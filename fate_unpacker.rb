@@ -55,10 +55,6 @@ class CLI
     @options.output_path = ARGV.last
   end
 
-  def target_path(resource_path)
-    File.join(@options.output_path, escape(resource_path))
-  end
-
   def escape(string)
     string
       .sub(/^\//, '')
