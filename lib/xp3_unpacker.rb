@@ -153,7 +153,7 @@ class Xp3Unpacker
       file.seek(@offset, IO::SEEK_SET)
       use_zlib = @flags & 7 == 1
       if use_zlib
-        return zlib.decompress(file.read(@compressed_size))
+        return Zlib.inflate(file.read(@compressed_size))
       else
         return file.read(@original_size)
       end
