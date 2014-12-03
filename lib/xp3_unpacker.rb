@@ -13,21 +13,21 @@ class Xp3Unpacker
     end
   end
 
-  def extract(output_dir)
+  def extract(output_dir, verbose)
     open(@path, 'rb') do |input_file|
       @file_table.files.each do |xp3_file|
         target_path = File.join(output_dir, xp3_file.info_chunk.file_name)
         FileUtils.mkpath(File.dirname(target_path))
-        print 'Extracting to ' + target_path + '... '
+        print 'Extracting to ' + target_path + '... ' if verbose
         begin
           xp3_file.extract(
             input_file,
             target_path,
             ->(data, file_entry) { filter(data, file_entry) })
         rescue StandardError => e
-          puts e.message
+          puts e.message if verbose
         else
-          puts 'ok'
+          puts 'ok' if verbose
         end
       end
     end

@@ -14,7 +14,9 @@ class CLI
     FileUtils.mkpath(@options.output_path) \
       unless @options.output_path.nil?
 
-    FateUnpacker.new(@options.input_path).extract(@options.output_path)
+    FateUnpacker.new(@options.input_path).extract(
+      @options.output_path,
+      @options.verbose)
   end
 
   private
@@ -23,6 +25,7 @@ class CLI
     @options = OpenStruct.new
     @options.input_path = nil
     @options.output_path = nil
+    @options.verbose = true
 
     opt_parser = OptionParser.new do |opts|
       opts.banner = format(
@@ -30,6 +33,10 @@ class CLI
         File.basename(__FILE__))
 
       opts.separator ''
+
+      opts.on('-q', '--quiet', 'Suppress output') do
+        @options.verbose = false
+      end
 
       opts.on_tail('-h', '--help', 'Show this message') do
         puts opts
