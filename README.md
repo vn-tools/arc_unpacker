@@ -13,17 +13,8 @@ Usage:
 2. Run this script on the XP3 archives. These can be found in the game's
 installation folder.
 
-Notes:
+Note:
 
-The inconvenience of reversing XP3 archives mainly lies in the way Kirikiri
-handles encryption - each game can (and is encouraged to) implement customized
-encryption / decryption routine:
-
-https://github.com/krkrz/krkrz/blob/29cd9abe461fe1b0ead0b47ecb76bd5c0619542d/src/core/base/XP3Archive.cpp#L1007-L1014  
-(BTW: I am almost positive that ADLR chunk isn't always included.)
-
-As an example, in the case of Fate/Stay Night, this routine goes like this:
-
-    decrypted[i] = encrypted[i] ^ 0x36 for every i
-    decrypted[i] = encrypted[i] ^ 0x01 for i = 0x13
-    decrypted[i] = encrypted[i] ^ 0x03 for i = 0x2ea29
+Unfortunately, I don't know any way to verify correctness of the extracted
+files. This means that for the games using unsupported encryption, the script
+won't notify you about possible decryption failures.
