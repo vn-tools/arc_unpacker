@@ -1,7 +1,5 @@
-require_relative 'xp3_unpacker'
-
-# XP3 archive unpacker with Fate/Stay night encryption tweak
-class FateUnpacker < Xp3Unpacker
+# Decryption routine for Fate/Stay Night
+class FsnDecryptor
   def filter(data, _file_entry)
     bytes = data.unpack('C*')
     (0...data.length - 1).each do |i|

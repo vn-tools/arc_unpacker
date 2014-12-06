@@ -1,11 +1,20 @@
 #!/usr/bin/ruby -W2
-require_relative 'lib/fate_unpacker'
+require_relative 'lib/decryption/noop'
+require_relative 'lib/decryption/fsn'
+require_relative 'lib/xp3_unpacker'
 require 'ostruct'
 require 'optparse'
 require 'fileutils'
 
-# CLI frontend for Fate unpacker
+# CLI frontend for XP3 unpacker
 class CLI
+  def decryptors
+    {
+      noop: ->() { NoopDecryptor.new },
+      fsn: ->() { FsnDecryptor.new }
+    }
+  end
+
   def initialize
     parse_options
   end
@@ -14,7 +23,9 @@ class CLI
     FileUtils.mkpath(@options.output_path) \
       unless @options.output_path.nil?
 
-    FateUnpacker.new(@options.input_path).extract(
+    decryptor = decryptors[@options.format].call
+
+    Xp3Unpacker.new(@options.input_path, decryptor).extract(
       @options.output_path,
       @options.verbose)
   end
@@ -38,6 +49,15 @@ class CLI
         @options.verbose = false
       end
 
+      opts.on(
+        '-f',
+        '--fmt FORMAT',
+        decryptors.keys,
+        'Select decryption type (' + decryptors.keys.join(', ') + ')') \
+      do |format|
+        @options.format = format
+      end
+
       opts.on_tail('-h', '--help', 'Show this message') do
         puts opts
         exit
@@ -46,7 +66,11 @@ class CLI
 
     begin
       opt_parser.parse!
-    rescue OptionParser::InvalidOption => e
+      if @options.format.nil?
+        fail OptionParser::MissingArgument, 'Must specify decryption format.'
+      end
+    rescue StandardError => e
+      raise e unless e.class.name.start_with?('OptionParser')
       puts e.message
       puts
       puts opt_parser

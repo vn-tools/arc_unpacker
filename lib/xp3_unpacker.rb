@@ -4,8 +4,10 @@ require 'awesome_print'
 
 # XP3 archive unpacker
 class Xp3Unpacker
-  def initialize(path)
+  def initialize(path, decryptor)
     @path = path
+    @decryptor = decryptor
+
     open(path, 'rb') do |file|
       header = Xp3Header.new.read!(file)
       file.seek(header.file_table_origin, IO::SEEK_SET)
@@ -23,7 +25,7 @@ class Xp3Unpacker
           xp3_file.extract(
             input_file,
             target_path,
-            ->(data, file_entry) { filter(data, file_entry) })
+            ->(data, file_entry) { @decryptor.filter(data, file_entry) })
         rescue StandardError => e
           puts e.message if verbose
         else
@@ -31,10 +33,6 @@ class Xp3Unpacker
         end
       end
     end
-  end
-
-  def filter(data, _xp3_file_entry)
-    data
   end
 
   # basic XP3 header (not fully reversed)
