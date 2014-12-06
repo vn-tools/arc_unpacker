@@ -4,6 +4,8 @@ Currently supported decryption routines:
 
 - Noop (no encryption)
 - Fate/Stay Night
+- CXDEC-based:
+  - Fate/Hollow Ataraxia
 
 Usage:
 

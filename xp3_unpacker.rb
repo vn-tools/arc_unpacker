@@ -1,6 +1,8 @@
 #!/usr/bin/ruby -W2
 require_relative 'lib/decryption/noop'
 require_relative 'lib/decryption/fsn'
+require_relative 'lib/decryption/cxdec'
+require_relative 'lib/decryption/cxdec_plugin_fha'
 require_relative 'lib/xp3_unpacker'
 require 'ostruct'
 require 'optparse'
@@ -8,13 +10,6 @@ require 'fileutils'
 
 # CLI frontend for XP3 unpacker
 class CLI
-  def decryptors
-    {
-      noop: ->() { NoopDecryptor.new },
-      fsn: ->() { FsnDecryptor.new }
-    }
-  end
-
   def initialize
     parse_options
   end
@@ -31,6 +26,14 @@ class CLI
   end
 
   private
+
+  def decryptors
+    {
+      noop: ->() { NoopDecryptor.new },
+      fsn: ->() { FsnDecryptor.new },
+      fha: ->() { CxdecDecryptor.new(CxdecPluginFha.new) }
+    }
+  end
 
   def parse_options
     @options = OpenStruct.new
