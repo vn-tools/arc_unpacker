@@ -2,15 +2,17 @@ require 'zlib'
 require 'stringio'
 require 'awesome_print'
 
-# XP3 archive unpacker
-class Xp3Unpacker
+# XP3 archive
+class Xp3Archive
   def initialize(path, decryptor)
     @path = path
     @decryptor = decryptor
+  end
 
-    open(path, 'rb') do |file|
-      header = Xp3Header.new.read!(file)
-      file.seek(header.file_table_origin, IO::SEEK_SET)
+  def read!
+    open(@path, 'rb') do |file|
+      @header = Xp3Header.new.read!(file)
+      file.seek(@header.file_table_origin, IO::SEEK_SET)
       @file_table = Xp3FileTable.new.read!(file)
     end
   end

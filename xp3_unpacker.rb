@@ -1,9 +1,9 @@
 #!/usr/bin/ruby -W2
-require_relative 'lib/decryption/noop'
-require_relative 'lib/decryption/fsn'
-require_relative 'lib/decryption/cxdec'
-require_relative 'lib/decryption/cxdec_plugin_fha'
-require_relative 'lib/xp3_unpacker'
+require_relative 'decryptors/noop'
+require_relative 'decryptors/fsn'
+require_relative 'decryptors/cxdec'
+require_relative 'decryptors/cxdec_plugin_fha'
+require_relative 'xp3_archive'
 require 'ostruct'
 require 'optparse'
 require 'fileutils'
@@ -20,9 +20,9 @@ class CLI
 
     decryptor = decryptors[@options.format].call
 
-    Xp3Unpacker.new(@options.input_path, decryptor).extract(
-      @options.output_path,
-      @options.verbose)
+    xp3 = Xp3Archive.new(@options.input_path, decryptor)
+    xp3.read!
+    xp3.extract(@options.output_path, @options.verbose)
   end
 
   private
