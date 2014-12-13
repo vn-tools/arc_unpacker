@@ -1,11 +1,11 @@
 #!/usr/bin/ruby -W2
 require 'bundler/setup'
 require 'vntools_helpers'
-require_relative 'decryptors/noop'
-require_relative 'decryptors/fsn'
-require_relative 'decryptors/cxdec'
-require_relative 'decryptors/cxdec_plugin_fha'
-require_relative 'xp3_archive'
+require_relative '../lib/decryptors/noop'
+require_relative '../lib/decryptors/fsn'
+require_relative '../lib/decryptors/cxdec'
+require_relative '../lib/decryptors/cxdec_plugin_fha'
+require_relative '../lib/xp3_archive'
 
 # CLI frontend for XP3 unpacker
 class CLI < GenericUnpacker
