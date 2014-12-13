@@ -1,6 +1,5 @@
 require 'zlib'
 require 'stringio'
-require 'awesome_print'
 
 # XP3 archive
 class Xp3Archive
