@@ -9,8 +9,9 @@ Currently supported decryption routines:
 
 Usage:
 
-1. Choose the correct --fmt parameter to decrypt the files properly.
-2. Run this script on the XP3 archives. These can be found in the game's
+1. `gem install bundler && bundle install`.
+2. Choose the correct --fmt parameter to decrypt the files properly.
+3. Run this script on the XP3 archives. These can be found in the game's
 installation folder.
 
 Note:
