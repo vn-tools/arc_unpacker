@@ -1,1 +1,1 @@
-gem 'vntools_helpers', :github => 'vn-tools/ruby_helpers'
+gem 'vntools_helpers', github: 'vn-tools/ruby_helpers'
