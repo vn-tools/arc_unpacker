@@ -12,9 +12,9 @@ class CLI < GenericUnpacker
   def run_internal
     decryptor = decryptors[@options[:format]].call
 
-    xp3 = Xp3Archive.new(@options[:input_path], decryptor)
-    xp3.read!
-    xp3.extract(@options[:output_path], @options[:verbose])
+    archive = Xp3Archive.new(@options[:input_path], decryptor)
+    archive.read!
+    archive.extract(@options[:output_path], @options[:verbose])
   end
 
   private
