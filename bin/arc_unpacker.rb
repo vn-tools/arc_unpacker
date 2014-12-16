@@ -26,19 +26,17 @@ class CLI
 
   private
 
-  def decryptors
+  def archive_factory
     {
-      'xp3/noop' => ->() { NoopDecryptor.new },
-      'xp3/fsn' => ->() { FsnDecryptor.new },
-      'xp3/fha' => ->() { CxdecDecryptor.new(CxdecPluginFha.new) }
+      'xp3/noop' => ->() { Xp3Archive.new(NoopDecryptor.new) },
+      'xp3/fsn' => ->() { Xp3Archive.new(FsnDecryptor.new) },
+      'xp3/fha' => ->() { Xp3Archive.new(CxdecDecryptor.new(CxdecPluginFha.new)) }
     }
   end
 
   def run_internal
-    decryptor = decryptors[@options[:format]].call
-
-    archive = Xp3Archive.new(@options[:input_path], decryptor)
-    archive.read!
+    archive = archive_factory[@options[:format]].call
+    archive.read(@options[:input_path])
     archive.extract(@options[:output_path], @options[:verbose])
   end
 
@@ -58,8 +56,8 @@ class CLI
       opts.on(
         '-f',
         '--fmt FORMAT',
-        decryptors.keys,
-        'Select decryption type (' + decryptors.keys.join(', ') + ')') \
+        archive_factory.keys,
+        'Select decryption type (' + archive_factory.keys.join(', ') + ')') \
       do |format|
         @options[:format] = format
       end
