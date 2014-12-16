@@ -24,7 +24,7 @@ class Xp3FileEntry
     open(target_path, 'wb') do |output_file|
       data = ''
       @segm_chunks.each { |segm_chunk| data += segm_chunk.read_data!(handle) }
-      data = filter.call(data, self)
+      data = filter.call(data)
       output_file.write(data)
     end
   end

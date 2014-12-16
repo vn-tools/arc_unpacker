@@ -2,7 +2,7 @@ require 'fileutils'
 
 # generic archive
 class Archive
-  def read(path)
+  def read(path) # rubocop:disable Style/TrivialAccessors
     @path = path
   end
 

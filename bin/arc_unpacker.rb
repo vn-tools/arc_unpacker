@@ -8,6 +8,19 @@ require_relative '../lib/kirikiri/decryptors/cxdec'
 require_relative '../lib/kirikiri/decryptors/cxdec_plugin_fha'
 require_relative '../lib/kirikiri/xp3_archive'
 require_relative '../lib/ykc/ykc_archive'
+require_relative '../lib/nscripter/nsa/nsa_archive'
+require_relative '../lib/nscripter/sar/sar_archive'
+
+def archive_factory
+  {
+    'xp3/noop' => -> { Xp3Archive.new(NoopDecryptor.new) },
+    'xp3/fsn' => -> { Xp3Archive.new(FsnDecryptor.new) },
+    'xp3/fha' => -> { Xp3Archive.new(CxdecDecryptor.new(CxdecPluginFha.new)) },
+    'ykc' => -> { YkcArchive.new },
+    'sar' => -> { SarArchive.new },
+    'nsa' => -> { NsaArchive.new }
+  }
+end
 
 # CLI frontend
 class CLI
@@ -26,15 +39,6 @@ class CLI
   end
 
   private
-
-  def archive_factory
-    {
-      'xp3/noop' => ->() { Xp3Archive.new(NoopDecryptor.new) },
-      'xp3/fsn' => ->() { Xp3Archive.new(FsnDecryptor.new) },
-      'xp3/fha' => ->() { Xp3Archive.new(CxdecDecryptor.new(CxdecPluginFha.new)) },
-      'ykc' => ->() { YkcArchive.new }
-    }
-  end
 
   def run_internal
     archive = archive_factory[@options[:format]].call

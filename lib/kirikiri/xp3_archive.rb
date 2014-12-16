@@ -27,6 +27,6 @@ class Xp3Archive < Archive
     file_entry.extract(
       input_file,
       target_path,
-      ->(data, file_entry) { @decryptor.filter(data, file_entry) })
+      ->(data) { @decryptor.filter(data, file_entry) })
   end
 end
