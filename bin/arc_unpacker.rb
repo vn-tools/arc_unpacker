@@ -10,6 +10,7 @@ require_relative '../lib/kirikiri/xp3_archive'
 require_relative '../lib/ykc/ykc_archive'
 require_relative '../lib/nscripter/nsa/nsa_archive'
 require_relative '../lib/nscripter/sar/sar_archive'
+require_relative '../lib/french_bread/melty_blood/melty_blood_archive'
 
 def archive_factory
   {
@@ -18,7 +19,8 @@ def archive_factory
     'xp3/fha' => -> { Xp3Archive.new(CxdecDecryptor.new(CxdecPluginFha.new)) },
     'ykc' => -> { YkcArchive.new },
     'sar' => -> { SarArchive.new },
-    'nsa' => -> { NsaArchive.new }
+    'nsa' => -> { NsaArchive.new },
+    'melty_blood' => -> { MeltyBloodArchive.new }
   }
 end
 
