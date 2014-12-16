@@ -5,7 +5,7 @@ class Xp3FileEntry
   attr_reader :adlr_chunk
 
   def file_name
-    @info_chunk.file_name\
+    @info_chunk.file_name
   end
 
   def read!(file)
