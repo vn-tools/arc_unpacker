@@ -1,21 +1,25 @@
-A tool for extracting data from XP3 archives used by Kirikiri engine.
+A tool for extracting data from visual novels.
 
-Currently supported decryption routines:
+Currently supported games:
 
-- Noop (no encryption)
-- Fate/Stay Night
-- CXDEC-based:
-  - Fate/Hollow Ataraxia
+`--fmt` string | Game or format
+-------------- | --------------------------------
+xp3/noop       | Unecrypted Kirikiri XP3 archive
+xp3/fsn        | Fate/Stay Night
+xp3/fha        | Fate/Hollow Ataraxia
 
 Usage:
 
-1. `gem install bundler && bundle install`.
-2. Choose the correct --fmt parameter to decrypt the files properly.
-3. Run this script on the XP3 archives. These can be found in the game's
-installation folder.
+1. Choose the correct --fmt parameter to decrypt the files properly.
+2. Run this script on the archive files. These can be found in the game's
+   installation folder.
 
-Note:
+Example:
 
-Unfortunately, I don't know any way to verify correctness of the extracted
-files. This means that for the games using unsupported encryption, the script
-won't notify you about possible decryption failures.
+    ruby bin/arcunpacker.rb fate/fgimage.xp3 fgimage_unpacked/
+
+Warning:
+
+Some archives provide no way to verify correctness of the extracted files. This
+means that for some unsupported games, the script may extract the files and
+show no errors, but you will be unable to open them nonetheless.

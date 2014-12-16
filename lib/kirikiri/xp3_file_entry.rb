@@ -1,8 +1,12 @@
 # XP3 file table entry
 class Xp3FileEntry
-  attr_accessor :info_chunk
-  attr_accessor :segm_chunks
-  attr_accessor :adlr_chunk
+  attr_reader :info_chunk
+  attr_reader :segm_chunks
+  attr_reader :adlr_chunk
+
+  def file_name
+    @info_chunk.file_name
+  end
 
   def read!(file)
     magic = file.read(4)
@@ -16,12 +20,10 @@ class Xp3FileEntry
     self
   end
 
-  def extract(handle, target_path, filter)
-    open(target_path, 'wb') do |output_file|
-      data = ''
-      @segm_chunks.each { |segm_chunk| data += segm_chunk.read_data!(handle) }
-      data = filter.call(data, self)
-      output_file.write(data)
-    end
+  def read_data(handle, filter)
+    data = ''
+    @segm_chunks.each { |segm_chunk| data += segm_chunk.read_data!(handle) }
+    data = filter.call(data)
+    data
   end
 end
