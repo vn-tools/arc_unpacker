@@ -11,6 +11,7 @@ require_relative '../lib/ykc/ykc_archive'
 require_relative '../lib/nscripter/nsa/nsa_archive'
 require_relative '../lib/nscripter/sar/sar_archive'
 require_relative '../lib/french_bread/melty_blood/melty_blood_archive'
+require_relative '../lib/nitroplus/pak/pak_archive'
 
 def archive_factory
   {
@@ -20,7 +21,8 @@ def archive_factory
     'ykc' => -> { YkcArchive.new },
     'sar' => -> { SarArchive.new },
     'nsa' => -> { NsaArchive.new },
-    'melty_blood' => -> { MeltyBloodArchive.new }
+    'melty_blood' => -> { MeltyBloodArchive.new },
+    'nitroplus/pak' => -> { PakArchive.new }
   }
 end
 
