@@ -20,11 +20,11 @@ class MeltyBloodFileEntry
     self
   end
 
-  def extract(input_file, target_path)
+  def read_data(input_file)
     input_file.seek(@data_origin, IO::SEEK_SET)
     data = input_file.read(@data_size)
     data = decrypt(data) if @header.encrypted
-    open(target_path, 'wb') { |output_file| output_file.write(data) }
+    data
   end
 
   private

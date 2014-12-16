@@ -23,10 +23,9 @@ class Xp3Archive < Archive
     end
   end
 
-  def extract_file(file_entry, input_file, target_path)
-    file_entry.extract(
+  def read_data_from_file(file_entry, input_file)
+    file_entry.read_data(
       input_file,
-      target_path,
       ->(data) { @decryptor.filter(data, file_entry) })
   end
 end

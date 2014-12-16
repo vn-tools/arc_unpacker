@@ -11,9 +11,13 @@ class Archive
       @file_table.files.each do |file_entry|
         target_path = File.join(output_dir, file_entry.file_name)
         FileUtils.mkpath(File.dirname(target_path))
+
         print 'Extracting to ' + target_path + '... ' if verbose
         begin
-          extract_file(file_entry, input_file, target_path)
+          data = read_data_from_file(file_entry, input_file)
+          open(target_path, 'wb') do |output_file|
+            output_file.write(data)
+          end
         rescue StandardError => e
           puts e.message if verbose
         else
@@ -23,7 +27,9 @@ class Archive
     end
   end
 
-  def extract_file(file_entry, input_file, target_path)
-    file_entry.extract(input_file, target_path)
+  private
+
+  def read_data_from_file(file_entry, input_file)
+    file_entry.read_data(input_file)
   end
 end

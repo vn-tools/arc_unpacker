@@ -26,14 +26,14 @@ class NsaFileEntry
     self
   end
 
-  def extract(input_file, target_path)
+  def read_data(input_file)
     input_file.seek(@data_offset + @data_origin, IO::SEEK_SET)
     data = unpack(input_file.read(@data_size_compressed))
 
     fail format('Expected %d bytes, got %d', data.length, @data_size_original) \
       if data.length != @data_size_original
 
-    open(target_path, 'wb') { |output_file| output_file.write(data) }
+    data
   end
 
   def unpack(data)

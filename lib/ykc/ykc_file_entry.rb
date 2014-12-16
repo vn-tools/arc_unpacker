@@ -20,7 +20,7 @@ class YkcFileEntry
     self
   end
 
-  def extract(input_file, target_path)
+  def read_data(input_file)
     input_file.seek(@data_origin, IO::SEEK_SET)
     data = input_file.read(@data_size)
     if data[0..(YKS_MAGIC.length - 1)] == YKS_MAGIC
@@ -31,12 +31,8 @@ class YkcFileEntry
     elsif data[0..(YKG_MAGIC.length - 1)] == YKG_MAGIC
       data[0x41..0x43] = 'PNG'
       data = data[0x40..-1]
-      target_path += '.png'
     end
-
-    open(target_path, 'wb') do |output_file|
-      output_file.write(data)
-    end
+    data
   end
 
   private

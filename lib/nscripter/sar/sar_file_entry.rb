@@ -19,9 +19,8 @@ class SarFileEntry
     self
   end
 
-  def extract(input_file, target_path)
+  def read_data(input_file)
     input_file.seek(@data_offset + @data_origin, IO::SEEK_SET)
-    data = input_file.read(@data_size)
-    open(target_path, 'wb') { |output_file| output_file.write(data) }
+    input_file.read(@data_size)
   end
 end
