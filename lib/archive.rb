@@ -22,4 +22,8 @@ class Archive
       end
     end
   end
+
+  def extract_file(file_entry, input_file, target_path)
+    file_entry.extract(input_file, target_path)
+  end
 end

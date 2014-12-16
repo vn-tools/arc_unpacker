@@ -7,6 +7,7 @@ require_relative '../lib/kirikiri/decryptors/fsn'
 require_relative '../lib/kirikiri/decryptors/cxdec'
 require_relative '../lib/kirikiri/decryptors/cxdec_plugin_fha'
 require_relative '../lib/kirikiri/xp3_archive'
+require_relative '../lib/ykc/ykc_archive'
 
 # CLI frontend
 class CLI
@@ -30,7 +31,8 @@ class CLI
     {
       'xp3/noop' => ->() { Xp3Archive.new(NoopDecryptor.new) },
       'xp3/fsn' => ->() { Xp3Archive.new(FsnDecryptor.new) },
-      'xp3/fha' => ->() { Xp3Archive.new(CxdecDecryptor.new(CxdecPluginFha.new)) }
+      'xp3/fha' => ->() { Xp3Archive.new(CxdecDecryptor.new(CxdecPluginFha.new)) },
+      'ykc' => ->() { YkcArchive.new }
     }
   end
 
