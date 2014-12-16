@@ -9,7 +9,7 @@ class Archive
   def extract(output_dir, verbose)
     open(@path, 'rb') do |input_file|
       @file_table.files.each do |file_entry|
-        target_path = File.join(output_dir, file_entry.info_chunk.file_name)
+        target_path = File.join(output_dir, file_entry.file_name)
         FileUtils.mkpath(File.dirname(target_path))
         print 'Extracting to ' + target_path + '... ' if verbose
         begin

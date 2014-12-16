@@ -1,8 +1,12 @@
 # XP3 file table entry
 class Xp3FileEntry
-  attr_accessor :info_chunk
-  attr_accessor :segm_chunks
-  attr_accessor :adlr_chunk
+  attr_reader :info_chunk
+  attr_reader :segm_chunks
+  attr_reader :adlr_chunk
+
+  def file_name
+    @info_chunk.file_name\
+  end
 
   def read!(file)
     magic = file.read(4)
