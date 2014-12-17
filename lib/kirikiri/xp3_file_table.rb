@@ -1,3 +1,6 @@
+require 'stringio'
+require_relative 'xp3_file_entry'
+
 # XP3 file table
 class Xp3FileTable
   attr_accessor :files

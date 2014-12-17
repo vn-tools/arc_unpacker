@@ -1,3 +1,5 @@
+require 'stringio'
+
 # XP3 ADLR chunk
 class Xp3AdlrChunk
   attr_accessor :encryption_key

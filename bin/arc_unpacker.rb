@@ -1,30 +1,7 @@
 #!/usr/bin/ruby -W2
 require 'optparse'
 require 'fileutils'
-
-require_relative '../lib/kirikiri/decryptors/noop'
-require_relative '../lib/kirikiri/decryptors/fsn'
-require_relative '../lib/kirikiri/decryptors/cxdec'
-require_relative '../lib/kirikiri/decryptors/cxdec_plugin_fha'
-require_relative '../lib/kirikiri/xp3_archive'
-require_relative '../lib/ykc/ykc_archive'
-require_relative '../lib/nscripter/nsa/nsa_archive'
-require_relative '../lib/nscripter/sar/sar_archive'
-require_relative '../lib/french_bread/melty_blood/melty_blood_archive'
-require_relative '../lib/nitroplus/pak/pak_archive'
-
-def archive_factory
-  {
-    'xp3/noop' => -> { Xp3Archive.new(NoopDecryptor.new) },
-    'xp3/fsn' => -> { Xp3Archive.new(FsnDecryptor.new) },
-    'xp3/fha' => -> { Xp3Archive.new(CxdecDecryptor.new(CxdecPluginFha.new)) },
-    'ykc' => -> { YkcArchive.new },
-    'sar' => -> { SarArchive.new },
-    'nsa' => -> { NsaArchive.new },
-    'melty_blood' => -> { MeltyBloodArchive.new },
-    'nitroplus/pak' => -> { PakArchive.new }
-  }
-end
+require_relative '../lib/archive_factory'
 
 # CLI frontend
 class CLI
@@ -45,7 +22,7 @@ class CLI
   private
 
   def run_internal
-    archive = archive_factory[@options[:format]].call
+    archive = ArchiveFactory.get(@options[:format])
     archive.read(@options[:input_path])
     archive.extract(@options[:output_path], @options[:verbose])
   end
@@ -66,8 +43,10 @@ class CLI
       opts.on(
         '-f',
         '--fmt FORMAT',
-        archive_factory.keys,
-        'Select decryption type (' + archive_factory.keys.join(', ') + ')') \
+        ArchiveFactory.format_strings,
+        format(
+          'Select decryption type (%s)',
+          ArchiveFactory.format_strings.join(', '))) \
       do |format|
         @options[:format] = format
       end

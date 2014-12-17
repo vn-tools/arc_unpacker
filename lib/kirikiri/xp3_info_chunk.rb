@@ -1,3 +1,5 @@
+require 'stringio'
+
 # XP3 INFO chunk
 class Xp3InfoChunk
   attr_accessor :protect

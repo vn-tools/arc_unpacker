@@ -1,12 +1,7 @@
 require 'zlib'
-require 'stringio'
 require_relative '../archive'
 require_relative 'xp3_header'
 require_relative 'xp3_file_table'
-require_relative 'xp3_file_entry'
-require_relative 'xp3_info_chunk'
-require_relative 'xp3_segm_chunk'
-require_relative 'xp3_adlr_chunk'
 
 # XP3 archive
 class Xp3Archive < Archive

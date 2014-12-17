@@ -1,3 +1,5 @@
+require 'stringio'
+
 # Xp3 SEGM chunk
 class Xp3SegmChunk
   attr_accessor :flags

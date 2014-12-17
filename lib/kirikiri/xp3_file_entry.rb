@@ -1,3 +1,8 @@
+require 'stringio'
+require_relative 'xp3_info_chunk'
+require_relative 'xp3_segm_chunk'
+require_relative 'xp3_adlr_chunk'
+
 # XP3 file table entry
 class Xp3FileEntry
   attr_reader :info_chunk

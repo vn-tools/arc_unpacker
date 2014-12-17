@@ -1,4 +1,5 @@
 require 'zlib'
+require 'stringio'
 require_relative 'pak2_file_entry'
 
 # PAK2 file table

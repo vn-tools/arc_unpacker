@@ -1,3 +1,5 @@
+require_relative 'ykc_file_entry'
+
 # YKC file table
 class YkcFileTable
   attr_reader :files

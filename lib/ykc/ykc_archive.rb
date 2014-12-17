@@ -1,7 +1,6 @@
 require_relative '../archive'
 require_relative 'ykc_header'
 require_relative 'ykc_file_table'
-require_relative 'ykc_file_entry'
 
 # YKC archive
 class YkcArchive < Archive
