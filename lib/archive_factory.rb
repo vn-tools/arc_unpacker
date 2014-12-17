@@ -52,6 +52,11 @@ class ArchiveFactory
       'nitroplus/pak' => lambda do
         require_relative 'nitroplus/pak/pak_archive'
         PakArchive.new
+      end,
+
+      'exe' => lambda do
+        require_relative 'exe/exe_reader.rb'
+        ExeReader.new
       end
     }
   end

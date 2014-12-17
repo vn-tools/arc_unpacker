@@ -12,6 +12,7 @@ Currently supported games:
 `sar`           | Nscripter SAR archives (e.g. Tsukihime)
 `ykc`           | YKC archives (e.g. Hoshizora e Kakaru Hashi)
 `nitroplus/pak` | Nitroplus's PAK archives (e.g. Saya no Uta)
+`exe`           | Windows executable files (embedded resources)
 
 Usage:
 
