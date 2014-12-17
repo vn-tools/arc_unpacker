@@ -1,5 +1,6 @@
-require 'pedump'
 require_relative 'exe_resource_entry'
+require_relative '../warning_silencer'
+silence_warnings { require 'pedump' }
 
 # Reader of .exe resources
 class ExeResourcesReader
@@ -27,8 +28,10 @@ class ExeResourcesReader
 
   def init_pedump(path)
     pedump = PEdump.new(path)
-    pedump.dump
-    pedump.resources
+    silence_warnings do
+      pedump.dump
+      pedump.resources
+    end
     pedump
   end
 
