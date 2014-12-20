@@ -15,22 +15,23 @@ class Archive
     end
   end
 
-  def extract(output_dir, verbose)
+  def extract(output_dir, verbosity)
     open(@path, 'rb') do |arc_file|
       @files.each do |file_entry|
         target_path = File.join(output_dir, file_entry.file_name)
         FileUtils.mkpath(File.dirname(target_path))
 
-        print 'Extracting to ' + target_path + '... ' if verbose
+        print 'Extracting to ' + target_path + '... ' if verbosity != :quiet
         begin
           data = file_entry.data.call(arc_file)
           open(target_path, 'wb') do |output_file|
             output_file.write(data)
           end
         rescue StandardError => e
-          puts e.message if verbose
+          puts e.message if verbosity != :quiet
+          puts e.backtrace if verbosity == :debug
         else
-          puts 'ok' if verbose
+          puts 'ok' if verbosity != :quiet
         end
       end
     end

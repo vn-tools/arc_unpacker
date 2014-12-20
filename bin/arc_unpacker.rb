@@ -6,6 +6,13 @@ require_relative '../lib/archive_factory'
 # CLI frontend
 class CLI
   def initialize
+    @options =
+    {
+      input_path: nil,
+      output_path: nil,
+      verbosity: :normal
+    }
+
     parse_options
   end
 
@@ -14,7 +21,8 @@ class CLI
     begin
       run_internal
     rescue StandardError => e
-      puts 'Error: ' + e.message.to_s
+      puts 'Error: ' + e.message.to_s if @options[:verbosity] != :quiet
+      puts e.backtrace if @options[:verbosity] == :debug
       exit(1)
     end
   end
@@ -24,17 +32,10 @@ class CLI
   def run_internal
     archive = ArchiveFactory.get(@options[:format])
     archive.read(@options[:input_path])
-    archive.extract(@options[:output_path], @options[:verbose])
+    archive.extract(@options[:output_path], @options[:verbosity])
   end
 
   def parse_options
-    @options =
-    {
-      input_path: nil,
-      output_path: nil,
-      verbose: true
-    }
-
     opt_parser = OptionParser.new do |opts|
       opts.banner = format(
         'Usage: %s INPUT_PATH OUTPUT_DIR',
@@ -52,8 +53,19 @@ class CLI
       end
 
       opts.separator ''
-      opts.on('-q', '--quiet', 'Suppress output') { @options[:verbose] = false }
-      opts.on_tail('-h', '--help', 'Show this message') { puts opts && exit }
+
+      opts.on('-q', '--quiet', 'Suppress output') do
+        @options[:verbosity] = :quiet
+      end
+
+      opts.on('-v', '--verbose', 'Show debug information for errors') do
+        @options[:verbosity] = :debug
+      end
+
+      opts.on_tail('-h', '--help', 'Show this message') do
+        puts opts
+        exit
+      end
     end
 
     begin
