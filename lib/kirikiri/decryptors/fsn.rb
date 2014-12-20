@@ -1,6 +1,6 @@
 # Decryption routine for Fate/Stay Night
 class FsnDecryptor
-  def filter(data, _file_entry)
+  def filter(data, _adlr_chunk)
     bytes = data.unpack('C*')
     bytes[0x2ea29] ^= 0x03 if data.length >= 0x2ea29
     bytes[0x13] ^= 0x01 if data.length >= 0x13

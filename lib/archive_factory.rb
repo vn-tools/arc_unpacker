@@ -30,32 +30,32 @@ class ArchiveFactory
       end,
 
       'ykc' => lambda do
-        require_relative 'ykc/ykc_archive'
+        require_relative 'misc/ykc_archive'
         YkcArchive.new
       end,
 
       'sar' => lambda do
-        require_relative 'nscripter/sar/sar_archive'
+        require_relative 'nscripter/sar_archive'
         SarArchive.new
       end,
 
       'nsa' => lambda do
-        require_relative 'nscripter/nsa/nsa_archive'
+        require_relative 'nscripter/nsa_archive'
         NsaArchive.new
       end,
 
       'melty_blood' => lambda do
-        require_relative 'french_bread/melty_blood/melty_blood_archive'
+        require_relative 'french_bread/melty_blood_archive'
         MeltyBloodArchive.new
       end,
 
       'nitroplus/pak' => lambda do
-        require_relative 'nitroplus/pak/pak_archive'
+        require_relative 'nitroplus/pak_archive'
         PakArchive.new
       end,
 
       'exe' => lambda do
-        require_relative 'exe/exe_reader.rb'
+        require_relative 'misc/exe_reader.rb'
         ExeReader.new
       end
     }

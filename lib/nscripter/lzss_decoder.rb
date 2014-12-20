@@ -1,4 +1,4 @@
-require_relative 'bit_reader'
+require_relative '../bit_reader'
 
 # Customized LZSS decompressor.
 class LzssDecoder
