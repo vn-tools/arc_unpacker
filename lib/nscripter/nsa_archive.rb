@@ -1,12 +1,12 @@
 require_relative '../archive'
 require_relative '../file_entry'
-require_relative 'lzss_decoder'
+require_relative 'lzss_encoder'
 
 # NSA archive
 class NsaArchive < Archive
   def initialize
     super
-    @lzss_decoder = LzssDecoder.new
+    @lzss_encoder = LzssEncoder.new(initial_dictionary_pos: 239)
   end
 
   def read_internal(arc_file)
@@ -99,7 +99,7 @@ class NsaArchive < Archive
         StandardError,
         'SPB compression not supported! Please send samples to rr- on github.'
     when 2
-      return @lzss_decoder.encode(data)
+      return @lzss_encoder.encode(data)
     else
       return data
     end
@@ -112,7 +112,7 @@ class NsaArchive < Archive
         StandardError,
         'SPB compression not supported! Please send samples to rr- on github.'
     when 2
-      return @lzss_decoder.decode(data)
+      return @lzss_encoder.decode(data)
     else
       return data
     end

@@ -18,7 +18,7 @@ class BitStream
     @buffer.seek(0, IO::SEEK_SET)
     bytes = @buffer.read
     @buffer.seek(pos, IO::SEEK_SET)
-    bytes
+    bytes.force_encoding('binary')
   end
 
   def bit_length
