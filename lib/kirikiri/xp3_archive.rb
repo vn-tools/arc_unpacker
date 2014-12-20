@@ -12,6 +12,7 @@ class Xp3Archive < Archive
   SEGM_MAGIC = 'segm'
 
   def initialize(decryptor)
+    super
     @decryptor = decryptor
   end
 
