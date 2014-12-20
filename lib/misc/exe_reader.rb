@@ -19,7 +19,7 @@ class ExeReader < Archive
 
   def to_file_entry(pedump_resource)
     file_name = pedump_resource.type + '/' + pedump_resource.name
-    data = lambda do |input_file|
+    data = lambda do
       input_file.seek(pedump_resource.file_offset, IO::SEEK_SET)
       input_file.read(pedump_resource.size)
     end

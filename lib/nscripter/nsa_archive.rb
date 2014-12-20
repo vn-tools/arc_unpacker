@@ -21,7 +21,7 @@ class NsaArchive < Archive
       data_size_compressed,
       data_size_original = arc_file.read(13).unpack('CL>L>L>')
 
-      data = lambda do |arc_file|
+      data = lambda do
         arc_file.seek(offset_to_files + data_origin, IO::SEEK_SET)
         data = decompress(arc_file.read(data_size_compressed), compression_type)
         fail 'Bad file size' unless data.length == data_size_original
@@ -42,7 +42,7 @@ class NsaArchive < Archive
     table_entries = []
     @files.each do |file_entry|
       compression_type = 3 # uncompressed
-      data_original = file_entry.data.call(arc_file)
+      data_original = file_entry.data.call
       data_compressed = compress(data_original, compression_type)
       data_size_original = data_original.length
       data_size_compressed = data_compressed.length

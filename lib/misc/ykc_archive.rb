@@ -34,7 +34,7 @@ class YkcArchive < Archive
     arc_file.seek(4, IO::SEEK_CUR)
     file_name = read_file_name(arc_file, file_name_origin, file_name_size)
 
-    data = lambda do |arc_file|
+    data = lambda do
       arc_file.seek(data_origin, IO::SEEK_SET)
       data = arc_file.read(data_size)
       data = decode(data)

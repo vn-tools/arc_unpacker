@@ -13,7 +13,7 @@ class SarArchive < Archive
       data_origin,
       data_size = arc_file.read(8).unpack('L>L>')
 
-      data = lambda do |arc_file|
+      data = lambda do
         arc_file.seek(offset_to_files + data_origin, IO::SEEK_SET)
         arc_file.read(data_size)
       end
@@ -31,7 +31,7 @@ class SarArchive < Archive
     cur_data_origin = 0
     table_entries = []
     @files.each do |file_entry|
-      data = file_entry.data.call(arc_file)
+      data = file_entry.data.call
       data_size = data.length
       arc_file.write(data)
       table_entries.push([file_entry.file_name, cur_data_origin, data_size])

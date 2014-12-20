@@ -49,7 +49,7 @@ class PakArchive < Archive
     flags,
     data_size_compressed = arc_file.read(20).unpack('LLxxxxLL')
 
-    data = lambda do |arc_file|
+    data = lambda do
       arc_file.seek(data_origin + offset_to_files, IO::SEEK_SET)
       return Zlib.inflate(arc_file.read(data_size_compressed)) if flags > 0
       arc_file.read(data_size_original)

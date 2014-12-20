@@ -60,7 +60,7 @@ class Xp3Archive < Archive
     adlr_chunk = Xp3AdlrChunk.new
     adlr_chunk.read!(raw)
 
-    data = lambda do |arc_file|
+    data = lambda do
       data = segm_chunks.map { |segm| segm.read_data!(arc_file) } * ''
       @decryptor.filter(data, adlr_chunk)
     end

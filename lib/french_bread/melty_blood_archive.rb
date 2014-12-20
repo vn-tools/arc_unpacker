@@ -27,7 +27,7 @@ class MeltyBloodArchive < Archive
     data_size = arc_file.read(8).unpack('LL')
     data_size ^= ENCRYPTION_KEY
 
-    data = lambda do |arc_file|
+    data = lambda do
       arc_file.seek(data_origin, IO::SEEK_SET)
       data = arc_file.read(data_size)
       data = decrypt(data, file_name) if encrypted
