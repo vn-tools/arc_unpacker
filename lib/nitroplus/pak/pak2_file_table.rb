@@ -6,23 +6,24 @@ require_relative 'pak2_file_entry'
 class Pak2FileTable
   attr_reader :files
 
-  def read!(file)
+  def initialize
+    @files = []
+  end
+
+  def read!(arc_file)
     file_count,
     table_size,
-    compressed_table_size = file.read(16).unpack('LLL')
+    compressed_table_size = arc_file.read(12).unpack('LLL')
 
-    file.seek(276, IO::SEEK_SET)
-    raw = Zlib.inflate(file.read(compressed_table_size))
-    data_offset = file.tell
+    arc_file.seek(276, IO::SEEK_SET)
+    raw = StringIO.new(Zlib.inflate(arc_file.read(compressed_table_size)))
+    data_offset = arc_file.tell
     fail 'Bad file table size' unless raw.length == table_size
 
-    table = StringIO.new(raw)
-
-    @files = []
-    (1..file_count).each do
-      @files.push(Pak2FileEntry.new(data_offset).read!(table))
+    @files = (1..file_count).map do
+      entry = Pak2FileEntry.new(data_offset)
+      entry.read!(raw)
+      entry
     end
-
-    self
   end
 end

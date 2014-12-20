@@ -6,10 +6,9 @@ class MeltyBloodHeader
   attr_reader :magic
   attr_reader :encrypted
 
-  def read!(file)
-    @magic = file.read(4)
+  def read!(arc_file)
+    @magic = arc_file.read(4)
     @encrypted = @magic == MAGIC1
     fail 'Not a Melty Blood archive' unless @magic == MAGIC1 || @magic == MAGIC2
-    self
   end
 end

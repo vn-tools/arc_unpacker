@@ -8,31 +8,27 @@ class NsaFileEntry
   attr_reader :data_size_compressed
   attr_reader :data_size_original
 
-  def initialize(file_data_origin)
-    @data_offset = file_data_origin
+  def initialize(arc_data_origin)
+    @data_offset = arc_data_origin
     @lzss_decoder = LzssDecoder.new
   end
 
-  def read!(file)
+  def read!(arc_file)
     @file_name = ''
-    while (c = file.read(1)) != "\0"
+    while (c = arc_file.read(1)) != "\0"
       @file_name += c
     end
 
     @compression_type,
     @data_origin,
     @data_size_compressed,
-    @data_size_original = file.read(13).unpack('CL>L>L>')
-    self
+    @data_size_original = arc_file.read(13).unpack('CL>L>L>')
   end
 
-  def read_data(input_file)
-    input_file.seek(@data_offset + @data_origin, IO::SEEK_SET)
-    data = unpack(input_file.read(@data_size_compressed))
-
-    fail format('Expected %d bytes, got %d', data.length, @data_size_original) \
-      if data.length != @data_size_original
-
+  def read_data(arc_file)
+    arc_file.seek(@data_offset + @data_origin, IO::SEEK_SET)
+    data = unpack(arc_file.read(@data_size_compressed))
+    fail 'Bad file size' unless data.length == @data_size_original
     data
   end
 

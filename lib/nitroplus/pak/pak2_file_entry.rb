@@ -13,28 +13,25 @@ class Pak2FileEntry
     @data_offset = file_data_origin
   end
 
-  def read!(file)
-    @file_name = read_file_name(file)
+  def read!(arc_file)
+    @file_name = read_file_name(arc_file)
     @data_origin,
     @data_size_original,
     @flags,
-    @data_size_compressed = file.read(20).unpack('LLxxxxLL')
-    self
+    @data_size_compressed = arc_file.read(20).unpack('LLxxxxLL')
   end
 
-  def read_data(input_file)
-    input_file.seek(@data_origin + @data_offset, IO::SEEK_SET)
-    return Zlib.inflate(input_file.read(@data_size_compressed)) if @flags > 0
-    input_file.read(@data_size_original)
+  def read_data(arc_file)
+    arc_file.seek(@data_origin + @data_offset, IO::SEEK_SET)
+    return Zlib.inflate(arc_file.read(@data_size_compressed)) if @flags > 0
+    arc_file.read(@data_size_original)
   end
 
-  def read_file_name(file)
-    file_name_length = file.read(4).unpack('L')[0]
-    file_name = file.read(file_name_length)
-    begin
-      return file_name.force_encoding('sjis').encode('utf-8')
-    rescue
-      return file_name
-    end
+  def read_file_name(arc_file)
+    file_name_length = arc_file.read(4).unpack('L')[0]
+    file_name = arc_file.read(file_name_length)
+    file_name.force_encoding('sjis').encode('utf-8')
+  rescue
+    file_name
   end
 end

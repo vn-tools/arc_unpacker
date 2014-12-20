@@ -7,16 +7,15 @@ class YkcHeader
   attr_reader :file_table_origin
   attr_reader :file_table_size
 
-  def read!(file)
-    @magic = file.read(6)
+  def read!(arc_file)
+    @magic = arc_file.read(6)
     fail 'Not a YKC archive' unless @magic == MAGIC
 
-    file.seek(2, IO::SEEK_CUR)
-    @version = file.read(4).unpack('L')[0]
+    arc_file.seek(2, IO::SEEK_CUR)
+    @version = arc_file.read(4).unpack('L')[0]
 
-    file.seek(4, IO::SEEK_CUR)
+    arc_file.seek(4, IO::SEEK_CUR)
     @file_table_origin,
-    @file_table_size = file.read(8).unpack('LL')
-    self
+    @file_table_size = arc_file.read(8).unpack('LL')
   end
 end

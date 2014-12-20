@@ -12,17 +12,16 @@ class MeltyBloodFileEntry
     @header = header
   end
 
-  def read!(file)
-    @file_name = read_file_name!(file)
+  def read!(arc_file)
+    @file_name = read_file_name!(arc_file)
     @data_origin,
-    @data_size = file.read(8).unpack('LL')
+    @data_size = arc_file.read(8).unpack('LL')
     @data_size ^= ENCRYPTION_KEY
-    self
   end
 
-  def read_data(input_file)
-    input_file.seek(@data_origin, IO::SEEK_SET)
-    data = input_file.read(@data_size)
+  def read_data(arc_file)
+    arc_file.seek(@data_origin, IO::SEEK_SET)
+    data = arc_file.read(@data_size)
     data = decrypt(data) if @header.encrypted
     data
   end
@@ -39,8 +38,8 @@ class MeltyBloodFileEntry
     data_bytes.pack('C*')
   end
 
-  def read_file_name!(file)
-    file_name = file.read(60).unpack('C*')
+  def read_file_name!(arc_file)
+    file_name = arc_file.read(60).unpack('C*')
     (0..58).each { |i| file_name[i] ^= (@file_id * i * 3 + 0x3d) & 0xff }
     file_name = file_name[0..(file_name.index(0) - 1)]
     file_name.pack('C*')

@@ -7,12 +7,10 @@ class PakHeader
 
   attr_reader :magic
 
-  def read!(file)
-    @magic = file.read(4)
+  def read!(arc_file)
+    @magic = arc_file.read(4)
 
     fail 'Not a PAK archive' \
       unless [MAGIC1, MAGIC2, MAGIC3, MAGIC4].include?(@magic)
-
-    self
   end
 end

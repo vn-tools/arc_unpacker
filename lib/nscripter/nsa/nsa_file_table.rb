@@ -5,14 +5,18 @@ class NsaFileTable
   attr_reader :files
   attr_reader :file_data_origin
 
-  def read!(file)
-    num_files = file.read(2).unpack('S>')[0]
-    @file_data_origin = file.read(4).unpack('L>')[0]
-
+  def initialize
     @files = []
-    (1..num_files).each do
-      @files.push(NsaFileEntry.new(@file_data_origin).read!(file))
+  end
+
+  def read!(arc_file)
+    num_files,
+    @file_data_origin = arc_file.read(6).unpack('S>L>')
+
+    @files = (1..num_files).map do
+      entry = NsaFileEntry.new(@file_data_origin)
+      entry.read!(arc_file)
+      entry
     end
-    self
   end
 end

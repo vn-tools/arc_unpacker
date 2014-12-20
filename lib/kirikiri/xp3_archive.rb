@@ -7,20 +7,22 @@ require_relative 'xp3_file_table'
 class Xp3Archive < Archive
   def initialize(decryptor)
     @decryptor = decryptor
+    @header = Xp3Header.new
+    @file_table = Xp3FileTable.new
   end
 
   def read(path)
     super
-    open(path, 'rb') do |file|
-      @header = Xp3Header.new.read!(file)
-      file.seek(@header.file_table_origin, IO::SEEK_SET)
-      @file_table = Xp3FileTable.new.read!(file)
+    open(path, 'rb') do |arc_file|
+      @header.read!(arc_file)
+      arc_file.seek(@header.file_table_origin, IO::SEEK_SET)
+      @file_table.read!(arc_file)
     end
   end
 
-  def read_data_from_file(file_entry, input_file)
+  def read_data_from_file(file_entry, arc_file)
     file_entry.read_data(
-      input_file,
+      arc_file,
       ->(data) { @decryptor.filter(data, file_entry) })
   end
 end

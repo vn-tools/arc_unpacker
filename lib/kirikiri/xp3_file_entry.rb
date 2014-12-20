@@ -5,24 +5,32 @@ require_relative 'xp3_adlr_chunk'
 
 # XP3 file table entry
 class Xp3FileEntry
+  MAGIC = 'File'
+
   attr_reader :info_chunk
   attr_reader :segm_chunks
   attr_reader :adlr_chunk
+
+  def initialize
+    @info_chunk = Xp3InfoChunk.new
+    @segm_chunks = []
+    @adlr_chunk = Xp3AdlrChunk.new
+  end
 
   def file_name
     @info_chunk.file_name
   end
 
-  def read!(file)
-    magic = file.read(4)
-    fail 'Expected file chunk' unless magic == 'File'
-    file_chunk_size = file.read(8).unpack('Q<')[0]
-    file_chunk = StringIO.new(file.read(file_chunk_size))
+  def read!(arc_file)
+    magic = arc_file.read(MAGIC.length)
+    fail 'Expected file chunk' unless magic == MAGIC
 
-    @info_chunk = Xp3InfoChunk.new.read!(file_chunk)
-    @segm_chunks = Xp3SegmChunk.read_list!(file_chunk)
-    @adlr_chunk = Xp3AdlrChunk.new.read!(file_chunk)
-    self
+    raw_size = arc_file.read(8).unpack('Q<')[0]
+    raw = StringIO.new(arc_file.read(raw_size))
+
+    @info_chunk.read!(raw)
+    @segm_chunks = Xp3SegmChunk.read_list!(raw)
+    @adlr_chunk.read!(raw)
   end
 
   def read_data(handle, filter)

@@ -8,14 +8,15 @@ class MeltyBloodFileTable
 
   def initialize(header)
     @header = header
+    @files = []
   end
 
-  def read!(file)
-    num_files = file.read(4).unpack('L<')[0] ^ ENCRYPTION_KEY
-    @files = []
-    (1..num_files).each do |i|
-      @files.push(MeltyBloodFileEntry.new(i - 1, @header).read!(file))
+  def read!(arc_file)
+    num_files = arc_file.read(4).unpack('L<')[0] ^ ENCRYPTION_KEY
+    @files = (1..num_files).map do |i|
+      entry = MeltyBloodFileEntry.new(i - 1, @header)
+      entry.read!(arc_file)
+      entry
     end
-    self
   end
 end

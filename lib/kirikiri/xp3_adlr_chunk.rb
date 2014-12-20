@@ -2,15 +2,17 @@ require 'stringio'
 
 # XP3 ADLR chunk
 class Xp3AdlrChunk
+  MAGIC = 'adlr'
+
   attr_accessor :encryption_key
 
-  def read!(file)
-    magic = file.read(4)
-    fail 'Expected ADLR chunk' unless magic == 'adlr'
-    adlr_chunk_size = file.read(8).unpack('Q<')[0]
-    adlr_chunk = StringIO.new(file.read(adlr_chunk_size))
+  def read!(arc_file)
+    magic = arc_file.read(MAGIC.length)
+    fail 'Expected ADLR chunk' unless magic == MAGIC
 
-    @encryption_key = adlr_chunk.read(4).unpack('L<')
-    self
+    raw_size = arc_file.read(8).unpack('Q<')[0]
+    raw = StringIO.new(arc_file.read(raw_size))
+
+    @encryption_key = raw.read(4).unpack('L<')
   end
 end

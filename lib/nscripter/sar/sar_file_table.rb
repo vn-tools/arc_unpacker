@@ -5,14 +5,18 @@ class SarFileTable
   attr_reader :files
   attr_reader :file_data_origin
 
-  def read!(file)
-    num_files = file.read(2).unpack('S>')[0]
-    @file_data_origin = file.read(4).unpack('L>')[0]
-
+  def initialize
     @files = []
-    (1..num_files).each do
-      @files.push(SarFileEntry.new(@file_data_origin).read!(file))
+  end
+
+  def read!(file)
+    num_files,
+    @file_data_origin = file.read(6).unpack('S>L>')
+
+    @files = (1..num_files).map do
+      entry = SarFileEntry.new(@file_data_origin)
+      entry.read!(file)
+      entry
     end
-    self
   end
 end
