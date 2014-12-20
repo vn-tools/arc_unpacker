@@ -17,12 +17,12 @@ class Pak2FileTable
 
     arc_file.seek(276, IO::SEEK_SET)
     raw = StringIO.new(Zlib.inflate(arc_file.read(compressed_table_size)))
-    data_offset = arc_file.tell
+    offset_to_files = arc_file.tell
     fail 'Bad file table size' unless raw.length == table_size
 
     @files = (1..file_count).map do
-      entry = Pak2FileEntry.new(data_offset)
-      entry.read!(raw)
+      entry = Pak2FileEntry.new
+      entry.read!(raw, offset_to_files)
       entry
     end
   end

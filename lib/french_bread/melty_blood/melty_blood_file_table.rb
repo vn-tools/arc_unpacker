@@ -14,8 +14,8 @@ class MeltyBloodFileTable
   def read!(arc_file)
     num_files = arc_file.read(4).unpack('L<')[0] ^ ENCRYPTION_KEY
     @files = (1..num_files).map do |i|
-      entry = MeltyBloodFileEntry.new(i - 1, @header)
-      entry.read!(arc_file)
+      entry = MeltyBloodFileEntry.new
+      entry.read!(arc_file, i - 1, @header)
       entry
     end
   end

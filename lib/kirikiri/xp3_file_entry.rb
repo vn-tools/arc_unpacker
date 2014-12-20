@@ -7,19 +7,8 @@ require_relative 'xp3_adlr_chunk'
 class Xp3FileEntry
   MAGIC = 'File'
 
-  attr_reader :info_chunk
-  attr_reader :segm_chunks
-  attr_reader :adlr_chunk
-
-  def initialize
-    @info_chunk = Xp3InfoChunk.new
-    @segm_chunks = []
-    @adlr_chunk = Xp3AdlrChunk.new
-  end
-
-  def file_name
-    @info_chunk.file_name
-  end
+  attr_reader :file_name
+  attr_reader :data
 
   def read!(arc_file)
     magic = arc_file.read(MAGIC.length)
@@ -28,15 +17,20 @@ class Xp3FileEntry
     raw_size = arc_file.read(8).unpack('Q<')[0]
     raw = StringIO.new(arc_file.read(raw_size))
 
-    @info_chunk.read!(raw)
-    @segm_chunks = Xp3SegmChunk.read_list!(raw)
-    @adlr_chunk.read!(raw)
-  end
+    info_chunk = Xp3InfoChunk.new
+    info_chunk.read!(raw)
 
-  def read_data(handle, filter)
-    data = ''
-    @segm_chunks.each { |segm_chunk| data += segm_chunk.read_data!(handle) }
-    data = filter.call(data)
-    data
+    segm_chunks = Xp3SegmChunk.read_list!(raw)
+
+    adlr_chunk = Xp3AdlrChunk.new
+    adlr_chunk.read!(raw)
+
+    @file_name = info_chunk.file_name
+
+    @data = lambda do |arc_file|
+      data = ''
+      segm_chunks.each { |segm_chunk| data += segm_chunk.read_data!(arc_file) }
+      filter.call(data)
+    end
   end
 end
