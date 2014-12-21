@@ -8,6 +8,11 @@ include Test::Unit::Assertions
 module TestHelper
   module_function
 
+  def get_test_file(name)
+    path = File.join(__dir__, 'test_files', name)
+    open(path, 'rb') { |f| f.read }
+  end
+
   def write_and_read(arc, options = {})
     buffer = BinaryIO.new
     content1 = rand_binary_string(30_000)

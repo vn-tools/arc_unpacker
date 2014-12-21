@@ -1,5 +1,6 @@
 require_relative '../archive'
 require_relative '../file_entry'
+require_relative 'mgd_converter'
 
 # FJSYS archive
 class FjsysArchive < Archive
@@ -25,7 +26,7 @@ class FjsysArchive < Archive
 
       data = lambda do
         arc_file.seek(data_origin, IO::SEEK_SET)
-        arc_file.read(data_size)
+        decode(arc_file.read(data_size))
       end
 
       FileEntry.new(file_name, data)
@@ -45,21 +46,21 @@ class FjsysArchive < Archive
     cur_data_origin = header_size
     cur_file_name_origin = 0
     @files.each do |file_entry|
-      data = file_entry.data.call
+      data = encode(file_entry.file_name, file_entry.data.call)
       data_size = data.length
       arc_file.write(data)
 
       table_entries.push([
         cur_file_name_origin,
-        cur_data_origin,
-        data_size])
+        data_size,
+        cur_data_origin])
       cur_file_name_origin += file_entry.file_name.length + 1
       cur_data_origin += data_size
       fail 'Bad' if arc_file.tell != cur_data_origin
     end
 
     arc_file.seek(0x54, IO::SEEK_SET)
-    table_entries.each do |file_name_origin, data_origin, data_size|
+    table_entries.each do |file_name_origin, data_size, data_origin|
       arc_file.write([file_name_origin, data_size, data_origin].pack('LLQ'))
     end
 
@@ -70,6 +71,18 @@ class FjsysArchive < Archive
   end
 
   private
+
+  def decode(data)
+    if data[0..MgdConverter::MAGIC.length - 1] == MgdConverter::MAGIC
+      return MgdConverter.decode(data)
+    end
+    data
+  end
+
+  def encode(file_name, data)
+    return MgdConverter.encode(data) if file_name.downcase.end_with?('.mgd')
+    data
+  end
 
   def peek(arc_file, pos, &func)
     old_pos = arc_file.tell
