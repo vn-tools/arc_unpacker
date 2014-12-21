@@ -38,7 +38,10 @@ class MgdConverter
 
   def self.encode(data)
     image = Magick::Image.from_blob(data)[0]
-    png_blob = image.to_blob { |attrs| attrs.format = 'PNG' }
+    png_blob = image.to_blob do |attrs|
+      attrs.format = 'PNG'
+      attrs.quality = 0
+    end
     png_size = png_blob.length
 
     data_offset = 92
@@ -49,8 +52,8 @@ class MgdConverter
       1,
       image.columns,
       image.rows,
-      png_size,
-      png_size,
+      image.columns * image.rows * 4,
+      png_size + 4,
       PNG_COMPRESSION,
       png_size].pack('SS x4 S2 L2 S x66 L'))
     output.write(png_blob)
@@ -74,9 +77,7 @@ class MgdConverter
     input = BinaryIO.new(input)
     output = BinaryIO.new
 
-    compressed_length = input.read(4).unpack('L')[0]
-    uncompressed_length = image_width * image_height * 4
-
+    _compressed_length = input.read(4).unpack('L')[0]
     len = input.read(4).unpack('L')[0]
 
     # alpha
