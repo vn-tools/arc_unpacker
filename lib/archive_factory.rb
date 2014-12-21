@@ -54,6 +54,11 @@ class ArchiveFactory
         PakArchive.new
       end,
 
+      'fjsys' => lambda do
+        require_relative 'misc/fjsys_archive.rb'
+        FjsysArchive.new
+      end,
+
       'exe' => lambda do
         require_relative 'misc/exe_reader.rb'
         ExeReader.new

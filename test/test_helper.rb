@@ -20,7 +20,7 @@ module TestHelper
     arc.read_internal(buffer)
     assert_equal(2, arc.files.length)
     assert_equal('test.png', arc.files[0].file_name)
-    assert_equal('dir\\test.txt', arc.files[1].file_name)
+    assert_equal('dir/test.txt', arc.files[1].file_name.gsub(/\\/, '/'))
     assert_equal(content1, arc.files[0].data.call)
     assert_equal(content2, arc.files[1].data.call)
   end
