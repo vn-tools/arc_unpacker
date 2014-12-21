@@ -55,6 +55,7 @@ class FjsysArchive < Archive
         data_size])
       cur_file_name_origin += file_entry.file_name.length + 1
       cur_data_origin += data_size
+      fail 'Bad' if arc_file.tell != cur_data_origin
     end
 
     arc_file.seek(0x54, IO::SEEK_SET)

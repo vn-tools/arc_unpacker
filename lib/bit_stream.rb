@@ -1,4 +1,4 @@
-require 'stringio'
+require_relative 'binary_io'
 
 # Allows to read and write individual bits.
 class BitStream
@@ -8,7 +8,7 @@ class BitStream
   def initialize(input = '')
     @mask_for_get_bit = 0
     @src_for_get_bit = 0
-    @buffer = StringIO.new(input.force_encoding('binary'))
+    @buffer = BinaryIO.new(input)
 
     @bit_pos = 0
   end
