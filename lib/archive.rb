@@ -17,15 +17,15 @@ class Archive
     ObjectSpace.define_finalizer(self, proc { arc_file.close })
   end
 
-  def write(path)
-    open(path, 'wb') { |arc_file| write_internal(arc_file) }
+  def write(path, options = {})
+    open(path, 'wb') { |arc_file| write_internal(arc_file, options) }
   end
 
   def read_internal(_arc_file)
     fail 'This format does not support unpacking'
   end
 
-  def write_internal(_arc_file)
+  def write_internal(_arc_file, _options)
     fail 'This format does not support packing'
   end
 

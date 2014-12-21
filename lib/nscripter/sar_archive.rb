@@ -22,7 +22,7 @@ class SarArchive < Archive
     end
   end
 
-  def write_internal(arc_file)
+  def write_internal(arc_file, _options)
     table_size = @files.map { |f| f.file_name.length + 9 }.reduce(0, :+)
     offset_to_files = 6 + table_size
     arc_file.write([@files.length, offset_to_files].pack('S>L>'))

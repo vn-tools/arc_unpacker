@@ -31,16 +31,16 @@ class NsaArchive < Archive
     end
   end
 
-  def write_internal(arc_file)
+  def write_internal(arc_file, options)
     table_size = @files.map { |f| f.file_name.length + 14 }.reduce(0, :+)
     offset_to_files = 6 + table_size
     arc_file.write([@files.length, offset_to_files].pack('S>L>'))
     arc_file.write("\x00" * table_size)
 
+    compression_type = options[:compression] || NO_COMPRESSION
     cur_data_origin = 0
     table_entries = []
     @files.each do |file_entry|
-      compression_type = NO_COMPRESSION
       data_original = file_entry.data.call
       data_compressed = compress(data_original, compression_type)
       data_size_original = data_original.length
@@ -49,7 +49,6 @@ class NsaArchive < Archive
       arc_file.write(data_compressed)
 
       table_entries.push([
-        compression_type,
         file_entry.file_name,
         cur_data_origin,
         data_size_original,
@@ -59,20 +58,14 @@ class NsaArchive < Archive
     end
 
     arc_file.seek(6, IO::SEEK_SET)
-    table_entries.each do |i|
-      compression_type,
-      file_name,
-      data_origin,
-      data_size_original,
-      data_size_compressed = i
-
+    table_entries.each do |file_name, data_origin, orig_size, compressed_size|
       write_file_name(arc_file, file_name)
 
       arc_file.write([
         compression_type,
         data_origin,
-        data_size_compressed,
-        data_size_original].pack('CL>L>L>'))
+        compressed_size,
+        orig_size].pack('CL>L>L>'))
     end
   end
 
