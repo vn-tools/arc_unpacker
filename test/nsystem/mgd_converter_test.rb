@@ -1,4 +1,4 @@
-require_relative '../../lib/misc/mgd_converter'
+require_relative '../../lib/nsystem/mgd_converter'
 require_relative '../test_helper'
 require 'rmagick'
 

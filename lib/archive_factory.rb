@@ -55,7 +55,7 @@ class ArchiveFactory
       end,
 
       'fjsys' => lambda do
-        require_relative 'misc/fjsys_archive.rb'
+        require_relative 'nsystem/fjsys_archive.rb'
         FjsysArchive.new
       end,
 
