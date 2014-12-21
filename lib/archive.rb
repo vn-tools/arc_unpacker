@@ -38,7 +38,7 @@ class Archive
         .relative_path_from(Pathname.new(input_dir))
         .to_s
 
-      data = ->(_arc_file) { open(path, 'rb') { |h| h.read } }
+      data = -> { open(path, 'rb') { |h| h.read } }
 
       @files.push(FileEntry.new(file_name, data))
     end
