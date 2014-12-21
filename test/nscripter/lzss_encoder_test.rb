@@ -22,26 +22,47 @@ class LzssEncoderTest < Test::Unit::TestCase
   end
 
   def test_repetitions
-    (0..1000).step(7).each do |i|
-      test = 's' * i
+    test = ''
+    (0..1000).step(7).each do
+      test += '#' * 5
       lzss = LzssEncoder.new
       assert_equal(test, lzss.decode(lzss.encode(test)))
     end
   end
 
   def test_complex_repetitions
-    (0..100).step(7).each do |i|
-      test = 'maslo ' * i
+    (0..300).each do |i|
+      test = rand_string(i)
       lzss = LzssEncoder.new
       assert_equal(test, lzss.decode(lzss.encode(test)))
     end
   end
 
-  def test_complex_repetitions_custom_settings
-    (0..100).step(7).each do |i|
-      test = 'maslo ' * i
+  def test_complex_repetitions_custom_size
+    (0..100).each do |i|
+      test = rand_string(i)
       lzss = LzssEncoder.new(position_bits: 5, length_bits: 3)
       assert_equal(test, lzss.decode(lzss.encode(test)))
     end
+  end
+
+  def test_complex_repetitions_non_zero_dictionary_pos
+    (0..100).each do |i|
+      test = rand_string(i)
+      lzss = LzssEncoder.new(initial_dictionary_pos: 15)
+      assert_equal(test, lzss.decode(lzss.encode(test)))
+    end
+  end
+
+  def test_complex_repetitions_reuse_compressed
+    (0..100).each do |i|
+      test = rand_string(i)
+      lzss = LzssEncoder.new(reuse_compressed: true)
+      assert_equal(test, lzss.decode(lzss.encode(test)))
+    end
+  end
+
+  def rand_string(length)
+    (0..length).map { rand(2) == 0 ? '#' : '.' } * ''
   end
 end

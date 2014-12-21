@@ -4,10 +4,9 @@ require_relative 'lzss_encoder'
 
 # NSA archive
 class NsaArchive < Archive
-  def initialize
-    super
-    @lzss_encoder = LzssEncoder.new(initial_dictionary_pos: 239)
-  end
+  NO_COMPRESSION = 0
+  SPB_COMPRESSION = 1
+  LZSS_COMPRESSION = 2
 
   def read_internal(arc_file)
     num_files,
@@ -41,7 +40,7 @@ class NsaArchive < Archive
     cur_data_origin = 0
     table_entries = []
     @files.each do |file_entry|
-      compression_type = 3 # uncompressed
+      compression_type = NO_COMPRESSION
       data_original = file_entry.data.call
       data_compressed = compress(data_original, compression_type)
       data_size_original = data_original.length
@@ -94,12 +93,12 @@ class NsaArchive < Archive
 
   def compress(data, compression_type)
     case compression_type
-    when 1
+    when SPB_COMPRESSION
       fail \
         StandardError,
         'SPB compression not supported! Please send samples to rr- on github.'
-    when 2
-      return @lzss_encoder.encode(data)
+    when LZSS_COMPRESSION
+      return lzss_encoder.encode(data)
     else
       return data
     end
@@ -107,14 +106,18 @@ class NsaArchive < Archive
 
   def decompress(data, compression_type)
     case compression_type
-    when 1
+    when SPB_COMPRESSION
       fail \
         StandardError,
         'SPB compression not supported! Please send samples to rr- on github.'
-    when 2
-      return @lzss_encoder.decode(data)
+    when LZSS_COMPRESSION
+      return lzss_encoder.decode(data)
     else
       return data
     end
+  end
+
+  def lzss_encoder
+    LzssEncoder.new(initial_dictionary_pos: 239, reuse_compressed: true)
   end
 end
