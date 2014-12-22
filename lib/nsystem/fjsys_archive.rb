@@ -1,3 +1,5 @@
+require 'json'
+require 'tmpdir'
 require_relative '../archive'
 require_relative '../file_entry'
 require_relative 'mgd_converter'
@@ -26,7 +28,7 @@ class FjsysArchive < Archive
 
       data = lambda do
         arc_file.seek(data_origin, IO::SEEK_SET)
-        decode(arc_file.read(data_size))
+        decode(file_name, arc_file.read(data_size))
       end
 
       FileEntry.new(file_name, data)
@@ -59,7 +61,7 @@ class FjsysArchive < Archive
       fail 'Bad' if arc_file.tell != cur_data_origin
     end
 
-    arc_file.seek(0x54, IO::SEEK_SET)
+    arc_file.seek(0x54)
     table_entries.each do |file_name_origin, data_size, data_origin|
       arc_file.write([file_name_origin, data_size, data_origin].pack('LLQ'))
     end
@@ -72,23 +74,39 @@ class FjsysArchive < Archive
 
   private
 
-  def decode(data)
+  def decode(file_name, data)
     if data[0..MgdConverter::MAGIC.length - 1] == MgdConverter::MAGIC
-      return MgdConverter.decode(data)
+      data, regions = MgdConverter.decode(data)
+      open(mgd_regions_path(file_name), 'w') do |f|
+        f.write(JSON.dump(regions))
+      end
+      return data
     end
+
     data
   end
 
   def encode(file_name, data)
-    return MgdConverter.encode(data) if file_name.downcase.end_with?('.mgd')
+    if file_name.downcase.end_with?('.mgd')
+      regions = open(mgd_regions_path(file_name), 'r') do |f|
+        JSON.parse(f.read, symbolize_names: true)
+      end
+      return MgdConverter.encode(data, regions)
+    end
+
     data
+  end
+
+  # TODO: this is maximum crap and should be moved to @files.
+  def mgd_regions_path(file_name)
+    File.join(Dir.tmpdir, file_name + '_regions.txt')
   end
 
   def peek(arc_file, pos, &func)
     old_pos = arc_file.tell
-    arc_file.seek(pos, IO::SEEK_SET)
+    arc_file.seek(pos)
     ret = func.call
-    arc_file.seek(old_pos, IO::SEEK_SET)
+    arc_file.seek(old_pos)
     ret
   end
 
