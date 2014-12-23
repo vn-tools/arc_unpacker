@@ -1,4 +1,4 @@
-require_relative '../../lib/misc/fjsys_archive'
+require_relative '../../lib/nsystem/fjsys_archive'
 require_relative '../test_helper'
 
 # Unit tests for FjsysArchive

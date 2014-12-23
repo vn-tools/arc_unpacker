@@ -1,5 +1,7 @@
+require 'tmpdir'
 require_relative '../archive'
 require_relative '../file_entry'
+require_relative 'mgd_converter'
 
 # FJSYS archive
 class FjsysArchive < Archive
@@ -25,7 +27,7 @@ class FjsysArchive < Archive
 
       data = lambda do
         arc_file.seek(data_origin, IO::SEEK_SET)
-        arc_file.read(data_size)
+        decode(file_name, arc_file.read(data_size))
       end
 
       FileEntry.new(file_name, data)
@@ -34,6 +36,8 @@ class FjsysArchive < Archive
 
   def write_internal(arc_file, _options)
     arc_file.write(MAGIC)
+
+    fix_file_order
 
     file_names_size = @files.map { |f| f.file_name.length + 1 }.reduce(0, :+)
     file_names_start = @files.length * 16 + 0x54
@@ -45,21 +49,21 @@ class FjsysArchive < Archive
     cur_data_origin = header_size
     cur_file_name_origin = 0
     @files.each do |file_entry|
-      data = file_entry.data.call
+      data = encode(file_entry.file_name, file_entry.data.call)
       data_size = data.length
       arc_file.write(data)
 
       table_entries.push([
         cur_file_name_origin,
-        cur_data_origin,
-        data_size])
+        data_size,
+        cur_data_origin])
       cur_file_name_origin += file_entry.file_name.length + 1
       cur_data_origin += data_size
       fail 'Bad' if arc_file.tell != cur_data_origin
     end
 
-    arc_file.seek(0x54, IO::SEEK_SET)
-    table_entries.each do |file_name_origin, data_origin, data_size|
+    arc_file.seek(0x54)
+    table_entries.each do |file_name_origin, data_size, data_origin|
       arc_file.write([file_name_origin, data_size, data_origin].pack('LLQ'))
     end
 
@@ -71,11 +75,40 @@ class FjsysArchive < Archive
 
   private
 
+  def decode(file_name, data)
+    if data[0..MgdConverter::MAGIC.length - 1] == MgdConverter::MAGIC
+      data, regions = MgdConverter.decode(data)
+      @meta = { regions: {} } if @meta.nil?
+      @meta[:regions][file_name.to_sym] = regions
+      return data
+    end
+
+    data
+  end
+
+  def encode(file_name, data)
+    if file_name.downcase.end_with?('.mgd')
+      regions = @meta[:regions][file_name.to_sym]
+      return MgdConverter.encode(data, regions)
+    end
+
+    data
+  end
+
+  # it is important to sort the files like the game did,
+  # because the game refers to the file by their indices, not the file names!
+  def fix_file_order
+    # I guess the files are sorted alphabetically, but this assumption might be
+    # wrong. I know that what I do below is stupid, but "_" needed to be placed
+    # before "0" and after "." in the games I tested.
+    @files = @files.sort_by { |f| f.file_name.gsub('_', '/').downcase }
+  end
+
   def peek(arc_file, pos, &func)
     old_pos = arc_file.tell
-    arc_file.seek(pos, IO::SEEK_SET)
+    arc_file.seek(pos)
     ret = func.call
-    arc_file.seek(old_pos, IO::SEEK_SET)
+    arc_file.seek(old_pos)
     ret
   end
 
