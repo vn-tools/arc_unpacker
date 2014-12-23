@@ -25,12 +25,17 @@ module TestHelper
     buffer.seek(0, IO::SEEK_SET)
     arc.read_internal(buffer)
     assert_equal(3, arc.files.length)
-    assert_equal('test.png', arc.files[0].file_name)
-    assert_equal('dir/test.txt', arc.files[1].file_name.gsub(/\\/, '/'))
-    assert_equal('empty', arc.files[2].file_name)
-    assert_equal(content1, arc.files[0].data.call)
-    assert_equal(content2, arc.files[1].data.call)
-    assert_equal('', arc.files[2].data.call)
+
+    file1, = arc.files.select { |f| f.file_name == 'test.png' }
+    file2, = arc.files.select { |f| f.file_name =~ /dir[\\\/]test.txt/ }
+    file3, = arc.files.select { |f| f.file_name == 'empty' }
+
+    assert_not_nil(file1)
+    assert_not_nil(file2)
+    assert_not_nil(file3)
+    assert_equal(content1, file1.data.call)
+    assert_equal(content2, file2.data.call)
+    assert_equal('', file3.data.call)
   end
 
   def rand_string(length)

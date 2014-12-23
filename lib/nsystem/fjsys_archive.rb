@@ -37,6 +37,8 @@ class FjsysArchive < Archive
   def write_internal(arc_file, _options)
     arc_file.write(MAGIC)
 
+    fix_file_order
+
     file_names_size = @files.map { |f| f.file_name.length + 1 }.reduce(0, :+)
     file_names_start = @files.length * 16 + 0x54
     header_size = file_names_size + file_names_start
@@ -93,6 +95,14 @@ class FjsysArchive < Archive
     data
   end
 
+  # it is important to sort the files like the game did,
+  # because the game refers to the file by their indices, not the file names!
+  def fix_file_order
+    # I guess the files are sorted alphabetically, but this assumption might be
+    # wrong. I know that what I do below is stupid, but "_" needed to be placed
+    # before "0" and after "." in the games I tested.
+    @files = @files.sort_by { |f| f.file_name.gsub('_', '/').downcase }
+  end
 
   def peek(arc_file, pos, &func)
     old_pos = arc_file.tell
