@@ -1,4 +1,3 @@
-require 'json'
 require 'tmpdir'
 require_relative '../archive'
 require_relative '../file_entry'
@@ -77,9 +76,8 @@ class FjsysArchive < Archive
   def decode(file_name, data)
     if data[0..MgdConverter::MAGIC.length - 1] == MgdConverter::MAGIC
       data, regions = MgdConverter.decode(data)
-      open(mgd_regions_path(file_name), 'w') do |f|
-        f.write(JSON.dump(regions))
-      end
+      @meta = { regions: {} } if @meta.nil?
+      @meta[:regions][file_name.to_sym] = regions
       return data
     end
 
@@ -88,19 +86,13 @@ class FjsysArchive < Archive
 
   def encode(file_name, data)
     if file_name.downcase.end_with?('.mgd')
-      regions = open(mgd_regions_path(file_name), 'r') do |f|
-        JSON.parse(f.read, symbolize_names: true)
-      end
+      regions = @meta[:regions][file_name.to_sym]
       return MgdConverter.encode(data, regions)
     end
 
     data
   end
 
-  # TODO: this is maximum crap and should be moved to @files.
-  def mgd_regions_path(file_name)
-    File.join(Dir.tmpdir, file_name + '_regions.txt')
-  end
 
   def peek(arc_file, pos, &func)
     old_pos = arc_file.tell
