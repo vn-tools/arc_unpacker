@@ -22,8 +22,10 @@ class MgdConverter
     image_height,
     _size_original,
     _size_compressed, # == size_compressed + 4
-    compression_type,
-    size_compressed = input.read(92).unpack('SS x4 S2 L2 L x64 L')
+    compression_type, = input.read(24).unpack('SS x4 S2 L2 L')
+
+    _unknown = input.read(64)
+    size_compressed, = input.read(4).unpack('L')
 
     png_data =
     case compression_type
@@ -37,7 +39,8 @@ class MgdConverter
       sgd_to_png(data, image_width, image_height)
 
     when NO_COMPRESSION
-      fail 'Unsupported compression type.'
+      data = input.read(size_compressed)
+      uncompressed_to_png(data, image_width, image_height)
 
     else
       fail 'Unsupported compression type.'
@@ -56,7 +59,7 @@ class MgdConverter
       meta_format = input.read(12).unpack('x4 LSS')
       bytes_left = input.length - input.tell
 
-      fail 'Unsupported format' if meta_format != 4
+      fail format('Unsupported format (%d)',  meta_format) if meta_format != 4
       fail 'Failed to read regions metadata' if regions_size != bytes_left
 
       region_count.times do
@@ -67,6 +70,8 @@ class MgdConverter
           x: dim[0],
           y: dim[1])
       end
+
+      _unknown = input.read(4)
     end
 
     regions
@@ -74,25 +79,22 @@ class MgdConverter
 
   def self.encode(data, regions = nil)
     image = Magick::Image.from_blob(data)[0]
-    png_blob = image.to_blob do
-      self.format = 'PNG'
-      self.quality = 0
-    end
-    png_size = png_blob.length
+    blob = image.export_pixels_to_str(0, 0, image.columns, image.rows, 'BGRA')
+    blob_size = blob.length
 
     data_offset = 92
     output = BinaryIO.new
     output.write(MAGIC)
     output.write([
       data_offset,
-      1,
+      6,
       image.columns,
       image.rows,
       image.columns * image.rows * 4,
-      png_size + 4,
-      PNG_COMPRESSION,
-      png_size].pack('SS x4 S2 L2 L x64 L'))
-    output.write(png_blob)
+      blob_size + 4,
+      NO_COMPRESSION,
+      blob_size].pack('SS x4 S2 L2 L x64 L'))
+    output.write(blob)
 
     write_regions(output, regions, image.columns, image.rows)
 
@@ -120,17 +122,10 @@ class MgdConverter
     output.write("\x00" * 4)
   end
 
-  def self.uncompressed_to_png(input, image_width, image_height)
-    image = Magick::Image.from_blob(input) do
-      self.format = 'RGBA'
-      self.depth = 8
-      self.size = "#{image_width}x#{image_height}"
-    end
-
-    image = image[0]
-    image.to_blob do
-      self.format = 'PNG'
-    end
+  def self.uncompressed_to_png(blob, image_width, image_height)
+    image = Magick::Image.new(image_width, image_height)
+    image.import_pixels(0, 0, image_width, image_height, 'BGRA', blob)
+    image.to_blob { self.format = 'PNG' }
   end
 
   def self.sgd_to_png(input, image_width, image_height)

@@ -12,6 +12,12 @@ class MgdConverterTest < Test::Unit::TestCase
     assert_equal(641, image.columns)
     assert_equal(720, image.rows)
 
+    mul = 255.0 / Magick::QuantumRange
+    assert_equal(254, image.pixel_color(200, 100).red * mul)
+    assert_equal(10, image.pixel_color(200, 100).green * mul)
+    assert_equal(23, image.pixel_color(200, 100).blue * mul)
+    assert_equal(0, image.pixel_color(200, 100).opacity * mul)
+
     assert_equal([{ width: 641, height: 720, x: 0, y: 0 }], regions)
   end
 
