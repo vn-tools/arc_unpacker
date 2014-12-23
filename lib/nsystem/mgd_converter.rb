@@ -1,6 +1,7 @@
-require 'rmagick'
 require_relative '../binary_io'
+require_relative '../warning_silencer'
 require_relative 'sgd_decompressor'
+silence_warnings { require 'rmagick' }
 
 # Converts MGD to PNG and vice versa.
 class MgdConverter

@@ -1,6 +1,7 @@
 require_relative '../../lib/nsystem/mgd_converter'
+require_relative '../../lib/warning_silencer'
 require_relative '../test_helper'
-require 'rmagick'
+silence_warnings { require 'rmagick' }
 
 # Unit tests for MgdConverter
 class MgdConverterTest < Test::Unit::TestCase
