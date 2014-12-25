@@ -25,9 +25,6 @@ module TestHelper
   end
 
   def generic_pack_and_unpack_test(arc, options = {})
-    content1 = rand_binary_string(30_000)
-    content2 = rand_binary_string(1)
-
     test_files = []
     test_files << {
       file_name: 'empty.txt',

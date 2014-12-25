@@ -9,7 +9,7 @@ class SarArchiveTest < Test::Unit::TestCase
 
   def test_backslash
     input_files = InputFilesMock.new([
-      {file_name: 'dir/test.txt', data: 'whatever'}])
+      { file_name: 'dir/test.txt', data: 'whatever' }])
 
     output_files = TestHelper.pack_and_unpack(SarArchive.new, input_files)
     assert_equal('dir\\test.txt', output_files.files.first[:file_name])
@@ -17,8 +17,8 @@ class SarArchiveTest < Test::Unit::TestCase
 
   def test_file_order
     input_files = InputFilesMock.new([
-      {file_name: '1.txt', data: 'whatever'},
-      {file_name: '2.txt', data: 'whatever'}])
+      { file_name: '1.txt', data: 'whatever' },
+      { file_name: '2.txt', data: 'whatever' }])
 
     output_files = TestHelper.pack_and_unpack(SarArchive.new, input_files)
     assert_equal('2.txt', output_files.files[0][:file_name])

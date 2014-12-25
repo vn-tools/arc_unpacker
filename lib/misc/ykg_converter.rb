@@ -1,7 +1,6 @@
 require_relative '../binary_io'
 
-require 'zlib'
-
+# Converts YKG to PNG and vice versa.
 class YkgConverter
   MAGIC = 'YKG000'
 
@@ -49,7 +48,7 @@ class YkgConverter
 
     output.write(MAGIC)
     output.write([
-      0x40, #?
+      0x40, # ?
       data_origin,
       data.length,
       meta_origin,

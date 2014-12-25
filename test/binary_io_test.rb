@@ -1,6 +1,7 @@
 require 'test/unit'
 require_relative '../lib/binary_io'
 
+# Unit tests for BinaryIO
 class BinaryIOTest < Test::Unit::TestCase
   def test_creating_from_string
     assert_nothing_thrown { BinaryIO.from_string('test') }

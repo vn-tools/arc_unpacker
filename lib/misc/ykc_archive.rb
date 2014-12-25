@@ -29,7 +29,7 @@ class YkcArchive < Archive
       output_files.write(name, data)
     end
 
-    meta.reject! { |k, v| v.nil? }
+    meta.reject! { |_k, v| v.nil? }
     output_files.write_meta(meta) unless meta.empty?
   end
 
@@ -79,7 +79,7 @@ class YkcArchive < Archive
   end
 
   def encode(file_name, data, file_meta)
-    if (file_name.downcase.end_with?('.ykg'))
+    if file_name.downcase.end_with?('.ykg')
       regions = file_meta
       return YkgConverter.encode(data, regions)
     end

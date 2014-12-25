@@ -17,7 +17,7 @@ class NsaArchiveTest < Test::Unit::TestCase
 
   def test_backslash
     input_files = InputFilesMock.new([
-      {file_name: 'dir/test.txt', data: 'whatever'}])
+      { file_name: 'dir/test.txt', data: 'whatever' }])
 
     output_files = TestHelper.pack_and_unpack(NsaArchive.new, input_files)
     assert_equal('dir\\test.txt', output_files.files.first[:file_name])

@@ -21,7 +21,7 @@ class InputFilesMock
     @files.length
   end
 
-  def read_meta
+  def read_meta # rubocop:disable Style/TrivialAccessors
     @meta
   end
 end
