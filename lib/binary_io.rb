@@ -12,8 +12,8 @@ class BinaryIO
     run(io, &block)
   end
 
-  def self.from_string(*args, &block)
-    io = StringIO.new(*args)
+  def self.from_string(str = nil, &block)
+    io = StringIO.new(str || '')
     io.set_encoding('ASCII-8BIT')
     run(io, &block)
   end
@@ -36,6 +36,10 @@ class BinaryIO
     ret = block.call
     @io.seek(old_pos)
     ret
+  end
+
+  def skip(count)
+    @io.seek(count, IO::SEEK_CUR)
   end
 
   def read_until_zero
