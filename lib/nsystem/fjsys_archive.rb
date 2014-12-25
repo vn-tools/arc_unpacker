@@ -22,11 +22,11 @@ class FjsysArchive < Archive
       data_size,
       data_origin = arc_file.read(16).unpack('LLQ')
 
-      file_name = peek(arc_file, file_name_origin + file_names_start) do
-        read_until_zero(arc_file)
+      file_name = arc_file.peek(file_name_origin + file_names_start) do
+        arc_file.read_until_zero
       end
 
-      data, file_meta = peek(arc_file, data_origin) do
+      data, file_meta = arc_file.peek(data_origin) do
         decode(arc_file.read(data_size))
       end
       meta[file_name.to_sym] = file_meta unless file_meta.nil?
@@ -111,21 +111,5 @@ class FjsysArchive < Archive
     # wrong. I know that what I do below is stupid, but "_" needed to be placed
     # before "0" and after "." in the games I tested.
     table_entries.sort_by { |e| e[:file_name].gsub('_', '/').downcase }
-  end
-
-  def peek(arc_file, pos, &func)
-    old_pos = arc_file.tell
-    arc_file.seek(pos)
-    ret = func.call
-    arc_file.seek(old_pos)
-    ret
-  end
-
-  def read_until_zero(arc_file)
-    str = ''
-    while ((c = arc_file.read(1)) || "\0") != "\0"
-      str += c
-    end
-    str
   end
 end

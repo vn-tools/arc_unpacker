@@ -12,18 +12,20 @@ class NsaArchive < Archive
     offset_to_files = arc_file.read(6).unpack('S>L>')
 
     num_files.times do
-      file_name = read_file_name(arc_file)
+      file_name = arc_file.read_until_zero
 
       compression_type,
       data_origin,
       data_size_compressed,
       data_size_original = arc_file.read(13).unpack('CL>L>L>')
 
-      old_pos = arc_file.tell
-      arc_file.seek(offset_to_files + data_origin)
-      data = decompress(arc_file.read(data_size_compressed), compression_type)
+      data = arc_file.peek(offset_to_files + data_origin) do
+        data = arc_file.read(data_size_compressed)
+        data = decompress(data, compression_type)
+        data
+      end
+
       fail 'Bad file size' unless data.length == data_size_original
-      arc_file.seek(old_pos)
 
       output_files.write(file_name, data)
     end
@@ -56,7 +58,8 @@ class NsaArchive < Archive
 
     arc_file.seek(6)
     table_entries.each do |file_name, data_origin, orig_size, compressed_size|
-      write_file_name(arc_file, file_name)
+      arc_file.write(file_name.gsub('/', '\\'))
+      arc_file.write("\0")
 
       arc_file.write([
         compression_type,
@@ -67,19 +70,6 @@ class NsaArchive < Archive
   end
 
   private
-
-  def read_file_name(arc_file)
-    file_name = ''
-    while (c = arc_file.read(1)) != "\0"
-      file_name += c
-    end
-    file_name
-  end
-
-  def write_file_name(arc_file, file_name)
-    arc_file.write(file_name.gsub('/', '\\'))
-    arc_file.write("\0")
-  end
 
   def compress(data, compression_type)
     case compression_type

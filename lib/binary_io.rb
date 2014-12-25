@@ -1,7 +1,8 @@
 require 'stringio'
 
-# A BinaryIO that encapsulates both IO and StringIO, enforcing binary encoding.
-# Using encoding other than binary leads to severe bugs in some cases.
+# A BinaryIO that encapsulates both IO and StringIO, adding a few methods and
+# enforcing binary encoding. Using encoding other than binary leads to severe
+# bugs in some cases.
 class BinaryIO
   private_class_method :new
 
@@ -27,6 +28,22 @@ class BinaryIO
       io.close
       return ret
     end
+  end
+
+  def peek(pos, &block)
+    old_pos = @io.tell
+    @io.seek(pos)
+    ret = block.call
+    @io.seek(old_pos)
+    ret
+  end
+
+  def read_until_zero
+    str = ''
+    while ((c = @io.read(1)) || "\0") != "\0"
+      str += c
+    end
+    str
   end
 
   def respond_to?(method_name, include_private = false)

@@ -28,24 +28,19 @@ class YkcArchive < Archive
     data_origin,
     data_size = arc_file.read(20).unpack('L4 x4')
 
-    file_name = read_file_name(arc_file, file_name_origin, file_name_size)
+    file_name = arc_file.peek(file_name_origin) do
+      file_name = arc_file.read(file_name_size - 1)
+      file_name = file_name.gsub('\\', '/')
+      file_name
+    end
 
-    old_pos = arc_file.tell
-    arc_file.seek(data_origin)
-    data = arc_file.read(data_size)
-    data = decode(data)
-    arc_file.seek(old_pos)
+    data = arc_file.peek(data_origin) do
+      data = arc_file.read(data_size)
+      data = decode(data)
+      data
+    end
 
     output_files.write(file_name, data)
-  end
-
-  def read_file_name(arc_file, file_name_origin, file_name_size)
-    old_pos = arc_file.tell
-    arc_file.seek(file_name_origin)
-    file_name = arc_file.read(file_name_size - 1)
-    file_name = file_name.gsub('\\', '/')
-    arc_file.seek(old_pos)
-    file_name
   end
 
   def decode(data)

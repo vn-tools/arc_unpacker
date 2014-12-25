@@ -24,11 +24,11 @@ class MeltyBloodArchive < Archive
     data_size = arc_file.read(8).unpack('LL')
     data_size ^= ENCRYPTION_KEY
 
-    old_pos = arc_file.tell
-    arc_file.seek(data_origin)
-    data = arc_file.read(data_size)
-    data = decrypt(data, file_name) if encrypted
-    arc_file.seek(old_pos)
+    data = arc_file.peek(data_origin) do
+      data = arc_file.read(data_size)
+      data = decrypt(data, file_name) if encrypted
+      data
+    end
 
     output_files.write(file_name, data)
   end
