@@ -3,7 +3,6 @@ require_relative '../archive'
 # YKC archive
 class YkcArchive < Archive
   MAGIC = 'YKC001'
-  YKS_MAGIC = 'YKS001'
   YKG_MAGIC = 'YKG000'
 
   def unpack_internal(arc_file, output_files)
@@ -44,13 +43,7 @@ class YkcArchive < Archive
   end
 
   def decode(data)
-    if data[0..(YKS_MAGIC.length - 1)] == YKS_MAGIC
-      offset_to_text = data[0x20..0x23].unpack('L')[0]
-      bytes = data[offset_to_text..-1].unpack('C*')
-      (0..(bytes.length - 1)).each { |i| bytes[i] ^= 0xaa }
-      data = data[0..(offset_to_text - 1)] + bytes.pack('C*')
-
-    elsif data[0..(YKG_MAGIC.length - 1)] == YKG_MAGIC
+    if data[0..(YKG_MAGIC.length - 1)] == YKG_MAGIC
       data[0x41..0x43] = 'PNG'
       data = data[0x40..-1]
     end
