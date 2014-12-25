@@ -11,7 +11,7 @@ module TestHelper
 
   def get_test_file(name)
     path = File.join(__dir__, 'test_files', name)
-    open(path, 'rb') { |f| f.read }
+    File.binread(path)
   end
 
   def pack_and_unpack(arc, input_files, options = {})
