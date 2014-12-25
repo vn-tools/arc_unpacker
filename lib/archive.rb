@@ -68,6 +68,7 @@ class Archive
 
       Dir[source_dir + '/**/*'].each do |path|
         next unless File.file?(path)
+        next if path.end_with?(META_FILE_NAME)
 
         file_name =
           Pathname.new(path)
