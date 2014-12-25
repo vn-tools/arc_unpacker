@@ -25,10 +25,10 @@ class MeltyBloodArchive < Archive
     data_size ^= ENCRYPTION_KEY
 
     old_pos = arc_file.tell
-    arc_file.seek(data_origin, IO::SEEK_SET)
+    arc_file.seek(data_origin)
     data = arc_file.read(data_size)
     data = decrypt(data, file_name) if encrypted
-    arc_file.seek(old_pos, IO::SEEK_SET)
+    arc_file.seek(old_pos)
 
     output_files.write(file_name, data)
   end

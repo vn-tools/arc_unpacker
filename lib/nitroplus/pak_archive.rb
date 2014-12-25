@@ -30,7 +30,7 @@ class PakArchive < Archive
     table_size,
     compressed_table_size = arc_file.read(12).unpack('LLL')
 
-    arc_file.seek(276, IO::SEEK_SET)
+    arc_file.seek(276)
     raw = BinaryIO.new(Zlib.inflate(arc_file.read(compressed_table_size)))
     offset_to_files = arc_file.tell
     fail 'Bad file table size' unless raw.length == table_size
@@ -46,7 +46,7 @@ class PakArchive < Archive
     flags,
     data_size_compressed = raw_file_table.read(20).unpack('LLxxxxLL')
 
-    arc_file.seek(data_origin + offset_to_files, IO::SEEK_SET)
+    arc_file.seek(data_origin + offset_to_files)
     if flags > 0
       data = Zlib.inflate(arc_file.read(data_size_compressed))
     else

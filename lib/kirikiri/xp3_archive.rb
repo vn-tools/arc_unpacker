@@ -21,7 +21,7 @@ class Xp3Archive < Archive
     _version,
     file_table_origin = arc_file.read(10).unpack('IxxI')
 
-    arc_file.seek(file_table_origin, IO::SEEK_SET)
+    arc_file.seek(file_table_origin)
 
     raw = BinaryIO.new(read_raw_file_table!(arc_file))
     read_file(raw, arc_file, output_files) until raw.eof?

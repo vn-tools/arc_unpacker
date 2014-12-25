@@ -15,9 +15,9 @@ class BitStream
 
   def bytes
     pos = @buffer.tell
-    @buffer.seek(0, IO::SEEK_SET)
+    @buffer.seek(0)
     bytes = @buffer.read
-    @buffer.seek(pos, IO::SEEK_SET)
+    @buffer.seek(pos)
     bytes.force_encoding('binary')
   end
 
@@ -42,7 +42,7 @@ class BitStream
       fail 'Wrong direction'
     end
 
-    @buffer.seek(@bit_pos / 8, IO::SEEK_SET)
+    @buffer.seek(@bit_pos / 8)
     @mask_for_get_bit = 0x100 >> ((@bit_pos & 7) + 1)
     @src_for_get_bit = (@buffer.read(1) || "\x00").ord
   end
@@ -52,11 +52,11 @@ class BitStream
 
     length = ((@bit_pos & 7) + bits_to_write + 7) / 8
 
-    @buffer.seek(@bit_pos / 8, IO::SEEK_SET)
+    @buffer.seek(@bit_pos / 8)
     first_byte = (@buffer.read(1) || "\x00").ord
-    @buffer.seek(length - 1, IO::SEEK_SET)
+    @buffer.seek(length - 1)
     last_byte = (@buffer.read(1) || "\x00").ord
-    @buffer.seek(@bit_pos / 8, IO::SEEK_SET)
+    @buffer.seek(@bit_pos / 8)
 
     first_byte_mask = ((1 << (8 - (@bit_pos & 7))) - 1) ^ 0xff
     last_byte_mask = (1 << (8 - (((@bit_pos + bits_to_write - 1) & 7) + 1))) - 1

@@ -20,10 +20,10 @@ class NsaArchive < Archive
       data_size_original = arc_file.read(13).unpack('CL>L>L>')
 
       old_pos = arc_file.tell
-      arc_file.seek(offset_to_files + data_origin, IO::SEEK_SET)
+      arc_file.seek(offset_to_files + data_origin)
       data = decompress(arc_file.read(data_size_compressed), compression_type)
       fail 'Bad file size' unless data.length == data_size_original
-      arc_file.seek(old_pos, IO::SEEK_SET)
+      arc_file.seek(old_pos)
 
       output_files.write(file_name, data)
     end
@@ -54,7 +54,7 @@ class NsaArchive < Archive
       cur_data_origin += data_size_compressed
     end
 
-    arc_file.seek(6, IO::SEEK_SET)
+    arc_file.seek(6)
     table_entries.each do |file_name, data_origin, orig_size, compressed_size|
       write_file_name(arc_file, file_name)
 
