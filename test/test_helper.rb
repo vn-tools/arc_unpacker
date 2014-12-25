@@ -15,7 +15,7 @@ module TestHelper
   end
 
   def pack_and_unpack(arc, input_files, options = {})
-    buffer = BinaryIO.new
+    buffer = BinaryIO.from_string('')
     arc.pack_internal(buffer, input_files, options)
 
     buffer.rewind

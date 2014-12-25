@@ -1,6 +1,7 @@
 require 'fileutils'
 require 'pathname'
 require 'json'
+require_relative 'binary_io'
 
 # Generic archive
 class Archive
@@ -9,13 +10,13 @@ class Archive
   META_FILE_NAME = 'arc_meta.txt'
 
   def unpack(source_arc, target_dir, verbosity)
-    File.open(source_arc, 'rb') do |arc_file|
+    BinaryIO.from_file(source_arc, 'rb') do |arc_file|
       unpack_internal(arc_file, OutputFiles.new(target_dir, verbosity))
     end
   end
 
   def pack(source_dir, target_arc)
-    File.open(target_arc, 'wb') do |arc_file|
+    BinaryIO.from_file(target_arc, 'wb') do |arc_file|
       pack_internal(arc_file, InputFiles.new(source_dir), {})
     end
   end

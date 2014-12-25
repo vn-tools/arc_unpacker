@@ -3,8 +3,8 @@ require_relative '../binary_io'
 # SGD raw data decompressor
 class SgdDecompressor
   def self.decompress(input)
-    input = BinaryIO.new(input)
-    output = BinaryIO.new
+    input = BinaryIO.from_string(input)
+    output = BinaryIO.from_string('')
 
     decode_alpha(input, output)
     decode_bgr(input, output)

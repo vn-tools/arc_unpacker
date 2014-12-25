@@ -23,7 +23,7 @@ class Xp3Archive < Archive
 
     arc_file.seek(file_table_origin)
 
-    raw = BinaryIO.new(read_raw_file_table!(arc_file))
+    raw = BinaryIO.from_string(read_raw_file_table!(arc_file))
     read_file(raw, arc_file, output_files) until raw.eof?
   end
 
@@ -49,7 +49,7 @@ class Xp3Archive < Archive
     fail 'Expected file chunk' unless magic == FILE_MAGIC
 
     raw_size = raw_file_table.read(8).unpack('Q<')[0]
-    raw_file_chunk = BinaryIO.new(raw_file_table.read(raw_size))
+    raw_file_chunk = BinaryIO.from_string(raw_file_table.read(raw_size))
 
     info_chunk = Xp3InfoChunk.new
     info_chunk.read!(raw_file_chunk)
@@ -70,7 +70,7 @@ class Xp3Archive < Archive
       fail 'Expected segment chunk' unless magic == SEGM_MAGIC
 
       raw_size = arc_file.read(8).unpack('Q<')[0]
-      raw = BinaryIO.new(arc_file.read(raw_size))
+      raw = BinaryIO.from_string(arc_file.read(raw_size))
 
       chunks = []
       until raw.eof?
@@ -113,7 +113,7 @@ class Xp3Archive < Archive
       fail 'Expected info chunk' unless magic == INFO_MAGIC
 
       raw_size = arc_file.read(8).unpack('Q<')[0]
-      raw = BinaryIO.new(arc_file.read(raw_size))
+      raw = BinaryIO.from_string(arc_file.read(raw_size))
 
       @protect,
       @original_file_size,
@@ -137,7 +137,7 @@ class Xp3Archive < Archive
       fail 'Expected ADLR chunk' unless magic == ADLR_MAGIC
 
       raw_size = arc_file.read(8).unpack('Q<')[0]
-      raw = BinaryIO.new(arc_file.read(raw_size))
+      raw = BinaryIO.from_string(arc_file.read(raw_size))
 
       @encryption_key = raw.read(4).unpack('L<')
     end

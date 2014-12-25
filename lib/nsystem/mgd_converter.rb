@@ -12,7 +12,7 @@ class MgdConverter
   PNG_COMPRESSION = 2
 
   def self.decode(data)
-    input = BinaryIO.new(data)
+    input = BinaryIO.from_string(data)
 
     magic = input.read(MAGIC.length)
     fail 'Not a MGD picture' if magic != MAGIC
@@ -84,7 +84,7 @@ class MgdConverter
     blob_size = blob.length
 
     data_offset = 92
-    output = BinaryIO.new
+    output = BinaryIO.from_string('')
     output.write(MAGIC)
     output.write([
       data_offset,

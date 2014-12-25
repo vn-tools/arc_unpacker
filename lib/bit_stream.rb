@@ -8,7 +8,7 @@ class BitStream
   def initialize(input = '')
     @mask_for_get_bit = 0
     @src_for_get_bit = 0
-    @buffer = BinaryIO.new(input)
+    @buffer = BinaryIO.from_string(input)
 
     @bit_pos = 0
   end
