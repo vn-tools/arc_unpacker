@@ -28,25 +28,25 @@ module TestHelper
     content1 = rand_binary_string(30_000)
     content2 = rand_binary_string(1)
 
-    input_files = InputFilesMock.new([
-      {file_name: 'test.png', data: content1},
-      {file_name: 'dir/test.txt', data: content2},
-      {file_name: 'empty', data: ''.b}],
-      nil)
+    test_files = []
+    test_files << {
+      file_name: 'empty.txt',
+      data: ''.b
+    }
+    25.times do
+      test_files << {
+        file_name: rand_string(300),
+        data: rand_binary_string(rand(1000))
+      }
+    end
+
+    test_files = test_files.sort_by { |f| f[:file_name] }
+
+    input_files = InputFilesMock.new(test_files)
     output_files = pack_and_unpack(arc, input_files, options)
 
-    files = output_files.files
-    assert_equal(3, files.length)
-    file1, = files.select { |f| f[:file_name] == 'test.png' }
-    file2, = files.select { |f| f[:file_name] =~ /dir[\\\/]test.txt/ }
-    file3, = files.select { |f| f[:file_name] == 'empty' }
-
-    assert_not_nil(file1)
-    assert_not_nil(file2)
-    assert_not_nil(file3)
-    assert_equal(content1, file1[:data])
-    assert_equal(content2, file2[:data])
-    assert_equal('', file3[:data])
+    files = output_files.files.sort_by { |f| f[:file_name] }
+    assert_equal(files, test_files)
   end
 
   def rand_string(length)
