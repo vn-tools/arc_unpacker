@@ -13,6 +13,10 @@ class InputFilesMock
     @files.each { |f| block.call(f[:file_name], f[:data]) }
   end
 
+  def reverse_each(&block)
+    @files.reverse_each { |f| block.call(f[:file_name], f[:data]) }
+  end
+
   def length
     @files.length
   end

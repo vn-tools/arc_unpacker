@@ -79,10 +79,11 @@ class Archive
     end
 
     def each(&block)
-      @paths.zip(@names).each do |file_path, file_name|
-        file_data = File.binread(file_path)
-        block.call(file_name, file_data)
-      end
+      @paths.zip(@names).each { |fp, fn| pack(fp, fn, &block) }
+    end
+
+    def reverse_each(&block)
+      @paths.zip(@names).reverse_each { |fp, fn| pack(fp, fn, &block) }
     end
 
     def length
@@ -92,6 +93,13 @@ class Archive
     def read_meta
       source_path = File.join(@source_dir, META_FILE_NAME)
       JSON.parse(File.binread(source_path), symbolize_names: true)
+    end
+
+    private
+
+    def pack(file_path, file_name, &block)
+      file_data = File.binread(file_path)
+      block.call(file_name, file_data)
     end
   end
 end

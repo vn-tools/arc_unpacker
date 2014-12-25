@@ -29,7 +29,7 @@ class SarArchive < Archive
 
     cur_data_origin = 0
     table_entries = []
-    input_files.each do |file_name, data|
+    input_files.reverse_each do |file_name, data|
       data_size = data.length
       arc_file.write(data)
       table_entries.push([file_name, cur_data_origin, data_size])
