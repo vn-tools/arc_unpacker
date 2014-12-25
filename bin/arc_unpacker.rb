@@ -7,8 +7,10 @@ class ArchiveUnpacker < CLI
   def run_internal
     FileUtils.mkpath(@options[:output_path])
     archive = ArchiveFactory.get(@options[:format])
-    archive.read(@options[:input_path])
-    archive.extract(@options[:output_path], @options[:verbosity])
+    archive.unpack(
+      @options[:input_path],
+      @options[:output_path],
+      @options[:verbosity])
   end
 
   def usage_fmt

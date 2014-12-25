@@ -7,8 +7,7 @@ class ArchivePacker < CLI
   def run_internal
     FileUtils.mkpath(File.dirname(@options[:output_path]))
     archive = ArchiveFactory.get(@options[:format])
-    archive.add_files(@options[:input_path])
-    archive.write(@options[:output_path])
+    archive.pack(@options[:input_path], @options[:output_path])
   end
 
   def usage_fmt

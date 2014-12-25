@@ -1,7 +1,6 @@
 require 'zlib'
 require_relative '../binary_io'
 require_relative '../archive'
-require_relative '../file_entry'
 
 # PAK archive
 class PakArchive < Archive
@@ -10,14 +9,14 @@ class PakArchive < Archive
   MAGIC3 = "\x03\x00\x00\x00"
   MAGIC4 = "\x04\x00\x00\x00"
 
-  def read_internal(arc_file)
+  def unpack_internal(arc_file, output_files)
     magic = arc_file.read(4)
 
     fail 'Not a PAK archive' \
       unless [MAGIC1, MAGIC2, MAGIC3, MAGIC4].include?(magic)
 
     if magic == MAGIC2
-      read_pak2_file_table(arc_file)
+      read_pak2_file_table(arc_file, output_files)
     else
       fail 'Reading this PAK version is not yet supported.' \
         'Please send samples to rr- on github.'
@@ -26,7 +25,7 @@ class PakArchive < Archive
 
   private
 
-  def read_pak2_file_table(arc_file)
+  def read_pak2_file_table(arc_file, output_files)
     file_count,
     table_size,
     compressed_table_size = arc_file.read(12).unpack('LLL')
@@ -36,26 +35,25 @@ class PakArchive < Archive
     offset_to_files = arc_file.tell
     fail 'Bad file table size' unless raw.length == table_size
 
-    @files = (1..file_count).map do
-      read_file(raw, offset_to_files)
-    end
+    file_count.times { read_file(raw, arc_file, offset_to_files, output_files) }
   end
 
-  def read_file(arc_file, offset_to_files)
-    file_name = read_file_name(arc_file)
+  def read_file(raw_file_table, arc_file, offset_to_files, output_files)
+    file_name = read_file_name(raw_file_table)
 
     data_origin,
     data_size_original,
     flags,
-    data_size_compressed = arc_file.read(20).unpack('LLxxxxLL')
+    data_size_compressed = raw_file_table.read(20).unpack('LLxxxxLL')
 
-    data = lambda do
-      arc_file.seek(data_origin + offset_to_files, IO::SEEK_SET)
-      return Zlib.inflate(arc_file.read(data_size_compressed)) if flags > 0
-      arc_file.read(data_size_original)
+    arc_file.seek(data_origin + offset_to_files, IO::SEEK_SET)
+    if flags > 0
+      data = Zlib.inflate(arc_file.read(data_size_compressed))
+    else
+      data = arc_file.read(data_size_original)
     end
 
-    FileEntry.new(file_name, data)
+    output_files.write(file_name, data)
   end
 
   def read_file_name(arc_file)

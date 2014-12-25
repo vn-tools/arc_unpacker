@@ -1,5 +1,4 @@
 require_relative '../archive'
-require_relative '../file_entry'
 
 # YKC archive
 class YkcArchive < Archive
@@ -7,7 +6,7 @@ class YkcArchive < Archive
   YKS_MAGIC = 'YKS001'
   YKG_MAGIC = 'YKG000'
 
-  def read_internal(arc_file)
+  def unpack_internal(arc_file, output_files)
     magic = arc_file.read(MAGIC.length)
     fail 'Not a YKC archive' unless magic == MAGIC
 
@@ -18,30 +17,26 @@ class YkcArchive < Archive
     arc_file.seek(file_table_origin)
     num_files = file_table_size / 20
 
-    @files = (1..num_files).map do
-      read_file(arc_file)
-    end
+    num_files.times { read_file(arc_file, output_files) }
   end
 
   private
 
-  def read_file(arc_file)
+  def read_file(arc_file, output_files)
     file_name_origin,
     file_name_size,
     data_origin,
-    data_size = arc_file.read(16).unpack('L4')
+    data_size = arc_file.read(20).unpack('L4 x4')
 
-    arc_file.seek(4, IO::SEEK_CUR)
     file_name = read_file_name(arc_file, file_name_origin, file_name_size)
 
-    data = lambda do
-      arc_file.seek(data_origin, IO::SEEK_SET)
-      data = arc_file.read(data_size)
-      data = decode(data)
-      data
-    end
+    old_pos = arc_file.tell
+    arc_file.seek(data_origin, IO::SEEK_SET)
+    data = arc_file.read(data_size)
+    data = decode(data)
+    arc_file.seek(old_pos, IO::SEEK_SET)
 
-    FileEntry.new(file_name, data)
+    output_files.write(file_name, data)
   end
 
   def read_file_name(arc_file, file_name_origin, file_name_size)

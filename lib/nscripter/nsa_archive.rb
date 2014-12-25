@@ -1,5 +1,4 @@
 require_relative '../archive'
-require_relative '../file_entry'
 require_relative 'lzss_encoder'
 
 # NSA archive
@@ -8,11 +7,11 @@ class NsaArchive < Archive
   SPB_COMPRESSION = 1
   LZSS_COMPRESSION = 2
 
-  def read_internal(arc_file)
+  def unpack_internal(arc_file, output_files)
     num_files,
     offset_to_files = arc_file.read(6).unpack('S>L>')
 
-    @files = (1..num_files).map do
+    num_files.times do
       file_name = read_file_name(arc_file)
 
       compression_type,
@@ -20,28 +19,26 @@ class NsaArchive < Archive
       data_size_compressed,
       data_size_original = arc_file.read(13).unpack('CL>L>L>')
 
-      data = lambda do
-        arc_file.seek(offset_to_files + data_origin, IO::SEEK_SET)
-        data = decompress(arc_file.read(data_size_compressed), compression_type)
-        fail 'Bad file size' unless data.length == data_size_original
-        data
-      end
+      old_pos = arc_file.tell
+      arc_file.seek(offset_to_files + data_origin, IO::SEEK_SET)
+      data = decompress(arc_file.read(data_size_compressed), compression_type)
+      fail 'Bad file size' unless data.length == data_size_original
+      arc_file.seek(old_pos, IO::SEEK_SET)
 
-      FileEntry.new(file_name, data)
+      output_files.write(file_name, data)
     end
   end
 
-  def write_internal(arc_file, options)
-    table_size = @files.map { |f| f.file_name.length + 14 }.reduce(0, :+)
+  def pack_internal(arc_file, input_files, options)
+    table_size = input_files.names.map { |n| n.length + 14 }.reduce(0, :+)
     offset_to_files = 6 + table_size
-    arc_file.write([@files.length, offset_to_files].pack('S>L>'))
+    arc_file.write([input_files.length, offset_to_files].pack('S>L>'))
     arc_file.write("\x00" * table_size)
 
     compression_type = options[:compression] || NO_COMPRESSION
     cur_data_origin = 0
     table_entries = []
-    @files.each do |file_entry|
-      data_original = file_entry.data.call
+    input_files.each do |file_name, data_original|
       data_compressed = compress(data_original, compression_type)
       data_size_original = data_original.length
       data_size_compressed = data_compressed.length
@@ -49,7 +46,7 @@ class NsaArchive < Archive
       arc_file.write(data_compressed)
 
       table_entries.push([
-        file_entry.file_name,
+        file_name,
         cur_data_origin,
         data_size_original,
         data_size_compressed])

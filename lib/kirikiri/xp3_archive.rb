@@ -1,7 +1,6 @@
 require 'zlib'
 require_relative '../binary_io'
 require_relative '../archive'
-require_relative '../file_entry'
 
 # XP3 archive
 class Xp3Archive < Archive
@@ -12,11 +11,10 @@ class Xp3Archive < Archive
   SEGM_MAGIC = 'segm'
 
   def initialize(decryptor)
-    super
     @decryptor = decryptor
   end
 
-  def read_internal(arc_file)
+  def unpack_internal(arc_file, output_files)
     magic = arc_file.read(5)
     fail 'Not an XP3 archive' unless magic == MAGIC
 
@@ -26,8 +24,7 @@ class Xp3Archive < Archive
     arc_file.seek(file_table_origin, IO::SEEK_SET)
 
     raw = BinaryIO.new(read_raw_file_table!(arc_file))
-    @files = []
-    @files.push(read_file(raw)) until raw.eof?
+    read_file(raw, arc_file, output_files) until raw.eof?
   end
 
   private
@@ -47,25 +44,23 @@ class Xp3Archive < Archive
     arc_file.read(raw_size)
   end
 
-  def read_file(arc_file)
-    magic = arc_file.read(FILE_MAGIC.length)
+  def read_file(raw_file_table, arc_file, output_files)
+    magic = raw_file_table.read(FILE_MAGIC.length)
     fail 'Expected file chunk' unless magic == FILE_MAGIC
 
-    raw_size = arc_file.read(8).unpack('Q<')[0]
-    raw = BinaryIO.new(arc_file.read(raw_size))
+    raw_size = raw_file_table.read(8).unpack('Q<')[0]
+    raw_file_chunk = BinaryIO.new(raw_file_table.read(raw_size))
 
     info_chunk = Xp3InfoChunk.new
-    info_chunk.read!(raw)
-    segm_chunks = Xp3SegmChunk.read_list!(raw)
+    info_chunk.read!(raw_file_chunk)
+    segm_chunks = Xp3SegmChunk.read_list!(raw_file_chunk)
     adlr_chunk = Xp3AdlrChunk.new
-    adlr_chunk.read!(raw)
+    adlr_chunk.read!(raw_file_chunk)
 
-    data = lambda do
-      data = segm_chunks.map { |segm| segm.read_data!(arc_file) } * ''
-      @decryptor.filter(data, adlr_chunk)
-    end
+    data = segm_chunks.map { |segm| segm.read_data!(arc_file) } * ''
+    data = @decryptor.filter(data, adlr_chunk)
 
-    FileEntry.new(info_chunk.file_name, data)
+    output_files.write(info_chunk.file_name, data)
   end
 
   # Xp3 SEGM chunk

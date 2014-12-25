@@ -4,85 +4,94 @@ require 'json'
 
 # Generic archive
 class Archive
-  attr_reader :files
-  attr_reader :meta
+  # A file that is used to contain data necessary to repack some files.
+  # For example, graphic files that need tags.
+  META_FILE_NAME = 'arc_meta.txt'
 
-  def initialize
-    @files = []
-    @meta = nil
-  end
-
-  def read(path)
-    arc_file = File.open(path, 'rb')
-    read_internal(arc_file)
-    # allow FileEntry.data lambda func to use the file descriptor
-    # by destroying it at a later time.
-    ObjectSpace.define_finalizer(self, proc { arc_file.close })
-  end
-
-  def write(path, options = {})
-    open(path, 'wb') { |arc_file| write_internal(arc_file, options) }
-  end
-
-  def add_files(input_dir)
-    Dir[input_dir + '/**/*'].each do |path|
-      next unless File.file?(path)
-
-      if path.end_with?(meta_file_name)
-        @meta = JSON.parse(File.binread(path), symbolize_names: true)
-        next
-      end
-
-      file_name =
-        Pathname.new(path)
-        .relative_path_from(Pathname.new(input_dir))
-        .to_s
-
-      data = -> { open(path, 'rb') { |h| h.read } }
-
-      @files.push(FileEntry.new(file_name, data))
+  def unpack(source_arc, target_dir, verbosity)
+    File.open(source_arc, 'rb') do |arc_file|
+      unpack_internal(arc_file, OutputFiles.new(target_dir, verbosity))
     end
   end
 
-  def extract(output_dir, verbosity)
-    @files.each do |file_entry|
-      extract_file(output_dir, file_entry, verbosity)
+  def pack(source_dir, target_arc)
+    File.open(target_arc, 'wb') do |arc_file|
+      pack_internal(arc_file, InputFiles.new(source_dir), {})
     end
-
-    return if @meta.nil?
-    File.binwrite(File.join(output_dir, meta_file_name), JSON.dump(@meta))
   end
 
   protected
 
-  def read_internal(_arc_file)
+  def unpack_internal(_arc_file, _output_files)
     fail 'This format does not support unpacking'
   end
 
-  def write_internal(_arc_file, _options)
+  def pack_internal(_arc_file, _input_files, _options)
     fail 'This format does not support packing'
   end
 
-  private
+  # A class used to save extracted archive resources to disk
+  class OutputFiles
+    def initialize(target_dir, verbosity)
+      @target_dir = target_dir
+      @verbosity = verbosity
+    end
 
-  def extract_file(output_dir, file_entry, verbosity)
-    target_path = File.join(output_dir, file_entry.file_name)
-    print 'Extracting to ' + target_path + '... ' if verbosity != :quiet
+    def write(file_name, data)
+      target_path = File.join(@target_dir, file_name)
+      print 'Extracting to ' + target_path + '... ' if @verbosity != :quiet
 
-    FileUtils.mkpath(File.dirname(target_path))
+      FileUtils.mkpath(File.dirname(target_path))
+      File.binwrite(target_path, data)
+    rescue StandardError => e
+      puts e.message if @verbosity != :quiet
+      puts e.backtrace if @verbosity == :debug
+    else
+      puts 'ok' if @verbosity != :quiet
+    end
 
-    data = file_entry.data.call
-    open(target_path, 'wb') { |output_file| output_file.write(data) }
-  rescue StandardError => e
-    puts e.message if verbosity != :quiet
-    puts e.backtrace if verbosity == :debug
-  else
-    puts 'ok' if verbosity != :quiet
+    def write_meta(meta)
+      target_path = File.join(@target_dir, META_FILE_NAME)
+      File.binwrite(target_path, JSON.dump(meta))
+    end
   end
 
-  # A file that is used to contain data necessary to repack some files.
-  # For example, graphic files that need tags.
-  def meta_file_name
-    'arc_meta.txt'
+  # A class used to supply packer with input files read from disk
+  class InputFiles
+    attr_reader :names
+
+    def initialize(source_dir)
+      @source_dir = source_dir
+      @paths = []
+      @names = []
+
+      Dir[source_dir + '/**/*'].each do |path|
+        next unless File.file?(path)
+
+        file_name =
+          Pathname.new(path)
+          .relative_path_from(Pathname.new(source_dir))
+          .to_s
+
+        @paths.push(path)
+        @names.push(file_name)
+      end
+    end
+
+    def each(&block)
+      @paths.zip(@names).each do |file_path, file_name|
+        file_data = File.binread(file_path)
+        block.call(file_name, file_data)
+      end
+    end
+
+    def length
+      @paths.length
+    end
+
+    def read_meta
+      source_path = File.join(@source_dir, META_FILE_NAME)
+      JSON.parse(File.binread(source_path), symbolize_names: true)
+    end
   end
 end

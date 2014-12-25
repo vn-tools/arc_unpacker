@@ -4,16 +4,22 @@ require_relative '../test_helper'
 # Unit tests for NsaArchive
 class NsaArchiveTest < Test::Unit::TestCase
   def test_no_compression
-    arc = NsaArchive.new
-    TestHelper.write_and_read(
-      arc,
+    TestHelper.generic_pack_and_unpack_test(
+      NsaArchive.new,
       compression: NsaArchive::NO_COMPRESSION)
-    assert_equal('dir\\test.txt', arc.files[1].file_name)
   end
 
   def test_lzss_compression
-    TestHelper.write_and_read(
+    TestHelper.generic_pack_and_unpack_test(
       NsaArchive.new,
       compression: NsaArchive::LZSS_COMPRESSION)
+  end
+
+  def test_backslash
+    input_files = InputFilesMock.new([
+      {file_name: 'dir/test.txt', data: 'whatever'}])
+
+    output_files = TestHelper.pack_and_unpack(NsaArchive.new, input_files)
+    assert_equal('dir\\test.txt', output_files.files.first[:file_name])
   end
 end

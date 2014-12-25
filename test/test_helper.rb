@@ -1,6 +1,7 @@
 require 'test/unit'
 require_relative '../lib/binary_io'
-require_relative '../lib/file_entry'
+require_relative 'output_files_mock'
+require_relative 'input_files_mock'
 
 include Test::Unit::Assertions
 
@@ -13,29 +14,39 @@ module TestHelper
     open(path, 'rb') { |f| f.read }
   end
 
-  def write_and_read(arc, options = {})
+  def pack_and_unpack(arc, input_files, options = {})
     buffer = BinaryIO.new
+    arc.pack_internal(buffer, input_files, options)
+
+    buffer.rewind
+    output_files = OutputFilesMock.new
+    arc.unpack_internal(buffer, output_files)
+    output_files
+  end
+
+  def generic_pack_and_unpack_test(arc, options = {})
     content1 = rand_binary_string(30_000)
     content2 = rand_binary_string(1)
-    arc.files.push(FileEntry.new('test.png', ->() { content1 }))
-    arc.files.push(FileEntry.new('dir/test.txt', ->() { content2 }))
-    arc.files.push(FileEntry.new('empty', ->() { '' }))
-    arc.write_internal(buffer, options)
 
-    buffer.seek(0, IO::SEEK_SET)
-    arc.read_internal(buffer)
-    assert_equal(3, arc.files.length)
+    input_files = InputFilesMock.new([
+      {file_name: 'test.png', data: content1},
+      {file_name: 'dir/test.txt', data: content2},
+      {file_name: 'empty', data: ''.b}],
+      nil)
+    output_files = pack_and_unpack(arc, input_files, options)
 
-    file1, = arc.files.select { |f| f.file_name == 'test.png' }
-    file2, = arc.files.select { |f| f.file_name =~ /dir[\\\/]test.txt/ }
-    file3, = arc.files.select { |f| f.file_name == 'empty' }
+    files = output_files.files
+    assert_equal(3, files.length)
+    file1, = files.select { |f| f[:file_name] == 'test.png' }
+    file2, = files.select { |f| f[:file_name] =~ /dir[\\\/]test.txt/ }
+    file3, = files.select { |f| f[:file_name] == 'empty' }
 
     assert_not_nil(file1)
     assert_not_nil(file2)
     assert_not_nil(file3)
-    assert_equal(content1, file1.data.call)
-    assert_equal(content2, file2.data.call)
-    assert_equal('', file3.data.call)
+    assert_equal(content1, file1[:data])
+    assert_equal(content2, file2[:data])
+    assert_equal('', file3[:data])
   end
 
   def rand_string(length)
