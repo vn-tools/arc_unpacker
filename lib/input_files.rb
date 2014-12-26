@@ -40,6 +40,7 @@ class InputFiles
 
   def read_meta
     source_path = File.join(@source_dir, OutputFiles::META_FILE_NAME)
+    return nil unless File.exist?(source_path)
     JSON.parse(File.binread(source_path), symbolize_names: true)
   end
 
