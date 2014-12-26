@@ -1,5 +1,5 @@
-require 'optparse'
 require_relative 'archive_factory'
+require_relative 'arg_parser'
 
 # Generic CLI frontend
 class CLI
@@ -10,69 +10,57 @@ class CLI
       output_path: nil,
       verbosity: :normal
     }
-
-    parse_options
   end
 
   def run
+    @arg_parser = ArgParser.new(ARGV)
+    parse_options
     run_internal
+  rescue OptionError => e
+    puts 'Error: ' + e.message.to_s
+    puts e.backtrace if @options[:verbosity] == :debug
+    puts
+    print_help
+    exit(1)
   rescue StandardError => e
-    puts 'Error: ' + e.message.to_s if @options[:verbosity] != :quiet
+    puts 'Error: ' + e.message if @options[:verbosity] != :quiet
     puts e.backtrace if @options[:verbosity] == :debug
     exit(1)
   end
 
   def parse_options
-    opt_parser = OptionParser.new do |opts|
-      opts.banner = format(
-        usage_fmt,
-        File.basename(__FILE__))
+    @arg_parser.on('-q', '--quiet') { @options[:verbosity] = :quiet }
+    @arg_parser.on('-v', '--verbose') { @options[:verbosity] = :debug }
 
-      opts.on(
-        '-f',
-        '--fmt FORMAT',
-        ArchiveFactory.format_strings,
-        format(
-          'Select encryption type (%s)',
-          ArchiveFactory.format_strings.join(', '))) \
-      do |format|
-        @options[:format] = format
-      end
-
-      opts.separator ''
-
-      opts.on('-q', '--quiet', 'Suppress output') do
-        @options[:verbosity] = :quiet
-      end
-
-      opts.on('-v', '--verbose', 'Show debug information for errors') do
-        @options[:verbosity] = :debug
-      end
-
-      opts.on_tail('-h', '--help', 'Show this message') do
-        puts opts
-        exit
-      end
+    @arg_parser.on('-h', '--help') do
+      print_help
+      exit(0)
     end
 
-    begin
-      opt_parser.parse!
-
-      if @options[:format].nil?
-        fail OptionParser::MissingArgument, 'Must specify encryption format.'
-      end
-    rescue StandardError => e
-      raise e unless e.class.name.start_with?('OptionParser')
-      puts e.message, '', opt_parser
-      exit(1)
+    @arg_parser.get('-f', '--fmt') do |value|
+      fail 'Unknown format' unless ArchiveFactory.format_strings.include?(value)
+      @options[:format] = value
     end
 
-    if ARGV.length != 2
-      puts opt_parser
-      exit(1)
-    end
+    @arg_parser.get_stray { |value| @options[:input_path] = value }
+    @arg_parser.get_stray { |value| @options[:output_path] = value }
+  end
 
-    @options[:input_path] = ARGV.first
-    @options[:output_path] = ARGV.last
+  def print_help
+    puts format(
+      'Usage: %s [options] [arc_options] input_path output_path',
+      File.basename(__FILE__))
+
+    puts
+    puts '[options] can be:'
+    puts
+    puts '-f, --fmt [format]   Select archive format.'
+    puts '-q, --quiet          Suppress output.'
+    puts '-v, --verbose        Show exception stack traces for debug purposes.'
+    puts '-h, --help           Show this message.'
+    puts
+    puts '[format] currently supports:'
+    puts
+    puts ArchiveFactory.format_strings * "\n"
   end
 end

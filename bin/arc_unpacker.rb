@@ -12,10 +12,6 @@ class ArchiveUnpacker < CLI
       @options[:output_path],
       @options)
   end
-
-  def usage_fmt
-    'Usage: %s INPUT_PATH OUTPUT_DIR'
-  end
 end
 
 ArchiveUnpacker.new.run
