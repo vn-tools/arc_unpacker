@@ -34,8 +34,9 @@ class BinaryIO
     old_pos = @io.tell
     @io.seek(pos)
     ret = block.call
+    return ret
+  ensure
     @io.seek(old_pos)
-    ret
   end
 
   def skip(count)
