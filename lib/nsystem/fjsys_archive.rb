@@ -2,12 +2,22 @@ require 'tmpdir'
 require_relative '../archive'
 require_relative 'mgd_converter'
 require_relative 'msd_converter'
+require_relative 'msd_keys'
 
 # FJSYS archive
 class FjsysArchive < Archive
   MAGIC = "FJSYS\x00\x00\x00"
 
-  def unpack_internal(arc_file, output_files, _options)
+  def request_options(arg_parser, options)
+    arg_parser.on('-k', '--key') do |key|
+      unless MSD_KEYS.include?(key.to_sym)
+        fail "Bad key. Available keys:\n" + MSD_KEYS.keys * "\n"
+      end
+      options[:msd_key] = MSD_KEYS[key.to_sym]
+    end
+  end
+
+  def unpack_internal(arc_file, output_files, options)
     magic = arc_file.read(MAGIC.length)
     fail 'Not a FJSYS archive' unless magic == MAGIC
 
@@ -29,7 +39,7 @@ class FjsysArchive < Archive
         end
 
         data, file_meta = arc_file.peek(data_origin) do
-          decode(arc_file.read(data_size))
+          decode(file_name, arc_file.read(data_size), options)
         end
         meta[file_name.to_sym] = file_meta unless file_meta.nil?
 
@@ -89,10 +99,13 @@ class FjsysArchive < Archive
 
   private
 
-  def decode(data)
+  def decode(file_name, data, options)
     if data[0..MgdConverter::MAGIC.length - 1] == MgdConverter::MAGIC
       data, regions = MgdConverter.decode(data)
       return data, regions
+
+    elsif file_name.downcase.end_with?('.msd')
+      return MsdConverter.decode(data, options[:msd_key])
     end
 
     [data, nil]
@@ -102,6 +115,9 @@ class FjsysArchive < Archive
     if file_name.downcase.end_with?('.mgd')
       regions = file_meta
       return MgdConverter.encode(data, regions)
+
+    elsif file_name.downcase.end_with?('.msd')
+      return MsdConverter.encode(data)
     end
 
     data
