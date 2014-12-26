@@ -1,11 +1,12 @@
 XP3_DECRYPTORS = {
   none: lambda do
     require_relative 'decryptors/noop'
+    NoopDecryptor.new
   end,
 
   fsn: lambda do
     require_relative 'decryptors/fsn'
-    Xp3Archive.new(FsnDecryptor.new)
+    FsnDecryptor.new
   end,
 
   fha: lambda do

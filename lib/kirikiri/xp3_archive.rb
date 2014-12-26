@@ -19,7 +19,7 @@ class Xp3Archive < Archive
           XP3_DECRYPTORS.keys * "\n"
       end
 
-      options[:decryptor] = XP3_DECRYPTORS[enc_name.to_sym]
+      options[:decryptor] = XP3_DECRYPTORS[enc_name.to_sym].call
     end
   end
 
@@ -41,7 +41,7 @@ class Xp3Archive < Archive
   private
 
   def read_raw_table!(arc_file)
-    use_zlib = arc_file.read(1).unpack('B')[0]
+    use_zlib = arc_file.read(1).unpack('C')[0] > 0
 
     if use_zlib
       table_size_compressed,
@@ -101,7 +101,7 @@ class Xp3Archive < Archive
     end
 
     def read_data!(arc_file)
-      arc_file.seek(@offset, IO::SEEK_SET)
+      arc_file.seek(@offset)
       use_zlib = @flags & 7 == 1
       if use_zlib
         raw = Zlib.inflate(arc_file.read(@compressed_size))
