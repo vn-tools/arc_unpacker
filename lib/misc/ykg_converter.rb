@@ -10,10 +10,15 @@ class YkgConverter
     magic = input.read(MAGIC.length)
     fail 'Not a YKG picture' if magic != MAGIC
 
+    is_encrypted,
+    _header_size,
     data_origin,
     data_size,
     meta_origin,
-    meta_size = input.read(58).unpack('x2 x4 x28 LL x8 LL')
+    meta_size = input.read(58).unpack('SL x28 LL x8 LL')
+    is_encrypted = is_encrypted != 0
+
+    fail 'Reading encrypted YKG is not supported.' if is_encrypted
 
     data = input.peek(data_origin) { input.read(data_size) }
     meta = input.peek(meta_origin) { input.read(meta_size) }
@@ -40,7 +45,8 @@ class YkgConverter
     meta.rewind
     meta = meta.read
 
-    data_origin = 0x40
+    header_size = 0x40
+    data_origin = header_size
     meta_origin = data_origin + data.length
 
     fail 'Only PNG files are supported' if data[1..3] != 'PNG'
@@ -48,7 +54,7 @@ class YkgConverter
 
     output.write(MAGIC)
     output.write([
-      0x40, # ?
+      header_size,
       data_origin,
       data.length,
       meta_origin,

@@ -1,5 +1,6 @@
 require_relative '../archive'
 require_relative 'ykg_converter'
+require_relative 'yks_converter'
 
 # YKC archive
 class YkcArchive < Archive
@@ -70,18 +71,23 @@ class YkcArchive < Archive
   private
 
   def decode(data)
+    meta = nil
+
     if data[0..(YkgConverter::MAGIC.length - 1)] == YkgConverter::MAGIC
-      data, regions = YkgConverter.decode(data)
-      return [data, regions]
+      data, meta = YkgConverter.decode(data)
+    elsif data[0..(YksConverter::MAGIC.length - 1)] == YksConverter::MAGIC
+      data = YksConverter.decode(data)
     end
 
-    [data, nil]
+    [data, meta]
   end
 
-  def encode(file_name, data, file_meta)
-    if file_name.downcase.end_with?('.ykg')
-      regions = file_meta
+  def encode(name, data, meta)
+    if name.downcase.end_with?('.ykg')
+      regions = meta
       return YkgConverter.encode(data, regions)
+    elsif name.downcase.end_with?('.yks')
+      return YksConverter.encode(data, true)
     end
 
     data
