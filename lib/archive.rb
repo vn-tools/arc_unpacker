@@ -1,14 +1,9 @@
-require 'fileutils'
-require 'pathname'
-require 'json'
 require_relative 'binary_io'
+require_relative 'input_files'
+require_relative 'output_files'
 
 # Generic archive
 class Archive
-  # A file that is used to contain data necessary to repack some files.
-  # For example, graphic files that need tags.
-  META_FILE_NAME = 'arc_meta.txt'
-
   def unpack(source_arc, target_dir, options)
     BinaryIO.from_file(source_arc, 'rb') do |arc_file|
       unpack_internal(arc_file, OutputFiles.new(target_dir, options), options)
@@ -29,88 +24,5 @@ class Archive
 
   def pack_internal(_arc_file, _input_files, _options)
     fail 'This format does not support packing'
-  end
-
-  # A class used to save extracted archive resources to disk
-  class OutputFiles
-    def initialize(target_dir, options)
-      @target_dir = target_dir
-      @verbosity = options[:verbosity]
-    end
-
-    def write(&block)
-      print 'Extracting... ' if @verbosity != :quiet
-
-      file_name, data = block.call
-      target_path = File.join(@target_dir, file_name.gsub('\\', '/'))
-
-      FileUtils.mkpath(File.dirname(target_path))
-      File.binwrite(target_path, data)
-    rescue StandardError => e
-      puts e.message if @verbosity != :quiet
-      puts e.backtrace if @verbosity == :debug
-    else
-      puts 'ok (saved in ' + target_path + ')' if @verbosity != :quiet
-    end
-
-    def write_meta(meta)
-      target_path = File.join(@target_dir, META_FILE_NAME)
-      File.binwrite(target_path, JSON.dump(meta))
-    end
-  end
-
-  # A class used to supply packer with input files read from disk
-  class InputFiles
-    attr_reader :names
-
-    def initialize(source_dir, options)
-      @source_dir = source_dir
-      @verbosity = options[:verbosity]
-      @paths = []
-      @names = []
-
-      Dir[source_dir + '/**/*'].each do |path|
-        next unless File.file?(path)
-        next if path.end_with?(META_FILE_NAME)
-
-        file_name =
-          Pathname.new(path)
-          .relative_path_from(Pathname.new(source_dir))
-          .to_s
-
-        @paths.push(path)
-        @names.push(file_name)
-      end
-    end
-
-    def each(&block)
-      @paths.zip(@names).each { |fp, fn| pack(fp, fn, &block) }
-    end
-
-    def reverse_each(&block)
-      @paths.zip(@names).reverse_each { |fp, fn| pack(fp, fn, &block) }
-    end
-
-    def length
-      @paths.length
-    end
-
-    def read_meta
-      source_path = File.join(@source_dir, META_FILE_NAME)
-      JSON.parse(File.binread(source_path), symbolize_names: true)
-    end
-
-    private
-
-    def pack(file_path, file_name, &block)
-      print format('Inserting %s... ', file_name) if @verbosity != :quiet
-      file_data = File.binread(file_path)
-      block.call(file_name, file_data)
-    rescue
-      puts e.message if @verbosity != :quiet
-      puts e.backtrace if @verbosity == :debug
-    else
-      puts 'ok' if @verbosity != :quiet
-    end
   end
 end
