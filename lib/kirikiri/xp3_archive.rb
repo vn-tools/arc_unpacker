@@ -5,7 +5,7 @@ require_relative 'xp3_decryptor_factory'
 
 # XP3 archive
 class Xp3Archive < Archive
-  MAGIC = "XP3\r\n"
+  MAGIC = "XP3\r\n\x20\x0a\x1a\x8b\x67\x01".b
   FILE_MAGIC = 'File'
   ADLR_MAGIC = 'adlr'
   INFO_MAGIC = 'info'
@@ -24,17 +24,30 @@ class Xp3Archive < Archive
   end
 
   def unpack_internal(arc_file, output_files, options)
-    magic = arc_file.read(5)
+    magic = arc_file.read(MAGIC.length)
     fail 'Not an XP3 archive' unless magic == MAGIC
 
-    _version,
-    table_origin = arc_file.read(10).unpack('IxxI')
+    version = arc_file.peek(19) { arc_file.read(4) == "\x01\0\0\0" ? 2 : 1 }
 
-    arc_file.seek(table_origin)
-    raw = BinaryIO.from_string(read_raw_table!(arc_file))
+    if version == 1
+      table_origin = arc_file.read(8).unpack('Q')[0]
+    else
+      additional_header_offset,
+      minor_version = arc_file.read(12).unpack('QI')
+      fail 'Unexpected XP3 version: ' + minor_version.to_s if minor_version != 1
 
-    until raw.eof?
-      output_files.write { read_file(raw, arc_file, options[:decryptor]) }
+      arc_file.peek(additional_header_offset) do
+        _flag,
+        _table_size,
+        table_origin = arc_file.read(17).unpack('BQQ')
+      end
+    end
+
+    table = arc_file.peek(table_origin) { read_raw_table!(arc_file) }
+    table = BinaryIO.from_string(table)
+
+    until table.eof?
+      output_files.write { read_file(table, arc_file, options[:decryptor]) }
     end
   end
 
