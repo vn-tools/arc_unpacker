@@ -1,6 +1,7 @@
 require 'zlib'
 require_relative '../binary_io'
 require_relative '../archive'
+require_relative 'xp3_decryptor_factory'
 
 # XP3 archive
 class Xp3Archive < Archive
@@ -10,33 +11,44 @@ class Xp3Archive < Archive
   INFO_MAGIC = 'info'
   SEGM_MAGIC = 'segm'
 
-  def initialize(decryptor)
-    @decryptor = decryptor
+  def request_options(arg_parser, options)
+    arg_parser.get(nil, '--plugin') do |enc_name|
+      unless XP3_DECRYPTORS.include?(enc_name.to_sym)
+        fail \
+          "Bad decryptor name. Available decryptors:\n" +
+          XP3_DECRYPTORS.keys * "\n"
+      end
+
+      options[:decryptor] = XP3_DECRYPTORS[enc_name.to_sym]
+    end
   end
 
-  def unpack_internal(arc_file, output_files, _options)
+  def unpack_internal(arc_file, output_files, options)
     magic = arc_file.read(5)
     fail 'Not an XP3 archive' unless magic == MAGIC
 
     _version,
-    file_table_origin = arc_file.read(10).unpack('IxxI')
+    table_origin = arc_file.read(10).unpack('IxxI')
 
-    arc_file.seek(file_table_origin)
+    arc_file.seek(table_origin)
+    raw = BinaryIO.from_string(read_raw_table!(arc_file))
 
-    raw = BinaryIO.from_string(read_raw_file_table!(arc_file))
-    output_files.write { read_file(raw, arc_file) } until raw.eof?
+    until raw.eof?
+      output_files.write { read_file(raw, arc_file, options[:decryptor]) }
+    end
   end
 
   private
 
-  def read_raw_file_table!(arc_file)
+  def read_raw_table!(arc_file)
     use_zlib = arc_file.read(1).unpack('B')[0]
 
     if use_zlib
-      file_table_size_compressed,
-      file_table_size_original = arc_file.read(16).unpack('Q<Q<')
-      raw = Zlib.inflate(arc_file.read(file_table_size_compressed))
-      fail 'Bad file size' unless raw.length == file_table_size_original
+      table_size_compressed,
+      table_size_original = arc_file.read(16).unpack('Q<Q<')
+      raw = arc_file.read(table_size_compressed)
+      raw = Zlib.inflate(raw) if table_size_original != table_size_compressed
+      fail 'Bad file size' unless raw.length == table_size_original
       return raw
     end
 
@@ -44,12 +56,12 @@ class Xp3Archive < Archive
     arc_file.read(raw_size)
   end
 
-  def read_file(raw_file_table, arc_file)
-    magic = raw_file_table.read(FILE_MAGIC.length)
+  def read_file(raw_table, arc_file, decryptor)
+    magic = raw_table.read(FILE_MAGIC.length)
     fail 'Expected file chunk' unless magic == FILE_MAGIC
 
-    raw_size = raw_file_table.read(8).unpack('Q<')[0]
-    raw_file_chunk = BinaryIO.from_string(raw_file_table.read(raw_size))
+    raw_size = raw_table.read(8).unpack('Q<')[0]
+    raw_file_chunk = BinaryIO.from_string(raw_table.read(raw_size))
 
     info_chunk = Xp3InfoChunk.new
     info_chunk.read!(raw_file_chunk)
@@ -58,7 +70,7 @@ class Xp3Archive < Archive
     adlr_chunk.read!(raw_file_chunk)
 
     data = segm_chunks.map { |segm| segm.read_data!(arc_file) } * ''
-    data = @decryptor.filter(data, adlr_chunk)
+    data = decryptor.filter(data, adlr_chunk)
 
     [info_chunk.file_name, data]
   end

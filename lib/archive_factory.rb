@@ -10,23 +10,9 @@ class ArchiveFactory
 
   def self.factory
     {
-      'xp3/noop' => lambda do
+      'xp3' => lambda do
         require_relative 'kirikiri/xp3_archive'
-        require_relative 'kirikiri/decryptors/noop'
-        Xp3Archive.new(NoopDecryptor.new)
-      end,
-
-      'xp3/fsn' => lambda do
-        require_relative 'kirikiri/xp3_archive'
-        require_relative 'kirikiri/decryptors/fsn'
-        Xp3Archive.new(FsnDecryptor.new)
-      end,
-
-      'xp3/fha' => lambda do
-        require_relative 'kirikiri/xp3_archive'
-        require_relative 'kirikiri/decryptors/cxdec'
-        require_relative 'kirikiri/decryptors/cxdec_plugin_fha'
-        Xp3Archive.new(CxdecDecryptor.new(CxdecPluginFha.new))
+        Xp3Archive.new
       end,
 
       'ykc' => lambda do

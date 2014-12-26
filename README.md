@@ -4,9 +4,10 @@ Currently supported games:
 
 `--fmt` string  | Game or format
 --------------- | --------------------------------
-`xp3/noop`      | Unecrypted Kirikiri XP3 archive
-`xp3/fsn`       | Fate/Stay Night
-`xp3/fha`       | Fate/Hollow Ataraxia
+`xp3`           | Kirikiri XP3 archive
+                | - `--plugin none`: unecrypted
+                | - `--plugin fha`: Fate/Hollow Ataraxia
+                | - `--plugin fsn`: Fate/Hollow Ataraxia
 `melty_blood`   | Melty Blood
 `nsa`           | Nscripter NSA archives (e.g. Tsukihime)
 `sar`           | Nscripter SAR archives (e.g. Tsukihime)
