@@ -37,9 +37,15 @@ class CLI
       exit(0)
     end
 
-    @arg_parser.get('-f', '--fmt') do |value|
-      fail 'Unknown format' unless ArchiveFactory.format_strings.include?(value)
-      @options[:format] = value
+    @arg_parser.get('-f', '--fmt') do |format|
+      unless ArchiveFactory.format_strings.include?(format)
+        fail 'Unknown archive format'
+      end
+
+      archive = ArchiveFactory.get(format)
+      archive.request_options(@arg_parser, @options)
+      @options[:format] = format
+      @options[:archive] = archive
     end
 
     @arg_parser.get_stray { |value| @options[:input_path] = value }
@@ -58,6 +64,8 @@ class CLI
     puts '-q, --quiet          Suppress output.'
     puts '-v, --verbose        Show exception stack traces for debug purposes.'
     puts '-h, --help           Show this message.'
+    puts
+    puts '[arc_options] depend on each archive and are required at runtime.'
     puts
     puts '[format] currently supports:'
     puts

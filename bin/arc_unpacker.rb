@@ -6,7 +6,7 @@ require_relative '../lib/cli'
 class ArchiveUnpacker < CLI
   def run_internal
     FileUtils.mkpath(@options[:output_path])
-    archive = ArchiveFactory.get(@options[:format])
+    archive = @options[:archive]
     archive.unpack(
       @options[:input_path],
       @options[:output_path],
