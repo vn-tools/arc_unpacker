@@ -9,7 +9,7 @@ class PakArchive < Archive
   MAGIC3 = "\x03\x00\x00\x00"
   MAGIC4 = "\x04\x00\x00\x00"
 
-  def unpack_internal(arc_file, output_files)
+  def unpack_internal(arc_file, output_files, _options)
     magic = arc_file.read(4)
 
     fail 'Not a PAK archive' \

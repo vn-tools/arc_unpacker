@@ -9,21 +9,21 @@ class Archive
   # For example, graphic files that need tags.
   META_FILE_NAME = 'arc_meta.txt'
 
-  def unpack(source_arc, target_dir, verbosity)
+  def unpack(source_arc, target_dir, options)
     BinaryIO.from_file(source_arc, 'rb') do |arc_file|
-      unpack_internal(arc_file, OutputFiles.new(target_dir, verbosity))
+      unpack_internal(arc_file, OutputFiles.new(target_dir, options), options)
     end
   end
 
-  def pack(source_dir, target_arc, verbosity)
+  def pack(source_dir, target_arc, options)
     BinaryIO.from_file(target_arc, 'wb') do |arc_file|
-      pack_internal(arc_file, InputFiles.new(source_dir, verbosity), {})
+      pack_internal(arc_file, InputFiles.new(source_dir, options), options)
     end
   end
 
   protected
 
-  def unpack_internal(_arc_file, _output_files)
+  def unpack_internal(_arc_file, _output_files, _options)
     fail 'This format does not support unpacking'
   end
 
@@ -33,9 +33,9 @@ class Archive
 
   # A class used to save extracted archive resources to disk
   class OutputFiles
-    def initialize(target_dir, verbosity)
+    def initialize(target_dir, options)
       @target_dir = target_dir
-      @verbosity = verbosity
+      @verbosity = options[:verbosity]
     end
 
     def write(&block)
@@ -63,9 +63,9 @@ class Archive
   class InputFiles
     attr_reader :names
 
-    def initialize(source_dir, verbosity)
+    def initialize(source_dir, options)
       @source_dir = source_dir
-      @verbosity = verbosity
+      @verbosity = options[:verbosity]
       @paths = []
       @names = []
 

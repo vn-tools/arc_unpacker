@@ -6,7 +6,7 @@ require_relative 'yks_converter'
 class YkcArchive < Archive
   MAGIC = 'YKC001'
 
-  def unpack_internal(arc_file, output_files)
+  def unpack_internal(arc_file, output_files, _options)
     magic = arc_file.read(MAGIC.length)
     fail 'Not a YKC archive' unless magic == MAGIC
 

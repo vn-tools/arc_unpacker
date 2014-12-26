@@ -10,7 +10,7 @@ class ArchiveUnpacker < CLI
     archive.unpack(
       @options[:input_path],
       @options[:output_path],
-      @options[:verbosity])
+      @options)
   end
 
   def usage_fmt

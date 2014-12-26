@@ -1,12 +1,13 @@
 require 'tmpdir'
 require_relative '../archive'
 require_relative 'mgd_converter'
+require_relative 'msd_converter'
 
 # FJSYS archive
 class FjsysArchive < Archive
   MAGIC = "FJSYS\x00\x00\x00"
 
-  def unpack_internal(arc_file, output_files)
+  def unpack_internal(arc_file, output_files, _options)
     magic = arc_file.read(MAGIC.length)
     fail 'Not a FJSYS archive' unless magic == MAGIC
 

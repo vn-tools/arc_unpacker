@@ -4,7 +4,7 @@ silence_warnings { require 'pedump' }
 
 # Windows executable reader
 class ExeReader < Archive
-  def unpack_internal(handle, output_files)
+  def unpack_internal(handle, output_files, _options)
     pedump = init_pedump(handle)
     warn_about_packer(pedump) unless pedump.packer.nil?
 

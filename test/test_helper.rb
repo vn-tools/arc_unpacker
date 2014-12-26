@@ -20,7 +20,7 @@ module TestHelper
 
     buffer.rewind
     output_files = OutputFilesMock.new
-    arc.unpack_internal(buffer, output_files)
+    arc.unpack_internal(buffer, output_files, options)
     output_files
   end
 

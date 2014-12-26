@@ -6,7 +6,7 @@ class MeltyBloodArchive < Archive
   MAGIC2 = "\x01\x00\x00\x00" # not encrypted
   ENCRYPTION_KEY = 0xE3DF59AC
 
-  def unpack_internal(arc_file, output_files)
+  def unpack_internal(arc_file, output_files, _options)
     magic = arc_file.read(4)
     encrypted = magic == MAGIC1
     fail 'Not a Melty Blood archive' unless magic == MAGIC1 || magic == MAGIC2

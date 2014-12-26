@@ -14,7 +14,7 @@ class Xp3Archive < Archive
     @decryptor = decryptor
   end
 
-  def unpack_internal(arc_file, output_files)
+  def unpack_internal(arc_file, output_files, _options)
     magic = arc_file.read(5)
     fail 'Not an XP3 archive' unless magic == MAGIC
 

@@ -10,7 +10,7 @@ class ArchivePacker < CLI
     archive.pack(
       @options[:input_path],
       @options[:output_path],
-      @options[:verbosity])
+      @options)
   end
 
   def usage_fmt

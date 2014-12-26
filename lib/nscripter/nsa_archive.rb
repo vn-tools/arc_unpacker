@@ -7,7 +7,7 @@ class NsaArchive < Archive
   SPB_COMPRESSION = 1
   LZSS_COMPRESSION = 2
 
-  def unpack_internal(arc_file, output_files)
+  def unpack_internal(arc_file, output_files, _options)
     num_files,
     offset_to_files = arc_file.read(6).unpack('S>L>')
 
