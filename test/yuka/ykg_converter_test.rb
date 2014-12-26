@@ -1,4 +1,4 @@
-require_relative '../../lib/misc/ykg_converter'
+require_relative '../../lib/yuka/ykg_converter'
 require_relative '../test_helper'
 
 # Unit tests for YkgConverter

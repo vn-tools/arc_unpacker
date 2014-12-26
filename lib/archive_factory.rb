@@ -30,7 +30,7 @@ class ArchiveFactory
       end,
 
       'ykc' => lambda do
-        require_relative 'misc/ykc_archive'
+        require_relative 'yuka/ykc_archive'
         YkcArchive.new
       end,
 

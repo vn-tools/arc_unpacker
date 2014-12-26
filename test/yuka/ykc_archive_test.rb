@@ -1,4 +1,4 @@
-require_relative '../../lib/misc/ykc_archive'
+require_relative '../../lib/yuka/ykc_archive'
 require_relative '../test_helper'
 
 # Unit tests for YkcArchive
