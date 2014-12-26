@@ -24,7 +24,7 @@ class Xp3Archive < Archive
     arc_file.seek(file_table_origin)
 
     raw = BinaryIO.from_string(read_raw_file_table!(arc_file))
-    read_file(raw, arc_file, output_files) until raw.eof?
+    output_files.write { read_file(raw, arc_file) } until raw.eof?
   end
 
   private
@@ -44,7 +44,7 @@ class Xp3Archive < Archive
     arc_file.read(raw_size)
   end
 
-  def read_file(raw_file_table, arc_file, output_files)
+  def read_file(raw_file_table, arc_file)
     magic = raw_file_table.read(FILE_MAGIC.length)
     fail 'Expected file chunk' unless magic == FILE_MAGIC
 
@@ -60,7 +60,7 @@ class Xp3Archive < Archive
     data = segm_chunks.map { |segm| segm.read_data!(arc_file) } * ''
     data = @decryptor.filter(data, adlr_chunk)
 
-    output_files.write(info_chunk.file_name, data)
+    [info_chunk.file_name, data]
   end
 
   # Xp3 SEGM chunk

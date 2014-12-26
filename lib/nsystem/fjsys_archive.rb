@@ -18,20 +18,22 @@ class FjsysArchive < Archive
     meta = {}
 
     file_count.times do
-      file_name_origin,
-      data_size,
-      data_origin = arc_file.read(16).unpack('LLQ')
+      output_files.write do
+        file_name_origin,
+        data_size,
+        data_origin = arc_file.read(16).unpack('LLQ')
 
-      file_name = arc_file.peek(file_name_origin + file_names_start) do
-        arc_file.read_until_zero
+        file_name = arc_file.peek(file_name_origin + file_names_start) do
+          arc_file.read_until_zero
+        end
+
+        data, file_meta = arc_file.peek(data_origin) do
+          decode(arc_file.read(data_size))
+        end
+        meta[file_name.to_sym] = file_meta unless file_meta.nil?
+
+        [file_name, data]
       end
-
-      data, file_meta = arc_file.peek(data_origin) do
-        decode(arc_file.read(data_size))
-      end
-      meta[file_name.to_sym] = file_meta unless file_meta.nil?
-
-      output_files.write(file_name, data)
     end
 
     output_files.write_meta(meta) unless meta.empty?

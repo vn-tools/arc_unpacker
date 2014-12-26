@@ -12,12 +12,14 @@ class MeltyBloodArchive < Archive
     fail 'Not a Melty Blood archive' unless magic == MAGIC1 || magic == MAGIC2
 
     num_files = arc_file.read(4).unpack('L<')[0] ^ ENCRYPTION_KEY
-    num_files.times { |i| read_file(arc_file, i, encrypted, output_files) }
+    num_files.times do |i|
+      output_files.write { read_file(arc_file, i, encrypted) }
+    end
   end
 
   private
 
-  def read_file(arc_file, file_id, encrypted, output_files)
+  def read_file(arc_file, file_id, encrypted)
     file_name = read_file_name(arc_file, file_id)
 
     data_origin,
@@ -30,7 +32,7 @@ class MeltyBloodArchive < Archive
       data
     end
 
-    output_files.write(file_name, data)
+    [file_name, data]
   end
 
   def decrypt(data, file_name)

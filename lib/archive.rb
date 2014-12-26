@@ -15,9 +15,9 @@ class Archive
     end
   end
 
-  def pack(source_dir, target_arc)
+  def pack(source_dir, target_arc, verbosity)
     BinaryIO.from_file(target_arc, 'wb') do |arc_file|
-      pack_internal(arc_file, InputFiles.new(source_dir), {})
+      pack_internal(arc_file, InputFiles.new(source_dir, verbosity), {})
     end
   end
 
@@ -38,9 +38,11 @@ class Archive
       @verbosity = verbosity
     end
 
-    def write(file_name, data)
-      target_path = File.join(@target_dir, file_name)
-      print 'Extracting to ' + target_path + '... ' if @verbosity != :quiet
+    def write(&block)
+      print 'Extracting... ' if @verbosity != :quiet
+
+      file_name, data = block.call
+      target_path = File.join(@target_dir, file_name.gsub('\\', '/'))
 
       FileUtils.mkpath(File.dirname(target_path))
       File.binwrite(target_path, data)
@@ -48,7 +50,7 @@ class Archive
       puts e.message if @verbosity != :quiet
       puts e.backtrace if @verbosity == :debug
     else
-      puts 'ok' if @verbosity != :quiet
+      puts 'ok (saved in ' + target_path + ')' if @verbosity != :quiet
     end
 
     def write_meta(meta)
@@ -61,8 +63,9 @@ class Archive
   class InputFiles
     attr_reader :names
 
-    def initialize(source_dir)
+    def initialize(source_dir, verbosity)
       @source_dir = source_dir
+      @verbosity = verbosity
       @paths = []
       @names = []
 
@@ -100,8 +103,14 @@ class Archive
     private
 
     def pack(file_path, file_name, &block)
+      print format('Inserting %s... ', file_name) if @verbosity != :quiet
       file_data = File.binread(file_path)
       block.call(file_name, file_data)
+    rescue
+      puts e.message if @verbosity != :quiet
+      puts e.backtrace if @verbosity == :debug
+    else
+      puts 'ok' if @verbosity != :quiet
     end
   end
 end

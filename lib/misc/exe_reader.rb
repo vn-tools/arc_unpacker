@@ -17,10 +17,12 @@ class ExeReader < Archive
   private
 
   def write_resource(pedump_resource, handle, output_files)
-    file_name = pedump_resource.type + '/' + pedump_resource.name
-    handle.seek(pedump_resource.file_offset)
-    data = handle.read(pedump_resource.size)
-    output_files.write(file_name, data)
+    output_files.write do
+      file_name = pedump_resource.type + '/' + pedump_resource.name
+      handle.seek(pedump_resource.file_offset)
+      data = handle.read(pedump_resource.size)
+      [file_name, data]
+    end
   end
 
   def init_pedump(handle)

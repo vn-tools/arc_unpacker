@@ -7,16 +7,18 @@ class SarArchive < Archive
     offset_to_files = arc_file.read(6).unpack('S>L>')
 
     num_files.times do
-      file_name = arc_file.read_until_zero
+      output_files.write do
+        file_name = arc_file.read_until_zero
 
-      data_origin,
-      data_size = arc_file.read(8).unpack('L>L>')
+        data_origin,
+        data_size = arc_file.read(8).unpack('L>L>')
 
-      data = arc_file.peek(offset_to_files + data_origin) do
-        arc_file.read(data_size)
+        data = arc_file.peek(offset_to_files + data_origin) do
+          arc_file.read(data_size)
+        end
+
+        [file_name, data]
       end
-
-      output_files.write(file_name, data)
     end
   end
 

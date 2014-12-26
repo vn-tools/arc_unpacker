@@ -12,22 +12,24 @@ class NsaArchive < Archive
     offset_to_files = arc_file.read(6).unpack('S>L>')
 
     num_files.times do
-      file_name = arc_file.read_until_zero
+      output_files.write do
+        file_name = arc_file.read_until_zero
 
-      compression_type,
-      data_origin,
-      data_size_compressed,
-      data_size_original = arc_file.read(13).unpack('CL>L>L>')
+        compression_type,
+        data_origin,
+        data_size_compressed,
+        data_size_original = arc_file.read(13).unpack('CL>L>L>')
 
-      data = arc_file.peek(offset_to_files + data_origin) do
-        data = arc_file.read(data_size_compressed)
-        data = decompress(data, compression_type)
-        data
+        data = arc_file.peek(offset_to_files + data_origin) do
+          data = arc_file.read(data_size_compressed)
+          data = decompress(data, compression_type)
+          data
+        end
+
+        fail 'Bad file size' unless data.length == data_size_original
+
+        [file_name, data]
       end
-
-      fail 'Bad file size' unless data.length == data_size_original
-
-      output_files.write(file_name, data)
     end
   end
 

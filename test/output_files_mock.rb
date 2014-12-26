@@ -7,7 +7,8 @@ class OutputFilesMock
     @files = []
   end
 
-  def write(file_name, data)
+  def write(&block)
+    file_name, data = block.call
     @files.push(file_name: file_name, data: data)
   end
 

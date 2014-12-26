@@ -19,15 +19,18 @@ class YkcArchive < Archive
 
     meta = {}
     num_files.times do
-      name_origin,
-      name_size,
-      data_origin,
-      data_size = arc_file.read(20).unpack('L4 x4')
+      output_files.write do
+        name_origin,
+        name_size,
+        data_origin,
+        data_size = arc_file.read(20).unpack('L4 x4')
 
-      name = arc_file.peek(name_origin) { arc_file.read(name_size - 1) }
-      data = arc_file.peek(data_origin) { arc_file.read(data_size) }
-      data, meta[name.gsub('\\', '/').to_sym] = decode(data)
-      output_files.write(name, data)
+        name = arc_file.peek(name_origin) { arc_file.read(name_size - 1) }
+        data = arc_file.peek(data_origin) { arc_file.read(data_size) }
+        data, meta[name.gsub('\\', '/').to_sym] = decode(data)
+
+        [name, data]
+      end
     end
 
     meta.reject! { |_k, v| v.nil? }

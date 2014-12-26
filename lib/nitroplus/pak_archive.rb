@@ -36,10 +36,12 @@ class PakArchive < Archive
     offset_to_files = arc_file.tell
     fail 'Bad file table size' unless raw.length == table_size
 
-    file_count.times { read_file(raw, arc_file, offset_to_files, output_files) }
+    file_count.times do
+      output_files.write { read_file(raw, arc_file, offset_to_files) }
+    end
   end
 
-  def read_file(raw_file_table, arc_file, offset_to_files, output_files)
+  def read_file(raw_file_table, arc_file, offset_to_files)
     file_name = read_file_name(raw_file_table)
 
     data_origin,
@@ -54,7 +56,7 @@ class PakArchive < Archive
       data = arc_file.read(data_size_original)
     end
 
-    output_files.write(file_name, data)
+    [file_name, data]
   end
 
   def read_file_name(arc_file)
