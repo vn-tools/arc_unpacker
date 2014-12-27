@@ -22,8 +22,10 @@ class RpaArchive < Archive
 
       table.each do |name, options|
         output_files.write do
-          origin, size = options[:origin], options[:size]
-          data = @arc_file.peek(origin) { @arc_file.read(size) }
+          data = options[:prefix]
+          data += @arc_file.peek(options[:origin]) do
+            @arc_file.read(options[:size])
+          end
           [name, data]
         end
       end
@@ -54,7 +56,8 @@ class RpaArchive < Archive
         Unpickle.loads(Zlib.inflate(@arc_file.read)).each do |k, v|
           table[k] = {
             origin: v[0][0],
-            size: v[0][1]
+            size: v[0][1],
+            prefix: v[0][2],
           }
         end
         decrypt_table(table, key)
