@@ -72,7 +72,7 @@ class CLI
   def print_help
     puts format(
       'Usage: %s [options] [arc_options] input_path output_path',
-      File.basename(__FILE__))
+      File.basename($PROGRAM_NAME))
 
     puts
     puts '[options] can be:'
