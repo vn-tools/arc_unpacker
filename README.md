@@ -11,6 +11,7 @@ Currently supported games:
 `ykc`           | YKC archives (e.g. Hoshizora e Kakaru Hashi)
 `fjsys`         | FJSYS archives (e.g. Sono Hanabira ni Kuchizuke o)
 `nitroplus/pak` | Nitroplus's PAK archives (e.g. Saya no Uta)
+`rpa`           | Ren'py RPA archives (e.g. Everlasting Summer)
 `exe`           | Windows executable files (embedded resources)
 
 Usage:

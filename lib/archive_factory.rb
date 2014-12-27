@@ -45,6 +45,11 @@ class ArchiveFactory
         FjsysArchive.new
       end,
 
+      'rpa' => lambda do
+        require_relative 'renpy/rpa_archive.rb'
+        RpaArchive.new
+      end,
+
       'exe' => lambda do
         require_relative 'misc/exe_reader.rb'
         ExeReader.new
