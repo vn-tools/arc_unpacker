@@ -44,12 +44,15 @@ class CLI
 
       archive = ArchiveFactory.get(format)
       archive.request_options(@arg_parser, @options)
+      @arg_parser.parse
       @options[:format] = format
       @options[:archive] = archive
     end
 
     @arg_parser.get_stray { |value| @options[:input_path] = value }
     @arg_parser.get_stray { |value| @options[:output_path] = value }
+
+    @arg_parser.parse
   end
 
   def print_help

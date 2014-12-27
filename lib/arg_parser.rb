@@ -10,6 +10,7 @@ end
 # decorated dynamically without weird hacks.
 class ArgParser
   def initialize(args)
+    @getters = []
     @args = args
   end
 
@@ -29,6 +30,12 @@ class ArgParser
     get_stray_internal(true, &block)
   end
 
+  def parse
+    getters = @getters.dup
+    @getters = []
+    getters.each(&:call)
+  end
+
   private
 
   def myfail(message)
@@ -36,45 +43,49 @@ class ArgParser
   end
 
   def get_internal(short, long, mandatory, &block)
-    index = \
-      @args.index('-' + strip_dashes(short)) || \
-      @args.index('--' + strip_dashes(long))
+    @getters.push(lambda do
+      index = \
+        @args.index('-' + strip_dashes(short)) || \
+        @args.index('--' + strip_dashes(long))
 
-    if index.nil?
-      myfail(format('Required argument %s is missing.', long)) if mandatory
-      return
-    end
+      if index.nil?
+        myfail(format('Required argument %s is missing.', long)) if mandatory
+        return
+      end
 
-    indices = @args.each_index.select do |i|
-      i > index && !@args[i].start_with?('-')
-    end.first(block.arity)
+      indices = @args.each_index.select do |i|
+        i > index && !@args[i].start_with?('-')
+      end.first(block.arity)
 
-    if mandatory && indices.length < block.arity
-      myfail(format('Required values for %s are missing.', long))
-    end
+      if mandatory && indices.length < block.arity
+        myfail(format('Required values for %s are missing.', long))
+      end
 
-    values = @args.values_at(*indices)
-    block.call(*values)
+      values = @args.values_at(*indices)
+      @args.delete_if.with_index { |_, i| indices.include?(i) }
+      @args.delete_at(index)
 
-    @args.delete_if.with_index { |_, i| indices.include?(i) }
-    @args.delete_at(index)
+      block.call(*values)
+    end)
   end
 
   def get_stray_internal(mandatory, &block)
-    fail 'This doesn\'t make sense!' if block.arity == 0
+    @getters.push(lambda do
+      fail 'This doesn\'t make sense!' if block.arity == 0
 
-    indices = @args.each_index.select do |i|
-      !@args[i].start_with?('-')
-    end.first(block.arity)
+      indices = @args.each_index.select do |i|
+        !@args[i].start_with?('-')
+      end.first(block.arity)
 
-    if mandatory && indices.length < block.arity
-      myfail('Required arguments are missing.')
-    end
+      if mandatory && indices.length < block.arity
+        myfail('Required arguments are missing.')
+      end
 
-    values = @args.values_at(*indices)
-    block.call(*values)
+      values = @args.values_at(*indices)
+      @args.delete_if.with_index { |_, i| indices.include?(i) }
 
-    @args.delete_if.with_index { |_, i| indices.include?(i) }
+      block.call(*values)
+    end)
   end
 
   def strip_dashes(key)
