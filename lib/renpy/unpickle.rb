@@ -196,12 +196,12 @@ module Unpickle
 
     def handle_binstring
       len = @input.read(4).unpack('L')[0]
-      @stack.push(@input.read(len).encode('utf-8'))
+      @stack.push(@input.read(len))
     end
 
     def handle_short_binstring
       len = @input.read(1).ord
-      @stack.push(@input.read(len).encode('utf-8'))
+      @stack.push(@input.read(len))
     end
 
     def handle_unicode
