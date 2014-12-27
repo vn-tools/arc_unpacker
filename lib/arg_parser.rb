@@ -11,15 +11,30 @@ end
 class ArgParser
   def initialize(args)
     @getters = []
+    @help_entries = []
     @args = args
   end
 
-  def on(short, long, &block)
-    get_internal(short, long, false, &block)
+  def on(short, long, help_message = nil, values = nil, &block)
+    @help_entries.push(
+      short: short,
+      long: long,
+      message: help_message,
+      parameters: block.parameters,
+      mandatory: false)
+
+    get_internal(short, long, false, values, &block)
   end
 
-  def get(short, long, &block)
-    get_internal(short, long, true, &block)
+  def get(short, long, help_message = nil, values = nil, &block)
+    @help_entries.push(
+      short: short,
+      long: long,
+      message: help_message,
+      parameters: block.parameters,
+      mandatory: true)
+
+    get_internal(short, long, true, values, &block)
   end
 
   def on_stray(&block)
@@ -36,13 +51,41 @@ class ArgParser
     getters.each(&:call)
   end
 
+  def print_help
+    if @help_entries.empty?
+      puts 'No additional switches are available.'
+      return
+    end
+
+    @help_entries.each do |entry|
+      params = entry[:parameters].map { |p| p[1] }
+      params = params.map { |p| format('[%s]', p) } unless entry[:mandatory]
+      switches =
+        ['-' + strip_dashes(entry[:short]), '--' + strip_dashes(entry[:long])]
+        .select { |m| strip_dashes(m).length > 0 }
+
+      left = format('%s %s', switches.join(', '), params.join(', ').upcase)
+      right = entry[:message]
+
+      left_size = 25
+      right_size = 78 - left_size
+
+      print left.ljust(left_size)
+      puts word_wrap(right, right_size) * ("\n" + ' ' * left_size)
+    end
+  end
+
   private
+
+  def word_wrap(message, width)
+    message.scan(/\S.{0,#{width}}\S(?=\s|$)|\S+/)
+  end
 
   def myfail(message)
     fail OptionError, message
   end
 
-  def get_internal(short, long, mandatory, &block)
+  def get_internal(short, long, mandatory, allowed_values, &block)
     @getters.push(lambda do
       index = \
         @args.index('-' + strip_dashes(short)) || \
@@ -64,6 +107,17 @@ class ArgParser
       values = @args.values_at(*indices)
       @args.delete_if.with_index { |_, i| indices.include?(i) }
       @args.delete_at(index)
+
+      unless allowed_values.nil?
+        fail 'This doesn\'t make sense!' if block.arity != 1
+        unless allowed_values.include?(values.first.to_sym)
+          myfail(format(
+            "Bad value %s for %s. Allowed values:\n%s",
+            values.first,
+            long,
+            allowed_values * "\n"))
+        end
+      end
 
       block.call(*values)
     end)

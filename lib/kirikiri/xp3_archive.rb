@@ -11,15 +11,13 @@ class Xp3Archive < Archive
   INFO_MAGIC = 'info'
   SEGM_MAGIC = 'segm'
 
-  def request_options(arg_parser, options)
-    arg_parser.get(nil, '--plugin') do |enc_name|
-      unless XP3_DECRYPTORS.include?(enc_name.to_sym)
-        fail \
-          "Bad decryptor name. Available decryptors:\n" +
-          XP3_DECRYPTORS.keys * "\n"
-      end
-
-      options[:decryptor] = XP3_DECRYPTORS[enc_name.to_sym].call
+  def register_options(arg_parser, options)
+    arg_parser.get(
+      nil,
+      '--plugin',
+      'XP3 decryption routine.',
+      XP3_DECRYPTORS.keys) do |plugin|
+      options[:decryptor] = XP3_DECRYPTORS[plugin.to_sym].call
     end
   end
 

@@ -8,11 +8,12 @@ require_relative 'msd_keys'
 class FjsysArchive < Archive
   MAGIC = "FJSYS\x00\x00\x00"
 
-  def request_options(arg_parser, options)
-    arg_parser.on('-k', '--key') do |key|
-      unless MSD_KEYS.include?(key.to_sym)
-        fail "Bad key. Available keys:\n" + MSD_KEYS.keys * "\n"
-      end
+  def register_options(arg_parser, options)
+    arg_parser.on(
+      '-k',
+      '--key',
+      'Key to use for decryption of MSD files.',
+      MSD_KEYS.keys) do |key|
       options[:msd_key] = MSD_KEYS[key.to_sym]
     end
   end

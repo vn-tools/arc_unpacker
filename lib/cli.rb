@@ -13,7 +13,6 @@ class CLI
   end
 
   def run
-    @arg_parser = ArgParser.new(ARGV)
     parse_options
     run_internal
   rescue OptionError => e
@@ -29,30 +28,45 @@ class CLI
   end
 
   def parse_options
-    @arg_parser.on('-q', '--quiet') { @options[:verbosity] = :quiet }
-    @arg_parser.on('-v', '--verbose') { @options[:verbosity] = :debug }
+    arg_parser = ArgParser.new(ARGV)
+    register_basic_options(arg_parser)
+    arg_parser.parse
 
-    @arg_parser.on('-h', '--help') do
-      print_help
-      exit(0)
+    @options[:archive].register_options(arg_parser, @options)
+    arg_parser.get_stray { |value| @options[:input_path] = value }
+    arg_parser.get_stray { |value| @options[:output_path] = value }
+    arg_parser.parse
+  end
+
+  def register_basic_options(arg_parser)
+    arg_parser.on(
+      '-q',
+      '--quiet',
+      'Suppress output.') do
+      @options[:verbosity] = :quiet
     end
 
-    @arg_parser.get('-f', '--fmt') do |format|
+    arg_parser.on(
+      '-v',
+      '--verbose',
+      'Show exception stack traces for debug purposes.') do
+      @options[:verbosity] = :debug
+    end
+
+    arg_parser.get('-f', '--fmt', 'Select archive format.') do |format|
       unless ArchiveFactory.format_strings.include?(format)
         fail 'Unknown archive format'
       end
 
       archive = ArchiveFactory.get(format)
-      archive.request_options(@arg_parser, @options)
-      @arg_parser.parse
       @options[:format] = format
       @options[:archive] = archive
     end
 
-    @arg_parser.get_stray { |value| @options[:input_path] = value }
-    @arg_parser.get_stray { |value| @options[:output_path] = value }
-
-    @arg_parser.parse
+    arg_parser.on('-h', '--help', 'Show this message.') do
+      print_help
+      exit(0)
+    end
   end
 
   def print_help
@@ -63,15 +77,21 @@ class CLI
     puts
     puts '[options] can be:'
     puts
-    puts '-f, --fmt [format]   Select archive format.'
-    puts '-q, --quiet          Suppress output.'
-    puts '-v, --verbose        Show exception stack traces for debug purposes.'
-    puts '-h, --help           Show this message.'
+    arg_parser = ArgParser.new([])
+    register_basic_options(arg_parser)
+    arg_parser.print_help
     puts
-    puts '[arc_options] depend on each archive and are required at runtime.'
-    puts
-    puts '[format] currently supports:'
-    puts
-    puts ArchiveFactory.format_strings * "\n"
+
+    if @options[:archive].nil?
+      puts '[arc_options] depend on each archive and are required at runtime.'
+      puts 'See --help --fmt FORMAT to see detailed help for given archive.'
+    else
+      spec_arg_parser = ArgParser.new([])
+      arc = @options[:archive]
+      arc.register_options(spec_arg_parser, nil)
+
+      puts '[arc_options] specific to ' + @options[:format] + ':'
+      spec_arg_parser.print_help
+    end
   end
 end

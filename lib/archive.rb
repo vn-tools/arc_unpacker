@@ -5,7 +5,7 @@ require_relative 'output_files'
 # Generic archive
 class Archive
   # Used to get access to additional parameters from CLI arguments.
-  def request_options(_arg_parser, _options)
+  def register_options(_arg_parser, _options)
   end
 
   def unpack(source_arc, target_dir, options)
