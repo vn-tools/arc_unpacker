@@ -1,18 +1,19 @@
 A tool for extracting data from visual novels.
+Some formats allow repacking.
 
 Currently supported games:
 
-`--fmt` string  | Game or format
---------------- | --------------------------------
-`xp3`           | Kirikiri XP3 archive <ul><li>`--plugin none`: unecrypted<li>`--plugin fsn`: Fate/Stay Night<li>`--plugin fha`: Fate/Hollow Ataraxia
-`melty_blood`   | Melty Blood
-`nsa`           | Nscripter NSA archives (e.g. Tsukihime)
-`sar`           | Nscripter SAR archives (e.g. Tsukihime)
-`ykc`           | YKC archives (e.g. Hoshizora e Kakaru Hashi)
-`fjsys`         | FJSYS archives (e.g. Sono Hanabira ni Kuchizuke o)
-`nitroplus/pak` | Nitroplus's PAK archives (e.g. Saya no Uta)
-`rpa`           | Ren'py RPA archives (e.g. Everlasting Summer)
-`exe`           | Windows executable files (embedded resources)
+`--fmt` string  | Engine / format   | Game
+--------------- | ----------------- | --------
+`xp3`           | Kirikiri / XP3    | <ul><li>Sono Hanabira ni Kuchizuke o 12 (`--plugin none`)<li>Fate/Stay Night (`--plugin fsn`)<li>Fate/Hollow Ataraxia (`--plugin fha`)
+`melty_blood`   | French Bread / ?  | <ul><li>Melty Blood
+`nsa`           | Nscripter / NSA   | <ul><li>Tsukihime
+`sar`           | Nscripter / SAR   | <ul><li>Tsukihime
+`ykc`           | Yukascript / YKC  | <ul><li>Hoshizora e Kakaru Hashi
+`fjsys`         | NSystem / FJSYS   | <ul><li>Sono Hanabira ni Kuchizuke o 1 (`--key sonohana1`)<li>Sono Hanabira ni Kuchizuke o 2 (`--key sonohana2`)<li>Sono Hanabira ni Kuchizuke o 3 (`--key sonohana3`)<li>Sono Hanabira ni Kuchizuke o 4 (`--key sonohana4`)<li>Sono Hanabira ni Kuchizuke o 5 (`--key sonohana5`)<li>Sono Hanabira ni Kuchizuke o 6 (`--key sonohana6`)<li>Sono Hanabira ni Kuchizuke o 7 (`--key sonohana7`)<li>Sono Hanabira ni Kuchizuke o 8 (`--key sonohana8`)<li>Sono Hanabira ni Kuchizuke o 9 (`--key sonohana9`)<li>Sono Hanabira ni Kuchizuke o 10 (`--key sonohana10`)<li>Sono Hanabira ni Kuchizuke o 11 (`--key sonohana11`)
+`nitroplus/pak` | Nitroplus / PAK   | <ul><li>Saya no Uta
+`rpa`           | Ren'py / RPA      | <ul><li>Everlasting Summer<li>Katawa Shoujo
+`exe`           | Windows / PE/EXE  | Generic `.exe` embedded resources
 
 Usage:
 
