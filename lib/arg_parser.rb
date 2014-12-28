@@ -110,7 +110,8 @@ class ArgParser
 
       unless allowed_values.nil?
         fail 'This doesn\'t make sense!' if block.arity != 1
-        unless allowed_values.include?(values.first.to_sym)
+        unless allowed_values.include?(values.first) \
+        || allowed_values.include?(values.first.to_sym)
           myfail(format(
             "Bad value %s for %s. Allowed values:\n%s",
             values.first,
