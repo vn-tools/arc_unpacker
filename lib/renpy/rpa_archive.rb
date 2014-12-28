@@ -11,14 +11,76 @@ class RpaArchive < Archive
     RpaUnpacker.new.unpack(arc_file, output_files)
   end
 
+  def pack_internal(arc_file, input_files, options)
+    RpaPacker.new.pack(arc_file, input_files, options)
+  end
+
+  # RPA archive packer
+  class RpaPacker
+    def pack(arc_file, input_files, options)
+      @arc_file = arc_file
+      key = options[:key] || 0
+
+      write_magic(key)
+      header_pos = @arc_file.tell
+      write_dummy_header(key)
+
+      table = write_contents(input_files)
+      table_pos = @arc_file.tell
+      write_table(table, key)
+
+      @arc_file.seek(header_pos)
+      write_header(table_pos, key)
+    end
+
+    private
+
+    def write_magic(key)
+      @arc_file.write(key != 0 ? MAGIC3 : MAGIC2)
+    end
+
+    def write_dummy_header(key)
+      write_header(0, key)
+    end
+
+    def write_header(table_pos, key)
+      if key == 0
+        @arc_file.write(format("%016x\n", table_pos))
+      else
+        @arc_file.write(format("%016x %08x\n", table_pos, key))
+      end
+    end
+
+    def write_contents(input_files)
+      table = []
+      input_files.each do |name, data|
+        table.push(origin: @arc_file.tell, size: data.length, name: name)
+        @arc_file.write(data)
+      end
+      table
+    end
+
+    def write_table(table, key)
+      raw = {}
+      table.each do |e|
+        tuple = [e[:origin] ^ key, e[:size] ^ key].freeze
+        raw[e[:name]] = [tuple].freeze
+      end
+      @arc_file.write(Zlib.deflate(Pickle.dumps(raw)))
+    end
+  end
+
   # RPA archive unpacker
   class RpaUnpacker
     def unpack(arc_file, output_files)
       @arc_file = arc_file
 
-      fail_on_version2
-      assert_version3
+      magic = assert_magic
+      table_pos, key = read_header(magic)
+
+      @arc_file.seek(table_pos)
       table = read_table
+      table = decrypt_table(table, key)
 
       table.each do |name, options|
         output_files.write do
@@ -31,37 +93,36 @@ class RpaArchive < Archive
       end
     end
 
-    def fail_on_version2
-      @arc_file.peek(0) do
-        if @arc_file.read(MAGIC2.length) == MAGIC2
-          fail \
-            'This version is not yet supported. ' \
-            'Please send this game title to rr- on github'
-        end
-      end
+    private
+
+    def assert_magic
+      magic = @arc_file.read(MAGIC3.length)
+      fail 'Not a RPA archive' unless magic == MAGIC3 || magic == MAGIC2
+      magic
     end
 
-    def assert_version3
-      magic = @arc_file.read(MAGIC3.length)
-      fail 'Not a RPA archive' unless magic == MAGIC3
+    def read_header(magic)
+      if magic == MAGIC3
+        table_origin = @arc_file.read(16).to_i(16)
+        @arc_file.skip(1)
+        key = @arc_file.read(8).to_i(16)
+      else
+        table_origin = @arc_file.read(16).to_i(16)
+        key = 0
+      end
+      [table_origin, key]
     end
 
     def read_table
-      table_origin = @arc_file.read(16).to_i(16)
-      @arc_file.skip(1)
-      key = @arc_file.read(8).to_i(16)
-
-      @arc_file.peek(table_origin) do
-        table = {}
-        Pickle.loads(Zlib.inflate(@arc_file.read)).each do |k, v|
-          table[k] = {
-            origin: v[0][0],
-            size: v[0][1],
-            prefix: v[0][2]
-          }
-        end
-        decrypt_table(table, key)
+      table = {}
+      Pickle.loads(Zlib.inflate(@arc_file.read)).each do |k, v|
+        table[k] = {
+          origin: v[0][0],
+          size: v[0][1],
+          prefix: v[0][2] || ''
+        }
       end
+      table
     end
 
     def decrypt_table(table, key)
