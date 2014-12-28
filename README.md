@@ -13,6 +13,7 @@ Currently supported games:
 `fjsys`         | NSystem / FJSYS   | <ul><li>Sono Hanabira ni Kuchizuke o 1 (`--key sonohana1`)<li>Sono Hanabira ni Kuchizuke o 2 (`--key sonohana2`)<li>Sono Hanabira ni Kuchizuke o 3 (`--key sonohana3`)<li>Sono Hanabira ni Kuchizuke o 4 (`--key sonohana4`)<li>Sono Hanabira ni Kuchizuke o 5 (`--key sonohana5`)<li>Sono Hanabira ni Kuchizuke o 6 (`--key sonohana6`)<li>Sono Hanabira ni Kuchizuke o 7 (`--key sonohana7`)<li>Sono Hanabira ni Kuchizuke o 8 (`--key sonohana8`)<li>Sono Hanabira ni Kuchizuke o 9 (`--key sonohana9`)<li>Sono Hanabira ni Kuchizuke o 10 (`--key sonohana10`)<li>Sono Hanabira ni Kuchizuke o 11 (`--key sonohana11`)
 `nitroplus/pak` | Nitroplus / PAK   | <ul><li>Saya no Uta
 `rpa`           | Ren'py / RPA      | <ul><li>Everlasting Summer<li>Katawa Shoujo
+`mbl`           | Ivory / MBL       | <ul><li>Wanko to Kurasou
 `exe`           | Windows / PE/EXE  | Generic `.exe` embedded resources
 
 Usage:

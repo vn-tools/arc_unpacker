@@ -50,6 +50,11 @@ class ArchiveFactory
         RpaArchive.new
       end,
 
+      'mbl' => lambda do
+        require_relative 'ivory/mbl_archive.rb'
+        MblArchive.new
+      end,
+
       'exe' => lambda do
         require_relative 'misc/exe_reader.rb'
         ExeReader.new
