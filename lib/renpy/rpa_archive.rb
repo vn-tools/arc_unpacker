@@ -1,5 +1,5 @@
 require_relative '../archive'
-require_relative 'unpickle'
+require_relative 'pickle'
 require 'zlib'
 
 # RPA archive
@@ -53,11 +53,11 @@ class RpaArchive < Archive
 
       @arc_file.peek(table_origin) do
         table = {}
-        Unpickle.loads(Zlib.inflate(@arc_file.read)).each do |k, v|
+        Pickle.loads(Zlib.inflate(@arc_file.read)).each do |k, v|
           table[k] = {
             origin: v[0][0],
             size: v[0][1],
-            prefix: v[0][2],
+            prefix: v[0][2]
           }
         end
         decrypt_table(table, key)
