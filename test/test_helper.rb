@@ -24,6 +24,16 @@ module TestHelper
     output_files
   end
 
+  def generic_sjis_names_test(arc, options = {})
+    test_files = [{ file_name: 'シフトジス', data: 'whatever' }]
+
+    input_files = InputFilesMock.new(test_files)
+    output_files = pack_and_unpack(arc, input_files, options)
+    result_files = output_files.files
+
+    assert_equal(test_files, result_files)
+  end
+
   def generic_pack_and_unpack_test(arc, options = {})
     test_files = []
     test_files << {
@@ -42,8 +52,8 @@ module TestHelper
     input_files = InputFilesMock.new(test_files)
     output_files = pack_and_unpack(arc, input_files, options)
 
-    files = output_files.files.sort_by { |f| f[:file_name] }
-    assert_equal(files, test_files)
+    result_files = output_files.files.sort_by { |f| f[:file_name] }
+    assert_equal(test_files, result_files)
   end
 
   def rand_string(length)

@@ -7,6 +7,10 @@ class MblArchiveTest < Test::Unit::TestCase
     TestHelper.generic_pack_and_unpack_test(MblArchive.new, version: 2)
   end
 
+  def test_sjis
+    TestHelper.generic_sjis_names_test(MblArchive.new, version: 2)
+  end
+
   def test_version1
     input_files = [{ file_name: 'short', data: 'whatever' }]
 

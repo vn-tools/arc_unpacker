@@ -72,38 +72,36 @@ class MblArchive < Archive
   class MblPacker
     def pack(arc_file, input_files, version)
       @arc_file = arc_file
-      write_dummy_table(input_files, version)
+      name_length = calc_name_length(input_files, version)
+      write_dummy_table(input_files, version, name_length)
       table = write_contents(input_files)
       @arc_file.seek(0)
-      write_table(table, version)
+      write_table(table, version, name_length)
     end
 
     private
 
-    def write_dummy_table(input_files, version)
+    def calc_name_length(input_files, version)
+      return 16 if version == 1
+      input_files.names.map { |n| n.encode('sjis').b.length }.max + 1
+    end
+
+    def write_dummy_table(input_files, version, name_length)
       table_size = 4
-      if version == 2
-        name_length = input_files.names.map(&:length).max + 1
-        table_size += 4
-      else
-        name_length = 16
-      end
+      table_size += 4 if version == 2
       table_size += (name_length + 8) * input_files.length
       @arc_file.write("\x00" * table_size)
     end
 
-    def write_table(table, version)
+    def write_table(table, version, name_length)
       @arc_file.write([table.length].pack('L'))
-      if version == 2
-        name_length = table.map { |e| e[:name].length }.max + 1
-        @arc_file.write([name_length].pack('L'))
-      else
-        name_length = 16
-      end
+      @arc_file.write([name_length].pack('L')) if version == 2
       table.each do |e|
         fail 'Too long file name!' if e[:name].length > name_length
-        @arc_file.write(e[:name].encode('sjis'))
-        @arc_file.write("\x00" * (name_length - e[:name].length))
+        @arc_file.write("\x00" * name_length)
+        @arc_file.peek(@arc_file.tell - name_length) do
+          @arc_file.write(e[:name].encode('sjis'))
+        end
         @arc_file.write([e[:origin], e[:size]].pack('LL'))
       end
     end
