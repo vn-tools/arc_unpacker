@@ -4,7 +4,7 @@ require_relative '../binary_io'
 silence_warnings { require 'rmagick' }
 
 class PrsConverter
-  MAGIC = "YB\x83\x03"
+  MAGIC = "YB\x83\x03".b
 
   def decode(input)
     input = BinaryIO.from_string(input)
