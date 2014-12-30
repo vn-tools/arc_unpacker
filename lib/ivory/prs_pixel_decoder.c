@@ -17,7 +17,6 @@ static VALUE decode_pixels(
     unsigned char *target_buffer = (unsigned char*)malloc(target_size);
     unsigned char *source = source_buffer;
     unsigned char *target = target_buffer;
-    return rb_str_new((char*) target_buffer, target_size);
 
     int flag = 0;
 
