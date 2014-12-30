@@ -1,6 +1,7 @@
 require_relative 'prs_pixel_decoder'
+require_relative '../warning_silencer'
 require_relative '../binary_io'
-require 'rmagick'
+silence_warnings { require 'rmagick' }
 
 class PrsConverter
   MAGIC = "YB\x83\x03"
