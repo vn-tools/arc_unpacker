@@ -1,4 +1,5 @@
 require_relative '../archive'
+require_relative 'prs_converter'
 
 # MBL archive
 class MblArchive < Archive
@@ -23,6 +24,7 @@ class MblArchive < Archive
   # MBL archive unpacker
   class MblUnpacker
     def unpack(arc_file, output_files)
+      @prs_converter = PrsConverter.new
       @arc_file = arc_file
       version = detect_version
       table = read_table(version)
@@ -62,9 +64,17 @@ class MblArchive < Archive
       table.each do |e|
         output_files.write do
           data = @arc_file.peek(e[:origin]) { @arc_file.read(e[:size]) }
+          data = decode(data)
           [e[:name], data]
         end
       end
+    end
+
+    def decode(data)
+      if data.start_with?(PrsConverter::MAGIC)
+        return @prs_converter.decode(data)
+      end
+      data
     end
   end
 
@@ -109,10 +119,18 @@ class MblArchive < Archive
     def write_contents(input_files)
       table = []
       input_files.each do |name, data|
+        data = encode(data)
         table.push(name: name, origin: @arc_file.tell, size: data.length)
         @arc_file.write(data)
       end
       table
+    end
+
+    def encode(data)
+      if data.start_with?(PrsConverter::MAGIC)
+        return @prs_converter.encode(data)
+      end
+      data
     end
   end
 end
