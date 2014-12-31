@@ -7,6 +7,7 @@ require_relative '../lib/input_files'
 # CLI frontend
 class ArchivePacker < CLI
   def run_internal
+    fail 'Must specify output format.' if @options[:archive].nil?
     BinaryIO.from_file(@options[:output_path], 'wb') do |arc_file|
       input_files = InputFiles.new(@options[:input_path], @options)
       fail 'Packing not supported' unless defined? @options[:archive]::Packer

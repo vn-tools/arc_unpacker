@@ -55,7 +55,7 @@ class CLI
       @options[:verbosity] = :debug
     end
 
-    arg_parser.get('-f', '--fmt', 'Select archive format.') do |format|
+    arg_parser.on('-f', '--fmt', 'Select archive format.') do |format|
       unless ArchiveFactory.format_strings.include?(format)
         fail 'Unknown archive format'
       end

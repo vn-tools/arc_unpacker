@@ -12,32 +12,52 @@ module NsaArchive
 
   class Unpacker
     def unpack(arc_file, output_files, _options)
-      num_files,
-      offset_to_files = arc_file.read(6).unpack('S>L>')
-
-      num_files.times do
-        output_files.write do
-          file_name = arc_file.read_until_zero
-
-          compression_type,
-          data_origin,
-          data_size_compressed,
-          data_size_original = arc_file.read(13).unpack('CL>L>L>')
-
-          data = arc_file.peek(offset_to_files + data_origin) do
-            data = arc_file.read(data_size_compressed)
-            data = decompress(data, compression_type)
-            data
-          end
-
-          fail 'Bad file size' unless data.length == data_size_original
-
-          [file_name, data]
-        end
-      end
+      table = read_table(arc_file)
+      read_contents(arc_file, table, output_files)
     end
 
     private
+
+    def read_table(arc_file)
+      num_files,
+      offset_to_files = arc_file.read(6).unpack('S>L>')
+      fail 'Bad offset to files' if offset_to_files > arc_file.size
+
+      table = []
+      num_files.times do
+        e = {}
+
+        e[:name] = arc_file.read_until_zero
+        e[:compression_type],
+        e[:origin],
+        e[:size_compressed],
+        e[:size_original] = arc_file.read(13).unpack('CL>L>L>')
+
+        e[:origin] += offset_to_files
+        table.push(e)
+
+        if e[:origin] + e[:size_compressed] > arc_file.size
+          fail 'Bad offset to file'
+        end
+      end
+      table
+    end
+
+    def read_contents(arc_file, table, output_files)
+      table.each do |e|
+        output_files.write do
+          data = arc_file.peek(e[:origin]) do
+            data = arc_file.read(e[:size_compressed])
+            data = decompress(data, e[:compression_type])
+            data
+          end
+
+          fail 'Bad file size' unless data.length == e[:size_original]
+
+          [e[:name], data]
+        end
+      end
+    end
 
     def decompress(data, compression_type)
       case compression_type

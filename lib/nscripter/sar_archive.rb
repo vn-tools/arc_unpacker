@@ -2,21 +2,36 @@
 module SarArchive
   class Unpacker
     def unpack(arc_file, output_files, _options)
+      table = read_table(arc_file)
+      read_contents(arc_file, table, output_files)
+    end
+
+    def read_table(arc_file)
       num_files,
       offset_to_files = arc_file.read(6).unpack('S>L>')
+      fail 'Bad offset to files' if offset_to_files > arc_file.size
 
+      table = []
       num_files.times do
+        e = {}
+
+        e[:name] = arc_file.read_until_zero
+        e[:origin],
+        e[:size] = arc_file.read(8).unpack('L>L>')
+
+        e[:origin] += offset_to_files
+        table.push(e)
+
+        fail 'Bad offset to file' if e[:origin] + e[:size] > arc_file.size
+      end
+      table
+    end
+
+    def read_contents(arc_file, table, output_files)
+      table.each do |e|
         output_files.write do
-          file_name = arc_file.read_until_zero
-
-          data_origin,
-          data_size = arc_file.read(8).unpack('L>L>')
-
-          data = arc_file.peek(offset_to_files + data_origin) do
-            arc_file.read(data_size)
-          end
-
-          [file_name, data]
+          data = arc_file.peek(e[:origin]) { arc_file.read(e[:size]) }
+          [e[:name], data]
         end
       end
     end
