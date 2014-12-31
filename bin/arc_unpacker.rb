@@ -32,9 +32,8 @@ class ArchiveUnpacker < CLI
 
   def unpack(archive, options)
     fail 'Unpacking not supported' unless defined? archive::Unpacker
-    if defined? archive.register_options
-      archive.register_options(@arg_parser, options)
-      @arg_parser.parse
+    if defined? archive.parse_cli_options
+      archive.parse_cli_options(@arg_parser, options)
     end
 
     FileUtils.mkpath(options[:output_path])

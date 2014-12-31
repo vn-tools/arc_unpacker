@@ -6,14 +6,16 @@ require_relative 'msd_keys'
 module FjsysArchive
   MAGIC = "FJSYS\x00\x00\x00"
 
-  def self.register_options(arg_parser, options)
-    arg_parser.on(
-      '-k',
-      '--key',
-      'Key to use for decryption of MSD files.',
-      MSD_KEYS.keys) do |key|
-      options[:msd_key] = MSD_KEYS[key.to_sym]
-    end
+  def self.add_cli_help(arg_parser)
+    arg_parser.add_help(
+      '-k, --key=KEY',
+      'Sets key used for decrypting MSD files.',
+      possible_values: MSD_KEYS.keys)
+  end
+
+  def self.parse_cli_options(arg_parser, options)
+    key = arg_parser.switch(%w(-k --key))
+    options[:msd_key] = MSD_KEYS[key.to_sym]
   end
 
   class Unpacker
@@ -49,6 +51,8 @@ module FjsysArchive
 
       output_files.write_meta(meta) unless meta.empty?
     end
+
+    private
 
     def decode(file_name, data, options)
       if data[0..MgdConverter::MAGIC.length - 1] == MgdConverter::MAGIC

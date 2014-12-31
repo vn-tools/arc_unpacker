@@ -10,14 +10,19 @@ module Xp3Archive
   INFO_MAGIC = 'info'
   SEGM_MAGIC = 'segm'
 
-  def self.register_options(arg_parser, options)
-    arg_parser.get(
-      nil,
-      '--plugin',
-      'XP3 decryption routine.',
-      XP3_DECRYPTORS.keys) do |plugin|
-      options[:decryptor] = XP3_DECRYPTORS[plugin.to_sym].call
-    end
+  def self.add_cli_help(arg_parser)
+    arg_parser.add_help(
+      '--plugin=PLUGIN',
+      'Selects XP3 decryption routine.',
+      possible_values: XP3_DECRYPTORS.keys)
+  end
+
+  def self.parse_cli_options(arg_parser, options)
+    decryptor = arg_parser.switch(['--plugin'])
+    decryptor = :none if decryptor.nil?
+    decryptor = XP3_DECRYPTORS[decryptor.to_sym]
+    fail 'Unknown decryptor' if decryptor.nil?
+    options[:decryptor] = decryptor.call
   end
 
   class Unpacker

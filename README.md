@@ -24,7 +24,7 @@ Usage:
 
 Example:
 
-    ruby ./bin/arc_unpacker.rb --fmt xp3 --plugin fsn ~/games/fate/fgimage.xp3 ./fgimage_unpacked/
+    ruby ./bin/arc_unpacker.rb --fmt=xp3 --plugin=fsn ~/games/fate/fgimage.xp3 ./fgimage_unpacked/
 
 Warning:
 
