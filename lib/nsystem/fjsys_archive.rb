@@ -15,7 +15,8 @@ module FjsysArchive
 
   def self.parse_cli_options(arg_parser, options)
     key = arg_parser.switch(%w(-k --key))
-    options[:msd_key] = MSD_KEYS[key.to_sym]
+    key = MSD_KEYS[key.to_sym] unless key.nil?
+    options[:msd_key] = key
   end
 
   class Unpacker

@@ -30,6 +30,8 @@ module MblArchive
       last_file_origin, last_file_size = @arc_file.read(8).unpack('LL')
       return 1 if last_file_origin + last_file_size == @arc_file.size
       return 2
+    rescue
+      raise ArcError, 'Not a MBL archive'
     ensure
       @arc_file.seek(0)
     end
