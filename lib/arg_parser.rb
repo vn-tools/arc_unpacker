@@ -9,46 +9,40 @@ end
 # The key reason for using this over built-in OptParser is that it can be
 # decorated dynamically without weird hacks.
 class ArgParser
+  attr_reader :stray
+
   def initialize(args)
-    @getters = []
+    @switches = {}
+    @flags = []
+    @stray = []
     @help_entries = []
-    @args = args
+    parse(args)
   end
 
-  def on(short, long, help_message = nil, values = nil, &block)
-    @help_entries.push(
-      short: short,
-      long: long,
-      message: help_message,
-      parameters: block.parameters,
-      mandatory: false)
-
-    get_internal(short, long, false, values, &block)
+  def add_help(invocation, description, possible_values: [])
+    unless possible_values.empty?
+      description += " Possible values:\n"
+      description += possible_values.map { |e| format('- %s', e) } * "\n"
+    end
+    @help_entries.push(invocation: invocation, description: description)
   end
 
-  def get(short, long, help_message = nil, values = nil, &block)
-    @help_entries.push(
-      short: short,
-      long: long,
-      message: help_message,
-      parameters: block.parameters,
-      mandatory: true)
-
-    get_internal(short, long, true, values, &block)
+  def clear_help
+    @help_entries = []
   end
 
-  def on_stray(&block)
-    get_stray_internal(false, &block)
+  def switch(keys)
+    [*keys].each do |key|
+      value = @switches[strip_dashes(key)]
+      next if value.nil?
+      return value
+    end
+    nil
   end
 
-  def get_stray(&block)
-    get_stray_internal(true, &block)
-  end
-
-  def parse
-    getters = @getters.dup
-    @getters = []
-    getters.each(&:call)
+  def flag?(keys)
+    keys = [*keys].map { |k| strip_dashes(k) }
+    @flags.any? { |f| keys.include?(f) }
   end
 
   def print_help
@@ -58,14 +52,8 @@ class ArgParser
     end
 
     @help_entries.each do |entry|
-      params = entry[:parameters].map { |p| p[1] }
-      params = params.map { |p| format('[%s]', p) } unless entry[:mandatory]
-      switches =
-        ['-' + strip_dashes(entry[:short]), '--' + strip_dashes(entry[:long])]
-        .select { |m| strip_dashes(m).length > 0 }
-
-      left = format('%s %s', switches.join(', '), params.join(', ').upcase)
-      right = entry[:message]
+      left = entry[:invocation]
+      right = entry[:description]
 
       left_size = 25
       right_size = 78 - left_size
@@ -77,70 +65,30 @@ class ArgParser
 
   private
 
+  def parse(args)
+    args.each do |arg|
+      match = /\A--?(?<key>\w+)=(?<value>.*)\Z/.match(arg)
+      if match
+        @switches[match[:key]] = match[:value]
+        next
+      end
+
+      match = /\A--?(?<key>\w+)\Z/.match(arg)
+      if match
+        @flags.push(match[:key])
+        next
+      end
+
+      @stray.push(arg)
+    end
+  end
+
   def word_wrap(message, width)
     message.scan(/\S.{0,#{width}}\S(?=\s|$)|\S+/)
   end
 
   def myfail(message)
     fail OptionError, message
-  end
-
-  def get_internal(short, long, mandatory, allowed_values, &block)
-    @getters.push(lambda do
-      index = \
-        @args.index('-' + strip_dashes(short)) || \
-        @args.index('--' + strip_dashes(long))
-
-      if index.nil?
-        myfail(format('Required argument %s is missing.', long)) if mandatory
-        return
-      end
-
-      indices = @args.each_index.select do |i|
-        i > index && !@args[i].start_with?('-')
-      end.first(block.arity)
-
-      if mandatory && indices.length < block.arity
-        myfail(format('Required values for %s are missing.', long))
-      end
-
-      values = @args.values_at(*indices)
-      @args.delete_if.with_index { |_, i| indices.include?(i) }
-      @args.delete_at(index)
-
-      unless allowed_values.nil?
-        fail 'This doesn\'t make sense!' if block.arity != 1
-        unless allowed_values.include?(values.first) \
-        || allowed_values.include?(values.first.to_sym)
-          myfail(format(
-            "Bad value %s for %s. Allowed values:\n%s",
-            values.first,
-            long,
-            allowed_values * "\n"))
-        end
-      end
-
-      block.call(*values)
-    end)
-  end
-
-  def get_stray_internal(mandatory, &block)
-    @getters.push(lambda do
-      fail 'This doesn\'t make sense!' if block.arity == 0
-
-      indices = @args.each_index.select do |i|
-        !@args[i].start_with?('-')
-      end.first(block.arity)
-
-      if mandatory && indices.length < block.arity
-        myfail('Required arguments are missing.')
-      end
-
-      values = @args.values_at(*indices)
-      @args.delete_if.with_index { |_, i| indices.include?(i) }
-
-      block.call(*values)
-    end)
   end
 
   def strip_dashes(key)

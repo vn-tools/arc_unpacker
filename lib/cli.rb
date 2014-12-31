@@ -10,6 +10,7 @@ class CLI
       output_path: nil,
       verbosity: :normal
     }
+    @arg_parser = ArgParser.new(ARGV)
   end
 
   def run
@@ -28,45 +29,30 @@ class CLI
   end
 
   def parse_options
-    arg_parser = ArgParser.new(ARGV)
-    register_basic_options(arg_parser)
-    arg_parser.parse
+    @arg_parser.add_help('-f, --fmt=FORMAT', 'Selects the archive format.')
+    @arg_parser.add_help('-q, --quiet', 'Suppresses output.')
+    @arg_parser.add_help('-v, --verbose', 'Shows additional debug information.')
+    @arg_parser.add_help('-h, --help', 'Shows this message.')
+    @options[:verbosity] = :quiet if @arg_parser.flag?(%w(-q --quiet))
+    @options[:verbosity] = :debug if @arg_parser.flag?(%w(-v --verbose))
+    @options[:format] = @arg_parser.switch(%w(-f --fmt))
 
-    @options[:archive].register_options(arg_parser, @options)
-    arg_parser.get_stray { |value| @options[:input_path] = value }
-    arg_parser.get_stray { |value| @options[:output_path] = value }
-    arg_parser.parse
-  end
-
-  def register_basic_options(arg_parser)
-    arg_parser.on(
-      '-q',
-      '--quiet',
-      'Suppress output.') do
-      @options[:verbosity] = :quiet
-    end
-
-    arg_parser.on(
-      '-v',
-      '--verbose',
-      'Show exception stack traces for debug purposes.') do
-      @options[:verbosity] = :debug
-    end
-
-    arg_parser.get('-f', '--fmt', 'Select archive format.') do |format|
-      unless ArchiveFactory.format_strings.include?(format)
+    unless @options[:format].nil?
+      unless  ArchiveFactory.format_strings.include?(@options[:format])
         fail 'Unknown archive format'
       end
-
-      archive = ArchiveFactory.get(format)
-      @options[:format] = format
-      @options[:archive] = archive
+      @options[:archive] = ArchiveFactory.get(@options[:format])
     end
 
-    arg_parser.on('-h', '--help', 'Show this message.') do
+    if @arg_parser.flag?(%w(-h  --help))
       print_help
       exit(0)
     end
+
+    stray = @arg_parser.stray
+    fail OptionError, 'Required more arguments.' if stray.count < 2
+    @options[:input_path],
+    @options[:output_path] = stray
   end
 
   def print_help
@@ -77,21 +63,20 @@ class CLI
     puts
     puts '[options] can be:'
     puts
-    arg_parser = ArgParser.new([])
-    register_basic_options(arg_parser)
-    arg_parser.print_help
+
+    @arg_parser.print_help
+    @arg_parser.clear_help
     puts
 
     if @options[:archive].nil?
       puts '[arc_options] depend on each archive and are required at runtime.'
       puts 'See --help --fmt FORMAT to see detailed help for given archive.'
-    else
-      spec_arg_parser = ArgParser.new([])
-      arc = @options[:archive]
-      arc.register_options(spec_arg_parser, nil)
+    elsif defined? @options[:archive].add_cli_help
+      @options[:archive].add_cli_help(@arg_parser)
 
       puts '[arc_options] specific to ' + @options[:format] + ':'
-      spec_arg_parser.print_help
+      puts
+      @arg_parser.print_help
     end
   end
 end

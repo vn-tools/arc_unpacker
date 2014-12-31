@@ -1,16 +1,7 @@
-require_relative '../archive'
 require_relative 'prs_converter'
 
 # MBL archive
-class MblArchive < Archive
-  def unpack_internal(arc_file, output_files, _options)
-    MblUnpacker.new.unpack(arc_file, output_files)
-  end
-
-  def pack_internal(arc_file, input_files, options)
-    MblPacker.new.pack(arc_file, input_files, options[:version] || 2)
-  end
-
+module MblArchive
   def register_options(arg_parser, options)
     arg_parser.on(
       nil,
@@ -22,8 +13,8 @@ class MblArchive < Archive
   end
 
   # MBL archive unpacker
-  class MblUnpacker
-    def unpack(arc_file, output_files)
+  class Unpacker
+    def unpack(arc_file, output_files, _options)
       @prs_converter = PrsConverter.new
       @arc_file = arc_file
       version = detect_version
@@ -39,6 +30,8 @@ class MblArchive < Archive
       last_file_origin, last_file_size = @arc_file.read(8).unpack('LL')
       return 1 if last_file_origin + last_file_size == @arc_file.size
       return 2
+    rescue
+      raise ArcError, 'Not a MBL archive'
     ensure
       @arc_file.seek(0)
     end
@@ -79,8 +72,9 @@ class MblArchive < Archive
   end
 
   # MBL archive packer
-  class MblPacker
-    def pack(arc_file, input_files, version)
+  class Packer
+    def pack(arc_file, input_files, options)
+      version = options[:version] || 2
       @arc_file = arc_file
       name_length = calc_name_length(input_files, version)
       write_dummy_table(input_files, version, name_length)
@@ -107,7 +101,7 @@ class MblArchive < Archive
       @arc_file.write([table.length].pack('L'))
       @arc_file.write([name_length].pack('L')) if version == 2
       table.each do |e|
-        fail 'Too long file name!' if e[:name].length > name_length
+        fail ArcError, 'Too long file name!' if e[:name].length > name_length
         @arc_file.write("\x00" * name_length)
         @arc_file.peek(@arc_file.tell - name_length) do
           @arc_file.write(e[:name].encode('sjis'))

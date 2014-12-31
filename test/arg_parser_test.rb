@@ -4,175 +4,82 @@ require_relative '../lib/arg_parser'
 # Unit tests for ArgParser
 class ArgParserTest < Test::Unit::TestCase
   def test_instantiation
+    assert_nothing_thrown { ArgParser.new([]) }
+  end
+
+  def test_switch_missing
     args = ArgParser.new([])
-    assert_nothing_thrown { args.parse }
+    assert_nil(args.switch(%w(-s --long)))
   end
 
-  def test_optional_switch_single_arity_missing
-    args = ArgParser.new(['--nope'])
-    x_out = 'good'
-    args.on('-s', '--long') { |_| x_out = 'bad' }
-    assert_nothing_thrown { args.parse }
-    assert_equal(x_out, 'good')
+  def test_switch_short
+    args = ArgParser.new(%w(-s=short))
+    assert_equal('short', args.switch(%w(-s --long)))
   end
 
-  def test_optional_switch_single_arity_consuming_short
-    args = ArgParser.new(['-o', 'bad', '-s', 'good'])
-    x_out = 'bad'
-    args.on('-s', '--long') { |x| x_out = x }
-    assert_nothing_thrown { args.parse }
-    assert_equal(x_out, 'good')
+  def test_switch_long
+    args = ArgParser.new(%w(--long=long))
+    assert_equal('long', args.switch(%w(-s --long)))
   end
 
-  def test_optional_switch_single_arity_consuming_long
-    args = ArgParser.new(['--other', 'bad', '--long', 'good'])
-    x_out = nil
-    args.on('-s', '--long') { |x| x_out = x }
-    args.parse
-    assert_equal(x_out, 'good')
+  def test_switch_overriding_short
+    args = ArgParser.new(%w(-s=short1 -s=short2))
+    assert_equal('short2', args.switch(%w(-s --long)))
   end
 
-  def test_optional_switch_double_arity_missing
-    args = ArgParser.new(['--other', 'bad', '--long', 'good'])
-    x_out, y_out = nil, nil
-    args.on('-s', '--long') { |x, y| x_out, y_out = x, y }
-    args.parse
-    assert_equal(x_out, 'good')
-    assert_nil(y_out)
+  def test_switch_overriding_long
+    args = ArgParser.new(%w(--long=long1 --long=long2))
+    assert_equal('long2', args.switch(%w(-s --long)))
   end
 
-  def test_mandatory_switch_double_arity_missing
-    args = ArgParser.new(['--other', 'bad', '--long', 'good'])
-    args.get('-s', '--long') { |_, _| fail 'Don\'t run me' }
-    assert_raise(OptionError) do
-      args.parse
-    end
+  def test_switch_overriding_mixed
+    args = ArgParser.new(%w(-s=short --long=long))
+    assert_equal('short', args.switch(%w(-s --long)))
+    assert_equal('long', args.switch(%w(--long -s)))
   end
 
-  def test_mandatory_switch_double_arity_consuming
-    args = ArgParser.new(['--other', 'good', 'good2', '--long', 'good3'])
-    x_out, y_out, z_out = nil, nil, nil
-    args.get(nil, '--other') { |x, y| x_out, y_out = x, y }
-    args.get(nil, '--long') { |z| z_out = z }
-    args.parse
-    assert_equal(x_out, 'good')
-    assert_equal(y_out, 'good2')
-    assert_equal(z_out, 'good3')
+  def test_switch_with_space
+    args = ArgParser.new(['--switch=long switch'])
+    assert_equal('long switch', args.switch('switch'))
   end
 
-  def test_mixed_switches_and_stray_consuming
-    args = ArgParser.new(%w(stray1 -s1 switch1 switch2 --flag stray2 --flag2))
-
-    switch1, switch2, stray1, stray2, flag1, flag2 = nil
-    args.get('-s1', nil) { |x, y| switch1, switch2 = x, y }
-    args.get(nil, '--flag') { flag1 = true }
-    args.get_stray { |x, y| stray1, stray2 = x, y }
-    args.get(nil, '--flag2') { flag2 = true }
-    args.parse
-
-    assert_equal(switch1, 'switch1')
-    assert_equal(switch2, 'switch2')
-    assert_equal(stray1, 'stray1')
-    assert_equal(stray2, 'stray2')
-    assert_equal(flag1, true)
-    assert_equal(flag2, true)
-  end
-
-  def test_optional_stray_single_arity_missing
+  def test_flag_missing
     args = ArgParser.new([])
-    args.on_stray { |x| assert_nil(x) }
-    assert_nothing_thrown { args.parse }
+    assert_equal(false, args.flag?('nope'))
   end
 
-  def test_optional_stray_double_arity_consuming
-    args = ArgParser.new(['1'])
-    args.on_stray do |x, y|
-      assert_equal(x, '1')
-      assert_nil(y)
-    end
-    assert_nothing_thrown { args.parse }
+  def test_flag
+    args = ArgParser.new(%w(--flag))
+    assert_equal(true, args.flag?('flag'))
   end
 
-  def test_mandatory_stray_single_arity_missing
+  def test_flags_mixed_with_stray
+    args = ArgParser.new(%w(--flag stray))
+    assert_equal(true, args.flag?('flag'))
+    assert_equal(%w(stray), args.stray)
+  end
+
+  def test_stray_missing
     args = ArgParser.new([])
-    args.get_stray { |_| fail 'Don\'t run me' }
-    assert_raise(OptionError) { args.parse }
+    assert_equal([], args.stray)
   end
 
-  def test_mandatory_stray_double_arity_missing
-    args = ArgParser.new(['1'])
-    args.get_stray { |_, _| fail 'Don\'t run me' }
-    assert_raise(OptionError) { args.parse }
+  def def_stray
+    args = ArgParser.new(%w(stray1 stray2))
+    assert_equal(%w(stray1 stray2), args.stray)
   end
 
-  def test_mandatory_stray_double_arity_consuming
-    args = ArgParser.new(%w(1 2))
-    x_out, y_out = nil, nil
-    args.get_stray { |x, y| x_out, y_out = x, y }
-    assert_nothing_thrown { args.parse }
-    assert_equal(x_out, '1')
-    assert_equal(y_out, '2')
+  def test_stray_with_space
+    args = ArgParser.new(['long stray'])
+    assert_equal(['long stray'], args.stray)
   end
 
-  def test_stray_multiple_consuming
-    args = ArgParser.new(%w(1 2 3))
-    x_out, y_out, z_out = nil, nil
+  def test_mixed_types
+    args = ArgParser.new(%w(stray1 --switch=s --flag1 stray2 --flag2))
 
-    args.get_stray { |x, y| x_out, y_out = x, y }
-    args.on_stray { |z| z_out = z }
-    assert_nil(x_out)
-    assert_nil(z_out)
-    assert_nil(z_out)
-    assert_nothing_thrown { args.parse }
-    assert_equal(x_out, '1')
-    assert_equal(y_out, '2')
-    assert_equal(z_out, '3')
-  end
-
-  def test_consecutive_parsing
-    args = ArgParser.new(%w(1 2 3))
-    x_out, y_out, z_out = nil, nil
-
-    args.get_stray { |x, y| x_out, y_out = x, y }
-    assert_nil(x_out)
-    assert_nil(z_out)
-    assert_nothing_thrown { args.parse }
-    assert_equal(x_out, '1')
-    assert_equal(y_out, '2')
-
-    args.on_stray { |z| z_out = z }
-    assert_nil(z_out)
-    assert_nothing_thrown { args.parse }
-    assert_equal(z_out, '3')
-  end
-
-  def test_nested_parsing_stray
-    args = ArgParser.new(%w(1 2 3))
-
-    x_out = nil
-    y_out = nil
-    args.get_stray do |x|
-      x_out = x
-      args.get_stray { |y| y_out = y }
-      args.parse
-    end
-    assert_nothing_thrown { args.parse }
-    assert_equal(x_out, '1')
-    assert_equal(y_out, '2')
-  end
-
-  def test_nested_parsing_switch
-    args = ArgParser.new(%w(-s 1 -s 2))
-
-    x_out = nil
-    y_out = nil
-    args.get('-s', '--short') do |x|
-      x_out = x
-      args.get('-s', '--short') { |y| y_out = y }
-      args.parse
-    end
-    assert_nothing_thrown { args.parse }
-    assert_equal(x_out, '1')
-    assert_equal(y_out, '2')
+    assert_equal(%w(stray1 stray2), args.stray)
+    assert_equal(true, args.flag?('flag1'))
+    assert_equal(true, args.flag?('flag2'))
+    assert_equal('s', args.switch('switch'))
   end
 end
