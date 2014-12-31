@@ -8,7 +8,7 @@ module YkcArchive
   class Unpacker
     def unpack(arc_file, output_files, _options)
       magic = arc_file.read(MAGIC.length)
-      fail 'Not a YKC archive' unless magic == MAGIC
+      fail ArcError, 'Not a YKC archive' unless magic == MAGIC
 
       _version,
       table_origin,

@@ -9,7 +9,7 @@ module SarArchive
     def read_table(arc_file)
       num_files,
       offset_to_files = arc_file.read(6).unpack('S>L>')
-      fail 'Bad offset to files' if offset_to_files > arc_file.size
+      fail ArcError, 'Bad offset to files' if offset_to_files > arc_file.size
 
       table = []
       num_files.times do
@@ -22,7 +22,9 @@ module SarArchive
         e[:origin] += offset_to_files
         table.push(e)
 
-        fail 'Bad offset to file' if e[:origin] + e[:size] > arc_file.size
+        if e[:origin] + e[:size] > arc_file.size
+          fail ArcError, 'Bad offset to file'
+        end
       end
       table
     end

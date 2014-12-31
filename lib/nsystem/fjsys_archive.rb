@@ -21,7 +21,7 @@ module FjsysArchive
   class Unpacker
     def unpack(arc_file, output_files, options)
       magic = arc_file.read(MAGIC.length)
-      fail 'Not a FJSYS archive' unless magic == MAGIC
+      fail ArcError, 'Not a FJSYS archive' unless magic == MAGIC
 
       header_size,
       file_names_size,

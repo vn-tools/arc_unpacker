@@ -21,14 +21,14 @@ module Xp3Archive
     decryptor = arg_parser.switch(['--plugin'])
     decryptor = :none if decryptor.nil?
     decryptor = XP3_DECRYPTORS[decryptor.to_sym]
-    fail 'Unknown decryptor' if decryptor.nil?
+    fail ArcError, 'Unknown decryptor' if decryptor.nil?
     options[:decryptor] = decryptor.call
   end
 
   class Unpacker
     def unpack(arc_file, output_files, options)
       magic = arc_file.read(MAGIC.length)
-      fail 'Not an XP3 archive' unless magic == MAGIC
+      fail ArcError, 'Not an XP3 archive' unless magic == MAGIC
 
       version = arc_file.peek(19) { arc_file.read(4) == "\x01\0\0\0" ? 2 : 1 }
 
@@ -38,7 +38,7 @@ module Xp3Archive
         additional_header_offset,
         minor_version = arc_file.read(12).unpack('QI')
         if minor_version != 1
-          fail format('Unexpected XP3 version: %s', minor_version.to_s)
+          fail ArcError, format('Unexpected XP3 version: %s', minor_version)
         end
 
         arc_file.peek(additional_header_offset) do
@@ -66,7 +66,7 @@ module Xp3Archive
         table_size_original = arc_file.read(16).unpack('Q<Q<')
         raw = arc_file.read(table_size_compressed)
         raw = Zlib.inflate(raw) if table_size_original != table_size_compressed
-        fail 'Bad file size' unless raw.length == table_size_original
+        fail ArcError, 'Bad file size' unless raw.length == table_size_original
         return raw
       end
 
@@ -76,7 +76,7 @@ module Xp3Archive
 
     def read_file(raw_table, arc_file, decryptor)
       magic = raw_table.read(FILE_MAGIC.length)
-      fail 'Expected file chunk' unless magic == FILE_MAGIC
+      fail ArcError, 'Expected file chunk' unless magic == FILE_MAGIC
 
       raw_size = raw_table.read(8).unpack('Q<')[0]
       raw_file_chunk = BinaryIO.from_string(raw_table.read(raw_size))
@@ -97,7 +97,7 @@ module Xp3Archive
     class Xp3SegmChunk
       def self.read_list!(arc_file)
         magic = arc_file.read(SEGM_MAGIC.length)
-        fail 'Expected segment chunk' unless magic == SEGM_MAGIC
+        fail ArcError, 'Expected segment chunk' unless magic == SEGM_MAGIC
 
         raw_size = arc_file.read(8).unpack('Q<')[0]
         raw = BinaryIO.from_string(arc_file.read(raw_size))
@@ -123,7 +123,7 @@ module Xp3Archive
         use_zlib = @flags & 7 == 1
         if use_zlib
           raw = Zlib.inflate(arc_file.read(@compressed_size))
-          fail 'Bad SEGM size' unless raw.length == @original_size
+          fail ArcError, 'Bad SEGM size' unless raw.length == @original_size
           raw
         end
 
@@ -140,7 +140,7 @@ module Xp3Archive
 
       def read!(arc_file)
         magic = arc_file.read(INFO_MAGIC.length)
-        fail 'Expected info chunk' unless magic == INFO_MAGIC
+        fail ArcError, 'Expected info chunk' unless magic == INFO_MAGIC
 
         raw_size = arc_file.read(8).unpack('Q<')[0]
         raw = BinaryIO.from_string(arc_file.read(raw_size))
@@ -164,7 +164,7 @@ module Xp3Archive
 
       def read!(arc_file)
         magic = arc_file.read(ADLR_MAGIC.length)
-        fail 'Expected ADLR chunk' unless magic == ADLR_MAGIC
+        fail ArcError, 'Expected ADLR chunk' unless magic == ADLR_MAGIC
 
         raw_size = arc_file.read(8).unpack('Q<')[0]
         raw = BinaryIO.from_string(arc_file.read(raw_size))

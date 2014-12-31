@@ -30,7 +30,7 @@ class MblArchiveTest < Test::Unit::TestCase
   end
 
   def test_version1_too_long_names
-    assert_raise(RuntimeError) do
+    assert_raise(ArcError) do
       TestHelper.pack_and_unpack(
         MblArchive::Packer.new,
         MblArchive::Unpacker.new,

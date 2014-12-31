@@ -88,7 +88,7 @@ module RpaArchive
 
     def assert_magic
       magic = @arc_file.read(MAGIC3.length)
-      fail 'Not a RPA archive' unless magic == MAGIC3 || magic == MAGIC2
+      fail ArcError, 'Not a RPA archive' unless [MAGIC2, MAGIC3].include?(magic)
       magic
     end
 

@@ -21,7 +21,7 @@ module NsaArchive
     def read_table(arc_file)
       num_files,
       offset_to_files = arc_file.read(6).unpack('S>L>')
-      fail 'Bad offset to files' if offset_to_files > arc_file.size
+      fail ArcError, 'Bad offset to files' if offset_to_files > arc_file.size
 
       table = []
       num_files.times do
@@ -37,7 +37,7 @@ module NsaArchive
         table.push(e)
 
         if e[:origin] + e[:size_compressed] > arc_file.size
-          fail 'Bad offset to file'
+          fail ArcError, 'Bad offset to file'
         end
       end
       table
@@ -52,7 +52,7 @@ module NsaArchive
             data
           end
 
-          fail 'Bad file size' unless data.length == e[:size_original]
+          fail ArcError, 'Bad file size' unless data.length == e[:size_original]
 
           [e[:name], data]
         end
@@ -63,7 +63,7 @@ module NsaArchive
       case compression_type
       when SPB_COMPRESSION
         fail \
-          StandardError,
+          ArcError,
           'SPB compression not supported! Please send samples to rr- on github.'
       when LZSS_COMPRESSION
         return NsaArchive.lzss_encoder.decode(data)
@@ -118,7 +118,7 @@ module NsaArchive
       case compression_type
       when SPB_COMPRESSION
         fail \
-          StandardError,
+          ArcError,
           'SPB compression not supported! Please send samples to rr- on github.'
       when LZSS_COMPRESSION
         return NsaArchive.lzss_encoder.encode(data)

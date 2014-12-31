@@ -12,7 +12,7 @@ module Pak2Archive
   class Unpacker
     def unpack(arc_file, output_files, _options)
       magic = arc_file.read(4)
-      fail 'Not a PAK archive' unless magic == MAGIC
+      fail ArcError, 'Not a PAK archive' unless magic == MAGIC
 
       read_file_table(arc_file, output_files)
     end
@@ -28,7 +28,7 @@ module Pak2Archive
       raw = Zlib.inflate(arc_file.read(compressed_table_size))
       raw = BinaryIO.from_string(raw)
       offset_to_files = arc_file.tell
-      fail 'Bad file table size' unless raw.length == table_size
+      fail ArcError, 'Bad file table size' unless raw.length == table_size
 
       file_count.times do
         output_files.write { read_file(raw, arc_file, offset_to_files) }

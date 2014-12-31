@@ -8,7 +8,9 @@ module MeltyBloodArchive
     def unpack(arc_file, output_files, _options)
       magic = arc_file.read(4)
       encrypted = magic == MAGIC1
-      fail 'Not a Melty Blood archive' unless magic == MAGIC1 || magic == MAGIC2
+      unless [MAGIC1, MAGIC2].include? magic
+        fail ArcError, 'Not a Melty Blood archive'
+      end
 
       num_files = arc_file.read(4).unpack('L<')[0] ^ ENCRYPTION_KEY
       num_files.times do |i|

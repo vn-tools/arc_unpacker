@@ -1,4 +1,5 @@
 require 'test/unit'
+require_relative '../lib/common'
 require_relative '../lib/binary_io'
 require_relative 'output_files_mock'
 require_relative 'input_files_mock'
