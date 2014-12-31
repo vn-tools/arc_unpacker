@@ -8,7 +8,7 @@ require_relative '../lib/archive_factory'
 # CLI frontend
 class ArchiveUnpacker < CLI
   def run_internal
-    verbose = @options[:verbosity] == :debug
+    verbose = @options[:verbosity] != :quiet
 
     unless @options[:archive].nil?
       unpack(@options[:archive], @options)
