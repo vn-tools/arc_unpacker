@@ -8,56 +8,60 @@ class ArchiveFactory
     factory.keys
   end
 
+  def self.each(&block)
+    factory.each { |k, v| block.call(k, v.call) }
+  end
+
   def self.factory
     {
       'xp3' => lambda do
         require_relative 'kirikiri/xp3_archive'
-        Xp3Archive.new
+        Xp3Archive
       end,
 
       'ykc' => lambda do
         require_relative 'yuka/ykc_archive'
-        YkcArchive.new
+        YkcArchive
       end,
 
       'sar' => lambda do
         require_relative 'nscripter/sar_archive'
-        SarArchive.new
+        SarArchive
       end,
 
       'nsa' => lambda do
         require_relative 'nscripter/nsa_archive'
-        NsaArchive.new
+        NsaArchive
       end,
 
       'melty_blood' => lambda do
         require_relative 'french_bread/melty_blood_archive'
-        MeltyBloodArchive.new
+        MeltyBloodArchive
       end,
 
-      'nitroplus/pak' => lambda do
-        require_relative 'nitroplus/pak_archive'
-        PakArchive.new
+      'nitroplus/pak2' => lambda do
+        require_relative 'nitroplus/pak2_archive'
+        Pak2Archive
       end,
 
       'fjsys' => lambda do
         require_relative 'nsystem/fjsys_archive.rb'
-        FjsysArchive.new
+        FjsysArchive
       end,
 
       'rpa' => lambda do
         require_relative 'renpy/rpa_archive.rb'
-        RpaArchive.new
+        RpaArchive
       end,
 
       'mbl' => lambda do
         require_relative 'ivory/mbl_archive.rb'
-        MblArchive.new
+        MblArchive
       end,
 
       'exe' => lambda do
         require_relative 'misc/exe_reader.rb'
-        ExeReader.new
+        ExeReader
       end
     }
   end

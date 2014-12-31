@@ -1,6 +1,6 @@
 require_relative 'prs_pixel_decoder'
-require_relative '../warning_silencer'
 require_relative '../binary_io'
+require_relative '../warning_silencer'
 silence_warnings { require 'rmagick' }
 
 class PrsConverter
@@ -26,7 +26,7 @@ class PrsConverter
     image.to_blob { self.format = 'PNG' }
   end
 
-  def encode(input)
+  def encode(_input)
     fail 'Not supported.'
   end
 end

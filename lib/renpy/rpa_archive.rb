@@ -1,22 +1,13 @@
-require_relative '../archive'
 require_relative 'pickle'
 require 'zlib'
 
 # RPA archive
-class RpaArchive < Archive
+module RpaArchive
   MAGIC3 = 'RPA-3.0 '
   MAGIC2 = 'RPA-2.0 '
 
-  def unpack_internal(arc_file, output_files, _options)
-    RpaUnpacker.new.unpack(arc_file, output_files)
-  end
-
-  def pack_internal(arc_file, input_files, options)
-    RpaPacker.new.pack(arc_file, input_files, options)
-  end
-
   # RPA archive packer
-  class RpaPacker
+  class Packer
     def pack(arc_file, input_files, options)
       @arc_file = arc_file
       key = options[:key] || 0
@@ -71,8 +62,8 @@ class RpaArchive < Archive
   end
 
   # RPA archive unpacker
-  class RpaUnpacker
-    def unpack(arc_file, output_files)
+  class Unpacker
+    def unpack(arc_file, output_files, _options)
       @arc_file = arc_file
 
       magic = assert_magic

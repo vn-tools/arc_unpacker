@@ -1,10 +1,9 @@
-require 'zlib'
-require_relative '../binary_io'
-require_relative '../archive'
 require_relative 'xp3_decryptor_factory'
+require_relative '../binary_io'
+require 'zlib'
 
 # XP3 archive
-class Xp3Archive < Archive
+module Xp3Archive
   MAGIC = "XP3\r\n\x20\x0a\x1a\x8b\x67\x01".b
   FILE_MAGIC = 'File'
   ADLR_MAGIC = 'adlr'
@@ -21,148 +20,152 @@ class Xp3Archive < Archive
     end
   end
 
-  def unpack_internal(arc_file, output_files, options)
-    magic = arc_file.read(MAGIC.length)
-    fail 'Not an XP3 archive' unless magic == MAGIC
+  class Unpacker
+    def unpack(arc_file, output_files, options)
+      magic = arc_file.read(MAGIC.length)
+      fail 'Not an XP3 archive' unless magic == MAGIC
 
-    version = arc_file.peek(19) { arc_file.read(4) == "\x01\0\0\0" ? 2 : 1 }
+      version = arc_file.peek(19) { arc_file.read(4) == "\x01\0\0\0" ? 2 : 1 }
 
-    if version == 1
-      table_origin = arc_file.read(8).unpack('Q')[0]
-    else
-      additional_header_offset,
-      minor_version = arc_file.read(12).unpack('QI')
-      fail 'Unexpected XP3 version: ' + minor_version.to_s if minor_version != 1
+      if version == 1
+        table_origin = arc_file.read(8).unpack('Q')[0]
+      else
+        additional_header_offset,
+        minor_version = arc_file.read(12).unpack('QI')
+        if minor_version != 1
+          fail format('Unexpected XP3 version: %s', minor_version.to_s)
+        end
 
-      arc_file.peek(additional_header_offset) do
-        _flag,
-        _table_size,
-        table_origin = arc_file.read(17).unpack('BQQ')
+        arc_file.peek(additional_header_offset) do
+          _flag,
+          _table_size,
+          table_origin = arc_file.read(17).unpack('BQQ')
+        end
+      end
+
+      table = arc_file.peek(table_origin) { read_raw_table!(arc_file) }
+      table = BinaryIO.from_string(table)
+
+      until table.eof?
+        output_files.write { read_file(table, arc_file, options[:decryptor]) }
       end
     end
 
-    table = arc_file.peek(table_origin) { read_raw_table!(arc_file) }
-    table = BinaryIO.from_string(table)
+    private
 
-    until table.eof?
-      output_files.write { read_file(table, arc_file, options[:decryptor]) }
-    end
-  end
+    def read_raw_table!(arc_file)
+      use_zlib = arc_file.read(1).unpack('C')[0] > 0
 
-  private
-
-  def read_raw_table!(arc_file)
-    use_zlib = arc_file.read(1).unpack('C')[0] > 0
-
-    if use_zlib
-      table_size_compressed,
-      table_size_original = arc_file.read(16).unpack('Q<Q<')
-      raw = arc_file.read(table_size_compressed)
-      raw = Zlib.inflate(raw) if table_size_original != table_size_compressed
-      fail 'Bad file size' unless raw.length == table_size_original
-      return raw
-    end
-
-    raw_size = arc_file.read(8).unpack('Q')[0]
-    arc_file.read(raw_size)
-  end
-
-  def read_file(raw_table, arc_file, decryptor)
-    magic = raw_table.read(FILE_MAGIC.length)
-    fail 'Expected file chunk' unless magic == FILE_MAGIC
-
-    raw_size = raw_table.read(8).unpack('Q<')[0]
-    raw_file_chunk = BinaryIO.from_string(raw_table.read(raw_size))
-
-    info_chunk = Xp3InfoChunk.new
-    info_chunk.read!(raw_file_chunk)
-    segm_chunks = Xp3SegmChunk.read_list!(raw_file_chunk)
-    adlr_chunk = Xp3AdlrChunk.new
-    adlr_chunk.read!(raw_file_chunk)
-
-    data = segm_chunks.map { |segm| segm.read_data!(arc_file) } * ''
-    data = decryptor.filter(data, adlr_chunk)
-
-    [info_chunk.file_name, data]
-  end
-
-  # Xp3 SEGM chunk
-  class Xp3SegmChunk
-    def self.read_list!(arc_file)
-      magic = arc_file.read(SEGM_MAGIC.length)
-      fail 'Expected segment chunk' unless magic == SEGM_MAGIC
-
-      raw_size = arc_file.read(8).unpack('Q<')[0]
-      raw = BinaryIO.from_string(arc_file.read(raw_size))
-
-      chunks = []
-      until raw.eof?
-        chunk = Xp3SegmChunk.new
-        chunk.read!(raw)
-        chunks.push(chunk)
-      end
-      chunks
-    end
-
-    def read!(arc_file)
-      @flags,
-      @offset,
-      @original_size,
-      @compressed_size = arc_file.read(28).unpack('L<Q<Q<Q<')
-    end
-
-    def read_data!(arc_file)
-      arc_file.seek(@offset)
-      use_zlib = @flags & 7 == 1
       if use_zlib
-        raw = Zlib.inflate(arc_file.read(@compressed_size))
-        fail 'Bad SEGM size' unless raw.length == @original_size
-        raw
+        table_size_compressed,
+        table_size_original = arc_file.read(16).unpack('Q<Q<')
+        raw = arc_file.read(table_size_compressed)
+        raw = Zlib.inflate(raw) if table_size_original != table_size_compressed
+        fail 'Bad file size' unless raw.length == table_size_original
+        return raw
       end
 
-      arc_file.read(@original_size)
+      raw_size = arc_file.read(8).unpack('Q')[0]
+      arc_file.read(raw_size)
     end
-  end
 
-  # XP3 INFO chunk
-  class Xp3InfoChunk
-    attr_accessor :protect
-    attr_accessor :original_file_size
-    attr_accessor :compressed_file_size
-    attr_accessor :file_name
+    def read_file(raw_table, arc_file, decryptor)
+      magic = raw_table.read(FILE_MAGIC.length)
+      fail 'Expected file chunk' unless magic == FILE_MAGIC
 
-    def read!(arc_file)
-      magic = arc_file.read(INFO_MAGIC.length)
-      fail 'Expected info chunk' unless magic == INFO_MAGIC
+      raw_size = raw_table.read(8).unpack('Q<')[0]
+      raw_file_chunk = BinaryIO.from_string(raw_table.read(raw_size))
 
-      raw_size = arc_file.read(8).unpack('Q<')[0]
-      raw = BinaryIO.from_string(arc_file.read(raw_size))
+      info_chunk = Xp3InfoChunk.new
+      info_chunk.read!(raw_file_chunk)
+      segm_chunks = Xp3SegmChunk.read_list!(raw_file_chunk)
+      adlr_chunk = Xp3AdlrChunk.new
+      adlr_chunk.read!(raw_file_chunk)
 
-      @protect,
-      @original_file_size,
-      @compressed_file_size,
-      name_length = raw.read(22).unpack('I<Q<Q<S<')
+      data = segm_chunks.map { |segm| segm.read_data!(arc_file) } * ''
+      data = decryptor.filter(data, adlr_chunk)
 
-      @file_name =
-        raw
-        .read(name_length * 2)
-        .force_encoding('utf-16le')
-        .encode('utf-8')
+      [info_chunk.file_name, data]
     end
-  end
 
-  # XP3 ADLR chunk
-  class Xp3AdlrChunk
-    attr_accessor :encryption_key
+    # Xp3 SEGM chunk
+    class Xp3SegmChunk
+      def self.read_list!(arc_file)
+        magic = arc_file.read(SEGM_MAGIC.length)
+        fail 'Expected segment chunk' unless magic == SEGM_MAGIC
 
-    def read!(arc_file)
-      magic = arc_file.read(ADLR_MAGIC.length)
-      fail 'Expected ADLR chunk' unless magic == ADLR_MAGIC
+        raw_size = arc_file.read(8).unpack('Q<')[0]
+        raw = BinaryIO.from_string(arc_file.read(raw_size))
 
-      raw_size = arc_file.read(8).unpack('Q<')[0]
-      raw = BinaryIO.from_string(arc_file.read(raw_size))
+        chunks = []
+        until raw.eof?
+          chunk = Xp3SegmChunk.new
+          chunk.read!(raw)
+          chunks.push(chunk)
+        end
+        chunks
+      end
 
-      @encryption_key = raw.read(4).unpack('L<')
+      def read!(arc_file)
+        @flags,
+        @offset,
+        @original_size,
+        @compressed_size = arc_file.read(28).unpack('L<Q<Q<Q<')
+      end
+
+      def read_data!(arc_file)
+        arc_file.seek(@offset)
+        use_zlib = @flags & 7 == 1
+        if use_zlib
+          raw = Zlib.inflate(arc_file.read(@compressed_size))
+          fail 'Bad SEGM size' unless raw.length == @original_size
+          raw
+        end
+
+        arc_file.read(@original_size)
+      end
+    end
+
+    # XP3 INFO chunk
+    class Xp3InfoChunk
+      attr_accessor :protect
+      attr_accessor :original_file_size
+      attr_accessor :compressed_file_size
+      attr_accessor :file_name
+
+      def read!(arc_file)
+        magic = arc_file.read(INFO_MAGIC.length)
+        fail 'Expected info chunk' unless magic == INFO_MAGIC
+
+        raw_size = arc_file.read(8).unpack('Q<')[0]
+        raw = BinaryIO.from_string(arc_file.read(raw_size))
+
+        @protect,
+        @original_file_size,
+        @compressed_file_size,
+        name_length = raw.read(22).unpack('I<Q<Q<S<')
+
+        @file_name =
+          raw
+          .read(name_length * 2)
+          .force_encoding('utf-16le')
+          .encode('utf-8')
+      end
+    end
+
+    # XP3 ADLR chunk
+    class Xp3AdlrChunk
+      attr_accessor :encryption_key
+
+      def read!(arc_file)
+        magic = arc_file.read(ADLR_MAGIC.length)
+        fail 'Expected ADLR chunk' unless magic == ADLR_MAGIC
+
+        raw_size = arc_file.read(8).unpack('Q<')[0]
+        raw = BinaryIO.from_string(arc_file.read(raw_size))
+
+        @encryption_key = raw.read(4).unpack('L<')
+      end
     end
   end
 end

@@ -32,7 +32,9 @@ class CLI
     register_basic_options(arg_parser)
     arg_parser.parse
 
-    @options[:archive].register_options(arg_parser, @options)
+    if defined? @options[:archive].register_options
+      @options[:archive].register_options(arg_parser, @options)
+    end
     arg_parser.get_stray { |value| @options[:input_path] = value }
     arg_parser.get_stray { |value| @options[:output_path] = value }
     arg_parser.parse
@@ -85,7 +87,7 @@ class CLI
     if @options[:archive].nil?
       puts '[arc_options] depend on each archive and are required at runtime.'
       puts 'See --help --fmt FORMAT to see detailed help for given archive.'
-    else
+    elsif defined? arc.register_options
       spec_arg_parser = ArgParser.new([])
       arc = @options[:archive]
       arc.register_options(spec_arg_parser, nil)

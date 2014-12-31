@@ -1,5 +1,3 @@
-# rubocop:disable Style/AsciiComments
-
 # How to find out the key for your game:
 # 1. Search for _wsprintfA("%s%d", ...) instruction.
 # 2. The register used to fill "%s" part should point to the key.

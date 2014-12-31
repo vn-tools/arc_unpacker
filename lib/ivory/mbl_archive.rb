@@ -1,16 +1,7 @@
-require_relative '../archive'
 require_relative 'prs_converter'
 
 # MBL archive
-class MblArchive < Archive
-  def unpack_internal(arc_file, output_files, _options)
-    MblUnpacker.new.unpack(arc_file, output_files)
-  end
-
-  def pack_internal(arc_file, input_files, options)
-    MblPacker.new.pack(arc_file, input_files, options[:version] || 2)
-  end
-
+module MblArchive
   def register_options(arg_parser, options)
     arg_parser.on(
       nil,
@@ -22,8 +13,8 @@ class MblArchive < Archive
   end
 
   # MBL archive unpacker
-  class MblUnpacker
-    def unpack(arc_file, output_files)
+  class Unpacker
+    def unpack(arc_file, output_files, _options)
       @prs_converter = PrsConverter.new
       @arc_file = arc_file
       version = detect_version
@@ -79,8 +70,9 @@ class MblArchive < Archive
   end
 
   # MBL archive packer
-  class MblPacker
-    def pack(arc_file, input_files, version)
+  class Packer
+    def pack(arc_file, input_files, options)
+      version = options[:version] || 2
       @arc_file = arc_file
       name_length = calc_name_length(input_files, version)
       write_dummy_table(input_files, version, name_length)
