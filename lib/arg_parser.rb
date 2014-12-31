@@ -73,6 +73,8 @@ class ArgParser
       print left.ljust(left_size)
       puts word_wrap(right, right_size) * ("\n" + ' ' * left_size)
     end
+
+    @help_entries = []
   end
 
   private

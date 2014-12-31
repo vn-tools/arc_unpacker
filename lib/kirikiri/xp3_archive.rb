@@ -10,7 +10,7 @@ module Xp3Archive
   INFO_MAGIC = 'info'
   SEGM_MAGIC = 'segm'
 
-  def register_options(arg_parser, options)
+  def self.register_options(arg_parser, options)
     arg_parser.get(
       nil,
       '--plugin',

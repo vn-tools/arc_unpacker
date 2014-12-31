@@ -6,7 +6,7 @@ require_relative 'msd_keys'
 module FjsysArchive
   MAGIC = "FJSYS\x00\x00\x00"
 
-  def register_options(arg_parser, options)
+  def self.register_options(arg_parser, options)
     arg_parser.on(
       '-k',
       '--key',

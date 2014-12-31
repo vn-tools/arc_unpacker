@@ -10,6 +10,7 @@ class CLI
       output_path: nil,
       verbosity: :normal
     }
+    @arg_parser = ArgParser.new(ARGV)
   end
 
   def run
@@ -28,34 +29,28 @@ class CLI
   end
 
   def parse_options
-    arg_parser = ArgParser.new(ARGV)
-    register_basic_options(arg_parser)
-    arg_parser.parse
-
-    if defined? @options[:archive].register_options
-      @options[:archive].register_options(arg_parser, @options)
-    end
-    arg_parser.get_stray { |value| @options[:input_path] = value }
-    arg_parser.get_stray { |value| @options[:output_path] = value }
-    arg_parser.parse
+    register_basic_options
+    @arg_parser.get_stray { |value| @options[:input_path] = value }
+    @arg_parser.get_stray { |value| @options[:output_path] = value }
+    @arg_parser.parse
   end
 
-  def register_basic_options(arg_parser)
-    arg_parser.on(
+  def register_basic_options
+    @arg_parser.on(
       '-q',
       '--quiet',
       'Suppress output.') do
       @options[:verbosity] = :quiet
     end
 
-    arg_parser.on(
+    @arg_parser.on(
       '-v',
       '--verbose',
       'Show exception stack traces for debug purposes.') do
       @options[:verbosity] = :debug
     end
 
-    arg_parser.on('-f', '--fmt', 'Select archive format.') do |format|
+    @arg_parser.on('-f', '--fmt', 'Select archive format.') do |format|
       unless ArchiveFactory.format_strings.include?(format)
         fail 'Unknown archive format'
       end
@@ -65,7 +60,7 @@ class CLI
       @options[:archive] = archive
     end
 
-    arg_parser.on('-h', '--help', 'Show this message.') do
+    @arg_parser.on('-h', '--help', 'Show this message.') do
       print_help
       exit(0)
     end
@@ -79,21 +74,18 @@ class CLI
     puts
     puts '[options] can be:'
     puts
-    arg_parser = ArgParser.new([])
-    register_basic_options(arg_parser)
-    arg_parser.print_help
+
+    @arg_parser.print_help
     puts
 
     if @options[:archive].nil?
       puts '[arc_options] depend on each archive and are required at runtime.'
       puts 'See --help --fmt FORMAT to see detailed help for given archive.'
-    elsif defined? arc.register_options
-      spec_arg_parser = ArgParser.new([])
-      arc = @options[:archive]
-      arc.register_options(spec_arg_parser, nil)
+    elsif defined? @options[:archive].register_options
+      @options[:archive].register_options(@arg_parser, nil)
 
       puts '[arc_options] specific to ' + @options[:format] + ':'
-      spec_arg_parser.print_help
+      @arg_parser.print_help
     end
   end
 end

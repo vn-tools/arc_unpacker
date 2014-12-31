@@ -32,10 +32,15 @@ class ArchiveUnpacker < CLI
 
   def unpack(archive, options)
     fail 'Unpacking not supported' unless defined? archive::Unpacker
+    if defined? archive.register_options
+      archive.register_options(@arg_parser, options)
+      @arg_parser.parse
+    end
+
+    FileUtils.mkpath(options[:output_path])
+    output_files = OutputFiles.new(options[:output_path], options)
     unpacker = archive::Unpacker.new
     BinaryIO.from_file(options[:input_path], 'rb') do |arc_file|
-      FileUtils.mkpath(options[:output_path])
-      output_files = OutputFiles.new(options[:output_path], options)
       unpacker.unpack(arc_file, output_files, options)
     end
   end
