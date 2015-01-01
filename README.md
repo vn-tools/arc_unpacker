@@ -1,6 +1,29 @@
 A tool for extracting data from visual novels.
 Some formats allow repacking.
 
+Requirements
+------------
+
+1. `ruby` interpreter (tested on 2.0.0p598)
+2. `rmagick` gem
+3. `gcc`.
+
+This is subject to change - see [#5](/../../issues/5).
+
+Before running the script, please run `sh build.sh` to build native extensions.
+Otherwise, some formats might not work correctly.
+
+Usage
+-----
+
+1. Choose the correct --fmt parameter to decrypt the files properly.
+2. Run this script on the archive files. These can be found in the game's
+   installation folder.
+
+#### Example
+
+    ruby ./bin/arc_unpacker.rb --fmt=xp3 --plugin=fsn ~/games/fate/fgimage.xp3 ./fgimage_unpacked/
+
 Supported games
 ---------------
 
@@ -53,32 +76,7 @@ PNG.</sub>
 [par]: http://tmp.sakuya.pl/f/chk2.png?v=2
 [non]: http://tmp.sakuya.pl/f/chk3.png?v=2
 
-Requirements
-------------
-
-1. `ruby` interpreter (tested on 2.0.0p598)
-2. `rmagick` gem
-3. `gcc`.
-
-This is subject to change - see [#5](/../../issues/5).
-
-Before running the script, please run `sh build.sh` to build native extensions.
-Otherwise, some formats might not work correctly.
-
-Usage
------
-
-1. Choose the correct --fmt parameter to decrypt the files properly.
-2. Run this script on the archive files. These can be found in the game's
-   installation folder.
-
-Example
--------
-
-    ruby ./bin/arc_unpacker.rb --fmt=xp3 --plugin=fsn ~/games/fate/fgimage.xp3 ./fgimage_unpacked/
-
-Disclaimer
-----------
+#### Disclaimer
 
 Some archives provide no way to verify correctness of the extracted files. This
 means that for some unsupported games, the script may extract the files and
