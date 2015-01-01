@@ -4,19 +4,14 @@ require_relative '../test_helper'
 # Unit tests for SarArchive
 class SarArchiveTest < Test::Unit::TestCase
   def test
-    TestHelper.generic_pack_and_unpack_test(
-      SarArchive::Packer.new,
-      SarArchive::Unpacker.new)
+    TestHelper.generic_pack_and_unpack_test(SarArchive)
   end
 
   def test_backslash
     input_files = InputFilesMock.new([
       { file_name: 'dir/test.txt', data: 'whatever' }])
 
-    output_files = TestHelper.pack_and_unpack(
-      SarArchive::Packer.new,
-      SarArchive::Unpacker.new,
-      input_files)
+    output_files = TestHelper.pack_and_unpack(SarArchive, input_files)
 
     assert_equal('dir\\test.txt', output_files.files.first[:file_name])
   end
@@ -26,10 +21,7 @@ class SarArchiveTest < Test::Unit::TestCase
       { file_name: '1.txt', data: 'whatever' },
       { file_name: '2.txt', data: 'whatever' }])
 
-    output_files = TestHelper.pack_and_unpack(
-      SarArchive::Packer.new,
-      SarArchive::Unpacker.new,
-      input_files)
+    output_files = TestHelper.pack_and_unpack(SarArchive, input_files)
 
     assert_equal('2.txt', output_files.files[0][:file_name])
     assert_equal('1.txt', output_files.files[1][:file_name])

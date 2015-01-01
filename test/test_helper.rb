@@ -15,27 +15,27 @@ module TestHelper
     File.binread(path)
   end
 
-  def pack_and_unpack(packer, unpacker, input_files, options = {})
+  def pack_and_unpack(archive, input_files, options = {})
     buffer = BinaryIO.from_string('')
-    packer.pack(buffer, input_files, options)
+    archive::Packer.new.pack(buffer, input_files, options)
 
     buffer.rewind
     output_files = OutputFilesMock.new
-    unpacker.unpack(buffer, output_files, options)
+    archive::Unpacker.new.unpack(buffer, output_files, options)
     output_files
   end
 
-  def generic_sjis_names_test(packer, unpacker, options = {})
+  def generic_sjis_names_test(archive, options = {})
     test_files = [{ file_name: 'シフトジス', data: 'whatever' }]
 
     input_files = InputFilesMock.new(test_files)
-    output_files = pack_and_unpack(packer, unpacker, input_files, options)
+    output_files = pack_and_unpack(archive, input_files, options)
     result_files = output_files.files
 
     assert_equal(test_files, result_files)
   end
 
-  def generic_pack_and_unpack_test(packer, unpacker, options = {})
+  def generic_pack_and_unpack_test(archive, options = {})
     test_files = []
     test_files << {
       file_name: 'empty.txt',
@@ -51,7 +51,7 @@ module TestHelper
     test_files = test_files.sort_by { |f| f[:file_name] }
 
     input_files = InputFilesMock.new(test_files)
-    output_files = pack_and_unpack(packer, unpacker, input_files, options)
+    output_files = pack_and_unpack(archive, input_files, options)
 
     result_files = output_files.files.sort_by { |f| f[:file_name] }
     assert_equal(test_files, result_files)

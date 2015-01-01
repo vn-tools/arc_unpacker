@@ -5,15 +5,13 @@ require_relative '../test_helper'
 class NsaArchiveTest < Test::Unit::TestCase
   def test_no_compression
     TestHelper.generic_pack_and_unpack_test(
-      NsaArchive::Packer.new,
-      NsaArchive::Unpacker.new,
+      NsaArchive,
       compression: NsaArchive::NO_COMPRESSION)
   end
 
   def test_lzss_compression
     TestHelper.generic_pack_and_unpack_test(
-      NsaArchive::Packer.new,
-      NsaArchive::Unpacker.new,
+      NsaArchive,
       compression: NsaArchive::LZSS_COMPRESSION)
   end
 
@@ -22,8 +20,7 @@ class NsaArchiveTest < Test::Unit::TestCase
       { file_name: 'dir/test.txt', data: 'whatever' }])
 
     output_files = TestHelper.pack_and_unpack(
-      NsaArchive::Packer.new,
-      NsaArchive::Unpacker.new,
+      NsaArchive,
       input_files)
 
     assert_equal('dir\\test.txt', output_files.files.first[:file_name])
