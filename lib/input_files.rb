@@ -50,7 +50,7 @@ class InputFiles
     print format('Inserting %s... ', file_name) if @verbosity != :quiet
     file_data = File.binread(file_path)
     block.call(file_name, file_data)
-  rescue
+  rescue StandardError => e
     puts e.message if @verbosity != :quiet
     puts e.backtrace if @verbosity == :debug
   else
