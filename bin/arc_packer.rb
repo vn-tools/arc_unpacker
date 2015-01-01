@@ -1,9 +1,9 @@
 #!/usr/bin/ruby -W2
-require 'fileutils'
 require_relative '../lib/common'
-require_relative '../lib/cli'
-require_relative '../lib/binary_io'
-require_relative '../lib/input_files'
+require 'fileutils'
+require 'lib/cli'
+require 'lib/binary_io'
+require 'lib/input_files'
 
 # CLI frontend
 class ArchivePacker < CLI

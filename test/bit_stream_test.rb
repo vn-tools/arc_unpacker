@@ -1,5 +1,5 @@
-require_relative '../lib/bit_stream'
 require 'test/unit'
+require 'lib/bit_stream'
 
 # Unit tests for BitStream
 class BitStreamTest < Test::Unit::TestCase

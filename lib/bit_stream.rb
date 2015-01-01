@@ -1,4 +1,4 @@
-require_relative 'binary_io'
+require 'lib/binary_io'
 
 # Allows to read and write individual bits.
 class BitStream

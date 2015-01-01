@@ -1,6 +1,6 @@
+require 'lib/output_files'
 require 'json'
 require 'pathname'
-require_relative 'output_files'
 
 # A class used to supply packer with input files read from disk
 class InputFiles

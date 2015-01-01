@@ -1,5 +1,5 @@
-require_relative 'archive_factory'
-require_relative 'arg_parser'
+require 'lib/archive_factory'
+require 'lib/arg_parser'
 
 # Generic CLI frontend
 class CLI

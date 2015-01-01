@@ -1,10 +1,10 @@
 #!/usr/bin/ruby -W2
-require 'fileutils'
 require_relative '../lib/common'
-require_relative '../lib/cli'
-require_relative '../lib/binary_io'
-require_relative '../lib/output_files'
-require_relative '../lib/archive_factory'
+require 'fileutils'
+require 'lib/cli'
+require 'lib/binary_io'
+require 'lib/output_files'
+require 'lib/archive_factory'
 
 # CLI frontend
 class ArchiveUnpacker < CLI

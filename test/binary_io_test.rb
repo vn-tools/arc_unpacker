@@ -1,5 +1,5 @@
 require 'test/unit'
-require_relative '../lib/binary_io'
+require 'lib/binary_io'
 
 # Unit tests for BinaryIO
 class BinaryIOTest < Test::Unit::TestCase

@@ -15,52 +15,52 @@ class ArchiveFactory
   def self.factory
     {
       'xp3' => lambda do
-        require_relative 'kirikiri/xp3_archive'
+        require 'lib/formats/arc/xp3_archive'
         Xp3Archive
       end,
 
       'ykc' => lambda do
-        require_relative 'yuka/ykc_archive'
+        require 'lib/formats/arc/ykc_archive'
         YkcArchive
       end,
 
       'sar' => lambda do
-        require_relative 'nscripter/sar_archive'
+        require 'lib/formats/arc/sar_archive'
         SarArchive
       end,
 
       'nsa' => lambda do
-        require_relative 'nscripter/nsa_archive'
+        require 'lib/formats/arc/nsa_archive'
         NsaArchive
       end,
 
       'melty_blood' => lambda do
-        require_relative 'french_bread/melty_blood_archive'
+        require 'lib/formats/arc/melty_blood_archive'
         MeltyBloodArchive
       end,
 
       'nitroplus/pak2' => lambda do
-        require_relative 'nitroplus/pak2_archive'
-        Pak2Archive
+        require 'lib/formats/arc/pak2_nitroplus_archive'
+        Pak2NitroplusArchive
       end,
 
       'fjsys' => lambda do
-        require_relative 'nsystem/fjsys_archive.rb'
+        require 'lib/formats/arc/fjsys_archive'
         FjsysArchive
       end,
 
       'rpa' => lambda do
-        require_relative 'renpy/rpa_archive.rb'
+        require 'lib/formats/arc/rpa_archive'
         RpaArchive
       end,
 
       'mbl' => lambda do
-        require_relative 'ivory/mbl_archive.rb'
+        require 'lib/formats/arc/mbl_archive'
         MblArchive
       end,
 
       'exe' => lambda do
-        require_relative 'misc/exe_reader.rb'
+        require 'lib/formats/arc/exe_reader'
         ExeReader
       end
     }

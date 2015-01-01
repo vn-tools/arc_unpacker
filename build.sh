@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dirs=lib/ivory
+dirs=lib/formats/gfx/prs_converter
 
 for x in $dirs; do
     pushd $x

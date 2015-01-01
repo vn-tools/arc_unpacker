@@ -1,5 +1,5 @@
 require 'test/unit'
-require_relative '../lib/arg_parser'
+require 'lib/arg_parser'
 
 # Unit tests for ArgParser
 class ArgParserTest < Test::Unit::TestCase
