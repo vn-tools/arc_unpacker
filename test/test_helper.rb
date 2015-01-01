@@ -18,20 +18,24 @@ module TestHelper
   def pack_and_unpack(archive, input_files, options = {})
     buffer = BinaryIO.from_string('')
     archive::Packer.new.pack(buffer, input_files, options)
-
     buffer.rewind
     output_files = OutputFilesMock.new
     archive::Unpacker.new.unpack(buffer, output_files, options)
     output_files
   end
 
+  def generic_backslash_test(archive, options = {})
+    input_files = InputFilesMock.new([
+      { file_name: 'dir/test.txt', data: 'whatever' }])
+    output_files = pack_and_unpack(archive, input_files, options)
+    assert_equal('dir\\test.txt', output_files.files.first[:file_name])
+  end
+
   def generic_sjis_names_test(archive, options = {})
     test_files = [{ file_name: 'シフトジス', data: 'whatever' }]
-
     input_files = InputFilesMock.new(test_files)
     output_files = pack_and_unpack(archive, input_files, options)
     result_files = output_files.files
-
     assert_equal(test_files, result_files)
   end
 
@@ -49,10 +53,8 @@ module TestHelper
     end
 
     test_files = test_files.sort_by { |f| f[:file_name] }
-
     input_files = InputFilesMock.new(test_files)
     output_files = pack_and_unpack(archive, input_files, options)
-
     result_files = output_files.files.sort_by { |f| f[:file_name] }
     assert_equal(test_files, result_files)
   end

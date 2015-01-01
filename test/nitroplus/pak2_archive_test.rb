@@ -16,11 +16,6 @@ class Pak2ArchiveTest < Test::Unit::TestCase
   end
 
   def test_backslash
-    input_files = InputFilesMock.new([
-      { file_name: 'dir/test.txt', data: 'whatever' }])
-
-    output_files = TestHelper.pack_and_unpack(Pak2Archive, input_files)
-
-    assert_equal('dir\\test.txt', output_files.files.first[:file_name])
+    TestHelper.generic_backslash_test(Pak2Archive)
   end
 end
