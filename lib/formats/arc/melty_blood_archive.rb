@@ -16,28 +16,41 @@ module MeltyBloodArchive
         fail ArcError, 'Not a Melty Blood archive'
       end
 
-      num_files = arc_file.read(4).unpack('L<')[0] ^ ENCRYPTION_KEY
-      num_files.times do |i|
-        output_files.write { read_file(arc_file, i, encrypted) }
-      end
+      table = read_table(arc_file)
+      read_contents(arc_file, table, output_files, encrypted)
     end
 
     private
 
-    def read_file(arc_file, file_id, encrypted)
-      file_name = read_file_name(arc_file, file_id)
+    def read_table(arc_file)
+      num_files = arc_file.read(4).unpack('L<')[0] ^ ENCRYPTION_KEY
+      table = []
+      num_files.times do |i|
+        e = { name: read_file_name(arc_file, i), file_id: i }
+        e[:origin],
+        e[:size] = arc_file.read(8).unpack('LL')
+        e[:size] ^= ENCRYPTION_KEY
+        table << e
 
-      data_origin,
-      data_size = arc_file.read(8).unpack('LL')
-      data_size ^= ENCRYPTION_KEY
-
-      data = arc_file.peek(data_origin) do
-        data = arc_file.read(data_size)
-        data = decrypt(data, file_name) if encrypted
-        data
+        if e[:origin] + e[:size] > arc_file.size
+          fail ArcError, 'Bad offset to file'
+        end
       end
+      table
+    end
 
-      [file_name, data]
+    def read_contents(arc_file, table, output_files, encrypted)
+      table.each do |e|
+        output_files.write do
+          data = arc_file.peek(e[:origin]) do
+            data = arc_file.read(e[:size])
+            data = decrypt(data, e[:name]) if encrypted
+            data
+          end
+
+          [e[:name], data]
+        end
+      end
     end
 
     def decrypt(data, file_name)
