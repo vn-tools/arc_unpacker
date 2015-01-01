@@ -7,11 +7,11 @@ class CxdecDecryptor
     @key_deriver = CxdecKeyDeriver.new(plugin)
   end
 
-  def filter(data, adlr_chunk)
+  def filter(data, encryption_key)
     bytes = data.unpack('C*')
 
     begin
-      hash = adlr_chunk.encryption_key[0]
+      hash = encryption_key
       key = (hash & @plugin.key[0]) + @plugin.key[1]
 
       if bytes.length > key

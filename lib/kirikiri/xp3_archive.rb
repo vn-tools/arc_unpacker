@@ -19,10 +19,14 @@ module Xp3Archive
 
   def self.parse_cli_options(arg_parser, options)
     decryptor = arg_parser.switch(['--plugin'])
-    decryptor = :none if decryptor.nil?
-    decryptor = XP3_DECRYPTORS[decryptor.to_sym]
+    decryptor = decryptor.nil? ? :none : decryptor.to_sym
+    options[:decryptor] = decryptor
+  end
+
+  def self.get_decryptor(symbol)
+    decryptor = XP3_DECRYPTORS[symbol]
     fail ArcError, 'Unknown decryptor' if decryptor.nil?
-    options[:decryptor] = decryptor.call
+    decryptor.call
   end
 
   class Unpacker
@@ -51,8 +55,9 @@ module Xp3Archive
       table = arc_file.peek(table_origin) { read_raw_table!(arc_file) }
       table = BinaryIO.from_string(table)
 
+      decryptor = Xp3Archive.get_decryptor(options[:decryptor])
       until table.eof?
-        output_files.write { read_file(table, arc_file, options[:decryptor]) }
+        output_files.write { read_file(table, arc_file, decryptor) }
       end
     end
 
@@ -66,7 +71,7 @@ module Xp3Archive
         table_size_original = arc_file.read(16).unpack('Q<Q<')
         raw = arc_file.read(table_size_compressed)
         raw = Zlib.inflate(raw) if table_size_original != table_size_compressed
-        fail ArcError, 'Bad file size' unless raw.length == table_size_original
+        fail ArcError, 'Bad table size' unless raw.length == table_size_original
         return raw
       end
 
@@ -88,7 +93,7 @@ module Xp3Archive
       adlr_chunk.read!(raw_file_chunk)
 
       data = segm_chunks.map { |segm| segm.read_data!(arc_file) } * ''
-      data = decryptor.filter(data, adlr_chunk)
+      data = decryptor.filter(data, adlr_chunk.encryption_key[0])
 
       [info_chunk.file_name, data]
     end
@@ -124,7 +129,7 @@ module Xp3Archive
         if use_zlib
           raw = Zlib.inflate(arc_file.read(@compressed_size))
           fail ArcError, 'Bad SEGM size' unless raw.length == @original_size
-          raw
+          return raw
         end
 
         arc_file.read(@original_size)
@@ -171,6 +176,118 @@ module Xp3Archive
 
         @encryption_key = raw.read(4).unpack('L<')
       end
+    end
+  end
+
+  class Packer
+    def pack(arc_file, input_files, options)
+      arc_file.write(MAGIC)
+      table = prepare_table(input_files, options)
+      header_pos = arc_file.tell
+      write_dummy_header(arc_file)
+      write_contents(arc_file, input_files, table, options)
+      table_offset = arc_file.tell
+      arc_file.peek(header_pos) { write_header(arc_file, table_offset) }
+      write_table(arc_file, table, options)
+    end
+
+    private
+
+    def prepare_table(input_files, options)
+      table = {}
+      origin = 0
+      input_files.each do |name, data|
+        e = {
+          name: name,
+          size_original: data.length,
+          origin: origin + 19,
+          random: rand(0xffff_ffff)
+        }
+        if options[:compress_files]
+          e[:size_compressed] = Zlib.deflate(data).length
+        else
+          e[:size_compressed] = data.length
+        end
+        origin += e[:size_compressed]
+        table[name] = e
+      end
+      table
+    end
+
+    def write_dummy_header(arc_file)
+      arc_file.write("\x00" * 8)
+    end
+
+    def write_header(arc_file, table_offset)
+      arc_file.write([table_offset].pack('Q<'))
+    end
+
+    def write_contents(arc_file, input_files, table, options)
+      decryptor = Xp3Archive.get_decryptor(options[:decryptor])
+      input_files.each do |name, data|
+        data = Zlib.deflate(data) if options[:compress_files]
+        data = decryptor.filter(data, table[name][:random])
+        arc_file.write(data)
+      end
+    end
+
+    def write_table(arc_file, table, options)
+      use_zlib = options[:compress_table]
+
+      raw_table = BinaryIO.from_string('')
+      table.each do |_name, e|
+        info_chunk = prepare_info_chunk(e)
+        segm_chunk = prepare_segm_chunk(e, options)
+        adlr_chunk = prepare_adlr_chunk(e)
+        file_chunk = prepare_file_chunk(info_chunk, segm_chunk, adlr_chunk)
+        raw_table.write(file_chunk)
+      end
+
+      raw_table.rewind
+      raw_table = raw_table.read
+      table_size_original = raw_table.length
+      raw_table = Zlib.deflate(raw_table) if use_zlib
+      table_size_compressed = raw_table.length
+
+      if use_zlib
+        arc_file.write("\x01")
+        arc_file.write([table_size_compressed].pack('Q<'))
+      else
+        arc_file.write("\x00")
+      end
+
+      arc_file.write([table_size_original].pack('Q<'))
+      arc_file.write(raw_table)
+    end
+
+    def prepare_file_chunk(info_chunk, segm_chunk, adlr_chunk)
+      prepare_chunk(FILE_MAGIC, info_chunk + segm_chunk + adlr_chunk)
+    end
+
+    def prepare_info_chunk(table_entry)
+      prepare_chunk(INFO_MAGIC, [
+        0, # protected?
+        table_entry[:size_original],
+        table_entry[:size_compressed],
+        table_entry[:name].length
+      ].pack('I<Q<Q<S<') + table_entry[:name].encode('utf-16le').b)
+    end
+
+    def prepare_segm_chunk(table_entry, options)
+      prepare_chunk(SEGM_MAGIC, [
+        options[:compress_files] ? 1 : 0,
+        table_entry[:origin],
+        table_entry[:size_original],
+        table_entry[:size_compressed]
+      ].pack('L<Q<3'))
+    end
+
+    def prepare_adlr_chunk(table_entry)
+      prepare_chunk(ADLR_MAGIC, [table_entry[:random]].pack('L<'))
+    end
+
+    def prepare_chunk(magic, data)
+      magic + [data.length].pack('Q<') + data
     end
   end
 end

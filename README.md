@@ -29,9 +29,9 @@ Supported games
 
 CLI invocation                 | Game                             | Features<sup>1</sup>
 ------------------------------ | -------------------------------- | ------------
-`--fmt=xp3 --plugin=none`      | Sono Hanabira ni Kuchizuke o 12  | ![][sup]![][par]![][sup]![][par] ![][non]![][non]![][non]![][non]
-`--fmt=xp3 --plugin=fsn`       | Fate/Stay Night                  | ![][sup]![][par]![][sup]![][par] ![][non]![][non]![][non]![][non]
-`--fmt=xp3 --plugin=fha`       | Fate/Hollow Ataraxia             | ![][sup]![][par]![][sup]![][par] ![][non]![][non]![][non]![][non]
+`--fmt=xp3 --plugin=none`      | Sono Hanabira ni Kuchizuke o 12  | ![][sup]![][par]![][sup]![][par] ![][sup]![][non]![][sup]![][non]
+`--fmt=xp3 --plugin=fsn`       | Fate/Stay Night                  | ![][sup]![][par]![][sup]![][par] ![][sup]![][non]![][sup]![][non]
+`--fmt=xp3 --plugin=fha`       | Fate/Hollow Ataraxia             | ![][sup]![][par]![][sup]![][par] ![][sup]![][non]![][sup]![][non]
 `--fmt=melty_blood`            | Melty Blood                      | ![][sup]![][non]![][non]![][non] ![][non]![][non]![][non]![][non]
 `--fmt=nsa`                    | Tsukihime                        | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
 `--fmt=sar`                    | Tsukihime                        | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
