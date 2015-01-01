@@ -8,7 +8,7 @@ require_relative '../lib/input_files'
 # CLI frontend
 class ArchivePacker < CLI
   def run_internal
-    fail 'Must specify output format.' if @options[:archive].nil?
+    fail OptionError, 'Must specify output format.' if @options[:archive].nil?
     pack(@options[:archive], @options)
   end
 

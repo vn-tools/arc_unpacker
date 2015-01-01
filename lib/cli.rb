@@ -50,19 +50,24 @@ class CLI
     end
 
     stray = @arg_parser.stray
-    fail OptionError, 'Required more arguments.' if stray.count < 2
+    fail OptionError, 'Required more arguments.' if stray.count < 1
     @options[:input_path],
     @options[:output_path] = stray
+    @options[:output_path] ||= @options[:input_path] + '~'
   end
 
   def print_help
     puts format(
-      'Usage: %s [options] [arc_options] input_path output_path',
+      'Usage: %s [options] [arc_options] input_path [output_path]',
       File.basename($PROGRAM_NAME))
 
-    puts
-    puts '[options] can be:'
-    puts
+    puts \
+      '',
+      'Unless output path is provided, the script is going to use input_path',
+      'followed with a tilde (~).',
+      '',
+      '[options] can be:',
+      ''
 
     @arg_parser.print_help
     @arg_parser.clear_help

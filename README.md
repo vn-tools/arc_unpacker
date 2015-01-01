@@ -4,7 +4,7 @@ Some formats allow repacking.
 Supported games
 ---------------
 
-`--fmt` string                 | Game                             | Features<sup>1</sup>
+CLI invocation                 | Game                             | Features<sup>1</sup>
 ------------------------------ | -------------------------------- | ------------
 `--fmt=xp3 --plugin=none`      | Sono Hanabira ni Kuchizuke o 12  | ![][sup]![][par]![][sup]![][par] ![][non]![][non]![][non]![][non]
 `--fmt=xp3 --plugin=fsn`       | Fate/Stay Night                  | ![][sup]![][par]![][sup]![][par] ![][non]![][non]![][non]![][non]
@@ -75,3 +75,33 @@ Disclaimer
 Some archives provide no way to verify correctness of the extracted files. This
 means that for some unsupported games, the script may extract the files and
 show no errors, but you will be unable to open them nonetheless.
+
+Enabling drag'n'drop on Windows
+-------------------------------
+
+The unpacker is made so that it can accept just the path to the archive. To be
+able to drag'n'drop the files onto the `bin/arc_unpacker.rb`, following
+Registry patch should help:
+
+    Windows Registry Editor Version 5.00
+
+    ;The part that points to Ruby interpreter.
+    [HKEY_CLASSES_ROOT\.rb]
+    @="rb_file"
+
+    [HKEY_CLASSES_ROOT\rb_file]
+    @="Ruby script"
+
+    [HKEY_CLASSES_ROOT\rb_file\shell]
+
+    [HKEY_CLASSES_ROOT\rb_file\shell\open]
+
+    [HKEY_CLASSES_ROOT\rb_file\shell\open\command]
+    @="\"C:\\cygwin\\bin\\ruby.exe\" -- \"%1\" %*"
+	;note the "%*" - it's used to handle additional arguments.
+
+    ;The part that tells Explorer to handle drag'n'drop event
+    [HKEY_CLASSES_ROOT\rb_file\ShellEx]
+
+    [HKEY_CLASSES_ROOT\rb_file\ShellEx\DropHandler]
+    @="{60254CA5-953B-11CF-8C96-00AA00B8708C}"
