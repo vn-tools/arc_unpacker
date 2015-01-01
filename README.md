@@ -105,7 +105,7 @@ Registry patch should help:
     [HKEY_CLASSES_ROOT\rb_file\shell\open]
 
     [HKEY_CLASSES_ROOT\rb_file\shell\open\command]
-    @="\"C:\\cygwin\\bin\\ruby.exe\" -- \"%1\" %*"
+    @="\"C:\\Ruby21-x64\\bin\\ruby.exe\" -- \"%1\" %*"
     ;note the "%*" - it's used to handle additional arguments.
 
     ;The part that tells Explorer to handle drag'n'drop event
@@ -113,3 +113,11 @@ Registry patch should help:
 
     [HKEY_CLASSES_ROOT\rb_file\ShellEx\DropHandler]
     @="{60254CA5-953B-11CF-8C96-00AA00B8708C}"
+
+<sub>If you're using Cygwin, to avoid problems with Unicode please make sure
+you run the script either in a shell that supports UTF-8 (e.g. MinTTY), or use
+official non-Cygwin Ruby installation. Trying to unpack files with non-ASCII
+characters in their names within a `cmd.exe` using Cygwin's version of Ruby
+interpreter may result in messed up names, or even exceptions during outputting
+information to the console. `chcp 65001` does not help either. (This advice
+applies to every Cygwin program, not just this project.)</sub>
