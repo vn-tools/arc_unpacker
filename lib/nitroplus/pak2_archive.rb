@@ -14,43 +14,50 @@ module Pak2Archive
       magic = arc_file.read(4)
       fail ArcError, 'Not a PAK archive' unless magic == MAGIC
 
-      read_file_table(arc_file, output_files)
+      table = read_table(arc_file)
+      read_contents(arc_file, table, output_files)
     end
 
     private
 
-    def read_file_table(arc_file, output_files)
+    def read_table(arc_file)
       file_count,
-      table_size,
-      compressed_table_size = arc_file.read(12).unpack('LLL')
+      table_size_original,
+      table_size_compressed = arc_file.read(12).unpack('L3')
 
-      arc_file.seek(276)
-      raw = Zlib.inflate(arc_file.read(compressed_table_size))
-      raw = BinaryIO.from_string(raw)
-      offset_to_files = arc_file.tell
-      fail ArcError, 'Bad file table size' unless raw.length == table_size
-
-      file_count.times do
-        output_files.write { read_file(raw, arc_file, offset_to_files) }
+      arc_file.skip(0x104)
+      raw_table = Zlib.inflate(arc_file.read(table_size_compressed))
+      raw_table = BinaryIO.from_string(raw_table)
+      unless raw_table.length == table_size_original
+        fail ArcError, 'Bad file table size'
       end
+      offset_to_files = arc_file.tell
+
+      table = []
+      file_count.times do
+        e = { name: read_file_name(raw_table) }
+        e[:origin],
+        e[:size_original],
+        e[:flags],
+        e[:size_compressed] = raw_table.read(20).unpack('L2x4L2')
+        e[:origin] += offset_to_files
+        table << e
+      end
+      table
     end
 
-    def read_file(raw_file_table, arc_file, offset_to_files)
-      file_name = read_file_name(raw_file_table)
+    def read_contents(arc_file, table, output_files)
+      table.each do |e|
+        output_files.write do
+          data = arc_file.peek(e[:origin]) do
+            next arc_file.read(e[:size_original]) unless e[:flags] > 0
+            next Zlib.inflate(arc_file.read(e[:size_compressed]))
+          end
+          fail ArcError, 'Bad file size' unless data.length == e[:size_original]
 
-      data_origin,
-      data_size_original,
-      flags,
-      data_size_compressed = raw_file_table.read(20).unpack('LLxxxxLL')
-
-      arc_file.seek(data_origin + offset_to_files)
-      if flags > 0
-        data = Zlib.inflate(arc_file.read(data_size_compressed))
-      else
-        data = arc_file.read(data_size_original)
+          [e[:name], data]
+        end
       end
-
-      [file_name, data]
     end
 
     def read_file_name(arc_file)
@@ -59,6 +66,83 @@ module Pak2Archive
       file_name.force_encoding('sjis').encode('utf-8')
     rescue
       file_name
+    end
+  end
+
+  class Packer
+    def pack(arc_file, input_files, options)
+      arc_file.write(MAGIC)
+
+      table = prepare_table(input_files, options)
+      header_pos = arc_file.tell
+      write_dummy_header(arc_file)
+
+      table_sizes = write_table(arc_file, table)
+      arc_file.peek(header_pos) { write_header(arc_file, table, table_sizes) }
+
+      write_contents(arc_file, table, input_files)
+    end
+
+    private
+
+    def write_dummy_header(arc_file)
+      arc_file.write("\x00" * 12)
+      arc_file.write("\x00" * 4)
+      arc_file.write("\x00" * 0x100)
+    end
+
+    def write_header(arc_file, table, table_sizes)
+      arc_file.write([
+        table.length,
+        *table_sizes,
+        100].pack('L4'))
+      arc_file.write("\x00" * 0x100)
+    end
+
+    def prepare_table(input_files, options)
+      origin = 0
+      table = {}
+      input_files.each do |name, data|
+        e = { name: name, origin: origin, size_original: data.length }
+        if options[:compressed]
+          e[:flags] = 1
+          e[:size_compressed] = Zlib.deflate(data).length
+        else
+          e[:flags] = 0
+          e[:size_compressed] = data.length
+        end
+        table[name] = e
+        origin += e[:size_compressed]
+      end
+      table
+    end
+
+    def write_table(arc_file, table)
+      raw_table = BinaryIO.from_string('')
+      table.each do |name, e|
+        name = name.gsub(/\//, '\\').encode('sjis').b
+        raw_table.write([name.length].pack('L'))
+        raw_table.write(name)
+        raw_table.write([
+          e[:origin],
+          e[:size_original],
+          e[:flags],
+          e[:size_compressed]].pack('L2x4L2'))
+      end
+      raw_table.rewind
+      raw_table = raw_table.read
+      table_size_original = raw_table.length
+      raw_table = Zlib.deflate(raw_table)
+      table_size_compressed = raw_table.length
+      arc_file.write(raw_table)
+      [table_size_original, table_size_compressed]
+    end
+
+    def write_contents(arc_file, table, input_files)
+      input_files.each do |name, data|
+        data = Zlib.deflate(data) if table[name][:flags] > 0
+        arc_file.write(data)
+      end
     end
   end
 end
