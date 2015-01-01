@@ -32,14 +32,22 @@ CLI invocation                 | Game                             | Features<sup
 
 <sup>1</sup> Feature legend:
 
-1. File unpacking
-	1. Graphics
-	2. Music
-	3. Scripts
-2. File packing
-	1. Graphics
-	2. Music
-	3. Scripts
+1.  File unpacking
+    - Generic files
+    - Graphics
+    - Music
+    - Scripts
+2.  File packing
+    - Generic files
+    - Graphics
+    - Music
+    - Scripts
+
+<sub>Graphics, music and scripts are listed separately, because each of them
+could use encryption, compression or a niche file format. For example, being
+able to unpack generic files doesn't mean you will be able to read TLG files
+used by the game, unless `arc_unpacker` converts them specifically to
+PNG.</sub>
 
 [sup]: http://tmp.sakuya.pl/f/chk.png?v=2
 [par]: http://tmp.sakuya.pl/f/chk2.png?v=2
@@ -98,7 +106,7 @@ Registry patch should help:
 
     [HKEY_CLASSES_ROOT\rb_file\shell\open\command]
     @="\"C:\\cygwin\\bin\\ruby.exe\" -- \"%1\" %*"
-	;note the "%*" - it's used to handle additional arguments.
+    ;note the "%*" - it's used to handle additional arguments.
 
     ;The part that tells Explorer to handle drag'n'drop event
     [HKEY_CLASSES_ROOT\rb_file\ShellEx]
