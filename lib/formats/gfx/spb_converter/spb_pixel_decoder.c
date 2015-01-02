@@ -9,8 +9,8 @@ static VALUE decode_spb_pixels(
     VALUE _input,
     VALUE _input_size,
     VALUE _image_width,
-    VALUE _image_height)
-{
+    VALUE _image_height) {
+
     unsigned char *input = (unsigned char*)RSTRING_PTR(_input);
     unsigned char *output;
     unsigned char *tmp_data;

@@ -12,8 +12,9 @@ void bit_stream_init(
     unsigned char *buffer,
     size_t buffer_size) {
 
-    if (bs == NULL)
+    if (bs == NULL) {
         return;
+    }
 
     bs->buffer = buffer;
     bs->buffer_size = buffer_size;
@@ -29,8 +30,7 @@ unsigned int __bit_stream_get(bit_stream *bs) {
         return 0;
 
     bs->mask >>= 1;
-    if (bs->mask == 0x00)
-    {
+    if (bs->mask == 0x00) {
         if (bs->buffer_size == 0)
             return 0;
 
@@ -52,11 +52,11 @@ unsigned int bit_stream_get(bit_stream *bs, int n) {
     if (n < 0 || n > 32)
         return 0;
 
-    for (value = 0; n > 0; n--)
-    {
+    for (value = 0; n > 0; n --) {
         value <<= 1;
-        if (__bit_stream_get(bs))
+        if (__bit_stream_get(bs)) {
             value |= 1;
+        }
     }
 
     return value;

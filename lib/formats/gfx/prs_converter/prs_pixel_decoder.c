@@ -6,8 +6,8 @@ static VALUE decode_pixels(
     VALUE _source_buffer,
     VALUE _source_size,
     VALUE _image_width,
-    VALUE _image_height)
-{
+    VALUE _image_height) {
+
     int i;
     unsigned long source_size = FIX2INT(_source_size);
     unsigned long image_width = FIX2INT(_image_width);
