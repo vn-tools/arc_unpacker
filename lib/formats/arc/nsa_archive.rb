@@ -1,4 +1,5 @@
 require_relative 'nsa_archive/lzss_compressor'
+require 'lib/formats/gfx/spb_converter'
 
 # NSA archive
 # Engine: Nscripter
@@ -52,7 +53,7 @@ module NsaArchive
         output_files.write do
           data = arc_file.peek(e[:origin]) do
             data = arc_file.read(e[:size_compressed])
-            data = decompress(data, e[:compression_type])
+            data = decompress(data, e)
             data
           end
 
@@ -63,17 +64,16 @@ module NsaArchive
       end
     end
 
-    def decompress(data, compression_type)
-      case compression_type
+    def decompress(data, table_entry)
+      case table_entry[:compression_type]
       when SPB_COMPRESSION
-        fail \
-          ArcError,
-          'SPB compression not supported! Please send samples to rr- on github.'
+        data = SpbConverter.decode(data)
+        table_entry[:size_original] = data.length
       when LZSS_COMPRESSION
-        return NsaArchive.lzss_compressor.decode(data)
-      else
-        return data
+        data = NsaArchive.lzss_compressor.decode(data)
       end
+
+      data
     end
   end
 
@@ -121,14 +121,12 @@ module NsaArchive
     def compress(data, compression_type)
       case compression_type
       when SPB_COMPRESSION
-        fail \
-          ArcError,
-          'SPB compression not supported! Please send samples to rr- on github.'
+        data = SpbConverter.encode(data)
       when LZSS_COMPRESSION
-        return NsaArchive.lzss_compressor.encode(data)
-      else
-        return data
+        data = NsaArchive.lzss_compressor.encode(data)
       end
+
+      data
     end
   end
 end
