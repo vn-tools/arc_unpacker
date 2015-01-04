@@ -31,4 +31,3 @@ module SpbConverter
     fail 'Not supported.'
   end
 end
-
