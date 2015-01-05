@@ -121,7 +121,7 @@ module MblArchive
     end
 
     def encode(data)
-      return PrsConverter.encode(data) if data.start_with?(PrsConverter::MAGIC)
+      data = PrsConverter.encode(data) if data[1..3] == 'PNG'
       data
     end
   end
