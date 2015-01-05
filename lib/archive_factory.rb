@@ -49,6 +49,11 @@ class ArchiveFactory
         FjsysArchive
       end,
 
+      'npa' => lambda do
+        require 'lib/formats/arc/npa_archive'
+        NpaArchive
+      end,
+
       'rpa' => lambda do
         require 'lib/formats/arc/rpa_archive'
         RpaArchive

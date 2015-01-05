@@ -49,6 +49,7 @@ CLI invocation                 | Game                             | Features<sup
 `--fmt=fjsys --key=sonohana10` | Sono Hanabira ni Kuchizuke o 10  | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
 `--fmt=fjsys --key=sonohana11` | Sono Hanabira ni Kuchizuke o 11  | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
 `--fmt=nitroplus/pak2`         | Saya no Uta                      | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
+`--fmt=npa`                    | Chaos;Head                       | ![][sup]![][sup]![][sup]![][non] ![][non]![][non]![][non]![][non]
 `--fmt=rpa`                    | Everlasting Summer               | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
 `--fmt=rpa`                    | Katawa Shoujo                    | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
 `--fmt=mbl`                    | Wanko to Kurasou                 | ![][sup]![][sup]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
