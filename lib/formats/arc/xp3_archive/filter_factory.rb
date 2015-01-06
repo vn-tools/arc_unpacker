@@ -13,5 +13,11 @@ XP3_FILTERS = {
     require_relative 'filters/cxdec'
     require_relative 'filters/cxdec_plugin_fha'
     CxdecFilter.new(CxdecPluginFha.new)
+  end,
+
+  comyu: lambda do
+    require_relative 'filters/cxdec'
+    require_relative 'filters/cxdec_plugin_comyu'
+    CxdecFilter.new(CxdecPluginComyu.new)
   end
 }
