@@ -13,7 +13,10 @@ module Image
     image = Magick::Image.new(width, height)
     image.import_pixels(0, 0, width, height, format, raw_data)
     image['comment'] = encode_meta(meta)
-    image.to_blob { self.format = FORMAT }
+    image.to_blob do
+      self.quality = 10
+      self.format = FORMAT
+    end
   ensure
     !image.nil? && image.destroy!
   end
@@ -44,7 +47,10 @@ module Image
   def self.add_meta_to_boxed(blob, meta)
     image = Magick::Image.from_blob(blob)[0]
     image['comment'] = encode_meta(meta)
-    image.to_blob { self.format = FORMAT }
+    image.to_blob do
+      self.quality = 10
+      self.format = FORMAT
+    end
   ensure
     !image.nil? && image.destroy!
   end
