@@ -21,12 +21,9 @@ class BinaryIO
   def self.run(io, &block)
     instance = new(io)
     if block.nil?
-      ObjectSpace.define_finalizer(instance, proc { io.close })
       return instance
     else
-      ret = block.call(instance)
-      io.close
-      return ret
+      return block.call(instance)
     end
   end
 
@@ -67,5 +64,10 @@ class BinaryIO
 
   def initialize(io)
     @io = io
+    ObjectSpace.define_finalizer(self, self.class.finalize(io))
+  end
+
+  def self.finalize(io)
+    proc { io.close }
   end
 end
