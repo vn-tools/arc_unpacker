@@ -15,7 +15,7 @@ module Image
     image['comment'] = encode_meta(meta)
     image.to_blob { self.format = FORMAT }
   ensure
-    image.destroy!
+    !image.nil? && image.destroy!
   end
 
   # Opposite of raw_to_boxed.
@@ -30,7 +30,7 @@ module Image
       format)
     [raw_data, meta]
   ensure
-    image.destroy!
+    !image.nil? && image.destroy!
   end
 
   # Retrieves meta data associated with boxed file type such as PNG.
@@ -38,7 +38,7 @@ module Image
     image = Magick::Image.from_blob(blob)[0]
     rmagick_to_meta(image)
   ensure
-    image.destroy!
+    !image.nil? && image.destroy!
   end
 
   def self.add_meta_to_boxed(blob, meta)
@@ -46,7 +46,7 @@ module Image
     image['comment'] = encode_meta(meta)
     image.to_blob { self.format = FORMAT }
   ensure
-    image.destroy!
+    !image.nil? && image.destroy!
   end
 
   # Retrieves meta data associated with RMagick handle.
