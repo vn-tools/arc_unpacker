@@ -21,7 +21,6 @@ module YkcArchive
       arc_file.seek(table_origin)
       num_files = table_size / 20
 
-      meta = {}
       num_files.times do
         output_files.write do
           name_origin,
@@ -31,35 +30,27 @@ module YkcArchive
 
           name = arc_file.peek(name_origin) { arc_file.read(name_size - 1) }
           data = arc_file.peek(data_origin) { arc_file.read(data_size) }
-          data, meta[name.gsub('\\', '/').to_sym] = decode(data)
+          data = decode(data)
 
           [name, data]
         end
       end
-
-      meta.reject! { |_k, v| v.nil? }
-      output_files.write_meta(meta) unless meta.empty?
     end
 
     private
 
     def decode(data)
-      meta = nil
-
       if data.start_with?(YkgConverter::MAGIC)
-        data, meta = YkgConverter.decode(data)
+        data = YkgConverter.decode(data)
       elsif data.start_with?(YksConverter::MAGIC)
         data = YksConverter.decode(data)
       end
-
-      [data, meta]
+      data
     end
   end
 
   class Packer
     def pack(arc_file, input_files, _options)
-      meta = input_files.read_meta || {}
-
       table_origin = MAGIC.length + 18
       table_size = input_files.length * 20
 
@@ -70,7 +61,7 @@ module YkcArchive
 
       table_entries = {}
       input_files.each do |name, data|
-        data = encode(name, data, meta[name.gsub('\\', '/').to_sym])
+        data = encode(name, data)
 
         table_entries[name] = { name_origin: arc_file.tell }
         arc_file.write(name.gsub('/', '\\'))
@@ -91,14 +82,12 @@ module YkcArchive
       end
     end
 
-    def encode(name, data, meta)
+    def encode(name, data)
       if name.downcase.end_with?('.ykg')
-        regions = meta
-        data = YkgConverter.encode(data, regions)
+        data = YkgConverter.encode(data)
       elsif name.downcase.end_with?('.yks')
         data = YksConverter.encode(data, true)
       end
-
       data
     end
   end

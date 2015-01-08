@@ -1,4 +1,5 @@
 require 'lib/binary_io'
+require 'lib/image'
 
 # Converts YKG to PNG and vice versa.
 # Seen in YKC archives.
@@ -35,10 +36,14 @@ module YkgConverter
       regions.push(x: x, y: y, width: w, height: h)
     end
 
-    [data, regions]
+    raw_data, meta = Image.boxed_to_raw(data, 'RGBA')
+    meta[:regions] = regions
+    Image.raw_to_boxed(meta[:width], meta[:height], raw_data, 'RGBA', meta)
   end
 
-  def encode(data, regions)
+  def encode(data)
+    regions = Image.read_meta_from_boxed(data)[:regions]
+
     output = BinaryIO.from_string
 
     meta = BinaryIO.from_string

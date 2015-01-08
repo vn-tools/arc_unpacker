@@ -1,7 +1,7 @@
 require 'lib/binary_io'
 require 'lib/warning_silencer'
+require 'lib/image'
 require_relative 'sgd_compressor'
-silence_warnings { require 'rmagick' }
 
 # Converts MGD to PNG and vice versa.
 # Seen in FJSYS archives.
@@ -18,8 +18,8 @@ module MgdConverter
     Decoder.new.read(data)
   end
 
-  def encode(data, regions = nil)
-    Encoder.new.write(data, regions)
+  def encode(data)
+    Encoder.new.write(data)
   end
 
   class Decoder
@@ -31,8 +31,8 @@ module MgdConverter
 
       _data_offset,
       _format,
-      image_width,
-      image_height,
+      width,
+      height,
       _size_original,
       _size_compressed, # == size_compressed + 4
       compression_type, = input.read(24).unpack('SS x4 S2 L2 L')
@@ -40,27 +40,24 @@ module MgdConverter
       _unknown = input.read(64)
       size_compressed, = input.read(4).unpack('L')
 
-      png_data =
       case compression_type
       when PNG_COMPRESSION
         size_compressed = input.read.index('IEND') + 8
         input.seek(96)
-        input.read(size_compressed)
+        raw_data = Image.boxed_to_raw(input.read(size_compressed), 'BGRA')[0]
 
       when SGD_COMPRESSION
-        data = input.read(size_compressed)
-        sgd_to_png(data, image_width, image_height)
+        raw_data = SgdCompressor.decode(input.read(size_compressed))
 
       when NO_COMPRESSION
-        data = input.read(size_compressed)
-        uncompressed_to_png(data, image_width, image_height)
+        raw_data = input.read(size_compressed)
 
       else
         fail 'Unsupported compression type.'
       end
 
       regions = read_regions(input)
-      [png_data, regions]
+      Image.raw_to_boxed(width, height, raw_data, 'BGRA', regions: regions)
     end
 
     def read_regions(input)
@@ -89,24 +86,11 @@ module MgdConverter
 
       regions
     end
-
-    def uncompressed_to_png(blob, image_width, image_height)
-      image = Magick::Image.new(image_width, image_height)
-      image.import_pixels(0, 0, image_width, image_height, 'BGRA', blob)
-      image.to_blob { self.format = 'PNG' }
-    end
-
-    def sgd_to_png(input, image_width, image_height)
-      output = SgdCompressor.decode(input)
-      uncompressed_to_png(output, image_width, image_height)
-    end
   end
 
   class Encoder
-    def write(data, regions = nil)
-      image = Magick::Image.from_blob(data)[0]
-      blob = image.export_pixels_to_str(0, 0, image.columns, image.rows, 'BGRA')
-      blob_size = blob.length
+    def write(data)
+      raw_data, meta = Image.boxed_to_raw(data, 'BGRA')
 
       data_offset = 92
       output = BinaryIO.from_string('')
@@ -114,15 +98,16 @@ module MgdConverter
       output.write([
         data_offset,
         6,
-        image.columns,
-        image.rows,
-        image.columns * image.rows * 4,
-        blob_size + 4,
+        meta[:width],
+        meta[:height],
+        meta[:width] * meta[:height] * 4,
+        raw_data.length + 4,
         NO_COMPRESSION,
-        blob_size].pack('SS x4 S2 L2 L x64 L'))
-      output.write(blob)
+        raw_data.length].pack('SS x4 S2 L2 L x64 L'))
 
-      write_regions(output, regions, image.columns, image.rows)
+      output.write(raw_data)
+
+      write_regions(output, meta[:regions], meta[:width], meta[:height])
 
       output.rewind
       output.read

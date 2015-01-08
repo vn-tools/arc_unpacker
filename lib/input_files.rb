@@ -14,7 +14,6 @@ class InputFiles
 
     Dir[source_dir + '/**/*'].each do |path|
       next unless File.file?(path)
-      next if path.end_with?(OutputFiles::META_FILE_NAME)
 
       file_name =
         Pathname.new(path)
@@ -36,12 +35,6 @@ class InputFiles
 
   def length
     @paths.length
-  end
-
-  def read_meta
-    source_path = File.join(@source_dir, OutputFiles::META_FILE_NAME)
-    return nil unless File.exist?(source_path)
-    JSON.parse(File.binread(source_path), symbolize_names: true)
   end
 
   private

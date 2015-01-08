@@ -1,5 +1,6 @@
 require 'lib/formats/gfx/mgd_converter'
 require 'lib/warning_silencer'
+require 'lib/image'
 require 'test/test_helper'
 silence_warnings { require 'rmagick' }
 
@@ -7,7 +8,8 @@ silence_warnings { require 'rmagick' }
 class MgdConverterTest < Test::Unit::TestCase
   def test_encoding_and_decoding
     data = TestHelper.get_test_file('reimu_transparent.png')
-    data, regions = MgdConverter.decode(MgdConverter.encode(data))
+    data = MgdConverter.decode(MgdConverter.encode(data))
+    regions = Image.read_meta_from_boxed(data)[:regions]
 
     image = Magick::Image.from_blob(data)[0]
     assert_equal(641, image.columns)
@@ -24,7 +26,8 @@ class MgdConverterTest < Test::Unit::TestCase
 
   def test_decoding_from_sgd
     data = TestHelper.get_test_file('GS_UD.MGD')
-    data, regions = MgdConverter.decode(data)
+    data = MgdConverter.decode(data)
+    regions = Image.read_meta_from_boxed(data)[:regions]
 
     image = Magick::Image.from_blob(data)[0]
     assert_equal(800, image.columns)
@@ -35,7 +38,8 @@ class MgdConverterTest < Test::Unit::TestCase
 
   def test_decoding_from_png
     data = TestHelper.get_test_file('saveload_p.MGD')
-    data, regions = MgdConverter.decode(data)
+    data = MgdConverter.decode(data)
+    regions = Image.read_meta_from_boxed(data)[:regions]
 
     image = Magick::Image.from_blob(data)[0]
     assert_equal(800, image.columns)

@@ -42,8 +42,6 @@ module FjsysArchive
       file_count = arc_file.read(76).unpack('LLLx64')
       file_names_start = header_size - file_names_size
 
-      meta = {}
-
       file_count.times do
         output_files.write do
           file_name_origin,
@@ -54,30 +52,25 @@ module FjsysArchive
             arc_file.read_until_zero
           end
 
-          data, file_meta = arc_file.peek(data_origin) do
+          data = arc_file.peek(data_origin) do
             decode(file_name, arc_file.read(data_size), options)
           end
-          meta[file_name.to_sym] = file_meta unless file_meta.nil?
 
           [file_name, data]
         end
       end
-
-      output_files.write_meta(meta) unless meta.empty?
     end
 
     private
 
     def decode(file_name, data, options)
-      if data[0..MgdConverter::MAGIC.length - 1] == MgdConverter::MAGIC
-        data, regions = MgdConverter.decode(data)
-        return data, regions
-
+      if data.start_with?(MgdConverter::MAGIC)
+        data = MgdConverter.decode(data)
       elsif file_name.downcase.end_with?('.msd')
-        return MsdConverter.decode(data, options[:msd_key])
+        data = MsdConverter.decode(data, options[:msd_key])
       end
 
-      [data, nil]
+      data
     end
   end
 
@@ -96,12 +89,9 @@ module FjsysArchive
         input_files.length].pack('LLLx64'))
       arc_file.write("\x00" * (header_size - arc_file.tell))
 
-      meta = input_files.read_meta
-
       table_entries = []
       input_files.each do |file_name, data|
-        file_meta = meta.nil? ? nil : meta[file_name.to_sym]
-        data = encode(file_name, data, file_meta)
+        data = encode(file_name, data)
 
         table_entries.push(
           file_name: file_name,
@@ -131,15 +121,12 @@ module FjsysArchive
 
     private
 
-    def encode(file_name, data, file_meta)
+    def encode(file_name, data)
       if file_name.downcase.end_with?('.mgd')
-        regions = file_meta
-        return MgdConverter.encode(data, regions)
-
+        return MgdConverter.encode(data)
       elsif file_name.downcase.end_with?('.msd')
         return MsdConverter.encode(data)
       end
-
       data
     end
 

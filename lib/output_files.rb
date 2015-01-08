@@ -3,10 +3,6 @@ require 'json'
 
 # A class used to save extracted archive resources to disk
 class OutputFiles
-  # A file that is used to contain data necessary to repack some files.
-  # For example, graphic files that need tags.
-  META_FILE_NAME = 'arc_meta.txt'
-
   def initialize(target_dir, options)
     @target_dir = target_dir
     @verbosity = options[:verbosity]
@@ -25,10 +21,5 @@ class OutputFiles
     puts e.backtrace if @verbosity == :debug
   else
     puts 'ok (saved in ' + target_path + ')' if @verbosity != :quiet
-  end
-
-  def write_meta(meta)
-    target_path = File.join(@target_dir, META_FILE_NAME)
-    File.binwrite(target_path, JSON.dump(meta))
   end
 end
