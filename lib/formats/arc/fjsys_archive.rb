@@ -3,7 +3,7 @@ require 'lib/formats/script/msd_converter'
 
 # FJSYS archive
 # Company: various
-# Extension: .fjsys
+# Extension: none
 # Known games:
 # - Sono Hanabira ni Kuchizuke o 1
 # - Sono Hanabira ni Kuchizuke o 2
