@@ -17,19 +17,18 @@ require 'lib/formats/script/msd_converter'
 # - Sono Hanabira ni Kuchizuke o 10
 # - Sono Hanabira ni Kuchizuke o 11
 module FjsysArchive
+  module_function
+
   MAGIC = "FJSYS\x00\x00\x00"
 
-  def self.add_cli_help(arg_parser)
-    arg_parser.add_help(
-      '-k, --key=KEY',
-      'Sets key used for decrypting MSD files.',
-      possible_values: MsdConverter::COMMON_KEYS.keys)
+  def add_cli_help(arg_parser)
+    MsdConverter.add_cli_help(arg_parser)
+    MgdConverter.add_cli_help(arg_parser)
   end
 
-  def self.parse_cli_options(arg_parser, options)
-    key = arg_parser.switch(%w(-k --key))
-    key = MsdConverter::COMMON_KEYS[key.to_sym] unless key.nil?
-    options[:msd_key] = key
+  def parse_cli_options(arg_parser, options)
+    MsdConverter.parse_cli_options(arg_parser, options)
+    MgdConverter.parse_cli_options(arg_parser, options)
   end
 
   class Unpacker
@@ -65,9 +64,9 @@ module FjsysArchive
 
     def decode(file_name, data, options)
       if data.start_with?(MgdConverter::MAGIC)
-        data = MgdConverter.decode(data)
+        data = MgdConverter.decode(data, options)
       elsif file_name.downcase.end_with?('.msd')
-        data = MsdConverter.decode(data, options[:msd_key])
+        data = MsdConverter.decode(data, options)
       end
 
       data
@@ -75,7 +74,7 @@ module FjsysArchive
   end
 
   class Packer
-    def pack(arc_file, input_files, _options)
+    def pack(arc_file, input_files, options)
       arc_file.write(MAGIC)
 
       file_names_start = input_files.length * 16 + 0x54
@@ -91,7 +90,7 @@ module FjsysArchive
 
       table_entries = []
       input_files.each do |file_name, data|
-        data = encode(file_name, data)
+        data = encode(file_name, data, options)
 
         table_entries.push(
           file_name: file_name,
@@ -121,11 +120,11 @@ module FjsysArchive
 
     private
 
-    def encode(file_name, data)
+    def encode(file_name, data, options)
       if file_name.downcase.end_with?('.mgd')
-        return MgdConverter.encode(data)
+        data = MgdConverter.encode(data, options)
       elsif file_name.downcase.end_with?('.msd')
-        return MsdConverter.encode(data)
+        data = MsdConverter.encode(data, options)
       end
       data
     end

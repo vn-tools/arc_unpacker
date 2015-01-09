@@ -4,9 +4,15 @@
 # Known games:
 # - Melty Blood
 module MeltyBloodArchive
+  module_function
+
   MAGIC1 = "\x00\x00\x00\x00" # encrypted
   MAGIC2 = "\x01\x00\x00\x00" # not encrypted
   ENCRYPTION_KEY = 0xE3DF59AC
+
+  def add_cli_help(_arg_parser) end
+
+  def parse_cli_options(_arg_parser, _options) end
 
   class Unpacker
     def unpack(arc_file, output_files, _options)

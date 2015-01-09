@@ -7,10 +7,22 @@ require 'lib/formats/script/yks_converter'
 # Known games:
 # - Hoshizora e Kakaru Hashi
 module YkcArchive
+  module_function
+
   MAGIC = 'YKC001'
 
+  def add_cli_help(arg_parser)
+    YkgConverter.add_cli_help(arg_parser)
+    YksConverter.add_cli_help(arg_parser)
+  end
+
+  def parse_cli_options(arg_parser, options)
+    YkgConverter.parse_cli_options(arg_parser, options)
+    YksConverter.parse_cli_options(arg_parser, options)
+  end
+
   class Unpacker
-    def unpack(arc_file, output_files, _options)
+    def unpack(arc_file, output_files, options)
       magic = arc_file.read(MAGIC.length)
       fail ArcError, 'Not a YKC archive' unless magic == MAGIC
 
@@ -30,7 +42,7 @@ module YkcArchive
 
           name = arc_file.peek(name_origin) { arc_file.read(name_size - 1) }
           data = arc_file.peek(data_origin) { arc_file.read(data_size) }
-          data = decode(data)
+          data = decode(data, options)
 
           [name, data]
         end
@@ -39,18 +51,18 @@ module YkcArchive
 
     private
 
-    def decode(data)
+    def decode(data, options)
       if data.start_with?(YkgConverter::MAGIC)
-        data = YkgConverter.decode(data)
+        data = YkgConverter.decode(data, options)
       elsif data.start_with?(YksConverter::MAGIC)
-        data = YksConverter.decode(data)
+        data = YksConverter.decode(data, options)
       end
       data
     end
   end
 
   class Packer
-    def pack(arc_file, input_files, _options)
+    def pack(arc_file, input_files, options)
       table_origin = MAGIC.length + 18
       table_size = input_files.length * 20
 
@@ -61,7 +73,7 @@ module YkcArchive
 
       table_entries = {}
       input_files.each do |name, data|
-        data = encode(name, data)
+        data = encode(name, data, options)
 
         table_entries[name] = { name_origin: arc_file.tell }
         arc_file.write(name.gsub('/', '\\'))
@@ -82,11 +94,11 @@ module YkcArchive
       end
     end
 
-    def encode(name, data)
+    def encode(name, data, options)
       if name.downcase.end_with?('.ykg')
-        data = YkgConverter.encode(data)
+        data = YkgConverter.encode(data, options)
       elsif name.downcase.end_with?('.yks')
-        data = YksConverter.encode(data, true)
+        data = YksConverter.encode(data, options)
       end
       data
     end

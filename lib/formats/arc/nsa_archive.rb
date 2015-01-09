@@ -7,11 +7,17 @@ require 'lib/formats/gfx/spb_converter'
 # Known games:
 # - Tsukihime
 module NsaArchive
+  module_function
+
   NO_COMPRESSION = 0
   SPB_COMPRESSION = 1
   LZSS_COMPRESSION = 2
 
-  def self.lzss_compressor
+  def add_cli_help(_arg_parser) end
+
+  def parse_cli_options(_arg_parser, _options) end
+
+  def lzss_compressor
     LzssCompressor.new(initial_dictionary_pos: 239, reuse_compressed: true)
   end
 
@@ -67,7 +73,7 @@ module NsaArchive
     def decompress(data, table_entry)
       case table_entry[:compression_type]
       when SPB_COMPRESSION
-        data = SpbConverter.decode(data)
+        data = SpbConverter.decode(data, {})
         table_entry[:size_original] = data.length
       when LZSS_COMPRESSION
         data = NsaArchive.lzss_compressor.decode(data)
@@ -121,7 +127,7 @@ module NsaArchive
     def compress(data, compression_type)
       case compression_type
       when SPB_COMPRESSION
-        data = SpbConverter.encode(data)
+        data = SpbConverter.encode(data, {})
       when LZSS_COMPRESSION
         data = NsaArchive.lzss_compressor.encode(data)
       end

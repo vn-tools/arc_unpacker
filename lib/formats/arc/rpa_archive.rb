@@ -8,8 +8,14 @@ require 'zlib'
 # - Everlasting Summer
 # - Katawa Shoujo
 module RpaArchive
+  module_function
+
   MAGIC3 = 'RPA-3.0 '
   MAGIC2 = 'RPA-2.0 '
+
+  def add_cli_help(_arg_parser) end
+
+  def parse_cli_options(_arg_parser, _options) end
 
   # RPA archive packer
   class Packer

@@ -8,7 +8,11 @@ module YkgConverter
 
   MAGIC = 'YKG000'
 
-  def decode(data)
+  def add_cli_help(_arg_parser) end
+
+  def parse_cli_options(_arg_parser, _options) end
+
+  def decode(data, _options)
     input = BinaryIO.from_string(data)
 
     magic = input.read(MAGIC.length)
@@ -41,7 +45,7 @@ module YkgConverter
     Image.raw_to_boxed(meta[:width], meta[:height], raw_data, 'RGBA', meta)
   end
 
-  def encode(data)
+  def encode(data, _options)
     regions = Image.read_meta_from_boxed(data)[:regions]
 
     output = BinaryIO.from_string

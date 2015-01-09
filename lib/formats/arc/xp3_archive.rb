@@ -10,26 +10,28 @@ require 'zlib'
 # - Fate/Hollow Ataraxia
 # - Sono Hanabira ni Kuchizuke o 12
 module Xp3Archive
+  module_function
+
   MAGIC = "XP3\r\n\x20\x0a\x1a\x8b\x67\x01".b
   FILE_MAGIC = 'File'
   ADLR_MAGIC = 'adlr'
   INFO_MAGIC = 'info'
   SEGM_MAGIC = 'segm'
 
-  def self.add_cli_help(arg_parser)
+  def add_cli_help(arg_parser)
     arg_parser.add_help(
       '--plugin=PLUGIN',
       'Selects XP3 decryption routine.',
       possible_values: XP3_FILTERS.keys)
   end
 
-  def self.parse_cli_options(arg_parser, options)
+  def parse_cli_options(arg_parser, options)
     filter = arg_parser.switch(['--plugin'])
     filter = filter.nil? ? :none : filter.to_sym
     options[:filter] = filter
   end
 
-  def self.get_filter(symbol)
+  def get_filter(symbol)
     filter = XP3_FILTERS[symbol]
     fail ArcError, 'Unknown filter' if filter.nil?
     filter.call

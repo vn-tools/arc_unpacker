@@ -76,9 +76,8 @@ class CLI
     if @options[:archive].nil?
       puts '[arc_options] depend on each archive and are required at runtime.'
       puts 'See --help --fmt FORMAT to see detailed help for given archive.'
-    elsif defined? @options[:archive].add_cli_help
+    else
       @options[:archive].add_cli_help(@arg_parser)
-
       puts '[arc_options] specific to ' + @options[:format] + ':'
       puts
       @arg_parser.print_help

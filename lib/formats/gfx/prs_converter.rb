@@ -9,7 +9,11 @@ module PrsConverter
 
   MAGIC = "YB\x83\x03".b
 
-  def decode(input)
+  def add_cli_help(_arg_parser) end
+
+  def parse_cli_options(_arg_parser, _options) end
+
+  def decode(input, _options)
     input = BinaryIO.from_string(input)
     magic = input.read(4)
     fail 'Not a PRS graphic file' if magic != MAGIC
@@ -27,7 +31,7 @@ module PrsConverter
     Image.raw_to_boxed(width, height, target_buffer, 'BGR')
   end
 
-  def encode(_input)
+  def encode(_input, _options)
     fail 'Not supported.'
   end
 end

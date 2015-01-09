@@ -6,6 +6,12 @@ silence_warnings { require 'pedump' }
 # Known games:
 # - Fortune Summoners
 module ExeReader
+  module_function
+
+  def add_cli_help(_arg_parser) end
+
+  def parse_cli_options(_arg_parser, _options) end
+
   class Unpacker
     def unpack(handle, output_files, _options)
       pedump = init_pedump(handle)

@@ -7,22 +7,29 @@ require 'lib/formats/gfx/prs_converter'
 # Known games:
 # - Wanko to Kurasou
 module MblArchive
-  def register_options(arg_parser, options)
-    arg_parser.on(
-      nil,
-      '--version',
+  module_function
+
+  def add_cli_help(arg_parser)
+    PrsConverter.add_cli_help(arg_parser)
+    arg_parser.add_help(
+      '--mbl-version',
       'Which version to pack MBL archive with.',
-      %(1 2)) do |version|
-      options[:version] = version.to_i
-    end
+      possible_values: ['1', '2'])
+  end
+
+  def parse_cli_options(arg_parser, options)
+    PrsConverter.parse_cli_options(arg_parser, options)
+    key = arg_parser.switch(['--mbl-version'])
+    key = '2' if key.to_s != '1'
+    options[:mbl_version] = key.to_i
   end
 
   class Unpacker
-    def unpack(arc_file, output_files, _options)
+    def unpack(arc_file, output_files, options)
       @arc_file = arc_file
       version = detect_version
       table = read_table(version)
-      unpack_files(table, output_files)
+      unpack_files(table, output_files, options)
     end
 
     private
@@ -56,29 +63,31 @@ module MblArchive
       table
     end
 
-    def unpack_files(table, output_files)
+    def unpack_files(table, output_files, options)
       table.each do |e|
         output_files.write do
           data = @arc_file.peek(e[:origin]) { @arc_file.read(e[:size]) }
-          data = decode(data)
+          data = decode(data, options)
           [e[:name], data]
         end
       end
     end
 
-    def decode(data)
-      return PrsConverter.decode(data) if data.start_with?(PrsConverter::MAGIC)
+    def decode(data, options)
+      if data.start_with?(PrsConverter::MAGIC)
+        data = PrsConverter.decode(data, options)
+      end
       data
     end
   end
 
   class Packer
     def pack(arc_file, input_files, options)
-      version = options[:version] || 2
+      version = options[:mbl_version] || 2
       @arc_file = arc_file
       name_length = calc_name_length(input_files, version)
       write_dummy_table(input_files, version, name_length)
-      table = write_contents(input_files)
+      table = write_contents(input_files, options)
       @arc_file.seek(0)
       write_table(table, version, name_length)
     end
@@ -110,18 +119,18 @@ module MblArchive
       end
     end
 
-    def write_contents(input_files)
+    def write_contents(input_files, options)
       table = []
       input_files.each do |name, data|
-        data = encode(data)
+        data = encode(data, options)
         table.push(name: name, origin: @arc_file.tell, size: data.length)
         @arc_file.write(data)
       end
       table
     end
 
-    def encode(data)
-      data = PrsConverter.encode(data) if data[1..3] == 'PNG'
+    def encode(data, options)
+      data = PrsConverter.encode(data, options) if data[1..3] == 'PNG'
       data
     end
   end

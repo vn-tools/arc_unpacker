@@ -8,23 +8,25 @@ require 'zlib'
 # Known games:
 # - Chaos;Head
 module NpaArchive
+  module_function
+
   MAGIC = "NPA\x01\x00\x00\x00".b
   FILE_TYPE_DIRECTORY = 1
   FILE_TYPE_FILE = 2
 
-  def self.add_cli_help(arg_parser)
+  def add_cli_help(arg_parser)
     arg_parser.add_help(
       '--plugin=PLUGIN',
       'Selects NPA decryption routine.',
       possible_values: NPA_FILTERS.keys)
   end
 
-  def self.parse_cli_options(arg_parser, options)
+  def parse_cli_options(arg_parser, options)
     filter = arg_parser.switch(['--plugin'])
     options[:filter] = filter
   end
 
-  def self.get_filter(symbol)
+  def get_filter(symbol)
     filter = NPA_FILTERS[symbol.to_sym]
     fail ArcError, 'Unknown filter' if filter.nil?
     filter.call

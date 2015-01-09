@@ -7,11 +7,17 @@ require 'zlib'
 # Known games:
 # - Saya no Uta
 module Pak2NitroplusArchive
+  module_function
+
   MAGIC = "\x02\x00\x00\x00"
   # MAGIC1 = "\x01\x00\x00\x00"
   # MAGIC2 = "\x02\x00\x00\x00"
   # MAGIC3 = "\x03\x00\x00\x00"
   # MAGIC4 = "\x04\x00\x00\x00"
+
+  def add_cli_help(_arg_parser) end
+
+  def parse_cli_options(_arg_parser, _options) end
 
   class Unpacker
     def unpack(arc_file, output_files, _options)

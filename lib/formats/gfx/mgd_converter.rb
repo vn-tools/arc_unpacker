@@ -9,16 +9,19 @@ module MgdConverter
   module_function
 
   MAGIC = 'MGD '
-
   NO_COMPRESSION = 0
   SGD_COMPRESSION = 1
   PNG_COMPRESSION = 2
 
-  def decode(data)
+  def add_cli_help(_arg_parser) end
+
+  def parse_cli_options(_arg_parser, _options) end
+
+  def decode(data, _options)
     Decoder.new.read(data)
   end
 
-  def encode(data)
+  def encode(data, _options)
     Encoder.new.write(data)
   end
 

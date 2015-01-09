@@ -12,7 +12,6 @@ module MsdConverter
   # 1. Search for _wsprintfA("%s%d", ...) instruction.
   # 2. The register used to fill "%s" part should point to the key.
   # 3. Apparently, this is just the main window title, encoded in SJIS.
-
   COMMON_KEYS = {
     sonohana1: 'その花びらにくちづけを'.encode('sjis'),
     sonohana2: 'その花びらにくちづけを　わたしの王子さま'.encode('sjis'),
@@ -27,9 +26,22 @@ module MsdConverter
     sonohana11: 'その花びらにくちづけを ミカエルの乙女たち'.encode('sjis')
   }
 
-  def decode(data, key)
+  def add_cli_help(arg_parser)
+    arg_parser.add_help(
+      '-msd-key=KEY',
+      'Sets key used for decrypting MSD files.',
+      possible_values: COMMON_KEYS.keys)
+  end
+
+  def parse_cli_options(arg_parser, options)
+    key = arg_parser.switch(['--msd-key'])
+    key = MsdConverter::COMMON_KEYS[key.to_sym] unless key.nil?
+    options[:msd_key] = key
+  end
+
+  def decode(data, options)
     return data if data.start_with?(MAGIC)
-    fail 'Must supply a key to decrypt this file.' if key.nil?
+    fail 'Must supply a key to decrypt this file.' if options[:msd_key].nil?
 
     data = data.unpack('C*')
     k = 0
@@ -37,7 +49,7 @@ module MsdConverter
 
     catch :done do
       how_many.times do |i|
-        md5 = Digest::MD5.hexdigest(key + i.to_s)
+        md5 = Digest::MD5.hexdigest(options[:msd_key] + i.to_s)
         md5 = md5.split('').map(&:ord)
         (0..31).each do |j|
           data[k] ^= md5[j]
@@ -52,7 +64,7 @@ module MsdConverter
     data
   end
 
-  def encode(data, _key = nil)
+  def encode(data, _options)
     data
   end
 end

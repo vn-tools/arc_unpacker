@@ -42,7 +42,6 @@ module YksConverter
   # ...it should be sufficient to make translation possible.
 
   MAGIC = 'YKS001'
-
   OPCODE_FUNC = 0
   OPCODE_OPERATOR = 1
   OPCODE_INT_VALUE = 4
@@ -51,7 +50,17 @@ module YksConverter
   OPCODE_STRING = 9
   OPCODE_COUNTER = 10
 
-  def decode(data)
+  def add_cli_help(arg_parser)
+    arg_parser.add_help(
+      '--encrypt-yks',
+      'Enables encryption of YKS scripts.')
+  end
+
+  def parse_cli_options(arg_parser, options)
+    options[:encrypt_yks] = arg_parser.flag(%w(--encrypt))
+  end
+
+  def decode(data, _options)
     input = BinaryIO.from_string(data)
 
     magic = input.read(MAGIC.length)
@@ -144,7 +153,7 @@ module YksConverter
     ] * "\n".encode('binary')
   end
 
-  def encode(data, encrypt = false)
+  def encode(data, options)
     data = data.split("\n")
     unknown = data.shift.to_i
     entries = JSON.load(data.shift)
@@ -205,7 +214,7 @@ module YksConverter
 
     text.rewind
     text = text.read
-    text = xor(text) if encrypt
+    text = xor(text) if options[:encrypt_yks]
 
     code.rewind
     code = code.read
@@ -218,7 +227,7 @@ module YksConverter
     output = BinaryIO.from_string
     output.write(MAGIC)
     output.write([
-      encrypt ? 1 : 0,
+      options[:encrypt_yks] ? 1 : 0,
       header_size,
       entries_origin,
       entries.length / 4,

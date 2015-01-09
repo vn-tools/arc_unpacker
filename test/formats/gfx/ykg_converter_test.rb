@@ -10,7 +10,7 @@ class YkgConverterTest < Test::Unit::TestCase
 
     data = TestHelper.get_test_file('reimu_transparent.png')
     data = Image.add_meta_to_boxed(data, regions: test_regions)
-    data = YkgConverter.decode(YkgConverter.encode(data))
+    data = YkgConverter.decode(YkgConverter.encode(data, {}), {})
     regions = Image.read_meta_from_boxed(data)[:regions]
 
     assert_equal('PNG', data[1..3])

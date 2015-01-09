@@ -14,9 +14,7 @@ class ArchivePacker < CLI
 
   def pack(archive, options)
     fail 'Packing not supported' unless defined? archive::Packer
-    if defined? archive.parse_cli_options
-      archive.parse_cli_options(@arg_parser, options)
-    end
+    archive.parse_cli_options(@arg_parser, options)
 
     input_files = InputFiles.new(options[:input_path], options)
     packer = archive::Packer.new

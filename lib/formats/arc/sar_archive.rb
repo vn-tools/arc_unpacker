@@ -4,6 +4,12 @@
 # Known games:
 # - Tsukihime
 module SarArchive
+  module_function
+
+  def add_cli_help(_arg_parser) end
+
+  def parse_cli_options(_arg_parser, _options) end
+
   class Unpacker
     def unpack(arc_file, output_files, _options)
       table = read_table(arc_file)
