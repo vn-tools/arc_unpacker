@@ -67,13 +67,13 @@ class ArgParser
 
   def parse(args)
     args.each do |arg|
-      match = /\A--?(?<key>\w+)=(?<value>.*)\Z/.match(arg)
+      match = /\A--?(?<key>[\w-]+)=(?<value>.*)\Z/.match(arg)
       if match
         @switches[match[:key]] = match[:value]
         next
       end
 
-      match = /\A--?(?<key>\w+)\Z/.match(arg)
+      match = /\A--?(?<key>[\w-]+)\Z/.match(arg)
       if match
         @flags.push(match[:key])
         next
