@@ -64,7 +64,7 @@ module YksConverter
     input = BinaryIO.from_string(data)
 
     magic = input.read(MAGIC.length)
-    fail 'Not a YKS script' if magic != MAGIC
+    fail RecognitionError, 'Not a YKS script' if magic != MAGIC
 
     is_encrypted,
     _header_size,

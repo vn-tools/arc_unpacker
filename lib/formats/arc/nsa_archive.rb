@@ -32,7 +32,9 @@ module NsaArchive
     def read_table(arc_file)
       num_files,
       offset_to_files = arc_file.read(6).unpack('S>L>')
-      fail ArcError, 'Bad offset to files' if offset_to_files > arc_file.size
+      if offset_to_files > arc_file.size
+        fail RecognitionError, 'Bad offset to files'
+      end
 
       table = []
       num_files.times do
@@ -48,7 +50,7 @@ module NsaArchive
         table.push(e)
 
         if e[:origin] + e[:size_compressed] > arc_file.size
-          fail ArcError, 'Bad offset to file'
+          fail RecognitionError, 'Bad offset to file'
         end
       end
       table
@@ -63,7 +65,9 @@ module NsaArchive
             data
           end
 
-          fail ArcError, 'Bad file size' unless data.length == e[:size_original]
+          unless data.length == e[:size_original]
+            fail RecognitionError, 'Bad file size'
+          end
 
           [e[:name], data]
         end

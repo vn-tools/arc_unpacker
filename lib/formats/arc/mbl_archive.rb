@@ -14,7 +14,7 @@ module MblArchive
     arg_parser.add_help(
       '--mbl-version',
       'Which version to pack MBL archive with.',
-      possible_values: ['1', '2'])
+      possible_values: %w(1 2))
   end
 
   def parse_cli_options(arg_parser, options)
@@ -41,7 +41,7 @@ module MblArchive
       return 1 if last_file_origin + last_file_size == @arc_file.size
       return 2
     rescue
-      raise ArcError, 'Not a MBL archive'
+      raise RecognitionError, 'Not a MBL archive'
     ensure
       @arc_file.seek(0)
     end
@@ -110,7 +110,9 @@ module MblArchive
       @arc_file.write([table.length].pack('L'))
       @arc_file.write([name_length].pack('L')) if version == 2
       table.each do |e|
-        fail ArcError, 'Too long file name!' if e[:name].length > name_length
+        if e[:name].length > name_length
+          fail RecognitionError, 'Too long file name!'
+        end
         @arc_file.write("\x00" * name_length)
         @arc_file.peek(@arc_file.tell - name_length) do
           @arc_file.write(e[:name].encode('sjis'))

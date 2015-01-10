@@ -19,7 +19,7 @@ module MeltyBloodArchive
       magic = arc_file.read(4)
       encrypted = magic == MAGIC1
       unless [MAGIC1, MAGIC2].include? magic
-        fail ArcError, 'Not a Melty Blood archive'
+        fail RecognitionError, 'Not a Melty Blood archive'
       end
 
       table = read_table(arc_file)
@@ -39,7 +39,7 @@ module MeltyBloodArchive
         table << e
 
         if e[:origin] + e[:size] > arc_file.size
-          fail ArcError, 'Bad offset to file'
+          fail RecognitionError, 'Bad offset to file'
         end
       end
       table

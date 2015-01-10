@@ -10,6 +10,6 @@ def hex_s_to_s(str)
   hex_s_to_a(str).map(&:chr).join.b
 end
 
-# Generic error thrown by the archive readers.
-class ArcError < RuntimeError
+# Error thrown by file readers, when they fail to recognize the file.
+class RecognitionError < RuntimeError
 end

@@ -1,17 +1,7 @@
-# Converts --fmt string to instance of given archive.
-class ArchiveFactory
-  def self.get(fmt)
-    factory[fmt].call
-  end
+require_relative 'generic_factory'
 
-  def self.format_strings
-    factory.keys
-  end
-
-  def self.each(&block)
-    factory.each { |k, v| block.call(k, v.call) }
-  end
-
+# Converts --fmt string to a corresponding archive module.
+class ArchiveFactory < GenericFactory
   def self.factory
     {
       'xp3' => lambda do

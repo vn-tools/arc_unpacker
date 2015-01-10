@@ -16,7 +16,7 @@ module PrsConverter
   def decode(input, _options)
     input = BinaryIO.from_string(input)
     magic = input.read(4)
-    fail 'Not a PRS graphic file' if magic != MAGIC
+    fail RecognitionError, 'Not a PRS graphic file' if magic != MAGIC
 
     source_size,
     width,

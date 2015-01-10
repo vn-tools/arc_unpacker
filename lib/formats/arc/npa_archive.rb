@@ -28,7 +28,7 @@ module NpaArchive
 
   def get_filter(symbol)
     filter = NPA_FILTERS[symbol.to_sym]
-    fail ArcError, 'Unknown filter' if filter.nil?
+    fail RecognitionError, 'Unknown filter' if filter.nil?
     filter.call
   end
 
@@ -37,7 +37,7 @@ module NpaArchive
       @filter = NpaArchive.get_filter(options[:filter])
 
       magic = arc_file.read(MAGIC.length)
-      fail ArcError, 'Not a NPA archive' unless magic == MAGIC
+      fail RecognitionError, 'Not a NPA archive' unless magic == MAGIC
 
       header = read_header(arc_file)
       table = read_table(arc_file, header)
@@ -87,12 +87,12 @@ module NpaArchive
         when FILE_TYPE_FILE
           table.push(e)
         else
-          fail ArcError, 'Unknown file type: ' + e[:type].to_s
+          fail RecognitionError, 'Unknown file type: ' + e[:type].to_s
         end
       end
 
       if table_origin + header[:table_size] != arc_file.tell
-        fail ArcError, 'Bad file table size.'
+        fail RecognitionError, 'Bad file table size.'
       end
 
       table
@@ -108,7 +108,9 @@ module NpaArchive
           data = decrypt_data(data, e, header) if header[:encrypted]
           data = Zlib.inflate(data) if e[:size_compressed] != e[:size_original]
 
-          fail ArcError, 'Bad file size' unless data.length == e[:size_original]
+          unless data.length == e[:size_original]
+            fail RecognitionError, 'Bad file size'
+          end
 
           [e[:name], data]
         end

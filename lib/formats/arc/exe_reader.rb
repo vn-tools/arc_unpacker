@@ -17,7 +17,7 @@ module ExeReader
       pedump = init_pedump(handle)
       warn_about_packer(pedump) unless pedump.packer.nil?
 
-      fail ArcError, 'No resources found' if pedump.resources.nil?
+      fail RecognitionError, 'No resources found' if pedump.resources.nil?
       pedump
         .resources
         .reject { |resource| resource.file_offset.nil? }

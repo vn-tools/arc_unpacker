@@ -1,13 +1,13 @@
 #!/usr/bin/ruby -W2
 require_relative '../lib/common'
 require 'fileutils'
-require 'lib/cli'
+require 'lib/cli_archive'
 require 'lib/binary_io'
 require 'lib/output_files'
-require 'lib/archive_factory'
+require 'lib/factory/archive_factory'
 
 # CLI frontend
-class ArchiveUnpacker < CLI
+class ArchiveUnpacker < CLIArchive
   def run_internal
     verbose = @options[:verbosity] != :quiet
 
@@ -26,7 +26,7 @@ class ArchiveUnpacker < CLI
         return
       rescue => e
         puts e.message if verbose
-        if @options[:verbosity] == :debug && !e.is_a?(ArcError)
+        if @options[:verbosity] == :debug && !e.is_a?(RecognitionError)
           puts
           puts e.backtrace
           puts

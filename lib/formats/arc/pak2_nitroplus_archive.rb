@@ -22,7 +22,7 @@ module Pak2NitroplusArchive
   class Unpacker
     def unpack(arc_file, output_files, _options)
       magic = arc_file.read(4)
-      fail ArcError, 'Not a PAK archive' unless magic == MAGIC
+      fail RecognitionError, 'Not a PAK archive' unless magic == MAGIC
 
       table = read_table(arc_file)
       read_contents(arc_file, table, output_files)
@@ -39,7 +39,7 @@ module Pak2NitroplusArchive
       raw_table = Zlib.inflate(arc_file.read(table_size_compressed))
       raw_table = BinaryIO.from_string(raw_table)
       unless raw_table.length == table_size_original
-        fail ArcError, 'Bad file table size'
+        fail RecognitionError, 'Bad file table size'
       end
       offset_to_files = arc_file.tell
 
@@ -63,7 +63,9 @@ module Pak2NitroplusArchive
             next arc_file.read(e[:size_original]) unless e[:flags] > 0
             next Zlib.inflate(arc_file.read(e[:size_compressed]))
           end
-          fail ArcError, 'Bad file size' unless data.length == e[:size_original]
+          unless data.length == e[:size_original]
+            fail RecognitionError, 'Bad file size'
+          end
 
           [e[:name], data]
         end

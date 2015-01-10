@@ -16,7 +16,7 @@ module YkgConverter
     input = BinaryIO.from_string(data)
 
     magic = input.read(MAGIC.length)
-    fail 'Not a YKG picture' if magic != MAGIC
+    fail RecognitionError, 'Not a YKG picture' if magic != MAGIC
 
     is_encrypted,
     _header_size,

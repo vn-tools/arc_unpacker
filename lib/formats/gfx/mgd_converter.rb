@@ -1,5 +1,4 @@
 require 'lib/binary_io'
-require 'lib/warning_silencer'
 require 'lib/image'
 require_relative 'sgd_compressor'
 
@@ -30,7 +29,7 @@ module MgdConverter
       input = BinaryIO.from_string(data)
 
       magic = input.read(MAGIC.length)
-      fail 'Not a MGD picture' if magic != MAGIC
+      fail RecognitionError, 'Not a MGD picture' if magic != MAGIC
 
       _data_offset,
       _format,
@@ -64,7 +63,7 @@ module MgdConverter
     end
 
     def read_regions(input)
-      fail 'Failed to read regions metadata' if input.eof?
+      fail RecognitionError, 'Failed to read regions metadata' if input.eof?
       regions = []
       unless input.eof?
         regions_size,
@@ -73,7 +72,9 @@ module MgdConverter
         bytes_left = input.length - input.tell
 
         fail format('Unsupported format (%d)',  meta_format) if meta_format != 4
-        fail 'Failed to read regions metadata' if regions_size != bytes_left
+        if regions_size != bytes_left
+          fail RecognitionError, 'Failed to read regions metadata'
+        end
 
         region_count.times do
           dim = input.read(8).unpack('S*')

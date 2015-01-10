@@ -23,7 +23,7 @@ class MblArchiveTest < Test::Unit::TestCase
   end
 
   def test_version1_too_long_names
-    assert_raise(ArcError) do
+    assert_raise(RecognitionError) do
       TestHelper.pack_and_unpack(
         MblArchive,
         InputFilesMock.new([{ file_name: 'long' * 10, data: 'whatever' }]),

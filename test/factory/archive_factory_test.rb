@@ -1,5 +1,5 @@
 require 'test/unit'
-require 'lib/archive_factory'
+require 'lib/factory/archive_factory'
 
 class ArchiveFactoryTest < Test::Unit::TestCase
   def test_iteration

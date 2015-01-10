@@ -1,12 +1,12 @@
 #!/usr/bin/ruby -W2
 require_relative '../lib/common'
 require 'fileutils'
-require 'lib/cli'
+require 'lib/cli_archive'
 require 'lib/binary_io'
 require 'lib/input_files'
 
 # CLI frontend
-class ArchivePacker < CLI
+class ArchivePacker < CLIArchive
   def run_internal
     fail OptionError, 'Must specify output format.' if @options[:archive].nil?
     pack(@options[:archive], @options)

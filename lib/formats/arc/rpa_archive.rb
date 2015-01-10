@@ -99,7 +99,9 @@ module RpaArchive
 
     def assert_magic
       magic = @arc_file.read(MAGIC3.length)
-      fail ArcError, 'Not a RPA archive' unless [MAGIC2, MAGIC3].include?(magic)
+      unless [MAGIC2, MAGIC3].include?(magic)
+        fail RecognitionError, 'Not a RPA archive'
+      end
       magic
     end
 
