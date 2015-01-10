@@ -1,6 +1,6 @@
+require_relative 'g00_converter/g00_decompressor'
 require 'lib/binary_io'
 require 'lib/image'
-require 'lib/binary_io'
 
 # Converts G00 to PNG and vice versa.
 # Seen in Key games:
@@ -59,7 +59,7 @@ module G00Converter
         fail RecognitionError, 'Bad uncompressed size'
       end
 
-      output = decompress_version_0(input.read)
+      output = decompress_version_0(input.read, uncompressed_size)
       Image.raw_to_boxed(header[:width], header[:height], output, 'BGR')
     end
 
@@ -98,12 +98,14 @@ module G00Converter
         fail RecognitionError, 'Bad compressed size'
       end
 
-      pix_input = decompress_version_1(input.read(uncompressed_size))
+      pix_input = input.read(compressed_size)
+      pix_input = decompress_version_1(pix_input, uncompressed_size)
       pix_input = BinaryIO.from_string(pix_input)
+      fail 'Malformed data' if uncompressed_size != pix_input.length
+
       pix_output = BinaryIO.from_string('')
       pix_output.write("\x00" * header[:width] * header[:height] * 4)
       pix_output.rewind
-      #fail 'Malformed data' if uncompressed_size < pix_input.length
 
       if pix_input.read(4).unpack('L')[0] != region_count
         fail RecognitionError, 'Bad bitmap count'
@@ -160,37 +162,12 @@ module G00Converter
         regions: regions, index: index)
     end
 
-    def decompress_version_0(input)
-      decompress(input, 3, 1)
+    def decompress_version_0(input, output_size)
+      decompress_g00(input, input.b.length, output_size, 3, 1)
     end
 
-    def decompress_version_1(input)
-      decompress(input, 1, 2)
-    end
-
-    def decompress(input, byte_count, length_delta)
-      output = ''
-      bs = BinaryIO.from_string(input)
-      flag = bs.read(1).ord
-      bit = 1
-      until bs.eof?
-        if bit == 256
-          flag = bs.read(1).ord
-          bit = 1
-        end
-        if flag & bit > 0
-          output << bs.read(byte_count)
-        else
-          tmp = (bs.read(2) || "\0\0").unpack('S<')[0]
-          look_behind = (tmp >> 4) * byte_count
-          length = ((tmp & 0x0f) + length_delta) * byte_count
-          length.times do
-            output << output[-look_behind] unless output[-look_behind].nil?
-          end
-        end
-        bit <<= 1
-      end
-      output
+    def decompress_version_1(input, output_size)
+      decompress_g00(input, input.b.length, output_size, 1, 2)
     end
   end
 end
