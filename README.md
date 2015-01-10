@@ -55,6 +55,7 @@ CLI invocation                 | Game                                | Features<
 `--fmt=rpa`                    | Katawa Shoujo                       | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
 `--fmt=mbl`                    | Wanko to Kurasou                    | ![][sup]![][sup]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
 `--fmt=exe`                    | Generic `.exe` resources            | ![][sup]![][sup]![][sup]![][sup] ![][non]![][non]![][non]![][non]
+`--fmt=g00`                    | Little Busters                      | ![][non]![][par]![][non]![][non] ![][non]![][non]![][non]![][non]
 
 <sup>1</sup> Feature legend:
 

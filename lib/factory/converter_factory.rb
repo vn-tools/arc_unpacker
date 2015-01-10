@@ -22,6 +22,11 @@ class ConverterFactory < GenericFactory
       'ykg' => lambda do
         require 'lib/formats/gfx/ykg_converter'
         YkgConverter
+      end,
+
+      'g00' => lambda do
+        require 'lib/formats/gfx/g00_converter'
+        G00Converter
       end
     }
   end
