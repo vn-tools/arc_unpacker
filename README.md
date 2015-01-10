@@ -29,10 +29,10 @@ Supported games
 
 CLI invocation                 | Game                                | Features<sup>1</sup>
 ------------------------------ | ----------------------------------- | ------------
-`--fmt=xp3 --plugin=none`      | Sono Hanabira ni Kuchizuke o 12     | ![][sup]![][par]![][sup]![][par] ![][sup]![][non]![][sup]![][non]
-`--fmt=xp3 --plugin=fsn`       | Fate/Stay Night                     | ![][sup]![][par]![][sup]![][par] ![][sup]![][non]![][sup]![][non]
-`--fmt=xp3 --plugin=fha`       | Fate/Hollow Ataraxia                | ![][sup]![][par]![][sup]![][par] ![][sup]![][non]![][sup]![][non]
-`--fmt=xp3 --plugin=fha`       | Comyu Kuroi Ryuu to Yasashii Oukoku | ![][sup]![][par]![][sup]![][par] ![][sup]![][non]![][sup]![][non]
+`--fmt=xp3 --plugin=none`      | Sono Hanabira ni Kuchizuke o 12     | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
+`--fmt=xp3 --plugin=fsn`       | Fate/Stay Night                     | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
+`--fmt=xp3 --plugin=fha`       | Fate/Hollow Ataraxia                | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
+`--fmt=xp3 --plugin=fha`       | Comyu Kuroi Ryuu to Yasashii Oukoku | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
 `--fmt=melty_blood`            | Melty Blood                         | ![][sup]![][non]![][non]![][non] ![][non]![][non]![][non]![][non]
 `--fmt=sar`                    | Tsukihime                           | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
 `--fmt=nsa`                    | Tsukihime                           | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
@@ -55,8 +55,8 @@ CLI invocation                 | Game                                | Features<
 `--fmt=rpa`                    | Katawa Shoujo                       | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
 `--fmt=mbl`                    | Wanko to Kurasou                    | ![][sup]![][sup]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
 `--fmt=exe`                    | Generic `.exe` resources            | ![][sup]![][nap]![][nap]![][nap] ![][non]![][nap]![][nap]![][nap]
-`--fmt=g00`                    | Little Busters                      | ![][nap]![][par]![][non]![][non] ![][nap]![][non]![][non]![][non]
-`--fmt=g00`                    | Clannad                             | ![][nap]![][par]![][non]![][non] ![][nap]![][non]![][non]![][non]
+`--fmt=g00`                    | Little Busters                      | ![][nap]![][sup]![][non]![][non] ![][nap]![][non]![][non]![][non]
+`--fmt=g00`                    | Clannad                             | ![][nap]![][sup]![][non]![][non] ![][nap]![][non]![][non]![][non]
 
 <sup>1</sup> Feature legend:
 
