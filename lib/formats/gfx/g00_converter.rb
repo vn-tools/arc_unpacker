@@ -59,7 +59,8 @@ module G00Converter
         fail RecognitionError, 'Bad uncompressed size'
       end
 
-      output = decompress_version_0(input.read, uncompressed_size)
+      output = decompress_version_0(input.read(compressed_size), uncompressed_size)
+      output = output[0..header[:width] * header[:height] * 3 - 1]
       Image.raw_to_boxed(header[:width], header[:height], output, 'BGR')
     end
 
@@ -111,42 +112,45 @@ module G00Converter
         fail RecognitionError, 'Bad bitmap count'
       end
 
-      index = (1..region_count).map do
+      index = []
+      region_count.times do
         entry = {}
         entry[:origin],
-        entry[:size] = pix_input.read(8).unpack('LL')
-        entry
+        entry[:size] = pix_input.read(8).unpack('Ll')
+        index << entry
       end
 
       index.each_with_index do |entry, i|
         region = regions[i]
 
-        block = pix_input.peek(entry[:origin]) do
-          BinaryIO.from_string(pix_input.read(entry[:size]))
-        end
-        block_type,
-        part_count = block.read(4).unpack('S2')
-        fail 'Unknown block type' unless block_type == 1
-
-        block.skip(0x70)
-        parts = (1..part_count).map do
-          part = {}
-          part[:x],
-          part[:y],
-          part[:tr],
-          part[:width],
-          part[:height] = block.read(10).unpack('S5')
-          block.skip(0x52)
-
-          x = part[:x] + region[:x1]
-          y1 = part[:y] + region[:y1]
-          y2 = y1 + part[:height]
-          (y1..y2 - 1).each do |y|
-            data = block.read(part[:width] * 4)
-            pix_output.seek((x + y * header[:width]) * 4)
-            pix_output.write(data)
+        if entry[:size] > 0
+          block = pix_input.peek(entry[:origin]) do
+            BinaryIO.from_string(pix_input.read(entry[:size]))
           end
-          part
+          block_type,
+          part_count = block.read(4).unpack('S2')
+          fail 'Unknown block type' unless block_type == 1
+
+          block.skip(0x70)
+          parts = (1..part_count).map do
+            part = {}
+            part[:x],
+            part[:y],
+            part[:tr],
+            part[:width],
+            part[:height] = block.read(10).unpack('S5')
+            block.skip(0x52)
+
+            x = part[:x] + region[:x1]
+            y1 = part[:y] + region[:y1]
+            y2 = y1 + part[:height]
+            (y1..y2 - 1).each do |y|
+              data = block.read(part[:width] * 4)
+              pix_output.seek((x + y * header[:width]) * 4)
+              pix_output.write(data)
+            end
+            part
+          end
         end
 
         entry[:region] = region
