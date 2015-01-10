@@ -54,8 +54,9 @@ CLI invocation                 | Game                                | Features<
 `--fmt=rpa`                    | Everlasting Summer                  | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
 `--fmt=rpa`                    | Katawa Shoujo                       | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
 `--fmt=mbl`                    | Wanko to Kurasou                    | ![][sup]![][sup]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
-`--fmt=exe`                    | Generic `.exe` resources            | ![][sup]![][sup]![][sup]![][sup] ![][non]![][non]![][non]![][non]
-`--fmt=g00`                    | Little Busters                      | ![][non]![][par]![][non]![][non] ![][non]![][non]![][non]![][non]
+`--fmt=exe`                    | Generic `.exe` resources            | ![][sup]![][nap]![][nap]![][nap] ![][non]![][nap]![][nap]![][nap]
+`--fmt=g00`                    | Little Busters                      | ![][nap]![][par]![][non]![][non] ![][nap]![][non]![][non]![][non]
+`--fmt=g00`                    | Clannad                             | ![][nap]![][par]![][non]![][non] ![][nap]![][non]![][non]![][non]
 
 <sup>1</sup> Feature legend:
 
@@ -76,9 +77,15 @@ able to unpack generic files doesn't mean you will be able to read TLG files
 used by the game, unless `arc_unpacker` converts them specifically to
 PNG.</sub>
 
-[sup]: http://tmp.sakuya.pl/f/chk.png?v=2
-[par]: http://tmp.sakuya.pl/f/chk2.png?v=2
-[non]: http://tmp.sakuya.pl/f/chk3.png?v=2
+<sub>![][sup] - fully supported, ![][par] - partially supported, ![][non] -
+unsupported, ![][nap] - doesn't apply.  
+If generic file unpacking "doesn't apply", it means the game doesn't use
+archives.</sub>
+
+[sup]: http://i.imgur.com/PeYsbCg.png
+[par]: http://i.imgur.com/NMBy1C0.png
+[non]: http://i.imgur.com/2aTNlHb.png
+[nap]: http://i.imgur.com/jQTmqxl.png
 
 #### Disclaimer
 
