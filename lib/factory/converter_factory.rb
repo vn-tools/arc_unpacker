@@ -27,6 +27,11 @@ class ConverterFactory < GenericFactory
       'g00' => lambda do
         require 'lib/formats/gfx/g00_converter'
         G00Converter
+      end,
+
+      'nwa' => lambda do
+        require 'lib/formats/sfx/nwa_converter'
+        NwaConverter
       end
     }
   end
