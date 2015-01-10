@@ -59,24 +59,26 @@ module G00Converter
         fail RecognitionError, 'Bad uncompressed size'
       end
 
-      output = decompress_version_0(input.read(compressed_size), uncompressed_size)
+      output = decompress_version_0(
+        input.read(compressed_size),
+        uncompressed_size)
       output = output[0..header[:width] * header[:height] * 3 - 1]
       Image.raw_to_boxed(header[:width], header[:height], output, 'BGR')
     end
 
     def decode_version_1(_input, _header)
-      fail 'Reading version 1 is not supported.'
-      palette = {}
-      raw_palette = input.read(256 * 4)
-      while raw_palette.size > 0
-        rgba = raw_palette.slice!(0, 4)
-        palette[palette.length] = rgba
-      end
-      raw_data = ''
-      input.read(width * height).unpack('C*').each do |b|
-        raw_data << palette[b]
-      end
-      Image.raw_to_boxed(width, height, raw_data, 'ABGR')
+      fail 'Reading version 1 is not supported yet.'
+      # palette = {}
+      # raw_palette = input.read(256 * 4)
+      # while raw_palette.size > 0
+      #   rgba = raw_palette.slice!(0, 4)
+      #   palette[palette.length] = rgba
+      # end
+      # raw_data = ''
+      # input.read(width * height).unpack('C*').each do |b|
+      #   raw_data << palette[b]
+      # end
+      # Image.raw_to_boxed(width, height, raw_data, 'ABGR')
     end
 
     def decode_version_2(input, header)
