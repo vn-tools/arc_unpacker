@@ -24,6 +24,16 @@ class ConverterFactory < GenericFactory
         YkgConverter
       end,
 
+      'msd' => lambda do
+        require 'lib/formats/script/msd_converter'
+        MsdConverter
+      end,
+
+      'yks' => lambda do
+        require 'lib/formats/script/yks_converter'
+        YksConverter
+      end,
+
       'g00' => lambda do
         require 'lib/formats/gfx/g00_converter'
         G00Converter
