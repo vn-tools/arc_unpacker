@@ -66,19 +66,28 @@ module G00Converter
       Image.raw_to_boxed(header[:width], header[:height], output, 'BGR')
     end
 
-    def decode_version_1(_input, _header)
-      fail 'Reading version 1 is not supported yet.'
-      # palette = {}
-      # raw_palette = input.read(256 * 4)
-      # while raw_palette.size > 0
-      #   rgba = raw_palette.slice!(0, 4)
-      #   palette[palette.length] = rgba
-      # end
-      # raw_data = ''
-      # input.read(width * height).unpack('C*').each do |b|
-      #   raw_data << palette[b]
-      # end
-      # Image.raw_to_boxed(width, height, raw_data, 'ABGR')
+    def decode_version_1(input, header)
+      compressed_size,
+      uncompressed_size = input.read(8).unpack('L2')
+      if compressed_size != input.size - input.tell + 8
+        fail RecognitionError, 'Bad compressed size'
+      end
+
+      pix_input = BinaryIO.from_string(decompress_version_1(
+        input.read(compressed_size),
+        uncompressed_size))
+
+      color_count = pix_input.read(2).unpack('S')[0]
+      palette = {}
+      color_count.times do
+        palette[palette.length] = pix_input.read(4)
+      end
+
+      raw_data = ''
+      pix_input.read(header[:width] * header[:height]).unpack('C*').each do |b|
+        raw_data << palette[b]
+      end
+      Image.raw_to_boxed(header[:width], header[:height], raw_data, 'BGRA')
     end
 
     def decode_version_2(input, header)

@@ -58,6 +58,7 @@ CLI invocation                 | Game                                | Features<
 `--fmt=exe`                    | Generic `.exe` resources            | ![][sup]![][nap]![][nap]![][nap] ![][non]![][nap]![][nap]![][nap]
 `--fmt=g00`, `--fmt=nwa`       | Little Busters                      | ![][nap]![][sup]![][sup]![][non] ![][nap]![][non]![][non]![][non]
 `--fmt=g00`, `--fmt=nwa`       | Clannad                             | ![][nap]![][sup]![][sup]![][non] ![][nap]![][non]![][non]![][non]
+`--fmt=g00`, `--fmt=nwa`       | Kanon                               | ![][nap]![][sup]![][sup]![][non] ![][nap]![][non]![][non]![][non]
 
 <sup>1</sup> Feature legend:
 
