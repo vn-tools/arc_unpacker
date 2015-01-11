@@ -1,4 +1,4 @@
-require 'lib/warning_silencer'
+require 'lib/common'
 silence_warnings { require 'pedump' }
 
 # Windows executable reader

@@ -1,4 +1,4 @@
-require 'lib/warning_silencer'
+require 'lib/common'
 require 'base64'
 silence_warnings { require 'rmagick' }
 

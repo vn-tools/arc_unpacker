@@ -1,5 +1,5 @@
 require 'lib/formats/gfx/mgd_converter'
-require 'lib/warning_silencer'
+require 'lib/common'
 require 'lib/image'
 require 'test/test_helper'
 silence_warnings { require 'rmagick' }
