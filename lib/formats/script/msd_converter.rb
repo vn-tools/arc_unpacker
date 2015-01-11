@@ -28,7 +28,7 @@ module MsdConverter
 
   def add_cli_help(arg_parser)
     arg_parser.add_help(
-      '-msd-key=KEY',
+      '--msd-key=KEY',
       'Sets key used for decrypting MSD files.',
       possible_values: COMMON_KEYS.keys)
   end
