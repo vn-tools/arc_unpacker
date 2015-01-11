@@ -13,3 +13,16 @@ end
 # Error thrown by file readers, when they fail to recognize the file.
 class RecognitionError < RuntimeError
 end
+
+# Expands list of folders and files into flat array of file paths.
+def expand_paths(input_paths)
+  paths = []
+  [*input_paths].each do |input_path|
+    if File.directory?(input_path)
+      paths += Dir.glob(input_path + '/*')
+    else
+      paths << input_path
+    end
+  end
+  paths
+end

@@ -9,23 +9,14 @@ require 'lib/factory/converter_factory'
 class FileDecoder < CLI
   def run_internal
     verbose = @options[:verbosity] != :quiet
-
-    unless @options[:converter].nil?
-      decode(@options[:converter], @options)
-      return
-    end
-
-    ConverterFactory.each do |key, converter|
-      @options[:format] = key
-      @options[:converter] = converter
-      print format('Trying %s... ', key) if verbose
+    expand_paths(@options[:input_paths]).each do |input_path|
       begin
-        decode(converter, @options)
+        print 'Converting ' + input_path  + '... ' if verbose
+        choose_converter_and_decode(input_path, @options)
         puts 'ok' if verbose
-        return
       rescue => e
         puts e.message if verbose
-        if @options[:verbosity] == :debug && !e.is_a?(RecognitionError)
+        if @options[:verbosity] == :debug
           puts
           puts e.backtrace
           puts
@@ -35,18 +26,53 @@ class FileDecoder < CLI
     end
   end
 
-  def decode(converter, options)
+  def choose_converter_and_decode(input_path, options)
+    verbose = options[:verbosity] != :quiet
+
+    unless options[:converter].nil?
+      decode(input_path, options[:converter], options)
+      return
+    end
+
+    ConverterFactory.each do |key, converter|
+      print format('Trying %s... ', key) if verbose
+      begin
+        decode(input_path, converter, options)
+        return
+      rescue RecognitionError => e
+        puts e.message if verbose
+        next
+      end
+    end
+  end
+
+  def decode(input_path, converter, options)
     converter.parse_cli_options(@arg_parser, options)
 
-    FileUtils.mkpath(File.dirname(options[:output_path]))
-    data = File.binread(options[:input_path])
+    data = File.binread(input_path)
     data = converter.decode(data, options)
-    File.binwrite(options[:output_path], data)
+
+    if @options[:output_path].nil?
+      output_path = input_path + '~'
+    else
+      output_path = File.join(options[:output_path], File.basename(input_path))
+    end
+
+    if File.exist?(output_path) && !@options[:overwrite]
+      fail 'File already exists.'
+    end
+
+    FileUtils.mkpath(File.dirname(output_path))
+    File.binwrite(output_path, data)
   end
 
   def parse_options
     @arg_parser.add_help('-f, --fmt=FORMAT', 'Selects the file format.')
+    @arg_parser.add_help('-o, --out=FOLDER', 'Where to put the output files.')
+    @arg_parser.add_help('--overwrite', 'Overwrites existing target files.')
     @options[:format] = @arg_parser.switch(%w(-f --fmt))
+    @options[:output_path] = @arg_parser.switch(%w(-o --out))
+    @options[:overwrite] = @arg_parser.flag?(%w(--overwrite))
 
     unless @options[:format].nil?
       unless ConverterFactory.format_strings.include?(@options[:format])
@@ -57,20 +83,22 @@ class FileDecoder < CLI
 
     super
 
-    stray = @arg_parser.stray
-    fail OptionError, 'Required more arguments.' if stray.count < 1
-    @options[:input_path],
-    @options[:output_path] = stray
-    @options[:output_path] ||= @options[:input_path] + '~'
+    fail OptionError, 'Required more arguments.' if @arg_parser.stray.count < 1
+    @options[:input_paths] = @arg_parser.stray
   end
 
   def print_help
-    puts format(
-      'Usage: %s [options] [file_options] input_path [output_path]',
-      File.basename($PROGRAM_NAME))
-    puts ''
+    puts \
+      format(
+        'Usage: %s [options] [file_options] input_path [input_path...]',
+        File.basename($PROGRAM_NAME)),
+      '',
+      '[options] can be:',
+      ''
 
-    super
+    @arg_parser.print_help
+    @arg_parser.clear_help
+    puts
 
     if @options[:converter].nil?
       puts '[file_options] depend on chosen format and are required at runtime.'

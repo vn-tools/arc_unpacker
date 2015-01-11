@@ -53,6 +53,7 @@ class ArgParser
 
     @help_entries.each do |entry|
       left = entry[:invocation]
+      left = ' ' * 4 + left if left.start_with?('--')
       right = entry[:description]
 
       left_size = 25

@@ -30,12 +30,20 @@ class CLIArchive < CLI
   end
 
   def print_help
-    puts format(
-      'Usage: %s [options] [arc_options] input_path [output_path]',
-      File.basename($PROGRAM_NAME))
-    puts ''
+    puts \
+      format(
+        'Usage: %s [options] [arc_options] input_path [output_path]',
+        File.basename($PROGRAM_NAME)),
+      '',
+      'Unless output path is provided, the script is going to use input_path',
+      'followed with a tilde (~).',
+      '',
+      '[options] can be:',
+      ''
 
-    super
+    @arg_parser.print_help
+    @arg_parser.clear_help
+    puts
 
     if @options[:archive].nil?
       puts '[arc_options] depend on each archive and are required at runtime.'

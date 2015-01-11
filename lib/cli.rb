@@ -35,15 +35,6 @@ class CLI
   end
 
   def print_help
-    puts \
-      'Unless output path is provided, the script is going to use input_path',
-      'followed with a tilde (~).',
-      '',
-      '[options] can be:',
-      ''
-
-    @arg_parser.print_help
-    @arg_parser.clear_help
-    puts
+    fail 'Implement me'
   end
 end
