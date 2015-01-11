@@ -89,6 +89,8 @@ module NwaConverter
          (header[:block_count] - 1) * header[:block_size] + header[:rest_size]
         fail RecognitionError, 'Bad sample count.'
       end
+
+      true
     end
   end
 end

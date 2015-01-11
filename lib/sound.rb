@@ -5,7 +5,12 @@ module Sound
   module_function
 
   # Converts raw samples to chosen readable format, such as WAV.
-  def raw_to_boxed(raw_sample_data, channel_count, bytes_per_sample, sample_rate)
+  def raw_to_boxed(
+    raw_sample_data,
+    channel_count,
+    bytes_per_sample,
+    sample_rate)
+
     fail 'Empty sample data' if raw_sample_data.empty?
 
     _sample_count = raw_sample_data.length / channel_count
