@@ -72,11 +72,11 @@ class FileDecoder < CLI
 
     super
 
-    if @options[:archive].nil?
-      puts '[file_options] depend on each archive and are required at runtime.'
-      puts 'See --help --fmt FORMAT to see detailed help for given archive.'
+    if @options[:converter].nil?
+      puts '[file_options] depend on chosen format and are required at runtime.'
+      puts 'See --help --fmt FORMAT to see detailed help for given converter.'
     else
-      @options[:archive].add_cli_help(@arg_parser)
+      @options[:converter].add_cli_help(@arg_parser)
       puts '[file_options] specific to ' + @options[:format] + ':'
       puts
       @arg_parser.print_help
