@@ -30,6 +30,7 @@ Supported games
 CLI invocation                 | Game                                | Features<sup>1</sup>
 ------------------------------ | ----------------------------------- | ------------
 `--fmt=xp3 --plugin=none`      | Sono Hanabira ni Kuchizuke o 12     | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
+`--fmt=xp3 --plugin=none`      | Sharin no Kuni, Himawari no Shoujo  | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
 `--fmt=xp3 --plugin=fsn`       | Fate/Stay Night                     | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
 `--fmt=xp3 --plugin=fha`       | Fate/Hollow Ataraxia                | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
 `--fmt=xp3 --plugin=fha`       | Comyu Kuroi Ryuu to Yasashii Oukoku | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
