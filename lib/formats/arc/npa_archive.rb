@@ -1,6 +1,7 @@
-require_relative 'npa_archive/filter_factory'
 require 'lib/binary_io'
+require 'lib/memory_file'
 require 'zlib'
+require_relative 'npa_archive/filter_factory'
 
 # NPA archive
 # Company: Nitroplus
@@ -112,7 +113,7 @@ module NpaArchive
             fail RecognitionError, 'Bad file size'
           end
 
-          [e[:name], data]
+          MemoryFile.new(e[:name], data)
         end
       end
     end

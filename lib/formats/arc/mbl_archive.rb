@@ -1,4 +1,5 @@
 require 'lib/formats/gfx/prs_converter'
+require 'lib/memory_file'
 
 # MBL archive
 # Company: Ivory
@@ -67,17 +68,17 @@ module MblArchive
       table.each do |e|
         output_files.write do
           data = @arc_file.peek(e[:origin]) { @arc_file.read(e[:size]) }
-          data = decode(data, options)
-          [e[:name], data]
+          file = MemoryFile.new(e[:name], data)
+          decode!(file, options)
+          file
         end
       end
     end
 
-    def decode(data, options)
-      if data.start_with?(PrsConverter::MAGIC)
-        data = PrsConverter.decode(data, options)
+    def decode!(file, options)
+      if file.data.start_with?(PrsConverter::MAGIC)
+        file.data = PrsConverter.decode(file.data, options)
       end
-      data
     end
   end
 
@@ -123,17 +124,21 @@ module MblArchive
 
     def write_contents(input_files, options)
       table = []
-      input_files.each do |name, data|
-        data = encode(data, options)
-        table.push(name: name, origin: @arc_file.tell, size: data.length)
-        @arc_file.write(data)
+      input_files.each do |file|
+        encode!(file, options)
+        table.push(
+          name: file.name,
+          origin: @arc_file.tell,
+          size: file.data.length)
+        @arc_file.write(file.data)
       end
       table
     end
 
-    def encode(data, options)
-      data = PrsConverter.encode(data, options) if data[1..3] == 'PNG'
-      data
+    def encode!(file, options)
+      if file.data[1..3] == 'PNG'
+        file.data = PrsConverter.encode(file.data, options)
+      end
     end
   end
 end

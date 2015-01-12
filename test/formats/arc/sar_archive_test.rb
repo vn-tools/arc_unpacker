@@ -13,12 +13,12 @@ class SarArchiveTest < Test::Unit::TestCase
 
   def test_file_order
     input_files = InputFilesMock.new([
-      { file_name: '1.txt', data: 'whatever' },
-      { file_name: '2.txt', data: 'whatever' }])
+      MemoryFile.new('1.txt', 'whatever'),
+      MemoryFile.new('2.txt', 'whatever')])
 
     output_files = TestHelper.pack_and_unpack(SarArchive, input_files)
 
-    assert_equal('2.txt', output_files.files[0][:file_name])
-    assert_equal('1.txt', output_files.files[1][:file_name])
+    assert_equal('2.txt', output_files.files[0].name)
+    assert_equal('1.txt', output_files.files[1].name)
   end
 end

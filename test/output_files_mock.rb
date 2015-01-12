@@ -8,8 +8,7 @@ class OutputFilesMock
   end
 
   def write(&block)
-    file_name, data = block.call
-    @files.push(file_name: file_name, data: data)
+    @files << block.call
   end
 
   def write_meta(meta) # rubocop:disable Style/TrivialAccessors

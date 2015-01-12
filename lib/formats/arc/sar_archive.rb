@@ -1,3 +1,5 @@
+require 'lib/memory_file'
+
 # SAR archive
 # Engine: Nscripter
 # Extension: .sar
@@ -45,7 +47,7 @@ module SarArchive
       table.each do |e|
         output_files.write do
           data = arc_file.peek(e[:origin]) { arc_file.read(e[:size]) }
-          [e[:name], data]
+          MemoryFile.new(e[:name], data)
         end
       end
     end
@@ -60,10 +62,10 @@ module SarArchive
 
       cur_data_origin = 0
       table_entries = []
-      input_files.reverse_each do |file_name, data|
-        data_size = data.length
-        arc_file.write(data)
-        table_entries.push([file_name, cur_data_origin, data_size])
+      input_files.reverse_each do |file|
+        data_size = file.data.length
+        arc_file.write(file.data)
+        table_entries.push([file.name, cur_data_origin, data_size])
         cur_data_origin += data_size
       end
 

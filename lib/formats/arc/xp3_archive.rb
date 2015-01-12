@@ -1,6 +1,7 @@
-require_relative 'xp3_archive/filter_factory'
 require 'lib/binary_io'
+require 'lib/memory_file'
 require 'zlib'
+require_relative 'xp3_archive/filter_factory'
 
 # XP3 archive
 # Engine: Kirikiri2
@@ -105,7 +106,7 @@ module Xp3Archive
       data = segm_chunks.map { |segm| segm.read_data!(arc_file) } * ''
       data = filter.filter(data, adlr_chunk.encryption_key[0])
 
-      [info_chunk.file_name, data]
+      MemoryFile.new(info_chunk.file_name, data)
     end
 
     # Xp3 SEGM chunk
@@ -206,20 +207,20 @@ module Xp3Archive
     def prepare_table(input_files, options)
       table = {}
       origin = 0
-      input_files.each do |name, data|
+      input_files.each do |file|
         e = {
-          name: name,
-          size_original: data.length,
+          name: file.name,
+          size_original: file.data.length,
           origin: origin + 19,
           random: rand(0xffff_ffff)
         }
         if options[:compress_files]
-          e[:size_compressed] = Zlib.deflate(data).length
+          e[:size_compressed] = Zlib.deflate(file.data).length
         else
-          e[:size_compressed] = data.length
+          e[:size_compressed] = file.data.length
         end
         origin += e[:size_compressed]
-        table[name] = e
+        table[file.name] = e
       end
       table
     end
@@ -234,10 +235,10 @@ module Xp3Archive
 
     def write_contents(arc_file, input_files, table, options)
       filter = Xp3Archive.get_filter(options[:filter])
-      input_files.each do |name, data|
-        data = Zlib.deflate(data) if options[:compress_files]
-        data = filter.filter(data, table[name][:random])
-        arc_file.write(data)
+      input_files.each do |file|
+        file.data = Zlib.deflate(file.data) if options[:compress_files]
+        file.data = filter.filter(file.data, table[file.name][:random])
+        arc_file.write(file.data)
       end
     end
 

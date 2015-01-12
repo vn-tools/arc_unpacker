@@ -1,5 +1,6 @@
-require_relative 'nsa_archive/lzss_compressor'
 require 'lib/formats/gfx/spb_converter'
+require 'lib/memory_file'
+require_relative 'nsa_archive/lzss_compressor'
 
 # NSA archive
 # Engine: Nscripter
@@ -69,7 +70,7 @@ module NsaArchive
             fail RecognitionError, 'Bad file size'
           end
 
-          [e[:name], data]
+          MemoryFile.new(e[:name], data)
         end
       end
     end
@@ -97,15 +98,15 @@ module NsaArchive
       compression_type = options[:compression] || NO_COMPRESSION
       cur_data_origin = 0
       table_entries = []
-      input_files.each do |file_name, data_original|
-        data_compressed = compress(data_original, compression_type)
-        data_size_original = data_original.length
+      input_files.each do |file|
+        data_compressed = compress(file.data, compression_type)
+        data_size_original = file.data.length
         data_size_compressed = data_compressed.length
 
         arc_file.write(data_compressed)
 
         table_entries.push([
-          file_name,
+          file.name,
           cur_data_origin,
           data_size_original,
           data_size_compressed])

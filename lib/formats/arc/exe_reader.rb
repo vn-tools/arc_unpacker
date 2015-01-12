@@ -1,4 +1,5 @@
 require 'lib/common'
+require 'lib/memory_file'
 silence_warnings { require 'pedump' }
 
 # Windows executable reader
@@ -31,7 +32,7 @@ module ExeReader
         file_name = pedump_resource.type + '/' + pedump_resource.name
         handle.seek(pedump_resource.file_offset)
         data = handle.read(pedump_resource.size)
-        [file_name, data]
+        MemoryFile.new(file_name, data)
       end
     end
 

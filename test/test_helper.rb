@@ -25,38 +25,38 @@ module TestHelper
   end
 
   def generic_backslash_test(archive, options = {})
-    input_files = InputFilesMock.new([
-      { file_name: 'dir/test.txt', data: 'whatever' }])
+    test_files = [MemoryFile.new('dir/test.txt', 'whatever')]
+    input_files = InputFilesMock.new(test_files)
     output_files = pack_and_unpack(archive, input_files, options)
-    assert_equal('dir\\test.txt', output_files.files.first[:file_name])
+    assert_equal('dir\\test.txt', output_files.files.first.name)
   end
 
   def generic_sjis_names_test(archive, options = {})
-    test_files = [{ file_name: 'シフトジス', data: 'whatever' }]
+    test_files = [MemoryFile.new('シフトジス', 'whatever')]
     input_files = InputFilesMock.new(test_files)
     output_files = pack_and_unpack(archive, input_files, options)
-    result_files = output_files.files
-    assert_equal(test_files, result_files)
+    compare_files(input_files, output_files)
   end
 
   def generic_pack_and_unpack_test(archive, options = {})
     test_files = []
-    test_files << {
-      file_name: 'empty.txt',
-      data: ''.b
-    }
+    test_files << MemoryFile.new('empty.txt', ''.b)
     25.times do
-      test_files << {
-        file_name: rand_string(300),
-        data: rand_binary_string(rand(1000))
-      }
+      test_files << MemoryFile.new(
+        rand_string(300),
+        rand_binary_string(rand(1000)))
     end
 
-    test_files = test_files.sort_by { |f| f[:file_name] }
     input_files = InputFilesMock.new(test_files)
     output_files = pack_and_unpack(archive, input_files, options)
-    result_files = output_files.files.sort_by { |f| f[:file_name] }
-    assert_equal(test_files, result_files)
+    compare_files(input_files, output_files)
+  end
+
+  def compare_files(input_files, output_files)
+    actual = output_files.files.sort_by { |f| f.name }
+    expected = input_files.files.sort_by { |f| f.name }
+    assert_equal(expected.map(&:name), actual.map(&:name))
+    assert_equal(expected.map(&:data), actual.map(&:data))
   end
 
   def rand_string(length)

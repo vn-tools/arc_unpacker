@@ -1,5 +1,6 @@
 require 'lib/formats/gfx/ykg_converter'
 require 'lib/formats/script/yks_converter'
+require 'lib/memory_file'
 
 # YKC archive
 # Engine: YukaScript
@@ -42,22 +43,22 @@ module YkcArchive
 
           name = arc_file.peek(name_origin) { arc_file.read(name_size - 1) }
           data = arc_file.peek(data_origin) { arc_file.read(data_size) }
-          data = decode(data, options)
 
-          [name, data]
+          file = MemoryFile.new(name, data)
+          decode!(file, options)
+          file
         end
       end
     end
 
     private
 
-    def decode(data, options)
-      if data.start_with?(YkgConverter::MAGIC)
-        data = YkgConverter.decode(data, options)
-      elsif data.start_with?(YksConverter::MAGIC)
-        data = YksConverter.decode(data, options)
+    def decode!(file, options)
+      if file.data.start_with?(YkgConverter::MAGIC)
+        file.data = YkgConverter.decode(file.data, options)
+      elsif file.data.start_with?(YksConverter::MAGIC)
+        file.data = YksConverter.decode(file.data, options)
       end
-      data
     end
   end
 
@@ -72,16 +73,16 @@ module YkcArchive
       arc_file.write("\x00" * table_size)
 
       table_entries = {}
-      input_files.each do |name, data|
-        data = encode(name, data, options)
+      input_files.each do |file|
+        encode!(file, options)
 
-        table_entries[name] = { name_origin: arc_file.tell }
-        arc_file.write(name.gsub('/', '\\'))
+        table_entries[file.name] = { name_origin: arc_file.tell }
+        arc_file.write(file.name.gsub('/', '\\'))
         arc_file.write("\x00")
 
-        table_entries[name][:data_origin] = arc_file.tell
-        table_entries[name][:data_size] = data.length
-        arc_file.write(data)
+        table_entries[file.name][:data_origin] = arc_file.tell
+        table_entries[file.name][:data_size] = file.data.length
+        arc_file.write(file.data)
       end
 
       arc_file.seek(table_origin)
@@ -94,13 +95,12 @@ module YkcArchive
       end
     end
 
-    def encode(name, data, options)
-      if name.downcase.end_with?('.ykg')
-        data = YkgConverter.encode(data, options)
-      elsif name.downcase.end_with?('.yks')
-        data = YksConverter.encode(data, options)
+    def encode!(file, options)
+      if file.name.downcase.end_with?('.ykg')
+        file.data = YkgConverter.encode(file.data, options)
+      elsif file.name.downcase.end_with?('.yks')
+        file.data = YksConverter.encode(file.data, options)
       end
-      data
     end
   end
 end

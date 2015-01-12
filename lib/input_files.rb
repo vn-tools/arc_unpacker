@@ -41,8 +41,8 @@ class InputFiles
 
   def pack(file_path, file_name, &block)
     print format('Inserting %s... ', file_name) if @verbosity != :quiet
-    file_data = File.binread(file_path)
-    block.call(file_name, file_data)
+    file = MemoryFile.new(file_name, File.binread(file_path))
+    block.call(file)
   rescue StandardError => e
     puts e.message if @verbosity != :quiet
     puts e.backtrace if @verbosity == :debug
