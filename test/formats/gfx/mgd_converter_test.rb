@@ -8,7 +8,10 @@ silence_warnings { require 'rmagick' }
 class MgdConverterTest < Test::Unit::TestCase
   def test_encoding_and_decoding
     data = TestHelper.get_test_file('reimu_transparent.png')
-    data = MgdConverter.decode(MgdConverter.encode(data, {}), {})
+    file = VirtualFile.new(nil, data)
+    MgdConverter.encode!(file, {})
+    MgdConverter.decode!(file, {})
+    data = file.data
     regions = Image.read_meta_from_boxed(data)[:regions]
 
     image = Magick::Image.from_blob(data)[0]
@@ -26,7 +29,10 @@ class MgdConverterTest < Test::Unit::TestCase
 
   def test_decoding_from_sgd
     data = TestHelper.get_test_file('GS_UD.MGD')
-    data = MgdConverter.decode(data, {})
+    file = VirtualFile.new(nil, data)
+    MgdConverter.decode!(file, {})
+    data = file.data
+
     regions = Image.read_meta_from_boxed(data)[:regions]
 
     image = Magick::Image.from_blob(data)[0]
@@ -38,7 +44,10 @@ class MgdConverterTest < Test::Unit::TestCase
 
   def test_decoding_from_png
     data = TestHelper.get_test_file('saveload_p.MGD')
-    data = MgdConverter.decode(data, {})
+    file = VirtualFile.new(nil, data)
+    MgdConverter.decode!(file, {})
+    data = file.data
+
     regions = Image.read_meta_from_boxed(data)[:regions]
 
     image = Magick::Image.from_blob(data)[0]

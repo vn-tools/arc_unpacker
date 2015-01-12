@@ -12,17 +12,17 @@ module NwaConverter
 
   def parse_cli_options(_arg_parser, _options) end
 
-  def decode(data, _options)
-    Decoder.new.decode(data)
+  def decode!(file, _options)
+    Decoder.new.decode!(file)
   end
 
-  def encode(_data, _options)
+  def encode!(_file, _options)
     fail 'Not supported'
   end
 
   class Decoder
-    def decode(data)
-      input = BinaryIO.from_string(data)
+    def decode!(file)
+      input = BinaryIO.from_string(file.data)
       header = read_header(input)
       if header[:compression_level] == -1 \
         || header[:block_count] == 0 \
@@ -34,11 +34,13 @@ module NwaConverter
         validate_header(header)
         samples = read_samples(header, input)
       end
-      Sound.raw_to_boxed(
-        samples,
-        header[:channel_count],
-        header[:bits_per_sample] / 8,
-        header[:sample_rate])
+      Sound.make_file(
+        file,
+        Sound.make_raw(
+          samples,
+          header[:channel_count],
+          header[:bits_per_sample] / 8,
+          header[:sample_rate]))
     end
 
     def read_header(input)

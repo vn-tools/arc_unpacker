@@ -77,7 +77,7 @@ module MblArchive
 
     def decode!(file, options)
       return unless file.data.start_with?(PrsConverter::MAGIC)
-      file.data = PrsConverter.decode(file.data, options)
+      PrsConverter.decode!(file, options)
     end
   end
 
@@ -136,7 +136,7 @@ module MblArchive
 
     def encode!(file, options)
       return unless file.data[1..3] == 'PNG'
-      file.data = PrsConverter.encode(file.data, options)
+      PrsConverter.encode!(file, options)
     end
   end
 end

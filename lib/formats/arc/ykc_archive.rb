@@ -55,9 +55,9 @@ module YkcArchive
 
     def decode!(file, options)
       if file.data.start_with?(YkgConverter::MAGIC)
-        file.data = YkgConverter.decode(file.data, options)
+        YkgConverter.decode!(file, options)
       elsif file.data.start_with?(YksConverter::MAGIC)
-        file.data = YksConverter.decode(file.data, options)
+        YksConverter.decode!(file, options)
       end
     end
   end
@@ -97,9 +97,9 @@ module YkcArchive
 
     def encode!(file, options)
       if file.name.downcase.end_with?('.ykg')
-        file.data = YkgConverter.encode(file.data, options)
+        YkgConverter.encode!(file, options)
       elsif file.name.downcase.end_with?('.yks')
-        file.data = YksConverter.encode(file.data, options)
+        YksConverter.encode!(file, options)
       end
     end
   end

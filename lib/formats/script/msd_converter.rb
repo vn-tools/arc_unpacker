@@ -39,11 +39,11 @@ module MsdConverter
     options[:msd_key] = key
   end
 
-  def decode(data, options)
-    return data if data.start_with?(MAGIC)
+  def decode!(file, options)
+    return if file.data.start_with?(MAGIC)
     fail 'Must supply a key to decrypt this file.' if options[:msd_key].nil?
 
-    data = data.unpack('C*')
+    data = file.data.unpack('C*')
     k = 0
     how_many = (data.length + 31) & (0xff_ff_ff_ff ^ 31)
 
@@ -61,10 +61,8 @@ module MsdConverter
 
     data = data.pack('C*')
     fail 'Supplied key can\'t decrypt this file.' unless data.start_with?(MAGIC)
-    data
+    file.data = data
   end
 
-  def encode(data, _options)
-    data
-  end
+  def encode!(_file, _options) end
 end

@@ -65,12 +65,10 @@ module FjsysArchive
 
     def decode!(file, options)
       if file.data.start_with?(MgdConverter::MAGIC)
-        file.data = MgdConverter.decode(file.data, options)
+        MgdConverter.decode!(file, options)
       elsif file.name.downcase.end_with?('.msd')
-        file.data = MsdConverter.decode(file.data, options)
+        MsdConverter.decode!(file, options)
       end
-
-      file
     end
   end
 
@@ -123,9 +121,9 @@ module FjsysArchive
 
     def encode!(file, options)
       if file.name.downcase.end_with?('.mgd')
-        file.data = MgdConverter.encode(file.data, options)
+        MgdConverter.encode!(file, options)
       elsif file.name.downcase.end_with?('.msd')
-        file.data = MsdConverter.encode(file.data, options)
+        MsdConverter.encode!(file, options)
       end
     end
 

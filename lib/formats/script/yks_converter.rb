@@ -60,8 +60,8 @@ module YksConverter
     options[:encrypt_yks] = arg_parser.flag(%w(--encrypt))
   end
 
-  def decode(data, _options)
-    input = BinaryIO.from_string(data)
+  def decode!(file, _options)
+    input = BinaryIO.from_string(file.data)
 
     magic = input.read(MAGIC.length)
     fail RecognitionError, 'Not a YKS script' if magic != MAGIC
@@ -146,15 +146,15 @@ module YksConverter
       end
     end
 
-    [
+    file.data = [
       unknown,
       JSON.dump(entries),
       opcodes.map { |o| JSON.dump(o) } * "\n"
     ] * "\n".encode('binary')
   end
 
-  def encode(data, options)
-    data = data.split("\n")
+  def encode!(file, options)
+    data = file.data.split("\n")
     unknown = data.shift.to_i
     entries = JSON.load(data.shift)
     opcodes = data.map { |o| JSON.load(o) }
@@ -242,7 +242,7 @@ module YksConverter
     output.write(text)
 
     output.rewind
-    output.read
+    file.data = output.read
   end
 
   def xor(data)

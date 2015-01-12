@@ -13,8 +13,8 @@ module PrsConverter
 
   def parse_cli_options(_arg_parser, _options) end
 
-  def decode(input, _options)
-    input = BinaryIO.from_string(input)
+  def decode!(file, _options)
+    input = BinaryIO.from_string(file.data)
     magic = input.read(4)
     fail RecognitionError, 'Not a PRS graphic file' if magic != MAGIC
 
@@ -28,10 +28,10 @@ module PrsConverter
       width,
       height)
 
-    Image.raw_to_boxed(width, height, target_buffer, 'BGR')
+    file.data = Image.raw_to_boxed(width, height, target_buffer, 'BGR')
   end
 
-  def encode(_input, _options)
+  def encode!(_file, _options)
     fail 'Not supported.'
   end
 end

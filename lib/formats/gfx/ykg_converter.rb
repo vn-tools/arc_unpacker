@@ -12,8 +12,8 @@ module YkgConverter
 
   def parse_cli_options(_arg_parser, _options) end
 
-  def decode(data, _options)
-    input = BinaryIO.from_string(data)
+  def decode!(file, _options)
+    input = BinaryIO.from_string(file.data)
 
     magic = input.read(MAGIC.length)
     fail RecognitionError, 'Not a YKG picture' if magic != MAGIC
@@ -42,10 +42,16 @@ module YkgConverter
 
     raw_data, meta = Image.boxed_to_raw(data, 'RGBA')
     meta[:regions] = regions
-    Image.raw_to_boxed(meta[:width], meta[:height], raw_data, 'RGBA', meta)
+    file.data = Image.raw_to_boxed(
+      meta[:width],
+      meta[:height],
+      raw_data,
+      'RGBA',
+      meta)
   end
 
-  def encode(data, _options)
+  def encode!(file, _options)
+    data = file.data
     regions = Image.read_meta_from_boxed(data)[:regions]
 
     output = BinaryIO.from_string
@@ -75,6 +81,6 @@ module YkgConverter
     output.write(meta)
 
     output.rewind
-    output.read
+    file.data = output.read
   end
 end

@@ -13,18 +13,17 @@ module G00Converter
 
   def parse_cli_options(_arg_parser, _options) end
 
-  def decode(data, _options)
-    Decoder.new.decode(data)
+  def decode!(file, _options)
+    file.data = Decoder.new.decode(file.data)
   end
 
-  def encode(_data, _options)
+  def encode!(_file, _options)
     fail 'Not supported'
   end
 
   class Decoder
     def decode(data)
       input = BinaryIO.from_string(data)
-
       header = read_header(input)
 
       case header[:version]
