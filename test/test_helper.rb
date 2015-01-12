@@ -53,8 +53,8 @@ module TestHelper
   end
 
   def compare_files(input_files, output_files)
-    actual = output_files.files.sort_by { |f| f.name }
-    expected = input_files.files.sort_by { |f| f.name }
+    actual = output_files.files.sort_by(&:name)
+    expected = input_files.files.sort_by(&:name)
     assert_equal(expected.map(&:name), actual.map(&:name))
     assert_equal(expected.map(&:data), actual.map(&:data))
   end

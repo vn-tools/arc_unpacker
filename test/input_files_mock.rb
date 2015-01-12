@@ -8,7 +8,7 @@ class InputFilesMock
   end
 
   def names
-    @files.map { |f| f.name }
+    @files.map(&:name)
   end
 
   def each(&block)
