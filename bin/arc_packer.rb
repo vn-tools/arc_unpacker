@@ -16,6 +16,7 @@ class ArchivePacker < CLIArchive
     fail 'Packing not supported' unless defined? archive::Packer
     archive.parse_cli_options(@arg_parser, options)
 
+    FileUtils.mkpath(File.dirname(options[:output_path]))
     input_files = InputFiles.new(options[:input_path], options)
     packer = archive::Packer.new
     BinaryIO.from_file(options[:output_path], 'wb') do |arc_file|
