@@ -1,9 +1,10 @@
 #!/usr/bin/ruby -W2
 require_relative '../lib/common'
 require 'fileutils'
-require 'lib/cli'
 require 'lib/binary_io'
+require 'lib/cli'
 require 'lib/factory/converter_factory'
+require 'lib/virtual_file'
 
 # CLI frontend
 class FileDecoder < CLI
@@ -49,9 +50,6 @@ class FileDecoder < CLI
   def decode(input_path, converter, options)
     converter.parse_cli_options(@arg_parser, options)
 
-    data = File.binread(input_path)
-    data = converter.decode(data, options)
-
     if @options[:output_path].nil?
       output_path = input_path + '~'
     else
@@ -62,8 +60,13 @@ class FileDecoder < CLI
       fail 'File already exists.'
     end
 
-    FileUtils.mkpath(File.dirname(output_path))
-    File.binwrite(output_path, data)
+    dir_path = File.dirname(output_path)
+    file_name = File.basename(output_path)
+    file = VirtualFile.new(file_name, File.binread(input_path))
+    converter.decode!(file, options)
+
+    FileUtils.mkpath(dir_path)
+    File.binwrite(File.join(dir_path, file.name), file.data)
   end
 
   def parse_options
