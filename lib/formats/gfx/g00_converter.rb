@@ -14,7 +14,7 @@ module G00Converter
   def parse_cli_options(_arg_parser, _options) end
 
   def decode!(file, _options)
-    file.data = Decoder.new.decode(file.data)
+    file.data = Decoder.new.read(file.data)
   end
 
   def encode!(_file, _options)
@@ -22,17 +22,17 @@ module G00Converter
   end
 
   class Decoder
-    def decode(data)
+    def read(data)
       input = BinaryIO.from_string(data)
       header = read_header(input)
 
       case header[:version]
       when 0
-        decode_version_0(input, header)
+        read_version_0(input, header)
       when 1
-        decode_version_1(input, header)
+        read_version_1(input, header)
       when 2
-        decode_version_2(input, header)
+        read_version_2(input, header)
       else
         fail RecognitionError, 'Not a G00 image'
       end
@@ -48,7 +48,7 @@ module G00Converter
       header
     end
 
-    def decode_version_0(input, header)
+    def read_version_0(input, header)
       compressed_size,
       uncompressed_size = input.read(8).unpack('L2')
       if compressed_size != input.size - input.tell + 8
@@ -65,7 +65,7 @@ module G00Converter
       Image.raw_to_boxed(header[:width], header[:height], output, 'BGR')
     end
 
-    def decode_version_1(input, header)
+    def read_version_1(input, header)
       compressed_size,
       uncompressed_size = input.read(8).unpack('L2')
       if compressed_size != input.size - input.tell + 8
@@ -89,7 +89,7 @@ module G00Converter
       Image.raw_to_boxed(header[:width], header[:height], raw_data, 'BGRA')
     end
 
-    def decode_version_2(input, header)
+    def read_version_2(input, header)
       region_count = input.read(4).unpack('L')[0]
       regions = []
       region_count.times do

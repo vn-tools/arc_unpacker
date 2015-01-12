@@ -40,29 +40,37 @@ module MsdConverter
   end
 
   def decode!(file, options)
-    return if file.data.start_with?(MAGIC)
-    fail 'Must supply a key to decrypt this file.' if options[:msd_key].nil?
-
-    data = file.data.unpack('C*')
-    k = 0
-    how_many = (data.length + 31) & (0xff_ff_ff_ff ^ 31)
-
-    catch :done do
-      how_many.times do |i|
-        md5 = Digest::MD5.hexdigest(options[:msd_key] + i.to_s)
-        md5 = md5.split('').map(&:ord)
-        (0..31).each do |j|
-          data[k] ^= md5[j]
-          k += 1
-          throw :done if k >= data.length
-        end
-      end
-    end
-
-    data = data.pack('C*')
-    fail 'Supplied key can\'t decrypt this file.' unless data.start_with?(MAGIC)
-    file.data = data
+    file.data = Decoder.new.read(file.data, options)
   end
 
   def encode!(_file, _options) end
+
+  class Decoder
+    def read(data, options)
+      return if data.start_with?(MAGIC)
+      fail 'Must supply a key to decrypt this file.' if options[:msd_key].nil?
+
+      data = data.unpack('C*')
+      k = 0
+      how_many = (data.length + 31) & (0xff_ff_ff_ff ^ 31)
+
+      catch :done do
+        how_many.times do |i|
+          md5 = Digest::MD5.hexdigest(options[:msd_key] + i.to_s)
+          md5 = md5.split('').map(&:ord)
+          (0..31).each do |j|
+            data[k] ^= md5[j]
+            k += 1
+            throw :done if k >= data.length
+          end
+        end
+      end
+
+      data = data.pack('C*')
+      unless data.start_with?(MAGIC)
+        fail 'Supplied key can\'t decrypt this file.'
+      end
+      data
+    end
+  end
 end

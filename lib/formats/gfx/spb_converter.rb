@@ -14,21 +14,27 @@ module SpbConverter
   def parse_cli_options(_arg_parser, _options) end
 
   def decode!(file, _options)
-    input = BinaryIO.from_string(file.data)
-    width, height = input.read(4).unpack('S>S>')
-
-    source_size = input.size
-    source_buffer = input.read
-    target_buffer = decode_spb_pixels(
-      source_buffer,
-      source_size,
-      width,
-      height)
-
-    file.data = Image.raw_to_boxed(width, height, target_buffer, 'RGB')
+    file.data = Decoder.new.read(file.data)
   end
 
   def encode!(_file, _options)
     fail 'Not supported.'
+  end
+
+  class Decoder
+    def read(data)
+      input = BinaryIO.from_string(data)
+      width, height = input.read(4).unpack('S>S>')
+
+      source_size = input.size
+      source_buffer = input.read
+      target_buffer = decode_spb_pixels(
+        source_buffer,
+        source_size,
+        width,
+        height)
+
+      Image.raw_to_boxed(width, height, target_buffer, 'RGB')
+    end
   end
 end
