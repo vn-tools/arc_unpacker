@@ -23,11 +23,12 @@ module NpaArchive
 
   def parse_cli_options(arg_parser, options)
     filter = arg_parser.switch(['--plugin'])
+    filter = filter.nil? ? :none : filter.to_sym
     options[:filter] = filter
   end
 
   def get_filter(symbol)
-    filter = NPA_FILTERS[symbol.to_sym]
+    filter = NPA_FILTERS[symbol]
     fail RecognitionError, 'Unknown filter' if filter.nil?
     filter.call
   end
