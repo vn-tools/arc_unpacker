@@ -1,8 +1,7 @@
 # A mock for Archive::InputFilesMock.
 class InputFilesMock
-  def initialize(files, meta = nil)
+  def initialize(files)
     @files = files
-    @meta = meta
   end
 
   def names
@@ -19,9 +18,5 @@ class InputFilesMock
 
   def length
     @files.length
-  end
-
-  def read_meta # rubocop:disable Style/TrivialAccessors
-    @meta
   end
 end
