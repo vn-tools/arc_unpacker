@@ -13,8 +13,8 @@ class SarArchiveTest < Test::Unit::TestCase
 
   def test_file_order
     input_files = InputFilesMock.new([
-      MemoryFile.new('1.txt', 'whatever'),
-      MemoryFile.new('2.txt', 'whatever')])
+      VirtualFile.new('1.txt', 'whatever'),
+      VirtualFile.new('2.txt', 'whatever')])
 
     output_files = TestHelper.pack_and_unpack(SarArchive, input_files)
 

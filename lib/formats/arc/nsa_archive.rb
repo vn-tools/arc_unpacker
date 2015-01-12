@@ -1,5 +1,5 @@
 require 'lib/formats/gfx/spb_converter'
-require 'lib/memory_file'
+require 'lib/virtual_file'
 require_relative 'nsa_archive/lzss_compressor'
 
 # NSA archive
@@ -70,7 +70,7 @@ module NsaArchive
             fail RecognitionError, 'Bad file size'
           end
 
-          MemoryFile.new(e[:name], data)
+          VirtualFile.new(e[:name], data)
         end
       end
     end

@@ -1,4 +1,4 @@
-require 'lib/memory_file'
+require 'lib/virtual_file'
 
 # Melty Blood archive
 # Company: French Bread
@@ -56,7 +56,7 @@ module MeltyBloodArchive
             data
           end
 
-          MemoryFile.new(e[:name], data)
+          VirtualFile.new(e[:name], data)
         end
       end
     end

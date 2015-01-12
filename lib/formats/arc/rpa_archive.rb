@@ -1,5 +1,5 @@
 require 'lib/formats/generic/pickle'
-require 'lib/memory_file'
+require 'lib/virtual_file'
 require 'zlib'
 
 # RPA archive
@@ -94,7 +94,7 @@ module RpaArchive
           data += @arc_file.peek(options[:origin]) do
             @arc_file.read(options[:size])
           end
-          MemoryFile.new(name, data)
+          VirtualFile.new(name, data)
         end
       end
     end

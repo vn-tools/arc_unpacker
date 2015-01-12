@@ -9,7 +9,7 @@ class FjsysArchiveTest < Test::Unit::TestCase
 
   def test_file_order
     ['cg_p.png', 'cg00.png', 'cg.png'].permutation.each do |file_names|
-      files = file_names.map { |fn| MemoryFile.new(fn, 'whatever') }
+      files = file_names.map { |fn| VirtualFile.new(fn, 'whatever') }
 
       input_files = InputFilesMock.new(files)
       output_files = TestHelper.pack_and_unpack(FjsysArchive, input_files)

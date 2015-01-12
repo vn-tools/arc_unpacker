@@ -12,7 +12,7 @@ class MblArchiveTest < Test::Unit::TestCase
   end
 
   def test_version1
-    input_files = InputFilesMock.new([MemoryFile.new('short', 'whatever')])
+    input_files = InputFilesMock.new([VirtualFile.new('short', 'whatever')])
 
     output_files = TestHelper.pack_and_unpack(
       MblArchive,
@@ -23,7 +23,7 @@ class MblArchiveTest < Test::Unit::TestCase
   end
 
   def test_version1_too_long_names
-    input_files = InputFilesMock.new([MemoryFile.new('long' * 10, 'whatever')])
+    input_files = InputFilesMock.new([VirtualFile.new('long' * 10, 'whatever')])
 
     assert_raise(RecognitionError) do
       TestHelper.pack_and_unpack(

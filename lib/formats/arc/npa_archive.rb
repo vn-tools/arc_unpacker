@@ -1,5 +1,5 @@
 require 'lib/binary_io'
-require 'lib/memory_file'
+require 'lib/virtual_file'
 require 'zlib'
 require_relative 'npa_archive/filter_factory'
 
@@ -113,7 +113,7 @@ module NpaArchive
             fail RecognitionError, 'Bad file size'
           end
 
-          MemoryFile.new(e[:name], data)
+          VirtualFile.new(e[:name], data)
         end
       end
     end

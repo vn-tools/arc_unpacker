@@ -1,5 +1,5 @@
 require 'lib/binary_io'
-require 'lib/memory_file'
+require 'lib/virtual_file'
 require 'zlib'
 
 # PAK2 archive
@@ -68,7 +68,7 @@ module Pak2NitroplusArchive
             fail RecognitionError, 'Bad file size'
           end
 
-          MemoryFile.new(e[:name], data)
+          VirtualFile.new(e[:name], data)
         end
       end
     end

@@ -1,6 +1,6 @@
 require 'lib/formats/gfx/ykg_converter'
 require 'lib/formats/script/yks_converter'
-require 'lib/memory_file'
+require 'lib/virtual_file'
 
 # YKC archive
 # Engine: YukaScript
@@ -44,7 +44,7 @@ module YkcArchive
           name = arc_file.peek(name_origin) { arc_file.read(name_size - 1) }
           data = arc_file.peek(data_origin) { arc_file.read(data_size) }
 
-          file = MemoryFile.new(name, data)
+          file = VirtualFile.new(name, data)
           decode!(file, options)
           file
         end

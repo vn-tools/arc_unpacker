@@ -1,5 +1,5 @@
 require 'lib/formats/gfx/prs_converter'
-require 'lib/memory_file'
+require 'lib/virtual_file'
 
 # MBL archive
 # Company: Ivory
@@ -68,7 +68,7 @@ module MblArchive
       table.each do |e|
         output_files.write do
           data = @arc_file.peek(e[:origin]) { @arc_file.read(e[:size]) }
-          file = MemoryFile.new(e[:name], data)
+          file = VirtualFile.new(e[:name], data)
           decode!(file, options)
           file
         end

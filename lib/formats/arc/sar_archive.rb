@@ -1,4 +1,4 @@
-require 'lib/memory_file'
+require 'lib/virtual_file'
 
 # SAR archive
 # Engine: Nscripter
@@ -47,7 +47,7 @@ module SarArchive
       table.each do |e|
         output_files.write do
           data = arc_file.peek(e[:origin]) { arc_file.read(e[:size]) }
-          MemoryFile.new(e[:name], data)
+          VirtualFile.new(e[:name], data)
         end
       end
     end

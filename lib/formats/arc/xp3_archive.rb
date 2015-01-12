@@ -1,5 +1,5 @@
 require 'lib/binary_io'
-require 'lib/memory_file'
+require 'lib/virtual_file'
 require 'zlib'
 require_relative 'xp3_archive/filter_factory'
 
@@ -106,7 +106,7 @@ module Xp3Archive
       data = segm_chunks.map { |segm| segm.read_data!(arc_file) } * ''
       data = filter.filter(data, adlr_chunk.encryption_key[0])
 
-      MemoryFile.new(info_chunk.file_name, data)
+      VirtualFile.new(info_chunk.file_name, data)
     end
 
     # Xp3 SEGM chunk

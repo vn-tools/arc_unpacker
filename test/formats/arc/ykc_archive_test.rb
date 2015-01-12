@@ -9,7 +9,7 @@ class YkcArchiveTest < Test::Unit::TestCase
 
   def test_backslash
     input_files = InputFilesMock.new([
-      MemoryFile.new('dir/test.txt', 'whatever')])
+      VirtualFile.new('dir/test.txt', 'whatever')])
 
     output_files = TestHelper.pack_and_unpack(YkcArchive, input_files)
 

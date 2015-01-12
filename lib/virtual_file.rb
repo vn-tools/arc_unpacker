@@ -1,5 +1,5 @@
 # Generic representation of a file that resides in the program memory.
-class MemoryFile
+class VirtualFile
   attr_accessor :name
   attr_accessor :data
 

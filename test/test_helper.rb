@@ -25,14 +25,14 @@ module TestHelper
   end
 
   def generic_backslash_test(archive, options = {})
-    test_files = [MemoryFile.new('dir/test.txt', 'whatever')]
+    test_files = [VirtualFile.new('dir/test.txt', 'whatever')]
     input_files = InputFilesMock.new(test_files)
     output_files = pack_and_unpack(archive, input_files, options)
     assert_equal('dir\\test.txt', output_files.files.first.name)
   end
 
   def generic_sjis_names_test(archive, options = {})
-    test_files = [MemoryFile.new('シフトジス', 'whatever')]
+    test_files = [VirtualFile.new('シフトジス', 'whatever')]
     input_files = InputFilesMock.new(test_files)
     output_files = pack_and_unpack(archive, input_files, options)
     compare_files(input_files, output_files)
@@ -40,9 +40,9 @@ module TestHelper
 
   def generic_pack_and_unpack_test(archive, options = {})
     test_files = []
-    test_files << MemoryFile.new('empty.txt', ''.b)
+    test_files << VirtualFile.new('empty.txt', ''.b)
     25.times do
-      test_files << MemoryFile.new(
+      test_files << VirtualFile.new(
         rand_string(300),
         rand_binary_string(rand(1000)))
     end

@@ -1,6 +1,6 @@
 require 'lib/formats/gfx/mgd_converter'
 require 'lib/formats/script/msd_converter'
-require 'lib/memory_file'
+require 'lib/virtual_file'
 
 # FJSYS archive
 # Company: various
@@ -54,7 +54,7 @@ module FjsysArchive
 
           data = arc_file.peek(data_origin) { arc_file.read(data_size) }
 
-          file = MemoryFile.new(file_name, data)
+          file = VirtualFile.new(file_name, data)
           decode!(file, options)
           file
         end
