@@ -57,7 +57,7 @@ module YksConverter
   end
 
   def parse_cli_options(arg_parser, options)
-    options[:encrypt_yks] = arg_parser.flag(%w(--encrypt))
+    options[:encrypt_yks] = arg_parser.flag?(%w(--encrypt))
   end
 
   def decode(data, _options)
