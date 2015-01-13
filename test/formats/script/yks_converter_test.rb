@@ -5,7 +5,7 @@ require 'test/test_helper'
 # Unit tests for YksConverter
 class YksConverterTest < Test::Unit::TestCase
   def test_decoding_and_encoding_unencrypted
-    original = TestHelper.get_test_file('SelectJumpStart.yks')
+    original = TestHelper.get_test_file('yks/SelectJumpStart.yks')
     file = VirtualFile.new(nil, original)
     YksConverter.decode!(file, {})
     decoded = file.data
@@ -16,7 +16,7 @@ class YksConverterTest < Test::Unit::TestCase
   end
 
   def test_decoding_and_encoding_encrypted
-    original = TestHelper.get_test_file('SelectJumpStart.yks')
+    original = TestHelper.get_test_file('yks/SelectJumpStart.yks')
     file = VirtualFile.new(nil, original)
     YksConverter.decode!(file, {})
     decoded = file.data

@@ -5,7 +5,7 @@ require 'test/test_helper'
 # Unit tests for G00Converter
 class G00ConverterTest < Test::Unit::TestCase
   def test_decoding_version_0
-    data = TestHelper.get_test_file('ayu_02.g00')
+    data = TestHelper.get_test_file('g00/ayu_02.g00')
     file = VirtualFile.new(nil, data)
     G00Converter.decode!(file, {})
     data = file.data
@@ -15,7 +15,7 @@ class G00ConverterTest < Test::Unit::TestCase
   end
 
   def test_decoding_version_1
-    data = TestHelper.get_test_file('ayu_05.g00')
+    data = TestHelper.get_test_file('g00/ayu_05.g00')
     file = VirtualFile.new(nil, data)
     G00Converter.decode!(file, {})
     data = file.data
@@ -25,7 +25,7 @@ class G00ConverterTest < Test::Unit::TestCase
   end
 
   def test_decoding_version_2
-    data = TestHelper.get_test_file('ayu_03.g00')
+    data = TestHelper.get_test_file('g00/AYU_03.g00')
     file = VirtualFile.new(nil, data)
     G00Converter.decode!(file, {})
     data = file.data

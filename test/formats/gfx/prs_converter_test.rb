@@ -5,7 +5,7 @@ require 'test/test_helper'
 # Unit tests for PrsConverter
 class PrsConverterTest < Test::Unit::TestCase
   def test_decoding
-    data = TestHelper.get_test_file('BMIK_A16')
+    data = TestHelper.get_test_file('prs/BMIK_A16')
     file = VirtualFile.new(nil, data)
     PrsConverter.decode!(file, {})
     data = file.data

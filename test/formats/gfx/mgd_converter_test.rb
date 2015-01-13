@@ -29,7 +29,7 @@ class MgdConverterTest < Test::Unit::TestCase
   end
 
   def test_decoding_from_sgd
-    data = TestHelper.get_test_file('GS_UD.MGD')
+    data = TestHelper.get_test_file('mgd/GS_UD.MGD')
     file = VirtualFile.new(nil, data)
     MgdConverter.decode!(file, {})
     data = file.data
@@ -44,7 +44,7 @@ class MgdConverterTest < Test::Unit::TestCase
   end
 
   def test_decoding_from_png
-    data = TestHelper.get_test_file('saveload_p.MGD')
+    data = TestHelper.get_test_file('mgd/saveload_p.MGD')
     file = VirtualFile.new(nil, data)
     MgdConverter.decode!(file, {})
     data = file.data
