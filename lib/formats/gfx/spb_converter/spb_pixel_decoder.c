@@ -38,17 +38,28 @@ static VALUE decode_spb_pixels(
     bit_stream bs;
     bit_stream_init(&bs, input, input_size);
 
+    unsigned char *dest_guardian = tmp_data + tmp_data_size;
     unsigned char *dest = tmp_data;
     for (rgb = 2; rgb >= 0; rgb--, dest = tmp_data) {
         ch = bit_stream_get(&bs, 8);
+        if (dest >= dest_guardian)
+            break;
         *dest ++ = ch;
 
         while (dest < tmp_data + tmp_data_size) {
             t = bit_stream_get(&bs, 3);
             if (t == 0) {
+                if (dest >= dest_guardian)
+                    break;
                 *dest ++ = ch;
+                if (dest >= dest_guardian)
+                    break;
                 *dest ++ = ch;
+                if (dest >= dest_guardian)
+                    break;
                 *dest ++ = ch;
+                if (dest >= dest_guardian)
+                    break;
                 *dest ++ = ch;
                 continue;
             }
@@ -68,6 +79,8 @@ static VALUE decode_spb_pixels(
                         ch -= (t >> 1);
                     }
                 }
+                if (dest >= dest_guardian)
+                    break;
                 *dest ++ = ch;
             }
         }
