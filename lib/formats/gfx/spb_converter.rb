@@ -26,11 +26,10 @@ module SpbConverter
       input = BinaryIO.from_string(data)
       width, height = input.read(4).unpack('S>S>')
 
-      source_size = input.size
       source_buffer = input.read
       target_buffer = decode_spb_pixels(
         source_buffer,
-        source_size,
+        source_buffer.length,
         width,
         height)
 
