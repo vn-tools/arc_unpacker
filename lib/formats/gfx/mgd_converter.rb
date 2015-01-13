@@ -1,6 +1,6 @@
 require 'lib/binary_io'
 require 'lib/image'
-require_relative 'sgd_compressor'
+require_relative 'mgd_converter/sgd_compressor'
 
 # Converts MGD to PNG and vice versa.
 # Seen in FJSYS archives.
