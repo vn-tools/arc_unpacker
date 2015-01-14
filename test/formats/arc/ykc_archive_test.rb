@@ -9,10 +9,10 @@ class YkcArchiveTest < Test::Unit::TestCase
 
   def test_backslash
     input_files = InputFilesMock.new([
-      { file_name: 'dir/test.txt', data: 'whatever' }])
+      VirtualFile.new('dir/test.txt', 'whatever')])
 
     output_files = TestHelper.pack_and_unpack(YkcArchive, input_files)
 
-    assert_equal('dir\\test.txt', output_files.files.first[:file_name])
+    assert_equal('dir\\test.txt', output_files.files.first.name)
   end
 end

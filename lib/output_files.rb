@@ -11,11 +11,11 @@ class OutputFiles
   def write(&block)
     print 'Extracting... ' if @verbosity != :quiet
 
-    file_name, data = block.call
-    target_path = File.join(@target_dir, file_name.gsub('\\', '/'))
+    file = block.call
+    target_path = File.join(@target_dir, file.name.gsub('\\', '/'))
 
     FileUtils.mkpath(File.dirname(target_path))
-    File.binwrite(target_path, data)
+    File.binwrite(target_path, file.data)
   rescue StandardError => e
     puts e.message if @verbosity != :quiet
     puts e.backtrace if @verbosity == :debug

@@ -1,5 +1,6 @@
 require 'lib/formats/gfx/ykg_converter'
 require 'lib/formats/script/yks_converter'
+require 'lib/virtual_file'
 
 # YKC archive
 # Engine: YukaScript
@@ -42,27 +43,27 @@ module YkcArchive
 
           name = arc_file.peek(name_origin) { arc_file.read(name_size - 1) }
           data = arc_file.peek(data_origin) { arc_file.read(data_size) }
-          data = decode(data, options)
 
-          [name, data]
+          file = VirtualFile.new(name, data)
+          decode!(file, options)
+          file
         end
       end
     end
 
     private
 
-    def decode(data, options)
-      if data.start_with?(YkgConverter::MAGIC)
-        data = YkgConverter.decode(data, options)
-      elsif data.start_with?(YksConverter::MAGIC)
-        data = YksConverter.decode(data, options)
+    def decode!(file, options)
+      if file.data.start_with?(YkgConverter::MAGIC)
+        YkgConverter.decode!(file, options)
+      elsif file.data.start_with?(YksConverter::MAGIC)
+        YksConverter.decode!(file, options)
       end
-      data
     end
   end
 
   class Packer
-    def pack(arc_file, input_files, options)
+    def pack(arc_file, input_files, _options)
       table_origin = MAGIC.length + 18
       table_size = input_files.length * 20
 
@@ -72,16 +73,14 @@ module YkcArchive
       arc_file.write("\x00" * table_size)
 
       table_entries = {}
-      input_files.each do |name, data|
-        data = encode(name, data, options)
-
-        table_entries[name] = { name_origin: arc_file.tell }
-        arc_file.write(name.gsub('/', '\\'))
+      input_files.each do |file|
+        table_entries[file.name] = { name_origin: arc_file.tell }
+        arc_file.write(file.name.gsub('/', '\\'))
         arc_file.write("\x00")
 
-        table_entries[name][:data_origin] = arc_file.tell
-        table_entries[name][:data_size] = data.length
-        arc_file.write(data)
+        table_entries[file.name][:data_origin] = arc_file.tell
+        table_entries[file.name][:data_size] = file.data.length
+        arc_file.write(file.data)
       end
 
       arc_file.seek(table_origin)
@@ -92,15 +91,6 @@ module YkcArchive
           entry[:data_origin],
           entry[:data_size]].pack('L4 x4'))
       end
-    end
-
-    def encode(name, data, options)
-      if name.downcase.end_with?('.ykg')
-        data = YkgConverter.encode(data, options)
-      elsif name.downcase.end_with?('.yks')
-        data = YksConverter.encode(data, options)
-      end
-      data
     end
   end
 end

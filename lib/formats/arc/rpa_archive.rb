@@ -1,4 +1,5 @@
 require 'lib/formats/generic/pickle'
+require 'lib/virtual_file'
 require 'zlib'
 
 # RPA archive
@@ -55,9 +56,12 @@ module RpaArchive
 
     def write_contents(input_files)
       table = []
-      input_files.each do |name, data|
-        table.push(origin: @arc_file.tell, size: data.length, name: name)
-        @arc_file.write(data)
+      input_files.each do |file|
+        table.push(
+          origin: @arc_file.tell,
+          size: file.data.length,
+          name: file.name)
+        @arc_file.write(file.data)
       end
       table
     end
@@ -90,7 +94,7 @@ module RpaArchive
           data += @arc_file.peek(options[:origin]) do
             @arc_file.read(options[:size])
           end
-          [name, data]
+          VirtualFile.new(name, data)
         end
       end
     end

@@ -60,189 +60,203 @@ module YksConverter
     options[:encrypt_yks] = arg_parser.flag?(%w(--encrypt))
   end
 
-  def decode(data, _options)
-    input = BinaryIO.from_string(data)
-
-    magic = input.read(MAGIC.length)
-    fail RecognitionError, 'Not a YKS script' if magic != MAGIC
-
-    is_encrypted,
-    _header_size,
-    entries_origin,
-    entry_count,
-    code_origin,
-    code_size,
-    text_origin,
-    text_size,
-    unknown = input.read(48 - MAGIC.length).unpack('SL x4 L6 Q')
-    is_encrypted = is_encrypted != 0
-
-    text = input.peek(text_origin) { input.read(text_size) }
-    text = xor(text) if is_encrypted
-
-    entries = input.peek(entries_origin) do
-      input.read(4 * entry_count).unpack('L*')
-    end
-
-    code = input.peek(code_origin) do
-      input.read(16 * code_size).unpack('L*').each_slice(4).to_a
-    end
-
-    text = BinaryIO.from_string(text)
-    opcodes = []
-    code.each do |d1, d2, d3, d4|
-      case d1
-      when OPCODE_FUNC
-        fail 'Unexpected value: ' + d4.to_s if d4 != 0
-        opcodes << [
-          'func_name',
-          text.peek(d2) { text.read_until_zero },
-          d3]
-
-      when OPCODE_OPERATOR
-        fail 'Unexpected value: ' + d4.to_s if d4 != 0xff_ff_ff_ff
-        opcodes << [
-          'operator',
-          text.peek(d2) { text.read_until_zero },
-          text.peek(d3) { text.read(4).unpack('L')[0] }]
-
-      when OPCODE_INT_VALUE
-        fail 'Unexpected value: ' + d2.to_s if d2 != 0
-        fail 'Unexpected value: ' + d4.to_s if d4 != 0
-        opcodes << [
-          'int_value',
-          text.peek(d3) { text.read(4).unpack('L')[0] }]
-
-      when OPCODE_STR_VALUE
-        fail 'Unexpected value: ' + d2.to_s if d2 != 0
-        fail 'Unexpected value: ' + d4.to_s if d4 != 0
-        value = text.peek(d3) do
-          text.read_until_zero.force_encoding('sjis').encode('utf-8')
-        end
-        opcodes << ['str_value', value]
-
-      when OPCODE_GLOBAL_FLAG
-        fail 'Unexpected value: ' + d3.to_s if d3 != 0
-        opcodes << [
-          'func_global_flag',
-          text.peek(d2) { text.read_until_zero },
-          d4 - d2]
-
-      when OPCODE_STRING
-        fail 'Unexpected value: ' + d3.to_s if d3 != 0
-        opcodes << [
-          'func_string',
-          text.peek(d2) { text.read_until_zero },
-          d4 - d2]
-
-      when OPCODE_COUNTER
-        fail 'Unexpected value: ' + d2.to_s if d2 != 0
-        fail 'Unexpected value: ' + d4.to_s if d4 != 0
-        opcodes << ['counter', d3]
-
-      else
-        fail 'Unknown instruction: ' + d1.to_s
-
-      end
-    end
-
-    [
-      unknown,
-      JSON.dump(entries),
-      opcodes.map { |o| JSON.dump(o) } * "\n"
-    ] * "\n".encode('binary')
+  def decode!(file, _options)
+    file.data = Decoder.new.read(file.data)
+    file.change_extension('.txt')
   end
 
-  def encode(data, options)
-    data = data.split("\n")
-    unknown = data.shift.to_i
-    entries = JSON.load(data.shift)
-    opcodes = data.map { |o| JSON.load(o) }
+  def encode!(file, options)
+    file.data = Encoder.new.write(file.data, options)
+    file.change_extension('.yks')
+  end
 
-    code = BinaryIO.from_string
-    text = BinaryIO.from_string
-    entries = entries.map { |m| [m].pack('L') } * ''
+  class Decoder
+    def read(data)
+      input = BinaryIO.from_string(data)
 
-    opcodes.each do |o|
-      name = o.shift
+      magic = input.read(MAGIC.length)
+      fail RecognitionError, 'Not a YKS script' if magic != MAGIC
 
-      case name
-      when 'func_name'
-        pos = text.tell
-        text.write(o[0])
-        text.write("\x00")
-        code << [OPCODE_FUNC, pos, o[1], 0].pack('L4')
-
-      when 'operator'
-        pos1 = text.tell
-        text.write(o[0])
-        text.write("\x00")
-        pos2 = text.tell
-        text.write([o[1]].pack('L'))
-        code << [OPCODE_OPERATOR, pos1, pos2, 0xff_ff_ff_ff].pack('L4')
-
-      when 'int_value'
-        pos = text.tell
-        text.write([o[0]].pack('L'))
-        code << [OPCODE_INT_VALUE, 0, pos, 0].pack('L4')
-
-      when 'str_value'
-        pos = text.tell
-        text.write(o[0].force_encoding('utf-8').encode('sjis'))
-        text.write("\x00")
-        code << [OPCODE_STR_VALUE, 0, pos, 0].pack('L4')
-
-      when 'func_global_flag'
-        pos = text.tell
-        text.write(o[0])
-        text.write("\x00")
-        code << [OPCODE_GLOBAL_FLAG, pos, 0, pos + o[1]].pack('L4')
-
-      when 'func_string'
-        pos = text.tell
-        text.write(o[0])
-        text.write("\x00")
-        code << [OPCODE_STRING, pos, 0, pos + o[1]].pack('L4')
-
-      when 'counter'
-        code << [OPCODE_COUNTER, 0, o[0], 0].pack('L4')
-
-      else
-        fail 'Unknown opcode name: ' + name
-      end
-    end
-
-    text.rewind
-    text = text.read
-    text = xor(text) if options[:encrypt_yks]
-
-    code.rewind
-    code = code.read
-
-    header_size = 48
-    entries_origin = header_size
-    code_origin = entries_origin + entries.length
-    text_origin = code_origin + code.length
-
-    output = BinaryIO.from_string
-    output.write(MAGIC)
-    output.write([
-      options[:encrypt_yks] ? 1 : 0,
-      header_size,
+      is_encrypted,
+      _header_size,
       entries_origin,
-      entries.length / 4,
+      entry_count,
       code_origin,
-      code.length / 16,
+      code_size,
       text_origin,
-      text.length,
-      unknown].pack('SL x4 L6 Q'))
+      text_size,
+      unknown = input.read(48 - MAGIC.length).unpack('SL x4 L6 Q')
+      is_encrypted = is_encrypted != 0
 
-    output.write(entries)
-    output.write(code)
-    output.write(text)
+      text = input.peek(text_origin) { input.read(text_size) }
+      text = YksConverter.xor(text) if is_encrypted
 
-    output.rewind
-    output.read
+      entries = input.peek(entries_origin) do
+        input.read(4 * entry_count).unpack('L*')
+      end
+
+      code = input.peek(code_origin) do
+        input.read(16 * code_size).unpack('L*').each_slice(4).to_a
+      end
+
+      text = BinaryIO.from_string(text)
+      opcodes = []
+      code.each do |d1, d2, d3, d4|
+        case d1
+        when OPCODE_FUNC
+          fail 'Unexpected value: ' + d4.to_s if d4 != 0
+          opcodes << [
+            'func_name',
+            text.peek(d2) { text.read_until_zero },
+            d3]
+
+        when OPCODE_OPERATOR
+          fail 'Unexpected value: ' + d4.to_s if d4 != 0xff_ff_ff_ff
+          opcodes << [
+            'operator',
+            text.peek(d2) { text.read_until_zero },
+            text.peek(d3) { text.read(4).unpack('L')[0] }]
+
+        when OPCODE_INT_VALUE
+          fail 'Unexpected value: ' + d2.to_s if d2 != 0
+          fail 'Unexpected value: ' + d4.to_s if d4 != 0
+          opcodes << [
+            'int_value',
+            text.peek(d3) { text.read(4).unpack('L')[0] }]
+
+        when OPCODE_STR_VALUE
+          fail 'Unexpected value: ' + d2.to_s if d2 != 0
+          fail 'Unexpected value: ' + d4.to_s if d4 != 0
+          value = text.peek(d3) do
+            text.read_until_zero.force_encoding('sjis').encode('utf-8')
+          end
+          opcodes << ['str_value', value]
+
+        when OPCODE_GLOBAL_FLAG
+          fail 'Unexpected value: ' + d3.to_s if d3 != 0
+          opcodes << [
+            'func_global_flag',
+            text.peek(d2) { text.read_until_zero },
+            d4 - d2]
+
+        when OPCODE_STRING
+          fail 'Unexpected value: ' + d3.to_s if d3 != 0
+          opcodes << [
+            'func_string',
+            text.peek(d2) { text.read_until_zero },
+            d4 - d2]
+
+        when OPCODE_COUNTER
+          fail 'Unexpected value: ' + d2.to_s if d2 != 0
+          fail 'Unexpected value: ' + d4.to_s if d4 != 0
+          opcodes << ['counter', d3]
+
+        else
+          fail 'Unknown instruction: ' + d1.to_s
+
+        end
+      end
+
+      [
+        unknown,
+        JSON.dump(entries),
+        opcodes.map { |o| JSON.dump(o) } * "\n"
+      ] * "\n".encode('binary')
+    end
+  end
+
+  class Encoder
+    def write(data, options)
+      data = data.split("\n")
+      unknown = data.shift.to_i
+      entries = JSON.load(data.shift)
+      opcodes = data.map { |o| JSON.load(o) }
+
+      code = BinaryIO.from_string
+      text = BinaryIO.from_string
+      entries = entries.map { |m| [m].pack('L') } * ''
+
+      opcodes.each do |o|
+        name = o.shift
+
+        case name
+        when 'func_name'
+          pos = text.tell
+          text.write(o[0])
+          text.write("\x00")
+          code << [OPCODE_FUNC, pos, o[1], 0].pack('L4')
+
+        when 'operator'
+          pos1 = text.tell
+          text.write(o[0])
+          text.write("\x00")
+          pos2 = text.tell
+          text.write([o[1]].pack('L'))
+          code << [OPCODE_OPERATOR, pos1, pos2, 0xff_ff_ff_ff].pack('L4')
+
+        when 'int_value'
+          pos = text.tell
+          text.write([o[0]].pack('L'))
+          code << [OPCODE_INT_VALUE, 0, pos, 0].pack('L4')
+
+        when 'str_value'
+          pos = text.tell
+          text.write(o[0].force_encoding('utf-8').encode('sjis'))
+          text.write("\x00")
+          code << [OPCODE_STR_VALUE, 0, pos, 0].pack('L4')
+
+        when 'func_global_flag'
+          pos = text.tell
+          text.write(o[0])
+          text.write("\x00")
+          code << [OPCODE_GLOBAL_FLAG, pos, 0, pos + o[1]].pack('L4')
+
+        when 'func_string'
+          pos = text.tell
+          text.write(o[0])
+          text.write("\x00")
+          code << [OPCODE_STRING, pos, 0, pos + o[1]].pack('L4')
+
+        when 'counter'
+          code << [OPCODE_COUNTER, 0, o[0], 0].pack('L4')
+
+        else
+          fail 'Unknown opcode name: ' + name
+        end
+      end
+
+      text.rewind
+      text = text.read
+      text = YksConverter.xor(text) if options[:encrypt_yks]
+
+      code.rewind
+      code = code.read
+
+      header_size = 48
+      entries_origin = header_size
+      code_origin = entries_origin + entries.length
+      text_origin = code_origin + code.length
+
+      output = BinaryIO.from_string
+      output.write(MAGIC)
+      output.write([
+        options[:encrypt_yks] ? 1 : 0,
+        header_size,
+        entries_origin,
+        entries.length / 4,
+        code_origin,
+        code.length / 16,
+        text_origin,
+        text.length,
+        unknown].pack('SL x4 L6 Q'))
+
+      output.write(entries)
+      output.write(code)
+      output.write(text)
+
+      output.rewind
+      output.read
+    end
   end
 
   def xor(data)

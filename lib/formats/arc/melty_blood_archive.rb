@@ -1,3 +1,5 @@
+require 'lib/virtual_file'
+
 # Melty Blood archive
 # Company: French Bread
 # Extension: .p
@@ -54,7 +56,7 @@ module MeltyBloodArchive
             data
           end
 
-          [e[:name], data]
+          VirtualFile.new(e[:name], data)
         end
       end
     end

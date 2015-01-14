@@ -1,4 +1,5 @@
 require 'lib/binary_io'
+require 'lib/virtual_file'
 require 'zlib'
 
 # PAK2 archive
@@ -67,7 +68,7 @@ module Pak2NitroplusArchive
             fail RecognitionError, 'Bad file size'
           end
 
-          [e[:name], data]
+          VirtualFile.new(e[:name], data)
         end
       end
     end
@@ -114,16 +115,16 @@ module Pak2NitroplusArchive
     def prepare_table(input_files, options)
       origin = 0
       table = {}
-      input_files.each do |name, data|
-        e = { name: name, origin: origin, size_original: data.length }
+      input_files.each do |file|
+        e = { name: file.name, origin: origin, size_original: file.data.length }
         if options[:compressed]
           e[:flags] = 1
-          e[:size_compressed] = Zlib.deflate(data).length
+          e[:size_compressed] = Zlib.deflate(file.data).length
         else
           e[:flags] = 0
-          e[:size_compressed] = data.length
+          e[:size_compressed] = file.data.length
         end
-        table[name] = e
+        table[file.name] = e
         origin += e[:size_compressed]
       end
       table
@@ -151,9 +152,9 @@ module Pak2NitroplusArchive
     end
 
     def write_contents(arc_file, table, input_files)
-      input_files.each do |name, data|
-        data = Zlib.deflate(data) if table[name][:flags] > 0
-        arc_file.write(data)
+      input_files.each do |file|
+        file.data = Zlib.deflate(file.data) if table[file.name][:flags] > 0
+        arc_file.write(file.data)
       end
     end
   end

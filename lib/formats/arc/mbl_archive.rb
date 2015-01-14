@@ -1,4 +1,5 @@
 require 'lib/formats/gfx/prs_converter'
+require 'lib/virtual_file'
 
 # MBL archive
 # Company: Ivory
@@ -67,17 +68,16 @@ module MblArchive
       table.each do |e|
         output_files.write do
           data = @arc_file.peek(e[:origin]) { @arc_file.read(e[:size]) }
-          data = decode(data, options)
-          [e[:name], data]
+          file = VirtualFile.new(e[:name], data)
+          decode!(file, options)
+          file
         end
       end
     end
 
-    def decode(data, options)
-      if data.start_with?(PrsConverter::MAGIC)
-        data = PrsConverter.decode(data, options)
-      end
-      data
+    def decode!(file, options)
+      return unless file.data.start_with?(PrsConverter::MAGIC)
+      PrsConverter.decode!(file, options)
     end
   end
 
@@ -87,7 +87,7 @@ module MblArchive
       @arc_file = arc_file
       name_length = calc_name_length(input_files, version)
       write_dummy_table(input_files, version, name_length)
-      table = write_contents(input_files, options)
+      table = write_contents(input_files)
       @arc_file.seek(0)
       write_table(table, version, name_length)
     end
@@ -121,19 +121,16 @@ module MblArchive
       end
     end
 
-    def write_contents(input_files, options)
+    def write_contents(input_files)
       table = []
-      input_files.each do |name, data|
-        data = encode(data, options)
-        table.push(name: name, origin: @arc_file.tell, size: data.length)
-        @arc_file.write(data)
+      input_files.each do |file|
+        table.push(
+          name: file.name,
+          origin: @arc_file.tell,
+          size: file.data.length)
+        @arc_file.write(file.data)
       end
       table
-    end
-
-    def encode(data, options)
-      data = PrsConverter.encode(data, options) if data[1..3] == 'PNG'
-      data
     end
   end
 end

@@ -13,25 +13,32 @@ module PrsConverter
 
   def parse_cli_options(_arg_parser, _options) end
 
-  def decode(input, _options)
-    input = BinaryIO.from_string(input)
-    magic = input.read(4)
-    fail RecognitionError, 'Not a PRS graphic file' if magic != MAGIC
-
-    source_size,
-    width,
-    height = input.read(12).unpack('Lx4S2')
-    source_buffer = input.read(source_size)
-    target_buffer = prs_decode_pixels(
-      source_buffer,
-      source_size,
-      width,
-      height)
-
-    Image.raw_to_boxed(width, height, target_buffer, 'BGR')
+  def decode!(file, _options)
+    file.data = Decoder.new.read(file.data)
+    file.change_extension('.png')
   end
 
-  def encode(_input, _options)
+  def encode!(_file, _options)
     fail 'Not supported.'
+  end
+
+  class Decoder
+    def read(data)
+      input = BinaryIO.from_string(data)
+      magic = input.read(4)
+      fail RecognitionError, 'Not a PRS graphic file' if magic != MAGIC
+
+      source_size,
+      width,
+      height = input.read(12).unpack('Lx4S2')
+      source_buffer = input.read(source_size)
+      target_buffer = prs_decode_pixels(
+        source_buffer,
+        source_size,
+        width,
+        height)
+
+      Image.raw_to_boxed(width, height, target_buffer, 'BGR')
+    end
   end
 end

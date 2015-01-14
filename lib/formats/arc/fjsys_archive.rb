@@ -1,5 +1,6 @@
 require 'lib/formats/gfx/mgd_converter'
 require 'lib/formats/script/msd_converter'
+require 'lib/virtual_file'
 
 # FJSYS archive
 # Company: various
@@ -51,30 +52,28 @@ module FjsysArchive
             arc_file.read_until_zero
           end
 
-          data = arc_file.peek(data_origin) do
-            decode(file_name, arc_file.read(data_size), options)
-          end
+          data = arc_file.peek(data_origin) { arc_file.read(data_size) }
 
-          [file_name, data]
+          file = VirtualFile.new(file_name, data)
+          decode!(file, options)
+          file
         end
       end
     end
 
     private
 
-    def decode(file_name, data, options)
-      if data.start_with?(MgdConverter::MAGIC)
-        data = MgdConverter.decode(data, options)
-      elsif file_name.downcase.end_with?('.msd')
-        data = MsdConverter.decode(data, options)
+    def decode!(file, options)
+      if file.data.start_with?(MgdConverter::MAGIC)
+        MgdConverter.decode!(file, options)
+      elsif file.name.downcase.end_with?('.msd')
+        MsdConverter.decode!(file, options)
       end
-
-      data
     end
   end
 
   class Packer
-    def pack(arc_file, input_files, options)
+    def pack(arc_file, input_files, _options)
       arc_file.write(MAGIC)
 
       file_names_start = input_files.length * 16 + 0x54
@@ -89,15 +88,13 @@ module FjsysArchive
       arc_file.write("\x00" * (header_size - arc_file.tell))
 
       table_entries = []
-      input_files.each do |file_name, data|
-        data = encode(file_name, data, options)
-
+      input_files.each do |file|
         table_entries.push(
-          file_name: file_name,
-          data_size: data.length,
+          file_name: file.name,
+          data_size: file.data.length,
           data_origin: arc_file.tell)
 
-        arc_file.write(data)
+        arc_file.write(file.data)
       end
 
       table_entries = fix_file_order(table_entries)
@@ -119,15 +116,6 @@ module FjsysArchive
     end
 
     private
-
-    def encode(file_name, data, options)
-      if file_name.downcase.end_with?('.mgd')
-        data = MgdConverter.encode(data, options)
-      elsif file_name.downcase.end_with?('.msd')
-        data = MsdConverter.encode(data, options)
-      end
-      data
-    end
 
     # it is important to sort the files like the game did,
     # because the game refers to the file by their indices, not the file names!

@@ -1,5 +1,4 @@
 A tool for extracting data from visual novels.
-Some formats allow repacking.
 
 Requirements
 ------------
@@ -29,49 +28,43 @@ Supported games
 
 CLI invocation                 | Game                                | Features<sup>1</sup>
 ------------------------------ | ----------------------------------- | ------------
-`--fmt=xp3 --plugin=none`      | Sono Hanabira ni Kuchizuke o 12     | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
-`--fmt=xp3 --plugin=none`      | Sharin no Kuni, Himawari no Shoujo  | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
-`--fmt=xp3 --plugin=fsn`       | Fate/Stay Night                     | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
-`--fmt=xp3 --plugin=fha`       | Fate/Hollow Ataraxia                | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
-`--fmt=xp3 --plugin=fha`       | Comyu Kuroi Ryuu to Yasashii Oukoku | ![][sup]![][par]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
-`--fmt=melty_blood`            | Melty Blood                         | ![][sup]![][non]![][non]![][non] ![][non]![][non]![][non]![][non]
-`--fmt=sar`                    | Tsukihime                           | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=nsa`                    | Tsukihime                           | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=nsa`                    | Umineko No Naku Koro Ni             | ![][sup]![][sup]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
-`--fmt=ykc`                    | Hoshizora e Kakaru Hashi            | ![][sup]![][sup]![][sup]![][sup] ![][sup]![][sup]![][sup]![][sup]
-`--fmt=fjsys --key=sonohana1`  | Sono Hanabira ni Kuchizuke o 1      | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=fjsys --key=sonohana2`  | Sono Hanabira ni Kuchizuke o 2      | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=fjsys --key=sonohana3`  | Sono Hanabira ni Kuchizuke o 3      | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=fjsys --key=sonohana4`  | Sono Hanabira ni Kuchizuke o 4      | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=fjsys --key=sonohana5`  | Sono Hanabira ni Kuchizuke o 5      | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=fjsys --key=sonohana6`  | Sono Hanabira ni Kuchizuke o 6      | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=fjsys --key=sonohana7`  | Sono Hanabira ni Kuchizuke o 7      | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=fjsys --key=sonohana8`  | Sono Hanabira ni Kuchizuke o 8      | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=fjsys --key=sonohana9`  | Sono Hanabira ni Kuchizuke o 9      | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=fjsys --key=sonohana10` | Sono Hanabira ni Kuchizuke o 10     | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=fjsys --key=sonohana11` | Sono Hanabira ni Kuchizuke o 11     | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=nitroplus/pak2`         | Saya no Uta                         | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=npa`                    | Chaos;Head                          | ![][sup]![][sup]![][sup]![][non] ![][non]![][non]![][non]![][non]
-`--fmt=rpa`                    | Everlasting Summer                  | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=rpa`                    | Katawa Shoujo                       | ![][sup]![][sup]![][sup]![][non] ![][sup]![][sup]![][sup]![][non]
-`--fmt=mbl`                    | Wanko to Kurasou                    | ![][sup]![][sup]![][sup]![][non] ![][sup]![][non]![][sup]![][non]
-`--fmt=exe`                    | Generic `.exe` resources            | ![][sup]![][nap]![][nap]![][nap] ![][non]![][nap]![][nap]![][nap]
-`--fmt=g00`, `--fmt=nwa`       | Little Busters                      | ![][nap]![][sup]![][sup]![][non] ![][nap]![][non]![][non]![][non]
-`--fmt=g00`, `--fmt=nwa`       | Clannad                             | ![][nap]![][sup]![][sup]![][non] ![][nap]![][non]![][non]![][non]
-`--fmt=g00`, `--fmt=nwa`       | Kanon                               | ![][nap]![][sup]![][sup]![][non] ![][nap]![][non]![][non]![][non]
+`--fmt=xp3 --plugin=none`      | Sono Hanabira ni Kuchizuke o 12     | ![][sup]![][par]![][sup]![][non]
+`--fmt=xp3 --plugin=none`      | Sharin no Kuni, Himawari no Shoujo  | ![][sup]![][par]![][sup]![][non]
+`--fmt=xp3 --plugin=fsn`       | Fate/Stay Night                     | ![][sup]![][par]![][sup]![][non]
+`--fmt=xp3 --plugin=fha`       | Fate/Hollow Ataraxia                | ![][sup]![][par]![][sup]![][non]
+`--fmt=xp3 --plugin=fha`       | Comyu Kuroi Ryuu to Yasashii Oukoku | ![][sup]![][par]![][sup]![][non]
+`--fmt=melty_blood`            | Melty Blood                         | ![][sup]![][non]![][non]![][non]
+`--fmt=sar`                    | Tsukihime                           | ![][sup]![][sup]![][sup]![][non]
+`--fmt=nsa`                    | Tsukihime                           | ![][sup]![][sup]![][sup]![][non]
+`--fmt=nsa`                    | Umineko No Naku Koro Ni             | ![][sup]![][sup]![][sup]![][non]
+`--fmt=ykc`                    | Hoshizora e Kakaru Hashi            | ![][sup]![][sup]![][sup]![][sup]
+`--fmt=fjsys --key=sonohana1`  | Sono Hanabira ni Kuchizuke o 1      | ![][sup]![][sup]![][sup]![][non]
+`--fmt=fjsys --key=sonohana2`  | Sono Hanabira ni Kuchizuke o 2      | ![][sup]![][sup]![][sup]![][non]
+`--fmt=fjsys --key=sonohana3`  | Sono Hanabira ni Kuchizuke o 3      | ![][sup]![][sup]![][sup]![][non]
+`--fmt=fjsys --key=sonohana4`  | Sono Hanabira ni Kuchizuke o 4      | ![][sup]![][sup]![][sup]![][non]
+`--fmt=fjsys --key=sonohana5`  | Sono Hanabira ni Kuchizuke o 5      | ![][sup]![][sup]![][sup]![][non]
+`--fmt=fjsys --key=sonohana6`  | Sono Hanabira ni Kuchizuke o 6      | ![][sup]![][sup]![][sup]![][non]
+`--fmt=fjsys --key=sonohana7`  | Sono Hanabira ni Kuchizuke o 7      | ![][sup]![][sup]![][sup]![][non]
+`--fmt=fjsys --key=sonohana8`  | Sono Hanabira ni Kuchizuke o 8      | ![][sup]![][sup]![][sup]![][non]
+`--fmt=fjsys --key=sonohana9`  | Sono Hanabira ni Kuchizuke o 9      | ![][sup]![][sup]![][sup]![][non]
+`--fmt=fjsys --key=sonohana10` | Sono Hanabira ni Kuchizuke o 10     | ![][sup]![][sup]![][sup]![][non]
+`--fmt=fjsys --key=sonohana11` | Sono Hanabira ni Kuchizuke o 11     | ![][sup]![][sup]![][sup]![][non]
+`--fmt=nitroplus/pak2`         | Saya no Uta                         | ![][sup]![][sup]![][sup]![][non]
+`--fmt=npa`                    | Chaos;Head                          | ![][sup]![][sup]![][sup]![][non]
+`--fmt=rpa`                    | Everlasting Summer                  | ![][sup]![][sup]![][sup]![][non]
+`--fmt=rpa`                    | Katawa Shoujo                       | ![][sup]![][sup]![][sup]![][non]
+`--fmt=mbl`                    | Wanko to Kurasou                    | ![][sup]![][sup]![][sup]![][non]
+`--fmt=exe`                    | Generic `.exe` resources            | ![][sup]![][nap]![][nap]![][nap]
+`--fmt=g00`, `--fmt=nwa`       | Little Busters                      | ![][nap]![][sup]![][sup]![][non]
+`--fmt=g00`, `--fmt=nwa`       | Clannad                             | ![][nap]![][sup]![][sup]![][non]
+`--fmt=g00`, `--fmt=nwa`       | Kanon                               | ![][nap]![][sup]![][sup]![][non]
 
 <sup>1</sup> Feature legend:
 
-1.  File unpacking
-    - Generic files
-    - Graphics
-    - Music
-    - Scripts
-2.  File packing
-    - Generic files
-    - Graphics
-    - Music
-    - Scripts
+- Generic files
+- Graphics
+- Music
+- Scripts
 
 <sub>Graphics, music and scripts are listed separately, because each of them
 could use encryption, compression or a niche file format. For example, being

@@ -16,12 +16,14 @@ module MgdConverter
 
   def parse_cli_options(_arg_parser, _options) end
 
-  def decode(data, _options)
-    Decoder.new.read(data)
+  def decode!(file, _options)
+    file.data = Decoder.new.read(file.data)
+    file.change_extension('.png')
   end
 
-  def encode(data, _options)
-    Encoder.new.write(data)
+  def encode!(file, _options)
+    file.data = Encoder.new.write(file.data)
+    file.change_extension('.mgd')
   end
 
   class Decoder
