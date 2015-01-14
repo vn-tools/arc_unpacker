@@ -17,6 +17,8 @@ static VALUE decode_pixels(
     unsigned char *target_buffer = (unsigned char*)malloc(target_size);
     unsigned char *source = source_buffer;
     unsigned char *target = target_buffer;
+    unsigned char *source_guardian = source + source_size;
+    unsigned char *target_guardian = target + target_size;
 
     int flag = 0;
 
@@ -30,18 +32,15 @@ static VALUE decode_pixels(
     while (1) {
         flag <<= 1;
         if ((flag & 0xff) == 0) {
-            -- source_size;
-            if (source_size <= 0)
+            if (source >= source_guardian)
                 break;
-
             flag = *source ++;
             flag <<= 1;
             flag += 1;
         }
 
         if ((flag & 0x100) != 0x100) {
-            source_size --;
-            if (source_size == 0)
+            if (source >= source_guardian || target >= target_guardian)
                 break;
 
             *target ++ = *source ++;
@@ -55,18 +54,17 @@ static VALUE decode_pixels(
                 tmp &= 3;
                 if (tmp == 3) {
                     length += 9;
-                    source_size -= length;
-                    if (source_size <= 0)
-                        break;
-                    for (i = 0; i < length; i ++)
+                    for (i = 0; i < length; i ++) {
+                        if (source >= source_guardian || target >= target_guardian)
+                            break;
                         *target ++ = *source ++;
+                    }
                     continue;
                 }
                 shift = length;
                 length = tmp + 2;
             } else {
-                -- source_size;
-                if (source_size <= 0)
+                if (source >= source_guardian)
                     break;
 
                 shift = (*source ++) | ((tmp & 0x3f) << 8);
@@ -76,8 +74,7 @@ static VALUE decode_pixels(
                     length &= 0xf;
                     length += 3;
                 } else {
-                    -- source_size;
-                    if (source_size <= 0)
+                    if (source >= source_guardian)
                         break;
 
                     length = length_lookup[*source ++];
@@ -85,10 +82,10 @@ static VALUE decode_pixels(
             }
 
             shift += 1;
-            if ((target - target_buffer) + shift > target_size)
-                break;
             for (i = 0; i < length; i ++) {
-                *target = *(target-shift);
+                if (target >= target_guardian)
+                    break;
+                *target = *(target - shift);
                 target ++;
             }
         }
