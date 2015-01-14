@@ -65,6 +65,7 @@ module TestHelper
       image = Magick::Image.from_blob(raw)[0]
       width, height = image.columns, image.rows
       pixels = image.export_pixels_to_str(0, 0, width, height, 'RGBA')
+      image.destroy!
       [width, height, pixels]
     end
 
