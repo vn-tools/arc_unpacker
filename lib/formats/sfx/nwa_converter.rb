@@ -14,6 +14,7 @@ module NwaConverter
 
   def decode!(file, _options)
     file.data = Decoder.new.read(file.data)
+    file.change_extension('.txt')
   end
 
   def encode!(_file, _options)

@@ -15,6 +15,7 @@ module SpbConverter
 
   def decode!(file, _options)
     file.data = Decoder.new.read(file.data)
+    file.change_extension('.png')
   end
 
   def encode!(_file, _options)

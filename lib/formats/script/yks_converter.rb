@@ -62,10 +62,12 @@ module YksConverter
 
   def decode!(file, _options)
     file.data = Decoder.new.read(file.data)
+    file.change_extension('.txt')
   end
 
   def encode!(file, options)
     file.data = Encoder.new.write(file.data, options)
+    file.change_extension('.yks')
   end
 
   class Decoder
