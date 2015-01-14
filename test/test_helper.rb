@@ -69,18 +69,18 @@ module TestHelper
     end
 
     expected = {}
-    expected[:width]
+    expected[:width],
     expected[:height],
     expected[:pixels] = get_image_info.call(expected_raw)
 
     actual = {}
-    actual[:width]
+    actual[:width],
     actual[:height],
     actual[:pixels] = get_image_info.call(actual_raw)
 
     assert_equal(expected[:width], actual[:width])
     assert_equal(expected[:height], actual[:height])
-    assert_equal(expected[:pixels], actual[:pixels], 'Pixel data differs')
+    assert_equal(true, expected[:pixels] == actual[:pixels], 'Bad pixel data')
   end
 
   def rand_string(length)
