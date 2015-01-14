@@ -1,5 +1,6 @@
 require 'lib/formats/gfx/mgd_converter'
 require 'lib/common'
+require 'lib/virtual_file'
 require 'lib/image'
 require 'test/test_helper'
 silence_warnings { require 'rmagick' }
@@ -28,7 +29,7 @@ class MgdConverterTest < Test::Unit::TestCase
   end
 
   def test_decoding_from_sgd
-    data = TestHelper.get_test_file('GS_UD.MGD')
+    data = TestHelper.get_test_file('mgd/GS_UD.MGD')
     file = VirtualFile.new(nil, data)
     MgdConverter.decode!(file, {})
     data = file.data
@@ -43,7 +44,7 @@ class MgdConverterTest < Test::Unit::TestCase
   end
 
   def test_decoding_from_png
-    data = TestHelper.get_test_file('saveload_p.MGD')
+    data = TestHelper.get_test_file('mgd/saveload_p.MGD')
     file = VirtualFile.new(nil, data)
     MgdConverter.decode!(file, {})
     data = file.data

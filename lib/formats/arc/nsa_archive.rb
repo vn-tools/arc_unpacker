@@ -61,30 +61,29 @@ module NsaArchive
       table.each do |e|
         output_files.write do
           data = arc_file.peek(e[:origin]) do
-            data = arc_file.read(e[:size_compressed])
-            data = decompress(data, e)
-            data
+            arc_file.read(e[:size_compressed])
           end
 
-          unless data.length == e[:size_original]
+          file = VirtualFile.new(e[:name], data)
+          decode!(file, e)
+
+          unless file.data.length == e[:size_original]
             fail RecognitionError, 'Bad file size'
           end
 
-          VirtualFile.new(e[:name], data)
+          file
         end
       end
     end
 
-    def decompress(data, table_entry)
+    def decode!(file, table_entry)
       case table_entry[:compression_type]
       when SPB_COMPRESSION
-        data = SpbConverter.decode(data, {})
-        table_entry[:size_original] = data.length
+        SpbConverter.decode!(file, {})
+        table_entry[:size_original] = file.data.length
       when LZSS_COMPRESSION
-        data = NsaArchive.lzss_compressor.decode(data)
+        file.data = NsaArchive.lzss_compressor.decode(file.data)
       end
-
-      data
     end
   end
 
@@ -99,11 +98,11 @@ module NsaArchive
       cur_data_origin = 0
       table_entries = []
       input_files.each do |file|
-        data_compressed = compress(file.data, compression_type)
         data_size_original = file.data.length
-        data_size_compressed = data_compressed.length
+        encode!(file, compression_type)
+        data_size_compressed = file.data.length
 
-        arc_file.write(data_compressed)
+        arc_file.write(file.data)
 
         table_entries.push([
           file.name,
@@ -129,15 +128,13 @@ module NsaArchive
 
     private
 
-    def compress(data, compression_type)
+    def encode!(file, compression_type)
       case compression_type
       when SPB_COMPRESSION
-        data = SpbConverter.encode(data, {})
+        SpbConverter.encode!(file, {})
       when LZSS_COMPRESSION
-        data = NsaArchive.lzss_compressor.encode(data)
+        file.data = NsaArchive.lzss_compressor.encode(file.data)
       end
-
-      data
     end
   end
 end
