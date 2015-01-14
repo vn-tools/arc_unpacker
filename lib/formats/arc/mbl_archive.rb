@@ -87,7 +87,7 @@ module MblArchive
       @arc_file = arc_file
       name_length = calc_name_length(input_files, version)
       write_dummy_table(input_files, version, name_length)
-      table = write_contents(input_files, options)
+      table = write_contents(input_files)
       @arc_file.seek(0)
       write_table(table, version, name_length)
     end
@@ -121,10 +121,9 @@ module MblArchive
       end
     end
 
-    def write_contents(input_files, options)
+    def write_contents(input_files)
       table = []
       input_files.each do |file|
-        encode!(file, options)
         table.push(
           name: file.name,
           origin: @arc_file.tell,
@@ -132,11 +131,6 @@ module MblArchive
         @arc_file.write(file.data)
       end
       table
-    end
-
-    def encode!(file, options)
-      return unless file.data[1..3] == 'PNG'
-      PrsConverter.encode!(file, options)
     end
   end
 end

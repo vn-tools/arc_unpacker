@@ -63,7 +63,7 @@ module YkcArchive
   end
 
   class Packer
-    def pack(arc_file, input_files, options)
+    def pack(arc_file, input_files, _options)
       table_origin = MAGIC.length + 18
       table_size = input_files.length * 20
 
@@ -74,8 +74,6 @@ module YkcArchive
 
       table_entries = {}
       input_files.each do |file|
-        encode!(file, options)
-
         table_entries[file.name] = { name_origin: arc_file.tell }
         arc_file.write(file.name.gsub('/', '\\'))
         arc_file.write("\x00")
@@ -92,14 +90,6 @@ module YkcArchive
           name.length + 1,
           entry[:data_origin],
           entry[:data_size]].pack('L4 x4'))
-      end
-    end
-
-    def encode!(file, options)
-      if file.name.downcase.end_with?('.ykg')
-        YkgConverter.encode!(file, options)
-      elsif file.name.downcase.end_with?('.yks')
-        YksConverter.encode!(file, options)
       end
     end
   end

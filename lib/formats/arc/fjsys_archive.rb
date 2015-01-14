@@ -73,7 +73,7 @@ module FjsysArchive
   end
 
   class Packer
-    def pack(arc_file, input_files, options)
+    def pack(arc_file, input_files, _options)
       arc_file.write(MAGIC)
 
       file_names_start = input_files.length * 16 + 0x54
@@ -89,8 +89,6 @@ module FjsysArchive
 
       table_entries = []
       input_files.each do |file|
-        encode!(file, options)
-
         table_entries.push(
           file_name: file.name,
           data_size: file.data.length,
@@ -118,14 +116,6 @@ module FjsysArchive
     end
 
     private
-
-    def encode!(file, options)
-      if file.name.downcase.end_with?('.mgd')
-        MgdConverter.encode!(file, options)
-      elsif file.name.downcase.end_with?('.msd')
-        MsdConverter.encode!(file, options)
-      end
-    end
 
     # it is important to sort the files like the game did,
     # because the game refers to the file by their indices, not the file names!
