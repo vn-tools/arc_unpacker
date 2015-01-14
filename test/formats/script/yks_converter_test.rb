@@ -5,26 +5,30 @@ require 'test/test_helper'
 # Unit tests for YksConverter
 class YksConverterTest < Test::Unit::TestCase
   def test_decoding_and_encoding_unencrypted
-    original = TestHelper.get_test_file('yks/SelectJumpStart.yks')
-    file = VirtualFile.new(nil, original)
+    input_data = TestHelper.get_test_file('yks/SelectJumpStart.yks')
+
+    file = VirtualFile.new(nil, input_data)
     YksConverter.decode!(file, {})
-    decoded = file.data
+    decoded_data = file.data
     YksConverter.encode!(file, {})
     YksConverter.decode!(file, {})
-    decoded_again = file.data
-    assert_equal(decoded, decoded_again)
+    decoded_again_data = file.data
+
+    assert_equal(decoded_data, decoded_again_data)
   end
 
   def test_decoding_and_encoding_encrypted
-    original = TestHelper.get_test_file('yks/SelectJumpStart.yks')
-    file = VirtualFile.new(nil, original)
+    input_data = TestHelper.get_test_file('yks/SelectJumpStart.yks')
+
+    file = VirtualFile.new(nil, input_data)
     YksConverter.decode!(file, {})
-    decoded = file.data
+    decoded_data = file.data
     YksConverter.encode!(file, encrypt_yks: true)
-    encoded = file.data
+    encoded_data = file.data
     YksConverter.decode!(file, {})
-    decoded_again = file.data
-    assert_equal(decoded, decoded_again)
-    assert_equal(encoded, original)
+    decoded_again_data = file.data
+
+    assert_equal(decoded_data, decoded_again_data)
+    assert_equal(encoded_data, input_data)
   end
 end

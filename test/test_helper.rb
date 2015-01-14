@@ -59,6 +59,30 @@ module TestHelper
     assert_equal(expected.map(&:data), actual.map(&:data))
   end
 
+  def compare_image(expected_raw, actual_raw)
+    get_image_info = lambda do |raw|
+      silence_warnings { require 'rmagick' }
+      image = Magick::Image.from_blob(raw)[0]
+      width, height = image.columns, image.rows
+      pixels = image.export_pixels_to_str(0, 0, width, height, 'RGBA')
+      [width, height, pixels]
+    end
+
+    expected = {}
+    expected[:width]
+    expected[:height],
+    expected[:pixels] = get_image_info.call(expected_raw)
+
+    actual = {}
+    actual[:width]
+    actual[:height],
+    actual[:pixels] = get_image_info.call(actual_raw)
+
+    assert_equal(expected[:width], actual[:width])
+    assert_equal(expected[:height], actual[:height])
+    assert_equal(expected[:pixels], actual[:pixels], 'Pixel data differs')
+  end
+
   def rand_string(length)
     (1..length).map { rand(2) == 0 ? '#' : '.' } * ''
   end

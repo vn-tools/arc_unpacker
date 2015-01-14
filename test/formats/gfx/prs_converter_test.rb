@@ -5,12 +5,13 @@ require 'test/test_helper'
 # Unit tests for PrsConverter
 class PrsConverterTest < Test::Unit::TestCase
   def test_decoding
-    data = TestHelper.get_test_file('prs/BMIK_A16')
-    file = VirtualFile.new(nil, data)
-    PrsConverter.decode!(file, {})
-    data = file.data
+    input_data = TestHelper.get_test_file('prs/BMIK_A16')
+    expected_data = TestHelper.get_test_file('prs/BMIK_A16-out.png')
 
-    assert_equal('PNG', data[1..3])
-    assert_equal('IEND', data[-8..-5])
+    file = VirtualFile.new(nil, input_data)
+    PrsConverter.decode!(file, {})
+    actual_data = file.data
+
+    TestHelper.compare_image(expected_data, actual_data)
   end
 end

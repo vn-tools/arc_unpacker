@@ -5,32 +5,37 @@ require 'test/test_helper'
 # Unit tests for G00Converter
 class G00ConverterTest < Test::Unit::TestCase
   def test_decoding_version_0
-    data = TestHelper.get_test_file('g00/ayu_02.g00')
-    file = VirtualFile.new(nil, data)
-    G00Converter.decode!(file, {})
-    data = file.data
+    input_data = TestHelper.get_test_file('g00/ayu_02.g00')
+    expected_data = TestHelper.get_test_file('g00/ayu_02-out.png')
 
-    assert_equal('PNG', data[1..3])
-    assert_equal('IEND', data[-8..-5])
+    file = VirtualFile.new(nil, input_data)
+    G00Converter.decode!(file, {})
+    actual_data = file.data
+
+    TestHelper.compare_image(expected_data, actual_data)
   end
 
   def test_decoding_version_1
-    data = TestHelper.get_test_file('g00/ayu_05.g00')
-    file = VirtualFile.new(nil, data)
-    G00Converter.decode!(file, {})
-    data = file.data
+    input_data = TestHelper.get_test_file('g00/ayu_05.g00')
+    expected_data = TestHelper.get_test_file('g00/ayu_05-out.png')
 
-    assert_equal('PNG', data[1..3])
-    assert_equal('IEND', data[-8..-5])
+    file = VirtualFile.new(nil, input_data)
+    G00Converter.decode!(file, {})
+    actual_data = file.data
+
+    TestHelper.compare_image(expected_data, actual_data)
   end
 
   def test_decoding_version_2
-    data = TestHelper.get_test_file('g00/AYU_03.g00')
-    file = VirtualFile.new(nil, data)
-    G00Converter.decode!(file, {})
-    data = file.data
+    input_data = TestHelper.get_test_file('g00/AYU_03.g00')
+    expected_data = TestHelper.get_test_file('g00/AYU_03-out.png')
 
-    actual_meta = Image.read_meta_from_boxed(file.data)
+    file = VirtualFile.new(nil, input_data)
+    G00Converter.decode!(file, {})
+    actual_data = file.data
+
+    TestHelper.compare_image(expected_data, actual_data)
+    actual_meta = Image.read_meta_from_boxed(actual_data)
     expected_meta = \
     {
       width: 640,
@@ -230,9 +235,6 @@ class G00ConverterTest < Test::Unit::TestCase
           { x: 120, y: 472, tr: 1, width: 272, height: 8 }]
       }]
     }
-
-    assert_equal('PNG', data[1..3])
-    assert_equal('IEND', data[-8..-5])
     assert_equal(expected_meta, actual_meta)
   end
 end

@@ -5,12 +5,13 @@ require 'test/test_helper'
 # Unit tests for SpbConverter
 class SpbConverterTest < Test::Unit::TestCase
   def test_decoding
-    data = TestHelper.get_test_file('spb/grimoire_btn.bmp')
-    file = VirtualFile.new(nil, data)
-    SpbConverter.decode!(file, {})
-    data = file.data
+    input_data = TestHelper.get_test_file('spb/grimoire_btn.bmp')
+    expected_data = TestHelper.get_test_file('spb/grimoire_btn-out.png')
 
-    assert_equal('PNG', data[1..3])
-    assert_equal('IEND', data[-8..-5])
+    file = VirtualFile.new(nil, input_data)
+    SpbConverter.decode!(file, {})
+    actual_data = file.data
+
+    TestHelper.compare_image(expected_data, actual_data)
   end
 end
