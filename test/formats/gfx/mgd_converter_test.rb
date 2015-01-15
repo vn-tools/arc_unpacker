@@ -16,7 +16,7 @@ class MgdConverterTest < Test::Unit::TestCase
     actual_data = file.data
 
     TestHelper.compare_image(expected_data, actual_data)
-    regions = Image.read_meta_from_boxed(actual_data)[:regions]
+    regions = Image.from_boxed(actual_data, nil).meta[:regions]
     assert_equal([{ width: 800, height: 600, x: 0, y: 0 }], regions)
   end
 
@@ -29,7 +29,7 @@ class MgdConverterTest < Test::Unit::TestCase
     actual_data = file.data
 
     TestHelper.compare_image(expected_data, actual_data)
-    regions = Image.read_meta_from_boxed(actual_data)[:regions]
+    regions = Image.from_boxed(actual_data, nil).meta[:regions]
     assert_equal(
       [
         { width: 30, height: 30, x: 0, y: 300 },
@@ -77,7 +77,7 @@ class MgdConverterTest < Test::Unit::TestCase
     MgdConverter.encode!(file, {})
     MgdConverter.decode!(file, {})
     data = file.data
-    regions = Image.read_meta_from_boxed(data)[:regions]
+    regions = Image.from_boxed(data, nil).meta[:regions]
 
     image = Magick::Image.from_blob(data)[0]
     assert_equal(641, image.columns)

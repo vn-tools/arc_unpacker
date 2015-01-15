@@ -21,12 +21,15 @@ class YkgConverterTest < Test::Unit::TestCase
       { x: 330, y: 431, width: 123, height: 234 }]
 
     data = TestHelper.get_test_file('reimu_transparent.png')
-    data = Image.add_meta_to_boxed(data, regions: test_regions)
+    image = Image.from_boxed(data, 'BGRA')
+    image.meta = { regions: test_regions }
+    data = image.to_boxed
+
     file = VirtualFile.new(nil, data)
     YkgConverter.encode!(file, {})
     YkgConverter.decode!(file, {})
     data = file.data
-    regions = Image.read_meta_from_boxed(data)[:regions]
+    regions = Image.from_boxed(data, nil).meta[:regions]
 
     assert_equal('PNG', data[1..3])
     assert_equal('IEND', data[-8..-5])

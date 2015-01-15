@@ -14,8 +14,8 @@ module SpbConverter
   def parse_cli_options(_arg_parser, _options) end
 
   def decode!(file, _options)
-    file.data = Decoder.new.read(file.data)
-    file.change_extension('.png')
+    image = Decoder.new.read(file.data)
+    image.update_file(file)
   end
 
   def encode!(_file, _options)
@@ -34,7 +34,7 @@ module SpbConverter
         width,
         height)
 
-      Image.raw_to_boxed(width, height, target_buffer, 'RGB')
+      Image.from_pixels(width, height, target_buffer, 'RGB')
     end
   end
 end

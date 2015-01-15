@@ -17,8 +17,8 @@ module MgdConverter
   def parse_cli_options(_arg_parser, _options) end
 
   def decode!(file, _options)
-    file.data = Decoder.new.read(file.data)
-    file.change_extension('.png')
+    image = Decoder.new.read(file.data)
+    image.update_file(file)
   end
 
   def encode!(file, _options)
@@ -48,7 +48,7 @@ module MgdConverter
       when PNG_COMPRESSION
         size_compressed = input.read.index('IEND') + 8
         input.seek(96)
-        raw_data = Image.boxed_to_raw(input.read(size_compressed), 'BGRA')[0]
+        raw_data = Image.from_boxed(input.read(size_compressed), 'BGRA').pixels
 
       when SGD_COMPRESSION
         raw_data = SgdCompressor.decode(input.read(size_compressed))
@@ -61,7 +61,7 @@ module MgdConverter
       end
 
       regions = read_regions(input)
-      Image.raw_to_boxed(width, height, raw_data, 'BGRA', regions: regions)
+      Image.from_pixels(width, height, raw_data, 'BGRA', regions: regions)
     end
 
     def read_regions(input)
@@ -96,7 +96,7 @@ module MgdConverter
 
   class Encoder
     def write(data)
-      raw_data, meta = Image.boxed_to_raw(data, 'BGRA')
+      image = Image.from_boxed(data, 'BGRA')
 
       data_offset = 92
       output = BinaryIO.from_string('')
@@ -104,16 +104,16 @@ module MgdConverter
       output.write([
         data_offset,
         6,
-        meta[:width],
-        meta[:height],
-        meta[:width] * meta[:height] * 4,
-        raw_data.length + 4,
+        image.width,
+        image.height,
+        image.width * image.height * 4,
+        image.pixels.length + 4,
         NO_COMPRESSION,
-        raw_data.length].pack('SS x4 S2 L2 L x64 L'))
+        image.pixels.length].pack('SS x4 S2 L2 L x64 L'))
 
-      output.write(raw_data)
+      output.write(image.pixels)
 
-      write_regions(output, meta[:regions], meta[:width], meta[:height])
+      write_regions(output, image.meta[:regions], image.width, image.height)
 
       output.rewind
       output.read

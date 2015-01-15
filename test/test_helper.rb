@@ -1,8 +1,9 @@
-require 'test/unit'
-require 'lib/common'
 require 'lib/binary_io'
-require 'test/output_files_mock'
+require 'lib/common'
+require 'lib/image'
 require 'test/input_files_mock'
+require 'test/output_files_mock'
+require 'test/unit'
 
 include Test::Unit::Assertions
 
@@ -61,12 +62,8 @@ module TestHelper
 
   def compare_image(expected_raw, actual_raw)
     get_image_info = lambda do |raw|
-      silence_warnings { require 'rmagick' }
-      image = Magick::Image.from_blob(raw)[0]
-      width, height = image.columns, image.rows
-      pixels = image.export_pixels_to_str(0, 0, width, height, 'RGBA')
-      image.destroy!
-      [width, height, pixels]
+      image = Image.from_boxed(raw, 'BGRA')
+      [image.width, image.height, image.pixels]
     end
 
     expected = {}

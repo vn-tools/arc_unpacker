@@ -35,11 +35,9 @@ class G00ConverterTest < Test::Unit::TestCase
     actual_data = file.data
 
     TestHelper.compare_image(expected_data, actual_data)
-    actual_meta = Image.read_meta_from_boxed(actual_data)
+    actual_meta = Image.from_boxed(actual_data, nil).meta
     expected_meta = \
     {
-      width: 640,
-      height: 480,
       regions: [{ x1: 0, y1: 0, x2: 639, y2: 479, ox: 0, oy: 0 }],
       index: [{
         origin: 12,

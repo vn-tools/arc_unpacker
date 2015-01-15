@@ -13,8 +13,8 @@ module YkgConverter
   def parse_cli_options(_arg_parser, _options) end
 
   def decode!(file, _options)
-    file.data = Decoder.new.read(file.data)
-    file.change_extension('.png')
+    image = Decoder.new.read(file.data)
+    image.update_file(file)
   end
 
   def encode!(file, _options)
@@ -51,15 +51,15 @@ module YkgConverter
         regions.push(x: x, y: y, width: w, height: h)
       end
 
-      raw_data, meta = Image.boxed_to_raw(data, 'RGBA')
-      meta[:regions] = regions
-      Image.raw_to_boxed(meta[:width], meta[:height], raw_data, 'RGBA', meta)
+      image = Image.from_boxed(data, 'RGBA')
+      image.meta[:regions] = regions
+      image
     end
   end
 
   class Encoder
     def write(data)
-      regions = Image.read_meta_from_boxed(data)[:regions]
+      regions = Image.from_boxed(data, nil).meta[:regions]
       output = BinaryIO.from_string
       meta = BinaryIO.from_string
 

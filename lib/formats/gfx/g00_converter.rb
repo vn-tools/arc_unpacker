@@ -14,8 +14,8 @@ module G00Converter
   def parse_cli_options(_arg_parser, _options) end
 
   def decode!(file, _options)
-    file.data = Decoder.new.read(file.data)
-    file.change_extension('.png')
+    image = Decoder.new.read(file.data)
+    image.update_file(file)
   end
 
   def encode!(_file, _options)
@@ -63,7 +63,7 @@ module G00Converter
         input.read(compressed_size),
         uncompressed_size)
       output = output[0..header[:width] * header[:height] * 3 - 1]
-      Image.raw_to_boxed(header[:width], header[:height], output, 'BGR')
+      Image.from_pixels(header[:width], header[:height], output, 'BGR')
     end
 
     def read_version_1(input, header)
@@ -87,7 +87,7 @@ module G00Converter
       pix_input.read(header[:width] * header[:height]).unpack('C*').each do |b|
         raw_data << palette[b]
       end
-      Image.raw_to_boxed(header[:width], header[:height], raw_data, 'BGRA')
+      Image.from_pixels(header[:width], header[:height], raw_data, 'BGRA')
     end
 
     def read_version_2(input, header)
@@ -169,12 +169,9 @@ module G00Converter
       end
 
       pix_output.rewind
-      Image.raw_to_boxed(
-        header[:width],
-        header[:height],
-        pix_output.read,
-        'BGRA',
-        regions: regions, index: index)
+      raw_data = pix_output.read
+      meta = { regions: regions, index: index }
+      Image.from_pixels(header[:width], header[:height], raw_data, 'BGRA', meta)
     end
 
     def decompress_version_0(input, output_size)
