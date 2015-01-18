@@ -1,4 +1,5 @@
 require 'lib/binary_io'
+require 'lib/formats/gfx/tlg_converter'
 require 'lib/virtual_file'
 require 'zlib'
 require_relative 'xp3_archive/filter_factory'
@@ -69,7 +70,9 @@ module Xp3Archive
       table = BinaryIO.from_string(table)
 
       filter = Xp3Archive.get_filter(options[:filter])
-      output_files.write { read_file(table, arc_file, filter) } until table.eof?
+      until table.eof?
+        output_files.write { read_file(table, arc_file, filter, options) }
+      end
     end
 
     private
@@ -92,7 +95,7 @@ module Xp3Archive
       arc_file.read(raw_size)
     end
 
-    def read_file(raw_table, arc_file, filter)
+    def read_file(raw_table, arc_file, filter, options)
       magic = raw_table.read(FILE_MAGIC.length)
       fail RecognitionError, 'Expected file chunk' unless magic == FILE_MAGIC
 
@@ -108,7 +111,19 @@ module Xp3Archive
       data = segm_chunks.map { |segm| segm.read_data!(arc_file) } * ''
       data = filter.filter(data, adlr_chunk.encryption_key[0])
 
-      VirtualFile.new(info_chunk.file_name, data)
+      file = VirtualFile.new(info_chunk.file_name, data)
+      decode!(file, options)
+      file
+    end
+
+    def decode!(file, options)
+      if file.data.start_with?(TlgConverter::MAGIC_TLG0)
+        TlgConverter.decode!(file, options)
+      elsif file.data.start_with?(TlgConverter::MAGIC_TLG5)
+        TlgConverter.decode!(file, options)
+      elsif file.data.start_with?(TlgConverter::MAGIC_TLG6)
+        TlgConverter.decode!(file, options)
+      end
     end
 
     # Xp3 SEGM chunk

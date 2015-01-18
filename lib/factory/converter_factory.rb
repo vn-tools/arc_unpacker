@@ -39,6 +39,11 @@ class ConverterFactory < GenericFactory
         G00Converter
       end,
 
+      'tlg' => lambda do
+        require 'lib/formats/gfx/tlg_converter'
+        TlgConverter
+      end,
+
       'nwa' => lambda do
         require 'lib/formats/sfx/nwa_converter'
         NwaConverter
