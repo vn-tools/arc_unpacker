@@ -13,8 +13,7 @@ module NwaConverter
   def parse_cli_options(_arg_parser, _options) end
 
   def decode!(file, _options)
-    file.data = Decoder.new.read(file.data)
-    file.change_extension('.txt')
+    Decoder.new.read(file.data).update_file(file)
   end
 
   def encode!(_file, _options)
@@ -36,11 +35,12 @@ module NwaConverter
         samples = read_samples(header, input)
       end
 
-      Sound.raw_to_boxed(
-        samples,
-        header[:channel_count],
-        header[:bits_per_sample] / 8,
-        header[:sample_rate])
+      sound = Sound.new
+      sound.channel_count = header[:channel_count]
+      sound.bytes_per_sample = header[:bits_per_sample] / 8
+      sound.sample_rate = header[:sample_rate]
+      sound.samples = samples
+      sound
     end
 
     def read_header(input)

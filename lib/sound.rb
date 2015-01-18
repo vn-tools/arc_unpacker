@@ -1,22 +1,24 @@
 require 'lib/binary_io'
 
 # Sound manipulation helper.
-module Sound
-  module_function
+class Sound
+  attr_accessor :channel_count
+  attr_accessor :bytes_per_sample
+  attr_accessor :sample_rate
+  attr_accessor :samples
 
-  # Converts raw samples to chosen readable format, such as WAV.
-  def raw_to_boxed(
-    raw_sample_data,
-    channel_count,
-    bytes_per_sample,
-    sample_rate)
+  def update_file(file)
+    file.data = to_boxed
+    file.change_extension('wav')
+  end
 
-    fail 'Empty sample data' if raw_sample_data.empty?
+  def to_boxed
+    fail 'Empty sample data' if @samples.empty?
 
-    _sample_count = raw_sample_data.length / channel_count
-    block_align = channel_count * bytes_per_sample
-    byte_rate = block_align * sample_rate
-    bits_per_sample = bytes_per_sample * 8
+    _sample_count = @samples.length / @channel_count
+    block_align = @channel_count * @bytes_per_sample
+    byte_rate = block_align * @sample_rate
+    bits_per_sample = @bytes_per_sample * 8
 
     output = BinaryIO.from_string('')
     output.write('RIFF')
@@ -26,16 +28,15 @@ module Sound
     output.write([
       16,
       1,
-      channel_count,
-      sample_rate,
+      @channel_count,
+      @sample_rate,
       byte_rate,
       block_align,
       bits_per_sample].pack('LSSLLSS'))
 
     output.write('data')
-    output.write([raw_sample_data.length].pack('L'))
-
-    output.write(raw_sample_data)
+    output.write([@samples.length].pack('L'))
+    output.write(@samples)
 
     output.seek(4)
     output.write([output.size - 8].pack('L'))
