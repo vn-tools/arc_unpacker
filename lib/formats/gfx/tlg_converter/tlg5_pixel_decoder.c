@@ -1,4 +1,4 @@
-#include <ruby.h>
+#include "tlg5_pixel_decoder.h"
 #include "lzss_compressor.h"
 
 typedef struct {
@@ -14,11 +14,11 @@ typedef struct {
     unsigned char *block_data;
 } Tlg5BlockInfo;
 
-void tlg5_block_info_destroy(Tlg5BlockInfo *info) {
+static void tlg5_block_info_destroy(Tlg5BlockInfo *info) {
     free(info->block_data);
 }
 
-void tlg5_block_info_read(Tlg5BlockInfo *info, unsigned char **_input) {
+static void tlg5_block_info_read(Tlg5BlockInfo *info, unsigned char **_input) {
     unsigned char *input = *_input;
 
     info->mark = *input ++;
@@ -40,7 +40,7 @@ void tlg5_block_info_read(Tlg5BlockInfo *info, unsigned char **_input) {
     *_input = input;
 }
 
-void tlg5_block_info_decompress(
+static void tlg5_block_info_decompress(
     Tlg5BlockInfo *info,
     LzssState *lzss_state,
     Tlg5Header *header) {
@@ -64,7 +64,7 @@ void tlg5_block_info_decompress(
     info->block_size = new_data_size;
 }
 
-void load_pixel_block_row(
+static void load_pixel_block_row(
     unsigned char *zero_line,
     unsigned char *output,
     Tlg5BlockInfo *channel_data,
@@ -126,7 +126,11 @@ void load_pixel_block_row(
     }
 }
 
-void read_pixels(unsigned char *input, unsigned char *output, Tlg5Header *header) {
+static void tlg5_read_pixels(
+    unsigned char *input,
+    unsigned char *output,
+    Tlg5Header *header) {
+
     // ignore block sizes
     size_t block_count = (header->image_height - 1) / header->block_height + 1;
     input += 4 * block_count;
@@ -158,11 +162,7 @@ void read_pixels(unsigned char *input, unsigned char *output, Tlg5Header *header
     free(zero_line);
 }
 
-static VALUE decode_tlg5_pixels(
-    VALUE _self,
-    VALUE _header,
-    VALUE _input) {
-
+VALUE decode_tlg5_pixels(VALUE _self, VALUE _header, VALUE _input) {
     size_t input_size = RSTRING_LEN(_input);
     unsigned char *input = RSTRING_PTR(_input);
 
@@ -178,13 +178,9 @@ static VALUE decode_tlg5_pixels(
     size_t output_size = header.image_width * header.image_height * 4;
     unsigned char *output = (unsigned char*)malloc(output_size);
 
-    read_pixels(input, output, &header);
+    tlg5_read_pixels(input, output, &header);
 
     VALUE ret = rb_str_new((char*) output, output_size);
     free(output);
     return ret;
-}
-
-void Init_tlg5_pixel_decoder() {
-    rb_define_global_function("decode_tlg5_pixels", decode_tlg5_pixels, 2);
 }

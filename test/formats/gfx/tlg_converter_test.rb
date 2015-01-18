@@ -14,4 +14,15 @@ class TlgConverterTest < Test::Unit::TestCase
 
     TestHelper.compare_image(expected_data, actual_data)
   end
+
+  def test_decoding_version6
+    input_data = TestHelper.get_test_file('tlg/tlg6.tlg')
+    expected_data = TestHelper.get_test_file('tlg/tlg6-out.png')
+
+    file = VirtualFile.new(nil, input_data)
+    TlgConverter.decode!(file, {})
+    actual_data = file.data
+
+    TestHelper.compare_image(expected_data, actual_data)
+  end
 end

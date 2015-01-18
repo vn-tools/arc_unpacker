@@ -1,6 +1,6 @@
 require 'lib/binary_io'
 require 'lib/image'
-require_relative 'tlg_converter/tlg5_pixel_decoder'
+require_relative 'tlg_converter/tlg_pixel_decoder'
 
 # Converts TLG to PNG.
 # Seen in XP3 archives.
@@ -60,8 +60,23 @@ module TlgConverter
         'RGBA')
     end
 
-    def read_tlg6(_input)
-      fail 'Not supported (yet)'
+    def read_tlg6(input)
+      header = {}
+      header[:channel_count],
+      header[:data_flags],
+      header[:color_type],
+      header[:external_golomb_table],
+      header[:image_width],
+      header[:image_height],
+      header[:max_bit_length] = input.read(16).unpack('C4L3')
+      pixels = input.read
+
+      output = decode_tlg6_pixels(header, pixels)
+      Image.from_pixels(
+        header[:image_width],
+        header[:image_height],
+        output,
+        'RGBA')
     end
   end
 end
