@@ -28,11 +28,11 @@ Supported games
 
 CLI invocation                 | Game                                | Features<sup>1</sup>
 ------------------------------ | ----------------------------------- | ------------
-`--fmt=xp3 --plugin=none`      | Sono Hanabira ni Kuchizuke o 12     | ![][sup]![][par]![][sup]![][non]
-`--fmt=xp3 --plugin=none`      | Sharin no Kuni, Himawari no Shoujo  | ![][sup]![][par]![][sup]![][non]
-`--fmt=xp3 --plugin=fsn`       | Fate/Stay Night                     | ![][sup]![][par]![][sup]![][non]
-`--fmt=xp3 --plugin=fha`       | Fate/Hollow Ataraxia                | ![][sup]![][par]![][sup]![][non]
-`--fmt=xp3 --plugin=fha`       | Comyu Kuroi Ryuu to Yasashii Oukoku | ![][sup]![][par]![][sup]![][non]
+`--fmt=xp3 --plugin=none`      | Sono Hanabira ni Kuchizuke o 12     | ![][sup]![][sup]![][sup]![][non]
+`--fmt=xp3 --plugin=none`      | Sharin no Kuni, Himawari no Shoujo  | ![][sup]![][sup]![][sup]![][non]
+`--fmt=xp3 --plugin=fsn`       | Fate/Stay Night                     | ![][sup]![][sup]![][sup]![][non]
+`--fmt=xp3 --plugin=fha`       | Fate/Hollow Ataraxia                | ![][sup]![][sup]![][sup]![][non]
+`--fmt=xp3 --plugin=fha`       | Comyu Kuroi Ryuu to Yasashii Oukoku | ![][sup]![][sup]![][sup]![][non]
 `--fmt=melty_blood`            | Melty Blood                         | ![][sup]![][non]![][non]![][non]
 `--fmt=sar`                    | Tsukihime                           | ![][sup]![][sup]![][sup]![][non]
 `--fmt=nsa`                    | Tsukihime                           | ![][sup]![][sup]![][sup]![][non]
