@@ -10,6 +10,8 @@ require_relative 'xp3_archive/filter_factory'
 # - Fate/Stay Night
 # - Fate/Hollow Ataraxia
 # - Sono Hanabira ni Kuchizuke o 12
+# - Sharin no Kuni, Himawari no Shoujo
+# - Comyu Kuroi Ryuu to Yasashii Oukoku
 module Xp3Archive
   module_function
 
