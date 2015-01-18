@@ -54,6 +54,11 @@ class ArchiveFactory < GenericFactory
         MblArchive
       end,
 
+      'rgssad' => lambda do
+        require 'lib/formats/arc/rgssad_archive'
+        RgssadArchive
+      end,
+
       'exe' => lambda do
         require 'lib/formats/arc/exe_reader'
         ExeReader

@@ -54,6 +54,7 @@ CLI invocation                 | Game                                | Features<
 `--fmt=rpa`                    | Everlasting Summer                  | ![][sup]![][sup]![][sup]![][non]
 `--fmt=rpa`                    | Katawa Shoujo                       | ![][sup]![][sup]![][sup]![][non]
 `--fmt=mbl`                    | Wanko to Kurasou                    | ![][sup]![][sup]![][sup]![][non]
+`--fmt=rgssad`                 | Cherry Tree High Comedy Club        | ![][sup]![][sup]![][sup]![][non]
 `--fmt=exe`                    | Generic `.exe` resources            | ![][sup]![][nap]![][nap]![][nap]
 `--fmt=g00`, `--fmt=nwa`       | Little Busters                      | ![][nap]![][sup]![][sup]![][non]
 `--fmt=g00`, `--fmt=nwa`       | Clannad                             | ![][nap]![][sup]![][sup]![][non]
