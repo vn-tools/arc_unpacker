@@ -52,6 +52,7 @@ CLI invocation                 | Game                                | Features<
 `--fmt=nitroplus/pak2`         | Saya no Uta                         | ![][sup]![][sup]![][sup]![][non]
 `--fmt=npa`                    | Chaos;Head                          | ![][sup]![][sup]![][sup]![][non]
 `--fmt=rpa`                    | Everlasting Summer                  | ![][sup]![][sup]![][sup]![][non]
+`--fmt=rpa`                    | Long Live The Queen                 | ![][sup]![][sup]![][sup]![][non]
 `--fmt=rpa`                    | Katawa Shoujo                       | ![][sup]![][sup]![][sup]![][non]
 `--fmt=mbl`                    | Wanko to Kurasou                    | ![][sup]![][sup]![][sup]![][non]
 `--fmt=rgssad`                 | Cherry Tree High Comedy Club        | ![][sup]![][sup]![][sup]![][non]

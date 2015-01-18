@@ -8,6 +8,7 @@ require 'zlib'
 # Known games:
 # - Everlasting Summer
 # - Katawa Shoujo
+# - Long Live The Queen
 module RpaArchive
   module_function
 
