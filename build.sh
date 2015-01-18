@@ -4,6 +4,6 @@ dirs=( lib/formats/gfx/prs_converter lib/formats/gfx/spb_converter lib/formats/g
 
 for x in "${dirs[@]}"; do
     pushd "$x"
-    ruby extconfig.rb && make
+    ruby extconfig.rb && make || exit 1
     popd
 done
