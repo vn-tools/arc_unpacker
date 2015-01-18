@@ -40,8 +40,33 @@ module TlgConverter
       end
     end
 
-    def read_tlg0(_input)
-      fail 'Not supported (yet)'
+    def read_tlg0(input)
+      raw_data_size = input.read(4).unpack('L')[0]
+      image = read(input.read(raw_data_size))
+      image.meta = { tags: {} }
+      until input.eof?
+        chunk_name = input.read(4)
+        chunk_size = input.read(4).unpack('L')[0]
+        chunk_data = input.read(chunk_size)
+        if chunk_name == 'tags'
+          extract_string = lambda do |container|
+            str_length = container.to_i
+            container = container[str_length.to_s.length + 1..-1]
+            str = container[0..str_length - 1]
+            container = container[str_length + 1..-1]
+            next [str, container]
+          end
+
+          while chunk_data != ''
+            key, chunk_data = extract_string.call(chunk_data)
+            val, chunk_data = extract_string.call(chunk_data)
+            image.meta[:tags][key.to_sym] = val
+          end
+        else
+          STDERR.puts 'Unknown chunk: ' + chunk_name
+        end
+      end
+      image
     end
 
     def read_tlg5(input)

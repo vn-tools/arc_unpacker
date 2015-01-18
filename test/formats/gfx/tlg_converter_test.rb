@@ -25,4 +25,18 @@ class TlgConverterTest < Test::Unit::TestCase
 
     TestHelper.compare_image(expected_data, actual_data)
   end
+
+  def test_decoding_version0
+    input_data = TestHelper.get_test_file('tlg/bg08d.tlg')
+    expected_data = TestHelper.get_test_file('tlg/bg08d-out.png')
+    expected_meta = { tags: { mode: 'alpha' } }
+
+    file = VirtualFile.new(nil, input_data)
+    TlgConverter.decode!(file, {})
+    actual_data = file.data
+    actual_meta = Image.from_boxed(actual_data, nil).meta
+
+    assert_equal(expected_meta, actual_meta)
+    TestHelper.compare_image(expected_data, actual_data)
+  end
 end
