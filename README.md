@@ -61,6 +61,7 @@ CLI invocation                 | Game                                | Features<
 `--fmt=g00`, `--fmt=nwa`       | Clannad                             | ![][nap]![][sup]![][sup]![][non]
 `--fmt=g00`, `--fmt=nwa`       | Kanon                               | ![][nap]![][sup]![][sup]![][non]
 `--fmt=xyz`                    | Yume Nikki                          | ![][nap]![][sup]![][sup]![][non]
+`--fmt=sotes`                  | Fortune Summoners                   | ![][nap]![][sup]![][sup]![][non]
 
 <sup>1</sup> Feature legend:
 

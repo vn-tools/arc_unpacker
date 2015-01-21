@@ -52,6 +52,11 @@ class ConverterFactory < GenericFactory
       'nwa' => lambda do
         require 'lib/formats/sfx/nwa_converter'
         NwaConverter
+      end,
+
+      'sotes' => lambda do
+        require 'lib/formats/gfx/sotes_converter'
+        SotesConverter
       end
     }
   end
