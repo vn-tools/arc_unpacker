@@ -37,3 +37,9 @@ def silence_warnings(&block)
   $VERBOSE = warn_level
   result
 end
+
+class String
+  def chunks(length)
+    scan(/.{#{length}}/m)
+  end
+end

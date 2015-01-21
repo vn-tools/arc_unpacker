@@ -33,7 +33,7 @@ module XyzConverter
       width, height = input.read(4).unpack('S2')
 
       input = BinaryIO.from_string(Zlib.inflate(input.read))
-      palette = input.read(256 * 3).scan(/.{3}/)
+      palette = input.read(256 * 3).chunks(3)
 
       pixels = BinaryIO.from_string('')
       pixels.write(palette[input.read(1).ord]) until input.eof?
