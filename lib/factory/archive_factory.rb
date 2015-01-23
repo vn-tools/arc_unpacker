@@ -59,6 +59,11 @@ class ArchiveFactory < GenericFactory
         RgssadArchive
       end,
 
+      'npa_sg' => lambda do
+        require 'lib/formats/arc/npa_sg_archive'
+        NpaSgArchive
+      end,
+
       'exe' => lambda do
         require 'lib/formats/arc/exe_reader'
         ExeReader
