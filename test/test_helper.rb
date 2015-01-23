@@ -78,7 +78,9 @@ module TestHelper
 
     assert_equal(expected[:width], actual[:width])
     assert_equal(expected[:height], actual[:height])
-    assert_equal(true, expected[:pixels] == actual[:pixels], 'Bad pixel data')
+    assert(
+      [expected[:pixels]].pack('H*') == [actual[:pixels]].pack('H*'),
+      'Bad pixel data')
   end
 
   def rand_string(length)
