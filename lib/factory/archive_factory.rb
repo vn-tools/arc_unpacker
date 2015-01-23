@@ -4,6 +4,11 @@ require_relative 'generic_factory'
 class ArchiveFactory < GenericFactory
   def self.factory
     {
+      'arc' => lambda do
+        require 'lib/formats/arc/arc_archive'
+        ArcArchive
+      end,
+
       'xp3' => lambda do
         require 'lib/formats/arc/xp3_archive'
         Xp3Archive
