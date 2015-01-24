@@ -22,7 +22,7 @@ module RgssadArchive
 
       version = arc_file.read(1).unpack('C')[0]
       if version != 1
-        fail 'Reading version ' + version.to_s + ' is not supported.'
+        fail 'Reading version ' + version.to_s + ' is not supported'
       end
 
       key = INITIAL_KEY
@@ -36,7 +36,9 @@ module RgssadArchive
         name_length = arc_file.read(4).unpack('L<')[0]
         name_length ^= key
         key = RgssadArchive.advance_key(key)
-        fail 'Bad file name length' if name_length > arc_file.size
+        if name_length > arc_file.size
+          fail RecognitionError, 'Bad file name length'
+        end
         e = {}
 
         e[:name] = arc_file.read(name_length)

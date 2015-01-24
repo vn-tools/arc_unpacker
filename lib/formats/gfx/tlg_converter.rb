@@ -36,7 +36,7 @@ module TlgConverter
         input.seek(MAGIC_TLG6.length)
         return read_tlg6(input)
       else
-        fail 'Not a TLG image.'
+        fail RecognitionError, 'Not a TLG image'
       end
     end
 

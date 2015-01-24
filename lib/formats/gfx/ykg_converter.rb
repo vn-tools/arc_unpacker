@@ -37,7 +37,7 @@ module YkgConverter
       meta_size = input.read(58).unpack('SL x28 LL x8 LL')
       is_encrypted = is_encrypted != 0
 
-      fail 'Reading encrypted YKG is not supported.' if is_encrypted
+      fail 'Reading encrypted YKG is not supported' if is_encrypted
 
       data = input.peek(data_origin) { input.read(data_size) }
       meta = input.peek(meta_origin) { input.read(meta_size) }

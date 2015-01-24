@@ -112,8 +112,7 @@ module SgdCompressor
         end
 
       else
-        fail 'You have been compressed badly.'
-
+        fail RecognitionError, 'Malformed data'
       end
     end
   end

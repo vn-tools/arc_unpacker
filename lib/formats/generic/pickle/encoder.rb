@@ -39,7 +39,7 @@ module Pickle
         handle_hash(input)
 
       else
-        fail EncoderError, 'Unsupported object.'
+        fail EncoderError, 'Unsupported object'
       end
     end
 

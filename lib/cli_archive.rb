@@ -23,7 +23,7 @@ class CLIArchive < CLI
     super
 
     stray = @arg_parser.stray
-    fail OptionError, 'Required more arguments.' if stray.count < 1
+    fail OptionError, 'Required more arguments' if stray.count < 1
     @options[:input_path],
     @options[:output_path] = stray
     @options[:output_path] ||= @options[:input_path] + '~'

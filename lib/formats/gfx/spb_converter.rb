@@ -19,13 +19,15 @@ module SpbConverter
   end
 
   def encode!(_file, _options)
-    fail 'Not supported.'
+    fail 'Not supported'
   end
 
   class Decoder
     def read(data)
       input = BinaryIO.from_string(data)
       width, height = input.read(4).unpack('S>S>')
+
+      fail RecognitionError, 'Image is too big' if width * height > 0xfff_ffff
 
       source_buffer = input.read
       target_buffer = spb_decode_pixels(

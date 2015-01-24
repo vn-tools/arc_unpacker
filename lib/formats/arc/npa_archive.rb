@@ -30,7 +30,7 @@ module NpaArchive
 
   def get_filter(symbol)
     filter = NPA_FILTERS[symbol]
-    fail RecognitionError, 'Unknown filter' if filter.nil?
+    fail OptionError, 'Unknown filter' if filter.nil?
     filter.call
   end
 
@@ -94,7 +94,7 @@ module NpaArchive
       end
 
       if table_origin + header[:table_size] != arc_file.tell
-        fail RecognitionError, 'Bad file table size.'
+        fail RecognitionError, 'Bad file table size'
       end
 
       table

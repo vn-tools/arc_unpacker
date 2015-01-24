@@ -68,28 +68,28 @@ module NwaConverter
 
     def validate_header(header)
       unless (0..5).include?(header[:compression_level])
-        fail RecognitionError, 'Unsupported compression level.'
+        fail RecognitionError, 'Unsupported compression level'
       end
 
       unless (1..2).include?(header[:channel_count])
-        fail RecognitionError, 'Unsupported channel count.'
+        fail RecognitionError, 'Unsupported channel count'
       end
 
       unless [8, 16].include?(header[:bits_per_sample])
-        fail RecognitionError, 'Unsupported bits per sample.'
+        fail RecognitionError, 'Unsupported bits per sample'
       end
 
-      fail RecognitionError, 'No blocks found.' if header[:blocks] <= 0
-      fail RecognitionError, 'No data found.' if header[:compressed_size] == 0
+      fail RecognitionError, 'No blocks found' if header[:blocks] <= 0
+      fail RecognitionError, 'No data found' if header[:compressed_size] == 0
 
       if header[:uncompressed_size] !=
          header[:sample_count] * header[:bits_per_sample] / 8
-        fail RecognitionError, 'Bad data size.'
+        fail RecognitionError, 'Bad data size'
       end
 
       if header[:sample_count] !=
          (header[:block_count] - 1) * header[:block_size] + header[:rest_size]
-        fail RecognitionError, 'Bad sample count.'
+        fail RecognitionError, 'Bad sample count'
       end
 
       true

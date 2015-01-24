@@ -37,7 +37,7 @@ module Xp3Archive
 
   def get_filter(symbol)
     filter = XP3_FILTERS[symbol]
-    fail RecognitionError, 'Unknown filter' if filter.nil?
+    fail OptionError, 'Unknown filter' if filter.nil?
     filter.call
   end
 

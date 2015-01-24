@@ -110,9 +110,7 @@ module MblArchive
       @arc_file.write([table.length].pack('L'))
       @arc_file.write([name_length].pack('L')) if version == 2
       table.each do |e|
-        if e[:name].length > name_length
-          fail RecognitionError, 'Too long file name!'
-        end
+        fail 'Too long file name!' if e[:name].length > name_length
         @arc_file.write("\x00" * name_length)
         @arc_file.peek(@arc_file.tell - name_length) do
           @arc_file.write(e[:name].encode('sjis'))

@@ -40,7 +40,7 @@ class FileDecoder < CLI
       begin
         decode(input_path, converter, options)
         return
-      rescue RecognitionError => e
+      rescue OptionError, RecognitionError => e
         puts e.message if verbose
         next
       end
@@ -57,7 +57,7 @@ class FileDecoder < CLI
     end
 
     if File.exist?(output_path) && !@options[:overwrite]
-      fail 'File already exists.'
+      fail 'File already exists'
     end
 
     dir_path = File.dirname(output_path)
@@ -86,7 +86,7 @@ class FileDecoder < CLI
 
     super
 
-    fail OptionError, 'Required more arguments.' if @arg_parser.stray.count < 1
+    fail OptionError, 'Required more arguments' if @arg_parser.stray.count < 1
     @options[:input_paths] = @arg_parser.stray
   end
 

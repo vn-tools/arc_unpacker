@@ -69,7 +69,7 @@ module ArcArchive
   class Packer
     def pack(arc_file, input_files, _options)
       input_files.names.each do |name|
-        fail 'File names can contain 16 characters max.' if name.length > 16
+        fail 'File names can contain 16 characters max' if name.length > 16
       end
 
       arc_file.write(MAGIC)

@@ -17,7 +17,7 @@ module CbgConverter
   end
 
   def encode!(_file, _options)
-    fail 'Not supported.'
+    fail 'Not supported'
   end
 
   class Decoder

@@ -25,7 +25,7 @@ class MblArchiveTest < Test::Unit::TestCase
   def test_version1_too_long_names
     input_files = InputFilesMock.new([VirtualFile.new('long' * 10, 'whatever')])
 
-    assert_raise(RecognitionError) do
+    assert_raise(RuntimeError) do
       TestHelper.pack_and_unpack(
         MblArchive,
         input_files,

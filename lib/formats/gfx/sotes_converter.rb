@@ -17,18 +17,18 @@ module SotesConverter
   end
 
   def encode!(_file, _options)
-    fail 'Not supported.'
+    fail 'Not supported'
   end
 
   class Decoder
     def read(data)
       input = BinaryIO.from_string(data)
-      fail RecognitionError, 'Not a image' if input.size < 1112
+      fail RecognitionError, 'Not an image' if input.size < 1112
       weird_data1 = input.read(32).unpack('L*')
       palette = input.read(256 * 4).chunks(4)
       weird_data2 = input.read(56).unpack('L*')
       pixel_data_offset = weird_data2[12] - weird_data2[10]
-      fail RecognitionError, 'Not a image' if pixel_data_offset >= input.size
+      fail RecognitionError, 'Not an image' if pixel_data_offset >= input.size
       input.skip(pixel_data_offset)
       pixel_data = input.read
 

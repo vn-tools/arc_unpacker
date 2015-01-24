@@ -57,7 +57,7 @@ module MgdConverter
         raw_data = input.read(size_compressed)
 
       else
-        fail 'Unsupported compression type.'
+        fail 'Unsupported compression type'
       end
 
       regions = read_regions(input)

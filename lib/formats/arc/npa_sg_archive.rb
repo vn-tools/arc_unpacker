@@ -41,7 +41,7 @@ module NpaSgArchive
 
         e[:size],
         e[:origin] = raw_table.read(8).unpack('L2')
-        fail 'Bad file origin' if e[:origin] > arc_file.size
+        fail RecognitionError, 'Bad file origin' if e[:origin] > arc_file.size
         raw_table.skip(4)
         table << e
       end

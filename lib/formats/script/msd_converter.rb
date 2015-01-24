@@ -48,7 +48,9 @@ module MsdConverter
   class Decoder
     def read(data, options)
       return if data.start_with?(MAGIC)
-      fail 'Must supply a key to decrypt this file.' if options[:msd_key].nil?
+      if options[:msd_key].nil?
+        fail OptionError, 'Must supply a key to decrypt this file'
+      end
 
       data = data.unpack('C*')
       k = 0
@@ -68,7 +70,7 @@ module MsdConverter
 
       data = data.pack('C*')
       unless data.start_with?(MAGIC)
-        fail 'Supplied key can\'t decrypt this file.'
+        fail 'Supplied key can\'t decrypt this file'
       end
       data
     end
