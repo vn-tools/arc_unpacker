@@ -4,7 +4,7 @@
 #include <ruby.h>
 #include "../../../bit_stream.c" //TODO: relative paths have to do for now
 
-static VALUE decode_spb_pixels(
+VALUE decode_spb_pixels(
     VALUE _self,
     VALUE _input,
     VALUE _image_width,
@@ -113,5 +113,5 @@ static VALUE decode_spb_pixels(
 }
 
 void Init_spb_pixel_decoder() {
-    rb_define_global_function("decode_spb_pixels", decode_spb_pixels, 3);
+    rb_define_global_function("spb_decode_pixels", decode_spb_pixels, 3);
 }

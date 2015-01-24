@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct CbgNodeInfo {
+typedef struct {
     unsigned char valid;
     unsigned long frequency;
     int left_node;
     int right_node;
-};
+} CbgNodeInfo;
 
 static unsigned char *allocate(size_t length) {
     unsigned char *result = (unsigned char*) malloc(length);
@@ -90,7 +90,7 @@ static void cbg_read_frequency_table(
 
 static int cbg_read_node_info(
     unsigned long frequency_table[],
-    struct CbgNodeInfo node_info[]) {
+    CbgNodeInfo node_info[]) {
 
     int i, j, k;
     unsigned long frequency_sum = 0;
@@ -139,7 +139,7 @@ static int cbg_read_node_info(
 static void cbg_decompress_huffman(
     unsigned char **input,
     int last_node,
-    struct CbgNodeInfo node_info[],
+    CbgNodeInfo node_info[],
     unsigned long huffman_size,
     unsigned char *huffman) {
 
@@ -233,7 +233,7 @@ static void cbg_transform_colors(
     }
 }
 
-VALUE decode_cbg_pixels(
+VALUE cbg_decode_pixels(
     VALUE _self,
     VALUE _width,
     VALUE _height,
@@ -260,7 +260,7 @@ VALUE decode_cbg_pixels(
         key,
         frequency_table);
 
-    struct CbgNodeInfo node_info[511];
+    CbgNodeInfo node_info[511];
     int last_node = cbg_read_node_info(frequency_table, node_info);
 
     unsigned char *huffman = allocate(huffman_size);
@@ -279,5 +279,5 @@ VALUE decode_cbg_pixels(
 }
 
 void Init_cbg_pixel_decoder() {
-    rb_define_global_function("decode_cbg_pixels", decode_cbg_pixels, 4);
+    rb_define_global_function("cbg_decode_pixels", cbg_decode_pixels, 4);
 }

@@ -77,7 +77,7 @@ module TlgConverter
       header[:block_height] = input.read(13).unpack('CL4')
       pixels = input.read
 
-      output = decode_tlg5_pixels(header, pixels)
+      output = tlg5_decode_pixels(header, pixels)
       Image.from_pixels(
         header[:image_width],
         header[:image_height],
@@ -96,7 +96,7 @@ module TlgConverter
       header[:max_bit_length] = input.read(16).unpack('C4L3')
       pixels = input.read
 
-      output = decode_tlg6_pixels(header, pixels)
+      output = tlg6_decode_pixels(header, pixels)
       Image.from_pixels(
         header[:image_width],
         header[:image_height],

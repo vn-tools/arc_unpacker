@@ -33,7 +33,7 @@ module CbgConverter
       input.skip(8)
 
       source_buffer = input.read
-      target_buffer = decode_cbg_pixels(
+      target_buffer = cbg_decode_pixels(
         width,
         height,
         bpp,

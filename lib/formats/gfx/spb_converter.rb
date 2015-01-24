@@ -28,7 +28,7 @@ module SpbConverter
       width, height = input.read(4).unpack('S>S>')
 
       source_buffer = input.read
-      target_buffer = decode_spb_pixels(
+      target_buffer = spb_decode_pixels(
         source_buffer,
         width,
         height)

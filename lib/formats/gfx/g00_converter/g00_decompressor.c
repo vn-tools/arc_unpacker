@@ -1,6 +1,6 @@
 #include <ruby.h>
 
-static VALUE decompress_g00(
+VALUE g00_decompress(
     VALUE _self,
     VALUE _input,
     VALUE _output_size,
@@ -67,5 +67,5 @@ static VALUE decompress_g00(
 }
 
 void Init_g00_decompressor() {
-    rb_define_global_function("decompress_g00", decompress_g00, 4);
+    rb_define_global_function("g00_decompress", g00_decompress, 4);
 }

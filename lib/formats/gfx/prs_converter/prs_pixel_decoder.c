@@ -1,7 +1,7 @@
 #include <string.h>
 #include "ruby.h"
 
-static VALUE decode_pixels(
+VALUE prs_decode_pixels(
     VALUE _self,
     VALUE _source_buffer,
     VALUE _image_width,
@@ -98,5 +98,5 @@ static VALUE decode_pixels(
 }
 
 void Init_prs_pixel_decoder() {
-    rb_define_global_function("prs_decode_pixels", decode_pixels, 3);
+    rb_define_global_function("prs_decode_pixels", prs_decode_pixels, 3);
 }

@@ -175,11 +175,11 @@ module G00Converter
     end
 
     def decompress_version_0(input, output_size)
-      decompress_g00(input, output_size, 3, 1)
+      g00_decompress(input, output_size, 3, 1)
     end
 
     def decompress_version_1(input, output_size)
-      decompress_g00(input, output_size, 1, 2)
+      g00_decompress(input, output_size, 1, 2)
     end
   end
 end
