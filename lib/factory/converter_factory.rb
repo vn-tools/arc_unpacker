@@ -19,11 +19,6 @@ class ConverterFactory < GenericFactory
         PrsConverter
       end,
 
-      'spb' => lambda do
-        require 'lib/formats/gfx/spb_converter'
-        SpbConverter
-      end,
-
       'ykg' => lambda do
         require 'lib/formats/gfx/ykg_converter'
         YkgConverter
@@ -62,6 +57,11 @@ class ConverterFactory < GenericFactory
       'sotes' => lambda do
         require 'lib/formats/gfx/sotes_converter'
         SotesConverter
+      end,
+
+      'spb' => lambda do
+        require 'lib/formats/gfx/spb_converter'
+        SpbConverter
       end
     }
   end
