@@ -34,7 +34,6 @@ module PrsConverter
       source_buffer = input.read(source_size)
       target_buffer = prs_decode_pixels(
         source_buffer,
-        source_size,
         width,
         height)
 

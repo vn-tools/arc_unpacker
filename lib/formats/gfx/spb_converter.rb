@@ -30,7 +30,6 @@ module SpbConverter
       source_buffer = input.read
       target_buffer = decode_spb_pixels(
         source_buffer,
-        source_buffer.length,
         width,
         height)
 

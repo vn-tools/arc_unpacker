@@ -7,16 +7,15 @@
 static VALUE decode_spb_pixels(
     VALUE _self,
     VALUE _input,
-    VALUE _input_size,
     VALUE _image_width,
     VALUE _image_height) {
 
+    size_t input_size = RSTRING_LEN(_input);
     unsigned char *input = (unsigned char*)RSTRING_PTR(_input);
     unsigned char *output;
     unsigned char *tmp_data;
     unsigned short w = FIX2INT(_image_width);
     unsigned short h = FIX2INT(_image_height);
-    size_t input_size = FIX2INT(_input_size);
     size_t output_size;
     size_t tmp_data_size;
 
@@ -114,5 +113,5 @@ static VALUE decode_spb_pixels(
 }
 
 void Init_spb_pixel_decoder() {
-    rb_define_global_function("decode_spb_pixels", decode_spb_pixels, 4);
+    rb_define_global_function("decode_spb_pixels", decode_spb_pixels, 3);
 }

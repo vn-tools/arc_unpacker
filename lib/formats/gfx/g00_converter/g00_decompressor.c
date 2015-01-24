@@ -3,14 +3,13 @@
 static VALUE decompress_g00(
     VALUE _self,
     VALUE _input,
-    VALUE _input_size,
     VALUE _output_size,
     VALUE _byte_count,
     VALUE _length_delta) {
 
     unsigned char *input = (unsigned char*) RSTRING_PTR(_input);
     unsigned char *output;
-    size_t input_size = FIX2INT(_input_size);
+    size_t input_size = RSTRING_LEN(_input);
     size_t output_size = FIX2INT(_output_size);
     size_t byte_count = FIX2INT(_byte_count);
     size_t length_delta = FIX2INT(_length_delta);
@@ -68,5 +67,5 @@ static VALUE decompress_g00(
 }
 
 void Init_g00_decompressor() {
-    rb_define_global_function("decompress_g00", decompress_g00, 5);
+    rb_define_global_function("decompress_g00", decompress_g00, 4);
 }

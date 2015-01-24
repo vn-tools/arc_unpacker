@@ -4,15 +4,14 @@
 static VALUE decode_pixels(
     VALUE _self,
     VALUE _source_buffer,
-    VALUE _source_size,
     VALUE _image_width,
     VALUE _image_height) {
 
     int i;
-    unsigned long source_size = FIX2INT(_source_size);
     unsigned long image_width = FIX2INT(_image_width);
     unsigned long image_height = FIX2INT(_image_height);
     unsigned long target_size = image_width * image_height * 3;
+    unsigned long source_size = RSTRING_LEN(_source_buffer);
     unsigned char *source_buffer = (unsigned char*)RSTRING_PTR(_source_buffer);
     unsigned char *target_buffer = (unsigned char*)malloc(target_size);
     unsigned char *source = source_buffer;
@@ -99,5 +98,5 @@ static VALUE decode_pixels(
 }
 
 void Init_prs_pixel_decoder() {
-    rb_define_global_function("prs_decode_pixels", decode_pixels, 4);
+    rb_define_global_function("prs_decode_pixels", decode_pixels, 3);
 }
