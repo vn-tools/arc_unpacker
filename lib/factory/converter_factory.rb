@@ -9,6 +9,11 @@ class ConverterFactory < GenericFactory
         MgdConverter
       end,
 
+      'cbg' => lambda do
+        require 'lib/formats/gfx/cbg_converter'
+        CbgConverter
+      end,
+
       'prs' => lambda do
         require 'lib/formats/gfx/prs_converter'
         PrsConverter

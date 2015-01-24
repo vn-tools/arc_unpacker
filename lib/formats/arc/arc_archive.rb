@@ -1,4 +1,5 @@
 require 'lib/virtual_file'
+require 'lib/formats/gfx/cbg_converter'
 
 # ARC archive
 # Engine: BGI/Ethornell
@@ -15,12 +16,12 @@ module ArcArchive
   def parse_cli_options(_arg_parser, _options) end
 
   class Unpacker
-    def unpack(arc_file, output_files, _options)
+    def unpack(arc_file, output_files, options)
       magic = arc_file.read(MAGIC.length)
       fail RecognitionError, 'Not an ARC archive' unless magic == MAGIC
 
       table = read_table(arc_file)
-      read_contents(arc_file, table, output_files)
+      read_contents(arc_file, table, output_files, options)
     end
 
     def read_table(arc_file)
@@ -48,13 +49,20 @@ module ArcArchive
       table
     end
 
-    def read_contents(arc_file, table, output_files)
+    def read_contents(arc_file, table, output_files, options)
       table.each do |e|
         output_files.write do
           data = arc_file.peek(e[:origin]) { arc_file.read(e[:size]) }
-          VirtualFile.new(e[:name], data)
+          file = VirtualFile.new(e[:name], data)
+          decode!(file, options)
+          file
         end
       end
+    end
+
+    def decode!(file, options)
+      return unless file.data.start_with?(CbgConverter::MAGIC)
+      CbgConverter.decode!(file, options)
     end
   end
 
