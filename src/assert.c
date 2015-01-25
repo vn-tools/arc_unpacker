@@ -24,6 +24,23 @@ void assert_equals(const char *const expected, const char *const actual)
     }
 }
 
+void assert_equalsn(
+    const char *const expected,
+    const char *const actual,
+    size_t size)
+{
+    if (expected == NULL && actual == NULL)
+        return;
+
+    if (expected == NULL
+        || actual == NULL
+        || strncmp(actual, expected, size) != 0)
+    {
+        fprintf(stderr, "Fatal: expected %s, got %s.\n", expected, actual);
+        exit(1);
+    }
+}
+
 void assert_equalp(const void *const expected, const void *const actual)
 {
     if (actual != expected)
