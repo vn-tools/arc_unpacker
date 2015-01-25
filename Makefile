@@ -68,3 +68,5 @@ clean:
 
 #Disable removing .o after successful build
 .SECONDARY:
+#Keep binaries of failed tests for gdb
+.PRECIOUS: $(TEST_BIN_DIR)/%
