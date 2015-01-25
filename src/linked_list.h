@@ -10,7 +10,7 @@ void linked_list_destroy(LinkedList *linked_list);
 
 void linked_list_reset(LinkedList *linked_list);
 
-void* linked_list_get(LinkedList *linked_list);
+void *linked_list_get(LinkedList *linked_list);
 
 void linked_list_advance(LinkedList *linked_list);
 

@@ -22,6 +22,7 @@ LinkedList *linked_list_create()
     linked_list->head = NULL;
     linked_list->current = NULL;
     linked_list->tail = NULL;
+    linked_list->size = 0;
     return linked_list;
 }
 
