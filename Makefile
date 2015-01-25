@@ -15,8 +15,8 @@ RM       = rm -rf
 MKPATH   = mkdir -p
 STRIP    = /usr/bin/strip
 
-CFLAGS   = -O2 -std=c99 -Wall -Wextra -pedantic -I$(SRC_DIR)
-LFLAGS   = -Wall -liconv
+CFLAGS   = -Wall -Wextra -pedantic -O2 -std=c99 -I$(SRC_DIR)
+LFLAGS   = -Wall -Wextra -pedantic -liconv
 
 
 
