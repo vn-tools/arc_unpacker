@@ -63,7 +63,7 @@ void linked_list_advance(LinkedList *linked_list)
 void linked_list_add(LinkedList *linked_list, void *item)
 {
     assert_not_null(linked_list);
-    struct ListItem *li = malloc(sizeof(li));
+    struct ListItem *li = malloc(sizeof(struct ListItem));
     li->data = item;
     li->next = NULL;
     if (linked_list->tail != NULL)
