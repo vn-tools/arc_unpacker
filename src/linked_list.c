@@ -27,23 +27,21 @@ LinkedList *linked_list_create()
 
 void linked_list_destroy(LinkedList *linked_list)
 {
-    if (linked_list == NULL)
-        return;
-
-    struct ListItem *li = linked_list->head;
-    struct ListItem *old;
+    struct ListItem *li, *old;
+    assert_not_null(linked_list);
+    li = linked_list->head;
     while (li != NULL)
     {
         old = li;
         li = li->next;
         free(old);
     }
-
     free(linked_list);
 }
 
 void linked_list_reset(LinkedList *linked_list)
 {
+    assert_not_null(linked_list);
     linked_list->current = linked_list->head;
 }
 
@@ -64,6 +62,7 @@ void linked_list_advance(LinkedList *linked_list)
 
 void linked_list_add(LinkedList *linked_list, void *item)
 {
+    assert_not_null(linked_list);
     struct ListItem *li = malloc(sizeof(li));
     li->data = item;
     li->next = NULL;
@@ -77,5 +76,6 @@ void linked_list_add(LinkedList *linked_list, void *item)
 
 size_t linked_list_size(LinkedList *linked_list)
 {
+    assert_not_null(linked_list);
     return linked_list->size;
 }
