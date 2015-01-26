@@ -1,4 +1,4 @@
-#include "linked_list.h"
+#include "collections/linked_list.h"
 #include "assert.h"
 
 void test_getting_empty_without_resetting()

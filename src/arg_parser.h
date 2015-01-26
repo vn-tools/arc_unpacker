@@ -1,7 +1,7 @@
 #ifndef ARG_PARSER_H
 #define ARG_PARSER_H
 #include <stdbool.h>
-#include "linked_list.h"
+#include "collections/linked_list.h"
 
 typedef struct ArgParser ArgParser;
 
