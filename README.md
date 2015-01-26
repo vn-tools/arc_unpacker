@@ -1,3 +1,9 @@
+# Work in progress
+
+A shift to C is currently happening. Stay tuned.
+
+---
+
 A tool for extracting data from visual novels.
 
 Requirements
