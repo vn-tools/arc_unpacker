@@ -211,6 +211,23 @@ void arg_parser_add_help(
     linked_list_add(arg_parser->help_items, kv);
 }
 
+bool arg_parser_has_switch(ArgParser *arg_parser, const char *key)
+{
+    KeyValue *kv;
+    assert_not_null(arg_parser);
+    assert_not_null(key);
+    while (key[0] == '-')
+        key ++;
+    linked_list_reset(arg_parser->switches);
+    while ((kv = (KeyValue*)linked_list_get(arg_parser->switches)) != NULL)
+    {
+        linked_list_advance(arg_parser->switches);
+        if (strcmp((char*)kv->key, key) == 0)
+            return true;
+    }
+    return false;
+}
+
 char *arg_parser_get_switch(ArgParser *arg_parser, const char *key)
 {
     KeyValue *kv;

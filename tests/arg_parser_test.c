@@ -6,6 +6,8 @@ void test_switch_missing()
     ArgParser *ap = arg_parser_create();
     assert_null(arg_parser_get_switch(ap, "-s"));
     assert_null(arg_parser_get_switch(ap, "--long"));
+    assert_that(!arg_parser_has_switch(ap, "-s"));
+    assert_that(!arg_parser_has_switch(ap, "--long"));
     arg_parser_destroy(ap);
 }
 
@@ -15,6 +17,7 @@ void test_switch_is_not_a_flag()
     char *argv[1] = {"-f"};
     arg_parser_parse(ap, 1, argv);
     assert_null(arg_parser_get_switch(ap, "-f"));
+    assert_that(!arg_parser_has_switch(ap, "-f"));
     arg_parser_destroy(ap);
 }
 
@@ -25,6 +28,8 @@ void test_switch_short()
     arg_parser_parse(ap, 1, argv);
     assert_equals("short", arg_parser_get_switch(ap, "-s"));
     assert_equals("short", arg_parser_get_switch(ap, "s"));
+    assert_that(arg_parser_has_switch(ap, "-s"));
+    assert_that(arg_parser_has_switch(ap, "s"));
     arg_parser_destroy(ap);
 }
 
@@ -36,6 +41,9 @@ void test_switch_long()
     assert_equals("long", arg_parser_get_switch(ap, "--long"));
     assert_equals("long", arg_parser_get_switch(ap, "-long"));
     assert_equals("long", arg_parser_get_switch(ap, "long"));
+    assert_that(arg_parser_has_switch(ap, "--long"));
+    assert_that(arg_parser_has_switch(ap, "-long"));
+    assert_that(arg_parser_has_switch(ap, "long"));
     arg_parser_destroy(ap);
 }
 

@@ -15,6 +15,8 @@ void arg_parser_parse(ArgParser *arg_parser, int argc, char **argv);
 
 bool arg_parser_has_flag(ArgParser *arg_parser, const char *argument);
 
+bool arg_parser_has_switch(ArgParser *arg_parser, const char *key);
+
 char *arg_parser_get_switch(ArgParser *arg_parser, const char *key);
 
 LinkedList *arg_parser_get_stray(ArgParser *arg_parser);
