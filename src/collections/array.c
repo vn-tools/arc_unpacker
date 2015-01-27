@@ -46,7 +46,7 @@ bool array_set(Array *array, size_t index, void *data)
     if (index >= array->size)
     {
         new_size = index + 1;
-        new_items = realloc(array->items, sizeof(void*) * array->size);
+        new_items = realloc(array->items, sizeof(void*) * new_size);
         if (!new_items)
             return false;
         array->items = new_items;
