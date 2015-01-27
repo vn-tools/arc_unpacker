@@ -1,5 +1,6 @@
 #ifndef ASSERT_H
 #define ASSERT_H
+#include <stddef.h>
 #include <stdbool.h>
 
 void assert_equali(int expected, int actual);
