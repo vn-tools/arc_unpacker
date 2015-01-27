@@ -39,6 +39,7 @@ void dictionary_set(
     const void *const value)
 {
     KeyValue *kv;
+    assert_not_null(dictionary);
     linked_list_reset(dictionary->linked_list);
     while ((kv = (KeyValue*)linked_list_get(dictionary->linked_list)) != NULL)
     {
@@ -61,6 +62,7 @@ const void *dictionary_get(
     const char *const key)
 {
     KeyValue *kv;
+    assert_not_null(dictionary);
     linked_list_reset(dictionary->linked_list);
     while ((kv = (KeyValue*)linked_list_get(dictionary->linked_list)) != NULL)
     {
@@ -76,6 +78,7 @@ bool dictionary_has_key(
     const char *const key)
 {
     KeyValue *kv;
+    assert_not_null(dictionary);
     linked_list_reset(dictionary->linked_list);
     while ((kv = (KeyValue*)linked_list_get(dictionary->linked_list)) != NULL)
     {
