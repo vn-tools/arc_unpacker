@@ -2,6 +2,7 @@
 #define ARG_PARSER_H
 #include <stdbool.h>
 #include "collections/linked_list.h"
+#include "collections/array.h"
 
 typedef struct ArgParser ArgParser;
 
@@ -19,7 +20,7 @@ bool arg_parser_has_switch(ArgParser *arg_parser, const char *key);
 
 char *arg_parser_get_switch(ArgParser *arg_parser, const char *key);
 
-LinkedList *arg_parser_get_stray(ArgParser *arg_parser);
+Array *arg_parser_get_stray(ArgParser *arg_parser);
 
 void arg_parser_add_help(
     ArgParser *arg_parser,

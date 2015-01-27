@@ -4,7 +4,6 @@
 #include "arg_parser.h"
 #include "assert.h"
 #include "key_value.h"
-#include "collections/array.h"
 
 static bool is_alphanumeric(char *string);
 
@@ -100,7 +99,7 @@ struct ArgParser
 {
     LinkedList *switches;
     LinkedList *flags;
-    LinkedList *stray;
+    Array *stray;
     LinkedList *help_items;
 };
 
@@ -109,13 +108,14 @@ ArgParser *arg_parser_create()
     ArgParser *arg_parser = malloc(sizeof(ArgParser));
     arg_parser->flags = linked_list_create();
     arg_parser->switches = linked_list_create();
-    arg_parser->stray = linked_list_create();
+    arg_parser->stray = array_create();
     arg_parser->help_items = linked_list_create();
     return arg_parser;
 }
 
 void arg_parser_destroy(ArgParser *arg_parser)
 {
+    size_t i;
     void *item;
     assert_not_null(arg_parser);
 
@@ -146,13 +146,9 @@ void arg_parser_destroy(ArgParser *arg_parser)
 
     if (arg_parser->stray != NULL)
     {
-        linked_list_reset(arg_parser->stray);
-        while ((item = linked_list_get(arg_parser->stray)) != NULL)
-        {
-            linked_list_advance(arg_parser->stray);
-            free(item);
-        }
-        linked_list_destroy(arg_parser->stray);
+        for (i = 0; i < array_size(arg_parser->stray); i ++)
+            free(array_get(arg_parser->stray, i));
+        array_destroy(arg_parser->stray);
     }
 
     if (arg_parser->help_items != NULL)
@@ -185,7 +181,10 @@ void arg_parser_parse(ArgParser *arg_parser, int argc, char **argv)
         }
         else
         {
-            linked_list_add(arg_parser->stray, strdup(arg));
+            array_set(
+                arg_parser->stray,
+                array_size(arg_parser->stray),
+                strdup(arg));
         }
     }
 }
@@ -268,7 +267,7 @@ bool arg_parser_has_flag(ArgParser *arg_parser, const char *flag)
     return false;
 }
 
-LinkedList *arg_parser_get_stray(ArgParser *arg_parser)
+Array *arg_parser_get_stray(ArgParser *arg_parser)
 {
     assert_not_null(arg_parser);
     return arg_parser->stray;

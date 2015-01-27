@@ -105,18 +105,17 @@ void test_flag_mixed_with_stray()
     char *argv[2] = {"--flag", "stray"};
     arg_parser_parse(ap, 2, argv);
     assert_that(arg_parser_has_flag(ap, "flag"));
-    LinkedList *stray = arg_parser_get_stray(ap);
-    linked_list_reset(stray);
-    assert_equali(1, linked_list_size(stray));
-    assert_equals("stray", linked_list_get(stray));
+    Array *stray = arg_parser_get_stray(ap);
+    assert_equali(1, array_size(stray));
+    assert_equals("stray", array_get(stray, 0));
     arg_parser_destroy(ap);
 }
 
 void test_stray_missing()
 {
     ArgParser *ap = arg_parser_create();
-    LinkedList *stray = arg_parser_get_stray(ap);
-    assert_equali(0, linked_list_size(stray));
+    Array *stray = arg_parser_get_stray(ap);
+    assert_equali(0, array_size(stray));
     arg_parser_destroy(ap);
 }
 
@@ -125,12 +124,10 @@ void test_stray()
     ArgParser *ap = arg_parser_create();
     char *argv[2] = {"stray1", "stray2"};
     arg_parser_parse(ap, 2, argv);
-    LinkedList *stray = arg_parser_get_stray(ap);
-    linked_list_reset(stray);
-    assert_equali(2, linked_list_size(stray));
-    assert_equals("stray1", linked_list_get(stray));
-    linked_list_advance(stray);
-    assert_equals("stray2", linked_list_get(stray));
+    Array *stray = arg_parser_get_stray(ap);
+    assert_equali(2, array_size(stray));
+    assert_equals("stray1", array_get(stray, 0));
+    assert_equals("stray2", array_get(stray, 1));
     arg_parser_destroy(ap);
 }
 
@@ -139,10 +136,9 @@ void test_stray_with_space()
     ArgParser *ap = arg_parser_create();
     char *argv[1] = {"long stray"};
     arg_parser_parse(ap, 1, argv);
-    LinkedList *stray = arg_parser_get_stray(ap);
-    linked_list_reset(stray);
-    assert_equali(1, linked_list_size(stray));
-    assert_equals("long stray", linked_list_get(stray));
+    Array *stray = arg_parser_get_stray(ap);
+    assert_equali(1, array_size(stray));
+    assert_equals("long stray", array_get(stray, 0));
     arg_parser_destroy(ap);
 }
 
@@ -156,12 +152,10 @@ void test_mixed_types()
     assert_that(arg_parser_has_flag(ap, "flag1"));
     assert_that(arg_parser_has_flag(ap, "flag2"));
 
-    LinkedList *stray = arg_parser_get_stray(ap);
-    linked_list_reset(stray);
-    assert_equali(2, linked_list_size(stray));
-    assert_equals("stray1", linked_list_get(stray));
-    linked_list_advance(stray);
-    assert_equals("stray2", linked_list_get(stray));
+    Array *stray = arg_parser_get_stray(ap);
+    assert_equali(2, array_size(stray));
+    assert_equals("stray1", array_get(stray, 0));
+    assert_equals("stray2", array_get(stray, 1));
 
     arg_parser_destroy(ap);
 }
