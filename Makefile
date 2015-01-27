@@ -47,15 +47,17 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 TEST_SOURCES := $(call rwildcard, $(TEST_SRC_DIR)/, *.c)
 TEST_BINARIES := $(TEST_SOURCES:$(TEST_SRC_DIR)/%.c=$(TEST_BIN_DIR)/%)
 
-tests: clean
 tests: CFLAGS:=$(filter-out -O1 -O2 -O3,$(CFLAGS))
 tests: CFLAGS += -ggdb
 tests: $(TEST_BINARIES)
+tests: run_tests
+
+run_tests: $(TEST_BINARIES)
+	$^
 
 $(TEST_BIN_DIR)/%: $(TEST_OBJ_DIR)/%.o $(OBJECTS)
 	@$(MKPATH) $(dir $@)
 	$(LINKER) $@ $^ $(LFLAGS)
-	$@
 
 $(TEST_OBJ_DIR)/%.o: $(TEST_SRC_DIR)/%.c
 	@$(MKPATH) $(dir $@)
@@ -64,12 +66,10 @@ $(TEST_OBJ_DIR)/%.o: $(TEST_SRC_DIR)/%.c
 
 
 #Additional targets
-.PHONY: clean tests
+.PHONY: clean tests run_tests
 clean:
 	$(RM) $(BIN_DIR)/*
-	$(RM) $(OBJECTS)
-	$(RM) $(OBJ_DIR)/bin/arc_unpacker.o
-	$(RM) $(OBJ_DIR)/bin/file_decoder.o
+	$(RM) $(OBJ_DIR)/*
 
 
 #Disable removing .o after successful build
