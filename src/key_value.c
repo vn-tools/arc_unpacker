@@ -9,7 +9,7 @@ KeyValue *key_value_create(void *key, void *value)
     return kv;
 }
 
-void key_value_destroy(KeyValue *kv)
+void key_value_destroy(KeyValue *const kv)
 {
     free(kv);
 }

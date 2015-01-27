@@ -45,16 +45,13 @@ void dictionary_set(
     {
         if (strcmp(kv->key, key) == 0)
         {
-            kv->value = value;
+            kv->value = (void*)value;
             return;
         }
         linked_list_advance(dictionary->linked_list);
     }
-    kv = (KeyValue*)malloc(sizeof(KeyValue));
-    kv->key = key;
-    kv->value = value;
+    kv = key_value_create((void*)key, (void*)value);
     linked_list_add(dictionary->linked_list, kv);
-    return false;
 }
 
 const void *dictionary_get(

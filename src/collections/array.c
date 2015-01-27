@@ -20,8 +20,7 @@ Array *array_create()
 void array_destroy(Array *array)
 {
     assert_not_null(array);
-    if (array->items != NULL)
-        free(array->items);
+    free(array->items);
     free(array);
 }
 

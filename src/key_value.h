@@ -3,12 +3,12 @@
 
 typedef struct
 {
-    const void *key;
-    const void *value;
+    void *key;
+    void *value;
 } KeyValue;
 
-KeyValue *key_value_create(const void *key, const void *value);
+KeyValue *key_value_create(void *key, void *value);
 
-void key_value_destroy(KeyValue *kv);
+void key_value_destroy(KeyValue *const kv);
 
 #endif
