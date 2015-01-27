@@ -27,4 +27,6 @@ void arg_parser_add_help(
     char *invocation,
     char *description);
 
+void arg_parser_print_help(ArgParser *arg_parser);
+
 #endif

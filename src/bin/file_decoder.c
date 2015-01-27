@@ -2,6 +2,6 @@
 
 int main(void)
 {
-	printf("file_decoder\n");
-	return 0;
+    printf("file_decoder\n");
+    return 0;
 }
