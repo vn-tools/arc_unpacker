@@ -6,7 +6,7 @@
 struct Array
 {
     size_t size;
-    const void **items;
+    void **items;
 };
 
 Array *array_create()
@@ -30,7 +30,7 @@ size_t array_size(Array *array)
     return array->size;
 }
 
-const void *array_get(Array *array, size_t index)
+void *array_get(Array *array, size_t index)
 {
     assert_not_null(array);
     if (index >= array->size)
@@ -38,7 +38,7 @@ const void *array_get(Array *array, size_t index)
     return array->items[index];
 }
 
-bool array_set(Array *array, size_t index, const void *const data)
+bool array_set(Array *array, size_t index, void *data)
 {
     void *new_items;
     size_t new_size;

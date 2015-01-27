@@ -4,6 +4,7 @@
 #include "arg_parser.h"
 #include "assert.h"
 #include "key_value.h"
+#include "collections/array.h"
 
 static bool is_alphanumeric(char *string);
 
@@ -11,7 +12,7 @@ static bool get_switch(char *argument, char **key, char **value);
 
 static bool get_flag(char *argument, char **value);
 
-static LinkedList *create_words(char *sentence);
+static Array *create_words(char *sentence);
 
 static bool is_alphanumeric(char *string)
 {
@@ -71,23 +72,25 @@ static bool get_flag(char *argument, char **value)
     return true;
 }
 
-static LinkedList *create_words(char *sentence)
+static Array *create_words(char *sentence)
 {
-    LinkedList *words;
+    Array *words;
+    size_t i = 0;
     char *word = sentence;
     char *next_word;
 
     assert_not_null(sentence);
 
-    words = linked_list_create();
+    words = array_create();
     next_word = strpbrk(word, " ");
     while (next_word != NULL)
     {
-        linked_list_add(words, strndup(word, next_word - word));
+        array_set(words, i, strndup(word, next_word - word));
         word = next_word + 1;
         next_word = strpbrk(word, " ");
+        i ++;
     }
-    linked_list_add(words, strdup(word));
+    array_set(words, i, strdup(word));
     return words;
 }
 
@@ -261,7 +264,7 @@ void arg_parser_print_help(ArgParser *arg_parser)
     void *item;
     char *invocation, *description;
     char *word;
-    size_t i;
+    size_t i, j;
     size_t tmp_length;
     KeyValue *kv;
 
@@ -294,25 +297,24 @@ void arg_parser_print_help(ArgParser *arg_parser)
             printf(" ");
 
         //word wrap
-        LinkedList *words = create_words(description);
-        linked_list_reset(words);
+        Array *words = create_words(description);
         bool first_word = true;
-        while ((word = linked_list_get(words)) != NULL)
+        for (i = 0; i < array_size(words); i ++)
         {
+            word = array_get(words, i);
             tmp_length += strlen(word);
             if (!first_word && tmp_length > max_line_length)
             {
                 printf("\n");
-                for (i = 0; i < max_invocation_length; i ++)
+                for (j = 0; j < max_invocation_length; j ++)
                     printf(" ");
                 tmp_length = max_invocation_length;
             }
             printf("%s ", word);
-            linked_list_advance(words);
             free(word);
             first_word = false;
         }
         printf("\n");
-        linked_list_destroy(words);
+        array_destroy(words);
     }
 }
