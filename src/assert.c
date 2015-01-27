@@ -1,30 +1,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include "assert.h"
 
-void assert_equali(int expected, int actual)
+static void fail(char *file, int line, char *format, ...)
 {
-    if (actual != expected)
-    {
-        fprintf(stderr, "Fatal: expected %d, got %d.\n", expected, actual);
-        exit(1);
-    }
+    va_list args;
+    char buffer[1024];
+
+    va_start(args, format);
+    vsnprintf(buffer, sizeof buffer, format, args);
+    va_end(args);
+
+    fprintf(stderr, "%s\n  in %s:%d\n\n", buffer, file, line);
+    abort();
 }
 
-void assert_equals(const char *const expected, const char *const actual)
+void __assert_equali(char *file, int line, int expected, int actual)
+{
+    if (actual != expected)
+        fail(file, line, "Fatal: expected %d, got %d", expected, actual);
+}
+
+void __assert_equals(
+    char *file,
+    int line,
+    const char *const expected,
+    const char *const actual)
 {
     if (expected == NULL && actual == NULL)
         return;
 
     if (expected == NULL || actual == NULL || strcmp(actual, expected) != 0)
-    {
-        fprintf(stderr, "Fatal: expected %s, got %s.\n", expected, actual);
-        exit(1);
-    }
+        fail(file, line, "Fatal: expected %s, got %s", expected, actual);
 }
 
-void assert_equalsn(
+void __assert_equalsn(
+    char *file,
+    int line,
     const char *const expected,
     const char *const actual,
     size_t size)
@@ -36,43 +50,34 @@ void assert_equalsn(
         || actual == NULL
         || strncmp(actual, expected, size) != 0)
     {
-        fprintf(stderr, "Fatal: expected %s, got %s.\n", expected, actual);
-        exit(1);
+        fail(file, line, "Fatal: expected %s, got %s", expected, actual);
     }
 }
 
-void assert_equalp(const void *const expected, const void *const actual)
+void __assert_equalp(
+    char *file,
+    int line,
+    const void *const expected,
+    const void *const actual)
 {
     if (actual != expected)
-    {
-        fprintf(stderr, "Fatal: expected %p, got %p.\n", expected, actual);
-        exit(1);
-    }
+        fail(file, line, "Fatal: expected %p, got %p", expected, actual);
 }
 
-void assert_null(const void *const data)
+void __assert_null(char *file, int line, const void *const data)
 {
     if (data != NULL)
-    {
-        fprintf(stderr, "Fatal: expected NULL, got %p.\n", data);
-        exit(1);
-    }
+        fail(file, line, "Fatal: expected NULL, got %p", data);
 }
 
-void assert_not_null(const void *const data)
+void __assert_not_null(char *file, int line, const void *const data)
 {
     if (data == NULL)
-    {
-        fprintf(stderr, "Fatal: expected not NULL, got NULL.\n");
-        exit(1);
-    }
+        fail(file, line, "Fatal: expected not NULL, got NULL.");
 }
 
-void assert_that(bool expected)
+void __assert_that(char *file, int line, bool expected)
 {
     if (!expected)
-    {
-        fprintf(stderr, "Fatal: expected true, got false.\n");
-        exit(1);
-    }
+        fail(file, line, "Fatal: expected true, got false.");
 }
