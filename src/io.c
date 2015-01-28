@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +17,7 @@ struct IO
 
     void (*seek)(struct IO *, size_t, int);
     void (*read)(struct IO *, size_t, void *);
+    bool (*write)(struct IO *, size_t, void *);
     size_t (*tell)(struct IO *);
     size_t (*size)(struct IO *);
 };
@@ -32,6 +34,17 @@ static void file_io_read(IO *io, size_t length, void *destination)
 {
     assert_not_null(io);
     fread(destination, 1, length, io->file);
+}
+
+static bool file_io_write(IO *io, size_t length, void *source)
+{
+    assert_not_null(io);
+    if (fwrite(source, 1, length, io->file) == length)
+    {
+        return true;
+    }
+    errno = EIO;
+    return false;
 }
 
 static size_t file_io_tell(IO *io)
@@ -69,9 +82,31 @@ static void buffer_io_seek(IO *io, size_t offset, int whence)
 
 static void buffer_io_read(IO *io, size_t length, void *destination)
 {
+    assert_not_null(io);
     assert_that(io->buffer_pos + length <= io->buffer_size);
     strncpy(destination, io->buffer + io->buffer_pos, length);
     io->buffer_pos += length;
+}
+
+static bool buffer_io_write(IO *io, size_t length, void *source)
+{
+    char *destination;
+    assert_not_null(io);
+    if (io->buffer_pos + length > io->buffer_size)
+    {
+        destination = realloc(io->buffer, io->buffer_pos + length);
+        if (!destination)
+        {
+            errno = ENOMEM;
+            return false;
+        }
+        io->buffer_size = io->buffer_pos + length;
+        io->buffer = destination;
+    }
+    destination = io->buffer + io->buffer_pos;
+    strncpy(destination, source, length);
+    io->buffer_pos += length;
+    return true;
 }
 
 static size_t buffer_io_tell(IO *io)
@@ -99,6 +134,7 @@ IO *io_create_from_file(const char *const path, const char *const read_mode)
     io->buffer_size = 0;
     io->seek = &file_io_seek;
     io->read = &file_io_read;
+    io->write = &file_io_write;
     io->tell = &file_io_tell;
     io->size = &file_io_size;
     return io;
@@ -113,6 +149,7 @@ IO *io_create_from_buffer(const char *buffer, size_t buffer_size)
     io->buffer_size = buffer_size;
     io->seek = &buffer_io_seek;
     io->read = &buffer_io_read;
+    io->write = &buffer_io_write;
     io->tell = &buffer_io_tell;
     io->size = &buffer_io_size;
     return io;
@@ -216,4 +253,39 @@ uint64_t io_read_u64(IO *io)
     assert_that(io->read != NULL);
     io->read(io, 8, &ret);
     return ret;
+}
+
+bool io_write_string(IO *io, char *str, size_t length)
+{
+    assert_not_null(io);
+    assert_that(io->write != NULL);
+    return io->write(io, length, str);
+}
+
+bool io_write_u8(IO *io, uint8_t value)
+{
+    assert_not_null(io);
+    assert_that(io->write != NULL);
+    return io->write(io, 1, &value);
+}
+
+bool io_write_u16(IO *io, uint16_t value)
+{
+    assert_not_null(io);
+    assert_that(io->write != NULL);
+    return io->write(io, 2, &value);
+}
+
+bool io_write_u32(IO *io, uint32_t value)
+{
+    assert_not_null(io);
+    assert_that(io->write != NULL);
+    return io->write(io, 4, &value);
+}
+
+bool io_write_u64(IO *io, uint64_t value)
+{
+    assert_not_null(io);
+    assert_that(io->write != NULL);
+    return io->write(io, 8, &value);
 }
