@@ -84,7 +84,7 @@ static void buffer_io_read(IO *io, size_t length, void *destination)
 {
     assert_not_null(io);
     assert_that(io->buffer_pos + length <= io->buffer_size);
-    strncpy(destination, io->buffer + io->buffer_pos, length);
+    memcpy(destination, io->buffer + io->buffer_pos, length);
     io->buffer_pos += length;
 }
 
@@ -104,7 +104,7 @@ static bool buffer_io_write(IO *io, size_t length, void *source)
         io->buffer = destination;
     }
     destination = io->buffer + io->buffer_pos;
-    strncpy(destination, source, length);
+    memcpy(destination, source, length);
     io->buffer_pos += length;
     return true;
 }
@@ -144,7 +144,8 @@ IO *io_create_from_buffer(const char *buffer, size_t buffer_size)
 {
     IO *io = malloc(sizeof(IO));
     io->file = NULL;
-    io->buffer = strdup(buffer);
+    io->buffer = malloc(buffer_size);
+    memcpy(io->buffer, buffer, buffer_size);
     io->buffer_pos = 0;
     io->buffer_size = buffer_size;
     io->seek = &buffer_io_seek;

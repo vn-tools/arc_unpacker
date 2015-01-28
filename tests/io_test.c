@@ -31,6 +31,18 @@ void test_buffer_empty()
     io_destroy(io);
 }
 
+void test_buffer_binary_data()
+{
+    IO *io = io_create_from_buffer("\x00\x00\x00\x01", 4);
+    assert_equali(4, io_size(io));
+    assert_equali(0x01000000, io_read_u32(io));
+    io_seek(io, 0);
+    io_write_string(io, "\x00\x00\x00\x02", 4);
+    io_seek(io, 0);
+    assert_equali(0x02000000, io_read_u32(io));
+    io_destroy(io);
+}
+
 void test_buffer_simple_read()
 {
     IO *io = io_create_from_buffer("\x01\x00\x00\x00", 4);
@@ -105,6 +117,7 @@ int main(void)
     test_file_simple_read();
     test_file_simple_write();
     test_buffer_empty();
+    test_buffer_binary_data();
     test_buffer_simple_read();
     test_buffer_simple_write();
     test_buffer_skip_and_tell();
