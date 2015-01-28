@@ -18,6 +18,10 @@ STRIP    = /usr/bin/strip
 CFLAGS   = -Wall -Wextra -pedantic -O2 -std=gnu99 -I$(SRC_DIR)
 LFLAGS   = -Wall -Wextra -pedantic
 
+.PHONY: set_test_flags
+set_test_flags:
+	$(eval CFLAGS:=$(filter-out -Os -O1 -O2 -O3,$(CFLAGS)) -ggdb)
+
 #OS specific linker settings
 SYSTEM := $(shell gcc -dumpmachine)
 ifneq (, $(findstring cygwin, $(SYSTEM)))
@@ -30,6 +34,10 @@ endif
 SOURCES := $(filter-out $(SRC_DIR)/bin%.c, $(call rwildcard, $(SRC_DIR)/, *.c))
 OBJECTS := $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
+.PHONY: debug
+debug: | set_test_flags all
+
+.PHONY: all
 all: $(BIN_DIR)/arc_unpacker $(BIN_DIR)/file_decoder
 
 $(BIN_DIR)/%: $(OBJ_DIR)/bin/%.o $(OBJECTS)
@@ -47,12 +55,9 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 TEST_SOURCES := $(call rwildcard, $(TEST_SRC_DIR)/, *.c)
 TEST_BINARIES := $(TEST_SOURCES:$(TEST_SRC_DIR)/%.c=$(TEST_BIN_DIR)/%)
 
-tests: CFLAGS:=$(filter-out -O1 -O2 -O3,$(CFLAGS))
-tests: CFLAGS += -ggdb
+.PHONY: tests
+tests: set_test_flags
 tests: $(TEST_BINARIES)
-tests: run_tests
-
-run_tests: $(TEST_BINARIES)
 	$^
 
 $(TEST_BIN_DIR)/%: $(TEST_OBJ_DIR)/%.o $(OBJECTS)
@@ -66,7 +71,7 @@ $(TEST_OBJ_DIR)/%.o: $(TEST_SRC_DIR)/%.c
 
 
 #Additional targets
-.PHONY: clean tests run_tests
+.PHONY: clean
 clean:
 	$(RM) $(BIN_DIR)/*
 	$(RM) $(OBJ_DIR)/*
