@@ -1,9 +1,11 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include "cli_helpers.h"
+#include <string.h>
 #include "arg_parser.h"
+#include "cli_helpers.h"
 #include "options.h"
+#include "output_files.h"
+#include "virtual_file.h"
 
 static char *get_default_output_path(char *input_path)
 {
@@ -73,6 +75,14 @@ static void print_help(char *path_to_self, ArgParser *arg_parser, Options *optio
     }
 }
 
+VirtualFile *test_file_creator(void *context __attribute__((unused)))
+{
+    VirtualFile *test_file = vf_create();
+    vf_set_name(test_file, "data.txt");
+    vf_set_data(test_file, "abc", 3);
+    return test_file;
+}
+
 static void run(Options *options)
 {
     //TODO: decide on archiver and unpack
@@ -80,6 +90,10 @@ static void run(Options *options)
         "run\ninput = %s\noutput = %s\n",
         options_get(options, "input_path"),
         options_get(options, "output_path"));
+
+    OutputFiles *output_files = output_files_create(options);
+    output_files_save(output_files, &test_file_creator, NULL);
+    output_files_destroy(output_files);
 }
 
 int main(int argc, char **argv)
