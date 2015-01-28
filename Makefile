@@ -20,7 +20,7 @@ LFLAGS   = -Wall -Wextra -pedantic
 
 .PHONY: set_test_flags
 set_test_flags:
-	$(eval CFLAGS:=$(filter-out -Os -O1 -O2 -O3,$(CFLAGS)) -ggdb)
+	$(eval CFLAGS:=$(filter-out -Os -O1 -O2 -O3,$(CFLAGS)) -ggdb -DENABLE_ASSERT)
 
 #OS specific linker settings
 SYSTEM := $(shell gcc -dumpmachine)
