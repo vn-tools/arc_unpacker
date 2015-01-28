@@ -25,6 +25,7 @@ void cli_add_verbose_option(ArgParser *arg_parser, Options *options)
         "-v, --verbose",
         "Shows additional debug information>");
 
+    options_set(options, "verbosity", "normal");
     if (arg_parser_has_flag(arg_parser, "-v")
         || arg_parser_has_flag(arg_parser, "--verbose"))
     {
