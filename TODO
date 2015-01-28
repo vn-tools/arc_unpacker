@@ -1,0 +1,51 @@
+Port old core classes:
+- InputFiles
+- FileDecoder
+- ArchiveFactory
+- FileFactory
+- Image (libpng)
+- Sound (raw)
+
+Add new necessary classes:
+- Zlib (de)compressor (lzlib)
+- ArchiveFormat
+- FileFormat
+
+Refactor:
+- Add proper logging with level controllable from within CliHelpers
+	- After that, add checks for buffer overflows everywhere
+- Change Options to a non-dictionary or even remove it altogether
+
+Port old code for formats:
+	- Archives:
+		- ARC
+		- EXE
+		- FJSYS
+		- MBL
+		- Melty Blood
+		- NPA
+		- NPA (S;G)
+		- NSA
+		- PAK
+		- RGSSAD
+		- RPA
+		- SAR
+		- XP3
+		- YKC
+
+	- Files:
+		- Pickle
+		- CBG
+		- G00
+		- MGD
+		- PRS
+		- Fortune Summoners
+		- SPB
+		- TLG
+		- XYZ
+		- YKG
+		- MSD
+		- YKS
+		- NWA
+
+The ride never ends!
