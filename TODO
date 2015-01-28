@@ -15,6 +15,7 @@ Refactor:
 - Add proper logging with level controllable from within CliHelpers
 	- After that, add checks for buffer overflows everywhere
 - Change Options to a non-dictionary or even remove it altogether
+- Decide on whitespace or tabs, damnit!
 
 Port old code for formats:
 	- Archives:
