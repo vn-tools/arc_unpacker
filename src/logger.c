@@ -6,7 +6,7 @@
 #include "logger.h"
 
 static char buffer[1024];
-static bool levels_enabled[_LOG_LEVEL_COUNT];
+static bool levels_enabled[_LOG_LEVEL_COUNT] = { true, true, true };
 
 static void log_text(FILE *out, const char *prefix, const char *buffer);
 
