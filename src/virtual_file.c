@@ -81,7 +81,7 @@ bool vf_set_data(VirtualFile *file, const char *data, size_t length)
     assert_not_null(file);
     if (file->data != NULL)
         free(file->data);
-    file->data = strndup(data, length);
+    file->data = (char*)malloc(length);
     if (file->data == NULL)
     {
         file->size = 0;
@@ -89,6 +89,7 @@ bool vf_set_data(VirtualFile *file, const char *data, size_t length)
     }
     else
     {
+        memcpy(file->data, data, length);
         file->size = length;
         return true;
     }
