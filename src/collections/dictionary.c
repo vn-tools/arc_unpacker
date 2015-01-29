@@ -1,88 +1,85 @@
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include "assert.h"
 #include "collections/dictionary.h"
 #include "collections/linked_list.h"
-#include "key_value.h"
 
 // super stupid implementation with O(n) lookup time and O(n) insertion time
 
 struct Dictionary
 {
-    LinkedList *linked_list;
+    Array *keys;
+    Array *values;
 };
+
+static ssize_t get_index_for_key(const Dictionary *dictionary, const char *key)
+{
+    size_t i;
+    for (i = 0; i < array_size(dictionary->keys); i ++)
+    {
+        if (strcmp((const char*)array_get(dictionary->keys, i), key) == 0)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
 
 Dictionary *dictionary_create()
 {
     Dictionary *dictionary = (Dictionary*)malloc(sizeof(Dictionary));
     assert_not_null(dictionary);
-    dictionary->linked_list = linked_list_create();
+    dictionary->values = array_create();
+    dictionary->keys = array_create();
     return dictionary;
 }
 
 void dictionary_destroy(Dictionary *dictionary)
 {
-    KeyValue *kv;
     assert_not_null(dictionary);
-    linked_list_reset(dictionary->linked_list);
-    while ((kv = (KeyValue*)linked_list_get(dictionary->linked_list)) != NULL)
-    {
-        free(kv);
-        linked_list_advance(dictionary->linked_list);
-    }
-    linked_list_destroy(dictionary->linked_list);
+    array_destroy(dictionary->keys);
+    array_destroy(dictionary->values);
     free(dictionary);
 }
 
-void dictionary_set(
-    Dictionary *const dictionary,
-    const char *const key,
-    const void *const value)
+const Array *dictionary_get_keys(const Dictionary *const dictionary)
 {
-    KeyValue *kv;
-    assert_not_null(dictionary);
-    linked_list_reset(dictionary->linked_list);
-    while ((kv = (KeyValue*)linked_list_get(dictionary->linked_list)) != NULL)
+    return dictionary->keys;
+}
+
+const Array *dictionary_get_values(const Dictionary *const dictionary)
+{
+    return dictionary->values;
+}
+
+void dictionary_set(
+    Dictionary *dictionary,
+    const char *key,
+    const void *value)
+{
+    ssize_t i = get_index_for_key(dictionary, key);
+    if (i == -1)
     {
-        if (strcmp((const char*)kv->key, key) == 0)
-        {
-            kv->value = (void*)value;
-            return;
-        }
-        linked_list_advance(dictionary->linked_list);
+        i = array_size(dictionary->keys);
+        array_set(dictionary->keys, i, (void*)key);
     }
-    kv = key_value_create((void*)key, (void*)value);
-    linked_list_add(dictionary->linked_list, kv);
+    array_set(dictionary->values, i, (void*)value);
 }
 
 const void *dictionary_get(
     const Dictionary *const dictionary,
     const char *const key)
 {
-    KeyValue *kv;
-    assert_not_null(dictionary);
-    linked_list_reset(dictionary->linked_list);
-    while ((kv = (KeyValue*)linked_list_get(dictionary->linked_list)) != NULL)
-    {
-        if (strcmp((const char*)kv->key, key) == 0)
-            return kv->value;
-        linked_list_advance(dictionary->linked_list);
-    }
-    return NULL;
+    ssize_t i = get_index_for_key(dictionary, key);
+    if (i == -1)
+        return NULL;
+    return array_get(dictionary->values, i);
 }
 
 bool dictionary_has_key(
     const Dictionary *const dictionary,
     const char *const key)
 {
-    KeyValue *kv;
-    assert_not_null(dictionary);
-    linked_list_reset(dictionary->linked_list);
-    while ((kv = (KeyValue*)linked_list_get(dictionary->linked_list)) != NULL)
-    {
-        if (strcmp((const char*)kv->key, key) == 0)
-            return true;
-        linked_list_advance(dictionary->linked_list);
-    }
-    return false;
+    return get_index_for_key(dictionary, key) != -1;
 }
