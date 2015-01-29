@@ -10,6 +10,7 @@ Add new necessary classes:
 - FileFormat
 
 Refactor:
+- Stop using errno (turns out this is intended for using system programming)
 - Decide on whitespace or tabs, damnit!
 
 Port old code for formats:
