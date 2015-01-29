@@ -2,12 +2,12 @@
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 
 #Variables
-SRC_DIR   = src
-OBJ_DIR   = obj
-BIN_DIR   = bin
+SRC_DIR = src
+BIN_DIR = bin
+OBJ_DIR = obj
 TEST_SRC_DIR = tests
-TEST_OBJ_DIR = obj/tests
 TEST_BIN_DIR = bin/tests
+TEST_OBJ_DIR = obj/tests
 
 CC       = gcc
 LINKER   = gcc -o
@@ -15,12 +15,12 @@ RM       = rm -rf
 MKPATH   = mkdir -p
 STRIP    = /usr/bin/strip
 
-CFLAGS   = -Wall -Wextra -pedantic -O2 -std=gnu99 -I$(SRC_DIR)
-LFLAGS   = -Wall -Wextra -pedantic
-
-.PHONY: set_test_flags
-set_test_flags:
-	$(eval CFLAGS:=$(filter-out -Os -O1 -O2 -O3,$(CFLAGS)) -ggdb -DENABLE_ASSERT)
+LFLAGS         = -Wall -Wextra -pedantic
+LFLAGS_DEBUG   =
+LFLAGS_RELEASE =
+CFLAGS         = -Wall -Wextra -pedantic -std=gnu99 -I$(SRC_DIR)
+CFLAGS_DEBUG   = -ggdb -DENABLE_ASSERT
+CFLAGS_RELEASE = -Os
 
 #OS specific linker settings
 SYSTEM := $(shell gcc -dumpmachine)
@@ -30,22 +30,45 @@ endif
 
 
 
-#Binaries
-SOURCES := $(filter-out $(SRC_DIR)/bin%.c, $(call rwildcard, $(SRC_DIR)/, *.c))
-OBJECTS := $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+#General targets
+.PHONY: all
+all: release tests
+
+.PHONY: release
+release: CFLAGS += $(CFLAGS_RELEASE)
+release: LFLAGS += $(LFLAGS_RELEASE)
+release: release_binaries
 
 .PHONY: debug
-debug: | set_test_flags all
+debug: CFLAGS += $(CFLAGS_DEBUG)
+debug: LFLAGS += $(LFLAGS_DEBUG)
+debug: debug_binaries
 
-.PHONY: all
-all: $(BIN_DIR)/arc_unpacker $(BIN_DIR)/file_decoder
 
-$(BIN_DIR)/%: $(OBJ_DIR)/bin/%.o $(OBJECTS)
+
+#Binaries
+SOURCES := $(filter-out $(SRC_DIR)/bin%.c, $(call rwildcard, $(SRC_DIR)/, *.c))
+RELEASE_OBJECTS := $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/release/%.o)
+DEBUG_OBJECTS := $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/debug/%.o)
+
+.PHONY: release_binaries debug_binaries
+release_binaries: $(BIN_DIR)/release/arc_unpacker $(BIN_DIR)/release/file_decoder
+debug_binaries: $(BIN_DIR)/debug/arc_unpacker $(BIN_DIR)/debug/file_decoder
+
+$(BIN_DIR)/debug/%: $(OBJ_DIR)/debug/bin/%.o $(DEBUG_OBJECTS)
 	@$(MKPATH) $(dir $@)
 	$(LINKER) $@ $^ $(LFLAGS)
-	if [ -f "$(STRIP)" ]; then $(STRIP) $@; fi
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+$(BIN_DIR)/release/%: $(OBJ_DIR)/release/bin/%.o $(RELEASE_OBJECTS)
+	@$(MKPATH) $(dir $@)
+	$(LINKER) $@ $^ $(LFLAGS)
+	if [ -f "$(STRIP)" ]; then $(STRIP) --strip-all $@; fi
+
+$(OBJ_DIR)/release/%.o: $(SRC_DIR)/%.c
+	@$(MKPATH) $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/debug/%.o: $(SRC_DIR)/%.c
 	@$(MKPATH) $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -56,11 +79,12 @@ TEST_SOURCES := $(call rwildcard, $(TEST_SRC_DIR)/, *.c)
 TEST_BINARIES := $(TEST_SOURCES:$(TEST_SRC_DIR)/%.c=$(TEST_BIN_DIR)/%)
 
 .PHONY: tests
-tests: set_test_flags
+tests: CFLAGS += $(CFLAGS_DEBUG)
+tests: LFLAGS += $(LFLAGS_DEBUG)
 tests: $(TEST_BINARIES)
-	$(foreach x,$(filter-out set_test_flags,$^),$(x);)
+	@$(foreach x,$^,echo $(x);$(x);)
 
-$(TEST_BIN_DIR)/%: $(TEST_OBJ_DIR)/%.o $(OBJECTS)
+$(TEST_BIN_DIR)/%: $(TEST_OBJ_DIR)/%.o $(DEBUG_OBJECTS)
 	@$(MKPATH) $(dir $@)
 	$(LINKER) $@ $^ $(LFLAGS)
 
@@ -73,8 +97,8 @@ $(TEST_OBJ_DIR)/%.o: $(TEST_SRC_DIR)/%.c
 #Additional targets
 .PHONY: clean
 clean:
-	$(RM) $(BIN_DIR)/*
-	$(RM) $(OBJ_DIR)/*
+	$(RM) ./$(BIN_DIR)/*
+	$(RM) ./$(OBJ_DIR)/*
 
 
 #Disable removing .o after successful build
