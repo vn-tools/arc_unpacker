@@ -62,9 +62,9 @@ void dictionary_set(
     if (i == -1)
     {
         i = array_size(dictionary->keys);
-        array_set(dictionary->keys, i, (void*)key);
+        assert_that(array_set(dictionary->keys, i, (void*)key));
     }
-    array_set(dictionary->values, i, (void*)value);
+    assert_that(array_set(dictionary->values, i, (void*)value));
 }
 
 const void *dictionary_get(
