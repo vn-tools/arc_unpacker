@@ -35,7 +35,8 @@ static void file_io_seek(IO *io, size_t offset, int whence)
 static void file_io_read(IO *io, size_t length, void *destination)
 {
     assert_not_null(io);
-    fread(destination, 1, length, io->file);
+    if (fread(destination, 1, length, io->file) != length)
+        log_warning("Failed to read full data");
 }
 
 static bool file_io_write(IO *io, size_t length, void *source)
