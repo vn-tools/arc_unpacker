@@ -12,10 +12,18 @@ static void log_text(FILE *out, const char *prefix, const char *buffer);
 
 static void log_text(FILE *out, const char *prefix, const char *buffer)
 {
-    if (errno != 0)
-        fprintf(out, "%s: %s (%s)\n", prefix, buffer, strerror(errno));
+    if (buffer == NULL)
+    {
+        if (errno != 0)
+            fprintf(out, "%s: (%s)\n", prefix, strerror(errno));
+    }
     else
-        fprintf(out, "%s: %s\n", prefix, buffer);
+    {
+        if (errno != 0)
+            fprintf(out, "%s: %s (%s)\n", prefix, buffer, strerror(errno));
+        else
+            fprintf(out, "%s: %s\n", prefix, buffer);
+    }
 }
 
 
