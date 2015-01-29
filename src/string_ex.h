@@ -1,7 +1,9 @@
-#ifndef ENCODING_H
-#define ENCODING_H
+#ifndef STRING_EX_H
+#define STRING_EX_H
 #include <stddef.h>
 #include <stdbool.h>
+
+void trim_right(char *target, const char *chars);
 
 bool convert(
     const char *input,

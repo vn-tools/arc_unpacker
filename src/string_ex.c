@@ -1,10 +1,20 @@
 #include <errno.h>
 #include <iconv.h>
 #include <stdlib.h>
+#include <string.h>
 #include "assert.h"
 #include "logger.h"
+#include "string_ex.h"
 
-int convert(
+void trim_right(char *target, const char *chars)
+{
+    char *end = target + strlen(target) - 1;
+    while (end >= target && strchr(chars, *end) != NULL)
+        end --;
+    end[1] = '\0';
+}
+
+bool convert(
     const char *input,
     size_t input_size,
     char **output,
@@ -64,7 +74,7 @@ int convert(
                 free(*output);
                 *output = NULL;
                 *output_size = 0;
-                return errno;
+                return false;
 
             case E2BIG:
                 *output_size += 1;

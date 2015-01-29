@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include "fs.h"
 #include "logger.h"
-#include "string_ext.h"
+#include "string_ex.h"
 
 bool mkpath(const char *path)
 {
