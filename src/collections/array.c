@@ -25,13 +25,13 @@ void array_destroy(Array *array)
     free(array);
 }
 
-size_t array_size(Array *array)
+size_t array_size(const Array *array)
 {
     assert_not_null(array);
     return array->size;
 }
 
-void *array_get(Array *array, size_t index)
+void *array_get(const Array *array, size_t index)
 {
     assert_not_null(array);
     if (index >= array->size)
