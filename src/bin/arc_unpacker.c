@@ -56,7 +56,7 @@ static void print_help(
     ArgParser *arg_parser,
     Options *options)
 {
-    printf("Usage: %s [options [arc_options] input_path [output_path]\n",
+    printf("Usage: %s [options] [arc_options] input_path [output_path]\n",
         path_to_self);
 
     puts("");
