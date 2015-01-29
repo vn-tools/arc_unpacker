@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "assert.h"
+#include "logger.h"
 #include "io.h"
 
 struct IO
@@ -97,7 +98,7 @@ static bool buffer_io_write(IO *io, size_t length, void *source)
         destination = realloc(io->buffer, io->buffer_pos + length);
         if (!destination)
         {
-            errno = ENOMEM;
+            log_error(NULL);
             return false;
         }
         io->buffer_size = io->buffer_pos + length;
@@ -128,6 +129,7 @@ IO *io_create_from_file(const char *const path, const char *const read_mode)
     if (!fp)
         return NULL;
     IO *io = malloc(sizeof(IO));
+    assert_not_null(io);
     io->file = fp;
     io->buffer = NULL;
     io->buffer_pos = 0;
@@ -143,8 +145,10 @@ IO *io_create_from_file(const char *const path, const char *const read_mode)
 IO *io_create_from_buffer(const char *buffer, size_t buffer_size)
 {
     IO *io = malloc(sizeof(IO));
+    assert_not_null(io);
     io->file = NULL;
     io->buffer = malloc(buffer_size);
+    assert_not_null(io->buffer);
     memcpy(io->buffer, buffer, buffer_size);
     io->buffer_pos = 0;
     io->buffer_size = buffer_size;
@@ -199,6 +203,11 @@ char *io_read_string(IO *io, size_t length)
     assert_not_null(io);
     assert_that(io->read != NULL);
     str = malloc(length + 1);
+    if (!str)
+    {
+        log_error(NULL);
+        return NULL;
+    }
     io->read(io, length, str);
     str[length] = '\0';
     return str;
@@ -207,12 +216,20 @@ char *io_read_string(IO *io, size_t length)
 char *io_read_until_zero(IO *io)
 {
     char *str = NULL;
+    char *new_str;
     char c;
     size_t length = 0;
     assert_not_null(io);
     do
     {
-        str = realloc(str, length);
+        new_str = realloc(str, length);
+        if (!new_str)
+        {
+            free(str);
+            log_error(NULL);
+            return NULL;
+        }
+        str = new_str;
         c = io_read_u8(io);
         str[length ++] = c;
     }

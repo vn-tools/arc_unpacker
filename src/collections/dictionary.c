@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
+#include "assert.h"
 #include "collections/dictionary.h"
 #include "collections/linked_list.h"
 #include "key_value.h"
-#include "assert.h"
 
 // super stupid implementation with O(n) lookup time and O(n) insertion time
 
@@ -15,6 +15,7 @@ struct Dictionary
 Dictionary *dictionary_create()
 {
     Dictionary *dictionary = malloc(sizeof(Dictionary));
+    assert_not_null(dictionary);
     dictionary->linked_list = linked_list_create();
     return dictionary;
 }

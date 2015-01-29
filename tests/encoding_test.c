@@ -24,7 +24,7 @@ void test_sjis_to_utf8()
 {
     char *output = NULL;
     size_t output_size = 0;
-    assert_equali(0, convert(sjis, 41, &output, &output_size, "SJIS", "UTF-8"));
+    assert_that(convert(sjis, 41, &output, &output_size, "SJIS", "UTF-8"));
     assert_equalsn(utf8, output, 61);
     free(output);
 }
@@ -33,7 +33,7 @@ void test_utf8_to_sjis()
 {
     char *output = NULL;
     size_t output_size = 0;
-    assert_equali(0, convert(utf8, 61, &output, &output_size, "UTF-8", "SJIS"));
+    assert_that(convert(utf8, 61, &output, &output_size, "UTF-8", "SJIS"));
     assert_equalsn(sjis, output, 41);
     free(output);
 }
@@ -42,4 +42,5 @@ int main(void)
 {
     test_sjis_to_utf8();
     test_utf8_to_sjis();
+    return 0;
 }

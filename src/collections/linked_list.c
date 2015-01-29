@@ -1,6 +1,6 @@
 #include <stdlib.h>
-#include "linked_list.h"
 #include "assert.h"
+#include "linked_list.h"
 
 struct ListItem
 {
@@ -19,6 +19,7 @@ struct LinkedList
 LinkedList *linked_list_create()
 {
     LinkedList *linked_list = malloc(sizeof(LinkedList));
+    assert_not_null(linked_list);
     linked_list->head = NULL;
     linked_list->current = NULL;
     linked_list->tail = NULL;
@@ -65,6 +66,7 @@ void linked_list_add(LinkedList *linked_list, void *item)
 {
     assert_not_null(linked_list);
     struct ListItem *li = malloc(sizeof(struct ListItem));
+    assert_not_null(li);
     li->data = item;
     li->next = NULL;
     if (linked_list->tail != NULL)

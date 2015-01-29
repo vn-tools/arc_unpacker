@@ -106,6 +106,7 @@ struct ArgParser
 ArgParser *arg_parser_create()
 {
     ArgParser *arg_parser = malloc(sizeof(ArgParser));
+    assert_not_null(arg_parser);
     arg_parser->flags = linked_list_create();
     arg_parser->switches = linked_list_create();
     arg_parser->stray = array_create();

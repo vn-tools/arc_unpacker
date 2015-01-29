@@ -14,6 +14,7 @@ struct VirtualFile
 VirtualFile *vf_create()
 {
     VirtualFile *file = malloc(sizeof(VirtualFile));
+    assert_not_null(file);
     file->data = NULL;
     file->size = 0;
     file->name = NULL;
@@ -42,7 +43,7 @@ char *vf_get_name(VirtualFile *file)
     return file->name;
 }
 
-bool vf_change_extension(VirtualFile *file, const char *new_extension)
+void vf_change_extension(VirtualFile *file, const char *new_extension)
 {
     char *new_name;
     size_t base_length;
@@ -60,16 +61,10 @@ bool vf_change_extension(VirtualFile *file, const char *new_extension)
         file->name,
         base_length + 1 + strlen(new_extension) + 1);
 
-    if (!new_name)
-    {
-        errno = ENOMEM;
-        return false;
-    }
-
+    assert_not_null(new_name);
     strcpy(new_name + base_length, ".");
     strcpy(new_name + base_length + 1, new_extension);
     file->name = new_name;
-    return true;
 }
 
 bool vf_set_name(VirtualFile *file, const char *const new_name)

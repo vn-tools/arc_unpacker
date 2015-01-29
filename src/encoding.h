@@ -1,7 +1,9 @@
 #ifndef ENCODING_H
 #define ENCODING_H
+#include <stddef.h>
+#include <stdbool.h>
 
-int convert(
+bool convert(
     const char *input,
     size_t input_size,
     char **output,

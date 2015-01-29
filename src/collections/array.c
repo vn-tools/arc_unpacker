@@ -12,6 +12,7 @@ struct Array
 Array *array_create()
 {
     Array *array = malloc(sizeof(Array));
+    assert_not_null(array);
     array->size = 0;
     array->items = NULL;
     return array;

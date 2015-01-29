@@ -22,13 +22,12 @@ bool mkpath(const char *path)
         done = (*slash == '\0');
 
         dir_path = malloc(slash + 2 - path);
-        memset(dir_path, 0, slash + 2 - path);
         if (!dir_path)
         {
-            errno = ENOMEM;
             log_error(NULL);
             return false;
         }
+        memset(dir_path, 0, slash + 2 - path);
         strncpy(dir_path, path, slash - path);
         trim_right(dir_path, "/\\");
         strcat(dir_path, "/"); //important for Windows

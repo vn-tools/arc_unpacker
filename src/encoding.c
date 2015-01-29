@@ -2,6 +2,7 @@
 #include <iconv.h>
 #include <stdlib.h>
 #include "assert.h"
+#include "logger.h"
 
 int convert(
     const char *input,
@@ -34,9 +35,10 @@ int convert(
         output_new = realloc(*output, *output_size);
         if (!output_new)
         {
+            log_error(NULL);
             free(*output);
-            errno = ENOMEM;
-            return 1;
+            *output = NULL;
+            return false;
         }
         *output = output_new;
 
@@ -72,5 +74,5 @@ int convert(
     }
 
     iconv_close(conv);
-    return 0;
+    return true;
 }

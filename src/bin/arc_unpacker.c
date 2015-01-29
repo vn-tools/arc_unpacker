@@ -3,10 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "arg_parser.h"
+#include "assert.h"
 #include "cli_helpers.h"
+#include "logger.h"
 #include "options.h"
 #include "output_files.h"
-#include "logger.h"
 #include "virtual_file.h"
 
 static char *get_default_output_path(char *input_path)
@@ -103,6 +104,7 @@ int main(int argc, char **argv)
 {
     Options *options = options_create();
     ArgParser *arg_parser = arg_parser_create();
+    assert_not_null(arg_parser);
     arg_parser_parse(arg_parser, argc, argv);
 
     add_format_option(arg_parser, options);

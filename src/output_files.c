@@ -15,6 +15,7 @@ struct OutputFiles
 OutputFiles *output_files_create(const Options *const options)
 {
     OutputFiles *output_files = malloc(sizeof(OutputFiles));
+    assert_not_null(output_files);
     output_files->options = options;
     return output_files;
 }
@@ -54,7 +55,7 @@ bool output_files_save(
         full_path = malloc(strlen(output_dir) + 1 + strlen(vf_get_name(file)) + 1);
         if (!full_path)
         {
-            errno = ENOMEM;
+            log_warning(NULL);
         }
         else
         {
