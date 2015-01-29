@@ -33,6 +33,7 @@ bool output_files_save(
 {
     VirtualFile *file;
     char *full_path;
+    char *dir;
     FILE *fp;
     bool verbose = log_enabled(LOG_LEVEL_INFO);
 
@@ -51,41 +52,41 @@ bool output_files_save(
     {
 
         full_path = (char*)malloc(
-            strlen(output_files->output_dir) + 1 + strlen(vf_get_name(file)) + 1);
+            strlen(output_files->output_dir)
+            + 1
+            + strlen(vf_get_name(file)) + 1);
+        assert_not_null(full_path);
+        strcpy(full_path, output_files->output_dir);
+        strcat(full_path, "/");
+        strcat(full_path, vf_get_name(file));
 
-        if (!full_path)
+        if (verbose)
         {
-            log_warning(NULL);
+            printf("Saving to %s... ", full_path);
+            fflush(stdout);
+        }
+
+        dir = dirname(full_path);
+        assert_not_null(dir);
+        assert_that(mkpath(dirname(full_path)));
+        fp = fopen(full_path, "wb");
+        if (!fp)
+        {
+            log_warning("Failed to open file %s", full_path);
         }
         else
         {
-            strcpy(full_path, output_files->output_dir);
-            strcat(full_path, "/");
-            strcat(full_path, vf_get_name(file));
+            fwrite(vf_get_data(file), 1, vf_get_size(file), fp);
+            fclose(fp);
             if (verbose)
-            {
-                printf("Saving to %s... ", full_path);
-                fflush(stdout);
-            }
-            if (mkpath(output_files->output_dir))
-            {
-                fp = fopen(full_path, "wb");
-                if (!fp)
-                {
-                    errno = EIO;
-                    log_warning("Failed to open file %s", full_path);
-                }
-                else
-                {
-                    fwrite(vf_get_data(file), 1, vf_get_size(file), fp);
-                    fclose(fp);
-                    if (verbose)
-                        puts("ok");
-                    vf_destroy(file);
-                    return true;
-                }
-            }
+                puts("ok");
+            vf_destroy(file);
+            free(full_path);
+            free(dir);
+            return true;
         }
+        free(full_path);
+        free(dir);
     }
 
     //errors already reported with log_error and log_warn, no need to print \n
