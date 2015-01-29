@@ -12,13 +12,13 @@
 	#define assert_null(a) __assert_null(__FILE__, __LINE__, a)
 	#define assert_that(a) __assert_that(__FILE__, __LINE__, a)
 #else
-	#define assert_equali(a, b) ((void)0)
-	#define assert_equals(a, b) ((void)0)
-	#define assert_equalsn(a, b, n) ((void)0)
-	#define assert_equalp(a, b) ((void)0)
-	#define assert_not_null(a) ((void)0)
-	#define assert_null(a) ((void)0)
-	#define assert_that(a) ((void)0)
+	#define assert_equali(a, b) ((void)(a);(void)(b))
+	#define assert_equals(a, b) ((void)(a);(void)(b))
+	#define assert_equalsn(a, b, n) ((void)(a);(void)(b);(void)(n))
+	#define assert_equalp(a, b) ((void)(a);(void)(b))
+	#define assert_not_null(a) ((void)(a))
+	#define assert_null(a) ((void)(a))
+	#define assert_that(a) ((void)(a))
 #endif
 
 void __assert_equali(const char *file, int line, int expected, int actual);
