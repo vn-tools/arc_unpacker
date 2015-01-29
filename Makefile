@@ -58,7 +58,7 @@ TEST_BINARIES := $(TEST_SOURCES:$(TEST_SRC_DIR)/%.c=$(TEST_BIN_DIR)/%)
 .PHONY: tests
 tests: set_test_flags
 tests: $(TEST_BINARIES)
-	$^
+	$(foreach x,$(filter-out set_test_flags,$^),$(x);)
 
 $(TEST_BIN_DIR)/%: $(TEST_OBJ_DIR)/%.o $(OBJECTS)
 	@$(MKPATH) $(dir $@)
