@@ -127,7 +127,10 @@ IO *io_create_from_file(const char *path, const char *read_mode)
 {
     FILE *fp = fopen(path, read_mode);
     if (!fp)
+    {
+        log_error("Can\'t open file %s", path);
         return NULL;
+    }
     IO *io = (IO*)malloc(sizeof(IO));
     assert_not_null(io);
     io->file = fp;

@@ -12,10 +12,10 @@ static void log_text(FILE *out, const char *prefix, const char *buffer);
 
 static void log_text(FILE *out, const char *prefix, const char *buffer)
 {
-    if (buffer == NULL)
+    if (buffer == NULL || strcmp(buffer, "") == 0)
     {
         if (errno != 0)
-            fprintf(out, "%s: (%s)\n", prefix, strerror(errno));
+            fprintf(out, "%s: %s\n", prefix, strerror(errno));
     }
     else
     {

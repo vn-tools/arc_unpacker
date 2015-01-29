@@ -1,14 +1,12 @@
 Port old core classes:
 - InputFiles
 - FileDecoder
-- ArchiveFactory
 - FileFactory
 - Image (libpng)
 - Sound (raw)
 
 Add new necessary classes:
 - Zlib (de)compressor (lzlib)
-- ArchiveFormat
 - FileFormat
 
 Refactor:
