@@ -15,9 +15,9 @@ void test_file_simple_read()
 void test_file_simple_write()
 {
     IO *io = io_create_from_file("tests/test_files/trash.out", "w+b");
-    assert_that(io_write_u32(io, 1));
+    assert_that(io_write_u32_le(io, 1));
     io_seek(io, 0);
-    assert_equali(1, io_read_u32(io));
+    assert_equali(1, io_read_u32_le(io));
     assert_equali(4, io_size(io));
     io_destroy(io);
     remove("tests/test_files/trash.out");
@@ -35,18 +35,18 @@ void test_buffer_binary_data()
 {
     IO *io = io_create_from_buffer("\x00\x00\x00\x01", 4);
     assert_equali(4, io_size(io));
-    assert_equali(0x01000000, io_read_u32(io));
+    assert_equali(0x01000000, io_read_u32_le(io));
     io_seek(io, 0);
     io_write_string(io, "\x00\x00\x00\x02", 4);
     io_seek(io, 0);
-    assert_equali(0x02000000, io_read_u32(io));
+    assert_equali(0x02000000, io_read_u32_le(io));
     io_destroy(io);
 }
 
 void test_buffer_simple_read()
 {
     IO *io = io_create_from_buffer("\x01\x00\x00\x00", 4);
-    assert_equali(1, io_read_u32(io));
+    assert_equali(1, io_read_u32_le(io));
     assert_equali(4, io_size(io));
     io_destroy(io);
 }
@@ -54,9 +54,9 @@ void test_buffer_simple_read()
 void test_buffer_simple_write()
 {
     IO *io = io_create_from_buffer("", 0);
-    io_write_u32(io, 1);
+    io_write_u32_le(io, 1);
     io_seek(io, 0);
-    assert_equali(1, io_read_u32(io));
+    assert_equali(1, io_read_u32_le(io));
     assert_equali(4, io_size(io));
     io_destroy(io);
 }
@@ -66,7 +66,7 @@ void test_buffer_skip_and_tell()
     IO *io = io_create_from_buffer("\x01\x0f\x00\x00", 4);
     io_skip(io, 1);
     assert_equali(1, io_tell(io));
-    assert_equali(15, io_read_u16(io));
+    assert_equali(15, io_read_u16_le(io));
     assert_equali(3, io_tell(io));
     io_destroy(io);
 }
@@ -74,10 +74,10 @@ void test_buffer_skip_and_tell()
 void test_buffer_seek_and_tell()
 {
     IO *io = io_create_from_buffer("\x01\x00\x00\x00", 4);
-    assert_equali(1, io_read_u32(io));
+    assert_equali(1, io_read_u32_le(io));
     io_seek(io, 0);
     assert_equali(0, io_tell(io));
-    assert_equali(1, io_read_u32(io));
+    assert_equali(1, io_read_u32_le(io));
     io_seek(io, 2);
     assert_equali(2, io_tell(io));
     io_destroy(io);
@@ -112,6 +112,16 @@ void test_write_string()
     io_destroy(io);
 }
 
+void test_endianness()
+{
+    IO *io = io_create_from_buffer("\x12\x34\x56\x78", 4);
+    assert_equali(0x12, io_read_u8(io)); io_skip(io, -1);
+    assert_equali(0x3412, io_read_u16_le(io)); io_skip(io, -2);
+    assert_equali(0x1234, io_read_u16_be(io)); io_skip(io, -2);
+    assert_equali(0x78563412, io_read_u32_le(io)); io_skip(io, -4);
+    assert_equali(0x12345678, io_read_u32_be(io)); io_skip(io, -4);
+}
+
 int main(void)
 {
     test_file_simple_read();
@@ -125,5 +135,6 @@ int main(void)
     test_read_until_zero();
     test_read_string();
     test_write_string();
+    test_endianness();
     return 0;
 }

@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <endian.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -249,31 +250,58 @@ uint8_t io_read_u8(IO *io)
     return ret;
 }
 
-uint16_t io_read_u16(IO *io)
+uint16_t io_read_u16_le(IO *io)
 {
     uint16_t ret = 0;
     assert_not_null(io);
     assert_that(io->read != NULL);
     io->read(io, 2, &ret);
-    return ret;
+    return le16toh(ret);
 }
 
-uint32_t io_read_u32(IO *io)
+uint32_t io_read_u32_le(IO *io)
 {
     uint32_t ret = 0;
     assert_not_null(io);
     assert_that(io->read != NULL);
     io->read(io, 4, &ret);
-    return ret;
+    return le32toh(ret);
 }
 
-uint64_t io_read_u64(IO *io)
+uint64_t io_read_u64_le(IO *io)
 {
     uint64_t ret = 0;
     assert_not_null(io);
     assert_that(io->read != NULL);
     io->read(io, 8, &ret);
-    return ret;
+    return le64toh(ret);
+}
+
+uint16_t io_read_u16_be(IO *io)
+{
+    uint16_t ret = 0;
+    assert_not_null(io);
+    assert_that(io->read != NULL);
+    io->read(io, 2, &ret);
+    return be16toh(ret);
+}
+
+uint32_t io_read_u32_be(IO *io)
+{
+    uint32_t ret = 0;
+    assert_not_null(io);
+    assert_that(io->read != NULL);
+    io->read(io, 4, &ret);
+    return be32toh(ret);
+}
+
+uint64_t io_read_u64_be(IO *io)
+{
+    uint64_t ret = 0;
+    assert_not_null(io);
+    assert_that(io->read != NULL);
+    io->read(io, 8, &ret);
+    return be64toh(ret);
 }
 
 bool io_write_string(IO *io, const char *str, size_t length)
@@ -290,23 +318,50 @@ bool io_write_u8(IO *io, uint8_t value)
     return io->write(io, 1, &value);
 }
 
-bool io_write_u16(IO *io, uint16_t value)
+bool io_write_u16_le(IO *io, uint16_t value)
 {
     assert_not_null(io);
     assert_that(io->write != NULL);
+    value = le16toh(value);
     return io->write(io, 2, &value);
 }
 
-bool io_write_u32(IO *io, uint32_t value)
+bool io_write_u32_le(IO *io, uint32_t value)
 {
     assert_not_null(io);
     assert_that(io->write != NULL);
+    value = le32toh(value);
     return io->write(io, 4, &value);
 }
 
-bool io_write_u64(IO *io, uint64_t value)
+bool io_write_u64_le(IO *io, uint64_t value)
 {
     assert_not_null(io);
     assert_that(io->write != NULL);
+    value = le64toh(value);
+    return io->write(io, 8, &value);
+}
+
+bool io_write_u16_be(IO *io, uint16_t value)
+{
+    assert_not_null(io);
+    assert_that(io->write != NULL);
+    value = be16toh(value);
+    return io->write(io, 2, &value);
+}
+
+bool io_write_u32_be(IO *io, uint32_t value)
+{
+    assert_not_null(io);
+    assert_that(io->write != NULL);
+    value = be32toh(value);
+    return io->write(io, 4, &value);
+}
+
+bool io_write_u64_be(IO *io, uint64_t value)
+{
+    assert_not_null(io);
+    assert_that(io->write != NULL);
+    value = be64toh(value);
     return io->write(io, 8, &value);
 }
