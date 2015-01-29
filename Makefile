@@ -32,7 +32,7 @@ endif
 
 #General targets
 .PHONY: all
-all: release tests
+all: release debug tests
 
 .PHONY: release
 release: CFLAGS += $(CFLAGS_RELEASE)
