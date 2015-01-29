@@ -12,7 +12,6 @@ Add new necessary classes:
 - FileFormat
 
 Refactor:
-- Change Options to a non-dictionary or even remove it altogether
 - Decide on whitespace or tabs, damnit!
 
 Port old code for formats:

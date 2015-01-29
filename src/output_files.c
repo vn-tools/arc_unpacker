@@ -9,14 +9,14 @@
 
 struct OutputFiles
 {
-    const Options *options;
+    const char *output_dir;
 };
 
-OutputFiles *output_files_create(const Options *options)
+OutputFiles *output_files_create(const char *output_dir)
 {
     OutputFiles *output_files = (OutputFiles*)malloc(sizeof(OutputFiles));
     assert_not_null(output_files);
-    output_files->options = options;
+    output_files->output_dir = output_dir;
     return output_files;
 }
 
@@ -32,12 +32,12 @@ bool output_files_save(
     void *context)
 {
     VirtualFile *file;
-    const char *output_dir;
     char *full_path;
     FILE *fp;
     bool verbose = log_enabled(LOG_LEVEL_INFO);
 
     assert_not_null(output_files);
+    assert_not_null(output_files->output_dir);
     assert_that(save_proc != NULL);
 
     if (verbose)
@@ -49,11 +49,9 @@ bool output_files_save(
     file = save_proc(context);
     if (file != NULL)
     {
-        output_dir = options_get(output_files->options, "output_path");
-        assert_not_null(output_dir);
 
         full_path = (char*)malloc(
-            strlen(output_dir) + 1 + strlen(vf_get_name(file)) + 1);
+            strlen(output_files->output_dir) + 1 + strlen(vf_get_name(file)) + 1);
 
         if (!full_path)
         {
@@ -61,7 +59,7 @@ bool output_files_save(
         }
         else
         {
-            strcpy(full_path, output_dir);
+            strcpy(full_path, output_files->output_dir);
             strcat(full_path, "/");
             strcat(full_path, vf_get_name(file));
             if (verbose)
@@ -69,7 +67,7 @@ bool output_files_save(
                 printf("Saving to %s... ", full_path);
                 fflush(stdout);
             }
-            if (mkpath(output_dir))
+            if (mkpath(output_files->output_dir))
             {
                 fp = fopen(full_path, "wb");
                 if (!fp)

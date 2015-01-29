@@ -1,11 +1,10 @@
 #ifndef OUTPUT_FILES_H
 #define OUTPUT_FILES_H
-#include "options.h"
 #include "virtual_file.h"
 
 typedef struct OutputFiles OutputFiles;
 
-OutputFiles *output_files_create(const Options *options);
+OutputFiles *output_files_create();
 
 void output_files_destroy(OutputFiles *output_files);
 
