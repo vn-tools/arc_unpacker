@@ -227,7 +227,7 @@ char *io_read_until_zero(IO *io)
     assert_not_null(io);
     do
     {
-        new_str = (char*)realloc(str, length);
+        new_str = (char*)realloc(str, length + 1);
         if (!new_str)
         {
             free(str);
