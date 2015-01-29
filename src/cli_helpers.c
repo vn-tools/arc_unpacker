@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "assert.h"
+#include "logger.h"
 #include "cli_helpers.h"
 
 void cli_add_quiet_option(ArgParser *arg_parser, Options *options)
@@ -10,26 +11,19 @@ void cli_add_quiet_option(ArgParser *arg_parser, Options *options)
         "-q, --quiet",
         "Suppresses output.");
 
+    options_set(options, "verbosity", "normal");
+    log_enable(LOG_LEVEL_WARNING);
+    log_enable(LOG_LEVEL_ERROR);
+
     if (arg_parser_has_flag(arg_parser, "-q")
         || arg_parser_has_flag(arg_parser, "--quiet"))
     {
         options_set(options, "verbosity", "quiet");
+        log_disable(LOG_LEVEL_INFO);
     }
-}
-
-void cli_add_verbose_option(ArgParser *arg_parser, Options *options)
-{
-    assert_not_null(arg_parser);
-    arg_parser_add_help(
-        arg_parser,
-        "-v, --verbose",
-        "Shows additional debug information>");
-
-    options_set(options, "verbosity", "normal");
-    if (arg_parser_has_flag(arg_parser, "-v")
-        || arg_parser_has_flag(arg_parser, "--verbose"))
+    else
     {
-        options_set(options, "verbosity", "verbose");
+        log_enable(LOG_LEVEL_INFO);
     }
 }
 

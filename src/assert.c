@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include "logger.h"
 #include "assert.h"
 
 static void fail(char *file, int line, char *format, ...)
@@ -13,7 +14,7 @@ static void fail(char *file, int line, char *format, ...)
     vsnprintf(buffer, sizeof buffer, format, args);
     va_end(args);
 
-    fprintf(stderr, "%s\n  in %s:%d\n\n", buffer, file, line);
+    log_error("%s in %s:%d", buffer, file, line);
     abort();
 }
 

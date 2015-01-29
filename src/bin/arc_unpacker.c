@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,6 +6,7 @@
 #include "cli_helpers.h"
 #include "options.h"
 #include "output_files.h"
+#include "logger.h"
 #include "virtual_file.h"
 
 static char *get_default_output_path(char *input_path)
@@ -35,7 +37,8 @@ static void add_path_options(ArgParser *arg_parser, Options *options)
     Array *stray = arg_parser_get_stray(arg_parser);
     if (array_size(stray) < 2)
     {
-        fprintf(stderr, "Required more arguments.\n");
+        errno = EINVAL;
+        log_error("Required more arguments.");
         exit(1);
     }
 
@@ -104,7 +107,6 @@ int main(int argc, char **argv)
 
     add_format_option(arg_parser, options);
     cli_add_quiet_option(arg_parser, options);
-    cli_add_verbose_option(arg_parser, options);
     cli_add_help_option(arg_parser);
 
     if (cli_should_show_help(arg_parser))

@@ -1,21 +1,11 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "assert.h"
-#include "errno.h"
-#include "output_files.h"
 #include "fs.h"
-
-static bool is_quiet(const Options *const options);
-
-static bool is_quiet(const Options *const options)
-{
-    const char *verbosity = options_get(options, "verbosity");
-    assert_not_null(verbosity);
-    return strcmp(verbosity, "quiet") == 0;
-}
-
-
+#include "logger.h"
+#include "output_files.h"
 
 struct OutputFiles
 {
@@ -41,17 +31,19 @@ bool output_files_save(
     void *context)
 {
     VirtualFile *file;
-    bool quiet;
     const char *output_dir;
     char *full_path;
     FILE *fp;
+    bool verbose = log_enabled(LOG_LEVEL_INFO);
 
     assert_not_null(output_files);
     assert_that(save_proc != NULL);
-    quiet = is_quiet(output_files->options);
 
-    if (!quiet)
+    if (verbose)
+    {
         printf("Extracting... ");
+        fflush(stdout);
+    }
 
     file = save_proc(context);
     if (file != NULL)
@@ -69,22 +61,25 @@ bool output_files_save(
             strcpy(full_path, output_dir);
             strcat(full_path, "/");
             strcat(full_path, vf_get_name(file));
-            if (!quiet)
+            if (verbose)
+            {
                 printf("Saving to %s... ", full_path);
+                fflush(stdout);
+            }
             if (mkpath(output_dir))
             {
                 fp = fopen(full_path, "wb");
                 if (!fp)
                 {
                     errno = EIO;
-                    warn("Failed to open file %s: %s\n", full_path, strerror(errno));
+                    log_warning("Failed to open file %s", full_path);
                 }
                 else
                 {
                     fwrite(vf_get_data(file), 1, vf_get_size(file), fp);
                     fclose(fp);
-                    if (!quiet)
-                        printf("ok\n");
+                    if (verbose)
+                        puts("ok");
                     vf_destroy(file);
                     return true;
                 }
@@ -92,7 +87,7 @@ bool output_files_save(
         }
     }
 
-    printf("error (%s)\n", strerror(errno));
+    //errors already reported with log_error and log_warn, no need to print \n
     vf_destroy(file);
     return false;
 }

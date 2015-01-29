@@ -1,9 +1,9 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <err.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "fs.h"
+#include "logger.h"
 
 bool mkpath(const char *path)
 {
@@ -26,13 +26,13 @@ bool mkpath(const char *path)
             if (errno != ENOENT)
             {
                 *slash = '/';
-                warn("Failed to stat path %s: %s\n", path, strerror(errno));
+                log_warning("Failed to stat path %s", path);
                 return false;
             }
             if (mkdir(path, 0755) != 0)
             {
                 *slash = '/';
-                warn("Failed to create directory %s: %s\n", path, strerror(errno));
+                log_warning("Failed to create directory %s", path);
                 return false;
             }
         }
@@ -40,7 +40,7 @@ bool mkpath(const char *path)
         {
             *slash = '/';
             errno = EEXIST;
-            warn("Failed to create directory %s: %s\n", path, strerror(errno));
+            log_warning("Failed to create directory %s", path);
             return false;
         }
 
