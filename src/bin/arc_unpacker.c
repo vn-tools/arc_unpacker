@@ -10,10 +10,12 @@
 #include "output_files.h"
 #include "virtual_file.h"
 
-static char *get_default_output_path(char *input_path)
+static char *get_default_output_path(const char *input_path)
 {
     char *output_path = strdup(input_path);
-    output_path = realloc(output_path, strlen(output_path) + 1);
+    assert_not_null(output_path);
+    output_path = (char*)realloc(output_path, strlen(output_path) + 1);
+    assert_not_null(output_path);
     strcat(output_path, "~");
     return output_path;
 }
@@ -43,13 +45,16 @@ static void add_path_options(ArgParser *arg_parser, Options *options)
         exit(1);
     }
 
-    options_set(options, "input_path", array_get(stray, 1));
+    options_set(options, "input_path", (const char*)array_get(stray, 1));
     options_set(options, "output_path", array_size(stray) == 2
-        ? get_default_output_path(array_get(stray, 1))
-        : array_get(stray, 2));
+        ? get_default_output_path((const char*)array_get(stray, 1))
+        : (const char*)array_get(stray, 2));
 }
 
-static void print_help(char *path_to_self, ArgParser *arg_parser, Options *options)
+static void print_help(
+    const char *path_to_self,
+    ArgParser *arg_parser,
+    Options *options)
 {
     printf("Usage: %s [options [arc_options] input_path [output_path]\n",
         path_to_self);
@@ -100,7 +105,7 @@ static void run(Options *options)
     output_files_destroy(output_files);
 }
 
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
     Options *options = options_create();
     ArgParser *arg_parser = arg_parser_create();

@@ -8,7 +8,7 @@ bool convert(
     size_t input_size,
     char **output,
     size_t *output_size,
-    const char *const from,
-    const char *const to);
+    const char *from,
+    const char *to);
 
 #endif

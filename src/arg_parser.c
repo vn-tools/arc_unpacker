@@ -5,15 +5,15 @@
 #include "assert.h"
 #include "key_value.h"
 
-static bool is_alphanumeric(char *string);
+static bool is_alphanumeric(const char *string);
 
-static bool get_switch(char *argument, char **key, char **value);
+static bool get_switch(const char *argument, char **key, char **value);
 
-static bool get_flag(char *argument, char **value);
+static bool get_flag(const char *argument, char **value);
 
-static Array *create_words(char *sentence);
+static Array *create_words(const char *sentence);
 
-static bool is_alphanumeric(char *string)
+static bool is_alphanumeric(const char *string)
 {
     unsigned int i;
     for (i = 0; i < strlen(string); i ++)
@@ -25,7 +25,7 @@ static bool is_alphanumeric(char *string)
     return true;
 }
 
-static bool get_switch(char *argument, char **key, char **value)
+static bool get_switch(const char *argument, char **key, char **value)
 {
     char *value_ptr = NULL;
 
@@ -53,7 +53,7 @@ static bool get_switch(char *argument, char **key, char **value)
     return true;
 }
 
-static bool get_flag(char *argument, char **value)
+static bool get_flag(const char *argument, char **value)
 {
     assert_not_null(argument);
 
@@ -71,12 +71,12 @@ static bool get_flag(char *argument, char **value)
     return true;
 }
 
-static Array *create_words(char *sentence)
+static Array *create_words(const char *sentence)
 {
     Array *words;
     size_t i = 0;
-    char *word = sentence;
-    char *next_word;
+    const char *word = sentence;
+    const char *next_word;
 
     assert_not_null(sentence);
 
@@ -84,7 +84,8 @@ static Array *create_words(char *sentence)
     next_word = strpbrk(word, " ");
     while (next_word != NULL)
     {
-        array_set(words, i, strndup(word, next_word - word));
+        char *new_word = strndup(word, next_word - word);
+        array_set(words, i, new_word);
         word = next_word + 1;
         next_word = strpbrk(word, " ");
         i ++;
@@ -105,7 +106,7 @@ struct ArgParser
 
 ArgParser *arg_parser_create()
 {
-    ArgParser *arg_parser = malloc(sizeof(ArgParser));
+    ArgParser *arg_parser = (ArgParser*)malloc(sizeof(ArgParser));
     assert_not_null(arg_parser);
     arg_parser->flags = linked_list_create();
     arg_parser->switches = linked_list_create();
@@ -158,9 +159,10 @@ void arg_parser_destroy(ArgParser *arg_parser)
     free(arg_parser);
 }
 
-void arg_parser_parse(ArgParser *arg_parser, int argc, char **argv)
+void arg_parser_parse(ArgParser *arg_parser, int argc, const char **argv)
 {
-    char *arg, *key, *value;
+    const char *arg;
+    char *key, *value;
     int i;
 
     assert_not_null(argv);
@@ -200,14 +202,14 @@ void arg_parser_clear_help(ArgParser *arg_parser)
 
 void arg_parser_add_help(
     ArgParser *arg_parser,
-    char *invocation,
-    char *description)
+    const char *invocation,
+    const char *description)
 {
     assert_not_null(arg_parser);
     assert_not_null(invocation);
     assert_not_null(description);
 
-    KeyValue *kv = key_value_create(invocation, description);
+    KeyValue *kv = key_value_create((void*)invocation, (void*)description);
     linked_list_add(arg_parser->help_items, kv);
 }
 
@@ -243,7 +245,7 @@ char *arg_parser_get_switch(ArgParser *arg_parser, const char *key)
     {
         linked_list_advance(arg_parser->switches);
         if (strcmp((char*)kv->key, key) == 0)
-            return kv->value;
+            return (char*)kv->value;
     }
     return NULL;
 }
@@ -278,12 +280,13 @@ void arg_parser_print_help(ArgParser *arg_parser)
 {
     const size_t max_invocation_length = 25;
     const size_t max_line_length = 78;
-    void *item;
-    char *invocation, *description;
+    const char *invocation, *description;
     char *word;
+    void *item;
     size_t i, j;
     size_t tmp_length;
     KeyValue *kv;
+    bool first_word;
 
     assert_not_null(arg_parser);
 
@@ -299,8 +302,8 @@ void arg_parser_print_help(ArgParser *arg_parser)
         linked_list_advance(arg_parser->help_items);
 
         kv = (KeyValue*) item;
-        invocation = kv->key;
-        description = kv->value;
+        invocation = (const char*)kv->key;
+        description = (const char*)kv->value;
 
         tmp_length = strlen(invocation);
         if (strlen(invocation) >= 2 && strncmp(invocation, "--", 2) == 0)
@@ -315,10 +318,10 @@ void arg_parser_print_help(ArgParser *arg_parser)
 
         //word wrap
         Array *words = create_words(description);
-        bool first_word = true;
+        first_word = true;
         for (i = 0; i < array_size(words); i ++)
         {
-            word = array_get(words, i);
+            word = (char*)array_get(words, i);
             tmp_length += strlen(word);
             if (!first_word && tmp_length > max_line_length)
             {

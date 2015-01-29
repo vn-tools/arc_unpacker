@@ -95,7 +95,7 @@ static bool buffer_io_write(IO *io, size_t length, void *source)
     assert_not_null(io);
     if (io->buffer_pos + length > io->buffer_size)
     {
-        destination = realloc(io->buffer, io->buffer_pos + length);
+        destination = (char*)realloc(io->buffer, io->buffer_pos + length);
         if (!destination)
         {
             log_error(NULL);
@@ -123,12 +123,12 @@ static size_t buffer_io_size(IO *io)
 
 
 
-IO *io_create_from_file(const char *const path, const char *const read_mode)
+IO *io_create_from_file(const char *path, const char *read_mode)
 {
     FILE *fp = fopen(path, read_mode);
     if (!fp)
         return NULL;
-    IO *io = malloc(sizeof(IO));
+    IO *io = (IO*)malloc(sizeof(IO));
     assert_not_null(io);
     io->file = fp;
     io->buffer = NULL;
@@ -144,10 +144,10 @@ IO *io_create_from_file(const char *const path, const char *const read_mode)
 
 IO *io_create_from_buffer(const char *buffer, size_t buffer_size)
 {
-    IO *io = malloc(sizeof(IO));
+    IO *io = (IO*)malloc(sizeof(IO));
     assert_not_null(io);
     io->file = NULL;
-    io->buffer = malloc(buffer_size);
+    io->buffer = (char*)malloc(buffer_size);
     assert_not_null(io->buffer);
     memcpy(io->buffer, buffer, buffer_size);
     io->buffer_pos = 0;
@@ -202,7 +202,7 @@ char *io_read_string(IO *io, size_t length)
     char *str;
     assert_not_null(io);
     assert_that(io->read != NULL);
-    str = malloc(length + 1);
+    str = (char*)malloc(length + 1);
     if (!str)
     {
         log_error(NULL);
@@ -222,7 +222,7 @@ char *io_read_until_zero(IO *io)
     assert_not_null(io);
     do
     {
-        new_str = realloc(str, length);
+        new_str = (char*)realloc(str, length);
         if (!new_str)
         {
             free(str);
@@ -273,11 +273,11 @@ uint64_t io_read_u64(IO *io)
     return ret;
 }
 
-bool io_write_string(IO *io, char *str, size_t length)
+bool io_write_string(IO *io, const char *str, size_t length)
 {
     assert_not_null(io);
     assert_that(io->write != NULL);
-    return io->write(io, length, str);
+    return io->write(io, length, (void*)str);
 }
 
 bool io_write_u8(IO *io, uint8_t value)

@@ -1,7 +1,7 @@
 #include <string.h>
 #include "string_ext.h"
 
-void trim_right(char *target, char *chars)
+void trim_right(char *target, const char *chars)
 {
     char *end = target + strlen(target) - 1;
     while (end >= target && strchr(chars, *end) != NULL)

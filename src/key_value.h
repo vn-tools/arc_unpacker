@@ -9,6 +9,6 @@ typedef struct
 
 KeyValue *key_value_create(void *key, void *value);
 
-void key_value_destroy(KeyValue *const kv);
+void key_value_destroy(KeyValue *kv);
 
 #endif

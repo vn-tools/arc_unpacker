@@ -46,7 +46,7 @@ void log_disable(LogLevel level)
     levels_enabled[level] = false;
 }
 
-void log_error(char *format, ...)
+void log_error(const char *format, ...)
 {
     va_list args;
     if (!levels_enabled[LOG_LEVEL_ERROR])
@@ -59,7 +59,7 @@ void log_error(char *format, ...)
     log_text(stderr, "Error", buffer);
 }
 
-void log_warning(char *format, ...)
+void log_warning(const char *format, ...)
 {
     va_list args;
     if (!levels_enabled[LOG_LEVEL_WARNING])
@@ -72,7 +72,7 @@ void log_warning(char *format, ...)
     log_text(stderr, "Warning", buffer);
 }
 
-void log_info(char *format, ...)
+void log_info(const char *format, ...)
 {
     va_list args;
     if (!levels_enabled[LOG_LEVEL_INFO])

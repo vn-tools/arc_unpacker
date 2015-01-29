@@ -14,7 +14,7 @@ void test_switch_missing()
 void test_switch_is_not_a_flag()
 {
     ArgParser *ap = arg_parser_create();
-    char *argv[1] = {"-f"};
+    const char *argv[1] = {"-f"};
     arg_parser_parse(ap, 1, argv);
     assert_null(arg_parser_get_switch(ap, "-f"));
     assert_that(!arg_parser_has_switch(ap, "-f"));
@@ -24,7 +24,7 @@ void test_switch_is_not_a_flag()
 void test_switch_short()
 {
     ArgParser *ap = arg_parser_create();
-    char *argv[1] = {"-s=short"};
+    const char *argv[1] = {"-s=short"};
     arg_parser_parse(ap, 1, argv);
     assert_equals("short", arg_parser_get_switch(ap, "-s"));
     assert_equals("short", arg_parser_get_switch(ap, "s"));
@@ -36,7 +36,7 @@ void test_switch_short()
 void test_switch_long()
 {
     ArgParser *ap = arg_parser_create();
-    char *argv[1] = {"--long=long"};
+    const char *argv[1] = {"--long=long"};
     arg_parser_parse(ap, 1, argv);
     assert_equals("long", arg_parser_get_switch(ap, "--long"));
     assert_equals("long", arg_parser_get_switch(ap, "-long"));
@@ -50,7 +50,7 @@ void test_switch_long()
 void test_switch_overriding_short()
 {
     ArgParser *ap = arg_parser_create();
-    char *argv[2] = {"-s=short1", "-s=short2"};
+    const char *argv[2] = {"-s=short1", "-s=short2"};
     arg_parser_parse(ap, 2, argv);
     assert_equals("short2", arg_parser_get_switch(ap, "-s"));
     arg_parser_destroy(ap);
@@ -59,7 +59,7 @@ void test_switch_overriding_short()
 void test_switch_overriding_long()
 {
     ArgParser *ap = arg_parser_create();
-    char *argv[2] = {"--long=long1", "--long=long2"};
+    const char *argv[2] = {"--long=long1", "--long=long2"};
     arg_parser_parse(ap, 2, argv);
     assert_equals("long2", arg_parser_get_switch(ap, "--long"));
     arg_parser_destroy(ap);
@@ -68,7 +68,7 @@ void test_switch_overriding_long()
 void test_switch_with_space()
 {
     ArgParser *ap = arg_parser_create();
-    char *argv[1] = {"--switch=long switch"};
+    const char *argv[1] = {"--switch=long switch"};
     arg_parser_parse(ap, 1, argv);
     assert_equals("long switch", arg_parser_get_switch(ap, "--switch"));
     arg_parser_destroy(ap);
@@ -77,7 +77,7 @@ void test_switch_with_space()
 void test_switch_empty_value()
 {
     ArgParser *ap = arg_parser_create();
-    char *argv[1] = {"--switch="};
+    const char *argv[1] = {"--switch="};
     arg_parser_parse(ap, 1, argv);
     assert_equals("", arg_parser_get_switch(ap, "--switch"));
     arg_parser_destroy(ap);
@@ -93,7 +93,7 @@ void test_flag_missing()
 void test_flag()
 {
     ArgParser *ap = arg_parser_create();
-    char *argv[1] = {"--flag"};
+    const char *argv[1] = {"--flag"};
     arg_parser_parse(ap, 1, argv);
     assert_that(arg_parser_has_flag(ap, "flag"));
     arg_parser_destroy(ap);
@@ -102,12 +102,12 @@ void test_flag()
 void test_flag_mixed_with_stray()
 {
     ArgParser *ap = arg_parser_create();
-    char *argv[2] = {"--flag", "stray"};
+    const char *argv[2] = {"--flag", "stray"};
     arg_parser_parse(ap, 2, argv);
     assert_that(arg_parser_has_flag(ap, "flag"));
     Array *stray = arg_parser_get_stray(ap);
     assert_equali(1, array_size(stray));
-    assert_equals("stray", array_get(stray, 0));
+    assert_equals("stray", (const char*)array_get(stray, 0));
     arg_parser_destroy(ap);
 }
 
@@ -122,30 +122,30 @@ void test_stray_missing()
 void test_stray()
 {
     ArgParser *ap = arg_parser_create();
-    char *argv[2] = {"stray1", "stray2"};
+    const char *argv[2] = {"stray1", "stray2"};
     arg_parser_parse(ap, 2, argv);
     Array *stray = arg_parser_get_stray(ap);
     assert_equali(2, array_size(stray));
-    assert_equals("stray1", array_get(stray, 0));
-    assert_equals("stray2", array_get(stray, 1));
+    assert_equals("stray1", (const char*)array_get(stray, 0));
+    assert_equals("stray2", (const char*)array_get(stray, 1));
     arg_parser_destroy(ap);
 }
 
 void test_stray_with_space()
 {
     ArgParser *ap = arg_parser_create();
-    char *argv[1] = {"long stray"};
+    const char *argv[1] = {"long stray"};
     arg_parser_parse(ap, 1, argv);
     Array *stray = arg_parser_get_stray(ap);
     assert_equali(1, array_size(stray));
-    assert_equals("long stray", array_get(stray, 0));
+    assert_equals("long stray", (const char*)array_get(stray, 0));
     arg_parser_destroy(ap);
 }
 
 void test_mixed_types()
 {
     ArgParser *ap = arg_parser_create();
-    char *argv[5] = {"stray1", "--switch=s", "--flag1", "stray2", "--flag2"};
+    const char *argv[5] = {"stray1", "--switch=s", "--flag1", "stray2", "--flag2"};
     arg_parser_parse(ap, 5, argv);
 
     assert_equals("s", arg_parser_get_switch(ap, "--switch"));
@@ -154,8 +154,8 @@ void test_mixed_types()
 
     Array *stray = arg_parser_get_stray(ap);
     assert_equali(2, array_size(stray));
-    assert_equals("stray1", array_get(stray, 0));
-    assert_equals("stray2", array_get(stray, 1));
+    assert_equals("stray1", (const char*)array_get(stray, 0));
+    assert_equals("stray2", (const char*)array_get(stray, 1));
 
     arg_parser_destroy(ap);
 }

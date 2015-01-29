@@ -11,7 +11,7 @@ struct Array
 
 Array *array_create()
 {
-    Array *array = malloc(sizeof(Array));
+    Array *array = (Array*)malloc(sizeof(Array));
     assert_not_null(array);
     array->size = 0;
     array->items = NULL;
@@ -41,13 +41,13 @@ void *array_get(Array *array, size_t index)
 
 bool array_set(Array *array, size_t index, void *data)
 {
-    void *new_items;
+    void **new_items;
     size_t new_size;
     assert_not_null(array);
     if (index >= array->size)
     {
         new_size = index + 1;
-        new_items = realloc(array->items, sizeof(void*) * new_size);
+        new_items = (void**)realloc(array->items, sizeof(void*) * new_size);
         if (!new_items)
             return false;
         array->items = new_items;

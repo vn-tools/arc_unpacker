@@ -5,7 +5,7 @@
 
 typedef struct OutputFiles OutputFiles;
 
-OutputFiles *output_files_create(const Options *const options);
+OutputFiles *output_files_create(const Options *options);
 
 void output_files_destroy(OutputFiles *output_files);
 

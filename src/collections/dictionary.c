@@ -14,7 +14,7 @@ struct Dictionary
 
 Dictionary *dictionary_create()
 {
-    Dictionary *dictionary = malloc(sizeof(Dictionary));
+    Dictionary *dictionary = (Dictionary*)malloc(sizeof(Dictionary));
     assert_not_null(dictionary);
     dictionary->linked_list = linked_list_create();
     return dictionary;
@@ -44,7 +44,7 @@ void dictionary_set(
     linked_list_reset(dictionary->linked_list);
     while ((kv = (KeyValue*)linked_list_get(dictionary->linked_list)) != NULL)
     {
-        if (strcmp(kv->key, key) == 0)
+        if (strcmp((const char*)kv->key, key) == 0)
         {
             kv->value = (void*)value;
             return;
@@ -64,7 +64,7 @@ const void *dictionary_get(
     linked_list_reset(dictionary->linked_list);
     while ((kv = (KeyValue*)linked_list_get(dictionary->linked_list)) != NULL)
     {
-        if (strcmp(kv->key, key) == 0)
+        if (strcmp((const char*)kv->key, key) == 0)
             return kv->value;
         linked_list_advance(dictionary->linked_list);
     }
@@ -80,7 +80,7 @@ bool dictionary_has_key(
     linked_list_reset(dictionary->linked_list);
     while ((kv = (KeyValue*)linked_list_get(dictionary->linked_list)) != NULL)
     {
-        if (strcmp(kv->key, key) == 0)
+        if (strcmp((const char*)kv->key, key) == 0)
             return true;
         linked_list_advance(dictionary->linked_list);
     }

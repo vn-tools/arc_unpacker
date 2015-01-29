@@ -4,14 +4,14 @@
 
 KeyValue *key_value_create(void *key, void *value)
 {
-    KeyValue *kv = malloc(sizeof(KeyValue));
+    KeyValue *kv = (KeyValue*)malloc(sizeof(KeyValue));
     assert_not_null(kv);
     kv->key = key;
     kv->value = value;
     return kv;
 }
 
-void key_value_destroy(KeyValue *const kv)
+void key_value_destroy(KeyValue *kv)
 {
     free(kv);
 }

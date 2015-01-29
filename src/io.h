@@ -6,7 +6,7 @@
 
 typedef struct IO IO;
 
-IO *io_create_from_file(const char *const path, const char *const read_mode);
+IO *io_create_from_file(const char *path, const char *read_mode);
 IO *io_create_from_buffer(const char *buffer, size_t buffer_size);
 void io_destroy(IO *io);
 
@@ -22,7 +22,7 @@ uint16_t io_read_u16(IO *io);
 uint32_t io_read_u32(IO *io);
 uint64_t io_read_u64(IO *io);
 
-bool io_write_string(IO *io, char *str, size_t length);
+bool io_write_string(IO *io, const char *str, size_t length);
 bool io_write_u8(IO *io, uint8_t value);
 bool io_write_u16(IO *io, uint16_t value);
 bool io_write_u32(IO *io, uint32_t value);

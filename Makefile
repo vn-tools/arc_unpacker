@@ -18,7 +18,7 @@ STRIP    = /usr/bin/strip
 LFLAGS         = -Wall -Wextra -pedantic
 LFLAGS_DEBUG   =
 LFLAGS_RELEASE =
-CFLAGS         = -Wall -Wextra -pedantic -std=gnu99 -I$(SRC_DIR)
+CFLAGS         = -Wall -Wextra -pedantic -Wwrite-strings -Wsuggest-attribute=const -Wunused -Wc++-compat -std=gnu99 -I$(SRC_DIR)
 CFLAGS_DEBUG   = -ggdb -DENABLE_ASSERT
 CFLAGS_RELEASE = -Os
 

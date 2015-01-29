@@ -9,8 +9,8 @@ int convert(
     size_t input_size,
     char **output,
     size_t *output_size,
-    const char *const from,
-    const char *const to)
+    const char *from,
+    const char *to)
 {
     assert_not_null(input);
     assert_not_null(output);
@@ -32,7 +32,7 @@ int convert(
     while (1)
     {
         output_old = *output;
-        output_new = realloc(*output, *output_size);
+        output_new = (char*)realloc(*output, *output_size);
         if (!output_new)
         {
             log_error(NULL);

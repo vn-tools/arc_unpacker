@@ -12,9 +12,9 @@ struct OutputFiles
     const Options *options;
 };
 
-OutputFiles *output_files_create(const Options *const options)
+OutputFiles *output_files_create(const Options *options)
 {
-    OutputFiles *output_files = malloc(sizeof(OutputFiles));
+    OutputFiles *output_files = (OutputFiles*)malloc(sizeof(OutputFiles));
     assert_not_null(output_files);
     output_files->options = options;
     return output_files;
@@ -52,7 +52,9 @@ bool output_files_save(
         output_dir = options_get(output_files->options, "output_path");
         assert_not_null(output_dir);
 
-        full_path = malloc(strlen(output_dir) + 1 + strlen(vf_get_name(file)) + 1);
+        full_path = (char*)malloc(
+            strlen(output_dir) + 1 + strlen(vf_get_name(file)) + 1);
+
         if (!full_path)
         {
             log_warning(NULL);

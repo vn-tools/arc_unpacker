@@ -15,11 +15,11 @@ void options_destroy(Options *options);
 
 void options_set(
     Options *options,
-    const char *const key,
-    const char *const value);
+    const char *key,
+    const char *value);
 
 const char *options_get(
-    const Options *const options,
-    const char *const key);
+    const Options *options,
+    const char *key);
 
 #endif

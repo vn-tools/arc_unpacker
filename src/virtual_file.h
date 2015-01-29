@@ -13,7 +13,7 @@ size_t vf_get_size(VirtualFile *file);
 char *vf_get_name(VirtualFile *file);
 void vf_change_extension(VirtualFile *file, const char *new_extension);
 
-bool vf_set_name(VirtualFile *file, const char *const new_name);
-bool vf_set_data(VirtualFile *file, const char *const new_data, size_t length);
+bool vf_set_name(VirtualFile *file, const char *new_name);
+bool vf_set_data(VirtualFile *file, const char *new_data, size_t length);
 
 #endif

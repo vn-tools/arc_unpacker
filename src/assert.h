@@ -21,31 +21,31 @@
 	#define assert_that(a) ((void)0)
 #endif
 
-void __assert_equali(char *file, int line, int expected, int actual);
+void __assert_equali(const char *file, int line, int expected, int actual);
 
 void __assert_equals(
-    char *file,
+    const char *file,
     int line,
-    const char *const expected,
-    const char *const actual);
+    const char *expected,
+    const char *actual);
 
 void __assert_equalsn(
-    char *file,
+    const char *file,
     int line,
-    const char *const expected,
-    const char *const actual,
+    const char *expected,
+    const char *actual,
     size_t size);
 
 void __assert_equalp(
-    char *file,
+    const char *file,
     int line,
-    const void *const expected,
-    const void *const actual);
+    const void *expected,
+    const void *actual);
 
-void __assert_not_null(char *file, int line, const void *const a);
+void __assert_not_null(const char *file, int line, const void *a);
 
-void __assert_null(char *file, int line, const void *const a);
+void __assert_null(const char *file, int line, const void *a);
 
-void __assert_that(char *file, int line, bool expected);
+void __assert_that(const char *file, int line, bool expected);
 
 #endif

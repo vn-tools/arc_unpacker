@@ -21,7 +21,7 @@ bool mkpath(const char *path)
         slash += strspn(slash, "/\\");
         done = (*slash == '\0');
 
-        dir_path = malloc(slash + 2 - path);
+        dir_path = (char*)malloc(slash + 2 - path);
         if (!dir_path)
         {
             log_error(NULL);

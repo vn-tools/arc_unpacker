@@ -13,15 +13,15 @@ void options_destroy(Options *options)
 
 void options_set(
     Options *options,
-    const char *const key,
-    const char *const value)
+    const char *key,
+    const char *value)
 {
-    dictionary_set(options, key, value);
+    dictionary_set(options, key, (void*)value);
 }
 
 const char *options_get(
-    const Options *const options,
-    const char *const key)
+    const Options *options,
+    const char *key)
 {
-    return dictionary_get(options, key);
+    return (const char*)dictionary_get(options, key);
 }

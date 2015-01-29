@@ -14,8 +14,8 @@ bool log_enabled(LogLevel level);
 void log_enable(LogLevel level);
 void log_disable(LogLevel level);
 
-void log_error(char *format, ...);
-void log_warning(char *format, ...);
-void log_info(char *format, ...);
+void log_error(const char *format, ...);
+void log_warning(const char *format, ...);
+void log_info(const char *format, ...);
 
 #endif
