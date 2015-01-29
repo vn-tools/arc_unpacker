@@ -21,11 +21,9 @@ typedef struct
 
 static char *get_default_output_path(const char *input_path)
 {
-    char *output_path = strdup(input_path);
+    char *output_path = (char*)malloc(strlen(input_path) + 2);
     assert_not_null(output_path);
-    output_path = (char*)realloc(output_path, strlen(output_path) + 1);
-    assert_not_null(output_path);
-    strcat(output_path, "~");
+    sprintf(output_path, "%s~", input_path);
     return output_path;
 }
 

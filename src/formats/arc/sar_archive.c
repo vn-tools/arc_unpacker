@@ -1,45 +1,89 @@
-#include <errno.h>
+#include <stdlib.h>
 #include "formats/arc/sar_archive.h"
 #include "assert.h"
 #include "logger.h"
 
-static bool unpack(Archive *archive, IO *archive_file, OutputFiles *output_files);
-
-static void add_cli_help(Archive *archive, ArgParser *arg_parser)
+typedef struct
 {
-    assert_not_null(archive);
-    assert_not_null(arg_parser);
-    log_info("Adding help...");
+    const char *name;
+    uint32_t offset;
+    uint32_t size;
+} TableEntry;
+
+typedef struct
+{
+    IO *io;
+    TableEntry *table_entry;
+} Context;
+
+static VirtualFile *read_file(void *_context)
+{
+    VirtualFile *vf = vf_create();
+    Context *context = (Context*)_context;
+    io_seek(context->io, context->table_entry->offset);
+    char *data = io_read_string(context->io, context->table_entry->size);
+    assert_not_null(data);
+    vf_set_data(vf, data, context->table_entry->size);
+    vf_set_name(vf, context->table_entry->name);
+    free(data);
+    return vf;
 }
 
-static void parse_cli_options(Archive *archive, ArgParser *arg_parser)
+static bool unpack(Archive *archive, IO *io, OutputFiles *output_files)
 {
-    assert_not_null(archive);
-    assert_not_null(arg_parser);
-    log_info("Parsing CLI options...");
-}
+    TableEntry **table;
+    size_t i, j;
 
-static void cleanup(Archive *archive)
-{
     assert_not_null(archive);
-    log_info("Cleanup...");
-}
-
-static bool unpack(Archive *archive, IO *archive_file, OutputFiles *output_files)
-{
-    assert_not_null(archive);
-    assert_not_null(archive_file);
+    assert_not_null(io);
     assert_not_null(output_files);
-    log_info("Unpacking...");
+
+    uint16_t num_files = io_read_u16_be(io);
+    uint32_t offset_to_files = io_read_u32_be(io);
+    if (offset_to_files > io_size(io))
+    {
+        log_error("Bad offset to files");
+        return false;
+    }
+
+    table = (TableEntry**)malloc(num_files * sizeof(TableEntry*));
+    assert_not_null(table);
+    for (i = 0; i < num_files; i ++)
+    {
+        TableEntry *entry = (TableEntry*)malloc(sizeof(TableEntry));
+        assert_not_null(entry);
+        entry->name = io_read_until_zero(io);
+        entry->offset = io_read_u32_be(io) + offset_to_files;
+        entry->size = io_read_u32_be(io);
+        if (entry->offset + entry->size > io_size(io))
+        {
+            log_error("Bad offset to file");
+            for (j = 0; j < i; j ++)
+                free(table[j]);
+            free(table);
+            return false;
+        }
+        table[i] = entry;
+    }
+
+    Context context;
+    context.io = io;
+    for (i = 0; i < num_files; i ++)
+    {
+        context.table_entry = table[i];
+        output_files_save(output_files, &read_file, &context);
+    }
+
+    for (i = 0; i < num_files; i ++)
+        free(table[i]);
+    free(table);
+
     return true;
 }
 
 Archive *sar_archive_create()
 {
     Archive *archive = archive_create();
-    archive->add_cli_help = &add_cli_help;
-    archive->parse_cli_options = &parse_cli_options;
     archive->unpack = &unpack;
-    archive->cleanup = &cleanup;
     return archive;
 }
