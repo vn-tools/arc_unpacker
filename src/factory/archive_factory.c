@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include "assert_ex.h"
@@ -78,7 +77,6 @@ Archive *archive_factory_from_string(
     if (definition != NULL)
         return definition->creator();
 
-    errno = EINVAL;
-    log_error("Invalid format: %s", format);
+    log_error("Invalid archive format: %s", format);
     return NULL;
 }

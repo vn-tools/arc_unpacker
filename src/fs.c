@@ -38,7 +38,6 @@ char *dirname(const char *path)
 
 bool mkpath(const char *path)
 {
-    errno = 0;
     char *dir = NULL;
     struct stat sb;
     if (stat(path, &sb))

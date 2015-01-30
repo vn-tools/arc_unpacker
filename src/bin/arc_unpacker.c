@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,7 +44,6 @@ static void add_path_options(ArgParser *arg_parser, Options *options)
     Array *stray = arg_parser_get_stray(arg_parser);
     if (array_size(stray) < 2)
     {
-        errno = EINVAL;
         log_error("Required more arguments.");
         exit(1);
     }

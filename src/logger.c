@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,15 +13,11 @@ static void log_text(FILE *out, const char *prefix, const char *buffer)
 {
     if (buffer == NULL || strcmp(buffer, "") == 0)
     {
-        if (errno != 0)
-            fprintf(out, "%s: %s\n", prefix, strerror(errno));
+        fprintf(out, "%s\n", prefix);
     }
     else
     {
-        if (errno != 0)
-            fprintf(out, "%s: %s (%s)\n", prefix, buffer, strerror(errno));
-        else
-            fprintf(out, "%s: %s\n", prefix, buffer);
+        fprintf(out, "%s: %s\n", prefix, buffer);
     }
 }
 

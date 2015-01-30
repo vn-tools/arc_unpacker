@@ -1,5 +1,4 @@
 #include <endian.h>
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +17,7 @@ struct IO
     size_t buffer_size;
 
     void (*seek)(struct IO *, size_t, int);
-    void (*read)(struct IO *, size_t, void *);
+    bool (*read)(struct IO *, size_t, void *);
     bool (*write)(struct IO *, size_t, void *);
     size_t (*tell)(struct IO *);
     size_t (*size)(struct IO *);
@@ -32,22 +31,26 @@ static void file_io_seek(IO *io, size_t offset, int whence)
     fseek(io->file, offset, whence);
 }
 
-static void file_io_read(IO *io, size_t length, void *destination)
+static bool file_io_read(IO *io, size_t length, void *destination)
 {
     assert_not_null(io);
     if (fread(destination, 1, length, io->file) != length)
+    {
         log_warning("Failed to read full data");
+        return false;
+    }
+    return true;
 }
 
 static bool file_io_write(IO *io, size_t length, void *source)
 {
     assert_not_null(io);
-    if (fwrite(source, 1, length, io->file) == length)
+    if (fwrite(source, 1, length, io->file) != length)
     {
-        return true;
+        log_warning("Failed to write full data");
+        return false;
     }
-    errno = EIO;
-    return false;
+    return true;
 }
 
 static size_t file_io_tell(IO *io)
@@ -83,12 +86,13 @@ static void buffer_io_seek(IO *io, size_t offset, int whence)
         assert_that(1 == 0);
 }
 
-static void buffer_io_read(IO *io, size_t length, void *destination)
+static bool buffer_io_read(IO *io, size_t length, void *destination)
 {
     assert_not_null(io);
     assert_that(io->buffer_pos + length <= io->buffer_size);
     memcpy(destination, io->buffer + io->buffer_pos, length);
     io->buffer_pos += length;
+    return true;
 }
 
 static bool buffer_io_write(IO *io, size_t length, void *source)
@@ -100,7 +104,7 @@ static bool buffer_io_write(IO *io, size_t length, void *source)
         destination = (char*)realloc(io->buffer, io->buffer_pos + length);
         if (!destination)
         {
-            log_error(NULL);
+            log_error("Failed to allocate memory");
             return false;
         }
         io->buffer_size = io->buffer_pos + length;
@@ -210,7 +214,7 @@ char *io_read_string(IO *io, size_t length)
     str = (char*)malloc(length + 1);
     if (!str)
     {
-        log_error(NULL);
+        log_error("Failed to allocate memory");
         return NULL;
     }
     io->read(io, length, str);
@@ -231,7 +235,7 @@ char *io_read_until_zero(IO *io)
         if (!new_str)
         {
             free(str);
-            log_error(NULL);
+            log_error("Failed to allocate memory");
             return NULL;
         }
         str = new_str;

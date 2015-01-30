@@ -45,7 +45,7 @@ bool convert(
         output_new = (char*)realloc(*output, *output_size);
         if (!output_new)
         {
-            log_error(NULL);
+            log_error("Failed to allocate memory");
             free(*output);
             *output = NULL;
             return false;
