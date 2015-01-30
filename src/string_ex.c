@@ -24,9 +24,12 @@ bool convert(
 {
     assert_not_null(input);
     assert_not_null(output);
-    assert_not_null(output_size);
     assert_not_null(from);
     assert_not_null(to);
+
+    size_t tmp;
+    if (output_size == NULL)
+        output_size = &tmp;
 
     iconv_t conv = iconv_open(to, from);
 
