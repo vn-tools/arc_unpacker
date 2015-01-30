@@ -128,7 +128,7 @@ static bool run(
             result = unpack(options->archive, arg_parser, io, output_files);
             if (result)
             {
-                log_info("%s unpacking finished");
+                log_info("Success - %s unpacking finished", format);
                 break;
             }
             else
