@@ -91,6 +91,7 @@ static bool unpack(
     Archive *archive, ArgParser *arg_parser, IO *io, OutputFiles *output_files)
 {
     bool result;
+    io_seek(io, 0);
     archive_parse_cli_options(archive, arg_parser);
     result = archive_unpack(archive, io, output_files);
     archive_destroy(archive);
