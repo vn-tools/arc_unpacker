@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert.h"
+#include "assert_ex.h"
 #include "fs.h"
 #include "logger.h"
 #include "output_files.h"

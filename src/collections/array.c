@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "array.h"
-#include "assert.h"
+#include "assert_ex.h"
 
 struct Array
 {

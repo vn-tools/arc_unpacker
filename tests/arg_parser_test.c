@@ -1,5 +1,5 @@
 #include "arg_parser.h"
-#include "assert.h"
+#include "assert_ex.h"
 
 void test_switch_missing()
 {
@@ -183,4 +183,5 @@ int main(void)
     test_stray();
     test_stray_with_space();
     test_mixed_types();
+    return 0;
 }

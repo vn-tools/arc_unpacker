@@ -1,7 +1,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert.h"
+#include "assert_ex.h"
 #include "collections/dictionary.h"
 #include "factory/archive_factory.h"
 #include "formats/arc/sar_archive.h"

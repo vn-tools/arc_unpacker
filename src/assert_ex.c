@@ -1,9 +1,9 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
+#include "assert_ex.h"
 #include "logger.h"
-#include "assert.h"
 
 static void fail(const char *file, int line, const char *format, ...);
 

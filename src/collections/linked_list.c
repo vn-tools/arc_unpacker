@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "assert.h"
+#include "assert_ex.h"
 #include "linked_list.h"
 
 struct ListItem

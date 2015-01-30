@@ -1,6 +1,6 @@
 #include <stdlib.h>
+#include "assert_ex.h"
 #include "formats/arc/sar_archive.h"
-#include "assert.h"
 #include "logger.h"
 
 typedef struct

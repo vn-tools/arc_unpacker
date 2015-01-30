@@ -2,7 +2,7 @@
 #include <iconv.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert.h"
+#include "assert_ex.h"
 #include "logger.h"
 #include "string_ex.h"
 

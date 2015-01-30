@@ -1,5 +1,5 @@
+#include "assert_ex.h"
 #include "collections/array.h"
-#include "assert.h"
 
 void test_empty_array()
 {

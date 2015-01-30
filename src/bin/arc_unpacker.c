@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "arg_parser.h"
-#include "assert.h"
+#include "assert_ex.h"
 #include "cli_helpers.h"
 #include "factory/archive_factory.h"
 #include "formats/archive.h"

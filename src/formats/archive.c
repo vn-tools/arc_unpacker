@@ -1,8 +1,8 @@
 #include <errno.h>
 #include <stdlib.h>
-#include "assert.h"
-#include "logger.h"
+#include "assert_ex.h"
 #include "formats/archive.h"
+#include "logger.h"
 
 Archive *archive_create()
 {

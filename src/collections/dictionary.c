@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include "assert.h"
+#include "assert_ex.h"
 #include "collections/dictionary.h"
 #include "collections/linked_list.h"
 

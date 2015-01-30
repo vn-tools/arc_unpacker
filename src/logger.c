@@ -1,8 +1,8 @@
 #include <errno.h>
-#include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include "assert.h"
+#include <string.h>
+#include "assert_ex.h"
 #include "logger.h"
 
 static char buffer[1024];

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "arg_parser.h"
-#include "assert.h"
+#include "assert_ex.h"
 #include "key_value.h"
 
 static bool is_alphanumeric(const char *string);

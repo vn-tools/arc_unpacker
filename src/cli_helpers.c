@@ -1,7 +1,7 @@
 #include <stdlib.h>
-#include "assert.h"
-#include "logger.h"
+#include "assert_ex.h"
 #include "cli_helpers.h"
+#include "logger.h"
 
 void cli_add_quiet_option(ArgParser *arg_parser)
 {

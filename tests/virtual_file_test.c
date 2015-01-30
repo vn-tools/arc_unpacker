@@ -1,5 +1,5 @@
+#include "assert_ex.h"
 #include "virtual_file.h"
-#include "assert.h"
 
 void test_empty_file()
 {

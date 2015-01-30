@@ -3,7 +3,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "assert.h"
+#include "assert_ex.h"
 #include "fs.h"
 #include "logger.h"
 #include "string_ex.h"

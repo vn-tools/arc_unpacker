@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "assert.h"
+#include "assert_ex.h"
 #include "key_value.h"
 
 KeyValue *key_value_create(void *key, void *value)

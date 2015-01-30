@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "assert_ex.h"
 #include "io.h"
-#include "assert.h"
 
 void test_file_simple_read()
 {

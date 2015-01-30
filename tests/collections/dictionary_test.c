@@ -1,5 +1,5 @@
+#include "assert_ex.h"
 #include "collections/dictionary.h"
-#include "assert.h"
 
 void test_non_existent_key()
 {

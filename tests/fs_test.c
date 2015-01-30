@@ -1,6 +1,6 @@
 #include <stdlib.h>
+#include "assert_ex.h"
 #include "fs.h"
-#include "assert.h"
 
 void test_dirname(const char *expected, const char *input)
 {
