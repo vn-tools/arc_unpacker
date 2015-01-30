@@ -5,7 +5,7 @@
 
 typedef struct
 {
-    const char *name;
+    char *name;
     uint32_t offset;
     uint32_t size;
 } TableEntry;
@@ -38,7 +38,7 @@ static bool unpack(Archive *archive, IO *io, OutputFiles *output_files)
     assert_not_null(io);
     assert_not_null(output_files);
 
-    uint16_t num_files = io_read_u16_be(io);
+    uint16_t file_count = io_read_u16_be(io);
     uint32_t offset_to_files = io_read_u32_be(io);
     if (offset_to_files > io_size(io))
     {
@@ -46,9 +46,9 @@ static bool unpack(Archive *archive, IO *io, OutputFiles *output_files)
         return false;
     }
 
-    table = (TableEntry**)malloc(num_files * sizeof(TableEntry*));
+    table = (TableEntry**)malloc(file_count * sizeof(TableEntry*));
     assert_not_null(table);
-    for (i = 0; i < num_files; i ++)
+    for (i = 0; i < file_count; i ++)
     {
         TableEntry *entry = (TableEntry*)malloc(sizeof(TableEntry));
         assert_not_null(entry);
@@ -68,14 +68,17 @@ static bool unpack(Archive *archive, IO *io, OutputFiles *output_files)
 
     Context context;
     context.io = io;
-    for (i = 0; i < num_files; i ++)
+    for (i = 0; i < file_count; i ++)
     {
         context.table_entry = table[i];
         output_files_save(output_files, &read_file, &context);
     }
 
-    for (i = 0; i < num_files; i ++)
+    for (i = 0; i < file_count; i ++)
+    {
+        free(table[i]->name);
         free(table[i]);
+    }
     free(table);
 
     return true;
