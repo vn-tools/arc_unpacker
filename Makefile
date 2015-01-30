@@ -47,9 +47,10 @@ debug: debug_binaries
 
 
 #Binaries
-SOURCES := $(filter-out $(SRC_DIR)/bin%.c, $(call rwildcard, $(SRC_DIR)/, *.c))
-RELEASE_OBJECTS := $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/release/%.o)
-DEBUG_OBJECTS := $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/debug/%.o)
+RELEASE_SOURCES := $(filter-out $(SRC_DIR)/bin%.c $(SRC_DIR)/test_support%.c, $(call rwildcard, $(SRC_DIR)/, *.c))
+DEBUG_SOURCES := $(filter-out $(SRC_DIR)/bin%.c, $(call rwildcard, $(SRC_DIR)/, *.c))
+RELEASE_OBJECTS := $(RELEASE_SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/release/%.o)
+DEBUG_OBJECTS := $(DEBUG_SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/debug/%.o)
 
 .PHONY: release_binaries debug_binaries
 release_binaries: $(BIN_DIR)/release/arc_unpacker $(BIN_DIR)/release/file_decoder

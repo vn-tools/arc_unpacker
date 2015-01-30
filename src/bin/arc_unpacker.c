@@ -111,7 +111,7 @@ static bool run(
 
     assert_not_null(options);
 
-    output_files = output_files_create(options->output_path);
+    output_files = output_files_create_hdd(options->output_path);
     io = io_create_from_file(options->input_path, "rb");
     if (!io)
         return false;

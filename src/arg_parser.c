@@ -165,6 +165,9 @@ void arg_parser_parse(ArgParser *arg_parser, int argc, const char **argv)
     char *key, *value;
     int i;
 
+    if (argc == 0)
+        return;
+
     assert_not_null(argv);
 
     for (i = 0; i < argc; i ++)
