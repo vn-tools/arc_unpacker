@@ -51,6 +51,7 @@ bool convert(
             log_error("Failed to allocate memory");
             free(*output);
             *output = NULL;
+            *output_size = 0;
             return false;
         }
         *output = output_new;
@@ -74,6 +75,7 @@ bool convert(
         {
             case EINVAL:
             case EILSEQ:
+                log_error("Invalid byte sequence");
                 free(*output);
                 *output = NULL;
                 *output_size = 0;
@@ -86,6 +88,8 @@ bool convert(
         }
     }
 
+    *output = (char*)realloc(*output, (*output_size) + 1);
+    (*output)[(*output_size)] = '\0';
     iconv_close(conv);
     return true;
 }
