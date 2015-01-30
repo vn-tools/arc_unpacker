@@ -11,8 +11,8 @@ IO *io_create_from_buffer(const char *buffer, size_t buffer_size);
 void io_destroy(IO *io);
 
 size_t io_size(IO *io);
-void io_seek(IO *io, size_t offset);
-void io_skip(IO *io, size_t offset);
+bool io_seek(IO *io, size_t offset);
+bool io_skip(IO *io, size_t offset);
 size_t io_tell(IO *io);
 
 char *io_read_until_zero(IO *io);

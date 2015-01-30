@@ -16,7 +16,7 @@ struct IO
     size_t buffer_pos;
     size_t buffer_size;
 
-    void (*seek)(struct IO *, size_t, int);
+    bool (*seek)(struct IO *, size_t, int);
     bool (*read)(struct IO *, size_t, void *);
     bool (*write)(struct IO *, size_t, void *);
     size_t (*tell)(struct IO *);
@@ -25,10 +25,10 @@ struct IO
 
 
 
-static void file_io_seek(IO *io, size_t offset, int whence)
+static bool file_io_seek(IO *io, size_t offset, int whence)
 {
     assert_not_null(io);
-    fseek(io->file, offset, whence);
+    return fseek(io->file, offset, whence) == 0;
 }
 
 static bool file_io_read(IO *io, size_t length, void *destination)
@@ -73,7 +73,7 @@ static size_t file_io_size(IO *io)
 
 
 
-static void buffer_io_seek(IO *io, size_t offset, int whence)
+static bool buffer_io_seek(IO *io, size_t offset, int whence)
 {
     assert_not_null(io);
     if (whence == SEEK_SET)
@@ -84,6 +84,7 @@ static void buffer_io_seek(IO *io, size_t offset, int whence)
         io->buffer_pos += offset;
     else
         assert_that(1 == 0);
+    return io->buffer_pos < io->buffer_size;
 }
 
 static bool buffer_io_read(IO *io, size_t length, void *destination)
@@ -185,18 +186,18 @@ size_t io_size(IO *io)
     return io->size(io);
 }
 
-void io_seek(IO *io, size_t offset)
+bool io_seek(IO *io, size_t offset)
 {
     assert_not_null(io);
     assert_that(io->seek != NULL);
-    io->seek(io, offset, SEEK_SET);
+    return io->seek(io, offset, SEEK_SET);
 }
 
-void io_skip(IO *io, size_t offset)
+bool io_skip(IO *io, size_t offset)
 {
     assert_not_null(io);
     assert_that(io->seek != NULL);
-    io->seek(io, offset, SEEK_CUR);
+    return io->seek(io, offset, SEEK_CUR);
 }
 
 size_t io_tell(IO *io)
