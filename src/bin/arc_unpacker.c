@@ -124,13 +124,22 @@ static bool run(
             format = (const char*)array_get(format_strings, i);
             options->archive = archive_factory_from_string(arc_factory, format);
             assert_not_null(options->archive);
-            log_info("Trying %s", format);
+            log_info("Trying %s...", format);
             result = unpack(options->archive, arg_parser, io, output_files);
             if (result)
+            {
+                log_info("%s unpacking finished");
                 break;
+            }
             else
-                log_info(NULL);
+            {
+                log_info("%s didn\'t work, trying next format...", format);
+                if (log_enabled(LOG_LEVEL_INFO))
+                    puts("");
+            }
         }
+        if (!result)
+            log_error("Nothing left to try. File not recognized.");
     }
     else
     {
