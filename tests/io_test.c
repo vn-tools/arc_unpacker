@@ -5,7 +5,9 @@
 
 void test_file_simple_read()
 {
-    IO *io = io_create_from_file("tests/test_files/reimu_transparent.png", "rb");
+    IO *io = io_create_from_file(
+        "tests/test_files/gfx/reimu_transparent.png",
+        "rb");
     char *png_magic = io_read_string(io, 4);
     assert_equals("\x89PNG", png_magic);
     free(png_magic);

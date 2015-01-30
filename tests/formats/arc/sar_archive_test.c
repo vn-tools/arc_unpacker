@@ -16,7 +16,7 @@ void test_sar_archive()
     Archive *archive = sar_archive_create();
 
     OutputFiles *output_files = unpack_to_memory(
-        "tests/test_files/sar/test.sar",
+        "tests/test_files/arc/sar/test.sar",
         archive,
         0,
         NULL);
