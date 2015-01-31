@@ -67,7 +67,7 @@ static bool mbl_unpack(
         old_pos = io_tell(io);
         tmp_name = io_read_until_zero(io);
         assert_not_null(tmp_name);
-        assert_that(convert(
+        assert_that(convert_encoding(
             tmp_name, strlen(tmp_name),
             &entry->name, NULL,
             "sjis", "utf-8"));

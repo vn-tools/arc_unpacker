@@ -5,7 +5,7 @@
 
 void trim_right(char *target, const char *chars);
 
-bool convert(
+bool convert_encoding(
     const char *input,
     size_t input_size,
     char **output,
