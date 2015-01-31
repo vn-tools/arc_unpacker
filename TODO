@@ -1,12 +1,11 @@
 Port old core classes:
 - InputFiles
 - FileDecoder
-- FileFactory
+- ConverterFactory
 - Sound (raw)
 
 Add new necessary classes:
 - Zlib (de)compressor (lzlib)
-- FileFormat
 
 Refactor:
 - Decide on whitespace or tabs, damnit!
@@ -31,7 +30,6 @@ Port old code for formats:
 		- CBG
 		- G00
 		- MGD
-		- PRS
 		- Fortune Summoners
 		- SPB
 		- TLG
