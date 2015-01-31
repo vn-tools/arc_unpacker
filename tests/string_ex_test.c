@@ -85,8 +85,23 @@ void test_trim_right_trim_to_empty_string()
     free(target);
 }
 
+void test_zlib_inflate()
+{
+    char *output;
+    size_t output_size;
+    zlib_inflate(
+        "\x78\xda\xcb\xc9\x4c\x4b\x55\xc8\x2c\x56\x48\xce\x4f\x49\xe5\x02\x00\x20\xc1\x04\x62\x0a",
+        21,
+        &output,
+        &output_size);
+    assert_equali(13, output_size);
+    assert_equals("life is code\n", output);
+    free(output);
+}
+
 int main(void)
 {
+    test_zlib_inflate();
     test_sjis_to_utf8();
     test_utf8_to_sjis();
     test_trim_right_nothing_to_trim();

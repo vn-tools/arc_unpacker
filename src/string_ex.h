@@ -13,4 +13,10 @@ bool convert_encoding(
     const char *from,
     const char *to);
 
+bool zlib_inflate(
+    const char *input,
+    size_t input_size,
+    char **output,
+    size_t *output_size);
+
 #endif
