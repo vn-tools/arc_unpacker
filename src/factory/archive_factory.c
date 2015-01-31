@@ -34,8 +34,8 @@ static void add_format(
 
 static void init_factory(ArchiveFactory *factory)
 {
-    add_format(factory, "sar", &sar_archive_create);
     add_format(factory, "mbl", &mbl_archive_create);
+    add_format(factory, "sar", &sar_archive_create);
 }
 
 
