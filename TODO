@@ -4,9 +4,6 @@ Port old core classes:
 - ConverterFactory
 - Sound (raw)
 
-Add new necessary classes:
-- Zlib (de)compressor (lzlib)
-
 Refactor:
 - Decide on whitespace or tabs, damnit!
 
