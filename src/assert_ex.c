@@ -51,11 +51,24 @@ void __assert_equalsn(
     if (expected == NULL && actual == NULL)
         return;
 
-    if (expected == NULL
-        || actual == NULL
-        || strncmp(actual, expected, size) != 0)
-    {
+    if (expected == NULL || actual == NULL)
         fail(file, line, "Fatal: expected %s, got %s", expected, actual);
+
+    size_t i;
+    for (i = 0; i < size; i ++)
+    {
+        if (actual[i] != expected[i])
+        {
+            fail(
+                file,
+                line,
+                "Fatal: expected %c (%02x), got %c (%02x) at position %d",
+                expected[i],
+                (unsigned)expected[i],
+                actual[i],
+                (unsigned)actual[i],
+                i);
+        }
     }
 }
 
