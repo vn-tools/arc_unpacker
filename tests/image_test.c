@@ -3,7 +3,7 @@
 #include "image.h"
 #include "io.h"
 
-int main(void)
+void test_transparent()
 {
     IO *io = io_create_from_file("tests/test_files/gfx/reimu_transparent.png", "rb");
     assert_not_null(io);
@@ -29,5 +29,37 @@ int main(void)
 
     free(data);
     io_destroy(io);
+}
+
+void test_opaque()
+{
+    IO *io = io_create_from_file("tests/test_files/gfx/usagi_opaque.png", "rb");
+    assert_not_null(io);
+
+    char *data = io_read_string(io, io_size(io));
+    assert_not_null(data);
+
+    Image *image = image_create_from_boxed(data, io_size(io));
+    assert_not_null(image);
+
+    assert_equali(640, image_width(image));
+    assert_equali(480, image_height(image));
+
+    size_t pixel_pos = image_width(image) * 100 + 200;
+    uint8_t r = ((uint8_t*)image_pixel_data(image))[pixel_pos * 3];
+    uint8_t g = ((uint8_t*)image_pixel_data(image))[pixel_pos * 3 + 1];
+    uint8_t b = ((uint8_t*)image_pixel_data(image))[pixel_pos * 3 + 2];
+    assert_equali(104, r);
+    assert_equali(76, g);
+    assert_equali(4, b);
+
+    free(data);
+    io_destroy(io);
+}
+
+int main(void)
+{
+    test_transparent();
+    test_opaque();
     return 0;
 }

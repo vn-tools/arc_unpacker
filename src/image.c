@@ -111,7 +111,14 @@ Image *image_create_from_boxed(const char *boxed_data, size_t boxed_data_size)
         NULL,
         NULL,
         NULL);
-    assert_equali(color_type, PNG_COLOR_TYPE_RGBA);
+    assert_equali(8, bpp);
+
+    if (color_type == PNG_COLOR_TYPE_RGB)
+        image->pixel_format = IMAGE_PIXEL_FORMAT_RGB;
+    else if (color_type == PNG_COLOR_TYPE_RGBA)
+        image->pixel_format = IMAGE_PIXEL_FORMAT_RGBA;
+    else
+        assert_that(1 == 0);
 
     image->pixel_data_size = image->image_width * image->image_height * 4;
     image->internal_data = (char*)malloc(image->pixel_data_size);
@@ -127,7 +134,6 @@ Image *image_create_from_boxed(const char *boxed_data, size_t boxed_data_size)
     }
 
     image->pixel_data = image->internal_data;
-    image->pixel_format = IMAGE_PIXEL_FORMAT_RGBA;
 
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
