@@ -79,7 +79,8 @@ static bool save_to_hdd(
     }
 
     //errors already reported with log_error and log_warn, no need to print \n
-    vf_destroy(file);
+    if (file != NULL)
+        vf_destroy(file);
     return false;
 }
 
