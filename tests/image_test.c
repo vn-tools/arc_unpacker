@@ -16,6 +16,7 @@ void test_transparent()
 
     assert_equali(641, image_width(image));
     assert_equali(720, image_height(image));
+    assert_equali(641 * 720 * 4, image_pixel_data_size(image));
 
     size_t pixel_pos = image_width(image) * 100 + 200;
     uint8_t r = ((uint8_t*)image_pixel_data(image))[pixel_pos * 4];
@@ -44,14 +45,15 @@ void test_opaque()
 
     assert_equali(640, image_width(image));
     assert_equali(480, image_height(image));
+    assert_equali(640 * 480 * 3, image_pixel_data_size(image));
 
     size_t pixel_pos = image_width(image) * 100 + 200;
     uint8_t r = ((uint8_t*)image_pixel_data(image))[pixel_pos * 3];
     uint8_t g = ((uint8_t*)image_pixel_data(image))[pixel_pos * 3 + 1];
     uint8_t b = ((uint8_t*)image_pixel_data(image))[pixel_pos * 3 + 2];
-    assert_equali(104, r);
-    assert_equali(76, g);
-    assert_equali(4, b);
+    assert_equali(124, r);
+    assert_equali(106, g);
+    assert_equali(52, b);
 
     free(data);
     io_destroy(io);

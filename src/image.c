@@ -100,31 +100,38 @@ Image *image_create_from_boxed(const char *boxed_data, size_t boxed_data_size)
         NULL);
 
     int color_type;
-    int bpp;
+    int bits_per_channel;
     png_get_IHDR(
         png_ptr,
         info_ptr,
         &image->image_width,
         &image->image_height,
-        &bpp,
+        &bits_per_channel,
         &color_type,
         NULL,
         NULL,
         NULL);
-    assert_equali(8, bpp);
+    assert_equali(8, bits_per_channel);
 
+    int bpp = 0;
     if (color_type == PNG_COLOR_TYPE_RGB)
+    {
+        bpp = 3;
         image->pixel_format = IMAGE_PIXEL_FORMAT_RGB;
+    }
     else if (color_type == PNG_COLOR_TYPE_RGBA)
+    {
+        bpp = 4;
         image->pixel_format = IMAGE_PIXEL_FORMAT_RGBA;
+    }
     else
         assert_that(1 == 0);
 
-    image->pixel_data_size = image->image_width * image->image_height * 4;
+    image->pixel_data_size = image->image_width * image->image_height * bpp;
     image->internal_data = (char*)malloc(image->pixel_data_size);
     assert_not_null(image->internal_data);
     png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
-    size_t scanline_size = image->image_width * 4, y;
+    size_t scanline_size = image->image_width * bpp, y;
     for (y = 0; y < image->image_height; y ++)
     {
         memcpy(
