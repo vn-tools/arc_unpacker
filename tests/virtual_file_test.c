@@ -27,6 +27,13 @@ void test_setting_data()
     vf_destroy(file);
 }
 
+void test_changing_extension_null()
+{
+    VirtualFile *file = vf_create();
+    vf_change_extension(file, "xyz");
+    assert_null(vf_get_name(file));
+}
+
 void test_changing_extension_without_extension()
 {
     VirtualFile *file = vf_create();
@@ -56,6 +63,7 @@ int main(void)
     test_empty_file();
     test_setting_name();
     test_setting_data();
+    test_changing_extension_null();
     test_changing_extension_without_extension();
     test_changing_extension_with_extension();
     test_changing_extension_with_extra_dots();

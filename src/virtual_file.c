@@ -44,19 +44,19 @@ char *vf_get_name(VirtualFile *file)
 
 void vf_change_extension(VirtualFile *file, const char *new_extension)
 {
-    char *new_name;
-    size_t base_length;
-    char *ptr = strrchr(file->name, '.');
     assert_not_null(file);
-    assert_not_null(file->name);
+    if (file->name == NULL)
+        return;
+
+    char *ptr = strrchr(file->name, '.');
     if (ptr != NULL)
         *ptr = '\0';
 
     while (new_extension[0] == '.')
         new_extension ++;
 
-    base_length = strlen(file->name);
-    new_name = (char*)realloc(
+    size_t base_length = strlen(file->name);
+    char *new_name = (char*)realloc(
         file->name,
         base_length + 1 + strlen(new_extension) + 1);
 
