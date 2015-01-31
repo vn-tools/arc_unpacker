@@ -141,37 +141,37 @@ void image_destroy(Image *image)
     free(image);
 }
 
-size_t image_width(Image *image)
+size_t image_width(const Image *image)
 {
     assert_not_null(image);
     return image->image_width;
 }
 
-size_t image_height(Image *image)
+size_t image_height(const Image *image)
 {
     assert_not_null(image);
     return image->image_height;
 }
 
-PixelFormat image_pixel_format(Image *image)
+PixelFormat image_pixel_format(const Image *image)
 {
     assert_not_null(image);
     return image->pixel_format;
 }
 
-const char *image_pixel_data(Image *image)
+const char *image_pixel_data(const Image *image)
 {
     assert_not_null(image);
     return image->pixel_data;
 }
 
-size_t image_pixel_data_size(Image *image)
+size_t image_pixel_data_size(const Image *image)
 {
     assert_not_null(image);
     return image->pixel_data_size;
 }
 
-void image_update_file(Image *image, VirtualFile *file)
+void image_update_file(const Image *image, VirtualFile *file)
 {
     assert_not_null(image);
     assert_not_null(file);

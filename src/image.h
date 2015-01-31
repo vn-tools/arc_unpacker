@@ -18,12 +18,12 @@ Image *image_create_from_pixels(
 
 Image *image_create_from_boxed(const char *boxed_data, size_t boxed_data_size);
 
-size_t image_width(Image *image);
-size_t image_height(Image *image);
-PixelFormat image_pixel_format(Image *image);
-const char *image_pixel_data(Image *image);
-size_t image_pixel_data_size(Image *image);
+size_t image_width(const Image *image);
+size_t image_height(const Image *image);
+PixelFormat image_pixel_format(const Image *image);
+const char *image_pixel_data(const Image *image);
+size_t image_pixel_data_size(const Image *image);
 
 void image_destroy(Image *image);
 
-void image_update_file(Image *image, VirtualFile *file);
+void image_update_file(const Image *image, VirtualFile *file);
