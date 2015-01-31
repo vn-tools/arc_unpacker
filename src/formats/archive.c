@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdlib.h>
 #include "assert_ex.h"
 #include "formats/archive.h"
@@ -46,7 +45,6 @@ bool archive_unpack(
     assert_not_null(archive);
     if (archive->unpack == NULL)
     {
-        errno = ENOSYS;
         log_error("Unpacking for this format is not supported");
         return false;
     }
