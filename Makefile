@@ -58,20 +58,24 @@ debug_binaries: $(BIN_DIR)/debug/arc_unpacker $(BIN_DIR)/debug/file_decoder
 
 $(BIN_DIR)/debug/%: $(OBJ_DIR)/debug/bin/%.o $(DEBUG_OBJECTS)
 	@$(MKPATH) $(dir $@)
-	$(LINKER) $@ $^ $(LFLAGS)
+	@echo Linking $@
+	@$(LINKER) $@ $^ $(LFLAGS)
 
 $(BIN_DIR)/release/%: $(OBJ_DIR)/release/bin/%.o $(RELEASE_OBJECTS)
 	@$(MKPATH) $(dir $@)
-	$(LINKER) $@ $^ $(LFLAGS)
-	if [ -f "$(STRIP)" ]; then $(STRIP) --strip-all $@; fi
+	@echo Linking $@
+	@$(LINKER) $@ $^ $(LFLAGS)
+	@if [ -f "$(STRIP)" ]; then $(STRIP) --strip-all $@; fi
 
 $(OBJ_DIR)/release/%.o: $(SRC_DIR)/%.c
 	@$(MKPATH) $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	@echo Compiling $<
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJ_DIR)/debug/%.o: $(SRC_DIR)/%.c
 	@$(MKPATH) $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	@echo Compiling $<
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 
 
@@ -83,15 +87,17 @@ TEST_BINARIES := $(TEST_SOURCES:$(TEST_SRC_DIR)/%.c=$(TEST_BIN_DIR)/%)
 tests: CFLAGS += $(CFLAGS_DEBUG)
 tests: LFLAGS += $(LFLAGS_DEBUG)
 tests: $(TEST_BINARIES)
-	@$(foreach x,$^,echo $(x);$(x);)
+	@$(foreach x,$^,echo Running tests: $(x);$(x);)
 
 $(TEST_BIN_DIR)/%: $(TEST_OBJ_DIR)/%.o $(DEBUG_OBJECTS)
 	@$(MKPATH) $(dir $@)
-	$(LINKER) $@ $^ $(LFLAGS)
+	@echo Linking $@
+	@$(LINKER) $@ $^ $(LFLAGS)
 
 $(TEST_OBJ_DIR)/%.o: $(TEST_SRC_DIR)/%.c
 	@$(MKPATH) $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	@echo Compiling $<
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 
 
