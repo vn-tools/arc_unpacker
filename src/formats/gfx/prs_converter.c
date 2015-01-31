@@ -127,7 +127,15 @@ static bool prs_decode_pixels(
     return true;
 }
 
-bool prs_decode(Converter *converter, VirtualFile *file)
+static bool prs_check_magic(IO *io)
+{
+    char *magic = io_read_string(io, prs_magic_length);
+    bool ok = memcmp(magic, prs_magic, prs_magic_length) == 0;
+    free(magic);
+    return ok;
+}
+
+static bool prs_decode(Converter *converter, VirtualFile *file)
 {
     assert_not_null(converter);
     assert_not_null(file);
@@ -135,8 +143,7 @@ bool prs_decode(Converter *converter, VirtualFile *file)
     IO *io = io_create_from_buffer(vf_get_data(file), vf_get_size(file));
     assert_not_null(io);
 
-    char *magic = io_read_string(io, prs_magic_length);
-    if (memcmp(magic, prs_magic, prs_magic_length) != 0)
+    if (!prs_check_magic(io))
     {
         log_error("Not a PRS graphic file");
         return false;
