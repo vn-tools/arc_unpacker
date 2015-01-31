@@ -2,7 +2,6 @@ Port old core classes:
 - InputFiles
 - FileDecoder
 - FileFactory
-- Image (libpng)
 - Sound (raw)
 
 Add new necessary classes:
