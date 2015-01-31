@@ -144,7 +144,12 @@ static bool run(
     }
     else
     {
+        format = options->format;
         result = unpack(options->archive, arg_parser, io, output_files);
+        if (result)
+            log_info("Success - %s unpacking finished", format);
+        else
+            log_info("Failure - %s unpacking finished", format);
     }
 
     output_files_destroy(output_files);
