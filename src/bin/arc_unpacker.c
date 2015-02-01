@@ -15,7 +15,6 @@ typedef struct
     const char *format;
     const char *input_path;
     const char *output_path;
-    Archive *archive;
 } Options;
 
 static char *get_default_output_path(const char *input_path)
@@ -30,7 +29,7 @@ static void add_format_option(ArgParser *arg_parser, Options *options)
 {
     arg_parser_add_help(
         arg_parser,
-        "-f, --fmt FORMAT",
+        "-f, --fmt=FORMAT",
         "Selects the archive format.");
 
     if (arg_parser_has_switch(arg_parser, "-f"))
@@ -57,8 +56,13 @@ static void add_path_options(ArgParser *arg_parser, Options *options)
 static void print_help(
     const char *path_to_self,
     ArgParser *arg_parser,
-    Options *options)
+    Options *options,
+    Archive *archive)
 {
+    assert_not_null(path_to_self);
+    assert_not_null(arg_parser);
+    assert_not_null(options);
+
     printf("Usage: %s [options] [arc_options] input_path [output_path]\n",
         path_to_self);
 
@@ -73,14 +77,14 @@ static void print_help(
     arg_parser_clear_help(arg_parser);
     puts("");
 
-    if (options->archive == NULL)
+    if (archive == NULL)
     {
         puts("[arc_options] depend on each archive and are required at runtime.");
-        puts("See --help --fmt FORMAT to get detailed help for given archive.");
+        puts("See --help --fmt=FORMAT to get detailed help for given archive.");
     }
     else
     {
-        archive_add_cli_help(options->archive, arg_parser);
+        archive_add_cli_help(archive, arg_parser);
         printf("[arc_options] specific to %s:\n", options->format);
         puts("");
         arg_parser_print_help(arg_parser);
@@ -90,43 +94,42 @@ static void print_help(
 static bool unpack(
     Archive *archive, ArgParser *arg_parser, IO *io, OutputFiles *output_files)
 {
-    bool result;
     io_seek(io, 0);
     archive_parse_cli_options(archive, arg_parser);
-    result = archive_unpack(archive, io, output_files);
-    archive_destroy(archive);
-    return result;
+    return archive_unpack(archive, io, output_files);
 }
 
-static bool run(
+static bool guess_archive_and_unpack(
+    IO *io,
+    OutputFiles *output_files,
     Options *options,
     ArgParser *arg_parser,
     ArchiveFactory *arc_factory)
 {
-    OutputFiles *output_files;
-    IO *io;
-    const Array *format_strings;
-    const char *format;
-    bool result = false;
-    size_t i;
-
+    assert_not_null(io);
     assert_not_null(options);
+    assert_not_null(arg_parser);
+    assert_not_null(arc_factory);
+    assert_not_null(output_files);
 
-    output_files = output_files_create_hdd(options->output_path);
-    io = io_create_from_file(options->input_path, "rb");
-    if (!io)
-        return false;
-
-    if (options->archive == NULL)
+    size_t i;
+    bool result = false;
+    if (options->format == NULL)
     {
-        format_strings = archive_factory_formats(arc_factory);
+        const Array *format_strings = archive_factory_formats(arc_factory);
+        assert_not_null(format_strings);
+
         for (i = 0; i < array_size(format_strings); i ++)
         {
-            format = (const char*)array_get(format_strings, i);
-            options->archive = archive_factory_from_string(arc_factory, format);
-            assert_not_null(options->archive);
+            const char *format = (const char*)array_get(format_strings, i);
+            assert_not_null(format);
+
+            Archive *archive = archive_factory_from_string(arc_factory, format);
+            assert_not_null(archive);
             log_info("Trying %s...", format);
-            result = unpack(options->archive, arg_parser, io, output_files);
+            result = unpack(archive, arg_parser, io, output_files);
+            archive_destroy(archive);
+
             if (result)
             {
                 log_info("Success - %s unpacking finished", format);
@@ -144,22 +147,47 @@ static bool run(
     }
     else
     {
-        format = options->format;
-        result = unpack(options->archive, arg_parser, io, output_files);
+        Archive *archive
+            = archive_factory_from_string(arc_factory, options->format);
+        result = unpack(archive, arg_parser, io, output_files);
         if (result)
-            log_info("Success - %s unpacking finished", format);
+            log_info("Success - %s unpacking finished", options->format);
         else
-            log_info("Failure - %s unpacking finished", format);
+            log_info("Failure - %s unpacking finished", options->format);
+        archive_destroy(archive);
     }
-
-    output_files_destroy(output_files);
-    io_destroy(io);
     return result;
+}
 
+static bool run(
+    Options *options,
+    ArgParser *arg_parser,
+    ArchiveFactory *arc_factory)
+{
+    assert_not_null(options);
+    assert_not_null(arg_parser);
+    assert_not_null(arc_factory);
+
+    OutputFiles *output_files = output_files_create_hdd(options->output_path);
+    IO *io = io_create_from_file(options->input_path, "rb");
+    if (!io)
+        return false;
+
+    bool result = guess_archive_and_unpack(
+        io,
+        output_files,
+        options,
+        arg_parser,
+        arc_factory);
+
+    io_destroy(io);
+    output_files_destroy(output_files);
+    return result;
 }
 
 int main(int argc, const char **argv)
 {
+    int exit_code = 0;
     Options options =
     {
         .input_path = NULL,
@@ -168,36 +196,32 @@ int main(int argc, const char **argv)
     };
 
     ArchiveFactory *arc_factory = archive_factory_create();
+    assert_not_null(arc_factory);
     ArgParser *arg_parser = arg_parser_create();
     assert_not_null(arg_parser);
     arg_parser_parse(arg_parser, argc, argv);
 
     add_format_option(arg_parser, &options);
-    if (options.format != NULL)
-    {
-        options.archive = archive_factory_from_string(
-            arc_factory,
-            options.format);
-        if (options.archive == NULL)
-        {
-            return 1;
-        }
-    }
     cli_add_quiet_option(arg_parser);
     cli_add_help_option(arg_parser);
 
     if (cli_should_show_help(arg_parser))
     {
-        print_help(argv[0], arg_parser, &options);
+        Archive *archive = options.format != NULL
+            ? archive_factory_from_string( arc_factory, options.format)
+            : NULL;
+        print_help(argv[0], arg_parser, &options, archive);
+        if (archive != NULL)
+            archive_destroy(archive);
     }
     else
     {
         add_path_options(arg_parser, &options);
         if (!run(&options, arg_parser, arc_factory))
-            return 1;
+            exit_code = 1;
     }
 
     archive_factory_destroy(arc_factory);
     arg_parser_destroy(arg_parser);
-    return 0;
+    return exit_code;
 }

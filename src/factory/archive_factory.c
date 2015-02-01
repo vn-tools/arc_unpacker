@@ -26,6 +26,9 @@ static void add_format(
     const char *name,
     ArchiveCreator creator)
 {
+    assert_not_null(factory);
+    assert_not_null(name);
+    assert_that(creator != NULL);
     FormatDefinition *definition
         = (FormatDefinition*)malloc(sizeof(FormatDefinition));
     definition->name = name;
