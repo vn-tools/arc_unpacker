@@ -170,6 +170,11 @@ IO *io_create_from_buffer(const char *buffer, size_t buffer_size)
     return io;
 }
 
+IO *io_create_empty()
+{
+    return io_create_from_buffer("", 0);
+}
+
 void io_destroy(IO *io)
 {
     assert_not_null(io);

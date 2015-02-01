@@ -1,6 +1,3 @@
-Port old core classes:
-- Sound (raw)
-
 Refactor:
 - Decide on whitespace or tabs, damnit!
 
@@ -31,6 +28,5 @@ Port old code for formats:
 		- YKG
 		- MSD
 		- YKS
-		- NWA
 
 The ride never ends!

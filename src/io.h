@@ -8,6 +8,7 @@ typedef struct IO IO;
 
 IO *io_create_from_file(const char *path, const char *read_mode);
 IO *io_create_from_buffer(const char *buffer, size_t buffer_size);
+IO *io_create_empty();
 void io_destroy(IO *io);
 
 size_t io_size(IO *io);
