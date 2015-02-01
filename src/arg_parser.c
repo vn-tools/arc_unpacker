@@ -85,12 +85,12 @@ static Array *create_words(const char *sentence)
     while (next_word != NULL)
     {
         char *new_word = strndup(word, next_word - word);
-        array_set(words, i, new_word);
+        array_add(words, new_word);
         word = next_word + 1;
         next_word = strpbrk(word, " ");
         i ++;
     }
-    array_set(words, i, strdup(word));
+    array_add(words, strdup(word));
     return words;
 }
 
@@ -187,10 +187,7 @@ void arg_parser_parse(ArgParser *arg_parser, int argc, const char **argv)
         }
         else
         {
-            array_set(
-                arg_parser->stray,
-                array_size(arg_parser->stray),
-                strdup(arg));
+            array_add(arg_parser->stray, strdup(arg));
         }
     }
 }

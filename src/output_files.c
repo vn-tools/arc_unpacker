@@ -94,10 +94,7 @@ static bool save_to_memory(
     {
         return false;
     }
-    assert_that(array_set(
-        output_files->files,
-        array_size(output_files->files),
-        vf));
+    assert_that(array_add(output_files->files, vf));
     return true;
 }
 

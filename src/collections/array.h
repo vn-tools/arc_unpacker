@@ -15,4 +15,6 @@ void *array_get(const Array *array, size_t index);
 
 bool array_set(Array *array, size_t index, void *data);
 
+bool array_add(Array *array, void *data);
+
 #endif

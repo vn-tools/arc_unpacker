@@ -57,3 +57,8 @@ bool array_set(Array *array, size_t index, void *data)
     array->items[index] = data;
     return true;
 }
+
+bool array_add(Array *array, void *data)
+{
+    return array_set(array, array_size(array), data);
+}

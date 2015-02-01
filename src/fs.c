@@ -47,7 +47,7 @@ static bool _get_files_accumulator(
         }
         else
         {
-            array_set(accumulator, array_size(accumulator), path);
+            array_add(accumulator, path);
         }
     }
 

@@ -43,11 +43,22 @@ void test_gaps()
     array_destroy(arr);
 }
 
+void test_add()
+{
+    Array *arr = array_create();
+    array_add(arr, (void*)"test1");
+    array_add(arr, (void*)"test2");
+    assert_equals("test1", (const char*)array_get(arr, 0));
+    assert_equals("test2", (const char*)array_get(arr, 1));
+    array_destroy(arr);
+}
+
 int main(void)
 {
     test_empty_array();
     test_one_item();
     test_two_items();
     test_gaps();
+    test_add();
     return 0;
 }
