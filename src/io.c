@@ -21,6 +21,7 @@ struct IO
     bool (*write)(struct IO *, size_t, void *);
     size_t (*tell)(struct IO *);
     size_t (*size)(struct IO *);
+    bool (*truncate)(struct IO *, size_t);
 };
 
 
@@ -71,6 +72,15 @@ static size_t file_io_size(IO *io)
     return size;
 }
 
+static bool file_io_truncate(IO *io, __attribute__((unused)) size_t new_size)
+{
+    assert_not_null(io);
+    //return ftruncate(io->file, new_size) == 0;
+    log_error("Truncating for real files is not supported!");
+    assert_that(1 == 0);
+    return false;
+}
+
 
 
 static bool buffer_io_seek(IO *io, size_t offset, int whence)
@@ -90,7 +100,8 @@ static bool buffer_io_seek(IO *io, size_t offset, int whence)
 static bool buffer_io_read(IO *io, size_t length, void *destination)
 {
     assert_not_null(io);
-    assert_that(io->buffer_pos + length <= io->buffer_size);
+    if (io->buffer_pos + length > io->buffer_size)
+        return false;
     memcpy(destination, io->buffer + io->buffer_pos, length);
     io->buffer_pos += length;
     return true;
@@ -125,7 +136,21 @@ static size_t buffer_io_tell(IO *io)
 
 static size_t buffer_io_size(IO *io)
 {
+    assert_not_null(io);
     return io->buffer_size;
+}
+
+static bool buffer_io_truncate(IO *io, size_t new_size)
+{
+    assert_not_null(io);
+    char *new_buffer = (char*)realloc(io->buffer, new_size);
+    if (new_buffer == NULL)
+        return false;
+    io->buffer = new_buffer;
+    io->buffer_size = new_size;
+    if (io->buffer_pos >= new_size)
+        io->buffer_pos = new_size;
+    return true;
 }
 
 
@@ -149,6 +174,7 @@ IO *io_create_from_file(const char *path, const char *read_mode)
     io->write = &file_io_write;
     io->tell = &file_io_tell;
     io->size = &file_io_size;
+    io->truncate = &file_io_truncate;
     return io;
 }
 
@@ -167,6 +193,7 @@ IO *io_create_from_buffer(const char *buffer, size_t buffer_size)
     io->write = &buffer_io_write;
     io->tell = &buffer_io_tell;
     io->size = &buffer_io_size;
+    io->truncate = &buffer_io_truncate;
     return io;
 }
 
@@ -372,4 +399,11 @@ bool io_write_u64_be(IO *io, uint64_t value)
     assert_that(io->write != NULL);
     value = htobe64(value);
     return io->write(io, 8, &value);
+}
+
+bool io_truncate(IO *io, size_t new_size)
+{
+    assert_not_null(io);
+    assert_that(io->truncate != NULL);
+    return io->truncate(io, new_size);
 }
