@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -7,6 +8,81 @@
 #include "fs.h"
 #include "logger.h"
 #include "string_ex.h"
+
+static bool _get_files_accumulator(
+    const char *dir_path,
+    Array *accumulator,
+    bool recursive)
+{
+    DIR *d = opendir(dir_path);
+    if (!d)
+    {
+        log_warning("Cannot open directory %s", dir_path);
+        return false;
+    }
+
+    while (1)
+    {
+        struct dirent *entry = readdir(d);
+        if (!entry)
+            break;
+
+        int path_length = strlen(dir_path) + 1 + strlen(entry->d_name);
+        char *path = (char*)malloc(path_length + 1);
+        assert_not_null(path);
+
+        strcpy(path, dir_path);
+        strcat(path, "/");
+        strcat(path, entry->d_name);
+
+        if (entry->d_type & DT_DIR)
+        {
+            if (recursive
+                && strcmp(entry->d_name, "..") != 0
+                && strcmp(entry->d_name, ".") != 0)
+            {
+                _get_files_accumulator(path, accumulator, recursive);
+            }
+            free(path);
+        }
+        else
+        {
+            array_set(accumulator, array_size(accumulator), path);
+        }
+    }
+
+    assert_equali(0, closedir(d));
+    return true;
+}
+
+static Array *_get_files(const char *dir_path, bool recursive)
+{
+    Array *accumulator = array_create();
+    if (!_get_files_accumulator(dir_path, accumulator, recursive))
+    {
+        array_destroy(accumulator);
+        return false;
+    }
+    return accumulator;
+}
+
+
+
+bool is_dir(const char *path)
+{
+    struct stat stats;
+    return stat (path, &stats) == 0 && S_ISDIR (stats.st_mode);
+}
+
+Array *get_files_recursive(const char *dir_path)
+{
+    return _get_files(dir_path, true);
+}
+
+Array *get_files(const char *dir_path)
+{
+    return _get_files(dir_path, false);
+}
 
 char *dirname(const char *path)
 {
