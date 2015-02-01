@@ -1,7 +1,4 @@
 Port old core classes:
-- InputFiles
-- FileDecoder
-- ConverterFactory
 - Sound (raw)
 
 Refactor:
