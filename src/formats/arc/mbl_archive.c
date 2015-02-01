@@ -16,15 +16,37 @@ typedef struct
     uint32_t size;
 } TableEntry;
 
+static int mbl_check_version(
+    IO *arc_file,
+    size_t initial_position,
+    uint32_t file_count,
+    uint32_t name_length)
+{
+    io_seek(arc_file, initial_position + file_count * (name_length + 8));
+    io_skip(arc_file, -8);
+    uint32_t last_file_offset = io_read_u32_le(arc_file);
+    uint32_t last_file_size = io_read_u32_le(arc_file);
+    return last_file_offset + last_file_size == io_size(arc_file);
+}
+
 static int mbl_get_version(IO *arc_file)
 {
     uint32_t file_count = io_read_u32_le(arc_file);
-    if (!io_skip(arc_file, file_count * (16 + 8) - 8))
-        return -1;
-    uint32_t last_file_offset = io_read_u32_le(arc_file);
-    uint32_t last_file_size = io_read_u32_le(arc_file);
-    io_seek(arc_file, 0);
-    return last_file_offset + last_file_size == io_size(arc_file) ? 1 : 2;
+    if (mbl_check_version(arc_file, 4, file_count, 16))
+    {
+        io_seek(arc_file, 0);
+        return 1;
+    }
+
+    io_seek(arc_file, 4);
+    uint32_t name_length = io_read_u32_le(arc_file);
+    if (mbl_check_version(arc_file, 8, file_count, name_length))
+    {
+        io_seek(arc_file, 0);
+        return 2;
+    }
+
+    return -1;
 }
 
 static VirtualFile *mbl_read_file(void *context)
