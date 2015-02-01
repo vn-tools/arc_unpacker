@@ -77,10 +77,10 @@ static bool nwa_read_uncompressed(
     assert_not_null(samples);
     assert_not_null(sample_count);
     *sample_count = header->block_size * header->channel_count;
-    *samples = io_read_string(io, *sample_count);
+    *samples = (char*)malloc(*sample_count);
     if (*samples == NULL)
         return false;
-    return true;
+    return io_read_string(io, *samples, *sample_count);
 }
 
 static bool nwa_read_compressed(

@@ -40,8 +40,10 @@ void assert_decoded_image(
     IO *input = io_create_from_file(path_to_input, "rb");
     IO *expected = io_create_from_file(path_to_expected, "rb");
 
-    char *input_data = io_read_string(input, io_size(input));
+    char *input_data = (char*)malloc(io_size(input));
     assert_not_null(input_data);
+    io_read_string(input, input_data, io_size(input));
+
     VirtualFile *file = vf_create();
     assert_not_null(file);
     vf_set_data(file, input_data, io_size(input));
@@ -49,8 +51,9 @@ void assert_decoded_image(
 
     converter_decode(converter, file);
 
-    char *expected_boxed_data = io_read_string(expected, io_size(expected));
+    char *expected_boxed_data = (char*)malloc(io_size(expected));
     assert_not_null(expected_boxed_data);
+    io_read_string(expected, expected_boxed_data, io_size(expected));
     Image *expected_image = image_create_from_boxed(
         expected_boxed_data,
         io_size(expected));

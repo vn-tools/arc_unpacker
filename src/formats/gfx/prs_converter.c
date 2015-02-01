@@ -129,10 +129,9 @@ static bool prs_decode_pixels(
 
 static bool prs_check_magic(IO *io)
 {
-    char *magic = io_read_string(io, prs_magic_length);
-    bool ok = memcmp(magic, prs_magic, prs_magic_length) == 0;
-    free(magic);
-    return ok;
+    char magic[prs_magic_length];
+    io_read_string(io, magic, prs_magic_length);
+    return memcmp(magic, prs_magic, prs_magic_length) == 0;
 }
 
 static bool prs_decode(Converter *converter, VirtualFile *file)

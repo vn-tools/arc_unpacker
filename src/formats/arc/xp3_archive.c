@@ -41,7 +41,9 @@ static int xp3_detect_version(IO *io)
 
 static bool xp3_check_magic(IO *io, const char *expected_magic, size_t length)
 {
-    char *magic = io_read_string(io, length);
+    char *magic = (char*)malloc(length);
+    assert_not_null(magic);
+    io_read_string(io, magic, length);
     bool ok = memcmp(magic, expected_magic, length) == 0;
     free(magic);
     return ok;
@@ -74,7 +76,8 @@ static IO *xp3_read_raw_table(IO *io)
         ? io_read_u64_le(io)
         : table_size_compressed;
 
-    char *table_data = io_read_string(io, table_size_compressed);
+    char *table_data = (char*)malloc(table_size_compressed);
+    io_read_string(io, table_data, table_size_compressed);
     if (use_zlib)
     {
         char *table_data_uncompressed;
@@ -111,7 +114,10 @@ static bool xp3_read_info_chunk(IO *table_io, VirtualFile *target_file)
     __attribute__((unused)) uint64_t file_size_compressed = io_read_u64_le(table_io);
     size_t name_length = io_read_u16_le(table_io);
 
-    char *name_utf16 = io_read_string(table_io, name_length * 2);
+    char *name_utf16 = (char*)malloc(name_length * 2);
+    assert_not_null(name_utf16);
+    io_read_string(table_io, name_utf16, name_length * 2);
+
     char *name_utf8;
     assert_that(convert_encoding(
         name_utf16, name_length * 2,
@@ -119,8 +125,9 @@ static bool xp3_read_info_chunk(IO *table_io, VirtualFile *target_file)
         "UTF-16LE", "UTF-8"));
     assert_not_null(name_utf8);
     vf_set_name(target_file, name_utf8);
-    free(name_utf16);
     free(name_utf8);
+
+    free(name_utf16);
     assert_equali(name_length * 2 + 22, info_chunk_size);
     return true;
 }
@@ -143,8 +150,9 @@ static bool xp3_read_segm_chunk(
     uint64_t data_size_original = io_read_u64_le(table_io);
     uint64_t data_size_compressed = io_read_u64_le(table_io);
     io_seek(arc_io, data_offset);
-    char *data = io_read_string(arc_io, data_size_compressed);
+    char *data = (char*)malloc(data_size_compressed);
     assert_not_null(data);
+    io_read_string(arc_io, data, data_size_compressed);
     bool use_zlib = segm_flags & 7;
     if (use_zlib)
     {

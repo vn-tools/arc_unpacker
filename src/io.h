@@ -16,8 +16,8 @@ bool io_seek(IO *io, size_t offset);
 bool io_skip(IO *io, size_t offset);
 size_t io_tell(IO *io);
 
-char *io_read_until_zero(IO *io);
-char *io_read_string(IO *io, size_t length);
+bool io_read_until_zero(IO *io, char **output, size_t *output_size);
+bool io_read_string(IO *io, char *input, size_t length);
 uint8_t io_read_u8(IO *io);
 uint16_t io_read_u16_le(IO *io);
 uint32_t io_read_u32_le(IO *io);

@@ -8,9 +8,9 @@ void test_file_simple_read()
     IO *io = io_create_from_file(
         "tests/test_files/gfx/reimu_transparent.png",
         "rb");
-    char *png_magic = io_read_string(io, 4);
-    assert_equals("\x89PNG", png_magic);
-    free(png_magic);
+    char png_magic[4];
+    io_read_string(io, png_magic, 4);
+    assert_equalsn("\x89PNG", png_magic, 4);
     io_destroy(io);
 }
 
@@ -88,8 +88,11 @@ void test_buffer_seek_and_tell()
 void test_read_until_zero()
 {
     IO *io = io_create_from_buffer("abc\x00", 4);
-    char *result = io_read_until_zero(io);
+    char *result = NULL;
+    size_t length = 0;
+    io_read_until_zero(io, &result, &length);
     assert_equals("abc", result);
+    assert_equali(4, length);
     free(result);
     io_destroy(io);
 }
@@ -97,9 +100,9 @@ void test_read_until_zero()
 void test_read_string()
 {
     IO *io = io_create_from_buffer("abc\x00", 4);
-    char *result = io_read_string(io, 2);
-    assert_equals("ab", result);
-    free(result);
+    char result[2];
+    io_read_string(io, result, 2);
+    assert_equalsn("ab", result, 2);
     io_destroy(io);
 }
 
@@ -108,9 +111,9 @@ void test_write_string()
     IO *io = io_create_from_buffer("abc\x00", 4);
     io_write_string(io, "xy", 2);
     io_skip(io, -2);
-    char *result = io_read_string(io, 3);
-    assert_equals("xyc", result);
-    free(result);
+    char result[3];
+    io_read_string(io, result, 3);
+    assert_equalsn("xyc", result, 3);
     io_destroy(io);
 }
 

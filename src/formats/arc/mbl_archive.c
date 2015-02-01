@@ -32,8 +32,9 @@ static VirtualFile *mbl_read_file(void *context)
     VirtualFile *vf = vf_create();
     TableEntry *table_entry = (TableEntry*)context;
     io_seek(table_entry->io, table_entry->offset);
-    char *data = io_read_string(table_entry->io, table_entry->size);
+    char *data = (char*)malloc(table_entry->size);
     assert_not_null(data);
+    io_read_string(table_entry->io, data, table_entry->size);
     vf_set_data(vf, data, table_entry->size);
     vf_set_name(vf, table_entry->name);
     if (memcmp(data, prs_magic, prs_magic_length) == 0)
@@ -47,7 +48,6 @@ static bool mbl_unpack(
     IO *io,
     OutputFiles *output_files)
 {
-    char *tmp_name;
     size_t i, old_pos;
     int version = mbl_get_version(io);
     if (version == -1)
@@ -65,7 +65,8 @@ static bool mbl_unpack(
         assert_not_null(entry);
 
         old_pos = io_tell(io);
-        tmp_name = io_read_until_zero(io);
+        char *tmp_name = NULL;
+        io_read_until_zero(io, &tmp_name, NULL);
         assert_not_null(tmp_name);
         assert_that(convert_encoding(
             tmp_name, strlen(tmp_name),

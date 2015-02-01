@@ -21,8 +21,9 @@ static VirtualFile *read_file(void *_context)
     VirtualFile *vf = vf_create();
     Context *context = (Context*)_context;
     io_seek(context->io, context->table_entry->offset);
-    char *data = io_read_string(context->io, context->table_entry->size);
+    char *data = (char*)malloc(context->table_entry->size);
     assert_not_null(data);
+    io_read_string(context->io, data, context->table_entry->size);
     vf_set_data(vf, data, context->table_entry->size);
     vf_set_name(vf, context->table_entry->name);
     free(data);
@@ -52,7 +53,8 @@ static bool unpack(Archive *archive, IO *io, OutputFiles *output_files)
     {
         TableEntry *entry = (TableEntry*)malloc(sizeof(TableEntry));
         assert_not_null(entry);
-        entry->name = io_read_until_zero(io);
+        entry->name = NULL;
+        io_read_until_zero(io, &entry->name, NULL);
         entry->offset = io_read_u32_be(io) + offset_to_files;
         entry->size = io_read_u32_be(io);
         if (entry->offset + entry->size > io_size(io))

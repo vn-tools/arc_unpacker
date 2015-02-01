@@ -60,8 +60,9 @@ void sound_update_file(const Sound *sound, VirtualFile *file)
     io_write_u32_le(io, io_size(io));
 
     io_seek(io, 0);
-    char *data = io_read_string(io, io_size(io));
+    char *data = (char*)malloc(io_size(io));
     assert_not_null(data);
+    io_read_string(io, data, io_size(io));
     assert_that(vf_set_data(file, data, io_size(io)));
     io_destroy(io);
     free(data);

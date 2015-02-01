@@ -212,44 +212,41 @@ size_t io_tell(IO *io)
     return io->tell(io);
 }
 
-char *io_read_string(IO *io, size_t length)
+bool io_read_string(IO *io, char *output, size_t length)
 {
-    char *str;
     assert_not_null(io);
+    assert_not_null(output);
     assert_that(io->read != NULL);
-    str = (char*)malloc(length + 1);
-    if (!str)
-    {
-        log_error("Failed to allocate memory");
-        return NULL;
-    }
-    io->read(io, length, str);
-    str[length] = '\0';
-    return str;
+    return io->read(io, length, output);
 }
 
-char *io_read_until_zero(IO *io)
+bool io_read_until_zero(IO *io, char **output, size_t *output_size)
 {
-    char *str = NULL;
     char *new_str;
     char c;
-    size_t length = 0;
     assert_not_null(io);
+    assert_not_null(output);
+    *output = NULL;
+    size_t size = 0;
     do
     {
-        new_str = (char*)realloc(str, length + 1);
-        if (!new_str)
+        new_str = (char*)realloc(*output, size + 1);
+        if (new_str == NULL)
         {
-            free(str);
+            free(*output);
+            *output = NULL;
+            *output_size = 0;
             log_error("Failed to allocate memory");
-            return NULL;
+            return false;
         }
-        str = new_str;
+        *output = new_str;
         c = io_read_u8(io);
-        str[length ++] = c;
+        (*output)[size ++] = c;
     }
     while (c != '\0');
-    return str;
+    if (output_size != NULL)
+        *output_size = size;
+    return true;
 }
 
 uint8_t io_read_u8(IO *io)

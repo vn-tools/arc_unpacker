@@ -188,8 +188,9 @@ static VirtualFile *read_file(const char *file_path)
     VirtualFile *file = vf_create();
     assert_not_null(file);
 
-    char *tmp = io_read_string(input_io, io_size(input_io));
+    char *tmp = (char*)malloc(io_size(input_io));
     assert_not_null(tmp);
+    io_read_string(input_io, tmp, io_size(input_io));
     vf_set_data(file, tmp, io_size(input_io));
     free(tmp);
 
