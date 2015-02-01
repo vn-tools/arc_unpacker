@@ -84,6 +84,18 @@ Array *get_files(const char *dir_path)
     return _get_files(dir_path, false);
 }
 
+char *basename(const char *path)
+{
+    char *last_slash = strrchr(path, '\\');
+    if (strrchr(path, '/') > last_slash)
+        last_slash = strrchr(path, '/');
+    if (last_slash == NULL)
+    {
+        return strdup(path);
+    }
+    return strdup(last_slash + 1);
+}
+
 char *dirname(const char *path)
 {
     char *ret;

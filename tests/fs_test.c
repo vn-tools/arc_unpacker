@@ -30,6 +30,13 @@ void test_get_files_recursive()
     assert_that(array_size(result) > 3);
 }
 
+void test_basename(const char *expected, const char *input)
+{
+    char *dir = basename(input);
+    assert_equals(expected, dir);
+    free(dir);
+}
+
 void test_dirname(const char *expected, const char *input)
 {
     char *dir = dirname(input);
@@ -51,6 +58,16 @@ int main(void)
     test_is_dir(true, "tests");
     test_is_dir(true, "tests/");
     test_is_dir(false, "tests/test_files/gfx/usagi_opaque.png");
+
+    test_basename("", "");
+    test_basename("", "/");
+    test_basename("", "Z:/");
+    test_basename("test.txt", "test.txt");
+    test_basename("test.txt", "/test.txt");
+    test_basename("test.txt", "Z:/test.txt");
+    test_basename("test.txt", "dir/test.txt");
+    test_basename("test.txt", "/dir/test.txt");
+    test_basename("test.txt", "Z:/dir/test.txt");
 
     test_dirname("", "");
     test_dirname("/", "/");
