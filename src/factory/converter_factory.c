@@ -3,6 +3,7 @@
 #include "collections/dictionary.h"
 #include "factory/converter_factory.h"
 #include "formats/sfx/nwa_converter.h"
+#include "formats/gfx/xyz_converter.h"
 #include "formats/gfx/prs_converter.h"
 #include "logger.h"
 
@@ -37,6 +38,7 @@ static void add_format(
 static void init_factory(ConverterFactory *factory)
 {
     assert_not_null(factory);
+    add_format(factory, "xyz", &xyz_converter_create);
     add_format(factory, "nwa", &nwa_converter_create);
     add_format(factory, "prs", &prs_converter_create);
 }
