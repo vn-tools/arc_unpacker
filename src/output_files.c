@@ -14,51 +14,47 @@ struct OutputFiles
     Array *files;
 };
 
+static char *get_full_path(OutputFiles *output_files, const char *file_name)
+{
+    assert_not_null(output_files);
+    if (output_files->output_dir == NULL)
+        return strdup(file_name);
+
+    char *full_path = (char*)malloc(
+        strlen(output_files->output_dir)
+        + 1
+        + strlen(file_name) + 1);
+    assert_not_null(full_path);
+    strcpy(full_path, output_files->output_dir);
+    strcat(full_path, "/");
+    strcat(full_path, file_name);
+    return full_path;
+}
+
 static bool save_to_hdd(
     OutputFiles *output_files,
     VirtualFile *(*save_proc)(void *),
     void *context)
 {
-    VirtualFile *file;
-    char *full_path;
-    char *dir;
-    FILE *fp;
-    bool verbose = log_enabled(LOG_LEVEL_INFO);
-
     assert_not_null(output_files);
-    assert_not_null(output_files->output_dir);
     assert_that(!output_files->memory);
     assert_that(save_proc != NULL);
 
-    if (verbose)
-    {
-        printf("Extracting... ");
-        fflush(stdout);
-    }
+    log_info("Reading file...");
 
-    file = save_proc(context);
+    bool result;
+    VirtualFile *file = save_proc(context);
     if (file != NULL)
     {
-
-        full_path = (char*)malloc(
-            strlen(output_files->output_dir)
-            + 1
-            + strlen(vf_get_name(file)) + 1);
+        char *full_path = get_full_path(output_files, vf_get_name(file));
         assert_not_null(full_path);
-        strcpy(full_path, output_files->output_dir);
-        strcat(full_path, "/");
-        strcat(full_path, vf_get_name(file));
 
-        if (verbose)
-        {
-            printf("Saving to %s... ", full_path);
-            fflush(stdout);
-        }
+        log_info("Saving to %s... ", full_path);
 
-        dir = dirname(full_path);
+        char *dir = dirname(full_path);
         assert_not_null(dir);
         assert_that(mkpath(dirname(full_path)));
-        fp = fopen(full_path, "wb");
+        FILE *fp = fopen(full_path, "wb");
         if (!fp)
         {
             log_warning("Failed to open file %s", full_path);
@@ -67,21 +63,20 @@ static bool save_to_hdd(
         {
             fwrite(vf_get_data(file), 1, vf_get_size(file), fp);
             fclose(fp);
-            if (verbose)
-                puts("ok");
-            vf_destroy(file);
-            free(full_path);
-            free(dir);
-            return true;
+            result = true;
+            log_info("Saved successfully");
         }
         free(full_path);
         free(dir);
     }
+    else
+    {
+        log_error("Error while reading file");
+    }
 
-    //errors already reported with log_error and log_warn, no need to print \n
     if (file != NULL)
         vf_destroy(file);
-    return false;
+    return result;
 }
 
 static bool save_to_memory(

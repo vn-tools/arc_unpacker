@@ -9,12 +9,21 @@
 #include "fs.h"
 #include "io.h"
 #include "logger.h"
+#include "output_files.h"
 
 typedef struct
 {
     const char *format;
     Array *input_paths;
 } Options;
+
+typedef struct
+{
+    Options *options;
+    ArgParser *arg_parser;
+    ConverterFactory *conv_factory;
+    const char *path;
+} ReadContext;
 
 static bool add_path_options(ArgParser *arg_parser, Options *options)
 {
@@ -143,8 +152,6 @@ static bool guess_converter_and_decode(
             if (result)
             {
                 log_info("Success - %s decoding finished", format);
-                if (log_enabled(LOG_LEVEL_INFO))
-                    puts("");
                 break;
             }
             else
@@ -155,8 +162,6 @@ static bool guess_converter_and_decode(
         if (!result)
         {
             log_error("Nothing left to try. File not recognized.");
-            if (log_enabled(LOG_LEVEL_INFO))
-                puts("");
         }
     }
     else
@@ -169,8 +174,6 @@ static bool guess_converter_and_decode(
             log_info("Success - %s decoding finished", options->format);
         else
             log_info("Failure - %s decoding finished", options->format);
-        if (log_enabled(LOG_LEVEL_INFO))
-            puts("");
         converter_destroy(converter);
     }
 
@@ -208,18 +211,26 @@ static void set_file_path(VirtualFile *file, const char *input_path)
     free(output_path);
 }
 
-static bool write_file(VirtualFile *file)
+static VirtualFile *read_and_decode(void *_context)
 {
-    const char *file_path = vf_get_name(file);
-    IO *output_io = io_create_from_file(file_path, "wb");
-    if (!output_io)
+    ReadContext *context = (ReadContext*)_context;
+    VirtualFile *file = read_file(context->path);
+    if (file == NULL)
+        return NULL;
+
+    set_file_path(file, context->path);
+
+    if (!guess_converter_and_decode(
+        context->options,
+        context->arg_parser,
+        context->conv_factory,
+        file))
     {
-        log_warning("Cannot open %s fopr writing.", file_path);
-        return false;
+        vf_destroy(file);
+        return NULL;
     }
-    io_write_string(output_io, vf_get_data(file), vf_get_size(file));
-    io_destroy(output_io);
-    return true;
+
+    return file;
 }
 
 static bool run(
@@ -232,28 +243,21 @@ static bool run(
     assert_not_null(arg_parser);
     assert_not_null(conv_factory);
 
+    OutputFiles *output_files = output_files_create_hdd(NULL);
+    assert_not_null(output_files);
+
+    ReadContext context;
+    context.arg_parser = arg_parser;
+    context.options = options;
+    context.conv_factory = conv_factory;
+
     bool result = true;
     for (i = 0; i < array_size(options->input_paths); i ++)
     {
-        char *file_path = (char*)array_get(options->input_paths, i);
-        VirtualFile *file = read_file(file_path);
-        set_file_path(file, file_path);
-        if (file == NULL)
-            continue;
-
-        bool local_result = guess_converter_and_decode(
-            options,
-            arg_parser,
-            conv_factory,
-            file);
-        result &= local_result;
-
-        if (local_result)
-            write_file(file);
-
-        vf_destroy(file);
+        context.path = (char*)array_get(options->input_paths, i);
+        result &= output_files_save(output_files, &read_and_decode, &context);
     }
-
+    output_files_destroy(output_files);
     return result;
 }
 

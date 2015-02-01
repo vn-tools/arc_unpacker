@@ -5,8 +5,8 @@
 
 struct VirtualFile
 {
-    char *data;
     size_t size;
+    char *data;
     char *name;
 };
 
@@ -14,8 +14,8 @@ VirtualFile *vf_create()
 {
     VirtualFile *file = (VirtualFile*)malloc(sizeof(VirtualFile));
     assert_not_null(file);
-    file->data = NULL;
     file->size = 0;
+    file->data = NULL;
     file->name = NULL;
     return file;
 }
@@ -25,6 +25,7 @@ void vf_destroy(VirtualFile *file)
     assert_not_null(file);
     free(file->data);
     free(file->name);
+    free(file);
 }
 
 char *vf_get_data(VirtualFile *file)
