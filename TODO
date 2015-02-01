@@ -18,7 +18,6 @@ Port old code for formats:
 
 	- Files:
 		- Pickle
-		- CBG
 		- G00
 		- MGD
 		- Fortune Summoners
