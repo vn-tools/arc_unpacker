@@ -330,7 +330,7 @@ bool io_write_u16_le(IO *io, uint16_t value)
 {
     assert_not_null(io);
     assert_that(io->write != NULL);
-    value = le16toh(value);
+    value = htole16(value);
     return io->write(io, 2, &value);
 }
 
@@ -338,7 +338,7 @@ bool io_write_u32_le(IO *io, uint32_t value)
 {
     assert_not_null(io);
     assert_that(io->write != NULL);
-    value = le32toh(value);
+    value = htole32(value);
     return io->write(io, 4, &value);
 }
 
@@ -346,7 +346,7 @@ bool io_write_u64_le(IO *io, uint64_t value)
 {
     assert_not_null(io);
     assert_that(io->write != NULL);
-    value = le64toh(value);
+    value = htole64(value);
     return io->write(io, 8, &value);
 }
 
@@ -354,7 +354,7 @@ bool io_write_u16_be(IO *io, uint16_t value)
 {
     assert_not_null(io);
     assert_that(io->write != NULL);
-    value = be16toh(value);
+    value = htobe16(value);
     return io->write(io, 2, &value);
 }
 
@@ -362,7 +362,7 @@ bool io_write_u32_be(IO *io, uint32_t value)
 {
     assert_not_null(io);
     assert_that(io->write != NULL);
-    value = be32toh(value);
+    value = htobe32(value);
     return io->write(io, 4, &value);
 }
 
@@ -370,6 +370,6 @@ bool io_write_u64_be(IO *io, uint64_t value)
 {
     assert_not_null(io);
     assert_that(io->write != NULL);
-    value = be64toh(value);
+    value = htobe64(value);
     return io->write(io, 8, &value);
 }
