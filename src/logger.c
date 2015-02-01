@@ -13,12 +13,13 @@ static void log_text(FILE *out, const char *prefix, const char *buffer)
 {
     if (buffer == NULL || strcmp(buffer, "") == 0)
     {
-        fprintf(out, "%s\n", prefix);
+        fprintf(out, "\n");
     }
     else
     {
         fprintf(out, "%s: %s\n", prefix, buffer);
     }
+    fflush(out);
 }
 
 

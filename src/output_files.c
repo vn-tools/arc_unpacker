@@ -76,6 +76,7 @@ static bool save_to_hdd(
 
     if (file != NULL)
         vf_destroy(file);
+    log_info("");
     return result;
 }
 
