@@ -14,18 +14,38 @@
 typedef struct
 {
     const char *format;
+    const char *output_dir;
     Array *input_paths;
 } Options;
+
+typedef struct
+{
+    char *input_path;
+    char *target_path;
+} PathInfo;
 
 typedef struct
 {
     Options *options;
     ArgParser *arg_parser;
     ConverterFactory *conv_factory;
-    const char *path;
+    const PathInfo *path_info;
 } ReadContext;
 
-static bool add_path_options(ArgParser *arg_parser, Options *options)
+static void add_output_folder_option(ArgParser *arg_parser, Options *options)
+{
+    arg_parser_add_help(
+        arg_parser,
+        "-o, --out=FOLDER",
+        "Where to put the output files.");
+
+    if (arg_parser_has_switch(arg_parser, "-o"))
+        options->output_dir = arg_parser_get_switch(arg_parser, "-o");
+    if (arg_parser_has_switch(arg_parser, "--out"))
+        options->output_dir = arg_parser_get_switch(arg_parser, "--out");
+}
+
+static bool add_input_paths_option(ArgParser *arg_parser, Options *options)
 {
     options->input_paths = array_create();
 
@@ -39,18 +59,18 @@ static bool add_path_options(ArgParser *arg_parser, Options *options)
             Array *sub_paths = get_files_recursive(path);
             for (j = 0; j < array_size(sub_paths); j ++)
             {
-                array_set(
-                    options->input_paths,
-                    array_size(options->input_paths),
-                    array_get(sub_paths, j));
+                PathInfo *pi = (PathInfo*)malloc(sizeof(PathInfo));
+                pi->input_path = (char*)array_get(sub_paths, j);
+                pi->target_path = strdup(pi->input_path + strlen(path) + 1);
+                array_add(options->input_paths, pi);
             }
         }
         else
         {
-            array_set(
-                options->input_paths,
-                array_size(options->input_paths),
-                strdup(path));
+            PathInfo *pi = (PathInfo*)malloc(sizeof(PathInfo));
+            pi->input_path = strdup(path);
+            pi->target_path = basename(path);
+            array_add(options->input_paths, pi);
         }
     }
 
@@ -214,11 +234,15 @@ static void set_file_path(VirtualFile *file, const char *input_path)
 static VirtualFile *read_and_decode(void *_context)
 {
     ReadContext *context = (ReadContext*)_context;
-    VirtualFile *file = read_file(context->path);
+    VirtualFile *file = read_file(context->path_info->input_path);
     if (file == NULL)
         return NULL;
 
-    set_file_path(file, context->path);
+    set_file_path(
+        file,
+        context->options->output_dir == NULL
+            ? context->path_info->input_path
+            : context->path_info->target_path);
 
     if (!guess_converter_and_decode(
         context->options,
@@ -243,7 +267,7 @@ static bool run(
     assert_not_null(arg_parser);
     assert_not_null(conv_factory);
 
-    OutputFiles *output_files = output_files_create_hdd(NULL);
+    OutputFiles *output_files = output_files_create_hdd(options->output_dir);
     assert_not_null(output_files);
 
     ReadContext context;
@@ -254,7 +278,7 @@ static bool run(
     bool result = true;
     for (i = 0; i < array_size(options->input_paths); i ++)
     {
-        context.path = (char*)array_get(options->input_paths, i);
+        context.path_info = (PathInfo*)array_get(options->input_paths, i);
         result &= output_files_save(output_files, &read_and_decode, &context);
     }
     output_files_destroy(output_files);
@@ -267,6 +291,7 @@ int main(int argc, const char **argv)
     Options options =
     {
         .format = NULL,
+        .output_dir = NULL,
         .input_paths = NULL,
     };
 
@@ -276,6 +301,7 @@ int main(int argc, const char **argv)
     assert_not_null(arg_parser);
     arg_parser_parse(arg_parser, argc, argv);
 
+    add_output_folder_option(arg_parser, &options);
     add_format_option(arg_parser, &options);
     cli_add_quiet_option(arg_parser);
     cli_add_help_option(arg_parser);
@@ -291,7 +317,7 @@ int main(int argc, const char **argv)
     }
     else
     {
-        if (!add_path_options(arg_parser, &options))
+        if (!add_input_paths_option(arg_parser, &options))
             exit_code = 1;
         else if (!run(&options, arg_parser, conv_factory))
             exit_code = 1;
@@ -301,7 +327,12 @@ int main(int argc, const char **argv)
     {
         size_t i;
         for (i = 0; i < array_size(options.input_paths); i ++)
-            free(array_get(options.input_paths, i));
+        {
+            PathInfo *pi = (PathInfo*)array_get(options.input_paths, i);
+            free(pi->input_path);
+            free(pi->target_path);
+            free(pi);
+        }
         array_destroy(options.input_paths);
     }
     converter_factory_destroy(conv_factory);
