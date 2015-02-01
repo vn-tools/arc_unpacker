@@ -200,27 +200,6 @@ static bool guess_converter_and_decode(
     return result;
 }
 
-static VirtualFile *read_file(const char *file_path)
-{
-    IO *input_io = io_create_from_file(file_path, "rb");
-    if (!input_io)
-    {
-        log_warning("File %s does not exist.", file_path);
-        return NULL;
-    }
-    VirtualFile *file = vf_create();
-    assert_not_null(file);
-
-    char *tmp = (char*)malloc(io_size(input_io));
-    assert_not_null(tmp);
-    io_read_string(input_io, tmp, io_size(input_io));
-    vf_set_data(file, tmp, io_size(input_io));
-    free(tmp);
-
-    io_destroy(input_io);
-    return file;
-}
-
 static void set_file_path(VirtualFile *file, const char *input_path)
 {
     char *output_path = (char*)malloc(strlen(input_path) + 2);
@@ -234,7 +213,7 @@ static void set_file_path(VirtualFile *file, const char *input_path)
 static VirtualFile *read_and_decode(void *_context)
 {
     ReadContext *context = (ReadContext*)_context;
-    VirtualFile *file = read_file(context->path_info->input_path);
+    VirtualFile *file = vf_create_from_hdd(context->path_info->input_path);
     if (file == NULL)
         return NULL;
 

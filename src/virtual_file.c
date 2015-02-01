@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "assert_ex.h"
+#include "logger.h"
+#include "io.h"
 #include "virtual_file.h"
 
 struct VirtualFile
@@ -17,6 +19,29 @@ VirtualFile *vf_create()
     file->size = 0;
     file->data = NULL;
     file->name = NULL;
+    return file;
+}
+
+VirtualFile *vf_create_from_hdd(const char *path)
+{
+    IO *io = io_create_from_file(path, "rb");
+    if (!io)
+    {
+        log_warning("File %s does not exist.", path);
+        return NULL;
+    }
+
+    char *data = (char*)malloc(io_size(io));
+    assert_not_null(data);
+    io_read_string(io, data, io_size(io));
+
+    VirtualFile *file = vf_create();
+    assert_not_null(file);
+    vf_set_name(file, path);
+    vf_set_data(file, data, io_size(io));
+    free(data);
+
+    io_destroy(io);
     return file;
 }
 

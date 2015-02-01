@@ -29,6 +29,35 @@ void compare_images(
         image_pixel_data_size(expected_image));
 }
 
+Image *get_actual_image(const char *path, Converter *converter)
+{
+    VirtualFile *file = vf_create_from_hdd(path);
+    converter_decode(converter, file);
+
+    Image *image = image_create_from_boxed(
+        vf_get_data(file),
+        vf_get_size(file));
+    assert_not_null(image);
+    vf_destroy(file);
+
+    return image;
+}
+
+Image *get_expected_image(const char *path)
+{
+    IO *io = io_create_from_file(path, "rb");
+
+    char *boxed_data = (char*)malloc(io_size(io));
+    assert_not_null(boxed_data);
+    io_read_string(io, boxed_data, io_size(io));
+    io_destroy(io);
+
+    Image *image = image_create_from_boxed(boxed_data, io_size(io));
+    assert_not_null(image);
+    free(boxed_data);
+    return image;
+}
+
 void assert_decoded_image(
     Converter *converter,
     const char *path_to_input,
@@ -37,38 +66,12 @@ void assert_decoded_image(
     assert_not_null(converter);
     assert_not_null(path_to_input);
     assert_not_null(path_to_expected);
-    IO *input = io_create_from_file(path_to_input, "rb");
-    IO *expected = io_create_from_file(path_to_expected, "rb");
 
-    char *input_data = (char*)malloc(io_size(input));
-    assert_not_null(input_data);
-    io_read_string(input, input_data, io_size(input));
-
-    VirtualFile *file = vf_create();
-    assert_not_null(file);
-    vf_set_data(file, input_data, io_size(input));
-    free(input_data);
-
-    converter_decode(converter, file);
-
-    char *expected_boxed_data = (char*)malloc(io_size(expected));
-    assert_not_null(expected_boxed_data);
-    io_read_string(expected, expected_boxed_data, io_size(expected));
-    Image *expected_image = image_create_from_boxed(
-        expected_boxed_data,
-        io_size(expected));
-    assert_not_null(expected_image);
-    free(expected_boxed_data);
-
-    Image *actual_image = image_create_from_boxed(
-        vf_get_data(file),
-        vf_get_size(file));
-    assert_not_null(actual_image);
+    Image *actual_image = get_actual_image(path_to_input, converter);
+    Image *expected_image = get_expected_image(path_to_expected);
 
     compare_images(expected_image, actual_image);
 
-    vf_destroy(file);
-
-    io_destroy(input);
-    io_destroy(expected);
+    image_destroy(actual_image);
+    image_destroy(expected_image);
 }

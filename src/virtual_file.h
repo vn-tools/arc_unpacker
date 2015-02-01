@@ -6,6 +6,7 @@
 typedef struct VirtualFile VirtualFile;
 
 VirtualFile *vf_create();
+VirtualFile *vf_create_from_hdd(const char *path);
 void vf_destroy(VirtualFile *file);
 
 char *vf_get_data(VirtualFile *file);
