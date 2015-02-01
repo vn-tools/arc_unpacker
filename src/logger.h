@@ -10,6 +10,10 @@ typedef enum
     _LOG_LEVEL_COUNT,
 } LogLevel;
 
+void log_save();
+void log_silence();
+void log_restore();
+
 bool log_enabled(LogLevel level);
 void log_enable(LogLevel level);
 void log_disable(LogLevel level);

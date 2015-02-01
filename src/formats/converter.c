@@ -47,3 +47,12 @@ bool converter_decode(Converter *converter, VirtualFile *target_file)
     }
     return converter->decode(converter, target_file);
 }
+
+bool converter_try_decode(Converter *converter, VirtualFile *target_file)
+{
+    log_save();
+    log_silence();
+    bool result = converter_decode(converter, target_file);
+    log_restore();
+    return result;
+}

@@ -24,4 +24,6 @@ void converter_add_cli_help(Converter *converter, ArgParser *arg_parser);
 
 bool converter_decode(Converter *converter, VirtualFile *target_file);
 
+bool converter_try_decode(Converter *converter, VirtualFile *target_file);
+
 #endif

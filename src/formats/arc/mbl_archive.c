@@ -37,8 +37,7 @@ static VirtualFile *mbl_read_file(void *context)
     io_read_string(table_entry->io, data, table_entry->size);
     vf_set_data(vf, data, table_entry->size);
     vf_set_name(vf, table_entry->name);
-    if (memcmp(data, prs_magic, prs_magic_length) == 0)
-        converter_decode((Converter*)table_entry->archive->data, vf);
+    converter_try_decode((Converter*)table_entry->archive->data, vf);
     free(data);
     return vf;
 }

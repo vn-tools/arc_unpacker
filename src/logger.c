@@ -6,8 +6,7 @@
 
 static char buffer[1024];
 static bool levels_enabled[_LOG_LEVEL_COUNT] = { true, true, true };
-
-static void log_text(FILE *out, const char *prefix, const char *buffer);
+static bool levels_saved[_LOG_LEVEL_COUNT] = { true, true, true };
 
 static void log_text(FILE *out, const char *prefix, const char *buffer)
 {
@@ -23,6 +22,27 @@ static void log_text(FILE *out, const char *prefix, const char *buffer)
 }
 
 
+
+void log_save()
+{
+    size_t i;
+    for (i = 0; i < _LOG_LEVEL_COUNT; i ++)
+        levels_saved[i] = levels_enabled[i];
+}
+
+void log_restore()
+{
+    size_t i;
+    for (i = 0; i < _LOG_LEVEL_COUNT; i ++)
+        levels_enabled[i] = levels_saved[i];
+}
+
+void log_silence()
+{
+    size_t i;
+    for (i = 0; i < _LOG_LEVEL_COUNT; i ++)
+        levels_enabled[i] = false;
+}
 
 bool log_enabled(LogLevel level)
 {
