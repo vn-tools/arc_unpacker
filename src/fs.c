@@ -38,8 +38,8 @@ static bool _get_files_accumulator(
         if (entry->d_type & DT_DIR)
         {
             if (recursive
-                && strcmp(entry->d_name, "..") != 0
-                && strcmp(entry->d_name, ".") != 0)
+            && strcmp(entry->d_name, "..") != 0
+            && strcmp(entry->d_name, ".") != 0)
             {
                 _get_files_accumulator(path, accumulator, recursive);
             }

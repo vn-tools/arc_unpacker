@@ -136,22 +136,19 @@ static bool prs_decode(Converter *converter, VirtualFile *file)
     assert_not_null(converter);
     assert_not_null(file);
 
-    IO *io = io_create_from_buffer(vf_get_data(file), vf_get_size(file));
-    assert_not_null(io);
-
-    if (!prs_check_magic(io))
+    if (!prs_check_magic(file->io))
     {
         log_error("Not a PRS graphic file");
         return false;
     }
 
-    uint32_t source_size = io_read_u32_le(io);
-    io_skip(io, 4);
-    uint16_t image_width = io_read_u16_le(io);
-    uint16_t image_height = io_read_u16_le(io);
+    uint32_t source_size = io_read_u32_le(file->io);
+    io_skip(file->io, 4);
+    uint16_t image_width = io_read_u16_le(file->io);
+    uint16_t image_height = io_read_u16_le(file->io);
 
-    const char *source_buffer = vf_get_data(file) + io_tell(io);
-    assert_equali(source_size, vf_get_size(file) - io_tell(io));
+    char *source_buffer = (char*)malloc(source_size);
+    io_read_string(file->io, source_buffer, source_size);
 
     bool result;
     char *target_buffer = NULL;
@@ -174,14 +171,13 @@ static bool prs_decode(Converter *converter, VirtualFile *file)
             target_buffer,
             target_size,
             IMAGE_PIXEL_FORMAT_BGR);
-
         image_update_file(image, file);
         image_destroy(image);
         result = true;
     }
 
+    free(source_buffer);
     free(target_buffer);
-    io_destroy(io);
     return result;
 }
 

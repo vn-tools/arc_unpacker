@@ -18,6 +18,7 @@ size_t io_tell(IO *io);
 
 bool io_read_until_zero(IO *io, char **output, size_t *output_size);
 bool io_read_string(IO *io, char *input, size_t length);
+bool io_read_string_to_io(IO *io, IO *output, size_t length);
 uint8_t io_read_u8(IO *io);
 uint16_t io_read_u16_le(IO *io);
 uint32_t io_read_u32_le(IO *io);
@@ -34,5 +35,7 @@ bool io_write_u64_le(IO *io, uint64_t value);
 bool io_write_u16_be(IO *io, uint16_t value);
 bool io_write_u32_be(IO *io, uint32_t value);
 bool io_write_u64_be(IO *io, uint64_t value);
+
+bool io_truncate(IO *io, size_t new_size);
 
 #endif

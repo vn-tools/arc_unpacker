@@ -7,9 +7,9 @@ void test_mbl_archive(const char *path)
     VirtualFile *file1 = vf_create();
     VirtualFile *file2 = vf_create();
     vf_set_name(file1, "abc.txt");
-    vf_set_data(file1, "abc", 3);
     vf_set_name(file2, "テスト");
-    vf_set_data(file2, "AAAAAAAAAAAAAAAA", 16);
+    io_write_string(file1->io, "abc", 3);
+    io_write_string(file2->io, "AAAAAAAAAAAAAAAA", 16);
     array_set(expected_files, 0, file1);
     array_set(expected_files, 1, file2);
 

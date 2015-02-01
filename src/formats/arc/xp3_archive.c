@@ -9,7 +9,7 @@
 typedef struct
 {
     IO *table_io;
-    IO *arc_io;
+    IO *arc_file;
 } Xp3Context;
 
 static const char *xp3_magic = "XP3\r\n\x20\x0a\x1a\x8b\x67\x01";
@@ -27,57 +27,60 @@ static const size_t info_magic_length = 4;
 static const char *segm_magic = "segm";
 static const size_t segm_magic_length = 4;
 
-static int xp3_detect_version(IO *io)
+static int xp3_detect_version(IO *arc_file)
 {
     int version = 1;
-    size_t old_pos = io_tell(io);
-    assert_not_null(io);
-    io_seek(io, 19);
-    if (io_read_u32_le(io) == 1)
+    size_t old_pos = io_tell(arc_file);
+    assert_not_null(arc_file);
+    io_seek(arc_file, 19);
+    if (io_read_u32_le(arc_file) == 1)
         version = 2;
-    io_seek(io, old_pos);
+    io_seek(arc_file, old_pos);
     return version;
 }
 
-static bool xp3_check_magic(IO *io, const char *expected_magic, size_t length)
+static bool xp3_check_magic(
+    IO *arc_file,
+    const char *expected_magic,
+    size_t length)
 {
     char *magic = (char*)malloc(length);
     assert_not_null(magic);
-    io_read_string(io, magic, length);
+    io_read_string(arc_file, magic, length);
     bool ok = memcmp(magic, expected_magic, length) == 0;
     free(magic);
     return ok;
 }
 
-static uint64_t xp3_get_table_offset(IO *io, int version)
+static uint64_t xp3_get_table_offset(IO *arc_file, int version)
 {
     if (version == 1)
-        return io_read_u64_le(io);
-    uint64_t additional_header_offset = io_read_u64_le(io);
-    uint32_t minor_version = io_read_u32_le(io);
+        return io_read_u64_le(arc_file);
+    uint64_t additional_header_offset = io_read_u64_le(arc_file);
+    uint32_t minor_version = io_read_u32_le(arc_file);
     if (minor_version != 1)
     {
         log_error("Unexpected XP3 version: %d", minor_version);
         return false;
     }
 
-    io_seek(io, additional_header_offset & 0xfffffffff);
-    io_skip(io, 1); // flags?
-    io_skip(io, 8); // table size
-    return io_read_u64_le(io);
+    io_seek(arc_file, additional_header_offset & 0xfffffffff);
+    io_skip(arc_file, 1); // flags?
+    io_skip(arc_file, 8); // table size
+    return io_read_u64_le(arc_file);
 }
 
-static IO *xp3_read_raw_table(IO *io)
+static IO *xp3_read_raw_table(IO *arc_file)
 {
-    assert_not_null(io);
-    bool use_zlib = io_read_u8(io);
-    const uint64_t table_size_compressed = io_read_u64_le(io);
+    assert_not_null(arc_file);
+    bool use_zlib = io_read_u8(arc_file);
+    const uint64_t table_size_compressed = io_read_u64_le(arc_file);
     const uint64_t table_size_original = use_zlib
-        ? io_read_u64_le(io)
+        ? io_read_u64_le(arc_file)
         : table_size_compressed;
 
     char *table_data = (char*)malloc(table_size_compressed);
-    io_read_string(io, table_data, table_size_compressed);
+    io_read_string(arc_file, table_data, table_size_compressed);
     if (use_zlib)
     {
         char *table_data_uncompressed;
@@ -137,7 +140,7 @@ static bool xp3_read_info_chunk(IO *table_io, VirtualFile *target_file)
 
 static bool xp3_read_segm_chunk(
     IO *table_io,
-    IO *arc_io,
+    IO *arc_file,
     VirtualFile *target_file)
 {
     if (!xp3_check_magic(table_io, segm_magic, segm_magic_length))
@@ -152,13 +155,15 @@ static bool xp3_read_segm_chunk(
     uint64_t data_offset = io_read_u64_le(table_io);
     uint64_t data_size_original = io_read_u64_le(table_io);
     uint64_t data_size_compressed = io_read_u64_le(table_io);
-    io_seek(arc_io, data_offset);
-    char *data = (char*)malloc(data_size_compressed);
-    assert_not_null(data);
-    io_read_string(arc_io, data, data_size_compressed);
+    io_seek(arc_file, data_offset);
+
     bool use_zlib = segm_flags & 7;
     if (use_zlib)
     {
+        char *data = (char*)malloc(data_size_compressed);
+        assert_not_null(data);
+        io_read_string(arc_file, data, data_size_compressed);
+
         char *data_uncompressed;
         size_t data_size_uncompressed;
         assert_that(zlib_inflate(
@@ -168,18 +173,15 @@ static bool xp3_read_segm_chunk(
             &data_size_uncompressed));
         assert_equali(data_size_original, data_size_uncompressed);
         free(data);
-        data = data_uncompressed;
+
+        io_write_string(target_file->io, data_uncompressed, data_size_original);
+        free(data_uncompressed);
+    }
+    else
+    {
+        io_read_string_to_io(arc_file, target_file->io, data_size_original);
     }
 
-    size_t full_data_size = vf_get_size(target_file) + data_size_original;
-    char *full_data = (char*)malloc(full_data_size);
-    assert_not_null(full_data);
-    memcpy(full_data, vf_get_data(target_file), vf_get_size(target_file));
-    memcpy(full_data + vf_get_size(target_file), data, data_size_original);
-    assert_that(vf_set_data(target_file, full_data, full_data_size));
-    free(full_data);
-
-    free(data);
     return true;
 }
 
@@ -199,7 +201,7 @@ static uint32_t xp3_read_adlr_chunk(IO *table_io, uint32_t *encryption_key)
 
 static VirtualFile *xp3_read_file(void *context)
 {
-    IO *arc_io = ((Xp3Context*)context)->arc_io;
+    IO *arc_file = ((Xp3Context*)context)->arc_file;
     IO *table_io = ((Xp3Context*)context)->table_io;
     VirtualFile *target_file = vf_create();
 
@@ -220,7 +222,7 @@ static VirtualFile *xp3_read_file(void *context)
 
     while (true)
     {
-        if (!xp3_read_segm_chunk(table_io, arc_io, target_file))
+        if (!xp3_read_segm_chunk(table_io, arc_file, target_file))
             break;
     }
 
@@ -236,28 +238,31 @@ static VirtualFile *xp3_read_file(void *context)
     return target_file;
 }
 
-static bool xp3_unpack(Archive *archive, IO *io, OutputFiles *output_files)
+static bool xp3_unpack(
+    Archive *archive,
+    IO *arc_file,
+    OutputFiles *output_files)
 {
     assert_not_null(archive);
-    assert_not_null(io);
+    assert_not_null(arc_file);
     assert_not_null(output_files);
 
-    if (!xp3_check_magic(io, xp3_magic, xp3_magic_length))
+    if (!xp3_check_magic(arc_file, xp3_magic, xp3_magic_length))
     {
         log_error("Not an XP3 archive");
         return false;
     }
 
-    int version = xp3_detect_version(io);
+    int version = xp3_detect_version(arc_file);
     log_info("Version: %d", version);
 
-    uint64_t table_offset = xp3_get_table_offset(io, version);
-    io_seek(io, table_offset & 0xffffffff);
-    IO *table_io = xp3_read_raw_table(io);
+    uint64_t table_offset = xp3_get_table_offset(arc_file, version);
+    io_seek(arc_file, table_offset & 0xffffffff);
+    IO *table_io = xp3_read_raw_table(arc_file);
     assert_not_null(table_io);
 
     Xp3Context context;
-    context.arc_io = io;
+    context.arc_file = arc_file;
     context.table_io = table_io;
     while (io_tell(table_io) < io_size(table_io))
         output_files_save(output_files, &xp3_read_file, &context);

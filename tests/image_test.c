@@ -9,11 +9,7 @@ void test_transparent()
         "tests/test_files/gfx/reimu_transparent.png", "rb");
     assert_not_null(io);
 
-    char *data = (char*)malloc(io_size(io));
-    assert_not_null(data);
-    io_read_string(io, data, io_size(io));
-
-    Image *image = image_create_from_boxed(data, io_size(io));
+    Image *image = image_create_from_boxed(io);
     assert_not_null(image);
 
     assert_equali(641, image_width(image));
@@ -30,7 +26,6 @@ void test_transparent()
     assert_equali(0x17, b);
     assert_equali(0xff, a);
 
-    free(data);
     io_destroy(io);
 }
 
@@ -39,11 +34,7 @@ void test_opaque()
     IO *io = io_create_from_file("tests/test_files/gfx/usagi_opaque.png", "rb");
     assert_not_null(io);
 
-    char *data = (char*)malloc(io_size(io));
-    assert_not_null(data);
-    io_read_string(io, data, io_size(io));
-
-    Image *image = image_create_from_boxed(data, io_size(io));
+    Image *image = image_create_from_boxed(io);
     assert_not_null(image);
 
     assert_equali(640, image_width(image));
@@ -58,7 +49,6 @@ void test_opaque()
     assert_equali(106, g);
     assert_equali(52, b);
 
-    free(data);
     io_destroy(io);
 }
 

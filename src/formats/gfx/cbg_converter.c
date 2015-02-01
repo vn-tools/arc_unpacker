@@ -263,10 +263,8 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
     assert_not_null(file);
 
     bool result;
-    IO *io = io_create_from_buffer(vf_get_data(file), vf_get_size(file));
-
     char magic[cbg_magic_length];
-    io_read_string(io, magic, cbg_magic_length);
+    io_read_string(file->io, magic, cbg_magic_length);
     if (memcmp(magic, cbg_magic, cbg_magic_length) != 0)
     {
         log_error("Not a CBG image");
@@ -274,10 +272,10 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
     }
     else
     {
-        uint16_t width = io_read_u16_le(io);
-        uint16_t height = io_read_u16_le(io);
-        uint16_t bpp = io_read_u16_le(io);
-        io_skip(io, 10);
+        uint16_t width = io_read_u16_le(file->io);
+        uint16_t height = io_read_u16_le(file->io);
+        uint16_t bpp = io_read_u16_le(file->io);
+        io_skip(file->io, 10);
 
         if (!bpp_to_image_pixel_format(bpp))
         {
@@ -285,13 +283,17 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
         }
         else
         {
-            uint32_t huffman_size = io_read_u32_le(io);
-            uint32_t key = io_read_u32_le(io);
-            uint32_t freq_table_data_size = io_read_u32_le(io);
-            io_skip(io, 4);
+            uint32_t huffman_size = io_read_u32_le(file->io);
+            uint32_t key = io_read_u32_le(file->io);
+            uint32_t freq_table_data_size = io_read_u32_le(file->io);
+            io_skip(file->io, 4);
 
             uint32_t freq_table[256];
-            cbg_read_frequency_table(io, freq_table_data_size, key, freq_table);
+            cbg_read_frequency_table(
+                file->io,
+                freq_table_data_size,
+                key,
+                freq_table);
 
             CbgNodeInfo node_info[511];
             int last_node = cbg_read_node_info(freq_table, node_info);
@@ -299,7 +301,7 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
             char *huffman = (char*)malloc(huffman_size);
             assert_not_null(huffman);
             cbg_decompress_huffman(
-                io,
+                file->io,
                 last_node,
                 node_info,
                 huffman_size,

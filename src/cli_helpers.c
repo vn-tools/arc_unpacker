@@ -15,7 +15,7 @@ void cli_add_quiet_option(ArgParser *arg_parser)
     log_enable(LOG_LEVEL_ERROR);
 
     if (arg_parser_has_flag(arg_parser, "-q")
-        || arg_parser_has_flag(arg_parser, "--quiet"))
+    || arg_parser_has_flag(arg_parser, "--quiet"))
     {
         log_disable(LOG_LEVEL_INFO);
     }

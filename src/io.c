@@ -247,6 +247,37 @@ bool io_read_string(IO *io, char *output, size_t length)
     return io->read(io, length, output);
 }
 
+bool io_read_string_to_io(IO *io, IO *output, size_t length)
+{
+    assert_not_null(io);
+    assert_not_null(output);
+    bool result;
+    if (output->file != NULL)
+    {
+        // TODO improvement: use static buffer instead of such allocation
+        char *buffer = (char*)malloc(length);
+        assert_not_null(buffer);
+        result = io_read_string(io, buffer, length);
+        if (result)
+            result &= io_write_string(output, buffer, length);
+        free(buffer);
+    }
+    else
+    {
+        size_t new_pos = output->buffer_pos + length;
+        if (new_pos > output->buffer_size)
+        {
+            char *new_buffer = (char*)realloc(output->buffer, new_pos);
+            assert_not_null(new_buffer);
+            output->buffer = new_buffer;
+            output->buffer_size = new_pos;
+        }
+        result = io_read_string(io, output->buffer, length);
+        output->buffer_pos = new_pos;
+    }
+    return result;
+}
+
 bool io_read_until_zero(IO *io, char **output, size_t *output_size)
 {
     char *new_str;

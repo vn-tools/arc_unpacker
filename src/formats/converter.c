@@ -45,6 +45,7 @@ bool converter_decode(Converter *converter, VirtualFile *target_file)
         log_error("Decoding for this format is not supported");
         return false;
     }
+    io_seek(target_file->io, 0);
     return converter->decode(converter, target_file);
 }
 

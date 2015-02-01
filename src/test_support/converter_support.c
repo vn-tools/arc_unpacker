@@ -35,12 +35,13 @@ void compare_images(
 
 Image *get_actual_image(const char *path, Converter *converter)
 {
-    VirtualFile *file = vf_create_from_hdd(path);
+    IO *io = io_create_from_file(path, "rb");
+    VirtualFile *file = vf_create();
+    io_read_string_to_io(io, file->io, io_size(io));
     converter_decode(converter, file);
+    io_destroy(io);
 
-    Image *image = image_create_from_boxed(
-        vf_get_data(file),
-        vf_get_size(file));
+    Image *image = image_create_from_boxed(file->io);
     assert_not_null(image);
     vf_destroy(file);
 
@@ -50,15 +51,9 @@ Image *get_actual_image(const char *path, Converter *converter)
 Image *get_expected_image(const char *path)
 {
     IO *io = io_create_from_file(path, "rb");
-
-    char *boxed_data = (char*)malloc(io_size(io));
-    assert_not_null(boxed_data);
-    io_read_string(io, boxed_data, io_size(io));
+    Image *image = image_create_from_boxed(io);
     io_destroy(io);
-
-    Image *image = image_create_from_boxed(boxed_data, io_size(io));
     assert_not_null(image);
-    free(boxed_data);
     return image;
 }
 

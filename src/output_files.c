@@ -54,15 +54,16 @@ static bool save_to_hdd(
         char *dir = dirname(full_path);
         assert_not_null(dir);
         assert_that(mkpath(dirname(full_path)));
-        FILE *fp = fopen(full_path, "wb");
-        if (!fp)
+        IO *output_io = io_create_from_file(full_path, "wb");
+        if (!output_io)
         {
             log_warning("Failed to open file %s", full_path);
         }
         else
         {
-            fwrite(vf_get_data(file), 1, vf_get_size(file), fp);
-            fclose(fp);
+            io_seek(file->io, 0);
+            io_read_string_to_io(file->io, output_io, io_size(file->io));
+            io_destroy(output_io);
             result = true;
             log_info("Saved successfully");
         }
@@ -91,9 +92,7 @@ static bool save_to_memory(
     assert_that(output_files->memory);
     vf = save_proc(context);
     if (vf == NULL)
-    {
         return false;
-    }
     assert_that(array_add(output_files->files, vf));
     return true;
 }

@@ -211,9 +211,16 @@ static void set_file_path(VirtualFile *file, const char *input_path)
 static VirtualFile *read_and_decode(void *_context)
 {
     ReadContext *context = (ReadContext*)_context;
-    VirtualFile *file = vf_create_from_hdd(context->path_info->input_path);
-    if (file == NULL)
+
+    IO *io = io_create_from_file(context->path_info->input_path, "rb");
+    if (io == NULL)
         return NULL;
+
+    VirtualFile *file = vf_create();
+    assert_not_null(file);
+    io_read_string_to_io(io, file->io, io_size(io));
+    io_destroy(io);
+    io_seek(file->io, 0);
 
     set_file_path(
         file,

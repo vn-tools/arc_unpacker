@@ -17,11 +17,8 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
 
     bool result;
 
-    IO *io = io_create_from_buffer(vf_get_data(file), vf_get_size(file));
-    assert_not_null(io);
-
     char magic[xyz_magic_length];
-    io_read_string(io, magic, xyz_magic_length);
+    io_read_string(file->io, magic, xyz_magic_length);
 
     if (memcmp(magic, xyz_magic, xyz_magic_length) != 0)
     {
@@ -30,13 +27,13 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
     }
     else
     {
-        uint16_t width = io_read_u16_le(io);
-        uint16_t height = io_read_u16_le(io);
+        uint16_t width = io_read_u16_le(file->io);
+        uint16_t height = io_read_u16_le(file->io);
 
-        size_t compressed_data_size = io_size(io) - io_tell(io);
+        size_t compressed_data_size = io_size(file->io) - io_tell(file->io);
         char *compressed_data = (char*)malloc(compressed_data_size);
         assert_not_null(compressed_data);
-        io_read_string(io, compressed_data, compressed_data_size);
+        io_read_string(file->io, compressed_data, compressed_data_size);
 
         char *uncompressed_data = NULL;
         size_t uncompressed_data_size = 0;
@@ -76,14 +73,13 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
             pixels,
             pixels_size,
             IMAGE_PIXEL_FORMAT_RGB);
-
         image_update_file(image, file);
         image_destroy(image);
+
         free(pixels);
         result = true;
     }
 
-    io_destroy(io);
     return result;
 }
 

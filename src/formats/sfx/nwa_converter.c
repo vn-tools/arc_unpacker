@@ -100,33 +100,30 @@ static bool nwa_decode(Converter *converter, VirtualFile *file)
     assert_not_null(converter);
     assert_not_null(file);
 
-    IO *io = io_create_from_buffer(vf_get_data(file), vf_get_size(file));
-    assert_not_null(io);
-
     NwaHeader header;
-    header.channel_count = io_read_u16_le(io);
-    header.bits_per_sample = io_read_u16_le(io);
-    header.sample_rate = io_read_u32_le(io);
-    header.compression_level = (int32_t)io_read_u32_le(io);
-    header.block_count = io_read_u32_le(io);
-    header.uncompressed_size = io_read_u32_le(io);
-    header.compressed_size = io_read_u32_le(io);
-    header.sample_count = io_read_u32_le(io);
-    header.block_size = io_read_u32_le(io);
-    header.rest_size = io_read_u32_le(io);
+    header.channel_count = io_read_u16_le(file->io);
+    header.bits_per_sample = io_read_u16_le(file->io);
+    header.sample_rate = io_read_u32_le(file->io);
+    header.compression_level = (int32_t)io_read_u32_le(file->io);
+    header.block_count = io_read_u32_le(file->io);
+    header.uncompressed_size = io_read_u32_le(file->io);
+    header.compressed_size = io_read_u32_le(file->io);
+    header.sample_count = io_read_u32_le(file->io);
+    header.block_size = io_read_u32_le(file->io);
+    header.rest_size = io_read_u32_le(file->io);
 
     char *output_samples = NULL;
     size_t output_sample_count;
     bool result;
 
     if (header.compression_level == -1
-        || header.block_count == 0
-        || header.compressed_size == 0
-        || header.block_size == 0
-        || header.rest_size == 0)
+    || header.block_count == 0
+    || header.compressed_size == 0
+    || header.block_size == 0
+    || header.rest_size == 0)
     {
         result = nwa_read_uncompressed(
-            io,
+            file->io,
             &header,
             &output_samples,
             &output_sample_count);
@@ -136,12 +133,11 @@ static bool nwa_decode(Converter *converter, VirtualFile *file)
         if (!nwa_validate_header(&header))
         {
             log_error("Invalid header, decoding aborted");
-            io_destroy(io);
             return false;
         }
 
         result = nwa_read_compressed(
-            io,
+            file->io,
             &header,
             &output_samples,
             &output_sample_count);
@@ -159,7 +155,6 @@ static bool nwa_decode(Converter *converter, VirtualFile *file)
         sound_destroy(sound);
     }
 
-    io_destroy(io);
     free(output_samples);
     return true;
 }

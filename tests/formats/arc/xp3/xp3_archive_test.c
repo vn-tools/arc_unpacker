@@ -7,9 +7,9 @@ void test_xp3_archive(const char *path)
     VirtualFile *file1 = vf_create();
     VirtualFile *file2 = vf_create();
     vf_set_name(file1, "abc.txt");
-    vf_set_data(file1, "123", 3);
     vf_set_name(file2, "abc2.txt");
-    vf_set_data(file2, "AAAAAAAAAA", 10);
+    io_write_string(file1->io, "123", 3);
+    io_write_string(file2->io, "AAAAAAAAAA", 10);
     array_set(expected_files, 0, file1);
     array_set(expected_files, 1, file2);
 
