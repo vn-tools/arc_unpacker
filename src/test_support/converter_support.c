@@ -20,6 +20,10 @@ void compare_images(
     assert_equali(image_height(expected_image), image_height(actual_image));
 
     assert_equali(
+        image_pixel_format(expected_image),
+        image_pixel_format(actual_image));
+
+    assert_equali(
         image_pixel_data_size(expected_image),
         image_pixel_data_size(actual_image));
 

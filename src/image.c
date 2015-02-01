@@ -96,7 +96,10 @@ Image *image_create_from_boxed(const char *boxed_data, size_t boxed_data_size)
     png_read_png(
         png_ptr,
         info_ptr,
-        PNG_TRANSFORM_STRIP_16 | PNG_TRANSFORM_PACKING | PNG_TRANSFORM_EXPAND,
+        PNG_TRANSFORM_GRAY_TO_RGB
+            | PNG_TRANSFORM_STRIP_16
+            | PNG_TRANSFORM_PACKING
+            | PNG_TRANSFORM_EXPAND,
         NULL);
 
     int color_type;
@@ -124,8 +127,16 @@ Image *image_create_from_boxed(const char *boxed_data, size_t boxed_data_size)
         bpp = 4;
         image->pixel_format = IMAGE_PIXEL_FORMAT_RGBA;
     }
+    else if (color_type == PNG_COLOR_TYPE_GRAY)
+    {
+        bpp = 1;
+        image->pixel_format = IMAGE_PIXEL_FORMAT_GRAYSCALE;
+    }
     else
+    {
+        log_error("Unsupported color_type: %d\n", color_type);
         assert_that(1 == 0);
+    }
 
     image->pixel_data_size = image->image_width * image->image_height * bpp;
     image->internal_data = (char*)malloc(image->pixel_data_size);
@@ -206,15 +217,33 @@ void image_update_file(const Image *image, VirtualFile *file)
 
     unsigned long bpp;
     unsigned long color_type;
+    int transformations = 0;
     if (image->pixel_format == IMAGE_PIXEL_FORMAT_RGB)
     {
         bpp = 3;
         color_type = PNG_COLOR_TYPE_RGB;
     }
+    else if (image->pixel_format == IMAGE_PIXEL_FORMAT_BGR)
+    {
+        bpp = 3;
+        color_type = PNG_COLOR_TYPE_RGB;
+        transformations |= PNG_TRANSFORM_BGR;
+    }
     else if (image->pixel_format == IMAGE_PIXEL_FORMAT_RGBA)
     {
         bpp = 4;
         color_type = PNG_COLOR_TYPE_RGBA;
+    }
+    else if (image->pixel_format == IMAGE_PIXEL_FORMAT_BGRA)
+    {
+        bpp = 4;
+        color_type = PNG_COLOR_TYPE_RGBA;
+        transformations |= PNG_TRANSFORM_BGR;
+    }
+    else if (image->pixel_format == IMAGE_PIXEL_FORMAT_GRAYSCALE)
+    {
+        bpp = 1;
+        color_type = PNG_COLOR_TYPE_GRAY;
     }
     else
     {
@@ -241,15 +270,15 @@ void image_update_file(const Image *image, VirtualFile *file)
     png_set_write_fn(png_ptr, &png_holder, &my_png_write_data, &my_png_flush);
     png_write_info(png_ptr, info_ptr);
 
+    png_bytep* rows = (png_bytep*)malloc(sizeof(png_bytep)*image->image_height);
+    assert_not_null(rows);
     size_t y;
     for (y = 0; y < image->image_height; y ++)
-    {
-        png_write_row(
-            png_ptr,
-            (png_bytep) &image->pixel_data[y * image->image_width * bpp]);
-    }
-    png_write_end(png_ptr, NULL);
+        rows[y] = (png_bytep)&image->pixel_data[y * image->image_width * bpp];
+    png_set_rows(png_ptr, info_ptr, rows);
+    png_write_png(png_ptr, info_ptr, transformations, NULL);
     png_destroy_write_struct(&png_ptr, &info_ptr);
+    free(rows);
 
     vf_change_extension(file, "png");
     vf_set_data(file, png_holder.buffer, png_holder.size);

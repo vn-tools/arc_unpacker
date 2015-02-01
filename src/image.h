@@ -5,6 +5,9 @@ typedef enum
 {
     IMAGE_PIXEL_FORMAT_RGB = 1,
     IMAGE_PIXEL_FORMAT_RGBA,
+    IMAGE_PIXEL_FORMAT_GRAYSCALE,
+    IMAGE_PIXEL_FORMAT_BGR,
+    IMAGE_PIXEL_FORMAT_BGRA,
 } PixelFormat;
 
 typedef struct Image Image;

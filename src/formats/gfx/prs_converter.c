@@ -118,12 +118,6 @@ static bool prs_decode_pixels(
 
     for (i = 3; i < *target_size; i ++)
         (*target_buffer)[i] += (*target_buffer)[i-3];
-    for (i = 0; i < *target_size; i += 3)
-    {
-        int tmp = (*target_buffer)[i];
-        (*target_buffer)[i] = (*target_buffer)[i+2];
-        (*target_buffer)[i+2] = tmp;
-    }
     return true;
 }
 
@@ -176,7 +170,7 @@ static bool prs_decode(Converter *converter, VirtualFile *file)
             image_height,
             target_buffer,
             target_size,
-            IMAGE_PIXEL_FORMAT_RGB);
+            IMAGE_PIXEL_FORMAT_BGR);
 
         image_update_file(image, file);
         image_destroy(image);
