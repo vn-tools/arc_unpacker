@@ -110,8 +110,11 @@ static bool xp3_read_info_chunk(IO *table_io, VirtualFile *target_file)
     uint64_t info_chunk_size = io_read_u64_le(table_io);
 
     __attribute__((unused)) uint32_t info_flags = io_read_u32_le(table_io);
-    __attribute__((unused)) uint64_t file_size_original = io_read_u64_le(table_io);
-    __attribute__((unused)) uint64_t file_size_compressed = io_read_u64_le(table_io);
+    __attribute__((unused)) uint64_t file_size_original
+        = io_read_u64_le(table_io);
+    __attribute__((unused)) uint64_t file_size_compressed
+        = io_read_u64_le(table_io);
+
     size_t name_length = io_read_u16_le(table_io);
 
     char *name_utf16 = (char*)malloc(name_length * 2);

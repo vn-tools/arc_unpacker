@@ -117,18 +117,16 @@ static void print_help(
     arg_parser_clear_help(arg_parser);
     puts("");
 
-    if (converter == NULL)
-    {
-        puts("[file_options] depend on chosen format and are required at runtime.");
-        puts("See --help --fmt=FORMAT to get detailed help for given converter.");
-    }
-    else
+    if (converter != NULL)
     {
         converter_add_cli_help(converter, arg_parser);
         printf("[file_options] specific to %s:\n", options->format);
         puts("");
         arg_parser_print_help(arg_parser);
+        return;
     }
+    puts("[file_options] depend on chosen format and are required at runtime.");
+    puts("See --help --fmt=FORMAT to get detailed help for given converter.");
 }
 
 static bool decode(

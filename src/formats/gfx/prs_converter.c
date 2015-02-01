@@ -73,8 +73,11 @@ static bool prs_decode_pixels(
                     length += 9;
                     for (i = 0; i < length; i ++)
                     {
-                        if (source >= source_guardian || target >= target_guardian)
+                        if (source >= source_guardian
+                        || target >= target_guardian)
+                        {
                             break;
+                        }
                         *target ++ = *source ++;
                     }
                     continue;

@@ -5,7 +5,8 @@
 
 void test_transparent()
 {
-    IO *io = io_create_from_file("tests/test_files/gfx/reimu_transparent.png", "rb");
+    IO *io = io_create_from_file(
+        "tests/test_files/gfx/reimu_transparent.png", "rb");
     assert_not_null(io);
 
     char *data = (char*)malloc(io_size(io));

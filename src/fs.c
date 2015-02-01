@@ -153,7 +153,7 @@ bool mkpath(const char *path)
     }
     else if (!S_ISDIR(sb.st_mode))
     {
-        log_warning("Cannot create directory at %s - file already exists", path);
+        log_warning("Cannot create directory at %s: file already exists", path);
         return false;
     }
     return true;

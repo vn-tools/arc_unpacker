@@ -22,13 +22,13 @@ static void fail(const char *file, int line, const char *format, ...)
 
 
 
-void __assert_equali(const char *file, int line, int expected, int actual)
+void _assert_equali(const char *file, int line, int expected, int actual)
 {
     if (actual != expected)
         fail(file, line, "Fatal: expected %d, got %d", expected, actual);
 }
 
-void __assert_equals(
+void _assert_equals(
     const char *file,
     int line,
     const char *expected,
@@ -41,7 +41,7 @@ void __assert_equals(
         fail(file, line, "Fatal: expected %s, got %s", expected, actual);
 }
 
-void __assert_equalsn(
+void _assert_equalsn(
     const char *file,
     int line,
     const char *expected,
@@ -72,7 +72,7 @@ void __assert_equalsn(
     }
 }
 
-void __assert_equalp(
+void _assert_equalp(
     const char *file,
     int line,
     const void *expected,
@@ -82,19 +82,19 @@ void __assert_equalp(
         fail(file, line, "Fatal: expected %p, got %p", expected, actual);
 }
 
-void __assert_null(const char *file, int line, const void *data)
+void _assert_null(const char *file, int line, const void *data)
 {
     if (data != NULL)
         fail(file, line, "Fatal: expected NULL, got %p", data);
 }
 
-void __assert_not_null(const char *file, int line, const void *data)
+void _assert_not_null(const char *file, int line, const void *data)
 {
     if (data == NULL)
         fail(file, line, "Fatal: expected not NULL, got NULL.");
 }
 
-void __assert_that(const char *file, int line, bool expected)
+void _assert_that(const char *file, int line, bool expected)
 {
     if (!expected)
         fail(file, line, "Fatal: expected true, got false.");

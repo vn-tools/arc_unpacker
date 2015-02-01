@@ -145,7 +145,14 @@ void test_stray_with_space()
 void test_mixed_types()
 {
     ArgParser *ap = arg_parser_create();
-    const char *argv[5] = {"stray1", "--switch=s", "--flag1", "stray2", "--flag2"};
+    const char *argv[5] =
+    {
+        "stray1",
+        "--switch=s",
+        "--flag1",
+        "stray2",
+        "--flag2"
+    };
     arg_parser_parse(ap, 5, argv);
 
     assert_equals("s", arg_parser_get_switch(ap, "--switch"));

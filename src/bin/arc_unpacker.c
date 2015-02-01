@@ -77,18 +77,16 @@ static void print_help(
     arg_parser_clear_help(arg_parser);
     puts("");
 
-    if (archive == NULL)
-    {
-        puts("[arc_options] depend on each archive and are required at runtime.");
-        puts("See --help --fmt=FORMAT to get detailed help for given archive.");
-    }
-    else
+    if (archive != NULL)
     {
         archive_add_cli_help(archive, arg_parser);
         printf("[arc_options] specific to %s:\n", options->format);
         puts("");
         arg_parser_print_help(arg_parser);
+        return;
     }
+    puts("[arc_options] depend on each archive and are required at runtime.");
+    puts("See --help --fmt=FORMAT to get detailed help for given archive.");
 }
 
 static bool unpack(
