@@ -1,3 +1,5 @@
+Merge VirtualFile to IO (I just realized they essentially do the same thing)
+
 Port old code for formats:
 	- Archives:
 		- ARC
