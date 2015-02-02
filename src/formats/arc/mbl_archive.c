@@ -1,3 +1,12 @@
+// MBL archive
+//
+// Company:   Ivory
+// Engine:    MarbleEngine
+// Extension: .mbl
+//
+// Known games:
+// - Wanko to Kurasou
+
 #include <stdlib.h>
 #include <string.h>
 #include "assert_ex.h"

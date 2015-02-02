@@ -1,3 +1,12 @@
+// SAR archive
+//
+// Company:    -
+// Engine:     Nscripter
+// Extension: .sar
+//
+// Known games:
+// - Tsukihime
+
 #include <stdlib.h>
 #include "assert_ex.h"
 #include "formats/arc/sar_archive.h"

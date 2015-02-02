@@ -1,3 +1,10 @@
+// CBG image
+//
+// Company:   -
+// Engine:    BGI/Ethornell
+// Extension: -
+// Archives:  ARC
+
 #include <stdlib.h>
 #include <string.h>
 #include "assert_ex.h"

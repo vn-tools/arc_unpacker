@@ -1,3 +1,16 @@
+// XP3 archive
+//
+// Company:    -
+// Engine:     Kirikiri
+// Extension: .xp3
+//
+// Known games:
+// - Fate/Stay Night
+// - Fate/Hollow Ataraxia
+// - Sono Hanabira ni Kuchizuke o 12
+// - Sharin no Kuni, Himawari no Shoujo
+// - Comyu Kuroi Ryuu to Yasashii Oukoku
+
 #include <stdlib.h>
 #include <string.h>
 #include "assert_ex.h"

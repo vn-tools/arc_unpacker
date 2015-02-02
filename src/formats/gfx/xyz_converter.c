@@ -1,3 +1,13 @@
+// XYZ image
+//
+// Company:   Enterbrain
+// Engine:    RPGMaker
+// Extension: .xyz
+// Archives:  -
+//
+// Known games:
+// - Yume Nikki
+
 #include <stdlib.h>
 #include <string.h>
 #include "assert_ex.h"

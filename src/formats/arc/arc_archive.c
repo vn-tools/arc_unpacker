@@ -1,15 +1,18 @@
+// ARC archive
+//
+// Company:   -
+// Engine:    BGI/Ethornell
+// Extension: .arc
+//
+// Known games:
+// - Higurashi No Naku Koro Ni
+
 #include <stdlib.h>
 #include <string.h>
 #include "assert_ex.h"
 #include "formats/arc/arc_archive.h"
 #include "formats/gfx/cbg_converter.h"
 #include "logger.h"
-
-// ARC archive
-// Engine: BGI/Ethornell
-// Extension: .arc
-// Known games:
-// - Higurashi No Naku Koro Ni
 
 const char *arc_magic = "PackFile    ";
 const size_t arc_magic_length = 12;
