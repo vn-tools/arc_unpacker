@@ -13,8 +13,8 @@
 #include "io.h"
 #include "logger.h"
 
-const char *cbg_magic = "CompressedBG___\x00";
-const size_t cbg_magic_length = 16;
+static const char *cbg_magic = "CompressedBG___\x00";
+static const size_t cbg_magic_length = 16;
 
 typedef struct
 {

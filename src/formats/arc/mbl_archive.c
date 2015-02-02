@@ -20,7 +20,7 @@ typedef struct
     Converter *prs_converter;
     IO *arc_io;
     size_t name_length;
-} UnpackContext;
+} MblUnpackContext;
 
 static int mbl_check_version(
     IO *arc_io,
@@ -57,7 +57,7 @@ static int mbl_get_version(IO *arc_io)
 
 static VirtualFile *mbl_read_file(void *_context)
 {
-    UnpackContext *context = (UnpackContext*)_context;
+    MblUnpackContext *context = (MblUnpackContext*)_context;
     assert_not_null(context);
     VirtualFile *file = virtual_file_create();
 
@@ -111,7 +111,7 @@ static bool mbl_unpack(
 
     uint32_t file_count = io_read_u32_le(arc_io);
     uint32_t name_length = version == 2 ? io_read_u32_le(arc_io) : 16;
-    UnpackContext unpack_context;
+    MblUnpackContext unpack_context;
     unpack_context.prs_converter = (Converter*)archive->data;
     unpack_context.arc_io = arc_io;
     unpack_context.name_length = name_length;
@@ -123,7 +123,7 @@ static bool mbl_unpack(
     return true;
 }
 
-void mbl_cleanup(Archive *archive)
+static void mbl_cleanup(Archive *archive)
 {
     assert_not_null(archive);
     converter_destroy((Converter*)archive->data);

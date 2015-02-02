@@ -14,8 +14,8 @@
 #include "io.h"
 #include "logger.h"
 
-const char *prs_magic = "YB\x83\x03";
-const size_t prs_magic_length = 4;
+static const char *prs_magic = "YB\x83\x03";
+static const size_t prs_magic_length = 4;
 
 static bool prs_decode_pixels(
     uint16_t image_width,

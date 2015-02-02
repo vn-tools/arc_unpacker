@@ -17,8 +17,8 @@
 #include "logger.h"
 #include "string_ex.h"
 
-const char *xyz_magic = "XYZ1";
-const size_t xyz_magic_length = 4;
+static const char *xyz_magic = "XYZ1";
+static const size_t xyz_magic_length = 4;
 
 static bool xyz_decode(Converter *converter, VirtualFile *file)
 {

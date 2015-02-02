@@ -1,7 +1,7 @@
 // XP3 archive
 //
-// Company:    -
-// Engine:     Kirikiri
+// Company:   -
+// Engine:    Kirikiri
 // Extension: .xp3
 //
 // Known games:

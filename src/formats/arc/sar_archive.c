@@ -1,7 +1,7 @@
 // SAR archive
 //
-// Company:    -
-// Engine:     Nscripter
+// Company:   -
+// Engine:    Nscripter
 // Extension: .sar
 //
 // Known games:
@@ -23,12 +23,12 @@ typedef struct
 {
     IO *arc_io;
     TableEntry *table_entry;
-} UnpackContext;
+} SarUnpackContext;
 
-static VirtualFile *read_file(void *_context)
+static VirtualFile *sar_read_file(void *_context)
 {
     VirtualFile *file = virtual_file_create();
-    UnpackContext *context = (UnpackContext*)_context;
+    SarUnpackContext *context = (SarUnpackContext*)_context;
     io_seek(context->arc_io, context->table_entry->offset);
 
     io_write_string_from_io(
@@ -40,7 +40,7 @@ static VirtualFile *read_file(void *_context)
     return file;
 }
 
-static bool unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
+static bool sar_unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
 {
     TableEntry **table;
     size_t i, j;
@@ -78,12 +78,12 @@ static bool unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
         table[i] = entry;
     }
 
-    UnpackContext context;
+    SarUnpackContext context;
     context.arc_io = arc_io;
     for (i = 0; i < file_count; i ++)
     {
         context.table_entry = table[i];
-        output_files_save(output_files, &read_file, &context);
+        output_files_save(output_files, &sar_read_file, &context);
     }
 
     for (i = 0; i < file_count; i ++)
@@ -99,6 +99,6 @@ static bool unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
 Archive *sar_archive_create()
 {
     Archive *archive = archive_create();
-    archive->unpack = &unpack;
+    archive->unpack = &sar_unpack;
     return archive;
 }

@@ -14,15 +14,15 @@
 #include "formats/gfx/cbg_converter.h"
 #include "logger.h"
 
-const char *arc_magic = "PackFile    ";
-const size_t arc_magic_length = 12;
+static const char *arc_magic = "PackFile    ";
+static const size_t arc_magic_length = 12;
 
 typedef struct
 {
     IO *arc_io;
     Converter *cbg_converter;
     size_t file_count;
-} UnpackContext;
+} ArcUnpackContext;
 
 static bool arc_check_magic(IO *arc_io)
 {
@@ -33,7 +33,7 @@ static bool arc_check_magic(IO *arc_io)
 
 static VirtualFile *arc_read_file(void *_context)
 {
-    UnpackContext *context = (UnpackContext*)_context;
+    ArcUnpackContext *context = (ArcUnpackContext*)_context;
     assert_not_null(context);
 
     VirtualFile *file = virtual_file_create();
@@ -84,7 +84,7 @@ static bool arc_unpack(
         return false;
     }
 
-    UnpackContext unpack_context;
+    ArcUnpackContext unpack_context;
     unpack_context.cbg_converter = (Converter*)archive->data;
     unpack_context.arc_io = arc_io;
     unpack_context.file_count = file_count;
