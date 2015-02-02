@@ -3,9 +3,10 @@
 #include "assert_ex.h"
 #include "collections/dictionary.h"
 #include "factory/archive_factory.h"
-#include "formats/arc/xp3_archive.h"
+#include "formats/arc/arc_archive.h"
 #include "formats/arc/mbl_archive.h"
 #include "formats/arc/sar_archive.h"
+#include "formats/arc/xp3_archive.h"
 #include "logger.h"
 
 struct ArchiveFactory
@@ -38,6 +39,7 @@ static void add_format(
 
 static void init_factory(ArchiveFactory *factory)
 {
+    add_format(factory, "arc", &arc_archive_create);
     add_format(factory, "xp3", &xp3_archive_create);
     add_format(factory, "mbl", &mbl_archive_create);
     add_format(factory, "sar", &sar_archive_create);
