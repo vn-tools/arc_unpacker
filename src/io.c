@@ -371,7 +371,7 @@ bool io_write_string_from_io(IO *io, IO *input, size_t length)
             io->buffer = new_buffer;
             io->buffer_size = new_pos;
         }
-        result = io_read_string(input, io->buffer, length);
+        result = io_read_string(input, io->buffer + io->buffer_pos, length);
         io->buffer_pos = new_pos;
     }
     return result;
