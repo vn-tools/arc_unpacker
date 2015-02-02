@@ -22,9 +22,9 @@ static VirtualFile *read_file(void *_context)
     Context *context = (Context*)_context;
     io_seek(context->arc_file, context->table_entry->offset);
 
-    io_read_string_to_io(
-        context->arc_file,
+    io_write_string_from_io(
         vf->io,
+        context->arc_file,
         context->table_entry->size);
 
     vf_set_name(vf, context->table_entry->name);

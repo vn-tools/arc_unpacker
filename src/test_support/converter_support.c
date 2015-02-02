@@ -37,7 +37,7 @@ Image *get_actual_image(const char *path, Converter *converter)
 {
     IO *io = io_create_from_file(path, "rb");
     VirtualFile *file = vf_create();
-    io_read_string_to_io(io, file->io, io_size(io));
+    io_write_string_from_io(file->io, io, io_size(io));
     converter_decode(converter, file);
     io_destroy(io);
 

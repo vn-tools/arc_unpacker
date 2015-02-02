@@ -179,7 +179,7 @@ static bool xp3_read_segm_chunk(
     }
     else
     {
-        io_read_string_to_io(arc_file, target_file->io, data_size_original);
+        io_write_string_from_io(target_file->io, arc_file, data_size_original);
     }
 
     return true;

@@ -54,7 +54,7 @@ static VirtualFile *mbl_read_file(void *context)
     VirtualFile *vf = vf_create();
     TableEntry *table_entry = (TableEntry*)context;
     io_seek(table_entry->arc_file, table_entry->offset);
-    io_read_string_to_io(table_entry->arc_file, vf->io, table_entry->size);
+    io_write_string_from_io(vf->io, table_entry->arc_file, table_entry->size);
     vf_set_name(vf, table_entry->name);
 
     converter_try_decode((Converter*)table_entry->archive->data, vf);

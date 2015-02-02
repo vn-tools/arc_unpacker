@@ -218,7 +218,7 @@ static VirtualFile *read_and_decode(void *_context)
 
     VirtualFile *file = vf_create();
     assert_not_null(file);
-    io_read_string_to_io(io, file->io, io_size(io));
+    io_write_string_from_io(file->io, io,  io_size(io));
     io_destroy(io);
     io_seek(file->io, 0);
 

@@ -62,7 +62,7 @@ static bool save_to_hdd(
         else
         {
             io_seek(file->io, 0);
-            io_read_string_to_io(file->io, output_io, io_size(file->io));
+            io_write_string_from_io(output_io, file->io, io_size(file->io));
             io_destroy(output_io);
             result = true;
             log_info("Saved successfully");
