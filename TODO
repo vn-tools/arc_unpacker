@@ -8,12 +8,10 @@ Port old code for formats:
 		- NSA
 		- PAK
 		- RGSSAD
-		- RPA
 		- XP3 (F/SN, CXDEC)
 		- YKC
 
 	- Files:
-		- Pickle
 		- G00
 		- MGD
 		- Fortune Summoners
