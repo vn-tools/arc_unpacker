@@ -87,15 +87,21 @@ void test_trim_right_trim_to_empty_string()
 
 void test_zlib_inflate()
 {
-    char *output;
-    size_t output_size;
-    zlib_inflate(
+    const char *input =
         "\x78\xda\xcb\xc9\x4c\x4b\x55\xc8"
         "\x2c\x56\x48\xce\x4f\x49\xe5\x02"
-        "\x00\x20\xc1\x04\x62\x0a",
-        21,
-        &output,
-        &output_size);
+        "\x00\x20\xc1\x04\x62\x0a";
+    char *output;
+    size_t output_size;
+
+    assert_that(zlib_inflate(input, 21, &output, &output_size));
+    assert_equali(13, output_size);
+    assert_equals("life is code\n", output);
+    free(output);
+
+    output = NULL;
+
+    assert_that(zlib_inflate(input, 21, &output, NULL));
     assert_equali(13, output_size);
     assert_equals("life is code\n", output);
     free(output);

@@ -24,7 +24,10 @@ bool zlib_inflate(
     z_stream stream;
     assert_not_null(input);
     assert_not_null(output);
-    assert_not_null(output_size);
+
+    size_t tmp;
+    if (output_size == NULL)
+        output_size = &tmp;
 
     if (input_size < SSIZE_MAX / 10)
         *output_size = input_size;
