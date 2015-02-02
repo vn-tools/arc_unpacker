@@ -31,7 +31,9 @@ void compare_files(Array *expected_files, Array *actual_files)
     {
         expected_file = (VirtualFile*)array_get(expected_files, i);
         actual_file = (VirtualFile*)array_get(actual_files, i);
-        assert_equals(vf_get_name(expected_file), vf_get_name(actual_file));
+        assert_equals(
+            virtual_file_get_name(expected_file),
+            virtual_file_get_name(actual_file));
         assert_equali(io_size(expected_file->io), io_size(actual_file->io));
         io_seek(expected_file->io, 0);
         io_seek(actual_file->io, 0);

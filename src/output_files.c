@@ -46,7 +46,9 @@ static bool save_to_hdd(
     VirtualFile *file = save_proc(context);
     if (file != NULL)
     {
-        char *full_path = get_full_path(output_files, vf_get_name(file));
+        char *full_path = get_full_path(
+            output_files,
+            virtual_file_get_name(file));
         assert_not_null(full_path);
 
         log_info("Saving to %s... ", full_path);
@@ -76,7 +78,7 @@ static bool save_to_hdd(
     }
 
     if (file != NULL)
-        vf_destroy(file);
+        virtual_file_destroy(file);
     log_info("");
     return result;
 }
@@ -86,14 +88,14 @@ static bool save_to_memory(
     VirtualFile *(*save_proc)(void *),
     void *context)
 {
-    VirtualFile *vf;
+    VirtualFile *file;
     assert_not_null(output_files);
     assert_that(save_proc != NULL);
     assert_that(output_files->memory);
-    vf = save_proc(context);
-    if (vf == NULL)
+    file = save_proc(context);
+    if (file == NULL)
         return false;
-    assert_that(array_add(output_files->files, vf));
+    assert_that(array_add(output_files->files, file));
     return true;
 }
 
@@ -127,7 +129,10 @@ void output_files_destroy(OutputFiles *output_files)
     if (output_files->memory)
     {
         for (i = 0; i < array_size(output_files->files); i ++)
-            vf_destroy((VirtualFile*)array_get(output_files->files, i));
+        {
+            VirtualFile *file = (VirtualFile*)array_get(output_files->files, i);
+            virtual_file_destroy(file);
+        }
         array_destroy(output_files->files);
     }
     free(output_files);

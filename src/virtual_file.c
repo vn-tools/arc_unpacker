@@ -10,7 +10,7 @@ typedef struct
     char *name;
 } Internals;
 
-VirtualFile *vf_create()
+VirtualFile *virtual_file_create()
 {
     VirtualFile *file = (VirtualFile*)malloc(sizeof(VirtualFile));
     assert_not_null(file);
@@ -26,7 +26,7 @@ VirtualFile *vf_create()
     return file;
 }
 
-void vf_destroy(VirtualFile *file)
+void virtual_file_destroy(VirtualFile *file)
 {
     assert_not_null(file);
     io_destroy(file->io);
@@ -34,7 +34,7 @@ void vf_destroy(VirtualFile *file)
     free(file);
 }
 
-void vf_change_extension(VirtualFile *file, const char *new_extension)
+void virtual_file_change_extension(VirtualFile *file, const char *new_ext)
 {
     char *name = ((Internals*)file->internals)->name;
     assert_not_null(file);
@@ -45,26 +45,26 @@ void vf_change_extension(VirtualFile *file, const char *new_extension)
     if (ptr != NULL)
         *ptr = '\0';
 
-    while (new_extension[0] == '.')
-        new_extension ++;
+    while (new_ext[0] == '.')
+        new_ext ++;
 
     size_t base_length = strlen(name);
     char *new_name = (char*)realloc(
         name,
-        base_length + 1 + strlen(new_extension) + 1);
+        base_length + 1 + strlen(new_ext) + 1);
 
     assert_not_null(new_name);
     strcpy(new_name + base_length, ".");
-    strcpy(new_name + base_length + 1, new_extension);
+    strcpy(new_name + base_length + 1, new_ext);
     ((Internals*)file->internals)->name = new_name;
 }
 
-const char *vf_get_name(VirtualFile *file)
+const char *virtual_file_get_name(VirtualFile *file)
 {
     return ((Internals*)file->internals)->name;
 }
 
-bool vf_set_name(VirtualFile *file, const char *new_name)
+bool virtual_file_set_name(VirtualFile *file, const char *new_name)
 {
     char *name = ((Internals*)file->internals)->name;
     assert_not_null(file);

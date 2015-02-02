@@ -3,49 +3,49 @@
 
 void test_empty_file()
 {
-    VirtualFile *file = vf_create();
+    VirtualFile *file = virtual_file_create();
     assert_not_null(file->io);
-    assert_null(vf_get_name(file));
-    vf_destroy(file);
+    assert_null(virtual_file_get_name(file));
+    virtual_file_destroy(file);
 }
 
 void test_setting_name()
 {
-    VirtualFile *file = vf_create();
-    assert_that(vf_set_name(file, "abc"));
-    assert_equals("abc", vf_get_name(file));
-    vf_destroy(file);
+    VirtualFile *file = virtual_file_create();
+    assert_that(virtual_file_set_name(file, "abc"));
+    assert_equals("abc", virtual_file_get_name(file));
+    virtual_file_destroy(file);
 }
 
 void test_changing_extension_null()
 {
-    VirtualFile *file = vf_create();
-    vf_change_extension(file, "xyz");
-    assert_null(vf_get_name(file));
+    VirtualFile *file = virtual_file_create();
+    virtual_file_change_extension(file, "xyz");
+    assert_null(virtual_file_get_name(file));
 }
 
 void test_changing_extension_without_extension()
 {
-    VirtualFile *file = vf_create();
-    assert_that(vf_set_name(file, "abc"));
-    vf_change_extension(file, "xyz");
-    assert_equals("abc.xyz", vf_get_name(file));
+    VirtualFile *file = virtual_file_create();
+    assert_that(virtual_file_set_name(file, "abc"));
+    virtual_file_change_extension(file, "xyz");
+    assert_equals("abc.xyz", virtual_file_get_name(file));
 }
 
 void test_changing_extension_with_extension()
 {
-    VirtualFile *file = vf_create();
-    assert_that(vf_set_name(file, "abc.de"));
-    vf_change_extension(file, "xyz");
-    assert_equals("abc.xyz", vf_get_name(file));
+    VirtualFile *file = virtual_file_create();
+    assert_that(virtual_file_set_name(file, "abc.de"));
+    virtual_file_change_extension(file, "xyz");
+    assert_equals("abc.xyz", virtual_file_get_name(file));
 }
 
 void test_changing_extension_with_extra_dots()
 {
-    VirtualFile *file = vf_create();
-    assert_that(vf_set_name(file, "abc.de"));
-    vf_change_extension(file, ".xyz");
-    assert_equals("abc.xyz", vf_get_name(file));
+    VirtualFile *file = virtual_file_create();
+    assert_that(virtual_file_set_name(file, "abc.de"));
+    virtual_file_change_extension(file, ".xyz");
+    assert_equals("abc.xyz", virtual_file_get_name(file));
 }
 
 int main(void)

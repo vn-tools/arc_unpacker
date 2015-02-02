@@ -258,5 +258,5 @@ void image_update_file(const Image *image, VirtualFile *file)
     png_destroy_write_struct(&png_ptr, &info_ptr);
     free(rows);
 
-    vf_change_extension(file, "png");
+    virtual_file_change_extension(file, "png");
 }

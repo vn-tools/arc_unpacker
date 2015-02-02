@@ -62,5 +62,5 @@ void sound_update_file(const Sound *sound, VirtualFile *file)
     io_seek(file->io, 4);
     io_write_u32_le(file->io, io_size(file->io));
 
-    vf_change_extension(file, "wav");
+    virtual_file_change_extension(file, "wav");
 }

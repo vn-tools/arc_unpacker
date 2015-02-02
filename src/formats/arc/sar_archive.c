@@ -12,37 +12,37 @@ typedef struct
 
 typedef struct
 {
-    IO *arc_file;
+    IO *arc_io;
     TableEntry *table_entry;
-} Context;
+} UnpackContext;
 
 static VirtualFile *read_file(void *_context)
 {
-    VirtualFile *vf = vf_create();
-    Context *context = (Context*)_context;
-    io_seek(context->arc_file, context->table_entry->offset);
+    VirtualFile *file = virtual_file_create();
+    UnpackContext *context = (UnpackContext*)_context;
+    io_seek(context->arc_io, context->table_entry->offset);
 
     io_write_string_from_io(
-        vf->io,
-        context->arc_file,
+        file->io,
+        context->arc_io,
         context->table_entry->size);
 
-    vf_set_name(vf, context->table_entry->name);
-    return vf;
+    virtual_file_set_name(file, context->table_entry->name);
+    return file;
 }
 
-static bool unpack(Archive *archive, IO *arc_file, OutputFiles *output_files)
+static bool unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
 {
     TableEntry **table;
     size_t i, j;
 
     assert_not_null(archive);
-    assert_not_null(arc_file);
+    assert_not_null(arc_io);
     assert_not_null(output_files);
 
-    uint16_t file_count = io_read_u16_be(arc_file);
-    uint32_t offset_to_files = io_read_u32_be(arc_file);
-    if (offset_to_files > io_size(arc_file))
+    uint16_t file_count = io_read_u16_be(arc_io);
+    uint32_t offset_to_files = io_read_u32_be(arc_io);
+    if (offset_to_files > io_size(arc_io))
     {
         log_error("Bad offset to files");
         return false;
@@ -55,10 +55,10 @@ static bool unpack(Archive *archive, IO *arc_file, OutputFiles *output_files)
         TableEntry *entry = (TableEntry*)malloc(sizeof(TableEntry));
         assert_not_null(entry);
         entry->name = NULL;
-        io_read_until_zero(arc_file, &entry->name, NULL);
-        entry->offset = io_read_u32_be(arc_file) + offset_to_files;
-        entry->size = io_read_u32_be(arc_file);
-        if (entry->offset + entry->size > io_size(arc_file))
+        io_read_until_zero(arc_io, &entry->name, NULL);
+        entry->offset = io_read_u32_be(arc_io) + offset_to_files;
+        entry->size = io_read_u32_be(arc_io);
+        if (entry->offset + entry->size > io_size(arc_io))
         {
             log_error("Bad offset to file");
             for (j = 0; j < i; j ++)
@@ -69,8 +69,8 @@ static bool unpack(Archive *archive, IO *arc_file, OutputFiles *output_files)
         table[i] = entry;
     }
 
-    Context context;
-    context.arc_file = arc_file;
+    UnpackContext context;
+    context.arc_io = arc_io;
     for (i = 0; i < file_count; i ++)
     {
         context.table_entry = table[i];

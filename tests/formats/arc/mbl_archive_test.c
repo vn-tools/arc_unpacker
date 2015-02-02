@@ -4,10 +4,10 @@
 void test_mbl_archive(const char *path)
 {
     Array *expected_files = array_create();
-    VirtualFile *file1 = vf_create();
-    VirtualFile *file2 = vf_create();
-    vf_set_name(file1, "abc.txt");
-    vf_set_name(file2, "テスト");
+    VirtualFile *file1 = virtual_file_create();
+    VirtualFile *file2 = virtual_file_create();
+    virtual_file_set_name(file1, "abc.txt");
+    virtual_file_set_name(file2, "テスト");
     io_write_string(file1->io, "abc", 3);
     io_write_string(file2->io, "AAAAAAAAAAAAAAAA", 16);
     array_set(expected_files, 0, file1);
@@ -21,8 +21,8 @@ void test_mbl_archive(const char *path)
     compare_files(expected_files, actual_files);
     output_files_destroy(output_files);
 
-    vf_destroy(file1);
-    vf_destroy(file2);
+    virtual_file_destroy(file1);
+    virtual_file_destroy(file2);
     archive_destroy(archive);
     array_destroy(expected_files);
 }

@@ -36,14 +36,14 @@ void compare_images(
 Image *get_actual_image(const char *path, Converter *converter)
 {
     IO *io = io_create_from_file(path, "rb");
-    VirtualFile *file = vf_create();
+    VirtualFile *file = virtual_file_create();
     io_write_string_from_io(file->io, io, io_size(io));
     converter_decode(converter, file);
     io_destroy(io);
 
     Image *image = image_create_from_boxed(file->io);
     assert_not_null(image);
-    vf_destroy(file);
+    virtual_file_destroy(file);
 
     return image;
 }

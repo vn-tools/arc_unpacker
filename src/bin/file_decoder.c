@@ -204,7 +204,7 @@ static void set_file_path(VirtualFile *file, const char *input_path)
     assert_not_null(output_path);
     strcpy(output_path, input_path);
     strcat(output_path, "~");
-    vf_set_name(file, output_path);
+    virtual_file_set_name(file, output_path);
     free(output_path);
 }
 
@@ -216,7 +216,7 @@ static VirtualFile *read_and_decode(void *_context)
     if (io == NULL)
         return NULL;
 
-    VirtualFile *file = vf_create();
+    VirtualFile *file = virtual_file_create();
     assert_not_null(file);
     io_write_string_from_io(file->io, io,  io_size(io));
     io_destroy(io);
@@ -234,7 +234,7 @@ static VirtualFile *read_and_decode(void *_context)
         context->conv_factory,
         file))
     {
-        vf_destroy(file);
+        virtual_file_destroy(file);
         return NULL;
     }
 
