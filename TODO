@@ -3,7 +3,6 @@ Port old code for formats:
 		- EXE
 		- FJSYS
 		- Melty Blood
-		- NPA
 		- NPA (S;G)
 		- NSA
 		- PAK
@@ -19,5 +18,8 @@ Port old code for formats:
 		- YKG
 		- MSD
 		- YKS
+
+Unit tests (low priority):
+	- NPA archive
 
 The ride never ends!

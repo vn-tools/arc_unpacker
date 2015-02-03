@@ -39,7 +39,7 @@ void archive_add_cli_help(Archive *archive, ArgParser *arg_parser)
 
 bool archive_unpack(
     Archive *archive,
-    IO *archive_file,
+    IO *arc_io,
     OutputFiles *output_files)
 {
     assert_not_null(archive);
@@ -48,5 +48,5 @@ bool archive_unpack(
         log_error("Unpacking for this format is not supported");
         return false;
     }
-    return archive->unpack(archive, archive_file, output_files);
+    return archive->unpack(archive, arc_io, output_files);
 }

@@ -25,7 +25,7 @@ void archive_add_cli_help(Archive *archive, ArgParser *arg_parser);
 
 bool archive_unpack(
     Archive *archive,
-    IO *archive_file,
+    IO *arc_io,
     OutputFiles *output_files);
 
 #endif
