@@ -9,7 +9,7 @@
 #include "logger.h"
 #include "string_ex.h"
 
-#if defined(linux) || defined(unix)
+#if defined(__linux) || defined(__unix)
     #define p_mkdir(name,chmod) mkdir(name, chmod)
 #else
     #define p_mkdir(name,chmod) _mkdir(name)
@@ -41,7 +41,7 @@ static bool _get_files_accumulator(
         strcat(path, "/");
         strcat(path, entry->d_name);
 
-        if (entry->d_type & DT_DIR)
+        if (is_dir(path))
         {
             if (recursive
             && strcmp(entry->d_name, "..") != 0
@@ -77,7 +77,7 @@ static Array *_get_files(const char *dir_path, bool recursive)
 bool is_dir(const char *path)
 {
     struct stat stats;
-    return stat (path, &stats) == 0 && S_ISDIR (stats.st_mode);
+    return stat(path, &stats) == 0 && S_ISDIR (stats.st_mode);
 }
 
 Array *get_files_recursive(const char *dir_path)
