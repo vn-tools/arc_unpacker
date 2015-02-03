@@ -20,7 +20,7 @@ static void my_png_write_data(
     png_size_t length)
 {
     IO *io = (IO*)png_get_io_ptr(png_ptr);
-    io_write_string(io, (char*)data, length);
+    assert_that(io_write_string(io, (char*)data, length));
 }
 
 static void my_png_read_data(
@@ -29,7 +29,7 @@ static void my_png_read_data(
     png_size_t length)
 {
     IO *io = (IO*)png_get_io_ptr(png_ptr);
-    io_read_string(io, (char*)data, length);
+    assert_that(io_read_string(io, (char*)data, length));
 }
 
 static void my_png_flush(png_structp png_ptr __attribute__((unused)))
@@ -63,15 +63,11 @@ Image *image_create_from_boxed(IO *io)
     Image *image = (Image*)malloc(sizeof(Image));
 
     png_structp png_ptr = png_create_read_struct(
-        PNG_LIBPNG_VER_STRING,
-        NULL,
-        NULL,
-        NULL);
+        PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     assert_not_null(png_ptr);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
     assert_not_null(info_ptr);
-    assert_that(setjmp(png_jmpbuf(png_ptr)) == 0);
 
     png_set_read_fn(png_ptr, io, &my_png_read_data);
     png_read_png(
@@ -88,8 +84,8 @@ Image *image_create_from_boxed(IO *io)
     png_get_IHDR(
         png_ptr,
         info_ptr,
-        &image->image_width,
-        &image->image_height,
+        (png_uint_32*)&image->image_width,
+        (png_uint_32*)&image->image_height,
         &bits_per_channel,
         &color_type,
         NULL,

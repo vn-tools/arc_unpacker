@@ -143,6 +143,14 @@ static size_t buffer_io_size(IO *io)
 static bool buffer_io_truncate(IO *io, size_t new_size)
 {
     assert_not_null(io);
+    if (new_size == 0)
+    {
+        free(io->buffer);
+        io->buffer_size = 0;
+        io->buffer_pos = 0;
+        io->buffer = NULL;
+        return true;
+    }
     char *new_buffer = (char*)realloc(io->buffer, new_size);
     if (new_buffer == NULL)
         return false;
