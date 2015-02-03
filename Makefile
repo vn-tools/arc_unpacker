@@ -10,7 +10,7 @@ TEST_BIN_DIR = bin/tests
 TEST_OBJ_DIR = obj/tests
 
 CC       = gcc
-LINKER   = gcc -o
+LINKER   = $(CC) -o
 RM       = rm -rf
 MKPATH   = mkdir -p
 STRIP    = /usr/bin/strip
@@ -57,6 +57,7 @@ DEBUG_OBJECTS := $(DEBUG_SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/debug/%.o)
 
 .PHONY: release_binaries debug_binaries
 release_binaries: $(BIN_DIR)/release/arc_unpacker $(BIN_DIR)/release/file_decoder
+	@if [ -f "$(STRIP)" ]; then $(STRIP) --strip-all $(BIN_DIR)/release/*; fi
 debug_binaries: $(BIN_DIR)/debug/arc_unpacker $(BIN_DIR)/debug/file_decoder
 
 $(BIN_DIR)/debug/%: $(OBJ_DIR)/debug/bin/%.o $(DEBUG_OBJECTS)
@@ -68,7 +69,6 @@ $(BIN_DIR)/release/%: $(OBJ_DIR)/release/bin/%.o $(RELEASE_OBJECTS)
 	@$(MKPATH) $(dir $@)
 	@echo Linking $@
 	@$(LINKER) $@ $^ $(LFLAGS)
-	@if [ -f "$(STRIP)" ]; then $(STRIP) --strip-all $@; fi
 
 $(OBJ_DIR)/release/%.o: $(SRC_DIR)/%.c
 	@$(MKPATH) $(dir $@)
