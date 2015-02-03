@@ -1,5 +1,6 @@
 #include <png.h>
 #include <stdlib.h>
+#include <string.h>
 #include "assert_ex.h"
 #include "image.h"
 #include "logger.h"
@@ -186,7 +187,6 @@ void image_update_file(const Image *image, VirtualFile *file)
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
     assert_not_null(info_ptr);
-    assert_that(setjmp(png_jmpbuf(png_ptr)) == 0);
 
     unsigned long bpp;
     unsigned long color_type;

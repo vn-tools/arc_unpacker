@@ -7,6 +7,24 @@
 #include "logger.h"
 #include "string_ex.h"
 
+#ifndef SIZE_MAX
+#define SIZE_MAX ((size_t) -1)
+#endif
+
+char *strndup(const char *source, const size_t size)
+{
+    char *target = (char*)malloc(size + 1);
+    assert_not_null(target);
+    memcpy(target, source, size);
+    target[size] = '\0';
+    return target;
+}
+
+char *strdup(const char *source)
+{
+    return strndup(source, strlen(source));
+}
+
 void trim_right(char *target, const char *chars)
 {
     char *end = target + strlen(target) - 1;
@@ -29,7 +47,7 @@ bool zlib_inflate(
     if (output_size == NULL)
         output_size = &tmp;
 
-    if (input_size < SSIZE_MAX / 10)
+    if (input_size < SIZE_MAX / 10)
         *output_size = input_size;
     else
         *output_size = input_size;
@@ -62,11 +80,11 @@ bool zlib_inflate(
 
             case Z_BUF_ERROR:
             case Z_OK:
-                if (*output_size < SSIZE_MAX / 2)
+                if (*output_size < SIZE_MAX / 2)
                 {
                     *output_size *= 2;
                 }
-                else if (*output_size == SSIZE_MAX - 1)
+                else if (*output_size == SIZE_MAX - 1)
                 {
                     log_error("input too large");
                     free(*output);
@@ -76,7 +94,7 @@ bool zlib_inflate(
                 }
                 else
                 {
-                    *output_size = SSIZE_MAX - 1;
+                    *output_size = SIZE_MAX - 1;
                 }
                 *output = (char*)realloc(*output, *output_size + 1);
                 assert_not_null(*output);

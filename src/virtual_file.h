@@ -1,7 +1,7 @@
 #ifndef VIRTUAL_FILE_H
 #define VIRTUAL_FILE_H
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include "io.h"
 
 typedef struct

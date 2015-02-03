@@ -1,7 +1,7 @@
 #ifndef FACTORY_CONVERTER_FACTORY_H
 #define FACTORY_CONVERTER_FACTORY_H
-#include "formats/converter.h"
 #include "collections/array.h"
+#include "formats/converter.h"
 
 typedef struct ConverterFactory ConverterFactory;
 

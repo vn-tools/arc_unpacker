@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "assert_ex.h"
+#include "endian.h"
 #include "g00_converter.h"
 #include "image.h"
 #include "io.h"

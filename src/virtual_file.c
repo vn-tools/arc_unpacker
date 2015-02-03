@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "assert_ex.h"
-#include "logger.h"
 #include "io.h"
+#include "logger.h"
+#include "string_ex.h"
 #include "virtual_file.h"
 
 typedef struct

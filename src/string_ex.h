@@ -1,7 +1,10 @@
 #ifndef STRING_EX_H
 #define STRING_EX_H
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
+
+char *strndup(const char *source, const size_t size);
+char *strdup(const char *source);
 
 void trim_right(char *target, const char *chars);
 

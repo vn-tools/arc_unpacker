@@ -4,6 +4,7 @@
 #include "arg_parser.h"
 #include "assert_ex.h"
 #include "key_value.h"
+#include "string_ex.h"
 
 static bool is_alphanumeric(const char *string);
 

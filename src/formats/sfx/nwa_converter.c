@@ -11,10 +11,10 @@
 
 #include <stdlib.h>
 #include "assert_ex.h"
-#include "io.h"
-#include "sound.h"
-#include "logger.h"
 #include "formats/sfx/nwa_converter.h"
+#include "io.h"
+#include "logger.h"
+#include "sound.h"
 
 typedef struct
 {

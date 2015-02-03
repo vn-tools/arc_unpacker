@@ -1,7 +1,7 @@
 #ifndef ASSERT_H
 #define ASSERT_H
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #ifdef ENABLE_ASSERT
     #define assert_equali(a, b) _assert_equali(__FILE__, __LINE__, a, b)

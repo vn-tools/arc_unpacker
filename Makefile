@@ -18,13 +18,16 @@ STRIP    = /usr/bin/strip
 LFLAGS         = -Wall -Wextra -pedantic -lpng -lz
 LFLAGS_DEBUG   =
 LFLAGS_RELEASE =
-CFLAGS         = -Wall -Wextra -pedantic -Wwrite-strings -Wsuggest-attribute=const -Wunused -Wc++-compat -std=gnu99 -I$(SRC_DIR)
+CFLAGS         = -Wall -Wextra -pedantic -Wwrite-strings -Wsuggest-attribute=const -Wunused -Wc++-compat -std=c99 -I$(SRC_DIR)
 CFLAGS_DEBUG   = -ggdb -DENABLE_ASSERT
 CFLAGS_RELEASE = -Os
 
 #OS specific linker settings
-SYSTEM := $(shell gcc -dumpmachine)
+SYSTEM := $(shell $(CC) -dumpmachine)
 ifneq (, $(findstring cygwin, $(SYSTEM)))
+	LFLAGS += -liconv
+endif
+ifneq (, $(findstring mingw32, $(SYSTEM)))
 	LFLAGS += -liconv
 endif
 

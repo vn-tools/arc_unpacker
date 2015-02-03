@@ -1,5 +1,5 @@
-#include <errno.h>
 #include <dirent.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -8,6 +8,12 @@
 #include "fs.h"
 #include "logger.h"
 #include "string_ex.h"
+
+#if defined(linux) || defined(unix)
+    #define p_mkdir(name,chmod) mkdir(name, chmod)
+#else
+    #define p_mkdir(name,chmod) _mkdir(name)
+#endif
 
 static bool _get_files_accumulator(
     const char *dir_path,
@@ -142,7 +148,7 @@ bool mkpath(const char *path)
             return false;
         }
         trim_right(dir, "/\\");
-        if (mkdir(path, 0755) != 0 && errno != EEXIST)
+        if (p_mkdir(path, 0755) != 0 && errno != EEXIST)
         {
             log_warning("Failed to create directory %s", dir);
             free(dir);

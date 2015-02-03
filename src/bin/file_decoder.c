@@ -10,6 +10,7 @@
 #include "io.h"
 #include "logger.h"
 #include "output_files.h"
+#include "string_ex.h"
 
 typedef struct
 {
