@@ -1,14 +1,20 @@
+// NWA music
+//
+// Company:   Key
+// Engine:    -
+// Extension: .nwa
+// Archives:  -
+//
+// Known games:
+// - Clannad
+// - Little Busters
+
 #include <stdlib.h>
 #include "assert_ex.h"
 #include "io.h"
 #include "sound.h"
 #include "logger.h"
 #include "formats/sfx/nwa_converter.h"
-
-// Converts NWA to WAV and vice versa.
-// Seen in Key games:
-// - Clannad
-// - Little Busters
 
 typedef struct
 {
