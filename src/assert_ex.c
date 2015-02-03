@@ -17,7 +17,7 @@ static void fail(const char *file, int line, const char *format, ...)
     va_end(args);
 
     log_error("%s in %s:%d", buffer, file, line);
-    abort();
+    exit(1);
 }
 
 
