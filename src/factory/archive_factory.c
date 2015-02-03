@@ -6,6 +6,7 @@
 #include "formats/arc/arc_archive.h"
 #include "formats/arc/mbl_archive.h"
 #include "formats/arc/npa_archive.h"
+#include "formats/arc/pak_archive.h"
 #include "formats/arc/rpa_archive.h"
 #include "formats/arc/sar_archive.h"
 #include "formats/arc/xp3_archive.h"
@@ -45,6 +46,7 @@ static void init_factory(ArchiveFactory *factory)
     add_format(factory, "npa", &npa_archive_create);
     add_format(factory, "xp3", &xp3_archive_create);
     add_format(factory, "rpa", &rpa_archive_create);
+    add_format(factory, "pak", &pak_archive_create);
     add_format(factory, "mbl", &mbl_archive_create);
     add_format(factory, "sar", &sar_archive_create);
 }
