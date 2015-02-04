@@ -2,6 +2,7 @@
 #include <string.h>
 #include "arg_parser.h"
 #include "io.h"
+#include "logger.h"
 #include "test_support/archive_support.h"
 #include "virtual_file.h"
 
@@ -11,6 +12,9 @@ OutputFiles *unpack_to_memory(
     int argc,
     const char **argv)
 {
+    log_save();
+    log_silence();
+
     ArgParser *arg_parser = arg_parser_create();
     arg_parser_parse(arg_parser, argc, argv);
     IO *io = io_create_from_file(input_path, "rb");
@@ -19,6 +23,8 @@ OutputFiles *unpack_to_memory(
     archive_unpack(archive, io, output_files);
     io_destroy(io);
     arg_parser_destroy(arg_parser);
+
+    log_restore();
     return output_files;
 }
 
