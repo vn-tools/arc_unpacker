@@ -3,7 +3,7 @@
 #include <string.h>
 #include "arg_parser.h"
 #include "assert_ex.h"
-#include "cli_helpers.h"
+#include "bin_helpers.h"
 #include "factory/converter_factory.h"
 #include "formats/converter.h"
 #include "fs.h"
@@ -294,10 +294,10 @@ int main(int argc, const char **argv)
 
     add_output_folder_option(arg_parser, &options);
     add_format_option(arg_parser, &options);
-    cli_add_quiet_option(arg_parser);
-    cli_add_help_option(arg_parser);
+    add_quiet_option(arg_parser);
+    add_help_option(arg_parser);
 
-    if (cli_should_show_help(arg_parser))
+    if (should_show_help(arg_parser))
     {
         Converter *converter = options.format != NULL
             ? converter_factory_from_string(conv_factory, options.format)

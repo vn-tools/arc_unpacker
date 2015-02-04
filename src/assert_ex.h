@@ -1,5 +1,5 @@
-#ifndef ASSERT_H
-#define ASSERT_H
+#ifndef ASSERT_EX_H
+#define ASSERT_EX_H
 #include <stdbool.h>
 #include <stddef.h>
 

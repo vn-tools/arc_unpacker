@@ -1,5 +1,5 @@
-#ifndef DICTIONARY_H
-#define DICTIONARY_H
+#ifndef COLLECTIONS_DICTIONARY_H
+#define COLLECTIONS_DICTIONARY_H
 #include <stdbool.h>
 #include "collections/array.h"
 

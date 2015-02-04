@@ -3,7 +3,7 @@
 #include <string.h>
 #include "arg_parser.h"
 #include "assert_ex.h"
-#include "cli_helpers.h"
+#include "bin_helpers.h"
 #include "factory/archive_factory.h"
 #include "formats/archive.h"
 #include "logger.h"
@@ -200,10 +200,10 @@ int main(int argc, const char **argv)
     arg_parser_parse(arg_parser, argc, argv);
 
     add_format_option(arg_parser, &options);
-    cli_add_quiet_option(arg_parser);
-    cli_add_help_option(arg_parser);
+    add_quiet_option(arg_parser);
+    add_help_option(arg_parser);
 
-    if (cli_should_show_help(arg_parser))
+    if (should_show_help(arg_parser))
     {
         Archive *archive = options.format != NULL
             ? archive_factory_from_string( arc_factory, options.format)

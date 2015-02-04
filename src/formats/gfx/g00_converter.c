@@ -13,8 +13,8 @@
 #include <stdlib.h>
 #include "assert_ex.h"
 #include "endian.h"
-#include "g00_converter.h"
-#include "image.h"
+#include "formats/gfx/g00_converter.h"
+#include "formats/image.h"
 #include "io.h"
 #include "logger.h"
 

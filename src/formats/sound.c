@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "assert_ex.h"
+#include "formats/sound.h"
 #include "io.h"
-#include "sound.h"
 
 struct Sound
 {

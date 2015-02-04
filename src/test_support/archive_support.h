@@ -1,3 +1,5 @@
+#ifndef TEST_SUPPORT_ARCHIVE_SUPPORT_H
+#define TEST_SUPPORT_ARCHIVE_SUPPORT_H
 #include "collections/array.h"
 #include "formats/archive.h"
 #include "output_files.h"
@@ -9,3 +11,5 @@ OutputFiles *unpack_to_memory(
     const char **argv);
 
 void compare_files(Array *expected_files, Array *actual_files);
+
+#endif

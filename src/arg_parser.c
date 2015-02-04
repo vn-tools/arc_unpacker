@@ -3,7 +3,7 @@
 #include <string.h>
 #include "arg_parser.h"
 #include "assert_ex.h"
-#include "key_value.h"
+#include "collections/pair.h"
 #include "string_ex.h"
 
 static bool is_alphanumeric(const char *string);
@@ -128,10 +128,10 @@ void arg_parser_destroy(ArgParser *arg_parser)
         while ((item = linked_list_get(arg_parser->switches)) != NULL)
         {
             linked_list_advance(arg_parser->switches);
-            KeyValue *kv = (KeyValue*)item;
-            free(kv->key);
-            free(kv->value);
-            key_value_destroy(kv);
+            Pair *pair = (Pair*)item;
+            free(pair->e1);
+            free(pair->e2);
+            pair_destroy(pair);
         }
         linked_list_destroy(arg_parser->switches);
     }
@@ -180,7 +180,7 @@ void arg_parser_parse(ArgParser *arg_parser, int argc, const char **argv)
         value = NULL;
         if (get_switch(arg, &key, &value))
         {
-            linked_list_add(arg_parser->switches, key_value_create(key, value));
+            linked_list_add(arg_parser->switches, pair_create(key, value));
         }
         else if (get_flag(arg, &value))
         {
@@ -210,22 +210,22 @@ void arg_parser_add_help(
     assert_not_null(invocation);
     assert_not_null(description);
 
-    KeyValue *kv = key_value_create((void*)invocation, (void*)description);
-    linked_list_add(arg_parser->help_items, kv);
+    Pair *pair = pair_create((void*)invocation, (void*)description);
+    linked_list_add(arg_parser->help_items, pair);
 }
 
 bool arg_parser_has_switch(ArgParser *arg_parser, const char *key)
 {
-    KeyValue *kv;
+    Pair *pair;
     assert_not_null(arg_parser);
     assert_not_null(key);
     while (key[0] == '-')
         key ++;
     linked_list_reset(arg_parser->switches);
-    while ((kv = (KeyValue*)linked_list_get(arg_parser->switches)) != NULL)
+    while ((pair = (Pair*)linked_list_get(arg_parser->switches)) != NULL)
     {
         linked_list_advance(arg_parser->switches);
-        if (strcmp((char*)kv->key, key) == 0)
+        if (strcmp((char*)pair->e1, key) == 0)
             return true;
     }
     return false;
@@ -233,7 +233,7 @@ bool arg_parser_has_switch(ArgParser *arg_parser, const char *key)
 
 char *arg_parser_get_switch(ArgParser *arg_parser, const char *key)
 {
-    KeyValue *kv;
+    Pair *pair;
 
     assert_not_null(arg_parser);
     assert_not_null(key);
@@ -242,11 +242,11 @@ char *arg_parser_get_switch(ArgParser *arg_parser, const char *key)
         key ++;
 
     linked_list_reset(arg_parser->switches);
-    while ((kv = (KeyValue*)linked_list_get(arg_parser->switches)) != NULL)
+    while ((pair = (Pair*)linked_list_get(arg_parser->switches)) != NULL)
     {
         linked_list_advance(arg_parser->switches);
-        if (strcmp((char*)kv->key, key) == 0)
-            return (char*)kv->value;
+        if (strcmp((char*)pair->e1, key) == 0)
+            return (char*)pair->e2;
     }
     return NULL;
 }
@@ -286,7 +286,7 @@ void arg_parser_print_help(ArgParser *arg_parser)
     void *item;
     size_t i, j;
     size_t tmp_length;
-    KeyValue *kv;
+    Pair *pair;
     bool first_word;
 
     assert_not_null(arg_parser);
@@ -302,9 +302,9 @@ void arg_parser_print_help(ArgParser *arg_parser)
     {
         linked_list_advance(arg_parser->help_items);
 
-        kv = (KeyValue*) item;
-        invocation = (const char*)kv->key;
-        description = (const char*)kv->value;
+        pair = (Pair*)item;
+        invocation = (const char*)pair->e1;
+        description = (const char*)pair->e2;
 
         tmp_length = strlen(invocation);
         if (strlen(invocation) >= 2 && strncmp(invocation, "--", 2) == 0)

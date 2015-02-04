@@ -1,5 +1,5 @@
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef COLLECTIONS_ARRAY_H
+#define COLLECTIONS_ARRAY_H
 #include <stdbool.h>
 #include <stddef.h>
 

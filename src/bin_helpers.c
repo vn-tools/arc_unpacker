@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include "assert_ex.h"
-#include "cli_helpers.h"
+#include "bin_helpers.h"
 #include "logger.h"
 
-void cli_add_quiet_option(ArgParser *arg_parser)
+void add_quiet_option(ArgParser *arg_parser)
 {
     assert_not_null(arg_parser);
     arg_parser_add_help(
@@ -25,13 +25,13 @@ void cli_add_quiet_option(ArgParser *arg_parser)
     }
 }
 
-void cli_add_help_option(ArgParser *arg_parser)
+void add_help_option(ArgParser *arg_parser)
 {
     assert_not_null(arg_parser);
     arg_parser_add_help(arg_parser, "-h, --help", "Shows this message.");
 }
 
-bool cli_should_show_help(ArgParser *arg_parser)
+bool should_show_help(ArgParser *arg_parser)
 {
     assert_not_null(arg_parser);
     return arg_parser_has_flag(arg_parser, "-h")

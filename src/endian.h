@@ -1,59 +1,48 @@
-#ifndef ORDER32_H
-#define ORDER32_H
-
+#ifndef ENDIAN_H
+#define ENDIAN_H
 #include <limits.h>
 #include <stdint.h>
 
 #ifndef be16toh
-#if CHAR_BIT != 8
-    #error "unsupported char size"
-#endif
+    #if CHAR_BIT != 8
+        #error "unsupported char size"
+    #endif
 
-enum
-{
-    O32_LITTLE_ENDIAN = 0x03020100ul,
-    O32_BIG_ENDIAN = 0x00010203ul,
-    O32_PDP_ENDIAN = 0x01000302ul
-};
+    #ifndef __BYTE_ORDER__
+        #error "byte order not defined"
+    #endif
 
-static const union
-{
-    unsigned char bytes[4];
-    uint32_t value;
-} o32_host_order = { { 0, 1, 2, 3 } };
+    #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+        #define be16toh(x) __builtin_bswap16(x)
+        #define be32toh(x) __builtin_bswap32(x)
+        #define be64toh(x) __builtin_bswap64(x)
+        #define htobe16(x) __builtin_bswap16(x)
+        #define htobe32(x) __builtin_bswap32(x)
+        #define htobe64(x) __builtin_bswap64(x)
 
-//#define O32_HOST_ORDER (o32_host_order.value)
-#define IS_BIG_ENDIAN (!*(unsigned char *)&(uint16_t){1})
+        #define le16toh(x) (x)
+        #define le32toh(x) (x)
+        #define le64toh(x) (x)
+        #define htole16(x) (x)
+        #define htole32(x) (x)
+        #define htole64(x) (x)
+    #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+        #define be16toh(x) (x)
+        #define be32toh(x) (x)
+        #define be64toh(x) (x)
+        #define htobe16(x) (x)
+        #define htobe32(x) (x)
+        #define htobe64(x) (x)
 
-#if O32_HOST_ORDER == O32_LITTLE_ENDIAN
-    #define be16toh(x) __builtin_bswap16(x)
-    #define be32toh(x) __builtin_bswap32(x)
-    #define be64toh(x) __builtin_bswap64(x)
-    #define htobe16(x) __builtin_bswap16(x)
-    #define htobe32(x) __builtin_bswap32(x)
-    #define htobe64(x) __builtin_bswap64(x)
-
-    #define le16toh(x) (x)
-    #define le32toh(x) (x)
-    #define le64toh(x) (x)
-    #define htole16(x) (x)
-    #define htole32(x) (x)
-    #define htole64(x) (x)
-#else
-    #define be16toh(x) (x)
-    #define be32toh(x) (x)
-    #define be64toh(x) (x)
-    #define htobe16(x) (x)
-    #define htobe32(x) (x)
-    #define htobe64(x) (x)
-
-    #define le16toh(x) __builtin_bswap16(x)
-    #define le32toh(x) __builtin_bswap32(x)
-    #define le64toh(x) __builtin_bswap64(x)
-    #define htole16(x) __builtin_bswap16(x)
-    #define htole32(x) __builtin_bswap32(x)
-    #define htole64(x) __builtin_bswap64(x)
-#endif
+        #define le16toh(x) __builtin_bswap16(x)
+        #define le32toh(x) __builtin_bswap32(x)
+        #define le64toh(x) __builtin_bswap64(x)
+        #define htole16(x) __builtin_bswap16(x)
+        #define htole32(x) __builtin_bswap32(x)
+        #define htole64(x) __builtin_bswap64(x)
+    #else
+        #error "unknown byte order"
+    #endif
 #endif
 
 #endif

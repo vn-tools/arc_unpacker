@@ -1,5 +1,5 @@
-#ifndef MKPATH_H
-#define MKPATH_H
+#ifndef FS_H
+#define FS_H
 #include <stdbool.h>
 #include "collections/array.h"
 

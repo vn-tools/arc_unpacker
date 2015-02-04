@@ -1,5 +1,5 @@
-#ifndef LOG_H
-#define LOG_H
+#ifndef LOGGER_H
+#define LOGGER_H
 #include <stdbool.h>
 
 typedef enum

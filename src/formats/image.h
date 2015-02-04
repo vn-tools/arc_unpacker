@@ -1,3 +1,5 @@
+#ifndef FORMATS_IMAGE_H
+#define FORMATS_IMAGE_H
 #include <stdbool.h>
 #include "virtual_file.h"
 
@@ -31,3 +33,5 @@ uint32_t image_color_at(const Image *image, size_t x, size_t y);
 void image_destroy(Image *image);
 
 void image_update_file(const Image *image, VirtualFile *file);
+
+#endif

@@ -10,7 +10,7 @@
 #include <string.h>
 #include "assert_ex.h"
 #include "formats/gfx/prs_converter.h"
-#include "image.h"
+#include "formats/image.h"
 #include "io.h"
 #include "logger.h"
 

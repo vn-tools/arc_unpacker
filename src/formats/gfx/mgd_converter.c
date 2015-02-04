@@ -12,7 +12,7 @@
 #include "collections/array.h"
 #include "endian.h"
 #include "formats/gfx/mgd_converter.h"
-#include "image.h"
+#include "formats/image.h"
 #include "io.h"
 #include "logger.h"
 

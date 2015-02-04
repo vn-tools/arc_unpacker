@@ -50,8 +50,8 @@ debug: debug_binaries
 
 
 #Binaries
-RELEASE_SOURCES := $(filter-out $(SRC_DIR)/bin%.c $(SRC_DIR)/test_support%.c, $(call rwildcard, $(SRC_DIR)/, *.c))
-DEBUG_SOURCES := $(filter-out $(SRC_DIR)/bin%.c, $(call rwildcard, $(SRC_DIR)/, *.c))
+RELEASE_SOURCES := $(filter-out $(SRC_DIR)/bin/%.c $(SRC_DIR)/test_support%.c, $(call rwildcard, $(SRC_DIR)/, *.c))
+DEBUG_SOURCES := $(filter-out $(SRC_DIR)/bin/%.c, $(call rwildcard, $(SRC_DIR)/, *.c))
 RELEASE_OBJECTS := $(RELEASE_SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/release/%.o)
 DEBUG_OBJECTS := $(DEBUG_SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/debug/%.o)
 

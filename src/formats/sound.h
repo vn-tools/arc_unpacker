@@ -1,5 +1,5 @@
-#ifndef SOUND_H
-#define SOUND_H
+#ifndef FORMATS_SOUND_H
+#define FORMATS_SOUND_H
 #include "virtual_file.h"
 
 typedef struct Sound Sound;

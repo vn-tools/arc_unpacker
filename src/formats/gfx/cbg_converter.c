@@ -9,7 +9,7 @@
 #include <string.h>
 #include "assert_ex.h"
 #include "formats/gfx/cbg_converter.h"
-#include "image.h"
+#include "formats/image.h"
 #include "io.h"
 #include "logger.h"
 

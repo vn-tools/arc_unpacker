@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "assert_ex.h"
-#include "image.h"
+#include "formats/image.h"
 #include "logger.h"
 
 struct Image

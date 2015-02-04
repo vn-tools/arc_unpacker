@@ -1,5 +1,5 @@
-#ifndef FORMAT_ARCHIVE_H
-#define FORMAT_ARCHIVE_H
+#ifndef FORMATS_ARCHIVE_H
+#define FORMATS_ARCHIVE_H
 #include <stdbool.h>
 #include "arg_parser.h"
 #include "io.h"

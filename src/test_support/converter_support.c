@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "assert_ex.h"
-#include "image.h"
+#include "formats/image.h"
 #include "io.h"
 #include "test_support/converter_support.h"
 #include "virtual_file.h"

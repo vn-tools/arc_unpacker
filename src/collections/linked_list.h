@@ -1,5 +1,5 @@
-#ifndef LINKED_LIST_H
-#define LINKED_LIST_H
+#ifndef COLLECTIONS_LINKED_LIST_H
+#define COLLECTIONS_LINKED_LIST_H
 #include <stddef.h>
 
 typedef struct LinkedList LinkedList;
