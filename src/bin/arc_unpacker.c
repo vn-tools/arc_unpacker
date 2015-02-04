@@ -130,12 +130,12 @@ static bool guess_archive_and_unpack(
 
             if (result)
             {
-                log_info("Success - %s unpacking finished", format);
+                log_info("%s unpacking finished successfully.", format);
                 break;
             }
             else
             {
-                log_info("%s didn\'t work, trying next format...", format);
+                log_info("%s didn\'t work, trying next format.", format);
                 if (log_enabled(LOG_LEVEL_INFO))
                     puts("");
             }
@@ -149,9 +149,9 @@ static bool guess_archive_and_unpack(
             = archive_factory_from_string(arc_factory, options->format);
         result = unpack(archive, arg_parser, io, output_files);
         if (result)
-            log_info("Success - %s unpacking finished", options->format);
+            log_info("%s unpacking finished successfully.", options->format);
         else
-            log_info("Failure - %s unpacking finished", options->format);
+            log_info("%s unpacking finished with errors.", options->format);
         archive_destroy(archive);
     }
     return result;

@@ -187,13 +187,19 @@ static bool guess_converter_and_decode(
     {
         Converter *converter
             = converter_factory_from_string(conv_factory, options->format);
-        assert_not_null(converter);
-        result = decode(converter, arg_parser, file);
-        if (result)
-            log_info("Success - %s decoding finished", options->format);
+        if (converter != NULL)
+        {
+            result = decode(converter, arg_parser, file);
+            if (result)
+                log_info("Success - %s decoding finished", options->format);
+            else
+                log_info("Failure - %s decoding finished", options->format);
+            converter_destroy(converter);
+        }
         else
-            log_info("Failure - %s decoding finished", options->format);
-        converter_destroy(converter);
+        {
+            result = false;
+        }
     }
 
     return result;
