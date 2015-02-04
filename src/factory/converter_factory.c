@@ -4,6 +4,7 @@
 #include "factory/converter_factory.h"
 #include "formats/gfx/cbg_converter.h"
 #include "formats/gfx/g00_converter.h"
+#include "formats/gfx/mgd_converter.h"
 #include "formats/gfx/prs_converter.h"
 #include "formats/gfx/xyz_converter.h"
 #include "formats/sfx/nwa_converter.h"
@@ -42,6 +43,7 @@ static void init_factory(ConverterFactory *factory)
     assert_not_null(factory);
     add_format(factory, "cbg", &cbg_converter_create);
     add_format(factory, "xyz", &xyz_converter_create);
+    add_format(factory, "mgd", &mgd_converter_create);
     add_format(factory, "g00", &g00_converter_create);
     add_format(factory, "nwa", &nwa_converter_create);
     add_format(factory, "prs", &prs_converter_create);

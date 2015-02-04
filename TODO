@@ -10,7 +10,6 @@ Port old code for formats:
 		- YKC
 
 	- Files:
-		- MGD
 		- Fortune Summoners
 		- SPB
 		- TLG
@@ -21,6 +20,7 @@ Port old code for formats:
 Unit tests (low priority):
 	- NPA archive
 	- PAK archive
+	- MGD - choose a non-monochrome image for tests; fix possible RGB-BGR issues
 
 Misc:
 	- Improve incorrect --fmt handling
