@@ -16,7 +16,7 @@ static void log_text(FILE *out, const char *prefix, const char *buffer)
     }
     else
     {
-        fprintf(out, "%s: %s\n", prefix, buffer);
+        fprintf(out, "%9s %s\n", prefix, buffer);
     }
     fflush(out);
 }
@@ -72,7 +72,7 @@ void log_error(const char *format, ...)
     vsnprintf(buffer, sizeof buffer, format, args);
     va_end(args);
 
-    log_text(stderr, "Error", buffer);
+    log_text(stderr, "[Error]", buffer);
 }
 
 void log_warning(const char *format, ...)
@@ -85,7 +85,7 @@ void log_warning(const char *format, ...)
     vsnprintf(buffer, sizeof buffer, format, args);
     va_end(args);
 
-    log_text(stderr, "Warning", buffer);
+    log_text(stderr, "[Warning]", buffer);
 }
 
 void log_info(const char *format, ...)
@@ -98,5 +98,5 @@ void log_info(const char *format, ...)
     vsnprintf(buffer, sizeof buffer, format, args);
     va_end(args);
 
-    log_text(stdout, "Info", buffer);
+    log_text(stdout, "[Info]", buffer);
 }
