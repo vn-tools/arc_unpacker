@@ -1,5 +1,5 @@
+#include <assert.h>
 #include <stdlib.h>
-#include "assert_ex.h"
 #include "linked_list.h"
 
 struct ListItem
@@ -19,7 +19,7 @@ struct LinkedList
 LinkedList *linked_list_create()
 {
     LinkedList *linked_list = (LinkedList*)malloc(sizeof(LinkedList));
-    assert_not_null(linked_list);
+    assert(linked_list != NULL);
     linked_list->head = NULL;
     linked_list->current = NULL;
     linked_list->tail = NULL;
@@ -30,7 +30,7 @@ LinkedList *linked_list_create()
 void linked_list_destroy(LinkedList *linked_list)
 {
     struct ListItem *li, *old;
-    assert_not_null(linked_list);
+    assert(linked_list != NULL);
     li = linked_list->head;
     while (li != NULL)
     {
@@ -43,13 +43,13 @@ void linked_list_destroy(LinkedList *linked_list)
 
 void linked_list_reset(LinkedList *linked_list)
 {
-    assert_not_null(linked_list);
+    assert(linked_list != NULL);
     linked_list->current = linked_list->head;
 }
 
 void *linked_list_get(LinkedList *linked_list)
 {
-    assert_not_null(linked_list);
+    assert(linked_list != NULL);
     if (linked_list->current == NULL)
         return NULL;
     return linked_list->current->data;
@@ -57,16 +57,16 @@ void *linked_list_get(LinkedList *linked_list)
 
 void linked_list_advance(LinkedList *linked_list)
 {
-    assert_not_null(linked_list);
+    assert(linked_list != NULL);
     if (linked_list->current != NULL)
         linked_list->current = linked_list->current->next;
 }
 
 void linked_list_add(LinkedList *linked_list, void *item)
 {
-    assert_not_null(linked_list);
+    assert(linked_list != NULL);
     struct ListItem *li = (struct ListItem*)malloc(sizeof(struct ListItem));
-    assert_not_null(li);
+    assert(li != NULL);
     li->data = item;
     li->next = NULL;
     if (linked_list->tail != NULL)
@@ -79,6 +79,6 @@ void linked_list_add(LinkedList *linked_list, void *item)
 
 size_t linked_list_size(LinkedList *linked_list)
 {
-    assert_not_null(linked_list);
+    assert(linked_list != NULL);
     return linked_list->size;
 }

@@ -1,5 +1,5 @@
+#include <assert.h>
 #include <stdlib.h>
-#include "assert_ex.h"
 #include "formats/sound.h"
 #include "io.h"
 
@@ -20,7 +20,7 @@ Sound *sound_create_from_samples(
     size_t sample_count)
 {
     Sound *sound = (Sound*)malloc(sizeof(Sound));
-    assert_not_null(sound);
+    assert(sound != NULL);
     sound->channel_count = channel_count;
     sound->bytes_per_sample = bytes_per_sample;
     sound->sample_rate = sample_rate;
@@ -31,16 +31,18 @@ Sound *sound_create_from_samples(
 
 void sound_destroy(Sound *sound)
 {
-    assert_not_null(sound);
+    assert(sound != NULL);
     free(sound);
 }
 
 void sound_update_file(const Sound *sound, VirtualFile *file)
 {
-    assert_not_null(sound);
-    assert_not_null(file);
+    assert(sound != NULL);
+    assert(file != NULL);
 
-    assert_that(io_truncate(file->io, 0));
+    if (!io_truncate(file->io, 0))
+        assert(0);
+
     size_t block_align = sound->channel_count * sound->bytes_per_sample;
     size_t byte_rate = block_align * sound->sample_rate;
     size_t bits_per_sample = sound->bytes_per_sample * 8;

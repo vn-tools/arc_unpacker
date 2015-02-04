@@ -1,11 +1,12 @@
-#include "assert_ex.h"
+#include <assert.h>
+#include <string.h>
 #include "collections/dictionary.h"
 
 void test_non_existent_key()
 {
     Dictionary *dic = dictionary_create();
-    assert_null(dictionary_get(dic, "nope"));
-    assert_that(!dictionary_has_key(dic, "nope"));
+    assert(dictionary_get(dic, "nope") == NULL);
+    assert(!dictionary_has_key(dic, "nope"));
     dictionary_destroy(dic);
 }
 
@@ -14,8 +15,8 @@ void test_one_key()
     int value = 5;
     Dictionary *dic = dictionary_create();
     dictionary_set(dic, "key", &value);
-    assert_equalp(&value, dictionary_get(dic, "key"));
-    assert_that(dictionary_has_key(dic, "key"));
+    assert(&value == dictionary_get(dic, "key"));
+    assert(dictionary_has_key(dic, "key"));
     dictionary_destroy(dic);
 }
 
@@ -26,10 +27,10 @@ void test_two_keys()
     Dictionary *dic = dictionary_create();
     dictionary_set(dic, "key1", &value1);
     dictionary_set(dic, "key2", &value2);
-    assert_equalp(&value1, dictionary_get(dic, "key1"));
-    assert_equalp(&value2, dictionary_get(dic, "key2"));
-    assert_that(dictionary_has_key(dic, "key1"));
-    assert_that(dictionary_has_key(dic, "key2"));
+    assert(&value1 == dictionary_get(dic, "key1"));
+    assert(&value2 == dictionary_get(dic, "key2"));
+    assert(dictionary_has_key(dic, "key1"));
+    assert(dictionary_has_key(dic, "key2"));
     dictionary_destroy(dic);
 }
 
@@ -40,8 +41,8 @@ void test_two_keys_reverse_order()
     Dictionary *dic = dictionary_create();
     dictionary_set(dic, "key1", &value1);
     dictionary_set(dic, "key2", &value2);
-    assert_equalp(&value2, dictionary_get(dic, "key2"));
-    assert_equalp(&value1, dictionary_get(dic, "key1"));
+    assert(&value2 == (int*)dictionary_get(dic, "key2"));
+    assert(&value1 == (int*)dictionary_get(dic, "key1"));
     dictionary_destroy(dic);
 }
 
@@ -54,9 +55,9 @@ void test_all_keys()
     dictionary_set(dic, "key1", &value1);
     dictionary_set(dic, "key2", &value2);
     keys = dictionary_get_keys(dic);
-    assert_equali(2, array_size(keys));
-    assert_equals("key1", (const char*)array_get(keys, 0));
-    assert_equals("key2", (const char*)array_get(keys, 1));
+    assert(2 == array_size(keys));
+    assert(strcmp("key1", (const char*)array_get(keys, 0)) == 0);
+    assert(strcmp("key2", (const char*)array_get(keys, 1)) == 0);
     dictionary_destroy(dic);
 }
 
@@ -69,9 +70,9 @@ void test_all_values()
     dictionary_set(dic, "key1", &value1);
     dictionary_set(dic, "key2", &value2);
     values = dictionary_get_values(dic);
-    assert_equali(2, array_size(values));
-    assert_equalp(&value1, (const char*)array_get(values, 0));
-    assert_equalp(&value2, (const char*)array_get(values, 1));
+    assert(2 == array_size(values));
+    assert(&value1 == (int*)array_get(values, 0));
+    assert(&value2 == (int*)array_get(values, 1));
     dictionary_destroy(dic);
 }
 

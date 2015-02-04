@@ -7,9 +7,9 @@
 // Known games:
 // - Saya no Uta
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "formats/arc/pak_archive.h"
 #include "logger.h"
 #include "string_ex.h"
@@ -37,16 +37,21 @@ static char *pak_read_zlib(
     size_t *size_uncompressed)
 {
     char *data_compressed = (char*)malloc(size_compressed);
-    assert_not_null(data_compressed);
+    assert(data_compressed != NULL);
 
-    assert_that(io_read_string(arc_io, data_compressed, size_compressed));
+    if (!io_read_string(arc_io, data_compressed, size_compressed))
+        assert(0);
+
     char *data_uncompressed;
-    assert_that(zlib_inflate(
+    if (!zlib_inflate(
         data_compressed,
         size_compressed,
         &data_uncompressed,
-        size_uncompressed));
-    assert_not_null(data_uncompressed);
+        size_uncompressed))
+    {
+        assert(0);
+    }
+    assert(data_uncompressed != NULL);
     free(data_compressed);
 
     return data_uncompressed;
@@ -56,19 +61,22 @@ static VirtualFile *pak_read_file(void *context)
 {
     PakUnpackContext *unpack_context = (PakUnpackContext*)context;
     VirtualFile *file = virtual_file_create();
-    assert_not_null(file);
+    assert(file != NULL);
 
     size_t file_name_length = io_read_u32_le(unpack_context->table_io);
     char *file_name = (char*)malloc(file_name_length);
-    assert_not_null(file_name);
+    assert(file_name != NULL);
     io_read_string(unpack_context->table_io, file_name, file_name_length);
 
     char *file_name_utf8 = NULL;
-    assert_that(convert_encoding(
+    if (!convert_encoding(
         file_name, file_name_length,
         &file_name_utf8, NULL,
-        "cp932", "utf-8"));
-    assert_not_null(file_name_utf8);
+        "cp932", "utf-8"))
+    {
+        assert(0);
+    }
+    assert(file_name_utf8 != NULL);
     virtual_file_set_name(file, file_name_utf8);
     free(file_name_utf8);
 
@@ -85,7 +93,7 @@ static VirtualFile *pak_read_file(void *context)
         size_t size_uncompressed = 0;
         char *data_uncompressed = pak_read_zlib(
             unpack_context->arc_io, size_compressed, &size_uncompressed);
-        assert_not_null(data_uncompressed);
+        assert(data_uncompressed != NULL);
         io_write_string(file->io, data_uncompressed, size_original);
         free(data_uncompressed);
         if (size_uncompressed != size_original)
@@ -122,10 +130,10 @@ static bool pak_unpack(
     io_skip(arc_io, 0x104);
 
     char *table = pak_read_zlib(arc_io, table_size_compressed, NULL);
-    assert_not_null(table);
+    assert(table != NULL);
 
     IO *table_io = io_create_from_buffer(table, table_size_original);
-    assert_not_null(table_io);
+    assert(table_io != NULL);
     free(table);
 
     size_t i;

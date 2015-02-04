@@ -1,7 +1,7 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include "array.h"
-#include "assert_ex.h"
 
 struct Array
 {
@@ -12,7 +12,7 @@ struct Array
 Array *array_create()
 {
     Array *array = (Array*)malloc(sizeof(Array));
-    assert_not_null(array);
+    assert(array != NULL);
     array->size = 0;
     array->items = NULL;
     return array;
@@ -20,20 +20,20 @@ Array *array_create()
 
 void array_destroy(Array *array)
 {
-    assert_not_null(array);
+    assert(array != NULL);
     free(array->items);
     free(array);
 }
 
 size_t array_size(const Array *array)
 {
-    assert_not_null(array);
+    assert(array != NULL);
     return array->size;
 }
 
 void *array_get(const Array *array, size_t index)
 {
-    assert_not_null(array);
+    assert(array != NULL);
     if (index >= array->size)
         return NULL;
     return array->items[index];
@@ -43,7 +43,7 @@ bool array_set(Array *array, size_t index, void *data)
 {
     void **new_items;
     size_t new_size;
-    assert_not_null(array);
+    assert(array != NULL);
     if (index >= array->size)
     {
         new_size = index + 1;

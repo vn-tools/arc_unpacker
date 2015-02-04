@@ -1,6 +1,6 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "collections/dictionary.h"
 #include "factory/archive_factory.h"
 #include "formats/arc/arc_archive.h"
@@ -31,9 +31,9 @@ static void add_format(
     const char *name,
     ArchiveCreator creator)
 {
-    assert_not_null(factory);
-    assert_not_null(name);
-    assert_that(creator != NULL);
+    assert(factory != NULL);
+    assert(name != NULL);
+    assert(creator != NULL);
     FormatDefinition *definition
         = (FormatDefinition*)malloc(sizeof(FormatDefinition));
     definition->name = name;
@@ -58,7 +58,7 @@ static void init_factory(ArchiveFactory *factory)
 ArchiveFactory *archive_factory_create()
 {
     ArchiveFactory *factory = (ArchiveFactory*)malloc(sizeof(ArchiveFactory));
-    assert_not_null(factory);
+    assert(factory != NULL);
     factory->formats = dictionary_create();
     init_factory(factory);
     return factory;
@@ -68,7 +68,7 @@ void archive_factory_destroy(ArchiveFactory *factory)
 {
     size_t i;
     const Array *definitions;
-    assert_not_null(factory);
+    assert(factory != NULL);
     definitions = dictionary_get_values(factory->formats);
     for (i = 0; i < array_size(definitions); i ++)
         free(array_get(definitions, i));
@@ -85,12 +85,11 @@ Archive *archive_factory_from_string(
     const ArchiveFactory *factory,
     const char *format)
 {
-    FormatDefinition *definition;
+    assert(factory != NULL);
+    assert(format != NULL);
 
-    assert_not_null(factory);
-    assert_not_null(format);
-
-    definition = (FormatDefinition*)dictionary_get(factory->formats, format);
+    FormatDefinition *definition
+        = (FormatDefinition*)dictionary_get(factory->formats, format);
     if (definition != NULL)
         return definition->creator();
 

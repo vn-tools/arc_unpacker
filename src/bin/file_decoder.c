@@ -1,8 +1,8 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "arg_parser.h"
-#include "assert_ex.h"
 #include "bin_helpers.h"
 #include "factory/converter_factory.h"
 #include "formats/converter.h"
@@ -103,9 +103,9 @@ static void print_help(
     Options *options,
     Converter *converter)
 {
-    assert_not_null(path_to_self);
-    assert_not_null(arg_parser);
-    assert_not_null(options);
+    assert(path_to_self != NULL);
+    assert(arg_parser != NULL);
+    assert(options != NULL);
 
     printf(
         "Usage: %s [options] [file_options] input_path [input_path...]",
@@ -145,25 +145,25 @@ static bool guess_converter_and_decode(
     ConverterFactory *conv_factory,
     VirtualFile *file)
 {
-    assert_not_null(options);
-    assert_not_null(arg_parser);
-    assert_not_null(conv_factory);
-    assert_not_null(file);
+    assert(options != NULL);
+    assert(arg_parser != NULL);
+    assert(conv_factory != NULL);
+    assert(file != NULL);
 
     size_t i;
     bool result = false;
     if (options->format == NULL)
     {
         const Array *format_strings = converter_factory_formats(conv_factory);
-        assert_not_null(format_strings);
+        assert(format_strings != NULL);
         for (i = 0; i < array_size(format_strings); i ++)
         {
             const char *format = (const char*)array_get(format_strings, i);
-            assert_not_null(format);
+            assert(format != NULL);
 
             Converter *converter
                 = converter_factory_from_string(conv_factory, format);
-            assert_not_null(converter);
+            assert(converter != NULL);
             log_info("Trying %s...", format);
             result = decode(converter, arg_parser, file);
             converter_destroy(converter);
@@ -208,7 +208,7 @@ static bool guess_converter_and_decode(
 static void set_file_path(VirtualFile *file, const char *input_path)
 {
     char *output_path = (char*)malloc(strlen(input_path) + 2);
-    assert_not_null(output_path);
+    assert(output_path != NULL);
     strcpy(output_path, input_path);
     strcat(output_path, "~");
     virtual_file_set_name(file, output_path);
@@ -224,7 +224,7 @@ static VirtualFile *read_and_decode(void *_context)
         return NULL;
 
     VirtualFile *file = virtual_file_create();
-    assert_not_null(file);
+    assert(file != NULL);
     io_write_string_from_io(file->io, io,  io_size(io));
     io_destroy(io);
     io_seek(file->io, 0);
@@ -254,12 +254,12 @@ static bool run(
     ConverterFactory *conv_factory)
 {
     size_t i;
-    assert_not_null(options);
-    assert_not_null(arg_parser);
-    assert_not_null(conv_factory);
+    assert(options != NULL);
+    assert(arg_parser != NULL);
+    assert(conv_factory != NULL);
 
     OutputFiles *output_files = output_files_create_hdd(options->output_dir);
-    assert_not_null(output_files);
+    assert(output_files != NULL);
 
     ReadContext context;
     context.arg_parser = arg_parser;
@@ -287,9 +287,9 @@ int main(int argc, const char **argv)
     };
 
     ConverterFactory *conv_factory = converter_factory_create();
-    assert_not_null(conv_factory);
+    assert(conv_factory != NULL);
     ArgParser *arg_parser = arg_parser_create();
-    assert_not_null(arg_parser);
+    assert(arg_parser != NULL);
     arg_parser_parse(arg_parser, argc, argv);
 
     add_output_folder_option(arg_parser, &options);

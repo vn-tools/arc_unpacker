@@ -1,8 +1,8 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "arg_parser.h"
-#include "assert_ex.h"
 #include "collections/pair.h"
 #include "string_ex.h"
 
@@ -28,9 +28,10 @@ static bool is_alphanumeric(const char *string)
 
 static bool get_switch(const char *argument, char **key, char **value)
 {
-    char *value_ptr = NULL;
+    assert(argument != NULL);
+    assert(value != NULL);
 
-    assert_not_null(argument);
+    char *value_ptr = NULL;
 
     *key = NULL;
     *value = NULL;
@@ -56,7 +57,8 @@ static bool get_switch(const char *argument, char **key, char **value)
 
 static bool get_flag(const char *argument, char **value)
 {
-    assert_not_null(argument);
+    assert(argument != NULL);
+    assert(value != NULL);
 
     *value = NULL;
 
@@ -74,12 +76,12 @@ static bool get_flag(const char *argument, char **value)
 
 static Array *create_words(const char *sentence)
 {
+    assert(sentence != NULL);
+
     Array *words;
     size_t i = 0;
     const char *word = sentence;
     const char *next_word;
-
-    assert_not_null(sentence);
 
     words = array_create();
     next_word = strpbrk(word, " ");
@@ -108,7 +110,7 @@ struct ArgParser
 ArgParser *arg_parser_create()
 {
     ArgParser *arg_parser = (ArgParser*)malloc(sizeof(ArgParser));
-    assert_not_null(arg_parser);
+    assert(arg_parser != NULL);
     arg_parser->flags = linked_list_create();
     arg_parser->switches = linked_list_create();
     arg_parser->stray = array_create();
@@ -118,9 +120,8 @@ ArgParser *arg_parser_create()
 
 void arg_parser_destroy(ArgParser *arg_parser)
 {
-    size_t i;
     void *item;
-    assert_not_null(arg_parser);
+    assert(arg_parser != NULL);
 
     if (arg_parser->switches != NULL)
     {
@@ -149,6 +150,7 @@ void arg_parser_destroy(ArgParser *arg_parser)
 
     if (arg_parser->stray != NULL)
     {
+        size_t i;
         for (i = 0; i < array_size(arg_parser->stray); i ++)
             free(array_get(arg_parser->stray, i));
         array_destroy(arg_parser->stray);
@@ -169,12 +171,12 @@ void arg_parser_parse(ArgParser *arg_parser, int argc, const char **argv)
     if (argc == 0)
         return;
 
-    assert_not_null(argv);
+    assert(argv != NULL);
 
     for (i = 0; i < argc; i ++)
     {
         arg = argv[i];
-        assert_not_null(arg);
+        assert(arg != NULL);
 
         key = NULL;
         value = NULL;
@@ -195,8 +197,7 @@ void arg_parser_parse(ArgParser *arg_parser, int argc, const char **argv)
 
 void arg_parser_clear_help(ArgParser *arg_parser)
 {
-    assert_not_null(arg_parser);
-
+    assert(arg_parser != NULL);
     linked_list_destroy(arg_parser->help_items);
     arg_parser->help_items = linked_list_create();
 }
@@ -206,9 +207,9 @@ void arg_parser_add_help(
     const char *invocation,
     const char *description)
 {
-    assert_not_null(arg_parser);
-    assert_not_null(invocation);
-    assert_not_null(description);
+    assert(arg_parser != NULL);
+    assert(invocation != NULL);
+    assert(description != NULL);
 
     Pair *pair = pair_create((void*)invocation, (void*)description);
     linked_list_add(arg_parser->help_items, pair);
@@ -217,8 +218,8 @@ void arg_parser_add_help(
 bool arg_parser_has_switch(ArgParser *arg_parser, const char *key)
 {
     Pair *pair;
-    assert_not_null(arg_parser);
-    assert_not_null(key);
+    assert(arg_parser != NULL);
+    assert(key != NULL);
     while (key[0] == '-')
         key ++;
     linked_list_reset(arg_parser->switches);
@@ -235,8 +236,8 @@ char *arg_parser_get_switch(ArgParser *arg_parser, const char *key)
 {
     Pair *pair;
 
-    assert_not_null(arg_parser);
-    assert_not_null(key);
+    assert(arg_parser != NULL);
+    assert(key != NULL);
 
     while (key[0] == '-')
         key ++;
@@ -255,8 +256,8 @@ bool arg_parser_has_flag(ArgParser *arg_parser, const char *flag)
 {
     void *item;
 
-    assert_not_null(arg_parser);
-    assert_not_null(flag);
+    assert(arg_parser != NULL);
+    assert(flag != NULL);
 
     while (flag[0] == '-')
         flag ++;
@@ -273,7 +274,7 @@ bool arg_parser_has_flag(ArgParser *arg_parser, const char *flag)
 
 Array *arg_parser_get_stray(ArgParser *arg_parser)
 {
-    assert_not_null(arg_parser);
+    assert(arg_parser != NULL);
     return arg_parser->stray;
 }
 
@@ -289,7 +290,7 @@ void arg_parser_print_help(ArgParser *arg_parser)
     Pair *pair;
     bool first_word;
 
-    assert_not_null(arg_parser);
+    assert(arg_parser != NULL);
 
     if (linked_list_size(arg_parser->help_items) == 0)
     {

@@ -8,9 +8,10 @@
 // Known games:
 // - Yume Nikki
 
+#include <assert.h>
+#include <string.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "formats/gfx/xyz_converter.h"
 #include "formats/image.h"
 #include "io.h"
@@ -22,8 +23,8 @@ static const size_t xyz_magic_length = 4;
 
 static bool xyz_decode(Converter *converter, VirtualFile *file)
 {
-    assert_not_null(converter);
-    assert_not_null(file);
+    assert(converter != NULL);
+    assert(file != NULL);
 
     bool result;
 
@@ -42,23 +43,26 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
 
         size_t compressed_data_size = io_size(file->io) - io_tell(file->io);
         char *compressed_data = (char*)malloc(compressed_data_size);
-        assert_not_null(compressed_data);
+        assert(compressed_data != NULL);
         io_read_string(file->io, compressed_data, compressed_data_size);
 
         char *uncompressed_data = NULL;
         size_t uncompressed_data_size = 0;
-        assert_that(zlib_inflate(
+        if (!zlib_inflate(
             compressed_data,
             compressed_data_size,
             &uncompressed_data,
-            &uncompressed_data_size));
-        assert_not_null(uncompressed_data);
-        assert_equali(256 * 3 + width * height, uncompressed_data_size);
+            &uncompressed_data_size))
+        {
+            assert(0);
+        }
+        assert(uncompressed_data != NULL);
+        assert((unsigned)256 * 3 + width * height == uncompressed_data_size);
         free(compressed_data);
 
         size_t pixels_size = width * height * 3;
         char *pixels = (char*)malloc(pixels_size);
-        assert_not_null(pixels);
+        assert(pixels != NULL);
 
         {
             char *palette = uncompressed_data;
@@ -83,6 +87,7 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
             pixels,
             pixels_size,
             IMAGE_PIXEL_FORMAT_RGB);
+        assert(image != NULL);
         image_update_file(image, file);
         image_destroy(image);
 

@@ -1,10 +1,10 @@
+#include <assert.h>
 #include <dirent.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "assert_ex.h"
 #include "fs.h"
 #include "logger.h"
 #include "string_ex.h"
@@ -35,7 +35,7 @@ static bool _get_files_accumulator(
 
         int path_length = strlen(dir_path) + 1 + strlen(entry->d_name);
         char *path = (char*)malloc(path_length + 1);
-        assert_not_null(path);
+        assert(path != NULL);
 
         strcpy(path, dir_path);
         strcat(path, "/");
@@ -57,7 +57,7 @@ static bool _get_files_accumulator(
         }
     }
 
-    assert_equali(0, closedir(d));
+    closedir(d);
     return true;
 }
 
@@ -108,7 +108,7 @@ char *dirname(const char *path)
     char *path_nts;
 
     path_nts = strdup(path);
-    assert_not_null(path_nts);
+    assert(path_nts != NULL);
     trim_right(path_nts, "/\\");
     if (strcmp(path_nts, "") == 0)
     {

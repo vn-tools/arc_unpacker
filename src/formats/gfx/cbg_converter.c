@@ -5,9 +5,9 @@
 // Extension: -
 // Archives:  ARC
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "formats/gfx/cbg_converter.h"
 #include "formats/image.h"
 #include "io.h"
@@ -52,7 +52,7 @@ static uint32_t cbg_read_variable_data(char **input, char *input_guardian)
     {
         current = **input;
         (*input) ++;
-        assert_that(*input <= input_guardian);
+        assert(*input <= input_guardian);
         result |= (current & 0x7f) << shift;
         shift += 7;
     } while (current & 0x80);
@@ -65,9 +65,8 @@ static void cbg_read_frequency_table(
     uint32_t key,
     uint32_t frequency_table[])
 {
-
     char *raw_data = (char*)malloc(raw_data_size);
-    assert_not_null(raw_data);
+    assert(raw_data != NULL);
     io_read_string(io, raw_data, raw_data_size);
 
     cbg_decrypt(raw_data, raw_data_size, key);
@@ -88,6 +87,8 @@ static int cbg_read_node_info(
     uint32_t frequency_table[],
     CbgNodeInfo node_info[])
 {
+    assert(frequency_table != NULL);
+    assert(node_info != NULL);
     int i, j, k;
     uint32_t frequency_sum = 0;
     for (i = 0; i < 256; i ++)
@@ -146,6 +147,8 @@ static void cbg_decompress_huffman(
     uint32_t huffman_size,
     uint8_t *huffman)
 {
+    assert(io != NULL);
+    assert(node_info != NULL);
     uint32_t root = last_node;
     uint8_t mask = 0x80;
     size_t i;
@@ -173,6 +176,8 @@ static void cbg_decompress_rle(
     char *huffman,
     char *output)
 {
+    assert(huffman != NULL);
+    assert(output != NULL);
     char *huffman_ptr = huffman;
     char *huffman_guardian = huffman + huffman_size;
     bool zero_flag = false;
@@ -202,6 +207,7 @@ static void cbg_transform_colors(
     uint16_t height,
     uint16_t bpp)
 {
+    assert(input != NULL);
     uint16_t channels = bpp >> 3;
     int y, x, i;
 
@@ -266,8 +272,8 @@ static PixelFormat bpp_to_image_pixel_format(short bpp)
 
 static bool cbg_decode(Converter *converter, VirtualFile *file)
 {
-    assert_not_null(converter);
-    assert_not_null(file);
+    assert(converter != NULL);
+    assert(file != NULL);
 
     bool result;
     char magic[cbg_magic_length];
@@ -306,7 +312,7 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
             int last_node = cbg_read_node_info(freq_table, node_info);
 
             char *huffman = (char*)malloc(huffman_size);
-            assert_not_null(huffman);
+            assert(huffman != NULL);
             cbg_decompress_huffman(
                 file->io,
                 last_node,
@@ -316,7 +322,7 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
 
             size_t output_size = width * height * (bpp >> 3);
             char *output = (char*)malloc(output_size);
-            assert_not_null(output);
+            assert(output != NULL);
             cbg_decompress_rle(huffman_size, huffman, output);
             free(huffman);
 
@@ -328,6 +334,7 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
                 output,
                 output_size,
                 bpp_to_image_pixel_format(bpp));
+            assert(image != NULL);
             image_update_file(image, file);
             image_destroy(image);
 
@@ -335,6 +342,7 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
             result = true;
         }
     }
+
     return result;
 }
 

@@ -1,3 +1,5 @@
+#include <assert.h>
+#include <stddef.h>
 #include "formats/arc/npa_archive/npa_filter_chaos_head.h"
 
 __attribute__((const))
@@ -8,6 +10,7 @@ uint32_t npa_chaos_head_file_name_filter(uint32_t key1, uint32_t key2)
 
 void npa_chaos_head_filter_init(NpaFilter *filter)
 {
+    assert(filter != NULL);
     filter->permutation =
         (unsigned char*)
         "\xF1\x71\x80\x19\x17\x01\x74\x7D\x90\x47\xF9\x68\xDE\xB4\x24\x40"

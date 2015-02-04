@@ -1,9 +1,9 @@
+#include <assert.h>
 #include <errno.h>
 #include <iconv.h>
 #include <stdlib.h>
 #include <string.h>
 #include <zlib.h>
-#include "assert_ex.h"
 #include "logger.h"
 #include "string_ex.h"
 
@@ -14,7 +14,7 @@
 char *strndup(const char *source, const size_t size)
 {
     char *target = (char*)malloc(size + 1);
-    assert_not_null(target);
+    assert(target != NULL);
     memcpy(target, source, size);
     target[size] = '\0';
     return target;
@@ -40,8 +40,8 @@ bool zlib_inflate(
     size_t *output_size)
 {
     z_stream stream;
-    assert_not_null(input);
-    assert_not_null(output);
+    assert(input != NULL);
+    assert(output != NULL);
 
     size_t tmp;
     if (output_size == NULL)
@@ -52,7 +52,7 @@ bool zlib_inflate(
     else
         *output_size = input_size;
     *output = (char*)malloc(*output_size + 1);
-    assert_not_null(*output);
+    assert(*output != NULL);
 
     stream.next_in = (unsigned char *)input;
     stream.avail_in = input_size;
@@ -63,7 +63,7 @@ bool zlib_inflate(
     stream.opaque = (voidpf)NULL;
     stream.total_out = 0;
 
-    assert_equali(Z_OK, inflateInit(&stream));
+    assert(Z_OK == inflateInit(&stream));
 
     while (1)
     {
@@ -71,9 +71,9 @@ bool zlib_inflate(
         switch (result)
         {
             case Z_STREAM_END:
-                assert_equali(Z_OK, inflateEnd(&stream));
+                assert(Z_OK == inflateEnd(&stream));
                 *output = (char*)realloc(*output, stream.total_out + 1);
-                assert_not_null(*output);
+                assert(*output != NULL);
                 *output_size = stream.total_out;
                 (*output)[*output_size] = '\0';
                 return true;
@@ -97,7 +97,7 @@ bool zlib_inflate(
                     *output_size = SIZE_MAX - 1;
                 }
                 *output = (char*)realloc(*output, *output_size + 1);
-                assert_not_null(*output);
+                assert(*output != NULL);
                 stream.next_out = (unsigned char *)*output + stream.total_out;
                 stream.avail_out = *output_size - stream.total_out;
                 break;
@@ -123,10 +123,10 @@ bool convert_encoding(
     const char *from,
     const char *to)
 {
-    assert_not_null(input);
-    assert_not_null(output);
-    assert_not_null(from);
-    assert_not_null(to);
+    assert(input != NULL);
+    assert(output != NULL);
+    assert(from != NULL);
+    assert(to != NULL);
 
     size_t tmp;
     if (output_size == NULL)

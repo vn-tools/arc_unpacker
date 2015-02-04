@@ -9,9 +9,9 @@
 // - Katawa Shoujo
 // - Long Live The Queen
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "formats/arc/rpa_archive.h"
 #include "io.h"
 #include "logger.h"
@@ -120,7 +120,7 @@ static void rpa_unpickle_handle_number(
 static char *rpa_unpickle_read_string(IO *table_io, size_t str_size)
 {
     char *str = (char*)malloc(str_size + 1);
-    assert_not_null(str);
+    assert(str != NULL);
     io_read_string(table_io, str, str_size);
     str[str_size] = '\0';
     return str;
@@ -238,19 +238,19 @@ static RpaTableEntry **rpa_decode_table(
     // games might not embed prefixes at all. This means that there are twice
     // as many numbers as strings, and all prefixes should be set to empty.
     // Since I haven't seen such games, I leave this remark only as a comment.
-    assert_that(array_size(context.strings) % 2 == 0);
+    assert(array_size(context.strings) % 2 == 0);
     *file_count = array_size(context.strings) / 2;
-    assert_equali(array_size(context.numbers), array_size(context.strings));
+    assert(array_size(context.numbers) == array_size(context.strings));
 
     RpaTableEntry **entries
         = (RpaTableEntry**)malloc(sizeof(RpaTableEntry*) * (*file_count));
-    assert_not_null(entries);
+    assert(entries != NULL);
 
     size_t i;
     for (i = 0; i < *file_count; i ++)
     {
         RpaTableEntry *entry = (RpaTableEntry*)malloc(sizeof(RpaTableEntry));
-        assert_not_null(entry);
+        assert(entry != NULL);
         entry->name = (char*)array_get(context.strings, i*2);
         entry->prefix = (char*)array_get(context.strings, i*2+1);
         entry->prefix_size = (size_t)array_get(context.string_lengths, i*2+1);
@@ -304,8 +304,9 @@ static bool rpa_read_raw_table(IO *arc_io, char **table, size_t *table_size)
 {
     size_t compressed_size = io_size(arc_io) - io_tell(arc_io);
     char *compressed = (char*)malloc(compressed_size);
-    assert_not_null(compressed);
-    assert_that(io_read_string(arc_io, compressed, compressed_size));
+    assert(compressed != NULL);
+    if (!io_read_string(arc_io, compressed, compressed_size))
+        assert(0);
 
     *table = NULL;
     bool result = zlib_inflate(compressed, compressed_size, table, table_size);
@@ -322,22 +323,29 @@ static bool rpa_read_raw_table(IO *arc_io, char **table, size_t *table_size)
 static VirtualFile *rpa_read_file(void *_context)
 {
     RpaUnpackContext *context = (RpaUnpackContext*)_context;
-    assert_not_null(context);
+    assert(context != NULL);
     VirtualFile *file = virtual_file_create();
-    assert_not_null(file);
+    assert(file != NULL);
 
-    assert_that(io_seek(context->arc_io, context->table_entry->offset));
-    assert_that(context->table_entry->offset < io_size(context->arc_io));
+    if (!io_seek(context->arc_io, context->table_entry->offset))
+        assert(0);
+    assert(context->table_entry->offset < io_size(context->arc_io));
 
-    assert_that(io_write_string(
+    if (!io_write_string(
         file->io,
         context->table_entry->prefix,
-        context->table_entry->prefix_size));
+        context->table_entry->prefix_size))
+    {
+        assert(0);
+    }
 
-    assert_that(io_write_string_from_io(
+    if (!io_write_string_from_io(
         file->io,
         context->arc_io,
-        context->table_entry->size));
+        context->table_entry->size))
+    {
+        assert(0);
+    }
 
     virtual_file_set_name(file, context->table_entry->name);
     return file;
@@ -388,7 +396,7 @@ static bool rpa_unpack(
     size_t file_count;
     RpaTableEntry **entries = rpa_decode_table(
         table, table_size, key, &file_count);
-    assert_not_null(entries);
+    assert(entries != NULL);
     free(table);
 
     size_t i;

@@ -1,12 +1,12 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "fs.h"
 
 void test_get_files()
 {
     Array *result = get_files("tests/test_files/gfx");
-    assert_equali(3, array_size(result));
+    assert(3 == array_size(result));
 
     size_t correct = 0;
     size_t i;
@@ -21,32 +21,32 @@ void test_get_files()
         }
         free(actual_path);
     }
-    assert_equali(3, correct);
+    assert(3 == correct);
 }
 
 void test_get_files_recursive()
 {
     Array *result = get_files_recursive("tests/test_files/gfx");
-    assert_that(array_size(result) > 3);
+    assert(array_size(result) > 3);
 }
 
 void test_basename(const char *expected, const char *input)
 {
     char *dir = basename(input);
-    assert_equals(expected, dir);
+    assert(strcmp(expected, dir) == 0);
     free(dir);
 }
 
 void test_dirname(const char *expected, const char *input)
 {
     char *dir = dirname(input);
-    assert_equals(expected, dir);
+    assert(strcmp(expected, dir) == 0);
     free(dir);
 }
 
 void test_is_dir(bool expected, const char *input)
 {
-    assert_equali(expected, is_dir(input));
+    assert(expected == is_dir(input));
 }
 
 int main(void)

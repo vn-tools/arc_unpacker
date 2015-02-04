@@ -1,5 +1,5 @@
+#include <assert.h>
 #include <stdlib.h>
-#include "assert_ex.h"
 #include "collections/dictionary.h"
 #include "factory/converter_factory.h"
 #include "formats/gfx/cbg_converter.h"
@@ -28,9 +28,9 @@ static void add_format(
     const char *name,
     ConverterCreator creator)
 {
-    assert_not_null(factory);
-    assert_not_null(name);
-    assert_that(creator != NULL);
+    assert(factory != NULL);
+    assert(name != NULL);
+    assert(creator != NULL);
     FormatDefinition *definition
         = (FormatDefinition*)malloc(sizeof(FormatDefinition));
     definition->name = name;
@@ -40,7 +40,7 @@ static void add_format(
 
 static void init_factory(ConverterFactory *factory)
 {
-    assert_not_null(factory);
+    assert(factory != NULL);
     add_format(factory, "cbg", &cbg_converter_create);
     add_format(factory, "xyz", &xyz_converter_create);
     add_format(factory, "mgd", &mgd_converter_create);
@@ -55,7 +55,7 @@ ConverterFactory *converter_factory_create()
 {
     ConverterFactory *factory
         = (ConverterFactory*)malloc(sizeof(ConverterFactory));
-    assert_not_null(factory);
+    assert(factory != NULL);
     factory->formats = dictionary_create();
     init_factory(factory);
     return factory;
@@ -65,7 +65,7 @@ void converter_factory_destroy(ConverterFactory *factory)
 {
     size_t i;
     const Array *definitions;
-    assert_not_null(factory);
+    assert(factory != NULL);
     definitions = dictionary_get_values(factory->formats);
     for (i = 0; i < array_size(definitions); i ++)
         free(array_get(definitions, i));
@@ -82,12 +82,11 @@ Converter *converter_factory_from_string(
     const ConverterFactory *factory,
     const char *format)
 {
-    FormatDefinition *definition;
+    assert(factory != NULL);
+    assert(format != NULL);
 
-    assert_not_null(factory);
-    assert_not_null(format);
-
-    definition = (FormatDefinition*)dictionary_get(factory->formats, format);
+    FormatDefinition *definition
+        = (FormatDefinition*)dictionary_get(factory->formats, format);
     if (definition != NULL)
         return definition->creator();
 

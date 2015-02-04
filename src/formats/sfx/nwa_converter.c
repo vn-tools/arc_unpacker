@@ -9,8 +9,8 @@
 // - Clannad
 // - Little Busters
 
+#include <assert.h>
 #include <stdlib.h>
-#include "assert_ex.h"
 #include "formats/sfx/nwa_converter.h"
 #include "formats/sound.h"
 #include "io.h"
@@ -78,10 +78,10 @@ static bool nwa_read_uncompressed(
     char **samples,
     size_t *sample_count)
 {
-    assert_not_null(io);
-    assert_not_null(header);
-    assert_not_null(samples);
-    assert_not_null(sample_count);
+    assert(io != NULL);
+    assert(header != NULL);
+    assert(samples != NULL);
+    assert(sample_count != NULL);
     *sample_count = header->block_size * header->channel_count;
     *samples = (char*)malloc(*sample_count);
     if (*samples == NULL)
@@ -95,16 +95,16 @@ static bool nwa_read_compressed(
     __attribute__((unused)) char **samples,
     __attribute__((unused)) size_t *sample_count)
 {
-    assert_not_null(io);
-    assert_not_null(header);
+    assert(io != NULL);
+    assert(header != NULL);
     log_error("Reading compressed streams is not supported");
     return false;
 }
 
 static bool nwa_decode(Converter *converter, VirtualFile *file)
 {
-    assert_not_null(converter);
-    assert_not_null(file);
+    assert(converter != NULL);
+    assert(file != NULL);
 
     NwaHeader header;
     header.channel_count = io_read_u16_le(file->io);

@@ -7,8 +7,8 @@
 // Known games:
 // - Tsukihime
 
+#include <assert.h>
 #include <stdlib.h>
-#include "assert_ex.h"
 #include "formats/arc/sar_archive.h"
 #include "logger.h"
 
@@ -42,12 +42,12 @@ static VirtualFile *sar_read_file(void *_context)
 
 static bool sar_unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
 {
+    assert(archive != NULL);
+    assert(arc_io != NULL);
+    assert(output_files != NULL);
+
     TableEntry **table;
     size_t i, j;
-
-    assert_not_null(archive);
-    assert_not_null(arc_io);
-    assert_not_null(output_files);
 
     uint16_t file_count = io_read_u16_be(arc_io);
     uint32_t offset_to_files = io_read_u32_be(arc_io);
@@ -58,11 +58,11 @@ static bool sar_unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
     }
 
     table = (TableEntry**)malloc(file_count * sizeof(TableEntry*));
-    assert_not_null(table);
+    assert(table != NULL);
     for (i = 0; i < file_count; i ++)
     {
         TableEntry *entry = (TableEntry*)malloc(sizeof(TableEntry));
-        assert_not_null(entry);
+        assert(entry != NULL);
         entry->name = NULL;
         io_read_until_zero(arc_io, &entry->name, NULL);
         entry->offset = io_read_u32_be(arc_io) + offset_to_files;

@@ -5,10 +5,10 @@
 // Extension: .MGD
 // Archives:  FJSYS
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "collections/array.h"
 #include "endian.h"
 #include "formats/gfx/mgd_converter.h"
@@ -36,6 +36,7 @@ typedef struct
 
 static bool mgd_check_magic(IO *io)
 {
+    assert(io != NULL);
     char magic[mgd_magic_length];
     io_read_string(io, magic, mgd_magic_length);
     return memcmp(magic, mgd_magic, mgd_magic_length) == 0;
@@ -215,8 +216,8 @@ static bool mgd_decompress_sgd(
     char *const output,
     size_t output_size)
 {
-    assert_not_null(input);
-    assert_not_null(output);
+    assert(input != NULL);
+    assert(output != NULL);
 
     size_t length;
     const uint8_t *input_guardian;
@@ -312,11 +313,11 @@ static Image *mgd_read_image(
     size_t image_height,
     char **data_uncompressed)
 {
-    assert_not_null(file_io);
-    assert_not_null(data_uncompressed);
+    assert(file_io != NULL);
+    assert(data_uncompressed != NULL);
 
     char *data_compressed = (char*)malloc(size_compressed);
-    assert_not_null(data_compressed);
+    assert(data_compressed != NULL);
     io_read_string(file_io, data_compressed, size_compressed);
 
     Image *image = NULL;
@@ -335,7 +336,7 @@ static Image *mgd_read_image(
         case MGD_COMPRESSION_SGD:
         {
             *data_uncompressed = (char*)malloc(size_original);
-            assert_not_null(*data_uncompressed);
+            assert(*data_uncompressed != NULL);
 
             if (mgd_decompress_sgd(
                 data_compressed,
@@ -378,8 +379,8 @@ static Image *mgd_read_image(
 
 static bool mgd_decode(Converter *converter, VirtualFile *file)
 {
-    assert_not_null(converter);
-    assert_not_null(file);
+    assert(converter != NULL);
+    assert(file != NULL);
 
     if (!mgd_check_magic(file->io))
     {

@@ -1,6 +1,6 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "string_ex.h"
 
 // sjis の"あいうえおかきくけこさしすせそたちつてと"
@@ -25,11 +25,11 @@ void test_sjis_to_utf8()
 {
     char *output = NULL;
     size_t output_size = 0;
-    assert_that(convert_encoding(
+    assert(convert_encoding(
         sjis, 41,
         &output, &output_size,
         "SJIS", "UTF-8"));
-    assert_equalsn(utf8, output, 61);
+    assert(memcmp(utf8, output, 61) == 0);
     free(output);
 }
 
@@ -37,11 +37,11 @@ void test_utf8_to_sjis()
 {
     char *output = NULL;
     size_t output_size = 0;
-    assert_that(convert_encoding(
+    assert(convert_encoding(
         utf8, 61,
         &output, &output_size,
         "UTF-8", "SJIS"));
-    assert_equalsn(sjis, output, 41);
+    assert(memcmp(sjis, output, 41) == 0);
     free(output);
 }
 
@@ -49,7 +49,7 @@ void test_trim_right_nothing_to_trim()
 {
     char *target = strdup("abc");
     trim_right(target, " ");
-    assert_equals("abc", target);
+    assert(strcmp("abc", target) == 0);
     free(target);
 }
 
@@ -57,7 +57,7 @@ void test_trim_right_trim_one()
 {
     char *target = strdup("abc ");
     trim_right(target, " ");
-    assert_equals("abc", target);
+    assert(strcmp("abc", target) == 0);
     free(target);
 }
 
@@ -65,7 +65,7 @@ void test_trim_right_trim_two()
 {
     char *target = strdup("abc  ");
     trim_right(target, " ");
-    assert_equals("abc", target);
+    assert(strcmp("abc", target) == 0);
     free(target);
 }
 
@@ -73,7 +73,7 @@ void test_trim_right_trim_different_characters()
 {
     char *target = strdup("abc \t ");
     trim_right(target, " \t");
-    assert_equals("abc", target);
+    assert(strcmp("abc", target) == 0);
     free(target);
 }
 
@@ -81,7 +81,7 @@ void test_trim_right_trim_to_empty_string()
 {
     char *target = strdup(" \t ");
     trim_right(target, " \t");
-    assert_equals("", target);
+    assert(strcmp("", target) == 0);
     free(target);
 }
 
@@ -94,16 +94,16 @@ void test_zlib_inflate()
     char *output;
     size_t output_size;
 
-    assert_that(zlib_inflate(input, 21, &output, &output_size));
-    assert_equali(13, output_size);
-    assert_equals("life is code\n", output);
+    assert(zlib_inflate(input, 21, &output, &output_size));
+    assert(13 == output_size);
+    assert(strcmp("life is code\n", output) == 0);
     free(output);
 
     output = NULL;
 
-    assert_that(zlib_inflate(input, 21, &output, NULL));
-    assert_equali(13, output_size);
-    assert_equals("life is code\n", output);
+    assert(zlib_inflate(input, 21, &output, NULL));
+    assert(13 == output_size);
+    assert(strcmp("life is code\n", output) == 0);
     free(output);
 }
 

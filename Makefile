@@ -18,9 +18,9 @@ STRIP    = /usr/bin/strip
 LFLAGS         = -Wall -Wextra -pedantic -lpng -lz
 LFLAGS_DEBUG   =
 LFLAGS_RELEASE =
-CFLAGS         = -Wall -Wextra -pedantic -Wwrite-strings -Wsuggest-attribute=const -Wunused -Wc++-compat -std=c99 -iquote $(SRC_DIR)
-CFLAGS_DEBUG   = -ggdb -DENABLE_ASSERT
-CFLAGS_RELEASE = -Os
+CFLAGS         = -Wall -Wextra -pedantic -Wwrite-strings -Wc++-compat -std=c99 -iquote $(SRC_DIR)
+CFLAGS_DEBUG   = -ggdb -DENABLE_ASSERT -Wunused
+CFLAGS_RELEASE = -Os -DNDEBUG -Wno-unused-variable -Wno-unused-parameter
 
 #OS specific linker settings
 SYSTEM := $(shell $(CC) -dumpmachine)

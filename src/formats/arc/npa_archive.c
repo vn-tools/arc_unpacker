@@ -7,9 +7,9 @@
 // Known games:
 // - Chaos;Head
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "string_ex.h"
 #include "formats/arc/npa_archive.h"
 #include "formats/arc/npa_archive/npa_filter.h"
@@ -69,10 +69,10 @@ static void npa_parse_cli_options(Archive *archive, ArgParser *arg_parser)
 {
     NpaArchiveContext *archive_context
         = (NpaArchiveContext*)malloc(sizeof(NpaArchiveContext));
-    assert_not_null(archive_context);
+    assert(archive_context != NULL);
 
     archive_context->filter = (NpaFilter*)malloc(sizeof(NpaFilter));
-    assert_not_null(archive_context->filter);
+    assert(archive_context->filter != NULL);
 
     const char *plugin = arg_parser_get_switch(arg_parser, "plugin");
     void (*initializer)(NpaFilter*) = NULL;
@@ -117,7 +117,7 @@ static bool npa_check_magic(IO *arc_io)
 static NpaHeader *npa_read_header(IO *arc_io)
 {
     NpaHeader *header = (NpaHeader*)malloc(sizeof(NpaHeader));
-    assert_not_null(header);
+    assert(header != NULL);
     header->key1 = io_read_u32_le(arc_io);
     header->key2 = io_read_u32_le(arc_io);
     header->compressed = io_read_u8(arc_io);
@@ -135,8 +135,8 @@ static void npa_decrypt_file_name(
     size_t name_length,
     NpaUnpackContext *unpack_context)
 {
-    assert_not_null(name);
-    assert_not_null(unpack_context);
+    assert(name != NULL);
+    assert(unpack_context != NULL);
 
     uint32_t tmp = unpack_context->archive_context->filter->file_name_key(
         unpack_context->header->key1,
@@ -162,12 +162,12 @@ static char *npa_read_file_name(
     NpaUnpackContext *unpack_context,
     size_t *file_name_length)
 {
-    assert_not_null(unpack_context);
-    assert_not_null(file_name_length);
+    assert(unpack_context != NULL);
+    assert(file_name_length != NULL);
 
     *file_name_length = io_read_u32_le(unpack_context->arc_io);
     char *file_name = (char*)malloc(*file_name_length);
-    assert_not_null(file_name);
+    assert(file_name != NULL);
     io_read_string(unpack_context->arc_io, file_name, *file_name_length);
     npa_decrypt_file_name(file_name, *file_name_length, unpack_context);
     return file_name;
@@ -181,8 +181,8 @@ static void npa_decrypt_file_data(
     size_t original_file_name_length,
     NpaUnpackContext *unpack_context)
 {
-    assert_not_null(data);
-    assert_not_null(unpack_context);
+    assert(data != NULL);
+    assert(unpack_context != NULL);
 
     const unsigned char *permutation
         = unpack_context->archive_context->filter->permutation;
@@ -208,12 +208,13 @@ static char *npa_read_file_data(
     size_t original_file_name_length,
     NpaUnpackContext *unpack_context)
 {
-    assert_not_null(original_file_name);
-    assert_not_null(unpack_context);
+    assert(original_file_name != NULL);
+    assert(unpack_context != NULL);
 
     char *data = (char*)malloc(size_compressed);
-    assert_not_null(data);
-    assert_that(io_read_string(unpack_context->arc_io, data, size_compressed));
+    assert(data != NULL);
+    if (!io_read_string(unpack_context->arc_io, data, size_compressed))
+        assert(0);
 
     if (unpack_context->header->encrypted)
     {
@@ -229,12 +230,15 @@ static char *npa_read_file_data(
     if (unpack_context->header->compressed)
     {
         char *data_uncompressed = NULL;
-        assert_that(zlib_inflate(
+        if (!zlib_inflate(
             data,
             size_compressed,
             &data_uncompressed,
-            NULL));
-        assert_not_null(data_uncompressed);
+            NULL))
+        {
+            assert(0);
+        }
+        assert(data_uncompressed != NULL);
         free(data);
         data = data_uncompressed;
     }
@@ -246,7 +250,7 @@ static VirtualFile *npa_read_file(void *_context)
 {
     NpaUnpackContext *unpack_context = (NpaUnpackContext*)_context;
     VirtualFile *file = virtual_file_create();
-    assert_not_null(file);
+    assert(file != NULL);
 
     size_t file_name_length;
     char *file_name = npa_read_file_name(unpack_context, &file_name_length);
@@ -255,7 +259,7 @@ static VirtualFile *npa_read_file(void *_context)
         file_name, file_name_length,
         &file_name_utf8, NULL,
         "cp932", "utf-8");
-    assert_not_null(file_name_utf8);
+    assert(file_name_utf8 != NULL);
     virtual_file_set_name(file, file_name_utf8);
 
     NpaFileType file_type = (NpaFileType)io_read_u8(unpack_context->arc_io);
@@ -300,7 +304,7 @@ static bool npa_unpack(
     OutputFiles *output_files)
 {
     NpaArchiveContext *archive_context = (NpaArchiveContext*)archive->data;
-    assert_not_null(archive_context);
+    assert(archive_context != NULL);
     if (!npa_check_magic(arc_io))
     {
         log_error("Not a NPA archive");

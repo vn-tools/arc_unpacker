@@ -1,12 +1,12 @@
 #include <stdlib.h>
-#include "assert_ex.h"
+#include <assert.h>
 #include "formats/converter.h"
 #include "logger.h"
 
 Converter *converter_create()
 {
     Converter *converter = (Converter*)malloc(sizeof(Converter));
-    assert_not_null(converter);
+    assert(converter != NULL);
     converter->data = NULL;
     converter->add_cli_help = NULL;
     converter->parse_cli_options = NULL;
@@ -17,7 +17,7 @@ Converter *converter_create()
 
 void converter_destroy(Converter *converter)
 {
-    assert_not_null(converter);
+    assert(converter != NULL);
     if (converter->cleanup != NULL)
         converter->cleanup(converter);
     free(converter);
@@ -25,21 +25,21 @@ void converter_destroy(Converter *converter)
 
 void converter_parse_cli_options(Converter *converter, ArgParser *arg_parser)
 {
-    assert_not_null(converter);
+    assert(converter != NULL);
     if (converter->parse_cli_options != NULL)
         converter->parse_cli_options(converter, arg_parser);
 }
 
 void converter_add_cli_help(Converter *converter, ArgParser *arg_parser)
 {
-    assert_not_null(converter);
+    assert(converter != NULL);
     if (converter->add_cli_help != NULL)
         converter->add_cli_help(converter, arg_parser);
 }
 
 bool converter_decode(Converter *converter, VirtualFile *target_file)
 {
-    assert_not_null(converter);
+    assert(converter != NULL);
     if (converter->decode == NULL)
     {
         log_error("Decoding for this format is not supported");

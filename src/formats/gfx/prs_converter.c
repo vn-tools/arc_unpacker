@@ -5,10 +5,10 @@
 // Extension: -
 // Archives:  MBL
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "formats/gfx/prs_converter.h"
 #include "formats/image.h"
 #include "io.h"
@@ -26,12 +26,12 @@ static bool prs_decode_pixels(
     size_t *target_size)
 {
     size_t i;
-    assert_not_null(source_buffer);
-    assert_not_null(target_buffer);
+    assert(source_buffer != NULL);
+    assert(target_buffer != NULL);
 
     *target_size = image_width * image_height * 3;
     *target_buffer = (char*)malloc(*target_size);
-    assert_not_null(*target_buffer);
+    assert(*target_buffer != NULL);
 
     const unsigned char *source = (const unsigned char*)source_buffer;
     const unsigned char *source_guardian = source + source_size;
@@ -119,7 +119,7 @@ static bool prs_decode_pixels(
             {
                 if (target >= target_guardian)
                     break;
-                assert_that(target - shift >= (unsigned char*)*target_buffer);
+                assert(target - shift >= (unsigned char*)*target_buffer);
                 *target = *(target - shift);
                 target ++;
             }
@@ -133,6 +133,7 @@ static bool prs_decode_pixels(
 
 static bool prs_check_magic(IO *io)
 {
+    assert(io != NULL);
     char magic[prs_magic_length];
     io_read_string(io, magic, prs_magic_length);
     return memcmp(magic, prs_magic, prs_magic_length) == 0;
@@ -140,8 +141,8 @@ static bool prs_check_magic(IO *io)
 
 static bool prs_decode(Converter *converter, VirtualFile *file)
 {
-    assert_not_null(converter);
-    assert_not_null(file);
+    assert(converter != NULL);
+    assert(file != NULL);
 
     if (!prs_check_magic(file->io))
     {
@@ -178,6 +179,7 @@ static bool prs_decode(Converter *converter, VirtualFile *file)
             target_buffer,
             target_size,
             IMAGE_PIXEL_FORMAT_BGR);
+        assert(image != NULL);
         image_update_file(image, file);
         image_destroy(image);
         result = true;

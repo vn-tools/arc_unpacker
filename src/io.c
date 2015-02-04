@@ -1,7 +1,7 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "endian.h"
 #include "io.h"
 #include "logger.h"
@@ -28,13 +28,14 @@ struct IO
 
 static bool file_io_seek(IO *io, size_t offset, int whence)
 {
-    assert_not_null(io);
+    assert(io != NULL);
     return fseek(io->file, offset, whence) == 0;
 }
 
 static bool file_io_read(IO *io, size_t length, void *destination)
 {
-    assert_not_null(io);
+    assert(io != NULL);
+    assert(destination != NULL);
     if (fread(destination, 1, length, io->file) != length)
     {
         log_warning("Failed to read full data");
@@ -45,7 +46,8 @@ static bool file_io_read(IO *io, size_t length, void *destination)
 
 static bool file_io_write(IO *io, size_t length, void *source)
 {
-    assert_not_null(io);
+    assert(io != NULL);
+    assert(source != NULL);
     if (fwrite(source, 1, length, io->file) != length)
     {
         log_warning("Failed to write full data");
@@ -56,28 +58,27 @@ static bool file_io_write(IO *io, size_t length, void *source)
 
 static size_t file_io_tell(IO *io)
 {
-    assert_not_null(io);
+    assert(io != NULL);
     return ftell(io->file);
 }
 
 static size_t file_io_size(IO *io)
 {
-    size_t size;
-    size_t old_pos;
-    assert_not_null(io);
-    old_pos = ftell(io->file);
+    assert(io != NULL);
+    size_t old_pos = ftell(io->file);
     fseek(io->file, 0, SEEK_END);
-    size = ftell(io->file);
+    size_t size = ftell(io->file);
     fseek(io->file, old_pos, SEEK_SET);
     return size;
 }
 
-static bool file_io_truncate(IO *io, __attribute__((unused)) size_t new_size)
+static bool file_io_truncate(
+    __attribute__((unused)) IO *io,
+    __attribute__((unused)) size_t new_size)
 {
-    assert_not_null(io);
+    assert(io != NULL);
     //return ftruncate(io->file, new_size) == 0;
     log_error("Truncating for real files is not supported!");
-    assert_that(1 == 0);
     return false;
 }
 
@@ -85,21 +86,23 @@ static bool file_io_truncate(IO *io, __attribute__((unused)) size_t new_size)
 
 static bool buffer_io_seek(IO *io, size_t offset, int whence)
 {
-    assert_not_null(io);
+    assert(io != NULL);
+    assert(whence == SEEK_SET || whence == SEEK_END || whence == SEEK_CUR);
+
     if (whence == SEEK_SET)
         io->buffer_pos = offset;
     else if (whence == SEEK_END)
         io->buffer_pos = io->buffer_size - 1 - offset;
     else if (whence == SEEK_CUR)
         io->buffer_pos += offset;
-    else
-        assert_that(1 == 0);
+
     return io->buffer_pos < io->buffer_size;
 }
 
 static bool buffer_io_read(IO *io, size_t length, void *destination)
 {
-    assert_not_null(io);
+    assert(io != NULL);
+    assert(destination != NULL);
     if (io->buffer_pos + length > io->buffer_size)
         return false;
     memcpy(destination, io->buffer + io->buffer_pos, length);
@@ -109,8 +112,10 @@ static bool buffer_io_read(IO *io, size_t length, void *destination)
 
 static bool buffer_io_write(IO *io, size_t length, void *source)
 {
+    assert(io != NULL);
+    assert(source != NULL);
+
     char *destination;
-    assert_not_null(io);
     if (io->buffer_pos + length > io->buffer_size)
     {
         destination = (char*)realloc(io->buffer, io->buffer_pos + length);
@@ -130,19 +135,19 @@ static bool buffer_io_write(IO *io, size_t length, void *source)
 
 static size_t buffer_io_tell(IO *io)
 {
-    assert_not_null(io);
+    assert(io != NULL);
     return io->buffer_pos;
 }
 
 static size_t buffer_io_size(IO *io)
 {
-    assert_not_null(io);
+    assert(io != NULL);
     return io->buffer_size;
 }
 
 static bool buffer_io_truncate(IO *io, size_t new_size)
 {
-    assert_not_null(io);
+    assert(io != NULL);
     if (new_size == 0)
     {
         free(io->buffer);
@@ -172,7 +177,7 @@ IO *io_create_from_file(const char *path, const char *read_mode)
         return NULL;
     }
     IO *io = (IO*)malloc(sizeof(IO));
-    assert_not_null(io);
+    assert(io != NULL);
     io->file = fp;
     io->buffer = NULL;
     io->buffer_pos = 0;
@@ -189,10 +194,10 @@ IO *io_create_from_file(const char *path, const char *read_mode)
 IO *io_create_from_buffer(const char *buffer, size_t buffer_size)
 {
     IO *io = (IO*)malloc(sizeof(IO));
-    assert_not_null(io);
+    assert(io != NULL);
     io->file = NULL;
     io->buffer = (char*)malloc(buffer_size);
-    assert_not_null(io->buffer);
+    assert(io->buffer != NULL);
     memcpy(io->buffer, buffer, buffer_size);
     io->buffer_pos = 0;
     io->buffer_size = buffer_size;
@@ -212,7 +217,7 @@ IO *io_create_empty()
 
 void io_destroy(IO *io)
 {
-    assert_not_null(io);
+    assert(io != NULL);
     if (io->file != NULL)
         fclose(io->file);
     if (io->buffer != NULL)
@@ -221,46 +226,47 @@ void io_destroy(IO *io)
 
 size_t io_size(IO *io)
 {
-    assert_not_null(io);
-    assert_that(io->size != NULL);
+    assert(io != NULL);
+    assert(io->size != NULL);
     return io->size(io);
 }
 
 bool io_seek(IO *io, size_t offset)
 {
-    assert_not_null(io);
-    assert_that(io->seek != NULL);
+    assert(io != NULL);
+    assert(io->seek != NULL);
     return io->seek(io, offset, SEEK_SET);
 }
 
 bool io_skip(IO *io, size_t offset)
 {
-    assert_not_null(io);
-    assert_that(io->seek != NULL);
+    assert(io != NULL);
+    assert(io->seek != NULL);
     return io->seek(io, offset, SEEK_CUR);
 }
 
 size_t io_tell(IO *io)
 {
-    assert_not_null(io);
-    assert_that(io->tell != NULL);
+    assert(io != NULL);
+    assert(io->tell != NULL);
     return io->tell(io);
 }
 
 bool io_read_string(IO *io, char *output, size_t length)
 {
-    assert_not_null(io);
-    assert_not_null(output);
-    assert_that(io->read != NULL);
+    assert(io != NULL);
+    assert(output != NULL);
+    assert(io->read != NULL);
     return io->read(io, length, output);
 }
 
 bool io_read_until_zero(IO *io, char **output, size_t *output_size)
 {
+    assert(io != NULL);
+    assert(output != NULL);
+
     char *new_str;
     char c;
-    assert_not_null(io);
-    assert_not_null(output);
     *output = NULL;
     size_t size = 0;
     do
@@ -286,84 +292,86 @@ bool io_read_until_zero(IO *io, char **output, size_t *output_size)
 
 uint8_t io_read_u8(IO *io)
 {
+    assert(io != NULL);
+    assert(io->read != NULL);
     uint8_t ret = 0;
-    assert_not_null(io);
-    assert_that(io->read != NULL);
     io->read(io, 1, &ret);
     return ret;
 }
 
 uint16_t io_read_u16_le(IO *io)
 {
+    assert(io != NULL);
+    assert(io->read != NULL);
     uint16_t ret = 0;
-    assert_not_null(io);
-    assert_that(io->read != NULL);
     io->read(io, 2, &ret);
     return le16toh(ret);
 }
 
 uint32_t io_read_u32_le(IO *io)
 {
+    assert(io != NULL);
+    assert(io->read != NULL);
     uint32_t ret = 0;
-    assert_not_null(io);
-    assert_that(io->read != NULL);
     io->read(io, 4, &ret);
     return le32toh(ret);
 }
 
 uint64_t io_read_u64_le(IO *io)
 {
+    assert(io != NULL);
+    assert(io->read != NULL);
     uint64_t ret = 0;
-    assert_not_null(io);
-    assert_that(io->read != NULL);
     io->read(io, 8, &ret);
     return le64toh(ret);
 }
 
 uint16_t io_read_u16_be(IO *io)
 {
+    assert(io != NULL);
+    assert(io->read != NULL);
     uint16_t ret = 0;
-    assert_not_null(io);
-    assert_that(io->read != NULL);
     io->read(io, 2, &ret);
     return be16toh(ret);
 }
 
 uint32_t io_read_u32_be(IO *io)
 {
+    assert(io != NULL);
+    assert(io->read != NULL);
     uint32_t ret = 0;
-    assert_not_null(io);
-    assert_that(io->read != NULL);
     io->read(io, 4, &ret);
     return be32toh(ret);
 }
 
 uint64_t io_read_u64_be(IO *io)
 {
+    assert(io != NULL);
+    assert(io->read != NULL);
     uint64_t ret = 0;
-    assert_not_null(io);
-    assert_that(io->read != NULL);
     io->read(io, 8, &ret);
     return be64toh(ret);
 }
 
 bool io_write_string(IO *io, const char *str, size_t length)
 {
-    assert_not_null(io);
-    assert_that(io->write != NULL);
+    assert(io != NULL);
+    assert(io->write != NULL);
+    assert(str != NULL);
     return io->write(io, length, (void*)str);
 }
 
 bool io_write_string_from_io(IO *io, IO *input, size_t length)
 {
-    assert_not_null(io);
-    assert_not_null(input);
+    assert(io != NULL);
+    assert(input != NULL);
+
     bool result;
     if (io->file != NULL)
     {
         // TODO improvement: use static buffer instead of such allocation
         char *buffer = (char*)malloc(length);
-        assert_not_null(buffer);
+        assert(buffer != NULL);
         result = io_read_string(input, buffer, length);
         if (result)
             result &= io_write_string(io, buffer, length);
@@ -375,74 +383,80 @@ bool io_write_string_from_io(IO *io, IO *input, size_t length)
         if (new_pos > io->buffer_size)
         {
             char *new_buffer = (char*)realloc(io->buffer, new_pos);
-            assert_not_null(new_buffer);
+            if (new_buffer == NULL)
+            {
+                log_error(
+                    "IO: Failed to reallocate memory for string to %d bytes",
+                    new_pos);
+            }
             io->buffer = new_buffer;
             io->buffer_size = new_pos;
         }
         result = io_read_string(input, io->buffer + io->buffer_pos, length);
         io->buffer_pos = new_pos;
     }
+
     return result;
 }
 
 bool io_write_u8(IO *io, uint8_t value)
 {
-    assert_not_null(io);
-    assert_that(io->write != NULL);
+    assert(io != NULL);
+    assert(io->write != NULL);
     return io->write(io, 1, &value);
 }
 
 bool io_write_u16_le(IO *io, uint16_t value)
 {
-    assert_not_null(io);
-    assert_that(io->write != NULL);
+    assert(io != NULL);
+    assert(io->write != NULL);
     value = htole16(value);
     return io->write(io, 2, &value);
 }
 
 bool io_write_u32_le(IO *io, uint32_t value)
 {
-    assert_not_null(io);
-    assert_that(io->write != NULL);
+    assert(io != NULL);
+    assert(io->write != NULL);
     value = htole32(value);
     return io->write(io, 4, &value);
 }
 
 bool io_write_u64_le(IO *io, uint64_t value)
 {
-    assert_not_null(io);
-    assert_that(io->write != NULL);
+    assert(io != NULL);
+    assert(io->write != NULL);
     value = htole64(value);
     return io->write(io, 8, &value);
 }
 
 bool io_write_u16_be(IO *io, uint16_t value)
 {
-    assert_not_null(io);
-    assert_that(io->write != NULL);
+    assert(io != NULL);
+    assert(io->write != NULL);
     value = htobe16(value);
     return io->write(io, 2, &value);
 }
 
 bool io_write_u32_be(IO *io, uint32_t value)
 {
-    assert_not_null(io);
-    assert_that(io->write != NULL);
+    assert(io != NULL);
+    assert(io->write != NULL);
     value = htobe32(value);
     return io->write(io, 4, &value);
 }
 
 bool io_write_u64_be(IO *io, uint64_t value)
 {
-    assert_not_null(io);
-    assert_that(io->write != NULL);
+    assert(io != NULL);
+    assert(io->write != NULL);
     value = htobe64(value);
     return io->write(io, 8, &value);
 }
 
 bool io_truncate(IO *io, size_t new_size)
 {
-    assert_not_null(io);
-    assert_that(io->truncate != NULL);
+    assert(io != NULL);
+    assert(io->truncate != NULL);
     return io->truncate(io, new_size);
 }

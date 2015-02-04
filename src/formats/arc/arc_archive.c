@@ -7,9 +7,9 @@
 // Known games:
 // - Higurashi No Naku Koro Ni
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "formats/arc/arc_archive.h"
 #include "formats/gfx/cbg_converter.h"
 #include "logger.h"
@@ -34,14 +34,14 @@ static bool arc_check_magic(IO *arc_io)
 static VirtualFile *arc_read_file(void *_context)
 {
     ArcUnpackContext *context = (ArcUnpackContext*)_context;
-    assert_not_null(context);
+    assert(context != NULL);
 
     VirtualFile *file = virtual_file_create();
 
     size_t old_pos = io_tell(context->arc_io);
     char *tmp_name;
     io_read_until_zero(context->arc_io, &tmp_name, NULL);
-    assert_not_null(context);
+    assert(tmp_name != NULL);
     virtual_file_set_name(file, tmp_name);
     free(tmp_name);
     io_seek(context->arc_io, old_pos + 16);
@@ -57,7 +57,8 @@ static VirtualFile *arc_read_file(void *_context)
     }
 
     old_pos = io_tell(context->arc_io);
-    assert_that(io_seek(context->arc_io, offset));
+    if (!io_seek(context->arc_io, offset))
+        assert(0);
     io_write_string_from_io(file->io, context->arc_io, size);
     io_seek(context->arc_io, old_pos);
 
@@ -98,7 +99,7 @@ static bool arc_unpack(
 
 void arc_cleanup(Archive *archive)
 {
-    assert_not_null(archive);
+    assert(archive != NULL);
     converter_destroy((Converter*)archive->data);
 }
 

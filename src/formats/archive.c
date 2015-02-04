@@ -1,12 +1,12 @@
+#include <assert.h>
 #include <stdlib.h>
-#include "assert_ex.h"
 #include "formats/archive.h"
 #include "logger.h"
 
 Archive *archive_create()
 {
     Archive *archive = (Archive*)malloc(sizeof(Archive));
-    assert_not_null(archive);
+    assert(archive != NULL);
     archive->data = NULL;
     archive->add_cli_help = NULL;
     archive->parse_cli_options = NULL;
@@ -17,7 +17,7 @@ Archive *archive_create()
 
 void archive_destroy(Archive *archive)
 {
-    assert_not_null(archive);
+    assert(archive != NULL);
     if (archive->cleanup != NULL)
         archive->cleanup(archive);
     free(archive);
@@ -25,14 +25,14 @@ void archive_destroy(Archive *archive)
 
 void archive_parse_cli_options(Archive *archive, ArgParser *arg_parser)
 {
-    assert_not_null(archive);
+    assert(archive != NULL);
     if (archive->parse_cli_options != NULL)
         archive->parse_cli_options(archive, arg_parser);
 }
 
 void archive_add_cli_help(Archive *archive, ArgParser *arg_parser)
 {
-    assert_not_null(archive);
+    assert(archive != NULL);
     if (archive->add_cli_help != NULL)
         archive->add_cli_help(archive, arg_parser);
 }
@@ -42,7 +42,7 @@ bool archive_unpack(
     IO *arc_io,
     OutputFiles *output_files)
 {
-    assert_not_null(archive);
+    assert(archive != NULL);
     if (archive->unpack == NULL)
     {
         log_error("Unpacking for this format is not supported");

@@ -1,7 +1,7 @@
+#include <assert.h>
 #include <png.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "formats/image.h"
 #include "logger.h"
 
@@ -21,7 +21,8 @@ static void my_png_write_data(
     png_size_t length)
 {
     IO *io = (IO*)png_get_io_ptr(png_ptr);
-    assert_that(io_write_string(io, (char*)data, length));
+    if (!io_write_string(io, (char*)data, length))
+        assert(0);
 }
 
 static void my_png_read_data(
@@ -30,7 +31,8 @@ static void my_png_read_data(
     png_size_t length)
 {
     IO *io = (IO*)png_get_io_ptr(png_ptr);
-    assert_that(io_read_string(io, (char*)data, length));
+    if (!io_read_string(io, (char*)data, length))
+        assert(0);
 }
 
 static void my_png_flush(png_structp png_ptr __attribute__((unused)))
@@ -46,7 +48,7 @@ Image *image_create_from_pixels(
     size_t pixel_data_size,
     PixelFormat pixel_format)
 {
-    assert_not_null(pixel_data);
+    assert(pixel_data != NULL);
     Image *image = (Image*)malloc(sizeof(Image));
     image->image_width = image_width;
     image->image_height = image_height;
@@ -59,16 +61,16 @@ Image *image_create_from_pixels(
 
 Image *image_create_from_boxed(IO *io)
 {
-    assert_not_null(io);
+    assert(io != NULL);
     io_seek(io, 0);
     Image *image = (Image*)malloc(sizeof(Image));
 
     png_structp png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    assert_not_null(png_ptr);
+    assert(png_ptr != NULL);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
-    assert_not_null(info_ptr);
+    assert(info_ptr != NULL);
 
     png_set_read_fn(png_ptr, io, &my_png_read_data);
     png_read_png(
@@ -92,7 +94,7 @@ Image *image_create_from_boxed(IO *io)
         NULL,
         NULL,
         NULL);
-    assert_equali(8, bits_per_channel);
+    assert(8 == bits_per_channel);
 
     int bpp = 0;
     if (color_type == PNG_COLOR_TYPE_RGB)
@@ -112,13 +114,12 @@ Image *image_create_from_boxed(IO *io)
     }
     else
     {
-        log_error("Unsupported color_type: %d\n", color_type);
-        assert_that(1 == 0);
+        assert(0);
     }
 
     image->pixel_data_size = image->image_width * image->image_height * bpp;
     image->internal_data = (char*)malloc(image->pixel_data_size);
-    assert_not_null(image->internal_data);
+    assert(image->internal_data != NULL);
     png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
     size_t scanline_size = image->image_width * bpp, y;
     for (y = 0; y < image->image_height; y ++)
@@ -136,57 +137,58 @@ Image *image_create_from_boxed(IO *io)
 
 void image_destroy(Image *image)
 {
-    assert_not_null(image);
+    assert(image != NULL);
     free(image->internal_data);
     free(image);
 }
 
 size_t image_width(const Image *image)
 {
-    assert_not_null(image);
+    assert(image != NULL);
     return image->image_width;
 }
 
 size_t image_height(const Image *image)
 {
-    assert_not_null(image);
+    assert(image != NULL);
     return image->image_height;
 }
 
 PixelFormat image_pixel_format(const Image *image)
 {
-    assert_not_null(image);
+    assert(image != NULL);
     return image->pixel_format;
 }
 
 const char *image_pixel_data(const Image *image)
 {
-    assert_not_null(image);
+    assert(image != NULL);
     return image->pixel_data;
 }
 
 size_t image_pixel_data_size(const Image *image)
 {
-    assert_not_null(image);
+    assert(image != NULL);
     return image->pixel_data_size;
 }
 
 void image_update_file(const Image *image, VirtualFile *file)
 {
-    assert_not_null(image);
-    assert_not_null(file);
+    assert(image != NULL);
+    assert(file != NULL);
 
-    assert_that(io_truncate(file->io, 0));
+    if (!io_truncate(file->io, 0))
+        assert(0);
 
     png_structp png_ptr = png_create_write_struct(
         PNG_LIBPNG_VER_STRING,
         NULL,
         NULL,
         NULL);
-    assert_not_null(png_ptr);
+    assert(png_ptr != NULL);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
-    assert_not_null(info_ptr);
+    assert(info_ptr != NULL);
 
     unsigned long bpp;
     unsigned long color_type;
@@ -221,8 +223,7 @@ void image_update_file(const Image *image, VirtualFile *file)
             break;
 
         default:
-            log_error("Wrong color type");
-            assert_that(1 == 0);
+            assert(0);
             return;
     }
 
@@ -245,7 +246,7 @@ void image_update_file(const Image *image, VirtualFile *file)
     png_write_info(png_ptr, info_ptr);
 
     png_bytep* rows = (png_bytep*)malloc(sizeof(png_bytep)*image->image_height);
-    assert_not_null(rows);
+    assert(rows != NULL);
     size_t y;
     for (y = 0; y < image->image_height; y ++)
         rows[y] = (png_bytep)&image->pixel_data[y * image->image_width * bpp];
@@ -287,8 +288,7 @@ uint32_t image_color_at(const Image *image, size_t x, size_t y)
             break;
 
         default:
-            log_error("Format not supported.");
-            assert_that(1 == 0);
+            assert(0);
             return 0;
     }
 

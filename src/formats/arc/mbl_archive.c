@@ -7,9 +7,9 @@
 // Known games:
 // - Wanko to Kurasou
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "formats/arc/mbl_archive.h"
 #include "formats/gfx/prs_converter.h"
 #include "logger.h"
@@ -79,19 +79,23 @@ static int mbl_get_version(IO *arc_io)
 static VirtualFile *mbl_read_file(void *context)
 {
     MblUnpackContext *unpack_context = (MblUnpackContext*)context;
-    assert_not_null(unpack_context);
+    assert(unpack_context != NULL);
     VirtualFile *file = virtual_file_create();
 
     size_t old_pos = io_tell(unpack_context->arc_io);
     char *tmp_name = NULL;
     io_read_until_zero(unpack_context->arc_io, &tmp_name, NULL);
-    assert_not_null(tmp_name);
+    assert(tmp_name != NULL);
 
     char *decoded_name;
-    assert_that(convert_encoding(
+    if (!convert_encoding(
         tmp_name, strlen(tmp_name),
         &decoded_name, NULL,
-        "sjis", "utf-8"));
+        "sjis", "utf-8"))
+    {
+        assert(0);
+    }
+
     virtual_file_set_name(file, decoded_name);
     free(decoded_name);
 
@@ -160,7 +164,7 @@ Archive *mbl_archive_create()
 
     MblArchiveContext *context
         = (MblArchiveContext*)malloc(sizeof(MblArchiveContext));
-    assert_not_null(context);
+    assert(context != NULL);
     context->prs_converter = prs_converter_create();
     archive->data = context;
 

@@ -17,9 +17,9 @@
 // - Sono Hanabira ni Kuchizuke o 10
 // - Sono Hanabira ni Kuchizuke o 11
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "formats/arc/fjsys_archive.h"
 #include "formats/gfx/mgd_converter.h"
 #include "logger.h"
@@ -72,7 +72,7 @@ static bool fjsys_check_magic(IO *arc_io)
 static FjsysHeader *fjsys_read_header(IO *arc_io)
 {
     FjsysHeader *header = (FjsysHeader*)malloc(sizeof(FjsysHeader));
-    assert_not_null(header);
+    assert(header != NULL);
     header->header_size = io_read_u32_le(arc_io);
     header->file_names_size = io_read_u32_le(arc_io);
     header->file_count = io_read_u32_le(arc_io);
@@ -96,13 +96,12 @@ static VirtualFile *fjsys_read_file(void *context)
         file_name_offset + file_names_start);
     char *file_name = NULL;
     io_read_until_zero(unpack_context->arc_io, &file_name, NULL);
-    assert_not_null(file_name);
+    assert(file_name != NULL);
     virtual_file_set_name(file, file_name);
     free(file_name);
 
     io_seek(unpack_context->arc_io, data_offset);
     io_write_string_from_io(file->io, unpack_context->arc_io, data_size);
-
     converter_try_decode(unpack_context->archive_context->mgd_converter, file);
 
     io_seek(unpack_context->arc_io, old_pos);
@@ -115,7 +114,7 @@ static bool fjsys_unpack(
     OutputFiles *output_files)
 {
     FjsysArchiveContext *archive_context = (FjsysArchiveContext*)archive->data;
-    assert_not_null(archive_context);
+    assert(archive_context != NULL);
     if (!fjsys_check_magic(arc_io))
     {
         log_error("FJSYS: Not a FJSYS archive");
@@ -123,7 +122,7 @@ static bool fjsys_unpack(
     }
 
     FjsysHeader *header = fjsys_read_header(arc_io);
-    assert_not_null(header);
+    assert(header != NULL);
 
     FjsysUnpackContext unpack_context;
     unpack_context.header = header;
@@ -154,7 +153,7 @@ Archive *fjsys_archive_create()
 
     FjsysArchiveContext *context
         = (FjsysArchiveContext*)malloc(sizeof(FjsysArchiveContext));
-    assert_not_null(context);
+    assert(context != NULL);
     context->mgd_converter = mgd_converter_create();
     archive->data = context;
 

@@ -1,7 +1,7 @@
+#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include "assert_ex.h"
 #include "logger.h"
 
 static char buffer[1024];
@@ -46,19 +46,19 @@ void log_silence()
 
 bool log_enabled(LogLevel level)
 {
-    assert_that(level < _LOG_LEVEL_COUNT);
+    assert(level < _LOG_LEVEL_COUNT);
     return levels_enabled[level];
 }
 
 void log_enable(LogLevel level)
 {
-    assert_that(level < _LOG_LEVEL_COUNT);
+    assert(level < _LOG_LEVEL_COUNT);
     levels_enabled[level] = true;
 }
 
 void log_disable(LogLevel level)
 {
-    assert_that(level < _LOG_LEVEL_COUNT);
+    assert(level < _LOG_LEVEL_COUNT);
     levels_enabled[level] = false;
 }
 

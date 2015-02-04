@@ -1,8 +1,8 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "arg_parser.h"
-#include "assert_ex.h"
 #include "bin_helpers.h"
 #include "factory/archive_factory.h"
 #include "formats/archive.h"
@@ -20,7 +20,7 @@ typedef struct
 static char *get_default_output_path(const char *input_path)
 {
     char *output_path = (char*)malloc(strlen(input_path) + 2);
-    assert_not_null(output_path);
+    assert(output_path != NULL);
     sprintf(output_path, "%s~", input_path);
     return output_path;
 }
@@ -59,9 +59,9 @@ static void print_help(
     Options *options,
     Archive *archive)
 {
-    assert_not_null(path_to_self);
-    assert_not_null(arg_parser);
-    assert_not_null(options);
+    assert(path_to_self != NULL);
+    assert(arg_parser != NULL);
+    assert(options != NULL);
 
     printf("Usage: %s [options] [arc_options] input_path [output_path]\n",
         path_to_self);
@@ -104,26 +104,26 @@ static bool guess_archive_and_unpack(
     ArgParser *arg_parser,
     ArchiveFactory *arc_factory)
 {
-    assert_not_null(io);
-    assert_not_null(options);
-    assert_not_null(arg_parser);
-    assert_not_null(arc_factory);
-    assert_not_null(output_files);
+    assert(io != NULL);
+    assert(options != NULL);
+    assert(arg_parser != NULL);
+    assert(arc_factory != NULL);
+    assert(output_files != NULL);
 
     size_t i;
     bool result = false;
     if (options->format == NULL)
     {
         const Array *format_strings = archive_factory_formats(arc_factory);
-        assert_not_null(format_strings);
+        assert(format_strings != NULL);
 
         for (i = 0; i < array_size(format_strings); i ++)
         {
             const char *format = (const char*)array_get(format_strings, i);
-            assert_not_null(format);
+            assert(format != NULL);
 
             Archive *archive = archive_factory_from_string(arc_factory, format);
-            assert_not_null(archive);
+            assert(archive != NULL);
             log_info("Trying %s...", format);
             result = unpack(archive, arg_parser, io, output_files);
             archive_destroy(archive);
@@ -162,9 +162,9 @@ static bool run(
     ArgParser *arg_parser,
     ArchiveFactory *arc_factory)
 {
-    assert_not_null(options);
-    assert_not_null(arg_parser);
-    assert_not_null(arc_factory);
+    assert(options != NULL);
+    assert(arg_parser != NULL);
+    assert(arc_factory != NULL);
 
     OutputFiles *output_files = output_files_create_hdd(options->output_path);
     IO *io = io_create_from_file(options->input_path, "rb");
@@ -194,9 +194,9 @@ int main(int argc, const char **argv)
     };
 
     ArchiveFactory *arc_factory = archive_factory_create();
-    assert_not_null(arc_factory);
+    assert(arc_factory != NULL);
     ArgParser *arg_parser = arg_parser_create();
-    assert_not_null(arg_parser);
+    assert(arg_parser != NULL);
     arg_parser_parse(arg_parser, argc, argv);
 
     add_format_option(arg_parser, &options);

@@ -9,9 +9,9 @@
 // - Clannad
 // - Little Busters
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "assert_ex.h"
 #include "endian.h"
 #include "formats/gfx/g00_converter.h"
 #include "formats/image.h"
@@ -36,8 +36,8 @@ void g00_decompress(
     size_t byte_count,
     size_t length_delta)
 {
-    assert_not_null(input);
-    assert_not_null(output);
+    assert(input != NULL);
+    assert(output != NULL);
 
     const unsigned char *src = (unsigned char*)input;
     const unsigned char *src_guardian = src + input_size;
@@ -81,7 +81,7 @@ void g00_decompress(
             {
                 if (dst >= dst_guardian)
                     break;
-                assert_that(dst >= (unsigned char*)output + look_behind);
+                assert(dst >= (unsigned char*)output + look_behind);
                 *dst = dst[-look_behind];
                 dst ++;
             }
@@ -98,10 +98,13 @@ static void g00_decompress_from_io(
     size_t byte_count,
     size_t length_delta)
 {
+    assert(uncompressed != NULL);
+
     char *compressed = (char*)malloc(compressed_size);
-    assert_not_null(compressed);
-    assert_that(io_read_string(io, compressed, compressed_size));
-    assert_not_null(uncompressed);
+    assert(compressed != NULL);
+    if (!io_read_string(io, compressed, compressed_size))
+        assert(0);
+    assert(uncompressed != NULL);
     g00_decompress(
         compressed,
         compressed_size,
@@ -118,8 +121,8 @@ static void g00_decompress_version_0(
     char *uncompressed,
     size_t uncompressed_size)
 {
-    assert_not_null(io);
-    assert_not_null(uncompressed);
+    assert(io != NULL);
+    assert(uncompressed != NULL);
     g00_decompress_from_io(
         io, compressed_size, uncompressed, uncompressed_size, 3, 1);
 }
@@ -130,8 +133,8 @@ static void g00_decompress_version_1(
     char *uncompressed,
     size_t uncompressed_size)
 {
-    assert_not_null(io);
-    assert_not_null(uncompressed);
+    assert(io != NULL);
+    assert(uncompressed != NULL);
     g00_decompress_from_io(
         io, compressed_size, uncompressed, uncompressed_size, 1, 2);
 }
@@ -153,7 +156,7 @@ static bool g00_decode_version_0(VirtualFile *file, int width, int height)
     }
 
     char *uncompressed = (char*)malloc(uncompressed_size);
-    assert_not_null(uncompressed);
+    assert(uncompressed != NULL);
     g00_decompress_version_0(
         file->io,
         compressed_size,
@@ -166,6 +169,7 @@ static bool g00_decode_version_0(VirtualFile *file, int width, int height)
         uncompressed,
         width * height * 3,
         IMAGE_PIXEL_FORMAT_BGR);
+    assert(image != NULL);
     image_update_file(image, file);
     image_destroy(image);
     free(uncompressed);
@@ -184,7 +188,7 @@ static bool g00_decode_version_1(VirtualFile *file, int width, int height)
     }
 
     char *uncompressed = (char*)malloc(uncompressed_size);
-    assert_not_null(uncompressed);
+    assert(uncompressed != NULL);
     g00_decompress_version_1(
         file->io,
         compressed_size,
@@ -208,7 +212,7 @@ static bool g00_decode_version_1(VirtualFile *file, int width, int height)
 
         size_t i;
         uint32_t *pixels = (uint32_t*)malloc(width * height * 4);
-        assert_not_null(pixels);
+        assert(pixels != NULL);
         for (i = 0; i < (unsigned)(width * height); i ++)
         {
             unsigned char palette_index = (unsigned char)*tmp ++;
@@ -221,6 +225,7 @@ static bool g00_decode_version_1(VirtualFile *file, int width, int height)
             (char*)pixels,
             width * height * 4,
             IMAGE_PIXEL_FORMAT_BGRA);
+        assert(image != NULL);
         image_update_file(image, file);
         image_destroy(image);
 
@@ -237,7 +242,7 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
     size_t region_count = io_read_u32_le(file->io);
     size_t i, j;
     G00Region *regions = (G00Region*)malloc(region_count * sizeof(G00Region));
-    assert_not_null(regions);
+    assert(regions != NULL);
     for (i = 0; i < region_count; i ++)
     {
         regions[i].x1 = io_read_u32_le(file->io);
@@ -259,7 +264,7 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
     }
 
     char *uncompressed = (char*)malloc(uncompressed_size);
-    assert_not_null(uncompressed);
+    assert(uncompressed != NULL);
     g00_decompress_version_1(
         file->io,
         compressed_size,
@@ -267,7 +272,7 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
         uncompressed_size);
 
     char *pixels = (char*)malloc(width * height * 4);
-    assert_not_null(pixels);
+    assert(pixels != NULL);
 
     bool result;
     IO *uncompressed_io = io_create_from_buffer(uncompressed, uncompressed_size);
@@ -291,7 +296,7 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
             io_seek(uncompressed_io, block_offset);
             uint16_t block_type = io_read_u16_le(uncompressed_io);
             uint16_t part_count = io_read_u16_le(uncompressed_io);
-            assert_equali(1, block_type);
+            assert(1 == block_type);
 
             io_skip(uncompressed_io, 0x70);
             for (j = 0; j < part_count; j ++)
@@ -325,6 +330,7 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
         (char*)pixels,
         width * height * 4,
         IMAGE_PIXEL_FORMAT_BGRA);
+    assert(image != NULL);
     image_update_file(image, file);
     image_destroy(image);
 
@@ -335,8 +341,8 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
 
 static bool g00_decode(Converter *converter, VirtualFile *file)
 {
-    assert_not_null(converter);
-    assert_not_null(file);
+    assert(converter != NULL);
+    assert(file != NULL);
 
     uint8_t version = io_read_u8(file->io);
     uint16_t width = io_read_u16_le(file->io);
