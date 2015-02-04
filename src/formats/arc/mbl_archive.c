@@ -18,9 +18,30 @@
 typedef struct
 {
     Converter *prs_converter;
+} MblArchiveContext;
+
+typedef struct
+{
+    MblArchiveContext *archive_context;
     IO *arc_io;
     size_t name_length;
 } MblUnpackContext;
+
+static void mbl_add_cli_help(
+    Archive *archive,
+    ArgParser *arg_parser)
+{
+    MblArchiveContext *archive_context = (MblArchiveContext*)archive->data;
+    converter_add_cli_help(archive_context->prs_converter, arg_parser);
+}
+
+static void mbl_parse_cli_options(
+    Archive *archive,
+    ArgParser *arg_parser)
+{
+    MblArchiveContext *archive_context = (MblArchiveContext*)archive->data;
+    converter_parse_cli_options(archive_context->prs_converter, arg_parser);
+}
 
 static int mbl_check_version(
     IO *arc_io,
@@ -55,15 +76,15 @@ static int mbl_get_version(IO *arc_io)
     return -1;
 }
 
-static VirtualFile *mbl_read_file(void *_context)
+static VirtualFile *mbl_read_file(void *context)
 {
-    MblUnpackContext *context = (MblUnpackContext*)_context;
-    assert_not_null(context);
+    MblUnpackContext *unpack_context = (MblUnpackContext*)context;
+    assert_not_null(unpack_context);
     VirtualFile *file = virtual_file_create();
 
-    size_t old_pos = io_tell(context->arc_io);
+    size_t old_pos = io_tell(unpack_context->arc_io);
     char *tmp_name = NULL;
-    io_read_until_zero(context->arc_io, &tmp_name, NULL);
+    io_read_until_zero(unpack_context->arc_io, &tmp_name, NULL);
     assert_not_null(tmp_name);
 
     char *decoded_name;
@@ -75,22 +96,22 @@ static VirtualFile *mbl_read_file(void *_context)
     free(decoded_name);
 
     free(tmp_name);
-    io_seek(context->arc_io, old_pos + context->name_length);
+    io_seek(unpack_context->arc_io, old_pos + unpack_context->name_length);
 
-    size_t offset = io_read_u32_le(context->arc_io);
-    size_t size = io_read_u32_le(context->arc_io);
-    if (offset + size > io_size(context->arc_io))
+    size_t offset = io_read_u32_le(unpack_context->arc_io);
+    size_t size = io_read_u32_le(unpack_context->arc_io);
+    if (offset + size > io_size(unpack_context->arc_io))
     {
         log_error("Bad offset to file");
         return false;
     }
 
-    old_pos = io_tell(context->arc_io);
-    io_seek(context->arc_io, offset);
-    io_write_string_from_io(file->io, context->arc_io, size);
-    io_seek(context->arc_io, old_pos);
+    old_pos = io_tell(unpack_context->arc_io);
+    io_seek(unpack_context->arc_io, offset);
+    io_write_string_from_io(file->io, unpack_context->arc_io, size);
+    io_seek(unpack_context->arc_io, old_pos);
 
-    converter_try_decode(context->prs_converter, file);
+    converter_try_decode(unpack_context->archive_context->prs_converter, file);
 
     return file;
 }
@@ -112,7 +133,7 @@ static bool mbl_unpack(
     uint32_t file_count = io_read_u32_le(arc_io);
     uint32_t name_length = version == 2 ? io_read_u32_le(arc_io) : 16;
     MblUnpackContext unpack_context;
-    unpack_context.prs_converter = (Converter*)archive->data;
+    unpack_context.archive_context = (MblArchiveContext*)archive->data;
     unpack_context.arc_io = arc_io;
     unpack_context.name_length = name_length;
     for (i = 0; i < file_count; i ++)
@@ -125,8 +146,8 @@ static bool mbl_unpack(
 
 static void mbl_cleanup(Archive *archive)
 {
-    assert_not_null(archive);
-    converter_destroy((Converter*)archive->data);
+    MblArchiveContext *archive_context = (MblArchiveContext*)archive->data;
+    converter_destroy(archive_context->prs_converter);
 }
 
 Archive *mbl_archive_create()
@@ -134,7 +155,14 @@ Archive *mbl_archive_create()
     Archive *archive = archive_create();
     archive->unpack = &mbl_unpack;
     archive->cleanup = &mbl_cleanup;
-    archive->data = (void*)prs_converter_create();
-    assert_not_null(archive->data);
+    archive->add_cli_help = &mbl_add_cli_help;
+    archive->parse_cli_options = &mbl_parse_cli_options;
+
+    MblArchiveContext *context
+        = (MblArchiveContext*)malloc(sizeof(MblArchiveContext));
+    assert_not_null(context);
+    context->prs_converter = prs_converter_create();
+    archive->data = context;
+
     return archive;
 }
