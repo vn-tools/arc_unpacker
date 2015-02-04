@@ -50,6 +50,7 @@ Image *image_create_from_pixels(
 {
     assert(pixel_data != NULL);
     Image *image = (Image*)malloc(sizeof(Image));
+    assert(image != NULL);
     image->image_width = image_width;
     image->image_height = image_height;
     image->pixel_data = pixel_data;
@@ -63,7 +64,9 @@ Image *image_create_from_boxed(IO *io)
 {
     assert(io != NULL);
     io_seek(io, 0);
+
     Image *image = (Image*)malloc(sizeof(Image));
+    assert(image != NULL);
 
     png_structp png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);

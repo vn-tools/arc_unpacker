@@ -341,7 +341,6 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
                 output,
                 output_size,
                 bpp_to_image_pixel_format(bpp));
-            assert(image != NULL);
             image_update_file(image, file);
             image_destroy(image);
 

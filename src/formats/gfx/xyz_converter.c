@@ -44,7 +44,12 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
         size_t compressed_data_size = io_size(file->io) - io_tell(file->io);
         char *compressed_data = (char*)malloc(compressed_data_size);
         assert(compressed_data != NULL);
-        io_read_string(file->io, compressed_data, compressed_data_size);
+        if (!io_read_string(file->io, compressed_data, compressed_data_size))
+        {
+            log_error("XYZ: Failed to read pixel data");
+            free(compressed_data);
+            return false;
+        }
 
         char *uncompressed_data = NULL;
         size_t uncompressed_data_size = 0;
@@ -54,7 +59,10 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
             &uncompressed_data,
             &uncompressed_data_size))
         {
-            assert(0);
+            log_error("XYZ: Failed to decompress zlib stream");
+            free(compressed_data);
+            free(uncompressed_data);
+            return false;
         }
         assert(uncompressed_data != NULL);
         assert((unsigned)256 * 3 + width * height == uncompressed_data_size);
@@ -87,7 +95,6 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
             pixels,
             pixels_size,
             IMAGE_PIXEL_FORMAT_RGB);
-        assert(image != NULL);
         image_update_file(image, file);
         image_destroy(image);
 

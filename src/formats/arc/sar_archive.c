@@ -28,7 +28,11 @@ typedef struct
 static VirtualFile *sar_read_file(void *_context)
 {
     VirtualFile *file = virtual_file_create();
+    assert(file != NULL);
+
     SarUnpackContext *context = (SarUnpackContext*)_context;
+    assert(context != NULL);
+
     io_seek(context->arc_io, context->table_entry->offset);
 
     io_write_string_from_io(

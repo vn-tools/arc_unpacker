@@ -179,7 +179,6 @@ static bool prs_decode(Converter *converter, VirtualFile *file)
             target_buffer,
             target_size,
             IMAGE_PIXEL_FORMAT_BGR);
-        assert(image != NULL);
         image_update_file(image, file);
         image_destroy(image);
         result = true;
