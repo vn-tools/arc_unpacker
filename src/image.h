@@ -26,6 +26,7 @@ size_t image_height(const Image *image);
 PixelFormat image_pixel_format(const Image *image);
 const char *image_pixel_data(const Image *image);
 size_t image_pixel_data_size(const Image *image);
+uint32_t image_color_at(const Image *image, size_t x, size_t y);
 
 void image_destroy(Image *image);
 

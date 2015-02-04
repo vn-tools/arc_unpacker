@@ -5,7 +5,7 @@
 #include "test_support/converter_support.h"
 #include "virtual_file.h"
 
-void compare_images(
+static void compare_images(
     const Image *expected_image,
     const Image *actual_image)
 {
@@ -19,21 +19,19 @@ void compare_images(
     assert_equali(image_width(expected_image), image_width(actual_image));
     assert_equali(image_height(expected_image), image_height(actual_image));
 
-    assert_equali(
-        image_pixel_format(expected_image),
-        image_pixel_format(actual_image));
-
-    assert_equali(
-        image_pixel_data_size(expected_image),
-        image_pixel_data_size(actual_image));
-
-    assert_equalsn(
-        image_pixel_data(expected_image),
-        image_pixel_data(actual_image),
-        image_pixel_data_size(expected_image));
+    size_t x, y;
+    for (y = 0; y < image_height(expected_image); y ++)
+    {
+        for (x = 0; x < image_width(expected_image); x ++)
+        {
+            uint32_t expected_rgba = image_color_at(expected_image, x, y);
+            uint32_t actual_rgba = image_color_at(actual_image, x, y);
+            assert_equali(expected_rgba, actual_rgba);
+        }
+    }
 }
 
-Image *get_actual_image(const char *path, Converter *converter)
+static Image *get_actual_image(const char *path, Converter *converter)
 {
     IO *io = io_create_from_file(path, "rb");
     VirtualFile *file = virtual_file_create();
@@ -48,7 +46,7 @@ Image *get_actual_image(const char *path, Converter *converter)
     return image;
 }
 
-Image *get_expected_image(const char *path)
+static Image *get_expected_image(const char *path)
 {
     IO *io = io_create_from_file(path, "rb");
     Image *image = image_create_from_boxed(io);

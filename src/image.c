@@ -256,3 +256,41 @@ void image_update_file(const Image *image, VirtualFile *file)
 
     virtual_file_change_extension(file, "png");
 }
+
+uint32_t image_color_at(const Image *image, size_t x, size_t y)
+{
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+    size_t width = image_width(image);
+
+    switch (image_pixel_format(image))
+    {
+        case IMAGE_PIXEL_FORMAT_GRAYSCALE:
+            r = g = b = image_pixel_data(image)[y * width + x];
+            a = 255;
+            break;
+
+        case IMAGE_PIXEL_FORMAT_RGB:
+            r = image_pixel_data(image)[(y * width + x) * 3 + 0];
+            g = image_pixel_data(image)[(y * width + x) * 3 + 1];
+            b = image_pixel_data(image)[(y * width + x) * 3 + 2];
+            a = 255;
+            break;
+
+        case IMAGE_PIXEL_FORMAT_RGBA:
+            r = image_pixel_data(image)[(y * width + x) * 4 + 0];
+            g = image_pixel_data(image)[(y * width + x) * 4 + 1];
+            b = image_pixel_data(image)[(y * width + x) * 4 + 2];
+            a = image_pixel_data(image)[(y * width + x) * 4 + 3];
+            break;
+
+        default:
+            log_error("Format not supported.");
+            assert_that(1 == 0);
+            return 0;
+    }
+
+    return r | (g << 8) | (b << 16) | (a << 24);
+}
