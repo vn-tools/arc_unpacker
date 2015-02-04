@@ -99,7 +99,7 @@ static VirtualFile *pak_read_file(void *context)
         if (size_uncompressed != size_original)
         {
             virtual_file_destroy(file);
-            log_error("Bad file size");
+            log_error("PAK: Bad file size");
             return NULL;
         }
     }
@@ -120,7 +120,7 @@ static bool pak_unpack(
 {
     if (!pak_check_magic(arc_io))
     {
-        log_error("Not a PAK archive");
+        log_error("PAK: Not a PAK archive");
         return false;
     }
 

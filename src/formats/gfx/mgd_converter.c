@@ -292,6 +292,11 @@ static Array *mgd_read_region_data(IO *file_io)
         for (i = 0; i < region_count; i ++)
         {
             MgdRegion *region = (MgdRegion*)malloc(sizeof(MgdRegion));
+            if (!region)
+            {
+                log_error("MGD: Failed to allocate memory for region");
+                continue;
+            }
             region->x = io_read_u16_le(file_io);
             region->y = io_read_u16_le(file_io);
             region->width = io_read_u16_le(file_io);
@@ -317,8 +322,18 @@ static Image *mgd_read_image(
     assert(data_uncompressed != NULL);
 
     char *data_compressed = (char*)malloc(size_compressed);
-    assert(data_compressed != NULL);
-    io_read_string(file_io, data_compressed, size_compressed);
+    if (!data_compressed)
+    {
+        log_error("MGD: Failed to allocate memory for compressed data");
+        return NULL;
+    }
+    if (!io_read_string(file_io, data_compressed, size_compressed))
+    {
+        log_error("MGD: Failed to read compressed data");
+        return NULL;
+    }
+
+    log_info("MGD: compression type = %d", compression_type);
 
     Image *image = NULL;
     switch (compression_type)

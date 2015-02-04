@@ -73,7 +73,7 @@ static uint64_t xp3_get_table_offset(IO *arc_io, int version)
     uint32_t minor_version = io_read_u32_le(arc_io);
     if (minor_version != 1)
     {
-        log_error("Unexpected XP3 version: %d", minor_version);
+        log_error("XP3: Unexpected XP3 version: %d", minor_version);
         return false;
     }
 
@@ -104,7 +104,8 @@ static IO *xp3_read_raw_table(IO *arc_io)
             &table_data_uncompressed,
             &table_size_uncompressed))
         {
-            assert(0);
+            log_error("XP3: Failed to decompress zlib stream");
+            return NULL;
         }
         assert(table_data_uncompressed != NULL);
         assert(table_size_original == table_size_uncompressed);
@@ -123,7 +124,7 @@ static bool xp3_read_info_chunk(IO *table_io, VirtualFile *target_file)
 {
     if (!xp3_check_magic(table_io, info_magic, info_magic_length))
     {
-        log_error("Expected INFO chunk");
+        log_error("XP3: Expected INFO chunk");
         return false;
     }
     uint64_t info_chunk_size = io_read_u64_le(table_io);
@@ -211,7 +212,7 @@ static uint32_t xp3_read_adlr_chunk(IO *table_io, uint32_t *encryption_key)
 {
     if (!xp3_check_magic(table_io, adlr_magic, adlr_magic_length))
     {
-        log_error("Expected ADLR chunk");
+        log_error("XP3: Expected ADLR chunk");
         return false;
     }
     uint64_t adlr_chunk_size = io_read_u64_le(table_io);
@@ -229,7 +230,7 @@ static VirtualFile *xp3_read_file(void *context)
 
     if (!xp3_check_magic(table_io, file_magic, file_magic_length))
     {
-        log_error("Expected FILE chunk");
+        log_error("XP3: Expected FILE chunk");
         io_destroy(table_io);
         return NULL;
     }
@@ -270,12 +271,12 @@ static bool xp3_unpack(
 
     if (!xp3_check_magic(arc_io, xp3_magic, xp3_magic_length))
     {
-        log_error("Not an XP3 archive");
+        log_error("XP3: Not an XP3 archive");
         return false;
     }
 
     int version = xp3_detect_version(arc_io);
-    log_info("Version: %d", version);
+    log_info("XP3: Version: %d", version);
 
     uint64_t table_offset = xp3_get_table_offset(arc_io, version);
     io_seek(arc_io, table_offset & 0xffffffff);

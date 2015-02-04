@@ -266,7 +266,7 @@ static PixelFormat bpp_to_image_pixel_format(short bpp)
         case 32:
             return IMAGE_PIXEL_FORMAT_BGRA;
     }
-    log_error("Unsupported BPP: %d", bpp);
+    log_error("CBG: Unsupported BPP: %d", bpp);
     return (PixelFormat)0;
 }
 
@@ -275,57 +275,64 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
     assert(converter != NULL);
     assert(file != NULL);
 
-    bool result;
     char magic[cbg_magic_length];
     io_read_string(file->io, magic, cbg_magic_length);
     if (memcmp(magic, cbg_magic, cbg_magic_length) != 0)
     {
-        log_error("Not a CBG image");
+        log_error("CBG: Not a CBG image");
+        return false;
+    }
+
+    uint16_t width = io_read_u16_le(file->io);
+    uint16_t height = io_read_u16_le(file->io);
+    uint16_t bpp = io_read_u16_le(file->io);
+    io_skip(file->io, 10);
+
+    if (!bpp_to_image_pixel_format(bpp))
+        return false;
+
+    uint32_t huffman_size = io_read_u32_le(file->io);
+    uint32_t key = io_read_u32_le(file->io);
+    uint32_t freq_table_data_size = io_read_u32_le(file->io);
+    io_skip(file->io, 4);
+
+    uint32_t freq_table[256];
+    cbg_read_frequency_table(
+        file->io,
+        freq_table_data_size,
+        key,
+        freq_table);
+
+    CbgNodeInfo node_info[511];
+    int last_node = cbg_read_node_info(freq_table, node_info);
+
+    bool result;
+    char *huffman = (char*)malloc(huffman_size);
+    if (huffman == NULL)
+    {
+        log_error("CBG: Failed to allocate %d bytes", huffman_size);
         result = false;
     }
     else
     {
-        uint16_t width = io_read_u16_le(file->io);
-        uint16_t height = io_read_u16_le(file->io);
-        uint16_t bpp = io_read_u16_le(file->io);
-        io_skip(file->io, 10);
+        cbg_decompress_huffman(
+            file->io,
+            last_node,
+            node_info,
+            huffman_size,
+            (uint8_t*)huffman);
 
-        if (!bpp_to_image_pixel_format(bpp))
+        size_t output_size = width * height * (bpp >> 3);
+        char *output = (char*)malloc(output_size);
+        if (output == NULL)
         {
+            log_error("CBG: Failed to allocate %d bytes", output_size);
             result = false;
         }
         else
         {
-            uint32_t huffman_size = io_read_u32_le(file->io);
-            uint32_t key = io_read_u32_le(file->io);
-            uint32_t freq_table_data_size = io_read_u32_le(file->io);
-            io_skip(file->io, 4);
-
-            uint32_t freq_table[256];
-            cbg_read_frequency_table(
-                file->io,
-                freq_table_data_size,
-                key,
-                freq_table);
-
-            CbgNodeInfo node_info[511];
-            int last_node = cbg_read_node_info(freq_table, node_info);
-
-            char *huffman = (char*)malloc(huffman_size);
-            assert(huffman != NULL);
-            cbg_decompress_huffman(
-                file->io,
-                last_node,
-                node_info,
-                huffman_size,
-                (uint8_t*)huffman);
-
-            size_t output_size = width * height * (bpp >> 3);
-            char *output = (char*)malloc(output_size);
-            assert(output != NULL);
             cbg_decompress_rle(huffman_size, huffman, output);
             free(huffman);
-
             cbg_transform_colors((uint8_t*)output, width, height, bpp);
 
             Image *image = image_create_from_pixels(
@@ -339,7 +346,6 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
             image_destroy(image);
 
             free(output);
-            result = true;
         }
     }
 

@@ -90,7 +90,7 @@ void g00_decompress(
     }
 }
 
-static void g00_decompress_from_io(
+static bool g00_decompress_from_io(
     IO *io,
     size_t compressed_size,
     char *uncompressed,
@@ -101,10 +101,18 @@ static void g00_decompress_from_io(
     assert(uncompressed != NULL);
 
     char *compressed = (char*)malloc(compressed_size);
-    assert(compressed != NULL);
+    if (!compressed)
+    {
+        log_error("G00: Failed to allocate %d bytes", compressed);
+        return false;
+    }
+
     if (!io_read_string(io, compressed, compressed_size))
-        assert(0);
-    assert(uncompressed != NULL);
+    {
+        log_error("G00: Failed to read string");
+        return false;
+    }
+
     g00_decompress(
         compressed,
         compressed_size,
@@ -112,10 +120,12 @@ static void g00_decompress_from_io(
         uncompressed_size,
         byte_count,
         length_delta);
+
     free(compressed);
+    return true;
 }
 
-static void g00_decompress_version_0(
+static bool g00_decompress_version_0(
     IO *io,
     size_t compressed_size,
     char *uncompressed,
@@ -123,11 +133,11 @@ static void g00_decompress_version_0(
 {
     assert(io != NULL);
     assert(uncompressed != NULL);
-    g00_decompress_from_io(
+    return g00_decompress_from_io(
         io, compressed_size, uncompressed, uncompressed_size, 3, 1);
 }
 
-static void g00_decompress_version_1(
+static bool g00_decompress_version_1(
     IO *io,
     size_t compressed_size,
     char *uncompressed,
@@ -135,7 +145,7 @@ static void g00_decompress_version_1(
 {
     assert(io != NULL);
     assert(uncompressed != NULL);
-    g00_decompress_from_io(
+    return g00_decompress_from_io(
         io, compressed_size, uncompressed, uncompressed_size, 1, 2);
 }
 
@@ -146,22 +156,31 @@ static bool g00_decode_version_0(VirtualFile *file, int width, int height)
     compressed_size -= 8;
     if (compressed_size != io_size(file->io) - io_tell(file->io))
     {
-        log_error("Bad compressed size");
+        log_error("G00: Bad compressed size");
         return false;
     }
     if (uncompressed_size != (unsigned)(width * height * 4))
     {
-        log_error("Bad uncompressed size");
+        log_error("G00: Bad uncompressed size");
         return false;
     }
 
     char *uncompressed = (char*)malloc(uncompressed_size);
-    assert(uncompressed != NULL);
-    g00_decompress_version_0(
+    if (!uncompressed)
+    {
+        log_error("G00: Failed to allocate %d bytes", uncompressed_size);
+        return false;
+    }
+
+    if (!g00_decompress_version_0(
         file->io,
         compressed_size,
         uncompressed,
-        uncompressed_size);
+        uncompressed_size))
+    {
+        log_error("G00: Failed to decompress data");
+        return false;
+    }
 
     Image *image = image_create_from_pixels(
         width,
@@ -183,17 +202,26 @@ static bool g00_decode_version_1(VirtualFile *file, int width, int height)
     compressed_size -= 8;
     if (compressed_size != io_size(file->io) - io_tell(file->io))
     {
-        log_error("Bad compressed size");
+        log_error("G00: Bad compressed size");
         return false;
     }
 
     char *uncompressed = (char*)malloc(uncompressed_size);
-    assert(uncompressed != NULL);
-    g00_decompress_version_1(
+    if (!uncompressed)
+    {
+        log_error("G00: Failed to allocate %d bytes", uncompressed_size);
+        return false;
+    }
+
+    if (!g00_decompress_version_1(
         file->io,
         compressed_size,
         uncompressed,
-        uncompressed_size);
+        uncompressed_size))
+    {
+        log_error("G00: Failed to decompress data");
+        return false;
+    }
 
     char *tmp = uncompressed;
     uint16_t color_count = le32toh(*(uint16_t*)tmp);
@@ -202,7 +230,7 @@ static bool g00_decode_version_1(VirtualFile *file, int width, int height)
     bool result;
     if (uncompressed_size != (unsigned)color_count * 4 + width * height + 2)
     {
-        log_error("Bad uncompressed size");
+        log_error("G00: Bad uncompressed size");
         result = false;
     }
     else
@@ -242,7 +270,12 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
     size_t region_count = io_read_u32_le(file->io);
     size_t i, j;
     G00Region *regions = (G00Region*)malloc(region_count * sizeof(G00Region));
-    assert(regions != NULL);
+    if (!regions)
+    {
+        log_error("G00: Failed to allocate memory for %d regions", region_count);
+        return false;
+    }
+
     for (i = 0; i < region_count; i ++)
     {
         regions[i].x1 = io_read_u32_le(file->io);
@@ -258,27 +291,46 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
     compressed_size -= 8;
     if (compressed_size != io_size(file->io) - io_tell(file->io))
     {
-        log_error("Bad compressed size");
+        log_error("G00: Bad compressed size");
         free(regions);
         return false;
     }
 
     char *uncompressed = (char*)malloc(uncompressed_size);
-    assert(uncompressed != NULL);
-    g00_decompress_version_1(
+    if (!uncompressed)
+    {
+        log_error("G00: Failed to allocate %d bytes", uncompressed_size);
+        free(regions);
+        return false;
+    }
+
+    if (!g00_decompress_version_1(
         file->io,
         compressed_size,
         uncompressed,
-        uncompressed_size);
+        uncompressed_size))
+    {
+        log_error("G00: Failed to decompress data");
+        return false;
+    }
 
     char *pixels = (char*)malloc(width * height * 4);
-    assert(pixels != NULL);
+    if (!pixels)
+    {
+        log_error(
+            "G00: Failed to allocate memory for %d x %d pixels",
+            width,
+            height);
+        free(uncompressed);
+        free(regions);
+        return false;
+    }
 
     bool result;
     IO *uncompressed_io = io_create_from_buffer(uncompressed, uncompressed_size);
     if (region_count != io_read_u32_le(uncompressed_io))
     {
-        log_error("Bad region count");
+        log_error("G00: Bad region count");
         result = false;
     }
     else
@@ -347,7 +399,7 @@ static bool g00_decode(Converter *converter, VirtualFile *file)
     uint8_t version = io_read_u8(file->io);
     uint16_t width = io_read_u16_le(file->io);
     uint16_t height = io_read_u16_le(file->io);
-    log_info("Version: %d", version);
+    log_info("G00: Version = %d", version);
 
     switch (version)
     {
@@ -361,7 +413,7 @@ static bool g00_decode(Converter *converter, VirtualFile *file)
             return g00_decode_version_2(file, width, height);
 
         default:
-            log_error("Not a G00 image");
+            log_error("G00: Not a G00 image");
             return false;
     }
 

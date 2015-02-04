@@ -38,7 +38,7 @@ static bool file_io_read(IO *io, size_t length, void *destination)
     assert(destination != NULL);
     if (fread(destination, 1, length, io->file) != length)
     {
-        log_warning("Failed to read full data");
+        log_warning("IO: Failed to read full data");
         return false;
     }
     return true;
@@ -50,7 +50,7 @@ static bool file_io_write(IO *io, size_t length, void *source)
     assert(source != NULL);
     if (fwrite(source, 1, length, io->file) != length)
     {
-        log_warning("Failed to write full data");
+        log_warning("IO: Failed to write full data");
         return false;
     }
     return true;
@@ -78,7 +78,7 @@ static bool file_io_truncate(
 {
     assert(io != NULL);
     //return ftruncate(io->file, new_size) == 0;
-    log_error("Truncating for real files is not supported!");
+    log_error("IO: Truncating for real files is not supported!");
     return false;
 }
 
@@ -119,9 +119,10 @@ static bool buffer_io_write(IO *io, size_t length, void *source)
     if (io->buffer_pos + length > io->buffer_size)
     {
         destination = (char*)realloc(io->buffer, io->buffer_pos + length);
-        if (!destination)
+        if (destination == NULL)
         {
-            log_error("Failed to allocate memory");
+            log_error("IO: Failed to allocate %d bytes",
+                io->buffer_pos + length);
             return false;
         }
         io->buffer_size = io->buffer_pos + length;
@@ -173,11 +174,15 @@ IO *io_create_from_file(const char *path, const char *read_mode)
     FILE *fp = fopen(path, read_mode);
     if (!fp)
     {
-        log_error("Can\'t open file %s", path);
+        log_error("IO: Can\'t open file %s", path);
         return NULL;
     }
     IO *io = (IO*)malloc(sizeof(IO));
-    assert(io != NULL);
+    if (io == NULL)
+    {
+        log_error("IO: Failed to allocate memory for file IO");
+        return NULL;
+    }
     io->file = fp;
     io->buffer = NULL;
     io->buffer_pos = 0;
@@ -194,10 +199,21 @@ IO *io_create_from_file(const char *path, const char *read_mode)
 IO *io_create_from_buffer(const char *buffer, size_t buffer_size)
 {
     IO *io = (IO*)malloc(sizeof(IO));
-    assert(io != NULL);
+    if (io == NULL)
+    {
+        log_error("IO: Failed to allocate memory for buffer IO");
+        return NULL;
+    }
     io->file = NULL;
     io->buffer = (char*)malloc(buffer_size);
-    assert(io->buffer != NULL);
+    if (io->buffer == NULL)
+    {
+        log_error(
+            "IO: Failed to allocate %d bytes for buffer IO data",
+            buffer_size);
+        free(io);
+        return NULL;
+    }
     memcpy(io->buffer, buffer, buffer_size);
     io->buffer_pos = 0;
     io->buffer_size = buffer_size;
@@ -276,8 +292,10 @@ bool io_read_until_zero(IO *io, char **output, size_t *output_size)
         {
             free(*output);
             *output = NULL;
-            *output_size = 0;
-            log_error("Failed to allocate memory");
+            if (output_size != NULL)
+                *output_size = 0;
+            log_error(
+                "IO: Failed to allocate memory for null-terminated string");
             return false;
         }
         *output = new_str;
@@ -371,7 +389,11 @@ bool io_write_string_from_io(IO *io, IO *input, size_t length)
     {
         // TODO improvement: use static buffer instead of such allocation
         char *buffer = (char*)malloc(length);
-        assert(buffer != NULL);
+        if (buffer == NULL)
+        {
+            log_error("IO: Failed to allocate memory for string");
+            return NULL;
+        }
         result = io_read_string(input, buffer, length);
         if (result)
             result &= io_write_string(io, buffer, length);

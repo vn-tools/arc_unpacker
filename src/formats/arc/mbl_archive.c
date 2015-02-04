@@ -106,7 +106,7 @@ static VirtualFile *mbl_read_file(void *context)
     size_t size = io_read_u32_le(unpack_context->arc_io);
     if (offset + size > io_size(unpack_context->arc_io))
     {
-        log_error("Bad offset to file");
+        log_error("MBL: Bad offset to file");
         return false;
     }
 
@@ -129,10 +129,10 @@ static bool mbl_unpack(
     int version = mbl_get_version(arc_io);
     if (version == -1)
     {
-        log_error("Not a MBL archive");
+        log_error("MBL: Not a MBL archive");
         return false;
     }
-    log_info("Version: %d", version);
+    log_info("MBL: Version: %d", version);
 
     uint32_t file_count = io_read_u32_le(arc_io);
     uint32_t name_length = version == 2 ? io_read_u32_le(arc_io) : 16;

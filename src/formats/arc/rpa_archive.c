@@ -211,7 +211,7 @@ static bool rpa_unpickle(IO *table_io, RpaUnpickleContext *context)
                 return true;
 
             default:
-                log_error("Unsupported pickle operator '%c' (%02X)", c, c);
+                log_error("RPA: Unsupported pickle operator '%c' (%02X)", c, c);
                 return false;
         }
     }
@@ -373,15 +373,15 @@ static bool rpa_unpack(
     }
     else
     {
-        log_error("Not a RPA archive");
+        log_error("RPA: Not a RPA archive");
         return false;
     }
 
-    log_info("Version: %d", version);
+    log_info("RPA: Version: %d", version);
 
     if (!io_seek(arc_io, table_offset))
     {
-        log_error("Bad table offset");
+        log_error("RPA: Bad table offset");
         return false;
     }
 
@@ -389,7 +389,7 @@ static bool rpa_unpack(
     char *table;
     if (!rpa_read_raw_table(arc_io, &table, &table_size))
     {
-        log_error("Failed to read table");
+        log_error("RPA: Failed to read table");
         return false;
     }
 

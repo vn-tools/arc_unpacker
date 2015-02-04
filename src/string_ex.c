@@ -52,7 +52,12 @@ bool zlib_inflate(
     else
         *output_size = input_size;
     *output = (char*)malloc(*output_size + 1);
-    assert(*output != NULL);
+    if (*output == NULL)
+    {
+        log_error("Zlib: failed to allocate initial memory");
+        *output_size = 0;
+        return false;
+    }
 
     stream.next_in = (unsigned char *)input;
     stream.avail_in = input_size;
@@ -63,7 +68,13 @@ bool zlib_inflate(
     stream.opaque = (voidpf)NULL;
     stream.total_out = 0;
 
-    assert(Z_OK == inflateInit(&stream));
+    if (inflateInit(&stream) != Z_OK)
+    {
+        *output_size = 0;
+        *output = NULL;
+        log_error("Zlib: failed to initialize stream");
+        return false;
+    }
 
     while (1)
     {
@@ -71,22 +82,36 @@ bool zlib_inflate(
         switch (result)
         {
             case Z_STREAM_END:
-                assert(Z_OK == inflateEnd(&stream));
-                *output = (char*)realloc(*output, stream.total_out + 1);
-                assert(*output != NULL);
+            {
+                if (inflateEnd(&stream) != Z_OK)
+                {
+                    log_warning("Zlib: failed to uninitialize stream");
+                }
+                char *new_output = (char*)realloc(*output, stream.total_out+1);
+                if (new_output == NULL)
+                {
+                    log_error("Zlib: failed to allocate memory for output");
+                    free(*output);
+                    *output = NULL;
+                    *output_size = 0;
+                    return false;
+                }
+                *output = new_output;
                 *output_size = stream.total_out;
                 (*output)[*output_size] = '\0';
                 return true;
+            }
 
             case Z_BUF_ERROR:
             case Z_OK:
+            {
                 if (*output_size < SIZE_MAX / 2)
                 {
                     *output_size *= 2;
                 }
                 else if (*output_size == SIZE_MAX - 1)
                 {
-                    log_error("input too large");
+                    log_error("Zlib: input is too large");
                     free(*output);
                     *output = NULL;
                     *output_size = 0;
@@ -96,14 +121,25 @@ bool zlib_inflate(
                 {
                     *output_size = SIZE_MAX - 1;
                 }
-                *output = (char*)realloc(*output, *output_size + 1);
-                assert(*output != NULL);
+
+                char *new_output = (char*)realloc(*output, *output_size + 1);
+                if (new_output == NULL)
+                {
+                    log_error("Zlib: failed to allocate memory for output");
+                    free(*output);
+                    *output = NULL;
+                    *output_size = 0;
+                    return false;
+                }
+                *output = new_output;
+
                 stream.next_out = (unsigned char *)*output + stream.total_out;
                 stream.avail_out = *output_size - stream.total_out;
                 break;
+            }
 
             default:
-                log_error("Inflate failed: %d", result);
+                log_error("Zlib: inflate failed (error code = %d)", result);
                 free(*output);
                 *output = NULL;
                 *output_size = 0;
@@ -111,7 +147,7 @@ bool zlib_inflate(
         }
     }
 
-    log_error("???");
+    log_error("Zlib: reached unexpected state");
     return false;
 }
 
@@ -149,7 +185,7 @@ bool convert_encoding(
         output_new = (char*)realloc(*output, *output_size);
         if (!output_new)
         {
-            log_error("Failed to allocate memory");
+            log_error("Encoding: Failed to allocate memory");
             free(*output);
             *output = NULL;
             *output_size = 0;
@@ -176,7 +212,7 @@ bool convert_encoding(
         {
             case EINVAL:
             case EILSEQ:
-                log_error("Invalid byte sequence");
+                log_error("Encoding: Invalid byte sequence");
                 free(*output);
                 *output = NULL;
                 *output_size = 0;

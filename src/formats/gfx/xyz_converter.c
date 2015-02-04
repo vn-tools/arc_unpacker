@@ -33,7 +33,7 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
 
     if (memcmp(magic, xyz_magic, xyz_magic_length) != 0)
     {
-        log_error("Not an XYZ image");
+        log_error("XYZ: Not an XYZ image");
         result = false;
     }
     else

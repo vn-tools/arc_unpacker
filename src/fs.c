@@ -23,7 +23,7 @@ static bool _get_files_accumulator(
     DIR *d = opendir(dir_path);
     if (!d)
     {
-        log_warning("Cannot open directory %s", dir_path);
+        log_warning("FS: Cannot open directory %s", dir_path);
         return false;
     }
 
@@ -138,7 +138,7 @@ bool mkpath(const char *path)
     {
         if (errno != ENOENT)
         {
-            log_warning("Failed to stat path %s", path);
+            log_warning("FS: Failed to stat path %s", path);
             return false;
         }
         dir = dirname(path);
@@ -150,7 +150,7 @@ bool mkpath(const char *path)
         trim_right(dir, "/\\");
         if (p_mkdir(path, 0755) != 0 && errno != EEXIST)
         {
-            log_warning("Failed to create directory %s", dir);
+            log_warning("FS: Failed to create directory %s", dir);
             free(dir);
             return false;
         }
@@ -159,7 +159,9 @@ bool mkpath(const char *path)
     }
     else if (!S_ISDIR(sb.st_mode))
     {
-        log_warning("Cannot create directory at %s: file already exists", path);
+        log_warning(
+            "FS: Cannot create directory at %s - file already exists",
+            path);
         return false;
     }
     return true;

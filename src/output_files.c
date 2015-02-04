@@ -47,7 +47,11 @@ static bool save_to_hdd(
 
     bool result;
     VirtualFile *file = save_proc(context);
-    if (file != NULL)
+    if (file == NULL)
+    {
+        log_error("An error occured while reading file, saving skipped.");
+    }
+    else
     {
         char *full_path = get_full_path(
             output_files,
@@ -75,10 +79,6 @@ static bool save_to_hdd(
         }
         free(full_path);
         free(dir);
-    }
-    else
-    {
-        log_error("Error while reading file");
     }
 
     if (file != NULL)

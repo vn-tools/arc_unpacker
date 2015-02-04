@@ -84,7 +84,7 @@ static void npa_parse_cli_options(Archive *archive, ArgParser *arg_parser)
         }
         else
         {
-            log_error("Unrecognized plugin: %s", plugin);
+            log_error("NPA: Unrecognized plugin: %s", plugin);
         }
     }
 
@@ -271,14 +271,14 @@ static VirtualFile *npa_read_file(void *_context)
 
     if (file_type == NPA_FILE_TYPE_DIRECTORY)
     {
-        log_info("Empty directory - ignoring.");
+        log_info("NPA: Empty directory - ignoring.");
         virtual_file_destroy(file);
         return NULL;
     }
     else if (file_type != NPA_FILE_TYPE_FILE)
     {
         virtual_file_destroy(file);
-        log_error("Unknown file type: %d", file_type);
+        log_error("NPA: Unknown file type: %d", file_type);
         return NULL;
     }
 
@@ -307,13 +307,13 @@ static bool npa_unpack(
     assert(archive_context != NULL);
     if (!npa_check_magic(arc_io))
     {
-        log_error("Not a NPA archive");
+        log_error("NPA: Not a NPA archive");
         return false;
     }
 
     if (archive_context->filter == NULL)
     {
-        log_error("No plugin chosen");
+        log_error("NPA: No plugin selected");
         return false;
     }
 

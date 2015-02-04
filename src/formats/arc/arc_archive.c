@@ -52,13 +52,18 @@ static VirtualFile *arc_read_file(void *_context)
     io_skip(context->arc_io, 8);
     if (offset + size > io_size(context->arc_io))
     {
-        log_error("Bad offset to file");
+        log_error("ARC: Bad offset to file");
+        virtual_file_destroy(file);
         return NULL;
     }
 
     old_pos = io_tell(context->arc_io);
     if (!io_seek(context->arc_io, offset))
-        assert(0);
+    {
+        log_error("ARC: Failed to seek to file");
+        virtual_file_destroy(file);
+        return NULL;
+    }
     io_write_string_from_io(file->io, context->arc_io, size);
     io_seek(context->arc_io, old_pos);
 
@@ -74,14 +79,14 @@ static bool arc_unpack(
 {
     if (!arc_check_magic(arc_io))
     {
-        log_error("Not an ARC archive");
+        log_error("ARC: Not an ARC archive");
         return false;
     }
 
     size_t file_count = io_read_u32_le(arc_io);
     if (file_count * 32 > io_size(arc_io))
     {
-        log_error("Bad file count");
+        log_error("ARC: Bad file count");
         return false;
     }
 

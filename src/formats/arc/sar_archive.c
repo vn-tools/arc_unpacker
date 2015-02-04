@@ -53,7 +53,7 @@ static bool sar_unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
     uint32_t offset_to_files = io_read_u32_be(arc_io);
     if (offset_to_files > io_size(arc_io))
     {
-        log_error("Bad offset to files");
+        log_error("SAR: Bad offset to files");
         return false;
     }
 
@@ -69,7 +69,7 @@ static bool sar_unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
         entry->size = io_read_u32_be(arc_io);
         if (entry->offset + entry->size > io_size(arc_io))
         {
-            log_error("Bad offset to file");
+            log_error("SAR: Bad offset to file");
             for (j = 0; j < i; j ++)
                 free(table[j]);
             free(table);
