@@ -339,13 +339,13 @@ static Image *mgd_read_image(
     switch (compression_type)
     {
         case MGD_COMPRESSION_NONE:
+            *data_uncompressed = data_compressed;
             image = image_create_from_pixels(
                 image_width,
                 image_height,
                 data_compressed,
                 size_compressed,
                 IMAGE_PIXEL_FORMAT_BGRA);
-            free(data_compressed);
             break;
 
         case MGD_COMPRESSION_SGD:
