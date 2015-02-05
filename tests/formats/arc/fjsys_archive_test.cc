@@ -13,7 +13,7 @@ void test_fjsys_archive()
     array_set(expected_files, 0, file1);
     array_set(expected_files, 1, file2);
 
-    Archive *archive = fjsys_archive_create();
+    Archive *archive = new FjsysArchive();
 
     OutputFiles *output_files = unpack_to_memory(
         "tests/test_files/arc/fjsys/test.fjsys",
@@ -27,7 +27,7 @@ void test_fjsys_archive()
 
     virtual_file_destroy(file1);
     virtual_file_destroy(file2);
-    archive_destroy(archive);
+    delete archive;
     array_destroy(expected_files);
 }
 

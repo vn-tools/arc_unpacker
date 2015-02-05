@@ -349,10 +349,7 @@ static VirtualFile *rpa_read_file(void *_context)
     return file;
 }
 
-static bool rpa_unpack(
-    __attribute__((unused)) Archive *archive,
-    IO *arc_io,
-    OutputFiles *output_files)
+bool RpaArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
 {
     int version = rpa_check_version(arc_io);
 
@@ -410,11 +407,4 @@ static bool rpa_unpack(
     }
     delete []entries;
     return true;
-}
-
-Archive *rpa_archive_create()
-{
-    Archive *archive = archive_create();
-    archive->unpack = &rpa_unpack;
-    return archive;
 }

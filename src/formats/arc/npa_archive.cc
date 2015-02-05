@@ -36,73 +36,19 @@ typedef struct
     uint32_t table_size;
 } NpaHeader;
 
-typedef struct
+struct NpaArchive::Context
 {
     NpaFilter *filter;
-} NpaArchiveContext;
+};
 
 typedef struct
 {
     IO *arc_io;
-    NpaArchiveContext *archive_context;
+    NpaFilter *filter;
     NpaHeader *header;
     size_t file_pos;
     size_t table_offset;
 } NpaUnpackContext;
-
-
-
-static void npa_add_cli_help(
-    __attribute__((unused)) Archive *archive,
-    ArgParser &arg_parser)
-{
-    arg_parser.add_help(
-        "--plugin=PLUGIN",
-        "Selects NPA decryption routine.\n"
-            "Possible values:\n"
-            "- chaos_head");
-}
-
-static void npa_parse_cli_options(Archive *archive, ArgParser &arg_parser)
-{
-    NpaArchiveContext *archive_context = new NpaArchiveContext;
-    assert(archive_context != nullptr);
-
-    archive_context->filter = new NpaFilter;
-    assert(archive_context->filter != nullptr);
-
-    const char *plugin = arg_parser.get_switch("plugin").c_str();
-    void (*initializer)(NpaFilter*) = nullptr;
-    if (plugin != nullptr)
-    {
-        if (strcmp(plugin, "chaos_head") == 0)
-        {
-            initializer = &npa_chaos_head_filter_init;
-        }
-        else
-        {
-            log_error("NPA: Unrecognized plugin: %s", plugin);
-        }
-    }
-
-    if (initializer != nullptr)
-        initializer(archive_context->filter);
-    else
-    {
-        delete archive_context->filter;
-        archive_context->filter = nullptr;
-    }
-
-    archive->data = archive_context;
-}
-
-static void npa_cleanup(Archive *archive)
-{
-    NpaArchiveContext *archive_context = (NpaArchiveContext*)archive->data;
-    delete archive_context;
-}
-
-
 
 static bool npa_check_magic(IO *arc_io)
 {
@@ -135,7 +81,7 @@ static void npa_decrypt_file_name(
     assert(name != nullptr);
     assert(unpack_context != nullptr);
 
-    uint32_t tmp = unpack_context->archive_context->filter->file_name_key(
+    uint32_t tmp = unpack_context->filter->file_name_key(
         unpack_context->header->key1,
         unpack_context->header->key2);
 
@@ -182,9 +128,9 @@ static void npa_decrypt_file_data(
     assert(unpack_context != nullptr);
 
     const unsigned char *permutation
-        = unpack_context->archive_context->filter->permutation;
+        = unpack_context->filter->permutation;
 
-    uint32_t key = unpack_context->archive_context->filter->data_key;
+    uint32_t key = unpack_context->filter->data_key;
     size_t i;
     for (i = 0; i < original_file_name_length; i ++)
         key -= (unsigned char)original_file_name[i];
@@ -295,20 +241,65 @@ static VirtualFile *npa_read_file(void *_context)
     return file;
 }
 
-static bool npa_unpack(
-    Archive *archive,
-    IO *arc_io,
-    OutputFiles *output_files)
+NpaArchive::NpaArchive()
 {
-    NpaArchiveContext *archive_context = (NpaArchiveContext*)archive->data;
-    assert(archive_context != nullptr);
+    context = new NpaArchive::Context();
+}
+
+NpaArchive::~NpaArchive()
+{
+    delete context;
+}
+
+void NpaArchive::add_cli_help(ArgParser &arg_parser)
+{
+    arg_parser.add_help(
+        "--plugin=PLUGIN",
+        "Selects NPA decryption routine.\n"
+            "Possible values:\n"
+            "- chaos_head");
+}
+
+void NpaArchive::parse_cli_options(ArgParser &arg_parser)
+{
+    assert(context != nullptr);
+
+    context->filter = new NpaFilter;
+    assert(context->filter != nullptr);
+
+    const char *plugin = arg_parser.get_switch("plugin").c_str();
+    void (*initializer)(NpaFilter*) = nullptr;
+    if (plugin != nullptr)
+    {
+        if (strcmp(plugin, "chaos_head") == 0)
+        {
+            initializer = &npa_chaos_head_filter_init;
+        }
+        else
+        {
+            log_error("NPA: Unrecognized plugin: %s", plugin);
+        }
+    }
+
+    if (initializer != nullptr)
+        initializer(context->filter);
+    else
+    {
+        delete context->filter;
+        context->filter = nullptr;
+    }
+}
+
+bool NpaArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
+{
+    assert(context != nullptr);
     if (!npa_check_magic(arc_io))
     {
         log_error("NPA: Not a NPA archive");
         return false;
     }
 
-    if (archive_context->filter == nullptr)
+    if (context->filter == nullptr)
     {
         log_error("NPA: No plugin selected");
         return false;
@@ -318,7 +309,7 @@ static bool npa_unpack(
     NpaUnpackContext unpack_context;
     unpack_context.arc_io = arc_io;
     unpack_context.header = header;
-    unpack_context.archive_context = archive_context;
+    unpack_context.filter = context->filter;
     unpack_context.table_offset = io_tell(arc_io);
     size_t file_pos;
     for (file_pos = 0; file_pos < header->total_count; file_pos ++)
@@ -328,14 +319,4 @@ static bool npa_unpack(
     }
     delete header;
     return true;
-}
-
-Archive *npa_archive_create()
-{
-    Archive *archive = archive_create();
-    archive->add_cli_help = &npa_add_cli_help;
-    archive->parse_cli_options = &npa_parse_cli_options;
-    archive->unpack = &npa_unpack;
-    archive->cleanup = &npa_cleanup;
-    return archive;
 }

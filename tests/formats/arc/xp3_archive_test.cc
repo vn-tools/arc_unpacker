@@ -13,7 +13,7 @@ void test_xp3_archive(const char *path)
     array_set(expected_files, 0, file1);
     array_set(expected_files, 1, file2);
 
-    Archive *archive = xp3_archive_create();
+    Archive *archive = new Xp3Archive();
 
     OutputFiles *output_files = unpack_to_memory(path, archive, 0, nullptr);
     Array *actual_files = output_files_get_saved(output_files);
@@ -23,7 +23,7 @@ void test_xp3_archive(const char *path)
 
     virtual_file_destroy(file1);
     virtual_file_destroy(file2);
-    archive_destroy(archive);
+    delete archive;
     array_destroy(expected_files);
 }
 

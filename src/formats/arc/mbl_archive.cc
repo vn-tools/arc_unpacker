@@ -14,33 +14,17 @@
 #include "logger.h"
 #include "string_ex.h"
 
+struct MblArchive::Context
+{
+    PrsConverter *prs_converter;
+};
+
 typedef struct
 {
     PrsConverter *prs_converter;
-} MblArchiveContext;
-
-typedef struct
-{
-    MblArchiveContext *archive_context;
     IO *arc_io;
     size_t name_length;
 } MblUnpackContext;
-
-static void mbl_add_cli_help(
-    Archive *archive,
-    ArgParser &arg_parser)
-{
-    MblArchiveContext *archive_context = (MblArchiveContext*)archive->data;
-    archive_context->prs_converter->add_cli_help(arg_parser);
-}
-
-static void mbl_parse_cli_options(
-    Archive *archive,
-    ArgParser &arg_parser)
-{
-    MblArchiveContext *archive_context = (MblArchiveContext*)archive->data;
-    archive_context->prs_converter->parse_cli_options(arg_parser);
-}
 
 static int mbl_check_version(
     IO *arc_io,
@@ -114,15 +98,34 @@ static VirtualFile *mbl_read_file(void *context)
     io_write_string_from_io(file->io, unpack_context->arc_io, size);
     io_seek(unpack_context->arc_io, old_pos);
 
-    unpack_context->archive_context->prs_converter->try_decode(file);
+    unpack_context->prs_converter->try_decode(file);
 
     return file;
 }
 
-static bool mbl_unpack(
-    Archive *archive,
-    IO *arc_io,
-    OutputFiles *output_files)
+MblArchive::MblArchive()
+{
+    context = new MblArchive::Context();
+    context->prs_converter = new PrsConverter();
+}
+
+MblArchive::~MblArchive()
+{
+    delete context->prs_converter;
+    delete context;
+}
+
+void MblArchive::add_cli_help(ArgParser &arg_parser)
+{
+    context->prs_converter->add_cli_help(arg_parser);
+}
+
+void MblArchive::parse_cli_options(ArgParser &arg_parser)
+{
+    context->prs_converter->parse_cli_options(arg_parser);
+}
+
+bool MblArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
 {
     size_t i;
     int version = mbl_get_version(arc_io);
@@ -136,7 +139,7 @@ static bool mbl_unpack(
     uint32_t file_count = io_read_u32_le(arc_io);
     uint32_t name_length = version == 2 ? io_read_u32_le(arc_io) : 16;
     MblUnpackContext unpack_context;
-    unpack_context.archive_context = (MblArchiveContext*)archive->data;
+    unpack_context.prs_converter = context->prs_converter;
     unpack_context.arc_io = arc_io;
     unpack_context.name_length = name_length;
     for (i = 0; i < file_count; i ++)
@@ -145,26 +148,4 @@ static bool mbl_unpack(
     }
 
     return true;
-}
-
-static void mbl_cleanup(Archive *archive)
-{
-    MblArchiveContext *archive_context = (MblArchiveContext*)archive->data;
-    delete archive_context->prs_converter;
-}
-
-Archive *mbl_archive_create()
-{
-    Archive *archive = archive_create();
-    archive->unpack = &mbl_unpack;
-    archive->cleanup = &mbl_cleanup;
-    archive->add_cli_help = &mbl_add_cli_help;
-    archive->parse_cli_options = &mbl_parse_cli_options;
-
-    MblArchiveContext *context = new MblArchiveContext;
-    assert(context != nullptr);
-    context->prs_converter = new PrsConverter();
-    archive->data = context;
-
-    return archive;
 }

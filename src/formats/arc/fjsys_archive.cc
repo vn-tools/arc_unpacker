@@ -33,33 +33,17 @@ typedef struct
     size_t file_count;
 } FjsysHeader;
 
-typedef struct
+struct FjsysArchive::Context
 {
     MgdConverter *mgd_converter;
-} FjsysArchiveContext;
+};
 
 typedef struct
 {
     FjsysHeader *header;
-    FjsysArchiveContext *archive_context;
+    MgdConverter *mgd_converter;
     IO *arc_io;
 } FjsysUnpackContext;
-
-static void fjsys_add_cli_help(
-    Archive *archive,
-    ArgParser &arg_parser)
-{
-    FjsysArchiveContext *archive_context = (FjsysArchiveContext*)archive->data;
-    archive_context->mgd_converter->add_cli_help(arg_parser);
-}
-
-static void fjsys_parse_cli_options(
-    Archive *archive,
-    ArgParser &arg_parser)
-{
-    FjsysArchiveContext *archive_context = (FjsysArchiveContext*)archive->data;
-    archive_context->mgd_converter->parse_cli_options(arg_parser);
-}
 
 static bool fjsys_check_magic(IO *arc_io)
 {
@@ -101,19 +85,37 @@ static VirtualFile *fjsys_read_file(void *context)
 
     io_seek(unpack_context->arc_io, data_offset);
     io_write_string_from_io(file->io, unpack_context->arc_io, data_size);
-    unpack_context->archive_context->mgd_converter->try_decode(file);
+    unpack_context->mgd_converter->try_decode(file);
 
     io_seek(unpack_context->arc_io, old_pos);
     return file;
 }
 
-static bool fjsys_unpack(
-    Archive *archive,
-    IO *arc_io,
-    OutputFiles *output_files)
+FjsysArchive::FjsysArchive()
 {
-    FjsysArchiveContext *archive_context = (FjsysArchiveContext*)archive->data;
-    assert(archive_context != nullptr);
+    context = new FjsysArchive::Context();
+    context->mgd_converter = new MgdConverter();
+}
+
+FjsysArchive::~FjsysArchive()
+{
+    delete context->mgd_converter;
+    delete context;
+}
+
+void FjsysArchive::add_cli_help(ArgParser &arg_parser)
+{
+    context->mgd_converter->add_cli_help(arg_parser);
+}
+
+void FjsysArchive::parse_cli_options(ArgParser &arg_parser)
+{
+    context->mgd_converter->parse_cli_options(arg_parser);
+}
+
+bool FjsysArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
+{
+    assert(context != nullptr);
     if (!fjsys_check_magic(arc_io))
     {
         log_error("FJSYS: Not a FJSYS archive");
@@ -125,7 +127,7 @@ static bool fjsys_unpack(
 
     FjsysUnpackContext unpack_context;
     unpack_context.header = header;
-    unpack_context.archive_context = archive_context;
+    unpack_context.mgd_converter = context->mgd_converter;
     unpack_context.arc_io = arc_io;
 
     size_t i;
@@ -134,26 +136,4 @@ static bool fjsys_unpack(
 
     delete header;
     return true;
-}
-
-static void fjsys_cleanup(Archive *archive)
-{
-    FjsysArchiveContext *archive_context = (FjsysArchiveContext*)archive->data;
-    delete archive_context->mgd_converter;
-}
-
-Archive *fjsys_archive_create()
-{
-    Archive *archive = archive_create();
-    archive->add_cli_help = &fjsys_add_cli_help;
-    archive->parse_cli_options = &fjsys_parse_cli_options;
-    archive->unpack = &fjsys_unpack;
-    archive->cleanup = &fjsys_cleanup;
-
-    FjsysArchiveContext *context = new FjsysArchiveContext;
-    assert(context != nullptr);
-    context->mgd_converter = new MgdConverter();
-    archive->data = context;
-
-    return archive;
 }

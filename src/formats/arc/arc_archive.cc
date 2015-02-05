@@ -16,10 +16,15 @@
 static const char *arc_magic = "PackFile    ";
 static const size_t arc_magic_length = 12;
 
+struct ArcArchive::Context
+{
+    CbgConverter *cbg_converter;
+};
+
 typedef struct
 {
+    CbgConverter *cbg_converter;
     IO *arc_io;
-    Converter *cbg_converter;
     size_t file_count;
 } ArcUnpackContext;
 
@@ -30,51 +35,70 @@ static bool arc_check_magic(IO *arc_io)
     return memcmp(magic, arc_magic, arc_magic_length) == 0;
 }
 
-static VirtualFile *arc_read_file(void *_context)
+static VirtualFile *arc_read_file(void *context)
 {
-    ArcUnpackContext *context = (ArcUnpackContext*)_context;
-    assert(context != nullptr);
+    ArcUnpackContext *unpack_context = (ArcUnpackContext*)context;
+    assert(unpack_context != nullptr);
 
     VirtualFile *file = virtual_file_create();
 
-    size_t old_pos = io_tell(context->arc_io);
+    size_t old_pos = io_tell(unpack_context->arc_io);
     char *tmp_name;
-    io_read_until_zero(context->arc_io, &tmp_name, nullptr);
+    io_read_until_zero(unpack_context->arc_io, &tmp_name, nullptr);
     assert(tmp_name != nullptr);
     virtual_file_set_name(file, tmp_name);
     delete []tmp_name;
-    io_seek(context->arc_io, old_pos + 16);
+    io_seek(unpack_context->arc_io, old_pos + 16);
 
-    size_t offset = io_read_u32_le(context->arc_io);
-    size_t size = io_read_u32_le(context->arc_io);
-    offset += arc_magic_length + 4 + context->file_count * 32;
-    io_skip(context->arc_io, 8);
-    if (offset + size > io_size(context->arc_io))
+    size_t offset = io_read_u32_le(unpack_context->arc_io);
+    size_t size = io_read_u32_le(unpack_context->arc_io);
+    offset += arc_magic_length + 4 + unpack_context->file_count * 32;
+    io_skip(unpack_context->arc_io, 8);
+    if (offset + size > io_size(unpack_context->arc_io))
     {
         log_error("ARC: Bad offset to file");
         virtual_file_destroy(file);
         return nullptr;
     }
 
-    old_pos = io_tell(context->arc_io);
-    if (!io_seek(context->arc_io, offset))
+    old_pos = io_tell(unpack_context->arc_io);
+    if (!io_seek(unpack_context->arc_io, offset))
     {
         log_error("ARC: Failed to seek to file");
         virtual_file_destroy(file);
         return nullptr;
     }
-    io_write_string_from_io(file->io, context->arc_io, size);
-    io_seek(context->arc_io, old_pos);
+    io_write_string_from_io(file->io, unpack_context->arc_io, size);
+    io_seek(unpack_context->arc_io, old_pos);
 
-    context->cbg_converter->try_decode(file);
+    unpack_context->cbg_converter->try_decode(file);
 
     return file;
 }
 
-static bool arc_unpack(
-    Archive *archive,
-    IO *arc_io,
-    OutputFiles *output_files)
+ArcArchive::ArcArchive()
+{
+    context = new ArcArchive::Context();
+    context->cbg_converter = new CbgConverter();
+}
+
+ArcArchive::~ArcArchive()
+{
+    delete context->cbg_converter;
+    delete context;
+}
+
+void ArcArchive::add_cli_help(ArgParser &arg_parser)
+{
+    context->cbg_converter->add_cli_help(arg_parser);
+}
+
+void ArcArchive::parse_cli_options(ArgParser &arg_parser)
+{
+    context->cbg_converter->parse_cli_options(arg_parser);
+}
+
+bool ArcArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
 {
     if (!arc_check_magic(arc_io))
     {
@@ -90,7 +114,7 @@ static bool arc_unpack(
     }
 
     ArcUnpackContext unpack_context;
-    unpack_context.cbg_converter = (Converter*)archive->data;
+    unpack_context.cbg_converter = context->cbg_converter;
     unpack_context.arc_io = arc_io;
     unpack_context.file_count = file_count;
     size_t i;
@@ -99,19 +123,4 @@ static bool arc_unpack(
         output_files_save(output_files, &arc_read_file, &unpack_context);
     }
     return true;
-}
-
-void arc_cleanup(Archive *archive)
-{
-    assert(archive != nullptr);
-    delete (CbgConverter*)archive->data;
-}
-
-Archive *arc_archive_create()
-{
-    Archive *archive = archive_create();
-    archive->unpack = &arc_unpack;
-    archive->cleanup = &arc_cleanup;
-    archive->data = (void*)new CbgConverter();
-    return archive;
 }

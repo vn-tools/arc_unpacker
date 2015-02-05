@@ -2,6 +2,17 @@
 #define FROMATS_ARC_MBL_ARCHIVE
 #include "formats/archive.h"
 
-Archive *mbl_archive_create();
+class MblArchive final : public Archive
+{
+public:
+    MblArchive();
+    ~MblArchive();
+    void add_cli_help(ArgParser &arg_parser) override;
+    void parse_cli_options(ArgParser &arg_parser) override;
+    bool unpack_internal(IO *arc_io, OutputFiles *output_files) override;
+private:
+    struct Context;
+    Context *context;
+};
 
 #endif

@@ -2,6 +2,10 @@
 #define FROMATS_ARC_XP3_ARCHIVE
 #include "formats/archive.h"
 
-Archive *xp3_archive_create();
+class Xp3Archive final : public Archive
+{
+public:
+    bool unpack_internal(IO *arc_io, OutputFiles *output_files) override;
+};
 
 #endif

@@ -43,9 +43,8 @@ static VirtualFile *sar_read_file(void *_context)
     return file;
 }
 
-static bool sar_unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
+bool SarArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
 {
-    assert(archive != nullptr);
     assert(arc_io != nullptr);
     assert(output_files != nullptr);
 
@@ -97,11 +96,4 @@ static bool sar_unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
     delete table;
 
     return true;
-}
-
-Archive *sar_archive_create()
-{
-    Archive *archive = archive_create();
-    archive->unpack = &sar_unpack;
-    return archive;
 }

@@ -112,10 +112,7 @@ static VirtualFile *pak_read_file(void *context)
     return file;
 }
 
-static bool pak_unpack(
-    __attribute__((unused)) Archive *archive,
-    IO *arc_io,
-    OutputFiles *output_files)
+bool PakArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
 {
     if (!pak_check_magic(arc_io))
     {
@@ -147,11 +144,4 @@ static bool pak_unpack(
 
     io_destroy(table_io);
     return true;
-}
-
-Archive *pak_archive_create()
-{
-    Archive *archive = archive_create();
-    archive->unpack = &pak_unpack;
-    return archive;
 }

@@ -25,7 +25,7 @@ void test_rpa_archive(const char *path)
     array_set(expected_files, 0, file1);
     array_set(expected_files, 1, file2);
 
-    Archive *archive = rpa_archive_create();
+    Archive *archive = new RpaArchive();
 
     OutputFiles *output_files = unpack_to_memory(
         path,
@@ -39,7 +39,7 @@ void test_rpa_archive(const char *path)
 
     virtual_file_destroy(file1);
     virtual_file_destroy(file2);
-    archive_destroy(archive);
+    delete archive;
     array_destroy(expected_files);
 }
 

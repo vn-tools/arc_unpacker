@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstring>
+#include <functional>
 #include "collections/dictionary.h"
 #include "factory/archive_factory.h"
 #include "formats/arc/arc_archive.h"
@@ -17,18 +18,16 @@ struct ArchiveFactory
     Dictionary *formats;
 };
 
-typedef Archive*(*ArchiveCreator)();
-
 typedef struct
 {
     const char *name;
-    ArchiveCreator creator;
+    std::function<Archive*()> creator;
 } FormatDefinition;
 
 static void add_format(
     ArchiveFactory *factory,
     const char *name,
-    ArchiveCreator creator)
+    std::function<Archive*()> creator)
 {
     assert(factory != nullptr);
     assert(name != nullptr);
@@ -41,14 +40,14 @@ static void add_format(
 
 static void init_factory(ArchiveFactory *factory)
 {
-    add_format(factory, "fjsys", &fjsys_archive_create);
-    add_format(factory, "arc", &arc_archive_create);
-    add_format(factory, "npa", &npa_archive_create);
-    add_format(factory, "xp3", &xp3_archive_create);
-    add_format(factory, "rpa", &rpa_archive_create);
-    add_format(factory, "pak", &pak_archive_create);
-    add_format(factory, "mbl", &mbl_archive_create);
-    add_format(factory, "sar", &sar_archive_create);
+    add_format(factory, "fjsys", []() { return new FjsysArchive(); });
+    add_format(factory, "arc", []() { return new ArcArchive(); });
+    add_format(factory, "npa", []() { return new NpaArchive(); });
+    add_format(factory, "xp3", []() { return new Xp3Archive(); });
+    add_format(factory, "rpa", []() { return new RpaArchive(); });
+    add_format(factory, "pak", []() { return new PakArchive(); });
+    add_format(factory, "mbl", []() { return new MblArchive(); });
+    add_format(factory, "sar", []() { return new SarArchive(); });
 }
 
 

@@ -287,12 +287,8 @@ static VirtualFile *xp3_read_file(void *context)
     return target_file;
 }
 
-static bool xp3_unpack(
-    Archive *archive,
-    IO *arc_io,
-    OutputFiles *output_files)
+bool Xp3Archive::unpack_internal(IO *arc_io, OutputFiles *output_files)
 {
-    assert(archive != nullptr);
     assert(arc_io != nullptr);
     assert(output_files != nullptr);
 
@@ -327,11 +323,4 @@ static bool xp3_unpack(
     }
 
     return result;
-}
-
-Archive *xp3_archive_create()
-{
-    Archive *archive = archive_create();
-    archive->unpack = &xp3_unpack;
-    return archive;
 }

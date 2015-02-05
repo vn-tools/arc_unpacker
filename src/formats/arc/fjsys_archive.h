@@ -2,6 +2,17 @@
 #define FROMATS_ARC_FJSYS_ARCHIVE
 #include "formats/archive.h"
 
-Archive *fjsys_archive_create();
+class FjsysArchive final : public Archive
+{
+public:
+    FjsysArchive();
+    ~FjsysArchive();
+    void add_cli_help(ArgParser &arg_parser) override;
+    void parse_cli_options(ArgParser &arg_parser) override;
+    bool unpack_internal(IO *arc_io, OutputFiles *output_files) override;
+private:
+    struct Context;
+    Context *context;
+};
 
 #endif

@@ -74,7 +74,7 @@ static void print_help(
 
     if (archive != nullptr)
     {
-        archive_add_cli_help(archive, arg_parser);
+        archive->add_cli_help(arg_parser);
         printf("[arc_options] specific to %s:\n", options->format);
         puts("");
         arg_parser.print_help();
@@ -87,9 +87,10 @@ static void print_help(
 static bool unpack(
     Archive *archive, ArgParser &arg_parser, IO *io, OutputFiles *output_files)
 {
+    assert(archive != nullptr);
     io_seek(io, 0);
-    archive_parse_cli_options(archive, arg_parser);
-    return archive_unpack(archive, io, output_files);
+    archive->parse_cli_options(arg_parser);
+    return archive->unpack(io, output_files);
 }
 
 static bool guess_archive_and_unpack(
@@ -120,7 +121,7 @@ static bool guess_archive_and_unpack(
             assert(archive != nullptr);
             log_info("Trying %s...", format);
             result = unpack(archive, arg_parser, io, output_files);
-            archive_destroy(archive);
+            delete archive;
 
             if (result)
             {
@@ -146,7 +147,7 @@ static bool guess_archive_and_unpack(
             log_info("%s unpacking finished successfully.", options->format);
         else
             log_info("%s unpacking finished with errors.", options->format);
-        archive_destroy(archive);
+        delete archive;
     }
     return result;
 }
@@ -200,7 +201,7 @@ int main(int argc, const char **argv)
             : nullptr;
         print_help(argv[0], arg_parser, &options, archive);
         if (archive != nullptr)
-            archive_destroy(archive);
+            delete archive;
     }
     else
     {

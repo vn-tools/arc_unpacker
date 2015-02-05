@@ -15,6 +15,4 @@ public:
     bool decode(VirtualFile *);
 };
 
-Converter *converter_create();
-
 #endif

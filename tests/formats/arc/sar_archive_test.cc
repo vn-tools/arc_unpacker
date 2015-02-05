@@ -13,7 +13,7 @@ void test_sar_archive()
     array_set(expected_files, 0, file1);
     array_set(expected_files, 1, file2);
 
-    Archive *archive = sar_archive_create();
+    Archive *archive = new SarArchive();
 
     OutputFiles *output_files = unpack_to_memory(
         "tests/test_files/arc/sar/test.sar",
@@ -27,7 +27,7 @@ void test_sar_archive()
 
     virtual_file_destroy(file1);
     virtual_file_destroy(file2);
-    archive_destroy(archive);
+    delete archive;
     array_destroy(expected_files);
 }
 
