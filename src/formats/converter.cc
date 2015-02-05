@@ -1,11 +1,10 @@
-#include <stdlib.h>
-#include <assert.h>
+#include <cassert>
 #include "formats/converter.h"
 #include "logger.h"
 
 Converter *converter_create()
 {
-    Converter *converter = (Converter*)malloc(sizeof(Converter));
+    Converter *converter = new Converter;
     assert(converter != NULL);
     converter->data = NULL;
     converter->add_cli_help = NULL;
@@ -20,7 +19,7 @@ void converter_destroy(Converter *converter)
     assert(converter != NULL);
     if (converter->cleanup != NULL)
         converter->cleanup(converter);
-    free(converter);
+    delete converter;
 }
 
 void converter_parse_cli_options(Converter *converter, ArgParser *arg_parser)

@@ -1,7 +1,7 @@
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "arg_parser.h"
 #include "bin_helpers.h"
 #include "factory/archive_factory.h"
@@ -19,7 +19,7 @@ typedef struct
 
 static char *get_default_output_path(const char *input_path)
 {
-    char *output_path = (char*)malloc(strlen(input_path) + 2);
+    char *output_path = new char[strlen(input_path) + 2];
     assert(output_path != NULL);
     sprintf(output_path, "%s~", input_path);
     return output_path;

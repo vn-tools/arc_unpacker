@@ -1,6 +1,6 @@
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include "array.h"
 
 struct Array
@@ -11,7 +11,7 @@ struct Array
 
 Array *array_create()
 {
-    Array *array = (Array*)malloc(sizeof(Array));
+    Array *array = new Array;
     assert(array != NULL);
     array->size = 0;
     array->items = NULL;
@@ -22,7 +22,7 @@ void array_destroy(Array *array)
 {
     assert(array != NULL);
     free(array->items);
-    free(array);
+    delete array;
 }
 
 size_t array_size(const Array *array)

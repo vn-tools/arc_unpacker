@@ -7,9 +7,8 @@
 // Known games:
 // - Chaos;Head
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include "string_ex.h"
 #include "formats/arc/npa_archive.h"
 #include "formats/arc/npa_archive/npa_filter.h"
@@ -67,11 +66,10 @@ static void npa_add_cli_help(
 
 static void npa_parse_cli_options(Archive *archive, ArgParser *arg_parser)
 {
-    NpaArchiveContext *archive_context
-        = (NpaArchiveContext*)malloc(sizeof(NpaArchiveContext));
+    NpaArchiveContext *archive_context = new NpaArchiveContext;
     assert(archive_context != NULL);
 
-    archive_context->filter = (NpaFilter*)malloc(sizeof(NpaFilter));
+    archive_context->filter = new NpaFilter;
     assert(archive_context->filter != NULL);
 
     const char *plugin = arg_parser_get_switch(arg_parser, "plugin");
@@ -92,7 +90,7 @@ static void npa_parse_cli_options(Archive *archive, ArgParser *arg_parser)
         initializer(archive_context->filter);
     else
     {
-        free(archive_context->filter);
+        delete archive_context->filter;
         archive_context->filter = NULL;
     }
 
@@ -102,7 +100,7 @@ static void npa_parse_cli_options(Archive *archive, ArgParser *arg_parser)
 static void npa_cleanup(Archive *archive)
 {
     NpaArchiveContext *archive_context = (NpaArchiveContext*)archive->data;
-    free(archive_context);
+    delete archive_context;
 }
 
 
@@ -116,7 +114,7 @@ static bool npa_check_magic(IO *arc_io)
 
 static NpaHeader *npa_read_header(IO *arc_io)
 {
-    NpaHeader *header = (NpaHeader*)malloc(sizeof(NpaHeader));
+    NpaHeader *header = new NpaHeader;
     assert(header != NULL);
     header->key1 = io_read_u32_le(arc_io);
     header->key2 = io_read_u32_le(arc_io);
@@ -166,7 +164,7 @@ static char *npa_read_file_name(
     assert(file_name_length != NULL);
 
     *file_name_length = io_read_u32_le(unpack_context->arc_io);
-    char *file_name = (char*)malloc(*file_name_length);
+    char *file_name = new char[*file_name_length];
     assert(file_name != NULL);
     io_read_string(unpack_context->arc_io, file_name, *file_name_length);
     npa_decrypt_file_name(file_name, *file_name_length, unpack_context);
@@ -211,7 +209,7 @@ static char *npa_read_file_data(
     assert(original_file_name != NULL);
     assert(unpack_context != NULL);
 
-    char *data = (char*)malloc(size_compressed);
+    char *data = new char[size_compressed];
     assert(data != NULL);
     if (!io_read_string(unpack_context->arc_io, data, size_compressed))
         assert(0);
@@ -239,7 +237,7 @@ static char *npa_read_file_data(
             assert(0);
         }
         assert(data_uncompressed != NULL);
-        free(data);
+        delete []data;
         data = data_uncompressed;
     }
 
@@ -291,8 +289,8 @@ static VirtualFile *npa_read_file(void *_context)
         file_name_length,
         unpack_context);
     io_write_string(file->io, file_data, size_original);
-    free(file_data);
-    free(file_name);
+    delete []file_data;
+    delete []file_name;
     io_seek(unpack_context->arc_io, old_pos);
 
     return file;
@@ -329,7 +327,7 @@ static bool npa_unpack(
         unpack_context.file_pos = file_pos;
         output_files_save(output_files, &npa_read_file, &unpack_context);
     }
-    free(header);
+    delete header;
     return true;
 }
 

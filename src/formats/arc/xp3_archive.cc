@@ -11,9 +11,8 @@
 // - Sharin no Kuni, Himawari no Shoujo
 // - Comyu Kuroi Ryuu to Yasashii Oukoku
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include "formats/arc/xp3_archive.h"
 #include "io.h"
 #include "logger.h"
@@ -57,11 +56,11 @@ static bool xp3_check_magic(
     const char *expected_magic,
     size_t length)
 {
-    char *magic = (char*)malloc(length);
+    char *magic = new char[length];
     assert(magic != NULL);
     io_read_string(arc_io, magic, length);
     bool ok = memcmp(magic, expected_magic, length) == 0;
-    free(magic);
+    delete []magic;
     return ok;
 }
 
@@ -95,7 +94,7 @@ static IO *xp3_read_raw_table(IO *arc_io)
         ? io_read_u64_le(arc_io)
         : table_size_compressed;
 
-    char *table_data = (char*)malloc(table_size_compressed);
+    char *table_data = new char[table_size_compressed];
     if (!table_data)
     {
         log_error("XP3: Failed to allocate memory for table");
@@ -123,14 +122,14 @@ static IO *xp3_read_raw_table(IO *arc_io)
                 }
                 assert(table_data_uncompressed != NULL);
                 assert(table_size_original == table_size_uncompressed);
-                free(table_data);
+                delete []table_data;
                 table_data = table_data_uncompressed;
             }
             table_io = io_create_from_buffer(
                 table_data,
                 table_size_original);
         }
-        free(table_data);
+        delete []table_data;
     }
 
     return table_io;
@@ -156,7 +155,7 @@ static bool xp3_read_info_chunk(IO *table_io, VirtualFile *target_file)
 
     size_t name_length = io_read_u16_le(table_io);
 
-    char *name_utf16 = (char*)malloc(name_length * 2);
+    char *name_utf16 = new char [name_length * 2];
     assert(name_utf16 != NULL);
     io_read_string(table_io, name_utf16, name_length * 2);
 
@@ -170,9 +169,9 @@ static bool xp3_read_info_chunk(IO *table_io, VirtualFile *target_file)
     }
     assert(name_utf8 != NULL);
     virtual_file_set_name(target_file, name_utf8);
-    free(name_utf8);
+    delete []name_utf8;
 
-    free(name_utf16);
+    delete []name_utf16;
     assert(name_length * 2 + 22 == info_chunk_size);
     return true;
 }
@@ -203,7 +202,7 @@ static bool xp3_read_segm_chunk(
     bool use_zlib = segm_flags & 7;
     if (use_zlib)
     {
-        char *data = (char*)malloc(data_size_compressed);
+        char *data = new char[data_size_compressed];
         assert(data != NULL);
         io_read_string(arc_io, data, data_size_compressed);
 
@@ -218,10 +217,10 @@ static bool xp3_read_segm_chunk(
             assert(0);
         }
         assert(data_size_original == data_size_uncompressed);
-        free(data);
+        delete []data;
 
         io_write_string(target_file->io, data_uncompressed, data_size_original);
-        free(data_uncompressed);
+        delete []data_uncompressed;
     }
     else
     {

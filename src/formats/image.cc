@@ -1,7 +1,6 @@
-#include <assert.h>
+#include <cassert>
+#include <cstring>
 #include <png.h>
-#include <stdlib.h>
-#include <string.h>
 #include "formats/image.h"
 #include "logger.h"
 
@@ -49,7 +48,7 @@ Image *image_create_from_pixels(
     PixelFormat pixel_format)
 {
     assert(pixel_data != NULL);
-    Image *image = (Image*)malloc(sizeof(Image));
+    Image *image = new Image;
     assert(image != NULL);
     image->image_width = image_width;
     image->image_height = image_height;
@@ -65,7 +64,7 @@ Image *image_create_from_boxed(IO *io)
     assert(io != NULL);
     io_seek(io, 0);
 
-    Image *image = (Image*)malloc(sizeof(Image));
+    Image *image = new Image;
     assert(image != NULL);
 
     png_structp png_ptr = png_create_read_struct(
@@ -121,7 +120,7 @@ Image *image_create_from_boxed(IO *io)
     }
 
     image->pixel_data_size = image->image_width * image->image_height * bpp;
-    image->internal_data = (char*)malloc(image->pixel_data_size);
+    image->internal_data = new char[image->pixel_data_size];
     assert(image->internal_data != NULL);
     png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
     size_t scanline_size = image->image_width * bpp, y;
@@ -141,8 +140,8 @@ Image *image_create_from_boxed(IO *io)
 void image_destroy(Image *image)
 {
     assert(image != NULL);
-    free(image->internal_data);
-    free(image);
+    delete []image->internal_data;
+    delete image;
 }
 
 size_t image_width(const Image *image)
@@ -248,7 +247,7 @@ void image_update_file(const Image *image, VirtualFile *file)
     png_set_write_fn(png_ptr, file->io, &my_png_write_data, &my_png_flush);
     png_write_info(png_ptr, info_ptr);
 
-    png_bytep* rows = (png_bytep*)malloc(sizeof(png_bytep)*image->image_height);
+    png_bytep *rows = new png_bytep[image->image_height];
     assert(rows != NULL);
     size_t y;
     for (y = 0; y < image->image_height; y ++)
@@ -256,7 +255,7 @@ void image_update_file(const Image *image, VirtualFile *file)
     png_set_rows(png_ptr, info_ptr, rows);
     png_write_png(png_ptr, info_ptr, transformations, NULL);
     png_destroy_write_struct(&png_ptr, &info_ptr);
-    free(rows);
+    delete []rows;
 
     virtual_file_change_extension(file, "png");
 }

@@ -1,8 +1,7 @@
-#include <assert.h>
+#include <cassert>
+#include <cerrno>
+#include <cstring>
 #include <dirent.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "fs.h"
@@ -34,7 +33,7 @@ static bool _get_files_accumulator(
             break;
 
         int path_length = strlen(dir_path) + 1 + strlen(entry->d_name);
-        char *path = (char*)malloc(path_length + 1);
+        char *path = new char[path_length + 1];
         assert(path != NULL);
 
         strcpy(path, dir_path);
@@ -49,7 +48,7 @@ static bool _get_files_accumulator(
             {
                 _get_files_accumulator(path, accumulator, recursive);
             }
-            free(path);
+            delete []path;
         }
         else
         {
@@ -112,7 +111,7 @@ char *dirname(const char *path)
     trim_right(path_nts, "/\\");
     if (strcmp(path_nts, "") == 0)
     {
-        free(path_nts);
+        delete []path_nts;
         return strdup(path);
     }
 
@@ -121,12 +120,12 @@ char *dirname(const char *path)
         last_slash = strrchr(path_nts, '/');
     if (last_slash == NULL)
     {
-        free(path_nts);
+        delete []path_nts;
         return strdup(path);
     }
 
     ret = strndup(path_nts, last_slash + 1 - path_nts);
-    free(path_nts);
+    delete []path_nts;
     return ret;
 }
 
@@ -144,17 +143,17 @@ bool mkpath(const char *path)
         dir = dirname(path);
         if (!mkpath(dir))
         {
-            free(dir);
+            delete []dir;
             return false;
         }
         trim_right(dir, "/\\");
         if (p_mkdir(path, 0755) != 0 && errno != EEXIST)
         {
             log_warning("FS: Failed to create directory %s", dir);
-            free(dir);
+            delete []dir;
             return false;
         }
-        free(dir);
+        delete []dir;
         return true;
     }
     else if (!S_ISDIR(sb.st_mode))

@@ -5,9 +5,8 @@
 // Extension: -
 // Archives:  ARC
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include "formats/gfx/cbg_converter.h"
 #include "formats/image.h"
 #include "io.h"
@@ -65,7 +64,7 @@ static void cbg_read_frequency_table(
     uint32_t key,
     uint32_t frequency_table[])
 {
-    char *raw_data = (char*)malloc(raw_data_size);
+    char *raw_data = new char[raw_data_size];
     assert(raw_data != NULL);
     io_read_string(io, raw_data, raw_data_size);
 
@@ -80,7 +79,7 @@ static void cbg_read_frequency_table(
             raw_data + raw_data_size);
     }
 
-    free(raw_data);
+    delete []raw_data;
 }
 
 static int cbg_read_node_info(
@@ -307,7 +306,7 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
     int last_node = cbg_read_node_info(freq_table, node_info);
 
     bool result;
-    char *huffman = (char*)malloc(huffman_size);
+    char *huffman = new char[huffman_size];
     if (huffman == NULL)
     {
         log_error("CBG: Failed to allocate %d bytes", huffman_size);
@@ -323,7 +322,7 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
             (uint8_t*)huffman);
 
         size_t output_size = width * height * (bpp >> 3);
-        char *output = (char*)malloc(output_size);
+        char *output = new char[output_size];
         if (output == NULL)
         {
             log_error("CBG: Failed to allocate %d bytes", output_size);
@@ -332,7 +331,7 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
         else
         {
             cbg_decompress_rle(huffman_size, huffman, output);
-            free(huffman);
+            delete []huffman;
             cbg_transform_colors((uint8_t*)output, width, height, bpp);
 
             Image *image = image_create_from_pixels(
@@ -344,7 +343,7 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
             image_update_file(image, file);
             image_destroy(image);
 
-            free(output);
+            delete []output;
         }
     }
 

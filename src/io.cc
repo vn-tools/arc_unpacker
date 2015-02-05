@@ -1,7 +1,7 @@
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "endian.h"
 #include "io.h"
 #include "logger.h"
@@ -177,7 +177,7 @@ IO *io_create_from_file(const char *path, const char *read_mode)
         log_error("IO: Can\'t open file %s", path);
         return NULL;
     }
-    IO *io = (IO*)malloc(sizeof(IO));
+    IO *io = new IO;
     if (io == NULL)
     {
         log_error("IO: Failed to allocate memory for file IO");
@@ -198,7 +198,7 @@ IO *io_create_from_file(const char *path, const char *read_mode)
 
 IO *io_create_from_buffer(const char *buffer, size_t buffer_size)
 {
-    IO *io = (IO*)malloc(sizeof(IO));
+    IO *io = new IO;
     if (io == NULL)
     {
         log_error("IO: Failed to allocate memory for buffer IO");
@@ -211,7 +211,7 @@ IO *io_create_from_buffer(const char *buffer, size_t buffer_size)
         log_error(
             "IO: Failed to allocate %d bytes for buffer IO data",
             buffer_size);
-        free(io);
+        delete io;
         return NULL;
     }
     memcpy(io->buffer, buffer, buffer_size);
@@ -238,6 +238,7 @@ void io_destroy(IO *io)
         fclose(io->file);
     if (io->buffer != NULL)
         free(io->buffer);
+    delete io;
 }
 
 size_t io_size(IO *io)
@@ -388,7 +389,7 @@ bool io_write_string_from_io(IO *io, IO *input, size_t length)
     if (io->file != NULL)
     {
         // TODO improvement: use static buffer instead of such allocation
-        char *buffer = (char*)malloc(length);
+        char *buffer = new char[length];
         if (buffer == NULL)
         {
             log_error("IO: Failed to allocate memory for string");
@@ -397,7 +398,7 @@ bool io_write_string_from_io(IO *io, IO *input, size_t length)
         result = io_read_string(input, buffer, length);
         if (result)
             result &= io_write_string(io, buffer, length);
-        free(buffer);
+        delete []buffer;
     }
     else
     {

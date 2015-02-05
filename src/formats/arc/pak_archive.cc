@@ -7,9 +7,8 @@
 // Known games:
 // - Saya no Uta
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include "formats/arc/pak_archive.h"
 #include "logger.h"
 #include "string_ex.h"
@@ -36,7 +35,7 @@ static char *pak_read_zlib(
     size_t size_compressed,
     size_t *size_uncompressed)
 {
-    char *data_compressed = (char*)malloc(size_compressed);
+    char *data_compressed = new char[size_compressed];
     assert(data_compressed != NULL);
 
     if (!io_read_string(arc_io, data_compressed, size_compressed))
@@ -52,7 +51,7 @@ static char *pak_read_zlib(
         assert(0);
     }
     assert(data_uncompressed != NULL);
-    free(data_compressed);
+    delete []data_compressed;
 
     return data_uncompressed;
 }
@@ -64,7 +63,7 @@ static VirtualFile *pak_read_file(void *context)
     assert(file != NULL);
 
     size_t file_name_length = io_read_u32_le(unpack_context->table_io);
-    char *file_name = (char*)malloc(file_name_length);
+    char *file_name = new char[file_name_length];
     assert(file_name != NULL);
     io_read_string(unpack_context->table_io, file_name, file_name_length);
 
@@ -78,7 +77,7 @@ static VirtualFile *pak_read_file(void *context)
     }
     assert(file_name_utf8 != NULL);
     virtual_file_set_name(file, file_name_utf8);
-    free(file_name_utf8);
+    delete []file_name_utf8;
 
     size_t offset = io_read_u32_le(unpack_context->table_io);
     size_t size_original = io_read_u32_le(unpack_context->table_io);
@@ -95,7 +94,7 @@ static VirtualFile *pak_read_file(void *context)
             unpack_context->arc_io, size_compressed, &size_uncompressed);
         assert(data_uncompressed != NULL);
         io_write_string(file->io, data_uncompressed, size_original);
-        free(data_uncompressed);
+        delete []data_uncompressed;
         if (size_uncompressed != size_original)
         {
             virtual_file_destroy(file);
@@ -109,7 +108,7 @@ static VirtualFile *pak_read_file(void *context)
             file->io, unpack_context->arc_io, size_original);
     }
 
-    free(file_name);
+    delete []file_name;
     return file;
 }
 
@@ -134,7 +133,7 @@ static bool pak_unpack(
 
     IO *table_io = io_create_from_buffer(table, table_size_original);
     assert(table_io != NULL);
-    free(table);
+    delete []table;
 
     size_t i;
     PakUnpackContext unpack_context;

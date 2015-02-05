@@ -9,8 +9,7 @@
 // - Clannad
 // - Little Busters
 
-#include <assert.h>
-#include <stdlib.h>
+#include <cassert>
 #include "formats/sfx/nwa_converter.h"
 #include "formats/sound.h"
 #include "io.h"
@@ -83,7 +82,7 @@ static bool nwa_read_uncompressed(
     assert(samples != NULL);
     assert(sample_count != NULL);
     *sample_count = header->block_size * header->channel_count;
-    *samples = (char*)malloc(*sample_count);
+    *samples = new char[*sample_count];
     if (*samples == NULL)
         return false;
     return io_read_string(io, *samples, *sample_count);
@@ -161,7 +160,7 @@ static bool nwa_decode(Converter *converter, VirtualFile *file)
         sound_destroy(sound);
     }
 
-    free(output_samples);
+    delete []output_samples;
     return true;
 }
 

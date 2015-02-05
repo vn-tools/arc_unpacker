@@ -17,9 +17,8 @@
 // - Sono Hanabira ni Kuchizuke o 10
 // - Sono Hanabira ni Kuchizuke o 11
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include "formats/arc/fjsys_archive.h"
 #include "formats/gfx/mgd_converter.h"
 #include "logger.h"
@@ -71,7 +70,7 @@ static bool fjsys_check_magic(IO *arc_io)
 
 static FjsysHeader *fjsys_read_header(IO *arc_io)
 {
-    FjsysHeader *header = (FjsysHeader*)malloc(sizeof(FjsysHeader));
+    FjsysHeader *header = new FjsysHeader;
     assert(header != NULL);
     header->header_size = io_read_u32_le(arc_io);
     header->file_names_size = io_read_u32_le(arc_io);
@@ -98,7 +97,7 @@ static VirtualFile *fjsys_read_file(void *context)
     io_read_until_zero(unpack_context->arc_io, &file_name, NULL);
     assert(file_name != NULL);
     virtual_file_set_name(file, file_name);
-    free(file_name);
+    delete []file_name;
 
     io_seek(unpack_context->arc_io, data_offset);
     io_write_string_from_io(file->io, unpack_context->arc_io, data_size);
@@ -133,7 +132,7 @@ static bool fjsys_unpack(
     for (i = 0; i < header->file_count; i ++)
         output_files_save(output_files, &fjsys_read_file, &unpack_context);
 
-    free(header);
+    delete header;
     return true;
 }
 
@@ -151,8 +150,7 @@ Archive *fjsys_archive_create()
     archive->unpack = &fjsys_unpack;
     archive->cleanup = &fjsys_cleanup;
 
-    FjsysArchiveContext *context
-        = (FjsysArchiveContext*)malloc(sizeof(FjsysArchiveContext));
+    FjsysArchiveContext *context = new FjsysArchiveContext;
     assert(context != NULL);
     context->mgd_converter = mgd_converter_create();
     archive->data = context;

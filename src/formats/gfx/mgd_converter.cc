@@ -5,10 +5,9 @@
 // Extension: .MGD
 // Archives:  FJSYS
 
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdint>
+#include <cstring>
 #include "collections/array.h"
 #include "endian.h"
 #include "formats/gfx/mgd_converter.h"
@@ -291,7 +290,7 @@ static Array *mgd_read_region_data(IO *file_io)
         size_t i;
         for (i = 0; i < region_count; i ++)
         {
-            MgdRegion *region = (MgdRegion*)malloc(sizeof(MgdRegion));
+            MgdRegion *region = new MgdRegion;
             if (!region)
             {
                 log_error("MGD: Failed to allocate memory for region");
@@ -321,7 +320,7 @@ static Image *mgd_read_image(
     assert(file_io != NULL);
     assert(data_uncompressed != NULL);
 
-    char *data_compressed = (char*)malloc(size_compressed);
+    char *data_compressed = new char[size_compressed];
     if (!data_compressed)
     {
         log_error("MGD: Failed to allocate memory for compressed data");
@@ -350,7 +349,7 @@ static Image *mgd_read_image(
 
         case MGD_COMPRESSION_SGD:
         {
-            *data_uncompressed = (char*)malloc(size_original);
+            *data_uncompressed = new char[size_original];
             assert(*data_uncompressed != NULL);
 
             if (mgd_decompress_sgd(
@@ -371,7 +370,7 @@ static Image *mgd_read_image(
                 log_error("MGD: Failed to decompress SGD data");
             }
 
-            free(data_compressed);
+            delete []data_compressed;
             break;
         }
 
@@ -384,7 +383,7 @@ static Image *mgd_read_image(
                 size_compressed);
             image = image_create_from_boxed(image_io);
             io_destroy(image_io);
-            free(data_compressed);
+            delete []data_compressed;
             break;
         }
     }
@@ -437,7 +436,7 @@ static bool mgd_decode(Converter *converter, VirtualFile *file)
     Array *regions = mgd_read_region_data(file->io);
     size_t i;
     for (i = 0; i < array_size(regions); i ++)
-        free(array_get(regions, i));
+        delete (MgdRegion*)array_get(regions, i);
     array_destroy(regions);
 
     if (image == NULL)
@@ -448,7 +447,7 @@ static bool mgd_decode(Converter *converter, VirtualFile *file)
 
     image_update_file(image, file);
     image_destroy(image);
-    free(data_uncompressed);
+    delete []data_uncompressed;
     return true;
 }
 

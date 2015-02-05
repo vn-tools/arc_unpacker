@@ -5,10 +5,9 @@
 // Extension: -
 // Archives:  MBL
 
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdint>
+#include <cstring>
 #include "formats/gfx/prs_converter.h"
 #include "formats/image.h"
 #include "io.h"
@@ -30,7 +29,7 @@ static bool prs_decode_pixels(
     assert(target_buffer != NULL);
 
     *target_size = image_width * image_height * 3;
-    *target_buffer = (char*)malloc(*target_size);
+    *target_buffer = new char[*target_size];
     assert(*target_buffer != NULL);
 
     const unsigned char *source = (const unsigned char*)source_buffer;
@@ -155,7 +154,7 @@ static bool prs_decode(Converter *converter, VirtualFile *file)
     uint16_t image_width = io_read_u16_le(file->io);
     uint16_t image_height = io_read_u16_le(file->io);
 
-    char *source_buffer = (char*)malloc(source_size);
+    char *source_buffer = new char[source_size];
     io_read_string(file->io, source_buffer, source_size);
 
     bool result;
@@ -184,8 +183,8 @@ static bool prs_decode(Converter *converter, VirtualFile *file)
         result = true;
     }
 
-    free(source_buffer);
-    free(target_buffer);
+    delete []source_buffer;
+    delete []target_buffer;
     return result;
 }
 

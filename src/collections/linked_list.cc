@@ -1,5 +1,4 @@
-#include <assert.h>
-#include <stdlib.h>
+#include <cassert>
 #include "linked_list.h"
 
 struct ListItem
@@ -18,7 +17,7 @@ struct LinkedList
 
 LinkedList *linked_list_create()
 {
-    LinkedList *linked_list = (LinkedList*)malloc(sizeof(LinkedList));
+    LinkedList *linked_list = new LinkedList;
     assert(linked_list != NULL);
     linked_list->head = NULL;
     linked_list->current = NULL;
@@ -36,9 +35,9 @@ void linked_list_destroy(LinkedList *linked_list)
     {
         old = li;
         li = li->next;
-        free(old);
+        delete old;
     }
-    free(linked_list);
+    delete linked_list;
 }
 
 void linked_list_reset(LinkedList *linked_list)
@@ -65,7 +64,7 @@ void linked_list_advance(LinkedList *linked_list)
 void linked_list_add(LinkedList *linked_list, void *item)
 {
     assert(linked_list != NULL);
-    struct ListItem *li = (struct ListItem*)malloc(sizeof(struct ListItem));
+    struct ListItem *li = new struct ListItem;
     assert(li != NULL);
     li->data = item;
     li->next = NULL;

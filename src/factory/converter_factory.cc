@@ -1,5 +1,4 @@
-#include <assert.h>
-#include <stdlib.h>
+#include <cassert>
 #include "collections/dictionary.h"
 #include "factory/converter_factory.h"
 #include "formats/gfx/cbg_converter.h"
@@ -31,8 +30,7 @@ static void add_format(
     assert(factory != NULL);
     assert(name != NULL);
     assert(creator != NULL);
-    FormatDefinition *definition
-        = (FormatDefinition*)malloc(sizeof(FormatDefinition));
+    FormatDefinition *definition = new FormatDefinition;
     definition->name = name;
     definition->creator = creator;
     dictionary_set(factory->formats, name, (void*)definition);
@@ -53,8 +51,7 @@ static void init_factory(ConverterFactory *factory)
 
 ConverterFactory *converter_factory_create()
 {
-    ConverterFactory *factory
-        = (ConverterFactory*)malloc(sizeof(ConverterFactory));
+    ConverterFactory *factory = new ConverterFactory;
     assert(factory != NULL);
     factory->formats = dictionary_create();
     init_factory(factory);
@@ -68,9 +65,9 @@ void converter_factory_destroy(ConverterFactory *factory)
     assert(factory != NULL);
     definitions = dictionary_get_values(factory->formats);
     for (i = 0; i < array_size(definitions); i ++)
-        free(array_get(definitions, i));
+        delete (FormatDefinition*)array_get(definitions, i);
     dictionary_destroy(factory->formats);
-    free(factory);
+    delete factory;
 }
 
 const Array *converter_factory_formats(const ConverterFactory *factory)

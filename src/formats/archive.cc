@@ -1,11 +1,10 @@
-#include <assert.h>
-#include <stdlib.h>
+#include <cassert>
 #include "formats/archive.h"
 #include "logger.h"
 
 Archive *archive_create()
 {
-    Archive *archive = (Archive*)malloc(sizeof(Archive));
+    Archive *archive = new Archive;
     assert(archive != NULL);
     archive->data = NULL;
     archive->add_cli_help = NULL;
@@ -20,7 +19,7 @@ void archive_destroy(Archive *archive)
     assert(archive != NULL);
     if (archive->cleanup != NULL)
         archive->cleanup(archive);
-    free(archive);
+    delete archive;
 }
 
 void archive_parse_cli_options(Archive *archive, ArgParser *arg_parser)

@@ -1,6 +1,5 @@
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include "collections/dictionary.h"
 #include "factory/archive_factory.h"
 #include "formats/arc/arc_archive.h"
@@ -34,8 +33,7 @@ static void add_format(
     assert(factory != NULL);
     assert(name != NULL);
     assert(creator != NULL);
-    FormatDefinition *definition
-        = (FormatDefinition*)malloc(sizeof(FormatDefinition));
+    FormatDefinition *definition = new FormatDefinition;
     definition->name = name;
     definition->creator = creator;
     dictionary_set(factory->formats, name, (void*)definition);
@@ -57,7 +55,7 @@ static void init_factory(ArchiveFactory *factory)
 
 ArchiveFactory *archive_factory_create()
 {
-    ArchiveFactory *factory = (ArchiveFactory*)malloc(sizeof(ArchiveFactory));
+    ArchiveFactory *factory = new ArchiveFactory;
     assert(factory != NULL);
     factory->formats = dictionary_create();
     init_factory(factory);
@@ -71,9 +69,9 @@ void archive_factory_destroy(ArchiveFactory *factory)
     assert(factory != NULL);
     definitions = dictionary_get_values(factory->formats);
     for (i = 0; i < array_size(definitions); i ++)
-        free(array_get(definitions, i));
+        delete (FormatDefinition*)array_get(definitions, i);
     dictionary_destroy(factory->formats);
-    free(factory);
+    delete factory;
 }
 
 const Array *archive_factory_formats(const ArchiveFactory *factory)

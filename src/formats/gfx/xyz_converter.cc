@@ -8,10 +8,9 @@
 // Known games:
 // - Yume Nikki
 
-#include <assert.h>
-#include <string.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
+#include <cstring>
 #include "formats/gfx/xyz_converter.h"
 #include "formats/image.h"
 #include "io.h"
@@ -42,12 +41,12 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
         uint16_t height = io_read_u16_le(file->io);
 
         size_t compressed_data_size = io_size(file->io) - io_tell(file->io);
-        char *compressed_data = (char*)malloc(compressed_data_size);
+        char *compressed_data = new char[compressed_data_size];
         assert(compressed_data != NULL);
         if (!io_read_string(file->io, compressed_data, compressed_data_size))
         {
             log_error("XYZ: Failed to read pixel data");
-            free(compressed_data);
+            delete []compressed_data;
             return false;
         }
 
@@ -60,16 +59,16 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
             &uncompressed_data_size))
         {
             log_error("XYZ: Failed to decompress zlib stream");
-            free(compressed_data);
-            free(uncompressed_data);
+            delete []compressed_data;
+            delete []uncompressed_data;
             return false;
         }
         assert(uncompressed_data != NULL);
         assert((unsigned)256 * 3 + width * height == uncompressed_data_size);
-        free(compressed_data);
+        delete []compressed_data;
 
         size_t pixels_size = width * height * 3;
-        char *pixels = (char*)malloc(pixels_size);
+        char *pixels = new char[pixels_size];
         assert(pixels != NULL);
 
         {
@@ -86,7 +85,7 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
                 *out ++ = palette[j * 3 + 1];
                 *out ++ = palette[j * 3 + 2];
             }
-            free(uncompressed_data);
+            delete []uncompressed_data;
         }
 
         Image *image = image_create_from_pixels(
@@ -98,7 +97,7 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
         image_update_file(image, file);
         image_destroy(image);
 
-        free(pixels);
+        delete []pixels;
         result = true;
     }
 

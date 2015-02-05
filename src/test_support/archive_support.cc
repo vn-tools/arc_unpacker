@@ -1,5 +1,5 @@
-#include <assert.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include "arg_parser.h"
 #include "io.h"
 #include "logger.h"

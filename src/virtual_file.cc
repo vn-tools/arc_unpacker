@@ -1,6 +1,5 @@
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include "io.h"
 #include "logger.h"
 #include "string_ex.h"
@@ -13,13 +12,13 @@ typedef struct
 
 VirtualFile *virtual_file_create()
 {
-    VirtualFile *file = (VirtualFile*)malloc(sizeof(VirtualFile));
+    VirtualFile *file = new VirtualFile;
     assert(file != NULL);
 
     file->io = io_create_empty();
     assert(file->io != NULL);
 
-    Internals *internals = (Internals*)malloc(sizeof(Internals));;
+    Internals *internals = new Internals;
     assert(internals != NULL);
     internals->name = NULL;
     file->internals = internals;
@@ -31,8 +30,9 @@ void virtual_file_destroy(VirtualFile *file)
 {
     assert(file != NULL);
     io_destroy(file->io);
-    free(((Internals*)file->internals)->name);
-    free(file);
+    delete []((Internals*)file->internals)->name;
+    delete (Internals*)file->internals;
+    delete file;
 }
 
 void virtual_file_change_extension(VirtualFile *file, const char *new_ext)
@@ -50,11 +50,9 @@ void virtual_file_change_extension(VirtualFile *file, const char *new_ext)
         new_ext ++;
 
     size_t base_length = strlen(name);
-    char *new_name = (char*)realloc(
-        name,
-        base_length + 1 + strlen(new_ext) + 1);
-
+    char *new_name = new char[base_length + 1 + strlen(new_ext) + 1];
     assert(new_name != NULL);
+    strcpy(new_name, name);
     strcpy(new_name + base_length, ".");
     strcpy(new_name + base_length + 1, new_ext);
     ((Internals*)file->internals)->name = new_name;
@@ -70,7 +68,7 @@ bool virtual_file_set_name(VirtualFile *file, const char *new_name)
     char *name = ((Internals*)file->internals)->name;
     assert(file != NULL);
     if (name != NULL)
-        free(name);
+        delete []name;
     name = strdup(new_name);
     ((Internals*)file->internals)->name = name;
     return name != NULL;

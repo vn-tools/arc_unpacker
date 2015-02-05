@@ -1,6 +1,5 @@
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include "formats/image.h"
 #include "io.h"
 #include "test_support/converter_support.h"

@@ -9,9 +9,8 @@
 // - Katawa Shoujo
 // - Long Live The Queen
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include "formats/arc/rpa_archive.h"
 #include "io.h"
 #include "logger.h"
@@ -119,7 +118,7 @@ static void rpa_unpickle_handle_number(
 
 static char *rpa_unpickle_read_string(IO *table_io, size_t str_size)
 {
-    char *str = (char*)malloc(str_size + 1);
+    char *str = new char[str_size + 1];
     assert(str != NULL);
     io_read_string(table_io, str, str_size);
     str[str_size] = '\0';
@@ -242,14 +241,13 @@ static RpaTableEntry **rpa_decode_table(
     *file_count = array_size(context.strings) / 2;
     assert(array_size(context.numbers) == array_size(context.strings));
 
-    RpaTableEntry **entries
-        = (RpaTableEntry**)malloc(sizeof(RpaTableEntry*) * (*file_count));
+    RpaTableEntry **entries = new RpaTableEntry*[*file_count];
     assert(entries != NULL);
 
     size_t i;
     for (i = 0; i < *file_count; i ++)
     {
-        RpaTableEntry *entry = (RpaTableEntry*)malloc(sizeof(RpaTableEntry));
+        RpaTableEntry *entry = new RpaTableEntry;
         assert(entry != NULL);
         entry->name = (char*)array_get(context.strings, i*2);
         entry->prefix = (char*)array_get(context.strings, i*2+1);
@@ -303,7 +301,7 @@ static uint32_t rpa_read_hex_number(IO *arc_io, size_t length)
 static bool rpa_read_raw_table(IO *arc_io, char **table, size_t *table_size)
 {
     size_t compressed_size = io_size(arc_io) - io_tell(arc_io);
-    char *compressed = (char*)malloc(compressed_size);
+    char *compressed = new char[compressed_size];
     assert(compressed != NULL);
     if (!io_read_string(arc_io, compressed, compressed_size))
         assert(0);
@@ -312,11 +310,11 @@ static bool rpa_read_raw_table(IO *arc_io, char **table, size_t *table_size)
     bool result = zlib_inflate(compressed, compressed_size, table, table_size);
     if (!result)
     {
-        free(*table);
+        delete *table;
         *table = NULL;
         *table_size = 0;
     }
-    free(compressed);
+    delete []compressed;
     return result;
 }
 
@@ -397,7 +395,7 @@ static bool rpa_unpack(
     RpaTableEntry **entries = rpa_decode_table(
         table, table_size, key, &file_count);
     assert(entries != NULL);
-    free(table);
+    delete []table;
 
     size_t i;
     RpaUnpackContext context;
@@ -406,11 +404,11 @@ static bool rpa_unpack(
     {
         context.table_entry = entries[i];
         output_files_save(output_files, &rpa_read_file, &context);
-        free(entries[i]->name);
-        free(entries[i]->prefix);
-        free(entries[i]);
+        delete []entries[i]->name;
+        delete []entries[i]->prefix;
+        delete entries[i];
     }
-    free(entries);
+    delete []entries;
     return true;
 }
 

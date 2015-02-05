@@ -7,8 +7,7 @@
 // Known games:
 // - Tsukihime
 
-#include <assert.h>
-#include <stdlib.h>
+#include <cassert>
 #include "formats/arc/sar_archive.h"
 #include "logger.h"
 
@@ -61,11 +60,11 @@ static bool sar_unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
         return false;
     }
 
-    table = (TableEntry**)malloc(file_count * sizeof(TableEntry*));
+    table = new TableEntry*[file_count];
     assert(table != NULL);
     for (i = 0; i < file_count; i ++)
     {
-        TableEntry *entry = (TableEntry*)malloc(sizeof(TableEntry));
+        TableEntry *entry = new TableEntry;
         assert(entry != NULL);
         entry->name = NULL;
         io_read_until_zero(arc_io, &entry->name, NULL);
@@ -75,8 +74,8 @@ static bool sar_unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
         {
             log_error("SAR: Bad offset to file");
             for (j = 0; j < i; j ++)
-                free(table[j]);
-            free(table);
+                delete table[j];
+            delete table;
             return false;
         }
         table[i] = entry;
@@ -92,10 +91,10 @@ static bool sar_unpack(Archive *archive, IO *arc_io, OutputFiles *output_files)
 
     for (i = 0; i < file_count; i ++)
     {
-        free(table[i]->name);
-        free(table[i]);
+        delete []table[i]->name;
+        delete table[i];
     }
-    free(table);
+    delete table;
 
     return true;
 }

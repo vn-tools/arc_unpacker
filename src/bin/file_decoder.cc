@@ -1,7 +1,6 @@
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdio>
+#include <cstring>
 #include "arg_parser.h"
 #include "bin_helpers.h"
 #include "factory/converter_factory.h"
@@ -60,7 +59,7 @@ static bool add_input_paths_option(ArgParser *arg_parser, Options *options)
             Array *sub_paths = get_files_recursive(path);
             for (j = 0; j < array_size(sub_paths); j ++)
             {
-                PathInfo *pi = (PathInfo*)malloc(sizeof(PathInfo));
+                PathInfo *pi = new PathInfo;
                 pi->input_path = (char*)array_get(sub_paths, j);
                 pi->target_path = strdup(pi->input_path + strlen(path) + 1);
                 array_add(options->input_paths, pi);
@@ -68,7 +67,7 @@ static bool add_input_paths_option(ArgParser *arg_parser, Options *options)
         }
         else
         {
-            PathInfo *pi = (PathInfo*)malloc(sizeof(PathInfo));
+            PathInfo *pi = new PathInfo;
             pi->input_path = strdup(path);
             pi->target_path = basename(path);
             array_add(options->input_paths, pi);
@@ -207,12 +206,12 @@ static bool guess_converter_and_decode(
 
 static void set_file_path(VirtualFile *file, const char *input_path)
 {
-    char *output_path = (char*)malloc(strlen(input_path) + 2);
+    char *output_path = new char[strlen(input_path) + 2];
     assert(output_path != NULL);
     strcpy(output_path, input_path);
     strcat(output_path, "~");
     virtual_file_set_name(file, output_path);
-    free(output_path);
+    delete []output_path;
 }
 
 static VirtualFile *read_and_decode(void *_context)
@@ -318,9 +317,9 @@ int main(int argc, const char **argv)
         for (i = 0; i < array_size(options.input_paths); i ++)
         {
             PathInfo *pi = (PathInfo*)array_get(options.input_paths, i);
-            free(pi->input_path);
-            free(pi->target_path);
-            free(pi);
+            delete []pi->input_path;
+            delete []pi->target_path;
+            delete pi;
         }
         array_destroy(options.input_paths);
     }

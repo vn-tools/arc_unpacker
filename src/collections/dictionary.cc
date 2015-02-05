@@ -1,6 +1,5 @@
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include <sys/types.h>
 #include "collections/dictionary.h"
 #include "collections/linked_list.h"
@@ -28,7 +27,7 @@ static ssize_t get_index_for_key(const Dictionary *dictionary, const char *key)
 
 Dictionary *dictionary_create()
 {
-    Dictionary *dictionary = (Dictionary*)malloc(sizeof(Dictionary));
+    Dictionary *dictionary = new Dictionary;
     assert(dictionary != NULL);
     dictionary->values = array_create();
     dictionary->keys = array_create();
@@ -40,7 +39,7 @@ void dictionary_destroy(Dictionary *dictionary)
     assert(dictionary != NULL);
     array_destroy(dictionary->keys);
     array_destroy(dictionary->values);
-    free(dictionary);
+    delete dictionary;
 }
 
 const Array *dictionary_get_keys(const Dictionary *const dictionary)

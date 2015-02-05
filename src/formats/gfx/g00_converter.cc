@@ -9,9 +9,8 @@
 // - Clannad
 // - Little Busters
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstdio>
 #include "endian.h"
 #include "formats/gfx/g00_converter.h"
 #include "formats/image.h"
@@ -101,18 +100,18 @@ static bool g00_decompress_from_io(
     assert(io != NULL);
     assert(uncompressed != NULL);
 
-    *uncompressed = (char*)malloc(uncompressed_size);
+    *uncompressed = new char[uncompressed_size];
     if (!*uncompressed)
     {
         log_error("G00: Failed to allocate %d bytes", uncompressed_size);
         return false;
     }
 
-    char *compressed = (char*)malloc(compressed_size);
+    char *compressed = new char[compressed_size];
     if (!compressed)
     {
         *uncompressed = NULL;
-        free(uncompressed);
+        delete []uncompressed;
         log_error("G00: Failed to allocate %d bytes", compressed);
         return false;
     }
@@ -120,8 +119,8 @@ static bool g00_decompress_from_io(
     if (!io_read_string(io, compressed, compressed_size))
     {
         *uncompressed = NULL;
-        free(compressed);
-        free(uncompressed);
+        delete []compressed;
+        delete []uncompressed;
         log_error("G00: Failed to read compressed stream");
         return false;
     }
@@ -134,7 +133,7 @@ static bool g00_decompress_from_io(
         byte_count,
         length_delta);
 
-    free(compressed);
+    delete []compressed;
     return true;
 }
 
@@ -163,7 +162,7 @@ static bool g00_decode_version_0(VirtualFile *file, int width, int height)
         3, 1))
     {
         log_error("G00: Failed to decompress data");
-        free(uncompressed);
+        delete []uncompressed;
         return false;
     }
     assert(uncompressed != NULL);
@@ -176,7 +175,7 @@ static bool g00_decode_version_0(VirtualFile *file, int width, int height)
         IMAGE_PIXEL_FORMAT_BGR);
     image_update_file(image, file);
     image_destroy(image);
-    free(uncompressed);
+    delete []uncompressed;
     return true;
 }
 
@@ -200,7 +199,7 @@ static bool g00_decode_version_1(VirtualFile *file, int width, int height)
         1, 2))
     {
         log_error("G00: Failed to decompress data");
-        free(uncompressed);
+        delete []uncompressed;
         return false;
     }
     assert(uncompressed != NULL);
@@ -221,7 +220,7 @@ static bool g00_decode_version_1(VirtualFile *file, int width, int height)
         tmp += color_count * 4;
 
         size_t i;
-        uint32_t *pixels = (uint32_t*)malloc(width * height * 4);
+        uint32_t *pixels = new uint32_t[width * height];
         assert(pixels != NULL);
         for (i = 0; i < (unsigned)(width * height); i ++)
         {
@@ -238,17 +237,17 @@ static bool g00_decode_version_1(VirtualFile *file, int width, int height)
         image_update_file(image, file);
         image_destroy(image);
 
-        free(pixels);
+        delete []pixels;
         result = true;
     }
 
-    free(uncompressed);
+    delete []uncompressed;
     return result;
 }
 
 static G00Region *g00_read_version_2_regions(IO *file_io, size_t region_count)
 {
-    G00Region *regions = (G00Region*)malloc(region_count * sizeof(G00Region));
+    G00Region *regions = new G00Region[region_count];
     if (!regions)
     {
         log_error(
@@ -288,7 +287,7 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
     if (compressed_size != io_size(file->io) - io_tell(file->io))
     {
         log_error("G00: Bad compressed size");
-        free(regions);
+        delete []regions;
         return false;
     }
 
@@ -301,20 +300,20 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
         1, 2))
     {
         log_error("G00: Failed to decompress data");
-        free(uncompressed);
-        free(regions);
+        delete []uncompressed;
+        delete []regions;
         return false;
     }
 
-    char *pixels = (char*)malloc(width * height * 4);
+    char *pixels = new char[width * height * 4];
     if (!pixels)
     {
         log_error(
             "G00: Failed to allocate memory for %d x %d pixels",
             width,
             height);
-        free(uncompressed);
-        free(regions);
+        delete []uncompressed;
+        delete []regions;
         return false;
     }
 
@@ -366,7 +365,7 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
     }
 
     io_destroy(uncompressed_io);
-    free(uncompressed);
+    delete []uncompressed;
 
     Image *image = image_create_from_pixels(
         width,
@@ -377,8 +376,8 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
     image_update_file(image, file);
     image_destroy(image);
 
-    free(pixels);
-    free(regions);
+    delete []pixels;
+    delete []regions;
     return result;
 }
 

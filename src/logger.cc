@@ -1,7 +1,7 @@
-#include <assert.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
+#include <cassert>
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
 #include "logger.h"
 
 static char buffer[1024];

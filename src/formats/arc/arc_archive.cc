@@ -7,9 +7,8 @@
 // Known games:
 // - Higurashi No Naku Koro Ni
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include "formats/arc/arc_archive.h"
 #include "formats/gfx/cbg_converter.h"
 #include "logger.h"
@@ -43,7 +42,7 @@ static VirtualFile *arc_read_file(void *_context)
     io_read_until_zero(context->arc_io, &tmp_name, NULL);
     assert(tmp_name != NULL);
     virtual_file_set_name(file, tmp_name);
-    free(tmp_name);
+    delete []tmp_name;
     io_seek(context->arc_io, old_pos + 16);
 
     size_t offset = io_read_u32_le(context->arc_io);

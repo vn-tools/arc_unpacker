@@ -1,8 +1,8 @@
-#include <assert.h>
-#include <errno.h>
+#include <cassert>
+#include <cerrno>
+#include <cstring>
+#include <cstdlib>
 #include <iconv.h>
-#include <stdlib.h>
-#include <string.h>
 #include <zlib.h>
 #include "logger.h"
 #include "string_ex.h"
@@ -13,7 +13,7 @@
 
 char *strndup(const char *source, const size_t size)
 {
-    char *target = (char*)malloc(size + 1);
+    char *target = new char[size + 1];
     assert(target != NULL);
     memcpy(target, source, size);
     target[size] = '\0';

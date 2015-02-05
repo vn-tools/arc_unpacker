@@ -1,5 +1,5 @@
-#include <assert.h>
-#include <stddef.h>
+#include <cassert>
+#include <cstddef>
 #include "formats/arc/npa_archive/npa_filter_chaos_head.h"
 
 __attribute__((const))

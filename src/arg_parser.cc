@@ -1,7 +1,6 @@
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdio>
+#include <cstring>
 #include "arg_parser.h"
 #include "collections/pair.h"
 #include "string_ex.h"
@@ -48,7 +47,7 @@ static bool get_switch(const char *argument, char **key, char **value)
     *key = strndup(argument, value_ptr - argument);
     if (!is_alphanumeric(*key))
     {
-        free(key);
+        delete []key;
         return false;
     }
     *value = strdup(value_ptr + 1);
@@ -109,7 +108,7 @@ struct ArgParser
 
 ArgParser *arg_parser_create()
 {
-    ArgParser *arg_parser = (ArgParser*)malloc(sizeof(ArgParser));
+    ArgParser *arg_parser = new ArgParser;
     assert(arg_parser != NULL);
     arg_parser->flags = linked_list_create();
     arg_parser->switches = linked_list_create();
@@ -130,8 +129,8 @@ void arg_parser_destroy(ArgParser *arg_parser)
         {
             linked_list_advance(arg_parser->switches);
             Pair *pair = (Pair*)item;
-            free(pair->e1);
-            free(pair->e2);
+            delete [](char*)pair->e1;
+            delete [](char*)pair->e2;
             pair_destroy(pair);
         }
         linked_list_destroy(arg_parser->switches);
@@ -143,7 +142,7 @@ void arg_parser_destroy(ArgParser *arg_parser)
         while ((item = linked_list_get(arg_parser->flags)) != NULL)
         {
             linked_list_advance(arg_parser->flags);
-            free(item);
+            delete [](char*)item;
         }
         linked_list_destroy(arg_parser->flags);
     }
@@ -152,14 +151,14 @@ void arg_parser_destroy(ArgParser *arg_parser)
     {
         size_t i;
         for (i = 0; i < array_size(arg_parser->stray); i ++)
-            free(array_get(arg_parser->stray, i));
+            delete [](char*)array_get(arg_parser->stray, i);
         array_destroy(arg_parser->stray);
     }
 
     if (arg_parser->help_items != NULL)
         linked_list_destroy(arg_parser->help_items);
 
-    free(arg_parser);
+    delete arg_parser;
 }
 
 void arg_parser_parse(ArgParser *arg_parser, int argc, const char **argv)
@@ -333,7 +332,7 @@ void arg_parser_print_help(ArgParser *arg_parser)
                 tmp_length = max_invocation_length;
             }
             printf("%s ", word);
-            free(word);
+            delete []word;
             first_word = false;
         }
         printf("\n");

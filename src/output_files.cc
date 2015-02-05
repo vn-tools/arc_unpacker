@@ -1,7 +1,6 @@
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdio>
+#include <cstring>
 #include "fs.h"
 #include "logger.h"
 #include "output_files.h"
@@ -23,10 +22,10 @@ static char *get_full_path(OutputFiles *output_files, const char *file_name)
     if (output_files->output_dir == NULL)
         return strdup(file_name);
 
-    char *full_path = (char*)malloc(
+    char *full_path = new char[
         strlen(output_files->output_dir)
         + 1
-        + strlen(file_name) + 1);
+        + strlen(file_name) + 1];
     assert(full_path != NULL);
     strcpy(full_path, output_files->output_dir);
     strcat(full_path, "/");
@@ -77,8 +76,8 @@ static bool save_to_hdd(
             result = true;
             log_info("Saved successfully");
         }
-        free(full_path);
-        free(dir);
+        delete []full_path;
+        delete []dir;
     }
 
     if (file != NULL)
@@ -106,7 +105,7 @@ static bool save_to_memory(
 
 OutputFiles *output_files_create_hdd(const char *output_dir)
 {
-    OutputFiles *output_files = (OutputFiles*)malloc(sizeof(OutputFiles));
+    OutputFiles *output_files = new OutputFiles;
     assert(output_files != NULL);
     output_files->output_dir = output_dir;
     output_files->memory = false;
@@ -117,7 +116,7 @@ OutputFiles *output_files_create_hdd(const char *output_dir)
 
 OutputFiles *output_files_create_memory()
 {
-    OutputFiles *output_files = (OutputFiles*)malloc(sizeof(OutputFiles));
+    OutputFiles *output_files = new OutputFiles;
     assert(output_files != NULL);
     output_files->output_dir = NULL;
     output_files->memory = true;
@@ -140,7 +139,7 @@ void output_files_destroy(OutputFiles *output_files)
         }
         array_destroy(output_files->files);
     }
-    free(output_files);
+    delete output_files;
 }
 
 bool output_files_save(
