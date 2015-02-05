@@ -81,21 +81,22 @@ namespace
 
     typedef struct
     {
-        Array *string_lengths;
-        Array *strings;
-        Array *numbers;
+        std::vector<size_t> string_lengths;
+        std::vector<std::string> strings;
+        std::vector<int> numbers;
     } RpaUnpickleContext;
 
     void rpa_unpickle_handle_string(
         char *str, size_t str_size, RpaUnpickleContext *context)
     {
-        array_add(context->strings, str);
-        array_add(context->string_lengths, (void*)str_size);
+        context->strings.push_back(std::string(str));
+        context->string_lengths.push_back(str_size);
+        delete []str;
     }
 
     void rpa_unpickle_handle_number(size_t number, RpaUnpickleContext *context)
     {
-        array_add(context->numbers, (void*)number);
+        context->numbers.push_back(number);
     }
 
     char *rpa_unpickle_read_string(IO *table_io, size_t str_size)
@@ -208,10 +209,10 @@ namespace
 {
     typedef struct
     {
-        char *name;
+        std::string name;
         uint32_t offset;
         uint32_t size;
-        char *prefix;
+        std::string prefix;
         size_t prefix_size;
     } RpaTableEntry;
 
@@ -228,9 +229,6 @@ namespace
         size_t *file_count)
     {
         RpaUnpickleContext context;
-        context.strings = array_create();
-        context.string_lengths = array_create();
-        context.numbers = array_create();
 
         IO *table_io = io_create_from_buffer(table, table_size);
         rpa_unpickle(table_io, &context);
@@ -240,9 +238,9 @@ namespace
         // are twice as many numbers as strings, and all prefixes should be set
         // to empty.  Since I haven't seen such games, I leave this remark only
         // as a comment.
-        assert(array_size(context.strings) % 2 == 0);
-        *file_count = array_size(context.strings) / 2;
-        assert(array_size(context.numbers) == array_size(context.strings));
+        assert(context.strings.size() % 2 == 0);
+        *file_count = context.strings.size() / 2;
+        assert(context.numbers.size() == context.strings.size());
 
         RpaTableEntry **entries = new RpaTableEntry*[*file_count];
         assert(entries != nullptr);
@@ -252,18 +250,13 @@ namespace
         {
             RpaTableEntry *entry = new RpaTableEntry;
             assert(entry != nullptr);
-            entry->name = (char*)array_get(context.strings, i*2);
-            entry->prefix = (char*)array_get(context.strings, i*2+1);
-            entry->prefix_size = (size_t)
-                array_get(context.string_lengths, i*2+1);
-            entry->offset = (uint32_t)array_get(context.numbers, i*2) ^ key;
-            entry->size = (uint32_t)array_get(context.numbers, i*2+1) ^ key;
+            entry->name = context.strings[i * 2 ];
+            entry->prefix = context.strings[i * 2 + 1];
+            entry->prefix_size = context.string_lengths[i * 2 + 1];
+            entry->offset = context.numbers[i * 2] ^ key;
+            entry->size = context.numbers[i * 2 + 1] ^ key;
             entries[i] = entry;
         }
-
-        array_destroy(context.strings);
-        array_destroy(context.string_lengths);
-        array_destroy(context.numbers);
 
         io_destroy(table_io);
         return entries;
@@ -336,7 +329,7 @@ namespace
 
         if (!io_write_string(
             file->io,
-            context->table_entry->prefix,
+            context->table_entry->prefix.c_str(),
             context->table_entry->prefix_size))
         {
             assert(0);
@@ -350,7 +343,7 @@ namespace
             assert(0);
         }
 
-        virtual_file_set_name(file, context->table_entry->name);
+        virtual_file_set_name(file, context->table_entry->name.c_str());
         return file;
     }
 }
@@ -407,8 +400,6 @@ bool RpaArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
     {
         context.table_entry = entries[i];
         output_files_save(output_files, &rpa_read_file, &context);
-        delete []entries[i]->name;
-        delete []entries[i]->prefix;
         delete entries[i];
     }
     delete []entries;

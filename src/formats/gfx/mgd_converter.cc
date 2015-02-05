@@ -8,7 +8,6 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
-#include "collections/array.h"
 #include "endian.h"
 #include "formats/gfx/mgd_converter.h"
 #include "formats/image.h"
@@ -261,9 +260,9 @@ namespace
         return true;
     }
 
-    Array *mgd_read_region_data(IO *file_io)
+    std::vector<MgdRegion*> mgd_read_region_data(IO *file_io)
     {
-        Array *regions = array_create();
+        std::vector<MgdRegion*> regions;
         while (io_tell(file_io) < io_size(file_io))
         {
             io_skip(file_io, 4);
@@ -274,14 +273,12 @@ namespace
             if (meta_format != 4)
             {
                 log_warning("MGD: Unexpected region format %d", meta_format);
-                array_destroy(regions);
-                return nullptr;
+                return regions;
             }
             if (regions_size != bytes_left)
             {
                 log_warning("MGD: Unexpected region size %d", regions_size);
-                array_destroy(regions);
-                return nullptr;
+                return regions;
             }
 
             size_t i;
@@ -297,7 +294,7 @@ namespace
                 region->y = io_read_u16_le(file_io);
                 region->width = io_read_u16_le(file_io);
                 region->height = io_read_u16_le(file_io);
-                array_add(regions, region);
+                regions.push_back(region);
             }
 
             io_skip(file_io, 4);
@@ -430,11 +427,9 @@ bool MgdConverter::decode_internal(VirtualFile *file)
         image_height,
         &data_uncompressed);
 
-    Array *regions = mgd_read_region_data(file->io);
-    size_t i;
-    for (i = 0; i < array_size(regions); i ++)
-        delete (MgdRegion*)array_get(regions, i);
-    array_destroy(regions);
+    auto regions = mgd_read_region_data(file->io);
+    for (auto region : regions)
+        delete region;
 
     if (image == nullptr)
     {

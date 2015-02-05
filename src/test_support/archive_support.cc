@@ -27,23 +27,24 @@ OutputFiles *unpack_to_memory(
     return output_files;
 }
 
-void compare_files(Array *expected_files, Array *actual_files)
+void compare_files(
+    const std::vector<VirtualFile*> &expected_files,
+    const std::vector<VirtualFile*> &actual_files)
 {
     VirtualFile *expected_file;
     VirtualFile *actual_file;
-    size_t i, j;
-    assert(array_size(expected_files) == array_size(actual_files));
-    for (i = 0; i < array_size(expected_files); i ++)
+    assert(actual_files.size() == expected_files.size());
+    for (size_t i = 0; i < expected_files.size(); i ++)
     {
-        expected_file = (VirtualFile*)array_get(expected_files, i);
-        actual_file = (VirtualFile*)array_get(actual_files, i);
+        expected_file = expected_files[i];
+        actual_file = actual_files[i];
         assert(strcmp(
             virtual_file_get_name(expected_file),
             virtual_file_get_name(actual_file)) == 0);
         assert(io_size(expected_file->io) == io_size(actual_file->io));
         io_seek(expected_file->io, 0);
         io_seek(actual_file->io, 0);
-        for (j = 0; j < io_size(expected_file->io); j ++)
+        for (size_t j = 0; j < io_size(expected_file->io); j ++)
         {
             assert(
                 io_read_u8(expected_file->io) == io_read_u8(actual_file->io));

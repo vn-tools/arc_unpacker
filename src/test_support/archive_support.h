@@ -1,6 +1,6 @@
 #ifndef TEST_SUPPORT_ARCHIVE_SUPPORT_H
 #define TEST_SUPPORT_ARCHIVE_SUPPORT_H
-#include "collections/array.h"
+#include <vector>
 #include "formats/archive.h"
 #include "output_files.h"
 
@@ -10,6 +10,8 @@ OutputFiles *unpack_to_memory(
     int argc,
     const char **argv);
 
-void compare_files(Array *expected_files, Array *actual_files);
+void compare_files(
+    const std::vector<VirtualFile*> &expected_files,
+    const std::vector<VirtualFile*> &actual_files);
 
 #endif

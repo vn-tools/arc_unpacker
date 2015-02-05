@@ -3,15 +3,15 @@
 
 void test_fjsys_archive()
 {
-    Array *expected_files = array_create();
+    std::vector<VirtualFile*> expected_files;
     VirtualFile *file1 = virtual_file_create();
     VirtualFile *file2 = virtual_file_create();
     virtual_file_set_name(file1, "abc.txt");
     virtual_file_set_name(file2, "another.txt");
     io_write_string(file1->io, "123", 3);
     io_write_string(file2->io, "abcdefghij", 10);
-    array_set(expected_files, 0, file1);
-    array_set(expected_files, 1, file2);
+    expected_files.push_back(file1);
+    expected_files.push_back(file2);
 
     Archive *archive = new FjsysArchive();
 
@@ -20,7 +20,7 @@ void test_fjsys_archive()
         archive,
         0,
         nullptr);
-    Array *actual_files = output_files_get_saved(output_files);
+    auto actual_files = output_files_get_saved(output_files);
 
     compare_files(expected_files, actual_files);
     output_files_destroy(output_files);
@@ -28,7 +28,6 @@ void test_fjsys_archive()
     virtual_file_destroy(file1);
     virtual_file_destroy(file2);
     delete archive;
-    array_destroy(expected_files);
 }
 
 int main(void)

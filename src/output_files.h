@@ -1,6 +1,6 @@
 #ifndef OUTPUT_FILES_H
 #define OUTPUT_FILES_H
-#include "collections/array.h"
+#include <vector>
 #include "virtual_file.h"
 
 typedef struct OutputFiles OutputFiles;
@@ -15,6 +15,7 @@ bool output_files_save(
     VirtualFile *(*save_proc)(void *),
     void *context);
 
-Array *output_files_get_saved(const OutputFiles *output_files);
+std::vector<VirtualFile*> output_files_get_saved(
+    const OutputFiles *output_files);
 
 #endif

@@ -11,7 +11,7 @@ struct OutputFiles
     const char *output_dir;
     bool (*save)(OutputFiles*, VirtualFile*(*)(void *), void *);
     bool memory;
-    Array *files;
+    std::vector<VirtualFile*> files;
 };
 
 namespace
@@ -97,8 +97,7 @@ namespace
         file = save_proc(context);
         if (file == nullptr)
             return false;
-        if (!array_add(output_files->files, file))
-            assert(0);
+        output_files->files.push_back(file);
         return true;
     }
 }
@@ -109,7 +108,6 @@ OutputFiles *output_files_create_hdd(const char *output_dir)
     assert(output_files != nullptr);
     output_files->output_dir = output_dir;
     output_files->memory = false;
-    output_files->files = nullptr;
     output_files->save = &save_to_hdd;
     return output_files;
 }
@@ -120,8 +118,6 @@ OutputFiles *output_files_create_memory()
     assert(output_files != nullptr);
     output_files->output_dir = nullptr;
     output_files->memory = true;
-    output_files->files = array_create();
-    assert(output_files->files != nullptr);
     output_files->save = &save_to_memory;
     return output_files;
 }
@@ -130,15 +126,8 @@ void output_files_destroy(OutputFiles *output_files)
 {
     assert(output_files != nullptr);
     if (output_files->memory)
-    {
-        size_t i;
-        for (i = 0; i < array_size(output_files->files); i ++)
-        {
-            VirtualFile *file = (VirtualFile*)array_get(output_files->files, i);
+        for (auto file : output_files->files)
             virtual_file_destroy(file);
-        }
-        array_destroy(output_files->files);
-    }
     delete output_files;
 }
 
@@ -152,7 +141,8 @@ bool output_files_save(
     return output_files->save(output_files, save_proc, context);
 }
 
-Array *output_files_get_saved(const OutputFiles *output_files)
+std::vector<VirtualFile*> output_files_get_saved(
+    const OutputFiles *output_files)
 {
     assert(output_files != nullptr);
     assert(output_files->memory);
