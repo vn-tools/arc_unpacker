@@ -9,8 +9,8 @@ TEST_SRC_DIR = tests
 TEST_BIN_DIR = bin/tests
 TEST_OBJ_DIR = obj/tests
 
-CC       = gcc
-LINKER   = $(CC) -o
+CXX       = g++
+LINKER   = $(CXX) -o
 RM       = rm -rf
 MKPATH   = mkdir -p
 STRIP    = /usr/bin/strip
@@ -18,12 +18,12 @@ STRIP    = /usr/bin/strip
 LFLAGS         = -Wall -Wextra -pedantic -lpng -lz
 LFLAGS_DEBUG   =
 LFLAGS_RELEASE =
-CFLAGS         = -Wall -Wextra -pedantic -Wwrite-strings -Wc++-compat -std=c99 -iquote $(SRC_DIR)
+CFLAGS         = -Wall -Wextra -pedantic -Wwrite-strings -std=c++11 -iquote $(SRC_DIR)
 CFLAGS_DEBUG   = -ggdb -DENABLE_ASSERT -Wunused
 CFLAGS_RELEASE = -Os -DNDEBUG -Wno-unused-variable -Wno-unused-parameter
 
 #OS specific linker settings
-SYSTEM := $(shell $(CC) -dumpmachine)
+SYSTEM := $(shell $(CXX) -dumpmachine)
 ifneq (, $(findstring cygwin, $(SYSTEM)))
 	LFLAGS += -liconv
 endif
@@ -50,10 +50,10 @@ debug: debug_binaries
 
 
 #Binaries
-RELEASE_SOURCES := $(filter-out $(SRC_DIR)/bin/%.c $(SRC_DIR)/test_support%.c, $(call rwildcard, $(SRC_DIR)/, *.c))
-DEBUG_SOURCES := $(filter-out $(SRC_DIR)/bin/%.c, $(call rwildcard, $(SRC_DIR)/, *.c))
-RELEASE_OBJECTS := $(RELEASE_SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/release/%.o)
-DEBUG_OBJECTS := $(DEBUG_SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/debug/%.o)
+RELEASE_SOURCES := $(filter-out $(SRC_DIR)/bin/%.cc $(SRC_DIR)/test_support%.cc, $(call rwildcard, $(SRC_DIR)/, *.cc))
+DEBUG_SOURCES := $(filter-out $(SRC_DIR)/bin/%.cc, $(call rwildcard, $(SRC_DIR)/, *.cc))
+RELEASE_OBJECTS := $(RELEASE_SOURCES:$(SRC_DIR)/%.cc=$(OBJ_DIR)/release/%.o)
+DEBUG_OBJECTS := $(DEBUG_SOURCES:$(SRC_DIR)/%.cc=$(OBJ_DIR)/debug/%.o)
 
 .PHONY: release_binaries debug_binaries
 release_binaries: $(BIN_DIR)/release/arc_unpacker $(BIN_DIR)/release/file_decoder
@@ -70,21 +70,21 @@ $(BIN_DIR)/release/%: $(OBJ_DIR)/release/bin/%.o $(RELEASE_OBJECTS)
 	@echo Linking $@
 	@$(LINKER) $@ $^ $(LFLAGS)
 
-$(OBJ_DIR)/release/%.o: $(SRC_DIR)/%.c
+$(OBJ_DIR)/release/%.o: $(SRC_DIR)/%.cc
 	@$(MKPATH) $(dir $@)
 	@echo Compiling $<
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CXX) $(CFLAGS) -c $< -o $@
 
-$(OBJ_DIR)/debug/%.o: $(SRC_DIR)/%.c
+$(OBJ_DIR)/debug/%.o: $(SRC_DIR)/%.cc
 	@$(MKPATH) $(dir $@)
 	@echo Compiling $<
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CXX) $(CFLAGS) -c $< -o $@
 
 
 
 #Tests
-TEST_SOURCES := $(call rwildcard, $(TEST_SRC_DIR)/, *.c)
-TEST_BINARIES := $(TEST_SOURCES:$(TEST_SRC_DIR)/%.c=$(TEST_BIN_DIR)/%)
+TEST_SOURCES := $(call rwildcard, $(TEST_SRC_DIR)/, *.cc)
+TEST_BINARIES := $(TEST_SOURCES:$(TEST_SRC_DIR)/%.cc=$(TEST_BIN_DIR)/%)
 
 .PHONY: tests
 tests: CFLAGS += $(CFLAGS_DEBUG)
@@ -97,10 +97,10 @@ $(TEST_BIN_DIR)/%: $(TEST_OBJ_DIR)/%.o $(DEBUG_OBJECTS)
 	@echo Linking $@
 	@$(LINKER) $@ $^ $(LFLAGS)
 
-$(TEST_OBJ_DIR)/%.o: $(TEST_SRC_DIR)/%.c
+$(TEST_OBJ_DIR)/%.o: $(TEST_SRC_DIR)/%.cc
 	@$(MKPATH) $(dir $@)
 	@echo Compiling $<
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CXX) $(CFLAGS) -c $< -o $@
 
 
 
