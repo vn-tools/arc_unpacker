@@ -105,40 +105,33 @@ namespace
         OutputFiles *output_files,
         Options *options,
         ArgParser &arg_parser,
-        ArchiveFactory *arc_factory)
+        const ArchiveFactory &arc_factory)
     {
         assert(io != nullptr);
         assert(options != nullptr);
-        assert(arc_factory != nullptr);
         assert(output_files != nullptr);
 
-        size_t i;
         bool result = false;
         if (options->format == nullptr)
         {
-            const Array *format_strings = archive_factory_formats(arc_factory);
-            assert(format_strings != nullptr);
-
-            for (i = 0; i < array_size(format_strings); i ++)
+            for (auto format : arc_factory.get_formats())
             {
-                const char *format = (const char*)array_get(format_strings, i);
-                assert(format != nullptr);
-
-                Archive *archive
-                    = archive_factory_from_string(arc_factory, format);
+                Archive *archive = arc_factory.create_archive(format);
                 assert(archive != nullptr);
-                log_info("Trying %s...", format);
+                log_info("Trying %s...", format.c_str());
                 result = unpack(archive, arg_parser, io, output_files);
                 delete archive;
 
                 if (result)
                 {
-                    log_info("%s unpacking finished successfully.", format);
+                    log_info(
+                        "%s unpacking finished successfully.", format.c_str());
                     break;
                 }
                 else
                 {
-                    log_info("%s didn\'t work, trying next format.", format);
+                    log_info(
+                        "%s didn\'t work, trying next format.", format.c_str());
                     if (log_enabled(LOG_LEVEL_INFO))
                         puts("");
                 }
@@ -148,8 +141,7 @@ namespace
         }
         else
         {
-            Archive *archive
-                = archive_factory_from_string(arc_factory, options->format);
+            Archive *archive = arc_factory.create_archive(options->format);
             result = unpack(archive, arg_parser, io, output_files);
             if (result)
             {
@@ -169,10 +161,9 @@ namespace
     bool run(
         Options *options,
         ArgParser &arg_parser,
-        ArchiveFactory *arc_factory)
+        const ArchiveFactory &arc_factory)
     {
         assert(options != nullptr);
-        assert(arc_factory != nullptr);
 
         OutputFiles *output_files
             = output_files_create_hdd(options->output_path);
@@ -201,8 +192,7 @@ int main(int argc, const char **argv)
     options.output_path = nullptr;
     options.format = nullptr;
 
-    ArchiveFactory *arc_factory = archive_factory_create();
-    assert(arc_factory != nullptr);
+    ArchiveFactory arc_factory;
     ArgParser arg_parser;
     arg_parser.parse(argc, argv);
 
@@ -213,7 +203,7 @@ int main(int argc, const char **argv)
     if (should_show_help(arg_parser))
     {
         Archive *archive = options.format != nullptr
-            ? archive_factory_from_string( arc_factory, options.format)
+            ? arc_factory.create_archive(options.format)
             : nullptr;
         print_help(argv[0], arg_parser, &options, archive);
         if (archive != nullptr)
@@ -226,6 +216,5 @@ int main(int argc, const char **argv)
             exit_code = 1;
     }
 
-    archive_factory_destroy(arc_factory);
     return exit_code;
 }

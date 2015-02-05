@@ -30,7 +30,7 @@ namespace
     {
         Options *options;
         ArgParser &arg_parser;
-        ConverterFactory *conv_factory;
+        ConverterFactory &conv_factory;
         const PathInfo *path_info;
     } ReadContext;
 
@@ -141,40 +141,33 @@ namespace
     bool guess_converter_and_decode(
         Options *options,
         ArgParser &arg_parser,
-        ConverterFactory *conv_factory,
+        ConverterFactory &conv_factory,
         VirtualFile *file)
     {
         assert(options != nullptr);
-        assert(conv_factory != nullptr);
         assert(file != nullptr);
 
-        size_t i;
         bool result = false;
         if (options->format == nullptr)
         {
-            const Array *format_strings
-                = converter_factory_formats(conv_factory);
-            assert(format_strings != nullptr);
-            for (i = 0; i < array_size(format_strings); i ++)
+            for (auto format : conv_factory.get_formats())
             {
-                const char *format = (const char*)array_get(format_strings, i);
-                assert(format != nullptr);
-
-                Converter *converter
-                    = converter_factory_from_string(conv_factory, format);
+                Converter *converter = conv_factory.create_converter(format);
                 assert(converter != nullptr);
-                log_info("Trying %s...", format);
+                log_info("Trying %s...", format.c_str());
                 result = decode(converter, arg_parser, file);
                 delete converter;
 
                 if (result)
                 {
-                    log_info("Success - %s decoding finished", format);
+                    log_info("Success - %s decoding finished", format.c_str());
                     break;
                 }
                 else
                 {
-                    log_info("%s didn\'t work, trying next format...", format);
+                    log_info(
+                        "%s didn\'t work, trying next format...",
+                        format.c_str());
                 }
             }
             if (!result)
@@ -185,7 +178,7 @@ namespace
         else
         {
             Converter *converter
-                = converter_factory_from_string(conv_factory, options->format);
+                = conv_factory.create_converter(options->format);
             if (converter != nullptr)
             {
                 result = decode(converter, arg_parser, file);
@@ -250,11 +243,10 @@ namespace
     bool run(
         Options *options,
         ArgParser &arg_parser,
-        ConverterFactory *conv_factory)
+        ConverterFactory &conv_factory)
     {
         size_t i;
         assert(options != nullptr);
-        assert(conv_factory != nullptr);
 
         OutputFiles *output_files
             = output_files_create_hdd(options->output_dir);
@@ -288,8 +280,7 @@ int main(int argc, const char **argv)
     options.output_dir = nullptr;
     options.input_paths = nullptr;
 
-    ConverterFactory *conv_factory = converter_factory_create();
-    assert(conv_factory != nullptr);
+    ConverterFactory conv_factory;
     ArgParser arg_parser;
     arg_parser.parse(argc, argv);
 
@@ -301,7 +292,7 @@ int main(int argc, const char **argv)
     if (should_show_help(arg_parser))
     {
         Converter *converter = options.format != nullptr
-            ? converter_factory_from_string(conv_factory, options.format)
+            ? conv_factory.create_converter(options.format)
             : nullptr;
         print_help(argv[0], arg_parser, &options, converter);
         if (converter != nullptr)
@@ -327,6 +318,5 @@ int main(int argc, const char **argv)
         }
         array_destroy(options.input_paths);
     }
-    converter_factory_destroy(conv_factory);
     return exit_code;
 }

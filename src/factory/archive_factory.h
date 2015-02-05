@@ -1,17 +1,18 @@
 #ifndef FACTORY_ARCHIVE_FACTORY_H
 #define FACTORY_ARCHIVE_FACTORY_H
+#include <vector>
 #include "formats/archive.h"
 
-typedef struct ArchiveFactory ArchiveFactory;
-
-ArchiveFactory *archive_factory_create();
-
-void archive_factory_destroy(ArchiveFactory *factory);
-
-const Array *archive_factory_formats(const ArchiveFactory *factory);
-
-Archive *archive_factory_from_string(
-    const ArchiveFactory *factory,
-    const char *format);
+class ArchiveFactory final
+{
+public:
+    ArchiveFactory();
+    ~ArchiveFactory();
+    const std::vector<std::string> get_formats() const;
+    Archive *create_archive(std::string format) const;
+private:
+    struct Internals;
+    Internals *internals;
+};
 
 #endif

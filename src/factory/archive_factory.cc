@@ -1,7 +1,4 @@
-#include <cassert>
-#include <cstring>
 #include <functional>
-#include "collections/dictionary.h"
 #include "factory/archive_factory.h"
 #include "formats/arc/arc_archive.h"
 #include "formats/arc/fjsys_archive.h"
@@ -13,83 +10,48 @@
 #include "formats/arc/xp3_archive.h"
 #include "logger.h"
 
-struct ArchiveFactory
+struct ArchiveFactory::Internals
 {
-    Dictionary *formats;
+    std::vector<std::pair<std::string, std::function<Archive*()>>> formats;
+
+    void add_format(std::string format, std::function<Archive*()> creator)
+    {
+        formats.push_back(
+            std::pair<std::string, std::function<Archive*()>>(format, creator));
+    }
 };
 
-typedef struct
+ArchiveFactory::ArchiveFactory()
 {
-    const char *name;
-    std::function<Archive*()> creator;
-} FormatDefinition;
-
-static void add_format(
-    ArchiveFactory *factory,
-    const char *name,
-    std::function<Archive*()> creator)
-{
-    assert(factory != nullptr);
-    assert(name != nullptr);
-    assert(creator != nullptr);
-    FormatDefinition *definition = new FormatDefinition;
-    definition->name = name;
-    definition->creator = creator;
-    dictionary_set(factory->formats, name, (void*)definition);
+    internals = new ArchiveFactory::Internals();
+    internals->add_format("fjsys", []() { return new FjsysArchive(); });
+    internals->add_format("arc", []() { return new ArcArchive(); });
+    internals->add_format("npa", []() { return new NpaArchive(); });
+    internals->add_format("xp3", []() { return new Xp3Archive(); });
+    internals->add_format("rpa", []() { return new RpaArchive(); });
+    internals->add_format("pak", []() { return new PakArchive(); });
+    internals->add_format("mbl", []() { return new MblArchive(); });
+    internals->add_format("sar", []() { return new SarArchive(); });
 }
 
-static void init_factory(ArchiveFactory *factory)
+ArchiveFactory::~ArchiveFactory()
 {
-    add_format(factory, "fjsys", []() { return new FjsysArchive(); });
-    add_format(factory, "arc", []() { return new ArcArchive(); });
-    add_format(factory, "npa", []() { return new NpaArchive(); });
-    add_format(factory, "xp3", []() { return new Xp3Archive(); });
-    add_format(factory, "rpa", []() { return new RpaArchive(); });
-    add_format(factory, "pak", []() { return new PakArchive(); });
-    add_format(factory, "mbl", []() { return new MblArchive(); });
-    add_format(factory, "sar", []() { return new SarArchive(); });
+    delete internals;
 }
 
-
-
-ArchiveFactory *archive_factory_create()
+const std::vector<std::string> ArchiveFactory::get_formats() const
 {
-    ArchiveFactory *factory = new ArchiveFactory;
-    assert(factory != nullptr);
-    factory->formats = dictionary_create();
-    init_factory(factory);
-    return factory;
+    std::vector<std::string> formats;
+    for (auto p : internals->formats)
+        formats.push_back(p.first);
+    return formats;
 }
 
-void archive_factory_destroy(ArchiveFactory *factory)
+Archive *ArchiveFactory::create_archive(const std::string format) const
 {
-    size_t i;
-    const Array *definitions;
-    assert(factory != nullptr);
-    definitions = dictionary_get_values(factory->formats);
-    for (i = 0; i < array_size(definitions); i ++)
-        delete (FormatDefinition*)array_get(definitions, i);
-    dictionary_destroy(factory->formats);
-    delete factory;
-}
-
-const Array *archive_factory_formats(const ArchiveFactory *factory)
-{
-    return dictionary_get_keys(factory->formats);
-}
-
-Archive *archive_factory_from_string(
-    const ArchiveFactory *factory,
-    const char *format)
-{
-    assert(factory != nullptr);
-    assert(format != nullptr);
-
-    FormatDefinition *definition
-        = (FormatDefinition*)dictionary_get(factory->formats, format);
-    if (definition != nullptr)
-        return definition->creator();
-
-    log_error("Invalid archive format: %s", format);
+    for (auto p : internals->formats)
+        if (p.first == format)
+            return p.second();
+    log_error("Invalid archive format: %s", format.c_str());
     return nullptr;
 }

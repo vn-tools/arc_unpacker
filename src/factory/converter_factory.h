@@ -1,18 +1,18 @@
 #ifndef FACTORY_CONVERTER_FACTORY_H
 #define FACTORY_CONVERTER_FACTORY_H
-#include "collections/array.h"
+#include <vector>
 #include "formats/converter.h"
 
-typedef struct ConverterFactory ConverterFactory;
-
-ConverterFactory *converter_factory_create();
-
-void converter_factory_destroy(ConverterFactory *factory);
-
-const Array *converter_factory_formats(const ConverterFactory *factory);
-
-Converter *converter_factory_from_string(
-    const ConverterFactory *factory,
-    const char *format);
+class ConverterFactory final
+{
+public:
+    ConverterFactory();
+    ~ConverterFactory();
+    const std::vector<std::string> get_formats() const;
+    Converter *create_converter(std::string format) const;
+private:
+    struct Internals;
+    Internals *internals;
+};
 
 #endif
