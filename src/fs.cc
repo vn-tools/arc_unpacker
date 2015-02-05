@@ -14,64 +14,65 @@
     #define p_mkdir(name,chmod) _mkdir(name)
 #endif
 
-static bool _get_files_accumulator(
-    const char *dir_path,
-    Array *accumulator,
-    bool recursive)
+namespace
 {
-    DIR *d = opendir(dir_path);
-    if (!d)
+    bool _get_files_accumulator(
+        const char *dir_path,
+        Array *accumulator,
+        bool recursive)
     {
-        log_warning("FS: Cannot open directory %s", dir_path);
-        return false;
-    }
-
-    while (1)
-    {
-        struct dirent *entry = readdir(d);
-        if (!entry)
-            break;
-
-        int path_length = strlen(dir_path) + 1 + strlen(entry->d_name);
-        char *path = new char[path_length + 1];
-        assert(path != nullptr);
-
-        strcpy(path, dir_path);
-        strcat(path, "/");
-        strcat(path, entry->d_name);
-
-        if (is_dir(path))
+        DIR *d = opendir(dir_path);
+        if (!d)
         {
-            if (recursive
-            && strcmp(entry->d_name, "..") != 0
-            && strcmp(entry->d_name, ".") != 0)
+            log_warning("FS: Cannot open directory %s", dir_path);
+            return false;
+        }
+
+        while (1)
+        {
+            struct dirent *entry = readdir(d);
+            if (!entry)
+                break;
+
+            int path_length = strlen(dir_path) + 1 + strlen(entry->d_name);
+            char *path = new char[path_length + 1];
+            assert(path != nullptr);
+
+            strcpy(path, dir_path);
+            strcat(path, "/");
+            strcat(path, entry->d_name);
+
+            if (is_dir(path))
             {
-                _get_files_accumulator(path, accumulator, recursive);
+                if (recursive
+                && strcmp(entry->d_name, "..") != 0
+                && strcmp(entry->d_name, ".") != 0)
+                {
+                    _get_files_accumulator(path, accumulator, recursive);
+                }
+                delete []path;
             }
-            delete []path;
+            else
+            {
+                array_add(accumulator, path);
+            }
         }
-        else
-        {
-            array_add(accumulator, path);
-        }
+
+        closedir(d);
+        return true;
     }
 
-    closedir(d);
-    return true;
-}
-
-static Array *_get_files(const char *dir_path, bool recursive)
-{
-    Array *accumulator = array_create();
-    if (!_get_files_accumulator(dir_path, accumulator, recursive))
+    Array *_get_files(const char *dir_path, bool recursive)
     {
-        array_destroy(accumulator);
-        return false;
+        Array *accumulator = array_create();
+        if (!_get_files_accumulator(dir_path, accumulator, recursive))
+        {
+            array_destroy(accumulator);
+            return false;
+        }
+        return accumulator;
     }
-    return accumulator;
 }
-
-
 
 bool is_dir(const char *path)
 {

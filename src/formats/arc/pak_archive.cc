@@ -13,103 +13,104 @@
 #include "logger.h"
 #include "string_ex.h"
 
-static const char *pak_magic = "\x02\x00\x00\x00";
-static const size_t pak_magic_length = 4;
+const char *pak_magic = "\x02\x00\x00\x00";
+const size_t pak_magic_length = 4;
 
-typedef struct
+namespace
 {
-    IO *arc_io;
-    IO *table_io;
-    size_t offset_to_files;
-} PakUnpackContext;
-
-static bool pak_check_magic(IO *arc_io)
-{
-    char magic[pak_magic_length];
-    io_read_string(arc_io, magic, pak_magic_length);
-    return memcmp(magic, pak_magic, pak_magic_length) == 0;
-}
-
-static char *pak_read_zlib(
-    IO *arc_io,
-    size_t size_compressed,
-    size_t *size_uncompressed)
-{
-    char *data_compressed = new char[size_compressed];
-    assert(data_compressed != nullptr);
-
-    if (!io_read_string(arc_io, data_compressed, size_compressed))
-        assert(0);
-
-    char *data_uncompressed;
-    if (!zlib_inflate(
-        data_compressed,
-        size_compressed,
-        &data_uncompressed,
-        size_uncompressed))
+    typedef struct
     {
-        assert(0);
+        IO *arc_io;
+        IO *table_io;
+        size_t offset_to_files;
+    } PakUnpackContext;
+
+    bool pak_check_magic(IO *arc_io)
+    {
+        char magic[pak_magic_length];
+        io_read_string(arc_io, magic, pak_magic_length);
+        return memcmp(magic, pak_magic, pak_magic_length) == 0;
     }
-    assert(data_uncompressed != nullptr);
-    delete []data_compressed;
 
-    return data_uncompressed;
-}
-
-static VirtualFile *pak_read_file(void *context)
-{
-    PakUnpackContext *unpack_context = (PakUnpackContext*)context;
-    VirtualFile *file = virtual_file_create();
-    assert(file != nullptr);
-
-    size_t file_name_length = io_read_u32_le(unpack_context->table_io);
-    char *file_name = new char[file_name_length];
-    assert(file_name != nullptr);
-    io_read_string(unpack_context->table_io, file_name, file_name_length);
-
-    char *file_name_utf8 = nullptr;
-    if (!convert_encoding(
-        file_name, file_name_length,
-        &file_name_utf8, nullptr,
-        "cp932", "utf-8"))
+    char *pak_read_zlib(
+        IO *arc_io, size_t size_compressed, size_t *size_uncompressed)
     {
-        assert(0);
-    }
-    assert(file_name_utf8 != nullptr);
-    virtual_file_set_name(file, file_name_utf8);
-    delete []file_name_utf8;
+        char *data_compressed = new char[size_compressed];
+        assert(data_compressed != nullptr);
 
-    size_t offset = io_read_u32_le(unpack_context->table_io);
-    size_t size_original = io_read_u32_le(unpack_context->table_io);
-    io_skip(unpack_context->table_io, 4);
-    size_t flags = io_read_u32_le(unpack_context->table_io);
-    size_t size_compressed = io_read_u32_le(unpack_context->table_io);
-    offset += unpack_context->offset_to_files;
+        if (!io_read_string(arc_io, data_compressed, size_compressed))
+            assert(0);
 
-    io_seek(unpack_context->arc_io, offset);
-    if (flags > 0)
-    {
-        size_t size_uncompressed = 0;
-        char *data_uncompressed = pak_read_zlib(
-            unpack_context->arc_io, size_compressed, &size_uncompressed);
-        assert(data_uncompressed != nullptr);
-        io_write_string(file->io, data_uncompressed, size_original);
-        delete []data_uncompressed;
-        if (size_uncompressed != size_original)
+        char *data_uncompressed;
+        if (!zlib_inflate(
+            data_compressed,
+            size_compressed,
+            &data_uncompressed,
+            size_uncompressed))
         {
-            virtual_file_destroy(file);
-            log_error("PAK: Bad file size");
-            return nullptr;
+            assert(0);
         }
-    }
-    else
-    {
-        io_write_string_from_io(
-            file->io, unpack_context->arc_io, size_original);
+        assert(data_uncompressed != nullptr);
+        delete []data_compressed;
+
+        return data_uncompressed;
     }
 
-    delete []file_name;
-    return file;
+    VirtualFile *pak_read_file(void *context)
+    {
+        PakUnpackContext *unpack_context = (PakUnpackContext*)context;
+        VirtualFile *file = virtual_file_create();
+        assert(file != nullptr);
+
+        size_t file_name_length = io_read_u32_le(unpack_context->table_io);
+        char *file_name = new char[file_name_length];
+        assert(file_name != nullptr);
+        io_read_string(unpack_context->table_io, file_name, file_name_length);
+
+        char *file_name_utf8 = nullptr;
+        if (!convert_encoding(
+            file_name, file_name_length,
+            &file_name_utf8, nullptr,
+            "cp932", "utf-8"))
+        {
+            assert(0);
+        }
+        assert(file_name_utf8 != nullptr);
+        virtual_file_set_name(file, file_name_utf8);
+        delete []file_name_utf8;
+
+        size_t offset = io_read_u32_le(unpack_context->table_io);
+        size_t size_original = io_read_u32_le(unpack_context->table_io);
+        io_skip(unpack_context->table_io, 4);
+        size_t flags = io_read_u32_le(unpack_context->table_io);
+        size_t size_compressed = io_read_u32_le(unpack_context->table_io);
+        offset += unpack_context->offset_to_files;
+
+        io_seek(unpack_context->arc_io, offset);
+        if (flags > 0)
+        {
+            size_t size_uncompressed = 0;
+            char *data_uncompressed = pak_read_zlib(
+                unpack_context->arc_io, size_compressed, &size_uncompressed);
+            assert(data_uncompressed != nullptr);
+            io_write_string(file->io, data_uncompressed, size_original);
+            delete []data_uncompressed;
+            if (size_uncompressed != size_original)
+            {
+                virtual_file_destroy(file);
+                log_error("PAK: Bad file size");
+                return nullptr;
+            }
+        }
+        else
+        {
+            io_write_string_from_io(
+                file->io, unpack_context->arc_io, size_original);
+        }
+
+        delete []file_name;
+        return file;
+    }
 }
 
 bool PakArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)

@@ -4,24 +4,25 @@
 #include <cstring>
 #include "logger.h"
 
-static char buffer[1024];
-static bool levels_enabled[_LOG_LEVEL_COUNT] = { true, true, true };
-static bool levels_saved[_LOG_LEVEL_COUNT] = { true, true, true };
-
-static void log_text(FILE *out, const char *prefix, const char *buffer)
+namespace
 {
-    if (buffer == nullptr || strcmp(buffer, "") == 0)
+    char buffer[1024];
+    bool levels_enabled[_LOG_LEVEL_COUNT] = { true, true, true };
+    bool levels_saved[_LOG_LEVEL_COUNT] = { true, true, true };
+
+    void log_text(FILE *out, const char *prefix, const char *buffer)
     {
-        fprintf(out, "\n");
+        if (buffer == nullptr || strcmp(buffer, "") == 0)
+        {
+            fprintf(out, "\n");
+        }
+        else
+        {
+            fprintf(out, "%9s %s\n", prefix, buffer);
+        }
+        fflush(out);
     }
-    else
-    {
-        fprintf(out, "%9s %s\n", prefix, buffer);
-    }
-    fflush(out);
 }
-
-
 
 void log_save()
 {

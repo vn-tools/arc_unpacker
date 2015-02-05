@@ -11,36 +11,39 @@
 #include "formats/arc/sar_archive.h"
 #include "logger.h"
 
-typedef struct
+namespace
 {
-    char *name;
-    uint32_t offset;
-    uint32_t size;
-} TableEntry;
+    typedef struct
+    {
+        char *name;
+        uint32_t offset;
+        uint32_t size;
+    } TableEntry;
 
-typedef struct
-{
-    IO *arc_io;
-    TableEntry *table_entry;
-} SarUnpackContext;
+    typedef struct
+    {
+        IO *arc_io;
+        TableEntry *table_entry;
+    } SarUnpackContext;
 
-static VirtualFile *sar_read_file(void *_context)
-{
-    VirtualFile *file = virtual_file_create();
-    assert(file != nullptr);
+    VirtualFile *sar_read_file(void *_context)
+    {
+        VirtualFile *file = virtual_file_create();
+        assert(file != nullptr);
 
-    SarUnpackContext *context = (SarUnpackContext*)_context;
-    assert(context != nullptr);
+        SarUnpackContext *context = (SarUnpackContext*)_context;
+        assert(context != nullptr);
 
-    io_seek(context->arc_io, context->table_entry->offset);
+        io_seek(context->arc_io, context->table_entry->offset);
 
-    io_write_string_from_io(
-        file->io,
-        context->arc_io,
-        context->table_entry->size);
+        io_write_string_from_io(
+            file->io,
+            context->arc_io,
+            context->table_entry->size);
 
-    virtual_file_set_name(file, context->table_entry->name);
-    return file;
+        virtual_file_set_name(file, context->table_entry->name);
+        return file;
+    }
 }
 
 bool SarArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)

@@ -5,63 +5,66 @@
 #include "test_support/converter_support.h"
 #include "virtual_file.h"
 
-static void compare_images(
-    const Image *expected_image,
-    const Image *actual_image)
+namespace
 {
-    if (expected_image == nullptr || actual_image == nullptr)
+    void compare_images(
+        const Image *expected_image,
+        const Image *actual_image)
     {
-        assert(expected_image == nullptr);
-        assert(actual_image == nullptr);
-        return;
-    }
-
-    assert(image_width(expected_image) == image_width(actual_image));
-    assert(image_height(expected_image) == image_height(actual_image));
-
-    size_t x, y;
-    for (y = 0; y < image_height(expected_image); y ++)
-    {
-        for (x = 0; x < image_width(expected_image); x ++)
+        if (expected_image == nullptr || actual_image == nullptr)
         {
-            uint32_t expected_rgba = image_color_at(expected_image, x, y);
-            uint32_t actual_rgba = image_color_at(actual_image, x, y);
-            assert(expected_rgba == actual_rgba);
+            assert(expected_image == nullptr);
+            assert(actual_image == nullptr);
+            return;
+        }
+
+        assert(image_width(expected_image) == image_width(actual_image));
+        assert(image_height(expected_image) == image_height(actual_image));
+
+        size_t x, y;
+        for (y = 0; y < image_height(expected_image); y ++)
+        {
+            for (x = 0; x < image_width(expected_image); x ++)
+            {
+                uint32_t expected_rgba = image_color_at(expected_image, x, y);
+                uint32_t actual_rgba = image_color_at(actual_image, x, y);
+                assert(expected_rgba == actual_rgba);
+            }
         }
     }
-}
 
-static Image *get_actual_image(const char *path, Converter *converter)
-{
-    IO *io = io_create_from_file(path, "rb");
-    assert(io != nullptr);
+    Image *get_actual_image(const char *path, Converter *converter)
+    {
+        IO *io = io_create_from_file(path, "rb");
+        assert(io != nullptr);
 
-    VirtualFile *file = virtual_file_create();
-    assert(file != nullptr);
+        VirtualFile *file = virtual_file_create();
+        assert(file != nullptr);
 
-    if (!io_write_string_from_io(file->io, io, io_size(io)))
-        assert(0);
-    io_destroy(io);
+        if (!io_write_string_from_io(file->io, io, io_size(io)))
+            assert(0);
+        io_destroy(io);
 
-    converter->decode(file);
+        converter->decode(file);
 
-    Image *image = image_create_from_boxed(file->io);
-    assert(image != nullptr);
-    virtual_file_destroy(file);
+        Image *image = image_create_from_boxed(file->io);
+        assert(image != nullptr);
+        virtual_file_destroy(file);
 
-    return image;
-}
+        return image;
+    }
 
-static Image *get_expected_image(const char *path)
-{
-    IO *io = io_create_from_file(path, "rb");
-    assert(io != nullptr);
+    Image *get_expected_image(const char *path)
+    {
+        IO *io = io_create_from_file(path, "rb");
+        assert(io != nullptr);
 
-    Image *image = image_create_from_boxed(io);
-    assert(image != nullptr);
-    io_destroy(io);
+        Image *image = image_create_from_boxed(io);
+        assert(image != nullptr);
+        io_destroy(io);
 
-    return image;
+        return image;
+    }
 }
 
 void assert_decoded_image(

@@ -13,129 +13,132 @@
 #include "io.h"
 #include "logger.h"
 
-static const char *prs_magic = "YB\x83\x03";
-static const size_t prs_magic_length = 4;
-
-static bool prs_decode_pixels(
-    uint16_t image_width,
-    uint16_t image_height,
-    const char *source_buffer,
-    const size_t source_size,
-    char **target_buffer,
-    size_t *target_size)
+namespace
 {
-    size_t i;
-    assert(source_buffer != nullptr);
-    assert(target_buffer != nullptr);
+    const char *prs_magic = "YB\x83\x03";
+    const size_t prs_magic_length = 4;
 
-    *target_size = image_width * image_height * 3;
-    *target_buffer = new char[*target_size];
-    assert(*target_buffer != nullptr);
-
-    const unsigned char *source = (const unsigned char*)source_buffer;
-    const unsigned char *source_guardian = source + source_size;
-    unsigned char *target = (unsigned char*)(*target_buffer);
-    unsigned char *target_guardian = target + *target_size;
-
-    int flag = 0;
-    int length_lookup[256];
-    for (i = 0; i < 256; i ++)
-        length_lookup[i] = i + 3;
-    length_lookup[0xff] = 0x1000;
-    length_lookup[0xfe] = 0x400;
-    length_lookup[0xfd] = 0x100;
-
-    while (1)
+    bool prs_decode_pixels(
+        uint16_t image_width,
+        uint16_t image_height,
+        const char *source_buffer,
+        const size_t source_size,
+        char **target_buffer,
+        size_t *target_size)
     {
-        flag <<= 1;
-        if ((flag & 0xff) == 0)
+        size_t i;
+        assert(source_buffer != nullptr);
+        assert(target_buffer != nullptr);
+
+        *target_size = image_width * image_height * 3;
+        *target_buffer = new char[*target_size];
+        assert(*target_buffer != nullptr);
+
+        const unsigned char *source = (const unsigned char*)source_buffer;
+        const unsigned char *source_guardian = source + source_size;
+        unsigned char *target = (unsigned char*)(*target_buffer);
+        unsigned char *target_guardian = target + *target_size;
+
+        int flag = 0;
+        int length_lookup[256];
+        for (i = 0; i < 256; i ++)
+            length_lookup[i] = i + 3;
+        length_lookup[0xff] = 0x1000;
+        length_lookup[0xfe] = 0x400;
+        length_lookup[0xfd] = 0x100;
+
+        while (1)
         {
-            if (source >= source_guardian)
-                break;
-            flag = *source ++;
             flag <<= 1;
-            flag += 1;
-        }
-
-        if ((flag & 0x100) != 0x100)
-        {
-            if (source >= source_guardian || target >= target_guardian)
-                break;
-
-            *target ++ = *source ++;
-        }
-        else
-        {
-            int tmp = *source ++;
-            size_t length = 0;
-            size_t shift = 0;
-
-            if (tmp < 0x80)
-            {
-                length = tmp >> 2;
-                tmp &= 3;
-                if (tmp == 3)
-                {
-                    length += 9;
-                    for (i = 0; i < length; i ++)
-                    {
-                        if (source >= source_guardian
-                        || target >= target_guardian)
-                        {
-                            break;
-                        }
-                        *target ++ = *source ++;
-                    }
-                    continue;
-                }
-                shift = length;
-                length = tmp + 2;
-            }
-            else
+            if ((flag & 0xff) == 0)
             {
                 if (source >= source_guardian)
                     break;
+                flag = *source ++;
+                flag <<= 1;
+                flag += 1;
+            }
 
-                shift = (*source ++) | ((tmp & 0x3f) << 8);
-                if ((tmp & 0x40) == 0)
+            if ((flag & 0x100) != 0x100)
+            {
+                if (source >= source_guardian || target >= target_guardian)
+                    break;
+
+                *target ++ = *source ++;
+            }
+            else
+            {
+                int tmp = *source ++;
+                size_t length = 0;
+                size_t shift = 0;
+
+                if (tmp < 0x80)
                 {
-                    length = shift;
-                    shift >>= 4;
-                    length &= 0xf;
-                    length += 3;
+                    length = tmp >> 2;
+                    tmp &= 3;
+                    if (tmp == 3)
+                    {
+                        length += 9;
+                        for (i = 0; i < length; i ++)
+                        {
+                            if (source >= source_guardian
+                            || target >= target_guardian)
+                            {
+                                break;
+                            }
+                            *target ++ = *source ++;
+                        }
+                        continue;
+                    }
+                    shift = length;
+                    length = tmp + 2;
                 }
                 else
                 {
                     if (source >= source_guardian)
                         break;
 
-                    length = length_lookup[(size_t)*source ++];
+                    shift = (*source ++) | ((tmp & 0x3f) << 8);
+                    if ((tmp & 0x40) == 0)
+                    {
+                        length = shift;
+                        shift >>= 4;
+                        length &= 0xf;
+                        length += 3;
+                    }
+                    else
+                    {
+                        if (source >= source_guardian)
+                            break;
+
+                        length = length_lookup[(size_t)*source ++];
+                    }
+                }
+
+                shift += 1;
+                for (i = 0; i < length; i ++)
+                {
+                    if (target >= target_guardian)
+                        break;
+                    assert(target - shift >= (unsigned char*)*target_buffer);
+                    *target = *(target - shift);
+                    target ++;
                 }
             }
-
-            shift += 1;
-            for (i = 0; i < length; i ++)
-            {
-                if (target >= target_guardian)
-                    break;
-                assert(target - shift >= (unsigned char*)*target_buffer);
-                *target = *(target - shift);
-                target ++;
-            }
         }
+
+        for (i = 3; i < *target_size; i ++)
+            (*target_buffer)[i] += (*target_buffer)[i-3];
+        return true;
     }
 
-    for (i = 3; i < *target_size; i ++)
-        (*target_buffer)[i] += (*target_buffer)[i-3];
-    return true;
-}
-
-static bool prs_check_magic(IO *io)
-{
-    assert(io != nullptr);
-    char magic[prs_magic_length];
-    io_read_string(io, magic, prs_magic_length);
-    return memcmp(magic, prs_magic, prs_magic_length) == 0;
+    bool prs_check_magic(IO *io)
+    {
+        assert(io != nullptr);
+        char magic[prs_magic_length];
+        io_read_string(io, magic, prs_magic_length);
+        return memcmp(magic, prs_magic, prs_magic_length) == 0;
+    }
 }
 
 bool PrsConverter::decode_internal(VirtualFile *file)

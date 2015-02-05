@@ -14,31 +14,32 @@ struct Image
     PixelFormat pixel_format;
 };
 
-static void my_png_write_data(
-    png_structp png_ptr,
-    png_bytep data,
-    png_size_t length)
+namespace
 {
-    IO *io = (IO*)png_get_io_ptr(png_ptr);
-    if (!io_write_string(io, (char*)data, length))
-        assert(0);
+    void my_png_write_data(
+        png_structp png_ptr,
+        png_bytep data,
+        png_size_t length)
+    {
+        IO *io = (IO*)png_get_io_ptr(png_ptr);
+        if (!io_write_string(io, (char*)data, length))
+            assert(0);
+    }
+
+    void my_png_read_data(
+        png_structp png_ptr,
+        png_bytep data,
+        png_size_t length)
+    {
+        IO *io = (IO*)png_get_io_ptr(png_ptr);
+        if (!io_read_string(io, (char*)data, length))
+            assert(0);
+    }
+
+    void my_png_flush(png_structp png_ptr __attribute__((unused)))
+    {
+    }
 }
-
-static void my_png_read_data(
-    png_structp png_ptr,
-    png_bytep data,
-    png_size_t length)
-{
-    IO *io = (IO*)png_get_io_ptr(png_ptr);
-    if (!io_read_string(io, (char*)data, length))
-        assert(0);
-}
-
-static void my_png_flush(png_structp png_ptr __attribute__((unused)))
-{
-}
-
-
 
 Image *image_create_from_pixels(
     size_t image_width,

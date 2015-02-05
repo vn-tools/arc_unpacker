@@ -24,150 +24,150 @@ struct IO
     bool (*truncate)(struct IO *, size_t);
 };
 
-
-
-static bool file_io_seek(IO *io, size_t offset, int whence)
+namespace
 {
-    assert(io != nullptr);
-    return fseek(io->file, offset, whence) == 0;
-}
-
-static bool file_io_read(IO *io, size_t length, void *destination)
-{
-    assert(io != nullptr);
-    assert(destination != nullptr);
-    if (fread(destination, 1, length, io->file) != length)
+    bool file_io_seek(IO *io, size_t offset, int whence)
     {
-        log_warning("IO: Failed to read full data");
-        return false;
+        assert(io != nullptr);
+        return fseek(io->file, offset, whence) == 0;
     }
-    return true;
-}
 
-static bool file_io_write(IO *io, size_t length, void *source)
-{
-    assert(io != nullptr);
-    assert(source != nullptr);
-    if (fwrite(source, 1, length, io->file) != length)
+    bool file_io_read(IO *io, size_t length, void *destination)
     {
-        log_warning("IO: Failed to write full data");
-        return false;
-    }
-    return true;
-}
-
-static size_t file_io_tell(IO *io)
-{
-    assert(io != nullptr);
-    return ftell(io->file);
-}
-
-static size_t file_io_size(IO *io)
-{
-    assert(io != nullptr);
-    size_t old_pos = ftell(io->file);
-    fseek(io->file, 0, SEEK_END);
-    size_t size = ftell(io->file);
-    fseek(io->file, old_pos, SEEK_SET);
-    return size;
-}
-
-static bool file_io_truncate(
-    __attribute__((unused)) IO *io,
-    __attribute__((unused)) size_t new_size)
-{
-    assert(io != nullptr);
-    //return ftruncate(io->file, new_size) == 0;
-    log_error("IO: Truncating for real files is not supported!");
-    return false;
-}
-
-
-
-static bool buffer_io_seek(IO *io, size_t offset, int whence)
-{
-    assert(io != nullptr);
-    assert(whence == SEEK_SET || whence == SEEK_END || whence == SEEK_CUR);
-
-    if (whence == SEEK_SET)
-        io->buffer_pos = offset;
-    else if (whence == SEEK_END)
-        io->buffer_pos = io->buffer_size - 1 - offset;
-    else if (whence == SEEK_CUR)
-        io->buffer_pos += offset;
-
-    return io->buffer_pos < io->buffer_size;
-}
-
-static bool buffer_io_read(IO *io, size_t length, void *destination)
-{
-    assert(io != nullptr);
-    assert(destination != nullptr);
-    if (io->buffer_pos + length > io->buffer_size)
-        return false;
-    memcpy(destination, io->buffer + io->buffer_pos, length);
-    io->buffer_pos += length;
-    return true;
-}
-
-static bool buffer_io_write(IO *io, size_t length, void *source)
-{
-    assert(io != nullptr);
-    assert(source != nullptr);
-
-    char *destination;
-    if (io->buffer_pos + length > io->buffer_size)
-    {
-        destination = (char*)realloc(io->buffer, io->buffer_pos + length);
-        if (destination == nullptr)
+        assert(io != nullptr);
+        assert(destination != nullptr);
+        if (fread(destination, 1, length, io->file) != length)
         {
-            log_error("IO: Failed to allocate %d bytes",
-                io->buffer_pos + length);
+            log_warning("IO: Failed to read full data");
             return false;
         }
-        io->buffer_size = io->buffer_pos + length;
-        io->buffer = destination;
-    }
-    destination = io->buffer + io->buffer_pos;
-    memcpy(destination, source, length);
-    io->buffer_pos += length;
-    return true;
-}
-
-static size_t buffer_io_tell(IO *io)
-{
-    assert(io != nullptr);
-    return io->buffer_pos;
-}
-
-static size_t buffer_io_size(IO *io)
-{
-    assert(io != nullptr);
-    return io->buffer_size;
-}
-
-static bool buffer_io_truncate(IO *io, size_t new_size)
-{
-    assert(io != nullptr);
-    if (new_size == 0)
-    {
-        free(io->buffer);
-        io->buffer_size = 0;
-        io->buffer_pos = 0;
-        io->buffer = nullptr;
         return true;
     }
-    char *new_buffer = (char*)realloc(io->buffer, new_size);
-    if (new_buffer == nullptr)
+
+    bool file_io_write(IO *io, size_t length, void *source)
+    {
+        assert(io != nullptr);
+        assert(source != nullptr);
+        if (fwrite(source, 1, length, io->file) != length)
+        {
+            log_warning("IO: Failed to write full data");
+            return false;
+        }
+        return true;
+    }
+
+    size_t file_io_tell(IO *io)
+    {
+        assert(io != nullptr);
+        return ftell(io->file);
+    }
+
+    size_t file_io_size(IO *io)
+    {
+        assert(io != nullptr);
+        size_t old_pos = ftell(io->file);
+        fseek(io->file, 0, SEEK_END);
+        size_t size = ftell(io->file);
+        fseek(io->file, old_pos, SEEK_SET);
+        return size;
+    }
+
+    bool file_io_truncate(
+        __attribute__((unused)) IO *io,
+        __attribute__((unused)) size_t new_size)
+    {
+        assert(io != nullptr);
+        //return ftruncate(io->file, new_size) == 0;
+        log_error("IO: Truncating for real files is not supported!");
         return false;
-    io->buffer = new_buffer;
-    io->buffer_size = new_size;
-    if (io->buffer_pos >= new_size)
-        io->buffer_pos = new_size;
-    return true;
+    }
 }
 
+namespace
+{
+    bool buffer_io_seek(IO *io, size_t offset, int whence)
+    {
+        assert(io != nullptr);
+        assert(whence == SEEK_SET || whence == SEEK_END || whence == SEEK_CUR);
 
+        if (whence == SEEK_SET)
+            io->buffer_pos = offset;
+        else if (whence == SEEK_END)
+            io->buffer_pos = io->buffer_size - 1 - offset;
+        else if (whence == SEEK_CUR)
+            io->buffer_pos += offset;
+
+        return io->buffer_pos < io->buffer_size;
+    }
+
+    bool buffer_io_read(IO *io, size_t length, void *destination)
+    {
+        assert(io != nullptr);
+        assert(destination != nullptr);
+        if (io->buffer_pos + length > io->buffer_size)
+            return false;
+        memcpy(destination, io->buffer + io->buffer_pos, length);
+        io->buffer_pos += length;
+        return true;
+    }
+
+    bool buffer_io_write(IO *io, size_t length, void *source)
+    {
+        assert(io != nullptr);
+        assert(source != nullptr);
+
+        char *destination;
+        if (io->buffer_pos + length > io->buffer_size)
+        {
+            destination = (char*)realloc(io->buffer, io->buffer_pos + length);
+            if (destination == nullptr)
+            {
+                log_error("IO: Failed to allocate %d bytes",
+                    io->buffer_pos + length);
+                return false;
+            }
+            io->buffer_size = io->buffer_pos + length;
+            io->buffer = destination;
+        }
+        destination = io->buffer + io->buffer_pos;
+        memcpy(destination, source, length);
+        io->buffer_pos += length;
+        return true;
+    }
+
+    size_t buffer_io_tell(IO *io)
+    {
+        assert(io != nullptr);
+        return io->buffer_pos;
+    }
+
+    size_t buffer_io_size(IO *io)
+    {
+        assert(io != nullptr);
+        return io->buffer_size;
+    }
+
+    bool buffer_io_truncate(IO *io, size_t new_size)
+    {
+        assert(io != nullptr);
+        if (new_size == 0)
+        {
+            free(io->buffer);
+            io->buffer_size = 0;
+            io->buffer_pos = 0;
+            io->buffer = nullptr;
+            return true;
+        }
+        char *new_buffer = (char*)realloc(io->buffer, new_size);
+        if (new_buffer == nullptr)
+            return false;
+        io->buffer = new_buffer;
+        io->buffer_size = new_size;
+        if (io->buffer_pos >= new_size)
+            io->buffer_pos = new_size;
+        return true;
+    }
+}
 
 IO *io_create_from_file(const char *path, const char *read_mode)
 {

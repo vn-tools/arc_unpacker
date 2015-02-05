@@ -17,8 +17,11 @@
 #include "logger.h"
 #include "string_ex.h"
 
-static const char *xyz_magic = "XYZ1";
-static const size_t xyz_magic_length = 4;
+namespace
+{
+    const char *xyz_magic = "XYZ1";
+    const size_t xyz_magic_length = 4;
+}
 
 bool XyzConverter::decode_internal(VirtualFile *file)
 {

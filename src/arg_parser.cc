@@ -3,96 +3,84 @@
 #include "arg_parser.h"
 #include "collections/pair.h"
 
-static bool is_alphanumeric(std::string string);
-
-static bool get_switch(
-    const std::string argument,
-    std::string &key,
-    std::string &value);
-
-static bool get_flag(
-    const std::string argument,
-    std::string &value);
-
-static std::vector<std::string> create_words(const std::string sentence);
-
-static bool is_alphanumeric(std::string string)
+namespace
 {
-    for (size_t i = 0; i < string.length(); i ++)
+    bool is_alphanumeric(std::string string)
     {
-        char c = string[i];
-        if (c < '0' && c > '9' && c < 'a' && c > 'a' && c < 'A' && c > 'A')
-            return false;
+        for (size_t i = 0; i < string.length(); i ++)
+        {
+            char c = string[i];
+            if (c < '0' && c > '9' && c < 'a' && c > 'a' && c < 'A' && c > 'A')
+                return false;
+        }
+        return true;
     }
-    return true;
-}
 
-static std::string strip_dashes(const std::string argument)
-{
-    std::string ret = argument;
-    while (ret[0] == '-')
-        ret.erase(0, 1);
-    return ret;
-}
+    std::string strip_dashes(const std::string argument)
+    {
+        std::string ret = argument;
+        while (ret[0] == '-')
+            ret.erase(0, 1);
+        return ret;
+    }
 
-static bool get_switch(
-    const std::string argument,
-    std::string &key,
-    std::string &value)
-{
-    key = "";
-    value = "";
-
-    if (argument[0] != '-')
-        return false;
-    std::string argument_copy = strip_dashes(argument);
-
-    size_t pos = argument_copy.find("=");
-    if (pos == std::string::npos)
-        return false;
-
-    key = argument_copy.substr(0, pos);
-    if (!is_alphanumeric(key))
+    bool get_switch(
+        const std::string argument,
+        std::string &key,
+        std::string &value)
     {
         key = "";
-        return false;
+        value = "";
+
+        if (argument[0] != '-')
+            return false;
+        std::string argument_copy = strip_dashes(argument);
+
+        size_t pos = argument_copy.find("=");
+        if (pos == std::string::npos)
+            return false;
+
+        key = argument_copy.substr(0, pos);
+        if (!is_alphanumeric(key))
+        {
+            key = "";
+            return false;
+        }
+        value = argument_copy.substr(pos + 1);
+        return true;
     }
-    value = argument_copy.substr(pos + 1);
-    return true;
-}
 
-static bool get_flag(const std::string argument, std::string &value)
-{
-    value = "";
-
-    if (argument[0] != '-')
-        return false;
-    std::string argument_copy = argument;
-    while (argument_copy[0] == '-')
-        argument_copy.erase(0, 1);
-
-    if (!is_alphanumeric(argument_copy))
-        return false;
-
-    value = argument_copy;
-    return true;
-}
-
-static std::vector<std::string> create_words(const std::string sentence)
-{
-    std::vector<std::string> words;
-    size_t pos = 0, new_pos = 0;
-    do
+    bool get_flag(const std::string argument, std::string &value)
     {
-        new_pos = sentence.find(" ", pos);
-        words.push_back(sentence.substr(pos, new_pos - pos));
-        pos = new_pos + 1;
+        value = "";
+
+        if (argument[0] != '-')
+            return false;
+        std::string argument_copy = argument;
+        while (argument_copy[0] == '-')
+            argument_copy.erase(0, 1);
+
+        if (!is_alphanumeric(argument_copy))
+            return false;
+
+        value = argument_copy;
+        return true;
     }
-    while (new_pos != std::string::npos);
-    return words;
+
+    std::vector<std::string> create_words(const std::string sentence)
+    {
+        std::vector<std::string> words;
+        size_t pos = 0, new_pos = 0;
+        do
+        {
+            new_pos = sentence.find(" ", pos);
+            words.push_back(sentence.substr(pos, new_pos - pos));
+            pos = new_pos + 1;
+        }
+        while (new_pos != std::string::npos);
+        return words;
+    }
 }
-
-
 
 void ArgParser::parse(int argc, const char **argv)
 {
@@ -128,7 +116,8 @@ void ArgParser::clear_help()
 
 void ArgParser::add_help(std::string invocation, std::string description)
 {
-    help_items.push_back(std::pair<std::string, std::string>(invocation, description));
+    help_items.push_back(
+        std::pair<std::string, std::string>(invocation, description));
 }
 
 bool ArgParser::has_switch(std::string key) const

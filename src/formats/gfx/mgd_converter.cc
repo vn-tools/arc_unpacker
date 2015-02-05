@@ -15,98 +15,99 @@
 #include "io.h"
 #include "logger.h"
 
-static const char *mgd_magic = "MGD ";
-static const size_t mgd_magic_length = 4;
-
-typedef enum
+namespace
 {
-    MGD_COMPRESSION_NONE = 0,
-    MGD_COMPRESSION_SGD = 1,
-    MGD_COMPRESSION_PNG = 2,
-} MgdCompressionType;
+    const char *mgd_magic = "MGD ";
+    const size_t mgd_magic_length = 4;
 
-typedef struct
-{
-    uint16_t x;
-    uint16_t y;
-    uint16_t width;
-    uint16_t height;
-} MgdRegion;
-
-static bool mgd_check_magic(IO *io)
-{
-    assert(io != nullptr);
-    char magic[mgd_magic_length];
-    io_read_string(io, magic, mgd_magic_length);
-    return memcmp(magic, mgd_magic, mgd_magic_length) == 0;
-}
-
-static bool mgd_decompress_sgd_alpha(
-    const uint8_t **input,
-    const uint8_t *const input_guardian,
-    uint8_t **output,
-    const uint8_t *const output_guardian)
-{
-    const uint8_t *input_ptr = *input;
-    uint8_t *output_ptr = *output + 3;
-    while (input_ptr < input_guardian)
+    typedef enum
     {
-        uint16_t flag = le16toh(*(uint16_t*)input_ptr);
-        input_ptr += 2;
-        if (flag & 0x8000)
-        {
-            size_t pixels = (flag & 0x7fff) + 1;
-            uint8_t alpha = *input_ptr ++;
-            size_t i;
-            for (i = 0; i < pixels; i ++)
-            {
-                if (output_ptr > output_guardian)
-                {
-                    log_warning("SGD: trying to write alpha beyond EOF");
-                    return false;
-                }
-                *output_ptr = alpha ^ 0xff;
-                output_ptr += 4;
-            }
-        }
+        MGD_COMPRESSION_NONE = 0,
+        MGD_COMPRESSION_SGD = 1,
+        MGD_COMPRESSION_PNG = 2,
+    } MgdCompressionType;
 
-        else
-        {
-            while (flag -- && input_ptr < input_guardian)
-            {
-                uint8_t alpha = *input_ptr;
-                input_ptr ++;
-                if (output_ptr > output_guardian)
-                {
-                    log_warning("SGD: trying to write alpha beyond EOF");
-                    return false;
-                }
-                *output_ptr = alpha ^ 0xff;
-                output_ptr += 4;
-            }
-        }
+    typedef struct
+    {
+        uint16_t x;
+        uint16_t y;
+        uint16_t width;
+        uint16_t height;
+    } MgdRegion;
+
+    bool mgd_check_magic(IO *io)
+    {
+        assert(io != nullptr);
+        char magic[mgd_magic_length];
+        io_read_string(io, magic, mgd_magic_length);
+        return memcmp(magic, mgd_magic, mgd_magic_length) == 0;
     }
-    *input = input_ptr;
-    *output = output_ptr;
-    return true;
-}
 
-static bool mgd_decompress_sgd_bgr(
-    const uint8_t **input,
-    const uint8_t *const input_guardian,
-    uint8_t **output,
-    const uint8_t *const output_guardian)
-{
-    const uint8_t *input_ptr = *input;
-    uint8_t *output_ptr = *output;
-
-    while (input_ptr < input_guardian)
+    bool mgd_decompress_sgd_alpha(
+        const uint8_t **input,
+        const uint8_t *const input_guardian,
+        uint8_t **output,
+        const uint8_t *const output_guardian)
     {
-        uint8_t flag = *input_ptr ++;
-        size_t i;
-        switch (flag & 0xc0)
+        const uint8_t *input_ptr = *input;
+        uint8_t *output_ptr = *output + 3;
+        while (input_ptr < input_guardian)
         {
-            case 0x80:
+            uint16_t flag = le16toh(*(uint16_t*)input_ptr);
+            input_ptr += 2;
+            if (flag & 0x8000)
+            {
+                size_t pixels = (flag & 0x7fff) + 1;
+                uint8_t alpha = *input_ptr ++;
+                size_t i;
+                for (i = 0; i < pixels; i ++)
+                {
+                    if (output_ptr > output_guardian)
+                    {
+                        log_warning("SGD: trying to write alpha beyond EOF");
+                        return false;
+                    }
+                    *output_ptr = alpha ^ 0xff;
+                    output_ptr += 4;
+                }
+            }
+
+            else
+            {
+                while (flag -- && input_ptr < input_guardian)
+                {
+                    uint8_t alpha = *input_ptr;
+                    input_ptr ++;
+                    if (output_ptr > output_guardian)
+                    {
+                        log_warning("SGD: trying to write alpha beyond EOF");
+                        return false;
+                    }
+                    *output_ptr = alpha ^ 0xff;
+                    output_ptr += 4;
+                }
+            }
+        }
+        *input = input_ptr;
+        *output = output_ptr;
+        return true;
+    }
+
+    bool mgd_decompress_sgd_bgr(
+        const uint8_t **input,
+        const uint8_t *const input_guardian,
+        uint8_t **output,
+        const uint8_t *const output_guardian)
+    {
+        const uint8_t *input_ptr = *input;
+        uint8_t *output_ptr = *output;
+
+        while (input_ptr < input_guardian)
+        {
+            uint8_t flag = *input_ptr ++;
+            size_t i;
+
+            if ((flag & 0xc0) == 0x80)
             {
                 size_t pixels = flag & 0x3f;
                 uint8_t b = output_ptr[-4];
@@ -145,10 +146,9 @@ static bool mgd_decompress_sgd_bgr(
                     *output_ptr ++ = r;
                     output_ptr ++;
                 }
-                break;
             }
 
-            case 0x40:
+            else if ((flag & 0xc0) == 0x40)
             {
                 if (input_ptr + 3 > input_guardian)
                 {
@@ -171,10 +171,9 @@ static bool mgd_decompress_sgd_bgr(
                     *output_ptr ++ = r;
                     output_ptr ++;
                 }
-                break;
             }
 
-            case 0:
+            else if ((flag & 0xc0) == 0)
             {
                 size_t pixels = flag;
                 for (i = 0; i < pixels; i ++)
@@ -194,201 +193,200 @@ static bool mgd_decompress_sgd_bgr(
                     *output_ptr ++ = *input_ptr ++;
                     output_ptr ++;
                 }
-                break;
             }
 
-            default:
+            else
             {
                 log_error("SGD: Bad decompression flag");
                 return false;
             }
         }
-    }
-    *input = input_ptr;
-    *output = output_ptr;
-    return true;
-}
-
-static bool mgd_decompress_sgd(
-    const char *const input,
-    size_t input_size,
-    char *const output,
-    size_t output_size)
-{
-    assert(input != nullptr);
-    assert(output != nullptr);
-
-    size_t length;
-    const uint8_t *input_guardian;
-    const uint8_t *output_guardian = (const uint8_t*)output + output_size;
-    uint8_t *output_ptr = (uint8_t*)output;
-
-    const uint8_t *input_ptr = (const uint8_t*)input;
-    length = le32toh(*(uint32_t*)input_ptr);
-    input_ptr += 4;
-    input_guardian = (const uint8_t*)input_ptr + length;
-    if (length > input_size)
-    {
-        log_error("SGD: insufficient alpha channel data");
-        return false;
+        *input = input_ptr;
+        *output = output_ptr;
+        return true;
     }
 
-    if (!mgd_decompress_sgd_alpha(
-        &input_ptr,
-        input_guardian,
-        &output_ptr,
-        output_guardian))
+    bool mgd_decompress_sgd(
+        const char *const input,
+        size_t input_size,
+        char *const output,
+        size_t output_size)
     {
-        log_warning("SGD: failed to decompress alpha channel");
-    }
+        assert(input != nullptr);
+        assert(output != nullptr);
 
-    length = le32toh(*(uint32_t*)input_ptr);
-    input_ptr += 4;
-    input_guardian = (const uint8_t*)input_ptr + length;
-    if (length > input_size)
-    {
-        log_error("SGD: insufficient color data");
-        return false;
-    }
+        size_t length;
+        const uint8_t *input_guardian;
+        const uint8_t *output_guardian = (const uint8_t*)output + output_size;
+        uint8_t *output_ptr = (uint8_t*)output;
 
-    output_ptr = (uint8_t*)output;
-    if (!mgd_decompress_sgd_bgr(
-        &input_ptr,
-        input_guardian,
-        &output_ptr,
-        output_guardian))
-    {
-        log_warning("SGD: failed to decompress color channels");
-    }
-
-    return true;
-}
-
-static Array *mgd_read_region_data(IO *file_io)
-{
-    Array *regions = array_create();
-    while (io_tell(file_io) < io_size(file_io))
-    {
-        io_skip(file_io, 4);
-        size_t regions_size = io_read_u32_le(file_io);
-        size_t region_count = io_read_u16_le(file_io);
-        size_t meta_format = io_read_u16_le(file_io);
-        size_t bytes_left = io_size(file_io) - io_tell(file_io);
-        if (meta_format != 4)
+        const uint8_t *input_ptr = (const uint8_t*)input;
+        length = le32toh(*(uint32_t*)input_ptr);
+        input_ptr += 4;
+        input_guardian = (const uint8_t*)input_ptr + length;
+        if (length > input_size)
         {
-            log_warning("MGD: Unexpected region format %d", meta_format);
-            array_destroy(regions);
-            return nullptr;
-        }
-        if (regions_size != bytes_left)
-        {
-            log_warning("MGD: Unexpected region size %d", regions_size);
-            array_destroy(regions);
-            return nullptr;
+            log_error("SGD: insufficient alpha channel data");
+            return false;
         }
 
-        size_t i;
-        for (i = 0; i < region_count; i ++)
+        if (!mgd_decompress_sgd_alpha(
+            &input_ptr,
+            input_guardian,
+            &output_ptr,
+            output_guardian))
         {
-            MgdRegion *region = new MgdRegion;
-            if (!region)
+            log_warning("SGD: failed to decompress alpha channel");
+        }
+
+        length = le32toh(*(uint32_t*)input_ptr);
+        input_ptr += 4;
+        input_guardian = (const uint8_t*)input_ptr + length;
+        if (length > input_size)
+        {
+            log_error("SGD: insufficient color data");
+            return false;
+        }
+
+        output_ptr = (uint8_t*)output;
+        if (!mgd_decompress_sgd_bgr(
+            &input_ptr,
+            input_guardian,
+            &output_ptr,
+            output_guardian))
+        {
+            log_warning("SGD: failed to decompress color channels");
+        }
+
+        return true;
+    }
+
+    Array *mgd_read_region_data(IO *file_io)
+    {
+        Array *regions = array_create();
+        while (io_tell(file_io) < io_size(file_io))
+        {
+            io_skip(file_io, 4);
+            size_t regions_size = io_read_u32_le(file_io);
+            size_t region_count = io_read_u16_le(file_io);
+            size_t meta_format = io_read_u16_le(file_io);
+            size_t bytes_left = io_size(file_io) - io_tell(file_io);
+            if (meta_format != 4)
             {
-                log_error("MGD: Failed to allocate memory for region");
-                continue;
+                log_warning("MGD: Unexpected region format %d", meta_format);
+                array_destroy(regions);
+                return nullptr;
             }
-            region->x = io_read_u16_le(file_io);
-            region->y = io_read_u16_le(file_io);
-            region->width = io_read_u16_le(file_io);
-            region->height = io_read_u16_le(file_io);
-            array_add(regions, region);
+            if (regions_size != bytes_left)
+            {
+                log_warning("MGD: Unexpected region size %d", regions_size);
+                array_destroy(regions);
+                return nullptr;
+            }
+
+            size_t i;
+            for (i = 0; i < region_count; i ++)
+            {
+                MgdRegion *region = new MgdRegion;
+                if (!region)
+                {
+                    log_error("MGD: Failed to allocate memory for region");
+                    continue;
+                }
+                region->x = io_read_u16_le(file_io);
+                region->y = io_read_u16_le(file_io);
+                region->width = io_read_u16_le(file_io);
+                region->height = io_read_u16_le(file_io);
+                array_add(regions, region);
+            }
+
+            io_skip(file_io, 4);
+        }
+        return regions;
+    }
+
+    Image *mgd_read_image(
+        IO *file_io,
+        MgdCompressionType compression_type,
+        size_t size_compressed,
+        size_t size_original,
+        size_t image_width,
+        size_t image_height,
+        char **data_uncompressed)
+    {
+        assert(file_io != nullptr);
+        assert(data_uncompressed != nullptr);
+
+        char *data_compressed = new char[size_compressed];
+        if (!data_compressed)
+        {
+            log_error("MGD: Failed to allocate memory for compressed data");
+            return nullptr;
+        }
+        if (!io_read_string(file_io, data_compressed, size_compressed))
+        {
+            log_error("MGD: Failed to read compressed data");
+            return nullptr;
         }
 
-        io_skip(file_io, 4);
-    }
-    return regions;
-}
+        log_info("MGD: compression type = %d", compression_type);
 
-static Image *mgd_read_image(
-    IO *file_io,
-    MgdCompressionType compression_type,
-    size_t size_compressed,
-    size_t size_original,
-    size_t image_width,
-    size_t image_height,
-    char **data_uncompressed)
-{
-    assert(file_io != nullptr);
-    assert(data_uncompressed != nullptr);
-
-    char *data_compressed = new char[size_compressed];
-    if (!data_compressed)
-    {
-        log_error("MGD: Failed to allocate memory for compressed data");
-        return nullptr;
-    }
-    if (!io_read_string(file_io, data_compressed, size_compressed))
-    {
-        log_error("MGD: Failed to read compressed data");
-        return nullptr;
-    }
-
-    log_info("MGD: compression type = %d", compression_type);
-
-    Image *image = nullptr;
-    switch (compression_type)
-    {
-        case MGD_COMPRESSION_NONE:
-            *data_uncompressed = data_compressed;
-            image = image_create_from_pixels(
-                image_width,
-                image_height,
-                data_compressed,
-                size_compressed,
-                IMAGE_PIXEL_FORMAT_BGRA);
-            break;
-
-        case MGD_COMPRESSION_SGD:
+        Image *image = nullptr;
+        switch (compression_type)
         {
-            *data_uncompressed = new char[size_original];
-            assert(*data_uncompressed != nullptr);
-
-            if (mgd_decompress_sgd(
-                data_compressed,
-                size_compressed,
-                *data_uncompressed,
-                size_original))
-            {
+            case MGD_COMPRESSION_NONE:
+                *data_uncompressed = data_compressed;
                 image = image_create_from_pixels(
                     image_width,
                     image_height,
-                    *data_uncompressed,
-                    size_original,
+                    data_compressed,
+                    size_compressed,
                     IMAGE_PIXEL_FORMAT_BGRA);
-            }
-            else
+                break;
+
+            case MGD_COMPRESSION_SGD:
             {
-                log_error("MGD: Failed to decompress SGD data");
+                *data_uncompressed = new char[size_original];
+                assert(*data_uncompressed != nullptr);
+
+                if (mgd_decompress_sgd(
+                    data_compressed,
+                    size_compressed,
+                    *data_uncompressed,
+                    size_original))
+                {
+                    image = image_create_from_pixels(
+                        image_width,
+                        image_height,
+                        *data_uncompressed,
+                        size_original,
+                        IMAGE_PIXEL_FORMAT_BGRA);
+                }
+                else
+                {
+                    log_error("MGD: Failed to decompress SGD data");
+                }
+
+                delete []data_compressed;
+                break;
             }
 
-            delete []data_compressed;
-            break;
+            case MGD_COMPRESSION_PNG:
+            {
+                IO *image_io = io_create_empty();
+                io_write_string(
+                    image_io,
+                    data_compressed,
+                    size_compressed);
+                image = image_create_from_boxed(image_io);
+                io_destroy(image_io);
+                delete []data_compressed;
+                break;
+            }
         }
 
-        case MGD_COMPRESSION_PNG:
-        {
-            IO *image_io = io_create_empty();
-            io_write_string(
-                image_io,
-                data_compressed,
-                size_compressed);
-            image = image_create_from_boxed(image_io);
-            io_destroy(image_io);
-            delete []data_compressed;
-            break;
-        }
+        return image;
     }
-
-    return image;
 }
 
 bool MgdConverter::decode_internal(VirtualFile *file)
