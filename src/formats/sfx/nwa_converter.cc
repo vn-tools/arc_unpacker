@@ -103,7 +103,7 @@ namespace
     }
 }
 
-bool NwaConverter::decode(VirtualFile *file)
+bool NwaConverter::decode_internal(VirtualFile *file)
 {
     assert(file != nullptr);
 
