@@ -16,6 +16,19 @@ Port old code for formats:
 		- MSD
 		- YKS
 
+C++ stuff:
+	- Port IO to classes
+	- Port OutputFiles to class
+	- Port VirtualFile to class
+	- Port Image to class
+	- Port Sound to class
+	- Try to minify string_ex usages
+	- Remove stdbool includes
+	- Review all includes
+	- Replace pointers with references where applicable to reduce assertions
+	- Carefully check out smart pointers
+	- Replace logging with exceptions
+
 Unit tests (low priority):
 	- NPA archive
 	- PAK archive
