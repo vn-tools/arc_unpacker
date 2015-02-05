@@ -22,14 +22,14 @@ void converter_destroy(Converter *converter)
     delete converter;
 }
 
-void converter_parse_cli_options(Converter *converter, ArgParser *arg_parser)
+void converter_parse_cli_options(Converter *converter, ArgParser &arg_parser)
 {
     assert(converter != NULL);
     if (converter->parse_cli_options != NULL)
         converter->parse_cli_options(converter, arg_parser);
 }
 
-void converter_add_cli_help(Converter *converter, ArgParser *arg_parser)
+void converter_add_cli_help(Converter *converter, ArgParser &arg_parser)
 {
     assert(converter != NULL);
     if (converter->add_cli_help != NULL)

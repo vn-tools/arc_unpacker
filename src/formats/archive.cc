@@ -22,14 +22,14 @@ void archive_destroy(Archive *archive)
     delete archive;
 }
 
-void archive_parse_cli_options(Archive *archive, ArgParser *arg_parser)
+void archive_parse_cli_options(Archive *archive, ArgParser &arg_parser)
 {
     assert(archive != NULL);
     if (archive->parse_cli_options != NULL)
         archive->parse_cli_options(archive, arg_parser);
 }
 
-void archive_add_cli_help(Archive *archive, ArgParser *arg_parser)
+void archive_add_cli_help(Archive *archive, ArgParser &arg_parser)
 {
     assert(archive != NULL);
     if (archive->add_cli_help != NULL)

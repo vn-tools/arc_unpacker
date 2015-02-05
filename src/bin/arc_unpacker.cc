@@ -17,50 +17,45 @@ typedef struct
     const char *output_path;
 } Options;
 
-static char *get_default_output_path(const char *input_path)
+static std::string get_default_output_path(const std::string input_path)
 {
-    char *output_path = new char[strlen(input_path) + 2];
-    assert(output_path != NULL);
-    sprintf(output_path, "%s~", input_path);
-    return output_path;
+    return input_path + "~";
 }
 
-static void add_format_option(ArgParser *arg_parser, Options *options)
+static void add_format_option(ArgParser &arg_parser, Options *options)
 {
-    arg_parser_add_help(
-        arg_parser,
+    arg_parser.add_help(
         "-f, --fmt=FORMAT",
         "Selects the archive format.");
 
-    if (arg_parser_has_switch(arg_parser, "-f"))
-        options->format = arg_parser_get_switch(arg_parser, "-f");
-    if (arg_parser_has_switch(arg_parser, "--fmt"))
-        options->format = arg_parser_get_switch(arg_parser, "--fmt");
+    if (arg_parser.has_switch("-f"))
+        options->format = arg_parser.get_switch("-f").c_str();
+    if (arg_parser.has_switch("--fmt"))
+        options->format = arg_parser.get_switch("--fmt").c_str();
 }
 
-static void add_path_options(ArgParser *arg_parser, Options *options)
+static void add_path_options(ArgParser &arg_parser, Options *options)
 {
-    Array *stray = arg_parser_get_stray(arg_parser);
-    if (array_size(stray) < 2)
+    std::vector<std::string> stray = arg_parser.get_stray();
+    if (stray.size() < 2)
     {
         log_error("Required more arguments.");
         exit(1);
     }
 
-    options->input_path = (const char*)array_get(stray, 1);
-    options->output_path = array_size(stray) == 2
-        ? get_default_output_path((const char*)array_get(stray, 1))
-        : (const char*)array_get(stray, 2);
+    options->input_path = stray[1].c_str();
+    options->output_path = stray.size() < 3
+        ? get_default_output_path(stray[1]).c_str()
+        : stray[2].c_str();
 }
 
 static void print_help(
     const char *path_to_self,
-    ArgParser *arg_parser,
+    ArgParser &arg_parser,
     Options *options,
     Archive *archive)
 {
     assert(path_to_self != NULL);
-    assert(arg_parser != NULL);
     assert(options != NULL);
 
     printf("Usage: %s [options] [arc_options] input_path [output_path]\n",
@@ -73,8 +68,8 @@ static void print_help(
     puts("[options] can be:");
     puts("");
 
-    arg_parser_print_help(arg_parser);
-    arg_parser_clear_help(arg_parser);
+    arg_parser.print_help();
+    arg_parser.clear_help();
     puts("");
 
     if (archive != NULL)
@@ -82,7 +77,7 @@ static void print_help(
         archive_add_cli_help(archive, arg_parser);
         printf("[arc_options] specific to %s:\n", options->format);
         puts("");
-        arg_parser_print_help(arg_parser);
+        arg_parser.print_help();
         return;
     }
     puts("[arc_options] depend on each archive and are required at runtime.");
@@ -90,7 +85,7 @@ static void print_help(
 }
 
 static bool unpack(
-    Archive *archive, ArgParser *arg_parser, IO *io, OutputFiles *output_files)
+    Archive *archive, ArgParser &arg_parser, IO *io, OutputFiles *output_files)
 {
     io_seek(io, 0);
     archive_parse_cli_options(archive, arg_parser);
@@ -101,12 +96,11 @@ static bool guess_archive_and_unpack(
     IO *io,
     OutputFiles *output_files,
     Options *options,
-    ArgParser *arg_parser,
+    ArgParser &arg_parser,
     ArchiveFactory *arc_factory)
 {
     assert(io != NULL);
     assert(options != NULL);
-    assert(arg_parser != NULL);
     assert(arc_factory != NULL);
     assert(output_files != NULL);
 
@@ -159,11 +153,10 @@ static bool guess_archive_and_unpack(
 
 static bool run(
     Options *options,
-    ArgParser *arg_parser,
+    ArgParser &arg_parser,
     ArchiveFactory *arc_factory)
 {
     assert(options != NULL);
-    assert(arg_parser != NULL);
     assert(arc_factory != NULL);
 
     OutputFiles *output_files = output_files_create_hdd(options->output_path);
@@ -193,9 +186,8 @@ int main(int argc, const char **argv)
 
     ArchiveFactory *arc_factory = archive_factory_create();
     assert(arc_factory != NULL);
-    ArgParser *arg_parser = arg_parser_create();
-    assert(arg_parser != NULL);
-    arg_parser_parse(arg_parser, argc, argv);
+    ArgParser arg_parser;
+    arg_parser.parse(argc, argv);
 
     add_format_option(arg_parser, &options);
     add_quiet_option(arg_parser);
@@ -218,6 +210,5 @@ int main(int argc, const char **argv)
     }
 
     archive_factory_destroy(arc_factory);
-    arg_parser_destroy(arg_parser);
     return exit_code;
 }

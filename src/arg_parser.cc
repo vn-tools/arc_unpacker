@@ -1,22 +1,24 @@
 #include <cassert>
 #include <cstdio>
-#include <cstring>
 #include "arg_parser.h"
 #include "collections/pair.h"
-#include "string_ex.h"
 
-static bool is_alphanumeric(const char *string);
+static bool is_alphanumeric(std::string string);
 
-static bool get_switch(const char *argument, char **key, char **value);
+static bool get_switch(
+    const std::string argument,
+    std::string &key,
+    std::string &value);
 
-static bool get_flag(const char *argument, char **value);
+static bool get_flag(
+    const std::string argument,
+    std::string &value);
 
-static Array *create_words(const char *sentence);
+static std::vector<std::string> create_words(const std::string sentence);
 
-static bool is_alphanumeric(const char *string)
+static bool is_alphanumeric(std::string string)
 {
-    unsigned int i;
-    for (i = 0; i < strlen(string); i ++)
+    for (size_t i = 0; i < string.length(); i ++)
     {
         char c = string[i];
         if (c < '0' && c > '9' && c < 'a' && c > 'a' && c < 'A' && c > 'A')
@@ -25,317 +27,182 @@ static bool is_alphanumeric(const char *string)
     return true;
 }
 
-static bool get_switch(const char *argument, char **key, char **value)
+static std::string strip_dashes(const std::string argument)
 {
-    assert(argument != NULL);
-    assert(value != NULL);
+    std::string ret = argument;
+    while (ret[0] == '-')
+        ret.erase(0, 1);
+    return ret;
+}
 
-    char *value_ptr = NULL;
-
-    *key = NULL;
-    *value = NULL;
+static bool get_switch(
+    const std::string argument,
+    std::string &key,
+    std::string &value)
+{
+    key = "";
+    value = "";
 
     if (argument[0] != '-')
         return false;
-    while (argument[0] == '-')
-        argument ++;
+    std::string argument_copy = strip_dashes(argument);
 
-    value_ptr = ((char*)memchr(argument, '=', strlen(argument)));
-    if (value_ptr == NULL)
+    size_t pos = argument_copy.find("=");
+    if (pos == std::string::npos)
         return false;
 
-    *key = strndup(argument, value_ptr - argument);
-    if (!is_alphanumeric(*key))
+    key = argument_copy.substr(0, pos);
+    if (!is_alphanumeric(key))
     {
-        delete []key;
+        key = "";
         return false;
     }
-    *value = strdup(value_ptr + 1);
+    value = argument_copy.substr(pos + 1);
     return true;
 }
 
-static bool get_flag(const char *argument, char **value)
+static bool get_flag(const std::string argument, std::string &value)
 {
-    assert(argument != NULL);
-    assert(value != NULL);
-
-    *value = NULL;
+    value = "";
 
     if (argument[0] != '-')
         return false;
-    while (argument[0] == '-')
-        argument ++;
+    std::string argument_copy = argument;
+    while (argument_copy[0] == '-')
+        argument_copy.erase(0, 1);
 
-    if (!is_alphanumeric(argument))
+    if (!is_alphanumeric(argument_copy))
         return false;
 
-    *value = strdup(argument);
+    value = argument_copy;
     return true;
 }
 
-static Array *create_words(const char *sentence)
+static std::vector<std::string> create_words(const std::string sentence)
 {
-    assert(sentence != NULL);
-
-    Array *words;
-    size_t i = 0;
-    const char *word = sentence;
-    const char *next_word;
-
-    words = array_create();
-    next_word = strpbrk(word, " ");
-    while (next_word != NULL)
+    std::vector<std::string> words;
+    size_t pos = 0, new_pos = 0;
+    do
     {
-        char *new_word = strndup(word, next_word - word);
-        array_add(words, new_word);
-        word = next_word + 1;
-        next_word = strpbrk(word, " ");
-        i ++;
+        new_pos = sentence.find(" ", pos);
+        words.push_back(sentence.substr(pos, new_pos - pos));
+        pos = new_pos + 1;
     }
-    array_add(words, strdup(word));
+    while (new_pos != std::string::npos);
     return words;
 }
 
 
 
-struct ArgParser
+void ArgParser::parse(int argc, const char **argv)
 {
-    LinkedList *switches;
-    LinkedList *flags;
-    Array *stray;
-    LinkedList *help_items;
-};
-
-ArgParser *arg_parser_create()
-{
-    ArgParser *arg_parser = new ArgParser;
-    assert(arg_parser != NULL);
-    arg_parser->flags = linked_list_create();
-    arg_parser->switches = linked_list_create();
-    arg_parser->stray = array_create();
-    arg_parser->help_items = linked_list_create();
-    return arg_parser;
-}
-
-void arg_parser_destroy(ArgParser *arg_parser)
-{
-    void *item;
-    assert(arg_parser != NULL);
-
-    if (arg_parser->switches != NULL)
-    {
-        linked_list_reset(arg_parser->switches);
-        while ((item = linked_list_get(arg_parser->switches)) != NULL)
-        {
-            linked_list_advance(arg_parser->switches);
-            Pair *pair = (Pair*)item;
-            delete [](char*)pair->e1;
-            delete [](char*)pair->e2;
-            pair_destroy(pair);
-        }
-        linked_list_destroy(arg_parser->switches);
-    }
-
-    if (arg_parser->flags != NULL)
-    {
-        linked_list_reset(arg_parser->flags);
-        while ((item = linked_list_get(arg_parser->flags)) != NULL)
-        {
-            linked_list_advance(arg_parser->flags);
-            delete [](char*)item;
-        }
-        linked_list_destroy(arg_parser->flags);
-    }
-
-    if (arg_parser->stray != NULL)
-    {
-        size_t i;
-        for (i = 0; i < array_size(arg_parser->stray); i ++)
-            delete [](char*)array_get(arg_parser->stray, i);
-        array_destroy(arg_parser->stray);
-    }
-
-    if (arg_parser->help_items != NULL)
-        linked_list_destroy(arg_parser->help_items);
-
-    delete arg_parser;
-}
-
-void arg_parser_parse(ArgParser *arg_parser, int argc, const char **argv)
-{
-    const char *arg;
-    char *key, *value;
-    int i;
-
     if (argc == 0)
         return;
 
-    assert(argv != NULL);
+    assert(argv != nullptr);
 
-    for (i = 0; i < argc; i ++)
+    for (ssize_t i = 0; i < argc; i ++)
     {
-        arg = argv[i];
-        assert(arg != NULL);
-
-        key = NULL;
-        value = NULL;
-        if (get_switch(arg, &key, &value))
+        const std::string arg = std::string(argv[i]);
+        std::string key = "";
+        std::string value = "";
+        if (::get_switch(arg, key, value))
         {
-            linked_list_add(arg_parser->switches, pair_create(key, value));
+            switches.push_back(std::pair<std::string, std::string>(key, value));
         }
-        else if (get_flag(arg, &value))
+        else if (::get_flag(arg, value))
         {
-            linked_list_add(arg_parser->flags, value);
+            flags.push_back(value);
         }
         else
         {
-            array_add(arg_parser->stray, strdup(arg));
+            stray.push_back(std::string(arg));
         }
     }
 }
 
-void arg_parser_clear_help(ArgParser *arg_parser)
+void ArgParser::clear_help()
 {
-    assert(arg_parser != NULL);
-    linked_list_destroy(arg_parser->help_items);
-    arg_parser->help_items = linked_list_create();
+    help_items.clear();
 }
 
-void arg_parser_add_help(
-    ArgParser *arg_parser,
-    const char *invocation,
-    const char *description)
+void ArgParser::add_help(std::string invocation, std::string description)
 {
-    assert(arg_parser != NULL);
-    assert(invocation != NULL);
-    assert(description != NULL);
-
-    Pair *pair = pair_create((void*)invocation, (void*)description);
-    linked_list_add(arg_parser->help_items, pair);
+    help_items.push_back(std::pair<std::string, std::string>(invocation, description));
 }
 
-bool arg_parser_has_switch(ArgParser *arg_parser, const char *key)
+bool ArgParser::has_switch(std::string key) const
 {
-    Pair *pair;
-    assert(arg_parser != NULL);
-    assert(key != NULL);
-    while (key[0] == '-')
-        key ++;
-    linked_list_reset(arg_parser->switches);
-    while ((pair = (Pair*)linked_list_get(arg_parser->switches)) != NULL)
-    {
-        linked_list_advance(arg_parser->switches);
-        if (strcmp((char*)pair->e1, key) == 0)
+    for (auto it : switches)
+        if (it.first == strip_dashes(key))
             return true;
-    }
     return false;
 }
 
-char *arg_parser_get_switch(ArgParser *arg_parser, const char *key)
+const std::string ArgParser::get_switch(std::string key) const
 {
-    Pair *pair;
-
-    assert(arg_parser != NULL);
-    assert(key != NULL);
-
-    while (key[0] == '-')
-        key ++;
-
-    linked_list_reset(arg_parser->switches);
-    while ((pair = (Pair*)linked_list_get(arg_parser->switches)) != NULL)
-    {
-        linked_list_advance(arg_parser->switches);
-        if (strcmp((char*)pair->e1, key) == 0)
-            return (char*)pair->e2;
-    }
-    return NULL;
+    for (auto it : switches)
+        if (it.first == strip_dashes(key))
+            return it.second;
+    return "";
 }
 
-bool arg_parser_has_flag(ArgParser *arg_parser, const char *flag)
+bool ArgParser::has_flag(std::string flag) const
 {
-    void *item;
-
-    assert(arg_parser != NULL);
-    assert(flag != NULL);
-
-    while (flag[0] == '-')
-        flag ++;
-
-    linked_list_reset(arg_parser->flags);
-    while ((item = linked_list_get(arg_parser->flags)) != NULL)
-    {
-        linked_list_advance(arg_parser->flags);
-        if (strcmp((char*)item, flag) == 0)
+    for (auto it : flags)
+        if (it == strip_dashes(flag))
             return true;
-    }
     return false;
 }
 
-Array *arg_parser_get_stray(ArgParser *arg_parser)
+std::vector<std::string> ArgParser::get_stray()
 {
-    assert(arg_parser != NULL);
-    return arg_parser->stray;
+    return stray;
 }
 
-void arg_parser_print_help(ArgParser *arg_parser)
+void ArgParser::print_help() const
 {
     const size_t max_invocation_length = 25;
     const size_t max_line_length = 78;
-    const char *invocation, *description;
-    char *word;
-    void *item;
-    size_t i, j;
-    size_t tmp_length;
-    Pair *pair;
-    bool first_word;
 
-    assert(arg_parser != NULL);
-
-    if (linked_list_size(arg_parser->help_items) == 0)
+    if (help_items.size() == 0)
     {
         puts("No additional switches are available.");
         return;
     }
 
-    linked_list_reset(arg_parser->help_items);
-    while ((item = linked_list_get(arg_parser->help_items)) != NULL)
+    for (auto p : help_items)
     {
-        linked_list_advance(arg_parser->help_items);
+        std::string invocation = p.first;
+        std::string description = p.second;
 
-        pair = (Pair*)item;
-        invocation = (const char*)pair->e1;
-        description = (const char*)pair->e2;
-
-        tmp_length = strlen(invocation);
-        if (strlen(invocation) >= 2 && strncmp(invocation, "--", 2) == 0)
+        size_t tmp_length = invocation.length();
+        if (tmp_length >= 2 && invocation.compare(0, 2, "--") == 0)
         {
             printf("    ");
             tmp_length += 4;
         }
-        printf(invocation);
+        printf("%s", invocation.c_str());
 
         for (; tmp_length < max_invocation_length; tmp_length ++)
             printf(" ");
 
         //word wrap
-        Array *words = create_words(description);
-        first_word = true;
-        for (i = 0; i < array_size(words); i ++)
+        std::vector<std::string> words = create_words(description);
+        bool first_word = true;
+        for (auto word : words)
         {
-            word = (char*)array_get(words, i);
-            tmp_length += strlen(word);
+            tmp_length += word.length();
             if (!first_word && tmp_length > max_line_length)
             {
-                printf("\n");
-                for (j = 0; j < max_invocation_length; j ++)
+                puts("");
+                for (size_t i = 0; i < max_invocation_length; i ++)
                     printf(" ");
                 tmp_length = max_invocation_length;
             }
-            printf("%s ", word);
-            delete []word;
+            printf("%s ", word.c_str());
             first_word = false;
         }
-        printf("\n");
-        array_destroy(words);
+        puts("");
     }
 }

@@ -54,17 +54,16 @@ typedef struct
 
 static void npa_add_cli_help(
     __attribute__((unused)) Archive *archive,
-    ArgParser *arg_parser)
+    ArgParser &arg_parser)
 {
-    arg_parser_add_help(
-        arg_parser,
+    arg_parser.add_help(
         "--plugin=PLUGIN",
         "Selects NPA decryption routine.\n"
             "Possible values:\n"
             "- chaos_head");
 }
 
-static void npa_parse_cli_options(Archive *archive, ArgParser *arg_parser)
+static void npa_parse_cli_options(Archive *archive, ArgParser &arg_parser)
 {
     NpaArchiveContext *archive_context = new NpaArchiveContext;
     assert(archive_context != NULL);
@@ -72,7 +71,7 @@ static void npa_parse_cli_options(Archive *archive, ArgParser *arg_parser)
     archive_context->filter = new NpaFilter;
     assert(archive_context->filter != NULL);
 
-    const char *plugin = arg_parser_get_switch(arg_parser, "plugin");
+    const char *plugin = arg_parser.get_switch("plugin").c_str();
     void (*initializer)(NpaFilter*) = NULL;
     if (plugin != NULL)
     {

@@ -4,148 +4,134 @@
 
 void test_switch_missing()
 {
-    ArgParser *ap = arg_parser_create();
-    assert(arg_parser_get_switch(ap, "-s") == NULL);
-    assert(arg_parser_get_switch(ap, "--long") == NULL);
-    assert(!arg_parser_has_switch(ap, "-s"));
-    assert(!arg_parser_has_switch(ap, "--long"));
-    arg_parser_destroy(ap);
+    ArgParser ap;
+    assert(ap.get_switch("-s") == "");
+    assert(ap.get_switch("--long") == "");
+    assert(!ap.has_switch("-s"));
+    assert(!ap.has_switch("--long"));
 }
 
 void test_switch_is_not_a_flag()
 {
-    ArgParser *ap = arg_parser_create();
+    ArgParser ap;
     const char *argv[1] = {"-f"};
-    arg_parser_parse(ap, 1, argv);
-    assert(arg_parser_get_switch(ap, "-f") == NULL);
-    assert(!arg_parser_has_switch(ap, "-f"));
-    arg_parser_destroy(ap);
+    ap.parse(1, argv);
+    assert(ap.get_switch("-f") == "");
+    assert(!ap.has_switch("-f"));
 }
 
 void test_switch_short()
 {
-    ArgParser *ap = arg_parser_create();
+    ArgParser ap;
     const char *argv[1] = {"-s=short"};
-    arg_parser_parse(ap, 1, argv);
-    assert(strcmp("short", arg_parser_get_switch(ap, "-s")) == 0);
-    assert(strcmp("short", arg_parser_get_switch(ap, "s")) == 0);
-    assert(arg_parser_has_switch(ap, "-s"));
-    assert(arg_parser_has_switch(ap, "s"));
-    arg_parser_destroy(ap);
+    ap.parse(1, argv);
+    assert(ap.get_switch("-s") == "short");
+    assert(ap.get_switch("s") == "short");
+    assert(ap.has_switch("-s"));
+    assert(ap.has_switch("s"));
 }
 
 void test_switch_long()
 {
-    ArgParser *ap = arg_parser_create();
+    ArgParser ap;
     const char *argv[1] = {"--long=long"};
-    arg_parser_parse(ap, 1, argv);
-    assert(strcmp("long", arg_parser_get_switch(ap, "--long")) == 0);
-    assert(strcmp("long", arg_parser_get_switch(ap, "-long")) == 0);
-    assert(strcmp("long", arg_parser_get_switch(ap, "long")) == 0);
-    assert(arg_parser_has_switch(ap, "--long"));
-    assert(arg_parser_has_switch(ap, "-long"));
-    assert(arg_parser_has_switch(ap, "long"));
-    arg_parser_destroy(ap);
+    ap.parse(1, argv);
+    assert(ap.get_switch("--long") == "long");
+    assert(ap.get_switch("-long") == "long");
+    assert(ap.get_switch("long") == "long");
+    assert(ap.has_switch("--long"));
+    assert(ap.has_switch("-long"));
+    assert(ap.has_switch("long"));
 }
 
 void test_switch_overriding_short()
 {
-    ArgParser *ap = arg_parser_create();
+    ArgParser ap;
     const char *argv[2] = {"-s=short1", "-s=short2"};
-    arg_parser_parse(ap, 2, argv);
-    assert(strcmp("short2", arg_parser_get_switch(ap, "-s")) == 0);
-    arg_parser_destroy(ap);
+    ap.parse(2, argv);
+    assert(ap.get_switch("-s") == "short2");
 }
 
 void test_switch_overriding_long()
 {
-    ArgParser *ap = arg_parser_create();
+    ArgParser ap;
     const char *argv[2] = {"--long=long1", "--long=long2"};
-    arg_parser_parse(ap, 2, argv);
-    assert(strcmp("long2", arg_parser_get_switch(ap, "--long")) == 0);
-    arg_parser_destroy(ap);
+    ap.parse(2, argv);
+    assert(ap.get_switch("--long") == "long2");
 }
 
 void test_switch_with_space()
 {
-    ArgParser *ap = arg_parser_create();
+    ArgParser ap;
     const char *argv[1] = {"--switch=long switch"};
-    arg_parser_parse(ap, 1, argv);
-    assert(strcmp("long switch", arg_parser_get_switch(ap, "--switch")) == 0);
-    arg_parser_destroy(ap);
+    ap.parse(1, argv);
+    assert(ap.get_switch("--switch") == "long switch");
 }
 
 void test_switch_empty_value()
 {
-    ArgParser *ap = arg_parser_create();
+    ArgParser ap;
     const char *argv[1] = {"--switch="};
-    arg_parser_parse(ap, 1, argv);
-    assert(strcmp("", arg_parser_get_switch(ap, "--switch")) == 0);
-    arg_parser_destroy(ap);
+    ap.parse(1, argv);
+    assert(ap.get_switch("--switch") == "");
 }
 
 void test_flag_missing()
 {
-    ArgParser *ap = arg_parser_create();
-    assert(!arg_parser_has_flag(ap, "nope"));
-    arg_parser_destroy(ap);
+    ArgParser ap;
+    assert(!ap.has_flag("nope"));
 }
 
 void test_flag()
 {
-    ArgParser *ap = arg_parser_create();
+    ArgParser ap;
     const char *argv[1] = {"--flag"};
-    arg_parser_parse(ap, 1, argv);
-    assert(arg_parser_has_flag(ap, "flag"));
-    arg_parser_destroy(ap);
+    ap.parse(1, argv);
+    assert(ap.has_flag("flag"));
 }
 
 void test_flag_mixed_with_stray()
 {
-    ArgParser *ap = arg_parser_create();
+    ArgParser ap;
     const char *argv[2] = {"--flag", "stray"};
-    arg_parser_parse(ap, 2, argv);
-    assert(arg_parser_has_flag(ap, "flag"));
-    Array *stray = arg_parser_get_stray(ap);
-    assert(1 == array_size(stray));
-    assert(strcmp("stray", (const char*)array_get(stray, 0)) == 0);
-    arg_parser_destroy(ap);
+    ap.parse(2, argv);
+    assert(ap.has_flag("flag"));
+    auto stray = ap.get_stray();
+    assert(stray.size() == 1);
+    assert(stray[0] == "stray");
 }
 
 void test_stray_missing()
 {
-    ArgParser *ap = arg_parser_create();
-    Array *stray = arg_parser_get_stray(ap);
-    assert(0 == array_size(stray));
-    arg_parser_destroy(ap);
+    ArgParser ap;
+    auto stray = ap.get_stray();
+    assert(stray.size() == 0);
 }
 
 void test_stray()
 {
-    ArgParser *ap = arg_parser_create();
+    ArgParser ap;
     const char *argv[2] = {"stray1", "stray2"};
-    arg_parser_parse(ap, 2, argv);
-    Array *stray = arg_parser_get_stray(ap);
-    assert(2 == array_size(stray));
-    assert(strcmp("stray1", (const char*)array_get(stray, 0)) == 0);
-    assert(strcmp("stray2", (const char*)array_get(stray, 1)) == 0);
-    arg_parser_destroy(ap);
+    ap.parse(2, argv);
+    auto stray = ap.get_stray();
+    assert(stray.size() == 2);
+    assert(stray[0] == "stray1");
+    assert(stray[1] == "stray2");
 }
 
 void test_stray_with_space()
 {
-    ArgParser *ap = arg_parser_create();
+    ArgParser ap;
     const char *argv[1] = {"long stray"};
-    arg_parser_parse(ap, 1, argv);
-    Array *stray = arg_parser_get_stray(ap);
-    assert(1 == array_size(stray));
-    assert(strcmp("long stray", (const char*)array_get(stray, 0)) == 0);
-    arg_parser_destroy(ap);
+    ap.parse(1, argv);
+    auto stray = ap.get_stray();
+    assert(stray.size() == 1);
+    assert(stray[0] == "long stray");
 }
 
 void test_mixed_types()
 {
-    ArgParser *ap = arg_parser_create();
+    ArgParser ap;
     const char *argv[5] =
     {
         "stray1",
@@ -154,18 +140,16 @@ void test_mixed_types()
         "stray2",
         "--flag2"
     };
-    arg_parser_parse(ap, 5, argv);
+    ap.parse(5, argv);
 
-    assert(strcmp("s", arg_parser_get_switch(ap, "--switch")) == 0);
-    assert(arg_parser_has_flag(ap, "flag1"));
-    assert(arg_parser_has_flag(ap, "flag2"));
+    assert(ap.get_switch("--switch") == "s");
+    assert(ap.has_flag("flag1"));
+    assert(ap.has_flag("flag2"));
 
-    Array *stray = arg_parser_get_stray(ap);
-    assert(2 == array_size(stray));
-    assert(strcmp("stray1", (const char*)array_get(stray, 0)) == 0);
-    assert(strcmp("stray2", (const char*)array_get(stray, 1)) == 0);
-
-    arg_parser_destroy(ap);
+    auto stray = ap.get_stray();
+    assert(stray.size() == 2);
+    assert(stray[0] == "stray1");
+    assert(stray[1] == "stray2");
 }
 
 #if 0

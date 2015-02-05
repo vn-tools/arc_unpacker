@@ -27,37 +27,35 @@ typedef struct
 typedef struct
 {
     Options *options;
-    ArgParser *arg_parser;
+    ArgParser &arg_parser;
     ConverterFactory *conv_factory;
     const PathInfo *path_info;
 } ReadContext;
 
-static void add_output_folder_option(ArgParser *arg_parser, Options *options)
+static void add_output_folder_option(ArgParser &arg_parser, Options *options)
 {
-    arg_parser_add_help(
-        arg_parser,
+    arg_parser.add_help(
         "-o, --out=FOLDER",
         "Where to put the output files.");
 
-    if (arg_parser_has_switch(arg_parser, "-o"))
-        options->output_dir = arg_parser_get_switch(arg_parser, "-o");
-    if (arg_parser_has_switch(arg_parser, "--out"))
-        options->output_dir = arg_parser_get_switch(arg_parser, "--out");
+    if (arg_parser.has_switch("-o"))
+        options->output_dir = arg_parser.get_switch("-o").c_str();
+    if (arg_parser.has_switch("--out"))
+        options->output_dir = arg_parser.get_switch("--out").c_str();
 }
 
-static bool add_input_paths_option(ArgParser *arg_parser, Options *options)
+static bool add_input_paths_option(ArgParser &arg_parser, Options *options)
 {
     options->input_paths = array_create();
 
-    const Array *stray = arg_parser_get_stray(arg_parser);
-    size_t i, j;
-    for (i = 1; i < array_size(stray); i ++)
+    const std::vector<std::string> stray = arg_parser.get_stray();
+    for (size_t i = 1; i < stray.size(); i ++)
     {
-        const char *path = (const char*)array_get(stray, i);
+        const char *path = stray[i].c_str();
         if (is_dir(path))
         {
             Array *sub_paths = get_files_recursive(path);
-            for (j = 0; j < array_size(sub_paths); j ++)
+            for (size_t j = 0; j < array_size(sub_paths); j ++)
             {
                 PathInfo *pi = new PathInfo;
                 pi->input_path = (char*)array_get(sub_paths, j);
@@ -83,27 +81,25 @@ static bool add_input_paths_option(ArgParser *arg_parser, Options *options)
     return true;
 }
 
-static void add_format_option(ArgParser *arg_parser, Options *options)
+static void add_format_option(ArgParser &arg_parser, Options *options)
 {
-    arg_parser_add_help(
-        arg_parser,
+    arg_parser.add_help(
         "-f, --fmt=FORMAT",
         "Selects the file format.");
 
-    if (arg_parser_has_switch(arg_parser, "-f"))
-        options->format = arg_parser_get_switch(arg_parser, "-f");
-    if (arg_parser_has_switch(arg_parser, "--fmt"))
-        options->format = arg_parser_get_switch(arg_parser, "--fmt");
+    if (arg_parser.has_switch("-f"))
+        options->format = arg_parser.get_switch("-f").c_str();
+    if (arg_parser.has_switch("--fmt"))
+        options->format = arg_parser.get_switch("--fmt").c_str();
 }
 
 static void print_help(
     const char *path_to_self,
-    ArgParser *arg_parser,
+    ArgParser &arg_parser,
     Options *options,
     Converter *converter)
 {
     assert(path_to_self != NULL);
-    assert(arg_parser != NULL);
     assert(options != NULL);
 
     printf(
@@ -113,8 +109,8 @@ static void print_help(
     puts("");
     puts("[options] can be:");
     puts("");
-    arg_parser_print_help(arg_parser);
-    arg_parser_clear_help(arg_parser);
+    arg_parser.print_help();
+    arg_parser.clear_help();
     puts("");
 
     if (converter != NULL)
@@ -122,7 +118,7 @@ static void print_help(
         converter_add_cli_help(converter, arg_parser);
         printf("[file_options] specific to %s:\n", options->format);
         puts("");
-        arg_parser_print_help(arg_parser);
+        arg_parser.print_help();
         return;
     }
     puts("[file_options] depend on chosen format and are required at runtime.");
@@ -131,7 +127,7 @@ static void print_help(
 
 static bool decode(
     Converter *converter,
-    ArgParser *arg_parser,
+    ArgParser &arg_parser,
     VirtualFile *file)
 {
     converter_parse_cli_options(converter, arg_parser);
@@ -140,12 +136,11 @@ static bool decode(
 
 static bool guess_converter_and_decode(
     Options *options,
-    ArgParser *arg_parser,
+    ArgParser &arg_parser,
     ConverterFactory *conv_factory,
     VirtualFile *file)
 {
     assert(options != NULL);
-    assert(arg_parser != NULL);
     assert(conv_factory != NULL);
     assert(file != NULL);
 
@@ -249,21 +244,22 @@ static VirtualFile *read_and_decode(void *_context)
 
 static bool run(
     Options *options,
-    ArgParser *arg_parser,
+    ArgParser &arg_parser,
     ConverterFactory *conv_factory)
 {
     size_t i;
     assert(options != NULL);
-    assert(arg_parser != NULL);
     assert(conv_factory != NULL);
 
     OutputFiles *output_files = output_files_create_hdd(options->output_dir);
     assert(output_files != NULL);
 
-    ReadContext context;
-    context.arg_parser = arg_parser;
-    context.options = options;
-    context.conv_factory = conv_factory;
+    ReadContext context =
+    {
+        options,
+        arg_parser,
+        conv_factory,
+    };
 
     bool result = true;
     for (i = 0; i < array_size(options->input_paths); i ++)
@@ -285,9 +281,8 @@ int main(int argc, const char **argv)
 
     ConverterFactory *conv_factory = converter_factory_create();
     assert(conv_factory != NULL);
-    ArgParser *arg_parser = arg_parser_create();
-    assert(arg_parser != NULL);
-    arg_parser_parse(arg_parser, argc, argv);
+    ArgParser arg_parser;
+    arg_parser.parse(argc, argv);
 
     add_output_folder_option(arg_parser, &options);
     add_format_option(arg_parser, &options);
@@ -324,6 +319,5 @@ int main(int argc, const char **argv)
         array_destroy(options.input_paths);
     }
     converter_factory_destroy(conv_factory);
-    arg_parser_destroy(arg_parser);
     return exit_code;
 }

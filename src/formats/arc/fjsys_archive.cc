@@ -47,7 +47,7 @@ typedef struct
 
 static void fjsys_add_cli_help(
     Archive *archive,
-    ArgParser *arg_parser)
+    ArgParser &arg_parser)
 {
     FjsysArchiveContext *archive_context = (FjsysArchiveContext*)archive->data;
     converter_add_cli_help(archive_context->mgd_converter, arg_parser);
@@ -55,7 +55,7 @@ static void fjsys_add_cli_help(
 
 static void fjsys_parse_cli_options(
     Archive *archive,
-    ArgParser *arg_parser)
+    ArgParser &arg_parser)
 {
     FjsysArchiveContext *archive_context = (FjsysArchiveContext*)archive->data;
     converter_parse_cli_options(archive_context->mgd_converter, arg_parser);

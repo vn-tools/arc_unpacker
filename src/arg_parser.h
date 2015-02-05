@@ -1,32 +1,29 @@
 #ifndef ARG_PARSER_H
 #define ARG_PARSER_H
-#include <stdbool.h>
-#include "collections/array.h"
-#include "collections/linked_list.h"
+#include <string>
+#include <vector>
+#include <utility>
 
-typedef struct ArgParser ArgParser;
+class ArgParser final
+{
+public:
+    void clear_help();
+    void add_help(const std::string invocation, const std::string description);
+    void print_help() const;
 
-ArgParser *arg_parser_create();
+    void parse(int argc, const char **argv);
 
-void arg_parser_destroy(ArgParser *arg_parser);
+    bool has_flag(const std::string argument) const;
+    bool has_switch(const std::string key) const;
 
-void arg_parser_clear_help(ArgParser *arg_parser);
+    const std::string get_switch(const std::string key) const;
+    std::vector<std::string> get_stray();
 
-void arg_parser_parse(ArgParser *arg_parser, int argc, const char **argv);
-
-bool arg_parser_has_flag(ArgParser *arg_parser, const char *argument);
-
-bool arg_parser_has_switch(ArgParser *arg_parser, const char *key);
-
-char *arg_parser_get_switch(ArgParser *arg_parser, const char *key);
-
-Array *arg_parser_get_stray(ArgParser *arg_parser);
-
-void arg_parser_add_help(
-    ArgParser *arg_parser,
-    const char *invocation,
-    const char *description);
-
-void arg_parser_print_help(ArgParser *arg_parser);
+private:
+    std::vector<std::string> flags;
+    std::vector<std::pair<std::string, std::string>> switches;
+    std::vector<std::string> stray;
+    std::vector<std::pair<std::string, std::string>> help_items;
+};
 
 #endif

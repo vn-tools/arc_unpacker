@@ -28,7 +28,7 @@ typedef struct
 
 static void mbl_add_cli_help(
     Archive *archive,
-    ArgParser *arg_parser)
+    ArgParser &arg_parser)
 {
     MblArchiveContext *archive_context = (MblArchiveContext*)archive->data;
     converter_add_cli_help(archive_context->prs_converter, arg_parser);
@@ -36,7 +36,7 @@ static void mbl_add_cli_help(
 
 static void mbl_parse_cli_options(
     Archive *archive,
-    ArgParser *arg_parser)
+    ArgParser &arg_parser)
 {
     MblArchiveContext *archive_context = (MblArchiveContext*)archive->data;
     converter_parse_cli_options(archive_context->prs_converter, arg_parser);

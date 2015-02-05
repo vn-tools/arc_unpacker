@@ -15,14 +15,13 @@ OutputFiles *unpack_to_memory(
     log_save();
     log_silence();
 
-    ArgParser *arg_parser = arg_parser_create();
-    arg_parser_parse(arg_parser, argc, argv);
+    ArgParser arg_parser;
+    arg_parser.parse(argc, argv);
     IO *io = io_create_from_file(input_path, "rb");
     assert(io != NULL);
     OutputFiles *output_files = output_files_create_memory();
     archive_unpack(archive, io, output_files);
     io_destroy(io);
-    arg_parser_destroy(arg_parser);
 
     log_restore();
     return output_files;
