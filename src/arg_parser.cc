@@ -1,7 +1,6 @@
 #include <cassert>
 #include <cstdio>
 #include "arg_parser.h"
-#include "collections/pair.h"
 
 namespace
 {
