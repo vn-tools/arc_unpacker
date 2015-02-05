@@ -61,8 +61,6 @@ namespace
 
             log_info("Saving to %s... ", full_path);
 
-            char *dir = dirname(full_path);
-            assert(dir != nullptr);
             if (!mkpath(dirname(full_path)))
                 assert(0);
             IO *output_io = io_create_from_file(full_path, "wb");
@@ -79,7 +77,6 @@ namespace
                 log_info("Saved successfully");
             }
             delete []full_path;
-            delete []dir;
         }
 
         if (file != nullptr)

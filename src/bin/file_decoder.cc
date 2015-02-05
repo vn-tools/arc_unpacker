@@ -15,16 +15,16 @@ namespace
 {
     typedef struct
     {
-        const char *format;
-        const char *output_dir;
-        Array *input_paths;
-    } Options;
+        std::string input_path;
+        std::string target_path;
+    } PathInfo;
 
     typedef struct
     {
-        char *input_path;
-        char *target_path;
-    } PathInfo;
+        const char *format;
+        const char *output_dir;
+        std::vector<PathInfo*> input_paths;
+    } Options;
 
     typedef struct
     {
@@ -48,33 +48,31 @@ namespace
 
     bool add_input_paths_option(ArgParser &arg_parser, Options *options)
     {
-        options->input_paths = array_create();
-
         const std::vector<std::string> stray = arg_parser.get_stray();
         for (size_t i = 1; i < stray.size(); i ++)
         {
-            const char *path = stray[i].c_str();
+            std::string path = stray[i];
             if (is_dir(path))
             {
-                Array *sub_paths = get_files_recursive(path);
-                for (size_t j = 0; j < array_size(sub_paths); j ++)
+                std::vector<std::string> sub_paths = get_files_recursive(path);
+                for (size_t j = 0; j < sub_paths.size(); j ++)
                 {
                     PathInfo *pi = new PathInfo;
-                    pi->input_path = (char*)array_get(sub_paths, j);
-                    pi->target_path = strdup(pi->input_path + strlen(path) + 1);
-                    array_add(options->input_paths, pi);
+                    pi->input_path = sub_paths[j];
+                    pi->target_path = pi->input_path.substr(path.length() + 1);
+                    options->input_paths.push_back(pi);
                 }
             }
             else
             {
                 PathInfo *pi = new PathInfo;
-                pi->input_path = strdup(path);
+                pi->input_path = path;
                 pi->target_path = basename(path);
-                array_add(options->input_paths, pi);
+                options->input_paths.push_back(pi);
             }
         }
 
-        if (array_size(options->input_paths) < 1)
+        if (options->input_paths.size() < 1)
         {
             log_error("Required more arguments.");
             return false;
@@ -211,7 +209,9 @@ namespace
     {
         ReadContext *context = (ReadContext*)_context;
 
-        IO *io = io_create_from_file(context->path_info->input_path, "rb");
+        IO *io = io_create_from_file(
+            context->path_info->input_path.c_str(),
+            "rb");
         if (io == nullptr)
             return nullptr;
 
@@ -224,8 +224,8 @@ namespace
         set_file_path(
             file,
             context->options->output_dir == nullptr
-                ? context->path_info->input_path
-                : context->path_info->target_path);
+                ? context->path_info->input_path.c_str()
+                : context->path_info->target_path.c_str());
 
         if (!guess_converter_and_decode(
             context->options,
@@ -261,9 +261,9 @@ namespace
         };
 
         bool result = true;
-        for (i = 0; i < array_size(options->input_paths); i ++)
+        for (i = 0; i < options->input_paths.size(); i ++)
         {
-            context.path_info = (PathInfo*)array_get(options->input_paths, i);
+            context.path_info = options->input_paths[i];
             result &= output_files_save(
                 output_files, &read_and_decode, &context);
         }
@@ -278,7 +278,6 @@ int main(int argc, const char **argv)
     Options options;
     options.format = nullptr;
     options.output_dir = nullptr;
-    options.input_paths = nullptr;
 
     ConverterFactory conv_factory;
     ArgParser arg_parser;
@@ -306,17 +305,7 @@ int main(int argc, const char **argv)
             exit_code = 1;
     }
 
-    if (options.input_paths != nullptr)
-    {
-        size_t i;
-        for (i = 0; i < array_size(options.input_paths); i ++)
-        {
-            PathInfo *pi = (PathInfo*)array_get(options.input_paths, i);
-            delete []pi->input_path;
-            delete []pi->target_path;
-            delete pi;
-        }
-        array_destroy(options.input_paths);
-    }
+    for (auto pi : options.input_paths)
+        delete pi;
     return exit_code;
 }

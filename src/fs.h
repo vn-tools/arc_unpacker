@@ -1,13 +1,16 @@
 #ifndef FS_H
 #define FS_H
-#include <stdbool.h>
-#include "collections/array.h"
+#include <vector>
+#include <string>
 
-bool is_dir(const char *path);
-Array *get_files_recursive(const char *path);
-Array *get_files(const char *path);
-char *basename(const char *path);
-char *dirname(const char *path);
-bool mkpath(const char *path);
+bool is_dir(std::string path);
+
+std::vector<std::string> get_files_recursive(const std::string path);
+std::vector<std::string> get_files(const std::string path);
+
+std::string basename(const std::string path);
+std::string dirname(const std::string path);
+
+bool mkpath(std::string path);
 
 #endif

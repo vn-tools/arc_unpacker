@@ -1,12 +1,10 @@
 #include <cassert>
 #include <cerrno>
-#include <cstring>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "fs.h"
 #include "logger.h"
-#include "string_ex.h"
 
 #if defined(__linux) || defined(__unix)
     #define p_mkdir(name,chmod) mkdir(name, chmod)
@@ -16,15 +14,35 @@
 
 namespace
 {
-    bool _get_files_accumulator(
-        const char *dir_path,
-        Array *accumulator,
+    std::string trim_right(std::string str, std::string chars)
+    {
+        size_t pos = str.length();
+        while (pos > 0 && chars.find(str[pos - 1]) != std::string::npos)
+            -- pos;
+        return str.substr(0, pos);
+    }
+
+    size_t find_last_slash(const std::string path)
+    {
+        size_t pos = path.length();
+        while (pos > 0)
+        {
+            -- pos;
+            if (path[pos] == '\\' || path[pos] == '/')
+                return pos;
+        }
+        return std::string::npos;
+    }
+
+    bool get_files_accumulator(
+        const std::string dir_path,
+        std::vector<std::string> &accumulator,
         bool recursive)
     {
-        DIR *d = opendir(dir_path);
+        DIR *d = opendir(dir_path.c_str());
         if (!d)
         {
-            log_warning("FS: Cannot open directory %s", dir_path);
+            log_warning("FS: Cannot open directory %s", dir_path.c_str());
             return false;
         }
 
@@ -34,134 +52,92 @@ namespace
             if (!entry)
                 break;
 
-            int path_length = strlen(dir_path) + 1 + strlen(entry->d_name);
-            char *path = new char[path_length + 1];
-            assert(path != nullptr);
-
-            strcpy(path, dir_path);
-            strcat(path, "/");
-            strcat(path, entry->d_name);
-
+            std::string name = std::string(entry->d_name);
+            std::string path = dir_path + "/" + name;
             if (is_dir(path))
             {
-                if (recursive
-                && strcmp(entry->d_name, "..") != 0
-                && strcmp(entry->d_name, ".") != 0)
+                if (recursive && name != ".." && name != ".")
                 {
-                    _get_files_accumulator(path, accumulator, recursive);
+                    get_files_accumulator(path, accumulator, recursive);
                 }
-                delete []path;
             }
             else
             {
-                array_add(accumulator, path);
+                accumulator.push_back(path);
             }
         }
 
         closedir(d);
         return true;
     }
-
-    Array *_get_files(const char *dir_path, bool recursive)
-    {
-        Array *accumulator = array_create();
-        if (!_get_files_accumulator(dir_path, accumulator, recursive))
-        {
-            array_destroy(accumulator);
-            return false;
-        }
-        return accumulator;
-    }
 }
 
-bool is_dir(const char *path)
+bool is_dir(const std::string path)
 {
     struct stat stats;
-    return stat(path, &stats) == 0 && S_ISDIR (stats.st_mode);
+    return stat(path.c_str(), &stats) == 0 && S_ISDIR (stats.st_mode);
 }
 
-Array *get_files_recursive(const char *dir_path)
+std::vector<std::string> get_files_recursive(const std::string dir_path)
 {
-    return _get_files(dir_path, true);
+    std::vector<std::string> accumulator;
+    get_files_accumulator(dir_path, accumulator, true);
+    return accumulator;
 }
 
-Array *get_files(const char *dir_path)
+std::vector<std::string> get_files(const std::string dir_path)
 {
-    return _get_files(dir_path, false);
+    std::vector<std::string> accumulator;
+    get_files_accumulator(dir_path, accumulator, false);
+    return accumulator;
 }
 
-char *basename(const char *path)
+std::string basename(const std::string path)
 {
-    char *last_slash = strrchr(path, '\\');
-    if (strrchr(path, '/') > last_slash)
-        last_slash = strrchr(path, '/');
-    if (last_slash == nullptr)
-    {
-        return strdup(path);
-    }
-    return strdup(last_slash + 1);
+    size_t last_slash = find_last_slash(path);
+    if (last_slash == std::string::npos)
+        return path;
+    return path.substr(last_slash + 1);
 }
 
-char *dirname(const char *path)
+std::string dirname(const std::string path)
 {
-    char *ret;
-    char *path_nts;
+    std::string path_nts = trim_right(path, "/\\");
+    if (path_nts == "")
+        return path;
 
-    path_nts = strdup(path);
-    assert(path_nts != nullptr);
-    trim_right(path_nts, "/\\");
-    if (strcmp(path_nts, "") == 0)
-    {
-        delete []path_nts;
-        return strdup(path);
-    }
-
-    char *last_slash = strrchr(path_nts, '\\');
-    if (strrchr(path_nts, '/') > last_slash)
-        last_slash = strrchr(path_nts, '/');
-    if (last_slash == nullptr)
-    {
-        delete []path_nts;
-        return strdup(path);
-    }
-
-    ret = strndup(path_nts, last_slash + 1 - path_nts);
-    delete []path_nts;
-    return ret;
+    size_t last_slash = find_last_slash(path_nts);
+    if (last_slash == std::string::npos)
+        return path;
+    return path_nts.substr(0, last_slash + 1);
 }
 
-bool mkpath(const char *path)
+bool mkpath(const std::string path)
 {
-    char *dir = nullptr;
     struct stat sb;
-    if (stat(path, &sb))
+    if (stat(path.c_str(), &sb))
     {
         if (errno != ENOENT)
         {
-            log_warning("FS: Failed to stat path %s", path);
+            log_warning("FS: Failed to stat path %s", path.c_str());
             return false;
         }
-        dir = dirname(path);
+        std::string dir = dirname(path);
         if (!mkpath(dir))
-        {
-            delete []dir;
             return false;
-        }
         trim_right(dir, "/\\");
-        if (p_mkdir(path, 0755) != 0 && errno != EEXIST)
+        if (p_mkdir(path.c_str(), 0755) != 0 && errno != EEXIST)
         {
-            log_warning("FS: Failed to create directory %s", dir);
-            delete []dir;
+            log_warning("FS: Failed to create directory %s", dir.c_str());
             return false;
         }
-        delete []dir;
         return true;
     }
     else if (!S_ISDIR(sb.st_mode))
     {
         log_warning(
             "FS: Cannot create directory at %s - file already exists",
-            path);
+            path.c_str());
         return false;
     }
     return true;

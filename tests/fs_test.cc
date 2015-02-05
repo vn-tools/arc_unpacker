@@ -1,52 +1,51 @@
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <algorithm>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include "fs.h"
 
 void test_get_files()
 {
-    Array *result = get_files("tests/test_files/gfx");
-    assert(3 == array_size(result));
+    auto result = get_files("tests/test_files/gfx");
+    assert(result.size() == 3);
 
-    size_t correct = 0;
-    size_t i;
-    for (i = 0; i < 3; i ++)
-    {
-        char *actual_path = (char*)array_get(result, i);
-        if (!strcmp("tests/test_files/gfx/reimu_transparent.png", actual_path)
-            || !strcmp("tests/test_files/gfx/reimu_opaque.jpg", actual_path)
-            || !strcmp("tests/test_files/gfx/usagi_opaque.png", actual_path))
-        {
-            ++ correct;
-        }
-        free(actual_path);
-    }
-    assert(3 == correct);
+    assert(std::find(
+        result.begin(),
+        result.end(),
+        "tests/test_files/gfx/reimu_transparent.png") != result.end());
+
+    assert(std::find(
+        result.begin(),
+        result.end(),
+        "tests/test_files/gfx/reimu_opaque.jpg") != result.end());
+
+    assert(std::find(
+        result.begin(),
+        result.end(),
+        "tests/test_files/gfx/usagi_opaque.png") != result.end());
 }
 
 void test_get_files_recursive()
 {
-    Array *result = get_files_recursive("tests/test_files/gfx");
-    assert(array_size(result) > 3);
+    auto result = get_files_recursive("tests/test_files/gfx");
+    assert(result.size() > 3);
 }
 
-void test_basename(const char *expected, const char *input)
+void test_basename(const std::string expected, const std::string input)
 {
-    char *dir = basename(input);
-    assert(strcmp(expected, dir) == 0);
-    free(dir);
+    std::string dir = basename(input);
+    assert(dir == expected);
 }
 
-void test_dirname(const char *expected, const char *input)
+void test_dirname(const std::string expected, const std::string input)
 {
-    char *dir = dirname(input);
-    assert(strcmp(expected, dir) == 0);
-    free(dir);
+    std::string dir = dirname(input);
+    assert(dir == expected);
 }
 
-void test_is_dir(bool expected, const char *input)
+void test_is_dir(bool expected, const std::string input)
 {
-    assert(expected == is_dir(input));
+    assert(is_dir(input) == expected);
 }
 
 int main(void)
