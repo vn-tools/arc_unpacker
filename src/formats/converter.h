@@ -18,7 +18,7 @@ Converter *converter_create();
 
 void converter_destroy(Converter *converter);
 
-void converter_parse_cli_options();
+void converter_parse_cli_options(Converter *converter, ArgParser *arg_parser);
 
 void converter_add_cli_help(Converter *converter, ArgParser *arg_parser);
 

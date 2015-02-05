@@ -279,12 +279,10 @@ static bool run(
 int main(int argc, const char **argv)
 {
     int exit_code = 0;
-    Options options =
-    {
-        .format = NULL,
-        .output_dir = NULL,
-        .input_paths = NULL,
-    };
+    Options options;
+    options.format = NULL;
+    options.output_dir = NULL;
+    options.input_paths = NULL;
 
     ConverterFactory *conv_factory = converter_factory_create();
     assert(conv_factory != NULL);

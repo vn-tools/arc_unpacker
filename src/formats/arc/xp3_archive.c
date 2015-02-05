@@ -307,7 +307,7 @@ static bool xp3_unpack(
     log_info("XP3: Version: %d", version);
 
     uint64_t table_offset = xp3_get_table_offset(arc_io, version);
-    io_seek(arc_io, table_offset & 0xffffffff);
+    io_seek(arc_io, (uint32_t)table_offset);
     IO *table_io = xp3_read_raw_table(arc_io);
 
     bool result;

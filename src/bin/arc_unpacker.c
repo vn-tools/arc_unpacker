@@ -186,12 +186,10 @@ static bool run(
 int main(int argc, const char **argv)
 {
     int exit_code = 0;
-    Options options =
-    {
-        .input_path = NULL,
-        .output_path = NULL,
-        .format = NULL,
-    };
+    Options options;
+    options.input_path = NULL;
+    options.output_path = NULL;
+    options.format = NULL;
 
     ArchiveFactory *arc_factory = archive_factory_create();
     assert(arc_factory != NULL);

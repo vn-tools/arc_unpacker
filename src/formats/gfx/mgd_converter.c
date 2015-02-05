@@ -410,7 +410,8 @@ static bool mgd_decode(Converter *converter, VirtualFile *file)
     uint16_t image_height = io_read_u16_le(file->io);
     uint32_t size_original = io_read_u32_le(file->io);
     uint32_t size_compressed_total = io_read_u32_le(file->io);
-    MgdCompressionType compression_type = io_read_u32_le(file->io);
+    MgdCompressionType compression_type
+        = (MgdCompressionType)io_read_u32_le(file->io);
     io_skip(file->io, 64);
 
     size_t size_compressed = io_read_u32_le(file->io);

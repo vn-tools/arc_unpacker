@@ -7,7 +7,7 @@ typedef enum
     LOG_LEVEL_ERROR = 1,
     LOG_LEVEL_WARNING,
     LOG_LEVEL_INFO,
-    _LOG_LEVEL_COUNT,
+    _LOG_LEVEL_COUNT
 } LogLevel;
 
 void log_save();
