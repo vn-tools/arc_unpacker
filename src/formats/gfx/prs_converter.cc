@@ -138,9 +138,8 @@ static bool prs_check_magic(IO *io)
     return memcmp(magic, prs_magic, prs_magic_length) == 0;
 }
 
-static bool prs_decode(Converter *converter, VirtualFile *file)
+bool PrsConverter::decode_internal(VirtualFile *file)
 {
-    assert(converter != nullptr);
     assert(file != nullptr);
 
     if (!prs_check_magic(file->io))
@@ -186,11 +185,4 @@ static bool prs_decode(Converter *converter, VirtualFile *file)
     delete []source_buffer;
     delete []target_buffer;
     return result;
-}
-
-Converter *prs_converter_create()
-{
-    Converter *converter = converter_create();
-    converter->decode = &prs_decode;
-    return converter;
 }

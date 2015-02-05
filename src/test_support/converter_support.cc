@@ -43,7 +43,7 @@ static Image *get_actual_image(const char *path, Converter *converter)
         assert(0);
     io_destroy(io);
 
-    converter_decode(converter, file);
+    converter->decode(file);
 
     Image *image = image_create_from_boxed(file->io);
     assert(image != nullptr);

@@ -66,7 +66,7 @@ static VirtualFile *arc_read_file(void *_context)
     io_write_string_from_io(file->io, context->arc_io, size);
     io_seek(context->arc_io, old_pos);
 
-    converter_try_decode(context->cbg_converter, file);
+    context->cbg_converter->try_decode(file);
 
     return file;
 }
@@ -104,7 +104,7 @@ static bool arc_unpack(
 void arc_cleanup(Archive *archive)
 {
     assert(archive != nullptr);
-    converter_destroy((Converter*)archive->data);
+    delete (CbgConverter*)archive->data;
 }
 
 Archive *arc_archive_create()
@@ -112,6 +112,6 @@ Archive *arc_archive_create()
     Archive *archive = archive_create();
     archive->unpack = &arc_unpack;
     archive->cleanup = &arc_cleanup;
-    archive->data = (void*)cbg_converter_create();
+    archive->data = (void*)new CbgConverter();
     return archive;
 }

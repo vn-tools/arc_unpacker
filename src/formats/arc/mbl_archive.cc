@@ -16,7 +16,7 @@
 
 typedef struct
 {
-    Converter *prs_converter;
+    PrsConverter *prs_converter;
 } MblArchiveContext;
 
 typedef struct
@@ -31,7 +31,7 @@ static void mbl_add_cli_help(
     ArgParser &arg_parser)
 {
     MblArchiveContext *archive_context = (MblArchiveContext*)archive->data;
-    converter_add_cli_help(archive_context->prs_converter, arg_parser);
+    archive_context->prs_converter->add_cli_help(arg_parser);
 }
 
 static void mbl_parse_cli_options(
@@ -39,7 +39,7 @@ static void mbl_parse_cli_options(
     ArgParser &arg_parser)
 {
     MblArchiveContext *archive_context = (MblArchiveContext*)archive->data;
-    converter_parse_cli_options(archive_context->prs_converter, arg_parser);
+    archive_context->prs_converter->parse_cli_options(arg_parser);
 }
 
 static int mbl_check_version(
@@ -114,7 +114,7 @@ static VirtualFile *mbl_read_file(void *context)
     io_write_string_from_io(file->io, unpack_context->arc_io, size);
     io_seek(unpack_context->arc_io, old_pos);
 
-    converter_try_decode(unpack_context->archive_context->prs_converter, file);
+    unpack_context->archive_context->prs_converter->try_decode(file);
 
     return file;
 }
@@ -150,7 +150,7 @@ static bool mbl_unpack(
 static void mbl_cleanup(Archive *archive)
 {
     MblArchiveContext *archive_context = (MblArchiveContext*)archive->data;
-    converter_destroy(archive_context->prs_converter);
+    delete archive_context->prs_converter;
 }
 
 Archive *mbl_archive_create()
@@ -163,7 +163,7 @@ Archive *mbl_archive_create()
 
     MblArchiveContext *context = new MblArchiveContext;
     assert(context != nullptr);
-    context->prs_converter = prs_converter_create();
+    context->prs_converter = new PrsConverter();
     archive->data = context;
 
     return archive;

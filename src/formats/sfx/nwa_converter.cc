@@ -100,9 +100,8 @@ static bool nwa_read_compressed(
     return false;
 }
 
-static bool nwa_decode(Converter *converter, VirtualFile *file)
+bool NwaConverter::decode(VirtualFile *file)
 {
-    assert(converter != nullptr);
     assert(file != nullptr);
 
     NwaHeader header;
@@ -162,11 +161,4 @@ static bool nwa_decode(Converter *converter, VirtualFile *file)
 
     delete []output_samples;
     return true;
-}
-
-Converter *nwa_converter_create()
-{
-    Converter *converter = converter_create();
-    converter->decode = &nwa_decode;
-    return converter;
 }

@@ -269,9 +269,8 @@ static PixelFormat bpp_to_image_pixel_format(short bpp)
     return (PixelFormat)0;
 }
 
-static bool cbg_decode(Converter *converter, VirtualFile *file)
+bool CbgConverter::decode_internal(VirtualFile *file)
 {
-    assert(converter != nullptr);
     assert(file != nullptr);
 
     char magic[cbg_magic_length];
@@ -348,11 +347,4 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
     }
 
     return result;
-}
-
-Converter *cbg_converter_create()
-{
-    Converter *converter = converter_create();
-    converter->decode = &cbg_decode;
-    return converter;
 }

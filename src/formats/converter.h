@@ -1,29 +1,20 @@
 #ifndef FORMATS_CONVERTER_H
 #define FORMATS_CONVERTER_H
-#include <stdbool.h>
 #include "arg_parser.h"
 #include "virtual_file.h"
 
-typedef struct Converter
+class Converter
 {
-    void *data;
+public:
+    virtual void add_cli_help(ArgParser &);
+    virtual void parse_cli_options(ArgParser &);
+    virtual bool decode_internal(VirtualFile *);
+    virtual ~Converter();
 
-    void (*add_cli_help)(struct Converter *, ArgParser&);
-    void (*parse_cli_options)(struct Converter *, ArgParser&);
-    bool (*decode)(struct Converter *, VirtualFile *);
-    void (*cleanup)(struct Converter *);
-} Converter;
+    bool try_decode(VirtualFile *);
+    bool decode(VirtualFile *);
+};
 
 Converter *converter_create();
-
-void converter_destroy(Converter *converter);
-
-void converter_parse_cli_options(Converter *converter, ArgParser &arg_parser);
-
-void converter_add_cli_help(Converter *converter, ArgParser &arg_parser);
-
-bool converter_decode(Converter *converter, VirtualFile *target_file);
-
-bool converter_try_decode(Converter *converter, VirtualFile *target_file);
 
 #endif

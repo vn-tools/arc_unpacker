@@ -115,7 +115,7 @@ static void print_help(
 
     if (converter != nullptr)
     {
-        converter_add_cli_help(converter, arg_parser);
+        converter->add_cli_help(arg_parser);
         printf("[file_options] specific to %s:\n", options->format);
         puts("");
         arg_parser.print_help();
@@ -130,8 +130,8 @@ static bool decode(
     ArgParser &arg_parser,
     VirtualFile *file)
 {
-    converter_parse_cli_options(converter, arg_parser);
-    return converter_decode(converter, file);
+    converter->parse_cli_options(arg_parser);
+    return converter->decode(file);
 }
 
 static bool guess_converter_and_decode(
@@ -160,7 +160,7 @@ static bool guess_converter_and_decode(
             assert(converter != nullptr);
             log_info("Trying %s...", format);
             result = decode(converter, arg_parser, file);
-            converter_destroy(converter);
+            delete converter;
 
             if (result)
             {
@@ -188,7 +188,7 @@ static bool guess_converter_and_decode(
                 log_info("Success - %s decoding finished", options->format);
             else
                 log_info("Failure - %s decoding finished", options->format);
-            converter_destroy(converter);
+            delete converter;
         }
         else
         {
@@ -297,7 +297,7 @@ int main(int argc, const char **argv)
             : nullptr;
         print_help(argv[0], arg_parser, &options, converter);
         if (converter != nullptr)
-            converter_destroy(converter);
+            delete converter;
     }
     else
     {

@@ -391,9 +391,8 @@ static Image *mgd_read_image(
     return image;
 }
 
-static bool mgd_decode(Converter *converter, VirtualFile *file)
+bool MgdConverter::decode_internal(VirtualFile *file)
 {
-    assert(converter != nullptr);
     assert(file != nullptr);
 
     if (!mgd_check_magic(file->io))
@@ -449,11 +448,4 @@ static bool mgd_decode(Converter *converter, VirtualFile *file)
     image_destroy(image);
     delete []data_uncompressed;
     return true;
-}
-
-Converter *mgd_converter_create()
-{
-    Converter *converter = converter_create();
-    converter->decode = &mgd_decode;
-    return converter;
 }

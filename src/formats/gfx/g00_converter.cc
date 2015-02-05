@@ -381,9 +381,8 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
     return result;
 }
 
-static bool g00_decode(Converter *converter, VirtualFile *file)
+bool G00Converter::decode_internal(VirtualFile *file)
 {
-    assert(converter != nullptr);
     assert(file != nullptr);
 
     uint8_t version = io_read_u8(file->io);
@@ -408,11 +407,4 @@ static bool g00_decode(Converter *converter, VirtualFile *file)
     }
 
     return true;
-}
-
-Converter *g00_converter_create()
-{
-    Converter *converter = converter_create();
-    converter->decode = &g00_decode;
-    return converter;
 }

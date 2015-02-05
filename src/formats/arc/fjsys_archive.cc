@@ -35,7 +35,7 @@ typedef struct
 
 typedef struct
 {
-    Converter *mgd_converter;
+    MgdConverter *mgd_converter;
 } FjsysArchiveContext;
 
 typedef struct
@@ -50,7 +50,7 @@ static void fjsys_add_cli_help(
     ArgParser &arg_parser)
 {
     FjsysArchiveContext *archive_context = (FjsysArchiveContext*)archive->data;
-    converter_add_cli_help(archive_context->mgd_converter, arg_parser);
+    archive_context->mgd_converter->add_cli_help(arg_parser);
 }
 
 static void fjsys_parse_cli_options(
@@ -58,7 +58,7 @@ static void fjsys_parse_cli_options(
     ArgParser &arg_parser)
 {
     FjsysArchiveContext *archive_context = (FjsysArchiveContext*)archive->data;
-    converter_parse_cli_options(archive_context->mgd_converter, arg_parser);
+    archive_context->mgd_converter->parse_cli_options(arg_parser);
 }
 
 static bool fjsys_check_magic(IO *arc_io)
@@ -101,7 +101,7 @@ static VirtualFile *fjsys_read_file(void *context)
 
     io_seek(unpack_context->arc_io, data_offset);
     io_write_string_from_io(file->io, unpack_context->arc_io, data_size);
-    converter_try_decode(unpack_context->archive_context->mgd_converter, file);
+    unpack_context->archive_context->mgd_converter->try_decode(file);
 
     io_seek(unpack_context->arc_io, old_pos);
     return file;
@@ -139,7 +139,7 @@ static bool fjsys_unpack(
 static void fjsys_cleanup(Archive *archive)
 {
     FjsysArchiveContext *archive_context = (FjsysArchiveContext*)archive->data;
-    converter_destroy(archive_context->mgd_converter);
+    delete archive_context->mgd_converter;
 }
 
 Archive *fjsys_archive_create()
@@ -152,7 +152,7 @@ Archive *fjsys_archive_create()
 
     FjsysArchiveContext *context = new FjsysArchiveContext;
     assert(context != nullptr);
-    context->mgd_converter = mgd_converter_create();
+    context->mgd_converter = new MgdConverter();
     archive->data = context;
 
     return archive;

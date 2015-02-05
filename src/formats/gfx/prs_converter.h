@@ -2,6 +2,10 @@
 #define FORMATS_GFX_PRS_CONVERTER_H
 #include "formats/converter.h"
 
-Converter *prs_converter_create();
+class PrsConverter final : public Converter
+{
+public:
+    bool decode_internal(VirtualFile *) override;
+};
 
 #endif

@@ -1,4 +1,5 @@
 #include <cassert>
+#include <functional>
 #include "collections/dictionary.h"
 #include "factory/converter_factory.h"
 #include "formats/gfx/cbg_converter.h"
@@ -14,18 +15,16 @@ struct ConverterFactory
     Dictionary *formats;
 };
 
-typedef Converter*(*ConverterCreator)();
-
 typedef struct
 {
     const char *name;
-    ConverterCreator creator;
+    std::function<Converter*()> creator;
 } FormatDefinition;
 
 static void add_format(
     ConverterFactory *factory,
     const char *name,
-    ConverterCreator creator)
+    std::function<Converter*()> creator)
 {
     assert(factory != nullptr);
     assert(name != nullptr);
@@ -39,12 +38,12 @@ static void add_format(
 static void init_factory(ConverterFactory *factory)
 {
     assert(factory != nullptr);
-    add_format(factory, "cbg", &cbg_converter_create);
-    add_format(factory, "xyz", &xyz_converter_create);
-    add_format(factory, "mgd", &mgd_converter_create);
-    add_format(factory, "g00", &g00_converter_create);
-    add_format(factory, "nwa", &nwa_converter_create);
-    add_format(factory, "prs", &prs_converter_create);
+    add_format(factory, "cbg", []() { return new CbgConverter(); });
+    add_format(factory, "xyz", []() { return new XyzConverter(); });
+    add_format(factory, "mgd", []() { return new MgdConverter(); });
+    add_format(factory, "g00", []() { return new G00Converter(); });
+    add_format(factory, "nwa", []() { return new NwaConverter(); });
+    add_format(factory, "prs", []() { return new PrsConverter(); });
 }
 
 

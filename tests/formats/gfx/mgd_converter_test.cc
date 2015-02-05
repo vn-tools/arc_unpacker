@@ -3,22 +3,22 @@
 
 void test_mgd_decoding_sgd()
 {
-    Converter *converter = mgd_converter_create();
+    Converter *converter = new MgdConverter();
     assert_decoded_image(
         converter,
         "tests/test_files/gfx/mgd/GS_UD.MGD",
         "tests/test_files/gfx/mgd/GS_UD-out.png");
-    converter_destroy(converter);
+    delete converter;
 }
 
 void test_mgd_decoding_png()
 {
-    Converter *converter = mgd_converter_create();
+    Converter *converter = new MgdConverter();
     assert_decoded_image(
         converter,
         "tests/test_files/gfx/mgd/saveload_p.MGD",
         "tests/test_files/gfx/mgd/saveload_p-out.png");
-    converter_destroy(converter);
+    delete converter;
 }
 
 int main(void)

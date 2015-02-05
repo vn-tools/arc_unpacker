@@ -1,54 +1,32 @@
 #include <cassert>
+#include <stdexcept>
 #include "formats/converter.h"
 #include "logger.h"
 
-Converter *converter_create()
+void Converter::add_cli_help(__attribute__((unused)) ArgParser &arg_parser)
 {
-    Converter *converter = new Converter;
-    assert(converter != nullptr);
-    converter->data = nullptr;
-    converter->add_cli_help = nullptr;
-    converter->parse_cli_options = nullptr;
-    converter->decode = nullptr;
-    converter->cleanup = nullptr;
-    return converter;
 }
 
-void converter_destroy(Converter *converter)
+void Converter::parse_cli_options(__attribute__((unused)) ArgParser &arg_parser)
 {
-    assert(converter != nullptr);
-    if (converter->cleanup != nullptr)
-        converter->cleanup(converter);
-    delete converter;
 }
 
-void converter_parse_cli_options(Converter *converter, ArgParser &arg_parser)
+bool Converter::decode_internal(__attribute__((unused)) VirtualFile *)
 {
-    assert(converter != nullptr);
-    if (converter->parse_cli_options != nullptr)
-        converter->parse_cli_options(converter, arg_parser);
+    throw std::runtime_error("Decoding is not supported");
 }
 
-void converter_add_cli_help(Converter *converter, ArgParser &arg_parser)
+bool Converter::decode(VirtualFile *target_file)
 {
-    assert(converter != nullptr);
-    if (converter->add_cli_help != nullptr)
-        converter->add_cli_help(converter, arg_parser);
-}
-
-bool converter_decode(Converter *converter, VirtualFile *target_file)
-{
-    assert(converter != nullptr);
-    if (converter->decode == nullptr)
-    {
-        log_error("Decoding for this format is not supported");
-        return false;
-    }
     io_seek(target_file->io, 0);
-    return converter->decode(converter, target_file);
+    return decode_internal(target_file);
 }
 
-bool converter_try_decode(Converter *converter, VirtualFile *target_file)
+bool Converter::try_decode(VirtualFile *target_file)
 {
-    return converter_decode(converter, target_file);
+    return decode(target_file);
+}
+
+Converter::~Converter()
+{
 }

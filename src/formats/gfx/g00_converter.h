@@ -2,6 +2,10 @@
 #define FORMATS_GFX_G00_CONVERTER_H
 #include "formats/converter.h"
 
-Converter *g00_converter_create();
+class G00Converter final : public Converter
+{
+public:
+    bool decode_internal(VirtualFile *) override;
+};
 
 #endif

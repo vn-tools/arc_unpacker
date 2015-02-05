@@ -3,9 +3,9 @@
 
 void test_cbg_decoding(const char *input_path, const char *expected_path)
 {
-    Converter *converter = cbg_converter_create();
+    Converter *converter = new CbgConverter();
     assert_decoded_image(converter, input_path, expected_path);
-    converter_destroy(converter);
+    delete converter;
 }
 
 int main(void)

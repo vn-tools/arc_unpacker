@@ -20,9 +20,8 @@
 static const char *xyz_magic = "XYZ1";
 static const size_t xyz_magic_length = 4;
 
-static bool xyz_decode(Converter *converter, VirtualFile *file)
+bool XyzConverter::decode_internal(VirtualFile *file)
 {
-    assert(converter != nullptr);
     assert(file != nullptr);
 
     bool result;
@@ -102,11 +101,4 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
     }
 
     return result;
-}
-
-Converter *xyz_converter_create()
-{
-    Converter *converter = converter_create();
-    converter->decode = &xyz_decode;
-    return converter;
 }
