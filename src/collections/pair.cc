@@ -5,7 +5,7 @@
 Pair *pair_create(void *e1, void *e2)
 {
     Pair *pair = new Pair;
-    assert(pair != NULL);
+    assert(pair != nullptr);
     pair->e1 = e1;
     pair->e2 = e2;
     return pair;

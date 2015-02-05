@@ -15,7 +15,7 @@ void test_xp3_archive(const char *path)
 
     Archive *archive = xp3_archive_create();
 
-    OutputFiles *output_files = unpack_to_memory(path, archive, 0, NULL);
+    OutputFiles *output_files = unpack_to_memory(path, archive, 0, nullptr);
     Array *actual_files = output_files_get_saved(output_files);
 
     compare_files(expected_files, actual_files);

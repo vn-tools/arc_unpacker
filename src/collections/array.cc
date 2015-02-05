@@ -12,30 +12,30 @@ struct Array
 Array *array_create()
 {
     Array *array = new Array;
-    assert(array != NULL);
+    assert(array != nullptr);
     array->size = 0;
-    array->items = NULL;
+    array->items = nullptr;
     return array;
 }
 
 void array_destroy(Array *array)
 {
-    assert(array != NULL);
+    assert(array != nullptr);
     free(array->items);
     delete array;
 }
 
 size_t array_size(const Array *array)
 {
-    assert(array != NULL);
+    assert(array != nullptr);
     return array->size;
 }
 
 void *array_get(const Array *array, size_t index)
 {
-    assert(array != NULL);
+    assert(array != nullptr);
     if (index >= array->size)
-        return NULL;
+        return nullptr;
     return array->items[index];
 }
 
@@ -43,7 +43,7 @@ bool array_set(Array *array, size_t index, void *data)
 {
     void **new_items;
     size_t new_size;
-    assert(array != NULL);
+    assert(array != nullptr);
     if (index >= array->size)
     {
         new_size = index + 1;

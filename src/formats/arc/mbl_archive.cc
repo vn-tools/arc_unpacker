@@ -78,18 +78,18 @@ static int mbl_get_version(IO *arc_io)
 static VirtualFile *mbl_read_file(void *context)
 {
     MblUnpackContext *unpack_context = (MblUnpackContext*)context;
-    assert(unpack_context != NULL);
+    assert(unpack_context != nullptr);
     VirtualFile *file = virtual_file_create();
 
     size_t old_pos = io_tell(unpack_context->arc_io);
-    char *tmp_name = NULL;
-    io_read_until_zero(unpack_context->arc_io, &tmp_name, NULL);
-    assert(tmp_name != NULL);
+    char *tmp_name = nullptr;
+    io_read_until_zero(unpack_context->arc_io, &tmp_name, nullptr);
+    assert(tmp_name != nullptr);
 
     char *decoded_name;
     if (!convert_encoding(
         tmp_name, strlen(tmp_name),
-        &decoded_name, NULL,
+        &decoded_name, nullptr,
         "sjis", "utf-8"))
     {
         assert(0);
@@ -162,7 +162,7 @@ Archive *mbl_archive_create()
     archive->parse_cli_options = &mbl_parse_cli_options;
 
     MblArchiveContext *context = new MblArchiveContext;
-    assert(context != NULL);
+    assert(context != nullptr);
     context->prs_converter = prs_converter_create();
     archive->data = context;
 

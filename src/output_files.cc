@@ -16,17 +16,17 @@ struct OutputFiles
 
 static char *get_full_path(OutputFiles *output_files, const char *file_name)
 {
-    assert(output_files != NULL);
-    assert(file_name != NULL);
+    assert(output_files != nullptr);
+    assert(file_name != nullptr);
     assert(strcmp(file_name, "") != 0);
-    if (output_files->output_dir == NULL)
+    if (output_files->output_dir == nullptr)
         return strdup(file_name);
 
     char *full_path = new char[
         strlen(output_files->output_dir)
         + 1
         + strlen(file_name) + 1];
-    assert(full_path != NULL);
+    assert(full_path != nullptr);
     strcpy(full_path, output_files->output_dir);
     strcat(full_path, "/");
     strcat(full_path, file_name);
@@ -38,15 +38,15 @@ static bool save_to_hdd(
     VirtualFile *(*save_proc)(void *),
     void *context)
 {
-    assert(output_files != NULL);
-    assert(save_proc != NULL);
+    assert(output_files != nullptr);
+    assert(save_proc != nullptr);
     assert(!output_files->memory);
 
     log_info("Reading file...");
 
     bool result;
     VirtualFile *file = save_proc(context);
-    if (file == NULL)
+    if (file == nullptr)
     {
         log_error("An error occured while reading file, saving skipped.");
     }
@@ -55,12 +55,12 @@ static bool save_to_hdd(
         char *full_path = get_full_path(
             output_files,
             virtual_file_get_name(file));
-        assert(full_path != NULL);
+        assert(full_path != nullptr);
 
         log_info("Saving to %s... ", full_path);
 
         char *dir = dirname(full_path);
-        assert(dir != NULL);
+        assert(dir != nullptr);
         if (!mkpath(dirname(full_path)))
             assert(0);
         IO *output_io = io_create_from_file(full_path, "wb");
@@ -80,7 +80,7 @@ static bool save_to_hdd(
         delete []dir;
     }
 
-    if (file != NULL)
+    if (file != nullptr)
         virtual_file_destroy(file);
     log_info("");
     return result;
@@ -92,11 +92,11 @@ static bool save_to_memory(
     void *context)
 {
     VirtualFile *file;
-    assert(output_files != NULL);
-    assert(save_proc != NULL);
+    assert(output_files != nullptr);
+    assert(save_proc != nullptr);
     assert(output_files->memory);
     file = save_proc(context);
-    if (file == NULL)
+    if (file == nullptr)
         return false;
     if (!array_add(output_files->files, file))
         assert(0);
@@ -106,10 +106,10 @@ static bool save_to_memory(
 OutputFiles *output_files_create_hdd(const char *output_dir)
 {
     OutputFiles *output_files = new OutputFiles;
-    assert(output_files != NULL);
+    assert(output_files != nullptr);
     output_files->output_dir = output_dir;
     output_files->memory = false;
-    output_files->files = NULL;
+    output_files->files = nullptr;
     output_files->save = &save_to_hdd;
     return output_files;
 }
@@ -117,18 +117,18 @@ OutputFiles *output_files_create_hdd(const char *output_dir)
 OutputFiles *output_files_create_memory()
 {
     OutputFiles *output_files = new OutputFiles;
-    assert(output_files != NULL);
-    output_files->output_dir = NULL;
+    assert(output_files != nullptr);
+    output_files->output_dir = nullptr;
     output_files->memory = true;
     output_files->files = array_create();
-    assert(output_files->files != NULL);
+    assert(output_files->files != nullptr);
     output_files->save = &save_to_memory;
     return output_files;
 }
 
 void output_files_destroy(OutputFiles *output_files)
 {
-    assert(output_files != NULL);
+    assert(output_files != nullptr);
     if (output_files->memory)
     {
         size_t i;
@@ -147,14 +147,14 @@ bool output_files_save(
     VirtualFile *(*save_proc)(void *),
     void *context)
 {
-    assert(output_files != NULL);
-    assert(output_files->save != NULL);
+    assert(output_files != nullptr);
+    assert(output_files->save != nullptr);
     return output_files->save(output_files, save_proc, context);
 }
 
 Array *output_files_get_saved(const OutputFiles *output_files)
 {
-    assert(output_files != NULL);
+    assert(output_files != nullptr);
     assert(output_files->memory);
     return output_files->files;
 }

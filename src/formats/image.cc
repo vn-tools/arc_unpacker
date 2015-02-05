@@ -47,32 +47,32 @@ Image *image_create_from_pixels(
     size_t pixel_data_size,
     PixelFormat pixel_format)
 {
-    assert(pixel_data != NULL);
+    assert(pixel_data != nullptr);
     Image *image = new Image;
-    assert(image != NULL);
+    assert(image != nullptr);
     image->image_width = image_width;
     image->image_height = image_height;
     image->pixel_data = pixel_data;
     image->pixel_data_size = pixel_data_size;
     image->pixel_format = pixel_format;
-    image->internal_data = NULL;
+    image->internal_data = nullptr;
     return image;
 }
 
 Image *image_create_from_boxed(IO *io)
 {
-    assert(io != NULL);
+    assert(io != nullptr);
     io_seek(io, 0);
 
     Image *image = new Image;
-    assert(image != NULL);
+    assert(image != nullptr);
 
     png_structp png_ptr = png_create_read_struct(
-        PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    assert(png_ptr != NULL);
+        PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+    assert(png_ptr != nullptr);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
-    assert(info_ptr != NULL);
+    assert(info_ptr != nullptr);
 
     png_set_read_fn(png_ptr, io, &my_png_read_data);
     png_read_png(
@@ -82,7 +82,7 @@ Image *image_create_from_boxed(IO *io)
             | PNG_TRANSFORM_STRIP_16
             | PNG_TRANSFORM_PACKING
             | PNG_TRANSFORM_EXPAND,
-        NULL);
+        nullptr);
 
     int color_type;
     int bits_per_channel;
@@ -93,9 +93,9 @@ Image *image_create_from_boxed(IO *io)
         (png_uint_32*)&image->image_height,
         &bits_per_channel,
         &color_type,
-        NULL,
-        NULL,
-        NULL);
+        nullptr,
+        nullptr,
+        nullptr);
     assert(8 == bits_per_channel);
 
     int bpp = 0;
@@ -121,7 +121,7 @@ Image *image_create_from_boxed(IO *io)
 
     image->pixel_data_size = image->image_width * image->image_height * bpp;
     image->internal_data = new char[image->pixel_data_size];
-    assert(image->internal_data != NULL);
+    assert(image->internal_data != nullptr);
     png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
     size_t scanline_size = image->image_width * bpp, y;
     for (y = 0; y < image->image_height; y ++)
@@ -133,64 +133,64 @@ Image *image_create_from_boxed(IO *io)
     }
 
     image->pixel_data = image->internal_data;
-    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+    png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
     return image;
 }
 
 void image_destroy(Image *image)
 {
-    assert(image != NULL);
+    assert(image != nullptr);
     delete []image->internal_data;
     delete image;
 }
 
 size_t image_width(const Image *image)
 {
-    assert(image != NULL);
+    assert(image != nullptr);
     return image->image_width;
 }
 
 size_t image_height(const Image *image)
 {
-    assert(image != NULL);
+    assert(image != nullptr);
     return image->image_height;
 }
 
 PixelFormat image_pixel_format(const Image *image)
 {
-    assert(image != NULL);
+    assert(image != nullptr);
     return image->pixel_format;
 }
 
 const char *image_pixel_data(const Image *image)
 {
-    assert(image != NULL);
+    assert(image != nullptr);
     return image->pixel_data;
 }
 
 size_t image_pixel_data_size(const Image *image)
 {
-    assert(image != NULL);
+    assert(image != nullptr);
     return image->pixel_data_size;
 }
 
 void image_update_file(const Image *image, VirtualFile *file)
 {
-    assert(image != NULL);
-    assert(file != NULL);
+    assert(image != nullptr);
+    assert(file != nullptr);
 
     if (!io_truncate(file->io, 0))
         assert(0);
 
     png_structp png_ptr = png_create_write_struct(
         PNG_LIBPNG_VER_STRING,
-        NULL,
-        NULL,
-        NULL);
-    assert(png_ptr != NULL);
+        nullptr,
+        nullptr,
+        nullptr);
+    assert(png_ptr != nullptr);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
-    assert(info_ptr != NULL);
+    assert(info_ptr != nullptr);
 
     unsigned long bpp;
     unsigned long color_type;
@@ -248,12 +248,12 @@ void image_update_file(const Image *image, VirtualFile *file)
     png_write_info(png_ptr, info_ptr);
 
     png_bytep *rows = new png_bytep[image->image_height];
-    assert(rows != NULL);
+    assert(rows != nullptr);
     size_t y;
     for (y = 0; y < image->image_height; y ++)
         rows[y] = (png_bytep)&image->pixel_data[y * image->image_width * bpp];
     png_set_rows(png_ptr, info_ptr, rows);
-    png_write_png(png_ptr, info_ptr, transformations, NULL);
+    png_write_png(png_ptr, info_ptr, transformations, nullptr);
     png_destroy_write_struct(&png_ptr, &info_ptr);
     delete []rows;
 

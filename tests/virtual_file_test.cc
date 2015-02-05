@@ -5,8 +5,8 @@
 void test_empty_file()
 {
     VirtualFile *file = virtual_file_create();
-    assert(file->io != NULL);
-    assert(virtual_file_get_name(file) == NULL);
+    assert(file->io != nullptr);
+    assert(virtual_file_get_name(file) == nullptr);
     virtual_file_destroy(file);
 }
 
@@ -22,7 +22,7 @@ void test_changing_extension_null()
 {
     VirtualFile *file = virtual_file_create();
     virtual_file_change_extension(file, "xyz");
-    assert(virtual_file_get_name(file) == NULL);
+    assert(virtual_file_get_name(file) == nullptr);
 }
 
 void test_changing_extension_without_extension()

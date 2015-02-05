@@ -28,7 +28,7 @@ static ssize_t get_index_for_key(const Dictionary *dictionary, const char *key)
 Dictionary *dictionary_create()
 {
     Dictionary *dictionary = new Dictionary;
-    assert(dictionary != NULL);
+    assert(dictionary != nullptr);
     dictionary->values = array_create();
     dictionary->keys = array_create();
     return dictionary;
@@ -36,7 +36,7 @@ Dictionary *dictionary_create()
 
 void dictionary_destroy(Dictionary *dictionary)
 {
-    assert(dictionary != NULL);
+    assert(dictionary != nullptr);
     array_destroy(dictionary->keys);
     array_destroy(dictionary->values);
     delete dictionary;
@@ -74,7 +74,7 @@ const void *dictionary_get(
 {
     ssize_t i = get_index_for_key(dictionary, key);
     if (i == -1)
-        return NULL;
+        return nullptr;
     return array_get(dictionary->values, i);
 }
 

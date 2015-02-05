@@ -19,7 +19,7 @@ void test_sar_archive()
         "tests/test_files/arc/sar/test.sar",
         archive,
         0,
-        NULL);
+        nullptr);
     Array *actual_files = output_files_get_saved(output_files);
 
     compare_files(expected_files, actual_files);

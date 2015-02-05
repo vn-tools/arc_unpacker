@@ -35,8 +35,8 @@ static void g00_decompress(
     size_t byte_count,
     size_t length_delta)
 {
-    assert(input != NULL);
-    assert(output != NULL);
+    assert(input != nullptr);
+    assert(output != nullptr);
 
     const unsigned char *src = (unsigned char*)input;
     const unsigned char *src_guardian = src + input_size;
@@ -97,8 +97,8 @@ static bool g00_decompress_from_io(
     size_t byte_count,
     size_t length_delta)
 {
-    assert(io != NULL);
-    assert(uncompressed != NULL);
+    assert(io != nullptr);
+    assert(uncompressed != nullptr);
 
     *uncompressed = new char[uncompressed_size];
     if (!*uncompressed)
@@ -110,7 +110,7 @@ static bool g00_decompress_from_io(
     char *compressed = new char[compressed_size];
     if (!compressed)
     {
-        *uncompressed = NULL;
+        *uncompressed = nullptr;
         delete []uncompressed;
         log_error("G00: Failed to allocate %d bytes", compressed);
         return false;
@@ -118,7 +118,7 @@ static bool g00_decompress_from_io(
 
     if (!io_read_string(io, compressed, compressed_size))
     {
-        *uncompressed = NULL;
+        *uncompressed = nullptr;
         delete []compressed;
         delete []uncompressed;
         log_error("G00: Failed to read compressed stream");
@@ -153,7 +153,7 @@ static bool g00_decode_version_0(VirtualFile *file, int width, int height)
         return false;
     }
 
-    char *uncompressed = NULL;
+    char *uncompressed = nullptr;
     if (!g00_decompress_from_io(
         file->io,
         compressed_size,
@@ -165,7 +165,7 @@ static bool g00_decode_version_0(VirtualFile *file, int width, int height)
         delete []uncompressed;
         return false;
     }
-    assert(uncompressed != NULL);
+    assert(uncompressed != nullptr);
 
     Image *image = image_create_from_pixels(
         width,
@@ -190,7 +190,7 @@ static bool g00_decode_version_1(VirtualFile *file, int width, int height)
         return false;
     }
 
-    char *uncompressed = NULL;
+    char *uncompressed = nullptr;
     if (!g00_decompress_from_io(
         file->io,
         compressed_size,
@@ -202,7 +202,7 @@ static bool g00_decode_version_1(VirtualFile *file, int width, int height)
         delete []uncompressed;
         return false;
     }
-    assert(uncompressed != NULL);
+    assert(uncompressed != nullptr);
 
     char *tmp = uncompressed;
     uint16_t color_count = le32toh(*(uint16_t*)tmp);
@@ -221,7 +221,7 @@ static bool g00_decode_version_1(VirtualFile *file, int width, int height)
 
         size_t i;
         uint32_t *pixels = new uint32_t[width * height];
-        assert(pixels != NULL);
+        assert(pixels != nullptr);
         for (i = 0; i < (unsigned)(width * height); i ++)
         {
             unsigned char palette_index = (unsigned char)*tmp ++;
@@ -252,7 +252,7 @@ static G00Region *g00_read_version_2_regions(IO *file_io, size_t region_count)
     {
         log_error(
             "G00: Failed to allocate memory for %d regions", region_count);
-        return NULL;
+        return nullptr;
     }
 
     size_t i;
@@ -270,7 +270,7 @@ static G00Region *g00_read_version_2_regions(IO *file_io, size_t region_count)
 
 static bool g00_decode_version_2(VirtualFile *file, int width, int height)
 {
-    assert(file != NULL);
+    assert(file != nullptr);
 
     size_t region_count = io_read_u32_le(file->io);
     size_t i, j;
@@ -291,7 +291,7 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
         return false;
     }
 
-    char *uncompressed = NULL;
+    char *uncompressed = nullptr;
     if (!g00_decompress_from_io(
         file->io,
         compressed_size,
@@ -383,8 +383,8 @@ static bool g00_decode_version_2(VirtualFile *file, int width, int height)
 
 static bool g00_decode(Converter *converter, VirtualFile *file)
 {
-    assert(converter != NULL);
-    assert(file != NULL);
+    assert(converter != nullptr);
+    assert(file != nullptr);
 
     uint8_t version = io_read_u8(file->io);
     uint16_t width = io_read_u16_le(file->io);

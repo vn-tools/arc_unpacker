@@ -119,7 +119,7 @@ static void rpa_unpickle_handle_number(
 static char *rpa_unpickle_read_string(IO *table_io, size_t str_size)
 {
     char *str = new char[str_size + 1];
-    assert(str != NULL);
+    assert(str != nullptr);
     io_read_string(table_io, str, str_size);
     str[str_size] = '\0';
     return str;
@@ -242,13 +242,13 @@ static RpaTableEntry **rpa_decode_table(
     assert(array_size(context.numbers) == array_size(context.strings));
 
     RpaTableEntry **entries = new RpaTableEntry*[*file_count];
-    assert(entries != NULL);
+    assert(entries != nullptr);
 
     size_t i;
     for (i = 0; i < *file_count; i ++)
     {
         RpaTableEntry *entry = new RpaTableEntry;
-        assert(entry != NULL);
+        assert(entry != nullptr);
         entry->name = (char*)array_get(context.strings, i*2);
         entry->prefix = (char*)array_get(context.strings, i*2+1);
         entry->prefix_size = (size_t)array_get(context.string_lengths, i*2+1);
@@ -302,16 +302,16 @@ static bool rpa_read_raw_table(IO *arc_io, char **table, size_t *table_size)
 {
     size_t compressed_size = io_size(arc_io) - io_tell(arc_io);
     char *compressed = new char[compressed_size];
-    assert(compressed != NULL);
+    assert(compressed != nullptr);
     if (!io_read_string(arc_io, compressed, compressed_size))
         assert(0);
 
-    *table = NULL;
+    *table = nullptr;
     bool result = zlib_inflate(compressed, compressed_size, table, table_size);
     if (!result)
     {
         delete *table;
-        *table = NULL;
+        *table = nullptr;
         *table_size = 0;
     }
     delete []compressed;
@@ -321,9 +321,9 @@ static bool rpa_read_raw_table(IO *arc_io, char **table, size_t *table_size)
 static VirtualFile *rpa_read_file(void *_context)
 {
     RpaUnpackContext *context = (RpaUnpackContext*)_context;
-    assert(context != NULL);
+    assert(context != nullptr);
     VirtualFile *file = virtual_file_create();
-    assert(file != NULL);
+    assert(file != nullptr);
 
     if (!io_seek(context->arc_io, context->table_entry->offset))
         assert(0);
@@ -394,7 +394,7 @@ static bool rpa_unpack(
     size_t file_count;
     RpaTableEntry **entries = rpa_decode_table(
         table, table_size, key, &file_count);
-    assert(entries != NULL);
+    assert(entries != nullptr);
     delete []table;
 
     size_t i;

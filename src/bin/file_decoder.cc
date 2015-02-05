@@ -99,8 +99,8 @@ static void print_help(
     Options *options,
     Converter *converter)
 {
-    assert(path_to_self != NULL);
-    assert(options != NULL);
+    assert(path_to_self != nullptr);
+    assert(options != nullptr);
 
     printf(
         "Usage: %s [options] [file_options] input_path [input_path...]",
@@ -113,7 +113,7 @@ static void print_help(
     arg_parser.clear_help();
     puts("");
 
-    if (converter != NULL)
+    if (converter != nullptr)
     {
         converter_add_cli_help(converter, arg_parser);
         printf("[file_options] specific to %s:\n", options->format);
@@ -140,24 +140,24 @@ static bool guess_converter_and_decode(
     ConverterFactory *conv_factory,
     VirtualFile *file)
 {
-    assert(options != NULL);
-    assert(conv_factory != NULL);
-    assert(file != NULL);
+    assert(options != nullptr);
+    assert(conv_factory != nullptr);
+    assert(file != nullptr);
 
     size_t i;
     bool result = false;
-    if (options->format == NULL)
+    if (options->format == nullptr)
     {
         const Array *format_strings = converter_factory_formats(conv_factory);
-        assert(format_strings != NULL);
+        assert(format_strings != nullptr);
         for (i = 0; i < array_size(format_strings); i ++)
         {
             const char *format = (const char*)array_get(format_strings, i);
-            assert(format != NULL);
+            assert(format != nullptr);
 
             Converter *converter
                 = converter_factory_from_string(conv_factory, format);
-            assert(converter != NULL);
+            assert(converter != nullptr);
             log_info("Trying %s...", format);
             result = decode(converter, arg_parser, file);
             converter_destroy(converter);
@@ -181,7 +181,7 @@ static bool guess_converter_and_decode(
     {
         Converter *converter
             = converter_factory_from_string(conv_factory, options->format);
-        if (converter != NULL)
+        if (converter != nullptr)
         {
             result = decode(converter, arg_parser, file);
             if (result)
@@ -202,7 +202,7 @@ static bool guess_converter_and_decode(
 static void set_file_path(VirtualFile *file, const char *input_path)
 {
     char *output_path = new char[strlen(input_path) + 2];
-    assert(output_path != NULL);
+    assert(output_path != nullptr);
     strcpy(output_path, input_path);
     strcat(output_path, "~");
     virtual_file_set_name(file, output_path);
@@ -214,18 +214,18 @@ static VirtualFile *read_and_decode(void *_context)
     ReadContext *context = (ReadContext*)_context;
 
     IO *io = io_create_from_file(context->path_info->input_path, "rb");
-    if (io == NULL)
-        return NULL;
+    if (io == nullptr)
+        return nullptr;
 
     VirtualFile *file = virtual_file_create();
-    assert(file != NULL);
+    assert(file != nullptr);
     io_write_string_from_io(file->io, io,  io_size(io));
     io_destroy(io);
     io_seek(file->io, 0);
 
     set_file_path(
         file,
-        context->options->output_dir == NULL
+        context->options->output_dir == nullptr
             ? context->path_info->input_path
             : context->path_info->target_path);
 
@@ -236,7 +236,7 @@ static VirtualFile *read_and_decode(void *_context)
         file))
     {
         virtual_file_destroy(file);
-        return NULL;
+        return nullptr;
     }
 
     return file;
@@ -248,17 +248,18 @@ static bool run(
     ConverterFactory *conv_factory)
 {
     size_t i;
-    assert(options != NULL);
-    assert(conv_factory != NULL);
+    assert(options != nullptr);
+    assert(conv_factory != nullptr);
 
     OutputFiles *output_files = output_files_create_hdd(options->output_dir);
-    assert(output_files != NULL);
+    assert(output_files != nullptr);
 
     ReadContext context =
     {
         options,
         arg_parser,
         conv_factory,
+        nullptr,
     };
 
     bool result = true;
@@ -275,12 +276,12 @@ int main(int argc, const char **argv)
 {
     int exit_code = 0;
     Options options;
-    options.format = NULL;
-    options.output_dir = NULL;
-    options.input_paths = NULL;
+    options.format = nullptr;
+    options.output_dir = nullptr;
+    options.input_paths = nullptr;
 
     ConverterFactory *conv_factory = converter_factory_create();
-    assert(conv_factory != NULL);
+    assert(conv_factory != nullptr);
     ArgParser arg_parser;
     arg_parser.parse(argc, argv);
 
@@ -291,11 +292,11 @@ int main(int argc, const char **argv)
 
     if (should_show_help(arg_parser))
     {
-        Converter *converter = options.format != NULL
+        Converter *converter = options.format != nullptr
             ? converter_factory_from_string(conv_factory, options.format)
-            : NULL;
+            : nullptr;
         print_help(argv[0], arg_parser, &options, converter);
-        if (converter != NULL)
+        if (converter != nullptr)
             converter_destroy(converter);
     }
     else
@@ -306,7 +307,7 @@ int main(int argc, const char **argv)
             exit_code = 1;
     }
 
-    if (options.input_paths != NULL)
+    if (options.input_paths != nullptr)
     {
         size_t i;
         for (i = 0; i < array_size(options.input_paths); i ++)

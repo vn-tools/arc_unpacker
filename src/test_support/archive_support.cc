@@ -18,7 +18,7 @@ OutputFiles *unpack_to_memory(
     ArgParser arg_parser;
     arg_parser.parse(argc, argv);
     IO *io = io_create_from_file(input_path, "rb");
-    assert(io != NULL);
+    assert(io != nullptr);
     OutputFiles *output_files = output_files_create_memory();
     archive_unpack(archive, io, output_files);
     io_destroy(io);

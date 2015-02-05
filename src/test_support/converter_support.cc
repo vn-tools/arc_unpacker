@@ -9,10 +9,10 @@ static void compare_images(
     const Image *expected_image,
     const Image *actual_image)
 {
-    if (expected_image == NULL || actual_image == NULL)
+    if (expected_image == nullptr || actual_image == nullptr)
     {
-        assert(expected_image == NULL);
-        assert(actual_image == NULL);
+        assert(expected_image == nullptr);
+        assert(actual_image == nullptr);
         return;
     }
 
@@ -34,10 +34,10 @@ static void compare_images(
 static Image *get_actual_image(const char *path, Converter *converter)
 {
     IO *io = io_create_from_file(path, "rb");
-    assert(io != NULL);
+    assert(io != nullptr);
 
     VirtualFile *file = virtual_file_create();
-    assert(file != NULL);
+    assert(file != nullptr);
 
     if (!io_write_string_from_io(file->io, io, io_size(io)))
         assert(0);
@@ -46,7 +46,7 @@ static Image *get_actual_image(const char *path, Converter *converter)
     converter_decode(converter, file);
 
     Image *image = image_create_from_boxed(file->io);
-    assert(image != NULL);
+    assert(image != nullptr);
     virtual_file_destroy(file);
 
     return image;
@@ -55,10 +55,10 @@ static Image *get_actual_image(const char *path, Converter *converter)
 static Image *get_expected_image(const char *path)
 {
     IO *io = io_create_from_file(path, "rb");
-    assert(io != NULL);
+    assert(io != nullptr);
 
     Image *image = image_create_from_boxed(io);
-    assert(image != NULL);
+    assert(image != nullptr);
     io_destroy(io);
 
     return image;
@@ -69,9 +69,9 @@ void assert_decoded_image(
     const char *path_to_input,
     const char *path_to_expected)
 {
-    assert(converter != NULL);
-    assert(path_to_input != NULL);
-    assert(path_to_expected != NULL);
+    assert(converter != nullptr);
+    assert(path_to_input != nullptr);
+    assert(path_to_expected != nullptr);
 
     Image *actual_image = get_actual_image(path_to_input, converter);
     Image *expected_image = get_expected_image(path_to_expected);

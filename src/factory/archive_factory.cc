@@ -30,9 +30,9 @@ static void add_format(
     const char *name,
     ArchiveCreator creator)
 {
-    assert(factory != NULL);
-    assert(name != NULL);
-    assert(creator != NULL);
+    assert(factory != nullptr);
+    assert(name != nullptr);
+    assert(creator != nullptr);
     FormatDefinition *definition = new FormatDefinition;
     definition->name = name;
     definition->creator = creator;
@@ -56,7 +56,7 @@ static void init_factory(ArchiveFactory *factory)
 ArchiveFactory *archive_factory_create()
 {
     ArchiveFactory *factory = new ArchiveFactory;
-    assert(factory != NULL);
+    assert(factory != nullptr);
     factory->formats = dictionary_create();
     init_factory(factory);
     return factory;
@@ -66,7 +66,7 @@ void archive_factory_destroy(ArchiveFactory *factory)
 {
     size_t i;
     const Array *definitions;
-    assert(factory != NULL);
+    assert(factory != nullptr);
     definitions = dictionary_get_values(factory->formats);
     for (i = 0; i < array_size(definitions); i ++)
         delete (FormatDefinition*)array_get(definitions, i);
@@ -83,14 +83,14 @@ Archive *archive_factory_from_string(
     const ArchiveFactory *factory,
     const char *format)
 {
-    assert(factory != NULL);
-    assert(format != NULL);
+    assert(factory != nullptr);
+    assert(format != nullptr);
 
     FormatDefinition *definition
         = (FormatDefinition*)dictionary_get(factory->formats, format);
-    if (definition != NULL)
+    if (definition != nullptr)
         return definition->creator();
 
     log_error("Invalid archive format: %s", format);
-    return NULL;
+    return nullptr;
 }

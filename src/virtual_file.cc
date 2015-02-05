@@ -13,14 +13,14 @@ typedef struct
 VirtualFile *virtual_file_create()
 {
     VirtualFile *file = new VirtualFile;
-    assert(file != NULL);
+    assert(file != nullptr);
 
     file->io = io_create_empty();
-    assert(file->io != NULL);
+    assert(file->io != nullptr);
 
     Internals *internals = new Internals;
-    assert(internals != NULL);
-    internals->name = NULL;
+    assert(internals != nullptr);
+    internals->name = nullptr;
     file->internals = internals;
 
     return file;
@@ -28,7 +28,7 @@ VirtualFile *virtual_file_create()
 
 void virtual_file_destroy(VirtualFile *file)
 {
-    assert(file != NULL);
+    assert(file != nullptr);
     io_destroy(file->io);
     delete []((Internals*)file->internals)->name;
     delete (Internals*)file->internals;
@@ -38,12 +38,12 @@ void virtual_file_destroy(VirtualFile *file)
 void virtual_file_change_extension(VirtualFile *file, const char *new_ext)
 {
     char *name = ((Internals*)file->internals)->name;
-    assert(file != NULL);
-    if (name == NULL)
+    assert(file != nullptr);
+    if (name == nullptr)
         return;
 
     char *ptr = strrchr(name, '.');
-    if (ptr != NULL)
+    if (ptr != nullptr)
         *ptr = '\0';
 
     while (new_ext[0] == '.')
@@ -51,7 +51,7 @@ void virtual_file_change_extension(VirtualFile *file, const char *new_ext)
 
     size_t base_length = strlen(name);
     char *new_name = new char[base_length + 1 + strlen(new_ext) + 1];
-    assert(new_name != NULL);
+    assert(new_name != nullptr);
     strcpy(new_name, name);
     strcpy(new_name + base_length, ".");
     strcpy(new_name + base_length + 1, new_ext);
@@ -66,10 +66,10 @@ const char *virtual_file_get_name(VirtualFile *file)
 bool virtual_file_set_name(VirtualFile *file, const char *new_name)
 {
     char *name = ((Internals*)file->internals)->name;
-    assert(file != NULL);
-    if (name != NULL)
+    assert(file != nullptr);
+    if (name != nullptr)
         delete []name;
     name = strdup(new_name);
     ((Internals*)file->internals)->name = name;
-    return name != NULL;
+    return name != nullptr;
 }

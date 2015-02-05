@@ -23,7 +23,7 @@ const char utf8[] = {
 
 void test_sjis_to_utf8()
 {
-    char *output = NULL;
+    char *output = nullptr;
     size_t output_size = 0;
     assert(convert_encoding(
         sjis, 41,
@@ -35,7 +35,7 @@ void test_sjis_to_utf8()
 
 void test_utf8_to_sjis()
 {
-    char *output = NULL;
+    char *output = nullptr;
     size_t output_size = 0;
     assert(convert_encoding(
         utf8, 61,
@@ -99,9 +99,9 @@ void test_zlib_inflate()
     assert(strcmp("life is code\n", output) == 0);
     free(output);
 
-    output = NULL;
+    output = nullptr;
 
-    assert(zlib_inflate(input, 21, &output, NULL));
+    assert(zlib_inflate(input, 21, &output, nullptr));
     assert(13 == output_size);
     assert(strcmp("life is code\n", output) == 0);
     free(output);

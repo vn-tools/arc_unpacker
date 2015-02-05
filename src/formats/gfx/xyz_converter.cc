@@ -22,8 +22,8 @@ static const size_t xyz_magic_length = 4;
 
 static bool xyz_decode(Converter *converter, VirtualFile *file)
 {
-    assert(converter != NULL);
-    assert(file != NULL);
+    assert(converter != nullptr);
+    assert(file != nullptr);
 
     bool result;
 
@@ -42,7 +42,7 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
 
         size_t compressed_data_size = io_size(file->io) - io_tell(file->io);
         char *compressed_data = new char[compressed_data_size];
-        assert(compressed_data != NULL);
+        assert(compressed_data != nullptr);
         if (!io_read_string(file->io, compressed_data, compressed_data_size))
         {
             log_error("XYZ: Failed to read pixel data");
@@ -50,7 +50,7 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
             return false;
         }
 
-        char *uncompressed_data = NULL;
+        char *uncompressed_data = nullptr;
         size_t uncompressed_data_size = 0;
         if (!zlib_inflate(
             compressed_data,
@@ -63,13 +63,13 @@ static bool xyz_decode(Converter *converter, VirtualFile *file)
             delete []uncompressed_data;
             return false;
         }
-        assert(uncompressed_data != NULL);
+        assert(uncompressed_data != nullptr);
         assert((unsigned)256 * 3 + width * height == uncompressed_data_size);
         delete []compressed_data;
 
         size_t pixels_size = width * height * 3;
         char *pixels = new char[pixels_size];
-        assert(pixels != NULL);
+        assert(pixels != nullptr);
 
         {
             char *palette = uncompressed_data;

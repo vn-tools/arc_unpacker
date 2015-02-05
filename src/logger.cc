@@ -10,7 +10,7 @@ static bool levels_saved[_LOG_LEVEL_COUNT] = { true, true, true };
 
 static void log_text(FILE *out, const char *prefix, const char *buffer)
 {
-    if (buffer == NULL || strcmp(buffer, "") == 0)
+    if (buffer == nullptr || strcmp(buffer, "") == 0)
     {
         fprintf(out, "\n");
     }

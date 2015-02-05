@@ -33,14 +33,14 @@ static bool arc_check_magic(IO *arc_io)
 static VirtualFile *arc_read_file(void *_context)
 {
     ArcUnpackContext *context = (ArcUnpackContext*)_context;
-    assert(context != NULL);
+    assert(context != nullptr);
 
     VirtualFile *file = virtual_file_create();
 
     size_t old_pos = io_tell(context->arc_io);
     char *tmp_name;
-    io_read_until_zero(context->arc_io, &tmp_name, NULL);
-    assert(tmp_name != NULL);
+    io_read_until_zero(context->arc_io, &tmp_name, nullptr);
+    assert(tmp_name != nullptr);
     virtual_file_set_name(file, tmp_name);
     delete []tmp_name;
     io_seek(context->arc_io, old_pos + 16);
@@ -53,7 +53,7 @@ static VirtualFile *arc_read_file(void *_context)
     {
         log_error("ARC: Bad offset to file");
         virtual_file_destroy(file);
-        return NULL;
+        return nullptr;
     }
 
     old_pos = io_tell(context->arc_io);
@@ -61,7 +61,7 @@ static VirtualFile *arc_read_file(void *_context)
     {
         log_error("ARC: Failed to seek to file");
         virtual_file_destroy(file);
-        return NULL;
+        return nullptr;
     }
     io_write_string_from_io(file->io, context->arc_io, size);
     io_seek(context->arc_io, old_pos);
@@ -103,7 +103,7 @@ static bool arc_unpack(
 
 void arc_cleanup(Archive *archive)
 {
-    assert(archive != NULL);
+    assert(archive != nullptr);
     converter_destroy((Converter*)archive->data);
 }
 

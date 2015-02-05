@@ -55,8 +55,8 @@ static void print_help(
     Options *options,
     Archive *archive)
 {
-    assert(path_to_self != NULL);
-    assert(options != NULL);
+    assert(path_to_self != nullptr);
+    assert(options != nullptr);
 
     printf("Usage: %s [options] [arc_options] input_path [output_path]\n",
         path_to_self);
@@ -72,7 +72,7 @@ static void print_help(
     arg_parser.clear_help();
     puts("");
 
-    if (archive != NULL)
+    if (archive != nullptr)
     {
         archive_add_cli_help(archive, arg_parser);
         printf("[arc_options] specific to %s:\n", options->format);
@@ -99,25 +99,25 @@ static bool guess_archive_and_unpack(
     ArgParser &arg_parser,
     ArchiveFactory *arc_factory)
 {
-    assert(io != NULL);
-    assert(options != NULL);
-    assert(arc_factory != NULL);
-    assert(output_files != NULL);
+    assert(io != nullptr);
+    assert(options != nullptr);
+    assert(arc_factory != nullptr);
+    assert(output_files != nullptr);
 
     size_t i;
     bool result = false;
-    if (options->format == NULL)
+    if (options->format == nullptr)
     {
         const Array *format_strings = archive_factory_formats(arc_factory);
-        assert(format_strings != NULL);
+        assert(format_strings != nullptr);
 
         for (i = 0; i < array_size(format_strings); i ++)
         {
             const char *format = (const char*)array_get(format_strings, i);
-            assert(format != NULL);
+            assert(format != nullptr);
 
             Archive *archive = archive_factory_from_string(arc_factory, format);
-            assert(archive != NULL);
+            assert(archive != nullptr);
             log_info("Trying %s...", format);
             result = unpack(archive, arg_parser, io, output_files);
             archive_destroy(archive);
@@ -156,8 +156,8 @@ static bool run(
     ArgParser &arg_parser,
     ArchiveFactory *arc_factory)
 {
-    assert(options != NULL);
-    assert(arc_factory != NULL);
+    assert(options != nullptr);
+    assert(arc_factory != nullptr);
 
     OutputFiles *output_files = output_files_create_hdd(options->output_path);
     IO *io = io_create_from_file(options->input_path, "rb");
@@ -180,12 +180,12 @@ int main(int argc, const char **argv)
 {
     int exit_code = 0;
     Options options;
-    options.input_path = NULL;
-    options.output_path = NULL;
-    options.format = NULL;
+    options.input_path = nullptr;
+    options.output_path = nullptr;
+    options.format = nullptr;
 
     ArchiveFactory *arc_factory = archive_factory_create();
-    assert(arc_factory != NULL);
+    assert(arc_factory != nullptr);
     ArgParser arg_parser;
     arg_parser.parse(argc, argv);
 
@@ -195,11 +195,11 @@ int main(int argc, const char **argv)
 
     if (should_show_help(arg_parser))
     {
-        Archive *archive = options.format != NULL
+        Archive *archive = options.format != nullptr
             ? archive_factory_from_string( arc_factory, options.format)
-            : NULL;
+            : nullptr;
         print_help(argv[0], arg_parser, &options, archive);
-        if (archive != NULL)
+        if (archive != nullptr)
             archive_destroy(archive);
     }
     else

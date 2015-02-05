@@ -5,7 +5,7 @@
 void test_empty_array()
 {
     Array *arr = array_create();
-    assert(array_get(arr, 0) == NULL);
+    assert(array_get(arr, 0) == nullptr);
     assert(0 == array_size(arr));
     array_destroy(arr);
 }
@@ -13,7 +13,7 @@ void test_empty_array()
 void test_one_item()
 {
     Array *arr = array_create();
-    assert(array_get(arr, 0) == NULL);
+    assert(array_get(arr, 0) == nullptr);
     array_set(arr, 0, (void*)"test");
     assert(strcmp("test", (const char*)array_get(arr, 0)) == 0);
     array_destroy(arr);
@@ -22,7 +22,7 @@ void test_one_item()
 void test_two_items()
 {
     Array *arr = array_create();
-    assert(array_get(arr, 0) == NULL);
+    assert(array_get(arr, 0) == nullptr);
     array_set(arr, 0, (void*)"test1");
     array_set(arr, 1, (void*)"test2");
     assert(strcmp("test1", (const char*)array_get(arr, 0)) == 0);
@@ -34,13 +34,13 @@ void test_gaps()
 {
     size_t i;
     Array *arr = array_create();
-    assert(array_get(arr, 0) == NULL);
+    assert(array_get(arr, 0) == nullptr);
     array_set(arr, 0, (void*)"test1");
     array_set(arr, 10240, (void*)"test2");
     assert(strcmp("test1", (const char*)array_get(arr, 0)) == 0);
     assert(strcmp("test2", (const char*)array_get(arr, 10240)) == 0);
     for (i = 1; i < 10240; i ++)
-        assert(array_get(arr, i) == NULL);
+        assert(array_get(arr, i) == nullptr);
     array_destroy(arr);
 }
 

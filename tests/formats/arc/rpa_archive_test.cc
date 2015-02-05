@@ -31,7 +31,7 @@ void test_rpa_archive(const char *path)
         path,
         archive,
         0,
-        NULL);
+        nullptr);
     Array *actual_files = output_files_get_saved(output_files);
 
     compare_files(expected_files, actual_files);

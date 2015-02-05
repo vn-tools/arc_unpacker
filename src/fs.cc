@@ -34,7 +34,7 @@ static bool _get_files_accumulator(
 
         int path_length = strlen(dir_path) + 1 + strlen(entry->d_name);
         char *path = new char[path_length + 1];
-        assert(path != NULL);
+        assert(path != nullptr);
 
         strcpy(path, dir_path);
         strcat(path, "/");
@@ -94,7 +94,7 @@ char *basename(const char *path)
     char *last_slash = strrchr(path, '\\');
     if (strrchr(path, '/') > last_slash)
         last_slash = strrchr(path, '/');
-    if (last_slash == NULL)
+    if (last_slash == nullptr)
     {
         return strdup(path);
     }
@@ -107,7 +107,7 @@ char *dirname(const char *path)
     char *path_nts;
 
     path_nts = strdup(path);
-    assert(path_nts != NULL);
+    assert(path_nts != nullptr);
     trim_right(path_nts, "/\\");
     if (strcmp(path_nts, "") == 0)
     {
@@ -118,7 +118,7 @@ char *dirname(const char *path)
     char *last_slash = strrchr(path_nts, '\\');
     if (strrchr(path_nts, '/') > last_slash)
         last_slash = strrchr(path_nts, '/');
-    if (last_slash == NULL)
+    if (last_slash == nullptr)
     {
         delete []path_nts;
         return strdup(path);
@@ -131,7 +131,7 @@ char *dirname(const char *path)
 
 bool mkpath(const char *path)
 {
-    char *dir = NULL;
+    char *dir = nullptr;
     struct stat sb;
     if (stat(path, &sb))
     {

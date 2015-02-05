@@ -35,7 +35,7 @@ typedef struct
 
 static bool mgd_check_magic(IO *io)
 {
-    assert(io != NULL);
+    assert(io != nullptr);
     char magic[mgd_magic_length];
     io_read_string(io, magic, mgd_magic_length);
     return memcmp(magic, mgd_magic, mgd_magic_length) == 0;
@@ -215,8 +215,8 @@ static bool mgd_decompress_sgd(
     char *const output,
     size_t output_size)
 {
-    assert(input != NULL);
-    assert(output != NULL);
+    assert(input != nullptr);
+    assert(output != nullptr);
 
     size_t length;
     const uint8_t *input_guardian;
@@ -278,13 +278,13 @@ static Array *mgd_read_region_data(IO *file_io)
         {
             log_warning("MGD: Unexpected region format %d", meta_format);
             array_destroy(regions);
-            return NULL;
+            return nullptr;
         }
         if (regions_size != bytes_left)
         {
             log_warning("MGD: Unexpected region size %d", regions_size);
             array_destroy(regions);
-            return NULL;
+            return nullptr;
         }
 
         size_t i;
@@ -317,24 +317,24 @@ static Image *mgd_read_image(
     size_t image_height,
     char **data_uncompressed)
 {
-    assert(file_io != NULL);
-    assert(data_uncompressed != NULL);
+    assert(file_io != nullptr);
+    assert(data_uncompressed != nullptr);
 
     char *data_compressed = new char[size_compressed];
     if (!data_compressed)
     {
         log_error("MGD: Failed to allocate memory for compressed data");
-        return NULL;
+        return nullptr;
     }
     if (!io_read_string(file_io, data_compressed, size_compressed))
     {
         log_error("MGD: Failed to read compressed data");
-        return NULL;
+        return nullptr;
     }
 
     log_info("MGD: compression type = %d", compression_type);
 
-    Image *image = NULL;
+    Image *image = nullptr;
     switch (compression_type)
     {
         case MGD_COMPRESSION_NONE:
@@ -350,7 +350,7 @@ static Image *mgd_read_image(
         case MGD_COMPRESSION_SGD:
         {
             *data_uncompressed = new char[size_original];
-            assert(*data_uncompressed != NULL);
+            assert(*data_uncompressed != nullptr);
 
             if (mgd_decompress_sgd(
                 data_compressed,
@@ -393,8 +393,8 @@ static Image *mgd_read_image(
 
 static bool mgd_decode(Converter *converter, VirtualFile *file)
 {
-    assert(converter != NULL);
-    assert(file != NULL);
+    assert(converter != nullptr);
+    assert(file != nullptr);
 
     if (!mgd_check_magic(file->io))
     {
@@ -423,7 +423,7 @@ static bool mgd_decode(Converter *converter, VirtualFile *file)
         return false;
     }
 
-    char *data_uncompressed = NULL;
+    char *data_uncompressed = nullptr;
     Image *image = mgd_read_image(
         file->io,
         compression_type,
@@ -439,7 +439,7 @@ static bool mgd_decode(Converter *converter, VirtualFile *file)
         delete (MgdRegion*)array_get(regions, i);
     array_destroy(regions);
 
-    if (image == NULL)
+    if (image == nullptr)
     {
         log_error("MGD: No image produced");
         return false;

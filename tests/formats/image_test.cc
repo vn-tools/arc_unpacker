@@ -7,10 +7,10 @@ void test_transparent()
 {
     IO *io = io_create_from_file(
         "tests/test_files/gfx/reimu_transparent.png", "rb");
-    assert(io != NULL);
+    assert(io != nullptr);
 
     Image *image = image_create_from_boxed(io);
-    assert(image != NULL);
+    assert(image != nullptr);
 
     assert(641 == image_width(image));
     assert(720 == image_height(image));
@@ -32,10 +32,10 @@ void test_transparent()
 void test_opaque()
 {
     IO *io = io_create_from_file("tests/test_files/gfx/usagi_opaque.png", "rb");
-    assert(io != NULL);
+    assert(io != nullptr);
 
     Image *image = image_create_from_boxed(io);
-    assert(image != NULL);
+    assert(image != nullptr);
 
     assert(640 == image_width(image));
     assert(480 == image_height(image));

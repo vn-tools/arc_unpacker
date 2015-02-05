@@ -19,7 +19,7 @@ Sound *sound_create_from_samples(
     size_t sample_count)
 {
     Sound *sound = new Sound;
-    assert(sound != NULL);
+    assert(sound != nullptr);
     sound->channel_count = channel_count;
     sound->bytes_per_sample = bytes_per_sample;
     sound->sample_rate = sample_rate;
@@ -30,14 +30,14 @@ Sound *sound_create_from_samples(
 
 void sound_destroy(Sound *sound)
 {
-    assert(sound != NULL);
+    assert(sound != nullptr);
     delete sound;
 }
 
 void sound_update_file(const Sound *sound, VirtualFile *file)
 {
-    assert(sound != NULL);
-    assert(file != NULL);
+    assert(sound != nullptr);
+    assert(file != nullptr);
 
     if (!io_truncate(file->io, 0))
         assert(0);

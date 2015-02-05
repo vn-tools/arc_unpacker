@@ -71,7 +71,7 @@ static bool fjsys_check_magic(IO *arc_io)
 static FjsysHeader *fjsys_read_header(IO *arc_io)
 {
     FjsysHeader *header = new FjsysHeader;
-    assert(header != NULL);
+    assert(header != nullptr);
     header->header_size = io_read_u32_le(arc_io);
     header->file_names_size = io_read_u32_le(arc_io);
     header->file_count = io_read_u32_le(arc_io);
@@ -93,9 +93,9 @@ static VirtualFile *fjsys_read_file(void *context)
     io_seek(
         unpack_context->arc_io,
         file_name_offset + file_names_start);
-    char *file_name = NULL;
-    io_read_until_zero(unpack_context->arc_io, &file_name, NULL);
-    assert(file_name != NULL);
+    char *file_name = nullptr;
+    io_read_until_zero(unpack_context->arc_io, &file_name, nullptr);
+    assert(file_name != nullptr);
     virtual_file_set_name(file, file_name);
     delete []file_name;
 
@@ -113,7 +113,7 @@ static bool fjsys_unpack(
     OutputFiles *output_files)
 {
     FjsysArchiveContext *archive_context = (FjsysArchiveContext*)archive->data;
-    assert(archive_context != NULL);
+    assert(archive_context != nullptr);
     if (!fjsys_check_magic(arc_io))
     {
         log_error("FJSYS: Not a FJSYS archive");
@@ -121,7 +121,7 @@ static bool fjsys_unpack(
     }
 
     FjsysHeader *header = fjsys_read_header(arc_io);
-    assert(header != NULL);
+    assert(header != nullptr);
 
     FjsysUnpackContext unpack_context;
     unpack_context.header = header;
@@ -151,7 +151,7 @@ Archive *fjsys_archive_create()
     archive->cleanup = &fjsys_cleanup;
 
     FjsysArchiveContext *context = new FjsysArchiveContext;
-    assert(context != NULL);
+    assert(context != nullptr);
     context->mgd_converter = mgd_converter_create();
     archive->data = context;
 

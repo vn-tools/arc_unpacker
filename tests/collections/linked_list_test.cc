@@ -4,7 +4,7 @@
 void test_getting_empty_without_resetting()
 {
     LinkedList *list = linked_list_create();
-    assert(linked_list_get(list) == NULL);
+    assert(linked_list_get(list) == nullptr);
     linked_list_destroy(list);
 }
 
@@ -12,7 +12,7 @@ void test_getting_empty_with_resetting()
 {
     LinkedList *list = linked_list_create();
     linked_list_reset(list);
-    assert(linked_list_get(list) == NULL);
+    assert(linked_list_get(list) == nullptr);
     linked_list_destroy(list);
 }
 
@@ -21,7 +21,7 @@ void test_getting_nonempty_without_resetting()
     int item = 5;
     LinkedList *list = linked_list_create();
     linked_list_add(list, &item);
-    assert(linked_list_get(list) == NULL);
+    assert(linked_list_get(list) == nullptr);
     linked_list_destroy(list);
 }
 

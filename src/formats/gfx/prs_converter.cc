@@ -25,12 +25,12 @@ static bool prs_decode_pixels(
     size_t *target_size)
 {
     size_t i;
-    assert(source_buffer != NULL);
-    assert(target_buffer != NULL);
+    assert(source_buffer != nullptr);
+    assert(target_buffer != nullptr);
 
     *target_size = image_width * image_height * 3;
     *target_buffer = new char[*target_size];
-    assert(*target_buffer != NULL);
+    assert(*target_buffer != nullptr);
 
     const unsigned char *source = (const unsigned char*)source_buffer;
     const unsigned char *source_guardian = source + source_size;
@@ -132,7 +132,7 @@ static bool prs_decode_pixels(
 
 static bool prs_check_magic(IO *io)
 {
-    assert(io != NULL);
+    assert(io != nullptr);
     char magic[prs_magic_length];
     io_read_string(io, magic, prs_magic_length);
     return memcmp(magic, prs_magic, prs_magic_length) == 0;
@@ -140,8 +140,8 @@ static bool prs_check_magic(IO *io)
 
 static bool prs_decode(Converter *converter, VirtualFile *file)
 {
-    assert(converter != NULL);
-    assert(file != NULL);
+    assert(converter != nullptr);
+    assert(file != nullptr);
 
     if (!prs_check_magic(file->io))
     {
@@ -158,7 +158,7 @@ static bool prs_decode(Converter *converter, VirtualFile *file)
     io_read_string(file->io, source_buffer, source_size);
 
     bool result;
-    char *target_buffer = NULL;
+    char *target_buffer = nullptr;
     uint32_t target_size = 0;
     if (!prs_decode_pixels(
         image_width,

@@ -89,7 +89,7 @@ void test_buffer_seek_and_tell()
 void test_read_until_zero()
 {
     IO *io = io_create_from_buffer("abc\x00", 4);
-    char *result = NULL;
+    char *result = nullptr;
     size_t length = 0;
     io_read_until_zero(io, &result, &length);
     assert(strcmp("abc", result) == 0);

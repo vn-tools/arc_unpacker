@@ -77,13 +77,13 @@ static bool nwa_read_uncompressed(
     char **samples,
     size_t *sample_count)
 {
-    assert(io != NULL);
-    assert(header != NULL);
-    assert(samples != NULL);
-    assert(sample_count != NULL);
+    assert(io != nullptr);
+    assert(header != nullptr);
+    assert(samples != nullptr);
+    assert(sample_count != nullptr);
     *sample_count = header->block_size * header->channel_count;
     *samples = new char[*sample_count];
-    if (*samples == NULL)
+    if (*samples == nullptr)
         return false;
     return io_read_string(io, *samples, *sample_count);
 }
@@ -94,16 +94,16 @@ static bool nwa_read_compressed(
     __attribute__((unused)) char **samples,
     __attribute__((unused)) size_t *sample_count)
 {
-    assert(io != NULL);
-    assert(header != NULL);
+    assert(io != nullptr);
+    assert(header != nullptr);
     log_error("Reading compressed streams is not supported");
     return false;
 }
 
 static bool nwa_decode(Converter *converter, VirtualFile *file)
 {
-    assert(converter != NULL);
-    assert(file != NULL);
+    assert(converter != nullptr);
+    assert(file != nullptr);
 
     NwaHeader header;
     header.channel_count = io_read_u16_le(file->io);
@@ -117,7 +117,7 @@ static bool nwa_decode(Converter *converter, VirtualFile *file)
     header.block_size = io_read_u32_le(file->io);
     header.rest_size = io_read_u32_le(file->io);
 
-    char *output_samples = NULL;
+    char *output_samples = nullptr;
     size_t output_sample_count;
     bool result;
 

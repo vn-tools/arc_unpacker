@@ -28,14 +28,14 @@ struct IO
 
 static bool file_io_seek(IO *io, size_t offset, int whence)
 {
-    assert(io != NULL);
+    assert(io != nullptr);
     return fseek(io->file, offset, whence) == 0;
 }
 
 static bool file_io_read(IO *io, size_t length, void *destination)
 {
-    assert(io != NULL);
-    assert(destination != NULL);
+    assert(io != nullptr);
+    assert(destination != nullptr);
     if (fread(destination, 1, length, io->file) != length)
     {
         log_warning("IO: Failed to read full data");
@@ -46,8 +46,8 @@ static bool file_io_read(IO *io, size_t length, void *destination)
 
 static bool file_io_write(IO *io, size_t length, void *source)
 {
-    assert(io != NULL);
-    assert(source != NULL);
+    assert(io != nullptr);
+    assert(source != nullptr);
     if (fwrite(source, 1, length, io->file) != length)
     {
         log_warning("IO: Failed to write full data");
@@ -58,13 +58,13 @@ static bool file_io_write(IO *io, size_t length, void *source)
 
 static size_t file_io_tell(IO *io)
 {
-    assert(io != NULL);
+    assert(io != nullptr);
     return ftell(io->file);
 }
 
 static size_t file_io_size(IO *io)
 {
-    assert(io != NULL);
+    assert(io != nullptr);
     size_t old_pos = ftell(io->file);
     fseek(io->file, 0, SEEK_END);
     size_t size = ftell(io->file);
@@ -76,7 +76,7 @@ static bool file_io_truncate(
     __attribute__((unused)) IO *io,
     __attribute__((unused)) size_t new_size)
 {
-    assert(io != NULL);
+    assert(io != nullptr);
     //return ftruncate(io->file, new_size) == 0;
     log_error("IO: Truncating for real files is not supported!");
     return false;
@@ -86,7 +86,7 @@ static bool file_io_truncate(
 
 static bool buffer_io_seek(IO *io, size_t offset, int whence)
 {
-    assert(io != NULL);
+    assert(io != nullptr);
     assert(whence == SEEK_SET || whence == SEEK_END || whence == SEEK_CUR);
 
     if (whence == SEEK_SET)
@@ -101,8 +101,8 @@ static bool buffer_io_seek(IO *io, size_t offset, int whence)
 
 static bool buffer_io_read(IO *io, size_t length, void *destination)
 {
-    assert(io != NULL);
-    assert(destination != NULL);
+    assert(io != nullptr);
+    assert(destination != nullptr);
     if (io->buffer_pos + length > io->buffer_size)
         return false;
     memcpy(destination, io->buffer + io->buffer_pos, length);
@@ -112,14 +112,14 @@ static bool buffer_io_read(IO *io, size_t length, void *destination)
 
 static bool buffer_io_write(IO *io, size_t length, void *source)
 {
-    assert(io != NULL);
-    assert(source != NULL);
+    assert(io != nullptr);
+    assert(source != nullptr);
 
     char *destination;
     if (io->buffer_pos + length > io->buffer_size)
     {
         destination = (char*)realloc(io->buffer, io->buffer_pos + length);
-        if (destination == NULL)
+        if (destination == nullptr)
         {
             log_error("IO: Failed to allocate %d bytes",
                 io->buffer_pos + length);
@@ -136,29 +136,29 @@ static bool buffer_io_write(IO *io, size_t length, void *source)
 
 static size_t buffer_io_tell(IO *io)
 {
-    assert(io != NULL);
+    assert(io != nullptr);
     return io->buffer_pos;
 }
 
 static size_t buffer_io_size(IO *io)
 {
-    assert(io != NULL);
+    assert(io != nullptr);
     return io->buffer_size;
 }
 
 static bool buffer_io_truncate(IO *io, size_t new_size)
 {
-    assert(io != NULL);
+    assert(io != nullptr);
     if (new_size == 0)
     {
         free(io->buffer);
         io->buffer_size = 0;
         io->buffer_pos = 0;
-        io->buffer = NULL;
+        io->buffer = nullptr;
         return true;
     }
     char *new_buffer = (char*)realloc(io->buffer, new_size);
-    if (new_buffer == NULL)
+    if (new_buffer == nullptr)
         return false;
     io->buffer = new_buffer;
     io->buffer_size = new_size;
@@ -175,16 +175,16 @@ IO *io_create_from_file(const char *path, const char *read_mode)
     if (!fp)
     {
         log_error("IO: Can\'t open file %s", path);
-        return NULL;
+        return nullptr;
     }
     IO *io = new IO;
-    if (io == NULL)
+    if (io == nullptr)
     {
         log_error("IO: Failed to allocate memory for file IO");
-        return NULL;
+        return nullptr;
     }
     io->file = fp;
-    io->buffer = NULL;
+    io->buffer = nullptr;
     io->buffer_pos = 0;
     io->buffer_size = 0;
     io->seek = &file_io_seek;
@@ -199,20 +199,20 @@ IO *io_create_from_file(const char *path, const char *read_mode)
 IO *io_create_from_buffer(const char *buffer, size_t buffer_size)
 {
     IO *io = new IO;
-    if (io == NULL)
+    if (io == nullptr)
     {
         log_error("IO: Failed to allocate memory for buffer IO");
-        return NULL;
+        return nullptr;
     }
-    io->file = NULL;
+    io->file = nullptr;
     io->buffer = (char*)malloc(buffer_size);
-    if (io->buffer == NULL)
+    if (io->buffer == nullptr)
     {
         log_error(
             "IO: Failed to allocate %d bytes for buffer IO data",
             buffer_size);
         delete io;
-        return NULL;
+        return nullptr;
     }
     memcpy(io->buffer, buffer, buffer_size);
     io->buffer_pos = 0;
@@ -233,67 +233,67 @@ IO *io_create_empty()
 
 void io_destroy(IO *io)
 {
-    assert(io != NULL);
-    if (io->file != NULL)
+    assert(io != nullptr);
+    if (io->file != nullptr)
         fclose(io->file);
-    if (io->buffer != NULL)
+    if (io->buffer != nullptr)
         free(io->buffer);
     delete io;
 }
 
 size_t io_size(IO *io)
 {
-    assert(io != NULL);
-    assert(io->size != NULL);
+    assert(io != nullptr);
+    assert(io->size != nullptr);
     return io->size(io);
 }
 
 bool io_seek(IO *io, size_t offset)
 {
-    assert(io != NULL);
-    assert(io->seek != NULL);
+    assert(io != nullptr);
+    assert(io->seek != nullptr);
     return io->seek(io, offset, SEEK_SET);
 }
 
 bool io_skip(IO *io, size_t offset)
 {
-    assert(io != NULL);
-    assert(io->seek != NULL);
+    assert(io != nullptr);
+    assert(io->seek != nullptr);
     return io->seek(io, offset, SEEK_CUR);
 }
 
 size_t io_tell(IO *io)
 {
-    assert(io != NULL);
-    assert(io->tell != NULL);
+    assert(io != nullptr);
+    assert(io->tell != nullptr);
     return io->tell(io);
 }
 
 bool io_read_string(IO *io, char *output, size_t length)
 {
-    assert(io != NULL);
-    assert(output != NULL);
-    assert(io->read != NULL);
+    assert(io != nullptr);
+    assert(output != nullptr);
+    assert(io->read != nullptr);
     return io->read(io, length, output);
 }
 
 bool io_read_until_zero(IO *io, char **output, size_t *output_size)
 {
-    assert(io != NULL);
-    assert(output != NULL);
+    assert(io != nullptr);
+    assert(output != nullptr);
 
     char *new_str;
     char c;
-    *output = NULL;
+    *output = nullptr;
     size_t size = 0;
     do
     {
         new_str = (char*)realloc(*output, size + 1);
-        if (new_str == NULL)
+        if (new_str == nullptr)
         {
             free(*output);
-            *output = NULL;
-            if (output_size != NULL)
+            *output = nullptr;
+            if (output_size != nullptr)
                 *output_size = 0;
             log_error(
                 "IO: Failed to allocate memory for null-terminated string");
@@ -304,15 +304,15 @@ bool io_read_until_zero(IO *io, char **output, size_t *output_size)
         (*output)[size ++] = c;
     }
     while (c != '\0');
-    if (output_size != NULL)
+    if (output_size != nullptr)
         *output_size = size;
     return true;
 }
 
 uint8_t io_read_u8(IO *io)
 {
-    assert(io != NULL);
-    assert(io->read != NULL);
+    assert(io != nullptr);
+    assert(io->read != nullptr);
     uint8_t ret = 0;
     io->read(io, 1, &ret);
     return ret;
@@ -320,8 +320,8 @@ uint8_t io_read_u8(IO *io)
 
 uint16_t io_read_u16_le(IO *io)
 {
-    assert(io != NULL);
-    assert(io->read != NULL);
+    assert(io != nullptr);
+    assert(io->read != nullptr);
     uint16_t ret = 0;
     io->read(io, 2, &ret);
     return le16toh(ret);
@@ -329,8 +329,8 @@ uint16_t io_read_u16_le(IO *io)
 
 uint32_t io_read_u32_le(IO *io)
 {
-    assert(io != NULL);
-    assert(io->read != NULL);
+    assert(io != nullptr);
+    assert(io->read != nullptr);
     uint32_t ret = 0;
     io->read(io, 4, &ret);
     return le32toh(ret);
@@ -338,8 +338,8 @@ uint32_t io_read_u32_le(IO *io)
 
 uint64_t io_read_u64_le(IO *io)
 {
-    assert(io != NULL);
-    assert(io->read != NULL);
+    assert(io != nullptr);
+    assert(io->read != nullptr);
     uint64_t ret = 0;
     io->read(io, 8, &ret);
     return le64toh(ret);
@@ -347,8 +347,8 @@ uint64_t io_read_u64_le(IO *io)
 
 uint16_t io_read_u16_be(IO *io)
 {
-    assert(io != NULL);
-    assert(io->read != NULL);
+    assert(io != nullptr);
+    assert(io->read != nullptr);
     uint16_t ret = 0;
     io->read(io, 2, &ret);
     return be16toh(ret);
@@ -356,8 +356,8 @@ uint16_t io_read_u16_be(IO *io)
 
 uint32_t io_read_u32_be(IO *io)
 {
-    assert(io != NULL);
-    assert(io->read != NULL);
+    assert(io != nullptr);
+    assert(io->read != nullptr);
     uint32_t ret = 0;
     io->read(io, 4, &ret);
     return be32toh(ret);
@@ -365,8 +365,8 @@ uint32_t io_read_u32_be(IO *io)
 
 uint64_t io_read_u64_be(IO *io)
 {
-    assert(io != NULL);
-    assert(io->read != NULL);
+    assert(io != nullptr);
+    assert(io->read != nullptr);
     uint64_t ret = 0;
     io->read(io, 8, &ret);
     return be64toh(ret);
@@ -374,26 +374,26 @@ uint64_t io_read_u64_be(IO *io)
 
 bool io_write_string(IO *io, const char *str, size_t length)
 {
-    assert(io != NULL);
-    assert(io->write != NULL);
-    assert(str != NULL);
+    assert(io != nullptr);
+    assert(io->write != nullptr);
+    assert(str != nullptr);
     return io->write(io, length, (void*)str);
 }
 
 bool io_write_string_from_io(IO *io, IO *input, size_t length)
 {
-    assert(io != NULL);
-    assert(input != NULL);
+    assert(io != nullptr);
+    assert(input != nullptr);
 
     bool result;
-    if (io->file != NULL)
+    if (io->file != nullptr)
     {
         // TODO improvement: use static buffer instead of such allocation
         char *buffer = new char[length];
-        if (buffer == NULL)
+        if (buffer == nullptr)
         {
             log_error("IO: Failed to allocate memory for string");
-            return NULL;
+            return nullptr;
         }
         result = io_read_string(input, buffer, length);
         if (result)
@@ -406,7 +406,7 @@ bool io_write_string_from_io(IO *io, IO *input, size_t length)
         if (new_pos > io->buffer_size)
         {
             char *new_buffer = (char*)realloc(io->buffer, new_pos);
-            if (new_buffer == NULL)
+            if (new_buffer == nullptr)
             {
                 log_error(
                     "IO: Failed to reallocate memory for string to %d bytes",
@@ -424,62 +424,62 @@ bool io_write_string_from_io(IO *io, IO *input, size_t length)
 
 bool io_write_u8(IO *io, uint8_t value)
 {
-    assert(io != NULL);
-    assert(io->write != NULL);
+    assert(io != nullptr);
+    assert(io->write != nullptr);
     return io->write(io, 1, &value);
 }
 
 bool io_write_u16_le(IO *io, uint16_t value)
 {
-    assert(io != NULL);
-    assert(io->write != NULL);
+    assert(io != nullptr);
+    assert(io->write != nullptr);
     value = htole16(value);
     return io->write(io, 2, &value);
 }
 
 bool io_write_u32_le(IO *io, uint32_t value)
 {
-    assert(io != NULL);
-    assert(io->write != NULL);
+    assert(io != nullptr);
+    assert(io->write != nullptr);
     value = htole32(value);
     return io->write(io, 4, &value);
 }
 
 bool io_write_u64_le(IO *io, uint64_t value)
 {
-    assert(io != NULL);
-    assert(io->write != NULL);
+    assert(io != nullptr);
+    assert(io->write != nullptr);
     value = htole64(value);
     return io->write(io, 8, &value);
 }
 
 bool io_write_u16_be(IO *io, uint16_t value)
 {
-    assert(io != NULL);
-    assert(io->write != NULL);
+    assert(io != nullptr);
+    assert(io->write != nullptr);
     value = htobe16(value);
     return io->write(io, 2, &value);
 }
 
 bool io_write_u32_be(IO *io, uint32_t value)
 {
-    assert(io != NULL);
-    assert(io->write != NULL);
+    assert(io != nullptr);
+    assert(io->write != nullptr);
     value = htobe32(value);
     return io->write(io, 4, &value);
 }
 
 bool io_write_u64_be(IO *io, uint64_t value)
 {
-    assert(io != NULL);
-    assert(io->write != NULL);
+    assert(io != nullptr);
+    assert(io->write != nullptr);
     value = htobe64(value);
     return io->write(io, 8, &value);
 }
 
 bool io_truncate(IO *io, size_t new_size)
 {
-    assert(io != NULL);
-    assert(io->truncate != NULL);
+    assert(io != nullptr);
+    assert(io->truncate != nullptr);
     return io->truncate(io, new_size);
 }

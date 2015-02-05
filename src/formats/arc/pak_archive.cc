@@ -36,7 +36,7 @@ static char *pak_read_zlib(
     size_t *size_uncompressed)
 {
     char *data_compressed = new char[size_compressed];
-    assert(data_compressed != NULL);
+    assert(data_compressed != nullptr);
 
     if (!io_read_string(arc_io, data_compressed, size_compressed))
         assert(0);
@@ -50,7 +50,7 @@ static char *pak_read_zlib(
     {
         assert(0);
     }
-    assert(data_uncompressed != NULL);
+    assert(data_uncompressed != nullptr);
     delete []data_compressed;
 
     return data_uncompressed;
@@ -60,22 +60,22 @@ static VirtualFile *pak_read_file(void *context)
 {
     PakUnpackContext *unpack_context = (PakUnpackContext*)context;
     VirtualFile *file = virtual_file_create();
-    assert(file != NULL);
+    assert(file != nullptr);
 
     size_t file_name_length = io_read_u32_le(unpack_context->table_io);
     char *file_name = new char[file_name_length];
-    assert(file_name != NULL);
+    assert(file_name != nullptr);
     io_read_string(unpack_context->table_io, file_name, file_name_length);
 
-    char *file_name_utf8 = NULL;
+    char *file_name_utf8 = nullptr;
     if (!convert_encoding(
         file_name, file_name_length,
-        &file_name_utf8, NULL,
+        &file_name_utf8, nullptr,
         "cp932", "utf-8"))
     {
         assert(0);
     }
-    assert(file_name_utf8 != NULL);
+    assert(file_name_utf8 != nullptr);
     virtual_file_set_name(file, file_name_utf8);
     delete []file_name_utf8;
 
@@ -92,14 +92,14 @@ static VirtualFile *pak_read_file(void *context)
         size_t size_uncompressed = 0;
         char *data_uncompressed = pak_read_zlib(
             unpack_context->arc_io, size_compressed, &size_uncompressed);
-        assert(data_uncompressed != NULL);
+        assert(data_uncompressed != nullptr);
         io_write_string(file->io, data_uncompressed, size_original);
         delete []data_uncompressed;
         if (size_uncompressed != size_original)
         {
             virtual_file_destroy(file);
             log_error("PAK: Bad file size");
-            return NULL;
+            return nullptr;
         }
     }
     else
@@ -128,11 +128,11 @@ static bool pak_unpack(
     uint32_t table_size_compressed = io_read_u32_le(arc_io);
     io_skip(arc_io, 0x104);
 
-    char *table = pak_read_zlib(arc_io, table_size_compressed, NULL);
-    assert(table != NULL);
+    char *table = pak_read_zlib(arc_io, table_size_compressed, nullptr);
+    assert(table != nullptr);
 
     IO *table_io = io_create_from_buffer(table, table_size_original);
-    assert(table_io != NULL);
+    assert(table_io != nullptr);
     delete []table;
 
     size_t i;

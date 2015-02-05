@@ -14,7 +14,7 @@
 char *strndup(const char *source, const size_t size)
 {
     char *target = new char[size + 1];
-    assert(target != NULL);
+    assert(target != nullptr);
     memcpy(target, source, size);
     target[size] = '\0';
     return target;
@@ -28,7 +28,7 @@ char *strdup(const char *source)
 void trim_right(char *target, const char *chars)
 {
     char *end = target + strlen(target) - 1;
-    while (end >= target && strchr(chars, *end) != NULL)
+    while (end >= target && strchr(chars, *end) != nullptr)
         end --;
     end[1] = '\0';
 }
@@ -40,11 +40,11 @@ bool zlib_inflate(
     size_t *output_size)
 {
     z_stream stream;
-    assert(input != NULL);
-    assert(output != NULL);
+    assert(input != nullptr);
+    assert(output != nullptr);
 
     size_t tmp;
-    if (output_size == NULL)
+    if (output_size == nullptr)
         output_size = &tmp;
 
     if (input_size < SIZE_MAX / 10)
@@ -52,7 +52,7 @@ bool zlib_inflate(
     else
         *output_size = input_size;
     *output = (char*)malloc(*output_size + 1);
-    if (*output == NULL)
+    if (*output == nullptr)
     {
         log_error("Zlib: failed to allocate initial memory");
         *output_size = 0;
@@ -63,15 +63,15 @@ bool zlib_inflate(
     stream.avail_in = input_size;
     stream.next_out = (unsigned char *)*output;
     stream.avail_out = *output_size;
-    stream.zalloc = (alloc_func)NULL;
-    stream.zfree = (free_func)NULL;
-    stream.opaque = (voidpf)NULL;
+    stream.zalloc = (alloc_func)nullptr;
+    stream.zfree = (free_func)nullptr;
+    stream.opaque = (voidpf)nullptr;
     stream.total_out = 0;
 
     if (inflateInit(&stream) != Z_OK)
     {
         *output_size = 0;
-        *output = NULL;
+        *output = nullptr;
         log_error("Zlib: failed to initialize stream");
         return false;
     }
@@ -88,11 +88,11 @@ bool zlib_inflate(
                     log_warning("Zlib: failed to uninitialize stream");
                 }
                 char *new_output = (char*)realloc(*output, stream.total_out+1);
-                if (new_output == NULL)
+                if (new_output == nullptr)
                 {
                     log_error("Zlib: failed to allocate memory for output");
                     free(*output);
-                    *output = NULL;
+                    *output = nullptr;
                     *output_size = 0;
                     return false;
                 }
@@ -113,7 +113,7 @@ bool zlib_inflate(
                 {
                     log_error("Zlib: input is too large");
                     free(*output);
-                    *output = NULL;
+                    *output = nullptr;
                     *output_size = 0;
                     return false;
                 }
@@ -123,11 +123,11 @@ bool zlib_inflate(
                 }
 
                 char *new_output = (char*)realloc(*output, *output_size + 1);
-                if (new_output == NULL)
+                if (new_output == nullptr)
                 {
                     log_error("Zlib: failed to allocate memory for output");
                     free(*output);
-                    *output = NULL;
+                    *output = nullptr;
                     *output_size = 0;
                     return false;
                 }
@@ -141,7 +141,7 @@ bool zlib_inflate(
             default:
                 log_error("Zlib: inflate failed (error code = %d)", result);
                 free(*output);
-                *output = NULL;
+                *output = nullptr;
                 *output_size = 0;
                 return false;
         }
@@ -159,23 +159,23 @@ bool convert_encoding(
     const char *from,
     const char *to)
 {
-    assert(input != NULL);
-    assert(output != NULL);
-    assert(from != NULL);
-    assert(to != NULL);
+    assert(input != nullptr);
+    assert(output != nullptr);
+    assert(from != nullptr);
+    assert(to != nullptr);
 
     size_t tmp;
-    if (output_size == NULL)
+    if (output_size == nullptr)
         output_size = &tmp;
 
     iconv_t conv = iconv_open(to, from);
 
-    *output = NULL;
+    *output = nullptr;
     *output_size = 0;
 
     char *output_old, *output_new;
     char *input_ptr = (char*) input;
-    char *output_ptr = NULL;
+    char *output_ptr = nullptr;
     size_t input_bytes_left = input_size;
     size_t output_bytes_left = *output_size;
 
@@ -187,13 +187,13 @@ bool convert_encoding(
         {
             log_error("Encoding: Failed to allocate memory");
             free(*output);
-            *output = NULL;
+            *output = nullptr;
             *output_size = 0;
             return false;
         }
         *output = output_new;
 
-        if (output_old == NULL)
+        if (output_old == nullptr)
             output_ptr = *output;
         else
             output_ptr += *output - output_old;
@@ -214,7 +214,7 @@ bool convert_encoding(
             case EILSEQ:
                 log_error("Encoding: Invalid byte sequence");
                 free(*output);
-                *output = NULL;
+                *output = nullptr;
                 *output_size = 0;
                 return false;
 

@@ -5,41 +5,41 @@
 Converter *converter_create()
 {
     Converter *converter = new Converter;
-    assert(converter != NULL);
-    converter->data = NULL;
-    converter->add_cli_help = NULL;
-    converter->parse_cli_options = NULL;
-    converter->decode = NULL;
-    converter->cleanup = NULL;
+    assert(converter != nullptr);
+    converter->data = nullptr;
+    converter->add_cli_help = nullptr;
+    converter->parse_cli_options = nullptr;
+    converter->decode = nullptr;
+    converter->cleanup = nullptr;
     return converter;
 }
 
 void converter_destroy(Converter *converter)
 {
-    assert(converter != NULL);
-    if (converter->cleanup != NULL)
+    assert(converter != nullptr);
+    if (converter->cleanup != nullptr)
         converter->cleanup(converter);
     delete converter;
 }
 
 void converter_parse_cli_options(Converter *converter, ArgParser &arg_parser)
 {
-    assert(converter != NULL);
-    if (converter->parse_cli_options != NULL)
+    assert(converter != nullptr);
+    if (converter->parse_cli_options != nullptr)
         converter->parse_cli_options(converter, arg_parser);
 }
 
 void converter_add_cli_help(Converter *converter, ArgParser &arg_parser)
 {
-    assert(converter != NULL);
-    if (converter->add_cli_help != NULL)
+    assert(converter != nullptr);
+    if (converter->add_cli_help != nullptr)
         converter->add_cli_help(converter, arg_parser);
 }
 
 bool converter_decode(Converter *converter, VirtualFile *target_file)
 {
-    assert(converter != NULL);
-    if (converter->decode == NULL)
+    assert(converter != nullptr);
+    if (converter->decode == nullptr)
     {
         log_error("Decoding for this format is not supported");
         return false;

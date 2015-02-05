@@ -27,9 +27,9 @@ static void add_format(
     const char *name,
     ConverterCreator creator)
 {
-    assert(factory != NULL);
-    assert(name != NULL);
-    assert(creator != NULL);
+    assert(factory != nullptr);
+    assert(name != nullptr);
+    assert(creator != nullptr);
     FormatDefinition *definition = new FormatDefinition;
     definition->name = name;
     definition->creator = creator;
@@ -38,7 +38,7 @@ static void add_format(
 
 static void init_factory(ConverterFactory *factory)
 {
-    assert(factory != NULL);
+    assert(factory != nullptr);
     add_format(factory, "cbg", &cbg_converter_create);
     add_format(factory, "xyz", &xyz_converter_create);
     add_format(factory, "mgd", &mgd_converter_create);
@@ -52,7 +52,7 @@ static void init_factory(ConverterFactory *factory)
 ConverterFactory *converter_factory_create()
 {
     ConverterFactory *factory = new ConverterFactory;
-    assert(factory != NULL);
+    assert(factory != nullptr);
     factory->formats = dictionary_create();
     init_factory(factory);
     return factory;
@@ -62,7 +62,7 @@ void converter_factory_destroy(ConverterFactory *factory)
 {
     size_t i;
     const Array *definitions;
-    assert(factory != NULL);
+    assert(factory != nullptr);
     definitions = dictionary_get_values(factory->formats);
     for (i = 0; i < array_size(definitions); i ++)
         delete (FormatDefinition*)array_get(definitions, i);
@@ -79,14 +79,14 @@ Converter *converter_factory_from_string(
     const ConverterFactory *factory,
     const char *format)
 {
-    assert(factory != NULL);
-    assert(format != NULL);
+    assert(factory != nullptr);
+    assert(format != nullptr);
 
     FormatDefinition *definition
         = (FormatDefinition*)dictionary_get(factory->formats, format);
-    if (definition != NULL)
+    if (definition != nullptr)
         return definition->creator();
 
     log_error("Invalid converter format: %s", format);
-    return NULL;
+    return nullptr;
 }

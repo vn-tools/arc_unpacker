@@ -5,7 +5,7 @@
 void test_non_existent_key()
 {
     Dictionary *dic = dictionary_create();
-    assert(dictionary_get(dic, "nope") == NULL);
+    assert(dictionary_get(dic, "nope") == nullptr);
     assert(!dictionary_has_key(dic, "nope"));
     dictionary_destroy(dic);
 }

@@ -65,7 +65,7 @@ static void cbg_read_frequency_table(
     uint32_t frequency_table[])
 {
     char *raw_data = new char[raw_data_size];
-    assert(raw_data != NULL);
+    assert(raw_data != nullptr);
     io_read_string(io, raw_data, raw_data_size);
 
     cbg_decrypt(raw_data, raw_data_size, key);
@@ -86,8 +86,8 @@ static int cbg_read_node_info(
     uint32_t frequency_table[],
     CbgNodeInfo node_info[])
 {
-    assert(frequency_table != NULL);
-    assert(node_info != NULL);
+    assert(frequency_table != nullptr);
+    assert(node_info != nullptr);
     int i, j, k;
     uint32_t frequency_sum = 0;
     for (i = 0; i < 256; i ++)
@@ -146,8 +146,8 @@ static void cbg_decompress_huffman(
     uint32_t huffman_size,
     uint8_t *huffman)
 {
-    assert(io != NULL);
-    assert(node_info != NULL);
+    assert(io != nullptr);
+    assert(node_info != nullptr);
     uint32_t root = last_node;
     uint8_t mask = 0x80;
     size_t i;
@@ -175,8 +175,8 @@ static void cbg_decompress_rle(
     char *huffman,
     char *output)
 {
-    assert(huffman != NULL);
-    assert(output != NULL);
+    assert(huffman != nullptr);
+    assert(output != nullptr);
     char *huffman_ptr = huffman;
     char *huffman_guardian = huffman + huffman_size;
     bool zero_flag = false;
@@ -206,7 +206,7 @@ static void cbg_transform_colors(
     uint16_t height,
     uint16_t bpp)
 {
-    assert(input != NULL);
+    assert(input != nullptr);
     uint16_t channels = bpp >> 3;
     int y, x, i;
 
@@ -271,8 +271,8 @@ static PixelFormat bpp_to_image_pixel_format(short bpp)
 
 static bool cbg_decode(Converter *converter, VirtualFile *file)
 {
-    assert(converter != NULL);
-    assert(file != NULL);
+    assert(converter != nullptr);
+    assert(file != nullptr);
 
     char magic[cbg_magic_length];
     io_read_string(file->io, magic, cbg_magic_length);
@@ -307,7 +307,7 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
 
     bool result;
     char *huffman = new char[huffman_size];
-    if (huffman == NULL)
+    if (huffman == nullptr)
     {
         log_error("CBG: Failed to allocate %d bytes", huffman_size);
         result = false;
@@ -323,7 +323,7 @@ static bool cbg_decode(Converter *converter, VirtualFile *file)
 
         size_t output_size = width * height * (bpp >> 3);
         char *output = new char[output_size];
-        if (output == NULL)
+        if (output == nullptr)
         {
             log_error("CBG: Failed to allocate %d bytes", output_size);
             result = false;

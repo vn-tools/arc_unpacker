@@ -41,7 +41,7 @@ static const size_t segm_magic_length = 4;
 
 static int xp3_detect_version(IO *arc_io)
 {
-    assert(arc_io != NULL);
+    assert(arc_io != nullptr);
     int version = 1;
     size_t old_pos = io_tell(arc_io);
     io_seek(arc_io, 19);
@@ -57,7 +57,7 @@ static bool xp3_check_magic(
     size_t length)
 {
     char *magic = new char[length];
-    assert(magic != NULL);
+    assert(magic != nullptr);
     io_read_string(arc_io, magic, length);
     bool ok = memcmp(magic, expected_magic, length) == 0;
     delete []magic;
@@ -66,7 +66,7 @@ static bool xp3_check_magic(
 
 static uint64_t xp3_get_table_offset(IO *arc_io, int version)
 {
-    assert(arc_io != NULL);
+    assert(arc_io != nullptr);
     if (version == 1)
         return io_read_u64_le(arc_io);
     uint64_t additional_header_offset = io_read_u64_le(arc_io);
@@ -85,9 +85,9 @@ static uint64_t xp3_get_table_offset(IO *arc_io, int version)
 
 static IO *xp3_read_raw_table(IO *arc_io)
 {
-    assert(arc_io != NULL);
+    assert(arc_io != nullptr);
 
-    IO *table_io = NULL;
+    IO *table_io = nullptr;
     bool use_zlib = io_read_u8(arc_io);
     const uint64_t table_size_compressed = io_read_u64_le(arc_io);
     const uint64_t table_size_original = use_zlib
@@ -118,9 +118,9 @@ static IO *xp3_read_raw_table(IO *arc_io)
                     &table_size_uncompressed))
                 {
                     log_error("XP3: Failed to decompress zlib stream");
-                    return NULL;
+                    return nullptr;
                 }
-                assert(table_data_uncompressed != NULL);
+                assert(table_data_uncompressed != nullptr);
                 assert(table_size_original == table_size_uncompressed);
                 delete []table_data;
                 table_data = table_data_uncompressed;
@@ -137,8 +137,8 @@ static IO *xp3_read_raw_table(IO *arc_io)
 
 static bool xp3_read_info_chunk(IO *table_io, VirtualFile *target_file)
 {
-    assert(table_io != NULL);
-    assert(target_file != NULL);
+    assert(table_io != nullptr);
+    assert(target_file != nullptr);
 
     if (!xp3_check_magic(table_io, info_magic, info_magic_length))
     {
@@ -156,18 +156,18 @@ static bool xp3_read_info_chunk(IO *table_io, VirtualFile *target_file)
     size_t name_length = io_read_u16_le(table_io);
 
     char *name_utf16 = new char [name_length * 2];
-    assert(name_utf16 != NULL);
+    assert(name_utf16 != nullptr);
     io_read_string(table_io, name_utf16, name_length * 2);
 
     char *name_utf8;
     if (!convert_encoding(
         name_utf16, name_length * 2,
-        &name_utf8, NULL,
+        &name_utf8, nullptr,
         "UTF-16LE", "UTF-8"))
     {
         assert(0);
     }
-    assert(name_utf8 != NULL);
+    assert(name_utf8 != nullptr);
     virtual_file_set_name(target_file, name_utf8);
     delete []name_utf8;
 
@@ -181,9 +181,9 @@ static bool xp3_read_segm_chunk(
     IO *arc_io,
     VirtualFile *target_file)
 {
-    assert(table_io != NULL);
-    assert(arc_io != NULL);
-    assert(target_file != NULL);
+    assert(table_io != nullptr);
+    assert(arc_io != nullptr);
+    assert(target_file != nullptr);
 
     if (!xp3_check_magic(table_io, segm_magic, segm_magic_length))
     {
@@ -203,7 +203,7 @@ static bool xp3_read_segm_chunk(
     if (use_zlib)
     {
         char *data = new char[data_size_compressed];
-        assert(data != NULL);
+        assert(data != nullptr);
         io_read_string(arc_io, data, data_size_compressed);
 
         char *data_uncompressed;
@@ -232,8 +232,8 @@ static bool xp3_read_segm_chunk(
 
 static uint32_t xp3_read_adlr_chunk(IO *table_io, uint32_t *encryption_key)
 {
-    assert(table_io != NULL);
-    assert(encryption_key != NULL);
+    assert(table_io != nullptr);
+    assert(encryption_key != nullptr);
 
     if (!xp3_check_magic(table_io, adlr_magic, adlr_magic_length))
     {
@@ -249,7 +249,7 @@ static uint32_t xp3_read_adlr_chunk(IO *table_io, uint32_t *encryption_key)
 
 static VirtualFile *xp3_read_file(void *context)
 {
-    assert(context != NULL);
+    assert(context != nullptr);
 
     IO *arc_io = ((Xp3UnpackContext*)context)->arc_io;
     IO *table_io = ((Xp3UnpackContext*)context)->table_io;
@@ -259,7 +259,7 @@ static VirtualFile *xp3_read_file(void *context)
     {
         log_error("XP3: Expected FILE chunk");
         io_destroy(table_io);
-        return NULL;
+        return nullptr;
     }
     uint64_t file_chunk_size = io_read_u64_le(table_io);
     size_t file_chunk_start_offset = io_tell(table_io);
@@ -292,9 +292,9 @@ static bool xp3_unpack(
     IO *arc_io,
     OutputFiles *output_files)
 {
-    assert(archive != NULL);
-    assert(arc_io != NULL);
-    assert(output_files != NULL);
+    assert(archive != nullptr);
+    assert(arc_io != nullptr);
+    assert(output_files != nullptr);
 
     if (!xp3_check_magic(arc_io, xp3_magic, xp3_magic_length))
     {
@@ -310,7 +310,7 @@ static bool xp3_unpack(
     IO *table_io = xp3_read_raw_table(arc_io);
 
     bool result;
-    if (table_io == NULL)
+    if (table_io == nullptr)
     {
         log_error("XP3: Failed to read file table");
         result = false;
