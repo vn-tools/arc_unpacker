@@ -1,5 +1,5 @@
 #include <cassert>
-#include <cstring>
+#include <string>
 #include "io.h"
 #include "logger.h"
 #include "string_ex.h"
@@ -7,7 +7,7 @@
 
 typedef struct
 {
-    char *name;
+    std::string name;
 } Internals;
 
 VirtualFile *virtual_file_create()
@@ -18,11 +18,7 @@ VirtualFile *virtual_file_create()
     file->io = io_create_empty();
     assert(file->io != nullptr);
 
-    Internals *internals = new Internals;
-    assert(internals != nullptr);
-    internals->name = nullptr;
-    file->internals = internals;
-
+    file->internals = new Internals;
     return file;
 }
 
@@ -30,47 +26,36 @@ void virtual_file_destroy(VirtualFile *file)
 {
     assert(file != nullptr);
     io_destroy(file->io);
-    delete []((Internals*)file->internals)->name;
     delete (Internals*)file->internals;
     delete file;
 }
 
 void virtual_file_change_extension(VirtualFile *file, const char *new_ext)
 {
-    char *name = ((Internals*)file->internals)->name;
     assert(file != nullptr);
-    if (name == nullptr)
+    Internals *internals = ((Internals*)file->internals);
+    std::string old_name = internals->name;
+    if (old_name == "")
         return;
 
-    char *ptr = strrchr(name, '.');
-    if (ptr != nullptr)
-        *ptr = '\0';
-
-    while (new_ext[0] == '.')
-        new_ext ++;
-
-    size_t base_length = strlen(name);
-    char *new_name = new char[base_length + 1 + strlen(new_ext) + 1];
-    assert(new_name != nullptr);
-    strcpy(new_name, name);
-    strcpy(new_name + base_length, ".");
-    strcpy(new_name + base_length + 1, new_ext);
-    ((Internals*)file->internals)->name = new_name;
+    size_t pos = old_name.rfind(".");
+    if (pos == std::string::npos)
+    {
+        internals->name = old_name + "." + std::string(new_ext);
+    }
+    else
+    {
+        internals->name = old_name.substr(0, pos) + "." + std::string(new_ext);
+    }
 }
 
 const char *virtual_file_get_name(VirtualFile *file)
 {
-    return ((Internals*)file->internals)->name;
+    return ((Internals*)file->internals)->name.c_str();
 }
 
-bool virtual_file_set_name(VirtualFile *file, const char *new_name)
+void virtual_file_set_name(VirtualFile *file, const char *new_name)
 {
-    char *name = ((Internals*)file->internals)->name;
     assert(file != nullptr);
-    if (name != nullptr)
-        delete []name;
-    name = new char[strlen(new_name) + 1];
-    strcpy(name, new_name);
-    ((Internals*)file->internals)->name = name;
-    return name != nullptr;
+    ((Internals*)file->internals)->name = std::string(new_name);
 }
