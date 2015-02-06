@@ -18,7 +18,6 @@ Port old code for formats:
 
 C++ stuff:
 	- Port IO to classes
-	- Port OutputFiles to class
 	- Port VirtualFile to class
 	- Port Image to class
 	- Port Sound to class

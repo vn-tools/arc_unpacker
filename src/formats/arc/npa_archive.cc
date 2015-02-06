@@ -291,7 +291,7 @@ void NpaArchive::parse_cli_options(ArgParser &arg_parser)
     }
 }
 
-bool NpaArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
+bool NpaArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
 {
     assert(context != nullptr);
     if (!npa_check_magic(arc_io))
@@ -316,7 +316,7 @@ bool NpaArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
     for (file_pos = 0; file_pos < header->total_count; file_pos ++)
     {
         unpack_context.file_pos = file_pos;
-        output_files_save(output_files, &npa_read_file, &unpack_context);
+        output_files.save(&npa_read_file, &unpack_context);
     }
     delete header;
     return true;

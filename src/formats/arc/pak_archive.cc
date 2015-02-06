@@ -113,7 +113,7 @@ namespace
     }
 }
 
-bool PakArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
+bool PakArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
 {
     if (!pak_check_magic(arc_io))
     {
@@ -140,7 +140,7 @@ bool PakArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
     unpack_context.offset_to_files = io_tell(arc_io);
     for (i = 0; i < file_count; i ++)
     {
-        output_files_save(output_files, &pak_read_file, &unpack_context);
+        output_files.save(&pak_read_file, &unpack_context);
     }
 
     io_destroy(table_io);

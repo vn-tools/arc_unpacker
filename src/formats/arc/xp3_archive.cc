@@ -292,10 +292,9 @@ namespace
     }
 }
 
-bool Xp3Archive::unpack_internal(IO *arc_io, OutputFiles *output_files)
+bool Xp3Archive::unpack_internal(IO *arc_io, OutputFiles &output_files)
 {
     assert(arc_io != nullptr);
-    assert(output_files != nullptr);
 
     if (!xp3_check_magic(arc_io, xp3_magic, xp3_magic_length))
     {
@@ -322,7 +321,7 @@ bool Xp3Archive::unpack_internal(IO *arc_io, OutputFiles *output_files)
         unpack_context.arc_io = arc_io;
         unpack_context.table_io = table_io;
         while (io_tell(table_io) < io_size(table_io))
-            output_files_save(output_files, &xp3_read_file, &unpack_context);
+            output_files.save(&xp3_read_file, &unpack_context);
         io_destroy(table_io);
         result = true;
     }

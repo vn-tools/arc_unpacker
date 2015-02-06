@@ -15,15 +15,14 @@ void test_sar_archive()
 
     Archive *archive = new SarArchive();
 
-    OutputFiles *output_files = unpack_to_memory(
+    auto output_files = unpack_to_memory(
         "tests/test_files/arc/sar/test.sar",
         archive,
         0,
         nullptr);
-    auto actual_files = output_files_get_saved(output_files);
+    auto actual_files = output_files->get_saved();
 
     compare_files(expected_files, actual_files);
-    output_files_destroy(output_files);
 
     virtual_file_destroy(file1);
     virtual_file_destroy(file2);

@@ -9,10 +9,10 @@ class Archive
 public:
     virtual void add_cli_help(ArgParser &);
     virtual void parse_cli_options(ArgParser& );
-    virtual bool unpack_internal(IO *, OutputFiles *);
+    virtual bool unpack_internal(IO *, OutputFiles &);
     virtual ~Archive();
 
-    bool unpack(IO *, OutputFiles *);
+    bool unpack(IO *, OutputFiles &);
 };
 
 #endif

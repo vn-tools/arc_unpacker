@@ -6,8 +6,8 @@
 #include "test_support/archive_support.h"
 #include "virtual_file.h"
 
-OutputFiles *unpack_to_memory(
-    const char *input_path,
+std::unique_ptr<OutputFilesMemory> unpack_to_memory(
+    std::string input_path,
     Archive *archive,
     int argc,
     const char **argv)
@@ -17,10 +17,10 @@ OutputFiles *unpack_to_memory(
 
     ArgParser arg_parser;
     arg_parser.parse(argc, argv);
-    IO *io = io_create_from_file(input_path, "rb");
+    IO *io = io_create_from_file(input_path.c_str(), "rb");
     assert(io != nullptr);
-    OutputFiles *output_files = output_files_create_memory();
-    archive->unpack(io, output_files);
+    std::unique_ptr<OutputFilesMemory> output_files(new OutputFilesMemory);
+    archive->unpack(io, *output_files);
     io_destroy(io);
 
     log_restore();

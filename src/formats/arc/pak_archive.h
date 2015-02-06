@@ -5,7 +5,7 @@
 class PakArchive final : public Archive
 {
 public:
-    bool unpack_internal(IO *arc_io, OutputFiles *output_files) override;
+    bool unpack_internal(IO *, OutputFiles &output_files) override;
 };
 
 #endif

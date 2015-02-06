@@ -1,11 +1,13 @@
 #ifndef TEST_SUPPORT_ARCHIVE_SUPPORT_H
 #define TEST_SUPPORT_ARCHIVE_SUPPORT_H
+#include <memory>
+#include <string>
 #include <vector>
 #include "formats/archive.h"
 #include "output_files.h"
 
-OutputFiles *unpack_to_memory(
-    const char *input_path,
+std::unique_ptr<OutputFilesMemory> unpack_to_memory(
+    std::string input_path,
     Archive *archive,
     int argc,
     const char **argv);

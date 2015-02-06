@@ -348,7 +348,7 @@ namespace
     }
 }
 
-bool RpaArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
+bool RpaArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
 {
     int version = rpa_check_version(arc_io);
 
@@ -399,7 +399,7 @@ bool RpaArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
     for (i = 0; i < file_count; i ++)
     {
         context.table_entry = entries[i];
-        output_files_save(output_files, &rpa_read_file, &context);
+        output_files.save(&rpa_read_file, &context);
         delete entries[i];
     }
     delete []entries;

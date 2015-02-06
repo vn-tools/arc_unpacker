@@ -46,10 +46,9 @@ namespace
     }
 }
 
-bool SarArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
+bool SarArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
 {
     assert(arc_io != nullptr);
-    assert(output_files != nullptr);
 
     TableEntry **table;
     size_t i, j;
@@ -88,7 +87,7 @@ bool SarArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
     for (i = 0; i < file_count; i ++)
     {
         context.table_entry = table[i];
-        output_files_save(output_files, &sar_read_file, &context);
+        output_files.save(&sar_read_file, &context);
     }
 
     for (i = 0; i < file_count; i ++)

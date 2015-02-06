@@ -1,154 +1,110 @@
 #include <cassert>
-#include <cstdio>
-#include <cstring>
 #include "fs.h"
 #include "logger.h"
 #include "output_files.h"
 #include "string_ex.h"
 
-struct OutputFiles
+struct OutputFilesHdd::Internals
 {
-    const char *output_dir;
-    bool (*save)(OutputFiles*, VirtualFile*(*)(void *), void *);
-    bool memory;
+    std::string output_dir;
+
+    std::string get_full_path(
+        const std::string output_dir, const std::string file_name)
+    {
+        assert(file_name != "");
+        if (output_dir == "")
+            return file_name;
+        return output_dir + "/" + file_name;
+    }
+};
+
+OutputFilesHdd::OutputFilesHdd(std::string output_dir)
+{
+    internals = new Internals();
+    internals->output_dir = output_dir;
+}
+
+OutputFilesHdd::~OutputFilesHdd()
+{
+    delete internals;
+}
+
+bool OutputFilesHdd::save(
+    VirtualFile *(*save_proc)(void *),
+    void *context) const
+{
+    assert(save_proc != nullptr);
+
+    log_info("Reading file...");
+
+    VirtualFile *file = save_proc(context);
+    if (file == nullptr)
+    {
+        log_error("An error occured while reading file, saving skipped.");
+        log_info("");
+        return false;
+    }
+
+    std::string full_path = internals->get_full_path(
+        internals->output_dir,
+        virtual_file_get_name(file));
+    assert(full_path != "");
+
+    log_info("Saving to %s... ", full_path.c_str());
+
+    if (!mkpath(dirname(full_path)))
+        assert(0);
+
+    IO *output_io = io_create_from_file(full_path.c_str(), "wb");
+    if (!output_io)
+    {
+        log_warning("Failed to open file %s", full_path.c_str());
+        log_info("");
+        virtual_file_destroy(file);
+        return false;
+    }
+
+    io_seek(file->io, 0);
+    io_write_string_from_io(output_io, file->io, io_size(file->io));
+    io_destroy(output_io);
+    virtual_file_destroy(file);
+    log_info("Saved successfully");
+    log_info("");
+    return true;
+}
+
+
+
+struct OutputFilesMemory::Internals
+{
     std::vector<VirtualFile*> files;
 };
 
-namespace
+OutputFilesMemory::OutputFilesMemory()
 {
-    char *get_full_path(OutputFiles *output_files, const char *file_name)
-    {
-        assert(output_files != nullptr);
-        assert(file_name != nullptr);
-        assert(strcmp(file_name, "") != 0);
-        if (output_files->output_dir == nullptr)
-        {
-            char *ret = new char[strlen(file_name) + 1];
-            strcpy(ret, file_name);
-            return ret;
-        }
-
-        char *full_path = new char[
-            strlen(output_files->output_dir)
-            + 1
-            + strlen(file_name) + 1];
-        assert(full_path != nullptr);
-        strcpy(full_path, output_files->output_dir);
-        strcat(full_path, "/");
-        strcat(full_path, file_name);
-        return full_path;
-    }
-
-    bool save_to_hdd(
-        OutputFiles *output_files,
-        VirtualFile *(*save_proc)(void *),
-        void *context)
-    {
-        assert(output_files != nullptr);
-        assert(save_proc != nullptr);
-        assert(!output_files->memory);
-
-        log_info("Reading file...");
-
-        bool result;
-        VirtualFile *file = save_proc(context);
-        if (file == nullptr)
-        {
-            log_error("An error occured while reading file, saving skipped.");
-        }
-        else
-        {
-            char *full_path = get_full_path(
-                output_files,
-                virtual_file_get_name(file));
-            assert(full_path != nullptr);
-
-            log_info("Saving to %s... ", full_path);
-
-            if (!mkpath(dirname(full_path)))
-                assert(0);
-            IO *output_io = io_create_from_file(full_path, "wb");
-            if (!output_io)
-            {
-                log_warning("Failed to open file %s", full_path);
-            }
-            else
-            {
-                io_seek(file->io, 0);
-                io_write_string_from_io(output_io, file->io, io_size(file->io));
-                io_destroy(output_io);
-                result = true;
-                log_info("Saved successfully");
-            }
-            delete []full_path;
-        }
-
-        if (file != nullptr)
-            virtual_file_destroy(file);
-        log_info("");
-        return result;
-    }
-
-    bool save_to_memory(
-        OutputFiles *output_files,
-        VirtualFile *(*save_proc)(void *),
-        void *context)
-    {
-        VirtualFile *file;
-        assert(output_files != nullptr);
-        assert(save_proc != nullptr);
-        assert(output_files->memory);
-        file = save_proc(context);
-        if (file == nullptr)
-            return false;
-        output_files->files.push_back(file);
-        return true;
-    }
+    internals = new Internals();
 }
 
-OutputFiles *output_files_create_hdd(const char *output_dir)
+OutputFilesMemory::~OutputFilesMemory()
 {
-    OutputFiles *output_files = new OutputFiles;
-    assert(output_files != nullptr);
-    output_files->output_dir = output_dir;
-    output_files->memory = false;
-    output_files->save = &save_to_hdd;
-    return output_files;
+    for (auto file : internals->files)
+        virtual_file_destroy(file);
+    delete internals;
 }
 
-OutputFiles *output_files_create_memory()
+const std::vector<VirtualFile*> OutputFilesMemory::get_saved() const
 {
-    OutputFiles *output_files = new OutputFiles;
-    assert(output_files != nullptr);
-    output_files->output_dir = nullptr;
-    output_files->memory = true;
-    output_files->save = &save_to_memory;
-    return output_files;
+    return internals->files;
 }
 
-void output_files_destroy(OutputFiles *output_files)
-{
-    assert(output_files != nullptr);
-    if (output_files->memory)
-        for (auto file : output_files->files)
-            virtual_file_destroy(file);
-    delete output_files;
-}
-
-bool output_files_save(
-    OutputFiles *output_files,
+bool OutputFilesMemory::save(
     VirtualFile *(*save_proc)(void *),
-    void *context)
+    void *context) const
 {
-    assert(output_files != nullptr);
-    assert(output_files->save != nullptr);
-    return output_files->save(output_files, save_proc, context);
-}
-
-std::vector<VirtualFile*> output_files_get_saved(
-    const OutputFiles *output_files)
-{
-    assert(output_files != nullptr);
-    assert(output_files->memory);
-    return output_files->files;
+    assert(save_proc != nullptr);
+    VirtualFile *file = save_proc(context);
+    if (file == nullptr)
+        return false;
+    internals->files.push_back(file);
+    return true;
 }

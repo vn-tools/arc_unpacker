@@ -92,7 +92,7 @@ namespace
         Archive *archive,
         ArgParser &arg_parser,
         IO *io,
-        OutputFiles *output_files)
+        OutputFiles &output_files)
     {
         assert(archive != nullptr);
         io_seek(io, 0);
@@ -102,14 +102,13 @@ namespace
 
     bool guess_archive_and_unpack(
         IO *io,
-        OutputFiles *output_files,
+        OutputFiles &output_files,
         Options *options,
         ArgParser &arg_parser,
         const ArchiveFactory &arc_factory)
     {
         assert(io != nullptr);
         assert(options != nullptr);
-        assert(output_files != nullptr);
 
         bool result = false;
         if (options->format == nullptr)
@@ -165,8 +164,7 @@ namespace
     {
         assert(options != nullptr);
 
-        OutputFiles *output_files
-            = output_files_create_hdd(options->output_path);
+        OutputFilesHdd output_files(options->output_path);
         IO *io = io_create_from_file(options->input_path, "rb");
         if (!io)
             return false;
@@ -179,7 +177,6 @@ namespace
             arc_factory);
 
         io_destroy(io);
-        output_files_destroy(output_files);
         return result;
     }
 }

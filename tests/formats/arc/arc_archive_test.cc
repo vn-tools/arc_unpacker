@@ -15,11 +15,10 @@ void test_arc_archive()
 
     const char *path = "tests/test_files/arc/arc/test.arc";
     Archive *archive = new ArcArchive();
-    OutputFiles *output_files = unpack_to_memory(path, archive, 0, nullptr);
-    auto actual_files = output_files_get_saved(output_files);
+    auto output_files = unpack_to_memory(path, archive, 0, nullptr);
+    auto actual_files = output_files->get_saved();
 
     compare_files(expected_files, actual_files);
-    output_files_destroy(output_files);
 
     virtual_file_destroy(file1);
     virtual_file_destroy(file2);

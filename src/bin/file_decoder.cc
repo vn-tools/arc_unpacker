@@ -247,10 +247,7 @@ namespace
         size_t i;
         assert(options != nullptr);
 
-        OutputFiles *output_files
-            = output_files_create_hdd(options->output_dir);
-        assert(output_files != nullptr);
-
+        OutputFilesHdd output_files(options->output_dir);
         ReadContext context =
         {
             options,
@@ -263,10 +260,8 @@ namespace
         for (i = 0; i < options->input_paths.size(); i ++)
         {
             context.path_info = options->input_paths[i];
-            result &= output_files_save(
-                output_files, &read_and_decode, &context);
+            result &= output_files.save(&read_and_decode, &context);
         }
-        output_files_destroy(output_files);
         return result;
     }
 }

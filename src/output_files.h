@@ -1,21 +1,42 @@
 #ifndef OUTPUT_FILES_H
 #define OUTPUT_FILES_H
 #include <vector>
+#include <string>
 #include "virtual_file.h"
 
-typedef struct OutputFiles OutputFiles;
+class OutputFiles
+{
+public:
+    virtual bool save(
+        VirtualFile *(*save_proc)(void *),
+        void *context) const = 0;
+};
 
-OutputFiles *output_files_create_hdd(const char *output_dir);
-OutputFiles *output_files_create_memory();
 
-void output_files_destroy(OutputFiles *output_files);
 
-bool output_files_save(
-    OutputFiles *output_files,
-    VirtualFile *(*save_proc)(void *),
-    void *context);
+class OutputFilesHdd : public OutputFiles
+{
+public:
+    OutputFilesHdd(std::string output_dir);
+    ~OutputFilesHdd();
+    bool save(VirtualFile *(*save_proc)(void *), void *context) const override;
+private:
+    struct Internals;
+    Internals *internals;
+};
 
-std::vector<VirtualFile*> output_files_get_saved(
-    const OutputFiles *output_files);
+
+
+class OutputFilesMemory : public OutputFiles
+{
+public:
+    OutputFilesMemory();
+    ~OutputFilesMemory();
+    bool save(VirtualFile *(*save_proc)(void *), void *context) const override;
+    const std::vector<VirtualFile*> get_saved() const;
+private:
+    struct Internals;
+    Internals *internals;
+};
 
 #endif

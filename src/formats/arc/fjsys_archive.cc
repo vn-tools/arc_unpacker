@@ -116,7 +116,7 @@ void FjsysArchive::parse_cli_options(ArgParser &arg_parser)
     context->mgd_converter->parse_cli_options(arg_parser);
 }
 
-bool FjsysArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
+bool FjsysArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
 {
     assert(context != nullptr);
     if (!fjsys_check_magic(arc_io))
@@ -135,7 +135,7 @@ bool FjsysArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
 
     size_t i;
     for (i = 0; i < header->file_count; i ++)
-        output_files_save(output_files, &fjsys_read_file, &unpack_context);
+        output_files.save(&fjsys_read_file, &unpack_context);
 
     delete header;
     return true;

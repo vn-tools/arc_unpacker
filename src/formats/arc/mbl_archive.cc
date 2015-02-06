@@ -128,7 +128,7 @@ void MblArchive::parse_cli_options(ArgParser &arg_parser)
     context->prs_converter->parse_cli_options(arg_parser);
 }
 
-bool MblArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
+bool MblArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
 {
     size_t i;
     int version = mbl_get_version(arc_io);
@@ -147,7 +147,7 @@ bool MblArchive::unpack_internal(IO *arc_io, OutputFiles *output_files)
     unpack_context.name_length = name_length;
     for (i = 0; i < file_count; i ++)
     {
-        output_files_save(output_files, &mbl_read_file, &unpack_context);
+        output_files.save(&mbl_read_file, &unpack_context);
     }
 
     return true;
