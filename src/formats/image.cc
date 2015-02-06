@@ -87,17 +87,20 @@ Image *image_create_from_boxed(IO *io)
 
     int color_type;
     int bits_per_channel;
+    png_uint_32 png_image_width, png_image_height;
     png_get_IHDR(
         png_ptr,
         info_ptr,
-        (png_uint_32*)&image->image_width,
-        (png_uint_32*)&image->image_height,
+        &png_image_width,
+        &png_image_height,
         &bits_per_channel,
         &color_type,
         nullptr,
         nullptr,
         nullptr);
     assert(8 == bits_per_channel);
+    image->image_width = png_image_width;
+    image->image_height = png_image_height;
 
     int bpp = 0;
     if (color_type == PNG_COLOR_TYPE_RGB)
@@ -250,8 +253,7 @@ void image_update_file(const Image *image, VirtualFile *file)
 
     png_bytep *rows = new png_bytep[image->image_height];
     assert(rows != nullptr);
-    size_t y;
-    for (y = 0; y < image->image_height; y ++)
+    for (size_t y = 0; y < image->image_height; y ++)
         rows[y] = (png_bytep)&image->pixel_data[y * image->image_width * bpp];
     png_set_rows(png_ptr, info_ptr, rows);
     png_write_png(png_ptr, info_ptr, transformations, nullptr);

@@ -357,10 +357,13 @@ namespace
                     size_t y;
                     for (y = part_y+region->y1; y < part_y+part_height; y ++)
                     {
-                        io_read_string(
+                        if (!io_read_string(
                             uncompressed_io,
                             pixels + (part_x + region->x1 + y * width) * 4,
-                            part_width * 4);
+                            part_width * 4))
+                        {
+                            assert(0);
+                        }
                     }
                 }
             }
