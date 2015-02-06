@@ -183,11 +183,10 @@ namespace
         return data;
     }
 
-    VirtualFile *npa_read_file(void *_context)
+    std::unique_ptr<VirtualFile> npa_read_file(void *_context)
     {
         NpaUnpackContext *unpack_context = (NpaUnpackContext*)_context;
-        VirtualFile *file = virtual_file_create();
-        assert(file != nullptr);
+        std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         size_t file_name_length;
         char *file_name = npa_read_file_name(unpack_context, &file_name_length);
@@ -197,7 +196,7 @@ namespace
             &file_name_utf8, nullptr,
             "cp932", "utf-8");
         assert(file_name_utf8 != nullptr);
-        virtual_file_set_name(file, file_name_utf8);
+        file->name = std::string(file_name_utf8);
 
         NpaFileType file_type = (NpaFileType)io_read_u8(unpack_context->arc_io);
         io_skip(unpack_context->arc_io, 4);
@@ -210,12 +209,10 @@ namespace
         if (file_type == NPA_FILE_TYPE_DIRECTORY)
         {
             log_info("NPA: Empty directory - ignoring.");
-            virtual_file_destroy(file);
             return nullptr;
         }
         else if (file_type != NPA_FILE_TYPE_FILE)
         {
-            virtual_file_destroy(file);
             log_error("NPA: Unknown file type: %d", file_type);
             return nullptr;
         }
@@ -228,7 +225,7 @@ namespace
             file_name,
             file_name_length,
             unpack_context);
-        io_write_string(file->io, file_data, size_original);
+        io_write_string(&file->io, file_data, size_original);
         delete []file_data;
         delete []file_name;
         io_seek(unpack_context->arc_io, old_pos);

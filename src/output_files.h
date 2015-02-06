@@ -1,14 +1,17 @@
 #ifndef OUTPUT_FILES_H
 #define OUTPUT_FILES_H
-#include <vector>
+#include <memory>
 #include <string>
+#include <vector>
 #include "virtual_file.h"
+
+typedef std::unique_ptr<VirtualFile>(*VirtualFileFactory)(void *);
 
 class OutputFiles
 {
 public:
     virtual bool save(
-        VirtualFile *(*save_proc)(void *),
+        VirtualFileFactory save_proc,
         void *context) const = 0;
 };
 
@@ -19,7 +22,7 @@ class OutputFilesHdd : public OutputFiles
 public:
     OutputFilesHdd(std::string output_dir);
     ~OutputFilesHdd();
-    bool save(VirtualFile *(*save_proc)(void *), void *context) const override;
+    bool save(VirtualFileFactory save_proc, void *context) const override;
 private:
     struct Internals;
     Internals *internals;
@@ -32,7 +35,7 @@ class OutputFilesMemory : public OutputFiles
 public:
     OutputFilesMemory();
     ~OutputFilesMemory();
-    bool save(VirtualFile *(*save_proc)(void *), void *context) const override;
+    bool save(VirtualFileFactory save_proc, void *context) const override;
     const std::vector<VirtualFile*> get_saved() const;
 private:
     struct Internals;

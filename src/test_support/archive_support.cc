@@ -1,5 +1,4 @@
 #include <cassert>
-#include <cstring>
 #include "arg_parser.h"
 #include "io.h"
 #include "logger.h"
@@ -8,7 +7,7 @@
 
 std::unique_ptr<OutputFilesMemory> unpack_to_memory(
     std::string input_path,
-    Archive *archive,
+    Archive &archive,
     int argc,
     const char **argv)
 {
@@ -20,7 +19,7 @@ std::unique_ptr<OutputFilesMemory> unpack_to_memory(
     IO *io = io_create_from_file(input_path.c_str(), "rb");
     assert(io != nullptr);
     std::unique_ptr<OutputFilesMemory> output_files(new OutputFilesMemory);
-    archive->unpack(io, *output_files);
+    archive.unpack(io, *output_files);
     io_destroy(io);
 
     log_restore();
@@ -38,16 +37,14 @@ void compare_files(
     {
         expected_file = expected_files[i];
         actual_file = actual_files[i];
-        assert(strcmp(
-            virtual_file_get_name(expected_file),
-            virtual_file_get_name(actual_file)) == 0);
-        assert(io_size(expected_file->io) == io_size(actual_file->io));
-        io_seek(expected_file->io, 0);
-        io_seek(actual_file->io, 0);
-        for (size_t j = 0; j < io_size(expected_file->io); j ++)
+        assert(expected_file->name == actual_file->name);
+        assert(io_size(&expected_file->io) == io_size(&actual_file->io));
+        io_seek(&expected_file->io, 0);
+        io_seek(&actual_file->io, 0);
+        for (size_t j = 0; j < io_size(&expected_file->io); j ++)
         {
             assert(
-                io_read_u8(expected_file->io) == io_read_u8(actual_file->io));
+                io_read_u8(&expected_file->io) == io_read_u8(&actual_file->io));
         }
     }
 }

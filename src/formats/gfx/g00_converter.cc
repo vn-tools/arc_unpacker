@@ -139,12 +139,12 @@ namespace
         return true;
     }
 
-    bool g00_decode_version_0(VirtualFile *file, int width, int height)
+    bool g00_decode_version_0(VirtualFile &file, int width, int height)
     {
-        size_t compressed_size = io_read_u32_le(file->io);
-        size_t uncompressed_size = io_read_u32_le(file->io);
+        size_t compressed_size = io_read_u32_le(&file.io);
+        size_t uncompressed_size = io_read_u32_le(&file.io);
         compressed_size -= 8;
-        if (compressed_size != io_size(file->io) - io_tell(file->io))
+        if (compressed_size != io_size(&file.io) - io_tell(&file.io))
         {
             log_error("G00: Bad compressed size");
             return false;
@@ -157,7 +157,7 @@ namespace
 
         char *uncompressed = nullptr;
         if (!g00_decompress_from_io(
-            file->io,
+            &file.io,
             compressed_size,
             &uncompressed,
             uncompressed_size,
@@ -181,12 +181,12 @@ namespace
         return true;
     }
 
-    bool g00_decode_version_1(VirtualFile *file, int width, int height)
+    bool g00_decode_version_1(VirtualFile &file, int width, int height)
     {
-        size_t compressed_size = io_read_u32_le(file->io);
-        size_t uncompressed_size = io_read_u32_le(file->io);
+        size_t compressed_size = io_read_u32_le(&file.io);
+        size_t uncompressed_size = io_read_u32_le(&file.io);
         compressed_size -= 8;
-        if (compressed_size != io_size(file->io) - io_tell(file->io))
+        if (compressed_size != io_size(&file.io) - io_tell(&file.io))
         {
             log_error("G00: Bad compressed size");
             return false;
@@ -194,7 +194,7 @@ namespace
 
         char *uncompressed = nullptr;
         if (!g00_decompress_from_io(
-            file->io,
+            &file.io,
             compressed_size,
             &uncompressed,
             uncompressed_size,
@@ -270,23 +270,21 @@ namespace
         return regions;
     }
 
-    bool g00_decode_version_2(VirtualFile *file, int width, int height)
+    bool g00_decode_version_2(VirtualFile &file, int width, int height)
     {
-        assert(file != nullptr);
-
-        size_t region_count = io_read_u32_le(file->io);
+        size_t region_count = io_read_u32_le(&file.io);
         size_t i, j;
-        G00Region *regions = g00_read_version_2_regions(file->io, region_count);
+        G00Region *regions = g00_read_version_2_regions(&file.io, region_count);
         if (!regions)
         {
             log_error("G00: Failed to read region data");
             return false;
         }
 
-        size_t compressed_size = io_read_u32_le(file->io);
-        size_t uncompressed_size = io_read_u32_le(file->io);
+        size_t compressed_size = io_read_u32_le(&file.io);
+        size_t uncompressed_size = io_read_u32_le(&file.io);
         compressed_size -= 8;
-        if (compressed_size != io_size(file->io) - io_tell(file->io))
+        if (compressed_size != io_size(&file.io) - io_tell(&file.io))
         {
             log_error("G00: Bad compressed size");
             delete []regions;
@@ -295,7 +293,7 @@ namespace
 
         char *uncompressed = nullptr;
         if (!g00_decompress_from_io(
-            file->io,
+            &file.io,
             compressed_size,
             &uncompressed,
             uncompressed_size,
@@ -388,13 +386,11 @@ namespace
     }
 }
 
-bool G00Converter::decode_internal(VirtualFile *file)
+bool G00Converter::decode_internal(VirtualFile &file)
 {
-    assert(file != nullptr);
-
-    uint8_t version = io_read_u8(file->io);
-    uint16_t width = io_read_u16_le(file->io);
-    uint16_t height = io_read_u16_le(file->io);
+    uint8_t version = io_read_u8(&file.io);
+    uint16_t width = io_read_u16_le(&file.io);
+    uint16_t height = io_read_u16_le(&file.io);
     log_info("G00: Version = %d", version);
 
     switch (version)

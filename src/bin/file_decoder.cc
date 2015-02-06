@@ -129,7 +129,7 @@ namespace
     bool decode(
         Converter *converter,
         ArgParser &arg_parser,
-        VirtualFile *file)
+        VirtualFile &file)
     {
         converter->parse_cli_options(arg_parser);
         return converter->decode(file);
@@ -139,10 +139,9 @@ namespace
         Options *options,
         ArgParser &arg_parser,
         ConverterFactory &conv_factory,
-        VirtualFile *file)
+        VirtualFile &file)
     {
         assert(options != nullptr);
-        assert(file != nullptr);
 
         bool result = false;
         if (options->format == nullptr)
@@ -194,17 +193,12 @@ namespace
         return result;
     }
 
-    void set_file_path(VirtualFile *file, const char *input_path)
+    void set_file_path(VirtualFile &file, std::string input_path)
     {
-        char *output_path = new char[strlen(input_path) + 2];
-        assert(output_path != nullptr);
-        strcpy(output_path, input_path);
-        strcat(output_path, "~");
-        virtual_file_set_name(file, output_path);
-        delete []output_path;
+        file.name = input_path + "~";
     }
 
-    VirtualFile *read_and_decode(void *_context)
+    std::unique_ptr<VirtualFile> read_and_decode(void *_context)
     {
         ReadContext *context = (ReadContext*)_context;
 
@@ -214,25 +208,23 @@ namespace
         if (io == nullptr)
             return nullptr;
 
-        VirtualFile *file = virtual_file_create();
-        assert(file != nullptr);
-        io_write_string_from_io(file->io, io,  io_size(io));
+        std::unique_ptr<VirtualFile> file;
+        io_write_string_from_io(&file->io, io,  io_size(io));
         io_destroy(io);
-        io_seek(file->io, 0);
+        io_seek(&file->io, 0);
 
         set_file_path(
-            file,
+            *file,
             context->options->output_dir == nullptr
-                ? context->path_info->input_path.c_str()
-                : context->path_info->target_path.c_str());
+                ? context->path_info->input_path
+                : context->path_info->target_path);
 
         if (!guess_converter_and_decode(
             context->options,
             context->arg_parser,
             context->conv_factory,
-            file))
+            *file))
         {
-            virtual_file_destroy(file);
             return nullptr;
         }
 

@@ -56,11 +56,11 @@ namespace
         return -1;
     }
 
-    VirtualFile *mbl_read_file(void *context)
+    std::unique_ptr<VirtualFile> mbl_read_file(void *context)
     {
         MblUnpackContext *unpack_context = (MblUnpackContext*)context;
         assert(unpack_context != nullptr);
-        VirtualFile *file = virtual_file_create();
+        std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         size_t old_pos = io_tell(unpack_context->arc_io);
         char *tmp_name = nullptr;
@@ -76,7 +76,7 @@ namespace
             assert(0);
         }
 
-        virtual_file_set_name(file, decoded_name);
+        file->name = std::string(decoded_name);
         delete []decoded_name;
 
         delete []tmp_name;
@@ -92,10 +92,10 @@ namespace
 
         old_pos = io_tell(unpack_context->arc_io);
         io_seek(unpack_context->arc_io, offset);
-        io_write_string_from_io(file->io, unpack_context->arc_io, size);
+        io_write_string_from_io(&file->io, unpack_context->arc_io, size);
         io_seek(unpack_context->arc_io, old_pos);
 
-        unpack_context->prs_converter->try_decode(file);
+        unpack_context->prs_converter->try_decode(*file);
 
         return file;
     }

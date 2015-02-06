@@ -178,12 +178,11 @@ size_t image_pixel_data_size(const Image *image)
     return image->pixel_data_size;
 }
 
-void image_update_file(const Image *image, VirtualFile *file)
+void image_update_file(const Image *image, VirtualFile &file)
 {
     assert(image != nullptr);
-    assert(file != nullptr);
 
-    if (!io_truncate(file->io, 0))
+    if (!io_truncate(&file.io, 0))
         assert(0);
 
     png_structp png_ptr = png_create_write_struct(
@@ -248,7 +247,7 @@ void image_update_file(const Image *image, VirtualFile *file)
     // 1 produces good file size and is still fast.
     png_set_compression_level(png_ptr, 1);
 
-    png_set_write_fn(png_ptr, file->io, &my_png_write_data, &my_png_flush);
+    png_set_write_fn(png_ptr, &file.io, &my_png_write_data, &my_png_flush);
     png_write_info(png_ptr, info_ptr);
 
     png_bytep *rows = new png_bytep[image->image_height];
@@ -260,7 +259,7 @@ void image_update_file(const Image *image, VirtualFile *file)
     png_destroy_write_struct(&png_ptr, &info_ptr);
     delete []rows;
 
-    virtual_file_change_extension(file, "png");
+    file.change_extension("png");
 }
 
 uint32_t image_color_at(const Image *image, size_t x, size_t y)

@@ -4,49 +4,46 @@
 
 void test_empty_file()
 {
-    VirtualFile *file = virtual_file_create();
-    assert(file->io != nullptr);
-    assert(strcmp(virtual_file_get_name(file), "") == 0);
-    virtual_file_destroy(file);
+    VirtualFile file;
+    assert(file.name == "");
 }
 
 void test_setting_name()
 {
-    VirtualFile *file = virtual_file_create();
-    virtual_file_set_name(file, "abc");
-    assert(strcmp(virtual_file_get_name(file), "abc") == 0);
-    virtual_file_destroy(file);
+    VirtualFile file;
+    file.name = "abc";
+    assert(file.name == "abc");
 }
 
 void test_changing_extension_null()
 {
-    VirtualFile *file = virtual_file_create();
-    virtual_file_change_extension(file, "xyz");
-    assert(strcmp(virtual_file_get_name(file), "") == 0);
+    VirtualFile file;
+    file.change_extension("xyz");
+    assert(file.name == "");
 }
 
 void test_changing_extension_without_extension()
 {
-    VirtualFile *file = virtual_file_create();
-    virtual_file_set_name(file, "abc");
-    virtual_file_change_extension(file, "xyz");
-    assert(strcmp(virtual_file_get_name(file), "abc.xyz") == 0);
+    VirtualFile file;
+    file.name = "abc";
+    file.change_extension("xyz");
+    assert(file.name == "abc.xyz");
 }
 
 void test_changing_extension_with_extension()
 {
-    VirtualFile *file = virtual_file_create();
-    virtual_file_set_name(file, "abc.de");
-    virtual_file_change_extension(file, "xyz");
-    assert(strcmp(virtual_file_get_name(file), "abc.xyz") == 0);
+    VirtualFile file;
+    file.name = "abc.de";
+    file.change_extension("xyz");
+    assert(file.name == "abc.xyz");
 }
 
 void test_changing_extension_with_extra_dots()
 {
-    VirtualFile *file = virtual_file_create();
-    virtual_file_set_name(file, "abc.de");
-    virtual_file_change_extension(file, ".xyz");
-    assert(strcmp(virtual_file_get_name(file), "abc.xyz") == 0);
+    VirtualFile file;
+    file.name = "abc.de";
+    file.change_extension(".xyz");
+    assert(file.name == "abc.xyz");
 }
 
 int main(void)

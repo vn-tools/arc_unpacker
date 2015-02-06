@@ -103,21 +103,19 @@ namespace
     }
 }
 
-bool NwaConverter::decode_internal(VirtualFile *file)
+bool NwaConverter::decode_internal(VirtualFile &file)
 {
-    assert(file != nullptr);
-
     NwaHeader header;
-    header.channel_count = io_read_u16_le(file->io);
-    header.bits_per_sample = io_read_u16_le(file->io);
-    header.sample_rate = io_read_u32_le(file->io);
-    header.compression_level = (int32_t)io_read_u32_le(file->io);
-    header.block_count = io_read_u32_le(file->io);
-    header.uncompressed_size = io_read_u32_le(file->io);
-    header.compressed_size = io_read_u32_le(file->io);
-    header.sample_count = io_read_u32_le(file->io);
-    header.block_size = io_read_u32_le(file->io);
-    header.rest_size = io_read_u32_le(file->io);
+    header.channel_count = io_read_u16_le(&file.io);
+    header.bits_per_sample = io_read_u16_le(&file.io);
+    header.sample_rate = io_read_u32_le(&file.io);
+    header.compression_level = (int32_t)io_read_u32_le(&file.io);
+    header.block_count = io_read_u32_le(&file.io);
+    header.uncompressed_size = io_read_u32_le(&file.io);
+    header.compressed_size = io_read_u32_le(&file.io);
+    header.sample_count = io_read_u32_le(&file.io);
+    header.block_size = io_read_u32_le(&file.io);
+    header.rest_size = io_read_u32_le(&file.io);
 
     char *output_samples = nullptr;
     size_t output_sample_count;
@@ -130,7 +128,7 @@ bool NwaConverter::decode_internal(VirtualFile *file)
     || header.rest_size == 0)
     {
         result = nwa_read_uncompressed(
-            file->io,
+            &file.io,
             &header,
             &output_samples,
             &output_sample_count);
@@ -144,7 +142,7 @@ bool NwaConverter::decode_internal(VirtualFile *file)
         }
 
         result = nwa_read_compressed(
-            file->io,
+            &file.io,
             &header,
             &output_samples,
             &output_sample_count);

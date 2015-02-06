@@ -56,11 +56,10 @@ namespace
         return data_uncompressed;
     }
 
-    VirtualFile *pak_read_file(void *context)
+    std::unique_ptr<VirtualFile> pak_read_file(void *context)
     {
         PakUnpackContext *unpack_context = (PakUnpackContext*)context;
-        VirtualFile *file = virtual_file_create();
-        assert(file != nullptr);
+        std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         size_t file_name_length = io_read_u32_le(unpack_context->table_io);
         char *file_name = new char[file_name_length];
@@ -76,7 +75,7 @@ namespace
             assert(0);
         }
         assert(file_name_utf8 != nullptr);
-        virtual_file_set_name(file, file_name_utf8);
+        file->name = std::string(file_name_utf8);
         delete []file_name_utf8;
 
         size_t offset = io_read_u32_le(unpack_context->table_io);
@@ -93,11 +92,10 @@ namespace
             char *data_uncompressed = pak_read_zlib(
                 unpack_context->arc_io, size_compressed, &size_uncompressed);
             assert(data_uncompressed != nullptr);
-            io_write_string(file->io, data_uncompressed, size_original);
+            io_write_string(&file->io, data_uncompressed, size_original);
             delete []data_uncompressed;
             if (size_uncompressed != size_original)
             {
-                virtual_file_destroy(file);
                 log_error("PAK: Bad file size");
                 return nullptr;
             }
@@ -105,7 +103,7 @@ namespace
         else
         {
             io_write_string_from_io(
-                file->io, unpack_context->arc_io, size_original);
+                &file->io, unpack_context->arc_io, size_original);
         }
 
         delete []file_name;

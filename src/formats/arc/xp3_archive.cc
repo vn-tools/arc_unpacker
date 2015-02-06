@@ -137,10 +137,9 @@ namespace
         return table_io;
     }
 
-    bool xp3_read_info_chunk(IO *table_io, VirtualFile *target_file)
+    bool xp3_read_info_chunk(IO *table_io, VirtualFile &target_file)
     {
         assert(table_io != nullptr);
-        assert(target_file != nullptr);
 
         if (!xp3_check_magic(table_io, info_magic, info_magic_length))
         {
@@ -170,7 +169,7 @@ namespace
             assert(0);
         }
         assert(name_utf8 != nullptr);
-        virtual_file_set_name(target_file, name_utf8);
+        target_file.name = std::string(name_utf8);
         delete []name_utf8;
 
         delete []name_utf16;
@@ -181,11 +180,10 @@ namespace
     bool xp3_read_segm_chunk(
         IO *table_io,
         IO *arc_io,
-        VirtualFile *target_file)
+        VirtualFile &target_file)
     {
         assert(table_io != nullptr);
         assert(arc_io != nullptr);
-        assert(target_file != nullptr);
 
         if (!xp3_check_magic(table_io, segm_magic, segm_magic_length))
         {
@@ -222,13 +220,13 @@ namespace
             delete []data;
 
             io_write_string(
-                target_file->io, data_uncompressed, data_size_original);
+                &target_file.io, data_uncompressed, data_size_original);
             delete []data_uncompressed;
         }
         else
         {
             io_write_string_from_io(
-                target_file->io, arc_io, data_size_original);
+                &target_file.io, arc_io, data_size_original);
         }
 
         return true;
@@ -251,13 +249,13 @@ namespace
         return true;
     }
 
-    VirtualFile *xp3_read_file(void *context)
+    std::unique_ptr<VirtualFile> xp3_read_file(void *context)
     {
         assert(context != nullptr);
 
         IO *arc_io = ((Xp3UnpackContext*)context)->arc_io;
         IO *table_io = ((Xp3UnpackContext*)context)->table_io;
-        VirtualFile *target_file = virtual_file_create();
+        std::unique_ptr<VirtualFile> target_file(new VirtualFile());
 
         if (!xp3_check_magic(table_io, file_magic, file_magic_length))
         {
@@ -268,7 +266,7 @@ namespace
         uint64_t file_chunk_size = io_read_u64_le(table_io);
         size_t file_chunk_start_offset = io_tell(table_io);
 
-        if (!xp3_read_info_chunk(table_io, target_file))
+        if (!xp3_read_info_chunk(table_io, *target_file))
         {
             io_destroy(table_io);
             return false;
@@ -276,7 +274,7 @@ namespace
 
         while (true)
         {
-            if (!xp3_read_segm_chunk(table_io, arc_io, target_file))
+            if (!xp3_read_segm_chunk(table_io, arc_io, *target_file))
                 break;
         }
 

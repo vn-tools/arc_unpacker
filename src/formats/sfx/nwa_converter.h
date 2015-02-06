@@ -5,7 +5,7 @@
 class NwaConverter final : public Converter
 {
 public:
-    bool decode_internal(VirtualFile *) override;
+    bool decode_internal(VirtualFile &) override;
 };
 
 #endif

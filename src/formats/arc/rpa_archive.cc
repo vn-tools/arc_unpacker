@@ -316,19 +316,18 @@ namespace
         return result;
     }
 
-    VirtualFile *rpa_read_file(void *_context)
+    std::unique_ptr<VirtualFile> rpa_read_file(void *_context)
     {
         RpaUnpackContext *context = (RpaUnpackContext*)_context;
         assert(context != nullptr);
-        VirtualFile *file = virtual_file_create();
-        assert(file != nullptr);
+        std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         if (!io_seek(context->arc_io, context->table_entry->offset))
             assert(0);
         assert(context->table_entry->offset < io_size(context->arc_io));
 
         if (!io_write_string(
-            file->io,
+            &file->io,
             context->table_entry->prefix.c_str(),
             context->table_entry->prefix_size))
         {
@@ -336,14 +335,14 @@ namespace
         }
 
         if (!io_write_string_from_io(
-            file->io,
+            &file->io,
             context->arc_io,
             context->table_entry->size))
         {
             assert(0);
         }
 
-        virtual_file_set_name(file, context->table_entry->name.c_str());
+        file->name = context->table_entry->name;
         return file;
     }
 }

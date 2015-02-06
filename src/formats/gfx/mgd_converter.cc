@@ -386,28 +386,26 @@ namespace
     }
 }
 
-bool MgdConverter::decode_internal(VirtualFile *file)
+bool MgdConverter::decode_internal(VirtualFile &file)
 {
-    assert(file != nullptr);
-
-    if (!mgd_check_magic(file->io))
+    if (!mgd_check_magic(&file.io))
     {
         log_error("MGD: Not a MGD graphic file");
         return false;
     }
 
-    __attribute__((unused)) uint16_t data_offset = io_read_u16_le(file->io);
-    __attribute__((unused)) uint16_t format = io_read_u16_le(file->io);
-    io_skip(file->io, 4);
-    uint16_t image_width = io_read_u16_le(file->io);
-    uint16_t image_height = io_read_u16_le(file->io);
-    uint32_t size_original = io_read_u32_le(file->io);
-    uint32_t size_compressed_total = io_read_u32_le(file->io);
+    __attribute__((unused)) uint16_t data_offset = io_read_u16_le(&file.io);
+    __attribute__((unused)) uint16_t format = io_read_u16_le(&file.io);
+    io_skip(&file.io, 4);
+    uint16_t image_width = io_read_u16_le(&file.io);
+    uint16_t image_height = io_read_u16_le(&file.io);
+    uint32_t size_original = io_read_u32_le(&file.io);
+    uint32_t size_compressed_total = io_read_u32_le(&file.io);
     MgdCompressionType compression_type
-        = (MgdCompressionType)io_read_u32_le(file->io);
-    io_skip(file->io, 64);
+        = (MgdCompressionType)io_read_u32_le(&file.io);
+    io_skip(&file.io, 64);
 
-    size_t size_compressed = io_read_u32_le(file->io);
+    size_t size_compressed = io_read_u32_le(&file.io);
     if (size_compressed + 4 != size_compressed_total)
     {
         log_error(
@@ -419,7 +417,7 @@ bool MgdConverter::decode_internal(VirtualFile *file)
 
     char *data_uncompressed = nullptr;
     Image *image = mgd_read_image(
-        file->io,
+        &file.io,
         compression_type,
         size_compressed,
         size_original,
@@ -427,7 +425,7 @@ bool MgdConverter::decode_internal(VirtualFile *file)
         image_height,
         &data_uncompressed);
 
-    auto regions = mgd_read_region_data(file->io);
+    auto regions = mgd_read_region_data(&file.io);
     for (auto& region : regions)
         delete region;
 

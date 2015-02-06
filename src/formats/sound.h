@@ -13,6 +13,6 @@ Sound *sound_create_from_samples(
 
 void sound_destroy(Sound *sound);
 
-void sound_update_file(const Sound *sound, VirtualFile *virtual_file);
+void sound_update_file(const Sound *sound, VirtualFile &virtual_file);
 
 #endif

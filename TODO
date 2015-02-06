@@ -18,7 +18,6 @@ Port old code for formats:
 
 C++ stuff:
 	- Port IO to classes
-	- Port VirtualFile to class
 	- Port Image to class
 	- Port Sound to class
 	- Try to minify string_ex usages

@@ -26,10 +26,9 @@ namespace
         TableEntry *table_entry;
     } SarUnpackContext;
 
-    VirtualFile *sar_read_file(void *_context)
+    std::unique_ptr<VirtualFile> sar_read_file(void *_context)
     {
-        VirtualFile *file = virtual_file_create();
-        assert(file != nullptr);
+        std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         SarUnpackContext *context = (SarUnpackContext*)_context;
         assert(context != nullptr);
@@ -37,11 +36,11 @@ namespace
         io_seek(context->arc_io, context->table_entry->offset);
 
         io_write_string_from_io(
-            file->io,
+            &file->io,
             context->arc_io,
             context->table_entry->size);
 
-        virtual_file_set_name(file, context->table_entry->name);
+        file->name = std::string(context->table_entry->name);
         return file;
     }
 }

@@ -8,7 +8,7 @@
 
 std::unique_ptr<OutputFilesMemory> unpack_to_memory(
     std::string input_path,
-    Archive *archive,
+    Archive &archive,
     int argc,
     const char **argv);
 

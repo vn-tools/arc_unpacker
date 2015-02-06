@@ -23,14 +23,12 @@ namespace
     const size_t xyz_magic_length = 4;
 }
 
-bool XyzConverter::decode_internal(VirtualFile *file)
+bool XyzConverter::decode_internal(VirtualFile &file)
 {
-    assert(file != nullptr);
-
     bool result;
 
     char magic[xyz_magic_length];
-    io_read_string(file->io, magic, xyz_magic_length);
+    io_read_string(&file.io, magic, xyz_magic_length);
 
     if (memcmp(magic, xyz_magic, xyz_magic_length) != 0)
     {
@@ -39,13 +37,13 @@ bool XyzConverter::decode_internal(VirtualFile *file)
     }
     else
     {
-        uint16_t width = io_read_u16_le(file->io);
-        uint16_t height = io_read_u16_le(file->io);
+        uint16_t width = io_read_u16_le(&file.io);
+        uint16_t height = io_read_u16_le(&file.io);
 
-        size_t compressed_data_size = io_size(file->io) - io_tell(file->io);
+        size_t compressed_data_size = io_size(&file.io) - io_tell(&file.io);
         char *compressed_data = new char[compressed_data_size];
         assert(compressed_data != nullptr);
-        if (!io_read_string(file->io, compressed_data, compressed_data_size))
+        if (!io_read_string(&file.io, compressed_data, compressed_data_size))
         {
             log_error("XYZ: Failed to read pixel data");
             delete []compressed_data;

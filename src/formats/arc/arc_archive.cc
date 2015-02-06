@@ -32,18 +32,18 @@ namespace
         return memcmp(magic, arc_magic, arc_magic_length) == 0;
     }
 
-    VirtualFile *arc_read_file(void *context)
+    std::unique_ptr<VirtualFile> arc_read_file(void *context)
     {
         ArcUnpackContext *unpack_context = (ArcUnpackContext*)context;
         assert(unpack_context != nullptr);
 
-        VirtualFile *file = virtual_file_create();
+        std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         size_t old_pos = io_tell(unpack_context->arc_io);
         char *tmp_name;
         io_read_until_zero(unpack_context->arc_io, &tmp_name, nullptr);
         assert(tmp_name != nullptr);
-        virtual_file_set_name(file, tmp_name);
+        file->name = std::string(tmp_name);
         delete []tmp_name;
         io_seek(unpack_context->arc_io, old_pos + 16);
 
@@ -54,7 +54,6 @@ namespace
         if (offset + size > io_size(unpack_context->arc_io))
         {
             log_error("ARC: Bad offset to file");
-            virtual_file_destroy(file);
             return nullptr;
         }
 
@@ -62,13 +61,12 @@ namespace
         if (!io_seek(unpack_context->arc_io, offset))
         {
             log_error("ARC: Failed to seek to file");
-            virtual_file_destroy(file);
             return nullptr;
         }
-        io_write_string_from_io(file->io, unpack_context->arc_io, size);
+        io_write_string_from_io(&file->io, unpack_context->arc_io, size);
         io_seek(unpack_context->arc_io, old_pos);
 
-        unpack_context->cbg_converter->try_decode(file);
+        unpack_context->cbg_converter->try_decode(*file);
 
         return file;
     }

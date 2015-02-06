@@ -5,61 +5,27 @@
 #include "string_ex.h"
 #include "virtual_file.h"
 
-typedef struct
+VirtualFile::VirtualFile() : io(*io_create_empty())
 {
-    std::string name;
-} Internals;
-
-VirtualFile *virtual_file_create()
-{
-    VirtualFile *file = new VirtualFile;
-    assert(file != nullptr);
-
-    file->io = io_create_empty();
-    assert(file->io != nullptr);
-
-    file->internals = new Internals;
-    return file;
 }
 
-void virtual_file_destroy(VirtualFile *file)
+VirtualFile::~VirtualFile()
 {
-    assert(file != nullptr);
-    io_destroy(file->io);
-    delete (Internals*)file->internals;
-    delete file;
+    io_destroy(&io);
 }
 
-void virtual_file_change_extension(VirtualFile *file, const char *new_ext)
+void VirtualFile::change_extension(const std::string new_extension)
 {
-    assert(file != nullptr);
-    Internals *internals = ((Internals*)file->internals);
-    std::string old_name = internals->name;
-    if (old_name == "")
+    if (name == "")
         return;
 
-    std::string ext_copy = std::string(new_ext);
+    std::string ext_copy = new_extension;
     while (ext_copy.length() > 0 && ext_copy[0] == '.')
         ext_copy.erase(0, 1);
 
-    size_t pos = old_name.rfind(".");
+    size_t pos = name.rfind(".");
     if (pos == std::string::npos)
-    {
-        internals->name = old_name + "." + ext_copy;
-    }
+        name += "." + ext_copy;
     else
-    {
-        internals->name = old_name.substr(0, pos) + "." + ext_copy;
-    }
-}
-
-const char *virtual_file_get_name(VirtualFile *file)
-{
-    return ((Internals*)file->internals)->name.c_str();
-}
-
-void virtual_file_set_name(VirtualFile *file, const char *new_name)
-{
-    assert(file != nullptr);
-    ((Internals*)file->internals)->name = std::string(new_name);
+        name = name.substr(0, pos) + "." + ext_copy;
 }

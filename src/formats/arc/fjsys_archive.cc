@@ -60,9 +60,9 @@ namespace
         return header;
     }
 
-    VirtualFile *fjsys_read_file(void *context)
+    std::unique_ptr<VirtualFile> fjsys_read_file(void *context)
     {
-        VirtualFile *file = virtual_file_create();
+        std::unique_ptr<VirtualFile> file(new VirtualFile);
         FjsysUnpackContext *unpack_context = (FjsysUnpackContext*)context;
         size_t file_name_offset = io_read_u32_le(unpack_context->arc_io);
         size_t data_size = io_read_u32_le(unpack_context->arc_io);
@@ -77,12 +77,12 @@ namespace
         char *file_name = nullptr;
         io_read_until_zero(unpack_context->arc_io, &file_name, nullptr);
         assert(file_name != nullptr);
-        virtual_file_set_name(file, file_name);
+        file->name = std::string(file_name);
         delete []file_name;
 
         io_seek(unpack_context->arc_io, data_offset);
-        io_write_string_from_io(file->io, unpack_context->arc_io, data_size);
-        unpack_context->mgd_converter->try_decode(file);
+        io_write_string_from_io(&file->io, unpack_context->arc_io, data_size);
+        unpack_context->mgd_converter->try_decode(*file);
 
         io_seek(unpack_context->arc_io, old_pos);
         return file;

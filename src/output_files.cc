@@ -30,14 +30,14 @@ OutputFilesHdd::~OutputFilesHdd()
 }
 
 bool OutputFilesHdd::save(
-    VirtualFile *(*save_proc)(void *),
+    std::unique_ptr<VirtualFile>(*save_proc)(void *),
     void *context) const
 {
     assert(save_proc != nullptr);
 
     log_info("Reading file...");
 
-    VirtualFile *file = save_proc(context);
+    std::unique_ptr<VirtualFile> file = save_proc(context);
     if (file == nullptr)
     {
         log_error("An error occured while reading file, saving skipped.");
@@ -46,8 +46,7 @@ bool OutputFilesHdd::save(
     }
 
     std::string full_path = internals->get_full_path(
-        internals->output_dir,
-        virtual_file_get_name(file));
+        internals->output_dir, file->name);
     assert(full_path != "");
 
     log_info("Saving to %s... ", full_path.c_str());
@@ -60,14 +59,12 @@ bool OutputFilesHdd::save(
     {
         log_warning("Failed to open file %s", full_path.c_str());
         log_info("");
-        virtual_file_destroy(file);
         return false;
     }
 
-    io_seek(file->io, 0);
-    io_write_string_from_io(output_io, file->io, io_size(file->io));
+    io_seek(&file->io, 0);
+    io_write_string_from_io(output_io, &file->io, io_size(&file->io));
     io_destroy(output_io);
-    virtual_file_destroy(file);
     log_info("Saved successfully");
     log_info("");
     return true;
@@ -77,7 +74,7 @@ bool OutputFilesHdd::save(
 
 struct OutputFilesMemory::Internals
 {
-    std::vector<VirtualFile*> files;
+    std::vector<std::unique_ptr<VirtualFile>> files;
 };
 
 OutputFilesMemory::OutputFilesMemory()
@@ -87,24 +84,25 @@ OutputFilesMemory::OutputFilesMemory()
 
 OutputFilesMemory::~OutputFilesMemory()
 {
-    for (auto file : internals->files)
-        virtual_file_destroy(file);
     delete internals;
 }
 
 const std::vector<VirtualFile*> OutputFilesMemory::get_saved() const
 {
-    return internals->files;
+    std::vector<VirtualFile*> files;
+    for (std::unique_ptr<VirtualFile>& f : internals->files)
+        files.push_back(f.get());
+    return files;
 }
 
 bool OutputFilesMemory::save(
-    VirtualFile *(*save_proc)(void *),
+    std::unique_ptr<VirtualFile>(*save_proc)(void *),
     void *context) const
 {
     assert(save_proc != nullptr);
-    VirtualFile *file = save_proc(context);
+    std::unique_ptr<VirtualFile> file(save_proc(context));
     if (file == nullptr)
         return false;
-    internals->files.push_back(file);
+    internals->files.push_back(std::move(file));
     return true;
 }

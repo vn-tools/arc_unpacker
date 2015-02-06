@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstring>
+#include <memory>
 #include "formats/image.h"
 #include "io.h"
 #include "logger.h"
@@ -48,20 +49,15 @@ namespace
         IO *io = io_create_from_file(path, "rb");
         assert(io != nullptr);
 
-        VirtualFile *file = virtual_file_create();
-        assert(file != nullptr);
+        std::unique_ptr<VirtualFile> file(new VirtualFile);
 
-        if (!io_write_string_from_io(file->io, io, io_size(io)))
+        if (!io_write_string_from_io(&file->io, io, io_size(io)))
             assert(0);
         io_destroy(io);
 
-        converter->decode(file);
+        converter->decode(*file);
 
-        Image *image = image_create_from_boxed(file->io);
-        assert(image != nullptr);
-        virtual_file_destroy(file);
-
-        return image;
+        return image_create_from_boxed(&file->io);
     }
 
     Image *get_expected_image(const char *path)

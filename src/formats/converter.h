@@ -8,11 +8,11 @@ class Converter
 public:
     virtual void add_cli_help(ArgParser &);
     virtual void parse_cli_options(ArgParser &);
-    virtual bool decode_internal(VirtualFile *);
+    virtual bool decode_internal(VirtualFile &);
     virtual ~Converter();
 
-    bool try_decode(VirtualFile *);
-    bool decode(VirtualFile *);
+    bool try_decode(VirtualFile &);
+    bool decode(VirtualFile &);
 };
 
 #endif
