@@ -38,14 +38,18 @@ void virtual_file_change_extension(VirtualFile *file, const char *new_ext)
     if (old_name == "")
         return;
 
+    std::string ext_copy = std::string(new_ext);
+    while (ext_copy.length() > 0 && ext_copy[0] == '.')
+        ext_copy.erase(0, 1);
+
     size_t pos = old_name.rfind(".");
     if (pos == std::string::npos)
     {
-        internals->name = old_name + "." + std::string(new_ext);
+        internals->name = old_name + "." + ext_copy;
     }
     else
     {
-        internals->name = old_name.substr(0, pos) + "." + std::string(new_ext);
+        internals->name = old_name.substr(0, pos) + "." + ext_copy;
     }
 }
 
