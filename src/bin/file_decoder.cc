@@ -147,7 +147,7 @@ namespace
         bool result = false;
         if (options->format == nullptr)
         {
-            for (auto format : conv_factory.get_formats())
+            for (auto& format : conv_factory.get_formats())
             {
                 Converter *converter = conv_factory.create_converter(format);
                 assert(converter != nullptr);
@@ -299,7 +299,7 @@ int main(int argc, const char **argv)
             exit_code = 1;
     }
 
-    for (auto pi : options.input_paths)
+    for (auto& pi : options.input_paths)
         delete pi;
     return exit_code;
 }

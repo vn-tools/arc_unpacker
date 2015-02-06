@@ -39,14 +39,14 @@ ConverterFactory::~ConverterFactory()
 const std::vector<std::string> ConverterFactory::get_formats() const
 {
     std::vector<std::string> formats;
-    for (auto p : internals->formats)
+    for (auto& p : internals->formats)
         formats.push_back(p.first);
     return formats;
 }
 
 Converter *ConverterFactory::create_converter(const std::string format) const
 {
-    for (auto p : internals->formats)
+    for (auto& p : internals->formats)
         if (p.first == format)
             return p.second();
     log_error("Invalid converter format: %s", format.c_str());

@@ -113,7 +113,7 @@ namespace
         bool result = false;
         if (options->format == nullptr)
         {
-            for (auto format : arc_factory.get_formats())
+            for (auto& format : arc_factory.get_formats())
             {
                 Archive *archive = arc_factory.create_archive(format);
                 assert(archive != nullptr);

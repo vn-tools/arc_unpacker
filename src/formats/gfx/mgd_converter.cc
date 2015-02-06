@@ -428,7 +428,7 @@ bool MgdConverter::decode_internal(VirtualFile *file)
         &data_uncompressed);
 
     auto regions = mgd_read_region_data(file->io);
-    for (auto region : regions)
+    for (auto& region : regions)
         delete region;
 
     if (image == nullptr)

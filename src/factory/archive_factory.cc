@@ -42,14 +42,14 @@ ArchiveFactory::~ArchiveFactory()
 const std::vector<std::string> ArchiveFactory::get_formats() const
 {
     std::vector<std::string> formats;
-    for (auto p : internals->formats)
+    for (auto& p : internals->formats)
         formats.push_back(p.first);
     return formats;
 }
 
 Archive *ArchiveFactory::create_archive(const std::string format) const
 {
-    for (auto p : internals->formats)
+    for (auto& p : internals->formats)
         if (p.first == format)
             return p.second();
     log_error("Invalid archive format: %s", format.c_str());

@@ -121,7 +121,7 @@ void ArgParser::add_help(std::string invocation, std::string description)
 
 bool ArgParser::has_switch(std::string key) const
 {
-    for (auto it : switches)
+    for (auto& it : switches)
         if (it.first == strip_dashes(key))
             return true;
     return false;
@@ -129,7 +129,7 @@ bool ArgParser::has_switch(std::string key) const
 
 const std::string ArgParser::get_switch(std::string key) const
 {
-    for (auto it : switches)
+    for (auto& it : switches)
         if (it.first == strip_dashes(key))
             return it.second;
     return "";
@@ -137,7 +137,7 @@ const std::string ArgParser::get_switch(std::string key) const
 
 bool ArgParser::has_flag(std::string flag) const
 {
-    for (auto it : flags)
+    for (auto& it : flags)
         if (it == strip_dashes(flag))
             return true;
     return false;
@@ -159,7 +159,7 @@ void ArgParser::print_help() const
         return;
     }
 
-    for (auto p : help_items)
+    for (auto& p : help_items)
     {
         std::string invocation = p.first;
         std::string description = p.second;
@@ -178,7 +178,7 @@ void ArgParser::print_help() const
         //word wrap
         std::vector<std::string> words = create_words(description);
         bool first_word = true;
-        for (auto word : words)
+        for (auto& word : words)
         {
             tmp_length += word.length();
             if (!first_word && tmp_length > max_line_length)
