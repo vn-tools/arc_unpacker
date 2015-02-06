@@ -3,11 +3,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-char *strndup(const char *source, const size_t size);
-char *strdup(const char *source);
-
-void trim_right(char *target, const char *chars);
-
 bool convert_encoding(
     const char *input,
     size_t input_size,

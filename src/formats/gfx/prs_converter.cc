@@ -161,7 +161,7 @@ bool PrsConverter::decode_internal(VirtualFile *file)
 
     bool result;
     char *target_buffer = nullptr;
-    uint32_t target_size = 0;
+    size_t target_size = 0;
     if (!prs_decode_pixels(
         image_width,
         image_height,

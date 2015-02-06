@@ -69,7 +69,8 @@ bool virtual_file_set_name(VirtualFile *file, const char *new_name)
     assert(file != nullptr);
     if (name != nullptr)
         delete []name;
-    name = strdup(new_name);
+    name = new char[strlen(new_name) + 1];
+    strcpy(name, new_name);
     ((Internals*)file->internals)->name = name;
     return name != nullptr;
 }

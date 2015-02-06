@@ -11,28 +11,6 @@
 #define SIZE_MAX ((size_t) -1)
 #endif
 
-char *strndup(const char *source, const size_t size)
-{
-    char *target = new char[size + 1];
-    assert(target != nullptr);
-    memcpy(target, source, size);
-    target[size] = '\0';
-    return target;
-}
-
-char *strdup(const char *source)
-{
-    return strndup(source, strlen(source));
-}
-
-void trim_right(char *target, const char *chars)
-{
-    char *end = target + strlen(target) - 1;
-    while (end >= target && strchr(chars, *end) != nullptr)
-        end --;
-    end[1] = '\0';
-}
-
 bool zlib_inflate(
     const char *input,
     size_t input_size,

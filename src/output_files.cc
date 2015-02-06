@@ -22,7 +22,11 @@ namespace
         assert(file_name != nullptr);
         assert(strcmp(file_name, "") != 0);
         if (output_files->output_dir == nullptr)
-            return strdup(file_name);
+        {
+            char *ret = new char[strlen(file_name) + 1];
+            strcpy(ret, file_name);
+            return ret;
+        }
 
         char *full_path = new char[
             strlen(output_files->output_dir)

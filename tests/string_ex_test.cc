@@ -45,46 +45,6 @@ void test_utf8_to_sjis()
     free(output);
 }
 
-void test_trim_right_nothing_to_trim()
-{
-    char *target = strdup("abc");
-    trim_right(target, " ");
-    assert(strcmp("abc", target) == 0);
-    free(target);
-}
-
-void test_trim_right_trim_one()
-{
-    char *target = strdup("abc ");
-    trim_right(target, " ");
-    assert(strcmp("abc", target) == 0);
-    free(target);
-}
-
-void test_trim_right_trim_two()
-{
-    char *target = strdup("abc  ");
-    trim_right(target, " ");
-    assert(strcmp("abc", target) == 0);
-    free(target);
-}
-
-void test_trim_right_trim_different_characters()
-{
-    char *target = strdup("abc \t ");
-    trim_right(target, " \t");
-    assert(strcmp("abc", target) == 0);
-    free(target);
-}
-
-void test_trim_right_trim_to_empty_string()
-{
-    char *target = strdup(" \t ");
-    trim_right(target, " \t");
-    assert(strcmp("", target) == 0);
-    free(target);
-}
-
 void test_zlib_inflate()
 {
     const char *input =
@@ -112,10 +72,5 @@ int main(void)
     test_zlib_inflate();
     test_sjis_to_utf8();
     test_utf8_to_sjis();
-    test_trim_right_nothing_to_trim();
-    test_trim_right_trim_one();
-    test_trim_right_trim_two();
-    test_trim_right_trim_different_characters();
-    test_trim_right_trim_to_empty_string();
     return 0;
 }
