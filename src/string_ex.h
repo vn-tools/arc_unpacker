@@ -1,7 +1,7 @@
 #ifndef STRING_EX_H
 #define STRING_EX_H
-#include <stdbool.h>
-#include <stddef.h>
+#include <cstddef>
+#include <string>
 
 bool convert_encoding(
     const char *input,
@@ -11,10 +11,6 @@ bool convert_encoding(
     const char *from,
     const char *to);
 
-bool zlib_inflate(
-    const char *input,
-    size_t input_size,
-    char **output,
-    size_t *output_size);
+std::string zlib_inflate(const std::string &input);
 
 #endif

@@ -16,7 +16,10 @@ public:
     virtual void skip(size_t offset) override;
     virtual void truncate(size_t new_size) override;
 
+    using IO::read;
     virtual void read(void *destination, size_t length) override;
+
+    using IO::write;
     virtual void write(const void *source, size_t length) override;
     virtual void write_from_io(IO &source, size_t length) override;
 private:

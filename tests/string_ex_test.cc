@@ -47,24 +47,13 @@ void test_utf8_to_sjis()
 
 void test_zlib_inflate()
 {
-    const char *input =
+    std::string input(
         "\x78\xda\xcb\xc9\x4c\x4b\x55\xc8"
         "\x2c\x56\x48\xce\x4f\x49\xe5\x02"
-        "\x00\x20\xc1\x04\x62\x0a";
-    char *output;
-    size_t output_size;
+        "\x00\x20\xc1\x04\x62\x0a",
+        21);
 
-    assert(zlib_inflate(input, 21, &output, &output_size));
-    assert(13 == output_size);
-    assert(strcmp("life is code\n", output) == 0);
-    free(output);
-
-    output = nullptr;
-
-    assert(zlib_inflate(input, 21, &output, nullptr));
-    assert(13 == output_size);
-    assert(strcmp("life is code\n", output) == 0);
-    free(output);
+    assert(zlib_inflate(input) == "life is code\n");
 }
 
 int main(void)

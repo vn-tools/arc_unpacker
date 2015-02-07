@@ -38,29 +38,6 @@ namespace
         return memcmp(magic, pak_magic, pak_magic_length) == 0;
     }
 
-    char *pak_read_zlib(
-        IO &arc_io, size_t size_compressed, size_t *size_uncompressed)
-    {
-        char *data_compressed = new char[size_compressed];
-        assert(data_compressed != nullptr);
-
-        arc_io.read(data_compressed, size_compressed);
-
-        char *data_uncompressed;
-        if (!zlib_inflate(
-            data_compressed,
-            size_compressed,
-            &data_uncompressed,
-            size_uncompressed))
-        {
-            assert(0);
-        }
-        assert(data_uncompressed != nullptr);
-        delete []data_compressed;
-
-        return data_uncompressed;
-    }
-
     std::unique_ptr<VirtualFile> pak_read_file(void *context)
     {
         PakUnpackContext *unpack_context = (PakUnpackContext*)context;
@@ -93,22 +70,18 @@ namespace
         unpack_context->arc_io.seek(offset);
         if (flags > 0)
         {
-            size_t size_uncompressed = 0;
-            char *data_uncompressed = pak_read_zlib(
-                unpack_context->arc_io, size_compressed, &size_uncompressed);
-            assert(data_uncompressed != nullptr);
-            file->io.write(data_uncompressed, size_original);
-            delete []data_uncompressed;
-            if (size_uncompressed != size_original)
+            std::string data_uncompressed
+                = zlib_inflate(unpack_context->arc_io.read(size_compressed));
+            if (data_uncompressed.size() != size_original)
             {
                 log_error("PAK: Bad file size");
                 return nullptr;
             }
+            file->io.write(data_uncompressed);
         }
         else
         {
-            file->io.write_from_io(
-                unpack_context->arc_io, size_original);
+            file->io.write_from_io(unpack_context->arc_io, size_original);
         }
 
         delete []file_name;
@@ -125,15 +98,11 @@ bool PakArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
     }
 
     uint32_t file_count = arc_io.read_u32_le();
-    uint32_t table_size_original = arc_io.read_u32_le();
+    __attribute__((unused)) uint32_t table_size_original = arc_io.read_u32_le();
     uint32_t table_size_compressed = arc_io.read_u32_le();
     arc_io.skip(0x104);
 
-    char *table = pak_read_zlib(arc_io, table_size_compressed, nullptr);
-    assert(table != nullptr);
-
-    BufferedIO table_io(table, table_size_original);
-    delete []table;
+    BufferedIO table_io(zlib_inflate(arc_io.read(table_size_compressed)));
 
     size_t i;
     PakUnpackContext unpack_context(arc_io, table_io);

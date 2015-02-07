@@ -1,6 +1,6 @@
 #include <cassert>
-#include <cstdio>
 #include <cstdlib>
+#include <memory>
 #include "endian.h"
 #include "io.h"
 #include "logger.h"
@@ -34,6 +34,13 @@ bool IO::read_until_zero(char **output, size_t *output_size)
     if (output_size != nullptr)
         *output_size = size;
     return true;
+}
+
+std::string IO::read(size_t bytes)
+{
+    std::unique_ptr<char> buffer(new char[bytes]);
+    read(buffer.get(), bytes);
+    return std::string(buffer.get(), bytes);
 }
 
 uint8_t IO::read_u8()
@@ -83,6 +90,11 @@ uint64_t IO::read_u64_be()
     uint64_t ret = 0;
     read(&ret, 8);
     return be64toh(ret);
+}
+
+void IO::write(const std::string &bytes)
+{
+    write(bytes.data(), bytes.size());
 }
 
 void IO::write_u8(uint8_t value)

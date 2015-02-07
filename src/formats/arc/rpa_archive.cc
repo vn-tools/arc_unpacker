@@ -227,14 +227,11 @@ namespace
     } RpaUnpackContext;
 
     RpaTableEntry **rpa_decode_table(
-        const char *table,
-        size_t table_size,
+        IO &table_io,
         uint32_t key,
         size_t *file_count)
     {
         RpaUnpickleContext context;
-
-        BufferedIO table_io(table, table_size);
         rpa_unpickle(table_io, &context);
 
         // Suspicion: reading renpy sources leaves me under impression that
@@ -298,24 +295,12 @@ namespace
         return result;
     }
 
-    bool rpa_read_raw_table(IO &arc_io, char **table, size_t *table_size)
+    std::string rpa_read_raw_table(IO &arc_io)
     {
         size_t compressed_size = arc_io.size() - arc_io.tell();
-        char *compressed = new char[compressed_size];
-        assert(compressed != nullptr);
-        arc_io.read(compressed, compressed_size);
-
-        *table = nullptr;
-        bool result = zlib_inflate(
-            compressed, compressed_size, table, table_size);
-        if (!result)
-        {
-            delete *table;
-            *table = nullptr;
-            *table_size = 0;
-        }
-        delete []compressed;
-        return result;
+        std::string compressed = arc_io.read(compressed_size);
+        std::string uncompressed = zlib_inflate(compressed);
+        return uncompressed;
     }
 
     std::unique_ptr<VirtualFile> rpa_read_file(void *_context)
@@ -367,19 +352,11 @@ bool RpaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
 
     arc_io.seek(table_offset);
 
-    size_t table_size;
-    char *table;
-    if (!rpa_read_raw_table(arc_io, &table, &table_size))
-    {
-        log_error("RPA: Failed to read table");
-        return false;
-    }
+    BufferedIO table_io(rpa_read_raw_table(arc_io));
 
     size_t file_count;
-    RpaTableEntry **entries = rpa_decode_table(
-        table, table_size, key, &file_count);
+    RpaTableEntry **entries = rpa_decode_table(table_io, key, &file_count);
     assert(entries != nullptr);
-    delete []table;
 
     size_t i;
     RpaUnpackContext context(arc_io);

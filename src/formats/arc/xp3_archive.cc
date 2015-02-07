@@ -92,36 +92,18 @@ namespace
     std::unique_ptr<IO> xp3_read_raw_table(IO &arc_io)
     {
         bool use_zlib = arc_io.read_u8();
-        const uint64_t table_size_compressed = arc_io.read_u64_le();
-        const uint64_t table_size_original = use_zlib
+        const uint64_t size_compressed = arc_io.read_u64_le();
+        __attribute__((unused)) const uint64_t size_original = use_zlib
             ? arc_io.read_u64_le()
-            : table_size_compressed;
+            : size_compressed;
 
-        char *table_data = new char[table_size_compressed];
-        arc_io.read(table_data, table_size_compressed);
+        std::string compressed = arc_io.read(size_compressed);
         if (use_zlib)
         {
-            char *table_data_uncompressed;
-            size_t table_size_uncompressed;
-            if (!zlib_inflate(
-                table_data,
-                table_size_compressed,
-                &table_data_uncompressed,
-                &table_size_uncompressed))
-            {
-                log_error("XP3: Failed to decompress zlib stream");
-                return nullptr;
-            }
-            assert(table_data_uncompressed != nullptr);
-            assert(table_size_original == table_size_uncompressed);
-            delete []table_data;
-            table_data = table_data_uncompressed;
+            std::string uncompressed = zlib_inflate(compressed);
+            return std::unique_ptr<IO>(new BufferedIO(uncompressed));
         }
-
-        std::unique_ptr<IO> table_io(
-            new BufferedIO(table_data, table_size_original));
-        delete []table_data;
-        return table_io;
+        return std::unique_ptr<IO>(new BufferedIO(compressed));
     }
 
     bool xp3_read_info_chunk(IO &table_io, VirtualFile &target_file)
@@ -184,25 +166,9 @@ namespace
         bool use_zlib = segm_flags & 7;
         if (use_zlib)
         {
-            char *data = new char[data_size_compressed];
-            assert(data != nullptr);
-            arc_io.read(data, data_size_compressed);
-
-            char *data_uncompressed;
-            size_t data_size_uncompressed;
-            if (!zlib_inflate(
-                data,
-                data_size_compressed,
-                &data_uncompressed,
-                &data_size_uncompressed))
-            {
-                assert(0);
-            }
-            assert(data_size_original == data_size_uncompressed);
-            delete []data;
-
-            target_file.io.write(data_uncompressed, data_size_original);
-            delete []data_uncompressed;
+            std::string data_compressed = arc_io.read(data_size_compressed);
+            std::string data_uncompressed = zlib_inflate(data_compressed);
+            target_file.io.write(data_uncompressed);
         }
         else
         {

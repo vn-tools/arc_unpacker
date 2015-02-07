@@ -1,8 +1,9 @@
 #include <cassert>
 #include <cerrno>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 #include <iconv.h>
+#include <stdexcept>
 #include <zlib.h>
 #include "logger.h"
 #include "string_ex.h"
@@ -11,122 +12,45 @@
 #define SIZE_MAX ((size_t) -1)
 #endif
 
-bool zlib_inflate(
-    const char *input,
-    size_t input_size,
-    char **output,
-    size_t *output_size)
+std::string zlib_inflate(const std::string &input)
 {
+    std::string output;
+    size_t written = 0;
+    output.reserve(input.size() * ((input.size() < SIZE_MAX / 10) ? 3 : 1));
+
     z_stream stream;
-    assert(input != nullptr);
-    assert(output != nullptr);
-
-    size_t tmp;
-    if (output_size == nullptr)
-        output_size = &tmp;
-
-    if (input_size < SIZE_MAX / 10)
-        *output_size = input_size;
-    else
-        *output_size = input_size;
-    *output = (char*)malloc(*output_size + 1);
-    if (*output == nullptr)
-    {
-        log_error("Zlib: failed to allocate initial memory");
-        *output_size = 0;
-        return false;
-    }
-
-    stream.next_in = (unsigned char *)input;
-    stream.avail_in = input_size;
-    stream.next_out = (unsigned char *)*output;
-    stream.avail_out = *output_size;
+    stream.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(input.data()));
+    stream.avail_in = input.size();
     stream.zalloc = (alloc_func)nullptr;
     stream.zfree = (free_func)nullptr;
     stream.opaque = (voidpf)nullptr;
     stream.total_out = 0;
 
     if (inflateInit(&stream) != Z_OK)
+        throw std::runtime_error("Failed to initialize zlib stream");
+
+    int ret;
+    do
     {
-        *output_size = 0;
-        *output = nullptr;
-        log_error("Zlib: failed to initialize stream");
-        return false;
+        char buffer[8192];
+        stream.next_out = reinterpret_cast<Bytef*>(buffer);
+        stream.avail_out = sizeof(buffer);
+        ret = inflate(&stream, 0);
+        if (output.size() < stream.total_out)
+            output.append(buffer, stream.total_out - written);
+        written = stream.total_out;
+    }
+    while (ret == Z_OK);
+
+    inflateEnd(&stream);
+
+    if (ret != Z_STREAM_END)
+    {
+        throw std::runtime_error(
+            "Failed to inflate zlib stream (" + std::string(stream.msg) + ")");
     }
 
-    while (1)
-    {
-        int result = inflate(&stream, Z_FINISH);
-        switch (result)
-        {
-            case Z_STREAM_END:
-            {
-                if (inflateEnd(&stream) != Z_OK)
-                {
-                    log_warning("Zlib: failed to uninitialize stream");
-                }
-                char *new_output = (char*)realloc(*output, stream.total_out+1);
-                if (new_output == nullptr)
-                {
-                    log_error("Zlib: failed to allocate memory for output");
-                    free(*output);
-                    *output = nullptr;
-                    *output_size = 0;
-                    return false;
-                }
-                *output = new_output;
-                *output_size = stream.total_out;
-                (*output)[*output_size] = '\0';
-                return true;
-            }
-
-            case Z_BUF_ERROR:
-            case Z_OK:
-            {
-                if (*output_size < SIZE_MAX / 2)
-                {
-                    *output_size *= 2;
-                }
-                else if (*output_size == SIZE_MAX - 1)
-                {
-                    log_error("Zlib: input is too large");
-                    free(*output);
-                    *output = nullptr;
-                    *output_size = 0;
-                    return false;
-                }
-                else
-                {
-                    *output_size = SIZE_MAX - 1;
-                }
-
-                char *new_output = (char*)realloc(*output, *output_size + 1);
-                if (new_output == nullptr)
-                {
-                    log_error("Zlib: failed to allocate memory for output");
-                    free(*output);
-                    *output = nullptr;
-                    *output_size = 0;
-                    return false;
-                }
-                *output = new_output;
-
-                stream.next_out = (unsigned char *)*output + stream.total_out;
-                stream.avail_out = *output_size - stream.total_out;
-                break;
-            }
-
-            default:
-                log_error("Zlib: inflate failed (error code = %d)", result);
-                free(*output);
-                *output = nullptr;
-                *output_size = 0;
-                return false;
-        }
-    }
-
-    log_error("Zlib: reached unexpected state");
-    return false;
+    return output;
 }
 
 bool convert_encoding(

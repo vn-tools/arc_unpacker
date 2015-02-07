@@ -42,33 +42,17 @@ bool XyzConverter::decode_internal(VirtualFile &file)
         uint16_t height = file.io.read_u16_le();
 
         size_t compressed_data_size = file.io.size() - file.io.tell();
-        std::unique_ptr<char> compressed_data(new char[compressed_data_size]);
-        assert(compressed_data != nullptr);
-        file.io.read(compressed_data.get(), compressed_data_size);
-
-        char *uncompressed_data = nullptr;
-        size_t uncompressed_data_size = 0;
-        if (!zlib_inflate(
-            compressed_data.get(),
-            compressed_data_size,
-            &uncompressed_data,
-            &uncompressed_data_size))
-        {
-            log_error("XYZ: Failed to decompress zlib stream");
-            delete []uncompressed_data;
-            return false;
-        }
-        assert(uncompressed_data != nullptr);
-        assert((unsigned)256 * 3 + width * height == uncompressed_data_size);
+        std::string compressed_data = file.io.read(compressed_data_size);
+        std::string uncompressed_data = zlib_inflate(compressed_data);
+        assert((unsigned)256 * 3 + width * height == uncompressed_data.size());
 
         size_t pixels_size = width * height * 3;
-        char *pixels = new char[pixels_size];
-        assert(pixels != nullptr);
+        std::unique_ptr<char> pixels(new char[pixels_size]);
 
         {
-            char *palette = uncompressed_data;
-            char *palette_indices = uncompressed_data + 256 * 3;
-            char *out = pixels;
+            const char *palette = uncompressed_data.data();
+            const char *palette_indices = palette + 256 * 3;
+            char *out = pixels.get();
 
             int i;
             size_t j;
@@ -79,19 +63,17 @@ bool XyzConverter::decode_internal(VirtualFile &file)
                 *out ++ = palette[j * 3 + 1];
                 *out ++ = palette[j * 3 + 2];
             }
-            delete []uncompressed_data;
         }
 
         Image *image = image_create_from_pixels(
             width,
             height,
-            pixels,
+            pixels.get(),
             pixels_size,
             IMAGE_PIXEL_FORMAT_RGB);
         image_update_file(image, file);
         image_destroy(image);
 
-        delete []pixels;
         result = true;
     }
 

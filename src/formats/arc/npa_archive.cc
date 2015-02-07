@@ -142,7 +142,7 @@ namespace
             data[i] = (unsigned char)(permutation[(size_t)data[i]] - key - i);
     }
 
-    char *npa_read_file_data(
+    std::string npa_read_file_data(
         size_t size_compressed,
         size_t size_original,
         const char *original_file_name,
@@ -152,14 +152,12 @@ namespace
         assert(original_file_name != nullptr);
         assert(unpack_context != nullptr);
 
-        char *data = new char[size_compressed];
-        assert(data != nullptr);
-        unpack_context->arc_io.read(data, size_compressed);
+        std::string data = unpack_context->arc_io.read(size_compressed);
 
         if (unpack_context->header->encrypted)
         {
             npa_decrypt_file_data(
-                (unsigned char*)data,
+                (unsigned char*)data.data(),
                 size_compressed,
                 size_original,
                 original_file_name,
@@ -168,20 +166,7 @@ namespace
         }
 
         if (unpack_context->header->compressed)
-        {
-            char *data_uncompressed = nullptr;
-            if (!zlib_inflate(
-                data,
-                size_compressed,
-                &data_uncompressed,
-                nullptr))
-            {
-                assert(0);
-            }
-            assert(data_uncompressed != nullptr);
-            delete []data;
-            data = data_uncompressed;
-        }
+            data = zlib_inflate(data);
 
         return data;
     }
@@ -222,14 +207,13 @@ namespace
 
         size_t old_pos = unpack_context->arc_io.tell();
         unpack_context->arc_io.seek(offset);
-        char *file_data = npa_read_file_data(
+        std::string file_data = npa_read_file_data(
             size_compressed,
             size_original,
             file_name,
             file_name_length,
             unpack_context);
-        file->io.write(file_data, size_original);
-        delete []file_data;
+        file->io.write(file_data);
         delete []file_name;
         unpack_context->arc_io.seek(old_pos);
 

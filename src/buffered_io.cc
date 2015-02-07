@@ -97,6 +97,11 @@ BufferedIO::BufferedIO() : BufferedIO("", 0)
 {
 }
 
+BufferedIO::BufferedIO(const std::string &buffer)
+    : BufferedIO(buffer.data(), buffer.size())
+{
+}
+
 BufferedIO::BufferedIO(const char *buffer, size_t buffer_size)
     : internals(new BufferedIO::Internals)
 {
