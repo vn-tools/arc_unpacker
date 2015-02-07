@@ -45,7 +45,7 @@ namespace
             options->output_dir = arg_parser.get_switch("--out").c_str();
     }
 
-    bool add_input_paths_option(ArgParser &arg_parser, Options *options)
+    bool add_input_paths_option(const ArgParser &arg_parser, Options *options)
     {
         const std::vector<std::string> stray = arg_parser.get_stray();
         for (size_t i = 1; i < stray.size(); i ++)

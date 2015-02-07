@@ -7,6 +7,9 @@
 class ArgParser final
 {
 public:
+    ArgParser();
+    ~ArgParser();
+
     void clear_help();
     void add_help(const std::string invocation, const std::string description);
     void print_help() const;
@@ -17,13 +20,11 @@ public:
     bool has_switch(const std::string key) const;
 
     const std::string get_switch(const std::string key) const;
-    std::vector<std::string> get_stray();
+    const std::vector<std::string> get_stray() const;
 
 private:
-    std::vector<std::string> flags;
-    std::vector<std::pair<std::string, std::string>> switches;
-    std::vector<std::string> stray;
-    std::vector<std::pair<std::string, std::string>> help_items;
+    struct Internals;
+    Internals *internals;
 };
 
 #endif

@@ -38,7 +38,7 @@ namespace
 
     void add_path_options(ArgParser &arg_parser, Options *options)
     {
-        std::vector<std::string> stray = arg_parser.get_stray();
+        const std::vector<std::string> stray = arg_parser.get_stray();
         if (stray.size() < 2)
         {
             log_error("Required more arguments.");
