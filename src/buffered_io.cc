@@ -3,6 +3,7 @@
 #include <cstring>
 #include <stdexcept>
 #include "buffered_io.h"
+#include "logger.h"
 
 struct BufferedIO::Internals
 {
@@ -13,14 +14,14 @@ struct BufferedIO::Internals
 
 void BufferedIO::seek(size_t offset)
 {
-    if (offset >= internals->buffer_size)
+    if (offset > internals->buffer_size)
         throw std::runtime_error("Seeking beyond EOF");
     internals->buffer_pos = offset;
 }
 
 void BufferedIO::skip(ssize_t offset)
 {
-    if (internals->buffer_pos + offset >= internals->buffer_size)
+    if (internals->buffer_pos + offset > internals->buffer_size)
         throw std::runtime_error("Seeking beyond EOF");
     internals->buffer_pos += offset;
 }
@@ -89,7 +90,7 @@ void BufferedIO::truncate(size_t new_size)
         throw std::bad_alloc();
     internals->buffer = new_buffer;
     internals->buffer_size = new_size;
-    if (internals->buffer_pos >= new_size)
+    if (internals->buffer_pos > new_size)
         internals->buffer_pos = new_size;
 }
 

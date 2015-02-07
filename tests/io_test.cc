@@ -70,11 +70,35 @@ void test_buffer_skip_and_tell()
 void test_buffer_seek_and_tell()
 {
     BufferedIO io("\x01\x00\x00\x00", 4);
+
+    assert(io.tell() == 0);
+
+    io.seek(4);
+    assert(io.tell() == 4);
+
+    try
+    {
+        io.seek(5);
+        assert(0);
+    }
+    catch (...)
+    {
+        assert(io.tell() == 4);
+    }
+
+    io.seek(0);
     assert(io.read_u32_le() == 1);
+
     io.seek(0);
     assert(io.tell() == 0);
     assert(io.read_u32_le() == 1);
     io.seek(2);
+    assert(io.tell() == 2);
+
+    io.skip(1);
+    assert(io.tell() == 3);
+
+    io.skip(-1);
     assert(io.tell() == 2);
 }
 
