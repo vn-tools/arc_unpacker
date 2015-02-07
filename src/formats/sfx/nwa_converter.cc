@@ -32,41 +32,41 @@ namespace
         uint32_t rest_size;
     } NwaHeader;
 
-    bool nwa_validate_header(NwaHeader *header)
+    bool nwa_validate_header(const NwaHeader &header)
     {
-        if (header->compression_level >= 0 || header->compression_level > 5)
+        if (header.compression_level >= 0 || header.compression_level > 5)
         {
             log_error("Unsupported compression level");
             return false;
         }
-        else if (header->channel_count != 1 && header->channel_count != 2)
+        else if (header.channel_count != 1 && header.channel_count != 2)
         {
             log_error("Unsupported channel count");
             return false;
         }
-        else if (header->bits_per_sample != 8 && header->bits_per_sample != 16)
+        else if (header.bits_per_sample != 8 && header.bits_per_sample != 16)
         {
             log_error("Unsupported bits per sample");
             return false;
         }
-        else if (!header->block_count)
+        else if (!header.block_count)
         {
             log_error("No blocks found");
             return false;
         }
-        else if (!header->compressed_size)
+        else if (!header.compressed_size)
         {
             log_error("No data found");
             return false;
         }
-        else if (header->uncompressed_size
-            != header->sample_count * header->bits_per_sample / 8)
+        else if (header.uncompressed_size
+            != header.sample_count * header.bits_per_sample / 8)
         {
             log_error("Bad data size");
             return false;
         }
-        else if (header->sample_count
-            != (header->block_count-1) * header->block_size + header->rest_size)
+        else if (header.sample_count
+            != (header.block_count-1) * header.block_size + header.rest_size)
         {
             log_error("Bad sample count");
             return false;
@@ -74,32 +74,20 @@ namespace
         return true;
     }
 
-    void nwa_read_uncompressed(
-        IO &io,
-        NwaHeader *header,
-        char **samples,
-        size_t *sample_count)
+    std::string nwa_read_uncompressed(IO &io, const NwaHeader &header)
     {
-        assert(header != nullptr);
-        assert(samples != nullptr);
-        assert(sample_count != nullptr);
-        *sample_count = header->block_size * header->channel_count;
-        *samples = new char[*sample_count];
-        io.read(*samples, *sample_count);
+        return io.read(header.block_size * header.channel_count);
     }
 
-    void nwa_read_compressed(
+    std::string nwa_read_compressed(
         __attribute__((unused)) IO &io,
-        NwaHeader *header,
-        __attribute__((unused)) char **samples,
-        __attribute__((unused)) size_t *sample_count)
+        __attribute__((unused)) const NwaHeader &header)
     {
-        assert(header != nullptr);
         throw std::runtime_error("Reading compressed streams is not supported");
     }
 }
 
-bool NwaConverter::decode_internal(VirtualFile &file)
+void NwaConverter::decode_internal(VirtualFile &file) const
 {
     NwaHeader header;
     header.channel_count = file.io.read_u16_le();
@@ -113,8 +101,7 @@ bool NwaConverter::decode_internal(VirtualFile &file)
     header.block_size = file.io.read_u32_le();
     header.rest_size = file.io.read_u32_le();
 
-    char *output_samples = nullptr;
-    size_t output_sample_count;
+    std::string samples;
 
     if (header.compression_level == -1
     || header.block_count == 0
@@ -122,33 +109,20 @@ bool NwaConverter::decode_internal(VirtualFile &file)
     || header.block_size == 0
     || header.rest_size == 0)
     {
-        nwa_read_uncompressed(
-            file.io,
-            &header,
-            &output_samples,
-            &output_sample_count);
+        samples = nwa_read_uncompressed(file.io, header);
     }
     else
     {
-        if (!nwa_validate_header(&header))
+        if (!nwa_validate_header(header))
             throw std::runtime_error("Invalid header, decoding aborted");
 
-        nwa_read_compressed(
-            file.io,
-            &header,
-            &output_samples,
-            &output_sample_count);
+        samples = nwa_read_compressed(file.io, header);
     }
 
-    Sound *sound = sound_create_from_samples(
+    std::unique_ptr<Sound> sound = Sound::from_samples(
         header.channel_count,
         header.bits_per_sample / 8,
         header.sample_rate,
-        output_samples,
-        output_sample_count);
-    sound_update_file(sound, file);
-    sound_destroy(sound);
-
-    delete []output_samples;
-    return true;
+        samples);
+    sound->update_file(file);
 }

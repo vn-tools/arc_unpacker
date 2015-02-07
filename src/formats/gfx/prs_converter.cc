@@ -15,29 +15,22 @@
 
 namespace
 {
-    const char *prs_magic = "YB\x83\x03";
-    const size_t prs_magic_length = 4;
+    const std::string prs_magic("YB\x83\x03", 4);
 
-    bool prs_decode_pixels(
-        uint16_t image_width,
-        uint16_t image_height,
+    void prs_decode_pixels(
         const char *source_buffer,
         const size_t source_size,
-        char **target_buffer,
-        size_t *target_size)
+        char *target_buffer,
+        const size_t target_size)
     {
         size_t i;
         assert(source_buffer != nullptr);
         assert(target_buffer != nullptr);
 
-        *target_size = image_width * image_height * 3;
-        *target_buffer = new char[*target_size];
-        assert(*target_buffer != nullptr);
-
         const unsigned char *source = (const unsigned char*)source_buffer;
         const unsigned char *source_guardian = source + source_size;
-        unsigned char *target = (unsigned char*)(*target_buffer);
-        unsigned char *target_guardian = target + *target_size;
+        unsigned char *target = (unsigned char*)(target_buffer);
+        unsigned char *target_guardian = target + target_size;
 
         int flag = 0;
         int length_lookup[256];
@@ -120,69 +113,43 @@ namespace
                 {
                     if (target >= target_guardian)
                         break;
-                    assert(target - shift >= (unsigned char*)*target_buffer);
+                    assert(target - shift >= (unsigned char*)target_buffer);
                     *target = *(target - shift);
                     target ++;
                 }
             }
         }
 
-        for (i = 3; i < *target_size; i ++)
-            (*target_buffer)[i] += (*target_buffer)[i-3];
-        return true;
-    }
-
-    bool prs_check_magic(IO &io)
-    {
-        char magic[prs_magic_length];
-        io.read(magic, prs_magic_length);
-        return memcmp(magic, prs_magic, prs_magic_length) == 0;
+        for (i = 3; i < target_size; i ++)
+            target_buffer[i] += target_buffer[i-3];
     }
 }
 
-bool PrsConverter::decode_internal(VirtualFile &file)
+void PrsConverter::decode_internal(VirtualFile &file) const
 {
-    if (!prs_check_magic(file.io))
-    {
-        log_error("Not a PRS graphic file");
-        return false;
-    }
+    if (file.io.read(prs_magic.size()) != prs_magic)
+        throw std::runtime_error("Not a PRS graphic file");
 
     uint32_t source_size = file.io.read_u32_le();
     file.io.skip(4);
     uint16_t image_width = file.io.read_u16_le();
     uint16_t image_height = file.io.read_u16_le();
 
-    char *source_buffer = new char[source_size];
-    file.io.read(source_buffer, source_size);
+    const size_t target_size = image_width * image_height * 3;
+    std::unique_ptr<char> source_buffer(new char[source_size]);
+    std::unique_ptr<char> target_buffer(new char[target_size]);
+    file.io.read(source_buffer.get(), source_size);
 
-    bool result;
-    char *target_buffer = nullptr;
-    size_t target_size = 0;
-    if (!prs_decode_pixels(
+    prs_decode_pixels(
+        source_buffer.get(),
+        source_size,
+        target_buffer.get(),
+        target_size);
+
+    std::unique_ptr<Image> image = Image::from_pixels(
         image_width,
         image_height,
-        source_buffer,
-        source_size,
-        &target_buffer,
-        &target_size))
-    {
-        result = false;
-    }
-    else
-    {
-        Image *image = image_create_from_pixels(
-            image_width,
-            image_height,
-            target_buffer,
-            target_size,
-            IMAGE_PIXEL_FORMAT_BGR);
-        image_update_file(image, file);
-        image_destroy(image);
-        result = true;
-    }
-
-    delete []source_buffer;
-    delete []target_buffer;
-    return result;
+        std::string(target_buffer.get(), target_size),
+        IMAGE_PIXEL_FORMAT_BGR);
+    image->update_file(file);
 }

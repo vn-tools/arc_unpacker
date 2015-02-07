@@ -14,8 +14,7 @@
 
 namespace
 {
-    const char *cbg_magic = "CompressedBG___\x00";
-    const size_t cbg_magic_length = 16;
+    const std::string cbg_magic("CompressedBG___\x00", 16);
 
     typedef struct
     {
@@ -266,28 +265,19 @@ namespace
             case 32:
                 return IMAGE_PIXEL_FORMAT_BGRA;
         }
-        log_error("CBG: Unsupported BPP: %d", bpp);
-        return (PixelFormat)0;
+        throw std::runtime_error("Unsupported BPP");
     }
 }
 
-bool CbgConverter::decode_internal(VirtualFile &file)
+void CbgConverter::decode_internal(VirtualFile &file) const
 {
-    char magic[cbg_magic_length];
-    file.io.read(magic, cbg_magic_length);
-    if (memcmp(magic, cbg_magic, cbg_magic_length) != 0)
-    {
-        log_error("CBG: Not a CBG image");
-        return false;
-    }
+    if (file.io.read(cbg_magic.size()) != cbg_magic)
+        throw std::runtime_error("Not a CBG image");
 
     uint16_t width = file.io.read_u16_le();
     uint16_t height = file.io.read_u16_le();
     uint16_t bpp = file.io.read_u16_le();
     file.io.skip(10);
-
-    if (!bpp_to_image_pixel_format(bpp))
-        return false;
 
     uint32_t huffman_size = file.io.read_u32_le();
     uint32_t key = file.io.read_u32_le();
@@ -304,47 +294,25 @@ bool CbgConverter::decode_internal(VirtualFile &file)
     CbgNodeInfo node_info[511];
     int last_node = cbg_read_node_info(freq_table, node_info);
 
-    bool result;
-    char *huffman = new char[huffman_size];
-    if (huffman == nullptr)
-    {
-        log_error("CBG: Failed to allocate %d bytes", huffman_size);
-        result = false;
-    }
-    else
-    {
-        cbg_decompress_huffman(
-            file.io,
-            last_node,
-            node_info,
-            huffman_size,
-            (uint8_t*)huffman);
+    std::unique_ptr<char> huffman(new char[huffman_size]);
 
-        size_t output_size = width * height * (bpp >> 3);
-        char *output = new char[output_size];
-        if (output == nullptr)
-        {
-            log_error("CBG: Failed to allocate %d bytes", output_size);
-            result = false;
-        }
-        else
-        {
-            cbg_decompress_rle(huffman_size, huffman, output);
-            delete []huffman;
-            cbg_transform_colors((uint8_t*)output, width, height, bpp);
+    cbg_decompress_huffman(
+        file.io,
+        last_node,
+        node_info,
+        huffman_size,
+        reinterpret_cast<uint8_t*>(huffman.get()));
 
-            Image *image = image_create_from_pixels(
-                width,
-                height,
-                output,
-                output_size,
-                bpp_to_image_pixel_format(bpp));
-            image_update_file(image, file);
-            image_destroy(image);
+    size_t output_size = width * height * (bpp >> 3);
+    std::unique_ptr<char> output(new char[output_size]);
+    cbg_decompress_rle(huffman_size, huffman.get(), output.get());
+    cbg_transform_colors(
+        reinterpret_cast<uint8_t*>(output.get()), width, height, bpp);
 
-            delete []output;
-        }
-    }
-
-    return result;
+    std::unique_ptr<Image> image = Image::from_pixels(
+        width,
+        height,
+        std::string(output.get(), output_size),
+        bpp_to_image_pixel_format(bpp));
+    image->update_file(file);
 }

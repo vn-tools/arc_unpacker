@@ -126,16 +126,16 @@ namespace
             "converter.");
     }
 
-    bool decode(
-        Converter *converter,
+    void decode(
+        Converter &converter,
         ArgParser &arg_parser,
         VirtualFile &file)
     {
-        converter->parse_cli_options(arg_parser);
-        return converter->decode(file);
+        converter.parse_cli_options(arg_parser);
+        converter.decode(file);
     }
 
-    bool guess_converter_and_decode(
+    void guess_converter_and_decode(
         Options *options,
         ArgParser &arg_parser,
         ConverterFactory &conv_factory,
@@ -146,51 +146,49 @@ namespace
         bool result = false;
         if (options->format == nullptr)
         {
+            bool recognized = false;
             for (auto& format : conv_factory.get_formats())
             {
-                Converter *converter = conv_factory.create_converter(format);
-                assert(converter != nullptr);
-                log_info("Trying %s...", format.c_str());
-                result = decode(converter, arg_parser, file);
-                delete converter;
+                std::unique_ptr<Converter> converter(
+                    conv_factory.create_converter(format));
 
-                if (result)
+                try
                 {
+                    log_info("Trying %s...", format.c_str());
+                    decode(*converter, arg_parser, file);
                     log_info("Success - %s decoding finished", format.c_str());
+                    recognized = true;
                     break;
                 }
-                else
+                catch (std::exception &e)
                 {
+                    log_error("%s", e.what());
                     log_info(
                         "%s didn\'t work, trying next format...",
                         format.c_str());
+                    continue;
                 }
             }
-            if (!result)
-            {
+
+            if (!recognized)
                 log_error("Nothing left to try. File not recognized.");
-            }
         }
         else
         {
-            Converter *converter
-                = conv_factory.create_converter(options->format);
-            if (converter != nullptr)
+            std::unique_ptr<Converter> converter(
+                conv_factory.create_converter(options->format));
+
+            try
             {
-                result = decode(converter, arg_parser, file);
-                if (result)
-                    log_info("Success - %s decoding finished", options->format);
-                else
-                    log_info("Failure - %s decoding finished", options->format);
-                delete converter;
+                decode(*converter, arg_parser, file);
+                log_info("Success - %s decoding finished", options->format);
             }
-            else
+            catch (std::exception &e)
             {
-                result = false;
+                log_error("%s", e.what());
+                log_info("Failure - %s decoding finished", options->format);
             }
         }
-
-        return result;
     }
 
     void set_file_path(VirtualFile &file, std::string input_path)
@@ -213,14 +211,11 @@ namespace
                 ? context->path_info->input_path
                 : context->path_info->target_path);
 
-        if (!guess_converter_and_decode(
+        guess_converter_and_decode(
             context->options,
             context->arg_parser,
             context->conv_factory,
-            *file))
-        {
-            return nullptr;
-        }
+            *file);
 
         return file;
     }

@@ -10,26 +10,19 @@
 namespace
 {
     void compare_images(
-        const Image *expected_image,
-        const Image *actual_image)
+        const Image &expected_image,
+        const Image &actual_image)
     {
-        if (expected_image == nullptr || actual_image == nullptr)
-        {
-            assert(expected_image == nullptr);
-            assert(actual_image == nullptr);
-            return;
-        }
-
-        assert(image_width(expected_image) == image_width(actual_image));
-        assert(image_height(expected_image) == image_height(actual_image));
+        assert(expected_image.width() == actual_image.width());
+        assert(expected_image.height() == actual_image.height());
 
         size_t x, y;
-        for (y = 0; y < image_height(expected_image); y ++)
+        for (y = 0; y < expected_image.height(); y ++)
         {
-            for (x = 0; x < image_width(expected_image); x ++)
+            for (x = 0; x < expected_image.width(); x ++)
             {
-                uint32_t expected_rgba = image_color_at(expected_image, x, y);
-                uint32_t actual_rgba = image_color_at(actual_image, x, y);
+                uint32_t expected_rgba = expected_image.color_at(x, y);
+                uint32_t actual_rgba = actual_image.color_at(x, y);
                 if (expected_rgba != actual_rgba)
                 {
                     log_error(
@@ -44,38 +37,30 @@ namespace
         }
     }
 
-    Image *get_actual_image(const std::string path, Converter *converter)
+    std::unique_ptr<Image> get_actual_image(
+        const std::string path, Converter &converter)
     {
         FileIO io(path, "rb");
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
-        file->io.write_from_io(io, io.size());
-        converter->decode(*file);
-        return image_create_from_boxed(file->io);
+        VirtualFile file;
+        file.io.write_from_io(io, io.size());
+        converter.decode(file);
+        return std::unique_ptr<Image>(Image::from_boxed(file.io));
     }
 
-    Image *get_expected_image(const std::string path)
+    std::unique_ptr<Image> get_expected_image(const std::string path)
     {
         FileIO io(path, "rb");
-        Image *image = image_create_from_boxed(io);
-        assert(image != nullptr);
-        return image;
+        return std::unique_ptr<Image>(Image::from_boxed(io));
     }
 }
 
 void assert_decoded_image(
-    Converter *converter,
-    const char *path_to_input,
-    const char *path_to_expected)
+    Converter &converter,
+    const std::string &path_to_input,
+    const std::string &path_to_expected)
 {
-    assert(converter != nullptr);
-    assert(path_to_input != nullptr);
-    assert(path_to_expected != nullptr);
+    auto actual_image = get_actual_image(path_to_input, converter);
+    auto expected_image = get_expected_image(path_to_expected);
 
-    Image *actual_image = get_actual_image(path_to_input, converter);
-    Image *expected_image = get_expected_image(path_to_expected);
-
-    compare_images(expected_image, actual_image);
-
-    image_destroy(actual_image);
-    image_destroy(expected_image);
+    compare_images(*expected_image, *actual_image);
 }

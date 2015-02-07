@@ -260,9 +260,9 @@ namespace
         return true;
     }
 
-    std::vector<MgdRegion*> mgd_read_region_data(IO &file_io)
+    std::vector<std::unique_ptr<MgdRegion>> mgd_read_region_data(IO &file_io)
     {
-        std::vector<MgdRegion*> regions;
+        std::vector<std::unique_ptr<MgdRegion>> regions;
         while (file_io.tell() < file_io.size())
         {
             file_io.skip(4);
@@ -271,20 +271,13 @@ namespace
             size_t meta_format = file_io.read_u16_le();
             size_t bytes_left = file_io.size() - file_io.tell();
             if (meta_format != 4)
-            {
-                log_warning("MGD: Unexpected region format %d", meta_format);
-                return regions;
-            }
+                throw std::runtime_error("Unexpected region format");
             if (regions_size != bytes_left)
-            {
-                log_warning("MGD: Unexpected region size %d", regions_size);
-                return regions;
-            }
+                throw std::runtime_error("Region size mismatch");
 
-            size_t i;
-            for (i = 0; i < region_count; i ++)
+            for (size_t i = 0; i < region_count; i ++)
             {
-                MgdRegion *region = new MgdRegion;
+                std::unique_ptr<MgdRegion> region(new MgdRegion);
                 if (!region)
                 {
                     log_error("MGD: Failed to allocate memory for region");
@@ -294,7 +287,7 @@ namespace
                 region->y = file_io.read_u16_le();
                 region->width = file_io.read_u16_le();
                 region->height = file_io.read_u16_le();
-                regions.push_back(region);
+                regions.push_back(std::move(region));
             }
 
             if (file_io.tell() + 4 >= file_io.size())
@@ -304,88 +297,60 @@ namespace
         return regions;
     }
 
-    Image *mgd_read_image(
+    std::unique_ptr<Image> mgd_read_image(
         IO &file_io,
         MgdCompressionType compression_type,
         size_t size_compressed,
         size_t size_original,
         size_t image_width,
-        size_t image_height,
-        char **data_uncompressed)
+        size_t image_height)
     {
-        assert(data_uncompressed != nullptr);
-
-        char *data_compressed = new char[size_compressed];
-        if (!data_compressed)
-        {
-            log_error("MGD: Failed to allocate memory for compressed data");
-            return nullptr;
-        }
-        file_io.read(data_compressed, size_compressed);
-
+        std::string data_compressed = file_io.read(size_compressed);
         log_info("MGD: compression type = %d", compression_type);
 
-        Image *image = nullptr;
         switch (compression_type)
         {
             case MGD_COMPRESSION_NONE:
-                *data_uncompressed = data_compressed;
-                image = image_create_from_pixels(
+                return Image::from_pixels(
                     image_width,
                     image_height,
                     data_compressed,
-                    size_compressed,
                     IMAGE_PIXEL_FORMAT_BGRA);
-                break;
 
             case MGD_COMPRESSION_SGD:
             {
-                *data_uncompressed = new char[size_original];
-                assert(*data_uncompressed != nullptr);
+                std::unique_ptr<char> data_uncompressed(
+                    new char[size_original]);
 
-                if (mgd_decompress_sgd(
-                    data_compressed,
+                mgd_decompress_sgd(
+                    data_compressed.data(),
                     size_compressed,
-                    *data_uncompressed,
-                    size_original))
-                {
-                    image = image_create_from_pixels(
-                        image_width,
-                        image_height,
-                        *data_uncompressed,
-                        size_original,
-                        IMAGE_PIXEL_FORMAT_BGRA);
-                }
-                else
-                {
-                    log_error("MGD: Failed to decompress SGD data");
-                }
+                    data_uncompressed.get(),
+                    size_original);
 
-                delete []data_compressed;
-                break;
+                return Image::from_pixels(
+                    image_width,
+                    image_height,
+                    std::string(data_uncompressed.get(), size_original),
+                    IMAGE_PIXEL_FORMAT_BGRA);
             }
 
             case MGD_COMPRESSION_PNG:
             {
-                BufferedIO image_io;
-                image_io.write(data_compressed, size_compressed);
-                image = image_create_from_boxed(image_io);
-                delete []data_compressed;
-                break;
+                BufferedIO buffered_io(data_compressed);
+                return Image::from_boxed(buffered_io);
             }
-        }
 
-        return image;
+            default:
+                throw std::runtime_error("Unsupported compression type");
+        }
     }
 }
 
-bool MgdConverter::decode_internal(VirtualFile &file)
+void MgdConverter::decode_internal(VirtualFile &file) const
 {
     if (!mgd_check_magic(file.io))
-    {
-        log_error("MGD: Not a MGD graphic file");
-        return false;
-    }
+        throw std::runtime_error("MGD: Not a MGD graphic file");
 
     __attribute__((unused)) uint16_t data_offset = file.io.read_u16_le();
     __attribute__((unused)) uint16_t format = file.io.read_u16_le();
@@ -400,36 +365,17 @@ bool MgdConverter::decode_internal(VirtualFile &file)
 
     size_t size_compressed = file.io.read_u32_le();
     if (size_compressed + 4 != size_compressed_total)
-    {
-        log_error(
-            "MGD: Compressed data size verification failed (%d != %d)",
-            size_compressed,
-            size_compressed_total);
-        return false;
-    }
+        throw std::runtime_error("Compressed data size mismatch");
 
-    char *data_uncompressed = nullptr;
-    Image *image = mgd_read_image(
+    std::unique_ptr<Image> image = mgd_read_image(
         file.io,
         compression_type,
         size_compressed,
         size_original,
         image_width,
-        image_height,
-        &data_uncompressed);
+        image_height);
 
-    auto regions = mgd_read_region_data(file.io);
-    for (auto& region : regions)
-        delete region;
+    __attribute__((unused)) auto regions = mgd_read_region_data(file.io);
 
-    if (image == nullptr)
-    {
-        log_error("MGD: No image produced");
-        return false;
-    }
-
-    image_update_file(image, file);
-    image_destroy(image);
-    delete []data_uncompressed;
-    return true;
+    image->update_file(file);
 }

@@ -5,12 +5,11 @@ void test_g00_decoding(
     const char *input_image_path,
     const char *expected_image_path)
 {
-    Converter *converter = new G00Converter();
+    G00Converter converter;
     assert_decoded_image(
         converter,
         input_image_path,
         expected_image_path);
-    delete converter;
 }
 
 int main(void)

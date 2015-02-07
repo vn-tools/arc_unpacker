@@ -116,21 +116,16 @@ namespace
         return std::move(uncompressed);
     }
 
-    bool g00_decode_version_0(VirtualFile &file, int width, int height)
+    void g00_decode_version_0(VirtualFile &file, int width, int height)
     {
         size_t compressed_size = file.io.read_u32_le();
         size_t uncompressed_size = file.io.read_u32_le();
         compressed_size -= 8;
         if (compressed_size != file.io.size() - file.io.tell())
-        {
-            log_error("G00: Bad compressed size");
-            return false;
-        }
+            throw std::runtime_error("Compressed data size mismatch");
+
         if (uncompressed_size != (unsigned)(width * height * 4))
-        {
-            log_error("G00: Bad uncompressed size");
-            return false;
-        }
+            throw std::runtime_error("Uncompressed data size mismatch");
 
         std::unique_ptr<char> uncompressed = g00_decompress_from_io(
             file.io,
@@ -138,27 +133,21 @@ namespace
             uncompressed_size,
             3, 1);
 
-        Image *image = image_create_from_pixels(
+        std::unique_ptr<Image> image = Image::from_pixels(
             width,
             height,
-            uncompressed.get(),
-            width * height * 3,
+            std::string(uncompressed.get(), width * height * 3),
             IMAGE_PIXEL_FORMAT_BGR);
-        image_update_file(image, file);
-        image_destroy(image);
-        return true;
+        image->update_file(file);
     }
 
-    bool g00_decode_version_1(VirtualFile &file, int width, int height)
+    void g00_decode_version_1(VirtualFile &file, int width, int height)
     {
         size_t compressed_size = file.io.read_u32_le();
         size_t uncompressed_size = file.io.read_u32_le();
         compressed_size -= 8;
         if (compressed_size != file.io.size() - file.io.tell())
-        {
-            log_error("G00: Bad compressed size");
-            return false;
-        }
+            throw std::runtime_error("Compressed data size mismatch");
 
         std::unique_ptr<char> uncompressed = g00_decompress_from_io(
             file.io,
@@ -170,85 +159,62 @@ namespace
         uint16_t color_count = le32toh(*(uint16_t*)tmp);
         tmp += 2;
 
-        bool result;
         if (uncompressed_size != (unsigned)color_count * 4 + width * height + 2)
+            throw std::runtime_error("Uncompressed data size mismatch");
+        uint32_t *palette = (uint32_t*)tmp;
+        tmp += color_count * 4;
+
+        size_t i;
+        std::unique_ptr<uint32_t> pixels(new uint32_t[width * height]);
+        for (i = 0; i < (unsigned)(width * height); i ++)
         {
-            log_error("G00: Bad uncompressed size");
-            result = false;
-        }
-        else
-        {
-            uint32_t *palette = (uint32_t*)tmp;
-            tmp += color_count * 4;
-
-            size_t i;
-            uint32_t *pixels = new uint32_t[width * height];
-            assert(pixels != nullptr);
-            for (i = 0; i < (unsigned)(width * height); i ++)
-            {
-                unsigned char palette_index = (unsigned char)*tmp ++;
-                pixels[i] = palette[palette_index];
-            }
-
-            Image *image = image_create_from_pixels(
-                width,
-                height,
-                (char*)pixels,
-                width * height * 4,
-                IMAGE_PIXEL_FORMAT_BGRA);
-            image_update_file(image, file);
-            image_destroy(image);
-
-            delete []pixels;
-            result = true;
+            unsigned char palette_index = (unsigned char)*tmp ++;
+            pixels.get()[i] = palette[palette_index];
         }
 
-        return result;
+        std::unique_ptr<Image> image = Image::from_pixels(
+            width,
+            height,
+            std::string(
+                reinterpret_cast<char*>(pixels.get()),
+                width * height * 4),
+            IMAGE_PIXEL_FORMAT_BGRA);
+        image->update_file(file);
     }
 
-    G00Region *g00_read_version_2_regions(IO &file_io, size_t region_count)
+    std::vector<std::unique_ptr<G00Region>> g00_read_version_2_regions(
+        IO &file_io, size_t region_count)
     {
-        G00Region *regions = new G00Region[region_count];
-        if (!regions)
-        {
-            log_error(
-                "G00: Failed to allocate memory for %d regions", region_count);
-            return nullptr;
-        }
+        std::vector<std::unique_ptr<G00Region>> regions;
+        regions.reserve(region_count);
 
         size_t i;
         for (i = 0; i < region_count; i ++)
         {
-            regions[i].x1 = file_io.read_u32_le();
-            regions[i].y1 = file_io.read_u32_le();
-            regions[i].x2 = file_io.read_u32_le();
-            regions[i].y2 = file_io.read_u32_le();
-            regions[i].ox = file_io.read_u32_le();
-            regions[i].oy = file_io.read_u32_le();
+            std::unique_ptr<G00Region> region(new G00Region);
+            region->x1 = file_io.read_u32_le();
+            region->y1 = file_io.read_u32_le();
+            region->x2 = file_io.read_u32_le();
+            region->y2 = file_io.read_u32_le();
+            region->ox = file_io.read_u32_le();
+            region->oy = file_io.read_u32_le();
+            regions.push_back(std::move(region));
         }
         return regions;
     }
 
-    bool g00_decode_version_2(VirtualFile &file, int width, int height)
+    void g00_decode_version_2(VirtualFile &file, int width, int height)
     {
         size_t region_count = file.io.read_u32_le();
         size_t i, j;
-        G00Region *regions = g00_read_version_2_regions(file.io, region_count);
-        if (!regions)
-        {
-            log_error("G00: Failed to read region data");
-            return false;
-        }
+        std::vector<std::unique_ptr<G00Region>> regions
+            = g00_read_version_2_regions(file.io, region_count);
 
         size_t compressed_size = file.io.read_u32_le();
         size_t uncompressed_size = file.io.read_u32_le();
         compressed_size -= 8;
         if (compressed_size != file.io.size() - file.io.tell())
-        {
-            log_error("G00: Bad compressed size");
-            delete []regions;
-            return false;
-        }
+            throw std::runtime_error("Compressed data size mismatch");
 
         std::unique_ptr<char>uncompressed = g00_decompress_from_io(
             file.io,
@@ -256,79 +222,59 @@ namespace
             uncompressed_size,
             1, 2);
 
-        char *pixels = new char[width * height * 4];
-        if (!pixels)
-        {
-            log_error(
-                "G00: Failed to allocate memory for %d x %d pixels",
-                width,
-                height);
-            delete []regions;
-            return false;
-        }
+        std::unique_ptr<uint32_t> pixels(new uint32_t[width * height]);
 
-        bool result;
         BufferedIO uncompressed_io(uncompressed.get(), uncompressed_size);
         if (region_count != uncompressed_io.read_u32_le())
+            throw std::runtime_error("Invalid region count");
+
+        for (i = 0; i < region_count; i ++)
         {
-            log_error("G00: Bad region count");
-            result = false;
-        }
-        else
-        {
-            for (i = 0; i < region_count; i ++)
+            uncompressed_io.seek(4 + i * 8);
+            size_t block_offset = uncompressed_io.read_u32_le();
+            size_t block_size = uncompressed_io.read_u32_le();
+
+            G00Region *region = regions[i].get();
+            if (block_size <= 0)
+                continue;
+
+            uncompressed_io.seek(block_offset);
+            uint16_t block_type = uncompressed_io.read_u16_le();
+            uint16_t part_count = uncompressed_io.read_u16_le();
+            assert(1 == block_type);
+
+            uncompressed_io.skip(0x70);
+            for (j = 0; j < part_count; j ++)
             {
-                uncompressed_io.seek(4 + i * 8);
-                size_t block_offset = uncompressed_io.read_u32_le();
-                size_t block_size = uncompressed_io.read_u32_le();
+                uint16_t part_x = uncompressed_io.read_u16_le();
+                uint16_t part_y = uncompressed_io.read_u16_le();
+                uncompressed_io.skip(2);
+                uint16_t part_width = uncompressed_io.read_u16_le();
+                uint16_t part_height = uncompressed_io.read_u16_le();
+                uncompressed_io.skip(0x52);
 
-                G00Region *region = &regions[i];
-                if (block_size <= 0)
-                    continue;
-
-                uncompressed_io.seek(block_offset);
-                uint16_t block_type = uncompressed_io.read_u16_le();
-                uint16_t part_count = uncompressed_io.read_u16_le();
-                assert(1 == block_type);
-
-                uncompressed_io.skip(0x70);
-                for (j = 0; j < part_count; j ++)
+                size_t y;
+                for (y = part_y+region->y1; y < part_y+part_height; y ++)
                 {
-                    uint16_t part_x = uncompressed_io.read_u16_le();
-                    uint16_t part_y = uncompressed_io.read_u16_le();
-                    uncompressed_io.skip(2);
-                    uint16_t part_width = uncompressed_io.read_u16_le();
-                    uint16_t part_height = uncompressed_io.read_u16_le();
-                    uncompressed_io.skip(0x52);
-
-                    size_t y;
-                    for (y = part_y+region->y1; y < part_y+part_height; y ++)
-                    {
-                        uncompressed_io.read(
-                            pixels + (part_x + region->x1 + y * width) * 4,
-                            part_width * 4);
-                    }
+                    uncompressed_io.read(
+                        &pixels.get()[part_x + region->x1 + y * width],
+                        part_width * sizeof(uint32_t));
                 }
             }
-            result = true;
         }
 
-        Image *image = image_create_from_pixels(
+        std::unique_ptr<Image> image = Image::from_pixels(
             width,
             height,
-            (char*)pixels,
-            width * height * 4,
+            std::string(
+                reinterpret_cast<char*>(pixels.get()),
+                width * height * 4),
             IMAGE_PIXEL_FORMAT_BGRA);
-        image_update_file(image, file);
-        image_destroy(image);
-
-        delete []pixels;
-        delete []regions;
-        return result;
+        image->update_file(file);
     }
 }
 
-bool G00Converter::decode_internal(VirtualFile &file)
+void G00Converter::decode_internal(VirtualFile &file) const
 {
     uint8_t version = file.io.read_u8();
     uint16_t width = file.io.read_u16_le();
@@ -338,18 +284,18 @@ bool G00Converter::decode_internal(VirtualFile &file)
     switch (version)
     {
         case 0:
-            return g00_decode_version_0(file, width, height);
+            g00_decode_version_0(file, width, height);
+            break;
 
         case 1:
-            return g00_decode_version_1(file, width, height);
+            g00_decode_version_1(file, width, height);
+            break;
 
         case 2:
-            return g00_decode_version_2(file, width, height);
+            g00_decode_version_2(file, width, height);
+            break;
 
         default:
-            log_error("G00: Not a G00 image");
-            return false;
+            throw std::runtime_error("G00: Not a G00 image");
     }
-
-    return true;
 }

@@ -1,5 +1,7 @@
 #ifndef FORMATS_IMAGE_H
 #define FORMATS_IMAGE_H
+#include <memory>
+#include <string>
 #include "virtual_file.h"
 
 typedef enum
@@ -11,26 +13,29 @@ typedef enum
     IMAGE_PIXEL_FORMAT_BGRA
 } PixelFormat;
 
-typedef struct Image Image;
+class Image final
+{
+public:
+    ~Image();
 
-Image *image_create_from_pixels(
-    size_t image_width,
-    size_t image_height,
-    const char *pixel_data,
-    size_t pixel_data_size,
-    PixelFormat pixel_format);
+    static std::unique_ptr<Image> from_pixels(
+        size_t image_width,
+        size_t image_height,
+        const std::string &pixel_data,
+        PixelFormat pixel_format);
 
-Image *image_create_from_boxed(IO &io);
+    static std::unique_ptr<Image> from_boxed(IO &io);
 
-size_t image_width(const Image *image);
-size_t image_height(const Image *image);
-PixelFormat image_pixel_format(const Image *image);
-const char *image_pixel_data(const Image *image);
-size_t image_pixel_data_size(const Image *image);
-uint32_t image_color_at(const Image *image, size_t x, size_t y);
+    void update_file(VirtualFile &target_file) const;
 
-void image_destroy(Image *image);
+    size_t width() const;
+    size_t height() const;
+    uint32_t color_at(size_t x, size_t y) const;
 
-void image_update_file(const Image *image, VirtualFile &file);
+private:
+    Image();
+    struct Internals;
+    std::unique_ptr<Internals> internals;
+};
 
 #endif

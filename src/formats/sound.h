@@ -1,18 +1,25 @@
 #ifndef FORMATS_SOUND_H
 #define FORMATS_SOUND_H
+#include <memory>
 #include "virtual_file.h"
 
-typedef struct Sound Sound;
+class Sound final
+{
+public:
+    ~Sound();
 
-Sound *sound_create_from_samples(
-    size_t channel_count,
-    size_t bytes_per_sample,
-    size_t sample_rate,
-    char *samples,
-    size_t sample_count);
+    static std::unique_ptr<Sound> from_samples(
+        size_t channel_count,
+        size_t bytes_per_sample,
+        size_t sample_rate,
+        const std::string &samples);
 
-void sound_destroy(Sound *sound);
+    void update_file(VirtualFile &target_file) const;
 
-void sound_update_file(const Sound *sound, VirtualFile &virtual_file);
+private:
+    Sound();
+    struct Internals;
+    std::unique_ptr<Internals> internals;
+};
 
 #endif

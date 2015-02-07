@@ -3,12 +3,11 @@
 
 void test_xyz_decoding()
 {
-    Converter *converter = new XyzConverter();
+    XyzConverter converter;
     assert_decoded_image(
         converter,
         "tests/test_files/gfx/xyz/浅瀬部屋a.xyz",
         "tests/test_files/gfx/xyz/浅瀬部屋a-out.png");
-    delete converter;
 }
 
 int main(void)

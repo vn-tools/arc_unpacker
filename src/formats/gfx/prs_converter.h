@@ -5,7 +5,7 @@
 class PrsConverter final : public Converter
 {
 public:
-    bool decode_internal(VirtualFile &) override;
+    void decode_internal(VirtualFile &target_file) const override;
 };
 
 #endif

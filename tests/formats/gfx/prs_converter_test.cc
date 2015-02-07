@@ -3,12 +3,11 @@
 
 void test_prs_decoding()
 {
-    Converter *converter = new PrsConverter();
+    PrsConverter converter;
     assert_decoded_image(
         converter,
         "tests/test_files/gfx/prs/BMIK_A16",
         "tests/test_files/gfx/prs/BMIK_A16-out.png");
-    delete converter;
 }
 
 int main(void)
