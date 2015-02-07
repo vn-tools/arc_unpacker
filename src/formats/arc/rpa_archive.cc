@@ -9,11 +9,8 @@
 // - Katawa Shoujo
 // - Long Live The Queen
 
-#include <cassert>
-#include <cstring>
 #include "formats/arc/rpa_archive.h"
 #include "buffered_io.h"
-#include "logger.h"
 #include "string_ex.h"
 
 // Stupid unpickle "implementation" ahead: instead of twiddling with stack,
@@ -81,17 +78,14 @@ namespace
 
     typedef struct
     {
-        std::vector<size_t> string_lengths;
         std::vector<std::string> strings;
         std::vector<int> numbers;
     } RpaUnpickleContext;
 
     void rpa_unpickle_handle_string(
-        char *str, size_t str_size, RpaUnpickleContext *context)
+        std::string str, RpaUnpickleContext *context)
     {
-        context->strings.push_back(std::string(str));
-        context->string_lengths.push_back(str_size);
-        delete []str;
+        context->strings.push_back(str);
     }
 
     void rpa_unpickle_handle_number(size_t number, RpaUnpickleContext *context)
@@ -99,16 +93,7 @@ namespace
         context->numbers.push_back(number);
     }
 
-    char *rpa_unpickle_read_string(IO &table_io, size_t str_size)
-    {
-        char *str = new char[str_size + 1];
-        assert(str != nullptr);
-        table_io.read(str, str_size);
-        str[str_size] = '\0';
-        return str;
-    }
-
-    bool rpa_unpickle(IO &table_io, RpaUnpickleContext *context)
+    void rpa_unpickle(IO &table_io, RpaUnpickleContext *context)
     {
         size_t table_size = table_io.size();
         while (table_io.tell() < table_size)
@@ -118,38 +103,33 @@ namespace
             {
                 case PICKLE_SHORT_BINSTRING:
                 {
-                    char str_size = table_io.read_u8();
-                    char *string = rpa_unpickle_read_string(table_io, str_size);
-                    rpa_unpickle_handle_string(string, str_size, context);
+                    char size = table_io.read_u8();
+                    rpa_unpickle_handle_string(table_io.read(size), context);
                     break;
                 }
 
                 case PICKLE_BINUNICODE:
                 {
-                    uint32_t str_size = table_io.read_u32_le();
-                    char *string = rpa_unpickle_read_string(table_io, str_size);
-                    rpa_unpickle_handle_string(string, str_size, context);
+                    uint32_t size = table_io.read_u32_le();
+                    rpa_unpickle_handle_string(table_io.read(size), context);
                     break;
                 }
 
                 case PICKLE_BININT1:
                 {
-                    rpa_unpickle_handle_number(
-                        table_io.read_u8(), context);
+                    rpa_unpickle_handle_number(table_io.read_u8(), context);
                     break;
                 }
 
                 case PICKLE_BININT2:
                 {
-                    rpa_unpickle_handle_number(
-                        table_io.read_u16_le(), context);
+                    rpa_unpickle_handle_number(table_io.read_u16_le(), context);
                     break;
                 }
 
                 case PICKLE_BININT4:
                 {
-                    rpa_unpickle_handle_number(
-                        table_io.read_u32_le(), context);
+                    rpa_unpickle_handle_number(table_io.read_u32_le(), context);
                     break;
                 }
 
@@ -193,15 +173,13 @@ namespace
                     break;
 
                 case PICKLE_STOP:
-                    return true;
+                    return;
 
                 default:
-                    log_error(
-                        "RPA: Unsupported pickle operator '%c' (%02X)", c, c);
-                    return false;
+                    throw std::runtime_error(
+                        "Unsupported pickle operator " + c);
             }
         }
-        return false;
     }
 }
 
@@ -226,10 +204,8 @@ namespace
         }
     } RpaUnpackContext;
 
-    RpaTableEntry **rpa_decode_table(
-        IO &table_io,
-        uint32_t key,
-        size_t *file_count)
+    std::vector<std::unique_ptr<RpaTableEntry>> rpa_decode_table(
+        IO &table_io, uint32_t key)
     {
         RpaUnpickleContext context;
         rpa_unpickle(table_io, &context);
@@ -239,39 +215,36 @@ namespace
         // are twice as many numbers as strings, and all prefixes should be set
         // to empty.  Since I haven't seen such games, I leave this remark only
         // as a comment.
-        assert(context.strings.size() % 2 == 0);
-        *file_count = context.strings.size() / 2;
-        assert(context.numbers.size() == context.strings.size());
+        if (context.strings.size() % 2 != 0)
+            throw std::runtime_error("Unsupported table format");
+        if (context.numbers.size() != context.strings.size())
+            throw std::runtime_error("Unsupported table format");
 
-        RpaTableEntry **entries = new RpaTableEntry*[*file_count];
-        assert(entries != nullptr);
+        size_t file_count = context.strings.size() / 2;
+        std::vector<std::unique_ptr<RpaTableEntry>> entries;
+        entries.reserve(file_count);
 
-        size_t i;
-        for (i = 0; i < *file_count; i ++)
+        for (size_t i = 0; i < file_count; i ++)
         {
-            RpaTableEntry *entry = new RpaTableEntry;
-            assert(entry != nullptr);
+            std::unique_ptr<RpaTableEntry> entry(new RpaTableEntry);
             entry->name = context.strings[i * 2 ];
             entry->prefix = context.strings[i * 2 + 1];
-            entry->prefix_size = context.string_lengths[i * 2 + 1];
             entry->offset = context.numbers[i * 2] ^ key;
             entry->size = context.numbers[i * 2 + 1] ^ key;
-            entries[i] = entry;
+            entries.push_back(std::move(entry));
         }
-
         return entries;
     }
 
     int rpa_check_version(IO &arc_io)
     {
-        const char *rpa_magic_3 = "RPA-3.0 ";
-        const char *rpa_magic_2 = "RPA-2.0 ";
-        char magic[8];
-        arc_io.read(magic, 8);
-        if (memcmp(rpa_magic_2, magic, 8) == 0)
-            return 2;
-        if (memcmp(rpa_magic_3, magic, 8) == 0)
+        const std::string rpa_magic_3("RPA-3.0 ", 8);
+        const std::string rpa_magic_2("RPA-2.0 ", 8);
+        if (arc_io.read(rpa_magic_3.size()) == rpa_magic_3)
             return 3;
+        arc_io.seek(0);
+        if (arc_io.read(rpa_magic_2.size()) == rpa_magic_2)
+            return 2;
         return -1;
     }
 
@@ -306,66 +279,46 @@ namespace
     std::unique_ptr<VirtualFile> rpa_read_file(void *_context)
     {
         RpaUnpackContext *context = (RpaUnpackContext*)_context;
-        assert(context != nullptr);
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         context->arc_io.seek(context->table_entry->offset);
-        assert(context->table_entry->offset < context->arc_io.size());
 
-        file->io.write(
-            context->table_entry->prefix.c_str(),
-            context->table_entry->prefix_size);
-
-        file->io.write_from_io(
-            context->arc_io,
-            context->table_entry->size);
+        file->io.write(context->table_entry->prefix);
+        file->io.write_from_io(context->arc_io, context->table_entry->size);
 
         file->name = context->table_entry->name;
         return file;
     }
 }
 
-bool RpaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
+void RpaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
 {
     int version = rpa_check_version(arc_io);
+    size_t table_offset = rpa_read_hex_number(arc_io, 16);
 
-    size_t table_offset;
     uint32_t key;
     if (version == 3)
     {
-        table_offset = rpa_read_hex_number(arc_io, 16);
         arc_io.skip(1);
         key = rpa_read_hex_number(arc_io, 8);
     }
     else if (version == 2)
     {
-        table_offset = rpa_read_hex_number(arc_io, 16);
         key = 0;
     }
     else
     {
-        log_error("RPA: Not a RPA archive");
-        return false;
+        throw std::runtime_error("Not a RPA archive");
     }
-
-    log_info("RPA: Version: %d", version);
 
     arc_io.seek(table_offset);
-
     BufferedIO table_io(rpa_read_raw_table(arc_io));
+    auto entries = rpa_decode_table(table_io, key);
 
-    size_t file_count;
-    RpaTableEntry **entries = rpa_decode_table(table_io, key, &file_count);
-    assert(entries != nullptr);
-
-    size_t i;
     RpaUnpackContext context(arc_io);
-    for (i = 0; i < file_count; i ++)
+    for (size_t i = 0; i < entries.size(); i ++)
     {
-        context.table_entry = entries[i];
+        context.table_entry = entries[i].get();
         output_files.save(&rpa_read_file, &context);
-        delete entries[i];
     }
-    delete []entries;
-    return true;
 }

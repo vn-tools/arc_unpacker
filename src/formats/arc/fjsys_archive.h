@@ -9,7 +9,7 @@ public:
     ~FjsysArchive();
     void add_cli_help(ArgParser &arg_parser) override;
     void parse_cli_options(ArgParser &arg_parser) override;
-    bool unpack_internal(IO &arc_io, OutputFiles &output_files) override;
+    void unpack_internal(IO &arc_io, OutputFiles &output_files) const override;
 private:
     struct Context;
     Context *context;

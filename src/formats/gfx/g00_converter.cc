@@ -17,7 +17,6 @@
 #include "formats/gfx/g00_converter.h"
 #include "formats/image.h"
 #include "io.h"
-#include "logger.h"
 
 namespace
 {
@@ -279,7 +278,6 @@ void G00Converter::decode_internal(VirtualFile &file) const
     uint8_t version = file.io.read_u8();
     uint16_t width = file.io.read_u16_le();
     uint16_t height = file.io.read_u16_le();
-    log_info("G00: Version = %d", version);
 
     switch (version)
     {
@@ -296,6 +294,6 @@ void G00Converter::decode_internal(VirtualFile &file) const
             break;
 
         default:
-            throw std::runtime_error("G00: Not a G00 image");
+            throw std::runtime_error("Not a G00 image");
     }
 }

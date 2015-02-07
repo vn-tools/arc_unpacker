@@ -17,17 +17,12 @@
 // - Sono Hanabira ni Kuchizuke o 10
 // - Sono Hanabira ni Kuchizuke o 11
 
-#include <cassert>
-#include <cstring>
-#include <memory>
 #include "formats/arc/fjsys_archive.h"
 #include "formats/gfx/mgd_converter.h"
-#include "logger.h"
 
 namespace
 {
-    const char *fjsys_magic = "FJSYS\x00\x00\x00";
-    const size_t fjsys_magic_length = 8;
+    const std::string fjsys_magic("FJSYS\x00\x00\x00", 8);
 
     typedef struct
     {
@@ -48,13 +43,6 @@ namespace
         {
         }
     } FjsysUnpackContext;
-
-    bool fjsys_check_magic(IO &arc_io)
-    {
-        char magic[fjsys_magic_length];
-        arc_io.read(magic, fjsys_magic_length);
-        return memcmp(magic, fjsys_magic, fjsys_magic_length) == 0;
-    }
 
     std::unique_ptr<FjsysHeader> fjsys_read_header(IO &arc_io)
     {
@@ -78,11 +66,7 @@ namespace
             - unpack_context->header.file_names_size;
 
         unpack_context->arc_io.seek(file_name_offset + file_names_start);
-        char *file_name = nullptr;
-        unpack_context->arc_io.read_until_zero(&file_name, nullptr);
-        assert(file_name != nullptr);
-        file->name = std::string(file_name);
-        delete []file_name;
+        file->name = unpack_context->arc_io.read_until_zero();
 
         unpack_context->arc_io.seek(data_offset);
         file->io.write_from_io(unpack_context->arc_io, data_size);
@@ -120,23 +104,16 @@ void FjsysArchive::parse_cli_options(ArgParser &arg_parser)
     context->mgd_converter->parse_cli_options(arg_parser);
 }
 
-bool FjsysArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
+void FjsysArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
 {
-    assert(context != nullptr);
-    if (!fjsys_check_magic(arc_io))
-    {
-        log_error("FJSYS: Not a FJSYS archive");
-        return false;
-    }
+    if (arc_io.read(fjsys_magic.size()) != fjsys_magic)
+        throw std::runtime_error("Not a FJSYS archive");
 
     std::unique_ptr<FjsysHeader> header = fjsys_read_header(arc_io);
-    assert(header != nullptr);
 
     FjsysUnpackContext unpack_context(
         arc_io, *context->mgd_converter, *header);
     size_t i;
     for (i = 0; i < header->file_count; i ++)
         output_files.save(&fjsys_read_file, &unpack_context);
-
-    return true;
 }

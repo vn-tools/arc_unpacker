@@ -3,7 +3,6 @@
 #include <memory>
 #include "formats/image.h"
 #include "file_io.h"
-#include "logger.h"
 #include "test_support/converter_support.h"
 #include "virtual_file.h"
 
@@ -23,16 +22,7 @@ namespace
             {
                 uint32_t expected_rgba = expected_image.color_at(x, y);
                 uint32_t actual_rgba = actual_image.color_at(x, y);
-                if (expected_rgba != actual_rgba)
-                {
-                    log_error(
-                        "Image pixels differ at %d, %d (%08x != %08x)",
-                        x,
-                        y,
-                        expected_rgba,
-                        actual_rgba);
-                    assert(0);
-                }
+                assert(expected_rgba == actual_rgba);
             }
         }
     }

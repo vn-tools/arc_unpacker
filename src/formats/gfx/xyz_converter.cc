@@ -15,7 +15,6 @@
 #include "formats/gfx/xyz_converter.h"
 #include "formats/image.h"
 #include "io.h"
-#include "logger.h"
 #include "string_ex.h"
 
 namespace
@@ -26,7 +25,7 @@ namespace
 void XyzConverter::decode_internal(VirtualFile &file) const
 {
     if (file.io.read(xyz_magic.size()) != xyz_magic)
-        throw std::runtime_error("XYZ: Not an XYZ image");
+        throw std::runtime_error("Not an XYZ image");
 
     uint16_t width = file.io.read_u16_le();
     uint16_t height = file.io.read_u16_le();

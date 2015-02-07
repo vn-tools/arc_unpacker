@@ -7,11 +7,8 @@
 // Known games:
 // - Wanko to Kurasou
 
-#include <cassert>
-#include <cstring>
 #include "formats/arc/mbl_archive.h"
 #include "formats/gfx/prs_converter.h"
-#include "logger.h"
 #include "string_ex.h"
 
 namespace
@@ -67,7 +64,6 @@ namespace
     std::unique_ptr<VirtualFile> mbl_read_file(void *context)
     {
         MblUnpackContext *unpack_context = (MblUnpackContext*)context;
-        assert(unpack_context != nullptr);
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         size_t old_pos = unpack_context->arc_io.tell();
@@ -78,10 +74,7 @@ namespace
         size_t offset = unpack_context->arc_io.read_u32_le();
         size_t size = unpack_context->arc_io.read_u32_le();
         if (offset + size > unpack_context->arc_io.size())
-        {
-            log_error("MBL: Bad offset to file");
-            return false;
-        }
+            throw std::runtime_error("Bad offset to file");
 
         old_pos = unpack_context->arc_io.tell();
         unpack_context->arc_io.seek(offset);
@@ -89,7 +82,6 @@ namespace
         unpack_context->arc_io.seek(old_pos);
 
         unpack_context->prs_converter.try_decode(*file);
-
         return file;
     }
 }
@@ -121,25 +113,18 @@ void MblArchive::parse_cli_options(ArgParser &arg_parser)
     context->prs_converter->parse_cli_options(arg_parser);
 }
 
-bool MblArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
+void MblArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
 {
     size_t i;
     int version = mbl_get_version(arc_io);
     if (version == -1)
-    {
-        log_error("MBL: Not a MBL archive");
-        return false;
-    }
-    log_info("MBL: Version: %d", version);
+        throw std::runtime_error("Not a MBL archive");
 
     uint32_t file_count = arc_io.read_u32_le();
     uint32_t name_length = version == 2 ? arc_io.read_u32_le() : 16;
     MblUnpackContext unpack_context(
         arc_io, *context->prs_converter, name_length);
-    for (i = 0; i < file_count; i ++)
-    {
-        output_files.save(&mbl_read_file, &unpack_context);
-    }
 
-    return true;
+    for (i = 0; i < file_count; i ++)
+        output_files.save(&mbl_read_file, &unpack_context);
 }

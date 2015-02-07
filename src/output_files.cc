@@ -30,21 +30,15 @@ OutputFilesHdd::~OutputFilesHdd()
     delete internals;
 }
 
-bool OutputFilesHdd::save(
+void OutputFilesHdd::save(
     std::unique_ptr<VirtualFile>(*save_proc)(void *),
     void *context) const
 {
     assert(save_proc != nullptr);
 
     log_info("Reading file...");
-
     std::unique_ptr<VirtualFile> file = save_proc(context);
-    if (file == nullptr)
-    {
-        log_error("An error occured while reading file, saving skipped.");
-        log_info("");
-        return false;
-    }
+    assert(file != nullptr);
 
     std::string full_path = internals->get_full_path(
         internals->output_dir, file->name);
@@ -52,15 +46,13 @@ bool OutputFilesHdd::save(
 
     log_info("Saving to %s... ", full_path.c_str());
 
-    if (!mkpath(dirname(full_path)))
-        assert(0);
+    mkpath(dirname(full_path));
 
     FileIO output_io(full_path, "wb");
     file->io.seek(0);
     output_io.write_from_io(file->io, file->io.size());
     log_info("Saved successfully");
     log_info("");
-    return true;
 }
 
 
@@ -88,14 +80,11 @@ const std::vector<VirtualFile*> OutputFilesMemory::get_saved() const
     return files;
 }
 
-bool OutputFilesMemory::save(
-    std::unique_ptr<VirtualFile>(*save_proc)(void *),
-    void *context) const
+void OutputFilesMemory::save(
+    std::unique_ptr<VirtualFile>(*save_proc)(void *), void *context) const
 {
     assert(save_proc != nullptr);
     std::unique_ptr<VirtualFile> file(save_proc(context));
-    if (file == nullptr)
-        return false;
+    assert(file != nullptr);
     internals->files.push_back(std::move(file));
-    return true;
 }

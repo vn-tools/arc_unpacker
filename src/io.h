@@ -10,14 +10,14 @@ public:
     virtual size_t size() const = 0;
     virtual size_t tell() const = 0;
     virtual void seek(size_t offset) = 0;
-    virtual void skip(size_t offset) = 0;
+    virtual void skip(ssize_t offset) = 0;
     virtual void truncate(size_t new_size) = 0;
 
     virtual void read(void *input, size_t length) = 0;
     virtual void write(const void *str, size_t length) = 0;
     virtual void write_from_io(IO &input, size_t length) = 0;
 
-    bool read_until_zero(char **output, size_t *output_size);
+    void read_until_zero(char **output, size_t *output_size);
     std::string read_until_zero();
     std::string read(size_t bytes);
     uint8_t read_u8();

@@ -15,13 +15,12 @@ void test_file_simple_read()
 
 void test_file_simple_write()
 {
-    FileIO *io = new FileIO("tests/test_files/trash.out", "w+b");
+    std::unique_ptr<FileIO> io(new FileIO("tests/test_files/trash.out", "w+b"));
     assert(io != nullptr);
     io->write_u32_le(1);
     io->seek(0);
     assert(io->read_u32_le() == 1);
     assert(io->size() == 4);
-    delete io;
     remove("tests/test_files/trash.out");
 }
 

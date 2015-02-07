@@ -13,7 +13,6 @@
 #include "formats/gfx/mgd_converter.h"
 #include "formats/image.h"
 #include "io.h"
-#include "logger.h"
 
 namespace
 {
@@ -42,14 +41,13 @@ namespace
         return memcmp(magic, mgd_magic, mgd_magic_length) == 0;
     }
 
-    bool mgd_decompress_sgd_alpha(
-        const uint8_t **input,
+    void mgd_decompress_sgd_alpha(
+        const uint8_t *&input_ptr,
         const uint8_t *const input_guardian,
-        uint8_t **output,
+        uint8_t *&output_ptr,
         const uint8_t *const output_guardian)
     {
-        const uint8_t *input_ptr = *input;
-        uint8_t *output_ptr = *output + 3;
+        output_ptr += 3; //ignore first RGB
         while (input_ptr < input_guardian)
         {
             uint16_t flag = le16toh(*(uint16_t*)input_ptr);
@@ -63,8 +61,8 @@ namespace
                 {
                     if (output_ptr > output_guardian)
                     {
-                        log_warning("SGD: trying to write alpha beyond EOF");
-                        return false;
+                        throw std::runtime_error(
+                            "Trying to write alpha beyond EOF");
                     }
                     *output_ptr = alpha ^ 0xff;
                     output_ptr += 4;
@@ -79,136 +77,154 @@ namespace
                     input_ptr ++;
                     if (output_ptr > output_guardian)
                     {
-                        log_warning("SGD: trying to write alpha beyond EOF");
-                        return false;
+                        throw std::runtime_error(
+                            "Trying to write alpha beyond EOF");
                     }
                     *output_ptr = alpha ^ 0xff;
                     output_ptr += 4;
                 }
             }
         }
-        *input = input_ptr;
-        *output = output_ptr;
-        return true;
     }
 
-    bool mgd_decompress_sgd_bgr(
-        const uint8_t **input,
+    void mgd_decompress_sgd_bgr_strategy_1(
+        const uint8_t *&input_ptr,
         const uint8_t *const input_guardian,
-        uint8_t **output,
+        uint8_t *&output_ptr,
+        const uint8_t *const output_guardian,
+        uint8_t flag)
+    {
+        size_t pixels = flag & 0x3f;
+        uint8_t b = output_ptr[-4];
+        uint8_t g = output_ptr[-3];
+        uint8_t r = output_ptr[-2];
+        for (size_t i = 0; i < pixels; i ++)
+        {
+            if (input_ptr + 2 > input_guardian)
+                throw std::runtime_error("Trying to read length beyond EOF");
+
+            uint16_t delta = le16toh(*(uint16_t*)input_ptr);
+            input_ptr += 2;
+
+            if (delta & 0x8000)
+            {
+                b += delta & 0x1f;
+                g += (delta >> 5) & 0x1f;
+                r += (delta >> 10) & 0x1f;
+            }
+            else
+            {
+                b += ( delta        & 0xf) * (delta &   0x10 ? -1 : 1);
+                g += ((delta >>  5) & 0xf) * (delta &  0x200 ? -1 : 1);
+                r += ((delta >> 10) & 0xf) * (delta & 0x4000 ? -1 : 1);
+            }
+
+            if (output_ptr + 4 > output_guardian)
+                throw std::runtime_error("Trying to write colors beyond EOF");
+
+            *output_ptr ++ = b;
+            *output_ptr ++ = g;
+            *output_ptr ++ = r;
+            output_ptr ++;
+        }
+    }
+
+    void mgd_decompress_sgd_bgr_strategy_2(
+        const uint8_t *&input_ptr,
+        const uint8_t *const input_guardian,
+        uint8_t *&output_ptr,
+        const uint8_t *const output_guardian,
+        uint8_t flag)
+    {
+        if (input_ptr + 3 > input_guardian)
+            throw std::runtime_error("Trying to read colors beyond EOF");
+
+        size_t pixels = (flag & 0x3f) + 1;
+        uint8_t b = *input_ptr ++;
+        uint8_t g = *input_ptr ++;
+        uint8_t r = *input_ptr ++;
+        for (size_t i = 0; i < pixels; i ++)
+        {
+            if (output_ptr + 4 > output_guardian)
+                throw std::runtime_error("Trying to write colors beyond EOF");
+
+            *output_ptr ++ = b;
+            *output_ptr ++ = g;
+            *output_ptr ++ = r;
+            output_ptr ++;
+        }
+    }
+
+    void mgd_decompress_sgd_bgr_strategy_3(
+        const uint8_t *&input_ptr,
+        const uint8_t *const input_guardian,
+        uint8_t *&output_ptr,
+        const uint8_t *const output_guardian,
+        uint8_t flag)
+    {
+        size_t pixels = flag;
+        for (size_t i = 0; i < pixels; i ++)
+        {
+            if (input_ptr + 3 > input_guardian)
+            {
+                throw std::runtime_error(
+                    "Trying to read colors beyond EOF");
+            }
+            if (output_ptr + 4 > output_guardian)
+            {
+                throw std::runtime_error(
+                    "Trying to write colors beyond EOF");
+            }
+
+            *output_ptr ++ = *input_ptr ++;
+            *output_ptr ++ = *input_ptr ++;
+            *output_ptr ++ = *input_ptr ++;
+            output_ptr ++;
+        }
+    }
+
+    void mgd_decompress_sgd_bgr(
+        const uint8_t *&input_ptr,
+        const uint8_t *const input_guardian,
+        uint8_t *&output_ptr,
         const uint8_t *const output_guardian)
     {
-        const uint8_t *input_ptr = *input;
-        uint8_t *output_ptr = *output;
-
         while (input_ptr < input_guardian)
         {
             uint8_t flag = *input_ptr ++;
-            size_t i;
-
-            if ((flag & 0xc0) == 0x80)
+            switch (flag & 0xc0)
             {
-                size_t pixels = flag & 0x3f;
-                uint8_t b = output_ptr[-4];
-                uint8_t g = output_ptr[-3];
-                uint8_t r = output_ptr[-2];
-                for (i = 0; i < pixels; i ++)
-                {
-                    if (input_ptr + 2 > input_guardian)
-                    {
-                        log_warning("SGD: trying to read length beyond EOF");
-                        return false;
-                    }
-                    uint16_t delta = le16toh(*(uint16_t*)input_ptr);
-                    input_ptr += 2;
+                case 0x80:
+                    mgd_decompress_sgd_bgr_strategy_1(
+                        input_ptr, input_guardian,
+                        output_ptr, output_guardian,
+                        flag);
+                    break;
 
-                    if (delta & 0x8000)
-                    {
-                        b += delta & 0x1f;
-                        g += (delta >> 5) & 0x1f;
-                        r += (delta >> 10) & 0x1f;
-                    }
-                    else
-                    {
-                        b += ( delta        & 0xf) * (delta &   0x10 ? -1 : 1);
-                        g += ((delta >>  5) & 0xf) * (delta &  0x200 ? -1 : 1);
-                        r += ((delta >> 10) & 0xf) * (delta & 0x4000 ? -1 : 1);
-                    }
+                case 0x40:
+                    mgd_decompress_sgd_bgr_strategy_2(
+                        input_ptr, input_guardian,
+                        output_ptr, output_guardian,
+                        flag);
+                    break;
 
-                    if (output_ptr + 4 > output_guardian)
-                    {
-                        log_warning("SGD: trying to write colors beyond EOF");
-                        return false;
-                    }
-                    *output_ptr ++ = b;
-                    *output_ptr ++ = g;
-                    *output_ptr ++ = r;
-                    output_ptr ++;
-                }
-            }
+                case 0:
+                    mgd_decompress_sgd_bgr_strategy_3(
+                        input_ptr, input_guardian,
+                        output_ptr, output_guardian,
+                        flag);
+                    break;
 
-            else if ((flag & 0xc0) == 0x40)
-            {
-                if (input_ptr + 3 > input_guardian)
-                {
-                    log_warning("SGD: trying to read colors beyond EOF");
-                    return false;
-                }
-                size_t pixels = (flag & 0x3f) + 1;
-                uint8_t b = *input_ptr ++;
-                uint8_t g = *input_ptr ++;
-                uint8_t r = *input_ptr ++;
-                for (i = 0; i < pixels; i ++)
-                {
-                    if (output_ptr + 4 > output_guardian)
-                    {
-                        log_warning("SGD: trying to write colors beyond EOF");
-                        return false;
-                    }
-                    *output_ptr ++ = b;
-                    *output_ptr ++ = g;
-                    *output_ptr ++ = r;
-                    output_ptr ++;
-                }
-            }
-
-            else if ((flag & 0xc0) == 0)
-            {
-                size_t pixels = flag;
-                for (i = 0; i < pixels; i ++)
-                {
-                    if (input_ptr + 3 > input_guardian)
-                    {
-                        log_warning("SGD: trying to read colors beyond EOF");
-                        return false;
-                    }
-                    if (output_ptr + 4 > output_guardian)
-                    {
-                        log_warning("SGD: trying to write colors beyond EOF");
-                        return false;
-                    }
-                    *output_ptr ++ = *input_ptr ++;
-                    *output_ptr ++ = *input_ptr ++;
-                    *output_ptr ++ = *input_ptr ++;
-                    output_ptr ++;
-                }
-            }
-
-            else
-            {
-                log_error("SGD: Bad decompression flag");
-                return false;
+                default:
+                    throw std::runtime_error("Bad decompression flag");
             }
         }
-        *input = input_ptr;
-        *output = output_ptr;
-        return true;
     }
 
-    bool mgd_decompress_sgd(
-        const char *const input,
+    void mgd_decompress_sgd(
+        const uint8_t *const input,
         size_t input_size,
-        char *const output,
+        uint8_t *const output,
         size_t output_size)
     {
         assert(input != nullptr);
@@ -216,48 +232,34 @@ namespace
 
         size_t length;
         const uint8_t *input_guardian;
-        const uint8_t *output_guardian = (const uint8_t*)output + output_size;
-        uint8_t *output_ptr = (uint8_t*)output;
+        const uint8_t *output_guardian = output + output_size;
+        uint8_t *output_ptr = output;
 
-        const uint8_t *input_ptr = (const uint8_t*)input;
-        length = le32toh(*(uint32_t*)input_ptr);
+        const uint8_t *input_ptr = input;
+        length = le32toh(*reinterpret_cast<const int32_t*>(input_ptr));
+        input_ptr += 4;
+        input_guardian = input_ptr + length;
+        if (length > input_size)
+            throw std::runtime_error("Insufficient alpha channel data");
+
+        mgd_decompress_sgd_alpha(
+            input_ptr,
+            input_guardian,
+            output_ptr,
+            output_guardian);
+
+        length = le32toh(*reinterpret_cast<const uint32_t*>(input_ptr));
         input_ptr += 4;
         input_guardian = (const uint8_t*)input_ptr + length;
         if (length > input_size)
-        {
-            log_error("SGD: insufficient alpha channel data");
-            return false;
-        }
+            throw std::runtime_error("Insufficient color data");
 
-        if (!mgd_decompress_sgd_alpha(
-            &input_ptr,
+        output_ptr = output;
+        mgd_decompress_sgd_bgr(
+            input_ptr,
             input_guardian,
-            &output_ptr,
-            output_guardian))
-        {
-            log_warning("SGD: failed to decompress alpha channel");
-        }
-
-        length = le32toh(*(uint32_t*)input_ptr);
-        input_ptr += 4;
-        input_guardian = (const uint8_t*)input_ptr + length;
-        if (length > input_size)
-        {
-            log_error("SGD: insufficient color data");
-            return false;
-        }
-
-        output_ptr = (uint8_t*)output;
-        if (!mgd_decompress_sgd_bgr(
-            &input_ptr,
-            input_guardian,
-            &output_ptr,
-            output_guardian))
-        {
-            log_warning("SGD: failed to decompress color channels");
-        }
-
-        return true;
+            output_ptr,
+            output_guardian);
     }
 
     std::vector<std::unique_ptr<MgdRegion>> mgd_read_region_data(IO &file_io)
@@ -278,11 +280,6 @@ namespace
             for (size_t i = 0; i < region_count; i ++)
             {
                 std::unique_ptr<MgdRegion> region(new MgdRegion);
-                if (!region)
-                {
-                    log_error("MGD: Failed to allocate memory for region");
-                    continue;
-                }
                 region->x = file_io.read_u16_le();
                 region->y = file_io.read_u16_le();
                 region->width = file_io.read_u16_le();
@@ -306,8 +303,6 @@ namespace
         size_t image_height)
     {
         std::string data_compressed = file_io.read(size_compressed);
-        log_info("MGD: compression type = %d", compression_type);
-
         switch (compression_type)
         {
             case MGD_COMPRESSION_NONE:
@@ -323,9 +318,9 @@ namespace
                     new char[size_original]);
 
                 mgd_decompress_sgd(
-                    data_compressed.data(),
+                    reinterpret_cast<const uint8_t*>(data_compressed.data()),
                     size_compressed,
-                    data_uncompressed.get(),
+                    reinterpret_cast<uint8_t*>(data_uncompressed.get()),
                     size_original);
 
                 return Image::from_pixels(
@@ -350,7 +345,7 @@ namespace
 void MgdConverter::decode_internal(VirtualFile &file) const
 {
     if (!mgd_check_magic(file.io))
-        throw std::runtime_error("MGD: Not a MGD graphic file");
+        throw std::runtime_error("Not a MGD graphic file");
 
     __attribute__((unused)) uint16_t data_offset = file.io.read_u16_le();
     __attribute__((unused)) uint16_t format = file.io.read_u16_le();

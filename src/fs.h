@@ -11,6 +11,6 @@ std::vector<std::string> get_files(const std::string path);
 std::string basename(const std::string path);
 std::string dirname(const std::string path);
 
-bool mkpath(std::string path);
+void mkpath(std::string path);
 
 #endif

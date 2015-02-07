@@ -13,7 +13,7 @@ void FileIO::seek(size_t offset)
         throw std::runtime_error("Failed to seek");
 }
 
-void FileIO::skip(size_t offset)
+void FileIO::skip(ssize_t offset)
 {
     if (fseek(internals->file, offset, SEEK_CUR) != 0)
         throw std::runtime_error("Failed to seek");

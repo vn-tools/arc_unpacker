@@ -3,7 +3,6 @@
 #include <memory>
 #include "endian.h"
 #include "io.h"
-#include "logger.h"
 
 std::string IO::read_until_zero()
 {
@@ -14,7 +13,7 @@ std::string IO::read_until_zero()
     return output;
 }
 
-bool IO::read_until_zero(char **output, size_t *output_size)
+void IO::read_until_zero(char **output, size_t *output_size)
 {
     assert(output != nullptr);
 
@@ -31,9 +30,7 @@ bool IO::read_until_zero(char **output, size_t *output_size)
             *output = nullptr;
             if (output_size != nullptr)
                 *output_size = 0;
-            log_error(
-                "IO: Failed to allocate memory for null-terminated string");
-            return false;
+            throw std::bad_alloc();
         }
         *output = new_str;
         c = read_u8();
@@ -42,7 +39,6 @@ bool IO::read_until_zero(char **output, size_t *output_size)
     while (c != '\0');
     if (output_size != nullptr)
         *output_size = size;
-    return true;
 }
 
 std::string IO::read(size_t bytes)

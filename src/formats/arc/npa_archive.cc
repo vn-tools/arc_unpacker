@@ -7,18 +7,14 @@
 // Known games:
 // - Chaos;Head
 
-#include <cassert>
-#include <cstring>
 #include "string_ex.h"
 #include "formats/arc/npa_archive.h"
 #include "formats/arc/npa_archive/npa_filter.h"
 #include "formats/arc/npa_archive/npa_filter_chaos_head.h"
-#include "logger.h"
 
 namespace
 {
-    const char *npa_magic = "NPA\x01\x00\x00\x00";
-    const size_t npa_magic_length = 7;
+    const std::string npa_magic("NPA\x01\x00\x00\x00", 7);
 
     typedef enum
     {
@@ -41,27 +37,20 @@ namespace
     typedef struct NpaUnpackContext
     {
         IO &arc_io;
+        NpaHeader &header;
         NpaFilter *filter;
-        NpaHeader *header;
         size_t file_pos;
         size_t table_offset;
 
-        NpaUnpackContext(IO &arc_io) : arc_io(arc_io)
+        NpaUnpackContext(IO &arc_io, NpaHeader header)
+            : arc_io(arc_io), header(header)
         {
         }
     } NpaUnpackContext;
 
-    bool npa_check_magic(IO &arc_io)
+    std::unique_ptr<NpaHeader> npa_read_header(IO &arc_io)
     {
-        char magic[npa_magic_length];
-        arc_io.read(magic, npa_magic_length);
-        return memcmp(magic, npa_magic, npa_magic_length) == 0;
-    }
-
-    NpaHeader *npa_read_header(IO &arc_io)
-    {
-        NpaHeader *header = new NpaHeader;
-        assert(header != nullptr);
+        std::unique_ptr<NpaHeader> header(new NpaHeader);
         header->key1 = arc_io.read_u32_le();
         header->key2 = arc_io.read_u32_le();
         header->compressed = arc_io.read_u8();
@@ -77,11 +66,9 @@ namespace
     void npa_decrypt_file_name(
         std::string &name, NpaUnpackContext *unpack_context)
     {
-        assert(unpack_context != nullptr);
-
         uint32_t tmp = unpack_context->filter->file_name_key(
-            unpack_context->header->key1,
-            unpack_context->header->key2);
+            unpack_context->header.key1,
+            unpack_context->header.key2);
 
         size_t char_pos;
         for (char_pos = 0; char_pos < name.size(); char_pos++)
@@ -101,7 +88,6 @@ namespace
 
     std::string npa_read_file_name(NpaUnpackContext *unpack_context)
     {
-        assert(unpack_context != nullptr);
         size_t file_name_length = unpack_context->arc_io.read_u32_le();
         std::string name = unpack_context->arc_io.read(file_name_length);
         npa_decrypt_file_name(name, unpack_context);
@@ -115,18 +101,14 @@ namespace
         const std::string &original_file_name,
         NpaUnpackContext *unpack_context)
     {
-        assert(data != nullptr);
-        assert(unpack_context != nullptr);
-
-        const unsigned char *permutation
-            = unpack_context->filter->permutation;
+        const unsigned char *permutation = unpack_context->filter->permutation;
 
         uint32_t key = unpack_context->filter->data_key;
         size_t i;
         for (i = 0; i < original_file_name.size(); i ++)
             key -= (unsigned char)original_file_name[i];
         key *= original_file_name.size();
-        key += unpack_context->header->key1 * unpack_context->header->key2;
+        key += unpack_context->header.key1 * unpack_context->header.key2;
         key *= data_size_original;
         key &= 0xff;
 
@@ -141,11 +123,9 @@ namespace
         const std::string &original_file_name,
         NpaUnpackContext *unpack_context)
     {
-        assert(unpack_context != nullptr);
-
         std::string data = unpack_context->arc_io.read(size_compressed);
 
-        if (unpack_context->header->encrypted)
+        if (unpack_context->header.encrypted)
         {
             npa_decrypt_file_data(
                 (unsigned char*)data.data(),
@@ -155,7 +135,7 @@ namespace
                 unpack_context);
         }
 
-        if (unpack_context->header->compressed)
+        if (unpack_context->header.compressed)
             data = zlib_inflate(data);
 
         return data;
@@ -175,18 +155,13 @@ namespace
         uint32_t size_compressed = unpack_context->arc_io.read_u32_le();
         uint32_t size_original = unpack_context->arc_io.read_u32_le();
         offset +=
-            unpack_context->table_offset + unpack_context->header->table_size;
+            unpack_context->table_offset + unpack_context->header.table_size;
 
         if (file_type == NPA_FILE_TYPE_DIRECTORY)
-        {
-            log_info("NPA: Empty directory - ignoring.");
             return nullptr;
-        }
+
         else if (file_type != NPA_FILE_TYPE_FILE)
-        {
-            log_error("NPA: Unknown file type: %d", file_type);
-            return nullptr;
-        }
+            throw std::runtime_error("Unknown file type");
 
         size_t old_pos = unpack_context->arc_io.tell();
         unpack_context->arc_io.seek(offset);
@@ -225,24 +200,14 @@ void NpaArchive::add_cli_help(ArgParser &arg_parser)
 
 void NpaArchive::parse_cli_options(ArgParser &arg_parser)
 {
-    assert(context != nullptr);
-
     context->filter = new NpaFilter;
-    assert(context->filter != nullptr);
 
-    const char *plugin = arg_parser.get_switch("plugin").c_str();
+    const std::string plugin = arg_parser.get_switch("plugin").c_str();
     void (*initializer)(NpaFilter*) = nullptr;
-    if (plugin != nullptr)
-    {
-        if (strcmp(plugin, "chaos_head") == 0)
-        {
-            initializer = &npa_chaos_head_filter_init;
-        }
-        else
-        {
-            log_error("NPA: Unrecognized plugin: %s", plugin);
-        }
-    }
+    if (plugin == "chaos_head")
+        initializer = &npa_chaos_head_filter_init;
+    else
+        throw std::runtime_error("Unrecognized plugin: " + plugin);
 
     if (initializer != nullptr)
         initializer(context->filter);
@@ -253,24 +218,16 @@ void NpaArchive::parse_cli_options(ArgParser &arg_parser)
     }
 }
 
-bool NpaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
+void NpaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
 {
-    assert(context != nullptr);
-    if (!npa_check_magic(arc_io))
-    {
-        log_error("NPA: Not a NPA archive");
-        return false;
-    }
+    if (arc_io.read(npa_magic.size()) != npa_magic)
+        throw std::runtime_error("Not a NPA archive");
 
     if (context->filter == nullptr)
-    {
-        log_error("NPA: No plugin selected");
-        return false;
-    }
+        throw std::runtime_error("No plugin selected");
 
-    NpaHeader *header = npa_read_header(arc_io);
-    NpaUnpackContext unpack_context(arc_io);
-    unpack_context.header = header;
+    std::unique_ptr<NpaHeader> header = npa_read_header(arc_io);
+    NpaUnpackContext unpack_context(arc_io, *header);
     unpack_context.filter = context->filter;
     unpack_context.table_offset = arc_io.tell();
     size_t file_pos;
@@ -279,6 +236,4 @@ bool NpaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
         unpack_context.file_pos = file_pos;
         output_files.save(&npa_read_file, &unpack_context);
     }
-    delete header;
-    return true;
 }

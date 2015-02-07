@@ -10,7 +10,6 @@
 #include "formats/gfx/cbg_converter.h"
 #include "formats/image.h"
 #include "io.h"
-#include "logger.h"
 
 namespace
 {
@@ -43,16 +42,15 @@ namespace
         }
     }
 
-    uint32_t cbg_read_variable_data(char **input, char *input_guardian)
+    uint32_t cbg_read_variable_data(char *&input, const char *input_guardian)
     {
         char current;
         uint32_t result = 0;
         uint32_t shift = 0;
         do
         {
-            current = **input;
-            (*input) ++;
-            assert(*input <= input_guardian);
+            current = *input ++;
+            assert(input <= input_guardian);
             result |= (current & 0x7f) << shift;
             shift += 7;
         } while (current & 0x80);
@@ -65,22 +63,20 @@ namespace
         uint32_t key,
         uint32_t frequency_table[])
     {
-        char *raw_data = new char[raw_data_size];
-        assert(raw_data != nullptr);
-        io.read(raw_data, raw_data_size);
+        std::unique_ptr<char> raw_data(new char[raw_data_size]);
+        io.read(raw_data.get(), raw_data_size);
 
-        cbg_decrypt(raw_data, raw_data_size, key);
+        cbg_decrypt(raw_data.get(), raw_data_size, key);
 
         int i;
-        char *raw_data_ptr = raw_data;
+        char *raw_data_ptr = raw_data.get();
+        const char *raw_data_guardian = raw_data_ptr + raw_data_size;
         for (i = 0; i < 256; i ++)
         {
             frequency_table[i] = cbg_read_variable_data(
-                &raw_data_ptr,
-                raw_data + raw_data_size);
+                raw_data_ptr,
+                raw_data_guardian);
         }
-
-        delete []raw_data;
     }
 
     int cbg_read_node_info(
@@ -178,13 +174,12 @@ namespace
         assert(huffman != nullptr);
         assert(output != nullptr);
         char *huffman_ptr = huffman;
-        char *huffman_guardian = huffman + huffman_size;
+        const char *huffman_guardian = huffman + huffman_size;
         bool zero_flag = false;
         while (huffman_ptr < huffman_guardian)
         {
             uint32_t length = cbg_read_variable_data(
-                &huffman_ptr,
-                huffman_guardian);
+                huffman_ptr, huffman_guardian);
             if (zero_flag)
             {
                 memset(output, 0, length);

@@ -11,14 +11,14 @@ void Archive::add_cli_help(__attribute__((unused)) ArgParser &arg_parser)
 {
 }
 
-bool Archive::unpack_internal(
+void Archive::unpack_internal(
     __attribute__((unused)) IO &arc_io,
-    __attribute__((unused)) OutputFiles &output_files)
+    __attribute__((unused)) OutputFiles &output_files) const
 {
     throw std::runtime_error("Unpacking is not supported");
 }
 
-bool Archive::unpack(IO &arc_io, OutputFiles &output_files)
+void Archive::unpack(IO &arc_io, OutputFiles &output_files) const
 {
     arc_io.seek(0);
     return unpack_internal(arc_io, output_files);

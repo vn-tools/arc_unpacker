@@ -1,10 +1,9 @@
-#include <cassert>
 #include <cerrno>
 #include <dirent.h>
+#include <stdexcept>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "fs.h"
-#include "logger.h"
 
 #if defined(__linux) || defined(__unix)
     #define p_mkdir(name,chmod) mkdir(name, chmod)
@@ -34,17 +33,14 @@ namespace
         return std::string::npos;
     }
 
-    bool get_files_accumulator(
+    void get_files_accumulator(
         const std::string dir_path,
         std::vector<std::string> &accumulator,
         bool recursive)
     {
         DIR *d = opendir(dir_path.c_str());
         if (!d)
-        {
-            log_warning("FS: Cannot open directory %s", dir_path.c_str());
-            return false;
-        }
+            throw std::runtime_error("Cannot open directory " + dir_path);
 
         while (1)
         {
@@ -68,7 +64,6 @@ namespace
         }
 
         closedir(d);
-        return true;
     }
 }
 
@@ -112,33 +107,23 @@ std::string dirname(const std::string path)
     return path_nts.substr(0, last_slash + 1);
 }
 
-bool mkpath(const std::string path)
+void mkpath(const std::string path)
 {
     struct stat sb;
     if (stat(path.c_str(), &sb))
     {
         if (errno != ENOENT)
-        {
-            log_warning("FS: Failed to stat path %s", path.c_str());
-            return false;
-        }
+            throw std::runtime_error("Failed to stat path " + path);
+
         std::string dir = dirname(path);
-        if (!mkpath(dir))
-            return false;
+        mkpath(dir);
         trim_right(dir, "/\\");
         if (p_mkdir(path.c_str(), 0755) != 0 && errno != EEXIST)
-        {
-            log_warning("FS: Failed to create directory %s", dir.c_str());
-            return false;
-        }
-        return true;
+            throw std::runtime_error("Failed to create directory " + path);
     }
     else if (!S_ISDIR(sb.st_mode))
     {
-        log_warning(
-            "FS: Cannot create directory at %s - file already exists",
-            path.c_str());
-        return false;
+        throw std::runtime_error("Cannot create directory, "
+            "because there is already a file with such name");
     }
-    return true;
 }

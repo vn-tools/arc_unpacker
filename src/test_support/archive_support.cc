@@ -1,7 +1,6 @@
 #include <cassert>
 #include "arg_parser.h"
 #include "file_io.h"
-#include "logger.h"
 #include "test_support/archive_support.h"
 #include "virtual_file.h"
 
@@ -11,16 +10,11 @@ std::unique_ptr<OutputFilesMemory> unpack_to_memory(
     int argc,
     const char **argv)
 {
-    log_save();
-    log_silence();
-
     ArgParser arg_parser;
     arg_parser.parse(argc, argv);
     FileIO io(input_path.c_str(), "rb");
     std::unique_ptr<OutputFilesMemory> output_files(new OutputFilesMemory);
     archive.unpack(io, *output_files);
-
-    log_restore();
     return output_files;
 }
 

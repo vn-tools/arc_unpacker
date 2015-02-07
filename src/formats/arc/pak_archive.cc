@@ -7,15 +7,11 @@
 // Known games:
 // - Saya no Uta
 
-#include <cassert>
-#include <cstring>
 #include "formats/arc/pak_archive.h"
 #include "buffered_io.h"
-#include "logger.h"
 #include "string_ex.h"
 
-const char *pak_magic = "\x02\x00\x00\x00";
-const size_t pak_magic_length = 4;
+const std::string pak_magic("\x02\x00\x00\x00", 4);
 
 namespace
 {
@@ -30,13 +26,6 @@ namespace
         {
         }
     } PakUnpackContext;
-
-    bool pak_check_magic(IO &arc_io)
-    {
-        char magic[pak_magic_length];
-        arc_io.read(magic, pak_magic_length);
-        return memcmp(magic, pak_magic, pak_magic_length) == 0;
-    }
 
     std::unique_ptr<VirtualFile> pak_read_file(void *context)
     {
@@ -59,11 +48,10 @@ namespace
         {
             std::string data_uncompressed
                 = zlib_inflate(unpack_context->arc_io.read(size_compressed));
+
             if (data_uncompressed.size() != size_original)
-            {
-                log_error("PAK: Bad file size");
-                return nullptr;
-            }
+                throw std::runtime_error("Bad file size");
+
             file->io.write(data_uncompressed);
         }
         else
@@ -75,13 +63,10 @@ namespace
     }
 }
 
-bool PakArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
+void PakArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
 {
-    if (!pak_check_magic(arc_io))
-    {
-        log_error("PAK: Not a PAK archive");
-        return false;
-    }
+    if (arc_io.read(pak_magic.size()) != pak_magic)
+        throw std::runtime_error("Not a PAK archive");
 
     uint32_t file_count = arc_io.read_u32_le();
     __attribute__((unused)) uint32_t table_size_original = arc_io.read_u32_le();
@@ -94,9 +79,5 @@ bool PakArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
     PakUnpackContext unpack_context(arc_io, table_io);
     unpack_context.offset_to_files = arc_io.tell();
     for (i = 0; i < file_count; i ++)
-    {
         output_files.save(&pak_read_file, &unpack_context);
-    }
-
-    return true;
 }

@@ -13,7 +13,7 @@ public:
     virtual size_t size() const override;
     virtual size_t tell() const override;
     virtual void seek(size_t offset) override;
-    virtual void skip(size_t offset) override;
+    virtual void skip(ssize_t offset) override;
     virtual void truncate(size_t new_size) override;
 
     using IO::read;

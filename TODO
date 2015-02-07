@@ -18,9 +18,6 @@ Port old code for formats:
 
 C++ stuff:
 	- Review all includes
-	- Replace pointers with references where applicable to reduce assertions
-	- Carefully check out smart pointers
-	- Replace logging with exceptions
 
 Unit tests (low priority):
 	- NPA archive

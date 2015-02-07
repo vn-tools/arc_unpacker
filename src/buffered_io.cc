@@ -18,7 +18,7 @@ void BufferedIO::seek(size_t offset)
     internals->buffer_pos = offset;
 }
 
-void BufferedIO::skip(size_t offset)
+void BufferedIO::skip(ssize_t offset)
 {
     if (internals->buffer_pos + offset >= internals->buffer_size)
         throw std::runtime_error("Seeking beyond EOF");

@@ -10,7 +10,7 @@ typedef std::unique_ptr<VirtualFile>(*VirtualFileFactory)(void *);
 class OutputFiles
 {
 public:
-    virtual bool save(
+    virtual void save(
         VirtualFileFactory save_proc,
         void *context) const = 0;
 };
@@ -22,7 +22,7 @@ class OutputFilesHdd : public OutputFiles
 public:
     OutputFilesHdd(std::string output_dir);
     ~OutputFilesHdd();
-    bool save(VirtualFileFactory save_proc, void *context) const override;
+    void save(VirtualFileFactory save_proc, void *context) const override;
 private:
     struct Internals;
     Internals *internals;
@@ -35,7 +35,7 @@ class OutputFilesMemory : public OutputFiles
 public:
     OutputFilesMemory();
     ~OutputFilesMemory();
-    bool save(VirtualFileFactory save_proc, void *context) const override;
+    void save(VirtualFileFactory save_proc, void *context) const override;
     const std::vector<VirtualFile*> get_saved() const;
 private:
     struct Internals;

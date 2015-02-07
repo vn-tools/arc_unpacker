@@ -11,7 +11,6 @@
 #include "formats/gfx/prs_converter.h"
 #include "formats/image.h"
 #include "io.h"
-#include "logger.h"
 
 namespace
 {

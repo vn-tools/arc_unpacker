@@ -14,7 +14,6 @@
 #include "formats/sfx/nwa_converter.h"
 #include "formats/sound.h"
 #include "io.h"
-#include "logger.h"
 
 namespace
 {
@@ -32,46 +31,34 @@ namespace
         uint32_t rest_size;
     } NwaHeader;
 
-    bool nwa_validate_header(const NwaHeader &header)
+    void nwa_validate_header(const NwaHeader &header)
     {
         if (header.compression_level >= 0 || header.compression_level > 5)
-        {
-            log_error("Unsupported compression level");
-            return false;
-        }
-        else if (header.channel_count != 1 && header.channel_count != 2)
-        {
-            log_error("Unsupported channel count");
-            return false;
-        }
-        else if (header.bits_per_sample != 8 && header.bits_per_sample != 16)
-        {
-            log_error("Unsupported bits per sample");
-            return false;
-        }
-        else if (!header.block_count)
-        {
-            log_error("No blocks found");
-            return false;
-        }
-        else if (!header.compressed_size)
-        {
-            log_error("No data found");
-            return false;
-        }
-        else if (header.uncompressed_size
+            throw std::runtime_error("Unsupported compression level");
+
+        if (header.channel_count != 1 && header.channel_count != 2)
+            throw std::runtime_error("Unsupported channel count");
+
+        if (header.bits_per_sample != 8 && header.bits_per_sample != 16)
+            throw std::runtime_error("Unsupported bits per sample");
+
+        if (!header.block_count)
+            throw std::runtime_error("No blocks found");
+
+        if (!header.compressed_size)
+            throw std::runtime_error("No data found");
+
+        if (header.uncompressed_size
             != header.sample_count * header.bits_per_sample / 8)
         {
-            log_error("Bad data size");
-            return false;
+            throw std::runtime_error("Bad data size");
         }
-        else if (header.sample_count
+
+        if (header.sample_count
             != (header.block_count-1) * header.block_size + header.rest_size)
         {
-            log_error("Bad sample count");
-            return false;
+            throw std::runtime_error("Bad sample count");
         }
-        return true;
     }
 
     std::string nwa_read_uncompressed(IO &io, const NwaHeader &header)
@@ -113,9 +100,7 @@ void NwaConverter::decode_internal(VirtualFile &file) const
     }
     else
     {
-        if (!nwa_validate_header(header))
-            throw std::runtime_error("Invalid header, decoding aborted");
-
+        nwa_validate_header(header);
         samples = nwa_read_compressed(file.io, header);
     }
 

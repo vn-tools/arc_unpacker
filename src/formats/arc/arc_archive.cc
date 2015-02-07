@@ -7,16 +7,12 @@
 // Known games:
 // - Higurashi No Naku Koro Ni
 
-#include <cassert>
-#include <cstring>
 #include "formats/arc/arc_archive.h"
 #include "formats/gfx/cbg_converter.h"
-#include "logger.h"
 
 namespace
 {
-    const char *arc_magic = "PackFile    ";
-    const size_t arc_magic_length = 12;
+    const std::string arc_magic("PackFile    ", 12);
 
     typedef struct ArcUnpackContext
     {
@@ -30,37 +26,21 @@ namespace
         }
     } ArcUnpackContext;
 
-    bool arc_check_magic(IO &arc_io)
-    {
-        char magic[arc_magic_length];
-        arc_io.read(magic, arc_magic_length);
-        return memcmp(magic, arc_magic, arc_magic_length) == 0;
-    }
-
     std::unique_ptr<VirtualFile> arc_read_file(void *context)
     {
         ArcUnpackContext *unpack_context = (ArcUnpackContext*)context;
-        assert(unpack_context != nullptr);
-
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         size_t old_pos = unpack_context->arc_io.tell();
-        char *tmp_name;
-        unpack_context->arc_io.read_until_zero(&tmp_name, nullptr);
-        assert(tmp_name != nullptr);
-        file->name = std::string(tmp_name);
-        delete []tmp_name;
+        file->name = unpack_context->arc_io.read_until_zero();
         unpack_context->arc_io.seek(old_pos + 16);
 
         size_t offset = unpack_context->arc_io.read_u32_le();
         size_t size = unpack_context->arc_io.read_u32_le();
-        offset += arc_magic_length + 4 + unpack_context->file_count * 32;
+        offset += arc_magic.size() + 4 + unpack_context->file_count * 32;
         unpack_context->arc_io.skip(8);
         if (offset + size > unpack_context->arc_io.size())
-        {
-            log_error("ARC: Bad offset to file");
-            return nullptr;
-        }
+            throw std::runtime_error("Bad offset to file");
 
         old_pos = unpack_context->arc_io.tell();
         unpack_context->arc_io.seek(offset);
@@ -100,27 +80,18 @@ void ArcArchive::parse_cli_options(ArgParser &arg_parser)
     context->cbg_converter->parse_cli_options(arg_parser);
 }
 
-bool ArcArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
+void ArcArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
 {
-    if (!arc_check_magic(arc_io))
-    {
-        log_error("ARC: Not an ARC archive");
-        return false;
-    }
+    if (arc_io.read(arc_magic.size()) != arc_magic)
+        throw std::runtime_error("Not an ARC archive");
 
     size_t file_count = arc_io.read_u32_le();
     if (file_count * 32 > arc_io.size())
-    {
-        log_error("ARC: Bad file count");
-        return false;
-    }
+        throw std::runtime_error("Bad file count");
 
     ArcUnpackContext unpack_context(arc_io, *context->cbg_converter);
     unpack_context.file_count = file_count;
     size_t i;
     for (i = 0; i < file_count; i ++)
-    {
         output_files.save(&arc_read_file, &unpack_context);
-    }
-    return true;
 }
