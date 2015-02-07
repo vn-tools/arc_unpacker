@@ -4,9 +4,9 @@
 #include "arg_parser.h"
 #include "bin_helpers.h"
 #include "factory/converter_factory.h"
+#include "file_io.h"
 #include "formats/converter.h"
 #include "fs.h"
-#include "io.h"
 #include "logger.h"
 #include "output_files.h"
 
@@ -202,16 +202,10 @@ namespace
     {
         ReadContext *context = (ReadContext*)_context;
 
-        IO *io = io_create_from_file(
-            context->path_info->input_path.c_str(),
-            "rb");
-        if (io == nullptr)
-            return nullptr;
-
+        FileIO io(context->path_info->input_path.c_str(), "rb");
         std::unique_ptr<VirtualFile> file;
-        io_write_string_from_io(&file->io, io,  io_size(io));
-        io_destroy(io);
-        io_seek(&file->io, 0);
+        file->io.write_from_io(io, io.size());
+        file->io.seek(0);
 
         set_file_path(
             *file,

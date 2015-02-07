@@ -22,8 +22,7 @@ namespace
         png_size_t length)
     {
         IO *io = (IO*)png_get_io_ptr(png_ptr);
-        if (!io_write_string(io, (char*)data, length))
-            assert(0);
+        io->write(data, length);
     }
 
     void my_png_read_data(
@@ -32,8 +31,7 @@ namespace
         png_size_t length)
     {
         IO *io = (IO*)png_get_io_ptr(png_ptr);
-        if (!io_read_string(io, (char*)data, length))
-            assert(0);
+        io->read(data, length);
     }
 
     void my_png_flush(png_structp png_ptr __attribute__((unused)))
@@ -60,10 +58,9 @@ Image *image_create_from_pixels(
     return image;
 }
 
-Image *image_create_from_boxed(IO *io)
+Image *image_create_from_boxed(IO &io)
 {
-    assert(io != nullptr);
-    io_seek(io, 0);
+    io.seek(0);
 
     Image *image = new Image;
     assert(image != nullptr);
@@ -75,7 +72,7 @@ Image *image_create_from_boxed(IO *io)
     png_infop info_ptr = png_create_info_struct(png_ptr);
     assert(info_ptr != nullptr);
 
-    png_set_read_fn(png_ptr, io, &my_png_read_data);
+    png_set_read_fn(png_ptr, &io, &my_png_read_data);
     png_read_png(
         png_ptr,
         info_ptr,
@@ -182,8 +179,7 @@ void image_update_file(const Image *image, VirtualFile &file)
 {
     assert(image != nullptr);
 
-    if (!io_truncate(&file.io, 0))
-        assert(0);
+    file.io.truncate(0);
 
     png_structp png_ptr = png_create_write_struct(
         PNG_LIBPNG_VER_STRING,

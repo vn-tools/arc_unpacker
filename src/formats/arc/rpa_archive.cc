@@ -12,7 +12,7 @@
 #include <cassert>
 #include <cstring>
 #include "formats/arc/rpa_archive.h"
-#include "io.h"
+#include "buffered_io.h"
 #include "logger.h"
 #include "string_ex.h"
 
@@ -99,26 +99,26 @@ namespace
         context->numbers.push_back(number);
     }
 
-    char *rpa_unpickle_read_string(IO *table_io, size_t str_size)
+    char *rpa_unpickle_read_string(IO &table_io, size_t str_size)
     {
         char *str = new char[str_size + 1];
         assert(str != nullptr);
-        io_read_string(table_io, str, str_size);
+        table_io.read(str, str_size);
         str[str_size] = '\0';
         return str;
     }
 
-    bool rpa_unpickle(IO *table_io, RpaUnpickleContext *context)
+    bool rpa_unpickle(IO &table_io, RpaUnpickleContext *context)
     {
-        size_t table_size = io_size(table_io);
-        while (io_tell(table_io) < table_size)
+        size_t table_size = table_io.size();
+        while (table_io.tell() < table_size)
         {
-            unsigned char c = io_read_u8(table_io);
+            unsigned char c = table_io.read_u8();
             switch (c)
             {
                 case PICKLE_SHORT_BINSTRING:
                 {
-                    char str_size = io_read_u8(table_io);
+                    char str_size = table_io.read_u8();
                     char *string = rpa_unpickle_read_string(table_io, str_size);
                     rpa_unpickle_handle_string(string, str_size, context);
                     break;
@@ -126,7 +126,7 @@ namespace
 
                 case PICKLE_BINUNICODE:
                 {
-                    uint32_t str_size = io_read_u32_le(table_io);
+                    uint32_t str_size = table_io.read_u32_le();
                     char *string = rpa_unpickle_read_string(table_io, str_size);
                     rpa_unpickle_handle_string(string, str_size, context);
                     break;
@@ -135,51 +135,51 @@ namespace
                 case PICKLE_BININT1:
                 {
                     rpa_unpickle_handle_number(
-                        io_read_u8(table_io), context);
+                        table_io.read_u8(), context);
                     break;
                 }
 
                 case PICKLE_BININT2:
                 {
                     rpa_unpickle_handle_number(
-                        io_read_u16_le(table_io), context);
+                        table_io.read_u16_le(), context);
                     break;
                 }
 
                 case PICKLE_BININT4:
                 {
                     rpa_unpickle_handle_number(
-                        io_read_u32_le(table_io), context);
+                        table_io.read_u32_le(), context);
                     break;
                 }
 
                 case PICKLE_LONG1:
                 {
-                    size_t length = io_read_u8(table_io);
+                    size_t length = table_io.read_u8();
                     uint32_t number = 0;
                     size_t i;
-                    size_t pos = io_tell(table_io);
+                    size_t pos = table_io.tell();
                     for (i = 0; i < length; i ++)
                     {
-                        io_seek(table_io, pos + length - 1 - i);
+                        table_io.seek(pos + length - 1 - i);
                         number *= 256;
-                        number += io_read_u8(table_io);
+                        number += table_io.read_u8();
                     }
                     rpa_unpickle_handle_number(number, context);
-                    io_seek(table_io, pos + length);
+                    table_io.seek(pos + length);
                     break;
                 }
 
                 case PICKLE_PROTO:
-                    io_skip(table_io, 1);
+                    table_io.skip(1);
                     break;
 
                 case PICKLE_BINPUT:
-                    io_skip(table_io, 1);
+                    table_io.skip(1);
                     break;
 
                 case PICKLE_LONG_BINPUT:
-                    io_skip(table_io, 4);
+                    table_io.skip(4);
                     break;
 
                 case PICKLE_APPEND:
@@ -216,10 +216,14 @@ namespace
         size_t prefix_size;
     } RpaTableEntry;
 
-    typedef struct
+    typedef struct RpaUnpackContext
     {
-        IO *arc_io;
+        IO &arc_io;
         RpaTableEntry *table_entry;
+
+        RpaUnpackContext(IO &arc_io) : arc_io(arc_io)
+        {
+        }
     } RpaUnpackContext;
 
     RpaTableEntry **rpa_decode_table(
@@ -230,7 +234,7 @@ namespace
     {
         RpaUnpickleContext context;
 
-        IO *table_io = io_create_from_buffer(table, table_size);
+        BufferedIO table_io(table, table_size);
         rpa_unpickle(table_io, &context);
 
         // Suspicion: reading renpy sources leaves me under impression that
@@ -258,16 +262,15 @@ namespace
             entries[i] = entry;
         }
 
-        io_destroy(table_io);
         return entries;
     }
 
-    int rpa_check_version(IO *arc_io)
+    int rpa_check_version(IO &arc_io)
     {
         const char *rpa_magic_3 = "RPA-3.0 ";
         const char *rpa_magic_2 = "RPA-2.0 ";
         char magic[8];
-        io_read_string(arc_io, magic, 8);
+        arc_io.read(magic, 8);
         if (memcmp(rpa_magic_2, magic, 8) == 0)
             return 2;
         if (memcmp(rpa_magic_3, magic, 8) == 0)
@@ -275,13 +278,13 @@ namespace
         return -1;
     }
 
-    uint32_t rpa_read_hex_number(IO *arc_io, size_t length)
+    uint32_t rpa_read_hex_number(IO &arc_io, size_t length)
     {
         size_t i;
         uint32_t result = 0;
         for (i = 0; i < length; i ++)
         {
-            char c = io_read_u8(arc_io);
+            char c = arc_io.read_u8();
             result *= 16;
             if (c >= 'A' && c <= 'F')
                 result += c + 10 - 'A';
@@ -295,13 +298,12 @@ namespace
         return result;
     }
 
-    bool rpa_read_raw_table(IO *arc_io, char **table, size_t *table_size)
+    bool rpa_read_raw_table(IO &arc_io, char **table, size_t *table_size)
     {
-        size_t compressed_size = io_size(arc_io) - io_tell(arc_io);
+        size_t compressed_size = arc_io.size() - arc_io.tell();
         char *compressed = new char[compressed_size];
         assert(compressed != nullptr);
-        if (!io_read_string(arc_io, compressed, compressed_size))
-            assert(0);
+        arc_io.read(compressed, compressed_size);
 
         *table = nullptr;
         bool result = zlib_inflate(
@@ -322,32 +324,23 @@ namespace
         assert(context != nullptr);
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
-        if (!io_seek(context->arc_io, context->table_entry->offset))
-            assert(0);
-        assert(context->table_entry->offset < io_size(context->arc_io));
+        context->arc_io.seek(context->table_entry->offset);
+        assert(context->table_entry->offset < context->arc_io.size());
 
-        if (!io_write_string(
-            &file->io,
+        file->io.write(
             context->table_entry->prefix.c_str(),
-            context->table_entry->prefix_size))
-        {
-            assert(0);
-        }
+            context->table_entry->prefix_size);
 
-        if (!io_write_string_from_io(
-            &file->io,
+        file->io.write_from_io(
             context->arc_io,
-            context->table_entry->size))
-        {
-            assert(0);
-        }
+            context->table_entry->size);
 
         file->name = context->table_entry->name;
         return file;
     }
 }
 
-bool RpaArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
+bool RpaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
 {
     int version = rpa_check_version(arc_io);
 
@@ -356,7 +349,7 @@ bool RpaArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
     if (version == 3)
     {
         table_offset = rpa_read_hex_number(arc_io, 16);
-        io_skip(arc_io, 1);
+        arc_io.skip(1);
         key = rpa_read_hex_number(arc_io, 8);
     }
     else if (version == 2)
@@ -372,11 +365,7 @@ bool RpaArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
 
     log_info("RPA: Version: %d", version);
 
-    if (!io_seek(arc_io, table_offset))
-    {
-        log_error("RPA: Bad table offset");
-        return false;
-    }
+    arc_io.seek(table_offset);
 
     size_t table_size;
     char *table;
@@ -393,8 +382,7 @@ bool RpaArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
     delete []table;
 
     size_t i;
-    RpaUnpackContext context;
-    context.arc_io = arc_io;
+    RpaUnpackContext context(arc_io);
     for (i = 0; i < file_count; i ++)
     {
         context.table_entry = entries[i];

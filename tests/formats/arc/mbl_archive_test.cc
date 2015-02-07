@@ -8,8 +8,8 @@ void test_mbl_archive(const char *path)
     std::unique_ptr<VirtualFile> file2(new VirtualFile);
     file1->name = "abc.txt";
     file2->name = "テスト";
-    io_write_string(&file1->io, "abc", 3);
-    io_write_string(&file2->io, "AAAAAAAAAAAAAAAA", 16);
+    file1->io.write("abc", 3);
+    file2->io.write("AAAAAAAAAAAAAAAA", 16);
     expected_files.push_back(file1.get());
     expected_files.push_back(file2.get());
 

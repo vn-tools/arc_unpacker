@@ -2,7 +2,7 @@
 #include <cstring>
 #include <memory>
 #include "formats/image.h"
-#include "io.h"
+#include "file_io.h"
 #include "logger.h"
 #include "test_support/converter_support.h"
 #include "virtual_file.h"
@@ -44,31 +44,20 @@ namespace
         }
     }
 
-    Image *get_actual_image(const char *path, Converter *converter)
+    Image *get_actual_image(const std::string path, Converter *converter)
     {
-        IO *io = io_create_from_file(path, "rb");
-        assert(io != nullptr);
-
+        FileIO io(path, "rb");
         std::unique_ptr<VirtualFile> file(new VirtualFile);
-
-        if (!io_write_string_from_io(&file->io, io, io_size(io)))
-            assert(0);
-        io_destroy(io);
-
+        file->io.write_from_io(io, io.size());
         converter->decode(*file);
-
-        return image_create_from_boxed(&file->io);
+        return image_create_from_boxed(file->io);
     }
 
-    Image *get_expected_image(const char *path)
+    Image *get_expected_image(const std::string path)
     {
-        IO *io = io_create_from_file(path, "rb");
-        assert(io != nullptr);
-
+        FileIO io(path, "rb");
         Image *image = image_create_from_boxed(io);
         assert(image != nullptr);
-        io_destroy(io);
-
         return image;
     }
 }

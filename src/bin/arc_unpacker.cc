@@ -5,6 +5,7 @@
 #include "arg_parser.h"
 #include "bin_helpers.h"
 #include "factory/archive_factory.h"
+#include "file_io.h"
 #include "formats/archive.h"
 #include "logger.h"
 #include "output_files.h"
@@ -91,23 +92,22 @@ namespace
     bool unpack(
         Archive *archive,
         ArgParser &arg_parser,
-        IO *io,
+        IO &io,
         OutputFiles &output_files)
     {
         assert(archive != nullptr);
-        io_seek(io, 0);
+        io.seek(0);
         archive->parse_cli_options(arg_parser);
         return archive->unpack(io, output_files);
     }
 
     bool guess_archive_and_unpack(
-        IO *io,
+        IO &io,
         OutputFiles &output_files,
         Options *options,
         ArgParser &arg_parser,
         const ArchiveFactory &arc_factory)
     {
-        assert(io != nullptr);
         assert(options != nullptr);
 
         bool result = false;
@@ -165,19 +165,13 @@ namespace
         assert(options != nullptr);
 
         OutputFilesHdd output_files(options->output_path);
-        IO *io = io_create_from_file(options->input_path, "rb");
-        if (!io)
-            return false;
-
-        bool result = guess_archive_and_unpack(
+        FileIO io(options->input_path, "rb");
+        return guess_archive_and_unpack(
             io,
             output_files,
             options,
             arg_parser,
             arc_factory);
-
-        io_destroy(io);
-        return result;
     }
 }
 

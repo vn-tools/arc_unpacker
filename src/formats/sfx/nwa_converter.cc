@@ -10,6 +10,7 @@
 // - Little Busters
 
 #include <cassert>
+#include <stdexcept>
 #include "formats/sfx/nwa_converter.h"
 #include "formats/sound.h"
 #include "io.h"
@@ -73,53 +74,47 @@ namespace
         return true;
     }
 
-    bool nwa_read_uncompressed(
-        IO *io,
+    void nwa_read_uncompressed(
+        IO &io,
         NwaHeader *header,
         char **samples,
         size_t *sample_count)
     {
-        assert(io != nullptr);
         assert(header != nullptr);
         assert(samples != nullptr);
         assert(sample_count != nullptr);
         *sample_count = header->block_size * header->channel_count;
         *samples = new char[*sample_count];
-        if (*samples == nullptr)
-            return false;
-        return io_read_string(io, *samples, *sample_count);
+        io.read(*samples, *sample_count);
     }
 
-    bool nwa_read_compressed(
-        IO *io,
+    void nwa_read_compressed(
+        __attribute__((unused)) IO &io,
         NwaHeader *header,
         __attribute__((unused)) char **samples,
         __attribute__((unused)) size_t *sample_count)
     {
-        assert(io != nullptr);
         assert(header != nullptr);
-        log_error("Reading compressed streams is not supported");
-        return false;
+        throw std::runtime_error("Reading compressed streams is not supported");
     }
 }
 
 bool NwaConverter::decode_internal(VirtualFile &file)
 {
     NwaHeader header;
-    header.channel_count = io_read_u16_le(&file.io);
-    header.bits_per_sample = io_read_u16_le(&file.io);
-    header.sample_rate = io_read_u32_le(&file.io);
-    header.compression_level = (int32_t)io_read_u32_le(&file.io);
-    header.block_count = io_read_u32_le(&file.io);
-    header.uncompressed_size = io_read_u32_le(&file.io);
-    header.compressed_size = io_read_u32_le(&file.io);
-    header.sample_count = io_read_u32_le(&file.io);
-    header.block_size = io_read_u32_le(&file.io);
-    header.rest_size = io_read_u32_le(&file.io);
+    header.channel_count = file.io.read_u16_le();
+    header.bits_per_sample = file.io.read_u16_le();
+    header.sample_rate = file.io.read_u32_le();
+    header.compression_level = (int32_t)file.io.read_u32_le();
+    header.block_count = file.io.read_u32_le();
+    header.uncompressed_size = file.io.read_u32_le();
+    header.compressed_size = file.io.read_u32_le();
+    header.sample_count = file.io.read_u32_le();
+    header.block_size = file.io.read_u32_le();
+    header.rest_size = file.io.read_u32_le();
 
     char *output_samples = nullptr;
     size_t output_sample_count;
-    bool result;
 
     if (header.compression_level == -1
     || header.block_count == 0
@@ -127,8 +122,8 @@ bool NwaConverter::decode_internal(VirtualFile &file)
     || header.block_size == 0
     || header.rest_size == 0)
     {
-        result = nwa_read_uncompressed(
-            &file.io,
+        nwa_read_uncompressed(
+            file.io,
             &header,
             &output_samples,
             &output_sample_count);
@@ -136,29 +131,23 @@ bool NwaConverter::decode_internal(VirtualFile &file)
     else
     {
         if (!nwa_validate_header(&header))
-        {
-            log_error("Invalid header, decoding aborted");
-            return false;
-        }
+            throw std::runtime_error("Invalid header, decoding aborted");
 
-        result = nwa_read_compressed(
-            &file.io,
+        nwa_read_compressed(
+            file.io,
             &header,
             &output_samples,
             &output_sample_count);
     }
 
-    if (result)
-    {
-        Sound *sound = sound_create_from_samples(
-            header.channel_count,
-            header.bits_per_sample / 8,
-            header.sample_rate,
-            output_samples,
-            output_sample_count);
-        sound_update_file(sound, file);
-        sound_destroy(sound);
-    }
+    Sound *sound = sound_create_from_samples(
+        header.channel_count,
+        header.bits_per_sample / 8,
+        header.sample_rate,
+        output_samples,
+        output_sample_count);
+    sound_update_file(sound, file);
+    sound_destroy(sound);
 
     delete []output_samples;
     return true;

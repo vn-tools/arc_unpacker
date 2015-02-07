@@ -21,7 +21,7 @@ Image *image_create_from_pixels(
     size_t pixel_data_size,
     PixelFormat pixel_format);
 
-Image *image_create_from_boxed(IO *io);
+Image *image_create_from_boxed(IO &io);
 
 size_t image_width(const Image *image);
 size_t image_height(const Image *image);

@@ -1,18 +1,9 @@
 #include <cassert>
 #include <string>
-#include "io.h"
+#include "buffered_io.h"
 #include "logger.h"
 #include "string_ex.h"
 #include "virtual_file.h"
-
-VirtualFile::VirtualFile() : io(*io_create_empty())
-{
-}
-
-VirtualFile::~VirtualFile()
-{
-    io_destroy(&io);
-}
 
 void VirtualFile::change_extension(const std::string new_extension)
 {

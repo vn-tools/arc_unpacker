@@ -38,35 +38,39 @@ namespace
         uint32_t table_size;
     } NpaHeader;
 
-    typedef struct
+    typedef struct NpaUnpackContext
     {
-        IO *arc_io;
+        IO &arc_io;
         NpaFilter *filter;
         NpaHeader *header;
         size_t file_pos;
         size_t table_offset;
+
+        NpaUnpackContext(IO &arc_io) : arc_io(arc_io)
+        {
+        }
     } NpaUnpackContext;
 
-    bool npa_check_magic(IO *arc_io)
+    bool npa_check_magic(IO &arc_io)
     {
         char magic[npa_magic_length];
-        io_read_string(arc_io, magic, npa_magic_length);
+        arc_io.read(magic, npa_magic_length);
         return memcmp(magic, npa_magic, npa_magic_length) == 0;
     }
 
-    NpaHeader *npa_read_header(IO *arc_io)
+    NpaHeader *npa_read_header(IO &arc_io)
     {
         NpaHeader *header = new NpaHeader;
         assert(header != nullptr);
-        header->key1 = io_read_u32_le(arc_io);
-        header->key2 = io_read_u32_le(arc_io);
-        header->compressed = io_read_u8(arc_io);
-        header->encrypted = io_read_u8(arc_io);
-        header->total_count = io_read_u32_le(arc_io);
-        header->folder_count = io_read_u32_le(arc_io);
-        header->file_count = io_read_u32_le(arc_io);
-        io_skip(arc_io, 8);
-        header->table_size = io_read_u32_le(arc_io);
+        header->key1 = arc_io.read_u32_le();
+        header->key2 = arc_io.read_u32_le();
+        header->compressed = arc_io.read_u8();
+        header->encrypted = arc_io.read_u8();
+        header->total_count = arc_io.read_u32_le();
+        header->folder_count = arc_io.read_u32_le();
+        header->file_count = arc_io.read_u32_le();
+        arc_io.skip(8);
+        header->table_size = arc_io.read_u32_le();
         return header;
     }
 
@@ -102,10 +106,10 @@ namespace
         assert(unpack_context != nullptr);
         assert(file_name_length != nullptr);
 
-        *file_name_length = io_read_u32_le(unpack_context->arc_io);
+        *file_name_length = unpack_context->arc_io.read_u32_le();
         char *file_name = new char[*file_name_length];
         assert(file_name != nullptr);
-        io_read_string(unpack_context->arc_io, file_name, *file_name_length);
+        unpack_context->arc_io.read(file_name, *file_name_length);
         npa_decrypt_file_name(file_name, *file_name_length, unpack_context);
         return file_name;
     }
@@ -150,8 +154,7 @@ namespace
 
         char *data = new char[size_compressed];
         assert(data != nullptr);
-        if (!io_read_string(unpack_context->arc_io, data, size_compressed))
-            assert(0);
+        unpack_context->arc_io.read(data, size_compressed);
 
         if (unpack_context->header->encrypted)
         {
@@ -198,11 +201,11 @@ namespace
         assert(file_name_utf8 != nullptr);
         file->name = std::string(file_name_utf8);
 
-        NpaFileType file_type = (NpaFileType)io_read_u8(unpack_context->arc_io);
-        io_skip(unpack_context->arc_io, 4);
-        uint32_t offset = io_read_u32_le(unpack_context->arc_io);
-        uint32_t size_compressed = io_read_u32_le(unpack_context->arc_io);
-        uint32_t size_original = io_read_u32_le(unpack_context->arc_io);
+        NpaFileType file_type = (NpaFileType)unpack_context->arc_io.read_u8();
+        unpack_context->arc_io.skip(4);
+        uint32_t offset = unpack_context->arc_io.read_u32_le();
+        uint32_t size_compressed = unpack_context->arc_io.read_u32_le();
+        uint32_t size_original = unpack_context->arc_io.read_u32_le();
         offset +=
             unpack_context->table_offset + unpack_context->header->table_size;
 
@@ -217,18 +220,18 @@ namespace
             return nullptr;
         }
 
-        size_t old_pos = io_tell(unpack_context->arc_io);
-        io_seek(unpack_context->arc_io, offset);
+        size_t old_pos = unpack_context->arc_io.tell();
+        unpack_context->arc_io.seek(offset);
         char *file_data = npa_read_file_data(
             size_compressed,
             size_original,
             file_name,
             file_name_length,
             unpack_context);
-        io_write_string(&file->io, file_data, size_original);
+        file->io.write(file_data, size_original);
         delete []file_data;
         delete []file_name;
-        io_seek(unpack_context->arc_io, old_pos);
+        unpack_context->arc_io.seek(old_pos);
 
         return file;
     }
@@ -288,7 +291,7 @@ void NpaArchive::parse_cli_options(ArgParser &arg_parser)
     }
 }
 
-bool NpaArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
+bool NpaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
 {
     assert(context != nullptr);
     if (!npa_check_magic(arc_io))
@@ -304,11 +307,10 @@ bool NpaArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
     }
 
     NpaHeader *header = npa_read_header(arc_io);
-    NpaUnpackContext unpack_context;
-    unpack_context.arc_io = arc_io;
+    NpaUnpackContext unpack_context(arc_io);
     unpack_context.header = header;
     unpack_context.filter = context->filter;
-    unpack_context.table_offset = io_tell(arc_io);
+    unpack_context.table_offset = arc_io.tell();
     size_t file_pos;
     for (file_pos = 0; file_pos < header->total_count; file_pos ++)
     {

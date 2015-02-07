@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <memory>
 #include "formats/arc/fjsys_archive.h"
 #include "formats/gfx/mgd_converter.h"
 #include "logger.h"
@@ -35,28 +36,33 @@ namespace
         size_t file_count;
     } FjsysHeader;
 
-    typedef struct
+    typedef struct FjsysUnpackContext
     {
-        FjsysHeader *header;
-        MgdConverter *mgd_converter;
-        IO *arc_io;
+        IO &arc_io;
+        MgdConverter &mgd_converter;
+        FjsysHeader &header;
+
+        FjsysUnpackContext(
+            IO &arc_io, MgdConverter &mgd_converter, FjsysHeader &header)
+            : arc_io(arc_io), mgd_converter(mgd_converter), header(header)
+        {
+        }
     } FjsysUnpackContext;
 
-    bool fjsys_check_magic(IO *arc_io)
+    bool fjsys_check_magic(IO &arc_io)
     {
         char magic[fjsys_magic_length];
-        io_read_string(arc_io, magic, fjsys_magic_length);
+        arc_io.read(magic, fjsys_magic_length);
         return memcmp(magic, fjsys_magic, fjsys_magic_length) == 0;
     }
 
-    FjsysHeader *fjsys_read_header(IO *arc_io)
+    std::unique_ptr<FjsysHeader> fjsys_read_header(IO &arc_io)
     {
-        FjsysHeader *header = new FjsysHeader;
-        assert(header != nullptr);
-        header->header_size = io_read_u32_le(arc_io);
-        header->file_names_size = io_read_u32_le(arc_io);
-        header->file_count = io_read_u32_le(arc_io);
-        io_skip(arc_io, 64);
+        std::unique_ptr<FjsysHeader> header(new FjsysHeader);
+        header->header_size = arc_io.read_u32_le();
+        header->file_names_size = arc_io.read_u32_le();
+        header->file_count = arc_io.read_u32_le();
+        arc_io.skip(64);
         return header;
     }
 
@@ -64,27 +70,25 @@ namespace
     {
         std::unique_ptr<VirtualFile> file(new VirtualFile);
         FjsysUnpackContext *unpack_context = (FjsysUnpackContext*)context;
-        size_t file_name_offset = io_read_u32_le(unpack_context->arc_io);
-        size_t data_size = io_read_u32_le(unpack_context->arc_io);
-        size_t data_offset = io_read_u64_le(unpack_context->arc_io);
-        size_t old_pos = io_tell(unpack_context->arc_io);
-        size_t file_names_start = unpack_context->header->header_size
-            - unpack_context->header->file_names_size;
+        size_t file_name_offset = unpack_context->arc_io.read_u32_le();
+        size_t data_size = unpack_context->arc_io.read_u32_le();
+        size_t data_offset = unpack_context->arc_io.read_u64_le();
+        size_t old_pos = unpack_context->arc_io.tell();
+        size_t file_names_start = unpack_context->header.header_size
+            - unpack_context->header.file_names_size;
 
-        io_seek(
-            unpack_context->arc_io,
-            file_name_offset + file_names_start);
+        unpack_context->arc_io.seek(file_name_offset + file_names_start);
         char *file_name = nullptr;
-        io_read_until_zero(unpack_context->arc_io, &file_name, nullptr);
+        unpack_context->arc_io.read_until_zero(&file_name, nullptr);
         assert(file_name != nullptr);
         file->name = std::string(file_name);
         delete []file_name;
 
-        io_seek(unpack_context->arc_io, data_offset);
-        io_write_string_from_io(&file->io, unpack_context->arc_io, data_size);
-        unpack_context->mgd_converter->try_decode(*file);
+        unpack_context->arc_io.seek(data_offset);
+        file->io.write_from_io(unpack_context->arc_io, data_size);
+        unpack_context->mgd_converter.try_decode(*file);
 
-        io_seek(unpack_context->arc_io, old_pos);
+        unpack_context->arc_io.seek(old_pos);
         return file;
     }
 }
@@ -116,7 +120,7 @@ void FjsysArchive::parse_cli_options(ArgParser &arg_parser)
     context->mgd_converter->parse_cli_options(arg_parser);
 }
 
-bool FjsysArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
+bool FjsysArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
 {
     assert(context != nullptr);
     if (!fjsys_check_magic(arc_io))
@@ -125,18 +129,14 @@ bool FjsysArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
         return false;
     }
 
-    FjsysHeader *header = fjsys_read_header(arc_io);
+    std::unique_ptr<FjsysHeader> header = fjsys_read_header(arc_io);
     assert(header != nullptr);
 
-    FjsysUnpackContext unpack_context;
-    unpack_context.header = header;
-    unpack_context.mgd_converter = context->mgd_converter;
-    unpack_context.arc_io = arc_io;
-
+    FjsysUnpackContext unpack_context(
+        arc_io, *context->mgd_converter, *header);
     size_t i;
     for (i = 0; i < header->file_count; i ++)
         output_files.save(&fjsys_read_file, &unpack_context);
 
-    delete header;
     return true;
 }

@@ -38,29 +38,28 @@ void sound_update_file(const Sound *sound, VirtualFile &file)
 {
     assert(sound != nullptr);
 
-    if (!io_truncate(&file.io, 0))
-        assert(0);
+    file.io.truncate(0);
 
     size_t block_align = sound->channel_count * sound->bytes_per_sample;
     size_t byte_rate = block_align * sound->sample_rate;
     size_t bits_per_sample = sound->bytes_per_sample * 8;
 
-    io_write_string(&file.io, "RIFF", 4);
-    io_write_string(&file.io, "\x00\x09\x00\x00", 4);
-    io_write_string(&file.io, "WAVE", 4);
-    io_write_string(&file.io, "fmt ", 4);
-    io_write_u32_le(&file.io, 16);
-    io_write_u16_le(&file.io, 1);
-    io_write_u16_le(&file.io, sound->channel_count);
-    io_write_u32_le(&file.io, sound->sample_rate);
-    io_write_u32_le(&file.io, byte_rate);
-    io_write_u16_le(&file.io, block_align);
-    io_write_u16_le(&file.io, bits_per_sample);
-    io_write_string(&file.io, "data", 4);
-    io_write_u32_le(&file.io, sound->sample_count);
-    io_write_string(&file.io, sound->samples, sound->sample_count);
-    io_seek(&file.io, 4);
-    io_write_u32_le(&file.io, io_size(&file.io));
+    file.io.write("RIFF", 4);
+    file.io.write("\x00\x09\x00\x00", 4);
+    file.io.write("WAVE", 4);
+    file.io.write("fmt ", 4);
+    file.io.write_u32_le(16);
+    file.io.write_u16_le(1);
+    file.io.write_u16_le(sound->channel_count);
+    file.io.write_u32_le(sound->sample_rate);
+    file.io.write_u32_le(byte_rate);
+    file.io.write_u16_le(block_align);
+    file.io.write_u16_le(bits_per_sample);
+    file.io.write("data", 4);
+    file.io.write_u32_le(sound->sample_count);
+    file.io.write(sound->samples, sound->sample_count);
+    file.io.seek(4);
+    file.io.write_u32_le(file.io.size());
 
     file.change_extension("wav");
 }

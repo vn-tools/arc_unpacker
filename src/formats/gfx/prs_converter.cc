@@ -132,30 +132,29 @@ namespace
         return true;
     }
 
-    bool prs_check_magic(IO *io)
+    bool prs_check_magic(IO &io)
     {
-        assert(io != nullptr);
         char magic[prs_magic_length];
-        io_read_string(io, magic, prs_magic_length);
+        io.read(magic, prs_magic_length);
         return memcmp(magic, prs_magic, prs_magic_length) == 0;
     }
 }
 
 bool PrsConverter::decode_internal(VirtualFile &file)
 {
-    if (!prs_check_magic(&file.io))
+    if (!prs_check_magic(file.io))
     {
         log_error("Not a PRS graphic file");
         return false;
     }
 
-    uint32_t source_size = io_read_u32_le(&file.io);
-    io_skip(&file.io, 4);
-    uint16_t image_width = io_read_u16_le(&file.io);
-    uint16_t image_height = io_read_u16_le(&file.io);
+    uint32_t source_size = file.io.read_u32_le();
+    file.io.skip(4);
+    uint16_t image_width = file.io.read_u16_le();
+    uint16_t image_height = file.io.read_u16_le();
 
     char *source_buffer = new char[source_size];
-    io_read_string(&file.io, source_buffer, source_size);
+    file.io.read(source_buffer, source_size);
 
     bool result;
     char *target_buffer = nullptr;

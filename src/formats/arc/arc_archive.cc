@@ -18,17 +18,22 @@ namespace
     const char *arc_magic = "PackFile    ";
     const size_t arc_magic_length = 12;
 
-    typedef struct
+    typedef struct ArcUnpackContext
     {
-        CbgConverter *cbg_converter;
-        IO *arc_io;
+        IO &arc_io;
+        CbgConverter &cbg_converter;
         size_t file_count;
+
+        ArcUnpackContext(IO &arc_io, CbgConverter &cbg_converter)
+            : arc_io(arc_io), cbg_converter(cbg_converter)
+        {
+        }
     } ArcUnpackContext;
 
-    bool arc_check_magic(IO *arc_io)
+    bool arc_check_magic(IO &arc_io)
     {
         char magic[arc_magic_length];
-        io_read_string(arc_io, magic, arc_magic_length);
+        arc_io.read(magic, arc_magic_length);
         return memcmp(magic, arc_magic, arc_magic_length) == 0;
     }
 
@@ -39,34 +44,30 @@ namespace
 
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
-        size_t old_pos = io_tell(unpack_context->arc_io);
+        size_t old_pos = unpack_context->arc_io.tell();
         char *tmp_name;
-        io_read_until_zero(unpack_context->arc_io, &tmp_name, nullptr);
+        unpack_context->arc_io.read_until_zero(&tmp_name, nullptr);
         assert(tmp_name != nullptr);
         file->name = std::string(tmp_name);
         delete []tmp_name;
-        io_seek(unpack_context->arc_io, old_pos + 16);
+        unpack_context->arc_io.seek(old_pos + 16);
 
-        size_t offset = io_read_u32_le(unpack_context->arc_io);
-        size_t size = io_read_u32_le(unpack_context->arc_io);
+        size_t offset = unpack_context->arc_io.read_u32_le();
+        size_t size = unpack_context->arc_io.read_u32_le();
         offset += arc_magic_length + 4 + unpack_context->file_count * 32;
-        io_skip(unpack_context->arc_io, 8);
-        if (offset + size > io_size(unpack_context->arc_io))
+        unpack_context->arc_io.skip(8);
+        if (offset + size > unpack_context->arc_io.size())
         {
             log_error("ARC: Bad offset to file");
             return nullptr;
         }
 
-        old_pos = io_tell(unpack_context->arc_io);
-        if (!io_seek(unpack_context->arc_io, offset))
-        {
-            log_error("ARC: Failed to seek to file");
-            return nullptr;
-        }
-        io_write_string_from_io(&file->io, unpack_context->arc_io, size);
-        io_seek(unpack_context->arc_io, old_pos);
+        old_pos = unpack_context->arc_io.tell();
+        unpack_context->arc_io.seek(offset);
+        file->io.write_from_io(unpack_context->arc_io, size);
+        unpack_context->arc_io.seek(old_pos);
 
-        unpack_context->cbg_converter->try_decode(*file);
+        unpack_context->cbg_converter.try_decode(*file);
 
         return file;
     }
@@ -99,7 +100,7 @@ void ArcArchive::parse_cli_options(ArgParser &arg_parser)
     context->cbg_converter->parse_cli_options(arg_parser);
 }
 
-bool ArcArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
+bool ArcArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
 {
     if (!arc_check_magic(arc_io))
     {
@@ -107,16 +108,14 @@ bool ArcArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
         return false;
     }
 
-    size_t file_count = io_read_u32_le(arc_io);
-    if (file_count * 32 > io_size(arc_io))
+    size_t file_count = arc_io.read_u32_le();
+    if (file_count * 32 > arc_io.size())
     {
         log_error("ARC: Bad file count");
         return false;
     }
 
-    ArcUnpackContext unpack_context;
-    unpack_context.cbg_converter = context->cbg_converter;
-    unpack_context.arc_io = arc_io;
+    ArcUnpackContext unpack_context(arc_io, *context->cbg_converter);
     unpack_context.file_count = file_count;
     size_t i;
     for (i = 0; i < file_count; i ++)

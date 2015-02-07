@@ -1,13 +1,11 @@
-#include <assert.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstdlib>
+#include "file_io.h"
 #include "formats/image.h"
-#include "io.h"
 
 void test_transparent()
 {
-    IO *io = io_create_from_file(
-        "tests/test_files/gfx/reimu_transparent.png", "rb");
-    assert(io != nullptr);
+    FileIO io("tests/test_files/gfx/reimu_transparent.png", "rb");
 
     Image *image = image_create_from_boxed(io);
     assert(image != nullptr);
@@ -25,14 +23,11 @@ void test_transparent()
     assert(0x0a == g);
     assert(0x17 == b);
     assert(0xff == a);
-
-    io_destroy(io);
 }
 
 void test_opaque()
 {
-    IO *io = io_create_from_file("tests/test_files/gfx/usagi_opaque.png", "rb");
-    assert(io != nullptr);
+    FileIO io("tests/test_files/gfx/usagi_opaque.png", "rb");
 
     Image *image = image_create_from_boxed(io);
     assert(image != nullptr);
@@ -48,8 +43,6 @@ void test_opaque()
     assert(124 == r);
     assert(106 == g);
     assert(52 == b);
-
-    io_destroy(io);
 }
 
 int main(void)

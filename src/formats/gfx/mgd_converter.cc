@@ -8,6 +8,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
+#include "buffered_io.h"
 #include "endian.h"
 #include "formats/gfx/mgd_converter.h"
 #include "formats/image.h"
@@ -34,11 +35,10 @@ namespace
         uint16_t height;
     } MgdRegion;
 
-    bool mgd_check_magic(IO *io)
+    bool mgd_check_magic(IO &io)
     {
-        assert(io != nullptr);
         char magic[mgd_magic_length];
-        io_read_string(io, magic, mgd_magic_length);
+        io.read(magic, mgd_magic_length);
         return memcmp(magic, mgd_magic, mgd_magic_length) == 0;
     }
 
@@ -260,16 +260,16 @@ namespace
         return true;
     }
 
-    std::vector<MgdRegion*> mgd_read_region_data(IO *file_io)
+    std::vector<MgdRegion*> mgd_read_region_data(IO &file_io)
     {
         std::vector<MgdRegion*> regions;
-        while (io_tell(file_io) < io_size(file_io))
+        while (file_io.tell() < file_io.size())
         {
-            io_skip(file_io, 4);
-            size_t regions_size = io_read_u32_le(file_io);
-            size_t region_count = io_read_u16_le(file_io);
-            size_t meta_format = io_read_u16_le(file_io);
-            size_t bytes_left = io_size(file_io) - io_tell(file_io);
+            file_io.skip(4);
+            size_t regions_size = file_io.read_u32_le();
+            size_t region_count = file_io.read_u16_le();
+            size_t meta_format = file_io.read_u16_le();
+            size_t bytes_left = file_io.size() - file_io.tell();
             if (meta_format != 4)
             {
                 log_warning("MGD: Unexpected region format %d", meta_format);
@@ -290,20 +290,22 @@ namespace
                     log_error("MGD: Failed to allocate memory for region");
                     continue;
                 }
-                region->x = io_read_u16_le(file_io);
-                region->y = io_read_u16_le(file_io);
-                region->width = io_read_u16_le(file_io);
-                region->height = io_read_u16_le(file_io);
+                region->x = file_io.read_u16_le();
+                region->y = file_io.read_u16_le();
+                region->width = file_io.read_u16_le();
+                region->height = file_io.read_u16_le();
                 regions.push_back(region);
             }
 
-            io_skip(file_io, 4);
+            if (file_io.tell() + 4 >= file_io.size())
+                break;
+            file_io.skip(4);
         }
         return regions;
     }
 
     Image *mgd_read_image(
-        IO *file_io,
+        IO &file_io,
         MgdCompressionType compression_type,
         size_t size_compressed,
         size_t size_original,
@@ -311,7 +313,6 @@ namespace
         size_t image_height,
         char **data_uncompressed)
     {
-        assert(file_io != nullptr);
         assert(data_uncompressed != nullptr);
 
         char *data_compressed = new char[size_compressed];
@@ -320,11 +321,7 @@ namespace
             log_error("MGD: Failed to allocate memory for compressed data");
             return nullptr;
         }
-        if (!io_read_string(file_io, data_compressed, size_compressed))
-        {
-            log_error("MGD: Failed to read compressed data");
-            return nullptr;
-        }
+        file_io.read(data_compressed, size_compressed);
 
         log_info("MGD: compression type = %d", compression_type);
 
@@ -370,13 +367,9 @@ namespace
 
             case MGD_COMPRESSION_PNG:
             {
-                IO *image_io = io_create_empty();
-                io_write_string(
-                    image_io,
-                    data_compressed,
-                    size_compressed);
+                BufferedIO image_io;
+                image_io.write(data_compressed, size_compressed);
                 image = image_create_from_boxed(image_io);
-                io_destroy(image_io);
                 delete []data_compressed;
                 break;
             }
@@ -388,24 +381,24 @@ namespace
 
 bool MgdConverter::decode_internal(VirtualFile &file)
 {
-    if (!mgd_check_magic(&file.io))
+    if (!mgd_check_magic(file.io))
     {
         log_error("MGD: Not a MGD graphic file");
         return false;
     }
 
-    __attribute__((unused)) uint16_t data_offset = io_read_u16_le(&file.io);
-    __attribute__((unused)) uint16_t format = io_read_u16_le(&file.io);
-    io_skip(&file.io, 4);
-    uint16_t image_width = io_read_u16_le(&file.io);
-    uint16_t image_height = io_read_u16_le(&file.io);
-    uint32_t size_original = io_read_u32_le(&file.io);
-    uint32_t size_compressed_total = io_read_u32_le(&file.io);
+    __attribute__((unused)) uint16_t data_offset = file.io.read_u16_le();
+    __attribute__((unused)) uint16_t format = file.io.read_u16_le();
+    file.io.skip(4);
+    uint16_t image_width = file.io.read_u16_le();
+    uint16_t image_height = file.io.read_u16_le();
+    uint32_t size_original = file.io.read_u32_le();
+    uint32_t size_compressed_total = file.io.read_u32_le();
     MgdCompressionType compression_type
-        = (MgdCompressionType)io_read_u32_le(&file.io);
-    io_skip(&file.io, 64);
+        = (MgdCompressionType)file.io.read_u32_le();
+    file.io.skip(64);
 
-    size_t size_compressed = io_read_u32_le(&file.io);
+    size_t size_compressed = file.io.read_u32_le();
     if (size_compressed + 4 != size_compressed_total)
     {
         log_error(
@@ -417,7 +410,7 @@ bool MgdConverter::decode_internal(VirtualFile &file)
 
     char *data_uncompressed = nullptr;
     Image *image = mgd_read_image(
-        &file.io,
+        file.io,
         compression_type,
         size_compressed,
         size_original,
@@ -425,7 +418,7 @@ bool MgdConverter::decode_internal(VirtualFile &file)
         image_height,
         &data_uncompressed);
 
-    auto regions = mgd_read_region_data(&file.io);
+    auto regions = mgd_read_region_data(file.io);
     for (auto& region : regions)
         delete region;
 

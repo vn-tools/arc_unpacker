@@ -18,13 +18,20 @@ bool Converter::decode_internal(__attribute__((unused)) VirtualFile &)
 
 bool Converter::decode(VirtualFile &target_file)
 {
-    io_seek(&target_file.io, 0);
+    target_file.io.seek(0);
     return decode_internal(target_file);
 }
 
 bool Converter::try_decode(VirtualFile &target_file)
 {
-    return decode(target_file);
+    try
+    {
+        return decode(target_file);
+    }
+    catch (...)
+    {
+        return false;
+    }
 }
 
 Converter::~Converter()

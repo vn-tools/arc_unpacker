@@ -9,7 +9,7 @@ public:
     ~ArcArchive();
     void add_cli_help(ArgParser &arg_parser) override;
     void parse_cli_options(ArgParser &arg_parser) override;
-    bool unpack_internal(IO *arc_io, OutputFiles &output_files) override;
+    bool unpack_internal(IO &arc_io, OutputFiles &output_files) override;
 private:
     struct Context;
     Context *context;

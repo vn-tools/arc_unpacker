@@ -1,4 +1,5 @@
 #include <cassert>
+#include "file_io.h"
 #include "fs.h"
 #include "logger.h"
 #include "output_files.h"
@@ -54,17 +55,9 @@ bool OutputFilesHdd::save(
     if (!mkpath(dirname(full_path)))
         assert(0);
 
-    IO *output_io = io_create_from_file(full_path.c_str(), "wb");
-    if (!output_io)
-    {
-        log_warning("Failed to open file %s", full_path.c_str());
-        log_info("");
-        return false;
-    }
-
-    io_seek(&file->io, 0);
-    io_write_string_from_io(output_io, &file->io, io_size(&file->io));
-    io_destroy(output_io);
+    FileIO output_io(full_path, "wb");
+    file->io.seek(0);
+    output_io.write_from_io(file->io, file->io.size());
     log_info("Saved successfully");
     log_info("");
     return true;

@@ -20,10 +20,14 @@ namespace
         uint32_t size;
     } TableEntry;
 
-    typedef struct
+    typedef struct SarUnpackContext
     {
-        IO *arc_io;
+        IO &arc_io;
         TableEntry *table_entry;
+
+        SarUnpackContext(IO &arc_io) : arc_io(arc_io)
+        {
+        }
     } SarUnpackContext;
 
     std::unique_ptr<VirtualFile> sar_read_file(void *_context)
@@ -33,10 +37,9 @@ namespace
         SarUnpackContext *context = (SarUnpackContext*)_context;
         assert(context != nullptr);
 
-        io_seek(context->arc_io, context->table_entry->offset);
+        context->arc_io.seek(context->table_entry->offset);
 
-        io_write_string_from_io(
-            &file->io,
+        file->io.write_from_io(
             context->arc_io,
             context->table_entry->size);
 
@@ -45,16 +48,14 @@ namespace
     }
 }
 
-bool SarArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
+bool SarArchive::unpack_internal(IO &arc_io, OutputFiles &output_files)
 {
-    assert(arc_io != nullptr);
-
     TableEntry **table;
     size_t i, j;
 
-    uint16_t file_count = io_read_u16_be(arc_io);
-    uint32_t offset_to_files = io_read_u32_be(arc_io);
-    if (offset_to_files > io_size(arc_io))
+    uint16_t file_count = arc_io.read_u16_be();
+    uint32_t offset_to_files = arc_io.read_u32_be();
+    if (offset_to_files > arc_io.size())
     {
         log_error("SAR: Bad offset to files");
         return false;
@@ -67,10 +68,10 @@ bool SarArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
         TableEntry *entry = new TableEntry;
         assert(entry != nullptr);
         entry->name = nullptr;
-        io_read_until_zero(arc_io, &entry->name, nullptr);
-        entry->offset = io_read_u32_be(arc_io) + offset_to_files;
-        entry->size = io_read_u32_be(arc_io);
-        if (entry->offset + entry->size > io_size(arc_io))
+        arc_io.read_until_zero(&entry->name, nullptr);
+        entry->offset = arc_io.read_u32_be() + offset_to_files;
+        entry->size = arc_io.read_u32_be();
+        if (entry->offset + entry->size > arc_io.size())
         {
             log_error("SAR: Bad offset to file");
             for (j = 0; j < i; j ++)
@@ -81,8 +82,7 @@ bool SarArchive::unpack_internal(IO *arc_io, OutputFiles &output_files)
         table[i] = entry;
     }
 
-    SarUnpackContext context;
-    context.arc_io = arc_io;
+    SarUnpackContext context(arc_io);
     for (i = 0; i < file_count; i ++)
     {
         context.table_entry = table[i];

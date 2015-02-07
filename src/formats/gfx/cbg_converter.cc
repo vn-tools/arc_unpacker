@@ -61,14 +61,14 @@ namespace
     }
 
     void cbg_read_frequency_table(
-        IO *io,
+        IO &io,
         uint32_t raw_data_size,
         uint32_t key,
         uint32_t frequency_table[])
     {
         char *raw_data = new char[raw_data_size];
         assert(raw_data != nullptr);
-        io_read_string(io, raw_data, raw_data_size);
+        io.read(raw_data, raw_data_size);
 
         cbg_decrypt(raw_data, raw_data_size, key);
 
@@ -142,13 +142,12 @@ namespace
     }
 
     void cbg_decompress_huffman(
-        IO *io,
+        IO &io,
         int last_node,
         CbgNodeInfo node_info[],
         uint32_t huffman_size,
         uint8_t *huffman)
     {
-        assert(io != nullptr);
         assert(node_info != nullptr);
         uint32_t root = last_node;
         uint8_t mask = 0x80;
@@ -159,14 +158,14 @@ namespace
             int node = root;
             while (node >= 256)
             {
-                node = io_read_u8(io) & mask
+                node = io.read_u8() & mask
                     ? node_info[node].right_node
                     : node_info[node].left_node;
                 mask >>= 1;
                 if (!mask)
                     mask = 0x80;
                 else
-                    io_skip(io, -1);
+                    io.skip(-1);
             }
             huffman[i] = node;
         }
@@ -275,29 +274,29 @@ namespace
 bool CbgConverter::decode_internal(VirtualFile &file)
 {
     char magic[cbg_magic_length];
-    io_read_string(&file.io, magic, cbg_magic_length);
+    file.io.read(magic, cbg_magic_length);
     if (memcmp(magic, cbg_magic, cbg_magic_length) != 0)
     {
         log_error("CBG: Not a CBG image");
         return false;
     }
 
-    uint16_t width = io_read_u16_le(&file.io);
-    uint16_t height = io_read_u16_le(&file.io);
-    uint16_t bpp = io_read_u16_le(&file.io);
-    io_skip(&file.io, 10);
+    uint16_t width = file.io.read_u16_le();
+    uint16_t height = file.io.read_u16_le();
+    uint16_t bpp = file.io.read_u16_le();
+    file.io.skip(10);
 
     if (!bpp_to_image_pixel_format(bpp))
         return false;
 
-    uint32_t huffman_size = io_read_u32_le(&file.io);
-    uint32_t key = io_read_u32_le(&file.io);
-    uint32_t freq_table_data_size = io_read_u32_le(&file.io);
-    io_skip(&file.io, 4);
+    uint32_t huffman_size = file.io.read_u32_le();
+    uint32_t key = file.io.read_u32_le();
+    uint32_t freq_table_data_size = file.io.read_u32_le();
+    file.io.skip(4);
 
     uint32_t freq_table[256];
     cbg_read_frequency_table(
-        &file.io,
+        file.io,
         freq_table_data_size,
         key,
         freq_table);
@@ -315,7 +314,7 @@ bool CbgConverter::decode_internal(VirtualFile &file)
     else
     {
         cbg_decompress_huffman(
-            &file.io,
+            file.io,
             last_node,
             node_info,
             huffman_size,

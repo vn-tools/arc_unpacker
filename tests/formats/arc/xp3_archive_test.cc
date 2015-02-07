@@ -8,8 +8,8 @@ void test_xp3_archive(const char *path)
     std::unique_ptr<VirtualFile> file2(new VirtualFile);
     file1->name = "abc.txt";
     file2->name = "abc2.txt";
-    io_write_string(&file1->io, "123", 3);
-    io_write_string(&file2->io, "AAAAAAAAAA", 10);
+    file1->io.write("123", 3);
+    file2->io.write("AAAAAAAAAA", 10);
     expected_files.push_back(file1.get());
     expected_files.push_back(file2.get());
 

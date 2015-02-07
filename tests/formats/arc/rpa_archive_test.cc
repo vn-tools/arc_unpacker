@@ -20,8 +20,8 @@ void test_rpa_archive(const char *path)
     std::unique_ptr<VirtualFile> file2(new VirtualFile);
     file1->name = "another.txt";
     file2->name = "abc.txt";
-    io_write_string(&file1->io, "abcdefghij", 10);
-    io_write_string(&file2->io, "123", 3);
+    file1->io.write("abcdefghij", 10);
+    file2->io.write("123", 3);
     expected_files.push_back(file1.get());
     expected_files.push_back(file2.get());
 

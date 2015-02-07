@@ -17,7 +17,6 @@ Port old code for formats:
 		- YKS
 
 C++ stuff:
-	- Port IO to classes
 	- Port Image to class
 	- Port Sound to class
 	- Try to minify string_ex usages
