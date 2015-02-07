@@ -70,14 +70,44 @@ namespace
     {
         std::vector<std::string> words;
         size_t pos = 0, new_pos = 0;
-        do
+        while (new_pos != sentence.length())
         {
-            new_pos = sentence.find(" ", pos);
-            words.push_back(sentence.substr(pos, new_pos - pos));
+            for (new_pos = pos; new_pos < sentence.length(); new_pos ++)
+            {
+                char c = sentence[new_pos];
+                if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
+                    break;
+            }
+            words.push_back(sentence.substr(pos, new_pos + 1 - pos));
             pos = new_pos + 1;
         }
-        while (new_pos != std::string::npos);
         return words;
+    }
+
+    std::vector<std::string> word_wrap(const std::string sentence, size_t max)
+    {
+        std::vector<std::string> words = create_words(sentence);
+        std::vector<std::string> lines;
+        std::string line;
+        for (auto &word : words)
+        {
+            line += word;
+            if (word.length() > 0 && word[word.length() - 1] == '\n')
+            {
+                lines.push_back(line);
+                line = "";
+            }
+            else if (line.length() > max)
+            {
+                if (line.length() > 0)
+                    line.erase(line.length() - 1, 1);
+                lines.push_back(line + "\n");
+                line = "";
+            }
+        }
+        if (line != "")
+            lines.push_back(line);
+        return lines;
     }
 }
 
@@ -141,7 +171,7 @@ void ArgParser::add_help(std::string invocation, std::string description)
 
 bool ArgParser::has_switch(std::string key) const
 {
-    for (auto& it : internals->switches)
+    for (auto &it : internals->switches)
         if (it.first == strip_dashes(key))
             return true;
     return false;
@@ -149,7 +179,7 @@ bool ArgParser::has_switch(std::string key) const
 
 const std::string ArgParser::get_switch(std::string key) const
 {
-    for (auto& it : internals->switches)
+    for (auto &it : internals->switches)
         if (it.first == strip_dashes(key))
             return it.second;
     return "";
@@ -157,7 +187,7 @@ const std::string ArgParser::get_switch(std::string key) const
 
 bool ArgParser::has_flag(std::string flag) const
 {
-    for (auto& it : internals->flags)
+    for (auto &it : internals->flags)
         if (it == strip_dashes(flag))
             return true;
     return false;
@@ -172,6 +202,8 @@ void ArgParser::print_help() const
 {
     const size_t max_invocation_length = 25;
     const size_t max_line_length = 78;
+    const size_t max_description_length
+        = max_line_length - max_invocation_length;
 
     if (internals->help_items.size() == 0)
     {
@@ -179,7 +211,7 @@ void ArgParser::print_help() const
         return;
     }
 
-    for (auto& p : internals->help_items)
+    for (auto &p : internals->help_items)
     {
         std::string invocation = p.first;
         std::string description = p.second;
@@ -195,21 +227,13 @@ void ArgParser::print_help() const
         for (; tmp_length < max_invocation_length; tmp_length ++)
             printf(" ");
 
-        //word wrap
-        std::vector<std::string> words = create_words(description);
-        bool first_word = true;
-        for (auto& word : words)
+        std::vector<std::string> lines = word_wrap(
+            description, max_description_length);
+        for (auto line : lines)
         {
-            tmp_length += word.length();
-            if (!first_word && tmp_length > max_line_length)
-            {
-                puts("");
-                for (size_t i = 0; i < max_invocation_length; i ++)
-                    printf(" ");
-                tmp_length = max_invocation_length;
-            }
-            printf("%s ", word.c_str());
-            first_word = false;
+            printf("%s", line.c_str());
+            for (size_t i = 0; i < max_invocation_length; i ++)
+                printf(" ");
         }
         puts("");
     }
