@@ -71,23 +71,8 @@ namespace
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         size_t old_pos = unpack_context->arc_io.tell();
-        char *tmp_name = nullptr;
-        unpack_context->arc_io.read_until_zero(&tmp_name, nullptr);
-        assert(tmp_name != nullptr);
-
-        char *decoded_name;
-        if (!convert_encoding(
-            tmp_name, strlen(tmp_name),
-            &decoded_name, nullptr,
-            "sjis", "utf-8"))
-        {
-            assert(0);
-        }
-
-        file->name = std::string(decoded_name);
-        delete []decoded_name;
-
-        delete []tmp_name;
+        std::string name = unpack_context->arc_io.read_until_zero();
+        file->name = convert_encoding(name, "sjis", "utf-8");
         unpack_context->arc_io.seek(old_pos + unpack_context->name_length);
 
         size_t offset = unpack_context->arc_io.read_u32_le();

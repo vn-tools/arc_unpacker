@@ -5,6 +5,15 @@
 #include "io.h"
 #include "logger.h"
 
+std::string IO::read_until_zero()
+{
+    std::string output;
+    char c;
+    while ((c = read_u8()) != '\0')
+        output.push_back(c);
+    return output;
+}
+
 bool IO::read_until_zero(char **output, size_t *output_size)
 {
     assert(output != nullptr);

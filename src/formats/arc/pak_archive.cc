@@ -44,21 +44,8 @@ namespace
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         size_t file_name_length = unpack_context->table_io.read_u32_le();
-        char *file_name = new char[file_name_length];
-        assert(file_name != nullptr);
-        unpack_context->table_io.read(file_name, file_name_length);
-
-        char *file_name_utf8 = nullptr;
-        if (!convert_encoding(
-            file_name, file_name_length,
-            &file_name_utf8, nullptr,
-            "cp932", "utf-8"))
-        {
-            assert(0);
-        }
-        assert(file_name_utf8 != nullptr);
-        file->name = std::string(file_name_utf8);
-        delete []file_name_utf8;
+        std::string file_name = unpack_context->table_io.read(file_name_length);
+        file->name = convert_encoding(file_name, "cp932", "utf-8");
 
         size_t offset = unpack_context->table_io.read_u32_le();
         size_t size_original = unpack_context->table_io.read_u32_le();
@@ -84,7 +71,6 @@ namespace
             file->io.write_from_io(unpack_context->arc_io, size_original);
         }
 
-        delete []file_name;
         return file;
     }
 }

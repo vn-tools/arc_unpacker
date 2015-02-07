@@ -18,6 +18,7 @@ public:
     virtual void write_from_io(IO &input, size_t length) = 0;
 
     bool read_until_zero(char **output, size_t *output_size);
+    std::string read_until_zero();
     std::string read(size_t bytes);
     uint8_t read_u8();
     uint16_t read_u16_le();

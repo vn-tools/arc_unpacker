@@ -1,8 +1,7 @@
 #include <cassert>
 #include <cerrno>
-#include <cstdlib>
-#include <cstring>
 #include <iconv.h>
+#include <memory>
 #include <stdexcept>
 #include <zlib.h>
 #include "logger.h"
@@ -32,12 +31,13 @@ std::string zlib_inflate(const std::string &input)
     int ret;
     do
     {
-        char buffer[8192];
-        stream.next_out = reinterpret_cast<Bytef*>(buffer);
-        stream.avail_out = sizeof(buffer);
+        const size_t buffer_size = 8192;
+        std::unique_ptr<char> output_buffer(new char[buffer_size]);
+        stream.next_out = reinterpret_cast<Bytef*>(output_buffer.get());
+        stream.avail_out = buffer_size;
         ret = inflate(&stream, 0);
         if (output.size() < stream.total_out)
-            output.append(buffer, stream.total_out - written);
+            output.append(output_buffer.get(), stream.total_out - written);
         written = stream.total_out;
     }
     while (ret == Z_OK);
@@ -53,82 +53,51 @@ std::string zlib_inflate(const std::string &input)
     return output;
 }
 
-bool convert_encoding(
-    const char *input,
-    size_t input_size,
-    char **output,
-    size_t *output_size,
-    const char *from,
-    const char *to)
+std::string convert_encoding(
+    const std::string &input,
+    const std::string &from,
+    const std::string &to)
 {
-    assert(input != nullptr);
-    assert(output != nullptr);
-    assert(from != nullptr);
-    assert(to != nullptr);
+    iconv_t conv = iconv_open(to.c_str(), from.c_str());
+    assert(conv != nullptr);
 
-    size_t tmp;
-    if (output_size == nullptr)
-        output_size = &tmp;
+    std::string output;
+    output.reserve(input.size() * 2);
 
-    iconv_t conv = iconv_open(to, from);
+    char *input_ptr = const_cast<char*>(input.data());
+    size_t input_bytes_left = input.size();
+    const size_t buffer_size = 32;
+    std::unique_ptr<char> buffer(new char[buffer_size]);
 
-    *output = nullptr;
-    *output_size = 0;
-
-    char *output_old, *output_new;
-    char *input_ptr = (char*) input;
-    char *output_ptr = nullptr;
-    size_t input_bytes_left = input_size;
-    size_t output_bytes_left = *output_size;
-
-    while (1)
+    while (true)
     {
-        output_old = *output;
-        output_new = (char*)realloc(*output, *output_size);
-        if (!output_new)
-        {
-            log_error("Encoding: Failed to allocate memory");
-            free(*output);
-            *output = nullptr;
-            *output_size = 0;
-            return false;
-        }
-        *output = output_new;
-
-        if (output_old == nullptr)
-            output_ptr = *output;
-        else
-            output_ptr += *output - output_old;
-
-        int result = iconv(
+        char *output_buffer = buffer.get();
+        size_t output_bytes_left = buffer_size;
+        int ret = iconv(
             conv,
             &input_ptr,
             &input_bytes_left,
-            &output_ptr,
+            &output_buffer,
             &output_bytes_left);
 
-        if (result != -1)
+        output.append(buffer.get(), buffer_size - output_bytes_left);
+
+        if (ret != -1 && input_bytes_left == 0)
             break;
 
         switch (errno)
         {
             case EINVAL:
             case EILSEQ:
-                log_error("Encoding: Invalid byte sequence");
-                free(*output);
-                *output = nullptr;
-                *output_size = 0;
-                return false;
+                throw std::runtime_error("Invalid byte sequence");
 
             case E2BIG:
-                *output_size += 1;
-                output_bytes_left += 1;
-                continue;
+                //repeat the iteration unless we got nothing at all
+                if (output_bytes_left != buffer_size)
+                    continue;
+                throw std::runtime_error("Code point too large to decode (?)");
         }
     }
 
-    *output = (char*)realloc(*output, (*output_size) + 1);
-    (*output)[(*output_size)] = '\0';
-    iconv_close(conv);
-    return true;
+    return output;
 }

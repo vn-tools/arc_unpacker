@@ -122,24 +122,8 @@ namespace
             = table_io.read_u64_le();
 
         size_t name_length = table_io.read_u16_le();
-
-        char *name_utf16 = new char [name_length * 2];
-        assert(name_utf16 != nullptr);
-        table_io.read(name_utf16, name_length * 2);
-
-        char *name_utf8;
-        if (!convert_encoding(
-            name_utf16, name_length * 2,
-            &name_utf8, nullptr,
-            "UTF-16LE", "UTF-8"))
-        {
-            assert(0);
-        }
-        assert(name_utf8 != nullptr);
-        target_file.name = std::string(name_utf8);
-        delete []name_utf8;
-
-        delete []name_utf16;
+        std::string name_utf16 = table_io.read(name_length * 2);
+        target_file.name = convert_encoding(name_utf16, "UTF-16LE", "UTF-8");
         assert(name_length * 2 + 22 == info_chunk_size);
         return true;
     }

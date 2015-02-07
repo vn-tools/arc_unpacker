@@ -75,9 +75,8 @@ namespace
     }
 
     void npa_decrypt_file_name(
-        char *name, size_t name_length, NpaUnpackContext *unpack_context)
+        std::string &name, NpaUnpackContext *unpack_context)
     {
-        assert(name != nullptr);
         assert(unpack_context != nullptr);
 
         uint32_t tmp = unpack_context->filter->file_name_key(
@@ -85,7 +84,7 @@ namespace
             unpack_context->header->key2);
 
         size_t char_pos;
-        for (char_pos = 0; char_pos < name_length; char_pos++)
+        for (char_pos = 0; char_pos < name.size(); char_pos++)
         {
             uint32_t key = 0xfc * char_pos;
             key -= tmp >> 0x18;
@@ -100,26 +99,20 @@ namespace
         }
     }
 
-    char *npa_read_file_name(
-        NpaUnpackContext *unpack_context, size_t *file_name_length)
+    std::string npa_read_file_name(NpaUnpackContext *unpack_context)
     {
         assert(unpack_context != nullptr);
-        assert(file_name_length != nullptr);
-
-        *file_name_length = unpack_context->arc_io.read_u32_le();
-        char *file_name = new char[*file_name_length];
-        assert(file_name != nullptr);
-        unpack_context->arc_io.read(file_name, *file_name_length);
-        npa_decrypt_file_name(file_name, *file_name_length, unpack_context);
-        return file_name;
+        size_t file_name_length = unpack_context->arc_io.read_u32_le();
+        std::string name = unpack_context->arc_io.read(file_name_length);
+        npa_decrypt_file_name(name, unpack_context);
+        return name;
     }
 
     void npa_decrypt_file_data(
         unsigned char *data,
         size_t data_size_compressed,
         size_t data_size_original,
-        const char *original_file_name,
-        size_t original_file_name_length,
+        const std::string &original_file_name,
         NpaUnpackContext *unpack_context)
     {
         assert(data != nullptr);
@@ -130,14 +123,14 @@ namespace
 
         uint32_t key = unpack_context->filter->data_key;
         size_t i;
-        for (i = 0; i < original_file_name_length; i ++)
+        for (i = 0; i < original_file_name.size(); i ++)
             key -= (unsigned char)original_file_name[i];
-        key *= original_file_name_length;
+        key *= original_file_name.size();
         key += unpack_context->header->key1 * unpack_context->header->key2;
         key *= data_size_original;
         key &= 0xff;
 
-        size_t length = 0x1000 + original_file_name_length;
+        size_t length = 0x1000 + original_file_name.size();
         for (i = 0; i < length && i < data_size_compressed; i ++)
             data[i] = (unsigned char)(permutation[(size_t)data[i]] - key - i);
     }
@@ -145,11 +138,9 @@ namespace
     std::string npa_read_file_data(
         size_t size_compressed,
         size_t size_original,
-        const char *original_file_name,
-        size_t original_file_name_length,
+        const std::string &original_file_name,
         NpaUnpackContext *unpack_context)
     {
-        assert(original_file_name != nullptr);
         assert(unpack_context != nullptr);
 
         std::string data = unpack_context->arc_io.read(size_compressed);
@@ -161,7 +152,6 @@ namespace
                 size_compressed,
                 size_original,
                 original_file_name,
-                original_file_name_length,
                 unpack_context);
         }
 
@@ -176,15 +166,8 @@ namespace
         NpaUnpackContext *unpack_context = (NpaUnpackContext*)_context;
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
-        size_t file_name_length;
-        char *file_name = npa_read_file_name(unpack_context, &file_name_length);
-        char *file_name_utf8;
-        convert_encoding(
-            file_name, file_name_length,
-            &file_name_utf8, nullptr,
-            "cp932", "utf-8");
-        assert(file_name_utf8 != nullptr);
-        file->name = std::string(file_name_utf8);
+        std::string file_name = npa_read_file_name(unpack_context);
+        file->name = convert_encoding(file_name, "cp932", "utf-8");
 
         NpaFileType file_type = (NpaFileType)unpack_context->arc_io.read_u8();
         unpack_context->arc_io.skip(4);
@@ -208,13 +191,8 @@ namespace
         size_t old_pos = unpack_context->arc_io.tell();
         unpack_context->arc_io.seek(offset);
         std::string file_data = npa_read_file_data(
-            size_compressed,
-            size_original,
-            file_name,
-            file_name_length,
-            unpack_context);
+            size_compressed, size_original, file_name, unpack_context);
         file->io.write(file_data);
-        delete []file_name;
         unpack_context->arc_io.seek(old_pos);
 
         return file;
