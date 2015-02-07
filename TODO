@@ -19,8 +19,6 @@ Port old code for formats:
 C++ stuff:
 	- Port Image to class
 	- Port Sound to class
-	- Try to minify string_ex usages
-	- Remove stdbool includes
 	- Review all includes
 	- Replace pointers with references where applicable to reduce assertions
 	- Carefully check out smart pointers

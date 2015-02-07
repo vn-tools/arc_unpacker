@@ -1,6 +1,5 @@
 #ifndef FORMATS_IMAGE_H
 #define FORMATS_IMAGE_H
-#include <stdbool.h>
 #include "virtual_file.h"
 
 typedef enum
