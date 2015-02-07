@@ -3,6 +3,7 @@
 
 void test_mgd_decoding_sgd()
 {
+    // possible BGR-RGB issues. Need a non-monochrome sample file.
     MgdConverter converter;
     assert_decoded_image(
         converter,
