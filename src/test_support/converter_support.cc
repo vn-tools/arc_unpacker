@@ -1,8 +1,8 @@
 #include <cassert>
 #include <cstring>
 #include <memory>
-#include "formats/image.h"
 #include "file_io.h"
+#include "formats/image.h"
 #include "test_support/converter_support.h"
 #include "virtual_file.h"
 

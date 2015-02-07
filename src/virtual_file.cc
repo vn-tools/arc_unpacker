@@ -1,8 +1,4 @@
-#include <cassert>
 #include <string>
-#include "buffered_io.h"
-#include "logger.h"
-#include "string_ex.h"
 #include "virtual_file.h"
 
 void VirtualFile::change_extension(const std::string new_extension)

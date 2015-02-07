@@ -27,6 +27,7 @@ void BufferedIO::skip(ssize_t offset)
 
 void BufferedIO::read(void *destination, size_t length)
 {
+    assert(destination != nullptr);
     if (internals->buffer_pos + length > internals->buffer_size)
         throw std::runtime_error("Reading beyond EOF");
     memcpy(destination, internals->buffer + internals->buffer_pos, length);
@@ -36,7 +37,6 @@ void BufferedIO::read(void *destination, size_t length)
 void BufferedIO::write(const void *source, size_t length)
 {
     assert(source != nullptr);
-
     size_t new_pos = internals->buffer_pos + length;
     if (new_pos > internals->buffer_size)
     {

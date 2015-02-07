@@ -3,7 +3,6 @@
 #include "fs.h"
 #include "logger.h"
 #include "output_files.h"
-#include "string_ex.h"
 
 struct OutputFilesHdd::Internals
 {

@@ -8,10 +8,9 @@ uint32_t npa_chaos_head_file_name_filter(uint32_t key1, uint32_t key2)
     return key1 * key2;
 }
 
-void npa_chaos_head_filter_init(NpaFilter *filter)
+void npa_chaos_head_filter_init(NpaFilter &filter)
 {
-    assert(filter != nullptr);
-    filter->permutation =
+    filter.permutation =
         (unsigned char*)
         "\xF1\x71\x80\x19\x17\x01\x74\x7D\x90\x47\xF9\x68\xDE\xB4\x24\x40"
         "\x73\x9E\x5B\x38\x4C\x3A\x2A\x0D\x2E\xB9\x5C\xE9\xCE\xE8\x3E\x39"
@@ -29,6 +28,6 @@ void npa_chaos_head_filter_init(NpaFilter *filter)
         "\xFA\x60\x8B\x14\x08\xBC\xEC\xBB\x26\x9C\x57\x32\x5A\x3F\x35\x6D"
         "\xC8\xC3\x69\x7C\x31\x58\xE3\x75\xD8\xE1\xC0\x9F\x11\xB5\x93\x56"
         "\xF5\x1E\xB1\x1A\x70\x3D\xFB\x82\xDC\xDF\x7E\x07\x15\x49\xFC\xB8";
-    filter->data_key = 0x87654321;
-    filter->file_name_key = &npa_chaos_head_file_name_filter;
+    filter.data_key = 0x87654321;
+    filter.file_name_key = &npa_chaos_head_file_name_filter;
 }

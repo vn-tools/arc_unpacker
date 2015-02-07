@@ -10,7 +10,6 @@
 // - Little Busters
 
 #include <cassert>
-#include <stdexcept>
 #include "formats/sfx/nwa_converter.h"
 #include "formats/sound.h"
 #include "io.h"

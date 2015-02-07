@@ -10,10 +10,8 @@
 // - Little Busters
 
 #include <cassert>
-#include <cstdio>
-#include <memory>
-#include "endian.h"
 #include "buffered_io.h"
+#include "endian.h"
 #include "formats/gfx/g00_converter.h"
 #include "formats/image.h"
 #include "io.h"
@@ -240,7 +238,7 @@ namespace
             uncompressed_io.seek(block_offset);
             uint16_t block_type = uncompressed_io.read_u16_le();
             uint16_t part_count = uncompressed_io.read_u16_le();
-            assert(1 == block_type);
+            assert(block_type == 1);
 
             uncompressed_io.skip(0x70);
             for (j = 0; j < part_count; j ++)

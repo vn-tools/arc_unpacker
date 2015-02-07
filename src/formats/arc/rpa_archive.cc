@@ -9,8 +9,8 @@
 // - Katawa Shoujo
 // - Long Live The Queen
 
-#include "formats/arc/rpa_archive.h"
 #include "buffered_io.h"
+#include "formats/arc/rpa_archive.h"
 #include "string_ex.h"
 
 // Stupid unpickle "implementation" ahead: instead of twiddling with stack,

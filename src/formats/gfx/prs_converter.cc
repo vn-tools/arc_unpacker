@@ -6,8 +6,6 @@
 // Archives:  MBL
 
 #include <cassert>
-#include <cstdint>
-#include <cstring>
 #include "formats/gfx/prs_converter.h"
 #include "formats/image.h"
 #include "io.h"

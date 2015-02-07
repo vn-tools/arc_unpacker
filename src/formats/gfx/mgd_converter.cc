@@ -6,8 +6,6 @@
 // Archives:  FJSYS
 
 #include <cassert>
-#include <cstdint>
-#include <cstring>
 #include "buffered_io.h"
 #include "endian.h"
 #include "formats/gfx/mgd_converter.h"
@@ -16,8 +14,7 @@
 
 namespace
 {
-    const char *mgd_magic = "MGD ";
-    const size_t mgd_magic_length = 4;
+    const std::string mgd_magic("MGD ", 4);
 
     typedef enum
     {
@@ -33,13 +30,6 @@ namespace
         uint16_t width;
         uint16_t height;
     } MgdRegion;
-
-    bool mgd_check_magic(IO &io)
-    {
-        char magic[mgd_magic_length];
-        io.read(magic, mgd_magic_length);
-        return memcmp(magic, mgd_magic, mgd_magic_length) == 0;
-    }
 
     void mgd_decompress_sgd_alpha(
         const uint8_t *&input_ptr,
@@ -344,7 +334,7 @@ namespace
 
 void MgdConverter::decode_internal(VirtualFile &file) const
 {
-    if (!mgd_check_magic(file.io))
+    if (file.io.read(mgd_magic.size()) != mgd_magic)
         throw std::runtime_error("Not a MGD graphic file");
 
     __attribute__((unused)) uint16_t data_offset = file.io.read_u16_le();

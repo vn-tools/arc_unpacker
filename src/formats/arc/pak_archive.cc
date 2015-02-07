@@ -7,8 +7,8 @@
 // Known games:
 // - Saya no Uta
 
-#include "formats/arc/pak_archive.h"
 #include "buffered_io.h"
+#include "formats/arc/pak_archive.h"
 #include "string_ex.h"
 
 const std::string pak_magic("\x02\x00\x00\x00", 4);

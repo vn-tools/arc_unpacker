@@ -7,10 +7,10 @@
 // Known games:
 // - Chaos;Head
 
-#include "string_ex.h"
 #include "formats/arc/npa_archive.h"
 #include "formats/arc/npa_archive/npa_filter.h"
 #include "formats/arc/npa_archive/npa_filter_chaos_head.h"
+#include "string_ex.h"
 
 namespace
 {
@@ -160,7 +160,7 @@ namespace
         if (file_type == NPA_FILE_TYPE_DIRECTORY)
             return nullptr;
 
-        else if (file_type != NPA_FILE_TYPE_FILE)
+        if (file_type != NPA_FILE_TYPE_FILE)
             throw std::runtime_error("Unknown file type");
 
         size_t old_pos = unpack_context->arc_io.tell();
@@ -203,14 +203,14 @@ void NpaArchive::parse_cli_options(ArgParser &arg_parser)
     context->filter = new NpaFilter;
 
     const std::string plugin = arg_parser.get_switch("plugin").c_str();
-    void (*initializer)(NpaFilter*) = nullptr;
+    void (*initializer)(NpaFilter&) = nullptr;
     if (plugin == "chaos_head")
         initializer = &npa_chaos_head_filter_init;
     else
         throw std::runtime_error("Unrecognized plugin: " + plugin);
 
     if (initializer != nullptr)
-        initializer(context->filter);
+        initializer(*context->filter);
     else
     {
         delete context->filter;
@@ -230,8 +230,7 @@ void NpaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
     NpaUnpackContext unpack_context(arc_io, *header);
     unpack_context.filter = context->filter;
     unpack_context.table_offset = arc_io.tell();
-    size_t file_pos;
-    for (file_pos = 0; file_pos < header->total_count; file_pos ++)
+    for (size_t file_pos = 0; file_pos < header->total_count; file_pos ++)
     {
         unpack_context.file_pos = file_pos;
         output_files.save(&npa_read_file, &unpack_context);

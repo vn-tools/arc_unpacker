@@ -1,4 +1,3 @@
-#include <cassert>
 #include <cerrno>
 #include <iconv.h>
 #include <memory>
@@ -59,7 +58,8 @@ std::string convert_encoding(
     const std::string &to)
 {
     iconv_t conv = iconv_open(to.c_str(), from.c_str());
-    assert(conv != nullptr);
+    if (conv == nullptr)
+        throw std::runtime_error("Failed to initialize iconv");
 
     std::string output;
     output.reserve(input.size() * 2);

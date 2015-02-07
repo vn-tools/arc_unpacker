@@ -1,4 +1,3 @@
-#include <cassert>
 #include "bin_helpers.h"
 #include "logger.h"
 

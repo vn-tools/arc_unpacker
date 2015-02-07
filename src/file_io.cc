@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstdio>
+#include <stdexcept>
 #include "file_io.h"
 
 struct FileIO::Internals

@@ -108,6 +108,7 @@ void ArgParser::parse(int argc, const char **argv)
 
     for (ssize_t i = 0; i < argc; i ++)
     {
+        assert(argv[i] != nullptr);
         const std::string arg = std::string(argv[i]);
         std::string key = "";
         std::string value = "";

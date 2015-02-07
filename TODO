@@ -16,9 +16,6 @@ Port old code for formats:
 		- MSD
 		- YKS
 
-C++ stuff:
-	- Review all includes
-
 Unit tests (low priority):
 	- NPA archive
 	- PAK archive

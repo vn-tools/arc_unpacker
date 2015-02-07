@@ -9,9 +9,6 @@
 // - Yume Nikki
 
 #include <cassert>
-#include <cstring>
-#include <cstring>
-#include <memory>
 #include "formats/gfx/xyz_converter.h"
 #include "formats/image.h"
 #include "io.h"
@@ -33,7 +30,7 @@ void XyzConverter::decode_internal(VirtualFile &file) const
     size_t compressed_data_size = file.io.size() - file.io.tell();
     std::string compressed_data = file.io.read(compressed_data_size);
     std::string uncompressed_data = zlib_inflate(compressed_data);
-    assert((unsigned)256 * 3 + width * height == uncompressed_data.size());
+    assert(uncompressed_data.size() == (unsigned)256 * 3 + width * height);
 
     size_t pixels_size = width * height * 3;
     std::unique_ptr<char> pixels(new char[pixels_size]);

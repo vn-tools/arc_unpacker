@@ -12,10 +12,8 @@
 // - Comyu Kuroi Ryuu to Yasashii Oukoku
 
 #include <cassert>
-#include <cstring>
-#include <memory>
-#include "formats/arc/xp3_archive.h"
 #include "buffered_io.h"
+#include "formats/arc/xp3_archive.h"
 #include "string_ex.h"
 
 namespace

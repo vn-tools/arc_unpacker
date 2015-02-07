@@ -1,6 +1,6 @@
 #ifndef FORMATS_ARC_NPA_ARCHIVE_NPA_FILTER
 #define FORMATS_ARC_NPA_ARCHIVE_NPA_FILTER
-#include <stdint.h>
+#include <cstdint>
 
 typedef struct
 {
