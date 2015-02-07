@@ -18,7 +18,6 @@ Port old code for formats:
 
 Unit tests (low priority):
 	- NPA archive
-	- PAK archive
 
 Misc:
 	- Improve incorrect --fmt handling
