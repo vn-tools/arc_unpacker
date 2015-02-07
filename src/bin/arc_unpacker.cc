@@ -173,29 +173,37 @@ namespace
 
 int main(int argc, const char **argv)
 {
-    int exit_code = 0;
-    Options options;
-    ArchiveFactory arc_factory;
-    ArgParser arg_parser;
-    arg_parser.parse(argc, argv);
-
-    add_format_option(arg_parser, options);
-    add_quiet_option(arg_parser);
-    add_help_option(arg_parser);
-
-    if (should_show_help(arg_parser))
+    try
     {
-        std::unique_ptr<Archive> archive(options.format != ""
-            ? arc_factory.create_archive(options.format)
-            : nullptr);
-        print_help(argv[0], arg_parser, options, archive.get());
-    }
-    else
-    {
-        add_path_options(arg_parser, options);
-        if (!run(options, arg_parser, arc_factory))
-            exit_code = 1;
-    }
+        int exit_code = 0;
+        Options options;
+        ArchiveFactory arc_factory;
+        ArgParser arg_parser;
+        arg_parser.parse(argc, argv);
 
-    return exit_code;
+        add_format_option(arg_parser, options);
+        add_quiet_option(arg_parser);
+        add_help_option(arg_parser);
+
+        if (should_show_help(arg_parser))
+        {
+            std::unique_ptr<Archive> archive(options.format != ""
+                ? arc_factory.create_archive(options.format)
+                : nullptr);
+            print_help(argv[0], arg_parser, options, archive.get());
+        }
+        else
+        {
+            add_path_options(arg_parser, options);
+            if (!run(options, arg_parser, arc_factory))
+                exit_code = 1;
+        }
+
+        return exit_code;
+    }
+    catch (std::exception &e)
+    {
+        log_error("%s", e.what());
+        return 1;
+    }
 }

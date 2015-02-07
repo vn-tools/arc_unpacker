@@ -8,7 +8,6 @@
 #include "formats/arc/rpa_archive.h"
 #include "formats/arc/sar_archive.h"
 #include "formats/arc/xp3_archive.h"
-#include "logger.h"
 
 struct ArchiveFactory::Internals
 {
@@ -52,6 +51,5 @@ Archive *ArchiveFactory::create_archive(const std::string format) const
     for (auto& p : internals->formats)
         if (p.first == format)
             return p.second();
-    log_error("Invalid archive format: %s", format.c_str());
-    return nullptr;
+    throw std::runtime_error("Invalid archive format: " + format);
 }

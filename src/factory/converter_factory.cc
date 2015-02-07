@@ -6,7 +6,6 @@
 #include "formats/gfx/prs_converter.h"
 #include "formats/gfx/xyz_converter.h"
 #include "formats/sfx/nwa_converter.h"
-#include "logger.h"
 
 struct ConverterFactory::Internals
 {
@@ -49,6 +48,5 @@ Converter *ConverterFactory::create_converter(const std::string format) const
     for (auto& p : internals->formats)
         if (p.first == format)
             return p.second();
-    log_error("Invalid converter format: %s", format.c_str());
-    return nullptr;
+    throw std::runtime_error("Invalid converter format: " + format);
 }
