@@ -1,5 +1,5 @@
 #ifndef FORMATS_ARC_NSA_ARCHIVE
-#define FROMATS_ARC_NSA_ARCHIVE
+#define FORMATS_ARC_NSA_ARCHIVE
 #include "formats/archive.h"
 
 class NsaArchive final : public Archive

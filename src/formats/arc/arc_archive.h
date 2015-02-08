@@ -1,5 +1,5 @@
 #ifndef FORMATS_ARC_ARC_ARCHIVE
-#define FROMATS_ARC_ARC_ARCHIVE
+#define FORMATS_ARC_ARC_ARCHIVE
 #include "formats/archive.h"
 
 class ArcArchive final : public Archive

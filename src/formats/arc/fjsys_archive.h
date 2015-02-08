@@ -1,5 +1,5 @@
 #ifndef FORMATS_ARC_FJSYS_ARCHIVE
-#define FROMATS_ARC_FJSYS_ARCHIVE
+#define FORMATS_ARC_FJSYS_ARCHIVE
 #include "formats/archive.h"
 
 class FjsysArchive final : public Archive

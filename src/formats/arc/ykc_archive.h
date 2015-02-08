@@ -1,5 +1,5 @@
 #ifndef FORMATS_ARC_YKC_ARCHIVE
-#define FROMATS_ARC_YKC_ARCHIVE
+#define FORMATS_ARC_YKC_ARCHIVE
 #include "formats/archive.h"
 
 class YkcArchive final : public Archive

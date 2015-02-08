@@ -1,5 +1,5 @@
 #ifndef FORMATS_ARC_MBL_ARCHIVE
-#define FROMATS_ARC_MBL_ARCHIVE
+#define FORMATS_ARC_MBL_ARCHIVE
 #include "formats/archive.h"
 
 class MblArchive final : public Archive
