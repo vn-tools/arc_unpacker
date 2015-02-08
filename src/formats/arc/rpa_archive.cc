@@ -176,8 +176,11 @@ namespace
                     return;
 
                 default:
-                    throw std::runtime_error(
-                        "Unsupported pickle operator " + c);
+                {
+                    std::string msg = "Unsupported pickle operator ";
+                    msg += c;
+                    throw std::runtime_error(msg);
+                }
             }
         }
     }
