@@ -8,6 +8,7 @@
 // - Hoshizora e Kakaru Hashi
 
 #include "formats/arc/ykc_archive.h"
+#include "formats/gfx/ykg_converter.h"
 
 namespace
 {
@@ -46,14 +47,18 @@ namespace
         return table;
     }
 
-    std::unique_ptr<VirtualFile> read_file(IO &arc_io, TableEntry &table_entry)
+    std::unique_ptr<VirtualFile> read_file(
+        IO &arc_io,
+        TableEntry &table_entry,
+        YkgConverter &ykg_converter)
     {
         std::unique_ptr<VirtualFile> file(new VirtualFile);
         arc_io.seek(table_entry.offset);
         file->io.write_from_io(arc_io, table_entry.size);
         file->name = table_entry.name;
 
-        // todo: decode with YKG and YKS once implemented
+        ykg_converter.try_decode(*file);
+        // todo: decode with YKS once implemented
 
         return file;
     }
@@ -61,7 +66,8 @@ namespace
 
 struct YkcArchive::Internals
 {
-    // todo: YKG and YKS converters go here
+    YkgConverter ykg_converter;
+    // todo: YKS converters goes here
 };
 
 YkcArchive::YkcArchive() : internals(new Internals())
@@ -72,16 +78,16 @@ YkcArchive::~YkcArchive()
 {
 }
 
-void YkcArchive::add_cli_help(
-    __attribute__((unused)) ArgParser &arg_parser) const
+void YkcArchive::add_cli_help(ArgParser &arg_parser) const
 {
-    // todo: pass to YKG and YKS once implemented
+    internals->ykg_converter.add_cli_help(arg_parser);
+    // todo: pass to YKS once implemented
 }
 
-void YkcArchive::parse_cli_options(
-    __attribute__((unused)) ArgParser &arg_parser)
+void YkcArchive::parse_cli_options(ArgParser &arg_parser)
 {
-    // todo: pass to YKG and YKS once implemented
+    internals->ykg_converter.parse_cli_options(arg_parser);
+    // todo: pass to YKS once implemented
 }
 
 void YkcArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
@@ -101,7 +107,10 @@ void YkcArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
     {
         output_files.save([&]() -> std::unique_ptr<VirtualFile>
         {
-            return read_file(arc_io, *table_entry);
+            return read_file(
+                arc_io,
+                *table_entry,
+                internals->ykg_converter);
         });
     }
 }
