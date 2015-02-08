@@ -183,7 +183,7 @@ NpaArchive::~NpaArchive()
     delete context;
 }
 
-void NpaArchive::add_cli_help(ArgParser &arg_parser)
+void NpaArchive::add_cli_help(ArgParser &arg_parser) const
 {
     arg_parser.add_help(
         "--plugin=PLUGIN",

@@ -94,7 +94,7 @@ FjsysArchive::~FjsysArchive()
     delete context;
 }
 
-void FjsysArchive::add_cli_help(ArgParser &arg_parser)
+void FjsysArchive::add_cli_help(ArgParser &arg_parser) const
 {
     context->mgd_converter->add_cli_help(arg_parser);
 }

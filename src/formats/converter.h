@@ -6,7 +6,7 @@
 class Converter
 {
 public:
-    virtual void add_cli_help(ArgParser &);
+    virtual void add_cli_help(ArgParser &) const;
     virtual void parse_cli_options(ArgParser &);
     virtual void decode_internal(VirtualFile &) const;
     virtual ~Converter();

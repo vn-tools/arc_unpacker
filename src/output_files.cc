@@ -45,7 +45,8 @@ void OutputFilesHdd::save(VFLambdaFactory save_proc) const
     {
         assert(save_proc != nullptr);
 
-        log_info("Reading file...");
+        log("Reading... ");
+
         std::unique_ptr<VirtualFile> file(save_proc());
         assert(file != nullptr);
 
@@ -53,21 +54,17 @@ void OutputFilesHdd::save(VFLambdaFactory save_proc) const
             internals->output_dir, file->name);
         assert(full_path != "");
 
-        log_info("Saving to %s... ", full_path.c_str());
-
         mkpath(dirname(full_path));
 
         FileIO output_io(full_path, "wb");
         file->io.seek(0);
         output_io.write_from_io(file->io, file->io.size());
-        log_info("Saved successfully");
+        log("ok (saved in %s)\n", full_path.c_str());
     }
     catch (std::runtime_error &e)
     {
-        log_error("%s", e.what());
-        log_info("Skipping.");
+        log("error (%s)\n", e.what());
     }
-    log_info("");
 }
 
 

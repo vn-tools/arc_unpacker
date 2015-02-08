@@ -3,7 +3,8 @@
 #include "formats/converter.h"
 #include "logger.h"
 
-void Converter::add_cli_help(__attribute__((unused)) ArgParser &arg_parser)
+void Converter::add_cli_help(
+    __attribute__((unused)) ArgParser &arg_parser) const
 {
 }
 

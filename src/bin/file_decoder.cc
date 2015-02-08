@@ -1,4 +1,3 @@
-#include <cstdio>
 #include <cstring>
 #include "arg_parser.h"
 #include "bin_helpers.h"
@@ -32,6 +31,37 @@ namespace
         const PathInfo *path_info;
     } ReadContext;
 
+    void print_help(
+        const std::string &path_to_self,
+        ArgParser &arg_parser,
+        const Options &options,
+        const Converter *converter)
+    {
+        log(
+            "Usage: %s [options] [file_options] input_path [input_path...]",
+            path_to_self.c_str());
+
+        log("\n");
+        log("[options] can be:\n");
+        log("\n");
+        arg_parser.print_help();
+        arg_parser.clear_help();
+        log("\n");
+
+        if (converter != nullptr)
+        {
+            converter->add_cli_help(arg_parser);
+            log("[file_options] specific to %s:\n", options.format.c_str());
+            log("\n");
+            arg_parser.print_help();
+            return;
+        }
+        log("[file_options] depend on chosen format and are required at "
+            "runtime.\n");
+        log("See --help --fmt=FORMAT to get detailed help for given "
+            "converter.\n");
+    }
+
     void add_output_folder_option(ArgParser &arg_parser, Options &options)
     {
         arg_parser.add_help(
@@ -44,7 +74,19 @@ namespace
             options.output_dir = arg_parser.get_switch("--out");
     }
 
-    bool add_input_paths_option(const ArgParser &arg_parser, Options &options)
+    void add_format_option(ArgParser &arg_parser, Options &options)
+    {
+        arg_parser.add_help(
+            "-f, --fmt=FORMAT",
+            "Selects the file format.");
+
+        if (arg_parser.has_switch("-f"))
+            options.format = arg_parser.get_switch("-f");
+        if (arg_parser.has_switch("--fmt"))
+            options.format = arg_parser.get_switch("--fmt");
+    }
+
+    bool add_input_paths_option(ArgParser &arg_parser, Options &options)
     {
         const std::vector<std::string> stray = arg_parser.get_stray();
         for (size_t i = 1; i < stray.size(); i ++)
@@ -72,54 +114,12 @@ namespace
 
         if (options.input_paths.size() < 1)
         {
-            log_error("Required more arguments.");
+            log("Error: required more arguments.\n");
+            print_help(stray[0], arg_parser, options, nullptr);
             return false;
         }
 
         return true;
-    }
-
-    void add_format_option(ArgParser &arg_parser, Options &options)
-    {
-        arg_parser.add_help(
-            "-f, --fmt=FORMAT",
-            "Selects the file format.");
-
-        if (arg_parser.has_switch("-f"))
-            options.format = arg_parser.get_switch("-f");
-        if (arg_parser.has_switch("--fmt"))
-            options.format = arg_parser.get_switch("--fmt");
-    }
-
-    void print_help(
-        const char *path_to_self,
-        ArgParser &arg_parser,
-        Options &options,
-        Converter *converter)
-    {
-        printf(
-            "Usage: %s [options] [file_options] input_path [input_path...]",
-            path_to_self);
-
-        puts("");
-        puts("[options] can be:");
-        puts("");
-        arg_parser.print_help();
-        arg_parser.clear_help();
-        puts("");
-
-        if (converter != nullptr)
-        {
-            converter->add_cli_help(arg_parser);
-            printf("[file_options] specific to %s:\n", options.format.c_str());
-            puts("");
-            arg_parser.print_help();
-            return;
-        }
-        puts("[file_options] depend on chosen format and are required at "
-            "runtime.");
-        puts("See --help --fmt=FORMAT to get detailed help for given "
-            "converter.");
     }
 
     void decode(
@@ -146,22 +146,20 @@ namespace
 
                 try
                 {
-                    log_info("Trying %s...", format.c_str());
+                    log("Trying %s... ", format.c_str());
                     decode(*converter, arg_parser, file);
-                    log_info("Success - %s decoding finished", format.c_str());
+                    log("Decoding finished successfully.\n");
                     return true;
                 }
                 catch (std::exception &e)
                 {
-                    log_error("%s", e.what());
-                    log_info(
-                        "Failure - %s didn\'t work, trying next format...",
-                        format.c_str());
-                    continue;
+                    log(
+                        "Error: %s; trying next format...\n",
+                        e.what());
                 }
             }
 
-            log_error("Nothing left to try. File not recognized.");
+            log("Nothing left to try. File not recognized.\n");
             return false;
         }
         else
@@ -172,15 +170,14 @@ namespace
             try
             {
                 decode(*converter, arg_parser, file);
-                log_info(
-                    "Success - %s decoding finished", options.format.c_str());
+                log("Decoding finished successfully.\n");
                 return true;
             }
             catch (std::exception &e)
             {
-                log_error("%s", e.what());
-                log_info(
-                    "Failure - %s decoding finished", options.format.c_str());
+                log(
+                    "Error: %s\nDecoding finished with errors.\n",
+                    e.what());
                 return false;
             }
         }
@@ -256,7 +253,6 @@ int main(int argc, const char **argv)
 
         add_output_folder_option(arg_parser, options);
         add_format_option(arg_parser, options);
-        add_quiet_option(arg_parser);
         add_help_option(arg_parser);
 
         if (should_show_help(arg_parser))
@@ -278,7 +274,7 @@ int main(int argc, const char **argv)
     }
     catch (std::exception &e)
     {
-        log_error("%s", e.what());
+        log("Error: %s\n", e.what());
         return 1;
     }
 }

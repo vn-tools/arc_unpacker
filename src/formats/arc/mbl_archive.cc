@@ -103,7 +103,7 @@ MblArchive::~MblArchive()
     delete context;
 }
 
-void MblArchive::add_cli_help(ArgParser &arg_parser)
+void MblArchive::add_cli_help(ArgParser &arg_parser) const
 {
     context->prs_converter->add_cli_help(arg_parser);
 }

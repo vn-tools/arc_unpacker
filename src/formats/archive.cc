@@ -3,11 +3,11 @@
 #include "formats/archive.h"
 #include "logger.h"
 
-void Archive::parse_cli_options(__attribute__((unused)) ArgParser &arg_parser)
+void Archive::add_cli_help(__attribute__((unused)) ArgParser &arg_parser) const
 {
 }
 
-void Archive::add_cli_help(__attribute__((unused)) ArgParser &arg_parser)
+void Archive::parse_cli_options(__attribute__((unused)) ArgParser &arg_parser)
 {
 }
 

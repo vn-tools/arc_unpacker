@@ -17,7 +17,6 @@ Unit tests (low priority):
 	- NPA archive
 
 Misc:
-	- Improve incorrect --fmt handling
 	- Replace some assertions with explicit checks
 
 The ride never ends!

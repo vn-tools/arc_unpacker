@@ -1,4 +1,3 @@
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include "arg_parser.h"
@@ -24,6 +23,40 @@ namespace
         return input_path + "~";
     }
 
+    void print_help(
+        const std::string path_to_self,
+        ArgParser &arg_parser,
+        Options &options,
+        Archive *archive)
+    {
+        log("Usage: %s [options] [arc_options] input_path [output_path]\n",
+            path_to_self.c_str());
+
+        log("\n");
+        log("Unless output path is provided, the program is going to use ");
+        log("input path\nfollowed with a tilde (~).\n");
+        log("\n");
+        log("[options] can be:\n");
+        log("\n");
+
+        arg_parser.print_help();
+        arg_parser.clear_help();
+        log("\n");
+
+        if (archive != nullptr)
+        {
+            archive->add_cli_help(arg_parser);
+            log("[arc_options] specific to %s:\n", options.format.c_str());
+            log("\n");
+            arg_parser.print_help();
+            return;
+        }
+        log("[arc_options] depend on each archive and are required at "
+            "runtime.\n");
+        log("See --help --fmt=FORMAT to get detailed help for given "
+            "archive.\n");
+    }
+
     void add_format_option(ArgParser &arg_parser, Options &options)
     {
         arg_parser.add_help(
@@ -41,7 +74,8 @@ namespace
         const std::vector<std::string> stray = arg_parser.get_stray();
         if (stray.size() < 2)
         {
-            log_error("Required more arguments.");
+            log("Error: required more arguments.\n");
+            print_help(stray[0], arg_parser, options, nullptr);
             exit(1);
         }
 
@@ -49,40 +83,6 @@ namespace
         options.output_path = stray.size() < 3
             ? get_default_output_path(stray[1])
             : stray[2];
-    }
-
-    void print_help(
-        const std::string path_to_self,
-        ArgParser &arg_parser,
-        Options &options,
-        Archive *archive)
-    {
-        printf("Usage: %s [options] [arc_options] input_path [output_path]\n",
-            path_to_self.c_str());
-
-        puts("");
-        puts("Unless output path is provided, the script is going to use path");
-        puts("followed with a tilde (~).");
-        puts("");
-        puts("[options] can be:");
-        puts("");
-
-        arg_parser.print_help();
-        arg_parser.clear_help();
-        puts("");
-
-        if (archive != nullptr)
-        {
-            archive->add_cli_help(arg_parser);
-            printf("[arc_options] specific to %s:\n", options.format.c_str());
-            puts("");
-            arg_parser.print_help();
-            return;
-        }
-        puts("[arc_options] depend on each archive and are required at "
-            "runtime.");
-        puts("See --help --fmt=FORMAT to get detailed help for given "
-            "archive.");
     }
 
     void unpack(
@@ -112,25 +112,22 @@ namespace
 
                 try
                 {
-                    log_info("Trying %s...", format.c_str());
+                    log("Trying %s...\n", format.c_str());
                     unpack(*archive, arg_parser, io, output_files);
-                    log_info(
-                        "Success - %s unpacking finished successfully.",
-                        format.c_str());
+                    log("Unpacking finished successfully.\n");
                     return true;
                 }
                 catch (std::exception &e)
                 {
-                    log_error("%s", e.what());
-                    log_info(
-                        "Failure - %s didn\'t work, trying next format...",
-                        format.c_str());
-                    if (log_enabled(LOG_LEVEL_INFO))
-                        puts("");
+                    log(
+                        "Error: %s\n"
+                        "Unpacking finished with errors, "
+                        "trying next format...\n",
+                        e.what());
                 }
             }
 
-            log_error("Nothing left to try. File not recognized.");
+            log("Nothing left to try. File not recognized.\n");
             return false;
         }
         else
@@ -141,15 +138,14 @@ namespace
             try
             {
                 unpack(*archive, arg_parser, io, output_files);
-                log_info(
-                    "Success - %s unpacking finished", options.format.c_str());
+                log("Unpacking finished successfully.\n");
                 return true;
             }
             catch (std::exception &e)
             {
-                log_error("%s", e.what());
-                log_info(
-                    "Failure - %s unpacking finished", options.format.c_str());
+                log(
+                    "Error: %s\nUnpacking finished with errors.\n",
+                    e.what());
                 return false;
             }
         }
@@ -182,7 +178,6 @@ int main(int argc, const char **argv)
         arg_parser.parse(argc, argv);
 
         add_format_option(arg_parser, options);
-        add_quiet_option(arg_parser);
         add_help_option(arg_parser);
 
         if (should_show_help(arg_parser))
@@ -203,7 +198,7 @@ int main(int argc, const char **argv)
     }
     catch (std::exception &e)
     {
-        log_error("%s", e.what());
+        log("Error: %s\n", e.what());
         return 1;
     }
 }

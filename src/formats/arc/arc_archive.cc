@@ -70,7 +70,7 @@ ArcArchive::~ArcArchive()
     delete context;
 }
 
-void ArcArchive::add_cli_help(ArgParser &arg_parser)
+void ArcArchive::add_cli_help(ArgParser &arg_parser) const
 {
     context->cbg_converter->add_cli_help(arg_parser);
 }

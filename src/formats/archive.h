@@ -7,7 +7,7 @@
 class Archive
 {
 public:
-    virtual void add_cli_help(ArgParser &);
+    virtual void add_cli_help(ArgParser &) const;
     virtual void parse_cli_options(ArgParser &);
     virtual void unpack_internal(IO &, OutputFiles &) const;
     virtual ~Archive();
