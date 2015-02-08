@@ -10,6 +10,7 @@
 #include "formats/arc/rpa_archive.h"
 #include "formats/arc/sar_archive.h"
 #include "formats/arc/xp3_archive.h"
+#include "formats/arc/ykc_archive.h"
 
 struct ArchiveFactory::Internals
 {
@@ -25,6 +26,7 @@ struct ArchiveFactory::Internals
 ArchiveFactory::ArchiveFactory()
 {
     internals = new ArchiveFactory::Internals();
+    internals->add_format("ykc", []() { return new YkcArchive(); });
     internals->add_format("rgssad", []() { return new RgssadArchive(); });
     internals->add_format("fjsys", []() { return new FjsysArchive(); });
     internals->add_format("arc", []() { return new ArcArchive(); });
