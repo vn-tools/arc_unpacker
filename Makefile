@@ -15,7 +15,7 @@ RM       = rm -rf
 MKPATH   = mkdir -p
 STRIP    = /usr/bin/strip
 
-LFLAGS         = -Wall -Wextra -pedantic -lpng -lz
+LFLAGS         = -Wall -Wextra -pedantic -lpng -lz -lstdc++
 LFLAGS_DEBUG   =
 LFLAGS_RELEASE =
 CFLAGS         = -Wall -Wextra -pedantic -Wwrite-strings -std=c++11 -iquote $(SRC_DIR)
