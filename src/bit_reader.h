@@ -1,14 +1,15 @@
 #ifndef BIT_READER_H
 #define BIT_READER_H
-#include "buffered_io.h"
+#include <memory>
 
 class BitReader
 {
 public:
-    BitReader(BufferedIO &io);
+    BitReader(const char *buffer, size_t buffer_size);
     ~BitReader();
-    bool get();
+
     unsigned int get(size_t n);
+    unsigned int try_get(size_t n);
 private:
     struct Internals;
     std::unique_ptr<Internals> internals;

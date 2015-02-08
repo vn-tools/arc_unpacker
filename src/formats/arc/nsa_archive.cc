@@ -10,6 +10,7 @@
 
 #include "bit_reader.h"
 #include "formats/arc/nsa_archive.h"
+#include "formats/gfx/spb_converter.h"
 
 namespace
 {
@@ -61,8 +62,7 @@ namespace
 
     void decompress_lzss(std::string &data, size_t size_original)
     {
-        BufferedIO io(data);
-        BitReader bit_reader(io);
+        BitReader bit_reader(data.data(), data.size());
 
         const size_t position_bits = 8;
         const size_t length_bits = 4;
@@ -82,7 +82,7 @@ namespace
         size_t written = 0;
         while (written < size_original)
         {
-            bool flag = bit_reader.get();
+            bool flag = bit_reader.get(1);
 
             if (flag)
             {
@@ -120,7 +120,7 @@ namespace
     }
 
     std::unique_ptr<VirtualFile> read_file(
-        IO &arc_io, const TableEntry &table_entry)
+        IO &arc_io, const TableEntry &table_entry, SpbConverter &spb_converter)
     {
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
@@ -131,25 +131,27 @@ namespace
         switch (table_entry.compression_type)
         {
             case COMPRESSION_NONE:
+                file->io.write(data);
                 break;
 
             case COMPRESSION_LZSS:
                 decompress_lzss(data, table_entry.size_original);
+                file->io.write(data);
                 break;
 
             case COMPRESSION_SPB:
-                throw std::runtime_error("Not supported yet");
+                file->io.write(data);
+                spb_converter.decode(*file);
                 break;
         }
 
-        file->io.write(data);
         return file;
     }
 }
 
 struct NsaArchive::Internals
 {
-    // SPB converter will go here
+    SpbConverter spb_converter;
 };
 
 NsaArchive::NsaArchive() : internals(new Internals)
@@ -167,7 +169,7 @@ void NsaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
     {
         output_files.save([&]() -> std::unique_ptr<VirtualFile>
         {
-            return read_file(arc_io, *table[i]);
+            return read_file(arc_io, *table[i], internals->spb_converter);
         });
     }
 }

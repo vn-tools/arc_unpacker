@@ -4,11 +4,10 @@
 
 void test_empty()
 {
-    BufferedIO io;
-    BitReader reader(io);
+    BitReader reader("", 0);
     try
     {
-        reader.get();
+        reader.get(1);
         assert(0);
     }
     catch (...)
@@ -18,29 +17,49 @@ void test_empty()
 
 void test_reading_one_bit()
 {
-    BufferedIO io("\x8f"); //10001111
-    BitReader reader(io);
-    assert(reader.get());
-    assert(!reader.get());
-    assert(!reader.get());
-    assert(!reader.get());
-    assert(reader.get());
-    assert(reader.get());
-    assert(reader.get());
-    assert(reader.get());
+    BitReader reader("\x8f", 2); //10001111
+    assert(reader.get(1));
+    assert(!reader.get(1));
+    assert(!reader.get(1));
+    assert(!reader.get(1));
+    assert(reader.get(1));
+    assert(reader.get(1));
+    assert(reader.get(1));
+    assert(reader.get(1));
 }
 
 void test_reading_many_bits()
 {
-    BufferedIO io("\x8f"); //10001111
-    BitReader reader(io);
+    BitReader reader("\x8f", 2); //10001111
     assert(reader.get(7) == (0x8f >> 1));
-    assert(reader.get());
+    assert(reader.get(1));
+}
+
+void test_reading_many_bytes()
+{
+    BitReader reader("\x8f\x8f", 2); //10001111
+    assert(reader.get(7) == (0x8f >> 1));
+    assert(reader.get(1));
+
+    assert(reader.get(1));
+    assert(!reader.get(1));
+    assert(reader.get(4) == 3);
+    assert(reader.get(2) == 3);
+    try
+    {
+        reader.get(1);
+        assert(0);
+    }
+    catch (...)
+    {
+    }
 }
 
 int main(void)
 {
     test_empty();
     test_reading_one_bit();
+    test_reading_many_bits();
+    test_reading_many_bytes();
     return 0;
 }
