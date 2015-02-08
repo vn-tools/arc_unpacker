@@ -18,16 +18,16 @@
 
 namespace
 {
-    typedef struct Xp3UnpackContext
+    typedef struct UnpackContext
     {
         IO &arc_io;
         IO &table_io;
 
-        Xp3UnpackContext(IO &arc_io, IO &table_io)
+        UnpackContext(IO &arc_io, IO &table_io)
             : arc_io(arc_io), table_io(table_io)
         {
         }
-    } Xp3UnpackContext;
+    } UnpackContext;
 
     const std::string xp3_magic("XP3\r\n\x20\x0a\x1a\x8b\x67\x01", 11);
     const std::string file_magic("File", 4);
@@ -35,7 +35,7 @@ namespace
     const std::string info_magic("info", 4);
     const std::string segm_magic("segm", 4);
 
-    int xp3_detect_version(IO &arc_io)
+    int detect_version(IO &arc_io)
     {
         int version = 1;
         size_t old_pos = arc_io.tell();
@@ -46,12 +46,12 @@ namespace
         return version;
     }
 
-    bool xp3_check_magic(IO &arc_io, std::string expected_magic)
+    bool check_magic(IO &arc_io, std::string expected_magic)
     {
         return arc_io.read(expected_magic.size()) == expected_magic;
     }
 
-    uint64_t xp3_get_table_offset(IO &arc_io, int version)
+    uint64_t get_table_offset(IO &arc_io, int version)
     {
         if (version == 1)
             return arc_io.read_u64_le();
@@ -67,7 +67,7 @@ namespace
         return arc_io.read_u64_le();
     }
 
-    std::unique_ptr<IO> xp3_read_raw_table(IO &arc_io)
+    std::unique_ptr<IO> read_raw_table(IO &arc_io)
     {
         bool use_zlib = arc_io.read_u8();
         const uint64_t size_compressed = arc_io.read_u64_le();
@@ -84,9 +84,9 @@ namespace
         return std::unique_ptr<IO>(new BufferedIO(compressed));
     }
 
-    void xp3_read_info_chunk(IO &table_io, VirtualFile &target_file)
+    void read_info_chunk(IO &table_io, VirtualFile &target_file)
     {
-        if (!xp3_check_magic(table_io, info_magic))
+        if (!check_magic(table_io, info_magic))
             throw std::runtime_error("Expected INFO chunk");
         uint64_t info_chunk_size = table_io.read_u64_le();
 
@@ -102,12 +102,12 @@ namespace
         assert(info_chunk_size == name_length * 2 + 22);
     }
 
-    bool xp3_read_segm_chunk(
+    bool read_segm_chunk(
         IO &table_io,
         IO &arc_io,
         VirtualFile &target_file)
     {
-        if (!xp3_check_magic(table_io, segm_magic))
+        if (!check_magic(table_io, segm_magic))
         {
             table_io.skip(-segm_magic.size());
             return false;
@@ -136,11 +136,11 @@ namespace
         return true;
     }
 
-    uint32_t xp3_read_adlr_chunk(IO &table_io, uint32_t *encryption_key)
+    uint32_t read_adlr_chunk(IO &table_io, uint32_t *encryption_key)
     {
         assert(encryption_key != nullptr);
 
-        if (!xp3_check_magic(table_io, adlr_magic))
+        if (!check_magic(table_io, adlr_magic))
             throw std::runtime_error("Expected ADLR chunk");
 
         uint64_t adlr_chunk_size = table_io.read_u64_le();
@@ -150,28 +150,28 @@ namespace
         return true;
     }
 
-    std::unique_ptr<VirtualFile> xp3_read_file(void *context)
+    std::unique_ptr<VirtualFile> read_file(void *context)
     {
-        Xp3UnpackContext *unpack_context = (Xp3UnpackContext*)context;
+        UnpackContext *unpack_context = (UnpackContext*)context;
 
         IO &arc_io = unpack_context->arc_io;
         IO &table_io = unpack_context->table_io;
         std::unique_ptr<VirtualFile> target_file(new VirtualFile());
 
-        if (!xp3_check_magic(table_io, file_magic))
+        if (!check_magic(table_io, file_magic))
             throw std::runtime_error("Expected FILE chunk");
 
         uint64_t file_chunk_size = table_io.read_u64_le();
         size_t file_chunk_start_offset = table_io.tell();
 
-        xp3_read_info_chunk(table_io, *target_file);
+        read_info_chunk(table_io, *target_file);
 
-        while (xp3_read_segm_chunk(table_io, arc_io, *target_file))
+        while (read_segm_chunk(table_io, arc_io, *target_file))
         {
         }
 
         uint32_t encryption_key;
-        xp3_read_adlr_chunk(table_io, &encryption_key);
+        read_adlr_chunk(table_io, &encryption_key);
 
         assert(table_io.tell() - file_chunk_start_offset == file_chunk_size);
         return target_file;
@@ -180,15 +180,15 @@ namespace
 
 void Xp3Archive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
 {
-    if (!xp3_check_magic(arc_io, xp3_magic))
+    if (!check_magic(arc_io, xp3_magic))
         throw std::runtime_error("Not an XP3 archive");
 
-    int version = xp3_detect_version(arc_io);
-    uint64_t table_offset = xp3_get_table_offset(arc_io, version);
+    int version = detect_version(arc_io);
+    uint64_t table_offset = get_table_offset(arc_io, version);
     arc_io.seek((uint32_t)table_offset);
-    std::unique_ptr<IO> table_io = xp3_read_raw_table(arc_io);
+    std::unique_ptr<IO> table_io = read_raw_table(arc_io);
 
-    Xp3UnpackContext unpack_context(arc_io, *table_io);
+    UnpackContext unpack_context(arc_io, *table_io);
     while (table_io->tell() < table_io->size())
-        output_files.save(&xp3_read_file, &unpack_context);
+        output_files.save(&read_file, &unpack_context);
 }

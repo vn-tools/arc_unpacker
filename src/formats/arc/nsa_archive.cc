@@ -6,6 +6,7 @@
 //
 // Known games:
 // - Tsukihime
+// - Umineko no naku koro ni
 
 #include "bit_reader.h"
 #include "formats/arc/nsa_archive.h"

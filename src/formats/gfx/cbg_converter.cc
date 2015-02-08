@@ -13,7 +13,7 @@
 
 namespace
 {
-    const std::string cbg_magic("CompressedBG___\x00", 16);
+    const std::string magic("CompressedBG___\x00", 16);
 
     typedef struct
     {
@@ -21,9 +21,9 @@ namespace
         uint32_t frequency;
         int left_node;
         int right_node;
-    } CbgNodeInfo;
+    } NodeInfo;
 
-    uint32_t cbg_get_key(uint32_t *pkey)
+    uint32_t get_key(uint32_t *pkey)
     {
         uint32_t key = *pkey;
         uint32_t tmp1 = 0x4e35 * (key & 0xffff);
@@ -33,16 +33,16 @@ namespace
         return tmp & 0x7fff;
     }
 
-    void cbg_decrypt(char *input, uint32_t decrypt_size, uint32_t key)
+    void decrypt(char *input, uint32_t decrypt_size, uint32_t key)
     {
         uint32_t i;
         for (i = 0; i < decrypt_size; i ++)
         {
-            *input ++ -= (char) cbg_get_key(&key);
+            *input ++ -= (char) get_key(&key);
         }
     }
 
-    uint32_t cbg_read_variable_data(char *&input, const char *input_guardian)
+    uint32_t read_variable_data(char *&input, const char *input_guardian)
     {
         char current;
         uint32_t result = 0;
@@ -57,7 +57,7 @@ namespace
         return result;
     }
 
-    void cbg_read_frequency_table(
+    void read_frequency_table(
         IO &io,
         uint32_t raw_data_size,
         uint32_t key,
@@ -66,22 +66,20 @@ namespace
         std::unique_ptr<char> raw_data(new char[raw_data_size]);
         io.read(raw_data.get(), raw_data_size);
 
-        cbg_decrypt(raw_data.get(), raw_data_size, key);
+        decrypt(raw_data.get(), raw_data_size, key);
 
         int i;
         char *raw_data_ptr = raw_data.get();
         const char *raw_data_guardian = raw_data_ptr + raw_data_size;
         for (i = 0; i < 256; i ++)
         {
-            frequency_table[i] = cbg_read_variable_data(
+            frequency_table[i] = read_variable_data(
                 raw_data_ptr,
                 raw_data_guardian);
         }
     }
 
-    int cbg_read_node_info(
-        uint32_t frequency_table[],
-        CbgNodeInfo node_info[])
+    int read_node_info(uint32_t frequency_table[], NodeInfo node_info[])
     {
         assert(frequency_table != nullptr);
         assert(node_info != nullptr);
@@ -136,10 +134,10 @@ namespace
         return i;
     }
 
-    void cbg_decompress_huffman(
+    void decompress_huffman(
         IO &io,
         int last_node,
-        CbgNodeInfo node_info[],
+        NodeInfo node_info[],
         uint32_t huffman_size,
         uint8_t *huffman)
     {
@@ -166,7 +164,7 @@ namespace
         }
     }
 
-    void cbg_decompress_rle(
+    void decompress_rle(
         uint32_t huffman_size,
         char *huffman,
         char *output)
@@ -178,7 +176,7 @@ namespace
         bool zero_flag = false;
         while (huffman_ptr < huffman_guardian)
         {
-            uint32_t length = cbg_read_variable_data(
+            uint32_t length = read_variable_data(
                 huffman_ptr, huffman_guardian);
             if (zero_flag)
             {
@@ -195,7 +193,7 @@ namespace
         }
     }
 
-    void cbg_transform_colors(
+    void transform_colors(
         uint8_t *input,
         uint16_t width,
         uint16_t height,
@@ -266,7 +264,7 @@ namespace
 
 void CbgConverter::decode_internal(VirtualFile &file) const
 {
-    if (file.io.read(cbg_magic.size()) != cbg_magic)
+    if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a CBG image");
 
     uint16_t width = file.io.read_u16_le();
@@ -280,18 +278,18 @@ void CbgConverter::decode_internal(VirtualFile &file) const
     file.io.skip(4);
 
     uint32_t freq_table[256];
-    cbg_read_frequency_table(
+    read_frequency_table(
         file.io,
         freq_table_data_size,
         key,
         freq_table);
 
-    CbgNodeInfo node_info[511];
-    int last_node = cbg_read_node_info(freq_table, node_info);
+    NodeInfo node_info[511];
+    int last_node = read_node_info(freq_table, node_info);
 
     std::unique_ptr<char> huffman(new char[huffman_size]);
 
-    cbg_decompress_huffman(
+    decompress_huffman(
         file.io,
         last_node,
         node_info,
@@ -300,8 +298,8 @@ void CbgConverter::decode_internal(VirtualFile &file) const
 
     size_t output_size = width * height * (bpp >> 3);
     std::unique_ptr<char> output(new char[output_size]);
-    cbg_decompress_rle(huffman_size, huffman.get(), output.get());
-    cbg_transform_colors(
+    decompress_rle(huffman_size, huffman.get(), output.get());
+    transform_colors(
         reinterpret_cast<uint8_t*>(output.get()), width, height, bpp);
 
     std::unique_ptr<Image> image = Image::from_pixels(

@@ -13,22 +13,22 @@
 
 namespace
 {
-    typedef struct MblUnpackContext
+    typedef struct UnpackContext
     {
         IO &arc_io;
         PrsConverter &prs_converter;
         size_t name_length;
 
-        MblUnpackContext(
+        UnpackContext(
             IO &arc_io, PrsConverter &prs_converter, size_t name_length)
             : arc_io(arc_io),
                 prs_converter(prs_converter),
                 name_length(name_length)
         {
         }
-    } MblUnpackContext;
+    } UnpackContext;
 
-    int mbl_check_version(
+    int check_version(
         IO &arc_io,
         size_t initial_position,
         uint32_t file_count,
@@ -41,10 +41,10 @@ namespace
         return last_file_offset + last_file_size == arc_io.size();
     }
 
-    int mbl_get_version(IO &arc_io)
+    int get_version(IO &arc_io)
     {
         uint32_t file_count = arc_io.read_u32_le();
-        if (mbl_check_version(arc_io, 4, file_count, 16))
+        if (check_version(arc_io, 4, file_count, 16))
         {
             arc_io.seek(0);
             return 1;
@@ -52,7 +52,7 @@ namespace
 
         arc_io.seek(4);
         uint32_t name_length = arc_io.read_u32_le();
-        if (mbl_check_version(arc_io, 8, file_count, name_length))
+        if (check_version(arc_io, 8, file_count, name_length))
         {
             arc_io.seek(0);
             return 2;
@@ -61,9 +61,9 @@ namespace
         return -1;
     }
 
-    std::unique_ptr<VirtualFile> mbl_read_file(void *context)
+    std::unique_ptr<VirtualFile> read_file(void *context)
     {
-        MblUnpackContext *unpack_context = (MblUnpackContext*)context;
+        UnpackContext *unpack_context = (UnpackContext*)context;
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         size_t old_pos = unpack_context->arc_io.tell();
@@ -116,15 +116,15 @@ void MblArchive::parse_cli_options(ArgParser &arg_parser)
 void MblArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
 {
     size_t i;
-    int version = mbl_get_version(arc_io);
+    int version = get_version(arc_io);
     if (version == -1)
         throw std::runtime_error("Not a MBL archive");
 
     uint32_t file_count = arc_io.read_u32_le();
     uint32_t name_length = version == 2 ? arc_io.read_u32_le() : 16;
-    MblUnpackContext unpack_context(
+    UnpackContext unpack_context(
         arc_io, *context->prs_converter, name_length);
 
     for (i = 0; i < file_count; i ++)
-        output_files.save(&mbl_read_file, &unpack_context);
+        output_files.save(&read_file, &unpack_context);
 }

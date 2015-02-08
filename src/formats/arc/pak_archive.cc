@@ -1,7 +1,7 @@
 // PAK2 archive
 //
-// Engine:    -
 // Company:   Nitroplus
+// Engine:    -
 // Extension: .pak
 //
 // Known games:
@@ -11,25 +11,26 @@
 #include "formats/arc/pak_archive.h"
 #include "string_ex.h"
 
-const std::string pak_magic("\x02\x00\x00\x00", 4);
-
 namespace
 {
-    typedef struct PakUnpackContext
+    const std::string magic("\x02\x00\x00\x00", 4);
+
+    typedef struct UnpackContext
+
     {
         IO &arc_io;
         IO &table_io;
         size_t offset_to_files;
 
-        PakUnpackContext(IO &arc_io, IO &table_io)
+        UnpackContext(IO &arc_io, IO &table_io)
             : arc_io(arc_io), table_io(table_io)
         {
         }
-    } PakUnpackContext;
+    } UnpackContext;
 
-    std::unique_ptr<VirtualFile> pak_read_file(void *context)
+    std::unique_ptr<VirtualFile> read_file(void *context)
     {
-        PakUnpackContext *unpack_context = (PakUnpackContext*)context;
+        UnpackContext *unpack_context = (UnpackContext*)context;
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         size_t file_name_length = unpack_context->table_io.read_u32_le();
@@ -65,7 +66,7 @@ namespace
 
 void PakArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
 {
-    if (arc_io.read(pak_magic.size()) != pak_magic)
+    if (arc_io.read(magic.size()) != magic)
         throw std::runtime_error("Not a PAK archive");
 
     uint32_t file_count = arc_io.read_u32_le();
@@ -76,8 +77,8 @@ void PakArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
     BufferedIO table_io(zlib_inflate(arc_io.read(table_size_compressed)));
 
     size_t i;
-    PakUnpackContext unpack_context(arc_io, table_io);
+    UnpackContext unpack_context(arc_io, table_io);
     unpack_context.offset_to_files = arc_io.tell();
     for (i = 0; i < file_count; i ++)
-        output_files.save(&pak_read_file, &unpack_context);
+        output_files.save(&read_file, &unpack_context);
 }

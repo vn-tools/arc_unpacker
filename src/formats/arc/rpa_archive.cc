@@ -80,20 +80,20 @@ namespace
     {
         std::vector<std::string> strings;
         std::vector<int> numbers;
-    } RpaUnpickleContext;
+    } UnpickleContext;
 
-    void rpa_unpickle_handle_string(
-        std::string str, RpaUnpickleContext *context)
+    void unpickle_handle_string(
+        std::string str, UnpickleContext *context)
     {
         context->strings.push_back(str);
     }
 
-    void rpa_unpickle_handle_number(size_t number, RpaUnpickleContext *context)
+    void unpickle_handle_number(size_t number, UnpickleContext *context)
     {
         context->numbers.push_back(number);
     }
 
-    void rpa_unpickle(IO &table_io, RpaUnpickleContext *context)
+    void unpickle(IO &table_io, UnpickleContext *context)
     {
         size_t table_size = table_io.size();
         while (table_io.tell() < table_size)
@@ -104,32 +104,32 @@ namespace
                 case PICKLE_SHORT_BINSTRING:
                 {
                     char size = table_io.read_u8();
-                    rpa_unpickle_handle_string(table_io.read(size), context);
+                    unpickle_handle_string(table_io.read(size), context);
                     break;
                 }
 
                 case PICKLE_BINUNICODE:
                 {
                     uint32_t size = table_io.read_u32_le();
-                    rpa_unpickle_handle_string(table_io.read(size), context);
+                    unpickle_handle_string(table_io.read(size), context);
                     break;
                 }
 
                 case PICKLE_BININT1:
                 {
-                    rpa_unpickle_handle_number(table_io.read_u8(), context);
+                    unpickle_handle_number(table_io.read_u8(), context);
                     break;
                 }
 
                 case PICKLE_BININT2:
                 {
-                    rpa_unpickle_handle_number(table_io.read_u16_le(), context);
+                    unpickle_handle_number(table_io.read_u16_le(), context);
                     break;
                 }
 
                 case PICKLE_BININT4:
                 {
-                    rpa_unpickle_handle_number(table_io.read_u32_le(), context);
+                    unpickle_handle_number(table_io.read_u32_le(), context);
                     break;
                 }
 
@@ -145,7 +145,7 @@ namespace
                         number *= 256;
                         number += table_io.read_u8();
                     }
-                    rpa_unpickle_handle_number(number, context);
+                    unpickle_handle_number(number, context);
                     table_io.seek(pos + length);
                     break;
                 }
@@ -192,23 +192,23 @@ namespace
         uint32_t size;
         std::string prefix;
         size_t prefix_size;
-    } RpaTableEntry;
+    } TableEntry;
 
-    typedef struct RpaUnpackContext
+    typedef struct UnpackContext
     {
         IO &arc_io;
-        RpaTableEntry *table_entry;
+        TableEntry *table_entry;
 
-        RpaUnpackContext(IO &arc_io) : arc_io(arc_io)
+        UnpackContext(IO &arc_io) : arc_io(arc_io)
         {
         }
-    } RpaUnpackContext;
+    } UnpackContext;
 
-    std::vector<std::unique_ptr<RpaTableEntry>> rpa_decode_table(
+    std::vector<std::unique_ptr<TableEntry>> decode_table(
         IO &table_io, uint32_t key)
     {
-        RpaUnpickleContext context;
-        rpa_unpickle(table_io, &context);
+        UnpickleContext context;
+        unpickle(table_io, &context);
 
         // Suspicion: reading renpy sources leaves me under impression that
         // older games might not embed prefixes at all. This means that there
@@ -221,12 +221,12 @@ namespace
             throw std::runtime_error("Unsupported table format");
 
         size_t file_count = context.strings.size() / 2;
-        std::vector<std::unique_ptr<RpaTableEntry>> entries;
+        std::vector<std::unique_ptr<TableEntry>> entries;
         entries.reserve(file_count);
 
         for (size_t i = 0; i < file_count; i ++)
         {
-            std::unique_ptr<RpaTableEntry> entry(new RpaTableEntry);
+            std::unique_ptr<TableEntry> entry(new TableEntry);
             entry->name = context.strings[i * 2 ];
             entry->prefix = context.strings[i * 2 + 1];
             entry->offset = context.numbers[i * 2] ^ key;
@@ -236,19 +236,19 @@ namespace
         return entries;
     }
 
-    int rpa_check_version(IO &arc_io)
+    int check_version(IO &arc_io)
     {
-        const std::string rpa_magic_3("RPA-3.0 ", 8);
-        const std::string rpa_magic_2("RPA-2.0 ", 8);
-        if (arc_io.read(rpa_magic_3.size()) == rpa_magic_3)
+        const std::string magic_3("RPA-3.0 ", 8);
+        const std::string magic_2("RPA-2.0 ", 8);
+        if (arc_io.read(magic_3.size()) == magic_3)
             return 3;
         arc_io.seek(0);
-        if (arc_io.read(rpa_magic_2.size()) == rpa_magic_2)
+        if (arc_io.read(magic_2.size()) == magic_2)
             return 2;
         return -1;
     }
 
-    uint32_t rpa_read_hex_number(IO &arc_io, size_t length)
+    uint32_t read_hex_number(IO &arc_io, size_t length)
     {
         size_t i;
         uint32_t result = 0;
@@ -268,7 +268,7 @@ namespace
         return result;
     }
 
-    std::string rpa_read_raw_table(IO &arc_io)
+    std::string read_raw_table(IO &arc_io)
     {
         size_t compressed_size = arc_io.size() - arc_io.tell();
         std::string compressed = arc_io.read(compressed_size);
@@ -276,9 +276,9 @@ namespace
         return uncompressed;
     }
 
-    std::unique_ptr<VirtualFile> rpa_read_file(void *_context)
+    std::unique_ptr<VirtualFile> read_file(void *_context)
     {
-        RpaUnpackContext *context = (RpaUnpackContext*)_context;
+        UnpackContext *context = (UnpackContext*)_context;
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
         context->arc_io.seek(context->table_entry->offset);
@@ -293,14 +293,14 @@ namespace
 
 void RpaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
 {
-    int version = rpa_check_version(arc_io);
-    size_t table_offset = rpa_read_hex_number(arc_io, 16);
+    int version = check_version(arc_io);
+    size_t table_offset = read_hex_number(arc_io, 16);
 
     uint32_t key;
     if (version == 3)
     {
         arc_io.skip(1);
-        key = rpa_read_hex_number(arc_io, 8);
+        key = read_hex_number(arc_io, 8);
     }
     else if (version == 2)
     {
@@ -312,13 +312,13 @@ void RpaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
     }
 
     arc_io.seek(table_offset);
-    BufferedIO table_io(rpa_read_raw_table(arc_io));
-    auto entries = rpa_decode_table(table_io, key);
+    BufferedIO table_io(read_raw_table(arc_io));
+    auto entries = decode_table(table_io, key);
 
-    RpaUnpackContext context(arc_io);
+    UnpackContext context(arc_io);
     for (size_t i = 0; i < entries.size(); i ++)
     {
         context.table_entry = entries[i].get();
-        output_files.save(&rpa_read_file, &context);
+        output_files.save(&read_file, &context);
     }
 }

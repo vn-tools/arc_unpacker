@@ -26,9 +26,9 @@ namespace
         size_t y2;
         size_t ox;
         size_t oy;
-    } G00Region;
+    } Region;
 
-    void g00_decompress(
+    void decompress(
         const char *input,
         size_t input_size,
         char *output,
@@ -90,7 +90,7 @@ namespace
         }
     }
 
-    std::unique_ptr<char> g00_decompress_from_io(
+    std::unique_ptr<char> decompress_from_io(
         IO &io,
         size_t compressed_size,
         size_t uncompressed_size,
@@ -102,7 +102,7 @@ namespace
 
         io.read(compressed.get(), compressed_size);
 
-        g00_decompress(
+        decompress(
             compressed.get(),
             compressed_size,
             uncompressed.get(),
@@ -113,7 +113,7 @@ namespace
         return std::move(uncompressed);
     }
 
-    void g00_decode_version_0(VirtualFile &file, int width, int height)
+    void decode_version_0(VirtualFile &file, int width, int height)
     {
         size_t compressed_size = file.io.read_u32_le();
         size_t uncompressed_size = file.io.read_u32_le();
@@ -124,7 +124,7 @@ namespace
         if (uncompressed_size != (unsigned)(width * height * 4))
             throw std::runtime_error("Uncompressed data size mismatch");
 
-        std::unique_ptr<char> uncompressed = g00_decompress_from_io(
+        std::unique_ptr<char> uncompressed = decompress_from_io(
             file.io,
             compressed_size,
             uncompressed_size,
@@ -138,7 +138,7 @@ namespace
         image->update_file(file);
     }
 
-    void g00_decode_version_1(VirtualFile &file, int width, int height)
+    void decode_version_1(VirtualFile &file, int width, int height)
     {
         size_t compressed_size = file.io.read_u32_le();
         size_t uncompressed_size = file.io.read_u32_le();
@@ -146,7 +146,7 @@ namespace
         if (compressed_size != file.io.size() - file.io.tell())
             throw std::runtime_error("Compressed data size mismatch");
 
-        std::unique_ptr<char> uncompressed = g00_decompress_from_io(
+        std::unique_ptr<char> uncompressed = decompress_from_io(
             file.io,
             compressed_size,
             uncompressed_size,
@@ -179,16 +179,16 @@ namespace
         image->update_file(file);
     }
 
-    std::vector<std::unique_ptr<G00Region>> g00_read_version_2_regions(
+    std::vector<std::unique_ptr<Region>> read_version_2_regions(
         IO &file_io, size_t region_count)
     {
-        std::vector<std::unique_ptr<G00Region>> regions;
+        std::vector<std::unique_ptr<Region>> regions;
         regions.reserve(region_count);
 
         size_t i;
         for (i = 0; i < region_count; i ++)
         {
-            std::unique_ptr<G00Region> region(new G00Region);
+            std::unique_ptr<Region> region(new Region);
             region->x1 = file_io.read_u32_le();
             region->y1 = file_io.read_u32_le();
             region->x2 = file_io.read_u32_le();
@@ -200,12 +200,12 @@ namespace
         return regions;
     }
 
-    void g00_decode_version_2(VirtualFile &file, int width, int height)
+    void decode_version_2(VirtualFile &file, int width, int height)
     {
         size_t region_count = file.io.read_u32_le();
         size_t i, j;
-        std::vector<std::unique_ptr<G00Region>> regions
-            = g00_read_version_2_regions(file.io, region_count);
+        std::vector<std::unique_ptr<Region>> regions
+            = read_version_2_regions(file.io, region_count);
 
         size_t compressed_size = file.io.read_u32_le();
         size_t uncompressed_size = file.io.read_u32_le();
@@ -213,7 +213,7 @@ namespace
         if (compressed_size != file.io.size() - file.io.tell())
             throw std::runtime_error("Compressed data size mismatch");
 
-        std::unique_ptr<char>uncompressed = g00_decompress_from_io(
+        std::unique_ptr<char>uncompressed = decompress_from_io(
             file.io,
             compressed_size,
             uncompressed_size,
@@ -231,7 +231,7 @@ namespace
             size_t block_offset = uncompressed_io.read_u32_le();
             size_t block_size = uncompressed_io.read_u32_le();
 
-            G00Region *region = regions[i].get();
+            Region *region = regions[i].get();
             if (block_size <= 0)
                 continue;
 
@@ -280,15 +280,15 @@ void G00Converter::decode_internal(VirtualFile &file) const
     switch (version)
     {
         case 0:
-            g00_decode_version_0(file, width, height);
+            decode_version_0(file, width, height);
             break;
 
         case 1:
-            g00_decode_version_1(file, width, height);
+            decode_version_1(file, width, height);
             break;
 
         case 2:
-            g00_decode_version_2(file, width, height);
+            decode_version_2(file, width, height);
             break;
 
         default:

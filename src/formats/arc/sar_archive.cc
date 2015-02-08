@@ -16,21 +16,21 @@ namespace
         std::string name;
         uint32_t offset;
         uint32_t size;
-    } SarTableEntry;
+    } TableEntry;
 
-    typedef struct SarUnpackContext
+    typedef struct UnpackContext
     {
         IO &arc_io;
-        SarTableEntry *table_entry;
+        TableEntry *table_entry;
 
-        SarUnpackContext(IO &arc_io) : arc_io(arc_io)
+        UnpackContext(IO &arc_io) : arc_io(arc_io)
         {
         }
-    } SarUnpackContext;
+    } UnpackContext;
 
     std::unique_ptr<VirtualFile> sar_read_file(void *_context)
     {
-        SarUnpackContext *context = (SarUnpackContext*)_context;
+        UnpackContext *context = (UnpackContext*)_context;
 
         std::unique_ptr<VirtualFile> file(new VirtualFile);
         file->name = context->table_entry->name;
@@ -51,11 +51,11 @@ void SarArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
     if (offset_to_files > arc_io.size())
         throw std::runtime_error("Bad offset to files");
 
-    std::vector<std::unique_ptr<SarTableEntry>> table;
+    std::vector<std::unique_ptr<TableEntry>> table;
     table.reserve(file_count);
     for (size_t i = 0; i < file_count; i ++)
     {
-        std::unique_ptr<SarTableEntry> entry(new SarTableEntry);
+        std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = arc_io.read_until_zero();
         entry->offset = arc_io.read_u32_be() + offset_to_files;
         entry->size = arc_io.read_u32_be();
@@ -64,7 +64,7 @@ void SarArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
         table.push_back(std::move(entry));
     }
 
-    SarUnpackContext context(arc_io);
+    UnpackContext context(arc_io);
     for (size_t i = 0; i < file_count; i ++)
     {
         context.table_entry = table[i].get();

@@ -1,7 +1,7 @@
 // FJSYS archive
 //
-// Engine:    -
 // Company:   various
+// Engine:    -
 // Extension: none
 //
 // Known games:
@@ -22,31 +22,31 @@
 
 namespace
 {
-    const std::string fjsys_magic("FJSYS\x00\x00\x00", 8);
+    const std::string magic("FJSYS\x00\x00\x00", 8);
 
     typedef struct
     {
         size_t header_size;
         size_t file_names_size;
         size_t file_count;
-    } FjsysHeader;
+    } Header;
 
-    typedef struct FjsysUnpackContext
+    typedef struct UnpackContext
     {
         IO &arc_io;
         MgdConverter &mgd_converter;
-        FjsysHeader &header;
+        Header &header;
 
-        FjsysUnpackContext(
-            IO &arc_io, MgdConverter &mgd_converter, FjsysHeader &header)
+        UnpackContext(
+            IO &arc_io, MgdConverter &mgd_converter, Header &header)
             : arc_io(arc_io), mgd_converter(mgd_converter), header(header)
         {
         }
-    } FjsysUnpackContext;
+    } UnpackContext;
 
-    std::unique_ptr<FjsysHeader> fjsys_read_header(IO &arc_io)
+    std::unique_ptr<Header> read_header(IO &arc_io)
     {
-        std::unique_ptr<FjsysHeader> header(new FjsysHeader);
+        std::unique_ptr<Header> header(new Header);
         header->header_size = arc_io.read_u32_le();
         header->file_names_size = arc_io.read_u32_le();
         header->file_count = arc_io.read_u32_le();
@@ -54,10 +54,10 @@ namespace
         return header;
     }
 
-    std::unique_ptr<VirtualFile> fjsys_read_file(void *context)
+    std::unique_ptr<VirtualFile> read_file(void *context)
     {
         std::unique_ptr<VirtualFile> file(new VirtualFile);
-        FjsysUnpackContext *unpack_context = (FjsysUnpackContext*)context;
+        UnpackContext *unpack_context = (UnpackContext*)context;
         size_t file_name_offset = unpack_context->arc_io.read_u32_le();
         size_t data_size = unpack_context->arc_io.read_u32_le();
         size_t data_offset = unpack_context->arc_io.read_u64_le();
@@ -106,14 +106,13 @@ void FjsysArchive::parse_cli_options(ArgParser &arg_parser)
 
 void FjsysArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
 {
-    if (arc_io.read(fjsys_magic.size()) != fjsys_magic)
+    if (arc_io.read(magic.size()) != magic)
         throw std::runtime_error("Not a FJSYS archive");
 
-    std::unique_ptr<FjsysHeader> header = fjsys_read_header(arc_io);
+    std::unique_ptr<Header> header = read_header(arc_io);
 
-    FjsysUnpackContext unpack_context(
-        arc_io, *context->mgd_converter, *header);
+    UnpackContext unpack_context(arc_io, *context->mgd_converter, *header);
     size_t i;
     for (i = 0; i < header->file_count; i ++)
-        output_files.save(&fjsys_read_file, &unpack_context);
+        output_files.save(&read_file, &unpack_context);
 }

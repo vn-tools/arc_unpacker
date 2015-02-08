@@ -12,9 +12,9 @@
 
 namespace
 {
-    const std::string prs_magic("YB\x83\x03", 4);
+    const std::string magic("YB\x83\x03", 4);
 
-    void prs_decode_pixels(
+    void decode_pixels(
         const char *source_buffer,
         const size_t source_size,
         char *target_buffer,
@@ -124,7 +124,7 @@ namespace
 
 void PrsConverter::decode_internal(VirtualFile &file) const
 {
-    if (file.io.read(prs_magic.size()) != prs_magic)
+    if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a PRS graphic file");
 
     uint32_t source_size = file.io.read_u32_le();
@@ -137,11 +137,9 @@ void PrsConverter::decode_internal(VirtualFile &file) const
     std::unique_ptr<char> target_buffer(new char[target_size]);
     file.io.read(source_buffer.get(), source_size);
 
-    prs_decode_pixels(
-        source_buffer.get(),
-        source_size,
-        target_buffer.get(),
-        target_size);
+    decode_pixels(
+        source_buffer.get(), source_size,
+        target_buffer.get(), target_size);
 
     std::unique_ptr<Image> image = Image::from_pixels(
         image_width,

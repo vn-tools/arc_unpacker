@@ -14,14 +14,14 @@
 
 namespace
 {
-    const std::string mgd_magic("MGD ", 4);
+    const std::string magic("MGD ", 4);
 
     typedef enum
     {
-        MGD_COMPRESSION_NONE = 0,
-        MGD_COMPRESSION_SGD = 1,
-        MGD_COMPRESSION_PNG = 2,
-    } MgdCompressionType;
+        COMPRESSION_NONE = 0,
+        COMPRESSION_SGD = 1,
+        COMPRESSION_PNG = 2,
+    } CompressionType;
 
     typedef struct
     {
@@ -29,9 +29,9 @@ namespace
         uint16_t y;
         uint16_t width;
         uint16_t height;
-    } MgdRegion;
+    } Region;
 
-    void mgd_decompress_sgd_alpha(
+    void decompress_sgd_alpha(
         const uint8_t *&input_ptr,
         const uint8_t *const input_guardian,
         uint8_t *&output_ptr,
@@ -77,7 +77,7 @@ namespace
         }
     }
 
-    void mgd_decompress_sgd_bgr_strategy_1(
+    void decompress_sgd_bgr_strategy_1(
         const uint8_t *&input_ptr,
         const uint8_t *const input_guardian,
         uint8_t *&output_ptr,
@@ -119,7 +119,7 @@ namespace
         }
     }
 
-    void mgd_decompress_sgd_bgr_strategy_2(
+    void decompress_sgd_bgr_strategy_2(
         const uint8_t *&input_ptr,
         const uint8_t *const input_guardian,
         uint8_t *&output_ptr,
@@ -145,7 +145,7 @@ namespace
         }
     }
 
-    void mgd_decompress_sgd_bgr_strategy_3(
+    void decompress_sgd_bgr_strategy_3(
         const uint8_t *&input_ptr,
         const uint8_t *const input_guardian,
         uint8_t *&output_ptr,
@@ -173,7 +173,7 @@ namespace
         }
     }
 
-    void mgd_decompress_sgd_bgr(
+    void decompress_sgd_bgr(
         const uint8_t *&input_ptr,
         const uint8_t *const input_guardian,
         uint8_t *&output_ptr,
@@ -185,21 +185,21 @@ namespace
             switch (flag & 0xc0)
             {
                 case 0x80:
-                    mgd_decompress_sgd_bgr_strategy_1(
+                    decompress_sgd_bgr_strategy_1(
                         input_ptr, input_guardian,
                         output_ptr, output_guardian,
                         flag);
                     break;
 
                 case 0x40:
-                    mgd_decompress_sgd_bgr_strategy_2(
+                    decompress_sgd_bgr_strategy_2(
                         input_ptr, input_guardian,
                         output_ptr, output_guardian,
                         flag);
                     break;
 
                 case 0:
-                    mgd_decompress_sgd_bgr_strategy_3(
+                    decompress_sgd_bgr_strategy_3(
                         input_ptr, input_guardian,
                         output_ptr, output_guardian,
                         flag);
@@ -211,7 +211,7 @@ namespace
         }
     }
 
-    void mgd_decompress_sgd(
+    void decompress_sgd(
         const uint8_t *const input,
         size_t input_size,
         uint8_t *const output,
@@ -232,7 +232,7 @@ namespace
         if (length > input_size)
             throw std::runtime_error("Insufficient alpha channel data");
 
-        mgd_decompress_sgd_alpha(
+        decompress_sgd_alpha(
             input_ptr,
             input_guardian,
             output_ptr,
@@ -245,16 +245,16 @@ namespace
             throw std::runtime_error("Insufficient color data");
 
         output_ptr = output;
-        mgd_decompress_sgd_bgr(
+        decompress_sgd_bgr(
             input_ptr,
             input_guardian,
             output_ptr,
             output_guardian);
     }
 
-    std::vector<std::unique_ptr<MgdRegion>> mgd_read_region_data(IO &file_io)
+    std::vector<std::unique_ptr<Region>> read_region_data(IO &file_io)
     {
-        std::vector<std::unique_ptr<MgdRegion>> regions;
+        std::vector<std::unique_ptr<Region>> regions;
         while (file_io.tell() < file_io.size())
         {
             file_io.skip(4);
@@ -269,7 +269,7 @@ namespace
 
             for (size_t i = 0; i < region_count; i ++)
             {
-                std::unique_ptr<MgdRegion> region(new MgdRegion);
+                std::unique_ptr<Region> region(new Region);
                 region->x = file_io.read_u16_le();
                 region->y = file_io.read_u16_le();
                 region->width = file_io.read_u16_le();
@@ -284,9 +284,9 @@ namespace
         return regions;
     }
 
-    std::unique_ptr<Image> mgd_read_image(
+    std::unique_ptr<Image> read_image(
         IO &file_io,
-        MgdCompressionType compression_type,
+        CompressionType compression_type,
         size_t size_compressed,
         size_t size_original,
         size_t image_width,
@@ -295,19 +295,19 @@ namespace
         std::string data_compressed = file_io.read(size_compressed);
         switch (compression_type)
         {
-            case MGD_COMPRESSION_NONE:
+            case COMPRESSION_NONE:
                 return Image::from_pixels(
                     image_width,
                     image_height,
                     data_compressed,
                     IMAGE_PIXEL_FORMAT_BGRA);
 
-            case MGD_COMPRESSION_SGD:
+            case COMPRESSION_SGD:
             {
                 std::unique_ptr<char> data_uncompressed(
                     new char[size_original]);
 
-                mgd_decompress_sgd(
+                decompress_sgd(
                     reinterpret_cast<const uint8_t*>(data_compressed.data()),
                     size_compressed,
                     reinterpret_cast<uint8_t*>(data_uncompressed.get()),
@@ -320,7 +320,7 @@ namespace
                     IMAGE_PIXEL_FORMAT_BGRA);
             }
 
-            case MGD_COMPRESSION_PNG:
+            case COMPRESSION_PNG:
             {
                 BufferedIO buffered_io(data_compressed);
                 return Image::from_boxed(buffered_io);
@@ -334,7 +334,7 @@ namespace
 
 void MgdConverter::decode_internal(VirtualFile &file) const
 {
-    if (file.io.read(mgd_magic.size()) != mgd_magic)
+    if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a MGD graphic file");
 
     __attribute__((unused)) uint16_t data_offset = file.io.read_u16_le();
@@ -344,15 +344,14 @@ void MgdConverter::decode_internal(VirtualFile &file) const
     uint16_t image_height = file.io.read_u16_le();
     uint32_t size_original = file.io.read_u32_le();
     uint32_t size_compressed_total = file.io.read_u32_le();
-    MgdCompressionType compression_type
-        = (MgdCompressionType)file.io.read_u32_le();
+    CompressionType compression_type = (CompressionType)file.io.read_u32_le();
     file.io.skip(64);
 
     size_t size_compressed = file.io.read_u32_le();
     if (size_compressed + 4 != size_compressed_total)
         throw std::runtime_error("Compressed data size mismatch");
 
-    std::unique_ptr<Image> image = mgd_read_image(
+    std::unique_ptr<Image> image = read_image(
         file.io,
         compression_type,
         size_compressed,
@@ -360,7 +359,7 @@ void MgdConverter::decode_internal(VirtualFile &file) const
         image_width,
         image_height);
 
-    __attribute__((unused)) auto regions = mgd_read_region_data(file.io);
+    __attribute__((unused)) auto regions = read_region_data(file.io);
 
     image->update_file(file);
 }
