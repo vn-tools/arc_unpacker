@@ -5,6 +5,7 @@
 #include "formats/arc/mbl_archive.h"
 #include "formats/arc/npa_archive.h"
 #include "formats/arc/pak_archive.h"
+#include "formats/arc/rgssad_archive.h"
 #include "formats/arc/rpa_archive.h"
 #include "formats/arc/sar_archive.h"
 #include "formats/arc/xp3_archive.h"
@@ -23,6 +24,7 @@ struct ArchiveFactory::Internals
 ArchiveFactory::ArchiveFactory()
 {
     internals = new ArchiveFactory::Internals();
+    internals->add_format("rgssad", []() { return new RgssadArchive(); });
     internals->add_format("fjsys", []() { return new FjsysArchive(); });
     internals->add_format("arc", []() { return new ArcArchive(); });
     internals->add_format("npa", []() { return new NpaArchive(); });
