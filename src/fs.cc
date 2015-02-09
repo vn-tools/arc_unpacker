@@ -97,6 +97,10 @@ std::string basename(const std::string path)
 
 std::string dirname(const std::string path)
 {
+    bool any_slash = find_last_slash(path) != std::string::npos;
+    if (!any_slash)
+        return "";
+
     std::string path_nts = trim_right(path, "/\\");
     if (path_nts == "")
         return path;

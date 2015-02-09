@@ -15,44 +15,34 @@ void test_setting_name()
     assert(file.name == "abc");
 }
 
-void test_changing_extension_null()
+void test_changing_extension(
+    const std::string name,
+    const std::string new_extension,
+    const std::string expected_name)
 {
     VirtualFile file;
-    file.change_extension("xyz");
-    assert(file.name == "");
-}
-
-void test_changing_extension_without_extension()
-{
-    VirtualFile file;
-    file.name = "abc";
-    file.change_extension("xyz");
-    assert(file.name == "abc.xyz");
-}
-
-void test_changing_extension_with_extension()
-{
-    VirtualFile file;
-    file.name = "abc.de";
-    file.change_extension("xyz");
-    assert(file.name == "abc.xyz");
-}
-
-void test_changing_extension_with_extra_dots()
-{
-    VirtualFile file;
-    file.name = "abc.de";
-    file.change_extension(".xyz");
-    assert(file.name == "abc.xyz");
+    file.name = name;
+    file.change_extension(new_extension);
+    assert(file.name == expected_name);
 }
 
 int main(void)
 {
     test_empty_file();
     test_setting_name();
-    test_changing_extension_null();
-    test_changing_extension_without_extension();
-    test_changing_extension_with_extension();
-    test_changing_extension_with_extra_dots();
+    test_changing_extension("",            "xyz",  "");
+    test_changing_extension(".",           "xyz",  ".");
+    test_changing_extension("..",          "xyz",  "..");
+    test_changing_extension("abc",         "xyz",  "abc.xyz");
+    test_changing_extension("abc.de",      "xyz",  "abc.xyz");
+    test_changing_extension("abc.de",      ".xyz", "abc.xyz");
+    test_changing_extension("abc.",        "xyz",  "abc.xyz");
+    test_changing_extension(".abc.",       "xyz",  ".abc.xyz");
+    test_changing_extension("./abc/",      "xyz",  "./abc/");
+    test_changing_extension("./abc/.",     "xyz",  "./abc/.");
+    test_changing_extension("./abc/..",    "xyz",  "./abc/..");
+    test_changing_extension("./abc/def",   "xyz",  "./abc/def.xyz");
+    test_changing_extension("./abc/def.",  "xyz",  "./abc/def.xyz");
+    test_changing_extension("./abc/.def.", "xyz",  "./abc/.def.xyz");
     return 0;
 }
