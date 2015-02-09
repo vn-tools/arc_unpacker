@@ -1,6 +1,7 @@
 #include <functional>
 #include "factory/archive_factory.h"
 #include "formats/arc/arc_archive.h"
+#include "formats/arc/exe_archive.h"
 #include "formats/arc/fjsys_archive.h"
 #include "formats/arc/mbl_archive.h"
 #include "formats/arc/npa_archive.h"
@@ -26,6 +27,7 @@ struct ArchiveFactory::Internals
 ArchiveFactory::ArchiveFactory()
 {
     internals = new ArchiveFactory::Internals();
+    internals->add_format("exe", []() { return new ExeArchive(); });
     internals->add_format("ykc", []() { return new YkcArchive(); });
     internals->add_format("rgssad", []() { return new RgssadArchive(); });
     internals->add_format("fjsys", []() { return new FjsysArchive(); });

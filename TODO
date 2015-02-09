@@ -1,6 +1,5 @@
 Port old code for formats:
 	- Archives:
-		- EXE
 		- Melty Blood
 		- NPA (S;G)
 		- XP3 (F/SN, CXDEC)
@@ -13,6 +12,7 @@ Port old code for formats:
 
 Unit tests (low priority):
 	- NPA archive
+	- EXE executables
 
 Misc:
 	- Replace some assertions with explicit checks
