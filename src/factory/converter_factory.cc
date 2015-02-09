@@ -4,6 +4,7 @@
 #include "formats/gfx/g00_converter.h"
 #include "formats/gfx/mgd_converter.h"
 #include "formats/gfx/prs_converter.h"
+#include "formats/gfx/sotes_converter.h"
 #include "formats/gfx/spb_converter.h"
 #include "formats/gfx/xyz_converter.h"
 #include "formats/gfx/ykg_converter.h"
@@ -29,6 +30,7 @@ ConverterFactory::ConverterFactory()
     internals->add_format("xyz", []() { return new XyzConverter(); });
     internals->add_format("mgd", []() { return new MgdConverter(); });
     internals->add_format("g00", []() { return new G00Converter(); });
+    internals->add_format("sotes", []() { return new SotesConverter(); });
     internals->add_format("nwa", []() { return new NwaConverter(); });
     internals->add_format("prs", []() { return new PrsConverter(); });
     internals->add_format("spb", []() { return new SpbConverter(); });
