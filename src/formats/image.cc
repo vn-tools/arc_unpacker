@@ -47,6 +47,8 @@ std::unique_ptr<Image> Image::from_pixels(
     PixelFormat pixel_format)
 {
     std::unique_ptr<Image> image(new Image);
+    if (image_width == 0 || image_height == 0)
+        throw std::runtime_error("Image dimension cannot be 0");
     image->internals->image_width = image_width;
     image->internals->image_height = image_height;
     image->internals->pixel_data = pixel_data;
