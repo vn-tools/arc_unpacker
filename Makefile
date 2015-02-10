@@ -6,7 +6,6 @@ RM       = rm -rf
 MKPATH   = mkdir -p
 STRIP    = /usr/bin/strip
 
-DEBUG ?= 1
 SRC_DIR = src
 BIN_DIR = bin
 OBJ_DIR = obj
@@ -56,7 +55,7 @@ $(BIN_DIR)/%: $(OBJ_DIR)/bin/%.o $(OBJECTS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
 	@$(MKPATH) $(dir $@)
-	@echo Compiling $<
+	@echo Compiling $@
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 #Tests
