@@ -14,21 +14,11 @@
 #include <cassert>
 #include "buffered_io.h"
 #include "formats/arc/xp3_archive.h"
+#include "formats/gfx/tlg_converter.h"
 #include "string_ex.h"
 
 namespace
 {
-    typedef struct UnpackContext
-    {
-        IO &arc_io;
-        IO &table_io;
-
-        UnpackContext(IO &arc_io, IO &table_io)
-            : arc_io(arc_io), table_io(table_io)
-        {
-        }
-    } UnpackContext;
-
     const std::string xp3_magic("XP3\r\n\x20\x0a\x1a\x8b\x67\x01", 11);
     const std::string file_magic("File", 4);
     const std::string adlr_magic("adlr", 4);
@@ -150,12 +140,9 @@ namespace
         return true;
     }
 
-    std::unique_ptr<VirtualFile> read_file(void *context)
+    std::unique_ptr<VirtualFile> read_file(
+        IO &arc_io, IO &table_io, TlgConverter &tlg_converter)
     {
-        UnpackContext *unpack_context = (UnpackContext*)context;
-
-        IO &arc_io = unpack_context->arc_io;
-        IO &table_io = unpack_context->table_io;
         std::unique_ptr<VirtualFile> target_file(new VirtualFile());
 
         if (!check_magic(table_io, file_magic))
@@ -174,8 +161,34 @@ namespace
         read_adlr_chunk(table_io, &encryption_key);
 
         assert(table_io.tell() - file_chunk_start_offset == file_chunk_size);
+
+        tlg_converter.try_decode(*target_file);
+
         return target_file;
     }
+}
+
+struct Xp3Archive::Internals
+{
+    TlgConverter tlg_converter;
+};
+
+Xp3Archive::Xp3Archive() : internals(new Internals)
+{
+}
+
+Xp3Archive::~Xp3Archive()
+{
+}
+
+void Xp3Archive::add_cli_help(ArgParser &arg_parser) const
+{
+    internals->tlg_converter.add_cli_help(arg_parser);
+}
+
+void Xp3Archive::parse_cli_options(ArgParser &arg_parser)
+{
+    internals->tlg_converter.parse_cli_options(arg_parser);
 }
 
 void Xp3Archive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
@@ -188,7 +201,12 @@ void Xp3Archive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
     arc_io.seek((uint32_t)table_offset);
     std::unique_ptr<IO> table_io = read_raw_table(arc_io);
 
-    UnpackContext unpack_context(arc_io, *table_io);
     while (table_io->tell() < table_io->size())
-        output_files.save(&read_file, &unpack_context);
+    {
+        output_files.save(
+            [&]() -> std::unique_ptr<VirtualFile>
+            {
+                return read_file(arc_io, *table_io, internals->tlg_converter);
+            });
+    }
 }

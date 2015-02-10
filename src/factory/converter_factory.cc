@@ -6,6 +6,7 @@
 #include "formats/gfx/prs_converter.h"
 #include "formats/gfx/sotes_converter.h"
 #include "formats/gfx/spb_converter.h"
+#include "formats/gfx/tlg_converter.h"
 #include "formats/gfx/xyz_converter.h"
 #include "formats/gfx/ykg_converter.h"
 #include "formats/sfx/nwa_converter.h"
@@ -25,6 +26,7 @@ struct ConverterFactory::Internals
 ConverterFactory::ConverterFactory()
 {
     internals = new ConverterFactory::Internals();
+    internals->add_format("tlg", []() { return new TlgConverter(); });
     internals->add_format("ykg", []() { return new YkgConverter(); });
     internals->add_format("cbg", []() { return new CbgConverter(); });
     internals->add_format("xyz", []() { return new XyzConverter(); });
