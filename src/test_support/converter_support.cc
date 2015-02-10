@@ -4,6 +4,7 @@
 #include "file_io.h"
 #include "formats/image.h"
 #include "test_support/converter_support.h"
+#include "test_support/eassert.h"
 #include "virtual_file.h"
 
 namespace
@@ -12,8 +13,8 @@ namespace
         const Image &expected_image,
         const Image &actual_image)
     {
-        assert(expected_image.width() == actual_image.width());
-        assert(expected_image.height() == actual_image.height());
+        eassert(expected_image.width() == actual_image.width());
+        eassert(expected_image.height() == actual_image.height());
 
         size_t x, y;
         for (y = 0; y < expected_image.height(); y ++)
@@ -22,7 +23,7 @@ namespace
             {
                 uint32_t expected_rgba = expected_image.color_at(x, y);
                 uint32_t actual_rgba = actual_image.color_at(x, y);
-                assert(expected_rgba == actual_rgba);
+                eassert(expected_rgba == actual_rgba);
             }
         }
     }

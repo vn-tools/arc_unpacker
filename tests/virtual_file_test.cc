@@ -1,18 +1,17 @@
-#include <assert.h>
-#include <string.h>
+#include "test_support/eassert.h"
 #include "virtual_file.h"
 
 void test_empty_file()
 {
     VirtualFile file;
-    assert(file.name == "");
+    eassert(file.name == "");
 }
 
 void test_setting_name()
 {
     VirtualFile file;
     file.name = "abc";
-    assert(file.name == "abc");
+    eassert(file.name == "abc");
 }
 
 void test_changing_extension(
@@ -23,7 +22,7 @@ void test_changing_extension(
     VirtualFile file;
     file.name = name;
     file.change_extension(new_extension);
-    assert(file.name == expected_name);
+    eassert(file.name == expected_name);
 }
 
 int main(void)

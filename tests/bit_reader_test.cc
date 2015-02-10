@@ -1,6 +1,6 @@
-#include <cassert>
 #include "bit_reader.h"
 #include "buffered_io.h"
+#include "test_support/eassert.h"
 
 void test_empty()
 {
@@ -8,7 +8,7 @@ void test_empty()
     try
     {
         reader.get(1);
-        assert(0);
+        eassert(0);
     }
     catch (...)
     {
@@ -18,37 +18,37 @@ void test_empty()
 void test_reading_one_bit()
 {
     BitReader reader("\x8f", 2); //10001111
-    assert(reader.get(1));
-    assert(!reader.get(1));
-    assert(!reader.get(1));
-    assert(!reader.get(1));
-    assert(reader.get(1));
-    assert(reader.get(1));
-    assert(reader.get(1));
-    assert(reader.get(1));
+    eassert(reader.get(1));
+    eassert(!reader.get(1));
+    eassert(!reader.get(1));
+    eassert(!reader.get(1));
+    eassert(reader.get(1));
+    eassert(reader.get(1));
+    eassert(reader.get(1));
+    eassert(reader.get(1));
 }
 
 void test_reading_many_bits()
 {
     BitReader reader("\x8f", 2); //10001111
-    assert(reader.get(7) == (0x8f >> 1));
-    assert(reader.get(1));
+    eassert(reader.get(7) == (0x8f >> 1));
+    eassert(reader.get(1));
 }
 
 void test_reading_many_bytes()
 {
     BitReader reader("\x8f\x8f", 2); //10001111
-    assert(reader.get(7) == (0x8f >> 1));
-    assert(reader.get(1));
+    eassert(reader.get(7) == (0x8f >> 1));
+    eassert(reader.get(1));
 
-    assert(reader.get(1));
-    assert(!reader.get(1));
-    assert(reader.get(4) == 3);
-    assert(reader.get(2) == 3);
+    eassert(reader.get(1));
+    eassert(!reader.get(1));
+    eassert(reader.get(4) == 3);
+    eassert(reader.get(2) == 3);
     try
     {
         reader.get(1);
-        assert(0);
+        eassert(0);
     }
     catch (...)
     {

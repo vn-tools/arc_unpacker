@@ -1,25 +1,23 @@
 #include <algorithm>
-#include <cassert>
-#include <cstdlib>
-#include <cstring>
 #include "fs.h"
+#include "test_support/eassert.h"
 
 void test_get_files()
 {
     auto result = get_files("tests/test_files/gfx");
-    assert(result.size() == 3);
+    eassert(result.size() == 3);
 
-    assert(std::find(
+    eassert(std::find(
         result.begin(),
         result.end(),
         "tests/test_files/gfx/reimu_transparent.png") != result.end());
 
-    assert(std::find(
+    eassert(std::find(
         result.begin(),
         result.end(),
         "tests/test_files/gfx/reimu_opaque.jpg") != result.end());
 
-    assert(std::find(
+    eassert(std::find(
         result.begin(),
         result.end(),
         "tests/test_files/gfx/usagi_opaque.png") != result.end());
@@ -28,24 +26,24 @@ void test_get_files()
 void test_get_files_recursive()
 {
     auto result = get_files_recursive("tests/test_files/gfx");
-    assert(result.size() > 3);
+    eassert(result.size() > 3);
 }
 
 void test_basename(const std::string expected, const std::string input)
 {
     std::string dir = basename(input);
-    assert(dir == expected);
+    eassert(dir == expected);
 }
 
 void test_dirname(const std::string expected, const std::string input)
 {
     std::string dir = dirname(input);
-    assert(dir == expected);
+    eassert(dir == expected);
 }
 
 void test_is_dir(bool expected, const std::string input)
 {
-    assert(is_dir(input) == expected);
+    eassert(is_dir(input) == expected);
 }
 
 int main(void)
