@@ -14,6 +14,8 @@
 #include <cassert>
 #include "buffered_io.h"
 #include "formats/arc/xp3_archive.h"
+#include "formats/arc/xp3_archive/xp3_filter.h"
+#include "formats/arc/xp3_archive/xp3_filter_fsn.h"
 #include "formats/gfx/tlg_converter.h"
 #include "string_ex.h"
 
@@ -141,7 +143,10 @@ namespace
     }
 
     std::unique_ptr<VirtualFile> read_file(
-        IO &arc_io, IO &table_io, TlgConverter &tlg_converter)
+        IO &arc_io,
+        IO &table_io,
+        TlgConverter &tlg_converter,
+        Xp3Filter *filter)
     {
         std::unique_ptr<VirtualFile> target_file(new VirtualFile());
 
@@ -162,6 +167,9 @@ namespace
 
         assert(table_io.tell() - file_chunk_start_offset == file_chunk_size);
 
+        if (filter != nullptr)
+            filter->decode(*target_file, encryption_key);
+
         tlg_converter.try_decode(*target_file);
 
         return target_file;
@@ -171,6 +179,15 @@ namespace
 struct Xp3Archive::Internals
 {
     TlgConverter tlg_converter;
+    std::unique_ptr<Xp3Filter> filter;
+
+    Internals() : filter(nullptr)
+    {
+    }
+
+    ~Internals()
+    {
+    }
 };
 
 Xp3Archive::Xp3Archive() : internals(new Internals)
@@ -183,11 +200,22 @@ Xp3Archive::~Xp3Archive()
 
 void Xp3Archive::add_cli_help(ArgParser &arg_parser) const
 {
+    arg_parser.add_help(
+        "--plugin=PLUGIN",
+        "Selects XP3 decryption routine.\n"
+            "Possible values:\n"
+            "- fsn");
     internals->tlg_converter.add_cli_help(arg_parser);
 }
 
 void Xp3Archive::parse_cli_options(ArgParser &arg_parser)
 {
+    const std::string plugin = arg_parser.get_switch("plugin").c_str();
+    if (plugin == "fsn")
+        internals->filter.reset(new Xp3FilterFsn);
+    else
+        throw std::runtime_error("Unrecognized plugin: " + plugin);
+
     internals->tlg_converter.parse_cli_options(arg_parser);
 }
 
@@ -206,7 +234,11 @@ void Xp3Archive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
         output_files.save(
             [&]() -> std::unique_ptr<VirtualFile>
             {
-                return read_file(arc_io, *table_io, internals->tlg_converter);
+                return read_file(
+                    arc_io,
+                    *table_io,
+                    internals->tlg_converter,
+                    internals->filter.get());
             });
     }
 }
