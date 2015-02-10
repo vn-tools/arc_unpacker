@@ -166,8 +166,6 @@ void Tlg5Decoder::decode(VirtualFile &file)
         header.image_width,
         header.image_height,
         std::string(reinterpret_cast<char*>(pixels.get()), pixels_size),
-        header.channel_count == 3
-            ? IMAGE_PIXEL_FORMAT_RGB
-            : IMAGE_PIXEL_FORMAT_RGBA);
+        IMAGE_PIXEL_FORMAT_RGBA);
     image->update_file(file);
 }
