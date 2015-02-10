@@ -73,7 +73,7 @@ $(TEST_BIN_DIR)/%: $(TEST_OBJ_DIR)/%.o $(OBJECTS)
 
 $(TEST_OBJ_DIR)/%.o: $(TEST_SRC_DIR)/%.cc
 	@$(MKPATH) $(dir $@)
-	@echo Compiling $<
+	@echo Compiling $@
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 
