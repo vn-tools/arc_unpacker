@@ -15,6 +15,7 @@
 #include "buffered_io.h"
 #include "formats/arc/xp3_archive.h"
 #include "formats/arc/xp3_archive/xp3_filter.h"
+#include "formats/arc/xp3_archive/xp3_filter_fha.h"
 #include "formats/arc/xp3_archive/xp3_filter_fsn.h"
 #include "formats/gfx/tlg_converter.h"
 #include "string_ex.h"
@@ -204,6 +205,7 @@ void Xp3Archive::add_cli_help(ArgParser &arg_parser) const
         "--plugin=PLUGIN",
         "Selects XP3 decryption routine.\n"
             "Possible values:\n"
+            "- fha\n"
             "- fsn");
     internals->tlg_converter.add_cli_help(arg_parser);
 }
@@ -211,7 +213,9 @@ void Xp3Archive::add_cli_help(ArgParser &arg_parser) const
 void Xp3Archive::parse_cli_options(ArgParser &arg_parser)
 {
     const std::string plugin = arg_parser.get_switch("plugin").c_str();
-    if (plugin == "fsn")
+    if (plugin == "fha")
+        internals->filter.reset(new Xp3FilterFha);
+    else if (plugin == "fsn")
         internals->filter.reset(new Xp3FilterFsn);
     else
         throw std::runtime_error("Unrecognized plugin: " + plugin);
