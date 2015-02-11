@@ -1,13 +1,10 @@
 Port old code for formats:
-	- Archives:
-		- NPA (S;G)
-
 	- Files:
 		- MSD
 		- YKS
 
 Unit tests (low priority):
-	- NPA archive
+	- Nitroplus archives
 	- EXE executables
 
 Misc:
