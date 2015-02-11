@@ -17,6 +17,9 @@ Building requirements
 5. POSIX compatibility <sub>(for Windows this means MinGW or Cygwin; might work
    with Visual Studio with minor tweaks, but I don't support it)</sub>.
 
+To download binaries for Windows, head over to
+[releases](https://github.com/vn-tools/arc_unpacker/releases).
+
 Usage
 -----
 
