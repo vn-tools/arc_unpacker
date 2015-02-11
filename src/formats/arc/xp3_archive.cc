@@ -18,6 +18,7 @@
 #include "formats/arc/xp3_archive/xp3_filter_comyu.h"
 #include "formats/arc/xp3_archive/xp3_filter_fha.h"
 #include "formats/arc/xp3_archive/xp3_filter_fsn.h"
+#include "formats/arc/xp3_archive/xp3_filter_noop.h"
 #include "formats/gfx/tlg_converter.h"
 #include "string_ex.h"
 
@@ -209,7 +210,8 @@ void Xp3Archive::add_cli_help(ArgParser &arg_parser) const
             "Possible values:\n"
             "- comyu\n"
             "- fha\n"
-            "- fsn");
+            "- fsn\n"
+            "- noop (for unecrypted games)");
     internals->tlg_converter.add_cli_help(arg_parser);
 }
 
@@ -222,6 +224,8 @@ void Xp3Archive::parse_cli_options(ArgParser &arg_parser)
         internals->filter.reset(new Xp3FilterFha);
     else if (plugin == "fsn")
         internals->filter.reset(new Xp3FilterFsn);
+    else if (plugin == "noop")
+        internals->filter.reset(new Xp3FilterNoop);
     else
         throw std::runtime_error("Unrecognized plugin: " + plugin);
 
