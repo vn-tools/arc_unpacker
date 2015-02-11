@@ -70,7 +70,7 @@ void PakArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
         throw std::runtime_error("Not a PAK archive");
 
     uint32_t file_count = arc_io.read_u32_le();
-    __attribute__((unused)) uint32_t table_size_original = arc_io.read_u32_le();
+    uint32_t table_size_original = arc_io.read_u32_le();
     uint32_t table_size_compressed = arc_io.read_u32_le();
     arc_io.skip(0x104);
 

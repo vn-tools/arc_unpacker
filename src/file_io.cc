@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <stdexcept>
 #include "file_io.h"
+#include "compat/open.h"
 
 struct FileIO::Internals
 {
@@ -14,7 +15,7 @@ void FileIO::seek(size_t offset)
         throw std::runtime_error("Failed to seek");
 }
 
-void FileIO::skip(ssize_t offset)
+void FileIO::skip(int offset)
 {
     if (fseek(internals->file, offset, SEEK_CUR) != 0)
         throw std::runtime_error("Failed to seek");
@@ -56,7 +57,7 @@ size_t FileIO::size() const
     return size;
 }
 
-void FileIO::truncate(__attribute__((unused)) size_t new_size)
+void FileIO::truncate(size_t)
 {
     //if (ftruncate(internals->file, new_size) != 0)
         //throw std::runtime_error("Failed to truncate file");
@@ -66,7 +67,7 @@ void FileIO::truncate(__attribute__((unused)) size_t new_size)
 FileIO::FileIO(std::string path, std::string read_mode)
     : internals(new FileIO::Internals)
 {
-    internals->file = fopen(path.c_str(), read_mode.c_str());
+    internals->file = compat_open(path.c_str(), read_mode.c_str());
     if (internals->file == nullptr)
         throw std::runtime_error("Can't open file " + path);
 }

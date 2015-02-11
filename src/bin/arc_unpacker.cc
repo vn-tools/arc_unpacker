@@ -2,6 +2,7 @@
 #include <cstring>
 #include "arg_parser.h"
 #include "bin_helpers.h"
+#include "compat/main.h"
 #include "factory/archive_factory.h"
 #include "file_io.h"
 #include "formats/archive.h"
@@ -169,36 +170,39 @@ namespace
 
 int main(int argc, const char **argv)
 {
-    try
+    return run_with_args(argc, argv, [](std::vector<std::string> args) -> int
     {
-        int exit_code = 0;
-        Options options;
-        ArchiveFactory arc_factory;
-        ArgParser arg_parser;
-        arg_parser.parse(argc, argv);
-
-        add_format_option(arg_parser, options);
-        add_help_option(arg_parser);
-
-        if (should_show_help(arg_parser))
+        try
         {
-            std::unique_ptr<Archive> archive(options.format != ""
-                ? arc_factory.create_archive(options.format)
-                : nullptr);
-            print_help(argv[0], arg_parser, options, archive.get());
-        }
-        else
-        {
-            add_path_options(arg_parser, options);
-            if (!run(options, arg_parser, arc_factory))
-                exit_code = 1;
-        }
+            int exit_code = 0;
+            Options options;
+            ArchiveFactory arc_factory;
+            ArgParser arg_parser;
+            arg_parser.parse(args);
 
-        return exit_code;
-    }
-    catch (std::exception &e)
-    {
-        log("Error: %s\n", e.what());
-        return 1;
-    }
+            add_format_option(arg_parser, options);
+            add_help_option(arg_parser);
+
+            if (should_show_help(arg_parser))
+            {
+                std::unique_ptr<Archive> archive(options.format != ""
+                    ? arc_factory.create_archive(options.format)
+                    : nullptr);
+                print_help(args[0], arg_parser, options, archive.get());
+            }
+            else
+            {
+                add_path_options(arg_parser, options);
+                if (!run(options, arg_parser, arc_factory))
+                    exit_code = 1;
+            }
+
+            return exit_code;
+        }
+        catch (std::exception &e)
+        {
+            log("Error: %s\n", e.what());
+            return 1;
+        }
+    });
 }

@@ -3,16 +3,15 @@
 #include "formats/converter.h"
 #include "logger.h"
 
-void Converter::add_cli_help(
-    __attribute__((unused)) ArgParser &arg_parser) const
+void Converter::add_cli_help(ArgParser &) const
 {
 }
 
-void Converter::parse_cli_options(__attribute__((unused)) ArgParser &arg_parser)
+void Converter::parse_cli_options(ArgParser &)
 {
 }
 
-void Converter::decode_internal(__attribute__((unused)) VirtualFile &) const
+void Converter::decode_internal(VirtualFile &) const
 {
     throw std::runtime_error("Decoding is not supported");
 }

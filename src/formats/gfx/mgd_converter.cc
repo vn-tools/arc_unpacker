@@ -337,8 +337,8 @@ void MgdConverter::decode_internal(VirtualFile &file) const
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a MGD graphic file");
 
-    __attribute__((unused)) uint16_t data_offset = file.io.read_u16_le();
-    __attribute__((unused)) uint16_t format = file.io.read_u16_le();
+    uint16_t data_offset = file.io.read_u16_le();
+    uint16_t format = file.io.read_u16_le();
     file.io.skip(4);
     uint16_t image_width = file.io.read_u16_le();
     uint16_t image_height = file.io.read_u16_le();
@@ -359,7 +359,7 @@ void MgdConverter::decode_internal(VirtualFile &file) const
         image_width,
         image_height);
 
-    __attribute__((unused)) auto regions = read_region_data(file.io);
+    read_region_data(file.io);
 
     image->update_file(file);
 }

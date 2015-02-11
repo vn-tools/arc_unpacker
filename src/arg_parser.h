@@ -13,7 +13,7 @@ public:
     void add_help(const std::string invocation, const std::string description);
     void print_help() const;
 
-    void parse(int argc, const char **argv);
+    void parse(const std::vector<std::string> args);
 
     bool has_flag(const std::string argument) const;
     bool has_switch(const std::string key) const;

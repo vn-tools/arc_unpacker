@@ -3,17 +3,15 @@
 #include "formats/archive.h"
 #include "logger.h"
 
-void Archive::add_cli_help(__attribute__((unused)) ArgParser &arg_parser) const
+void Archive::add_cli_help(ArgParser &) const
 {
 }
 
-void Archive::parse_cli_options(__attribute__((unused)) ArgParser &arg_parser)
+void Archive::parse_cli_options(ArgParser &)
 {
 }
 
-void Archive::unpack_internal(
-    __attribute__((unused)) IO &arc_io,
-    __attribute__((unused)) OutputFiles &output_files) const
+void Archive::unpack_internal(IO &, OutputFiles &) const
 {
     throw std::runtime_error("Unpacking is not supported");
 }

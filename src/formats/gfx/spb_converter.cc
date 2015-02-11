@@ -27,7 +27,7 @@ namespace
 
         size_t channel_data_size = image_width * image_height;
         std::unique_ptr<uchar> channel_data(new uchar[channel_data_size]);
-        for (ssize_t rgb = 2; rgb >= 0; rgb--)
+        for (int rgb = 2; rgb >= 0; rgb--)
         {
             uchar *channel_ptr = channel_data.get();
             const uchar *channel_guardian = channel_ptr + channel_data_size;

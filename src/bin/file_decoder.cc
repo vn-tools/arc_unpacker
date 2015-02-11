@@ -1,6 +1,7 @@
 #include <cstring>
 #include "arg_parser.h"
 #include "bin_helpers.h"
+#include "compat/main.h"
 #include "factory/converter_factory.h"
 #include "file_io.h"
 #include "formats/converter.h"
@@ -231,7 +232,7 @@ namespace
             {
                 output_files.save(&read_and_decode, &context);
             }
-            catch (std::runtime_error &e)
+            catch (std::runtime_error &)
             {
                 result = false;
             }
@@ -242,39 +243,42 @@ namespace
 
 int main(int argc, const char **argv)
 {
-    try
+    return run_with_args(argc, argv, [](std::vector<std::string> args) -> int
     {
-        int exit_code = 0;
-
-        Options options;
-        ConverterFactory conv_factory;
-        ArgParser arg_parser;
-        arg_parser.parse(argc, argv);
-
-        add_output_folder_option(arg_parser, options);
-        add_format_option(arg_parser, options);
-        add_help_option(arg_parser);
-
-        if (should_show_help(arg_parser))
+        try
         {
-            std::unique_ptr<Converter> converter(options.format != ""
-                ? conv_factory.create_converter(options.format)
-                : nullptr);
-            print_help(argv[0], arg_parser, options, converter.get());
-        }
-        else
-        {
-            if (!add_input_paths_option(arg_parser, options))
-                exit_code = 1;
-            else if (!run(options, arg_parser, conv_factory))
-                exit_code = 1;
-        }
+            int exit_code = 0;
 
-        return exit_code;
-    }
-    catch (std::exception &e)
-    {
-        log("Error: %s\n", e.what());
-        return 1;
-    }
+            Options options;
+            ConverterFactory conv_factory;
+            ArgParser arg_parser;
+            arg_parser.parse(args);
+
+            add_output_folder_option(arg_parser, options);
+            add_format_option(arg_parser, options);
+            add_help_option(arg_parser);
+
+            if (should_show_help(arg_parser))
+            {
+                std::unique_ptr<Converter> converter(options.format != ""
+                    ? conv_factory.create_converter(options.format)
+                    : nullptr);
+                print_help(args[0], arg_parser, options, converter.get());
+            }
+            else
+            {
+                if (!add_input_paths_option(arg_parser, options))
+                    exit_code = 1;
+                else if (!run(options, arg_parser, conv_factory))
+                    exit_code = 1;
+            }
+
+            return exit_code;
+        }
+        catch (std::exception &e)
+        {
+            log("Error: %s\n", e.what());
+            return 1;
+        }
+    });
 }

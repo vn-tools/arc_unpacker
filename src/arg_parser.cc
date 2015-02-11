@@ -129,17 +129,13 @@ ArgParser::~ArgParser()
     delete internals;
 }
 
-void ArgParser::parse(int argc, const char **argv)
+void ArgParser::parse(std::vector<std::string> args)
 {
-    if (argc == 0)
+    if (args.size() == 0)
         return;
 
-    assert(argv != nullptr);
-
-    for (ssize_t i = 0; i < argc; i ++)
+    for (auto &arg : args)
     {
-        assert(argv[i] != nullptr);
-        const std::string arg = std::string(argv[i]);
         std::string key = "";
         std::string value = "";
         if (::get_switch(arg, key, value))

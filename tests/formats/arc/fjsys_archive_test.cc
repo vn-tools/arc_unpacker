@@ -15,7 +15,7 @@ void test_fjsys_archive()
 
     std::string path = "tests/test_files/arc/fjsys/test.fjsys";
     std::unique_ptr<Archive> archive(new FjsysArchive);
-    auto output_files = unpack_to_memory(path, *archive, 0, nullptr);
+    auto output_files = unpack_to_memory(path, *archive);
     auto actual_files = output_files->get_saved();
 
     compare_files(expected_files, actual_files);

@@ -82,7 +82,7 @@ namespace
         size_t written = 0;
         while (written < size_original)
         {
-            bool flag = bit_reader.get(1);
+            bool flag = bit_reader.get(1) > 0;
 
             if (flag)
             {

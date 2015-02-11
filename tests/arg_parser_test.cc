@@ -13,8 +13,7 @@ void test_switch_missing()
 void test_switch_is_not_a_flag()
 {
     ArgParser ap;
-    const char *argv[1] = {"-f"};
-    ap.parse(1, argv);
+    ap.parse(std::vector<std::string>{"-f"});
     eassert(ap.get_switch("-f") == "");
     eassert(!ap.has_switch("-f"));
 }
@@ -22,8 +21,7 @@ void test_switch_is_not_a_flag()
 void test_switch_short()
 {
     ArgParser ap;
-    const char *argv[1] = {"-s=short"};
-    ap.parse(1, argv);
+    ap.parse(std::vector<std::string>{"-s=short"});
     eassert(ap.get_switch("-s") == "short");
     eassert(ap.get_switch("s") == "short");
     eassert(ap.has_switch("-s"));
@@ -33,8 +31,7 @@ void test_switch_short()
 void test_switch_long()
 {
     ArgParser ap;
-    const char *argv[1] = {"--long=long"};
-    ap.parse(1, argv);
+    ap.parse(std::vector<std::string>{"--long=long"});
     eassert(ap.get_switch("--long") == "long");
     eassert(ap.get_switch("-long") == "long");
     eassert(ap.get_switch("long") == "long");
@@ -46,32 +43,28 @@ void test_switch_long()
 void test_switch_overriding_short()
 {
     ArgParser ap;
-    const char *argv[2] = {"-s=short1", "-s=short2"};
-    ap.parse(2, argv);
+    ap.parse(std::vector<std::string>{"-s=short1", "-s=short2"});
     eassert(ap.get_switch("-s") == "short2");
 }
 
 void test_switch_overriding_long()
 {
     ArgParser ap;
-    const char *argv[2] = {"--long=long1", "--long=long2"};
-    ap.parse(2, argv);
+    ap.parse(std::vector<std::string>{"--long=long1", "--long=long2"});
     eassert(ap.get_switch("--long") == "long2");
 }
 
 void test_switch_with_space()
 {
     ArgParser ap;
-    const char *argv[1] = {"--switch=long switch"};
-    ap.parse(1, argv);
+    ap.parse(std::vector<std::string>{"--switch=long switch"});
     eassert(ap.get_switch("--switch") == "long switch");
 }
 
 void test_switch_empty_value()
 {
     ArgParser ap;
-    const char *argv[1] = {"--switch="};
-    ap.parse(1, argv);
+    ap.parse(std::vector<std::string>{"--switch="});
     eassert(ap.get_switch("--switch") == "");
 }
 
@@ -84,16 +77,14 @@ void test_flag_missing()
 void test_flag()
 {
     ArgParser ap;
-    const char *argv[1] = {"--flag"};
-    ap.parse(1, argv);
+    ap.parse(std::vector<std::string>{"--flag"});
     eassert(ap.has_flag("flag"));
 }
 
 void test_flag_mixed_with_stray()
 {
     ArgParser ap;
-    const char *argv[2] = {"--flag", "stray"};
-    ap.parse(2, argv);
+    ap.parse(std::vector<std::string>{"--flag", "stray"});
     eassert(ap.has_flag("flag"));
     auto stray = ap.get_stray();
     eassert(stray.size() == 1);
@@ -110,8 +101,7 @@ void test_stray_missing()
 void test_stray()
 {
     ArgParser ap;
-    const char *argv[2] = {"stray1", "stray2"};
-    ap.parse(2, argv);
+    ap.parse(std::vector<std::string>{"stray1", "stray2"});
     auto stray = ap.get_stray();
     eassert(stray.size() == 2);
     eassert(stray[0] == "stray1");
@@ -121,8 +111,7 @@ void test_stray()
 void test_stray_with_space()
 {
     ArgParser ap;
-    const char *argv[1] = {"long stray"};
-    ap.parse(1, argv);
+    ap.parse(std::vector<std::string>{"long stray"});
     auto stray = ap.get_stray();
     eassert(stray.size() == 1);
     eassert(stray[0] == "long stray");
@@ -131,7 +120,7 @@ void test_stray_with_space()
 void test_mixed_types()
 {
     ArgParser ap;
-    const char *argv[5] =
+    std::vector<std::string> args
     {
         "stray1",
         "--switch=s",
@@ -139,7 +128,7 @@ void test_mixed_types()
         "stray2",
         "--flag2"
     };
-    ap.parse(5, argv);
+    ap.parse(args);
 
     eassert(ap.get_switch("--switch") == "s");
     eassert(ap.has_flag("flag1"));

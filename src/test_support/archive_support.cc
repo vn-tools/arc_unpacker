@@ -6,13 +6,9 @@
 #include "virtual_file.h"
 
 std::unique_ptr<OutputFilesMemory> unpack_to_memory(
-    const std::string input_path,
-    Archive &archive,
-    int argc,
-    const char **argv)
+    const std::string input_path, Archive &archive)
 {
     ArgParser arg_parser;
-    arg_parser.parse(argc, argv);
     FileIO io(input_path.c_str(), "rb");
     std::unique_ptr<OutputFilesMemory> output_files(new OutputFilesMemory);
     archive.unpack(io, *output_files);

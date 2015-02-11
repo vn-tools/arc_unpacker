@@ -26,7 +26,7 @@ void test_rpa_archive(const char *path)
     expected_files.push_back(file2.get());
 
     std::unique_ptr<Archive> archive(new RpaArchive);
-    auto output_files = unpack_to_memory(path, *archive, 0, nullptr);
+    auto output_files = unpack_to_memory(path, *archive);
     auto actual_files = output_files->get_saved();
 
     compare_files(expected_files, actual_files);

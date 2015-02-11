@@ -24,7 +24,7 @@ namespace
 
         BlockInfo(IO &io) : block_data(nullptr)
         {
-            mark = io.read_u8();
+            mark = io.read_u8() > 0;
             block_size = io.read_u32_le();
             block_data.reset(new uchar[block_size]);
             uchar *tmp = block_data.get();
@@ -120,7 +120,8 @@ namespace
         Header &header)
     {
         // ignore block sizes
-        size_t block_count = (header.image_height - 1) / header.block_height + 1;
+        size_t block_count
+            = (header.image_height - 1) / header.block_height + 1;
         io.skip(4 * block_count);
 
         LzssDecompressor decompressor;
