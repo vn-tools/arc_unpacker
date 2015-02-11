@@ -6,6 +6,7 @@
 #include "formats/arc/mbl_archive.h"
 #include "formats/arc/npa_archive.h"
 #include "formats/arc/nsa_archive.h"
+#include "formats/arc/p_archive.h"
 #include "formats/arc/pak_archive.h"
 #include "formats/arc/rgssad_archive.h"
 #include "formats/arc/rpa_archive.h"
@@ -35,6 +36,7 @@ ArchiveFactory::ArchiveFactory()
     internals->add_format("npa", []() { return new NpaArchive(); });
     internals->add_format("xp3", []() { return new Xp3Archive(); });
     internals->add_format("rpa", []() { return new RpaArchive(); });
+    internals->add_format("p", []() { return new PArchive(); });
     internals->add_format("pak", []() { return new PakArchive(); });
     internals->add_format("mbl", []() { return new MblArchive(); });
     internals->add_format("nsa", []() { return new NsaArchive(); });
