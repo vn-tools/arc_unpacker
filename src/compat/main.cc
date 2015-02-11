@@ -3,7 +3,7 @@
 
 #ifdef _WIN32
     #include <Windows.h>
-    #include "winutf8.hpp"
+    #include "compat/winutf8.h"
 
     int run_with_args(
         int, const char **, std::function<int(std::vector<std::string>)> main)
@@ -14,7 +14,7 @@
         arguments.reserve(argc);
         for (int i = 0; i < argc; i ++)
         {
-            arguments.push_back(lpwstr2string(argv[i]));
+            arguments.push_back(wstring2string(argv[i]));
         }
         LocalFree(argv);
         return main(arguments);

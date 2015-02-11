@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <stdexcept>
 #include "file_io.h"
+#include "compat/open.h"
 
 struct FileIO::Internals
 {
@@ -66,7 +67,7 @@ void FileIO::truncate(size_t)
 FileIO::FileIO(std::string path, std::string read_mode)
     : internals(new FileIO::Internals)
 {
-    internals->file = fopen(path.c_str(), read_mode.c_str());
+    internals->file = compat_open(path.c_str(), read_mode.c_str());
     if (internals->file == nullptr)
         throw std::runtime_error("Can't open file " + path);
 }
