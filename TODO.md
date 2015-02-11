@@ -1,13 +1,6 @@
-Port old code for formats:
-	- Files:
-		- MSD
-		- YKS
-
 Unit tests (low priority):
 	- Nitroplus archives
 	- EXE executables
 
 Misc:
 	- Replace some assertions with explicit checks
-
-The ride never ends!
