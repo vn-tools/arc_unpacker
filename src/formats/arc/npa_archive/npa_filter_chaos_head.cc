@@ -2,7 +2,6 @@
 #include <cstddef>
 #include "formats/arc/npa_archive/npa_filter_chaos_head.h"
 
-__attribute__((const))
 uint32_t npa_chaos_head_file_name_filter(uint32_t key1, uint32_t key2)
 {
     return key1 * key2;

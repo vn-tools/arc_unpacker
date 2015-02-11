@@ -96,7 +96,7 @@ void YkcArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
         throw std::runtime_error("Not a YKC archive");
 
     arc_io.skip(2);
-    __attribute__((unused)) int version = arc_io.read_u32_le();
+    int version = arc_io.read_u32_le();
     arc_io.skip(4);
 
     size_t table_offset = arc_io.read_u32_le();

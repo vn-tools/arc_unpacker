@@ -14,7 +14,7 @@
                         "Assertion failed at %s:%d (%s)", \
                         __FILE__, \
                         __LINE__, \
-                        __func__); \
+                        __FUNCTION__); \
                 throw std::runtime_error(std::string(str)); \
         } \
     }

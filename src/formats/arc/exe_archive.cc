@@ -251,7 +251,7 @@ namespace
             name = io.read_u32_le();
             offset_to_data = io.read_u32_le();
             id = name;
-            name_is_string = name >> 31;
+            name_is_string = (name >> 31) > 0;
             name_offset = name & 0x7fffffff;
             data_is_directory = offset_to_data >> 31;
             offset_to_data &= 0x7fffffff;

@@ -50,8 +50,8 @@ namespace
         std::unique_ptr<Header> header(new Header);
         header->key1 = arc_io.read_u32_le();
         header->key2 = arc_io.read_u32_le();
-        header->compressed = arc_io.read_u8();
-        header->encrypted = arc_io.read_u8();
+        header->compressed = arc_io.read_u8() > 0;
+        header->encrypted = arc_io.read_u8() > 0;
         header->total_count = arc_io.read_u32_le();
         header->folder_count = arc_io.read_u32_le();
         header->file_count = arc_io.read_u32_le();

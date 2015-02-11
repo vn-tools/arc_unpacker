@@ -16,13 +16,13 @@ namespace
 {
     size_t guess_image_dimension(
         const std::vector<uint32_t> candidates,
-        ssize_t main_delta,
-        ssize_t max_delta_correction,
+        int main_delta,
+        int max_delta_correction,
         size_t pixels_size)
     {
         for (auto &base : candidates)
         {
-            for (ssize_t delta = 0; delta <= max_delta_correction; delta ++)
+            for (int delta = 0; delta <= max_delta_correction; delta ++)
             {
                 size_t possible_dimension = base + main_delta + delta;
                 if (possible_dimension > pixels_size)
@@ -79,13 +79,13 @@ void SotesConverter::decode_internal(VirtualFile &file) const
 
     size_t width = guess_image_dimension(
         std::vector<uint32_t>(&weird_data1[1], &weird_data1[5]),
-        - weird_data1[6],
+        -(signed)weird_data1[6],
         3,
         raw_data_size);
 
     size_t height = guess_image_dimension(
         std::vector<uint32_t>(&weird_data2[0], &weird_data2[5]),
-        - weird_data2[10],
+        -(signed)weird_data2[10],
         0,
         raw_data_size);
 

@@ -82,7 +82,7 @@ namespace
                     if (dst >= dst_guardian)
                         break;
                     assert(dst >= (unsigned char*)output + look_behind);
-                    *dst = dst[-look_behind];
+                    *dst = dst[-(signed)look_behind];
                     dst ++;
                 }
             }
@@ -250,8 +250,7 @@ namespace
                 uint16_t part_height = uncompressed_io.read_u16_le();
                 uncompressed_io.skip(0x52);
 
-                size_t y;
-                for (y = part_y+region->y1; y < part_y+part_height; y ++)
+                for (size_t y = part_y + region->y1; y < (unsigned) part_y + part_height; y ++)
                 {
                     uncompressed_io.read(
                         &pixels.get()[part_x + region->x1 + y * width],

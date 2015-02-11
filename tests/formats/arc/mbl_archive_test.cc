@@ -14,7 +14,7 @@ void test_mbl_archive(const char *path)
     expected_files.push_back(file2.get());
 
     std::unique_ptr<Archive> archive(new MblArchive);
-    auto output_files = unpack_to_memory(path, *archive, 0, nullptr);
+    auto output_files = unpack_to_memory(path, *archive);
     auto actual_files = output_files->get_saved();
 
     compare_files(expected_files, actual_files);

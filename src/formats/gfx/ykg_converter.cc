@@ -31,7 +31,7 @@ namespace
     std::unique_ptr<Header> read_header(IO &file_io)
     {
         std::unique_ptr<Header> header(new Header);
-        header->encrypted = file_io.read_u16_le();
+        header->encrypted = file_io.read_u16_le() > 0;
 
         size_t header_size = file_io.read_u32_le();
         if (header_size != 64)

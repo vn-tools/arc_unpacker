@@ -1,5 +1,6 @@
 #ifndef IO_H
 #define IO_H
+#include <cstdint>
 #include <string>
 
 class IO
@@ -8,7 +9,7 @@ public:
     virtual size_t size() const = 0;
     virtual size_t tell() const = 0;
     virtual void seek(size_t offset) = 0;
-    virtual void skip(ssize_t offset) = 0;
+    virtual void skip(int offset) = 0;
     virtual void truncate(size_t new_size) = 0;
 
     virtual void read(void *input, size_t length) = 0;

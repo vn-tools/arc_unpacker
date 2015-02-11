@@ -54,7 +54,7 @@ namespace
         if (minor_version != 1)
             throw std::runtime_error("Unexpected XP3 version");
 
-        arc_io.seek(additional_header_offset & 0xfffffffff);
+        arc_io.seek(static_cast<size_t>(additional_header_offset));
         arc_io.skip(1); // flags?
         arc_io.skip(8); // table size
         return arc_io.read_u64_le();
@@ -62,13 +62,14 @@ namespace
 
     std::unique_ptr<IO> read_raw_table(IO &arc_io)
     {
-        bool use_zlib = arc_io.read_u8();
+        bool use_zlib = arc_io.read_u8() != 0;
         const uint64_t size_compressed = arc_io.read_u64_le();
-        __attribute__((unused)) const uint64_t size_original = use_zlib
+        const uint64_t size_original = use_zlib
             ? arc_io.read_u64_le()
             : size_compressed;
 
-        std::string compressed = arc_io.read(size_compressed);
+        std::string compressed
+            = arc_io.read(static_cast<size_t>(size_compressed));
         if (use_zlib)
         {
             std::string uncompressed = zlib_inflate(compressed);
@@ -83,11 +84,9 @@ namespace
             throw std::runtime_error("Expected INFO chunk");
         uint64_t info_chunk_size = table_io.read_u64_le();
 
-        __attribute__((unused)) uint32_t info_flags = table_io.read_u32_le();
-        __attribute__((unused)) uint64_t file_size_original
-            = table_io.read_u64_le();
-        __attribute__((unused)) uint64_t file_size_compressed
-            = table_io.read_u64_le();
+        uint32_t info_flags = table_io.read_u32_le();
+        uint64_t file_size_original = table_io.read_u64_le();
+        uint64_t file_size_compressed = table_io.read_u64_le();
 
         size_t name_length = table_io.read_u16_le();
         std::string name_utf16 = table_io.read(name_length * 2);
@@ -102,7 +101,7 @@ namespace
     {
         if (!check_magic(table_io, segm_magic))
         {
-            table_io.skip(-segm_magic.size());
+            table_io.skip(-(signed)segm_magic.size());
             return false;
         }
         uint64_t segm_chunk_size = table_io.read_u64_le();
@@ -112,18 +111,20 @@ namespace
         uint64_t data_offset = table_io.read_u64_le();
         uint64_t data_size_original = table_io.read_u64_le();
         uint64_t data_size_compressed = table_io.read_u64_le();
-        arc_io.seek(data_offset);
+        arc_io.seek(static_cast<size_t>(data_offset));
 
-        bool use_zlib = segm_flags & 7;
+        bool use_zlib = (segm_flags & 7) > 0;
         if (use_zlib)
         {
-            std::string data_compressed = arc_io.read(data_size_compressed);
+            std::string data_compressed = arc_io.read(
+                static_cast<int>(data_size_compressed));
             std::string data_uncompressed = zlib_inflate(data_compressed);
             target_file.io.write(data_uncompressed);
         }
         else
         {
-            target_file.io.write_from_io(arc_io, data_size_original);
+            target_file.io.write_from_io(
+                arc_io, static_cast<size_t>(data_size_original));
         }
 
         return true;

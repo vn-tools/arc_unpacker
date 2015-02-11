@@ -177,7 +177,7 @@ namespace
                 case 2:
                     // neg eax
                     add_shellcode("\xf7\xd8", 2);
-                    eax = -eax;
+                    eax = -(signed)eax;
                     break;
 
                 case 3:

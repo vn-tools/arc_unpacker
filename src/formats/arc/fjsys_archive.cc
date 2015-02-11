@@ -60,7 +60,7 @@ namespace
         UnpackContext *unpack_context = (UnpackContext*)context;
         size_t file_name_offset = unpack_context->arc_io.read_u32_le();
         size_t data_size = unpack_context->arc_io.read_u32_le();
-        size_t data_offset = unpack_context->arc_io.read_u64_le();
+        size_t data_offset = static_cast<size_t>(unpack_context->arc_io.read_u64_le());
         size_t old_pos = unpack_context->arc_io.tell();
         size_t file_names_start = unpack_context->header.header_size
             - unpack_context->header.file_names_size;

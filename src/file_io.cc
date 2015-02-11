@@ -14,7 +14,7 @@ void FileIO::seek(size_t offset)
         throw std::runtime_error("Failed to seek");
 }
 
-void FileIO::skip(ssize_t offset)
+void FileIO::skip(int offset)
 {
     if (fseek(internals->file, offset, SEEK_CUR) != 0)
         throw std::runtime_error("Failed to seek");
@@ -56,7 +56,7 @@ size_t FileIO::size() const
     return size;
 }
 
-void FileIO::truncate(__attribute__((unused)) size_t new_size)
+void FileIO::truncate(size_t)
 {
     //if (ftruncate(internals->file, new_size) != 0)
         //throw std::runtime_error("Failed to truncate file");

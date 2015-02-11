@@ -10,6 +10,16 @@ struct BufferedIO::Internals
     char *buffer;
     size_t buffer_size;
     size_t buffer_pos;
+
+    Internals(const char *buffer, size_t buffer_size)
+    {
+        this->buffer = (char*)malloc(buffer_size);
+        if (this->buffer == nullptr)
+            throw std::bad_alloc();
+        memcpy(this->buffer, buffer, buffer_size);
+        this->buffer_pos = 0;
+        this->buffer_size = buffer_size;
+    }
 };
 
 void BufferedIO::seek(size_t offset)
@@ -19,7 +29,7 @@ void BufferedIO::seek(size_t offset)
     internals->buffer_pos = offset;
 }
 
-void BufferedIO::skip(ssize_t offset)
+void BufferedIO::skip(int offset)
 {
     if (internals->buffer_pos + offset > internals->buffer_size)
         throw std::runtime_error("Seeking beyond EOF");
@@ -94,24 +104,18 @@ void BufferedIO::truncate(size_t new_size)
         internals->buffer_pos = new_size;
 }
 
-BufferedIO::BufferedIO() : BufferedIO("", 0)
+BufferedIO::BufferedIO() : internals(new BufferedIO::Internals("", 0))
 {
 }
 
 BufferedIO::BufferedIO(const std::string &buffer)
-    : BufferedIO(buffer.data(), buffer.size())
+    : internals(new BufferedIO::Internals(buffer.data(), buffer.size()))
 {
 }
 
 BufferedIO::BufferedIO(const char *buffer, size_t buffer_size)
-    : internals(new BufferedIO::Internals)
+    : internals(new BufferedIO::Internals(buffer, buffer_size))
 {
-    internals->buffer = (char*)malloc(buffer_size);
-    if (internals->buffer == nullptr)
-        throw std::bad_alloc();
-    memcpy(internals->buffer, buffer, buffer_size);
-    internals->buffer_pos = 0;
-    internals->buffer_size = buffer_size;
 }
 
 BufferedIO::~BufferedIO()

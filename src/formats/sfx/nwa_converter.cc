@@ -65,9 +65,7 @@ namespace
         return io.read(header.block_size * header.channel_count);
     }
 
-    std::string nwa_read_compressed(
-        __attribute__((unused)) IO &io,
-        __attribute__((unused)) const NwaHeader &header)
+    std::string nwa_read_compressed(IO &, const NwaHeader &)
     {
         throw std::runtime_error("Reading compressed streams is not supported");
     }

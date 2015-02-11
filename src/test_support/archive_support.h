@@ -7,10 +7,7 @@
 #include "output_files.h"
 
 std::unique_ptr<OutputFilesMemory> unpack_to_memory(
-    std::string input_path,
-    Archive &archive,
-    int argc,
-    const char **argv);
+    const std::string input_path, Archive &archive);
 
 void compare_files(
     const std::vector<VirtualFile*> &expected_files,

@@ -27,7 +27,7 @@ namespace
         io->read(data, length);
     }
 
-    void my_png_flush(png_structp png_ptr __attribute__((unused)))
+    void my_png_flush(png_structp)
     {
     }
 }

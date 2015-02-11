@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "bit_reader.h"
 
 struct BitReader::Internals
@@ -64,7 +65,7 @@ unsigned int BitReader::get(size_t n)
     while (n --)
     {
         value <<= 1;
-        value |= internals->get();
+        value |= static_cast<int>(internals->get());
     }
     return value;
 }
@@ -78,7 +79,7 @@ unsigned int BitReader::try_get(size_t n)
     while (n --)
     {
         value <<= 1;
-        value |= internals->try_get();
+        value |= static_cast<int>(internals->try_get());
     }
     return value;
 }

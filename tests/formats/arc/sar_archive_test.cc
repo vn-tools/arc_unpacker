@@ -15,7 +15,7 @@ void test_sar_archive()
 
     std::string path = "tests/test_files/arc/sar/test.sar";
     std::unique_ptr<Archive> archive(new SarArchive);
-    auto output_files = unpack_to_memory(path, *archive, 0, nullptr);
+    auto output_files = unpack_to_memory(path, *archive);
     auto actual_files = output_files->get_saved();
 
     compare_files(expected_files, actual_files);
