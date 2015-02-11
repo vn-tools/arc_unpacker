@@ -1,13 +1,14 @@
 A tool for extracting data from visual novels.
 
+This branch is deprecated: for performance reasons the project was translated
+to C++ (see issue #5).
+
 Requirements
 ------------
 
 1. `ruby` interpreter (tested on 2.0.0p598)
 2. `rmagick` gem
 3. `gcc`.
-
-This is subject to change - see [#5](/../../issues/5).
 
 Before running the script, please run `sh build.sh` to build native extensions.
 Otherwise, some formats might not work correctly.
