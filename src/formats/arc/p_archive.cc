@@ -8,6 +8,7 @@
 // - Melty Blood
 
 #include "formats/arc/p_archive.h"
+#include "formats/gfx/ex3_converter.h"
 
 namespace
 {
@@ -50,7 +51,10 @@ namespace
     }
 
     std::unique_ptr<VirtualFile> read_file(
-        IO &arc_io, TableEntry &table_entry, bool encrypted)
+        IO &arc_io,
+        TableEntry &table_entry,
+        bool encrypted,
+        Ex3Converter &ex3_converter)
     {
         std::unique_ptr<VirtualFile> file(new VirtualFile);
         std::unique_ptr<char[]> data(new char[table_entry.size]);
@@ -63,8 +67,33 @@ namespace
 
         file->name = table_entry.name;
         file->io.write(ptr, table_entry.size);
+
+        ex3_converter.try_decode(*file);
         return file;
     }
+}
+
+struct PArchive::Internals
+{
+    Ex3Converter ex3_converter;
+};
+
+PArchive::PArchive() : internals(new PArchive::Internals)
+{
+}
+
+PArchive::~PArchive()
+{
+}
+
+void PArchive::add_cli_help(ArgParser &arg_parser) const
+{
+    internals->ex3_converter.add_cli_help(arg_parser);
+}
+
+void PArchive::parse_cli_options(ArgParser &arg_parser)
+{
+    internals->ex3_converter.parse_cli_options(arg_parser);
 }
 
 void PArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
@@ -79,7 +108,8 @@ void PArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
     {
         output_files.save([&]() -> std::unique_ptr<VirtualFile>
         {
-            return read_file(arc_io, *table_entry, encrypted);
+            return read_file(
+                arc_io, *table_entry, encrypted, internals->ex3_converter);
         });
     }
 }

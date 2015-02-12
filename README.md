@@ -46,7 +46,7 @@ CLI invocation             | Game                                | Features<sup>
 `--fmt=xp3 --plugin=fsn`   | Fate/Stay Night                     | ![][sup]![][sup]![][sup]
 `--fmt=xp3 --plugin=fha`   | Fate/Hollow Ataraxia                | ![][sup]![][sup]![][sup]
 `--fmt=xp3 --plugin=comyu` | Comyu Kuroi Ryuu to Yasashii Oukoku | ![][sup]![][sup]![][sup]
-`--fmt=p`                  | Melty Blood                         | ![][sup]![][non]![][non]
+`--fmt=p`                  | Melty Blood                         | ![][sup]![][sup]![][sup]
 `--fmt=sar`                | Tsukihime                           | ![][sup]![][sup]![][sup]
 `--fmt=nsa`                | Tsukihime                           | ![][sup]![][sup]![][sup]
 `--fmt=nsa`                | Umineko No Naku Koro Ni             | ![][sup]![][sup]![][sup]
