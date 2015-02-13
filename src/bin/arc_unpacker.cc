@@ -89,16 +89,16 @@ namespace
     void unpack(
         Archive &archive,
         ArgParser &arg_parser,
-        IO &io,
+        VirtualFile &file,
         OutputFiles &output_files)
     {
-        io.seek(0);
+        file.io.seek(0);
         archive.parse_cli_options(arg_parser);
-        archive.unpack(io, output_files);
+        archive.unpack(file, output_files);
     }
 
     bool guess_archive_and_unpack(
-        IO &io,
+        VirtualFile &file,
         OutputFiles &output_files,
         Options &options,
         ArgParser &arg_parser,
@@ -106,7 +106,7 @@ namespace
     {
         if (options.format == "")
         {
-            for (auto& format : arc_factory.get_formats())
+            for (auto &format : arc_factory.get_formats())
             {
                 std::unique_ptr<Archive> archive(
                     arc_factory.create_archive(format));
@@ -114,7 +114,7 @@ namespace
                 try
                 {
                     log("Trying %s...\n", format.c_str());
-                    unpack(*archive, arg_parser, io, output_files);
+                    unpack(*archive, arg_parser, file, output_files);
                     log("Unpacking finished successfully.\n");
                     return true;
                 }
@@ -138,7 +138,7 @@ namespace
 
             try
             {
-                unpack(*archive, arg_parser, io, output_files);
+                unpack(*archive, arg_parser, file, output_files);
                 log("Unpacking finished successfully.\n");
                 return true;
             }
@@ -158,9 +158,9 @@ namespace
         const ArchiveFactory &arc_factory)
     {
         OutputFilesHdd output_files(options.output_path);
-        FileIO io(options.input_path, "rb");
+        VirtualFile file(options.input_path, "rb");
         return guess_archive_and_unpack(
-            io,
+            file,
             output_files,
             options,
             arg_parser,

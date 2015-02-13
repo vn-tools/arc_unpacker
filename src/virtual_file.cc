@@ -1,7 +1,13 @@
 #include <string>
 #include "buffered_io.h"
+#include "file_io.h"
 #include "fs.h"
 #include "virtual_file.h"
+
+VirtualFile::VirtualFile(const std::string path, const std::string mode)
+    : io(*new FileIO(path, mode)), name(path)
+{
+}
 
 VirtualFile::VirtualFile() : io(*new BufferedIO)
 {

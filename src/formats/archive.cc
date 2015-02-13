@@ -11,15 +11,15 @@ void Archive::parse_cli_options(ArgParser &)
 {
 }
 
-void Archive::unpack_internal(IO &, OutputFiles &) const
+void Archive::unpack_internal(VirtualFile &, OutputFiles &) const
 {
     throw std::runtime_error("Unpacking is not supported");
 }
 
-void Archive::unpack(IO &arc_io, OutputFiles &output_files) const
+void Archive::unpack(VirtualFile &file, OutputFiles &output_files) const
 {
-    arc_io.seek(0);
-    return unpack_internal(arc_io, output_files);
+    file.io.seek(0);
+    return unpack_internal(file, output_files);
 }
 
 Archive::~Archive()

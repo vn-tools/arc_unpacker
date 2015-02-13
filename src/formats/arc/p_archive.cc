@@ -96,20 +96,21 @@ void PArchive::parse_cli_options(ArgParser &arg_parser)
     internals->ex3_converter.parse_cli_options(arg_parser);
 }
 
-void PArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
+void PArchive::unpack_internal(
+    VirtualFile &file, OutputFiles &output_files) const
 {
-    uint32_t magic = arc_io.read_u32_le();
+    uint32_t magic = file.io.read_u32_le();
     if (magic != 0 && magic != 1)
         throw std::runtime_error("Not a P archive");
 
     bool encrypted = magic == 1;
-    Table table = read_table(arc_io);
+    Table table = read_table(file.io);
     for (auto &table_entry : table)
     {
         output_files.save([&]() -> std::unique_ptr<VirtualFile>
         {
             return read_file(
-                arc_io, *table_entry, encrypted, internals->ex3_converter);
+                file.io, *table_entry, encrypted, internals->ex3_converter);
         });
     }
 }

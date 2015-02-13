@@ -7,7 +7,7 @@ class NsaArchive final : public Archive
 public:
     NsaArchive();
     ~NsaArchive();
-    void unpack_internal(IO &arc_io, OutputFiles &output_files) const override;
+    void unpack_internal(VirtualFile &, OutputFiles &) const override;
 private:
     struct Internals;
     std::unique_ptr<Internals> internals;

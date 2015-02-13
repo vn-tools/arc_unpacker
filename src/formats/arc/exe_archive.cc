@@ -443,14 +443,15 @@ namespace
     }
 }
 
-void ExeArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
+void ExeArchive::unpack_internal(
+    VirtualFile &file, OutputFiles &output_files) const
 {
-    DosHeader dos_header(arc_io);
+    DosHeader dos_header(file.io);
     if (dos_header.magic != "MZ")
         throw  std::runtime_error("Not an EXE executable");
 
-    arc_io.seek(dos_header.e_lfanew);
-    ImageNtHeader nt_header(arc_io);
+    file.io.seek(dos_header.e_lfanew);
+    ImageNtHeader nt_header(file.io);
 
     RvaHelper rva_helper(
         nt_header.optional_header.file_alignment,
@@ -461,18 +462,18 @@ void ExeArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
     std::vector<ImageDataDirectory> image_data_directories;
     image_data_directories.reserve(image_data_directory_count);
     for (size_t i = 0; i < image_data_directory_count; i ++)
-        image_data_directories.push_back(ImageDataDirectory(arc_io));
+        image_data_directories.push_back(ImageDataDirectory(file.io));
 
     std::vector<ImageSectionHeader> sections;
     for (size_t i = 0; i < nt_header.file_header.number_of_sections; i ++)
-        sections.push_back(ImageSectionHeader(arc_io));
+        sections.push_back(ImageSectionHeader(file.io));
 
     auto resource_directory = image_data_directories[2];
     size_t offset_to_image_resources = rva_helper.rva_to_offset(
         sections, resource_directory.virtual_address);
 
     process_image_resource_directory(
-        arc_io,
+        file.io,
         offset_to_image_resources,
         0,
         sections,

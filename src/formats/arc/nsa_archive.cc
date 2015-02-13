@@ -162,14 +162,15 @@ NsaArchive::~NsaArchive()
 {
 }
 
-void NsaArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
+void NsaArchive::unpack_internal(
+    VirtualFile &file, OutputFiles &output_files) const
 {
-    Table table = read_table(arc_io);
+    Table table = read_table(file.io);
     for (size_t i = 0; i < table.size(); i ++)
     {
         output_files.save([&]() -> std::unique_ptr<VirtualFile>
         {
-            return read_file(arc_io, *table[i], internals->spb_converter);
+            return read_file(file.io, *table[i], internals->spb_converter);
         });
     }
 }

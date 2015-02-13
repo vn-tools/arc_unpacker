@@ -113,17 +113,18 @@ void MblArchive::parse_cli_options(ArgParser &arg_parser)
     context->prs_converter->parse_cli_options(arg_parser);
 }
 
-void MblArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
+void MblArchive::unpack_internal(
+    VirtualFile &file, OutputFiles &output_files) const
 {
     size_t i;
-    int version = get_version(arc_io);
+    int version = get_version(file.io);
     if (version == -1)
         throw std::runtime_error("Not a MBL archive");
 
-    uint32_t file_count = arc_io.read_u32_le();
-    uint32_t name_length = version == 2 ? arc_io.read_u32_le() : 16;
+    uint32_t file_count = file.io.read_u32_le();
+    uint32_t name_length = version == 2 ? file.io.read_u32_le() : 16;
     UnpackContext unpack_context(
-        arc_io, *context->prs_converter, name_length);
+        file.io, *context->prs_converter, name_length);
 
     for (i = 0; i < file_count; i ++)
         output_files.save(&read_file, &unpack_context);

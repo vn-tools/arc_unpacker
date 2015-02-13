@@ -80,16 +80,17 @@ void ArcArchive::parse_cli_options(ArgParser &arg_parser)
     context->cbg_converter->parse_cli_options(arg_parser);
 }
 
-void ArcArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
+void ArcArchive::unpack_internal(
+    VirtualFile &file, OutputFiles &output_files) const
 {
-    if (arc_io.read(magic.size()) != magic)
+    if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not an ARC archive");
 
-    size_t file_count = arc_io.read_u32_le();
-    if (file_count * 32 > arc_io.size())
+    size_t file_count = file.io.read_u32_le();
+    if (file_count * 32 > file.io.size())
         throw std::runtime_error("Bad file count");
 
-    UnpackContext unpack_context(arc_io, *context->cbg_converter);
+    UnpackContext unpack_context(file.io, *context->cbg_converter);
     unpack_context.file_count = file_count;
     size_t i;
     for (i = 0; i < file_count; i ++)

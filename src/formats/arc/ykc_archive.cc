@@ -90,25 +90,26 @@ void YkcArchive::parse_cli_options(ArgParser &arg_parser)
     // todo: pass to YKS once implemented
 }
 
-void YkcArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
+void YkcArchive::unpack_internal(
+    VirtualFile &file, OutputFiles &output_files) const
 {
-    if (arc_io.read(magic.size()) != magic)
+    if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a YKC archive");
 
-    arc_io.skip(2);
-    int version = arc_io.read_u32_le();
-    arc_io.skip(4);
+    file.io.skip(2);
+    int version = file.io.read_u32_le();
+    file.io.skip(4);
 
-    size_t table_offset = arc_io.read_u32_le();
-    size_t table_size = arc_io.read_u32_le();
-    Table table = read_table(arc_io, table_offset, table_size);
+    size_t table_offset = file.io.read_u32_le();
+    size_t table_size = file.io.read_u32_le();
+    Table table = read_table(file.io, table_offset, table_size);
 
     for (auto &table_entry : table)
     {
         output_files.save([&]() -> std::unique_ptr<VirtualFile>
         {
             return read_file(
-                arc_io,
+                file.io,
                 *table_entry,
                 internals->ykg_converter);
         });

@@ -80,24 +80,25 @@ namespace
     }
 }
 
-void RgssadArchive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
+void RgssadArchive::unpack_internal(
+    VirtualFile &file, OutputFiles &output_files) const
 {
-    if (arc_io.read(magic.size()) != magic)
+    if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a RGSSAD archive");
 
-    uint8_t version = arc_io.read_u8();
+    uint8_t version = file.io.read_u8();
     if (version != 1)
         throw std::runtime_error("Unsupported archive version");
 
     uint32_t key = initial_key;
 
-    Table table = read_table(arc_io, key);
+    Table table = read_table(file.io, key);
     for (size_t i = 0; i < table.size(); i ++)
     {
         auto table_entry = *table[i];
         output_files.save([&]() -> std::unique_ptr<VirtualFile>
         {
-            return read_file(arc_io, table_entry);
+            return read_file(file.io, table_entry);
         });
     }
 }

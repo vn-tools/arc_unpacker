@@ -232,15 +232,16 @@ void Xp3Archive::parse_cli_options(ArgParser &arg_parser)
     internals->tlg_converter.parse_cli_options(arg_parser);
 }
 
-void Xp3Archive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
+void Xp3Archive::unpack_internal(
+    VirtualFile &file, OutputFiles &output_files) const
 {
-    if (!check_magic(arc_io, xp3_magic))
+    if (!check_magic(file.io, xp3_magic))
         throw std::runtime_error("Not an XP3 archive");
 
-    int version = detect_version(arc_io);
-    uint64_t table_offset = get_table_offset(arc_io, version);
-    arc_io.seek((uint32_t)table_offset);
-    std::unique_ptr<IO> table_io = read_raw_table(arc_io);
+    int version = detect_version(file.io);
+    uint64_t table_offset = get_table_offset(file.io, version);
+    file.io.seek((uint32_t)table_offset);
+    std::unique_ptr<IO> table_io = read_raw_table(file.io);
 
     while (table_io->tell() < table_io->size())
     {
@@ -248,7 +249,7 @@ void Xp3Archive::unpack_internal(IO &arc_io, OutputFiles &output_files) const
             [&]() -> std::unique_ptr<VirtualFile>
             {
                 return read_file(
-                    arc_io,
+                    file.io,
                     *table_io,
                     internals->tlg_converter,
                     internals->filter.get());

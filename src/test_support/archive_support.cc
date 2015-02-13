@@ -9,9 +9,9 @@ std::unique_ptr<OutputFilesMemory> unpack_to_memory(
     const std::string input_path, Archive &archive)
 {
     ArgParser arg_parser;
-    FileIO io(input_path.c_str(), "rb");
+    VirtualFile file(input_path, "rb");
     std::unique_ptr<OutputFilesMemory> output_files(new OutputFilesMemory);
-    archive.unpack(io, *output_files);
+    archive.unpack(file, *output_files);
     return output_files;
 }
 

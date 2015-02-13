@@ -6,6 +6,7 @@
 class VirtualFile final
 {
 public:
+    VirtualFile(const std::string path, const std::string mode);
     VirtualFile();
     ~VirtualFile();
     IO &io;
