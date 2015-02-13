@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "formats/gfx/tlg_converter/lzss_decompressor.h"
 #include "formats/gfx/tlg_converter/tlg6_decoder.h"
 #include "formats/image.h"

@@ -1,12 +1,14 @@
 #ifndef VIRTUAL_FILE_H
 #define VIRTUAL_FILE_H
 #include <string>
-#include "buffered_io.h"
+#include "io.h"
 
 class VirtualFile final
 {
 public:
-    BufferedIO io;
+    VirtualFile();
+    ~VirtualFile();
+    IO &io;
     std::string name;
     void change_extension(const std::string new_extension);
 };

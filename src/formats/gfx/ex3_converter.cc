@@ -8,6 +8,8 @@
 // Known games:
 // - Melty Blood
 
+#include <stdexcept>
+#include "buffered_io.h"
 #include "formats/gfx/ex3_converter.h"
 
 void Ex3Converter::decode_internal(VirtualFile &file) const

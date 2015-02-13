@@ -9,6 +9,7 @@
 // - Yume Nikki
 
 #include <cassert>
+#include <stdexcept>
 #include "formats/gfx/xyz_converter.h"
 #include "formats/image.h"
 #include "io.h"

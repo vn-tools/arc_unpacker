@@ -6,6 +6,8 @@
 class IO
 {
 public:
+    virtual ~IO();
+
     virtual size_t size() const = 0;
     virtual size_t tell() const = 0;
     virtual void seek(size_t offset) = 0;

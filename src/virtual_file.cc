@@ -1,6 +1,16 @@
 #include <string>
+#include "buffered_io.h"
 #include "fs.h"
 #include "virtual_file.h"
+
+VirtualFile::VirtualFile() : io(*new BufferedIO)
+{
+}
+
+VirtualFile::~VirtualFile()
+{
+    delete &io;
+}
 
 void VirtualFile::change_extension(const std::string new_extension)
 {

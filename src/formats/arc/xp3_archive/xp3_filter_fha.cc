@@ -1,3 +1,4 @@
+#include <memory>
 #include "formats/arc/xp3_archive/xp3_filter_cxdec.h"
 #include "formats/arc/xp3_archive/xp3_filter_fha.h"
 

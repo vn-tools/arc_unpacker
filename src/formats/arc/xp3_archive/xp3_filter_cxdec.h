@@ -1,5 +1,6 @@
 #ifndef FORMATS_ARC_XP3_ARCHIVE_XP3_FILTER_CXDEC
 #define FORMATS_ARC_XP3_ARCHIVE_XP3_FILTER_CXDEC
+#include <memory>
 #include "formats/arc/xp3_archive/xp3_filter.h"
 #include "formats/arc/xp3_archive/xp3_filter_cxdec_settings.h"
 

@@ -9,6 +9,7 @@
 // - Fate/Stay Night
 // - Fate/Hollow Ataraxia
 
+#include <stdexcept>
 #include "formats/gfx/tlg_converter.h"
 #include "formats/gfx/tlg_converter/tlg5_decoder.h"
 #include "formats/gfx/tlg_converter/tlg6_decoder.h"

@@ -1,4 +1,5 @@
 #include <cstring>
+#include <stdexcept>
 #include <vector>
 #include "formats/gfx/tlg_converter/lzss_decompressor.h"
 #include "formats/gfx/tlg_converter/tlg5_decoder.h"

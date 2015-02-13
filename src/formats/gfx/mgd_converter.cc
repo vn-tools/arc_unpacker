@@ -6,6 +6,7 @@
 // Archives:  FJSYS
 
 #include <cassert>
+#include <stdexcept>
 #include "buffered_io.h"
 #include "endian.h"
 #include "formats/gfx/mgd_converter.h"

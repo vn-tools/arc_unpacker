@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "formats/arc/xp3_archive/xp3_filter_cxdec.h"
 
 namespace

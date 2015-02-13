@@ -5,6 +5,7 @@
 // Extension: .ykg
 // Archives:  YKC
 
+#include <memory>
 #include "formats/gfx/ykg_converter.h"
 
 namespace

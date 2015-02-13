@@ -13,6 +13,10 @@ std::string IO::read_until_zero()
     return output;
 }
 
+IO::~IO()
+{
+}
+
 void IO::read_until_zero(char **output, size_t *output_size)
 {
     assert(output != nullptr);
