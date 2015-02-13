@@ -12,7 +12,7 @@ public:
     Archive *create_archive(std::string format) const;
 private:
     struct Internals;
-    Internals *internals;
+    std::unique_ptr<Internals> internals;
 };
 
 #endif

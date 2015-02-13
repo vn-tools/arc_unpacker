@@ -197,16 +197,6 @@ namespace
         size_t prefix_size;
     } TableEntry;
 
-    typedef struct UnpackContext
-    {
-        IO &arc_io;
-        TableEntry *table_entry;
-
-        UnpackContext(IO &arc_io) : arc_io(arc_io)
-        {
-        }
-    } UnpackContext;
-
     std::vector<std::unique_ptr<TableEntry>> decode_table(
         IO &table_io, uint32_t key)
     {
@@ -279,17 +269,17 @@ namespace
         return uncompressed;
     }
 
-    std::unique_ptr<VirtualFile> read_file(void *_context)
+    std::unique_ptr<VirtualFile> read_file(
+        IO &arc_io, const TableEntry &table_entry)
     {
-        UnpackContext *context = (UnpackContext*)_context;
         std::unique_ptr<VirtualFile> file(new VirtualFile);
 
-        context->arc_io.seek(context->table_entry->offset);
+        arc_io.seek(table_entry.offset);
 
-        file->io.write(context->table_entry->prefix);
-        file->io.write_from_io(context->arc_io, context->table_entry->size);
+        file->io.write(table_entry.prefix);
+        file->io.write_from_io(arc_io, table_entry.size);
 
-        file->name = context->table_entry->name;
+        file->name = table_entry.name;
         return file;
     }
 }
@@ -319,10 +309,11 @@ void RpaArchive::unpack_internal(
     BufferedIO table_io(read_raw_table(file.io));
     auto entries = decode_table(table_io, key);
 
-    UnpackContext context(file.io);
-    for (size_t i = 0; i < entries.size(); i ++)
+    for (auto &entry : entries)
     {
-        context.table_entry = entries[i].get();
-        output_files.save(&read_file, &context);
+        output_files.save([&]()
+        {
+            return read_file(file.io, *entry);
+        });
     }
 }

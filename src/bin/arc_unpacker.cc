@@ -100,7 +100,7 @@ namespace
     bool guess_archive_and_unpack(
         VirtualFile &file,
         OutputFiles &output_files,
-        Options &options,
+        const Options &options,
         ArgParser &arg_parser,
         const ArchiveFactory &arc_factory)
     {

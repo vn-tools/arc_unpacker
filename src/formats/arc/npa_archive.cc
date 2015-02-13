@@ -168,19 +168,17 @@ namespace
     }
 }
 
-struct NpaArchive::Context
+struct NpaArchive::Internals
 {
-    NpaFilter *filter;
+    std::unique_ptr<NpaFilter> filter;
 };
 
-NpaArchive::NpaArchive()
+NpaArchive::NpaArchive() : internals(new Internals)
 {
-    context = new NpaArchive::Context();
 }
 
 NpaArchive::~NpaArchive()
 {
-    delete context;
 }
 
 void NpaArchive::add_cli_help(ArgParser &arg_parser) const
@@ -194,8 +192,6 @@ void NpaArchive::add_cli_help(ArgParser &arg_parser) const
 
 void NpaArchive::parse_cli_options(ArgParser &arg_parser)
 {
-    context->filter = new NpaFilter;
-
     const std::string plugin = arg_parser.get_switch("plugin").c_str();
     void (*initializer)(NpaFilter&) = nullptr;
     if (plugin == "chaos_head")
@@ -204,11 +200,13 @@ void NpaArchive::parse_cli_options(ArgParser &arg_parser)
         throw std::runtime_error("Unrecognized plugin: " + plugin);
 
     if (initializer != nullptr)
-        initializer(*context->filter);
+    {
+        internals->filter.reset(new NpaFilter);
+        initializer(*internals->filter);
+    }
     else
     {
-        delete context->filter;
-        context->filter = nullptr;
+        internals->filter.reset(nullptr);
     }
 }
 
@@ -218,17 +216,17 @@ void NpaArchive::unpack_internal(
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a NPA archive");
 
-    if (context->filter == nullptr)
+    if (internals->filter == nullptr)
         throw std::runtime_error("No plugin selected");
 
     std::unique_ptr<Header> header = read_header(file.io);
 
-    Table table = read_table(file.io, *header, *context->filter);
+    Table table = read_table(file.io, *header, *internals->filter);
     for (size_t i = 0; i < table.size(); i ++)
     {
         output_files.save([&]() -> std::unique_ptr<VirtualFile>
         {
-            return read_file(file.io, *header, *context->filter, *table[i]);
+            return read_file(file.io, *header, *internals->filter, *table[i]);
         });
     }
 }

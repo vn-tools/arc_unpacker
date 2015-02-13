@@ -6,14 +6,12 @@
 #include <vector>
 #include "virtual_file.h"
 
-typedef std::unique_ptr<VirtualFile>(*VFPointerFactory)(void *);
-typedef std::function<std::unique_ptr<VirtualFile>()> VFLambdaFactory;
+typedef std::function<std::unique_ptr<VirtualFile>()> VFFactory;
 
 class OutputFiles
 {
 public:
-    void save(VFPointerFactory save_proc, void *context) const;
-    virtual void save(VFLambdaFactory save_proc) const = 0;
+    virtual void save(VFFactory save_proc) const = 0;
 };
 
 
@@ -25,10 +23,10 @@ public:
     ~OutputFilesHdd();
 
     using OutputFiles::save;
-    void save(VFLambdaFactory save_proc) const override;
+    void save(VFFactory save_proc) const override;
 private:
     struct Internals;
-    Internals *internals;
+    std::unique_ptr<Internals> internals;
 };
 
 
@@ -40,12 +38,12 @@ public:
     ~OutputFilesMemory();
 
     using OutputFiles::save;
-    void save(VFLambdaFactory save_proc) const override;
+    void save(VFFactory save_proc) const override;
 
     const std::vector<VirtualFile*> get_saved() const;
 private:
     struct Internals;
-    Internals *internals;
+    std::unique_ptr<Internals> internals;
 };
 
 #endif

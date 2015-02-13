@@ -1,5 +1,6 @@
 #ifndef FACTORY_CONVERTER_FACTORY_H
 #define FACTORY_CONVERTER_FACTORY_H
+#include <memory>
 #include <vector>
 #include "formats/converter.h"
 
@@ -12,7 +13,7 @@ public:
     Converter *create_converter(std::string format) const;
 private:
     struct Internals;
-    Internals *internals;
+    std::unique_ptr<Internals> internals;
 };
 
 #endif

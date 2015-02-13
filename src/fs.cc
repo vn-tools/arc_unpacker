@@ -113,6 +113,8 @@ std::string dirname(const std::string path)
 
 void mkpath(const std::string path)
 {
+    if (path == "")
+        return;
     struct stat sb;
     if (stat(path.c_str(), &sb))
     {

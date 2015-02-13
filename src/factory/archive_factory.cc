@@ -26,9 +26,8 @@ struct ArchiveFactory::Internals
     }
 };
 
-ArchiveFactory::ArchiveFactory()
+ArchiveFactory::ArchiveFactory() : internals(new Internals)
 {
-    internals = new ArchiveFactory::Internals();
     internals->add_format("exe", []() { return new ExeArchive(); });
     internals->add_format("ykc", []() { return new YkcArchive(); });
     internals->add_format("rgssad", []() { return new RgssadArchive(); });
@@ -47,20 +46,19 @@ ArchiveFactory::ArchiveFactory()
 
 ArchiveFactory::~ArchiveFactory()
 {
-    delete internals;
 }
 
 const std::vector<std::string> ArchiveFactory::get_formats() const
 {
     std::vector<std::string> formats;
-    for (auto& p : internals->formats)
+    for (auto &p : internals->formats)
         formats.push_back(p.first);
     return formats;
 }
 
 Archive *ArchiveFactory::create_archive(const std::string format) const
 {
-    for (auto& p : internals->formats)
+    for (auto &p : internals->formats)
         if (p.first == format)
             return p.second();
     throw std::runtime_error("Invalid archive format: " + format);

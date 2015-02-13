@@ -49,8 +49,8 @@ namespace
 
     std::unique_ptr<VirtualFile> read_file(
         IO &arc_io,
-        TableEntry &table_entry,
-        YkgConverter &ykg_converter)
+        const TableEntry &table_entry,
+        const YkgConverter &ykg_converter)
     {
         std::unique_ptr<VirtualFile> file(new VirtualFile);
         arc_io.seek(table_entry.offset);
@@ -58,7 +58,6 @@ namespace
         file->name = table_entry.name;
 
         ykg_converter.try_decode(*file);
-        // todo: decode with YKS once implemented
 
         return file;
     }
@@ -67,7 +66,6 @@ namespace
 struct YkcArchive::Internals
 {
     YkgConverter ykg_converter;
-    // todo: YKS converters goes here
 };
 
 YkcArchive::YkcArchive() : internals(new Internals())
@@ -81,13 +79,11 @@ YkcArchive::~YkcArchive()
 void YkcArchive::add_cli_help(ArgParser &arg_parser) const
 {
     internals->ykg_converter.add_cli_help(arg_parser);
-    // todo: pass to YKS once implemented
 }
 
 void YkcArchive::parse_cli_options(ArgParser &arg_parser)
 {
     internals->ykg_converter.parse_cli_options(arg_parser);
-    // todo: pass to YKS once implemented
 }
 
 void YkcArchive::unpack_internal(
@@ -109,9 +105,7 @@ void YkcArchive::unpack_internal(
         output_files.save([&]() -> std::unique_ptr<VirtualFile>
         {
             return read_file(
-                file.io,
-                *table_entry,
-                internals->ykg_converter);
+                file.io, *table_entry, internals->ykg_converter);
         });
     }
 }

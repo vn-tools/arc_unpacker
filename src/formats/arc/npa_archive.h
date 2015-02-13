@@ -11,8 +11,8 @@ public:
     void parse_cli_options(ArgParser &) override;
     void unpack_internal(VirtualFile &, OutputFiles &) const override;
 private:
-    struct Context;
-    Context *context;
+    struct Internals;
+    std::unique_ptr<Internals> internals;
 };
 
 #endif

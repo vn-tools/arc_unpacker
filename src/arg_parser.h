@@ -1,5 +1,6 @@
 #ifndef ARG_PARSER_H
 #define ARG_PARSER_H
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -23,7 +24,7 @@ public:
 
 private:
     struct Internals;
-    Internals *internals;
+    std::unique_ptr<Internals> internals;
 };
 
 #endif

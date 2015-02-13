@@ -78,7 +78,7 @@ struct PArchive::Internals
     Ex3Converter ex3_converter;
 };
 
-PArchive::PArchive() : internals(new PArchive::Internals)
+PArchive::PArchive() : internals(new Internals)
 {
 }
 

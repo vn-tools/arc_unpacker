@@ -24,14 +24,6 @@ namespace
         std::vector<std::unique_ptr<PathInfo>> input_paths;
     } Options;
 
-    typedef struct
-    {
-        Options &options;
-        ArgParser &arg_parser;
-        ConverterFactory &conv_factory;
-        const PathInfo *path_info;
-    } ReadContext;
-
     void print_help(
         const std::string &path_to_self,
         ArgParser &arg_parser,
@@ -133,14 +125,14 @@ namespace
     }
 
     bool guess_converter_and_decode(
-        Options &options,
+        const Options &options,
         ArgParser &arg_parser,
-        ConverterFactory &conv_factory,
+        const ConverterFactory &conv_factory,
         VirtualFile &file)
     {
         if (options.format == "")
         {
-            for (auto& format : conv_factory.get_formats())
+            for (auto &format : conv_factory.get_formats())
             {
                 std::unique_ptr<Converter> converter(
                     conv_factory.create_converter(format));
@@ -184,25 +176,24 @@ namespace
         }
     }
 
-    std::unique_ptr<VirtualFile> read_and_decode(void *_context)
+    std::unique_ptr<VirtualFile> read_and_decode(
+        Options &options,
+        ArgParser &arg_parser,
+        ConverterFactory &conv_factory,
+        const PathInfo &path_info)
     {
-        ReadContext *context = (ReadContext*)_context;
-
-        FileIO io(context->path_info->input_path, "rb");
+        FileIO io(path_info.input_path, "rb");
         std::unique_ptr<VirtualFile> file(new VirtualFile);
         file->io.write_from_io(io, io.size());
         file->io.seek(0);
 
-        file->name = context->options.output_dir == ""
-            ? context->path_info->input_path
-            : context->path_info->target_path;
+        file->name = options.output_dir == ""
+            ? path_info.input_path
+            : path_info.target_path;
         file->name += "~";
 
         if (!guess_converter_and_decode(
-            context->options,
-            context->arg_parser,
-            context->conv_factory,
-            *file))
+            options, arg_parser, conv_factory, *file))
         {
             throw std::runtime_error("Decoding failed");
         }
@@ -216,21 +207,17 @@ namespace
         ConverterFactory &conv_factory)
     {
         OutputFilesHdd output_files(options.output_dir);
-        ReadContext context =
-        {
-            options,
-            arg_parser,
-            conv_factory,
-            nullptr,
-        };
 
         bool result = true;
-        for (size_t i = 0; i < options.input_paths.size(); i ++)
+        for (auto &path_info : options.input_paths)
         {
-            context.path_info = options.input_paths[i].get();
             try
             {
-                output_files.save(&read_and_decode, &context);
+                output_files.save([&]()
+                {
+                    return read_and_decode(
+                        options, arg_parser, conv_factory, *path_info);
+                });
             }
             catch (std::runtime_error &)
             {

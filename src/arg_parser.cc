@@ -119,14 +119,12 @@ struct ArgParser::Internals
     std::vector<std::pair<std::string, std::string>> help_items;
 };
 
-ArgParser::ArgParser()
+ArgParser::ArgParser() : internals(new Internals)
 {
-    internals = new Internals;
 }
 
 ArgParser::~ArgParser()
 {
-    delete internals;
 }
 
 void ArgParser::parse(std::vector<std::string> args)

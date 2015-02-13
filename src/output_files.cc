@@ -4,16 +4,6 @@
 #include "logger.h"
 #include "output_files.h"
 
-void OutputFiles::save(VFPointerFactory save_proc, void *context) const
-{
-    return save([&]() -> std::unique_ptr<VirtualFile>
-    {
-        return save_proc(context);
-    });
-}
-
-
-
 struct OutputFilesHdd::Internals
 {
     std::string output_dir;
@@ -29,17 +19,16 @@ struct OutputFilesHdd::Internals
 };
 
 OutputFilesHdd::OutputFilesHdd(std::string output_dir)
+    : internals(new Internals)
 {
-    internals = new Internals();
     internals->output_dir = output_dir;
 }
 
 OutputFilesHdd::~OutputFilesHdd()
 {
-    delete internals;
 }
 
-void OutputFilesHdd::save(VFLambdaFactory save_proc) const
+void OutputFilesHdd::save(VFFactory save_proc) const
 {
     try
     {
@@ -74,14 +63,12 @@ struct OutputFilesMemory::Internals
     std::vector<std::unique_ptr<VirtualFile>> files;
 };
 
-OutputFilesMemory::OutputFilesMemory()
+OutputFilesMemory::OutputFilesMemory() : internals(new Internals)
 {
-    internals = new Internals();
 }
 
 OutputFilesMemory::~OutputFilesMemory()
 {
-    delete internals;
 }
 
 const std::vector<VirtualFile*> OutputFilesMemory::get_saved() const
@@ -92,7 +79,7 @@ const std::vector<VirtualFile*> OutputFilesMemory::get_saved() const
     return files;
 }
 
-void OutputFilesMemory::save(VFLambdaFactory save_proc) const
+void OutputFilesMemory::save(VFFactory save_proc) const
 {
     assert(save_proc != nullptr);
     std::unique_ptr<VirtualFile> file(save_proc());

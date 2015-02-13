@@ -18,27 +18,14 @@ namespace
         uint32_t size;
     } TableEntry;
 
-    typedef struct UnpackContext
+    std::unique_ptr<VirtualFile> read_file(
+        IO &arc_io, const TableEntry &table_entry)
     {
-        IO &arc_io;
-        TableEntry *table_entry;
-
-        UnpackContext(IO &arc_io) : arc_io(arc_io)
-        {
-        }
-    } UnpackContext;
-
-    std::unique_ptr<VirtualFile> sar_read_file(void *_context)
-    {
-        UnpackContext *context = (UnpackContext*)_context;
-
         std::unique_ptr<VirtualFile> file(new VirtualFile);
-        file->name = context->table_entry->name;
+        file->name = table_entry.name;
 
-        context->arc_io.seek(context->table_entry->offset);
-        file->io.write_from_io(
-            context->arc_io,
-            context->table_entry->size);
+        arc_io.seek(table_entry.offset);
+        file->io.write_from_io(arc_io, table_entry.size);
 
         return file;
     }
@@ -65,10 +52,11 @@ void SarArchive::unpack_internal(
         table.push_back(std::move(entry));
     }
 
-    UnpackContext context(file.io);
-    for (size_t i = 0; i < file_count; i ++)
+    for (auto &entry : table)
     {
-        context.table_entry = table[i].get();
-        output_files.save(&sar_read_file, &context);
+        output_files.save([&]()
+        {
+            return read_file(file.io, *entry);
+        });
     }
 }

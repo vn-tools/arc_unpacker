@@ -24,9 +24,8 @@ struct ConverterFactory::Internals
     }
 };
 
-ConverterFactory::ConverterFactory()
+ConverterFactory::ConverterFactory() : internals(new Internals)
 {
-    internals = new ConverterFactory::Internals();
     internals->add_format("ex3", []() { return new Ex3Converter(); });
     internals->add_format("tlg", []() { return new TlgConverter(); });
     internals->add_format("ykg", []() { return new YkgConverter(); });
@@ -42,20 +41,19 @@ ConverterFactory::ConverterFactory()
 
 ConverterFactory::~ConverterFactory()
 {
-    delete internals;
 }
 
 const std::vector<std::string> ConverterFactory::get_formats() const
 {
     std::vector<std::string> formats;
-    for (auto& p : internals->formats)
+    for (auto &p : internals->formats)
         formats.push_back(p.first);
     return formats;
 }
 
 Converter *ConverterFactory::create_converter(const std::string format) const
 {
-    for (auto& p : internals->formats)
+    for (auto &p : internals->formats)
         if (p.first == format)
             return p.second();
     throw std::runtime_error("Invalid converter format: " + format);
