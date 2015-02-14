@@ -1,6 +1,9 @@
-Unit tests (low priority):
-	- Nitroplus archives
-	- EXE executables
+Unit tests (importance is questionable):
+
+- EXE executables
+- PAC archive
+- Nitroplus archives
 
 Misc:
-	- Replace some assertions with explicit checks
+
+- Replace some assertions with explicit checks
