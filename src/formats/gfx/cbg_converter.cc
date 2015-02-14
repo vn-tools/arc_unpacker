@@ -13,6 +13,7 @@
 
 namespace
 {
+    const std::string bmp_magic("BM6", 3);
     const std::string magic("CompressedBG___\x00", 16);
 
     typedef struct
@@ -264,6 +265,13 @@ namespace
 
 void CbgConverter::decode_internal(VirtualFile &file) const
 {
+    if (file.io.read(bmp_magic.size()) == bmp_magic)
+    {
+        file.change_extension("bmp");
+        return;
+    }
+
+    file.io.seek(0);
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a CBG image");
 

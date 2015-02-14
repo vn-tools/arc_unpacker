@@ -9,6 +9,7 @@
 
 #include "formats/arc/arc_archive.h"
 #include "formats/gfx/cbg_converter.h"
+#include "formats/sfx/bgi_converter.h"
 
 namespace
 {
@@ -16,6 +17,7 @@ namespace
 
     std::unique_ptr<VirtualFile> read_file(
         IO &arc_io,
+        const BgiConverter &bgi_converter,
         const CbgConverter &cbg_converter,
         size_t file_count)
     {
@@ -37,6 +39,7 @@ namespace
         file->io.write_from_io(arc_io, size);
         arc_io.seek(old_pos);
 
+        bgi_converter.try_decode(*file);
         cbg_converter.try_decode(*file);
 
         return file;
@@ -45,6 +48,7 @@ namespace
 
 struct ArcArchive::Internals
 {
+    BgiConverter bgi_converter;
     CbgConverter cbg_converter;
 };
 
@@ -58,11 +62,13 @@ ArcArchive::~ArcArchive()
 
 void ArcArchive::add_cli_help(ArgParser &arg_parser) const
 {
+    internals->bgi_converter.add_cli_help(arg_parser);
     internals->cbg_converter.add_cli_help(arg_parser);
 }
 
 void ArcArchive::parse_cli_options(ArgParser &arg_parser)
 {
+    internals->bgi_converter.parse_cli_options(arg_parser);
     internals->cbg_converter.parse_cli_options(arg_parser);
 }
 
@@ -80,7 +86,11 @@ void ArcArchive::unpack_internal(
     {
         output_files.save([&]()
         {
-            return read_file(file.io, internals->cbg_converter, file_count);
+            return read_file(
+                file.io,
+                internals->bgi_converter,
+                internals->cbg_converter,
+                file_count);
         });
     }
 }

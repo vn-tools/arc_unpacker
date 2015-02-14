@@ -10,6 +10,7 @@
 #include "formats/gfx/tlg_converter.h"
 #include "formats/gfx/xyz_converter.h"
 #include "formats/gfx/ykg_converter.h"
+#include "formats/sfx/bgi_converter.h"
 #include "formats/sfx/nwa_converter.h"
 
 struct ConverterFactory::Internals
@@ -26,6 +27,7 @@ struct ConverterFactory::Internals
 
 ConverterFactory::ConverterFactory() : internals(new Internals)
 {
+    internals->add_format("bgi-sound", []() { return new BgiConverter(); });
     internals->add_format("ex3", []() { return new Ex3Converter(); });
     internals->add_format("tlg", []() { return new TlgConverter(); });
     internals->add_format("ykg", []() { return new YkgConverter(); });

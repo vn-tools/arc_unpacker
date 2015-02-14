@@ -59,7 +59,7 @@ CLI invocation             | Game                                | Features<sup>
 `--fmt=rpa`                | Katawa Shoujo                       | ![][sup]![][sup]![][sup]
 `--fmt=mbl`                | Wanko to Kurasou                    | ![][sup]![][sup]![][sup]
 `--fmt=rgssad`             | Cherry Tree High Comedy Club        | ![][sup]![][sup]![][sup]
-`--fmt=arc`                | Higurashi No Naku Koro Ni           | ![][sup]![][sup]![][non]
+`--fmt=arc`                | Higurashi No Naku Koro Ni           | ![][sup]![][sup]![][sup]
 `--fmt=npa_sg`             | Steins;Gate                         | ![][sup]![][sup]![][sup]
 `--fmt=pac`                | Maji de Watashi ni Koishinasai!     | ![][sup]![][sup]![][sup]
 `--fmt=exe`                | Generic `.exe` resources            | ![][sup]![][nap]![][nap]
