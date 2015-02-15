@@ -141,14 +141,12 @@ namespace
                 {
                     log("Trying %s... ", format.c_str());
                     decode(*converter, arg_parser, file);
-                    log("Decoding finished successfully.\n");
                     return true;
                 }
                 catch (std::exception &e)
                 {
                     log(
-                        "Error: %s; trying next format...\n",
-                        e.what());
+                        "Error: %s; trying next format...\n", e.what());
                 }
             }
 
@@ -163,14 +161,12 @@ namespace
             try
             {
                 decode(*converter, arg_parser, file);
-                log("Decoding finished successfully.\n");
                 return true;
             }
             catch (std::exception &e)
             {
                 log(
-                    "Error: %s\nDecoding finished with errors.\n",
-                    e.what());
+                    "Error: %s\nDecoding finished with errors.\n", e.what());
                 return false;
             }
         }

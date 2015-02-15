@@ -7,11 +7,13 @@
 #include "virtual_file.h"
 
 typedef std::function<std::unique_ptr<VirtualFile>()> VFFactory;
+typedef std::function<std::vector<std::unique_ptr<VirtualFile>>()> VFsFactory;
 
 class OutputFiles
 {
 public:
-    virtual void save(VFFactory save_proc) const = 0;
+    void save(VFFactory save_proc) const;
+    virtual void save(VFsFactory save_proc) const = 0;
 };
 
 
@@ -23,7 +25,7 @@ public:
     ~OutputFilesHdd();
 
     using OutputFiles::save;
-    void save(VFFactory save_proc) const override;
+    void save(VFsFactory save_proc) const override;
 private:
     struct Internals;
     std::unique_ptr<Internals> internals;
@@ -38,7 +40,7 @@ public:
     ~OutputFilesMemory();
 
     using OutputFiles::save;
-    void save(VFFactory save_proc) const override;
+    void save(VFsFactory save_proc) const override;
 
     const std::vector<VirtualFile*> get_saved() const;
 private:

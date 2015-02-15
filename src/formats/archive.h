@@ -12,6 +12,7 @@ public:
     virtual void unpack_internal(VirtualFile &, OutputFiles &) const;
     virtual ~Archive();
 
+    bool try_unpack(VirtualFile &, OutputFiles &) const;
     void unpack(VirtualFile &, OutputFiles &) const;
 };
 

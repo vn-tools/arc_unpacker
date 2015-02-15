@@ -22,6 +22,19 @@ void Archive::unpack(VirtualFile &file, OutputFiles &output_files) const
     return unpack_internal(file, output_files);
 }
 
+bool Archive::try_unpack(VirtualFile &file, OutputFiles &output_files) const
+{
+    try
+    {
+        unpack(file, output_files);
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
 Archive::~Archive()
 {
 }

@@ -9,4 +9,6 @@ std::string convert_encoding(
 
 std::string zlib_inflate(const std::string &input);
 
+std::string stoi(int i);
+
 #endif

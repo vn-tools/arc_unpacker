@@ -1,20 +1,57 @@
-#include <cassert>
+#include <set>
 #include "file_io.h"
 #include "fs.h"
 #include "logger.h"
 #include "output_files.h"
+#include "string_ex.h"
+
+void OutputFiles::save(VFFactory save_proc) const
+{
+    save([&]()
+    {
+        std::vector<std::unique_ptr<VirtualFile>> single_item;
+        std::unique_ptr<VirtualFile> file = save_proc();
+        single_item.push_back(std::move(file));
+        return single_item;
+    });
+}
+
+
 
 struct OutputFilesHdd::Internals
 {
     std::string output_dir;
+    std::set<std::string> paths;
 
     std::string get_full_path(
         const std::string output_dir, const std::string file_name)
     {
-        assert(file_name != "");
         if (output_dir == "")
             return file_name;
-        return output_dir + "/" + file_name;
+        std::string path = output_dir;
+        if (path[path.length() - 1] != '/')
+            path += "/";
+        path += file_name;
+        return path;
+    }
+
+    std::string make_path_unique(const std::string path)
+    {
+        std::string full_path = path;
+        int i = 1;
+        while (paths.find(full_path) != paths.end())
+        {
+            std::string dir = dirname(path);
+            std::string name = basename(path);
+            std::string suffix = "(" + stoi(i ++) + ")";
+            size_t pos = name.rfind(".");
+            name = pos != std::string::npos
+                ? name.substr(0, pos) + suffix + name.substr(pos)
+                : name + suffix;
+            full_path = dir + "/" + name;
+        }
+        paths.insert(full_path);
+        return full_path;
     }
 };
 
@@ -28,31 +65,30 @@ OutputFilesHdd::~OutputFilesHdd()
 {
 }
 
-void OutputFilesHdd::save(VFFactory save_proc) const
+void OutputFilesHdd::save(VFsFactory save_proc) const
 {
     try
     {
-        assert(save_proc != nullptr);
+        for (auto &file : save_proc())
+        {
+            std::string full_path = internals->get_full_path(
+                internals->output_dir, file->name);
+            full_path = internals->make_path_unique(full_path);
 
-        log("Reading... ");
+            log("Saving to %s... ", full_path.c_str());
 
-        std::unique_ptr<VirtualFile> file(save_proc());
-        assert(file != nullptr);
+            mkpath(dirname(full_path));
 
-        std::string full_path = internals->get_full_path(
-            internals->output_dir, file->name);
-        assert(full_path != "");
+            FileIO output_io(full_path, "wb");
+            file->io.seek(0);
+            output_io.write_from_io(file->io, file->io.size());
+            log("ok\n");
+        }
 
-        mkpath(dirname(full_path));
-
-        FileIO output_io(full_path, "wb");
-        file->io.seek(0);
-        output_io.write_from_io(file->io, file->io.size());
-        log("ok (saved in %s)\n", full_path.c_str());
     }
     catch (std::runtime_error &e)
     {
-        log("error (%s)\n", e.what());
+        log("Error (%s)\n", e.what());
     }
 }
 
@@ -79,10 +115,8 @@ const std::vector<VirtualFile*> OutputFilesMemory::get_saved() const
     return files;
 }
 
-void OutputFilesMemory::save(VFFactory save_proc) const
+void OutputFilesMemory::save(VFsFactory save_proc) const
 {
-    assert(save_proc != nullptr);
-    std::unique_ptr<VirtualFile> file(save_proc());
-    assert(file != nullptr);
-    internals->files.push_back(std::move(file));
+    for (auto &file : save_proc())
+        internals->files.push_back(std::move(file));
 }
