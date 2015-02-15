@@ -25,6 +25,8 @@ namespace
             for (int delta = 0; delta <= max_delta_correction; delta ++)
             {
                 size_t possible_dimension = base + main_delta + delta;
+                if (possible_dimension == 0)
+                    continue;
                 if (possible_dimension > pixels_size)
                     continue;
                 if (pixels_size % possible_dimension == 0)
