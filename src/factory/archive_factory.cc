@@ -9,6 +9,7 @@
 #include "formats/arc/nsa_archive.h"
 #include "formats/arc/p_archive.h"
 #include "formats/arc/pac_archive.h"
+#include "formats/arc/pack_archive.h"
 #include "formats/arc/pak_archive.h"
 #include "formats/arc/rgssad_archive.h"
 #include "formats/arc/rpa_archive.h"
@@ -29,6 +30,7 @@ struct ArchiveFactory::Internals
 
 ArchiveFactory::ArchiveFactory() : internals(new Internals)
 {
+    internals->add_format("pack", []() { return new PackArchive(); });
     internals->add_format("pac", []() { return new PacArchive(); });
     internals->add_format("exe", []() { return new ExeArchive(); });
     internals->add_format("ykc", []() { return new YkcArchive(); });
