@@ -12,6 +12,7 @@ public:
     IO &io;
     std::string name;
     void change_extension(const std::string new_extension);
+    void guess_extension();
 };
 
 #endif
