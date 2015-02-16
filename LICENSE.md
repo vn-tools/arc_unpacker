@@ -175,3 +175,10 @@ mkxp (https://github.com/Ancurio/mkxp)
 -------------------------------------------------------------------------------
 
 Licensed under GPL v2.
+
+
+
+Tools by asmodean (http://asmodean.reverse.net/pages/tools_index.html)
+-------------------------------------------------------------------------------
+
+No license.
