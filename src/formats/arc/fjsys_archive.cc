@@ -89,8 +89,7 @@ void FjsysArchive::parse_cli_options(ArgParser &arg_parser)
     internals->mgd_converter.parse_cli_options(arg_parser);
 }
 
-void FjsysArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void FjsysArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a FJSYS archive");
@@ -98,10 +97,5 @@ void FjsysArchive::unpack_internal(
     std::unique_ptr<Header> header = read_header(file.io);
 
     for (size_t i = 0; i < header->file_count; i ++)
-    {
-        file_saver.save([&]()
-        {
-            return read_file(file.io, internals->mgd_converter, *header);
-        });
-    }
+        file_saver.save(read_file(file.io, internals->mgd_converter, *header));
 }

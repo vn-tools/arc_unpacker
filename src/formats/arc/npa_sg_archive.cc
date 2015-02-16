@@ -64,8 +64,7 @@ namespace
     }
 }
 
-void NpaSgArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void NpaSgArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     size_t table_size = file.io.read_u32_le();
     if (table_size > file.io.size())
@@ -78,10 +77,5 @@ void NpaSgArchive::unpack_internal(
     BufferedIO table_io(table_bytes.get(), table_size);
     Table table = read_table(table_io, file.io);
     for (auto &table_entry : table)
-    {
-        file_saver.save([&]() -> std::unique_ptr<File>
-        {
-            return read_file(file.io, *table_entry);
-        });
-    }
+        file_saver.save(read_file(file.io, *table_entry));
 }

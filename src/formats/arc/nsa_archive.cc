@@ -162,15 +162,12 @@ NsaArchive::~NsaArchive()
 {
 }
 
-void NsaArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void NsaArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     Table table = read_table(file.io);
-    for (size_t i = 0; i < table.size(); i ++)
+    for (auto &table_entry : table)
     {
-        file_saver.save([&]() -> std::unique_ptr<File>
-        {
-            return read_file(file.io, *table[i], internals->spb_converter);
-        });
+        file_saver.save(
+            read_file(file.io, *table_entry, internals->spb_converter));
     }
 }

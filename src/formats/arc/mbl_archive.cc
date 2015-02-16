@@ -96,8 +96,7 @@ void MblArchive::parse_cli_options(ArgParser &arg_parser)
     internals->prs_converter.parse_cli_options(arg_parser);
 }
 
-void MblArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void MblArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     int version = get_version(file.io);
     if (version == -1)
@@ -108,9 +107,7 @@ void MblArchive::unpack_internal(
 
     for (size_t i = 0; i < file_count; i ++)
     {
-        file_saver.save([&]()
-        {
-            return read_file(file.io, internals->prs_converter, name_length);
-        });
+        file_saver.save(
+            read_file(file.io, internals->prs_converter, name_length));
     }
 }

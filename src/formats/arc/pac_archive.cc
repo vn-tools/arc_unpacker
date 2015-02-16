@@ -128,8 +128,7 @@ namespace
     }
 }
 
-void PacArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void PacArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a PAC archive");
@@ -138,10 +137,5 @@ void PacArchive::unpack_internal(
     auto table = read_table(file.io, file_count);
 
     for (auto &table_entry : table)
-    {
-        file_saver.save([&]()
-        {
-            return read_file(file.io, *table_entry);
-        });
-    }
+        file_saver.save(read_file(file.io, *table_entry));
 }

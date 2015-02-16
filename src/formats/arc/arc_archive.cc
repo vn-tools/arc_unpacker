@@ -72,8 +72,7 @@ void ArcArchive::parse_cli_options(ArgParser &arg_parser)
     internals->cbg_converter.parse_cli_options(arg_parser);
 }
 
-void ArcArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void ArcArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not an ARC archive");
@@ -84,13 +83,10 @@ void ArcArchive::unpack_internal(
 
     for (size_t i = 0; i < file_count; i ++)
     {
-        file_saver.save([&]()
-        {
-            return read_file(
-                file.io,
-                internals->bgi_converter,
-                internals->cbg_converter,
-                file_count);
-        });
+        file_saver.save(read_file(
+            file.io,
+            internals->bgi_converter,
+            internals->cbg_converter,
+            file_count));
     }
 }

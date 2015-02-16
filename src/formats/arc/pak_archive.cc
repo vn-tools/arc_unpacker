@@ -51,8 +51,7 @@ namespace
     }
 }
 
-void PakArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void PakArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a PAK archive");
@@ -66,10 +65,5 @@ void PakArchive::unpack_internal(
     size_t offset_to_files = file.io.tell();
 
     for (size_t i = 0; i < file_count; i ++)
-    {
-        file_saver.save([&]()
-        {
-            return read_file(file.io, table_io, offset_to_files);
-        });
-    }
+        file_saver.save(read_file(file.io, table_io, offset_to_files));
 }

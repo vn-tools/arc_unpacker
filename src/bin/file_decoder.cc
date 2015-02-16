@@ -4,10 +4,10 @@
 #include "compat/main.h"
 #include "factory/converter_factory.h"
 #include "file_io.h"
+#include "file_saver.h"
 #include "formats/converter.h"
 #include "fs.h"
 #include "logger.h"
-#include "file_saver.h"
 
 namespace
 {
@@ -209,11 +209,8 @@ namespace
         {
             try
             {
-                file_saver.save([&]()
-                {
-                    return read_and_decode(
-                        options, arg_parser, conv_factory, *path_info);
-                });
+                file_saver.save(read_and_decode(
+                    options, arg_parser, conv_factory, *path_info));
             }
             catch (std::runtime_error &)
             {

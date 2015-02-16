@@ -380,14 +380,13 @@ namespace
     {
         io.seek(base_offset + offset);
         ImageResourceDataEntry entry(io);
-        file_saver.save([&]() -> std::unique_ptr<File>
-        {
-            std::unique_ptr<File> file(new File);
-            file->name = path;
-            io.seek(rva_helper.rva_to_offset(sections, entry.offset_to_data));
-            file->io.write_from_io(io, entry.size);
-            return file;
-        });
+
+        std::unique_ptr<File> file(new File);
+        file->name = path;
+        io.seek(rva_helper.rva_to_offset(sections, entry.offset_to_data));
+        file->io.write_from_io(io, entry.size);
+
+        file_saver.save(std::move(file));
     }
 
     void process_image_resource_directory(
@@ -443,8 +442,7 @@ namespace
     }
 }
 
-void ExeArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void ExeArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     DosHeader dos_header(file.io);
     if (dos_header.magic != "MZ")

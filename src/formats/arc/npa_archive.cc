@@ -210,8 +210,7 @@ void NpaArchive::parse_cli_options(ArgParser &arg_parser)
     }
 }
 
-void NpaArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void NpaArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a NPA archive");
@@ -224,9 +223,7 @@ void NpaArchive::unpack_internal(
     Table table = read_table(file.io, *header, *internals->filter);
     for (size_t i = 0; i < table.size(); i ++)
     {
-        file_saver.save([&]() -> std::unique_ptr<File>
-        {
-            return read_file(file.io, *header, *internals->filter, *table[i]);
-        });
+        file_saver.save(read_file(
+            file.io, *header, *internals->filter, *table[i]));
     }
 }

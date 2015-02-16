@@ -232,8 +232,7 @@ void Xp3Archive::parse_cli_options(ArgParser &arg_parser)
     internals->tlg_converter.parse_cli_options(arg_parser);
 }
 
-void Xp3Archive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void Xp3Archive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     if (!check_magic(file.io, xp3_magic))
         throw std::runtime_error("Not an XP3 archive");
@@ -245,14 +244,10 @@ void Xp3Archive::unpack_internal(
 
     while (table_io->tell() < table_io->size())
     {
-        file_saver.save(
-            [&]() -> std::unique_ptr<File>
-            {
-                return read_file(
-                    file.io,
-                    *table_io,
-                    internals->tlg_converter,
-                    internals->filter.get());
-            });
+        file_saver.save(read_file(
+            file.io,
+            *table_io,
+            internals->tlg_converter,
+            internals->filter.get()));
     }
 }

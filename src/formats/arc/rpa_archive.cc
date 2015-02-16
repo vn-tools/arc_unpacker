@@ -284,8 +284,7 @@ namespace
     }
 }
 
-void RpaArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void RpaArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     int version = check_version(file.io);
     size_t table_offset = read_hex_number(file.io, 16);
@@ -307,13 +306,8 @@ void RpaArchive::unpack_internal(
 
     file.io.seek(table_offset);
     BufferedIO table_io(read_raw_table(file.io));
-    auto entries = decode_table(table_io, key);
+    auto table = decode_table(table_io, key);
 
-    for (auto &entry : entries)
-    {
-        file_saver.save([&]()
-        {
-            return read_file(file.io, *entry);
-        });
-    }
+    for (auto &table_entry : table)
+        file_saver.save(read_file(file.io, *table_entry));
 }

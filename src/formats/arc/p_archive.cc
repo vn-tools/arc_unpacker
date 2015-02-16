@@ -96,8 +96,7 @@ void PArchive::parse_cli_options(ArgParser &arg_parser)
     internals->ex3_converter.parse_cli_options(arg_parser);
 }
 
-void PArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void PArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     uint32_t magic = file.io.read_u32_le();
     if (magic != 0 && magic != 1)
@@ -107,10 +106,7 @@ void PArchive::unpack_internal(
     Table table = read_table(file.io);
     for (auto &table_entry : table)
     {
-        file_saver.save([&]() -> std::unique_ptr<File>
-        {
-            return read_file(
-                file.io, *table_entry, encrypted, internals->ex3_converter);
-        });
+        file_saver.save(read_file(
+            file.io, *table_entry, encrypted, internals->ex3_converter));
     }
 }

@@ -527,8 +527,7 @@ namespace
     }
 }
 
-void PackArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void PackArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     size_t version = QLiE::get_version(file.io);
     if (!version)
@@ -539,13 +538,5 @@ void PackArchive::unpack_internal(
 
     QLiE::Table table = QLiE::read_table(file.io, version);
     for (auto &table_entry : table)
-    {
-        file_saver.save([&]()
-        {
-            return QLiE::read_file(
-                file.io,
-                *table_entry,
-                version);
-        });
-    }
+        file_saver.save(QLiE::read_file(file.io, *table_entry, version));
 }

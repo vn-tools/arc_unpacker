@@ -80,8 +80,7 @@ namespace
     }
 }
 
-void RgssadArchive::unpack_internal(
-    File &file, FileSaver &file_saver) const
+void RgssadArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a RGSSAD archive");
@@ -93,12 +92,6 @@ void RgssadArchive::unpack_internal(
     uint32_t key = initial_key;
 
     Table table = read_table(file.io, key);
-    for (size_t i = 0; i < table.size(); i ++)
-    {
-        auto table_entry = *table[i];
-        file_saver.save([&]() -> std::unique_ptr<File>
-        {
-            return read_file(file.io, table_entry);
-        });
-    }
+    for (auto &table_entry : table)
+        file_saver.save(read_file(file.io, *table_entry));
 }

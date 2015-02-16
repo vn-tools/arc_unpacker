@@ -5,18 +5,11 @@
 #include "logger.h"
 #include "string_ex.h"
 
-void FileSaver::save(VFFactory save_proc) const
+void FileSaver::save(std::vector<std::unique_ptr<File>> files) const
 {
-    save([&]()
-    {
-        std::vector<std::unique_ptr<File>> single_item;
-        std::unique_ptr<File> file = save_proc();
-        single_item.push_back(std::move(file));
-        return single_item;
-    });
+    for (auto &file : files)
+        save(std::move(file));
 }
-
-
 
 struct FileSaverHdd::Internals
 {
@@ -65,26 +58,22 @@ FileSaverHdd::~FileSaverHdd()
 {
 }
 
-void FileSaverHdd::save(VFsFactory save_proc) const
+void FileSaverHdd::save(std::unique_ptr<File> file) const
 {
     try
     {
-        for (auto &file : save_proc())
-        {
-            std::string full_path = internals->get_full_path(
-                internals->output_dir, file->name);
-            full_path = internals->make_path_unique(full_path);
+        std::string full_path = internals->get_full_path(
+            internals->output_dir, file->name);
+        full_path = internals->make_path_unique(full_path);
 
-            log("Saving to %s... ", full_path.c_str());
+        log("Saving to %s... ", full_path.c_str());
 
-            mkpath(dirname(full_path));
+        mkpath(dirname(full_path));
 
-            FileIO output_io(full_path, "wb");
-            file->io.seek(0);
-            output_io.write_from_io(file->io, file->io.size());
-            log("ok\n");
-        }
-
+        FileIO output_io(full_path, "wb");
+        file->io.seek(0);
+        output_io.write_from_io(file->io, file->io.size());
+        log("ok\n");
     }
     catch (std::runtime_error &e)
     {
@@ -115,8 +104,7 @@ const std::vector<File*> FileSaverMemory::get_saved() const
     return files;
 }
 
-void FileSaverMemory::save(VFsFactory save_proc) const
+void FileSaverMemory::save(std::unique_ptr<File> file) const
 {
-    for (auto &file : save_proc())
-        internals->files.push_back(std::move(file));
+    internals->files.push_back(std::move(file));
 }
