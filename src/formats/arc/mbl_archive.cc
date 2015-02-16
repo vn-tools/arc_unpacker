@@ -46,12 +46,12 @@ namespace
         return -1;
     }
 
-    std::unique_ptr<VirtualFile> read_file(
+    std::unique_ptr<File> read_file(
         IO &arc_io,
         const PrsConverter &prs_converter,
         size_t name_length)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
 
         size_t old_pos = arc_io.tell();
         std::string name = arc_io.read_until_zero();
@@ -97,7 +97,7 @@ void MblArchive::parse_cli_options(ArgParser &arg_parser)
 }
 
 void MblArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     int version = get_version(file.io);
     if (version == -1)
@@ -108,7 +108,7 @@ void MblArchive::unpack_internal(
 
     for (size_t i = 0; i < file_count; i ++)
     {
-        output_files.save([&]()
+        file_saver.save([&]()
         {
             return read_file(file.io, internals->prs_converter, name_length);
         });

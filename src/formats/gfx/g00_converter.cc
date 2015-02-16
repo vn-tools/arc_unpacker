@@ -113,7 +113,7 @@ namespace
         return std::move(uncompressed);
     }
 
-    void decode_version_0(VirtualFile &file, int width, int height)
+    void decode_version_0(File &file, int width, int height)
     {
         size_t compressed_size = file.io.read_u32_le();
         size_t uncompressed_size = file.io.read_u32_le();
@@ -138,7 +138,7 @@ namespace
         image->update_file(file);
     }
 
-    void decode_version_1(VirtualFile &file, int width, int height)
+    void decode_version_1(File &file, int width, int height)
     {
         size_t compressed_size = file.io.read_u32_le();
         size_t uncompressed_size = file.io.read_u32_le();
@@ -200,7 +200,7 @@ namespace
         return regions;
     }
 
-    void decode_version_2(VirtualFile &file, int width, int height)
+    void decode_version_2(File &file, int width, int height)
     {
         size_t region_count = file.io.read_u32_le();
         size_t i, j;
@@ -270,7 +270,7 @@ namespace
     }
 }
 
-void G00Converter::decode_internal(VirtualFile &file) const
+void G00Converter::decode_internal(File &file) const
 {
     uint8_t version = file.io.read_u8();
     uint16_t width = file.io.read_u16_le();

@@ -71,7 +71,7 @@ namespace
     }
 }
 
-void NwaConverter::decode_internal(VirtualFile &file) const
+void NwaConverter::decode_internal(File &file) const
 {
     NwaHeader header;
     header.channel_count = file.io.read_u16_le();

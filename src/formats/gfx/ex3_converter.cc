@@ -12,7 +12,7 @@
 #include "buffered_io.h"
 #include "formats/gfx/ex3_converter.h"
 
-void Ex3Converter::decode_internal(VirtualFile &file) const
+void Ex3Converter::decode_internal(File &file) const
 {
     if (file.io.read(4) != "LLIF")
         throw std::runtime_error("Not an EX3 image");

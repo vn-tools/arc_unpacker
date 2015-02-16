@@ -47,12 +47,12 @@ namespace
         return table;
     }
 
-    std::unique_ptr<VirtualFile> read_file(
+    std::unique_ptr<File> read_file(
         IO &arc_io,
         const TableEntry &table_entry,
         const YkgConverter &ykg_converter)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
         arc_io.seek(table_entry.offset);
         file->io.write_from_io(arc_io, table_entry.size);
         file->name = table_entry.name;
@@ -87,7 +87,7 @@ void YkcArchive::parse_cli_options(ArgParser &arg_parser)
 }
 
 void YkcArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a YKC archive");
@@ -102,7 +102,7 @@ void YkcArchive::unpack_internal(
 
     for (auto &table_entry : table)
     {
-        output_files.save([&]() -> std::unique_ptr<VirtualFile>
+        file_saver.save([&]() -> std::unique_ptr<File>
         {
             return read_file(
                 file.io, *table_entry, internals->ykg_converter);

@@ -57,9 +57,9 @@ namespace
         return table;
     }
 
-    std::unique_ptr<VirtualFile> read_file(IO &arc_io, TableEntry &table_entry)
+    std::unique_ptr<File> read_file(IO &arc_io, TableEntry &table_entry)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
         file->name = table_entry.name;
         arc_io.seek(table_entry.offset);
         file->io.write_from_io(arc_io, table_entry.size);
@@ -81,7 +81,7 @@ namespace
 }
 
 void RgssadArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a RGSSAD archive");
@@ -96,7 +96,7 @@ void RgssadArchive::unpack_internal(
     for (size_t i = 0; i < table.size(); i ++)
     {
         auto table_entry = *table[i];
-        output_files.save([&]() -> std::unique_ptr<VirtualFile>
+        file_saver.save([&]() -> std::unique_ptr<File>
         {
             return read_file(file.io, table_entry);
         });

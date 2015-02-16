@@ -109,9 +109,9 @@ namespace
         return table;
     }
 
-    std::unique_ptr<VirtualFile> read_file(IO &arc_io, TableEntry &table_entry)
+    std::unique_ptr<File> read_file(IO &arc_io, TableEntry &table_entry)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
         arc_io.seek(table_entry.offset);
         if (table_entry.size_original == table_entry.size_compressed)
         {
@@ -129,7 +129,7 @@ namespace
 }
 
 void PacArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a PAC archive");
@@ -139,7 +139,7 @@ void PacArchive::unpack_internal(
 
     for (auto &table_entry : table)
     {
-        output_files.save([&]()
+        file_saver.save([&]()
         {
             return read_file(file.io, *table_entry);
         });

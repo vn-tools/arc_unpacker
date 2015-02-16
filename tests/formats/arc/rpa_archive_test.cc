@@ -15,9 +15,9 @@
 
 void test_rpa_archive(const char *path)
 {
-    std::vector<VirtualFile*> expected_files;
-    std::unique_ptr<VirtualFile> file1(new VirtualFile);
-    std::unique_ptr<VirtualFile> file2(new VirtualFile);
+    std::vector<File*> expected_files;
+    std::unique_ptr<File> file1(new File);
+    std::unique_ptr<File> file2(new File);
     file1->name = "another.txt";
     file2->name = "abc.txt";
     file1->io.write("abcdefghij", 10);

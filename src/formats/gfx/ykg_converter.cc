@@ -68,7 +68,7 @@ namespace
         return regions;
     }
 
-    void decode_png(VirtualFile &file, Header &header)
+    void decode_png(File &file, Header &header)
     {
         file.io.seek(header.data_offset);
         std::string data = file.io.read(header.data_size);
@@ -87,7 +87,7 @@ namespace
     }
 }
 
-void YkgConverter::decode_internal(VirtualFile &file) const
+void YkgConverter::decode_internal(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a YKG image");

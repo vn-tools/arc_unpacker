@@ -1,7 +1,7 @@
 #ifndef FORMATS_SOUND_H
 #define FORMATS_SOUND_H
 #include <memory>
-#include "virtual_file.h"
+#include "file.h"
 
 class Sound final
 {
@@ -14,7 +14,7 @@ public:
         size_t sample_rate,
         const std::string &samples);
 
-    void update_file(VirtualFile &target_file) const;
+    void update_file(File &target_file) const;
 
 private:
     Sound();

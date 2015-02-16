@@ -4,12 +4,12 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "virtual_file.h"
+#include "file.h"
 
-typedef std::function<std::unique_ptr<VirtualFile>()> VFFactory;
-typedef std::function<std::vector<std::unique_ptr<VirtualFile>>()> VFsFactory;
+typedef std::function<std::unique_ptr<File>()> VFFactory;
+typedef std::function<std::vector<std::unique_ptr<File>>()> VFsFactory;
 
-class OutputFiles
+class FileSaver
 {
 public:
     void save(VFFactory save_proc) const;
@@ -18,13 +18,13 @@ public:
 
 
 
-class OutputFilesHdd : public OutputFiles
+class FileSaverHdd : public FileSaver
 {
 public:
-    OutputFilesHdd(std::string output_dir);
-    ~OutputFilesHdd();
+    FileSaverHdd(std::string output_dir);
+    ~FileSaverHdd();
 
-    using OutputFiles::save;
+    using FileSaver::save;
     void save(VFsFactory save_proc) const override;
 private:
     struct Internals;
@@ -33,16 +33,16 @@ private:
 
 
 
-class OutputFilesMemory : public OutputFiles
+class FileSaverMemory : public FileSaver
 {
 public:
-    OutputFilesMemory();
-    ~OutputFilesMemory();
+    FileSaverMemory();
+    ~FileSaverMemory();
 
-    using OutputFiles::save;
+    using FileSaver::save;
     void save(VFsFactory save_proc) const override;
 
-    const std::vector<VirtualFile*> get_saved() const;
+    const std::vector<File*> get_saved() const;
 private:
     struct Internals;
     std::unique_ptr<Internals> internals;

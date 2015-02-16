@@ -447,7 +447,7 @@ Xp3FilterCxdec::~Xp3FilterCxdec()
 {
 }
 
-void Xp3FilterCxdec::decode(VirtualFile &file, uint32_t encryption_key) const
+void Xp3FilterCxdec::decode(File &file, uint32_t encryption_key) const
 {
     uint32_t hash = encryption_key;
     uint32_t key = (hash & internals->settings.key1) + internals->settings.key2;

@@ -60,7 +60,7 @@ namespace
     }
 }
 
-void SotesConverter::decode_internal(VirtualFile &file) const
+void SotesConverter::decode_internal(File &file) const
 {
     if (file.io.size() < 1112)
         throw std::runtime_error("Not a SOTES image");

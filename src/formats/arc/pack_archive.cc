@@ -13,7 +13,7 @@
 
 namespace
 {
-    void guess_extension(VirtualFile &file)
+    void guess_extension(File &file)
     {
         std::vector<std::pair<std::string, std::string>> definitions
         {
@@ -39,19 +39,19 @@ namespace
     }
 
     void try_unpack(
-        std::vector<std::unique_ptr<VirtualFile>> &files,
-        std::unique_ptr<VirtualFile> file);
+        std::vector<std::unique_ptr<File>> &files,
+        std::unique_ptr<File> file);
 
     namespace B7
     {
         const std::string magic("ABMP7", 5);
 
         void read_first_file(
-            std::vector<std::unique_ptr<VirtualFile>> &files,
-            VirtualFile &b_file)
+            std::vector<std::unique_ptr<File>> &files,
+            File &b_file)
         {
             size_t length = b_file.io.read_u32_le();
-            std::unique_ptr<VirtualFile> subfile(new VirtualFile);
+            std::unique_ptr<File> subfile(new File);
             subfile->io.write_from_io(b_file.io, length);
             subfile->name = b_file.name + "$.dat";
             guess_extension(*subfile);
@@ -59,14 +59,14 @@ namespace
         }
 
         void read_next_file(
-            std::vector<std::unique_ptr<VirtualFile>> &files,
-            VirtualFile &b_file)
+            std::vector<std::unique_ptr<File>> &files,
+            File &b_file)
         {
             std::string encoded_name = b_file.io.read(b_file.io.read_u8());
             b_file.io.skip(31 - encoded_name.size());
             std::string name = convert_encoding(encoded_name, "cp932", "utf-8");
             size_t length = b_file.io.read_u32_le();
-            std::unique_ptr<VirtualFile> subfile(new VirtualFile);
+            std::unique_ptr<File> subfile(new File);
             subfile->io.write_from_io(b_file.io, length);
             subfile->name = b_file.name + "_" + name + ".dat";
             guess_extension(*subfile);
@@ -74,8 +74,8 @@ namespace
         }
 
         bool unpack(
-            std::vector<std::unique_ptr<VirtualFile>> &files,
-            VirtualFile &b_file)
+            std::vector<std::unique_ptr<File>> &files,
+            File &b_file)
         {
             b_file.io.seek(0);
             if (b_file.io.size() < 12)
@@ -127,7 +127,7 @@ namespace
             return 0;
         }
 
-        std::unique_ptr<VirtualFile> read_subfile(
+        std::unique_ptr<File> read_subfile(
             IO &b_io, const std::string base_name)
         {
             std::string magic = b_io.read(16);
@@ -155,7 +155,7 @@ namespace
             if (len == 0)
                 return nullptr;
 
-            std::unique_ptr<VirtualFile> subfile(new VirtualFile);
+            std::unique_ptr<File> subfile(new File);
             subfile->io.write_from_io(b_io, len);
             subfile->name = base_name + "_" + name + ".dat";
             guess_extension(*subfile);
@@ -163,8 +163,8 @@ namespace
         }
 
         bool unpack(
-            std::vector<std::unique_ptr<VirtualFile>> &files,
-            VirtualFile &b_file)
+            std::vector<std::unique_ptr<File>> &files,
+            File &b_file)
         {
             b_file.io.seek(0);
             int version = get_version(b_file.io);
@@ -211,8 +211,8 @@ namespace
     }
 
     void try_unpack(
-        std::vector<std::unique_ptr<VirtualFile>> &files,
-        std::unique_ptr<VirtualFile> file)
+        std::vector<std::unique_ptr<File>> &files,
+        std::unique_ptr<File> file)
     {
         if (file == nullptr)
             return;
@@ -481,10 +481,10 @@ namespace
             return table;
         }
 
-        std::vector<std::unique_ptr<VirtualFile>> read_file(
+        std::vector<std::unique_ptr<File>> read_file(
             IO &arc_io, const TableEntry &table_entry, int version)
         {
-            std::unique_ptr<VirtualFile> file(new VirtualFile);
+            std::unique_ptr<File> file(new File);
             file->name = table_entry.name;
 
             arc_io.seek(table_entry.offset);
@@ -520,7 +520,7 @@ namespace
 
             file->io.write(data.get(), table_entry.size_original);
 
-            std::vector<std::unique_ptr<VirtualFile>> files;
+            std::vector<std::unique_ptr<File>> files;
             try_unpack(files, std::move(file));
             return files;
         }
@@ -528,7 +528,7 @@ namespace
 }
 
 void PackArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     size_t version = QLiE::get_version(file.io);
     if (!version)
@@ -540,7 +540,7 @@ void PackArchive::unpack_internal(
     QLiE::Table table = QLiE::read_table(file.io, version);
     for (auto &table_entry : table)
     {
-        output_files.save([&]()
+        file_saver.save([&]()
         {
             return QLiE::read_file(
                 file.io,

@@ -7,7 +7,7 @@
 #include "formats/converter.h"
 #include "fs.h"
 #include "logger.h"
-#include "output_files.h"
+#include "file_saver.h"
 
 namespace
 {
@@ -118,7 +118,7 @@ namespace
     void decode(
         Converter &converter,
         ArgParser &arg_parser,
-        VirtualFile &file)
+        File &file)
     {
         converter.parse_cli_options(arg_parser);
         converter.decode(file);
@@ -128,7 +128,7 @@ namespace
         const Options &options,
         ArgParser &arg_parser,
         const ConverterFactory &conv_factory,
-        VirtualFile &file)
+        File &file)
     {
         if (options.format == "")
         {
@@ -172,14 +172,14 @@ namespace
         }
     }
 
-    std::unique_ptr<VirtualFile> read_and_decode(
+    std::unique_ptr<File> read_and_decode(
         Options &options,
         ArgParser &arg_parser,
         ConverterFactory &conv_factory,
         const PathInfo &path_info)
     {
         FileIO io(path_info.input_path, "rb");
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
         file->io.write_from_io(io, io.size());
         file->io.seek(0);
 
@@ -202,14 +202,14 @@ namespace
         ArgParser &arg_parser,
         ConverterFactory &conv_factory)
     {
-        OutputFilesHdd output_files(options.output_dir);
+        FileSaverHdd file_saver(options.output_dir);
 
         bool result = true;
         for (auto &path_info : options.input_paths)
         {
             try
             {
-                output_files.save([&]()
+                file_saver.save([&]()
                 {
                     return read_and_decode(
                         options, arg_parser, conv_factory, *path_info);

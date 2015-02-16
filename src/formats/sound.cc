@@ -32,7 +32,7 @@ std::unique_ptr<Sound> Sound::from_samples(
     return sound;
 }
 
-void Sound::update_file(VirtualFile &file) const
+void Sound::update_file(File &file) const
 {
     file.io.truncate(0);
 

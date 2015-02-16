@@ -333,7 +333,7 @@ namespace
     }
 }
 
-void MgdConverter::decode_internal(VirtualFile &file) const
+void MgdConverter::decode_internal(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a MGD graphic file");

@@ -145,13 +145,13 @@ namespace
         return table;
     }
 
-    std::unique_ptr<VirtualFile> read_file(
+    std::unique_ptr<File> read_file(
         IO &arc_io,
         const Header &header,
         const NpaFilter &filter,
         const TableEntry &table_entry)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
         file->name = convert_encoding(table_entry.name, "cp932", "utf-8");
 
         arc_io.seek(table_entry.offset);
@@ -211,7 +211,7 @@ void NpaArchive::parse_cli_options(ArgParser &arg_parser)
 }
 
 void NpaArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a NPA archive");
@@ -224,7 +224,7 @@ void NpaArchive::unpack_internal(
     Table table = read_table(file.io, *header, *internals->filter);
     for (size_t i = 0; i < table.size(); i ++)
     {
-        output_files.save([&]() -> std::unique_ptr<VirtualFile>
+        file_saver.save([&]() -> std::unique_ptr<File>
         {
             return read_file(file.io, *header, *internals->filter, *table[i]);
         });

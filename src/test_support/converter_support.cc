@@ -5,7 +5,7 @@
 #include "formats/image.h"
 #include "test_support/converter_support.h"
 #include "test_support/eassert.h"
-#include "virtual_file.h"
+#include "file.h"
 
 namespace
 {
@@ -32,7 +32,7 @@ namespace
         const std::string path, Converter &converter)
     {
         FileIO io(path, "rb");
-        VirtualFile file;
+        File file;
         file.io.write_from_io(io, io.size());
         converter.decode(file);
         return std::unique_ptr<Image>(Image::from_boxed(file.io));

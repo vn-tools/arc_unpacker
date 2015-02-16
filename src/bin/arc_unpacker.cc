@@ -7,8 +7,8 @@
 #include "file_io.h"
 #include "formats/archive.h"
 #include "logger.h"
-#include "output_files.h"
-#include "virtual_file.h"
+#include "file_saver.h"
+#include "file.h"
 
 namespace
 {
@@ -89,17 +89,17 @@ namespace
     void unpack(
         Archive &archive,
         ArgParser &arg_parser,
-        VirtualFile &file,
-        OutputFiles &output_files)
+        File &file,
+        FileSaver &file_saver)
     {
         file.io.seek(0);
         archive.parse_cli_options(arg_parser);
-        archive.unpack(file, output_files);
+        archive.unpack(file, file_saver);
     }
 
     bool guess_archive_and_unpack(
-        VirtualFile &file,
-        OutputFiles &output_files,
+        File &file,
+        FileSaver &file_saver,
         const Options &options,
         ArgParser &arg_parser,
         const ArchiveFactory &arc_factory)
@@ -114,7 +114,7 @@ namespace
                 try
                 {
                     log("Trying %s...\n", format.c_str());
-                    unpack(*archive, arg_parser, file, output_files);
+                    unpack(*archive, arg_parser, file, file_saver);
                     log("Unpacking finished successfully.\n");
                     return true;
                 }
@@ -138,7 +138,7 @@ namespace
 
             try
             {
-                unpack(*archive, arg_parser, file, output_files);
+                unpack(*archive, arg_parser, file, file_saver);
                 log("Unpacking finished successfully.\n");
                 return true;
             }
@@ -157,11 +157,11 @@ namespace
         ArgParser &arg_parser,
         const ArchiveFactory &arc_factory)
     {
-        OutputFilesHdd output_files(options.output_path);
-        VirtualFile file(options.input_path, "rb");
+        FileSaverHdd file_saver(options.output_path);
+        File file(options.input_path, "rb");
         return guess_archive_and_unpack(
             file,
-            output_files,
+            file_saver,
             options,
             arg_parser,
             arc_factory);

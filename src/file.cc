@@ -1,24 +1,24 @@
 #include <string>
 #include "buffered_io.h"
+#include "file.h"
 #include "file_io.h"
 #include "fs.h"
-#include "virtual_file.h"
 
-VirtualFile::VirtualFile(const std::string path, const std::string mode)
+File::File(const std::string path, const std::string mode)
     : io(*new FileIO(path, mode)), name(path)
 {
 }
 
-VirtualFile::VirtualFile() : io(*new BufferedIO)
+File::File() : io(*new BufferedIO)
 {
 }
 
-VirtualFile::~VirtualFile()
+File::~File()
 {
     delete &io;
 }
 
-void VirtualFile::change_extension(const std::string new_extension)
+void File::change_extension(const std::string new_extension)
 {
     std::string ext_copy(new_extension);
     while (ext_copy.length() > 0 && ext_copy[0] == '.')

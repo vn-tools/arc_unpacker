@@ -4,13 +4,13 @@
 #include <string>
 #include <vector>
 #include "formats/archive.h"
-#include "output_files.h"
+#include "file_saver.h"
 
-std::unique_ptr<OutputFilesMemory> unpack_to_memory(
+std::unique_ptr<FileSaverMemory> unpack_to_memory(
     const std::string input_path, Archive &archive);
 
 void compare_files(
-    const std::vector<VirtualFile*> &expected_files,
-    const std::vector<VirtualFile*> &actual_files);
+    const std::vector<File*> &expected_files,
+    const std::vector<File*> &actual_files);
 
 #endif

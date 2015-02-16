@@ -20,7 +20,7 @@ namespace
     const std::string magic_tlg_5("TLG5.0\x00raw\x1a", 11);
     const std::string magic_tlg_6("TLG6.0\x00raw\x1a", 11);
 
-    void guess_version_and_decode(VirtualFile &file);
+    void guess_version_and_decode(File &file);
 
     std::string extract_string(std::string &container)
     {
@@ -37,7 +37,7 @@ namespace
         return str;
     }
 
-    void decode_tlg_0(VirtualFile &file)
+    void decode_tlg_0(File &file)
     {
         size_t raw_data_size = file.io.read_u32_le();
         size_t raw_data_offset = file.io.tell();
@@ -69,19 +69,19 @@ namespace
         guess_version_and_decode(file);
     }
 
-    void decode_tlg_5(VirtualFile &file)
+    void decode_tlg_5(File &file)
     {
         Tlg5Decoder decoder;
         decoder.decode(file);
     }
 
-    void decode_tlg_6(VirtualFile &file)
+    void decode_tlg_6(File &file)
     {
         Tlg6Decoder decoder;
         decoder.decode(file);
     }
 
-    void guess_version_and_decode(VirtualFile &file)
+    void guess_version_and_decode(File &file)
     {
         size_t pos = file.io.tell();
 
@@ -110,7 +110,7 @@ namespace
     }
 }
 
-void TlgConverter::decode_internal(VirtualFile &file) const
+void TlgConverter::decode_internal(File &file) const
 {
     guess_version_and_decode(file);
 }

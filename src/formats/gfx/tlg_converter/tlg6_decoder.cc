@@ -570,7 +570,7 @@ namespace
     }
 }
 
-void Tlg6Decoder::decode(VirtualFile &file)
+void Tlg6Decoder::decode(File &file)
 {
     init_table();
 

@@ -119,10 +119,10 @@ namespace
         data = output;
     }
 
-    std::unique_ptr<VirtualFile> read_file(
+    std::unique_ptr<File> read_file(
         IO &arc_io, const TableEntry &table_entry, SpbConverter &spb_converter)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
 
         file->name = table_entry.name;
         arc_io.seek(table_entry.offset);
@@ -163,12 +163,12 @@ NsaArchive::~NsaArchive()
 }
 
 void NsaArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     Table table = read_table(file.io);
     for (size_t i = 0; i < table.size(); i ++)
     {
-        output_files.save([&]() -> std::unique_ptr<VirtualFile>
+        file_saver.save([&]() -> std::unique_ptr<File>
         {
             return read_file(file.io, *table[i], internals->spb_converter);
         });

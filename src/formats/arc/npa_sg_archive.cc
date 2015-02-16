@@ -51,9 +51,9 @@ namespace
         return table;
     }
 
-    std::unique_ptr<VirtualFile> read_file(IO &arc_io, TableEntry &table_entry)
+    std::unique_ptr<File> read_file(IO &arc_io, TableEntry &table_entry)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
         std::unique_ptr<char[]> data(new char[table_entry.size]);
         arc_io.seek(table_entry.offset);
         arc_io.read(data.get(), table_entry.size);
@@ -65,7 +65,7 @@ namespace
 }
 
 void NpaSgArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     size_t table_size = file.io.read_u32_le();
     if (table_size > file.io.size())
@@ -79,7 +79,7 @@ void NpaSgArchive::unpack_internal(
     Table table = read_table(table_io, file.io);
     for (auto &table_entry : table)
     {
-        output_files.save([&]() -> std::unique_ptr<VirtualFile>
+        file_saver.save([&]() -> std::unique_ptr<File>
         {
             return read_file(file.io, *table_entry);
         });

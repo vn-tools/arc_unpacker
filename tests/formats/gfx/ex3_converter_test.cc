@@ -12,7 +12,7 @@ void test_ex3_decoding()
         = "tests/test_files/gfx/ex3/WIN_HISUI&KOHAKU-out.bmpz";
 
     FileIO input_io(input_path, "rb");
-    VirtualFile file;
+    File file;
     file.io.write_from_io(input_io, input_io.size());
     converter.decode(file);
 

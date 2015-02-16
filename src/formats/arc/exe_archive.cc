@@ -375,14 +375,14 @@ namespace
         size_t offset,
         std::vector<ImageSectionHeader> &sections,
         RvaHelper &rva_helper,
-        OutputFiles &output_files,
+        FileSaver &file_saver,
         std::string path)
     {
         io.seek(base_offset + offset);
         ImageResourceDataEntry entry(io);
-        output_files.save([&]() -> std::unique_ptr<VirtualFile>
+        file_saver.save([&]() -> std::unique_ptr<File>
         {
-            std::unique_ptr<VirtualFile> file(new VirtualFile);
+            std::unique_ptr<File> file(new File);
             file->name = path;
             io.seek(rva_helper.rva_to_offset(sections, entry.offset_to_data));
             file->io.write_from_io(io, entry.size);
@@ -396,7 +396,7 @@ namespace
         size_t offset,
         std::vector<ImageSectionHeader> &sections,
         RvaHelper &rva_helper,
-        OutputFiles &output_files,
+        FileSaver &file_saver,
         const std::string path = "")
     {
         io.seek(base_offset + offset);
@@ -423,7 +423,7 @@ namespace
                     entry.offset_to_data,
                     sections,
                     rva_helper,
-                    output_files,
+                    file_saver,
                     entry_path);
             }
             else
@@ -435,7 +435,7 @@ namespace
                     entry.offset_to_data,
                     sections,
                     rva_helper,
-                    output_files,
+                    file_saver,
                     entry_path);
             }
             directory_entry_offset += 8;
@@ -444,7 +444,7 @@ namespace
 }
 
 void ExeArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     DosHeader dos_header(file.io);
     if (dos_header.magic != "MZ")
@@ -478,5 +478,5 @@ void ExeArchive::unpack_internal(
         0,
         sections,
         rva_helper,
-        output_files);
+        file_saver);
 }

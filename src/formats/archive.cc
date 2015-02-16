@@ -11,22 +11,22 @@ void Archive::parse_cli_options(ArgParser &)
 {
 }
 
-void Archive::unpack_internal(VirtualFile &, OutputFiles &) const
+void Archive::unpack_internal(File &, FileSaver &) const
 {
     throw std::runtime_error("Unpacking is not supported");
 }
 
-void Archive::unpack(VirtualFile &file, OutputFiles &output_files) const
+void Archive::unpack(File &file, FileSaver &file_saver) const
 {
     file.io.seek(0);
-    return unpack_internal(file, output_files);
+    return unpack_internal(file, file_saver);
 }
 
-bool Archive::try_unpack(VirtualFile &file, OutputFiles &output_files) const
+bool Archive::try_unpack(File &file, FileSaver &file_saver) const
 {
     try
     {
-        unpack(file, output_files);
+        unpack(file, file_saver);
         return true;
     }
     catch (...)

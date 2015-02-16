@@ -263,7 +263,7 @@ namespace
     }
 }
 
-void CbgConverter::decode_internal(VirtualFile &file) const
+void CbgConverter::decode_internal(File &file) const
 {
     if (file.io.read(bmp_magic.size()) == bmp_magic)
     {

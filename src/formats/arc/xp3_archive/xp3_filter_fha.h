@@ -5,7 +5,7 @@
 class Xp3FilterFha final : public Xp3Filter
 {
 public:
-    virtual void decode(VirtualFile &file, uint32_t key) const override;
+    virtual void decode(File &file, uint32_t key) const override;
 };
 
 #endif

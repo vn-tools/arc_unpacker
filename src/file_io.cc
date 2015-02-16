@@ -1,8 +1,8 @@
 #include <cassert>
 #include <cstdio>
 #include <stdexcept>
-#include "file_io.h"
 #include "compat/open.h"
+#include "file_io.h"
 
 struct FileIO::Internals
 {

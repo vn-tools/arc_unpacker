@@ -18,10 +18,10 @@ namespace
         uint32_t size;
     } TableEntry;
 
-    std::unique_ptr<VirtualFile> read_file(
+    std::unique_ptr<File> read_file(
         IO &arc_io, const TableEntry &table_entry)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
         file->name = table_entry.name;
 
         arc_io.seek(table_entry.offset);
@@ -32,7 +32,7 @@ namespace
 }
 
 void SarArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     uint16_t file_count = file.io.read_u16_be();
     uint32_t offset_to_files = file.io.read_u32_be();
@@ -54,7 +54,7 @@ void SarArchive::unpack_internal(
 
     for (auto &entry : table)
     {
-        output_files.save([&]()
+        file_saver.save([&]()
         {
             return read_file(file.io, *entry);
         });

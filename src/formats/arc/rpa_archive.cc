@@ -269,10 +269,10 @@ namespace
         return uncompressed;
     }
 
-    std::unique_ptr<VirtualFile> read_file(
+    std::unique_ptr<File> read_file(
         IO &arc_io, const TableEntry &table_entry)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
 
         arc_io.seek(table_entry.offset);
 
@@ -285,7 +285,7 @@ namespace
 }
 
 void RpaArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     int version = check_version(file.io);
     size_t table_offset = read_hex_number(file.io, 16);
@@ -311,7 +311,7 @@ void RpaArchive::unpack_internal(
 
     for (auto &entry : entries)
     {
-        output_files.save([&]()
+        file_saver.save([&]()
         {
             return read_file(file.io, *entry);
         });

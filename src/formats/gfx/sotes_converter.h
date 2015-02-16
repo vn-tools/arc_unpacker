@@ -5,7 +5,7 @@
 class SotesConverter final : public Converter
 {
 public:
-    void decode_internal(VirtualFile &target_file) const override;
+    void decode_internal(File &target_file) const override;
 };
 
 #endif

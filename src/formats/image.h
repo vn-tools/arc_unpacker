@@ -2,7 +2,7 @@
 #define FORMATS_IMAGE_H
 #include <memory>
 #include <string>
-#include "virtual_file.h"
+#include "file.h"
 
 typedef enum
 {
@@ -26,7 +26,7 @@ public:
 
     static std::unique_ptr<Image> from_boxed(IO &io);
 
-    void update_file(VirtualFile &target_file) const;
+    void update_file(File &target_file) const;
 
     size_t width() const;
     size_t height() const;

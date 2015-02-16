@@ -3,9 +3,9 @@
 
 void test_pak_archive(const std::string path)
 {
-    std::vector<VirtualFile*> expected_files;
-    std::unique_ptr<VirtualFile> file1(new VirtualFile);
-    std::unique_ptr<VirtualFile> file2(new VirtualFile);
+    std::vector<File*> expected_files;
+    std::unique_ptr<File> file1(new File);
+    std::unique_ptr<File> file2(new File);
     file1->name = "abc.txt";
     file2->name = "another.txt";
     file1->io.write("123", 3);

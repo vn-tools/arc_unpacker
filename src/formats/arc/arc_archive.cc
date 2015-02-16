@@ -15,13 +15,13 @@ namespace
 {
     const std::string magic("PackFile    ", 12);
 
-    std::unique_ptr<VirtualFile> read_file(
+    std::unique_ptr<File> read_file(
         IO &arc_io,
         const BgiConverter &bgi_converter,
         const CbgConverter &cbg_converter,
         size_t file_count)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
 
         size_t old_pos = arc_io.tell();
         file->name = arc_io.read_until_zero();
@@ -73,7 +73,7 @@ void ArcArchive::parse_cli_options(ArgParser &arg_parser)
 }
 
 void ArcArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not an ARC archive");
@@ -84,7 +84,7 @@ void ArcArchive::unpack_internal(
 
     for (size_t i = 0; i < file_count; i ++)
     {
-        output_files.save([&]()
+        file_saver.save([&]()
         {
             return read_file(
                 file.io,

@@ -15,7 +15,7 @@ namespace
     const std::string magic("bw  ", 4);
 }
 
-void BgiConverter::decode_internal(VirtualFile &file) const
+void BgiConverter::decode_internal(File &file) const
 {
     size_t header_size = file.io.read_u32_le();
     if (file.io.read(magic.length()) != magic)

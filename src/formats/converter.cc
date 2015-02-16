@@ -11,18 +11,18 @@ void Converter::parse_cli_options(ArgParser &)
 {
 }
 
-void Converter::decode_internal(VirtualFile &) const
+void Converter::decode_internal(File &) const
 {
     throw std::runtime_error("Decoding is not supported");
 }
 
-void Converter::decode(VirtualFile &target_file) const
+void Converter::decode(File &target_file) const
 {
     target_file.io.seek(0);
     decode_internal(target_file);
 }
 
-bool Converter::try_decode(VirtualFile &target_file) const
+bool Converter::try_decode(File &target_file) const
 {
     try
     {

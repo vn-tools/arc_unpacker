@@ -5,7 +5,7 @@
 class ExeArchive final : public Archive
 {
 public:
-    void unpack_internal(VirtualFile &, OutputFiles &) const override;
+    void unpack_internal(File &, FileSaver &) const override;
 };
 
 #endif

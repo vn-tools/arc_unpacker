@@ -41,12 +41,12 @@ namespace
         return header;
     }
 
-    std::unique_ptr<VirtualFile> read_file(
+    std::unique_ptr<File> read_file(
         IO &arc_io,
         const MgdConverter &mgd_converter,
         const Header &header)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
         size_t file_name_offset = arc_io.read_u32_le();
         size_t data_size = arc_io.read_u32_le();
         size_t data_offset = static_cast<size_t>(arc_io.read_u64_le());
@@ -90,7 +90,7 @@ void FjsysArchive::parse_cli_options(ArgParser &arg_parser)
 }
 
 void FjsysArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a FJSYS archive");
@@ -99,7 +99,7 @@ void FjsysArchive::unpack_internal(
 
     for (size_t i = 0; i < header->file_count; i ++)
     {
-        output_files.save([&]()
+        file_saver.save([&]()
         {
             return read_file(file.io, internals->mgd_converter, *header);
         });

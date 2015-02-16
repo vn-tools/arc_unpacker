@@ -15,10 +15,10 @@ namespace
 {
     const std::string magic("\x02\x00\x00\x00", 4);
 
-    std::unique_ptr<VirtualFile> read_file(
+    std::unique_ptr<File> read_file(
         IO &arc_io, IO &table_io, size_t offset_to_files)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
 
         size_t file_name_length = table_io.read_u32_le();
         std::string file_name = table_io.read(file_name_length);
@@ -52,7 +52,7 @@ namespace
 }
 
 void PakArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a PAK archive");
@@ -67,7 +67,7 @@ void PakArchive::unpack_internal(
 
     for (size_t i = 0; i < file_count; i ++)
     {
-        output_files.save([&]()
+        file_saver.save([&]()
         {
             return read_file(file.io, table_io, offset_to_files);
         });

@@ -1,7 +1,7 @@
 #include <memory>
 #include "formats/arc/xp3_archive/xp3_filter_fsn.h"
 
-void Xp3FilterFsn::decode(VirtualFile &file, uint32_t) const
+void Xp3FilterFsn::decode(File &file, uint32_t) const
 {
     size_t size = file.io.size();
     file.io.seek(0);

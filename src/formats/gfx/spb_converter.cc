@@ -104,7 +104,7 @@ namespace
     }
 }
 
-void SpbConverter::decode_internal(VirtualFile &file) const
+void SpbConverter::decode_internal(File &file) const
 {
     uint16_t width = file.io.read_u16_be();
     uint16_t height = file.io.read_u16_be();

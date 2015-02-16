@@ -149,7 +149,7 @@ namespace
     }
 }
 
-void Tlg5Decoder::decode(VirtualFile &file)
+void Tlg5Decoder::decode(File &file)
 {
     Header header;
     header.channel_count = file.io.read_u8();

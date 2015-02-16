@@ -145,7 +145,7 @@ size_t Image::height() const
     return internals->image_height;
 }
 
-void Image::update_file(VirtualFile &file) const
+void Image::update_file(File &file) const
 {
     file.io.truncate(0);
 

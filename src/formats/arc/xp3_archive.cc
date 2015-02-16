@@ -80,7 +80,7 @@ namespace
         return std::unique_ptr<IO>(new BufferedIO(compressed));
     }
 
-    void read_info_chunk(IO &table_io, VirtualFile &target_file)
+    void read_info_chunk(IO &table_io, File &target_file)
     {
         if (!check_magic(table_io, info_magic))
             throw std::runtime_error("Expected INFO chunk");
@@ -99,7 +99,7 @@ namespace
     bool read_segm_chunk(
         IO &table_io,
         IO &arc_io,
-        VirtualFile &target_file)
+        File &target_file)
     {
         if (!check_magic(table_io, segm_magic))
         {
@@ -146,13 +146,13 @@ namespace
         return true;
     }
 
-    std::unique_ptr<VirtualFile> read_file(
+    std::unique_ptr<File> read_file(
         IO &arc_io,
         IO &table_io,
         TlgConverter &tlg_converter,
         Xp3Filter *filter)
     {
-        std::unique_ptr<VirtualFile> target_file(new VirtualFile());
+        std::unique_ptr<File> target_file(new File());
 
         if (!check_magic(table_io, file_magic))
             throw std::runtime_error("Expected FILE chunk");
@@ -233,7 +233,7 @@ void Xp3Archive::parse_cli_options(ArgParser &arg_parser)
 }
 
 void Xp3Archive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     if (!check_magic(file.io, xp3_magic))
         throw std::runtime_error("Not an XP3 archive");
@@ -245,8 +245,8 @@ void Xp3Archive::unpack_internal(
 
     while (table_io->tell() < table_io->size())
     {
-        output_files.save(
-            [&]() -> std::unique_ptr<VirtualFile>
+        file_saver.save(
+            [&]() -> std::unique_ptr<File>
             {
                 return read_file(
                     file.io,

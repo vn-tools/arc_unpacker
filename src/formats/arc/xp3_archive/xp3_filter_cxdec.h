@@ -9,7 +9,7 @@ class Xp3FilterCxdec final : public Xp3Filter
 public:
     Xp3FilterCxdec(Xp3FilterCxdecSettings &);
     ~Xp3FilterCxdec();
-    virtual void decode(VirtualFile &file, uint32_t key) const override;
+    virtual void decode(File &file, uint32_t key) const override;
 private:
     struct Internals;
     std::unique_ptr<Internals> internals;

@@ -2,7 +2,7 @@
 #include "formats/arc/xp3_archive/xp3_filter_cxdec.h"
 #include "formats/arc/xp3_archive/xp3_filter_comyu.h"
 
-void Xp3FilterComyu::decode(VirtualFile &file, uint32_t key) const
+void Xp3FilterComyu::decode(File &file, uint32_t key) const
 {
     Xp3FilterCxdecSettings settings;
     settings.key1 = 0x1a3;

@@ -1,15 +1,15 @@
 #include "test_support/eassert.h"
-#include "virtual_file.h"
+#include "file.h"
 
 void test_empty_file()
 {
-    VirtualFile file;
+    File file;
     eassert(file.name == "");
 }
 
 void test_setting_name()
 {
-    VirtualFile file;
+    File file;
     file.name = "abc";
     eassert(file.name == "abc");
 }
@@ -19,7 +19,7 @@ void test_changing_extension(
     const std::string new_extension,
     const std::string expected_name)
 {
-    VirtualFile file;
+    File file;
     file.name = name;
     file.change_extension(new_extension);
     eassert(file.name == expected_name);

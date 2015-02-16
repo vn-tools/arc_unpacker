@@ -3,13 +3,13 @@
 
 void test_ykc_archive()
 {
-    std::unique_ptr<VirtualFile> file1(new VirtualFile);
-    std::unique_ptr<VirtualFile> file2(new VirtualFile);
+    std::unique_ptr<File> file1(new File);
+    std::unique_ptr<File> file2(new File);
     file1->name = "abc.txt";
     file2->name = "another.txt";
     file1->io.write("123", 3);
     file2->io.write("abcdefghij", 10);
-    std::vector<VirtualFile*> expected_files { file1.get(), file2.get() };
+    std::vector<File*> expected_files { file1.get(), file2.get() };
 
     std::string path = "tests/test_files/arc/ykc/test.ykc";
     std::unique_ptr<Archive> archive(new YkcArchive);

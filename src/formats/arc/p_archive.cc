@@ -50,13 +50,13 @@ namespace
         return table;
     }
 
-    std::unique_ptr<VirtualFile> read_file(
+    std::unique_ptr<File> read_file(
         IO &arc_io,
         TableEntry &table_entry,
         bool encrypted,
         Ex3Converter &ex3_converter)
     {
-        std::unique_ptr<VirtualFile> file(new VirtualFile);
+        std::unique_ptr<File> file(new File);
         std::unique_ptr<char[]> data(new char[table_entry.size]);
         char *ptr = data.get();
         arc_io.seek(table_entry.offset);
@@ -97,7 +97,7 @@ void PArchive::parse_cli_options(ArgParser &arg_parser)
 }
 
 void PArchive::unpack_internal(
-    VirtualFile &file, OutputFiles &output_files) const
+    File &file, FileSaver &file_saver) const
 {
     uint32_t magic = file.io.read_u32_le();
     if (magic != 0 && magic != 1)
@@ -107,7 +107,7 @@ void PArchive::unpack_internal(
     Table table = read_table(file.io);
     for (auto &table_entry : table)
     {
-        output_files.save([&]() -> std::unique_ptr<VirtualFile>
+        file_saver.save([&]() -> std::unique_ptr<File>
         {
             return read_file(
                 file.io, *table_entry, encrypted, internals->ex3_converter);

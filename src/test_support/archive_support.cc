@@ -3,21 +3,21 @@
 #include "file_io.h"
 #include "test_support/archive_support.h"
 #include "test_support/eassert.h"
-#include "virtual_file.h"
+#include "file.h"
 
-std::unique_ptr<OutputFilesMemory> unpack_to_memory(
+std::unique_ptr<FileSaverMemory> unpack_to_memory(
     const std::string input_path, Archive &archive)
 {
     ArgParser arg_parser;
-    VirtualFile file(input_path, "rb");
-    std::unique_ptr<OutputFilesMemory> output_files(new OutputFilesMemory);
-    archive.unpack(file, *output_files);
-    return output_files;
+    File file(input_path, "rb");
+    std::unique_ptr<FileSaverMemory> file_saver(new FileSaverMemory);
+    archive.unpack(file, *file_saver);
+    return file_saver;
 }
 
 void compare_files(
-    const std::vector<VirtualFile*> &expected_files,
-    const std::vector<VirtualFile*> &actual_files)
+    const std::vector<File*> &expected_files,
+    const std::vector<File*> &actual_files)
 {
     eassert(actual_files.size() == expected_files.size());
     for (size_t i = 0; i < expected_files.size(); i ++)

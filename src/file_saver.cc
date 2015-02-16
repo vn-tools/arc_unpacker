@@ -1,16 +1,16 @@
 #include <set>
 #include "file_io.h"
+#include "file_saver.h"
 #include "fs.h"
 #include "logger.h"
-#include "output_files.h"
 #include "string_ex.h"
 
-void OutputFiles::save(VFFactory save_proc) const
+void FileSaver::save(VFFactory save_proc) const
 {
     save([&]()
     {
-        std::vector<std::unique_ptr<VirtualFile>> single_item;
-        std::unique_ptr<VirtualFile> file = save_proc();
+        std::vector<std::unique_ptr<File>> single_item;
+        std::unique_ptr<File> file = save_proc();
         single_item.push_back(std::move(file));
         return single_item;
     });
@@ -18,7 +18,7 @@ void OutputFiles::save(VFFactory save_proc) const
 
 
 
-struct OutputFilesHdd::Internals
+struct FileSaverHdd::Internals
 {
     std::string output_dir;
     std::set<std::string> paths;
@@ -55,17 +55,17 @@ struct OutputFilesHdd::Internals
     }
 };
 
-OutputFilesHdd::OutputFilesHdd(std::string output_dir)
+FileSaverHdd::FileSaverHdd(std::string output_dir)
     : internals(new Internals)
 {
     internals->output_dir = output_dir;
 }
 
-OutputFilesHdd::~OutputFilesHdd()
+FileSaverHdd::~FileSaverHdd()
 {
 }
 
-void OutputFilesHdd::save(VFsFactory save_proc) const
+void FileSaverHdd::save(VFsFactory save_proc) const
 {
     try
     {
@@ -94,28 +94,28 @@ void OutputFilesHdd::save(VFsFactory save_proc) const
 
 
 
-struct OutputFilesMemory::Internals
+struct FileSaverMemory::Internals
 {
-    std::vector<std::unique_ptr<VirtualFile>> files;
+    std::vector<std::unique_ptr<File>> files;
 };
 
-OutputFilesMemory::OutputFilesMemory() : internals(new Internals)
+FileSaverMemory::FileSaverMemory() : internals(new Internals)
 {
 }
 
-OutputFilesMemory::~OutputFilesMemory()
+FileSaverMemory::~FileSaverMemory()
 {
 }
 
-const std::vector<VirtualFile*> OutputFilesMemory::get_saved() const
+const std::vector<File*> FileSaverMemory::get_saved() const
 {
-    std::vector<VirtualFile*> files;
-    for (std::unique_ptr<VirtualFile>& f : internals->files)
+    std::vector<File*> files;
+    for (std::unique_ptr<File>& f : internals->files)
         files.push_back(f.get());
     return files;
 }
 
-void OutputFilesMemory::save(VFsFactory save_proc) const
+void FileSaverMemory::save(VFsFactory save_proc) const
 {
     for (auto &file : save_proc())
         internals->files.push_back(std::move(file));
