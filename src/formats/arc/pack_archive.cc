@@ -5,10 +5,13 @@
 // Extension: .pack
 //
 // Known games:
+// - Koiken Otome
 // - Soshite Ashita no Sekai yori
 
+#include <cstring>
 #include "buffered_io.h"
 #include "formats/arc/pack_archive.h"
+#include "mt.h"
 #include "string_ex.h"
 
 namespace
@@ -234,15 +237,23 @@ namespace
         const std::string magic2("FilePackVer2.0\x00\x00", 16);
         const std::string magic3("FilePackVer3.0\x00\x00", 16);
 
+        typedef enum
+        {
+            Basic = 1,
+            WithFKey = 2,
+            WithGameExe = 3,
+        } EncryptionType;
+
         typedef struct
         {
+            std::string orig_name;
             std::string name;
             size_t size_compressed;
             size_t size_original;
             size_t offset;
             bool encrypted;
             bool compressed;
-            uint32_t key;
+            uint32_t seed;
         } TableEntry;
 
         typedef std::vector<std::unique_ptr<TableEntry>> Table;
@@ -262,6 +273,13 @@ namespace
 
         namespace v3
         {
+            uint64_t padb(uint64_t a, uint64_t b)
+            {
+                return ((a & 0x7F7F7F7F7F7F7F7F)
+                    + (b & 0x7F7F7F7F7F7F7F7F))
+                    ^ ((a ^ b) & 0x8080808080808080);
+            }
+
             uint64_t padw(uint64_t a, uint64_t b)
             {
                 return ((a & 0x7FFF7FFF7FFF7FFF)
@@ -276,7 +294,7 @@ namespace
                     ^ ((a ^ b) & 0x8000000080000000);
             }
 
-            uint32_t derive_key(IO &io, size_t bytes)
+            uint32_t derive_seed(IO &io, size_t bytes)
             {
                 uint64_t key = 0;
                 uint64_t result = 0;
@@ -305,21 +323,126 @@ namespace
                 }
             }
 
-            void decrypt_file_data(
-                unsigned char *file_data, size_t length, uint32_t seed)
+            void decrypt_file_data_basic(
+                unsigned char *file_data,
+                size_t length,
+                uint32_t seed)
             {
+                uint64_t *current = reinterpret_cast<uint64_t*>(file_data);
+                const uint64_t *end = current + length / 8;
                 uint64_t key = 0xA73C5F9DA73C5F9D;
                 uint64_t mutator = (seed + length) ^ 0xFEC9753E;
                 mutator = (mutator << 32) | mutator;
 
-                uint64_t *input_ptr = reinterpret_cast<uint64_t*>(file_data);
-                uint64_t *input_guardian = input_ptr + (length / 8);
-
-                while (input_ptr < input_guardian)
+                while (current < end)
                 {
                     key = padd(key, 0xCE24F523CE24F523);
                     key ^= mutator;
-                    mutator = *input_ptr++ ^= key;
+                    mutator = *current++ ^= key;
+                }
+            }
+
+            void decrypt_file_data_with_external_keys(
+                unsigned char *file_data,
+                size_t length,
+                uint32_t seed,
+                EncryptionType encryption_type,
+                const std::string file_name,
+                const std::string key1,
+                const std::string key2)
+            {
+                uint64_t *current = reinterpret_cast<uint64_t*>(file_data);
+                const uint64_t *end = current + length / 8;
+                unsigned long mt_mutator = 0x85F532;
+                unsigned long mt_seed = 0x33F641;
+
+                for (size_t i = 0; i < file_name.length(); i++)
+                {
+                    mt_mutator
+                        += static_cast<const unsigned char&>(file_name[i])
+                        * static_cast<unsigned char>(i);
+                    mt_seed ^= mt_mutator;
+                }
+
+                mt_seed += seed ^ (7 * (length & 0xFFFFFF)
+                    + length
+                    + mt_mutator
+                    + (mt_mutator ^ length ^ 0x8F32DC));
+                mt_seed = 9 * (mt_seed & 0xFFFFFF);
+
+                if (encryption_type == EncryptionType::WithGameExe)
+                    mt_seed ^= 0x453A;
+
+                init_genrand(mt_seed);
+                mt_xor_state(
+                    reinterpret_cast<const unsigned char *>(key1.data()),
+                    key1.size());
+                mt_xor_state(
+                    reinterpret_cast<const unsigned char *>(key2.data()),
+                    key2.size());
+
+                uint64_t table[0x10] = { 0 };
+
+                for (unsigned long i = 0; i < 0x10; i++)
+                {
+                    table[i]
+                        = genrand_int32()
+                        | (static_cast<uint64_t>(genrand_int32()) << 32);
+                }
+                for (auto i = 0; i < 9; i ++)
+                     genrand_int32();
+
+                uint64_t mutator
+                    = genrand_int32()
+                    | (static_cast<uint64_t>(genrand_int32()) << 32);
+
+                size_t table_index = genrand_int32() & 0xF;
+                while (current < end)
+                {
+                    mutator ^= table[table_index];
+                    mutator = padd(mutator, table[table_index]);
+
+                    *current ^= mutator;
+
+                    mutator = padb(mutator, *current);
+                    mutator ^= *current;
+                    mutator <<= 1;
+                    mutator &= 0xFFFFFFFEFFFFFFFE;
+                    mutator = padw(mutator, *current);
+
+                    table_index++;
+                    table_index &= 0xF;
+
+                    current++;
+                }
+            }
+
+            void decrypt_file_data(
+                unsigned char *file_data,
+                size_t length,
+                uint32_t seed,
+                EncryptionType encryption_type,
+                const std::string file_name,
+                const std::string key1,
+                const std::string key2)
+            {
+                switch (encryption_type)
+                {
+                    case EncryptionType::Basic:
+                        decrypt_file_data_basic(file_data, length, seed);
+                        break;
+
+                    case EncryptionType::WithFKey:
+                    case EncryptionType::WithGameExe:
+                        decrypt_file_data_with_external_keys(
+                            file_data,
+                            length,
+                            seed,
+                            encryption_type,
+                            file_name,
+                            key1,
+                            key2);
+                        break;
                 }
             }
         }
@@ -337,7 +460,10 @@ namespace
 
             std::string magic("1PC\xff", 4);
             if (input_io.read(magic.length()) != magic)
-                throw std::runtime_error("Unexpected magic");
+            {
+                throw std::runtime_error("Unexpected magic in compressed file. "
+                    "Try with --fkey or --gameexe?");
+            }
 
             bool use_short_length = input_io.read_u32_le() > 0;
             uint32_t file_size = input_io.read_u32_le();
@@ -421,11 +547,7 @@ namespace
             }
             else
                 throw std::runtime_error("Not implemented");
-
-            return convert_encoding(
-                std::string(file_name.get(), file_name_length),
-                "cp932",
-                "utf-8");
+            return std::string(file_name.get(), file_name_length);
         }
 
         Table read_table(IO &arc_io, int version)
@@ -438,7 +560,7 @@ namespace
             BufferedIO table_io;
             table_io.write_from_io(arc_io, table_size);
 
-            uint32_t key = 0;
+            uint32_t seed = 0;
             if (version == 3)
             {
                 table_io.seek(0);
@@ -450,7 +572,7 @@ namespace
                 table_io.skip(28);
                 table_io.skip(table_io.read_u32_le());
                 table_io.skip(36);
-                key = v3::derive_key(table_io, 256) & 0x0FFFFFFF;
+                seed = v3::derive_seed(table_io, 256) & 0x0FFFFFFF;
             }
 
             Table table;
@@ -459,7 +581,10 @@ namespace
             {
                 std::unique_ptr<TableEntry> table_entry(new TableEntry);
 
-                table_entry->name = read_file_name(table_io, key, version);
+                table_entry->orig_name = read_file_name(
+                    table_io, seed, version);
+                table_entry->name = convert_encoding(
+                    table_entry->orig_name, "cp932", "utf-8");
                 table_entry->offset = table_io.read_u64_le();
                 table_entry->size_compressed = table_io.read_u32_le();
                 table_entry->size_original = table_io.read_u32_le();
@@ -468,11 +593,11 @@ namespace
 
                 if (version == 1 /* || version == 2? */)
                 {
-                    table_entry->key = table_io.read_u32_le();
+                    table_entry->seed = table_io.read_u32_le();
                 }
                 else
                 {
-                    table_entry->key = key;
+                    table_entry->seed = seed;
                     table_io.skip(4);
                 }
 
@@ -482,7 +607,12 @@ namespace
         }
 
         std::vector<std::unique_ptr<File>> read_file(
-            IO &arc_io, const TableEntry &table_entry, int version)
+            IO &arc_io,
+            const TableEntry &table_entry,
+            int version,
+            EncryptionType encryption_type,
+            const std::string key1,
+            const std::string key2)
         {
             std::unique_ptr<File> file(new File);
             file->name = table_entry.name;
@@ -498,7 +628,11 @@ namespace
                     v3::decrypt_file_data(
                         reinterpret_cast<unsigned char*>(data.get()),
                         table_entry.size_compressed,
-                        table_entry.key);
+                        table_entry.seed,
+                        encryption_type,
+                        table_entry.orig_name,
+                        key1,
+                        key2);
                 }
                 else
                     throw std::runtime_error("Not implemented");
@@ -527,6 +661,73 @@ namespace
     }
 }
 
+struct PackArchive::Internals
+{
+    QLiE::EncryptionType encryption_type;
+    std::string key1;
+    std::string key2;
+
+    Internals()
+    {
+        encryption_type = QLiE::EncryptionType::Basic;
+    }
+};
+
+PackArchive::PackArchive() : internals(new Internals)
+{
+}
+
+PackArchive::~PackArchive()
+{
+}
+
+void PackArchive::add_cli_help(ArgParser &arg_parser) const
+{
+    arg_parser.add_help(
+        "--fkey=PATH", "Selects path to fkey file.\n");
+
+    arg_parser.add_help(
+        "--gameexe=PATH", "Selects path to game executable.\n");
+}
+
+void PackArchive::parse_cli_options(ArgParser &arg_parser)
+{
+    if (arg_parser.has_switch("fkey"))
+    {
+        const std::string file_path = arg_parser.get_switch("fkey");
+        File file(file_path, "rb");
+        internals->encryption_type = QLiE::EncryptionType::WithFKey;
+        internals->key1 = file.io.read(file.io.size());
+    }
+
+    if (arg_parser.has_switch("gameexe"))
+    {
+        if (!arg_parser.has_switch("fkey"))
+            throw std::runtime_error("Must specify also --fkey.");
+
+        const std::string magic("\x05TIcon\x00", 7);
+        const std::string path = arg_parser.get_switch("gameexe");
+
+        File file(path, "rb");
+        std::unique_ptr<char[]> exe_data(new char[file.io.size()]);
+        file.io.read(exe_data.get(), file.io.size());
+
+        bool found = false;
+        for (size_t i = file.io.size() - magic.length(); i > 0; i --)
+        {
+            if (!memcmp(&exe_data[i], magic.data(), magic.length()))
+            {
+                found = true;
+                internals->encryption_type = QLiE::EncryptionType::WithGameExe;
+                internals->key2
+                    = std::string(&exe_data[i + magic.length() - 1], 256);
+            }
+        }
+        if (!found)
+            throw std::runtime_error("Cannot find the key in the .exe file");
+    }
+}
+
 void PackArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     size_t version = QLiE::get_version(file.io);
@@ -538,5 +739,13 @@ void PackArchive::unpack_internal(File &file, FileSaver &file_saver) const
 
     QLiE::Table table = QLiE::read_table(file.io, version);
     for (auto &table_entry : table)
-        file_saver.save(QLiE::read_file(file.io, *table_entry, version));
+    {
+        file_saver.save(QLiE::read_file(
+            file.io,
+            *table_entry,
+            version,
+            internals->encryption_type,
+            internals->key1,
+            internals->key2));
+    }
 }

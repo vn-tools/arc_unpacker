@@ -39,31 +39,32 @@ If you believe there is an error in these tables, please let me know.
 
 ### Archives
 
-CLI invocation             | Game                                | Features<sup>1</sup>
--------------------------- | ----------------------------------- | ------------
-`--fmt=xp3 --plugin=noop`  | Sono Hanabira ni Kuchizuke o 12     | ![][sup]![][sup]![][sup]
-`--fmt=xp3 --plugin=noop`  | Sharin no Kuni, Himawari no Shoujo  | ![][sup]![][sup]![][sup]
-`--fmt=xp3 --plugin=fsn`   | Fate/Stay Night                     | ![][sup]![][sup]![][sup]
-`--fmt=xp3 --plugin=fha`   | Fate/Hollow Ataraxia                | ![][sup]![][sup]![][sup]
-`--fmt=xp3 --plugin=comyu` | Comyu Kuroi Ryuu to Yasashii Oukoku | ![][sup]![][sup]![][sup]
-`--fmt=p`                  | Melty Blood                         | ![][sup]![][sup]![][sup]
-`--fmt=sar`                | Tsukihime                           | ![][sup]![][sup]![][sup]
-`--fmt=nsa`                | Tsukihime                           | ![][sup]![][sup]![][sup]
-`--fmt=nsa`                | Umineko No Naku Koro Ni             | ![][sup]![][sup]![][sup]
-`--fmt=ykc`                | Hoshizora e Kakaru Hashi            | ![][sup]![][sup]![][sup]
-`--fmt=fjsys`              | Sono Hanabira ni Kuchizuke o 1-11   | ![][sup]![][sup]![][sup]
-`--fmt=pak`                | Saya no Uta                         | ![][sup]![][sup]![][sup]
-`--fmt=npa`                | Chaos;Head                          | ![][sup]![][sup]![][sup]
-`--fmt=rpa`                | Everlasting Summer                  | ![][sup]![][sup]![][sup]
-`--fmt=rpa`                | Long Live The Queen                 | ![][sup]![][sup]![][sup]
-`--fmt=rpa`                | Katawa Shoujo                       | ![][sup]![][sup]![][sup]
-`--fmt=mbl`                | Wanko to Kurasou                    | ![][sup]![][sup]![][sup]
-`--fmt=rgssad`             | Cherry Tree High Comedy Club        | ![][sup]![][sup]![][sup]
-`--fmt=arc`                | Higurashi No Naku Koro Ni           | ![][sup]![][sup]![][sup]
-`--fmt=npa_sg`             | Steins;Gate                         | ![][sup]![][sup]![][sup]
-`--fmt=pac`                | Maji de Watashi ni Koishinasai!     | ![][sup]![][sup]![][sup]
-`--fmt=pack`               | Soshite Ashita no Sekai yori        | ![][sup]![][sup]![][sup]
-`--fmt=exe`                | Generic `.exe` resources            | ![][sup]![][nap]![][nap]
+CLI invocation                        | Game                                | Features<sup>1</sup>
+------------------------------------- | ----------------------------------- | ------------
+`--fmt=xp3 --plugin=noop`             | Sono Hanabira ni Kuchizuke o 12     | ![][sup]![][sup]![][sup]
+`--fmt=xp3 --plugin=noop`             | Sharin no Kuni, Himawari no Shoujo  | ![][sup]![][sup]![][sup]
+`--fmt=xp3 --plugin=fsn`              | Fate/Stay Night                     | ![][sup]![][sup]![][sup]
+`--fmt=xp3 --plugin=fha`              | Fate/Hollow Ataraxia                | ![][sup]![][sup]![][sup]
+`--fmt=xp3 --plugin=comyu`            | Comyu Kuroi Ryuu to Yasashii Oukoku | ![][sup]![][sup]![][sup]
+`--fmt=p`                             | Melty Blood                         | ![][sup]![][sup]![][sup]
+`--fmt=sar`                           | Tsukihime                           | ![][sup]![][sup]![][sup]
+`--fmt=nsa`                           | Tsukihime                           | ![][sup]![][sup]![][sup]
+`--fmt=nsa`                           | Umineko No Naku Koro Ni             | ![][sup]![][sup]![][sup]
+`--fmt=ykc`                           | Hoshizora e Kakaru Hashi            | ![][sup]![][sup]![][sup]
+`--fmt=fjsys`                         | Sono Hanabira ni Kuchizuke o 1-11   | ![][sup]![][sup]![][sup]
+`--fmt=pak`                           | Saya no Uta                         | ![][sup]![][sup]![][sup]
+`--fmt=npa`                           | Chaos;Head                          | ![][sup]![][sup]![][sup]
+`--fmt=rpa`                           | Everlasting Summer                  | ![][sup]![][sup]![][sup]
+`--fmt=rpa`                           | Long Live The Queen                 | ![][sup]![][sup]![][sup]
+`--fmt=rpa`                           | Katawa Shoujo                       | ![][sup]![][sup]![][sup]
+`--fmt=mbl`                           | Wanko to Kurasou                    | ![][sup]![][sup]![][sup]
+`--fmt=rgssad`                        | Cherry Tree High Comedy Club        | ![][sup]![][sup]![][sup]
+`--fmt=arc`                           | Higurashi No Naku Koro Ni           | ![][sup]![][sup]![][sup]
+`--fmt=npa_sg`                        | Steins;Gate                         | ![][sup]![][sup]![][sup]
+`--fmt=pac`                           | Maji de Watashi ni Koishinasai!     | ![][sup]![][sup]![][sup]
+`--fmt=pack`                          | Soshite Ashita no Sekai yori        | ![][sup]![][sup]![][sup]
+`--fmt=pack --fkey=... --gameexe=...` | Koiken Otome                        | ![][sup]![][par]![][sup]
+`--fmt=exe`                           | Generic `.exe` resources            | ![][sup]![][nap]![][nap]
 
 ### Files
 
