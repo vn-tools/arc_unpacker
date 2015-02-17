@@ -154,7 +154,7 @@ unsigned long genrand_int32(void)
             mt[kk] = mt[kk+(M-N)] ^ y ^ mag01[mt[kk+1] & 0x1UL];
         }
         y = (mt[N-1]&UPPER_MASK)|((mt[0]&LOWER_MASK) >> 1);
-        mt[N-1] = mt[M-1] ^ y ^ mag01[mt[kk+1] & 0x1UL];
+        mt[N-1] = mt[M-1] ^ y ^ mag01[mt[N-1] & 0x1UL];
 
         mti = 0;
     }
