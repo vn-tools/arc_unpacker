@@ -14,6 +14,7 @@
 #include "formats/arc/pack_archive/abmp10.h"
 #include "formats/arc/pack_archive/abmp7.h"
 #include "formats/arc/pack_archive/mt.h"
+#include "formats/gfx/dpng_converter.h"
 #include "string_ex.h"
 
 namespace
@@ -394,30 +395,30 @@ namespace
         if (file == nullptr)
             return;
 
-        try
+        auto container_unpackers =
         {
-            std::vector<std::unique_ptr<File>> local_files;
+            &abmp7_unpack,
+            &abmp10_unpack,
+        };
 
-            if (!abmp7_unpack(local_files, *file)
-            && !abmp10_unpack(local_files, *file))
-            {
-                files.push_back(std::move(file));
-            }
-            else
-            {
-                for (auto &subfile : local_files)
-                {
-                    try_unpack(files, std::move(subfile));
-                }
-            }
-        }
-        catch (std::exception &e)
+        for (auto &container_unpacker : container_unpackers)
         {
-            files.push_back(std::move(file));
+            try
+            {
+                std::vector<std::unique_ptr<File>> local_files;
+                container_unpacker(local_files, *file);
+                for (auto &subfile : local_files)
+                    try_unpack(files, std::move(subfile));
+                return;
+            }
+            catch (...)
+            {
+            }
         }
+        files.push_back(std::move(file));
     }
 
-    std::vector<std::unique_ptr<File>> read_file(
+    std::vector<std::unique_ptr<File>> read_files(
         IO &arc_io,
         const TableEntry &table_entry,
         int version,
@@ -473,6 +474,7 @@ namespace
 
 struct PackArchive::Internals
 {
+    DpngConverter dpng_converter;
     EncryptionType encryption_type;
     std::string key1;
     std::string key2;
@@ -498,6 +500,8 @@ void PackArchive::add_cli_help(ArgParser &arg_parser) const
 
     arg_parser.add_help(
         "--gameexe=PATH", "Selects path to game executable.\n");
+
+    internals->dpng_converter.add_cli_help(arg_parser);
 }
 
 void PackArchive::parse_cli_options(ArgParser &arg_parser)
@@ -536,6 +540,8 @@ void PackArchive::parse_cli_options(ArgParser &arg_parser)
         if (!found)
             throw std::runtime_error("Cannot find the key in the .exe file");
     }
+
+    internals->dpng_converter.parse_cli_options(arg_parser);
 }
 
 void PackArchive::unpack_internal(File &file, FileSaver &file_saver) const
@@ -550,12 +556,15 @@ void PackArchive::unpack_internal(File &file, FileSaver &file_saver) const
     Table table = read_table(file.io, version);
     for (auto &table_entry : table)
     {
-        file_saver.save(read_file(
+        auto subfiles = read_files(
             file.io,
             *table_entry,
             version,
             internals->encryption_type,
             internals->key1,
-            internals->key2));
+            internals->key2);
+        for (auto &subfile : subfiles)
+            internals->dpng_converter.try_decode(*subfile);
+        file_saver.save(std::move(subfiles));
     }
 }

@@ -63,7 +63,7 @@ CLI invocation                        | Game                                | Fe
 `--fmt=npa_sg`                        | Steins;Gate                         | ![][sup]![][sup]![][sup]
 `--fmt=pac`                           | Maji de Watashi ni Koishinasai!     | ![][sup]![][sup]![][sup]
 `--fmt=pack`                          | Soshite Ashita no Sekai yori        | ![][sup]![][sup]![][sup]
-`--fmt=pack --fkey=... --gameexe=...` | Koiken Otome                        | ![][sup]![][par]![][sup]
+`--fmt=pack --fkey=... --gameexe=...` | Koiken Otome                        | ![][sup]![][sup]![][sup]
 `--fmt=exe`                           | Generic `.exe` resources            | ![][sup]![][nap]![][nap]
 
 ### Files

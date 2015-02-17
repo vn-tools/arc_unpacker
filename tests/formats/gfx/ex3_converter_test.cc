@@ -30,4 +30,3 @@ int main(void)
     test_ex3_decoding();
     return 0;
 }
-

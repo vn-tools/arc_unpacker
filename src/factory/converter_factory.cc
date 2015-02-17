@@ -1,6 +1,7 @@
 #include <functional>
 #include "factory/converter_factory.h"
 #include "formats/gfx/cbg_converter.h"
+#include "formats/gfx/dpng_converter.h"
 #include "formats/gfx/ex3_converter.h"
 #include "formats/gfx/g00_converter.h"
 #include "formats/gfx/mgd_converter.h"
@@ -27,6 +28,7 @@ struct ConverterFactory::Internals
 
 ConverterFactory::ConverterFactory() : internals(new Internals)
 {
+    internals->add_format("dpng", []() { return new DpngConverter(); });
     internals->add_format("bgi-sound", []() { return new BgiConverter(); });
     internals->add_format("ex3", []() { return new Ex3Converter(); });
     internals->add_format("tlg", []() { return new TlgConverter(); });

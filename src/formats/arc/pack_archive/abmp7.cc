@@ -33,13 +33,11 @@ namespace
     }
 }
 
-bool abmp7_unpack(std::vector<std::unique_ptr<File>> &files, File &b_file)
+void abmp7_unpack(std::vector<std::unique_ptr<File>> &files, File &b_file)
 {
     b_file.io.seek(0);
-    if (b_file.io.size() < 12)
-        return false;
     if (b_file.io.read(magic.size()) != magic)
-        return false;
+        throw std::runtime_error("Not an ABMP7 container");
 
     b_file.io.seek(12);
     b_file.io.skip(b_file.io.read_u32_le());
@@ -47,5 +45,4 @@ bool abmp7_unpack(std::vector<std::unique_ptr<File>> &files, File &b_file)
     read_first_file(files, b_file);
     while (b_file.io.tell() < b_file.io.size())
         read_next_file(files, b_file);
-    return true;
 }

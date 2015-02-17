@@ -70,12 +70,12 @@ namespace
     }
 }
 
-bool abmp10_unpack(std::vector<std::unique_ptr<File>> &files, File &b_file)
+void abmp10_unpack(std::vector<std::unique_ptr<File>> &files, File &b_file)
 {
     b_file.io.seek(0);
     int version = get_version(b_file.io);
     if (!version)
-        return false;
+        throw std::runtime_error("Not an ABMP10 container");
 
     while (b_file.io.tell() < b_file.io.size())
     {
@@ -112,5 +112,4 @@ bool abmp10_unpack(std::vector<std::unique_ptr<File>> &files, File &b_file)
         else
             throw std::runtime_error("Unknown section " + magic);
     }
-    return true;
 }
