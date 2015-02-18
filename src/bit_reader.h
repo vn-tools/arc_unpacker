@@ -1,10 +1,12 @@
 #ifndef BIT_READER_H
 #define BIT_READER_H
 #include <memory>
+#include "io.h"
 
 class BitReader
 {
 public:
+    BitReader(IO &io);
     BitReader(const char *buffer, size_t buffer_size);
     ~BitReader();
 

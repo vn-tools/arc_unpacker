@@ -88,6 +88,34 @@ namespace
     }
 }
 
+namespace
+{
+    class IoBasedReader : public Reader
+    {
+    private:
+        IO &io;
+
+    public:
+        IoBasedReader(IO &io);
+        bool eof() override;
+        uint8_t fetch_byte() override;
+    };
+
+    IoBasedReader::IoBasedReader(IO &io) : io(io)
+    {
+    }
+
+    bool IoBasedReader::eof()
+    {
+        return io.tell() >= io.size();
+    }
+
+    uint8_t IoBasedReader::fetch_byte()
+    {
+        return io.read_u8();
+    }
+}
+
 struct BitReader::Internals
 {
     std::unique_ptr<Reader> reader;
@@ -101,6 +129,13 @@ struct BitReader::Internals
     }
 };
 
+BitReader::BitReader(IO &io)
+    : internals(
+        new Internals(
+            std::unique_ptr<Reader>(
+                new IoBasedReader(io))))
+{
+}
 
 BitReader::BitReader(const char *buffer, size_t buffer_size)
     : internals(
