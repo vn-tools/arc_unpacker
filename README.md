@@ -64,6 +64,7 @@ CLI invocation                        | Game                                | Fe
 `--fmt=pac`                           | Maji de Watashi ni Koishinasai!     | ![][sup]![][sup]![][sup]
 `--fmt=pack`                          | Soshite Ashita no Sekai yori        | ![][sup]![][sup]![][sup]
 `--fmt=pack --fkey=... --gameexe=...` | Koiken Otome                        | ![][sup]![][sup]![][sup]
+`--fmt=pbg3`                          | Touhou 06                           | ![][sup]![][sup]![][sup]
 `--fmt=exe`                           | Generic `.exe` resources            | ![][sup]![][nap]![][nap]
 
 ### Files

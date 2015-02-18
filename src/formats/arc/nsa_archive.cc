@@ -60,6 +60,7 @@ namespace
         return table;
     }
 
+    // TODO: almost the same code is in PBG3
     void decompress_lzss(std::string &data, size_t size_original)
     {
         BitReader bit_reader(data.data(), data.size());
@@ -82,9 +83,7 @@ namespace
         size_t written = 0;
         while (written < size_original)
         {
-            bool flag = bit_reader.get(1) > 0;
-
-            if (flag)
+            if (bit_reader.get(1))
             {
                 unsigned char byte = bit_reader.get(8);
                 output.push_back(byte);
