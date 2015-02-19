@@ -9,7 +9,8 @@
 
 #include <cstdio>
 #include "formats/arc/exe_archive.h"
-#include "string_ex.h"
+#include "string/encoding.h"
+#include "string/itos.h"
 
 namespace
 {
@@ -363,10 +364,7 @@ namespace
             case 24: return "MANIFEST";
         }
 
-        //no std::stoi on cygwin and mingw
-        char x[10];
-        sprintf(x, "%d", entry.id);
-        return std::string(x);
+        return itos(entry.id);
     }
 
     void process_image_resource_data_entry(

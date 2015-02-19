@@ -1,5 +1,6 @@
 #include "formats/arc/pack_archive/abmp10.h"
-#include "string_ex.h"
+#include "string/encoding.h"
+#include "string/itos.h"
 
 namespace
 {
@@ -95,7 +96,7 @@ void abmp10_unpack(std::vector<std::unique_ptr<File>> &files, File &b_file)
             for (size_t i = 0; i < image_count; i ++)
             {
                 auto subfile = read_subfile(
-                    b_file.io, b_file.name + "_" + stoi(i));
+                    b_file.io, b_file.name + "_" + itos(i));
                 files.push_back(std::move(subfile));
             }
         }
@@ -105,7 +106,7 @@ void abmp10_unpack(std::vector<std::unique_ptr<File>> &files, File &b_file)
             for (size_t i = 0; i < sound_count; i ++)
             {
                 auto subfile = read_subfile(
-                    b_file.io, b_file.name + "_" + stoi(i));
+                    b_file.io, b_file.name + "_" + itos(i));
                 files.push_back(std::move(subfile));
             }
         }

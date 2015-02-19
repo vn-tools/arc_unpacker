@@ -1,14 +1,10 @@
-#ifndef STRING_EX_H
-#define STRING_EX_H
+#ifndef STRING_ENCODING_H
+#define STRING_ENCODING_H
 #include <string>
 
 std::string convert_encoding(
     const std::string &input,
     const std::string &from,
     const std::string &to);
-
-std::string zlib_inflate(const std::string &input);
-
-std::string stoi(int i);
 
 #endif

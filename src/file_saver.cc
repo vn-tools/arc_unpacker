@@ -3,7 +3,7 @@
 #include "file_saver.h"
 #include "fs.h"
 #include "logger.h"
-#include "string_ex.h"
+#include "string/itos.h"
 
 void FileSaver::save(std::vector<std::unique_ptr<File>> files) const
 {
@@ -36,7 +36,7 @@ struct FileSaverHdd::Internals
         {
             std::string dir = dirname(path);
             std::string name = basename(path);
-            std::string suffix = "(" + stoi(i ++) + ")";
+            std::string suffix = "(" + itos(i ++) + ")";
             size_t pos = name.rfind(".");
             name = pos != std::string::npos
                 ? name.substr(0, pos) + suffix + name.substr(pos)

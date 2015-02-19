@@ -1,5 +1,5 @@
 #include "formats/arc/nsa_archive.h"
-#include "string_ex.h"
+#include "string/zlib.h"
 #include "test_support/archive_support.h"
 
 void test_nsa_archive_uncompressed()

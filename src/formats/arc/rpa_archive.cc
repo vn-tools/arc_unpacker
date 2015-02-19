@@ -11,7 +11,7 @@
 
 #include "buffered_io.h"
 #include "formats/arc/rpa_archive.h"
-#include "string_ex.h"
+#include "string/zlib.h"
 
 // Stupid unpickle "implementation" ahead: instead of twiddling with stack,
 // arrays, dictionaries and all that crap, just remember all pushed strings

@@ -9,7 +9,7 @@
 
 #include "formats/arc/mbl_archive.h"
 #include "formats/gfx/prs_converter.h"
-#include "string_ex.h"
+#include "string/encoding.h"
 
 namespace
 {

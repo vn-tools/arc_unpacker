@@ -1,6 +1,6 @@
 #include "file_io.h"
 #include "formats/gfx/ex3_converter.h"
-#include "string_ex.h"
+#include "string/zlib.h"
 #include "test_support/eassert.h"
 
 void test_ex3_decoding()

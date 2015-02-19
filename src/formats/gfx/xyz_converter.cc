@@ -13,7 +13,7 @@
 #include "formats/gfx/xyz_converter.h"
 #include "formats/image.h"
 #include "io.h"
-#include "string_ex.h"
+#include "string/zlib.h"
 
 namespace
 {

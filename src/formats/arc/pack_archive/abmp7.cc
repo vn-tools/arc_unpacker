@@ -1,5 +1,5 @@
 #include "formats/arc/pack_archive/abmp7.h"
-#include "string_ex.h"
+#include "string/encoding.h"
 
 namespace
 {

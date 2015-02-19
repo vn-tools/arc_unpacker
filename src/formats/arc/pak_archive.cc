@@ -9,7 +9,8 @@
 
 #include "buffered_io.h"
 #include "formats/arc/pak_archive.h"
-#include "string_ex.h"
+#include "string/encoding.h"
+#include "string/zlib.h"
 
 namespace
 {

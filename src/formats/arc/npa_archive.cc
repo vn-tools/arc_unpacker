@@ -10,7 +10,8 @@
 #include "formats/arc/npa_archive.h"
 #include "formats/arc/npa_archive/npa_filter.h"
 #include "formats/arc/npa_archive/npa_filter_chaos_head.h"
-#include "string_ex.h"
+#include "string/encoding.h"
+#include "string/zlib.h"
 
 namespace
 {

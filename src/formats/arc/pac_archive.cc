@@ -10,7 +10,7 @@
 #include "buffered_io.h"
 #include "bit_reader.h"
 #include "formats/arc/pac_archive.h"
-#include "string_ex.h"
+#include "string/zlib.h"
 
 namespace
 {

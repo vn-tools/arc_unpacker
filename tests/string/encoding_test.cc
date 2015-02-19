@@ -1,7 +1,5 @@
-#include <cstdlib>
-#include <cstring>
+#include "string/encoding.h"
 #include "test_support/eassert.h"
-#include "string_ex.h"
 
 // sjis の"あいうえおかきくけこさしすせそたちつてと"
 const std::string sjis(
@@ -33,20 +31,8 @@ void test_utf8_to_sjis()
     eassert(convert_encoding(utf8, "utf-8", "sjis") == sjis);
 }
 
-void test_zlib_inflate()
-{
-    std::string input(
-        "\x78\xda\xcb\xc9\x4c\x4b\x55\xc8"
-        "\x2c\x56\x48\xce\x4f\x49\xe5\x02"
-        "\x00\x20\xc1\x04\x62\x0a",
-        21);
-
-    eassert(zlib_inflate(input) == "life is code\n");
-}
-
 int main(void)
 {
-    test_zlib_inflate();
     test_sjis_to_utf8();
     test_utf8_to_sjis();
     return 0;

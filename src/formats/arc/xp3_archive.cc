@@ -20,7 +20,8 @@
 #include "formats/arc/xp3_archive/xp3_filter_fsn.h"
 #include "formats/arc/xp3_archive/xp3_filter_noop.h"
 #include "formats/gfx/tlg_converter.h"
-#include "string_ex.h"
+#include "string/encoding.h"
+#include "string/zlib.h"
 
 namespace
 {
