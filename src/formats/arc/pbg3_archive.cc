@@ -10,8 +10,8 @@
 #include "bit_reader.h"
 #include "buffered_io.h"
 #include "formats/arc/pbg3_archive.h"
+#include "string/lzss.h"
 
-#include <iostream>
 namespace
 {
     const std::string magic("PBG3", 4);
@@ -72,57 +72,6 @@ namespace
         return table;
     }
 
-    // TODO: almost the same code is in NSA
-    std::string decompress_lzss(BitReader &bit_reader, size_t size_original)
-    {
-        const size_t position_bits = 13;
-        const size_t length_bits = 4;
-        const size_t min_match_length = 3;
-        const size_t initial_dictionary_pos = 1;
-        const bool reuse_compressed = true;
-
-        std::string output;
-        size_t dictionary_size = 1 << position_bits;
-        size_t dictionary_pos = initial_dictionary_pos;
-        std::unique_ptr<unsigned char> dictionary(
-            new unsigned char[dictionary_size]);
-
-        unsigned char *dictionary_ptr = dictionary.get();
-
-        while (output.size() < size_original)
-        {
-            if (bit_reader.get(1) > 0)
-            {
-                unsigned char byte = bit_reader.get(8);
-                output.push_back(byte);
-                dictionary_ptr[dictionary_pos] = byte;
-                dictionary_pos ++;
-                dictionary_pos %= dictionary_size;
-            }
-            else
-            {
-                unsigned int pos = bit_reader.get(position_bits);
-                unsigned int length = bit_reader.get(length_bits);
-                length += min_match_length;
-                for (size_t i = 0; i < length; i ++)
-                {
-                    unsigned char byte = dictionary_ptr[pos];
-                    pos += 1;
-                    pos %= dictionary_size;
-
-                    if (reuse_compressed)
-                    {
-                        dictionary_ptr[dictionary_pos] = byte;
-                        dictionary_pos ++;
-                        dictionary_pos %= dictionary_size;
-                    }
-                    output.push_back(byte);
-                }
-            }
-        }
-
-        return output;
-    }
 
     std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &table_entry)
     {
@@ -131,7 +80,14 @@ namespace
 
         arc_io.seek(table_entry.offset);
         BitReader bit_reader(arc_io);
-        file->io.write(decompress_lzss(bit_reader, table_entry.size));
+
+        LzssSettings settings;
+        settings.position_bits = 13;
+        settings.length_bits = 4;
+        settings.min_match_length = 3;
+        settings.initial_dictionary_pos = 1;
+        settings.reuse_compressed = true;
+        file->io.write(lzss_decompress(bit_reader, table_entry.size, settings));
 
         return file;
     }

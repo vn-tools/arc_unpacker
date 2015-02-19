@@ -9,8 +9,10 @@
 // - Umineko no naku koro ni
 
 #include "bit_reader.h"
+#include "buffered_io.h"
 #include "formats/arc/nsa_archive.h"
 #include "formats/gfx/spb_converter.h"
+#include "string/lzss.h"
 
 namespace
 {
@@ -60,64 +62,6 @@ namespace
         return table;
     }
 
-    // TODO: almost the same code is in PBG3
-    void decompress_lzss(std::string &data, size_t size_original)
-    {
-        BitReader bit_reader(data.data(), data.size());
-
-        const size_t position_bits = 8;
-        const size_t length_bits = 4;
-        const size_t min_match_length = 2;
-        const size_t initial_dictionary_pos = 239;
-        const bool reuse_compressed = true;
-
-        std::string output;
-        output.reserve(size_original);
-        size_t dictionary_size = 1 << position_bits;
-        size_t dictionary_pos = initial_dictionary_pos;
-        std::unique_ptr<unsigned char> dictionary(
-            new unsigned char[dictionary_size]);
-
-        unsigned char *dictionary_ptr = dictionary.get();
-
-        size_t written = 0;
-        while (written < size_original)
-        {
-            if (bit_reader.get(1))
-            {
-                unsigned char byte = bit_reader.get(8);
-                output.push_back(byte);
-                written ++;
-                dictionary_ptr[dictionary_pos] = byte;
-                dictionary_pos ++;
-                dictionary_pos &= (dictionary_size - 1);
-            }
-            else
-            {
-                unsigned int pos = bit_reader.get(position_bits);
-                unsigned int length = bit_reader.get(length_bits);
-                length += min_match_length;
-                for (size_t i = 0; i < length && written < size_original; i ++)
-                {
-                    unsigned char byte = dictionary_ptr[pos];
-                    pos += 1;
-                    pos &= (dictionary_size - 1);
-
-                    if (reuse_compressed)
-                    {
-                        dictionary_ptr[dictionary_pos] = byte;
-                        dictionary_pos ++;
-                        dictionary_pos &= (dictionary_size - 1);
-                    }
-                    output.push_back(byte);
-                    written ++;
-                }
-            }
-        }
-
-        data = output;
-    }
-
     std::unique_ptr<File> read_file(
         IO &arc_io, const TableEntry &table_entry, SpbConverter &spb_converter)
     {
@@ -134,9 +78,22 @@ namespace
                 break;
 
             case COMPRESSION_LZSS:
-                decompress_lzss(data, table_entry.size_original);
-                file->io.write(data);
+            {
+                BufferedIO data_io(data);
+                BitReader bit_reader(data_io);
+
+                LzssSettings settings;
+                settings.position_bits = 8;
+                settings.length_bits = 4;
+                settings.min_match_length = 2;
+                settings.initial_dictionary_pos = 239;
+                settings.reuse_compressed = true;
+                file->io.write(lzss_decompress(
+                    bit_reader,
+                    table_entry.size_original,
+                    settings));
                 break;
+            }
 
             case COMPRESSION_SPB:
                 file->io.write(data);
