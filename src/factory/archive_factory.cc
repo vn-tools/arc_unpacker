@@ -18,6 +18,7 @@
 #include "formats/arc/sar_archive.h"
 #include "formats/arc/xp3_archive.h"
 #include "formats/arc/ykc_archive.h"
+#include "formats/gfx/anm_archive.h"
 
 struct ArchiveFactory::Internals
 {
@@ -50,6 +51,7 @@ ArchiveFactory::ArchiveFactory() : internals(new Internals)
     internals->add_format("mbl", []() { return new MblArchive(); });
     internals->add_format("nsa", []() { return new NsaArchive(); });
     internals->add_format("sar", []() { return new SarArchive(); });
+    internals->add_format("anm", []() { return new AnmArchive(); });
 }
 
 ArchiveFactory::~ArchiveFactory()

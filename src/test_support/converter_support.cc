@@ -28,7 +28,7 @@ namespace
         }
     }
 
-    std::unique_ptr<Image> get_actual_image(
+    std::unique_ptr<Image> image_from_converter(
         const std::string path, Converter &converter)
     {
         FileIO io(path, "rb");
@@ -38,11 +38,19 @@ namespace
         return std::unique_ptr<Image>(Image::from_boxed(file.io));
     }
 
-    std::unique_ptr<Image> get_expected_image(const std::string path)
+    std::unique_ptr<Image> image_from_path(const std::string path)
     {
         FileIO io(path, "rb");
         return std::unique_ptr<Image>(Image::from_boxed(io));
     }
+}
+
+void assert_decoded_image(const File &actual_file, const File &expected_file)
+{
+    auto actual_image = Image::from_boxed(actual_file.io);
+    auto expected_image = Image::from_boxed(expected_file.io);
+
+    compare_images(*expected_image, *actual_image);
 }
 
 void assert_decoded_image(
@@ -50,8 +58,8 @@ void assert_decoded_image(
     const std::string &path_to_input,
     const std::string &path_to_expected)
 {
-    auto actual_image = get_actual_image(path_to_input, converter);
-    auto expected_image = get_expected_image(path_to_expected);
+    auto actual_image = image_from_converter(path_to_input, converter);
+    auto expected_image = image_from_path(path_to_expected);
 
     compare_images(*expected_image, *actual_image);
 }

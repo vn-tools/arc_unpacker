@@ -3,6 +3,8 @@
 #include <string>
 #include "formats/converter.h"
 
+void assert_decoded_image(const File &actual_file, const File &expected_file);
+
 void assert_decoded_image(
     Converter &converter,
     const std::string &path_to_input,

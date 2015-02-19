@@ -9,6 +9,7 @@
 
 #include "buffered_io.h"
 #include "formats/arc/pbg4_archive.h"
+#include "formats/gfx/anm_archive.h"
 #include "string/lzss.h"
 
 namespace
@@ -88,6 +89,19 @@ namespace
     }
 }
 
+struct Pbg4Archive::Internals
+{
+    AnmArchive anm_archive;
+};
+
+Pbg4Archive::Pbg4Archive() : internals(new Internals())
+{
+}
+
+Pbg4Archive::~Pbg4Archive()
+{
+}
+
 void Pbg4Archive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
@@ -103,5 +117,15 @@ void Pbg4Archive::unpack_internal(File &file, FileSaver &file_saver) const
     auto table = read_table(buf_io, *header);
 
     for (auto &table_entry : table)
-        file_saver.save(read_file(buf_io, *table_entry));
+    {
+        auto subfile = read_file(buf_io, *table_entry);
+        try
+        {
+            internals->anm_archive.unpack(*subfile, file_saver);
+        }
+        catch (...)
+        {
+            file_saver.save(std::move(subfile));
+        }
+    }
 }

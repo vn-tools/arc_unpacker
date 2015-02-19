@@ -7,9 +7,9 @@
 // Known games:
 // - Touhou 06 - The Embodiment of Scarlet Devil
 
-#include "bit_reader.h"
 #include "buffered_io.h"
 #include "formats/arc/pbg3_archive.h"
+#include "formats/gfx/anm_archive.h"
 #include "string/lzss.h"
 
 namespace
@@ -92,6 +92,19 @@ namespace
     }
 }
 
+struct Pbg3Archive::Internals
+{
+    AnmArchive anm_archive;
+};
+
+Pbg3Archive::Pbg3Archive() : internals(new Internals())
+{
+}
+
+Pbg3Archive::~Pbg3Archive()
+{
+}
+
 void Pbg3Archive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
@@ -107,5 +120,15 @@ void Pbg3Archive::unpack_internal(File &file, FileSaver &file_saver) const
     auto table = read_table(buf_io, *header);
 
     for (auto &table_entry : table)
-        file_saver.save(read_file(buf_io, *table_entry));
+    {
+        auto subfile = read_file(buf_io, *table_entry);
+        try
+        {
+            internals->anm_archive.unpack(*subfile, file_saver);
+        }
+        catch (...)
+        {
+            file_saver.save(std::move(subfile));
+        }
+    }
 }
