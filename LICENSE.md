@@ -20,7 +20,7 @@ These projects are listed below.
 
 
 
-ae (https://github.com/dsp2003/ae)
+[ae](https://github.com/dsp2003/ae)
 -------------------------------------------------------------------------------
 
 AE - VN Tools
@@ -64,7 +64,7 @@ possibility of such damage.
 
 
 
-arc_conv (https://github.com/dsp2003/arc_conv)
+[arc_conv](https://github.com/dsp2003/arc_conv)
 -------------------------------------------------------------------------------
 
 No license.
@@ -78,14 +78,14 @@ Licensed under GPL v3.
 
 
 
-ExtractData (https://github.com/lioncash/ExtractData)
+[ExtractData](https://github.com/lioncash/ExtractData)
 -------------------------------------------------------------------------------
 
 Licensed under GPL v2.
 
 
 
-Kirikiri Z (https://github.com/krkrz/krkrz)
+[Kirikiri Z](https://github.com/krkrz/krkrz)
 -------------------------------------------------------------------------------
 
 Copyright (c), W.Dee and contributors All rights reserved.
@@ -120,14 +120,14 @@ Katsumasa Tsuneyoshi, 小池潤, miahmie, サークル獏, アザナシ, はっ�
 
 
 
-nipa (https://github.com/Wilhansen/nipa)
+[nipa](https://github.com/Wilhansen/nipa)
 -------------------------------------------------------------------------------
 
 No license.
 
 
 
-rldev (https://github.com/eglaysher/rldev)
+[rldev](https://github.com/eglaysher/rldev)
 -------------------------------------------------------------------------------
 
 Programs and documentation are copyright (C) 2006 Peter Jolly (Haeleth).
@@ -136,7 +136,7 @@ Licensed under GPL v2.
 
 
 
-rlvm (https://github.com/eglaysher/rlvm)
+[rlvm](https://github.com/eglaysher/rlvm)
 -------------------------------------------------------------------------------
 
 Copyright (C) 2006-2011 Elliot Glaysher
@@ -145,7 +145,7 @@ Licensed under GPL v3.
 
 
 
-vgmstream (https://github.com/kode54/vgmstream)
+[vgmstream](https://github.com/kode54/vgmstream)
 -------------------------------------------------------------------------------
 
 Copyright (c) 2008-2010 Adam Gashlin, Fastelbja, Ronny Elfert
@@ -171,14 +171,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
 
-mkxp (https://github.com/Ancurio/mkxp)
+[mkxp](https://github.com/Ancurio/mkxp)
 -------------------------------------------------------------------------------
 
 Licensed under GPL v2.
 
 
 
-Tools by asmodean (http://asmodean.reverse.net/pages/tools_index.html)
+[Tools by asmodean](http://asmodean.reverse.net/pages/tools_index.html)
 -------------------------------------------------------------------------------
 
 No license.
