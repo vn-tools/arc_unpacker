@@ -1,6 +1,15 @@
 #include "string/lzss.h"
 
 std::string lzss_decompress(
+    const std::string &input,
+    size_t size_original,
+    const LzssSettings &settings)
+{
+    BitReader bit_reader(input.data(), input.size());
+    return lzss_decompress(bit_reader, size_original, settings);
+}
+
+std::string lzss_decompress(
     BitReader &bit_reader,
     size_t size_original,
     const LzssSettings &settings)

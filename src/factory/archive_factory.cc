@@ -12,6 +12,7 @@
 #include "formats/arc/pack_archive.h"
 #include "formats/arc/pak_archive.h"
 #include "formats/arc/pbg3_archive.h"
+#include "formats/arc/pbg4_archive.h"
 #include "formats/arc/rgssad_archive.h"
 #include "formats/arc/rpa_archive.h"
 #include "formats/arc/sar_archive.h"
@@ -32,6 +33,7 @@ struct ArchiveFactory::Internals
 ArchiveFactory::ArchiveFactory() : internals(new Internals)
 {
     internals->add_format("pbg3", []() { return new Pbg3Archive(); });
+    internals->add_format("pbg4", []() { return new Pbg4Archive(); });
     internals->add_format("pack", []() { return new PackArchive(); });
     internals->add_format("pac", []() { return new PacArchive(); });
     internals->add_format("exe", []() { return new ExeArchive(); });

@@ -1,30 +1,29 @@
-// PBG3 archive
+// PBG4 archive
 //
 // Company:   Team Shanghai Alice
 // Engine:    -
 // Extension: .dat
 //
 // Known games:
-// - Touhou 06 - The Embodiment of Scarlet Devil
+// - Touhou 07 - Perfect Cherry Blossom
 
-#include "bit_reader.h"
 #include "buffered_io.h"
-#include "formats/arc/pbg3_archive.h"
+#include "formats/arc/pbg4_archive.h"
 #include "string/lzss.h"
 
 namespace
 {
-    const std::string magic("PBG3", 4);
+    const std::string magic("PBG4", 4);
 
     typedef struct
     {
         size_t file_count;
         size_t table_offset;
+        size_t table_size;
     } Header;
 
     typedef struct
     {
-        uint32_t checksum;
         size_t size;
         size_t offset;
         std::string name;
@@ -32,41 +31,48 @@ namespace
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 
-    unsigned int read_integer(BitReader &bit_reader)
-    {
-        size_t integer_size = bit_reader.get(2) + 1;
-        return bit_reader.get(integer_size << 3);
-    }
-
     std::unique_ptr<Header> read_header(IO &arc_io)
     {
         std::unique_ptr<Header> header(new Header);
-        BitReader bit_reader(arc_io);
-        header->file_count = read_integer(bit_reader);
-        header->table_offset = read_integer(bit_reader);
+        header->file_count = arc_io.read_u32_le();
+        header->table_offset = arc_io.read_u32_le();
+        header->table_size = arc_io.read_u32_le();
         return header;
+    }
+
+    std::string lzss_decompress(IO &arc_io, size_t size_original)
+    {
+        LzssSettings settings;
+        settings.position_bits = 13;
+        settings.length_bits = 4;
+        settings.min_match_length = 3;
+        settings.initial_dictionary_pos = 1;
+        settings.reuse_compressed = true;
+        BitReader bit_reader(arc_io);
+        return ::lzss_decompress(bit_reader, size_original, settings);
     }
 
     Table read_table(IO &arc_io, Header &header)
     {
         Table table;
         arc_io.seek(header.table_offset);
-        BitReader bit_reader(arc_io);
+
+        BufferedIO table_io(lzss_decompress(arc_io, header.table_size));
         for (size_t i = 0; i < header.file_count; i ++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
-            read_integer(bit_reader);
-            read_integer(bit_reader);
-            table_entry->checksum = read_integer(bit_reader);
-            table_entry->offset = read_integer(bit_reader);
-            table_entry->size = read_integer(bit_reader);
-            for (size_t i = 0; i < 256; i ++)
+            while (true)
             {
-                char c = static_cast<char>(bit_reader.get(8));
+                char c = static_cast<char>(table_io.read_u8());
                 if (c == 0)
                     break;
                 table_entry->name.push_back(c);
             }
+
+            table_entry->offset = table_io.read_u32_le();
+            table_entry->size = table_io.read_u32_le();
+            table_io.skip(4);
+
             table.push_back(std::move(table_entry));
         }
         return table;
@@ -75,27 +81,17 @@ namespace
     std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &table_entry)
     {
         std::unique_ptr<File> file(new File);
-        file->name = table_entry.name;
-
         arc_io.seek(table_entry.offset);
-        BitReader bit_reader(arc_io);
-
-        LzssSettings settings;
-        settings.position_bits = 13;
-        settings.length_bits = 4;
-        settings.min_match_length = 3;
-        settings.initial_dictionary_pos = 1;
-        settings.reuse_compressed = true;
-        file->io.write(lzss_decompress(bit_reader, table_entry.size, settings));
-
+        file->io.write(lzss_decompress(arc_io, table_entry.size));
+        file->name = table_entry.name;
         return file;
     }
 }
 
-void Pbg3Archive::unpack_internal(File &file, FileSaver &file_saver) const
+void Pbg4Archive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a PBG3 archive");
+        throw std::runtime_error("Not a PBG4 archive");
 
     // works much faster when the whole archive resides in memory
     file.io.seek(0);
