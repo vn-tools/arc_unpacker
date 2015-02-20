@@ -4,15 +4,6 @@
 #include "endian.h"
 #include "io.h"
 
-std::string IO::read_until_zero()
-{
-    std::string output;
-    char c;
-    while ((c = read_u8()) != '\0')
-        output.push_back(c);
-    return output;
-}
-
 IO::~IO()
 {
 }
@@ -43,6 +34,24 @@ void IO::read_until_zero(char **output, size_t *output_size)
     while (c != '\0');
     if (output_size != nullptr)
         *output_size = size;
+}
+
+std::string IO::read_until_zero()
+{
+    std::string output;
+    char c;
+    while ((c = read_u8()) != '\0')
+        output.push_back(c);
+    return output;
+}
+
+std::string IO::read_until_zero(size_t bytes)
+{
+    std::string output = read(bytes);
+    size_t pos = output.find('\x00');
+    if (pos != std::string::npos)
+        output = output.substr(0, pos);
+    return output;
 }
 
 std::string IO::read(size_t bytes)
