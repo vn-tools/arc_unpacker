@@ -7,6 +7,7 @@
 // Known games:
 // - Koiken Otome
 // - Soshite Ashita no Sekai yori
+// - Kimihagu
 
 #include <cstring>
 #include "buffered_io.h"

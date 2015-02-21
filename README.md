@@ -63,6 +63,7 @@ CLI invocation                        | Game                                | Fe
 `--fmt=npa_sg`                        | Steins;Gate                         | ![][sup]![][sup]![][sup]
 `--fmt=pac`                           | Maji de Watashi ni Koishinasai!     | ![][sup]![][sup]![][sup]
 `--fmt=pack`                          | Soshite Ashita no Sekai yori        | ![][sup]![][sup]![][sup]
+`--fmt=pack`                          | Kimihagu                            | ![][sup]![][sup]![][sup]
 `--fmt=pack --fkey=... --gameexe=...` | Koiken Otome                        | ![][sup]![][sup]![][sup]
 `--fmt=pbg3`                          | Touhou 06                           | ![][sup]![][sup]![][sup]
 `--fmt=pbg4`                          | Touhou 07                           | ![][sup]![][sup]![][par]
