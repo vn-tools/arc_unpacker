@@ -8,6 +8,7 @@
 // - Souten No Celenaria - What a Beautiful World
 
 #include "formats/arc/xfl_archive.h"
+#include "formats/gfx/wcg_converter.h"
 
 namespace
 {
@@ -50,6 +51,30 @@ namespace
     }
 }
 
+
+struct XflArchive::Internals
+{
+    WcgConverter wcg_converter;
+};
+
+XflArchive::XflArchive() : internals(new Internals)
+{
+}
+
+XflArchive::~XflArchive()
+{
+}
+
+void XflArchive::add_cli_help(ArgParser &arg_parser) const
+{
+    internals->wcg_converter.add_cli_help(arg_parser);
+}
+
+void XflArchive::parse_cli_options(ArgParser &arg_parser)
+{
+    internals->wcg_converter.parse_cli_options(arg_parser);
+}
+
 void XflArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     if (file.io.read(magic.size()) != magic)
@@ -57,5 +82,9 @@ void XflArchive::unpack_internal(File &file, FileSaver &file_saver) const
 
     Table table = read_table(file.io);
     for (auto &table_entry : table)
-        file_saver.save(read_file(file.io, *table_entry));
+    {
+        auto subfile = read_file(file.io, *table_entry);
+        internals->wcg_converter.try_decode(*subfile);
+        file_saver.save(std::move(subfile));
+    }
 }

@@ -9,6 +9,7 @@
 #include "formats/gfx/sotes_converter.h"
 #include "formats/gfx/spb_converter.h"
 #include "formats/gfx/tlg_converter.h"
+#include "formats/gfx/wcg_converter.h"
 #include "formats/gfx/xyz_converter.h"
 #include "formats/gfx/ykg_converter.h"
 #include "formats/sfx/bgi_converter.h"
@@ -28,6 +29,7 @@ struct ConverterFactory::Internals
 
 ConverterFactory::ConverterFactory() : internals(new Internals)
 {
+    internals->add_format("wcg", []() { return new WcgConverter(); });
     internals->add_format("dpng", []() { return new DpngConverter(); });
     internals->add_format("bgi-sound", []() { return new BgiConverter(); });
     internals->add_format("ex3", []() { return new Ex3Converter(); });
