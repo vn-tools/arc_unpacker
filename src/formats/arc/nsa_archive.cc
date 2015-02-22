@@ -118,12 +118,12 @@ NsaArchive::~NsaArchive()
 {
 }
 
-void NsaArchive::unpack_internal(File &file, FileSaver &file_saver) const
+void NsaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    Table table = read_table(file.io);
+    Table table = read_table(arc_file.io);
     for (auto &table_entry : table)
     {
         file_saver.save(
-            read_file(file.io, *table_entry, internals->spb_converter));
+            read_file(arc_file.io, *table_entry, internals->spb_converter));
     }
 }

@@ -128,14 +128,14 @@ namespace
     }
 }
 
-void PacArchive::unpack_internal(File &file, FileSaver &file_saver) const
+void PacArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (file.io.read(magic.size()) != magic)
+    if (arc_file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a PAC archive");
 
-    size_t file_count = file.io.read_u32_le();
-    auto table = read_table(file.io, file_count);
+    size_t file_count = arc_file.io.read_u32_le();
+    auto table = read_table(arc_file.io, file_count);
 
     for (auto &table_entry : table)
-        file_saver.save(read_file(file.io, *table_entry));
+        file_saver.save(read_file(arc_file.io, *table_entry));
 }

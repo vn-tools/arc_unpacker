@@ -14,10 +14,7 @@ void test_nsa_archive_uncompressed()
 
     std::string path = "tests/test_files/arc/nsa/uncompressed.nsa";
     std::unique_ptr<Archive> archive(new NsaArchive);
-    auto output_files = unpack_to_memory(path, *archive);
-    auto actual_files = output_files->get_saved();
-
-    compare_files(expected_files, actual_files);
+    compare_files(expected_files,  unpack_to_memory(path, *archive));
 }
 
 void test_nsa_archive_lzss()
@@ -60,10 +57,7 @@ void test_nsa_archive_lzss()
 
     std::string path = "tests/test_files/arc/nsa/lzss.nsa";
     std::unique_ptr<Archive> archive(new NsaArchive);
-    auto output_files = unpack_to_memory(path, *archive);
-    auto actual_files = output_files->get_saved();
-
-    compare_files(expected_files, actual_files);
+    compare_files(expected_files,  unpack_to_memory(path, *archive));
 }
 
 int main(void)

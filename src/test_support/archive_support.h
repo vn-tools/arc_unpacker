@@ -11,6 +11,6 @@ std::unique_ptr<FileSaverMemory> unpack_to_memory(
 
 void compare_files(
     const std::vector<File*> &expected_files,
-    const std::vector<File*> &actual_files);
+    std::unique_ptr<FileSaverMemory> file_saver);
 
 #endif

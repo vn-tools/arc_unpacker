@@ -15,10 +15,7 @@ void test_pbg4_archive()
 
     std::string path = "tests/test_files/arc/pbg4/test.pbg4";
     std::unique_ptr<Archive> archive(new Pbg4Archive);
-    auto output_files = unpack_to_memory(path, *archive);
-    auto actual_files = output_files->get_saved();
-
-    compare_files(expected_files, actual_files);
+    compare_files(expected_files,  unpack_to_memory(path, *archive));
 }
 
 int main(void)

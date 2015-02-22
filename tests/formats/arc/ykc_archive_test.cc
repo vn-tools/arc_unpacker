@@ -13,10 +13,7 @@ void test_ykc_archive()
 
     std::string path = "tests/test_files/arc/ykc/test.ykc";
     std::unique_ptr<Archive> archive(new YkcArchive);
-    auto output_files = unpack_to_memory(path, *archive);
-    auto actual_files = output_files->get_saved();
-
-    compare_files(expected_files, actual_files);
+    compare_files(expected_files, unpack_to_memory(path, *archive));
 }
 
 int main(void)

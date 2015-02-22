@@ -209,8 +209,8 @@ namespace
         {
             try
             {
-                file_saver.save(read_and_decode(
-                    options, arg_parser, conv_factory, *path_info));
+                file_saver.save(std::move(read_and_decode(
+                    options, arg_parser, conv_factory, *path_info)));
             }
             catch (std::runtime_error &)
             {

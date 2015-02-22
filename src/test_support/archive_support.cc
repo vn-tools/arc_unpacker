@@ -17,13 +17,14 @@ std::unique_ptr<FileSaverMemory> unpack_to_memory(
 
 void compare_files(
     const std::vector<File*> &expected_files,
-    const std::vector<File*> &actual_files)
+    std::unique_ptr<FileSaverMemory> file_saver)
 {
+    auto actual_files = file_saver->get_saved();
     eassert(actual_files.size() == expected_files.size());
     for (size_t i = 0; i < expected_files.size(); i ++)
     {
-        auto *expected_file = expected_files[i];
-        auto *actual_file = actual_files[i];
+        auto &expected_file = expected_files[i];
+        auto &actual_file = actual_files[i];
         eassert(expected_file->name == actual_file->name);
         eassert(expected_file->io.size() == actual_file->io.size());
         expected_file->io.seek(0);

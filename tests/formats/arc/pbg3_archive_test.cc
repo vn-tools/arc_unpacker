@@ -15,10 +15,7 @@ void test_pbg3_archive()
 
     std::string path = "tests/test_files/arc/pbg3/test.pbg3";
     std::unique_ptr<Archive> archive(new Pbg3Archive);
-    auto output_files = unpack_to_memory(path, *archive);
-    auto actual_files = output_files->get_saved();
-
-    compare_files(expected_files, actual_files);
+    compare_files(expected_files,  unpack_to_memory(path, *archive));
 }
 
 int main(void)

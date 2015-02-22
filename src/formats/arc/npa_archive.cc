@@ -211,20 +211,20 @@ void NpaArchive::parse_cli_options(ArgParser &arg_parser)
     }
 }
 
-void NpaArchive::unpack_internal(File &file, FileSaver &file_saver) const
+void NpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (file.io.read(magic.size()) != magic)
+    if (arc_file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a NPA archive");
 
     if (internals->filter == nullptr)
         throw std::runtime_error("No plugin selected");
 
-    std::unique_ptr<Header> header = read_header(file.io);
+    std::unique_ptr<Header> header = read_header(arc_file.io);
 
-    Table table = read_table(file.io, *header, *internals->filter);
+    Table table = read_table(arc_file.io, *header, *internals->filter);
     for (size_t i = 0; i < table.size(); i ++)
     {
         file_saver.save(read_file(
-            file.io, *header, *internals->filter, *table[i]));
+            arc_file.io, *header, *internals->filter, *table[i]));
     }
 }

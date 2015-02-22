@@ -64,18 +64,18 @@ namespace
     }
 }
 
-void NpaSgArchive::unpack_internal(File &file, FileSaver &file_saver) const
+void NpaSgArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    size_t table_size = file.io.read_u32_le();
-    if (table_size > file.io.size())
+    size_t table_size = arc_file.io.read_u32_le();
+    if (table_size > arc_file.io.size())
         throw std::runtime_error("Bad table size");
 
     std::unique_ptr<char> table_bytes(new char[table_size]);
-    file.io.read(table_bytes.get(), table_size);
+    arc_file.io.read(table_bytes.get(), table_size);
     decrypt(table_bytes.get(), table_size);
 
     BufferedIO table_io(table_bytes.get(), table_size);
-    Table table = read_table(table_io, file.io);
+    Table table = read_table(table_io, arc_file.io);
     for (auto &table_entry : table)
-        file_saver.save(read_file(file.io, *table_entry));
+        file_saver.save(read_file(arc_file.io, *table_entry));
 }

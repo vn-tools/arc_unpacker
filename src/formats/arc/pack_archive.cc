@@ -545,27 +545,29 @@ void PackArchive::parse_cli_options(ArgParser &arg_parser)
     internals->dpng_converter.parse_cli_options(arg_parser);
 }
 
-void PackArchive::unpack_internal(File &file, FileSaver &file_saver) const
+void PackArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    size_t version = get_version(file.io);
+    size_t version = get_version(arc_file.io);
     if (!version)
         throw std::runtime_error("Not a PAC archive");
 
     if (version == 1 || version == 2)
         throw std::runtime_error("Version 1 and 2 are not supported.");
 
-    Table table = read_table(file.io, version);
+    Table table = read_table(arc_file.io, version);
     for (auto &table_entry : table)
     {
-        auto subfiles = read_files(
-            file.io,
+        auto files = read_files(
+            arc_file.io,
             *table_entry,
             version,
             internals->encryption_type,
             internals->key1,
             internals->key2);
-        for (auto &subfile : subfiles)
-            internals->dpng_converter.try_decode(*subfile);
-        file_saver.save(std::move(subfiles));
+        for (auto &file : files)
+        {
+            internals->dpng_converter.try_decode(*file);
+            file_saver.save(std::move(file));
+        }
     }
 }

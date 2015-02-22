@@ -5,12 +5,6 @@
 #include "logger.h"
 #include "string/itos.h"
 
-void FileSaver::save(std::vector<std::unique_ptr<File>> files) const
-{
-    for (auto &file : files)
-        save(std::move(file));
-}
-
 struct FileSaverHdd::Internals
 {
     std::string output_dir;
@@ -58,7 +52,7 @@ FileSaverHdd::~FileSaverHdd()
 {
 }
 
-void FileSaverHdd::save(std::unique_ptr<File> file) const
+void FileSaverHdd::save(const std::shared_ptr<File> &file) const
 {
     try
     {
@@ -85,7 +79,7 @@ void FileSaverHdd::save(std::unique_ptr<File> file) const
 
 struct FileSaverMemory::Internals
 {
-    std::vector<std::unique_ptr<File>> files;
+    std::vector<std::shared_ptr<File>> files;
 };
 
 FileSaverMemory::FileSaverMemory() : internals(new Internals)
@@ -96,15 +90,12 @@ FileSaverMemory::~FileSaverMemory()
 {
 }
 
-const std::vector<File*> FileSaverMemory::get_saved() const
+const std::vector<std::shared_ptr<File>> FileSaverMemory::get_saved() const
 {
-    std::vector<File*> files;
-    for (std::unique_ptr<File>& f : internals->files)
-        files.push_back(f.get());
-    return files;
+    return internals->files;
 }
 
-void FileSaverMemory::save(std::unique_ptr<File> file) const
+void FileSaverMemory::save(const std::shared_ptr<File> &file) const
 {
-    internals->files.push_back(std::move(file));
+    internals->files.push_back(file);
 }

@@ -8,8 +8,7 @@
 class FileSaver
 {
 public:
-    void save(std::vector<std::unique_ptr<File>> files) const;
-    virtual void save(std::unique_ptr<File> file) const = 0;
+    virtual void save(const std::shared_ptr<File> &file) const = 0;
 };
 
 class FileSaverHdd : public FileSaver
@@ -18,8 +17,7 @@ public:
     FileSaverHdd(std::string output_dir);
     ~FileSaverHdd();
 
-    using FileSaver::save;
-    virtual void save(std::unique_ptr<File> file) const override;
+    virtual void save(const std::shared_ptr<File> &file) const override;
 private:
     struct Internals;
     std::unique_ptr<Internals> internals;
@@ -31,10 +29,9 @@ public:
     FileSaverMemory();
     ~FileSaverMemory();
 
-    const std::vector<File*> get_saved() const;
+    const std::vector<std::shared_ptr<File>> get_saved() const;
 
-    using FileSaver::save;
-    virtual void save(std::unique_ptr<File> file) const override;
+    virtual void save(const std::shared_ptr<File> &file) const override;
 private:
     struct Internals;
     std::unique_ptr<Internals> internals;

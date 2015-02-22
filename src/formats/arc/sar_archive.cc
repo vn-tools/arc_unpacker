@@ -30,11 +30,11 @@ namespace
     }
 }
 
-void SarArchive::unpack_internal(File &file, FileSaver &file_saver) const
+void SarArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    uint16_t file_count = file.io.read_u16_be();
-    uint32_t offset_to_files = file.io.read_u32_be();
-    if (offset_to_files > file.io.size())
+    uint16_t file_count = arc_file.io.read_u16_be();
+    uint32_t offset_to_files = arc_file.io.read_u32_be();
+    if (offset_to_files > arc_file.io.size())
         throw std::runtime_error("Bad offset to files");
 
     std::vector<std::unique_ptr<TableEntry>> table;
@@ -42,14 +42,14 @@ void SarArchive::unpack_internal(File &file, FileSaver &file_saver) const
     for (size_t i = 0; i < file_count; i ++)
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = file.io.read_until_zero();
-        entry->offset = file.io.read_u32_be() + offset_to_files;
-        entry->size = file.io.read_u32_be();
-        if (entry->offset + entry->size > file.io.size())
+        entry->name = arc_file.io.read_until_zero();
+        entry->offset = arc_file.io.read_u32_be() + offset_to_files;
+        entry->size = arc_file.io.read_u32_be();
+        if (entry->offset + entry->size > arc_file.io.size())
             throw std::runtime_error("Bad offset to file");
         table.push_back(std::move(entry));
     }
 
     for (auto &table_entry : table)
-        file_saver.save(read_file(file.io, *table_entry));
+        file_saver.save(read_file(arc_file.io, *table_entry));
 }

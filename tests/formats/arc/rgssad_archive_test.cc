@@ -15,10 +15,7 @@ void test_rgssad_archive()
 
     std::string path = "tests/test_files/arc/rgssad/test.rgssad";
     std::unique_ptr<Archive> archive(new RgssadArchive);
-    auto output_files = unpack_to_memory(path, *archive);
-    auto actual_files = output_files->get_saved();
-
-    compare_files(expected_files, actual_files);
+    compare_files(expected_files, unpack_to_memory(path, *archive));
 }
 
 int main(void)

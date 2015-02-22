@@ -102,15 +102,15 @@ Pbg4Archive::~Pbg4Archive()
 {
 }
 
-void Pbg4Archive::unpack_internal(File &file, FileSaver &file_saver) const
+void Pbg4Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (file.io.read(magic.size()) != magic)
+    if (arc_file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a PBG4 archive");
 
     // works much faster when the whole archive resides in memory
-    file.io.seek(0);
+    arc_file.io.seek(0);
     BufferedIO buf_io;
-    buf_io.write_from_io(file.io, file.io.size());
+    buf_io.write_from_io(arc_file.io, arc_file.io.size());
     buf_io.seek(magic.size());
 
     auto header = read_header(buf_io);
@@ -118,14 +118,14 @@ void Pbg4Archive::unpack_internal(File &file, FileSaver &file_saver) const
 
     for (auto &table_entry : table)
     {
-        auto subfile = read_file(buf_io, *table_entry);
+        auto file = read_file(buf_io, *table_entry);
         try
         {
-            internals->anm_archive.unpack(*subfile, file_saver);
+            internals->anm_archive.unpack(*file, file_saver);
         }
         catch (...)
         {
-            file_saver.save(std::move(subfile));
+            file_saver.save(std::move(file));
         }
     }
 }

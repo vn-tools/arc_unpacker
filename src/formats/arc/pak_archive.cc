@@ -52,19 +52,19 @@ namespace
     }
 }
 
-void PakArchive::unpack_internal(File &file, FileSaver &file_saver) const
+void PakArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (file.io.read(magic.size()) != magic)
+    if (arc_file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a PAK archive");
 
-    uint32_t file_count = file.io.read_u32_le();
-    uint32_t table_size_original = file.io.read_u32_le();
-    uint32_t table_size_compressed = file.io.read_u32_le();
-    file.io.skip(0x104);
+    uint32_t file_count = arc_file.io.read_u32_le();
+    uint32_t table_size_original = arc_file.io.read_u32_le();
+    uint32_t table_size_compressed = arc_file.io.read_u32_le();
+    arc_file.io.skip(0x104);
 
-    BufferedIO table_io(zlib_inflate(file.io.read(table_size_compressed)));
-    size_t offset_to_files = file.io.tell();
+    BufferedIO table_io(zlib_inflate(arc_file.io.read(table_size_compressed)));
+    size_t offset_to_files = arc_file.io.tell();
 
     for (size_t i = 0; i < file_count; i ++)
-        file_saver.save(read_file(file.io, table_io, offset_to_files));
+        file_saver.save(read_file(arc_file.io, table_io, offset_to_files));
 }

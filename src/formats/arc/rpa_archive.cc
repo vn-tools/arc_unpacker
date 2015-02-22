@@ -284,16 +284,16 @@ namespace
     }
 }
 
-void RpaArchive::unpack_internal(File &file, FileSaver &file_saver) const
+void RpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    int version = check_version(file.io);
-    size_t table_offset = read_hex_number(file.io, 16);
+    int version = check_version(arc_file.io);
+    size_t table_offset = read_hex_number(arc_file.io, 16);
 
     uint32_t key;
     if (version == 3)
     {
-        file.io.skip(1);
-        key = read_hex_number(file.io, 8);
+        arc_file.io.skip(1);
+        key = read_hex_number(arc_file.io, 8);
     }
     else if (version == 2)
     {
@@ -304,10 +304,10 @@ void RpaArchive::unpack_internal(File &file, FileSaver &file_saver) const
         throw std::runtime_error("Not a RPA archive");
     }
 
-    file.io.seek(table_offset);
-    BufferedIO table_io(read_raw_table(file.io));
+    arc_file.io.seek(table_offset);
+    BufferedIO table_io(read_raw_table(arc_file.io));
     auto table = decode_table(table_io, key);
 
     for (auto &table_entry : table)
-        file_saver.save(read_file(file.io, *table_entry));
+        file_saver.save(read_file(arc_file.io, *table_entry));
 }

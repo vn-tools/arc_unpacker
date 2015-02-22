@@ -15,11 +15,7 @@ namespace
 {
     const std::string magic("PackFile    ", 12);
 
-    std::unique_ptr<File> read_file(
-        IO &arc_io,
-        const BgiConverter &bgi_converter,
-        const CbgConverter &cbg_converter,
-        size_t file_count)
+    std::unique_ptr<File> read_file(IO &arc_io, size_t file_count)
     {
         std::unique_ptr<File> file(new File);
 
@@ -38,9 +34,6 @@ namespace
         arc_io.seek(offset);
         file->io.write_from_io(arc_io, size);
         arc_io.seek(old_pos);
-
-        bgi_converter.try_decode(*file);
-        cbg_converter.try_decode(*file);
 
         return file;
     }
@@ -72,21 +65,20 @@ void ArcArchive::parse_cli_options(ArgParser &arg_parser)
     internals->cbg_converter.parse_cli_options(arg_parser);
 }
 
-void ArcArchive::unpack_internal(File &file, FileSaver &file_saver) const
+void ArcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (file.io.read(magic.size()) != magic)
+    if (arc_file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not an ARC archive");
 
-    size_t file_count = file.io.read_u32_le();
-    if (file_count * 32 > file.io.size())
+    size_t file_count = arc_file.io.read_u32_le();
+    if (file_count * 32 > arc_file.io.size())
         throw std::runtime_error("Bad file count");
 
     for (size_t i = 0; i < file_count; i ++)
     {
-        file_saver.save(read_file(
-            file.io,
-            internals->bgi_converter,
-            internals->cbg_converter,
-            file_count));
+        auto file = read_file(arc_file.io, file_count);
+        internals->bgi_converter.try_decode(*file);
+        internals->cbg_converter.try_decode(*file);
+        file_saver.save(std::move(file));
     }
 }

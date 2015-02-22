@@ -51,10 +51,7 @@ namespace
     }
 
     std::unique_ptr<File> read_file(
-        IO &arc_io,
-        TableEntry &table_entry,
-        bool encrypted,
-        Ex3Converter &ex3_converter)
+        IO &arc_io, TableEntry &table_entry, bool encrypted)
     {
         std::unique_ptr<File> file(new File);
         std::unique_ptr<char[]> data(new char[table_entry.size]);
@@ -68,7 +65,6 @@ namespace
         file->name = table_entry.name;
         file->io.write(ptr, table_entry.size);
 
-        ex3_converter.try_decode(*file);
         return file;
     }
 }
@@ -96,17 +92,18 @@ void PArchive::parse_cli_options(ArgParser &arg_parser)
     internals->ex3_converter.parse_cli_options(arg_parser);
 }
 
-void PArchive::unpack_internal(File &file, FileSaver &file_saver) const
+void PArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    uint32_t magic = file.io.read_u32_le();
+    uint32_t magic = arc_file.io.read_u32_le();
     if (magic != 0 && magic != 1)
         throw std::runtime_error("Not a P archive");
 
     bool encrypted = magic == 1;
-    Table table = read_table(file.io);
+    Table table = read_table(arc_file.io);
     for (auto &table_entry : table)
     {
-        file_saver.save(read_file(
-            file.io, *table_entry, encrypted, internals->ex3_converter));
+        auto file = read_file(arc_file.io, *table_entry, encrypted);
+        internals->ex3_converter.try_decode(*file);
+        file_saver.save(std::move(file));
     }
 }

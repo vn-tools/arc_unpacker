@@ -150,7 +150,6 @@ namespace
     std::unique_ptr<File> read_file(
         IO &arc_io,
         IO &table_io,
-        TlgConverter &tlg_converter,
         Xp3Filter *filter)
     {
         std::unique_ptr<File> target_file(new File());
@@ -174,8 +173,6 @@ namespace
 
         if (filter != nullptr)
             filter->decode(*target_file, encryption_key);
-
-        tlg_converter.try_decode(*target_file);
 
         return target_file;
     }
@@ -233,22 +230,20 @@ void Xp3Archive::parse_cli_options(ArgParser &arg_parser)
     internals->tlg_converter.parse_cli_options(arg_parser);
 }
 
-void Xp3Archive::unpack_internal(File &file, FileSaver &file_saver) const
+void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (!check_magic(file.io, xp3_magic))
+    if (!check_magic(arc_file.io, xp3_magic))
         throw std::runtime_error("Not an XP3 archive");
 
-    int version = detect_version(file.io);
-    uint64_t table_offset = get_table_offset(file.io, version);
-    file.io.seek((uint32_t)table_offset);
-    std::unique_ptr<IO> table_io = read_raw_table(file.io);
+    int version = detect_version(arc_file.io);
+    uint64_t table_offset = get_table_offset(arc_file.io, version);
+    arc_file.io.seek((uint32_t)table_offset);
+    std::unique_ptr<IO> table_io = read_raw_table(arc_file.io);
 
     while (table_io->tell() < table_io->size())
     {
-        file_saver.save(read_file(
-            file.io,
-            *table_io,
-            internals->tlg_converter,
-            internals->filter.get()));
+        auto file = read_file(arc_file.io, *table_io, internals->filter.get());
+        internals->tlg_converter.try_decode(*file);
+        file_saver.save(std::move(file));
     }
 }
