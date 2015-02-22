@@ -1,46 +1,49 @@
-// XFL archive
+// LWG archive
 //
 // Company:   Liar-soft
 // Engine:    -
-// Extension: .xfl
+// Extension: .lwg
 //
 // Known games:
 // - Souten No Celenaria - What a Beautiful World
 
 #include "formats/arc/lwg_archive.h"
-#include "formats/arc/xfl_archive.h"
 #include "formats/gfx/wcg_converter.h"
 #include "string/encoding.h"
 
 namespace
 {
-    const std::string magic("LB\x01\x00", 4);
+    const std::string magic("LG\x01\x00", 4);
 
     typedef struct
     {
         std::string name;
-        uint32_t offset;
-        uint32_t size;
+        size_t offset;
+        size_t size;
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 
     Table read_table(IO &arc_io)
     {
-        Table table;
-        size_t table_size = arc_io.read_u32_le();
         size_t file_count = arc_io.read_u32_le();
-        size_t file_start = arc_io.tell() + table_size;
+        arc_io.skip(4);
+        size_t table_size = arc_io.read_u32_le();
+        size_t file_start = arc_io.tell() + table_size + 4;
+
+        Table table;
         table.reserve(file_count);
         for (size_t i = 0; i < file_count; i ++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
-            table_entry->name = convert_encoding(
-                arc_io.read_until_zero(0x20), "cp932", "utf-8");
+            arc_io.skip(9);
             table_entry->offset = file_start + arc_io.read_u32_le();
             table_entry->size = arc_io.read_u32_le();
+            table_entry->name = convert_encoding(
+                arc_io.read(arc_io.read_u8()), "cp932", "utf-8");
             table.push_back(std::move(table_entry));
         }
+        size_t file_data_size = arc_io.read_u32_le();
         return table;
     }
 
@@ -55,51 +58,40 @@ namespace
 }
 
 
-struct XflArchive::Internals
+struct LwgArchive::Internals
 {
     WcgConverter wcg_converter;
-    LwgArchive lwg_archive;
 };
 
-XflArchive::XflArchive() : internals(new Internals)
+LwgArchive::LwgArchive() : internals(new Internals)
 {
 }
 
-XflArchive::~XflArchive()
+LwgArchive::~LwgArchive()
 {
 }
 
-void XflArchive::add_cli_help(ArgParser &arg_parser) const
+void LwgArchive::add_cli_help(ArgParser &arg_parser) const
 {
     internals->wcg_converter.add_cli_help(arg_parser);
 }
 
-void XflArchive::parse_cli_options(ArgParser &arg_parser)
+void LwgArchive::parse_cli_options(ArgParser &arg_parser)
 {
     internals->wcg_converter.parse_cli_options(arg_parser);
 }
 
-void XflArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
+void LwgArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     if (arc_file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not an XFL archive");
+        throw std::runtime_error("Not an LWG archive");
+    size_t image_width = arc_file.io.read_u32_le();
+    size_t image_height = arc_file.io.read_u32_le();
 
     Table table = read_table(arc_file.io);
     for (auto &table_entry : table)
     {
         auto file = read_file(arc_file.io, *table_entry);
-
-        FileSaverMemory file_saver_memory;
-        if (internals->lwg_archive.try_unpack(*file, file_saver_memory))
-        {
-            for (auto &subfile : file_saver_memory.get_saved())
-            {
-                subfile->name = file->name + "/" + subfile->name;
-                file_saver.save(std::move(subfile));
-            }
-            continue;
-        }
-
         internals->wcg_converter.try_decode(*file);
         file_saver.save(std::move(file));
     }

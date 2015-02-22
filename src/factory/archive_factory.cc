@@ -3,6 +3,7 @@
 #include "formats/arc/arc_archive.h"
 #include "formats/arc/exe_archive.h"
 #include "formats/arc/fjsys_archive.h"
+#include "formats/arc/lwg_archive.h"
 #include "formats/arc/mbl_archive.h"
 #include "formats/arc/npa_archive.h"
 #include "formats/arc/npa_sg_archive.h"
@@ -34,6 +35,7 @@ struct ArchiveFactory::Internals
 
 ArchiveFactory::ArchiveFactory() : internals(new Internals)
 {
+    internals->add_format("lwg", []() { return new LwgArchive(); });
     internals->add_format("xfl", []() { return new XflArchive(); });
     internals->add_format("pbg3", []() { return new Pbg3Archive(); });
     internals->add_format("pbg4", []() { return new Pbg4Archive(); });

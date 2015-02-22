@@ -67,7 +67,7 @@ CLI invocation                        | Game                                | Fe
 `--fmt=pack --fkey=... --gameexe=...` | Koiken Otome                        | ![][sup]![][sup]![][sup]
 `--fmt=pbg3`                          | Touhou 06                           | ![][sup]![][sup]![][sup]
 `--fmt=pbg4`                          | Touhou 07                           | ![][sup]![][sup]![][par]
-`--fmt=xfl`                           | Souten No Celenaria                 | ![][sup]![][par]![][sup]
+`--fmt=xfl`                           | Souten No Celenaria                 | ![][sup]![][sup]![][sup]
 `--fmt=exe`                           | Generic `.exe` resources            | ![][sup]![][nap]![][nap]
 
 ### Files
