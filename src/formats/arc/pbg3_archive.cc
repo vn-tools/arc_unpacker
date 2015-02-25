@@ -105,6 +105,16 @@ Pbg3Archive::~Pbg3Archive()
 {
 }
 
+void Pbg3Archive::add_cli_help(ArgParser &arg_parser) const
+{
+    internals->anm_archive.add_cli_help(arg_parser);
+}
+
+void Pbg3Archive::parse_cli_options(ArgParser &arg_parser)
+{
+    internals->anm_archive.parse_cli_options(arg_parser);
+}
+
 void Pbg3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     if (arc_file.io.read(magic.size()) != magic)

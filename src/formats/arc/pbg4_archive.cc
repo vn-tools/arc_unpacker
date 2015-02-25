@@ -102,6 +102,16 @@ Pbg4Archive::~Pbg4Archive()
 {
 }
 
+void Pbg4Archive::add_cli_help(ArgParser &arg_parser) const
+{
+    internals->anm_archive.add_cli_help(arg_parser);
+}
+
+void Pbg4Archive::parse_cli_options(ArgParser &arg_parser)
+{
+    internals->anm_archive.parse_cli_options(arg_parser);
+}
+
 void Pbg4Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     if (arc_file.io.read(magic.size()) != magic)
