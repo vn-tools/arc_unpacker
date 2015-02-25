@@ -14,6 +14,7 @@
 #include "formats/arc/pak_archive.h"
 #include "formats/arc/pbg3_archive.h"
 #include "formats/arc/pbg4_archive.h"
+#include "formats/arc/pbgz_archive.h"
 #include "formats/arc/rgssad_archive.h"
 #include "formats/arc/rpa_archive.h"
 #include "formats/arc/sar_archive.h"
@@ -35,6 +36,7 @@ struct ArchiveFactory::Internals
 
 ArchiveFactory::ArchiveFactory() : internals(new Internals)
 {
+    internals->add_format("pbgz", []() { return new PbgzArchive(); });
     internals->add_format("lwg", []() { return new LwgArchive(); });
     internals->add_format("xfl", []() { return new XflArchive(); });
     internals->add_format("pbg3", []() { return new Pbg3Archive(); });
