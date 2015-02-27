@@ -12,22 +12,30 @@
 #include <map>
 #include "buffered_io.h"
 #include "formats/arc/pbgz_archive.h"
+#include "formats/arc/pbgz_archive/crypt.h"
 #include "formats/gfx/anm_archive.h"
 #include "string/lzss.h"
 
 namespace
 {
-    const std::string crypt_magic("edz", 3);
-
-    inline size_t min(size_t a, size_t b) { return a < b ? a : b; }
+    const std::string magic("PBGZ", 4);
 
     typedef struct
     {
-        uint8_t key;
-        uint8_t step;
-        size_t block_size;
-        size_t limit;
-    } DecryptorContext;
+        size_t file_count;
+        size_t table_offset;
+        size_t table_size;
+    } Header;
+
+    typedef struct
+    {
+        size_t size_compressed;
+        size_t size_original;
+        size_t offset;
+        std::string name;
+    } TableEntry;
+
+    typedef std::vector<std::unique_ptr<TableEntry>> Table;
 
     std::vector<std::map<uint8_t, DecryptorContext>> decryptors
     {
@@ -52,56 +60,6 @@ namespace
             { 0x57, { 0x12, 0x34,  0x400, 0x2800 } },
         },
     };
-
-    void decrypt(
-        IO &input, int limit, IO &output, const DecryptorContext &context)
-    {
-        uint8_t key = context.key;
-        std::unique_ptr<char[]> input_block(new char[context.block_size]);
-        std::unique_ptr<char[]> output_block(new char[context.block_size]);
-        while (input.tell() < input.size()
-            && output.tell() < min(limit, context.limit))
-        {
-            size_t current_block_size
-                = min(input.size() - input.tell(), context.block_size);
-            input.read(input_block.get(), current_block_size);
-
-            for (size_t j = 0; j < context.block_size; j ++)
-            {
-                size_t k = (((j << 1) % context.block_size)
-                    + (j >= context.block_size >> 1));
-                k = context.block_size - 1 - k;
-                output_block[k] = input_block[j] ^ key;
-                key += context.step;
-            }
-
-            output.write(output_block.get(), current_block_size);
-        }
-        output.write_from_io(input, input.size() - input.tell());
-        output.seek(0);
-    }
-}
-
-namespace
-{
-    const std::string magic("PBGZ", 4);
-
-    typedef struct
-    {
-        size_t file_count;
-        size_t table_offset;
-        size_t table_size;
-    } Header;
-
-    typedef struct
-    {
-        size_t size_compressed;
-        size_t size_original;
-        size_t offset;
-        std::string name;
-    } TableEntry;
-
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
 
     std::string lzss_decompress(
         IO &arc_io,
@@ -140,7 +98,7 @@ namespace
 
         BufferedIO table_io;
         arc_io.seek(header.table_offset);
-        decrypt(arc_io, size_compressed, table_io, { 62, 155, 0x80, 0x400 });
+        decrypt(arc_io, size_compressed, table_io, { 0x3e, 0x9b, 0x80, 0x400 });
 
         return std::unique_ptr<BufferedIO>(
             new BufferedIO(
@@ -187,6 +145,7 @@ namespace
                 table_entry.size_compressed,
                 table_entry.size_original));
 
+        const std::string crypt_magic("edz", 3);
         if (uncompressed_io.read(crypt_magic.size()) != crypt_magic)
             throw std::runtime_error("Unknown encryption");
 

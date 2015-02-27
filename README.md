@@ -69,6 +69,7 @@ CLI invocation                        | Game                                | Fe
 `--fmt=pbg4`                          | Touhou 07                           | ![][sup]![][sup]![][par]
 `--fmt=pbgz`                          | Touhou 08                           | ![][sup]![][sup]![][par]
 `--fmt=pbgz`                          | Touhou 09                           | ![][sup]![][sup]![][par]
+`--fmt=tha1`                          | Touhou 10                           | ![][sup]![][sup]![][par]
 `--fmt=xfl`                           | Souten No Celenaria                 | ![][sup]![][sup]![][sup]
 `--fmt=exe`                           | Generic `.exe` resources            | ![][sup]![][nap]![][nap]
 

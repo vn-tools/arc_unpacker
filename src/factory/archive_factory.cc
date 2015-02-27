@@ -18,6 +18,7 @@
 #include "formats/arc/rgssad_archive.h"
 #include "formats/arc/rpa_archive.h"
 #include "formats/arc/sar_archive.h"
+#include "formats/arc/tha1_archive.h"
 #include "formats/arc/xfl_archive.h"
 #include "formats/arc/xp3_archive.h"
 #include "formats/arc/ykc_archive.h"
@@ -36,6 +37,7 @@ struct ArchiveFactory::Internals
 
 ArchiveFactory::ArchiveFactory() : internals(new Internals)
 {
+    internals->add_format("tha1", []() { return new Tha1Archive(); });
     internals->add_format("pbgz", []() { return new PbgzArchive(); });
     internals->add_format("lwg", []() { return new LwgArchive(); });
     internals->add_format("xfl", []() { return new XflArchive(); });

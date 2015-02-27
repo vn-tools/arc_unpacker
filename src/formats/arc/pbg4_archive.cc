@@ -62,18 +62,10 @@ namespace
         for (size_t i = 0; i < header.file_count; i ++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
-            while (true)
-            {
-                char c = static_cast<char>(table_io.read_u8());
-                if (c == 0)
-                    break;
-                table_entry->name.push_back(c);
-            }
-
+            table_entry->name = table_io.read_until_zero();
             table_entry->offset = table_io.read_u32_le();
             table_entry->size = table_io.read_u32_le();
             table_io.skip(4);
-
             table.push_back(std::move(table_entry));
         }
         return table;
