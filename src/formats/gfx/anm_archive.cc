@@ -31,13 +31,10 @@ namespace
         size_t width;
         size_t height;
         size_t format;
-        std::string name1;
-        std::string name2;
+        std::string name;
         int version;
         size_t texture_offset;
         bool has_data;
-        std::vector<size_t> sprite_offsets;
-        std::vector<size_t> script_offsets;
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
@@ -54,9 +51,9 @@ namespace
     size_t read_old_entry(
         TableEntry &table_entry, IO &file_io, size_t start_offset)
     {
-        size_t sprite_count = file_io.read_u32_le();
-        size_t script_count = file_io.read_u32_le();
-        file_io.skip(4);
+        file_io.skip(4); //sprite count
+        file_io.skip(4); //script count
+        file_io.skip(4); //zero
 
         table_entry.width = file_io.read_u32_le();
         table_entry.height = file_io.read_u32_le();
@@ -66,65 +63,36 @@ namespace
         size_t name_offset1 = start_offset + file_io.read_u32_le();
         file_io.skip(4);
         size_t name_offset2 = start_offset + file_io.read_u32_le();
-        table_entry.name1 = read_name(file_io, name_offset1);
-        table_entry.name2 = read_name(file_io, name_offset2);
+        table_entry.name = read_name(file_io, name_offset1);
 
         table_entry.version = file_io.read_u32_le();
         file_io.skip(4);
         table_entry.texture_offset = start_offset + file_io.read_u32_le();
         table_entry.has_data = file_io.read_u32_le() > 0;
 
-        size_t next_offset = start_offset + file_io.read_u32_le();
-        file_io.skip(4);
-
-        for (size_t i = 0; i  < sprite_count; i ++)
-        {
-            table_entry.sprite_offsets.push_back(
-                start_offset + file_io.read_u32_le());
-        }
-
-        for (size_t i = 0; i < script_count; i ++)
-        {
-            table_entry.script_offsets.push_back(
-                start_offset + file_io.read_u32_le());
-        }
-        return next_offset;
+        return start_offset + file_io.read_u32_le();
     }
 
     size_t read_new_entry(
         TableEntry &table_entry, IO &file_io, size_t start_offset)
     {
         table_entry.version = file_io.read_u32_le();
-        size_t sprite_count = file_io.read_u16_le();
-        size_t script_count = file_io.read_u16_le();
-        file_io.skip(2);
+        file_io.skip(2); //sprite count
+        file_io.skip(2); //script count
+        file_io.skip(2); //zero
 
         table_entry.width = file_io.read_u16_le();
         table_entry.height = file_io.read_u16_le();
         table_entry.format = file_io.read_u16_le();
         size_t name_offset = start_offset + file_io.read_u32_le();
-        table_entry.name1 = read_name(file_io, name_offset);
-        table_entry.name2 = "";
+        table_entry.name = read_name(file_io, name_offset);
         file_io.skip(2 * 2 + 4);
 
         table_entry.texture_offset = start_offset + file_io.read_u32_le();
-        table_entry.has_data = file_io.read_u32_le() > 0;
+        table_entry.has_data = file_io.read_u16_le() > 0;
+        file_io.skip(2);
 
-        size_t next_offset = start_offset + file_io.read_u32_le();
-        file_io.skip(6);
-
-        for (size_t i = 0; i  < sprite_count; i ++)
-        {
-            table_entry.sprite_offsets.push_back(
-                start_offset + file_io.read_u32_le());
-        }
-
-        for (size_t i = 0; i < script_count; i ++)
-        {
-            table_entry.script_offsets.push_back(
-                start_offset + file_io.read_u32_le());
-        }
-        return next_offset;
+        return start_offset + file_io.read_u32_le();
     }
 
     Table read_table(IO &file_io)
@@ -230,7 +198,7 @@ namespace
         }
 
         std::unique_ptr<File> subfile(new File);
-        subfile->name = table_entry.name1;
+        subfile->name = table_entry.name;
         std::unique_ptr<Image> image = Image::from_pixels(
             width,
             height,
