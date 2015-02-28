@@ -6,6 +6,17 @@
 //
 // Known games:
 // - Touhou 06 - The Embodiment of Scarlet Devil
+// - Touhou 07 - Perfect Cherry Blossom
+// - Touhou 08 - Imperishable Night
+// - Touhou 09 - Phantasmagoria of Flower View
+// - Touhou 09.5 - Shoot the Bullet
+// - Touhou 10 - Mountain of Faith
+// - Touhou 11 - Subterranean Animism
+// - Touhou 12 - Undefined Fantastic Object
+// - Touhou 12.5 - Double Spoiler
+// - Touhou 12.8 - Fairy Wars
+// - Touhou 13 - Ten Desires
+// - Touhou 14 - Double Dealing Character
 
 #include "formats/gfx/anm_archive.h"
 #include "formats/image.h"
@@ -40,6 +51,82 @@ namespace
         return name;
     }
 
+    size_t read_old_entry(
+        TableEntry &table_entry, IO &file_io, size_t start_offset)
+    {
+        size_t sprite_count = file_io.read_u32_le();
+        size_t script_count = file_io.read_u32_le();
+        file_io.skip(4);
+
+        table_entry.width = file_io.read_u32_le();
+        table_entry.height = file_io.read_u32_le();
+        table_entry.format = file_io.read_u32_le();
+        file_io.skip(4);
+
+        size_t name_offset1 = start_offset + file_io.read_u32_le();
+        file_io.skip(4);
+        size_t name_offset2 = start_offset + file_io.read_u32_le();
+        table_entry.name1 = read_name(file_io, name_offset1);
+        table_entry.name2 = read_name(file_io, name_offset2);
+
+        table_entry.version = file_io.read_u32_le();
+        file_io.skip(4);
+        table_entry.texture_offset = start_offset + file_io.read_u32_le();
+        table_entry.has_data = file_io.read_u32_le() > 0;
+
+        size_t next_offset = start_offset + file_io.read_u32_le();
+        file_io.skip(4);
+
+        for (size_t i = 0; i  < sprite_count; i ++)
+        {
+            table_entry.sprite_offsets.push_back(
+                start_offset + file_io.read_u32_le());
+        }
+
+        for (size_t i = 0; i < script_count; i ++)
+        {
+            table_entry.script_offsets.push_back(
+                start_offset + file_io.read_u32_le());
+        }
+        return next_offset;
+    }
+
+    size_t read_new_entry(
+        TableEntry &table_entry, IO &file_io, size_t start_offset)
+    {
+        table_entry.version = file_io.read_u32_le();
+        size_t sprite_count = file_io.read_u16_le();
+        size_t script_count = file_io.read_u16_le();
+        file_io.skip(2);
+
+        table_entry.width = file_io.read_u16_le();
+        table_entry.height = file_io.read_u16_le();
+        table_entry.format = file_io.read_u16_le();
+        size_t name_offset = start_offset + file_io.read_u32_le();
+        table_entry.name1 = read_name(file_io, name_offset);
+        table_entry.name2 = "";
+        file_io.skip(2 * 2 + 4);
+
+        table_entry.texture_offset = start_offset + file_io.read_u32_le();
+        table_entry.has_data = file_io.read_u32_le() > 0;
+
+        size_t next_offset = start_offset + file_io.read_u32_le();
+        file_io.skip(6);
+
+        for (size_t i = 0; i  < sprite_count; i ++)
+        {
+            table_entry.sprite_offsets.push_back(
+                start_offset + file_io.read_u32_le());
+        }
+
+        for (size_t i = 0; i < script_count; i ++)
+        {
+            table_entry.script_offsets.push_back(
+                start_offset + file_io.read_u32_le());
+        }
+        return next_offset;
+    }
+
     Table read_table(IO &file_io)
     {
         Table table;
@@ -47,41 +134,15 @@ namespace
         while (true)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
+
             file_io.seek(start_offset);
-            size_t sprite_count = file_io.read_u32_le();
-            size_t script_count = file_io.read_u32_le();
-            file_io.skip(4);
+            file_io.skip(8);
+            bool use_old = file_io.read_u32_le() == 0;
 
-            table_entry->width = file_io.read_u32_le();
-            table_entry->height = file_io.read_u32_le();
-            table_entry->format = file_io.read_u32_le();
-            file_io.skip(4);
-
-            size_t name_offset1 = start_offset + file_io.read_u32_le();
-            file_io.skip(4);
-            size_t name_offset2 = start_offset + file_io.read_u32_le();
-            table_entry->name1 = read_name(file_io, name_offset1);
-            table_entry->name2 = read_name(file_io, name_offset2);
-
-            table_entry->version = file_io.read_u32_le();
-            file_io.skip(4);
-            table_entry->texture_offset = start_offset + file_io.read_u32_le();
-            table_entry->has_data = file_io.read_u32_le() > 0;
-
-            size_t next_offset = start_offset + file_io.read_u32_le();
-            file_io.skip(4);
-
-            for (size_t i = 0; i  < sprite_count; i ++)
-            {
-                table_entry->sprite_offsets.push_back(
-                    start_offset + file_io.read_u32_le());
-            }
-
-            for (size_t i = 0; i < script_count; i ++)
-            {
-                table_entry->script_offsets.push_back(
-                    start_offset + file_io.read_u32_le());
-            }
+            file_io.seek(start_offset);
+            size_t next_offset = use_old
+                ? read_old_entry(*table_entry, file_io, start_offset)
+                : read_new_entry(*table_entry, file_io, start_offset);
 
             table.push_back(std::move(table_entry));
             if (next_offset == start_offset)
@@ -151,6 +212,19 @@ namespace
                 }
                 break;
 
+            case 7:
+                //8 gray
+                for (size_t y = 0; y < height; y ++)
+                {
+                    for (size_t x = 0; x < width; x ++)
+                    {
+                        uint8_t byte = file_io.read_u8();
+                        *pixel_ptr ++
+                            = byte | (byte << 8) | (byte << 16) | 0xff000000;
+                    }
+                }
+                break;
+
             default:
                 throw std::runtime_error("Unknown format: " + itos(format));
         }
@@ -167,7 +241,6 @@ namespace
     }
 }
 
-#include <iostream>
 void AnmArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     Table table = read_table(file.io);

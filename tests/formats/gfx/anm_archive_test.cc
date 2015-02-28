@@ -36,6 +36,11 @@ int main(void)
         "tests/test_files/gfx/anm/player00.anm",
         { "tests/test_files/gfx/anm/player00-out.png" });
 
+    // format 7
+    test_anm_archive(
+        "tests/test_files/gfx/anm/clouds.anm",
+        { "tests/test_files/gfx/anm/clouds-out.png" });
+
     // multiple files
     test_anm_archive(
         "tests/test_files/gfx/anm/eff05.anm",
