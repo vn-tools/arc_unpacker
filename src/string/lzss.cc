@@ -50,6 +50,8 @@ std::string lzss_decompress(
                     dictionary_pos %= dictionary_size;
                 }
                 output.push_back(byte);
+                if (output.size() >= size_original)
+                    break;
             }
         }
     }
