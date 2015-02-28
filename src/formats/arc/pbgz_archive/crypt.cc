@@ -7,8 +7,14 @@ namespace
     inline int min(int a, int b) { return a < b ? a : b; }
 }
 
-using namespace std;
-#include <iostream>
+bool DecryptorContext::operator ==(const DecryptorContext &other) const
+{
+    return key == other.key
+        && step == other.step
+        && block_size == other.block_size
+        && limit == other.limit;
+}
+
 void decrypt(IO &input, size_t size, IO &output, const DecryptorContext &context)
 {
     int left = min(size, input.size() - input.tell());

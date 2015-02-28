@@ -5,7 +5,14 @@
 // Extension: .dat
 //
 // Known games:
+// - Touhou 09.5 - Shoot the Bullet
 // - Touhou 10 - Mountain of Faith
+// - Touhou 11 - Subterranean Animism
+// - Touhou 12 - Undefined Fantastic Object
+// - Touhou 12.5 - Double Spoiler
+// - Touhou 12.8 - Fairy Wars
+// - Touhou 13 - Ten Desires
+// - Touhou 14 - Double Dealing Character
 
 #include "buffered_io.h"
 #include "formats/arc/pbgz_archive/crypt.h"
@@ -13,8 +20,6 @@
 #include "formats/gfx/anm_archive.h"
 #include "string/lzss.h"
 
-#include <iostream>
-using namespace std;
 namespace
 {
     const std::string magic("THA1", 4);
@@ -40,6 +45,7 @@ namespace
 
     std::vector<std::vector<DecryptorContext>> decryptors
     {
+        //TH9.5, TH10, TH11
         {
             { 0x1b, 0x37,  0x40, 0x2800 },
             { 0x51, 0xe9,  0x40, 0x3000 },
@@ -50,6 +56,8 @@ namespace
             { 0x35, 0x97,  0x80, 0x2800 },
             { 0x99, 0x37, 0x400, 0x2000 },
         },
+
+        //TH12, TH12.5, TH12.8
         {
             { 0x1b, 0x73,  0x40, 0x3800 },
             { 0x51, 0x9e,  0x40, 0x4000 },
@@ -60,6 +68,8 @@ namespace
             { 0x35, 0x79, 0x400, 0x3c00 },
             { 0x99, 0x7d,  0x80, 0x2800 },
         },
+
+        //TH13
         {
             { 0x1b, 0x73, 0x0100, 0x3800 },
             { 0x12, 0x43, 0x0200, 0x3e00 },
@@ -69,6 +79,18 @@ namespace
             { 0x51, 0x9e, 0x0100, 0x4000 },
             { 0xc1, 0x15, 0x0400, 0x2c00 },
             { 0x99, 0x7d, 0x0080, 0x4400 },
+        },
+
+        //TH14
+        {
+            { 0x1b, 0x73, 0x0100, 0x3800 },
+            { 0x12, 0x43, 0x0200, 0x3e00 },
+            { 0x35, 0x79, 0x0400, 0x3c00 },
+            { 0x03, 0x91, 0x0080, 0x6400 },
+            { 0xab, 0xdc, 0x0080, 0x7000 },
+            { 0x51, 0x9e, 0x0100, 0x4000 },
+            { 0xc1, 0x15, 0x0400, 0x2c00 },
+            { 0x99, 0x7d, 0x0080, 0x4400 }
         },
     };
 
@@ -155,11 +177,6 @@ namespace
                 = header.table_offset - table[table.size() - 1]->offset;
         }
 
-        for (auto &table_entry : table)
-        {
-            cout << table_entry->name << ": " << (int) table_entry->decryptor_id << " " << table_entry->size_compressed << endl;
-        }
-
         return table;
     }
 
@@ -187,27 +204,26 @@ namespace
                 decrypted_io,
                 table_entry.size_compressed,
                 table_entry.size_original));
+
+            if (file->io.size() != table_entry.size_original)
+                throw std::runtime_error("Badly compressed stream");
         }
 
         return file;
     }
 
-    size_t detect_encryption_version(IO &arc_io, const Table &table)
+    size_t detect_encryption_version(File &arc_file, const Table &table)
     {
-        const std::string riff_magic("RIFF", 4);
-        for (auto &table_entry : table)
-        {
-            if (table_entry->name.find(".wav") == std::string::npos)
-                continue;
-            for (size_t version = 0; version < decryptors.size(); version ++)
-            {
-                auto file = read_file(arc_io, *table_entry, version);
-                file->io.seek(0);
-                if (file->io.read(riff_magic.size()) == riff_magic)
-                    return version;
-            }
-        }
-        throw std::runtime_error("No means to detect the encryption version");
+        if (arc_file.name.find("th095.") != std::string::npos) return 0;
+        if (arc_file.name.find("th10.") != std::string::npos) return 0;
+        if (arc_file.name.find("th11.") != std::string::npos) return 0;
+        if (arc_file.name.find("th12.") != std::string::npos) return 1;
+        if (arc_file.name.find("th125.") != std::string::npos) return 1;
+        if (arc_file.name.find("th128.") != std::string::npos) return 1;
+        if (arc_file.name.find("th13.") != std::string::npos) return 2;
+        if (arc_file.name.find("th14.") != std::string::npos) return 3;
+        if (arc_file.name.find("th143.") != std::string::npos) return 3;
+        throw std::runtime_error("Can't guess encryption version");
     }
 }
 
@@ -238,7 +254,7 @@ void Tha1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     auto header = read_header(arc_file.io);
     auto table = read_table(arc_file.io, *header);
-    auto encryption_version = detect_encryption_version(arc_file.io, table);
+    auto encryption_version = detect_encryption_version(arc_file, table);
 
     for (auto &table_entry : table)
     {
