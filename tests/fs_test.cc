@@ -4,28 +4,28 @@
 
 void test_get_files()
 {
-    auto result = get_files("tests/test_files/gfx");
+    auto result = get_files("tests/files");
     eassert(result.size() == 3);
 
     eassert(std::find(
         result.begin(),
         result.end(),
-        "tests/test_files/gfx/reimu_transparent.png") != result.end());
+        "tests/files/reimu_transparent.png") != result.end());
 
     eassert(std::find(
         result.begin(),
         result.end(),
-        "tests/test_files/gfx/reimu_opaque.jpg") != result.end());
+        "tests/files/reimu_opaque.jpg") != result.end());
 
     eassert(std::find(
         result.begin(),
         result.end(),
-        "tests/test_files/gfx/usagi_opaque.png") != result.end());
+        "tests/files/usagi_opaque.png") != result.end());
 }
 
 void test_get_files_recursive()
 {
-    auto result = get_files_recursive("tests/test_files/gfx");
+    auto result = get_files_recursive("tests/formats");
     eassert(result.size() > 3);
 }
 
@@ -54,7 +54,7 @@ int main(void)
     test_is_dir(false, "nonexisting");
     test_is_dir(true, "tests");
     test_is_dir(true, "tests/");
-    test_is_dir(false, "tests/test_files/gfx/usagi_opaque.png");
+    test_is_dir(false, "tests/files/usagi_opaque.png");
 
     test_basename("",         "");
     test_basename("",         "/");

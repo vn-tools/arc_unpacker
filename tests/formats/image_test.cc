@@ -6,7 +6,7 @@
 
 void test_transparent()
 {
-    FileIO io("tests/test_files/gfx/reimu_transparent.png", "rb");
+    FileIO io("tests/files/reimu_transparent.png", "rb");
 
     std::unique_ptr<Image> image = Image::from_boxed(io);
     eassert(image->width() == 641);
@@ -18,7 +18,7 @@ void test_transparent()
 
 void test_opaque()
 {
-    FileIO io("tests/test_files/gfx/usagi_opaque.png", "rb");
+    FileIO io("tests/files/usagi_opaque.png", "rb");
 
     std::unique_ptr<Image> image = Image::from_boxed(io);
     eassert(image->width() == 640);

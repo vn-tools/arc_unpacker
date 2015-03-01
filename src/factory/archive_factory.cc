@@ -1,34 +1,35 @@
 #include <functional>
 #include "factory/archive_factory.h"
-#include "formats/arc/arc_archive.h"
-#include "formats/arc/exe_archive.h"
-#include "formats/arc/fjsys_archive.h"
-#include "formats/arc/lwg_archive.h"
-#include "formats/arc/mbl_archive.h"
-#include "formats/arc/npa_archive.h"
-#include "formats/arc/npa_sg_archive.h"
-#include "formats/arc/nsa_archive.h"
-#include "formats/arc/p_archive.h"
-#include "formats/arc/pac_archive.h"
-#include "formats/arc/pack_archive.h"
-#include "formats/arc/pak_archive.h"
-#include "formats/arc/pbg3_archive.h"
-#include "formats/arc/pbg4_archive.h"
-#include "formats/arc/pbgz_archive.h"
-#include "formats/arc/rgssad_archive.h"
-#include "formats/arc/rpa_archive.h"
-#include "formats/arc/sar_archive.h"
-#include "formats/arc/tha1_archive.h"
-#include "formats/arc/xfl_archive.h"
-#include "formats/arc/xp3_archive.h"
-#include "formats/arc/ykc_archive.h"
-#include "formats/gfx/anm_archive.h"
+#include "formats/bgi/arc_archive.h"
+#include "formats/french_bread/p_archive.h"
+#include "formats/ivory/mbl_archive.h"
+#include "formats/kirikiri/xp3_archive.h"
+#include "formats/liarsoft/lwg_archive.h"
+#include "formats/liarsoft/xfl_archive.h"
+#include "formats/microsoft/exe_archive.h"
+#include "formats/minato_soft/pac_archive.h"
+#include "formats/nitroplus/npa_archive.h"
+#include "formats/nitroplus/npa_sg_archive.h"
+#include "formats/nitroplus/pak_archive.h"
+#include "formats/nscripter/nsa_archive.h"
+#include "formats/nscripter/sar_archive.h"
+#include "formats/nsystem/fjsys_archive.h"
+#include "formats/qlie/pack_archive.h"
+#include "formats/renpy/rpa_archive.h"
+#include "formats/rpgmaker/rgssad_archive.h"
+#include "formats/touhou/anm_archive.h"
+#include "formats/touhou/pbg3_archive.h"
+#include "formats/touhou/pbg4_archive.h"
+#include "formats/touhou/pbgz_archive.h"
+#include "formats/touhou/tha1_archive.h"
+#include "formats/yukascript/ykc_archive.h"
+using namespace Formats;
 
 struct ArchiveFactory::Internals
 {
     std::vector<std::pair<std::string, std::function<Archive*()>>> formats;
 
-    void add_format(std::string format, std::function<Archive*()> creator)
+    void add(std::string format, std::function<Archive*()> creator)
     {
         formats.push_back(
             std::pair<std::string, std::function<Archive*()>>(format, creator));
@@ -37,29 +38,29 @@ struct ArchiveFactory::Internals
 
 ArchiveFactory::ArchiveFactory() : internals(new Internals)
 {
-    internals->add_format("tha1", []() { return new Tha1Archive(); });
-    internals->add_format("pbgz", []() { return new PbgzArchive(); });
-    internals->add_format("lwg", []() { return new LwgArchive(); });
-    internals->add_format("xfl", []() { return new XflArchive(); });
-    internals->add_format("pbg3", []() { return new Pbg3Archive(); });
-    internals->add_format("pbg4", []() { return new Pbg4Archive(); });
-    internals->add_format("pack", []() { return new PackArchive(); });
-    internals->add_format("pac", []() { return new PacArchive(); });
-    internals->add_format("exe", []() { return new ExeArchive(); });
-    internals->add_format("ykc", []() { return new YkcArchive(); });
-    internals->add_format("rgssad", []() { return new RgssadArchive(); });
-    internals->add_format("fjsys", []() { return new FjsysArchive(); });
-    internals->add_format("arc", []() { return new ArcArchive(); });
-    internals->add_format("npa", []() { return new NpaArchive(); });
-    internals->add_format("xp3", []() { return new Xp3Archive(); });
-    internals->add_format("rpa", []() { return new RpaArchive(); });
-    internals->add_format("p", []() { return new PArchive(); });
-    internals->add_format("npa_sg", []() { return new NpaSgArchive(); });
-    internals->add_format("pak", []() { return new PakArchive(); });
-    internals->add_format("mbl", []() { return new MblArchive(); });
-    internals->add_format("nsa", []() { return new NsaArchive(); });
-    internals->add_format("sar", []() { return new SarArchive(); });
-    internals->add_format("anm", []() { return new AnmArchive(); });
+    internals->add("tha1", []() { return new Touhou::Tha1Archive(); });
+    internals->add("pbgz", []() { return new Touhou::PbgzArchive(); });
+    internals->add("lwg", []() { return new LiarSoft::LwgArchive(); });
+    internals->add("xfl", []() { return new LiarSoft::XflArchive(); });
+    internals->add("pbg3", []() { return new Touhou::Pbg3Archive(); });
+    internals->add("pbg4", []() { return new Touhou::Pbg4Archive(); });
+    internals->add("pack", []() { return new QLiE::PackArchive(); });
+    internals->add("pac", []() { return new MinatoSoft::PacArchive(); });
+    internals->add("exe", []() { return new Microsoft::ExeArchive(); });
+    internals->add("ykc", []() { return new YukaScript::YkcArchive(); });
+    internals->add("rgssad", []() { return new RpgMaker::RgssadArchive(); });
+    internals->add("fjsys", []() { return new NSystem::FjsysArchive(); });
+    internals->add("arc", []() { return new Bgi::ArcArchive(); });
+    internals->add("npa", []() { return new Nitroplus::NpaArchive(); });
+    internals->add("xp3", []() { return new Kirikiri::Xp3Archive(); });
+    internals->add("rpa", []() { return new Renpy::RpaArchive(); });
+    internals->add("p", []() { return new FrenchBread::PArchive(); });
+    internals->add("npa_sg", []() { return new Nitroplus::NpaSgArchive(); });
+    internals->add("pak", []() { return new Nitroplus::PakArchive(); });
+    internals->add("mbl", []() { return new Ivory::MblArchive(); });
+    internals->add("nsa", []() { return new NScripter::NsaArchive(); });
+    internals->add("sar", []() { return new NScripter::SarArchive(); });
+    internals->add("anm", []() { return new Touhou::AnmArchive(); });
 }
 
 ArchiveFactory::~ArchiveFactory()
