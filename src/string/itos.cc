@@ -16,3 +16,11 @@ std::string itos(int i)
     }
     return x;
 }
+
+std::string itos(int i, size_t length)
+{
+    std::string ret = itos(i);
+    while (ret.length() < length)
+        ret = "0" + ret;
+    return ret;
+}
