@@ -24,6 +24,8 @@ public:
     using IO::write;
     virtual void write(const void *source, size_t length) override;
     virtual void write_from_io(IO &source, size_t length) override;
+
+    void reserve(size_t count);
 private:
     struct Internals;
     std::unique_ptr<Internals> internals;

@@ -22,6 +22,18 @@ struct BufferedIO::Internals
     }
 };
 
+void BufferedIO::reserve(size_t length)
+{
+    size_t new_size = internals->buffer_pos + length;
+    if (new_size <= internals->buffer_size)
+        return;
+    char *new_buffer = (char*)realloc(internals->buffer, new_size);
+    if (new_buffer == nullptr)
+        throw std::bad_alloc();
+    internals->buffer = new_buffer;
+    internals->buffer_size = new_size;
+}
+
 void BufferedIO::seek(size_t offset)
 {
     if (offset > internals->buffer_size)
@@ -48,32 +60,16 @@ void BufferedIO::read(void *destination, size_t length)
 void BufferedIO::write(const void *source, size_t length)
 {
     assert(source != nullptr);
-    size_t new_pos = internals->buffer_pos + length;
-    if (new_pos > internals->buffer_size)
-    {
-        char *new_buffer = (char*)realloc(internals->buffer, new_pos);
-        if (new_buffer == nullptr)
-            throw std::bad_alloc();
-        internals->buffer = new_buffer;
-        internals->buffer_size = new_pos;
-    }
+    reserve(length);
     memcpy(internals->buffer + internals->buffer_pos, source, length);
     internals->buffer_pos += length;
 }
 
 void BufferedIO::write_from_io(IO &source, size_t length)
 {
-    size_t new_pos = internals->buffer_pos + length;
-    if (new_pos > internals->buffer_size)
-    {
-        char *new_buffer = (char*)realloc(internals->buffer, new_pos);
-        if (new_buffer == nullptr)
-            throw std::bad_alloc();
-        internals->buffer = new_buffer;
-        internals->buffer_size = new_pos;
-    }
+    reserve(length);
     source.read(internals->buffer + internals->buffer_pos, length);
-    internals->buffer_pos = new_pos;
+    internals->buffer_pos += length;
 }
 
 size_t BufferedIO::tell() const
