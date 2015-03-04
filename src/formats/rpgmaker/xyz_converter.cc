@@ -29,28 +29,22 @@ void XyzConverter::decode_internal(File &file) const
     uint16_t width = file.io.read_u16_le();
     uint16_t height = file.io.read_u16_le();
 
-    size_t compressed_data_size = file.io.size() - file.io.tell();
-    std::string compressed_data = file.io.read(compressed_data_size);
-    std::string uncompressed_data = zlib_inflate(compressed_data);
-    assert(uncompressed_data.size() == (unsigned)256 * 3 + width * height);
+    std::string data = zlib_inflate(file.io.read_until_end());
+    assert(data.size() == 256 * 3 + width * height);
 
     size_t pixels_size = width * height * 3;
-    std::unique_ptr<char> pixels(new char[pixels_size]);
+    std::unique_ptr<char[]> pixels(new char[pixels_size]);
 
+    const char *palette = data.data();
+    const char *palette_indices = data.data() + 256 * 3;
+    char *out = pixels.get();
+
+    for (size_t i = 0; i < width * height; i ++)
     {
-        const char *palette = uncompressed_data.data();
-        const char *palette_indices = palette + 256 * 3;
-        char *out = pixels.get();
-
-        int i;
-        size_t j;
-        for (i = 0; i < width * height; i ++)
-        {
-            j = *palette_indices ++;
-            *out ++ = palette[j * 3 + 0];
-            *out ++ = palette[j * 3 + 1];
-            *out ++ = palette[j * 3 + 2];
-        }
+        size_t index = *palette_indices ++;
+        *out ++ = palette[index * 3 + 0];
+        *out ++ = palette[index * 3 + 1];
+        *out ++ = palette[index * 3 + 2];
     }
 
     std::unique_ptr<Image> image = Image::from_pixels(

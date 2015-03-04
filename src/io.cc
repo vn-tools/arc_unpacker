@@ -54,6 +54,11 @@ std::string IO::read_until_zero(size_t bytes)
     return output;
 }
 
+std::string IO::read_until_end()
+{
+    return read(size() - tell());
+}
+
 std::string IO::read(size_t bytes)
 {
     std::unique_ptr<char> buffer(new char[bytes]);
