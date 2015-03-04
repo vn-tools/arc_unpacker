@@ -12,14 +12,14 @@ OBJ_DIR = obj
 TEST_SRC_DIR = tests
 
 LFLAGS = -Wall -Wextra -pedantic -lpng -lz -lstdc++
-CXXFLAGS = -Wall -Wextra -pedantic -Wwrite-strings -std=c++11 -iquote $(SRC_DIR)
+CXXFLAGS = -Wall -Wextra -pedantic -Wwrite-strings -Wno-unused-variable -Wno-unused-parameter -std=c++11 -iquote $(SRC_DIR)
 
 ifeq (${DEBUG}, 1)
-	CXXFLAGS += -ggdb -DDEBUG -DENABLE_ASSERT -Wunused
+	CXXFLAGS += -ggdb -DDEBUG
 	BIN_DIR := $(BIN_DIR)/debug
 	OBJ_DIR := $(OBJ_DIR)/debug
 else
-	CXXFLAGS += -Os -DNDEBUG -Wno-unused-variable -Wno-unused-parameter
+	CXXFLAGS += -Os -DNDEBUG
 	BIN_DIR := $(BIN_DIR)/release
 	OBJ_DIR := $(OBJ_DIR)/release
 endif
