@@ -72,6 +72,7 @@ CLI invocation                        | Game                                | Fe
 `--fmt=pbgz`                          | Touhou 09                           | ![][sup]![][sup]![][par]
 `--fmt=tha1`                          | Touhou 09.5                         | ![][sup]![][sup]![][par]
 `--fmt=tha1`                          | Touhou 10                           | ![][sup]![][sup]![][par]
+`--fmt=th-pak2`                       | Touhou 10.5                         | ![][sup]![][non]![][non]
 `--fmt=tha1`                          | Touhou 11                           | ![][sup]![][sup]![][par]
 `--fmt=tha1`                          | Touhou 12                           | ![][sup]![][sup]![][par]
 `--fmt=tha1`                          | Touhou 12.5                         | ![][sup]![][sup]![][par]
