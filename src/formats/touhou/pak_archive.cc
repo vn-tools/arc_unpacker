@@ -11,6 +11,7 @@
 #include "formats/image.h"
 #include "formats/sound.h"
 #include "formats/touhou/pak_archive.h"
+#include "util/colors.h"
 #include "util/itos.h"
 using namespace Formats::Touhou;
 
@@ -62,17 +63,6 @@ namespace
 
 namespace
 {
-    inline uint32_t rgba5551(uint16_t w)
-    {
-        uint8_t c2 = (w >> 8) & 0xff;
-        uint8_t c1 = w & 0xff;
-        uint8_t r = (c1 & 0x1f) << 3;
-        uint8_t g = ((c1 & 0xe0) >> 2) | ((c2 & 3) << 6);
-        uint8_t b = (c2 & 0x7c) << 1;
-        uint8_t a = c2 & 0x80 ? 0xff : 0;
-        return r | (g << 8) | (b << 16) | (a << 24);
-    }
-
     class ImageArchive : public Archive
     {
     public:

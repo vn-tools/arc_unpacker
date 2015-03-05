@@ -20,6 +20,7 @@
 
 #include "formats/image.h"
 #include "formats/touhou/anm_archive.h"
+#include "util/colors.h"
 #include "util/itos.h"
 using namespace Formats::Touhou;
 
@@ -138,64 +139,33 @@ namespace
         size_t pixel_data_size = width * height * 4;
         std::unique_ptr<char[]> pixel_data(new char[pixel_data_size]);
         uint32_t *pixel_ptr = reinterpret_cast<uint32_t*>(pixel_data.get());
-        switch (format)
+        for (size_t y = 0; y < height; y ++)
         {
-            case 1:
-                //8 8 8 8 BGRA
-                for (size_t y = 0; y < height; y ++)
+            for (size_t x = 0; x < width; x ++)
+            {
+                switch (format)
                 {
-                    for (size_t x = 0; x < width; x ++)
+                    case 1:
                         *pixel_ptr ++ = file_io.read_u32_le();
-                }
-                break;
+                        break;
 
-            case 3:
-                //5 6 5 RGB
-                for (size_t y = 0; y < height; y ++)
-                {
-                    for (size_t x = 0; x < width; x ++)
-                    {
-                        uint16_t word = file_io.read_u16_le();
-                        *pixel_ptr ++
-                            = ((word & 0x1f) << 3)
-                            | ((word & 0x7e0) << 5)
-                            | ((word & 0xf800) << 8)
-                            | 0xff000000;
-                    }
-                }
-                break;
+                    case 3:
+                        *pixel_ptr ++ = rgb565(file_io.read_u16_le());
+                        break;
 
-            case 5:
-                //4 4 4 4 BGRA
-                for (size_t y = 0; y < height; y ++)
-                {
-                    for (size_t x = 0; x < width; x ++)
-                    {
-                        uint16_t word = file_io.read_u16_le();
-                        *pixel_ptr ++
-                            = ((word & 0xf) << 4)
-                            | ((word & 0xf0) << 8)
-                            | ((word & 0xf00) << 12)
-                            | ((word & 0xf000) << 16);
-                    }
-                }
-                break;
+                    case 5:
+                        *pixel_ptr ++ = rgba4444(file_io.read_u16_le());
+                        break;
 
-            case 7:
-                //8 gray
-                for (size_t y = 0; y < height; y ++)
-                {
-                    for (size_t x = 0; x < width; x ++)
-                    {
-                        uint8_t byte = file_io.read_u8();
-                        *pixel_ptr ++
-                            = byte | (byte << 8) | (byte << 16) | 0xff000000;
-                    }
-                }
-                break;
+                    case 7:
+                        *pixel_ptr ++ = rgba_gray(file_io.read_u8());
+                        break;
 
-            default:
-                throw std::runtime_error("Unknown format: " + itos(format));
+                    default:
+                        throw std::runtime_error(
+                            "Unknown color format: " + itos(format));
+                }
+            }
         }
 
         std::unique_ptr<File> subfile(new File);
