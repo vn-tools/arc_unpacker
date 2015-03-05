@@ -159,7 +159,7 @@ namespace
             if (encryption_type == EncryptionType::WithGameExe)
                 mt_seed ^= 0x453A;
 
-            init_genrand(mt_seed);
+            mt_init_genrand(mt_seed);
             mt_xor_state(
                 reinterpret_cast<const unsigned char *>(key1.data()),
                 key1.size());
@@ -171,17 +171,17 @@ namespace
             for (size_t i = 0; i < 0x10; i++)
             {
                 table[i]
-                    = genrand_int32()
-                    | (static_cast<uint64_t>(genrand_int32()) << 32);
+                    = mt_genrand_int32()
+                    | (static_cast<uint64_t>(mt_genrand_int32()) << 32);
             }
             for (auto i = 0; i < 9; i ++)
-                 genrand_int32();
+                 mt_genrand_int32();
 
             uint64_t mutator
-                = genrand_int32()
-                | (static_cast<uint64_t>(genrand_int32()) << 32);
+                = mt_genrand_int32()
+                | (static_cast<uint64_t>(mt_genrand_int32()) << 32);
 
-            size_t table_index = genrand_int32() & 0xF;
+            size_t table_index = mt_genrand_int32() & 0xF;
             while (current < end)
             {
                 mutator ^= table[table_index];

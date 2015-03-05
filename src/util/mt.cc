@@ -2,10 +2,6 @@
    Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
    All rights reserved.
 
-   2009/09/25 - Modifications by asmodean to match the non-standard
-                implementation found in FilePackVer3.0 archives used
-                by Signal Hearts.
-
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
@@ -34,10 +30,10 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "formats/qlie/mt.h"
+#include "mt.h"
 
-const int N = 64;
-const int M = 39;
+const int N = 624;
+const int M = 397;
 const unsigned long MATRIX_A = 0x9908b0dfUL;
 const unsigned long UPPER_MASK = 0x80000000UL;
 const unsigned long LOWER_MASK = 0x7fffffffUL;
@@ -45,30 +41,55 @@ const unsigned long LOWER_MASK = 0x7fffffffUL;
 static unsigned long mt[N];
 static int mti = N + 1;
 
-void Formats::QLiE::mt_xor_state(const unsigned char* buff, unsigned long len)
-{
-    unsigned long *words = (unsigned long*) buff;
-    unsigned long word_count = len / 4;
-    unsigned long i;
-
-    if (word_count > N)
-        word_count = N;
-
-    for (i = 0; i < word_count; i ++)
-        mt[i] ^= words[i];
-}
-
-void Formats::QLiE::mt_init_genrand(unsigned long s)
+void mt_init_genrand(unsigned long s)
 {
     mt[0] = s & 0xffffffffUL;
     for (mti = 1; mti < N; mti ++)
     {
-        mt[mti] = (1712438297UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + mti);
+        mt[mti] = (1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + mti);
         mt[mti] &= 0xffffffffUL;
     }
 }
 
-unsigned long Formats::QLiE::mt_genrand_int32()
+void mt_init_by_array(unsigned long init_key[], int key_length)
+{
+    mt_init_genrand(19650218UL);
+    int i = 1;
+    int j = 0;
+    int k = (N > key_length ? N : key_length);
+    for (; k; k --)
+    {
+        mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1664525UL))
+            + init_key[j] + j;
+        mt[i] &= 0xffffffffUL;
+        i ++;
+        j ++;
+        if (i >= N)
+        {
+            mt[0] = mt[N - 1];
+            i = 1;
+        }
+        if (j >= key_length)
+        {
+            j = 0;
+        }
+    }
+    for (k = N - 1; k; k --)
+    {
+        mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1566083941UL)) - i;
+        mt[i] &= 0xffffffffUL;
+        i ++;
+        if (i >= N)
+        {
+            mt[0] = mt[N - 1];
+            i = 1;
+        }
+    }
+
+    mt[0] = 0x80000000UL;
+}
+
+unsigned long mt_genrand_int32()
 {
     unsigned long y;
     static unsigned long mag01[2] = { 0x0UL, MATRIX_A };
@@ -82,25 +103,52 @@ unsigned long Formats::QLiE::mt_genrand_int32()
 
         for (kk = 0; kk < N - M; kk ++)
         {
-            y = (mt[kk] & UPPER_MASK) | ((mt[kk + 1] & LOWER_MASK) >> 1);
-            mt[kk] = mt[kk + M] ^ y ^ mag01[mt[kk + 1] & 0x1UL];
+            y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
+            mt[kk] = mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1UL];
         }
         for (; kk < N - 1; kk ++)
         {
-            y = (mt[kk] & UPPER_MASK) | ((mt[kk + 1] & LOWER_MASK) >> 1);
-            mt[kk] = mt[kk + (M - N)] ^ y ^ mag01[mt[kk + 1] & 0x1UL];
+            y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
+            mt[kk] = mt[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
         }
-        y = (mt[N - 1] & UPPER_MASK) | ((mt[0] & LOWER_MASK) >> 1);
-        mt[N - 1] = mt[M - 1] ^ y ^ mag01[mt[N - 1] & 0x1UL];
+        y = (mt[N - 1] & UPPER_MASK) | (mt[0] & LOWER_MASK);
+        mt[N - 1] = mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1UL];
         mti = 0;
     }
 
     y = mt[mti ++];
 
     y ^= (y >> 11);
-    y ^= (y << 7) & 0x9c4f88e3ul;
-    y ^= (y << 15) & 0xe7f70000ul;
+    y ^= (y << 7) & 0x9d2c5680UL;
+    y ^= (y << 15) & 0xefc60000UL;
     y ^= (y >> 18);
 
     return y;
+}
+
+long mt_genrand_int31()
+{
+    return (long)(mt_genrand_int32() >> 1);
+}
+
+double mt_genrand_real1()
+{
+    return mt_genrand_int32() * (1.0 / 4294967295.0);
+}
+
+double mt_genrand_real2()
+{
+    return mt_genrand_int32() * (1.0 / 4294967296.0);
+}
+
+double mt_genrand_real3()
+{
+    return (((double)mt_genrand_int32()) + 0.5) * (1.0 / 4294967296.0);
+}
+
+double mt_genrand_res53()
+{
+    unsigned long a = mt_genrand_int32() >> 5;
+    unsigned long b = mt_genrand_int32() >> 6;
+    return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
 }
