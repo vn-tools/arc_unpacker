@@ -67,7 +67,7 @@ CLI invocation                        | Game                                | Fe
 `--fmt=pack --fkey=... --gameexe=...` | Koiken Otome                        | ![][sup]![][sup]![][sup]
 `--fmt=pbg3`                          | Touhou 06                           | ![][sup]![][sup]![][sup]
 `--fmt=pbg4`                          | Touhou 07                           | ![][sup]![][sup]![][par]
-`--fmt=th-pak`                        | Touhou 07.5                         | ![][sup]![][sup]![][sup]
+`--fmt=th-pak1`                       | Touhou 07.5                         | ![][sup]![][sup]![][sup]
 `--fmt=pbgz`                          | Touhou 08                           | ![][sup]![][sup]![][par]
 `--fmt=pbgz`                          | Touhou 09                           | ![][sup]![][sup]![][par]
 `--fmt=tha1`                          | Touhou 09.5                         | ![][sup]![][sup]![][par]
