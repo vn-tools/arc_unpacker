@@ -11,7 +11,7 @@
 
 #include "buffered_io.h"
 #include "formats/renpy/rpa_archive.h"
-#include "string/zlib.h"
+#include "util/zlib.h"
 using namespace Formats::Renpy;
 
 // Stupid unpickle "implementation" ahead: instead of twiddling with stack,

@@ -16,7 +16,7 @@
 #include "formats/qlie/dpng_converter.h"
 #include "formats/qlie/mt.h"
 #include "formats/qlie/pack_archive.h"
-#include "string/encoding.h"
+#include "util/encoding.h"
 using namespace Formats::QLiE;
 
 namespace

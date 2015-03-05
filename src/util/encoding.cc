@@ -2,7 +2,7 @@
 #include <memory>
 #include <stdexcept>
 #include <iconv.h>
-#include "string/encoding.h"
+#include "util/encoding.h"
 
 std::string convert_encoding(
     const std::string &input,

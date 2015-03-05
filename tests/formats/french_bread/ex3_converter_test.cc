@@ -1,6 +1,6 @@
 #include "file_io.h"
 #include "formats/french_bread/ex3_converter.h"
-#include "string/zlib.h"
+#include "util/zlib.h"
 #include "test_support/eassert.h"
 using namespace Formats::FrenchBread;
 

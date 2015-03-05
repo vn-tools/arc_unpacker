@@ -14,7 +14,7 @@
 #include "formats/touhou/anm_archive.h"
 #include "formats/touhou/crypt.h"
 #include "formats/touhou/pbgz_archive.h"
-#include "string/lzss.h"
+#include "util/lzss.h"
 using namespace Formats::Touhou;
 
 namespace

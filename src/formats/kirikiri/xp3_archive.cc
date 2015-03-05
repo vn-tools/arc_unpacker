@@ -19,8 +19,8 @@
 #include "formats/kirikiri/xp3_filters/fha_filter.h"
 #include "formats/kirikiri/xp3_filters/fsn_filter.h"
 #include "formats/kirikiri/xp3_filters/noop_filter.h"
-#include "string/encoding.h"
-#include "string/zlib.h"
+#include "util/encoding.h"
+#include "util/zlib.h"
 using namespace Formats::Kirikiri;
 using namespace Formats::Kirikiri::Xp3Filters;
 

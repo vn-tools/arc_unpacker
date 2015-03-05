@@ -9,8 +9,8 @@
 
 #include "buffered_io.h"
 #include "formats/nitroplus/pak_archive.h"
-#include "string/encoding.h"
-#include "string/zlib.h"
+#include "util/encoding.h"
+#include "util/zlib.h"
 using namespace Formats::Nitroplus;
 
 namespace

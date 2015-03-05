@@ -9,7 +9,7 @@
 
 #include "buffered_io.h"
 #include "formats/nitroplus/npa_sg_archive.h"
-#include "string/encoding.h"
+#include "util/encoding.h"
 using namespace Formats::Nitroplus;
 
 namespace

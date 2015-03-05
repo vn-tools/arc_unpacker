@@ -12,7 +12,7 @@
 #include "buffered_io.h"
 #include "formats/nscripter/nsa_archive.h"
 #include "formats/nscripter/spb_converter.h"
-#include "string/lzss.h"
+#include "util/lzss.h"
 using namespace Formats::NScripter;
 
 namespace

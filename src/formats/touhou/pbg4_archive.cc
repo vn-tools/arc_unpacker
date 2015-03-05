@@ -10,7 +10,7 @@
 #include "buffered_io.h"
 #include "formats/touhou/anm_archive.h"
 #include "formats/touhou/pbg4_archive.h"
-#include "string/lzss.h"
+#include "util/lzss.h"
 using namespace Formats::Touhou;
 
 namespace

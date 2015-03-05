@@ -1,5 +1,5 @@
-#ifndef STRING_ENCODING_H
-#define STRING_ENCODING_H
+#ifndef UTIL_ENCODING_H
+#define UTIL_ENCODING_H
 #include <string>
 
 std::string convert_encoding(

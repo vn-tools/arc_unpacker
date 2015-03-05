@@ -10,7 +10,7 @@
 #include "formats/liarsoft/lwg_archive.h"
 #include "formats/liarsoft/wcg_converter.h"
 #include "formats/liarsoft/xfl_archive.h"
-#include "string/encoding.h"
+#include "util/encoding.h"
 using namespace Formats::LiarSoft;
 
 namespace

@@ -1,7 +1,7 @@
 #include <memory>
 #include <stdexcept>
 #include <zlib.h>
-#include "string/zlib.h"
+#include "util/zlib.h"
 
 #ifndef SIZE_MAX
 #define SIZE_MAX ((size_t) -1)

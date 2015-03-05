@@ -9,7 +9,7 @@
 
 #include "formats/ivory/mbl_archive.h"
 #include "formats/ivory/prs_converter.h"
-#include "string/encoding.h"
+#include "util/encoding.h"
 using namespace Formats::Ivory;
 
 namespace

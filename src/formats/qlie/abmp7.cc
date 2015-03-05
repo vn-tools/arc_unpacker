@@ -1,5 +1,5 @@
 #include "formats/qlie/abmp7.h"
-#include "string/encoding.h"
+#include "util/encoding.h"
 
 namespace
 {

@@ -11,7 +11,7 @@
 #include "formats/image.h"
 #include "formats/sound.h"
 #include "formats/touhou/pak_archive.h"
-#include "string/itos.h"
+#include "util/itos.h"
 using namespace Formats::Touhou;
 
 namespace

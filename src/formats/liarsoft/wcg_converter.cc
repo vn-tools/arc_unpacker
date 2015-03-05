@@ -12,7 +12,7 @@
 #include "bit_reader.h"
 #include "formats/image.h"
 #include "formats/liarsoft/wcg_converter.h"
-#include "string/itos.h"
+#include "util/itos.h"
 using namespace Formats::LiarSoft;
 
 namespace

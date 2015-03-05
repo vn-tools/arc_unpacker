@@ -1,5 +1,5 @@
 #include "formats/nscripter/nsa_archive.h"
-#include "string/zlib.h"
+#include "util/zlib.h"
 #include "test_support/archive_support.h"
 using namespace Formats::NScripter;
 

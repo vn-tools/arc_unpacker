@@ -1,4 +1,4 @@
-#include "string/encoding.h"
+#include "util/encoding.h"
 #include "test_support/eassert.h"
 
 // sjis の"あいうえおかきくけこさしすせそたちつてと"

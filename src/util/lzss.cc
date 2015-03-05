@@ -1,4 +1,4 @@
-#include "string/lzss.h"
+#include "util/lzss.h"
 
 std::string lzss_decompress(
     const std::string &input,

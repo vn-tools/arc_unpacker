@@ -1,5 +1,5 @@
-#ifndef STRING_LZSS_H
-#define STRING_LZSS_H
+#ifndef UTIL_LZSS_H
+#define UTIL_LZSS_H
 #include <string>
 #include "bit_reader.h"
 

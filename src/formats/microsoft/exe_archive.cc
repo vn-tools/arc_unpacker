@@ -9,8 +9,8 @@
 
 #include <cstdio>
 #include "formats/microsoft/exe_archive.h"
-#include "string/encoding.h"
-#include "string/itos.h"
+#include "util/encoding.h"
+#include "util/itos.h"
 using namespace Formats::Microsoft;
 
 namespace

@@ -1,4 +1,4 @@
-#include "string/zlib.h"
+#include "util/zlib.h"
 #include "test_support/eassert.h"
 
 void test_zlib_inflate()

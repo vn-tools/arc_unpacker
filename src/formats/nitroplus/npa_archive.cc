@@ -9,8 +9,8 @@
 
 #include "formats/nitroplus/npa_archive.h"
 #include "formats/nitroplus/npa_filters/chaos_head_filter.h"
-#include "string/encoding.h"
-#include "string/zlib.h"
+#include "util/encoding.h"
+#include "util/zlib.h"
 using namespace Formats::Nitroplus;
 using namespace Formats::Nitroplus::NpaFilters;
 

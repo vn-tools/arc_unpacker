@@ -13,7 +13,7 @@
 #include "formats/rpgmaker/xyz_converter.h"
 #include "formats/image.h"
 #include "io.h"
-#include "string/zlib.h"
+#include "util/zlib.h"
 using namespace Formats::RpgMaker;
 
 namespace

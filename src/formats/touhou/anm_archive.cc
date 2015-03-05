@@ -20,7 +20,7 @@
 
 #include "formats/image.h"
 #include "formats/touhou/anm_archive.h"
-#include "string/itos.h"
+#include "util/itos.h"
 using namespace Formats::Touhou;
 
 namespace

@@ -1,6 +1,6 @@
 #include "formats/qlie/abmp10.h"
-#include "string/encoding.h"
-#include "string/itos.h"
+#include "util/encoding.h"
+#include "util/itos.h"
 
 namespace
 {
