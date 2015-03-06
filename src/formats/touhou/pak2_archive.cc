@@ -6,9 +6,16 @@
 //
 // Known games:
 // - Touhou 10.5 - Scarlet Weather Rhapsody
+// - Touhou 12.3 - Unthinkable Natural Law
 
 #include "buffered_io.h"
+#include "file_io.h"
 #include "formats/touhou/pak2_archive.h"
+#include "formats/touhou/pak2_image_converter.h"
+#include "formats/touhou/pak2_sound_converter.h"
+#include "fs.h"
+#include "util/colors.h"
+#include "util/encoding.h"
 #include "util/mt.h"
 using namespace Formats::Touhou;
 
@@ -78,18 +85,66 @@ namespace
             std::unique_ptr<TableEntry> entry(new TableEntry);
             entry->offset = table_io->read_u32_le();
             entry->size = table_io->read_u32_le();
-            entry->name = table_io->read(table_io->read_u8());
+            entry->name = convert_encoding(
+                table_io->read(table_io->read_u8()), "cp932", "utf-8");
             if (entry->offset + entry->size > arc_io.size())
                 throw std::runtime_error("Bad offset to file");
             table.push_back(std::move(entry));
         }
         return table;
     }
+
+    PaletteMap find_all_palettes(
+        const std::string &arc_path)
+    {
+        PaletteMap palettes;
+
+        for (auto &path : get_files(dirname(arc_path)))
+        {
+            if (path.find(".dat") == std::string::npos)
+                continue;
+
+            try
+            {
+                FileIO file_io(path, "rb");
+                for (auto &table_entry : read_table(file_io))
+                {
+                    if (table_entry->name.find(".pal") == std::string::npos)
+                        continue;
+
+                    std::unique_ptr<uint32_t[]> palette(new uint32_t[256]);
+                    auto pal_file = read_file(file_io, *table_entry);
+                    pal_file->io.seek(1);
+                    for (size_t i = 0; i < 256; i ++)
+                        palette[i] = rgba5551(pal_file->io.read_u16_le());
+                    palettes[table_entry->name] = std::move(palette);
+                }
+            }
+            catch (...)
+            {
+                continue;
+            }
+        }
+
+        return palettes;
+    }
 }
 
 void Pak2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     auto table = read_table(arc_file.io);
+
+    PaletteMap palette_map = find_all_palettes(arc_file.name);
+    Pak2ImageConverter image_converter(palette_map);
+    Pak2SoundConverter sound_converter;
+
     for (auto &table_entry : table)
-        file_saver.save(read_file(arc_file.io, *table_entry));
+    {
+        auto file = read_file(arc_file.io, *table_entry);
+
+        image_converter.try_decode(*file);
+        sound_converter.try_decode(*file);
+
+        file_saver.save(std::move(file));
+    }
 }

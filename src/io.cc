@@ -115,6 +115,11 @@ uint64_t IO::read_u64_be()
     return be64toh(ret);
 }
 
+void IO::write_from_io(IO &input)
+{
+    write_from_io(input, input.size() - input.tell());
+}
+
 void IO::write(const std::string &bytes)
 {
     write(bytes.data(), bytes.size());

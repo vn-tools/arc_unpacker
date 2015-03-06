@@ -22,6 +22,7 @@ public:
     virtual void read(void *destination, size_t length) override;
 
     using IO::write;
+    using IO::write_from_io;
     virtual void write(const void *source, size_t length) override;
     virtual void write_from_io(IO &source, size_t length) override;
 
