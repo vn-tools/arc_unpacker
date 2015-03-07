@@ -15,7 +15,8 @@ void test_anm_archive(
     eassert(actual_files.size() == paths_to_png.size());
     for (size_t i = 0; i < paths_to_png.size(); i ++)
     {
-        std::unique_ptr<File> expected_file(new File(paths_to_png[i], "rb"));
+        std::unique_ptr<File> expected_file(
+            new File(paths_to_png[i], FileIOMode::Read));
         assert_decoded_image(*actual_files[i], *expected_file);
     }
 }

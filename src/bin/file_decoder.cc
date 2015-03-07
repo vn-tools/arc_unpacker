@@ -180,7 +180,7 @@ namespace
         ConverterFactory &conv_factory,
         const PathInfo &path_info)
     {
-        FileIO io(path_info.input_path, "rb");
+        FileIO io(path_info.input_path, FileIOMode::Read);
         std::unique_ptr<File> file(new File);
         file->io.write_from_io(io, io.size());
         file->io.seek(0);

@@ -7,7 +7,7 @@
 
 void test_file_simple_read()
 {
-    FileIO io("tests/files/reimu_transparent.png", "rb");
+    FileIO io("tests/files/reimu_transparent.png", FileIOMode::Read);
     char png_magic[4];
     io.read(png_magic, 4);
     eassert(memcmp("\x89PNG", png_magic, 4) == 0);
@@ -15,12 +15,13 @@ void test_file_simple_read()
 
 void test_file_simple_write()
 {
-    std::unique_ptr<FileIO> io(new FileIO("tests/files/trash.out", "w+b"));
-    eassert(io != nullptr);
-    io->write_u32_le(1);
-    io->seek(0);
-    eassert(io->read_u32_le() == 1);
-    eassert(io->size() == 4);
+    {
+        FileIO io("tests/files/trash.out", FileIOMode::Write);
+        io.write_u32_le(1);
+        io.seek(0);
+        eassert(io.read_u32_le() == 1);
+        eassert(io.size() == 4);
+    }
     remove("tests/files/trash.out");
 }
 

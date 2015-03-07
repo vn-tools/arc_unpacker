@@ -511,7 +511,7 @@ void PackArchive::parse_cli_options(ArgParser &arg_parser)
     if (arg_parser.has_switch("fkey"))
     {
         const std::string file_path = arg_parser.get_switch("fkey");
-        File file(file_path, "rb");
+        File file(file_path, FileIOMode::Read);
         internals->encryption_type = EncryptionType::WithFKey;
         internals->key1 = file.io.read(file.io.size());
     }
@@ -524,7 +524,7 @@ void PackArchive::parse_cli_options(ArgParser &arg_parser)
         const std::string magic("\x05TIcon\x00", 7);
         const std::string path = arg_parser.get_switch("gameexe");
 
-        File file(path, "rb");
+        File file(path, FileIOMode::Read);
         std::unique_ptr<char[]> exe_data(new char[file.io.size()]);
         file.io.read(exe_data.get(), file.io.size());
 

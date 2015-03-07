@@ -4,10 +4,16 @@
 #include <string>
 #include "io.h"
 
+enum FileIOMode
+{
+    Read = 1,
+    Write = 2,
+};
+
 class FileIO final : public IO
 {
 public:
-    FileIO(const std::string path, const std::string read_mode);
+    FileIO(const std::string path, const FileIOMode mode);
     ~FileIO();
 
     virtual size_t size() const override;

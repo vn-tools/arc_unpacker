@@ -111,7 +111,7 @@ namespace
 
             try
             {
-                FileIO file_io(path, "rb");
+                FileIO file_io(path, FileIOMode::Read);
                 for (auto &table_entry : read_table(file_io))
                 {
                     if (table_entry->name.find(".pal") == std::string::npos)

@@ -31,7 +31,7 @@ namespace
     std::unique_ptr<Image> image_from_converter(
         const std::string path, Converter &converter)
     {
-        FileIO io(path, "rb");
+        FileIO io(path, FileIOMode::Read);
         File file;
         file.io.write_from_io(io, io.size());
         converter.decode(file);
@@ -40,7 +40,7 @@ namespace
 
     std::unique_ptr<Image> image_from_path(const std::string path)
     {
-        FileIO io(path, "rb");
+        FileIO io(path, FileIOMode::Read);
         return std::unique_ptr<Image>(Image::from_boxed(io));
     }
 }

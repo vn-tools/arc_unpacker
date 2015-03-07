@@ -9,7 +9,7 @@ std::unique_ptr<FileSaverMemory> unpack_to_memory(
     const std::string input_path, Archive &archive)
 {
     ArgParser arg_parser;
-    File file(input_path, "rb");
+    File file(input_path, FileIOMode::Read);
     std::unique_ptr<FileSaverMemory> file_saver(new FileSaverMemory);
     archive.unpack(file, *file_saver);
     return file_saver;

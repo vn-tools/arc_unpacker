@@ -4,7 +4,7 @@
 #include "file.h"
 #include "file_io.h"
 
-File::File(const std::string path, const std::string mode)
+File::File(const std::string path, const FileIOMode mode)
     : io(*new FileIO(path, mode)), name(path)
 {
 }

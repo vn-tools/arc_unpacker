@@ -158,7 +158,7 @@ namespace
         const ArchiveFactory &arc_factory)
     {
         FileSaverHdd file_saver(options.output_path);
-        File file(options.input_path, "rb");
+        File file(options.input_path, FileIOMode::Read);
         return guess_archive_and_unpack(
             file,
             file_saver,

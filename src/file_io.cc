@@ -64,10 +64,11 @@ void FileIO::truncate(size_t)
     throw std::runtime_error("Not implemented");
 }
 
-FileIO::FileIO(std::string path, std::string read_mode)
+FileIO::FileIO(std::string path, const FileIOMode mode)
     : internals(new FileIO::Internals)
 {
-    internals->file = compat_open(path.c_str(), read_mode.c_str());
+    internals->file = compat_open(
+        path.c_str(), mode == FileIOMode::Write ? "w+b" : "rb");
     if (internals->file == nullptr)
         throw std::runtime_error("Can't open file " + path);
 }

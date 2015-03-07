@@ -58,7 +58,7 @@ void FileSaverHdd::save(const std::shared_ptr<File> &file) const
 
         boost::filesystem::create_directories(full_path.parent_path());
 
-        FileIO output_io(full_path.string(), "wb");
+        FileIO output_io(full_path.string(), FileIOMode::Write);
         file->io.seek(0);
         output_io.write_from_io(file->io, file->io.size());
         log("ok\n");
