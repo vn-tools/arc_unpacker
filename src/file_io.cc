@@ -1,38 +1,47 @@
-#include <cassert>
+#include <boost/filesystem/fstream.hpp>
 #include <cstdio>
 #include <stdexcept>
-#include "compat/open.h"
 #include "file_io.h"
 
 struct FileIO::Internals
 {
-    FILE *file;
+    boost::filesystem::basic_fstream<char> stream;
+
+    Internals(const std::string &path, const FileIOMode mode)
+    {
+        std::ios_base::openmode flags;
+
+        flags |= std::ios_base::in;
+        if (mode == FileIOMode::Write)
+        {
+            flags |= std::ios_base::out;
+            flags |= std::ios_base::trunc;
+        }
+        flags |= std::ios_base::binary;
+
+        stream.open(boost::filesystem::path(path), flags);
+        stream.exceptions(std::fstream::failbit | std::fstream::badbit);
+    }
 };
 
 void FileIO::seek(size_t offset)
 {
-    if (fseek(internals->file, offset, SEEK_SET) != 0)
-        throw std::runtime_error("Failed to seek");
+    internals->stream.seekg(offset, std::fstream::beg);
 }
 
 void FileIO::skip(int offset)
 {
-    if (fseek(internals->file, offset, SEEK_CUR) != 0)
-        throw std::runtime_error("Failed to seek");
+    internals->stream.seekg(offset, std::fstream::cur);
 }
 
 void FileIO::read(void *destination, size_t length)
 {
-    assert(destination != nullptr);
-    if (fread(destination, 1, length, internals->file) != length)
-        throw std::runtime_error("Failed to read full data");
+    internals->stream.read(reinterpret_cast<char*>(destination), length);
 }
 
 void FileIO::write(const void *source, size_t length)
 {
-    assert(source != nullptr);
-    if (fwrite(source, 1, length, internals->file) != length)
-        throw std::runtime_error("Failed to write full data");
+    internals->stream.write(reinterpret_cast<const char*>(source), length);
 }
 
 void FileIO::write_from_io(IO &source, size_t length)
@@ -45,15 +54,15 @@ void FileIO::write_from_io(IO &source, size_t length)
 
 size_t FileIO::tell() const
 {
-    return ftell(internals->file);
+    return internals->stream.tellg();
 }
 
 size_t FileIO::size() const
 {
-    size_t old_pos = ftell(internals->file);
-    fseek(internals->file, 0, SEEK_END);
-    size_t size = ftell(internals->file);
-    fseek(internals->file, old_pos, SEEK_SET);
+    size_t old_pos = internals->stream.tellg();
+    internals->stream.seekg(0, std::fstream::end);
+    size_t size = internals->stream.tellg();
+    internals->stream.seekg(old_pos, std::fstream::beg);
     return size;
 }
 
@@ -64,17 +73,12 @@ void FileIO::truncate(size_t)
     throw std::runtime_error("Not implemented");
 }
 
-FileIO::FileIO(std::string path, const FileIOMode mode)
-    : internals(new FileIO::Internals)
+FileIO::FileIO(const std::string &path, const FileIOMode mode)
+    : internals(new Internals(path, mode))
 {
-    internals->file = compat_open(
-        path.c_str(), mode == FileIOMode::Write ? "w+b" : "rb");
-    if (internals->file == nullptr)
-        throw std::runtime_error("Can't open file " + path);
 }
 
 FileIO::~FileIO()
 {
-    if (internals != nullptr)
-        fclose(internals->file);
+    internals->stream.close();
 }
