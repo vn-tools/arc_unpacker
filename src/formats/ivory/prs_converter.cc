@@ -5,34 +5,30 @@
 // Extension: -
 // Archives:  MBL
 
-#include <cassert>
 #include "formats/image.h"
 #include "formats/ivory/prs_converter.h"
 #include "io.h"
 using namespace Formats::Ivory;
 
+#include <iostream>
 namespace
 {
-    const std::string magic("YB\x83\x03", 4);
+    const std::string magic("YB", 2);
 
     void decode_pixels(
-        const char *source_buffer,
+        const unsigned char *source,
         const size_t source_size,
-        char *target_buffer,
+        unsigned char *target,
         const size_t target_size)
     {
-        size_t i;
-        assert(source_buffer != nullptr);
-        assert(target_buffer != nullptr);
-
-        const unsigned char *source = (const unsigned char*)source_buffer;
+        const unsigned char *source_ptr = source;
         const unsigned char *source_guardian = source + source_size;
-        unsigned char *target = (unsigned char*)(target_buffer);
+        unsigned char *target_ptr = target;
         unsigned char *target_guardian = target + target_size;
 
         int flag = 0;
         int length_lookup[256];
-        for (i = 0; i < 256; i ++)
+        for (size_t i = 0; i < 256; i ++)
             length_lookup[i] = i + 3;
         length_lookup[0xff] = 0x1000;
         length_lookup[0xfe] = 0x400;
@@ -43,90 +39,93 @@ namespace
             flag <<= 1;
             if ((flag & 0xff) == 0)
             {
-                if (source >= source_guardian)
+                if (source_ptr >= source_guardian)
                     break;
-                flag = *source ++;
+                flag = *source_ptr ++;
                 flag <<= 1;
                 flag += 1;
             }
 
             if ((flag & 0x100) != 0x100)
             {
-                if (source >= source_guardian || target >= target_guardian)
+                if (source_ptr >= source_guardian
+                    || target_ptr >= target_guardian)
+                {
                     break;
+                }
 
-                *target ++ = *source ++;
+                *target_ptr ++ = *source_ptr ++;
             }
             else
             {
-                int tmp = *source ++;
+                int tmp = *source_ptr ++;
                 size_t length = 0;
                 size_t shift = 0;
 
-                if (tmp < 0x80)
+                if (tmp & 0x80)
+                {
+                    if (source_ptr >= source_guardian)
+                        break;
+
+                    shift = (*source_ptr ++) | ((tmp & 0x3f) << 8);
+                    if (tmp & 0x40)
+                    {
+                        if (source_ptr >= source_guardian)
+                            break;
+
+                        length = length_lookup[(size_t)*source_ptr ++];
+                    }
+                    else
+                    {
+                        length = (shift & 0xf) + 3;
+                        shift >>= 4;
+                    }
+                }
+                else
                 {
                     length = tmp >> 2;
                     tmp &= 3;
                     if (tmp == 3)
                     {
                         length += 9;
-                        for (i = 0; i < length; i ++)
+                        for (size_t i = 0; i < length; i ++)
                         {
-                            if (source >= source_guardian
-                            || target >= target_guardian)
+                            if (source_ptr >= source_guardian
+                                || target_ptr >= target_guardian)
                             {
                                 break;
                             }
-                            *target ++ = *source ++;
+                            *target_ptr ++ = *source_ptr ++;
                         }
                         continue;
                     }
                     shift = length;
                     length = tmp + 2;
                 }
-                else
-                {
-                    if (source >= source_guardian)
-                        break;
-
-                    shift = (*source ++) | ((tmp & 0x3f) << 8);
-                    if ((tmp & 0x40) == 0)
-                    {
-                        length = shift;
-                        shift >>= 4;
-                        length &= 0xf;
-                        length += 3;
-                    }
-                    else
-                    {
-                        if (source >= source_guardian)
-                            break;
-
-                        length = length_lookup[(size_t)*source ++];
-                    }
-                }
 
                 shift += 1;
-                for (i = 0; i < length; i ++)
+                for (size_t i = 0; i < length; i ++)
                 {
-                    if (target >= target_guardian)
+                    if (target_ptr >= target_guardian)
                         break;
-                    assert(target - shift >= (unsigned char*)target_buffer);
-                    *target = *(target - shift);
-                    target ++;
+                    if (target_ptr - shift < target)
+                        throw std::runtime_error("Invalid shift value");
+                    *target_ptr = *(target_ptr - shift);
+                    target_ptr ++;
                 }
             }
         }
-
-        for (i = 3; i < target_size; i ++)
-            target_buffer[i] += target_buffer[i-3];
     }
 }
 
 void PrsConverter::decode_internal(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a PRS graphic file");
+        throw std::runtime_error("Not a PRS image");
+
+    bool using_differences = file.io.read_u8() > 0;
+    if (file.io.read_u8() != 3)
+        throw std::runtime_error("Unknown PRS version");
 
     uint32_t source_size = file.io.read_u32_le();
     file.io.skip(4);
@@ -134,18 +133,26 @@ void PrsConverter::decode_internal(File &file) const
     uint16_t image_height = file.io.read_u16_le();
 
     const size_t target_size = image_width * image_height * 3;
-    std::unique_ptr<char> source_buffer(new char[source_size]);
-    std::unique_ptr<char> target_buffer(new char[target_size]);
-    file.io.read(source_buffer.get(), source_size);
+    std::unique_ptr<char[]> source(new char[source_size]);
+    std::unique_ptr<char[]> target(new char[target_size]);
+    file.io.read(source.get(), source_size);
 
     decode_pixels(
-        source_buffer.get(), source_size,
-        target_buffer.get(), target_size);
+        reinterpret_cast<unsigned char*>(source.get()),
+        source_size,
+        reinterpret_cast<unsigned char*>(target.get()),
+        target_size);
+
+    if (using_differences)
+    {
+        for (size_t i = 3; i < target_size; i ++)
+            target[i] += target[i - 3];
+    }
 
     std::unique_ptr<Image> image = Image::from_pixels(
         image_width,
         image_height,
-        std::string(target_buffer.get(), target_size),
+        std::string(target.get(), target_size),
         IMAGE_PIXEL_FORMAT_BGR);
     image->update_file(file);
 }
