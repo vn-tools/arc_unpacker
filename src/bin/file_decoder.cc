@@ -1,3 +1,4 @@
+#include <boost/filesystem.hpp>
 #include <cstring>
 #include "arg_parser.h"
 #include "bin_helpers.h"
@@ -6,7 +7,6 @@
 #include "file_io.h"
 #include "file_saver.h"
 #include "formats/converter.h"
-#include "fs.h"
 #include "logger.h"
 
 namespace
@@ -85,13 +85,14 @@ namespace
         for (size_t i = 1; i < stray.size(); i ++)
         {
             std::string path = stray[i];
-            if (is_dir(path))
+            if (boost::filesystem::is_directory(path))
             {
-                std::vector<std::string> sub_paths = get_files_recursive(path);
-                for (size_t j = 0; j < sub_paths.size(); j ++)
+                for (boost::filesystem::recursive_directory_iterator it(path);
+                    it != boost::filesystem::recursive_directory_iterator();
+                    it ++)
                 {
                     std::unique_ptr<PathInfo> pi(new PathInfo);
-                    pi->input_path = sub_paths[j];
+                    pi->input_path = it->path().string();
                     pi->target_path = pi->input_path.substr(path.length() + 1);
                     options.input_paths.push_back(std::move(pi));
                 }
@@ -100,7 +101,8 @@ namespace
             {
                 std::unique_ptr<PathInfo> pi(new PathInfo);
                 pi->input_path = path;
-                pi->target_path = basename(path);
+                pi->target_path
+                    = boost::filesystem::path(path).filename().string();
                 options.input_paths.push_back(std::move(pi));
             }
         }

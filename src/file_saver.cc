@@ -1,44 +1,30 @@
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <set>
+#include <stdexcept>
 #include "file_io.h"
 #include "file_saver.h"
-#include "fs.h"
 #include "logger.h"
 #include "util/itos.h"
 
 struct FileSaverHdd::Internals
 {
     std::string output_dir;
-    std::set<std::string> paths;
+    std::set<boost::filesystem::path> paths;
 
-    std::string get_full_path(
-        const std::string output_dir, const std::string file_name)
+    boost::filesystem::path make_path_unique(const boost::filesystem::path path)
     {
-        if (output_dir == "")
-            return file_name;
-        std::string path = output_dir;
-        if (path[path.length() - 1] != '/')
-            path += "/";
-        path += file_name;
-        return path;
-    }
-
-    std::string make_path_unique(const std::string path)
-    {
-        std::string full_path = path;
+        boost::filesystem::path new_path = path;
         int i = 1;
-        while (paths.find(full_path) != paths.end())
+        while (paths.find(new_path) != paths.end())
         {
-            std::string dir = dirname(path);
-            std::string name = basename(path);
             std::string suffix = "(" + itos(i ++) + ")";
-            size_t pos = name.rfind(".");
-            name = pos != std::string::npos
-                ? name.substr(0, pos) + suffix + name.substr(pos)
-                : name + suffix;
-            full_path = dir + "/" + name;
+            new_path = path.parent_path();
+            new_path /= boost::filesystem::path(
+                path.stem().string() + suffix + path.extension().string());
         }
-        paths.insert(full_path);
-        return full_path;
+        paths.insert(new_path);
+        return new_path;
     }
 };
 
@@ -56,15 +42,23 @@ void FileSaverHdd::save(const std::shared_ptr<File> &file) const
 {
     try
     {
-        std::string full_path = internals->get_full_path(
-            internals->output_dir, file->name);
+        std::string name_part = file->name;
+        size_t pos = 0;
+        while ((pos = name_part.find("\\", pos)) != std::string::npos)
+        {
+            name_part.replace(pos, 1, "/");
+            pos ++;
+        }
+
+        boost::filesystem::path full_path(internals->output_dir);
+        full_path /= boost::filesystem::path(name_part);
         full_path = internals->make_path_unique(full_path);
 
-        log("Saving to %s... ", full_path.c_str());
+        log("Saving to %s... ", full_path.generic_string().c_str());
 
-        mkpath(dirname(full_path));
+        boost::filesystem::create_directories(full_path.parent_path());
 
-        FileIO output_io(full_path, "wb");
+        FileIO output_io(full_path.string(), "wb");
         file->io.seek(0);
         output_io.write_from_io(file->io, file->io.size());
         log("ok\n");

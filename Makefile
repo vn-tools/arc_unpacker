@@ -11,7 +11,7 @@ BIN_DIR = bin
 OBJ_DIR = obj
 TEST_SRC_DIR = tests
 
-LFLAGS = -Wall -Wextra -pedantic -lpng -lz -lstdc++
+LFLAGS = -Wall -Wextra -pedantic -lpng -lz -lstdc++ -lboost_filesystem -lboost_locale -lboost_system
 CXXFLAGS = -Wall -Wextra -pedantic -Wwrite-strings -Wno-unused-variable -Wno-unused-parameter -std=c++11 -iquote $(SRC_DIR)
 
 ifeq (${DEBUG}, 1)

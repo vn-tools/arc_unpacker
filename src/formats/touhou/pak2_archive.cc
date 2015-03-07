@@ -8,12 +8,12 @@
 // - Touhou 10.5 - Scarlet Weather Rhapsody
 // - Touhou 12.3 - Unthinkable Natural Law
 
+#include <boost/filesystem.hpp>
 #include "buffered_io.h"
 #include "file_io.h"
 #include "formats/touhou/pak2_archive.h"
 #include "formats/touhou/pak2_image_converter.h"
 #include "formats/touhou/pak2_sound_converter.h"
-#include "fs.h"
 #include "util/colors.h"
 #include "util/encoding.h"
 #include "util/mt.h"
@@ -94,13 +94,18 @@ namespace
         return table;
     }
 
-    PaletteMap find_all_palettes(
-        const std::string &arc_path)
+    PaletteMap find_all_palettes(const std::string &arc_path)
     {
         PaletteMap palettes;
 
-        for (auto &path : get_files(dirname(arc_path)))
+        auto dir = boost::filesystem::path(arc_path).parent_path();
+        for (boost::filesystem::directory_iterator it(dir);
+            it != boost::filesystem::directory_iterator();
+            it ++)
         {
+            auto path = it->path().string();
+            if (!boost::filesystem::is_regular_file(path))
+                continue;
             if (path.find(".dat") == std::string::npos)
                 continue;
 

@@ -8,10 +8,10 @@
 // - Touhou 10.5 - Scarlet Weather Rhapsody
 // - Touhou 12.3 - Unthinkable Natural Law
 
+#include <boost/filesystem.hpp>
 #include "buffered_io.h"
 #include "formats/image.h"
 #include "formats/touhou/pak2_image_converter.h"
-#include "fs.h"
 #include "util/colors.h"
 #include "util/itos.h"
 using namespace Formats::Touhou;
@@ -59,9 +59,10 @@ void Pak2ImageConverter::decode_internal(File &file) const
     uint32_t *palette = nullptr;
     if (bit_depth == 8)
     {
-        std::string path = dirname(file.name)
-            + "palette" + itos(palette_number, 3) + ".pal";
-        palette = internals->palette_map[path].get();
+        auto path = boost::filesystem::path(file.name);
+        path.remove_filename();
+        path /= "palette" + itos(palette_number, 3) + ".pal";
+        palette = internals->palette_map[path.generic_string()].get();
     }
 
     for (size_t y = 0; y < image_height; y ++)

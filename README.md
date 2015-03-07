@@ -11,6 +11,7 @@ Building requirements
 ---------------------
 
 1. g++ 4.8+
+2. boost::filesystem
 2. libpng 1.4+
 3. zlib (comes with libpng)
 4. iconv (comes with POSIX)
