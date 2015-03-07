@@ -49,7 +49,6 @@ namespace
 
     std::unique_ptr<File> read_file(
         IO &arc_io,
-        const PrsConverter &prs_converter,
         size_t name_length)
     {
         std::unique_ptr<File> file(new File);
@@ -69,7 +68,6 @@ namespace
         file->io.write_from_io(arc_io, size);
         arc_io.seek(old_pos);
 
-        prs_converter.try_decode(*file);
         return file;
     }
 }
@@ -108,7 +106,9 @@ void MblArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     for (size_t i = 0; i < file_count; i ++)
     {
-        file_saver.save(
-            read_file(arc_file.io, internals->prs_converter, name_length));
+        auto file = read_file(arc_file.io, name_length);
+        internals->prs_converter.try_decode(*file);
+        file->guess_extension();
+        file_saver.save(std::move(file));
     }
 }
