@@ -11,7 +11,6 @@
 // - Sharin no Kuni, Himawari no Shoujo
 // - Comyu Kuroi Ryuu to Yasashii Oukoku
 
-#include <cassert>
 #include "buffered_io.h"
 #include "formats/kirikiri/tlg_converter.h"
 #include "formats/kirikiri/xp3_archive.h"
@@ -95,7 +94,8 @@ namespace
         size_t name_length = table_io.read_u16_le();
         std::string name_utf16 = table_io.read(name_length * 2);
         target_file.name = convert_encoding(name_utf16, "UTF-16LE", "UTF-8");
-        assert(info_chunk_size == name_length * 2 + 22);
+        if (info_chunk_size != name_length * 2 + 22)
+            throw std::runtime_error("Unexpected INFO chunk size");
     }
 
     bool read_segm_chunk(
@@ -104,31 +104,33 @@ namespace
         File &target_file)
     {
         if (!check_magic(table_io, segm_magic))
-        {
-            table_io.skip(-(signed)segm_magic.size());
-            return false;
-        }
+            throw std::runtime_error("Expected SEGM chunk");
+
         uint64_t segm_chunk_size = table_io.read_u64_le();
-        assert(segm_chunk_size == 28);
-
-        uint32_t segm_flags = table_io.read_u32_le();
-        uint64_t data_offset = table_io.read_u64_le();
-        uint64_t data_size_original = table_io.read_u64_le();
-        uint64_t data_size_compressed = table_io.read_u64_le();
-        arc_io.seek(static_cast<size_t>(data_offset));
-
-        bool use_zlib = (segm_flags & 7) > 0;
-        if (use_zlib)
+        if (segm_chunk_size % 28 != 0)
+            throw std::runtime_error("Unexpected SEGM chunk size");
+        size_t initial_pos = table_io.tell();
+        while (segm_chunk_size > table_io.tell() - initial_pos)
         {
-            std::string data_compressed = arc_io.read(
-                static_cast<int>(data_size_compressed));
-            std::string data_uncompressed = zlib_inflate(data_compressed);
-            target_file.io.write(data_uncompressed);
-        }
-        else
-        {
-            target_file.io.write_from_io(
-                arc_io, static_cast<size_t>(data_size_original));
+            uint32_t segm_flags = table_io.read_u32_le();
+            uint64_t data_offset = table_io.read_u64_le();
+            uint64_t data_size_original = table_io.read_u64_le();
+            uint64_t data_size_compressed = table_io.read_u64_le();
+            arc_io.seek(static_cast<size_t>(data_offset));
+
+            bool use_zlib = (segm_flags & 7) > 0;
+            if (use_zlib)
+            {
+                std::string data_compressed = arc_io.read(
+                    static_cast<int>(data_size_compressed));
+                std::string data_uncompressed = zlib_inflate(data_compressed);
+                target_file.io.write(data_uncompressed);
+            }
+            else
+            {
+                target_file.io.write_from_io(
+                    arc_io, static_cast<size_t>(data_size_original));
+            }
         }
 
         return true;
@@ -136,13 +138,12 @@ namespace
 
     uint32_t read_adlr_chunk(IO &table_io, uint32_t *encryption_key)
     {
-        assert(encryption_key != nullptr);
-
         if (!check_magic(table_io, adlr_magic))
             throw std::runtime_error("Expected ADLR chunk");
 
         uint64_t adlr_chunk_size = table_io.read_u64_le();
-        assert(adlr_chunk_size == 4);
+        if (adlr_chunk_size != 4)
+            throw std::runtime_error("Unexpected ADLR chunk size");
 
         *encryption_key = table_io.read_u32_le();
         return true;
@@ -155,19 +156,16 @@ namespace
         if (!check_magic(table_io, file_magic))
             throw std::runtime_error("Expected FILE chunk");
 
+        uint32_t encryption_key;
         uint64_t file_chunk_size = table_io.read_u64_le();
         size_t file_chunk_start_offset = table_io.tell();
 
         read_info_chunk(table_io, *target_file);
-
-        while (read_segm_chunk(table_io, arc_io, *target_file))
-        {
-        }
-
-        uint32_t encryption_key;
+        read_segm_chunk(table_io, arc_io, *target_file);
         read_adlr_chunk(table_io, &encryption_key);
 
-        assert(table_io.tell() - file_chunk_start_offset == file_chunk_size);
+        if (table_io.tell() - file_chunk_start_offset != file_chunk_size)
+            throw std::runtime_error("Unexpected FILE chunk size");
 
         if (filter != nullptr)
             filter->decode(*target_file, encryption_key);
