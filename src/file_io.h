@@ -1,5 +1,7 @@
 #ifndef FILE_IO
 #define FILE_IO
+#include <boost/filesystem.hpp>
+#include <boost/locale.hpp>
 #include <memory>
 #include <string>
 #include "io.h"
@@ -13,7 +15,7 @@ enum FileIOMode
 class FileIO final : public IO
 {
 public:
-    FileIO(const std::string &path, const FileIOMode mode);
+    FileIO(const boost::filesystem::path &path, const FileIOMode mode);
     ~FileIO();
 
     virtual size_t size() const override;

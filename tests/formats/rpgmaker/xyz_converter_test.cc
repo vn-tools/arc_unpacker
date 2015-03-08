@@ -7,8 +7,8 @@ void test_xyz_decoding()
     XyzConverter converter;
     assert_decoded_image(
         converter,
-        "tests/formats/rpgmaker/files/浅瀬部屋a.xyz",
-        "tests/formats/rpgmaker/files/浅瀬部屋a-out.png");
+        L"tests/formats/rpgmaker/files/浅瀬部屋a.xyz",
+        L"tests/formats/rpgmaker/files/浅瀬部屋a-out.png");
 }
 
 int main(void)

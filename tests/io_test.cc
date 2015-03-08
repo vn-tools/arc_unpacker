@@ -1,3 +1,4 @@
+#include <boost/filesystem.hpp>
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
@@ -22,7 +23,7 @@ void test_file_simple_write()
         eassert(io.read_u32_le() == 1);
         eassert(io.size() == 4);
     }
-    remove("tests/files/trash.out");
+    boost::filesystem::remove("tests/files/trash.out");
 }
 
 void test_buffer_empty()

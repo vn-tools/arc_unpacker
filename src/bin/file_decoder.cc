@@ -20,7 +20,7 @@ namespace
     typedef struct
     {
         std::string format;
-        std::string output_dir;
+        boost::filesystem::path output_dir;
         std::vector<std::unique_ptr<PathInfo>> input_paths;
     } Options;
 
@@ -223,44 +223,40 @@ namespace
     }
 }
 
-int main(int argc, const char **argv)
-{
-    return run_with_args(argc, argv, [](std::vector<std::string> args) -> int
+ENTRYPOINT(
+    try
     {
-        try
+        int exit_code = 0;
+
+        Options options;
+        ConverterFactory conv_factory;
+        ArgParser arg_parser;
+        arg_parser.parse(arguments);
+
+        add_output_folder_option(arg_parser, options);
+        add_format_option(arg_parser, options);
+        add_help_option(arg_parser);
+
+        if (should_show_help(arg_parser))
         {
-            int exit_code = 0;
-
-            Options options;
-            ConverterFactory conv_factory;
-            ArgParser arg_parser;
-            arg_parser.parse(args);
-
-            add_output_folder_option(arg_parser, options);
-            add_format_option(arg_parser, options);
-            add_help_option(arg_parser);
-
-            if (should_show_help(arg_parser))
-            {
-                std::unique_ptr<Converter> converter(options.format != ""
-                    ? conv_factory.create_converter(options.format)
-                    : nullptr);
-                print_help(args[0], arg_parser, options, converter.get());
-            }
-            else
-            {
-                if (!add_input_paths_option(arg_parser, options))
-                    exit_code = 1;
-                else if (!run(options, arg_parser, conv_factory))
-                    exit_code = 1;
-            }
-
-            return exit_code;
+            std::unique_ptr<Converter> converter(options.format != ""
+                ? conv_factory.create_converter(options.format)
+                : nullptr);
+            print_help(arguments[0], arg_parser, options, converter.get());
         }
-        catch (std::exception &e)
+        else
         {
-            log("Error: %s\n", e.what());
-            return 1;
+            if (!add_input_paths_option(arg_parser, options))
+                exit_code = 1;
+            else if (!run(options, arg_parser, conv_factory))
+                exit_code = 1;
         }
-    });
-}
+
+        return exit_code;
+    }
+    catch (std::exception &e)
+    {
+        log("Error: %s\n", e.what());
+        return 1;
+    }
+)

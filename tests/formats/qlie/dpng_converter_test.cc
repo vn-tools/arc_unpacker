@@ -7,8 +7,8 @@ void test_dpng_decoding()
     DpngConverter converter;
     assert_decoded_image(
         converter,
-        "tests/formats/qlie/files/雷02.png",
-        "tests/formats/qlie/files/雷02-out.png");
+        L"tests/formats/qlie/files/雷02.png",
+        L"tests/formats/qlie/files/雷02-out.png");
 }
 
 int main(void)

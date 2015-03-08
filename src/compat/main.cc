@@ -1,44 +1,39 @@
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 #include <boost/locale.hpp>
-#include <memory>
 #include "compat/main.h"
+#include "util/encoding.h"
 
-void ensure_utf8_locale()
+std::vector<std::string> get_arguments(int argc, const char **argv)
 {
-    std::locale::global(boost::locale::generator().generate("en_US.UTF-8"));
-    boost::filesystem::path::imbue(std::locale());
+    std::vector<std::string> arguments;
+    arguments.reserve(argc);
+    for (int i = 0; i < argc; i ++)
+        arguments.push_back(std::string(argv[i]));
+    return arguments;
 }
 
-#ifdef _WIN32
-    #include <Windows.h>
-    #include "compat/winutf8.h"
+std::vector<std::string> get_arguments(int argc, const wchar_t **argv)
+{
+    std::vector<std::string> arguments;
+    arguments.reserve(argc);
+    for (int i = 0; i < argc; i ++)
+    {
+        arguments.push_back(
+            convert_encoding(
+                std::string(
+                    reinterpret_cast<const char*>(argv[i]),
+                    wcslen(argv[i]) * 2),
+                "UTF-16LE",
+                "UTF-8"));
+    }
+    return arguments;
+}
 
-    int run_with_args(
-        int, const char **, std::function<int(std::vector<std::string>)> main)
-    {
-        ensure_utf8_locale();
-        std::vector<std::string> arguments;
-        int argc;
-        LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-        arguments.reserve(argc);
-        for (int i = 0; i < argc; i ++)
-        {
-            arguments.push_back(wstring2string(argv[i]));
-        }
-        LocalFree(argv);
-        return main(arguments);
-    }
-#else
-    int run_with_args(
-        int argc,
-        const char **argv,
-        std::function<int(std::vector<std::string>)> main)
-    {
-        ensure_utf8_locale();
-        std::vector<std::string> arguments;
-        arguments.reserve(argc);
-        for (int i = 0; i < argc; i ++)
-            arguments.push_back(std::string(argv[i]));
-        return main(arguments);
-    }
-#endif
+void init_fs_utf8()
+{
+    std::locale loc(
+        std::locale(),
+        new boost::filesystem::detail::utf8_codecvt_facet);
+    boost::filesystem::path::imbue(loc);
+}

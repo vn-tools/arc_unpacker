@@ -1,5 +1,6 @@
 #ifndef TEST_SUPPORT_ARCHIVE_SUPPORT_H
 #define TEST_SUPPORT_ARCHIVE_SUPPORT_H
+#include <boost/filesystem.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -7,7 +8,7 @@
 #include "file_saver.h"
 
 std::unique_ptr<FileSaverMemory> unpack_to_memory(
-    const std::string input_path, Archive &archive);
+    const boost::filesystem::path &input_path, Archive &archive);
 
 void compare_files(
     const std::vector<File*> &expected_files,

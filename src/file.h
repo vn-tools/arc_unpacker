@@ -1,5 +1,6 @@
 #ifndef FILE_H
 #define FILE_H
+#include <boost/filesystem.hpp>
 #include <string>
 #include "file_io.h"
 #include "io.h"
@@ -7,7 +8,7 @@
 class File final
 {
 public:
-    File(const std::string path, const FileIOMode mode);
+    File(const boost::filesystem::path &path, const FileIOMode mode);
     File();
     ~File();
     IO &io;

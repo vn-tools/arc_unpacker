@@ -1,11 +1,11 @@
 #include <cassert>
 #include <cstring>
 #include <memory>
+#include "file.h"
 #include "file_io.h"
 #include "formats/image.h"
 #include "test_support/converter_support.h"
 #include "test_support/eassert.h"
-#include "file.h"
 
 namespace
 {
@@ -29,7 +29,7 @@ namespace
     }
 
     std::unique_ptr<Image> image_from_converter(
-        const std::string path, Converter &converter)
+        const boost::filesystem::path &path, Converter &converter)
     {
         FileIO io(path, FileIOMode::Read);
         File file;
@@ -38,7 +38,7 @@ namespace
         return std::unique_ptr<Image>(Image::from_boxed(file.io));
     }
 
-    std::unique_ptr<Image> image_from_path(const std::string path)
+    std::unique_ptr<Image> image_from_path(const boost::filesystem::path &path)
     {
         FileIO io(path, FileIOMode::Read);
         return std::unique_ptr<Image>(Image::from_boxed(io));
@@ -55,8 +55,8 @@ void assert_decoded_image(const File &actual_file, const File &expected_file)
 
 void assert_decoded_image(
     Converter &converter,
-    const std::string &path_to_input,
-    const std::string &path_to_expected)
+    const boost::filesystem::path &path_to_input,
+    const boost::filesystem::path &path_to_expected)
 {
     auto actual_image = image_from_converter(path_to_input, converter);
     auto expected_image = image_from_path(path_to_expected);

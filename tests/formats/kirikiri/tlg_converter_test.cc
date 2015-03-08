@@ -7,8 +7,8 @@ void test_tlg5_decoding()
     TlgConverter converter;
     assert_decoded_image(
         converter,
-        "tests/formats/kirikiri/files/14凛ペンダント.tlg",
-        "tests/formats/kirikiri/files/14凛ペンダント-out.png");
+        L"tests/formats/kirikiri/files/14凛ペンダント.tlg",
+        L"tests/formats/kirikiri/files/14凛ペンダント-out.png");
 }
 
 void test_tlg6_decoding()

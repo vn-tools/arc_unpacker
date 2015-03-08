@@ -5,6 +5,8 @@
 #include <vector>
 #include "file.h"
 
+namespace boost { namespace filesystem { class path; } }
+
 class FileSaver
 {
 public:
@@ -14,7 +16,7 @@ public:
 class FileSaverHdd : public FileSaver
 {
 public:
-    FileSaverHdd(std::string output_dir);
+    FileSaverHdd(boost::filesystem::path output_dir);
     ~FileSaverHdd();
 
     virtual void save(const std::shared_ptr<File> &file) const override;

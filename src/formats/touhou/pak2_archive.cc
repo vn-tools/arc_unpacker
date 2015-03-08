@@ -103,15 +103,14 @@ namespace
             it != boost::filesystem::directory_iterator();
             it ++)
         {
-            auto path = it->path().string();
-            if (!boost::filesystem::is_regular_file(path))
+            if (!boost::filesystem::is_regular_file(it->path()))
                 continue;
-            if (path.find(".dat") == std::string::npos)
+            if (it->path().string().find(".dat") == std::string::npos)
                 continue;
 
             try
             {
-                FileIO file_io(path, FileIOMode::Read);
+                FileIO file_io(it->path(), FileIOMode::Read);
                 for (auto &table_entry : read_table(file_io))
                 {
                     if (table_entry->name.find(".pal") == std::string::npos)

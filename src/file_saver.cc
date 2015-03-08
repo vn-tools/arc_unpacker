@@ -1,5 +1,5 @@
-#include <boost/filesystem.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/filesystem.hpp>
 #include <set>
 #include <stdexcept>
 #include "file_io.h"
@@ -9,7 +9,7 @@
 
 struct FileSaverHdd::Internals
 {
-    std::string output_dir;
+    boost::filesystem::path output_dir;
     std::set<boost::filesystem::path> paths;
 
     boost::filesystem::path make_path_unique(const boost::filesystem::path path)
@@ -28,7 +28,7 @@ struct FileSaverHdd::Internals
     }
 };
 
-FileSaverHdd::FileSaverHdd(std::string output_dir)
+FileSaverHdd::FileSaverHdd(boost::filesystem::path output_dir)
     : internals(new Internals)
 {
     internals->output_dir = output_dir;

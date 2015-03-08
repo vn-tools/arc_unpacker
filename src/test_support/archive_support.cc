@@ -1,12 +1,12 @@
 #include <cassert>
 #include "arg_parser.h"
+#include "file.h"
 #include "file_io.h"
 #include "test_support/archive_support.h"
 #include "test_support/eassert.h"
-#include "file.h"
 
 std::unique_ptr<FileSaverMemory> unpack_to_memory(
-    const std::string input_path, Archive &archive)
+    const boost::filesystem::path &input_path, Archive &archive)
 {
     ArgParser arg_parser;
     File file(input_path, FileIOMode::Read);

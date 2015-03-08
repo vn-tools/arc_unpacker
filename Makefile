@@ -1,6 +1,5 @@
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 
-CXX      = g++
 LINKER   = $(CXX) -o
 RM       = rm -rf
 MKPATH   = mkdir -p
@@ -25,14 +24,20 @@ else
 endif
 TEST_BIN_DIR := $(BIN_DIR)/tests
 TEST_OBJ_DIR := $(OBJ_DIR)/tests
+TEST_LFLAGS := $(LFLAGS)
+TEST_CXXFLAGS := $(CXXFLAGS)
 
 #OS specific linker settings
 SYSTEM := $(shell $(CXX) -dumpmachine)
 ifneq (, $(findstring cygwin, $(SYSTEM)))
-	LFLAGS += -liconv
+	LFLAGS      += -liconv
+	TEST_LFLAGS += -liconv
 endif
-ifneq (, $(findstring mingw32, $(SYSTEM)))
-	LFLAGS += -liconv
+ifneq (, $(findstring w64-mingw, $(SYSTEM)))
+	LFLAGS      += -liconv -L $(MINGW)/lib -municode
+	TEST_LFLAGS += -liconv -L $(MINGW)/lib
+	CXXFLAGS      += -I $(MINGW)/include -Wno-unused-local-typedefs
+	TEST_CXXFLAGS += -I $(MINGW)/include -Wno-unused-local-typedefs
 endif
 
 
@@ -69,19 +74,19 @@ tests: $(TEST_BINARIES)
 $(TEST_BIN_DIR)/%: $(TEST_OBJ_DIR)/%.o $(OBJECTS)
 	@$(MKPATH) $(dir $@)
 	@echo Linking $@
-	@$(LINKER) $@ $^ $(LFLAGS)
+	@$(LINKER) $@ $^ $(TEST_LFLAGS)
 
 $(TEST_OBJ_DIR)/%.o: $(TEST_SRC_DIR)/%.cc
 	@$(MKPATH) $(dir $@)
 	@echo Compiling $@
-	@$(CXX) $(CXXFLAGS) -c $< -o $@
+	@$(CXX) $(TEST_CXXFLAGS) -c $< -o $@
 
 
 
 #Additional targets
 .PHONY: clean
 clean:
-	$(RM) ./$(BIN_DIR)/*
+	find ./$(BIN_DIR)/ -type f -not -iname '*.dll' -exec rm {} \;
 	$(RM) ./$(OBJ_DIR)/*
 	$(RM) ./$(TEST_BIN_DIR)/*
 	$(RM) ./$(TEST_OBJ_DIR)/*

@@ -16,10 +16,10 @@ namespace
     {
         std::string format;
         std::string input_path;
-        std::string output_path;
+        std::string output_dir;
     } Options;
 
-    std::string get_default_output_path(const std::string input_path)
+    std::string get_default_output_dir(const std::string input_path)
     {
         return input_path + "~";
     }
@@ -30,7 +30,7 @@ namespace
         Options &options,
         Archive *archive)
     {
-        log("Usage: %s [options] [arc_options] input_path [output_path]\n",
+        log("Usage: %s [options] [arc_options] input_path [output_dir]\n",
             path_to_self.c_str());
 
         log("\n");
@@ -81,8 +81,8 @@ namespace
         }
 
         options.input_path = stray[1];
-        options.output_path = stray.size() < 3
-            ? get_default_output_path(stray[1])
+        options.output_dir = stray.size() < 3
+            ? get_default_output_dir(stray[1])
             : stray[2];
     }
 
@@ -157,7 +157,7 @@ namespace
         ArgParser &arg_parser,
         const ArchiveFactory &arc_factory)
     {
-        FileSaverHdd file_saver(options.output_path);
+        FileSaverHdd file_saver(options.output_dir);
         File file(options.input_path, FileIOMode::Read);
         return guess_archive_and_unpack(
             file,
@@ -168,41 +168,37 @@ namespace
     }
 }
 
-int main(int argc, const char **argv)
-{
-    return run_with_args(argc, argv, [](std::vector<std::string> args) -> int
+ENTRYPOINT(
+    try
     {
-        try
+        int exit_code = 0;
+        Options options;
+        ArchiveFactory arc_factory;
+        ArgParser arg_parser;
+        arg_parser.parse(arguments);
+
+        add_format_option(arg_parser, options);
+        add_help_option(arg_parser);
+
+        if (should_show_help(arg_parser))
         {
-            int exit_code = 0;
-            Options options;
-            ArchiveFactory arc_factory;
-            ArgParser arg_parser;
-            arg_parser.parse(args);
-
-            add_format_option(arg_parser, options);
-            add_help_option(arg_parser);
-
-            if (should_show_help(arg_parser))
-            {
-                std::unique_ptr<Archive> archive(options.format != ""
-                    ? arc_factory.create_archive(options.format)
-                    : nullptr);
-                print_help(args[0], arg_parser, options, archive.get());
-            }
-            else
-            {
-                add_path_options(arg_parser, options);
-                if (!run(options, arg_parser, arc_factory))
-                    exit_code = 1;
-            }
-
-            return exit_code;
+            std::unique_ptr<Archive> archive(options.format != ""
+                ? arc_factory.create_archive(options.format)
+                : nullptr);
+            print_help(arguments[0], arg_parser, options, archive.get());
         }
-        catch (std::exception &e)
+        else
         {
-            log("Error: %s\n", e.what());
-            return 1;
+            add_path_options(arg_parser, options);
+            if (!run(options, arg_parser, arc_factory))
+                exit_code = 1;
         }
-    });
-}
+
+        return exit_code;
+    }
+    catch (std::exception &e)
+    {
+        log("Error: %s\n", e.what());
+        return 1;
+    }
+)

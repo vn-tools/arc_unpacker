@@ -1,25 +1,18 @@
 A tool for extracting images and sounds from visual novels.
 
-Disclaimer
-----------
+*Disclaimer*: this project doesn't support modifying the game files. If you'd
+like to translate a game into English and need tools for game script/image
+modification, contact me via the e-mail address listed in my [Github
+profile](https://github.com/rr-).
 
-This project is for data extraction only. If you'd like to translate a game
-into English and need tools for game script/image modification, contact me via
-the e-mail address listed in my [Github profile](https://github.com/rr-).
 
-Building requirements
----------------------
 
-1. g++ 4.8+
-2. boost::filesystem
-2. libpng 1.4+
-3. zlib (comes with libpng)
-4. iconv (comes with POSIX)
-5. POSIX compatibility <sub>(for Windows this means MinGW or Cygwin; might work
-   with Visual Studio with minor tweaks, but I don't support it)</sub>.
+Download
+--------
 
 To download binaries for Windows, head over to
 [releases](https://github.com/vn-tools/arc_unpacker/releases).
+For build instructions, see below.
 
 Usage
 -----
@@ -29,9 +22,7 @@ Usage
 3. Some formats need additional switches in order to unpack correctly.
    These can be found out using `--help`.
 
-Note that some archives provide no way to verify correctness of the extracted
-files. This means that for some unsupported games, the script may extract the
-files and show no errors, but you will be unable to open them nonetheless.
+
 
 Supported games
 ---------------
@@ -110,3 +101,160 @@ archives.</sub>
 [par]: http://i.imgur.com/NMBy1C0.png
 [non]: http://i.imgur.com/2aTNlHb.png
 [nap]: http://i.imgur.com/jQTmqxl.png
+
+If the game isn't listed above, there is still a small chance that the files
+can be extracted nonetheless. Note that some archives provide no way to verify
+correctness of the extracted files, which means that there can be false
+positives and you might get garbage files. That shouldn't happen with any of
+the games listed above, though.
+
+
+
+Building from sources
+---------------------
+
+### Requirements
+
+1. `g++` 4.8+ or `mingw-w64`
+2. `boost::locale`
+3. `boost::filesystem`
+4. `libpng` 1.4+
+5. `zlib` (comes with `libpng`)
+6. `iconv` (comes with POSIX)
+
+### Building for Linux
+
+Just download required dependencies, run `make` and you're good to go.
+
+### Building for Windows on Cygwin
+
+Just download required dependencies, run `make` and you're good to go. Note
+that you'll need Cygwin on every computer you plan to run it on.
+
+### Building for Windows without Cygwin dependencies
+
+In this case you need to use `mingw-w64`. On Cygwin you can download most of
+the dependencies from [Cygwin Ports](http://cygwinports.org/). On Linux, you
+probably need to compile the dependencies yourself. Below I describe the manual
+way which should work for both Cygwin and Linux.
+
+---
+
+:warning: **Before proceeding, run `export MINGW=$HOME/mingw`** (or another
+directory of your choice). This directory will contain the compiled
+dependencies. Choosing folder in `$HOME/` has two advantages:
+
+- we don't need to `sudo` on Linux machines
+- the build is sandboxed, so when we screw up we can just `rm -rf $MINGW` and
+  start over without littering the `/usr`.
+
+#### Compiling `zlib`
+
+    # Obtain sources
+    wget http://zlib.net/zlib-1.2.8.tar.gz
+    tar xzvf zlib-1.2.8.tar.gz
+    cd zlib-1.2.8/
+
+    # Compile
+    make \
+        -f win32/Makefile.gcc \
+        CC=i686-w64-mingw32-gcc \
+        RC=i686-w64-mingw32-windres
+
+    # Install
+    make \
+        -f win32/Makefile.gcc \
+        install \
+        BINARY_PATH=$MINGW/bin \
+        INCLUDE_PATH=$MINGW/include \
+        LIBRARY_PATH=$MINGW/lib \
+        SHARED_MODE=1
+
+#### Compiling `libiconv`
+
+    # Obtain sources
+    wget http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz
+    tar xzvf libiconv-1.14.tar.gz
+    cd libiconv-1.14
+
+    # Compile
+    ./configure \
+        --host=i686-w64-mingw32 \
+        --prefix=$MINGW \
+        CPPFLAGS=-I$MINGW/include \
+        LDFLAGS=-L$MINGW/lib
+    make
+
+    # Install
+    make install
+
+#### Compiling `libpng`
+
+    # Obtain sources
+    wget ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.16.tar.gz
+    tar xzvf libpng-1.6.16.tar.xz
+    cd libpng-1.6.16/
+
+    # Compile
+    ./configure \
+        --host=i686-w64-mingw32 \
+        --prefix=$MINGW \
+        CPPFLAGS=-I$MINGW/include \
+        LDFLAGS=-L$MINGW/lib
+    make
+
+    # Install
+    make install
+
+#### Compiling `boost`
+
+    # Obtain sources
+    wget http://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.zip
+    unzip boost_1_57_0.zip
+    cd boost_1_57_0
+
+    # Compile and install
+    ./bootstrap.sh --prefix=$MINGW
+    echo "using gcc : mingw32 : /usr/bin/i686-w64-mingw32-g++ ;" > user-config.jam
+
+    ./b2 \
+        -j 4 \
+        --layout=system \
+        --user-config=user-config.jam \
+        --with-locale \
+        --with-filesystem \
+        cxxflags="-I$MINGW/include" \
+        linkflags="-L$MINGW/lib" \
+        boost.locale.icu=off \
+        boost.locale.winapi=off \
+        boost.locale.iconv=on \
+        variant=release \
+        link=shared \
+        runtime-link=shared \
+        toolset=gcc-mingw32 \
+        target-os=windows \
+        threadapi=win32 \
+        install
+
+This will run a minimal required build (thanks to `--with` options), so it
+shouldn't take too long.
+
+---
+
+Finally, run `./make-mingw-w64.sh`. Then locate the compiled DLL-s in either
+`/usr` (`libstdc++` etc) or `$MINGW` (`libboost` etc):
+
+- libboost_filesystem.dll
+- libboost_locale.dll
+- libboost_system.dll
+- libgcc_s_sjlj-1.dll
+- libiconv-2.dll
+- libpng16-16.dll
+- libstdc++-6.dll
+
+...and copy them into the binaries directory. Now the program should be ready
+to ship.
+
+### Building in Visual Studio
+
+I'm open to pull requests.
