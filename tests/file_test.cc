@@ -29,20 +29,20 @@ int main(void)
 {
     test_empty_file();
     test_setting_name();
-    test_changing_extension("",            "xyz",  "");
-    test_changing_extension(".",           "xyz",  ".");
-    test_changing_extension("..",          "xyz",  "..");
-    test_changing_extension("abc",         "xyz",  "abc.xyz");
-    test_changing_extension("abc.de",      "xyz",  "abc.xyz");
-    test_changing_extension("abc.de",      ".xyz", "abc.xyz");
-    test_changing_extension("abc.",        "xyz",  "abc.xyz");
-    test_changing_extension(".abc.",       "xyz",  ".abc.xyz");
-    test_changing_extension("./abc",       "xyz",  "./abc.xyz");
-    test_changing_extension("./abc/",      "xyz",  "./abc/");
-    test_changing_extension("./abc/.",     "xyz",  "./abc/.");
-    test_changing_extension("./abc/..",    "xyz",  "./abc/..");
-    test_changing_extension("./abc/def",   "xyz",  "./abc/def.xyz");
-    test_changing_extension("./abc/def.",  "xyz",  "./abc/def.xyz");
-    test_changing_extension("./abc/.def.", "xyz",  "./abc/.def.xyz");
+    test_changing_extension("",          "xyz",  "");
+    test_changing_extension(".",         "xyz",  ".");
+    test_changing_extension("..",        "xyz",  "..");
+    test_changing_extension("abc",       "xyz",  "abc.xyz");
+    test_changing_extension("abc.de",    "xyz",  "abc.xyz");
+    test_changing_extension("abc.de",    ".xyz", "abc.xyz");
+    test_changing_extension("abc.",      "xyz",  "abc.xyz");
+    test_changing_extension(".abc.",     "xyz",  ".abc.xyz");
+    test_changing_extension("abc",       "xyz",  "abc.xyz");
+    test_changing_extension("abc/",      "xyz",  "abc/");
+    test_changing_extension("abc/.",     "xyz",  "abc/.");
+    test_changing_extension("abc/..",    "xyz",  "abc/..");
+    test_changing_extension("abc/def",   "xyz",  "abc/def.xyz");
+    test_changing_extension("abc/def.",  "xyz",  "abc/def.xyz");
+    test_changing_extension("abc/.def.", "xyz",  "abc/.def.xyz");
     return 0;
 }
