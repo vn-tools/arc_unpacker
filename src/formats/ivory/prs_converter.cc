@@ -10,7 +10,6 @@
 #include "io.h"
 using namespace Formats::Ivory;
 
-#include <iostream>
 namespace
 {
     const std::string magic("YB", 2);
