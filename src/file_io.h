@@ -1,7 +1,6 @@
 #ifndef FILE_IO
 #define FILE_IO
-#include <boost/filesystem.hpp>
-#include <boost/locale.hpp>
+#include <boost/filesystem/path.hpp>
 #include <memory>
 #include <string>
 #include "io.h"

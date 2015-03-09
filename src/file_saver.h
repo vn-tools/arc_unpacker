@@ -1,11 +1,10 @@
 #ifndef OUTPUT_FILES_H
 #define OUTPUT_FILES_H
+#include <boost/filesystem/path.hpp>
 #include <memory>
 #include <string>
 #include <vector>
 #include "file.h"
-
-namespace boost { namespace filesystem { class path; } }
 
 class FileSaver
 {

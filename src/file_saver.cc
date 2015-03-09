@@ -1,5 +1,5 @@
 #include <boost/algorithm/string/replace.hpp>
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <set>
 #include <stdexcept>
 #include "file_io.h"

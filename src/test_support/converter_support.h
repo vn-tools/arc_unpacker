@@ -1,6 +1,6 @@
 #ifndef TEST_SUPPORT_CONVERTER_SUPPORT_H
 #define TEST_SUPPORT_CONVERTER_SUPPORT_H
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
 #include <string>
 #include "formats/converter.h"
 

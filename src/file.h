@@ -1,6 +1,6 @@
 #ifndef FILE_H
 #define FILE_H
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
 #include <string>
 #include "file_io.h"
 #include "io.h"

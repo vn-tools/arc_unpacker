@@ -1,6 +1,6 @@
 #ifndef TEST_SUPPORT_ARCHIVE_SUPPORT_H
 #define TEST_SUPPORT_ARCHIVE_SUPPORT_H
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
 #include <memory>
 #include <string>
 #include <vector>
