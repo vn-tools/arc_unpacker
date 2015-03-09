@@ -4,24 +4,25 @@
 #include "bin_helpers.h"
 #include "compat/main.h"
 #include "factory/archive_factory.h"
+#include "file.h"
 #include "file_io.h"
+#include "file_saver.h"
 #include "formats/archive.h"
 #include "logger.h"
-#include "file_saver.h"
-#include "file.h"
 
 namespace
 {
     typedef struct
     {
         std::string format;
-        std::string input_path;
-        std::string output_dir;
+        boost::filesystem::path input_path;
+        boost::filesystem::path output_dir;
     } Options;
 
-    std::string get_default_output_dir(const std::string input_path)
+    boost::filesystem::path get_default_output_dir(
+        const boost::filesystem::path &input_path)
     {
-        return input_path + "~";
+        return boost::filesystem::path(input_path.string() + "~");
     }
 
     void print_help(
