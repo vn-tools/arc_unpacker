@@ -1,4 +1,3 @@
-#include <cassert>
 #include <cstring>
 #include <memory>
 #include "file.h"
