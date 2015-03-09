@@ -27,16 +27,16 @@ namespace
     std::string read_file_name(IO &arc_io, size_t file_id)
     {
         std::string file_name = arc_io.read(60);
-        for (size_t i = 0; i < 58; i ++)
-        {
+        for (size_t i = 0; i < 60; i ++)
             file_name[i] ^= file_id * i * 3 + 0x3d;
-        }
         return file_name.substr(0, file_name.find('\0'));
     }
 
     Table read_table(IO &arc_io)
     {
         size_t file_count = arc_io.read_u32_le() ^ encryption_key;
+        if (file_count > arc_io.size() || file_count * 68 > arc_io.size())
+            throw std::runtime_error("Not a P archive");
         Table table;
         for (size_t i = 0; i < file_count; i ++)
         {
