@@ -1,3 +1,4 @@
+#include "compat/main.h"
 #include "formats/kirikiri/tlg_converter.h"
 #include "test_support/converter_support.h"
 using namespace Formats::Kirikiri;
@@ -7,8 +8,8 @@ void test_tlg5_decoding()
     TlgConverter converter;
     assert_decoded_image(
         converter,
-        L"tests/formats/kirikiri/files/14凛ペンダント.tlg",
-        L"tests/formats/kirikiri/files/14凛ペンダント-out.png");
+        "tests/formats/kirikiri/files/14凛ペンダント.tlg",
+        "tests/formats/kirikiri/files/14凛ペンダント-out.png");
 }
 
 void test_tlg6_decoding()
@@ -31,6 +32,7 @@ void test_tlg0_decoding()
 
 int main(void)
 {
+    init_fs_utf8();
     test_tlg5_decoding();
     test_tlg6_decoding();
     test_tlg0_decoding();
