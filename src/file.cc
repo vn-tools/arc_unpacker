@@ -21,13 +21,17 @@ void File::change_extension(const std::string new_extension)
 {
     auto path = boost::filesystem::path(name);
     if (path.filename().empty()
+        || new_extension.empty()
         || path.filename() == "."
         || path.filename() == ".."
         || path.stem() == "")
     {
         return;
     }
-    path.replace_extension("." + new_extension);
+    if (new_extension[0] == '.')
+        path.replace_extension(new_extension);
+    else
+        path.replace_extension("." + new_extension);
     name = path.string();
 }
 
