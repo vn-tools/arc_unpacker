@@ -8,6 +8,14 @@ IO::~IO()
 {
 }
 
+void IO::peek(size_t offset, std::function<void()> func)
+{
+    size_t old_pos = tell();
+    seek(offset);
+    func();
+    seek(old_pos);
+}
+
 void IO::read_until_zero(char **output, size_t *output_size)
 {
     assert(output != nullptr);

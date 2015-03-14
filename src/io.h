@@ -1,6 +1,7 @@
 #ifndef IO_H
 #define IO_H
 #include <cstdint>
+#include <functional>
 #include <string>
 
 class IO
@@ -13,6 +14,7 @@ public:
     virtual void seek(size_t offset) = 0;
     virtual void skip(int offset) = 0;
     virtual void truncate(size_t new_size) = 0;
+    void peek(size_t offset, std::function<void()> func);
 
     virtual void read(void *input, size_t length) = 0;
     virtual void write(const void *str, size_t length) = 0;
