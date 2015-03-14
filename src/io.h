@@ -15,6 +15,7 @@ public:
     virtual void skip(int offset) = 0;
     virtual void truncate(size_t new_size) = 0;
     void peek(size_t offset, std::function<void()> func);
+    bool eof() const;
 
     virtual void read(void *input, size_t length) = 0;
     virtual void write(const void *str, size_t length) = 0;

@@ -16,6 +16,11 @@ void IO::peek(size_t offset, std::function<void()> func)
     seek(old_pos);
 }
 
+bool IO::eof() const
+{
+    return tell() == size();
+}
+
 void IO::read_until_zero(char **output, size_t *output_size)
 {
     assert(output != nullptr);

@@ -9,6 +9,7 @@
 
 #include "buffered_io.h"
 #include "formats/glib/glib2_archive.h"
+#include "formats/glib/pgx_converter.h"
 using namespace Formats::Glib;
 
 namespace
@@ -347,6 +348,29 @@ namespace
     }
 }
 
+struct Glib2Archive::Internals
+{
+    PgxConverter pgx_converter;
+};
+
+Glib2Archive::Glib2Archive() : internals(new Internals())
+{
+}
+
+Glib2Archive::~Glib2Archive()
+{
+}
+
+void Glib2Archive::add_cli_help(ArgParser &arg_parser) const
+{
+    internals->pgx_converter.add_cli_help(arg_parser);
+}
+
+void Glib2Archive::parse_cli_options(ArgParser &arg_parser)
+{
+    internals->pgx_converter.parse_cli_options(arg_parser);
+}
+
 void Glib2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     auto header = read_header(arc_file.io);
@@ -356,6 +380,8 @@ void Glib2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     {
         if (!table_entry->is_file)
             continue;
-        file_saver.save(read_file(arc_file.io, *table_entry));
+        auto file = read_file(arc_file.io, *table_entry);
+        internals->pgx_converter.try_decode(*file);
+        file_saver.save(std::move(file));
     }
 }

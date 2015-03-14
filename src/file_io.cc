@@ -54,8 +54,10 @@ size_t FileIO::size() const
     return size;
 }
 
-void FileIO::truncate(size_t)
+void FileIO::truncate(size_t new_size)
 {
+    if (new_size == size())
+        return;
     //if (ftruncate(internals->file, new_size) != 0)
         //throw std::runtime_error("Failed to truncate file");
     throw std::runtime_error("Not implemented");

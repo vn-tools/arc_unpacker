@@ -3,6 +3,7 @@
 #include "formats/bgi/cbg_converter.h"
 #include "formats/bgi/sound_converter.h"
 #include "formats/french_bread/ex3_converter.h"
+#include "formats/glib/pgx_converter.h"
 #include "formats/ivory/prs_converter.h"
 #include "formats/key/g00_converter.h"
 #include "formats/key/nwa_converter.h"
@@ -30,6 +31,7 @@ struct ConverterFactory::Internals
 
 ConverterFactory::ConverterFactory() : internals(new Internals)
 {
+    internals->add("pgx", []() { return new Glib::PgxConverter(); });
     internals->add("wcg", []() { return new LiarSoft::WcgConverter(); });
     internals->add("dpng", []() { return new QLiE::DpngConverter(); });
     internals->add("bgi-sound", []() { return new Bgi::SoundConverter(); });
