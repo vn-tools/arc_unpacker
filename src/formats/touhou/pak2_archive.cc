@@ -68,6 +68,8 @@ namespace
     std::unique_ptr<BufferedIO> read_raw_table(IO &arc_io, size_t file_count)
     {
         size_t table_size = arc_io.read_u32_le();
+        if (table_size > arc_io.size() - arc_io.tell())
+            throw std::runtime_error("Not a PAK2 archive");
         std::unique_ptr<BufferedIO> table_io(new BufferedIO());
         table_io->write_from_io(arc_io, table_size);
         decrypt(*table_io, table_size + 6, 0xc5, 0x83, 0x53);
@@ -77,6 +79,8 @@ namespace
     Table read_table(IO &arc_io)
     {
         uint16_t file_count = arc_io.read_u16_le();
+        if (file_count == 0 && arc_io.size() != 6)
+            throw std::runtime_error("Not a PAK2 archive");
         auto table_io = read_raw_table(arc_io, file_count);
         Table table;
         table.reserve(file_count);

@@ -13,9 +13,6 @@
 #include "formats/touhou/pak1_sound_archive.h"
 using namespace Formats::Touhou;
 
-
-
-
 namespace
 {
     typedef struct
@@ -56,6 +53,8 @@ namespace
     std::unique_ptr<BufferedIO> read_raw_table(IO &arc_io, size_t file_count)
     {
         size_t table_size = file_count * 0x6c;
+        if (table_size > arc_io.size() - arc_io.tell())
+            throw std::runtime_error("Not a PAK1 archive");
         std::unique_ptr<BufferedIO> table_io(new BufferedIO());
         table_io->write_from_io(arc_io, table_size);
         decrypt(*table_io, 0x64, 0x64, 0x4d);
@@ -65,6 +64,8 @@ namespace
     Table read_table(IO &arc_io)
     {
         uint16_t file_count = arc_io.read_u16_le();
+        if (file_count == 0 && arc_io.size() != 6)
+            throw std::runtime_error("Not a PAK1 archive");
         auto table_io = read_raw_table(arc_io, file_count);
         Table table;
         table.reserve(file_count);
