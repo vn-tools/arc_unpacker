@@ -22,6 +22,11 @@ struct BufferedIO::Internals
     }
 };
 
+char *BufferedIO::buffer()
+{
+    return internals->buffer;
+}
+
 void BufferedIO::reserve(size_t length)
 {
     size_t new_size = internals->buffer_pos + length;
