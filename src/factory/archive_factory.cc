@@ -3,6 +3,7 @@
 #include "formats/bgi/arc_archive.h"
 #include "formats/french_bread/p_archive.h"
 #include "formats/glib/glib2_archive.h"
+#include "formats/glib/gml_archive.h"
 #include "formats/ivory/mbl_archive.h"
 #include "formats/kirikiri/xp3_archive.h"
 #include "formats/liarsoft/lwg_archive.h"
@@ -41,6 +42,7 @@ struct ArchiveFactory::Internals
 
 ArchiveFactory::ArchiveFactory() : internals(new Internals)
 {
+    internals->add("gml", []() { return new Glib::GmlArchive(); });
     internals->add("g2", []() { return new Glib::Glib2Archive(); });
     internals->add("th-pak1", []() { return new Touhou::Pak1Archive(); });
     internals->add("th-pak2", []() { return new Touhou::Pak2Archive(); });

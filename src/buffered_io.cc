@@ -105,17 +105,24 @@ void BufferedIO::truncate(size_t new_size)
         internals->buffer_pos = new_size;
 }
 
-BufferedIO::BufferedIO() : internals(new BufferedIO::Internals("", 0))
+BufferedIO::BufferedIO() : internals(new Internals("", 0))
 {
 }
 
+BufferedIO::BufferedIO(IO &other_io, size_t length)
+    : internals(new Internals("", 0))
+{
+    write_from_io(other_io, length);
+    seek(0);
+}
+
 BufferedIO::BufferedIO(const std::string &buffer)
-    : internals(new BufferedIO::Internals(buffer.data(), buffer.size()))
+    : internals(new Internals(buffer.data(), buffer.size()))
 {
 }
 
 BufferedIO::BufferedIO(const char *buffer, size_t buffer_size)
-    : internals(new BufferedIO::Internals(buffer, buffer_size))
+    : internals(new Internals(buffer, buffer_size))
 {
 }
 
