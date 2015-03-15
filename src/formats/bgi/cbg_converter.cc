@@ -254,11 +254,11 @@ namespace
         switch (bpp)
         {
             case 8:
-                return IMAGE_PIXEL_FORMAT_GRAYSCALE;
+                return PixelFormat::Grayscale;
             case 24:
-                return IMAGE_PIXEL_FORMAT_BGR;
+                return PixelFormat::BGR;
             case 32:
-                return IMAGE_PIXEL_FORMAT_BGRA;
+                return PixelFormat::BGRA;
         }
         throw std::runtime_error("Unsupported BPP");
     }

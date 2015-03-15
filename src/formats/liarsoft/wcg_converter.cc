@@ -155,6 +155,6 @@ void WcgConverter::decode_internal(File &file) const
         image_width,
         image_height,
         std::string(pixels.get(), pixels_size),
-        IMAGE_PIXEL_FORMAT_BGRA);
+        PixelFormat::BGRA);
     image->update_file(file);
 }

@@ -59,6 +59,6 @@ void PgxConverter::decode_internal(File &file) const
         image_width,
         image_height,
         target_io.read_until_end(),
-        IMAGE_PIXEL_FORMAT_BGRA);
+        PixelFormat::BGRA);
     image->update_file(file);
 }

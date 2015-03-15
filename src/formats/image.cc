@@ -101,15 +101,15 @@ std::unique_ptr<Image> Image::from_boxed(IO &io)
     {
         case PNG_COLOR_TYPE_RGB:
             bpp = 3;
-            image->internals->pixel_format = IMAGE_PIXEL_FORMAT_RGB;
+            image->internals->pixel_format = PixelFormat::RGB;
             break;
         case PNG_COLOR_TYPE_RGBA:
             bpp = 4;
-            image->internals->pixel_format = IMAGE_PIXEL_FORMAT_RGBA;
+            image->internals->pixel_format = PixelFormat::RGBA;
             break;
         case PNG_COLOR_TYPE_GRAY:
             bpp = 1;
-            image->internals->pixel_format = IMAGE_PIXEL_FORMAT_GRAYSCALE;
+            image->internals->pixel_format = PixelFormat::Grayscale;
             break;
         default:
             throw std::runtime_error("Bad pixel format");
@@ -164,29 +164,29 @@ void Image::update_file(File &file) const
     int transformations = 0;
     switch (internals->pixel_format)
     {
-        case IMAGE_PIXEL_FORMAT_RGB:
+        case PixelFormat::RGB:
             bpp = 3;
             color_type = PNG_COLOR_TYPE_RGB;
             break;
 
-        case IMAGE_PIXEL_FORMAT_BGR:
+        case PixelFormat::BGR:
             bpp = 3;
             color_type = PNG_COLOR_TYPE_RGB;
             transformations |= PNG_TRANSFORM_BGR;
             break;
 
-        case IMAGE_PIXEL_FORMAT_RGBA:
+        case PixelFormat::RGBA:
             bpp = 4;
             color_type = PNG_COLOR_TYPE_RGBA;
             break;
 
-        case IMAGE_PIXEL_FORMAT_BGRA:
+        case PixelFormat::BGRA:
             bpp = 4;
             color_type = PNG_COLOR_TYPE_RGBA;
             transformations |= PNG_TRANSFORM_BGR;
             break;
 
-        case IMAGE_PIXEL_FORMAT_GRAYSCALE:
+        case PixelFormat::Grayscale:
             bpp = 1;
             color_type = PNG_COLOR_TYPE_GRAY;
             break;
@@ -241,19 +241,19 @@ uint32_t Image::color_at(size_t x, size_t y) const
 
     switch (internals->pixel_format)
     {
-        case IMAGE_PIXEL_FORMAT_GRAYSCALE:
+        case PixelFormat::Grayscale:
             r = g = b = pixel_data[i];
             a = 255;
             break;
 
-        case IMAGE_PIXEL_FORMAT_RGB:
+        case PixelFormat::RGB:
             r = pixel_data[i * 3];
             g = pixel_data[i * 3 + 1];
             b = pixel_data[i * 3 + 2];
             a = 255;
             break;
 
-        case IMAGE_PIXEL_FORMAT_RGBA:
+        case PixelFormat::RGBA:
             r = pixel_data[i * 4];
             g = pixel_data[i * 4 + 1];
             b = pixel_data[i * 4 + 2];

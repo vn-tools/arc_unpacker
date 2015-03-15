@@ -65,6 +65,6 @@ void DpngConverter::decode_internal(File &file) const
         image_width,
         image_height,
         std::string(pixel_data.get(), pixels_size),
-        IMAGE_PIXEL_FORMAT_RGBA);
+        PixelFormat::RGBA);
     image->update_file(file);
 }

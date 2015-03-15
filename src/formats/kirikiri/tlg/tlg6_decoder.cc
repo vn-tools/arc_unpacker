@@ -600,6 +600,6 @@ void Tlg6Decoder::decode(File &file)
         header.image_width,
         header.image_height,
         std::string(reinterpret_cast<char*>(pixels.get()), pixels_size),
-        IMAGE_PIXEL_FORMAT_RGBA);
+        PixelFormat::RGBA);
     image->update_file(file);
 }

@@ -135,7 +135,7 @@ namespace
             width,
             height,
             std::string(uncompressed.get(), width * height * 3),
-            IMAGE_PIXEL_FORMAT_BGR);
+            PixelFormat::BGR);
         image->update_file(file);
     }
 
@@ -176,7 +176,7 @@ namespace
             std::string(
                 reinterpret_cast<char*>(pixels.get()),
                 width * height * 4),
-            IMAGE_PIXEL_FORMAT_BGRA);
+            PixelFormat::BGRA);
         image->update_file(file);
     }
 
@@ -266,7 +266,7 @@ namespace
             std::string(
                 reinterpret_cast<char*>(pixels.get()),
                 width * height * 4),
-            IMAGE_PIXEL_FORMAT_BGRA);
+            PixelFormat::BGRA);
         image->update_file(file);
     }
 }

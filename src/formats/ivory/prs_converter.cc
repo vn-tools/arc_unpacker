@@ -152,6 +152,6 @@ void PrsConverter::decode_internal(File &file) const
         image_width,
         image_height,
         std::string(target.get(), target_size),
-        IMAGE_PIXEL_FORMAT_BGR);
+        PixelFormat::BGR);
     image->update_file(file);
 }

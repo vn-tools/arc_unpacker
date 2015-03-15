@@ -174,7 +174,7 @@ namespace
             width,
             height,
             std::string(pixel_data.get(), pixel_data_size),
-            PixelFormat::IMAGE_PIXEL_FORMAT_BGRA);
+            PixelFormat::BGRA);
         image->update_file(*subfile);
         return subfile;
     }

@@ -302,7 +302,7 @@ namespace
                     image_width,
                     image_height,
                     data_compressed,
-                    IMAGE_PIXEL_FORMAT_BGRA);
+                    PixelFormat::BGRA);
 
             case COMPRESSION_SGD:
             {
@@ -319,7 +319,7 @@ namespace
                     image_width,
                     image_height,
                     std::string(data_uncompressed.get(), size_original),
-                    IMAGE_PIXEL_FORMAT_BGRA);
+                    PixelFormat::BGRA);
             }
 
             case COMPRESSION_PNG:

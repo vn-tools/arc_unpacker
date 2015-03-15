@@ -125,9 +125,7 @@ void SotesConverter::decode_internal(File &file) const
     std::unique_ptr<Image> image = Image::from_pixels(
         width,
         height,
-        std::string(
-            pixel_data.get(),
-            pixel_data_size),
-        IMAGE_PIXEL_FORMAT_BGR);
+        std::string(pixel_data.get(), pixel_data_size),
+        PixelFormat::BGR);
     image->update_file(file);
 }

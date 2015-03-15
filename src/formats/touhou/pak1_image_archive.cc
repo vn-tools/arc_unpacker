@@ -78,7 +78,7 @@ namespace
             image_width,
             image_height,
             target_io.read(target_io.size()),
-            IMAGE_PIXEL_FORMAT_BGRA);
+            PixelFormat::BGRA);
         image->update_file(*file);
         return file;
     }

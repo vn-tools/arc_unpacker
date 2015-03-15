@@ -51,6 +51,6 @@ void XyzConverter::decode_internal(File &file) const
         width,
         height,
         std::string(pixels.get(), pixels_size),
-        IMAGE_PIXEL_FORMAT_RGB);
+        PixelFormat::RGB);
     image->update_file(file);
 }

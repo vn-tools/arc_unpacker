@@ -131,6 +131,6 @@ void SpbConverter::decode_internal(File &file) const
         std::string(
             reinterpret_cast<char*>(uncompressed_data.get()),
             uncompressed_data_size),
-        IMAGE_PIXEL_FORMAT_RGB);
+        PixelFormat::RGB);
     image->update_file(file);
 }
