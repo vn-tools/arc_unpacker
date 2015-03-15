@@ -3,12 +3,27 @@
 #include "formats/archive.h"
 #include "logger.h"
 
-void Archive::add_cli_help(ArgParser &) const
+void Archive::add_cli_help(ArgParser &arg_parser) const
 {
+    for (auto &converter : converters)
+        converter->add_cli_help(arg_parser);
 }
 
-void Archive::parse_cli_options(ArgParser &)
+void Archive::parse_cli_options(ArgParser &arg_parser)
 {
+    for (auto &converter : converters)
+        converter->parse_cli_options(arg_parser);
+}
+
+void Archive::register_converter(std::unique_ptr<Converter> converter)
+{
+    converters.push_back(std::move(converter));
+}
+
+void Archive::run_converters(File &file) const
+{
+    for (auto &converter : converters)
+        converter->try_decode(file);
 }
 
 void Archive::unpack_internal(File &, FileSaver &) const

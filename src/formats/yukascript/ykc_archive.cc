@@ -59,27 +59,13 @@ namespace
     }
 }
 
-struct YkcArchive::Internals
+YkcArchive::YkcArchive()
 {
-    YkgConverter ykg_converter;
-};
-
-YkcArchive::YkcArchive() : internals(new Internals())
-{
+    register_converter(std::unique_ptr<Converter>(new YkgConverter));
 }
 
 YkcArchive::~YkcArchive()
 {
-}
-
-void YkcArchive::add_cli_help(ArgParser &arg_parser) const
-{
-    internals->ykg_converter.add_cli_help(arg_parser);
-}
-
-void YkcArchive::parse_cli_options(ArgParser &arg_parser)
-{
-    internals->ykg_converter.parse_cli_options(arg_parser);
 }
 
 void YkcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -98,7 +84,7 @@ void YkcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (auto &table_entry : table)
     {
         auto file = read_file(arc_file.io, *table_entry);
-        internals->ykg_converter.try_decode(*file);
+        run_converters(*file);
         file_saver.save(std::move(file));
     }
 }

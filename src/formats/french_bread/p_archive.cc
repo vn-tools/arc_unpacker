@@ -70,27 +70,13 @@ namespace
     }
 }
 
-struct PArchive::Internals
+PArchive::PArchive()
 {
-    Ex3Converter ex3_converter;
-};
-
-PArchive::PArchive() : internals(new Internals)
-{
+    register_converter(std::unique_ptr<Converter>(new Ex3Converter));
 }
 
 PArchive::~PArchive()
 {
-}
-
-void PArchive::add_cli_help(ArgParser &arg_parser) const
-{
-    internals->ex3_converter.add_cli_help(arg_parser);
-}
-
-void PArchive::parse_cli_options(ArgParser &arg_parser)
-{
-    internals->ex3_converter.parse_cli_options(arg_parser);
 }
 
 void PArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -104,7 +90,7 @@ void PArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (auto &table_entry : table)
     {
         auto file = read_file(arc_file.io, *table_entry, encrypted);
-        internals->ex3_converter.try_decode(*file);
+        run_converters(*file);
         file_saver.save(std::move(file));
     }
 }

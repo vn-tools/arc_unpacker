@@ -348,27 +348,13 @@ namespace
     }
 }
 
-struct Glib2Archive::Internals
+Glib2Archive::Glib2Archive()
 {
-    PgxConverter pgx_converter;
-};
-
-Glib2Archive::Glib2Archive() : internals(new Internals())
-{
+    register_converter(std::unique_ptr<Converter>(new PgxConverter));
 }
 
 Glib2Archive::~Glib2Archive()
 {
-}
-
-void Glib2Archive::add_cli_help(ArgParser &arg_parser) const
-{
-    internals->pgx_converter.add_cli_help(arg_parser);
-}
-
-void Glib2Archive::parse_cli_options(ArgParser &arg_parser)
-{
-    internals->pgx_converter.parse_cli_options(arg_parser);
 }
 
 void Glib2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -381,7 +367,7 @@ void Glib2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         if (!table_entry->is_file)
             continue;
         auto file = read_file(arc_file.io, *table_entry);
-        internals->pgx_converter.try_decode(*file);
+        run_converters(*file);
         file_saver.save(std::move(file));
     }
 }

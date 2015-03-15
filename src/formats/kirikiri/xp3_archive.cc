@@ -176,20 +176,16 @@ namespace
 
 struct Xp3Archive::Internals
 {
-    TlgConverter tlg_converter;
     std::unique_ptr<Filter> filter;
 
     Internals() : filter(nullptr)
-    {
-    }
-
-    ~Internals()
     {
     }
 };
 
 Xp3Archive::Xp3Archive() : internals(new Internals)
 {
+    register_converter(std::unique_ptr<Converter>(new TlgConverter));
 }
 
 Xp3Archive::~Xp3Archive()
@@ -206,7 +202,8 @@ void Xp3Archive::add_cli_help(ArgParser &arg_parser) const
             "- fha\n"
             "- fsn\n"
             "- noop (for unecrypted games)");
-    internals->tlg_converter.add_cli_help(arg_parser);
+
+    Archive::add_cli_help(arg_parser);
 }
 
 void Xp3Archive::parse_cli_options(ArgParser &arg_parser)
@@ -223,7 +220,7 @@ void Xp3Archive::parse_cli_options(ArgParser &arg_parser)
     else
         throw std::runtime_error("Unrecognized plugin: " + plugin);
 
-    internals->tlg_converter.parse_cli_options(arg_parser);
+    Archive::parse_cli_options(arg_parser);
 }
 
 void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -239,7 +236,7 @@ void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     while (table_io->tell() < table_io->size())
     {
         auto file = read_file(arc_file.io, *table_io, internals->filter.get());
-        internals->tlg_converter.try_decode(*file);
+        run_converters(*file);
         file_saver.save(std::move(file));
     }
 }

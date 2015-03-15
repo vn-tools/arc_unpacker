@@ -55,29 +55,18 @@ namespace
     }
 }
 
-
 struct XflArchive::Internals
 {
-    WcgConverter wcg_converter;
     LwgArchive lwg_archive;
 };
 
 XflArchive::XflArchive() : internals(new Internals)
 {
+    register_converter(std::unique_ptr<Converter>(new WcgConverter));
 }
 
 XflArchive::~XflArchive()
 {
-}
-
-void XflArchive::add_cli_help(ArgParser &arg_parser) const
-{
-    internals->wcg_converter.add_cli_help(arg_parser);
-}
-
-void XflArchive::parse_cli_options(ArgParser &arg_parser)
-{
-    internals->wcg_converter.parse_cli_options(arg_parser);
 }
 
 void XflArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -101,7 +90,7 @@ void XflArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
             continue;
         }
 
-        internals->wcg_converter.try_decode(*file);
+        run_converters(*file);
         file_saver.save(std::move(file));
     }
 }

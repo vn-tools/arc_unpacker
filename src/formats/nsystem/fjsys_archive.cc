@@ -63,27 +63,13 @@ namespace
     }
 }
 
-struct FjsysArchive::Internals
+FjsysArchive::FjsysArchive()
 {
-    MgdConverter mgd_converter;
-};
-
-FjsysArchive::FjsysArchive() : internals(new Internals)
-{
+    register_converter(std::unique_ptr<Converter>(new MgdConverter));
 }
 
 FjsysArchive::~FjsysArchive()
 {
-}
-
-void FjsysArchive::add_cli_help(ArgParser &arg_parser) const
-{
-    internals->mgd_converter.add_cli_help(arg_parser);
-}
-
-void FjsysArchive::parse_cli_options(ArgParser &arg_parser)
-{
-    internals->mgd_converter.parse_cli_options(arg_parser);
 }
 
 void FjsysArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -96,7 +82,7 @@ void FjsysArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (size_t i = 0; i < header->file_count; i ++)
     {
         auto file = read_file(arc_file.io, *header);
-        internals->mgd_converter.try_decode(*file);
+        run_converters(*file);
         file_saver.save(std::move(file));
     }
 }

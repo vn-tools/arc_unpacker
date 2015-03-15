@@ -476,7 +476,6 @@ namespace
 
 struct PackArchive::Internals
 {
-    DpngConverter dpng_converter;
     EncryptionType encryption_type;
     std::string key1;
     std::string key2;
@@ -489,6 +488,7 @@ struct PackArchive::Internals
 
 PackArchive::PackArchive() : internals(new Internals)
 {
+    register_converter(std::unique_ptr<Converter>(new DpngConverter));
 }
 
 PackArchive::~PackArchive()
@@ -503,7 +503,7 @@ void PackArchive::add_cli_help(ArgParser &arg_parser) const
     arg_parser.add_help(
         "--gameexe=PATH", "Selects path to game executable.\n");
 
-    internals->dpng_converter.add_cli_help(arg_parser);
+    Archive::add_cli_help(arg_parser);
 }
 
 void PackArchive::parse_cli_options(ArgParser &arg_parser)
@@ -543,7 +543,7 @@ void PackArchive::parse_cli_options(ArgParser &arg_parser)
             throw std::runtime_error("Cannot find the key in the .exe file");
     }
 
-    internals->dpng_converter.parse_cli_options(arg_parser);
+    Archive::parse_cli_options(arg_parser);
 }
 
 void PackArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -567,7 +567,7 @@ void PackArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
             internals->key2);
         for (auto &file : files)
         {
-            internals->dpng_converter.try_decode(*file);
+            run_converters(*file);
             file_saver.save(std::move(file));
         }
     }

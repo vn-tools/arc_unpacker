@@ -40,30 +40,14 @@ namespace
     }
 }
 
-struct ArcArchive::Internals
+ArcArchive::ArcArchive()
 {
-    SoundConverter sound_converter;
-    CbgConverter cbg_converter;
-};
-
-ArcArchive::ArcArchive() : internals(new Internals)
-{
+    register_converter(std::unique_ptr<Converter>(new CbgConverter));
+    register_converter(std::unique_ptr<Converter>(new SoundConverter));
 }
 
 ArcArchive::~ArcArchive()
 {
-}
-
-void ArcArchive::add_cli_help(ArgParser &arg_parser) const
-{
-    internals->sound_converter.add_cli_help(arg_parser);
-    internals->cbg_converter.add_cli_help(arg_parser);
-}
-
-void ArcArchive::parse_cli_options(ArgParser &arg_parser)
-{
-    internals->sound_converter.parse_cli_options(arg_parser);
-    internals->cbg_converter.parse_cli_options(arg_parser);
 }
 
 void ArcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -78,8 +62,7 @@ void ArcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (size_t i = 0; i < file_count; i ++)
     {
         auto file = read_file(arc_file.io, file_count);
-        internals->sound_converter.try_decode(*file);
-        internals->cbg_converter.try_decode(*file);
+        run_converters(*file);
         file_saver.save(std::move(file));
     }
 }

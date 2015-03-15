@@ -80,27 +80,13 @@ namespace
     }
 }
 
-struct GmlArchive::Internals
+GmlArchive::GmlArchive()
 {
-    PgxConverter pgx_converter;
-};
-
-GmlArchive::GmlArchive() : internals(new Internals())
-{
+    register_converter(std::unique_ptr<Converter>(new PgxConverter));
 }
 
 GmlArchive::~GmlArchive()
 {
-}
-
-void GmlArchive::add_cli_help(ArgParser &arg_parser) const
-{
-    internals->pgx_converter.add_cli_help(arg_parser);
-}
-
-void GmlArchive::parse_cli_options(ArgParser &arg_parser)
-{
-    internals->pgx_converter.parse_cli_options(arg_parser);
 }
 
 void GmlArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -120,7 +106,7 @@ void GmlArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (auto &table_entry : table)
     {
         auto file = read_file(arc_file.io, *table_entry, permutation);
-        internals->pgx_converter.try_decode(*file);
+        run_converters(*file);
         file_saver.save(std::move(file));
     }
 }

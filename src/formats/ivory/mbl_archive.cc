@@ -72,27 +72,13 @@ namespace
     }
 }
 
-struct MblArchive::Internals
+MblArchive::MblArchive()
 {
-    PrsConverter prs_converter;
-};
-
-MblArchive::MblArchive() : internals(new Internals)
-{
+    register_converter(std::unique_ptr<Converter>(new PrsConverter));
 }
 
 MblArchive::~MblArchive()
 {
-}
-
-void MblArchive::add_cli_help(ArgParser &arg_parser) const
-{
-    internals->prs_converter.add_cli_help(arg_parser);
-}
-
-void MblArchive::parse_cli_options(ArgParser &arg_parser)
-{
-    internals->prs_converter.parse_cli_options(arg_parser);
 }
 
 void MblArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -107,7 +93,7 @@ void MblArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (size_t i = 0; i < file_count; i ++)
     {
         auto file = read_file(arc_file.io, name_length);
-        internals->prs_converter.try_decode(*file);
+        run_converters(*file);
         file->guess_extension();
         file_saver.save(std::move(file));
     }
