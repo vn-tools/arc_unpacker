@@ -4,6 +4,10 @@
 // Engine:    GLib
 // Extension: -
 // Archives:  GLib2
+//
+// Known games:
+// - Musume Shimai
+// - Watashi no Puni Puni
 
 #include "formats/image.h"
 #include "formats/glib/gml_decoder.h"
