@@ -29,7 +29,8 @@ namespace
         const std::string path_to_self,
         ArgParser &arg_parser,
         Options &options,
-        Archive *archive)
+        Archive *archive,
+        const ArchiveFactory &arc_factory)
     {
         log("Usage: %s [options] [arc_options] input_path [output_dir]\n",
             path_to_self.c_str());
@@ -57,6 +58,21 @@ namespace
             "runtime.\n");
         log("See --help --fmt=FORMAT to get detailed help for given "
             "archive.\n");
+        log("\n");
+
+        log("Supported FORMAT values:\n");
+        int i = 0;
+        for (auto &format : arc_factory.get_formats())
+        {
+            log("- %-10s", format.c_str());
+            if (i ++ == 4)
+            {
+                log("\n");
+                i = 0;
+            }
+        }
+        if (i != 0)
+            log("\n");
     }
 
     void add_format_option(ArgParser &arg_parser, Options &options)
@@ -71,13 +87,16 @@ namespace
             options.format = arg_parser.get_switch("--fmt");
     }
 
-    void add_path_options(ArgParser &arg_parser, Options &options)
+    void add_path_options(
+        ArgParser &arg_parser,
+        Options &options,
+        const ArchiveFactory &arc_factory)
     {
         const std::vector<std::string> stray = arg_parser.get_stray();
         if (stray.size() < 2)
         {
             log("Error: required more arguments.\n");
-            print_help(stray[0], arg_parser, options, nullptr);
+            print_help(stray[0], arg_parser, options, nullptr, arc_factory);
             exit(1);
         }
 
@@ -186,11 +205,12 @@ ENTRYPOINT(
             std::unique_ptr<Archive> archive(options.format != ""
                 ? arc_factory.create_archive(options.format)
                 : nullptr);
-            print_help(arguments[0], arg_parser, options, archive.get());
+            print_help(
+                arguments[0], arg_parser, options, archive.get(), arc_factory);
         }
         else
         {
-            add_path_options(arg_parser, options);
+            add_path_options(arg_parser, options, arc_factory);
             if (!run(options, arg_parser, arc_factory))
                 exit_code = 1;
         }

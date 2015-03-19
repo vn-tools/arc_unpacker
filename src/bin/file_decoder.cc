@@ -28,7 +28,8 @@ namespace
         const std::string &path_to_self,
         ArgParser &arg_parser,
         const Options &options,
-        const Converter *converter)
+        const Converter *converter,
+        const ConverterFactory &conv_factory)
     {
         log(
             "Usage: %s [options] [file_options] input_path [input_path...]",
@@ -53,6 +54,21 @@ namespace
             "runtime.\n");
         log("See --help --fmt=FORMAT to get detailed help for given "
             "converter.\n");
+        log("\n");
+
+        log("Supported FORMAT values:\n");
+        int i = 0;
+        for (auto &format : conv_factory.get_formats())
+        {
+            log("- %-10s", format.c_str());
+            if (i ++ == 4)
+            {
+                log("\n");
+                i = 0;
+            }
+        }
+        if (i != 0)
+            log("\n");
     }
 
     void add_output_folder_option(ArgParser &arg_parser, Options &options)
@@ -79,7 +95,10 @@ namespace
             options.format = arg_parser.get_switch("--fmt");
     }
 
-    bool add_input_paths_option(ArgParser &arg_parser, Options &options)
+    bool add_input_paths_option(
+        ArgParser &arg_parser,
+        Options &options,
+        const ConverterFactory &conv_factory)
     {
         const std::vector<std::string> stray = arg_parser.get_stray();
         for (size_t i = 1; i < stray.size(); i ++)
@@ -110,7 +129,7 @@ namespace
         if (options.input_paths.size() < 1)
         {
             log("Error: required more arguments.\n");
-            print_help(stray[0], arg_parser, options, nullptr);
+            print_help(stray[0], arg_parser, options, nullptr, conv_factory);
             return false;
         }
 
@@ -242,11 +261,16 @@ ENTRYPOINT(
             std::unique_ptr<Converter> converter(options.format != ""
                 ? conv_factory.create_converter(options.format)
                 : nullptr);
-            print_help(arguments[0], arg_parser, options, converter.get());
+            print_help(
+                arguments[0],
+                arg_parser,
+                options,
+                converter.get(),
+                conv_factory);
         }
         else
         {
-            if (!add_input_paths_option(arg_parser, options))
+            if (!add_input_paths_option(arg_parser, options, conv_factory))
                 exit_code = 1;
             else if (!run(options, arg_parser, conv_factory))
                 exit_code = 1;
