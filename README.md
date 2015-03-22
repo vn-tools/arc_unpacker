@@ -74,7 +74,7 @@ CLI invocation                        | Game                                | Fe
 `--fmt=tha1`                          | Touhou 14                           | ![][sup]![][sup]![][par]
 `--fmt=tha1`                          | Touhou 14.3                         | ![][sup]![][sup]![][par]
 `--fmt=xfl`                           | Souten No Celenaria                 | ![][sup]![][sup]![][sup]
-`--fmt=g2`                            | Musume Shimai                       | ![][sup]![][par]![][sup]
+`--fmt=g2`                            | Musume Shimai                       | ![][sup]![][sup]![][sup]
 `--fmt=gml`                           | Watashi no Puni Puni                | ![][sup]![][sup]![][sup]
 `--fmt=exe`                           | Generic `.exe` resources            | ![][sup]![][nap]![][nap]
 

@@ -2,7 +2,7 @@
 //
 // Company:   Rune
 // Engine:    GLib
-// Extension: .g2
+// Extension: .g2, .stx
 //
 // Known games:
 // - Musume Shimai
@@ -148,7 +148,8 @@ namespace
         },
     };
 
-    const std::string magic("GLibArchiveData2.1\x00", 19);
+    const std::string magic_21("GLibArchiveData2.1\x00", 19);
+    const std::string magic_20("GLibArchiveData2.0\x00", 19);
 
     typedef struct
     {
@@ -227,8 +228,12 @@ namespace
         decode(table_decoder, buffer.get(), header_size);
 
         BufferedIO header_io(buffer.get(), header_size);
-        if (header_io.read(magic.size()) != magic)
-            throw std::runtime_error("Not a GLIB2 archive");
+        if (header_io.read(magic_21.size()) != magic_21)
+        {
+            header_io.seek(0);
+            if (header_io.read(magic_20.size()) != magic_20)
+                throw std::runtime_error("Not a GLIB2 archive");
+        }
         header_io.skip(1);
         for (size_t i = 0; i < 4; i ++)
         {
@@ -367,7 +372,20 @@ void Glib2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         if (!table_entry->is_file)
             continue;
         auto file = read_file(arc_file.io, *table_entry);
-        run_converters(*file);
-        file_saver.save(std::move(file));
+
+        FileSaverMemory file_saver_memory;
+        if (try_unpack(*file, file_saver_memory))
+        {
+            for (auto &subfile : file_saver_memory.get_saved())
+            {
+                subfile->name = file->name + "/" + subfile->name;
+                file_saver.save(std::move(subfile));
+            }
+        }
+        else
+        {
+            run_converters(*file);
+            file_saver.save(std::move(file));
+        }
     }
 }
