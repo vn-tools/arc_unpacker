@@ -153,7 +153,7 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
 #### Compiling `zlib`
 
     # Obtain sources
-    wget http://zlib.net/zlib-1.2.8.tar.gz
+    wget 'http://zlib.net/zlib-1.2.8.tar.gz'
     tar xzvf zlib-1.2.8.tar.gz
     cd zlib-1.2.8/
 
@@ -175,7 +175,7 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
 #### Compiling `libiconv`
 
     # Obtain sources
-    wget http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz
+    wget 'http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz'
     tar xzvf libiconv-1.14.tar.gz
     cd libiconv-1.14
 
@@ -193,7 +193,7 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
 #### Compiling `libpng`
 
     # Obtain sources
-    wget ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.16.tar.gz
+    wget 'ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.16.tar.gz'
     tar xzvf libpng-1.6.16.tar.gz
     cd libpng-1.6.16/
 
@@ -211,7 +211,7 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
 #### Compiling `boost`
 
     # Obtain sources
-    wget http://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.zip
+    wget 'http://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.zip'
     unzip boost_1_57_0.zip
     cd boost_1_57_0
 
