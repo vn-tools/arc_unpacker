@@ -238,6 +238,23 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
         threadapi=win32 \
         install
 
+#### Compiling `OpenSSL`
+
+    # Obtain sources
+    wget 'http://openssl.org/source/openssl-1.0.2a.tar.gz'
+    tar zxvf openssl-1.0.2a.tar.gz
+    cd openssl-1.0.2a
+
+    # Compile and install
+    ./Configure \
+        --cross-compile-prefix=i686-w64-mingw32- \
+        --prefix=$MINGW \
+        mingw64 no-asm shared
+    make # (parallelizing with -j may break the build)
+
+    # Install
+    make install
+
 This will run a minimal required build (thanks to `--with` options), so it
 shouldn't take too long.
 
@@ -246,13 +263,14 @@ shouldn't take too long.
 Finally, run `./make-mingw-w64.sh`. Then locate the compiled DLL-s in either
 `/usr` (`libstdc++` etc) or `$MINGW` (`libboost` etc):
 
-- libboost_filesystem.dll
-- libboost_locale.dll
-- libboost_system.dll
-- libgcc_s_sjlj-1.dll
-- libiconv-2.dll
-- libpng16-16.dll
-- libstdc++-6.dll
+- `libboost_filesystem.dll`
+- `libboost_locale.dll`
+- `libboost_system.dll`
+- `libgcc_s_sjlj-1.dll`
+- `libiconv-2.dll`
+- `libpng16-16.dll`
+- `libstdc++-6.dll`
+- `libeay32.dll`
 
 ...and copy them into the binaries directory. Now the program should be ready
 to ship.
