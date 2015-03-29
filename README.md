@@ -71,6 +71,7 @@ CLI invocation                        | Game                                | Fe
 `--fmt=tha1`                          | Touhou 12.5                         | ![][sup]![][sup]![][par]
 `--fmt=tha1`                          | Touhou 12.8                         | ![][sup]![][sup]![][par]
 `--fmt=tha1`                          | Touhou 13                           | ![][sup]![][sup]![][par]
+`--fmt=tfpk`                          | Touhou 13.5                         | ![][sup]![][non]![][non]
 `--fmt=tha1`                          | Touhou 14                           | ![][sup]![][sup]![][par]
 `--fmt=tha1`                          | Touhou 14.3                         | ![][sup]![][sup]![][par]
 `--fmt=xfl`                           | Souten No Celenaria                 | ![][sup]![][sup]![][sup]

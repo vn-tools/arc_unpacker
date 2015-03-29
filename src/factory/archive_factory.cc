@@ -25,6 +25,7 @@
 #include "formats/touhou/pbg3_archive.h"
 #include "formats/touhou/pbg4_archive.h"
 #include "formats/touhou/pbgz_archive.h"
+#include "formats/touhou/tfpk_archive.h"
 #include "formats/touhou/tha1_archive.h"
 #include "formats/yukascript/ykc_archive.h"
 using namespace Formats;
@@ -46,6 +47,7 @@ ArchiveFactory::ArchiveFactory() : internals(new Internals)
     internals->add("g2", []() { return new Glib::Glib2Archive(); });
     internals->add("th-pak1", []() { return new Touhou::Pak1Archive(); });
     internals->add("th-pak2", []() { return new Touhou::Pak2Archive(); });
+    internals->add("tfpk", []() { return new Touhou::TfpkArchive(); });
     internals->add("tha1", []() { return new Touhou::Tha1Archive(); });
     internals->add("pbgz", []() { return new Touhou::PbgzArchive(); });
     internals->add("lwg", []() { return new LiarSoft::LwgArchive(); });
