@@ -7,6 +7,7 @@
 // Known games:
 // - Touhou 13.5 - Hopeless Masquerade
 
+#include <boost/filesystem.hpp>
 #include <iomanip>
 #include <map>
 #include <openssl/bn.h>
@@ -18,6 +19,8 @@
 #include "buffered_io.h"
 #include "formats/touhou/tfpk_archive.h"
 #include "formats/touhou/tfpk_dir_names.h"
+#include "formats/touhou/tfbm_converter.h"
+#include "util/colors.h"
 #include "util/encoding.h"
 #include "util/zlib.h"
 using namespace Formats::Touhou;
@@ -228,16 +231,18 @@ namespace
         for (auto &dir_entry : dir_entries)
         {
             std::string dir_name = get_dir_name(*dir_entry);
+            if (dir_name.size() > 0 && dir_name[dir_name.size() - 1] != '/')
+                dir_name += "/";
 
             for (size_t j = 0; j < dir_entry->file_count; j ++)
             {
-                std::string name
-                    = convert_encoding(tmp_io->read_until_zero(), "cp932", "utf-8");
+                std::string name = convert_encoding(
+                    tmp_io->read_until_zero(), "cp932", "utf-8");
 
-                uint32_t hash
-                    = get_file_name_hash(name, dir_entry->initial_hash);
+                uint32_t hash = get_file_name_hash(
+                    name, dir_entry->initial_hash);
 
-                map[hash] = dir_name + "/" + name;
+                map[hash] = dir_name + name;
             }
         }
         return map;
@@ -291,6 +296,78 @@ namespace
 
         return file;
     }
+
+    TfbmPalette read_palette_file(IO &arc_io, TableEntry &entry)
+    {
+        const std::string pal_magic("TFPA\x00", 5);
+        auto pal_file = read_file(arc_io, entry);
+        pal_file->io.seek(0);
+        if (pal_file->io.read(pal_magic.size()) != pal_magic)
+            throw std::runtime_error("Not a TFPA palette file");
+        size_t pal_size = pal_file->io.read_u32_le();
+        BufferedIO pal_io(zlib_inflate(pal_file->io.read(pal_size)));
+        TfbmPalette palette;
+        for (size_t i = 0; i < 256; i ++)
+            palette[i] = rgba5551(pal_io.read_u16_le());
+        return palette;
+    }
+
+    TfbmPaletteMap find_all_palettes(const boost::filesystem::path &arc_path)
+    {
+        TfbmPaletteMap pals;
+
+        auto dir = boost::filesystem::path(arc_path).parent_path();
+        for (boost::filesystem::directory_iterator it(dir);
+            it != boost::filesystem::directory_iterator();
+            it ++)
+        {
+            if (!boost::filesystem::is_regular_file(it->path()))
+                continue;
+            if (it->path().string().find(".pak") == std::string::npos)
+                continue;
+
+            try
+            {
+                FileIO sub_arc_io(it->path(), FileIOMode::Read);
+                if (sub_arc_io.read(magic.size()) != magic)
+                    continue;
+                RsaReader rsa_reader(sub_arc_io);
+                for (auto &entry : read_table(rsa_reader))
+                {
+                    if (entry->name.find("palette") == std::string::npos)
+                        continue;
+                    pals[entry->name] = read_palette_file(sub_arc_io, *entry);
+                }
+            }
+            catch (...)
+            {
+                continue;
+            }
+        }
+
+        return pals;
+    }
+}
+
+struct TfpkArchive::Internals
+{
+    std::unique_ptr<TfbmConverter> tfbm_converter;
+
+    Internals() : tfbm_converter(new TfbmConverter)
+    {
+    }
+
+    ~Internals()
+    {
+    }
+};
+
+TfpkArchive::TfpkArchive() : internals(new Internals)
+{
+}
+
+TfpkArchive::~TfpkArchive()
+{
 }
 
 void TfpkArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -298,12 +375,17 @@ void TfpkArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     if (arc_file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a TFPK archive");
 
+    TfbmPaletteMap palette_map = find_all_palettes(arc_file.name);
+    internals->tfbm_converter->set_palette_map(palette_map);
+
     RsaReader rsa_reader(arc_file.io);
     Table table = read_table(rsa_reader);
 
     for (auto &entry : table)
     {
         auto file = read_file(arc_file.io, *entry);
+        internals->tfbm_converter->try_decode(*file);
+        run_converters(*file);
         file_saver.save(std::move(file));
     }
 }
