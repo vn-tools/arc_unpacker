@@ -10,6 +10,7 @@
 #include "buffered_io.h"
 #include "formats/image.h"
 #include "formats/touhou/pak1_image_archive.h"
+#include "formats/touhou/palette.h"
 #include "util/colors.h"
 #include "util/itos.h"
 using namespace Formats::Touhou;
@@ -17,7 +18,7 @@ using namespace Formats::Touhou;
 namespace
 {
     std::unique_ptr<File> read_image(
-        IO &arc_io, size_t index, uint32_t *palette)
+        IO &arc_io, size_t index, Palette palette)
     {
         auto image_width = arc_io.read_u32_le();
         auto image_height = arc_io.read_u32_le();
@@ -87,13 +88,18 @@ namespace
 void Pak1ImageArchive::unpack_internal(
     File &arc_file, FileSaver &file_saver) const
 {
-    auto palette_size = arc_file.io.read_u8();
-    std::unique_ptr<uint32_t[]> palette(new uint32_t[256 * palette_size]);
-    for (size_t p = 0; p < palette_size; p ++)
+    auto palette_count = arc_file.io.read_u8();
+    std::vector<Palette> palettes;
+    for (size_t p = 0; p < palette_count; p ++)
+    {
+        Palette palette;
         for (size_t i = 0; i < 256; i ++)
-            palette[p * 256 + i] = rgba5551(arc_file.io.read_u16_le());
+            palette[i] = rgba5551(arc_file.io.read_u16_le());
+        palettes.push_back(palette);
+    }
+    palettes.push_back(create_default_palette());
 
     size_t i = 0;
     while (arc_file.io.tell() < arc_file.io.size())
-        file_saver.save(read_image(arc_file.io, i ++, palette.get()));
+        file_saver.save(read_image(arc_file.io, i ++, palettes[0]));
 }

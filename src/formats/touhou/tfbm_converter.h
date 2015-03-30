@@ -1,24 +1,18 @@
 #ifndef FORMATS_TOUHOU_TFBM_IMAGE_CONVERTER_H
 #define FORMATS_TOUHOU_TFBM_IMAGE_CONVERTER_H
-#include <array>
-#include <boost/filesystem/path.hpp>
-#include <map>
-#include <cstdint>
 #include "formats/converter.h"
+#include "formats/touhou/palette.h"
 
 namespace Formats
 {
     namespace Touhou
     {
-        typedef std::array<uint32_t, 256> TfbmPalette;
-        typedef std::map<boost::filesystem::path, TfbmPalette> TfbmPaletteMap;
-
         class TfbmConverter : public Converter
         {
         public:
             TfbmConverter();
             ~TfbmConverter();
-            void set_palette_map(const TfbmPaletteMap &palette_map);
+            void set_palette_map(const PaletteMap &palette_map);
             void decode_internal(File &) const override;
         private:
             struct Internals;

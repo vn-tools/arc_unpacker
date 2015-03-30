@@ -297,7 +297,7 @@ namespace
         return file;
     }
 
-    TfbmPalette read_palette_file(IO &arc_io, TableEntry &entry)
+    Palette read_palette_file(IO &arc_io, TableEntry &entry)
     {
         const std::string pal_magic("TFPA\x00", 5);
         auto pal_file = read_file(arc_io, entry);
@@ -306,15 +306,15 @@ namespace
             throw std::runtime_error("Not a TFPA palette file");
         size_t pal_size = pal_file->io.read_u32_le();
         BufferedIO pal_io(zlib_inflate(pal_file->io.read(pal_size)));
-        TfbmPalette palette;
+        Palette palette;
         for (size_t i = 0; i < 256; i ++)
             palette[i] = rgba5551(pal_io.read_u16_le());
         return palette;
     }
 
-    TfbmPaletteMap find_all_palettes(const boost::filesystem::path &arc_path)
+    PaletteMap find_all_palettes(const boost::filesystem::path &arc_path)
     {
-        TfbmPaletteMap pals;
+        PaletteMap palettes;
 
         auto dir = boost::filesystem::path(arc_path).parent_path();
         for (boost::filesystem::directory_iterator it(dir);
@@ -336,7 +336,8 @@ namespace
                 {
                     if (entry->name.find("palette") == std::string::npos)
                         continue;
-                    pals[entry->name] = read_palette_file(sub_arc_io, *entry);
+                    palettes[entry->name]
+                        = read_palette_file(sub_arc_io, *entry);
                 }
             }
             catch (...)
@@ -345,7 +346,7 @@ namespace
             }
         }
 
-        return pals;
+        return palettes;
     }
 }
 
@@ -375,7 +376,7 @@ void TfpkArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     if (arc_file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a TFPK archive");
 
-    TfbmPaletteMap palette_map = find_all_palettes(arc_file.name);
+    PaletteMap palette_map = find_all_palettes(arc_file.name);
     internals->tfbm_converter->set_palette_map(palette_map);
 
     RsaReader rsa_reader(arc_file.io);

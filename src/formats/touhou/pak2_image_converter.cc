@@ -19,23 +19,21 @@ using namespace Formats::Touhou;
 struct Pak2ImageConverter::Internals
 {
     PaletteMap palette_map;
-
-    Internals(PaletteMap &palette_map) : palette_map(std::move(palette_map))
-    {
-    }
-
-    ~Internals()
-    {
-    }
 };
 
-Pak2ImageConverter::Pak2ImageConverter(PaletteMap &palette_map)
-    : internals(new Internals(palette_map))
+Pak2ImageConverter::Pak2ImageConverter() : internals(new Internals)
 {
 }
 
 Pak2ImageConverter::~Pak2ImageConverter()
 {
+}
+
+void Pak2ImageConverter::set_palette_map(const PaletteMap &palette_map)
+{
+    internals->palette_map.clear();
+    for (auto &it : palette_map)
+        internals->palette_map[it.first] = it.second;
 }
 
 void Pak2ImageConverter::decode_internal(File &file) const
@@ -56,13 +54,17 @@ void Pak2ImageConverter::decode_internal(File &file) const
     source_io.write_from_io(file.io);
     source_io.seek(0);
 
-    uint32_t *palette = nullptr;
+    Palette palette;
     if (bit_depth == 8)
     {
         auto path = boost::filesystem::path(file.name);
         path.remove_filename();
         path /= "palette" + itos(palette_number, 3) + ".pal";
-        palette = internals->palette_map[path.generic_string()].get();
+
+        auto it = internals->palette_map.find(path.generic_string());
+        palette = it != internals->palette_map.end()
+            ? it->second
+            : create_default_palette();
     }
 
     for (size_t y = 0; y < image_height; y ++)
@@ -79,13 +81,8 @@ void Pak2ImageConverter::decode_internal(File &file) const
                     break;
 
                 case 8:
-                {
-                    auto index = source_io.read_u8();
-                    rgba = palette == nullptr
-                        ? rgba_gray(index)
-                        : palette[index];
+                    rgba = palette[source_io.read_u8()];
                     break;
-                }
 
                 default:
                     throw std::runtime_error("Unsupported channel count");

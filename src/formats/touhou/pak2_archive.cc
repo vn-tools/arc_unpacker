@@ -120,12 +120,12 @@ namespace
                     if (table_entry->name.find(".pal") == std::string::npos)
                         continue;
 
-                    std::unique_ptr<uint32_t[]> palette(new uint32_t[256]);
                     auto pal_file = read_file(file_io, *table_entry);
                     pal_file->io.seek(1);
+                    Palette palette;
                     for (size_t i = 0; i < 256; i ++)
                         palette[i] = rgba5551(pal_file->io.read_u16_le());
-                    palettes[table_entry->name] = std::move(palette);
+                    palettes[table_entry->name] = palette;
                 }
             }
             catch (...)
@@ -143,8 +143,9 @@ void Pak2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     auto table = read_table(arc_file.io);
 
     PaletteMap palette_map = find_all_palettes(arc_file.name);
-    Pak2ImageConverter image_converter(palette_map);
+    Pak2ImageConverter image_converter;
     Pak2SoundConverter sound_converter;
+    image_converter.set_palette_map(palette_map);
 
     for (auto &table_entry : table)
     {

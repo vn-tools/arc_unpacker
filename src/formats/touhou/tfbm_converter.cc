@@ -22,7 +22,7 @@ namespace
 
 struct TfbmConverter::Internals
 {
-    TfbmPaletteMap palette_map;
+    PaletteMap palette_map;
 };
 
 TfbmConverter::TfbmConverter() : internals(new Internals)
@@ -33,7 +33,7 @@ TfbmConverter::~TfbmConverter()
 {
 }
 
-void TfbmConverter::set_palette_map(const TfbmPaletteMap &palette_map)
+void TfbmConverter::set_palette_map(const PaletteMap &palette_map)
 {
     internals->palette_map.clear();
     for (auto &it : palette_map)
@@ -56,7 +56,7 @@ void TfbmConverter::decode_internal(File &file) const
     target_io.reserve(target_size);
     BufferedIO source_io(zlib_inflate(file.io.read_until_end()));
 
-    TfbmPalette palette;
+    Palette palette;
     if (bit_depth == 8)
     {
         uint32_t palette_number = 0;
@@ -65,13 +65,9 @@ void TfbmConverter::decode_internal(File &file) const
         path /= "palette" + itos(palette_number, 3) + ".bmp";
 
         auto it = internals->palette_map.find(path.generic_string());
-        if (it == internals->palette_map.end())
-        {
-            for (size_t i = 0; i < 256; i ++)
-                palette[i] = rgba_gray(i);
-        }
-        else
-            palette = it->second;
+        palette = it != internals->palette_map.end()
+            ? it->second
+            : create_default_palette();
     }
 
     for (size_t y = 0; y < image_height; y ++)
@@ -88,11 +84,8 @@ void TfbmConverter::decode_internal(File &file) const
                     break;
 
                 case 8:
-                {
-                    auto index = source_io.read_u8();
-                    rgba = palette[index];
+                    rgba = palette[source_io.read_u8()];
                     break;
-                }
 
                 default:
                     throw std::runtime_error("Unsupported channel count");
