@@ -38,7 +38,7 @@ FileSaverHdd::~FileSaverHdd()
 {
 }
 
-void FileSaverHdd::save(const std::shared_ptr<File> &file) const
+void FileSaverHdd::save(std::shared_ptr<File> file) const
 {
     try
     {
@@ -71,25 +71,25 @@ void FileSaverHdd::save(const std::shared_ptr<File> &file) const
 
 
 
-struct FileSaverMemory::Internals
+struct FileSaverCallback::Internals
 {
-    std::vector<std::shared_ptr<File>> files;
+    FileSaveCallback callback;
+
+    Internals(FileSaveCallback callback) : callback(callback)
+    {
+    }
 };
 
-FileSaverMemory::FileSaverMemory() : internals(new Internals)
+FileSaverCallback::FileSaverCallback(FileSaveCallback callback)
+    : internals(new Internals(callback))
 {
 }
 
-FileSaverMemory::~FileSaverMemory()
+FileSaverCallback::~FileSaverCallback()
 {
 }
 
-const std::vector<std::shared_ptr<File>> FileSaverMemory::get_saved() const
+void FileSaverCallback::save(std::shared_ptr<File> file) const
 {
-    return internals->files;
-}
-
-void FileSaverMemory::save(const std::shared_ptr<File> &file) const
-{
-    internals->files.push_back(file);
+    internals->callback(file);
 }

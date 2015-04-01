@@ -15,13 +15,12 @@ public:
     virtual void unpack_internal(File &, FileSaver &) const;
     virtual ~Archive();
 
-    void register_converter(std::unique_ptr<Converter> converter);
-    void run_converters(File &) const;
+    void add_transformer(std::shared_ptr<Converter> converter);
 
     bool try_unpack(File &, FileSaver &) const;
     void unpack(File &, FileSaver &) const;
 private:
-    std::vector<std::unique_ptr<Converter>> converters;
+    std::vector<std::shared_ptr<Converter>> transformers;
 };
 
 #endif

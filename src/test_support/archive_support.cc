@@ -5,21 +5,24 @@
 #include "test_support/archive_support.h"
 #include "test_support/eassert.h"
 
-std::unique_ptr<FileSaverMemory> unpack_to_memory(
+std::vector<std::shared_ptr<File>> unpack_to_memory(
     const boost::filesystem::path &input_path, Archive &archive)
 {
     ArgParser arg_parser;
     File file(input_path, FileIOMode::Read);
-    std::unique_ptr<FileSaverMemory> file_saver(new FileSaverMemory);
-    archive.unpack(file, *file_saver);
-    return file_saver;
+    std::vector<std::shared_ptr<File>> files;
+    FileSaverCallback file_saver([&](std::shared_ptr<File> file)
+    {
+        files.push_back(file);
+    });
+    archive.unpack(file, file_saver);
+    return files;
 }
 
 void compare_files(
-    const std::vector<File*> &expected_files,
-    std::unique_ptr<FileSaverMemory> file_saver)
+    const std::vector<std::shared_ptr<File>> &expected_files,
+    const std::vector<std::shared_ptr<File>> &actual_files)
 {
-    auto actual_files = file_saver->get_saved();
     eassert(actual_files.size() == expected_files.size());
     for (size_t i = 0; i < expected_files.size(); i ++)
     {

@@ -82,7 +82,7 @@ namespace
 
 GmlArchive::GmlArchive()
 {
-    register_converter(std::unique_ptr<Converter>(new PgxConverter));
+    add_transformer(std::unique_ptr<Converter>(new PgxConverter));
 }
 
 GmlArchive::~GmlArchive()
@@ -104,9 +104,5 @@ void GmlArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     std::string permutation = header_io->read(0x100);
     Table table = read_table(*header_io, file_data_start);
     for (auto &table_entry : table)
-    {
-        auto file = read_file(arc_file.io, *table_entry, permutation);
-        run_converters(*file);
-        file_saver.save(std::move(file));
-    }
+        file_saver.save(read_file(arc_file.io, *table_entry, permutation));
 }

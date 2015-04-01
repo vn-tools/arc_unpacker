@@ -65,7 +65,7 @@ namespace
 
 FjsysArchive::FjsysArchive()
 {
-    register_converter(std::unique_ptr<Converter>(new MgdConverter));
+    add_transformer(std::shared_ptr<Converter>(new MgdConverter));
 }
 
 FjsysArchive::~FjsysArchive()
@@ -78,11 +78,6 @@ void FjsysArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         throw std::runtime_error("Not a FJSYS archive");
 
     std::unique_ptr<Header> header = read_header(arc_file.io);
-
     for (size_t i = 0; i < header->file_count; i ++)
-    {
-        auto file = read_file(arc_file.io, *header);
-        run_converters(*file);
-        file_saver.save(std::move(file));
-    }
+        file_saver.save(read_file(arc_file.io, *header));
 }

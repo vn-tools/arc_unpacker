@@ -9,7 +9,7 @@
 class FileSaver
 {
 public:
-    virtual void save(const std::shared_ptr<File> &file) const = 0;
+    virtual void save(std::shared_ptr<File> file) const = 0;
 };
 
 class FileSaverHdd : public FileSaver
@@ -18,21 +18,21 @@ public:
     FileSaverHdd(boost::filesystem::path output_dir);
     ~FileSaverHdd();
 
-    virtual void save(const std::shared_ptr<File> &file) const override;
+    virtual void save(std::shared_ptr<File> file) const override;
 private:
     struct Internals;
     std::unique_ptr<Internals> internals;
 };
 
-class FileSaverMemory : public FileSaver
+typedef std::function<void(std::shared_ptr<File>)> FileSaveCallback;
+
+class FileSaverCallback : public FileSaver
 {
 public:
-    FileSaverMemory();
-    ~FileSaverMemory();
+    FileSaverCallback(FileSaveCallback callback);
+    ~FileSaverCallback();
 
-    const std::vector<std::shared_ptr<File>> get_saved() const;
-
-    virtual void save(const std::shared_ptr<File> &file) const override;
+    virtual void save(std::shared_ptr<File> file) const override;
 private:
     struct Internals;
     std::unique_ptr<Internals> internals;

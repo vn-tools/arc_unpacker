@@ -7,11 +7,11 @@
 #include "formats/archive.h"
 #include "file_saver.h"
 
-std::unique_ptr<FileSaverMemory> unpack_to_memory(
+std::vector<std::shared_ptr<File>> unpack_to_memory(
     const boost::filesystem::path &input_path, Archive &archive);
 
 void compare_files(
-    const std::vector<File*> &expected_files,
-    std::unique_ptr<FileSaverMemory> file_saver);
+    const std::vector<std::shared_ptr<File>> &expected_files,
+    const std::vector<std::shared_ptr<File>> &actual_files);
 
 #endif

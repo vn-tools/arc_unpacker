@@ -42,8 +42,8 @@ namespace
 
 ArcArchive::ArcArchive()
 {
-    register_converter(std::unique_ptr<Converter>(new CbgConverter));
-    register_converter(std::unique_ptr<Converter>(new SoundConverter));
+    add_transformer(std::unique_ptr<Converter>(new CbgConverter));
+    add_transformer(std::unique_ptr<Converter>(new SoundConverter));
 }
 
 ArcArchive::~ArcArchive()
@@ -60,9 +60,5 @@ void ArcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         throw std::runtime_error("Bad file count");
 
     for (size_t i = 0; i < file_count; i ++)
-    {
-        auto file = read_file(arc_file.io, file_count);
-        run_converters(*file);
-        file_saver.save(std::move(file));
-    }
+        file_saver.save(read_file(arc_file.io, file_count));
 }

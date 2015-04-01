@@ -16,15 +16,13 @@ using namespace Formats::Renpy;
 
 void test_rpa_archive(const char *path)
 {
-    std::vector<File*> expected_files;
-    std::unique_ptr<File> file1(new File);
-    std::unique_ptr<File> file2(new File);
+    std::shared_ptr<File> file1(new File);
+    std::shared_ptr<File> file2(new File);
     file1->name = "another.txt";
     file2->name = "abc.txt";
     file1->io.write("abcdefghij", 10);
     file2->io.write("123", 3);
-    expected_files.push_back(file1.get());
-    expected_files.push_back(file2.get());
+    std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
     std::unique_ptr<Archive> archive(new RpaArchive);
     compare_files(expected_files, unpack_to_memory(path, *archive));

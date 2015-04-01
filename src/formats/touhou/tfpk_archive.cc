@@ -352,7 +352,7 @@ namespace
 
 struct TfpkArchive::Internals
 {
-    std::unique_ptr<TfbmConverter> tfbm_converter;
+    std::shared_ptr<TfbmConverter> tfbm_converter;
 
     Internals() : tfbm_converter(new TfbmConverter)
     {
@@ -365,6 +365,7 @@ struct TfpkArchive::Internals
 
 TfpkArchive::TfpkArchive() : internals(new Internals)
 {
+    add_transformer(internals->tfbm_converter);
 }
 
 TfpkArchive::~TfpkArchive()
@@ -383,10 +384,5 @@ void TfpkArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     Table table = read_table(rsa_reader);
 
     for (auto &entry : table)
-    {
-        auto file = read_file(arc_file.io, *entry);
-        internals->tfbm_converter->try_decode(*file);
-        run_converters(*file);
-        file_saver.save(std::move(file));
-    }
+        file_saver.save(read_file(arc_file.io, *entry));
 }

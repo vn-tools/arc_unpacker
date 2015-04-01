@@ -488,7 +488,7 @@ struct PackArchive::Internals
 
 PackArchive::PackArchive() : internals(new Internals)
 {
-    register_converter(std::unique_ptr<Converter>(new DpngConverter));
+    add_transformer(std::unique_ptr<Converter>(new DpngConverter));
 }
 
 PackArchive::~PackArchive()
@@ -566,9 +566,6 @@ void PackArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
             internals->key1,
             internals->key2);
         for (auto &file : files)
-        {
-            run_converters(*file);
             file_saver.save(std::move(file));
-        }
     }
 }

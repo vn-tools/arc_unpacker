@@ -355,7 +355,7 @@ namespace
 
 Glib2Archive::Glib2Archive()
 {
-    register_converter(std::unique_ptr<Converter>(new PgxConverter));
+    add_transformer(std::unique_ptr<Converter>(new PgxConverter));
 }
 
 Glib2Archive::~Glib2Archive()
@@ -373,19 +373,12 @@ void Glib2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
             continue;
         auto file = read_file(arc_file.io, *table_entry);
 
-        FileSaverMemory file_saver_memory;
-        if (try_unpack(*file, file_saver_memory))
+        FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> subfile)
         {
-            for (auto &subfile : file_saver_memory.get_saved())
-            {
-                subfile->name = file->name + "/" + subfile->name;
-                file_saver.save(std::move(subfile));
-            }
-        }
-        else
-        {
-            run_converters(*file);
+            subfile->name = file->name + "/" + subfile->name;
+            file_saver.save(std::move(subfile));
+        });
+        if (!try_unpack(*file, file_saver_proxy))
             file_saver.save(std::move(file));
-        }
     }
 }

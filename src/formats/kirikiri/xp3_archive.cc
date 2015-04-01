@@ -185,7 +185,7 @@ struct Xp3Archive::Internals
 
 Xp3Archive::Xp3Archive() : internals(new Internals)
 {
-    register_converter(std::unique_ptr<Converter>(new TlgConverter));
+    add_transformer(std::unique_ptr<Converter>(new TlgConverter));
 }
 
 Xp3Archive::~Xp3Archive()
@@ -235,8 +235,7 @@ void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     while (table_io->tell() < table_io->size())
     {
-        auto file = read_file(arc_file.io, *table_io, internals->filter.get());
-        run_converters(*file);
-        file_saver.save(std::move(file));
+        file_saver.save(
+            read_file(arc_file.io, *table_io, internals->filter.get()));
     }
 }

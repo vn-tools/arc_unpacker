@@ -9,8 +9,7 @@ void test_anm_archive(
     const std::vector<std::string> paths_to_png)
 {
     std::unique_ptr<Archive> archive(new AnmArchive);
-    auto output_files = unpack_to_memory(path_to_anm, *archive);
-    auto actual_files = output_files->get_saved();
+    auto actual_files = unpack_to_memory(path_to_anm, *archive);
 
     eassert(actual_files.size() == paths_to_png.size());
     for (size_t i = 0; i < paths_to_png.size(); i ++)

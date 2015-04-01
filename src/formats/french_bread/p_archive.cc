@@ -72,7 +72,7 @@ namespace
 
 PArchive::PArchive()
 {
-    register_converter(std::unique_ptr<Converter>(new Ex3Converter));
+    add_transformer(std::unique_ptr<Converter>(new Ex3Converter));
 }
 
 PArchive::~PArchive()
@@ -88,9 +88,5 @@ void PArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     bool encrypted = magic == 1;
     Table table = read_table(arc_file.io);
     for (auto &table_entry : table)
-    {
-        auto file = read_file(arc_file.io, *table_entry, encrypted);
-        run_converters(*file);
-        file_saver.save(std::move(file));
-    }
+        file_saver.save(read_file(arc_file.io, *table_entry, encrypted));
 }

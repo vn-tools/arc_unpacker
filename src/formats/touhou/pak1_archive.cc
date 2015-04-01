@@ -91,9 +91,14 @@ void Pak1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     auto table = read_table(arc_file.io);
     for (auto &table_entry : table)
     {
-        FileSaverMemory file_saver_memory;
         bool file_is_another_archive = false;
         auto file = read_file(arc_file.io, *table_entry);
+
+        FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> subfile)
+        {
+            subfile->name = file->name + "/" + subfile->name;
+            file_saver.save(std::move(subfile));
+        });
 
         //decode the file
         if (file->name.find("musicroom.dat") != std::string::npos)
@@ -116,19 +121,13 @@ void Pak1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
             if (file->name.find("wave") != std::string::npos)
             {
                 file_is_another_archive
-                    |= sound_archive.try_unpack(*file, file_saver_memory);
+                    |= sound_archive.try_unpack(*file, file_saver_proxy);
             }
             else
             {
                 file_is_another_archive
-                    |= image_archive.try_unpack(*file, file_saver_memory);
+                    |= image_archive.try_unpack(*file, file_saver_proxy);
             }
-        }
-
-        for (auto &subfile : file_saver_memory.get_saved())
-        {
-            subfile->name = file->name + "/" + subfile->name;
-            file_saver.save(std::move(subfile));
         }
 
         if (!file_is_another_archive)

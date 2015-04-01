@@ -5,13 +5,13 @@ using namespace Formats::NScripter;
 
 void test_nsa_archive_uncompressed()
 {
-    std::unique_ptr<File> file1(new File);
-    std::unique_ptr<File> file2(new File);
+    std::shared_ptr<File> file1(new File);
+    std::shared_ptr<File> file2(new File);
     file1->name = "abc.txt";
     file2->name = "another.txt";
     file1->io.write("123", 3);
     file2->io.write("abcdefghij", 10);
-    std::vector<File*> expected_files { file1.get(), file2.get() };
+    std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
     std::unique_ptr<Archive> archive(new NsaArchive);
     compare_files(
@@ -22,7 +22,7 @@ void test_nsa_archive_uncompressed()
 
 void test_nsa_archive_lzss()
 {
-    std::unique_ptr<File> file(new File);
+    std::shared_ptr<File> file(new File);
     file->name = "test.bmp";
     file->io.write(zlib_inflate(std::string(
         "\x78\xDA\x8D\xD3\x3D\x6E\x13\x40\x10\x86\xE1\xB5\x44\x81\x70\x9C"
@@ -56,7 +56,7 @@ void test_nsa_archive_lzss()
         "\xE3\xF1\xB8\x5E\x5E\x5E\xD6\xE9\x74\x5A\xAF\xAF\xAF\xEB\x7C\x3E"
         "\xBF\xEB\x3F\xFF\xBC\xFB\xB5\xEE\xDC\xBF\x01\x89\x72\x8B\xEC",
         479)));
-    std::vector<File*> expected_files { file.get() };
+    std::vector<std::shared_ptr<File>> expected_files { file };
 
     std::unique_ptr<Archive> archive(new NsaArchive);
     compare_files(

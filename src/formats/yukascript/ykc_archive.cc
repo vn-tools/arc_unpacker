@@ -61,7 +61,7 @@ namespace
 
 YkcArchive::YkcArchive()
 {
-    register_converter(std::unique_ptr<Converter>(new YkgConverter));
+    add_transformer(std::unique_ptr<Converter>(new YkgConverter));
 }
 
 YkcArchive::~YkcArchive()
@@ -82,9 +82,5 @@ void YkcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     Table table = read_table(arc_file.io, table_offset, table_size);
 
     for (auto &table_entry : table)
-    {
-        auto file = read_file(arc_file.io, *table_entry);
-        run_converters(*file);
-        file_saver.save(std::move(file));
-    }
+        file_saver.save(read_file(arc_file.io, *table_entry));
 }

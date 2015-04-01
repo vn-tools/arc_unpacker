@@ -5,25 +5,19 @@
 
 void Archive::add_cli_help(ArgParser &arg_parser) const
 {
-    for (auto &converter : converters)
-        converter->add_cli_help(arg_parser);
+    for (auto &transformer : transformers)
+        transformer->add_cli_help(arg_parser);
 }
 
 void Archive::parse_cli_options(ArgParser &arg_parser)
 {
-    for (auto &converter : converters)
-        converter->parse_cli_options(arg_parser);
+    for (auto &transformer : transformers)
+        transformer->parse_cli_options(arg_parser);
 }
 
-void Archive::register_converter(std::unique_ptr<Converter> converter)
+void Archive::add_transformer(std::shared_ptr<Converter> converter)
 {
-    converters.push_back(std::move(converter));
-}
-
-void Archive::run_converters(File &file) const
-{
-    for (auto &converter : converters)
-        converter->try_decode(file);
+    transformers.push_back(converter);
 }
 
 void Archive::unpack_internal(File &, FileSaver &) const
@@ -33,8 +27,14 @@ void Archive::unpack_internal(File &, FileSaver &) const
 
 void Archive::unpack(File &file, FileSaver &file_saver) const
 {
+    FileSaverCallback file_saver_proxy([&](const std::shared_ptr<File> file)
+    {
+        for (auto &transformer : transformers)
+            transformer->try_decode(*file);
+        file_saver.save(file);
+    });
     file.io.seek(0);
-    return unpack_internal(file, file_saver);
+    return unpack_internal(file, file_saver_proxy);
 }
 
 bool Archive::try_unpack(File &file, FileSaver &file_saver) const

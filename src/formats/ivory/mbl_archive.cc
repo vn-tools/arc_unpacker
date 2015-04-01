@@ -74,7 +74,7 @@ namespace
 
 MblArchive::MblArchive()
 {
-    register_converter(std::unique_ptr<Converter>(new PrsConverter));
+    add_transformer(std::unique_ptr<Converter>(new PrsConverter));
 }
 
 MblArchive::~MblArchive()
@@ -93,7 +93,6 @@ void MblArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (size_t i = 0; i < file_count; i ++)
     {
         auto file = read_file(arc_file.io, name_length);
-        run_converters(*file);
         file->guess_extension();
         file_saver.save(std::move(file));
     }
