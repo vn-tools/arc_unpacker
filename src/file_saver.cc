@@ -80,6 +80,11 @@ struct FileSaverCallback::Internals
     }
 };
 
+FileSaverCallback::FileSaverCallback()
+    : internals(new Internals(nullptr))
+{
+}
+
 FileSaverCallback::FileSaverCallback(FileSaveCallback callback)
     : internals(new Internals(callback))
 {
@@ -87,6 +92,11 @@ FileSaverCallback::FileSaverCallback(FileSaveCallback callback)
 
 FileSaverCallback::~FileSaverCallback()
 {
+}
+
+void FileSaverCallback::set_callback(FileSaveCallback callback)
+{
+    internals->callback = callback;
 }
 
 void FileSaverCallback::save(std::shared_ptr<File> file) const

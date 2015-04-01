@@ -29,9 +29,11 @@ typedef std::function<void(std::shared_ptr<File>)> FileSaveCallback;
 class FileSaverCallback : public FileSaver
 {
 public:
+    FileSaverCallback();
     FileSaverCallback(FileSaveCallback callback);
     ~FileSaverCallback();
 
+    void set_callback(FileSaveCallback callback);
     virtual void save(std::shared_ptr<File> file) const override;
 private:
     struct Internals;

@@ -1,6 +1,7 @@
-#include "formats/qlie/abmp10.h"
+#include "formats/qlie/abmp10_archive.h"
 #include "util/encoding.h"
 #include "util/itos.h"
+using namespace Formats::QLiE;
 
 namespace
 {
@@ -20,12 +21,12 @@ namespace
     const std::string magic_image10("abimage10\0\0\0\0\0\0\0", 16);
     const std::string magic_sound10("absound10\0\0\0\0\0\0\0", 16);
 
-    int get_version(IO &b_io)
+    int get_version(IO &arc_io)
     {
-        if (b_io.size() < 16)
+        if (arc_io.size() < 16)
             return 0;
 
-        std::string magic = b_io.read(16);
+        std::string magic = arc_io.read(16);
         if (magic == magic10)
             return 10;
         if (magic == magic11)
@@ -35,11 +36,11 @@ namespace
         return 0;
     }
 
-    std::unique_ptr<File> read_subfile(
-        IO &b_io, const std::string base_name)
+    std::unique_ptr<File> read_file(
+        IO &arc_io, const std::string base_name)
     {
-        std::string magic = b_io.read(16);
-        std::string encoded_name = b_io.read(b_io.read_u16_le());
+        std::string magic = arc_io.read(16);
+        std::string encoded_name = arc_io.read(arc_io.read_u16_le());
         std::string name = convert_encoding(encoded_name, "cp932", "utf-8");
 
         if (magic == magic_snddat11
@@ -47,68 +48,69 @@ namespace
         || magic == magic_imgdat13
         || magic == magic_imgdat14)
         {
-            b_io.skip(b_io.read_u16_le());
+            arc_io.skip(arc_io.read_u16_le());
         }
         else if (magic != magic_imgdat10 && magic != magic_snddat10)
             throw std::runtime_error("Unknown image magic " + magic);
 
-        b_io.skip(1);
+        arc_io.skip(1);
 
         if (magic == magic_imgdat14)
-            b_io.skip(76);
+            arc_io.skip(76);
         else if (magic == magic_imgdat13)
-            b_io.skip(12);
+            arc_io.skip(12);
 
-        size_t len = b_io.read_u32_le();
+        size_t len = arc_io.read_u32_le();
         if (len == 0)
             return nullptr;
 
         std::unique_ptr<File> subfile(new File);
-        subfile->io.write_from_io(b_io, len);
+        subfile->io.write_from_io(arc_io, len);
         subfile->name = base_name + "_" + name + ".dat";
         subfile->guess_extension();
         return subfile;
     }
 }
 
-void Formats::QLiE::abmp10_unpack(
-    std::vector<std::unique_ptr<File>> &files, File &b_file)
+void Abmp10Archive::unpack_internal(
+    File &arc_file, FileSaver &file_saver) const
 {
-    b_file.io.seek(0);
-    int version = get_version(b_file.io);
+    int version = get_version(arc_file.io);
     if (!version)
         throw std::runtime_error("Not an ABMP10 container");
 
-    while (b_file.io.tell() < b_file.io.size())
+    while (arc_file.io.tell() < arc_file.io.size())
     {
-        std::string magic = b_file.io.read(16);
+        std::string magic = arc_file.io.read(16);
         if (magic == magic_data10
         || magic == magic_data11
         || magic == magic_data12
         || magic == magic_data13)
         {
             //interesting
-            size_t size = b_file.io.read_u32_le();
-            b_file.io.skip(size);
+            size_t size = arc_file.io.read_u32_le();
+            arc_file.io.skip(size);
         }
         else if (magic == magic_image10)
         {
-            size_t image_count = b_file.io.read_u8();
+            size_t image_count = arc_file.io.read_u8();
             for (size_t i = 0; i < image_count; i ++)
             {
-                auto subfile = read_subfile(
-                    b_file.io, b_file.name + "_" + itos(i));
-                files.push_back(std::move(subfile));
+                auto subfile = read_file(
+                    arc_file.io, arc_file.name + "_" + itos(i));
+                if (subfile != nullptr)
+                    file_saver.save(std::move(subfile));
             }
         }
         else if (magic == magic_sound10)
         {
-            size_t sound_count = b_file.io.read_u8();
+            size_t sound_count = arc_file.io.read_u8();
             for (size_t i = 0; i < sound_count; i ++)
             {
-                auto subfile = read_subfile(
-                    b_file.io, b_file.name + "_" + itos(i));
-                files.push_back(std::move(subfile));
+                auto subfile = read_file(
+                    arc_file.io, arc_file.name + "_" + itos(i));
+                if (subfile != nullptr)
+                    file_saver.save(std::move(subfile));
             }
         }
         else

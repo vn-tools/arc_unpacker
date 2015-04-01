@@ -11,8 +11,8 @@
 
 #include <cstring>
 #include "buffered_io.h"
-#include "formats/qlie/abmp10.h"
-#include "formats/qlie/abmp7.h"
+#include "formats/qlie/abmp10_archive.h"
+#include "formats/qlie/abmp7_archive.h"
 #include "formats/qlie/dpng_converter.h"
 #include "formats/qlie/mt.h"
 #include "formats/qlie/pack_archive.h"
@@ -390,37 +390,7 @@ namespace
         return table;
     }
 
-    void try_unpack(
-        std::vector<std::unique_ptr<File>> &files,
-        std::unique_ptr<File> file)
-    {
-        if (file == nullptr)
-            return;
-
-        auto container_unpackers =
-        {
-            &abmp7_unpack,
-            &abmp10_unpack,
-        };
-
-        for (auto &container_unpacker : container_unpackers)
-        {
-            try
-            {
-                std::vector<std::unique_ptr<File>> local_files;
-                container_unpacker(local_files, *file);
-                for (auto &subfile : local_files)
-                    try_unpack(files, std::move(subfile));
-                return;
-            }
-            catch (...)
-            {
-            }
-        }
-        files.push_back(std::move(file));
-    }
-
-    std::vector<std::unique_ptr<File>> read_files(
+    std::unique_ptr<File> read_file(
         IO &arc_io,
         const TableEntry &table_entry,
         int version,
@@ -468,9 +438,7 @@ namespace
 
         file->io.write(data.get(), table_entry.size_original);
 
-        std::vector<std::unique_ptr<File>> files;
-        try_unpack(files, std::move(file));
-        return files;
+        return file;
     }
 }
 
@@ -555,17 +523,29 @@ void PackArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     if (version == 1 || version == 2)
         throw std::runtime_error("Version 1 and 2 are not supported.");
 
+    Abmp7Archive abmp7_archive;
+    Abmp10Archive abmp10_archive;
+
     Table table = read_table(arc_file.io, version);
     for (auto &table_entry : table)
     {
-        auto files = read_files(
+        auto file = read_file(
             arc_file.io,
             *table_entry,
             version,
             internals->encryption_type,
             internals->key1,
             internals->key2);
-        for (auto &file : files)
-            file_saver.save(std::move(file));
+
+        FileSaverCallback file_saver_proxy;
+        file_saver_proxy.set_callback([&](std::shared_ptr<File> file)
+        {
+            if (!abmp7_archive.try_unpack(*file, file_saver_proxy)
+            && !abmp10_archive.try_unpack(*file, file_saver_proxy))
+            {
+                file_saver.save(file);
+            }
+        });
+        file_saver_proxy.save(std::shared_ptr<File>(std::move(file)));
     }
 }
