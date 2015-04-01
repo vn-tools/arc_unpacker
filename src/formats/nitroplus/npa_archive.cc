@@ -190,6 +190,8 @@ void NpaArchive::add_cli_help(ArgParser &arg_parser) const
         "Selects NPA decryption routine.\n"
             "Possible values:\n"
             "- chaos_head");
+
+    Archive::add_cli_help(arg_parser);
 }
 
 void NpaArchive::parse_cli_options(ArgParser &arg_parser)
@@ -210,6 +212,8 @@ void NpaArchive::parse_cli_options(ArgParser &arg_parser)
     {
         internals->filter.reset(nullptr);
     }
+
+    Archive::parse_cli_options(arg_parser);
 }
 
 void NpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
