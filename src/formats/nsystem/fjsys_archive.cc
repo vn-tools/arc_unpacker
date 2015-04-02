@@ -63,9 +63,14 @@ namespace
     }
 }
 
-FjsysArchive::FjsysArchive()
+struct FjsysArchive::Internals
 {
-    add_transformer(std::shared_ptr<Converter>(new MgdConverter));
+    MgdConverter mgd_converter;
+};
+
+FjsysArchive::FjsysArchive() : internals(new Internals)
+{
+    add_transformer(&internals->mgd_converter);
 }
 
 FjsysArchive::~FjsysArchive()

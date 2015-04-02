@@ -72,9 +72,14 @@ namespace
     }
 }
 
-MblArchive::MblArchive()
+struct MblArchive::Internals
 {
-    add_transformer(std::unique_ptr<Converter>(new PrsConverter));
+    PrsConverter prs_converter;
+};
+
+MblArchive::MblArchive() : internals(new Internals)
+{
+    add_transformer(&internals->prs_converter);
 }
 
 MblArchive::~MblArchive()

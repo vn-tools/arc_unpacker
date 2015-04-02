@@ -233,22 +233,13 @@ struct Tha1Archive::Internals
     AnmArchive anm_archive;
 };
 
-Tha1Archive::Tha1Archive() : internals(new Internals())
+Tha1Archive::Tha1Archive() : internals(new Internals)
 {
+    add_transformer(&internals->anm_archive);
 }
 
 Tha1Archive::~Tha1Archive()
 {
-}
-
-void Tha1Archive::add_cli_help(ArgParser &arg_parser) const
-{
-    internals->anm_archive.add_cli_help(arg_parser);
-}
-
-void Tha1Archive::parse_cli_options(ArgParser &arg_parser)
-{
-    internals->anm_archive.parse_cli_options(arg_parser);
 }
 
 void Tha1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -259,14 +250,7 @@ void Tha1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     for (auto &table_entry : table)
     {
-        auto file = read_file(arc_file.io, *table_entry, encryption_version);
-        try
-        {
-            internals->anm_archive.unpack(*file, file_saver);
-        }
-        catch (...)
-        {
-            file_saver.save(std::move(file));
-        }
+        file_saver.save(
+            read_file(arc_file.io, *table_entry, encryption_version));
     }
 }

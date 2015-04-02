@@ -80,9 +80,14 @@ namespace
     }
 }
 
-GmlArchive::GmlArchive()
+struct GmlArchive::Internals
 {
-    add_transformer(std::unique_ptr<Converter>(new PgxConverter));
+    PgxConverter pgx_converter;
+};
+
+GmlArchive::GmlArchive() : internals(new Internals)
+{
+    add_transformer(&internals->pgx_converter);
 }
 
 GmlArchive::~GmlArchive()

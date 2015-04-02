@@ -176,6 +176,7 @@ namespace
 
 struct Xp3Archive::Internals
 {
+    TlgConverter tlg_converter;
     std::unique_ptr<Filter> filter;
 
     Internals() : filter(nullptr)
@@ -185,7 +186,7 @@ struct Xp3Archive::Internals
 
 Xp3Archive::Xp3Archive() : internals(new Internals)
 {
-    add_transformer(std::unique_ptr<Converter>(new TlgConverter));
+    add_transformer(&internals->tlg_converter);
 }
 
 Xp3Archive::~Xp3Archive()

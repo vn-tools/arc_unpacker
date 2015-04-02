@@ -83,22 +83,28 @@ namespace
     }
 }
 
+struct Pak1Archive::Internals
+{
+    Pak1ImageArchive image_archive;
+    Pak1SoundArchive sound_archive;
+};
+
+Pak1Archive::Pak1Archive() : internals(new Internals)
+{
+    add_transformer(&internals->image_archive);
+    add_transformer(&internals->sound_archive);
+}
+
+Pak1Archive::~Pak1Archive()
+{
+}
+
 void Pak1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    Pak1SoundArchive sound_archive;
-    Pak1ImageArchive image_archive;
-
     auto table = read_table(arc_file.io);
     for (auto &table_entry : table)
     {
-        bool file_is_another_archive = false;
         auto file = read_file(arc_file.io, *table_entry);
-
-        FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> subfile)
-        {
-            subfile->name = file->name + "/" + subfile->name;
-            file_saver.save(std::move(subfile));
-        });
 
         //decode the file
         if (file->name.find("musicroom.dat") != std::string::npos)
@@ -116,21 +122,7 @@ void Pak1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
             decrypt(file->io, 0x60, 0x61, 0x41);
             file->change_extension(".txt");
         }
-        else if (file->name.find(".dat") != std::string::npos)
-        {
-            if (file->name.find("wave") != std::string::npos)
-            {
-                file_is_another_archive
-                    |= sound_archive.try_unpack(*file, file_saver_proxy);
-            }
-            else
-            {
-                file_is_another_archive
-                    |= image_archive.try_unpack(*file, file_saver_proxy);
-            }
-        }
 
-        if (!file_is_another_archive)
-            file_saver.save(std::move(file));
+        file_saver.save(std::move(file));
     }
 }

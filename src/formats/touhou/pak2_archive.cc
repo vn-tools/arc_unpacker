@@ -138,22 +138,29 @@ namespace
     }
 }
 
+struct Pak2Archive::Internals
+{
+    Pak2ImageConverter image_converter;
+    Pak2SoundConverter sound_converter;
+};
+
+Pak2Archive::Pak2Archive() : internals(new Internals)
+{
+    add_transformer(&internals->image_converter);
+    add_transformer(&internals->sound_converter);
+}
+
+Pak2Archive::~Pak2Archive()
+{
+}
+
 void Pak2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     auto table = read_table(arc_file.io);
 
     PaletteMap palette_map = find_all_palettes(arc_file.name);
-    Pak2ImageConverter image_converter;
-    Pak2SoundConverter sound_converter;
-    image_converter.set_palette_map(palette_map);
+    internals->image_converter.set_palette_map(palette_map);
 
     for (auto &table_entry : table)
-    {
-        auto file = read_file(arc_file.io, *table_entry);
-
-        image_converter.try_decode(*file);
-        sound_converter.try_decode(*file);
-
-        file_saver.save(std::move(file));
-    }
+        file_saver.save(read_file(arc_file.io, *table_entry));
 }

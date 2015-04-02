@@ -12,6 +12,9 @@ namespace Formats
             Glib2Archive();
             ~Glib2Archive();
             void unpack_internal(File &, FileSaver &) const override;
+        private:
+            struct Internals;
+            std::unique_ptr<Internals> internals;
         };
     }
 }

@@ -41,6 +41,9 @@ namespace
 void Pak1SoundArchive::unpack_internal(
     File &arc_file, FileSaver &file_saver) const
 {
+    if (arc_file.name.find("wave") == std::string::npos)
+        throw std::runtime_error("Not a PAK1 sound archive");
+
     size_t file_count = arc_file.io.read_u32_le();
     for (size_t i = 0; i < file_count; i ++)
     {

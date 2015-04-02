@@ -353,9 +353,15 @@ namespace
     }
 }
 
-Glib2Archive::Glib2Archive()
+struct Glib2Archive::Internals
 {
-    add_transformer(std::unique_ptr<Converter>(new PgxConverter));
+    PgxConverter pgx_converter;
+};
+
+Glib2Archive::Glib2Archive() : internals(new Internals)
+{
+    add_transformer(&internals->pgx_converter);
+    add_transformer(this);
 }
 
 Glib2Archive::~Glib2Archive()
@@ -369,16 +375,7 @@ void Glib2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     for (auto &table_entry : table)
     {
-        if (!table_entry->is_file)
-            continue;
-        auto file = read_file(arc_file.io, *table_entry);
-
-        FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> subfile)
-        {
-            subfile->name = file->name + "/" + subfile->name;
-            file_saver.save(std::move(subfile));
-        });
-        if (!try_unpack(*file, file_saver_proxy))
-            file_saver.save(std::move(file));
+        if (table_entry->is_file)
+            file_saver.save(read_file(arc_file.io, *table_entry));
     }
 }

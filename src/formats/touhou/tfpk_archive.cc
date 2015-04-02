@@ -352,20 +352,12 @@ namespace
 
 struct TfpkArchive::Internals
 {
-    std::shared_ptr<TfbmConverter> tfbm_converter;
-
-    Internals() : tfbm_converter(new TfbmConverter)
-    {
-    }
-
-    ~Internals()
-    {
-    }
+    TfbmConverter tfbm_converter;
 };
 
 TfpkArchive::TfpkArchive() : internals(new Internals)
 {
-    add_transformer(internals->tfbm_converter);
+    add_transformer(&internals->tfbm_converter);
 }
 
 TfpkArchive::~TfpkArchive()
@@ -378,7 +370,7 @@ void TfpkArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         throw std::runtime_error("Not a TFPK archive");
 
     PaletteMap palette_map = find_all_palettes(arc_file.name);
-    internals->tfbm_converter->set_palette_map(palette_map);
+    internals->tfbm_converter.set_palette_map(palette_map);
 
     RsaReader rsa_reader(arc_file.io);
     Table table = read_table(rsa_reader);

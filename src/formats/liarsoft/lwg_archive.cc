@@ -58,9 +58,15 @@ namespace
     }
 }
 
-LwgArchive::LwgArchive()
+struct LwgArchive::Internals
 {
-    add_transformer(std::unique_ptr<Converter>(new WcgConverter));
+    WcgConverter wcg_converter;
+};
+
+LwgArchive::LwgArchive() : internals(new Internals)
+{
+    add_transformer(&internals->wcg_converter);
+    add_transformer(this);
 }
 
 LwgArchive::~LwgArchive()

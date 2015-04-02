@@ -1,6 +1,5 @@
 #include "formats/qlie/abmp10_archive.h"
 #include "util/encoding.h"
-#include "util/itos.h"
 using namespace Formats::QLiE;
 
 namespace
@@ -36,8 +35,7 @@ namespace
         return 0;
     }
 
-    std::unique_ptr<File> read_file(
-        IO &arc_io, const std::string base_name)
+    std::unique_ptr<File> read_file(IO &arc_io)
     {
         std::string magic = arc_io.read(16);
         std::string encoded_name = arc_io.read(arc_io.read_u16_le());
@@ -66,7 +64,7 @@ namespace
 
         std::unique_ptr<File> subfile(new File);
         subfile->io.write_from_io(arc_io, len);
-        subfile->name = base_name + "_" + name + ".dat";
+        subfile->name = (name == "" ? "unknown" : name) + ".dat";
         subfile->guess_extension();
         return subfile;
     }
@@ -96,8 +94,7 @@ void Abmp10Archive::unpack_internal(
             size_t image_count = arc_file.io.read_u8();
             for (size_t i = 0; i < image_count; i ++)
             {
-                auto subfile = read_file(
-                    arc_file.io, arc_file.name + "_" + itos(i));
+                auto subfile = read_file(arc_file.io);
                 if (subfile != nullptr)
                     file_saver.save(std::move(subfile));
             }
@@ -107,8 +104,7 @@ void Abmp10Archive::unpack_internal(
             size_t sound_count = arc_file.io.read_u8();
             for (size_t i = 0; i < sound_count; i ++)
             {
-                auto subfile = read_file(
-                    arc_file.io, arc_file.name + "_" + itos(i));
+                auto subfile = read_file(arc_file.io);
                 if (subfile != nullptr)
                     file_saver.save(std::move(subfile));
             }

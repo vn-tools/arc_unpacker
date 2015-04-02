@@ -58,11 +58,14 @@ namespace
 struct XflArchive::Internals
 {
     LwgArchive lwg_archive;
+    WcgConverter wcg_converter;
 };
 
 XflArchive::XflArchive() : internals(new Internals)
 {
-    add_transformer(std::unique_ptr<Converter>(new WcgConverter));
+    add_transformer(&internals->wcg_converter);
+    add_transformer(&internals->lwg_archive);
+    add_transformer(this);
 }
 
 XflArchive::~XflArchive()
@@ -76,16 +79,5 @@ void XflArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     Table table = read_table(arc_file.io);
     for (auto &table_entry : table)
-    {
-        auto file = read_file(arc_file.io, *table_entry);
-
-        FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> subfile)
-        {
-            subfile->name = file->name + "/" + subfile->name;
-            file_saver.save(std::move(subfile));
-        });
-
-        if (!internals->lwg_archive.try_unpack(*file, file_saver_proxy))
-            file_saver.save(std::move(file));
-    }
+        file_saver.save(read_file(arc_file.io, *table_entry));
 }

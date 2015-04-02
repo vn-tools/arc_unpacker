@@ -444,6 +444,10 @@ namespace
 
 struct PackArchive::Internals
 {
+    DpngConverter dpng_converter;
+    Abmp7Archive abmp7_archive;
+    Abmp10Archive abmp10_archive;
+
     EncryptionType encryption_type;
     std::string key1;
     std::string key2;
@@ -456,7 +460,9 @@ struct PackArchive::Internals
 
 PackArchive::PackArchive() : internals(new Internals)
 {
-    add_transformer(std::unique_ptr<Converter>(new DpngConverter));
+    add_transformer(&internals->dpng_converter);
+    add_transformer(&internals->abmp7_archive);
+    add_transformer(&internals->abmp10_archive);
 }
 
 PackArchive::~PackArchive()
@@ -523,9 +529,6 @@ void PackArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     if (version == 1 || version == 2)
         throw std::runtime_error("Version 1 and 2 are not supported.");
 
-    Abmp7Archive abmp7_archive;
-    Abmp10Archive abmp10_archive;
-
     Table table = read_table(arc_file.io, version);
     for (auto &table_entry : table)
     {
@@ -536,16 +539,6 @@ void PackArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
             internals->encryption_type,
             internals->key1,
             internals->key2);
-
-        FileSaverCallback file_saver_proxy;
-        file_saver_proxy.set_callback([&](std::shared_ptr<File> file)
-        {
-            if (!abmp7_archive.try_unpack(*file, file_saver_proxy)
-            && !abmp10_archive.try_unpack(*file, file_saver_proxy))
-            {
-                file_saver.save(file);
-            }
-        });
-        file_saver_proxy.save(std::shared_ptr<File>(std::move(file)));
+        file_saver.save(std::move(file));
     }
 }

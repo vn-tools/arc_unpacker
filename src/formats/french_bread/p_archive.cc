@@ -70,9 +70,15 @@ namespace
     }
 }
 
-PArchive::PArchive()
+struct PArchive::Internals
 {
-    add_transformer(std::unique_ptr<Converter>(new Ex3Converter));
+    Ex3Converter ex3_converter;
+};
+
+
+PArchive::PArchive() : internals(new Internals)
+{
+    add_transformer(&internals->ex3_converter);
 }
 
 PArchive::~PArchive()

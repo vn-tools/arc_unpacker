@@ -183,22 +183,13 @@ struct PbgzArchive::Internals
     AnmArchive anm_archive;
 };
 
-PbgzArchive::PbgzArchive() : internals(new Internals())
+PbgzArchive::PbgzArchive() : internals(new Internals)
 {
+    add_transformer(&internals->anm_archive);
 }
 
 PbgzArchive::~PbgzArchive()
 {
-}
-
-void PbgzArchive::add_cli_help(ArgParser &arg_parser) const
-{
-    internals->anm_archive.add_cli_help(arg_parser);
-}
-
-void PbgzArchive::parse_cli_options(ArgParser &arg_parser)
-{
-    internals->anm_archive.parse_cli_options(arg_parser);
 }
 
 void PbgzArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -212,14 +203,7 @@ void PbgzArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     for (auto &table_entry : table)
     {
-        auto file = read_file(arc_file.io, *table_entry, encryption_version);
-        try
-        {
-            internals->anm_archive.unpack(*file, file_saver);
-        }
-        catch (...)
-        {
-            file_saver.save(std::move(file));
-        }
+        file_saver.save(
+            read_file(arc_file.io, *table_entry, encryption_version));
     }
 }

@@ -40,10 +40,16 @@ namespace
     }
 }
 
-ArcArchive::ArcArchive()
+struct ArcArchive::Internals
 {
-    add_transformer(std::unique_ptr<Converter>(new CbgConverter));
-    add_transformer(std::unique_ptr<Converter>(new SoundConverter));
+    CbgConverter cbg_converter;
+    SoundConverter sound_converter;
+};
+
+ArcArchive::ArcArchive() : internals(new Internals)
+{
+    add_transformer(&internals->cbg_converter);
+    add_transformer(&internals->sound_converter);
 }
 
 ArcArchive::~ArcArchive()

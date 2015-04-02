@@ -59,9 +59,14 @@ namespace
     }
 }
 
-YkcArchive::YkcArchive()
+struct YkcArchive::Internals
 {
-    add_transformer(std::unique_ptr<Converter>(new YkgConverter));
+    YkgConverter ykg_converter;
+};
+
+YkcArchive::YkcArchive() : internals(new Internals)
+{
+    add_transformer(&internals->ykg_converter);
 }
 
 YkcArchive::~YkcArchive()

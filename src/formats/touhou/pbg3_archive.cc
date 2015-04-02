@@ -98,22 +98,13 @@ struct Pbg3Archive::Internals
     AnmArchive anm_archive;
 };
 
-Pbg3Archive::Pbg3Archive() : internals(new Internals())
+Pbg3Archive::Pbg3Archive() : internals(new Internals)
 {
+    add_transformer(&internals->anm_archive);
 }
 
 Pbg3Archive::~Pbg3Archive()
 {
-}
-
-void Pbg3Archive::add_cli_help(ArgParser &arg_parser) const
-{
-    internals->anm_archive.add_cli_help(arg_parser);
-}
-
-void Pbg3Archive::parse_cli_options(ArgParser &arg_parser)
-{
-    internals->anm_archive.parse_cli_options(arg_parser);
 }
 
 void Pbg3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
@@ -131,15 +122,5 @@ void Pbg3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     auto table = read_table(buf_io, *header);
 
     for (auto &table_entry : table)
-    {
-        auto file = read_file(buf_io, *table_entry);
-        try
-        {
-            internals->anm_archive.unpack(*file, file_saver);
-        }
-        catch (...)
-        {
-            file_saver.save(std::move(file));
-        }
-    }
+        file_saver.save(read_file(buf_io, *table_entry));
 }
