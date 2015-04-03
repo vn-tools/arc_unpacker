@@ -1,31 +1,17 @@
 #ifndef FORMATS_ARCHIVE_H
 #define FORMATS_ARCHIVE_H
-#include <memory>
-#include <vector>
-#include "arg_parser.h"
-#include "file.h"
-#include "file_saver.h"
-#include "formats/converter.h"
+#include "formats/transformer.h"
 
-class Archive
+class Archive : public Transformer
 {
 public:
+    virtual void add_cli_help(ArgParser &) const override;
+    virtual void parse_cli_options(const ArgParser &) override;
+    virtual FileNamingStrategy get_file_naming_strategy() const override;
     virtual ~Archive();
 
-    bool try_unpack(File &, FileSaver &) const;
-    void unpack(File &, FileSaver &) const;
-    virtual void unpack_internal(File &, FileSaver &) const;
-
-    virtual void add_cli_help(ArgParser &) const;
-    virtual void parse_cli_options(const ArgParser &);
-
 protected:
-    void add_transformer(Converter *converter);
-    void add_transformer(Archive *archive);
-
-private:
-    std::vector<Converter*> converters;
-    std::vector<Archive*> archives;
+    void unpack_internal(File &, FileSaver &) const override = 0;
 };
 
 #endif

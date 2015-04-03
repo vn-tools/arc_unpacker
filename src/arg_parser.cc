@@ -1,6 +1,5 @@
-#include <cassert>
+#include <iostream>
 #include "arg_parser.h"
-#include "logger.h"
 
 namespace
 {
@@ -201,7 +200,7 @@ void ArgParser::print_help() const
 
     if (internals->help_items.size() == 0)
     {
-        log("No additional switches are available.\n");
+        std::cout << "No additional switches are available." << std::endl;
         return;
     }
 
@@ -213,22 +212,22 @@ void ArgParser::print_help() const
         size_t tmp_length = invocation.length();
         if (tmp_length >= 2 && invocation.compare(0, 2, "--") == 0)
         {
-            log("    ");
+            std::cout << "    ";
             tmp_length += 4;
         }
-        log("%s", invocation.c_str());
+        std::cout << invocation;
 
         for (; tmp_length < max_invocation_length; tmp_length ++)
-            log(" ");
+            std::cout << " ";
 
         std::vector<std::string> lines = word_wrap(
             description, max_description_length);
         for (auto line : lines)
         {
-            log("%s", line.c_str());
+            std::cout << line;
             for (size_t i = 0; i < max_invocation_length; i ++)
-                log(" ");
+                std::cout << " ";
         }
-        log("\n");
+        std::cout << std::endl;
     }
 }

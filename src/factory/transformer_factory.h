@@ -1,0 +1,18 @@
+#ifndef FACTORY_TRANSFORMER_FACTORY_H
+#define FACTORY_TRANSFORMER_FACTORY_H
+#include <vector>
+#include "formats/transformer.h"
+
+class TransformerFactory final
+{
+public:
+    TransformerFactory();
+    ~TransformerFactory();
+    const std::vector<std::string> get_formats() const;
+    std::unique_ptr<Transformer> create(const std::string &format) const;
+private:
+    struct Internals;
+    std::unique_ptr<Internals> internals;
+};
+
+#endif

@@ -1,0 +1,288 @@
+#include <boost/filesystem.hpp>
+#include <iostream>
+#include <iomanip>
+#include "arc_unpacker.h"
+
+namespace
+{
+    typedef struct
+    {
+        std::string format;
+        boost::filesystem::path output_dir;
+        std::vector<std::unique_ptr<PathInfo>> input_paths;
+    } Options;
+
+    void add_help_option(ArgParser &arg_parser)
+    {
+        arg_parser.add_help("-h, --help", "Shows this message.");
+    }
+
+    bool should_show_help(ArgParser &arg_parser)
+    {
+        return arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
+    }
+
+    void add_output_folder_option(ArgParser &arg_parser, Options &options)
+    {
+        arg_parser.add_help(
+            "-o, --out=FOLDER",
+            "Where to put the output files.");
+
+        if (arg_parser.has_switch("-o"))
+            options.output_dir = arg_parser.get_switch("-o");
+        else if (arg_parser.has_switch("--out"))
+            options.output_dir = arg_parser.get_switch("--out");
+        else
+            options.output_dir = "./";
+    }
+
+    void add_format_option(ArgParser &arg_parser, Options &options)
+    {
+        arg_parser.add_help(
+            "-f, --fmt=FORMAT",
+            "Disables guessing and selects given format.");
+
+        if (arg_parser.has_switch("-f"))
+            options.format = arg_parser.get_switch("-f");
+        if (arg_parser.has_switch("--fmt"))
+            options.format = arg_parser.get_switch("--fmt");
+    }
+
+    bool add_input_paths_option(
+        ArcUnpacker &arc_unpacker,
+        ArgParser &arg_parser,
+        Options &options)
+    {
+        const std::vector<std::string> stray = arg_parser.get_stray();
+        for (size_t i = 1; i < stray.size(); i ++)
+        {
+            std::string path = stray[i];
+            if (boost::filesystem::is_directory(path))
+            {
+                for (boost::filesystem::recursive_directory_iterator it(path);
+                    it != boost::filesystem::recursive_directory_iterator();
+                    it ++)
+                {
+                    std::unique_ptr<PathInfo> pi(new PathInfo);
+                    pi->input_path = it->path().string();
+                    pi->base_name = pi->input_path.substr(path.length() + 1);
+                    options.input_paths.push_back(std::move(pi));
+                }
+            }
+            else
+            {
+                std::unique_ptr<PathInfo> pi(new PathInfo);
+                pi->input_path = path;
+                pi->base_name
+                    = boost::filesystem::path(path).filename().string();
+                options.input_paths.push_back(std::move(pi));
+            }
+        }
+
+        if (options.input_paths.size() < 1)
+        {
+            std::cout
+                << "Error: required more arguments."
+                << std::endl
+                << std::endl;
+            arc_unpacker.print_help(stray[0]);
+            return false;
+        }
+
+        return true;
+    }
+}
+
+struct ArcUnpacker::Internals
+{
+    Options options;
+    ArgParser &arg_parser;
+    TransformerFactory factory;
+
+    Internals(ArgParser &arg_parser) : arg_parser(arg_parser)
+    {
+    }
+};
+
+ArcUnpacker::ArcUnpacker(ArgParser &arg_parser)
+    : internals(new Internals(arg_parser))
+{
+    add_output_folder_option(arg_parser, internals->options);
+    add_format_option(arg_parser, internals->options);
+    add_help_option(arg_parser);
+}
+
+ArcUnpacker::~ArcUnpacker()
+{
+}
+
+void ArcUnpacker::print_help(const std::string &path_to_self)
+{
+    std::cout
+        << "Usage: "
+        << path_to_self.c_str()
+        << " [options] [fmt_options] input_path [input_path...]"
+        << std::endl
+        << std::endl;
+
+    std::cout
+        << "Depending on the format, files will be saved either in a sub directory"
+        << std::endl
+        << "(archives), or aside the input files (direct images). If no output dir"
+        << std::endl
+        << "is provided, files are going to be saved inside current working directory."
+        << std::endl
+        << std::endl
+        << "[options] can be:"
+        << std::endl
+        << std::endl;
+
+    internals->arg_parser.print_help();
+    internals->arg_parser.clear_help();
+    std::cout << std::endl;
+
+    auto format = internals->options.format;
+    if (format != "")
+    {
+        std::unique_ptr<Transformer> transformer
+            = internals->factory.create(format);
+
+        if (transformer != nullptr)
+        {
+            transformer->add_cli_help(internals->arg_parser);
+            std::cout
+                << "[fmt_options] specific to "
+                << internals->options.format
+                << ":"
+                << std::endl
+                << std::endl;
+            internals->arg_parser.print_help();
+            return;
+        }
+    }
+
+    std::cout
+        << "[fmt_options] depend on chosen format and are required at runtime."
+        << std::endl
+        << "See --help --fmt=FORMAT to get detailed help for given transformer."
+        << std::endl
+        << std::endl;
+
+    std::cout << "Supported FORMAT values:" << std::endl;
+    int i = 0;
+    for (auto &format : internals->factory.get_formats())
+    {
+        std::cout << "- " << std::setw(10) << std::left << format;
+        if (i ++ == 4)
+        {
+            std::cout << std::endl;
+            i = 0;
+        }
+    }
+    if (i != 0)
+        std::cout << std::endl;
+}
+
+void ArcUnpacker::unpack(
+    Transformer &transformer, File &file, const std::string &base_name)
+{
+    FileSaverHdd file_saver(internals->options.output_dir);
+    unpack(transformer, file, base_name, file_saver);
+}
+
+void ArcUnpacker::unpack(
+    Transformer &transformer,
+    File &file,
+    const std::string &base_name,
+    FileSaver &file_saver)
+{
+    FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> saved_file)
+    {
+        saved_file->name =
+            FileNameDecorator::decorate(
+                transformer.get_file_naming_strategy(),
+                base_name,
+                saved_file->name);
+        file_saver.save(saved_file);
+    });
+
+    transformer.parse_cli_options(internals->arg_parser);
+    transformer.unpack(file, file_saver_proxy);
+}
+
+bool ArcUnpacker::guess_transformer_and_unpack(
+    File &file, const std::string &base_name)
+{
+    if (internals->options.format == "")
+    {
+        for (auto &format : internals->factory.get_formats())
+        {
+            auto transformer = internals->factory.create(format);
+
+            try
+            {
+                std::cout << "Trying " << format << "... ";
+                unpack(*transformer, file, base_name);
+                std::cout << "Unpacking finished successfully." << std::endl;
+                return true;
+            }
+            catch (std::exception &e)
+            {
+                std::cout << "Error: " << e.what() << "; trying next format..." << std::endl;
+            }
+        }
+
+        std::cout << "Nothing left to try. File not recognized." << std::endl;
+        return false;
+    }
+    else
+    {
+        auto transformer = internals->factory.create(internals->options.format);
+
+        try
+        {
+            unpack(*transformer, file, base_name);
+            std::cout << "Unpacking finished successfully." << std::endl;
+            return true;
+        }
+        catch (std::exception &e)
+        {
+            std::cout << "Error: " << e.what() << std::endl;
+            std::cout << "Decoding finished with errors." << std::endl;
+            return false;
+        }
+    }
+}
+
+bool ArcUnpacker::run()
+{
+    if (should_show_help(internals->arg_parser))
+    {
+        auto path_to_self = internals->arg_parser.get_stray()[0];
+        print_help(path_to_self);
+        return true;
+    }
+    else
+    {
+        if (!add_input_paths_option(
+            *this, internals->arg_parser, internals->options))
+        {
+            return false;
+        }
+
+        bool result = true;
+        for (auto &path_info : internals->options.input_paths)
+        {
+            File file(path_info->input_path, FileIOMode::Read);
+
+            auto tmp = boost::filesystem::path(path_info->base_name);
+            std::string base_name
+                = tmp.stem().string() + "~" + tmp.extension().string();
+
+            if (!guess_transformer_and_unpack(file, base_name))
+                result = false;
+        }
+        return result;
+    }
+}
+

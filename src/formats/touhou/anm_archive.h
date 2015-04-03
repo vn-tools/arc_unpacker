@@ -10,6 +10,8 @@ namespace Formats
         {
         public:
             void unpack_internal(File &, FileSaver &) const override;
+        protected:
+            FileNamingStrategy get_file_naming_strategy() const override;
         };
     }
 }

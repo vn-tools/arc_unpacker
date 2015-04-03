@@ -1,10 +1,10 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <iostream>
 #include <set>
 #include <stdexcept>
 #include "file_io.h"
 #include "file_saver.h"
-#include "logger.h"
 #include "util/itos.h"
 
 struct FileSaverHdd::Internals
@@ -54,18 +54,19 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
         full_path /= boost::filesystem::path(name_part);
         full_path = internals->make_path_unique(full_path);
 
-        log("Saving to %s... ", full_path.generic_string().c_str());
+        std::cout << "Saving to " << full_path.generic_string() << "... ";
 
-        boost::filesystem::create_directories(full_path.parent_path());
+        if (full_path.parent_path() != "")
+            boost::filesystem::create_directories(full_path.parent_path());
 
         FileIO output_io(full_path.string(), FileIOMode::Write);
         file->io.seek(0);
         output_io.write_from_io(file->io, file->io.size());
-        log("ok\n");
+        std::cout << "ok" << std::endl;
     }
     catch (std::runtime_error &e)
     {
-        log("Error (%s)\n", e.what());
+        std::cout << "error (" << e.what() << ")" << std::endl;
     }
 }
 

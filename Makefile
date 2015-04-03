@@ -51,7 +51,7 @@ SOURCES := $(filter-out $(SRC_DIR)/bin/%.cc, $(call rwildcard, $(SRC_DIR)/, *.cc
 OBJECTS := $(SOURCES:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o)
 
 .PHONY: binaries
-binaries: $(BIN_DIR)/arc_unpacker $(BIN_DIR)/file_decoder
+binaries: $(BIN_DIR)/arc_unpacker
 
 $(BIN_DIR)/%: $(OBJ_DIR)/bin/%.o $(OBJECTS)
 	@$(MKPATH) $(dir $@)

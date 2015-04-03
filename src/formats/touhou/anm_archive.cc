@@ -43,10 +43,8 @@ namespace
 
     std::string read_name(IO &file_io, size_t offset)
     {
-        size_t old_offset = file_io.tell();
-        file_io.seek(offset);
-        std::string name = file_io.read_until_zero();
-        file_io.seek(old_offset);
+        std::string name;
+        file_io.peek(offset, [&]() { name = file_io.read_until_zero(); });
         return name;
     }
 
@@ -180,6 +178,11 @@ namespace
     }
 }
 
+FileNamingStrategy AnmArchive::get_file_naming_strategy() const
+{
+    return FileNamingStrategy::Root;
+}
+
 void AnmArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     Table table = read_table(file.io);
@@ -187,7 +190,7 @@ void AnmArchive::unpack_internal(File &file, FileSaver &file_saver) const
     {
         // Ignore both the scripts and sprites and extract raw texture data.
         auto subfile = read_texture(file.io, *table_entry);
-        if (subfile)
+        if (subfile != nullptr)
             file_saver.save(std::move(subfile));
     }
 }

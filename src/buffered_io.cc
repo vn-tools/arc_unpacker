@@ -3,7 +3,6 @@
 #include <cstring>
 #include <stdexcept>
 #include "buffered_io.h"
-#include "logger.h"
 
 struct BufferedIO::Internals
 {
