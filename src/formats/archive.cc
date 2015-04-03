@@ -14,7 +14,7 @@ void Archive::add_cli_help(ArgParser &arg_parser) const
     }
 }
 
-void Archive::parse_cli_options(ArgParser &arg_parser)
+void Archive::parse_cli_options(const ArgParser &arg_parser)
 {
     for (auto &converter : converters)
         converter->parse_cli_options(arg_parser);

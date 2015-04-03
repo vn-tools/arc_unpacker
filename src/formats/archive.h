@@ -17,7 +17,7 @@ public:
     virtual void unpack_internal(File &, FileSaver &) const;
 
     virtual void add_cli_help(ArgParser &) const;
-    virtual void parse_cli_options(ArgParser &);
+    virtual void parse_cli_options(const ArgParser &);
 
 protected:
     void add_transformer(Converter *converter);

@@ -7,7 +7,7 @@ void Converter::add_cli_help(ArgParser &) const
 {
 }
 
-void Converter::parse_cli_options(ArgParser &)
+void Converter::parse_cli_options(const ArgParser &)
 {
 }
 

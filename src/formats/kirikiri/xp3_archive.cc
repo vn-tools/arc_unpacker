@@ -207,7 +207,7 @@ void Xp3Archive::add_cli_help(ArgParser &arg_parser) const
     Archive::add_cli_help(arg_parser);
 }
 
-void Xp3Archive::parse_cli_options(ArgParser &arg_parser)
+void Xp3Archive::parse_cli_options(const ArgParser &arg_parser)
 {
     const std::string plugin = arg_parser.get_switch("plugin").c_str();
     if (plugin == "comyu")

@@ -480,7 +480,7 @@ void PackArchive::add_cli_help(ArgParser &arg_parser) const
     Archive::add_cli_help(arg_parser);
 }
 
-void PackArchive::parse_cli_options(ArgParser &arg_parser)
+void PackArchive::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("fkey"))
     {
