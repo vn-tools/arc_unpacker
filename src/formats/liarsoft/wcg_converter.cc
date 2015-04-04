@@ -10,6 +10,7 @@
 
 #include <stdexcept>
 #include "bit_reader.h"
+#include "buffered_io.h"
 #include "formats/image.h"
 #include "formats/liarsoft/wcg_converter.h"
 #include "util/itos.h"
@@ -133,16 +134,17 @@ std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
     size_t pixels_size = image_width * image_height * 4;
     std::unique_ptr<char[]> pixels(new char[pixels_size]);
 
+    BufferedIO buffered_io(file.io);
     auto ret = wcg_unpack(
-        file.io,
+        buffered_io,
         pixels.get() + 2,
         image_width * image_height,
         1,
         4);
 
-    file.io.seek(ret);
+    buffered_io.seek(ret);
     wcg_unpack(
-        file.io,
+        buffered_io,
         pixels.get(),
         image_width * image_height,
         1,
