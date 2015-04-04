@@ -13,6 +13,7 @@ namespace Formats
             Pak2ImageConverter();
             ~Pak2ImageConverter();
             void set_palette_map(const PaletteMap &palette_map);
+        protected:
             void decode_internal(File &) const override;
         private:
             struct Internals;

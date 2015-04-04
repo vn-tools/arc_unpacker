@@ -8,7 +8,7 @@ namespace Formats
     {
         class SpbConverter final : public Converter
         {
-        public:
+        protected:
             void decode_internal(File &target_file) const override;
         };
     }

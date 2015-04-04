@@ -8,7 +8,7 @@ namespace Formats
     {
         class Pak2SoundConverter : public Converter
         {
-        public:
+        protected:
             void decode_internal(File &) const override;
         };
     }
