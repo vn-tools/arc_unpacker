@@ -11,6 +11,7 @@ namespace Formats
         public:
             Pbg3Archive();
             ~Pbg3Archive();
+        protected:
             void unpack_internal(File &, FileSaver &) const override;
         private:
             struct Internals;

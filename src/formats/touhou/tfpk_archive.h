@@ -11,6 +11,7 @@ namespace Formats
         public:
             TfpkArchive();
             ~TfpkArchive();
+        protected:
             void unpack_internal(File &, FileSaver &) const override;
         private:
             struct Internals;

@@ -11,6 +11,7 @@ namespace Formats
         public:
             Tha1Archive();
             ~Tha1Archive();
+        protected:
             void unpack_internal(File &, FileSaver &) const override;
         private:
             struct Internals;

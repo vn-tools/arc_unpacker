@@ -11,6 +11,7 @@ namespace Formats
         public:
             LwgArchive();
             ~LwgArchive();
+        protected:
             void unpack_internal(File &, FileSaver &) const override;
         private:
             struct Internals;

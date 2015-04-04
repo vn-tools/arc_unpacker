@@ -13,6 +13,7 @@ namespace Formats
             ~Xp3Archive();
             void add_cli_help(ArgParser &) const override;
             void parse_cli_options(const ArgParser &) override;
+        protected:
             void unpack_internal(File &, FileSaver &) const override;
         private:
             struct Internals;

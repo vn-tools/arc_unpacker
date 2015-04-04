@@ -8,7 +8,7 @@ namespace Formats
     {
         class NpaSgArchive final : public Archive
         {
-        public:
+        protected:
             void unpack_internal(File &, FileSaver &) const override;
         };
     }

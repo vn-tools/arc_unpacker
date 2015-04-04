@@ -8,7 +8,7 @@ namespace Formats
     {
         class PacArchive final : public Archive
         {
-        public:
+        protected:
             void unpack_internal(File &, FileSaver &) const override;
         };
     }

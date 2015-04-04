@@ -8,7 +8,7 @@ namespace Formats
     {
         class Pak1SoundArchive : public Archive
         {
-        public:
+        protected:
             void unpack_internal(File &, FileSaver &) const override;
         };
     }

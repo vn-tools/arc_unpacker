@@ -8,7 +8,7 @@ namespace Formats
     {
         class Abmp7Archive final : public Archive
         {
-        public:
+        protected:
             void unpack_internal(File &, FileSaver &) const override;
         };
     }

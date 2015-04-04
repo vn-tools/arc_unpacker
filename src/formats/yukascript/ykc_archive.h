@@ -11,6 +11,7 @@ namespace Formats
         public:
             YkcArchive();
             ~YkcArchive();
+        protected:
             void unpack_internal(File &, FileSaver &) const override;
         private:
             struct Internals;
