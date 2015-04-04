@@ -1,5 +1,5 @@
-#include "bit_reader.h"
-#include "buffered_io.h"
+#include "io/bit_reader.h"
+#include "io/buffered_io.h"
 #include "test_support/eassert.h"
 
 void test_empty()

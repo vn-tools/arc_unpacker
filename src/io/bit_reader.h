@@ -1,7 +1,7 @@
-#ifndef BIT_READER_H
-#define BIT_READER_H
+#ifndef IO_BIT_READER_H
+#define IO_BIT_READER_H
 #include <memory>
-#include "io.h"
+#include "io/io.h"
 
 class BitReader
 {

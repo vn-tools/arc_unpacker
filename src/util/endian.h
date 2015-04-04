@@ -1,5 +1,5 @@
-#ifndef ENDIAN_H
-#define ENDIAN_H
+#ifndef UTIL_ENDIAN_H
+#define UTIL_ENDIAN_H
 #include <limits.h>
 #include <stdint.h>
 

@@ -9,8 +9,8 @@
 // - Fortune Summoners: Secret Of The Elemental Stone (SOTES)
 
 #include <cstring>
-#include "formats/image.h"
 #include "formats/lizsoft/sotes_converter.h"
+#include "util/image.h"
 using namespace Formats::Lizsoft;
 
 namespace

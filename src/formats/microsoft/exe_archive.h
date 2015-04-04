@@ -1,5 +1,5 @@
-#ifndef FORMATS_MICROSOFT_EXE_ARCHIVE
-#define FORMATS_MICROSOFT_EXE_ARCHIVE
+#ifndef FORMATS_MICROSOFT_EXE_ARCHIVE_H
+#define FORMATS_MICROSOFT_EXE_ARCHIVE_H
 #include "formats/archive.h"
 
 namespace Formats

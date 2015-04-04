@@ -7,10 +7,10 @@
 // Known games:
 // - Touhou 13.5 - Hopeless Masquerade
 
-#include "buffered_io.h"
-#include "formats/image.h"
 #include "formats/touhou/tfbm_converter.h"
+#include "io/buffered_io.h"
 #include "util/colors.h"
+#include "util/image.h"
 #include "util/itos.h"
 #include "util/zlib.h"
 using namespace Formats::Touhou;

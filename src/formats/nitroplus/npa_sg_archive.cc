@@ -7,8 +7,8 @@
 // Known games:
 // - Steins;Gate
 
-#include "buffered_io.h"
 #include "formats/nitroplus/npa_sg_archive.h"
+#include "io/buffered_io.h"
 #include "util/encoding.h"
 using namespace Formats::Nitroplus;
 

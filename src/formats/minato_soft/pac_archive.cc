@@ -7,9 +7,9 @@
 // Known games:
 // - Maji de Watashi ni Koishinasai!
 
-#include "bit_reader.h"
-#include "buffered_io.h"
 #include "formats/minato_soft/pac_archive.h"
+#include "io/bit_reader.h"
+#include "io/buffered_io.h"
 #include "util/zlib.h"
 using namespace Formats::MinatoSoft;
 

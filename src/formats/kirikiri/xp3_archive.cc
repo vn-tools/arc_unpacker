@@ -11,13 +11,13 @@
 // - Sharin no Kuni, Himawari no Shoujo
 // - Comyu Kuroi Ryuu to Yasashii Oukoku
 
-#include "buffered_io.h"
 #include "formats/kirikiri/tlg_converter.h"
 #include "formats/kirikiri/xp3_archive.h"
 #include "formats/kirikiri/xp3_filters/comyu_filter.h"
 #include "formats/kirikiri/xp3_filters/fha_filter.h"
 #include "formats/kirikiri/xp3_filters/fsn_filter.h"
 #include "formats/kirikiri/xp3_filters/noop_filter.h"
+#include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/zlib.h"
 using namespace Formats::Kirikiri;

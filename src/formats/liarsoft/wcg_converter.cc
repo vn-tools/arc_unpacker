@@ -9,10 +9,10 @@
 // - Souten No Celenaria - What a Beautiful World
 
 #include <stdexcept>
-#include "bit_reader.h"
-#include "buffered_io.h"
-#include "formats/image.h"
 #include "formats/liarsoft/wcg_converter.h"
+#include "io/bit_reader.h"
+#include "io/buffered_io.h"
+#include "util/image.h"
 #include "util/itos.h"
 using namespace Formats::LiarSoft;
 

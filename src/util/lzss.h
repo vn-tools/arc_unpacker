@@ -1,7 +1,7 @@
 #ifndef UTIL_LZSS_H
 #define UTIL_LZSS_H
 #include <string>
-#include "bit_reader.h"
+#include "io/bit_reader.h"
 
 typedef struct
 {

@@ -1,9 +1,9 @@
-#ifndef FILE_IO
-#define FILE_IO
+#ifndef IO_FILE_IO_H
+#define IO_FILE_IO_H
 #include <boost/filesystem/path.hpp>
 #include <memory>
 #include <string>
-#include "io.h"
+#include "io/io.h"
 
 enum FileIOMode
 {

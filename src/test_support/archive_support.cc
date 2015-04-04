@@ -1,7 +1,6 @@
-#include <cassert>
 #include "arg_parser.h"
 #include "file.h"
-#include "file_io.h"
+#include "io/file_io.h"
 #include "test_support/archive_support.h"
 #include "test_support/eassert.h"
 

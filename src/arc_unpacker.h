@@ -3,8 +3,8 @@
 #include <boost/filesystem/path.hpp>
 #include <memory>
 #include <string>
-#include "factory/transformer_factory.h"
 #include "formats/transformer.h"
+#include "formats/transformer_factory.h"
 
 typedef struct
 {

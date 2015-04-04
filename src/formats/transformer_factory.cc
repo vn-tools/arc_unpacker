@@ -1,5 +1,6 @@
 #include <functional>
-#include "factory/transformer_factory.h"
+#include "formats/transformer_factory.h"
+
 #include "formats/bgi/arc_archive.h"
 #include "formats/bgi/cbg_converter.h"
 #include "formats/bgi/sound_converter.h"
@@ -43,6 +44,7 @@
 #include "formats/touhou/tha1_archive.h"
 #include "formats/yukascript/ykc_archive.h"
 #include "formats/yukascript/ykg_converter.h"
+
 using namespace Formats;
 
 namespace

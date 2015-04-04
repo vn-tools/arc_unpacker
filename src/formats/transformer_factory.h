@@ -1,5 +1,5 @@
-#ifndef FACTORY_TRANSFORMER_FACTORY_H
-#define FACTORY_TRANSFORMER_FACTORY_H
+#ifndef FORMATS_TRANSFORMER_FACTORY_H
+#define FORMATS_TRANSFORMER_FACTORY_H
 #include <vector>
 #include "formats/transformer.h"
 

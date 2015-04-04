@@ -7,10 +7,10 @@
 // Known games:
 // - Touhou 07.5 - Immaterial and Missing Power
 
-#include "buffered_io.h"
 #include "formats/touhou/pak1_archive.h"
 #include "formats/touhou/pak1_image_archive.h"
 #include "formats/touhou/pak1_sound_archive.h"
+#include "io/buffered_io.h"
 using namespace Formats::Touhou;
 
 namespace

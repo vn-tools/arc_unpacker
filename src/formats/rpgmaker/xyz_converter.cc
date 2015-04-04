@@ -8,11 +8,9 @@
 // Known games:
 // - Yume Nikki
 
-#include <cassert>
 #include <stdexcept>
 #include "formats/rpgmaker/xyz_converter.h"
-#include "formats/image.h"
-#include "io.h"
+#include "util/image.h"
 #include "util/zlib.h"
 using namespace Formats::RpgMaker;
 
@@ -30,7 +28,8 @@ std::unique_ptr<File> XyzConverter::decode_internal(File &file) const
     uint16_t height = file.io.read_u16_le();
 
     std::string data = zlib_inflate(file.io.read_until_end());
-    assert(data.size() == static_cast<size_t>(256 * 3 + width * height));
+    if (data.size() != static_cast<size_t>(256 * 3 + width * height))
+        throw std::runtime_error("Unexpected data size");
 
     size_t pixels_size = width * height * 3;
     std::unique_ptr<char[]> pixels(new char[pixels_size]);

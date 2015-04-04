@@ -1,5 +1,5 @@
 #include <boost/filesystem/path.hpp>
-#include "formats/file_naming_strategy.h"
+#include "formats/transformer.h"
 #include "test_support/eassert.h"
 
 typedef boost::filesystem::path path;

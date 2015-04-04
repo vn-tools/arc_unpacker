@@ -10,10 +10,10 @@
 
 #include <cstring>
 #include <map>
-#include "buffered_io.h"
 #include "formats/touhou/anm_archive.h"
 #include "formats/touhou/crypt.h"
 #include "formats/touhou/pbgz_archive.h"
+#include "io/buffered_io.h"
 #include "util/lzss.h"
 using namespace Formats::Touhou;
 

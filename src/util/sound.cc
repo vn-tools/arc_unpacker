@@ -1,5 +1,5 @@
 #include <cassert>
-#include "formats/sound.h"
+#include "util/sound.h"
 
 struct Sound::Internals
 {

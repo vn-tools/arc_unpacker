@@ -8,10 +8,10 @@
 // - Tsukihime
 // - Umineko no naku koro ni
 
-#include "bit_reader.h"
-#include "buffered_io.h"
 #include "formats/nscripter/nsa_archive.h"
 #include "formats/nscripter/spb_converter.h"
+#include "io/buffered_io.h"
+#include "io/bit_reader.h"
 #include "util/lzss.h"
 using namespace Formats::NScripter;
 

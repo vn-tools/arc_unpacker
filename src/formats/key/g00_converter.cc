@@ -10,11 +10,10 @@
 // - Little Busters
 
 #include <cassert>
-#include "buffered_io.h"
-#include "endian.h"
-#include "formats/image.h"
 #include "formats/key/g00_converter.h"
-#include "io.h"
+#include "io/buffered_io.h"
+#include "util/endian.h"
+#include "util/image.h"
 using namespace Formats::Key;
 
 namespace

@@ -7,11 +7,10 @@
 
 #include <cassert>
 #include <cstring>
-#include "bit_reader.h"
-#include "buffered_io.h"
 #include "formats/bgi/cbg_converter.h"
-#include "formats/image.h"
-#include "io.h"
+#include "io/bit_reader.h"
+#include "io/buffered_io.h"
+#include "util/image.h"
 using namespace Formats::Bgi;
 
 namespace

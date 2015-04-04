@@ -1,6 +1,6 @@
 #ifndef FORMATS_GLIB2_GML_DECODER_H
 #define FORMATS_GLIB2_GML_DECODER_H
-#include "buffered_io.h"
+#include "io/buffered_io.h"
 
 class GmlDecoder
 {

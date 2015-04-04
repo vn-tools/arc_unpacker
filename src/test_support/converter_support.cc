@@ -1,10 +1,8 @@
-#include <cstring>
-#include <memory>
 #include "file.h"
-#include "file_io.h"
-#include "formats/image.h"
+#include "io/file_io.h"
 #include "test_support/converter_support.h"
 #include "test_support/eassert.h"
+#include "util/image.h"
 
 namespace
 {

@@ -5,9 +5,8 @@
 // Extension: -
 // Archives:  MBL
 
-#include "formats/image.h"
 #include "formats/ivory/prs_converter.h"
-#include "io.h"
+#include "util/image.h"
 using namespace Formats::Ivory;
 
 namespace

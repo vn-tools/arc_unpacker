@@ -16,10 +16,10 @@
 #include <openssl/rsa.h>
 #include <sstream>
 #include <vector>
-#include "buffered_io.h"
 #include "formats/touhou/tfpk_archive.h"
 #include "formats/touhou/tfpk_dir_names.h"
 #include "formats/touhou/tfbm_converter.h"
+#include "io/buffered_io.h"
 #include "util/colors.h"
 #include "util/encoding.h"
 #include "util/zlib.h"

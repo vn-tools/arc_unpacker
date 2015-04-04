@@ -7,9 +7,9 @@
 // Known games:
 // - Touhou 06 - The Embodiment of Scarlet Devil
 
-#include "buffered_io.h"
 #include "formats/touhou/anm_archive.h"
 #include "formats/touhou/pbg3_archive.h"
+#include "io/buffered_io.h"
 #include "util/lzss.h"
 using namespace Formats::Touhou;
 

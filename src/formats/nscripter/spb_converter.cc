@@ -8,9 +8,9 @@
 // Known games:
 // - Umineko no naku koro ni
 
-#include "bit_reader.h"
-#include "formats/image.h"
 #include "formats/nscripter/spb_converter.h"
+#include "io/bit_reader.h"
+#include "util/image.h"
 using namespace Formats::NScripter;
 
 namespace

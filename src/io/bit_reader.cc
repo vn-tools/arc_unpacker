@@ -1,5 +1,5 @@
 #include <stdexcept>
-#include "bit_reader.h"
+#include "io/bit_reader.h"
 
 namespace
 {

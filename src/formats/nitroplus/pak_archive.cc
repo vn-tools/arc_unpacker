@@ -7,8 +7,8 @@
 // Known games:
 // - Saya no Uta
 
-#include "buffered_io.h"
 #include "formats/nitroplus/pak_archive.h"
+#include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/zlib.h"
 using namespace Formats::Nitroplus;

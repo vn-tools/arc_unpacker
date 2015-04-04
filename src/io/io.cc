@@ -1,8 +1,8 @@
 #include <cassert>
 #include <cstdlib>
 #include <memory>
-#include "endian.h"
-#include "io.h"
+#include "util/endian.h"
+#include "io/io.h"
 
 IO::~IO()
 {

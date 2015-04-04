@@ -5,7 +5,22 @@
 #include "arg_parser.h"
 #include "file.h"
 #include "file_saver.h"
-#include "formats/file_naming_strategy.h"
+
+enum class FileNamingStrategy : uint8_t
+{
+    Root = 1,
+    Sibling = 2,
+    Child = 3,
+};
+
+class FileNameDecorator
+{
+public:
+    static std::string decorate(
+        const FileNamingStrategy &strategy,
+        const std::string &parent_file_name,
+        const std::string &current_file_name);
+};
 
 class Transformer
 {

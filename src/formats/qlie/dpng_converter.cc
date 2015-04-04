@@ -8,9 +8,9 @@
 // Known games:
 // - Koiken Otome
 
-#include "buffered_io.h"
-#include "formats/image.h"
 #include "formats/qlie/dpng_converter.h"
+#include "io/buffered_io.h"
+#include "util/image.h"
 using namespace Formats::QLiE;
 
 namespace

@@ -8,9 +8,9 @@
 // - Touhou 10.5 - Scarlet Weather Rhapsody
 // - Touhou 12.3 - Unthinkable Natural Law
 
-#include "formats/sound.h"
 #include "formats/touhou/pak2_sound_converter.h"
 #include "util/itos.h"
+#include "util/sound.h"
 using namespace Formats::Touhou;
 
 std::unique_ptr<File> Pak2SoundConverter::decode_internal(File &file) const

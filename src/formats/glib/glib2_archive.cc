@@ -7,9 +7,9 @@
 // Known games:
 // - Musume Shimai
 
-#include "buffered_io.h"
 #include "formats/glib/glib2_archive.h"
 #include "formats/glib/pgx_converter.h"
+#include "io/buffered_io.h"
 using namespace Formats::Glib;
 
 namespace

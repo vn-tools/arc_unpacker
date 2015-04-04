@@ -1,4 +1,4 @@
-#include "endian.h"
+#include "util/endian.h"
 #include "test_support/eassert.h"
 
 int main(void)

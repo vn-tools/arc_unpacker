@@ -1,7 +1,7 @@
-#include "file_io.h"
 #include "formats/french_bread/ex3_converter.h"
-#include "util/zlib.h"
+#include "io/file_io.h"
 #include "test_support/eassert.h"
+#include "util/zlib.h"
 using namespace Formats::FrenchBread;
 
 void test_ex3_decoding()

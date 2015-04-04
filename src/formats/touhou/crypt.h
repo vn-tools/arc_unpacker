@@ -1,6 +1,6 @@
 #ifndef FORMATS_TOUHOU_CRYPT_H
 #define FORMATS_TOUHOU_CRYPT_H
-#include "io.h"
+#include "io/io.h"
 
 namespace Formats
 {

@@ -10,12 +10,12 @@
 // - Kimihagu
 
 #include <cstring>
-#include "buffered_io.h"
 #include "formats/qlie/abmp10_archive.h"
 #include "formats/qlie/abmp7_archive.h"
 #include "formats/qlie/dpng_converter.h"
 #include "formats/qlie/mt.h"
 #include "formats/qlie/pack_archive.h"
+#include "io/buffered_io.h"
 #include "util/encoding.h"
 using namespace Formats::QLiE;
 

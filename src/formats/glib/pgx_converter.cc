@@ -9,9 +9,9 @@
 // - Musume Shimai
 // - Watashi no Puni Puni
 
-#include "formats/image.h"
 #include "formats/glib/gml_decoder.h"
 #include "formats/glib/pgx_converter.h"
+#include "util/image.h"
 using namespace Formats::Glib;
 
 namespace

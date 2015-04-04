@@ -18,9 +18,9 @@
 // - Touhou 13 - Ten Desires
 // - Touhou 14 - Double Dealing Character
 
-#include "formats/image.h"
 #include "formats/touhou/anm_archive.h"
 #include "util/colors.h"
+#include "util/image.h"
 #include "util/itos.h"
 using namespace Formats::Touhou;
 

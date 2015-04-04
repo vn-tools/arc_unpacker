@@ -1,6 +1,6 @@
 #include <cassert>
 #include <png.h>
-#include "formats/image.h"
+#include "util/image.h"
 
 struct Image::Internals
 {

@@ -9,8 +9,8 @@
 // - Katawa Shoujo
 // - Long Live The Queen
 
-#include "buffered_io.h"
 #include "formats/renpy/rpa_archive.h"
+#include "io/buffered_io.h"
 #include "util/zlib.h"
 using namespace Formats::Renpy;
 

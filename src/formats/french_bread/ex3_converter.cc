@@ -9,8 +9,8 @@
 // - Melty Blood
 
 #include <stdexcept>
-#include "buffered_io.h"
 #include "formats/french_bread/ex3_converter.h"
+#include "io/buffered_io.h"
 using namespace Formats::FrenchBread;
 
 std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const

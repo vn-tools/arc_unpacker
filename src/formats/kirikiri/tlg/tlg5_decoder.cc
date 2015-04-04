@@ -1,9 +1,9 @@
 #include <cstring>
 #include <stdexcept>
 #include <vector>
-#include "formats/image.h"
 #include "formats/kirikiri/tlg/lzss_decompressor.h"
 #include "formats/kirikiri/tlg/tlg5_decoder.h"
+#include "util/image.h"
 using namespace Formats::Kirikiri::Tlg;
 
 namespace

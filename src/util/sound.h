@@ -1,5 +1,5 @@
-#ifndef FORMATS_SOUND_H
-#define FORMATS_SOUND_H
+#ifndef UTIL_SOUND_H
+#define UTIL_SOUND_H
 #include <memory>
 #include "file.h"
 

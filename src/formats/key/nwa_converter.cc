@@ -11,8 +11,7 @@
 
 #include <cassert>
 #include "formats/key/nwa_converter.h"
-#include "formats/sound.h"
-#include "io.h"
+#include "util/sound.h"
 using namespace Formats::Key;
 
 namespace

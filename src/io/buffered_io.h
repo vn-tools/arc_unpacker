@@ -1,8 +1,8 @@
-#ifndef BUFFERED_IO
-#define BUFFERED_IO
+#ifndef IO_BUFFERED_IO_H
+#define IO_BUFFERED_IO_H
 #include <memory>
 #include <string>
-#include "io.h"
+#include "io/io.h"
 
 class BufferedIO final : public IO
 {

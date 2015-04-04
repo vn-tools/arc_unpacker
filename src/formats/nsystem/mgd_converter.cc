@@ -7,11 +7,10 @@
 
 #include <cassert>
 #include <stdexcept>
-#include "buffered_io.h"
-#include "endian.h"
-#include "formats/image.h"
+#include "io/buffered_io.h"
 #include "formats/nsystem/mgd_converter.h"
-#include "io.h"
+#include "util/endian.h"
+#include "util/image.h"
 using namespace Formats::NSystem;
 
 namespace

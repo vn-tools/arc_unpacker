@@ -9,10 +9,10 @@
 // - Touhou 12.3 - Unthinkable Natural Law
 
 #include <boost/filesystem.hpp>
-#include "buffered_io.h"
-#include "formats/image.h"
 #include "formats/touhou/pak2_image_converter.h"
+#include "io/buffered_io.h"
 #include "util/colors.h"
+#include "util/image.h"
 #include "util/itos.h"
 using namespace Formats::Touhou;
 

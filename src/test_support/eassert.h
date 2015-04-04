@@ -1,5 +1,5 @@
-#ifndef TEST_SUPPORT_EASSERT
-#define TEST_SUPPORT_EASSERT
+#ifndef TEST_SUPPORT_EASSERT_H
+#define TEST_SUPPORT_EASSERT_H
 #include <cstdio>
 #include <stdexcept>
 #include <string>

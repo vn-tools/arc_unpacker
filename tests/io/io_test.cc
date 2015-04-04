@@ -2,8 +2,8 @@
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
-#include "file_io.h"
-#include "buffered_io.h"
+#include "io/file_io.h"
+#include "io/buffered_io.h"
 #include "test_support/eassert.h"
 
 void test_file_simple_read()

@@ -1,8 +1,8 @@
 #include <cstdlib>
-#include "endian.h"
-#include "file_io.h"
-#include "formats/image.h"
+#include "io/file_io.h"
 #include "test_support/eassert.h"
+#include "util/endian.h"
+#include "util/image.h"
 
 void test_transparent()
 {

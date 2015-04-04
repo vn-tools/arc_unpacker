@@ -1,7 +1,7 @@
 #include <stdexcept>
-#include "formats/image.h"
 #include "formats/kirikiri/tlg/lzss_decompressor.h"
 #include "formats/kirikiri/tlg/tlg6_decoder.h"
+#include "util/image.h"
 using namespace Formats::Kirikiri::Tlg;
 
 namespace

@@ -1,5 +1,5 @@
-#ifndef FORMATS_IMAGE_H
-#define FORMATS_IMAGE_H
+#ifndef UTIL_IMAGE_H
+#define UTIL_IMAGE_H
 #include <memory>
 #include <string>
 #include "file.h"

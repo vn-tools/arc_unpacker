@@ -7,9 +7,9 @@
 // Known games:
 // - Touhou 07.5 - Immaterial and Missing Power
 
-#include "formats/sound.h"
 #include "formats/touhou/pak1_sound_archive.h"
 #include "util/itos.h"
+#include "util/sound.h"
 using namespace Formats::Touhou;
 
 namespace

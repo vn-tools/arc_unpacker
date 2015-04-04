@@ -1,7 +1,7 @@
 #include <string>
-#include "buffered_io.h"
 #include "file.h"
-#include "file_io.h"
+#include "io/buffered_io.h"
+#include "io/file_io.h"
 
 File::File(const boost::filesystem::path &path, const FileIOMode mode)
     : io(*new FileIO(path, mode)), name(path.string())

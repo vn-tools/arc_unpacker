@@ -1,5 +1,4 @@
 #include <memory>
-#include "buffered_io.h"
 #include "formats/touhou/crypt.h"
 using namespace Formats::Touhou;
 
