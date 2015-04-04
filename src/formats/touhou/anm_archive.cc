@@ -182,6 +182,9 @@ FileNamingStrategy AnmArchive::get_file_naming_strategy() const
 
 void AnmArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
+    if (file.name.find("anm") == std::string::npos)
+        throw std::runtime_error("Not an ANM archive");
+
     Table table = read_table(file.io);
     for (auto &table_entry : table)
     {
