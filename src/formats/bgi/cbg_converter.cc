@@ -7,6 +7,8 @@
 
 #include <cassert>
 #include <cstring>
+#include "bit_reader.h"
+#include "buffered_io.h"
 #include "formats/bgi/cbg_converter.h"
 #include "formats/image.h"
 #include "io.h"
@@ -137,7 +139,7 @@ namespace
     }
 
     void decompress_huffman(
-        IO &io,
+        BitReader &bit_reader,
         int last_node,
         NodeInfo node_info[],
         uint32_t huffman_size,
@@ -145,22 +147,15 @@ namespace
     {
         assert(node_info != nullptr);
         uint32_t root = last_node;
-        uint8_t mask = 0x80;
-        size_t i;
 
-        for (i = 0; i < huffman_size; i ++)
+        for (size_t i = 0; i < huffman_size; i ++)
         {
             int node = root;
             while (node >= 256)
             {
-                node = io.read_u8() & mask
+                node = bit_reader.get(1)
                     ? node_info[node].right_node
                     : node_info[node].left_node;
-                mask >>= 1;
-                if (!mask)
-                    mask = 0x80;
-                else
-                    io.skip(-1);
             }
             huffman[i] = node;
         }
@@ -178,8 +173,7 @@ namespace
         bool zero_flag = false;
         while (huffman_ptr < huffman_guardian)
         {
-            uint32_t length = read_variable_data(
-                huffman_ptr, huffman_guardian);
+            uint32_t length = read_variable_data(huffman_ptr, huffman_guardian);
             if (zero_flag)
             {
                 memset(output, 0, length);
@@ -302,8 +296,10 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
 
     std::unique_ptr<char> huffman(new char[huffman_size]);
 
+    BufferedIO buffered_io(file.io);
+    BitReader bit_reader(buffered_io);
     decompress_huffman(
-        file.io,
+        bit_reader,
         last_node,
         node_info,
         huffman_size,

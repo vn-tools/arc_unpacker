@@ -11,6 +11,7 @@ public:
     BufferedIO(const char *buffer, size_t buffer_size);
     BufferedIO(const std::string &buffer);
     BufferedIO(IO &other_io, size_t length);
+    BufferedIO(IO &other_io);
     ~BufferedIO();
 
     virtual size_t size() const override;

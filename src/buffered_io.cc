@@ -115,6 +115,13 @@ BufferedIO::BufferedIO(IO &other_io, size_t length)
     seek(0);
 }
 
+BufferedIO::BufferedIO(IO &other_io)
+    : internals(new Internals("", 0))
+{
+    write_from_io(other_io, other_io.size() - other_io.tell());
+    seek(0);
+}
+
 BufferedIO::BufferedIO(const std::string &buffer)
     : internals(new Internals(buffer.data(), buffer.size()))
 {
