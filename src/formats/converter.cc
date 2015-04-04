@@ -2,20 +2,12 @@
 #include <stdexcept>
 #include "formats/converter.h"
 
-void Converter::unpack_internal(File &file, FileSaver &file_saver) const
+void Converter::unpack_internal(File &input_file, FileSaver &file_saver) const
 {
-    // TODO:
-    // change decode() signature to
-    // std::unique_ptr<File> decode(const File &input)
-    // so that we don't need to copy File here all the time
-    std::shared_ptr<File> file_copy(new File);
-    file.io.seek(0);
-    file_copy->name = file.name;
-    file_copy->io.write_from_io(file.io);
-    decode(*file_copy);
-    file_copy->name
-        = boost::filesystem::path(file_copy->name).filename().string();
-    file_saver.save(file_copy);
+    auto output_file = decode(input_file);
+    output_file->name
+        = boost::filesystem::path(output_file->name).filename().string();
+    file_saver.save(std::move(output_file));
 }
 
 void Converter::add_cli_help(ArgParser &) const
@@ -31,28 +23,10 @@ FileNamingStrategy Converter::get_file_naming_strategy() const
     return FileNamingStrategy::Sibling;
 }
 
-void Converter::decode_internal(File &) const
+std::unique_ptr<File> Converter::decode(File &file) const
 {
-    throw std::runtime_error("Decoding is not supported");
-}
-
-void Converter::decode(File &target_file) const
-{
-    target_file.io.seek(0);
-    decode_internal(target_file);
-}
-
-bool Converter::try_decode(File &target_file) const
-{
-    try
-    {
-        decode(target_file);
-        return true;
-    }
-    catch (...)
-    {
-        return false;
-    }
+    file.io.seek(0);
+    return decode_internal(file);
 }
 
 Converter::~Converter()

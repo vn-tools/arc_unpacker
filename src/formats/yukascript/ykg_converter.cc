@@ -69,7 +69,7 @@ namespace
         return regions;
     }
 
-    void decode_png(File &file, Header &header)
+    std::unique_ptr<File> decode_png(File &file, Header &header)
     {
         file.io.seek(header.data_offset);
         std::string data = file.io.read(header.data_size);
@@ -82,13 +82,15 @@ namespace
         data[2] = 'N';
         data[3] = 'G';
 
-        file.io.truncate(0);
-        file.io.write(data);
-        file.change_extension(".png");
+        std::unique_ptr<File> output_file(new File);
+        output_file->io.write(data);
+        output_file->name = file.name;
+        output_file->change_extension(".png");
+        return output_file;
     }
 }
 
-void YkgConverter::decode_internal(File &file) const
+std::unique_ptr<File> YkgConverter::decode_internal(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a YKG image");
@@ -101,5 +103,5 @@ void YkgConverter::decode_internal(File &file) const
     }
 
     read_regions(file.io, *header);
-    decode_png(file, *header);
+    return decode_png(file, *header);
 }

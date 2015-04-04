@@ -36,7 +36,7 @@ void Pak2ImageConverter::set_palette_map(const PaletteMap &palette_map)
         internals->palette_map[it.first] = it.second;
 }
 
-void Pak2ImageConverter::decode_internal(File &file) const
+std::unique_ptr<File> Pak2ImageConverter::decode_internal(File &file) const
 {
     if (file.name.find("cv2") == std::string::npos)
         throw std::runtime_error("Not a CV2 image file");
@@ -99,5 +99,5 @@ void Pak2ImageConverter::decode_internal(File &file) const
         image_height,
         target_io.read(target_io.size()),
         PixelFormat::BGRA);
-    image->update_file(file);
+    return image->create_file(file.name);
 }

@@ -105,7 +105,7 @@ namespace
     }
 }
 
-void SpbConverter::decode_internal(File &file) const
+std::unique_ptr<File> SpbConverter::decode_internal(File &file) const
 {
     uint16_t width = file.io.read_u16_be();
     uint16_t height = file.io.read_u16_be();
@@ -132,5 +132,5 @@ void SpbConverter::decode_internal(File &file) const
             reinterpret_cast<char*>(uncompressed_data.get()),
             uncompressed_data_size),
         PixelFormat::RGB);
-    image->update_file(file);
+    return image->create_file(file.name);
 }

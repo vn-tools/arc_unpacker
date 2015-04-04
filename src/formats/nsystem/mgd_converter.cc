@@ -334,7 +334,7 @@ namespace
     }
 }
 
-void MgdConverter::decode_internal(File &file) const
+std::unique_ptr<File> MgdConverter::decode_internal(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a MGD graphic file");
@@ -363,5 +363,5 @@ void MgdConverter::decode_internal(File &file) const
 
     read_region_data(file.io);
 
-    image->update_file(file);
+    return image->create_file(file.name);
 }

@@ -18,7 +18,7 @@ namespace
     const std::string magic("DPNG", 4);
 }
 
-void DpngConverter::decode_internal(File &file) const
+std::unique_ptr<File> DpngConverter::decode_internal(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a DPNG image");
@@ -66,5 +66,5 @@ void DpngConverter::decode_internal(File &file) const
         image_height,
         std::string(pixel_data.get(), pixels_size),
         PixelFormat::RGBA);
-    image->update_file(file);
+    return image->create_file(file.name);
 }

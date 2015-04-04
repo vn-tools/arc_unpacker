@@ -31,10 +31,7 @@ namespace
             sample_rate,
             arc_io.read(size));
 
-        std::unique_ptr<File> file(new File);
-        file->name = itos(index);
-        sound->update_file(*file);
-        return file;
+        return sound->create_file(itos(index, 4));
     }
 }
 

@@ -72,7 +72,7 @@ namespace
     }
 }
 
-void NwaConverter::decode_internal(File &file) const
+std::unique_ptr<File> NwaConverter::decode_internal(File &file) const
 {
     NwaHeader header;
     header.channel_count = file.io.read_u16_le();
@@ -107,5 +107,5 @@ void NwaConverter::decode_internal(File &file) const
         header.bits_per_sample / 8,
         header.sample_rate,
         samples);
-    sound->update_file(file);
+    return sound->create_file(file.name);
 }

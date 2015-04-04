@@ -22,7 +22,7 @@ namespace
     const std::string magic_tlg_5("TLG5.0\x00raw\x1a", 11);
     const std::string magic_tlg_6("TLG6.0\x00raw\x1a", 11);
 
-    void guess_version_and_decode(File &file);
+    std::unique_ptr<File> guess_version_and_decode(File &file);
 
     std::string extract_string(std::string &container)
     {
@@ -39,7 +39,7 @@ namespace
         return str;
     }
 
-    void decode_tlg_0(File &file)
+    std::unique_ptr<File> decode_tlg_0(File &file)
     {
         size_t raw_data_size = file.io.read_u32_le();
         size_t raw_data_offset = file.io.tell();
@@ -68,51 +68,42 @@ namespace
         }
 
         file.io.seek(raw_data_offset);
-        guess_version_and_decode(file);
+        return guess_version_and_decode(file);
     }
 
-    void decode_tlg_5(File &file)
+    std::unique_ptr<File> decode_tlg_5(File &file)
     {
         Tlg5Decoder decoder;
-        decoder.decode(file);
+        return decoder.decode(file);
     }
 
-    void decode_tlg_6(File &file)
+    std::unique_ptr<File> decode_tlg_6(File &file)
     {
         Tlg6Decoder decoder;
-        decoder.decode(file);
+        return decoder.decode(file);
     }
 
-    void guess_version_and_decode(File &file)
+    std::unique_ptr<File> guess_version_and_decode(File &file)
     {
         size_t pos = file.io.tell();
 
         file.io.seek(pos);
         if (file.io.read(magic_tlg_0.size()) ==  magic_tlg_0)
-        {
-            decode_tlg_0(file);
-            return;
-        }
+            return decode_tlg_0(file);
 
         file.io.seek(pos);
         if (file.io.read(magic_tlg_5.size()) ==  magic_tlg_5)
-        {
-            decode_tlg_5(file);
-            return;
-        }
+            return decode_tlg_5(file);
 
         file.io.seek(pos);
         if (file.io.read(magic_tlg_6.size()) ==  magic_tlg_6)
-        {
-            decode_tlg_6(file);
-            return;
-        }
+            return decode_tlg_6(file);
 
         throw std::runtime_error("Not a TLG image");
     }
 }
 
-void TlgConverter::decode_internal(File &file) const
+std::unique_ptr<File> TlgConverter::decode_internal(File &file) const
 {
-    guess_version_and_decode(file);
+    return guess_version_and_decode(file);
 }

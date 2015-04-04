@@ -72,16 +72,13 @@ namespace
                 target_io.write_u32_le(rgba);
         }
 
-        std::unique_ptr<File> file(new File);
-        file->name = itos(index, 4);
         target_io.seek(0);
         auto image = Image::from_pixels(
             image_width,
             image_height,
             target_io.read(target_io.size()),
             PixelFormat::BGRA);
-        image->update_file(*file);
-        return file;
+        return image->create_file(itos(index, 4));
     }
 }
 

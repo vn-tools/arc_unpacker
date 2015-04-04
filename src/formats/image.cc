@@ -145,9 +145,11 @@ size_t Image::height() const
     return internals->image_height;
 }
 
-void Image::update_file(File &file) const
+std::unique_ptr<File> Image::create_file(const std::string &name) const
 {
-    file.io.truncate(0);
+    std::unique_ptr<File> output_file(new File);
+    output_file->name = name;
+    output_file->change_extension("png");
 
     png_structp png_ptr = png_create_write_struct(
         PNG_LIBPNG_VER_STRING,
@@ -193,7 +195,6 @@ void Image::update_file(File &file) const
 
         default:
             throw std::runtime_error("Invalid pixel format");
-            return;
     }
 
     png_set_IHDR(
@@ -211,7 +212,8 @@ void Image::update_file(File &file) const
     // 1 produces good file size and is still fast.
     png_set_compression_level(png_ptr, 1);
 
-    png_set_write_fn(png_ptr, &file.io, &my_png_write_data, &my_png_flush);
+    png_set_write_fn(
+        png_ptr, &output_file->io, &my_png_write_data, &my_png_flush);
     png_write_info(png_ptr, info_ptr);
 
     std::unique_ptr<png_bytep> rows(new png_bytep[internals->image_height]);
@@ -225,7 +227,7 @@ void Image::update_file(File &file) const
     png_write_png(png_ptr, info_ptr, transformations, nullptr);
     png_destroy_write_struct(&png_ptr, &info_ptr);
 
-    file.change_extension("png");
+    return output_file;
 }
 
 uint32_t Image::color_at(size_t x, size_t y) const

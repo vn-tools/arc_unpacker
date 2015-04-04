@@ -13,7 +13,7 @@
 #include "formats/french_bread/ex3_converter.h"
 using namespace Formats::FrenchBread;
 
-void Ex3Converter::decode_internal(File &file) const
+std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
 {
     if (file.io.read(4) != "LLIF")
         throw std::runtime_error("Not an EX3 image");
@@ -91,7 +91,9 @@ void Ex3Converter::decode_internal(File &file) const
     }
 
     output.seek(0);
-    file.io.truncate(0);
-    file.io.write_from_io(output, output.size());
-    file.change_extension(".bmp");
+    std::unique_ptr<File> output_file(new File);
+    output_file->io.write_from_io(output);
+    output_file->name = file.name;
+    output_file->change_extension(".bmp");
+    return output_file;
 }

@@ -32,30 +32,32 @@ std::unique_ptr<Sound> Sound::from_samples(
     return sound;
 }
 
-void Sound::update_file(File &file) const
+std::unique_ptr<File> Sound::create_file(const std::string &name) const
 {
-    file.io.truncate(0);
-
     size_t block_align = internals->channel_count * internals->bytes_per_sample;
     size_t byte_rate = block_align * internals->sample_rate;
     size_t bits_per_sample = internals->bytes_per_sample * 8;
 
-    file.io.write("RIFF", 4);
-    file.io.write("\x00\x09\x00\x00", 4);
-    file.io.write("WAVE", 4);
-    file.io.write("fmt ", 4);
-    file.io.write_u32_le(16);
-    file.io.write_u16_le(1);
-    file.io.write_u16_le(internals->channel_count);
-    file.io.write_u32_le(internals->sample_rate);
-    file.io.write_u32_le(byte_rate);
-    file.io.write_u16_le(block_align);
-    file.io.write_u16_le(bits_per_sample);
-    file.io.write("data", 4);
-    file.io.write_u32_le(internals->sample_count);
-    file.io.write(internals->samples);
-    file.io.seek(4);
-    file.io.write_u32_le(file.io.size());
+    std::unique_ptr<File> output_file(new File);
 
-    file.change_extension("wav");
+    output_file->io.write("RIFF", 4);
+    output_file->io.write("\x00\x09\x00\x00", 4);
+    output_file->io.write("WAVE", 4);
+    output_file->io.write("fmt ", 4);
+    output_file->io.write_u32_le(16);
+    output_file->io.write_u16_le(1);
+    output_file->io.write_u16_le(internals->channel_count);
+    output_file->io.write_u32_le(internals->sample_rate);
+    output_file->io.write_u32_le(byte_rate);
+    output_file->io.write_u16_le(block_align);
+    output_file->io.write_u16_le(bits_per_sample);
+    output_file->io.write("data", 4);
+    output_file->io.write_u32_le(internals->sample_count);
+    output_file->io.write(internals->samples);
+    output_file->io.seek(4);
+    output_file->io.write_u32_le(output_file->io.size());
+
+    output_file->name = name;
+    output_file->change_extension("wav");
+    return output_file;
 }

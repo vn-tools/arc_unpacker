@@ -117,7 +117,7 @@ namespace
     }
 }
 
-void PrsConverter::decode_internal(File &file) const
+std::unique_ptr<File> PrsConverter::decode_internal(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a PRS image");
@@ -153,5 +153,5 @@ void PrsConverter::decode_internal(File &file) const
         image_height,
         std::string(target.get(), target_size),
         PixelFormat::BGR);
-    image->update_file(file);
+    return image->create_file(file.name);
 }

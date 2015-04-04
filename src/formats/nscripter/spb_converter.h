@@ -9,7 +9,7 @@ namespace Formats
         class SpbConverter final : public Converter
         {
         protected:
-            void decode_internal(File &target_file) const override;
+            std::unique_ptr<File> decode_internal(File &) const override;
         };
     }
 }

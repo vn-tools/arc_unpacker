@@ -19,7 +19,7 @@ namespace
     const std::string magic("PGX\x00", 4);
 }
 
-void PgxConverter::decode_internal(File &file) const
+std::unique_ptr<File> PgxConverter::decode_internal(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a PGX image");
@@ -60,5 +60,5 @@ void PgxConverter::decode_internal(File &file) const
         image_height,
         target_io.read_until_end(),
         PixelFormat::BGRA);
-    image->update_file(file);
+    return image->create_file(file.name);
 }

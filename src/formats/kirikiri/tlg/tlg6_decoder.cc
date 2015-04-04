@@ -571,7 +571,7 @@ namespace
     }
 }
 
-void Tlg6Decoder::decode(File &file)
+std::unique_ptr<File> Tlg6Decoder::decode(File &file)
 {
     init_table();
 
@@ -601,5 +601,5 @@ void Tlg6Decoder::decode(File &file)
         header.image_height,
         std::string(reinterpret_cast<char*>(pixels.get()), pixels_size),
         PixelFormat::RGBA);
-    image->update_file(file);
+    return image->create_file(file.name);
 }

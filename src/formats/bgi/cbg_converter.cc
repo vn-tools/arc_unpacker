@@ -264,12 +264,16 @@ namespace
     }
 }
 
-void CbgConverter::decode_internal(File &file) const
+std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
 {
     if (file.io.read(bmp_magic.size()) == bmp_magic)
     {
-        file.change_extension("bmp");
-        return;
+        file.io.seek(0);
+        std::unique_ptr<File> output_file(new File);
+        output_file->io.write_from_io(file.io);
+        output_file->name = file.name;
+        output_file->change_extension(".bmp");
+        return output_file;
     }
 
     file.io.seek(0);
@@ -316,5 +320,5 @@ void CbgConverter::decode_internal(File &file) const
         height,
         std::string(output.get(), output_size),
         bpp_to_image_pixel_format(bpp));
-    image->update_file(file);
+    return image->create_file(file.name);
 }

@@ -14,7 +14,7 @@ namespace Formats
             ~TfbmConverter();
             void set_palette_map(const PaletteMap &palette_map);
         protected:
-            void decode_internal(File &) const override;
+            std::unique_ptr<File> decode_internal(File &) const override;
         private:
             struct Internals;
             std::unique_ptr<Internals> internals;

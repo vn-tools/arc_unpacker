@@ -15,15 +15,14 @@ void test_ex3_decoding()
     FileIO input_io(input_path, FileIOMode::Read);
     File file;
     file.io.write_from_io(input_io, input_io.size());
-    converter.decode(file);
+    auto output_file = converter.decode(file);
 
     FileIO expected_io(expected_path, FileIOMode::Read);
-    const std::string expected_data
-        = zlib_inflate(expected_io.read(expected_io.size()));
+    const auto expected_data = zlib_inflate(expected_io.read_until_end());
 
-    file.io.seek(0);
-    eassert(expected_data.size() == file.io.size());
-    eassert(expected_data == file.io.read(file.io.size()));
+    output_file->io.seek(0);
+    eassert(expected_data.size() == output_file->io.size());
+    eassert(expected_data == output_file->io.read_until_end());
 }
 
 int main(void)

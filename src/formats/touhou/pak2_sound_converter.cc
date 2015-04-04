@@ -13,7 +13,7 @@
 #include "util/itos.h"
 using namespace Formats::Touhou;
 
-void Pak2SoundConverter::decode_internal(File &file) const
+std::unique_ptr<File> Pak2SoundConverter::decode_internal(File &file) const
 {
     if (file.name.find("cv3") == std::string::npos)
         throw std::runtime_error("Not a CV3 sound file");
@@ -32,5 +32,5 @@ void Pak2SoundConverter::decode_internal(File &file) const
         bits_per_sample / 8,
         sample_rate,
         file.io.read(size));
-    sound->update_file(file);
+    return sound->create_file(file.name);
 }

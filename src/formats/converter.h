@@ -10,12 +10,12 @@ public:
     virtual FileNamingStrategy get_file_naming_strategy() const override;
     virtual ~Converter();
 
-    bool try_decode(File &) const;
-    void decode(File &) const;
+    std::unique_ptr<File> decode(File &) const;
+protected:
+    virtual std::unique_ptr<File> decode_internal(File &) const = 0;
 
 protected:
     virtual void unpack_internal(File &, FileSaver &) const final override;
-    virtual void decode_internal(File &) const;
 };
 
 #endif

@@ -17,15 +17,17 @@ namespace
     public:
         std::function<void(File&)> callback;
     protected:
-        void decode_internal(File &file) const
+        std::unique_ptr<File> decode_internal(File &file) const
         {
             if (callback != nullptr)
                 callback(file);
             if (ext(file.name) != ".image")
                 throw std::runtime_error("Not an image");
-            file.io.truncate(0);
-            file.io.write("image");
-            file.change_extension("png");
+            std::unique_ptr<File> output_file(new File);
+            output_file->io.write("image");
+            output_file->name = file.name;
+            output_file->change_extension("png");
+            return output_file;
         }
     };
 

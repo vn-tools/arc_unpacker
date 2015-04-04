@@ -26,7 +26,7 @@ public:
 
     static std::unique_ptr<Image> from_boxed(IO &io);
 
-    void update_file(File &target_file) const;
+    std::unique_ptr<File> create_file(const std::string &name) const;
 
     size_t width() const;
     size_t height() const;

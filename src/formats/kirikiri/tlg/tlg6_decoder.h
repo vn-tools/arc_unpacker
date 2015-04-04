@@ -11,7 +11,7 @@ namespace Formats
             class Tlg6Decoder final
             {
             public:
-                void decode(File &file);
+                std::unique_ptr<File> decode(File &file);
             };
         }
     }

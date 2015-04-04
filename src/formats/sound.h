@@ -14,7 +14,7 @@ public:
         size_t sample_rate,
         const std::string &samples);
 
-    void update_file(File &target_file) const;
+    std::unique_ptr<File> create_file(const std::string &base_file) const;
 
 private:
     Sound();

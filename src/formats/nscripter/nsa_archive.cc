@@ -98,7 +98,7 @@ namespace
 
             case COMPRESSION_SPB:
                 file->io.write(data);
-                spb_converter.decode(*file);
+                file = spb_converter.decode(*file);
                 break;
         }
 

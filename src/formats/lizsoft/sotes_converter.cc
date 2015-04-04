@@ -61,7 +61,7 @@ namespace
     }
 }
 
-void SotesConverter::decode_internal(File &file) const
+std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
 {
     if (file.io.size() < 1112)
         throw std::runtime_error("Not a SOTES image");
@@ -127,5 +127,5 @@ void SotesConverter::decode_internal(File &file) const
         height,
         std::string(pixel_data.get(), pixel_data_size),
         PixelFormat::BGR);
-    image->update_file(file);
+    return image->create_file(file.name);
 }

@@ -21,7 +21,7 @@ namespace
     const std::string magic("XYZ1", 4);
 }
 
-void XyzConverter::decode_internal(File &file) const
+std::unique_ptr<File> XyzConverter::decode_internal(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not an XYZ image");
@@ -30,7 +30,7 @@ void XyzConverter::decode_internal(File &file) const
     uint16_t height = file.io.read_u16_le();
 
     std::string data = zlib_inflate(file.io.read_until_end());
-    assert(data.size() == 256 * 3 + width * height);
+    assert(data.size() == static_cast<size_t>(256 * 3 + width * height));
 
     size_t pixels_size = width * height * 3;
     std::unique_ptr<char[]> pixels(new char[pixels_size]);
@@ -52,5 +52,5 @@ void XyzConverter::decode_internal(File &file) const
         height,
         std::string(pixels.get(), pixels_size),
         PixelFormat::RGB);
-    image->update_file(file);
+    return image->create_file(file.name);
 }

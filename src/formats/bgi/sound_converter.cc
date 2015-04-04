@@ -16,7 +16,7 @@ namespace
     const std::string magic("bw  ", 4);
 }
 
-void SoundConverter::decode_internal(File &file) const
+std::unique_ptr<File> SoundConverter::decode_internal(File &file) const
 {
     size_t header_size = file.io.read_u32_le();
     if (file.io.read(magic.length()) != magic)
@@ -24,8 +24,9 @@ void SoundConverter::decode_internal(File &file) const
 
     uint32_t file_size = file.io.read_u32_le();
     file.io.seek(header_size);
-    std::string data = file.io.read(file_size);
-    file.io.truncate(0);
-    file.io.write(data);
-    file.change_extension("ogg");
+    std::unique_ptr<File> output_file(new File);
+    output_file->io.write_from_io(file.io, file_size);
+    output_file->name = file.name;
+    output_file->change_extension("ogg");
+    return output_file;
 }

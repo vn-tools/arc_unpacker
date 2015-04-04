@@ -30,11 +30,9 @@ namespace
     std::unique_ptr<Image> image_from_converter(
         const boost::filesystem::path &path, Converter &converter)
     {
-        FileIO io(path, FileIOMode::Read);
-        File file;
-        file.io.write_from_io(io, io.size());
-        converter.decode(file);
-        return std::unique_ptr<Image>(Image::from_boxed(file.io));
+        File file(path, FileIOMode::Read);
+        auto output_file = converter.decode(file);
+        return std::unique_ptr<Image>(Image::from_boxed(output_file->io));
     }
 
     std::unique_ptr<Image> image_from_path(const boost::filesystem::path &path)

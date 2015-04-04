@@ -166,15 +166,12 @@ namespace
             }
         }
 
-        std::unique_ptr<File> subfile(new File);
-        subfile->name = table_entry.name;
         std::unique_ptr<Image> image = Image::from_pixels(
             width,
             height,
             std::string(pixel_data.get(), pixel_data_size),
             PixelFormat::BGRA);
-        image->update_file(*subfile);
-        return subfile;
+        return image->create_file(table_entry.name);
     }
 }
 

@@ -114,7 +114,7 @@ namespace
         return std::move(uncompressed);
     }
 
-    void decode_version_0(File &file, int width, int height)
+    std::unique_ptr<File> decode_version_0(File &file, int width, int height)
     {
         size_t compressed_size = file.io.read_u32_le();
         size_t uncompressed_size = file.io.read_u32_le();
@@ -136,10 +136,10 @@ namespace
             height,
             std::string(uncompressed.get(), width * height * 3),
             PixelFormat::BGR);
-        image->update_file(file);
+        return image->create_file(file.name);
     }
 
-    void decode_version_1(File &file, int width, int height)
+    std::unique_ptr<File> decode_version_1(File &file, int width, int height)
     {
         size_t compressed_size = file.io.read_u32_le();
         size_t uncompressed_size = file.io.read_u32_le();
@@ -177,7 +177,7 @@ namespace
                 reinterpret_cast<char*>(pixels.get()),
                 width * height * 4),
             PixelFormat::BGRA);
-        image->update_file(file);
+        return image->create_file(file.name);
     }
 
     std::vector<std::unique_ptr<Region>> read_version_2_regions(
@@ -201,7 +201,7 @@ namespace
         return regions;
     }
 
-    void decode_version_2(File &file, int width, int height)
+    std::unique_ptr<File> decode_version_2(File &file, int width, int height)
     {
         size_t region_count = file.io.read_u32_le();
         size_t i, j;
@@ -267,11 +267,11 @@ namespace
                 reinterpret_cast<char*>(pixels.get()),
                 width * height * 4),
             PixelFormat::BGRA);
-        image->update_file(file);
+        return image->create_file(file.name);
     }
 }
 
-void G00Converter::decode_internal(File &file) const
+std::unique_ptr<File> G00Converter::decode_internal(File &file) const
 {
     uint8_t version = file.io.read_u8();
     uint16_t width = file.io.read_u16_le();
@@ -280,15 +280,15 @@ void G00Converter::decode_internal(File &file) const
     switch (version)
     {
         case 0:
-            decode_version_0(file, width, height);
+            return decode_version_0(file, width, height);
             break;
 
         case 1:
-            decode_version_1(file, width, height);
+            return decode_version_1(file, width, height);
             break;
 
         case 2:
-            decode_version_2(file, width, height);
+            return decode_version_2(file, width, height);
             break;
 
         default:
