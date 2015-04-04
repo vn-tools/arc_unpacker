@@ -17,17 +17,21 @@ For build instructions, see below.
 Usage
 -----
 
-1. Drag and drop archive files to `arc_unpacker`.
-2. Drag and drop non-archive files onto `file_decoder`.
-3. Some formats need additional switches in order to unpack correctly.
-   These can be found out using `--help`.
+1. See `--help` to list all the formats.
+2. Choose one of the formats.
+3. Provide parameters it requires (`--help --fmt=FMT` to inspect them). Most of
+   them work out-of-the-box.
+4. Finally, run the program.
+
+There is also auto-detection feature (meaning you can drag'n'drop the files
+on the executable), but it may not work occasionally, or refuse to work
+completely if the format requires additional parameters. So for now use it
+wisely. In the long run, this is going to be improved in #17.
 
 
 
 Supported games
 ---------------
-
-If you believe there is an error in these tables, please let me know.
 
 ### Archives
 
@@ -81,13 +85,13 @@ CLI invocation                        | Game                                | Fe
 
 ### Files
 
-CLI invocation             | Game                                | Features<sup>1</sup>
--------------------------- | ----------------------------------- | ------------
-`--fmt=g00`, `--fmt=nwa`   | Little Busters                      | ![][nap]![][sup]![][sup]
-`--fmt=g00`, `--fmt=nwa`   | Clannad                             | ![][nap]![][sup]![][sup]
-`--fmt=g00`, `--fmt=nwa`   | Kanon                               | ![][nap]![][sup]![][sup]
-`--fmt=xyz`                | Yume Nikki                          | ![][nap]![][sup]![][sup]
-`--fmt=sotes`              | Fortune Summoners                   | ![][nap]![][sup]![][sup]
+CLI invocation                        | Game                                | Features<sup>1</sup>
+------------------------------------- | ----------------------------------- | ------------------------
+`--fmt=g00`, `--fmt=nwa`              | Little Busters                      | ![][nap]![][sup]![][sup]
+`--fmt=g00`, `--fmt=nwa`              | Clannad                             | ![][nap]![][sup]![][sup]
+`--fmt=g00`, `--fmt=nwa`              | Kanon                               | ![][nap]![][sup]![][sup]
+`--fmt=xyz`                           | Yume Nikki                          | ![][nap]![][sup]![][sup]
+`--fmt=sotes`                         | Fortune Summoners                   | ![][nap]![][sup]![][sup]
 
 <sup>1</sup> Feature legend:
 
@@ -105,11 +109,11 @@ archives.</sub>
 [non]: http://i.imgur.com/2aTNlHb.png
 [nap]: http://i.imgur.com/jQTmqxl.png
 
-If the game isn't listed above, there is still a small chance that the files
-can be extracted nonetheless. Note that some archives provide no way to verify
-correctness of the extracted files, which means that there can be false
-positives and you might get garbage files. That shouldn't happen with any of
-the games listed above, though.
+Contribution
+------------
+
+If the game isn't listed above and it works, please let me know so I can update
+the table.
 
 
 
