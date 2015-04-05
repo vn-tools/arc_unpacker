@@ -11,4 +11,9 @@ void assert_decoded_image(
     const boost::filesystem::path &path_to_input,
     const boost::filesystem::path &path_to_expected);
 
+void assert_decoded_file(
+    Converter &converter,
+    const boost::filesystem::path &path_to_input,
+    const boost::filesystem::path &path_to_expected);
+
 #endif

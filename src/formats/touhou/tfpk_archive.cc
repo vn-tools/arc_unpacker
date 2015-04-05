@@ -16,9 +16,10 @@
 #include <openssl/rsa.h>
 #include <sstream>
 #include <vector>
+#include "formats/touhou/tfbm_converter.h"
+#include "formats/touhou/tfcs_converter.h"
 #include "formats/touhou/tfpk_archive.h"
 #include "formats/touhou/tfpk_dir_names.h"
-#include "formats/touhou/tfbm_converter.h"
 #include "io/buffered_io.h"
 #include "util/colors.h"
 #include "util/encoding.h"
@@ -353,11 +354,13 @@ namespace
 struct TfpkArchive::Internals
 {
     TfbmConverter tfbm_converter;
+    TfcsConverter tfcs_converter;
 };
 
 TfpkArchive::TfpkArchive() : internals(new Internals)
 {
     add_transformer(&internals->tfbm_converter);
+    add_transformer(&internals->tfcs_converter);
 }
 
 TfpkArchive::~TfpkArchive()

@@ -1,5 +1,5 @@
-#ifndef FORMATS_TOUHOU_TFBM_IMAGE_CONVERTER_H
-#define FORMATS_TOUHOU_TFBM_IMAGE_CONVERTER_H
+#ifndef FORMATS_TOUHOU_TFBM_CONVERTER_H
+#define FORMATS_TOUHOU_TFBM_CONVERTER_H
 #include "formats/converter.h"
 #include "formats/touhou/palette.h"
 
