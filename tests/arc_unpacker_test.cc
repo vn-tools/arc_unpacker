@@ -1,6 +1,7 @@
 #include <boost/filesystem.hpp>
 #include "arc_unpacker.h"
 #include "test_support/eassert.h"
+#include "test_support/suppress_output.h"
 
 void test_converter()
 {
@@ -37,6 +38,9 @@ void test_archive()
 
 int main(void)
 {
-    test_converter();
-    test_archive();
+    suppress_output([&]()
+    {
+        test_converter();
+        test_archive();
+    });
 }

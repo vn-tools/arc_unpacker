@@ -2,6 +2,7 @@
 #include "compat/main.h"
 #include "file_saver.h"
 #include "test_support/eassert.h"
+#include "test_support/suppress_output.h"
 
 void test(const boost::filesystem::path &path)
 {
@@ -76,12 +77,17 @@ void test_not_overwriting_one_file_saver()
 
 int main(void)
 {
-    init_fs_utf8();
-    // test encoding voodoo
-    test("test.out");
-    test("ąćę.out");
-    test("不用意な変換.out");
-    test_overwriting_two_file_savers();
-    test_not_overwriting_two_file_savers();
-    test_not_overwriting_one_file_saver();
+    suppress_output([&]()
+    {
+        // test encoding voodoo
+        init_fs_utf8();
+        test("test.out");
+        test("ąćę.out");
+        test("不用意な変換.out");
+
+        //test file overwriting
+        test_overwriting_two_file_savers();
+        test_not_overwriting_two_file_savers();
+        test_not_overwriting_one_file_saver();
+    });
 }
