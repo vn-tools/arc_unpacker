@@ -179,15 +179,14 @@ namespace
         size_t file_count;
     } DirEntry;
 
-    std::string lower_ascii_only(std::string name_sjis)
+    std::string lower_ascii_only(std::string name_utf8)
     {
         //while SJIS can use ASCII for encoding multibyte characters,
         //UTF-8 uses the codes 0–127 only for the ASCII characters.
-        std::string name_utf8 = convert_encoding(name_sjis, "cp932", "utf-8");
         for (size_t i = 0; i < name_utf8.size(); i ++)
             if (name_utf8[i] >= 'A' && name_utf8[i] <= 'Z')
                 name_utf8[i] += 'a' - 'A';
-        return convert_encoding(name_utf8, "utf-8", "cp932");
+        return name_utf8;
     }
 
     std::string replace_slash_with_backslash(std::string s)
@@ -201,10 +200,10 @@ namespace
         const std::string name,
         uint32_t initial_hash = 0x811C9DC5)
     {
-        std::string name_processed
-            = replace_slash_with_backslash(
-                lower_ascii_only(
-                    convert_encoding(name, "utf-8", "cp932")));
+        std::string name_processed = convert_encoding(
+            replace_slash_with_backslash(lower_ascii_only(name)),
+            "utf-8",
+            "cp932");
 
         uint32_t result = initial_hash;
         for (size_t i = 0; i < name_processed.size(); i ++)
