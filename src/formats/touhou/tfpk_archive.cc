@@ -28,17 +28,44 @@ using namespace Formats::Touhou;
 
 namespace
 {
-    const std::vector<unsigned char> modulus({
-            0xC7, 0x9A, 0x9E, 0x9B, 0xFB, 0xC2, 0x0C, 0xB0,
-            0xC3, 0xE7, 0xAE, 0x27, 0x49, 0x67, 0x62, 0x8A,
-            0x78, 0xBB, 0xD1, 0x2C, 0xB2, 0x4D, 0xF4, 0x87,
-            0xC7, 0x09, 0x35, 0xF7, 0x01, 0xF8, 0x2E, 0xE5,
-            0x49, 0x3B, 0x83, 0x6B, 0x84, 0x26, 0xAA, 0x42,
-            0x9A, 0xE1, 0xCC, 0xEE, 0x08, 0xA2, 0x15, 0x1C,
-            0x42, 0xE7, 0x48, 0xB1, 0x9C, 0xCE, 0x7A, 0xD9,
-            0x40, 0x1A, 0x4D, 0xD4, 0x36, 0x37, 0x5C, 0x89
+    typedef struct
+    {
+        std::array<uint8_t, 64> modulus;
+        unsigned int exponent;
+    } RsaKey;
+
+    const std::vector<RsaKey> rsa_keys(
+        {
+            //Japanese version
+            {
+                {
+                    0xC7, 0x9A, 0x9E, 0x9B, 0xFB, 0xC2, 0x0C, 0xB0,
+                    0xC3, 0xE7, 0xAE, 0x27, 0x49, 0x67, 0x62, 0x8A,
+                    0x78, 0xBB, 0xD1, 0x2C, 0xB2, 0x4D, 0xF4, 0x87,
+                    0xC7, 0x09, 0x35, 0xF7, 0x01, 0xF8, 0x2E, 0xE5,
+                    0x49, 0x3B, 0x83, 0x6B, 0x84, 0x26, 0xAA, 0x42,
+                    0x9A, 0xE1, 0xCC, 0xEE, 0x08, 0xA2, 0x15, 0x1C,
+                    0x42, 0xE7, 0x48, 0xB1, 0x9C, 0xCE, 0x7A, 0xD9,
+                    0x40, 0x1A, 0x4D, 0xD4, 0x36, 0x37, 0x5C, 0x89
+                },
+                65537,
+            },
+
+            //English patch
+            {
+                {
+                    0xFF, 0x65, 0x72, 0x74, 0x61, 0x69, 0x52, 0x20,
+                    0x2D, 0x2D, 0x20, 0x69, 0x6F, 0x6B, 0x6E, 0x61,
+                    0x6C, 0x46, 0x20, 0x73, 0x73, 0x65, 0x6C, 0x42,
+                    0x20, 0x64, 0x6F, 0x47, 0x20, 0x79, 0x61, 0x4D,
+                    0x08, 0x8B, 0xF4, 0x75, 0x5D, 0x78, 0xB1, 0xC8,
+                    0x93, 0x7F, 0x40, 0xEA, 0x34, 0xA5, 0x85, 0xC1,
+                    0x1B, 0x8D, 0x63, 0x17, 0x75, 0x98, 0x2D, 0xA8,
+                    0x17, 0x45, 0x31, 0x31, 0x51, 0x4F, 0x6E, 0x8D
+                },
+                65537,
+            },
         });
-    const unsigned int exponent = 65537;
 
     class RsaReader
     {
@@ -48,16 +75,29 @@ namespace
         std::unique_ptr<BufferedIO> read_block();
         size_t tell() const;
     private:
-        std::unique_ptr<BufferedIO> decrypt(
-            std::basic_string<unsigned char> input);
-        RSA *create_public_key();
+        std::unique_ptr<BufferedIO> decrypt(std::basic_string<uint8_t> input);
+        RSA *create_public_key(const RsaKey &);
         RSA *public_key;
         IO &io;
     };
 
     RsaReader::RsaReader(IO &io) : io(io)
     {
-        public_key = create_public_key();
+        for (auto &rsa_key : rsa_keys)
+        {
+            public_key = create_public_key(rsa_key);
+            try
+            {
+                io.peek(io.tell(), [&]() { read_block(); });
+                return;
+            }
+            catch (...)
+            {
+                RSA_free(public_key);
+                public_key = nullptr;
+            }
+        }
+        throw std::runtime_error("Unknown public key");
     }
 
     RsaReader::~RsaReader()
@@ -71,12 +111,12 @@ namespace
         return io.tell();
     }
 
-    RSA *RsaReader::create_public_key()
+    RSA *RsaReader::create_public_key(const RsaKey &rsa_key)
     {
         BIGNUM *bn_modulus = BN_new();
         BIGNUM *bn_exponent = BN_new();
-        BN_set_word(bn_exponent, exponent);
-        BN_bin2bn(modulus.data(), modulus.size(), bn_modulus);
+        BN_set_word(bn_exponent, rsa_key.exponent);
+        BN_bin2bn(rsa_key.modulus.data(), rsa_key.modulus.size(), bn_modulus);
 
         RSA *rsa = RSA_new();
         rsa->e = bn_exponent;
@@ -85,10 +125,10 @@ namespace
     }
 
     std::unique_ptr<BufferedIO> RsaReader::decrypt(
-        std::basic_string<unsigned char> input)
+        std::basic_string<uint8_t> input)
     {
         size_t output_size = RSA_size(public_key);
-        std::unique_ptr<unsigned char[]> output(new unsigned char[output_size]);
+        std::unique_ptr<uint8_t[]> output(new uint8_t[output_size]);
         int result = RSA_public_decrypt(
             input.size(),
             input.data(),
@@ -112,7 +152,7 @@ namespace
     std::unique_ptr<BufferedIO> RsaReader::read_block()
     {
         auto s = io.read(0x40);
-        auto su = std::basic_string<unsigned char>(s.begin(), s.end());
+        auto su = std::basic_string<uint8_t>(s.begin(), s.end());
         auto block_io = decrypt(su);
         block_io->truncate(0x20);
         return block_io;
@@ -141,8 +181,8 @@ namespace
 
     std::string lower_ascii_only(std::string name_sjis)
     {
-        //while SJIS can use ASCII for encoding multibyte characters.
-        //UTF-8 uses the codes 0–127 only for the ASCII characters,
+        //while SJIS can use ASCII for encoding multibyte characters,
+        //UTF-8 uses the codes 0–127 only for the ASCII characters.
         std::string name_utf8 = convert_encoding(name_sjis, "cp932", "utf-8");
         for (size_t i = 0; i < name_utf8.size(); i ++)
             if (name_utf8[i] >= 'A' && name_utf8[i] <= 'Z')
@@ -168,7 +208,10 @@ namespace
 
         uint32_t result = initial_hash;
         for (size_t i = 0; i < name_processed.size(); i ++)
-            result = name_processed[i] ^ 0x1000193 * result;
+        {
+            result *= 0x1000193;
+            result ^= name_processed[i];
+        }
         return result;
     }
 

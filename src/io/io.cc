@@ -12,8 +12,16 @@ void IO::peek(size_t offset, std::function<void()> func)
 {
     size_t old_pos = tell();
     seek(offset);
-    func();
-    seek(old_pos);
+    try
+    {
+        func();
+        seek(old_pos);
+    }
+    catch (...)
+    {
+        seek(old_pos);
+        throw;
+    }
 }
 
 bool IO::eof() const
