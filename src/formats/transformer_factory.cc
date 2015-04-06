@@ -20,6 +20,7 @@
 #include "formats/liarsoft/xfl_archive.h"
 #include "formats/lizsoft/sotes_converter.h"
 #include "formats/microsoft/exe_archive.h"
+#include "formats/microsoft/dds_converter.h"
 #include "formats/minato_soft/pac_archive.h"
 #include "formats/nitroplus/npa_archive.h"
 #include "formats/nitroplus/npa_sg_archive.h"
@@ -94,6 +95,7 @@ TransformerFactory::TransformerFactory() : internals(new Internals)
     internals->add("sar", []() { return new NScripter::SarArchive(); });
     internals->add("anm", []() { return new Touhou::AnmArchive(); });
 
+    internals->add("dds", []() { return new Microsoft::DdsConverter(); });
     internals->add("pgx", []() { return new Glib::PgxConverter(); });
     internals->add("wcg", []() { return new LiarSoft::WcgConverter(); });
     internals->add("dpng", []() { return new QLiE::DpngConverter(); });

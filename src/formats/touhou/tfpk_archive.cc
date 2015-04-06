@@ -16,6 +16,7 @@
 #include <openssl/rsa.h>
 #include <sstream>
 #include <vector>
+#include "formats/microsoft/dds_converter.h"
 #include "formats/touhou/tfbm_converter.h"
 #include "formats/touhou/tfcs_converter.h"
 #include "formats/touhou/tfpk_archive.h"
@@ -397,12 +398,14 @@ struct TfpkArchive::Internals
 {
     TfbmConverter tfbm_converter;
     TfcsConverter tfcs_converter;
+    Formats::Microsoft::DdsConverter dds_converter;
 };
 
 TfpkArchive::TfpkArchive() : internals(new Internals)
 {
     add_transformer(&internals->tfbm_converter);
     add_transformer(&internals->tfcs_converter);
+    add_transformer(&internals->dds_converter);
 }
 
 TfpkArchive::~TfpkArchive()
