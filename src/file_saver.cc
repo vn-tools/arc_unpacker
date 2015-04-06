@@ -11,12 +11,19 @@ struct FileSaverHdd::Internals
 {
     boost::filesystem::path output_dir;
     std::set<boost::filesystem::path> paths;
+    bool overwrite;
+
+    Internals(const boost::filesystem::path &output_dir, bool overwrite)
+         : output_dir(output_dir), overwrite(overwrite)
+    {
+    }
 
     boost::filesystem::path make_path_unique(const boost::filesystem::path path)
     {
         boost::filesystem::path new_path = path;
         int i = 1;
-        while (paths.find(new_path) != paths.end())
+        while (paths.find(new_path) != paths.end()
+        || (!overwrite && boost::filesystem::exists(new_path)))
         {
             std::string suffix = "(" + itos(i ++) + ")";
             new_path = path.parent_path();
@@ -28,10 +35,10 @@ struct FileSaverHdd::Internals
     }
 };
 
-FileSaverHdd::FileSaverHdd(boost::filesystem::path output_dir)
-    : internals(new Internals)
+FileSaverHdd::FileSaverHdd(
+    const boost::filesystem::path &output_dir, bool overwrite)
+    : internals(new Internals(output_dir, overwrite))
 {
-    internals->output_dir = output_dir;
 }
 
 FileSaverHdd::~FileSaverHdd()

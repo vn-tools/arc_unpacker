@@ -10,6 +10,7 @@ namespace
         std::string format;
         boost::filesystem::path output_dir;
         std::vector<std::unique_ptr<PathInfo>> input_paths;
+        bool overwrite;
     } Options;
 
     void add_help_option(ArgParser &arg_parser)
@@ -20,6 +21,17 @@ namespace
     bool should_show_help(ArgParser &arg_parser)
     {
         return arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
+    }
+
+    void add_rename_option(ArgParser &arg_parser, Options &options)
+    {
+        arg_parser.add_help(
+            "-r, --rename",
+            "Renames target files if they exist. By default, they're overwritten.");
+
+        options.overwrite = true;
+        if (arg_parser.has_flag("-r") || arg_parser.has_flag("--rename"))
+            options.overwrite = false;
     }
 
     void add_output_folder_option(ArgParser &arg_parser, Options &options)
@@ -109,6 +121,7 @@ ArcUnpacker::ArcUnpacker(ArgParser &arg_parser)
 {
     add_output_folder_option(arg_parser, internals->options);
     add_format_option(arg_parser, internals->options);
+    add_rename_option(arg_parser, internals->options);
     add_help_option(arg_parser);
 }
 
@@ -186,7 +199,9 @@ void ArcUnpacker::print_help(const std::string &path_to_self)
 void ArcUnpacker::unpack(
     Transformer &transformer, File &file, const std::string &base_name)
 {
-    FileSaverHdd file_saver(internals->options.output_dir);
+    FileSaverHdd file_saver(
+        internals->options.output_dir,
+        internals->options.overwrite);
     unpack(transformer, file, base_name, file_saver);
 }
 
@@ -279,8 +294,7 @@ bool ArcUnpacker::run()
             std::string base_name
                 = tmp.stem().string() + "~" + tmp.extension().string();
 
-            if (!guess_transformer_and_unpack(file, base_name))
-                result = false;
+            result &= guess_transformer_and_unpack(file, base_name);
         }
         return result;
     }

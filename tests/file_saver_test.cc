@@ -5,7 +5,7 @@
 
 void test(const boost::filesystem::path &path)
 {
-    FileSaverHdd file_saver(".");
+    FileSaverHdd file_saver(".", true);
 
     std::shared_ptr<File> file(new File);
     file->io.write("test");
@@ -22,6 +22,58 @@ void test(const boost::filesystem::path &path)
     boost::filesystem::remove(path);
 }
 
+void do_test_overwriting(
+    FileSaver &file_saver1,
+    FileSaver &file_saver2,
+    bool renamed_file_exists)
+{
+    boost::filesystem::path path = "test.txt";
+    boost::filesystem::path path2 = "test(1).txt";
+
+    std::shared_ptr<File> file(new File);
+    file->name = path.string();
+
+    try
+    {
+        eassert(!boost::filesystem::exists(path));
+        eassert(!boost::filesystem::exists(path2));
+        file_saver1.save(file);
+        file_saver2.save(file);
+        eassert(boost::filesystem::exists(path));
+        eassert(boost::filesystem::exists(path2) == renamed_file_exists);
+        if (boost::filesystem::exists(path)) boost::filesystem::remove(path);
+        if (boost::filesystem::exists(path2)) boost::filesystem::remove(path2);
+    }
+    catch(...)
+    {
+        if (boost::filesystem::exists(path)) boost::filesystem::remove(path);
+        if (boost::filesystem::exists(path2)) boost::filesystem::remove(path2);
+        throw;
+    }
+}
+
+void test_overwriting_two_file_savers()
+{
+    FileSaverHdd file_saver1(".", true);
+    FileSaverHdd file_saver2(".", true);
+    do_test_overwriting(file_saver1, file_saver2, false);
+}
+
+void test_not_overwriting_two_file_savers()
+{
+    FileSaverHdd file_saver1(".", false);
+    FileSaverHdd file_saver2(".", false);
+    do_test_overwriting(file_saver1, file_saver2, true);
+}
+
+void test_not_overwriting_one_file_saver()
+{
+    //even if we pass overwrite=true, files within the same archive with the
+    //same name are too valuable to be ovewritten silently
+    FileSaverHdd file_saver(".", true);
+    do_test_overwriting(file_saver, file_saver, true);
+}
+
 int main(void)
 {
     init_fs_utf8();
@@ -29,4 +81,7 @@ int main(void)
     test("test.out");
     test("ąćę.out");
     test("不用意な変換.out");
+    test_overwriting_two_file_savers();
+    test_not_overwriting_two_file_savers();
+    test_not_overwriting_one_file_saver();
 }

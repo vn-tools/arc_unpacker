@@ -15,7 +15,7 @@ public:
 class FileSaverHdd : public FileSaver
 {
 public:
-    FileSaverHdd(boost::filesystem::path output_dir);
+    FileSaverHdd(const boost::filesystem::path &output_dir, bool overwrite);
     ~FileSaverHdd();
 
     virtual void save(std::shared_ptr<File> file) const override;
