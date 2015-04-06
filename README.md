@@ -26,7 +26,8 @@ Usage
 There is also auto-detection feature (meaning you can drag'n'drop the files
 on the executable), but it may not work occasionally, or refuse to work
 completely if the format requires additional parameters. So for now use it
-wisely. In the long run, this is going to be improved in #17.
+wisely. In the long run, this is going to be improved in
+[#17](https://github.com/vn-tools/arc_unpacker/issues/17).
 
 
 
