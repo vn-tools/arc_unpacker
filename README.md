@@ -129,6 +129,7 @@ Building from sources
 4. `libpng` 1.4+
 5. `zlib` (comes with `libpng`)
 6. `iconv` (comes with POSIX)
+7. `openssl`
 
 ### Building for Linux
 
