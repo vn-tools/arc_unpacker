@@ -38,9 +38,14 @@ with `--fmt=FORMAT --help` switch.
 Supported games
 ---------------
 
+Feature legend:
+
+![legend](https://cloud.githubusercontent.com/assets/1045476/7105891/2cf895a8-e12f-11e4-830d-88c7585346ea.png)  
+<sub>If generic file unpacking "doesn't apply", it means the game doesn't use archives.</sub>
+
 ### Archives
 
-CLI invocation                        | Game                                | Features<sup>1</sup>
+CLI invocation                        | Game                                | Features
 ------------------------------------- | ----------------------------------- | ------------
 `--fmt=xp3 --plugin=noop`             | Sono Hanabira ni Kuchizuke o 12     | ![][sup]![][sup]![][sup]
 `--fmt=xp3 --plugin=noop`             | Sharin no Kuni, Himawari no Shoujo  | ![][sup]![][sup]![][sup]
@@ -90,24 +95,13 @@ CLI invocation                        | Game                                | Fe
 
 ### Files
 
-CLI invocation                        | Game                                | Features<sup>1</sup>
+CLI invocation                        | Game                                | Features
 ------------------------------------- | ----------------------------------- | ------------------------
 `--fmt=g00`, `--fmt=nwa`              | Little Busters                      | ![][nap]![][sup]![][sup]
 `--fmt=g00`, `--fmt=nwa`              | Clannad                             | ![][nap]![][sup]![][sup]
 `--fmt=g00`, `--fmt=nwa`              | Kanon                               | ![][nap]![][sup]![][sup]
 `--fmt=xyz`                           | Yume Nikki                          | ![][nap]![][sup]![][sup]
 `--fmt=sotes`                         | Fortune Summoners                   | ![][nap]![][sup]![][sup]
-
-<sup>1</sup> Feature legend:
-
-- Generic files
-- Graphics
-- Sound and music
-
-<sub>![][sup] - fully supported, ![][par] - partially supported, ![][non] -
-unsupported, ![][nap] - doesn't apply.  
-If generic file unpacking "doesn't apply", it means the game doesn't use
-archives.</sub>
 
 [sup]: http://i.imgur.com/PeYsbCg.png
 [par]: http://i.imgur.com/NMBy1C0.png
