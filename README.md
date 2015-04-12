@@ -17,17 +17,21 @@ For build instructions, see below.
 Usage
 -----
 
-1. See `--help` to list all the formats.
-2. Choose one of the formats.
-3. Provide parameters it requires (`--help --fmt=FMT` to inspect them). Most of
-   them work out-of-the-box.
-4. Finally, run the program.
+Drag'n'drop the archive or file onto `arc_unpacker.exe`. It will guess the
+format and unpack it for you.
 
-There is also auto-detection feature (meaning you can drag'n'drop the files
-on the executable), but it may not work occasionally, or refuse to work
-completely if the format requires additional parameters. So for now use it
-wisely. In the long run, this is going to be improved in
-[#17](https://github.com/vn-tools/arc_unpacker/issues/17).
+Caveats:
+
+1. The file format might be detected by two or more decoders at once. In such
+cases you need to look at the console output, choose the valid format and tell
+the program to use it by supplying `--fmt=...` option.
+
+2. The file might need more parameters to be correctly unpacked. In such cases
+you need to supply `--fmt=FORMAT` option and additional parameters. For
+example, XP3 archives need `--plugin` that tells what kind of decryption to
+use. To tell it to use Fate/Stay Night decryption, supply `--fmt=xp3
+--plugin=fsn`. All of these options along with their values can be discovered
+with `--fmt=FORMAT --help` switch.
 
 
 
