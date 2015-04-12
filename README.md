@@ -40,8 +40,7 @@ Supported games
 
 Feature legend:
 
-![legend](https://cloud.githubusercontent.com/assets/1045476/7105891/2cf895a8-e12f-11e4-830d-88c7585346ea.png)  
-<sub>If generic file unpacking "doesn't apply", it means the game doesn't use archives.</sub>
+![legend](https://cloud.githubusercontent.com/assets/1045476/7106067/af96459a-e135-11e4-956b-bc733b1e4ab2.png)
 
 ### Archives
 
