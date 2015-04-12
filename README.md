@@ -45,68 +45,68 @@ Feature legend:
 
 ### Archives
 
-CLI invocation                        | Game                                | Features
-------------------------------------- | ----------------------------------- | ------------
-`--fmt=xp3 --plugin=noop`             | Sono Hanabira ni Kuchizuke o 12     | ![][sup]![][sup]![][sup]
-`--fmt=xp3 --plugin=noop`             | Sharin no Kuni, Himawari no Shoujo  | ![][sup]![][sup]![][sup]
-`--fmt=xp3 --plugin=fsn`              | Fate/Stay Night                     | ![][sup]![][sup]![][sup]
-`--fmt=xp3 --plugin=fha`              | Fate/Hollow Ataraxia                | ![][sup]![][sup]![][sup]
-`--fmt=xp3 --plugin=comyu`            | Comyu Kuroi Ryuu to Yasashii Oukoku | ![][sup]![][sup]![][sup]
-`--fmt=p`                             | Melty Blood                         | ![][sup]![][sup]![][sup]
-`--fmt=sar`                           | Tsukihime                           | ![][sup]![][sup]![][sup]
-`--fmt=nsa`                           | Tsukihime                           | ![][sup]![][sup]![][sup]
-`--fmt=nsa`                           | Umineko No Naku Koro Ni             | ![][sup]![][sup]![][sup]
-`--fmt=ykc`                           | Hoshizora e Kakaru Hashi            | ![][sup]![][sup]![][sup]
-`--fmt=fjsys`                         | Sono Hanabira ni Kuchizuke o 1-11   | ![][sup]![][sup]![][sup]
-`--fmt=pak`                           | Saya no Uta                         | ![][sup]![][sup]![][sup]
-`--fmt=npa`                           | Chaos;Head                          | ![][sup]![][sup]![][sup]
-`--fmt=rpa`                           | Everlasting Summer                  | ![][sup]![][sup]![][sup]
-`--fmt=rpa`                           | Long Live The Queen                 | ![][sup]![][sup]![][sup]
-`--fmt=rpa`                           | Katawa Shoujo                       | ![][sup]![][sup]![][sup]
-`--fmt=mbl`                           | Wanko to Kurasou                    | ![][sup]![][sup]![][sup]
-`--fmt=rgssad`                        | Cherry Tree High Comedy Club        | ![][sup]![][sup]![][sup]
-`--fmt=arc`                           | Higurashi No Naku Koro Ni           | ![][sup]![][sup]![][sup]
-`--fmt=npa_sg`                        | Steins;Gate                         | ![][sup]![][sup]![][sup]
-`--fmt=pac`                           | Maji de Watashi ni Koishinasai!     | ![][sup]![][sup]![][sup]
-`--fmt=pack`                          | Soshite Ashita no Sekai yori        | ![][sup]![][sup]![][sup]
-`--fmt=pack`                          | Kimihagu                            | ![][sup]![][sup]![][sup]
-`--fmt=pack --fkey=... --gameexe=...` | Koiken Otome                        | ![][sup]![][sup]![][sup]
-`--fmt=pbg3`                          | Touhou 06                           | ![][sup]![][sup]![][sup]
-`--fmt=pbg4`                          | Touhou 07                           | ![][sup]![][sup]![][par]
-`--fmt=th-pak1`                       | Touhou 07.5                         | ![][sup]![][sup]![][sup]
-`--fmt=pbgz`                          | Touhou 08                           | ![][sup]![][sup]![][par]
-`--fmt=pbgz`                          | Touhou 09                           | ![][sup]![][sup]![][par]
-`--fmt=tha1`                          | Touhou 09.5                         | ![][sup]![][sup]![][par]
-`--fmt=tha1`                          | Touhou 10                           | ![][sup]![][sup]![][par]
-`--fmt=th-pak2`                       | Touhou 10.5                         | ![][sup]![][sup]![][sup]
-`--fmt=tha1`                          | Touhou 11                           | ![][sup]![][sup]![][par]
-`--fmt=tha1`                          | Touhou 12                           | ![][sup]![][sup]![][par]
-`--fmt=th-pak2`                       | Touhou 12.3                         | ![][sup]![][sup]![][sup]
-`--fmt=tha1`                          | Touhou 12.5                         | ![][sup]![][sup]![][par]
-`--fmt=tha1`                          | Touhou 12.8                         | ![][sup]![][sup]![][par]
-`--fmt=tha1`                          | Touhou 13                           | ![][sup]![][sup]![][par]
-`--fmt=tfpk`                          | Touhou 13.5                         | ![][sup]![][sup]![][non]
-`--fmt=tha1`                          | Touhou 14                           | ![][sup]![][sup]![][par]
-`--fmt=tha1`                          | Touhou 14.3                         | ![][sup]![][sup]![][par]
-`--fmt=xfl`                           | Souten No Celenaria                 | ![][sup]![][sup]![][sup]
-`--fmt=g2`                            | Musume Shimai                       | ![][sup]![][sup]![][sup]
-`--fmt=gml`                           | Watashi no Puni Puni                | ![][sup]![][sup]![][sup]
-`--fmt=exe`                           | Generic `.exe` resources            | ![][sup]![][nap]![][nap]
+Features           | Game                                | CLI invocation
+------------------ | ----------------------------------- | --------------
+![][F]![][F]![][F] | Sono Hanabira ni Kuchizuke o 12     | `--fmt=xp3 --plugin=noop`
+![][F]![][F]![][F] | Sharin no Kuni, Himawari no Shoujo  | `--fmt=xp3 --plugin=noop`
+![][F]![][F]![][F] | Fate/Stay Night                     | `--fmt=xp3 --plugin=fsn`
+![][F]![][F]![][F] | Fate/Hollow Ataraxia                | `--fmt=xp3 --plugin=fha`
+![][F]![][F]![][F] | Comyu Kuroi Ryuu to Yasashii Oukoku | `--fmt=xp3 --plugin=comyu`
+![][F]![][F]![][F] | Melty Blood                         | `--fmt=p`
+![][F]![][F]![][F] | Tsukihime                           | `--fmt=sar`
+![][F]![][F]![][F] | Tsukihime                           | `--fmt=nsa`
+![][F]![][F]![][F] | Umineko No Naku Koro Ni             | `--fmt=nsa`
+![][F]![][F]![][F] | Hoshizora e Kakaru Hashi            | `--fmt=ykc`
+![][F]![][F]![][F] | Sono Hanabira ni Kuchizuke o 1-11   | `--fmt=fjsys`
+![][F]![][F]![][F] | Saya no Uta                         | `--fmt=pak`
+![][F]![][F]![][F] | Chaos;Head                          | `--fmt=npa`
+![][F]![][F]![][F] | Everlasting Summer                  | `--fmt=rpa`
+![][F]![][F]![][F] | Long Live The Queen                 | `--fmt=rpa`
+![][F]![][F]![][F] | Katawa Shoujo                       | `--fmt=rpa`
+![][F]![][F]![][F] | Wanko to Kurasou                    | `--fmt=mbl`
+![][F]![][F]![][F] | Cherry Tree High Comedy Club        | `--fmt=rgssad`
+![][F]![][F]![][F] | Higurashi No Naku Koro Ni           | `--fmt=arc`
+![][F]![][F]![][F] | Steins;Gate                         | `--fmt=npa_sg`
+![][F]![][F]![][F] | Maji de Watashi ni Koishinasai!     | `--fmt=pac`
+![][F]![][F]![][F] | Soshite Ashita no Sekai yori        | `--fmt=pack`
+![][F]![][F]![][F] | Kimihagu                            | `--fmt=pack`
+![][F]![][F]![][F] | Koiken Otome                        | `--fmt=pack --fkey=... --gameexe=...`
+![][F]![][F]![][F] | Touhou 06                           | `--fmt=pbg3`
+![][F]![][F]![][P] | Touhou 07                           | `--fmt=pbg4`
+![][F]![][F]![][F] | Touhou 07.5                         | `--fmt=th-pak1`
+![][F]![][F]![][P] | Touhou 08                           | `--fmt=pbgz`
+![][F]![][F]![][P] | Touhou 09                           | `--fmt=pbgz`
+![][F]![][F]![][P] | Touhou 09.5                         | `--fmt=tha1`
+![][F]![][F]![][P] | Touhou 10                           | `--fmt=tha1`
+![][F]![][F]![][F] | Touhou 10.5                         | `--fmt=th-pak2`
+![][F]![][F]![][P] | Touhou 11                           | `--fmt=tha1`
+![][F]![][F]![][P] | Touhou 12                           | `--fmt=tha1`
+![][F]![][F]![][F] | Touhou 12.3                         | `--fmt=th-pak2`
+![][F]![][F]![][P] | Touhou 12.5                         | `--fmt=tha1`
+![][F]![][F]![][P] | Touhou 12.8                         | `--fmt=tha1`
+![][F]![][F]![][P] | Touhou 13                           | `--fmt=tha1`
+![][F]![][F]![][N] | Touhou 13.5                         | `--fmt=tfpk`
+![][F]![][F]![][P] | Touhou 14                           | `--fmt=tha1`
+![][F]![][F]![][P] | Touhou 14.3                         | `--fmt=tha1`
+![][F]![][F]![][F] | Souten No Celenaria                 | `--fmt=xfl`
+![][F]![][F]![][F] | Musume Shimai                       | `--fmt=g2`
+![][F]![][F]![][F] | Watashi no Puni Puni                | `--fmt=gml`
+![][F]![][X]![][X] | Generic `.exe` resources            | `--fmt=exe`
 
 ### Files
 
-CLI invocation                        | Game                                | Features
-------------------------------------- | ----------------------------------- | ------------------------
-`--fmt=g00`, `--fmt=nwa`              | Little Busters                      | ![][nap]![][sup]![][sup]
-`--fmt=g00`, `--fmt=nwa`              | Clannad                             | ![][nap]![][sup]![][sup]
-`--fmt=g00`, `--fmt=nwa`              | Kanon                               | ![][nap]![][sup]![][sup]
-`--fmt=xyz`                           | Yume Nikki                          | ![][nap]![][sup]![][sup]
-`--fmt=sotes`                         | Fortune Summoners                   | ![][nap]![][sup]![][sup]
+Features           | Game                                | CLI invocation
+------------------ | ----------------------------------- | --------------
+![][X]![][F]![][F] | Little Busters                      | `--fmt=g00`, `--fmt=nwa`
+![][X]![][F]![][F] | Clannad                             | `--fmt=g00`, `--fmt=nwa`
+![][X]![][F]![][F] | Kanon                               | `--fmt=g00`, `--fmt=nwa`
+![][X]![][F]![][F] | Yume Nikki                          | `--fmt=xyz`
+![][X]![][F]![][F] | Fortune Summoners                   | `--fmt=sotes`
 
-[sup]: http://i.imgur.com/PeYsbCg.png
-[par]: http://i.imgur.com/NMBy1C0.png
-[non]: http://i.imgur.com/2aTNlHb.png
-[nap]: http://i.imgur.com/jQTmqxl.png
+[F]: http://i.imgur.com/PeYsbCg.png
+[P]: http://i.imgur.com/NMBy1C0.png
+[N]: http://i.imgur.com/2aTNlHb.png
+[X]: http://i.imgur.com/jQTmqxl.png
 
 If a game isn't listed above and it works, please let me know so I can update
 the table.
