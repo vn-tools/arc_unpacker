@@ -385,6 +385,7 @@ namespace
         io.seek(rva_helper.rva_to_offset(sections, entry.offset_to_data));
         file->io.write_from_io(io, entry.size);
 
+        file->guess_extension();
         file_saver.save(std::move(file));
     }
 
