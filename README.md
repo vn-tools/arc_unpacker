@@ -108,13 +108,12 @@ CLI invocation                        | Game                                | Fe
 [non]: http://i.imgur.com/2aTNlHb.png
 [nap]: http://i.imgur.com/jQTmqxl.png
 
-Contribution
-------------
-
-If the game isn't listed above and it works, please let me know so I can update
+If a game isn't listed above and it works, please let me know so I can update
 the table.
 
 
+
+---
 
 Building from sources
 ---------------------
