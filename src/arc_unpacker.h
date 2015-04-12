@@ -17,12 +17,13 @@ class ArcUnpacker
 public:
     ArcUnpacker(ArgParser &);
     ~ArcUnpacker();
-    void print_help(const std::string &);
-    bool guess_transformer_and_unpack(File &, const std::string &);
-    void unpack(Transformer &, File &, const std::string &);
-    void unpack(Transformer &, File &, const std::string &, FileSaver &);
     bool run();
+    void print_help(const std::string &);
 private:
+    std::unique_ptr<Transformer> guess_transformer(File &) const;
+    bool guess_transformer_and_unpack(File &, const std::string &) const;
+    void unpack(Transformer &, File &, const std::string &) const;
+    void unpack(Transformer &, File &, const std::string &, FileSaver &) const;
     struct Internals;
     std::unique_ptr<Internals> internals;
 };

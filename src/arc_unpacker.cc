@@ -197,7 +197,7 @@ void ArcUnpacker::print_help(const std::string &path_to_self)
 }
 
 void ArcUnpacker::unpack(
-    Transformer &transformer, File &file, const std::string &base_name)
+    Transformer &transformer, File &file, const std::string &base_name) const
 {
     FileSaverHdd file_saver(
         internals->options.output_dir,
@@ -209,7 +209,7 @@ void ArcUnpacker::unpack(
     Transformer &transformer,
     File &file,
     const std::string &base_name,
-    FileSaver &file_saver)
+    FileSaver &file_saver) const
 {
     FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> saved_file)
     {
@@ -225,47 +225,80 @@ void ArcUnpacker::unpack(
     transformer.unpack(file, file_saver_proxy);
 }
 
-bool ArcUnpacker::guess_transformer_and_unpack(
-    File &file, const std::string &base_name)
+std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
 {
-    if (internals->options.format == "")
+    std::vector<std::unique_ptr<Transformer>> transformers;
+
+    size_t max_format_length = 0;
+    for (auto &format : internals->factory.get_formats())
+        if (format.length() > max_format_length)
+            max_format_length = format.length();
+
+    for (auto &format : internals->factory.get_formats())
     {
-        for (auto &format : internals->factory.get_formats())
+        auto current_transformer = internals->factory.create(format);
+        std::cout
+            << "Trying "
+            << std::setw(max_format_length + 2)
+            << std::left
+            << (format + ": ");
+
+        if (current_transformer->is_recognized(file))
         {
-            auto transformer = internals->factory.create(format);
-
-            try
-            {
-                std::cout << "Trying " << format << "... ";
-                unpack(*transformer, file, base_name);
-                std::cout << "Unpacking finished successfully." << std::endl;
-                return true;
-            }
-            catch (std::exception &e)
-            {
-                std::cout << "Error: " << e.what() << "; trying next format..." << std::endl;
-            }
+            std::cout << "recognized" << std::endl;
+            transformers.push_back(std::move(current_transformer));
         }
+        else
+        {
+            std::cout << "not recognized" << std::endl;
+        }
+    }
 
-        std::cout << "Nothing left to try. File not recognized." << std::endl;
-        return false;
+    if (transformers.size() == 0)
+    {
+        std::cout << "File not recognized." << std::endl;
+        return nullptr;
+    }
+    else if (transformers.size() == 1)
+    {
+        return std::move(transformers[0]);
     }
     else
     {
-        auto transformer = internals->factory.create(internals->options.format);
+        std::cout << "File was recognized by multiple engines." << std::endl;
+        std::cout << "Please provide --fmt and proceed manually." << std::endl;
+        return nullptr;
+    }
+}
 
-        try
-        {
-            unpack(*transformer, file, base_name);
-            std::cout << "Unpacking finished successfully." << std::endl;
-            return true;
-        }
-        catch (std::exception &e)
-        {
-            std::cout << "Error: " << e.what() << std::endl;
-            std::cout << "Decoding finished with errors." << std::endl;
+bool ArcUnpacker::guess_transformer_and_unpack(
+    File &file, const std::string &base_name) const
+{
+    std::unique_ptr<Transformer> transformer(nullptr);
+
+    if (internals->options.format == "")
+    {
+        transformer = guess_transformer(file);
+        if (transformer == nullptr)
             return false;
-        }
+    }
+    else
+    {
+        transformer = internals->factory.create(internals->options.format);
+    }
+
+    std::cout << "Unpacking..." << std::endl;
+    try
+    {
+        unpack(*transformer, file, base_name);
+        std::cout << "Unpacking finished successfully." << std::endl;
+        return true;
+    }
+    catch (std::exception &e)
+    {
+        std::cout << "Error: " << e.what() << std::endl;
+        std::cout << "Unpacking finished with errors." << std::endl;
+        return false;
     }
 }
 

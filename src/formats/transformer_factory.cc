@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <functional>
 #include "formats/transformer_factory.h"
 
@@ -19,8 +20,8 @@
 #include "formats/liarsoft/wcg_converter.h"
 #include "formats/liarsoft/xfl_archive.h"
 #include "formats/lizsoft/sotes_converter.h"
-#include "formats/microsoft/exe_archive.h"
 #include "formats/microsoft/dds_converter.h"
+#include "formats/microsoft/exe_archive.h"
 #include "formats/minato_soft/pac_archive.h"
 #include "formats/nitroplus/npa_archive.h"
 #include "formats/nitroplus/npa_sg_archive.h"
@@ -122,6 +123,15 @@ const std::vector<std::string> TransformerFactory::get_formats() const
     std::vector<std::string> formats;
     for (auto &p : internals->formats)
         formats.push_back(p.first);
+
+    std::sort(
+        formats.begin(),
+        formats.end(),
+        [](const std::string &left, const std::string &right)
+        {
+            return left < right;
+        });
+
     return formats;
 }
 
