@@ -99,6 +99,19 @@ Pak1Archive::~Pak1Archive()
 {
 }
 
+bool Pak1Archive::is_recognized_internal(File &arc_file) const
+{
+    try
+    {
+        read_table(arc_file.io);
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
 void Pak1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     auto table = read_table(arc_file.io);

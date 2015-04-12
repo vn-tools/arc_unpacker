@@ -119,6 +119,25 @@ NsaArchive::~NsaArchive()
 {
 }
 
+bool NsaArchive::is_recognized_internal(File &arc_file) const
+{
+    size_t file_count = arc_file.io.read_u16_be();
+    size_t offset_to_files = arc_file.io.read_u32_be();
+    if (file_count == 0)
+        return false;
+    for (size_t i = 0; i < file_count; i ++)
+    {
+        arc_file.io.read_until_zero();
+        arc_file.io.read_u8();
+        size_t offset = arc_file.io.read_u32_be();
+        size_t size_compressed = arc_file.io.read_u32_be();
+        size_t size_original = arc_file.io.read_u32_be();
+        if (offset_to_files + offset + size_compressed > arc_file.io.size())
+            return false;
+    }
+    return true;
+}
+
 void NsaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     Table table = read_table(arc_file.io);

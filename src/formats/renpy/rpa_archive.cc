@@ -230,7 +230,7 @@ namespace
         return entries;
     }
 
-    int check_version(IO &arc_io)
+    int guess_version(IO &arc_io)
     {
         const std::string magic_3("RPA-3.0 ", 8);
         const std::string magic_2("RPA-2.0 ", 8);
@@ -285,9 +285,14 @@ namespace
     }
 }
 
+bool RpaArchive::is_recognized_internal(File &arc_file) const
+{
+    return guess_version(arc_file.io) >= 0;
+}
+
 void RpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    int version = check_version(arc_file.io);
+    int version = guess_version(arc_file.io);
     size_t table_offset = read_hex_number(arc_file.io, 16);
 
     uint32_t key;
@@ -302,7 +307,7 @@ void RpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     }
     else
     {
-        throw std::runtime_error("Not a RPA archive");
+        throw std::runtime_error("Unknown RPA version");
     }
 
     arc_file.io.seek(table_offset);

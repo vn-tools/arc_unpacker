@@ -65,6 +65,14 @@ namespace
     }
 }
 
+bool NpaSgArchive::is_recognized_internal(File &arc_file) const
+{
+    if (!arc_file.has_extension("npa"))
+        return false;
+    size_t table_size = arc_file.io.read_u32_le();
+    return table_size < arc_file.io.size();
+}
+
 void NpaSgArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     size_t table_size = arc_file.io.read_u32_le();

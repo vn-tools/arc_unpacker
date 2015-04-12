@@ -14,6 +14,7 @@ namespace Formats
             ~Pak2ImageConverter();
             void set_palette_map(const PaletteMap &palette_map);
         protected:
+            bool is_recognized_internal(File &) const override;
             std::unique_ptr<File> decode_internal(File &) const override;
         private:
             struct Internals;

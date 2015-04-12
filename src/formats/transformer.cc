@@ -42,6 +42,19 @@ bool Transformer::try_unpack(File &file, FileSaver &file_saver) const
     }
 }
 
+bool Transformer::is_recognized(File &file) const
+{
+    try
+    {
+        file.io.seek(0);
+        return is_recognized_internal(file);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
 Transformer::~Transformer()
 {
 }

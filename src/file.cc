@@ -3,6 +3,31 @@
 #include "io/buffered_io.h"
 #include "io/file_io.h"
 
+namespace
+{
+    void change_extension(
+        boost::filesystem::path &path, const std::string &new_extension)
+    {
+        if (path.filename().empty()
+            || new_extension.empty()
+            || path.filename() == "."
+            || path.filename() == ".."
+            || path.stem() == "")
+        {
+            return;
+        }
+
+        if (new_extension[0] == '.')
+        {
+            path.replace_extension(new_extension);
+        }
+        else
+        {
+            path.replace_extension("." + new_extension);
+        }
+    }
+}
+
 File::File(const boost::filesystem::path &path, const FileIOMode mode)
     : io(*new FileIO(path, mode)), name(path.string())
 {
@@ -17,21 +42,17 @@ File::~File()
     delete &io;
 }
 
-void File::change_extension(const std::string new_extension)
+bool File::has_extension(const std::string &extension)
 {
     auto path = boost::filesystem::path(name);
-    if (path.filename().empty()
-        || new_extension.empty()
-        || path.filename() == "."
-        || path.filename() == ".."
-        || path.stem() == "")
-    {
-        return;
-    }
-    if (new_extension[0] == '.')
-        path.replace_extension(new_extension);
-    else
-        path.replace_extension("." + new_extension);
+    ::change_extension(path, extension);
+    return name == path;
+}
+
+void File::change_extension(const std::string &new_extension)
+{
+    auto path = boost::filesystem::path(name);
+    ::change_extension(path, new_extension);
     name = path.string();
 }
 

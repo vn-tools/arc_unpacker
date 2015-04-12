@@ -13,10 +13,19 @@
 #include "io/buffered_io.h"
 using namespace Formats::FrenchBread;
 
+namespace
+{
+    const std::string magic("LLIF", 4);
+}
+
+bool Ex3Converter::is_recognized_internal(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
+}
+
 std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
 {
-    if (file.io.read(4) != "LLIF")
-        throw std::runtime_error("Not an EX3 image");
+    file.io.skip(magic.size());
 
     unsigned char table0[60];
     unsigned char table1[256];

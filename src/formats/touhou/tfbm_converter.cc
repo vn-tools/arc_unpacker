@@ -40,11 +40,14 @@ void TfbmConverter::set_palette_map(const PaletteMap &palette_map)
         internals->palette_map[it.first] = it.second;
 }
 
+bool TfbmConverter::is_recognized_internal(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
+}
+
 std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
 {
-    if (file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a TFBM image file");
-
+    file.io.skip(magic.size());
     auto bit_depth = file.io.read_u8();
     auto image_width = file.io.read_u32_le();
     auto image_height = file.io.read_u32_le();

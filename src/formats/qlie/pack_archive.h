@@ -14,6 +14,7 @@ namespace Formats
             void add_cli_help(ArgParser &) const override;
             void parse_cli_options(const ArgParser &) override;
         protected:
+            bool is_recognized_internal(File &) const override;
             void unpack_internal(File &, FileSaver &) const override;
         private:
             struct Internals;

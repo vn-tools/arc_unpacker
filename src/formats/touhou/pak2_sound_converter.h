@@ -9,6 +9,7 @@ namespace Formats
         class Pak2SoundConverter : public Converter
         {
         protected:
+            bool is_recognized_internal(File &) const override;
             std::unique_ptr<File> decode_internal(File &) const override;
         };
     }

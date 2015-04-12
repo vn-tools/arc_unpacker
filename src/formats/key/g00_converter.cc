@@ -270,6 +270,11 @@ namespace
     }
 }
 
+bool G00Converter::is_recognized_internal(File &file) const
+{
+    return file.has_extension("g00");
+}
+
 std::unique_ptr<File> G00Converter::decode_internal(File &file) const
 {
     uint8_t version = file.io.read_u8();
@@ -291,6 +296,6 @@ std::unique_ptr<File> G00Converter::decode_internal(File &file) const
             break;
 
         default:
-            throw std::runtime_error("Not a G00 image");
+            throw std::runtime_error("Unknown G00 version");
     }
 }

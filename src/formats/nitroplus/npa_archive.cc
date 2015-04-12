@@ -216,10 +216,14 @@ void NpaArchive::parse_cli_options(const ArgParser &arg_parser)
     Archive::parse_cli_options(arg_parser);
 }
 
+bool NpaArchive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.io.read(magic.size()) == magic;
+}
+
 void NpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (arc_file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a NPA archive");
+    arc_file.io.skip(magic.size());
 
     if (internals->filter == nullptr)
         throw std::runtime_error("No plugin selected");

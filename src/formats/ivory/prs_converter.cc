@@ -116,10 +116,14 @@ namespace
     }
 }
 
+bool PrsConverter::is_recognized_internal(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
+}
+
 std::unique_ptr<File> PrsConverter::decode_internal(File &file) const
 {
-    if (file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a PRS image");
+    file.io.skip(magic.size());
 
     bool using_differences = file.io.read_u8() > 0;
     if (file.io.read_u8() != 3)

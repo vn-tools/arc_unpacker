@@ -18,10 +18,14 @@ namespace
     const std::string magic("DPNG", 4);
 }
 
+bool DpngConverter::is_recognized_internal(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
+}
+
 std::unique_ptr<File> DpngConverter::decode_internal(File &file) const
 {
-    if (file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a DPNG image");
+    file.io.skip(magic.size());
 
     file.io.skip(4);
     size_t file_count = file.io.read_u32_le();

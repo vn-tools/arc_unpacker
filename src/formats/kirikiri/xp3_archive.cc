@@ -42,11 +42,6 @@ namespace
         return version;
     }
 
-    bool check_magic(IO &arc_io, std::string expected_magic)
-    {
-        return arc_io.read(expected_magic.size()) == expected_magic;
-    }
-
     uint64_t get_table_offset(IO &arc_io, int version)
     {
         if (version == 1)
@@ -83,7 +78,7 @@ namespace
 
     void read_info_chunk(IO &table_io, File &target_file)
     {
-        if (!check_magic(table_io, info_magic))
+        if (table_io.read(info_magic.size()) != info_magic)
             throw std::runtime_error("Expected INFO chunk");
         uint64_t info_chunk_size = table_io.read_u64_le();
 
@@ -103,7 +98,7 @@ namespace
         IO &arc_io,
         File &target_file)
     {
-        if (!check_magic(table_io, segm_magic))
+        if (table_io.read(segm_magic.size()) != segm_magic)
             throw std::runtime_error("Expected SEGM chunk");
 
         uint64_t segm_chunk_size = table_io.read_u64_le();
@@ -138,7 +133,7 @@ namespace
 
     uint32_t read_adlr_chunk(IO &table_io, uint32_t *encryption_key)
     {
-        if (!check_magic(table_io, adlr_magic))
+        if (table_io.read(adlr_magic.size()) != adlr_magic)
             throw std::runtime_error("Expected ADLR chunk");
 
         uint64_t adlr_chunk_size = table_io.read_u64_le();
@@ -153,7 +148,7 @@ namespace
     {
         std::unique_ptr<File> target_file(new File());
 
-        if (!check_magic(table_io, file_magic))
+        if (table_io.read(file_magic.size()) != file_magic)
             throw std::runtime_error("Expected FILE chunk");
 
         uint32_t encryption_key;
@@ -224,10 +219,14 @@ void Xp3Archive::parse_cli_options(const ArgParser &arg_parser)
     Archive::parse_cli_options(arg_parser);
 }
 
+bool Xp3Archive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.io.read(xp3_magic.size()) == xp3_magic;
+}
+
 void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (!check_magic(arc_file.io, xp3_magic))
-        throw std::runtime_error("Not an XP3 archive");
+    arc_file.io.skip(xp3_magic.size());
 
     int version = detect_version(arc_file.io);
     uint64_t table_offset = get_table_offset(arc_file.io, version);

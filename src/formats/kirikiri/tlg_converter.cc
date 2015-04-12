@@ -22,7 +22,8 @@ namespace
     const std::string magic_tlg_5("TLG5.0\x00raw\x1a", 11);
     const std::string magic_tlg_6("TLG6.0\x00raw\x1a", 11);
 
-    std::unique_ptr<File> guess_version_and_decode(File &file);
+    int guess_version(IO &io);
+    std::unique_ptr<File> decode(int version, File &file);
 
     std::string extract_string(std::string &container)
     {
@@ -68,7 +69,10 @@ namespace
         }
 
         file.io.seek(raw_data_offset);
-        return guess_version_and_decode(file);
+        int version = guess_version(file.io);
+        if (version == -1)
+            throw std::runtime_error("Unknown TLG version");
+        return ::decode(version, file);
     }
 
     std::unique_ptr<File> decode_tlg_5(File &file)
@@ -83,27 +87,47 @@ namespace
         return decoder.decode(file);
     }
 
-    std::unique_ptr<File> guess_version_and_decode(File &file)
+    int guess_version(IO &io)
     {
-        size_t pos = file.io.tell();
+        size_t pos = io.tell();
+        if (io.read(magic_tlg_0.size()) == magic_tlg_0)
+            return 0;
 
-        file.io.seek(pos);
-        if (file.io.read(magic_tlg_0.size()) ==  magic_tlg_0)
-            return decode_tlg_0(file);
+        io.seek(pos);
+        if (io.read(magic_tlg_5.size()) == magic_tlg_5)
+            return 5;
 
-        file.io.seek(pos);
-        if (file.io.read(magic_tlg_5.size()) ==  magic_tlg_5)
-            return decode_tlg_5(file);
+        io.seek(pos);
+        if (io.read(magic_tlg_6.size()) == magic_tlg_6)
+            return 6;
 
-        file.io.seek(pos);
-        if (file.io.read(magic_tlg_6.size()) ==  magic_tlg_6)
-            return decode_tlg_6(file);
-
-        throw std::runtime_error("Not a TLG image");
+        return -1;
     }
+
+    std::unique_ptr<File> decode(int version, File &file)
+    {
+        switch (version)
+        {
+            case 0:
+                return decode_tlg_0(file);
+
+            case 5:
+                return decode_tlg_5(file);
+
+            case 6:
+                return decode_tlg_6(file);
+        }
+        throw std::runtime_error("Unknown TLG version");
+    }
+}
+
+bool TlgConverter::is_recognized_internal(File &file) const
+{
+    return guess_version(file.io) >= 0;
 }
 
 std::unique_ptr<File> TlgConverter::decode_internal(File &file) const
 {
-    return guess_version_and_decode(file);
+    int version = guess_version(file.io);
+    return ::decode(version, file);
 }

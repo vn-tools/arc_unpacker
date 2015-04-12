@@ -20,11 +20,8 @@ namespace
     const std::string magic_image10("abimage10\0\0\0\0\0\0\0", 16);
     const std::string magic_sound10("absound10\0\0\0\0\0\0\0", 16);
 
-    int get_version(IO &arc_io)
+    int guess_version(IO &arc_io)
     {
-        if (arc_io.size() < 16)
-            return 0;
-
         std::string magic = arc_io.read(16);
         if (magic == magic10)
             return 10;
@@ -32,7 +29,7 @@ namespace
             return 11;
         if (magic == magic12)
             return 12;
-        return 0;
+        return -1;
     }
 
     std::unique_ptr<File> read_file(IO &arc_io)
@@ -70,12 +67,14 @@ namespace
     }
 }
 
-void Abmp10Archive::unpack_internal(
-    File &arc_file, FileSaver &file_saver) const
+bool Abmp10Archive::is_recognized_internal(File &arc_file) const
 {
-    int version = get_version(arc_file.io);
-    if (!version)
-        throw std::runtime_error("Not an ABMP10 container");
+    return guess_version(arc_file.io) >= 0;
+}
+
+void Abmp10Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
+{
+    int version = guess_version(arc_file.io);
 
     while (arc_file.io.tell() < arc_file.io.size())
     {

@@ -46,7 +46,7 @@ namespace
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 
-    int get_version(IO &arc_io)
+    int guess_version(IO &arc_io)
     {
         int version = 1;
         for (auto &magic : {magic1, magic2, magic3})
@@ -56,7 +56,7 @@ namespace
                 return version;
             ++ version;
         }
-        return 0;
+        return -1;
     }
 
     namespace v3
@@ -520,12 +520,14 @@ void PackArchive::parse_cli_options(const ArgParser &arg_parser)
     Archive::parse_cli_options(arg_parser);
 }
 
+bool PackArchive::is_recognized_internal(File &arc_file) const
+{
+    return guess_version(arc_file.io) >= 0;
+}
+
 void PackArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    size_t version = get_version(arc_file.io);
-    if (!version)
-        throw std::runtime_error("Not a PAC archive");
-
+    size_t version = guess_version(arc_file.io);
     if (version == 1 || version == 2)
         throw std::runtime_error("Version 1 and 2 are not supported.");
 

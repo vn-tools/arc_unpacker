@@ -16,11 +16,16 @@ namespace
     const std::string magic("bw  ", 4);
 }
 
+bool SoundConverter::is_recognized_internal(File &file) const
+{
+    file.io.skip(4);
+    return file.io.read(magic.size()) == magic;
+}
+
 std::unique_ptr<File> SoundConverter::decode_internal(File &file) const
 {
     size_t header_size = file.io.read_u32_le();
-    if (file.io.read(magic.length()) != magic)
-        throw std::runtime_error("Not a BGI sound");
+    file.io.skip(magic.size());
 
     uint32_t file_size = file.io.read_u32_le();
     file.io.seek(header_size);

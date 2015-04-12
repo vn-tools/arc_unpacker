@@ -28,11 +28,15 @@ public:
     virtual ~Transformer();
 
     bool try_unpack(File &, FileSaver &) const;
+    bool is_recognized(File &) const;
 
     virtual void add_cli_help(ArgParser &) const = 0;
     virtual void parse_cli_options(const ArgParser &) = 0;
     virtual FileNamingStrategy get_file_naming_strategy() const = 0;
     virtual void unpack(File &, FileSaver &) const = 0;
+
+protected:
+    virtual bool is_recognized_internal(File &) const = 0;
 };
 
 #endif

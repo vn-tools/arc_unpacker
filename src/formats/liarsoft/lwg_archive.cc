@@ -73,10 +73,14 @@ LwgArchive::~LwgArchive()
 {
 }
 
+bool LwgArchive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.io.read(magic.size()) == magic;
+}
+
 void LwgArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (arc_file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not an LWG archive");
+    arc_file.io.skip(magic.size());
     size_t image_width = arc_file.io.read_u32_le();
     size_t image_height = arc_file.io.read_u32_le();
 

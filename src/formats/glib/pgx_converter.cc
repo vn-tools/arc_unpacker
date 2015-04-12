@@ -19,10 +19,14 @@ namespace
     const std::string magic("PGX\x00", 4);
 }
 
+bool PgxConverter::is_recognized_internal(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
+}
+
 std::unique_ptr<File> PgxConverter::decode_internal(File &file) const
 {
-    if (file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a PGX image");
+    file.io.skip(magic.size());
 
     file.io.skip(4);
     size_t image_width = file.io.read_u32_le();

@@ -19,10 +19,14 @@ namespace
     const std::string magic("XYZ1", 4);
 }
 
+bool XyzConverter::is_recognized_internal(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
+}
+
 std::unique_ptr<File> XyzConverter::decode_internal(File &file) const
 {
-    if (file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not an XYZ image");
+    file.io.skip(magic.size());
 
     uint16_t width = file.io.read_u16_le();
     uint16_t height = file.io.read_u16_le();

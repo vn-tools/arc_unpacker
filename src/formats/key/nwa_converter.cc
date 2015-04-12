@@ -71,6 +71,11 @@ namespace
     }
 }
 
+bool NwaConverter::is_recognized_internal(File &file) const
+{
+    return file.has_extension("nwa");
+}
+
 std::unique_ptr<File> NwaConverter::decode_internal(File &file) const
 {
     NwaHeader header;

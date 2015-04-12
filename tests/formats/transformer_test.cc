@@ -7,22 +7,23 @@ typedef boost::filesystem::path path;
 
 namespace
 {
-    std::string ext(std::string name)
-    {
-        return boost::filesystem::path(name).extension().string();
-    }
-
     class TestConverter : public Converter
     {
     public:
-        std::function<void(File&)> callback;
+        std::function<void(File&)> recognition_callback;
+        std::function<void(File&)> conversion_callback;
     protected:
-        std::unique_ptr<File> decode_internal(File &file) const
+        bool is_recognized_internal(File &file) const override
         {
-            if (callback != nullptr)
-                callback(file);
-            if (ext(file.name) != ".image")
-                throw std::runtime_error("Not an image");
+            if (recognition_callback != nullptr)
+                recognition_callback(file);
+            return file.has_extension("image");
+        }
+
+        std::unique_ptr<File> decode_internal(File &file) const override
+        {
+            if (conversion_callback != nullptr)
+                conversion_callback(file);
             std::unique_ptr<File> output_file(new File);
             output_file->io.write("image");
             output_file->name = file.name;
@@ -42,11 +43,14 @@ namespace
             add_transformer(this);
         }
 
-        void unpack_internal(File &arc_file, FileSaver &file_saver) const
+        bool is_recognized_internal(File &arc_file) const override
         {
-            if (ext(arc_file.name) != ".archive")
-                throw std::runtime_error("Not an archive");
+            return arc_file.has_extension("archive");
+        }
 
+        void unpack_internal(
+            File &arc_file, FileSaver &file_saver) const override
+        {
             while (!arc_file.io.eof())
             {
                 std::unique_ptr<File> output_file(new File);
@@ -65,7 +69,13 @@ namespace
         {
         }
 
-        void unpack_internal(File &arc_file, FileSaver &file_saver) const
+        bool is_recognized_internal(File &arc_file) const override
+        {
+            return true;
+        }
+
+        void unpack_internal(
+            File &arc_file, FileSaver &file_saver) const override
         {
             auto dir = boost::filesystem::path(arc_file.name).parent_path();
             for (boost::filesystem::directory_iterator it(dir);
@@ -147,19 +157,27 @@ void test_converter_receives_full_path()
     dummy_file.io.seek(pos - 4);
     dummy_file.io.write_u32_le(sub_archive_size);
 
-    std::vector<path> names_passed_to_converter;
-    test_archive.test_converter.callback = [&](File &file)
+    std::vector<path> names_for_recognition;
+    std::vector<path> names_for_conversion;
+    test_archive.test_converter.recognition_callback = [&](File &file)
     {
-        names_passed_to_converter.push_back(path(file.name));
+        names_for_recognition.push_back(path(file.name));
+    };
+    test_archive.test_converter.conversion_callback = [&](File &file)
+    {
+        names_for_conversion.push_back(path(file.name));
     };
     unpack(dummy_file, test_archive);
 
-    eassert(names_passed_to_converter.size() == 4);
-    eassert(names_passed_to_converter[0] == path("deeply/nested/test.archive"));
-    eassert(names_passed_to_converter[1] == path("further/nested/test.image"));
-    eassert(names_passed_to_converter[2] == path("further/nested/test.png"));
-    eassert(names_passed_to_converter[3]
+    eassert(names_for_recognition.size() == 4);
+    eassert(names_for_recognition[0] == path("deeply/nested/test.archive"));
+    eassert(names_for_recognition[1] == path("further/nested/test.image"));
+    eassert(names_for_recognition[2] == path("further/nested/test.png"));
+    eassert(names_for_recognition[3]
         == path("deeply/nested/test.archive/further/nested/test.png"));
+
+    eassert(names_for_conversion.size() == 1);
+    eassert(names_for_conversion[0] == path("further/nested/test.image"));
 }
 
 void test_nested_archive()

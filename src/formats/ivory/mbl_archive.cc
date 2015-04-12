@@ -60,8 +60,6 @@ namespace
 
         size_t offset = arc_io.read_u32_le();
         size_t size = arc_io.read_u32_le();
-        if (offset + size > arc_io.size())
-            throw std::runtime_error("Bad offset to file");
 
         old_pos = arc_io.tell();
         arc_io.seek(offset);
@@ -86,12 +84,14 @@ MblArchive::~MblArchive()
 {
 }
 
+bool MblArchive::is_recognized_internal(File &arc_file) const
+{
+    return get_version(arc_file.io) != -1;
+}
+
 void MblArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     int version = get_version(arc_file.io);
-    if (version == -1)
-        throw std::runtime_error("Not a MBL archive");
-
     uint32_t file_count = arc_file.io.read_u32_le();
     uint32_t name_length = version == 2 ? arc_file.io.read_u32_le() : 16;
 

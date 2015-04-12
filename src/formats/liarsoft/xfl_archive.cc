@@ -72,10 +72,14 @@ XflArchive::~XflArchive()
 {
 }
 
+bool XflArchive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.io.read(magic.size()) == magic;
+}
+
 void XflArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (arc_file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not an XFL archive");
+    arc_file.io.skip(magic.size());
 
     Table table = read_table(arc_file.io);
     for (auto &table_entry : table)

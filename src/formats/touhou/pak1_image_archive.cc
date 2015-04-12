@@ -82,12 +82,14 @@ namespace
     }
 }
 
+bool Pak1ImageArchive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.has_extension("dat");
+}
+
 void Pak1ImageArchive::unpack_internal(
     File &arc_file, FileSaver &file_saver) const
 {
-    if (arc_file.name.find("dat") == std::string::npos)
-        throw std::runtime_error("Not a PAK1 image archive");
-
     auto palette_count = arc_file.io.read_u8();
     std::vector<Palette> palettes;
     for (size_t p = 0; p < palette_count; p ++)

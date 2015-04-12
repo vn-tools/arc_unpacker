@@ -296,10 +296,14 @@ namespace
     }
 }
 
+bool DdsConverter::is_recognized_internal(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
+}
+
 std::unique_ptr<File> DdsConverter::decode_internal(File &file) const
 {
-    if (file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a DDS image");
+    file.io.skip(magic.size());
 
     auto header = read_header(file.io);
     if (header->pixel_format.four_cc == magic_dx10)

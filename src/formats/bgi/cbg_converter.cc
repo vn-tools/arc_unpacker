@@ -257,6 +257,14 @@ namespace
     }
 }
 
+bool CbgConverter::is_recognized_internal(File &file) const
+{
+    if (file.io.read(bmp_magic.size()) == bmp_magic)
+        return true;
+    file.io.seek(0);
+    return file.io.read(magic.size()) == magic;
+}
+
 std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
 {
     if (file.io.read(bmp_magic.size()) == bmp_magic)

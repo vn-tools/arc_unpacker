@@ -30,11 +30,13 @@ namespace
     }
 }
 
+bool Abmp7Archive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.io.read(magic.size()) == magic;
+}
+
 void Abmp7Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (arc_file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not an ABMP7 container");
-
     arc_file.io.seek(12);
     arc_file.io.skip(arc_file.io.read_u32_le());
 

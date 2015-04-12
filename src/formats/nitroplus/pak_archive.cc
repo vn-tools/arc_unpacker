@@ -53,10 +53,14 @@ namespace
     }
 }
 
+bool PakArchive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.io.read(magic.size()) == magic;
+}
+
 void PakArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (arc_file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a PAK archive");
+    arc_file.io.skip(magic.size());
 
     uint32_t file_count = arc_file.io.read_u32_le();
     uint32_t table_size_original = arc_file.io.read_u32_le();

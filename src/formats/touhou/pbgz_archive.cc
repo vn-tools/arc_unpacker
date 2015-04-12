@@ -192,11 +192,14 @@ PbgzArchive::~PbgzArchive()
 {
 }
 
+bool PbgzArchive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.io.read(magic.size()) == magic;
+}
+
 void PbgzArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (arc_file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a PBGZ archive");
-
+    arc_file.io.skip(magic.size());
     auto header = read_header(arc_file.io);
     auto table = read_table(arc_file.io, *header);
     int encryption_version = detect_encryption_version(arc_file.io, table);

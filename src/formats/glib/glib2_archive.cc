@@ -14,6 +14,9 @@ using namespace Formats::Glib;
 
 namespace
 {
+    const uint32_t table_decoder = 0x8465b49b;
+    const size_t header_size = 0x5c;
+
     const size_t decoder_table_size = 900;
     const uint16_t decoder_table[decoder_table_size] =
     {
@@ -219,9 +222,6 @@ namespace
 
     std::unique_ptr<Header> read_header(IO &arc_io)
     {
-        const uint32_t table_decoder = 0x8465b49b;
-        const size_t header_size = 0x5c;
-
         std::unique_ptr<Header> header(new Header);
         std::unique_ptr<char[]> buffer(new char[header_size]);
         arc_io.read(buffer.get(), header_size);
@@ -366,6 +366,19 @@ Glib2Archive::Glib2Archive() : internals(new Internals)
 
 Glib2Archive::~Glib2Archive()
 {
+}
+
+bool Glib2Archive::is_recognized_internal(File &arc_file) const
+{
+    BufferedIO buffer(arc_file.io, header_size);
+    decode(table_decoder, buffer.buffer(), header_size);
+
+    buffer.seek(0);
+    if (buffer.read(magic_21.size()) == magic_21)
+        return true;
+
+    buffer.seek(0);
+    return buffer.read(magic_20.size()) == magic_20;
 }
 
 void Glib2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const

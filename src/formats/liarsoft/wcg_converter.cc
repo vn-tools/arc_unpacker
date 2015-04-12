@@ -117,14 +117,23 @@ namespace
     }
 }
 
-std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
+bool WcgConverter::is_recognized_internal(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a WCG image");
+        return false;
 
     int version = file.io.read_u16_le();
     if (((version & 0xf) != 1) || ((version & 0x1c0) != 64))
-        throw std::runtime_error("Not a WCG image");
+        return false;
+
+    return true;
+}
+
+std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
+{
+    file.io.skip(magic.size());
+
+    file.io.skip(2);
     if (file.io.read_u16_le() != 0x20)
         throw std::runtime_error("Unknown WCG version");
     file.io.skip(2);

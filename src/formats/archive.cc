@@ -2,6 +2,9 @@
 
 void Archive::unpack(File &file, FileSaver &file_saver) const
 {
+    if (!is_recognized(file))
+        throw std::runtime_error("File is not recognized");
+
     //every file should be passed through registered transformers
     FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> saved_file)
     {

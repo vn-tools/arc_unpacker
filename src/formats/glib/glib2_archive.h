@@ -12,6 +12,7 @@ namespace Formats
             Glib2Archive();
             ~Glib2Archive();
         protected:
+            bool is_recognized_internal(File &) const override;
             void unpack_internal(File &, FileSaver &) const override;
         private:
             struct Internals;

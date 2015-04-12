@@ -73,11 +73,14 @@ YkcArchive::~YkcArchive()
 {
 }
 
+bool YkcArchive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.io.read(magic.size()) == magic;
+}
+
 void YkcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (arc_file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a YKC archive");
-
+    arc_file.io.skip(magic.size());
     arc_file.io.skip(2);
     int version = arc_file.io.read_u32_le();
     arc_file.io.skip(4);

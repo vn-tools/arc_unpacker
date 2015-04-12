@@ -441,12 +441,15 @@ namespace
     }
 }
 
+bool ExeArchive::is_recognized_internal(File &arc_file) const
+{
+    DosHeader dos_header(arc_file.io);
+    return dos_header.magic == "MZ";
+}
+
 void ExeArchive::unpack_internal(File &file, FileSaver &file_saver) const
 {
     DosHeader dos_header(file.io);
-    if (dos_header.magic != "MZ")
-        throw  std::runtime_error("Not an EXE executable");
-
     file.io.seek(dos_header.e_lfanew);
     ImageNtHeader nt_header(file.io);
 

@@ -105,16 +105,21 @@ namespace
     }
 }
 
+bool SpbConverter::is_recognized_internal(File &file) const
+{
+    uint16_t width = file.io.read_u16_be();
+    uint16_t height = file.io.read_u16_be();
+    if (height == 0 || width == 0)
+        return false;
+    if (static_cast<uint32_t>(width * height) > 0x0fffffff)
+        return false;
+    return true;
+}
+
 std::unique_ptr<File> SpbConverter::decode_internal(File &file) const
 {
     uint16_t width = file.io.read_u16_be();
     uint16_t height = file.io.read_u16_be();
-
-    if (height == 0 || width == 0)
-        throw std::runtime_error("Not a SPB image");
-
-    if (static_cast<uint32_t>(width * height) > 0x0fffffff)
-        throw std::runtime_error("Image is too big");
 
     size_t uncompressed_size = file.io.size() - file.io.tell();
     std::unique_ptr<char> uncompressed(new char[uncompressed_size]);

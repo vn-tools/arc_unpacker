@@ -31,12 +31,15 @@ namespace
     }
 }
 
+bool SarArchive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.has_extension("sar");
+}
+
 void SarArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     uint16_t file_count = arc_file.io.read_u16_be();
     uint32_t offset_to_files = arc_file.io.read_u32_be();
-    if (offset_to_files > arc_file.io.size())
-        throw std::runtime_error("Bad offset to files");
 
     std::vector<std::unique_ptr<TableEntry>> table;
     table.reserve(file_count);
@@ -46,8 +49,6 @@ void SarArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         entry->name = arc_file.io.read_until_zero();
         entry->offset = arc_file.io.read_u32_be() + offset_to_files;
         entry->size = arc_file.io.read_u32_be();
-        if (entry->offset + entry->size > arc_file.io.size())
-            throw std::runtime_error("Bad offset to file");
         table.push_back(std::move(entry));
     }
 

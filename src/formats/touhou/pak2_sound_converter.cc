@@ -13,11 +13,13 @@
 #include "util/sound.h"
 using namespace Formats::Touhou;
 
+bool Pak2SoundConverter::is_recognized_internal(File &file) const
+{
+    return file.has_extension("cv3");
+}
+
 std::unique_ptr<File> Pak2SoundConverter::decode_internal(File &file) const
 {
-    if (file.name.find("cv3") == std::string::npos)
-        throw std::runtime_error("Not a CV3 sound file");
-
     auto format = file.io.read_u16_le();
     auto channel_count = file.io.read_u16_le();
     auto sample_rate = file.io.read_u32_le();

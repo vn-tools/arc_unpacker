@@ -96,10 +96,14 @@ Pbg4Archive::~Pbg4Archive()
 {
 }
 
+bool Pbg4Archive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.io.read(magic.size()) == magic;
+}
+
 void Pbg4Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (arc_file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a PBG4 archive");
+    arc_file.io.skip(magic.size());
 
     // works much faster when the whole archive resides in memory
     arc_file.io.seek(0);

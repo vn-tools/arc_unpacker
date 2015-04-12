@@ -35,8 +35,6 @@ namespace
     Table read_table(IO &arc_io)
     {
         size_t file_count = arc_io.read_u32_le() ^ encryption_key;
-        if (file_count > arc_io.size() || file_count * 68 > arc_io.size())
-            throw std::runtime_error("Not a P archive");
         Table table;
         for (size_t i = 0; i < file_count; i ++)
         {
@@ -44,8 +42,6 @@ namespace
             table_entry->name = read_file_name(arc_io, i);
             table_entry->offset = arc_io.read_u32_le();
             table_entry->size = arc_io.read_u32_le() ^ encryption_key;
-            if (table_entry->offset + table_entry->size > arc_io.size())
-                throw std::runtime_error("Bad offset to file");
             table.push_back(std::move(table_entry));
         }
         return table;
@@ -85,13 +81,28 @@ PArchive::~PArchive()
 {
 }
 
+bool PArchive::is_recognized_internal(File &arc_file) const
+{
+    uint32_t encrypted = arc_file.io.read_u32_le();
+    size_t file_count = arc_file.io.read_u32_le() ^ encryption_key;
+    if (encrypted != 0 && encrypted != 1)
+        return false;
+    if (file_count > arc_file.io.size() || file_count * 68 > arc_file.io.size())
+        return false;
+    for (size_t i = 0; i < file_count; i ++)
+    {
+        read_file_name(arc_file.io, i);
+        size_t offset = arc_file.io.read_u32_le();
+        size_t size = arc_file.io.read_u32_le() ^ encryption_key;
+        if (offset + size > arc_file.io.size())
+            return false;
+    }
+    return true;
+}
+
 void PArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    uint32_t magic = arc_file.io.read_u32_le();
-    if (magic != 0 && magic != 1)
-        throw std::runtime_error("Not a P archive");
-
-    bool encrypted = magic == 1;
+    bool encrypted = arc_file.io.read_u32_le() == 1;
     Table table = read_table(arc_file.io);
     for (auto &table_entry : table)
         file_saver.save(read_file(arc_file.io, *table_entry, encrypted));

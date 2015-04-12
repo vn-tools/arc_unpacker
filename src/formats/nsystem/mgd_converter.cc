@@ -333,10 +333,14 @@ namespace
     }
 }
 
+bool MgdConverter::is_recognized_internal(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
+}
+
 std::unique_ptr<File> MgdConverter::decode_internal(File &file) const
 {
-    if (file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a MGD graphic file");
+    file.io.skip(magic.size());
 
     uint16_t data_offset = file.io.read_u16_le();
     uint16_t format = file.io.read_u16_le();

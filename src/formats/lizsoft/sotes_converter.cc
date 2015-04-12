@@ -61,6 +61,21 @@ namespace
     }
 }
 
+bool SotesConverter::is_recognized_internal(File &file) const
+{
+    uint32_t weird_data1[8];
+    uint32_t weird_data2[14];
+    file.io.read(weird_data1, 8 * 4);
+    file.io.skip(256 * 4);
+    file.io.read(weird_data2, 14 * 4);
+
+    size_t pixel_data_offset = weird_data2[12] - weird_data2[10];
+    if (pixel_data_offset >= file.io.size())
+        return false;
+
+    return true;
+}
+
 std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
 {
     if (file.io.size() < 1112)
@@ -74,8 +89,6 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
     file.io.read(weird_data2, 14 * 4);
 
     size_t pixel_data_offset = weird_data2[12] - weird_data2[10];
-    if (pixel_data_offset >= file.io.size())
-        throw std::runtime_error("Not a SOTES image");
     file.io.skip(pixel_data_offset);
 
     size_t raw_data_size = file.io.size() - file.io.tell();

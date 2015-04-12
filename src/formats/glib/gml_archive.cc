@@ -94,10 +94,14 @@ GmlArchive::~GmlArchive()
 {
 }
 
+bool GmlArchive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.io.read(magic.size()) == magic;
+}
+
 void GmlArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (arc_file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a GML archive");
+    arc_file.io.skip(magic.size());
 
     uint32_t file_data_start = arc_file.io.read_u32_le();
     uint32_t header_size_original = arc_file.io.read_u32_le();

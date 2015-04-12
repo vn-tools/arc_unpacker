@@ -180,17 +180,19 @@ FileNamingStrategy AnmArchive::get_file_naming_strategy() const
     return FileNamingStrategy::Root;
 }
 
-void AnmArchive::unpack_internal(File &file, FileSaver &file_saver) const
+bool AnmArchive::is_recognized_internal(File &arc_file) const
 {
-    if (file.name.find("anm") == std::string::npos)
-        throw std::runtime_error("Not an ANM archive");
+    return arc_file.has_extension("anm");
+}
 
-    Table table = read_table(file.io);
+void AnmArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
+{
+    Table table = read_table(arc_file.io);
     for (auto &table_entry : table)
     {
         // Ignore both the scripts and sprites and extract raw texture data.
-        auto subfile = read_texture(file.io, *table_entry);
-        if (subfile != nullptr)
-            file_saver.save(std::move(subfile));
+        auto file = read_texture(arc_file.io, *table_entry);
+        if (file != nullptr)
+            file_saver.save(std::move(file));
     }
 }

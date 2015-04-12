@@ -182,7 +182,7 @@ namespace
     }
 
     std::unique_ptr<File> read_file(
-        IO &arc_io, const TableEntry &table_entry, size_t encryption_version)
+        IO &arc_io, const TableEntry &table_entry, int encryption_version)
     {
         std::unique_ptr<File> file(new File);
         file->name = table_entry.name;
@@ -213,7 +213,7 @@ namespace
         return file;
     }
 
-    size_t detect_encryption_version(File &arc_file, const Table &table)
+    int detect_encryption_version(File &arc_file, const Table &table)
     {
         if (arc_file.name.find("th095.") != std::string::npos) return 0;
         if (arc_file.name.find("th10.") != std::string::npos) return 0;
@@ -224,7 +224,7 @@ namespace
         if (arc_file.name.find("th13.") != std::string::npos) return 2;
         if (arc_file.name.find("th14.") != std::string::npos) return 3;
         if (arc_file.name.find("th143.") != std::string::npos) return 3;
-        throw std::runtime_error("Can't guess encryption version");
+        return -1;
     }
 }
 
@@ -242,11 +242,22 @@ Tha1Archive::~Tha1Archive()
 {
 }
 
+bool Tha1Archive::is_recognized_internal(File &arc_file) const
+{
+    if (!arc_file.has_extension("dat"))
+        return false;
+    auto header = read_header(arc_file.io);
+    auto table = read_table(arc_file.io, *header);
+    return detect_encryption_version(arc_file, table) >= 0;
+}
+
 void Tha1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     auto header = read_header(arc_file.io);
     auto table = read_table(arc_file.io, *header);
     auto encryption_version = detect_encryption_version(arc_file, table);
+    if (encryption_version == -1)
+        throw std::runtime_error("Unknown encryption version");
 
     for (auto &table_entry : table)
     {

@@ -90,10 +90,14 @@ namespace
     }
 }
 
+bool YkgConverter::is_recognized_internal(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
+}
+
 std::unique_ptr<File> YkgConverter::decode_internal(File &file) const
 {
-    if (file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a YKG image");
+    file.io.skip(magic.size());
 
     std::unique_ptr<Header> header = read_header(file.io);
     if (header->encrypted)
