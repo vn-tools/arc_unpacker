@@ -107,6 +107,8 @@ namespace
 
 bool SpbConverter::is_recognized_internal(File &file) const
 {
+    if (!file.has_extension("bmp"))
+        return false;
     uint16_t width = file.io.read_u16_be();
     uint16_t height = file.io.read_u16_be();
     if (height == 0 || width == 0)
