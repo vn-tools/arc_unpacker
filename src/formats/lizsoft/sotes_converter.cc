@@ -68,6 +68,9 @@ bool SotesConverter::is_recognized_internal(File &file) const
     file.io.read(weird_data1, 8 * 4);
     file.io.skip(256 * 4);
     file.io.read(weird_data2, 14 * 4);
+    file.io.skip(8);
+    if (file.io.read(2) != "BM")
+        return false;
 
     size_t pixel_data_offset = weird_data2[12] - weird_data2[10];
     if (pixel_data_offset >= file.io.size())
