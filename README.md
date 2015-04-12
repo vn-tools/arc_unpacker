@@ -17,8 +17,8 @@ For build instructions, see below.
 Usage
 -----
 
-Drag'n'drop the archive or file onto `arc_unpacker.exe`. It will guess the
-format and unpack it for you.
+Drag'n'drop the archive or file onto `arc_unpacker`. It will guess the format
+and unpack it for you.
 
 Caveats:
 
