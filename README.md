@@ -87,8 +87,7 @@ Features           | Game                                | CLI invocation
 ![][F]![][F]![][N] | Touhou 13.5                         | `--fmt=tfpk`
 ![][F]![][F]![][P] | Touhou 14                           | `--fmt=tha1`
 ![][F]![][F]![][P] | Touhou 14.3                         | `--fmt=tha1`
-![][F]![][F]![][F] | Tsukihime                           | `--fmt=nsa`
-![][F]![][F]![][F] | Tsukihime                           | `--fmt=sar`
+![][F]![][F]![][F] | Tsukihime                           | `--fmt=nsa`, `--fmt=sar`
 ![][F]![][F]![][F] | Umineko No Naku Koro Ni             | `--fmt=nsa`
 ![][F]![][F]![][F] | Wanko to Kurasou                    | `--fmt=mbl`
 ![][F]![][F]![][F] | Watashi no Puni Puni                | `--fmt=gml`
