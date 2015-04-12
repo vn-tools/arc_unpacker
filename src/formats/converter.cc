@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include "formats/converter.h"
 
-void Converter::unpack_internal(File &input_file, FileSaver &file_saver) const
+void Converter::unpack(File &input_file, FileSaver &file_saver) const
 {
     auto output_file = decode(input_file);
     output_file->name

@@ -28,18 +28,11 @@ public:
     virtual ~Transformer();
 
     bool try_unpack(File &, FileSaver &) const;
-    void unpack(File &, FileSaver &) const;
 
-    virtual void add_cli_help(ArgParser &) const;
-    virtual void parse_cli_options(const ArgParser &);
+    virtual void add_cli_help(ArgParser &) const = 0;
+    virtual void parse_cli_options(const ArgParser &) = 0;
     virtual FileNamingStrategy get_file_naming_strategy() const = 0;
-
-protected:
-    virtual void unpack_internal(File &, FileSaver &) const = 0;
-    void add_transformer(Transformer *transformer);
-
-private:
-    std::vector<Transformer*> transformers;
+    virtual void unpack(File &, FileSaver &) const = 0;
 };
 
 #endif

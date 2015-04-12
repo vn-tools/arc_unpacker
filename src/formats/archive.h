@@ -10,8 +10,13 @@ public:
     virtual FileNamingStrategy get_file_naming_strategy() const override;
     virtual ~Archive();
 
+    virtual void unpack(File &file, FileSaver &file_saver) const override;
 protected:
-    void unpack_internal(File &, FileSaver &) const override = 0;
+    virtual void unpack_internal(File &, FileSaver &) const = 0;
+    void add_transformer(Transformer *transformer);
+
+private:
+    std::vector<Transformer*> transformers;
 };
 
 #endif
