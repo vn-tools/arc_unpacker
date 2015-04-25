@@ -83,7 +83,7 @@ Features           | Game                                | CLI invocation
 ![][F]![][F]![][P] | Touhou 12.5                         | `--fmt=tha1`
 ![][F]![][F]![][P] | Touhou 12.8                         | `--fmt=tha1`
 ![][F]![][F]![][P] | Touhou 13                           | `--fmt=tha1`
-![][F]![][F]![][N] | Touhou 13.5                         | `--fmt=tfpk`
+![][F]![][F]![][F] | Touhou 13.5                         | `--fmt=tfpk`
 ![][F]![][F]![][P] | Touhou 14                           | `--fmt=tha1`
 ![][F]![][F]![][P] | Touhou 14.3                         | `--fmt=tha1`
 ![][F]![][F]![][F] | Tsukihime                           | `--fmt=nsa`, `--fmt=sar`

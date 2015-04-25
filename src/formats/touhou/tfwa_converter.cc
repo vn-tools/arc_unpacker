@@ -1,24 +1,30 @@
-// PAK2 sound file
+// TFWA sound file
 //
 // Company:   Team Shanghai Alice
 // Engine:    -
-// Extension: .cv3
+// Extension: .wav
 //
 // Known games:
-// - Touhou 10.5 - Scarlet Weather Rhapsody
-// - Touhou 12.3 - Unthinkable Natural Law
+// - Touhou 13.5 - Hopeless Masquerade
 
-#include "formats/touhou/pak2_sound_converter.h"
+#include "formats/touhou/tfwa_converter.h"
 #include "util/sound.h"
 using namespace Formats::Touhou;
 
-bool Pak2SoundConverter::is_recognized_internal(File &file) const
+namespace
 {
-    return file.has_extension("cv3");
+    const std::string magic("TFWA\x00", 5);
 }
 
-std::unique_ptr<File> Pak2SoundConverter::decode_internal(File &file) const
+bool TfwaConverter::is_recognized_internal(File &file) const
 {
+    return file.io.read(magic.size()) == magic;
+}
+
+std::unique_ptr<File> TfwaConverter::decode_internal(File &file) const
+{
+    file.io.skip(magic.size());
+
     auto format = file.io.read_u16_le();
     auto channel_count = file.io.read_u16_le();
     auto sample_rate = file.io.read_u32_le();
