@@ -332,4 +332,3 @@ bool ArcUnpacker::run()
         return result;
     }
 }
-
