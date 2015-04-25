@@ -13,6 +13,7 @@
 // - Touhou 12.8 - Fairy Wars
 // - Touhou 13 - Ten Desires
 // - Touhou 14 - Double Dealing Character
+// - Touhou 14.3 - Impossible Spell Card
 
 #include "formats/touhou/anm_archive.h"
 #include "formats/touhou/crypt.h"
