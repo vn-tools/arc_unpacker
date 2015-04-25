@@ -18,6 +18,8 @@
 // - Touhou 13 - Ten Desires
 // - Touhou 14 - Double Dealing Character
 
+#include <algorithm>
+#include <map>
 #include "formats/touhou/anm_archive.h"
 #include "util/colors.h"
 #include "util/image.h"
@@ -32,6 +34,7 @@ namespace
     {
         size_t width;
         size_t height;
+        size_t x, y;
         size_t format;
         std::string name;
         int version;
@@ -58,7 +61,9 @@ namespace
         table_entry.width = file_io.read_u32_le();
         table_entry.height = file_io.read_u32_le();
         table_entry.format = file_io.read_u32_le();
-        file_io.skip(4);
+        table_entry.x = file_io.read_u16_le();
+        table_entry.y = file_io.read_u16_le();
+        //file_io.skip(4);
 
         size_t name_offset1 = start_offset + file_io.read_u32_le();
         file_io.skip(4);
@@ -86,7 +91,9 @@ namespace
         table_entry.format = file_io.read_u16_le();
         size_t name_offset = start_offset + file_io.read_u32_le();
         table_entry.name = read_name(file_io, name_offset);
-        file_io.skip(2 * 2 + 4);
+        table_entry.x = file_io.read_u16_le();
+        table_entry.y = file_io.read_u16_le();
+        file_io.skip(4);
 
         table_entry.texture_offset = start_offset + file_io.read_u32_le();
         table_entry.has_data = file_io.read_u16_le() > 0;
@@ -120,10 +127,15 @@ namespace
         return table;
     }
 
-    std::unique_ptr<File> read_texture(IO &file_io, TableEntry &table_entry)
+    void write_pixels(
+        IO &file_io,
+        TableEntry &table_entry,
+        uint32_t *pixel_data,
+        size_t pixel_data_width,
+        size_t pixel_data_height)
     {
         if (!table_entry.has_data)
-            return nullptr;
+            return;
 
         file_io.seek(table_entry.texture_offset);
         if (file_io.read(texture_magic.size()) != texture_magic)
@@ -134,13 +146,16 @@ namespace
         size_t height = file_io.read_u16_le();
         size_t data_size = file_io.read_u32_le();
 
-        size_t pixel_data_size = width * height * 4;
-        std::unique_ptr<char[]> pixel_data(new char[pixel_data_size]);
-        uint32_t *pixel_ptr = reinterpret_cast<uint32_t*>(pixel_data.get());
+        uint32_t *guardian = &pixel_data[pixel_data_width * pixel_data_height];
+
         for (size_t y = 0; y < height; y ++)
         {
+            size_t shift = (y + table_entry.y) * pixel_data_width + table_entry.x;
+            uint32_t *pixel_ptr = &pixel_data[shift];
             for (size_t x = 0; x < width; x ++)
             {
+                if (pixel_ptr >= guardian)
+                    return;
                 switch (format)
                 {
                     case 1:
@@ -165,13 +180,43 @@ namespace
                 }
             }
         }
+    }
+
+    std::unique_ptr<File> read_texture(IO &file_io, Table &entries)
+    {
+        size_t width = 0;
+        size_t height = 0;
+        for (auto &entry : entries)
+        {
+            if (!entry->has_data)
+                continue;
+            file_io.peek(entry->texture_offset, [&]()
+            {
+                file_io.skip(texture_magic.size());
+                file_io.skip(2);
+                file_io.skip(2);
+                size_t chunk_width = file_io.read_u16_le();
+                size_t chunk_height = file_io.read_u16_le();
+                width = std::max(width, entry->x + chunk_width);
+                height = std::max(height, entry->y + chunk_height);
+            });
+        }
+        if (!width || !height)
+            return nullptr;
+
+        size_t pixel_data_size = width * height;
+        std::unique_ptr<uint32_t[]> pixel_data(new uint32_t[pixel_data_size]);
+        for (size_t i = 0; i < pixel_data_size; i ++)
+            pixel_data[i] = 0;
+        for (auto &entry : entries)
+            write_pixels(file_io, *entry, pixel_data.get(), width, height);
 
         std::unique_ptr<Image> image = Image::from_pixels(
             width,
             height,
-            std::string(pixel_data.get(), pixel_data_size),
+            std::string(reinterpret_cast<char*>(pixel_data.get()), pixel_data_size * 4),
             PixelFormat::BGRA);
-        return image->create_file(table_entry.name);
+        return image->create_file(entries[0]->name);
     }
 }
 
@@ -188,10 +233,18 @@ bool AnmArchive::is_recognized_internal(File &arc_file) const
 void AnmArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     Table table = read_table(arc_file.io);
-    for (auto &table_entry : table)
+
+    std::map<std::string, Table> table_map;
+    for (auto &entry : table)
+        table_map[entry->name].push_back(std::move(entry));
+
+    for (auto &kv : table_map)
     {
+        auto &name = kv.first;
+        auto &entries = kv.second;
+
         // Ignore both the scripts and sprites and extract raw texture data.
-        auto file = read_texture(arc_file.io, *table_entry);
+        auto file = read_texture(arc_file.io, entries);
         if (file != nullptr)
             file_saver.save(std::move(file));
     }
