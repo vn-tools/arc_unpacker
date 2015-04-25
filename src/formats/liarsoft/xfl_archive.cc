@@ -83,5 +83,9 @@ void XflArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     Table table = read_table(arc_file.io);
     for (auto &table_entry : table)
-        file_saver.save(read_file(arc_file.io, *table_entry));
+    {
+        auto file = read_file(arc_file.io, *table_entry);
+        file->guess_extension();
+        file_saver.save(std::move(file));
+    }
 }
