@@ -55,6 +55,7 @@ Features           | Game                                | CLI invocation
 ![][F]![][F]![][F] | Fate/Stay Night                     | `--fmt=xp3 --plugin=fsn`
 ![][F]![][F]![][F] | Higurashi No Naku Koro Ni           | `--fmt=arc`
 ![][F]![][F]![][F] | Hoshizora e Kakaru Hashi            | `--fmt=ykc`
+![][F]![][N]![][F] | Irotoridori no Sekai                | `--fmt=fvp`
 ![][F]![][F]![][F] | Katawa Shoujo                       | `--fmt=rpa`
 ![][F]![][F]![][F] | Kimihagu                            | `--fmt=pack`
 ![][F]![][F]![][F] | Koiken Otome                        | `--fmt=pack --fkey=... --gameexe=...`

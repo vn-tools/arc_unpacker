@@ -7,6 +7,7 @@
 #include "formats/bgi/sound_converter.h"
 #include "formats/french_bread/ex3_converter.h"
 #include "formats/french_bread/p_archive.h"
+#include "formats/fvp/bin_archive.h"
 #include "formats/glib/glib2_archive.h"
 #include "formats/glib/gml_archive.h"
 #include "formats/glib/pgx_converter.h"
@@ -67,6 +68,7 @@ struct TransformerFactory::Internals
 
 TransformerFactory::TransformerFactory() : internals(new Internals)
 {
+    internals->add("fvp", []() { return new Fvp::BinArchive(); });
     internals->add("gml", []() { return new Glib::GmlArchive(); });
     internals->add("g2", []() { return new Glib::Glib2Archive(); });
     internals->add("th-pak1", []() { return new Touhou::Pak1Archive(); });
