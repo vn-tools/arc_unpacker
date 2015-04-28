@@ -8,9 +8,15 @@ namespace Formats
     {
         class BinArchive final : public Archive
         {
+        public:
+            BinArchive();
+            ~BinArchive();
         protected:
             bool is_recognized_internal(File &) const override;
             void unpack_internal(File &, FileSaver &) const override;
+        private:
+            struct Internals;
+            std::unique_ptr<Internals> internals;
         };
     }
 }

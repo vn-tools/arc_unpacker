@@ -8,6 +8,7 @@
 #include "formats/french_bread/ex3_converter.h"
 #include "formats/french_bread/p_archive.h"
 #include "formats/fvp/bin_archive.h"
+#include "formats/fvp/nvsg_converter.h"
 #include "formats/glib/glib2_archive.h"
 #include "formats/glib/gml_archive.h"
 #include "formats/glib/pgx_converter.h"
@@ -98,6 +99,7 @@ TransformerFactory::TransformerFactory() : internals(new Internals)
     internals->add("sar", []() { return new NScripter::SarArchive(); });
     internals->add("anm", []() { return new Touhou::AnmArchive(); });
 
+    internals->add("nvsg", []() { return new Fvp::NvsgConverter(); });
     internals->add("dds", []() { return new Microsoft::DdsConverter(); });
     internals->add("pgx", []() { return new Glib::PgxConverter(); });
     internals->add("wcg", []() { return new LiarSoft::WcgConverter(); });

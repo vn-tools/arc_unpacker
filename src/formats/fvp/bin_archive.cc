@@ -8,6 +8,7 @@
 // - Irotoridori no Sekai
 
 #include "formats/fvp/bin_archive.h"
+#include "formats/fvp/nvsg_converter.h"
 #include "util/encoding.h"
 using namespace Formats::Fvp;
 
@@ -54,6 +55,20 @@ namespace
         file->name = entry.name;
         return file;
     }
+}
+
+struct BinArchive::Internals
+{
+    NvsgConverter nvsg_converter;
+};
+
+BinArchive::BinArchive() : internals(new Internals)
+{
+    add_transformer(&internals->nvsg_converter);
+}
+
+BinArchive::~BinArchive()
+{
 }
 
 bool BinArchive::is_recognized_internal(File &arc_file) const
