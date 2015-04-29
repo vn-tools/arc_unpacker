@@ -241,6 +241,9 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
         threadapi=win32 \
         install
 
+This will run a minimal required build (thanks to `--with` options), so it
+shouldn't take too long.
+
 #### Compiling `OpenSSL`
 
     # Obtain sources
@@ -257,9 +260,6 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
 
     # Install
     make install
-
-This will run a minimal required build (thanks to `--with` options), so it
-shouldn't take too long.
 
 ---
 
