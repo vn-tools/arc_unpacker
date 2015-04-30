@@ -156,8 +156,7 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
 #### Compiling `zlib`
 
     # Obtain sources
-    wget 'http://zlib.net/zlib-1.2.8.tar.gz'
-    tar xzvf zlib-1.2.8.tar.gz
+    wget 'http://zlib.net/zlib-1.2.8.tar.gz' -O- | tar xzv
     cd zlib-1.2.8/
 
     # Compile
@@ -178,8 +177,7 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
 #### Compiling `libiconv`
 
     # Obtain sources
-    wget 'http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz'
-    tar xzvf libiconv-1.14.tar.gz
+    wget 'http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz' -O- | tar xzv
     cd libiconv-1.14
 
     # Compile
@@ -196,8 +194,7 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
 #### Compiling `libpng`
 
     # Obtain sources
-    wget 'ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.17.tar.gz'
-    tar xzvf libpng-1.6.17.tar.gz
+    wget 'http://sourceforge.net/projects/libpng/files/libpng16/1.6.17/libpng-1.6.17.tar.gz/download' -O- | tar xzv
     cd libpng-1.6.17/
 
     # Compile
@@ -214,9 +211,8 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
 #### Compiling `boost`
 
     # Obtain sources
-    wget 'http://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.zip'
-    unzip boost_1_57_0.zip
-    cd boost_1_57_0
+    wget 'http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.gz' -O- | tar xzv
+    cd boost_1_58_0
 
     # Compile and install
     ./bootstrap.sh --prefix=$MINGW
@@ -247,8 +243,7 @@ shouldn't take too long.
 #### Compiling `OpenSSL`
 
     # Obtain sources
-    wget 'http://openssl.org/source/openssl-1.0.2a.tar.gz'
-    tar zxvf openssl-1.0.2a.tar.gz
+    wget 'http://openssl.org/source/openssl-1.0.2a.tar.gz' -O- | tar xzv
     cd openssl-1.0.2a
 
     # Compile and install
