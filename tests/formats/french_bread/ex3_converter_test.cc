@@ -1,10 +1,10 @@
 #include "formats/french_bread/ex3_converter.h"
 #include "io/file_io.h"
-#include "test_support/eassert.h"
+#include "test_support/catch.hpp"
 #include "util/zlib.h"
 using namespace Formats::FrenchBread;
 
-void test_ex3_decoding()
+TEST_CASE("Decoding EX3 images works")
 {
     Ex3Converter converter;
     const std::string input_path
@@ -21,12 +21,6 @@ void test_ex3_decoding()
     const auto expected_data = zlib_inflate(expected_io.read_until_end());
 
     output_file->io.seek(0);
-    eassert(expected_data.size() == output_file->io.size());
-    eassert(expected_data == output_file->io.read_until_end());
-}
-
-int main(void)
-{
-    test_ex3_decoding();
-    return 0;
+    REQUIRE(expected_data.size() == output_file->io.size());
+    REQUIRE(expected_data == output_file->io.read_until_end());
 }

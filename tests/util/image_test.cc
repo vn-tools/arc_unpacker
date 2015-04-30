@@ -1,36 +1,28 @@
-#include <cstdlib>
 #include "io/file_io.h"
-#include "test_support/eassert.h"
+#include "test_support/catch.hpp"
 #include "util/endian.h"
 #include "util/image.h"
 
-void test_transparent()
+TEST_CASE("Reading transparent images works")
 {
     FileIO io("tests/files/reimu_transparent.png", FileIOMode::Read);
 
     std::unique_ptr<Image> image = Image::from_boxed(io);
-    eassert(image->width() == 641);
-    eassert(image->height() == 720);
+    REQUIRE(image->width() == 641);
+    REQUIRE(image->height() == 720);
 
     uint32_t rgba = image->color_at(200, 100);
-    eassert(rgba == be32toh(0xfe0a17ff));
+    REQUIRE(rgba == be32toh(0xfe0a17ff));
 }
 
-void test_opaque()
+TEST_CASE("Reading opaque images works")
 {
     FileIO io("tests/files/usagi_opaque.png", FileIOMode::Read);
 
     std::unique_ptr<Image> image = Image::from_boxed(io);
-    eassert(image->width() == 640);
-    eassert(image->height() == 480);
+    REQUIRE(image->width() == 640);
+    REQUIRE(image->height() == 480);
 
     uint32_t rgba = image->color_at(200, 100);
-    eassert(rgba = be32toh(0x7c6a34ff));
-}
-
-int main(void)
-{
-    test_transparent();
-    test_opaque();
-    return 0;
+    REQUIRE(rgba == be32toh(0x7c6a34ff));
 }

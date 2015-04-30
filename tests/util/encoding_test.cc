@@ -1,8 +1,8 @@
+#include "test_support/catch.hpp"
 #include "util/encoding.h"
-#include "test_support/eassert.h"
 
 // sjis の"あいうえおかきくけこさしすせそたちつてと"
-const std::string sjis(
+const static std::string sjis(
     "\x82\xA0\x82\xA2\x82\xA4\x82\xA6\x82\xA8"
     "\x82\xA9\x82\xAB\x82\xAD\x82\xAF\x82\xB1"
     "\x82\xB3\x82\xB5\x82\xB7\x82\xB9\x82\xBB"
@@ -11,7 +11,7 @@ const std::string sjis(
     41);
 
 // utf8 の"あいうえおかきくけこさしすせそたちつてと"
-const std::string utf8(
+const static std::string utf8(
     "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3"
     "\x81\x88\xE3\x81\x8A\xE3\x81\x8B\xE3\x81"
     "\x8D\xE3\x81\x8F\xE3\x81\x91\xE3\x81\x93"
@@ -21,19 +21,12 @@ const std::string utf8(
     "\x00",
     61);
 
-void test_sjis_to_utf8()
+TEST_CASE("Converting SJIS to UTF8 works")
 {
-    eassert(convert_encoding(sjis, "sjis", "utf-8") == utf8);
+    REQUIRE(convert_encoding(sjis, "sjis", "utf-8") == utf8);
 }
 
-void test_utf8_to_sjis()
+TEST_CASE("Converting UTF8 to SJIS works")
 {
-    eassert(convert_encoding(utf8, "utf-8", "sjis") == sjis);
-}
-
-int main(void)
-{
-    test_sjis_to_utf8();
-    test_utf8_to_sjis();
-    return 0;
+    REQUIRE(convert_encoding(utf8, "utf-8", "sjis") == sjis);
 }

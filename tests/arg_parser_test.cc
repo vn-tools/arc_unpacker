@@ -1,123 +1,125 @@
 #include "arg_parser.h"
-#include "test_support/eassert.h"
+#include "test_support/catch.hpp"
 
-void test_switch_missing()
+TEST_CASE("Missing switches don't throw exceptions")
 {
     ArgParser ap;
-    eassert(ap.get_switch("-s") == "");
-    eassert(ap.get_switch("--long") == "");
-    eassert(!ap.has_switch("-s"));
-    eassert(!ap.has_switch("--long"));
+    REQUIRE(ap.get_switch("-s") == "");
+    REQUIRE(ap.get_switch("--long") == "");
+    REQUIRE(!ap.has_switch("-s"));
+    REQUIRE(!ap.has_switch("--long"));
 }
 
-void test_switch_is_not_a_flag()
+TEST_CASE("Switches are not confused with flags")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"-f"});
-    eassert(ap.get_switch("-f") == "");
-    eassert(!ap.has_switch("-f"));
+    REQUIRE(ap.get_switch("-f") == "");
+    REQUIRE(!ap.has_switch("-f"));
 }
 
-void test_switch_short()
+TEST_CASE("Short switches work")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"-s=short"});
-    eassert(ap.get_switch("-s") == "short");
-    eassert(ap.get_switch("s") == "short");
-    eassert(ap.has_switch("-s"));
-    eassert(ap.has_switch("s"));
+    REQUIRE(ap.get_switch("-s") == "short");
+    REQUIRE(ap.get_switch("s") == "short");
+    REQUIRE(ap.has_switch("-s"));
+    REQUIRE(ap.has_switch("s"));
 }
 
-void test_switch_long()
+TEST_CASE("Long switches work")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"--long=long"});
-    eassert(ap.get_switch("--long") == "long");
-    eassert(ap.get_switch("-long") == "long");
-    eassert(ap.get_switch("long") == "long");
-    eassert(ap.has_switch("--long"));
-    eassert(ap.has_switch("-long"));
-    eassert(ap.has_switch("long"));
+    REQUIRE(ap.get_switch("--long") == "long");
+    REQUIRE(ap.get_switch("-long") == "long");
+    REQUIRE(ap.get_switch("long") == "long");
+    REQUIRE(ap.has_switch("--long"));
+    REQUIRE(ap.has_switch("-long"));
+    REQUIRE(ap.has_switch("long"));
 }
 
-void test_switch_overriding_short()
+#if 0
+TEST_CASE("Short switches are overriden with later values")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"-s=short1", "-s=short2"});
-    eassert(ap.get_switch("-s") == "short2");
+    REQUIRE(ap.get_switch("-s") == "short2");
 }
 
-void test_switch_overriding_long()
+TEST_CASE("Long switches are overriden with later values")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"--long=long1", "--long=long2"});
-    eassert(ap.get_switch("--long") == "long2");
+    REQUIRE(ap.get_switch("--long") == "long2");
 }
+#endif
 
-void test_switch_with_space()
+TEST_CASE("Switches with values containing spaces work")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"--switch=long switch"});
-    eassert(ap.get_switch("--switch") == "long switch");
+    REQUIRE(ap.get_switch("--switch") == "long switch");
 }
 
-void test_switch_empty_value()
+TEST_CASE("Switches with empty values work")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"--switch="});
-    eassert(ap.get_switch("--switch") == "");
+    REQUIRE(ap.get_switch("--switch") == "");
 }
 
-void test_flag_missing()
+TEST_CASE("Missing flags don't throw exceptions")
 {
     ArgParser ap;
-    eassert(!ap.has_flag("nope"));
+    REQUIRE(!ap.has_flag("nope"));
 }
 
-void test_flag()
+TEST_CASE("Basic flags work")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"--flag"});
-    eassert(ap.has_flag("flag"));
+    REQUIRE(ap.has_flag("flag"));
 }
 
-void test_flag_mixed_with_stray()
+TEST_CASE("Flags mixed with stray arguments are not confused")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"--flag", "stray"});
-    eassert(ap.has_flag("flag"));
+    REQUIRE(ap.has_flag("flag"));
     auto stray = ap.get_stray();
-    eassert(stray.size() == 1);
-    eassert(stray[0] == "stray");
+    REQUIRE(stray.size() == 1);
+    REQUIRE(stray[0] == "stray");
 }
 
-void test_stray_missing()
+TEST_CASE("Missing stray arguments return empty list")
 {
     ArgParser ap;
     auto stray = ap.get_stray();
-    eassert(stray.size() == 0);
+    REQUIRE(stray.size() == 0);
 }
 
-void test_stray()
+TEST_CASE("Basic stray arguments work")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"stray1", "stray2"});
     auto stray = ap.get_stray();
-    eassert(stray.size() == 2);
-    eassert(stray[0] == "stray1");
-    eassert(stray[1] == "stray2");
+    REQUIRE(stray.size() == 2);
+    REQUIRE(stray[0] == "stray1");
+    REQUIRE(stray[1] == "stray2");
 }
 
-void test_stray_with_space()
+TEST_CASE("Stray arguments with spaces work")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"long stray"});
     auto stray = ap.get_stray();
-    eassert(stray.size() == 1);
-    eassert(stray[0] == "long stray");
+    REQUIRE(stray.size() == 1);
+    REQUIRE(stray[0] == "long stray");
 }
 
-void test_mixed_types()
+TEST_CASE("Mixed types of arguments work")
 {
     ArgParser ap;
     std::vector<std::string> args
@@ -130,38 +132,12 @@ void test_mixed_types()
     };
     ap.parse(args);
 
-    eassert(ap.get_switch("--switch") == "s");
-    eassert(ap.has_flag("flag1"));
-    eassert(ap.has_flag("flag2"));
+    REQUIRE(ap.get_switch("--switch") == "s");
+    REQUIRE(ap.has_flag("flag1"));
+    REQUIRE(ap.has_flag("flag2"));
 
     auto stray = ap.get_stray();
-    eassert(stray.size() == 2);
-    eassert(stray[0] == "stray1");
-    eassert(stray[1] == "stray2");
-}
-
-#if 0
-#endif
-
-int main(void)
-{
-    test_switch_missing();
-    test_switch_is_not_a_flag();
-    test_switch_short();
-    test_switch_long();
-    // TODO: make this pass
-    #if 0
-    test_switch_overriding_short();
-    test_switch_overriding_long();
-    #endif
-    test_switch_with_space();
-    test_switch_empty_value();
-    test_flag_missing();
-    test_flag();
-    test_flag_mixed_with_stray();
-    test_stray_missing();
-    test_stray();
-    test_stray_with_space();
-    test_mixed_types();
-    return 0;
+    REQUIRE(stray.size() == 2);
+    REQUIRE(stray[0] == "stray1");
+    REQUIRE(stray[1] == "stray2");
 }

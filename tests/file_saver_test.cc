@@ -1,10 +1,10 @@
 #include <boost/filesystem.hpp>
-#include "compat/main.h"
+#include "compat/entry_point.h"
 #include "file_saver.h"
-#include "test_support/eassert.h"
+#include "test_support/catch.hpp"
 #include "test_support/suppress_output.h"
 
-void test(const boost::filesystem::path &path)
+static void test(const boost::filesystem::path &path)
 {
     FileSaverHdd file_saver(".", true);
 
@@ -14,16 +14,16 @@ void test(const boost::filesystem::path &path)
 
     file_saver.save(file);
 
-    eassert(boost::filesystem::exists(path));
+    REQUIRE(boost::filesystem::exists(path));
     {
         FileIO file_io(path, FileIOMode::Read);
-        eassert(file_io.size() == 4);
-        eassert(file_io.read_until_end() == "test");
+        REQUIRE(file_io.size() == 4);
+        REQUIRE(file_io.read_until_end() == "test");
     }
     boost::filesystem::remove(path);
 }
 
-void do_test_overwriting(
+static void do_test_overwriting(
     FileSaver &file_saver1,
     FileSaver &file_saver2,
     bool renamed_file_exists)
@@ -36,12 +36,12 @@ void do_test_overwriting(
 
     try
     {
-        eassert(!boost::filesystem::exists(path));
-        eassert(!boost::filesystem::exists(path2));
+        REQUIRE(!boost::filesystem::exists(path));
+        REQUIRE(!boost::filesystem::exists(path2));
         file_saver1.save(file);
         file_saver2.save(file);
-        eassert(boost::filesystem::exists(path));
-        eassert(boost::filesystem::exists(path2) == renamed_file_exists);
+        REQUIRE(boost::filesystem::exists(path));
+        REQUIRE(boost::filesystem::exists(path2) == renamed_file_exists);
         if (boost::filesystem::exists(path)) boost::filesystem::remove(path);
         if (boost::filesystem::exists(path2)) boost::filesystem::remove(path2);
     }
@@ -53,41 +53,35 @@ void do_test_overwriting(
     }
 }
 
-void test_overwriting_two_file_savers()
+TEST_CASE("Unicode file names work")
+{
+    suppress_output([&]()
+    {
+        init_fs_utf8();
+        test("test.out");
+        test("ąćę.out");
+        test("不用意な変換.out");
+    });
+}
+
+TEST_CASE("Two file savers overwrite the same file")
 {
     FileSaverHdd file_saver1(".", true);
     FileSaverHdd file_saver2(".", true);
     do_test_overwriting(file_saver1, file_saver2, false);
 }
 
-void test_not_overwriting_two_file_savers()
+TEST_CASE("Two file savers don't overwrite the same file")
 {
     FileSaverHdd file_saver1(".", false);
     FileSaverHdd file_saver2(".", false);
     do_test_overwriting(file_saver1, file_saver2, true);
 }
 
-void test_not_overwriting_one_file_saver()
+TEST_CASE("One file saver never overwrites the same file")
 {
     //even if we pass overwrite=true, files within the same archive with the
     //same name are too valuable to be ovewritten silently
     FileSaverHdd file_saver(".", true);
     do_test_overwriting(file_saver, file_saver, true);
-}
-
-int main(void)
-{
-    suppress_output([&]()
-    {
-        // test encoding voodoo
-        init_fs_utf8();
-        test("test.out");
-        test("ąćę.out");
-        test("不用意な変換.out");
-
-        //test file overwriting
-        test_overwriting_two_file_savers();
-        test_not_overwriting_two_file_savers();
-        test_not_overwriting_one_file_saver();
-    });
 }

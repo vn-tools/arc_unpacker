@@ -1,8 +1,9 @@
 #include "formats/ivory/mbl_archive.h"
 #include "test_support/archive_support.h"
+#include "test_support/catch.hpp"
 using namespace Formats::Ivory;
 
-void test_mbl_archive(const char *path)
+static void test_mbl_archive(const std::string &path)
 {
     std::shared_ptr<File> file1(new File);
     std::shared_ptr<File> file2(new File);
@@ -16,9 +17,12 @@ void test_mbl_archive(const char *path)
     compare_files(expected_files, unpack_to_memory(path, *archive));
 }
 
-int main(void)
+TEST_CASE("Unpacking version 1 MBL archives works")
 {
     test_mbl_archive("tests/formats/ivory/files/mbl-v1.mbl");
+}
+
+TEST_CASE("Unpacking version 2 MBL archives works")
+{
     test_mbl_archive("tests/formats/ivory/files/mbl-v2.mbl");
-    return 0;
 }

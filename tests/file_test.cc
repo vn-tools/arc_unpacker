@@ -1,20 +1,7 @@
-#include "test_support/eassert.h"
 #include "file.h"
+#include "test_support/catch.hpp"
 
-void test_empty_file()
-{
-    File file;
-    eassert(file.name == "");
-}
-
-void test_setting_name()
-{
-    File file;
-    file.name = "abc";
-    eassert(file.name == "abc");
-}
-
-void test_changing_extension(
+static void test_changing_extension(
     const std::string name,
     const std::string new_extension,
     const std::string expected_name)
@@ -22,13 +9,24 @@ void test_changing_extension(
     File file;
     file.name = name;
     file.change_extension(new_extension);
-    eassert(file.name == expected_name);
+    REQUIRE(file.name == expected_name);
 }
 
-int main(void)
+TEST_CASE("Empty file creation")
 {
-    test_empty_file();
-    test_setting_name();
+    File file;
+    REQUIRE(file.name == "");
+}
+
+TEST_CASE("Setting name works")
+{
+    File file;
+    file.name = "abc";
+    REQUIRE(file.name == "abc");
+}
+
+TEST_CASE("Changing file extension work")
+{
     test_changing_extension("",          "xyz",  "");
     test_changing_extension(".",         "xyz",  ".");
     test_changing_extension("..",        "xyz",  "..");
@@ -44,5 +42,5 @@ int main(void)
     test_changing_extension("abc/def",   "xyz",  "abc/def.xyz");
     test_changing_extension("abc/def.",  "xyz",  "abc/def.xyz");
     test_changing_extension("abc/.def.", "xyz",  "abc/.def.xyz");
-    return 0;
 }
+

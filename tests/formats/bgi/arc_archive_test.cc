@@ -1,8 +1,9 @@
 #include "formats/bgi/arc_archive.h"
 #include "test_support/archive_support.h"
+#include "test_support/catch.hpp"
 using namespace Formats::Bgi;
 
-void test_arc_archive()
+TEST_CASE("Unpacking ARC archives works")
 {
     std::shared_ptr<File> file1(new File);
     std::shared_ptr<File> file2(new File);
@@ -15,10 +16,4 @@ void test_arc_archive()
     std::string path = "tests/formats/bgi/files/test.arc";
     std::unique_ptr<Archive> archive(new ArcArchive);
     compare_files(expected_files, unpack_to_memory(path, *archive));
-}
-
-int main(void)
-{
-    test_arc_archive();
-    return 0;
 }

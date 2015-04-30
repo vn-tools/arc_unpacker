@@ -1,8 +1,8 @@
 #include <iostream>
-#include "compat/main.h"
+#include "compat/entry_point.h"
 #include "arc_unpacker.h"
 
-ENTRYPOINT(
+ENTRY_POINT(
     try
     {
         ArgParser arg_parser;

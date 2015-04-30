@@ -110,11 +110,31 @@ def build(ctx):
 		],
 	)
 
+	tests_sources = \
+		[f for f in sources if f.name != 'main.cc'] \
+		+ ctx.path.ant_glob('tests/**/*.cc')
+
+	ctx.program(
+		source = tests_sources,
+		target = 'run_tests',
+		cxxflags = [
+			'-iquote', ctx.path.find_node('src').abspath(),
+			'-iquote', ctx.path.find_node('tests').abspath(),
+		],
+		use = [
+			'LIBICONV',
+			'LIBPNG',
+			'LIBZ',
+			'LIBBOOST_FILESYSTEM',
+			'LIBBOOST_LOCALE',
+			'LIBOPENSSL',
+		],
+	)
+
 def dist(ctx):
 	ctx.algo = 'zip'
 	#TODO: strip executable
 	ctx.files = ctx.path.ant_glob('build')
 
 def test(ctx):
-	#TODO
-	raise RuntimeError('Not implemented')
+    ctx.exec_command('build/run_tests')

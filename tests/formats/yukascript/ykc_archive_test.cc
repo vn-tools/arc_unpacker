@@ -1,8 +1,9 @@
 #include "formats/yukascript/ykc_archive.h"
 #include "test_support/archive_support.h"
+#include "test_support/catch.hpp"
 using namespace Formats::YukaScript;
 
-void test_ykc_archive()
+TEST_CASE("Unpacking YKC archives works")
 {
     std::shared_ptr<File> file1(new File);
     std::shared_ptr<File> file2(new File);
@@ -16,10 +17,4 @@ void test_ykc_archive()
     compare_files(
         expected_files,
         unpack_to_memory("tests/formats/yukascript/files/test.ykc", *archive));
-}
-
-int main(void)
-{
-    test_ykc_archive();
-    return 0;
 }

@@ -1,8 +1,9 @@
 #include "formats/kirikiri/xp3_archive.h"
 #include "test_support/archive_support.h"
+#include "test_support/catch.hpp"
 using namespace Formats::Kirikiri;
 
-void test_xp3_archive(const char *path)
+static void test_xp3_archive(const std::string &path)
 {
     std::shared_ptr<File> file1(new File);
     std::shared_ptr<File> file2(new File);
@@ -16,12 +17,27 @@ void test_xp3_archive(const char *path)
     compare_files(expected_files, unpack_to_memory(path, *archive));
 }
 
-int main(void)
+TEST_CASE("Unpacking version 1 XP3 archives works")
 {
     test_xp3_archive("tests/formats/kirikiri/files/xp3-v1.xp3");
+}
+
+TEST_CASE("Unpacking version 2 XP3 archives works")
+{
     test_xp3_archive("tests/formats/kirikiri/files/xp3-v2.xp3");
+}
+
+TEST_CASE("Unpacking XP3 archives with compressed file table works")
+{
     test_xp3_archive("tests/formats/kirikiri/files/xp3-compressed-table.xp3");
+}
+
+TEST_CASE("Unpacking XP3 archives with compressed file data works")
+{
     test_xp3_archive("tests/formats/kirikiri/files/xp3-compressed-files.xp3");
+}
+
+TEST_CASE("Unpacking XP3 archives with multiple SEGM chunks works")
+{
     test_xp3_archive("tests/formats/kirikiri/files/xp3-multiple-segm.xp3");
-    return 0;
 }

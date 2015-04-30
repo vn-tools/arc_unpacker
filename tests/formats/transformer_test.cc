@@ -1,7 +1,7 @@
 #include <boost/filesystem.hpp>
 #include "formats/archive.h"
 #include "formats/converter.h"
-#include "test_support/eassert.h"
+#include "test_support/catch.hpp"
 
 typedef boost::filesystem::path path;
 
@@ -102,7 +102,7 @@ namespace
     }
 }
 
-void test_simple_archive()
+TEST_CASE("Simple archive unpacks correctly")
 {
     TestArchive test_archive;
     File dummy_file;
@@ -120,12 +120,12 @@ void test_simple_archive()
     });
     test_archive.unpack(dummy_file, file_saver);
 
-    eassert(saved_files.size() == 1);
-    eassert(path(saved_files[0]->name) == path("deeply/nested/file.txt"));
-    eassert(saved_files[0]->io.read_until_end() == "abc");
+    REQUIRE(saved_files.size() == 1);
+    REQUIRE(path(saved_files[0]->name) == path("deeply/nested/file.txt"));
+    REQUIRE(saved_files[0]->io.read_until_end() == "abc");
 }
 
-void test_simple_archive_with_converter()
+TEST_CASE("Simple archive with converter unpacks correctly")
 {
     TestArchive test_archive;
     File dummy_file;
@@ -136,12 +136,12 @@ void test_simple_archive_with_converter()
 
     auto saved_files = unpack(dummy_file, test_archive);
 
-    eassert(saved_files.size() == 1);
-    eassert(path(saved_files[0]->name) == path("deeply/nested/test.png"));
-    eassert(saved_files[0]->io.read_until_end() == "image");
+    REQUIRE(saved_files.size() == 1);
+    REQUIRE(path(saved_files[0]->name) == path("deeply/nested/test.png"));
+    REQUIRE(saved_files[0]->io.read_until_end() == "image");
 }
 
-void test_converter_receives_full_path()
+TEST_CASE("Converter receives full path")
 {
     TestArchive test_archive;
     File dummy_file;
@@ -169,18 +169,18 @@ void test_converter_receives_full_path()
     };
     unpack(dummy_file, test_archive);
 
-    eassert(names_for_recognition.size() == 4);
-    eassert(names_for_recognition[0] == path("deeply/nested/test.archive"));
-    eassert(names_for_recognition[1] == path("further/nested/test.image"));
-    eassert(names_for_recognition[2] == path("further/nested/test.png"));
-    eassert(names_for_recognition[3]
+    REQUIRE(names_for_recognition.size() == 4);
+    REQUIRE(names_for_recognition[0] == path("deeply/nested/test.archive"));
+    REQUIRE(names_for_recognition[1] == path("further/nested/test.image"));
+    REQUIRE(names_for_recognition[2] == path("further/nested/test.png"));
+    REQUIRE(names_for_recognition[3]
         == path("deeply/nested/test.archive/further/nested/test.png"));
 
-    eassert(names_for_conversion.size() == 1);
-    eassert(names_for_conversion[0] == path("further/nested/test.image"));
+    REQUIRE(names_for_conversion.size() == 1);
+    REQUIRE(names_for_conversion[0] == path("further/nested/test.image"));
 }
 
-void test_nested_archive()
+TEST_CASE("Nested archives unpack correctly")
 {
     TestArchive test_archive;
     File dummy_file;
@@ -201,22 +201,22 @@ void test_nested_archive()
 
     auto saved_files = unpack(dummy_file, test_archive);
 
-    eassert(saved_files.size() == 2);
-    eassert(path(saved_files[0]->name)
+    REQUIRE(saved_files.size() == 2);
+    REQUIRE(path(saved_files[0]->name)
         == path("deeply/nested/test.archive/further/nested/file.txt"));
-    eassert(saved_files[0]->io.read_until_end() == "");
-    eassert(path(saved_files[1]->name)
+    REQUIRE(saved_files[0]->io.read_until_end() == "");
+    REQUIRE(path(saved_files[1]->name)
         == path("deeply/nested/test.archive/further/nested/test.png"));
-    eassert(saved_files[1]->io.read_until_end() == "image");
+    REQUIRE(saved_files[1]->io.read_until_end() == "image");
 }
 
-void test_archive_filesystem_location()
+TEST_CASE("Files get correct location")
 {
     FilesystemTestArchive test_archive;
     File dummy_file("./tests/formats/transformer_test.cc", FileIOMode::Read);
 
     auto saved_files = unpack(dummy_file, test_archive);
-    eassert(saved_files.size() > 1);
+    REQUIRE(saved_files.size() > 1);
 
     bool correct = false;
     for (auto &file : saved_files)
@@ -224,14 +224,5 @@ void test_archive_filesystem_location()
         if (path(file->name) == path("./tests/formats/transformer_test.cc"))
             correct = true;
     }
-    eassert(correct);
-}
-
-int main(void)
-{
-    test_simple_archive();
-    test_simple_archive_with_converter();
-    test_nested_archive();
-    test_archive_filesystem_location();
-    test_converter_receives_full_path();
+    REQUIRE(correct);
 }

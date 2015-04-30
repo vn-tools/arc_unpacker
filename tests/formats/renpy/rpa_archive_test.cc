@@ -1,5 +1,6 @@
 #include "formats/renpy/rpa_archive.h"
 #include "test_support/archive_support.h"
+#include "test_support/catch.hpp"
 using namespace Formats::Renpy;
 
 // import cPickle
@@ -14,7 +15,7 @@ using namespace Formats::Renpy;
 //   'another.txt': [(filter(0x1B), filter(7), 'abc')]
 // }, cPickle.HIGHEST_PROTOCOL))
 
-void test_rpa_archive(const char *path)
+static void test(const std::string &path)
 {
     std::shared_ptr<File> file1(new File);
     std::shared_ptr<File> file2(new File);
@@ -28,10 +29,17 @@ void test_rpa_archive(const char *path)
     compare_files(expected_files, unpack_to_memory(path, *archive));
 }
 
-int main(void)
+TEST_CASE("Unpacking version 3 RPA archives works")
 {
-    test_rpa_archive("tests/formats/renpy/files/v3.rpa");
-    test_rpa_archive("tests/formats/renpy/files/v2.rpa");
-    test_rpa_archive("tests/formats/renpy/files/prefixes.rpa");
-    return 0;
+    test("tests/formats/renpy/files/v3.rpa");
+}
+
+TEST_CASE("Unpacking version 2 RPA archives works")
+{
+    test("tests/formats/renpy/files/v2.rpa");
+}
+
+TEST_CASE("Unpacking RPA archives using data prefixes works")
+{
+    test("tests/formats/renpy/files/prefixes.rpa");
 }

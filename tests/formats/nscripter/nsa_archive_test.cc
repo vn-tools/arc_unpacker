@@ -1,9 +1,10 @@
 #include "formats/nscripter/nsa_archive.h"
 #include "util/zlib.h"
 #include "test_support/archive_support.h"
+#include "test_support/catch.hpp"
 using namespace Formats::NScripter;
 
-void test_nsa_archive_uncompressed()
+TEST_CASE("Unpacking uncompressed NSA archives works")
 {
     std::shared_ptr<File> file1(new File);
     std::shared_ptr<File> file2(new File);
@@ -20,7 +21,7 @@ void test_nsa_archive_uncompressed()
             "tests/formats/nscripter/files/uncompressed.nsa", *archive));
 }
 
-void test_nsa_archive_lzss()
+TEST_CASE("Unpacking NSA archives compressed with LZSS works")
 {
     std::shared_ptr<File> file(new File);
     file->name = "test.bmp";
@@ -62,11 +63,4 @@ void test_nsa_archive_lzss()
     compare_files(
         expected_files,
         unpack_to_memory("tests/formats/nscripter/files//lzss.nsa", *archive));
-}
-
-int main(void)
-{
-    test_nsa_archive_uncompressed();
-    test_nsa_archive_lzss();
-    return 0;
 }

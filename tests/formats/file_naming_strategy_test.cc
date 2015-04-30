@@ -1,10 +1,10 @@
 #include <boost/filesystem/path.hpp>
 #include "formats/transformer.h"
-#include "test_support/eassert.h"
+#include "test_support/catch.hpp"
 
 typedef boost::filesystem::path path;
 
-path test(
+static path test(
     const FileNamingStrategy &strategy,
     const std::string &parent_path,
     const std::string &child_path)
@@ -12,28 +12,28 @@ path test(
     return path(FileNameDecorator::decorate(strategy, parent_path, child_path));
 }
 
-int main(void)
+TEST_CASE("File naming strategies work")
 {
     auto root    = FileNamingStrategy::Root;
     auto sibling = FileNamingStrategy::Sibling;
     auto child   = FileNamingStrategy::Child;
-    eassert(test(root,    "",           "file") == path("file"));
-    eassert(test(root,    "test",       "file") == path("file"));
-    eassert(test(root,    "test/",      "file") == path("file"));
-    eassert(test(root,    "test/nest",  "file") == path("file"));
-    eassert(test(root,    "test/nest/", "file") == path("file"));
-    eassert(test(sibling, "",           "file") == path("file"));
-    eassert(test(sibling, "test",       "file") == path("file"));
-    eassert(test(sibling, "test/",      "file") == path("test/file"));
-    eassert(test(sibling, "test/nest",  "file") == path("test/file"));
-    eassert(test(sibling, "test/nest/", "file") == path("test/nest/file"));
-    eassert(test(child,   "",           "file") == path("file"));
-    eassert(test(child,   "test",       "file") == path("test/file"));
-    eassert(test(child,   "test/",      "file") == path("test/file"));
-    eassert(test(child,   "test/nest",  "file") == path("test/nest/file"));
-    eassert(test(child,   "test/nest/", "file") == path("test/nest/file"));
+    REQUIRE(test(root,    "",           "file") == path("file"));
+    REQUIRE(test(root,    "test",       "file") == path("file"));
+    REQUIRE(test(root,    "test/",      "file") == path("file"));
+    REQUIRE(test(root,    "test/nest",  "file") == path("file"));
+    REQUIRE(test(root,    "test/nest/", "file") == path("file"));
+    REQUIRE(test(sibling, "",           "file") == path("file"));
+    REQUIRE(test(sibling, "test",       "file") == path("file"));
+    REQUIRE(test(sibling, "test/",      "file") == path("test/file"));
+    REQUIRE(test(sibling, "test/nest",  "file") == path("test/file"));
+    REQUIRE(test(sibling, "test/nest/", "file") == path("test/nest/file"));
+    REQUIRE(test(child,   "",           "file") == path("file"));
+    REQUIRE(test(child,   "test",       "file") == path("test/file"));
+    REQUIRE(test(child,   "test/",      "file") == path("test/file"));
+    REQUIRE(test(child,   "test/nest",  "file") == path("test/nest/file"));
+    REQUIRE(test(child,   "test/nest/", "file") == path("test/nest/file"));
 
-    eassert(test(root,    "test/nest",  "a/b") == path("a/b"));
-    eassert(test(sibling, "test/nest",  "a/b") == path("test/a/b"));
-    eassert(test(child,   "test/nest",  "a/b") == path("test/nest/a/b"));
+    REQUIRE(test(root,    "test/nest",  "a/b") == path("a/b"));
+    REQUIRE(test(sibling, "test/nest",  "a/b") == path("test/a/b"));
+    REQUIRE(test(child,   "test/nest",  "a/b") == path("test/nest/a/b"));
 }

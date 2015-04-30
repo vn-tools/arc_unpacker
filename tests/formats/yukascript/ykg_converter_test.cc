@@ -1,8 +1,9 @@
 #include "formats/yukascript/ykg_converter.h"
+#include "test_support/catch.hpp"
 #include "test_support/converter_support.h"
 using namespace Formats::YukaScript;
 
-void test_ykg_decoding()
+TEST_CASE("Decoding YKG images works")
 {
     YkgConverter converter;
     assert_decoded_image(
@@ -10,10 +11,3 @@ void test_ykg_decoding()
         "tests/formats/yukascript/files/reimu.ykg",
         "tests/formats/yukascript/files/reimu-out.png");
 }
-
-int main(void)
-{
-    test_ykg_decoding();
-    return 0;
-}
-

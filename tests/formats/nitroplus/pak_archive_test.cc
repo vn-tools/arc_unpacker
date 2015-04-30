@@ -1,8 +1,9 @@
 #include "formats/nitroplus/pak_archive.h"
 #include "test_support/archive_support.h"
+#include "test_support/catch.hpp"
 using namespace Formats::Nitroplus;
 
-void test_pak_archive(const std::string path)
+static void test_pak_archive(const std::string &path)
 {
     std::shared_ptr<File> file1(new File);
     std::shared_ptr<File> file2(new File);
@@ -16,9 +17,12 @@ void test_pak_archive(const std::string path)
     compare_files(expected_files,  unpack_to_memory(path, *archive));
 }
 
-int main(void)
+TEST_CASE("Unpacking uncompressed PAK archives works")
 {
     test_pak_archive("tests/formats/nitroplus/files/uncompressed.pak");
+}
+
+TEST_CASE("Unpacking compressed PAK archives works")
+{
     test_pak_archive("tests/formats/nitroplus/files/compressed.pak");
-    return 0;
 }

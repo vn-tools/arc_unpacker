@@ -1,8 +1,9 @@
 #include "formats/liarsoft/xfl_archive.h"
 #include "test_support/archive_support.h"
+#include "test_support/catch.hpp"
 using namespace Formats::LiarSoft;
 
-void test_xfl_archive()
+TEST_CASE("Unpacking XFL archives works")
 {
     std::shared_ptr<File> file1(new File);
     std::shared_ptr<File> file2(new File);
@@ -16,10 +17,4 @@ void test_xfl_archive()
     compare_files(
         expected_files,
         unpack_to_memory("tests/formats/liarsoft/files/test.xfl", *archive));
-}
-
-int main(void)
-{
-    test_xfl_archive();
-    return 0;
 }

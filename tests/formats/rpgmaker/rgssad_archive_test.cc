@@ -1,8 +1,9 @@
 #include "formats/rpgmaker/rgssad_archive.h"
 #include "test_support/archive_support.h"
+#include "test_support/catch.hpp"
 using namespace Formats::RpgMaker;
 
-void test_rgssad_archive()
+TEST_CASE("Unpacking RGSSAD archives works")
 {
     std::shared_ptr<File> file1(new File);
     std::shared_ptr<File> file2(new File);
@@ -16,10 +17,4 @@ void test_rgssad_archive()
     compare_files(
         expected_files,
         unpack_to_memory("tests/formats/rpgmaker/files/test.rgssad", *archive));
-}
-
-int main(void)
-{
-    test_rgssad_archive();
-    return 0;
 }
