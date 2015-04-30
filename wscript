@@ -78,8 +78,7 @@ def configure_packages(ctx):
 		uselib_store = 'LIBOPENSSL',
 		mandatory = False)
 
-	#TODO: cygwin needs this too
-	if ctx.options.cross_compile:
+	if ctx.options.cross_compile or ctx.env.DEST_OS == 'cygwin':
 		ctx.check_cxx(
 			lib = ['iconv'],
 			header_name = 'iconv.h',
