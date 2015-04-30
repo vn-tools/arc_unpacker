@@ -196,9 +196,9 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
 #### Compiling `libpng`
 
     # Obtain sources
-    wget 'ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.16.tar.gz'
-    tar xzvf libpng-1.6.16.tar.gz
-    cd libpng-1.6.16/
+    wget 'ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.17.tar.gz'
+    tar xzvf libpng-1.6.17.tar.gz
+    cd libpng-1.6.17/
 
     # Compile
     ./configure \
