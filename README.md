@@ -117,7 +117,9 @@ the table.
 Building from sources
 ---------------------
 
-### Requirements
+### Dependencies
+
+Required:
 
 1. `g++` 4.8+ or `mingw-w64`
 2. `boost::locale`
@@ -125,25 +127,40 @@ Building from sources
 4. `libpng` 1.4+
 5. `zlib` (comes with `libpng`)
 6. `iconv` (comes with POSIX)
-7. `openssl`
 
-### Building for Linux
+Recommended:
 
-Just download required dependencies, run `make` and you're good to go.
+1. `openssl`
 
-### Building for Windows on Cygwin
+### Building for GNU/Linux or Cygwin
 
-Just download required dependencies, run `make` and you're good to go. Note
-that you'll need Cygwin on every computer you plan to run it on.
+1. Download required dependencies (the ones with `-dev` suffix). On Cygwin most
+   of them are available on [Cygwin Ports](http://cygwinports.org/).
+2. Run `bootstrap.sh`, which is going to download [waf](http://waf.io) and
+[catch](https://github.com/philsquared/Catch/).
+3. Run `./waf configure`.
+4. Run `./waf build`.
+5. The executables should appear in `build/` directory.
 
 ### Building for Windows without Cygwin dependencies
 
-In this case you need to use `mingw-w64`. On Cygwin you can download most of
-the dependencies from [Cygwin Ports](http://cygwinports.org/). On Linux, you
-probably need to compile the dependencies yourself. Below I describe the manual
-way which should work for both Cygwin and Linux.
+In this case, the build requires MinGW-w64. Assuming you have installed
+`i686-w64-mingw32-g++`, proceed like above, but pass `-c` flag to waf during
+`configure`: `./waf configure -c`.
 
----
+Note that in order to ship the `.exe` portably, you'll need to include
+following DLLs in your bundle:
+
+- `libboost_filesystem.dll`
+- `libboost_locale.dll`
+- `libboost_system.dll`
+- `libgcc_s_sjlj-1.dll`
+- `libiconv-2.dll`
+- `libpng16-16.dll`
+- `libstdc++-6.dll`
+- `libeay32.dll`
+
+### Building the dependencies manually with MinGW-w64
 
 :warning: **Before proceeding, run `export MINGW=$HOME/mingw`** (or another
 directory of your choice). This directory will contain the compiled
@@ -255,23 +272,6 @@ shouldn't take too long.
 
     # Install
     make install
-
----
-
-Finally, run `./make-mingw-w64.sh`. Then locate the compiled DLL-s in either
-`/usr` (`libstdc++` etc) or `$MINGW` (`libboost` etc):
-
-- `libboost_filesystem.dll`
-- `libboost_locale.dll`
-- `libboost_system.dll`
-- `libgcc_s_sjlj-1.dll`
-- `libiconv-2.dll`
-- `libpng16-16.dll`
-- `libstdc++-6.dll`
-- `libeay32.dll`
-
-...and copy them into the binaries directory. Now the program should be ready
-to ship.
 
 ### Building in Visual Studio
 
