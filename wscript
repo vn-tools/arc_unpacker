@@ -75,7 +75,7 @@ def configure_packages(ctx):
 		lib = ['crypto'],
 		header_name = 'openssl/rsa.h',
 		uselib_store = 'LIBOPENSSL',
-		mandatory = True) #TODO: OpenSSL shouldn't be mandatory
+		mandatory = False)
 
 	#TODO: cygwin needs this too
 	if ctx.options.cross_compile:
@@ -94,8 +94,13 @@ def configure(ctx):
 		ctx.env.LDFLAGS += ['-municode']
 
 def build(ctx):
+	sources = ctx.path.ant_glob('src/**/*.cc')
+
+	if not ctx.env.LIB_LIBOPENSSL:
+		sources = [file for file in sources if 'tfpk_archive' not in file.abspath()]
+
 	ctx.program(
-		source = ctx.path.ant_glob('src/**/*.cc'),
+		source = sources,
 		target = 'arc_unpacker',
 		cxxflags = ['-iquote', ctx.path.find_node('src').abspath()],
 		use = [

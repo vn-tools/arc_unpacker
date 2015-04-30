@@ -44,7 +44,9 @@
 #include "formats/touhou/pbg3_archive.h"
 #include "formats/touhou/pbg4_archive.h"
 #include "formats/touhou/pbgz_archive.h"
+#ifdef HAVE_OPENSSL_RSA_H
 #include "formats/touhou/tfpk_archive.h"
+#endif
 #include "formats/touhou/tha1_archive.h"
 #include "formats/yukascript/ykc_archive.h"
 #include "formats/yukascript/ykg_converter.h"
@@ -74,7 +76,9 @@ TransformerFactory::TransformerFactory() : internals(new Internals)
     internals->add("g2", []() { return new Glib::Glib2Archive(); });
     internals->add("th-pak1", []() { return new Touhou::Pak1Archive(); });
     internals->add("th-pak2", []() { return new Touhou::Pak2Archive(); });
+    #ifdef HAVE_OPENSSL_RSA_H
     internals->add("tfpk", []() { return new Touhou::TfpkArchive(); });
+    #endif
     internals->add("tha1", []() { return new Touhou::Tha1Archive(); });
     internals->add("pbgz", []() { return new Touhou::PbgzArchive(); });
     internals->add("lwg", []() { return new LiarSoft::LwgArchive(); });
