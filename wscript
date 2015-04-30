@@ -41,8 +41,9 @@ def configure_flags(ctx):
 		mingw_dirs = find_mingw_dirs()
 		for dir in mingw_dirs:
 			ctx.env.CXXFLAGS += ['-I' + os.path.join(dir, 'include')]
-			ctx.env.LDFLAGS += ['-L' + os.path.join(dir, 'lib')]
-		ctx.env.LDFLAGS += ['-lstdc++']
+			ctx.env.LINKFLAGS += ['-L' + os.path.join(dir, 'lib')]
+		ctx.env.LINKFLAGS += ['-lstdc++']
+		ctx.env.LINKFLAGS_UNICODE = ['-municode']
 
 	ctx.load('compiler_cxx')
 
@@ -89,10 +90,6 @@ def configure(ctx):
 	configure_flags(ctx)
 	configure_packages(ctx)
 
-	#instruct cxx to use unicode entry point /after/ package tests were run
-	if ctx.options.cross_compile:
-		ctx.env.LDFLAGS += ['-municode']
-
 def build(ctx):
 	sources = ctx.path.ant_glob('src/**/*.cc')
 
@@ -110,6 +107,7 @@ def build(ctx):
 			'LIBBOOST_FILESYSTEM',
 			'LIBBOOST_LOCALE',
 			'LIBOPENSSL',
+			'UNICODE',
 		],
 	)
 
