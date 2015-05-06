@@ -18,8 +18,8 @@ namespace
             {
                 uint32_t expected_rgba = expected_image.color_at(x, y);
                 uint32_t actual_rgba = actual_image.color_at(x, y);
-                if (expected_rgba != actual_rgba)
-                    REQUIRE(0);
+                if (expected_rgba != actual_rgba) //speed up
+                    REQUIRE(expected_rgba == actual_rgba);
             }
         }
     }
