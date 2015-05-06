@@ -90,15 +90,22 @@ def configure(ctx):
 	configure_packages(ctx)
 
 def build(ctx):
-	sources = ctx.path.ant_glob('src/**/*.cc')
+	common_sources = ctx.path.ant_glob('src/**/*.cc')
+	common_sources = [f for f in common_sources if f.name != 'main.cc']
 
 	if not ctx.env.LIB_LIBOPENSSL:
-		sources = [file for file in sources if 'tfpk_archive' not in file.abspath()]
+		common_sources = [f for f in common_sources if 'tfpk_archive' not in f.name]
 
-	ctx.program(
-		source = sources,
-		target = 'arc_unpacker',
-		cxxflags = ['-iquote', ctx.path.find_node('src').abspath()],
+	path_to_src = ctx.path.find_node('src').abspath()
+	path_to_tests = ctx.path.find_node('tests').abspath()
+
+	program_sources = [ctx.path.find_node('src/main.cc')]
+	tests_sources = ctx.path.ant_glob('tests/**/*.cc')
+
+	ctx.objects(
+		source = common_sources,
+		target = 'common',
+		cxxflags = ['-iquote', path_to_src],
 		use = [
 			'LIBICONV',
 			'LIBPNG',
@@ -106,30 +113,25 @@ def build(ctx):
 			'LIBBOOST_FILESYSTEM',
 			'LIBBOOST_LOCALE',
 			'LIBOPENSSL',
-			'UNICODE',
-		],
-	)
+		])
 
-	tests_sources = \
-		[f for f in sources if f.name != 'main.cc'] \
-		+ ctx.path.ant_glob('tests/**/*.cc')
+	ctx.program(
+		source = program_sources,
+		target = 'arc_unpacker',
+		cxxflags = ['-iquote', path_to_src],
+		use = [
+			'common',
+			'UNICODE',
+		])
 
 	ctx.program(
 		source = tests_sources,
 		target = 'run_tests',
 		cxxflags = [
-			'-iquote', ctx.path.find_node('src').abspath(),
-			'-iquote', ctx.path.find_node('tests').abspath(),
+			'-iquote', path_to_src,
+			'-iquote', path_to_tests,
 		],
-		use = [
-			'LIBICONV',
-			'LIBPNG',
-			'LIBZ',
-			'LIBBOOST_FILESYSTEM',
-			'LIBBOOST_LOCALE',
-			'LIBOPENSSL',
-		],
-	)
+		use = [ 'common' ])
 
 def dist(ctx):
 	ctx.algo = 'zip'
