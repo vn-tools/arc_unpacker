@@ -161,12 +161,11 @@ namespace
         uint32_t *palette = (uint32_t*)tmp;
         tmp += color_count * 4;
 
-        size_t i;
-        std::unique_ptr<uint32_t> pixels(new uint32_t[width * height]);
-        for (i = 0; i < (unsigned)(width * height); i ++)
+        std::unique_ptr<uint32_t[]> pixels(new uint32_t[width * height]);
+        for (size_t i = 0; i < (unsigned)(width * height); i ++)
         {
             unsigned char palette_index = (unsigned char)*tmp ++;
-            pixels.get()[i] = palette[palette_index];
+            pixels[i] = palette[palette_index];
         }
 
         std::unique_ptr<Image> image = Image::from_pixels(
@@ -219,7 +218,9 @@ namespace
             uncompressed_size,
             1, 2);
 
-        std::unique_ptr<uint32_t> pixels(new uint32_t[width * height]);
+        std::unique_ptr<uint32_t[]> pixels(new uint32_t[width * height]);
+        for (int i = 0; i < width * height; i ++)
+            pixels[i] = 0;
 
         BufferedIO uncompressed_io(uncompressed.get(), uncompressed_size);
         if (region_count != uncompressed_io.read_u32_le())
@@ -253,7 +254,7 @@ namespace
                 for (size_t y = part_y + region->y1; y < (unsigned) part_y + part_height; y ++)
                 {
                     uncompressed_io.read(
-                        &pixels.get()[part_x + region->x1 + y * width],
+                        &pixels[part_x + region->x1 + y * width],
                         part_width * sizeof(uint32_t));
                 }
             }
