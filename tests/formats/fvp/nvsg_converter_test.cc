@@ -1,4 +1,3 @@
-#include "compat/entry_point.h"
 #include "formats/fvp/nvsg_converter.h"
 #include "test_support/catch.hpp"
 #include "test_support/converter_support.h"
@@ -28,7 +27,6 @@ TEST_CASE("Decoding format 1 NVSG images works")
 
 TEST_CASE("Decoding format 2 NVSG images works")
 {
-    init_fs_utf8();
     test_nvsg_decoding(
         "tests/formats/fvp/files/CHR_時雨_基_夏私服_表情",
         "tests/formats/fvp/files/CHR_時雨_基_夏私服_表情-out.png");

@@ -1,4 +1,3 @@
-#include "compat/entry_point.h"
 #include "formats/microsoft/dds_converter.h"
 #include "test_support/catch.hpp"
 #include "test_support/converter_support.h"
@@ -28,7 +27,6 @@ TEST_CASE("Decoding DXT3 DDS textures works")
 
 TEST_CASE("Decoding DXT5 DDS textures works")
 {
-    init_fs_utf8();
     test("決1.dds", "決1-out.png");
 }
 

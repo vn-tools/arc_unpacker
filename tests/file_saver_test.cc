@@ -1,5 +1,4 @@
 #include <boost/filesystem.hpp>
-#include "compat/entry_point.h"
 #include "file_saver.h"
 #include "test_support/catch.hpp"
 #include "test_support/suppress_output.h"
@@ -57,7 +56,6 @@ TEST_CASE("Unicode file names work")
 {
     suppress_output([&]()
     {
-        init_fs_utf8();
         test("test.out");
         test("ąćę.out");
         test("不用意な変換.out");
