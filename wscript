@@ -15,6 +15,14 @@ def options(ctx):
 		action = 'store_true',
 		help = 'enable cross compiling using mingw-w64')
 
+	ctx.add_option(
+		'-d',
+		'--debug',
+		dest = 'debug',
+		default = False,
+		action = 'store_true',
+		help = 'enable emitting debug information')
+
 def find_mingw_dirs():
 	MINGW_DIRS = ['~/mingw', '~/src/mingw', '/usr/i686-w64-mingw32']
 	MINGW_DIRS = [os.path.expanduser(dir) for dir in MINGW_DIRS]
@@ -35,6 +43,9 @@ def configure_flags(ctx):
 		'-Wno-unused-variable',
 		'-Wno-unused-parameter',
 		'-std=c++11']
+
+	if ctx.options.debug:
+		ctx.env.CXXFLAGS += ['-g']
 
 	if ctx.options.cross_compile:
 		ctx.env.CXX = 'i686-w64-mingw32-g++'
