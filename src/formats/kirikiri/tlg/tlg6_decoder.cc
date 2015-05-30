@@ -314,7 +314,7 @@ namespace
                     *pixel_buf = 0;
                     pixel_buf += 4;
                 }
-                while (-- count);
+                while (-- count && pixel_buf < limit);
             }
             else
             {
@@ -352,6 +352,9 @@ namespace
                         t = *reinterpret_cast<uint32_t*>(bit_pool);
                         b = 0;
                     }
+
+                    if (a >= GOLOMB_N_COUNT * 2 * 128) a = 0;
+                    if (n >= GOLOMB_N_COUNT) n = 0;
 
                     int k = golomb_bit_length_table[a][n];
                     int v = (bit_count << k) + ((t >> b) & ((1 << k) - 1));
