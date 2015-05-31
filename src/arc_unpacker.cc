@@ -77,7 +77,12 @@ namespace
                 {
                     std::unique_ptr<PathInfo> pi(new PathInfo);
                     pi->input_path = it->path().string();
-                    pi->base_name = pi->input_path.substr(path.length() + 1);
+                    pi->base_name = pi->input_path.substr(path.length());
+                    while (pi->base_name.size() > 0 &&
+                        (pi->base_name[0] == '/' || pi->base_name[0] == '\\'))
+                    {
+                        pi->base_name = pi->base_name.substr(1);
+                    }
                     options.input_paths.push_back(std::move(pi));
                 }
             }
