@@ -102,13 +102,9 @@ TEST_CASE("Seeking and telling position works")
 
 TEST_CASE("Reading NULL-terminated strings works")
 {
-    BufferedIO io("abc\x00", 4);
-    char *result = nullptr;
-    size_t length = 0;
-    io.read_until_zero(&result, &length);
-    REQUIRE(strcmp("abc", result) == 0);
-    REQUIRE(length == length);
-    free(result);
+    BufferedIO io("abc\x00""def\x00", 8);
+    REQUIRE(io.read_until_zero() == "abc\x00");
+    REQUIRE(io.read_until_zero() == "def\x00");
 }
 
 TEST_CASE("Reading lines works")

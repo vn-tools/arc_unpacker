@@ -1,5 +1,3 @@
-#include <cassert>
-#include <cstdlib>
 #include <memory>
 #include "util/endian.h"
 #include "io/io.h"
@@ -27,34 +25,6 @@ void IO::peek(size_t offset, std::function<void()> func)
 bool IO::eof() const
 {
     return tell() == size();
-}
-
-void IO::read_until_zero(char **output, size_t *output_size)
-{
-    assert(output != nullptr);
-
-    char *new_str;
-    char c;
-    *output = nullptr;
-    size_t size = 0;
-    do
-    {
-        new_str = (char*)realloc(*output, size + 1);
-        if (new_str == nullptr)
-        {
-            free(*output);
-            *output = nullptr;
-            if (output_size != nullptr)
-                *output_size = 0;
-            throw std::bad_alloc();
-        }
-        *output = new_str;
-        c = read_u8();
-        (*output)[size ++] = c;
-    }
-    while (c != '\0');
-    if (output_size != nullptr)
-        *output_size = size;
 }
 
 std::string IO::read_until_zero()

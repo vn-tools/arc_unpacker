@@ -22,7 +22,6 @@ public:
     virtual void write_from_io(IO &input, size_t length) = 0;
     void write_from_io(IO &input);
 
-    void read_until_zero(char **output, size_t *output_size);
     std::string read_until_zero();
     std::string read_until_zero(size_t bytes);
     std::string read_line();
