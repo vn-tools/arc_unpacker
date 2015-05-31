@@ -20,7 +20,6 @@
 #include "formats/touhou/tfbm_converter.h"
 #include "formats/touhou/tfcs_converter.h"
 #include "formats/touhou/tfpk_archive.h"
-#include "formats/touhou/tfpk_dir_names.h"
 #include "formats/touhou/tfwa_converter.h"
 #include "io/buffered_io.h"
 #include "util/colors.h"
@@ -175,6 +174,8 @@ namespace
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 
+    typedef std::map<uint32_t, std::string> DirNameMap;
+
     typedef struct
     {
         uint32_t initial_hash;
@@ -216,16 +217,11 @@ namespace
         return result;
     }
 
-    std::string get_dir_name(DirEntry &dir_entry)
+    std::string get_dir_name(
+        DirEntry &dir_entry, DirNameMap dir_name_map)
     {
-        static std::map<uint32_t, std::string> hash_to_dir_name_map;
-        if (hash_to_dir_name_map.size() == 0)
-        {
-            for (auto &dir_name : tfpk_known_dir_names)
-                hash_to_dir_name_map[get_file_name_hash(dir_name)] = dir_name;
-        }
-        auto it = hash_to_dir_name_map.find(dir_entry.initial_hash);
-        if (it != hash_to_dir_name_map.end())
+        auto it = dir_name_map.find(dir_entry.initial_hash);
+        if (it != dir_name_map.end())
             return it->second;
         std::stringstream stream;
         stream
@@ -253,7 +249,8 @@ namespace
         return dir_entries;
     }
 
-    std::map<uint32_t, std::string> read_file_names_map(RsaReader &rsa_reader)
+    std::map<uint32_t, std::string> read_file_names_map(
+        RsaReader &rsa_reader, DirNameMap dir_name_map)
     {
         auto dir_entries = read_dir_entries(rsa_reader);
 
@@ -275,7 +272,8 @@ namespace
         std::map<uint32_t, std::string> map;
         for (auto &dir_entry : dir_entries)
         {
-            std::string dir_name = get_dir_name(*dir_entry);
+            std::string dir_name = get_dir_name(
+                *dir_entry, dir_name_map);
             if (dir_name.size() > 0 && dir_name[dir_name.size() - 1] != '/')
                 dir_name += "/";
 
@@ -293,9 +291,11 @@ namespace
         return map;
     }
 
-    Table read_table(RsaReader &rsa_reader)
+    Table read_table(
+        RsaReader &rsa_reader, DirNameMap dir_name_map)
     {
-        auto hash_to_file_name_map = read_file_names_map(rsa_reader);
+        auto file_name_map
+            = read_file_names_map(rsa_reader, dir_name_map);
 
         std::unique_ptr<BufferedIO> tmp_io(rsa_reader.read_block());
         size_t file_count = tmp_io->read_u32_le();
@@ -311,8 +311,8 @@ namespace
 
             tmp_io = rsa_reader.read_block();
             uint32_t file_name_hash = tmp_io->read_u32_le();
-            auto it = hash_to_file_name_map.find(file_name_hash);
-            if (it == hash_to_file_name_map.end())
+            auto it = file_name_map.find(file_name_hash);
+            if (it == file_name_map.end())
                 throw std::runtime_error("Could not find file name hash");
             entry->name = it->second;
 
@@ -357,7 +357,8 @@ namespace
         return palette;
     }
 
-    PaletteMap find_all_palettes(const boost::filesystem::path &arc_path)
+    PaletteMap find_all_palettes(
+        const boost::filesystem::path &arc_path, DirNameMap dir_name_map)
     {
         PaletteMap palettes;
 
@@ -377,7 +378,7 @@ namespace
                 if (sub_arc_io.read(magic.size()) != magic)
                     continue;
                 RsaReader rsa_reader(sub_arc_io);
-                for (auto &entry : read_table(rsa_reader))
+                for (auto &entry : read_table(rsa_reader, dir_name_map))
                 {
                     if (entry->name.find("palette") == std::string::npos)
                         continue;
@@ -401,7 +402,33 @@ struct TfpkArchive::Internals
     TfcsConverter tfcs_converter;
     TfwaConverter tfwa_converter;
     Formats::Microsoft::DdsConverter dds_converter;
+    DirNameMap dir_name_map;
 };
+
+void TfpkArchive::add_cli_help(ArgParser &arg_parser) const
+{
+    arg_parser.add_help(
+        "--dir-names=PATH",
+        "Specifies path to file containing list of game's folder names.\n");
+
+    Archive::add_cli_help(arg_parser);
+}
+
+void TfpkArchive::parse_cli_options(const ArgParser &arg_parser)
+{
+    auto path = arg_parser.get_switch("dir-names");
+    if (path != "")
+    {
+        FileIO io(path, FileIOMode::Read);
+        std::string line;
+        while ((line = io.read_line()) != "")
+        {
+            internals->dir_name_map[get_file_name_hash(line)] = line;
+        }
+    }
+
+    Archive::parse_cli_options(arg_parser);
+}
 
 TfpkArchive::TfpkArchive() : internals(new Internals)
 {
@@ -424,11 +451,11 @@ void TfpkArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     arc_file.io.skip(magic.size());
 
-    PaletteMap palette_map = find_all_palettes(arc_file.name);
+    auto palette_map = find_all_palettes(arc_file.name, internals->dir_name_map);
     internals->tfbm_converter.set_palette_map(palette_map);
 
     RsaReader rsa_reader(arc_file.io);
-    Table table = read_table(rsa_reader);
+    Table table = read_table(rsa_reader, internals->dir_name_map);
 
     for (auto &entry : table)
         file_saver.save(read_file(arc_file.io, *entry));
