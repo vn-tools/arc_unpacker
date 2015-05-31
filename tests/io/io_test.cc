@@ -111,6 +111,32 @@ TEST_CASE("Reading NULL-terminated strings works")
     free(result);
 }
 
+TEST_CASE("Reading lines works")
+{
+    BufferedIO io("line1\nline2\n", 13);
+    REQUIRE(io.read_line() == "line1");
+    REQUIRE(io.read_line() == "line2");
+}
+
+TEST_CASE("Reading unterminated lines works")
+{
+    BufferedIO io("line", 4);
+    REQUIRE(io.read_line() == "line");
+}
+
+TEST_CASE("Reading NULL-terminated lines works")
+{
+    BufferedIO io("line\x00", 5);
+    REQUIRE(io.read_line() == "line");
+}
+
+TEST_CASE("Reading lines containing carriage returns works")
+{
+    BufferedIO io("line1\r\nline2\r\n", 14);
+    REQUIRE(io.read_line() == "line1");
+    REQUIRE(io.read_line() == "line2");
+}
+
 TEST_CASE("Reading strings works")
 {
     BufferedIO io("abc\x00", 4);

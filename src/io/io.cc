@@ -75,6 +75,21 @@ std::string IO::read_until_zero(size_t bytes)
     return output;
 }
 
+std::string IO::read_line()
+{
+    std::string output;
+    char c;
+    while (!eof())
+    {
+        c = read_u8();
+        if (c == '\0' || c == '\n')
+            break;
+        if (c != '\r')
+            output.push_back(c);
+    }
+    return output;
+}
+
 std::string IO::read_until_end()
 {
     return read(size() - tell());

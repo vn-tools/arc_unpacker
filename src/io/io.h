@@ -25,6 +25,7 @@ public:
     void read_until_zero(char **output, size_t *output_size);
     std::string read_until_zero();
     std::string read_until_zero(size_t bytes);
+    std::string read_line();
     std::string read_until_end();
     std::string read(size_t bytes);
     uint8_t read_u8();
