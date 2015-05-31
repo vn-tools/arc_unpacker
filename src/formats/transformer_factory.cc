@@ -44,6 +44,7 @@
 #include "formats/touhou/pbg3_archive.h"
 #include "formats/touhou/pbg4_archive.h"
 #include "formats/touhou/pbgz_archive.h"
+#include "formats/whale/dat_archive.h"
 #ifdef HAVE_OPENSSL_RSA_H
 #include "formats/touhou/tfpk_archive.h"
 #endif
@@ -102,6 +103,7 @@ TransformerFactory::TransformerFactory() : internals(new Internals)
     internals->add("nsa", []() { return new NScripter::NsaArchive(); });
     internals->add("sar", []() { return new NScripter::SarArchive(); });
     internals->add("anm", []() { return new Touhou::AnmArchive(); });
+    internals->add("dat-whale", []() { return new Whale::DatArchive(); });
 
     internals->add("nvsg", []() { return new Fvp::NvsgConverter(); });
     internals->add("dds", []() { return new Microsoft::DdsConverter(); });
