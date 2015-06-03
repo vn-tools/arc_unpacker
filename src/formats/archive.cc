@@ -8,7 +8,7 @@ void Archive::unpack(File &file, FileSaver &file_saver) const
     //every file should be passed through registered transformers
     FileSaverCallback file_saver_proxy;
 
-	file_saver_proxy.set_callback([&](std::shared_ptr<File> saved_file)
+    file_saver_proxy.set_callback([&](std::shared_ptr<File> saved_file)
     {
         for (auto &transformer : transformers)
         {

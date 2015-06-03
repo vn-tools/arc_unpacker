@@ -131,7 +131,6 @@ namespace
         header->misc_flags2 = io.read_u32_le();
         return header;
     }
-
 }
 
 namespace
