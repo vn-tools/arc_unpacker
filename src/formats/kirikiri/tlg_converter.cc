@@ -23,7 +23,7 @@ namespace
     const std::string magic_tlg_6("TLG6.0\x00raw\x1a", 11);
 
     int guess_version(IO &io);
-    std::unique_ptr<File> decode(int version, File &file);
+    std::unique_ptr<File> decode_proxy(int version, File &file);
 
     std::string extract_string(std::string &container)
     {
@@ -72,7 +72,7 @@ namespace
         int version = guess_version(file.io);
         if (version == -1)
             throw std::runtime_error("Unknown TLG version");
-        return ::decode(version, file);
+        return decode_proxy(version, file);
     }
 
     std::unique_ptr<File> decode_tlg_5(File &file)
@@ -104,7 +104,7 @@ namespace
         return -1;
     }
 
-    std::unique_ptr<File> decode(int version, File &file)
+    std::unique_ptr<File> decode_proxy(int version, File &file)
     {
         switch (version)
         {
@@ -129,5 +129,5 @@ bool TlgConverter::is_recognized_internal(File &file) const
 std::unique_ptr<File> TlgConverter::decode_internal(File &file) const
 {
     int version = guess_version(file.io);
-    return ::decode(version, file);
+    return decode_proxy(version, file);
 }
