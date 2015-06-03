@@ -84,10 +84,10 @@ Features           | Game                                | CLI invocation
 ![][F]![][F]![][P] | Touhou 12.5                         | `--fmt=tha1`
 ![][F]![][F]![][P] | Touhou 12.8                         | `--fmt=tha1`
 ![][F]![][F]![][P] | Touhou 13                           | `--fmt=tha1`
-![][F]![][F]![][F] | Touhou 13.5                         | `--fmt=tfpk --dir-names=aux/tfpk-dir-names.lst`
+![][F]![][F]![][F] | Touhou 13.5                         | `--fmt=tfpk --dir-names=extra/tfpk-dir-names.lst`
 ![][F]![][F]![][P] | Touhou 14                           | `--fmt=tha1`
 ![][F]![][F]![][P] | Touhou 14.3                         | `--fmt=tha1`
-![][F]![][F]![][F] | Tsujidou-san no Jun'ai Road         | `--fmt=dat-whale --game-title=辻堂さんの純愛ロード --file-names=tsujidou-junai.lst`
+![][F]![][F]![][F] | Tsujidou-san no Jun'ai Road         | `--fmt=dat-whale --game-title=辻堂さんの純愛ロード --file-names=extra/tsujidou-junai.lst`
 ![][F]![][F]![][F] | Tsukihime                           | `--fmt=nsa`, `--fmt=sar`
 ![][F]![][F]![][F] | Umineko No Naku Koro Ni             | `--fmt=nsa`
 ![][F]![][F]![][F] | Wanko to Kurasou                    | `--fmt=mbl`
