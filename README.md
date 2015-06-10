@@ -87,6 +87,7 @@ Features           | Game                                | CLI invocation
 ![][F]![][F]![][F] | Touhou 13.5                         | `--fmt=tfpk --file-names=extra/th135-file-names.lst`
 ![][F]![][F]![][P] | Touhou 14                           | `--fmt=tha1`
 ![][F]![][F]![][P] | Touhou 14.3                         | `--fmt=tha1`
+![][F]![][P]![][F] | Touhou 14.5                         | `--fmt=tfpk --file-names=extra/th145-file-names.lst`
 ![][F]![][F]![][F] | Tsujidou-san no Jun'ai Road         | `--fmt=dat-whale --game-title=辻堂さんの純愛ロード --file-names=extra/tsujidou-junai.lst`
 ![][F]![][F]![][F] | Tsukihime                           | `--fmt=nsa`, `--fmt=sar`
 ![][F]![][F]![][F] | Umineko No Naku Koro Ni             | `--fmt=nsa`
