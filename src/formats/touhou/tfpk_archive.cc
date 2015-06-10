@@ -195,15 +195,15 @@ namespace
         std::string key;
     } TableEntry;
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
-
-    typedef std::map<uint32_t, std::string> DirNameMap;
-
     typedef struct
     {
         uint32_t initial_hash;
         size_t file_count;
     } DirEntry;
+
+    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    typedef std::vector<std::unique_ptr<DirEntry>> DirTable;
+    typedef std::map<uint32_t, std::string> HashLookupMap;
 
     std::string lower_ascii_only(std::string name_utf8)
     {
@@ -240,11 +240,15 @@ namespace
         return result;
     }
 
-    std::string get_dir_name(
-        DirEntry &dir_entry, DirNameMap dir_name_map)
+    std::string get_unknown_name(int file_index)
     {
-        auto it = dir_name_map.find(dir_entry.initial_hash);
-        if (it != dir_name_map.end())
+        return "unknown-" + itos(file_index) + ".dat";
+    }
+
+    std::string get_dir_name(DirEntry &dir_entry, HashLookupMap dn_map)
+    {
+        auto it = dn_map.find(dir_entry.initial_hash);
+        if (it != dn_map.end())
             return it->second;
         std::stringstream stream;
         stream
@@ -255,15 +259,14 @@ namespace
         return stream.str();
     }
 
-    std::vector<std::unique_ptr<DirEntry>> read_dir_entries(
-        RsaReader &rsa_reader)
+    DirTable read_dir_entries(RsaReader &reader)
     {
-        std::unique_ptr<BufferedIO> tmp_io(rsa_reader.read_block());
+        std::unique_ptr<BufferedIO> tmp_io(reader.read_block());
         std::vector<std::unique_ptr<DirEntry>> dir_entries;
         size_t dir_count = tmp_io->read_u32_le();
         for (size_t i = 0; i < dir_count; i ++)
         {
-            tmp_io = rsa_reader.read_block();
+            tmp_io = reader.read_block();
             std::unique_ptr<DirEntry> entry(new DirEntry);
             entry->initial_hash = tmp_io->read_u32_le();
             entry->file_count = tmp_io->read_u32_le();
@@ -272,22 +275,19 @@ namespace
         return dir_entries;
     }
 
-    std::map<uint32_t, std::string> read_file_names_map(
-        RsaReader &rsa_reader, DirNameMap dir_name_map)
+    HashLookupMap read_fn_map(
+        RsaReader &reader, DirTable &dir_entries, HashLookupMap &dn_map)
     {
-        std::map<uint32_t, std::string> map;
-        auto dir_entries = read_dir_entries(rsa_reader);
-        if (dir_entries.size() == 0)
-            return map;
+        HashLookupMap map;
 
-        std::unique_ptr<BufferedIO> tmp_io(rsa_reader.read_block());
+        std::unique_ptr<BufferedIO> tmp_io(reader.read_block());
         size_t table_size_compressed = tmp_io->read_u32_le();
         size_t table_size_original = tmp_io->read_u32_le();
         size_t block_count = tmp_io->read_u32_le();
 
         tmp_io.reset(new BufferedIO);
         for (size_t i = 0; i < block_count; i ++)
-            tmp_io->write_from_io(*rsa_reader.read_block());
+            tmp_io->write_from_io(*reader.read_block());
         if (tmp_io->size() < table_size_compressed)
             throw std::runtime_error("Invalid file table size");
 
@@ -297,62 +297,57 @@ namespace
 
         for (auto &dir_entry : dir_entries)
         {
-            std::string dir_name = get_dir_name(
-                *dir_entry, dir_name_map);
-            if (dir_name.size() > 0 && dir_name[dir_name.size() - 1] != '/')
-                dir_name += "/";
+            std::string dn = get_dir_name(*dir_entry, dn_map);
+            if (dn.size() > 0 && dn[dn.size() - 1] != '/')
+                dn += "/";
 
             for (size_t j = 0; j < dir_entry->file_count; j ++)
             {
-                std::string name = convert_encoding(
+                std::string fn = convert_encoding(
                     tmp_io->read_until_zero(), "cp932", "utf-8");
 
-                uint32_t hash = get_file_name_hash(
-                    name, dir_entry->initial_hash);
-
-                map[hash] = dir_name + name;
+                auto hash = get_file_name_hash(fn, dir_entry->initial_hash);
+                map[hash] = dn + fn;
             }
         }
         return map;
     }
 
     Table read_table(
-        RsaReader &rsa_reader, DirNameMap dir_name_map, TfpkVersion version)
+        RsaReader &reader, HashLookupMap dn_map, TfpkVersion version)
     {
-        auto file_name_map
-            = read_file_names_map(rsa_reader, dir_name_map);
+        HashLookupMap fn_map;
+        //TH135 contains file hashes, TH145 contains garbage
+        auto dir_entries = read_dir_entries(reader);
+        if (dir_entries.size() > 0)
+            fn_map = read_fn_map(reader, dir_entries, dn_map);
 
-        std::unique_ptr<BufferedIO> tmp_io(rsa_reader.read_block());
-        size_t file_count = tmp_io->read_u32_le();
-
-        auto file_names_start = rsa_reader.tell() + file_count * 3 * 0x40;
+        size_t file_count = reader.read_block()->read_u32_le();
 
         Table table;
         for (size_t i = 0; i < file_count; i ++)
         {
             std::unique_ptr<TableEntry> entry(new TableEntry);
+            auto b1 = reader.read_block();
+            auto b2 = reader.read_block();
+            auto b3 = reader.read_block();
             if (version == TfpkVersion::Th135)
             {
-                tmp_io = rsa_reader.read_block();
-                entry->size = tmp_io->read_u32_le();
-                entry->offset = tmp_io->read_u32_le() + file_names_start;
+                entry->size = b1->read_u32_le();
+                entry->offset = b1->read_u32_le();
 
-                tmp_io = rsa_reader.read_block();
-                uint32_t file_name_hash = tmp_io->read_u32_le();
-                auto it = file_name_map.find(file_name_hash);
-                if (it == file_name_map.end())
-                    throw std::runtime_error("Could not find file name hash");
-                entry->name = it->second;
+                auto fn_hash = b2->read_u32_le();
+                auto it = fn_map.find(fn_hash);
+                entry->name = it == fn_map.end()
+                    ? get_unknown_name(i)
+                    : it->second;
 
-                entry->key = rsa_reader.read_block()->read(16);
+                entry->key = b3->read(16);
             }
             else
             {
-                auto b1 = rsa_reader.read_block();
-                auto b2 = rsa_reader.read_block();
-                auto b3 = rsa_reader.read_block();
                 entry->size   = b1->read_u32_le() ^ b3->read_u32_le();
-                entry->offset = (b1->read_u32_le() ^ b3->read_u32_le()) + file_names_start;
+                entry->offset = (b1->read_u32_le() ^ b3->read_u32_le());
 
                 uint32_t unk0 = b2->read_u32_le() ^ b3->read_u32_le();
                 uint32_t unk1 = b2->read_u32_le() ^ b3->read_u32_le();
@@ -360,14 +355,21 @@ namespace
                 b3->seek(0);
                 BufferedIO key_io;
                 for (int i = 0; i < 4; i ++)
-                    key_io.write_u32_le(reinterpret_cast<uint32_t>(-b3->read_u32_le()));
+                {
+                    key_io.write_u32_le(
+                        reinterpret_cast<uint32_t>(-b3->read_u32_le()));
+                }
                 key_io.seek(0);
                 entry->key = key_io.read_until_end();
 
-                entry->name = "unknown-" + itos(i) + ".dat";
+                entry->name = get_unknown_name(i);
             }
             table.push_back(std::move(entry));
         }
+
+        auto table_end = reader.tell();
+        for (auto &entry : table)
+            entry->offset += table_end;
 
         return table;
     }
@@ -391,6 +393,7 @@ namespace
             const char *key = entry.key.c_str();
             char *buf = tmp_io.buffer();
             size_t i = 0;
+
             uint32_t c = *reinterpret_cast<const uint32_t*>(&key[0]);
             if (entry.size % 4 == 1)
             {
@@ -403,7 +406,8 @@ namespace
             if (entry.size % 4 == 2)
             {
                 uint16_t tmp = *reinterpret_cast<uint16_t*>(&buf[i]);
-                *reinterpret_cast<uint16_t*>(&buf[i]) ^= c ^ *reinterpret_cast<const uint16_t*>(&key[i & 0xf]);
+                *reinterpret_cast<uint16_t*>(&buf[i])
+                    ^= c ^ *reinterpret_cast<const uint16_t*>(&key[i & 0xf]);
                 i += 2;
                 c >>= 16;
                 c |= tmp;
@@ -411,7 +415,8 @@ namespace
             while (i < entry.size)
             {
                 uint32_t tmp = *reinterpret_cast<uint32_t*>(&buf[i]);
-                *reinterpret_cast<uint32_t*>(&buf[i]) ^= c ^ *reinterpret_cast<const uint32_t*>(&key[i & 0xf]);
+                *reinterpret_cast<uint32_t*>(&buf[i])
+                    ^= c ^ *reinterpret_cast<const uint32_t*>(&key[i & 0xf]);
                 i += 4;
                 c = tmp;
             }
@@ -440,7 +445,7 @@ namespace
 
     PaletteMap find_all_palettes(
         const boost::filesystem::path &arc_path,
-        DirNameMap dir_name_map,
+        HashLookupMap dn_map,
         TfpkVersion version)
     {
         PaletteMap palettes;
@@ -461,8 +466,8 @@ namespace
                 if (sub_arc_io.read(magic.size()) != magic)
                     continue;
                 sub_arc_io.skip(1);
-                RsaReader rsa_reader(sub_arc_io);
-                for (auto &entry : read_table(rsa_reader, dir_name_map, version))
+                RsaReader reader(sub_arc_io);
+                for (auto &entry : read_table(reader, dn_map, version))
                 {
                     if (entry->name.find("palette") == std::string::npos)
                         continue;
@@ -486,7 +491,7 @@ struct TfpkArchive::Internals
     TfcsConverter tfcs_converter;
     TfwaConverter tfwa_converter;
     Formats::Microsoft::DdsConverter dds_converter;
-    DirNameMap dir_name_map;
+    HashLookupMap dn_map;
 };
 
 void TfpkArchive::add_cli_help(ArgParser &arg_parser) const
@@ -506,9 +511,7 @@ void TfpkArchive::parse_cli_options(const ArgParser &arg_parser)
         FileIO io(path, FileIOMode::Read);
         std::string line;
         while ((line = io.read_line()) != "")
-        {
-            internals->dir_name_map[get_file_name_hash(line)] = line;
-        }
+            internals->dn_map[get_file_name_hash(line)] = line;
     }
 
     Archive::parse_cli_options(arg_parser);
@@ -542,11 +545,11 @@ void TfpkArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         : TfpkVersion::Th145;
 
     auto palette_map = find_all_palettes(
-        arc_file.name, internals->dir_name_map, version);
+        arc_file.name, internals->dn_map, version);
     internals->tfbm_converter.set_palette_map(palette_map);
 
-    RsaReader rsa_reader(arc_file.io);
-    Table table = read_table(rsa_reader, internals->dir_name_map, version);
+    RsaReader reader(arc_file.io);
+    Table table = read_table(reader, internals->dn_map, version);
 
     for (auto &entry : table)
         file_saver.save(read_file(arc_file.io, *entry, version));
