@@ -86,12 +86,17 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
                     rgba = source_io.read_u32_le();
                     break;
 
+                case 16:
+                    rgba = rgb565(source_io.read_u16_le());
+                    break;
+
                 case 8:
                     rgba = palette[source_io.read_u8()];
                     break;
 
                 default:
-                    throw std::runtime_error("Unsupported channel count");
+                    throw std::runtime_error("Unsupported channel count "
+                        + itos(bit_depth));
             }
 
             if (x < image_width)
