@@ -6,6 +6,7 @@
 //
 // Known games:
 // - Touhou 13.5 - Hopeless Masquerade
+// - Touhou 14.5 - Urban Legend in Limbo
 
 #include <boost/filesystem.hpp>
 #include <iomanip>
@@ -24,6 +25,7 @@
 #include "io/buffered_io.h"
 #include "util/colors.h"
 #include "util/encoding.h"
+#include "util/itos.h"
 #include "util/zlib.h"
 using namespace Formats::Touhou;
 
@@ -37,7 +39,7 @@ namespace
 
     const std::vector<RsaKey> rsa_keys(
         {
-            //Japanese version
+            //TH13.5 Japanese version
             {
                 {
                     0xC7, 0x9A, 0x9E, 0x9B, 0xFB, 0xC2, 0x0C, 0xB0,
@@ -52,7 +54,7 @@ namespace
                 65537,
             },
 
-            //English patch
+            //TH13.5 English patch
             {
                 {
                     0xFF, 0x65, 0x72, 0x74, 0x61, 0x69, 0x52, 0x20,
@@ -63,6 +65,21 @@ namespace
                     0x93, 0x7F, 0x40, 0xEA, 0x34, 0xA5, 0x85, 0xC1,
                     0x1B, 0x8D, 0x63, 0x17, 0x75, 0x98, 0x2D, 0xA8,
                     0x17, 0x45, 0x31, 0x31, 0x51, 0x4F, 0x6E, 0x8D
+                },
+                65537,
+            },
+
+            //TH14.5 Japanese version
+            {
+                {
+                    0xC6, 0x43, 0xE0, 0x9D, 0x35, 0x5E, 0x98, 0x1D,
+                    0xBE, 0x63, 0x6D, 0x3A, 0x5F, 0x84, 0x0F, 0x49,
+                    0xB8, 0xE8, 0x53, 0xF5, 0x42, 0x06, 0x37, 0x3B,
+                    0x36, 0x25, 0xCB, 0x65, 0xCE, 0xDD, 0x68, 0x8C,
+                    0xF7, 0x5D, 0x72, 0x0A, 0xC0, 0x47, 0xBD, 0xFA,
+                    0x3B, 0x10, 0x4C, 0xD2, 0x2C, 0xFE, 0x72, 0x03,
+                    0x10, 0x4D, 0xD8, 0x85, 0x15, 0x35, 0x55, 0xA3,
+                    0x5A, 0xAF, 0xC3, 0x4A, 0x3B, 0xF3, 0xE2, 0x37,
                 },
                 65537,
             },
@@ -162,7 +179,13 @@ namespace
 
 namespace
 {
-    const std::string magic("TFPK\x00", 5);
+    const std::string magic("TFPK", 4);
+
+    enum class TfpkVersion : uint8_t
+    {
+        Th135,
+        Th145,
+    };
 
     typedef struct
     {
@@ -252,7 +275,10 @@ namespace
     std::map<uint32_t, std::string> read_file_names_map(
         RsaReader &rsa_reader, DirNameMap dir_name_map)
     {
+        std::map<uint32_t, std::string> map;
         auto dir_entries = read_dir_entries(rsa_reader);
+        if (dir_entries.size() == 0)
+            return map;
 
         std::unique_ptr<BufferedIO> tmp_io(rsa_reader.read_block());
         size_t table_size_compressed = tmp_io->read_u32_le();
@@ -269,7 +295,6 @@ namespace
         tmp_io.reset(
             new BufferedIO(zlib_inflate(tmp_io->read(table_size_compressed))));
 
-        std::map<uint32_t, std::string> map;
         for (auto &dir_entry : dir_entries)
         {
             std::string dir_name = get_dir_name(
@@ -292,7 +317,7 @@ namespace
     }
 
     Table read_table(
-        RsaReader &rsa_reader, DirNameMap dir_name_map)
+        RsaReader &rsa_reader, DirNameMap dir_name_map, TfpkVersion version)
     {
         auto file_name_map
             = read_file_names_map(rsa_reader, dir_name_map);
@@ -300,52 +325,108 @@ namespace
         std::unique_ptr<BufferedIO> tmp_io(rsa_reader.read_block());
         size_t file_count = tmp_io->read_u32_le();
 
+        auto file_names_start = rsa_reader.tell() + file_count * 3 * 0x40;
+
         Table table;
         for (size_t i = 0; i < file_count; i ++)
         {
             std::unique_ptr<TableEntry> entry(new TableEntry);
+            if (version == TfpkVersion::Th135)
+            {
+                tmp_io = rsa_reader.read_block();
+                entry->size = tmp_io->read_u32_le();
+                entry->offset = tmp_io->read_u32_le() + file_names_start;
 
-            tmp_io = rsa_reader.read_block();
-            entry->size = tmp_io->read_u32_le();
-            entry->offset = tmp_io->read_u32_le();
+                tmp_io = rsa_reader.read_block();
+                uint32_t file_name_hash = tmp_io->read_u32_le();
+                auto it = file_name_map.find(file_name_hash);
+                if (it == file_name_map.end())
+                    throw std::runtime_error("Could not find file name hash");
+                entry->name = it->second;
 
-            tmp_io = rsa_reader.read_block();
-            uint32_t file_name_hash = tmp_io->read_u32_le();
-            auto it = file_name_map.find(file_name_hash);
-            if (it == file_name_map.end())
-                throw std::runtime_error("Could not find file name hash");
-            entry->name = it->second;
+                entry->key = rsa_reader.read_block()->read(16);
+            }
+            else
+            {
+                auto b1 = rsa_reader.read_block();
+                auto b2 = rsa_reader.read_block();
+                auto b3 = rsa_reader.read_block();
+                entry->size   = b1->read_u32_le() ^ b3->read_u32_le();
+                entry->offset = (b1->read_u32_le() ^ b3->read_u32_le()) + file_names_start;
 
-            entry->key = rsa_reader.read_block()->read(16);
+                uint32_t unk0 = b2->read_u32_le() ^ b3->read_u32_le();
+                uint32_t unk1 = b2->read_u32_le() ^ b3->read_u32_le();
+
+                b3->seek(0);
+                BufferedIO key_io;
+                for (int i = 0; i < 4; i ++)
+                    key_io.write_u32_le(reinterpret_cast<uint32_t>(-b3->read_u32_le()));
+                key_io.seek(0);
+                entry->key = key_io.read_until_end();
+
+                entry->name = "unknown-" + itos(i) + ".dat";
+            }
             table.push_back(std::move(entry));
         }
-
-        auto file_names_start = rsa_reader.tell();
-        for (auto &entry : table)
-            entry->offset += file_names_start;
 
         return table;
     }
 
-    std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+    std::unique_ptr<File> read_file(
+        IO &arc_io, const TableEntry &entry, TfpkVersion version)
     {
         std::unique_ptr<File> file(new File);
         file->name = entry.name;
 
         arc_io.seek(entry.offset);
         BufferedIO tmp_io(arc_io, entry.size);
-        size_t key_size = entry.key.size();
-        for (size_t i = 0; i < entry.size; i ++)
-            tmp_io.buffer()[i] ^= entry.key[i % key_size];
+        if (version == TfpkVersion::Th135)
+        {
+            size_t key_size = entry.key.size();
+            for (size_t i = 0; i < entry.size; i ++)
+                tmp_io.buffer()[i] ^= entry.key[i % key_size];
+        }
+        else
+        {
+            const char *key = entry.key.c_str();
+            char *buf = tmp_io.buffer();
+            size_t i = 0;
+            uint32_t c = *reinterpret_cast<const uint32_t*>(&key[0]);
+            if (entry.size % 4 == 1)
+            {
+                uint8_t tmp = buf[i];
+                buf[i] ^= c ^ key[i & 0xf];
+                ++ i;
+                c >>= 8;
+                c |= tmp;
+            }
+            if (entry.size % 4 == 2)
+            {
+                uint16_t tmp = *reinterpret_cast<uint16_t*>(&buf[i]);
+                *reinterpret_cast<uint16_t*>(&buf[i]) ^= c ^ *reinterpret_cast<const uint16_t*>(&key[i & 0xf]);
+                i += 2;
+                c >>= 16;
+                c |= tmp;
+            }
+            while (i < entry.size)
+            {
+                uint32_t tmp = *reinterpret_cast<uint32_t*>(&buf[i]);
+                *reinterpret_cast<uint32_t*>(&buf[i]) ^= c ^ *reinterpret_cast<const uint32_t*>(&key[i & 0xf]);
+                i += 4;
+                c = tmp;
+            }
+            tmp_io.seek(0);
+        }
         file->io.write_from_io(tmp_io);
+        file->guess_extension();
 
         return file;
     }
 
-    Palette read_palette_file(IO &arc_io, TableEntry &entry)
+    Palette read_palette_file(IO &arc_io, TableEntry &entry, TfpkVersion version)
     {
         const std::string pal_magic("TFPA\x00", 5);
-        auto pal_file = read_file(arc_io, entry);
+        auto pal_file = read_file(arc_io, entry, version);
         pal_file->io.seek(0);
         if (pal_file->io.read(pal_magic.size()) != pal_magic)
             throw std::runtime_error("Not a TFPA palette file");
@@ -358,7 +439,9 @@ namespace
     }
 
     PaletteMap find_all_palettes(
-        const boost::filesystem::path &arc_path, DirNameMap dir_name_map)
+        const boost::filesystem::path &arc_path,
+        DirNameMap dir_name_map,
+        TfpkVersion version)
     {
         PaletteMap palettes;
 
@@ -377,13 +460,14 @@ namespace
                 FileIO sub_arc_io(it->path(), FileIOMode::Read);
                 if (sub_arc_io.read(magic.size()) != magic)
                     continue;
+                sub_arc_io.skip(1);
                 RsaReader rsa_reader(sub_arc_io);
-                for (auto &entry : read_table(rsa_reader, dir_name_map))
+                for (auto &entry : read_table(rsa_reader, dir_name_map, version))
                 {
                     if (entry->name.find("palette") == std::string::npos)
                         continue;
                     palettes[entry->name]
-                        = read_palette_file(sub_arc_io, *entry);
+                        = read_palette_file(sub_arc_io, *entry, version);
                 }
             }
             catch (...)
@@ -444,19 +528,26 @@ TfpkArchive::~TfpkArchive()
 
 bool TfpkArchive::is_recognized_internal(File &arc_file) const
 {
-    return arc_file.io.read(magic.size()) == magic;
+    if (arc_file.io.read(magic.size()) != magic)
+        return false;
+    auto version = arc_file.io.read_u8();
+    return version == 0 || version == 1;
 }
 
 void TfpkArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     arc_file.io.skip(magic.size());
+    auto version = arc_file.io.read_u8() == 0
+        ? TfpkVersion::Th135
+        : TfpkVersion::Th145;
 
-    auto palette_map = find_all_palettes(arc_file.name, internals->dir_name_map);
+    auto palette_map = find_all_palettes(
+        arc_file.name, internals->dir_name_map, version);
     internals->tfbm_converter.set_palette_map(palette_map);
 
     RsaReader rsa_reader(arc_file.io);
-    Table table = read_table(rsa_reader, internals->dir_name_map);
+    Table table = read_table(rsa_reader, internals->dir_name_map, version);
 
     for (auto &entry : table)
-        file_saver.save(read_file(arc_file.io, *entry));
+        file_saver.save(read_file(arc_file.io, *entry, version));
 }
