@@ -260,10 +260,10 @@ namespace
         return "unknown-" + itos(file_index) + ".dat";
     }
 
-    std::string get_dir_name(DirEntry &dir_entry, HashLookupMap dn_map)
+    std::string get_dir_name(DirEntry &dir_entry, HashLookupMap user_fn_map)
     {
-        auto it = dn_map.find(dir_entry.initial_hash);
-        if (it != dn_map.end())
+        auto it = user_fn_map.find(dir_entry.initial_hash);
+        if (it != user_fn_map.end())
             return it->second;
         std::stringstream stream;
         stream
@@ -293,7 +293,7 @@ namespace
     HashLookupMap read_fn_map(
         RsaReader &reader,
         DirTable &dir_entries,
-        HashLookupMap &dn_map,
+        HashLookupMap &user_fn_map,
         TfpkVersion version)
     {
         HashLookupMap fn_map;
@@ -315,7 +315,7 @@ namespace
 
         for (auto &dir_entry : dir_entries)
         {
-            std::string dn = get_dir_name(*dir_entry, dn_map);
+            std::string dn = get_dir_name(*dir_entry, user_fn_map);
             if (dn.size() > 0 && dn[dn.size() - 1] != '/')
                 dn += "/";
 
@@ -333,13 +333,17 @@ namespace
     }
 
     Table read_table(
-        RsaReader &reader, HashLookupMap dn_map, TfpkVersion version)
+        RsaReader &reader, HashLookupMap user_fn_map, TfpkVersion version)
     {
         HashLookupMap fn_map;
+
         //TH135 contains file hashes, TH145 contains garbage
         auto dir_entries = read_dir_entries(reader);
         if (dir_entries.size() > 0)
-            fn_map = read_fn_map(reader, dir_entries, dn_map, version);
+            fn_map = read_fn_map(reader, dir_entries, user_fn_map, version);
+
+        for (auto &it : user_fn_map)
+            fn_map[it.first] = it.second;
 
         size_t file_count = reader.read_block()->read_u32_le();
 
@@ -368,8 +372,12 @@ namespace
                 entry->size   = b1->read_u32_le() ^ b3->read_u32_le();
                 entry->offset = (b1->read_u32_le() ^ b3->read_u32_le());
 
-                uint32_t unk0 = b2->read_u32_le() ^ b3->read_u32_le();
-                uint32_t unk1 = b2->read_u32_le() ^ b3->read_u32_le();
+                uint32_t fn_hash = b2->read_u32_le() ^ b3->read_u32_le();
+                uint32_t unk = b2->read_u32_le() ^ b3->read_u32_le();
+                auto it = fn_map.find(fn_hash);
+                entry->name = it == fn_map.end()
+                    ? get_unknown_name(i)
+                    : it->second;
 
                 b3->seek(0);
                 BufferedIO key_io;
@@ -384,8 +392,6 @@ namespace
 
                 key_io.seek(0);
                 entry->key = key_io.read_until_end();
-
-                entry->name = get_unknown_name(i);
             }
             table.push_back(std::move(entry));
         }
@@ -468,7 +474,7 @@ namespace
 
     PaletteMap find_all_palettes(
         const boost::filesystem::path &arc_path,
-        HashLookupMap &dn_map,
+        HashLookupMap &user_fn_map,
         TfpkVersion version)
     {
         PaletteMap palettes;
@@ -490,7 +496,7 @@ namespace
                     continue;
                 sub_arc_io.skip(1);
                 RsaReader reader(sub_arc_io);
-                for (auto &entry : read_table(reader, dn_map, version))
+                for (auto &entry : read_table(reader, user_fn_map, version))
                 {
                     if (entry->name.find("palette") == std::string::npos)
                         continue;
@@ -514,27 +520,28 @@ struct TfpkArchive::Internals
     TfcsConverter tfcs_converter;
     TfwaConverter tfwa_converter;
     Formats::Microsoft::DdsConverter dds_converter;
-    std::set<std::string> dn_set;
+    std::set<std::string> fn_set;
 };
 
 void TfpkArchive::add_cli_help(ArgParser &arg_parser) const
 {
     arg_parser.add_help(
-        "--dir-names=PATH",
-        "Specifies path to file containing list of game's folder names.\n");
+        "--file-names=PATH",
+        "Specifies path to file containing list of game's file names.\n"
+        "Used to give files meaningful names and to use 8-bit palettes in images.\n");
 
     Archive::add_cli_help(arg_parser);
 }
 
 void TfpkArchive::parse_cli_options(const ArgParser &arg_parser)
 {
-    auto path = arg_parser.get_switch("dir-names");
+    auto path = arg_parser.get_switch("file-names");
     if (path != "")
     {
         FileIO io(path, FileIOMode::Read);
         std::string line;
         while ((line = io.read_line()) != "")
-            internals->dn_set.insert(line);
+            internals->fn_set.insert(line);
     }
 
     Archive::parse_cli_options(arg_parser);
@@ -567,15 +574,15 @@ void TfpkArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         ? TfpkVersion::Th135
         : TfpkVersion::Th145;
 
-    HashLookupMap dn_map;
-    for (auto &dn : internals->dn_set)
-        dn_map[get_file_name_hash(dn, version)] = dn;
+    HashLookupMap user_fn_map;
+    for (auto &fn : internals->fn_set)
+        user_fn_map[get_file_name_hash(fn, version)] = fn;
 
-    auto palette_map = find_all_palettes(arc_file.name, dn_map, version);
+    auto palette_map = find_all_palettes(arc_file.name, user_fn_map, version);
     internals->tfbm_converter.set_palette_map(palette_map);
 
     RsaReader reader(arc_file.io);
-    Table table = read_table(reader, dn_map, version);
+    Table table = read_table(reader, user_fn_map, version);
 
     for (auto &entry : table)
         file_saver.save(read_file(arc_file.io, *entry, version));
