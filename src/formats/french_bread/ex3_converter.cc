@@ -96,7 +96,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
             }
         }
         if (file.io.tell() < file.io.size())
-        b = file.io.read_u8();
+            b = file.io.read_u8();
     }
 
     output.seek(0);

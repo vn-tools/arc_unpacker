@@ -39,9 +39,9 @@ namespace
         std::string name = convert_encoding(encoded_name, "cp932", "utf-8");
 
         if (magic == magic_snddat11
-        || magic == magic_imgdat11
-        || magic == magic_imgdat13
-        || magic == magic_imgdat14)
+            || magic == magic_imgdat11
+            || magic == magic_imgdat13
+            || magic == magic_imgdat14)
         {
             arc_io.skip(arc_io.read_u16_le());
         }

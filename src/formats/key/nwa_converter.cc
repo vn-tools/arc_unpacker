@@ -93,10 +93,10 @@ std::unique_ptr<File> NwaConverter::decode_internal(File &file) const
     std::string samples;
 
     if (header.compression_level == -1
-    || header.block_count == 0
-    || header.compressed_size == 0
-    || header.block_size == 0
-    || header.rest_size == 0)
+        || header.block_count == 0
+        || header.compressed_size == 0
+        || header.block_size == 0
+        || header.rest_size == 0)
     {
         samples = nwa_read_uncompressed(file.io, header);
     }

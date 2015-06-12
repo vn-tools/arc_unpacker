@@ -47,8 +47,6 @@ namespace
             block_data = std::move(new_data);
             block_size = new_data_size;
         }
-
-
     } BlockInfo;
 
     void load_pixel_block_row(
@@ -117,9 +115,7 @@ namespace
     }
 
     void read_pixels(
-        IO &io,
-        uchar *output,
-        Header &header)
+        IO &io, uchar *output, Header &header)
     {
         // ignore block sizes
         size_t block_count
