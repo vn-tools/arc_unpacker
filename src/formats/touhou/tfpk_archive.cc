@@ -388,8 +388,6 @@ namespace
                 BufferedIO key_io;
                 for (int i = 0; i < 4; i ++)
                     key_io.write_u32_le(neg32(b3->read_u32_le()));
-                b3->seek(0);
-                key_io.write_u32_le(neg32(b3->read_u32_le()));
 
                 key_io.seek(0);
                 entry->key = key_io.read_until_end();
@@ -412,45 +410,25 @@ namespace
 
         arc_io.seek(entry.offset);
         BufferedIO tmp_io(arc_io, entry.size);
+        size_t key_size = entry.key.size();
         if (version == TfpkVersion::Th135)
         {
-            size_t key_size = entry.key.size();
             for (size_t i = 0; i < entry.size; i ++)
                 tmp_io.buffer()[i] ^= entry.key[i % key_size];
         }
         else
         {
-            const char *key = entry.key.c_str();
-            char *buf = tmp_io.buffer();
-            size_t i = 0;
-
-            u32 c = *reinterpret_cast<const u32*>(&key[0]);
-            if (entry.size & 1)
+            const u8 *key = reinterpret_cast<const u8*>(entry.key.c_str());
+            u8 *buf = reinterpret_cast<u8*>(tmp_io.buffer());
+            u8 aux[4];
+            for (size_t i = 0; i < 4; i ++)
+                aux[i] = key[i];
+            for (size_t i = 0; i < entry.size; i ++)
             {
                 u8 tmp = buf[i];
-                buf[i] ^= c ^ key[i & 0xf];
-                ++ i;
-                c >>= 8;
-                c |= (tmp << 24);
+                buf[i] = tmp ^ key[i % key_size] ^ aux[i%4];
+                aux[i%4] = tmp;
             }
-            if (entry.size & 2)
-            {
-                u16 tmp = *reinterpret_cast<u16*>(&buf[i]);
-                *reinterpret_cast<u16*>(&buf[i])
-                    ^= c ^ *reinterpret_cast<const u16*>(&key[i & 0xf]);
-                i += 2;
-                c >>= 16;
-                c |= (tmp << 16);
-            }
-            while (i < entry.size)
-            {
-                u32 tmp = *reinterpret_cast<u32*>(&buf[i]);
-                u32 k = *reinterpret_cast<const u32*>(&key[i & 0xf]);
-                *reinterpret_cast<u32*>(&buf[i]) ^= c ^ k;
-                i += 4;
-                c = tmp;
-            }
-            tmp_io.seek(0);
         }
         file->io.write_from_io(tmp_io);
         file->guess_extension();
