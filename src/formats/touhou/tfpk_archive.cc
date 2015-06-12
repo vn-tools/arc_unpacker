@@ -206,6 +206,11 @@ namespace
     typedef std::vector<std::unique_ptr<DirEntry>> DirTable;
     typedef std::map<uint32_t, std::string> HashLookupMap;
 
+    uint32_t neg32(uint32_t x)
+    {
+        return static_cast<uint32_t>(-static_cast<int32_t>(x));
+    }
+
     std::string lower_ascii_only(std::string name_utf8)
     {
         //while SJIS can use ASCII for encoding multibyte characters,
@@ -251,7 +256,7 @@ namespace
                 result ^= name_processed[i];
                 result *= 0x1000193;
             }
-            return reinterpret_cast<uint32_t>(-result);
+            return neg32(result);
         }
     }
 
@@ -382,13 +387,9 @@ namespace
                 b3->seek(0);
                 BufferedIO key_io;
                 for (int i = 0; i < 4; i ++)
-                {
-                    key_io.write_u32_le(
-                        reinterpret_cast<uint32_t>(-b3->read_u32_le()));
-                }
+                    key_io.write_u32_le(neg32(b3->read_u32_le()));
                 b3->seek(0);
-                key_io.write_u32_le(
-                    reinterpret_cast<uint32_t>(-b3->read_u32_le()));
+                key_io.write_u32_le(neg32(b3->read_u32_le()));
 
                 key_io.seek(0);
                 entry->key = key_io.read_until_end();
