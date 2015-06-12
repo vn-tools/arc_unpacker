@@ -18,16 +18,16 @@ namespace
 {
     typedef struct
     {
-        uint16_t channel_count;
-        uint16_t bits_per_sample;
-        uint32_t sample_rate;
+        u16 channel_count;
+        u16 bits_per_sample;
+        u32 sample_rate;
         int32_t compression_level;
-        uint32_t block_count;
-        uint32_t uncompressed_size;
-        uint32_t compressed_size;
-        uint32_t sample_count;
-        uint32_t block_size;
-        uint32_t rest_size;
+        u32 block_count;
+        u32 uncompressed_size;
+        u32 compressed_size;
+        u32 sample_count;
+        u32 block_size;
+        u32 rest_size;
     } NwaHeader;
 
     void nwa_validate_header(const NwaHeader &header)

@@ -20,22 +20,22 @@ namespace
     typedef struct DosHeader
     {
         std::string magic;
-        uint16_t e_cblp;
-        uint16_t e_cp;
-        uint16_t e_crlc;
-        uint16_t e_cparhdr;
-        uint16_t e_minalloc;
-        uint16_t e_maxalloc;
-        uint16_t e_ss;
-        uint16_t e_sp;
-        uint16_t e_csum;
-        uint16_t e_ip;
-        uint16_t e_cs;
-        uint16_t e_lfarlc;
-        uint16_t e_ovno;
-        uint16_t e_oemid;
-        uint16_t e_oeminfo;
-        uint32_t e_lfanew;
+        u16 e_cblp;
+        u16 e_cp;
+        u16 e_crlc;
+        u16 e_cparhdr;
+        u16 e_minalloc;
+        u16 e_maxalloc;
+        u16 e_ss;
+        u16 e_sp;
+        u16 e_csum;
+        u16 e_ip;
+        u16 e_cs;
+        u16 e_lfarlc;
+        u16 e_ovno;
+        u16 e_oemid;
+        u16 e_oeminfo;
+        u32 e_lfanew;
 
         DosHeader(IO &io)
         {
@@ -63,36 +63,36 @@ namespace
 
     typedef struct ImageOptionalHeader
     {
-        uint16_t magic;
-        uint8_t major_linker_version;
-        uint8_t minor_linker_version;
-        uint32_t size_of_code;
-        uint32_t size_of_initialized_data;
-        uint32_t size_of_uninitialized_data;
-        uint32_t address_of_entry_point;
-        uint32_t base_of_code;
-        uint32_t base_of_data;
-        uint32_t image_base;
-        uint32_t section_alignment;
-        uint32_t file_alignment;
-        uint16_t major_operating_system_version;
-        uint16_t minor_operating_system_version;
-        uint16_t major_image_version;
-        uint16_t minor_image_version;
-        uint16_t major_subsystem_version;
-        uint16_t minor_subsystem_version;
-        uint32_t win32_version_value;
-        uint32_t size_of_image;
-        uint32_t size_of_headers;
-        uint32_t checksum;
-        uint16_t subsystem;
-        uint16_t dll_characteristics;
-        uint64_t size_of_stack_reserve;
-        uint64_t size_of_stack_commit;
-        uint64_t size_of_heap_reserve;
-        uint64_t size_of_heap_commit;
-        uint32_t loader_flags;
-        uint32_t number_of_rva_and_sizes;
+        u16 magic;
+        u8 major_linker_version;
+        u8 minor_linker_version;
+        u32 size_of_code;
+        u32 size_of_initialized_data;
+        u32 size_of_uninitialized_data;
+        u32 address_of_entry_point;
+        u32 base_of_code;
+        u32 base_of_data;
+        u32 image_base;
+        u32 section_alignment;
+        u32 file_alignment;
+        u16 major_operating_system_version;
+        u16 minor_operating_system_version;
+        u16 major_image_version;
+        u16 minor_image_version;
+        u16 major_subsystem_version;
+        u16 minor_subsystem_version;
+        u32 win32_version_value;
+        u32 size_of_image;
+        u32 size_of_headers;
+        u32 checksum;
+        u16 subsystem;
+        u16 dll_characteristics;
+        u64 size_of_stack_reserve;
+        u64 size_of_stack_commit;
+        u64 size_of_heap_reserve;
+        u64 size_of_heap_commit;
+        u32 loader_flags;
+        u32 number_of_rva_and_sizes;
 
         ImageOptionalHeader(IO &io)
         {
@@ -142,13 +142,13 @@ namespace
 
     typedef struct ImageFileHeader
     {
-        uint16_t machine;
-        uint16_t number_of_sections;
-        uint32_t timestamp;
-        uint32_t pointer_to_symbol_table;
-        uint32_t number_of_symbols;
-        uint16_t size_of_optional_header;
-        uint16_t characteristics;
+        u16 machine;
+        u16 number_of_sections;
+        u32 timestamp;
+        u32 pointer_to_symbol_table;
+        u32 number_of_symbols;
+        u16 size_of_optional_header;
+        u16 characteristics;
 
         ImageFileHeader(IO &io)
         {
@@ -164,7 +164,7 @@ namespace
 
     typedef struct ImageNtHeader
     {
-        uint32_t signature;
+        u32 signature;
         ImageFileHeader file_header;
         ImageOptionalHeader optional_header;
 
@@ -178,8 +178,8 @@ namespace
 
     typedef struct ImageDataDirectory
     {
-        uint32_t virtual_address;
-        uint32_t size;
+        u32 virtual_address;
+        u32 size;
 
         ImageDataDirectory(IO &io)
         {
@@ -191,16 +191,16 @@ namespace
     typedef struct ImageSectionHeader
     {
         std::string name;
-        uint32_t virtual_size;
-        uint32_t physical_address;
-        uint32_t virtual_address;
-        uint32_t size_of_raw_data;
-        uint32_t pointer_to_raw_data;
-        uint32_t pointer_to_relocations;
-        uint32_t pointer_to_line_numbers;
-        uint16_t number_of_relocations;
-        uint16_t number_of_line_numbers;
-        uint32_t characteristics;
+        u32 virtual_size;
+        u32 physical_address;
+        u32 virtual_address;
+        u32 size_of_raw_data;
+        u32 pointer_to_raw_data;
+        u32 pointer_to_relocations;
+        u32 pointer_to_line_numbers;
+        u16 number_of_relocations;
+        u16 number_of_line_numbers;
+        u32 characteristics;
 
         ImageSectionHeader(IO &io)
         {
@@ -219,12 +219,12 @@ namespace
 
     typedef struct ImageResourceDirectory
     {
-        uint32_t characteristics;
-        uint32_t timestamp;
-        uint16_t major_version;
-        uint16_t minor_version;
-        uint16_t number_of_named_entries;
-        uint16_t number_of_id_entries;
+        u32 characteristics;
+        u32 timestamp;
+        u16 major_version;
+        u16 minor_version;
+        u16 number_of_named_entries;
+        u16 number_of_id_entries;
 
         ImageResourceDirectory(IO &io)
         {
@@ -239,12 +239,12 @@ namespace
 
     typedef struct ImageResourceDirectoryEntry
     {
-        uint32_t offset_to_data;
+        u32 offset_to_data;
         bool name_is_string;
-        uint32_t name_offset;
-        uint32_t name;
-        uint32_t id;
-        uint32_t data_is_directory;
+        u32 name_offset;
+        u32 name;
+        u32 id;
+        u32 data_is_directory;
 
         ImageResourceDirectoryEntry(IO &io)
         {
@@ -262,9 +262,9 @@ namespace
 
     typedef struct ImageResourceDataEntry
     {
-        uint32_t offset_to_data;
-        uint32_t size;
-        uint32_t code_page;
+        u32 offset_to_data;
+        u32 size;
+        u32 code_page;
 
         ImageResourceDataEntry(IO &io)
         {
@@ -278,12 +278,12 @@ namespace
     class RvaHelper
     {
     private:
-        uint32_t file_alignment;
-        uint32_t section_alignment;
+        u32 file_alignment;
+        u32 section_alignment;
 
         const ImageSectionHeader &section_for_rva(
             const std::vector<ImageSectionHeader> &sections,
-            uint32_t rva)
+            u32 rva)
         {
             for (auto &section : sections)
             {
@@ -296,14 +296,14 @@ namespace
             throw std::runtime_error("Section not found");
         }
 
-        uint32_t adjust_file_alignment(uint32_t offset)
+        u32 adjust_file_alignment(u32 offset)
         {
             return file_alignment < 0x200 ? offset : (offset / 0x200) * 0x200;
         }
 
-        uint32_t adjust_section_alignment(uint32_t offset)
+        u32 adjust_section_alignment(u32 offset)
         {
-            uint32_t fixed_alignment
+            u32 fixed_alignment
                 = section_alignment < 0x1000
                     ? file_alignment
                     : section_alignment;
@@ -313,14 +313,14 @@ namespace
         }
 
     public:
-        RvaHelper(uint32_t file_alignment, uint32_t section_alignment)
+        RvaHelper(u32 file_alignment, u32 section_alignment)
         : file_alignment(file_alignment), section_alignment(section_alignment)
         {
         }
 
-        uint32_t rva_to_offset(
+        u32 rva_to_offset(
             const std::vector<ImageSectionHeader> &sections,
-            const uint32_t rva)
+            const u32 rva)
         {
             const ImageSectionHeader &section = section_for_rva(sections, rva);
             return rva

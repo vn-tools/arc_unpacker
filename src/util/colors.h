@@ -1,16 +1,16 @@
 #ifndef UTIL_COLORS_H
 #define UTIL_COLORS_H
-#include <cstdint>
+#include "types.h"
 
-uint32_t rgb565(uint16_t word);
-uint32_t rgba5551(uint16_t word);
-uint32_t rgba4444(uint16_t word);
-uint32_t rgba_gray(uint8_t byte);
+u32 rgb565(u16 word);
+u32 rgba5551(u16 word);
+u32 rgba4444(u16 word);
+u32 rgba_gray(u8 byte);
 
-void set_channel(uint32_t &color, uint8_t channel, uint8_t value);
-uint8_t get_channel(uint32_t color, uint8_t channel);
+void set_channel(u32 &color, u8 channel, u8 value);
+u8 get_channel(u32 color, u8 channel);
 
-void split_channels(uint32_t color, uint8_t channels[4]);
-void merge_channels(uint8_t channels[4], uint32_t &color);
+void split_channels(u32 color, u8 channels[4]);
+void merge_channels(u8 channels[4], u32 &color);
 
 #endif

@@ -8,28 +8,26 @@ using namespace Formats::Kirikiri::Tlg;
 
 namespace
 {
-    typedef unsigned char uchar;
-
     typedef struct
     {
-        uint8_t channel_count;
-        uint32_t image_width;
-        uint32_t image_height;
-        uint32_t block_height;
+        u8 channel_count;
+        u32 image_width;
+        u32 image_height;
+        u32 block_height;
     } Header;
 
     typedef struct BlockInfo
     {
         bool mark;
         size_t block_size;
-        std::unique_ptr<uchar[]> block_data;
+        std::unique_ptr<u8[]> block_data;
 
         BlockInfo(IO &io) : block_data(nullptr)
         {
             mark = io.read_u8() > 0;
             block_size = io.read_u32_le();
-            block_data.reset(new uchar[block_size]);
-            uchar *tmp = block_data.get();
+            block_data.reset(new u8[block_size]);
+            u8 *tmp = block_data.get();
             for (size_t i = 0; i < block_size; i ++)
                 *tmp ++ = io.read_u8();
         }
@@ -39,7 +37,7 @@ namespace
             Header &header)
         {
             size_t new_data_size = header.image_width * header.block_height;
-            std::unique_ptr<uchar[]> new_data(new uchar[new_data_size]);
+            std::unique_ptr<u8[]> new_data(new u8[new_data_size]);
 
             decompressor.decompress(
                 block_data.get(), block_size, new_data.get(), new_data_size);
@@ -50,8 +48,8 @@ namespace
     } BlockInfo;
 
     void load_pixel_block_row(
-        uchar *zero_line,
-        uchar *output,
+        u8 *zero_line,
+        u8 *output,
         std::vector<std::unique_ptr<BlockInfo>> channel_data,
         Header &header,
         int block_y)
@@ -61,26 +59,26 @@ namespace
             max_y = header.image_height;
         bool use_alpha = header.channel_count == 4;
 
-        uchar *current_line = &output[block_y * header.image_width * 4];
-        uchar *previous_line = block_y == 0
+        u8 *current_line = &output[block_y * header.image_width * 4];
+        u8 *previous_line = block_y == 0
             ? zero_line
             : &output[(block_y - 1) * header.image_width * 4];
 
         for (size_t y = block_y; y < max_y; y ++)
         {
-            uchar prev_r = 0;
-            uchar prev_g = 0;
-            uchar prev_b = 0;
-            uchar prev_a = 0;
+            u8 prev_r = 0;
+            u8 prev_g = 0;
+            u8 prev_b = 0;
+            u8 prev_a = 0;
 
             size_t block_y_shift = (y - block_y) * header.image_width;
-            uchar *current_line_start = current_line;
+            u8 *current_line_start = current_line;
             for (size_t x = 0; x < header.image_width; x ++)
             {
-                uchar r = channel_data[2]->block_data[block_y_shift + x];
-                uchar g = channel_data[1]->block_data[block_y_shift + x];
-                uchar b = channel_data[0]->block_data[block_y_shift + x];
-                uchar a = use_alpha
+                u8 r = channel_data[2]->block_data[block_y_shift + x];
+                u8 g = channel_data[1]->block_data[block_y_shift + x];
+                u8 b = channel_data[0]->block_data[block_y_shift + x];
+                u8 a = use_alpha
                     ? channel_data[3]->block_data[block_y_shift + x]
                     : 0;
 
@@ -92,10 +90,10 @@ namespace
                 prev_b += b;
                 prev_a += a;
 
-                uchar output_r = prev_r;
-                uchar output_g = prev_g;
-                uchar output_b = prev_b;
-                uchar output_a = prev_a;
+                u8 output_r = prev_r;
+                u8 output_g = prev_g;
+                u8 output_b = prev_b;
+                u8 output_a = prev_a;
 
                 output_r += *previous_line ++;
                 output_g += *previous_line ++;
@@ -115,7 +113,7 @@ namespace
     }
 
     void read_pixels(
-        IO &io, uchar *output, Header &header)
+        IO &io, u8 *output, Header &header)
     {
         // ignore block sizes
         size_t block_count
@@ -124,7 +122,7 @@ namespace
 
         LzssDecompressor decompressor;
 
-        std::unique_ptr<uchar[]> zero_line(new uchar[header.image_width * 4]);
+        std::unique_ptr<u8[]> zero_line(new u8[header.image_width * 4]);
         memset(zero_line.get(), 0, header.image_width * 4);
         memset(output, 0, header.image_width * header.image_height * 4);
 
@@ -157,7 +155,7 @@ std::unique_ptr<File> Tlg5Decoder::decode(File &file)
         throw std::runtime_error("Unsupported channel count");
 
     size_t pixels_size = header.image_width * header.image_height * 4;
-    std::unique_ptr<unsigned char[]> pixels(new unsigned char[pixels_size]);
+    std::unique_ptr<u8[]> pixels(new u8[pixels_size]);
 
     read_pixels(file.io, pixels.get(), header);
 

@@ -42,13 +42,13 @@ namespace
         return version;
     }
 
-    uint64_t get_table_offset(IO &arc_io, int version)
+    u64 get_table_offset(IO &arc_io, int version)
     {
         if (version == 1)
             return arc_io.read_u64_le();
 
-        uint64_t additional_header_offset = arc_io.read_u64_le();
-        uint32_t minor_version = arc_io.read_u32_le();
+        u64 additional_header_offset = arc_io.read_u64_le();
+        u32 minor_version = arc_io.read_u32_le();
         if (minor_version != 1)
             throw std::runtime_error("Unexpected XP3 version");
 
@@ -61,8 +61,8 @@ namespace
     std::unique_ptr<IO> read_raw_table(IO &arc_io)
     {
         bool use_zlib = arc_io.read_u8() != 0;
-        const uint64_t size_compressed = arc_io.read_u64_le();
-        const uint64_t size_original = use_zlib
+        const u64 size_compressed = arc_io.read_u64_le();
+        const u64 size_original = use_zlib
             ? arc_io.read_u64_le()
             : size_compressed;
 
@@ -80,11 +80,11 @@ namespace
     {
         if (table_io.read(info_magic.size()) != info_magic)
             throw std::runtime_error("Expected INFO chunk");
-        uint64_t info_chunk_size = table_io.read_u64_le();
+        u64 info_chunk_size = table_io.read_u64_le();
 
-        uint32_t info_flags = table_io.read_u32_le();
-        uint64_t file_size_original = table_io.read_u64_le();
-        uint64_t file_size_compressed = table_io.read_u64_le();
+        u32 info_flags = table_io.read_u32_le();
+        u64 file_size_original = table_io.read_u64_le();
+        u64 file_size_compressed = table_io.read_u64_le();
 
         size_t name_length = table_io.read_u16_le();
         std::string name_utf16 = table_io.read(name_length * 2);
@@ -101,16 +101,16 @@ namespace
         if (table_io.read(segm_magic.size()) != segm_magic)
             throw std::runtime_error("Expected SEGM chunk");
 
-        uint64_t segm_chunk_size = table_io.read_u64_le();
+        u64 segm_chunk_size = table_io.read_u64_le();
         if (segm_chunk_size % 28 != 0)
             throw std::runtime_error("Unexpected SEGM chunk size");
         size_t initial_pos = table_io.tell();
         while (segm_chunk_size > table_io.tell() - initial_pos)
         {
-            uint32_t segm_flags = table_io.read_u32_le();
-            uint64_t data_offset = table_io.read_u64_le();
-            uint64_t data_size_original = table_io.read_u64_le();
-            uint64_t data_size_compressed = table_io.read_u64_le();
+            u32 segm_flags = table_io.read_u32_le();
+            u64 data_offset = table_io.read_u64_le();
+            u64 data_size_original = table_io.read_u64_le();
+            u64 data_size_compressed = table_io.read_u64_le();
             arc_io.seek(static_cast<size_t>(data_offset));
 
             bool use_zlib = (segm_flags & 7) > 0;
@@ -131,12 +131,12 @@ namespace
         return true;
     }
 
-    uint32_t read_adlr_chunk(IO &table_io, uint32_t *encryption_key)
+    u32 read_adlr_chunk(IO &table_io, u32 *encryption_key)
     {
         if (table_io.read(adlr_magic.size()) != adlr_magic)
             throw std::runtime_error("Expected ADLR chunk");
 
-        uint64_t adlr_chunk_size = table_io.read_u64_le();
+        u64 adlr_chunk_size = table_io.read_u64_le();
         if (adlr_chunk_size != 4)
             throw std::runtime_error("Unexpected ADLR chunk size");
 
@@ -151,8 +151,8 @@ namespace
         if (table_io.read(file_magic.size()) != file_magic)
             throw std::runtime_error("Expected FILE chunk");
 
-        uint32_t encryption_key;
-        uint64_t file_chunk_size = table_io.read_u64_le();
+        u32 encryption_key;
+        u64 file_chunk_size = table_io.read_u64_le();
         size_t file_chunk_start_offset = table_io.tell();
 
         read_info_chunk(table_io, *target_file);
@@ -229,8 +229,8 @@ void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     arc_file.io.skip(xp3_magic.size());
 
     int version = detect_version(arc_file.io);
-    uint64_t table_offset = get_table_offset(arc_file.io, version);
-    arc_file.io.seek((uint32_t)table_offset);
+    u64 table_offset = get_table_offset(arc_file.io, version);
+    arc_file.io.seek((u32)table_offset);
     std::unique_ptr<IO> table_io = read_raw_table(arc_file.io);
 
     while (table_io->tell() < table_io->size())

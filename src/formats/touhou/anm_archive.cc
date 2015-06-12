@@ -105,7 +105,7 @@ namespace
     Table read_table(IO &file_io)
     {
         Table table;
-        uint32_t start_offset = 0;
+        u32 start_offset = 0;
         while (true)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
@@ -130,7 +130,7 @@ namespace
     void write_pixels(
         IO &file_io,
         TableEntry &table_entry,
-        uint32_t *pixel_data,
+        u32 *pixel_data,
         size_t stride)
     {
         if (!table_entry.has_data)
@@ -145,12 +145,12 @@ namespace
         size_t height = file_io.read_u16_le();
         size_t data_size = file_io.read_u32_le();
 
-        uint32_t *guardian = &pixel_data[stride * height];
+        u32 *guardian = &pixel_data[stride * height];
 
         for (size_t y = 0; y < height; y ++)
         {
             size_t shift = (y + table_entry.y) * stride + table_entry.x;
-            uint32_t *pixel_ptr = &pixel_data[shift];
+            u32 *pixel_ptr = &pixel_data[shift];
             for (size_t x = 0; x < width; x ++)
             {
                 if (pixel_ptr >= guardian)
@@ -204,7 +204,7 @@ namespace
             return nullptr;
 
         size_t pixel_data_size = width * height;
-        std::unique_ptr<uint32_t[]> pixel_data(new uint32_t[pixel_data_size]);
+        std::unique_ptr<u32[]> pixel_data(new u32[pixel_data_size]);
         for (size_t i = 0; i < pixel_data_size; i ++)
             pixel_data[i] = 0;
         for (auto &entry : entries)

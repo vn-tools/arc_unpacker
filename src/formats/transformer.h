@@ -5,8 +5,9 @@
 #include "arg_parser.h"
 #include "file.h"
 #include "file_saver.h"
+#include "types.h"
 
-enum class FileNamingStrategy : uint8_t
+enum class FileNamingStrategy : u8
 {
     Root = 1,
     Sibling = 2,

@@ -24,7 +24,7 @@ namespace
                 = reinterpret_cast<size_t>(settings.encryption_block);
         }
 
-        uint32_t derive(uint32_t seed, uint32_t parameter)
+        u32 derive(u32 seed, u32 parameter)
         {
             this->seed = seed;
             this->parameter = parameter;
@@ -60,7 +60,7 @@ namespace
     private:
         const CxdecFilterSettings &settings;
         std::string shellcode;
-        uint32_t seed;
+        u32 seed;
         size_t parameter;
         unsigned long encryption_block_addr;
 
@@ -76,14 +76,14 @@ namespace
         // This is a modified glibc LCG randomization routine. It is used to
         // make the key as random as possible for each file, which is supposed
         // to maximize confusion.
-        uint32_t rand()
+        u32 rand()
         {
-            uint32_t old_seed = seed;
+            u32 old_seed = seed;
             seed = (0x41C64E6D * old_seed) + 12345;
             return seed ^ (old_seed << 16) ^ (old_seed >> 16);
         }
 
-        uint32_t derive_for_stage(size_t stage)
+        u32 derive_for_stage(size_t stage)
         {
             shellcode = "";
 
@@ -93,7 +93,7 @@ namespace
             // mov edi, dword ptr ss:[esp+18] (esp+18 == parameter)
             add_shellcode("\x86\x7c\x24\x18", 4);
 
-            uint32_t eax = run_stage_strategy_1(stage);
+            u32 eax = run_stage_strategy_1(stage);
 
             // pop edx, pop ecx, pop ebx, pop esi, pop edi
             add_shellcode("\x5a\x59\x5b\x5e\x5f", 5);
@@ -104,18 +104,18 @@ namespace
             return eax;
         }
 
-        uint32_t run_first_stage()
+        u32 run_first_stage()
         {
             size_t routine_number = settings.key_derivation_order1[rand() % 3];
 
-            uint32_t eax;
+            u32 eax;
             switch (routine_number)
             {
                 case 0:
                 {
                     // mov eax, rand()
                     add_shellcode("\xb8", 1);
-                    uint32_t tmp = rand();
+                    u32 tmp = rand();
                     add_shellcode(reinterpret_cast<char*>(&tmp), 4);
                     eax = tmp;
                     break;
@@ -136,10 +136,10 @@ namespace
 
                     // mov eax, dword ptr ds:[esi+((rand() & 0x3ff) * 4]
                     add_shellcode("\x8b\x86", 2);
-                    uint32_t pos = (rand() & 0x3ff) * 4;
+                    u32 pos = (rand() & 0x3ff) * 4;
                     add_shellcode(reinterpret_cast<char*>(&pos), 4);
 
-                    eax = *reinterpret_cast<const uint32_t*>(
+                    eax = *reinterpret_cast<const u32*>(
                         &settings.encryption_block[pos]);
                     break;
                 }
@@ -151,12 +151,12 @@ namespace
             return eax;
         }
 
-        uint32_t run_stage_strategy_0(size_t stage)
+        u32 run_stage_strategy_0(size_t stage)
         {
             if (stage == 1)
                 return run_first_stage();
 
-            uint32_t eax = (rand() & 1)
+            u32 eax = (rand() & 1)
                 ? run_stage_strategy_1(stage - 1)
                 : run_stage_strategy_0(stage - 1);
 
@@ -200,7 +200,7 @@ namespace
                     // mov eax, dword ptr ds:[esi+eax*4]
                     add_shellcode("\x8b\x04\x86", 3);
 
-                    eax = *reinterpret_cast<const uint32_t*>(
+                    eax = *reinterpret_cast<const u32*>(
                         &settings.encryption_block[(eax & 0x3ff) * 4]);
                     break;
 
@@ -230,7 +230,7 @@ namespace
                     // pop ebx
                     add_shellcode("\x5b", 1);
 
-                    uint32_t ebx = eax;
+                    u32 ebx = eax;
                     ebx &= 0xaaaaaaaa;
                     eax &= 0x55555555;
                     ebx >>= 1;
@@ -243,7 +243,7 @@ namespace
                 {
                     // xor eax, rand()
                     add_shellcode("\x35", 1);
-                    uint32_t tmp = rand();
+                    u32 tmp = rand();
                     add_shellcode(reinterpret_cast<char*>(&tmp), 4);
 
                     eax ^= tmp;
@@ -256,7 +256,7 @@ namespace
                     {
                         // add eax, rand()
                         add_shellcode("\x05", 1);
-                        uint32_t tmp = rand();
+                        u32 tmp = rand();
                         add_shellcode(reinterpret_cast<char*>(&tmp), 4);
 
                         eax += tmp;
@@ -265,7 +265,7 @@ namespace
                     {
                         // sub eax, rand()
                         add_shellcode("\x2d", 1);
-                        uint32_t tmp = rand();
+                        u32 tmp = rand();
                         add_shellcode(reinterpret_cast<char*>(&tmp), 4);
 
                         eax -= tmp;
@@ -280,7 +280,7 @@ namespace
             return eax;
         }
 
-        uint32_t run_stage_strategy_1(size_t stage)
+        u32 run_stage_strategy_1(size_t stage)
         {
             if (stage == 1)
                 return run_first_stage();
@@ -288,13 +288,13 @@ namespace
             // push ebx
             add_shellcode("\x53", 1);
 
-            uint32_t eax = (rand() & 1)
+            u32 eax = (rand() & 1)
                 ? run_stage_strategy_1(stage - 1)
                 : run_stage_strategy_0(stage - 1);
 
             // mov ebx, eax
             add_shellcode("\x89\xc3", 2);
-            uint32_t ebx = eax;
+            u32 ebx = eax;
 
             eax = (rand() & 1)
                 ? run_stage_strategy_1(stage - 1)
@@ -320,7 +320,7 @@ namespace
                     // pop ecx
                     add_shellcode("\x59", 1);
 
-                    uint8_t ecx = ebx & 0x0f;
+                    u8 ecx = ebx & 0x0f;
                     eax >>= ecx;
                     break;
                 }
@@ -342,7 +342,7 @@ namespace
                     // pop ecx
                     add_shellcode("\x59", 1);
 
-                    uint8_t ecx = ebx & 0x0f;
+                    u8 ecx = ebx & 0x0f;
                     eax <<= ecx;
                     break;
                 }
@@ -387,18 +387,18 @@ namespace
     void decrypt_chunk(
         KeyDeriver &key_deriver,
         IO &io,
-        uint32_t hash,
+        u32 hash,
         size_t base_offset,
         size_t length)
     {
-        uint32_t seed = hash & 0x7f;
+        u32 seed = hash & 0x7f;
         hash >>= 7;
-        uint32_t ret0 = key_deriver.derive(seed, hash);
-        uint32_t ret1 = key_deriver.derive(seed, hash ^ 0xffffffff);
+        u32 ret0 = key_deriver.derive(seed, hash);
+        u32 ret1 = key_deriver.derive(seed, hash ^ 0xffffffff);
 
-        uint8_t xor0 = (ret0 >> 8) & 0xff;
-        uint8_t xor1 = (ret0 >> 16) & 0xff;
-        uint8_t xor2 = ret0 & 0xff;
+        u8 xor0 = (ret0 >> 8) & 0xff;
+        u8 xor1 = (ret0 >> 16) & 0xff;
+        u8 xor2 = ret0 & 0xff;
         if (xor2 == 0)
             xor2 = 1;
 
@@ -448,10 +448,10 @@ CxdecFilter::~CxdecFilter()
 {
 }
 
-void CxdecFilter::decode(File &file, uint32_t encryption_key) const
+void CxdecFilter::decode(File &file, u32 encryption_key) const
 {
-    uint32_t hash = encryption_key;
-    uint32_t key = (hash & internals->settings.key1) + internals->settings.key2;
+    u32 hash = encryption_key;
+    u32 key = (hash & internals->settings.key1) + internals->settings.key2;
 
     size_t size = file.io.size() > key ? key : file.io.size();
 

@@ -37,11 +37,11 @@ namespace
                 + itos(actual_size) + " != " + itos(expected_size));
         }
 
-        uint32_t base_offset = io.read_u32_le();
-        uint32_t table_entry_count = io.read_u16_le();
+        u32 base_offset = io.read_u32_le();
+        u32 table_entry_count = io.read_u16_le();
         io.skip(2);
 
-        uint32_t table_size = table_entry_count << input_shift;
+        u32 table_size = table_entry_count << input_shift;
         std::unique_ptr<char[]> table(new char[table_size]);
         io.read(table.get(), table_size);
 
@@ -70,7 +70,7 @@ namespace
             if (!table_offset_length)
                 throw std::runtime_error("Table offset length = 0");
 
-            uint32_t table_offset = 0;
+            u32 table_offset = 0;
             -- table_offset_length;
             if (!table_offset_length)
             {
@@ -93,21 +93,21 @@ namespace
 
             if (input_shift == 1)
             {
-                auto table16 = reinterpret_cast<const uint16_t*>(table.get());
+                auto table16 = reinterpret_cast<const u16*>(table.get());
                 auto fragment = table16[table_offset];
                 while (sequence_length --)
                 {
-                    *reinterpret_cast<uint16_t*>(output_ptr) = fragment;
+                    *reinterpret_cast<u16*>(output_ptr) = fragment;
                     output_ptr += output_shift;
                 }
             }
             else
             {
-                auto table8 = reinterpret_cast<const uint8_t*>(table.get());
+                auto table8 = reinterpret_cast<const u8*>(table.get());
                 auto fragment = table8[table_offset];
                 while (sequence_length --)
                 {
-                    *reinterpret_cast<uint8_t*>(output_ptr) = fragment;
+                    *reinterpret_cast<u8*>(output_ptr) = fragment;
                     output_ptr += output_shift;
                 }
             }

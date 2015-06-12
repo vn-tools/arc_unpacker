@@ -15,7 +15,7 @@ namespace Formats
             public:
                 CxdecFilter(CxdecFilterSettings &);
                 ~CxdecFilter();
-                virtual void decode(File &file, uint32_t key) const override;
+                virtual void decode(File &file, u32 key) const override;
             private:
                 struct Internals;
                 std::unique_ptr<Internals> internals;

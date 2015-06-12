@@ -36,7 +36,7 @@ namespace
         while (source_io.tell() < source_io.size())
         {
             size_t repeat;
-            uint32_t rgba;
+            u32 rgba;
 
             switch (bit_depth)
             {

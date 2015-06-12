@@ -30,7 +30,7 @@ public:
 
     size_t width() const;
     size_t height() const;
-    uint32_t color_at(size_t x, size_t y) const;
+    u32 color_at(size_t x, size_t y) const;
 
 private:
     Image();

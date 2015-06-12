@@ -41,7 +41,7 @@ namespace
         size_t offset;
         bool encrypted;
         bool compressed;
-        uint32_t seed;
+        u32 seed;
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
@@ -61,35 +61,35 @@ namespace
 
     namespace v3
     {
-        uint64_t padb(uint64_t a, uint64_t b)
+        u64 padb(u64 a, u64 b)
         {
             return ((a & 0x7F7F7F7F7F7F7F7F)
                 + (b & 0x7F7F7F7F7F7F7F7F))
                 ^ ((a ^ b) & 0x8080808080808080);
         }
 
-        uint64_t padw(uint64_t a, uint64_t b)
+        u64 padw(u64 a, u64 b)
         {
             return ((a & 0x7FFF7FFF7FFF7FFF)
                 + (b & 0x7FFF7FFF7FFF7FFF))
                 ^ ((a ^ b) & 0x8000800080008000);
         }
 
-        uint64_t padd(uint64_t a, uint64_t b)
+        u64 padd(u64 a, u64 b)
         {
             return ((a & 0x7FFFFFFF7FFFFFFF)
                 + (b & 0x7FFFFFFF7FFFFFFF))
                 ^ ((a ^ b) & 0x8000000080000000);
         }
 
-        uint32_t derive_seed(IO &io, size_t bytes)
+        u32 derive_seed(IO &io, size_t bytes)
         {
-            uint64_t key = 0;
-            uint64_t result = 0;
+            u64 key = 0;
+            u64 result = 0;
             size_t size = bytes / 8;
-            std::unique_ptr<uint64_t[]> input(new uint64_t[size]);
-            uint64_t *input_ptr = input.get();
-            uint64_t *input_guardian = input_ptr + size;
+            std::unique_ptr<u64[]> input(new u64[size]);
+            u64 *input_ptr = input.get();
+            u64 *input_guardian = input_ptr + size;
             io.read(input_ptr, bytes);
 
             while (input_ptr < input_guardian)
@@ -98,26 +98,22 @@ namespace
                 result = padw(result, *input_ptr++ ^ key);
             }
             result ^= (result >> 32);
-            return static_cast<uint32_t>(result & 0xFFFFFFFF);
+            return static_cast<u32>(result & 0xFFFFFFFF);
         }
 
-        void decrypt_file_name(
-            unsigned char *file_name, size_t length, uint32_t key)
+        void decrypt_file_name(u8 *file_name, size_t length, u32 key)
         {
-            unsigned char _xor = ((key ^ 0x3e) + length) & 0xff;
+            u8 _xor = ((key ^ 0x3e) + length) & 0xff;
             for (size_t i = 1; i <= length; i ++)
                 file_name[i - 1] ^= ((i ^ _xor) & 0xff) + i;
         }
 
-        void decrypt_file_data_basic(
-            unsigned char *file_data,
-            size_t length,
-            uint32_t seed)
+        void decrypt_file_data_basic(u8 *file_data, size_t length, u32 seed)
         {
-            uint64_t *current = reinterpret_cast<uint64_t*>(file_data);
-            const uint64_t *end = current + length / 8;
-            uint64_t key = 0xA73C5F9DA73C5F9D;
-            uint64_t mutator = (seed + length) ^ 0xFEC9753E;
+            u64 *current = reinterpret_cast<u64*>(file_data);
+            const u64 *end = current + length / 8;
+            u64 key = 0xA73C5F9DA73C5F9D;
+            u64 mutator = (seed + length) ^ 0xFEC9753E;
             mutator = (mutator << 32) | mutator;
 
             while (current < end)
@@ -129,24 +125,24 @@ namespace
         }
 
         void decrypt_file_data_with_external_keys(
-            unsigned char *file_data,
+            u8 *file_data,
             size_t length,
-            uint32_t seed,
+            u32 seed,
             EncryptionType encryption_type,
             const std::string file_name,
             const std::string key1,
             const std::string key2)
         {
-            uint64_t *current = reinterpret_cast<uint64_t*>(file_data);
-            const uint64_t *end = current + length / 8;
+            u64 *current = reinterpret_cast<u64*>(file_data);
+            const u64 *end = current + length / 8;
             unsigned long mt_mutator = 0x85F532;
             unsigned long mt_seed = 0x33F641;
 
             for (size_t i = 0; i < file_name.length(); i++)
             {
                 mt_mutator
-                    += static_cast<const unsigned char&>(file_name[i])
-                    * static_cast<unsigned char>(i);
+                    += static_cast<const u8&>(file_name[i])
+                    * static_cast<u8>(i);
                 mt_seed ^= mt_mutator;
             }
 
@@ -161,25 +157,25 @@ namespace
 
             mt_init_genrand(mt_seed);
             mt_xor_state(
-                reinterpret_cast<const unsigned char *>(key1.data()),
+                reinterpret_cast<const u8 *>(key1.data()),
                 key1.size());
             mt_xor_state(
-                reinterpret_cast<const unsigned char *>(key2.data()),
+                reinterpret_cast<const u8 *>(key2.data()),
                 key2.size());
 
-            uint64_t table[0x10] = { 0 };
+            u64 table[0x10] = { 0 };
             for (size_t i = 0; i < 0x10; i++)
             {
                 table[i]
                     = mt_genrand_int32()
-                    | (static_cast<uint64_t>(mt_genrand_int32()) << 32);
+                    | (static_cast<u64>(mt_genrand_int32()) << 32);
             }
             for (auto i = 0; i < 9; i ++)
                  mt_genrand_int32();
 
-            uint64_t mutator
+            u64 mutator
                 = mt_genrand_int32()
-                | (static_cast<uint64_t>(mt_genrand_int32()) << 32);
+                | (static_cast<u64>(mt_genrand_int32()) << 32);
 
             size_t table_index = mt_genrand_int32() & 0xF;
             while (current < end)
@@ -202,9 +198,9 @@ namespace
         }
 
         void decrypt_file_data(
-            unsigned char *file_data,
+            u8 *file_data,
             size_t length,
-            uint32_t seed,
+            u32 seed,
             EncryptionType encryption_type,
             const std::string file_name,
             const std::string key1,
@@ -250,13 +246,13 @@ namespace
         }
 
         bool use_short_length = input_io.read_u32_le() > 0;
-        uint32_t file_size = input_io.read_u32_le();
+        u32 file_size = input_io.read_u32_le();
         if (file_size != output_size)
             throw std::runtime_error("Unpexpected file size");
 
-        unsigned char dict1[256];
-        unsigned char dict2[256];
-        unsigned char dict3[256];
+        u8 dict1[256];
+        u8 dict2[256];
+        u8 dict3[256];
         while (input_io.tell() < input_io.size())
         {
             for (size_t i = 0; i < 256; i ++)
@@ -264,7 +260,7 @@ namespace
 
             for (size_t d = 0; d < 256; )
             {
-                unsigned char c = input_io.read_u8();
+                u8 c = input_io.read_u8();
                 if (c > 0x7F)
                 {
                     d += c - 0x7F;
@@ -286,10 +282,10 @@ namespace
                 ? input_io.read_u16_le()
                 : input_io.read_u32_le();
 
-            unsigned char n = 0;
+            u8 n = 0;
             while (true)
             {
-                unsigned char d;
+                u8 d;
                 if (n > 0)
                 {
                     d = dict3[--n];
@@ -317,34 +313,31 @@ namespace
         }
     }
 
-    std::string read_file_name(IO &table_io, uint32_t key, int version)
+    std::string read_file_name(IO &table_io, u32 key, int version)
     {
         size_t file_name_length = table_io.read_u16_le();
         std::unique_ptr<char[]> file_name(new char[file_name_length + 1]);
         table_io.read(file_name.get(), file_name_length);
-        if (version == 3)
-        {
-            v3::decrypt_file_name(
-                reinterpret_cast<unsigned char*>(file_name.get()),
-                file_name_length,
-                key);
-        }
-        else
+        if (version != 3)
             throw std::runtime_error("Not implemented");
+        v3::decrypt_file_name(
+            reinterpret_cast<u8*>(file_name.get()),
+            file_name_length,
+            key);
         return std::string(file_name.get(), file_name_length);
     }
 
     Table read_table(IO &arc_io, int version)
     {
         size_t file_count = arc_io.read_u32_le();
-        uint64_t table_offset = arc_io.read_u64_le();
+        u64 table_offset = arc_io.read_u64_le();
         size_t table_size = (arc_io.size() - 0x1c) - table_offset;
         arc_io.seek(table_offset);
 
         BufferedIO table_io;
         table_io.write_from_io(arc_io, table_size);
 
-        uint32_t seed = 0;
+        u32 seed = 0;
         if (version == 3)
         {
             table_io.seek(0);
@@ -410,7 +403,7 @@ namespace
             if (version == 3)
             {
                 v3::decrypt_file_data(
-                    reinterpret_cast<unsigned char*>(data.get()),
+                    reinterpret_cast<u8*>(data.get()),
                     table_entry.size_compressed,
                     table_entry.seed,
                     encryption_type,

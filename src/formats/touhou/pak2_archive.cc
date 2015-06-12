@@ -24,13 +24,13 @@ namespace
     typedef struct
     {
         std::string name;
-        uint32_t offset;
-        uint32_t size;
+        u32 offset;
+        u32 size;
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 
-    void decrypt(IO &io, uint32_t mt_seed, uint8_t a, uint8_t b, uint8_t delta)
+    void decrypt(IO &io, u32 mt_seed, u8 a, u8 b, u8 delta)
     {
         size_t size = io.size();
         std::unique_ptr<char[]> buffer(new char[size]);
@@ -55,7 +55,7 @@ namespace
         arc_io.seek(table_entry.offset);
         arc_io.read(data.get(), table_entry.size);
 
-        uint8_t key = (table_entry.offset >> 1) | 0x23;
+        u8 key = (table_entry.offset >> 1) | 0x23;
         for (size_t i = 0; i < table_entry.size; i ++)
             data[i] ^= key;
 
@@ -78,7 +78,7 @@ namespace
 
     Table read_table(IO &arc_io)
     {
-        uint16_t file_count = arc_io.read_u16_le();
+        u16 file_count = arc_io.read_u16_le();
         if (file_count == 0 && arc_io.size() != 6)
             throw std::runtime_error("Not a PAK2 archive");
         auto table_io = read_raw_table(arc_io, file_count);

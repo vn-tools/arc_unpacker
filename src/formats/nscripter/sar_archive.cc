@@ -15,8 +15,8 @@ namespace
     typedef struct
     {
         std::string name;
-        uint32_t offset;
-        uint32_t size;
+        u32 offset;
+        u32 size;
     } TableEntry;
 
     std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &table_entry)
@@ -38,8 +38,8 @@ bool SarArchive::is_recognized_internal(File &arc_file) const
 
 void SarArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    uint16_t file_count = arc_file.io.read_u16_be();
-    uint32_t offset_to_files = arc_file.io.read_u32_be();
+    u16 file_count = arc_file.io.read_u16_be();
+    u32 offset_to_files = arc_file.io.read_u32_be();
 
     std::vector<std::unique_ptr<TableEntry>> table;
     table.reserve(file_count);

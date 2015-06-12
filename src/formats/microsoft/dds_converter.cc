@@ -25,7 +25,7 @@ namespace
     const std::string magic_dxt5("DXT5", 4);
     const std::string magic_dx10("DX10", 4);
 
-    enum class D3d10ResourceDimension : uint32_t
+    enum class D3d10ResourceDimension : u32
     {
         Unknown    = 0,
         Buffer     = 1,
@@ -46,23 +46,23 @@ namespace
 
     typedef struct
     {
-        uint32_t size;
+        u32 size;
         DdsPixelFormatFlags flags;
         std::string four_cc;
-        uint32_t rgb_bit_count;
-        uint32_t r_bit_mask;
-        uint32_t g_bit_mask;
-        uint32_t b_bit_mask;
-        uint32_t a_bit_mask;
+        u32 rgb_bit_count;
+        u32 r_bit_mask;
+        u32 g_bit_mask;
+        u32 b_bit_mask;
+        u32 a_bit_mask;
     } DdsPixelFormat;
 
     typedef struct
     {
-        uint32_t dxgi_format;
+        u32 dxgi_format;
         D3d10ResourceDimension resource_dimension;
-        uint32_t misc_flag;
-        uint32_t array_size;
-        uint32_t misc_flags2;
+        u32 misc_flag;
+        u32 array_size;
+        u32 misc_flags2;
     } DdsHeaderDx10;
 
     typedef enum
@@ -79,15 +79,15 @@ namespace
 
     typedef struct
     {
-        uint32_t size;
+        u32 size;
         DdsHeaderFlags flags;
-        uint32_t height;
-        uint32_t width;
-        uint32_t pitch_or_linear_size;
-        uint32_t depth;
-        uint32_t mip_map_count;
+        u32 height;
+        u32 width;
+        u32 pitch_or_linear_size;
+        u32 depth;
+        u32 mip_map_count;
         DdsPixelFormat pixel_format;
-        uint32_t caps[4];
+        u32 caps[4];
     } DdsHeader;
 
     void fill_pixel_format(IO &io, DdsPixelFormat &pixel_format)
@@ -142,16 +142,16 @@ namespace
         return output_io;
     }
 
-    void decode_dxt1_block(IO &io, uint32_t output_colors[4][4])
+    void decode_dxt1_block(IO &io, u32 output_colors[4][4])
     {
-        uint32_t colors[4];
+        u32 colors[4];
         colors[0] = io.read_u16_le();
         colors[1] = io.read_u16_le();
         bool transparent = colors[0] < colors[1];
         colors[0] = rgb565(colors[0]);
         colors[1] = rgb565(colors[1]);
 
-        uint8_t rgba[4][4];
+        u8 rgba[4][4];
         for (size_t i = 0; i < 2; i ++)
             split_channels(colors[i], rgba[i]);
 
@@ -172,7 +172,7 @@ namespace
         for (size_t i = 2; i < 4; i ++)
             merge_channels(rgba[i], colors[i]);
 
-        uint32_t lookup = io.read_u32_le();
+        u32 lookup = io.read_u32_le();
         for (size_t y = 0; y < 4; y ++)
         {
             for (size_t x = 0; x < 4; x ++)
@@ -184,9 +184,9 @@ namespace
         }
     }
 
-    void decode_dxt5_block(IO &io, uint8_t output_alpha[4][4])
+    void decode_dxt5_block(IO &io, u8 output_alpha[4][4])
     {
-        uint8_t alpha[8];
+        u8 alpha[8];
         alpha[0] = io.read_u8();
         alpha[1] = io.read_u8();
 
@@ -205,11 +205,11 @@ namespace
 
         for (size_t i = 0; i < 2; i ++)
         {
-            uint32_t lookup = be32toh(
+            u32 lookup = be32toh(
                 (io.read_u16_be() << 16) | (io.read_u8() << 8));
             for (size_t j = 0; j < 8; j ++)
             {
-                uint8_t index = lookup & 7;
+                u8 index = lookup & 7;
                 size_t pos = i * 8 + j;
                 size_t x = pos % 4;
                 size_t y = pos / 4;
@@ -225,7 +225,7 @@ namespace
         for (size_t block_y = 0; block_y < height; block_y += 4)
         for (size_t block_x = 0; block_x < width; block_x += 4)
         {
-            uint32_t colors[4][4];
+            u32 colors[4][4];
             decode_dxt1_block(io, colors);
             for (size_t y = 0; y < 4; y ++)
             {
@@ -243,18 +243,18 @@ namespace
         for (size_t block_y = 0; block_y < height; block_y += 4)
         for (size_t block_x = 0; block_x < width; block_x += 4)
         {
-            uint8_t alpha[4][4];
+            u8 alpha[4][4];
             for (size_t y = 0; y < 4; y ++)
             {
                 for (size_t x = 0; x < 4; x += 2)
                 {
-                    uint8_t b = io.read_u8();
+                    u8 b = io.read_u8();
                     alpha[y][x + 0] = b & 0xf0;
                     alpha[y][x + 1] = (b & 0x0f) << 4;
                 }
             }
 
-            uint32_t colors[4][4];
+            u32 colors[4][4];
             decode_dxt1_block(io, colors);
             for (size_t y = 0; y < 4; y ++)
             {
@@ -275,10 +275,10 @@ namespace
         for (size_t block_y = 0; block_y < height; block_y += 4)
         for (size_t block_x = 0; block_x < width; block_x += 4)
         {
-            uint8_t alpha[4][4];
+            u8 alpha[4][4];
             decode_dxt5_block(io, alpha);
 
-            uint32_t colors[4][4];
+            u32 colors[4][4];
             decode_dxt1_block(io, colors);
             for (size_t y = 0; y < 4; y ++)
             {

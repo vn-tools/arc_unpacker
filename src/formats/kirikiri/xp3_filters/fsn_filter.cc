@@ -2,7 +2,7 @@
 #include "formats/kirikiri/xp3_filters/fsn_filter.h"
 using namespace Formats::Kirikiri::Xp3Filters;
 
-void FsnFilter::decode(File &file, uint32_t) const
+void FsnFilter::decode(File &file, u32) const
 {
     size_t size = file.io.size();
     file.io.seek(0);

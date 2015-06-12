@@ -14,11 +14,11 @@ using namespace Formats::Glib;
 
 namespace
 {
-    const uint32_t table_decoder = 0x8465b49b;
+    const u32 table_decoder = 0x8465b49b;
     const size_t header_size = 0x5c;
 
     const size_t decoder_table_size = 900;
-    const uint16_t decoder_table[decoder_table_size] =
+    const u16 decoder_table[decoder_table_size] =
     {
         0x0DF0,0xB0B7,0x45B8,0xC9B4,0xCFB3,0xF0B0,0xA85F,0x2C0B,0x648D,0xD4E1,
         0x11EA,0xDAA7,0xFB5F,0xE83A,0x82A4,0x0F5D,0xAE64,0x6F6F,0xEC17,0x040E,
@@ -122,30 +122,30 @@ namespace
         { 3, 2, 1, 0 },
     };
 
-    const std::function<uint8_t(uint8_t, uint8_t)> decoders[] =
+    const std::function<u8(u8, u8)> decoders[] =
     {
-        [](uint8_t byte, size_t size) -> uint8_t
+        [](u8 byte, size_t size) -> u8
         {
             size &= 7;
             return (byte >> size) | (byte << (8 - size));
         },
-        [](uint8_t byte, size_t size) -> uint8_t
+        [](u8 byte, size_t size) -> u8
         {
             return byte ^ size;
         },
-        [](uint8_t byte, size_t size) -> uint8_t
+        [](u8 byte, size_t size) -> u8
         {
             return byte ^ 0xff;
         },
-        [](uint8_t byte, size_t size) -> uint8_t
+        [](u8 byte, size_t size) -> u8
         {
             return (byte - 0x64) ^ 0xff;
         },
-        [](uint8_t byte, size_t size) -> uint8_t
+        [](u8 byte, size_t size) -> u8
         {
             return byte + size;
         },
-        [](uint8_t byte, size_t size) -> uint8_t
+        [](u8 byte, size_t size) -> u8
         {
             return (byte << 4) | (byte >> 4);
         },
@@ -156,7 +156,7 @@ namespace
 
     typedef struct
     {
-        uint32_t keys[4];
+        u32 keys[4];
         size_t table_offset;
         size_t table_size;
     } Header;
@@ -165,16 +165,16 @@ namespace
     {
         std::string name;
         bool is_file;
-        uint32_t offset;
-        uint32_t size;
-        uint32_t keys[4];
+        u32 offset;
+        u32 size;
+        u32 keys[4];
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 
-    void decode(uint32_t decoder, char *buffer, size_t size)
+    void decode(u32 decoder, char *buffer, size_t size)
     {
-        uint32_t target = ((decoder * 95) >> 13) & 0xffff;
+        u32 target = ((decoder * 95) >> 13) & 0xffff;
         int index = -1;
         for (size_t i = 0; i < decoder_table_size; i ++)
         {
@@ -194,17 +194,17 @@ namespace
         int src_permutation = tmp1;
         int dst_permutation = tmp2 - 5 * tmp1 - ((tmp2 - 5 * tmp1 < tmp1) - 1);
 
-        uint32_t written = 0;
+        u32 written = 0;
         size_t left = size;
         while (left >= 4)
         {
             char temp_buffer[4];
             for (size_t i = 0; i < 4; i ++)
             {
-                uint8_t src_index = indices[src_permutation][i];
-                uint8_t dst_index = indices[dst_permutation][i];
-                uint8_t input = buffer[(written & (~3)) + src_index];
-                uint8_t output = func1(func2(input, written), written);
+                u8 src_index = indices[src_permutation][i];
+                u8 dst_index = indices[dst_permutation][i];
+                u8 input = buffer[(written & (~3)) + src_index];
+                u8 output = func1(func2(input, written), written);
                 temp_buffer[dst_index] = output;
                 written ++;
             }
@@ -213,8 +213,8 @@ namespace
         }
         while (left --)
         {
-            uint8_t input = buffer[written];
-            uint8_t output = func1(func2(input, written), written);
+            u8 input = buffer[written];
+            u8 output = func1(func2(input, written), written);
             buffer[written] = output;
             written ++;
         }
@@ -337,7 +337,7 @@ namespace
         arc_io.seek(table_entry.offset);
         arc_io.read(buffer.get(), table_entry.size);
 
-        uint8_t key_id = 0;
+        u8 key_id = 0;
         size_t chunk_size = 0x20000;
         for (size_t done = 0; done < table_entry.size; done += chunk_size)
         {

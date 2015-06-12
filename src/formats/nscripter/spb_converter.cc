@@ -15,25 +15,23 @@ using namespace Formats::NScripter;
 
 namespace
 {
-    typedef unsigned char uchar;
-
-    std::unique_ptr<uchar[]> decode_pixels(
+    std::unique_ptr<u8[]> decode_pixels(
         size_t image_width,
         size_t image_height,
         BitReader &bit_reader,
         size_t &output_size)
     {
         output_size = image_width * image_height * 3;
-        std::unique_ptr<uchar[]> output(new uchar[output_size]);
+        std::unique_ptr<u8[]> output(new u8[output_size]);
 
         size_t channel_data_size = image_width * image_height;
-        std::unique_ptr<uchar[]> channel_data(new uchar[channel_data_size]);
+        std::unique_ptr<u8[]> channel_data(new u8[channel_data_size]);
         for (int rgb = 2; rgb >= 0; rgb--)
         {
-            uchar *channel_ptr = channel_data.get();
-            const uchar *channel_guardian = channel_ptr + channel_data_size;
+            u8 *channel_ptr = channel_data.get();
+            const u8 *channel_guardian = channel_ptr + channel_data_size;
 
-            uchar ch = bit_reader.try_get(8);
+            u8 ch = bit_reader.try_get(8);
             if (channel_ptr >= channel_guardian) break;
             *channel_ptr ++ = ch;
 
@@ -74,8 +72,8 @@ namespace
                 }
             }
 
-            const uchar *p = channel_data.get();
-            uchar *q = output.get() + rgb;
+            const u8 *p = channel_data.get();
+            u8 *q = output.get() + rgb;
             for (size_t j = 0; j < image_height >> 1; j++)
             {
                 for (size_t i = 0; i < image_width; i++)
@@ -109,19 +107,19 @@ bool SpbConverter::is_recognized_internal(File &file) const
 {
     if (!file.has_extension("bmp"))
         return false;
-    uint16_t width = file.io.read_u16_be();
-    uint16_t height = file.io.read_u16_be();
+    u16 width = file.io.read_u16_be();
+    u16 height = file.io.read_u16_be();
     if (height == 0 || width == 0)
         return false;
-    if (static_cast<uint32_t>(width * height) > 0x0fffffff)
+    if (static_cast<u32>(width * height) > 0x0fffffff)
         return false;
     return true;
 }
 
 std::unique_ptr<File> SpbConverter::decode_internal(File &file) const
 {
-    uint16_t width = file.io.read_u16_be();
-    uint16_t height = file.io.read_u16_be();
+    u16 width = file.io.read_u16_be();
+    u16 height = file.io.read_u16_be();
 
     size_t uncompressed_size = file.io.size() - file.io.tell();
     std::unique_ptr<char[]> uncompressed(new char[uncompressed_size]);
@@ -129,7 +127,7 @@ std::unique_ptr<File> SpbConverter::decode_internal(File &file) const
     BitReader bit_reader(uncompressed.get(), uncompressed_size);
 
     size_t uncompressed_data_size;
-    std::unique_ptr<uchar[]> uncompressed_data
+    std::unique_ptr<u8[]> uncompressed_data
         = decode_pixels(width, height, bit_reader, uncompressed_data_size);
 
     std::unique_ptr<Image> image = Image::from_pixels(

@@ -64,18 +64,33 @@ namespace
     #define PICKLE_BINFLOAT        'G'
 
     // Pickle protocol 2
-    #define PICKLE_PROTO    (unsigned char)'\x80'
-    #define PICKLE_NEWOBJ   (unsigned char)'\x81'
-    #define PICKLE_EXT1     (unsigned char)'\x82'
-    #define PICKLE_EXT2     (unsigned char)'\x83'
-    #define PICKLE_EXT4     (unsigned char)'\x84'
-    #define PICKLE_TUPLE1   (unsigned char)'\x85'
-    #define PICKLE_TUPLE2   (unsigned char)'\x86'
-    #define PICKLE_TUPLE3   (unsigned char)'\x87'
-    #define PICKLE_NEWTRUE  (unsigned char)'\x88'
-    #define PICKLE_NEWFALSE (unsigned char)'\x89'
-    #define PICKLE_LONG1    (unsigned char)'\x8a'
-    #define PICKLE_LONG4    (unsigned char)'\x8b'
+    #ifdef VISUAL_STUDIO_2015_CAME_OUT
+        #define PICKLE_PROTO    '\x80'_u8
+        #define PICKLE_NEWOBJ   '\x81'_u8
+        #define PICKLE_EXT1     '\x82'_u8
+        #define PICKLE_EXT2     '\x83'_u8
+        #define PICKLE_EXT4     '\x84'_u8
+        #define PICKLE_TUPLE1   '\x85'_u8
+        #define PICKLE_TUPLE2   '\x86'_u8
+        #define PICKLE_TUPLE3   '\x87'_u8
+        #define PICKLE_NEWTRUE  '\x88'_u8
+        #define PICKLE_NEWFALSE '\x89'_u8
+        #define PICKLE_LONG1    '\x8a'_u8
+        #define PICKLE_LONG4    '\x8b'_u8
+    #else
+        #define PICKLE_PROTO    (u8)'\x80'
+        #define PICKLE_NEWOBJ   (u8)'\x81'
+        #define PICKLE_EXT1     (u8)'\x82'
+        #define PICKLE_EXT2     (u8)'\x83'
+        #define PICKLE_EXT4     (u8)'\x84'
+        #define PICKLE_TUPLE1   (u8)'\x85'
+        #define PICKLE_TUPLE2   (u8)'\x86'
+        #define PICKLE_TUPLE3   (u8)'\x87'
+        #define PICKLE_NEWTRUE  (u8)'\x88'
+        #define PICKLE_NEWFALSE (u8)'\x89'
+        #define PICKLE_LONG1    (u8)'\x8a'
+        #define PICKLE_LONG4    (u8)'\x8b'
+    #endif
 
     typedef struct
     {
@@ -99,7 +114,7 @@ namespace
         size_t table_size = table_io.size();
         while (table_io.tell() < table_size)
         {
-            unsigned char c = table_io.read_u8();
+            u8 c = table_io.read_u8();
             switch (c)
             {
                 case PICKLE_SHORT_BINSTRING:
@@ -111,7 +126,7 @@ namespace
 
                 case PICKLE_BINUNICODE:
                 {
-                    uint32_t size = table_io.read_u32_le();
+                    u32 size = table_io.read_u32_le();
                     unpickle_handle_string(table_io.read(size), context);
                     break;
                 }
@@ -137,7 +152,7 @@ namespace
                 case PICKLE_LONG1:
                 {
                     size_t length = table_io.read_u8();
-                    uint32_t number = 0;
+                    u32 number = 0;
                     size_t i;
                     size_t pos = table_io.tell();
                     for (i = 0; i < length; i ++)
@@ -192,14 +207,14 @@ namespace
     typedef struct
     {
         std::string name;
-        uint32_t offset;
-        uint32_t size;
+        u32 offset;
+        u32 size;
         std::string prefix;
         size_t prefix_size;
     } TableEntry;
 
     std::vector<std::unique_ptr<TableEntry>> decode_table(
-        IO &table_io, uint32_t key)
+        IO &table_io, u32 key)
     {
         UnpickleContext context;
         unpickle(table_io, &context);
@@ -242,10 +257,10 @@ namespace
         return -1;
     }
 
-    uint32_t read_hex_number(IO &arc_io, size_t length)
+    u32 read_hex_number(IO &arc_io, size_t length)
     {
         size_t i;
-        uint32_t result = 0;
+        u32 result = 0;
         for (i = 0; i < length; i ++)
         {
             char c = arc_io.read_u8();
@@ -295,7 +310,7 @@ void RpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     int version = guess_version(arc_file.io);
     size_t table_offset = read_hex_number(arc_file.io, 16);
 
-    uint32_t key;
+    u32 key;
     if (version == 3)
     {
         arc_file.io.skip(1);

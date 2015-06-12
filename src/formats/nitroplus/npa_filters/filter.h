@@ -1,6 +1,6 @@
 #ifndef FORMATS_NITROPLUS_NPA_FILTERS_FILTER_H
 #define FORMATS_NITROPLUS_NPA_FILTERS_FILTER_H
-#include <cstdint>
+#include "types.h"
 
 namespace Formats
 {
@@ -10,9 +10,9 @@ namespace Formats
         {
             typedef struct
             {
-                const unsigned char *permutation;
-                uint32_t data_key;
-                uint32_t (*file_name_key)(uint32_t key1, uint32_t key2);
+                const u8 *permutation;
+                u32 data_key;
+                u32 (*file_name_key)(u32 key1, u32 key2);
             } Filter;
         }
     }

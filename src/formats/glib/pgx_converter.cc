@@ -47,8 +47,8 @@ std::unique_ptr<File> PgxConverter::decode_internal(File &file) const
 
     if (!transparent)
     {
-        uint8_t *buffer = reinterpret_cast<uint8_t*>(target_io.buffer());
-        uint8_t *buffer_guardian = buffer + target_io.size();
+        u8 *buffer = reinterpret_cast<u8*>(target_io.buffer());
+        u8 *buffer_guardian = buffer + target_io.size();
         buffer += 3;
         while (buffer < buffer_guardian)
         {

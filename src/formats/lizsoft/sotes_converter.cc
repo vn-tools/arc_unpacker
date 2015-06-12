@@ -16,7 +16,7 @@ using namespace Formats::Lizsoft;
 namespace
 {
     size_t guess_image_dimension(
-        const std::vector<uint32_t> candidates,
+        const std::vector<u32> candidates,
         int main_delta,
         int max_delta_correction,
         size_t pixels_size)
@@ -63,8 +63,8 @@ namespace
 
 bool SotesConverter::is_recognized_internal(File &file) const
 {
-    uint32_t weird_data1[8];
-    uint32_t weird_data2[14];
+    u32 weird_data1[8];
+    u32 weird_data2[14];
     file.io.read(weird_data1, 8 * 4);
     file.io.skip(256 * 4);
     file.io.read(weird_data2, 14 * 4);
@@ -84,9 +84,9 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
     if (file.io.size() < 1112)
         throw std::runtime_error("Not a SOTES image");
 
-    uint32_t weird_data1[8];
-    uint32_t palette[256];
-    uint32_t weird_data2[14];
+    u32 weird_data1[8];
+    u32 palette[256];
+    u32 weird_data2[14];
     file.io.read(weird_data1, 8 * 4);
     file.io.read(palette, 256 * 4);
     file.io.read(weird_data2, 14 * 4);
@@ -97,14 +97,14 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
     size_t raw_data_size = file.io.size() - file.io.tell();
 
     size_t width = guess_image_dimension(
-        std::vector<uint32_t>(&weird_data1[1], &weird_data1[5]),
-        -(signed)weird_data1[6],
+        std::vector<u32>(&weird_data1[1], &weird_data1[5]),
+        -static_cast<i32>(weird_data1[6]),
         3,
         raw_data_size);
 
     size_t height = guess_image_dimension(
-        std::vector<uint32_t>(&weird_data2[0], &weird_data2[5]),
-        -(signed)weird_data2[10],
+        std::vector<u32>(&weird_data2[0], &weird_data2[5]),
+        -static_cast<i32>(weird_data2[10]),
         0,
         raw_data_size);
 
@@ -123,7 +123,7 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
             if (pixels_ptr >= pixel_data.get() + width * height * 3)
                 throw std::runtime_error("Trying to write pixels beyond EOF");
             size_t palette_index = static_cast<size_t>(file.io.read_u8());
-            uint32_t rgba = palette[palette_index];
+            u32 rgba = palette[palette_index];
             *pixels_ptr ++ = rgba;
             *pixels_ptr ++ = rgba >> 8;
             *pixels_ptr ++ = rgba >> 16;

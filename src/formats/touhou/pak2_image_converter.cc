@@ -73,7 +73,7 @@ std::unique_ptr<File> Pak2ImageConverter::decode_internal(File &file) const
     {
         for (size_t x = 0; x < image_width_padded; x ++)
         {
-            uint32_t rgba;
+            u32 rgba;
 
             switch (bit_depth)
             {

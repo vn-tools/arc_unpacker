@@ -3,12 +3,13 @@
 #include <array>
 #include <boost/filesystem/path.hpp>
 #include <map>
+#include "types.h"
 
 namespace Formats
 {
     namespace Touhou
     {
-        typedef std::array<uint32_t, 256> Palette;
+        typedef std::array<u32, 256> Palette;
 
         typedef std::map<boost::filesystem::path, Palette> PaletteMap;
 

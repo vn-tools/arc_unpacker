@@ -13,9 +13,9 @@ using namespace Formats::RpgMaker;
 namespace
 {
     const std::string magic("RGSSAD\x00", 7);
-    const uint32_t initial_key = 0xdeadcafe;
+    const u32 initial_key = 0xdeadcafe;
 
-    uint32_t advance_key(const uint32_t key)
+    u32 advance_key(const u32 key)
     {
         return key * 7 + 3;
     }
@@ -25,12 +25,12 @@ namespace
         std::string name;
         size_t size;
         size_t offset;
-        uint32_t key;
+        u32 key;
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 
-    Table read_table(IO &arc_io, uint32_t key)
+    Table read_table(IO &arc_io, u32 key)
     {
         Table table;
         while (arc_io.tell() < arc_io.size())
@@ -67,10 +67,10 @@ namespace
 
         file->io.write("\x00\x00\x00\x00", 4);
         file->io.seek(0);
-        uint32_t key = table_entry.key;
+        u32 key = table_entry.key;
         for (size_t i = 0; i + 4 < file->io.size(); i += 4)
         {
-            uint32_t chunk = file->io.read_u32_le();
+            u32 chunk = file->io.read_u32_le();
             chunk ^= key;
             key = advance_key(key);
             file->io.skip(-4);
@@ -90,11 +90,11 @@ void RgssadArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     arc_file.io.skip(magic.size());
 
-    uint8_t version = arc_file.io.read_u8();
+    u8 version = arc_file.io.read_u8();
     if (version != 1)
         throw std::runtime_error("Unsupported archive version");
 
-    uint32_t key = initial_key;
+    u32 key = initial_key;
 
     Table table = read_table(arc_file.io, key);
     for (auto &table_entry : table)

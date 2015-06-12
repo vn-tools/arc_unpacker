@@ -27,7 +27,7 @@ std::unique_ptr<File> SoundConverter::decode_internal(File &file) const
     size_t header_size = file.io.read_u32_le();
     file.io.skip(magic.size());
 
-    uint32_t file_size = file.io.read_u32_le();
+    u32 file_size = file.io.read_u32_le();
     file.io.seek(header_size);
     std::unique_ptr<File> output_file(new File);
     output_file->io.write_from_io(file.io, file_size);

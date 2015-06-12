@@ -8,8 +8,8 @@ namespace Formats
     {
         typedef struct DecryptorContext
         {
-            uint8_t key;
-            uint8_t step;
+            u8 key;
+            u8 step;
             size_t block_size;
             size_t limit;
 

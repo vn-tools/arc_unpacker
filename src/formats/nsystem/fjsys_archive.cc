@@ -49,8 +49,7 @@ namespace
         size_t data_size = arc_io.read_u32_le();
         size_t data_offset = static_cast<size_t>(arc_io.read_u64_le());
         size_t old_pos = arc_io.tell();
-        size_t file_names_start = header.header_size
-            - header.file_names_size;
+        size_t file_names_start = header.header_size - header.file_names_size;
 
         arc_io.seek(file_name_offset + file_names_start);
         file->name = arc_io.read_until_zero();

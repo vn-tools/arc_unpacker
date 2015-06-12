@@ -11,7 +11,7 @@ namespace Formats
             class NoopFilter final : public Filter
             {
             public:
-                virtual void decode(File &file, uint32_t key) const override;
+                virtual void decode(File &file, u32 key) const override;
             };
         }
     }

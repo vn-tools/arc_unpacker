@@ -62,7 +62,7 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
     Palette palette;
     if (bit_depth == 8)
     {
-        uint32_t palette_number = 0;
+        u32 palette_number = 0;
         auto path = boost::filesystem::path(file.name);
         path.remove_filename();
         path /= "palette" + itos(palette_number, 3) + ".bmp";
@@ -77,7 +77,7 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
     {
         for (size_t x = 0; x < image_width_padded; x ++)
         {
-            uint32_t rgba;
+            u32 rgba;
 
             switch (bit_depth)
             {

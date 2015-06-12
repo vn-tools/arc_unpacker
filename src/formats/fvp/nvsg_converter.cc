@@ -75,8 +75,8 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
 
         case 4:
         {
-            unsigned char *ptr = reinterpret_cast<unsigned char*>(&data[0]);
-            unsigned char *guardian = ptr + data.size();
+            u8 *ptr = reinterpret_cast<u8*>(&data[0]);
+            u8 *guardian = ptr + data.size();
             while (ptr < guardian)
             {
                 if (*ptr)

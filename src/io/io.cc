@@ -72,51 +72,51 @@ std::string IO::read(size_t bytes)
     return std::string(buffer.get(), bytes);
 }
 
-uint8_t IO::read_u8()
+u8 IO::read_u8()
 {
-    uint8_t ret = 0;
+    u8 ret = 0;
     read(&ret, 1);
     return ret;
 }
 
-uint16_t IO::read_u16_le()
+u16 IO::read_u16_le()
 {
-    uint16_t ret = 0;
+    u16 ret = 0;
     read(&ret, 2);
     return le16toh(ret);
 }
 
-uint32_t IO::read_u32_le()
+u32 IO::read_u32_le()
 {
-    uint32_t ret = 0;
+    u32 ret = 0;
     read(&ret, 4);
     return le32toh(ret);
 }
 
-uint64_t IO::read_u64_le()
+u64 IO::read_u64_le()
 {
-    uint64_t ret = 0;
+    u64 ret = 0;
     read(&ret, 8);
     return le64toh(ret);
 }
 
-uint16_t IO::read_u16_be()
+u16 IO::read_u16_be()
 {
-    uint16_t ret = 0;
+    u16 ret = 0;
     read(&ret, 2);
     return be16toh(ret);
 }
 
-uint32_t IO::read_u32_be()
+u32 IO::read_u32_be()
 {
-    uint32_t ret = 0;
+    u32 ret = 0;
     read(&ret, 4);
     return be32toh(ret);
 }
 
-uint64_t IO::read_u64_be()
+u64 IO::read_u64_be()
 {
-    uint64_t ret = 0;
+    u64 ret = 0;
     read(&ret, 8);
     return be64toh(ret);
 }
@@ -131,42 +131,42 @@ void IO::write(const std::string &bytes)
     write(bytes.data(), bytes.size());
 }
 
-void IO::write_u8(uint8_t value)
+void IO::write_u8(u8 value)
 {
     write(&value, 1);
 }
 
-void IO::write_u16_le(uint16_t value)
+void IO::write_u16_le(u16 value)
 {
     value = htole16(value);
     write(&value, 2);
 }
 
-void IO::write_u32_le(uint32_t value)
+void IO::write_u32_le(u32 value)
 {
     value = htole32(value);
     write(&value, 4);
 }
 
-void IO::write_u64_le(uint64_t value)
+void IO::write_u64_le(u64 value)
 {
     value = htole64(value);
     write(&value, 8);
 }
 
-void IO::write_u16_be(uint16_t value)
+void IO::write_u16_be(u16 value)
 {
     value = htobe16(value);
     write(&value, 2);
 }
 
-void IO::write_u32_be(uint32_t value)
+void IO::write_u32_be(u32 value)
 {
     value = htobe32(value);
     write(&value, 4);
 }
 
-void IO::write_u64_be(uint64_t value)
+void IO::write_u64_be(u64 value)
 {
     value = htobe64(value);
     write(&value, 8);

@@ -26,28 +26,27 @@ namespace
 
     typedef struct
     {
-        uint16_t x;
-        uint16_t y;
-        uint16_t width;
-        uint16_t height;
+        u16 x;
+        u16 y;
+        u16 width;
+        u16 height;
     } Region;
 
     void decompress_sgd_alpha(
-        const uint8_t *&input_ptr,
-        const uint8_t *const input_guardian,
-        uint8_t *&output_ptr,
-        const uint8_t *const output_guardian)
+        const u8 *&input_ptr,
+        const u8 *const input_guardian,
+        u8 *&output_ptr,
+        const u8 *const output_guardian)
     {
         output_ptr += 3; //ignore first RGB
         while (input_ptr < input_guardian)
         {
-            uint16_t flag = le16toh(
-                *reinterpret_cast<const uint16_t*>(input_ptr));
+            u16 flag = le16toh(*reinterpret_cast<const u16*>(input_ptr));
             input_ptr += 2;
             if (flag & 0x8000)
             {
                 size_t pixels = (flag & 0x7fff) + 1;
-                uint8_t alpha = *input_ptr ++;
+                u8 alpha = *input_ptr ++;
                 size_t i;
                 for (i = 0; i < pixels; i ++)
                 {
@@ -65,7 +64,7 @@ namespace
             {
                 while (flag -- && input_ptr < input_guardian)
                 {
-                    uint8_t alpha = *input_ptr;
+                    u8 alpha = *input_ptr;
                     input_ptr ++;
                     if (output_ptr > output_guardian)
                     {
@@ -80,23 +79,22 @@ namespace
     }
 
     void decompress_sgd_bgr_strategy_1(
-        const uint8_t *&input_ptr,
-        const uint8_t *const input_guardian,
-        uint8_t *&output_ptr,
-        const uint8_t *const output_guardian,
-        uint8_t flag)
+        const u8 *&input_ptr,
+        const u8 *const input_guardian,
+        u8 *&output_ptr,
+        const u8 *const output_guardian,
+        u8 flag)
     {
         size_t pixels = flag & 0x3f;
-        uint8_t b = output_ptr[-4];
-        uint8_t g = output_ptr[-3];
-        uint8_t r = output_ptr[-2];
+        u8 b = output_ptr[-4];
+        u8 g = output_ptr[-3];
+        u8 r = output_ptr[-2];
         for (size_t i = 0; i < pixels; i ++)
         {
             if (input_ptr + 2 > input_guardian)
                 throw std::runtime_error("Trying to read length beyond EOF");
 
-            uint16_t delta = le16toh(
-                *reinterpret_cast<const uint16_t*>(input_ptr));
+            u16 delta = le16toh(*reinterpret_cast<const u16*>(input_ptr));
             input_ptr += 2;
 
             if (delta & 0x8000)
@@ -123,19 +121,19 @@ namespace
     }
 
     void decompress_sgd_bgr_strategy_2(
-        const uint8_t *&input_ptr,
-        const uint8_t *const input_guardian,
-        uint8_t *&output_ptr,
-        const uint8_t *const output_guardian,
-        uint8_t flag)
+        const u8 *&input_ptr,
+        const u8 *const input_guardian,
+        u8 *&output_ptr,
+        const u8 *const output_guardian,
+        u8 flag)
     {
         if (input_ptr + 3 > input_guardian)
             throw std::runtime_error("Trying to read colors beyond EOF");
 
         size_t pixels = (flag & 0x3f) + 1;
-        uint8_t b = *input_ptr ++;
-        uint8_t g = *input_ptr ++;
-        uint8_t r = *input_ptr ++;
+        u8 b = *input_ptr ++;
+        u8 g = *input_ptr ++;
+        u8 r = *input_ptr ++;
         for (size_t i = 0; i < pixels; i ++)
         {
             if (output_ptr + 4 > output_guardian)
@@ -149,11 +147,11 @@ namespace
     }
 
     void decompress_sgd_bgr_strategy_3(
-        const uint8_t *&input_ptr,
-        const uint8_t *const input_guardian,
-        uint8_t *&output_ptr,
-        const uint8_t *const output_guardian,
-        uint8_t flag)
+        const u8 *&input_ptr,
+        const u8 *const input_guardian,
+        u8 *&output_ptr,
+        const u8 *const output_guardian,
+        u8 flag)
     {
         size_t pixels = flag;
         for (size_t i = 0; i < pixels; i ++)
@@ -177,14 +175,14 @@ namespace
     }
 
     void decompress_sgd_bgr(
-        const uint8_t *&input_ptr,
-        const uint8_t *const input_guardian,
-        uint8_t *&output_ptr,
-        const uint8_t *const output_guardian)
+        const u8 *&input_ptr,
+        const u8 *const input_guardian,
+        u8 *&output_ptr,
+        const u8 *const output_guardian)
     {
         while (input_ptr < input_guardian)
         {
-            uint8_t flag = *input_ptr ++;
+            u8 flag = *input_ptr ++;
             switch (flag & 0xc0)
             {
                 case 0x80:
@@ -215,20 +213,20 @@ namespace
     }
 
     void decompress_sgd(
-        const uint8_t *const input,
+        const u8 *const input,
         size_t input_size,
-        uint8_t *const output,
+        u8 *const output,
         size_t output_size)
     {
         assert(input != nullptr);
         assert(output != nullptr);
 
         size_t length;
-        const uint8_t *input_guardian;
-        const uint8_t *output_guardian = output + output_size;
-        uint8_t *output_ptr = output;
+        const u8 *input_guardian;
+        const u8 *output_guardian = output + output_size;
+        u8 *output_ptr = output;
 
-        const uint8_t *input_ptr = input;
+        const u8 *input_ptr = input;
         length = le32toh(*reinterpret_cast<const int32_t*>(input_ptr));
         input_ptr += 4;
         input_guardian = input_ptr + length;
@@ -241,7 +239,7 @@ namespace
             output_ptr,
             output_guardian);
 
-        length = le32toh(*reinterpret_cast<const uint32_t*>(input_ptr));
+        length = le32toh(*reinterpret_cast<const u32*>(input_ptr));
         input_ptr += 4;
         input_guardian = input_ptr + length;
         if (length > input_size)
@@ -311,9 +309,9 @@ namespace
                     new char[size_original]);
 
                 decompress_sgd(
-                    reinterpret_cast<const uint8_t*>(data_compressed.data()),
+                    reinterpret_cast<const u8*>(data_compressed.data()),
                     size_compressed,
-                    reinterpret_cast<uint8_t*>(data_uncompressed.get()),
+                    reinterpret_cast<u8*>(data_uncompressed.get()),
                     size_original);
 
                 return Image::from_pixels(
@@ -344,13 +342,13 @@ std::unique_ptr<File> MgdConverter::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
-    uint16_t data_offset = file.io.read_u16_le();
-    uint16_t format = file.io.read_u16_le();
+    u16 data_offset = file.io.read_u16_le();
+    u16 format = file.io.read_u16_le();
     file.io.skip(4);
-    uint16_t image_width = file.io.read_u16_le();
-    uint16_t image_height = file.io.read_u16_le();
-    uint32_t size_original = file.io.read_u32_le();
-    uint32_t size_compressed_total = file.io.read_u32_le();
+    u16 image_width = file.io.read_u16_le();
+    u16 image_height = file.io.read_u16_le();
+    u32 size_original = file.io.read_u32_le();
+    u32 size_compressed_total = file.io.read_u32_le();
     CompressionType compression_type = (CompressionType)file.io.read_u32_le();
     file.io.skip(64);
 

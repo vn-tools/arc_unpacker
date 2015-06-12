@@ -230,16 +230,16 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
     return output_file;
 }
 
-uint32_t Image::color_at(size_t x, size_t y) const
+u32 Image::color_at(size_t x, size_t y) const
 {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t a;
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
     size_t i = y * internals->image_width + x;
 
-    const uint8_t *pixel_data
-        = reinterpret_cast<const uint8_t*>(internals->pixel_data.data());
+    const u8 *pixel_data
+        = reinterpret_cast<const u8*>(internals->pixel_data.data());
 
     switch (internals->pixel_format)
     {

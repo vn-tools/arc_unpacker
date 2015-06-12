@@ -3,8 +3,8 @@ using namespace Formats::Kirikiri::Tlg;
 
 struct LzssDecompressor::Internals
 {
-    unsigned char dictionary[4096];
-    unsigned int offset;
+    u8 dictionary[4096];
+    size_t offset;
 
     Internals()
     {
@@ -22,20 +22,18 @@ LzssDecompressor::~LzssDecompressor()
 {
 }
 
-void LzssDecompressor::init_dictionary(unsigned char dictionary[4096])
+void LzssDecompressor::init_dictionary(u8 dictionary[4096])
 {
     for (size_t i = 0; i < 4096; i ++)
         internals->dictionary[i] = dictionary[i];
 }
 
 void LzssDecompressor::decompress(
-    unsigned char *input,
-    size_t input_size,
-    unsigned char *output,
-    size_t output_size)
+    u8 *input, size_t input_size,
+    u8 *output, size_t output_size)
 {
-    unsigned char *input_guardian = input + input_size;
-    unsigned char *output_guardian = output + output_size;
+    u8 *input_guardian = input + input_size;
+    u8 *output_guardian = output + output_size;
 
     for (size_t i = 0; i < output_size; i ++)
         output[i] = 0;
@@ -55,10 +53,10 @@ void LzssDecompressor::decompress(
         {
             if (input >= input_guardian)
                 return;
-            unsigned char x0 = *input++;
+            u8 x0 = *input++;
             if (input >= input_guardian)
                 return;
-            unsigned char x1 = *input++;
+            u8 x1 = *input++;
             size_t position = x0 | ((x1 & 0xf) << 8);
             size_t length = 3 + ((x1 & 0xf0) >> 4);
             if (length == 18)
@@ -70,7 +68,7 @@ void LzssDecompressor::decompress(
 
             for (size_t j = 0; j < length; j ++)
             {
-                unsigned char c = internals->dictionary[position];
+                u8 c = internals->dictionary[position];
                 if (output >= output_guardian)
                     return;
                 *output ++ = c;
@@ -85,7 +83,7 @@ void LzssDecompressor::decompress(
         {
             if (input >= input_guardian)
                 return;
-            unsigned char c = *input ++;
+            u8 c = *input ++;
             if (output >= output_guardian)
                 return;
             *output ++ = c;

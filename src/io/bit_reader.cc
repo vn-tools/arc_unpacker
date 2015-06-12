@@ -6,10 +6,10 @@ namespace
     class Reader
     {
     private:
-        uint8_t mask;
-        uint8_t value;
+        u8 mask;
+        u8 value;
         virtual bool eof() = 0;
-        virtual uint8_t fetch_byte() = 0;
+        virtual u8 fetch_byte() = 0;
 
     public:
         Reader();
@@ -61,17 +61,17 @@ namespace
     class BufferBasedReader : public Reader
     {
     private:
-        const uint8_t *buffer;
+        const u8 *buffer;
         size_t buffer_size;
 
     public:
-        BufferBasedReader(const uint8_t *buffer, size_t buffer_size);
+        BufferBasedReader(const u8 *buffer, size_t buffer_size);
         bool eof() override;
-        uint8_t fetch_byte() override;
+        u8 fetch_byte() override;
     };
 
     BufferBasedReader::BufferBasedReader(
-        const uint8_t *buffer, size_t buffer_size)
+        const u8 *buffer, size_t buffer_size)
         : buffer(buffer), buffer_size(buffer_size)
     {
     }
@@ -81,7 +81,7 @@ namespace
         return buffer_size == 0;
     }
 
-    uint8_t BufferBasedReader::fetch_byte()
+    u8 BufferBasedReader::fetch_byte()
     {
         -- buffer_size;
         return *buffer ++;
@@ -98,7 +98,7 @@ namespace
     public:
         IoBasedReader(IO &io);
         bool eof() override;
-        uint8_t fetch_byte() override;
+        u8 fetch_byte() override;
     };
 
     IoBasedReader::IoBasedReader(IO &io) : io(io)
@@ -110,7 +110,7 @@ namespace
         return io.tell() >= io.size();
     }
 
-    uint8_t IoBasedReader::fetch_byte()
+    u8 IoBasedReader::fetch_byte()
     {
         return io.read_u8();
     }
@@ -142,8 +142,7 @@ BitReader::BitReader(const char *buffer, size_t buffer_size)
         new Internals(
             std::unique_ptr<Reader>(
                 new BufferBasedReader(
-                    reinterpret_cast<const uint8_t*>(buffer),
-                    buffer_size))))
+                    reinterpret_cast<const u8*>(buffer), buffer_size))))
 {
 }
 

@@ -62,9 +62,9 @@ void PakArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     arc_file.io.skip(magic.size());
 
-    uint32_t file_count = arc_file.io.read_u32_le();
-    uint32_t table_size_original = arc_file.io.read_u32_le();
-    uint32_t table_size_compressed = arc_file.io.read_u32_le();
+    u32 file_count = arc_file.io.read_u32_le();
+    u32 table_size_original = arc_file.io.read_u32_le();
+    u32 table_size_compressed = arc_file.io.read_u32_le();
     arc_file.io.skip(0x104);
 
     BufferedIO table_io(zlib_inflate(arc_file.io.read(table_size_compressed)));

@@ -17,19 +17,19 @@ namespace
     int check_version(
         IO &arc_io,
         size_t initial_position,
-        uint32_t file_count,
-        uint32_t name_length)
+        u32 file_count,
+        u32 name_length)
     {
         arc_io.seek(initial_position + file_count * (name_length + 8));
         arc_io.skip(-8);
-        uint32_t last_file_offset = arc_io.read_u32_le();
-        uint32_t last_file_size = arc_io.read_u32_le();
+        u32 last_file_offset = arc_io.read_u32_le();
+        u32 last_file_size = arc_io.read_u32_le();
         return last_file_offset + last_file_size == arc_io.size();
     }
 
     int get_version(IO &arc_io)
     {
-        uint32_t file_count = arc_io.read_u32_le();
+        u32 file_count = arc_io.read_u32_le();
         if (check_version(arc_io, 4, file_count, 16))
         {
             arc_io.seek(0);
@@ -37,7 +37,7 @@ namespace
         }
 
         arc_io.seek(4);
-        uint32_t name_length = arc_io.read_u32_le();
+        u32 name_length = arc_io.read_u32_le();
         if (check_version(arc_io, 8, file_count, name_length))
         {
             arc_io.seek(0);
@@ -92,8 +92,8 @@ bool MblArchive::is_recognized_internal(File &arc_file) const
 void MblArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     int version = get_version(arc_file.io);
-    uint32_t file_count = arc_file.io.read_u32_le();
-    uint32_t name_length = version == 2 ? arc_file.io.read_u32_le() : 16;
+    u32 file_count = arc_file.io.read_u32_le();
+    u32 name_length = version == 2 ? arc_file.io.read_u32_le() : 16;
 
     for (size_t i = 0; i < file_count; i ++)
     {

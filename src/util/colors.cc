@@ -1,6 +1,6 @@
 #include "util/colors.h"
 
-uint32_t rgb565(uint16_t word)
+u32 rgb565(u16 word)
 {
      return ((word & 0x1f) << 3)
         | ((word & 0x7e0) << 5)
@@ -8,7 +8,7 @@ uint32_t rgb565(uint16_t word)
         | 0xff000000;
 }
 
-uint32_t rgba4444(uint16_t word)
+u32 rgba4444(u16 word)
 {
     return ((word & 0xf) << 4)
         | ((word & 0xf0) << 8)
@@ -16,7 +16,7 @@ uint32_t rgba4444(uint16_t word)
         | ((word & 0xf000) << 16);
 }
 
-uint32_t rgba5551(uint16_t word)
+u32 rgba5551(u16 word)
 {
     return ((word & 0x1f) << 3)
         | ((word & 0x3e0) << 6)
@@ -24,31 +24,31 @@ uint32_t rgba5551(uint16_t word)
         | (word & 0x8000 ? 0xff000000 : 0);
 }
 
-uint32_t rgba_gray(uint8_t byte)
+u32 rgba_gray(u8 byte)
 {
     return byte | (byte << 8) | (byte << 16) | 0xff000000;
 }
 
-void set_channel(uint32_t &color, uint8_t channel, uint8_t value)
+void set_channel(u32 &color, u8 channel, u8 value)
 {
     auto shift = channel << 3;
     color &= ~(0xff << shift);
     color |= value << shift;
 }
 
-uint8_t get_channel(uint32_t color, uint8_t channel)
+u8 get_channel(u32 color, u8 channel)
 {
     auto shift = channel << 3;
     return (color >> shift) & 0xff;
 }
 
-void split_channels(uint32_t color, uint8_t channels[4])
+void split_channels(u32 color, u8 channels[4])
 {
     for (auto i = 0; i < 4; i ++)
         channels[i] = get_channel(color, i);
 }
 
-void merge_channels(uint8_t channels[4], uint32_t &color)
+void merge_channels(u8 channels[4], u32 &color)
 {
     for (auto i = 0; i < 4; i ++)
         set_channel(color, i, channels[i]);

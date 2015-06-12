@@ -20,8 +20,8 @@ namespace
     typedef struct
     {
         std::string name;
-        uint32_t offset;
-        uint32_t size;
+        u32 offset;
+        u32 size;
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;

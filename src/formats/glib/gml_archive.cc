@@ -20,8 +20,8 @@ namespace
     typedef struct
     {
         std::string name;
-        uint32_t offset;
-        uint32_t size;
+        u32 offset;
+        u32 size;
         char prefix[prefix_size];
     } TableEntry;
 
@@ -31,7 +31,7 @@ namespace
         IO &arc_io, size_t header_size_compressed, size_t header_size_original)
     {
         BufferedIO temp_io(arc_io, header_size_compressed);
-        uint8_t *buffer = reinterpret_cast<uint8_t*>(temp_io.buffer());
+        u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
         for (size_t i = 0; i < header_size_compressed; i ++)
             buffer[i] ^= 0xff;
 
@@ -69,7 +69,7 @@ namespace
 
         arc_io.seek(table_entry.offset);
         BufferedIO temp_io(arc_io, table_entry.size);
-        uint8_t *buffer = reinterpret_cast<uint8_t*>(temp_io.buffer());
+        u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
         for (size_t i = 0; i < table_entry.size; i ++)
             buffer[i] = permutation[buffer[i]];
 
@@ -103,9 +103,9 @@ void GmlArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     arc_file.io.skip(magic.size());
 
-    uint32_t file_data_start = arc_file.io.read_u32_le();
-    uint32_t header_size_original = arc_file.io.read_u32_le();
-    uint32_t header_size_compressed = arc_file.io.read_u32_le();
+    u32 file_data_start = arc_file.io.read_u32_le();
+    u32 header_size_original = arc_file.io.read_u32_le();
+    u32 header_size_compressed = arc_file.io.read_u32_le();
 
     auto header_io = get_header_io(
         arc_file.io, header_size_compressed, header_size_original);

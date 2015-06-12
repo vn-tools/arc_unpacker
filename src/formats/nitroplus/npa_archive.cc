@@ -26,23 +26,23 @@ namespace
 
     typedef struct
     {
-        uint32_t key1;
-        uint32_t key2;
+        u32 key1;
+        u32 key2;
         bool compressed;
         bool encrypted;
-        uint32_t total_count;
-        uint32_t folder_count;
-        uint32_t file_count;
-        uint32_t table_size;
+        u32 total_count;
+        u32 folder_count;
+        u32 file_count;
+        u32 table_size;
         size_t table_offset;
     } Header;
 
     typedef struct
     {
         std::string name;
-        uint32_t offset;
-        uint32_t size_compressed;
-        uint32_t size_original;
+        u32 offset;
+        u32 size_compressed;
+        u32 size_original;
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
@@ -69,10 +69,10 @@ namespace
         const Filter &filter,
         size_t file_pos)
     {
-        uint32_t tmp = filter.file_name_key(header.key1, header.key2);
+        u32 tmp = filter.file_name_key(header.key1, header.key2);
         for (size_t char_pos = 0; char_pos < name.size(); char_pos++)
         {
-            uint32_t key = 0xfc * char_pos;
+            u32 key = 0xfc * char_pos;
             key -= tmp >> 0x18;
             key -= tmp >> 0x10;
             key -= tmp >> 0x08;
@@ -91,9 +91,9 @@ namespace
         const Header &header,
         const Filter &filter)
     {
-        uint32_t key = filter.data_key;
+        u32 key = filter.data_key;
         for (size_t i = 0; i < table_entry.name.size(); i ++)
-            key -= reinterpret_cast<const unsigned char&>(table_entry.name[i]);
+            key -= reinterpret_cast<const u8&>(table_entry.name[i]);
         key *= table_entry.name.size();
         key += header.key1 * header.key2;
         key *= table_entry.size_original;
@@ -102,7 +102,7 @@ namespace
         size_t length = 0x1000 + table_entry.name.size();
         for (size_t i = 0; i < length && i < table_entry.size_compressed; i ++)
         {
-            char p = filter.permutation[static_cast<unsigned char>(data[i])];
+            char p = filter.permutation[static_cast<u8>(data[i])];
             data[i] = static_cast<char>(p - key - i);
         }
     }

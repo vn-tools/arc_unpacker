@@ -25,7 +25,7 @@ namespace
 
     typedef struct
     {
-        uint32_t checksum;
+        u32 checksum;
         size_t size;
         size_t offset;
         std::string name;

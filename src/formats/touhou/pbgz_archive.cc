@@ -38,7 +38,7 @@ namespace
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 
-    std::vector<std::map<uint8_t, DecryptorContext>> decryptors
+    std::vector<std::map<u8, DecryptorContext>> decryptors
     {
         {
             { 0x2a, { 0x99, 0x37,  0x400, 0x1000 } },

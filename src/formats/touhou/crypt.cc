@@ -20,7 +20,7 @@ void Formats::Touhou::decrypt(
 {
     int left = min(size, input.size() - input.tell());
     size_t current_block_size = context.block_size;
-    uint8_t key = context.key;
+    u8 key = context.key;
     std::unique_ptr<char[]> input_block(new char[context.block_size]);
     std::unique_ptr<char[]> output_block(new char[context.block_size]);
 
@@ -39,8 +39,7 @@ void Formats::Touhou::decrypt(
         const char *input_block_ptr = input_block.get();
         for (int j = 0; j < 2; j ++)
         {
-            char *output_block_ptr
-                = &output_block[current_block_size - j - 1];
+            char *output_block_ptr = &output_block[current_block_size - j - 1];
             for (size_t i = 0; i < (current_block_size - j + 1) >> 1; i ++)
             {
                 *output_block_ptr = *input_block_ptr ^ key;

@@ -39,10 +39,10 @@ namespace
         assert(input != nullptr);
         assert(output != nullptr);
 
-        const uint8_t *src = reinterpret_cast<const uint8_t*>(input);
-        const uint8_t *src_guardian = src + input_size;
-        uint8_t *dst = reinterpret_cast<uint8_t*>(output);
-        uint8_t *dst_guardian = dst + output_size;
+        const u8 *src = reinterpret_cast<const u8*>(input);
+        const u8 *src_guardian = src + input_size;
+        u8 *dst = reinterpret_cast<u8*>(output);
+        u8 *dst_guardian = dst + output_size;
 
         int flag = *src ++;
         int bit = 1;
@@ -82,8 +82,7 @@ namespace
                 {
                     if (dst >= dst_guardian)
                         break;
-                    assert(dst >=
-                        reinterpret_cast<uint8_t*>(output + look_behind));
+                    assert(dst >= reinterpret_cast<u8*>(output + look_behind));
                     *dst = dst[-look_behind];
                     dst ++;
                 }
@@ -153,12 +152,12 @@ namespace
 
         BufferedIO tmp_io(uncompressed.get(), uncompressed_size);
 
-        std::unique_ptr<uint32_t[]> palette(new uint32_t[256]);
+        std::unique_ptr<u32[]> palette(new u32[256]);
         size_t color_count = tmp_io.read_u16_le();
         for (size_t i = 0; i < color_count; i ++)
             palette[i] = tmp_io.read_u32_le();
 
-        std::unique_ptr<uint32_t[]> pixels(new uint32_t[width * height]);
+        std::unique_ptr<u32[]> pixels(new u32[width * height]);
         for (size_t i = 0; i < static_cast<size_t>(width * height); i ++)
             pixels[i] = palette[tmp_io.read_u8()];
 
@@ -212,7 +211,7 @@ namespace
             uncompressed_size,
             1, 2);
 
-        std::unique_ptr<uint32_t[]> pixels(new uint32_t[width * height]);
+        std::unique_ptr<u32[]> pixels(new u32[width * height]);
         for (int i = 0; i < width * height; i ++)
             pixels[i] = 0;
 
@@ -231,18 +230,18 @@ namespace
                 continue;
 
             uncompressed_io.seek(block_offset);
-            uint16_t block_type = uncompressed_io.read_u16_le();
-            uint16_t part_count = uncompressed_io.read_u16_le();
+            u16 block_type = uncompressed_io.read_u16_le();
+            u16 part_count = uncompressed_io.read_u16_le();
             assert(block_type == 1);
 
             uncompressed_io.skip(0x70);
             for (j = 0; j < part_count; j ++)
             {
-                uint16_t part_x = uncompressed_io.read_u16_le();
-                uint16_t part_y = uncompressed_io.read_u16_le();
+                u16 part_x = uncompressed_io.read_u16_le();
+                u16 part_y = uncompressed_io.read_u16_le();
                 uncompressed_io.skip(2);
-                uint16_t part_width = uncompressed_io.read_u16_le();
-                uint16_t part_height = uncompressed_io.read_u16_le();
+                u16 part_width = uncompressed_io.read_u16_le();
+                u16 part_height = uncompressed_io.read_u16_le();
                 uncompressed_io.skip(0x52);
 
                 for (size_t y = part_y + region->y1;
@@ -251,7 +250,7 @@ namespace
                 {
                     uncompressed_io.read(
                         &pixels[part_x + region->x1 + y * width],
-                        part_width * sizeof(uint32_t));
+                        part_width * sizeof(u32));
                 }
             }
         }
@@ -274,9 +273,9 @@ bool G00Converter::is_recognized_internal(File &file) const
 
 std::unique_ptr<File> G00Converter::decode_internal(File &file) const
 {
-    uint8_t version = file.io.read_u8();
-    uint16_t width = file.io.read_u16_le();
-    uint16_t height = file.io.read_u16_le();
+    u8 version = file.io.read_u8();
+    u16 width = file.io.read_u16_le();
+    u16 height = file.io.read_u16_le();
 
     switch (version)
     {

@@ -27,8 +27,7 @@ namespace
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 
-    int init_huffman(
-        BitReader &bit_reader, uint16_t nodes[2][512], int &pos)
+    int init_huffman(BitReader &bit_reader, u16 nodes[2][512], int &pos)
     {
         if (bit_reader.get(1))
         {
@@ -51,7 +50,7 @@ namespace
         char *output_guardian = output + output_size;
         std::unique_ptr<BitReader> bit_reader(new BitReader(input, input_size));
 
-        uint16_t nodes[2][512];
+        u16 nodes[2][512];
         int pos = 256;
         int initial_pos = init_huffman(*bit_reader, nodes, pos);
 
@@ -59,12 +58,7 @@ namespace
         {
             unsigned int pos = initial_pos;
             while (pos >= 256)
-            {
-                if (bit_reader->get(1))
-                    pos = nodes[1][pos];
-                else
-                    pos = nodes[0][pos];
-            }
+                pos = nodes[bit_reader->get(1)][pos];
 
             *output ++ = pos;
         }

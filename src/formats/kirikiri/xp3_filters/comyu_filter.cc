@@ -3,7 +3,7 @@
 #include "formats/kirikiri/xp3_filters/cxdec_filter.h"
 using namespace Formats::Kirikiri::Xp3Filters;
 
-void ComyuFilter::decode(File &file, uint32_t key) const
+void ComyuFilter::decode(File &file, u32 key) const
 {
     CxdecFilterSettings settings;
     settings.key1 = 0x1a3;

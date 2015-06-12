@@ -28,8 +28,8 @@ std::unique_ptr<File> XyzConverter::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
-    uint16_t width = file.io.read_u16_le();
-    uint16_t height = file.io.read_u16_le();
+    u16 width = file.io.read_u16_le();
+    u16 height = file.io.read_u16_le();
 
     std::string data = zlib_inflate(file.io.read_until_end());
     if (data.size() != static_cast<size_t>(256 * 3 + width * height))

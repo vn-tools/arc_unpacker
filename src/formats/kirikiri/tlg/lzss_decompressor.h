@@ -1,6 +1,7 @@
 #ifndef FORMATS_KIRIKIRI_TLG_LZSS_COMPRESSOR_H
 #define FORMATS_KIRIKIRI_TLG_LZSS_COMPRESSOR_H
 #include <memory>
+#include "types.h"
 
 namespace Formats
 {
@@ -14,13 +15,11 @@ namespace Formats
                 LzssDecompressor();
                 ~LzssDecompressor();
 
-                void init_dictionary(unsigned char dictionary[4096]);
+                void init_dictionary(u8 dictionary[4096]);
 
                 void decompress(
-                    unsigned char *input,
-                    size_t input_size,
-                    unsigned char *output,
-                    size_t output_size);
+                    u8 *input, size_t input_size,
+                    u8 *output, size_t output_size);
             private:
                 struct Internals;
                 std::unique_ptr<Internals> internals;
@@ -28,6 +27,5 @@ namespace Formats
         }
     }
 }
-
 
 #endif

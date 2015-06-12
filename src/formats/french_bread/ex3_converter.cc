@@ -27,14 +27,14 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
-    unsigned char table0[60];
-    unsigned char table1[256];
-    unsigned char table2[256];
+    u8 table0[60];
+    u8 table1[256];
+    u8 table2[256];
 
     BufferedIO output;
     file.io.read(table0, 0x40);
 
-    uint8_t b = file.io.read_u8();
+    u8 b = file.io.read_u8();
     while (file.io.tell() < file.io.size())
     {
         for (size_t j = 0; j < 256; j ++)
@@ -50,7 +50,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
             }
             if (offset == 256)
                 break;
-            for (uint8_t j = 0; j < b + 1; j ++)
+            for (u8 j = 0; j < b + 1; j ++)
             {
                 if (offset >= 256)
                     throw std::runtime_error("Bad offset");

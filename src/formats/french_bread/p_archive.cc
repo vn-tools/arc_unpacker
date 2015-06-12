@@ -13,7 +13,7 @@ using namespace Formats::FrenchBread;
 
 namespace
 {
-    const uint32_t encryption_key = 0xE3DF59AC;
+    const u32 encryption_key = 0xE3DF59AC;
 
     typedef struct
     {
@@ -83,7 +83,7 @@ PArchive::~PArchive()
 
 bool PArchive::is_recognized_internal(File &arc_file) const
 {
-    uint32_t encrypted = arc_file.io.read_u32_le();
+    u32 encrypted = arc_file.io.read_u32_le();
     size_t file_count = arc_file.io.read_u32_le() ^ encryption_key;
     if (encrypted != 0 && encrypted != 1)
         return false;

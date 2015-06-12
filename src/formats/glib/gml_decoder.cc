@@ -25,8 +25,8 @@ void GmlDecoder::decode(BufferedIO &source_io, BufferedIO &target_io)
             continue;
         }
 
-        uint8_t tmp1 = source_io.eof() ? 0 : source_io.read_u8();
-        uint8_t tmp2 = source_io.eof() ? 0 : source_io.read_u8();
+        u8 tmp1 = source_io.eof() ? 0 : source_io.read_u8();
+        u8 tmp2 = source_io.eof() ? 0 : source_io.read_u8();
         size_t length = ((~tmp2) & 0xf) + 3;
         int32_t look_behind = (tmp1 | ((tmp2 << 4) & 0xf00)) + 18;
         look_behind -= target_ptr - target;
@@ -43,7 +43,7 @@ void GmlDecoder::decode(BufferedIO &source_io, BufferedIO &target_io)
         while (length && target_ptr < target_guardian)
         {
             -- length;
-            uint8_t tmp = target_ptr[look_behind];
+            u8 tmp = target_ptr[look_behind];
             *target_ptr ++ = tmp;
         }
     }

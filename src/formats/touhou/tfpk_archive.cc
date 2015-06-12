@@ -34,7 +34,7 @@ namespace
 {
     typedef struct
     {
-        std::array<uint8_t, 64> modulus;
+        std::array<u8, 64> modulus;
         unsigned int exponent;
     } RsaKey;
 
@@ -94,7 +94,7 @@ namespace
         std::unique_ptr<BufferedIO> read_block();
         size_t tell() const;
     private:
-        std::unique_ptr<BufferedIO> decrypt(std::basic_string<uint8_t> input);
+        std::unique_ptr<BufferedIO> decrypt(std::basic_string<u8> input);
         RSA *create_public_key(const RsaKey &);
         RSA *public_key;
         IO &io;
@@ -144,10 +144,10 @@ namespace
     }
 
     std::unique_ptr<BufferedIO> RsaReader::decrypt(
-        std::basic_string<uint8_t> input)
+        std::basic_string<u8> input)
     {
         size_t output_size = RSA_size(public_key);
-        std::unique_ptr<uint8_t[]> output(new uint8_t[output_size]);
+        std::unique_ptr<u8[]> output(new u8[output_size]);
         int result = RSA_public_decrypt(
             input.size(),
             input.data(),
@@ -171,7 +171,7 @@ namespace
     std::unique_ptr<BufferedIO> RsaReader::read_block()
     {
         auto s = io.read(0x40);
-        auto su = std::basic_string<uint8_t>(s.begin(), s.end());
+        auto su = std::basic_string<u8>(s.begin(), s.end());
         auto block_io = decrypt(su);
         block_io->truncate(0x20);
         return block_io;
@@ -182,7 +182,7 @@ namespace
 {
     const std::string magic("TFPK", 4);
 
-    enum class TfpkVersion : uint8_t
+    enum class TfpkVersion : u8
     {
         Th135,
         Th145,
@@ -198,17 +198,17 @@ namespace
 
     typedef struct
     {
-        uint32_t initial_hash;
+        u32 initial_hash;
         size_t file_count;
     } DirEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
     typedef std::vector<std::unique_ptr<DirEntry>> DirTable;
-    typedef std::map<uint32_t, std::string> HashLookupMap;
+    typedef std::map<u32, std::string> HashLookupMap;
 
-    uint32_t neg32(uint32_t x)
+    u32 neg32(u32 x)
     {
-        return static_cast<uint32_t>(-static_cast<int32_t>(x));
+        return static_cast<u32>(-static_cast<int32_t>(x));
     }
 
     std::string lower_ascii_only(std::string name_utf8)
@@ -228,10 +228,10 @@ namespace
         return s_copy;
     }
 
-    uint32_t get_file_name_hash(
+    u32 get_file_name_hash(
         const std::string name,
         TfpkVersion version,
-        uint32_t initial_hash = 0x811C9DC5)
+        u32 initial_hash = 0x811C9DC5)
     {
         std::string name_processed = convert_encoding(
             replace_slash_with_backslash(lower_ascii_only(name)),
@@ -240,7 +240,7 @@ namespace
 
         if (version == TfpkVersion::Th135)
         {
-            uint32_t result = initial_hash;
+            u32 result = initial_hash;
             for (size_t i = 0; i < name_processed.size(); i ++)
             {
                 result *= 0x1000193;
@@ -250,7 +250,7 @@ namespace
         }
         else
         {
-            uint32_t result = initial_hash;
+            u32 result = initial_hash;
             for (size_t i = 0; i < name_processed.size(); i ++)
             {
                 result ^= name_processed[i];
@@ -260,7 +260,7 @@ namespace
         }
     }
 
-    std::string get_unknown_name(uint32_t hash, const std::string &ext = ".dat")
+    std::string get_unknown_name(u32 hash, const std::string &ext = ".dat")
     {
         std::stringstream stream;
         stream
@@ -377,8 +377,8 @@ namespace
                 entry->size   = b1->read_u32_le() ^ b3->read_u32_le();
                 entry->offset = b1->read_u32_le() ^ b3->read_u32_le();
 
-                uint32_t fn_hash = b2->read_u32_le() ^ b3->read_u32_le();
-                uint32_t unk = b2->read_u32_le() ^ b3->read_u32_le();
+                u32 fn_hash = b2->read_u32_le() ^ b3->read_u32_le();
+                u32 unk = b2->read_u32_le() ^ b3->read_u32_le();
                 auto it = fn_map.find(fn_hash);
                 entry->name = it == fn_map.end()
                     ? get_unknown_name(fn_hash)
@@ -424,10 +424,10 @@ namespace
             char *buf = tmp_io.buffer();
             size_t i = 0;
 
-            uint32_t c = *reinterpret_cast<const uint32_t*>(&key[0]);
+            u32 c = *reinterpret_cast<const u32*>(&key[0]);
             if (entry.size % 4 == 1)
             {
-                uint8_t tmp = buf[i];
+                u8 tmp = buf[i];
                 buf[i] ^= c ^ key[i & 0xf];
                 ++ i;
                 c >>= 8;
@@ -435,18 +435,18 @@ namespace
             }
             if (entry.size % 4 == 2)
             {
-                uint16_t tmp = *reinterpret_cast<uint16_t*>(&buf[i]);
-                *reinterpret_cast<uint16_t*>(&buf[i])
-                    ^= c ^ *reinterpret_cast<const uint16_t*>(&key[i & 0xf]);
+                u16 tmp = *reinterpret_cast<u16*>(&buf[i]);
+                *reinterpret_cast<u16*>(&buf[i])
+                    ^= c ^ *reinterpret_cast<const u16*>(&key[i & 0xf]);
                 i += 2;
                 c >>= 16;
                 c |= (tmp << 16);
             }
             while (i < entry.size)
             {
-                uint32_t tmp = *reinterpret_cast<uint32_t*>(&buf[i]);
-                uint32_t k = *reinterpret_cast<const uint32_t*>(&key[i & 0xf]);
-                *reinterpret_cast<uint32_t*>(&buf[i]) ^= c ^ k;
+                u32 tmp = *reinterpret_cast<u32*>(&buf[i]);
+                u32 k = *reinterpret_cast<const u32*>(&key[i & 0xf]);
+                *reinterpret_cast<u32*>(&buf[i]) ^= c ^ k;
                 i += 4;
                 c = tmp;
             }

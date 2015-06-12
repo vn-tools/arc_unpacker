@@ -34,7 +34,7 @@ std::unique_ptr<File> DpngConverter::decode_internal(File &file) const
 
     size_t pixels_size = image_width * image_height * 4;
     std::unique_ptr<char[]> pixel_data(new char[pixels_size]);
-    uint32_t *pixel_ptr = reinterpret_cast<uint32_t*>(pixel_data.get());
+    u32 *pixel_ptr = reinterpret_cast<u32*>(pixel_data.get());
     for (size_t i = 0; i < image_width * image_height; i ++)
         pixel_ptr[i] = 0;
 

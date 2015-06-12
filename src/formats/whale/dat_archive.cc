@@ -19,9 +19,9 @@ using namespace Formats::Whale;
 
 namespace
 {
-    const uint32_t file_count_hash = 0x26ACA46E;
+    const u32 file_count_hash = 0x26ACA46E;
 
-    uint64_t CRC_TABLE[0x100] =
+    u64 CRC_TABLE[0x100] =
     {
         0x0000000000000000, 0x42F0E1EBA9EA3693,
         0x85E1C3D753D46D26, 0xC711223CFA3E5BB5,
@@ -153,19 +153,19 @@ namespace
         0xD80C07CD676F8394, 0x9AFCE626CE85B507
     };
 
-    uint64_t crc64(const std::string &buffer)
+    u64 crc64(const std::string &buffer)
     {
-        uint64_t crc = 0xFFFFFFFFFFFFFFFF;
+        u64 crc = 0xFFFFFFFFFFFFFFFF;
         for (size_t i = 0; i < buffer.size(); i ++)
         {
-            uint8_t c = static_cast<uint8_t>(buffer[i]);
+            u8 c = static_cast<u8>(buffer[i]);
             int tab_index = ((crc >> 56) ^ c) & 0xFF;
             crc = CRC_TABLE[tab_index] ^ ((crc << 8) & 0xFFFFFFFFFFFFFFFF);
         }
         return crc ^ 0xFFFFFFFFFFFFFFFF;
     }
 
-    enum class TableEntryType : uint8_t
+    enum class TableEntryType : u8
     {
         Plain      = 0,
         Obfuscated = 1,
@@ -174,7 +174,7 @@ namespace
 
     typedef struct
     {
-        uint64_t hash;
+        u64 hash;
         TableEntryType type;
         size_t offset;
         size_t size_original;
@@ -190,8 +190,8 @@ namespace
     {
         auto block_size = static_cast<size_t>(
             floor(io.size() / static_cast<float>(sjis_file_name.size())));
-        uint8_t *buffer_ptr = reinterpret_cast<uint8_t*>(io.buffer());
-        uint8_t *buffer_guardian = buffer_ptr + io.size();
+        u8 *buffer_ptr = reinterpret_cast<u8*>(io.buffer());
+        u8 *buffer_guardian = buffer_ptr + io.size();
         for (size_t j = 0; j < sjis_file_name.size() - 1; j ++)
         {
             for (size_t k = 0; k < block_size; k ++)
@@ -205,22 +205,22 @@ namespace
 
     void transform_script_content(
         BufferedIO &io,
-        uint64_t hash,
+        u64 hash,
         const std::string &sjis_game_title)
     {
-        uint32_t xor_value = (hash ^ crc64(sjis_game_title)) & 0xFFFFFFFF;
-        uint32_t *buffer_ptr = reinterpret_cast<uint32_t*>(io.buffer());
+        u32 xor_value = (hash ^ crc64(sjis_game_title)) & 0xFFFFFFFF;
+        u32 *buffer_ptr = reinterpret_cast<u32*>(io.buffer());
         for (size_t i = 0; i < io.size() / 4; i ++)
             *buffer_ptr++ ^= xor_value;
     }
 
-    uint32_t read_file_count(IO &arc_io)
+    u32 read_file_count(IO &arc_io)
     {
         return arc_io.read_u32_le() ^ file_count_hash;
     }
 
     Table read_table(
-        IO &arc_io, std::map<uint64_t, std::string> &sjis_file_names_map)
+        IO &arc_io, std::map<u64, std::string> &sjis_file_names_map)
     {
         Table table;
         auto file_count = read_file_count(arc_io);
@@ -297,7 +297,7 @@ namespace
 struct DatArchive::Internals
 {
     std::string sjis_game_title;
-    std::map<uint64_t, std::string> sjis_file_names_map;
+    std::map<u64, std::string> sjis_file_names_map;
     Kirikiri::TlgConverter tlg_converter;
 };
 

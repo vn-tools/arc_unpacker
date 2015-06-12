@@ -40,7 +40,7 @@ namespace
         size_t offset;
         size_t size_compressed;
         size_t size_original;
-        uint8_t decryptor_id;
+        u8 decryptor_id;
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;

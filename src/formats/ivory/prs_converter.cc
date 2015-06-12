@@ -14,15 +14,15 @@ namespace
     const std::string magic("YB", 2);
 
     void decode_pixels(
-        const unsigned char *source,
+        const u8 *source,
         const size_t source_size,
-        unsigned char *target,
+        u8 *target,
         const size_t target_size)
     {
-        const unsigned char *source_ptr = source;
-        const unsigned char *source_guardian = source + source_size;
-        unsigned char *target_ptr = target;
-        unsigned char *target_guardian = target + target_size;
+        const u8 *source_ptr = source;
+        const u8 *source_guardian = source + source_size;
+        u8 *target_ptr = target;
+        u8 *target_guardian = target + target_size;
 
         int flag = 0;
         int length_lookup[256];
@@ -129,10 +129,10 @@ std::unique_ptr<File> PrsConverter::decode_internal(File &file) const
     if (file.io.read_u8() != 3)
         throw std::runtime_error("Unknown PRS version");
 
-    uint32_t source_size = file.io.read_u32_le();
+    u32 source_size = file.io.read_u32_le();
     file.io.skip(4);
-    uint16_t image_width = file.io.read_u16_le();
-    uint16_t image_height = file.io.read_u16_le();
+    u16 image_width = file.io.read_u16_le();
+    u16 image_height = file.io.read_u16_le();
 
     const size_t target_size = image_width * image_height * 3;
     std::unique_ptr<char[]> source(new char[source_size]);
@@ -140,10 +140,8 @@ std::unique_ptr<File> PrsConverter::decode_internal(File &file) const
     file.io.read(source.get(), source_size);
 
     decode_pixels(
-        reinterpret_cast<unsigned char*>(source.get()),
-        source_size,
-        reinterpret_cast<unsigned char*>(target.get()),
-        target_size);
+        reinterpret_cast<u8*>(source.get()), source_size,
+        reinterpret_cast<u8*>(target.get()), target_size);
 
     if (using_differences)
     {
