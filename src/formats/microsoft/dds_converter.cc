@@ -131,8 +131,6 @@ namespace
         header->misc_flags2 = io.read_u32_le();
         return header;
     }
-
-    inline int max(int a, int b ) { return a > b ? a : b; }
 }
 
 namespace
