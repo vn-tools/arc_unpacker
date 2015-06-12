@@ -425,7 +425,7 @@ namespace
             size_t i = 0;
 
             u32 c = *reinterpret_cast<const u32*>(&key[0]);
-            if (entry.size % 4 == 1)
+            if (entry.size & 1)
             {
                 u8 tmp = buf[i];
                 buf[i] ^= c ^ key[i & 0xf];
@@ -433,7 +433,7 @@ namespace
                 c >>= 8;
                 c |= (tmp << 24);
             }
-            if (entry.size % 4 == 2)
+            if (entry.size & 2)
             {
                 u16 tmp = *reinterpret_cast<u16*>(&buf[i]);
                 *reinterpret_cast<u16*>(&buf[i])
