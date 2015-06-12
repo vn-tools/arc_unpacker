@@ -375,7 +375,7 @@ namespace
             else
             {
                 entry->size   = b1->read_u32_le() ^ b3->read_u32_le();
-                entry->offset = (b1->read_u32_le() ^ b3->read_u32_le());
+                entry->offset = b1->read_u32_le() ^ b3->read_u32_le();
 
                 uint32_t fn_hash = b2->read_u32_le() ^ b3->read_u32_le();
                 uint32_t unk = b2->read_u32_le() ^ b3->read_u32_le();
