@@ -128,7 +128,7 @@ namespace
 
         LzssDecompressor decompressor;
 
-        std::unique_ptr<uchar> zero_line(new uchar[header.image_width * 4]);
+        std::unique_ptr<uchar[]> zero_line(new uchar[header.image_width * 4]);
         memset(zero_line.get(), 0, header.image_width * 4);
         memset(output, 0, header.image_width * header.image_height * 4);
 
@@ -161,7 +161,7 @@ std::unique_ptr<File> Tlg5Decoder::decode(File &file)
         throw std::runtime_error("Unsupported channel count");
 
     size_t pixels_size = header.image_width * header.image_height * 4;
-    std::unique_ptr<unsigned char> pixels(new unsigned char[pixels_size]);
+    std::unique_ptr<unsigned char[]> pixels(new unsigned char[pixels_size]);
 
     read_pixels(file.io, pixels.get(), header);
 

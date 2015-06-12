@@ -216,7 +216,7 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
         png_ptr, &output_file->io, &my_png_write_data, &my_png_flush);
     png_write_info(png_ptr, info_ptr);
 
-    std::unique_ptr<png_bytep> rows(new png_bytep[internals->image_height]);
+    std::unique_ptr<png_bytep[]> rows(new png_bytep[internals->image_height]);
     for (size_t y = 0; y < internals->image_height; y ++)
     {
         rows.get()[y]

@@ -17,7 +17,7 @@ std::string lzss_decompress(
     std::string output;
     size_t dictionary_size = 1 << settings.position_bits;
     size_t dictionary_pos = settings.initial_dictionary_pos;
-    std::unique_ptr<unsigned char> dictionary(
+    std::unique_ptr<unsigned char[]> dictionary(
         new unsigned char[dictionary_size]);
 
     unsigned char *dictionary_ptr = dictionary.get();

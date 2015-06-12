@@ -32,7 +32,7 @@ namespace
     typedef struct FilterTypes
     {
         uint32_t data_size;
-        std::unique_ptr<uint8_t> data;
+        std::unique_ptr<uint8_t[]> data;
 
         FilterTypes(IO &io) : data(nullptr)
         {
@@ -48,7 +48,7 @@ namespace
         void decompress(Header &header)
         {
             size_t output_size = header.x_block_count * header.y_block_count;
-            std::unique_ptr<uint8_t> output(new uint8_t[output_size]);
+            std::unique_ptr<uint8_t[]> output(new uint8_t[output_size]);
 
             LzssDecompressor decompressor;
             uint8_t dictionary[4096];

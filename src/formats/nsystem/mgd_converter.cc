@@ -305,7 +305,7 @@ namespace
 
             case COMPRESSION_SGD:
             {
-                std::unique_ptr<char> data_uncompressed(
+                std::unique_ptr<char[]> data_uncompressed(
                     new char[size_original]);
 
                 decompress_sgd(

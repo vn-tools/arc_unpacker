@@ -67,7 +67,7 @@ std::string IO::read_until_end()
 
 std::string IO::read(size_t bytes)
 {
-    std::unique_ptr<char> buffer(new char[bytes]);
+    std::unique_ptr<char[]> buffer(new char[bytes]);
     read(buffer.get(), bytes);
     return std::string(buffer.get(), bytes);
 }

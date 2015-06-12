@@ -19,7 +19,7 @@ std::string convert_encoding(
     char *input_ptr = const_cast<char*>(input.data());
     size_t input_bytes_left = input.size();
     const size_t buffer_size = 32;
-    std::unique_ptr<char> buffer(new char[buffer_size]);
+    std::unique_ptr<char[]> buffer(new char[buffer_size]);
 
     while (true)
     {

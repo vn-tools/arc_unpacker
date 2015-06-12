@@ -405,7 +405,7 @@ namespace
         size_t offset0 = ret1 >> 16;
         size_t offset1 = ret1 & 0xffff;
 
-        std::unique_ptr<char> data(new char[length]);
+        std::unique_ptr<char[]> data(new char[length]);
         char *ptr = data.get();
         io.seek(base_offset);
         io.read(ptr, length);

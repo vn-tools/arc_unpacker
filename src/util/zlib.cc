@@ -28,7 +28,7 @@ std::string zlib_inflate(const std::string &input)
     do
     {
         const size_t buffer_size = 8192;
-        std::unique_ptr<char> output_buffer(new char[buffer_size]);
+        std::unique_ptr<char[]> output_buffer(new char[buffer_size]);
         stream.next_out = reinterpret_cast<Bytef*>(output_buffer.get());
         stream.avail_out = buffer_size;
         ret = inflate(&stream, 0);

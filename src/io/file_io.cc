@@ -35,7 +35,7 @@ void FileIO::write(const void *source, size_t length)
 void FileIO::write_from_io(IO &source, size_t length)
 {
     // TODO improvement: use static buffer instead of such allocation
-    std::unique_ptr<char> buffer(new char[length]);
+    std::unique_ptr<char[]> buffer(new char[length]);
     source.read(buffer.get(), length);
     write(buffer.get(), length);
 }

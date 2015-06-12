@@ -6,7 +6,7 @@ void FsnFilter::decode(File &file, uint32_t) const
 {
     size_t size = file.io.size();
     file.io.seek(0);
-    std::unique_ptr<char> data(new char[size]);
+    std::unique_ptr<char[]> data(new char[size]);
     char *ptr = data.get();
     file.io.read(ptr, size);
 

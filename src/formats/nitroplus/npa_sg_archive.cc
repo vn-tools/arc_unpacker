@@ -79,7 +79,7 @@ void NpaSgArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     if (table_size > arc_file.io.size())
         throw std::runtime_error("Bad table size");
 
-    std::unique_ptr<char> table_bytes(new char[table_size]);
+    std::unique_ptr<char[]> table_bytes(new char[table_size]);
     arc_file.io.read(table_bytes.get(), table_size);
     decrypt(table_bytes.get(), table_size);
 

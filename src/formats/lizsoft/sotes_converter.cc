@@ -40,7 +40,7 @@ namespace
     void mirror(char *pixel_data, size_t pixel_data_size, size_t scanline_width)
     {
         size_t height = pixel_data_size / scanline_width;
-        std::unique_ptr<char> old_line(new char[scanline_width]);
+        std::unique_ptr<char[]> old_line(new char[scanline_width]);
         for (size_t y = 0; y < height / 2; y ++)
         {
             memcpy(
@@ -111,7 +111,7 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
     bool use_palette = width * height * 3 != raw_data_size;
 
     size_t pixel_data_size;
-    std::unique_ptr<char> pixel_data(nullptr);
+    std::unique_ptr<char[]> pixel_data(nullptr);
     if (use_palette)
     {
         pixel_data_size = width * height * 3;

@@ -66,7 +66,7 @@ namespace
         uint32_t key,
         uint32_t frequency_table[])
     {
-        std::unique_ptr<char> raw_data(new char[raw_data_size]);
+        std::unique_ptr<char[]> raw_data(new char[raw_data_size]);
         io.read(raw_data.get(), raw_data_size);
 
         decrypt(raw_data.get(), raw_data_size, key);
@@ -301,7 +301,7 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
     NodeInfo node_info[511];
     int last_node = read_node_info(freq_table, node_info);
 
-    std::unique_ptr<char> huffman(new char[huffman_size]);
+    std::unique_ptr<char[]> huffman(new char[huffman_size]);
 
     BufferedIO buffered_io(file.io);
     BitReader bit_reader(buffered_io);
@@ -313,7 +313,7 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
         reinterpret_cast<uint8_t*>(huffman.get()));
 
     size_t output_size = width * height * (bpp >> 3);
-    std::unique_ptr<char> output(new char[output_size]);
+    std::unique_ptr<char[]> output(new char[output_size]);
     decompress_rle(huffman_size, huffman.get(), output.get());
     transform_colors(
         reinterpret_cast<uint8_t*>(output.get()), width, height, bpp);

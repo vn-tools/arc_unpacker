@@ -17,17 +17,17 @@ namespace
 {
     typedef unsigned char uchar;
 
-    std::unique_ptr<uchar> decode_pixels(
+    std::unique_ptr<uchar[]> decode_pixels(
         size_t image_width,
         size_t image_height,
         BitReader &bit_reader,
         size_t &output_size)
     {
         output_size = image_width * image_height * 3;
-        std::unique_ptr<uchar> output(new uchar[output_size]);
+        std::unique_ptr<uchar[]> output(new uchar[output_size]);
 
         size_t channel_data_size = image_width * image_height;
-        std::unique_ptr<uchar> channel_data(new uchar[channel_data_size]);
+        std::unique_ptr<uchar[]> channel_data(new uchar[channel_data_size]);
         for (int rgb = 2; rgb >= 0; rgb--)
         {
             uchar *channel_ptr = channel_data.get();
@@ -124,12 +124,12 @@ std::unique_ptr<File> SpbConverter::decode_internal(File &file) const
     uint16_t height = file.io.read_u16_be();
 
     size_t uncompressed_size = file.io.size() - file.io.tell();
-    std::unique_ptr<char> uncompressed(new char[uncompressed_size]);
+    std::unique_ptr<char[]> uncompressed(new char[uncompressed_size]);
     file.io.read(uncompressed.get(), uncompressed_size);
     BitReader bit_reader(uncompressed.get(), uncompressed_size);
 
     size_t uncompressed_data_size;
-    std::unique_ptr<uchar> uncompressed_data
+    std::unique_ptr<uchar[]> uncompressed_data
         = decode_pixels(width, height, bit_reader, uncompressed_data_size);
 
     std::unique_ptr<Image> image = Image::from_pixels(

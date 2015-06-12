@@ -90,15 +90,15 @@ namespace
         }
     }
 
-    std::unique_ptr<char> decompress_from_io(
+    std::unique_ptr<char[]> decompress_from_io(
         IO &io,
         size_t compressed_size,
         size_t uncompressed_size,
         size_t byte_count,
         size_t length_delta)
     {
-        std::unique_ptr<char>uncompressed(new char[uncompressed_size]);
-        std::unique_ptr<char>compressed(new char[compressed_size]);
+        std::unique_ptr<char[]> uncompressed(new char[uncompressed_size]);
+        std::unique_ptr<char[]> compressed(new char[compressed_size]);
 
         io.read(compressed.get(), compressed_size);
 
@@ -124,7 +124,7 @@ namespace
         if (uncompressed_size != (unsigned)(width * height * 4))
             throw std::runtime_error("Uncompressed data size mismatch");
 
-        std::unique_ptr<char> uncompressed = decompress_from_io(
+        std::unique_ptr<char[]> uncompressed = decompress_from_io(
             file.io,
             compressed_size,
             uncompressed_size,
@@ -146,7 +146,7 @@ namespace
         if (compressed_size != file.io.size() - file.io.tell())
             throw std::runtime_error("Compressed data size mismatch");
 
-        std::unique_ptr<char> uncompressed = decompress_from_io(
+        std::unique_ptr<char[]> uncompressed = decompress_from_io(
             file.io,
             compressed_size,
             uncompressed_size,
@@ -212,7 +212,7 @@ namespace
         if (compressed_size != file.io.size() - file.io.tell())
             throw std::runtime_error("Compressed data size mismatch");
 
-        std::unique_ptr<char>uncompressed = decompress_from_io(
+        std::unique_ptr<char[]>uncompressed = decompress_from_io(
             file.io,
             compressed_size,
             uncompressed_size,
