@@ -260,14 +260,14 @@ namespace
         }
     }
 
-    std::string get_unknown_name(u32 hash, const std::string &ext = ".dat")
+    std::string get_unknown_name(
+        int index, u32 hash, const std::string &ext = ".dat")
     {
         std::stringstream stream;
-        stream
-            << std::setfill('0')
-            << std::setw(8)
-            << std::hex
-            << hash;
+        stream << std::setfill('0');
+        if (index > 0)
+            stream << std::dec << std::setw(5) << index << "-";
+        stream << std::setw(8) << std::hex << hash;
         return "unk-" + stream.str() + ext;
     }
 
@@ -276,7 +276,7 @@ namespace
         auto it = user_fn_map.find(dir_entry.initial_hash);
         if (it != user_fn_map.end())
             return it->second;
-        return get_unknown_name(dir_entry.initial_hash, "");
+        return get_unknown_name(-1, dir_entry.initial_hash, "");
     }
 
     DirTable read_dir_entries(RsaReader &reader)
@@ -367,7 +367,7 @@ namespace
                 auto fn_hash = b2->read_u32_le();
                 auto it = fn_map.find(fn_hash);
                 entry->name = it == fn_map.end()
-                    ? get_unknown_name(fn_hash)
+                    ? get_unknown_name(i, fn_hash)
                     : it->second;
 
                 entry->key = b3->read(16);
@@ -381,7 +381,7 @@ namespace
                 u32 unk = b2->read_u32_le() ^ b3->read_u32_le();
                 auto it = fn_map.find(fn_hash);
                 entry->name = it == fn_map.end()
-                    ? get_unknown_name(fn_hash)
+                    ? get_unknown_name(i, fn_hash)
                     : it->second;
 
                 b3->seek(0);
