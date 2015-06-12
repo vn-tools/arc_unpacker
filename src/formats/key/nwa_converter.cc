@@ -81,7 +81,7 @@ std::unique_ptr<File> NwaConverter::decode_internal(File &file) const
     header.channel_count = file.io.read_u16_le();
     header.bits_per_sample = file.io.read_u16_le();
     header.sample_rate = file.io.read_u32_le();
-    header.compression_level = (int32_t)file.io.read_u32_le();
+    header.compression_level = static_cast<int32_t>(file.io.read_u32_le());
     header.block_count = file.io.read_u32_le();
     header.uncompressed_size = file.io.read_u32_le();
     header.compressed_size = file.io.read_u32_le();

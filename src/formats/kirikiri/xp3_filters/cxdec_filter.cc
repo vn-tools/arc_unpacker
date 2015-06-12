@@ -179,7 +179,7 @@ namespace
                 case 2:
                     // neg eax
                     add_shellcode("\xf7\xd8", 2);
-                    eax = -(signed)eax;
+                    eax = static_cast<u32>(-static_cast<i32>(eax));
                     break;
 
                 case 3:

@@ -349,7 +349,7 @@ std::unique_ptr<File> MgdConverter::decode_internal(File &file) const
     u16 image_height = file.io.read_u16_le();
     u32 size_original = file.io.read_u32_le();
     u32 size_compressed_total = file.io.read_u32_le();
-    CompressionType compression_type = (CompressionType)file.io.read_u32_le();
+    auto compression_type = static_cast<CompressionType>(file.io.read_u32_le());
     file.io.skip(64);
 
     size_t size_compressed = file.io.read_u32_le();

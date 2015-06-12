@@ -16,9 +16,9 @@ std::string zlib_inflate(const std::string &input)
     z_stream stream;
     stream.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(input.data()));
     stream.avail_in = input.size();
-    stream.zalloc = (alloc_func)nullptr;
-    stream.zfree = (free_func)nullptr;
-    stream.opaque = (voidpf)nullptr;
+    stream.zalloc = nullptr;
+    stream.zfree = nullptr;
+    stream.opaque = nullptr;
     stream.total_out = 0;
 
     if (inflateInit(&stream) != Z_OK)

@@ -70,8 +70,8 @@ namespace
                     {
                         if (source_ptr >= source_guardian)
                             break;
-
-                        length = length_lookup[(size_t)*source_ptr++];
+                        auto index = static_cast<size_t>(*source_ptr++);
+                        length = length_lookup[index];
                     }
                     else
                     {

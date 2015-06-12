@@ -122,7 +122,7 @@ namespace
         if (compressed_size != file.io.size() - file.io.tell())
             throw std::runtime_error("Compressed data size mismatch");
 
-        if (uncompressed_size != (unsigned)(width * height * 4))
+        if (uncompressed_size != static_cast<size_t>(width * height * 4))
             throw std::runtime_error("Uncompressed data size mismatch");
 
         std::unique_ptr<char[]> uncompressed = decompress_from_io(
