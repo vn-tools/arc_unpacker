@@ -10,6 +10,7 @@
 #include "formats/minato_soft/pac_archive.h"
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
+#include "util/encoding.h"
 #include "util/zlib.h"
 using namespace Formats::MinatoSoft;
 
@@ -118,7 +119,7 @@ namespace
             data = zlib_inflate(data);
             file->io.write(data);
         }
-        file->name = table_entry.name;
+        file->name = convert_encoding(table_entry.name, "cp932", "utf-8");
         return file;
     }
 }
