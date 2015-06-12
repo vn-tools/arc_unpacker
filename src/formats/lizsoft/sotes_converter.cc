@@ -23,7 +23,7 @@ namespace
     {
         for (auto &base : candidates)
         {
-            for (int delta = 0; delta <= max_delta_correction; delta ++)
+            for (int delta = 0; delta <= max_delta_correction; delta++)
             {
                 size_t possible_dimension = base + main_delta + delta;
                 if (possible_dimension == 0)
@@ -41,7 +41,7 @@ namespace
     {
         size_t height = pixel_data_size / scanline_width;
         std::unique_ptr<char[]> old_line(new char[scanline_width]);
-        for (size_t y = 0; y < height / 2; y ++)
+        for (size_t y = 0; y < height / 2; y++)
         {
             memcpy(
                 old_line.get(),
@@ -118,15 +118,15 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
         pixel_data.reset(new char[pixel_data_size]);
 
         char *pixels_ptr = pixel_data.get();
-        for (size_t i = 0; i < raw_data_size; i ++)
+        for (size_t i = 0; i < raw_data_size; i++)
         {
             if (pixels_ptr >= pixel_data.get() + width * height * 3)
                 throw std::runtime_error("Trying to write pixels beyond EOF");
             size_t palette_index = static_cast<size_t>(file.io.read_u8());
             u32 rgba = palette[palette_index];
-            *pixels_ptr ++ = rgba;
-            *pixels_ptr ++ = rgba >> 8;
-            *pixels_ptr ++ = rgba >> 16;
+            *pixels_ptr++ = rgba;
+            *pixels_ptr++ = rgba >> 8;
+            *pixels_ptr++ = rgba >> 16;
         }
     }
     else

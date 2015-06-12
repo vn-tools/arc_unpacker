@@ -10,7 +10,7 @@ void FsnFilter::decode(File &file, u32) const
     char *ptr = data.get();
     file.io.read(ptr, size);
 
-    for (size_t i = 0; i < size; i ++)
+    for (size_t i = 0; i < size; i++)
         ptr[i] ^= 0x36;
 
     if (size > 0x2ea29)

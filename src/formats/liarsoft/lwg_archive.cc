@@ -34,7 +34,7 @@ namespace
 
         Table table;
         table.reserve(file_count);
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
             arc_io.skip(9);

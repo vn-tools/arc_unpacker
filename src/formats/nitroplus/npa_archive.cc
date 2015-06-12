@@ -92,7 +92,7 @@ namespace
         const Filter &filter)
     {
         u32 key = filter.data_key;
-        for (size_t i = 0; i < table_entry.name.size(); i ++)
+        for (size_t i = 0; i < table_entry.name.size(); i++)
             key -= reinterpret_cast<const u8&>(table_entry.name[i]);
         key *= table_entry.name.size();
         key += header.key1 * header.key2;
@@ -100,7 +100,7 @@ namespace
         key &= 0xff;
 
         size_t length = 0x1000 + table_entry.name.size();
-        for (size_t i = 0; i < length && i < table_entry.size_compressed; i ++)
+        for (size_t i = 0; i < length && i < table_entry.size_compressed; i++)
         {
             char p = filter.permutation[static_cast<u8>(data[i])];
             data[i] = static_cast<char>(p - key - i);
@@ -138,7 +138,7 @@ namespace
         IO &arc_io, const Header &header, const Filter &filter)
     {
         Table table;
-        for (size_t i = 0; i < header.total_count; i ++)
+        for (size_t i = 0; i < header.total_count; i++)
         {
             auto table_entry = read_table_entry(arc_io, header, filter, i);
             if (table_entry != nullptr)
@@ -231,7 +231,7 @@ void NpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     std::unique_ptr<Header> header = read_header(arc_file.io);
 
     Table table = read_table(arc_file.io, *header, *internals->filter);
-    for (size_t i = 0; i < table.size(); i ++)
+    for (size_t i = 0; i < table.size(); i++)
     {
         file_saver.save(read_file(
             arc_file.io, *header, *internals->filter, *table[i]));

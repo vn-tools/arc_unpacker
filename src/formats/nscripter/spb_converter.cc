@@ -33,7 +33,7 @@ namespace
 
             u8 ch = bit_reader.try_get(8);
             if (channel_ptr >= channel_guardian) break;
-            *channel_ptr ++ = ch;
+            *channel_ptr++ = ch;
 
             while (channel_ptr < channel_guardian)
             {
@@ -41,13 +41,13 @@ namespace
                 if (t == 0)
                 {
                     if (channel_ptr >= channel_guardian) break;
-                    *channel_ptr ++ = ch;
+                    *channel_ptr++ = ch;
                     if (channel_ptr >= channel_guardian) break;
-                    *channel_ptr ++ = ch;
+                    *channel_ptr++ = ch;
                     if (channel_ptr >= channel_guardian) break;
-                    *channel_ptr ++ = ch;
+                    *channel_ptr++ = ch;
                     if (channel_ptr >= channel_guardian) break;
-                    *channel_ptr ++ = ch;
+                    *channel_ptr++ = ch;
                     continue;
                 }
 
@@ -68,7 +68,7 @@ namespace
                             ch -= (t >> 1);
                     }
                     if (channel_ptr >= channel_guardian) break;
-                    *channel_ptr ++ = ch;
+                    *channel_ptr++ = ch;
                 }
             }
 

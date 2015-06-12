@@ -29,7 +29,7 @@ namespace
         Table table;
         size_t file_count = table_size / 20;
 
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
 

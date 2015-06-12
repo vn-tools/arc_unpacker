@@ -54,14 +54,14 @@ void Formats::QLiE::mt_xor_state(const unsigned char* buff, unsigned long len)
     if (word_count > N)
         word_count = N;
 
-    for (i = 0; i < word_count; i ++)
+    for (i = 0; i < word_count; i++)
         mt[i] ^= words[i];
 }
 
 void Formats::QLiE::mt_init_genrand(unsigned long s)
 {
     mt[0] = s & 0xffffffffUL;
-    for (mti = 1; mti < N; mti ++)
+    for (mti = 1; mti < N; mti++)
     {
         mt[mti] = (1712438297UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + mti);
         mt[mti] &= 0xffffffffUL;
@@ -80,12 +80,12 @@ unsigned long Formats::QLiE::mt_genrand_int32()
         if (mti == N + 1)
             mt_init_genrand(5489UL);
 
-        for (kk = 0; kk < N - M; kk ++)
+        for (kk = 0; kk < N - M; kk++)
         {
             y = (mt[kk] & UPPER_MASK) | ((mt[kk + 1] & LOWER_MASK) >> 1);
             mt[kk] = mt[kk + M] ^ y ^ mag01[mt[kk + 1] & 0x1UL];
         }
-        for (; kk < N - 1; kk ++)
+        for (; kk < N - 1; kk++)
         {
             y = (mt[kk] & UPPER_MASK) | ((mt[kk + 1] & LOWER_MASK) >> 1);
             mt[kk] = mt[kk + (M - N)] ^ y ^ mag01[mt[kk + 1] & 0x1UL];
@@ -95,7 +95,7 @@ unsigned long Formats::QLiE::mt_genrand_int32()
         mti = 0;
     }
 
-    y = mt[mti ++];
+    y = mt[mti++];
 
     y ^= (y >> 11);
     y ^= (y << 7) & 0x9c4f88e3ul;

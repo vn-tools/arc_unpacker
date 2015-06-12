@@ -38,8 +38,8 @@ namespace
 
     void decrypt(char *input, u32 decrypt_size, u32 key)
     {
-        for (u32 i = 0; i < decrypt_size; i ++)
-            *input ++ -= static_cast<char>(get_key(&key));
+        for (u32 i = 0; i < decrypt_size; i++)
+            *input++ -= static_cast<char>(get_key(&key));
     }
 
     u32 read_variable_data(char *&input, const char *input_guardian)
@@ -49,7 +49,7 @@ namespace
         u32 shift = 0;
         do
         {
-            current = *input ++;
+            current = *input++;
             assert(input <= input_guardian);
             result |= (current & 0x7f) << shift;
             shift += 7;
@@ -67,7 +67,7 @@ namespace
 
         char *raw_data_ptr = raw_data.get();
         const char *raw_data_guardian = raw_data_ptr + raw_data_size;
-        for (int i = 0; i < 256; i ++)
+        for (int i = 0; i < 256; i++)
         {
             frequency_table[i] = read_variable_data(
                 raw_data_ptr, raw_data_guardian);
@@ -79,7 +79,7 @@ namespace
         assert(frequency_table != nullptr);
         assert(node_info != nullptr);
         u32 frequency_sum = 0;
-        for (int i = 0; i < 256; i ++)
+        for (int i = 0; i < 256; i++)
         {
             node_info[i].frequency = frequency_table[i];
             node_info[i].valid = frequency_table[i] > 0;
@@ -88,7 +88,7 @@ namespace
             frequency_sum += frequency_table[i];
         }
 
-        for (int i = 256; i < 511; i ++)
+        for (int i = 256; i < 511; i++)
         {
             node_info[i].frequency = 0;
             node_info[i].valid = false;
@@ -96,15 +96,15 @@ namespace
             node_info[i].right_node = -1;
         }
 
-        for (int i = 256; i < 511; i ++)
+        for (int i = 256; i < 511; i++)
         {
             u32 frequency = 0;
             int children[2];
-            for (int j = 0; j < 2; j ++)
+            for (int j = 0; j < 2; j++)
             {
                 u32 min = 0xffffffff;
                 children[j] = -1;
-                for (int k = 0; k < i; k ++)
+                for (int k = 0; k < i; k++)
                 {
                     if (node_info[k].valid && node_info[k].frequency < min)
                     {
@@ -138,7 +138,7 @@ namespace
         assert(node_info != nullptr);
         u32 root = last_node;
 
-        for (size_t i = 0; i < huffman_size; i ++)
+        for (size_t i = 0; i < huffman_size; i++)
         {
             int node = root;
             while (node >= 256)
@@ -190,36 +190,36 @@ namespace
         left += channels;
 
         //add left to first row
-        for (int x = 1; x < width; x ++)
+        for (int x = 1; x < width; x++)
         {
-            for (int i = 0; i < channels; i ++)
+            for (int i = 0; i < channels; i++)
             {
                 *input += input[-channels];
-                input ++;
-                above ++;
-                left ++;
+                input++;
+                above++;
+                left++;
             }
         }
 
         //add left and top to all other pixels
-        for (int y = 1; y < height; y ++)
+        for (int y = 1; y < height; y++)
         {
-            for (int i = 0; i < channels; i ++)
+            for (int i = 0; i < channels; i++)
             {
                 *input += *above;
-                input ++;
-                above ++;
-                left ++;
+                input++;
+                above++;
+                left++;
             }
 
-            for (int x = 1; x < width; x ++)
+            for (int x = 1; x < width; x++)
             {
-                for (int i = 0; i < channels; i ++)
+                for (int i = 0; i < channels; i++)
                 {
                     *input += (*left  + *above) >> 1;
-                    input ++;
-                    above ++;
-                    left ++;
+                    input++;
+                    above++;
+                    left++;
                 }
             }
         }

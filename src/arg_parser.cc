@@ -5,7 +5,7 @@ namespace
 {
     bool is_alphanumeric(std::string string)
     {
-        for (size_t i = 0; i < string.length(); i ++)
+        for (size_t i = 0; i < string.length(); i++)
         {
             char c = string[i];
             if (c < '0' && c > '9' && c < 'a' && c > 'a' && c < 'A' && c > 'A')
@@ -71,7 +71,7 @@ namespace
         size_t pos = 0, new_pos = 0;
         while (new_pos != sentence.length())
         {
-            for (new_pos = pos; new_pos < sentence.length(); new_pos ++)
+            for (new_pos = pos; new_pos < sentence.length(); new_pos++)
             {
                 char c = sentence[new_pos];
                 if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
@@ -217,7 +217,7 @@ void ArgParser::print_help() const
         }
         std::cout << invocation;
 
-        for (; tmp_length < max_invocation_length; tmp_length ++)
+        for (; tmp_length < max_invocation_length; tmp_length++)
             std::cout << " ";
 
         std::vector<std::string> lines = word_wrap(
@@ -225,7 +225,7 @@ void ArgParser::print_help() const
         for (auto line : lines)
         {
             std::cout << line;
-            for (size_t i = 0; i < max_invocation_length; i ++)
+            for (size_t i = 0; i < max_invocation_length; i++)
                 std::cout << " ";
         }
         std::cout << "\n";

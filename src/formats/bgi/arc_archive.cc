@@ -64,6 +64,6 @@ void ArcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     arc_file.io.skip(magic.size());
 
     size_t file_count = arc_file.io.read_u32_le();
-    for (size_t i = 0; i < file_count; i ++)
+    for (size_t i = 0; i < file_count; i++)
         file_saver.save(read_file(arc_file.io, file_count));
 }

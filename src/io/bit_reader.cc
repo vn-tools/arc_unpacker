@@ -47,7 +47,7 @@ namespace
             throw std::runtime_error("Too many bits");
 
         unsigned int value = 0;
-        while (n --)
+        while (n--)
         {
             value <<= 1;
             value |= static_cast<int>(get(exception));
@@ -83,8 +83,8 @@ namespace
 
     u8 BufferBasedReader::fetch_byte()
     {
-        -- buffer_size;
-        return *buffer ++;
+        --buffer_size;
+        return *buffer++;
     }
 }
 

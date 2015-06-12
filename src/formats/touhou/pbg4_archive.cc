@@ -60,7 +60,7 @@ namespace
         arc_io.seek(header.table_offset);
 
         BufferedIO table_io(lzss_decompress(arc_io, header.table_size));
-        for (size_t i = 0; i < header.file_count; i ++)
+        for (size_t i = 0; i < header.file_count; i++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
             table_entry->name = table_io.read_until_zero();

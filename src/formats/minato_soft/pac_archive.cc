@@ -33,7 +33,7 @@ namespace
         if (bit_reader.get(1))
         {
             int old_pos = pos;
-            pos ++;
+            pos++;
             if (old_pos < 511)
             {
                 nodes[0][old_pos] = init_huffman(bit_reader, nodes, pos);
@@ -61,7 +61,7 @@ namespace
             while (pos >= 256)
                 pos = nodes[bit_reader->get(1)][pos];
 
-            *output ++ = pos;
+            *output++ = pos;
         }
     }
 
@@ -74,11 +74,11 @@ namespace
         std::unique_ptr<char[]> compressed(new char[compressed_size]);
         arc_io.seek(arc_io.size() - 4 - compressed_size);
         arc_io.read(compressed.get(), compressed_size);
-        for (size_t i = 0; i < compressed_size; i ++)
+        for (size_t i = 0; i < compressed_size; i++)
             compressed.get()[i] ^= 0xff;
 
         std::unique_ptr<char[]> uncompressed(new char[uncompressed_size]);
-        for (size_t i = 0; i < uncompressed_size; i ++)
+        for (size_t i = 0; i < uncompressed_size; i++)
             uncompressed.get()[i] = 0;
 
         decompress_table(
@@ -91,7 +91,7 @@ namespace
         table_io.seek(0);
 
         Table table;
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             size_t pos = table_io.tell();
             std::unique_ptr<TableEntry> table_entry(new TableEntry);

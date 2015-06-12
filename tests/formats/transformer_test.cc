@@ -80,7 +80,7 @@ namespace
             auto dir = boost::filesystem::path(arc_file.name).parent_path();
             for (boost::filesystem::directory_iterator it(dir);
                 it != boost::filesystem::directory_iterator();
-                it ++)
+                it++)
             {
                 std::unique_ptr<File> output_file(new File);
                 output_file->name = it->path().string();

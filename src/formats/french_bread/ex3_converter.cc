@@ -37,7 +37,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
     u8 b = file.io.read_u8();
     while (file.io.tell() < file.io.size())
     {
-        for (size_t j = 0; j < 256; j ++)
+        for (size_t j = 0; j < 256; j++)
             table1[j] = j;
 
         size_t offset = 0;
@@ -50,14 +50,14 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
             }
             if (offset == 256)
                 break;
-            for (u8 j = 0; j < b + 1; j ++)
+            for (u8 j = 0; j < b + 1; j++)
             {
                 if (offset >= 256)
                     throw std::runtime_error("Bad offset");
                 table1[offset] = file.io.read_u8();
                 if (offset != table1[offset])
                     table2[offset] = file.io.read_u8();
-                ++ offset;
+                ++offset;
             }
             if (offset == 256)
                 break;
@@ -70,7 +70,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
         {
             if (offset)
             {
-                -- offset;
+                --offset;
                 if (offset >= 60)
                     throw std::runtime_error("Bad offset");
                 b = table0[offset];
@@ -79,7 +79,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
             {
                 if (!left)
                     break;
-                -- left;
+                --left;
                 b = file.io.read_u8();
             }
 
@@ -91,8 +91,8 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
             {
                 if (offset >= 58)
                     throw std::runtime_error("Bad offset");
-                table0[offset ++] = table2[b];
-                table0[offset ++] = table1[b];
+                table0[offset++] = table2[b];
+                table0[offset++] = table1[b];
             }
         }
         if (file.io.tell() < file.io.size())

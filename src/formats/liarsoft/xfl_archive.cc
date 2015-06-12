@@ -33,7 +33,7 @@ namespace
         size_t file_count = arc_io.read_u32_le();
         size_t file_start = arc_io.tell() + table_size;
         table.reserve(file_count);
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
             table_entry->name = convert_encoding(

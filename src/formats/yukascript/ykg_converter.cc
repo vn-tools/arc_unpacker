@@ -56,7 +56,7 @@ namespace
 
         file_io.seek(header.regions_offset);
         size_t region_count = header.regions_size / 64;
-        for (size_t i = 0; i < region_count; i ++)
+        for (size_t i = 0; i < region_count; i++)
         {
             std::unique_ptr<Region> region(new Region);
             region->x = file_io.read_u32_le();

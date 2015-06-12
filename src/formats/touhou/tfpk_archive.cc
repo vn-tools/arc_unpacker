@@ -215,7 +215,7 @@ namespace
     {
         //while SJIS can use ASCII for encoding multibyte characters,
         //UTF-8 uses the codes 0–127 only for the ASCII characters.
-        for (size_t i = 0; i < name_utf8.size(); i ++)
+        for (size_t i = 0; i < name_utf8.size(); i++)
             if (name_utf8[i] >= 'A' && name_utf8[i] <= 'Z')
                 name_utf8[i] += 'a' - 'A';
         return name_utf8;
@@ -241,7 +241,7 @@ namespace
         if (version == TfpkVersion::Th135)
         {
             u32 result = initial_hash;
-            for (size_t i = 0; i < name_processed.size(); i ++)
+            for (size_t i = 0; i < name_processed.size(); i++)
             {
                 result *= 0x1000193;
                 result ^= name_processed[i];
@@ -251,7 +251,7 @@ namespace
         else
         {
             u32 result = initial_hash;
-            for (size_t i = 0; i < name_processed.size(); i ++)
+            for (size_t i = 0; i < name_processed.size(); i++)
             {
                 result ^= name_processed[i];
                 result *= 0x1000193;
@@ -284,7 +284,7 @@ namespace
         std::unique_ptr<BufferedIO> tmp_io(reader.read_block());
         std::vector<std::unique_ptr<DirEntry>> dir_entries;
         size_t dir_count = tmp_io->read_u32_le();
-        for (size_t i = 0; i < dir_count; i ++)
+        for (size_t i = 0; i < dir_count; i++)
         {
             tmp_io = reader.read_block();
             std::unique_ptr<DirEntry> entry(new DirEntry);
@@ -309,7 +309,7 @@ namespace
         size_t block_count = tmp_io->read_u32_le();
 
         tmp_io.reset(new BufferedIO);
-        for (size_t i = 0; i < block_count; i ++)
+        for (size_t i = 0; i < block_count; i++)
             tmp_io->write_from_io(*reader.read_block());
         if (tmp_io->size() < table_size_compressed)
             throw std::runtime_error("Invalid file table size");
@@ -324,7 +324,7 @@ namespace
             if (dn.size() > 0 && dn[dn.size() - 1] != '/')
                 dn += "/";
 
-            for (size_t j = 0; j < dir_entry->file_count; j ++)
+            for (size_t j = 0; j < dir_entry->file_count; j++)
             {
                 std::string fn = convert_encoding(
                     tmp_io->read_until_zero(), "cp932", "utf-8");
@@ -353,7 +353,7 @@ namespace
         size_t file_count = reader.read_block()->read_u32_le();
 
         Table table;
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> entry(new TableEntry);
             auto b1 = reader.read_block();
@@ -386,7 +386,7 @@ namespace
 
                 b3->seek(0);
                 BufferedIO key_io;
-                for (int i = 0; i < 4; i ++)
+                for (int i = 0; i < 4; i++)
                     key_io.write_u32_le(neg32(b3->read_u32_le()));
 
                 key_io.seek(0);
@@ -413,7 +413,7 @@ namespace
         size_t key_size = entry.key.size();
         if (version == TfpkVersion::Th135)
         {
-            for (size_t i = 0; i < entry.size; i ++)
+            for (size_t i = 0; i < entry.size; i++)
                 tmp_io.buffer()[i] ^= entry.key[i % key_size];
         }
         else
@@ -421,9 +421,9 @@ namespace
             const u8 *key = reinterpret_cast<const u8*>(entry.key.c_str());
             u8 *buf = reinterpret_cast<u8*>(tmp_io.buffer());
             u8 aux[4];
-            for (size_t i = 0; i < 4; i ++)
+            for (size_t i = 0; i < 4; i++)
                 aux[i] = key[i];
-            for (size_t i = 0; i < entry.size; i ++)
+            for (size_t i = 0; i < entry.size; i++)
             {
                 u8 tmp = buf[i];
                 buf[i] = tmp ^ key[i % key_size] ^ aux[i%4];
@@ -447,7 +447,7 @@ namespace
         size_t pal_size = pal_file->io.read_u32_le();
         BufferedIO pal_io(zlib_inflate(pal_file->io.read(pal_size)));
         Palette palette;
-        for (size_t i = 0; i < 256; i ++)
+        for (size_t i = 0; i < 256; i++)
             palette[i] = rgba5551(pal_io.read_u16_le());
         return palette;
     }
@@ -462,7 +462,7 @@ namespace
         auto dir = boost::filesystem::path(arc_path).parent_path();
         for (boost::filesystem::directory_iterator it(dir);
             it != boost::filesystem::directory_iterator();
-            it ++)
+            it++)
         {
             if (!boost::filesystem::is_regular_file(it->path()))
                 continue;

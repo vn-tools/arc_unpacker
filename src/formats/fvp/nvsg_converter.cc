@@ -81,7 +81,7 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
             {
                 if (*ptr)
                     *ptr = 255;
-                ptr ++;
+                ptr++;
             }
             pixel_format = PixelFormat::Grayscale;
             break;

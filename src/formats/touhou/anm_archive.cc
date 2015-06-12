@@ -147,30 +147,30 @@ namespace
 
         u32 *guardian = &pixel_data[stride * height];
 
-        for (size_t y = 0; y < height; y ++)
+        for (size_t y = 0; y < height; y++)
         {
             size_t shift = (y + table_entry.y) * stride + table_entry.x;
             u32 *pixel_ptr = &pixel_data[shift];
-            for (size_t x = 0; x < width; x ++)
+            for (size_t x = 0; x < width; x++)
             {
                 if (pixel_ptr >= guardian)
                     return;
                 switch (format)
                 {
                     case 1:
-                        *pixel_ptr ++ = file_io.read_u32_le();
+                        *pixel_ptr++ = file_io.read_u32_le();
                         break;
 
                     case 3:
-                        *pixel_ptr ++ = rgb565(file_io.read_u16_le());
+                        *pixel_ptr++ = rgb565(file_io.read_u16_le());
                         break;
 
                     case 5:
-                        *pixel_ptr ++ = rgba4444(file_io.read_u16_le());
+                        *pixel_ptr++ = rgba4444(file_io.read_u16_le());
                         break;
 
                     case 7:
-                        *pixel_ptr ++ = rgba_gray(file_io.read_u8());
+                        *pixel_ptr++ = rgba_gray(file_io.read_u8());
                         break;
 
                     default:
@@ -205,7 +205,7 @@ namespace
 
         size_t pixel_data_size = width * height;
         std::unique_ptr<u32[]> pixel_data(new u32[pixel_data_size]);
-        for (size_t i = 0; i < pixel_data_size; i ++)
+        for (size_t i = 0; i < pixel_data_size; i++)
             pixel_data[i] = 0;
         for (auto &entry : entries)
             write_pixels(file_io, *entry, pixel_data.get(), width);

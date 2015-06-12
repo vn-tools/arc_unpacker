@@ -44,12 +44,12 @@ u8 get_channel(u32 color, u8 channel)
 
 void split_channels(u32 color, u8 channels[4])
 {
-    for (auto i = 0; i < 4; i ++)
+    for (auto i = 0; i < 4; i++)
         channels[i] = get_channel(color, i);
 }
 
 void merge_channels(u8 channels[4], u32 &color)
 {
-    for (auto i = 0; i < 4; i ++)
+    for (auto i = 0; i < 4; i++)
         set_channel(color, i, channels[i]);
 }

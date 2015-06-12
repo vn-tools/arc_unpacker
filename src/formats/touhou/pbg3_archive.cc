@@ -53,7 +53,7 @@ namespace
         Table table;
         arc_io.seek(header.table_offset);
         BitReader bit_reader(arc_io);
-        for (size_t i = 0; i < header.file_count; i ++)
+        for (size_t i = 0; i < header.file_count; i++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
             read_integer(bit_reader);
@@ -61,7 +61,7 @@ namespace
             table_entry->checksum = read_integer(bit_reader);
             table_entry->offset = read_integer(bit_reader);
             table_entry->size = read_integer(bit_reader);
-            for (size_t i = 0; i < 256; i ++)
+            for (size_t i = 0; i < 256; i++)
             {
                 char c = static_cast<char>(bit_reader.get(8));
                 if (c == 0)

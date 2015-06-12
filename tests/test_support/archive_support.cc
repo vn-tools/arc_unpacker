@@ -23,7 +23,7 @@ void compare_files(
     const std::vector<std::shared_ptr<File>> &actual_files)
 {
     REQUIRE(actual_files.size() == expected_files.size());
-    for (size_t i = 0; i < expected_files.size(); i ++)
+    for (size_t i = 0; i < expected_files.size(); i++)
     {
         auto &expected_file = expected_files[i];
         auto &actual_file = actual_files[i];
@@ -31,7 +31,7 @@ void compare_files(
         REQUIRE(expected_file->io.size() == actual_file->io.size());
         expected_file->io.seek(0);
         actual_file->io.seek(0);
-        for (size_t j = 0; j < expected_file->io.size(); j ++)
+        for (size_t j = 0; j < expected_file->io.size(); j++)
             REQUIRE(expected_file->io.read_u8() == actual_file->io.read_u8());
     }
 }

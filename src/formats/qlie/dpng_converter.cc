@@ -35,10 +35,10 @@ std::unique_ptr<File> DpngConverter::decode_internal(File &file) const
     size_t pixels_size = image_width * image_height * 4;
     std::unique_ptr<char[]> pixel_data(new char[pixels_size]);
     u32 *pixel_ptr = reinterpret_cast<u32*>(pixel_data.get());
-    for (size_t i = 0; i < image_width * image_height; i ++)
+    for (size_t i = 0; i < image_width * image_height; i++)
         pixel_ptr[i] = 0;
 
-    for (size_t i = 0; i < file_count; i ++)
+    for (size_t i = 0; i < file_count; i++)
     {
         size_t region_x = file.io.read_u32_le();
         size_t region_y = file.io.read_u32_le();
@@ -54,9 +54,9 @@ std::unique_ptr<File> DpngConverter::decode_internal(File &file) const
         io.write_from_io(file.io, region_data_size);
 
         std::unique_ptr<Image> region = Image::from_boxed(io);
-        for (size_t x = 0; x < region_width; x ++)
+        for (size_t x = 0; x < region_width; x++)
         {
-            for (size_t y = 0; y < region_height; y ++)
+            for (size_t y = 0; y < region_height; y++)
             {
                 size_t x2 = x + region_x;
                 size_t y2 = y + region_y;

@@ -70,6 +70,6 @@ void PakArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     BufferedIO table_io(zlib_inflate(arc_file.io.read(table_size_compressed)));
     size_t offset_to_files = arc_file.io.tell();
 
-    for (size_t i = 0; i < file_count; i ++)
+    for (size_t i = 0; i < file_count; i++)
         file_saver.save(read_file(arc_file.io, table_io, offset_to_files));
 }

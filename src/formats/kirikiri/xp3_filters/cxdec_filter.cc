@@ -41,7 +41,7 @@ namespace
             // Maintaining the randomizer state is essential for the decryption
             // to work.
 
-            for (size_t stage = 5; stage >= 1; stage --)
+            for (size_t stage = 5; stage >= 1; stage--)
             {
                 try
                 {
@@ -416,7 +416,7 @@ namespace
         if (offset1 >= base_offset && offset1 < base_offset + length)
             ptr[offset1 - base_offset] ^= xor1;
 
-        for (size_t i = 0; i < length; i ++)
+        for (size_t i = 0; i < length; i++)
             ptr[i] ^= xor2;
 
         io.seek(base_offset);

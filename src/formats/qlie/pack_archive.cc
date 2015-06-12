@@ -54,7 +54,7 @@ namespace
             arc_io.seek(arc_io.size() - 0x1c);
             if (arc_io.read(magic.size()) == magic)
                 return version;
-            ++ version;
+            ++version;
         }
         return -1;
     }
@@ -104,7 +104,7 @@ namespace
         void decrypt_file_name(u8 *file_name, size_t length, u32 key)
         {
             u8 _xor = ((key ^ 0x3e) + length) & 0xff;
-            for (size_t i = 1; i <= length; i ++)
+            for (size_t i = 1; i <= length; i++)
                 file_name[i - 1] ^= ((i ^ _xor) & 0xff) + i;
         }
 
@@ -170,7 +170,7 @@ namespace
                     = mt_genrand_int32()
                     | (static_cast<u64>(mt_genrand_int32()) << 32);
             }
-            for (auto i = 0; i < 9; i ++)
+            for (auto i = 0; i < 9; i++)
                  mt_genrand_int32();
 
             u64 mutator
@@ -255,7 +255,7 @@ namespace
         u8 dict3[256];
         while (input_io.tell() < input_io.size())
         {
-            for (size_t i = 0; i < 256; i ++)
+            for (size_t i = 0; i < 256; i++)
                 dict1[i] = i;
 
             for (size_t d = 0; d < 256; )
@@ -269,7 +269,7 @@ namespace
                         break;
                 }
 
-                for (size_t i = 0; i <= c; i ++)
+                for (size_t i = 0; i <= c; i++)
                 {
                     dict1[d] = input_io.read_u8();
                     if (dict1[d] != d)
@@ -341,7 +341,7 @@ namespace
         if (version == 3)
         {
             table_io.seek(0);
-            for (size_t i = 0; i < file_count; i ++)
+            for (size_t i = 0; i < file_count; i++)
             {
                 size_t file_name_length = table_io.read_u16_le();
                 table_io.skip(file_name_length + 28);
@@ -354,7 +354,7 @@ namespace
 
         Table table;
         table_io.seek(0);
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
 
@@ -496,7 +496,7 @@ void PackArchive::parse_cli_options(const ArgParser &arg_parser)
         file.io.read(exe_data.get(), file.io.size());
 
         bool found = false;
-        for (size_t i = file.io.size() - magic.length(); i > 0; i --)
+        for (size_t i = file.io.size() - magic.length(); i > 0; i--)
         {
             if (!memcmp(&exe_data[i], magic.data(), magic.length()))
             {

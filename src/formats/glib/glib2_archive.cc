@@ -176,7 +176,7 @@ namespace
     {
         u32 target = ((decoder * 95) >> 13) & 0xffff;
         int index = -1;
-        for (size_t i = 0; i < decoder_table_size; i ++)
+        for (size_t i = 0; i < decoder_table_size; i++)
         {
             if (decoder_table[i] == target)
                 index = i;
@@ -199,24 +199,24 @@ namespace
         while (left >= 4)
         {
             char temp_buffer[4];
-            for (size_t i = 0; i < 4; i ++)
+            for (size_t i = 0; i < 4; i++)
             {
                 u8 src_index = indices[src_permutation][i];
                 u8 dst_index = indices[dst_permutation][i];
                 u8 input = buffer[(written & (~3)) + src_index];
                 u8 output = func1(func2(input, written), written);
                 temp_buffer[dst_index] = output;
-                written ++;
+                written++;
             }
             memcpy(buffer + written - 4, temp_buffer, 4);
             left -= 4;
         }
-        while (left --)
+        while (left--)
         {
             u8 input = buffer[written];
             u8 output = func1(func2(input, written), written);
             buffer[written] = output;
-            written ++;
+            written++;
         }
     }
 
@@ -235,7 +235,7 @@ namespace
                 throw std::runtime_error("Not a GLIB2 archive");
         }
         header_io.skip(1);
-        for (size_t i = 0; i < 4; i ++)
+        for (size_t i = 0; i < 4; i++)
         {
             header->keys[i] = header_io.read_u32_le();
             header_io.skip(12);
@@ -273,7 +273,7 @@ namespace
                     table_io.skip(4); //null
                     entry->size = table_io.read_u32_le();
                     entry->offset = table_io.read_u32_le();
-                    for (size_t i = 0; i < 4; i ++)
+                    for (size_t i = 0; i < 4; i++)
                     {
                         entry->keys[i] = table_io.read_u32_le();
                         table_io.skip(12);
@@ -304,7 +304,7 @@ namespace
         arc_io.seek(header.table_offset);
         std::unique_ptr<char[]> buffer(new char[header.table_size]);
         arc_io.read(buffer.get(), header.table_size);
-        for (size_t i = 0; i < 4; i ++)
+        for (size_t i = 0; i < 4; i++)
             decode(header.keys[3 - i], buffer.get(), header.table_size);
 
         const std::string table_magic("CDBD");
@@ -319,7 +319,7 @@ namespace
 
         Table table;
         table.reserve(file_count);
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             auto entry = read_table_entry(
                 table_io, table, file_names_start, file_headers_start);
@@ -344,7 +344,7 @@ namespace
             if (done + chunk_size > table_entry.size)
                 chunk_size = table_entry.size - done;
             decode(table_entry.keys[key_id], buffer.get() + done, chunk_size);
-            key_id ++;
+            key_id++;
             key_id %= 4;
         }
 

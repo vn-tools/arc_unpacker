@@ -27,7 +27,7 @@ namespace
     std::string read_file_name(IO &arc_io, size_t file_id)
     {
         std::string file_name = arc_io.read(60);
-        for (size_t i = 0; i < 60; i ++)
+        for (size_t i = 0; i < 60; i++)
             file_name[i] ^= file_id * i * 3 + 0x3d;
         return file_name.substr(0, file_name.find('\0'));
     }
@@ -36,7 +36,7 @@ namespace
     {
         size_t file_count = arc_io.read_u32_le() ^ encryption_key;
         Table table;
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
             table_entry->name = read_file_name(arc_io, i);
@@ -56,7 +56,7 @@ namespace
         arc_io.seek(table_entry.offset);
         arc_io.read(ptr, table_entry.size);
 
-        for (size_t i = 0; i <= 0x2172 && i < table_entry.size; i ++)
+        for (size_t i = 0; i <= 0x2172 && i < table_entry.size; i++)
             data[i] ^= table_entry.name[i % table_entry.name.size()] + i + 3;
 
         file->name = table_entry.name;
@@ -89,7 +89,7 @@ bool PArchive::is_recognized_internal(File &arc_file) const
         return false;
     if (file_count > arc_file.io.size() || file_count * 68 > arc_file.io.size())
         return false;
-    for (size_t i = 0; i < file_count; i ++)
+    for (size_t i = 0; i < file_count; i++)
     {
         read_file_name(arc_file.io, i);
         size_t offset = arc_file.io.read_u32_le();

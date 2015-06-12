@@ -156,7 +156,7 @@ namespace
     u64 crc64(const std::string &buffer)
     {
         u64 crc = 0xFFFFFFFFFFFFFFFF;
-        for (size_t i = 0; i < buffer.size(); i ++)
+        for (size_t i = 0; i < buffer.size(); i++)
         {
             u8 c = static_cast<u8>(buffer[i]);
             int tab_index = ((crc >> 56) ^ c) & 0xFF;
@@ -192,9 +192,9 @@ namespace
             floor(io.size() / static_cast<float>(sjis_file_name.size())));
         u8 *buffer_ptr = reinterpret_cast<u8*>(io.buffer());
         u8 *buffer_guardian = buffer_ptr + io.size();
-        for (size_t j = 0; j < sjis_file_name.size() - 1; j ++)
+        for (size_t j = 0; j < sjis_file_name.size() - 1; j++)
         {
-            for (size_t k = 0; k < block_size; k ++)
+            for (size_t k = 0; k < block_size; k++)
             {
                 if (buffer_ptr >= buffer_guardian)
                     return;
@@ -210,7 +210,7 @@ namespace
     {
         u32 xor_value = (hash ^ crc64(sjis_game_title)) & 0xFFFFFFFF;
         u32 *buffer_ptr = reinterpret_cast<u32*>(io.buffer());
-        for (size_t i = 0; i < io.size() / 4; i ++)
+        for (size_t i = 0; i < io.size() / 4; i++)
             *buffer_ptr++ ^= xor_value;
     }
 
@@ -224,7 +224,7 @@ namespace
     {
         Table table;
         auto file_count = read_file_count(arc_io);
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> entry(new TableEntry);
 

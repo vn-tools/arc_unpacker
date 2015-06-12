@@ -44,7 +44,7 @@ namespace
         u8 *dst = reinterpret_cast<u8*>(output);
         u8 *dst_guardian = dst + output_size;
 
-        int flag = *src ++;
+        int flag = *src++;
         int bit = 1;
         size_t i, length;
         int look_behind;
@@ -54,37 +54,37 @@ namespace
             {
                 if (src >= src_guardian)
                     break;
-                flag = *src ++;
+                flag = *src++;
                 bit = 1;
             }
 
             if (flag & bit)
             {
-                for (i = 0; i < byte_count; i ++)
+                for (i = 0; i < byte_count; i++)
                 {
                     if (src >= src_guardian || dst >= dst_guardian)
                         break;
-                    *dst ++ = *src ++;
+                    *dst++ = *src++;
                 }
             }
             else
             {
                 if (src >= src_guardian)
                     break;
-                i = *src ++;
+                i = *src++;
                 if (src >= src_guardian)
                     break;
-                i |= (*src ++) << 8;
+                i |= (*src++) << 8;
 
                 look_behind = (i >> 4) * byte_count;
                 length = ((i & 0x0f) + length_delta) * byte_count;
-                for (i = 0; i < length; i ++)
+                for (i = 0; i < length; i++)
                 {
                     if (dst >= dst_guardian)
                         break;
                     assert(dst >= reinterpret_cast<u8*>(output + look_behind));
                     *dst = dst[-look_behind];
-                    dst ++;
+                    dst++;
                 }
             }
             bit <<= 1;
@@ -154,11 +154,11 @@ namespace
 
         std::unique_ptr<u32[]> palette(new u32[256]);
         size_t color_count = tmp_io.read_u16_le();
-        for (size_t i = 0; i < color_count; i ++)
+        for (size_t i = 0; i < color_count; i++)
             palette[i] = tmp_io.read_u32_le();
 
         std::unique_ptr<u32[]> pixels(new u32[width * height]);
-        for (size_t i = 0; i < static_cast<size_t>(width * height); i ++)
+        for (size_t i = 0; i < static_cast<size_t>(width * height); i++)
             pixels[i] = palette[tmp_io.read_u8()];
 
         std::unique_ptr<Image> image = Image::from_pixels(
@@ -178,7 +178,7 @@ namespace
         regions.reserve(region_count);
 
         size_t i;
-        for (i = 0; i < region_count; i ++)
+        for (i = 0; i < region_count; i++)
         {
             std::unique_ptr<Region> region(new Region);
             region->x1 = file_io.read_u32_le();
@@ -212,14 +212,14 @@ namespace
             1, 2);
 
         std::unique_ptr<u32[]> pixels(new u32[width * height]);
-        for (int i = 0; i < width * height; i ++)
+        for (int i = 0; i < width * height; i++)
             pixels[i] = 0;
 
         BufferedIO uncompressed_io(uncompressed.get(), uncompressed_size);
         if (region_count != uncompressed_io.read_u32_le())
             throw std::runtime_error("Invalid region count");
 
-        for (i = 0; i < region_count; i ++)
+        for (i = 0; i < region_count; i++)
         {
             uncompressed_io.seek(4 + i * 8);
             size_t block_offset = uncompressed_io.read_u32_le();
@@ -235,7 +235,7 @@ namespace
             assert(block_type == 1);
 
             uncompressed_io.skip(0x70);
-            for (j = 0; j < part_count; j ++)
+            for (j = 0; j < part_count; j++)
             {
                 u16 part_x = uncompressed_io.read_u16_le();
                 u16 part_y = uncompressed_io.read_u16_le();
@@ -246,7 +246,7 @@ namespace
 
                 for (size_t y = part_y + region->y1;
                     y < static_cast<size_t>(part_y + part_height);
-                    y ++)
+                    y++)
                 {
                     uncompressed_io.read(
                         &pixels[part_x + region->x1 + y * width],

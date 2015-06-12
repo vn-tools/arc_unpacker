@@ -111,7 +111,7 @@ namespace
         Table table;
         auto table_io = read_raw_table(arc_io, header);
 
-        for (size_t i = 0; i < header.file_count; i ++)
+        for (size_t i = 0; i < header.file_count; i++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
             table_entry->name = table_io->read_until_zero();
@@ -121,7 +121,7 @@ namespace
             table.push_back(std::move(table_entry));
         }
 
-        for (size_t i = 0; i < table.size() - 1; i ++)
+        for (size_t i = 0; i < table.size() - 1; i++)
             table[i]->size_compressed = table[i + 1]->offset - table[i]->offset;
 
         if (table.size() > 0)
@@ -166,7 +166,7 @@ namespace
         {
             if (table_entry->name.find(".jpg") == std::string::npos)
                 continue;
-            for (size_t version = 0; version < decryptors.size(); version ++)
+            for (size_t version = 0; version < decryptors.size(); version++)
             {
                 auto file = read_file(arc_io, *table_entry, version);
                 file->io.seek(0);

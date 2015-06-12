@@ -9,7 +9,7 @@ struct LzssDecompressor::Internals
     Internals()
     {
         offset = 0;
-        for (size_t i = 0; i < 4096; i ++)
+        for (size_t i = 0; i < 4096; i++)
             dictionary[i] = 0;
     }
 };
@@ -24,7 +24,7 @@ LzssDecompressor::~LzssDecompressor()
 
 void LzssDecompressor::init_dictionary(u8 dictionary[4096])
 {
-    for (size_t i = 0; i < 4096; i ++)
+    for (size_t i = 0; i < 4096; i++)
         internals->dictionary[i] = dictionary[i];
 }
 
@@ -35,7 +35,7 @@ void LzssDecompressor::decompress(
     u8 *input_guardian = input + input_size;
     u8 *output_guardian = output + output_size;
 
-    for (size_t i = 0; i < output_size; i ++)
+    for (size_t i = 0; i < output_size; i++)
         output[i] = 0;
 
     int flags = 0;
@@ -66,16 +66,16 @@ void LzssDecompressor::decompress(
                 length += *input++;
             }
 
-            for (size_t j = 0; j < length; j ++)
+            for (size_t j = 0; j < length; j++)
             {
                 u8 c = internals->dictionary[position];
                 if (output >= output_guardian)
                     return;
-                *output ++ = c;
+                *output++ = c;
                 internals->dictionary[internals->offset] = c;
-                internals->offset ++;
+                internals->offset++;
                 internals->offset &= 0xfff;
-                position ++;
+                position++;
                 position &= 0xfff;
             }
         }
@@ -83,12 +83,12 @@ void LzssDecompressor::decompress(
         {
             if (input >= input_guardian)
                 return;
-            u8 c = *input ++;
+            u8 c = *input++;
             if (output >= output_guardian)
                 return;
-            *output ++ = c;
+            *output++ = c;
             internals->dictionary[internals->offset] = c;
-            internals->offset ++;
+            internals->offset++;
             internals->offset &= 0xfff;
         }
     }

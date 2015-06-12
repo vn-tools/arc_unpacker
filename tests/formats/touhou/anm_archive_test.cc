@@ -12,7 +12,7 @@ static void test(
     auto actual_files = unpack_to_memory(path_to_anm, *archive);
 
     REQUIRE(actual_files.size() == paths_to_png.size());
-    for (size_t i = 0; i < paths_to_png.size(); i ++)
+    for (size_t i = 0; i < paths_to_png.size(); i++)
     {
         std::unique_ptr<File> expected_file(
             new File(paths_to_png[i], FileIOMode::Read));

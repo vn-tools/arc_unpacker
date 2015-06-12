@@ -46,9 +46,9 @@ namespace
             if (flag & 0x8000)
             {
                 size_t pixels = (flag & 0x7fff) + 1;
-                u8 alpha = *input_ptr ++;
+                u8 alpha = *input_ptr++;
                 size_t i;
-                for (i = 0; i < pixels; i ++)
+                for (i = 0; i < pixels; i++)
                 {
                     if (output_ptr > output_guardian)
                     {
@@ -62,10 +62,10 @@ namespace
 
             else
             {
-                while (flag -- && input_ptr < input_guardian)
+                while (flag-- && input_ptr < input_guardian)
                 {
                     u8 alpha = *input_ptr;
-                    input_ptr ++;
+                    input_ptr++;
                     if (output_ptr > output_guardian)
                     {
                         throw std::runtime_error(
@@ -89,7 +89,7 @@ namespace
         u8 b = output_ptr[-4];
         u8 g = output_ptr[-3];
         u8 r = output_ptr[-2];
-        for (size_t i = 0; i < pixels; i ++)
+        for (size_t i = 0; i < pixels; i++)
         {
             if (input_ptr + 2 > input_guardian)
                 throw std::runtime_error("Trying to read length beyond EOF");
@@ -113,10 +113,10 @@ namespace
             if (output_ptr + 4 > output_guardian)
                 throw std::runtime_error("Trying to write colors beyond EOF");
 
-            *output_ptr ++ = b;
-            *output_ptr ++ = g;
-            *output_ptr ++ = r;
-            output_ptr ++;
+            *output_ptr++ = b;
+            *output_ptr++ = g;
+            *output_ptr++ = r;
+            output_ptr++;
         }
     }
 
@@ -131,18 +131,18 @@ namespace
             throw std::runtime_error("Trying to read colors beyond EOF");
 
         size_t pixels = (flag & 0x3f) + 1;
-        u8 b = *input_ptr ++;
-        u8 g = *input_ptr ++;
-        u8 r = *input_ptr ++;
-        for (size_t i = 0; i < pixels; i ++)
+        u8 b = *input_ptr++;
+        u8 g = *input_ptr++;
+        u8 r = *input_ptr++;
+        for (size_t i = 0; i < pixels; i++)
         {
             if (output_ptr + 4 > output_guardian)
                 throw std::runtime_error("Trying to write colors beyond EOF");
 
-            *output_ptr ++ = b;
-            *output_ptr ++ = g;
-            *output_ptr ++ = r;
-            output_ptr ++;
+            *output_ptr++ = b;
+            *output_ptr++ = g;
+            *output_ptr++ = r;
+            output_ptr++;
         }
     }
 
@@ -154,7 +154,7 @@ namespace
         u8 flag)
     {
         size_t pixels = flag;
-        for (size_t i = 0; i < pixels; i ++)
+        for (size_t i = 0; i < pixels; i++)
         {
             if (input_ptr + 3 > input_guardian)
             {
@@ -167,10 +167,10 @@ namespace
                     "Trying to write colors beyond EOF");
             }
 
-            *output_ptr ++ = *input_ptr ++;
-            *output_ptr ++ = *input_ptr ++;
-            *output_ptr ++ = *input_ptr ++;
-            output_ptr ++;
+            *output_ptr++ = *input_ptr++;
+            *output_ptr++ = *input_ptr++;
+            *output_ptr++ = *input_ptr++;
+            output_ptr++;
         }
     }
 
@@ -182,7 +182,7 @@ namespace
     {
         while (input_ptr < input_guardian)
         {
-            u8 flag = *input_ptr ++;
+            u8 flag = *input_ptr++;
             switch (flag & 0xc0)
             {
                 case 0x80:
@@ -268,7 +268,7 @@ namespace
             if (regions_size != bytes_left)
                 throw std::runtime_error("Region size mismatch");
 
-            for (size_t i = 0; i < region_count; i ++)
+            for (size_t i = 0; i < region_count; i++)
             {
                 std::unique_ptr<Region> region(new Region);
                 region->x = file_io.read_u16_le();

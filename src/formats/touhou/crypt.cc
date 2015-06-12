@@ -37,14 +37,14 @@ void Formats::Touhou::decrypt(
         input.read(input_block.get(), current_block_size);
 
         const char *input_block_ptr = input_block.get();
-        for (int j = 0; j < 2; j ++)
+        for (int j = 0; j < 2; j++)
         {
             char *output_block_ptr = &output_block[current_block_size - j - 1];
-            for (size_t i = 0; i < (current_block_size - j + 1) >> 1; i ++)
+            for (size_t i = 0; i < (current_block_size - j + 1) >> 1; i++)
             {
                 *output_block_ptr = *input_block_ptr ^ key;
                 output_block_ptr -= 2;
-                input_block_ptr ++;
+                input_block_ptr++;
                 key += context.step;
             }
         }

@@ -21,7 +21,7 @@ void GmlDecoder::decode(BufferedIO &source_io, BufferedIO &target_io)
 
         if (carry)
         {
-            *target_ptr ++ = source_io.eof() ? 0 : source_io.read_u8();
+            *target_ptr++ = source_io.eof() ? 0 : source_io.read_u8();
             continue;
         }
 
@@ -36,15 +36,15 @@ void GmlDecoder::decode(BufferedIO &source_io, BufferedIO &target_io)
             && length
             && target_ptr < target_guardian)
         {
-            -- length;
-            *target_ptr ++ = 0;
+            --length;
+            *target_ptr++ = 0;
         }
 
         while (length && target_ptr < target_guardian)
         {
-            -- length;
+            --length;
             u8 tmp = target_ptr[look_behind];
-            *target_ptr ++ = tmp;
+            *target_ptr++ = tmp;
         }
     }
 

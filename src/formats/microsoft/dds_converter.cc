@@ -114,7 +114,7 @@ namespace
         header->mip_map_count = io.read_u32_le();
         io.skip(4 * 11);
         fill_pixel_format(io, header->pixel_format);
-        for (size_t i = 0; i < 4; i ++)
+        for (size_t i = 0; i < 4; i++)
             header->caps[i] = io.read_u32_le();
         io.skip(4);
         return header;
@@ -152,10 +152,10 @@ namespace
         colors[1] = rgb565(colors[1]);
 
         u8 rgba[4][4];
-        for (size_t i = 0; i < 2; i ++)
+        for (size_t i = 0; i < 2; i++)
             split_channels(colors[i], rgba[i]);
 
-        for (size_t i = 0; i < 4; i ++)
+        for (size_t i = 0; i < 4; i++)
         {
             if (!transparent)
             {
@@ -169,13 +169,13 @@ namespace
             }
         }
 
-        for (size_t i = 2; i < 4; i ++)
+        for (size_t i = 2; i < 4; i++)
             merge_channels(rgba[i], colors[i]);
 
         u32 lookup = io.read_u32_le();
-        for (size_t y = 0; y < 4; y ++)
+        for (size_t y = 0; y < 4; y++)
         {
-            for (size_t x = 0; x < 4; x ++)
+            for (size_t x = 0; x < 4; x++)
             {
                 size_t index = lookup & 3;
                 output_colors[y][x] = colors[index];
@@ -192,22 +192,22 @@ namespace
 
         if (alpha[0] > alpha[1])
         {
-            for (size_t i = 2; i < 8; i ++)
+            for (size_t i = 2; i < 8; i++)
                 alpha[i] = ((8. - i) * alpha[0] + ((i - 1.) * alpha[1])) / 7.;
         }
         else
         {
-            for (size_t i = 2; i < 6; i ++)
+            for (size_t i = 2; i < 6; i++)
                 alpha[i] = ((6. - i) * alpha[0] + ((i - 1.) * alpha[1])) / 5.;
             alpha[6] = 0;
             alpha[7] = 255;
         }
 
-        for (size_t i = 0; i < 2; i ++)
+        for (size_t i = 0; i < 2; i++)
         {
             u32 lookup = be32toh(
                 (io.read_u16_be() << 16) | (io.read_u8() << 8));
-            for (size_t j = 0; j < 8; j ++)
+            for (size_t j = 0; j < 8; j++)
             {
                 u8 index = lookup & 7;
                 size_t pos = i * 8 + j;
@@ -227,10 +227,10 @@ namespace
         {
             u32 colors[4][4];
             decode_dxt1_block(io, colors);
-            for (size_t y = 0; y < 4; y ++)
+            for (size_t y = 0; y < 4; y++)
             {
                 output_io->seek(((block_y + y) * width + block_x) * 4);
-                for (size_t x = 0; x < 4; x ++)
+                for (size_t x = 0; x < 4; x++)
                     output_io->write_u32_le(colors[y][x]);
             }
         }
@@ -244,7 +244,7 @@ namespace
         for (size_t block_x = 0; block_x < width; block_x += 4)
         {
             u8 alpha[4][4];
-            for (size_t y = 0; y < 4; y ++)
+            for (size_t y = 0; y < 4; y++)
             {
                 for (size_t x = 0; x < 4; x += 2)
                 {
@@ -256,10 +256,10 @@ namespace
 
             u32 colors[4][4];
             decode_dxt1_block(io, colors);
-            for (size_t y = 0; y < 4; y ++)
+            for (size_t y = 0; y < 4; y++)
             {
                 output_io->seek(((block_y + y) * width + block_x) * 4);
-                for (size_t x = 0; x < 4; x ++)
+                for (size_t x = 0; x < 4; x++)
                 {
                     set_channel(colors[y][x], 3, alpha[y][x]);
                     output_io->write_u32_le(colors[y][x]);
@@ -280,10 +280,10 @@ namespace
 
             u32 colors[4][4];
             decode_dxt1_block(io, colors);
-            for (size_t y = 0; y < 4; y ++)
+            for (size_t y = 0; y < 4; y++)
             {
                 output_io->seek(((block_y + y) * width + block_x) * 4);
-                for (size_t x = 0; x < 4; x ++)
+                for (size_t x = 0; x < 4; x++)
                 {
                     set_channel(colors[y][x], 3, alpha[y][x]);
                     output_io->write_u32_le(colors[y][x]);

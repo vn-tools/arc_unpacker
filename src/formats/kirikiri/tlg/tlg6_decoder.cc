@@ -53,15 +53,15 @@ namespace
             LzssDecompressor decompressor;
             u8 dictionary[4096];
             u8 *ptr = dictionary;
-            for (size_t i = 0; i < 32; i ++)
+            for (size_t i = 0; i < 32; i++)
             {
-                for (size_t j = 0; j < 16; j ++)
+                for (size_t j = 0; j < 16; j++)
                 {
-                    for (size_t k = 0; k < 4; k ++)
-                        *ptr ++ = i;
+                    for (size_t k = 0; k < 4; k++)
+                        *ptr++ = i;
 
-                    for (size_t k = 0; k < 4; k ++)
-                        *ptr ++ = j;
+                    for (size_t k = 0; k < 4; k++)
+                        *ptr++ = j;
                 }
             }
             decompressor.init_dictionary(dictionary);
@@ -227,7 +227,7 @@ namespace
             {2, 3, 9, 18, 33, 61, 129, 258, 511, },
         };
 
-        for (int i = 0; i < LEADING_ZERO_TABLE_SIZE; i ++)
+        for (int i = 0; i < LEADING_ZERO_TABLE_SIZE; i++)
         {
             int cnt = 0;
             int j = 1;
@@ -235,10 +235,10 @@ namespace
             while (j != LEADING_ZERO_TABLE_SIZE && !(i & j))
             {
                 j <<= 1;
-                cnt ++;
+                cnt++;
             }
 
-            cnt ++;
+            cnt++;
 
             if (j == LEADING_ZERO_TABLE_SIZE)
                 cnt = 0;
@@ -246,13 +246,13 @@ namespace
             leading_zero_table[i] = cnt;
         }
 
-        for (int n = 0; n < GOLOMB_N_COUNT; n ++)
+        for (int n = 0; n < GOLOMB_N_COUNT; n++)
         {
             int a = 0;
-            for (int i = 0; i < 9; i ++)
+            for (int i = 0; i < 9; i++)
             {
-                for (int j = 0; j < golomb_compression_table[n][i]; j ++)
-                    golomb_bit_length_table[a ++][n] = i;
+                for (int j = 0; j < golomb_compression_table[n][i]; j++)
+                    golomb_bit_length_table[a++][n] = i;
             }
         }
     }
@@ -288,7 +288,7 @@ namespace
                 bit_pool += bit_pos >> 3;
                 bit_pos &= 7;
 
-                bit_count --;
+                bit_count--;
                 count = 1 << bit_count;
                 t = *reinterpret_cast<u32*>(bit_pool);
                 count += ((t >> bit_pos) & (count - 1));
@@ -305,7 +305,7 @@ namespace
                     *pixel_buf = 0;
                     pixel_buf += 4;
                 }
-                while (-- count && pixel_buf < limit);
+                while (--count && pixel_buf < limit);
             }
             else
             {
@@ -333,7 +333,7 @@ namespace
                                 t & (LEADING_ZERO_TABLE_SIZE - 1)];
                             bit_count += b;
                         }
-                        bit_count --;
+                        bit_count--;
                     }
                     else
                     {
@@ -361,13 +361,13 @@ namespace
                     bit_pool += bit_pos >> 3;
                     bit_pos &= 7;
 
-                    if (-- n < 0)
+                    if (--n < 0)
                     {
                         a >>= 1;
                         n = GOLOMB_N_COUNT - 1;
                     }
                 }
-                while (-- count);
+                while (--count);
             }
 
             zero ^= 1;
@@ -405,7 +405,7 @@ namespace
         in += skip_block_bytes * start_block;
         step = (dir & 1) ? 1 : -1;
 
-        for (i = start_block; i < block_limit; i ++)
+        for (i = start_block; i < block_limit; i++)
         {
             int w = header.image_width - i * W_BLOCK_SIZE;
             if (w > W_BLOCK_SIZE)
@@ -443,12 +443,12 @@ namespace
                     p |= 0xff000000;
 
                 up = u;
-                *current_line ++ = p;
+                *current_line++ = p;
 
-                prev_line ++;
+                prev_line++;
                 in += step;
             }
-            while (-- w);
+            while (--w);
 
             in += skip_block_bytes + (step == 1 ? - ww : 1);
             if (i & 1)
@@ -465,7 +465,7 @@ namespace
             new u32[4 * header.image_width * H_BLOCK_SIZE]);
         std::unique_ptr<u32[]> zero_line(new u32[header.image_width]);
         u32 *prev_line = zero_line.get();
-        for (size_t i = 0; i < header.image_width; i ++)
+        for (size_t i = 0; i < header.image_width; i++)
             zero_line[i] = 0;
 
         u32 main_count = header.image_width / W_BLOCK_SIZE;
@@ -476,7 +476,7 @@ namespace
                 ylim = header.image_height;
 
             int pixel_count = (ylim - y) * header.image_width;
-            for (size_t c = 0; c < header.channel_count; c ++)
+            for (size_t c = 0; c < header.channel_count; c++)
             {
                 u32 bit_length = io.read_u32_le();
 
@@ -485,7 +485,7 @@ namespace
 
                 int byte_length = bit_length / 8;
                 if (bit_length % 8)
-                    byte_length ++;
+                    byte_length++;
 
                 std::unique_ptr<u8[]> bit_pool(new u8[byte_length]);
                 io.read(bit_pool.get(), byte_length);
@@ -503,7 +503,7 @@ namespace
                 + (y / H_BLOCK_SIZE) * header.x_block_count;
             int skip_bytes = (ylim - y) * W_BLOCK_SIZE;
 
-            for (size_t yy = y; yy < ylim; yy ++)
+            for (size_t yy = y; yy < ylim; yy++)
             {
                 u32 *current_line
                     = &reinterpret_cast<u32*>(output)
@@ -577,7 +577,7 @@ std::unique_ptr<File> Tlg6Decoder::decode(File &file)
 
     size_t pixels_size = header.image_width * header.image_height * 4;
     std::unique_ptr<u8[]> pixels(new u8[pixels_size]);
-    for (size_t i = 0; i < pixels_size; i ++)
+    for (size_t i = 0; i < pixels_size; i++)
         pixels[i] = 0;
 
     read_pixels(file.io, pixels.get(), header);

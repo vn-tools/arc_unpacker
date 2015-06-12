@@ -68,7 +68,7 @@ namespace
                     throw std::runtime_error("Unsupported channel count");
             }
 
-            while (repeat --)
+            while (repeat--)
                 target_io.write_u32_le(rgba);
         }
 
@@ -92,10 +92,10 @@ void Pak1ImageArchive::unpack_internal(
 {
     auto palette_count = arc_file.io.read_u8();
     std::vector<Palette> palettes;
-    for (size_t p = 0; p < palette_count; p ++)
+    for (size_t p = 0; p < palette_count; p++)
     {
         Palette palette;
-        for (size_t i = 0; i < 256; i ++)
+        for (size_t i = 0; i < 256; i++)
             palette[i] = rgba5551(arc_file.io.read_u16_le());
         palettes.push_back(palette);
     }
@@ -103,5 +103,5 @@ void Pak1ImageArchive::unpack_internal(
 
     size_t i = 0;
     while (arc_file.io.tell() < arc_file.io.size())
-        file_saver.save(read_image(arc_file.io, i ++, palettes[0]));
+        file_saver.save(read_image(arc_file.io, i++, palettes[0]));
 }

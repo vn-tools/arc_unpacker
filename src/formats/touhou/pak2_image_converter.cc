@@ -69,9 +69,9 @@ std::unique_ptr<File> Pak2ImageConverter::decode_internal(File &file) const
             : create_default_palette();
     }
 
-    for (size_t y = 0; y < image_height; y ++)
+    for (size_t y = 0; y < image_height; y++)
     {
-        for (size_t x = 0; x < image_width_padded; x ++)
+        for (size_t x = 0; x < image_width_padded; x++)
         {
             u32 rgba;
 

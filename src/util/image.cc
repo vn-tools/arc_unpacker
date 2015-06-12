@@ -122,7 +122,7 @@ std::unique_ptr<Image> Image::from_boxed(IO &io)
 
     png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
     size_t scanline_size = png_image_width * bpp, y;
-    for (y = 0; y < png_image_height; y ++)
+    for (y = 0; y < png_image_height; y++)
     {
         image->internals->pixel_data.replace(
             y * scanline_size,
@@ -217,7 +217,7 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
     png_write_info(png_ptr, info_ptr);
 
     std::unique_ptr<png_bytep[]> rows(new png_bytep[internals->image_height]);
-    for (size_t y = 0; y < internals->image_height; y ++)
+    for (size_t y = 0; y < internals->image_height; y++)
     {
         rows.get()[y]
             = reinterpret_cast<png_bytep>(&internals->pixel_data

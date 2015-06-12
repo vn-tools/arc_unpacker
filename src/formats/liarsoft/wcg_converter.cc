@@ -71,7 +71,7 @@ namespace
                 throw std::runtime_error("Table offset length = 0");
 
             u32 table_offset = 0;
-            -- table_offset_length;
+            --table_offset_length;
             if (!table_offset_length)
             {
                 table_offset = (table_offset << 1) + bit_reader.get(1);
@@ -81,9 +81,9 @@ namespace
                 if (table_offset_length >= var1)
                 {
                     while (bit_reader.get(1))
-                        ++ table_offset_length;
+                        ++table_offset_length;
                 }
-                ++ table_offset;
+                ++table_offset;
                 table_offset <<= table_offset_length;
                 table_offset |= bit_reader.get(table_offset_length);
             }
@@ -95,7 +95,7 @@ namespace
             {
                 auto table16 = reinterpret_cast<const u16*>(table.get());
                 auto fragment = table16[table_offset];
-                while (sequence_length --)
+                while (sequence_length--)
                 {
                     *reinterpret_cast<u16*>(output_ptr) = fragment;
                     output_ptr += output_shift;
@@ -105,7 +105,7 @@ namespace
             {
                 auto table8 = reinterpret_cast<const u8*>(table.get());
                 auto fragment = table8[table_offset];
-                while (sequence_length --)
+                while (sequence_length--)
                 {
                     *reinterpret_cast<u8*>(output_ptr) = fragment;
                     output_ptr += output_shift;

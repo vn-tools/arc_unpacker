@@ -31,7 +31,7 @@ namespace
         size_t names_start = file_count * 12 + 8;
 
         Table table;
-        for (size_t i = 0 ; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> entry(new TableEntry);
             size_t name_offset = arc_io.read_u32_le();

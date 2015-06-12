@@ -42,12 +42,12 @@ std::unique_ptr<File> XyzConverter::decode_internal(File &file) const
     const char *palette_indices = data.data() + 256 * 3;
     char *out = pixels.get();
 
-    for (size_t i = 0; i < static_cast<size_t>(width * height); i ++)
+    for (size_t i = 0; i < static_cast<size_t>(width * height); i++)
     {
-        size_t index = *palette_indices ++;
-        *out ++ = palette[index * 3 + 0];
-        *out ++ = palette[index * 3 + 1];
-        *out ++ = palette[index * 3 + 2];
+        size_t index = *palette_indices++;
+        *out++ = palette[index * 3 + 0];
+        *out++ = palette[index * 3 + 1];
+        *out++ = palette[index * 3 + 2];
     }
 
     std::unique_ptr<Image> image = Image::from_pixels(

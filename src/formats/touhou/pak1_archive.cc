@@ -30,7 +30,7 @@ namespace
         std::unique_ptr<char[]> buffer(new char[size]);
         io.seek(0);
         io.read(buffer.get(), size);
-        for (size_t i = 0; i < size; i ++)
+        for (size_t i = 0; i < size; i++)
         {
             buffer[i] ^= a;
             a += b;
@@ -69,7 +69,7 @@ namespace
         auto table_io = read_raw_table(arc_io, file_count);
         Table table;
         table.reserve(file_count);
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> entry(new TableEntry);
             entry->name = table_io->read_until_zero(0x64);

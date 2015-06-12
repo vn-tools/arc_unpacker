@@ -27,7 +27,7 @@ namespace
 
     void decrypt(char *data, size_t data_size)
     {
-        for (size_t i = 0; i < data_size; i ++)
+        for (size_t i = 0; i < data_size; i++)
             data[i] ^= key[i % key.length()];
     }
 
@@ -35,7 +35,7 @@ namespace
     {
         Table table;
         size_t file_count = table_io.read_u32_le();
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
             table_entry->name = convert_encoding(

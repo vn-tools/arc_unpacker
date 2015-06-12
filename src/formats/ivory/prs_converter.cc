@@ -26,7 +26,7 @@ namespace
 
         int flag = 0;
         int length_lookup[256];
-        for (size_t i = 0; i < 256; i ++)
+        for (size_t i = 0; i < 256; i++)
             length_lookup[i] = i + 3;
         length_lookup[0xff] = 0x1000;
         length_lookup[0xfe] = 0x400;
@@ -39,7 +39,7 @@ namespace
             {
                 if (source_ptr >= source_guardian)
                     break;
-                flag = *source_ptr ++;
+                flag = *source_ptr++;
                 flag <<= 1;
                 flag += 1;
             }
@@ -52,11 +52,11 @@ namespace
                     break;
                 }
 
-                *target_ptr ++ = *source_ptr ++;
+                *target_ptr++ = *source_ptr++;
             }
             else
             {
-                int tmp = *source_ptr ++;
+                int tmp = *source_ptr++;
                 size_t length = 0;
                 size_t shift = 0;
 
@@ -65,13 +65,13 @@ namespace
                     if (source_ptr >= source_guardian)
                         break;
 
-                    shift = (*source_ptr ++) | ((tmp & 0x3f) << 8);
+                    shift = (*source_ptr++) | ((tmp & 0x3f) << 8);
                     if (tmp & 0x40)
                     {
                         if (source_ptr >= source_guardian)
                             break;
 
-                        length = length_lookup[(size_t)*source_ptr ++];
+                        length = length_lookup[(size_t)*source_ptr++];
                     }
                     else
                     {
@@ -86,14 +86,14 @@ namespace
                     if (tmp == 3)
                     {
                         length += 9;
-                        for (size_t i = 0; i < length; i ++)
+                        for (size_t i = 0; i < length; i++)
                         {
                             if (source_ptr >= source_guardian
                                 || target_ptr >= target_guardian)
                             {
                                 break;
                             }
-                            *target_ptr ++ = *source_ptr ++;
+                            *target_ptr++ = *source_ptr++;
                         }
                         continue;
                     }
@@ -102,14 +102,14 @@ namespace
                 }
 
                 shift += 1;
-                for (size_t i = 0; i < length; i ++)
+                for (size_t i = 0; i < length; i++)
                 {
                     if (target_ptr >= target_guardian)
                         break;
                     if (target_ptr - shift < target)
                         throw std::runtime_error("Invalid shift value");
                     *target_ptr = *(target_ptr - shift);
-                    target_ptr ++;
+                    target_ptr++;
                 }
             }
         }
@@ -145,7 +145,7 @@ std::unique_ptr<File> PrsConverter::decode_internal(File &file) const
 
     if (using_differences)
     {
-        for (size_t i = 3; i < target_size; i ++)
+        for (size_t i = 3; i < target_size; i++)
             target[i] += target[i - 3];
     }
 

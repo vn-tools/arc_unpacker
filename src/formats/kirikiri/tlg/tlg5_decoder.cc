@@ -28,8 +28,8 @@ namespace
             block_size = io.read_u32_le();
             block_data.reset(new u8[block_size]);
             u8 *tmp = block_data.get();
-            for (size_t i = 0; i < block_size; i ++)
-                *tmp ++ = io.read_u8();
+            for (size_t i = 0; i < block_size; i++)
+                *tmp++ = io.read_u8();
         }
 
         void decompress(
@@ -64,7 +64,7 @@ namespace
             ? zero_line
             : &output[(block_y - 1) * header.image_width * 4];
 
-        for (size_t y = block_y; y < max_y; y ++)
+        for (size_t y = block_y; y < max_y; y++)
         {
             u8 prev_r = 0;
             u8 prev_g = 0;
@@ -73,7 +73,7 @@ namespace
 
             size_t block_y_shift = (y - block_y) * header.image_width;
             u8 *current_line_start = current_line;
-            for (size_t x = 0; x < header.image_width; x ++)
+            for (size_t x = 0; x < header.image_width; x++)
             {
                 u8 r = channel_data[2]->block_data[block_y_shift + x];
                 u8 g = channel_data[1]->block_data[block_y_shift + x];
@@ -95,18 +95,18 @@ namespace
                 u8 output_b = prev_b;
                 u8 output_a = prev_a;
 
-                output_r += *previous_line ++;
-                output_g += *previous_line ++;
-                output_b += *previous_line ++;
-                output_a += *previous_line ++;
+                output_r += *previous_line++;
+                output_g += *previous_line++;
+                output_b += *previous_line++;
+                output_a += *previous_line++;
 
                 if (!use_alpha)
                     output_a = 0xff;
 
-                *current_line ++ = output_r;
-                *current_line ++ = output_g;
-                *current_line ++ = output_b;
-                *current_line ++ = output_a;
+                *current_line++ = output_r;
+                *current_line++ = output_g;
+                *current_line++ = output_b;
+                *current_line++ = output_a;
             }
             previous_line = current_line_start;
         }
@@ -130,7 +130,7 @@ namespace
         {
             std::vector<std::unique_ptr<BlockInfo>> channel_data;
 
-            for (size_t channel = 0; channel < header.channel_count; channel ++)
+            for (size_t channel = 0; channel < header.channel_count; channel++)
             {
                 std::unique_ptr<BlockInfo> block_info(new BlockInfo(io));
                 if (!block_info->mark)

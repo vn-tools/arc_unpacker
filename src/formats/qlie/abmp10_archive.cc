@@ -91,7 +91,7 @@ void Abmp10Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         else if (magic == magic_image10)
         {
             size_t image_count = arc_file.io.read_u8();
-            for (size_t i = 0; i < image_count; i ++)
+            for (size_t i = 0; i < image_count; i++)
             {
                 auto subfile = read_file(arc_file.io);
                 if (subfile != nullptr)
@@ -101,7 +101,7 @@ void Abmp10Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         else if (magic == magic_sound10)
         {
             size_t sound_count = arc_file.io.read_u8();
-            for (size_t i = 0; i < sound_count; i ++)
+            for (size_t i = 0; i < sound_count; i++)
             {
                 auto subfile = read_file(arc_file.io);
                 if (subfile != nullptr)

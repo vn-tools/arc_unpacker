@@ -152,7 +152,7 @@ namespace
         Table table;
         auto table_io = read_raw_table(arc_io, header);
 
-        for (size_t i = 0; i < header.file_count; i ++)
+        for (size_t i = 0; i < header.file_count; i++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
 
@@ -160,7 +160,7 @@ namespace
             table_io->skip(3 - table_entry->name.length() % 4);
 
             table_entry->decryptor_id = 0;
-            for (size_t j = 0; j < table_entry->name.length(); j ++)
+            for (size_t j = 0; j < table_entry->name.length(); j++)
                 table_entry->decryptor_id += table_entry->name[j];
             table_entry->decryptor_id %= 8;
 
@@ -170,7 +170,7 @@ namespace
             table.push_back(std::move(table_entry));
         }
 
-        for (size_t i = 0; i < table.size() - 1; i ++)
+        for (size_t i = 0; i < table.size() - 1; i++)
             table[i]->size_compressed = table[i + 1]->offset - table[i]->offset;
 
         if (table.size() > 0)

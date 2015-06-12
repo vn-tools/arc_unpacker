@@ -155,7 +155,7 @@ namespace
                     u32 number = 0;
                     size_t i;
                     size_t pos = table_io.tell();
-                    for (i = 0; i < length; i ++)
+                    for (i = 0; i < length; i++)
                     {
                         table_io.seek(pos + length - 1 - i);
                         number *= 256;
@@ -233,7 +233,7 @@ namespace
         std::vector<std::unique_ptr<TableEntry>> entries;
         entries.reserve(file_count);
 
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> entry(new TableEntry);
             entry->name = context.strings[i * 2 ];
@@ -261,7 +261,7 @@ namespace
     {
         size_t i;
         u32 result = 0;
-        for (i = 0; i < length; i ++)
+        for (i = 0; i < length; i++)
         {
             char c = arc_io.read_u8();
             result *= 16;

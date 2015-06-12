@@ -40,7 +40,7 @@ namespace
             size_t name_length = arc_io.read_u32_le() ^ key;
             key = advance_key(key);
             table_entry->name = arc_io.read(name_length);
-            for (size_t i = 0; i < name_length; i ++)
+            for (size_t i = 0; i < name_length; i++)
             {
                 table_entry->name[i] ^= key;
                 key = advance_key(key);

@@ -66,14 +66,14 @@ namespace
         Options &options)
     {
         const std::vector<std::string> stray = arg_parser.get_stray();
-        for (size_t i = 1; i < stray.size(); i ++)
+        for (size_t i = 1; i < stray.size(); i++)
         {
             std::string path = stray[i];
             if (boost::filesystem::is_directory(path))
             {
                 for (boost::filesystem::recursive_directory_iterator it(path);
                     it != boost::filesystem::recursive_directory_iterator();
-                    it ++)
+                    it++)
                 {
                     std::unique_ptr<PathInfo> pi(new PathInfo);
                     pi->input_path = it->path().string();
@@ -181,7 +181,7 @@ Supported FORMAT values:
     for (auto &format : internals->factory.get_formats())
     {
         std::cout << "- " << std::setw(10) << std::left << format;
-        if (i ++ == 4)
+        if (i++ == 4)
         {
             std::cout << "\n";
             i = 0;

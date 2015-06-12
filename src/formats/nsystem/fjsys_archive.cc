@@ -86,6 +86,6 @@ void FjsysArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     arc_file.io.skip(magic.size());
 
     std::unique_ptr<Header> header = read_header(arc_file.io);
-    for (size_t i = 0; i < header->file_count; i ++)
+    for (size_t i = 0; i < header->file_count; i++)
         file_saver.save(read_file(arc_file.io, *header));
 }

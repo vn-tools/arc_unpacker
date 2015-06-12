@@ -404,7 +404,7 @@ namespace
             image_resource_directory.number_of_named_entries +
             image_resource_directory.number_of_id_entries;
         size_t directory_entry_offset = io.tell() - base_offset;
-        for (size_t i = 0; i < entry_count; i ++)
+        for (size_t i = 0; i < entry_count; i++)
         {
             io.seek(base_offset + directory_entry_offset);
             ImageResourceDirectoryEntry entry(io);
@@ -462,11 +462,11 @@ void ExeArchive::unpack_internal(File &file, FileSaver &file_saver) const
         = nt_header.optional_header.number_of_rva_and_sizes;
     std::vector<ImageDataDirectory> image_data_directories;
     image_data_directories.reserve(image_data_directory_count);
-    for (size_t i = 0; i < image_data_directory_count; i ++)
+    for (size_t i = 0; i < image_data_directory_count; i++)
         image_data_directories.push_back(ImageDataDirectory(file.io));
 
     std::vector<ImageSectionHeader> sections;
-    for (size_t i = 0; i < nt_header.file_header.number_of_sections; i ++)
+    for (size_t i = 0; i < nt_header.file_header.number_of_sections; i++)
         sections.push_back(ImageSectionHeader(file.io));
 
     auto resource_directory = image_data_directories[2];

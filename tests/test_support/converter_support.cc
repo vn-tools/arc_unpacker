@@ -12,9 +12,9 @@ namespace
         REQUIRE(expected_image.height() == actual_image.height());
 
         size_t x, y;
-        for (y = 0; y < expected_image.height(); y ++)
+        for (y = 0; y < expected_image.height(); y++)
         {
-            for (x = 0; x < expected_image.width(); x ++)
+            for (x = 0; x < expected_image.width(); x++)
             {
                 u32 expected_rgba = expected_image.color_at(x, y);
                 u32 actual_rgba = actual_image.color_at(x, y);

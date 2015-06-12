@@ -37,7 +37,7 @@ namespace
         io.seek(0);
         io.read(buffer.get(), size);
         mt_init_genrand(mt_seed);
-        for (size_t i = 0; i < size; i ++)
+        for (size_t i = 0; i < size; i++)
         {
             buffer[i] ^= mt_genrand_int32();
             buffer[i] ^= a;
@@ -56,7 +56,7 @@ namespace
         arc_io.read(data.get(), table_entry.size);
 
         u8 key = (table_entry.offset >> 1) | 0x23;
-        for (size_t i = 0; i < table_entry.size; i ++)
+        for (size_t i = 0; i < table_entry.size; i++)
             data[i] ^= key;
 
         std::unique_ptr<File> file(new File);
@@ -84,7 +84,7 @@ namespace
         auto table_io = read_raw_table(arc_io, file_count);
         Table table;
         table.reserve(file_count);
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> entry(new TableEntry);
             entry->offset = table_io->read_u32_le();
@@ -105,7 +105,7 @@ namespace
         auto dir = boost::filesystem::path(arc_path).parent_path();
         for (boost::filesystem::directory_iterator it(dir);
             it != boost::filesystem::directory_iterator();
-            it ++)
+            it++)
         {
             if (!boost::filesystem::is_regular_file(it->path()))
                 continue;
@@ -123,7 +123,7 @@ namespace
                     auto pal_file = read_file(file_io, *table_entry);
                     pal_file->io.seek(1);
                     Palette palette;
-                    for (size_t i = 0; i < 256; i ++)
+                    for (size_t i = 0; i < 256; i++)
                         palette[i] = rgba5551(pal_file->io.read_u16_le());
                     palettes[table_entry->name] = palette;
                 }

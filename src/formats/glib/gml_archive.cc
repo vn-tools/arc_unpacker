@@ -32,7 +32,7 @@ namespace
     {
         BufferedIO temp_io(arc_io, header_size_compressed);
         u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
-        for (size_t i = 0; i < header_size_compressed; i ++)
+        for (size_t i = 0; i < header_size_compressed; i++)
             buffer[i] ^= 0xff;
 
         std::unique_ptr<BufferedIO> header_io(new BufferedIO);
@@ -47,7 +47,7 @@ namespace
         size_t file_count = table_io.read_u32_le();
         Table table;
         table.reserve(file_count);
-        for (size_t i = 0; i < file_count; i ++)
+        for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> entry(new TableEntry);
             entry->name = table_io.read(table_io.read_u32_le());
@@ -70,7 +70,7 @@ namespace
         arc_io.seek(table_entry.offset);
         BufferedIO temp_io(arc_io, table_entry.size);
         u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
-        for (size_t i = 0; i < table_entry.size; i ++)
+        for (size_t i = 0; i < table_entry.size; i++)
             buffer[i] = permutation[buffer[i]];
 
         temp_io.skip(prefix_size);

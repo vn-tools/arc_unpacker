@@ -44,7 +44,7 @@ void Pak1SoundArchive::unpack_internal(
     File &arc_file, FileSaver &file_saver) const
 {
     size_t file_count = arc_file.io.read_u32_le();
-    for (size_t i = 0; i < file_count; i ++)
+    for (size_t i = 0; i < file_count; i++)
     {
         if (!arc_file.io.read_u8())
             continue;

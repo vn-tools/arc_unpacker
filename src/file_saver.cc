@@ -25,7 +25,7 @@ struct FileSaverHdd::Internals
         while (paths.find(new_path) != paths.end()
         || (!overwrite && boost::filesystem::exists(new_path)))
         {
-            std::string suffix = "(" + itos(i ++) + ")";
+            std::string suffix = "(" + itos(i++) + ")";
             new_path = path.parent_path();
             new_path /= boost::filesystem::path(
                 path.stem().string() + suffix + path.extension().string());
@@ -54,7 +54,7 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
         while ((pos = name_part.find("\\", pos)) != std::string::npos)
         {
             name_part.replace(pos, 1, "/");
-            pos ++;
+            pos++;
         }
 
         boost::filesystem::path full_path(internals->output_dir);

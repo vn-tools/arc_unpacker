@@ -28,7 +28,7 @@ std::string lzss_decompress(
             u8 byte = bit_reader.get(8);
             output.push_back(byte);
             dictionary_ptr[dictionary_pos] = byte;
-            dictionary_pos ++;
+            dictionary_pos++;
             dictionary_pos %= dictionary_size;
         }
         else
@@ -36,7 +36,7 @@ std::string lzss_decompress(
             unsigned int pos = bit_reader.get(settings.position_bits);
             unsigned int length = bit_reader.get(settings.length_bits);
             length += settings.min_match_length;
-            for (size_t i = 0; i < length; i ++)
+            for (size_t i = 0; i < length; i++)
             {
                 u8 byte = dictionary_ptr[pos];
                 pos += 1;
@@ -45,7 +45,7 @@ std::string lzss_decompress(
                 if (settings.reuse_compressed)
                 {
                     dictionary_ptr[dictionary_pos] = byte;
-                    dictionary_pos ++;
+                    dictionary_pos++;
                     dictionary_pos %= dictionary_size;
                 }
                 output.push_back(byte);
