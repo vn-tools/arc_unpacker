@@ -9,7 +9,6 @@
 // - Clannad
 // - Little Busters
 
-#include <cassert>
 #include "formats/key/nwa_converter.h"
 #include "util/sound.h"
 using namespace Formats::Key;

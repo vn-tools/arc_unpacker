@@ -1,5 +1,3 @@
-#include <cassert>
-#include <cstddef>
 #include "formats/nitroplus/npa_filters/chaos_head_filter.h"
 
 u32 chaos_head_file_name_filter(u32 key1, u32 key2)
