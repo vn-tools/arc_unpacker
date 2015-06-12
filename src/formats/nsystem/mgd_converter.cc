@@ -41,7 +41,8 @@ namespace
         output_ptr += 3; //ignore first RGB
         while (input_ptr < input_guardian)
         {
-            uint16_t flag = le16toh(*(uint16_t*)input_ptr);
+            uint16_t flag = le16toh(
+                *reinterpret_cast<const uint16_t*>(input_ptr));
             input_ptr += 2;
             if (flag & 0x8000)
             {
@@ -94,7 +95,8 @@ namespace
             if (input_ptr + 2 > input_guardian)
                 throw std::runtime_error("Trying to read length beyond EOF");
 
-            uint16_t delta = le16toh(*(uint16_t*)input_ptr);
+            uint16_t delta = le16toh(
+                *reinterpret_cast<const uint16_t*>(input_ptr));
             input_ptr += 2;
 
             if (delta & 0x8000)
@@ -241,7 +243,7 @@ namespace
 
         length = le32toh(*reinterpret_cast<const uint32_t*>(input_ptr));
         input_ptr += 4;
-        input_guardian = (const uint8_t*)input_ptr + length;
+        input_guardian = input_ptr + length;
         if (length > input_size)
             throw std::runtime_error("Insufficient color data");
 

@@ -12,7 +12,7 @@ struct BufferedIO::Internals
 
     Internals(const char *buffer, size_t buffer_size)
     {
-        this->buffer = (char*)malloc(buffer_size);
+        this->buffer = reinterpret_cast<char*>(malloc(buffer_size));
         if (this->buffer == nullptr)
             throw std::bad_alloc();
         memcpy(this->buffer, buffer, buffer_size);
@@ -31,7 +31,8 @@ void BufferedIO::reserve(size_t length)
     size_t new_size = internals->buffer_pos + length;
     if (new_size <= internals->buffer_size)
         return;
-    char *new_buffer = (char*)realloc(internals->buffer, new_size);
+    char *new_buffer = reinterpret_cast<char*>(
+        realloc(internals->buffer, new_size));
     if (new_buffer == nullptr)
         throw std::bad_alloc();
     internals->buffer = new_buffer;
@@ -95,7 +96,8 @@ void BufferedIO::truncate(size_t new_size)
         internals->buffer_pos = 0;
         internals->buffer = nullptr;
     }
-    char *new_buffer = (char*)realloc(internals->buffer, new_size);
+    char *new_buffer = reinterpret_cast<char*>(
+        realloc(internals->buffer, new_size));
     if (new_buffer == nullptr)
         throw std::bad_alloc();
     internals->buffer = new_buffer;

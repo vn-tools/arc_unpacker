@@ -39,14 +39,15 @@ namespace
         assert(input != nullptr);
         assert(output != nullptr);
 
-        const unsigned char *src = (unsigned char*)input;
-        const unsigned char *src_guardian = src + input_size;
-        unsigned char *dst = (unsigned char*)output;
-        unsigned char *dst_guardian = dst + output_size;
+        const uint8_t *src = reinterpret_cast<const uint8_t*>(input);
+        const uint8_t *src_guardian = src + input_size;
+        uint8_t *dst = reinterpret_cast<uint8_t*>(output);
+        uint8_t *dst_guardian = dst + output_size;
 
         int flag = *src ++;
         int bit = 1;
-        size_t i, look_behind, length;
+        size_t i, length;
+        int look_behind;
         while (dst < dst_guardian)
         {
             if (bit == 256)
@@ -81,8 +82,9 @@ namespace
                 {
                     if (dst >= dst_guardian)
                         break;
-                    assert(dst >= (unsigned char*)output + look_behind);
-                    *dst = dst[-(signed)look_behind];
+                    assert(dst >=
+                        reinterpret_cast<uint8_t*>(output + look_behind));
+                    *dst = dst[-look_behind];
                     dst ++;
                 }
             }
@@ -140,11 +142,8 @@ namespace
 
     std::unique_ptr<File> decode_version_1(File &file, int width, int height)
     {
-        size_t compressed_size = file.io.read_u32_le();
+        size_t compressed_size = file.io.read_u32_le() - 8;
         size_t uncompressed_size = file.io.read_u32_le();
-        compressed_size -= 8;
-        if (compressed_size != file.io.size() - file.io.tell())
-            throw std::runtime_error("Compressed data size mismatch");
 
         std::unique_ptr<char[]> uncompressed = decompress_from_io(
             file.io,
@@ -152,21 +151,16 @@ namespace
             uncompressed_size,
             1, 2);
 
-        char *tmp = uncompressed.get();
-        uint16_t color_count = le32toh(*(uint16_t*)tmp);
-        tmp += 2;
+        BufferedIO tmp_io(uncompressed.get(), uncompressed_size);
 
-        if (uncompressed_size != (unsigned)color_count * 4 + width * height + 2)
-            throw std::runtime_error("Uncompressed data size mismatch");
-        uint32_t *palette = (uint32_t*)tmp;
-        tmp += color_count * 4;
+        std::unique_ptr<uint32_t[]> palette(new uint32_t[256]);
+        size_t color_count = tmp_io.read_u16_le();
+        for (size_t i = 0; i < color_count; i ++)
+            palette[i] = tmp_io.read_u32_le();
 
         std::unique_ptr<uint32_t[]> pixels(new uint32_t[width * height]);
-        for (size_t i = 0; i < (unsigned)(width * height); i ++)
-        {
-            unsigned char palette_index = (unsigned char)*tmp ++;
-            pixels[i] = palette[palette_index];
-        }
+        for (size_t i = 0; i < static_cast<size_t>(width * height); i ++)
+            pixels[i] = palette[tmp_io.read_u8()];
 
         std::unique_ptr<Image> image = Image::from_pixels(
             width,
