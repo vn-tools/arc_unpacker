@@ -1,4 +1,5 @@
 # vi: ft=python
+from waflib import Logs
 import os
 
 APPNAME = 'arc_unpacker'
@@ -46,6 +47,9 @@ def configure_flags(ctx):
 
 	if ctx.options.debug:
 		ctx.env.CXXFLAGS += ['-g']
+		Logs.info('Debug information enabled')
+	else:
+		Logs.info('Debug information disabled, pass -d to enable')
 
 	if ctx.options.cross_compile:
 		ctx.env.CXX = 'i686-w64-mingw32-g++'
