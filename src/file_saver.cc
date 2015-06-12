@@ -69,12 +69,13 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
         FileIO output_io(full_path.string(), FileIOMode::Write);
         file->io.seek(0);
         output_io.write_from_io(file->io, file->io.size());
-        std::cout << "ok" << std::endl;
+        std::cout << "ok\n";
     }
     catch (std::runtime_error &e)
     {
-        std::cout << "error (" << e.what() << ")" << std::endl;
+        std::cout << "error (" << e.what() << ")\n";
     }
+    std::cout.flush();
 }
 
 

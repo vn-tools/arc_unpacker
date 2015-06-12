@@ -200,7 +200,7 @@ void ArgParser::print_help() const
 
     if (internals->help_items.size() == 0)
     {
-        std::cout << "No additional switches are available." << std::endl;
+        std::cout << "No additional switches are available.\n";
         return;
     }
 
@@ -228,6 +228,6 @@ void ArgParser::print_help() const
             for (size_t i = 0; i < max_invocation_length; i ++)
                 std::cout << " ";
         }
-        std::cout << std::endl;
+        std::cout << "\n";
     }
 }

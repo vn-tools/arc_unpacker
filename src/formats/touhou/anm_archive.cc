@@ -131,8 +131,7 @@ namespace
         IO &file_io,
         TableEntry &table_entry,
         uint32_t *pixel_data,
-        size_t pixel_data_width,
-        size_t pixel_data_height)
+        size_t stride)
     {
         if (!table_entry.has_data)
             return;
@@ -146,11 +145,11 @@ namespace
         size_t height = file_io.read_u16_le();
         size_t data_size = file_io.read_u32_le();
 
-        uint32_t *guardian = &pixel_data[pixel_data_width * pixel_data_height];
+        uint32_t *guardian = &pixel_data[stride * height];
 
         for (size_t y = 0; y < height; y ++)
         {
-            size_t shift = (y + table_entry.y) * pixel_data_width + table_entry.x;
+            size_t shift = (y + table_entry.y) * stride + table_entry.x;
             uint32_t *pixel_ptr = &pixel_data[shift];
             for (size_t x = 0; x < width; x ++)
             {
@@ -209,12 +208,13 @@ namespace
         for (size_t i = 0; i < pixel_data_size; i ++)
             pixel_data[i] = 0;
         for (auto &entry : entries)
-            write_pixels(file_io, *entry, pixel_data.get(), width, height);
+            write_pixels(file_io, *entry, pixel_data.get(), width);
 
         std::unique_ptr<Image> image = Image::from_pixels(
             width,
             height,
-            std::string(reinterpret_cast<char*>(pixel_data.get()), pixel_data_size * 4),
+            std::string(
+                reinterpret_cast<char*>(pixel_data.get()), pixel_data_size * 4),
             PixelFormat::BGRA);
         return image->create_file(entries[0]->name);
     }

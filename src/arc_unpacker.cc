@@ -27,7 +27,7 @@ namespace
     {
         arg_parser.add_help(
             "-r, --rename",
-            "Renames target files if they exist. By default, they're overwritten.");
+            "Renames existing target files.\nBy default, they're overwritten.");
 
         options.overwrite = true;
         if (arg_parser.has_flag("-r") || arg_parser.has_flag("--rename"))
@@ -98,10 +98,7 @@ namespace
 
         if (options.input_paths.size() < 1)
         {
-            std::cout
-                << "Error: required more arguments."
-                << std::endl
-                << std::endl;
+            std::cout << "Error: required more arguments.\n\n";
             arc_unpacker.print_help(stray[0]);
             return false;
         }
@@ -139,25 +136,21 @@ void ArcUnpacker::print_help(const std::string &path_to_self)
     std::cout
         << "Usage: "
         << path_to_self.c_str()
-        << " [options] [fmt_options] input_path [input_path...]"
-        << std::endl
-        << std::endl;
+        << " [options] [fmt_options] input_path [input_path...]\n\n";
 
-    std::cout
-        << "Depending on the format, files will be saved either in a sub directory"
-        << std::endl
-        << "(archives), or aside the input files (direct images). If no output dir"
-        << std::endl
-        << "is provided, files are going to be saved inside current working directory."
-        << std::endl
-        << std::endl
-        << "[options] can be:"
-        << std::endl
-        << std::endl;
+    std::cout <<
+R"(Depending on the format, files will be saved either in a subdirectory
+(archives), or aside the input files (images, music etc.). If no output
+directory is provided, files are going to be saved inside current working
+directory.
+
+[options] can be:
+
+)";
 
     internals->arg_parser.print_help();
     internals->arg_parser.clear_help();
-    std::cout << std::endl;
+    std::cout << "\n";
 
     auto format = internals->options.format;
     if (format != "")
@@ -171,34 +164,31 @@ void ArcUnpacker::print_help(const std::string &path_to_self)
             std::cout
                 << "[fmt_options] specific to "
                 << internals->options.format
-                << ":"
-                << std::endl
-                << std::endl;
+                << ":\n\n";
             internals->arg_parser.print_help();
             return;
         }
     }
 
-    std::cout
-        << "[fmt_options] depend on chosen format and are required at runtime."
-        << std::endl
-        << "See --help --fmt=FORMAT to get detailed help for given transformer."
-        << std::endl
-        << std::endl;
+    std::cout <<
+R"([fmt_options] depend on chosen format and are required at runtime.
+See --help --fmt=FORMAT to get detailed help for given transformer.
 
-    std::cout << "Supported FORMAT values:" << std::endl;
+Supported FORMAT values:
+)";
+
     int i = 0;
     for (auto &format : internals->factory.get_formats())
     {
         std::cout << "- " << std::setw(10) << std::left << format;
         if (i ++ == 4)
         {
-            std::cout << std::endl;
+            std::cout << "\n";
             i = 0;
         }
     }
     if (i != 0)
-        std::cout << std::endl;
+        std::cout << "\n";
 }
 
 void ArcUnpacker::unpack(
@@ -250,18 +240,18 @@ std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
 
         if (current_transformer->is_recognized(file))
         {
-            std::cout << "recognized" << std::endl;
+            std::cout << "recognized\n";
             transformers.push_back(std::move(current_transformer));
         }
         else
         {
-            std::cout << "not recognized" << std::endl;
+            std::cout << "not recognized\n";
         }
     }
 
     if (transformers.size() == 0)
     {
-        std::cout << "File not recognized." << std::endl;
+        std::cout << "File not recognized.\n";
         return nullptr;
     }
     else if (transformers.size() == 1)
@@ -270,8 +260,8 @@ std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
     }
     else
     {
-        std::cout << "File was recognized by multiple engines." << std::endl;
-        std::cout << "Please provide --fmt and proceed manually." << std::endl;
+        std::cout << "File was recognized by multiple engines.\n";
+        std::cout << "Please provide --fmt and proceed manually.\n";
         return nullptr;
     }
 }
@@ -292,17 +282,17 @@ bool ArcUnpacker::guess_transformer_and_unpack(
         transformer = internals->factory.create(internals->options.format);
     }
 
-    std::cout << "Unpacking..." << std::endl;
+    std::cout << "Unpacking...\n";
     try
     {
         unpack(*transformer, file, base_name);
-        std::cout << "Unpacking finished successfully." << std::endl;
+        std::cout << "Unpacking finished successfully.\n";
         return true;
     }
     catch (std::exception &e)
     {
-        std::cout << "Error: " << e.what() << std::endl;
-        std::cout << "Unpacking finished with errors." << std::endl;
+        std::cout << "Error: " << e.what() << "\n";
+        std::cout << "Unpacking finished with errors.\n";
         return false;
     }
 }

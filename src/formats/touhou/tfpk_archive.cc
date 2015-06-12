@@ -457,7 +457,8 @@ namespace
         return file;
     }
 
-    Palette read_palette_file(IO &arc_io, TableEntry &entry, TfpkVersion version)
+    Palette read_palette_file(
+        IO &arc_io, TableEntry &entry, TfpkVersion version)
     {
         const std::string pal_magic("TFPA\x00", 5);
         auto pal_file = read_file(arc_io, entry, version);
@@ -528,7 +529,7 @@ void TfpkArchive::add_cli_help(ArgParser &arg_parser) const
     arg_parser.add_help(
         "--file-names=PATH",
         "Specifies path to file containing list of game's file names.\n"
-        "Used to give files meaningful names and to use 8-bit palettes in images.\n");
+        "Used to get proper file names and to find palettes for sprites.\n");
 
     Archive::add_cli_help(arg_parser);
 }

@@ -251,7 +251,9 @@ namespace
                 uint16_t part_height = uncompressed_io.read_u16_le();
                 uncompressed_io.skip(0x52);
 
-                for (size_t y = part_y + region->y1; y < (unsigned) part_y + part_height; y ++)
+                for (size_t y = part_y + region->y1;
+                    y < static_cast<size_t>(part_y + part_height);
+                    y ++)
                 {
                     uncompressed_io.read(
                         &pixels[part_x + region->x1 + y * width],

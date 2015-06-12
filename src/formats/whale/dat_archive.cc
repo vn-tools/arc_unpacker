@@ -246,18 +246,18 @@ namespace
             else
             {
                 auto sjis_name = sjis_file_names_map[entry->hash];
-                if (sjis_name == "")
+                auto size = sjis_name.size();
+                if (!size)
                 {
                     std::cerr
                         << "Unknown hash: "
                         << std::hex << entry->hash
-                        << ". File cannot be unpacked."
-                        << std::endl;
+                        << ". File cannot be unpacked.\n";
                     continue;
                 }
-                entry->offset          ^= sjis_name[sjis_name.size() >> 1] & 0xFF;
-                entry->size_compressed ^= sjis_name[sjis_name.size() >> 2] & 0xFF;
-                entry->size_original   ^= sjis_name[sjis_name.size() >> 3] & 0xFF;
+                entry->offset          ^= sjis_name[size >> 1] & 0xFF;
+                entry->size_compressed ^= sjis_name[size >> 2] & 0xFF;
+                entry->size_original   ^= sjis_name[size >> 3] & 0xFF;
                 entry->sjis_name = sjis_name;
             }
 
