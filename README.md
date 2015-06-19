@@ -138,7 +138,7 @@ Recommended:
 
 1. Download required dependencies (the ones with `-dev` suffix). On Cygwin most
    of them are available on [Cygwin Ports](http://cygwinports.org/).
-2. Run `bootstrap.sh`, which is going to download [waf](http://waf.io) and
+2. Run `bootstrap`, which is going to download [waf](http://waf.io) and
 [catch](https://github.com/philsquared/Catch/).
 3. Run `./waf configure`.
 4. Run `./waf build`.
@@ -234,7 +234,7 @@ dependencies. Choosing folder in `$HOME/` has two advantages:
     cd boost_1_58_0
 
     # Compile and install
-    ./bootstrap.sh --prefix=$MINGW
+    ./bootstrap --prefix=$MINGW
     echo "using gcc : mingw32 : /usr/bin/i686-w64-mingw32-g++ ;" > user-config.jam
 
     ./b2 \
