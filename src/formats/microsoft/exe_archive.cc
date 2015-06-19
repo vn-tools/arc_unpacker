@@ -15,7 +15,8 @@ using namespace Formats::Microsoft;
 
 namespace
 {
-    const std::string path_sep = "／"; //keep flat hierarchy for unpacked files
+    //keep flat hierarchy for unpacked files
+    const std::string path_sep = "\xEF\xBC\x8F"; //／
 
     typedef struct DosHeader
     {
