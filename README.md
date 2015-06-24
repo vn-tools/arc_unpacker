@@ -201,5 +201,6 @@ I'm open to pull requests.
 Contact
 -------
 
-- GitHub issue tracker: [click](https://github.com/vn-tools/arc_unpacker/issues)
-- IRC channel: `#arc_unpacker` on Rizon
+To report issues, use [GitHub issue
+tracker](https://github.com/vn-tools/arc_unpacker/issues).  
+For more casual discussion, hit the IRC channel - `#arc_unpacker` on Rizon.
