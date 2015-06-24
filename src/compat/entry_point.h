@@ -8,7 +8,7 @@ std::vector<std::string> get_arguments(int argc, const wchar_t **argv);
 void init_fs_utf8();
 
 #ifdef _WIN32
-    #define ENTRY_POINT(x) extern "C" int wmain(int argc, const wchar_t **argv) \
+    #define ENTRY_POINT(x) int wmain(int argc, const wchar_t **argv) \
     { \
         std::vector<std::string> arguments = get_arguments(argc, argv); \
         init_fs_utf8(); \

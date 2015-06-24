@@ -9,14 +9,6 @@ def options(ctx):
 	ctx.load('compiler_cxx')
 
 	ctx.add_option(
-		'-c',
-		'--cross-compile',
-		dest = 'cross_compile',
-		default = False,
-		action = 'store_true',
-		help = 'enable cross compiling using mingw-w64')
-
-	ctx.add_option(
 		'-d',
 		'--debug',
 		dest = 'debug',
@@ -51,16 +43,10 @@ def configure_flags(ctx):
 	else:
 		Logs.info('Debug information disabled, pass -d to enable')
 
-	if ctx.options.cross_compile:
-		ctx.env.CXX = 'i686-w64-mingw32-g++'
-		mingw_dirs = find_mingw_dirs()
-		for dir in mingw_dirs:
-			ctx.env.CXXFLAGS += ['-I' + os.path.join(dir, 'include')]
-			ctx.env.LINKFLAGS += ['-L' + os.path.join(dir, 'lib')]
-		ctx.env.LINKFLAGS += ['-lstdc++']
-		ctx.env.LINKFLAGS_UNICODE = ['-municode']
-
 	ctx.load('compiler_cxx')
+
+	if ctx.env.DEST_OS in ['win32', 'cygwin']:
+		ctx.env.LINKFLAGS_UNICODE = ['-municode']
 
 def configure_packages(ctx):
 	ctx.check_cxx(
@@ -70,34 +56,52 @@ def configure_packages(ctx):
 		mandatory = True)
 
 	ctx.check_cxx(
-		lib = ['boost_filesystem', 'boost_system'],
-		header_name = 'boost/filesystem.hpp',
-		uselib_store = 'LIBBOOST_FILESYSTEM',
-		mandatory = True)
-
-	ctx.check_cxx(
-		lib = ['boost_locale'],
-		header_name = 'boost/locale.hpp',
-		uselib_store = 'LIBBOOST_LOCALE',
-		mandatory = True)
-
-	ctx.check_cxx(
 		lib = ['z'],
 		header_name = 'zlib.h',
 		uselib_store = 'LIBZ',
 		mandatory = True)
 
-	ctx.check_cxx(
-		lib = ['crypto'],
-		header_name = 'openssl/rsa.h',
-		uselib_store = 'LIBOPENSSL',
-		mandatory = False)
+	if ctx.env.DEST_OS in ['win32', 'cygwin']:
+		ctx.check_cxx(
+			lib = ['crypto', 'gdi32'],
+			header_name = 'openssl/rsa.h',
+			uselib_store = 'LIBOPENSSL',
+			mandatory = False)
 
-	if ctx.options.cross_compile or ctx.env.DEST_OS == 'cygwin':
+		ctx.check_cxx(
+			lib = ['boost_filesystem-mt', 'boost_system-mt'],
+			header_name = 'boost/filesystem.hpp',
+			uselib_store = 'LIBBOOST_FILESYSTEM',
+			mandatory = True)
+
+		ctx.check_cxx(
+			lib = ['boost_locale-mt'],
+			header_name = 'boost/locale.hpp',
+			uselib_store = 'LIBBOOST_LOCALE',
+			mandatory = True)
+
 		ctx.check_cxx(
 			lib = ['iconv'],
 			header_name = 'iconv.h',
 			uselib_store = 'LIBICONV',
+			mandatory = True)
+	else:
+		ctx.check_cxx(
+			lib = ['crypto'],
+			header_name = 'openssl/rsa.h',
+			uselib_store = 'LIBOPENSSL',
+			mandatory = False)
+
+		ctx.check_cxx(
+			lib = ['boost_filesystem', 'boost_system'],
+			header_name = 'boost/filesystem.hpp',
+			uselib_store = 'LIBBOOST_FILESYSTEM',
+			mandatory = True)
+
+		ctx.check_cxx(
+			lib = ['boost_locale'],
+			header_name = 'boost/locale.hpp',
+			uselib_store = 'LIBBOOST_LOCALE',
 			mandatory = True)
 
 def configure(ctx):

@@ -134,147 +134,52 @@ Recommended:
 
 1. `openssl`
 
-### Building for GNU/Linux or Cygwin
+### Compiling for GNU/Linux or Cygwin
 
 1. Download required dependencies (the ones with `-dev` suffix). On Cygwin most
    of them are available on [Cygwin Ports](http://cygwinports.org/).
-2. Run `bootstrap`, which is going to download [waf](http://waf.io) and
-[catch](https://github.com/philsquared/Catch/).
-3. Run `./waf configure`.
-4. Run `./waf build`.
-5. The executables should appear in `build/` directory.
+2. Run following:
 
-### Building for Windows without Cygwin dependencies
+        ./bootstrap
+        ./waf configure
+        ./waf build
 
-In this case, the build requires MinGW-w64. Assuming you have installed
-`i686-w64-mingw32-g++`, proceed like above, but pass `-c` flag to waf during
-`configure`: `./waf configure -c`.
+3. The executables should appear in `build/` directory.
 
-Note that in order to ship the `.exe` portably, you'll need to include
-following DLLs in your bundle:
+### Cross compiling for Windows
 
-- `libboost_filesystem.dll`
-- `libboost_locale.dll`
-- `libboost_system.dll`
-- `libgcc_s_sjlj-1.dll`
-- `libiconv-2.dll`
-- `libpng16-16.dll`
-- `libstdc++-6.dll`
-- `libeay32.dll`
+In this case, the project requires MinGW-w64. There are several ways to install
+it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
 
-### Building the dependencies manually with MinGW-w64
+1. Install `mxe`:
 
-:warning: **Before proceeding, run `export MINGW=$HOME/mingw`** (or another
-directory of your choice). This directory will contain the compiled
-dependencies. Choosing folder in `$HOME/` has two advantages:
+        git clone https://github.com/mxe/mxe.git
 
-- we don't need to `sudo` on Linux machines
-- the build is sandboxed, so when we screw up we can just `rm -rf $MINGW` and
-  start over without littering the `/usr`.
+2. Build `arc_unpacker`'s dependencies using `mxe`:
 
-#### Compiling `zlib`
+        cd mxe
+        make libiconv
+        make zlib
+        make libpng
+        make boost
+        make openssl
 
-    # Obtain sources
-    wget 'http://zlib.net/zlib-1.2.8.tar.gz' -O- | tar xzv
-    cd zlib-1.2.8/
+3. Configure the shell to use `mxe`:
 
-    # Compile
-    make \
-        -f win32/Makefile.gcc \
-        CC=i686-w64-mingw32-gcc \
-        RC=i686-w64-mingw32-windres
+        MXE_PATH=~/path/to/mxe
+        CROSS=i686-w64-mingw32.static-
+        export PATH="$MXE_PATH/usr/bin/:$PATH"
+        export CC=${CROSS}gcc
+        export CXX=${CROSS}g++
+        export AR=${CROSS}ar
+        export PKGCONFIG=${CROSS}pkg-config
 
-    # Install
-    make \
-        -f win32/Makefile.gcc \
-        install \
-        BINARY_PATH=$MINGW/bin \
-        INCLUDE_PATH=$MINGW/include \
-        LIBRARY_PATH=$MINGW/lib \
-        SHARED_MODE=1
+3. In the `arc_unpacker`'s directory run following:
 
-#### Compiling `libiconv`
+        ./bootstrap
+        ./waf configure
+        ./waf build
 
-    # Obtain sources
-    wget 'http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz' -O- | tar xzv
-    cd libiconv-1.14
-
-    # Compile
-    ./configure \
-        --host=i686-w64-mingw32 \
-        --prefix=$MINGW \
-        CPPFLAGS=-I$MINGW/include \
-        LDFLAGS=-L$MINGW/lib
-    make
-
-    # Install
-    make install
-
-#### Compiling `libpng`
-
-    # Obtain sources
-    wget 'http://sourceforge.net/projects/libpng/files/libpng16/1.6.17/libpng-1.6.17.tar.gz/download' -O- | tar xzv
-    cd libpng-1.6.17/
-
-    # Compile
-    ./configure \
-        --host=i686-w64-mingw32 \
-        --prefix=$MINGW \
-        CPPFLAGS=-I$MINGW/include \
-        LDFLAGS=-L$MINGW/lib
-    make
-
-    # Install
-    make install
-
-#### Compiling `boost`
-
-    # Obtain sources
-    wget 'http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.gz' -O- | tar xzv
-    cd boost_1_58_0
-
-    # Compile and install
-    ./bootstrap --prefix=$MINGW
-    echo "using gcc : mingw32 : /usr/bin/i686-w64-mingw32-g++ ;" > user-config.jam
-
-    ./b2 \
-        -j 4 \
-        --layout=system \
-        --user-config=user-config.jam \
-        --with-locale \
-        --with-filesystem \
-        cxxflags="-I$MINGW/include" \
-        linkflags="-L$MINGW/lib" \
-        boost.locale.icu=off \
-        boost.locale.winapi=off \
-        boost.locale.iconv=on \
-        variant=release \
-        link=shared \
-        runtime-link=shared \
-        toolset=gcc-mingw32 \
-        target-os=windows \
-        threadapi=win32 \
-        install
-
-This will run a minimal required build (thanks to `--with` options), so it
-shouldn't take too long.
-
-#### Compiling `OpenSSL`
-
-    # Obtain sources
-    wget 'http://openssl.org/source/openssl-1.0.2a.tar.gz' -O- | tar xzv
-    cd openssl-1.0.2a
-
-    # Compile and install
-    ./Configure \
-        --cross-compile-prefix=i686-w64-mingw32- \
-        --prefix=$MINGW \
-        mingw64 no-asm shared
-    make # (parallelizing with -j may break the build)
-
-    # Install
-    make install
-
-### Building in Visual Studio
+### Compiling for Windows with Visual Studio
 
 I'm open to pull requests.
