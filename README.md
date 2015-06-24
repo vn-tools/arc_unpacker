@@ -183,3 +183,9 @@ it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
 ### Compiling for Windows with Visual Studio
 
 I'm open to pull requests.
+
+Contact
+-------
+
+- GitHub issue tracker: [click](https://github.com/vn-tools/arc_unpacker/issues)
+- IRC channel: `#arc_unpacker` on Rizon
