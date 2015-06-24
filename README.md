@@ -1,4 +1,18 @@
-A tool for extracting images and sounds from visual novels.
+## arc_unpacker
+
+1. [Overview](#overview)
+2. [Download](#download)
+3. [Usage](#usage)
+4. [Supported games](#supported-games)
+5. [Building from sources](#building-from-sources)
+6. [Contact](#contact)
+
+
+
+Overview
+--------
+
+`arc_unpacker` is a tool for extracting images and sounds from visual novels.
 
 *Disclaimer*: this project doesn't support modifying the game files. If you'd
 like to translate a game into English and need tools for game script/image
