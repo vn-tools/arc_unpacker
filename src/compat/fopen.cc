@@ -5,8 +5,7 @@
 FILE *fopen(const boost::filesystem::path &path, const char *mode)
 {
     #ifdef _WIN32
-        std::string cmode
-            = convert_encoding(std::string(mode), "UTF-8", "UTF-16LE");
+        auto cmode = convert_encoding(std::string(mode), "utf-8", "utf-16le");
         std::wstring widemode(
             reinterpret_cast<const wchar_t*>(cmode.c_str()),
             cmode.length() / 2);

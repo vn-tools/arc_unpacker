@@ -20,7 +20,7 @@ namespace
     {
         std::string encoded_name = arc_io.read(arc_io.read_u8());
         arc_io.skip(31 - encoded_name.size());
-        std::string name = convert_encoding(encoded_name, "cp932", "utf-8");
+        std::string name = sjis_to_utf8(encoded_name);
         size_t length = arc_io.read_u32_le();
         std::unique_ptr<File> subfile(new File);
         subfile->io.write_from_io(arc_io, length);

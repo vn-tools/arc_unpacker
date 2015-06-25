@@ -51,3 +51,13 @@ std::string convert_encoding(
 
     return output;
 }
+
+std::string sjis_to_utf8(const std::string &input)
+{
+    return convert_encoding(input, "cp932", "utf-8");
+}
+
+std::string utf8_to_sjis(const std::string &input)
+{
+    return convert_encoding(input, "utf-8", "cp932");
+}

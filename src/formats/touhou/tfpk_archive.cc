@@ -233,10 +233,8 @@ namespace
         TfpkVersion version,
         u32 initial_hash = 0x811C9DC5)
     {
-        std::string name_processed = convert_encoding(
-            replace_slash_with_backslash(lower_ascii_only(name)),
-            "utf-8",
-            "cp932");
+        std::string name_processed = utf8_to_sjis(
+            replace_slash_with_backslash(lower_ascii_only(name)));
 
         if (version == TfpkVersion::Th135)
         {
@@ -326,8 +324,7 @@ namespace
 
             for (size_t j = 0; j < dir_entry->file_count; j++)
             {
-                std::string fn = convert_encoding(
-                    tmp_io->read_until_zero(), "cp932", "utf-8");
+                std::string fn = sjis_to_utf8(tmp_io->read_until_zero());
 
                 auto hash = get_file_name_hash(
                     fn, version, dir_entry->initial_hash);

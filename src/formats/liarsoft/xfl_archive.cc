@@ -36,8 +36,7 @@ namespace
         for (size_t i = 0; i < file_count; i++)
         {
             std::unique_ptr<TableEntry> table_entry(new TableEntry);
-            table_entry->name = convert_encoding(
-                arc_io.read_until_zero(0x20), "cp932", "utf-8");
+            table_entry->name = sjis_to_utf8(arc_io.read_until_zero(0x20));
             table_entry->offset = file_start + arc_io.read_u32_le();
             table_entry->size = arc_io.read_u32_le();
             table.push_back(std::move(table_entry));

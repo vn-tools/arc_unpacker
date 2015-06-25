@@ -40,8 +40,7 @@ namespace
             arc_io.skip(9);
             table_entry->offset = file_start + arc_io.read_u32_le();
             table_entry->size = arc_io.read_u32_le();
-            table_entry->name = convert_encoding(
-                arc_io.read(arc_io.read_u8()), "cp932", "utf-8");
+            table_entry->name = sjis_to_utf8(arc_io.read(arc_io.read_u8()));
             table.push_back(std::move(table_entry));
         }
         size_t file_data_size = arc_io.read_u32_le();

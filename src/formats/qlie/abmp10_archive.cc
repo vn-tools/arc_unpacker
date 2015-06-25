@@ -36,7 +36,7 @@ namespace
     {
         std::string magic = arc_io.read(16);
         std::string encoded_name = arc_io.read(arc_io.read_u16_le());
-        std::string name = convert_encoding(encoded_name, "cp932", "utf-8");
+        std::string name = sjis_to_utf8(encoded_name);
 
         if (magic == magic_snddat11
             || magic == magic_imgdat11

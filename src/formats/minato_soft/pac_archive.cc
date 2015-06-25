@@ -119,7 +119,7 @@ namespace
             data = zlib_inflate(data);
             file->io.write(data);
         }
-        file->name = convert_encoding(table_entry.name, "cp932", "utf-8");
+        file->name = sjis_to_utf8(table_entry.name);
         return file;
     }
 }

@@ -360,8 +360,7 @@ namespace
 
             table_entry->orig_name = read_file_name(
                 table_io, seed, version);
-            table_entry->name = convert_encoding(
-                table_entry->orig_name, "cp932", "utf-8");
+            table_entry->name = sjis_to_utf8(table_entry->orig_name);
             table_entry->offset = table_io.read_u64_le();
             table_entry->size_compressed = table_io.read_u32_le();
             table_entry->size_original = table_io.read_u32_le();

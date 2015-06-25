@@ -89,8 +89,7 @@ namespace
             std::unique_ptr<TableEntry> entry(new TableEntry);
             entry->offset = table_io->read_u32_le();
             entry->size = table_io->read_u32_le();
-            entry->name = convert_encoding(
-                table_io->read(table_io->read_u8()), "cp932", "utf-8");
+            entry->name = sjis_to_utf8(table_io->read(table_io->read_u8()));
             if (entry->offset + entry->size > arc_io.size())
                 throw std::runtime_error("Bad offset to file");
             table.push_back(std::move(entry));

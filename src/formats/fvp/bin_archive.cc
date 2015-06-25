@@ -37,8 +37,7 @@ namespace
             size_t name_offset = arc_io.read_u32_le();
             arc_io.peek(names_start + name_offset, [&]()
             {
-                entry->name = convert_encoding(
-                    arc_io.read_until_zero(), "cp932", "utf-8");
+                entry->name = sjis_to_utf8(arc_io.read_until_zero());
             });
             entry->offset = arc_io.read_u32_le();
             entry->size = arc_io.read_u32_le();

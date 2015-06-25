@@ -88,7 +88,7 @@ namespace
 
         size_t name_length = table_io.read_u16_le();
         std::string name_utf16 = table_io.read(name_length * 2);
-        target_file.name = convert_encoding(name_utf16, "UTF-16LE", "UTF-8");
+        target_file.name = convert_encoding(name_utf16, "utf-16le", "utf-8");
         if (info_chunk_size != name_length * 2 + 22)
             throw std::runtime_error("Unexpected INFO chunk size");
     }

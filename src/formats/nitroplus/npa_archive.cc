@@ -154,7 +154,7 @@ namespace
         const TableEntry &table_entry)
     {
         std::unique_ptr<File> file(new File);
-        file->name = convert_encoding(table_entry.name, "cp932", "utf-8");
+        file->name = sjis_to_utf8(table_entry.name);
 
         arc_io.seek(table_entry.offset);
         std::string data = arc_io.read(table_entry.size_compressed);

@@ -55,7 +55,7 @@ namespace
 
         size_t old_pos = arc_io.tell();
         std::string name = arc_io.read_until_zero();
-        file->name = convert_encoding(name, "sjis", "utf-8");
+        file->name = sjis_to_utf8(name);
         arc_io.seek(old_pos + name_length);
 
         size_t offset = arc_io.read_u32_le();

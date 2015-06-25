@@ -24,7 +24,7 @@ namespace
 
         size_t file_name_length = table_io.read_u32_le();
         std::string file_name = table_io.read(file_name_length);
-        file->name = convert_encoding(file_name, "cp932", "utf-8");
+        file->name = sjis_to_utf8(file_name);
 
         size_t offset = table_io.read_u32_le();
         size_t size_original = table_io.read_u32_le();

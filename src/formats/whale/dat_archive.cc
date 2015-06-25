@@ -272,7 +272,7 @@ namespace
         const std::string &sjis_game_title)
     {
         std::unique_ptr<File> file(new File);
-        file->name = convert_encoding(entry.sjis_name, "cp932", "utf-8");
+        file->name = sjis_to_utf8(entry.sjis_name);
 
         arc_io.seek(entry.offset);
         BufferedIO output_io(arc_io, entry.size_compressed);
@@ -327,8 +327,8 @@ void DatArchive::add_cli_help(ArgParser &arg_parser) const
 
 void DatArchive::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->sjis_game_title = convert_encoding(
-        arg_parser.get_switch("game-title"), "utf-8", "cp932");
+    p->sjis_game_title = utf8_to_sjis(
+        arg_parser.get_switch("game-title"));
 
     auto path = arg_parser.get_switch("file-names");
     if (path != "")
@@ -337,7 +337,7 @@ void DatArchive::parse_cli_options(const ArgParser &arg_parser)
         std::string line;
         while ((line = io.read_line()) != "")
         {
-            line = convert_encoding(line, "utf-8", "cp932");
+            line = utf8_to_sjis(line);
             p->sjis_file_names_map[crc64(line)] = line;
         }
     }

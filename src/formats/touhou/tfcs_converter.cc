@@ -25,8 +25,7 @@ namespace
             boost::replace_all(cell, "\"", "\"\"");
             cell = "\"" + cell + "\"";
         }
-        cell = convert_encoding(cell, "cp932", "utf-8");
-        output_io.write(cell);
+        output_io.write(sjis_to_utf8(cell));
     }
 }
 
