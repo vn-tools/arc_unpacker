@@ -424,23 +424,23 @@ namespace
     }
 }
 
-struct CxdecFilter::Internals
+struct CxdecFilter::Priv
 {
     KeyDeriver key_deriver;
     const CxdecFilterSettings &settings;
 
-    Internals(const CxdecFilterSettings &settings)
+    Priv(const CxdecFilterSettings &settings)
         : key_deriver(settings), settings(settings)
     {
     }
 
-    ~Internals()
+    ~Priv()
     {
     }
 };
 
 CxdecFilter::CxdecFilter(CxdecFilterSettings &settings)
-    : internals(new Internals(settings))
+    : p(new Priv(settings))
 {
 }
 
@@ -451,13 +451,13 @@ CxdecFilter::~CxdecFilter()
 void CxdecFilter::decode(File &file, u32 encryption_key) const
 {
     u32 hash = encryption_key;
-    u32 key = (hash & internals->settings.key1) + internals->settings.key2;
+    u32 key = (hash & p->settings.key1) + p->settings.key2;
 
     size_t size = file.io.size() > key ? key : file.io.size();
 
-    decrypt_chunk(internals->key_deriver, file.io, hash, 0, size);
+    decrypt_chunk(p->key_deriver, file.io, hash, 0, size);
     size_t offset = size;
     size = file.io.size() - offset;
     hash = (hash >> 16) ^ hash;
-    decrypt_chunk(internals->key_deriver, file.io, hash, offset, size);
+    decrypt_chunk(p->key_deriver, file.io, hash, offset, size);
 }

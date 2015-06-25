@@ -107,23 +107,23 @@ namespace
     }
 }
 
-struct ArcUnpacker::Internals
+struct ArcUnpacker::Priv
 {
     Options options;
     ArgParser &arg_parser;
     TransformerFactory factory;
 
-    Internals(ArgParser &arg_parser) : arg_parser(arg_parser)
+    Priv(ArgParser &arg_parser) : arg_parser(arg_parser)
     {
     }
 };
 
 ArcUnpacker::ArcUnpacker(ArgParser &arg_parser)
-    : internals(new Internals(arg_parser))
+    : p(new Priv(arg_parser))
 {
-    add_output_folder_option(arg_parser, internals->options);
-    add_format_option(arg_parser, internals->options);
-    add_rename_option(arg_parser, internals->options);
+    add_output_folder_option(arg_parser, p->options);
+    add_format_option(arg_parser, p->options);
+    add_rename_option(arg_parser, p->options);
     add_help_option(arg_parser);
 }
 
@@ -148,24 +148,23 @@ directory.
 
 )";
 
-    internals->arg_parser.print_help();
-    internals->arg_parser.clear_help();
+    p->arg_parser.print_help();
+    p->arg_parser.clear_help();
     std::cout << "\n";
 
-    auto format = internals->options.format;
+    auto format = p->options.format;
     if (format != "")
     {
-        std::unique_ptr<Transformer> transformer
-            = internals->factory.create(format);
+        std::unique_ptr<Transformer> transformer = p->factory.create(format);
 
         if (transformer != nullptr)
         {
-            transformer->add_cli_help(internals->arg_parser);
+            transformer->add_cli_help(p->arg_parser);
             std::cout
                 << "[fmt_options] specific to "
-                << internals->options.format
+                << p->options.format
                 << ":\n\n";
-            internals->arg_parser.print_help();
+            p->arg_parser.print_help();
             return;
         }
     }
@@ -178,7 +177,7 @@ Supported FORMAT values:
 )";
 
     int i = 0;
-    for (auto &format : internals->factory.get_formats())
+    for (auto &format : p->factory.get_formats())
     {
         std::cout << "- " << std::setw(10) << std::left << format;
         if (i++ == 4)
@@ -194,9 +193,7 @@ Supported FORMAT values:
 void ArcUnpacker::unpack(
     Transformer &transformer, File &file, const std::string &base_name) const
 {
-    FileSaverHdd file_saver(
-        internals->options.output_dir,
-        internals->options.overwrite);
+    FileSaverHdd file_saver(p->options.output_dir, p->options.overwrite);
     unpack(transformer, file, base_name, file_saver);
 }
 
@@ -216,7 +213,7 @@ void ArcUnpacker::unpack(
         file_saver.save(saved_file);
     });
 
-    transformer.parse_cli_options(internals->arg_parser);
+    transformer.parse_cli_options(p->arg_parser);
     transformer.unpack(file, file_saver_proxy);
 }
 
@@ -225,13 +222,13 @@ std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
     std::vector<std::unique_ptr<Transformer>> transformers;
 
     size_t max_format_length = 0;
-    for (auto &format : internals->factory.get_formats())
+    for (auto &format : p->factory.get_formats())
         if (format.length() > max_format_length)
             max_format_length = format.length();
 
-    for (auto &format : internals->factory.get_formats())
+    for (auto &format : p->factory.get_formats())
     {
-        auto current_transformer = internals->factory.create(format);
+        auto current_transformer = p->factory.create(format);
         std::cout
             << "Trying "
             << std::setw(max_format_length + 2)
@@ -271,7 +268,7 @@ bool ArcUnpacker::guess_transformer_and_unpack(
 {
     std::unique_ptr<Transformer> transformer(nullptr);
 
-    if (internals->options.format == "")
+    if (p->options.format == "")
     {
         transformer = guess_transformer(file);
         if (transformer == nullptr)
@@ -279,7 +276,7 @@ bool ArcUnpacker::guess_transformer_and_unpack(
     }
     else
     {
-        transformer = internals->factory.create(internals->options.format);
+        transformer = p->factory.create(p->options.format);
     }
 
     std::cout << "Unpacking...\n";
@@ -299,22 +296,22 @@ bool ArcUnpacker::guess_transformer_and_unpack(
 
 bool ArcUnpacker::run()
 {
-    if (should_show_help(internals->arg_parser))
+    if (should_show_help(p->arg_parser))
     {
-        auto path_to_self = internals->arg_parser.get_stray()[0];
+        auto path_to_self = p->arg_parser.get_stray()[0];
         print_help(path_to_self);
         return true;
     }
     else
     {
         if (!add_input_paths_option(
-            *this, internals->arg_parser, internals->options))
+            *this, p->arg_parser, p->options))
         {
             return false;
         }
 
         bool result = true;
-        for (auto &path_info : internals->options.input_paths)
+        for (auto &path_info : p->options.input_paths)
         {
             File file(path_info->input_path, FileIOMode::Read);
 

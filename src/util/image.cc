@@ -2,19 +2,18 @@
 #include <png.h>
 #include "util/image.h"
 
-struct Image::Internals
+struct Image::Priv
 {
-    size_t image_width;
-    size_t image_height;
-    std::string pixel_data;
-    size_t pixel_data_size;
-    PixelFormat pixel_format;
+    size_t width;
+    size_t height;
+    std::string data;
+    size_t data_size;
+    PixelFormat fmt;
 };
 
 namespace
 {
-    void my_png_write_data(
-        png_structp png_ptr, png_bytep data, png_size_t length)
+    void png_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
     {
         IO *io = reinterpret_cast<IO*>(png_get_io_ptr(png_ptr));
         io->write(data, length);
@@ -27,12 +26,12 @@ namespace
         io->read(data, length);
     }
 
-    void my_png_flush(png_structp)
+    void png_flush(png_structp)
     {
     }
 }
 
-Image::Image() : internals(new Internals)
+Image::Image() : p(new Priv)
 {
 }
 
@@ -41,18 +40,15 @@ Image::~Image()
 }
 
 std::unique_ptr<Image> Image::from_pixels(
-    size_t image_width,
-    size_t image_height,
-    const std::string &pixel_data,
-    PixelFormat pixel_format)
+    size_t width, size_t height, const std::string &data, PixelFormat fmt)
 {
     std::unique_ptr<Image> image(new Image);
-    if (image_width == 0 || image_height == 0)
+    if (width == 0 || height == 0)
         throw std::runtime_error("Image dimension cannot be 0");
-    image->internals->image_width = image_width;
-    image->internals->image_height = image_height;
-    image->internals->pixel_data = pixel_data;
-    image->internals->pixel_format = pixel_format;
+    image->p->width = width;
+    image->p->height = height;
+    image->p->data = data;
+    image->p->fmt = fmt;
     return image;
 }
 
@@ -79,12 +75,12 @@ std::unique_ptr<Image> Image::from_boxed(IO &io)
 
     int color_type;
     int bits_per_channel;
-    png_uint_32 png_image_width, png_image_height;
+    png_uint_32 png_width, png_height;
     png_get_IHDR(
         png_ptr,
         info_ptr,
-        &png_image_width,
-        &png_image_height,
+        &png_width,
+        &png_height,
         &bits_per_channel,
         &color_type,
         nullptr,
@@ -93,38 +89,36 @@ std::unique_ptr<Image> Image::from_boxed(IO &io)
     assert(bits_per_channel == 8);
 
     std::unique_ptr<Image> image(new Image);
-    image->internals->image_width = png_image_width;
-    image->internals->image_height = png_image_height;
+    image->p->width = png_width;
+    image->p->height = png_height;
 
     int bpp = 0;
     switch (color_type)
     {
         case PNG_COLOR_TYPE_RGB:
             bpp = 3;
-            image->internals->pixel_format = PixelFormat::RGB;
+            image->p->fmt = PixelFormat::RGB;
             break;
         case PNG_COLOR_TYPE_RGBA:
             bpp = 4;
-            image->internals->pixel_format = PixelFormat::RGBA;
+            image->p->fmt = PixelFormat::RGBA;
             break;
         case PNG_COLOR_TYPE_GRAY:
             bpp = 1;
-            image->internals->pixel_format = PixelFormat::Grayscale;
+            image->p->fmt = PixelFormat::Grayscale;
             break;
         default:
             throw std::runtime_error("Bad pixel format");
     }
 
-    image->internals->pixel_data_size
-        = png_image_width * png_image_height * bpp;
-    image->internals->pixel_data
-        = std::string(image->internals->pixel_data_size, '\0');
+    image->p->data_size = png_width * png_height * bpp;
+    image->p->data = std::string(image->p->data_size, '\0');
 
     png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
-    size_t scanline_size = png_image_width * bpp, y;
-    for (y = 0; y < png_image_height; y++)
+    size_t scanline_size = png_width * bpp, y;
+    for (y = 0; y < png_height; y++)
     {
-        image->internals->pixel_data.replace(
+        image->p->data.replace(
             y * scanline_size,
             scanline_size,
             reinterpret_cast<char*>(row_pointers[y]),
@@ -137,12 +131,12 @@ std::unique_ptr<Image> Image::from_boxed(IO &io)
 
 size_t Image::width() const
 {
-    return internals->image_width;
+    return p->width;
 }
 
 size_t Image::height() const
 {
-    return internals->image_height;
+    return p->height;
 }
 
 std::unique_ptr<File> Image::create_file(const std::string &name) const
@@ -152,10 +146,7 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
     output_file->change_extension("png");
 
     png_structp png_ptr = png_create_write_struct(
-        PNG_LIBPNG_VER_STRING,
-        nullptr,
-        nullptr,
-        nullptr);
+        PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     assert(png_ptr != nullptr);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
@@ -164,7 +155,7 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
     unsigned long bpp;
     unsigned long color_type;
     int transformations = 0;
-    switch (internals->pixel_format)
+    switch (p->fmt)
     {
         case PixelFormat::RGB:
             bpp = 3;
@@ -200,8 +191,8 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
     png_set_IHDR(
         png_ptr,
         info_ptr,
-        internals->image_width,
-        internals->image_height,
+        p->width,
+        p->height,
         8,
         color_type,
         PNG_INTERLACE_NONE,
@@ -212,16 +203,14 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
     // 1 produces good file size and is still fast.
     png_set_compression_level(png_ptr, 1);
 
-    png_set_write_fn(
-        png_ptr, &output_file->io, &my_png_write_data, &my_png_flush);
+    png_set_write_fn(png_ptr, &output_file->io, &png_write_data, &png_flush);
     png_write_info(png_ptr, info_ptr);
 
-    std::unique_ptr<png_bytep[]> rows(new png_bytep[internals->image_height]);
-    for (size_t y = 0; y < internals->image_height; y++)
+    std::unique_ptr<png_bytep[]> rows(new png_bytep[p->height]);
+    for (size_t y = 0; y < p->height; y++)
     {
-        rows.get()[y]
-            = reinterpret_cast<png_bytep>(&internals->pixel_data
-                [y * internals->image_width * bpp]);
+        size_t i = y * p->width * bpp;
+        rows.get()[y] = reinterpret_cast<png_bytep>(&p->data[i]);
     }
     png_set_rows(png_ptr, info_ptr, rows.get());
     png_write_png(png_ptr, info_ptr, transformations, nullptr);
@@ -232,39 +221,33 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
 
 u32 Image::color_at(size_t x, size_t y) const
 {
-    u8 r;
-    u8 g;
-    u8 b;
-    u8 a;
-    size_t i = y * internals->image_width + x;
+    u8 r, g, b, a;
+    size_t i = y * p->width + x;
 
-    const u8 *pixel_data
-        = reinterpret_cast<const u8*>(internals->pixel_data.data());
-
-    switch (internals->pixel_format)
+    const u8 *data = reinterpret_cast<const u8*>(p->data.data());
+    switch (p->fmt)
     {
         case PixelFormat::Grayscale:
-            r = g = b = pixel_data[i];
+            r = g = b = data[i];
             a = 255;
             break;
 
         case PixelFormat::RGB:
-            r = pixel_data[i * 3];
-            g = pixel_data[i * 3 + 1];
-            b = pixel_data[i * 3 + 2];
+            r = data[i * 3];
+            g = data[i * 3 + 1];
+            b = data[i * 3 + 2];
             a = 255;
             break;
 
         case PixelFormat::RGBA:
-            r = pixel_data[i * 4];
-            g = pixel_data[i * 4 + 1];
-            b = pixel_data[i * 4 + 2];
-            a = pixel_data[i * 4 + 3];
+            r = data[i * 4];
+            g = data[i * 4 + 1];
+            b = data[i * 4 + 2];
+            a = data[i * 4 + 3];
             break;
 
         default:
             throw std::runtime_error("Unsupported pixel format");
     }
-
     return r | (g << 8) | (b << 16) | (a << 24);
 }

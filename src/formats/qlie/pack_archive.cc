@@ -435,7 +435,7 @@ namespace
     }
 }
 
-struct PackArchive::Internals
+struct PackArchive::Priv
 {
     DpngConverter dpng_converter;
     Abmp7Archive abmp7_archive;
@@ -445,17 +445,17 @@ struct PackArchive::Internals
     std::string key1;
     std::string key2;
 
-    Internals()
+    Priv()
     {
         encryption_type = EncryptionType::Basic;
     }
 };
 
-PackArchive::PackArchive() : internals(new Internals)
+PackArchive::PackArchive() : p(new Priv)
 {
-    add_transformer(&internals->dpng_converter);
-    add_transformer(&internals->abmp7_archive);
-    add_transformer(&internals->abmp10_archive);
+    add_transformer(&p->dpng_converter);
+    add_transformer(&p->abmp7_archive);
+    add_transformer(&p->abmp10_archive);
 }
 
 PackArchive::~PackArchive()
@@ -479,8 +479,8 @@ void PackArchive::parse_cli_options(const ArgParser &arg_parser)
     {
         const std::string file_path = arg_parser.get_switch("fkey");
         File file(file_path, FileIOMode::Read);
-        internals->encryption_type = EncryptionType::WithFKey;
-        internals->key1 = file.io.read(file.io.size());
+        p->encryption_type = EncryptionType::WithFKey;
+        p->key1 = file.io.read(file.io.size());
     }
 
     if (arg_parser.has_switch("gameexe"))
@@ -501,9 +501,8 @@ void PackArchive::parse_cli_options(const ArgParser &arg_parser)
             if (!memcmp(&exe_data[i], magic.data(), magic.length()))
             {
                 found = true;
-                internals->encryption_type = EncryptionType::WithGameExe;
-                internals->key2
-                    = std::string(&exe_data[i + magic.length() - 1], 256);
+                p->encryption_type = EncryptionType::WithGameExe;
+                p->key2 = std::string(&exe_data[i + magic.length() - 1], 256);
             }
         }
         if (!found)
@@ -531,9 +530,9 @@ void PackArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
             arc_file.io,
             *table_entry,
             version,
-            internals->encryption_type,
-            internals->key1,
-            internals->key2);
+            p->encryption_type,
+            p->key1,
+            p->key2);
         file_saver.save(std::move(file));
     }
 }

@@ -31,8 +31,8 @@ public:
     virtual void write(const void *source, size_t length) override;
     virtual void write_from_io(IO &source, size_t length) override;
 private:
-    struct Internals;
-    std::unique_ptr<Internals> internals;
+    struct Priv;
+    std::unique_ptr<Priv> p;
 };
 
 #endif

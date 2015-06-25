@@ -59,7 +59,7 @@ namespace
     typedef std::function<Transformer*()> TransformerCreator;
 }
 
-struct TransformerFactory::Internals
+struct TransformerFactory::Priv
 {
     std::vector<std::pair<std::string, TransformerCreator>> formats;
 
@@ -70,58 +70,58 @@ struct TransformerFactory::Internals
     }
 };
 
-TransformerFactory::TransformerFactory() : internals(new Internals)
+TransformerFactory::TransformerFactory() : p(new Priv)
 {
-    internals->add("fvp", []() { return new Fvp::BinArchive(); });
-    internals->add("gml", []() { return new Glib::GmlArchive(); });
-    internals->add("g2", []() { return new Glib::Glib2Archive(); });
-    internals->add("th-pak1", []() { return new Touhou::Pak1Archive(); });
-    internals->add("th-pak2", []() { return new Touhou::Pak2Archive(); });
+    p->add("fvp", []() { return new Fvp::BinArchive(); });
+    p->add("gml", []() { return new Glib::GmlArchive(); });
+    p->add("g2", []() { return new Glib::Glib2Archive(); });
+    p->add("th-pak1", []() { return new Touhou::Pak1Archive(); });
+    p->add("th-pak2", []() { return new Touhou::Pak2Archive(); });
     #ifdef HAVE_OPENSSL_RSA_H
-    internals->add("tfpk", []() { return new Touhou::TfpkArchive(); });
+    p->add("tfpk", []() { return new Touhou::TfpkArchive(); });
     #endif
-    internals->add("tha1", []() { return new Touhou::Tha1Archive(); });
-    internals->add("pbgz", []() { return new Touhou::PbgzArchive(); });
-    internals->add("lwg", []() { return new LiarSoft::LwgArchive(); });
-    internals->add("xfl", []() { return new LiarSoft::XflArchive(); });
-    internals->add("pbg3", []() { return new Touhou::Pbg3Archive(); });
-    internals->add("pbg4", []() { return new Touhou::Pbg4Archive(); });
-    internals->add("pack", []() { return new QLiE::PackArchive(); });
-    internals->add("pac", []() { return new MinatoSoft::PacArchive(); });
-    internals->add("exe", []() { return new Microsoft::ExeArchive(); });
-    internals->add("ykc", []() { return new YukaScript::YkcArchive(); });
-    internals->add("rgssad", []() { return new RpgMaker::RgssadArchive(); });
-    internals->add("fjsys", []() { return new NSystem::FjsysArchive(); });
-    internals->add("arc", []() { return new Bgi::ArcArchive(); });
-    internals->add("npa", []() { return new Nitroplus::NpaArchive(); });
-    internals->add("xp3", []() { return new Kirikiri::Xp3Archive(); });
-    internals->add("rpa", []() { return new Renpy::RpaArchive(); });
-    internals->add("p", []() { return new FrenchBread::PArchive(); });
-    internals->add("npa_sg", []() { return new Nitroplus::NpaSgArchive(); });
-    internals->add("pak", []() { return new Nitroplus::PakArchive(); });
-    internals->add("mbl", []() { return new Ivory::MblArchive(); });
-    internals->add("nsa", []() { return new NScripter::NsaArchive(); });
-    internals->add("sar", []() { return new NScripter::SarArchive(); });
-    internals->add("anm", []() { return new Touhou::AnmArchive(); });
-    internals->add("dat-whale", []() { return new Whale::DatArchive(); });
+    p->add("tha1", []() { return new Touhou::Tha1Archive(); });
+    p->add("pbgz", []() { return new Touhou::PbgzArchive(); });
+    p->add("lwg", []() { return new LiarSoft::LwgArchive(); });
+    p->add("xfl", []() { return new LiarSoft::XflArchive(); });
+    p->add("pbg3", []() { return new Touhou::Pbg3Archive(); });
+    p->add("pbg4", []() { return new Touhou::Pbg4Archive(); });
+    p->add("pack", []() { return new QLiE::PackArchive(); });
+    p->add("pac", []() { return new MinatoSoft::PacArchive(); });
+    p->add("exe", []() { return new Microsoft::ExeArchive(); });
+    p->add("ykc", []() { return new YukaScript::YkcArchive(); });
+    p->add("rgssad", []() { return new RpgMaker::RgssadArchive(); });
+    p->add("fjsys", []() { return new NSystem::FjsysArchive(); });
+    p->add("arc", []() { return new Bgi::ArcArchive(); });
+    p->add("npa", []() { return new Nitroplus::NpaArchive(); });
+    p->add("xp3", []() { return new Kirikiri::Xp3Archive(); });
+    p->add("rpa", []() { return new Renpy::RpaArchive(); });
+    p->add("p", []() { return new FrenchBread::PArchive(); });
+    p->add("npa_sg", []() { return new Nitroplus::NpaSgArchive(); });
+    p->add("pak", []() { return new Nitroplus::PakArchive(); });
+    p->add("mbl", []() { return new Ivory::MblArchive(); });
+    p->add("nsa", []() { return new NScripter::NsaArchive(); });
+    p->add("sar", []() { return new NScripter::SarArchive(); });
+    p->add("anm", []() { return new Touhou::AnmArchive(); });
+    p->add("dat-whale", []() { return new Whale::DatArchive(); });
 
-    internals->add("nvsg", []() { return new Fvp::NvsgConverter(); });
-    internals->add("dds", []() { return new Microsoft::DdsConverter(); });
-    internals->add("pgx", []() { return new Glib::PgxConverter(); });
-    internals->add("wcg", []() { return new LiarSoft::WcgConverter(); });
-    internals->add("dpng", []() { return new QLiE::DpngConverter(); });
-    internals->add("bgi-sound", []() { return new Bgi::SoundConverter(); });
-    internals->add("ex3", []() { return new FrenchBread::Ex3Converter(); });
-    internals->add("tlg", []() { return new Kirikiri::TlgConverter(); });
-    internals->add("ykg", []() { return new YukaScript::YkgConverter(); });
-    internals->add("cbg", []() { return new Bgi::CbgConverter(); });
-    internals->add("xyz", []() { return new RpgMaker::XyzConverter(); });
-    internals->add("mgd", []() { return new NSystem::MgdConverter(); });
-    internals->add("g00", []() { return new Key::G00Converter(); });
-    internals->add("sotes", []() { return new Lizsoft::SotesConverter(); });
-    internals->add("nwa", []() { return new Key::NwaConverter(); });
-    internals->add("prs", []() { return new Ivory::PrsConverter(); });
-    internals->add("spb", []() { return new NScripter::SpbConverter(); });
+    p->add("nvsg", []() { return new Fvp::NvsgConverter(); });
+    p->add("dds", []() { return new Microsoft::DdsConverter(); });
+    p->add("pgx", []() { return new Glib::PgxConverter(); });
+    p->add("wcg", []() { return new LiarSoft::WcgConverter(); });
+    p->add("dpng", []() { return new QLiE::DpngConverter(); });
+    p->add("bgi-sound", []() { return new Bgi::SoundConverter(); });
+    p->add("ex3", []() { return new FrenchBread::Ex3Converter(); });
+    p->add("tlg", []() { return new Kirikiri::TlgConverter(); });
+    p->add("ykg", []() { return new YukaScript::YkgConverter(); });
+    p->add("cbg", []() { return new Bgi::CbgConverter(); });
+    p->add("xyz", []() { return new RpgMaker::XyzConverter(); });
+    p->add("mgd", []() { return new NSystem::MgdConverter(); });
+    p->add("g00", []() { return new Key::G00Converter(); });
+    p->add("sotes", []() { return new Lizsoft::SotesConverter(); });
+    p->add("nwa", []() { return new Key::NwaConverter(); });
+    p->add("prs", []() { return new Ivory::PrsConverter(); });
+    p->add("spb", []() { return new NScripter::SpbConverter(); });
 }
 
 TransformerFactory::~TransformerFactory()
@@ -131,8 +131,8 @@ TransformerFactory::~TransformerFactory()
 const std::vector<std::string> TransformerFactory::get_formats() const
 {
     std::vector<std::string> formats;
-    for (auto &p : internals->formats)
-        formats.push_back(p.first);
+    for (auto &item : p->formats)
+        formats.push_back(item.first);
 
     std::sort(
         formats.begin(),
@@ -148,10 +148,10 @@ const std::vector<std::string> TransformerFactory::get_formats() const
 std::unique_ptr<Transformer> TransformerFactory::create(
     const std::string &format) const
 {
-    for (auto &p : internals->formats)
+    for (auto &item : p->formats)
     {
-        if (p.first == format)
-            return std::unique_ptr<Transformer>(p.second());
+        if (item.first == format)
+            return std::unique_ptr<Transformer>(item.second());
     }
     throw std::runtime_error("Invalid format: " + format);
 }

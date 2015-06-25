@@ -21,8 +21,8 @@ namespace Formats
                     u8 *input, size_t input_size,
                     u8 *output, size_t output_size);
             private:
-                struct Internals;
-                std::unique_ptr<Internals> internals;
+                struct Priv;
+                std::unique_ptr<Priv> p;
             };
         }
     }

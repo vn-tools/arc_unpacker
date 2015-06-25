@@ -80,14 +80,14 @@ namespace
     }
 }
 
-struct GmlArchive::Internals
+struct GmlArchive::Priv
 {
     PgxConverter pgx_converter;
 };
 
-GmlArchive::GmlArchive() : internals(new Internals)
+GmlArchive::GmlArchive() : p(new Priv)
 {
-    add_transformer(&internals->pgx_converter);
+    add_transformer(&p->pgx_converter);
 }
 
 GmlArchive::~GmlArchive()

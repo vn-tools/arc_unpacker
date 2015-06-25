@@ -13,8 +13,8 @@ public:
     unsigned int get(size_t n);
     unsigned int try_get(size_t n);
 private:
-    struct Internals;
-    std::unique_ptr<Internals> internals;
+    struct Priv;
+    std::unique_ptr<Priv> p;
 };
 
 #endif

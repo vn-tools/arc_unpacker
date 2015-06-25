@@ -1,12 +1,12 @@
 #include "formats/kirikiri/tlg/lzss_decompressor.h"
 using namespace Formats::Kirikiri::Tlg;
 
-struct LzssDecompressor::Internals
+struct LzssDecompressor::Priv
 {
     u8 dictionary[4096];
     size_t offset;
 
-    Internals()
+    Priv()
     {
         offset = 0;
         for (size_t i = 0; i < 4096; i++)
@@ -14,7 +14,7 @@ struct LzssDecompressor::Internals
     }
 };
 
-LzssDecompressor::LzssDecompressor() : internals(new Internals)
+LzssDecompressor::LzssDecompressor() : p(new Priv)
 {
 }
 
@@ -25,7 +25,7 @@ LzssDecompressor::~LzssDecompressor()
 void LzssDecompressor::init_dictionary(u8 dictionary[4096])
 {
     for (size_t i = 0; i < 4096; i++)
-        internals->dictionary[i] = dictionary[i];
+        p->dictionary[i] = dictionary[i];
 }
 
 void LzssDecompressor::decompress(
@@ -68,13 +68,13 @@ void LzssDecompressor::decompress(
 
             for (size_t j = 0; j < length; j++)
             {
-                u8 c = internals->dictionary[position];
+                u8 c = p->dictionary[position];
                 if (output >= output_guardian)
                     return;
                 *output++ = c;
-                internals->dictionary[internals->offset] = c;
-                internals->offset++;
-                internals->offset &= 0xfff;
+                p->dictionary[p->offset] = c;
+                p->offset++;
+                p->offset &= 0xfff;
                 position++;
                 position &= 0xfff;
             }
@@ -87,9 +87,9 @@ void LzssDecompressor::decompress(
             if (output >= output_guardian)
                 return;
             *output++ = c;
-            internals->dictionary[internals->offset] = c;
-            internals->offset++;
-            internals->offset &= 0xfff;
+            p->dictionary[p->offset] = c;
+            p->offset++;
+            p->offset &= 0xfff;
         }
     }
 }

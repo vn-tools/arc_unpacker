@@ -138,16 +138,16 @@ namespace
     }
 }
 
-struct Pak2Archive::Internals
+struct Pak2Archive::Priv
 {
     Pak2ImageConverter image_converter;
     Pak2SoundConverter sound_converter;
 };
 
-Pak2Archive::Pak2Archive() : internals(new Internals)
+Pak2Archive::Pak2Archive() : p(new Priv)
 {
-    add_transformer(&internals->image_converter);
-    add_transformer(&internals->sound_converter);
+    add_transformer(&p->image_converter);
+    add_transformer(&p->sound_converter);
 }
 
 Pak2Archive::~Pak2Archive()
@@ -172,7 +172,7 @@ void Pak2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     auto table = read_table(arc_file.io);
 
     PaletteMap palette_map = find_all_palettes(arc_file.name);
-    internals->image_converter.set_palette_map(palette_map);
+    p->image_converter.set_palette_map(palette_map);
 
     for (auto &table_entry : table)
         file_saver.save(read_file(arc_file.io, *table_entry));

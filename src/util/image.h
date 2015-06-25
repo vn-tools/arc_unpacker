@@ -18,13 +18,9 @@ class Image final
 public:
     ~Image();
 
-    static std::unique_ptr<Image> from_pixels(
-        size_t image_width,
-        size_t image_height,
-        const std::string &pixel_data,
-        PixelFormat pixel_format);
-
     static std::unique_ptr<Image> from_boxed(IO &io);
+    static std::unique_ptr<Image> from_pixels(
+        size_t width, size_t height, const std::string &data, PixelFormat fmt);
 
     std::unique_ptr<File> create_file(const std::string &name) const;
 
@@ -34,8 +30,8 @@ public:
 
 private:
     Image();
-    struct Internals;
-    std::unique_ptr<Internals> internals;
+    struct Priv;
+    std::unique_ptr<Priv> p;
 };
 
 #endif

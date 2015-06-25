@@ -66,15 +66,15 @@ namespace
     }
 }
 
-struct PArchive::Internals
+struct PArchive::Priv
 {
     Ex3Converter ex3_converter;
 };
 
 
-PArchive::PArchive() : internals(new Internals)
+PArchive::PArchive() : p(new Priv)
 {
-    add_transformer(&internals->ex3_converter);
+    add_transformer(&p->ex3_converter);
 }
 
 PArchive::~PArchive()

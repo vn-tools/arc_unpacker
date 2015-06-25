@@ -62,14 +62,14 @@ namespace
     }
 }
 
-struct FjsysArchive::Internals
+struct FjsysArchive::Priv
 {
     MgdConverter mgd_converter;
 };
 
-FjsysArchive::FjsysArchive() : internals(new Internals)
+FjsysArchive::FjsysArchive() : p(new Priv)
 {
-    add_transformer(&internals->mgd_converter);
+    add_transformer(&p->mgd_converter);
 }
 
 FjsysArchive::~FjsysArchive()

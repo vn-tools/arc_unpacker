@@ -178,14 +178,14 @@ namespace
     }
 }
 
-struct PbgzArchive::Internals
+struct PbgzArchive::Priv
 {
     AnmArchive anm_archive;
 };
 
-PbgzArchive::PbgzArchive() : internals(new Internals)
+PbgzArchive::PbgzArchive() : p(new Priv)
 {
-    add_transformer(&internals->anm_archive);
+    add_transformer(&p->anm_archive);
 }
 
 PbgzArchive::~PbgzArchive()

@@ -70,14 +70,14 @@ namespace
     }
 }
 
-struct MblArchive::Internals
+struct MblArchive::Priv
 {
     PrsConverter prs_converter;
 };
 
-MblArchive::MblArchive() : internals(new Internals)
+MblArchive::MblArchive() : p(new Priv)
 {
-    add_transformer(&internals->prs_converter);
+    add_transformer(&p->prs_converter);
 }
 
 MblArchive::~MblArchive()

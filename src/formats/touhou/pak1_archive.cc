@@ -83,16 +83,16 @@ namespace
     }
 }
 
-struct Pak1Archive::Internals
+struct Pak1Archive::Priv
 {
     Pak1ImageArchive image_archive;
     Pak1SoundArchive sound_archive;
 };
 
-Pak1Archive::Pak1Archive() : internals(new Internals)
+Pak1Archive::Pak1Archive() : p(new Priv)
 {
-    add_transformer(&internals->image_archive);
-    add_transformer(&internals->sound_archive);
+    add_transformer(&p->image_archive);
+    add_transformer(&p->sound_archive);
 }
 
 Pak1Archive::~Pak1Archive()

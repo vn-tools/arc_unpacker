@@ -82,14 +82,14 @@ namespace
     }
 }
 
-struct Pbg4Archive::Internals
+struct Pbg4Archive::Priv
 {
     AnmArchive anm_archive;
 };
 
-Pbg4Archive::Pbg4Archive() : internals(new Internals)
+Pbg4Archive::Pbg4Archive() : p(new Priv)
 {
-    add_transformer(&internals->anm_archive);
+    add_transformer(&p->anm_archive);
 }
 
 Pbg4Archive::~Pbg4Archive()

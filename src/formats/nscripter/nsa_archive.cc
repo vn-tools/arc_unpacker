@@ -106,12 +106,12 @@ namespace
     }
 }
 
-struct NsaArchive::Internals
+struct NsaArchive::Priv
 {
     SpbConverter spb_converter;
 };
 
-NsaArchive::NsaArchive() : internals(new Internals)
+NsaArchive::NsaArchive() : p(new Priv)
 {
 }
 
@@ -144,6 +144,6 @@ void NsaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (auto &table_entry : table)
     {
         file_saver.save(
-            read_file(arc_file.io, *table_entry, internals->spb_converter));
+            read_file(arc_file.io, *table_entry, p->spb_converter));
     }
 }

@@ -18,8 +18,8 @@ public:
 
 private:
     Sound();
-    struct Internals;
-    std::unique_ptr<Internals> internals;
+    struct Priv;
+    std::unique_ptr<Priv> p;
 };
 
 #endif

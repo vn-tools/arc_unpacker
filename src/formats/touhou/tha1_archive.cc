@@ -229,14 +229,14 @@ namespace
     }
 }
 
-struct Tha1Archive::Internals
+struct Tha1Archive::Priv
 {
     AnmArchive anm_archive;
 };
 
-Tha1Archive::Tha1Archive() : internals(new Internals)
+Tha1Archive::Tha1Archive() : p(new Priv)
 {
-    add_transformer(&internals->anm_archive);
+    add_transformer(&p->anm_archive);
 }
 
 Tha1Archive::~Tha1Archive()

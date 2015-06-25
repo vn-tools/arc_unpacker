@@ -58,14 +58,14 @@ namespace
     }
 }
 
-struct LwgArchive::Internals
+struct LwgArchive::Priv
 {
     WcgConverter wcg_converter;
 };
 
-LwgArchive::LwgArchive() : internals(new Internals)
+LwgArchive::LwgArchive() : p(new Priv)
 {
-    add_transformer(&internals->wcg_converter);
+    add_transformer(&p->wcg_converter);
     add_transformer(this);
 }
 

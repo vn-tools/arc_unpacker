@@ -494,7 +494,7 @@ namespace
     }
 }
 
-struct TfpkArchive::Internals
+struct TfpkArchive::Priv
 {
     TfbmConverter tfbm_converter;
     TfcsConverter tfcs_converter;
@@ -521,18 +521,18 @@ void TfpkArchive::parse_cli_options(const ArgParser &arg_parser)
         FileIO io(path, FileIOMode::Read);
         std::string line;
         while ((line = io.read_line()) != "")
-            internals->fn_set.insert(line);
+            p->fn_set.insert(line);
     }
 
     Archive::parse_cli_options(arg_parser);
 }
 
-TfpkArchive::TfpkArchive() : internals(new Internals)
+TfpkArchive::TfpkArchive() : p(new Priv)
 {
-    add_transformer(&internals->tfbm_converter);
-    add_transformer(&internals->tfcs_converter);
-    add_transformer(&internals->tfwa_converter);
-    add_transformer(&internals->dds_converter);
+    add_transformer(&p->tfbm_converter);
+    add_transformer(&p->tfcs_converter);
+    add_transformer(&p->tfwa_converter);
+    add_transformer(&p->dds_converter);
 }
 
 TfpkArchive::~TfpkArchive()
@@ -555,11 +555,11 @@ void TfpkArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         : TfpkVersion::Th145;
 
     HashLookupMap user_fn_map;
-    for (auto &fn : internals->fn_set)
+    for (auto &fn : p->fn_set)
         user_fn_map[get_file_name_hash(fn, version)] = fn;
 
     auto palette_map = find_all_palettes(arc_file.name, user_fn_map, version);
-    internals->tfbm_converter.set_palette_map(palette_map);
+    p->tfbm_converter.set_palette_map(palette_map);
 
     RsaReader reader(arc_file.io);
     Table table = read_table(reader, user_fn_map, version);

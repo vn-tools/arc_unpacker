@@ -31,8 +31,8 @@ public:
     char *buffer();
     void reserve(size_t count);
 private:
-    struct Internals;
-    std::unique_ptr<Internals> internals;
+    struct Priv;
+    std::unique_ptr<Priv> p;
 };
 
 #endif

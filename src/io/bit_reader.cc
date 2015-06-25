@@ -116,30 +116,30 @@ namespace
     }
 }
 
-struct BitReader::Internals
+struct BitReader::Priv
 {
     std::unique_ptr<Reader> reader;
 
-    Internals(std::unique_ptr<Reader> reader) : reader(std::move(reader))
+    Priv(std::unique_ptr<Reader> reader) : reader(std::move(reader))
     {
     }
 
-    ~Internals()
+    ~Priv()
     {
     }
 };
 
 BitReader::BitReader(IO &io)
-    : internals(
-        new Internals(
+    : p(
+        new Priv(
             std::unique_ptr<Reader>(
                 new IoBasedReader(io))))
 {
 }
 
 BitReader::BitReader(const char *buffer, size_t buffer_size)
-    : internals(
-        new Internals(
+    : p(
+        new Priv(
             std::unique_ptr<Reader>(
                 new BufferBasedReader(
                     reinterpret_cast<const u8*>(buffer), buffer_size))))
@@ -152,10 +152,10 @@ BitReader::~BitReader()
 
 unsigned int BitReader::get(size_t n)
 {
-    return internals->reader->getn(n, true);
+    return p->reader->getn(n, true);
 }
 
 unsigned int BitReader::try_get(size_t n)
 {
-    return internals->reader->getn(n, false);
+    return p->reader->getn(n, false);
 }

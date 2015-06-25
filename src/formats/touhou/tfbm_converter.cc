@@ -20,12 +20,12 @@ namespace
     const std::string magic("TFBM\x00", 5);
 }
 
-struct TfbmConverter::Internals
+struct TfbmConverter::Priv
 {
     PaletteMap palette_map;
 };
 
-TfbmConverter::TfbmConverter() : internals(new Internals)
+TfbmConverter::TfbmConverter() : p(new Priv)
 {
 }
 
@@ -35,9 +35,9 @@ TfbmConverter::~TfbmConverter()
 
 void TfbmConverter::set_palette_map(const PaletteMap &palette_map)
 {
-    internals->palette_map.clear();
+    p->palette_map.clear();
     for (auto &it : palette_map)
-        internals->palette_map[it.first] = it.second;
+        p->palette_map[it.first] = it.second;
 }
 
 bool TfbmConverter::is_recognized_internal(File &file) const
@@ -67,8 +67,8 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
         path.remove_filename();
         path /= "palette" + itos(palette_number, 3) + ".bmp";
 
-        auto it = internals->palette_map.find(path.generic_string());
-        palette = it != internals->palette_map.end()
+        auto it = p->palette_map.find(path.generic_string());
+        palette = it != p->palette_map.end()
             ? it->second
             : create_default_palette();
     }

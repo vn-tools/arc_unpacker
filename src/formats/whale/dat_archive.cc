@@ -294,16 +294,16 @@ namespace
     }
 }
 
-struct DatArchive::Internals
+struct DatArchive::Priv
 {
     std::string sjis_game_title;
     std::map<u64, std::string> sjis_file_names_map;
     Kirikiri::TlgConverter tlg_converter;
 };
 
-DatArchive::DatArchive() : internals(new Internals)
+DatArchive::DatArchive() : p(new Priv)
 {
-    add_transformer(&internals->tlg_converter);
+    add_transformer(&p->tlg_converter);
 }
 
 DatArchive::~DatArchive()
@@ -327,7 +327,7 @@ void DatArchive::add_cli_help(ArgParser &arg_parser) const
 
 void DatArchive::parse_cli_options(const ArgParser &arg_parser)
 {
-    internals->sjis_game_title = convert_encoding(
+    p->sjis_game_title = convert_encoding(
         arg_parser.get_switch("game-title"), "utf-8", "cp932");
 
     auto path = arg_parser.get_switch("file-names");
@@ -338,7 +338,7 @@ void DatArchive::parse_cli_options(const ArgParser &arg_parser)
         while ((line = io.read_line()) != "")
         {
             line = convert_encoding(line, "utf-8", "cp932");
-            internals->sjis_file_names_map[crc64(line)] = line;
+            p->sjis_file_names_map[crc64(line)] = line;
         }
     }
 
@@ -355,11 +355,11 @@ bool DatArchive::is_recognized_internal(File &arc_file) const
 
 void DatArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    Table table = read_table(arc_file.io, internals->sjis_file_names_map);
+    Table table = read_table(arc_file.io, p->sjis_file_names_map);
 
     for (auto &table_entry : table)
     {
         file_saver.save(read_file(
-            arc_file.io, *table_entry, internals->sjis_game_title));
+            arc_file.io, *table_entry, p->sjis_game_title));
     }
 }

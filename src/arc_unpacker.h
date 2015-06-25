@@ -24,8 +24,8 @@ private:
     bool guess_transformer_and_unpack(File &, const std::string &) const;
     void unpack(Transformer &, File &, const std::string &) const;
     void unpack(Transformer &, File &, const std::string &, FileSaver &) const;
-    struct Internals;
-    std::unique_ptr<Internals> internals;
+    struct Priv;
+    std::unique_ptr<Priv> p;
 };
 
 #endif

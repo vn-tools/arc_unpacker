@@ -3,32 +3,32 @@
 #include "compat/fopen.h"
 #include "io/file_io.h"
 
-struct FileIO::Internals
+struct FileIO::Priv
 {
     FILE *file;
 };
 
 void FileIO::seek(size_t offset)
 {
-    if (fseek(internals->file, offset, SEEK_SET) != 0)
+    if (fseek(p->file, offset, SEEK_SET) != 0)
         throw std::runtime_error("Seeking beyond EOF");
 }
 
 void FileIO::skip(int offset)
 {
-    if (fseek(internals->file, offset, SEEK_CUR) != 0)
+    if (fseek(p->file, offset, SEEK_CUR) != 0)
         throw std::runtime_error("Seeking beyond EOF");
 }
 
 void FileIO::read(void *destination, size_t length)
 {
-    if (fread(destination, 1, length, internals->file) != length)
+    if (fread(destination, 1, length, p->file) != length)
         throw std::runtime_error("Could not read full data");
 }
 
 void FileIO::write(const void *source, size_t length)
 {
-    if (fwrite(source, 1, length, internals->file) != length)
+    if (fwrite(source, 1, length, p->file) != length)
         throw std::runtime_error("Could not write full data");
 }
 
@@ -42,15 +42,15 @@ void FileIO::write_from_io(IO &source, size_t length)
 
 size_t FileIO::tell() const
 {
-    return ftell(internals->file);
+    return ftell(p->file);
 }
 
 size_t FileIO::size() const
 {
-    size_t old_pos = ftell(internals->file);
-    fseek(internals->file, 0, SEEK_END);
-    size_t size = ftell(internals->file);
-    fseek(internals->file, old_pos, SEEK_SET);
+    size_t old_pos = ftell(p->file);
+    fseek(p->file, 0, SEEK_END);
+    size_t size = ftell(p->file);
+    fseek(p->file, old_pos, SEEK_SET);
     return size;
 }
 
@@ -58,21 +58,21 @@ void FileIO::truncate(size_t new_size)
 {
     if (new_size == size())
         return;
-    //if (ftruncate(internals->file, new_size) != 0)
+    //if (ftruncate(p->file, new_size) != 0)
         //throw std::runtime_error("Failed to truncate file");
     throw std::runtime_error("Not implemented");
 }
 
 FileIO::FileIO(const boost::filesystem::path &path, const FileIOMode mode)
-    : internals(new Internals())
+    : p(new Priv())
 {
-    internals->file = fopen(path, mode == FileIOMode::Write ? "w+b" : "r+b");
-    if (internals->file == nullptr)
+    p->file = fopen(path, mode == FileIOMode::Write ? "w+b" : "r+b");
+    if (p->file == nullptr)
         throw std::runtime_error("Could not open " + path.string());
 }
 
 FileIO::~FileIO()
 {
-    if (internals->file != nullptr)
-        fclose(internals->file);
+    if (p->file != nullptr)
+        fclose(p->file);
 }

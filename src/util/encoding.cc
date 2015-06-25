@@ -5,9 +5,7 @@
 #include "util/encoding.h"
 
 std::string convert_encoding(
-    const std::string &input,
-    const std::string &from,
-    const std::string &to)
+    const std::string &input, const std::string &from, const std::string &to)
 {
     iconv_t conv = iconv_open(to.c_str(), from.c_str());
     if (conv == nullptr)

@@ -55,16 +55,16 @@ namespace
     }
 }
 
-struct XflArchive::Internals
+struct XflArchive::Priv
 {
     LwgArchive lwg_archive;
     WcgConverter wcg_converter;
 };
 
-XflArchive::XflArchive() : internals(new Internals)
+XflArchive::XflArchive() : p(new Priv)
 {
-    add_transformer(&internals->wcg_converter);
-    add_transformer(&internals->lwg_archive);
+    add_transformer(&p->wcg_converter);
+    add_transformer(&p->lwg_archive);
     add_transformer(this);
 }
 

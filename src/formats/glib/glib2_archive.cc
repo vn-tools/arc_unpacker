@@ -353,14 +353,14 @@ namespace
     }
 }
 
-struct Glib2Archive::Internals
+struct Glib2Archive::Priv
 {
     PgxConverter pgx_converter;
 };
 
-Glib2Archive::Glib2Archive() : internals(new Internals)
+Glib2Archive::Glib2Archive() : p(new Priv)
 {
-    add_transformer(&internals->pgx_converter);
+    add_transformer(&p->pgx_converter);
     add_transformer(this);
 }
 

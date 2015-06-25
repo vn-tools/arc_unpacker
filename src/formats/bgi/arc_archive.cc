@@ -38,16 +38,16 @@ namespace
     }
 }
 
-struct ArcArchive::Internals
+struct ArcArchive::Priv
 {
     CbgConverter cbg_converter;
     SoundConverter sound_converter;
 };
 
-ArcArchive::ArcArchive() : internals(new Internals)
+ArcArchive::ArcArchive() : p(new Priv)
 {
-    add_transformer(&internals->cbg_converter);
-    add_transformer(&internals->sound_converter);
+    add_transformer(&p->cbg_converter);
+    add_transformer(&p->sound_converter);
 }
 
 ArcArchive::~ArcArchive()

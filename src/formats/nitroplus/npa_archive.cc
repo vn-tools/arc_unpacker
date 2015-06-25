@@ -170,12 +170,12 @@ namespace
     }
 }
 
-struct NpaArchive::Internals
+struct NpaArchive::Priv
 {
     std::unique_ptr<Filter> filter;
 };
 
-NpaArchive::NpaArchive() : internals(new Internals)
+NpaArchive::NpaArchive() : p(new Priv)
 {
 }
 
@@ -205,12 +205,12 @@ void NpaArchive::parse_cli_options(const ArgParser &arg_parser)
 
     if (initializer != nullptr)
     {
-        internals->filter.reset(new Filter);
-        initializer(*internals->filter);
+        p->filter.reset(new Filter);
+        initializer(*p->filter);
     }
     else
     {
-        internals->filter.reset(nullptr);
+        p->filter.reset(nullptr);
     }
 
     Archive::parse_cli_options(arg_parser);
@@ -225,15 +225,15 @@ void NpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     arc_file.io.skip(magic.size());
 
-    if (internals->filter == nullptr)
+    if (p->filter == nullptr)
         throw std::runtime_error("No plugin selected");
 
     std::unique_ptr<Header> header = read_header(arc_file.io);
 
-    Table table = read_table(arc_file.io, *header, *internals->filter);
+    Table table = read_table(arc_file.io, *header, *p->filter);
     for (size_t i = 0; i < table.size(); i++)
     {
         file_saver.save(read_file(
-            arc_file.io, *header, *internals->filter, *table[i]));
+            arc_file.io, *header, *p->filter, *table[i]));
     }
 }

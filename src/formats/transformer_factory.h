@@ -11,8 +11,8 @@ public:
     const std::vector<std::string> get_formats() const;
     std::unique_ptr<Transformer> create(const std::string &format) const;
 private:
-    struct Internals;
-    std::unique_ptr<Internals> internals;
+    struct Priv;
+    std::unique_ptr<Priv> p;
 };
 
 #endif

@@ -16,12 +16,12 @@
 #include "util/itos.h"
 using namespace Formats::Touhou;
 
-struct Pak2ImageConverter::Internals
+struct Pak2ImageConverter::Priv
 {
     PaletteMap palette_map;
 };
 
-Pak2ImageConverter::Pak2ImageConverter() : internals(new Internals)
+Pak2ImageConverter::Pak2ImageConverter() : p(new Priv)
 {
 }
 
@@ -31,9 +31,9 @@ Pak2ImageConverter::~Pak2ImageConverter()
 
 void Pak2ImageConverter::set_palette_map(const PaletteMap &palette_map)
 {
-    internals->palette_map.clear();
+    p->palette_map.clear();
     for (auto &it : palette_map)
-        internals->palette_map[it.first] = it.second;
+        p->palette_map[it.first] = it.second;
 }
 
 bool Pak2ImageConverter::is_recognized_internal(File &file) const
@@ -63,8 +63,8 @@ std::unique_ptr<File> Pak2ImageConverter::decode_internal(File &file) const
         path.remove_filename();
         path /= "palette" + itos(palette_number, 3) + ".pal";
 
-        auto it = internals->palette_map.find(path.generic_string());
-        palette = it != internals->palette_map.end()
+        auto it = p->palette_map.find(path.generic_string());
+        palette = it != p->palette_map.end()
             ? it->second
             : create_default_palette();
     }

@@ -17,8 +17,8 @@ namespace Formats
             bool is_recognized_internal(File &) const override;
             std::unique_ptr<File> decode_internal(File &) const override;
         private:
-            struct Internals;
-            std::unique_ptr<Internals> internals;
+            struct Priv;
+            std::unique_ptr<Priv> p;
         };
     }
 }

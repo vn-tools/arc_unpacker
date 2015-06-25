@@ -169,19 +169,19 @@ namespace
     }
 }
 
-struct Xp3Archive::Internals
+struct Xp3Archive::Priv
 {
     TlgConverter tlg_converter;
     std::unique_ptr<Filter> filter;
 
-    Internals() : filter(nullptr)
+    Priv() : filter(nullptr)
     {
     }
 };
 
-Xp3Archive::Xp3Archive() : internals(new Internals)
+Xp3Archive::Xp3Archive() : p(new Priv)
 {
-    add_transformer(&internals->tlg_converter);
+    add_transformer(&p->tlg_converter);
 }
 
 Xp3Archive::~Xp3Archive()
@@ -206,13 +206,13 @@ void Xp3Archive::parse_cli_options(const ArgParser &arg_parser)
 {
     const std::string plugin = arg_parser.get_switch("plugin").c_str();
     if (plugin == "comyu")
-        internals->filter.reset(new ComyuFilter);
+        p->filter.reset(new ComyuFilter);
     else if (plugin == "fha")
-        internals->filter.reset(new FhaFilter);
+        p->filter.reset(new FhaFilter);
     else if (plugin == "fsn")
-        internals->filter.reset(new FsnFilter);
+        p->filter.reset(new FsnFilter);
     else if (plugin == "noop")
-        internals->filter.reset(new NoopFilter);
+        p->filter.reset(new NoopFilter);
     else
         throw std::runtime_error("Unrecognized plugin: " + plugin);
 
@@ -236,6 +236,6 @@ void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     while (table_io->tell() < table_io->size())
     {
         file_saver.save(
-            read_file(arc_file.io, *table_io, internals->filter.get()));
+            read_file(arc_file.io, *table_io, p->filter.get()));
     }
 }

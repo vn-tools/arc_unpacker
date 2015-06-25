@@ -57,14 +57,14 @@ namespace
     }
 }
 
-struct BinArchive::Internals
+struct BinArchive::Priv
 {
     NvsgConverter nvsg_converter;
 };
 
-BinArchive::BinArchive() : internals(new Internals)
+BinArchive::BinArchive() : p(new Priv)
 {
-    add_transformer(&internals->nvsg_converter);
+    add_transformer(&p->nvsg_converter);
 }
 
 BinArchive::~BinArchive()

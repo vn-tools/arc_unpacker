@@ -59,14 +59,14 @@ namespace
     }
 }
 
-struct YkcArchive::Internals
+struct YkcArchive::Priv
 {
     YkgConverter ykg_converter;
 };
 
-YkcArchive::YkcArchive() : internals(new Internals)
+YkcArchive::YkcArchive() : p(new Priv)
 {
-    add_transformer(&internals->ykg_converter);
+    add_transformer(&p->ykg_converter);
 }
 
 YkcArchive::~YkcArchive()

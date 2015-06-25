@@ -13,13 +13,9 @@ typedef struct
 } LzssSettings;
 
 std::string lzss_decompress(
-    const std::string &input,
-    size_t size_original,
-    const LzssSettings &settings);
+    const std::string &input, size_t orig_size, const LzssSettings &settings);
 
 std::string lzss_decompress(
-    BitReader &bit_reader,
-    size_t size_original,
-    const LzssSettings &settings);
+    BitReader &bit_reader, size_t orig_size, const LzssSettings &settings);
 
 #endif

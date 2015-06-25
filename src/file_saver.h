@@ -20,8 +20,8 @@ public:
 
     virtual void save(std::shared_ptr<File> file) const override;
 private:
-    struct Internals;
-    std::unique_ptr<Internals> internals;
+    struct Priv;
+    std::unique_ptr<Priv> p;
 };
 
 typedef std::function<void(std::shared_ptr<File>)> FileSaveCallback;
@@ -36,8 +36,8 @@ public:
     void set_callback(FileSaveCallback callback);
     virtual void save(std::shared_ptr<File> file) const override;
 private:
-    struct Internals;
-    std::unique_ptr<Internals> internals;
+    struct Priv;
+    std::unique_ptr<Priv> p;
 };
 
 #endif

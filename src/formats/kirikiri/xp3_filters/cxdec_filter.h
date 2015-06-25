@@ -17,8 +17,8 @@ namespace Formats
                 ~CxdecFilter();
                 virtual void decode(File &file, u32 key) const override;
             private:
-                struct Internals;
-                std::unique_ptr<Internals> internals;
+                struct Priv;
+                std::unique_ptr<Priv> p;
             };
         }
     }

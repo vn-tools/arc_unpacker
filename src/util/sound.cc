@@ -1,7 +1,7 @@
 #include <cassert>
 #include "util/sound.h"
 
-struct Sound::Internals
+struct Sound::Priv
 {
     size_t channel_count;
     size_t bytes_per_sample;
@@ -10,7 +10,7 @@ struct Sound::Internals
     size_t sample_count;
 };
 
-Sound::Sound() : internals(new Internals())
+Sound::Sound() : p(new Priv())
 {
 }
 
@@ -25,18 +25,18 @@ std::unique_ptr<Sound> Sound::from_samples(
     const std::string &samples)
 {
     std::unique_ptr<Sound> sound(new Sound);
-    sound->internals->channel_count = channel_count;
-    sound->internals->bytes_per_sample = bytes_per_sample;
-    sound->internals->sample_rate = sample_rate;
-    sound->internals->samples = samples;
+    sound->p->channel_count = channel_count;
+    sound->p->bytes_per_sample = bytes_per_sample;
+    sound->p->sample_rate = sample_rate;
+    sound->p->samples = samples;
     return sound;
 }
 
 std::unique_ptr<File> Sound::create_file(const std::string &name) const
 {
-    size_t block_align = internals->channel_count * internals->bytes_per_sample;
-    size_t byte_rate = block_align * internals->sample_rate;
-    size_t bits_per_sample = internals->bytes_per_sample * 8;
+    size_t block_align = p->channel_count * p->bytes_per_sample;
+    size_t byte_rate = block_align * p->sample_rate;
+    size_t bits_per_sample = p->bytes_per_sample * 8;
 
     std::unique_ptr<File> output_file(new File);
 
@@ -46,14 +46,14 @@ std::unique_ptr<File> Sound::create_file(const std::string &name) const
     output_file->io.write("fmt ", 4);
     output_file->io.write_u32_le(16);
     output_file->io.write_u16_le(1);
-    output_file->io.write_u16_le(internals->channel_count);
-    output_file->io.write_u32_le(internals->sample_rate);
+    output_file->io.write_u16_le(p->channel_count);
+    output_file->io.write_u32_le(p->sample_rate);
     output_file->io.write_u32_le(byte_rate);
     output_file->io.write_u16_le(block_align);
     output_file->io.write_u16_le(bits_per_sample);
     output_file->io.write("data", 4);
-    output_file->io.write_u32_le(internals->sample_count);
-    output_file->io.write(internals->samples);
+    output_file->io.write_u32_le(p->sample_count);
+    output_file->io.write(p->samples);
     output_file->io.seek(4);
     output_file->io.write_u32_le(output_file->io.size());
 

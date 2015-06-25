@@ -1,18 +1,14 @@
 #include "util/lzss.h"
 
 std::string lzss_decompress(
-    const std::string &input,
-    size_t size_original,
-    const LzssSettings &settings)
+    const std::string &input, size_t orig_size, const LzssSettings &settings)
 {
     BitReader bit_reader(input.data(), input.size());
-    return lzss_decompress(bit_reader, size_original, settings);
+    return lzss_decompress(bit_reader, orig_size, settings);
 }
 
 std::string lzss_decompress(
-    BitReader &bit_reader,
-    size_t size_original,
-    const LzssSettings &settings)
+    BitReader &bit_reader, size_t orig_size, const LzssSettings &settings)
 {
     std::string output;
     size_t dictionary_size = 1 << settings.position_bits;
@@ -21,7 +17,7 @@ std::string lzss_decompress(
 
     u8 *dictionary_ptr = dictionary.get();
 
-    while (output.size() < size_original)
+    while (output.size() < orig_size)
     {
         if (bit_reader.get(1) > 0)
         {
@@ -49,7 +45,7 @@ std::string lzss_decompress(
                     dictionary_pos %= dictionary_size;
                 }
                 output.push_back(byte);
-                if (output.size() >= size_original)
+                if (output.size() >= orig_size)
                     break;
             }
         }

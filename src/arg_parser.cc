@@ -110,7 +110,7 @@ namespace
     }
 }
 
-struct ArgParser::Internals
+struct ArgParser::Priv
 {
     std::vector<std::string> flags;
     std::vector<std::pair<std::string, std::string>> switches;
@@ -118,7 +118,7 @@ struct ArgParser::Internals
     std::vector<std::pair<std::string, std::string>> help_items;
 };
 
-ArgParser::ArgParser() : internals(new Internals)
+ArgParser::ArgParser() : p(new Priv)
 {
 }
 
@@ -137,34 +137,34 @@ void ArgParser::parse(std::vector<std::string> args)
         std::string value = "";
         if (::get_switch(arg, key, value))
         {
-            internals->switches.push_back(
+            p->switches.push_back(
                 std::pair<std::string, std::string>(key, value));
         }
         else if (::get_flag(arg, value))
         {
-            internals->flags.push_back(value);
+            p->flags.push_back(value);
         }
         else
         {
-            internals->stray.push_back(std::string(arg));
+            p->stray.push_back(std::string(arg));
         }
     }
 }
 
 void ArgParser::clear_help()
 {
-    internals->help_items.clear();
+    p->help_items.clear();
 }
 
 void ArgParser::add_help(std::string invocation, std::string description)
 {
-    internals->help_items.push_back(
+    p->help_items.push_back(
         std::pair<std::string, std::string>(invocation, description));
 }
 
 bool ArgParser::has_switch(std::string key) const
 {
-    for (auto &it : internals->switches)
+    for (auto &it : p->switches)
         if (it.first == strip_dashes(key))
             return true;
     return false;
@@ -172,7 +172,7 @@ bool ArgParser::has_switch(std::string key) const
 
 const std::string ArgParser::get_switch(std::string key) const
 {
-    for (auto &it : internals->switches)
+    for (auto &it : p->switches)
         if (it.first == strip_dashes(key))
             return it.second;
     return "";
@@ -180,7 +180,7 @@ const std::string ArgParser::get_switch(std::string key) const
 
 bool ArgParser::has_flag(std::string flag) const
 {
-    for (auto &it : internals->flags)
+    for (auto &it : p->flags)
         if (it == strip_dashes(flag))
             return true;
     return false;
@@ -188,7 +188,7 @@ bool ArgParser::has_flag(std::string flag) const
 
 const std::vector<std::string> ArgParser::get_stray() const
 {
-    return internals->stray;
+    return p->stray;
 }
 
 void ArgParser::print_help() const
@@ -198,16 +198,16 @@ void ArgParser::print_help() const
     const size_t max_description_length
         = max_line_length - max_invocation_length;
 
-    if (internals->help_items.size() == 0)
+    if (p->help_items.size() == 0)
     {
         std::cout << "No additional switches are available.\n";
         return;
     }
 
-    for (auto &p : internals->help_items)
+    for (auto &item : p->help_items)
     {
-        std::string invocation = p.first;
-        std::string description = p.second;
+        std::string invocation = item.first;
+        std::string description = item.second;
 
         size_t tmp_length = invocation.length();
         if (tmp_length >= 2 && invocation.compare(0, 2, "--") == 0)

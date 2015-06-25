@@ -7,13 +7,13 @@
 #include "io/file_io.h"
 #include "util/itos.h"
 
-struct FileSaverHdd::Internals
+struct FileSaverHdd::Priv
 {
     boost::filesystem::path output_dir;
     std::set<boost::filesystem::path> paths;
     bool overwrite;
 
-    Internals(const boost::filesystem::path &output_dir, bool overwrite)
+    Priv(const boost::filesystem::path &output_dir, bool overwrite)
          : output_dir(output_dir), overwrite(overwrite)
     {
     }
@@ -37,7 +37,7 @@ struct FileSaverHdd::Internals
 
 FileSaverHdd::FileSaverHdd(
     const boost::filesystem::path &output_dir, bool overwrite)
-    : internals(new Internals(output_dir, overwrite))
+    : p(new Priv(output_dir, overwrite))
 {
 }
 
@@ -57,9 +57,9 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
             pos++;
         }
 
-        boost::filesystem::path full_path(internals->output_dir);
+        boost::filesystem::path full_path(p->output_dir);
         full_path /= boost::filesystem::path(name_part);
-        full_path = internals->make_path_unique(full_path);
+        full_path = p->make_path_unique(full_path);
 
         std::cout << "Saving to " << full_path.generic_string() << "... ";
 
@@ -80,22 +80,22 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
 
 
 
-struct FileSaverCallback::Internals
+struct FileSaverCallback::Priv
 {
     FileSaveCallback callback;
 
-    Internals(FileSaveCallback callback) : callback(callback)
+    Priv(FileSaveCallback callback) : callback(callback)
     {
     }
 };
 
 FileSaverCallback::FileSaverCallback()
-    : internals(new Internals(nullptr))
+    : p(new Priv(nullptr))
 {
 }
 
 FileSaverCallback::FileSaverCallback(FileSaveCallback callback)
-    : internals(new Internals(callback))
+    : p(new Priv(callback))
 {
 }
 
@@ -105,10 +105,10 @@ FileSaverCallback::~FileSaverCallback()
 
 void FileSaverCallback::set_callback(FileSaveCallback callback)
 {
-    internals->callback = callback;
+    p->callback = callback;
 }
 
 void FileSaverCallback::save(std::shared_ptr<File> file) const
 {
-    internals->callback(file);
+    p->callback(file);
 }
