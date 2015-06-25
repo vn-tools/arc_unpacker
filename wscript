@@ -16,17 +16,6 @@ def options(ctx):
 		action = 'store_true',
 		help = 'enable emitting debug information')
 
-def find_mingw_dirs():
-	MINGW_DIRS = ['~/mingw', '~/src/mingw', '/usr/i686-w64-mingw32']
-	MINGW_DIRS = [os.path.expanduser(dir) for dir in MINGW_DIRS]
-	dirs = []
-	for dir in MINGW_DIRS:
-		if os.path.isdir(dir):
-			dirs.append(dir)
-	if len(dirs) == 0:
-		raise RuntimeError('No mingw folder found')
-	return dirs
-
 def configure_flags(ctx):
 	ctx.env.CXXFLAGS = [
 		'-Wall',
