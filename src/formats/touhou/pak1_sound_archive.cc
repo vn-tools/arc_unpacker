@@ -12,27 +12,24 @@
 #include "util/sound.h"
 using namespace Formats::Touhou;
 
-namespace
+static std::unique_ptr<File> read_sound(IO &arc_io, size_t index)
 {
-    std::unique_ptr<File> read_sound(IO &arc_io, size_t index)
-    {
-        size_t size = arc_io.read_u32_le();
-        auto format = arc_io.read_u16_le();
-        auto channel_count = arc_io.read_u16_le();
-        auto sample_rate = arc_io.read_u32_le();
-        auto byte_rate = arc_io.read_u32_le();
-        auto block_align = arc_io.read_u16_le();
-        auto bits_per_sample = arc_io.read_u16_le();
-        arc_io.skip(2);
+    size_t size = arc_io.read_u32_le();
+    auto format = arc_io.read_u16_le();
+    auto channel_count = arc_io.read_u16_le();
+    auto sample_rate = arc_io.read_u32_le();
+    auto byte_rate = arc_io.read_u32_le();
+    auto block_align = arc_io.read_u16_le();
+    auto bits_per_sample = arc_io.read_u16_le();
+    arc_io.skip(2);
 
-        auto sound = Sound::from_samples(
-            channel_count,
-            bits_per_sample / 8,
-            sample_rate,
-            arc_io.read(size));
+    auto sound = Sound::from_samples(
+        channel_count,
+        bits_per_sample / 8,
+        sample_rate,
+        arc_io.read(size));
 
-        return sound->create_file(itos(index, 4));
-    }
+    return sound->create_file(itos(index, 4));
 }
 
 bool Pak1SoundArchive::is_recognized_internal(File &arc_file) const

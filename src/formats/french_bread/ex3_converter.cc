@@ -13,10 +13,7 @@
 #include "io/buffered_io.h"
 using namespace Formats::FrenchBread;
 
-namespace
-{
-    const std::string magic("LLIF", 4);
-}
+static const std::string magic("LLIF", 4);
 
 bool Ex3Converter::is_recognized_internal(File &file) const
 {

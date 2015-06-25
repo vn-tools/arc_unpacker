@@ -28,8 +28,6 @@ using namespace Formats::Touhou;
 
 namespace
 {
-    const std::string texture_magic("THTX", 4);
-
     typedef struct
     {
         size_t width;
@@ -43,181 +41,178 @@ namespace
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
+}
 
-    std::string read_name(IO &file_io, size_t offset)
+static const std::string texture_magic("THTX", 4);
+
+static std::string read_name(IO &file_io, size_t offset)
+{
+    std::string name;
+    file_io.peek(offset, [&]() { name = file_io.read_until_zero(); });
+    return name;
+}
+
+static size_t read_old_entry(TableEntry &entry, IO &file_io, size_t base_offset)
+{
+    file_io.skip(4); //sprite count
+    file_io.skip(4); //script count
+    file_io.skip(4); //zero
+
+    entry.width = file_io.read_u32_le();
+    entry.height = file_io.read_u32_le();
+    entry.format = file_io.read_u32_le();
+    entry.x = file_io.read_u16_le();
+    entry.y = file_io.read_u16_le();
+    //file_io.skip(4);
+
+    size_t name_offset1 = base_offset + file_io.read_u32_le();
+    file_io.skip(4);
+    size_t name_offset2 = base_offset + file_io.read_u32_le();
+    entry.name = read_name(file_io, name_offset1);
+
+    entry.version = file_io.read_u32_le();
+    file_io.skip(4);
+    entry.texture_offset = base_offset + file_io.read_u32_le();
+    entry.has_data = file_io.read_u32_le() > 0;
+
+    return base_offset + file_io.read_u32_le();
+}
+
+static size_t read_new_entry(TableEntry &entry, IO &file_io, size_t base_offset)
+{
+    entry.version = file_io.read_u32_le();
+    file_io.skip(2); //sprite count
+    file_io.skip(2); //script count
+    file_io.skip(2); //zero
+
+    entry.width = file_io.read_u16_le();
+    entry.height = file_io.read_u16_le();
+    entry.format = file_io.read_u16_le();
+    size_t name_offset = base_offset + file_io.read_u32_le();
+    entry.name = read_name(file_io, name_offset);
+    entry.x = file_io.read_u16_le();
+    entry.y = file_io.read_u16_le();
+    file_io.skip(4);
+
+    entry.texture_offset = base_offset + file_io.read_u32_le();
+    entry.has_data = file_io.read_u16_le() > 0;
+    file_io.skip(2);
+
+    return base_offset + file_io.read_u32_le();
+}
+
+static Table read_table(IO &file_io)
+{
+    Table table;
+    u32 base_offset = 0;
+    while (true)
     {
-        std::string name;
-        file_io.peek(offset, [&]() { name = file_io.read_until_zero(); });
-        return name;
+        std::unique_ptr<TableEntry> entry(new TableEntry);
+
+        file_io.seek(base_offset);
+        file_io.skip(8);
+        bool use_old = file_io.read_u32_le() == 0;
+
+        file_io.seek(base_offset);
+        size_t next_offset = use_old
+            ? read_old_entry(*entry, file_io, base_offset)
+            : read_new_entry(*entry, file_io, base_offset);
+
+        table.push_back(std::move(entry));
+        if (next_offset == base_offset)
+            break;
+        base_offset = next_offset;
     }
+    return table;
+}
 
-    size_t read_old_entry(
-        TableEntry &table_entry, IO &file_io, size_t start_offset)
+static void write_pixels(
+    IO &file_io, TableEntry &entry, u32 *pixel_data, size_t stride)
+{
+    if (!entry.has_data)
+        return;
+
+    file_io.seek(entry.texture_offset);
+    if (file_io.read(texture_magic.size()) != texture_magic)
+        throw std::runtime_error("Corrupt texture data");
+    file_io.skip(2);
+    int format = file_io.read_u16_le();
+    size_t width = file_io.read_u16_le();
+    size_t height = file_io.read_u16_le();
+    size_t data_size = file_io.read_u32_le();
+
+    u32 *guardian = &pixel_data[stride * height];
+
+    for (size_t y = 0; y < height; y++)
     {
-        file_io.skip(4); //sprite count
-        file_io.skip(4); //script count
-        file_io.skip(4); //zero
-
-        table_entry.width = file_io.read_u32_le();
-        table_entry.height = file_io.read_u32_le();
-        table_entry.format = file_io.read_u32_le();
-        table_entry.x = file_io.read_u16_le();
-        table_entry.y = file_io.read_u16_le();
-        //file_io.skip(4);
-
-        size_t name_offset1 = start_offset + file_io.read_u32_le();
-        file_io.skip(4);
-        size_t name_offset2 = start_offset + file_io.read_u32_le();
-        table_entry.name = read_name(file_io, name_offset1);
-
-        table_entry.version = file_io.read_u32_le();
-        file_io.skip(4);
-        table_entry.texture_offset = start_offset + file_io.read_u32_le();
-        table_entry.has_data = file_io.read_u32_le() > 0;
-
-        return start_offset + file_io.read_u32_le();
-    }
-
-    size_t read_new_entry(
-        TableEntry &table_entry, IO &file_io, size_t start_offset)
-    {
-        table_entry.version = file_io.read_u32_le();
-        file_io.skip(2); //sprite count
-        file_io.skip(2); //script count
-        file_io.skip(2); //zero
-
-        table_entry.width = file_io.read_u16_le();
-        table_entry.height = file_io.read_u16_le();
-        table_entry.format = file_io.read_u16_le();
-        size_t name_offset = start_offset + file_io.read_u32_le();
-        table_entry.name = read_name(file_io, name_offset);
-        table_entry.x = file_io.read_u16_le();
-        table_entry.y = file_io.read_u16_le();
-        file_io.skip(4);
-
-        table_entry.texture_offset = start_offset + file_io.read_u32_le();
-        table_entry.has_data = file_io.read_u16_le() > 0;
-        file_io.skip(2);
-
-        return start_offset + file_io.read_u32_le();
-    }
-
-    Table read_table(IO &file_io)
-    {
-        Table table;
-        u32 start_offset = 0;
-        while (true)
+        size_t shift = (y + entry.y) * stride + entry.x;
+        u32 *pixel_ptr = &pixel_data[shift];
+        for (size_t x = 0; x < width; x++)
         {
-            std::unique_ptr<TableEntry> table_entry(new TableEntry);
-
-            file_io.seek(start_offset);
-            file_io.skip(8);
-            bool use_old = file_io.read_u32_le() == 0;
-
-            file_io.seek(start_offset);
-            size_t next_offset = use_old
-                ? read_old_entry(*table_entry, file_io, start_offset)
-                : read_new_entry(*table_entry, file_io, start_offset);
-
-            table.push_back(std::move(table_entry));
-            if (next_offset == start_offset)
-                break;
-            start_offset = next_offset;
-        }
-        return table;
-    }
-
-    void write_pixels(
-        IO &file_io,
-        TableEntry &table_entry,
-        u32 *pixel_data,
-        size_t stride)
-    {
-        if (!table_entry.has_data)
-            return;
-
-        file_io.seek(table_entry.texture_offset);
-        if (file_io.read(texture_magic.size()) != texture_magic)
-            throw std::runtime_error("Corrupt texture data");
-        file_io.skip(2);
-        int format = file_io.read_u16_le();
-        size_t width = file_io.read_u16_le();
-        size_t height = file_io.read_u16_le();
-        size_t data_size = file_io.read_u32_le();
-
-        u32 *guardian = &pixel_data[stride * height];
-
-        for (size_t y = 0; y < height; y++)
-        {
-            size_t shift = (y + table_entry.y) * stride + table_entry.x;
-            u32 *pixel_ptr = &pixel_data[shift];
-            for (size_t x = 0; x < width; x++)
+            if (pixel_ptr >= guardian)
+                return;
+            switch (format)
             {
-                if (pixel_ptr >= guardian)
-                    return;
-                switch (format)
-                {
-                    case 1:
-                        *pixel_ptr++ = file_io.read_u32_le();
-                        break;
+                case 1:
+                    *pixel_ptr++ = file_io.read_u32_le();
+                    break;
 
-                    case 3:
-                        *pixel_ptr++ = rgb565(file_io.read_u16_le());
-                        break;
+                case 3:
+                    *pixel_ptr++ = rgb565(file_io.read_u16_le());
+                    break;
 
-                    case 5:
-                        *pixel_ptr++ = rgba4444(file_io.read_u16_le());
-                        break;
+                case 5:
+                    *pixel_ptr++ = rgba4444(file_io.read_u16_le());
+                    break;
 
-                    case 7:
-                        *pixel_ptr++ = rgba_gray(file_io.read_u8());
-                        break;
+                case 7:
+                    *pixel_ptr++ = rgba_gray(file_io.read_u8());
+                    break;
 
-                    default:
-                        throw std::runtime_error(
-                            "Unknown color format: " + itos(format));
-                }
+                default:
+                    throw std::runtime_error(
+                        "Unknown color format: " + itos(format));
             }
         }
     }
+}
 
-    std::unique_ptr<File> read_texture(IO &file_io, Table &entries)
+static std::unique_ptr<File> read_texture(IO &file_io, Table &entries)
+{
+    size_t width = 0;
+    size_t height = 0;
+    for (auto &entry : entries)
     {
-        size_t width = 0;
-        size_t height = 0;
-        for (auto &entry : entries)
+        if (!entry->has_data)
+            continue;
+        file_io.peek(entry->texture_offset, [&]()
         {
-            if (!entry->has_data)
-                continue;
-            file_io.peek(entry->texture_offset, [&]()
-            {
-                file_io.skip(texture_magic.size());
-                file_io.skip(2);
-                file_io.skip(2);
-                size_t chunk_width = file_io.read_u16_le();
-                size_t chunk_height = file_io.read_u16_le();
-                width = std::max(width, entry->x + chunk_width);
-                height = std::max(height, entry->y + chunk_height);
-            });
-        }
-        if (!width || !height)
-            return nullptr;
-
-        size_t pixel_data_size = width * height;
-        std::unique_ptr<u32[]> pixel_data(new u32[pixel_data_size]);
-        for (size_t i = 0; i < pixel_data_size; i++)
-            pixel_data[i] = 0;
-        for (auto &entry : entries)
-            write_pixels(file_io, *entry, pixel_data.get(), width);
-
-        std::unique_ptr<Image> image = Image::from_pixels(
-            width,
-            height,
-            std::string(
-                reinterpret_cast<char*>(pixel_data.get()), pixel_data_size * 4),
-            PixelFormat::BGRA);
-        return image->create_file(entries[0]->name);
+            file_io.skip(texture_magic.size());
+            file_io.skip(2);
+            file_io.skip(2);
+            size_t chunk_width = file_io.read_u16_le();
+            size_t chunk_height = file_io.read_u16_le();
+            width = std::max(width, entry->x + chunk_width);
+            height = std::max(height, entry->y + chunk_height);
+        });
     }
+    if (!width || !height)
+        return nullptr;
+
+    size_t pixel_data_size = width * height;
+    std::unique_ptr<u32[]> pixel_data(new u32[pixel_data_size]);
+    for (size_t i = 0; i < pixel_data_size; i++)
+        pixel_data[i] = 0;
+    for (auto &entry : entries)
+        write_pixels(file_io, *entry, pixel_data.get(), width);
+
+    std::unique_ptr<Image> image = Image::from_pixels(
+        width,
+        height,
+        std::string(
+            reinterpret_cast<char*>(pixel_data.get()), pixel_data_size * 4),
+        PixelFormat::BGRA);
+    return image->create_file(entries[0]->name);
 }
 
 FileNamingStrategy AnmArchive::get_file_naming_strategy() const

@@ -2,10 +2,7 @@
 #include "formats/touhou/crypt.h"
 using namespace Formats::Touhou;
 
-namespace
-{
-    inline int min(int a, int b) { return a < b ? a : b; }
-}
+static inline int min(int a, int b) { return a < b ? a : b; }
 
 bool DecryptorContext::operator ==(const DecryptorContext &other) const
 {

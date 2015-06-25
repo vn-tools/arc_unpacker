@@ -3,28 +3,25 @@
 #include "io/buffered_io.h"
 #include "io/file_io.h"
 
-namespace
+static void change_extension(
+    boost::filesystem::path &path, const std::string &new_extension)
 {
-    void change_extension(
-        boost::filesystem::path &path, const std::string &new_extension)
+    if (path.filename().empty()
+        || new_extension.empty()
+        || path.filename() == "."
+        || path.filename() == ".."
+        || path.stem() == "")
     {
-        if (path.filename().empty()
-            || new_extension.empty()
-            || path.filename() == "."
-            || path.filename() == ".."
-            || path.stem() == "")
-        {
-            return;
-        }
+        return;
+    }
 
-        if (new_extension[0] == '.')
-        {
-            path.replace_extension(new_extension);
-        }
-        else
-        {
-            path.replace_extension("." + new_extension);
-        }
+    if (new_extension[0] == '.')
+    {
+        path.replace_extension(new_extension);
+    }
+    else
+    {
+        path.replace_extension("." + new_extension);
     }
 }
 

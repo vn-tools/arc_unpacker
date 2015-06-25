@@ -11,24 +11,22 @@ struct Image::Priv
     PixelFormat fmt;
 };
 
-namespace
+static void png_write_data(
+    png_structp png_ptr, png_bytep data, png_size_t length)
 {
-    void png_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
-    {
-        IO *io = reinterpret_cast<IO*>(png_get_io_ptr(png_ptr));
-        io->write(data, length);
-    }
+    IO *io = reinterpret_cast<IO*>(png_get_io_ptr(png_ptr));
+    io->write(data, length);
+}
 
-    void my_png_read_data(
-        png_structp png_ptr, png_bytep data, png_size_t length)
-    {
-        IO *io = reinterpret_cast<IO*>(png_get_io_ptr(png_ptr));
-        io->read(data, length);
-    }
+static void png_read_data(
+    png_structp png_ptr, png_bytep data, png_size_t length)
+{
+    IO *io = reinterpret_cast<IO*>(png_get_io_ptr(png_ptr));
+    io->read(data, length);
+}
 
-    void png_flush(png_structp)
-    {
-    }
+static void png_flush(png_structp)
+{
 }
 
 Image::Image() : p(new Priv)
@@ -63,7 +61,7 @@ std::unique_ptr<Image> Image::from_boxed(IO &io)
     png_infop info_ptr = png_create_info_struct(png_ptr);
     assert(info_ptr != nullptr);
 
-    png_set_read_fn(png_ptr, &io, &my_png_read_data);
+    png_set_read_fn(png_ptr, &io, &png_read_data);
     png_read_png(
         png_ptr,
         info_ptr,

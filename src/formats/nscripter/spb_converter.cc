@@ -13,94 +13,88 @@
 #include "util/image.h"
 using namespace Formats::NScripter;
 
-namespace
+static std::unique_ptr<u8[]> decode_pixels(
+    size_t width, size_t height, BitReader &bit_reader, size_t &output_size)
 {
-    std::unique_ptr<u8[]> decode_pixels(
-        size_t image_width,
-        size_t image_height,
-        BitReader &bit_reader,
-        size_t &output_size)
+    output_size = width * height * 3;
+    std::unique_ptr<u8[]> output(new u8[output_size]);
+
+    size_t channel_data_size = width * height;
+    std::unique_ptr<u8[]> channel_data(new u8[channel_data_size]);
+    for (int rgb = 2; rgb >= 0; rgb--)
     {
-        output_size = image_width * image_height * 3;
-        std::unique_ptr<u8[]> output(new u8[output_size]);
+        u8 *channel_ptr = channel_data.get();
+        const u8 *channel_guardian = channel_ptr + channel_data_size;
 
-        size_t channel_data_size = image_width * image_height;
-        std::unique_ptr<u8[]> channel_data(new u8[channel_data_size]);
-        for (int rgb = 2; rgb >= 0; rgb--)
+        u8 ch = bit_reader.try_get(8);
+        if (channel_ptr >= channel_guardian) break;
+        *channel_ptr++ = ch;
+
+        while (channel_ptr < channel_guardian)
         {
-            u8 *channel_ptr = channel_data.get();
-            const u8 *channel_guardian = channel_ptr + channel_data_size;
-
-            u8 ch = bit_reader.try_get(8);
-            if (channel_ptr >= channel_guardian) break;
-            *channel_ptr++ = ch;
-
-            while (channel_ptr < channel_guardian)
+            size_t t = bit_reader.try_get(3);
+            if (t == 0)
             {
-                size_t t = bit_reader.try_get(3);
-                if (t == 0)
+                if (channel_ptr >= channel_guardian) break;
+                *channel_ptr++ = ch;
+                if (channel_ptr >= channel_guardian) break;
+                *channel_ptr++ = ch;
+                if (channel_ptr >= channel_guardian) break;
+                *channel_ptr++ = ch;
+                if (channel_ptr >= channel_guardian) break;
+                *channel_ptr++ = ch;
+                continue;
+            }
+
+            size_t mask = t == 7 ? bit_reader.try_get(1) + 1 : t + 2;
+
+            for (size_t i = 0; i < 4; i++)
+            {
+                if (mask == 8)
                 {
-                    if (channel_ptr >= channel_guardian) break;
-                    *channel_ptr++ = ch;
-                    if (channel_ptr >= channel_guardian) break;
-                    *channel_ptr++ = ch;
-                    if (channel_ptr >= channel_guardian) break;
-                    *channel_ptr++ = ch;
-                    if (channel_ptr >= channel_guardian) break;
-                    *channel_ptr++ = ch;
-                    continue;
+                    ch = bit_reader.try_get(8);
                 }
-
-                size_t mask = t == 7 ? bit_reader.try_get(1) + 1 : t + 2;
-
-                for (size_t i = 0; i < 4; i++)
+                else
                 {
-                    if (mask == 8)
-                    {
-                        ch = bit_reader.try_get(8);
-                    }
+                    t = bit_reader.try_get(mask);
+                    if (t & 1)
+                        ch += (t >> 1) + 1;
                     else
-                    {
-                        t = bit_reader.try_get(mask);
-                        if (t & 1)
-                            ch += (t >> 1) + 1;
-                        else
-                            ch -= (t >> 1);
-                    }
-                    if (channel_ptr >= channel_guardian) break;
-                    *channel_ptr++ = ch;
+                        ch -= (t >> 1);
                 }
-            }
-
-            const u8 *p = channel_data.get();
-            u8 *q = output.get() + rgb;
-            for (size_t j = 0; j < image_height >> 1; j++)
-            {
-                for (size_t i = 0; i < image_width; i++)
-                {
-                    *q = *p++;
-                    q += 3;
-                }
-                q += image_width * 3;
-                for (size_t i = 0; i < image_width; i++)
-                {
-                    q -= 3;
-                    *q = *p++;
-                }
-                q += image_width * 3;
-            }
-            if (image_height & 1)
-            {
-                for (size_t i = 0; i < image_width; i++)
-                {
-                    *q = *p++;
-                    q += 3;
-                }
+                if (channel_ptr >= channel_guardian) break;
+                *channel_ptr++ = ch;
             }
         }
 
-        return output;
+        const u8 *p = channel_data.get();
+        u8 *q = output.get() + rgb;
+        for (size_t j = 0; j < height >> 1; j++)
+        {
+            for (size_t i = 0; i < width; i++)
+            {
+                *q = *p++;
+                q += 3;
+            }
+            q += width * 3;
+            for (size_t i = 0; i < width; i++)
+            {
+                q -= 3;
+                *q = *p++;
+            }
+            q += width * 3;
+        }
+        if (height & 1)
+        {
+            for (size_t i = 0; i < width; i++)
+            {
+                *q = *p++;
+                q += 3;
+            }
+        }
     }
+
+    return output;
 }
 
 bool SpbConverter::is_recognized_internal(File &file) const

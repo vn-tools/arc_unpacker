@@ -17,14 +17,6 @@ using namespace Formats::Microsoft;
 
 namespace
 {
-    const std::string magic("DDS\x20", 4);
-    const std::string magic_dxt1("DXT1", 4);
-    const std::string magic_dxt2("DXT2", 4);
-    const std::string magic_dxt3("DXT3", 4);
-    const std::string magic_dxt4("DXT4", 4);
-    const std::string magic_dxt5("DXT5", 4);
-    const std::string magic_dx10("DX10", 4);
-
     enum class D3d10ResourceDimension : u32
     {
         Unknown    = 0,
@@ -89,48 +81,56 @@ namespace
         DdsPixelFormat pixel_format;
         u32 caps[4];
     } DdsHeader;
+}
 
-    void fill_pixel_format(IO &io, DdsPixelFormat &pixel_format)
-    {
-        pixel_format.size = io.read_u32_le();
-        pixel_format.flags = static_cast<DdsPixelFormatFlags>(io.read_u32_le());
-        pixel_format.four_cc = io.read(4);
-        pixel_format.rgb_bit_count = io.read_u32_le();
-        pixel_format.r_bit_mask = io.read_u32_le();
-        pixel_format.g_bit_mask = io.read_u32_le();
-        pixel_format.b_bit_mask = io.read_u32_le();
-        pixel_format.a_bit_mask = io.read_u32_le();
-    }
+static const std::string magic("DDS\x20", 4);
+static const std::string magic_dxt1("DXT1", 4);
+static const std::string magic_dxt2("DXT2", 4);
+static const std::string magic_dxt3("DXT3", 4);
+static const std::string magic_dxt4("DXT4", 4);
+static const std::string magic_dxt5("DXT5", 4);
+static const std::string magic_dx10("DX10", 4);
 
-    std::unique_ptr<DdsHeader> read_header(IO &io)
-    {
-        std::unique_ptr<DdsHeader> header(new DdsHeader);
-        header->size = io.read_u32_le();
-        header->flags = static_cast<DdsHeaderFlags>(io.read_u32_le());
-        header->height = io.read_u32_le();
-        header->width = io.read_u32_le();
-        header->pitch_or_linear_size = io.read_u32_le();
-        header->depth = io.read_u32_le();
-        header->mip_map_count = io.read_u32_le();
-        io.skip(4 * 11);
-        fill_pixel_format(io, header->pixel_format);
-        for (size_t i = 0; i < 4; i++)
-            header->caps[i] = io.read_u32_le();
-        io.skip(4);
-        return header;
-    }
+static void fill_pixel_format(IO &io, DdsPixelFormat &pixel_format)
+{
+    pixel_format.size = io.read_u32_le();
+    pixel_format.flags = static_cast<DdsPixelFormatFlags>(io.read_u32_le());
+    pixel_format.four_cc = io.read(4);
+    pixel_format.rgb_bit_count = io.read_u32_le();
+    pixel_format.r_bit_mask = io.read_u32_le();
+    pixel_format.g_bit_mask = io.read_u32_le();
+    pixel_format.b_bit_mask = io.read_u32_le();
+    pixel_format.a_bit_mask = io.read_u32_le();
+}
 
-    std::unique_ptr<DdsHeaderDx10> read_header_dx10(IO &io)
-    {
-        std::unique_ptr<DdsHeaderDx10> header(new DdsHeaderDx10);
-        header->dxgi_format = io.read_u32_le();
-        header->resource_dimension = static_cast<D3d10ResourceDimension>(
-            io.read_u32_le());
-        header->misc_flag = io.read_u32_le();
-        header->array_size = io.read_u32_le();
-        header->misc_flags2 = io.read_u32_le();
-        return header;
-    }
+static std::unique_ptr<DdsHeader> read_header(IO &io)
+{
+    std::unique_ptr<DdsHeader> header(new DdsHeader);
+    header->size = io.read_u32_le();
+    header->flags = static_cast<DdsHeaderFlags>(io.read_u32_le());
+    header->height = io.read_u32_le();
+    header->width = io.read_u32_le();
+    header->pitch_or_linear_size = io.read_u32_le();
+    header->depth = io.read_u32_le();
+    header->mip_map_count = io.read_u32_le();
+    io.skip(4 * 11);
+    fill_pixel_format(io, header->pixel_format);
+    for (size_t i = 0; i < 4; i++)
+        header->caps[i] = io.read_u32_le();
+    io.skip(4);
+    return header;
+}
+
+static std::unique_ptr<DdsHeaderDx10> read_header_dx10(IO &io)
+{
+    std::unique_ptr<DdsHeaderDx10> header(new DdsHeaderDx10);
+    header->dxgi_format = io.read_u32_le();
+    header->resource_dimension = static_cast<D3d10ResourceDimension>(
+        io.read_u32_le());
+    header->misc_flag = io.read_u32_le();
+    header->array_size = io.read_u32_le();
+    header->misc_flags2 = io.read_u32_le();
+    return header;
 }
 
 namespace

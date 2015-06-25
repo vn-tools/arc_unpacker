@@ -11,10 +11,7 @@
 #include "util/sound.h"
 using namespace Formats::Touhou;
 
-namespace
-{
-    const std::string magic("TFWA\x00", 5);
-}
+static const std::string magic("TFWA\x00", 5);
 
 bool TfwaConverter::is_recognized_internal(File &file) const
 {

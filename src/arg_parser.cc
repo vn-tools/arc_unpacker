@@ -1,113 +1,109 @@
 #include <iostream>
 #include "arg_parser.h"
 
-namespace
+static bool is_alphanumeric(std::string string)
 {
-    bool is_alphanumeric(std::string string)
+    for (size_t i = 0; i < string.length(); i++)
     {
-        for (size_t i = 0; i < string.length(); i++)
-        {
-            char c = string[i];
-            if (c < '0' && c > '9' && c < 'a' && c > 'a' && c < 'A' && c > 'A')
-                return false;
-        }
-        return true;
+        char c = string[i];
+        if (c < '0' && c > '9' && c < 'a' && c > 'a' && c < 'A' && c > 'A')
+            return false;
     }
+    return true;
+}
 
-    std::string strip_dashes(const std::string argument)
-    {
-        std::string ret = argument;
-        while (ret[0] == '-')
-            ret.erase(0, 1);
-        return ret;
-    }
+static std::string strip_dashes(const std::string argument)
+{
+    std::string ret = argument;
+    while (ret[0] == '-')
+        ret.erase(0, 1);
+    return ret;
+}
 
-    bool get_switch(
-        const std::string argument,
-        std::string &key,
-        std::string &value)
+static bool get_switch(
+    const std::string argument, std::string &key, std::string &value)
+{
+    key = "";
+    value = "";
+
+    if (argument[0] != '-')
+        return false;
+    std::string argument_copy = strip_dashes(argument);
+
+    size_t pos = argument_copy.find("=");
+    if (pos == std::string::npos)
+        return false;
+
+    key = argument_copy.substr(0, pos);
+    if (!is_alphanumeric(key))
     {
         key = "";
-        value = "";
-
-        if (argument[0] != '-')
-            return false;
-        std::string argument_copy = strip_dashes(argument);
-
-        size_t pos = argument_copy.find("=");
-        if (pos == std::string::npos)
-            return false;
-
-        key = argument_copy.substr(0, pos);
-        if (!is_alphanumeric(key))
-        {
-            key = "";
-            return false;
-        }
-        value = argument_copy.substr(pos + 1);
-        return true;
+        return false;
     }
+    value = argument_copy.substr(pos + 1);
+    return true;
+}
 
-    bool get_flag(const std::string argument, std::string &value)
+static bool get_flag(const std::string argument, std::string &value)
+{
+    value = "";
+
+    if (argument[0] != '-')
+        return false;
+    std::string argument_copy = argument;
+    while (argument_copy[0] == '-')
+        argument_copy.erase(0, 1);
+
+    if (!is_alphanumeric(argument_copy))
+        return false;
+
+    value = argument_copy;
+    return true;
+}
+
+static std::vector<std::string> create_words(const std::string sentence)
+{
+    std::vector<std::string> words;
+    size_t pos = 0, new_pos = 0;
+    while (new_pos != sentence.length())
     {
-        value = "";
-
-        if (argument[0] != '-')
-            return false;
-        std::string argument_copy = argument;
-        while (argument_copy[0] == '-')
-            argument_copy.erase(0, 1);
-
-        if (!is_alphanumeric(argument_copy))
-            return false;
-
-        value = argument_copy;
-        return true;
-    }
-
-    std::vector<std::string> create_words(const std::string sentence)
-    {
-        std::vector<std::string> words;
-        size_t pos = 0, new_pos = 0;
-        while (new_pos != sentence.length())
+        for (new_pos = pos; new_pos < sentence.length(); new_pos++)
         {
-            for (new_pos = pos; new_pos < sentence.length(); new_pos++)
-            {
-                char c = sentence[new_pos];
-                if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
-                    break;
-            }
-            words.push_back(sentence.substr(pos, new_pos + 1 - pos));
-            pos = new_pos + 1;
+            char c = sentence[new_pos];
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
+                break;
         }
-        return words;
+        words.push_back(sentence.substr(pos, new_pos + 1 - pos));
+        pos = new_pos + 1;
     }
+    return words;
+}
 
-    std::vector<std::string> word_wrap(const std::string sentence, size_t max)
+static std::vector<std::string> word_wrap(
+    const std::string sentence, size_t max)
+{
+    std::vector<std::string> words = create_words(sentence);
+    std::vector<std::string> lines;
+    std::string line;
+    for (auto &word : words)
     {
-        std::vector<std::string> words = create_words(sentence);
-        std::vector<std::string> lines;
-        std::string line;
-        for (auto &word : words)
+        line += word;
+        if (word.length() > 0 && word[word.length() - 1] == '\n')
         {
-            line += word;
-            if (word.length() > 0 && word[word.length() - 1] == '\n')
-            {
-                lines.push_back(line);
-                line = "";
-            }
-            else if (line.length() > max)
-            {
-                if (line.length() > 0)
-                    line.erase(line.length() - 1, 1);
-                lines.push_back(line + "\n");
-                line = "";
-            }
-        }
-        if (line != "")
             lines.push_back(line);
-        return lines;
+            line = "";
+        }
+        else if (line.length() > max)
+        {
+            if (line.length() > 0)
+                line.erase(line.length() - 1, 1);
+            lines.push_back(line + "\n");
+            line = "";
+        }
     }
+    if (line != "")
+        lines.push_back(line);
+    return lines;
 }
 
 struct ArgParser::Priv

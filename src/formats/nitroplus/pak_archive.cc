@@ -13,44 +13,41 @@
 #include "util/zlib.h"
 using namespace Formats::Nitroplus;
 
-namespace
+static const std::string magic("\x02\x00\x00\x00", 4);
+
+static std::unique_ptr<File> read_file(
+    IO &arc_io, IO &table_io, size_t offset_to_files)
 {
-    const std::string magic("\x02\x00\x00\x00", 4);
+    std::unique_ptr<File> file(new File);
 
-    std::unique_ptr<File> read_file(
-        IO &arc_io, IO &table_io, size_t offset_to_files)
+    size_t file_name_length = table_io.read_u32_le();
+    std::string file_name = table_io.read(file_name_length);
+    file->name = sjis_to_utf8(file_name);
+
+    size_t offset = table_io.read_u32_le();
+    size_t size_original = table_io.read_u32_le();
+    table_io.skip(4);
+    size_t flags = table_io.read_u32_le();
+    size_t size_compressed = table_io.read_u32_le();
+    offset += offset_to_files;
+
+    arc_io.seek(offset);
+    if (flags > 0)
     {
-        std::unique_ptr<File> file(new File);
+        std::string data_uncompressed
+            = zlib_inflate(arc_io.read(size_compressed));
 
-        size_t file_name_length = table_io.read_u32_le();
-        std::string file_name = table_io.read(file_name_length);
-        file->name = sjis_to_utf8(file_name);
+        if (data_uncompressed.size() != size_original)
+            throw std::runtime_error("Bad file size");
 
-        size_t offset = table_io.read_u32_le();
-        size_t size_original = table_io.read_u32_le();
-        table_io.skip(4);
-        size_t flags = table_io.read_u32_le();
-        size_t size_compressed = table_io.read_u32_le();
-        offset += offset_to_files;
-
-        arc_io.seek(offset);
-        if (flags > 0)
-        {
-            std::string data_uncompressed
-                = zlib_inflate(arc_io.read(size_compressed));
-
-            if (data_uncompressed.size() != size_original)
-                throw std::runtime_error("Bad file size");
-
-            file->io.write(data_uncompressed);
-        }
-        else
-        {
-            file->io.write_from_io(arc_io, size_original);
-        }
-
-        return file;
+        file->io.write(data_uncompressed);
     }
+    else
+    {
+        file->io.write_from_io(arc_io, size_original);
+    }
+
+    return file;
 }
 
 bool PakArchive::is_recognized_internal(File &arc_file) const

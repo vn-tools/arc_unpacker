@@ -13,11 +13,8 @@
 #include "util/image.h"
 using namespace Formats::Fvp;
 
-namespace
-{
-    const std::string hzc1_magic("hzc1", 4);
-    const std::string nvsg_magic("NVSG", 4);
-}
+static const std::string hzc1_magic("hzc1", 4);
+static const std::string nvsg_magic("NVSG", 4);
 
 bool NvsgConverter::is_recognized_internal(File &file) const
 {

@@ -28,46 +28,46 @@ namespace
         u32 block_size;
         u32 rest_size;
     } NwaHeader;
+}
 
-    void nwa_validate_header(const NwaHeader &header)
+static void nwa_validate_header(const NwaHeader &header)
+{
+    if (header.compression_level >= 0 || header.compression_level > 5)
+        throw std::runtime_error("Unsupported compression level");
+
+    if (header.channel_count != 1 && header.channel_count != 2)
+        throw std::runtime_error("Unsupported channel count");
+
+    if (header.bits_per_sample != 8 && header.bits_per_sample != 16)
+        throw std::runtime_error("Unsupported bits per sample");
+
+    if (!header.block_count)
+        throw std::runtime_error("No blocks found");
+
+    if (!header.compressed_size)
+        throw std::runtime_error("No data found");
+
+    if (header.uncompressed_size
+        != header.sample_count * header.bits_per_sample / 8)
     {
-        if (header.compression_level >= 0 || header.compression_level > 5)
-            throw std::runtime_error("Unsupported compression level");
-
-        if (header.channel_count != 1 && header.channel_count != 2)
-            throw std::runtime_error("Unsupported channel count");
-
-        if (header.bits_per_sample != 8 && header.bits_per_sample != 16)
-            throw std::runtime_error("Unsupported bits per sample");
-
-        if (!header.block_count)
-            throw std::runtime_error("No blocks found");
-
-        if (!header.compressed_size)
-            throw std::runtime_error("No data found");
-
-        if (header.uncompressed_size
-            != header.sample_count * header.bits_per_sample / 8)
-        {
-            throw std::runtime_error("Bad data size");
-        }
-
-        if (header.sample_count
-            != (header.block_count-1) * header.block_size + header.rest_size)
-        {
-            throw std::runtime_error("Bad sample count");
-        }
+        throw std::runtime_error("Bad data size");
     }
 
-    std::string nwa_read_uncompressed(IO &io, const NwaHeader &header)
+    if (header.sample_count
+        != (header.block_count-1) * header.block_size + header.rest_size)
     {
-        return io.read(header.block_size * header.channel_count);
+        throw std::runtime_error("Bad sample count");
     }
+}
 
-    std::string nwa_read_compressed(IO &, const NwaHeader &)
-    {
-        throw std::runtime_error("Reading compressed streams is not supported");
-    }
+static std::string nwa_read_uncompressed(IO &io, const NwaHeader &header)
+{
+    return io.read(header.block_size * header.channel_count);
+}
+
+static std::string nwa_read_compressed(IO &, const NwaHeader &)
+{
+    throw std::runtime_error("Reading compressed streams is not supported");
 }
 
 bool NwaConverter::is_recognized_internal(File &file) const

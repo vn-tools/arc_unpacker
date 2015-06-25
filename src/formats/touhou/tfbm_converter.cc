@@ -15,10 +15,7 @@
 #include "util/zlib.h"
 using namespace Formats::Touhou;
 
-namespace
-{
-    const std::string magic("TFBM\x00", 5);
-}
+static const std::string magic("TFBM\x00", 5);
 
 struct TfbmConverter::Priv
 {

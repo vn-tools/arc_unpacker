@@ -14,19 +14,16 @@
 #include "util/zlib.h"
 using namespace Formats::Touhou;
 
-namespace
-{
-    const std::string magic("TFCS\x00", 5);
+static const std::string magic("TFCS\x00", 5);
 
-    void write_cell(IO &output_io, std::string cell)
+static void write_cell(IO &output_io, std::string cell)
+{
+    if (cell.find(",") != std::string::npos)
     {
-        if (cell.find(",") != std::string::npos)
-        {
-            boost::replace_all(cell, "\"", "\"\"");
-            cell = "\"" + cell + "\"";
-        }
-        output_io.write(sjis_to_utf8(cell));
+        boost::replace_all(cell, "\"", "\"\"");
+        cell = "\"" + cell + "\"";
     }
+    output_io.write(sjis_to_utf8(cell));
 }
 
 bool TfcsConverter::is_recognized_internal(File &file) const

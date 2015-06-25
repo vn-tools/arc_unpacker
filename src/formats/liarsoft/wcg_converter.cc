@@ -16,105 +16,102 @@
 #include "util/itos.h"
 using namespace Formats::LiarSoft;
 
-namespace
+static const std::string magic("WG", 2);
+
+static size_t wcg_unpack(
+    IO &io,
+    char *output,
+    unsigned int output_size,
+    int input_shift,
+    int output_shift)
 {
-    const std::string magic("WG", 2);
-
-    size_t wcg_unpack(
-        IO &io,
-        char *output,
-        unsigned int output_size,
-        int input_shift,
-        int output_shift)
+    char *output_ptr = output;
+    char *output_guardian = output + output_size * output_shift;
+    size_t expected_size = output_size << input_shift;
+    size_t actual_size = io.read_u32_le();
+    if (expected_size != actual_size)
     {
-        char *output_ptr = output;
-        char *output_guardian = output + output_size * output_shift;
-        size_t expected_size = output_size << input_shift;
-        size_t actual_size = io.read_u32_le();
-        if (expected_size != actual_size)
-        {
-            throw std::runtime_error("Unexpected size: "
-                + itos(actual_size) + " != " + itos(expected_size));
-        }
-
-        u32 base_offset = io.read_u32_le();
-        u32 table_entry_count = io.read_u16_le();
-        io.skip(2);
-
-        u32 table_size = table_entry_count << input_shift;
-        std::unique_ptr<char[]> table(new char[table_size]);
-        io.read(table.get(), table_size);
-
-        base_offset += io.tell();
-
-        int tmp = table_entry_count - 1;
-        if (tmp < 0)
-            throw std::runtime_error("No table entries found");
-
-        //risky
-        tmp = tmp < 0x1001 ? -1 : 0;
-        size_t var1 = tmp * 8 + 0xe;
-        size_t var2 = tmp + 4;
-
-        BitReader bit_reader(io);
-        while (output_ptr != output_guardian)
-        {
-            size_t sequence_length = 1;
-            size_t table_offset_length = bit_reader.get(var2);
-
-            if (!table_offset_length)
-            {
-                sequence_length = bit_reader.get(4) + 2;
-                table_offset_length = bit_reader.get(var2);
-            }
-            if (!table_offset_length)
-                throw std::runtime_error("Table offset length = 0");
-
-            u32 table_offset = 0;
-            --table_offset_length;
-            if (!table_offset_length)
-            {
-                table_offset = (table_offset << 1) + bit_reader.get(1);
-            }
-            else
-            {
-                if (table_offset_length >= var1)
-                {
-                    while (bit_reader.get(1))
-                        ++table_offset_length;
-                }
-                ++table_offset;
-                table_offset <<= table_offset_length;
-                table_offset |= bit_reader.get(table_offset_length);
-            }
-
-            if (table_offset >= table_entry_count)
-                throw std::runtime_error("Bad table offset");
-
-            if (input_shift == 1)
-            {
-                auto table16 = reinterpret_cast<const u16*>(table.get());
-                auto fragment = table16[table_offset];
-                while (sequence_length--)
-                {
-                    *reinterpret_cast<u16*>(output_ptr) = fragment;
-                    output_ptr += output_shift;
-                }
-            }
-            else
-            {
-                auto table8 = reinterpret_cast<const u8*>(table.get());
-                auto fragment = table8[table_offset];
-                while (sequence_length--)
-                {
-                    *reinterpret_cast<u8*>(output_ptr) = fragment;
-                    output_ptr += output_shift;
-                }
-            }
-        }
-
-        return base_offset;
+        throw std::runtime_error("Unexpected size: "
+            + itos(actual_size) + " != " + itos(expected_size));
     }
+
+    u32 base_offset = io.read_u32_le();
+    u32 table_entry_count = io.read_u16_le();
+    io.skip(2);
+
+    u32 table_size = table_entry_count << input_shift;
+    std::unique_ptr<char[]> table(new char[table_size]);
+    io.read(table.get(), table_size);
+
+    base_offset += io.tell();
+
+    int tmp = table_entry_count - 1;
+    if (tmp < 0)
+        throw std::runtime_error("No table entries found");
+
+    //risky
+    tmp = tmp < 0x1001 ? -1 : 0;
+    size_t var1 = tmp * 8 + 0xe;
+    size_t var2 = tmp + 4;
+
+    BitReader bit_reader(io);
+    while (output_ptr != output_guardian)
+    {
+        size_t sequence_length = 1;
+        size_t table_offset_length = bit_reader.get(var2);
+
+        if (!table_offset_length)
+        {
+            sequence_length = bit_reader.get(4) + 2;
+            table_offset_length = bit_reader.get(var2);
+        }
+        if (!table_offset_length)
+            throw std::runtime_error("Table offset length = 0");
+
+        u32 table_offset = 0;
+        --table_offset_length;
+        if (!table_offset_length)
+        {
+            table_offset = (table_offset << 1) + bit_reader.get(1);
+        }
+        else
+        {
+            if (table_offset_length >= var1)
+            {
+                while (bit_reader.get(1))
+                    ++table_offset_length;
+            }
+            ++table_offset;
+            table_offset <<= table_offset_length;
+            table_offset |= bit_reader.get(table_offset_length);
+        }
+
+        if (table_offset >= table_entry_count)
+            throw std::runtime_error("Bad table offset");
+
+        if (input_shift == 1)
+        {
+            auto table16 = reinterpret_cast<const u16*>(table.get());
+            auto fragment = table16[table_offset];
+            while (sequence_length--)
+            {
+                *reinterpret_cast<u16*>(output_ptr) = fragment;
+                output_ptr += output_shift;
+            }
+        }
+        else
+        {
+            auto table8 = reinterpret_cast<const u8*>(table.get());
+            auto fragment = table8[table_offset];
+            while (sequence_length--)
+            {
+                *reinterpret_cast<u8*>(output_ptr) = fragment;
+                output_ptr += output_shift;
+            }
+        }
+    }
+
+    return base_offset;
 }
 
 bool WcgConverter::is_recognized_internal(File &file) const

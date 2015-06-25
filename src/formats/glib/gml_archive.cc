@@ -12,11 +12,10 @@
 #include "formats/glib/pgx_converter.h"
 using namespace Formats::Glib;
 
+static const size_t prefix_size = 4;
+
 namespace
 {
-    const std::string magic("GML_ARC\x00", 8);
-    const size_t prefix_size = 4;
-
     typedef struct
     {
         std::string name;
@@ -26,58 +25,58 @@ namespace
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
+}
 
-    std::unique_ptr<BufferedIO> get_header_io(
-        IO &arc_io, size_t header_size_compressed, size_t header_size_original)
+static const std::string magic("GML_ARC\x00", 8);
+
+static std::unique_ptr<BufferedIO> get_header_io(
+    IO &arc_io, size_t header_size_compressed, size_t header_size_original)
+{
+    BufferedIO temp_io(arc_io, header_size_compressed);
+    u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
+    for (size_t i = 0; i < header_size_compressed; i++)
+        buffer[i] ^= 0xff;
+
+    std::unique_ptr<BufferedIO> header_io(new BufferedIO);
+    header_io->reserve(header_size_original);
+    GmlDecoder::decode(temp_io, *header_io);
+    header_io->seek(0);
+    return header_io;
+}
+
+static Table read_table(IO &table_io, size_t file_data_start)
+{
+    size_t file_count = table_io.read_u32_le();
+    Table table;
+    table.reserve(file_count);
+    for (size_t i = 0; i < file_count; i++)
     {
-        BufferedIO temp_io(arc_io, header_size_compressed);
-        u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
-        for (size_t i = 0; i < header_size_compressed; i++)
-            buffer[i] ^= 0xff;
-
-        std::unique_ptr<BufferedIO> header_io(new BufferedIO);
-        header_io->reserve(header_size_original);
-        GmlDecoder::decode(temp_io, *header_io);
-        header_io->seek(0);
-        return header_io;
+        std::unique_ptr<TableEntry> entry(new TableEntry);
+        entry->name = table_io.read(table_io.read_u32_le());
+        entry->offset = table_io.read_u32_le() + file_data_start;
+        entry->size = table_io.read_u32_le();
+        table_io.read(entry->prefix, prefix_size);
+        table.push_back(std::move(entry));
     }
+    return table;
+}
 
-    Table read_table(IO &table_io, size_t file_data_start)
-    {
-        size_t file_count = table_io.read_u32_le();
-        Table table;
-        table.reserve(file_count);
-        for (size_t i = 0; i < file_count; i++)
-        {
-            std::unique_ptr<TableEntry> entry(new TableEntry);
-            entry->name = table_io.read(table_io.read_u32_le());
-            entry->offset = table_io.read_u32_le() + file_data_start;
-            entry->size = table_io.read_u32_le();
-            table_io.read(entry->prefix, prefix_size);
-            table.push_back(std::move(entry));
-        }
-        return table;
-    }
+static std::unique_ptr<File> read_file(
+    IO &arc_io, const TableEntry &entry, const std::string &permutation)
+{
+    std::unique_ptr<File> file(new File);
+    file->name = entry.name;
 
-    std::unique_ptr<File> read_file(
-        IO &arc_io,
-        const TableEntry &table_entry,
-        const std::string &permutation)
-    {
-        std::unique_ptr<File> file(new File);
-        file->name = table_entry.name;
+    arc_io.seek(entry.offset);
+    BufferedIO temp_io(arc_io, entry.size);
+    u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
+    for (size_t i = 0; i < entry.size; i++)
+        buffer[i] = permutation[buffer[i]];
 
-        arc_io.seek(table_entry.offset);
-        BufferedIO temp_io(arc_io, table_entry.size);
-        u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
-        for (size_t i = 0; i < table_entry.size; i++)
-            buffer[i] = permutation[buffer[i]];
-
-        temp_io.skip(prefix_size);
-        file->io.write(table_entry.prefix, prefix_size);
-        file->io.write_from_io(temp_io);
-        return file;
-    }
+    temp_io.skip(prefix_size);
+    file->io.write(entry.prefix, prefix_size);
+    file->io.write_from_io(temp_io);
+    return file;
 }
 
 struct GmlArchive::Priv
@@ -112,6 +111,6 @@ void GmlArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     std::string permutation = header_io->read(0x100);
     Table table = read_table(*header_io, file_data_start);
-    for (auto &table_entry : table)
-        file_saver.save(read_file(arc_file.io, *table_entry, permutation));
+    for (auto &entry : table)
+        file_saver.save(read_file(arc_file.io, *entry, permutation));
 }

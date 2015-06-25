@@ -9,108 +9,102 @@
 #include "util/image.h"
 using namespace Formats::Ivory;
 
-namespace
+static const std::string magic("YB", 2);
+
+static void decode_pixels(
+    const u8 *source, size_t source_size, u8 *target, size_t target_size)
 {
-    const std::string magic("YB", 2);
+    const u8 *source_ptr = source;
+    const u8 *source_guardian = source + source_size;
+    u8 *target_ptr = target;
+    u8 *target_guardian = target + target_size;
 
-    void decode_pixels(
-        const u8 *source,
-        const size_t source_size,
-        u8 *target,
-        const size_t target_size)
+    int flag = 0;
+    int length_lookup[256];
+    for (size_t i = 0; i < 256; i++)
+        length_lookup[i] = i + 3;
+    length_lookup[0xff] = 0x1000;
+    length_lookup[0xfe] = 0x400;
+    length_lookup[0xfd] = 0x100;
+
+    while (1)
     {
-        const u8 *source_ptr = source;
-        const u8 *source_guardian = source + source_size;
-        u8 *target_ptr = target;
-        u8 *target_guardian = target + target_size;
-
-        int flag = 0;
-        int length_lookup[256];
-        for (size_t i = 0; i < 256; i++)
-            length_lookup[i] = i + 3;
-        length_lookup[0xff] = 0x1000;
-        length_lookup[0xfe] = 0x400;
-        length_lookup[0xfd] = 0x100;
-
-        while (1)
+        flag <<= 1;
+        if ((flag & 0xff) == 0)
         {
+            if (source_ptr >= source_guardian)
+                break;
+            flag = *source_ptr++;
             flag <<= 1;
-            if ((flag & 0xff) == 0)
+            flag += 1;
+        }
+
+        if ((flag & 0x100) != 0x100)
+        {
+            if (source_ptr >= source_guardian
+                || target_ptr >= target_guardian)
+            {
+                break;
+            }
+
+            *target_ptr++ = *source_ptr++;
+        }
+        else
+        {
+            int tmp = *source_ptr++;
+            size_t length = 0;
+            size_t shift = 0;
+
+            if (tmp & 0x80)
             {
                 if (source_ptr >= source_guardian)
                     break;
-                flag = *source_ptr++;
-                flag <<= 1;
-                flag += 1;
-            }
 
-            if ((flag & 0x100) != 0x100)
-            {
-                if (source_ptr >= source_guardian
-                    || target_ptr >= target_guardian)
-                {
-                    break;
-                }
-
-                *target_ptr++ = *source_ptr++;
-            }
-            else
-            {
-                int tmp = *source_ptr++;
-                size_t length = 0;
-                size_t shift = 0;
-
-                if (tmp & 0x80)
+                shift = (*source_ptr++) | ((tmp & 0x3f) << 8);
+                if (tmp & 0x40)
                 {
                     if (source_ptr >= source_guardian)
                         break;
-
-                    shift = (*source_ptr++) | ((tmp & 0x3f) << 8);
-                    if (tmp & 0x40)
-                    {
-                        if (source_ptr >= source_guardian)
-                            break;
-                        auto index = static_cast<size_t>(*source_ptr++);
-                        length = length_lookup[index];
-                    }
-                    else
-                    {
-                        length = (shift & 0xf) + 3;
-                        shift >>= 4;
-                    }
+                    auto index = static_cast<size_t>(*source_ptr++);
+                    length = length_lookup[index];
                 }
                 else
                 {
-                    length = tmp >> 2;
-                    tmp &= 3;
-                    if (tmp == 3)
-                    {
-                        length += 9;
-                        for (size_t i = 0; i < length; i++)
-                        {
-                            if (source_ptr >= source_guardian
-                                || target_ptr >= target_guardian)
-                            {
-                                break;
-                            }
-                            *target_ptr++ = *source_ptr++;
-                        }
-                        continue;
-                    }
-                    shift = length;
-                    length = tmp + 2;
+                    length = (shift & 0xf) + 3;
+                    shift >>= 4;
                 }
-
-                shift += 1;
-                for (size_t i = 0; i < length; i++)
+            }
+            else
+            {
+                length = tmp >> 2;
+                tmp &= 3;
+                if (tmp == 3)
                 {
-                    if (target_ptr >= target_guardian)
-                        break;
-                    if (target_ptr - shift < target)
-                        throw std::runtime_error("Invalid shift value");
-                    *target_ptr = *(target_ptr - shift);
-                    target_ptr++;
+                    length += 9;
+                    for (size_t i = 0; i < length; i++)
+                    {
+                        if (source_ptr >= source_guardian
+                            || target_ptr >= target_guardian)
+                        {
+                            break;
+                        }
+                        *target_ptr++ = *source_ptr++;
+                    }
+                    continue;
                 }
+                shift = length;
+                length = tmp + 2;
+            }
+
+            shift += 1;
+            for (size_t i = 0; i < length; i++)
+            {
+                if (target_ptr >= target_guardian)
+                    break;
+                if (target_ptr - shift < target)
+                    throw std::runtime_error("Invalid shift value");
+                *target_ptr = *(target_ptr - shift);
+                target_ptr++;
             }
         }
     }

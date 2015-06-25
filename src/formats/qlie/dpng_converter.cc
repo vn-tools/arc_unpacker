@@ -13,10 +13,7 @@
 #include "util/image.h"
 using namespace Formats::QLiE;
 
-namespace
-{
-    const std::string magic("DPNG", 4);
-}
+static const std::string magic("DPNG", 4);
 
 bool DpngConverter::is_recognized_internal(File &file) const
 {

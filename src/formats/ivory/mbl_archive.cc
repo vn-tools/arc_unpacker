@@ -12,62 +12,54 @@
 #include "util/encoding.h"
 using namespace Formats::Ivory;
 
-namespace
+static int check_version(
+    IO &arc_io, size_t initial_position, u32 file_count, u32 name_length)
 {
-    int check_version(
-        IO &arc_io,
-        size_t initial_position,
-        u32 file_count,
-        u32 name_length)
+    arc_io.seek(initial_position + file_count * (name_length + 8));
+    arc_io.skip(-8);
+    u32 last_file_offset = arc_io.read_u32_le();
+    u32 last_file_size = arc_io.read_u32_le();
+    return last_file_offset + last_file_size == arc_io.size();
+}
+
+static int get_version(IO &arc_io)
+{
+    u32 file_count = arc_io.read_u32_le();
+    if (check_version(arc_io, 4, file_count, 16))
     {
-        arc_io.seek(initial_position + file_count * (name_length + 8));
-        arc_io.skip(-8);
-        u32 last_file_offset = arc_io.read_u32_le();
-        u32 last_file_size = arc_io.read_u32_le();
-        return last_file_offset + last_file_size == arc_io.size();
+        arc_io.seek(0);
+        return 1;
     }
 
-    int get_version(IO &arc_io)
+    arc_io.seek(4);
+    u32 name_length = arc_io.read_u32_le();
+    if (check_version(arc_io, 8, file_count, name_length))
     {
-        u32 file_count = arc_io.read_u32_le();
-        if (check_version(arc_io, 4, file_count, 16))
-        {
-            arc_io.seek(0);
-            return 1;
-        }
-
-        arc_io.seek(4);
-        u32 name_length = arc_io.read_u32_le();
-        if (check_version(arc_io, 8, file_count, name_length))
-        {
-            arc_io.seek(0);
-            return 2;
-        }
-
-        return -1;
+        arc_io.seek(0);
+        return 2;
     }
 
-    std::unique_ptr<File> read_file(
-        IO &arc_io,
-        size_t name_length)
-    {
-        std::unique_ptr<File> file(new File);
+    return -1;
+}
 
-        size_t old_pos = arc_io.tell();
-        std::string name = arc_io.read_until_zero();
-        file->name = sjis_to_utf8(name);
-        arc_io.seek(old_pos + name_length);
+static std::unique_ptr<File> read_file(IO &arc_io, size_t name_length)
+{
+    std::unique_ptr<File> file(new File);
 
-        size_t offset = arc_io.read_u32_le();
-        size_t size = arc_io.read_u32_le();
+    size_t old_pos = arc_io.tell();
+    std::string name = arc_io.read_until_zero();
+    file->name = sjis_to_utf8(name);
+    arc_io.seek(old_pos + name_length);
 
-        old_pos = arc_io.tell();
-        arc_io.seek(offset);
-        file->io.write_from_io(arc_io, size);
-        arc_io.seek(old_pos);
+    size_t offset = arc_io.read_u32_le();
+    size_t size = arc_io.read_u32_le();
 
-        return file;
-    }
+    old_pos = arc_io.tell();
+    arc_io.seek(offset);
+    file->io.write_from_io(arc_io, size);
+    arc_io.seek(old_pos);
+
+    return file;
 }
 
 struct MblArchive::Priv

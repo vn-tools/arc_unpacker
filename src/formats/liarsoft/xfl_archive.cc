@@ -15,8 +15,6 @@ using namespace Formats::LiarSoft;
 
 namespace
 {
-    const std::string magic("LB\x01\x00", 4);
-
     typedef struct
     {
         std::string name;
@@ -25,33 +23,35 @@ namespace
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
+}
 
-    Table read_table(IO &arc_io)
-    {
-        Table table;
-        size_t table_size = arc_io.read_u32_le();
-        size_t file_count = arc_io.read_u32_le();
-        size_t file_start = arc_io.tell() + table_size;
-        table.reserve(file_count);
-        for (size_t i = 0; i < file_count; i++)
-        {
-            std::unique_ptr<TableEntry> table_entry(new TableEntry);
-            table_entry->name = sjis_to_utf8(arc_io.read_until_zero(0x20));
-            table_entry->offset = file_start + arc_io.read_u32_le();
-            table_entry->size = arc_io.read_u32_le();
-            table.push_back(std::move(table_entry));
-        }
-        return table;
-    }
+static const std::string magic("LB\x01\x00", 4);
 
-    std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &table_entry)
+static Table read_table(IO &arc_io)
+{
+    Table table;
+    size_t table_size = arc_io.read_u32_le();
+    size_t file_count = arc_io.read_u32_le();
+    size_t file_start = arc_io.tell() + table_size;
+    table.reserve(file_count);
+    for (size_t i = 0; i < file_count; i++)
     {
-        std::unique_ptr<File> file(new File);
-        file->name = table_entry.name;
-        arc_io.seek(table_entry.offset);
-        file->io.write_from_io(arc_io, table_entry.size);
-        return file;
+        std::unique_ptr<TableEntry> entry(new TableEntry);
+        entry->name = sjis_to_utf8(arc_io.read_until_zero(0x20));
+        entry->offset = file_start + arc_io.read_u32_le();
+        entry->size = arc_io.read_u32_le();
+        table.push_back(std::move(entry));
     }
+    return table;
+}
+
+static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+{
+    std::unique_ptr<File> file(new File);
+    file->name = entry.name;
+    arc_io.seek(entry.offset);
+    file->io.write_from_io(arc_io, entry.size);
+    return file;
 }
 
 struct XflArchive::Priv
@@ -81,9 +81,9 @@ void XflArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     arc_file.io.skip(magic.size());
 
     Table table = read_table(arc_file.io);
-    for (auto &table_entry : table)
+    for (auto &entry : table)
     {
-        auto file = read_file(arc_file.io, *table_entry);
+        auto file = read_file(arc_file.io, *entry);
         file->guess_extension();
         file_saver.save(std::move(file));
     }

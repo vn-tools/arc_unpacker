@@ -34,76 +34,74 @@ namespace
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
+}
 
-    Table read_table(IO &arc_io)
+static Table read_table(IO &arc_io)
+{
+    Table table;
+    size_t file_count = arc_io.read_u16_be();
+    size_t offset_to_files = arc_io.read_u32_be();
+    if (offset_to_files > arc_io.size())
+        throw std::runtime_error("Bad offset to files");
+
+    for (size_t i = 0; i < file_count; i++)
     {
-        Table table;
-        size_t file_count = arc_io.read_u16_be();
-        size_t offset_to_files = arc_io.read_u32_be();
-        if (offset_to_files > arc_io.size())
-            throw std::runtime_error("Bad offset to files");
+        std::unique_ptr<TableEntry> entry(new TableEntry);
+        entry->name = arc_io.read_until_zero();
+        entry->compression_type
+            = static_cast<CompressionType>(arc_io.read_u8());
+        entry->offset = arc_io.read_u32_be();
+        entry->size_compressed = arc_io.read_u32_be();
+        entry->size_original = arc_io.read_u32_be();
 
-        for (size_t i = 0; i < file_count; i++)
-        {
-            std::unique_ptr<TableEntry> entry(new TableEntry);
-            entry->name = arc_io.read_until_zero();
-            entry->compression_type
-                = static_cast<CompressionType>(arc_io.read_u8());
-            entry->offset = arc_io.read_u32_be();
-            entry->size_compressed = arc_io.read_u32_be();
-            entry->size_original = arc_io.read_u32_be();
+        entry->offset += offset_to_files;
 
-            entry->offset += offset_to_files;
+        if (entry->offset + entry->size_compressed > arc_io.size())
+            throw std::runtime_error("Bad offset to file");
 
-            if (entry->offset + entry->size_compressed > arc_io.size())
-                throw std::runtime_error("Bad offset to file");
-
-            table.push_back(std::move(entry));
-        }
-        return table;
+        table.push_back(std::move(entry));
     }
+    return table;
+}
 
-    std::unique_ptr<File> read_file(
-        IO &arc_io, const TableEntry &table_entry, SpbConverter &spb_converter)
+static std::unique_ptr<File> read_file(
+    IO &arc_io, const TableEntry &entry, SpbConverter &spb_converter)
+{
+    std::unique_ptr<File> file(new File);
+
+    file->name = entry.name;
+    arc_io.seek(entry.offset);
+    std::string data = arc_io.read(entry.size_compressed);
+
+    switch (entry.compression_type)
     {
-        std::unique_ptr<File> file(new File);
+        case COMPRESSION_NONE:
+            file->io.write(data);
+            break;
 
-        file->name = table_entry.name;
-        arc_io.seek(table_entry.offset);
-        std::string data = arc_io.read(table_entry.size_compressed);
-
-        switch (table_entry.compression_type)
+        case COMPRESSION_LZSS:
         {
-            case COMPRESSION_NONE:
-                file->io.write(data);
-                break;
+            BufferedIO data_io(data);
+            BitReader bit_reader(data_io);
 
-            case COMPRESSION_LZSS:
-            {
-                BufferedIO data_io(data);
-                BitReader bit_reader(data_io);
-
-                LzssSettings settings;
-                settings.position_bits = 8;
-                settings.length_bits = 4;
-                settings.min_match_length = 2;
-                settings.initial_dictionary_pos = 239;
-                settings.reuse_compressed = true;
-                file->io.write(lzss_decompress(
-                    bit_reader,
-                    table_entry.size_original,
-                    settings));
-                break;
-            }
-
-            case COMPRESSION_SPB:
-                file->io.write(data);
-                file = spb_converter.decode(*file);
-                break;
+            LzssSettings settings;
+            settings.position_bits = 8;
+            settings.length_bits = 4;
+            settings.min_match_length = 2;
+            settings.initial_dictionary_pos = 239;
+            settings.reuse_compressed = true;
+            file->io.write(lzss_decompress(
+                bit_reader, entry.size_original, settings));
+            break;
         }
 
-        return file;
+        case COMPRESSION_SPB:
+            file->io.write(data);
+            file = spb_converter.decode(*file);
+            break;
     }
+
+    return file;
 }
 
 struct NsaArchive::Priv
@@ -141,9 +139,6 @@ bool NsaArchive::is_recognized_internal(File &arc_file) const
 void NsaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     Table table = read_table(arc_file.io);
-    for (auto &table_entry : table)
-    {
-        file_saver.save(
-            read_file(arc_file.io, *table_entry, p->spb_converter));
-    }
+    for (auto &entry : table)
+        file_saver.save(read_file(arc_file.io, *entry, p->spb_converter));
 }

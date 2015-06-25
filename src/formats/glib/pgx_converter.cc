@@ -14,10 +14,7 @@
 #include "util/image.h"
 using namespace Formats::Glib;
 
-namespace
-{
-    const std::string magic("PGX\x00", 4);
-}
+static const std::string magic("PGX\x00", 4);
 
 bool PgxConverter::is_recognized_internal(File &file) const
 {

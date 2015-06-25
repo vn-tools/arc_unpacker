@@ -15,71 +15,68 @@
 #include "util/itos.h"
 using namespace Formats::Touhou;
 
-namespace
+static std::unique_ptr<File> read_image(
+    IO &arc_io, size_t index, Palette palette)
 {
-    std::unique_ptr<File> read_image(
-        IO &arc_io, size_t index, Palette palette)
+    auto image_width = arc_io.read_u32_le();
+    auto image_height = arc_io.read_u32_le();
+    arc_io.skip(4);
+    auto bit_depth = arc_io.read_u8();
+    size_t source_size = arc_io.read_u32_le();
+    size_t target_size = image_width * image_height * 4;
+
+    BufferedIO target_io;
+    target_io.reserve(target_size);
+    BufferedIO source_io;
+    source_io.write_from_io(arc_io, source_size);
+    source_io.seek(0);
+
+    while (source_io.tell() < source_io.size())
     {
-        auto image_width = arc_io.read_u32_le();
-        auto image_height = arc_io.read_u32_le();
-        arc_io.skip(4);
-        auto bit_depth = arc_io.read_u8();
-        size_t source_size = arc_io.read_u32_le();
-        size_t target_size = image_width * image_height * 4;
+        size_t repeat;
+        u32 rgba;
 
-        BufferedIO target_io;
-        target_io.reserve(target_size);
-        BufferedIO source_io;
-        source_io.write_from_io(arc_io, source_size);
-        source_io.seek(0);
-
-        while (source_io.tell() < source_io.size())
+        switch (bit_depth)
         {
-            size_t repeat;
-            u32 rgba;
+            case 32:
+                repeat = source_io.read_u32_le();
+                rgba = source_io.read_u32_le();
+                break;
 
-            switch (bit_depth)
-            {
-                case 32:
-                    repeat = source_io.read_u32_le();
-                    rgba = source_io.read_u32_le();
-                    break;
+            case 24:
+                repeat = source_io.read_u32_le();
+                rgba = source_io.read_u8()
+                    | (source_io.read_u8() << 8)
+                    | (source_io.read_u8() << 16)
+                    | 0xff000000;
+                source_io.skip(1);
+                break;
 
-                case 24:
-                    repeat = source_io.read_u32_le();
-                    rgba = source_io.read_u8()
-                        | (source_io.read_u8() << 8)
-                        | (source_io.read_u8() << 16)
-                        | 0xff000000;
-                    source_io.skip(1);
-                    break;
+            case 16:
+                repeat = source_io.read_u16_le();
+                rgba = rgba5551(source_io.read_u16_le());
+                break;
 
-                case 16:
-                    repeat = source_io.read_u16_le();
-                    rgba = rgba5551(source_io.read_u16_le());
-                    break;
+            case 8:
+                repeat = source_io.read_u8();
+                rgba = palette[static_cast<size_t>(source_io.read_u8())];
+                break;
 
-                case 8:
-                    repeat = source_io.read_u8();
-                    rgba = palette[static_cast<size_t>(source_io.read_u8())];
-                    break;
-
-                default:
-                    throw std::runtime_error("Unsupported channel count");
-            }
-
-            while (repeat--)
-                target_io.write_u32_le(rgba);
+            default:
+                throw std::runtime_error("Unsupported channel count");
         }
 
-        target_io.seek(0);
-        auto image = Image::from_pixels(
-            image_width,
-            image_height,
-            target_io.read(target_io.size()),
-            PixelFormat::BGRA);
-        return image->create_file(itos(index, 4));
+        while (repeat--)
+            target_io.write_u32_le(rgba);
     }
+
+    target_io.seek(0);
+    auto image = Image::from_pixels(
+        image_width,
+        image_height,
+        target_io.read(target_io.size()),
+        PixelFormat::BGRA);
+    return image->create_file(itos(index, 4));
 }
 
 bool Pak1ImageArchive::is_recognized_internal(File &arc_file) const

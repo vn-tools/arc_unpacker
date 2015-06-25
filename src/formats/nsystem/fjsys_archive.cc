@@ -23,43 +23,43 @@ using namespace Formats::NSystem;
 
 namespace
 {
-    const std::string magic("FJSYS\x00\x00\x00", 8);
-
     typedef struct
     {
         size_t header_size;
         size_t file_names_size;
         size_t file_count;
     } Header;
+}
 
-    std::unique_ptr<Header> read_header(IO &arc_io)
-    {
-        std::unique_ptr<Header> header(new Header);
-        header->header_size = arc_io.read_u32_le();
-        header->file_names_size = arc_io.read_u32_le();
-        header->file_count = arc_io.read_u32_le();
-        arc_io.skip(64);
-        return header;
-    }
+static const std::string magic("FJSYS\x00\x00\x00", 8);
 
-    std::unique_ptr<File> read_file(IO &arc_io, const Header &header)
-    {
-        std::unique_ptr<File> file(new File);
-        size_t file_name_offset = arc_io.read_u32_le();
-        size_t data_size = arc_io.read_u32_le();
-        size_t data_offset = static_cast<size_t>(arc_io.read_u64_le());
-        size_t old_pos = arc_io.tell();
-        size_t file_names_start = header.header_size - header.file_names_size;
+static std::unique_ptr<Header> read_header(IO &arc_io)
+{
+    std::unique_ptr<Header> header(new Header);
+    header->header_size = arc_io.read_u32_le();
+    header->file_names_size = arc_io.read_u32_le();
+    header->file_count = arc_io.read_u32_le();
+    arc_io.skip(64);
+    return header;
+}
 
-        arc_io.seek(file_name_offset + file_names_start);
-        file->name = arc_io.read_until_zero();
+static std::unique_ptr<File> read_file(IO &arc_io, const Header &header)
+{
+    std::unique_ptr<File> file(new File);
+    size_t file_name_offset = arc_io.read_u32_le();
+    size_t data_size = arc_io.read_u32_le();
+    size_t data_offset = static_cast<size_t>(arc_io.read_u64_le());
+    size_t old_pos = arc_io.tell();
+    size_t file_names_start = header.header_size - header.file_names_size;
 
-        arc_io.seek(data_offset);
-        file->io.write_from_io(arc_io, data_size);
+    arc_io.seek(file_name_offset + file_names_start);
+    file->name = arc_io.read_until_zero();
 
-        arc_io.seek(old_pos);
-        return file;
-    }
+    arc_io.seek(data_offset);
+    file->io.write_from_io(arc_io, data_size);
+
+    arc_io.seek(old_pos);
+    return file;
 }
 
 struct FjsysArchive::Priv

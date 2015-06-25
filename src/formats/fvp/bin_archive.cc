@@ -22,38 +22,38 @@ namespace
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
+}
 
-    Table read_table(IO &arc_io)
+static Table read_table(IO &arc_io)
+{
+    size_t file_count = arc_io.read_u32_le();
+    arc_io.skip(4);
+
+    size_t names_start = file_count * 12 + 8;
+
+    Table table;
+    for (size_t i = 0; i < file_count; i++)
     {
-        size_t file_count = arc_io.read_u32_le();
-        arc_io.skip(4);
-
-        size_t names_start = file_count * 12 + 8;
-
-        Table table;
-        for (size_t i = 0; i < file_count; i++)
+        std::unique_ptr<TableEntry> entry(new TableEntry);
+        size_t name_offset = arc_io.read_u32_le();
+        arc_io.peek(names_start + name_offset, [&]()
         {
-            std::unique_ptr<TableEntry> entry(new TableEntry);
-            size_t name_offset = arc_io.read_u32_le();
-            arc_io.peek(names_start + name_offset, [&]()
-            {
-                entry->name = sjis_to_utf8(arc_io.read_until_zero());
-            });
-            entry->offset = arc_io.read_u32_le();
-            entry->size = arc_io.read_u32_le();
-            table.push_back(std::move(entry));
-        }
-        return table;
+            entry->name = sjis_to_utf8(arc_io.read_until_zero());
+        });
+        entry->offset = arc_io.read_u32_le();
+        entry->size = arc_io.read_u32_le();
+        table.push_back(std::move(entry));
     }
+    return table;
+}
 
-    std::unique_ptr<File> read_file(IO &arc_io, TableEntry &entry)
-    {
-        std::unique_ptr<File> file(new File);
-        arc_io.seek(entry.offset);
-        file->io.write_from_io(arc_io, entry.size);
-        file->name = entry.name;
-        return file;
-    }
+static std::unique_ptr<File> read_file(IO &arc_io, TableEntry &entry)
+{
+    std::unique_ptr<File> file(new File);
+    arc_io.seek(entry.offset);
+    file->io.write_from_io(arc_io, entry.size);
+    file->name = entry.name;
+    return file;
 }
 
 struct BinArchive::Priv

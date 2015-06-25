@@ -18,17 +18,17 @@ namespace
         u32 offset;
         u32 size;
     } TableEntry;
+}
 
-    std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &table_entry)
-    {
-        std::unique_ptr<File> file(new File);
-        file->name = table_entry.name;
+static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+{
+    std::unique_ptr<File> file(new File);
+    file->name = entry.name;
 
-        arc_io.seek(table_entry.offset);
-        file->io.write_from_io(arc_io, table_entry.size);
+    arc_io.seek(entry.offset);
+    file->io.write_from_io(arc_io, entry.size);
 
-        return file;
-    }
+    return file;
 }
 
 bool SarArchive::is_recognized_internal(File &arc_file) const
@@ -52,6 +52,6 @@ void SarArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         table.push_back(std::move(entry));
     }
 
-    for (auto &table_entry : table)
-        file_saver.save(read_file(arc_file.io, *table_entry));
+    for (auto &entry : table)
+        file_saver.save(read_file(arc_file.io, *entry));
 }

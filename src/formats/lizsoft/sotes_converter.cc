@@ -13,51 +13,48 @@
 #include "util/image.h"
 using namespace Formats::Lizsoft;
 
-namespace
+static size_t guess_image_dimension(
+    const std::vector<u32> candidates,
+    int main_delta,
+    int max_delta_correction,
+    size_t pixels_size)
 {
-    size_t guess_image_dimension(
-        const std::vector<u32> candidates,
-        int main_delta,
-        int max_delta_correction,
-        size_t pixels_size)
+    for (auto &base : candidates)
     {
-        for (auto &base : candidates)
+        for (int delta = 0; delta <= max_delta_correction; delta++)
         {
-            for (int delta = 0; delta <= max_delta_correction; delta++)
-            {
-                size_t possible_dimension = base + main_delta + delta;
-                if (possible_dimension == 0)
-                    continue;
-                if (possible_dimension > pixels_size)
-                    continue;
-                if (pixels_size % possible_dimension == 0)
-                    return possible_dimension;
-            }
+            size_t possible_dimension = base + main_delta + delta;
+            if (possible_dimension == 0)
+                continue;
+            if (possible_dimension > pixels_size)
+                continue;
+            if (pixels_size % possible_dimension == 0)
+                return possible_dimension;
         }
-        throw std::runtime_error("Cannot figure out the image dimensions");
     }
+    throw std::runtime_error("Cannot figure out the image dimensions");
+}
 
-    void mirror(char *pixel_data, size_t pixel_data_size, size_t scanline_width)
+static void mirror(char *pixel_data, size_t pixel_data_size, size_t stride)
+{
+    size_t height = pixel_data_size / stride;
+    std::unique_ptr<char[]> old_line(new char[stride]);
+    for (size_t y = 0; y < height / 2; y++)
     {
-        size_t height = pixel_data_size / scanline_width;
-        std::unique_ptr<char[]> old_line(new char[scanline_width]);
-        for (size_t y = 0; y < height / 2; y++)
-        {
-            memcpy(
-                old_line.get(),
-                &pixel_data[y * scanline_width],
-                scanline_width);
+        memcpy(
+            old_line.get(),
+            &pixel_data[y * stride],
+            stride);
 
-            memcpy(
-                &pixel_data[y * scanline_width],
-                &pixel_data[(height - 1 - y) * scanline_width],
-                scanline_width);
+        memcpy(
+            &pixel_data[y * stride],
+            &pixel_data[(height - 1 - y) * stride],
+            stride);
 
-            memcpy(
-                &pixel_data[(height - 1 - y) * scanline_width],
-                old_line.get(),
-                scanline_width);
-        }
+        memcpy(
+            &pixel_data[(height - 1 - y) * stride],
+            old_line.get(),
+            stride);
     }
 }
 

@@ -23,64 +23,64 @@ namespace
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
+}
 
-    void decrypt(IO &io, u8 a, u8 b, u8 delta)
+static void decrypt(IO &io, u8 a, u8 b, u8 delta)
+{
+    size_t size = io.size();
+    std::unique_ptr<char[]> buffer(new char[size]);
+    io.seek(0);
+    io.read(buffer.get(), size);
+    for (size_t i = 0; i < size; i++)
     {
-        size_t size = io.size();
-        std::unique_ptr<char[]> buffer(new char[size]);
-        io.seek(0);
-        io.read(buffer.get(), size);
-        for (size_t i = 0; i < size; i++)
-        {
-            buffer[i] ^= a;
-            a += b;
-            b += delta;
-        }
-        io.seek(0);
-        io.write(buffer.get(), size);
-        io.seek(0);
+        buffer[i] ^= a;
+        a += b;
+        b += delta;
     }
+    io.seek(0);
+    io.write(buffer.get(), size);
+    io.seek(0);
+}
 
-    std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &table_entry)
-    {
-        std::unique_ptr<File> file(new File);
-        arc_io.seek(table_entry.offset);
-        file->io.write_from_io(arc_io, table_entry.size);
-        file->name = table_entry.name;
-        return file;
-    }
+static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+{
+    std::unique_ptr<File> file(new File);
+    arc_io.seek(entry.offset);
+    file->io.write_from_io(arc_io, entry.size);
+    file->name = entry.name;
+    return file;
+}
 
-    std::unique_ptr<BufferedIO> read_raw_table(IO &arc_io, size_t file_count)
-    {
-        size_t table_size = file_count * 0x6c;
-        if (table_size > arc_io.size() - arc_io.tell())
-            throw std::runtime_error("Not a PAK1 archive");
-        std::unique_ptr<BufferedIO> table_io(new BufferedIO());
-        table_io->write_from_io(arc_io, table_size);
-        decrypt(*table_io, 0x64, 0x64, 0x4d);
-        return table_io;
-    }
+static std::unique_ptr<BufferedIO> read_raw_table(IO &arc_io, size_t file_count)
+{
+    size_t table_size = file_count * 0x6c;
+    if (table_size > arc_io.size() - arc_io.tell())
+        throw std::runtime_error("Not a PAK1 archive");
+    std::unique_ptr<BufferedIO> table_io(new BufferedIO());
+    table_io->write_from_io(arc_io, table_size);
+    decrypt(*table_io, 0x64, 0x64, 0x4d);
+    return table_io;
+}
 
-    Table read_table(IO &arc_io)
+static Table read_table(IO &arc_io)
+{
+    u16 file_count = arc_io.read_u16_le();
+    if (file_count == 0 && arc_io.size() != 6)
+        throw std::runtime_error("Not a PAK1 archive");
+    auto table_io = read_raw_table(arc_io, file_count);
+    Table table;
+    table.reserve(file_count);
+    for (size_t i = 0; i < file_count; i++)
     {
-        u16 file_count = arc_io.read_u16_le();
-        if (file_count == 0 && arc_io.size() != 6)
-            throw std::runtime_error("Not a PAK1 archive");
-        auto table_io = read_raw_table(arc_io, file_count);
-        Table table;
-        table.reserve(file_count);
-        for (size_t i = 0; i < file_count; i++)
-        {
-            std::unique_ptr<TableEntry> entry(new TableEntry);
-            entry->name = table_io->read_until_zero(0x64);
-            entry->size = table_io->read_u32_le();
-            entry->offset = table_io->read_u32_le();
-            if (entry->offset + entry->size > arc_io.size())
-                throw std::runtime_error("Bad offset to file");
-            table.push_back(std::move(entry));
-        }
-        return table;
+        std::unique_ptr<TableEntry> entry(new TableEntry);
+        entry->name = table_io->read_until_zero(0x64);
+        entry->size = table_io->read_u32_le();
+        entry->offset = table_io->read_u32_le();
+        if (entry->offset + entry->size > arc_io.size())
+            throw std::runtime_error("Bad offset to file");
+        table.push_back(std::move(entry));
     }
+    return table;
 }
 
 struct Pak1Archive::Priv
@@ -115,9 +115,9 @@ bool Pak1Archive::is_recognized_internal(File &arc_file) const
 void Pak1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     auto table = read_table(arc_file.io);
-    for (auto &table_entry : table)
+    for (auto &entry : table)
     {
-        auto file = read_file(arc_file.io, *table_entry);
+        auto file = read_file(arc_file.io, *entry);
 
         //decode the file
         if (file->name.find("musicroom.dat") != std::string::npos)

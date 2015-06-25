@@ -13,8 +13,6 @@ using namespace Formats::YukaScript;
 
 namespace
 {
-    const std::string magic("YKC001", 6);
-
     typedef struct
     {
         std::string name;
@@ -23,40 +21,43 @@ namespace
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
+}
 
-    Table read_table(IO &arc_io, size_t table_offset, size_t table_size)
+static const std::string magic("YKC001", 6);
+
+static Table read_table(IO &arc_io, size_t table_offset, size_t table_size)
+{
+    Table table;
+    size_t file_count = table_size / 20;
+
+    for (size_t i = 0; i < file_count; i++)
     {
-        Table table;
-        size_t file_count = table_size / 20;
+        std::unique_ptr<TableEntry> entry(new TableEntry);
 
-        for (size_t i = 0; i < file_count; i++)
-        {
-            std::unique_ptr<TableEntry> table_entry(new TableEntry);
+        arc_io.seek(table_offset + i * 20);
+        size_t name_origin = arc_io.read_u32_le();
+        size_t name_size = arc_io.read_u32_le();
+        entry->offset = arc_io.read_u32_le();
+        entry->size = arc_io.read_u32_le();
+        arc_io.skip(4);
 
-            arc_io.seek(table_offset + i * 20);
-            size_t name_origin = arc_io.read_u32_le();
-            size_t name_size = arc_io.read_u32_le();
-            table_entry->offset = arc_io.read_u32_le();
-            table_entry->size = arc_io.read_u32_le();
-            arc_io.skip(4);
-
-            arc_io.seek(name_origin);
-            table_entry->name = arc_io.read(name_size);
-            table.push_back(std::move(table_entry));
-        }
-
-        return table;
+        arc_io.seek(name_origin);
+        entry->name = arc_io.read(name_size);
+        table.push_back(std::move(entry));
     }
 
-    std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &table_entry)
-    {
-        std::unique_ptr<File> file(new File);
-        arc_io.seek(table_entry.offset);
-        file->io.write_from_io(arc_io, table_entry.size);
-        file->name = table_entry.name;
+    return table;
+}
 
-        return file;
-    }
+static std::unique_ptr<File> read_file(
+    IO &arc_io, const TableEntry &entry)
+{
+    std::unique_ptr<File> file(new File);
+    arc_io.seek(entry.offset);
+    file->io.write_from_io(arc_io, entry.size);
+    file->name = entry.name;
+
+    return file;
 }
 
 struct YkcArchive::Priv
@@ -89,6 +90,6 @@ void YkcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     size_t table_size = arc_file.io.read_u32_le();
     Table table = read_table(arc_file.io, table_offset, table_size);
 
-    for (auto &table_entry : table)
-        file_saver.save(read_file(arc_file.io, *table_entry));
+    for (auto &entry : table)
+        file_saver.save(read_file(arc_file.io, *entry));
 }

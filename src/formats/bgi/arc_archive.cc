@@ -12,30 +12,27 @@
 #include "formats/bgi/sound_converter.h"
 using namespace Formats::Bgi;
 
-namespace
+static const std::string magic("PackFile    ", 12);
+
+static std::unique_ptr<File> read_file(IO &arc_io, size_t file_count)
 {
-    const std::string magic("PackFile    ", 12);
+    std::unique_ptr<File> file(new File);
 
-    std::unique_ptr<File> read_file(IO &arc_io, size_t file_count)
-    {
-        std::unique_ptr<File> file(new File);
+    size_t old_pos = arc_io.tell();
+    file->name = arc_io.read_until_zero();
+    arc_io.seek(old_pos + 16);
 
-        size_t old_pos = arc_io.tell();
-        file->name = arc_io.read_until_zero();
-        arc_io.seek(old_pos + 16);
+    size_t offset = arc_io.read_u32_le();
+    size_t size = arc_io.read_u32_le();
+    offset += magic.size() + 4 + file_count * 32;
+    arc_io.skip(8);
 
-        size_t offset = arc_io.read_u32_le();
-        size_t size = arc_io.read_u32_le();
-        offset += magic.size() + 4 + file_count * 32;
-        arc_io.skip(8);
+    old_pos = arc_io.tell();
+    arc_io.seek(offset);
+    file->io.write_from_io(arc_io, size);
+    arc_io.seek(old_pos);
 
-        old_pos = arc_io.tell();
-        arc_io.seek(offset);
-        file->io.write_from_io(arc_io, size);
-        arc_io.seek(old_pos);
-
-        return file;
-    }
+    return file;
 }
 
 struct ArcArchive::Priv

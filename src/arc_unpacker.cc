@@ -12,99 +12,99 @@ namespace
         std::vector<std::unique_ptr<PathInfo>> input_paths;
         bool overwrite;
     } Options;
+}
 
-    void add_help_option(ArgParser &arg_parser)
+static void add_help_option(ArgParser &arg_parser)
+{
+    arg_parser.add_help("-h, --help", "Shows this message.");
+}
+
+static bool should_show_help(ArgParser &arg_parser)
+{
+    return arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
+}
+
+static void add_rename_option(ArgParser &arg_parser, Options &options)
+{
+    arg_parser.add_help(
+        "-r, --rename",
+        "Renames existing target files.\nBy default, they're overwritten.");
+
+    options.overwrite = true;
+    if (arg_parser.has_flag("-r") || arg_parser.has_flag("--rename"))
+        options.overwrite = false;
+}
+
+static void add_output_folder_option(ArgParser &arg_parser, Options &options)
+{
+    arg_parser.add_help(
+        "-o, --out=FOLDER",
+        "Where to put the output files.");
+
+    if (arg_parser.has_switch("-o"))
+        options.output_dir = arg_parser.get_switch("-o");
+    else if (arg_parser.has_switch("--out"))
+        options.output_dir = arg_parser.get_switch("--out");
+    else
+        options.output_dir = "./";
+}
+
+static void add_format_option(ArgParser &arg_parser, Options &options)
+{
+    arg_parser.add_help(
+        "-f, --fmt=FORMAT",
+        "Disables guessing and selects given format.");
+
+    if (arg_parser.has_switch("-f"))
+        options.format = arg_parser.get_switch("-f");
+    if (arg_parser.has_switch("--fmt"))
+        options.format = arg_parser.get_switch("--fmt");
+}
+
+static bool add_input_paths_option(
+    ArcUnpacker &arc_unpacker,
+    ArgParser &arg_parser,
+    Options &options)
+{
+    const std::vector<std::string> stray = arg_parser.get_stray();
+    for (size_t i = 1; i < stray.size(); i++)
     {
-        arg_parser.add_help("-h, --help", "Shows this message.");
-    }
-
-    bool should_show_help(ArgParser &arg_parser)
-    {
-        return arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
-    }
-
-    void add_rename_option(ArgParser &arg_parser, Options &options)
-    {
-        arg_parser.add_help(
-            "-r, --rename",
-            "Renames existing target files.\nBy default, they're overwritten.");
-
-        options.overwrite = true;
-        if (arg_parser.has_flag("-r") || arg_parser.has_flag("--rename"))
-            options.overwrite = false;
-    }
-
-    void add_output_folder_option(ArgParser &arg_parser, Options &options)
-    {
-        arg_parser.add_help(
-            "-o, --out=FOLDER",
-            "Where to put the output files.");
-
-        if (arg_parser.has_switch("-o"))
-            options.output_dir = arg_parser.get_switch("-o");
-        else if (arg_parser.has_switch("--out"))
-            options.output_dir = arg_parser.get_switch("--out");
-        else
-            options.output_dir = "./";
-    }
-
-    void add_format_option(ArgParser &arg_parser, Options &options)
-    {
-        arg_parser.add_help(
-            "-f, --fmt=FORMAT",
-            "Disables guessing and selects given format.");
-
-        if (arg_parser.has_switch("-f"))
-            options.format = arg_parser.get_switch("-f");
-        if (arg_parser.has_switch("--fmt"))
-            options.format = arg_parser.get_switch("--fmt");
-    }
-
-    bool add_input_paths_option(
-        ArcUnpacker &arc_unpacker,
-        ArgParser &arg_parser,
-        Options &options)
-    {
-        const std::vector<std::string> stray = arg_parser.get_stray();
-        for (size_t i = 1; i < stray.size(); i++)
+        std::string path = stray[i];
+        if (boost::filesystem::is_directory(path))
         {
-            std::string path = stray[i];
-            if (boost::filesystem::is_directory(path))
-            {
-                for (boost::filesystem::recursive_directory_iterator it(path);
-                    it != boost::filesystem::recursive_directory_iterator();
-                    it++)
-                {
-                    std::unique_ptr<PathInfo> pi(new PathInfo);
-                    pi->input_path = it->path().string();
-                    pi->base_name = pi->input_path.substr(path.length());
-                    while (pi->base_name.size() > 0 &&
-                        (pi->base_name[0] == '/' || pi->base_name[0] == '\\'))
-                    {
-                        pi->base_name = pi->base_name.substr(1);
-                    }
-                    options.input_paths.push_back(std::move(pi));
-                }
-            }
-            else
+            for (boost::filesystem::recursive_directory_iterator it(path);
+                it != boost::filesystem::recursive_directory_iterator();
+                it++)
             {
                 std::unique_ptr<PathInfo> pi(new PathInfo);
-                pi->input_path = path;
-                pi->base_name
-                    = boost::filesystem::path(path).filename().string();
+                pi->input_path = it->path().string();
+                pi->base_name = pi->input_path.substr(path.length());
+                while (pi->base_name.size() > 0 &&
+                    (pi->base_name[0] == '/' || pi->base_name[0] == '\\'))
+                {
+                    pi->base_name = pi->base_name.substr(1);
+                }
                 options.input_paths.push_back(std::move(pi));
             }
         }
-
-        if (options.input_paths.size() < 1)
+        else
         {
-            std::cout << "Error: required more arguments.\n\n";
-            arc_unpacker.print_help(stray[0]);
-            return false;
+            std::unique_ptr<PathInfo> pi(new PathInfo);
+            pi->input_path = path;
+            pi->base_name
+                = boost::filesystem::path(path).filename().string();
+            options.input_paths.push_back(std::move(pi));
         }
-
-        return true;
     }
+
+    if (options.input_paths.size() < 1)
+    {
+        std::cout << "Error: required more arguments.\n\n";
+        arc_unpacker.print_help(stray[0]);
+        return false;
+    }
+
+    return true;
 }
 
 struct ArcUnpacker::Priv

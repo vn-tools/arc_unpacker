@@ -16,8 +16,6 @@ using namespace Formats::Nitroplus::NpaFilters;
 
 namespace
 {
-    const std::string magic("NPA\x01\x00\x00\x00", 7);
-
     typedef enum
     {
         FILE_TYPE_DIRECTORY = 1,
@@ -46,128 +44,129 @@ namespace
     } TableEntry;
 
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
+}
 
-    std::unique_ptr<Header> read_header(IO &arc_io)
+static const std::string magic("NPA\x01\x00\x00\x00", 7);
+
+static std::unique_ptr<Header> read_header(IO &arc_io)
+{
+    std::unique_ptr<Header> header(new Header);
+    header->key1 = arc_io.read_u32_le();
+    header->key2 = arc_io.read_u32_le();
+    header->compressed = arc_io.read_u8() > 0;
+    header->encrypted = arc_io.read_u8() > 0;
+    header->total_count = arc_io.read_u32_le();
+    header->folder_count = arc_io.read_u32_le();
+    header->file_count = arc_io.read_u32_le();
+    arc_io.skip(8);
+    header->table_size = arc_io.read_u32_le();
+    header->table_offset = arc_io.tell();
+    return header;
+}
+
+static void decrypt_file_name(
+    std::string &name,
+    const Header &header,
+    const Filter &filter,
+    size_t file_pos)
+{
+    u32 tmp = filter.file_name_key(header.key1, header.key2);
+    for (size_t char_pos = 0; char_pos < name.size(); char_pos++)
     {
-        std::unique_ptr<Header> header(new Header);
-        header->key1 = arc_io.read_u32_le();
-        header->key2 = arc_io.read_u32_le();
-        header->compressed = arc_io.read_u8() > 0;
-        header->encrypted = arc_io.read_u8() > 0;
-        header->total_count = arc_io.read_u32_le();
-        header->folder_count = arc_io.read_u32_le();
-        header->file_count = arc_io.read_u32_le();
-        arc_io.skip(8);
-        header->table_size = arc_io.read_u32_le();
-        header->table_offset = arc_io.tell();
-        return header;
+        u32 key = 0xfc * char_pos;
+        key -= tmp >> 0x18;
+        key -= tmp >> 0x10;
+        key -= tmp >> 0x08;
+        key -= tmp & 0xff;
+        key -= file_pos >> 0x18;
+        key -= file_pos >> 0x10;
+        key -= file_pos >> 0x08;
+        key -= file_pos;
+        name[char_pos] += (key & 0xff);
     }
+}
 
-    void decrypt_file_name(
-        std::string &name,
-        const Header &header,
-        const Filter &filter,
-        size_t file_pos)
+static void decrypt_file_data(
+    std::string &data,
+    const TableEntry &entry,
+    const Header &header,
+    const Filter &filter)
+{
+    u32 key = filter.data_key;
+    for (size_t i = 0; i < entry.name.size(); i++)
+        key -= reinterpret_cast<const u8&>(entry.name[i]);
+    key *= entry.name.size();
+    key += header.key1 * header.key2;
+    key *= entry.size_original;
+    key &= 0xff;
+
+    size_t length = 0x1000 + entry.name.size();
+    for (size_t i = 0; i < length && i < entry.size_compressed; i++)
     {
-        u32 tmp = filter.file_name_key(header.key1, header.key2);
-        for (size_t char_pos = 0; char_pos < name.size(); char_pos++)
-        {
-            u32 key = 0xfc * char_pos;
-            key -= tmp >> 0x18;
-            key -= tmp >> 0x10;
-            key -= tmp >> 0x08;
-            key -= tmp & 0xff;
-            key -= file_pos >> 0x18;
-            key -= file_pos >> 0x10;
-            key -= file_pos >> 0x08;
-            key -= file_pos;
-            name[char_pos] += (key & 0xff);
-        }
+        char p = filter.permutation[static_cast<u8>(data[i])];
+        data[i] = static_cast<char>(p - key - i);
     }
+}
 
-    void decrypt_file_data(
-        std::string &data,
-        const TableEntry &table_entry,
-        const Header &header,
-        const Filter &filter)
+static std::unique_ptr<TableEntry> read_table_entry(
+    IO &arc_io,
+    const Header &header,
+    const Filter &filter,
+    size_t file_pos)
+{
+    std::unique_ptr<TableEntry> entry(new TableEntry);
+
+    entry->name = arc_io.read(arc_io.read_u32_le());
+    decrypt_file_name(entry->name, header, filter, file_pos);
+
+    FileType file_type = static_cast<FileType>(arc_io.read_u8());
+    arc_io.skip(4);
+
+    entry->offset
+        = arc_io.read_u32_le() + header.table_offset + header.table_size;
+    entry->size_compressed = arc_io.read_u32_le();
+    entry->size_original = arc_io.read_u32_le();
+
+    if (file_type == FILE_TYPE_DIRECTORY)
+        return nullptr;
+    if (file_type != FILE_TYPE_FILE)
+        throw std::runtime_error("Unknown file type");
+
+    return entry;
+}
+
+static Table read_table(IO &arc_io, const Header &header, const Filter &filter)
+{
+    Table table;
+    for (size_t i = 0; i < header.total_count; i++)
     {
-        u32 key = filter.data_key;
-        for (size_t i = 0; i < table_entry.name.size(); i++)
-            key -= reinterpret_cast<const u8&>(table_entry.name[i]);
-        key *= table_entry.name.size();
-        key += header.key1 * header.key2;
-        key *= table_entry.size_original;
-        key &= 0xff;
-
-        size_t length = 0x1000 + table_entry.name.size();
-        for (size_t i = 0; i < length && i < table_entry.size_compressed; i++)
-        {
-            char p = filter.permutation[static_cast<u8>(data[i])];
-            data[i] = static_cast<char>(p - key - i);
-        }
+        auto entry = read_table_entry(arc_io, header, filter, i);
+        if (entry != nullptr)
+            table.push_back(std::move(entry));
     }
+    return table;
+}
 
-    std::unique_ptr<TableEntry> read_table_entry(
-        IO &arc_io,
-        const Header &header,
-        const Filter &filter,
-        size_t file_pos)
-    {
-        std::unique_ptr<TableEntry> table_entry(new TableEntry);
+static std::unique_ptr<File> read_file(
+    IO &arc_io,
+    const Header &header,
+    const Filter &filter,
+    const TableEntry &entry)
+{
+    std::unique_ptr<File> file(new File);
+    file->name = sjis_to_utf8(entry.name);
 
-        table_entry->name = arc_io.read(arc_io.read_u32_le());
-        decrypt_file_name(table_entry->name, header, filter, file_pos);
+    arc_io.seek(entry.offset);
+    std::string data = arc_io.read(entry.size_compressed);
 
-        FileType file_type = static_cast<FileType>(arc_io.read_u8());
-        arc_io.skip(4);
+    if (header.encrypted)
+        decrypt_file_data(data, entry, header, filter);
 
-        table_entry->offset
-            = arc_io.read_u32_le() + header.table_offset + header.table_size;
-        table_entry->size_compressed = arc_io.read_u32_le();
-        table_entry->size_original = arc_io.read_u32_le();
+    if (header.compressed)
+        data = zlib_inflate(data);
 
-        if (file_type == FILE_TYPE_DIRECTORY)
-            return nullptr;
-        if (file_type != FILE_TYPE_FILE)
-            throw std::runtime_error("Unknown file type");
-
-        return table_entry;
-    }
-
-    Table read_table(
-        IO &arc_io, const Header &header, const Filter &filter)
-    {
-        Table table;
-        for (size_t i = 0; i < header.total_count; i++)
-        {
-            auto table_entry = read_table_entry(arc_io, header, filter, i);
-            if (table_entry != nullptr)
-                table.push_back(std::move(table_entry));
-        }
-        return table;
-    }
-
-    std::unique_ptr<File> read_file(
-        IO &arc_io,
-        const Header &header,
-        const Filter &filter,
-        const TableEntry &table_entry)
-    {
-        std::unique_ptr<File> file(new File);
-        file->name = sjis_to_utf8(table_entry.name);
-
-        arc_io.seek(table_entry.offset);
-        std::string data = arc_io.read(table_entry.size_compressed);
-
-        if (header.encrypted)
-            decrypt_file_data(data, table_entry, header, filter);
-
-        if (header.compressed)
-            data = zlib_inflate(data);
-
-        file->io.write(data);
-        return file;
-    }
+    file->io.write(data);
+    return file;
 }
 
 struct NpaArchive::Priv

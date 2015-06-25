@@ -11,10 +11,7 @@
 #include "formats/bgi/sound_converter.h"
 using namespace Formats::Bgi;
 
-namespace
-{
-    const std::string magic("bw  ", 4);
-}
+static const std::string magic("bw  ", 4);
 
 bool SoundConverter::is_recognized_internal(File &file) const
 {
