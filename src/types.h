@@ -2,6 +2,7 @@
 #define TYPES_H
 #include <cstdint>
 #include <cstddef>
+#include <string>
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -21,7 +22,12 @@ typedef int64_t i64;
 
     constexpr const u8* operator "" _u8(const char *value, size_t n)
     {
-        return reinterpret_cast<const u8 *>(value);
+        return reinterpret_cast<const u8*>(value);
+    }
+
+    std::string operator "" _s(const char *value, size_t n)
+    {
+        return std::string(value, n);
     }
 #endif
 
