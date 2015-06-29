@@ -166,7 +166,7 @@ namespace
 }
 
 //keep flat hierarchy for unpacked files
-static const std::string path_sep = "／";
+static const std::string path_sep = "\xEF\xBC\x8F"; // "／"
 
 DosHeader::DosHeader(IO &io)
 {
