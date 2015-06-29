@@ -77,15 +77,17 @@ if(MSVC)
 
         # Recursive call
         add_source_group_recursive(${curdir}/${child})
-        file(RELATIVE_PATH relative ${CMAKE_SOURCE_DIR}/src/ ${curdir}/${child})
+        file(RELATIVE_PATH relative ${CMAKE_SOURCE_DIR}/../src/ ${curdir}/${child})
 
 
         # Modify 'relative', replace '/' to '\'
         string(REPLACE "/" "\\" group_name ${relative})
 
         # Add source group for each sub directory
-        source_group("src\\${group_name}" REGULAR_EXPRESSION "src/${relative}/[^./]+[.]cc$")
-        source_group("header\\${group_name}" REGULAR_EXPRESSION "src/${relative}/[^./]+[.]h$")
+        source_group("src\\${group_name}" REGULAR_EXPRESSION "../src/${relative}/[^./]+[.]cc$")
+        source_group("header\\${group_name}" REGULAR_EXPRESSION "../src/${relative}/[^./]+[.]h$")
+        source_group("src\\${group_name}" REGULAR_EXPRESSION "../tests/${relative}/[^./]+[.]cc$")
+        source_group("header\\${group_name}" REGULAR_EXPRESSION "../tests/${relative}/[^./]+[.]h$")
 
       endif()
     endforeach()
@@ -95,6 +97,8 @@ if(MSVC)
   # Group for files in src
   source_group("src" REGULAR_EXPRESSION "../src/[^.]+[.]cc$")
   source_group("header" REGULAR_EXPRESSION "../src/[^.]+[.]h$")
+  source_group("src" REGULAR_EXPRESSION "../tests/[^.]+[.]cc$")
+  source_group("header" REGULAR_EXPRESSION "../tests/[^.]+[.]h$")
 endif()
 
 # Warnings
