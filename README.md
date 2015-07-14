@@ -84,7 +84,7 @@ Features           | Game                                | CLI invocation
 ![][F]![][F]![][F] | Soshite Ashita no Sekai yori        | `--fmt=pack`
 ![][F]![][F]![][F] | Souten No Celenaria                 | `--fmt=xfl`
 ![][F]![][F]![][F] | Steins;Gate                         | `--fmt=npa_sg`
-![][F]![][N]![][F] | Sukimazakura to Uso no Machi        | `--fmt=mpk`
+![][F]![][F]![][F] | Sukimazakura to Uso no Machi        | `--fmt=mpk`
 ![][F]![][F]![][F] | Touhou 06                           | `--fmt=pbg3`
 ![][F]![][F]![][P] | Touhou 07                           | `--fmt=pbg4`
 ![][F]![][F]![][F] | Touhou 07.5                         | `--fmt=th-pak1`

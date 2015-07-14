@@ -8,6 +8,7 @@
 // - Sukimazakura to Uso no Machi
 
 #include "formats/propeller/mpk_archive.h"
+#include "formats/propeller/mgr_archive.h"
 #include "util/encoding.h"
 using namespace Formats::Propeller;
 
@@ -67,6 +68,20 @@ static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
     arc_io.seek(entry.offset);
     file->io.write_from_io(arc_io, entry.size);
     return file;
+}
+
+struct MpkArchive::Priv
+{
+    MgrArchive mgr_archive;
+};
+
+MpkArchive::MpkArchive() : p(new Priv)
+{
+    add_transformer(&p->mgr_archive);
+}
+
+MpkArchive::~MpkArchive()
+{
 }
 
 bool MpkArchive::is_recognized_internal(File &arc_file) const
