@@ -29,6 +29,7 @@
 #include "formats/nitroplus/npa_sg_archive.h"
 #include "formats/nitroplus/pak_archive.h"
 #include "formats/nscripter/nsa_archive.h"
+#include "formats/propeller/mpk_archive.h"
 #include "formats/nscripter/sar_archive.h"
 #include "formats/nscripter/spb_converter.h"
 #include "formats/nsystem/fjsys_archive.h"
@@ -72,6 +73,7 @@ struct TransformerFactory::Priv
 
 TransformerFactory::TransformerFactory() : p(new Priv)
 {
+    p->add("mpk", []() { return new Propeller::MpkArchive(); });
     p->add("fvp", []() { return new Fvp::BinArchive(); });
     p->add("gml", []() { return new Glib::GmlArchive(); });
     p->add("g2", []() { return new Glib::Glib2Archive(); });
