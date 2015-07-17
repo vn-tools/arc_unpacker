@@ -134,9 +134,10 @@ ArcUnpacker::~ArcUnpacker()
 void ArcUnpacker::print_help(const std::string &path_to_self)
 {
     std::cout
-        << "Usage: "
-        << path_to_self.c_str()
-        << " [options] [fmt_options] input_path [input_path...]\n\n";
+        << "arc_unpacker v" << AU_VERSION << "\n"
+        << "Extracts images and sounds from various visual novels.\n\n"
+        << "Usage: " << path_to_self.c_str() << " \\\n"
+        << "       [options] [fmt_options] input_path [input_path...]\n\n";
 
     std::cout <<
 R"(Depending on the format, files will be saved either in a subdirectory

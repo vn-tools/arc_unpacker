@@ -3,7 +3,12 @@ from waflib import Logs
 import os
 
 APPNAME = 'arc_unpacker'
-VERSION = '0.3'
+try:
+	VERSION = os.popen('git describe --tags').read().strip()
+	VERSION_LONG = os.popen('git describe --always --dirty --long --tags').read().strip()
+except:
+	VERSION = '0.0'
+	VERSION_LONG = '?'
 
 def options(ctx):
 	ctx.load('compiler_cxx')
@@ -98,6 +103,8 @@ def configure(ctx):
 	configure_packages(ctx)
 
 def build(ctx):
+	ctx.env.DEFINES += [ 'AU_VERSION="' + VERSION_LONG + '"' ]
+
 	common_sources = ctx.path.ant_glob('src/**/*.cc')
 	common_sources = [f for f in common_sources if f.name != 'main.cc']
 
@@ -147,4 +154,4 @@ def dist(ctx):
 	ctx.files = ctx.path.ant_glob('build')
 
 def test(ctx):
-    ctx.exec_command('build/run_tests')
+	ctx.exec_command('build/run_tests')
