@@ -35,7 +35,7 @@ def configure_flags(ctx):
         ctx.env.CXXFLAGS += ['-g']
         Logs.info('Debug information enabled')
     else:
-        ctx.env.CXXFLAGS += ['-O3']
+        ctx.env.CXXFLAGS += ['-s', '-O3']
         Logs.info('Debug information disabled, pass -d to enable')
 
     ctx.load('compiler_cxx')
@@ -150,9 +150,31 @@ def build(ctx):
         use = [ 'common' ])
 
 def dist(ctx):
-    ctx.algo = 'zip'
-    #TODO: strip executable
-    ctx.files = ctx.path.ant_glob('build')
+    ctx.algo  = 'zip'
+    ctx.base_path = ctx.path
+    ctx.excl = ctx.get_excl() + ' *.dll'
+
+def distbin(ctx):
+    from subprocess import call, PIPE
+    from zipfile import ZipFile, ZIP_DEFLATED
+    arch_name = 'arc_unpacker-' + VERSION + '-bin.zip'
+
+    zip = ZipFile(arch_name, 'w', compression=ZIP_DEFLATED)
+    for p in ctx.path.ant_glob('build/arc_unpacker.exe') + ctx.path.ant_glob('**/*.dll'):
+        if not 'test' in p.name:
+            target_name = p.name
+            print('Compressing', target_name)
+            call(['strip', '--strip-all', p.abspath()])
+            call(['upx', '--ultra-brute', p.abspath()])
+            print('Adding', target_name)
+            zip.write(p.abspath(), target_name, ZIP_DEFLATED)
+
+    for p in ctx.path.ant_glob('extra/**/*'):
+        target_name = os.path.relpath(p.abspath(), ctx.cur_script.parent.abspath())
+        print('Adding', target_name)
+        zip.write(p.abspath(), target_name, ZIP_DEFLATED)
+
+    zip.close()
 
 def test(ctx):
     ctx.exec_command('build/run_tests')
