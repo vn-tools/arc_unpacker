@@ -35,6 +35,7 @@ def configure_flags(ctx):
         ctx.env.CXXFLAGS += ['-g']
         Logs.info('Debug information enabled')
     else:
+        ctx.env.CXXFLAGS += ['-O3']
         Logs.info('Debug information disabled, pass -d to enable')
 
     ctx.load('compiler_cxx')
