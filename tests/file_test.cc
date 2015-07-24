@@ -43,4 +43,3 @@ TEST_CASE("Changing file extension work")
     test_changing_extension("abc/def.",  "xyz",  "abc/def.xyz");
     test_changing_extension("abc/.def.", "xyz",  "abc/.def.xyz");
 }
-
