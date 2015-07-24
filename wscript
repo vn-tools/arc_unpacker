@@ -32,7 +32,7 @@ def configure_flags(ctx):
         '-std=c++11']
 
     if ctx.options.debug:
-        ctx.env.CXXFLAGS += ['-g']
+        ctx.env.CXXFLAGS += ['-ggdb']
         Logs.info('Debug information enabled')
     else:
         ctx.env.CXXFLAGS += ['-s', '-O3']
