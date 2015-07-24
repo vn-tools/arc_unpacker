@@ -163,9 +163,19 @@ def distbin(ctx):
     for p in ctx.path.ant_glob('build/arc_unpacker.exe') + ctx.path.ant_glob('**/*.dll'):
         if not 'test' in p.name:
             target_name = p.name
-            print('Compressing', target_name)
-            call(['strip', '--strip-all', p.abspath()])
-            call(['upx', '--ultra-brute', p.abspath()])
+
+            try:
+                print('Stripping cruft from', target_name)
+                call(['strip', '--strip-all', p.abspath()])
+            except Exception as e:
+                print(e)
+
+            try:
+                print('Compressing', target_name, 'with UPX')
+                call(['upx', '--ultra-brute', p.abspath()])
+            except Exception as e:
+                print(e)
+
             print('Adding', target_name)
             zip.write(p.abspath(), target_name, ZIP_DEFLATED)
 
