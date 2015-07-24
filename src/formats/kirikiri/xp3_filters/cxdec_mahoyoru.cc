@@ -1,11 +1,11 @@
 #include <memory>
-#include "formats/kirikiri/xp3_filters/cxdec_filter.h"
-#include "formats/kirikiri/xp3_filters/mahoyoru_filter.h"
+#include "formats/kirikiri/xp3_filters/cxdec.h"
+#include "formats/kirikiri/xp3_filters/cxdec_mahoyoru.h"
 using namespace Formats::Kirikiri::Xp3Filters;
 
-void MahoYoruFilter::decode(File &file, u32 key) const
+void CxdecMahoYoru::decode(File &file, u32 key) const
 {
-    CxdecFilterSettings settings;
+    CxdecSettings settings;
     settings.key1 = 0x22a;
     settings.key2 = 0x2a2;
 
@@ -287,6 +287,6 @@ void MahoYoruFilter::decode(File &file, u32 key) const
         "\x6a\x6a\xba\xda\xff\xfa\xed\x00\x8d\x08\x89\x37\x65\xf5\x1e\x03"
         "\xeb\x69\x3a\x7f\xc7\xa7\xe4\x36\x0f\x05\x89\xb7\xc2\x02\x86\x0c";
 
-    CxdecFilter cxdec(settings);
+    Cxdec cxdec(settings);
     cxdec.decode(file, key);
 }

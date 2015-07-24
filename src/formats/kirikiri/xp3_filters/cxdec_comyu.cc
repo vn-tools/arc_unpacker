@@ -1,11 +1,11 @@
 #include <memory>
-#include "formats/kirikiri/xp3_filters/comyu_filter.h"
-#include "formats/kirikiri/xp3_filters/cxdec_filter.h"
+#include "formats/kirikiri/xp3_filters/cxdec.h"
+#include "formats/kirikiri/xp3_filters/cxdec_comyu.h"
 using namespace Formats::Kirikiri::Xp3Filters;
 
-void ComyuFilter::decode(File &file, u32 key) const
+void CxdecComyu::decode(File &file, u32 key) const
 {
-    CxdecFilterSettings settings;
+    CxdecSettings settings;
     settings.key1 = 0x1a3;
     settings.key2 = 0x0b6;
 
@@ -287,6 +287,6 @@ void ComyuFilter::decode(File &file, u32 key) const
         "\xBB\x54\x74\x2F\x77\x48\xAA\x61\xCE\x26\xA1\xEF\x20\x94\x17\xC8"
         "\xEF\x10\xF1\xEE\xA1\xE2\x8A\x50\x98\x2B\xC7\x9C\xF1\x8B\x17\x7F";
 
-    CxdecFilter cxdec(settings);
+    Cxdec cxdec(settings);
     cxdec.decode(file, key);
 }

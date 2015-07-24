@@ -1,11 +1,11 @@
 #include <memory>
-#include "formats/kirikiri/xp3_filters/cxdec_filter.h"
-#include "formats/kirikiri/xp3_filters/fha_filter.h"
+#include "formats/kirikiri/xp3_filters/cxdec.h"
+#include "formats/kirikiri/xp3_filters/cxdec_fha.h"
 using namespace Formats::Kirikiri::Xp3Filters;
 
-void FhaFilter::decode(File &file, u32 key) const
+void CxdecFha::decode(File &file, u32 key) const
 {
-    CxdecFilterSettings settings;
+    CxdecSettings settings;
     settings.key1 = 0x143;
     settings.key2 = 0x787;
 
@@ -287,6 +287,6 @@ void FhaFilter::decode(File &file, u32 key) const
         "\x88\x36\xbc\x88\xdd\x2f\x30\x34\xec\x51\x35\x61\xea\x68\xf0\xa4"
         "\x14\x6e\x68\x5f\x72\x39\xc0\xea\x46\xbb\x4f\xf1\xe9\x00\x77\x8a";
 
-    CxdecFilter cxdec(settings);
+    Cxdec cxdec(settings);
     cxdec.decode(file, key);
 }

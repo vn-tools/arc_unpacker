@@ -1,5 +1,5 @@
 #include <stdexcept>
-#include "formats/kirikiri/xp3_filters/cxdec_filter.h"
+#include "formats/kirikiri/xp3_filters/cxdec.h"
 using namespace Formats::Kirikiri::Xp3Filters;
 
 namespace
@@ -16,10 +16,10 @@ namespace
     class KeyDeriver
     {
     public:
-        KeyDeriver(const CxdecFilterSettings &settings);
+        KeyDeriver(const CxdecSettings &settings);
         u32 derive(u32 seed, u32 parameter);
     private:
-        const CxdecFilterSettings &settings;
+        const CxdecSettings &settings;
         std::string shellcode;
         u32 seed;
         size_t parameter;
@@ -39,7 +39,7 @@ static std::string u32_to_string(u32 value)
     return std::string(reinterpret_cast<char*>(&value), 4);
 }
 
-KeyDeriver::KeyDeriver(const CxdecFilterSettings &settings) : settings(settings)
+KeyDeriver::KeyDeriver(const CxdecSettings &settings) : settings(settings)
 {
     seed = 0;
     parameter = 0;
@@ -435,12 +435,12 @@ static void decrypt_chunk(
     io.write(ptr, size);
 }
 
-struct CxdecFilter::Priv
+struct Cxdec::Priv
 {
     KeyDeriver key_deriver;
-    const CxdecFilterSettings &settings;
+    const CxdecSettings &settings;
 
-    Priv(const CxdecFilterSettings &settings)
+    Priv(const CxdecSettings &settings)
         : key_deriver(settings), settings(settings)
     {
     }
@@ -450,16 +450,16 @@ struct CxdecFilter::Priv
     }
 };
 
-CxdecFilter::CxdecFilter(CxdecFilterSettings &settings)
+Cxdec::Cxdec(CxdecSettings &settings)
     : p(new Priv(settings))
 {
 }
 
-CxdecFilter::~CxdecFilter()
+Cxdec::~Cxdec()
 {
 }
 
-void CxdecFilter::decode(File &file, u32 encryption_key) const
+void Cxdec::decode(File &file, u32 encryption_key) const
 {
     u32 hash = encryption_key;
     u32 key = (hash & p->settings.key1) + p->settings.key2;

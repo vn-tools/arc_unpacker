@@ -1,6 +1,6 @@
-#ifndef FORMATS_KIRIKIRI_XP3_FILTERS_FSN_FILTER_H
-#define FORMATS_KIRIKIRI_XP3_FILTERS_FSN_FILTER_H
-#include "formats/kirikiri/xp3_filters/filter.h"
+#ifndef FORMATS_KIRIKIRI_XP3_FILTERS_FHA_H
+#define FORMATS_KIRIKIRI_XP3_FILTERS_FHA_H
+#include "formats/kirikiri/xp3_filter.h"
 
 namespace Formats
 {
@@ -8,7 +8,7 @@ namespace Formats
     {
         namespace Xp3Filters
         {
-            class FsnFilter final : public Filter
+            class CxdecFha final : public Xp3Filter
             {
             public:
                 virtual void decode(File &file, u32 key) const override;

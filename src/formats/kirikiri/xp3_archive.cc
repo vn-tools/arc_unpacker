@@ -13,16 +13,11 @@
 
 #include "formats/kirikiri/tlg_converter.h"
 #include "formats/kirikiri/xp3_archive.h"
-#include "formats/kirikiri/xp3_filters/comyu_filter.h"
-#include "formats/kirikiri/xp3_filters/fha_filter.h"
-#include "formats/kirikiri/xp3_filters/fsn_filter.h"
-#include "formats/kirikiri/xp3_filters/mahoyoru_filter.h"
-#include "formats/kirikiri/xp3_filters/noop_filter.h"
+#include "formats/kirikiri/xp3_filter_factory.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/zlib.h"
 using namespace Formats::Kirikiri;
-using namespace Formats::Kirikiri::Xp3Filters;
 
 static const std::string xp3_magic("XP3\r\n\x20\x0a\x1a\x8b\x67\x01", 11);
 static const std::string file_magic("File", 4);
@@ -137,7 +132,8 @@ static u32 read_adlr_chunk(IO &table_io, u32 *encryption_key)
     return true;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, IO &table_io, Filter *filter)
+static std::unique_ptr<File> read_file(
+    IO &arc_io, IO &table_io, Xp3Filter *filter)
 {
     std::unique_ptr<File> target_file(new File());
 
@@ -163,8 +159,9 @@ static std::unique_ptr<File> read_file(IO &arc_io, IO &table_io, Filter *filter)
 
 struct Xp3Archive::Priv
 {
+    Xp3FilterFactory filter_factory;
     TlgConverter tlg_converter;
-    std::unique_ptr<Filter> filter;
+    std::unique_ptr<Xp3Filter> filter;
 
     Priv() : filter(nullptr)
     {
@@ -182,35 +179,13 @@ Xp3Archive::~Xp3Archive()
 
 void Xp3Archive::add_cli_help(ArgParser &arg_parser) const
 {
-    arg_parser.add_help(
-        "--plugin=PLUGIN",
-        "Selects XP3 decryption routine.\n"
-            "Possible values:\n"
-            "- comyu\n"
-            "- fsn\n"
-            "- fha\n"
-            "- mahoyoru\n"
-            "- noop (for unecrypted games)");
-
+    p->filter_factory.add_cli_help(arg_parser);
     Archive::add_cli_help(arg_parser);
 }
 
 void Xp3Archive::parse_cli_options(const ArgParser &arg_parser)
 {
-    const std::string plugin = arg_parser.get_switch("plugin").c_str();
-    if (plugin == "comyu")
-        p->filter.reset(new ComyuFilter);
-    else if (plugin == "fsn")
-        p->filter.reset(new FsnFilter);
-    else if (plugin == "fha")
-        p->filter.reset(new FhaFilter);
-    else if (plugin == "mahoyoru")
-        p->filter.reset(new MahoYoruFilter);
-    else if (plugin == "noop")
-        p->filter.reset(new NoopFilter);
-    else
-        throw std::runtime_error("Unrecognized plugin: " + plugin);
-
+    p->filter = p->filter_factory.get_filter_from_cli_options(arg_parser);
     Archive::parse_cli_options(arg_parser);
 }
 
@@ -229,8 +204,5 @@ void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     std::unique_ptr<IO> table_io = read_raw_table(arc_file.io);
 
     while (table_io->tell() < table_io->size())
-    {
-        file_saver.save(
-            read_file(arc_file.io, *table_io, p->filter.get()));
-    }
+        file_saver.save(read_file(arc_file.io, *table_io, p->filter.get()));
 }

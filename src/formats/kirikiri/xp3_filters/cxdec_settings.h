@@ -1,5 +1,5 @@
-#ifndef FORMATS_KIRIKIRI_XP3_FILTERS_CXDEC_FILTER_SETTINGS_H
-#define FORMATS_KIRIKIRI_XP3_FILTERS_CXDEC_FILTER_SETTINGS_H
+#ifndef FORMATS_KIRIKIRI_XP3_FILTERS_CXDEC_SETTINGS_H
+#define FORMATS_KIRIKIRI_XP3_FILTERS_CXDEC_SETTINGS_H
 #include <array>
 #include "types.h"
 
@@ -9,7 +9,7 @@ namespace Formats
     {
         namespace Xp3Filters
         {
-            class CxdecFilterSettings
+            class CxdecSettings
             {
             public:
                 u16 key1;
