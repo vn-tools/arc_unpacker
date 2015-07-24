@@ -1,6 +1,6 @@
 #ifndef FORMATS_KIRIKIRI_XP3_FILTERS_MAHOYORU_H
 #define FORMATS_KIRIKIRI_XP3_FILTERS_MAHOYORU_H
-#include "formats/kirikiri/xp3_filter.h"
+#include "formats/kirikiri/xp3_filters/cxdec.h"
 
 namespace Formats
 {
@@ -8,10 +8,10 @@ namespace Formats
     {
         namespace Xp3Filters
         {
-            class CxdecMahoYoru final : public Xp3Filter
+            class CxdecMahoYoru final : public Cxdec
             {
             public:
-                virtual void decode(File &file, u32 key) const override;
+                virtual CxdecSettings get_settings() const override;
             };
         }
     }

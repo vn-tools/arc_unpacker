@@ -1,6 +1,11 @@
 #include <stdexcept>
+#include <boost/filesystem.hpp>
 #include "formats/kirikiri/xp3_filters/cxdec.h"
 using namespace Formats::Kirikiri::Xp3Filters;
+
+static const size_t encryption_block_size = 4096;
+static const std::string encryption_block_magic(
+    "\x20\x45\x6E\x63\x72\x79\x70\x74\x69\x6F\x6E\x20\x63\x6F\x6E\x74", 16);
 
 namespace
 {
@@ -16,14 +21,17 @@ namespace
     class KeyDeriver
     {
     public:
-        KeyDeriver(const CxdecSettings &settings);
+        KeyDeriver(
+            const CxdecSettings &settings,
+            const std::array<char, encryption_block_size> encryption_block);
         u32 derive(u32 seed, u32 parameter);
     private:
         const CxdecSettings &settings;
+        const std::array<char, encryption_block_size> encryption_block;
         std::string shellcode;
         u32 seed;
         size_t parameter;
-        unsigned long encryption_block_addr;
+        u32 encryption_block_addr;
 
         void add_shellcode(const std::string &bytes);
         u32 rand();
@@ -39,12 +47,14 @@ static std::string u32_to_string(u32 value)
     return std::string(reinterpret_cast<char*>(&value), 4);
 }
 
-KeyDeriver::KeyDeriver(const CxdecSettings &settings) : settings(settings)
+KeyDeriver::KeyDeriver(
+    const CxdecSettings &settings,
+    const std::array<char, encryption_block_size> encryption_block)
+    : settings(settings), encryption_block(encryption_block)
 {
     seed = 0;
     parameter = 0;
-    encryption_block_addr
-        = reinterpret_cast<size_t>(settings.encryption_block);
+    encryption_block_addr = reinterpret_cast<size_t>(&encryption_block[0]);
 }
 
 u32 KeyDeriver::derive(u32 seed, u32 parameter)
@@ -153,8 +163,7 @@ u32 KeyDeriver::run_first_stage()
             u32 pos = (rand() & 0x3ff) * 4;
             add_shellcode(u32_to_string(pos));
 
-            eax = *reinterpret_cast<const u32*>(
-                &settings.encryption_block[pos]);
+            eax = *reinterpret_cast<const u32*>(&encryption_block[pos]);
             break;
         }
 
@@ -218,7 +227,7 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
             add_shellcode("\x8b\x04\x86");
 
             eax = *reinterpret_cast<const u32*>(
-                &settings.encryption_block[(eax & 0x3ff) * 4]);
+                &encryption_block[(eax & 0x3ff) * 4]);
             break;
 
         case 5:
@@ -437,21 +446,10 @@ static void decrypt_chunk(
 
 struct Cxdec::Priv
 {
-    KeyDeriver key_deriver;
-    const CxdecSettings &settings;
-
-    Priv(const CxdecSettings &settings)
-        : key_deriver(settings), settings(settings)
-    {
-    }
-
-    ~Priv()
-    {
-    }
+    std::array<char, encryption_block_size> encryption_block;
 };
 
-Cxdec::Cxdec(CxdecSettings &settings)
-    : p(new Priv(settings))
+Cxdec::Cxdec() : p(new Priv())
 {
 }
 
@@ -461,14 +459,51 @@ Cxdec::~Cxdec()
 
 void Cxdec::decode(File &file, u32 encryption_key) const
 {
+    CxdecSettings settings = get_settings();
+    KeyDeriver key_deriver(settings, p->encryption_block);
+
     u32 hash = encryption_key;
-    u32 key = (hash & p->settings.key1) + p->settings.key2;
+    u32 key = (hash & settings.key1) + settings.key2;
 
     size_t size = file.io.size() > key ? key : file.io.size();
 
-    decrypt_chunk(p->key_deriver, file.io, hash, 0, size);
+    decrypt_chunk(key_deriver, file.io, hash, 0, size);
     size_t offset = size;
     size = file.io.size() - offset;
     hash = (hash >> 16) ^ hash;
-    decrypt_chunk(p->key_deriver, file.io, hash, offset, size);
+    decrypt_chunk(key_deriver, file.io, hash, offset, size);
+}
+
+void Cxdec::set_arc_path(const std::string &path)
+{
+    auto dir = boost::filesystem::path(path).parent_path();
+    for (boost::filesystem::recursive_directory_iterator it(dir);
+        it != boost::filesystem::recursive_directory_iterator();
+        it++)
+    {
+        if (!boost::filesystem::is_regular_file(it->path()))
+            continue;
+
+        auto fn = it->path().string();
+        if (fn.find(".tpm") != fn.length() - 4)
+            continue;
+
+        FileIO tmp_io(it->path(), FileIOMode::Read);
+        std::string content = tmp_io.read_until_end();
+        auto pos = content.find(encryption_block_magic);
+        if (pos == std::string::npos)
+        {
+            throw std::runtime_error(
+                "Encryption file found, but without encryption block");
+        }
+
+        if (pos + encryption_block_size > content.size())
+            throw std::runtime_error("Encryption block found, but truncated");
+
+        for (size_t i = 0; i < encryption_block_size; i++)
+            p->encryption_block[i] = content[pos + i];
+        return;
+    }
+
+    throw std::runtime_error("Encryption file not found");
 }

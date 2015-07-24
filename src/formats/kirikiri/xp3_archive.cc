@@ -203,6 +203,9 @@ void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     arc_file.io.seek((u32)table_offset);
     std::unique_ptr<IO> table_io = read_raw_table(arc_file.io);
 
+    if (p->filter)
+        p->filter->set_arc_path(arc_file.name);
+
     while (table_io->tell() < table_io->size())
         file_saver.save(read_file(arc_file.io, *table_io, p->filter.get()));
 }

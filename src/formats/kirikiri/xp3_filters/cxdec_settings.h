@@ -17,7 +17,6 @@ namespace Formats
                 std::array<size_t, 3> key_derivation_order1;
                 std::array<size_t, 8> key_derivation_order2;
                 std::array<size_t, 6> key_derivation_order3;
-                const char *encryption_block;
             };
         }
     }
