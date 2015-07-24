@@ -74,6 +74,7 @@ Features           | Game                                | CLI invocation
 ![][F]![][F]![][F] | Kimihagu                            | `--fmt=pack`
 ![][F]![][F]![][F] | Koiken Otome                        | `--fmt=pack --fkey=... --gameexe=...`
 ![][F]![][F]![][F] | Long Live The Queen                 | `--fmt=rpa`
+![][F]![][F]![][F] | Mahou Tsukai no Yoru                | `--fmt=xp3 --plugin=mahoyoru`
 ![][F]![][F]![][F] | Maji de Watashi ni Koishinasai!     | `--fmt=pac`
 ![][F]![][F]![][F] | Melty Blood                         | `--fmt=p`
 ![][F]![][F]![][F] | Musume Shimai                       | `--fmt=g2`

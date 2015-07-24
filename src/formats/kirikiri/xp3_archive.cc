@@ -16,6 +16,7 @@
 #include "formats/kirikiri/xp3_filters/comyu_filter.h"
 #include "formats/kirikiri/xp3_filters/fha_filter.h"
 #include "formats/kirikiri/xp3_filters/fsn_filter.h"
+#include "formats/kirikiri/xp3_filters/mahoyoru_filter.h"
 #include "formats/kirikiri/xp3_filters/noop_filter.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
@@ -186,8 +187,9 @@ void Xp3Archive::add_cli_help(ArgParser &arg_parser) const
         "Selects XP3 decryption routine.\n"
             "Possible values:\n"
             "- comyu\n"
-            "- fha\n"
             "- fsn\n"
+            "- fha\n"
+            "- mahoyoru\n"
             "- noop (for unecrypted games)");
 
     Archive::add_cli_help(arg_parser);
@@ -198,10 +200,12 @@ void Xp3Archive::parse_cli_options(const ArgParser &arg_parser)
     const std::string plugin = arg_parser.get_switch("plugin").c_str();
     if (plugin == "comyu")
         p->filter.reset(new ComyuFilter);
-    else if (plugin == "fha")
-        p->filter.reset(new FhaFilter);
     else if (plugin == "fsn")
         p->filter.reset(new FsnFilter);
+    else if (plugin == "fha")
+        p->filter.reset(new FhaFilter);
+    else if (plugin == "mahoyoru")
+        p->filter.reset(new MahoYoruFilter);
     else if (plugin == "noop")
         p->filter.reset(new NoopFilter);
     else
