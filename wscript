@@ -172,7 +172,7 @@ def distbin(ctx):
 
             try:
                 print('Compressing', target_name, 'with UPX')
-                call(['upx', '--ultra-brute', p.abspath()])
+                call(['upx', p.abspath()])
             except Exception as e:
                 print(e)
 
