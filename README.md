@@ -1,12 +1,11 @@
-## arc_unpacker
+## arc\_unpacker
 
 1. [Overview](#overview)
-2. [Download](#download)
+2. [Download, building...](#download)
 3. [Usage](#usage)
 4. [Supported games](#supported-games)
-5. [Building from sources](https://github.com/vn-tools/arc_unpacker/blob/master/BUILD.md)
-6. [License](https://github.com/vn-tools/arc_unpacker/blob/master/LICENSE.md)
-7. [Contact](#contact)
+5. [License](#license)
+6. [Contact](#contact)
 
 
 
@@ -27,7 +26,8 @@ Download
 
 - [Windows - releases](https://github.com/vn-tools/arc_unpacker/releases)
 - [Windows - nightly builds](http://tmp.sakuya.pl/au/)
-- [Build instructions](https://github.com/vn-tools/arc_unpacker/blob/master/BUILD.md)
+- [Build instructions](https://github.com/vn-tools/arc_unpacker/blob/master/BUILD.md)  
+  Supported platforms: Windows, Cygwin and GNU/Linux.
 
 Usage
 -----
@@ -128,6 +128,14 @@ Features           | Game                                | CLI invocation
 
 If a game isn't listed above and it works, please let me know so I can update
 the table.
+
+
+
+License
+-------
+
+See
+[LICENSE.md](https://github.com/vn-tools/arc_unpacker/blob/master/LICENSE.md).
 
 
 
