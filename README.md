@@ -24,9 +24,9 @@ profile](https://github.com/rr-).
 Download
 --------
 
-To download binaries for Windows, head over to
-[releases](https://github.com/vn-tools/arc_unpacker/releases).
-For build instructions, see below.
+- [Windows - releases](https://github.com/vn-tools/arc_unpacker/releases)
+- [Windows - nightly builds](http://tmp.sakuya.pl/au/)
+- [Build instructions](#building-from-sources)
 
 Usage
 -----
