@@ -1,5 +1,5 @@
-Building from sources
----------------------
+Build instructions
+------------------
 
 ### Dependencies
 
