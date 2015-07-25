@@ -5,7 +5,8 @@
 3. [Usage](#usage)
 4. [Supported games](#supported-games)
 5. [Building from sources](https://github.com/vn-tools/arc_unpacker/blob/master/BUILD.md)
-6. [Contact](#contact)
+6. [License](https://github.com/vn-tools/arc_unpacker/blob/master/LICENSE.md)
+7. [Contact](#contact)
 
 
 
