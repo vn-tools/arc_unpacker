@@ -1,3 +1,7 @@
+# arc\_unpacker
+
+Licensed under GPL v3.
+
 Copyright (c) 2014-2015 Marcin Kurczewski
 
 This program is free software: you can redistribute it and/or modify
@@ -13,7 +17,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
----
+
+
+# Other projects
 
 Some portions of `arc_unpacker` use work from other projects.
 These projects are listed below.
