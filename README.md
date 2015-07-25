@@ -4,7 +4,7 @@
 2. [Download](#download)
 3. [Usage](#usage)
 4. [Supported games](#supported-games)
-5. [Building from sources](#building-from-sources)
+5. [Building from sources](https://github.com/vn-tools/arc_unpacker/blob/master/BUILD.md)
 6. [Contact](#contact)
 
 
@@ -26,7 +26,7 @@ Download
 
 - [Windows - releases](https://github.com/vn-tools/arc_unpacker/releases)
 - [Windows - nightly builds](http://tmp.sakuya.pl/au/)
-- [Build instructions](#building-from-sources)
+- [Build instructions](https://github.com/vn-tools/arc_unpacker/blob/master/BUILD.md)
 
 Usage
 -----
@@ -129,76 +129,6 @@ If a game isn't listed above and it works, please let me know so I can update
 the table.
 
 
-
----
-
-Building from sources
----------------------
-
-### Dependencies
-
-Required:
-
-1. `g++` 4.8+ or `mingw-w64`
-2. `boost::locale`
-3. `boost::filesystem`
-4. `libpng` 1.4+
-5. `zlib` (comes with `libpng`)
-6. `iconv` (comes with POSIX)
-
-Recommended:
-
-1. `openssl`
-
-### Compiling for GNU/Linux or Cygwin
-
-1. Download required dependencies (the ones with `-dev` suffix). On Cygwin most
-   of them are available on [Cygwin Ports](http://cygwinports.org/).
-2. Run following:
-
-        ./bootstrap
-        ./waf configure
-        ./waf build
-
-3. The executables should appear in `build/` directory.
-
-### Cross compiling for Windows
-
-In this case, the project requires MinGW-w64. There are several ways to install
-it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
-
-1. Install `mxe`:
-
-        git clone https://github.com/mxe/mxe.git
-
-2. Build `arc_unpacker`'s dependencies using `mxe`:
-
-        cd mxe
-        make libiconv
-        make zlib
-        make libpng
-        make boost
-        make openssl
-
-3. Configure the shell to use `mxe`:
-
-        MXE_PATH=~/path/to/mxe
-        CROSS=i686-w64-mingw32.static-
-        export PATH="$MXE_PATH/usr/bin/:$PATH"
-        export CC=${CROSS}gcc
-        export CXX=${CROSS}g++
-        export AR=${CROSS}ar
-        export PKGCONFIG=${CROSS}pkg-config
-
-3. In the `arc_unpacker`'s directory run following:
-
-        ./bootstrap
-        ./waf configure
-        ./waf build
-
-### Compiling for Windows with Visual Studio
-
-I'm open to pull requests.
 
 Contact
 -------
