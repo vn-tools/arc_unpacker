@@ -184,13 +184,13 @@ static void (*transformers[16])(u8 &, u8 &, u8 &) =
 static inline u32 make_gt_mask(u32 a, u32 b)
 {
     u32 tmp2 = ~b;
-    u32 tmp = ((a & tmp2) + (((a ^ tmp2) >> 1) & 0x7f7f7f7f)) & 0x80808080;
-    return ((tmp >> 7) + 0x7f7f7f7f) ^ 0x7f7f7f7f;
+    u32 tmp = ((a & tmp2) + (((a ^ tmp2) >> 1) & 0x7F7F7F7F)) & 0x80808080;
+    return ((tmp >> 7) + 0x7F7F7F7F) ^ 0x7F7F7F7F;
 }
 
 static inline u32 packed_bytes_add(u32 a, u32 b)
 {
-    return a + b - ((((a & b) << 1) + ((a ^ b) & 0xfefefefe)) & 0x01010100);
+    return a + b - ((((a & b) << 1) + ((a ^ b) & 0xFEFEFEFE)) & 0x01010100);
 }
 
 static inline u32 med(u32 a, u32 b, u32 c, u32 v)
@@ -209,7 +209,7 @@ static inline u32 med(u32 a, u32 b, u32 c, u32 v)
 static inline u32 avg(u32 a, u32 b, u32, u32 v)
 {
     return packed_bytes_add((a & b)
-        + (((a ^ b) & 0xfefefefe) >> 1)
+        + (((a ^ b) & 0xFEFEFEFE) >> 1)
         + ((a ^ b) & 0x01010101), v);
 }
 
@@ -387,7 +387,7 @@ static void decode_line(
     int dir,
     Header &header)
 {
-    u32 initialp = header.channel_count == 3 ? 0xff000000 : 0;
+    u32 initialp = header.channel_count == 3 ? 0xFF000000 : 0;
     u32 p, up;
     int step, i;
 
@@ -424,10 +424,10 @@ static void decode_line(
 
         do
         {
-            u8 a = (*in >> 24) & 0xff;
-            u8 r = (*in >> 16) & 0xff;
-            u8 g = (*in >> 8) & 0xff;
-            u8 b = (*in) & 0xff;
+            u8 a = (*in >> 24) & 0xFF;
+            u8 r = (*in >> 16) & 0xFF;
+            u8 g = (*in >> 8) & 0xFF;
+            u8 b = (*in) & 0xFF;
 
             transformer(r, g, b);
 
@@ -436,12 +436,12 @@ static void decode_line(
                 p,
                 u,
                 up,
-                (0xff0000 & (b << 16))
-                + (0xff00 & (g << 8))
-                + (0xff & r) + (a << 24));
+                (0xFF0000 & (b << 16))
+                + (0xFF00 & (g << 8))
+                + (0xFF & r) + (a << 24));
 
             if (header.channel_count == 3)
-                p |= 0xff000000;
+                p |= 0xFF000000;
 
             up = u;
             *current_line++ = p;
@@ -482,7 +482,7 @@ static void read_pixels(io::IO &io, u8 *output, Header &header)
             u32 bit_length = io.read_u32_le();
 
             int method = (bit_length >> 30) & 3;
-            bit_length &= 0x3fffffff;
+            bit_length &= 0x3FFFFFFF;
 
             int byte_length = bit_length / 8;
             if (bit_length % 8)

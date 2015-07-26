@@ -25,14 +25,14 @@ static void decode_pixels(
     int length_lookup[256];
     for (size_t i = 0; i < 256; i++)
         length_lookup[i] = i + 3;
-    length_lookup[0xff] = 0x1000;
-    length_lookup[0xfe] = 0x400;
-    length_lookup[0xfd] = 0x100;
+    length_lookup[0xFF] = 0x1000;
+    length_lookup[0xFE] = 0x400;
+    length_lookup[0xFD] = 0x100;
 
     while (1)
     {
         flag <<= 1;
-        if ((flag & 0xff) == 0)
+        if ((flag & 0xFF) == 0)
         {
             if (source_ptr >= source_guardian)
                 break;
@@ -62,7 +62,7 @@ static void decode_pixels(
                 if (source_ptr >= source_guardian)
                     break;
 
-                shift = (*source_ptr++) | ((tmp & 0x3f) << 8);
+                shift = (*source_ptr++) | ((tmp & 0x3F) << 8);
                 if (tmp & 0x40)
                 {
                     if (source_ptr >= source_guardian)
@@ -72,7 +72,7 @@ static void decode_pixels(
                 }
                 else
                 {
-                    length = (shift & 0xf) + 3;
+                    length = (shift & 0xF) + 3;
                     shift >>= 4;
                 }
             }

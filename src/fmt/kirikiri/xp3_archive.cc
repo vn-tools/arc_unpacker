@@ -21,7 +21,7 @@
 using namespace au;
 using namespace au::fmt::kirikiri;
 
-static const std::string xp3_magic = "XP3\r\n\x20\x0a\x1a\x8b\x67\x01"_s;
+static const std::string xp3_magic = "XP3\r\n\x20\x0A\x1A\x8B\x67\x01"_s;
 static const std::string file_magic = "File"_s;
 static const std::string adlr_magic = "adlr"_s;
 static const std::string info_magic = "info"_s;

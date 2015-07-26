@@ -74,16 +74,16 @@ static void decrypt_file_name(
     u32 tmp = filter.file_name_key(header.key1, header.key2);
     for (size_t char_pos = 0; char_pos < name.size(); char_pos++)
     {
-        u32 key = 0xfc * char_pos;
+        u32 key = 0xFC * char_pos;
         key -= tmp >> 0x18;
         key -= tmp >> 0x10;
         key -= tmp >> 0x08;
-        key -= tmp & 0xff;
+        key -= tmp & 0xFF;
         key -= file_pos >> 0x18;
         key -= file_pos >> 0x10;
         key -= file_pos >> 0x08;
         key -= file_pos;
-        name[char_pos] += (key & 0xff);
+        name[char_pos] += (key & 0xFF);
     }
 }
 
@@ -99,7 +99,7 @@ static void decrypt_file_data(
     key *= entry.name.size();
     key += header.key1 * header.key2;
     key *= entry.size_original;
-    key &= 0xff;
+    key &= 0xFF;
 
     size_t length = 0x1000 + entry.name.size();
     for (size_t i = 0; i < length && i < entry.size_compressed; i++)

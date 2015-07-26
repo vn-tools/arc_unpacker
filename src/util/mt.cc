@@ -34,34 +34,34 @@
 
 const int N = 624;
 const int M = 397;
-const unsigned long MATRIX_A = 0x9908b0dfUL;
-const unsigned long UPPER_MASK = 0x80000000UL;
-const unsigned long LOWER_MASK = 0x7fffffffUL;
+const unsigned long MATRIX_A = 0x9908B0DFul;
+const unsigned long UPPER_MASK = 0x80000000ul;
+const unsigned long LOWER_MASK = 0x7FFFFFFFul;
 
 static unsigned long mts[N];
 static int mti = N + 1;
 
 void au::util::mt::init_genrand(unsigned long s)
 {
-    mts[0] = s & 0xffffffffUL;
+    mts[0] = s & 0xFFFFFFFFul;
     for (mti = 1; mti < N; mti++)
     {
-        mts[mti] = (1812433253UL * (mts[mti - 1] ^ (mts[mti - 1] >> 30)) + mti);
-        mts[mti] &= 0xffffffffUL;
+        mts[mti] = (1812433253ul * (mts[mti - 1] ^ (mts[mti - 1] >> 30)) + mti);
+        mts[mti] &= 0xFFFFFFFFul;
     }
 }
 
 void au::util::mt::init_by_array(unsigned long init_key[], int key_length)
 {
-    init_genrand(19650218UL);
+    init_genrand(19650218ul);
     int i = 1;
     int j = 0;
     int k = (N > key_length ? N : key_length);
     for (; k; k--)
     {
-        mts[i] = (mts[i] ^ ((mts[i - 1] ^ (mts[i - 1] >> 30)) * 1664525UL))
+        mts[i] = (mts[i] ^ ((mts[i - 1] ^ (mts[i - 1] >> 30)) * 1664525ul))
             + init_key[j] + j;
-        mts[i] &= 0xffffffffUL;
+        mts[i] &= 0xFFFFFFFFul;
         i++;
         j++;
         if (i >= N)
@@ -76,9 +76,9 @@ void au::util::mt::init_by_array(unsigned long init_key[], int key_length)
     }
     for (k = N - 1; k; k--)
     {
-        mts[i] = (mts[i] ^ ((mts[i - 1] ^ (mts[i - 1] >> 30)) * 1566083941UL))
+        mts[i] = (mts[i] ^ ((mts[i - 1] ^ (mts[i - 1] >> 30)) * 1566083941ul))
             - i;
-        mts[i] &= 0xffffffffUL;
+        mts[i] &= 0xFFFFFFFFul;
         i++;
         if (i >= N)
         {
@@ -87,41 +87,41 @@ void au::util::mt::init_by_array(unsigned long init_key[], int key_length)
         }
     }
 
-    mts[0] = 0x80000000UL;
+    mts[0] = 0x80000000ul;
 }
 
 unsigned long au::util::mt::genrand_int32()
 {
     unsigned long y;
-    static unsigned long mag01[2] = { 0x0UL, MATRIX_A };
+    static unsigned long mag01[2] = { 0x0ul, MATRIX_A };
 
     if (mti >= N)
     {
         int kk;
 
         if (mti == N + 1)
-            init_genrand(5489UL);
+            init_genrand(5489ul);
 
         for (kk = 0; kk < N - M; kk++)
         {
             y = (mts[kk] & UPPER_MASK) | (mts[kk + 1] & LOWER_MASK);
-            mts[kk] = mts[kk + M] ^ (y >> 1) ^ mag01[y & 0x1UL];
+            mts[kk] = mts[kk + M] ^ (y >> 1) ^ mag01[y & 0x1ul];
         }
         for (; kk < N - 1; kk++)
         {
             y = (mts[kk] & UPPER_MASK) | (mts[kk + 1] & LOWER_MASK);
-            mts[kk] = mts[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
+            mts[kk] = mts[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1ul];
         }
         y = (mts[N - 1] & UPPER_MASK) | (mts[0] & LOWER_MASK);
-        mts[N - 1] = mts[M - 1] ^ (y >> 1) ^ mag01[y & 0x1UL];
+        mts[N - 1] = mts[M - 1] ^ (y >> 1) ^ mag01[y & 0x1ul];
         mti = 0;
     }
 
     y = mts[mti++];
 
     y ^= (y >> 11);
-    y ^= (y << 7) & 0x9d2c5680UL;
-    y ^= (y << 15) & 0xefc60000UL;
+    y ^= (y << 7) & 0x9D2C5680ul;
+    y ^= (y << 15) & 0xEFC60000ul;
     y ^= (y >> 18);
 
     return y;

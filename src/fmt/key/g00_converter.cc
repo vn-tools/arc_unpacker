@@ -80,7 +80,7 @@ static void decompress(
             i |= (*src++) << 8;
 
             look_behind = (i >> 4) * byte_count;
-            length = ((i & 0x0f) + length_delta) * byte_count;
+            length = ((i & 0x0F) + length_delta) * byte_count;
             for (i = 0; i < length; i++)
             {
                 if (dst >= dst_guardian)

@@ -251,8 +251,8 @@ static std::unique_ptr<io::BufferedIO> decode_dxt3(
             for (size_t x = 0; x < 4; x += 2)
             {
                 u8 b = io.read_u8();
-                alpha[y][x + 0] = b & 0xf0;
-                alpha[y][x + 1] = (b & 0x0f) << 4;
+                alpha[y][x + 0] = b & 0xF0;
+                alpha[y][x + 1] = (b & 0x0F) << 4;
             }
         }
 

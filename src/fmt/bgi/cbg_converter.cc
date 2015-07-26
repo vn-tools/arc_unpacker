@@ -32,11 +32,11 @@ static const std::string magic = "CompressedBG___\x00"_s;
 static u32 get_key(u32 *pkey)
 {
     u32 key = *pkey;
-    u32 tmp1 = 0x4e35 * (key & 0xffff);
-    u32 tmp2 = 0x4e35 * (key >> 16);
-    u32 tmp = 0x15a * key + tmp2 + (tmp1 >> 16);
-    *pkey = (tmp << 16) + (tmp1 & 0xffff) + 1;
-    return tmp & 0x7fff;
+    u32 tmp1 = 0x4E35 * (key & 0xFFFF);
+    u32 tmp2 = 0x4E35 * (key >> 16);
+    u32 tmp = 0x15A * key + tmp2 + (tmp1 >> 16);
+    *pkey = (tmp << 16) + (tmp1 & 0xFFFF) + 1;
+    return tmp & 0x7FFF;
 }
 
 static void decrypt(char *input, u32 decrypt_size, u32 key)
@@ -54,7 +54,7 @@ static u32 read_variable_data(char *&input, const char *input_guardian)
     {
         current = *input++;
         assert(input <= input_guardian);
-        result |= (current & 0x7f) << shift;
+        result |= (current & 0x7F) << shift;
         shift += 7;
     } while (current & 0x80);
     return result;
@@ -101,7 +101,7 @@ static int read_node_info(u32 freq_table[], NodeInfo node_info[])
         int children[2];
         for (int j = 0; j < 2; j++)
         {
-            u32 min = 0xffffffff;
+            u32 min = 0xFFFFFFFF;
             children[j] = -1;
             for (int k = 0; k < i; k++)
             {

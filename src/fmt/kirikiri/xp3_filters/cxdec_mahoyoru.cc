@@ -7,8 +7,8 @@ using namespace au::fmt::kirikiri::xp3_filters;
 CxdecSettings CxdecMahoYoru::get_settings() const
 {
     CxdecSettings settings;
-    settings.key1 = 0x22a;
-    settings.key2 = 0x2a2;
+    settings.key1 = 0x22A;
+    settings.key2 = 0x2A2;
 
     settings.key_derivation_order1[0] = 1;
     settings.key_derivation_order1[1] = 0;

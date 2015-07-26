@@ -104,7 +104,7 @@ static void load_pixel_block_row(
             output_a += *previous_line++;
 
             if (!use_alpha)
-                output_a = 0xff;
+                output_a = 0xFF;
 
             *current_line++ = output_r;
             *current_line++ = output_g;

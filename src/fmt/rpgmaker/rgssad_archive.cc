@@ -26,7 +26,7 @@ namespace
 }
 
 static const std::string magic = "RGSSAD\x00"_s;
-static const u32 initial_key = 0xdeadcafe;
+static const u32 initial_key = 0xDEADCAFE;
 
 static u32 advance_key(const u32 key)
 {

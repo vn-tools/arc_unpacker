@@ -47,7 +47,7 @@ void LzssDecompressor::decompress(
         {
             if (input >= input_guardian)
                 return;
-            flags = *input++ | 0xff00;
+            flags = *input++ | 0xFF00;
         }
 
         if ((flags & 1) == 1)
@@ -58,8 +58,8 @@ void LzssDecompressor::decompress(
             if (input >= input_guardian)
                 return;
             u8 x1 = *input++;
-            size_t position = x0 | ((x1 & 0xf) << 8);
-            size_t length = 3 + ((x1 & 0xf0) >> 4);
+            size_t position = x0 | ((x1 & 0xF) << 8);
+            size_t length = 3 + ((x1 & 0xF0) >> 4);
             if (length == 18)
             {
                 if (input >= input_guardian)
@@ -75,9 +75,9 @@ void LzssDecompressor::decompress(
                 *output++ = c;
                 p->dictionary[p->offset] = c;
                 p->offset++;
-                p->offset &= 0xfff;
+                p->offset &= 0xFFF;
                 position++;
-                position &= 0xfff;
+                position &= 0xFFF;
             }
         }
         else
@@ -90,7 +90,7 @@ void LzssDecompressor::decompress(
             *output++ = c;
             p->dictionary[p->offset] = c;
             p->offset++;
-            p->offset &= 0xfff;
+            p->offset &= 0xFFF;
         }
     }
 }

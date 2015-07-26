@@ -107,7 +107,7 @@ bool SpbConverter::is_recognized_internal(File &file) const
     u16 height = file.io.read_u16_be();
     if (height == 0 || width == 0)
         return false;
-    if (static_cast<u32>(width * height) > 0x0fffffff)
+    if (static_cast<u32>(width * height) > 0x0FFFFFFF)
         return false;
     return true;
 }

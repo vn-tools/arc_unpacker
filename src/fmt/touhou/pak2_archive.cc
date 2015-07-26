@@ -76,7 +76,7 @@ static std::unique_ptr<io::BufferedIO> read_raw_table(
         throw std::runtime_error("Not a PAK2 archive");
     std::unique_ptr<io::BufferedIO> table_io(new io::BufferedIO());
     table_io->write_from_io(arc_io, table_size);
-    decrypt(*table_io, table_size + 6, 0xc5, 0x83, 0x53);
+    decrypt(*table_io, table_size + 6, 0xC5, 0x83, 0x53);
     return table_io;
 }
 

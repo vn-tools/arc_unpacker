@@ -55,7 +55,7 @@ static size_t wcg_unpack(
 
     //risky
     tmp = tmp < 0x1001 ? -1 : 0;
-    size_t var1 = tmp * 8 + 0xe;
+    size_t var1 = tmp * 8 + 0xE;
     size_t var2 = tmp + 4;
 
     io::BitReader bit_reader(io);
@@ -124,7 +124,7 @@ bool WcgConverter::is_recognized_internal(File &file) const
         return false;
 
     int version = file.io.read_u16_le();
-    if (((version & 0xf) != 1) || ((version & 0x1c0) != 64))
+    if (((version & 0xF) != 1) || ((version & 0x1C0) != 64))
         return false;
 
     return true;
@@ -161,7 +161,7 @@ std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
         4);
 
     for (size_t i = 0; i < pixels_size; i += 4)
-        pixels[i + 3] ^= 0xff;
+        pixels[i + 3] ^= 0xFF;
 
     std::unique_ptr<util::Image> image = util::Image::from_pixels(
         image_width,

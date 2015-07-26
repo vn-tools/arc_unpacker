@@ -14,8 +14,8 @@ void Fsn::decode(File &file, u32) const
     for (size_t i = 0; i < size; i++)
         ptr[i] ^= 0x36;
 
-    if (size > 0x2ea29)
-        ptr[0x2ea29] ^= 3;
+    if (size > 0x2EA29)
+        ptr[0x2EA29] ^= 3;
 
     if (size > 0x13)
         ptr[0x13] ^= 1;

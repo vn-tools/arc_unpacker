@@ -36,8 +36,8 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const u32 table_decoder = 0x8465b49b;
-static const size_t header_size = 0x5c;
+static const u32 table_decoder = 0x8465B49B;
+static const size_t header_size = 0x5C;
 
 static const size_t decoder_table_size = 900;
 static const u16 decoder_table[decoder_table_size] =
@@ -157,11 +157,11 @@ static const std::function<u8(u8, u8)> decoders[] =
     },
     [](u8 byte, size_t size) -> u8
     {
-        return byte ^ 0xff;
+        return byte ^ 0xFF;
     },
     [](u8 byte, size_t size) -> u8
     {
-        return (byte - 0x64) ^ 0xff;
+        return (byte - 0x64) ^ 0xFF;
     },
     [](u8 byte, size_t size) -> u8
     {
@@ -179,7 +179,7 @@ static const std::string magic_20 = "GLibArchiveData2.0\x00"_s;
 
 static void decode(u32 decoder, char *buffer, size_t size)
 {
-    u32 target = ((decoder * 95) >> 13) & 0xffff;
+    u32 target = ((decoder * 95) >> 13) & 0xFFFF;
     int index = -1;
     for (size_t i = 0; i < decoder_table_size; i++)
     {

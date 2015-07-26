@@ -38,9 +38,9 @@
 
 const int N = 64;
 const int M = 39;
-const unsigned long MATRIX_A = 0x9908b0dfUL;
-const unsigned long UPPER_MASK = 0x80000000UL;
-const unsigned long LOWER_MASK = 0x7fffffffUL;
+const unsigned long MATRIX_A = 0x9908B0DFul;
+const unsigned long UPPER_MASK = 0x80000000ul;
+const unsigned long LOWER_MASK = 0x7FFFFFFFul;
 
 static unsigned long mts[N];
 static int mti = N + 1;
@@ -60,46 +60,46 @@ void au::fmt::qlie::mt::xor_state(const unsigned char* buff, unsigned long len)
 
 void au::fmt::qlie::mt::init_genrand(unsigned long s)
 {
-    mts[0] = s & 0xffffffffUL;
+    mts[0] = s & 0xFFFFFFFFul;
     for (mti = 1; mti < N; mti++)
     {
-        mts[mti] = (1712438297UL * (mts[mti - 1] ^ (mts[mti - 1] >> 30)) + mti);
-        mts[mti] &= 0xffffffffUL;
+        mts[mti] = (1712438297ul * (mts[mti - 1] ^ (mts[mti - 1] >> 30)) + mti);
+        mts[mti] &= 0xFFFFFFFFul;
     }
 }
 
 unsigned long au::fmt::qlie::mt::genrand_int32()
 {
     unsigned long y;
-    static unsigned long mag01[2] = { 0x0UL, MATRIX_A };
+    static unsigned long mag01[2] = { 0x0ul, MATRIX_A };
 
     if (mti >= N)
     {
         int kk;
 
         if (mti == N + 1)
-            au::fmt::qlie::mt::init_genrand(5489UL);
+            au::fmt::qlie::mt::init_genrand(5489ul);
 
         for (kk = 0; kk < N - M; kk++)
         {
             y = (mts[kk] & UPPER_MASK) | ((mts[kk + 1] & LOWER_MASK) >> 1);
-            mts[kk] = mts[kk + M] ^ y ^ mag01[mts[kk + 1] & 0x1UL];
+            mts[kk] = mts[kk + M] ^ y ^ mag01[mts[kk + 1] & 0x1ul];
         }
         for (; kk < N - 1; kk++)
         {
             y = (mts[kk] & UPPER_MASK) | ((mts[kk + 1] & LOWER_MASK) >> 1);
-            mts[kk] = mts[kk + (M - N)] ^ y ^ mag01[mts[kk + 1] & 0x1UL];
+            mts[kk] = mts[kk + (M - N)] ^ y ^ mag01[mts[kk + 1] & 0x1ul];
         }
         y = (mts[N - 1] & UPPER_MASK) | ((mts[0] & LOWER_MASK) >> 1);
-        mts[N - 1] = mts[M - 1] ^ y ^ mag01[mts[N - 1] & 0x1UL];
+        mts[N - 1] = mts[M - 1] ^ y ^ mag01[mts[N - 1] & 0x1ul];
         mti = 0;
     }
 
     y = mts[mti++];
 
     y ^= (y >> 11);
-    y ^= (y << 7) & 0x9c4f88e3ul;
-    y ^= (y << 15) & 0xe7f70000ul;
+    y ^= (y << 7) & 0x9C4F88E3ul;
+    y ^= (y << 15) & 0xE7F70000ul;
     y ^= (y >> 18);
 
     return y;

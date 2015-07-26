@@ -37,7 +37,7 @@ static std::unique_ptr<io::BufferedIO> get_header_io(
     io::BufferedIO temp_io(arc_io, header_size_compressed);
     u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
     for (size_t i = 0; i < header_size_compressed; i++)
-        buffer[i] ^= 0xff;
+        buffer[i] ^= 0xFF;
 
     std::unique_ptr<io::BufferedIO> header_io(new io::BufferedIO);
     header_io->reserve(header_size_original);

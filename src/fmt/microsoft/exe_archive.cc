@@ -219,7 +219,7 @@ ImageOptionalHeader::ImageOptionalHeader(io::IO &io)
     checksum                       = io.read_u32_le();
     subsystem                      = io.read_u16_le();
     dll_characteristics            = io.read_u16_le();
-    bool pe64 = magic == 0x20b;
+    bool pe64 = magic == 0x20B;
     if (pe64)
     {
         size_of_stack_reserve = io.read_u64_le();
@@ -291,9 +291,9 @@ ImageResourceDirectoryEntry::ImageResourceDirectoryEntry(io::IO &io)
     offset_to_data = io.read_u32_le();
     id = name;
     name_is_string = (name >> 31) > 0;
-    name_offset = name & 0x7fffffff;
+    name_offset = name & 0x7FFFFFFF;
     data_is_directory = offset_to_data >> 31;
-    offset_to_data &= 0x7fffffff;
+    offset_to_data &= 0x7FFFFFFF;
 }
 
 ImageResourceDataEntry::ImageResourceDataEntry(io::IO &io)

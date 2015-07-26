@@ -52,7 +52,7 @@ std::unique_ptr<File> PgxConverter::decode_internal(File &file) const
         buffer += 3;
         while (buffer < buffer_guardian)
         {
-            *buffer = 0xff;
+            *buffer = 0xFF;
             buffer += 4;
         }
     }

@@ -31,7 +31,7 @@ static std::string read_file_name(io::IO &arc_io, size_t file_id)
 {
     std::string file_name = arc_io.read(60);
     for (size_t i = 0; i < 60; i++)
-        file_name[i] ^= file_id * i * 3 + 0x3d;
+        file_name[i] ^= file_id * i * 3 + 0x3D;
     return file_name.substr(0, file_name.find('\0'));
 }
 

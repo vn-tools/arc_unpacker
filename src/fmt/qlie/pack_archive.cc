@@ -54,7 +54,7 @@ static int guess_version(io::IO &arc_io)
     int version = 1;
     for (auto &magic : {magic1, magic2, magic3})
     {
-        arc_io.seek(arc_io.size() - 0x1c);
+        arc_io.seek(arc_io.size() - 0x1C);
         if (arc_io.read(magic.size()) == magic)
             return version;
         ++version;
@@ -104,9 +104,9 @@ static u32 v3_derive_seed(io::IO &io, size_t bytes)
 
 static void v3_decrypt_file_name(u8 *file_name, size_t length, u32 key)
 {
-    u8 _xor = ((key ^ 0x3e) + length) & 0xff;
+    u8 _xor = ((key ^ 0x3E) + length) & 0xFF;
     for (size_t i = 1; i <= length; i++)
-        file_name[i - 1] ^= ((i ^ _xor) & 0xff) + i;
+        file_name[i - 1] ^= ((i ^ _xor) & 0xFF) + i;
 }
 
 static void v3_decrypt_file_data_basic(u8 *file_data, size_t length, u32 seed)
@@ -238,7 +238,7 @@ static void decompress(
 
     io::BufferedIO input_io(input, input_size);
 
-    std::string magic = "1PC\xff"_s;
+    std::string magic = "1PC\xFF"_s;
     if (input_io.read(magic.length()) != magic)
     {
         throw std::runtime_error("Unexpected magic in compressed file. "
@@ -331,7 +331,7 @@ static Table read_table(io::IO &arc_io, int version)
 {
     size_t file_count = arc_io.read_u32_le();
     u64 table_offset = arc_io.read_u64_le();
-    size_t table_size = (arc_io.size() - 0x1c) - table_offset;
+    size_t table_size = (arc_io.size() - 0x1C) - table_offset;
     arc_io.seek(table_offset);
 
     io::BufferedIO table_io;

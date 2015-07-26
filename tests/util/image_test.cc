@@ -15,7 +15,7 @@ TEST_CASE("Reading transparent images works")
     REQUIRE(image->height() == 720);
 
     u32 rgba = image->color_at(200, 100);
-    REQUIRE(rgba == be32toh(0xfe0a17ff));
+    REQUIRE(rgba == be32toh(0xFE0A17FF));
 }
 
 TEST_CASE("Reading opaque images works")
@@ -27,5 +27,5 @@ TEST_CASE("Reading opaque images works")
     REQUIRE(image->height() == 480);
 
     u32 rgba = image->color_at(200, 100);
-    REQUIRE(rgba == be32toh(0x7c6a34ff));
+    REQUIRE(rgba == be32toh(0x7C6A34FF));
 }

@@ -60,7 +60,7 @@ TEST_CASE("Writing integers works")
 
 TEST_CASE("Skipping and telling position works")
 {
-    BufferedIO io("\x01\x0f\x00\x00"_s);
+    BufferedIO io("\x01\x0F\x00\x00"_s);
     io.skip(1);
     REQUIRE(io.tell() == 1);
     REQUIRE(io.read_u16_le() == 15);

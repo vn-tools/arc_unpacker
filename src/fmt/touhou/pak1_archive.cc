@@ -56,12 +56,12 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 static std::unique_ptr<io::BufferedIO> read_raw_table(
     io::IO &arc_io, size_t file_count)
 {
-    size_t table_size = file_count * 0x6c;
+    size_t table_size = file_count * 0x6C;
     if (table_size > arc_io.size() - arc_io.tell())
         throw std::runtime_error("Not a PAK1 archive");
     std::unique_ptr<io::BufferedIO> table_io(new io::BufferedIO());
     table_io->write_from_io(arc_io, table_size);
-    decrypt(*table_io, 0x64, 0x64, 0x4d);
+    decrypt(*table_io, 0x64, 0x64, 0x4D);
     return table_io;
 }
 
@@ -125,7 +125,7 @@ void Pak1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         //decode the file
         if (file->name.find("musicroom.dat") != std::string::npos)
         {
-            decrypt(file->io, 0x5c, 0x5a, 0x3d);
+            decrypt(file->io, 0x5C, 0x5A, 0x3D);
             file->change_extension(".txt");
         }
         else if (file->name.find(".sce") != std::string::npos)

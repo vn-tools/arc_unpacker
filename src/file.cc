@@ -65,7 +65,7 @@ void File::guess_extension()
         { "bmp",    "BM"_s           },
         { "wav",    "RIFF"_s         },
         { "ogg",    "OggS"_s         },
-        { "jpeg",   "\xff\xd8\xff"_s },
+        { "jpeg",   "\xFF\xD8\xFF"_s },
     };
 
     size_t old_pos = io.tell();

@@ -50,7 +50,7 @@ static std::unique_ptr<File> read_image(
                 rgba = source_io.read_u8()
                     | (source_io.read_u8() << 8)
                     | (source_io.read_u8() << 16)
-                    | 0xff000000;
+                    | 0xFF000000;
                 source_io.skip(1);
                 break;
 

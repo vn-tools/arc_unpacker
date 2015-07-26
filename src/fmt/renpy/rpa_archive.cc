@@ -69,8 +69,8 @@ using namespace au::fmt::renpy;
 #define PICKLE_TUPLE3   '\x87'_u8
 #define PICKLE_NEWTRUE  '\x88'_u8
 #define PICKLE_NEWFALSE '\x89'_u8
-#define PICKLE_LONG1    '\x8a'_u8
-#define PICKLE_LONG4    '\x8b'_u8
+#define PICKLE_LONG1    '\x8A'_u8
+#define PICKLE_LONG4    '\x8B'_u8
 
 namespace
 {

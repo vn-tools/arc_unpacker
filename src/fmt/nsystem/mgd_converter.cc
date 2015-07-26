@@ -48,7 +48,7 @@ static void decompress_sgd_alpha(
         input_ptr += 2;
         if (flag & 0x8000)
         {
-            size_t pixels = (flag & 0x7fff) + 1;
+            size_t pixels = (flag & 0x7FFF) + 1;
             u8 alpha = *input_ptr++;
             size_t i;
             for (i = 0; i < pixels; i++)
@@ -58,7 +58,7 @@ static void decompress_sgd_alpha(
                     throw std::runtime_error(
                         "Trying to write alpha beyond EOF");
                 }
-                *output_ptr = alpha ^ 0xff;
+                *output_ptr = alpha ^ 0xFF;
                 output_ptr += 4;
             }
         }
@@ -74,7 +74,7 @@ static void decompress_sgd_alpha(
                     throw std::runtime_error(
                         "Trying to write alpha beyond EOF");
                 }
-                *output_ptr = alpha ^ 0xff;
+                *output_ptr = alpha ^ 0xFF;
                 output_ptr += 4;
             }
         }
@@ -88,7 +88,7 @@ static void decompress_sgd_bgr_strategy_1(
     const u8 *const output_guardian,
     u8 flag)
 {
-    size_t pixels = flag & 0x3f;
+    size_t pixels = flag & 0x3F;
     u8 b = output_ptr[-4];
     u8 g = output_ptr[-3];
     u8 r = output_ptr[-2];
@@ -102,15 +102,15 @@ static void decompress_sgd_bgr_strategy_1(
 
         if (delta & 0x8000)
         {
-            b += delta & 0x1f;
-            g += (delta >> 5) & 0x1f;
-            r += (delta >> 10) & 0x1f;
+            b += delta & 0x1F;
+            g += (delta >> 5) & 0x1F;
+            r += (delta >> 10) & 0x1F;
         }
         else
         {
-            b += ( delta        & 0xf) * (delta &   0x10 ? -1 : 1);
-            g += ((delta >>  5) & 0xf) * (delta &  0x200 ? -1 : 1);
-            r += ((delta >> 10) & 0xf) * (delta & 0x4000 ? -1 : 1);
+            b += ( delta        & 0xF) * (delta &   0x10 ? -1 : 1);
+            g += ((delta >>  5) & 0xF) * (delta &  0x200 ? -1 : 1);
+            r += ((delta >> 10) & 0xF) * (delta & 0x4000 ? -1 : 1);
         }
 
         if (output_ptr + 4 > output_guardian)
@@ -133,7 +133,7 @@ static void decompress_sgd_bgr_strategy_2(
     if (input_ptr + 3 > input_guardian)
         throw std::runtime_error("Trying to read colors beyond EOF");
 
-    size_t pixels = (flag & 0x3f) + 1;
+    size_t pixels = (flag & 0x3F) + 1;
     u8 b = *input_ptr++;
     u8 g = *input_ptr++;
     u8 r = *input_ptr++;
@@ -186,7 +186,7 @@ static void decompress_sgd_bgr(
     while (input_ptr < input_guardian)
     {
         u8 flag = *input_ptr++;
-        switch (flag & 0xc0)
+        switch (flag & 0xC0)
         {
             case 0x80:
                 decompress_sgd_bgr_strategy_1(
