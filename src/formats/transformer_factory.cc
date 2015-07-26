@@ -29,17 +29,20 @@
 #include "formats/nitroplus/npa_sg_archive.h"
 #include "formats/nitroplus/pak_archive.h"
 #include "formats/nscripter/nsa_archive.h"
-#include "formats/propeller/mgr_archive.h"
-#include "formats/propeller/mpk_archive.h"
 #include "formats/nscripter/sar_archive.h"
 #include "formats/nscripter/spb_converter.h"
 #include "formats/nsystem/fjsys_archive.h"
 #include "formats/nsystem/mgd_converter.h"
+#include "formats/propeller/mgr_archive.h"
+#include "formats/propeller/mpk_archive.h"
 #include "formats/qlie/dpng_converter.h"
 #include "formats/qlie/pack_archive.h"
 #include "formats/renpy/rpa_archive.h"
 #include "formats/rpgmaker/rgssad_archive.h"
 #include "formats/rpgmaker/xyz_converter.h"
+#ifdef HAVE_OPENSSL_RSA_H
+#include "formats/tanuki_soft/tac_archive.h"
+#endif
 #include "formats/touhou/anm_archive.h"
 #include "formats/touhou/pak1_archive.h"
 #include "formats/touhou/pak2_archive.h"
@@ -74,6 +77,9 @@ struct TransformerFactory::Priv
 
 TransformerFactory::TransformerFactory() : p(new Priv)
 {
+    #ifdef HAVE_OPENSSL_RSA_H
+    p->add("tac", []() { return new TanukiSoft::TacArchive(); });
+    #endif
     p->add("mgr", []() { return new Propeller::MgrArchive(); });
     p->add("mpk", []() { return new Propeller::MpkArchive(); });
     p->add("fvp", []() { return new Fvp::BinArchive(); });

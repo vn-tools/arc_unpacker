@@ -77,6 +77,7 @@ Features           | Game                                | CLI invocation
 ![][F]![][F]![][F] | Long Live The Queen                 | `--fmt=rpa`
 ![][F]![][F]![][F] | Mahou Tsukai no Yoru                | `--fmt=xp3 --plugin=mahoyoru`
 ![][F]![][F]![][F] | Maji de Watashi ni Koishinasai!     | `--fmt=pac`
+![][F]![][F]![][F] | Mebae                               | `--fmt=tac`
 ![][F]![][F]![][F] | Melty Blood                         | `--fmt=p`
 ![][F]![][F]![][F] | Musume Shimai                       | `--fmt=g2`
 ![][F]![][F]![][F] | Pure My Imouto Milk Purin           | `--fmt=g2`
