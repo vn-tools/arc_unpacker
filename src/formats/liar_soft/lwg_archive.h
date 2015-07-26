@@ -1,10 +1,10 @@
-#ifndef AU_FMT_LIARSOFT_LWG_ARCHIVE_H
-#define AU_FMT_LIARSOFT_LWG_ARCHIVE_H
+#ifndef AU_FMT_LIAR_SOFT_LWG_ARCHIVE_H
+#define AU_FMT_LIAR_SOFT_LWG_ARCHIVE_H
 #include "formats/archive.h"
 
 namespace au {
 namespace fmt {
-namespace liarsoft {
+namespace liar_soft {
 
     class LwgArchive final : public Archive
     {

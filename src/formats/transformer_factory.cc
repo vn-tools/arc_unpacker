@@ -18,9 +18,9 @@
 #include "formats/key/nwa_converter.h"
 #include "formats/kirikiri/tlg_converter.h"
 #include "formats/kirikiri/xp3_archive.h"
-#include "formats/liarsoft/lwg_archive.h"
-#include "formats/liarsoft/wcg_converter.h"
-#include "formats/liarsoft/xfl_archive.h"
+#include "formats/liar_soft/lwg_archive.h"
+#include "formats/liar_soft/wcg_converter.h"
+#include "formats/liar_soft/xfl_archive.h"
 #include "formats/lizsoft/sotes_converter.h"
 #include "formats/microsoft/dds_converter.h"
 #include "formats/microsoft/exe_archive.h"
@@ -54,8 +54,8 @@
 #include "formats/touhou/tfpk_archive.h"
 #endif
 #include "formats/touhou/tha1_archive.h"
-#include "formats/yukascript/ykc_archive.h"
-#include "formats/yukascript/ykg_converter.h"
+#include "formats/yuka_script/ykc_archive.h"
+#include "formats/yuka_script/ykg_converter.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -91,14 +91,14 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("th-pak2",   []() { return new touhou::Pak2Archive();     });
     p->add("tha1",      []() { return new touhou::Tha1Archive();     });
     p->add("pbgz",      []() { return new touhou::PbgzArchive();     });
-    p->add("lwg",       []() { return new liarsoft::LwgArchive();    });
-    p->add("xfl",       []() { return new liarsoft::XflArchive();    });
+    p->add("lwg",       []() { return new liar_soft::LwgArchive();   });
+    p->add("xfl",       []() { return new liar_soft::XflArchive();   });
     p->add("pbg3",      []() { return new touhou::Pbg3Archive();     });
     p->add("pbg4",      []() { return new touhou::Pbg4Archive();     });
     p->add("pack",      []() { return new qlie::PackArchive();       });
     p->add("pac",       []() { return new minato_soft::PacArchive(); });
     p->add("exe",       []() { return new microsoft::ExeArchive();   });
-    p->add("ykc",       []() { return new yukascript::YkcArchive();  });
+    p->add("ykc",       []() { return new yuka_script::YkcArchive(); });
     p->add("rgssad",    []() { return new rpgmaker::RgssadArchive(); });
     p->add("fjsys",     []() { return new nsystem::FjsysArchive();   });
     p->add("arc",       []() { return new bgi::ArcArchive();         });
@@ -117,12 +117,12 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("nvsg",      []() { return new fvp::NvsgConverter();         });
     p->add("dds",       []() { return new microsoft::DdsConverter();    });
     p->add("pgx",       []() { return new glib::PgxConverter();         });
-    p->add("wcg",       []() { return new liarsoft::WcgConverter();     });
+    p->add("wcg",       []() { return new liar_soft::WcgConverter();    });
     p->add("dpng",      []() { return new qlie::DpngConverter();        });
     p->add("bgi-sound", []() { return new bgi::SoundConverter();        });
     p->add("ex3",       []() { return new french_bread::Ex3Converter(); });
     p->add("tlg",       []() { return new kirikiri::TlgConverter();     });
-    p->add("ykg",       []() { return new yukascript::YkgConverter();   });
+    p->add("ykg",       []() { return new yuka_script::YkgConverter();  });
     p->add("cbg",       []() { return new bgi::CbgConverter();          });
     p->add("xyz",       []() { return new rpgmaker::XyzConverter();     });
     p->add("mgd",       []() { return new nsystem::MgdConverter();      });

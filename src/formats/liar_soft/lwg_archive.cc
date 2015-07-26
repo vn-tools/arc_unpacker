@@ -9,12 +9,12 @@
 // - Sekien no Inganock - What a Beautiful People
 // - Shikkoku no Sharnoth - What a Beautiful Tomorrow
 
-#include "formats/liarsoft/lwg_archive.h"
-#include "formats/liarsoft/wcg_converter.h"
+#include "formats/liar_soft/lwg_archive.h"
+#include "formats/liar_soft/wcg_converter.h"
 #include "util/encoding.h"
 
 using namespace au;
-using namespace au::fmt::liarsoft;
+using namespace au::fmt::liar_soft;
 
 namespace
 {

@@ -6,10 +6,10 @@
 // Archives:  YKC
 
 #include <memory>
-#include "formats/yukascript/ykg_converter.h"
+#include "formats/yuka_script/ykg_converter.h"
 
 using namespace au;
-using namespace au::fmt::yukascript;
+using namespace au::fmt::yuka_script;
 
 namespace
 {

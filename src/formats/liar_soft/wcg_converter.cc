@@ -11,14 +11,14 @@
 // - Shikkoku no Sharnoth - What a Beautiful Tomorrow
 
 #include <stdexcept>
-#include "formats/liarsoft/wcg_converter.h"
+#include "formats/liar_soft/wcg_converter.h"
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/itos.h"
 
 using namespace au;
-using namespace au::fmt::liarsoft;
+using namespace au::fmt::liar_soft;
 
 static const std::string magic("WG", 2);
 

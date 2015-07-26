@@ -1,12 +1,12 @@
-#ifndef AU_FMT_LIARSOFT_WCG_CONVERTER_H
-#define AU_FMT_LIARSOFT_WCG_CONVERTER_H
+#ifndef AU_FMT_YUKASCRIPT_YKG_CONVERTER_H
+#define AU_FMT_YUKASCRIPT_YKG_CONVERTER_H
 #include "formats/converter.h"
 
 namespace au {
 namespace fmt {
-namespace liarsoft {
+namespace yuka_script {
 
-    class WcgConverter final : public Converter
+    class YkgConverter final : public Converter
     {
     protected:
         bool is_recognized_internal(File &) const override;

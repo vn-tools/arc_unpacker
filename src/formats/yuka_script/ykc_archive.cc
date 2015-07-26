@@ -7,11 +7,11 @@
 // Known games:
 // - Hoshizora e Kakaru Hashi
 
-#include "formats/yukascript/ykc_archive.h"
-#include "formats/yukascript/ykg_converter.h"
+#include "formats/yuka_script/ykc_archive.h"
+#include "formats/yuka_script/ykg_converter.h"
 
 using namespace au;
-using namespace au::fmt::yukascript;
+using namespace au::fmt::yuka_script;
 
 namespace
 {

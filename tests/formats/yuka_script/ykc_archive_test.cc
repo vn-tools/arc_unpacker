@@ -1,12 +1,12 @@
-#include "formats/liarsoft/xfl_archive.h"
+#include "formats/yuka_script/ykc_archive.h"
 #include "test_support/archive_support.h"
 #include "test_support/catch.hpp"
 
 using namespace au;
 using namespace au::fmt;
-using namespace au::fmt::liarsoft;
+using namespace au::fmt::yuka_script;
 
-TEST_CASE("Unpacking XFL archives works")
+TEST_CASE("Unpacking YKC archives works")
 {
     std::shared_ptr<File> file1(new File);
     std::shared_ptr<File> file2(new File);
@@ -16,10 +16,9 @@ TEST_CASE("Unpacking XFL archives works")
     file2->io.write("abcdefghij", 10);
     std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
-    std::unique_ptr<Archive> archive(new XflArchive);
+    std::unique_ptr<Archive> archive(new YkcArchive);
     au::tests::compare_files(
         expected_files,
         au::tests::unpack_to_memory(
-            "tests/formats/liarsoft/files/test.xfl",
-            *archive));
+            "tests/formats/yuka_script/files/test.ykc", *archive));
 }

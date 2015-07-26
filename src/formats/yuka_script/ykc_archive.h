@@ -1,16 +1,16 @@
-#ifndef AU_FMT_LIARSOFT_XFL_ARCHIVE_H
-#define AU_FMT_LIARSOFT_XFL_ARCHIVE_H
+#ifndef AU_FMT_YUKASCRIPT_YKC_ARCHIVE_H
+#define AU_FMT_YUKASCRIPT_YKC_ARCHIVE_H
 #include "formats/archive.h"
 
 namespace au {
 namespace fmt {
-namespace liarsoft {
+namespace yuka_script {
 
-    class XflArchive final : public Archive
+    class YkcArchive final : public Archive
     {
     public:
-        XflArchive();
-        ~XflArchive();
+        YkcArchive();
+        ~YkcArchive();
     protected:
         bool is_recognized_internal(File &) const override;
         void unpack_internal(File &, FileSaver &) const override;
