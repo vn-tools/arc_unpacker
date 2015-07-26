@@ -11,7 +11,9 @@
 #include <cstring>
 #include "formats/lizsoft/sotes_converter.h"
 #include "util/image.h"
-using namespace Formats::Lizsoft;
+
+using namespace au;
+using namespace au::fmt::lizsoft;
 
 static size_t guess_image_dimension(
     const std::vector<u32> candidates,
@@ -135,10 +137,10 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
 
     mirror(pixel_data.get(), pixel_data_size, 3 * width);
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         width,
         height,
         std::string(pixel_data.get(), pixel_data_size),
-        PixelFormat::BGR);
+        util::PixelFormat::BGR);
     return image->create_file(file.name);
 }

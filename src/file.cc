@@ -3,6 +3,8 @@
 #include "io/buffered_io.h"
 #include "io/file_io.h"
 
+using namespace au;
+
 static void change_extension(
     boost::filesystem::path &path, const std::string &new_extension)
 {
@@ -25,12 +27,12 @@ static void change_extension(
     }
 }
 
-File::File(const boost::filesystem::path &path, const FileIOMode mode)
-    : io(*new FileIO(path, mode)), name(path.string())
+File::File(const boost::filesystem::path &path, const io::FileMode mode)
+    : io(*new io::FileIO(path, mode)), name(path.string())
 {
 }
 
-File::File() : io(*new BufferedIO)
+File::File() : io(*new io::BufferedIO)
 {
 }
 

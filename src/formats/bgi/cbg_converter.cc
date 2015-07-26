@@ -11,7 +11,9 @@
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
-using namespace Formats::Bgi;
+
+using namespace au;
+using namespace au::fmt::bgi;
 
 namespace
 {
@@ -58,7 +60,7 @@ static u32 read_variable_data(char *&input, const char *input_guardian)
     return result;
 }
 
-static void read_freq_table(IO &io, u32 raw_size, u32 key, u32 freq_table[])
+static void read_freq_table(io::IO &io, u32 raw_size, u32 key, u32 freq_table[])
 {
     std::unique_ptr<char[]> raw_data(new char[raw_size]);
     io.read(raw_data.get(), raw_size);
@@ -126,7 +128,7 @@ static int read_node_info(u32 freq_table[], NodeInfo node_info[])
 }
 
 static void decompress_huffman(
-    BitReader &bit_reader,
+    io::BitReader &bit_reader,
     int last_node,
     NodeInfo node_info[],
     u32 huffman_size,
@@ -222,16 +224,16 @@ static void transform_colors(u8 *input, u16 width, u16 height, u16 bpp)
     }
 }
 
-static PixelFormat bpp_to_image_pixel_format(int bpp)
+static util::PixelFormat bpp_to_image_pixel_format(int bpp)
 {
     switch (bpp)
     {
         case 8:
-            return PixelFormat::Grayscale;
+            return util::PixelFormat::Grayscale;
         case 24:
-            return PixelFormat::BGR;
+            return util::PixelFormat::BGR;
         case 32:
-            return PixelFormat::BGRA;
+            return util::PixelFormat::BGRA;
     }
     throw std::runtime_error("Unsupported BPP");
 }
@@ -278,8 +280,8 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
 
     std::unique_ptr<char[]> huffman(new char[huffman_size]);
 
-    BufferedIO buffered_io(file.io);
-    BitReader bit_reader(buffered_io);
+    io::BufferedIO buffered_io(file.io);
+    io::BitReader bit_reader(buffered_io);
     decompress_huffman(
         bit_reader,
         last_node,
@@ -292,7 +294,7 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
     decompress_rle(huffman_size, huffman.get(), output.get());
     transform_colors(reinterpret_cast<u8*>(output.get()), width, height, bpp);
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    auto image = util::Image::from_pixels(
         width,
         height,
         std::string(output.get(), output_size),

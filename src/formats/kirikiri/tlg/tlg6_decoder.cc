@@ -2,7 +2,9 @@
 #include "formats/kirikiri/tlg/lzss_decompressor.h"
 #include "formats/kirikiri/tlg/tlg6_decoder.h"
 #include "util/image.h"
-using namespace Formats::Kirikiri::Tlg;
+
+using namespace au;
+using namespace au::fmt::kirikiri::tlg;
 
 static const int W_BLOCK_SIZE = 8;
 static const int H_BLOCK_SIZE = 8;
@@ -33,12 +35,12 @@ namespace
     {
         u32 data_size;
         std::unique_ptr<u8[]> data;
-        FilterTypes(IO &io);
+        FilterTypes(io::IO &io);
         void decompress(Header &header);
     } FilterTypes;
 }
 
-FilterTypes::FilterTypes(IO &io) : data(nullptr)
+FilterTypes::FilterTypes(io::IO &io) : data(nullptr)
 {
     data_size = io.read_u32_le();
     data.reset(new u8[data_size]);
@@ -455,7 +457,7 @@ static void decode_line(
     }
 }
 
-static void read_pixels(IO &io, u8 *output, Header &header)
+static void read_pixels(io::IO &io, u8 *output, Header &header)
 {
     FilterTypes filter_types(io);
     filter_types.decompress(header);
@@ -580,10 +582,10 @@ std::unique_ptr<File> Tlg6Decoder::decode(File &file)
 
     read_pixels(file.io, pixels.get(), header);
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         header.image_width,
         header.image_height,
         std::string(reinterpret_cast<char*>(pixels.get()), pixels_size),
-        PixelFormat::RGBA);
+        util::PixelFormat::RGBA);
     return image->create_file(file.name);
 }

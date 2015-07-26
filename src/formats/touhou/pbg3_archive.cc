@@ -11,7 +11,9 @@
 #include "formats/touhou/pbg3_archive.h"
 #include "io/buffered_io.h"
 #include "util/lzss.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt::touhou;
 
 namespace
 {
@@ -34,26 +36,26 @@ namespace
 
 static const std::string magic("PBG3", 4);
 
-static unsigned int read_integer(BitReader &bit_reader)
+static unsigned int read_integer(io::BitReader &bit_reader)
 {
     size_t integer_size = bit_reader.get(2) + 1;
     return bit_reader.get(integer_size << 3);
 }
 
-static std::unique_ptr<Header> read_header(IO &arc_io)
+static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {
     std::unique_ptr<Header> header(new Header);
-    BitReader bit_reader(arc_io);
+    io::BitReader bit_reader(arc_io);
     header->file_count = read_integer(bit_reader);
     header->table_offset = read_integer(bit_reader);
     return header;
 }
 
-static Table read_table(IO &arc_io, Header &header)
+static Table read_table(io::IO &arc_io, Header &header)
 {
     Table table;
     arc_io.seek(header.table_offset);
-    BitReader bit_reader(arc_io);
+    io::BitReader bit_reader(arc_io);
     for (size_t i = 0; i < header.file_count; i++)
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
@@ -74,21 +76,21 @@ static Table read_table(IO &arc_io, Header &header)
     return table;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     file->name = entry.name;
 
     arc_io.seek(entry.offset);
-    BitReader bit_reader(arc_io);
+    io::BitReader bit_reader(arc_io);
 
-    LzssSettings settings;
+    util::lzss::Settings settings;
     settings.position_bits = 13;
     settings.length_bits = 4;
     settings.min_match_length = 3;
     settings.initial_dictionary_pos = 1;
     settings.reuse_compressed = true;
-    file->io.write(lzss_decompress(bit_reader, entry.size, settings));
+    file->io.write(util::lzss::decompress(bit_reader, entry.size, settings));
 
     return file;
 }
@@ -118,7 +120,7 @@ void Pbg3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     // works much faster when the whole archive resides in memory
     arc_file.io.seek(0);
-    BufferedIO buf_io;
+    io::BufferedIO buf_io;
     buf_io.write_from_io(arc_file.io, arc_file.io.size());
     buf_io.seek(magic.size());
 

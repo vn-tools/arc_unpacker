@@ -1,18 +1,18 @@
-#ifndef FORMATS_TOUHOU_PAK1_SOUND_ARCHIVE_H
-#define FORMATS_TOUHOU_PAK1_SOUND_ARCHIVE_H
+#ifndef AU_FMT_TOUHOU_PAK1_SOUND_ARCHIVE_H
+#define AU_FMT_TOUHOU_PAK1_SOUND_ARCHIVE_H
 #include "formats/archive.h"
 
-namespace Formats
-{
-    namespace Touhou
+namespace au {
+namespace fmt {
+namespace touhou {
+
+    class Pak1SoundArchive : public Archive
     {
-        class Pak1SoundArchive : public Archive
-        {
-        protected:
-            bool is_recognized_internal(File &) const override;
-            void unpack_internal(File &, FileSaver &) const override;
-        };
-    }
-}
+    protected:
+        bool is_recognized_internal(File &) const override;
+        void unpack_internal(File &, FileSaver &) const override;
+    };
+
+} } }
 
 #endif

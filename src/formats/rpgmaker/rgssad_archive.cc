@@ -8,7 +8,9 @@
 // - Cherry Tree High Comedy Club
 
 #include "formats/rpgmaker/rgssad_archive.h"
-using namespace Formats::RpgMaker;
+
+using namespace au;
+using namespace au::fmt::rpgmaker;
 
 namespace
 {
@@ -31,7 +33,7 @@ static u32 advance_key(const u32 key)
     return key * 7 + 3;
 }
 
-static Table read_table(IO &arc_io, u32 key)
+static Table read_table(io::IO &arc_io, u32 key)
 {
     Table table;
     while (arc_io.tell() < arc_io.size())
@@ -59,7 +61,7 @@ static Table read_table(IO &arc_io, u32 key)
     return table;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     file->name = entry.name;

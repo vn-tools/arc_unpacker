@@ -12,18 +12,20 @@
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/zlib.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt::touhou;
 
 static const std::string magic("TFCS\x00", 5);
 
-static void write_cell(IO &output_io, std::string cell)
+static void write_cell(io::IO &output_io, std::string cell)
 {
     if (cell.find(",") != std::string::npos)
     {
         boost::replace_all(cell, "\"", "\"\"");
         cell = "\"" + cell + "\"";
     }
-    output_io.write(sjis_to_utf8(cell));
+    output_io.write(util::sjis_to_utf8(cell));
 }
 
 bool TfcsConverter::is_recognized_internal(File &file) const
@@ -36,7 +38,8 @@ std::unique_ptr<File> TfcsConverter::decode_internal(File &file) const
     file.io.skip(magic.size());
     size_t compressed_size = file.io.read_u32_le();
     size_t original_size = file.io.read_u32_le();
-    BufferedIO uncompressed_io(zlib_inflate(file.io.read_until_end()));
+    io::BufferedIO uncompressed_io(
+        util::zlib_inflate(file.io.read_until_end()));
     if (uncompressed_io.size() != original_size)
         throw std::runtime_error("Unexpected file size");
 

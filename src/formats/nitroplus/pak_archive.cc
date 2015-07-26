@@ -11,18 +11,20 @@
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/zlib.h"
-using namespace Formats::Nitroplus;
+
+using namespace au;
+using namespace au::fmt::nitroplus;
 
 static const std::string magic("\x02\x00\x00\x00", 4);
 
 static std::unique_ptr<File> read_file(
-    IO &arc_io, IO &table_io, size_t offset_to_files)
+    io::IO &arc_io, io::IO &table_io, size_t offset_to_files)
 {
     std::unique_ptr<File> file(new File);
 
     size_t file_name_length = table_io.read_u32_le();
     std::string file_name = table_io.read(file_name_length);
-    file->name = sjis_to_utf8(file_name);
+    file->name = util::sjis_to_utf8(file_name);
 
     size_t offset = table_io.read_u32_le();
     size_t size_original = table_io.read_u32_le();
@@ -35,7 +37,7 @@ static std::unique_ptr<File> read_file(
     if (flags > 0)
     {
         std::string data_uncompressed
-            = zlib_inflate(arc_io.read(size_compressed));
+            = util::zlib_inflate(arc_io.read(size_compressed));
 
         if (data_uncompressed.size() != size_original)
             throw std::runtime_error("Bad file size");
@@ -64,7 +66,10 @@ void PakArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     u32 table_size_compressed = arc_file.io.read_u32_le();
     arc_file.io.skip(0x104);
 
-    BufferedIO table_io(zlib_inflate(arc_file.io.read(table_size_compressed)));
+    io::BufferedIO table_io(
+        util::zlib_inflate(
+            arc_file.io.read(table_size_compressed)));
+
     size_t offset_to_files = arc_file.io.tell();
 
     for (size_t i = 0; i < file_count; i++)

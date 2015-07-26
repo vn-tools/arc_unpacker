@@ -11,7 +11,9 @@
 #include "formats/touhou/pbg4_archive.h"
 #include "io/buffered_io.h"
 #include "util/lzss.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt::touhou;
 
 namespace
 {
@@ -34,7 +36,7 @@ namespace
 
 static const std::string magic("PBG4", 4);
 
-static std::unique_ptr<Header> read_header(IO &arc_io)
+static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {
     std::unique_ptr<Header> header(new Header);
     header->file_count = arc_io.read_u32_le();
@@ -43,24 +45,24 @@ static std::unique_ptr<Header> read_header(IO &arc_io)
     return header;
 }
 
-static std::string lzss_decompress(IO &arc_io, size_t size_original)
+static std::string decompress(io::IO &arc_io, size_t size_original)
 {
-    LzssSettings settings;
+    util::lzss::Settings settings;
     settings.position_bits = 13;
     settings.length_bits = 4;
     settings.min_match_length = 3;
     settings.initial_dictionary_pos = 1;
     settings.reuse_compressed = true;
-    BitReader bit_reader(arc_io);
-    return ::lzss_decompress(bit_reader, size_original, settings);
+    io::BitReader bit_reader(arc_io);
+    return util::lzss::decompress(bit_reader, size_original, settings);
 }
 
-static Table read_table(IO &arc_io, Header &header)
+static Table read_table(io::IO &arc_io, Header &header)
 {
     Table table;
     arc_io.seek(header.table_offset);
 
-    BufferedIO table_io(lzss_decompress(arc_io, header.table_size));
+    io::BufferedIO table_io(decompress(arc_io, header.table_size));
     for (size_t i = 0; i < header.file_count; i++)
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
@@ -73,11 +75,11 @@ static Table read_table(IO &arc_io, Header &header)
     return table;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     arc_io.seek(entry.offset);
-    file->io.write(lzss_decompress(arc_io, entry.size));
+    file->io.write(decompress(arc_io, entry.size));
     file->name = entry.name;
     return file;
 }
@@ -107,7 +109,7 @@ void Pbg4Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     // works much faster when the whole archive resides in memory
     arc_file.io.seek(0);
-    BufferedIO buf_io;
+    io::BufferedIO buf_io;
     buf_io.write_from_io(arc_file.io, arc_file.io.size());
     buf_io.seek(magic.size());
 

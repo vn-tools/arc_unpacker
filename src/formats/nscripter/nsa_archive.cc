@@ -13,7 +13,9 @@
 #include "io/buffered_io.h"
 #include "io/bit_reader.h"
 #include "util/lzss.h"
-using namespace Formats::NScripter;
+
+using namespace au;
+using namespace au::fmt::nscripter;
 
 namespace
 {
@@ -36,7 +38,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static Table read_table(IO &arc_io)
+static Table read_table(io::IO &arc_io)
 {
     Table table;
     size_t file_count = arc_io.read_u16_be();
@@ -65,7 +67,7 @@ static Table read_table(IO &arc_io)
 }
 
 static std::unique_ptr<File> read_file(
-    IO &arc_io, const TableEntry &entry, SpbConverter &spb_converter)
+    io::IO &arc_io, const TableEntry &entry, SpbConverter &spb_converter)
 {
     std::unique_ptr<File> file(new File);
 
@@ -81,16 +83,16 @@ static std::unique_ptr<File> read_file(
 
         case COMPRESSION_LZSS:
         {
-            BufferedIO data_io(data);
-            BitReader bit_reader(data_io);
+            io::BufferedIO data_io(data);
+            io::BitReader bit_reader(data_io);
 
-            LzssSettings settings;
+            util::lzss::Settings settings;
             settings.position_bits = 8;
             settings.length_bits = 4;
             settings.min_match_length = 2;
             settings.initial_dictionary_pos = 239;
             settings.reuse_compressed = true;
-            file->io.write(lzss_decompress(
+            file->io.write(util::lzss::decompress(
                 bit_reader, entry.size_original, settings));
             break;
         }

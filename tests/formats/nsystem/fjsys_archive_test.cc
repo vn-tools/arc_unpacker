@@ -1,7 +1,10 @@
 #include "formats/nsystem/fjsys_archive.h"
 #include "test_support/archive_support.h"
 #include "test_support/catch.hpp"
-using namespace Formats::NSystem;
+
+using namespace au;
+using namespace au::fmt;
+using namespace au::fmt::nsystem;
 
 TEST_CASE("Unpacking FJSYS archives works")
 {
@@ -14,7 +17,8 @@ TEST_CASE("Unpacking FJSYS archives works")
     std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
     std::unique_ptr<Archive> archive(new FjsysArchive);
-    compare_files(
+    au::tests::compare_files(
         expected_files,
-        unpack_to_memory("tests/formats/nsystem/files/test.fjsys", *archive));
+        au::tests::unpack_to_memory(
+            "tests/formats/nsystem/files/test.fjsys", *archive));
 }

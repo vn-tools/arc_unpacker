@@ -1,5 +1,6 @@
 #include "formats/kirikiri/tlg/lzss_decompressor.h"
-using namespace Formats::Kirikiri::Tlg;
+
+using namespace au::fmt::kirikiri::tlg;
 
 struct LzssDecompressor::Priv
 {

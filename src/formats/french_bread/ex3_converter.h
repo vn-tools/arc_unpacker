@@ -1,18 +1,18 @@
-#ifndef FORMATS_FRENCH_BREAD_EX3_CONVERTER_H
-#define FORMATS_FRENCH_BREAD_EX3_CONVERTER_H
+#ifndef AU_FMT_FRENCH_BREAD_EX3_CONVERTER_H
+#define AU_FMT_FRENCH_BREAD_EX3_CONVERTER_H
 #include "formats/converter.h"
 
-namespace Formats
-{
-    namespace FrenchBread
+namespace au {
+namespace fmt {
+namespace french_bread {
+
+    class Ex3Converter final : public Converter
     {
-        class Ex3Converter final : public Converter
-        {
-        protected:
-            bool is_recognized_internal(File &) const override;
-            std::unique_ptr<File> decode_internal(File &) const override;
-        };
-    }
-}
+    protected:
+        bool is_recognized_internal(File &) const override;
+        std::unique_ptr<File> decode_internal(File &) const override;
+    };
+
+} } }
 
 #endif

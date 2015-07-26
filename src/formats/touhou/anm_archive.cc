@@ -24,7 +24,10 @@
 #include "util/colors.h"
 #include "util/image.h"
 #include "util/itos.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt;
+using namespace au::fmt::touhou;
 
 namespace
 {
@@ -45,14 +48,15 @@ namespace
 
 static const std::string texture_magic("THTX", 4);
 
-static std::string read_name(IO &file_io, size_t offset)
+static std::string read_name(io::IO &file_io, size_t offset)
 {
     std::string name;
     file_io.peek(offset, [&]() { name = file_io.read_until_zero(); });
     return name;
 }
 
-static size_t read_old_entry(TableEntry &entry, IO &file_io, size_t base_offset)
+static size_t read_old_entry(
+    TableEntry &entry, io::IO &file_io, size_t base_offset)
 {
     file_io.skip(4); //sprite count
     file_io.skip(4); //script count
@@ -78,7 +82,8 @@ static size_t read_old_entry(TableEntry &entry, IO &file_io, size_t base_offset)
     return base_offset + file_io.read_u32_le();
 }
 
-static size_t read_new_entry(TableEntry &entry, IO &file_io, size_t base_offset)
+static size_t read_new_entry(
+    TableEntry &entry, io::IO &file_io, size_t base_offset)
 {
     entry.version = file_io.read_u32_le();
     file_io.skip(2); //sprite count
@@ -101,7 +106,7 @@ static size_t read_new_entry(TableEntry &entry, IO &file_io, size_t base_offset)
     return base_offset + file_io.read_u32_le();
 }
 
-static Table read_table(IO &file_io)
+static Table read_table(io::IO &file_io)
 {
     Table table;
     u32 base_offset = 0;
@@ -127,7 +132,7 @@ static Table read_table(IO &file_io)
 }
 
 static void write_pixels(
-    IO &file_io, TableEntry &entry, u32 *pixel_data, size_t stride)
+    io::IO &file_io, TableEntry &entry, u32 *pixel_data, size_t stride)
 {
     if (!entry.has_data)
         return;
@@ -158,26 +163,26 @@ static void write_pixels(
                     break;
 
                 case 3:
-                    *pixel_ptr++ = rgb565(file_io.read_u16_le());
+                    *pixel_ptr++ = util::color::rgb565(file_io.read_u16_le());
                     break;
 
                 case 5:
-                    *pixel_ptr++ = rgba4444(file_io.read_u16_le());
+                    *pixel_ptr++ = util::color::rgba4444(file_io.read_u16_le());
                     break;
 
                 case 7:
-                    *pixel_ptr++ = rgba_gray(file_io.read_u8());
+                    *pixel_ptr++ = util::color::rgba_gray(file_io.read_u8());
                     break;
 
                 default:
                     throw std::runtime_error(
-                        "Unknown color format: " + itos(format));
+                        "Unknown color format: " + util::itos(format));
             }
         }
     }
 }
 
-static std::unique_ptr<File> read_texture(IO &file_io, Table &entries)
+static std::unique_ptr<File> read_texture(io::IO &file_io, Table &entries)
 {
     size_t width = 0;
     size_t height = 0;
@@ -206,12 +211,12 @@ static std::unique_ptr<File> read_texture(IO &file_io, Table &entries)
     for (auto &entry : entries)
         write_pixels(file_io, *entry, pixel_data.get(), width);
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         width,
         height,
         std::string(
             reinterpret_cast<char*>(pixel_data.get()), pixel_data_size * 4),
-        PixelFormat::BGRA);
+        util::PixelFormat::BGRA);
     return image->create_file(entries[0]->name);
 }
 

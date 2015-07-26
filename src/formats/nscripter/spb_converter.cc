@@ -11,10 +11,12 @@
 #include "formats/nscripter/spb_converter.h"
 #include "io/bit_reader.h"
 #include "util/image.h"
-using namespace Formats::NScripter;
+
+using namespace au;
+using namespace au::fmt::nscripter;
 
 static std::unique_ptr<u8[]> decode_pixels(
-    size_t width, size_t height, BitReader &bit_reader, size_t &output_size)
+    size_t width, size_t height, io::BitReader &bit_reader, size_t &output_size)
 {
     output_size = width * height * 3;
     std::unique_ptr<u8[]> output(new u8[output_size]);
@@ -118,18 +120,18 @@ std::unique_ptr<File> SpbConverter::decode_internal(File &file) const
     size_t uncompressed_size = file.io.size() - file.io.tell();
     std::unique_ptr<char[]> uncompressed(new char[uncompressed_size]);
     file.io.read(uncompressed.get(), uncompressed_size);
-    BitReader bit_reader(uncompressed.get(), uncompressed_size);
+    io::BitReader bit_reader(uncompressed.get(), uncompressed_size);
 
     size_t uncompressed_data_size;
     std::unique_ptr<u8[]> uncompressed_data
         = decode_pixels(width, height, bit_reader, uncompressed_data_size);
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         width,
         height,
         std::string(
             reinterpret_cast<char*>(uncompressed_data.get()),
             uncompressed_data_size),
-        PixelFormat::RGB);
+        util::PixelFormat::RGB);
     return image->create_file(file.name);
 }

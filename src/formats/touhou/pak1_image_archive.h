@@ -1,18 +1,18 @@
-#ifndef FORMATS_TOUHOU_PAK1_IMAGE_ARCHIVE_H
-#define FORMATS_TOUHOU_PAK1_IMAGE_ARCHIVE_H
+#ifndef AU_FMT_TOUHOU_PAK1_IMAGE_ARCHIVE_H
+#define AU_FMT_TOUHOU_PAK1_IMAGE_ARCHIVE_H
 #include "formats/archive.h"
 
-namespace Formats
-{
-    namespace Touhou
+namespace au {
+namespace fmt {
+namespace touhou {
+
+    class Pak1ImageArchive : public Archive
     {
-        class Pak1ImageArchive : public Archive
-        {
-        protected:
-            bool is_recognized_internal(File &) const override;
-            void unpack_internal(File &, FileSaver &) const override;
-        };
-    }
-}
+    protected:
+        bool is_recognized_internal(File &) const override;
+        void unpack_internal(File &, FileSaver &) const override;
+    };
+
+} } }
 
 #endif

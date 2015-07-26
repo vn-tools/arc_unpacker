@@ -1,7 +1,12 @@
-#ifndef UTIL_ZLIB_H
-#define UTIL_ZLIB_H
+#ifndef AU_UTIL_ZLIB_H
+#define AU_UTIL_ZLIB_H
 #include <string>
 
-std::string zlib_inflate(const std::string &input);
+namespace au {
+namespace util {
+
+    std::string zlib_inflate(const std::string &input);
+
+} }
 
 #endif

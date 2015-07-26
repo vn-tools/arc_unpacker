@@ -10,11 +10,13 @@
 #include "formats/bgi/arc_archive.h"
 #include "formats/bgi/cbg_converter.h"
 #include "formats/bgi/sound_converter.h"
-using namespace Formats::Bgi;
+
+using namespace au;
+using namespace au::fmt::bgi;
 
 static const std::string magic("PackFile    ", 12);
 
-static std::unique_ptr<File> read_file(IO &arc_io, size_t file_count)
+static std::unique_ptr<File> read_file(io::IO &arc_io, size_t file_count)
 {
     std::unique_ptr<File> file(new File);
 

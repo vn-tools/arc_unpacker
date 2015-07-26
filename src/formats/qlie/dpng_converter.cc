@@ -11,7 +11,9 @@
 #include "formats/qlie/dpng_converter.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
-using namespace Formats::QLiE;
+
+using namespace au;
+using namespace au::fmt::qlie;
 
 static const std::string magic("DPNG", 4);
 
@@ -47,10 +49,10 @@ std::unique_ptr<File> DpngConverter::decode_internal(File &file) const
         if (region_data_size == 0)
             continue;
 
-        BufferedIO io;
+        io::BufferedIO io;
         io.write_from_io(file.io, region_data_size);
 
-        std::unique_ptr<Image> region = Image::from_boxed(io);
+        std::unique_ptr<util::Image> region = util::Image::from_boxed(io);
         for (size_t x = 0; x < region_width; x++)
         {
             for (size_t y = 0; y < region_height; y++)
@@ -62,10 +64,10 @@ std::unique_ptr<File> DpngConverter::decode_internal(File &file) const
         }
     }
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         image_width,
         image_height,
         std::string(pixel_data.get(), pixels_size),
-        PixelFormat::RGBA);
+        util::PixelFormat::RGBA);
     return image->create_file(file.name);
 }

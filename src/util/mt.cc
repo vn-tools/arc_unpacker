@@ -38,35 +38,35 @@ const unsigned long MATRIX_A = 0x9908b0dfUL;
 const unsigned long UPPER_MASK = 0x80000000UL;
 const unsigned long LOWER_MASK = 0x7fffffffUL;
 
-static unsigned long mt[N];
+static unsigned long mts[N];
 static int mti = N + 1;
 
-void mt_init_genrand(unsigned long s)
+void au::util::mt::init_genrand(unsigned long s)
 {
-    mt[0] = s & 0xffffffffUL;
+    mts[0] = s & 0xffffffffUL;
     for (mti = 1; mti < N; mti++)
     {
-        mt[mti] = (1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + mti);
-        mt[mti] &= 0xffffffffUL;
+        mts[mti] = (1812433253UL * (mts[mti - 1] ^ (mts[mti - 1] >> 30)) + mti);
+        mts[mti] &= 0xffffffffUL;
     }
 }
 
-void mt_init_by_array(unsigned long init_key[], int key_length)
+void au::util::mt::init_by_array(unsigned long init_key[], int key_length)
 {
-    mt_init_genrand(19650218UL);
+    init_genrand(19650218UL);
     int i = 1;
     int j = 0;
     int k = (N > key_length ? N : key_length);
     for (; k; k--)
     {
-        mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1664525UL))
+        mts[i] = (mts[i] ^ ((mts[i - 1] ^ (mts[i - 1] >> 30)) * 1664525UL))
             + init_key[j] + j;
-        mt[i] &= 0xffffffffUL;
+        mts[i] &= 0xffffffffUL;
         i++;
         j++;
         if (i >= N)
         {
-            mt[0] = mt[N - 1];
+            mts[0] = mts[N - 1];
             i = 1;
         }
         if (j >= key_length)
@@ -76,20 +76,21 @@ void mt_init_by_array(unsigned long init_key[], int key_length)
     }
     for (k = N - 1; k; k--)
     {
-        mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1566083941UL)) - i;
-        mt[i] &= 0xffffffffUL;
+        mts[i] = (mts[i] ^ ((mts[i - 1] ^ (mts[i - 1] >> 30)) * 1566083941UL))
+            - i;
+        mts[i] &= 0xffffffffUL;
         i++;
         if (i >= N)
         {
-            mt[0] = mt[N - 1];
+            mts[0] = mts[N - 1];
             i = 1;
         }
     }
 
-    mt[0] = 0x80000000UL;
+    mts[0] = 0x80000000UL;
 }
 
-unsigned long mt_genrand_int32()
+unsigned long au::util::mt::genrand_int32()
 {
     unsigned long y;
     static unsigned long mag01[2] = { 0x0UL, MATRIX_A };
@@ -99,24 +100,24 @@ unsigned long mt_genrand_int32()
         int kk;
 
         if (mti == N + 1)
-            mt_init_genrand(5489UL);
+            init_genrand(5489UL);
 
         for (kk = 0; kk < N - M; kk++)
         {
-            y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
-            mt[kk] = mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1UL];
+            y = (mts[kk] & UPPER_MASK) | (mts[kk + 1] & LOWER_MASK);
+            mts[kk] = mts[kk + M] ^ (y >> 1) ^ mag01[y & 0x1UL];
         }
         for (; kk < N - 1; kk++)
         {
-            y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
-            mt[kk] = mt[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
+            y = (mts[kk] & UPPER_MASK) | (mts[kk + 1] & LOWER_MASK);
+            mts[kk] = mts[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
         }
-        y = (mt[N - 1] & UPPER_MASK) | (mt[0] & LOWER_MASK);
-        mt[N - 1] = mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1UL];
+        y = (mts[N - 1] & UPPER_MASK) | (mts[0] & LOWER_MASK);
+        mts[N - 1] = mts[M - 1] ^ (y >> 1) ^ mag01[y & 0x1UL];
         mti = 0;
     }
 
-    y = mt[mti++];
+    y = mts[mti++];
 
     y ^= (y >> 11);
     y ^= (y << 7) & 0x9d2c5680UL;
@@ -126,29 +127,29 @@ unsigned long mt_genrand_int32()
     return y;
 }
 
-long mt_genrand_int31()
+long au::util::mt::genrand_int31()
 {
-    return (long)(mt_genrand_int32() >> 1);
+    return (long)(genrand_int32() >> 1);
 }
 
-double mt_genrand_real1()
+double au::util::mt::genrand_real1()
 {
-    return mt_genrand_int32() * (1.0 / 4294967295.0);
+    return genrand_int32() * (1.0 / 4294967295.0);
 }
 
-double mt_genrand_real2()
+double au::util::mt::genrand_real2()
 {
-    return mt_genrand_int32() * (1.0 / 4294967296.0);
+    return genrand_int32() * (1.0 / 4294967296.0);
 }
 
-double mt_genrand_real3()
+double au::util::mt::genrand_real3()
 {
-    return (((double)mt_genrand_int32()) + 0.5) * (1.0 / 4294967296.0);
+    return (((double)genrand_int32()) + 0.5) * (1.0 / 4294967296.0);
 }
 
-double mt_genrand_res53()
+double au::util::mt::genrand_res53()
 {
-    unsigned long a = mt_genrand_int32() >> 5;
-    unsigned long b = mt_genrand_int32() >> 6;
+    unsigned long a = genrand_int32() >> 5;
+    unsigned long b = genrand_int32() >> 6;
     return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
 }

@@ -1,6 +1,9 @@
 #include <stdexcept>
 #include "formats/converter.h"
 
+using namespace au;
+using namespace au::fmt;
+
 void Converter::unpack(File &input_file, FileSaver &file_saver) const
 {
     auto output_file = decode(input_file);

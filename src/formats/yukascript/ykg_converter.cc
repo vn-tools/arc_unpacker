@@ -7,7 +7,9 @@
 
 #include <memory>
 #include "formats/yukascript/ykg_converter.h"
-using namespace Formats::YukaScript;
+
+using namespace au;
+using namespace au::fmt::yukascript;
 
 namespace
 {
@@ -31,7 +33,7 @@ namespace
 
 static const std::string magic("YKG000", 6);
 
-static std::unique_ptr<Header> read_header(IO &file_io)
+static std::unique_ptr<Header> read_header(io::IO &file_io)
 {
     std::unique_ptr<Header> header(new Header);
     header->encrypted = file_io.read_u16_le() > 0;
@@ -51,7 +53,7 @@ static std::unique_ptr<Header> read_header(IO &file_io)
 }
 
 static std::vector<std::unique_ptr<Region>> read_regions(
-    IO &file_io, Header &header)
+    io::IO &file_io, Header &header)
 {
     std::vector<std::unique_ptr<Region>> regions;
 

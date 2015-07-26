@@ -7,7 +7,9 @@
 
 #include "formats/ivory/prs_converter.h"
 #include "util/image.h"
-using namespace Formats::Ivory;
+
+using namespace au;
+using namespace au::fmt::ivory;
 
 static const std::string magic("YB", 2);
 
@@ -143,10 +145,10 @@ std::unique_ptr<File> PrsConverter::decode_internal(File &file) const
             target[i] += target[i - 3];
     }
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         image_width,
         image_height,
         std::string(target.get(), target_size),
-        PixelFormat::BGR);
+        util::PixelFormat::BGR);
     return image->create_file(file.name);
 }

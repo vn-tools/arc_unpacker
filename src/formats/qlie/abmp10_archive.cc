@@ -1,6 +1,8 @@
 #include "formats/qlie/abmp10_archive.h"
 #include "util/encoding.h"
-using namespace Formats::QLiE;
+
+using namespace au;
+using namespace au::fmt::qlie;
 
 static const std::string magic10("abmp10\0\0\0\0\0\0\0\0\0\0", 16);
 static const std::string magic11("abmp11\0\0\0\0\0\0\0\0\0\0", 16);
@@ -18,7 +20,7 @@ static const std::string magic_data13("abdata13\0\0\0\0\0\0\0\0", 16);
 static const std::string magic_image10("abimage10\0\0\0\0\0\0\0", 16);
 static const std::string magic_sound10("absound10\0\0\0\0\0\0\0", 16);
 
-static int guess_version(IO &arc_io)
+static int guess_version(io::IO &arc_io)
 {
     std::string magic = arc_io.read(16);
     if (magic == magic10)
@@ -30,11 +32,11 @@ static int guess_version(IO &arc_io)
     return -1;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io)
+static std::unique_ptr<File> read_file(io::IO &arc_io)
 {
     std::string magic = arc_io.read(16);
     std::string encoded_name = arc_io.read(arc_io.read_u16_le());
-    std::string name = sjis_to_utf8(encoded_name);
+    std::string name = util::sjis_to_utf8(encoded_name);
 
     if (magic == magic_snddat11
         || magic == magic_imgdat11

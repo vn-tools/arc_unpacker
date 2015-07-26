@@ -11,7 +11,9 @@
 #include "formats/nsystem/mgd_converter.h"
 #include "util/endian.h"
 #include "util/image.h"
-using namespace Formats::NSystem;
+
+using namespace au;
+using namespace au::fmt::nsystem;
 
 namespace
 {
@@ -254,7 +256,7 @@ static void decompress_sgd(
         output_guardian);
 }
 
-static std::vector<std::unique_ptr<Region>> read_region_data(IO &file_io)
+static std::vector<std::unique_ptr<Region>> read_region_data(io::IO &file_io)
 {
     std::vector<std::unique_ptr<Region>> regions;
     while (file_io.tell() < file_io.size())
@@ -286,8 +288,8 @@ static std::vector<std::unique_ptr<Region>> read_region_data(IO &file_io)
     return regions;
 }
 
-static std::unique_ptr<Image> read_image(
-    IO &file_io,
+static std::unique_ptr<util::Image> read_image(
+    io::IO &file_io,
     CompressionType compression_type,
     size_t size_compressed,
     size_t size_original,
@@ -298,11 +300,11 @@ static std::unique_ptr<Image> read_image(
     switch (compression_type)
     {
         case COMPRESSION_NONE:
-            return Image::from_pixels(
+            return util::Image::from_pixels(
                 image_width,
                 image_height,
                 data_compressed,
-                PixelFormat::BGRA);
+                util::PixelFormat::BGRA);
 
         case COMPRESSION_SGD:
         {
@@ -315,17 +317,17 @@ static std::unique_ptr<Image> read_image(
                 reinterpret_cast<u8*>(data_uncompressed.get()),
                 size_original);
 
-            return Image::from_pixels(
+            return util::Image::from_pixels(
                 image_width,
                 image_height,
                 std::string(data_uncompressed.get(), size_original),
-                PixelFormat::BGRA);
+                util::PixelFormat::BGRA);
         }
 
         case COMPRESSION_PNG:
         {
-            BufferedIO buffered_io(data_compressed);
-            return Image::from_boxed(buffered_io);
+            io::BufferedIO buffered_io(data_compressed);
+            return util::Image::from_boxed(buffered_io);
         }
 
         default:
@@ -356,7 +358,7 @@ std::unique_ptr<File> MgdConverter::decode_internal(File &file) const
     if (size_compressed + 4 != size_compressed_total)
         throw std::runtime_error("Compressed data size mismatch");
 
-    std::unique_ptr<Image> image = read_image(
+    std::unique_ptr<util::Image> image = read_image(
         file.io,
         compression_type,
         size_compressed,

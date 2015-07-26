@@ -1,7 +1,8 @@
 #include "formats/microsoft/dds_converter.h"
 #include "test_support/catch.hpp"
 #include "test_support/converter_support.h"
-using namespace Formats::Microsoft;
+
+using namespace au::fmt::microsoft;
 
 static void test(
     const std::string &input_image_path,
@@ -9,7 +10,7 @@ static void test(
 {
     const std::string prefix("tests/formats/microsoft/files/");
     DdsConverter converter;
-    assert_decoded_image(
+    au::tests::assert_decoded_image(
         converter,
         prefix + input_image_path,
         prefix + expected_image_path);

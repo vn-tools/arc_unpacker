@@ -2,6 +2,9 @@
 #include <stdexcept>
 #include "formats/transformer.h"
 
+using namespace au;
+using namespace au::fmt;
+
 std::string FileNameDecorator::decorate(
     const FileNamingStrategy &strategy,
     const std::string &parent_file_name,

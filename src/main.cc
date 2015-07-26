@@ -2,6 +2,8 @@
 #include "compat/entry_point.h"
 #include "arc_unpacker.h"
 
+using namespace au;
+
 ENTRY_POINT(
     try
     {

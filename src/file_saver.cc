@@ -7,6 +7,8 @@
 #include "io/file_io.h"
 #include "util/itos.h"
 
+using namespace au;
+
 struct FileSaverHdd::Priv
 {
     boost::filesystem::path output_dir;
@@ -25,7 +27,7 @@ struct FileSaverHdd::Priv
         while (paths.find(new_path) != paths.end()
         || (!overwrite && boost::filesystem::exists(new_path)))
         {
-            std::string suffix = "(" + itos(i++) + ")";
+            std::string suffix = "(" + util::itos(i++) + ")";
             new_path = path.parent_path();
             new_path /= boost::filesystem::path(
                 path.stem().string() + suffix + path.extension().string());
@@ -66,7 +68,7 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
         if (full_path.parent_path() != "")
             boost::filesystem::create_directories(full_path.parent_path());
 
-        FileIO output_io(full_path.string(), FileIOMode::Write);
+        io::FileIO output_io(full_path.string(), io::FileMode::Write);
         file->io.seek(0);
         output_io.write_from_io(file->io, file->io.size());
         std::cout << "ok\n";

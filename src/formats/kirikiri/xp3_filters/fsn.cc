@@ -1,6 +1,7 @@
 #include <memory>
 #include "formats/kirikiri/xp3_filters/fsn.h"
-using namespace Formats::Kirikiri::Xp3Filters;
+
+using namespace au::fmt::kirikiri::xp3_filters;
 
 void Fsn::decode(File &file, u32) const
 {

@@ -3,15 +3,24 @@
 #include <iomanip>
 #include "arc_unpacker.h"
 
+using namespace au;
+using namespace au::fmt;
+
 namespace
 {
-    typedef struct
+    struct PathInfo
+    {
+        std::string input_path;
+        std::string base_name;
+    };
+
+    struct Options
     {
         std::string format;
         boost::filesystem::path output_dir;
         std::vector<std::unique_ptr<PathInfo>> input_paths;
         bool overwrite;
-    } Options;
+    };
 }
 
 static void add_help_option(ArgParser &arg_parser)
@@ -35,7 +44,8 @@ static void add_rename_option(ArgParser &arg_parser, Options &options)
         options.overwrite = false;
 }
 
-static void add_output_folder_option(ArgParser &arg_parser, Options &options)
+static void add_output_folder_option(
+    ArgParser &arg_parser, Options &options)
 {
     arg_parser.add_help(
         "-o, --out=FOLDER",
@@ -316,7 +326,7 @@ bool ArcUnpacker::run()
         bool result = true;
         for (auto &path_info : p->options.input_paths)
         {
-            File file(path_info->input_path, FileIOMode::Read);
+            File file(path_info->input_path, io::FileMode::Read);
 
             auto tmp = boost::filesystem::path(path_info->base_name);
             std::string base_name

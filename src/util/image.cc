@@ -2,6 +2,9 @@
 #include <png.h>
 #include "util/image.h"
 
+using namespace au;
+using namespace au::util;
+
 struct Image::Priv
 {
     size_t width;
@@ -14,14 +17,14 @@ struct Image::Priv
 static void png_write_data(
     png_structp png_ptr, png_bytep data, png_size_t length)
 {
-    IO *io = reinterpret_cast<IO*>(png_get_io_ptr(png_ptr));
+    io::IO *io = reinterpret_cast<io::IO*>(png_get_io_ptr(png_ptr));
     io->write(data, length);
 }
 
 static void png_read_data(
     png_structp png_ptr, png_bytep data, png_size_t length)
 {
-    IO *io = reinterpret_cast<IO*>(png_get_io_ptr(png_ptr));
+    io::IO *io = reinterpret_cast<io::IO*>(png_get_io_ptr(png_ptr));
     io->read(data, length);
 }
 
@@ -50,7 +53,7 @@ std::unique_ptr<Image> Image::from_pixels(
     return image;
 }
 
-std::unique_ptr<Image> Image::from_boxed(IO &io)
+std::unique_ptr<Image> Image::from_boxed(io::IO &io)
 {
     io.seek(0);
 

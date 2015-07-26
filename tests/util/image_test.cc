@@ -3,9 +3,12 @@
 #include "util/endian.h"
 #include "util/image.h"
 
+using namespace au;
+using namespace au::util;
+
 TEST_CASE("Reading transparent images works")
 {
-    FileIO io("tests/files/reimu_transparent.png", FileIOMode::Read);
+    io::FileIO io("tests/files/reimu_transparent.png", io::FileMode::Read);
 
     std::unique_ptr<Image> image = Image::from_boxed(io);
     REQUIRE(image->width() == 641);
@@ -17,7 +20,7 @@ TEST_CASE("Reading transparent images works")
 
 TEST_CASE("Reading opaque images works")
 {
-    FileIO io("tests/files/usagi_opaque.png", FileIOMode::Read);
+    io::FileIO io("tests/files/usagi_opaque.png", io::FileMode::Read);
 
     std::unique_ptr<Image> image = Image::from_boxed(io);
     REQUIRE(image->width() == 640);

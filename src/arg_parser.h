@@ -1,30 +1,34 @@
-#ifndef ARG_PARSER_H
-#define ARG_PARSER_H
+#ifndef AU_ARG_PARSER_H
+#define AU_ARG_PARSER_H
 #include <memory>
 #include <string>
 #include <vector>
 
-class ArgParser final
-{
-public:
-    ArgParser();
-    ~ArgParser();
+namespace au {
 
-    void clear_help();
-    void add_help(const std::string invocation, const std::string description);
-    void print_help() const;
+    class ArgParser final
+    {
+    public:
+        ArgParser();
+        ~ArgParser();
 
-    void parse(const std::vector<std::string> args);
+        void clear_help();
+        void add_help(const std::string invocation, const std::string desc);
+        void print_help() const;
 
-    bool has_flag(const std::string argument) const;
-    bool has_switch(const std::string key) const;
+        void parse(const std::vector<std::string> args);
 
-    const std::string get_switch(const std::string key) const;
-    const std::vector<std::string> get_stray() const;
+        bool has_flag(const std::string argument) const;
+        bool has_switch(const std::string key) const;
 
-private:
-    struct Priv;
-    std::unique_ptr<Priv> p;
-};
+        const std::string get_switch(const std::string key) const;
+        const std::vector<std::string> get_stray() const;
+
+    private:
+        struct Priv;
+        std::unique_ptr<Priv> p;
+    };
+
+}
 
 #endif

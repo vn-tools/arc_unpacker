@@ -11,7 +11,9 @@
 #include <stdexcept>
 #include "formats/french_bread/ex3_converter.h"
 #include "io/buffered_io.h"
-using namespace Formats::FrenchBread;
+
+using namespace au;
+using namespace au::fmt::french_bread;
 
 static const std::string magic("LLIF", 4);
 
@@ -28,7 +30,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
     u8 table1[256];
     u8 table2[256];
 
-    BufferedIO output;
+    io::BufferedIO output;
     file.io.read(table0, 0x40);
 
     u8 b = file.io.read_u8();

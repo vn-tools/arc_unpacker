@@ -1,24 +1,24 @@
-#ifndef FORMATS_TOUHOU_PBG4_ARCHIVE_H
-#define FORMATS_TOUHOU_PBG4_ARCHIVE_H
+#ifndef AU_FMT_TOUHOU_PBG4_ARCHIVE_H
+#define AU_FMT_TOUHOU_PBG4_ARCHIVE_H
 #include "formats/archive.h"
 
-namespace Formats
-{
-    namespace Touhou
+namespace au {
+namespace fmt {
+namespace touhou {
+
+    class Pbg4Archive final : public Archive
     {
-        class Pbg4Archive final : public Archive
-        {
-        public:
-            Pbg4Archive();
-            ~Pbg4Archive();
-        protected:
-            bool is_recognized_internal(File &) const override;
-            void unpack_internal(File &, FileSaver &) const override;
-        private:
-            struct Priv;
-            std::unique_ptr<Priv> p;
-        };
-    }
-}
+    public:
+        Pbg4Archive();
+        ~Pbg4Archive();
+    protected:
+        bool is_recognized_internal(File &) const override;
+        void unpack_internal(File &, FileSaver &) const override;
+    private:
+        struct Priv;
+        std::unique_ptr<Priv> p;
+    };
+
+} } }
 
 #endif

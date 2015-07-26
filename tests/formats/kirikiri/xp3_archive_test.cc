@@ -1,7 +1,10 @@
 #include "formats/kirikiri/xp3_archive.h"
 #include "test_support/archive_support.h"
 #include "test_support/catch.hpp"
-using namespace Formats::Kirikiri;
+
+using namespace au;
+using namespace au::fmt;
+using namespace au::fmt::kirikiri;
 
 static void test_xp3_archive(const std::string &path)
 {
@@ -14,7 +17,8 @@ static void test_xp3_archive(const std::string &path)
     std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
     std::unique_ptr<Archive> archive(new Xp3Archive);
-    compare_files(expected_files, unpack_to_memory(path, *archive));
+    au::tests::compare_files(
+        expected_files, au::tests::unpack_to_memory(path, *archive));
 }
 
 TEST_CASE("Unpacking version 1 XP3 archives works")

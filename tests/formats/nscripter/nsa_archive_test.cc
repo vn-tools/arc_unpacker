@@ -2,7 +2,10 @@
 #include "util/zlib.h"
 #include "test_support/archive_support.h"
 #include "test_support/catch.hpp"
-using namespace Formats::NScripter;
+
+using namespace au;
+using namespace au::fmt;
+using namespace au::fmt::nscripter;
 
 TEST_CASE("Unpacking uncompressed NSA archives works")
 {
@@ -15,9 +18,9 @@ TEST_CASE("Unpacking uncompressed NSA archives works")
     std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
     std::unique_ptr<Archive> archive(new NsaArchive);
-    compare_files(
+    au::tests::compare_files(
         expected_files,
-        unpack_to_memory(
+        au::tests::unpack_to_memory(
             "tests/formats/nscripter/files/uncompressed.nsa", *archive));
 }
 
@@ -25,7 +28,7 @@ TEST_CASE("Unpacking NSA archives compressed with LZSS works")
 {
     std::shared_ptr<File> file(new File);
     file->name = "test.bmp";
-    file->io.write(zlib_inflate(std::string(
+    file->io.write(util::zlib_inflate(std::string(
         "\x78\xDA\x8D\xD3\x3D\x6E\x13\x40\x10\x86\xE1\xB5\x44\x81\x70\x9C"
         "\x38\xF1\x25\xA8\x53\x50\x20\x2A\x8A\xE9\xB8\xD4\x9C\x69\x6E\x40"
         "\x9D\x1B\xCC\x11\xF2\xE7\x38\xB4\x63\x1E\x82\xA0\xCE\x4A\x9F\x56"
@@ -60,7 +63,8 @@ TEST_CASE("Unpacking NSA archives compressed with LZSS works")
     std::vector<std::shared_ptr<File>> expected_files { file };
 
     std::unique_ptr<Archive> archive(new NsaArchive);
-    compare_files(
+    au::tests::compare_files(
         expected_files,
-        unpack_to_memory("tests/formats/nscripter/files//lzss.nsa", *archive));
+        au::tests::unpack_to_memory(
+            "tests/formats/nscripter/files//lzss.nsa", *archive));
 }

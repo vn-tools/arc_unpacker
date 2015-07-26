@@ -1,6 +1,8 @@
 #include <memory>
 #include "formats/touhou/crypt.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt::touhou;
 
 static inline int min(int a, int b) { return a < b ? a : b; }
 
@@ -12,8 +14,8 @@ bool DecryptorContext::operator ==(const DecryptorContext &other) const
         && limit == other.limit;
 }
 
-void Formats::Touhou::decrypt(
-    IO &input, size_t size, IO &output, const DecryptorContext &context)
+void au::fmt::touhou::decrypt(
+    io::IO &input, size_t size, io::IO &output, const DecryptorContext &context)
 {
     int left = min(size, input.size() - input.tell());
     size_t current_block_size = context.block_size;

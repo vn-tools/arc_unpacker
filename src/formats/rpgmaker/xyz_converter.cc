@@ -12,7 +12,9 @@
 #include "formats/rpgmaker/xyz_converter.h"
 #include "util/image.h"
 #include "util/zlib.h"
-using namespace Formats::RpgMaker;
+
+using namespace au;
+using namespace au::fmt::rpgmaker;
 
 static const std::string magic("XYZ1", 4);
 
@@ -28,7 +30,7 @@ std::unique_ptr<File> XyzConverter::decode_internal(File &file) const
     u16 width = file.io.read_u16_le();
     u16 height = file.io.read_u16_le();
 
-    std::string data = zlib_inflate(file.io.read_until_end());
+    std::string data = util::zlib_inflate(file.io.read_until_end());
     if (data.size() != static_cast<size_t>(256 * 3 + width * height))
         throw std::runtime_error("Unexpected data size");
 
@@ -47,10 +49,10 @@ std::unique_ptr<File> XyzConverter::decode_internal(File &file) const
         *out++ = palette[index * 3 + 2];
     }
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         width,
         height,
         std::string(pixels.get(), pixels_size),
-        PixelFormat::RGB);
+        util::PixelFormat::RGB);
     return image->create_file(file.name);
 }

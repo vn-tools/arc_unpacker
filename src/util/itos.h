@@ -1,8 +1,13 @@
-#ifndef UTIL_ITOS_H
-#define UTIL_ITOS_H
+#ifndef AU_UTIL_ITOS_H
+#define AU_UTIL_ITOS_H
 #include <string>
 
-std::string itos(int i);
-std::string itos(int i, size_t length);
+namespace au {
+namespace util {
+
+    std::string itos(int i);
+    std::string itos(int i, size_t length);
+
+} }
 
 #endif

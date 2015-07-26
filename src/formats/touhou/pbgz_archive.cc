@@ -15,7 +15,9 @@
 #include "formats/touhou/pbgz_archive.h"
 #include "io/buffered_io.h"
 #include "util/lzss.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt::touhou;
 
 namespace
 {
@@ -63,27 +65,27 @@ static std::vector<std::map<u8, DecryptorContext>> decryptors
     },
 };
 
-static std::string lzss_decompress(
-    IO &arc_io, size_t size_compressed, size_t size_original)
+static std::string decompress(
+    io::IO &arc_io, size_t size_compressed, size_t size_original)
 {
-    LzssSettings settings;
+    util::lzss::Settings settings;
     settings.position_bits = 13;
     settings.length_bits = 4;
     settings.min_match_length = 3;
     settings.initial_dictionary_pos = 1;
     settings.reuse_compressed = true;
 
-    BufferedIO buffered_io;
+    io::BufferedIO buffered_io;
     buffered_io.write_from_io(arc_io, size_compressed);
     buffered_io.seek(0);
-    BitReader bit_reader(buffered_io);
-    return ::lzss_decompress(bit_reader, size_original, settings);
+    io::BitReader bit_reader(buffered_io);
+    return util::lzss::decompress(bit_reader, size_original, settings);
 }
 
-static std::unique_ptr<Header> read_header(IO &arc_io)
+static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {
     std::unique_ptr<Header> header(new Header);
-    BufferedIO header_io;
+    io::BufferedIO header_io;
     decrypt(arc_io, 12, header_io, { 0x1b, 0x37, 0x0c, 0x400 });
     header->file_count = header_io.read_u32_le() - 123456;
     header->table_offset = header_io.read_u32_le() - 345678;
@@ -91,22 +93,22 @@ static std::unique_ptr<Header> read_header(IO &arc_io)
     return header;
 }
 
-static std::unique_ptr<BufferedIO> read_raw_table(
-    IO &arc_io, const Header &header)
+static std::unique_ptr<io::BufferedIO> read_raw_table(
+    io::IO &arc_io, const Header &header)
 {
     size_t size_compressed = arc_io.size() - header.table_offset;
     size_t size_original = header.table_size;
 
-    BufferedIO table_io;
+    io::BufferedIO table_io;
     arc_io.seek(header.table_offset);
     decrypt(arc_io, size_compressed, table_io, { 0x3e, 0x9b, 0x80, 0x400 });
 
-    return std::unique_ptr<BufferedIO>(
-        new BufferedIO(
-            lzss_decompress(table_io, size_compressed, size_original)));
+    return std::unique_ptr<io::BufferedIO>(
+        new io::BufferedIO(
+            decompress(table_io, size_compressed, size_original)));
 }
 
-static Table read_table(IO &arc_io, const Header &header)
+static Table read_table(io::IO &arc_io, const Header &header)
 {
     Table table;
     auto table_io = read_raw_table(arc_io, header);
@@ -134,14 +136,14 @@ static Table read_table(IO &arc_io, const Header &header)
 }
 
 static std::unique_ptr<File> read_file(
-    IO &arc_io, const TableEntry &entry, size_t encryption_version)
+    io::IO &arc_io, const TableEntry &entry, size_t encryption_version)
 {
     std::unique_ptr<File> file(new File);
     file->name = entry.name;
 
     arc_io.seek(entry.offset);
-    BufferedIO uncompressed_io(
-        lzss_decompress(
+    io::BufferedIO uncompressed_io(
+        decompress(
             arc_io,
             entry.size_compressed,
             entry.size_original));
@@ -159,7 +161,7 @@ static std::unique_ptr<File> read_file(
     return file;
 }
 
-static size_t detect_encryption_version(IO &arc_io, const Table &table)
+static size_t detect_encryption_version(io::IO &arc_io, const Table &table)
 {
     const std::string jpeg_magic("\xff\xd8\xff\xe0", 4);
     for (auto &entry : table)

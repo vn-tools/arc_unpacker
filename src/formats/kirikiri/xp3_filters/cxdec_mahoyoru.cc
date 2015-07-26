@@ -1,7 +1,8 @@
 #include <memory>
 #include "formats/kirikiri/xp3_filters/cxdec.h"
 #include "formats/kirikiri/xp3_filters/cxdec_mahoyoru.h"
-using namespace Formats::Kirikiri::Xp3Filters;
+
+using namespace au::fmt::kirikiri::xp3_filters;
 
 CxdecSettings CxdecMahoYoru::get_settings() const
 {

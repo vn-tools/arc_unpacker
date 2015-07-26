@@ -1,6 +1,8 @@
 #include "test_support/catch.hpp"
 #include "util/encoding.h"
 
+using namespace au::util;
+
 // sjis の"あいうえおかきくけこさしすせそたちつてと"
 const static std::string sjis(
     "\x82\xA0\x82\xA2\x82\xA4\x82\xA6\x82\xA8"

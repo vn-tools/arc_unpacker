@@ -11,7 +11,9 @@
 #include "formats/fvp/nvsg_converter.h"
 #include "util/zlib.h"
 #include "util/image.h"
-using namespace Formats::Fvp;
+
+using namespace au;
+using namespace au::fmt::fvp;
 
 static const std::string hzc1_magic("hzc1", 4);
 static const std::string nvsg_magic("NVSG", 4);
@@ -38,36 +40,36 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
     size_t image_count = file.io.read_u32_le();
     file.io.skip(8);
 
-    std::string data = zlib_inflate(file.io.read_until_end());
+    std::string data = util::zlib_inflate(file.io.read_until_end());
     if (data.size() != uncompressed_size)
         throw std::runtime_error("Unexpected data size");
 
-    PixelFormat pixel_format;
+    util::PixelFormat pixel_format;
     switch (format)
     {
         case 0:
             if (width * height * 3 != uncompressed_size)
                 throw std::runtime_error("Unexpected data size");
-            pixel_format = PixelFormat::BGR;
+            pixel_format = util::PixelFormat::BGR;
             break;
 
         case 1:
             if (width * height * 4 != uncompressed_size)
                 throw std::runtime_error("Unexpected data size");
-            pixel_format = PixelFormat::BGRA;
+            pixel_format = util::PixelFormat::BGRA;
             break;
 
         case 2:
             if (width * height * 4 * image_count != uncompressed_size)
                 throw std::runtime_error("Unexpected data size");
             height *= image_count;
-            pixel_format = PixelFormat::BGRA;
+            pixel_format = util::PixelFormat::BGRA;
             break;
 
         case 3:
             if (width * height != uncompressed_size)
                 throw std::runtime_error("Unexpected data size");
-            pixel_format = PixelFormat::Grayscale;
+            pixel_format = util::PixelFormat::Grayscale;
             break;
 
         case 4:
@@ -80,7 +82,7 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
                     *ptr = 255;
                 ptr++;
             }
-            pixel_format = PixelFormat::Grayscale;
+            pixel_format = util::PixelFormat::Grayscale;
             break;
         }
 
@@ -88,6 +90,6 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
             throw std::runtime_error("Unexpected pixel format");
     }
 
-    auto image = Image::from_pixels(width, height, data, pixel_format);
+    auto image = util::Image::from_pixels(width, height, data, pixel_format);
     return image->create_file(file.name);
 }

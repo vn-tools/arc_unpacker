@@ -17,7 +17,9 @@
 #include "formats/qlie/pack_archive.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
-using namespace Formats::QLiE;
+
+using namespace au;
+using namespace au::fmt::qlie;
 
 namespace
 {
@@ -47,7 +49,7 @@ static const std::string magic1("FilePackVer1.0\x00\x00", 16);
 static const std::string magic2("FilePackVer2.0\x00\x00", 16);
 static const std::string magic3("FilePackVer3.0\x00\x00", 16);
 
-static int guess_version(IO &arc_io)
+static int guess_version(io::IO &arc_io)
 {
     int version = 1;
     for (auto &magic : {magic1, magic2, magic3})
@@ -81,7 +83,7 @@ static u64 padd(u64 a, u64 b)
         ^ ((a ^ b) & 0x8000000080000000);
 }
 
-static u32 v3_derive_seed(IO &io, size_t bytes)
+static u32 v3_derive_seed(io::IO &io, size_t bytes)
 {
     u64 key = 0;
     u64 result = 0;
@@ -154,11 +156,11 @@ static void v3_decrypt_file_data_with_external_keys(
     if (encryption_type == EncryptionType::WithGameExe)
         mt_seed ^= 0x453A;
 
-    mt_init_genrand(mt_seed);
-    mt_xor_state(
+    mt::init_genrand(mt_seed);
+    mt::xor_state(
         reinterpret_cast<const u8 *>(key1.data()),
         key1.size());
-    mt_xor_state(
+    mt::xor_state(
         reinterpret_cast<const u8 *>(key2.data()),
         key2.size());
 
@@ -166,17 +168,17 @@ static void v3_decrypt_file_data_with_external_keys(
     for (size_t i = 0; i < 0x10; i++)
     {
         table[i]
-            = mt_genrand_int32()
-            | (static_cast<u64>(mt_genrand_int32()) << 32);
+            = mt::genrand_int32()
+            | (static_cast<u64>(mt::genrand_int32()) << 32);
     }
     for (auto i = 0; i < 9; i++)
-         mt_genrand_int32();
+         mt::genrand_int32();
 
     u64 mutator
-        = mt_genrand_int32()
-        | (static_cast<u64>(mt_genrand_int32()) << 32);
+        = mt::genrand_int32()
+        | (static_cast<u64>(mt::genrand_int32()) << 32);
 
-    size_t table_index = mt_genrand_int32() & 0xF;
+    size_t table_index = mt::genrand_int32() & 0xF;
     while (current < end)
     {
         mutator ^= table[table_index];
@@ -234,7 +236,7 @@ static void decompress(
     char *output_ptr = output;
     const char *output_guardian = output + output_size;
 
-    BufferedIO input_io(input, input_size);
+    io::BufferedIO input_io(input, input_size);
 
     std::string magic("1PC\xff", 4);
     if (input_io.read(magic.length()) != magic)
@@ -311,7 +313,7 @@ static void decompress(
     }
 }
 
-static std::string read_file_name(IO &table_io, u32 key, int version)
+static std::string read_file_name(io::IO &table_io, u32 key, int version)
 {
     size_t file_name_length = table_io.read_u16_le();
     std::unique_ptr<char[]> file_name(new char[file_name_length + 1]);
@@ -325,14 +327,14 @@ static std::string read_file_name(IO &table_io, u32 key, int version)
     return std::string(file_name.get(), file_name_length);
 }
 
-static Table read_table(IO &arc_io, int version)
+static Table read_table(io::IO &arc_io, int version)
 {
     size_t file_count = arc_io.read_u32_le();
     u64 table_offset = arc_io.read_u64_le();
     size_t table_size = (arc_io.size() - 0x1c) - table_offset;
     arc_io.seek(table_offset);
 
-    BufferedIO table_io;
+    io::BufferedIO table_io;
     table_io.write_from_io(arc_io, table_size);
 
     u32 seed = 0;
@@ -357,7 +359,7 @@ static Table read_table(IO &arc_io, int version)
         std::unique_ptr<TableEntry> entry(new TableEntry);
 
         entry->orig_name = read_file_name(table_io, seed, version);
-        entry->name = sjis_to_utf8(entry->orig_name);
+        entry->name = util::sjis_to_utf8(entry->orig_name);
         entry->offset = table_io.read_u64_le();
         entry->size_compressed = table_io.read_u32_le();
         entry->size_original = table_io.read_u32_le();
@@ -380,7 +382,7 @@ static Table read_table(IO &arc_io, int version)
 }
 
 static std::unique_ptr<File> read_file(
-    IO &arc_io,
+    io::IO &arc_io,
     const TableEntry &entry,
     int version,
     EncryptionType encryption_type,
@@ -473,7 +475,7 @@ void PackArchive::parse_cli_options(const ArgParser &arg_parser)
     if (arg_parser.has_switch("fkey"))
     {
         const std::string file_path = arg_parser.get_switch("fkey");
-        File file(file_path, FileIOMode::Read);
+        File file(file_path, io::FileMode::Read);
         p->encryption_type = EncryptionType::WithFKey;
         p->key1 = file.io.read(file.io.size());
     }
@@ -486,7 +488,7 @@ void PackArchive::parse_cli_options(const ArgParser &arg_parser)
         const std::string magic("\x05TIcon\x00", 7);
         const std::string path = arg_parser.get_switch("gameexe");
 
-        File file(path, FileIOMode::Read);
+        File file(path, io::FileMode::Read);
         std::unique_ptr<char[]> exe_data(new char[file.io.size()]);
         file.io.read(exe_data.get(), file.io.size());
 

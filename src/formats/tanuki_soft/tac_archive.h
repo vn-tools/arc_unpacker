@@ -1,20 +1,20 @@
-#ifndef FORMATS_TANUKISOFT_XFL_ARCHIVE_H
-#define FORMATS_TANUKISOFT_XFL_ARCHIVE_H
+#ifndef AU_FMT_TANUKISOFT_XFL_ARCHIVE_H
+#define AU_FMT_TANUKISOFT_XFL_ARCHIVE_H
 #include "formats/archive.h"
 
-namespace Formats
-{
-    namespace TanukiSoft
+namespace au {
+namespace fmt {
+namespace tanuki_soft {
+
+    class TacArchive final : public Archive
     {
-        class TacArchive final : public Archive
-        {
-        public:
-            TacArchive();
-        protected:
-            bool is_recognized_internal(File &) const override;
-            void unpack_internal(File &, FileSaver &) const override;
-        };
-    }
-}
+    public:
+        TacArchive();
+    protected:
+        bool is_recognized_internal(File &) const override;
+        void unpack_internal(File &, FileSaver &) const override;
+    };
+
+} } }
 
 #endif

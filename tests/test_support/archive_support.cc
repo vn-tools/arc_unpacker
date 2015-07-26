@@ -4,11 +4,13 @@
 #include "test_support/archive_support.h"
 #include "test_support/catch.hpp"
 
-std::vector<std::shared_ptr<File>> unpack_to_memory(
-    const boost::filesystem::path &input_path, Archive &archive)
+using namespace au;
+
+std::vector<std::shared_ptr<File>> au::tests::unpack_to_memory(
+    const boost::filesystem::path &input_path, fmt::Archive &archive)
 {
     ArgParser arg_parser;
-    File file(input_path, FileIOMode::Read);
+    File file(input_path, io::FileMode::Read);
     std::vector<std::shared_ptr<File>> files;
     FileSaverCallback file_saver([&](std::shared_ptr<File> file)
     {
@@ -18,7 +20,7 @@ std::vector<std::shared_ptr<File>> unpack_to_memory(
     return files;
 }
 
-void compare_files(
+void au::tests::compare_files(
     const std::vector<std::shared_ptr<File>> &expected_files,
     const std::vector<std::shared_ptr<File>> &actual_files)
 {

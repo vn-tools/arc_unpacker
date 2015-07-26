@@ -1,6 +1,8 @@
 #include "test_support/catch.hpp"
 #include "util/zlib.h"
 
+using namespace au::util;
+
 TEST_CASE("Inflating works")
 {
     const std::string input(

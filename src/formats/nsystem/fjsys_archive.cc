@@ -19,7 +19,9 @@
 
 #include "formats/nsystem/fjsys_archive.h"
 #include "formats/nsystem/mgd_converter.h"
-using namespace Formats::NSystem;
+
+using namespace au;
+using namespace au::fmt::nsystem;
 
 namespace
 {
@@ -33,7 +35,7 @@ namespace
 
 static const std::string magic("FJSYS\x00\x00\x00", 8);
 
-static std::unique_ptr<Header> read_header(IO &arc_io)
+static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {
     std::unique_ptr<Header> header(new Header);
     header->header_size = arc_io.read_u32_le();
@@ -43,7 +45,7 @@ static std::unique_ptr<Header> read_header(IO &arc_io)
     return header;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, const Header &header)
+static std::unique_ptr<File> read_file(io::IO &arc_io, const Header &header)
 {
     std::unique_ptr<File> file(new File);
     size_t file_name_offset = arc_io.read_u32_le();

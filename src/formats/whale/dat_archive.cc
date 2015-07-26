@@ -15,7 +15,9 @@
 #include "util/encoding.h"
 #include "util/itos.h"
 #include "util/zlib.h"
-using namespace Formats::Whale;
+
+using namespace au;
+using namespace au::fmt::whale;
 
 namespace
 {
@@ -122,7 +124,7 @@ static u64 crc64(const std::string &buffer)
 }
 
 static void transform_regular_content(
-    BufferedIO &io, const std::string &sjis_file_name)
+    io::BufferedIO &io, const std::string &sjis_file_name)
 {
     auto block_size = static_cast<size_t>(
         floor(io.size() / static_cast<float>(sjis_file_name.size())));
@@ -140,7 +142,7 @@ static void transform_regular_content(
 }
 
 static void transform_script_content(
-    BufferedIO &io, u64 hash, const std::string &sjis_game_title)
+    io::BufferedIO &io, u64 hash, const std::string &sjis_game_title)
 {
     u32 xor_value = (hash ^ crc64(sjis_game_title)) & 0xFFFFFFFF;
     u32 *buffer_ptr = reinterpret_cast<u32*>(io.buffer());
@@ -148,13 +150,13 @@ static void transform_script_content(
         *buffer_ptr++ ^= xor_value;
 }
 
-static u32 read_file_count(IO &arc_io)
+static u32 read_file_count(io::IO &arc_io)
 {
     return arc_io.read_u32_le() ^ file_count_hash;
 }
 
 static Table read_table(
-    IO &arc_io, std::map<u64, std::string> &sjis_file_names_map)
+    io::IO &arc_io, std::map<u64, std::string> &sjis_file_names_map)
 {
     Table table;
     auto file_count = read_file_count(arc_io);
@@ -175,7 +177,7 @@ static Table read_table(
 
         if (entry->type == TableEntryType::Compressed)
         {
-            entry->sjis_name = itos(i, 4) + ".txt";
+            entry->sjis_name = util::itos(i, 4) + ".txt";
         }
         else
         {
@@ -201,19 +203,19 @@ static Table read_table(
 }
 
 static std::unique_ptr<File> read_file(
-    IO &arc_io, const TableEntry &entry, const std::string &sjis_game_title)
+    io::IO &arc_io, const TableEntry &entry, const std::string &sjis_game_title)
 {
     std::unique_ptr<File> file(new File);
-    file->name = sjis_to_utf8(entry.sjis_name);
+    file->name = util::sjis_to_utf8(entry.sjis_name);
 
     arc_io.seek(entry.offset);
-    BufferedIO output_io(arc_io, entry.size_compressed);
+    io::BufferedIO output_io(arc_io, entry.size_compressed);
 
     if (entry.type == TableEntryType::Compressed)
     {
         transform_script_content(output_io, entry.hash, sjis_game_title);
         output_io.seek(0);
-        file->io.write(zlib_inflate(output_io.read_until_end()));
+        file->io.write(util::zlib_inflate(output_io.read_until_end()));
     }
     else
     {
@@ -229,7 +231,7 @@ struct DatArchive::Priv
 {
     std::string sjis_game_title;
     std::map<u64, std::string> sjis_file_names_map;
-    Kirikiri::TlgConverter tlg_converter;
+    fmt::kirikiri::TlgConverter tlg_converter;
 };
 
 DatArchive::DatArchive() : p(new Priv)
@@ -258,17 +260,17 @@ void DatArchive::add_cli_help(ArgParser &arg_parser) const
 
 void DatArchive::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->sjis_game_title = utf8_to_sjis(
+    p->sjis_game_title = util::utf8_to_sjis(
         arg_parser.get_switch("game-title"));
 
     auto path = arg_parser.get_switch("file-names");
     if (path != "")
     {
-        FileIO io(path, FileIOMode::Read);
+        io::FileIO io(path, io::FileMode::Read);
         std::string line;
         while ((line = io.read_line()) != "")
         {
-            line = utf8_to_sjis(line);
+            line = util::utf8_to_sjis(line);
             p->sjis_file_names_map[crc64(line)] = line;
         }
     }

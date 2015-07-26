@@ -1,7 +1,10 @@
 #include "formats/glib/gml_decoder.h"
 
+using namespace au;
+using namespace au::fmt::glib;
+
 // modified LZSS
-void GmlDecoder::decode(BufferedIO &source_io, BufferedIO &target_io)
+void GmlDecoder::decode(io::BufferedIO &source_io, io::BufferedIO &target_io)
 {
     char *target = target_io.buffer();
     char *target_ptr = target;

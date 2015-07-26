@@ -1,6 +1,8 @@
 #include "file.h"
 #include "test_support/catch.hpp"
 
+using namespace au;
+
 static void test_changing_extension(
     const std::string name,
     const std::string new_extension,

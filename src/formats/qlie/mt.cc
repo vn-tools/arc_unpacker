@@ -42,10 +42,10 @@ const unsigned long MATRIX_A = 0x9908b0dfUL;
 const unsigned long UPPER_MASK = 0x80000000UL;
 const unsigned long LOWER_MASK = 0x7fffffffUL;
 
-static unsigned long mt[N];
+static unsigned long mts[N];
 static int mti = N + 1;
 
-void Formats::QLiE::mt_xor_state(const unsigned char* buff, unsigned long len)
+void au::fmt::qlie::mt::xor_state(const unsigned char* buff, unsigned long len)
 {
     unsigned long *words = (unsigned long*) buff;
     unsigned long word_count = len / 4;
@@ -55,20 +55,20 @@ void Formats::QLiE::mt_xor_state(const unsigned char* buff, unsigned long len)
         word_count = N;
 
     for (i = 0; i < word_count; i++)
-        mt[i] ^= words[i];
+        mts[i] ^= words[i];
 }
 
-void Formats::QLiE::mt_init_genrand(unsigned long s)
+void au::fmt::qlie::mt::init_genrand(unsigned long s)
 {
-    mt[0] = s & 0xffffffffUL;
+    mts[0] = s & 0xffffffffUL;
     for (mti = 1; mti < N; mti++)
     {
-        mt[mti] = (1712438297UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + mti);
-        mt[mti] &= 0xffffffffUL;
+        mts[mti] = (1712438297UL * (mts[mti - 1] ^ (mts[mti - 1] >> 30)) + mti);
+        mts[mti] &= 0xffffffffUL;
     }
 }
 
-unsigned long Formats::QLiE::mt_genrand_int32()
+unsigned long au::fmt::qlie::mt::genrand_int32()
 {
     unsigned long y;
     static unsigned long mag01[2] = { 0x0UL, MATRIX_A };
@@ -78,24 +78,24 @@ unsigned long Formats::QLiE::mt_genrand_int32()
         int kk;
 
         if (mti == N + 1)
-            mt_init_genrand(5489UL);
+            au::fmt::qlie::mt::init_genrand(5489UL);
 
         for (kk = 0; kk < N - M; kk++)
         {
-            y = (mt[kk] & UPPER_MASK) | ((mt[kk + 1] & LOWER_MASK) >> 1);
-            mt[kk] = mt[kk + M] ^ y ^ mag01[mt[kk + 1] & 0x1UL];
+            y = (mts[kk] & UPPER_MASK) | ((mts[kk + 1] & LOWER_MASK) >> 1);
+            mts[kk] = mts[kk + M] ^ y ^ mag01[mts[kk + 1] & 0x1UL];
         }
         for (; kk < N - 1; kk++)
         {
-            y = (mt[kk] & UPPER_MASK) | ((mt[kk + 1] & LOWER_MASK) >> 1);
-            mt[kk] = mt[kk + (M - N)] ^ y ^ mag01[mt[kk + 1] & 0x1UL];
+            y = (mts[kk] & UPPER_MASK) | ((mts[kk + 1] & LOWER_MASK) >> 1);
+            mts[kk] = mts[kk + (M - N)] ^ y ^ mag01[mts[kk + 1] & 0x1UL];
         }
-        y = (mt[N - 1] & UPPER_MASK) | ((mt[0] & LOWER_MASK) >> 1);
-        mt[N - 1] = mt[M - 1] ^ y ^ mag01[mt[N - 1] & 0x1UL];
+        y = (mts[N - 1] & UPPER_MASK) | ((mts[0] & LOWER_MASK) >> 1);
+        mts[N - 1] = mts[M - 1] ^ y ^ mag01[mts[N - 1] & 0x1UL];
         mti = 0;
     }
 
-    y = mt[mti++];
+    y = mts[mti++];
 
     y ^= (y >> 11);
     y ^= (y << 7) & 0x9c4f88e3ul;

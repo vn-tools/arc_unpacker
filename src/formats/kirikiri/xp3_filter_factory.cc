@@ -7,7 +7,8 @@
 #include "formats/kirikiri/xp3_filters/cxdec_mahoyoru.h"
 #include "formats/kirikiri/xp3_filters/fsn.h"
 #include "formats/kirikiri/xp3_filters/noop.h"
-using namespace Formats::Kirikiri;
+
+using namespace au::fmt::kirikiri;
 
 struct Definition
 {
@@ -35,11 +36,11 @@ struct Xp3FilterFactory::Priv
 
 Xp3FilterFactory::Xp3FilterFactory() : p(new Priv)
 {
-    p->add("comyu",    []() { return new Xp3Filters::CxdecComyu;    });
-    p->add("fsn",      []() { return new Xp3Filters::Fsn;           });
-    p->add("fha",      []() { return new Xp3Filters::CxdecFha;      });
-    p->add("mahoyoru", []() { return new Xp3Filters::CxdecMahoYoru; });
-    p->add("noop",     []() { return new Xp3Filters::Noop;          },
+    p->add("comyu",    []() { return new xp3_filters::CxdecComyu;    });
+    p->add("fsn",      []() { return new xp3_filters::Fsn;           });
+    p->add("fha",      []() { return new xp3_filters::CxdecFha;      });
+    p->add("mahoyoru", []() { return new xp3_filters::CxdecMahoYoru; });
+    p->add("noop",     []() { return new xp3_filters::Noop;          },
         "for unecrypted games");
 }
 

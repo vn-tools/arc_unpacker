@@ -4,7 +4,7 @@
 #include <iconv.h>
 #include "util/encoding.h"
 
-std::string convert_encoding(
+std::string au::util::convert_encoding(
     const std::string &input, const std::string &from, const std::string &to)
 {
     iconv_t conv = iconv_open(to.c_str(), from.c_str());
@@ -52,12 +52,12 @@ std::string convert_encoding(
     return output;
 }
 
-std::string sjis_to_utf8(const std::string &input)
+std::string au::util::sjis_to_utf8(const std::string &input)
 {
     return convert_encoding(input, "cp932", "utf-8");
 }
 
-std::string utf8_to_sjis(const std::string &input)
+std::string au::util::utf8_to_sjis(const std::string &input)
 {
     return convert_encoding(input, "utf-8", "cp932");
 }

@@ -1,37 +1,46 @@
-#ifndef UTIL_IMAGE_H
-#define UTIL_IMAGE_H
+#ifndef AU_UTIL_IMAGE_H
+#define AU_UTIL_IMAGE_H
 #include <memory>
 #include <string>
+#include "io/io.h"
 #include "file.h"
 
-typedef enum
-{
-    RGB = 1,
-    RGBA,
-    Grayscale,
-    BGR,
-    BGRA
-} PixelFormat;
+namespace au {
+namespace util {
 
-class Image final
-{
-public:
-    ~Image();
+    typedef enum
+    {
+        RGB = 1,
+        RGBA,
+        Grayscale,
+        BGR,
+        BGRA
+    } PixelFormat;
 
-    static std::unique_ptr<Image> from_boxed(IO &io);
-    static std::unique_ptr<Image> from_pixels(
-        size_t width, size_t height, const std::string &data, PixelFormat fmt);
+    class Image final
+    {
+    public:
+        ~Image();
 
-    std::unique_ptr<File> create_file(const std::string &name) const;
+        static std::unique_ptr<Image> from_boxed(io::IO &io);
+        static std::unique_ptr<Image> from_pixels(
+            size_t width,
+            size_t height,
+            const std::string &data,
+            PixelFormat fmt);
 
-    size_t width() const;
-    size_t height() const;
-    u32 color_at(size_t x, size_t y) const;
+        std::unique_ptr<File> create_file(const std::string &name) const;
 
-private:
-    Image();
-    struct Priv;
-    std::unique_ptr<Priv> p;
-};
+        size_t width() const;
+        size_t height() const;
+        u32 color_at(size_t x, size_t y) const;
+
+    private:
+        Image();
+        struct Priv;
+        std::unique_ptr<Priv> p;
+    };
+
+} }
 
 #endif

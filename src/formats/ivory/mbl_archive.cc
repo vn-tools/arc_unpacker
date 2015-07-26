@@ -10,10 +10,12 @@
 #include "formats/ivory/mbl_archive.h"
 #include "formats/ivory/prs_converter.h"
 #include "util/encoding.h"
-using namespace Formats::Ivory;
+
+using namespace au;
+using namespace au::fmt::ivory;
 
 static int check_version(
-    IO &arc_io, size_t initial_position, u32 file_count, u32 name_length)
+    io::IO &arc_io, size_t initial_position, u32 file_count, u32 name_length)
 {
     arc_io.seek(initial_position + file_count * (name_length + 8));
     arc_io.skip(-8);
@@ -22,7 +24,7 @@ static int check_version(
     return last_file_offset + last_file_size == arc_io.size();
 }
 
-static int get_version(IO &arc_io)
+static int get_version(io::IO &arc_io)
 {
     u32 file_count = arc_io.read_u32_le();
     if (check_version(arc_io, 4, file_count, 16))
@@ -42,13 +44,13 @@ static int get_version(IO &arc_io)
     return -1;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, size_t name_length)
+static std::unique_ptr<File> read_file(io::IO &arc_io, size_t name_length)
 {
     std::unique_ptr<File> file(new File);
 
     size_t old_pos = arc_io.tell();
     std::string name = arc_io.read_until_zero();
-    file->name = sjis_to_utf8(name);
+    file->name = util::sjis_to_utf8(name);
     arc_io.seek(old_pos + name_length);
 
     size_t offset = arc_io.read_u32_le();

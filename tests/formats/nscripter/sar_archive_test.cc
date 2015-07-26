@@ -1,7 +1,10 @@
 #include "formats/nscripter/sar_archive.h"
 #include "test_support/archive_support.h"
 #include "test_support/catch.hpp"
-using namespace Formats::NScripter;
+
+using namespace au;
+using namespace au::fmt;
+using namespace au::fmt::nscripter;
 
 TEST_CASE("Unpacking SAR archives works")
 {
@@ -14,6 +17,8 @@ TEST_CASE("Unpacking SAR archives works")
     std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
     std::unique_ptr<Archive> archive(new SarArchive);
-    compare_files(expected_files,
-        unpack_to_memory("tests/formats/nscripter/files/test.sar", *archive));
+    au::tests::compare_files(
+        expected_files,
+        au::tests::unpack_to_memory(
+            "tests/formats/nscripter/files/test.sar", *archive));
 }

@@ -13,14 +13,16 @@
 #include "formats/kirikiri/tlg/tlg5_decoder.h"
 #include "formats/kirikiri/tlg/tlg6_decoder.h"
 #include "formats/kirikiri/tlg_converter.h"
-using namespace Formats::Kirikiri;
-using namespace Formats::Kirikiri::Tlg;
+
+using namespace au;
+using namespace au::fmt::kirikiri;
+using namespace au::fmt::kirikiri::tlg;
 
 static const std::string magic_tlg_0("TLG0.0\x00sds\x1a", 11);
 static const std::string magic_tlg_5("TLG5.0\x00raw\x1a", 11);
 static const std::string magic_tlg_6("TLG6.0\x00raw\x1a", 11);
 
-static int guess_version(IO &io);
+static int guess_version(io::IO &io);
 static std::unique_ptr<File> decode_proxy(int version, File &file);
 
 static std::string extract_string(std::string &container)
@@ -85,7 +87,7 @@ static std::unique_ptr<File> decode_tlg_6(File &file)
     return decoder.decode(file);
 }
 
-static int guess_version(IO &io)
+static int guess_version(io::IO &io)
 {
     size_t pos = io.tell();
     if (io.read(magic_tlg_0.size()) == magic_tlg_0)

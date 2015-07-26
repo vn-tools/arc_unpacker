@@ -1,25 +1,30 @@
-#ifndef UTIL_SOUND_H
-#define UTIL_SOUND_H
+#ifndef AU_UTIL_SOUND_H
+#define AU_UTIL_SOUND_H
 #include <memory>
 #include "file.h"
 
-class Sound final
-{
-public:
-    ~Sound();
+namespace au {
+namespace util {
 
-    static std::unique_ptr<Sound> from_samples(
-        size_t channel_count,
-        size_t bytes_per_sample,
-        size_t sample_rate,
-        const std::string &samples);
+    class Sound final
+    {
+    public:
+        ~Sound();
 
-    std::unique_ptr<File> create_file(const std::string &base_file) const;
+        static std::unique_ptr<Sound> from_samples(
+            size_t channel_count,
+            size_t bytes_per_sample,
+            size_t sample_rate,
+            const std::string &samples);
 
-private:
-    Sound();
-    struct Priv;
-    std::unique_ptr<Priv> p;
-};
+        std::unique_ptr<File> create_file(const std::string &base_file) const;
+
+    private:
+        Sound();
+        struct Priv;
+        std::unique_ptr<Priv> p;
+    };
+
+} }
 
 #endif

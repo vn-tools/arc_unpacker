@@ -1,6 +1,6 @@
 #include "util/itos.h"
 
-std::string itos(int i)
+std::string au::util::itos(int i)
 {
     if (i == 0)
         return "0";
@@ -17,7 +17,7 @@ std::string itos(int i)
     return x;
 }
 
-std::string itos(int i, size_t length)
+std::string au::util::itos(int i, size_t length)
 {
     std::string ret = itos(i);
     while (ret.length() < length)

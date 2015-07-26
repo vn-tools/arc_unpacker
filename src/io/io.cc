@@ -2,6 +2,8 @@
 #include "util/endian.h"
 #include "io/io.h"
 
+using namespace au::io;
+
 IO::~IO()
 {
 }

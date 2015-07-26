@@ -1,6 +1,9 @@
 #include <cassert>
 #include "util/sound.h"
 
+using namespace au;
+using namespace au::util;
+
 struct Sound::Priv
 {
     size_t channel_count;

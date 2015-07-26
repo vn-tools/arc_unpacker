@@ -1,6 +1,8 @@
 #include "arg_parser.h"
 #include "test_support/catch.hpp"
 
+using namespace au;
+
 TEST_CASE("Missing switches don't throw exceptions")
 {
     ArgParser ap;

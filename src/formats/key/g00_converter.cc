@@ -14,7 +14,9 @@
 #include "io/buffered_io.h"
 #include "util/endian.h"
 #include "util/image.h"
-using namespace Formats::Key;
+
+using namespace au;
+using namespace au::fmt::key;
 
 namespace
 {
@@ -93,7 +95,7 @@ static void decompress(
 }
 
 static std::unique_ptr<char[]> decompress_from_io(
-    IO &io,
+    io::IO &io,
     size_t compressed_size,
     size_t uncompressed_size,
     size_t byte_count,
@@ -129,11 +131,11 @@ static std::unique_ptr<File> decode_version_0(File &file, int width, int height)
     std::unique_ptr<char[]> uncompressed = decompress_from_io(
         file.io, compressed_size, uncompressed_size, 3, 1);
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         width,
         height,
         std::string(uncompressed.get(), width * height * 3),
-        PixelFormat::BGR);
+        util::PixelFormat::BGR);
     return image->create_file(file.name);
 }
 
@@ -145,7 +147,7 @@ static std::unique_ptr<File> decode_version_1(File &file, int width, int height)
     std::unique_ptr<char[]> uncompressed = decompress_from_io(
         file.io, compressed_size, uncompressed_size, 1, 2);
 
-    BufferedIO tmp_io(uncompressed.get(), uncompressed_size);
+    io::BufferedIO tmp_io(uncompressed.get(), uncompressed_size);
 
     std::unique_ptr<u32[]> palette(new u32[256]);
     size_t color_count = tmp_io.read_u16_le();
@@ -156,18 +158,18 @@ static std::unique_ptr<File> decode_version_1(File &file, int width, int height)
     for (size_t i = 0; i < static_cast<size_t>(width * height); i++)
         pixels[i] = palette[tmp_io.read_u8()];
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         width,
         height,
         std::string(
             reinterpret_cast<char*>(pixels.get()),
             width * height * 4),
-        PixelFormat::BGRA);
+        util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }
 
 static std::vector<std::unique_ptr<Region>> read_version_2_regions(
-    IO &file_io, size_t region_count)
+    io::IO &file_io, size_t region_count)
 {
     std::vector<std::unique_ptr<Region>> regions;
     regions.reserve(region_count);
@@ -207,7 +209,7 @@ static std::unique_ptr<File> decode_version_2(File &file, int width, int height)
     for (int i = 0; i < width * height; i++)
         pixels[i] = 0;
 
-    BufferedIO uncompressed_io(uncompressed.get(), uncompressed_size);
+    io::BufferedIO uncompressed_io(uncompressed.get(), uncompressed_size);
     if (region_count != uncompressed_io.read_u32_le())
         throw std::runtime_error("Invalid region count");
 
@@ -247,13 +249,13 @@ static std::unique_ptr<File> decode_version_2(File &file, int width, int height)
         }
     }
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         width,
         height,
         std::string(
             reinterpret_cast<char*>(pixels.get()),
             width * height * 4),
-        PixelFormat::BGRA);
+        util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }
 

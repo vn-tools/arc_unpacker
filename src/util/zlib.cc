@@ -7,7 +7,7 @@
 #define SIZE_MAX ((size_t) -1)
 #endif
 
-std::string zlib_inflate(const std::string &input)
+std::string au::util::zlib_inflate(const std::string &input)
 {
     std::string output;
     size_t written = 0;

@@ -1,14 +1,16 @@
 #include "formats/fvp/nvsg_converter.h"
 #include "test_support/catch.hpp"
 #include "test_support/converter_support.h"
-using namespace Formats::Fvp;
+
+using namespace au::fmt::fvp;
 
 static void test_nvsg_decoding(
     const std::string &input_image_path,
     const std::string &expected_image_path)
 {
     NvsgConverter converter;
-    assert_decoded_image(converter, input_image_path, expected_image_path);
+    au::tests::assert_decoded_image(
+        converter, input_image_path, expected_image_path);
 }
 
 TEST_CASE("Decoding format 0 NVSG images works")

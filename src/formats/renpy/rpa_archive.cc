@@ -12,7 +12,9 @@
 #include "formats/renpy/rpa_archive.h"
 #include "io/buffered_io.h"
 #include "util/zlib.h"
-using namespace Formats::Renpy;
+
+using namespace au;
+using namespace au::fmt::renpy;
 
 #define PICKLE_MARK            '('
 #define PICKLE_STOP            '.'
@@ -115,7 +117,7 @@ static void unpickle_handle_number(size_t number, UnpickleContext *context)
     context->numbers.push_back(number);
 }
 
-static void unpickle(IO &table_io, UnpickleContext *context)
+static void unpickle(io::IO &table_io, UnpickleContext *context)
 {
     // Stupid unpickle "implementation" ahead: instead of twiddling with stack,
     // arrays, dictionaries and all that crap, just remember all pushed strings
@@ -212,7 +214,7 @@ static void unpickle(IO &table_io, UnpickleContext *context)
     }
 }
 
-static Table decode_table(IO &table_io, u32 key)
+static Table decode_table(io::IO &table_io, u32 key)
 {
     UnpickleContext context;
     unpickle(table_io, &context);
@@ -243,7 +245,7 @@ static Table decode_table(IO &table_io, u32 key)
     return entries;
 }
 
-static int guess_version(IO &arc_io)
+static int guess_version(io::IO &arc_io)
 {
     const std::string magic_3("RPA-3.0 ", 8);
     const std::string magic_2("RPA-2.0 ", 8);
@@ -255,7 +257,7 @@ static int guess_version(IO &arc_io)
     return -1;
 }
 
-static u32 read_hex_number(IO &arc_io, size_t length)
+static u32 read_hex_number(io::IO &arc_io, size_t length)
 {
     size_t i;
     u32 result = 0;
@@ -275,15 +277,15 @@ static u32 read_hex_number(IO &arc_io, size_t length)
     return result;
 }
 
-static std::string read_raw_table(IO &arc_io)
+static std::string read_raw_table(io::IO &arc_io)
 {
     size_t compressed_size = arc_io.size() - arc_io.tell();
     std::string compressed = arc_io.read(compressed_size);
-    std::string uncompressed = zlib_inflate(compressed);
+    std::string uncompressed = util::zlib_inflate(compressed);
     return uncompressed;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
 
@@ -322,7 +324,7 @@ void RpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     }
 
     arc_file.io.seek(table_offset);
-    BufferedIO table_io(read_raw_table(arc_file.io));
+    io::BufferedIO table_io(read_raw_table(arc_file.io));
     auto table = decode_table(table_io, key);
 
     for (auto &entry : table)

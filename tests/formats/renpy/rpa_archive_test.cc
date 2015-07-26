@@ -1,7 +1,10 @@
 #include "formats/renpy/rpa_archive.h"
 #include "test_support/archive_support.h"
 #include "test_support/catch.hpp"
-using namespace Formats::Renpy;
+
+using namespace au;
+using namespace au::fmt;
+using namespace au::fmt::renpy;
 
 // import cPickle
 // import zlib
@@ -26,7 +29,8 @@ static void test(const std::string &path)
     std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
     std::unique_ptr<Archive> archive(new RpaArchive);
-    compare_files(expected_files, unpack_to_memory(path, *archive));
+    au::tests::compare_files(
+        expected_files, au::tests::unpack_to_memory(path, *archive));
 }
 
 TEST_CASE("Unpacking version 3 RPA archives works")

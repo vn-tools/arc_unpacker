@@ -1,5 +1,5 @@
-#ifndef COMPAT_MAIN_H
-#define COMPAT_MAIN_H
+#ifndef AU_COMPAT_MAIN_H
+#define AU_COMPAT_MAIN_H
 #include <string>
 #include <vector>
 
@@ -22,4 +22,5 @@ void init_fs_utf8();
         x \
     }
 #endif
+
 #endif

@@ -8,7 +8,9 @@
 // - Tsukihime
 
 #include "formats/nscripter/sar_archive.h"
-using namespace Formats::NScripter;
+
+using namespace au;
+using namespace au::fmt::nscripter;
 
 namespace
 {
@@ -20,7 +22,7 @@ namespace
     } TableEntry;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     file->name = entry.name;

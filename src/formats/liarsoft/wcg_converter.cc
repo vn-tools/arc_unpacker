@@ -16,12 +16,14 @@
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/itos.h"
-using namespace Formats::LiarSoft;
+
+using namespace au;
+using namespace au::fmt::liarsoft;
 
 static const std::string magic("WG", 2);
 
 static size_t wcg_unpack(
-    IO &io,
+    io::IO &io,
     char *output,
     unsigned int output_size,
     int input_shift,
@@ -34,7 +36,7 @@ static size_t wcg_unpack(
     if (expected_size != actual_size)
     {
         throw std::runtime_error("Unexpected size: "
-            + itos(actual_size) + " != " + itos(expected_size));
+            + util::itos(actual_size) + " != " + util::itos(expected_size));
     }
 
     u32 base_offset = io.read_u32_le();
@@ -56,7 +58,7 @@ static size_t wcg_unpack(
     size_t var1 = tmp * 8 + 0xe;
     size_t var2 = tmp + 4;
 
-    BitReader bit_reader(io);
+    io::BitReader bit_reader(io);
     while (output_ptr != output_guardian)
     {
         size_t sequence_length = 1;
@@ -142,7 +144,7 @@ std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
     size_t pixels_size = image_width * image_height * 4;
     std::unique_ptr<char[]> pixels(new char[pixels_size]);
 
-    BufferedIO buffered_io(file.io);
+    io::BufferedIO buffered_io(file.io);
     auto ret = wcg_unpack(
         buffered_io,
         pixels.get() + 2,
@@ -161,10 +163,10 @@ std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
     for (size_t i = 0; i < pixels_size; i += 4)
         pixels[i + 3] ^= 0xff;
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         image_width,
         image_height,
         std::string(pixels.get(), pixels_size),
-        PixelFormat::BGRA);
+        util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }

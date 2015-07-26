@@ -13,7 +13,9 @@
 #include "formats/liarsoft/wcg_converter.h"
 #include "formats/liarsoft/xfl_archive.h"
 #include "util/encoding.h"
-using namespace Formats::LiarSoft;
+
+using namespace au;
+using namespace au::fmt::liarsoft;
 
 namespace
 {
@@ -29,7 +31,7 @@ namespace
 
 static const std::string magic("LB\x01\x00", 4);
 
-static Table read_table(IO &arc_io)
+static Table read_table(io::IO &arc_io)
 {
     Table table;
     size_t table_size = arc_io.read_u32_le();
@@ -39,7 +41,7 @@ static Table read_table(IO &arc_io)
     for (size_t i = 0; i < file_count; i++)
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = sjis_to_utf8(arc_io.read_until_zero(0x20));
+        entry->name = util::sjis_to_utf8(arc_io.read_until_zero(0x20));
         entry->offset = file_start + arc_io.read_u32_le();
         entry->size = arc_io.read_u32_le();
         table.push_back(std::move(entry));
@@ -47,7 +49,7 @@ static Table read_table(IO &arc_io)
     return table;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     file->name = entry.name;

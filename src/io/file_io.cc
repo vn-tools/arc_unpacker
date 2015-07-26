@@ -3,6 +3,8 @@
 #include "compat/fopen.h"
 #include "io/file_io.h"
 
+using namespace au::io;
+
 struct FileIO::Priv
 {
     FILE *file;
@@ -63,10 +65,10 @@ void FileIO::truncate(size_t new_size)
     throw std::runtime_error("Not implemented");
 }
 
-FileIO::FileIO(const boost::filesystem::path &path, const FileIOMode mode)
+FileIO::FileIO(const boost::filesystem::path &path, const FileMode mode)
     : p(new Priv())
 {
-    p->file = fopen(path, mode == FileIOMode::Write ? "w+b" : "r+b");
+    p->file = fopen(path, mode == FileMode::Write ? "w+b" : "r+b");
     if (p->file == nullptr)
         throw std::runtime_error("Could not open " + path.string());
 }

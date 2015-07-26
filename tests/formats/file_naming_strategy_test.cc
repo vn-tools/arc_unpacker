@@ -5,18 +5,19 @@
 typedef boost::filesystem::path path;
 
 static path test(
-    const FileNamingStrategy &strategy,
+    const au::fmt::FileNamingStrategy &strategy,
     const std::string &parent_path,
     const std::string &child_path)
 {
-    return path(FileNameDecorator::decorate(strategy, parent_path, child_path));
+    return path(au::fmt::FileNameDecorator::decorate(
+        strategy, parent_path, child_path));
 }
 
 TEST_CASE("File naming strategies work")
 {
-    auto root    = FileNamingStrategy::Root;
-    auto sibling = FileNamingStrategy::Sibling;
-    auto child   = FileNamingStrategy::Child;
+    auto root    = au::fmt::FileNamingStrategy::Root;
+    auto sibling = au::fmt::FileNamingStrategy::Sibling;
+    auto child   = au::fmt::FileNamingStrategy::Child;
     REQUIRE(test(root,    "",           "file") == path("file"));
     REQUIRE(test(root,    "test",       "file") == path("file"));
     REQUIRE(test(root,    "test/",      "file") == path("file"));

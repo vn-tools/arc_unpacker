@@ -1,18 +1,18 @@
-#ifndef FORMATS_NITROPLUS_PAK_ARCHIVE_H
-#define FORMATS_NITROPLUS_PAK_ARCHIVE_H
+#ifndef AU_FMT_NITROPLUS_PAK_ARCHIVE_H
+#define AU_FMT_NITROPLUS_PAK_ARCHIVE_H
 #include "formats/archive.h"
 
-namespace Formats
-{
-    namespace Nitroplus
+namespace au {
+namespace fmt {
+namespace nitroplus {
+
+    class PakArchive final : public Archive
     {
-        class PakArchive final : public Archive
-        {
-        protected:
-            bool is_recognized_internal(File &) const override;
-            void unpack_internal(File &, FileSaver &) const override;
-        };
-    }
-}
+    protected:
+        bool is_recognized_internal(File &) const override;
+        void unpack_internal(File &, FileSaver &) const override;
+    };
+
+} } }
 
 #endif

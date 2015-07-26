@@ -3,6 +3,8 @@
 #include "test_support/catch.hpp"
 #include "test_support/suppress_output.h"
 
+using namespace au;
+
 TEST_CASE("Converting single files with CLI facade works")
 {
     suppress_output([&]()

@@ -17,7 +17,9 @@
 #include "util/colors.h"
 #include "util/encoding.h"
 #include "util/mt.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt::touhou;
 
 namespace
 {
@@ -31,16 +33,16 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static void decrypt(IO &io, u32 mt_seed, u8 a, u8 b, u8 delta)
+static void decrypt(io::IO &io, u32 mt_seed, u8 a, u8 b, u8 delta)
 {
     size_t size = io.size();
     std::unique_ptr<char[]> buffer(new char[size]);
     io.seek(0);
     io.read(buffer.get(), size);
-    mt_init_genrand(mt_seed);
+    util::mt::init_genrand(mt_seed);
     for (size_t i = 0; i < size; i++)
     {
-        buffer[i] ^= mt_genrand_int32();
+        buffer[i] ^= util::mt::genrand_int32();
         buffer[i] ^= a;
         a += b;
         b += delta;
@@ -50,7 +52,7 @@ static void decrypt(IO &io, u32 mt_seed, u8 a, u8 b, u8 delta)
     io.seek(0);
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<char[]> data(new char[entry.size]);
     arc_io.seek(entry.offset);
@@ -66,18 +68,19 @@ static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-static std::unique_ptr<BufferedIO> read_raw_table(IO &arc_io, size_t file_count)
+static std::unique_ptr<io::BufferedIO> read_raw_table(
+    io::IO &arc_io, size_t file_count)
 {
     size_t table_size = arc_io.read_u32_le();
     if (table_size > arc_io.size() - arc_io.tell())
         throw std::runtime_error("Not a PAK2 archive");
-    std::unique_ptr<BufferedIO> table_io(new BufferedIO());
+    std::unique_ptr<io::BufferedIO> table_io(new io::BufferedIO());
     table_io->write_from_io(arc_io, table_size);
     decrypt(*table_io, table_size + 6, 0xc5, 0x83, 0x53);
     return table_io;
 }
 
-static Table read_table(IO &arc_io)
+static Table read_table(io::IO &arc_io)
 {
     u16 file_count = arc_io.read_u16_le();
     if (file_count == 0 && arc_io.size() != 6)
@@ -90,7 +93,7 @@ static Table read_table(IO &arc_io)
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->offset = table_io->read_u32_le();
         entry->size = table_io->read_u32_le();
-        entry->name = sjis_to_utf8(table_io->read(table_io->read_u8()));
+        entry->name = util::sjis_to_utf8(table_io->read(table_io->read_u8()));
         if (entry->offset + entry->size > arc_io.size())
             throw std::runtime_error("Bad offset to file");
         table.push_back(std::move(entry));
@@ -114,7 +117,7 @@ static PaletteMap find_all_palettes(const std::string &arc_path)
 
         try
         {
-            FileIO file_io(it->path(), FileIOMode::Read);
+            io::FileIO file_io(it->path(), io::FileMode::Read);
             for (auto &entry : read_table(file_io))
             {
                 if (entry->name.find(".pal") == std::string::npos)
@@ -124,7 +127,10 @@ static PaletteMap find_all_palettes(const std::string &arc_path)
                 pal_file->io.seek(1);
                 Palette palette;
                 for (size_t i = 0; i < 256; i++)
-                    palette[i] = rgba5551(pal_file->io.read_u16_le());
+                {
+                    palette[i] = util::color::rgba5551(
+                        pal_file->io.read_u16_le());
+                }
                 palettes[entry->name] = palette;
             }
         }

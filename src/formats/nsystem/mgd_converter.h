@@ -1,18 +1,18 @@
-#ifndef FORMATS_NSYSTEM_MGD_CONVERTER_H
-#define FORMATS_NSYSTEM_MGD_CONVERTER_H
+#ifndef AU_FMT_NSYSTEM_MGD_CONVERTER_H
+#define AU_FMT_NSYSTEM_MGD_CONVERTER_H
 #include "formats/converter.h"
 
-namespace Formats
-{
-    namespace NSystem
+namespace au {
+namespace fmt {
+namespace nsystem {
+
+    class MgdConverter final : public Converter
     {
-        class MgdConverter final : public Converter
-        {
-        protected:
-            bool is_recognized_internal(File &) const override;
-            std::unique_ptr<File> decode_internal(File &) const override;
-        };
-    }
-}
+    protected:
+        bool is_recognized_internal(File &) const override;
+        std::unique_ptr<File> decode_internal(File &) const override;
+    };
+
+} } }
 
 #endif

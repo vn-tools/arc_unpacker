@@ -11,7 +11,9 @@
 #include "formats/microsoft/exe_archive.h"
 #include "util/encoding.h"
 #include "util/itos.h"
-using namespace Formats::Microsoft;
+
+using namespace au;
+using namespace au::fmt::microsoft;
 
 namespace
 {
@@ -35,7 +37,7 @@ namespace
         u16 e_oeminfo;
         u32 e_lfanew;
 
-        DosHeader(IO &io);
+        DosHeader(io::IO &io);
     } DosHeader;
 
     typedef struct ImageOptionalHeader
@@ -71,7 +73,7 @@ namespace
         u32 loader_flags;
         u32 number_of_rva_and_sizes;
 
-        ImageOptionalHeader(IO &io);
+        ImageOptionalHeader(io::IO &io);
     } ImageOptionalHeader;
 
     typedef struct ImageFileHeader
@@ -83,7 +85,7 @@ namespace
         u32 number_of_symbols;
         u16 size_of_optional_header;
         u16 characteristics;
-        ImageFileHeader(IO &io);
+        ImageFileHeader(io::IO &io);
     } ImageFileHeader;
 
     typedef struct ImageNtHeader
@@ -91,14 +93,14 @@ namespace
         u32 signature;
         ImageFileHeader file_header;
         ImageOptionalHeader optional_header;
-        ImageNtHeader(IO &io);
+        ImageNtHeader(io::IO &io);
     } ImageNtHeader;
 
     typedef struct ImageDataDirectory
     {
         u32 virtual_address;
         u32 size;
-        ImageDataDirectory(IO &io);
+        ImageDataDirectory(io::IO &io);
     } ImageDataDriectory;
 
     typedef struct ImageSectionHeader
@@ -114,7 +116,7 @@ namespace
         u16 number_of_relocations;
         u16 number_of_line_numbers;
         u32 characteristics;
-        ImageSectionHeader(IO &io);
+        ImageSectionHeader(io::IO &io);
     } ImageSectionHeader;
 
     typedef struct ImageResourceDirectory
@@ -125,7 +127,7 @@ namespace
         u16 minor_version;
         u16 number_of_named_entries;
         u16 number_of_id_entries;
-        ImageResourceDirectory(IO &io);
+        ImageResourceDirectory(io::IO &io);
     } ImageResourceDirectory;
 
     typedef struct ImageResourceDirectoryEntry
@@ -136,7 +138,7 @@ namespace
         u32 name;
         u32 id;
         u32 data_is_directory;
-        ImageResourceDirectoryEntry(IO &io);
+        ImageResourceDirectoryEntry(io::IO &io);
     } ImageResourceDirectoryEntry;
 
     typedef struct ImageResourceDataEntry
@@ -144,7 +146,7 @@ namespace
         u32 offset_to_data;
         u32 size;
         u32 code_page;
-        ImageResourceDataEntry(IO &io);
+        ImageResourceDataEntry(io::IO &io);
     } ImageResourceDataEntry;
 
     class RvaHelper
@@ -168,7 +170,7 @@ namespace
 //keep flat hierarchy for unpacked files
 static const std::string path_sep = "／";
 
-DosHeader::DosHeader(IO &io)
+DosHeader::DosHeader(io::IO &io)
 {
     magic      = io.read(2);
     e_cblp     = io.read_u16_le();
@@ -191,7 +193,7 @@ DosHeader::DosHeader(IO &io)
     e_lfanew   = io.read_u32_le();
 }
 
-ImageOptionalHeader::ImageOptionalHeader(IO &io)
+ImageOptionalHeader::ImageOptionalHeader(io::IO &io)
 {
     magic                          = io.read_u16_le();
     major_linker_version           = io.read_u8();
@@ -236,7 +238,7 @@ ImageOptionalHeader::ImageOptionalHeader(IO &io)
     number_of_rva_and_sizes = io.read_u32_le();
 }
 
-ImageFileHeader::ImageFileHeader(IO &io)
+ImageFileHeader::ImageFileHeader(io::IO &io)
 {
     machine = io.read_u16_le();
     number_of_sections = io.read_u16_le();
@@ -247,18 +249,18 @@ ImageFileHeader::ImageFileHeader(IO &io)
     characteristics = io.read_u16_le();
 }
 
-ImageNtHeader::ImageNtHeader(IO &io)
+ImageNtHeader::ImageNtHeader(io::IO &io)
     : signature(io.read_u32_le()), file_header(io), optional_header(io)
 {
 }
 
-ImageDataDirectory::ImageDataDirectory(IO &io)
+ImageDataDirectory::ImageDataDirectory(io::IO &io)
 {
     virtual_address = io.read_u32_le();
     size = io.read_u32_le();
 }
 
-ImageSectionHeader::ImageSectionHeader(IO &io)
+ImageSectionHeader::ImageSectionHeader(io::IO &io)
 {
     name                    = io.read(8);
     virtual_size            = io.read_u32_le();
@@ -272,7 +274,7 @@ ImageSectionHeader::ImageSectionHeader(IO &io)
     characteristics         = io.read_u32_le();
 }
 
-ImageResourceDirectory::ImageResourceDirectory(IO &io)
+ImageResourceDirectory::ImageResourceDirectory(io::IO &io)
 {
     characteristics         = io.read_u32_le();
     timestamp               = io.read_u32_le();
@@ -282,7 +284,7 @@ ImageResourceDirectory::ImageResourceDirectory(IO &io)
     number_of_id_entries    = io.read_u16_le();
 }
 
-ImageResourceDirectoryEntry::ImageResourceDirectoryEntry(IO &io)
+ImageResourceDirectoryEntry::ImageResourceDirectoryEntry(io::IO &io)
 {
     //i am ugliness
     name = io.read_u32_le();
@@ -294,7 +296,7 @@ ImageResourceDirectoryEntry::ImageResourceDirectoryEntry(IO &io)
     offset_to_data &= 0x7fffffff;
 }
 
-ImageResourceDataEntry::ImageResourceDataEntry(IO &io)
+ImageResourceDataEntry::ImageResourceDataEntry(io::IO &io)
 {
     offset_to_data = io.read_u32_le();
     size = io.read_u32_le();
@@ -347,14 +349,14 @@ u32 RvaHelper::rva_to_offset(
 }
 
 static std::string read_entry_name(
-    IO &io, size_t base_offset, const ImageResourceDirectoryEntry &entry)
+    io::IO &io, size_t base_offset, const ImageResourceDirectoryEntry &entry)
 {
     if (entry.name_is_string)
     {
         io.seek(base_offset + entry.name_offset);
         size_t max_length = io.read_u16_le();
         std::string utf16le = io.read(max_length * 2);
-        return convert_encoding(utf16le, "utf-16le", "utf-8");
+        return util::convert_encoding(utf16le, "utf-16le", "utf-8");
     }
 
     switch (entry.id)
@@ -380,11 +382,11 @@ static std::string read_entry_name(
         case 24: return "MANIFEST";
     }
 
-    return itos(entry.id);
+    return util::itos(entry.id);
 }
 
 static void process_image_resource_data_entry(
-    IO &io,
+    io::IO &io,
     size_t base_offset,
     size_t offset,
     std::vector<ImageSectionHeader> &sections,
@@ -405,7 +407,7 @@ static void process_image_resource_data_entry(
 }
 
 static void process_image_resource_directory(
-    IO &io,
+    io::IO &io,
     size_t base_offset,
     size_t offset,
     std::vector<ImageSectionHeader> &sections,

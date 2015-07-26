@@ -10,7 +10,9 @@
 #include "formats/fvp/bin_archive.h"
 #include "formats/fvp/nvsg_converter.h"
 #include "util/encoding.h"
-using namespace Formats::Fvp;
+
+using namespace au;
+using namespace au::fmt::fvp;
 
 namespace
 {
@@ -24,7 +26,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static Table read_table(IO &arc_io)
+static Table read_table(io::IO &arc_io)
 {
     size_t file_count = arc_io.read_u32_le();
     arc_io.skip(4);
@@ -38,7 +40,7 @@ static Table read_table(IO &arc_io)
         size_t name_offset = arc_io.read_u32_le();
         arc_io.peek(names_start + name_offset, [&]()
         {
-            entry->name = sjis_to_utf8(arc_io.read_until_zero());
+            entry->name = util::sjis_to_utf8(arc_io.read_until_zero());
         });
         entry->offset = arc_io.read_u32_le();
         entry->size = arc_io.read_u32_le();
@@ -47,7 +49,7 @@ static Table read_table(IO &arc_io)
     return table;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     arc_io.seek(entry.offset);

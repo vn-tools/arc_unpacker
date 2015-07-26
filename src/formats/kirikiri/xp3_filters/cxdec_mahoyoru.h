@@ -1,20 +1,18 @@
-#ifndef FORMATS_KIRIKIRI_XP3_FILTERS_MAHOYORU_H
-#define FORMATS_KIRIKIRI_XP3_FILTERS_MAHOYORU_H
+#ifndef AU_FMT_KIRIKIRI_XP3_FILTERS_MAHOYORU_H
+#define AU_FMT_KIRIKIRI_XP3_FILTERS_MAHOYORU_H
 #include "formats/kirikiri/xp3_filters/cxdec.h"
 
-namespace Formats
-{
-    namespace Kirikiri
+namespace au {
+namespace fmt {
+namespace kirikiri {
+namespace xp3_filters {
+
+    class CxdecMahoYoru final : public Cxdec
     {
-        namespace Xp3Filters
-        {
-            class CxdecMahoYoru final : public Cxdec
-            {
-            public:
-                virtual CxdecSettings get_settings() const override;
-            };
-        }
-    }
-}
+    public:
+        virtual CxdecSettings get_settings() const override;
+    };
+
+} } } }
 
 #endif

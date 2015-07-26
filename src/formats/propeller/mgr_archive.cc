@@ -10,10 +10,12 @@
 #include "formats/propeller/mgr_archive.h"
 #include "io/buffered_io.h"
 #include "util/itos.h"
-using namespace Formats::Propeller;
+
+using namespace au;
+using namespace au::fmt::propeller;
 
 static void decompress(
-    BufferedIO &input_io, IO &output_io, size_t size_original)
+    io::BufferedIO &input_io, io::IO &output_io, size_t size_original)
 {
     u8 *input_ptr = reinterpret_cast<u8*>(input_io.buffer());
     u8 *input_guardian = input_ptr + input_io.size();
@@ -77,9 +79,9 @@ void MgrArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         size_t size_compressed = arc_file.io.read_u32_le();
 
         std::unique_ptr<File> file(new File);
-        file->name = itos(++file_number) + ".bmp";
+        file->name = util::itos(++file_number) + ".bmp";
 
-        BufferedIO input(arc_file.io, size_compressed);
+        io::BufferedIO input(arc_file.io, size_compressed);
         decompress(input, file->io, size_original);
 
         file_saver.save(std::move(file));

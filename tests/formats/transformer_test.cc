@@ -3,6 +3,9 @@
 #include "formats/converter.h"
 #include "test_support/catch.hpp"
 
+using namespace au;
+using namespace au::fmt;
+
 typedef boost::filesystem::path path;
 
 namespace
@@ -13,93 +16,104 @@ namespace
         std::function<void(File&)> recognition_callback;
         std::function<void(File&)> conversion_callback;
     protected:
-        bool is_recognized_internal(File &file) const override
-        {
-            if (recognition_callback != nullptr)
-                recognition_callback(file);
-            return file.has_extension("image");
-        }
-
-        std::unique_ptr<File> decode_internal(File &file) const override
-        {
-            if (conversion_callback != nullptr)
-                conversion_callback(file);
-            std::unique_ptr<File> output_file(new File);
-            output_file->io.write("image");
-            output_file->name = file.name;
-            output_file->change_extension("png");
-            return output_file;
-        }
+        bool is_recognized_internal(File &file) const override;
+        std::unique_ptr<File> decode_internal(File &file) const override;
     };
 
     class TestArchive : public Archive
     {
     public:
         TestConverter test_converter;
-
-        TestArchive()
-        {
-            add_transformer(&test_converter);
-            add_transformer(this);
-        }
-
-        bool is_recognized_internal(File &arc_file) const override
-        {
-            return arc_file.has_extension("archive");
-        }
-
+        TestArchive();
+        bool is_recognized_internal(File &arc_file) const override;
         void unpack_internal(
-            File &arc_file, FileSaver &file_saver) const override
-        {
-            while (!arc_file.io.eof())
-            {
-                std::unique_ptr<File> output_file(new File);
-                output_file->name = arc_file.io.read_until_zero();
-                size_t output_file_size = arc_file.io.read_u32_le();
-                output_file->io.write(arc_file.io.read(output_file_size));
-                file_saver.save(std::move(output_file));
-            }
-        }
+            File &arc_file, FileSaver &file_saver) const override;
     };
 
     class FilesystemTestArchive : public Archive
     {
     public:
-        FilesystemTestArchive()
-        {
-        }
-
-        bool is_recognized_internal(File &arc_file) const override
-        {
-            return true;
-        }
-
+        FilesystemTestArchive();
+        bool is_recognized_internal(File &arc_file) const override;
         void unpack_internal(
-            File &arc_file, FileSaver &file_saver) const override
-        {
-            auto dir = boost::filesystem::path(arc_file.name).parent_path();
-            for (boost::filesystem::directory_iterator it(dir);
-                it != boost::filesystem::directory_iterator();
-                it++)
-            {
-                std::unique_ptr<File> output_file(new File);
-                output_file->name = it->path().string();
-                file_saver.save(std::move(output_file));
-            }
-        }
+            File &arc_file, FileSaver &file_saver) const override;
     };
+}
 
-    std::vector<std::shared_ptr<File>> unpack(File &file, Archive &archive)
+bool TestConverter::is_recognized_internal(File &file) const
+{
+    if (recognition_callback != nullptr)
+        recognition_callback(file);
+    return file.has_extension("image");
+}
+
+std::unique_ptr<File> TestConverter::decode_internal(File &file) const
+{
+    if (conversion_callback != nullptr)
+        conversion_callback(file);
+    std::unique_ptr<File> output_file(new File);
+    output_file->io.write("image");
+    output_file->name = file.name;
+    output_file->change_extension("png");
+    return output_file;
+}
+
+TestArchive::TestArchive()
+{
+    add_transformer(&test_converter);
+    add_transformer(this);
+}
+
+bool TestArchive::is_recognized_internal(File &arc_file) const
+{
+    return arc_file.has_extension("archive");
+}
+
+void TestArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
+{
+    while (!arc_file.io.eof())
     {
-        std::vector<std::shared_ptr<File>> saved_files;
-        FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
-        {
-            saved_file->io.seek(0);
-            saved_files.push_back(saved_file);
-        });
-        archive.unpack(file, file_saver);
-        return saved_files;
+        std::unique_ptr<File> output_file(new File);
+        output_file->name = arc_file.io.read_until_zero();
+        size_t output_file_size = arc_file.io.read_u32_le();
+        output_file->io.write(arc_file.io.read(output_file_size));
+        file_saver.save(std::move(output_file));
     }
+}
+
+FilesystemTestArchive::FilesystemTestArchive()
+{
+}
+
+bool FilesystemTestArchive::is_recognized_internal(File &arc_file) const
+{
+    return true;
+}
+
+void FilesystemTestArchive::unpack_internal(
+    File &arc_file, FileSaver &file_saver) const
+{
+    auto dir = boost::filesystem::path(arc_file.name).parent_path();
+    for (boost::filesystem::directory_iterator it(dir);
+        it != boost::filesystem::directory_iterator();
+        it++)
+    {
+        std::unique_ptr<File> output_file(new File);
+        output_file->name = it->path().string();
+        file_saver.save(std::move(output_file));
+    }
+}
+
+static std::vector<std::shared_ptr<File>> unpack(File &file, Archive &archive)
+{
+    std::vector<std::shared_ptr<File>> saved_files;
+    FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
+    {
+        saved_file->io.seek(0);
+        saved_files.push_back(saved_file);
+    });
+    archive.unpack(file, file_saver);
+    return saved_files;
 }
 
 TEST_CASE("Simple archive unpacks correctly")
@@ -213,7 +227,7 @@ TEST_CASE("Nested archives unpack correctly")
 TEST_CASE("Files get correct location")
 {
     FilesystemTestArchive test_archive;
-    File dummy_file("./tests/formats/transformer_test.cc", FileIOMode::Read);
+    File dummy_file("./tests/formats/transformer_test.cc", io::FileMode::Read);
 
     auto saved_files = unpack(dummy_file, test_archive);
     REQUIRE(saved_files.size() > 1);

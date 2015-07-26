@@ -14,7 +14,9 @@
 #include "util/itos.h"
 #include "util/zlib.h"
 #include "util/encoding.h"
-using namespace Formats::TanukiSoft;
+
+using namespace au;
+using namespace au::fmt::tanuki_soft;
 
 namespace
 {
@@ -69,7 +71,7 @@ static std::string decrypt(
     return output;
 }
 
-static std::vector<std::unique_ptr<TableDirectory>> read_table(IO &arc_io)
+static std::vector<std::unique_ptr<TableDirectory>> read_table(io::IO &arc_io)
 {
     size_t entry_count = arc_io.read_u32_le();
     size_t directory_count = arc_io.read_u32_le();
@@ -77,8 +79,8 @@ static std::vector<std::unique_ptr<TableDirectory>> read_table(IO &arc_io)
     arc_io.skip(4);
     size_t file_data_start = arc_io.tell() + table_size;
 
-    BufferedIO table_io(
-        zlib_inflate(
+    io::BufferedIO table_io(
+        util::zlib_inflate(
             decrypt(arc_io.read(table_size), table_size, "TLibArchiveData")));
 
     std::vector<std::unique_ptr<TableDirectory>> directories;
@@ -120,13 +122,13 @@ static std::vector<std::unique_ptr<TableDirectory>> read_table(IO &arc_io)
     return directories;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     arc_io.seek(entry.offset);
     std::string data = arc_io.read(entry.size_compressed);
     if (entry.compressed)
-        data = zlib_inflate(data);
+        data = util::zlib_inflate(data);
 
     if (!entry.compressed)
     {
@@ -148,7 +150,7 @@ static std::unique_ptr<File> read_file(IO &arc_io, TableEntry &entry)
     }
 
     file->io.write(data);
-    file->name = itos(entry.index);
+    file->name = util::itos(entry.index);
     file->guess_extension();
     return file;
 }

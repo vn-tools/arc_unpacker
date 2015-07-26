@@ -1,7 +1,10 @@
 #include "formats/touhou/pbg3_archive.h"
 #include "test_support/archive_support.h"
 #include "test_support/catch.hpp"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt;
+using namespace au::fmt::touhou;
 
 TEST_CASE("Unpacking PBG3 archives works")
 {
@@ -14,7 +17,8 @@ TEST_CASE("Unpacking PBG3 archives works")
     std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
     std::unique_ptr<Archive> archive(new Pbg3Archive);
-    compare_files(
+    au::tests::compare_files(
         expected_files,
-        unpack_to_memory("tests/formats/touhou/files/test.pbg3", *archive));
+        au::tests::unpack_to_memory(
+            "tests/formats/touhou/files/test.pbg3", *archive));
 }

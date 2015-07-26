@@ -17,7 +17,9 @@
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/zlib.h"
-using namespace Formats::Kirikiri;
+
+using namespace au;
+using namespace au::fmt::kirikiri;
 
 static const std::string xp3_magic("XP3\r\n\x20\x0a\x1a\x8b\x67\x01", 11);
 static const std::string file_magic("File", 4);
@@ -25,7 +27,7 @@ static const std::string adlr_magic("adlr", 4);
 static const std::string info_magic("info", 4);
 static const std::string segm_magic("segm", 4);
 
-static int detect_version(IO &arc_io)
+static int detect_version(io::IO &arc_io)
 {
     int version = 1;
     size_t old_pos = arc_io.tell();
@@ -36,7 +38,7 @@ static int detect_version(IO &arc_io)
     return version;
 }
 
-static u64 get_table_offset(IO &arc_io, int version)
+static u64 get_table_offset(io::IO &arc_io, int version)
 {
     if (version == 1)
         return arc_io.read_u64_le();
@@ -52,7 +54,7 @@ static u64 get_table_offset(IO &arc_io, int version)
     return arc_io.read_u64_le();
 }
 
-static std::unique_ptr<IO> read_raw_table(IO &arc_io)
+static std::unique_ptr<io::IO> read_raw_table(io::IO &arc_io)
 {
     bool use_zlib = arc_io.read_u8() != 0;
     const u64 size_compressed = arc_io.read_u64_le();
@@ -63,13 +65,13 @@ static std::unique_ptr<IO> read_raw_table(IO &arc_io)
     std::string compressed = arc_io.read(size_compressed);
     if (use_zlib)
     {
-        std::string uncompressed = zlib_inflate(compressed);
-        return std::unique_ptr<IO>(new BufferedIO(uncompressed));
+        std::string uncompressed = util::zlib_inflate(compressed);
+        return std::unique_ptr<io::IO>(new io::BufferedIO(uncompressed));
     }
-    return std::unique_ptr<IO>(new BufferedIO(compressed));
+    return std::unique_ptr<io::IO>(new io::BufferedIO(compressed));
 }
 
-static void read_info_chunk(IO &table_io, File &target_file)
+static void read_info_chunk(io::IO &table_io, File &target_file)
 {
     if (table_io.read(info_magic.size()) != info_magic)
         throw std::runtime_error("Expected INFO chunk");
@@ -81,12 +83,12 @@ static void read_info_chunk(IO &table_io, File &target_file)
 
     size_t name_length = table_io.read_u16_le();
     std::string name_utf16 = table_io.read(name_length * 2);
-    target_file.name = convert_encoding(name_utf16, "utf-16le", "utf-8");
+    target_file.name = util::convert_encoding(name_utf16, "utf-16le", "utf-8");
     if (info_chunk_size != name_length * 2 + 22)
         throw std::runtime_error("Unexpected INFO chunk size");
 }
 
-static bool read_segm_chunk(IO &table_io, IO &arc_io, File &target_file)
+static bool read_segm_chunk(io::IO &table_io, io::IO &arc_io, File &target_file)
 {
     if (table_io.read(segm_magic.size()) != segm_magic)
         throw std::runtime_error("Expected SEGM chunk");
@@ -107,7 +109,7 @@ static bool read_segm_chunk(IO &table_io, IO &arc_io, File &target_file)
         if (use_zlib)
         {
             std::string data_compressed = arc_io.read(data_size_compressed);
-            std::string data_uncompressed = zlib_inflate(data_compressed);
+            std::string data_uncompressed = util::zlib_inflate(data_compressed);
             target_file.io.write(data_uncompressed);
         }
         else
@@ -119,7 +121,7 @@ static bool read_segm_chunk(IO &table_io, IO &arc_io, File &target_file)
     return true;
 }
 
-static u32 read_adlr_chunk(IO &table_io, u32 *encryption_key)
+static u32 read_adlr_chunk(io::IO &table_io, u32 *encryption_key)
 {
     if (table_io.read(adlr_magic.size()) != adlr_magic)
         throw std::runtime_error("Expected ADLR chunk");
@@ -133,7 +135,7 @@ static u32 read_adlr_chunk(IO &table_io, u32 *encryption_key)
 }
 
 static std::unique_ptr<File> read_file(
-    IO &arc_io, IO &table_io, Xp3Filter *filter)
+    io::IO &arc_io, io::IO &table_io, Xp3Filter *filter)
 {
     std::unique_ptr<File> target_file(new File());
 
@@ -201,7 +203,7 @@ void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     int version = detect_version(arc_file.io);
     u64 table_offset = get_table_offset(arc_file.io, version);
     arc_file.io.seek((u32)table_offset);
-    std::unique_ptr<IO> table_io = read_raw_table(arc_file.io);
+    std::unique_ptr<io::IO> table_io = read_raw_table(arc_file.io);
 
     if (p->filter)
         p->filter->set_arc_path(arc_file.name);

@@ -14,7 +14,9 @@
 #include "util/colors.h"
 #include "util/image.h"
 #include "util/itos.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt::touhou;
 
 struct Pak2ImageConverter::Priv
 {
@@ -50,9 +52,9 @@ std::unique_ptr<File> Pak2ImageConverter::decode_internal(File &file) const
     auto palette_number = file.io.read_u32_le();
     size_t target_size = image_width * image_height * 4;
 
-    BufferedIO target_io;
+    io::BufferedIO target_io;
     target_io.reserve(target_size);
-    BufferedIO source_io;
+    io::BufferedIO source_io;
     source_io.write_from_io(file.io);
     source_io.seek(0);
 
@@ -61,7 +63,7 @@ std::unique_ptr<File> Pak2ImageConverter::decode_internal(File &file) const
     {
         auto path = boost::filesystem::path(file.name);
         path.remove_filename();
-        path /= "palette" + itos(palette_number, 3) + ".pal";
+        path /= "palette" + util::itos(palette_number, 3) + ".pal";
 
         auto it = p->palette_map.find(path.generic_string());
         palette = it != p->palette_map.end()
@@ -96,10 +98,10 @@ std::unique_ptr<File> Pak2ImageConverter::decode_internal(File &file) const
     }
 
     target_io.seek(0);
-    auto image = Image::from_pixels(
+    auto image = util::Image::from_pixels(
         image_width,
         image_height,
         target_io.read(target_io.size()),
-        PixelFormat::BGRA);
+        util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }

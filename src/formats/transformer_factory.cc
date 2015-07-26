@@ -57,7 +57,8 @@
 #include "formats/yukascript/ykc_archive.h"
 #include "formats/yukascript/ykg_converter.h"
 
-using namespace Formats;
+using namespace au;
+using namespace au::fmt;
 
 namespace
 {
@@ -78,60 +79,58 @@ struct TransformerFactory::Priv
 TransformerFactory::TransformerFactory() : p(new Priv)
 {
     #ifdef HAVE_OPENSSL_RSA_H
-    p->add("tac", []() { return new TanukiSoft::TacArchive(); });
+    p->add("tac",       []() { return new tanuki_soft::TacArchive(); });
+    p->add("tfpk",      []() { return new touhou::TfpkArchive();     });
     #endif
-    p->add("mgr", []() { return new Propeller::MgrArchive(); });
-    p->add("mpk", []() { return new Propeller::MpkArchive(); });
-    p->add("fvp", []() { return new Fvp::BinArchive(); });
-    p->add("gml", []() { return new Glib::GmlArchive(); });
-    p->add("g2", []() { return new Glib::Glib2Archive(); });
-    p->add("th-pak1", []() { return new Touhou::Pak1Archive(); });
-    p->add("th-pak2", []() { return new Touhou::Pak2Archive(); });
-    #ifdef HAVE_OPENSSL_RSA_H
-    p->add("tfpk", []() { return new Touhou::TfpkArchive(); });
-    #endif
-    p->add("tha1", []() { return new Touhou::Tha1Archive(); });
-    p->add("pbgz", []() { return new Touhou::PbgzArchive(); });
-    p->add("lwg", []() { return new LiarSoft::LwgArchive(); });
-    p->add("xfl", []() { return new LiarSoft::XflArchive(); });
-    p->add("pbg3", []() { return new Touhou::Pbg3Archive(); });
-    p->add("pbg4", []() { return new Touhou::Pbg4Archive(); });
-    p->add("pack", []() { return new QLiE::PackArchive(); });
-    p->add("pac", []() { return new MinatoSoft::PacArchive(); });
-    p->add("exe", []() { return new Microsoft::ExeArchive(); });
-    p->add("ykc", []() { return new YukaScript::YkcArchive(); });
-    p->add("rgssad", []() { return new RpgMaker::RgssadArchive(); });
-    p->add("fjsys", []() { return new NSystem::FjsysArchive(); });
-    p->add("arc", []() { return new Bgi::ArcArchive(); });
-    p->add("npa", []() { return new Nitroplus::NpaArchive(); });
-    p->add("xp3", []() { return new Kirikiri::Xp3Archive(); });
-    p->add("rpa", []() { return new Renpy::RpaArchive(); });
-    p->add("p", []() { return new FrenchBread::PArchive(); });
-    p->add("npa_sg", []() { return new Nitroplus::NpaSgArchive(); });
-    p->add("pak", []() { return new Nitroplus::PakArchive(); });
-    p->add("mbl", []() { return new Ivory::MblArchive(); });
-    p->add("nsa", []() { return new NScripter::NsaArchive(); });
-    p->add("sar", []() { return new NScripter::SarArchive(); });
-    p->add("anm", []() { return new Touhou::AnmArchive(); });
-    p->add("dat-whale", []() { return new Whale::DatArchive(); });
+    p->add("mgr",       []() { return new propeller::MgrArchive();   });
+    p->add("mpk",       []() { return new propeller::MpkArchive();   });
+    p->add("fvp",       []() { return new fvp::BinArchive();         });
+    p->add("gml",       []() { return new glib::GmlArchive();        });
+    p->add("g2",        []() { return new glib::Glib2Archive();      });
+    p->add("th-pak1",   []() { return new touhou::Pak1Archive();     });
+    p->add("th-pak2",   []() { return new touhou::Pak2Archive();     });
+    p->add("tha1",      []() { return new touhou::Tha1Archive();     });
+    p->add("pbgz",      []() { return new touhou::PbgzArchive();     });
+    p->add("lwg",       []() { return new liarsoft::LwgArchive();    });
+    p->add("xfl",       []() { return new liarsoft::XflArchive();    });
+    p->add("pbg3",      []() { return new touhou::Pbg3Archive();     });
+    p->add("pbg4",      []() { return new touhou::Pbg4Archive();     });
+    p->add("pack",      []() { return new qlie::PackArchive();       });
+    p->add("pac",       []() { return new minato_soft::PacArchive(); });
+    p->add("exe",       []() { return new microsoft::ExeArchive();   });
+    p->add("ykc",       []() { return new yukascript::YkcArchive();  });
+    p->add("rgssad",    []() { return new rpgmaker::RgssadArchive(); });
+    p->add("fjsys",     []() { return new nsystem::FjsysArchive();   });
+    p->add("arc",       []() { return new bgi::ArcArchive();         });
+    p->add("npa",       []() { return new nitroplus::NpaArchive();   });
+    p->add("xp3",       []() { return new kirikiri::Xp3Archive();    });
+    p->add("rpa",       []() { return new renpy::RpaArchive();       });
+    p->add("p",         []() { return new french_bread::PArchive();  });
+    p->add("npa_sg",    []() { return new nitroplus::NpaSgArchive(); });
+    p->add("pak",       []() { return new nitroplus::PakArchive();   });
+    p->add("mbl",       []() { return new ivory::MblArchive();       });
+    p->add("nsa",       []() { return new nscripter::NsaArchive();   });
+    p->add("sar",       []() { return new nscripter::SarArchive();   });
+    p->add("anm",       []() { return new touhou::AnmArchive();      });
+    p->add("dat-whale", []() { return new whale::DatArchive();       });
 
-    p->add("nvsg", []() { return new Fvp::NvsgConverter(); });
-    p->add("dds", []() { return new Microsoft::DdsConverter(); });
-    p->add("pgx", []() { return new Glib::PgxConverter(); });
-    p->add("wcg", []() { return new LiarSoft::WcgConverter(); });
-    p->add("dpng", []() { return new QLiE::DpngConverter(); });
-    p->add("bgi-sound", []() { return new Bgi::SoundConverter(); });
-    p->add("ex3", []() { return new FrenchBread::Ex3Converter(); });
-    p->add("tlg", []() { return new Kirikiri::TlgConverter(); });
-    p->add("ykg", []() { return new YukaScript::YkgConverter(); });
-    p->add("cbg", []() { return new Bgi::CbgConverter(); });
-    p->add("xyz", []() { return new RpgMaker::XyzConverter(); });
-    p->add("mgd", []() { return new NSystem::MgdConverter(); });
-    p->add("g00", []() { return new Key::G00Converter(); });
-    p->add("sotes", []() { return new Lizsoft::SotesConverter(); });
-    p->add("nwa", []() { return new Key::NwaConverter(); });
-    p->add("prs", []() { return new Ivory::PrsConverter(); });
-    p->add("spb", []() { return new NScripter::SpbConverter(); });
+    p->add("nvsg",      []() { return new fvp::NvsgConverter();         });
+    p->add("dds",       []() { return new microsoft::DdsConverter();    });
+    p->add("pgx",       []() { return new glib::PgxConverter();         });
+    p->add("wcg",       []() { return new liarsoft::WcgConverter();     });
+    p->add("dpng",      []() { return new qlie::DpngConverter();        });
+    p->add("bgi-sound", []() { return new bgi::SoundConverter();        });
+    p->add("ex3",       []() { return new french_bread::Ex3Converter(); });
+    p->add("tlg",       []() { return new kirikiri::TlgConverter();     });
+    p->add("ykg",       []() { return new yukascript::YkgConverter();   });
+    p->add("cbg",       []() { return new bgi::CbgConverter();          });
+    p->add("xyz",       []() { return new rpgmaker::XyzConverter();     });
+    p->add("mgd",       []() { return new nsystem::MgdConverter();      });
+    p->add("g00",       []() { return new key::G00Converter();          });
+    p->add("sotes",     []() { return new lizsoft::SotesConverter();    });
+    p->add("nwa",       []() { return new key::NwaConverter();          });
+    p->add("prs",       []() { return new ivory::PrsConverter();        });
+    p->add("spb",       []() { return new nscripter::SpbConverter();    });
 }
 
 TransformerFactory::~TransformerFactory()

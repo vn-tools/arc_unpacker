@@ -1,7 +1,9 @@
 #include <stdexcept>
 #include <boost/filesystem.hpp>
 #include "formats/kirikiri/xp3_filters/cxdec.h"
-using namespace Formats::Kirikiri::Xp3Filters;
+
+using namespace au;
+using namespace au::fmt::kirikiri::xp3_filters;
 
 static const size_t encryption_block_size = 4096;
 static const std::string encryption_block_magic(
@@ -410,7 +412,11 @@ u32 KeyDeriver::run_stage_strategy_1(size_t stage)
 }
 
 static void decrypt_chunk(
-    KeyDeriver &key_deriver, IO &io, u32 hash, size_t base_offset, size_t size)
+    KeyDeriver &key_deriver,
+    io::IO &io,
+    u32 hash,
+    size_t base_offset,
+    size_t size)
 {
     u32 seed = hash & 0x7f;
     hash >>= 7;
@@ -488,7 +494,7 @@ void Cxdec::set_arc_path(const std::string &path)
         if (fn.find(".tpm") != fn.length() - 4)
             continue;
 
-        FileIO tmp_io(it->path(), FileIOMode::Read);
+        io::FileIO tmp_io(it->path(), io::FileMode::Read);
         std::string content = tmp_io.read_until_end();
         auto pos = content.find(encryption_block_magic);
         if (pos == std::string::npos)

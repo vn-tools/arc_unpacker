@@ -12,7 +12,9 @@
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/zlib.h"
-using namespace Formats::MinatoSoft;
+
+using namespace au;
+using namespace au::fmt::minato_soft;
 
 namespace
 {
@@ -29,7 +31,7 @@ namespace
 
 static const std::string magic("PAC\x00", 4);
 
-static int init_huffman(BitReader &bit_reader, u16 nodes[2][512], int &pos)
+static int init_huffman(io::BitReader &bit_reader, u16 nodes[2][512], int &pos)
 {
     if (bit_reader.get(1))
     {
@@ -50,7 +52,8 @@ static void decompress_table(
     const char *input, int input_size, char *output, int output_size)
 {
     char *output_guardian = output + output_size;
-    std::unique_ptr<BitReader> bit_reader(new BitReader(input, input_size));
+    std::unique_ptr<io::BitReader> bit_reader(
+        new io::BitReader(input, input_size));
 
     u16 nodes[2][512];
     int pos = 256;
@@ -66,7 +69,7 @@ static void decompress_table(
     }
 }
 
-static Table read_table(IO &arc_io, size_t file_count)
+static Table read_table(io::IO &arc_io, size_t file_count)
 {
     arc_io.seek(arc_io.size() - 4);
     size_t compressed_size = arc_io.read_u32_le();
@@ -88,7 +91,7 @@ static Table read_table(IO &arc_io, size_t file_count)
         uncompressed.get(),
         uncompressed_size);
 
-    BufferedIO table_io(uncompressed.get(), uncompressed_size);
+    io::BufferedIO table_io(uncompressed.get(), uncompressed_size);
     table_io.seek(0);
 
     Table table;
@@ -106,7 +109,7 @@ static Table read_table(IO &arc_io, size_t file_count)
     return table;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     arc_io.seek(entry.offset);
@@ -117,10 +120,10 @@ static std::unique_ptr<File> read_file(IO &arc_io, TableEntry &entry)
     else
     {
         std::string data = arc_io.read(entry.size_compressed);
-        data = zlib_inflate(data);
+        data = util::zlib_inflate(data);
         file->io.write(data);
     }
-    file->name = sjis_to_utf8(entry.name);
+    file->name = util::sjis_to_utf8(entry.name);
     return file;
 }
 

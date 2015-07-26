@@ -11,7 +11,9 @@
 #include "formats/glib/glib2_archive.h"
 #include "formats/glib/pgx_converter.h"
 #include "io/buffered_io.h"
-using namespace Formats::Glib;
+
+using namespace au;
+using namespace au::fmt::glib;
 
 namespace
 {
@@ -222,14 +224,14 @@ static void decode(u32 decoder, char *buffer, size_t size)
     }
 }
 
-static std::unique_ptr<Header> read_header(IO &arc_io)
+static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {
     std::unique_ptr<Header> header(new Header);
     std::unique_ptr<char[]> buffer(new char[header_size]);
     arc_io.read(buffer.get(), header_size);
     decode(table_decoder, buffer.get(), header_size);
 
-    BufferedIO header_io(buffer.get(), header_size);
+    io::BufferedIO header_io(buffer.get(), header_size);
     if (header_io.read(magic_21.size()) != magic_21)
     {
         header_io.seek(0);
@@ -248,7 +250,7 @@ static std::unique_ptr<Header> read_header(IO &arc_io)
 }
 
 static std::unique_ptr<TableEntry> read_table_entry(
-    IO &table_io,
+    io::IO &table_io,
     Table &table,
     size_t file_names_start,
     size_t file_headers_start)
@@ -301,7 +303,7 @@ static std::unique_ptr<TableEntry> read_table_entry(
     return entry;
 }
 
-static Table read_table(IO &arc_io, Header &header)
+static Table read_table(io::IO &arc_io, Header &header)
 {
     arc_io.seek(header.table_offset);
     std::unique_ptr<char[]> buffer(new char[header.table_size]);
@@ -310,7 +312,7 @@ static Table read_table(IO &arc_io, Header &header)
         decode(header.keys[3 - i], buffer.get(), header.table_size);
 
     const std::string table_magic("CDBD");
-    BufferedIO table_io(buffer.get(), header.table_size);
+    io::BufferedIO table_io(buffer.get(), header.table_size);
     if (table_io.read(table_magic.size()) != table_magic)
         throw std::runtime_error("Corrupted file table");
 
@@ -330,7 +332,7 @@ static Table read_table(IO &arc_io, Header &header)
     return table;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     file->name = entry.name;
@@ -371,7 +373,7 @@ Glib2Archive::~Glib2Archive()
 
 bool Glib2Archive::is_recognized_internal(File &arc_file) const
 {
-    BufferedIO buffer(arc_file.io, header_size);
+    io::BufferedIO buffer(arc_file.io, header_size);
     decode(table_decoder, buffer.buffer(), header_size);
 
     buffer.seek(0);

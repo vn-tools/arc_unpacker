@@ -1,24 +1,24 @@
-#ifndef FORMATS_NSCRIPTER_NSA_ARCHIVE_H
-#define FORMATS_NSCRIPTER_NSA_ARCHIVE_H
+#ifndef AU_FMT_NSCRIPTER_NSA_ARCHIVE_H
+#define AU_FMT_NSCRIPTER_NSA_ARCHIVE_H
 #include "formats/archive.h"
 
-namespace Formats
-{
-    namespace NScripter
+namespace au {
+namespace fmt {
+namespace nscripter {
+
+    class NsaArchive final : public Archive
     {
-        class NsaArchive final : public Archive
-        {
-        public:
-            NsaArchive();
-            ~NsaArchive();
-        protected:
-            bool is_recognized_internal(File &) const override;
-            void unpack_internal(File &, FileSaver &) const override;
-        private:
-            struct Priv;
-            std::unique_ptr<Priv> p;
-        };
-    }
-}
+    public:
+        NsaArchive();
+        ~NsaArchive();
+    protected:
+        bool is_recognized_internal(File &) const override;
+        void unpack_internal(File &, FileSaver &) const override;
+    private:
+        struct Priv;
+        std::unique_ptr<Priv> p;
+    };
+
+} } }
 
 #endif

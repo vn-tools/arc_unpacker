@@ -1,11 +1,14 @@
-#include "formats/nitroplus/npa_filters/chaos_head_filter.h"
+#include "formats/nitroplus/npa_filters/chaos_head.h"
+
+using namespace au::fmt::nitroplus;
+using namespace au::fmt::nitroplus::npa_filters;
 
 static u32 chaos_head_file_name_filter(u32 key1, u32 key2)
 {
     return key1 * key2;
 }
 
-void Formats::Nitroplus::NpaFilters::chaos_head_filter_init(Filter &filter)
+void au::fmt::nitroplus::npa_filters::chaos_head_filter_init(NpaFilter &filter)
 {
     #ifdef VISUAL_STUDIO_2015_CAME_OUT
         filter.permutation =

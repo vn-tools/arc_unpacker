@@ -1,5 +1,5 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef AU_TYPES_H
+#define AU_TYPES_H
 #include <cstdint>
 #include <cstddef>
 #include <string>

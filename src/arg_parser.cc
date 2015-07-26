@@ -1,6 +1,8 @@
 #include <iostream>
 #include "arg_parser.h"
 
+using namespace au;
+
 static bool is_alphanumeric(std::string string)
 {
     for (size_t i = 0; i < string.length(); i++)

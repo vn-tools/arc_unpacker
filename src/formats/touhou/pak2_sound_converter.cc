@@ -10,7 +10,9 @@
 
 #include "formats/touhou/pak2_sound_converter.h"
 #include "util/sound.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt::touhou;
 
 bool Pak2SoundConverter::is_recognized_internal(File &file) const
 {
@@ -28,7 +30,7 @@ std::unique_ptr<File> Pak2SoundConverter::decode_internal(File &file) const
     file.io.skip(2);
     size_t size = file.io.read_u32_le();
 
-    auto sound = Sound::from_samples(
+    auto sound = util::Sound::from_samples(
         channel_count,
         bits_per_sample / 8,
         sample_rate,

@@ -13,7 +13,9 @@
 #include "util/image.h"
 #include "util/itos.h"
 #include "util/zlib.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt::touhou;
 
 static const std::string magic("TFBM\x00", 5);
 
@@ -52,9 +54,9 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
     auto source_size = file.io.read_u32_le();
     size_t target_size = image_width * image_height * 4;
 
-    BufferedIO target_io;
+    io::BufferedIO target_io;
     target_io.reserve(target_size);
-    BufferedIO source_io(zlib_inflate(file.io.read_until_end()));
+    io::BufferedIO source_io(util::zlib_inflate(file.io.read_until_end()));
 
     Palette palette;
     if (bit_depth == 8)
@@ -62,7 +64,7 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
         u32 palette_number = 0;
         auto path = boost::filesystem::path(file.name);
         path.remove_filename();
-        path /= "palette" + itos(palette_number, 3) + ".bmp";
+        path /= "palette" + util::itos(palette_number, 3) + ".bmp";
 
         auto it = p->palette_map.find(path.generic_string());
         palette = it != p->palette_map.end()
@@ -84,7 +86,7 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
                     break;
 
                 case 16:
-                    rgba = rgb565(source_io.read_u16_le());
+                    rgba = util::color::rgb565(source_io.read_u16_le());
                     break;
 
                 case 8:
@@ -93,7 +95,7 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
 
                 default:
                     throw std::runtime_error("Unsupported channel count "
-                        + itos(bit_depth));
+                        + util::itos(bit_depth));
             }
 
             if (x < image_width)
@@ -102,10 +104,10 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
     }
 
     target_io.seek(0);
-    auto image = Image::from_pixels(
+    auto image = util::Image::from_pixels(
         image_width,
         image_height,
         target_io.read(target_io.size()),
-        PixelFormat::BGRA);
+        util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }

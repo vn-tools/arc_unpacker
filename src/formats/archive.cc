@@ -1,5 +1,8 @@
 #include "formats/archive.h"
 
+using namespace au;
+using namespace au::fmt;
+
 void Archive::unpack(File &file, FileSaver &file_saver) const
 {
     if (!is_recognized(file))

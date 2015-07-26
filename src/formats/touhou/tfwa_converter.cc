@@ -9,7 +9,9 @@
 
 #include "formats/touhou/tfwa_converter.h"
 #include "util/sound.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt::touhou;
 
 static const std::string magic("TFWA\x00", 5);
 
@@ -31,7 +33,7 @@ std::unique_ptr<File> TfwaConverter::decode_internal(File &file) const
     file.io.skip(2);
     size_t size = file.io.read_u32_le();
 
-    auto sound = Sound::from_samples(
+    auto sound = util::Sound::from_samples(
         channel_count,
         bits_per_sample / 8,
         sample_rate,

@@ -1,6 +1,8 @@
 #include <stdexcept>
 #include "io/bit_reader.h"
 
+using namespace au::io;
+
 namespace
 {
     class Reader

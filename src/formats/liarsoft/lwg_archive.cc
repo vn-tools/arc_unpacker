@@ -12,7 +12,9 @@
 #include "formats/liarsoft/lwg_archive.h"
 #include "formats/liarsoft/wcg_converter.h"
 #include "util/encoding.h"
-using namespace Formats::LiarSoft;
+
+using namespace au;
+using namespace au::fmt::liarsoft;
 
 namespace
 {
@@ -28,7 +30,7 @@ namespace
 
 static const std::string magic("LG\x01\x00", 4);
 
-static Table read_table(IO &arc_io)
+static Table read_table(io::IO &arc_io)
 {
     size_t file_count = arc_io.read_u32_le();
     arc_io.skip(4);
@@ -43,14 +45,14 @@ static Table read_table(IO &arc_io)
         arc_io.skip(9);
         entry->offset = file_start + arc_io.read_u32_le();
         entry->size = arc_io.read_u32_le();
-        entry->name = sjis_to_utf8(arc_io.read(arc_io.read_u8()));
+        entry->name = util::sjis_to_utf8(arc_io.read(arc_io.read_u8()));
         table.push_back(std::move(entry));
     }
     size_t file_data_size = arc_io.read_u32_le();
     return table;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     file->name = entry.name;

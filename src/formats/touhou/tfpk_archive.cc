@@ -26,9 +26,10 @@
 #include "io/buffered_io.h"
 #include "util/colors.h"
 #include "util/encoding.h"
-#include "util/itos.h"
 #include "util/zlib.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt::touhou;
 
 namespace
 {
@@ -41,15 +42,15 @@ namespace
     class RsaReader
     {
     public:
-        RsaReader(IO &io);
+        RsaReader(io::IO &io);
         ~RsaReader();
-        std::unique_ptr<BufferedIO> read_block();
+        std::unique_ptr<io::BufferedIO> read_block();
         size_t tell() const;
     private:
-        std::unique_ptr<BufferedIO> decrypt(std::basic_string<u8> input);
+        std::unique_ptr<io::BufferedIO> decrypt(std::basic_string<u8> input);
         RSA *create_public_key(const RsaKey &);
         RSA *public_key;
-        IO &io;
+        io::IO &io;
     };
 
     enum class TfpkVersion : u8
@@ -126,7 +127,7 @@ static const std::vector<RsaKey> rsa_keys({
     },
 });
 
-RsaReader::RsaReader(IO &io) : io(io)
+RsaReader::RsaReader(io::IO &io) : io(io)
 {
     for (auto &rsa_key : rsa_keys)
     {
@@ -169,7 +170,7 @@ RSA *RsaReader::create_public_key(const RsaKey &rsa_key)
     return rsa;
 }
 
-std::unique_ptr<BufferedIO> RsaReader::decrypt(std::basic_string<u8> input)
+std::unique_ptr<io::BufferedIO> RsaReader::decrypt(std::basic_string<u8> input)
 {
     size_t output_size = RSA_size(public_key);
     std::unique_ptr<u8[]> output(new u8[output_size]);
@@ -188,12 +189,12 @@ std::unique_ptr<BufferedIO> RsaReader::decrypt(std::basic_string<u8> input)
         throw std::runtime_error(std::string(err.get()));
     }
 
-    return std::unique_ptr<BufferedIO>(
-        new BufferedIO(
+    return std::unique_ptr<io::BufferedIO>(
+        new io::BufferedIO(
             reinterpret_cast<const char*>(output.get()), output_size));
 }
 
-std::unique_ptr<BufferedIO> RsaReader::read_block()
+std::unique_ptr<io::BufferedIO> RsaReader::read_block()
 {
     auto s = io.read(0x40);
     auto su = std::basic_string<u8>(s.begin(), s.end());
@@ -229,7 +230,7 @@ static u32 get_file_name_hash(
     TfpkVersion version,
     u32 initial_hash = 0x811C9DC5)
 {
-    std::string name_processed = utf8_to_sjis(
+    std::string name_processed = util::utf8_to_sjis(
         replace_slash_with_backslash(lower_ascii_only(name)));
 
     if (version == TfpkVersion::Th135)
@@ -275,7 +276,7 @@ static std::string get_dir_name(DirEntry &dir_entry, HashLookupMap user_fn_map)
 
 static DirTable read_dir_entries(RsaReader &reader)
 {
-    std::unique_ptr<BufferedIO> tmp_io(reader.read_block());
+    std::unique_ptr<io::BufferedIO> tmp_io(reader.read_block());
     std::vector<std::unique_ptr<DirEntry>> dir_entries;
     size_t dir_count = tmp_io->read_u32_le();
     for (size_t i = 0; i < dir_count; i++)
@@ -297,12 +298,12 @@ static HashLookupMap read_fn_map(
 {
     HashLookupMap fn_map;
 
-    std::unique_ptr<BufferedIO> tmp_io(reader.read_block());
+    std::unique_ptr<io::BufferedIO> tmp_io(reader.read_block());
     size_t table_size_compressed = tmp_io->read_u32_le();
     size_t table_size_original = tmp_io->read_u32_le();
     size_t block_count = tmp_io->read_u32_le();
 
-    tmp_io.reset(new BufferedIO);
+    tmp_io.reset(new io::BufferedIO);
     for (size_t i = 0; i < block_count; i++)
         tmp_io->write_from_io(*reader.read_block());
     if (tmp_io->size() < table_size_compressed)
@@ -310,7 +311,8 @@ static HashLookupMap read_fn_map(
 
     tmp_io->seek(0);
     tmp_io.reset(
-        new BufferedIO(zlib_inflate(tmp_io->read(table_size_compressed))));
+        new io::BufferedIO(
+            util::zlib_inflate(tmp_io->read(table_size_compressed))));
 
     for (auto &dir_entry : dir_entries)
     {
@@ -320,7 +322,7 @@ static HashLookupMap read_fn_map(
 
         for (size_t j = 0; j < dir_entry->file_count; j++)
         {
-            std::string fn = sjis_to_utf8(tmp_io->read_until_zero());
+            std::string fn = util::sjis_to_utf8(tmp_io->read_until_zero());
 
             auto hash = get_file_name_hash(
                 fn, version, dir_entry->initial_hash);
@@ -378,7 +380,7 @@ static Table read_table(
                 : it->second;
 
             b3->seek(0);
-            BufferedIO key_io;
+            io::BufferedIO key_io;
             for (int i = 0; i < 4; i++)
                 key_io.write_u32_le(neg32(b3->read_u32_le()));
 
@@ -396,13 +398,13 @@ static Table read_table(
 }
 
 static std::unique_ptr<File> read_file(
-    IO &arc_io, const TableEntry &entry, TfpkVersion version)
+    io::IO &arc_io, const TableEntry &entry, TfpkVersion version)
 {
     std::unique_ptr<File> file(new File);
     file->name = entry.name;
 
     arc_io.seek(entry.offset);
-    BufferedIO tmp_io(arc_io, entry.size);
+    io::BufferedIO tmp_io(arc_io, entry.size);
     size_t key_size = entry.key.size();
     if (version == TfpkVersion::Th135)
     {
@@ -430,7 +432,7 @@ static std::unique_ptr<File> read_file(
 }
 
 static Palette read_palette_file(
-    IO &arc_io, TableEntry &entry, TfpkVersion version)
+    io::IO &arc_io, TableEntry &entry, TfpkVersion version)
 {
     const std::string pal_magic("TFPA\x00", 5);
     auto pal_file = read_file(arc_io, entry, version);
@@ -438,10 +440,10 @@ static Palette read_palette_file(
     if (pal_file->io.read(pal_magic.size()) != pal_magic)
         throw std::runtime_error("Not a TFPA palette file");
     size_t pal_size = pal_file->io.read_u32_le();
-    BufferedIO pal_io(zlib_inflate(pal_file->io.read(pal_size)));
+    io::BufferedIO pal_io(util::zlib_inflate(pal_file->io.read(pal_size)));
     Palette palette;
     for (size_t i = 0; i < 256; i++)
-        palette[i] = rgba5551(pal_io.read_u16_le());
+        palette[i] = util::color::rgba5551(pal_io.read_u16_le());
     return palette;
 }
 
@@ -464,7 +466,7 @@ static PaletteMap find_all_palettes(
 
         try
         {
-            FileIO sub_arc_io(it->path(), FileIOMode::Read);
+            io::FileIO sub_arc_io(it->path(), io::FileMode::Read);
             if (sub_arc_io.read(magic.size()) != magic)
                 continue;
             sub_arc_io.skip(1);
@@ -491,7 +493,7 @@ struct TfpkArchive::Priv
     TfbmConverter tfbm_converter;
     TfcsConverter tfcs_converter;
     TfwaConverter tfwa_converter;
-    Formats::Microsoft::DdsConverter dds_converter;
+    fmt::microsoft::DdsConverter dds_converter;
     std::set<std::string> fn_set;
 };
 
@@ -510,7 +512,7 @@ void TfpkArchive::parse_cli_options(const ArgParser &arg_parser)
     auto path = arg_parser.get_switch("file-names");
     if (path != "")
     {
-        FileIO io(path, FileIOMode::Read);
+        io::FileIO io(path, io::FileMode::Read);
         std::string line;
         while ((line = io.read_line()) != "")
             p->fn_set.insert(line);

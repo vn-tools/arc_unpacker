@@ -8,11 +8,12 @@
 // - Chaos;Head
 
 #include "formats/nitroplus/npa_archive.h"
-#include "formats/nitroplus/npa_filters/chaos_head_filter.h"
+#include "formats/nitroplus/npa_filters/chaos_head.h"
 #include "util/encoding.h"
 #include "util/zlib.h"
-using namespace Formats::Nitroplus;
-using namespace Formats::Nitroplus::NpaFilters;
+
+using namespace au;
+using namespace au::fmt::nitroplus;
 
 namespace
 {
@@ -48,7 +49,7 @@ namespace
 
 static const std::string magic("NPA\x01\x00\x00\x00", 7);
 
-static std::unique_ptr<Header> read_header(IO &arc_io)
+static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {
     std::unique_ptr<Header> header(new Header);
     header->key1 = arc_io.read_u32_le();
@@ -67,7 +68,7 @@ static std::unique_ptr<Header> read_header(IO &arc_io)
 static void decrypt_file_name(
     std::string &name,
     const Header &header,
-    const Filter &filter,
+    const NpaFilter &filter,
     size_t file_pos)
 {
     u32 tmp = filter.file_name_key(header.key1, header.key2);
@@ -90,7 +91,7 @@ static void decrypt_file_data(
     std::string &data,
     const TableEntry &entry,
     const Header &header,
-    const Filter &filter)
+    const NpaFilter &filter)
 {
     u32 key = filter.data_key;
     for (size_t i = 0; i < entry.name.size(); i++)
@@ -109,9 +110,9 @@ static void decrypt_file_data(
 }
 
 static std::unique_ptr<TableEntry> read_table_entry(
-    IO &arc_io,
+    io::IO &arc_io,
     const Header &header,
-    const Filter &filter,
+    const NpaFilter &filter,
     size_t file_pos)
 {
     std::unique_ptr<TableEntry> entry(new TableEntry);
@@ -135,7 +136,8 @@ static std::unique_ptr<TableEntry> read_table_entry(
     return entry;
 }
 
-static Table read_table(IO &arc_io, const Header &header, const Filter &filter)
+static Table read_table(
+    io::IO &arc_io, const Header &header, const NpaFilter &filter)
 {
     Table table;
     for (size_t i = 0; i < header.total_count; i++)
@@ -148,13 +150,13 @@ static Table read_table(IO &arc_io, const Header &header, const Filter &filter)
 }
 
 static std::unique_ptr<File> read_file(
-    IO &arc_io,
+    io::IO &arc_io,
     const Header &header,
-    const Filter &filter,
+    const NpaFilter &filter,
     const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
-    file->name = sjis_to_utf8(entry.name);
+    file->name = util::sjis_to_utf8(entry.name);
 
     arc_io.seek(entry.offset);
     std::string data = arc_io.read(entry.size_compressed);
@@ -163,7 +165,7 @@ static std::unique_ptr<File> read_file(
         decrypt_file_data(data, entry, header, filter);
 
     if (header.compressed)
-        data = zlib_inflate(data);
+        data = util::zlib_inflate(data);
 
     file->io.write(data);
     return file;
@@ -171,7 +173,7 @@ static std::unique_ptr<File> read_file(
 
 struct NpaArchive::Priv
 {
-    std::unique_ptr<Filter> filter;
+    std::unique_ptr<NpaFilter> filter;
 };
 
 NpaArchive::NpaArchive() : p(new Priv)
@@ -196,15 +198,15 @@ void NpaArchive::add_cli_help(ArgParser &arg_parser) const
 void NpaArchive::parse_cli_options(const ArgParser &arg_parser)
 {
     const std::string plugin = arg_parser.get_switch("plugin").c_str();
-    void (*initializer)(Filter&) = nullptr;
+    void (*initializer)(NpaFilter&) = nullptr;
     if (plugin == "chaos_head")
-        initializer = &chaos_head_filter_init;
+        initializer = &npa_filters::chaos_head_filter_init;
     else
         throw std::runtime_error("Unrecognized plugin: " + plugin);
 
     if (initializer != nullptr)
     {
-        p->filter.reset(new Filter);
+        p->filter.reset(new NpaFilter);
         initializer(*p->filter);
     }
     else

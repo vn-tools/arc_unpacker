@@ -2,7 +2,9 @@
 #include "io/file_io.h"
 #include "test_support/catch.hpp"
 #include "util/zlib.h"
-using namespace Formats::FrenchBread;
+
+using namespace au;
+using namespace au::fmt::french_bread;
 
 TEST_CASE("Decoding EX3 images works")
 {
@@ -12,13 +14,14 @@ TEST_CASE("Decoding EX3 images works")
     const std::string expected_path
         = "tests/formats/french_bread/files/WIN_HISUI&KOHAKU-out.bmpz";
 
-    FileIO input_io(input_path, FileIOMode::Read);
+    io::FileIO input_io(input_path, io::FileMode::Read);
     File file;
     file.io.write_from_io(input_io, input_io.size());
     auto output_file = converter.decode(file);
 
-    FileIO expected_io(expected_path, FileIOMode::Read);
-    const auto expected_data = zlib_inflate(expected_io.read_until_end());
+    io::FileIO expected_io(expected_path, io::FileMode::Read);
+    const auto expected_data = au::util::zlib_inflate(
+        expected_io.read_until_end());
 
     output_file->io.seek(0);
     REQUIRE(expected_data.size() == output_file->io.size());

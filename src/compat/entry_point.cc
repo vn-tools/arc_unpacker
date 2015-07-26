@@ -4,6 +4,8 @@
 #include "compat/entry_point.h"
 #include "util/encoding.h"
 
+using namespace au;
+
 std::vector<std::string> get_arguments(int argc, const char **argv)
 {
     std::vector<std::string> arguments;
@@ -21,7 +23,7 @@ std::vector<std::string> get_arguments(int argc, const wchar_t **argv)
     {
         auto str = std::string(
             reinterpret_cast<const char*>(argv[i]), wcslen(argv[i]) * 2);
-        arguments.push_back(convert_encoding(str, "utf-16le", "utf-8"));
+        arguments.push_back(util::convert_encoding(str, "utf-16le", "utf-8"));
     }
     return arguments;
 }

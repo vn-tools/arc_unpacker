@@ -13,7 +13,9 @@
 #include "formats/glib/gml_decoder.h"
 #include "formats/glib/pgx_converter.h"
 #include "util/image.h"
-using namespace Formats::Glib;
+
+using namespace au;
+using namespace au::fmt::glib;
 
 static const std::string magic("PGX\x00", 4);
 
@@ -34,8 +36,8 @@ std::unique_ptr<File> PgxConverter::decode_internal(File &file) const
     size_t source_size = file.io.read_u32_le();
     size_t target_size = image_width * image_height * 4;
 
-    BufferedIO source_io;
-    BufferedIO target_io;
+    io::BufferedIO source_io;
+    io::BufferedIO target_io;
     file.io.seek(file.io.size() - source_size);
     source_io.write_from_io(file.io, source_size);
     source_io.seek(0);
@@ -57,10 +59,10 @@ std::unique_ptr<File> PgxConverter::decode_internal(File &file) const
 
     target_io.seek(0);
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         image_width,
         image_height,
         target_io.read_until_end(),
-        PixelFormat::BGRA);
+        util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }

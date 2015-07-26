@@ -3,9 +3,11 @@
 #include "io/buffered_io.h"
 #include "test_support/catch.hpp"
 
+using namespace au::io;
+
 TEST_CASE("Reading real files works")
 {
-    FileIO io("tests/files/reimu_transparent.png", FileIOMode::Read);
+    FileIO io("tests/files/reimu_transparent.png", FileMode::Read);
     const std::string png_magic("\x89PNG", 4);
     REQUIRE(io.read(png_magic.size()) == png_magic);
 }
@@ -13,7 +15,7 @@ TEST_CASE("Reading real files works")
 TEST_CASE("Writing to real files works")
 {
     {
-        FileIO io("tests/files/trash.out", FileIOMode::Write);
+        FileIO io("tests/files/trash.out", FileMode::Write);
         io.write_u32_le(1);
         io.seek(0);
         REQUIRE(io.read_u32_le() == 1);

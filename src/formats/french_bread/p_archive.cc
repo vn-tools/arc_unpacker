@@ -9,7 +9,9 @@
 
 #include "formats/french_bread/ex3_converter.h"
 #include "formats/french_bread/p_archive.h"
-using namespace Formats::FrenchBread;
+
+using namespace au;
+using namespace au::fmt::french_bread;
 
 namespace
 {
@@ -25,7 +27,7 @@ namespace
 
 static const u32 encryption_key = 0xE3DF59AC;
 
-static std::string read_file_name(IO &arc_io, size_t file_id)
+static std::string read_file_name(io::IO &arc_io, size_t file_id)
 {
     std::string file_name = arc_io.read(60);
     for (size_t i = 0; i < 60; i++)
@@ -33,7 +35,7 @@ static std::string read_file_name(IO &arc_io, size_t file_id)
     return file_name.substr(0, file_name.find('\0'));
 }
 
-static Table read_table(IO &arc_io)
+static Table read_table(io::IO &arc_io)
 {
     size_t file_count = arc_io.read_u32_le() ^ encryption_key;
     Table table;
@@ -49,7 +51,7 @@ static Table read_table(IO &arc_io)
 }
 
 static std::unique_ptr<File> read_file(
-    IO &arc_io, TableEntry &entry, bool encrypted)
+    io::IO &arc_io, TableEntry &entry, bool encrypted)
 {
     std::unique_ptr<File> file(new File);
     std::unique_ptr<char[]> data(new char[entry.size]);

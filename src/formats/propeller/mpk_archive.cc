@@ -10,7 +10,9 @@
 #include "formats/propeller/mpk_archive.h"
 #include "formats/propeller/mgr_archive.h"
 #include "util/encoding.h"
-using namespace Formats::Propeller;
+
+using namespace au;
+using namespace au::fmt::propeller;
 
 namespace
 {
@@ -24,7 +26,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static Table read_table(IO &arc_io)
+static Table read_table(io::IO &arc_io)
 {
     Table table;
     size_t table_offset = arc_io.read_u32_le();
@@ -50,7 +52,7 @@ static Table read_table(IO &arc_io)
     {
         for (size_t i = 0; i < 32; i++)
             entry->name[i] ^= key8;
-        entry->name = sjis_to_utf8(entry->name);
+        entry->name = util::sjis_to_utf8(entry->name);
         if (entry->name[0] == '\\')
             entry->name = entry->name.substr(1);
         entry->name.erase(entry->name.find('\x00'));
@@ -61,7 +63,7 @@ static Table read_table(IO &arc_io)
     return table;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, const TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     file->name = entry.name;

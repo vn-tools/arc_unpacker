@@ -9,7 +9,9 @@
 
 #include "formats/yukascript/ykc_archive.h"
 #include "formats/yukascript/ykg_converter.h"
-using namespace Formats::YukaScript;
+
+using namespace au;
+using namespace au::fmt::yukascript;
 
 namespace
 {
@@ -25,7 +27,7 @@ namespace
 
 static const std::string magic("YKC001", 6);
 
-static Table read_table(IO &arc_io, size_t table_offset, size_t table_size)
+static Table read_table(io::IO &arc_io, size_t table_offset, size_t table_size)
 {
     Table table;
     size_t file_count = table_size / 20;
@@ -49,8 +51,7 @@ static Table read_table(IO &arc_io, size_t table_offset, size_t table_size)
     return table;
 }
 
-static std::unique_ptr<File> read_file(
-    IO &arc_io, const TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     arc_io.seek(entry.offset);

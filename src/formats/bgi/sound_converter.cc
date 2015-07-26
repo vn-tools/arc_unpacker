@@ -9,7 +9,9 @@
 // - Higurashi No Naku Koro Ni
 
 #include "formats/bgi/sound_converter.h"
-using namespace Formats::Bgi;
+
+using namespace au;
+using namespace au::fmt::bgi;
 
 static const std::string magic("bw  ", 4);
 

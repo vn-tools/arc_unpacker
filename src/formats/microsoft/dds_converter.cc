@@ -13,7 +13,9 @@
 #include "util/colors.h"
 #include "util/endian.h"
 #include "util/image.h"
-using namespace Formats::Microsoft;
+
+using namespace au;
+using namespace au::fmt::microsoft;
 
 namespace
 {
@@ -91,7 +93,7 @@ static const std::string magic_dxt4("DXT4", 4);
 static const std::string magic_dxt5("DXT5", 4);
 static const std::string magic_dx10("DX10", 4);
 
-static void fill_pixel_format(IO &io, DdsPixelFormat &pixel_format)
+static void fill_pixel_format(io::IO &io, DdsPixelFormat &pixel_format)
 {
     pixel_format.size = io.read_u32_le();
     pixel_format.flags = static_cast<DdsPixelFormatFlags>(io.read_u32_le());
@@ -103,7 +105,7 @@ static void fill_pixel_format(IO &io, DdsPixelFormat &pixel_format)
     pixel_format.a_bit_mask = io.read_u32_le();
 }
 
-static std::unique_ptr<DdsHeader> read_header(IO &io)
+static std::unique_ptr<DdsHeader> read_header(io::IO &io)
 {
     std::unique_ptr<DdsHeader> header(new DdsHeader);
     header->size = io.read_u32_le();
@@ -121,7 +123,7 @@ static std::unique_ptr<DdsHeader> read_header(IO &io)
     return header;
 }
 
-static std::unique_ptr<DdsHeaderDx10> read_header_dx10(IO &io)
+static std::unique_ptr<DdsHeaderDx10> read_header_dx10(io::IO &io)
 {
     std::unique_ptr<DdsHeaderDx10> header(new DdsHeaderDx10);
     header->dxgi_format = io.read_u32_le();
@@ -133,165 +135,165 @@ static std::unique_ptr<DdsHeaderDx10> read_header_dx10(IO &io)
     return header;
 }
 
-namespace
+static std::unique_ptr<io::BufferedIO> create_io(size_t width, size_t height)
 {
-    std::unique_ptr<BufferedIO> create_io(size_t width, size_t height)
+    std::unique_ptr<io::BufferedIO> output_io(new io::BufferedIO);
+    output_io->reserve(((width + 3) / 4) * ((height + 3) / 4) * 64);
+    return output_io;
+}
+
+static void decode_dxt1_block(io::IO &io, u32 output_colors[4][4])
+{
+    u32 colors[4];
+    colors[0] = io.read_u16_le();
+    colors[1] = io.read_u16_le();
+    bool transparent = colors[0] < colors[1];
+    colors[0] = util::color::rgb565(colors[0]);
+    colors[1] = util::color::rgb565(colors[1]);
+
+    u8 rgba[4][4];
+    for (size_t i = 0; i < 2; i++)
+        util::color::split_channels(colors[i], rgba[i]);
+
+    for (size_t i = 0; i < 4; i++)
     {
-        std::unique_ptr<BufferedIO> output_io(new BufferedIO);
-        output_io->reserve(((width + 3) / 4) * ((height + 3) / 4) * 64);
-        return output_io;
-    }
-
-    void decode_dxt1_block(IO &io, u32 output_colors[4][4])
-    {
-        u32 colors[4];
-        colors[0] = io.read_u16_le();
-        colors[1] = io.read_u16_le();
-        bool transparent = colors[0] < colors[1];
-        colors[0] = rgb565(colors[0]);
-        colors[1] = rgb565(colors[1]);
-
-        u8 rgba[4][4];
-        for (size_t i = 0; i < 2; i++)
-            split_channels(colors[i], rgba[i]);
-
-        for (size_t i = 0; i < 4; i++)
+        if (!transparent)
         {
-            if (!transparent)
-            {
-                rgba[2][i] = ((rgba[0][i] << 1) + rgba[1][i]) / 3;
-                rgba[3][i] = ((rgba[1][i] << 1) + rgba[0][i]) / 3;
-            }
-            else
-            {
-                rgba[2][i] = (rgba[0][i] + rgba[1][i]) >> 1;
-                rgba[3][i] = 0;
-            }
-        }
-
-        for (size_t i = 2; i < 4; i++)
-            merge_channels(rgba[i], colors[i]);
-
-        u32 lookup = io.read_u32_le();
-        for (size_t y = 0; y < 4; y++)
-        {
-            for (size_t x = 0; x < 4; x++)
-            {
-                size_t index = lookup & 3;
-                output_colors[y][x] = colors[index];
-                lookup >>= 2;
-            }
-        }
-    }
-
-    void decode_dxt5_block(IO &io, u8 output_alpha[4][4])
-    {
-        u8 alpha[8];
-        alpha[0] = io.read_u8();
-        alpha[1] = io.read_u8();
-
-        if (alpha[0] > alpha[1])
-        {
-            for (size_t i = 2; i < 8; i++)
-                alpha[i] = ((8. - i) * alpha[0] + ((i - 1.) * alpha[1])) / 7.;
+            rgba[2][i] = ((rgba[0][i] << 1) + rgba[1][i]) / 3;
+            rgba[3][i] = ((rgba[1][i] << 1) + rgba[0][i]) / 3;
         }
         else
         {
-            for (size_t i = 2; i < 6; i++)
-                alpha[i] = ((6. - i) * alpha[0] + ((i - 1.) * alpha[1])) / 5.;
-            alpha[6] = 0;
-            alpha[7] = 255;
-        }
-
-        for (size_t i = 0; i < 2; i++)
-        {
-            u32 lookup = be32toh(
-                (io.read_u16_be() << 16) | (io.read_u8() << 8));
-            for (size_t j = 0; j < 8; j++)
-            {
-                u8 index = lookup & 7;
-                size_t pos = i * 8 + j;
-                size_t x = pos % 4;
-                size_t y = pos / 4;
-                lookup >>= 3;
-                output_alpha[y][x] = alpha[index];
-            }
+            rgba[2][i] = (rgba[0][i] + rgba[1][i]) >> 1;
+            rgba[3][i] = 0;
         }
     }
 
-    std::unique_ptr<BufferedIO> decode_dxt1(IO &io, size_t width, size_t height)
+    for (size_t i = 2; i < 4; i++)
+        util::color::merge_channels(rgba[i], colors[i]);
+
+    u32 lookup = io.read_u32_le();
+    for (size_t y = 0; y < 4; y++)
     {
-        auto output_io = create_io(width, height);
-        for (size_t block_y = 0; block_y < height; block_y += 4)
-        for (size_t block_x = 0; block_x < width; block_x += 4)
+        for (size_t x = 0; x < 4; x++)
         {
-            u32 colors[4][4];
-            decode_dxt1_block(io, colors);
-            for (size_t y = 0; y < 4; y++)
-            {
-                output_io->seek(((block_y + y) * width + block_x) * 4);
-                for (size_t x = 0; x < 4; x++)
-                    output_io->write_u32_le(colors[y][x]);
-            }
+            size_t index = lookup & 3;
+            output_colors[y][x] = colors[index];
+            lookup >>= 2;
         }
-        return output_io;
     }
+}
 
-    std::unique_ptr<BufferedIO> decode_dxt3(IO &io, size_t width, size_t height)
+static void decode_dxt5_block(io::IO &io, u8 output_alpha[4][4])
+{
+    u8 alpha[8];
+    alpha[0] = io.read_u8();
+    alpha[1] = io.read_u8();
+
+    if (alpha[0] > alpha[1])
     {
-        auto output_io = create_io(width, height);
-        for (size_t block_y = 0; block_y < height; block_y += 4)
-        for (size_t block_x = 0; block_x < width; block_x += 4)
-        {
-            u8 alpha[4][4];
-            for (size_t y = 0; y < 4; y++)
-            {
-                for (size_t x = 0; x < 4; x += 2)
-                {
-                    u8 b = io.read_u8();
-                    alpha[y][x + 0] = b & 0xf0;
-                    alpha[y][x + 1] = (b & 0x0f) << 4;
-                }
-            }
-
-            u32 colors[4][4];
-            decode_dxt1_block(io, colors);
-            for (size_t y = 0; y < 4; y++)
-            {
-                output_io->seek(((block_y + y) * width + block_x) * 4);
-                for (size_t x = 0; x < 4; x++)
-                {
-                    set_channel(colors[y][x], 3, alpha[y][x]);
-                    output_io->write_u32_le(colors[y][x]);
-                }
-            }
-        }
-        return output_io;
+        for (size_t i = 2; i < 8; i++)
+            alpha[i] = ((8. - i) * alpha[0] + ((i - 1.) * alpha[1])) / 7.;
     }
-
-    std::unique_ptr<BufferedIO> decode_dxt5(IO &io, size_t width, size_t height)
+    else
     {
-        auto output_io = create_io(width, height);
-        for (size_t block_y = 0; block_y < height; block_y += 4)
-        for (size_t block_x = 0; block_x < width; block_x += 4)
-        {
-            u8 alpha[4][4];
-            decode_dxt5_block(io, alpha);
+        for (size_t i = 2; i < 6; i++)
+            alpha[i] = ((6. - i) * alpha[0] + ((i - 1.) * alpha[1])) / 5.;
+        alpha[6] = 0;
+        alpha[7] = 255;
+    }
 
-            u32 colors[4][4];
-            decode_dxt1_block(io, colors);
-            for (size_t y = 0; y < 4; y++)
+    for (size_t i = 0; i < 2; i++)
+    {
+        u32 lookup = be32toh(
+            (io.read_u16_be() << 16) | (io.read_u8() << 8));
+        for (size_t j = 0; j < 8; j++)
+        {
+            u8 index = lookup & 7;
+            size_t pos = i * 8 + j;
+            size_t x = pos % 4;
+            size_t y = pos / 4;
+            lookup >>= 3;
+            output_alpha[y][x] = alpha[index];
+        }
+    }
+}
+
+static std::unique_ptr<io::BufferedIO> decode_dxt1(
+    io::IO &io, size_t width, size_t height)
+{
+    auto output_io = create_io(width, height);
+    for (size_t block_y = 0; block_y < height; block_y += 4)
+    for (size_t block_x = 0; block_x < width; block_x += 4)
+    {
+        u32 colors[4][4];
+        decode_dxt1_block(io, colors);
+        for (size_t y = 0; y < 4; y++)
+        {
+            output_io->seek(((block_y + y) * width + block_x) * 4);
+            for (size_t x = 0; x < 4; x++)
+                output_io->write_u32_le(colors[y][x]);
+        }
+    }
+    return output_io;
+}
+
+static std::unique_ptr<io::BufferedIO> decode_dxt3(
+    io::IO &io, size_t width, size_t height)
+{
+    auto output_io = create_io(width, height);
+    for (size_t block_y = 0; block_y < height; block_y += 4)
+    for (size_t block_x = 0; block_x < width; block_x += 4)
+    {
+        u8 alpha[4][4];
+        for (size_t y = 0; y < 4; y++)
+        {
+            for (size_t x = 0; x < 4; x += 2)
             {
-                output_io->seek(((block_y + y) * width + block_x) * 4);
-                for (size_t x = 0; x < 4; x++)
-                {
-                    set_channel(colors[y][x], 3, alpha[y][x]);
-                    output_io->write_u32_le(colors[y][x]);
-                }
+                u8 b = io.read_u8();
+                alpha[y][x + 0] = b & 0xf0;
+                alpha[y][x + 1] = (b & 0x0f) << 4;
             }
         }
-        return output_io;
+
+        u32 colors[4][4];
+        decode_dxt1_block(io, colors);
+        for (size_t y = 0; y < 4; y++)
+        {
+            output_io->seek(((block_y + y) * width + block_x) * 4);
+            for (size_t x = 0; x < 4; x++)
+            {
+                util::color::set_channel(colors[y][x], 3, alpha[y][x]);
+                output_io->write_u32_le(colors[y][x]);
+            }
+        }
     }
+    return output_io;
+}
+
+static std::unique_ptr<io::BufferedIO> decode_dxt5(
+    io::IO &io, size_t width, size_t height)
+{
+    auto output_io = create_io(width, height);
+    for (size_t block_y = 0; block_y < height; block_y += 4)
+    for (size_t block_x = 0; block_x < width; block_x += 4)
+    {
+        u8 alpha[4][4];
+        decode_dxt5_block(io, alpha);
+
+        u32 colors[4][4];
+        decode_dxt1_block(io, colors);
+        for (size_t y = 0; y < 4; y++)
+        {
+            output_io->seek(((block_y + y) * width + block_x) * 4);
+            for (size_t x = 0; x < 4; x++)
+            {
+                util::color::set_channel(colors[y][x], 3, alpha[y][x]);
+                output_io->write_u32_le(colors[y][x]);
+            }
+        }
+    }
+    return output_io;
 }
 
 bool DdsConverter::is_recognized_internal(File &file) const
@@ -307,7 +309,7 @@ std::unique_ptr<File> DdsConverter::decode_internal(File &file) const
     if (header->pixel_format.four_cc == magic_dx10)
         read_header_dx10(file.io);
 
-    std::unique_ptr<IO> pixels_io(nullptr);
+    std::unique_ptr<io::IO> pixels_io(nullptr);
     if (header->pixel_format.flags & DDPF_FOURCC)
     {
         if (header->pixel_format.four_cc == magic_dxt1)
@@ -326,7 +328,7 @@ std::unique_ptr<File> DdsConverter::decode_internal(File &file) const
     {
         if (header->pixel_format.rgb_bit_count == 32)
         {
-            pixels_io = std::unique_ptr<IO>(new BufferedIO(file.io.read(
+            pixels_io = std::unique_ptr<io::IO>(new io::BufferedIO(file.io.read(
                 header->width * header->height * 4)));
         }
     }
@@ -335,10 +337,10 @@ std::unique_ptr<File> DdsConverter::decode_internal(File &file) const
         throw std::runtime_error("Not supported");
 
     pixels_io->seek(0);
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         header->width,
         header->height,
         pixels_io->read_until_end(),
-        PixelFormat::BGRA);
+        util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }

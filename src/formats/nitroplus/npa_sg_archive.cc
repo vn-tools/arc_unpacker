@@ -10,7 +10,9 @@
 #include "formats/nitroplus/npa_sg_archive.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
-using namespace Formats::Nitroplus;
+
+using namespace au;
+using namespace au::fmt::nitroplus;
 
 namespace
 {
@@ -32,14 +34,14 @@ static void decrypt(char *data, size_t data_size)
         data[i] ^= key[i % key.length()];
 }
 
-static Table read_table(IO &table_io, const IO &arc_io)
+static Table read_table(io::IO &table_io, const io::IO &arc_io)
 {
     Table table;
     size_t file_count = table_io.read_u32_le();
     for (size_t i = 0; i < file_count; i++)
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = convert_encoding(
+        entry->name = util::convert_encoding(
             table_io.read(table_io.read_u32_le()), "utf-16le", "utf-8");
         entry->size = table_io.read_u32_le();
         entry->offset = table_io.read_u32_le();
@@ -51,7 +53,7 @@ static Table read_table(IO &table_io, const IO &arc_io)
     return table;
 }
 
-static std::unique_ptr<File> read_file(IO &arc_io, TableEntry &entry)
+static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     std::unique_ptr<char[]> data(new char[entry.size]);
@@ -81,7 +83,7 @@ void NpaSgArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     arc_file.io.read(table_bytes.get(), table_size);
     decrypt(table_bytes.get(), table_size);
 
-    BufferedIO table_io(table_bytes.get(), table_size);
+    io::BufferedIO table_io(table_bytes.get(), table_size);
     Table table = read_table(table_io, arc_file.io);
     for (auto &entry : table)
         file_saver.save(read_file(arc_file.io, *entry));

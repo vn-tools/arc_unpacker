@@ -1,11 +1,18 @@
-#ifndef FORMATS_GLIB2_GML_DECODER_H
-#define FORMATS_GLIB2_GML_DECODER_H
+#ifndef AU_FMT_GLIB2_GML_DECODER_H
+#define AU_FMT_GLIB2_GML_DECODER_H
 #include "io/buffered_io.h"
 
-class GmlDecoder
-{
-public:
-    static void decode(BufferedIO &source_io, BufferedIO &target_io);
-};
+namespace au {
+namespace fmt {
+namespace glib {
+
+    class GmlDecoder
+    {
+    public:
+        static void decode(
+            io::BufferedIO &source_io, io::BufferedIO &target_io);
+    };
+
+} } }
 
 #endif

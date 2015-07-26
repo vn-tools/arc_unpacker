@@ -10,7 +10,9 @@
 #include "formats/glib/gml_archive.h"
 #include "formats/glib/gml_decoder.h"
 #include "formats/glib/pgx_converter.h"
-using namespace Formats::Glib;
+
+using namespace au;
+using namespace au::fmt::glib;
 
 static const size_t prefix_size = 4;
 
@@ -29,22 +31,22 @@ namespace
 
 static const std::string magic("GML_ARC\x00", 8);
 
-static std::unique_ptr<BufferedIO> get_header_io(
-    IO &arc_io, size_t header_size_compressed, size_t header_size_original)
+static std::unique_ptr<io::BufferedIO> get_header_io(
+    io::IO &arc_io, size_t header_size_compressed, size_t header_size_original)
 {
-    BufferedIO temp_io(arc_io, header_size_compressed);
+    io::BufferedIO temp_io(arc_io, header_size_compressed);
     u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
     for (size_t i = 0; i < header_size_compressed; i++)
         buffer[i] ^= 0xff;
 
-    std::unique_ptr<BufferedIO> header_io(new BufferedIO);
+    std::unique_ptr<io::BufferedIO> header_io(new io::BufferedIO);
     header_io->reserve(header_size_original);
     GmlDecoder::decode(temp_io, *header_io);
     header_io->seek(0);
     return header_io;
 }
 
-static Table read_table(IO &table_io, size_t file_data_start)
+static Table read_table(io::IO &table_io, size_t file_data_start)
 {
     size_t file_count = table_io.read_u32_le();
     Table table;
@@ -62,13 +64,13 @@ static Table read_table(IO &table_io, size_t file_data_start)
 }
 
 static std::unique_ptr<File> read_file(
-    IO &arc_io, const TableEntry &entry, const std::string &permutation)
+    io::IO &arc_io, const TableEntry &entry, const std::string &permutation)
 {
     std::unique_ptr<File> file(new File);
     file->name = entry.name;
 
     arc_io.seek(entry.offset);
-    BufferedIO temp_io(arc_io, entry.size);
+    io::BufferedIO temp_io(arc_io, entry.size);
     u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
     for (size_t i = 0; i < entry.size; i++)
         buffer[i] = permutation[buffer[i]];

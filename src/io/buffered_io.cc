@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include "io/buffered_io.h"
 
+using namespace au::io;
+
 struct BufferedIO::Priv
 {
     char *buffer;

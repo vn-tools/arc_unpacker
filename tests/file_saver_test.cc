@@ -3,6 +3,8 @@
 #include "test_support/catch.hpp"
 #include "test_support/suppress_output.h"
 
+using namespace au;
+
 static void test(const boost::filesystem::path &path)
 {
     FileSaverHdd file_saver(".", true);
@@ -15,7 +17,7 @@ static void test(const boost::filesystem::path &path)
 
     REQUIRE(boost::filesystem::exists(path));
     {
-        FileIO file_io(path, FileIOMode::Read);
+        io::FileIO file_io(path, io::FileMode::Read);
         REQUIRE(file_io.size() == 4);
         REQUIRE(file_io.read_until_end() == "test");
     }

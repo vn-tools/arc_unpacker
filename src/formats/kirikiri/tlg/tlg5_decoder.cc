@@ -4,7 +4,9 @@
 #include "formats/kirikiri/tlg/lzss_decompressor.h"
 #include "formats/kirikiri/tlg/tlg5_decoder.h"
 #include "util/image.h"
-using namespace Formats::Kirikiri::Tlg;
+
+using namespace au;
+using namespace au::fmt::kirikiri::tlg;
 
 namespace
 {
@@ -21,12 +23,12 @@ namespace
         bool mark;
         size_t block_size;
         std::unique_ptr<u8[]> block_data;
-        BlockInfo(IO &io);
+        BlockInfo(io::IO &io);
         void decompress(LzssDecompressor &decompressor, Header &header);
     } BlockInfo;
 }
 
-BlockInfo::BlockInfo(IO &io) : block_data(nullptr)
+BlockInfo::BlockInfo(io::IO &io) : block_data(nullptr)
 {
     mark = io.read_u8() > 0;
     block_size = io.read_u32_le();
@@ -113,7 +115,7 @@ static void load_pixel_block_row(
     }
 }
 
-static void read_pixels(IO &io, u8 *output, Header &header)
+static void read_pixels(io::IO &io, u8 *output, Header &header)
 {
     // ignore block sizes
     size_t block_count = (header.image_height - 1) / header.block_height + 1;
@@ -157,10 +159,10 @@ std::unique_ptr<File> Tlg5Decoder::decode(File &file)
 
     read_pixels(file.io, pixels.get(), header);
 
-    std::unique_ptr<Image> image = Image::from_pixels(
+    std::unique_ptr<util::Image> image = util::Image::from_pixels(
         header.image_width,
         header.image_height,
         std::string(reinterpret_cast<char*>(pixels.get()), pixels_size),
-        PixelFormat::RGBA);
+        util::PixelFormat::RGBA);
     return image->create_file(file.name);
 }

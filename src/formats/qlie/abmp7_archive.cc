@@ -1,10 +1,12 @@
 #include "formats/qlie/abmp7_archive.h"
 #include "util/encoding.h"
-using namespace Formats::QLiE;
+
+using namespace au;
+using namespace au::fmt::qlie;
 
 static const std::string magic("ABMP7", 5);
 
-static void read_first_file(IO &arc_io, FileSaver &file_saver)
+static void read_first_file(io::IO &arc_io, FileSaver &file_saver)
 {
     size_t length = arc_io.read_u32_le();
     std::unique_ptr<File> subfile(new File);
@@ -14,11 +16,11 @@ static void read_first_file(IO &arc_io, FileSaver &file_saver)
     file_saver.save(std::move(subfile));
 }
 
-static void read_next_file(IO &arc_io, FileSaver &file_saver)
+static void read_next_file(io::IO &arc_io, FileSaver &file_saver)
 {
     std::string encoded_name = arc_io.read(arc_io.read_u8());
     arc_io.skip(31 - encoded_name.size());
-    std::string name = sjis_to_utf8(encoded_name);
+    std::string name = util::sjis_to_utf8(encoded_name);
     size_t length = arc_io.read_u32_le();
     std::unique_ptr<File> subfile(new File);
     subfile->io.write_from_io(arc_io, length);

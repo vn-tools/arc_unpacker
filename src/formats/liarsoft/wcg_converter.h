@@ -1,18 +1,18 @@
-#ifndef FORMATS_LIARSOFT_WCG_CONVERTER_H
-#define FORMATS_LIARSOFT_WCG_CONVERTER_H
+#ifndef AU_FMT_LIARSOFT_WCG_CONVERTER_H
+#define AU_FMT_LIARSOFT_WCG_CONVERTER_H
 #include "formats/converter.h"
 
-namespace Formats
-{
-    namespace LiarSoft
+namespace au {
+namespace fmt {
+namespace liarsoft {
+
+    class WcgConverter final : public Converter
     {
-        class WcgConverter final : public Converter
-        {
-        protected:
-            bool is_recognized_internal(File &) const override;
-            std::unique_ptr<File> decode_internal(File &) const override;
-        };
-    }
-}
+    protected:
+        bool is_recognized_internal(File &) const override;
+        std::unique_ptr<File> decode_internal(File &) const override;
+    };
+
+} } }
 
 #endif

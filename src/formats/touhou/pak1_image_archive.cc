@@ -13,10 +13,12 @@
 #include "util/colors.h"
 #include "util/image.h"
 #include "util/itos.h"
-using namespace Formats::Touhou;
+
+using namespace au;
+using namespace au::fmt::touhou;
 
 static std::unique_ptr<File> read_image(
-    IO &arc_io, size_t index, Palette palette)
+    io::IO &arc_io, size_t index, Palette palette)
 {
     auto image_width = arc_io.read_u32_le();
     auto image_height = arc_io.read_u32_le();
@@ -25,9 +27,9 @@ static std::unique_ptr<File> read_image(
     size_t source_size = arc_io.read_u32_le();
     size_t target_size = image_width * image_height * 4;
 
-    BufferedIO target_io;
+    io::BufferedIO target_io;
     target_io.reserve(target_size);
-    BufferedIO source_io;
+    io::BufferedIO source_io;
     source_io.write_from_io(arc_io, source_size);
     source_io.seek(0);
 
@@ -54,7 +56,7 @@ static std::unique_ptr<File> read_image(
 
             case 16:
                 repeat = source_io.read_u16_le();
-                rgba = rgba5551(source_io.read_u16_le());
+                rgba = util::color::rgba5551(source_io.read_u16_le());
                 break;
 
             case 8:
@@ -71,12 +73,12 @@ static std::unique_ptr<File> read_image(
     }
 
     target_io.seek(0);
-    auto image = Image::from_pixels(
+    auto image = util::Image::from_pixels(
         image_width,
         image_height,
         target_io.read(target_io.size()),
-        PixelFormat::BGRA);
-    return image->create_file(itos(index, 4));
+        util::PixelFormat::BGRA);
+    return image->create_file(util::itos(index, 4));
 }
 
 bool Pak1ImageArchive::is_recognized_internal(File &arc_file) const
@@ -93,7 +95,7 @@ void Pak1ImageArchive::unpack_internal(
     {
         Palette palette;
         for (size_t i = 0; i < 256; i++)
-            palette[i] = rgba5551(arc_file.io.read_u16_le());
+            palette[i] = util::color::rgba5551(arc_file.io.read_u16_le());
         palettes.push_back(palette);
     }
     palettes.push_back(create_default_palette());
