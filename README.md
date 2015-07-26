@@ -79,6 +79,7 @@ Features           | Game                                | CLI invocation
 ![][F]![][F]![][F] | Maji de Watashi ni Koishinasai!     | `--fmt=pac`
 ![][F]![][F]![][F] | Melty Blood                         | `--fmt=p`
 ![][F]![][F]![][F] | Musume Shimai                       | `--fmt=g2`
+![][F]![][F]![][F] | Pure My Imouto Milk Purin           | `--fmt=g2`
 ![][F]![][F]![][F] | Saya no Uta                         | `--fmt=pak`
 ![][F]![][F]![][F] | Sharin no Kuni, Himawari no Shoujo  | `--fmt=xp3 --plugin=noop`
 ![][F]![][F]![][F] | Sono Hanabira ni Kuchizuke o 1-11   | `--fmt=fjsys`

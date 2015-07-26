@@ -8,6 +8,7 @@
 // Known games:
 // - Musume Shimai
 // - Watashi no Puni Puni
+// - Pure My Imouto Milk Purin
 
 #include "formats/glib/gml_decoder.h"
 #include "formats/glib/pgx_converter.h"
