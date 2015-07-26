@@ -39,7 +39,9 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const std::string magic("PBGZ", 4);
+static const std::string crypt_magic = "edz"_s;
+static const std::string jpeg_magic = "\xff\xd8\xff\xe0"_s;
+static const std::string magic = "PBGZ"_s;
 
 static std::vector<std::map<u8, DecryptorContext>> decryptors
 {
@@ -148,7 +150,6 @@ static std::unique_ptr<File> read_file(
             entry.size_compressed,
             entry.size_original));
 
-    const std::string crypt_magic("edz", 3);
     if (uncompressed_io.read(crypt_magic.size()) != crypt_magic)
         throw std::runtime_error("Unknown encryption");
 
@@ -163,7 +164,6 @@ static std::unique_ptr<File> read_file(
 
 static size_t detect_encryption_version(io::IO &arc_io, const Table &table)
 {
-    const std::string jpeg_magic("\xff\xd8\xff\xe0", 4);
     for (auto &entry : table)
     {
         if (entry->name.find(".jpg") == std::string::npos)

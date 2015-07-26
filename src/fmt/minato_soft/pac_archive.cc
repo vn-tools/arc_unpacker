@@ -29,7 +29,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const std::string magic("PAC\x00", 4);
+static const std::string magic = "PAC\x00"_s;
 
 static int init_huffman(io::BitReader &bit_reader, u16 nodes[2][512], int &pos)
 {

@@ -26,8 +26,8 @@ namespace
     } NodeInfo;
 }
 
-static const std::string bmp_magic("BM6", 3);
-static const std::string magic("CompressedBG___\x00", 16);
+static const std::string bmp_magic = "BM6"_s;
+static const std::string magic = "CompressedBG___\x00"_s;
 
 static u32 get_key(u32 *pkey)
 {

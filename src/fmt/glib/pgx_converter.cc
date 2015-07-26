@@ -17,7 +17,7 @@
 using namespace au;
 using namespace au::fmt::glib;
 
-static const std::string magic("PGX\x00", 4);
+static const std::string magic = "PGX\x00"_s;
 
 bool PgxConverter::is_recognized_internal(File &file) const
 {

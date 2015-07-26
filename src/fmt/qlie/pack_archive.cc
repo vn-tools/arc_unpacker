@@ -45,9 +45,9 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const std::string magic1("FilePackVer1.0\x00\x00", 16);
-static const std::string magic2("FilePackVer2.0\x00\x00", 16);
-static const std::string magic3("FilePackVer3.0\x00\x00", 16);
+static const std::string magic1 = "FilePackVer1.0\x00\x00"_s;
+static const std::string magic2 = "FilePackVer2.0\x00\x00"_s;
+static const std::string magic3 = "FilePackVer3.0\x00\x00"_s;
 
 static int guess_version(io::IO &arc_io)
 {
@@ -238,7 +238,7 @@ static void decompress(
 
     io::BufferedIO input_io(input, input_size);
 
-    std::string magic("1PC\xff", 4);
+    std::string magic = "1PC\xff"_s;
     if (input_io.read(magic.length()) != magic)
     {
         throw std::runtime_error("Unexpected magic in compressed file. "
@@ -485,7 +485,7 @@ void PackArchive::parse_cli_options(const ArgParser &arg_parser)
         if (!arg_parser.has_switch("fkey"))
             throw std::runtime_error("Must specify also --fkey.");
 
-        const std::string magic("\x05TIcon\x00", 7);
+        const std::string magic = "\x05TIcon\x00"_s;
         const std::string path = arg_parser.get_switch("gameexe");
 
         File file(path, io::FileMode::Read);

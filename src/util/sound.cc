@@ -43,10 +43,10 @@ std::unique_ptr<File> Sound::create_file(const std::string &name) const
 
     std::unique_ptr<File> output_file(new File);
 
-    output_file->io.write("RIFF", 4);
-    output_file->io.write("\x00\x09\x00\x00", 4);
-    output_file->io.write("WAVE", 4);
-    output_file->io.write("fmt ", 4);
+    output_file->io.write("RIFF"_s);
+    output_file->io.write("\x00\x09\x00\x00"_s);
+    output_file->io.write("WAVE"_s);
+    output_file->io.write("fmt "_s);
     output_file->io.write_u32_le(16);
     output_file->io.write_u16_le(1);
     output_file->io.write_u16_le(p->channel_count);
@@ -54,7 +54,7 @@ std::unique_ptr<File> Sound::create_file(const std::string &name) const
     output_file->io.write_u32_le(byte_rate);
     output_file->io.write_u16_le(block_align);
     output_file->io.write_u16_le(bits_per_sample);
-    output_file->io.write("data", 4);
+    output_file->io.write("data"_s);
     output_file->io.write_u32_le(p->sample_count);
     output_file->io.write(p->samples);
     output_file->io.seek(4);

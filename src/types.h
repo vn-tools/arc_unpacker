@@ -14,21 +14,19 @@ typedef int16_t i16;
 typedef int32_t i32;
 typedef int64_t i64;
 
-#ifdef VISUAL_STUDIO_2015_CAME_OUT
-    constexpr u8 operator "" _u8(char value)
-    {
-        return static_cast<u8>(value);
-    }
+constexpr u8 operator "" _u8(char value)
+{
+    return static_cast<u8>(value);
+}
 
-    constexpr const u8* operator "" _u8(const char *value, size_t n)
-    {
-        return reinterpret_cast<const u8*>(value);
-    }
+constexpr const u8* operator "" _u8(const char *value, size_t n)
+{
+    return reinterpret_cast<const u8*>(value);
+}
 
-    std::string operator "" _s(const char *value, size_t n)
-    {
-        return std::string(value, n);
-    }
-#endif
+inline std::string operator "" _s(const char *value, size_t n)
+{
+    return std::string(value, n);
+}
 
 #endif

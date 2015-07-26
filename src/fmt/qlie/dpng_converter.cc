@@ -15,7 +15,7 @@
 using namespace au;
 using namespace au::fmt::qlie;
 
-static const std::string magic("DPNG", 4);
+static const std::string magic = "DPNG"_s;
 
 bool DpngConverter::is_recognized_internal(File &file) const
 {

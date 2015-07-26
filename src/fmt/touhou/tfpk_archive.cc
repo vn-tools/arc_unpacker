@@ -78,7 +78,8 @@ namespace
     typedef std::map<u32, std::string> HashLookupMap;
 }
 
-static const std::string magic("TFPK", 4);
+static const std::string pal_magic = "TFPA\x00"_s;
+static const std::string magic = "TFPK"_s;
 
 static const std::vector<RsaKey> rsa_keys({
     //TH13.5 Japanese version
@@ -434,7 +435,6 @@ static std::unique_ptr<File> read_file(
 static Palette read_palette_file(
     io::IO &arc_io, TableEntry &entry, TfpkVersion version)
 {
-    const std::string pal_magic("TFPA\x00", 5);
     auto pal_file = read_file(arc_io, entry, version);
     pal_file->io.seek(0);
     if (pal_file->io.read(pal_magic.size()) != pal_magic)

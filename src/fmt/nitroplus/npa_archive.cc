@@ -47,7 +47,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const std::string magic("NPA\x01\x00\x00\x00", 7);
+static const std::string magic = "NPA\x01\x00\x00\x00"_s;
 
 static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {

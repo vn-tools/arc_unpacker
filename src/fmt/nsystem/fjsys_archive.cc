@@ -33,7 +33,7 @@ namespace
     } Header;
 }
 
-static const std::string magic("FJSYS\x00\x00\x00", 8);
+static const std::string magic = "FJSYS\x00\x00\x00"_s;
 
 static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {

@@ -85,13 +85,13 @@ namespace
     } DdsHeader;
 }
 
-static const std::string magic("DDS\x20", 4);
-static const std::string magic_dxt1("DXT1", 4);
-static const std::string magic_dxt2("DXT2", 4);
-static const std::string magic_dxt3("DXT3", 4);
-static const std::string magic_dxt4("DXT4", 4);
-static const std::string magic_dxt5("DXT5", 4);
-static const std::string magic_dx10("DX10", 4);
+static const std::string magic = "DDS\x20"_s;
+static const std::string magic_dxt1 = "DXT1"_s;
+static const std::string magic_dxt2 = "DXT2"_s;
+static const std::string magic_dxt3 = "DXT3"_s;
+static const std::string magic_dxt4 = "DXT4"_s;
+static const std::string magic_dxt5 = "DXT5"_s;
+static const std::string magic_dx10 = "DX10"_s;
 
 static void fill_pixel_format(io::IO &io, DdsPixelFormat &pixel_format)
 {

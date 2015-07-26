@@ -18,9 +18,9 @@ using namespace au;
 using namespace au::fmt::kirikiri;
 using namespace au::fmt::kirikiri::tlg;
 
-static const std::string magic_tlg_0("TLG0.0\x00sds\x1a", 11);
-static const std::string magic_tlg_5("TLG5.0\x00raw\x1a", 11);
-static const std::string magic_tlg_6("TLG6.0\x00raw\x1a", 11);
+static const std::string magic_tlg_0 = "TLG0.0\x00sds\x1a"_s;
+static const std::string magic_tlg_5 = "TLG5.0\x00raw\x1a"_s;
+static const std::string magic_tlg_6 = "TLG6.0\x00raw\x1a"_s;
 
 static int guess_version(io::IO &io);
 static std::unique_ptr<File> decode_proxy(int version, File &file);

@@ -25,7 +25,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const std::string magic("YKC001", 6);
+static const std::string magic = "YKC001"_s;
 
 static Table read_table(io::IO &arc_io, size_t table_offset, size_t table_size)
 {

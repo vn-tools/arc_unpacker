@@ -16,7 +16,7 @@
 using namespace au;
 using namespace au::fmt::rpgmaker;
 
-static const std::string magic("XYZ1", 4);
+static const std::string magic = "XYZ1"_s;
 
 bool XyzConverter::is_recognized_internal(File &file) const
 {

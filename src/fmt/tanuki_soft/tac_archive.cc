@@ -42,7 +42,7 @@ namespace
     };
 }
 
-static const std::string magic("TArc1.00\x00\x00\x00\x00", 12);
+static const std::string magic = "TArc1.00\x00\x00\x00\x00"_s;
 
 static std::string decrypt(
     const std::string &input, size_t size, const std::string &key)

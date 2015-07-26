@@ -29,7 +29,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const std::string magic("GML_ARC\x00", 8);
+static const std::string magic = "GML_ARC\x00"_s;
 
 static std::unique_ptr<io::BufferedIO> get_header_io(
     io::IO &arc_io, size_t header_size_compressed, size_t header_size_original)

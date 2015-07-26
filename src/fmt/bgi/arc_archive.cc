@@ -14,7 +14,7 @@
 using namespace au;
 using namespace au::fmt::bgi;
 
-static const std::string magic("PackFile    ", 12);
+static const std::string magic = "PackFile    "_s;
 
 static std::unique_ptr<File> read_file(io::IO &arc_io, size_t file_count)
 {

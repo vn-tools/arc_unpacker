@@ -21,11 +21,11 @@
 using namespace au;
 using namespace au::fmt::kirikiri;
 
-static const std::string xp3_magic("XP3\r\n\x20\x0a\x1a\x8b\x67\x01", 11);
-static const std::string file_magic("File", 4);
-static const std::string adlr_magic("adlr", 4);
-static const std::string info_magic("info", 4);
-static const std::string segm_magic("segm", 4);
+static const std::string xp3_magic = "XP3\r\n\x20\x0a\x1a\x8b\x67\x01"_s;
+static const std::string file_magic = "File"_s;
+static const std::string adlr_magic = "adlr"_s;
+static const std::string info_magic = "info"_s;
+static const std::string segm_magic = "segm"_s;
 
 static int detect_version(io::IO &arc_io)
 {

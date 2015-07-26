@@ -20,7 +20,7 @@
 using namespace au;
 using namespace au::fmt::liar_soft;
 
-static const std::string magic("WG", 2);
+static const std::string magic = "WG"_s;
 
 static size_t wcg_unpack(
     io::IO &io,

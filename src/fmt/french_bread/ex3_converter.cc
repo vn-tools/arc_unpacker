@@ -15,7 +15,7 @@
 using namespace au;
 using namespace au::fmt::french_bread;
 
-static const std::string magic("LLIF", 4);
+static const std::string magic = "LLIF"_s;
 
 bool Ex3Converter::is_recognized_internal(File &file) const
 {

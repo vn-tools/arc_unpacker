@@ -4,7 +4,7 @@
 using namespace au;
 using namespace au::fmt::qlie;
 
-static const std::string magic("ABMP7", 5);
+static const std::string magic = "ABMP7"_s;
 
 static void read_first_file(io::IO &arc_io, FileSaver &file_saver)
 {

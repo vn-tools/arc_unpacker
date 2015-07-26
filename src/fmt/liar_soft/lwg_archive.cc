@@ -28,7 +28,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const std::string magic("LG\x01\x00", 4);
+static const std::string magic = "LG\x01\x00"_s;
 
 static Table read_table(io::IO &arc_io)
 {

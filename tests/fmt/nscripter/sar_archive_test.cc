@@ -12,8 +12,8 @@ TEST_CASE("Unpacking SAR archives works")
     std::shared_ptr<File> file2(new File);
     file1->name = "abc.txt";
     file2->name = "dir/another.txt";
-    file1->io.write("123", 3);
-    file2->io.write("AAAAAAAAAAAAAAAA", 16);
+    file1->io.write("123"_s);
+    file2->io.write("AAAAAAAAAAAAAAAA"_s);
     std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
     std::unique_ptr<Archive> archive(new SarArchive);

@@ -46,7 +46,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const std::string texture_magic("THTX", 4);
+static const std::string texture_magic = "THTX"_s;
 
 static std::string read_name(io::IO &file_io, size_t offset)
 {

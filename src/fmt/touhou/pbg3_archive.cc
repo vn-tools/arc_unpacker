@@ -34,7 +34,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const std::string magic("PBG3", 4);
+static const std::string magic = "PBG3"_s;
 
 static unsigned int read_integer(io::BitReader &bit_reader)
 {

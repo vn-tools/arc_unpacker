@@ -12,8 +12,8 @@ static void test_pak_archive(const std::string &path)
     std::shared_ptr<File> file2(new File);
     file1->name = "abc.txt";
     file2->name = "another.txt";
-    file1->io.write("123", 3);
-    file2->io.write("abcdefghij", 10);
+    file1->io.write("123"_s);
+    file2->io.write("abcdefghij"_s);
     std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
     std::unique_ptr<Archive> archive(new PakArchive);

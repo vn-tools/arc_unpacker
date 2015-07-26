@@ -59,13 +59,13 @@ void File::guess_extension()
 {
     std::vector<std::pair<std::string, std::string>> definitions
     {
-        { "b", std::string("abmp", 4) }, //QLiE
-        { "imoavi", std::string("IMOAVI", 6) }, //QLiE
-        { "png", std::string("\x89PNG", 4) },
-        { "bmp", std::string("BM", 2) },
-        { "wav", std::string("RIFF", 4) },
-        { "ogg", std::string("OggS", 4) },
-        { "jpeg", std::string("\xff\xd8\xff", 3) },
+        { "b",      "abmp"_s         }, //QLiE
+        { "imoavi", "IMOAVI"_s       }, //QLiE
+        { "png",    "\x89PNG"_s      },
+        { "bmp",    "BM"_s           },
+        { "wav",    "RIFF"_s         },
+        { "ogg",    "OggS"_s         },
+        { "jpeg",   "\xff\xd8\xff"_s },
     };
 
     size_t old_pos = io.tell();

@@ -31,7 +31,7 @@ namespace
     } Region;
 }
 
-static const std::string magic("YKG000", 6);
+static const std::string magic = "YKG000"_s;
 
 static std::unique_ptr<Header> read_header(io::IO &file_io)
 {

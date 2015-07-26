@@ -11,7 +11,7 @@
 using namespace au;
 using namespace au::fmt::ivory;
 
-static const std::string magic("YB", 2);
+static const std::string magic = "YB"_s;
 
 static void decode_pixels(
     const u8 *source, size_t source_size, u8 *target, size_t target_size)

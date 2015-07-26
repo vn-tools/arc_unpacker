@@ -4,21 +4,21 @@
 using namespace au;
 using namespace au::fmt::qlie;
 
-static const std::string magic10("abmp10\0\0\0\0\0\0\0\0\0\0", 16);
-static const std::string magic11("abmp11\0\0\0\0\0\0\0\0\0\0", 16);
-static const std::string magic12("abmp12\0\0\0\0\0\0\0\0\0\0", 16);
-static const std::string magic_imgdat10("abimgdat10\0\0\0\0\0\0", 16);
-static const std::string magic_imgdat11("abimgdat11\0\0\0\0\0\0", 16);
-static const std::string magic_imgdat13("abimgdat13\0\0\0\0\0\0", 16);
-static const std::string magic_imgdat14("abimgdat14\0\0\0\0\0\0", 16);
-static const std::string magic_snddat10("absnddat10\0\0\0\0\0\0", 16);
-static const std::string magic_snddat11("absnddat11\0\0\0\0\0\0", 16);
-static const std::string magic_data10("abdata10\0\0\0\0\0\0\0\0", 16);
-static const std::string magic_data11("abdata11\0\0\0\0\0\0\0\0", 16);
-static const std::string magic_data12("abdata12\0\0\0\0\0\0\0\0", 16);
-static const std::string magic_data13("abdata13\0\0\0\0\0\0\0\0", 16);
-static const std::string magic_image10("abimage10\0\0\0\0\0\0\0", 16);
-static const std::string magic_sound10("absound10\0\0\0\0\0\0\0", 16);
+static const std::string magic10 = "abmp10\0\0\0\0\0\0\0\0\0\0"_s;
+static const std::string magic11 = "abmp11\0\0\0\0\0\0\0\0\0\0"_s;
+static const std::string magic12 = "abmp12\0\0\0\0\0\0\0\0\0\0"_s;
+static const std::string magic_imgdat10 = "abimgdat10\0\0\0\0\0\0"_s;
+static const std::string magic_imgdat11 = "abimgdat11\0\0\0\0\0\0"_s;
+static const std::string magic_imgdat13 = "abimgdat13\0\0\0\0\0\0"_s;
+static const std::string magic_imgdat14 = "abimgdat14\0\0\0\0\0\0"_s;
+static const std::string magic_snddat10 = "absnddat10\0\0\0\0\0\0"_s;
+static const std::string magic_snddat11 = "absnddat11\0\0\0\0\0\0"_s;
+static const std::string magic_data10 = "abdata10\0\0\0\0\0\0\0\0"_s;
+static const std::string magic_data11 = "abdata11\0\0\0\0\0\0\0\0"_s;
+static const std::string magic_data12 = "abdata12\0\0\0\0\0\0\0\0"_s;
+static const std::string magic_data13 = "abdata13\0\0\0\0\0\0\0\0"_s;
+static const std::string magic_image10 = "abimage10\0\0\0\0\0\0\0"_s;
+static const std::string magic_sound10 = "absound10\0\0\0\0\0\0\0"_s;
 
 static int guess_version(io::IO &arc_io)
 {

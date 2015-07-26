@@ -16,7 +16,7 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
-static const std::string magic("TFCS\x00", 5);
+static const std::string magic = "TFCS\x00"_s;
 
 static void write_cell(io::IO &output_io, std::string cell)
 {

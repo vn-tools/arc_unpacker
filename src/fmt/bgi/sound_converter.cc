@@ -13,7 +13,7 @@
 using namespace au;
 using namespace au::fmt::bgi;
 
-static const std::string magic("bw  ", 4);
+static const std::string magic = "bw  "_s;
 
 bool SoundConverter::is_recognized_internal(File &file) const
 {

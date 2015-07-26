@@ -25,7 +25,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const std::string magic("RGSSAD\x00", 7);
+static const std::string magic = "RGSSAD\x00"_s;
 static const u32 initial_key = 0xdeadcafe;
 
 static u32 advance_key(const u32 key)
@@ -68,7 +68,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
     arc_io.seek(entry.offset);
     file->io.write_from_io(arc_io, entry.size);
 
-    file->io.write("\x00\x00\x00\x00", 4);
+    file->io.write("\x00\x00\x00\x00"_s);
     file->io.seek(0);
     u32 key = entry.key;
     for (size_t i = 0; i + 4 < file->io.size(); i += 4)

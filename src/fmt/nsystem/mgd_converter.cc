@@ -33,7 +33,7 @@ namespace
     } Region;
 }
 
-static const std::string magic("MGD ", 4);
+static const std::string magic = "MGD "_s;
 
 static void decompress_sgd_alpha(
     const u8 *&input_ptr,

@@ -173,8 +173,9 @@ static const std::function<u8(u8, u8)> decoders[] =
     },
 };
 
-static const std::string magic_21("GLibArchiveData2.1\x00", 19);
-static const std::string magic_20("GLibArchiveData2.0\x00", 19);
+static const std::string table_magic = "CDBD"_s;
+static const std::string magic_21 = "GLibArchiveData2.1\x00"_s;
+static const std::string magic_20 = "GLibArchiveData2.0\x00"_s;
 
 static void decode(u32 decoder, char *buffer, size_t size)
 {
@@ -311,7 +312,6 @@ static Table read_table(io::IO &arc_io, Header &header)
     for (size_t i = 0; i < 4; i++)
         decode(header.keys[3 - i], buffer.get(), header.table_size);
 
-    const std::string table_magic("CDBD");
     io::BufferedIO table_io(buffer.get(), header.table_size);
     if (table_io.read(table_magic.size()) != table_magic)
         throw std::runtime_error("Corrupted file table");

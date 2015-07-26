@@ -46,7 +46,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const std::string magic("THA1", 4);
+static const std::string magic = "THA1"_s;
 
 static std::vector<std::vector<DecryptorContext>> decryptors
 {

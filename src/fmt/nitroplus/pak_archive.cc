@@ -15,7 +15,7 @@
 using namespace au;
 using namespace au::fmt::nitroplus;
 
-static const std::string magic("\x02\x00\x00\x00", 4);
+static const std::string magic = "\x02\x00\x00\x00"_s;
 
 static std::unique_ptr<File> read_file(
     io::IO &arc_io, io::IO &table_io, size_t offset_to_files)

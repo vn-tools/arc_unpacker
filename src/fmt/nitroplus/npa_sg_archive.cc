@@ -26,7 +26,7 @@ namespace
     typedef std::vector<std::unique_ptr<TableEntry>> Table;
 }
 
-static const std::string key("\xBD\xAA\xBC\xB4\xAB\xB6\xBC\xB4", 8);
+static const std::string key = "\xBD\xAA\xBC\xB4\xAB\xB6\xBC\xB4"_s;
 
 static void decrypt(char *data, size_t data_size)
 {
