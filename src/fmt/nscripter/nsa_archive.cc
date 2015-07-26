@@ -83,8 +83,7 @@ static std::unique_ptr<File> read_file(
 
         case COMPRESSION_LZSS:
         {
-            io::BufferedIO data_io(data);
-            io::BitReader bit_reader(data_io);
+            io::BitReader bit_reader(data);
 
             util::lzss::Settings settings;
             settings.position_bits = 8;

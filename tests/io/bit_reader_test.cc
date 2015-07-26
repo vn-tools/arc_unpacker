@@ -6,7 +6,7 @@ using namespace au::io;
 
 TEST_CASE("Reading missing bits throws exceptions")
 {
-    BitReader reader("", 0);
+    BitReader reader(""_s);
     try
     {
         reader.get(1);
@@ -19,7 +19,7 @@ TEST_CASE("Reading missing bits throws exceptions")
 
 TEST_CASE("Reading single bits works")
 {
-    BitReader reader("\x8F", 2); //10001111
+    BitReader reader("\x8F"_s); //10001111
     REQUIRE(reader.get(1));
     REQUIRE(!reader.get(1));
     REQUIRE(!reader.get(1));
@@ -32,14 +32,14 @@ TEST_CASE("Reading single bits works")
 
 TEST_CASE("Reading multiple bits works")
 {
-    BitReader reader("\x8F", 2); //10001111
+    BitReader reader("\x8F"_s); //10001111
     REQUIRE(reader.get(7) == (0x8F >> 1));
     REQUIRE(reader.get(1));
 }
 
 TEST_CASE("Reading multiple bytes works")
 {
-    BitReader reader("\x8F\x8F", 2); //10001111
+    BitReader reader("\x8F\x8F"_s); //10001111
     REQUIRE(reader.get(7) == (0x8F >> 1));
     REQUIRE(reader.get(1));
 

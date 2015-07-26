@@ -10,6 +10,7 @@ namespace io {
     {
     public:
         BitReader(IO &io);
+        BitReader(const std::string &buffer);
         BitReader(const char *buffer, size_t buffer_size);
         ~BitReader();
 
