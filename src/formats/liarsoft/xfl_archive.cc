@@ -6,6 +6,8 @@
 //
 // Known games:
 // - Souten No Celenaria - What a Beautiful World
+// - Sekien no Inganock - What a Beautiful People
+// - Shikkoku no Sharnoth - What a Beautiful Tomorrow
 
 #include "formats/liarsoft/lwg_archive.h"
 #include "formats/liarsoft/wcg_converter.h"

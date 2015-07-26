@@ -81,11 +81,13 @@ Features           | Game                                | CLI invocation
 ![][F]![][F]![][F] | Musume Shimai                       | `--fmt=g2`
 ![][F]![][F]![][F] | Pure My Imouto Milk Purin           | `--fmt=g2`
 ![][F]![][F]![][F] | Saya no Uta                         | `--fmt=pak`
+![][F]![][F]![][F] | Sekien no Inganock                  | `--fmt=xfl`
 ![][F]![][F]![][F] | Sharin no Kuni, Himawari no Shoujo  | `--fmt=xp3 --plugin=noop`
+![][F]![][F]![][F] | Shikkoku no Sharnoth                | `--fmt=xfl`
 ![][F]![][F]![][F] | Sono Hanabira ni Kuchizuke o 1-11   | `--fmt=fjsys`
 ![][F]![][F]![][F] | Sono Hanabira ni Kuchizuke o 12     | `--fmt=xp3 --plugin=noop`
 ![][F]![][F]![][F] | Soshite Ashita no Sekai yori        | `--fmt=pack`
-![][F]![][F]![][F] | Souten No Celenaria                 | `--fmt=xfl`
+![][F]![][F]![][F] | Souten no Celenaria                 | `--fmt=xfl`
 ![][F]![][F]![][F] | Steins;Gate                         | `--fmt=npa_sg`
 ![][F]![][F]![][F] | Sukimazakura to Uso no Machi        | `--fmt=mpk`
 ![][F]![][F]![][F] | Touhou 06                           | `--fmt=pbg3`
