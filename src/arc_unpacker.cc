@@ -112,14 +112,16 @@ struct ArcUnpacker::Priv
     Options options;
     ArgParser &arg_parser;
     TransformerFactory factory;
+    std::string version;
 
-    Priv(ArgParser &arg_parser) : arg_parser(arg_parser)
+    Priv(ArgParser &arg_parser, const std::string &version)
+        : arg_parser(arg_parser), version(version)
     {
     }
 };
 
-ArcUnpacker::ArcUnpacker(ArgParser &arg_parser)
-    : p(new Priv(arg_parser))
+ArcUnpacker::ArcUnpacker(ArgParser &arg_parser, const std::string &version)
+    : p(new Priv(arg_parser, version))
 {
     add_output_folder_option(arg_parser, p->options);
     add_format_option(arg_parser, p->options);
@@ -134,7 +136,7 @@ ArcUnpacker::~ArcUnpacker()
 void ArcUnpacker::print_help(const std::string &path_to_self)
 {
     std::cout
-        << "arc_unpacker v" << AU_VERSION << "\n"
+        << "arc_unpacker v" << p->version << "\n"
         << "Extracts images and sounds from various visual novels.\n\n"
         << "Usage: " << path_to_self.c_str() << " \\\n"
         << "       [options] [fmt_options] input_path [input_path...]\n\n";

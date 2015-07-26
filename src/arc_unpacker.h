@@ -15,7 +15,7 @@ typedef struct
 class ArcUnpacker
 {
 public:
-    ArcUnpacker(ArgParser &);
+    ArcUnpacker(ArgParser &, const std::string &version);
     ~ArcUnpacker();
     bool run();
     void print_help(const std::string &);

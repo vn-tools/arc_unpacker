@@ -7,7 +7,7 @@ ENTRY_POINT(
     {
         ArgParser arg_parser;
         arg_parser.parse(arguments);
-        ArcUnpacker arc_unpacker(arg_parser);
+        ArcUnpacker arc_unpacker(arg_parser, AU_VERSION);
 
         if (!arc_unpacker.run())
             return -1;

@@ -104,8 +104,6 @@ def configure(ctx):
     configure_packages(ctx)
 
 def build(ctx):
-    ctx.env.DEFINES += [ 'AU_VERSION="' + VERSION_LONG + '"' ]
-
     common_sources = ctx.path.ant_glob('src/**/*.cc')
     common_sources = [f for f in common_sources if f.name != 'main.cc']
 
@@ -135,6 +133,7 @@ def build(ctx):
         source = program_sources,
         target = 'arc_unpacker',
         cxxflags = ['-iquote', path_to_src],
+        defines = [ 'AU_VERSION="' + VERSION_LONG + '"' ],
         use = [
             'common',
             'UNICODE',
