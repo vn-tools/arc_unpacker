@@ -1,0 +1,14 @@
+#!/bin/sh
+shopt -s globstar
+
+echo 'Checking for whitespace errors...'
+grep '\s$' **/*.{cc,h} && exit 1
+pcregrep -M '\n\n\Z' **/*.{cc,h} && exit 1
+
+echo 'Checking for too long lines...'
+grep '^.\{81,\}$' **/*.{cc,h} && exit 1
+
+echo 'Checking for lowercase hex literals...'
+grep '[0\\]x[0-9]*[a-f][0-9]*' **/*.{cc,h} && exit 1
+
+exit 0
