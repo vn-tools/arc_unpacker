@@ -1,7 +1,7 @@
 // YKG image
 //
 // Company:   -
-// Engine:a   YukaScript
+// Engine:    YukaScript
 // Extension: .ykg
 // Archives:  YKC
 
