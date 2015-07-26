@@ -2,7 +2,7 @@
 #define AU_TEST_SUPPORT_CONVERTER_SUPPORT_H
 #include <boost/filesystem/path.hpp>
 #include <string>
-#include "formats/converter.h"
+#include "fmt/converter.h"
 
 namespace au {
 namespace tests {

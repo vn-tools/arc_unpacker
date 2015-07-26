@@ -3,8 +3,8 @@
 #include <boost/filesystem/path.hpp>
 #include <memory>
 #include <string>
-#include "formats/transformer.h"
-#include "formats/transformer_factory.h"
+#include "fmt/transformer.h"
+#include "fmt/transformer_factory.h"
 
 namespace au {
 
