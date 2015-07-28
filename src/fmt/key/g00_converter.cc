@@ -39,9 +39,6 @@ static void decompress(
     size_t byte_count,
     size_t length_delta)
 {
-    assert(input != nullptr);
-    assert(output != nullptr);
-
     const u8 *src = reinterpret_cast<const u8*>(input);
     const u8 *src_guardian = src + input_size;
     u8 *dst = reinterpret_cast<u8*>(output);
@@ -85,7 +82,7 @@ static void decompress(
             {
                 if (dst >= dst_guardian)
                     break;
-                assert(dst >= reinterpret_cast<u8*>(output + look_behind));
+                assert(&dst[-look_behind] >= reinterpret_cast<u8*>(output));
                 *dst = dst[-look_behind];
                 dst++;
             }
@@ -117,7 +114,7 @@ static std::unique_ptr<char[]> decompress_from_io(
     return std::move(uncompressed);
 }
 
-static std::unique_ptr<File> decode_version_0(File &file, int width, int height)
+static std::unique_ptr<File> decode_v0(File &file, size_t width, size_t height)
 {
     size_t compressed_size = file.io.read_u32_le();
     size_t uncompressed_size = file.io.read_u32_le();
@@ -125,13 +122,13 @@ static std::unique_ptr<File> decode_version_0(File &file, int width, int height)
     if (compressed_size != file.io.size() - file.io.tell())
         throw std::runtime_error("Compressed data size mismatch");
 
-    if (uncompressed_size != static_cast<size_t>(width * height * 4))
+    if (uncompressed_size != width * height * 4)
         throw std::runtime_error("Uncompressed data size mismatch");
 
     std::unique_ptr<char[]> uncompressed = decompress_from_io(
         file.io, compressed_size, uncompressed_size, 3, 1);
 
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
+    auto image = util::Image::from_pixels(
         width,
         height,
         std::string(uncompressed.get(), width * height * 3),
@@ -139,7 +136,7 @@ static std::unique_ptr<File> decode_version_0(File &file, int width, int height)
     return image->create_file(file.name);
 }
 
-static std::unique_ptr<File> decode_version_1(File &file, int width, int height)
+static std::unique_ptr<File> decode_v1(File &file, size_t width, size_t height)
 {
     size_t compressed_size = file.io.read_u32_le() - 8;
     size_t uncompressed_size = file.io.read_u32_le();
@@ -155,10 +152,10 @@ static std::unique_ptr<File> decode_version_1(File &file, int width, int height)
         palette[i] = tmp_io.read_u32_le();
 
     std::unique_ptr<u32[]> pixels(new u32[width * height]);
-    for (size_t i = 0; i < static_cast<size_t>(width * height); i++)
+    for (size_t i = 0; i < width * height; i++)
         pixels[i] = palette[tmp_io.read_u8()];
 
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
+    auto image = util::Image::from_pixels(
         width,
         height,
         std::string(
@@ -168,7 +165,7 @@ static std::unique_ptr<File> decode_version_1(File &file, int width, int height)
     return image->create_file(file.name);
 }
 
-static std::vector<std::unique_ptr<Region>> read_version_2_regions(
+static std::vector<std::unique_ptr<Region>> read_v2_regions(
     io::IO &file_io, size_t region_count)
 {
     std::vector<std::unique_ptr<Region>> regions;
@@ -189,12 +186,10 @@ static std::vector<std::unique_ptr<Region>> read_version_2_regions(
     return regions;
 }
 
-static std::unique_ptr<File> decode_version_2(File &file, int width, int height)
+static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
 {
     size_t region_count = file.io.read_u32_le();
-    size_t i, j;
-    std::vector<std::unique_ptr<Region>> regions
-        = read_version_2_regions(file.io, region_count);
+    auto regions = read_v2_regions(file.io, region_count);
 
     size_t compressed_size = file.io.read_u32_le();
     size_t uncompressed_size = file.io.read_u32_le();
@@ -202,24 +197,21 @@ static std::unique_ptr<File> decode_version_2(File &file, int width, int height)
     if (compressed_size != file.io.size() - file.io.tell())
         throw std::runtime_error("Compressed data size mismatch");
 
-    std::unique_ptr<char[]>uncompressed = decompress_from_io(
+    auto uncompressed = decompress_from_io(
         file.io, compressed_size, uncompressed_size, 1, 2);
 
-    std::unique_ptr<u32[]> pixels(new u32[width * height]);
-    for (int i = 0; i < width * height; i++)
-        pixels[i] = 0;
-
+    std::unique_ptr<u32[]> pixels(new u32[width * height]());
     io::BufferedIO uncompressed_io(uncompressed.get(), uncompressed_size);
     if (region_count != uncompressed_io.read_u32_le())
         throw std::runtime_error("Invalid region count");
 
-    for (i = 0; i < region_count; i++)
+    for (size_t i = 0; i < region_count; i++)
     {
         uncompressed_io.seek(4 + i * 8);
         size_t block_offset = uncompressed_io.read_u32_le();
         size_t block_size = uncompressed_io.read_u32_le();
 
-        Region *region = regions[i].get();
+        Region &region = *regions[i];
         if (block_size <= 0)
             continue;
 
@@ -229,7 +221,7 @@ static std::unique_ptr<File> decode_version_2(File &file, int width, int height)
         assert(block_type == 1);
 
         uncompressed_io.skip(0x70);
-        for (j = 0; j < part_count; j++)
+        for (size_t j = 0; j < part_count; j++)
         {
             u16 part_x = uncompressed_io.read_u16_le();
             u16 part_y = uncompressed_io.read_u16_le();
@@ -238,23 +230,23 @@ static std::unique_ptr<File> decode_version_2(File &file, int width, int height)
             u16 part_height = uncompressed_io.read_u16_le();
             uncompressed_io.skip(0x52);
 
-            for (size_t y = part_y + region->y1;
-                y < static_cast<size_t>(part_y + part_height);
-                y++)
+            size_t target_x = region.x1 + part_x;
+            size_t target_y = region.y1 + part_y;
+            assert(target_x + part_width <= width);
+            assert(target_y + part_height <= height);
+            for (size_t y = 0; y < part_height; y++)
             {
                 uncompressed_io.read(
-                    &pixels[part_x + region->x1 + y * width],
-                    part_width * sizeof(u32));
+                    &pixels[target_x + (target_y + y) * width],
+                    part_width * 4);
             }
         }
     }
 
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
+    auto image = util::Image::from_pixels(
         width,
         height,
-        std::string(
-            reinterpret_cast<char*>(pixels.get()),
-            width * height * 4),
+        std::string(reinterpret_cast<char*>(pixels.get()), width * height * 4),
         util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }
@@ -273,16 +265,13 @@ std::unique_ptr<File> G00Converter::decode_internal(File &file) const
     switch (version)
     {
         case 0:
-            return decode_version_0(file, width, height);
-            break;
+            return decode_v0(file, width, height);
 
         case 1:
-            return decode_version_1(file, width, height);
-            break;
+            return decode_v1(file, width, height);
 
         case 2:
-            return decode_version_2(file, width, height);
-            break;
+            return decode_v2(file, width, height);
 
         default:
             throw std::runtime_error("Unknown G00 version");
