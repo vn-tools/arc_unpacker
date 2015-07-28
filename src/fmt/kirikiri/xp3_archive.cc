@@ -7,7 +7,7 @@
 // Known games:
 // - Fate/Stay Night
 // - Fate/Hollow Ataraxia
-// - Sono Hanabira ni Kuchizuke o 12
+// - Sono Hanabira ni Kuchizuke o 12 - Atelier no Koibito-tachi
 // - Sharin no Kuni, Himawari no Shoujo
 // - Comyu Kuroi Ryuu to Yasashii Oukoku
 

@@ -6,16 +6,16 @@
 //
 // Known games:
 // - Sono Hanabira ni Kuchizuke o 1
-// - Sono Hanabira ni Kuchizuke o 2
-// - Sono Hanabira ni Kuchizuke o 3
-// - Sono Hanabira ni Kuchizuke o 4
-// - Sono Hanabira ni Kuchizuke o 5
-// - Sono Hanabira ni Kuchizuke o 6
-// - Sono Hanabira ni Kuchizuke o 7
-// - Sono Hanabira ni Kuchizuke o 8
-// - Sono Hanabira ni Kuchizuke o 9
-// - Sono Hanabira ni Kuchizuke o 10
-// - Sono Hanabira ni Kuchizuke o 11
+// - Sono Hanabira ni Kuchizuke o 2 - Watashi no Ouji-Sama
+// - Sono Hanabira ni Kuchizuke o 3 - Anata to Koibito Tsunagi
+// - Sono Hanabira ni Kuchizuke o 4 - Itoshisa no Photograph
+// - Sono Hanabira ni Kuchizuke o 5 - Anata o Suki na Shiawase
+// - Sono Hanabira ni Kuchizuke o 6 - Kuchibiru to Kiss de Tsubuyaite
+// - Sono Hanabira ni Kuchizuke o 7 - Amakute Hoshikute Torokeru Chuu
+// - Sono Hanabira ni Kuchizuke o 8 - Tenshi no Hanabira Zome
+// - Sono Hanabira ni Kuchizuke o 9 - Amakute Otona no Torokeru Chuu
+// - Sono Hanabira ni Kuchizuke o 10 - Lily Platinum
+// - Sono Hanabira ni Kuchizuke o 11 - Michael no Otome-tachi
 
 #include "fmt/nsystem/fjsys_archive.h"
 #include "fmt/nsystem/mgd_converter.h"
