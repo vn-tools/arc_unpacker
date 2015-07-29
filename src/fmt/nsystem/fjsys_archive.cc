@@ -16,6 +16,7 @@
 // - Sono Hanabira ni Kuchizuke o 9 - Amakute Otona no Torokeru Chuu
 // - Sono Hanabira ni Kuchizuke o 10 - Lily Platinum
 // - Sono Hanabira ni Kuchizuke o 11 - Michael no Otome-tachi
+// - Hanahira
 
 #include "fmt/nsystem/fjsys_archive.h"
 #include "fmt/nsystem/mgd_converter.h"
