@@ -56,16 +56,16 @@
     i.full {
       background: black;
     }
-    i.part:after {
+    i.partial:after {
       display: block;
       content: '';
       border: 6px solid;
       border-color: black transparent transparent black;
     }
-    i.bad {
+    i.none {
       position: relative;
     }
-    i.bad:after, i.bad:before {
+    i.none:after, i.none:before {
       position: absolute;
       top: 5px;
       left: 0px;
@@ -75,11 +75,15 @@
       height: 1px;
       background: black;
     }
-    i.bad:after {
+    i.none:after {
       transform: rotate(45deg);
     }
-    i.bad:before {
+    i.none:before {
       transform: rotate(-45deg);
+    }
+    i.incorrect {
+      border-style: dashed;
+      border-color: #bdb;
     }
     canvas {
       float: left;
@@ -132,9 +136,9 @@
     <div id="aux-legend">
       <table>
         <tr><td><i class="full"></i></td><td>Fully supported</td></tr>
-        <tr><td><i class="part"></i></td><td>Partially supported</td></tr>
+        <tr><td><i class="partial"></i></td><td>Partially supported</td></tr>
         <tr><td><i class="none"></i></td><td>Not supported</td></tr>
-        <tr><td><i class="bad"></i></td><td>Doesn't apply</td></tr>
+        <tr><td><i class="incorrect"></i></td><td>Doesn't apply</td></tr>
       </table>
     </div>
     <div class="clear"></div>
@@ -181,8 +185,8 @@
       <tbody>
         <tr>
           <td><i class="full"></i></td>
-          <td><i class="bad"></i></td>
-          <td><i class="bad"></i></td>
+          <td><i class="incorrect"></i></td>
+          <td><i class="incorrect"></i></td>
           <td>Generic <code>.exe</code> and <code>.dll</code> resources</td>
           <td><code>--fmt=exe</code></td>
         </tr>
@@ -204,7 +208,7 @@
         </tr>
 
         <tr>
-          <td><i class="bad"></i></td>
+          <td><i class="incorrect"></i></td>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
           <td>Clannad</td>
@@ -284,7 +288,7 @@
         </tr>
 
         <tr>
-          <td><i class="bad"></i></td>
+          <td><i class="incorrect"></i></td>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
           <td>Kanon</td>
@@ -316,7 +320,7 @@
         </tr>
 
         <tr>
-          <td><i class="bad"></i></td>
+          <td><i class="incorrect"></i></td>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
           <td>Little Busters</td>
@@ -550,7 +554,7 @@
         <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td>Touhou 07</td>
           <td><code>--fmt=pbg4</code></td>
         </tr>
@@ -566,7 +570,7 @@
         <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td>Touhou 08</td>
           <td><code>--fmt=pbgz</code></td>
         </tr>
@@ -574,7 +578,7 @@
         <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td>Touhou 09</td>
           <td><code>--fmt=pbgz</code></td>
         </tr>
@@ -582,7 +586,7 @@
         <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td>Touhou 09.5</td>
           <td><code>--fmt=tha1</code></td>
         </tr>
@@ -590,7 +594,7 @@
         <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td>Touhou 10</td>
           <td><code>--fmt=tha1</code></td>
         </tr>
@@ -606,7 +610,7 @@
         <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td>Touhou 11</td>
           <td><code>--fmt=tha1</code></td>
         </tr>
@@ -614,7 +618,7 @@
         <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td>Touhou 12</td>
           <td><code>--fmt=tha1</code></td>
         </tr>
@@ -630,7 +634,7 @@
         <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td>Touhou 12.5</td>
           <td><code>--fmt=tha1</code></td>
         </tr>
@@ -638,7 +642,7 @@
         <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td>Touhou 12.8</td>
           <td><code>--fmt=tha1</code></td>
         </tr>
@@ -646,7 +650,7 @@
         <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td>Touhou 13</td>
           <td><code>--fmt=tha1</code></td>
         </tr>
@@ -662,7 +666,7 @@
         <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td>Touhou 14</td>
           <td><code>--fmt=tha1</code></td>
         </tr>
@@ -670,14 +674,14 @@
         <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td>Touhou 14.3</td>
           <td><code>--fmt=tha1</code></td>
         </tr>
 
         <tr>
           <td><i class="full"></i></td>
-          <td><i class="part"></i></td>
+          <td><i class="partial"></i></td>
           <td><i class="full"></i></td>
           <td>Touhou 14.5</td>
           <td><code>--fmt=tfpk --file-names=extra/th145-file-names.lst</code></td>
@@ -724,7 +728,7 @@
         </tr>
 
         <tr>
-          <td><i class="bad"></i></td>
+          <td><i class="incorrect"></i></td>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
           <td>Yume Nikki</td>
