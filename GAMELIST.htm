@@ -12,10 +12,6 @@
       font-size: 18pt;
       font-weight: normal;
     }
-    h2 {
-      font-size: 16pt;
-      font-weight: normal;
-    }
     table {
       border-spacing: 0;
       border-collapse: collapse;
@@ -103,6 +99,9 @@
     .clear {
       clear: both;
     }
+    section {
+      margin-bottom: 0.5em;
+    }
   </style>
 </head>
 <body>
@@ -113,7 +112,6 @@
   </h1>
 
   <section>
-    <h2>Feature legend</h2>
     <div id="main-legend">
       <div>
         <canvas id="main-legend-arrows"></canvas>
@@ -172,7 +170,6 @@
   </section>
 
   <section>
-    <h2>Archives</h2>
     <table class="zebra">
       <thead>
         <tr>
@@ -186,7 +183,7 @@
           <td><i class="full"></i></td>
           <td><i class="bad"></i></td>
           <td><i class="bad"></i></td>
-          <td>Generic <code>.exe</code> resources</td>
+          <td>Generic <code>.exe</code> and <code>.dll</code> resources</td>
           <td><code>--fmt=exe</code></td>
         </tr>
 
@@ -204,6 +201,14 @@
           <td><i class="full"></i></td>
           <td>Cherry Tree High Comedy Club</td>
           <td><code>--fmt=rgssad</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="bad"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Clannad</td>
+          <td><code>--fmt=g00</code>, <code>--fmt=nwa</code></td>
         </tr>
 
         <tr>
@@ -242,6 +247,14 @@
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
+          <td>Fortune Summoners: Secret Of The Elemental Stone</td>
+          <td><code>--fmt=exe</code>, <code>--fmt=sotes</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
           <td>Hanahira</td>
           <td><code>--fmt=fjsys</code></td>
         </tr>
@@ -271,6 +284,14 @@
         </tr>
 
         <tr>
+          <td><i class="bad"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Kanon</td>
+          <td><code>--fmt=g00</code>, <code>--fmt=nwa</code></td>
+        </tr>
+
+        <tr>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
           <td><i class="full"></i></td>
@@ -292,6 +313,14 @@
           <td><i class="full"></i></td>
           <td>Koiken Otome</td>
           <td><code>--fmt=pack --fkey=... --gameexe=...</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="bad"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Little Busters</td>
+          <td><code>--fmt=g00</code>, <code>--fmt=nwa</code></td>
         </tr>
 
         <tr>
@@ -692,52 +721,6 @@
           <td><i class="full"></i></td>
           <td>Watashi no Puni Puni</td>
           <td><code>--fmt=gml</code></td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>Files</h2>
-    <table class="zebra">
-      <thead>
-        <tr>
-          <th colspan="3">Features</th>
-          <th>Game</th>
-          <th>CLI invocation</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><i class="bad"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Clannad</td>
-          <td><code>--fmt=g00</code>, <code>--fmt=nwa</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="bad"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Fortune Summoners</td>
-          <td><code>--fmt=sotes</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="bad"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Kanon</td>
-          <td><code>--fmt=g00</code>, <code>--fmt=nwa</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="bad"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Little Busters</td>
-          <td><code>--fmt=g00</code>, <code>--fmt=nwa</code></td>
         </tr>
 
         <tr>
