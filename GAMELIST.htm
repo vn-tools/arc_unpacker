@@ -1,0 +1,752 @@
+<!-- vim: set tw=80 sts=2 ts=2 sw=2 cc=80: -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>arc_unpacker - supported game list</title>
+  <style type="text/css">
+    body {
+      font-size: 12pt;
+      font-family: sans-serif;
+    }
+    h1 {
+      font-size: 18pt;
+      font-weight: normal;
+    }
+    h2 {
+      font-size: 16pt;
+      font-weight: normal;
+    }
+    table {
+      border-spacing: 0;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 0.2em 0.5em;
+      text-align: left;
+      font-weight: normal;
+    }
+    th:first-child {
+      text-align: center;
+    }
+    th {
+      border: 1px solid #ccc;
+    }
+    td {
+      border: 1px solid #ddd;
+    }
+    table.zebra thead tr {
+      background: #eee;
+    }
+    table.zebra tbody tr:nth-child(2n) {
+      background: #f7f7f7;
+    }
+    table.zebra tr:hover td {
+      background: #f7f7f0;
+    }
+    table.zebra tr:hover:nth-child(2n) td {
+      background: #eeeee7;
+    }
+    a {
+      text-decoration: none;
+      color: dodgerblue;
+    }
+    i {
+      width: 12px;
+      height: 12px;
+      vertical-align: middle;
+      display: inline-block;
+      border: 1px solid black;
+    }
+    i.full {
+      background: black;
+    }
+    i.part:after {
+      display: block;
+      content: '';
+      border: 6px solid;
+      border-color: black transparent transparent black;
+    }
+    i.bad {
+      position: relative;
+    }
+    i.bad:after, i.bad:before {
+      position: absolute;
+      top: 5px;
+      left: 0px;
+      content: '';
+      display: block;
+      width: 12px;
+      height: 1px;
+      background: black;
+    }
+    i.bad:after {
+      transform: rotate(45deg);
+    }
+    i.bad:before {
+      transform: rotate(-45deg);
+    }
+    canvas {
+      float: left;
+      margin-right: 0.5em;
+    }
+    #main-legend-hints {
+      float: left;
+      margin-bottom: 0.5em;
+    }
+    #main-legend {
+      float: left;
+    }
+    #aux-legend {
+      float: left;
+      margin-left: 10em;
+    }
+    .clear {
+      clear: both;
+    }
+  </style>
+</head>
+<body>
+  <h1>
+    <a href="https://github.com/vn-tools/arc_unpacker">
+      <code>arc_unpacker</code>
+    </a> - supported game list
+  </h1>
+
+  <section>
+    <h2>Feature legend</h2>
+    <div id="main-legend">
+      <div>
+        <canvas id="main-legend-arrows"></canvas>
+        <table id="main-legend-hints">
+          <tr><td>Generic files</td></tr>
+          <tr><td>Graphic</td></tr>
+          <tr><td>Sound</td></tr>
+        </table>
+      </div>
+      <table id="main-legend-table">
+        <tr>
+        <td><i class="full"></i></td>
+        <td><i class="full"></i></td>
+        <td><i class="full"></i></td>
+        </tr>
+      </table>
+    </div>
+    <div id="aux-legend">
+      <table>
+        <tr><td><i class="full"></i></td><td>Fully supported</td></tr>
+        <tr><td><i class="part"></i></td><td>Partially supported</td></tr>
+        <tr><td><i class="none"></i></td><td>Not supported</td></tr>
+        <tr><td><i class="bad"></i></td><td>Doesn't apply</td></tr>
+      </table>
+    </div>
+    <div class="clear"></div>
+
+    <script>
+      var main_legend_table = document.getElementById('main-legend-table');
+      var main_legend_hints = document.getElementById('main-legend-hints');
+      var canvas = document.getElementById('main-legend-arrows');
+      canvas.width = main_legend_table.offsetWidth;
+      canvas.height = main_legend_hints.offsetHeight;
+      var ctx = canvas.getContext("2d");
+      ctx.lineWidth = .5;
+      function moveTo(x, y) {
+        ctx.moveTo(Math.floor(x) + 0.5, Math.floor(y) + 0.5);
+      }
+      function lineTo(x, y) {
+        ctx.lineTo(Math.floor(x) + 0.5, Math.floor(y) + 0.5);
+      }
+      ctx.beginPath();
+      moveTo(canvas.width / 6, canvas.height);
+      lineTo(canvas.width / 6, canvas.height / 6);
+      lineTo(canvas.width, canvas.height / 6);
+      ctx.stroke();
+      moveTo(canvas.width * 3 / 6, canvas.height);
+      lineTo(canvas.width * 3 / 6, canvas.height * 3 / 6);
+      lineTo(canvas.width, canvas.height * 3 / 6);
+      ctx.stroke();
+      moveTo(canvas.width * 5 / 6, canvas.height);
+      lineTo(canvas.width * 5 / 6, canvas.height * 5 / 6);
+      lineTo(canvas.width, canvas.height * 5 / 6);
+      ctx.stroke();
+    </script>
+  </section>
+
+  <section>
+    <h2>Archives</h2>
+    <table class="zebra">
+      <thead>
+        <tr>
+          <th colspan="3">Features</th>
+          <th>Game</th>
+          <th>CLI invocation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="bad"></i></td>
+          <td><i class="bad"></i></td>
+          <td>Generic <code>.exe</code> resources</td>
+          <td><code>--fmt=exe</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Chaos;Head</td>
+          <td><code>--fmt=npa</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Cherry Tree High Comedy Club</td>
+          <td><code>--fmt=rgssad</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Comyu Kuroi Ryuu to Yasashii Oukoku</td>
+          <td><code>--fmt=xp3 --plugin=comyu</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Everlasting Summer</td>
+          <td><code>--fmt=rpa</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Fate/Hollow Ataraxia</td>
+          <td><code>--fmt=xp3 --plugin=fha</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Fate/Stay Night</td>
+          <td><code>--fmt=xp3 --plugin=fsn</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Higurashi No Naku Koro Ni</td>
+          <td><code>--fmt=arc</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Hoshizora e Kakaru Hashi</td>
+          <td><code>--fmt=ykc</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Irotoridori no Sekai</td>
+          <td><code>--fmt=fvp</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Katawa Shoujo</td>
+          <td><code>--fmt=rpa</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Kimihagu</td>
+          <td><code>--fmt=pack</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Koiken Otome</td>
+          <td><code>--fmt=pack --fkey=... --gameexe=...</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Long Live The Queen</td>
+          <td><code>--fmt=rpa</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Mahou Tsukai no Yoru</td>
+          <td><code>--fmt=xp3 --plugin=mahoyoru</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Maji de Watashi ni Koishinasai!</td>
+          <td><code>--fmt=pac</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Mebae</td>
+          <td><code>--fmt=tac</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Melty Blood</td>
+          <td><code>--fmt=p</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Musume Shimai</td>
+          <td><code>--fmt=g2</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Pure My Imouto Milk Purin</td>
+          <td><code>--fmt=g2</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Saya no Uta</td>
+          <td><code>--fmt=pak</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sekien no Inganock - What a Beautiful People</td>
+          <td><code>--fmt=xfl</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sharin no Kuni, Himawari no Shoujo</td>
+          <td><code>--fmt=xp3 --plugin=noop</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Shikkoku no Sharnoth - What a Beautiful Tomorrow</td>
+          <td><code>--fmt=xfl</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sono Hanabira ni Kuchizuke o 1</td>
+          <td><code>--fmt=fjsys</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sono Hanabira ni Kuchizuke o 2 - Watashi no Ouji-sama</td>
+          <td><code>--fmt=fjsys</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sono Hanabira ni Kuchizuke o 3 - Anata to Koibito Tsunagi</td>
+          <td><code>--fmt=fjsys</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sono Hanabira ni Kuchizuke o 4 - Itoshisa no Photograph</td>
+          <td><code>--fmt=fjsys</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sono Hanabira ni Kuchizuke o 5 - Anata o Suki na Shiawase</td>
+          <td><code>--fmt=fjsys</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sono Hanabira ni Kuchizuke o 6 - Kuchibiru to Kiss de Tsubuyaite</td>
+          <td><code>--fmt=fjsys</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sono Hanabira ni Kuchizuke o 7 - Amakute Hoshikute Torokeru Chuu</td>
+          <td><code>--fmt=fjsys</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sono Hanabira ni Kuchizuke o 8 - Tenshi no Hanabira Zome</td>
+          <td><code>--fmt=fjsys</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sono Hanabira ni Kuchizuke o 9 - Amakute Otona no Torokeru Chuu</td>
+          <td><code>--fmt=fjsys</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sono Hanabira ni Kuchizuke o 10 - Lily Platinum</td>
+          <td><code>--fmt=fjsys</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sono Hanabira ni Kuchizuke o 11 - Michael no Otomoe-tachi</td>
+          <td><code>--fmt=fjsys</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sono Hanabira ni Kuchizuke o 12 - Atelier no Koibito-tachi</td>
+          <td><code>--fmt=xp3 --plugin=noop</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Soshite Ashita no Sekai yori</td>
+          <td><code>--fmt=pack</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Souten no Celenaria - What a Beautiful World</td>
+          <td><code>--fmt=xfl</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Steins;Gate</td>
+          <td><code>--fmt=npa_sg</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Sukimazakura to Uso no Machi</td>
+          <td><code>--fmt=mpk</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Touhou 06</td>
+          <td><code>--fmt=pbg3</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td>Touhou 07</td>
+          <td><code>--fmt=pbg4</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Touhou 07.5</td>
+          <td><code>--fmt=th-pak1</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td>Touhou 08</td>
+          <td><code>--fmt=pbgz</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td>Touhou 09</td>
+          <td><code>--fmt=pbgz</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td>Touhou 09.5</td>
+          <td><code>--fmt=tha1</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td>Touhou 10</td>
+          <td><code>--fmt=tha1</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Touhou 10.5</td>
+          <td><code>--fmt=th-pak2</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td>Touhou 11</td>
+          <td><code>--fmt=tha1</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td>Touhou 12</td>
+          <td><code>--fmt=tha1</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Touhou 12.3</td>
+          <td><code>--fmt=th-pak2</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td>Touhou 12.5</td>
+          <td><code>--fmt=tha1</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td>Touhou 12.8</td>
+          <td><code>--fmt=tha1</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td>Touhou 13</td>
+          <td><code>--fmt=tha1</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Touhou 13.5</td>
+          <td><code>--fmt=tfpk --file-names=extra/th135-file-names.lst</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td>Touhou 14</td>
+          <td><code>--fmt=tha1</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td>Touhou 14.3</td>
+          <td><code>--fmt=tha1</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="part"></i></td>
+          <td><i class="full"></i></td>
+          <td>Touhou 14.5</td>
+          <td><code>--fmt=tfpk --file-names=extra/th145-file-names.lst</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Tsujidou-san no Jun'ai Road</td>
+          <td><code>--fmt=dat-whale --game-title=辻堂さんの純愛ロード --file-names=extra/tsujidou-junai.lst</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Tsukihime</td>
+          <td><code>--fmt=nsa</code>, <code>--fmt=sar</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Umineko No Naku Koro Ni</td>
+          <td><code>--fmt=nsa</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Wanko to Kurasou</td>
+          <td><code>--fmt=mbl</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Watashi no Puni Puni</td>
+          <td><code>--fmt=gml</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Files</h2>
+    <table class="zebra">
+      <thead>
+        <tr>
+          <th colspan="3">Features</th>
+          <th>Game</th>
+          <th>CLI invocation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><i class="bad"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Clannad</td>
+          <td><code>--fmt=g00</code>, <code>--fmt=nwa</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="bad"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Fortune Summoners</td>
+          <td><code>--fmt=sotes</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="bad"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Kanon</td>
+          <td><code>--fmt=g00</code>, <code>--fmt=nwa</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="bad"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Little Busters</td>
+          <td><code>--fmt=g00</code>, <code>--fmt=nwa</code></td>
+        </tr>
+
+        <tr>
+          <td><i class="bad"></i></td>
+          <td><i class="full"></i></td>
+          <td><i class="full"></i></td>
+          <td>Yume Nikki</td>
+          <td><code>--fmt=xyz</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    <p>If a game isn't listed above and it works, please let me know so I can
+    update the table. Contact information can be found in
+    <a href="https://github.com/vn-tools/arc_unpacker">README</a>.</p>
+  </footer>
+</body>
+</html>
