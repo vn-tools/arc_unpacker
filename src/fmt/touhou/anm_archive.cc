@@ -22,8 +22,8 @@
 #include <map>
 #include "fmt/touhou/anm_archive.h"
 #include "util/colors.h"
+#include "util/format.h"
 #include "util/image.h"
-#include "util/itos.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -175,8 +175,8 @@ static void write_pixels(
                     break;
 
                 default:
-                    throw std::runtime_error(
-                        "Unknown color format: " + util::itos(format));
+                    throw std::runtime_error(util::format(
+                        "Unknown color format: %d", format));
             }
         }
     }

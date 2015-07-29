@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include "file_saver.h"
 #include "io/file_io.h"
-#include "util/itos.h"
+#include "util/format.h"
 
 using namespace au;
 
@@ -27,7 +27,7 @@ struct FileSaverHdd::Priv
         while (paths.find(new_path) != paths.end()
         || (!overwrite && boost::filesystem::exists(new_path)))
         {
-            std::string suffix = "(" + util::itos(i++) + ")";
+            std::string suffix = util::format("(%d)", i++);
             new_path = path.parent_path();
             new_path /= boost::filesystem::path(
                 path.stem().string() + suffix + path.extension().string());

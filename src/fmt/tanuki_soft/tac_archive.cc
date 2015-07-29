@@ -7,13 +7,12 @@
 // Known games:
 // - Mebae
 
-#include <cinttypes>
 #include <openssl/blowfish.h>
-#include "io/buffered_io.h"
 #include "fmt/tanuki_soft/tac_archive.h"
-#include "util/itos.h"
-#include "util/zlib.h"
+#include "io/buffered_io.h"
 #include "util/encoding.h"
+#include "util/format.h"
+#include "util/zlib.h"
 
 using namespace au;
 using namespace au::fmt::tanuki_soft;
@@ -132,9 +131,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
 
     if (!entry.compressed)
     {
-        char key[40];
-        sprintf(key, "%" PRIu64 "_tlib_secure_", entry.hash);
-
+        std::string key = util::format("%llu_tlib_secure_", entry.hash);
         size_t bytes_to_decrypt = 10240;
         if (data.size() < bytes_to_decrypt)
             bytes_to_decrypt = data.size();
@@ -150,7 +147,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
     }
 
     file->io.write(data);
-    file->name = util::itos(entry.index);
+    file->name = util::format("%d", entry.index);
     file->guess_extension();
     return file;
 }

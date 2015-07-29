@@ -8,7 +8,7 @@
 // - Touhou 07.5 - Immaterial and Missing Power
 
 #include "fmt/touhou/pak1_sound_archive.h"
-#include "util/itos.h"
+#include "util/format.h"
 #include "util/sound.h"
 
 using namespace au;
@@ -31,7 +31,7 @@ static std::unique_ptr<File> read_sound(io::IO &arc_io, size_t index)
         sample_rate,
         arc_io.read(size));
 
-    return sound->create_file(util::itos(index, 4));
+    return sound->create_file(util::format("%04d", index));
 }
 
 bool Pak1SoundArchive::is_recognized_internal(File &arc_file) const

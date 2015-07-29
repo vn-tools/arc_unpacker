@@ -13,7 +13,7 @@
 #include "fmt/kirikiri/tlg_converter.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
-#include "util/itos.h"
+#include "util/format.h"
 #include "util/zlib.h"
 
 using namespace au;
@@ -177,7 +177,7 @@ static Table read_table(
 
         if (entry->type == TableEntryType::Compressed)
         {
-            entry->sjis_name = util::itos(i, 4) + ".txt";
+            entry->sjis_name = util::format("%04d.txt", i);
         }
         else
         {

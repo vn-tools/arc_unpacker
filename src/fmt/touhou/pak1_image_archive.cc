@@ -11,8 +11,8 @@
 #include "fmt/touhou/palette.h"
 #include "io/buffered_io.h"
 #include "util/colors.h"
+#include "util/format.h"
 #include "util/image.h"
-#include "util/itos.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -78,7 +78,7 @@ static std::unique_ptr<File> read_image(
         image_height,
         target_io.read(target_io.size()),
         util::PixelFormat::BGRA);
-    return image->create_file(util::itos(index, 4));
+    return image->create_file(util::format("%04d", index));
 }
 
 bool Pak1ImageArchive::is_recognized_internal(File &arc_file) const

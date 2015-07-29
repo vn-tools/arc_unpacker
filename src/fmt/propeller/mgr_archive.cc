@@ -9,7 +9,7 @@
 
 #include "fmt/propeller/mgr_archive.h"
 #include "io/buffered_io.h"
-#include "util/itos.h"
+#include "util/format.h"
 
 using namespace au;
 using namespace au::fmt::propeller;
@@ -79,7 +79,7 @@ void MgrArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         size_t size_compressed = arc_file.io.read_u32_le();
 
         std::unique_ptr<File> file(new File);
-        file->name = util::itos(++file_number) + ".bmp";
+        file->name = util::format("%d.bmp", ++file_number);
 
         io::BufferedIO input(arc_file.io, size_compressed);
         decompress(input, file->io, size_original);

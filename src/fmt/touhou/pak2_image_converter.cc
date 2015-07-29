@@ -12,8 +12,8 @@
 #include "fmt/touhou/pak2_image_converter.h"
 #include "io/buffered_io.h"
 #include "util/colors.h"
+#include "util/format.h"
 #include "util/image.h"
-#include "util/itos.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -63,7 +63,7 @@ std::unique_ptr<File> Pak2ImageConverter::decode_internal(File &file) const
     {
         auto path = boost::filesystem::path(file.name);
         path.remove_filename();
-        path /= "palette" + util::itos(palette_number, 3) + ".pal";
+        path /= util::format("palette%03d.pal", palette_number);
 
         auto it = p->palette_map.find(path.generic_string());
         palette = it != p->palette_map.end()

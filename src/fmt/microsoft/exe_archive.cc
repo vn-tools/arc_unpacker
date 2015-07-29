@@ -10,7 +10,7 @@
 #include <cstdio>
 #include "fmt/microsoft/exe_archive.h"
 #include "util/encoding.h"
-#include "util/itos.h"
+#include "util/format.h"
 
 using namespace au;
 using namespace au::fmt::microsoft;
@@ -382,7 +382,7 @@ static std::string read_entry_name(
         case 24: return "MANIFEST";
     }
 
-    return util::itos(entry.id);
+    return util::format("%d", entry.id);
 }
 
 static void process_image_resource_data_entry(

@@ -15,7 +15,7 @@
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
-#include "util/itos.h"
+#include "util/format.h"
 
 using namespace au;
 using namespace au::fmt::liar_soft;
@@ -35,8 +35,8 @@ static size_t wcg_unpack(
     size_t actual_size = io.read_u32_le();
     if (expected_size != actual_size)
     {
-        throw std::runtime_error("Unexpected size: "
-            + util::itos(actual_size) + " != " + util::itos(expected_size));
+        throw std::runtime_error(util::format(
+            "Unexpected size: %d != %d", actual_size, expected_size));
     }
 
     u32 base_offset = io.read_u32_le();

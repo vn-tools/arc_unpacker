@@ -10,8 +10,8 @@
 #include "fmt/touhou/tfbm_converter.h"
 #include "io/buffered_io.h"
 #include "util/colors.h"
+#include "util/format.h"
 #include "util/image.h"
-#include "util/itos.h"
 #include "util/zlib.h"
 
 using namespace au;
@@ -64,7 +64,7 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
         u32 palette_number = 0;
         auto path = boost::filesystem::path(file.name);
         path.remove_filename();
-        path /= "palette" + util::itos(palette_number, 3) + ".bmp";
+        path /= util::format("palette%03d.bmp", palette_number);
 
         auto it = p->palette_map.find(path.generic_string());
         palette = it != p->palette_map.end()
@@ -94,8 +94,8 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
                     break;
 
                 default:
-                    throw std::runtime_error("Unsupported channel count "
-                        + util::itos(bit_depth));
+                    throw std::runtime_error(util::format(
+                        "Unsupported channel count: %d", bit_depth));
             }
 
             if (x < image_width)
