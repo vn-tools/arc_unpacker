@@ -16,6 +16,7 @@
 #include "fmt/ivory/prs_converter.h"
 #include "fmt/key/g00_converter.h"
 #include "fmt/key/nwa_converter.h"
+#include "fmt/kid/lnk_archive.h"
 #include "fmt/kirikiri/tlg_converter.h"
 #include "fmt/kirikiri/xp3_archive.h"
 #include "fmt/liar_soft/lwg_archive.h"
@@ -82,6 +83,7 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("tac",       []() { return new tanuki_soft::TacArchive(); });
     p->add("tfpk",      []() { return new touhou::TfpkArchive();     });
     #endif
+    p->add("lnk",       []() { return new kid::LnkArchive();         });
     p->add("mgr",       []() { return new propeller::MgrArchive();   });
     p->add("mpk",       []() { return new propeller::MpkArchive();   });
     p->add("fvp",       []() { return new fvp::BinArchive();         });
