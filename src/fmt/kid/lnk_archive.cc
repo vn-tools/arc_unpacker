@@ -16,6 +16,7 @@ using namespace au;
 using namespace au::fmt::kid;
 
 static const std::string magic = "LNK\x00"_s;
+static const std::string compress_magic = "lnd\x00"_s;
 
 namespace
 {
@@ -49,6 +50,63 @@ static Table read_table(io::IO &arc_io)
     return table;
 }
 
+static std::unique_ptr<io::IO> decompress(io::IO &input_io)
+{
+    std::unique_ptr<io::BufferedIO> output_io(new io::BufferedIO);
+
+    if (input_io.read(compress_magic.size()) != compress_magic)
+        throw std::runtime_error("Unexpected file header");
+    input_io.skip(4);
+    size_t size_original = input_io.read_u32_le();
+    input_io.skip(4);
+
+    output_io->reserve(size_original);
+    while (output_io->tell() < size_original)
+    {
+        u8 byte = input_io.read_u8();
+        if (byte & 0x80)
+        {
+            if (byte & 0x40)
+            {
+                int repetitions = (byte & 0x1F) + 2;
+                if (byte & 0x20)
+                    repetitions += input_io.read_u8() << 5;
+                u8 data_byte = input_io.read_u8();
+                for (auto i : util::range(repetitions))
+                    output_io->write_u8(data_byte);
+            }
+            else
+            {
+                int length = ((byte >> 2) & 0xF) + 2;
+                int look_behind = ((byte & 3) << 8) + input_io.read_u8() + 1;
+                int start_pos = output_io->tell() - look_behind;
+                for (auto i : util::range(length))
+                    output_io->write_u8(output_io->buffer()[start_pos + i]);
+            }
+        }
+        else
+        {
+            if (byte & 0x40)
+            {
+                int repetitions = input_io.read_u8() + 1;
+                int length = (byte & 0x3F) + 2;
+                auto chunk = input_io.read(length);
+                for (auto i : util::range(repetitions))
+                    output_io->write(chunk);
+            }
+            else
+            {
+                int length = (byte & 0x1F) + 1;
+                if (byte & 0x20)
+                    length += input_io.read_u8() << 5;
+                output_io->write(input_io.read(length));
+            }
+        }
+    }
+    output_io->seek(0);
+    return output_io;
+}
+
 static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
@@ -77,11 +135,15 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
         }
     }
 
-    if (entry.compressed)
-        throw std::runtime_error("Compressed files are not supported");
-
     data_io.seek(0);
-    file->io.write_from_io(data_io, entry.size);
+    if (entry.compressed)
+    {
+        auto decompressed_io = decompress(data_io);
+        file->io.write_from_io(*decompressed_io);
+    }
+    else
+        file->io.write_from_io(data_io);
+
     return file;
 }
 
