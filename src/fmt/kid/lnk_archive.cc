@@ -61,7 +61,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     else if (file->has_extension(".scr"))
         key_pos = 0x1000;
 
-    if (key_pos >= 0 && key_pos < entry.size)
+    if (key_pos >= 0 && key_pos < static_cast<int>(entry.size))
     {
         u8 key = 0;
         for (u8 c : entry.name)
