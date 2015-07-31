@@ -22,6 +22,7 @@ namespace
     typedef struct
     {
         std::string name;
+        bool compressed;
         u32 offset;
         u32 size;
     } TableEntry;
@@ -39,7 +40,9 @@ static Table read_table(io::IO &arc_io)
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->offset = arc_io.read_u32_le() + file_data_start;
-        entry->size = arc_io.read_u32_le() / 2;
+        u32 tmp = arc_io.read_u32_le();
+        entry->compressed = tmp & 1;
+        entry->size = tmp >> 1;
         entry->name = arc_io.read_until_zero(24);
         table.push_back(std::move(entry));
     }
@@ -73,6 +76,9 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
             key = key * 0x6D - 0x25;
         }
     }
+
+    if (entry.compressed)
+        throw std::runtime_error("Compressed files are not supported");
 
     data_io.seek(0);
     file->io.write_from_io(data_io, entry.size);
