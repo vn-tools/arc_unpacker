@@ -17,6 +17,7 @@
 #include "fmt/key/g00_converter.h"
 #include "fmt/key/nwa_converter.h"
 #include "fmt/kid/lnk_archive.h"
+#include "fmt/kid/sound_converter.h"
 #include "fmt/kirikiri/tlg_converter.h"
 #include "fmt/kirikiri/xp3_archive.h"
 #include "fmt/liar_soft/lwg_archive.h"
@@ -116,6 +117,7 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("anm",       []() { return new touhou::AnmArchive();      });
     p->add("dat-whale", []() { return new whale::DatArchive();       });
 
+    p->add("waf",       []() { return new kid::SoundConverter();        });
     p->add("nvsg",      []() { return new fvp::NvsgConverter();         });
     p->add("dds",       []() { return new microsoft::DdsConverter();    });
     p->add("pgx",       []() { return new glib::PgxConverter();         });

@@ -8,6 +8,7 @@
 // - Ever 17
 
 #include "fmt/kid/lnk_archive.h"
+#include "fmt/kid/sound_converter.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
@@ -76,6 +77,20 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     data_io.seek(0);
     file->io.write_from_io(data_io, entry.size);
     return file;
+}
+
+struct LnkArchive::Priv
+{
+    SoundConverter sound_converter;
+};
+
+LnkArchive::LnkArchive() : p(new Priv)
+{
+    add_transformer(&p->sound_converter);
+}
+
+LnkArchive::~LnkArchive()
+{
 }
 
 bool LnkArchive::is_recognized_internal(File &arc_file) const
