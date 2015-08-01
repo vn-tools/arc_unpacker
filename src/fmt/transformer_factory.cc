@@ -19,7 +19,7 @@
 #include "fmt/kid/cps_converter.h"
 #include "fmt/kid/lnk_archive.h"
 #include "fmt/kid/prt_converter.h"
-#include "fmt/kid/sound_converter.h"
+#include "fmt/kid/waf_converter.h"
 #include "fmt/kirikiri/tlg_converter.h"
 #include "fmt/kirikiri/xp3_archive.h"
 #include "fmt/liar_soft/lwg_archive.h"
@@ -121,7 +121,7 @@ TransformerFactory::TransformerFactory() : p(new Priv)
 
     p->add("prt",       []() { return new kid::PrtConverter();          });
     p->add("cps",       []() { return new kid::CpsConverter();          });
-    p->add("waf",       []() { return new kid::SoundConverter();        });
+    p->add("waf",       []() { return new kid::WafConverter();          });
     p->add("nvsg",      []() { return new fvp::NvsgConverter();         });
     p->add("dds",       []() { return new microsoft::DdsConverter();    });
     p->add("pgx",       []() { return new glib::PgxConverter();         });

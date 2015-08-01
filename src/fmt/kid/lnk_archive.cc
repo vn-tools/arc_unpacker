@@ -11,7 +11,7 @@
 #include "fmt/kid/decompressor.h"
 #include "fmt/kid/lnk_archive.h"
 #include "fmt/kid/prt_converter.h"
-#include "fmt/kid/sound_converter.h"
+#include "fmt/kid/waf_converter.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
@@ -107,14 +107,14 @@ struct LnkArchive::Priv
 {
     CpsConverter cps_converter;
     PrtConverter prt_converter;
-    SoundConverter sound_converter;
+    WafConverter waf_converter;
 };
 
 LnkArchive::LnkArchive() : p(new Priv)
 {
     add_transformer(&p->cps_converter);
     add_transformer(&p->prt_converter);
-    add_transformer(&p->sound_converter);
+    add_transformer(&p->waf_converter);
 }
 
 LnkArchive::~LnkArchive()

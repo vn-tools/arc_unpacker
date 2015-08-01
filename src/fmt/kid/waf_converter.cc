@@ -1,4 +1,4 @@
-// KID music/sound
+// KID music/sound file
 //
 // Company:   KID
 // Engine:    -
@@ -8,19 +8,19 @@
 // Known games:
 // - Ever 17
 
-#include "fmt/kid/sound_converter.h"
+#include "fmt/kid/waf_converter.h"
 
 using namespace au;
 using namespace au::fmt::kid;
 
 static const std::string magic = "WAF\x00\x00\x00"_s;
 
-bool SoundConverter::is_recognized_internal(File &file) const
+bool WafConverter::is_recognized_internal(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> SoundConverter::decode_internal(File &file) const
+std::unique_ptr<File> WafConverter::decode_internal(File &file) const
 {
     std::unique_ptr<File> output_file(new File);
 
