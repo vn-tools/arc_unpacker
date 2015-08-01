@@ -206,7 +206,7 @@ std::unique_ptr<io::BufferedIO> RsaReader::read_block()
 
 static u32 neg32(u32 x)
 {
-    return static_cast<u32>(-static_cast<int32_t>(x));
+    return static_cast<u32>(-static_cast<i32>(x));
 }
 
 static std::string lower_ascii_only(std::string name_utf8)

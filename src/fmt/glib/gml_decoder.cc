@@ -31,7 +31,7 @@ void GmlDecoder::decode(io::BufferedIO &source_io, io::BufferedIO &target_io)
         u8 tmp1 = source_io.eof() ? 0 : source_io.read_u8();
         u8 tmp2 = source_io.eof() ? 0 : source_io.read_u8();
         size_t length = ((~tmp2) & 0xF) + 3;
-        int32_t look_behind = (tmp1 | ((tmp2 << 4) & 0xF00)) + 18;
+        i32 look_behind = (tmp1 | ((tmp2 << 4) & 0xF00)) + 18;
         look_behind -= target_ptr - target;
         look_behind |= 0xFFFFF000;
 

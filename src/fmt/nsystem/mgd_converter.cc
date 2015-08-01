@@ -230,7 +230,7 @@ static void decompress_sgd(
     u8 *output_ptr = output;
 
     const u8 *input_ptr = input;
-    length = le32toh(*reinterpret_cast<const int32_t*>(input_ptr));
+    length = le32toh(*reinterpret_cast<const i32*>(input_ptr));
     input_ptr += 4;
     input_guardian = input_ptr + length;
     if (length > input_size)
