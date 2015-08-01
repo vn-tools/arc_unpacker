@@ -1,30 +1,37 @@
 #include "test_support/catch.hpp"
 #include "util/endian.h"
 
+using namespace au::util;
+
 TEST_CASE("Converting endianness works")
 {
     const char *x = "\x12\x34\x56\x78";
-    bool big_endian = *reinterpret_cast<const uint32_t*>(x) == 0x12345678;
+    bool big_endian = *reinterpret_cast<const u32*>(x) == 0x12345678;
     if (big_endian)
     {
-        REQUIRE(be16toh(*reinterpret_cast<const uint16_t*>(x)) == 0x3412);
-        REQUIRE(le16toh(*reinterpret_cast<const uint16_t*>(x)) == 0x1234);
-        REQUIRE(htobe16(*reinterpret_cast<const uint16_t*>(x)) == 0x3412);
-        REQUIRE(htole16(*reinterpret_cast<const uint16_t*>(x)) == 0x1234);
-        REQUIRE(be32toh(*reinterpret_cast<const uint32_t*>(x)) == 0x78563412);
-        REQUIRE(le32toh(*reinterpret_cast<const uint32_t*>(x)) == 0x12345678);
-        REQUIRE(htobe32(*reinterpret_cast<const uint32_t*>(x)) == 0x78563412);
-        REQUIRE(htole32(*reinterpret_cast<const uint32_t*>(x)) == 0x12345678);
+        REQUIRE(from_little_endian<u8>(0x12) == 0x12);
+        REQUIRE(from_little_endian<u16>(0x1234) == 0x3412);
+        REQUIRE(from_little_endian<u32>(0x12345678) == 0x78563412);
+        REQUIRE(from_big_endian<u8>(0x12) == 0x12);
+        REQUIRE(from_big_endian<u16>(0x1234) == 0x1234);
+        REQUIRE(from_big_endian<u32>(0x12345678) == 0x12345678);
+        REQUIRE(to_little_endian<u16>(0x1234) == 0x3412);
+        REQUIRE(to_little_endian<u32>(0x12345678) == 0x78563412);
+        REQUIRE(to_big_endian<u16>(0x1234) == 0x1234);
+        REQUIRE(to_big_endian<u32>(0x12345678) == 0x12345678);
     }
     else
     {
-        REQUIRE(le16toh(*reinterpret_cast<const uint16_t*>(x)) == 0x3412);
-        REQUIRE(be16toh(*reinterpret_cast<const uint16_t*>(x)) == 0x1234);
-        REQUIRE(htole16(*reinterpret_cast<const uint16_t*>(x)) == 0x3412);
-        REQUIRE(htobe16(*reinterpret_cast<const uint16_t*>(x)) == 0x1234);
-        REQUIRE(le32toh(*reinterpret_cast<const uint32_t*>(x)) == 0x78563412);
-        REQUIRE(be32toh(*reinterpret_cast<const uint32_t*>(x)) == 0x12345678);
-        REQUIRE(htole32(*reinterpret_cast<const uint32_t*>(x)) == 0x78563412);
-        REQUIRE(htobe32(*reinterpret_cast<const uint32_t*>(x)) == 0x12345678);
+        REQUIRE(from_big_endian<u8>(0x12) == 0x12);
+        REQUIRE(from_big_endian<u16>(0x1234) == 0x3412);
+        REQUIRE(from_big_endian<u32>(0x12345678) == 0x78563412);
+        REQUIRE(from_big_endian<u32>(0x12) == 0x12000000);
+        REQUIRE(from_little_endian<u8>(0x12) == 0x12);
+        REQUIRE(from_little_endian<u16>(0x1234) == 0x1234);
+        REQUIRE(from_little_endian<u32>(0x12345678) == 0x12345678);
+        REQUIRE(to_big_endian<u16>(0x1234) == 0x3412);
+        REQUIRE(to_big_endian<u32>(0x12345678) == 0x78563412);
+        REQUIRE(to_little_endian<u16>(0x1234) == 0x1234);
+        REQUIRE(to_little_endian<u32>(0x12345678) == 0x12345678);
     }
 }

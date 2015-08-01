@@ -85,42 +85,42 @@ u16 IO::read_u16_le()
 {
     u16 ret = 0;
     read(&ret, 2);
-    return le16toh(ret);
+    return util::from_little_endian<u16>(ret);
 }
 
 u32 IO::read_u32_le()
 {
     u32 ret = 0;
     read(&ret, 4);
-    return le32toh(ret);
+    return util::from_little_endian<u32>(ret);
 }
 
 u64 IO::read_u64_le()
 {
     u64 ret = 0;
     read(&ret, 8);
-    return le64toh(ret);
+    return util::from_little_endian<u64>(ret);
 }
 
 u16 IO::read_u16_be()
 {
     u16 ret = 0;
     read(&ret, 2);
-    return be16toh(ret);
+    return util::from_big_endian<u16>(ret);
 }
 
 u32 IO::read_u32_be()
 {
     u32 ret = 0;
     read(&ret, 4);
-    return be32toh(ret);
+    return util::from_big_endian<u32>(ret);
 }
 
 u64 IO::read_u64_be()
 {
     u64 ret = 0;
     read(&ret, 8);
-    return be64toh(ret);
+    return util::from_big_endian<u64>(ret);
 }
 
 void IO::write_from_io(IO &input)
@@ -140,36 +140,36 @@ void IO::write_u8(u8 value)
 
 void IO::write_u16_le(u16 value)
 {
-    value = htole16(value);
+    value = util::to_little_endian<u16>(value);
     write(&value, 2);
 }
 
 void IO::write_u32_le(u32 value)
 {
-    value = htole32(value);
+    value = util::to_little_endian<u32>(value);
     write(&value, 4);
 }
 
 void IO::write_u64_le(u64 value)
 {
-    value = htole64(value);
+    value = util::to_little_endian<u64>(value);
     write(&value, 8);
 }
 
 void IO::write_u16_be(u16 value)
 {
-    value = htobe16(value);
+    value = util::to_big_endian<u16>(value);
     write(&value, 2);
 }
 
 void IO::write_u32_be(u32 value)
 {
-    value = htobe32(value);
+    value = util::to_big_endian<u32>(value);
     write(&value, 4);
 }
 
 void IO::write_u64_be(u64 value)
 {
-    value = htobe64(value);
+    value = util::to_big_endian<u64>(value);
     write(&value, 8);
 }

@@ -12,7 +12,6 @@
 #include <cassert>
 #include "fmt/key/g00_converter.h"
 #include "io/buffered_io.h"
-#include "util/endian.h"
 #include "util/image.h"
 
 using namespace au;

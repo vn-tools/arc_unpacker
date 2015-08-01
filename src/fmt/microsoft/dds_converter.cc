@@ -205,7 +205,7 @@ static void decode_dxt5_block(io::IO &io, u8 output_alpha[4][4])
 
     for (size_t i = 0; i < 2; i++)
     {
-        u32 lookup = be32toh(
+        u32 lookup = util::from_big_endian<u32>(
             (io.read_u16_be() << 16) | (io.read_u8() << 8));
         for (size_t j = 0; j < 8; j++)
         {

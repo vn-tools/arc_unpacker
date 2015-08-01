@@ -7,8 +7,8 @@
 
 #include <cassert>
 #include <stdexcept>
-#include "io/buffered_io.h"
 #include "fmt/nsystem/mgd_converter.h"
+#include "io/buffered_io.h"
 #include "util/endian.h"
 #include "util/image.h"
 
@@ -44,7 +44,8 @@ static void decompress_sgd_alpha(
     output_ptr += 3; //ignore first RGB
     while (input_ptr < input_guardian)
     {
-        u16 flag = le16toh(*reinterpret_cast<const u16*>(input_ptr));
+        u16 flag = util::from_little_endian<u16>(
+            *reinterpret_cast<const u16*>(input_ptr));
         input_ptr += 2;
         if (flag & 0x8000)
         {
@@ -97,7 +98,8 @@ static void decompress_sgd_bgr_strategy_1(
         if (input_ptr + 2 > input_guardian)
             throw std::runtime_error("Trying to read length beyond EOF");
 
-        u16 delta = le16toh(*reinterpret_cast<const u16*>(input_ptr));
+        u16 delta = util::from_little_endian<u16>(*
+            reinterpret_cast<const u16*>(input_ptr));
         input_ptr += 2;
 
         if (delta & 0x8000)
@@ -230,7 +232,8 @@ static void decompress_sgd(
     u8 *output_ptr = output;
 
     const u8 *input_ptr = input;
-    length = le32toh(*reinterpret_cast<const i32*>(input_ptr));
+    length = util::from_little_endian<u32>(
+        *reinterpret_cast<const u32*>(input_ptr));
     input_ptr += 4;
     input_guardian = input_ptr + length;
     if (length > input_size)
@@ -242,7 +245,8 @@ static void decompress_sgd(
         output_ptr,
         output_guardian);
 
-    length = le32toh(*reinterpret_cast<const u32*>(input_ptr));
+    length = util::from_little_endian<u32>(
+        *reinterpret_cast<const u32*>(input_ptr));
     input_ptr += 4;
     input_guardian = input_ptr + length;
     if (length > input_size)
