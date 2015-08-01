@@ -159,15 +159,13 @@ TacArchive::TacArchive()
 
 bool TacArchive::is_recognized_internal(File &arc_file) const
 {
-    return arc_file.has_extension("tac");
+    return arc_file.io.read(magic.size()) == magic;
 }
 
 void TacArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    if (arc_file.io.read(magic.size()) == magic)
-        arc_file.io.skip(4 * 2);
-    else
-        arc_file.io.seek(0);
+    arc_file.io.skip(magic.size());
+    arc_file.io.skip(8);
 
     auto directories = read_table(arc_file.io);
     for (auto &directory : directories)
