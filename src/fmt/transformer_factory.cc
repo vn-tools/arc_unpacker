@@ -44,20 +44,16 @@
 #include "fmt/renpy/rpa_archive.h"
 #include "fmt/rpgmaker/rgssad_archive.h"
 #include "fmt/rpgmaker/xyz_converter.h"
-#ifdef HAVE_OPENSSL_RSA_H
 #include "fmt/tanuki_soft/tac_archive.h"
-#endif
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/pak1_archive.h"
 #include "fmt/touhou/pak2_archive.h"
 #include "fmt/touhou/pbg3_archive.h"
 #include "fmt/touhou/pbg4_archive.h"
 #include "fmt/touhou/pbgz_archive.h"
-#include "fmt/whale/dat_archive.h"
-#ifdef HAVE_OPENSSL_RSA_H
 #include "fmt/touhou/tfpk_archive.h"
-#endif
 #include "fmt/touhou/tha1_archive.h"
+#include "fmt/whale/dat_archive.h"
 #include "fmt/yuka_script/ykc_archive.h"
 #include "fmt/yuka_script/ykg_converter.h"
 
@@ -82,10 +78,8 @@ struct TransformerFactory::Priv
 
 TransformerFactory::TransformerFactory() : p(new Priv)
 {
-    #ifdef HAVE_OPENSSL_RSA_H
     p->add("tac",       []() { return new tanuki_soft::TacArchive(); });
     p->add("tfpk",      []() { return new touhou::TfpkArchive();     });
-    #endif
     p->add("lnk",       []() { return new kid::LnkArchive();         });
     p->add("mgr",       []() { return new propeller::MgrArchive();   });
     p->add("mpk",       []() { return new propeller::MpkArchive();   });

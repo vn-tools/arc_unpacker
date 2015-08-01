@@ -108,10 +108,9 @@ def build(ctx):
     common_sources = [f for f in common_sources if f.name != 'main.cc']
 
     if not ctx.env.LIB_LIBOPENSSL:
-        common_sources = [f for f in common_sources if 'tfpk_archive' not in f.name]
-        common_sources = [f for f in common_sources if 'tac_archive' not in f.name]
-        common_sources = [f for f in common_sources if 'blowfish' not in f.name]
-        common_sources = [f for f in common_sources if 'rsa' not in f.name]
+        common_sources = [f for f in common_sources if '_openssl' not in f.name]
+    else:
+        common_sources = [f for f in common_sources if '_dummy' not in f.name]
 
     path_to_src = ctx.path.find_node('src').abspath()
     path_to_tests = ctx.path.find_node('tests').abspath()
