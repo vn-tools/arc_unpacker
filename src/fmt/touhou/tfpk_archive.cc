@@ -11,10 +11,6 @@
 #include <boost/filesystem.hpp>
 #include <iomanip>
 #include <map>
-#include <openssl/bn.h>
-#include <openssl/err.h>
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
 #include <set>
 #include <sstream>
 #include <vector>
@@ -27,18 +23,13 @@
 #include "util/colors.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
+#include "util/crypt/rsa.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
 
 namespace
 {
-    typedef struct
-    {
-        std::array<u8, 64> modulus;
-        unsigned int exponent;
-    } RsaKey;
-
     class RsaReader
     {
     public:
@@ -48,9 +39,8 @@ namespace
         size_t tell() const;
     private:
         std::unique_ptr<io::BufferedIO> decrypt(std::basic_string<u8> input);
-        RSA *create_public_key(const RsaKey &);
-        RSA *public_key;
         io::IO &io;
+        std::unique_ptr<util::crypt::Rsa> rsa;
     };
 
     enum class TfpkVersion : u8
@@ -81,7 +71,7 @@ namespace
 static const std::string pal_magic = "TFPA\x00"_s;
 static const std::string magic = "TFPK"_s;
 
-static const std::vector<RsaKey> rsa_keys({
+static const std::vector<util::crypt::RsaKey> rsa_keys({
     //TH13.5 Japanese version
     {
         {
@@ -130,18 +120,20 @@ static const std::vector<RsaKey> rsa_keys({
 
 RsaReader::RsaReader(io::IO &io) : io(io)
 {
+    std::string test_chunk;
+    io.peek(io.tell(), [&]() { test_chunk = io.read(0x40); });
+
     for (auto &rsa_key : rsa_keys)
     {
-        public_key = create_public_key(rsa_key);
+        util::crypt::Rsa tester(rsa_key);
         try
         {
-            io.peek(io.tell(), [&]() { read_block(); });
+            tester.decrypt(test_chunk);
+            rsa.reset(new util::crypt::Rsa(rsa_key));
             return;
         }
         catch (...)
         {
-            RSA_free(public_key);
-            public_key = nullptr;
         }
     }
     throw std::runtime_error("Unknown public key");
@@ -149,8 +141,6 @@ RsaReader::RsaReader(io::IO &io) : io(io)
 
 RsaReader::~RsaReader()
 {
-    if (public_key != nullptr)
-        RSA_free(public_key);
 }
 
 size_t RsaReader::tell() const
@@ -158,48 +148,11 @@ size_t RsaReader::tell() const
     return io.tell();
 }
 
-RSA *RsaReader::create_public_key(const RsaKey &rsa_key)
-{
-    BIGNUM *bn_modulus = BN_new();
-    BIGNUM *bn_exponent = BN_new();
-    BN_set_word(bn_exponent, rsa_key.exponent);
-    BN_bin2bn(rsa_key.modulus.data(), rsa_key.modulus.size(), bn_modulus);
-
-    RSA *rsa = RSA_new();
-    rsa->e = bn_exponent;
-    rsa->n = bn_modulus;
-    return rsa;
-}
-
-std::unique_ptr<io::BufferedIO> RsaReader::decrypt(std::basic_string<u8> input)
-{
-    size_t output_size = RSA_size(public_key);
-    std::unique_ptr<u8[]> output(new u8[output_size]);
-    int result = RSA_public_decrypt(
-        input.size(),
-        input.data(),
-        output.get(),
-        public_key,
-        RSA_PKCS1_PADDING);
-
-    if (result == -1)
-    {
-        std::unique_ptr<char[]> err(new char[130]);
-        ERR_load_crypto_strings();
-        ERR_error_string(ERR_get_error(), err.get());
-        throw std::runtime_error(std::string(err.get()));
-    }
-
-    return std::unique_ptr<io::BufferedIO>(
-        new io::BufferedIO(
-            reinterpret_cast<const char*>(output.get()), output_size));
-}
-
 std::unique_ptr<io::BufferedIO> RsaReader::read_block()
 {
-    auto s = io.read(0x40);
-    auto su = std::basic_string<u8>(s.begin(), s.end());
-    auto block_io = decrypt(su);
+    auto input = io.read(0x40);
+    std::unique_ptr<io::BufferedIO> block_io(
+        new io::BufferedIO(rsa->decrypt(input)));
     block_io->truncate(0x20);
     return block_io;
 }
@@ -277,7 +230,7 @@ static std::string get_dir_name(DirEntry &dir_entry, HashLookupMap user_fn_map)
 
 static DirTable read_dir_entries(RsaReader &reader)
 {
-    std::unique_ptr<io::BufferedIO> tmp_io(reader.read_block());
+    auto tmp_io = reader.read_block();
     std::vector<std::unique_ptr<DirEntry>> dir_entries;
     size_t dir_count = tmp_io->read_u32_le();
     for (size_t i = 0; i < dir_count; i++)
@@ -299,7 +252,7 @@ static HashLookupMap read_fn_map(
 {
     HashLookupMap fn_map;
 
-    std::unique_ptr<io::BufferedIO> tmp_io(reader.read_block());
+    auto tmp_io = reader.read_block();
     size_t table_size_compressed = tmp_io->read_u32_le();
     size_t table_size_original = tmp_io->read_u32_le();
     size_t block_count = tmp_io->read_u32_le();

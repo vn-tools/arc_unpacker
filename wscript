@@ -111,6 +111,7 @@ def build(ctx):
         common_sources = [f for f in common_sources if 'tfpk_archive' not in f.name]
         common_sources = [f for f in common_sources if 'tac_archive' not in f.name]
         common_sources = [f for f in common_sources if 'blowfish' not in f.name]
+        common_sources = [f for f in common_sources if 'rsa' not in f.name]
 
     path_to_src = ctx.path.find_node('src').abspath()
     path_to_tests = ctx.path.find_node('tests').abspath()
