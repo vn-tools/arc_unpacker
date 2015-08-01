@@ -121,6 +121,7 @@ def build(ctx):
         source = common_sources,
         target = 'common',
         cxxflags = ['-iquote', path_to_src],
+        includes = ['src'],
         use = [
             'LIBICONV',
             'LIBPNG',
@@ -135,6 +136,7 @@ def build(ctx):
         target = 'arc_unpacker',
         cxxflags = ['-iquote', path_to_src],
         defines = [ 'AU_VERSION="' + VERSION_LONG + '"' ],
+        includes = ['src'],
         use = [
             'common',
             'UNICODE',
@@ -147,6 +149,7 @@ def build(ctx):
             '-iquote', path_to_src,
             '-iquote', path_to_tests,
         ],
+        includes = ['src'],
         use = [ 'common' ])
 
 def dist(ctx):
