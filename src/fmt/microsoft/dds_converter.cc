@@ -263,7 +263,7 @@ static std::unique_ptr<io::BufferedIO> decode_dxt3(
             output_io->seek(((block_y + y) * width + block_x) * 4);
             for (size_t x = 0; x < 4; x++)
             {
-                util::color::set_channel(colors[y][x], 3, alpha[y][x]);
+                util::color::set_alpha(colors[y][x], alpha[y][x]);
                 output_io->write_u32_le(colors[y][x]);
             }
         }
@@ -288,7 +288,7 @@ static std::unique_ptr<io::BufferedIO> decode_dxt5(
             output_io->seek(((block_y + y) * width + block_x) * 4);
             for (size_t x = 0; x < 4; x++)
             {
-                util::color::set_channel(colors[y][x], 3, alpha[y][x]);
+                util::color::set_alpha(colors[y][x], alpha[y][x]);
                 output_io->write_u32_le(colors[y][x]);
             }
         }
