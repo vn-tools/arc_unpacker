@@ -7,8 +7,10 @@
 // Known games:
 // - Ever 17
 
-#include "fmt/kid/lnk_archive.h"
+#include "fmt/kid/cps_converter.h"
 #include "fmt/kid/decompressor.h"
+#include "fmt/kid/lnk_archive.h"
+#include "fmt/kid/prt_converter.h"
 #include "fmt/kid/sound_converter.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
@@ -103,11 +105,15 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 
 struct LnkArchive::Priv
 {
+    CpsConverter cps_converter;
+    PrtConverter prt_converter;
     SoundConverter sound_converter;
 };
 
 LnkArchive::LnkArchive() : p(new Priv)
 {
+    add_transformer(&p->cps_converter);
+    add_transformer(&p->prt_converter);
     add_transformer(&p->sound_converter);
 }
 
