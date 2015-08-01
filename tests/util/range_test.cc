@@ -12,6 +12,22 @@ TEST_CASE("Simple range iterating works", "[util]")
     REQUIRE(out == "01");
 }
 
+TEST_CASE("Range iterating with stride works", "[util]")
+{
+    std::string out;
+    for (auto i : range(0, 4, 2))
+        out += format("%d", i);
+    REQUIRE(out == "02");
+}
+
+TEST_CASE("Range iterating with unaligned stride works", "[util]")
+{
+    std::string out;
+    for (auto i : range(0, 5, 2))
+        out += format("%d", i);
+    REQUIRE(out == "024");
+}
+
 TEST_CASE("Range iterating starting at negative offset works")
 {
     std::string out;
@@ -20,18 +36,18 @@ TEST_CASE("Range iterating starting at negative offset works")
     REQUIRE(out == "-5-4-3-2-101234");
 }
 
+TEST_CASE("Range iterating at negative offsets works")
+{
+    std::string out;
+    for (auto i : range(-8, -4))
+        out += format("%d", i);
+    REQUIRE(out == "-8-7-6-5");
+}
+
 TEST_CASE("Reverse range iterating works")
 {
     std::string out;
-    for (auto i : range(5, 0))
+    for (auto i : range(5, -5, -1))
         out += format("%d", i);
-    REQUIRE(out == "54321");
-}
-
-TEST_CASE("Reverse range iterating at negative offsets works")
-{
-    std::string out;
-    for (auto i : range(-4, -8))
-        out += format("%d", i);
-    REQUIRE(out == "-4-5-6-7");
+    REQUIRE(out == "543210-1-2-3-4");
 }

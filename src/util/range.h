@@ -1,75 +1,39 @@
 #ifndef AU_UTIL_RANGE_H
 #define AU_UTIL_RANGE_H
 #include <algorithm>
+#include <cstdio>
 
 namespace au {
 namespace util {
 
     struct RangeImpl
     {
-        struct Iterator
-            : std::iterator<std::random_access_iterator_tag,int,int>
+        struct Iterator : std::iterator<std::random_access_iterator_tag,int,int>
         {
-            int i;
-            int stride;
+            int i, stride;
 
-            constexpr Iterator(int i, int stride)
-                : i(i), stride(stride)
+            constexpr Iterator(int i, int stride) : i(i), stride(stride)
             {
             }
 
-            constexpr Iterator(Iterator it, int stride)
-                : i(*it), stride(stride)
+            constexpr Iterator(Iterator it, int stride) : i(*it), stride(stride)
             {
             }
 
-            constexpr int operator*()
+            constexpr int operator *()
             {
                 return i;
             }
 
-            Iterator operator++()
+            Iterator operator ++()
             {
-                ++i;
+                i += stride;
                 return *this;
             }
 
-            Iterator operator++(int)
+            constexpr bool operator !=(Iterator other)
             {
-                auto cpy = *this;
-                ++(*this);
-                return cpy;
-            }
-
-            constexpr Iterator operator+(int n)
-            {
-                return Iterator((i + n) / stride, stride);
-            }
-
-            constexpr Iterator operator-(int n)
-            {
-                return Iterator((i - n) / stride, stride);
-            }
-
-            constexpr int operator-(Iterator other)
-            {
-                return(i - *other) / stride;
-            }
-
-            constexpr bool operator==(Iterator other)
-            {
-                return i == *other;
-            }
-
-            constexpr bool operator!=(Iterator other)
-            {
-                return i != *other;
-            }
-
-            Iterator& operator+=(int other)
-            {
-                i += other * stride;
-                return *this;
+                return stride < 0 ? i > *other : i < *other;
             }
         };
 
@@ -77,11 +41,6 @@ namespace util {
         Iterator b, e;
 
         constexpr RangeImpl(int b, int e, int stride=1)
-            : stride(stride), b(b,stride), e(e,stride)
-        {
-        }
-
-        constexpr RangeImpl(Iterator b, Iterator e, int stride=1)
             : stride(stride), b(b,stride), e(e,stride)
         {
         }
