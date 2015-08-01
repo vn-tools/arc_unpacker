@@ -8,7 +8,6 @@
 // Known games:
 // - Ever 17
 
-#include <iostream>
 #include "fmt/kid/prt_converter.h"
 #include "util/format.h"
 #include "util/image.h"
