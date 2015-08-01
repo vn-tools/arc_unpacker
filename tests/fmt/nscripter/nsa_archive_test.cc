@@ -1,7 +1,7 @@
 #include "fmt/nscripter/nsa_archive.h"
-#include "util/zlib.h"
 #include "test_support/archive_support.h"
 #include "test_support/catch.hpp"
+#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -28,7 +28,7 @@ TEST_CASE("Unpacking NSA archives compressed with LZSS works")
 {
     std::shared_ptr<File> file(new File);
     file->name = "test.bmp";
-    file->io.write(util::zlib_inflate(std::string(
+    file->io.write(util::pack::zlib_inflate(std::string(
         "\x78\xDA\x8D\xD3\x3D\x6E\x13\x40\x10\x86\xE1\xB5\x44\x81\x70\x9C"
         "\x38\xF1\x25\xA8\x53\x50\x20\x2A\x8A\xE9\xB8\xD4\x9C\x69\x6E\x40"
         "\x9D\x1B\xCC\x11\xF2\xE7\x38\xB4\x63\x1E\x82\xA0\xCE\x4A\x9F\x56"

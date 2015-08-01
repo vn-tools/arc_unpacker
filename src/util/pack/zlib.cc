@@ -1,13 +1,13 @@
 #include <memory>
 #include <stdexcept>
 #include <zlib.h>
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 
 #ifndef SIZE_MAX
 #define SIZE_MAX ((size_t) -1)
 #endif
 
-std::string au::util::zlib_inflate(const std::string &input)
+std::string au::util::pack::zlib_inflate(const std::string &input)
 {
     std::string output;
     size_t written = 0;

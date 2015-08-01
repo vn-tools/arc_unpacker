@@ -16,7 +16,7 @@
 #include "fmt/kirikiri/xp3_filter_factory.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri;
@@ -65,7 +65,7 @@ static std::unique_ptr<io::IO> read_raw_table(io::IO &arc_io)
     std::string compressed = arc_io.read(size_compressed);
     if (use_zlib)
     {
-        std::string uncompressed = util::zlib_inflate(compressed);
+        std::string uncompressed = util::pack::zlib_inflate(compressed);
         return std::unique_ptr<io::IO>(new io::BufferedIO(uncompressed));
     }
     return std::unique_ptr<io::IO>(new io::BufferedIO(compressed));
@@ -108,8 +108,8 @@ static bool read_segm_chunk(io::IO &table_io, io::IO &arc_io, File &target_file)
         bool use_zlib = (segm_flags & 7) > 0;
         if (use_zlib)
         {
-            std::string data_compressed = arc_io.read(data_size_compressed);
-            std::string data_uncompressed = util::zlib_inflate(data_compressed);
+            auto data_compressed = arc_io.read(data_size_compressed);
+            auto data_uncompressed = util::pack::zlib_inflate(data_compressed);
             target_file.io.write(data_uncompressed);
         }
         else

@@ -11,7 +11,7 @@
 #include "fmt/touhou/tfcs_converter.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -39,7 +39,7 @@ std::unique_ptr<File> TfcsConverter::decode_internal(File &file) const
     size_t compressed_size = file.io.read_u32_le();
     size_t original_size = file.io.read_u32_le();
     io::BufferedIO uncompressed_io(
-        util::zlib_inflate(file.io.read_until_end()));
+        util::pack::zlib_inflate(file.io.read_until_end()));
     if (uncompressed_io.size() != original_size)
         throw std::runtime_error("Unexpected file size");
 

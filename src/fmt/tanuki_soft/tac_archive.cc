@@ -12,7 +12,7 @@
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/format.h"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::tanuki_soft;
@@ -79,7 +79,7 @@ static std::vector<std::unique_ptr<TableDirectory>> read_table(io::IO &arc_io)
     size_t file_data_start = arc_io.tell() + table_size;
 
     io::BufferedIO table_io(
-        util::zlib_inflate(
+        util::pack::zlib_inflate(
             decrypt(arc_io.read(table_size), table_size, "TLibArchiveData")));
 
     std::vector<std::unique_ptr<TableDirectory>> directories;
@@ -127,7 +127,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
     arc_io.seek(entry.offset);
     std::string data = arc_io.read(entry.size_compressed);
     if (entry.compressed)
-        data = util::zlib_inflate(data);
+        data = util::pack::zlib_inflate(data);
 
     if (!entry.compressed)
     {

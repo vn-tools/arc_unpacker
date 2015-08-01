@@ -1,8 +1,8 @@
 #include "test_support/catch.hpp"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 #include "types.h"
 
-using namespace au::util;
+using namespace au::util::pack;
 
 TEST_CASE("Inflating works")
 {

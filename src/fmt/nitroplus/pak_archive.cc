@@ -10,7 +10,7 @@
 #include "fmt/nitroplus/pak_archive.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::nitroplus;
@@ -36,8 +36,8 @@ static std::unique_ptr<File> read_file(
     arc_io.seek(offset);
     if (flags > 0)
     {
-        std::string data_uncompressed
-            = util::zlib_inflate(arc_io.read(size_compressed));
+        auto data_compressed = arc_io.read(size_compressed);
+        auto data_uncompressed = util::pack::zlib_inflate(data_compressed);
 
         if (data_uncompressed.size() != size_original)
             throw std::runtime_error("Bad file size");
@@ -67,7 +67,7 @@ void PakArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     arc_file.io.skip(0x104);
 
     io::BufferedIO table_io(
-        util::zlib_inflate(
+        util::pack::zlib_inflate(
             arc_file.io.read(table_size_compressed)));
 
     size_t offset_to_files = arc_file.io.tell();

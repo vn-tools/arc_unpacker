@@ -19,7 +19,7 @@
 #include "fmt/touhou/crypt.h"
 #include "fmt/touhou/tha1_archive.h"
 #include "io/buffered_io.h"
-#include "util/lzss.h"
+#include "util/pack/lzss.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -102,7 +102,7 @@ static std::vector<std::vector<DecryptorContext>> decryptors
 static std::string decompress(
     io::IO &io, size_t size_compressed, size_t size_original)
 {
-    util::lzss::Settings settings;
+    util::pack::LzssSettings settings;
     settings.position_bits = 13;
     settings.length_bits = 4;
     settings.min_match_length = 3;
@@ -113,7 +113,7 @@ static std::string decompress(
     buffered_io.write_from_io(io, size_compressed);
     buffered_io.seek(0);
     io::BitReader bit_reader(buffered_io);
-    return util::lzss::decompress(bit_reader, size_original, settings);
+    return util::pack::lzss_decompress(bit_reader, size_original, settings);
 }
 
 static std::unique_ptr<Header> read_header(io::IO &arc_io)

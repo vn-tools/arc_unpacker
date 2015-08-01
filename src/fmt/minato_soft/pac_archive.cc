@@ -11,7 +11,7 @@
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::minato_soft;
@@ -120,7 +120,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
     else
     {
         std::string data = arc_io.read(entry.size_compressed);
-        data = util::zlib_inflate(data);
+        data = util::pack::zlib_inflate(data);
         file->io.write(data);
     }
     file->name = util::sjis_to_utf8(entry.name);

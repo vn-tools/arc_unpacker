@@ -26,7 +26,7 @@
 #include "io/buffered_io.h"
 #include "util/colors.h"
 #include "util/encoding.h"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -313,7 +313,7 @@ static HashLookupMap read_fn_map(
     tmp_io->seek(0);
     tmp_io.reset(
         new io::BufferedIO(
-            util::zlib_inflate(tmp_io->read(table_size_compressed))));
+            util::pack::zlib_inflate(tmp_io->read(table_size_compressed))));
 
     for (auto &dir_entry : dir_entries)
     {
@@ -440,7 +440,8 @@ static Palette read_palette_file(
     if (pal_file->io.read(pal_magic.size()) != pal_magic)
         throw std::runtime_error("Not a TFPA palette file");
     size_t pal_size = pal_file->io.read_u32_le();
-    io::BufferedIO pal_io(util::zlib_inflate(pal_file->io.read(pal_size)));
+    io::BufferedIO pal_io(util::pack::zlib_inflate(
+        pal_file->io.read(pal_size)));
     Palette palette;
     for (size_t i = 0; i < 256; i++)
         palette[i] = util::color::rgba5551(pal_io.read_u16_le());

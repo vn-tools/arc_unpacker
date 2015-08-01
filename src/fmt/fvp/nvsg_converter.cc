@@ -9,7 +9,7 @@
 // - Irotoridori no Sekai
 
 #include "fmt/fvp/nvsg_converter.h"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 #include "util/image.h"
 
 using namespace au;
@@ -40,7 +40,7 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
     size_t image_count = file.io.read_u32_le();
     file.io.skip(8);
 
-    std::string data = util::zlib_inflate(file.io.read_until_end());
+    std::string data = util::pack::zlib_inflate(file.io.read_until_end());
     if (data.size() != uncompressed_size)
         throw std::runtime_error("Unexpected data size");
 

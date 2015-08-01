@@ -1,7 +1,7 @@
 #include "fmt/french_bread/ex3_converter.h"
 #include "io/file_io.h"
 #include "test_support/catch.hpp"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::french_bread;
@@ -20,7 +20,7 @@ TEST_CASE("Decoding EX3 images works")
     auto output_file = converter.decode(file);
 
     io::FileIO expected_io(expected_path, io::FileMode::Read);
-    const auto expected_data = au::util::zlib_inflate(
+    const auto expected_data = au::util::pack::zlib_inflate(
         expected_io.read_until_end());
 
     output_file->io.seek(0);

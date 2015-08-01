@@ -10,7 +10,7 @@
 #include "fmt/nitroplus/npa_archive.h"
 #include "fmt/nitroplus/npa_filters/chaos_head.h"
 #include "util/encoding.h"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::nitroplus;
@@ -165,7 +165,7 @@ static std::unique_ptr<File> read_file(
         decrypt_file_data(data, entry, header, filter);
 
     if (header.compressed)
-        data = util::zlib_inflate(data);
+        data = util::pack::zlib_inflate(data);
 
     file->io.write(data);
     return file;

@@ -1,16 +1,16 @@
-#include "util/lzss.h"
+#include "util/pack/lzss.h"
 
 using namespace au;
 
-std::string au::util::lzss::decompress(
-    const std::string &input, size_t orig_size, const Settings &settings)
+std::string au::util::pack::lzss_decompress(
+    const std::string &input, size_t orig_size, const LzssSettings &settings)
 {
     io::BitReader bit_reader(input.data(), input.size());
-    return decompress(bit_reader, orig_size, settings);
+    return lzss_decompress(bit_reader, orig_size, settings);
 }
 
-std::string au::util::lzss::decompress(
-    io::BitReader &bit_reader, size_t orig_size, const Settings &settings)
+std::string au::util::pack::lzss_decompress(
+    io::BitReader &bit_reader, size_t orig_size, const LzssSettings &settings)
 {
     std::string output;
     size_t dictionary_size = 1 << settings.position_bits;

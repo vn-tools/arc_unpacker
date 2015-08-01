@@ -5,26 +5,26 @@
 
 namespace au {
 namespace util {
-namespace lzss {
+namespace pack {
 
-    typedef struct
+    struct LzssSettings
     {
         size_t position_bits;
         size_t length_bits;
         size_t min_match_length;
         size_t initial_dictionary_pos;
         bool reuse_compressed;
-    } Settings;
+    };
 
-    std::string decompress(
+    std::string lzss_decompress(
         const std::string &input,
         size_t orig_size,
-        const Settings &settings);
+        const LzssSettings &settings);
 
-    std::string decompress(
+    std::string lzss_decompress(
         io::BitReader &bit_reader,
         size_t orig_size,
-        const Settings &settings);
+        const LzssSettings &settings);
 
 } } }
 

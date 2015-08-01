@@ -12,7 +12,7 @@
 #include "util/colors.h"
 #include "util/format.h"
 #include "util/image.h"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -55,8 +55,9 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
     size_t target_size = image_width * image_height * 4;
 
     io::BufferedIO target_io;
+    io::BufferedIO source_io(
+        util::pack::zlib_inflate(file.io.read_until_end()));
     target_io.reserve(target_size);
-    io::BufferedIO source_io(util::zlib_inflate(file.io.read_until_end()));
 
     Palette palette;
     if (bit_depth == 8)

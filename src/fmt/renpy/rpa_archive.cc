@@ -11,7 +11,7 @@
 
 #include "fmt/renpy/rpa_archive.h"
 #include "io/buffered_io.h"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::renpy;
@@ -266,7 +266,7 @@ static std::string read_raw_table(io::IO &arc_io)
 {
     size_t compressed_size = arc_io.size() - arc_io.tell();
     std::string compressed = arc_io.read(compressed_size);
-    std::string uncompressed = util::zlib_inflate(compressed);
+    std::string uncompressed = util::pack::zlib_inflate(compressed);
     return uncompressed;
 }
 

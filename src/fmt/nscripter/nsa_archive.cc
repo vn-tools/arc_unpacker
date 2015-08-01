@@ -12,7 +12,7 @@
 #include "fmt/nscripter/spb_converter.h"
 #include "io/buffered_io.h"
 #include "io/bit_reader.h"
-#include "util/lzss.h"
+#include "util/pack/lzss.h"
 
 using namespace au;
 using namespace au::fmt::nscripter;
@@ -85,13 +85,13 @@ static std::unique_ptr<File> read_file(
         {
             io::BitReader bit_reader(data);
 
-            util::lzss::Settings settings;
+            util::pack::LzssSettings settings;
             settings.position_bits = 8;
             settings.length_bits = 4;
             settings.min_match_length = 2;
             settings.initial_dictionary_pos = 239;
             settings.reuse_compressed = true;
-            file->io.write(util::lzss::decompress(
+            file->io.write(util::pack::lzss_decompress(
                 bit_reader, entry.size_original, settings));
             break;
         }

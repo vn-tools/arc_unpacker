@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include "fmt/rpgmaker/xyz_converter.h"
 #include "util/image.h"
-#include "util/zlib.h"
+#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::rpgmaker;
@@ -30,7 +30,7 @@ std::unique_ptr<File> XyzConverter::decode_internal(File &file) const
     u16 width = file.io.read_u16_le();
     u16 height = file.io.read_u16_le();
 
-    std::string data = util::zlib_inflate(file.io.read_until_end());
+    std::string data = util::pack::zlib_inflate(file.io.read_until_end());
     if (data.size() != static_cast<size_t>(256 * 3 + width * height))
         throw std::runtime_error("Unexpected data size");
 

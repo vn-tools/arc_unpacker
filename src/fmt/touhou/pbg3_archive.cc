@@ -10,7 +10,7 @@
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/pbg3_archive.h"
 #include "io/buffered_io.h"
-#include "util/lzss.h"
+#include "util/pack/lzss.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -84,13 +84,14 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     arc_io.seek(entry.offset);
     io::BitReader bit_reader(arc_io);
 
-    util::lzss::Settings settings;
+    util::pack::LzssSettings settings;
     settings.position_bits = 13;
     settings.length_bits = 4;
     settings.min_match_length = 3;
     settings.initial_dictionary_pos = 1;
     settings.reuse_compressed = true;
-    file->io.write(util::lzss::decompress(bit_reader, entry.size, settings));
+    file->io.write(util::pack::lzss_decompress(
+        bit_reader, entry.size, settings));
 
     return file;
 }
