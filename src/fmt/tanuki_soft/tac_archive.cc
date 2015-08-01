@@ -147,7 +147,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
     }
 
     file->io.write(data);
-    file->name = util::format("%d", entry.index);
+    file->name = util::format("%05d.dat", entry.index);
     file->guess_extension();
     return file;
 }
