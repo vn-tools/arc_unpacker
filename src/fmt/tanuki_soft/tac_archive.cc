@@ -7,9 +7,9 @@
 // Known games:
 // - Mebae
 
-#include <openssl/blowfish.h>
 #include "fmt/tanuki_soft/tac_archive.h"
 #include "io/buffered_io.h"
+#include "util/crypt/blowfish.h"
 #include "util/encoding.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"
@@ -48,26 +48,9 @@ static std::string decrypt(
 {
     std::string output;
 
-    std::unique_ptr<BF_KEY> bf_key(new BF_KEY);
-    BF_set_key(
-        bf_key.get(), key.size(), reinterpret_cast<const u8*>(key.data()));
-
-    size_t left = (size / BF_BLOCK) * BF_BLOCK;
-    size_t done = 0;
-
-    BF_LONG transit;
-    while (left)
-    {
-        memcpy(&transit, input.data() + done, BF_BLOCK);
-        BF_decrypt(&transit, bf_key.get());
-        output += std::string(reinterpret_cast<char*>(&transit), BF_BLOCK);
-        left -= BF_BLOCK;
-        done += BF_BLOCK;
-    }
-    if (done < input.size())
-        output += std::string(input.data() + done, input.size() - done);
-
-    return output;
+    util::crypt::Blowfish bf(key);
+    size_t left = (size / bf.block_size()) * bf.block_size();
+    return bf.decrypt(input.substr(0, left)) + input.substr(left);
 }
 
 static std::vector<std::unique_ptr<TableDirectory>> read_table(io::IO &arc_io)
@@ -137,9 +120,11 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
             bytes_to_decrypt = data.size();
 
         {
-            auto header = decrypt(data.substr(0, BF_BLOCK), BF_BLOCK, key);
-            auto header4 = header.substr(0, 4);
-            if (header4 == "RIFF" || header4 == "TArc")
+            auto header = decrypt(
+                data.substr(0, util::crypt::Blowfish::block_size()),
+                util::crypt::Blowfish::block_size(),
+                key).substr(0, 4);
+            if (header == "RIFF" || header == "TArc")
                 bytes_to_decrypt = data.size();
         }
 
