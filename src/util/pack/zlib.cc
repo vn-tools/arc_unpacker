@@ -1,6 +1,7 @@
 #include <memory>
 #include <stdexcept>
 #include <zlib.h>
+#include "util/format.h"
 #include "util/pack/zlib.h"
 
 #ifndef SIZE_MAX
@@ -42,8 +43,8 @@ std::string au::util::pack::zlib_inflate(const std::string &input)
 
     if (ret != Z_STREAM_END)
     {
-        throw std::runtime_error(
-            "Failed to inflate zlib stream (" + std::string(stream.msg) + ")");
+        throw std::runtime_error(util::format(
+            "Failed to inflate zlib stream (%s)", stream.msg));
     }
 
     return output;
