@@ -56,13 +56,29 @@ std::unique_ptr<File> PrtConverter::decode_internal(File &file) const
     auto stride = (((width * bit_depth / 8) + 3) / 4) * 4;
     std::unique_ptr<u32[]> pixel_data(new u32[width * height]());
 
+    std::unique_ptr<u32[]> palette(new u32[256]);
+    if (bit_depth == 8)
+    {
+        file.io.seek(palette_offset);
+        for (size_t i = 0; i < 256; i++)
+        {
+            palette[i] = util::color::rgb888(
+                file.io.read_u8(), file.io.read_u8(), file.io.read_u8());
+            file.io.skip(1);
+        }
+    }
+
     for (size_t y = 0; y < height; y++)
     {
         file.io.seek(data_offset + stride * y);
         u32 *out = &pixel_data[(height - 1 - y) * width];
         for (size_t x = 0; x < width; x++)
         {
-            if (bit_depth == 24)
+            if (bit_depth == 8)
+            {
+                *out++ = palette[file.io.read_u8()];
+            }
+            else if (bit_depth == 24)
             {
                 *out++ = util::color::rgb888(
                     file.io.read_u8(), file.io.read_u8(), file.io.read_u8());

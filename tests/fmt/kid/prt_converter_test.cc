@@ -21,3 +21,12 @@ TEST_CASE("Decoding PRT images with alpha channel works")
         "tests/fmt/kid/files/yh04adm.prt",
         "tests/fmt/kid/files/yh04adm-out.png");
 }
+
+TEST_CASE("Decoding 8-bit PRT images works")
+{
+    PrtConverter converter;
+    au::tests::assert_decoded_image(
+        converter,
+        "tests/fmt/kid/files/saver_sm.prt",
+        "tests/fmt/kid/files/saver_sm-out.png");
+}
