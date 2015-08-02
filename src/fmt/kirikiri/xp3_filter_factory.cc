@@ -10,12 +10,15 @@
 
 using namespace au::fmt::kirikiri;
 
-struct Definition
+namespace
 {
-    std::string name;
-    std::string description;
-    std::function<Xp3Filter*()> creator;
-};
+    struct Definition
+    {
+        std::string name;
+        std::string description;
+        std::function<Xp3Filter*()> creator;
+    };
+}
 
 struct Xp3FilterFactory::Priv
 {

@@ -34,7 +34,7 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-std::unique_ptr<io::IO> lnd_decompress(io::IO &input_io)
+static std::unique_ptr<io::IO> lnd_decompress(io::IO &input_io)
 {
     if (input_io.read(compress_magic.size()) != compress_magic)
         throw std::runtime_error("Unexpected file header");
