@@ -311,7 +311,7 @@ const ImageSectionHeader &RvaHelper::section_for_rva(
     for (auto &section : sections)
     {
         if (rva >= section.virtual_address
-        && rva <= (section.virtual_address + section.virtual_size))
+        && rva < (section.virtual_address + section.virtual_size))
         {
             return section;
         }
