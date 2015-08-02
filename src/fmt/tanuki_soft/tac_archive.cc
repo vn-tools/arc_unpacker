@@ -6,6 +6,7 @@
 //
 // Known games:
 // - Mebae
+// - Shoukoujo
 
 #include "fmt/tanuki_soft/tac_archive.h"
 #include "io/buffered_io.h"
@@ -39,9 +40,17 @@ namespace
         u32 start_index;
         std::vector<std::unique_ptr<TableEntry>> entries;
     };
+
+    enum Version
+    {
+        Unknown,
+        Version100,
+        Version110,
+    };
 }
 
-static const std::string magic = "TArc1.00\x00\x00\x00\x00"_s;
+static const std::string magic_100 = "TArc1.00\x00\x00\x00\x00"_s;
+static const std::string magic_110 = "TArc1.10\x00\x00\x00\x00"_s;
 
 static std::string decrypt(
     const std::string &input, size_t size, const std::string &key)
@@ -53,12 +62,15 @@ static std::string decrypt(
     return bf.decrypt(input.substr(0, left)) + input.substr(left);
 }
 
-static std::vector<std::unique_ptr<TableDirectory>> read_table(io::IO &arc_io)
+static std::vector<std::unique_ptr<TableDirectory>> read_table(
+    io::IO &arc_io, Version version)
 {
     size_t entry_count = arc_io.read_u32_le();
     size_t directory_count = arc_io.read_u32_le();
     size_t table_size = arc_io.read_u32_le();
     arc_io.skip(4);
+    if (version == Version::Version110)
+        arc_io.skip(8);
     size_t file_data_start = arc_io.tell() + table_size;
 
     io::BufferedIO table_io(
@@ -137,6 +149,16 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
     return file;
 }
 
+static Version read_version(io::IO &io)
+{
+    if (io.read(magic_100.size()) == magic_100)
+        return Version::Version100;
+    io.seek(0);
+    if (io.read(magic_110.size()) == magic_110)
+        return Version::Version110;
+    return Version::Unknown;
+}
+
 TacArchive::TacArchive()
 {
     add_transformer(this);
@@ -144,15 +166,15 @@ TacArchive::TacArchive()
 
 bool TacArchive::is_recognized_internal(File &arc_file) const
 {
-    return arc_file.io.read(magic.size()) == magic;
+    return read_version(arc_file.io) != Version::Unknown;
 }
 
 void TacArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    arc_file.io.skip(magic.size());
+    auto version = read_version(arc_file.io);
     arc_file.io.skip(8);
 
-    auto directories = read_table(arc_file.io);
+    auto directories = read_table(arc_file.io, version);
     for (auto &directory : directories)
         for (auto &entry : directory->entries)
             file_saver.save(read_file(arc_file.io, *entry));
