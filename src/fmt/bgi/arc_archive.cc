@@ -64,5 +64,9 @@ void ArcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     size_t file_count = arc_file.io.read_u32_le();
     for (size_t i = 0; i < file_count; i++)
-        file_saver.save(read_file(arc_file.io, file_count));
+    {
+        auto file = read_file(arc_file.io, file_count);
+        file->guess_extension();
+        file_saver.save(std::move(file));
+    }
 }

@@ -26,7 +26,6 @@ namespace
     };
 }
 
-static const std::string bmp_magic = "BM6"_s;
 static const std::string magic = "CompressedBG___\x00"_s;
 
 static u32 get_key(u32 *pkey)
@@ -240,24 +239,11 @@ static util::PixelFormat bpp_to_image_pixel_format(int bpp)
 
 bool CbgConverter::is_recognized_internal(File &file) const
 {
-    if (file.io.read(bmp_magic.size()) == bmp_magic)
-        return true;
-    file.io.seek(0);
     return file.io.read(magic.size()) == magic;
 }
 
 std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
 {
-    if (file.io.read(bmp_magic.size()) == bmp_magic)
-    {
-        file.io.seek(0);
-        std::unique_ptr<File> output_file(new File);
-        output_file->io.write_from_io(file.io);
-        output_file->name = file.name;
-        output_file->change_extension(".bmp");
-        return output_file;
-    }
-
     file.io.seek(0);
     if (file.io.read(magic.size()) != magic)
         throw std::runtime_error("Not a CBG image");
