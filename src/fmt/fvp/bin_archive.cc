@@ -16,14 +16,14 @@ using namespace au::fmt::fvp;
 
 namespace
 {
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         u32 offset;
         u32 size;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static Table read_table(io::IO &arc_io)

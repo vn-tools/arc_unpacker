@@ -23,14 +23,14 @@ using namespace au::fmt::qlie;
 
 namespace
 {
-    typedef enum
+    enum EncryptionType
     {
         Basic = 1,
         WithFKey = 2,
         WithGameExe = 3,
-    } EncryptionType;
+    };
 
-    typedef struct
+    struct TableEntry
     {
         std::string orig_name;
         std::string name;
@@ -40,9 +40,9 @@ namespace
         bool encrypted;
         bool compressed;
         u32 seed;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const std::string magic1 = "FilePackVer1.0\x00\x00"_s;

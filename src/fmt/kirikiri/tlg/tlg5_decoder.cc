@@ -10,22 +10,22 @@ using namespace au::fmt::kirikiri::tlg;
 
 namespace
 {
-    typedef struct
+    struct Header
     {
         u8 channel_count;
         u32 image_width;
         u32 image_height;
         u32 block_height;
-    } Header;
+    };
 
-    typedef struct BlockInfo
+    struct BlockInfo
     {
         bool mark;
         size_t block_size;
         std::unique_ptr<u8[]> block_data;
         BlockInfo(io::IO &io);
         void decompress(LzssDecompressor &decompressor, Header &header);
-    } BlockInfo;
+    };
 }
 
 BlockInfo::BlockInfo(io::IO &io) : block_data(nullptr)

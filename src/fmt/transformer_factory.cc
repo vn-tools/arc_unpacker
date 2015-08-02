@@ -62,7 +62,7 @@ using namespace au::fmt;
 
 namespace
 {
-    typedef std::function<Transformer*()> TransformerCreator;
+    using TransformerCreator = std::function<Transformer*()>;
 }
 
 struct TransformerFactory::Priv

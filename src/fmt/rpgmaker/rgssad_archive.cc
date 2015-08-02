@@ -14,15 +14,15 @@ using namespace au::fmt::rpgmaker;
 
 namespace
 {
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         size_t size;
         size_t offset;
         u32 key;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const std::string magic = "RGSSAD\x00"_s;

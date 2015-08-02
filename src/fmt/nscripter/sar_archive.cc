@@ -14,12 +14,12 @@ using namespace au::fmt::nscripter;
 
 namespace
 {
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         u32 offset;
         u32 size;
-    } TableEntry;
+    };
 }
 
 static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)

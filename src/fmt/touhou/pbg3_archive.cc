@@ -17,21 +17,21 @@ using namespace au::fmt::touhou;
 
 namespace
 {
-    typedef struct
+    struct Header
     {
         size_t file_count;
         size_t table_offset;
-    } Header;
+    };
 
-    typedef struct
+    struct TableEntry
     {
         u32 checksum;
         size_t size;
         size_t offset;
         std::string name;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const std::string magic = "PBG3"_s;

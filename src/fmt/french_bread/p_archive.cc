@@ -15,14 +15,14 @@ using namespace au::fmt::french_bread;
 
 namespace
 {
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         size_t offset;
         size_t size;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const u32 encryption_key = 0xE3DF59AC;

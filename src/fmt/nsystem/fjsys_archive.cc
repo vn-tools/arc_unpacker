@@ -26,12 +26,12 @@ using namespace au::fmt::nsystem;
 
 namespace
 {
-    typedef struct
+    struct Header
     {
         size_t header_size;
         size_t file_names_size;
         size_t file_count;
-    } Header;
+    };
 }
 
 static const std::string magic = "FJSYS\x00\x00\x00"_s;

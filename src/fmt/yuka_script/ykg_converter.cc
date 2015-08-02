@@ -13,22 +13,22 @@ using namespace au::fmt::yuka_script;
 
 namespace
 {
-    typedef struct
+    struct Header
     {
         bool encrypted;
         size_t data_offset;
         size_t data_size;
         size_t regions_offset;
         size_t regions_size;
-    } Header;
+    };
 
-    typedef struct
+    struct Region
     {
         size_t width;
         size_t height;
         size_t x;
         size_t y;
-    } Region;
+    };
 }
 
 static const std::string magic = "YKG000"_s;

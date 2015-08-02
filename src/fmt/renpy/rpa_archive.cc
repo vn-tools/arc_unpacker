@@ -74,22 +74,22 @@ using namespace au::fmt::renpy;
 
 namespace
 {
-    typedef struct
+    struct UnpickleContext
     {
         std::vector<std::string> strings;
         std::vector<int> numbers;
-    } UnpickleContext;
+    };
 
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         u32 offset;
         u32 size;
         std::string prefix;
         size_t prefix_size;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static void unpickle_handle_string(std::string str, UnpickleContext *context)

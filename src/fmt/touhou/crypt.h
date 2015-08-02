@@ -6,7 +6,7 @@ namespace au {
 namespace fmt {
 namespace touhou {
 
-    typedef struct DecryptorContext
+    struct DecryptorContext
     {
         u8 key;
         u8 step;
@@ -14,7 +14,7 @@ namespace touhou {
         size_t limit;
 
         bool operator ==(const DecryptorContext &other) const;
-    } DecryptorContext;
+    };
 
     void decrypt(
         io::IO &input,

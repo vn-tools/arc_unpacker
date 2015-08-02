@@ -17,13 +17,13 @@ using namespace au::fmt::bgi;
 
 namespace
 {
-    typedef struct
+    struct NodeInfo
     {
         bool valid;
         u32 frequency;
         int left_node;
         int right_node;
-    } NodeInfo;
+    };
 }
 
 static const std::string bmp_magic = "BM6"_s;

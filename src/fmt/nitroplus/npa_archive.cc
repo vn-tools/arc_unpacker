@@ -17,13 +17,13 @@ using namespace au::fmt::nitroplus;
 
 namespace
 {
-    typedef enum
+    enum FileType
     {
         FILE_TYPE_DIRECTORY = 1,
         FILE_TYPE_FILE = 2
-    } FileType;
+    };
 
-    typedef struct
+    struct Header
     {
         u32 key1;
         u32 key2;
@@ -34,17 +34,17 @@ namespace
         u32 file_count;
         u32 table_size;
         size_t table_offset;
-    } Header;
+    };
 
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         u32 offset;
         u32 size_compressed;
         u32 size_original;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const std::string magic = "NPA\x01\x00\x00\x00"_s;

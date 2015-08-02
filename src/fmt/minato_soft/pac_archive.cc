@@ -18,15 +18,15 @@ using namespace au::fmt::minato_soft;
 
 namespace
 {
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         size_t offset;
         size_t size_original;
         size_t size_compressed;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const std::string magic = "PAC\x00"_s;

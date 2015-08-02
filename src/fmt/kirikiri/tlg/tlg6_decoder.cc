@@ -17,7 +17,7 @@ static u8 golomb_bit_length_table[GOLOMB_N_COUNT * 2 * 128][GOLOMB_N_COUNT];
 
 namespace
 {
-    typedef struct
+    struct Header
     {
         u8 channel_count;
         u8 data_flags;
@@ -29,15 +29,15 @@ namespace
 
         size_t x_block_count;
         size_t y_block_count;
-    } Header;
+    };
 
-    typedef struct FilterTypes
+    struct FilterTypes
     {
         u32 data_size;
         std::unique_ptr<u8[]> data;
         FilterTypes(io::IO &io);
         void decompress(Header &header);
-    } FilterTypes;
+    };
 }
 
 FilterTypes::FilterTypes(io::IO &io) : data(nullptr)

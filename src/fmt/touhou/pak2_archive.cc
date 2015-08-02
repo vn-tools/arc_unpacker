@@ -23,14 +23,14 @@ using namespace au::fmt::touhou;
 
 namespace
 {
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         u32 offset;
         u32 size;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static void decrypt(io::IO &io, u32 mt_seed, u8 a, u8 b, u8 delta)

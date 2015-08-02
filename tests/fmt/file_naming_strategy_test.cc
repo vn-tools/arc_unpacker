@@ -2,7 +2,7 @@
 #include "fmt/transformer.h"
 #include "test_support/catch.hpp"
 
-typedef boost::filesystem::path path;
+using path = boost::filesystem::path;
 
 static path test(
     const au::fmt::FileNamingStrategy &strategy,

@@ -17,24 +17,28 @@ using namespace au::fmt::glib;
 
 namespace
 {
-    typedef struct
+    struct Header
     {
         u32 keys[4];
         size_t table_offset;
         size_t table_size;
-    } Header;
+    };
 
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         bool is_file;
         u32 offset;
         u32 size;
         u32 keys[4];
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
+
+static const std::string table_magic = "CDBD"_s;
+static const std::string magic_21 = "GLibArchiveData2.1\x00"_s;
+static const std::string magic_20 = "GLibArchiveData2.0\x00"_s;
 
 static const u32 table_decoder = 0x8465B49B;
 static const size_t header_size = 0x5C;
@@ -172,10 +176,6 @@ static const std::function<u8(u8, u8)> decoders[] =
         return (byte << 4) | (byte >> 4);
     },
 };
-
-static const std::string table_magic = "CDBD"_s;
-static const std::string magic_21 = "GLibArchiveData2.1\x00"_s;
-static const std::string magic_20 = "GLibArchiveData2.0\x00"_s;
 
 static void decode(u32 decoder, char *buffer, size_t size)
 {

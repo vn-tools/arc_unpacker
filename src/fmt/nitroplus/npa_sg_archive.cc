@@ -16,14 +16,14 @@ using namespace au::fmt::nitroplus;
 
 namespace
 {
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         size_t offset;
         size_t size;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const std::string key = "\xBD\xAA\xBC\xB4\xAB\xB6\xBC\xB4"_s;

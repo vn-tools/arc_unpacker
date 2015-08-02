@@ -31,7 +31,7 @@ using namespace au::fmt::touhou;
 
 namespace
 {
-    typedef struct
+    struct TableEntry
     {
         size_t width;
         size_t height;
@@ -41,9 +41,9 @@ namespace
         int version;
         size_t texture_offset;
         bool has_data;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const std::string texture_magic = "THTX"_s;

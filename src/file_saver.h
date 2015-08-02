@@ -26,7 +26,7 @@ namespace au {
         std::unique_ptr<Priv> p;
     };
 
-    typedef std::function<void(std::shared_ptr<File>)> FileSaveCallback;
+    using FileSaveCallback = std::function<void(std::shared_ptr<File>)>;
 
     class FileSaverCallback : public FileSaver
     {

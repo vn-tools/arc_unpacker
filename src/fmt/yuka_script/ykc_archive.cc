@@ -15,14 +15,14 @@ using namespace au::fmt::yuka_script;
 
 namespace
 {
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         size_t size;
         size_t offset;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const std::string magic = "YKC001"_s;

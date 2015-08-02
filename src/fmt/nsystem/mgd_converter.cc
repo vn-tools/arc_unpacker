@@ -17,20 +17,20 @@ using namespace au::fmt::nsystem;
 
 namespace
 {
-    typedef enum
+    enum CompressionType
     {
         COMPRESSION_NONE = 0,
         COMPRESSION_SGD = 1,
         COMPRESSION_PNG = 2,
-    } CompressionType;
+    };
 
-    typedef struct
+    struct Region
     {
         u16 x;
         u16 y;
         u16 width;
         u16 height;
-    } Region;
+    };
 }
 
 static const std::string magic = "MGD "_s;

@@ -19,7 +19,7 @@ using namespace au::fmt::key;
 
 namespace
 {
-    typedef struct
+    struct Region
     {
         size_t x1;
         size_t y1;
@@ -27,7 +27,7 @@ namespace
         size_t y2;
         size_t ox;
         size_t oy;
-    } Region;
+    };
 }
 
 static void decompress(

@@ -23,15 +23,15 @@ static const std::string compress_magic = "lnd\x00"_s;
 
 namespace
 {
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         bool compressed;
         u32 offset;
         u32 size;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 std::unique_ptr<io::IO> lnd_decompress(io::IO &input_io)

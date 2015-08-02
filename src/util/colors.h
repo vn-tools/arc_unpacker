@@ -6,13 +6,13 @@ namespace au {
 namespace util {
 namespace color {
 
-    typedef enum
+    enum Channel
     {
         Red   = 0,
         Green = 1,
         Blue  = 2,
         Alpha = 3
-    } Channel;
+    };
 
     u32 rgb888(u8 r, u8 g, u8 b);
     u32 rgb565(u16 word);

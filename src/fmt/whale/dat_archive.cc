@@ -28,7 +28,7 @@ namespace
         Compressed = 2,
     };
 
-    typedef struct
+    struct TableEntry
     {
         u64 hash;
         TableEntryType type;
@@ -36,9 +36,9 @@ namespace
         size_t size_original;
         size_t size_compressed;
         std::string sjis_name;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const u32 file_count_hash = 0x26ACA46E;

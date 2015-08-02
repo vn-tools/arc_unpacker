@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt;
 
-typedef boost::filesystem::path path;
+using path = boost::filesystem::path;
 
 namespace
 {

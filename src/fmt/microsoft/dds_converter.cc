@@ -28,7 +28,7 @@ namespace
         Texture3D  = 4,
     };
 
-    typedef enum
+    enum DdsPixelFormatFlags
     {
         DDPF_ALPHAPIXELS = 0x1,
         DDPF_ALPHA = 0x2,
@@ -36,9 +36,9 @@ namespace
         DDPF_RGB = 0x40,
         DDPF_YUV = 0x200,
         DDPF_LUMINACE = 0x20000,
-    } DdsPixelFormatFlags;
+    };
 
-    typedef struct
+    struct DdsPixelFormat
     {
         u32 size;
         DdsPixelFormatFlags flags;
@@ -48,18 +48,18 @@ namespace
         u32 g_bit_mask;
         u32 b_bit_mask;
         u32 a_bit_mask;
-    } DdsPixelFormat;
+    };
 
-    typedef struct
+    struct DdsHeaderDx10
     {
         u32 dxgi_format;
         D3d10ResourceDimension resource_dimension;
         u32 misc_flag;
         u32 array_size;
         u32 misc_flags2;
-    } DdsHeaderDx10;
+    };
 
-    typedef enum
+    enum DdsHeaderFlags
     {
         DDSD_CAPS        = 0x1,
         DDSD_HEIGHT      = 0x2,
@@ -69,9 +69,9 @@ namespace
         DDSD_MIPMAPCOUNT = 0x20000,
         DDSD_LINEARSIZE  = 0x80000,
         DDSD_DEPTH       = 0x800000,
-    } DdsHeaderFlags;
+    };
 
-    typedef struct
+    struct DdsHeader
     {
         u32 size;
         DdsHeaderFlags flags;
@@ -82,7 +82,7 @@ namespace
         u32 mip_map_count;
         DdsPixelFormat pixel_format;
         u32 caps[4];
-    } DdsHeader;
+    };
 }
 
 static const std::string magic = "DDS\x20"_s;

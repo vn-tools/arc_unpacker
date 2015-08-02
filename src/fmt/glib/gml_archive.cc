@@ -18,15 +18,15 @@ static const size_t prefix_size = 4;
 
 namespace
 {
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         u32 offset;
         u32 size;
         char prefix[prefix_size];
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const std::string magic = "GML_ARC\x00"_s;

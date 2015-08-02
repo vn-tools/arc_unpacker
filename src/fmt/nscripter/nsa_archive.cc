@@ -19,23 +19,23 @@ using namespace au::fmt::nscripter;
 
 namespace
 {
-    typedef enum
+    enum CompressionType
     {
         COMPRESSION_NONE = 0,
         COMPRESSION_SPB = 1,
         COMPRESSION_LZSS = 2,
-    } CompressionType;
+    };
 
-    typedef struct
+    struct TableEntry
     {
         std::string name;
         CompressionType compression_type;
         size_t offset;
         size_t size_compressed;
         size_t size_original;
-    } TableEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static Table read_table(io::IO &arc_io)

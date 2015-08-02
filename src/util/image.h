@@ -8,14 +8,14 @@
 namespace au {
 namespace util {
 
-    typedef enum
+    enum PixelFormat
     {
         RGB = 1,
         RGBA,
         Grayscale,
         BGR,
         BGRA
-    } PixelFormat;
+    };
 
     class Image final
     {

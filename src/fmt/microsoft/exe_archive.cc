@@ -17,7 +17,7 @@ using namespace au::fmt::microsoft;
 
 namespace
 {
-    typedef struct DosHeader
+    struct DosHeader
     {
         std::string magic;
         u16 e_cblp;
@@ -38,9 +38,9 @@ namespace
         u32 e_lfanew;
 
         DosHeader(io::IO &io);
-    } DosHeader;
+    };
 
-    typedef struct ImageOptionalHeader
+    struct ImageOptionalHeader
     {
         u16 magic;
         u8 major_linker_version;
@@ -74,9 +74,9 @@ namespace
         u32 number_of_rva_and_sizes;
 
         ImageOptionalHeader(io::IO &io);
-    } ImageOptionalHeader;
+    };
 
-    typedef struct ImageFileHeader
+    struct ImageFileHeader
     {
         u16 machine;
         u16 number_of_sections;
@@ -86,24 +86,24 @@ namespace
         u16 size_of_optional_header;
         u16 characteristics;
         ImageFileHeader(io::IO &io);
-    } ImageFileHeader;
+    };
 
-    typedef struct ImageNtHeader
+    struct ImageNtHeader
     {
         u32 signature;
         ImageFileHeader file_header;
         ImageOptionalHeader optional_header;
         ImageNtHeader(io::IO &io);
-    } ImageNtHeader;
+    };
 
-    typedef struct ImageDataDirectory
+    struct ImageDataDirectory
     {
         u32 virtual_address;
         u32 size;
         ImageDataDirectory(io::IO &io);
-    } ImageDataDriectory;
+    };
 
-    typedef struct ImageSectionHeader
+    struct ImageSectionHeader
     {
         std::string name;
         u32 virtual_size;
@@ -117,9 +117,9 @@ namespace
         u16 number_of_line_numbers;
         u32 characteristics;
         ImageSectionHeader(io::IO &io);
-    } ImageSectionHeader;
+    };
 
-    typedef struct ImageResourceDirectory
+    struct ImageResourceDirectory
     {
         u32 characteristics;
         u32 timestamp;
@@ -128,9 +128,9 @@ namespace
         u16 number_of_named_entries;
         u16 number_of_id_entries;
         ImageResourceDirectory(io::IO &io);
-    } ImageResourceDirectory;
+    };
 
-    typedef struct ImageResourceDirectoryEntry
+    struct ImageResourceDirectoryEntry
     {
         u32 offset_to_data;
         bool name_is_string;
@@ -139,15 +139,15 @@ namespace
         u32 id;
         u32 data_is_directory;
         ImageResourceDirectoryEntry(io::IO &io);
-    } ImageResourceDirectoryEntry;
+    };
 
-    typedef struct ImageResourceDataEntry
+    struct ImageResourceDataEntry
     {
         u32 offset_to_data;
         u32 size;
         u32 code_page;
         ImageResourceDataEntry(io::IO &io);
-    } ImageResourceDataEntry;
+    };
 
     class RvaHelper
     {

@@ -17,7 +17,7 @@ using namespace au::fmt::key;
 
 namespace
 {
-    typedef struct
+    struct NwaHeader
     {
         u16 channel_count;
         u16 bits_per_sample;
@@ -29,7 +29,7 @@ namespace
         u32 sample_count;
         u32 block_size;
         u32 rest_size;
-    } NwaHeader;
+    };
 }
 
 static void nwa_validate_header(const NwaHeader &header)

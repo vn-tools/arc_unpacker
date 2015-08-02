@@ -9,8 +9,8 @@ namespace au {
 namespace fmt {
 namespace touhou {
 
-    typedef std::array<u32, 256> Palette;
-    typedef std::map<boost::filesystem::path, Palette> PaletteMap;
+    using Palette = std::array<u32, 256>;
+    using PaletteMap = std::map<boost::filesystem::path, Palette>;
     Palette create_default_palette();
 
 } } }

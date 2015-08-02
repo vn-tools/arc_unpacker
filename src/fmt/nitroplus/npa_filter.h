@@ -6,12 +6,12 @@ namespace au {
 namespace fmt {
 namespace nitroplus {
 
-    typedef struct
+    struct NpaFilter
     {
         const u8 *permutation;
         u32 data_key;
         u32 (*file_name_key)(u32 key1, u32 key2);
-    } NpaFilter;
+    };
 
 } } }
 

@@ -49,23 +49,23 @@ namespace
         Th145,
     };
 
-    typedef struct
+    struct TableEntry
     {
         size_t size;
         size_t offset;
         std::string name;
         std::string key;
-    } TableEntry;
+    };
 
-    typedef struct
+    struct DirEntry
     {
         u32 initial_hash;
         size_t file_count;
-    } DirEntry;
+    };
 
-    typedef std::vector<std::unique_ptr<TableEntry>> Table;
-    typedef std::vector<std::unique_ptr<DirEntry>> DirTable;
-    typedef std::map<u32, std::string> HashLookupMap;
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
+    using DirTable = std::vector<std::unique_ptr<DirEntry>>;
+    using HashLookupMap = std::map<u32, std::string>;
 }
 
 static const std::string pal_magic = "TFPA\x00"_s;
