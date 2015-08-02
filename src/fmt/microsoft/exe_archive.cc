@@ -97,11 +97,11 @@ namespace
         ImageNtHeader(io::IO &io);
     };
 
-    struct ImageDataDirectory
+    struct ImageDataDir
     {
         u32 virtual_address;
         u32 size;
-        ImageDataDirectory(io::IO &io);
+        ImageDataDir(io::IO &io);
     };
 
     struct ImageSectionHeader
@@ -120,7 +120,7 @@ namespace
         ImageSectionHeader(io::IO &io);
     };
 
-    struct ImageResourceDirectory
+    struct ImageResourceDir
     {
         u32 characteristics;
         u32 timestamp;
@@ -128,18 +128,18 @@ namespace
         u16 minor_version;
         u16 number_of_named_entries;
         u16 number_of_id_entries;
-        ImageResourceDirectory(io::IO &io);
+        ImageResourceDir(io::IO &io);
     };
 
-    struct ImageResourceDirectoryEntry
+    struct ImageResourceDirEntry
     {
         u32 offset_to_data;
         bool name_is_string;
         u32 name_offset;
         u32 name;
         u32 id;
-        u32 data_is_directory;
-        ImageResourceDirectoryEntry(io::IO &io);
+        u32 data_is_dir;
+        ImageResourceDirEntry(io::IO &io);
     };
 
     struct ImageResourceDataEntry
@@ -153,18 +153,45 @@ namespace
     class RvaHelper
     {
     public:
-        RvaHelper(u32 file_alignment, u32 section_alignment);
-        u32 rva_to_offset(
-            const std::vector<ImageSectionHeader> &sections, u32 rva);
+        RvaHelper(
+            u32 file_alignment,
+            u32 section_alignment,
+            const std::vector<ImageSectionHeader> &sections);
+
+        u32 rva_to_offset(u32 rva) const;
+
     private:
+        const ImageSectionHeader &section_for_rva(u32 rva) const;
+        u32 adjust_file_alignment(u32 offset) const;
+        u32 adjust_section_alignment(u32 offset) const;
+
         u32 file_alignment;
         u32 section_alignment;
+        const std::vector<ImageSectionHeader> &sections;
+    };
 
-        const ImageSectionHeader &section_for_rva(
-            const std::vector<ImageSectionHeader> &sections, u32 rva);
+    struct ResourceCrawlerArgs
+    {
+        ResourceCrawlerArgs(io::IO &, FileSaver &, const RvaHelper &, size_t);
 
-        u32 adjust_file_alignment(u32 offset);
-        u32 adjust_section_alignment(u32 offset);
+        io::IO &io;
+        FileSaver &saver;
+        const RvaHelper &rva_helper;
+        size_t base_offset;
+    };
+
+    class ResourceCrawler
+    {
+    public:
+        static void crawl(const ResourceCrawlerArgs &args);
+
+    private:
+        ResourceCrawler(const ResourceCrawlerArgs &args);
+        void process_entry(size_t offset, const std::string &path);
+        void process_dir(size_t offset, const std::string path = "");
+        std::string read_entry_name(const ImageResourceDirEntry &entry);
+
+        const ResourceCrawlerArgs &args;
     };
 }
 
@@ -255,7 +282,7 @@ ImageNtHeader::ImageNtHeader(io::IO &io)
 {
 }
 
-ImageDataDirectory::ImageDataDirectory(io::IO &io)
+ImageDataDir::ImageDataDir(io::IO &io)
 {
     virtual_address = io.read_u32_le();
     size = io.read_u32_le();
@@ -275,7 +302,7 @@ ImageSectionHeader::ImageSectionHeader(io::IO &io)
     characteristics         = io.read_u32_le();
 }
 
-ImageResourceDirectory::ImageResourceDirectory(io::IO &io)
+ImageResourceDir::ImageResourceDir(io::IO &io)
 {
     characteristics         = io.read_u32_le();
     timestamp               = io.read_u32_le();
@@ -285,7 +312,7 @@ ImageResourceDirectory::ImageResourceDirectory(io::IO &io)
     number_of_id_entries    = io.read_u16_le();
 }
 
-ImageResourceDirectoryEntry::ImageResourceDirectoryEntry(io::IO &io)
+ImageResourceDirEntry::ImageResourceDirEntry(io::IO &io)
 {
     //i am ugliness
     name = io.read_u32_le();
@@ -293,7 +320,7 @@ ImageResourceDirectoryEntry::ImageResourceDirectoryEntry(io::IO &io)
     id = name;
     name_is_string = (name >> 31) > 0;
     name_offset = name & 0x7FFFFFFF;
-    data_is_directory = offset_to_data >> 31;
+    data_is_dir = offset_to_data >> 31;
     offset_to_data &= 0x7FFFFFFF;
 }
 
@@ -305,8 +332,25 @@ ImageResourceDataEntry::ImageResourceDataEntry(io::IO &io)
     io.skip(4);
 }
 
-const ImageSectionHeader &RvaHelper::section_for_rva(
-    const std::vector<ImageSectionHeader> &sections, u32 rva)
+RvaHelper::RvaHelper(
+    u32 file_alignment,
+    u32 section_alignment,
+    const std::vector<ImageSectionHeader> &sections)
+: file_alignment(file_alignment),
+    section_alignment(section_alignment),
+    sections(sections)
+{
+}
+
+u32 RvaHelper::rva_to_offset(u32 rva) const
+{
+    const ImageSectionHeader &section = section_for_rva(rva);
+    return rva
+        + adjust_file_alignment(section.pointer_to_raw_data)
+        - adjust_section_alignment(section.virtual_address);
+}
+
+const ImageSectionHeader &RvaHelper::section_for_rva(u32 rva) const
 {
     for (auto &section : sections)
     {
@@ -319,44 +363,81 @@ const ImageSectionHeader &RvaHelper::section_for_rva(
     throw std::runtime_error("Section not found");
 }
 
-u32 RvaHelper::adjust_file_alignment(u32 offset)
+u32 RvaHelper::adjust_file_alignment(u32 offset) const
 {
     return file_alignment < 0x200 ? offset : (offset / 0x200) * 0x200;
 }
 
-u32 RvaHelper::adjust_section_alignment(u32 offset)
+u32 RvaHelper::adjust_section_alignment(u32 offset) const
 {
-    u32 fixed_alignment
-        = section_alignment < 0x1000
-            ? file_alignment
-            : section_alignment;
+    u32 fixed_alignment = section_alignment < 0x1000
+        ? file_alignment
+        : section_alignment;
     if (fixed_alignment && (offset % fixed_alignment))
         return fixed_alignment * (offset / fixed_alignment);
     return offset;
 }
 
-RvaHelper::RvaHelper(u32 file_alignment, u32 section_alignment)
-    : file_alignment(file_alignment), section_alignment(section_alignment)
+ResourceCrawlerArgs::ResourceCrawlerArgs(
+    io::IO &io, FileSaver &saver, const RvaHelper &helper, size_t base_offset)
+    : io(io), saver(saver), rva_helper(helper), base_offset(base_offset)
 {
 }
 
-u32 RvaHelper::rva_to_offset(
-    const std::vector<ImageSectionHeader> &sections, u32 rva)
+void ResourceCrawler::crawl(const ResourceCrawlerArgs &args)
 {
-    const ImageSectionHeader &section = section_for_rva(sections, rva);
-    return rva
-        + adjust_file_alignment(section.pointer_to_raw_data)
-        - adjust_section_alignment(section.virtual_address);
+    ResourceCrawler crawler(args);
+    crawler.process_dir(0);
 }
 
-static std::string read_entry_name(
-    io::IO &io, size_t base_offset, const ImageResourceDirectoryEntry &entry)
+ResourceCrawler::ResourceCrawler(const ResourceCrawlerArgs &args) : args(args)
+{
+}
+
+void ResourceCrawler::process_dir(size_t offset, const std::string path)
+{
+    args.io.seek(args.base_offset + offset);
+    ImageResourceDir dir(args.io);
+    size_t entry_count = dir.number_of_named_entries + dir.number_of_id_entries;
+    for (auto i : util::range(entry_count))
+    {
+        ImageResourceDirEntry entry(args.io);
+
+        args.io.peek(args.io.tell(), [&]()
+        {
+            std::string entry_path = read_entry_name(entry);
+            if (path != "")
+                entry_path = path + path_sep + entry_path;
+
+            if (entry.data_is_dir)
+                process_dir(entry.offset_to_data, entry_path);
+            else
+                process_entry(entry.offset_to_data, entry_path);
+        });
+    }
+}
+
+void ResourceCrawler::process_entry(size_t offset, const std::string &path)
+{
+    args.io.seek(args.base_offset + offset);
+    ImageResourceDataEntry entry(args.io);
+
+    std::unique_ptr<File> file(new File);
+    file->name = path;
+    args.io.seek(args.rva_helper.rva_to_offset(entry.offset_to_data));
+    file->io.write_from_io(args.io, entry.size);
+
+    file->guess_extension();
+    args.saver.save(std::move(file));
+}
+
+std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
 {
     if (entry.name_is_string)
     {
-        io.seek(base_offset + entry.name_offset);
-        size_t max_length = io.read_u16_le();
-        std::string utf16le = io.read(max_length * 2);
+        args.io.seek(args.base_offset + entry.name_offset);
+        size_t max_length = args.io.read_u16_le();
+        std::string utf16le = args.io.read(max_length * 2);
         return util::convert_encoding(utf16le, "utf-16le", "utf-8");
     }
 
@@ -386,79 +467,6 @@ static std::string read_entry_name(
     return util::format("%d", entry.id);
 }
 
-static void process_image_resource_data_entry(
-    io::IO &io,
-    size_t base_offset,
-    size_t offset,
-    std::vector<ImageSectionHeader> &sections,
-    RvaHelper &rva_helper,
-    FileSaver &file_saver,
-    std::string path)
-{
-    io.seek(base_offset + offset);
-    ImageResourceDataEntry entry(io);
-
-    std::unique_ptr<File> file(new File);
-    file->name = path;
-    io.seek(rva_helper.rva_to_offset(sections, entry.offset_to_data));
-    file->io.write_from_io(io, entry.size);
-
-    file->guess_extension();
-    file_saver.save(std::move(file));
-}
-
-static void process_image_resource_directory(
-    io::IO &io,
-    size_t base_offset,
-    size_t offset,
-    std::vector<ImageSectionHeader> &sections,
-    RvaHelper &rva_helper,
-    FileSaver &file_saver,
-    const std::string path = "")
-{
-    io.seek(base_offset + offset);
-    ImageResourceDirectory image_resource_directory(io);
-    size_t entry_count =
-        image_resource_directory.number_of_named_entries +
-        image_resource_directory.number_of_id_entries;
-    size_t directory_entry_offset = io.tell() - base_offset;
-    for (auto i : util::range(entry_count))
-    {
-        io.seek(base_offset + directory_entry_offset);
-        ImageResourceDirectoryEntry entry(io);
-        std::string entry_path = read_entry_name(io, base_offset, entry);
-        if (path != "")
-        {
-            entry_path = path + path_sep + entry_path;
-        }
-        if (entry.data_is_directory)
-        {
-            //another directory
-            process_image_resource_directory(
-                io,
-                base_offset,
-                entry.offset_to_data,
-                sections,
-                rva_helper,
-                file_saver,
-                entry_path);
-        }
-        else
-        {
-            //file
-            process_image_resource_data_entry(
-                io,
-                base_offset,
-                entry.offset_to_data,
-                sections,
-                rva_helper,
-                file_saver,
-                entry_path);
-        }
-        directory_entry_offset += 8;
-    }
-}
-
 bool ExeArchive::is_recognized_internal(File &arc_file) const
 {
     DosHeader dos_header(arc_file.io);
@@ -471,30 +479,23 @@ void ExeArchive::unpack_internal(File &file, FileSaver &file_saver) const
     file.io.seek(dos_header.e_lfanew);
     ImageNtHeader nt_header(file.io);
 
-    RvaHelper rva_helper(
-        nt_header.optional_header.file_alignment,
-        nt_header.optional_header.section_alignment);
-
-    size_t image_data_directory_count
-        = nt_header.optional_header.number_of_rva_and_sizes;
-    std::vector<ImageDataDirectory> image_data_directories;
-    image_data_directories.reserve(image_data_directory_count);
-    for (auto i : util::range(image_data_directory_count))
-        image_data_directories.push_back(ImageDataDirectory(file.io));
+    size_t data_dir_count = nt_header.optional_header.number_of_rva_and_sizes;
+    std::vector<ImageDataDir> data_dirs;
+    data_dirs.reserve(data_dir_count);
+    for (auto i : util::range(data_dir_count))
+        data_dirs.push_back(ImageDataDir(file.io));
 
     std::vector<ImageSectionHeader> sections;
     for (auto i : util::range(nt_header.file_header.number_of_sections))
         sections.push_back(ImageSectionHeader(file.io));
 
-    auto resource_directory = image_data_directories[2];
-    size_t offset_to_image_resources = rva_helper.rva_to_offset(
-        sections, resource_directory.virtual_address);
+    RvaHelper rva_helper(
+        nt_header.optional_header.file_alignment,
+        nt_header.optional_header.section_alignment,
+        sections);
 
-    process_image_resource_directory(
-        file.io,
-        offset_to_image_resources,
-        0,
-        sections,
-        rva_helper,
-        file_saver);
+    auto resource_dir = data_dirs[2];
+    size_t base_offset = rva_helper.rva_to_offset(resource_dir.virtual_address);
+    ResourceCrawler::crawl(
+        ResourceCrawlerArgs(file.io, file_saver, rva_helper, base_offset));
 }
