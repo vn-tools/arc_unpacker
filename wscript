@@ -29,6 +29,7 @@ def configure_flags(ctx):
         '-Wwrite-strings',
         '-Wno-unused-variable',
         '-Wno-unused-parameter',
+        '-Wold-style-cast',
         '-std=c++11']
 
     if ctx.options.debug:

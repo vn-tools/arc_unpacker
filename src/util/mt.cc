@@ -129,7 +129,7 @@ unsigned long au::util::mt::genrand_int32()
 
 long au::util::mt::genrand_int31()
 {
-    return (long)(genrand_int32() >> 1);
+    return static_cast<long>(genrand_int32() >> 1);
 }
 
 double au::util::mt::genrand_real1()
@@ -144,7 +144,8 @@ double au::util::mt::genrand_real2()
 
 double au::util::mt::genrand_real3()
 {
-    return (((double)genrand_int32()) + 0.5) * (1.0 / 4294967296.0);
+    return ((static_cast<double>(genrand_int32())) + 0.5)
+        * (1.0 / 4294967296.0);
 }
 
 double au::util::mt::genrand_res53()

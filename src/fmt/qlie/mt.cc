@@ -47,7 +47,7 @@ static int mti = N + 1;
 
 void au::fmt::qlie::mt::xor_state(const unsigned char* buff, unsigned long len)
 {
-    unsigned long *words = (unsigned long*) buff;
+    const unsigned long *words = reinterpret_cast<const unsigned long*>(buff);
     unsigned long word_count = len / 4;
     unsigned long i;
 

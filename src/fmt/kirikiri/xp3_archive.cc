@@ -202,7 +202,7 @@ void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     int version = detect_version(arc_file.io);
     u64 table_offset = get_table_offset(arc_file.io, version);
-    arc_file.io.seek((u32)table_offset);
+    arc_file.io.seek(table_offset);
     std::unique_ptr<io::IO> table_io = read_raw_table(arc_file.io);
 
     if (p->filter)
