@@ -63,7 +63,6 @@ static std::unique_ptr<File> read_file(io::IO &arc_io)
     std::unique_ptr<File> subfile(new File);
     subfile->io.write_from_io(arc_io, len);
     subfile->name = (name == "" ? "unknown" : name) + ".dat";
-    subfile->guess_extension();
     return subfile;
 }
 
@@ -88,27 +87,22 @@ void Abmp10Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
             size_t size = arc_file.io.read_u32_le();
             arc_file.io.skip(size);
         }
-        else if (magic == magic_image10)
+        else if (magic == magic_image10 || magic == magic_image10)
         {
-            size_t image_count = arc_file.io.read_u8();
-            for (auto i : util::range(image_count))
+            size_t file_count = arc_file.io.read_u8();
+            for (auto i : util::range(file_count))
             {
                 auto subfile = read_file(arc_file.io);
                 if (subfile != nullptr)
+                {
+                    subfile->guess_extension();
                     file_saver.save(std::move(subfile));
-            }
-        }
-        else if (magic == magic_sound10)
-        {
-            size_t sound_count = arc_file.io.read_u8();
-            for (auto i : util::range(sound_count))
-            {
-                auto subfile = read_file(arc_file.io);
-                if (subfile != nullptr)
-                    file_saver.save(std::move(subfile));
+                }
             }
         }
         else
+        {
             throw std::runtime_error("Unknown section " + magic);
+        }
     }
 }
