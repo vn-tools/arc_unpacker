@@ -1,5 +1,6 @@
 #include <memory>
 #include "fmt/kirikiri/xp3_filters/fsn.h"
+#include "util/range.h"
 
 using namespace au::fmt::kirikiri::xp3_filters;
 
@@ -11,7 +12,7 @@ void Fsn::decode(File &file, u32) const
     char *ptr = data.get();
     file.io.read(ptr, size);
 
-    for (size_t i = 0; i < size; i++)
+    for (auto i : util::range(size))
         ptr[i] ^= 0x36;
 
     if (size > 0x2EA29)

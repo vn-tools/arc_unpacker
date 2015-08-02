@@ -14,6 +14,7 @@
 #include "util/encoding.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::tanuki_soft;
@@ -78,7 +79,7 @@ static std::vector<std::unique_ptr<TableDirectory>> read_table(
             decrypt(arc_io.read(table_size), table_size, "TLibArchiveData")));
 
     std::vector<std::unique_ptr<TableDirectory>> directories;
-    for (size_t i = 0; i < directory_count; i++)
+    for (auto i : util::range(directory_count))
     {
         std::unique_ptr<TableDirectory> dir(new TableDirectory);
         dir->hash = table_io.read_u16_le();
@@ -88,7 +89,7 @@ static std::vector<std::unique_ptr<TableDirectory>> read_table(
     }
 
     std::vector<std::unique_ptr<TableEntry>> entries;
-    for (size_t i = 0; i < entry_count; i++)
+    for (auto i : util::range(entry_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->hash = table_io.read_u64_le();
@@ -102,7 +103,7 @@ static std::vector<std::unique_ptr<TableDirectory>> read_table(
 
     for (auto &directory : directories)
     {
-        for (size_t i = 0; i < directory->entry_count; i++)
+        for (auto i : util::range(directory->entry_count))
         {
             if (i + directory->start_index >= entries.size())
                 throw std::runtime_error("Corrupt file table");

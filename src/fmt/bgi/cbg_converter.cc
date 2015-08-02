@@ -10,6 +10,7 @@
 #include "fmt/bgi/cbg_converter.h"
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
+#include "util/range.h"
 #include "util/image.h"
 
 using namespace au;
@@ -40,7 +41,7 @@ static u32 get_key(u32 *pkey)
 
 static void decrypt(char *input, u32 decrypt_size, u32 key)
 {
-    for (u32 i = 0; i < decrypt_size; i++)
+    for (auto i : util::range(decrypt_size))
         *input++ -= static_cast<char>(get_key(&key));
 }
 
@@ -68,7 +69,7 @@ static void read_freq_table(io::IO &io, u32 raw_size, u32 key, u32 freq_table[])
 
     char *raw_data_ptr = raw_data.get();
     const char *raw_data_guardian = raw_data_ptr + raw_size;
-    for (int i = 0; i < 256; i++)
+    for (auto i : util::range(256))
         freq_table[i] = read_variable_data(raw_data_ptr, raw_data_guardian);
 }
 
@@ -77,7 +78,7 @@ static int read_node_info(u32 freq_table[], NodeInfo node_info[])
     assert(freq_table != nullptr);
     assert(node_info != nullptr);
     u32 frequency_sum = 0;
-    for (int i = 0; i < 256; i++)
+    for (auto i : util::range(256))
     {
         node_info[i].frequency = freq_table[i];
         node_info[i].valid = freq_table[i] > 0;
@@ -86,7 +87,7 @@ static int read_node_info(u32 freq_table[], NodeInfo node_info[])
         frequency_sum += freq_table[i];
     }
 
-    for (int i = 256; i < 511; i++)
+    for (auto i : util::range(256, 511))
     {
         node_info[i].frequency = 0;
         node_info[i].valid = false;
@@ -94,15 +95,15 @@ static int read_node_info(u32 freq_table[], NodeInfo node_info[])
         node_info[i].right_node = -1;
     }
 
-    for (int i = 256; i < 511; i++)
+    for (auto i : util::range(256, 511))
     {
         u32 frequency = 0;
         int children[2];
-        for (int j = 0; j < 2; j++)
+        for (auto j : util::range(2))
         {
             u32 min = 0xFFFFFFFF;
             children[j] = -1;
-            for (int k = 0; k < i; k++)
+            for (auto k : util::range(i))
             {
                 if (node_info[k].valid && node_info[k].frequency < min)
                 {
@@ -136,7 +137,7 @@ static void decompress_huffman(
     assert(node_info != nullptr);
     u32 root = last_node;
 
-    for (size_t i = 0; i < huffman_size; i++)
+    for (auto i : util::range(huffman_size))
     {
         int node = root;
         while (node >= 256)
@@ -188,9 +189,9 @@ static void transform_colors(u8 *input, u16 width, u16 height, u16 bpp)
     left += channels;
 
     //add left to first row
-    for (int x = 1; x < width; x++)
+    for (auto x : util::range(1, width))
     {
-        for (int i = 0; i < channels; i++)
+        for (auto i : util::range(channels))
         {
             *input += input[-channels];
             input++;
@@ -200,9 +201,9 @@ static void transform_colors(u8 *input, u16 width, u16 height, u16 bpp)
     }
 
     //add left and top to all other pixels
-    for (int y = 1; y < height; y++)
+    for (auto y : util::range(1, height))
     {
-        for (int i = 0; i < channels; i++)
+        for (auto i : util::range(channels))
         {
             *input += *above;
             input++;
@@ -210,9 +211,9 @@ static void transform_colors(u8 *input, u16 width, u16 height, u16 bpp)
             left++;
         }
 
-        for (int x = 1; x < width; x++)
+        for (auto x : util::range(1, width))
         {
-            for (int i = 0; i < channels; i++)
+            for (auto i : util::range(channels))
             {
                 *input += (*left  + *above) >> 1;
                 input++;

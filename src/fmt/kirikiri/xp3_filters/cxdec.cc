@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <boost/filesystem.hpp>
 #include "fmt/kirikiri/xp3_filters/cxdec.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri::xp3_filters;
@@ -439,7 +440,7 @@ static void decrypt_chunk(
     if (offset1 >= base_offset && offset1 < base_offset + size)
         ptr[offset1 - base_offset] ^= xor1;
 
-    for (size_t i = 0; i < size; i++)
+    for (auto i : util::range(size))
         ptr[i] ^= xor2;
 
     io.seek(base_offset);
@@ -502,7 +503,7 @@ void Cxdec::set_arc_path(const std::string &path)
         if (pos + encryption_block_size > content.size())
             throw std::runtime_error("Encryption block found, but truncated");
 
-        for (size_t i = 0; i < encryption_block_size; i++)
+        for (auto i : util::range(encryption_block_size))
             p->encryption_block[i] = content[pos + i];
         return;
     }

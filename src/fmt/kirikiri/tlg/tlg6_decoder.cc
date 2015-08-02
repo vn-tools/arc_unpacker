@@ -2,6 +2,7 @@
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
 #include "fmt/kirikiri/tlg/tlg6_decoder.h"
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri::tlg;
@@ -55,14 +56,14 @@ void FilterTypes::decompress(Header &header)
     LzssDecompressor decompressor;
     u8 dictionary[4096];
     u8 *ptr = dictionary;
-    for (size_t i = 0; i < 32; i++)
+    for (auto i : util::range(32))
     {
-        for (size_t j = 0; j < 16; j++)
+        for (auto j : util::range(16))
         {
-            for (size_t k = 0; k < 4; k++)
+            for (auto k : util::range(4))
                 *ptr++ = i;
 
-            for (size_t k = 0; k < 4; k++)
+            for (auto k : util::range(4))
                 *ptr++ = j;
         }
     }
@@ -228,7 +229,7 @@ static void init_table()
         {2, 3, 9, 18, 33, 61, 129, 258, 511, },
     };
 
-    for (int i = 0; i < LEADING_ZERO_TABLE_SIZE; i++)
+    for (auto i : util::range(LEADING_ZERO_TABLE_SIZE))
     {
         int cnt = 0;
         int j = 1;
@@ -247,12 +248,12 @@ static void init_table()
         leading_zero_table[i] = cnt;
     }
 
-    for (int n = 0; n < GOLOMB_N_COUNT; n++)
+    for (auto n : util::range(GOLOMB_N_COUNT))
     {
         int a = 0;
-        for (int i = 0; i < 9; i++)
+        for (auto i : util::range(9))
         {
-            for (int j = 0; j < golomb_compression_table[n][i]; j++)
+            for (auto j : util::range(golomb_compression_table[n][i]))
                 golomb_bit_length_table[a++][n] = i;
         }
     }
@@ -387,9 +388,8 @@ static void decode_line(
     int dir,
     Header &header)
 {
-    u32 initialp = header.channel_count == 3 ? 0xFF000000 : 0;
     u32 p, up;
-    int step, i;
+    int step;
 
     if (start_block)
     {
@@ -400,13 +400,13 @@ static void decode_line(
     }
     else
     {
-        p = up = initialp;
+        p = up = header.channel_count == 3 ? 0xFF000000 : 0;
     }
 
     in += skip_block_bytes * start_block;
     step = (dir & 1) ? 1 : -1;
 
-    for (i = start_block; i < block_limit; i++)
+    for (auto i : util::range(start_block, block_limit))
     {
         int w = header.image_width - i * W_BLOCK_SIZE;
         if (w > W_BLOCK_SIZE)
@@ -464,20 +464,18 @@ static void read_pixels(io::IO &io, u8 *output, Header &header)
 
     std::unique_ptr<u32[]> pixel_buf(
         new u32[4 * header.image_width * H_BLOCK_SIZE]);
-    std::unique_ptr<u32[]> zero_line(new u32[header.image_width]);
+    std::unique_ptr<u32[]> zero_line(new u32[header.image_width]());
     u32 *prev_line = zero_line.get();
-    for (size_t i = 0; i < header.image_width; i++)
-        zero_line[i] = 0;
 
     u32 main_count = header.image_width / W_BLOCK_SIZE;
-    for (size_t y = 0; y < header.image_height; y += H_BLOCK_SIZE)
+    for (auto y : util::range(0, header.image_height, H_BLOCK_SIZE))
     {
         u32 ylim = y + H_BLOCK_SIZE;
         if (ylim >= header.image_height)
             ylim = header.image_height;
 
         int pixel_count = (ylim - y) * header.image_width;
-        for (size_t c = 0; c < header.channel_count; c++)
+        for (auto c : util::range(header.channel_count))
         {
             u32 bit_length = io.read_u32_le();
 
@@ -504,7 +502,7 @@ static void read_pixels(io::IO &io, u8 *output, Header &header)
             + (y / H_BLOCK_SIZE) * header.x_block_count;
         int skip_bytes = (ylim - y) * W_BLOCK_SIZE;
 
-        for (size_t yy = y; yy < ylim; yy++)
+        for (auto yy : util::range(y, ylim))
         {
             u32 *current_line
                 = &reinterpret_cast<u32*>(output)
@@ -576,9 +574,7 @@ std::unique_ptr<File> Tlg6Decoder::decode(File &file)
         throw std::runtime_error("Unsupported channel count");
 
     size_t pixels_size = header.image_width * header.image_height * 4;
-    std::unique_ptr<u8[]> pixels(new u8[pixels_size]);
-    for (size_t i = 0; i < pixels_size; i++)
-        pixels[i] = 0;
+    std::unique_ptr<u8[]> pixels(new u8[pixels_size]());
 
     read_pixels(file.io, pixels.get(), header);
 

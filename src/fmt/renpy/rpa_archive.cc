@@ -12,6 +12,7 @@
 #include "fmt/renpy/rpa_archive.h"
 #include "io/buffered_io.h"
 #include "util/pack/zlib.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::renpy;
@@ -151,9 +152,8 @@ static void unpickle(io::IO &table_io, UnpickleContext *context)
             {
                 size_t length = table_io.read_u8();
                 u32 number = 0;
-                size_t i;
                 size_t pos = table_io.tell();
-                for (i = 0; i < length; i++)
+                for (auto i : util::range(length))
                 {
                     table_io.seek(pos + length - 1 - i);
                     number *= 256;
@@ -218,7 +218,7 @@ static Table decode_table(io::IO &table_io, u32 key)
     Table entries;
     entries.reserve(file_count);
 
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = context.strings[i * 2 ];
@@ -244,9 +244,8 @@ static int guess_version(io::IO &arc_io)
 
 static u32 read_hex_number(io::IO &arc_io, size_t length)
 {
-    size_t i;
     u32 result = 0;
-    for (i = 0; i < length; i++)
+    for (auto i : util::range(length))
     {
         char c = arc_io.read_u8();
         result *= 16;

@@ -17,6 +17,7 @@
 #include "fmt/qlie/pack_archive.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::qlie;
@@ -139,11 +140,9 @@ static void v3_decrypt_file_data_with_external_keys(
     unsigned long mt_mutator = 0x85F532;
     unsigned long mt_seed = 0x33F641;
 
-    for (size_t i = 0; i < file_name.length(); i++)
+    for (auto i : util::range(file_name.length()))
     {
-        mt_mutator
-            += static_cast<const u8&>(file_name[i])
-            * static_cast<u8>(i);
+        mt_mutator += static_cast<const u8&>(file_name[i]) * static_cast<u8>(i);
         mt_seed ^= mt_mutator;
     }
 
@@ -157,21 +156,17 @@ static void v3_decrypt_file_data_with_external_keys(
         mt_seed ^= 0x453A;
 
     mt::init_genrand(mt_seed);
-    mt::xor_state(
-        reinterpret_cast<const u8 *>(key1.data()),
-        key1.size());
-    mt::xor_state(
-        reinterpret_cast<const u8 *>(key2.data()),
-        key2.size());
+    mt::xor_state(reinterpret_cast<const u8 *>(key1.data()), key1.size());
+    mt::xor_state(reinterpret_cast<const u8 *>(key2.data()), key2.size());
 
     u64 table[0x10] = { 0 };
-    for (size_t i = 0; i < 0x10; i++)
+    for (auto i : util::range(0x10))
     {
         table[i]
             = mt::genrand_int32()
             | (static_cast<u64>(mt::genrand_int32()) << 32);
     }
-    for (auto i = 0; i < 9; i++)
+    for (auto i : util::range(9))
          mt::genrand_int32();
 
     u64 mutator
@@ -255,7 +250,7 @@ static void decompress(
     u8 dict3[256];
     while (input_io.tell() < input_io.size())
     {
-        for (size_t i = 0; i < 256; i++)
+        for (auto i : util::range(256))
             dict1[i] = i;
 
         for (size_t d = 0; d < 256; )
@@ -269,7 +264,7 @@ static void decompress(
                     break;
             }
 
-            for (size_t i = 0; i <= c; i++)
+            for (auto i : util::range(c + 1))
             {
                 dict1[d] = input_io.read_u8();
                 if (dict1[d] != d)
@@ -321,9 +316,7 @@ static std::string read_file_name(io::IO &table_io, u32 key, int version)
     if (version != 3)
         throw std::runtime_error("Not implemented");
     v3_decrypt_file_name(
-        reinterpret_cast<u8*>(file_name.get()),
-        file_name_length,
-        key);
+        reinterpret_cast<u8*>(file_name.get()), file_name_length, key);
     return std::string(file_name.get(), file_name_length);
 }
 
@@ -341,7 +334,7 @@ static Table read_table(io::IO &arc_io, int version)
     if (version == 3)
     {
         table_io.seek(0);
-        for (size_t i = 0; i < file_count; i++)
+        for (auto i : util::range(file_count))
         {
             size_t file_name_length = table_io.read_u16_le();
             table_io.skip(file_name_length + 28);
@@ -354,7 +347,7 @@ static Table read_table(io::IO &arc_io, int version)
 
     Table table;
     table_io.seek(0);
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
 
@@ -415,8 +408,7 @@ static std::unique_ptr<File> read_file(
 
     if (entry.compressed)
     {
-        std::unique_ptr<char[]> decompressed(
-            new char[entry.size_original]);
+        std::unique_ptr<char[]> decompressed(new char[entry.size_original]);
 
         decompress(
             data.get(),

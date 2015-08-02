@@ -10,6 +10,7 @@
 #include "fmt/glib/gml_archive.h"
 #include "fmt/glib/gml_decoder.h"
 #include "fmt/glib/pgx_converter.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::glib;
@@ -36,7 +37,7 @@ static std::unique_ptr<io::BufferedIO> get_header_io(
 {
     io::BufferedIO temp_io(arc_io, header_size_compressed);
     u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
-    for (size_t i = 0; i < header_size_compressed; i++)
+    for (auto i : util::range(header_size_compressed))
         buffer[i] ^= 0xFF;
 
     std::unique_ptr<io::BufferedIO> header_io(new io::BufferedIO);
@@ -51,7 +52,7 @@ static Table read_table(io::IO &table_io, size_t file_data_start)
     size_t file_count = table_io.read_u32_le();
     Table table;
     table.reserve(file_count);
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = table_io.read(table_io.read_u32_le());
@@ -72,7 +73,7 @@ static std::unique_ptr<File> read_file(
     arc_io.seek(entry.offset);
     io::BufferedIO temp_io(arc_io, entry.size);
     u8 *buffer = reinterpret_cast<u8*>(temp_io.buffer());
-    for (size_t i = 0; i < entry.size; i++)
+    for (auto i : util::range(entry.size))
         buffer[i] = permutation[buffer[i]];
 
     temp_io.skip(prefix_size);

@@ -16,6 +16,7 @@
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/format.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::liar_soft;
@@ -160,7 +161,7 @@ std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
         1,
         4);
 
-    for (size_t i = 0; i < pixels_size; i += 4)
+    for (auto i : util::range(0, pixels_size, 4))
         pixels[i + 3] ^= 0xFF;
 
     std::unique_ptr<util::Image> image = util::Image::from_pixels(

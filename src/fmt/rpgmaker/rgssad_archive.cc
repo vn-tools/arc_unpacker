@@ -8,6 +8,7 @@
 // - Cherry Tree High Comedy Club
 
 #include "fmt/rpgmaker/rgssad_archive.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::rpgmaker;
@@ -43,7 +44,7 @@ static Table read_table(io::IO &arc_io, u32 key)
         size_t name_length = arc_io.read_u32_le() ^ key;
         key = advance_key(key);
         entry->name = arc_io.read(name_length);
-        for (size_t i = 0; i < name_length; i++)
+        for (auto i : util::range(name_length))
         {
             entry->name[i] ^= key;
             key = advance_key(key);
@@ -71,7 +72,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
     file->io.write("\x00\x00\x00\x00"_s);
     file->io.seek(0);
     u32 key = entry.key;
-    for (size_t i = 0; i + 4 < file->io.size(); i += 4)
+    for (auto i : util::range(0, file->io.size() - 4, 4))
     {
         u32 chunk = file->io.read_u32_le();
         chunk ^= key;

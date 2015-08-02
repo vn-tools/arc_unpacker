@@ -11,6 +11,7 @@
 #include "fmt/nitroplus/npa_filters/chaos_head.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nitroplus;
@@ -72,7 +73,7 @@ static void decrypt_file_name(
     size_t file_pos)
 {
     u32 tmp = filter.file_name_key(header.key1, header.key2);
-    for (size_t char_pos = 0; char_pos < name.size(); char_pos++)
+    for (auto char_pos : util::range(name.size()))
     {
         u32 key = 0xFC * char_pos;
         key -= tmp >> 0x18;
@@ -94,7 +95,7 @@ static void decrypt_file_data(
     const NpaFilter &filter)
 {
     u32 key = filter.data_key;
-    for (size_t i = 0; i < entry.name.size(); i++)
+    for (auto i : util::range(entry.name.size()))
         key -= reinterpret_cast<const u8&>(entry.name[i]);
     key *= entry.name.size();
     key += header.key1 * header.key2;
@@ -140,7 +141,7 @@ static Table read_table(
     io::IO &arc_io, const Header &header, const NpaFilter &filter)
 {
     Table table;
-    for (size_t i = 0; i < header.total_count; i++)
+    for (auto i : util::range(header.total_count))
     {
         auto entry = read_table_entry(arc_io, header, filter, i);
         if (entry != nullptr)
@@ -230,11 +231,7 @@ void NpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         throw std::runtime_error("No plugin selected");
 
     std::unique_ptr<Header> header = read_header(arc_file.io);
-
     Table table = read_table(arc_file.io, *header, *p->filter);
-    for (size_t i = 0; i < table.size(); i++)
-    {
-        file_saver.save(read_file(
-            arc_file.io, *header, *p->filter, *table[i]));
-    }
+    for (auto &entry : table)
+        file_saver.save(read_file(arc_file.io, *header, *p->filter, *entry));
 }

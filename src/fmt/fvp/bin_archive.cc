@@ -10,6 +10,7 @@
 #include "fmt/fvp/bin_archive.h"
 #include "fmt/fvp/nvsg_converter.h"
 #include "util/encoding.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::fvp;
@@ -34,7 +35,7 @@ static Table read_table(io::IO &arc_io)
     size_t names_start = file_count * 12 + 8;
 
     Table table;
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         size_t name_offset = arc_io.read_u32_le();

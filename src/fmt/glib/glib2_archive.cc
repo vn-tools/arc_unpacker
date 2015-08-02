@@ -11,6 +11,7 @@
 #include "fmt/glib/glib2_archive.h"
 #include "fmt/glib/pgx_converter.h"
 #include "io/buffered_io.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::glib;
@@ -181,7 +182,7 @@ static void decode(u32 decoder, char *buffer, size_t size)
 {
     u32 target = ((decoder * 95) >> 13) & 0xFFFF;
     int index = -1;
-    for (size_t i = 0; i < decoder_table_size; i++)
+    for (auto i : util::range(decoder_table_size))
     {
         if (decoder_table[i] == target)
             index = i;
@@ -204,7 +205,7 @@ static void decode(u32 decoder, char *buffer, size_t size)
     while (left >= 4)
     {
         char temp_buffer[4];
-        for (size_t i = 0; i < 4; i++)
+        for (auto i : util::range(4))
         {
             u8 src_index = indices[src_permutation][i];
             u8 dst_index = indices[dst_permutation][i];
@@ -240,7 +241,7 @@ static std::unique_ptr<Header> read_header(io::IO &arc_io)
             throw std::runtime_error("Not a GLIB2 archive");
     }
     header_io.skip(1);
-    for (size_t i = 0; i < 4; i++)
+    for (auto i : util::range(4))
     {
         header->keys[i] = header_io.read_u32_le();
         header_io.skip(12);
@@ -278,7 +279,7 @@ static std::unique_ptr<TableEntry> read_table_entry(
                 table_io.skip(4); //null
                 entry->size = table_io.read_u32_le();
                 entry->offset = table_io.read_u32_le();
-                for (size_t i = 0; i < 4; i++)
+                for (auto i : util::range(4))
                 {
                     entry->keys[i] = table_io.read_u32_le();
                     table_io.skip(12);
@@ -309,7 +310,7 @@ static Table read_table(io::IO &arc_io, Header &header)
     arc_io.seek(header.table_offset);
     std::unique_ptr<char[]> buffer(new char[header.table_size]);
     arc_io.read(buffer.get(), header.table_size);
-    for (size_t i = 0; i < 4; i++)
+    for (auto i : util::range(4))
         decode(header.keys[3 - i], buffer.get(), header.table_size);
 
     io::BufferedIO table_io(buffer.get(), header.table_size);
@@ -323,7 +324,7 @@ static Table read_table(io::IO &arc_io, Header &header)
 
     Table table;
     table.reserve(file_count);
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         auto entry = read_table_entry(
             table_io, table, file_names_start, file_headers_start);

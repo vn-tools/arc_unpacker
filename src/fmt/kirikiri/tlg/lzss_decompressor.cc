@@ -1,4 +1,5 @@
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
+#include "util/range.h"
 
 using namespace au::fmt::kirikiri::tlg;
 
@@ -10,7 +11,7 @@ struct LzssDecompressor::Priv
     Priv()
     {
         offset = 0;
-        for (size_t i = 0; i < 4096; i++)
+        for (auto i : util::range(4096))
             dictionary[i] = 0;
     }
 };
@@ -25,7 +26,7 @@ LzssDecompressor::~LzssDecompressor()
 
 void LzssDecompressor::init_dictionary(u8 dictionary[4096])
 {
-    for (size_t i = 0; i < 4096; i++)
+    for (auto i : util::range(4096))
         p->dictionary[i] = dictionary[i];
 }
 
@@ -36,7 +37,7 @@ void LzssDecompressor::decompress(
     u8 *input_guardian = input + input_size;
     u8 *output_guardian = output + output_size;
 
-    for (size_t i = 0; i < output_size; i++)
+    for (auto i : util::range(output_size))
         output[i] = 0;
 
     int flags = 0;
@@ -67,7 +68,7 @@ void LzssDecompressor::decompress(
                 length += *input++;
             }
 
-            for (size_t j = 0; j < length; j++)
+            for (auto j : util::range(length))
             {
                 u8 c = p->dictionary[position];
                 if (output >= output_guardian)

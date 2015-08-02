@@ -20,6 +20,7 @@
 #include "fmt/touhou/tha1_archive.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -154,7 +155,7 @@ static Table read_table(io::IO &arc_io, const Header &header)
     Table table;
     auto table_io = read_raw_table(arc_io, header);
 
-    for (size_t i = 0; i < header.file_count; i++)
+    for (auto i : util::range(header.file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
 
@@ -162,7 +163,7 @@ static Table read_table(io::IO &arc_io, const Header &header)
         table_io->skip(3 - entry->name.length() % 4);
 
         entry->decryptor_id = 0;
-        for (size_t j = 0; j < entry->name.length(); j++)
+        for (auto j : util::range(entry->name.length()))
             entry->decryptor_id += entry->name[j];
         entry->decryptor_id %= 8;
 
@@ -172,7 +173,7 @@ static Table read_table(io::IO &arc_io, const Header &header)
         table.push_back(std::move(entry));
     }
 
-    for (size_t i = 0; i < table.size() - 1; i++)
+    for (auto i : util::range(table.size() - 1))
         table[i]->size_compressed = table[i + 1]->offset - table[i]->offset;
 
     if (table.size() > 0)

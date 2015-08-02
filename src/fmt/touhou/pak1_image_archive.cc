@@ -13,6 +13,7 @@
 #include "util/colors.h"
 #include "util/format.h"
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -91,10 +92,10 @@ void Pak1ImageArchive::unpack_internal(
 {
     auto palette_count = arc_file.io.read_u8();
     std::vector<Palette> palettes;
-    for (size_t p = 0; p < palette_count; p++)
+    for (auto p : util::range(palette_count))
     {
         Palette palette;
-        for (size_t i = 0; i < 256; i++)
+        for (auto i : util::range(256))
             palette[i] = util::color::rgba5551(arc_file.io.read_u16_le());
         palettes.push_back(palette);
     }

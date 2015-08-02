@@ -10,6 +10,7 @@
 #include "fmt/propeller/mgr_archive.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::propeller;
@@ -66,10 +67,14 @@ void MgrArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     offsets.reserve(entry_count);
 
     if (entry_count == 1)
+    {
         offsets.push_back(arc_file.io.tell());
+    }
     else
-        for (size_t i = 0; i < entry_count; i++)
+    {
+        for (auto i : util::range(entry_count))
             offsets.push_back(arc_file.io.read_u32_le());
+    }
 
     size_t file_number = 0;
     for (auto &offset : offsets)

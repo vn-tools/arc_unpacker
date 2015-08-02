@@ -12,6 +12,7 @@
 #include "fmt/liar_soft/lwg_archive.h"
 #include "fmt/liar_soft/wcg_converter.h"
 #include "util/encoding.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::liar_soft;
@@ -39,7 +40,7 @@ static Table read_table(io::IO &arc_io)
 
     Table table;
     table.reserve(file_count);
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         arc_io.skip(9);

@@ -1,5 +1,6 @@
 #include "fmt/qlie/abmp10_archive.h"
 #include "util/encoding.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::qlie;
@@ -90,7 +91,7 @@ void Abmp10Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         else if (magic == magic_image10)
         {
             size_t image_count = arc_file.io.read_u8();
-            for (size_t i = 0; i < image_count; i++)
+            for (auto i : util::range(image_count))
             {
                 auto subfile = read_file(arc_file.io);
                 if (subfile != nullptr)
@@ -100,7 +101,7 @@ void Abmp10Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         else if (magic == magic_sound10)
         {
             size_t sound_count = arc_file.io.read_u8();
-            for (size_t i = 0; i < sound_count; i++)
+            for (auto i : util::range(sound_count))
             {
                 auto subfile = read_file(arc_file.io);
                 if (subfile != nullptr)

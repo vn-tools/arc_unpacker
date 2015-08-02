@@ -7,6 +7,7 @@
 
 #include "fmt/ivory/prs_converter.h"
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::ivory;
@@ -23,7 +24,7 @@ static void decode_pixels(
 
     int flag = 0;
     int length_lookup[256];
-    for (size_t i = 0; i < 256; i++)
+    for (auto i : util::range(256))
         length_lookup[i] = i + 3;
     length_lookup[0xFF] = 0x1000;
     length_lookup[0xFE] = 0x400;
@@ -83,7 +84,7 @@ static void decode_pixels(
                 if (tmp == 3)
                 {
                     length += 9;
-                    for (size_t i = 0; i < length; i++)
+                    for (auto i : util::range(length))
                     {
                         if (source_ptr >= source_guardian
                             || target_ptr >= target_guardian)
@@ -99,7 +100,7 @@ static void decode_pixels(
             }
 
             shift += 1;
-            for (size_t i = 0; i < length; i++)
+            for (auto i : util::range(length))
             {
                 if (target_ptr >= target_guardian)
                     break;
@@ -141,7 +142,7 @@ std::unique_ptr<File> PrsConverter::decode_internal(File &file) const
 
     if (using_differences)
     {
-        for (size_t i = 3; i < target_size; i++)
+        for (auto i : util::range(3, target_size))
             target[i] += target[i - 3];
     }
 

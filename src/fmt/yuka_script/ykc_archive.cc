@@ -9,6 +9,7 @@
 
 #include "fmt/yuka_script/ykc_archive.h"
 #include "fmt/yuka_script/ykg_converter.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::yuka_script;
@@ -32,7 +33,7 @@ static Table read_table(io::IO &arc_io, size_t table_offset, size_t table_size)
     Table table;
     size_t file_count = table_size / 20;
 
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
 

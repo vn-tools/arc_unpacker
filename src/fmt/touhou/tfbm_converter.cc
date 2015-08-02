@@ -13,6 +13,7 @@
 #include "util/format.h"
 #include "util/image.h"
 #include "util/pack/zlib.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -50,7 +51,7 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
     auto bit_depth = file.io.read_u8();
     auto image_width = file.io.read_u32_le();
     auto image_height = file.io.read_u32_le();
-    auto image_width_padded = file.io.read_u32_le();
+    auto stride = file.io.read_u32_le();
     auto source_size = file.io.read_u32_le();
     size_t target_size = image_width * image_height * 4;
 
@@ -73,9 +74,9 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
             : create_default_palette();
     }
 
-    for (size_t y = 0; y < image_height; y++)
+    for (auto y : util::range(image_height))
     {
-        for (size_t x = 0; x < image_width_padded; x++)
+        for (auto x : util::range(stride))
         {
             u32 rgba;
 

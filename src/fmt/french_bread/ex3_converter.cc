@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include "fmt/french_bread/ex3_converter.h"
 #include "io/buffered_io.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::french_bread;
@@ -36,7 +37,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
     u8 b = file.io.read_u8();
     while (file.io.tell() < file.io.size())
     {
-        for (size_t j = 0; j < 256; j++)
+        for (auto j : util::range(256))
             table1[j] = j;
 
         size_t offset = 0;
@@ -49,7 +50,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
             }
             if (offset == 256)
                 break;
-            for (u8 j = 0; j < b + 1; j++)
+            for (u8 j : util::range(b + 1))
             {
                 if (offset >= 256)
                     throw std::runtime_error("Bad offset");

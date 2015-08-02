@@ -10,6 +10,7 @@
 #include "fmt/touhou/pak1_sound_archive.h"
 #include "util/format.h"
 #include "util/sound.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -43,7 +44,7 @@ void Pak1SoundArchive::unpack_internal(
     File &arc_file, FileSaver &file_saver) const
 {
     size_t file_count = arc_file.io.read_u32_le();
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         if (!arc_file.io.read_u8())
             continue;

@@ -20,6 +20,7 @@
 
 #include "fmt/nsystem/fjsys_archive.h"
 #include "fmt/nsystem/mgd_converter.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nsystem;
@@ -89,6 +90,6 @@ void FjsysArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     arc_file.io.skip(magic.size());
 
     std::unique_ptr<Header> header = read_header(arc_file.io);
-    for (size_t i = 0; i < header->file_count; i++)
+    for (auto i : util::range(header->file_count))
         file_saver.save(read_file(arc_file.io, *header));
 }

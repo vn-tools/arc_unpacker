@@ -9,6 +9,7 @@
 
 #include "fmt/french_bread/ex3_converter.h"
 #include "fmt/french_bread/p_archive.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::french_bread;
@@ -30,7 +31,7 @@ static const u32 encryption_key = 0xE3DF59AC;
 static std::string read_file_name(io::IO &arc_io, size_t file_id)
 {
     std::string file_name = arc_io.read(60);
-    for (size_t i = 0; i < 60; i++)
+    for (auto i : util::range(60))
         file_name[i] ^= file_id * i * 3 + 0x3D;
     return file_name.substr(0, file_name.find('\0'));
 }
@@ -39,7 +40,7 @@ static Table read_table(io::IO &arc_io)
 {
     size_t file_count = arc_io.read_u32_le() ^ encryption_key;
     Table table;
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = read_file_name(arc_io, i);
@@ -90,7 +91,7 @@ bool PArchive::is_recognized_internal(File &arc_file) const
         return false;
     if (file_count > arc_file.io.size() || file_count * 68 > arc_file.io.size())
         return false;
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         read_file_name(arc_file.io, i);
         size_t offset = arc_file.io.read_u32_le();

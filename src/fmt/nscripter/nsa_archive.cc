@@ -13,6 +13,7 @@
 #include "io/buffered_io.h"
 #include "io/bit_reader.h"
 #include "util/pack/lzss.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nscripter;
@@ -46,7 +47,7 @@ static Table read_table(io::IO &arc_io)
     if (offset_to_files > arc_io.size())
         throw std::runtime_error("Bad offset to files");
 
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = arc_io.read_until_zero();
@@ -124,7 +125,7 @@ bool NsaArchive::is_recognized_internal(File &arc_file) const
     size_t offset_to_files = arc_file.io.read_u32_be();
     if (file_count == 0)
         return false;
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         arc_file.io.read_until_zero();
         arc_file.io.read_u8();

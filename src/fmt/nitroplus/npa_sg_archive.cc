@@ -10,6 +10,7 @@
 #include "fmt/nitroplus/npa_sg_archive.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nitroplus;
@@ -30,7 +31,7 @@ static const std::string key = "\xBD\xAA\xBC\xB4\xAB\xB6\xBC\xB4"_s;
 
 static void decrypt(char *data, size_t data_size)
 {
-    for (size_t i = 0; i < data_size; i++)
+    for (auto i : util::range(data_size))
         data[i] ^= key[i % key.length()];
 }
 
@@ -38,7 +39,7 @@ static Table read_table(io::IO &table_io, const io::IO &arc_io)
 {
     Table table;
     size_t file_count = table_io.read_u32_le();
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = util::convert_encoding(

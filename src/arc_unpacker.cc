@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include "arc_unpacker.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -77,7 +78,7 @@ static bool add_input_paths_option(
     Options &options)
 {
     const std::vector<std::string> stray = arg_parser.get_stray();
-    for (size_t i = 1; i < stray.size(); i++)
+    for (auto i : util::range(1, stray.size()))
     {
         std::string path = stray[i];
         if (boost::filesystem::is_directory(path))

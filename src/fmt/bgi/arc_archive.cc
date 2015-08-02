@@ -10,6 +10,7 @@
 #include "fmt/bgi/arc_archive.h"
 #include "fmt/bgi/cbg_converter.h"
 #include "fmt/bgi/sound_converter.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::bgi;
@@ -63,7 +64,7 @@ void ArcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     arc_file.io.skip(magic.size());
 
     size_t file_count = arc_file.io.read_u32_le();
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         auto file = read_file(arc_file.io, file_count);
         file->guess_extension();

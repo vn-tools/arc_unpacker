@@ -15,6 +15,7 @@
 #include "fmt/touhou/pbgz_archive.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -115,7 +116,7 @@ static Table read_table(io::IO &arc_io, const Header &header)
     Table table;
     auto table_io = read_raw_table(arc_io, header);
 
-    for (size_t i = 0; i < header.file_count; i++)
+    for (auto i : util::range(header.file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = table_io->read_until_zero();
@@ -125,7 +126,7 @@ static Table read_table(io::IO &arc_io, const Header &header)
         table.push_back(std::move(entry));
     }
 
-    for (size_t i = 0; i < table.size() - 1; i++)
+    for (auto i : util::range(table.size() - 1))
         table[i]->size_compressed = table[i + 1]->offset - table[i]->offset;
 
     if (table.size() > 0)
@@ -168,7 +169,7 @@ static size_t detect_encryption_version(io::IO &arc_io, const Table &table)
     {
         if (entry->name.find(".jpg") == std::string::npos)
             continue;
-        for (size_t version = 0; version < decryptors.size(); version++)
+        for (auto version : util::range(decryptors.size()))
         {
             auto file = read_file(arc_io, *entry, version);
             file->io.seek(0);

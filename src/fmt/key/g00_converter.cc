@@ -13,6 +13,7 @@
 #include "fmt/key/g00_converter.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::key;
@@ -45,8 +46,6 @@ static void decompress(
 
     int flag = *src++;
     int bit = 1;
-    size_t i, length;
-    int look_behind;
     while (dst < dst_guardian)
     {
         if (bit == 256)
@@ -59,7 +58,7 @@ static void decompress(
 
         if (flag & bit)
         {
-            for (i = 0; i < byte_count; i++)
+            for (auto i : util::range(byte_count))
             {
                 if (src >= src_guardian || dst >= dst_guardian)
                     break;
@@ -70,14 +69,14 @@ static void decompress(
         {
             if (src >= src_guardian)
                 break;
-            i = *src++;
+            size_t tmp = *src++;
             if (src >= src_guardian)
                 break;
-            i |= (*src++) << 8;
+            tmp |= (*src++) << 8;
 
-            look_behind = (i >> 4) * byte_count;
-            length = ((i & 0x0F) + length_delta) * byte_count;
-            for (i = 0; i < length; i++)
+            int look_behind = (tmp >> 4) * byte_count;
+            size_t length = ((tmp & 0x0F) + length_delta) * byte_count;
+            for (auto i : util::range(length))
             {
                 if (dst >= dst_guardian)
                     break;
@@ -147,11 +146,11 @@ static std::unique_ptr<File> decode_v1(File &file, size_t width, size_t height)
 
     std::unique_ptr<u32[]> palette(new u32[256]);
     size_t color_count = tmp_io.read_u16_le();
-    for (size_t i = 0; i < color_count; i++)
+    for (auto i : util::range(color_count))
         palette[i] = tmp_io.read_u32_le();
 
     std::unique_ptr<u32[]> pixels(new u32[width * height]);
-    for (size_t i = 0; i < width * height; i++)
+    for (auto i : util::range(width * height))
         pixels[i] = palette[tmp_io.read_u8()];
 
     auto image = util::Image::from_pixels(
@@ -170,8 +169,7 @@ static std::vector<std::unique_ptr<Region>> read_v2_regions(
     std::vector<std::unique_ptr<Region>> regions;
     regions.reserve(region_count);
 
-    size_t i;
-    for (i = 0; i < region_count; i++)
+    for (auto i : util::range(region_count))
     {
         std::unique_ptr<Region> region(new Region);
         region->x1 = file_io.read_u32_le();
@@ -204,7 +202,7 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
     if (region_count != uncompressed_io.read_u32_le())
         throw std::runtime_error("Invalid region count");
 
-    for (size_t i = 0; i < region_count; i++)
+    for (auto i : util::range(region_count))
     {
         uncompressed_io.seek(4 + i * 8);
         size_t block_offset = uncompressed_io.read_u32_le();
@@ -220,7 +218,7 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
         assert(block_type == 1);
 
         uncompressed_io.skip(0x70);
-        for (size_t j = 0; j < part_count; j++)
+        for (auto j : util::range(part_count))
         {
             u16 part_x = uncompressed_io.read_u16_le();
             u16 part_y = uncompressed_io.read_u16_le();
@@ -233,7 +231,7 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
             size_t target_y = region.y1 + part_y;
             assert(target_x + part_width <= width);
             assert(target_y + part_height <= height);
-            for (size_t y = 0; y < part_height; y++)
+            for (auto y : util::range(part_height))
             {
                 uncompressed_io.read(
                     &pixels[target_x + (target_y + y) * width],

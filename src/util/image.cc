@@ -1,6 +1,7 @@
 #include <cassert>
 #include <png.h>
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::util;
@@ -116,8 +117,8 @@ std::unique_ptr<Image> Image::from_boxed(io::IO &io)
     image->p->data = std::string(image->p->data_size, '\0');
 
     png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
-    size_t scanline_size = png_width * bpp, y;
-    for (y = 0; y < png_height; y++)
+    size_t scanline_size = png_width * bpp;
+    for (auto y : util::range(png_height))
     {
         image->p->data.replace(
             y * scanline_size,
@@ -208,7 +209,7 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
     png_write_info(png_ptr, info_ptr);
 
     std::unique_ptr<png_bytep[]> rows(new png_bytep[p->height]);
-    for (size_t y = 0; y < p->height; y++)
+    for (auto y : util::range(p->height))
     {
         size_t i = y * p->width * bpp;
         rows.get()[y] = reinterpret_cast<png_bytep>(&p->data[i]);

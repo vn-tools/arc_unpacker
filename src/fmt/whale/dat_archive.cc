@@ -15,6 +15,7 @@
 #include "util/encoding.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::whale;
@@ -114,7 +115,7 @@ static u64 CRC_TABLE[0x100] =
 static u64 crc64(const std::string &buffer)
 {
     u64 crc = 0xFFFFFFFFFFFFFFFF;
-    for (size_t i = 0; i < buffer.size(); i++)
+    for (auto i : util::range(buffer.size()))
     {
         u8 c = static_cast<u8>(buffer[i]);
         int tab_index = ((crc >> 56) ^ c) & 0xFF;
@@ -130,9 +131,9 @@ static void transform_regular_content(
         floor(io.size() / static_cast<float>(sjis_file_name.size())));
     u8 *buffer_ptr = reinterpret_cast<u8*>(io.buffer());
     u8 *buffer_guardian = buffer_ptr + io.size();
-    for (size_t j = 0; j < sjis_file_name.size() - 1; j++)
+    for (auto j : util::range(sjis_file_name.size() - 1))
     {
-        for (size_t k = 0; k < block_size; k++)
+        for (auto k : util::range(block_size))
         {
             if (buffer_ptr >= buffer_guardian)
                 return;
@@ -146,7 +147,7 @@ static void transform_script_content(
 {
     u32 xor_value = (hash ^ crc64(sjis_game_title)) & 0xFFFFFFFF;
     u32 *buffer_ptr = reinterpret_cast<u32*>(io.buffer());
-    for (size_t i = 0; i < io.size() / 4; i++)
+    for (auto i : util::range(io.size() / 4))
         *buffer_ptr++ ^= xor_value;
 }
 
@@ -160,7 +161,7 @@ static Table read_table(
 {
     Table table;
     auto file_count = read_file_count(arc_io);
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
 

@@ -11,6 +11,7 @@
 #include "fmt/touhou/pak1_image_archive.h"
 #include "fmt/touhou/pak1_sound_archive.h"
 #include "io/buffered_io.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -33,7 +34,7 @@ static void decrypt(io::IO &io, u8 a, u8 b, u8 delta)
     std::unique_ptr<char[]> buffer(new char[size]);
     io.seek(0);
     io.read(buffer.get(), size);
-    for (size_t i = 0; i < size; i++)
+    for (auto i : util::range(size))
     {
         buffer[i] ^= a;
         a += b;
@@ -73,7 +74,7 @@ static Table read_table(io::IO &arc_io)
     auto table_io = read_raw_table(arc_io, file_count);
     Table table;
     table.reserve(file_count);
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = table_io->read_until_zero(0x64);

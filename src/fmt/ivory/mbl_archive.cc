@@ -10,6 +10,7 @@
 #include "fmt/ivory/mbl_archive.h"
 #include "fmt/ivory/prs_converter.h"
 #include "util/encoding.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::ivory;
@@ -89,7 +90,7 @@ void MblArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     u32 file_count = arc_file.io.read_u32_le();
     u32 name_length = version == 2 ? arc_file.io.read_u32_le() : 16;
 
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         auto file = read_file(arc_file.io, name_length);
         file->guess_extension();

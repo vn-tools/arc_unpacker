@@ -1,4 +1,5 @@
 #include "util/pack/lzss.h"
+#include "util/range.h"
 
 using namespace au;
 
@@ -34,7 +35,7 @@ std::string au::util::pack::lzss_decompress(
             unsigned int pos = bit_reader.get(settings.position_bits);
             unsigned int length = bit_reader.get(settings.length_bits);
             length += settings.min_match_length;
-            for (size_t i = 0; i < length; i++)
+            for (auto i : util::range(length))
             {
                 u8 byte = dictionary_ptr[pos];
                 pos += 1;

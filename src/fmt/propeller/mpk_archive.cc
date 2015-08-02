@@ -10,6 +10,7 @@
 #include "fmt/propeller/mpk_archive.h"
 #include "fmt/propeller/mgr_archive.h"
 #include "util/encoding.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::propeller;
@@ -34,7 +35,7 @@ static Table read_table(io::IO &arc_io)
     table.reserve(file_count);
 
     arc_io.seek(table_offset);
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = arc_io.read(32);
@@ -50,7 +51,7 @@ static Table read_table(io::IO &arc_io)
 
     for (auto &entry : table)
     {
-        for (size_t i = 0; i < 32; i++)
+        for (auto i : util::range(32))
             entry->name[i] ^= key8;
         entry->name = util::sjis_to_utf8(entry->name);
         if (entry->name[0] == '\\')

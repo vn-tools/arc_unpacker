@@ -24,6 +24,7 @@
 #include "util/colors.h"
 #include "util/format.h"
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -148,11 +149,11 @@ static void write_pixels(
 
     u32 *guardian = &pixel_data[stride * height];
 
-    for (size_t y = 0; y < height; y++)
+    for (auto y : util::range(height))
     {
         size_t shift = (y + entry.y) * stride + entry.x;
         u32 *pixel_ptr = &pixel_data[shift];
-        for (size_t x = 0; x < width; x++)
+        for (auto x : util::range(width))
         {
             if (pixel_ptr >= guardian)
                 return;
@@ -205,9 +206,7 @@ static std::unique_ptr<File> read_texture(io::IO &file_io, Table &entries)
         return nullptr;
 
     size_t pixel_data_size = width * height;
-    std::unique_ptr<u32[]> pixel_data(new u32[pixel_data_size]);
-    for (size_t i = 0; i < pixel_data_size; i++)
-        pixel_data[i] = 0;
+    std::unique_ptr<u32[]> pixel_data(new u32[pixel_data_size]());
     for (auto &entry : entries)
         write_pixels(file_io, *entry, pixel_data.get(), width);
 

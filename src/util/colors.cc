@@ -1,4 +1,5 @@
 #include "util/colors.h"
+#include "util/range.h"
 
 u32 au::util::color::rgb888(u8 r, u8 g, u8 b)
 {
@@ -54,7 +55,7 @@ u8 au::util::color::get_channel(u32 color, Channel channel)
 
 void au::util::color::split_channels(u32 color, u8 channels[4])
 {
-    for (auto i = 0; i < 4; i++)
+    for (auto i : au::util::range(4))
     {
         channels[i] = get_channel(
             color, static_cast<au::util::color::Channel>(i));
@@ -63,7 +64,7 @@ void au::util::color::split_channels(u32 color, u8 channels[4])
 
 void au::util::color::merge_channels(u8 channels[4], u32 &color)
 {
-    for (auto i = 0; i < 4; i++)
+    for (auto i : au::util::range(4))
     {
         set_channel(
             color, static_cast<au::util::color::Channel>(i), channels[i]);

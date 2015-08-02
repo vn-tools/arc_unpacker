@@ -13,6 +13,7 @@
 #include "util/colors.h"
 #include "util/endian.h"
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::microsoft;
@@ -117,7 +118,7 @@ static std::unique_ptr<DdsHeader> read_header(io::IO &io)
     header->mip_map_count = io.read_u32_le();
     io.skip(4 * 11);
     fill_pixel_format(io, header->pixel_format);
-    for (size_t i = 0; i < 4; i++)
+    for (auto i : util::range(4))
         header->caps[i] = io.read_u32_le();
     io.skip(4);
     return header;
@@ -152,10 +153,10 @@ static void decode_dxt1_block(io::IO &io, u32 output_colors[4][4])
     colors[1] = util::color::rgb565(colors[1]);
 
     u8 rgba[4][4];
-    for (size_t i = 0; i < 2; i++)
+    for (auto i : util::range(2))
         util::color::split_channels(colors[i], rgba[i]);
 
-    for (size_t i = 0; i < 4; i++)
+    for (auto i : util::range(4))
     {
         if (!transparent)
         {
@@ -169,13 +170,13 @@ static void decode_dxt1_block(io::IO &io, u32 output_colors[4][4])
         }
     }
 
-    for (size_t i = 2; i < 4; i++)
+    for (auto i : util::range(2, 4))
         util::color::merge_channels(rgba[i], colors[i]);
 
     u32 lookup = io.read_u32_le();
-    for (size_t y = 0; y < 4; y++)
+    for (auto y : util::range(4))
     {
-        for (size_t x = 0; x < 4; x++)
+        for (auto x : util::range(4))
         {
             size_t index = lookup & 3;
             output_colors[y][x] = colors[index];
@@ -192,22 +193,22 @@ static void decode_dxt5_block(io::IO &io, u8 output_alpha[4][4])
 
     if (alpha[0] > alpha[1])
     {
-        for (size_t i = 2; i < 8; i++)
+        for (auto i : util::range(2, 8))
             alpha[i] = ((8. - i) * alpha[0] + ((i - 1.) * alpha[1])) / 7.;
     }
     else
     {
-        for (size_t i = 2; i < 6; i++)
+        for (auto i : util::range(2, 6))
             alpha[i] = ((6. - i) * alpha[0] + ((i - 1.) * alpha[1])) / 5.;
         alpha[6] = 0;
         alpha[7] = 255;
     }
 
-    for (size_t i = 0; i < 2; i++)
+    for (auto i : util::range(2))
     {
         u32 lookup = util::from_big_endian<u32>(
             (io.read_u16_be() << 16) | (io.read_u8() << 8));
-        for (size_t j = 0; j < 8; j++)
+        for (auto j : util::range(8))
         {
             u8 index = lookup & 7;
             size_t pos = i * 8 + j;
@@ -223,15 +224,15 @@ static std::unique_ptr<io::BufferedIO> decode_dxt1(
     io::IO &io, size_t width, size_t height)
 {
     auto output_io = create_io(width, height);
-    for (size_t block_y = 0; block_y < height; block_y += 4)
-    for (size_t block_x = 0; block_x < width; block_x += 4)
+    for (auto block_y : util::range(0, height, 4))
+    for (auto block_x : util::range(0, width, 4))
     {
         u32 colors[4][4];
         decode_dxt1_block(io, colors);
-        for (size_t y = 0; y < 4; y++)
+        for (auto y : util::range(4))
         {
             output_io->seek(((block_y + y) * width + block_x) * 4);
-            for (size_t x = 0; x < 4; x++)
+            for (auto x : util::range(4))
                 output_io->write_u32_le(colors[y][x]);
         }
     }
@@ -242,13 +243,13 @@ static std::unique_ptr<io::BufferedIO> decode_dxt3(
     io::IO &io, size_t width, size_t height)
 {
     auto output_io = create_io(width, height);
-    for (size_t block_y = 0; block_y < height; block_y += 4)
-    for (size_t block_x = 0; block_x < width; block_x += 4)
+    for (auto block_y : util::range(0, height, 4))
+    for (auto block_x : util::range(0, width, 4))
     {
         u8 alpha[4][4];
-        for (size_t y = 0; y < 4; y++)
+        for (auto y : util::range(4))
         {
-            for (size_t x = 0; x < 4; x += 2)
+            for (auto x : util::range(0, 4, 2))
             {
                 u8 b = io.read_u8();
                 alpha[y][x + 0] = b & 0xF0;
@@ -258,10 +259,10 @@ static std::unique_ptr<io::BufferedIO> decode_dxt3(
 
         u32 colors[4][4];
         decode_dxt1_block(io, colors);
-        for (size_t y = 0; y < 4; y++)
+        for (auto y : util::range(4))
         {
             output_io->seek(((block_y + y) * width + block_x) * 4);
-            for (size_t x = 0; x < 4; x++)
+            for (auto x : util::range(4))
             {
                 util::color::set_alpha(colors[y][x], alpha[y][x]);
                 output_io->write_u32_le(colors[y][x]);
@@ -275,18 +276,18 @@ static std::unique_ptr<io::BufferedIO> decode_dxt5(
     io::IO &io, size_t width, size_t height)
 {
     auto output_io = create_io(width, height);
-    for (size_t block_y = 0; block_y < height; block_y += 4)
-    for (size_t block_x = 0; block_x < width; block_x += 4)
+    for (auto block_y : util::range(0, height, 4))
+    for (auto block_x : util::range(0, width, 4))
     {
         u8 alpha[4][4];
         decode_dxt5_block(io, alpha);
 
         u32 colors[4][4];
         decode_dxt1_block(io, colors);
-        for (size_t y = 0; y < 4; y++)
+        for (auto y : util::range(4))
         {
             output_io->seek(((block_y + y) * width + block_x) * 4);
-            for (size_t x = 0; x < 4; x++)
+            for (auto x : util::range(4))
             {
                 util::color::set_alpha(colors[y][x], alpha[y][x]);
                 output_io->write_u32_le(colors[y][x]);

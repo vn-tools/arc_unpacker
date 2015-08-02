@@ -11,6 +11,7 @@
 #include <cstring>
 #include "fmt/lizsoft/sotes_converter.h"
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::lizsoft;
@@ -41,7 +42,7 @@ static void mirror(char *pixel_data, size_t pixel_data_size, size_t stride)
 {
     size_t height = pixel_data_size / stride;
     std::unique_ptr<char[]> old_line(new char[stride]);
-    for (size_t y = 0; y < height / 2; y++)
+    for (auto y : util::range(height / 2))
     {
         memcpy(
             old_line.get(),
@@ -117,7 +118,7 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
         pixel_data.reset(new char[pixel_data_size]);
 
         char *pixels_ptr = pixel_data.get();
-        for (size_t i = 0; i < raw_data_size; i++)
+        for (auto i : util::range(raw_data_size))
         {
             if (pixels_ptr >= pixel_data.get() + width * height * 3)
                 throw std::runtime_error("Trying to write pixels beyond EOF");

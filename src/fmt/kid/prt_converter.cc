@@ -9,9 +9,10 @@
 // - Ever 17
 
 #include "fmt/kid/prt_converter.h"
+#include "util/colors.h"
 #include "util/format.h"
 #include "util/image.h"
-#include "util/colors.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kid;
@@ -59,7 +60,7 @@ std::unique_ptr<File> PrtConverter::decode_internal(File &file) const
     if (bit_depth == 8)
     {
         file.io.seek(palette_offset);
-        for (size_t i = 0; i < 256; i++)
+        for (auto i : util::range(256))
         {
             palette[i] = util::color::rgb888(
                 file.io.read_u8(), file.io.read_u8(), file.io.read_u8());
@@ -67,11 +68,11 @@ std::unique_ptr<File> PrtConverter::decode_internal(File &file) const
         }
     }
 
-    for (size_t y = 0; y < height; y++)
+    for (auto y : util::range(height))
     {
         file.io.seek(data_offset + stride * y);
         u32 *out = &pixel_data[(height - 1 - y) * width];
-        for (size_t x = 0; x < width; x++)
+        for (auto x : util::range(width))
         {
             if (bit_depth == 8)
             {
@@ -96,11 +97,13 @@ std::unique_ptr<File> PrtConverter::decode_internal(File &file) const
 
     if (has_alpha)
     {
-        for (size_t y = 0; y < height; y++)
-        for (size_t x = 0; x < width; x++)
+        for (auto y : util::range(height))
         {
-            auto alpha = file.io.read_u8();
-            util::color::set_alpha(pixel_data[y * width + x], alpha);
+            for (auto x : util::range(width))
+            {
+                auto alpha = file.io.read_u8();
+                util::color::set_alpha(pixel_data[y * width + x], alpha);
+            }
         }
     }
 

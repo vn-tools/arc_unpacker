@@ -13,6 +13,7 @@
 #include "fmt/liar_soft/wcg_converter.h"
 #include "fmt/liar_soft/xfl_archive.h"
 #include "util/encoding.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::liar_soft;
@@ -38,7 +39,7 @@ static Table read_table(io::IO &arc_io)
     size_t file_count = arc_io.read_u32_le();
     size_t file_start = arc_io.tell() + table_size;
     table.reserve(file_count);
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = util::sjis_to_utf8(arc_io.read_until_zero(0x20));

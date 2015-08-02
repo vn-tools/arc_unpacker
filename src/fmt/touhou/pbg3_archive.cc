@@ -11,6 +11,7 @@
 #include "fmt/touhou/pbg3_archive.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -56,7 +57,7 @@ static Table read_table(io::IO &arc_io, Header &header)
     Table table;
     arc_io.seek(header.table_offset);
     io::BitReader bit_reader(arc_io);
-    for (size_t i = 0; i < header.file_count; i++)
+    for (auto i : util::range(header.file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         read_integer(bit_reader);
@@ -64,7 +65,7 @@ static Table read_table(io::IO &arc_io, Header &header)
         entry->checksum = read_integer(bit_reader);
         entry->offset = read_integer(bit_reader);
         entry->size = read_integer(bit_reader);
-        for (size_t i = 0; i < 256; i++)
+        for (auto j : util::range(256))
         {
             char c = static_cast<char>(bit_reader.get(8));
             if (c == 0)

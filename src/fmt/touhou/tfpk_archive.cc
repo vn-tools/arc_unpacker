@@ -24,6 +24,7 @@
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
 #include "util/crypt/rsa.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -166,7 +167,7 @@ static std::string lower_ascii_only(std::string name_utf8)
 {
     //while SJIS can use ASCII for encoding multibyte characters,
     //UTF-8 uses the codes 0–127 only for the ASCII characters.
-    for (size_t i = 0; i < name_utf8.size(); i++)
+    for (auto i : util::range(name_utf8.size()))
         if (name_utf8[i] >= 'A' && name_utf8[i] <= 'Z')
             name_utf8[i] += 'a' - 'A';
     return name_utf8;
@@ -190,7 +191,7 @@ static u32 get_file_name_hash(
     if (version == TfpkVersion::Th135)
     {
         u32 result = initial_hash;
-        for (size_t i = 0; i < name_processed.size(); i++)
+        for (auto i : util::range(name_processed.size()))
         {
             result *= 0x1000193;
             result ^= name_processed[i];
@@ -200,7 +201,7 @@ static u32 get_file_name_hash(
     else
     {
         u32 result = initial_hash;
-        for (size_t i = 0; i < name_processed.size(); i++)
+        for (auto i : util::range(name_processed.size()))
         {
             result ^= name_processed[i];
             result *= 0x1000193;
@@ -233,7 +234,7 @@ static DirTable read_dir_entries(RsaReader &reader)
     auto tmp_io = reader.read_block();
     std::vector<std::unique_ptr<DirEntry>> dir_entries;
     size_t dir_count = tmp_io->read_u32_le();
-    for (size_t i = 0; i < dir_count; i++)
+    for (auto i : util::range(dir_count))
     {
         tmp_io = reader.read_block();
         std::unique_ptr<DirEntry> entry(new DirEntry);
@@ -258,7 +259,7 @@ static HashLookupMap read_fn_map(
     size_t block_count = tmp_io->read_u32_le();
 
     tmp_io.reset(new io::BufferedIO);
-    for (size_t i = 0; i < block_count; i++)
+    for (auto i : util::range(block_count))
         tmp_io->write_from_io(*reader.read_block());
     if (tmp_io->size() < table_size_compressed)
         throw std::runtime_error("Invalid file table size");
@@ -274,7 +275,7 @@ static HashLookupMap read_fn_map(
         if (dn.size() > 0 && dn[dn.size() - 1] != '/')
             dn += "/";
 
-        for (size_t j = 0; j < dir_entry->file_count; j++)
+        for (auto j : util::range(dir_entry->file_count))
         {
             std::string fn = util::sjis_to_utf8(tmp_io->read_until_zero());
 
@@ -302,7 +303,7 @@ static Table read_table(
     size_t file_count = reader.read_block()->read_u32_le();
 
     Table table;
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         auto b1 = reader.read_block();
@@ -335,7 +336,7 @@ static Table read_table(
 
             b3->seek(0);
             io::BufferedIO key_io;
-            for (int i = 0; i < 4; i++)
+            for (auto j : util::range(4))
                 key_io.write_u32_le(neg32(b3->read_u32_le()));
 
             key_io.seek(0);
@@ -362,7 +363,7 @@ static std::unique_ptr<File> read_file(
     size_t key_size = entry.key.size();
     if (version == TfpkVersion::Th135)
     {
-        for (size_t i = 0; i < entry.size; i++)
+        for (auto i : util::range(entry.size))
             tmp_io.buffer()[i] ^= entry.key[i % key_size];
     }
     else
@@ -370,9 +371,9 @@ static std::unique_ptr<File> read_file(
         const u8 *key = reinterpret_cast<const u8*>(entry.key.c_str());
         u8 *buf = reinterpret_cast<u8*>(tmp_io.buffer());
         u8 aux[4];
-        for (size_t i = 0; i < 4; i++)
+        for (auto i : util::range(4))
             aux[i] = key[i];
-        for (size_t i = 0; i < entry.size; i++)
+        for (auto i : util::range(entry.size))
         {
             u8 tmp = buf[i];
             buf[i] = tmp ^ key[i % key_size] ^ aux[i%4];
@@ -396,7 +397,7 @@ static Palette read_palette_file(
     io::BufferedIO pal_io(util::pack::zlib_inflate(
         pal_file->io.read(pal_size)));
     Palette palette;
-    for (size_t i = 0; i < 256; i++)
+    for (auto i : util::range(256))
         palette[i] = util::color::rgba5551(pal_io.read_u16_le());
     return palette;
 }

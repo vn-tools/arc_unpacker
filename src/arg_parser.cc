@@ -1,11 +1,12 @@
 #include <iostream>
 #include "arg_parser.h"
+#include "util/range.h"
 
 using namespace au;
 
 static bool is_alphanumeric(std::string string)
 {
-    for (size_t i = 0; i < string.length(); i++)
+    for (auto i : util::range(string.length()))
     {
         char c = string[i];
         if (c < '0' && c > '9' && c < 'a' && c > 'a' && c < 'A' && c > 'A')

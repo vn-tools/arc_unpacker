@@ -17,6 +17,7 @@
 #include "util/colors.h"
 #include "util/encoding.h"
 #include "util/mt.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -40,7 +41,7 @@ static void decrypt(io::IO &io, u32 mt_seed, u8 a, u8 b, u8 delta)
     io.seek(0);
     io.read(buffer.get(), size);
     util::mt::init_genrand(mt_seed);
-    for (size_t i = 0; i < size; i++)
+    for (auto i : util::range(size))
     {
         buffer[i] ^= util::mt::genrand_int32();
         buffer[i] ^= a;
@@ -59,7 +60,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     arc_io.read(data.get(), entry.size);
 
     u8 key = (entry.offset >> 1) | 0x23;
-    for (size_t i = 0; i < entry.size; i++)
+    for (auto i : util::range(entry.size))
         data[i] ^= key;
 
     std::unique_ptr<File> file(new File);
@@ -88,7 +89,7 @@ static Table read_table(io::IO &arc_io)
     auto table_io = read_raw_table(arc_io, file_count);
     Table table;
     table.reserve(file_count);
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->offset = table_io->read_u32_le();
@@ -126,7 +127,7 @@ static PaletteMap find_all_palettes(const std::string &arc_path)
                 auto pal_file = read_file(file_io, *entry);
                 pal_file->io.seek(1);
                 Palette palette;
-                for (size_t i = 0; i < 256; i++)
+                for (auto i : util::range(256))
                 {
                     palette[i] = util::color::rgba5551(
                         pal_file->io.read_u16_le());

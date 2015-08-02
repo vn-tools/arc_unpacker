@@ -11,6 +11,7 @@
 #include "io/buffered_io.h"
 #include "util/endian.h"
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nsystem;
@@ -51,8 +52,7 @@ static void decompress_sgd_alpha(
         {
             size_t pixels = (flag & 0x7FFF) + 1;
             u8 alpha = *input_ptr++;
-            size_t i;
-            for (i = 0; i < pixels; i++)
+            for (auto i : util::range(pixels))
             {
                 if (output_ptr > output_guardian)
                 {
@@ -63,7 +63,6 @@ static void decompress_sgd_alpha(
                 output_ptr += 4;
             }
         }
-
         else
         {
             while (flag-- && input_ptr < input_guardian)
@@ -93,7 +92,7 @@ static void decompress_sgd_bgr_strategy_1(
     u8 b = output_ptr[-4];
     u8 g = output_ptr[-3];
     u8 r = output_ptr[-2];
-    for (size_t i = 0; i < pixels; i++)
+    for (auto i : util::range(pixels))
     {
         if (input_ptr + 2 > input_guardian)
             throw std::runtime_error("Trying to read length beyond EOF");
@@ -139,7 +138,7 @@ static void decompress_sgd_bgr_strategy_2(
     u8 b = *input_ptr++;
     u8 g = *input_ptr++;
     u8 r = *input_ptr++;
-    for (size_t i = 0; i < pixels; i++)
+    for (auto i : util::range(pixels))
     {
         if (output_ptr + 4 > output_guardian)
             throw std::runtime_error("Trying to write colors beyond EOF");
@@ -159,7 +158,7 @@ static void decompress_sgd_bgr_strategy_3(
     u8 flag)
 {
     size_t pixels = flag;
-    for (size_t i = 0; i < pixels; i++)
+    for (auto i : util::range(pixels))
     {
         if (input_ptr + 3 > input_guardian)
         {
@@ -275,7 +274,7 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::IO &file_io)
         if (regions_size != bytes_left)
             throw std::runtime_error("Region size mismatch");
 
-        for (size_t i = 0; i < region_count; i++)
+        for (auto i : util::range(region_count))
         {
             std::unique_ptr<Region> region(new Region);
             region->x = file_io.read_u16_le();

@@ -11,6 +11,7 @@
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nitroplus;
@@ -72,6 +73,6 @@ void PakArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     size_t offset_to_files = arc_file.io.tell();
 
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
         file_saver.save(read_file(arc_file.io, table_io, offset_to_files));
 }

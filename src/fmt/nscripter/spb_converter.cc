@@ -11,6 +11,7 @@
 #include "fmt/nscripter/spb_converter.h"
 #include "io/bit_reader.h"
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nscripter;
@@ -50,7 +51,7 @@ static std::unique_ptr<u8[]> decode_pixels(
 
             size_t mask = t == 7 ? bit_reader.try_get(1) + 1 : t + 2;
 
-            for (size_t i = 0; i < 4; i++)
+            for (auto i : util::range(4))
             {
                 if (mask == 8)
                 {
@@ -71,15 +72,15 @@ static std::unique_ptr<u8[]> decode_pixels(
 
         const u8 *p = channel_data.get();
         u8 *q = output.get() + rgb;
-        for (size_t j = 0; j < height >> 1; j++)
+        for (auto j : util::range(height >> 1))
         {
-            for (size_t i = 0; i < width; i++)
+            for (auto i : util::range(width))
             {
                 *q = *p++;
                 q += 3;
             }
             q += width * 3;
-            for (size_t i = 0; i < width; i++)
+            for (auto i : util::range(width))
             {
                 q -= 3;
                 *q = *p++;
@@ -88,7 +89,7 @@ static std::unique_ptr<u8[]> decode_pixels(
         }
         if (height & 1)
         {
-            for (size_t i = 0; i < width; i++)
+            for (auto i : util::range(width))
             {
                 *q = *p++;
                 q += 3;

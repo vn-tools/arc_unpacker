@@ -4,6 +4,7 @@
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
 #include "fmt/kirikiri/tlg/tlg5_decoder.h"
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri::tlg;
@@ -34,7 +35,7 @@ BlockInfo::BlockInfo(io::IO &io) : block_data(nullptr)
     block_size = io.read_u32_le();
     block_data.reset(new u8[block_size]);
     u8 *tmp = block_data.get();
-    for (size_t i = 0; i < block_size; i++)
+    for (auto i : util::range(block_size))
         *tmp++ = io.read_u8();
 }
 
@@ -67,7 +68,7 @@ static void load_pixel_block_row(
         ? zero_line
         : &output[(block_y - 1) * header.image_width * 4];
 
-    for (size_t y = block_y; y < max_y; y++)
+    for (auto y : util::range(block_y, max_y))
     {
         u8 prev_r = 0;
         u8 prev_g = 0;
@@ -76,7 +77,7 @@ static void load_pixel_block_row(
 
         size_t block_y_shift = (y - block_y) * header.image_width;
         u8 *current_line_start = current_line;
-        for (size_t x = 0; x < header.image_width; x++)
+        for (auto x : util::range(header.image_width))
         {
             u8 r = channel_data[2]->block_data[block_y_shift + x];
             u8 g = channel_data[1]->block_data[block_y_shift + x];
@@ -127,7 +128,7 @@ static void read_pixels(io::IO &io, u8 *output, Header &header)
     memset(zero_line.get(), 0, header.image_width * 4);
     memset(output, 0, header.image_width * header.image_height * 4);
 
-    for (size_t y = 0; y < header.image_height; y += header.block_height)
+    for (auto y : util::range(0, header.image_height, header.block_height))
     {
         std::vector<std::unique_ptr<BlockInfo>> channel_data;
 

@@ -12,6 +12,7 @@
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -48,10 +49,10 @@ std::unique_ptr<File> TfcsConverter::decode_internal(File &file) const
     output_file->change_extension("csv");
 
     size_t row_count = uncompressed_io.read_u32_le();
-    for (size_t i = 0; i < row_count; i++)
+    for (auto i : util::range(row_count))
     {
         size_t column_count = uncompressed_io.read_u32_le();
-        for (size_t j = 0; j < column_count; j++)
+        for (auto j : util::range(column_count))
         {
             size_t cell_size = uncompressed_io.read_u32_le();
             std::string cell = uncompressed_io.read(cell_size);

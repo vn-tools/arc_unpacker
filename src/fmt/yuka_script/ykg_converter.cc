@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "fmt/yuka_script/ykg_converter.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::yuka_script;
@@ -59,7 +60,7 @@ static std::vector<std::unique_ptr<Region>> read_regions(
 
     file_io.seek(header.regions_offset);
     size_t region_count = header.regions_size / 64;
-    for (size_t i = 0; i < region_count; i++)
+    for (auto i : util::range(region_count))
     {
         std::unique_ptr<Region> region(new Region);
         region->x = file_io.read_u32_le();

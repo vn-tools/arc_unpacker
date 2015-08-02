@@ -12,6 +12,7 @@
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::minato_soft;
@@ -78,11 +79,11 @@ static Table read_table(io::IO &arc_io, size_t file_count)
     std::unique_ptr<char[]> compressed(new char[compressed_size]);
     arc_io.seek(arc_io.size() - 4 - compressed_size);
     arc_io.read(compressed.get(), compressed_size);
-    for (size_t i = 0; i < compressed_size; i++)
+    for (auto i : util::range(compressed_size))
         compressed.get()[i] ^= 0xFF;
 
     std::unique_ptr<char[]> uncompressed(new char[uncompressed_size]);
-    for (size_t i = 0; i < uncompressed_size; i++)
+    for (auto i : util::range(uncompressed_size))
         uncompressed.get()[i] = 0;
 
     decompress_table(
@@ -95,7 +96,7 @@ static Table read_table(io::IO &arc_io, size_t file_count)
     table_io.seek(0);
 
     Table table;
-    for (size_t i = 0; i < file_count; i++)
+    for (auto i : util::range(file_count))
     {
         size_t pos = table_io.tell();
         std::unique_ptr<TableEntry> entry(new TableEntry);
