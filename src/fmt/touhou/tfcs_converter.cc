@@ -49,10 +49,10 @@ std::unique_ptr<File> TfcsConverter::decode_internal(File &file) const
     output_file->change_extension("csv");
 
     size_t row_count = uncompressed_io.read_u32_le();
-    for (auto i : util::range(row_count))
+    for (size_t i : util::range(row_count))
     {
         size_t column_count = uncompressed_io.read_u32_le();
-        for (auto j : util::range(column_count))
+        for (size_t j : util::range(column_count))
         {
             size_t cell_size = uncompressed_io.read_u32_le();
             std::string cell = uncompressed_io.read(cell_size);
