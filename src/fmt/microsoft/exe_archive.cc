@@ -7,6 +7,7 @@
 // Known games:
 // - Fortune Summoners: Secret Of The Elemental Stone
 
+#include <iostream>
 #include <cstdio>
 #include "fmt/microsoft/exe_archive.h"
 #include "util/encoding.h"
@@ -403,17 +404,27 @@ void ResourceCrawler::process_dir(size_t offset, const std::string path)
     {
         ImageResourceDirEntry entry(args.io);
 
-        args.io.peek(args.io.tell(), [&]()
+        try
         {
-            std::string entry_path = read_entry_name(entry);
-            if (path != "")
-                entry_path = path + path_sep + entry_path;
+            args.io.peek(args.io.tell(), [&]()
+            {
+                std::string entry_path = read_entry_name(entry);
+                if (path != "")
+                    entry_path = path + path_sep + entry_path;
 
-            if (entry.data_is_dir)
-                process_dir(entry.offset_to_data, entry_path);
-            else
-                process_entry(entry.offset_to_data, entry_path);
-        });
+                if (entry.data_is_dir)
+                    process_dir(entry.offset_to_data, entry_path);
+                else
+                    process_entry(entry.offset_to_data, entry_path);
+            });
+        }
+        catch (std::exception &e)
+        {
+            std::cerr
+                << "Can't read resource entry located at 0x"
+                << std::hex << args.base_offset + entry.offset_to_data
+                << " (" << e.what() << ")\n";
+        }
     }
 }
 
