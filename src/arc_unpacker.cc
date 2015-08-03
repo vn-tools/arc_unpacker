@@ -188,20 +188,26 @@ R"([fmt_options] depend on chosen format and are required at runtime.
 See --help --fmt=FORMAT to get detailed help for given transformer.
 
 Supported FORMAT values:
+
 )";
 
-    int i = 0;
-    for (auto &format : p->factory.get_formats())
+    const int columns = 5;
+    auto formats = p->factory.get_formats();
+    int max_y = (formats.size() + columns - 1) / columns;
+    for (auto y : util::range(max_y))
     {
-        std::cout << "- " << std::setw(14) << std::left << format;
-        if (i++ == 4)
+        for (auto x : util::range(columns))
         {
-            std::cout << "\n";
-            i = 0;
+            size_t i = x * max_y + y;
+            if (i < formats.size())
+            {
+                auto &format = formats[i];
+                std::cout << "- " << std::setw(14) << std::left << format;
+            }
         }
-    }
-    if (i != 0)
         std::cout << "\n";
+    }
+    std::cout << "\n";
 }
 
 void ArcUnpacker::unpack(
