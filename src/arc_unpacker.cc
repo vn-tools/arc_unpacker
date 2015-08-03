@@ -193,7 +193,7 @@ Supported FORMAT values:
     int i = 0;
     for (auto &format : p->factory.get_formats())
     {
-        std::cout << "- " << std::setw(10) << std::left << format;
+        std::cout << "- " << std::setw(14) << std::left << format;
         if (i++ == 4)
         {
             std::cout << "\n";
