@@ -60,6 +60,8 @@ static std::unique_ptr<io::BufferedIO> read_raw_table(
     size_t table_size = file_count * 0x6C;
     if (table_size > arc_io.size() - arc_io.tell())
         throw std::runtime_error("Not a PAK1 archive");
+    if (table_size > file_count * (0x64 + 4 + 4))
+        throw std::runtime_error("Not a PAK1 archive");
     std::unique_ptr<io::BufferedIO> table_io(new io::BufferedIO());
     table_io->write_from_io(arc_io, table_size);
     decrypt(*table_io, 0x64, 0x64, 0x4D);
