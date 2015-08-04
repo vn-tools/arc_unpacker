@@ -60,5 +60,5 @@ std::unique_ptr<io::IO> au::fmt::kid::decompress(
         }
     }
     output_io->seek(0);
-    return output_io;
+    return std::unique_ptr<io::IO>(std::move(output_io));
 }

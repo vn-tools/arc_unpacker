@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdio>
 #include <cstdarg>
 #include <memory>
 #include "util/format.h"

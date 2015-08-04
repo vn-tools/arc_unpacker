@@ -5,7 +5,7 @@ Build instructions
 
 Required:
 
-1. `g++` 4.8+ or `mingw-w64`
+1. `g++` 4.8+ or `mingw-w64` or `mingw`
 2. `boost::locale`
 3. `boost::filesystem`
 4. `libpng` 1.4+

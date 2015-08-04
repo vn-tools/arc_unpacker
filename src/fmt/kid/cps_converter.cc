@@ -43,7 +43,7 @@ static std::unique_ptr<io::IO> decrypt(
     output_io->write_u32_le(0);
 
     output_io->seek(4);
-    return output_io;
+    return std::unique_ptr<io::IO>(std::move(output_io));
 }
 
 bool CpsConverter::is_recognized_internal(File &file) const

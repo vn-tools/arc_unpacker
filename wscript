@@ -41,7 +41,7 @@ def configure_flags(ctx):
 
     ctx.load('compiler_cxx')
 
-    if ctx.env.DEST_OS in ['win32', 'cygwin']:
+    if ctx.env.DEST_OS in ['win32']:
         ctx.env.LINKFLAGS_UNICODE = ['-municode']
 
 def configure_packages(ctx):
@@ -65,18 +65,6 @@ def configure_packages(ctx):
             mandatory = False)
 
         ctx.check_cxx(
-            lib = ['boost_filesystem-mt', 'boost_system-mt'],
-            header_name = 'boost/filesystem.hpp',
-            uselib_store = 'LIBBOOST_FILESYSTEM',
-            mandatory = True)
-
-        ctx.check_cxx(
-            lib = ['boost_locale-mt'],
-            header_name = 'boost/locale.hpp',
-            uselib_store = 'LIBBOOST_LOCALE',
-            mandatory = True)
-
-        ctx.check_cxx(
             lib = ['iconv'],
             header_name = 'iconv.h',
             uselib_store = 'LIBICONV',
@@ -88,17 +76,29 @@ def configure_packages(ctx):
             uselib_store = 'LIBOPENSSL',
             mandatory = False)
 
-        ctx.check_cxx(
-            lib = ['boost_filesystem', 'boost_system'],
-            header_name = 'boost/filesystem.hpp',
-            uselib_store = 'LIBBOOST_FILESYSTEM',
-            mandatory = True)
+    boost_found = False
+    for suffix in ['', '-mt']:
+        try:
+            ctx.check_cxx(
+                lib = ['boost_filesystem' + suffix, 'boost_system' + suffix],
+                header_name = 'boost/filesystem.hpp',
+                uselib_store = 'LIBBOOST_FILESYSTEM',
+                mandatory = True,
+                msg = 'Checking for boost_filesystem' + suffix)
 
-        ctx.check_cxx(
-            lib = ['boost_locale'],
-            header_name = 'boost/locale.hpp',
-            uselib_store = 'LIBBOOST_LOCALE',
-            mandatory = True)
+            ctx.check_cxx(
+                lib = ['boost_locale' + suffix],
+                header_name = 'boost/locale.hpp',
+                uselib_store = 'LIBBOOST_LOCALE',
+                mandatory = True,
+                msg = 'Checking for boost_locale' + suffix)
+
+            boost_found = True
+            break
+        except ctx.errors.ConfigurationError as e:
+            ctx.to_log('boost%s not found, trying another' % suffix)
+    if not boost_found:
+        ctx.fatal('Boost not found')
 
 def configure(ctx):
     configure_flags(ctx)
