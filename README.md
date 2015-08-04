@@ -43,7 +43,7 @@ Supported games
 ---------------
 
 See
-[GAMELIST.htm](https://cdn.rawgit.com/vn-tools/arc_unpacker/master/GAMELIST.htm)
+[GAMELIST.htm](https://rawgit.com/vn-tools/arc_unpacker/master/GAMELIST.htm)
 (the table is held in a separate HTML document due to space limitations of
 GitHub).
 
