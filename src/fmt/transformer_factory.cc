@@ -2,6 +2,7 @@
 #include <functional>
 #include "fmt/transformer_factory.h"
 
+#include "fmt/alice_soft/ald_archive.h"
 #include "fmt/bgi/arc_archive.h"
 #include "fmt/bgi/cbg_converter.h"
 #include "fmt/bgi/sound_converter.h"
@@ -78,6 +79,7 @@ struct TransformerFactory::Priv
 
 TransformerFactory::TransformerFactory() : p(new Priv)
 {
+    p->add("alice/ald",     []() { return new alice_soft::AldArchive();     });
     p->add("bgi/arc",       []() { return new bgi::ArcArchive();            });
     p->add("bgi/cbg",       []() { return new bgi::CbgConverter();          });
     p->add("bgi/sound",     []() { return new bgi::SoundConverter();        });
