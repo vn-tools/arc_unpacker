@@ -8,6 +8,7 @@
 // - Comyu Kuroi Ryuu to Yasashii Oukoku
 // - Fate/Hollow Ataraxia
 // - Fate/Stay Night
+// - Hare Nochi Kitto Nanohana Biyori
 // - Koiimo SWEET☆DAYS
 // - Mahou Tsukai no Yoru
 // - Sharin no Kuni, Himawari no Shoujo
