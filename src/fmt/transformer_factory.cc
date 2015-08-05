@@ -2,6 +2,7 @@
 #include <functional>
 #include "fmt/transformer_factory.h"
 
+#include "fmt/alice_soft/afa_archive.h"
 #include "fmt/alice_soft/ald_archive.h"
 #include "fmt/bgi/arc_archive.h"
 #include "fmt/bgi/cbg_converter.h"
@@ -79,6 +80,7 @@ struct TransformerFactory::Priv
 
 TransformerFactory::TransformerFactory() : p(new Priv)
 {
+    p->add("alice/afa",     []() { return new alice_soft::AfaArchive();     });
     p->add("alice/ald",     []() { return new alice_soft::AldArchive();     });
     p->add("bgi/arc",       []() { return new bgi::ArcArchive();            });
     p->add("bgi/cbg",       []() { return new bgi::CbgConverter();          });
