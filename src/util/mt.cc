@@ -32,11 +32,11 @@
 
 #include "mt.h"
 
-const int N = 624;
-const int M = 397;
-const unsigned long MATRIX_A = 0x9908B0DFul;
-const unsigned long UPPER_MASK = 0x80000000ul;
-const unsigned long LOWER_MASK = 0x7FFFFFFFul;
+static const int N = 624;
+static const int M = 397;
+static const unsigned long MATRIX_A = 0x9908B0DFul;
+static const unsigned long UPPER_MASK = 0x80000000ul;
+static const unsigned long LOWER_MASK = 0x7FFFFFFFul;
 
 static unsigned long mts[N];
 static int mti = N + 1;
