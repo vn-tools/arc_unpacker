@@ -10,12 +10,12 @@ std::string au::util::format(const std::string fmt, ...)
     size_t size;
 
     {
-        const size_t BUFFER_SIZE = 256;
-        char buffer[BUFFER_SIZE];
+        const size_t buffer_size = 256;
+        char buffer[buffer_size];
         va_start(ap, fmt);
-        size = vsnprintf(buffer, BUFFER_SIZE, fmt.c_str(), ap);
+        size = vsnprintf(buffer, buffer_size, fmt.c_str(), ap);
         va_end(ap);
-        if (size < BUFFER_SIZE)
+        if (size < buffer_size)
             return std::string(buffer, size);
     }
 

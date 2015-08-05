@@ -7,14 +7,14 @@
 using namespace au;
 using namespace au::fmt::kirikiri::tlg;
 
-static const int W_BLOCK_SIZE = 8;
-static const int H_BLOCK_SIZE = 8;
-static const int GOLOMB_N_COUNT = 4;
-static const int LEADING_ZERO_TABLE_BITS = 12;
-static const int LEADING_ZERO_TABLE_SIZE = (1 << LEADING_ZERO_TABLE_BITS);
+static const int w_block_size = 8;
+static const int h_block_size = 8;
+static const int golomb_n_count = 4;
+static const int leading_zero_table_bits = 12;
+static const int leading_zero_table_size = (1 << leading_zero_table_bits);
 
-static u8 leading_zero_table[LEADING_ZERO_TABLE_SIZE];
-static u8 golomb_bit_length_table[GOLOMB_N_COUNT * 2 * 128][GOLOMB_N_COUNT];
+static u8 leading_zero_table[leading_zero_table_size];
+static u8 golomb_bit_length_table[golomb_n_count * 2 * 128][golomb_n_count];
 
 namespace
 {
@@ -221,7 +221,7 @@ static void init_table()
         return;
     initialized = true;
 
-    short golomb_compression_table[GOLOMB_N_COUNT][9] =
+    short golomb_compression_table[golomb_n_count][9] =
     {
         {3, 7, 15, 27, 63, 108, 223, 448, 130, },
         {3, 5, 13, 24, 51, 95, 192, 384, 257, },
@@ -229,12 +229,12 @@ static void init_table()
         {2, 3, 9, 18, 33, 61, 129, 258, 511, },
     };
 
-    for (auto i : util::range(LEADING_ZERO_TABLE_SIZE))
+    for (auto i : util::range(leading_zero_table_size))
     {
         int cnt = 0;
         int j = 1;
 
-        while (j != LEADING_ZERO_TABLE_SIZE && !(i & j))
+        while (j != leading_zero_table_size && !(i & j))
         {
             j <<= 1;
             cnt++;
@@ -242,13 +242,13 @@ static void init_table()
 
         cnt++;
 
-        if (j == LEADING_ZERO_TABLE_SIZE)
+        if (j == leading_zero_table_size)
             cnt = 0;
 
         leading_zero_table[i] = cnt;
     }
 
-    for (auto n : util::range(GOLOMB_N_COUNT))
+    for (auto n : util::range(golomb_n_count))
     {
         int a = 0;
         for (auto i : util::range(9))
@@ -261,7 +261,7 @@ static void init_table()
 
 static void decode_golomb_values(u8 *pixel_buf, int pixel_count, u8 *bit_pool)
 {
-    int n = GOLOMB_N_COUNT - 1;
+    int n = golomb_n_count - 1;
     int a = 0;
 
     int bit_pos = 1;
@@ -273,16 +273,16 @@ static void decode_golomb_values(u8 *pixel_buf, int pixel_count, u8 *bit_pool)
         int count;
         {
             u32 t = *reinterpret_cast<u32*>(bit_pool) >> bit_pos;
-            int b = leading_zero_table[t & (LEADING_ZERO_TABLE_SIZE - 1)];
+            int b = leading_zero_table[t & (leading_zero_table_size - 1)];
             int bit_count = b;
             while (!b)
             {
-                bit_count += LEADING_ZERO_TABLE_BITS;
-                bit_pos += LEADING_ZERO_TABLE_BITS;
+                bit_count += leading_zero_table_bits;
+                bit_pos += leading_zero_table_bits;
                 bit_pool += bit_pos >> 3;
                 bit_pos &= 7;
                 t = *reinterpret_cast<u32*>(bit_pool) >> bit_pos;
-                b = leading_zero_table[t & (LEADING_ZERO_TABLE_SIZE - 1)];
+                b = leading_zero_table[t & (leading_zero_table_size - 1)];
                 bit_count += b;
             }
 
@@ -321,18 +321,18 @@ static void decode_golomb_values(u8 *pixel_buf, int pixel_count, u8 *bit_pool)
                 if (t)
                 {
                     b = leading_zero_table[
-                        t & (LEADING_ZERO_TABLE_SIZE - 1)];
+                        t & (leading_zero_table_size - 1)];
                     bit_count = b;
                     while (!b)
                     {
-                        bit_count += LEADING_ZERO_TABLE_BITS;
-                        bit_pos += LEADING_ZERO_TABLE_BITS;
+                        bit_count += leading_zero_table_bits;
+                        bit_pos += leading_zero_table_bits;
                         bit_pool += bit_pos >> 3;
                         bit_pos &= 7;
                         t = *reinterpret_cast<u32*>(bit_pool);
                         t >>= bit_pos;
                         b = leading_zero_table[
-                            t & (LEADING_ZERO_TABLE_SIZE - 1)];
+                            t & (leading_zero_table_size - 1)];
                         bit_count += b;
                     }
                     bit_count--;
@@ -346,8 +346,8 @@ static void decode_golomb_values(u8 *pixel_buf, int pixel_count, u8 *bit_pool)
                     b = 0;
                 }
 
-                if (a >= GOLOMB_N_COUNT * 2 * 128) a = 0;
-                if (n >= GOLOMB_N_COUNT) n = 0;
+                if (a >= golomb_n_count * 2 * 128) a = 0;
+                if (n >= golomb_n_count) n = 0;
 
                 int k = golomb_bit_length_table[a][n];
                 int v = (bit_count << k) + ((t >> b) & ((1 << k) - 1));
@@ -366,7 +366,7 @@ static void decode_golomb_values(u8 *pixel_buf, int pixel_count, u8 *bit_pool)
                 if (--n < 0)
                 {
                     a >>= 1;
-                    n = GOLOMB_N_COUNT - 1;
+                    n = golomb_n_count - 1;
                 }
             }
             while (--count);
@@ -393,8 +393,8 @@ static void decode_line(
 
     if (start_block)
     {
-        prev_line += start_block * W_BLOCK_SIZE;
-        current_line += start_block * W_BLOCK_SIZE;
+        prev_line += start_block * w_block_size;
+        current_line += start_block * w_block_size;
         p = current_line[-1];
         up = prev_line[-1];
     }
@@ -408,9 +408,9 @@ static void decode_line(
 
     for (auto i : util::range(start_block, block_limit))
     {
-        int w = header.image_width - i * W_BLOCK_SIZE;
-        if (w > W_BLOCK_SIZE)
-            w = W_BLOCK_SIZE;
+        int w = header.image_width - i * w_block_size;
+        if (w > w_block_size)
+            w = w_block_size;
 
         int ww = w;
         if (step == -1)
@@ -463,14 +463,14 @@ static void read_pixels(io::IO &io, u8 *output, Header &header)
     filter_types.decompress(header);
 
     std::unique_ptr<u32[]> pixel_buf(
-        new u32[4 * header.image_width * H_BLOCK_SIZE]);
+        new u32[4 * header.image_width * h_block_size]);
     std::unique_ptr<u32[]> zero_line(new u32[header.image_width]());
     u32 *prev_line = zero_line.get();
 
-    u32 main_count = header.image_width / W_BLOCK_SIZE;
-    for (auto y : util::range(0, header.image_height, H_BLOCK_SIZE))
+    u32 main_count = header.image_width / w_block_size;
+    for (auto y : util::range(0, header.image_height, h_block_size))
     {
-        u32 ylim = y + H_BLOCK_SIZE;
+        u32 ylim = y + h_block_size;
         if (ylim >= header.image_height)
             ylim = header.image_height;
 
@@ -499,8 +499,8 @@ static void read_pixels(io::IO &io, u8 *output, Header &header)
         }
 
         u8 *ft = filter_types.data.get()
-            + (y / H_BLOCK_SIZE) * header.x_block_count;
-        int skip_bytes = (ylim - y) * W_BLOCK_SIZE;
+            + (y / h_block_size) * header.x_block_count;
+        int skip_bytes = (ylim - y) * w_block_size;
 
         for (auto yy : util::range(y, ylim))
         {
@@ -513,9 +513,9 @@ static void read_pixels(io::IO &io, u8 *output, Header &header)
 
             if (main_count)
             {
-                int start = ((header.image_width < W_BLOCK_SIZE)
+                int start = ((header.image_width < w_block_size)
                     ? header.image_width
-                    : W_BLOCK_SIZE) * (yy - y);
+                    : w_block_size) * (yy - y);
 
                 decode_line(
                     prev_line,
@@ -532,9 +532,9 @@ static void read_pixels(io::IO &io, u8 *output, Header &header)
 
             if (main_count != header.x_block_count)
             {
-                int ww = header.image_width - main_count * W_BLOCK_SIZE;
-                if (ww > W_BLOCK_SIZE)
-                    ww = W_BLOCK_SIZE;
+                int ww = header.image_width - main_count * w_block_size;
+                if (ww > w_block_size)
+                    ww = w_block_size;
 
                 int start = ww * (yy - y);
                 decode_line(
@@ -568,8 +568,8 @@ std::unique_ptr<File> Tlg6Decoder::decode(File &file)
     header.image_height = file.io.read_u32_le();
     header.max_bit_length = file.io.read_u32_le();
 
-    header.x_block_count = ((header.image_width - 1) / W_BLOCK_SIZE) + 1;
-    header.y_block_count = ((header.image_height - 1) / H_BLOCK_SIZE) + 1;
+    header.x_block_count = ((header.image_width - 1) / w_block_size) + 1;
+    header.y_block_count = ((header.image_height - 1) / h_block_size) + 1;
     if (header.channel_count != 3 && header.channel_count != 4)
         throw std::runtime_error("Unsupported channel count");
 
