@@ -65,17 +65,17 @@ u32 KeyDeriver::derive(u32 seed, u32 parameter)
     this->seed = seed;
     this->parameter = parameter;
 
-    // What we do: we try to run a code a few times for different
-    // "stages".  The first one to succeed yields the key.
+    // What we do: we try to run a code a few times for different "stages".
+    // The first one to succeed yields the key.
 
-    // This mechanism of figuring out the valid stage number is really
-    // crappy, but it's important we do it this way. This is because we
-    // initialize the seed only once, and even if we fail to get a
-    // number from the given stage, the internal state of randomizer is
-    // preserved to the next iteration.
+    // This mechanism of figuring out the valid stage number is really poor,
+    // but it's important we do it this way. This is because we initialize the
+    // seed only once, and even if we fail to get a number from the given
+    // stage, the internal state of randomizer is preserved to the next
+    // iteration.
 
-    // Maintaining the randomizer state is essential for the decryption
-    // to work.
+    // Maintaining the randomizer state is essential for the decryption to
+    // work.
 
     for (size_t stage = 5; stage >= 1; stage--)
     {
@@ -103,9 +103,9 @@ void KeyDeriver::add_shellcode(const std::string &bytes)
 
 u32 KeyDeriver::rand()
 {
-    // This is a modified glibc LCG randomization routine. It is used to
-    // make the key as random as possible for each file, which is supposed
-    // to maximize confusion.
+    // This is a modified glibc LCG randomization routine. It is used to make
+    // the key as random as possible for each file, which is supposed to
+    // maximize confusion.
     u32 old_seed = seed;
     seed = (0x41C64E6D * old_seed) + 12345;
     return seed ^ (old_seed << 16) ^ (old_seed >> 16);

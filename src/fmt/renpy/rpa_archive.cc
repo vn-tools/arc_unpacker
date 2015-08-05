@@ -113,7 +113,7 @@ static void unpickle_handle_number(size_t number, UnpickleContext *context)
 static void unpickle(io::IO &table_io, UnpickleContext *context)
 {
     // Stupid unpickle "implementation" ahead: instead of twiddling with stack,
-    // arrays, dictionaries and all that crap, just remember all pushed strings
+    // arrays, dictionaries and all that jazz, just remember all pushed strings
     // and integers for later interpretation. We also take advantage of RenPy
     // using Pickle's HIGHEST_PROTOCOL, which means there's no need to parse
     // 90% of the opcodes (such as "S" with escape stuff).
