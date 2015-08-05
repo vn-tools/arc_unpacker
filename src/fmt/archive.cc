@@ -4,6 +4,28 @@
 using namespace au;
 using namespace au::fmt;
 
+namespace
+{
+    struct DepthKeeper
+    {
+        DepthKeeper();
+        ~DepthKeeper();
+    };
+}
+
+static const int max_depth = 10;
+static int depth = 0;
+
+DepthKeeper::DepthKeeper()
+{
+    depth++;
+}
+
+DepthKeeper::~DepthKeeper()
+{
+    depth--;
+}
+
 static bool pass_through_transformers(
     FileSaverCallback &recognition_proxy,
     std::shared_ptr<File> original_file,
@@ -39,8 +61,18 @@ void Archive::unpack(File &file, FileSaver &file_saver) const
     FileSaverCallback recognition_proxy;
     recognition_proxy.set_callback([&](std::shared_ptr<File> original_file)
     {
-        bool save_normally = !pass_through_transformers(
-            recognition_proxy, original_file, transformers);
+        DepthKeeper keeper;
+
+        bool save_normally;
+        if (depth > max_depth)
+        {
+            save_normally = true;
+        }
+        else
+        {
+            save_normally = !pass_through_transformers(
+                recognition_proxy, original_file, transformers);
+        }
 
         if (save_normally)
             file_saver.save(original_file);
