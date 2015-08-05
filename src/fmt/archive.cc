@@ -1,7 +1,34 @@
+#include <iostream>
 #include "fmt/archive.h"
 
 using namespace au;
 using namespace au::fmt;
+
+static bool pass_through_transformers(
+    FileSaverCallback &recognition_proxy,
+    std::shared_ptr<File> original_file,
+    std::vector<Transformer*> transformers)
+{
+    for (auto &transformer : transformers)
+    {
+        FileSaverCallback transformer_proxy(
+            [original_file, &recognition_proxy, &transformer]
+            (std::shared_ptr<File> converted_file)
+        {
+            converted_file->name =
+                FileNameDecorator::decorate(
+                    transformer->get_file_naming_strategy(),
+                    original_file->name,
+                    converted_file->name);
+            recognition_proxy.save(converted_file);
+        });
+
+        if (transformer->try_unpack(*original_file, transformer_proxy))
+            return true;
+    }
+
+    return false;
+}
 
 void Archive::unpack(File &file, FileSaver &file_saver) const
 {
@@ -9,33 +36,18 @@ void Archive::unpack(File &file, FileSaver &file_saver) const
         throw std::runtime_error("File is not recognized");
 
     //every file should be passed through registered transformers
-    FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> saved_file)
+    FileSaverCallback recognition_proxy;
+    recognition_proxy.set_callback([&](std::shared_ptr<File> original_file)
     {
-        for (auto &transformer : transformers)
-        {
-            FileSaverCallback nested_proxy;
+        bool save_normally = !pass_through_transformers(
+            recognition_proxy, original_file, transformers);
 
-            nested_proxy.set_callback(
-                [saved_file, &file_saver_proxy, &transformer]
-                (std::shared_ptr<File> nested_file)
-            {
-                nested_file->name =
-                    FileNameDecorator::decorate(
-                        transformer->get_file_naming_strategy(),
-                        saved_file->name,
-                        nested_file->name);
-                file_saver_proxy.save(nested_file);
-            });
-
-            if (transformer->try_unpack(*saved_file, nested_proxy))
-                return;
-        }
-
-        file_saver.save(saved_file);
+        if (save_normally)
+            file_saver.save(original_file);
     });
 
     file.io.seek(0);
-    return unpack_internal(file, file_saver_proxy);
+    return unpack_internal(file, recognition_proxy);
 }
 
 void Archive::add_cli_help(ArgParser &arg_parser) const
