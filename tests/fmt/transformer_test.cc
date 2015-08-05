@@ -25,6 +25,7 @@ namespace
     public:
         TestConverter test_converter;
         TestArchive();
+    protected:
         bool is_recognized_internal(File &arc_file) const override;
         void unpack_internal(
             File &arc_file, FileSaver &file_saver) const override;
@@ -34,6 +35,7 @@ namespace
     {
     public:
         FilesystemTestArchive();
+    protected:
         bool is_recognized_internal(File &arc_file) const override;
         void unpack_internal(
             File &arc_file, FileSaver &file_saver) const override;
