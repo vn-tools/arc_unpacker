@@ -6,15 +6,6 @@
 using namespace au;
 using namespace au::util;
 
-struct Image::Priv
-{
-    size_t width;
-    size_t height;
-    std::string data;
-    size_t data_size;
-    PixelFormat fmt;
-};
-
 static void png_write_data(
     png_structp png_ptr, png_bytep data, png_size_t length)
 {
@@ -33,37 +24,26 @@ static void png_flush(png_structp)
 {
 }
 
-Image::Image() : p(new Priv)
+struct Image::Priv
 {
-}
+    size_t width;
+    size_t height;
+    std::string data;
+    size_t data_size;
+    PixelFormat fmt;
 
-Image::~Image()
+    static std::unique_ptr<Image> from_png(io::IO &io);
+    void save_png(io::IO &io);
+};
+
+std::unique_ptr<Image> Image::Priv::from_png(io::IO &io)
 {
-}
-
-std::unique_ptr<Image> Image::from_pixels(
-    size_t width, size_t height, const std::string &data, PixelFormat fmt)
-{
-    std::unique_ptr<Image> image(new Image);
-    if (width == 0 || height == 0)
-        throw std::runtime_error("Image dimension cannot be 0");
-    image->p->width = width;
-    image->p->height = height;
-    image->p->data = data;
-    image->p->fmt = fmt;
-    return image;
-}
-
-std::unique_ptr<Image> Image::from_boxed(io::IO &io)
-{
-    io.seek(0);
-
     png_structp png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-    assert(png_ptr != nullptr);
+    assert(png_ptr);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
-    assert(info_ptr != nullptr);
+    assert(info_ptr);
 
     png_set_read_fn(png_ptr, &io, &png_read_data);
     png_read_png(
@@ -79,15 +59,10 @@ std::unique_ptr<Image> Image::from_boxed(io::IO &io)
     int bits_per_channel;
     png_uint_32 png_width, png_height;
     png_get_IHDR(
-        png_ptr,
-        info_ptr,
-        &png_width,
-        &png_height,
-        &bits_per_channel,
-        &color_type,
-        nullptr,
-        nullptr,
-        nullptr);
+        png_ptr, info_ptr,
+        &png_width, &png_height,
+        &bits_per_channel, &color_type,
+        nullptr, nullptr, nullptr);
     assert(bits_per_channel == 8);
 
     std::unique_ptr<Image> image(new Image);
@@ -131,22 +106,8 @@ std::unique_ptr<Image> Image::from_boxed(io::IO &io)
     return image;
 }
 
-size_t Image::width() const
+void Image::Priv::save_png(io::IO &io)
 {
-    return p->width;
-}
-
-size_t Image::height() const
-{
-    return p->height;
-}
-
-std::unique_ptr<File> Image::create_file(const std::string &name) const
-{
-    std::unique_ptr<File> output_file(new File);
-    output_file->name = name;
-    output_file->change_extension("png");
-
     png_structp png_ptr = png_create_write_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     assert(png_ptr != nullptr);
@@ -157,7 +118,7 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
     unsigned long bpp;
     unsigned long color_type;
     int transformations = 0;
-    switch (p->fmt)
+    switch (fmt)
     {
         case PixelFormat::RGB:
             bpp = 3;
@@ -191,12 +152,7 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
     }
 
     png_set_IHDR(
-        png_ptr,
-        info_ptr,
-        p->width,
-        p->height,
-        8,
-        color_type,
+        png_ptr, info_ptr, width, height, 8, color_type,
         PNG_INTERLACE_NONE,
         PNG_COMPRESSION_TYPE_BASE,
         PNG_FILTER_TYPE_BASE);
@@ -205,19 +161,63 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
     // 1 produces good file size and is still fast.
     png_set_compression_level(png_ptr, 1);
 
-    png_set_write_fn(png_ptr, &output_file->io, &png_write_data, &png_flush);
+    png_set_write_fn(png_ptr, &io, &png_write_data, &png_flush);
     png_write_info(png_ptr, info_ptr);
 
-    std::unique_ptr<png_bytep[]> rows(new png_bytep[p->height]);
-    for (auto y : util::range(p->height))
+    std::unique_ptr<png_bytep[]> rows(new png_bytep[height]);
+    for (auto y : util::range(height))
     {
-        size_t i = y * p->width * bpp;
-        rows.get()[y] = reinterpret_cast<png_bytep>(&p->data[i]);
+        size_t i = y * width * bpp;
+        rows.get()[y] = reinterpret_cast<png_bytep>(&data[i]);
     }
     png_set_rows(png_ptr, info_ptr, rows.get());
     png_write_png(png_ptr, info_ptr, transformations, nullptr);
     png_destroy_write_struct(&png_ptr, &info_ptr);
+}
 
+Image::Image() : p(new Priv)
+{
+}
+
+Image::~Image()
+{
+}
+
+std::unique_ptr<Image> Image::from_pixels(
+    size_t width, size_t height, const std::string &data, PixelFormat fmt)
+{
+    std::unique_ptr<Image> image(new Image);
+    if (width == 0 || height == 0)
+        throw std::runtime_error("Image dimension cannot be 0");
+    image->p->width = width;
+    image->p->height = height;
+    image->p->data = data;
+    image->p->fmt = fmt;
+    return image;
+}
+
+std::unique_ptr<Image> Image::from_boxed(io::IO &io)
+{
+    io.seek(0);
+    return Priv::from_png(io);
+}
+
+size_t Image::width() const
+{
+    return p->width;
+}
+
+size_t Image::height() const
+{
+    return p->height;
+}
+
+std::unique_ptr<File> Image::create_file(const std::string &name) const
+{
+    std::unique_ptr<File> output_file(new File);
+    output_file->name = name;
+    output_file->change_extension("png");
+    p->save_png(output_file->io);
     return output_file;
 }
 
