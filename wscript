@@ -46,9 +46,13 @@ def configure_flags(ctx):
 
 def configure_packages(ctx):
     ctx.check_cxx(
-        lib = ['png'],
-        header_name = 'png.h',
+        lib = 'png',
         uselib_store = 'LIBPNG',
+        mandatory = True)
+
+    ctx.check_cxx(
+        lib = 'jpeg',
+        uselib_store = 'LIBJPEG',
         mandatory = True)
 
     ctx.check_cxx(
@@ -127,6 +131,7 @@ def build(ctx):
         use = [
             'LIBICONV',
             'LIBPNG',
+            'LIBJPEG',
             'LIBZ',
             'LIBBOOST_FILESYSTEM',
             'LIBBOOST_LOCALE',

@@ -1,5 +1,6 @@
 #include <cassert>
 #include <png.h>
+#include <jpeglib.h>
 #include "util/image.h"
 #include "util/range.h"
 
@@ -33,6 +34,7 @@ struct Image::Priv
     PixelFormat fmt;
 
     static std::unique_ptr<Image> from_png(io::IO &io);
+    static std::unique_ptr<Image> from_jpeg(io::IO &io);
     void save_png(io::IO &io);
 };
 
@@ -103,6 +105,52 @@ std::unique_ptr<Image> Image::Priv::from_png(io::IO &io)
     }
 
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+    return image;
+}
+
+std::unique_ptr<Image> Image::Priv::from_jpeg(io::IO &io)
+{
+    auto input_size = io.size();
+    std::unique_ptr<u8[]> source(new u8[input_size]);
+    io.read(source.get(), input_size);
+
+    struct jpeg_decompress_struct info;
+    struct jpeg_error_mgr err;
+    info.err = jpeg_std_error(&err);
+    jpeg_create_decompress(&info);
+    jpeg_mem_src(&info, source.get(), input_size);
+    jpeg_read_header(&info, true);
+    jpeg_start_decompress(&info);
+
+    std::unique_ptr<Image> image(new Image);
+    image->p->width = info.output_width;
+    image->p->height = info.output_height;
+    switch (info.num_components)
+    {
+        case 3:
+            image->p->fmt = PixelFormat::RGB;
+            break;
+        case 4:
+            image->p->fmt = PixelFormat::RGBA;
+            break;
+        default:
+            throw std::runtime_error("Invalid channel count");
+    }
+
+    auto stride = image->p->width * info.num_components;
+    auto output_size = image->p->height * stride;
+    std::unique_ptr<u8[]> output(new u8[output_size]);
+    while (info.output_scanline < image->p->height)
+    {
+        u8 *rowptr = &output[info.output_scanline * stride];
+        jpeg_read_scanlines(&info, &rowptr, 1);
+    }
+
+    jpeg_finish_decompress(&info);
+
+    image->p->data_size = output_size;
+    image->p->data = std::string(
+        reinterpret_cast<char*>(output.get()), output_size);
     return image;
 }
 
@@ -198,8 +246,24 @@ std::unique_ptr<Image> Image::from_pixels(
 
 std::unique_ptr<Image> Image::from_boxed(io::IO &io)
 {
+    static const std::string png_magic = "\x89PNG"_s;
+    static const std::string jpeg_magic = "\xFF\xD8\xFF"_s;
+
     io.seek(0);
-    return Priv::from_png(io);
+    if (io.read(png_magic.size()) == png_magic)
+    {
+        io.seek(0);
+        return Priv::from_png(io);
+    }
+
+    io.seek(0);
+    if (io.read(jpeg_magic.size()) == jpeg_magic)
+    {
+        io.seek(0);
+        return Priv::from_jpeg(io);
+    }
+
+    throw std::runtime_error("Not a PNG nor a JPEG file");
 }
 
 size_t Image::width() const

@@ -9,8 +9,9 @@ Required:
 2. `boost::locale`
 3. `boost::filesystem`
 4. `libpng` 1.4+
-5. `zlib` (comes with `libpng`)
-6. `iconv` (comes with POSIX)
+5. `libjpeg`
+6. `zlib` (comes with `libpng`)
+7. `iconv` (comes with POSIX)
 
 Recommended:
 
@@ -40,11 +41,7 @@ it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
 2. Build `arc_unpacker`'s dependencies using `mxe`:
 
         cd mxe
-        make libiconv
-        make zlib
-        make libpng
-        make boost
-        make openssl
+        make libiconv zlib libpng jpeg boost openssl
 
 3. Configure the shell to use `mxe`:
 
