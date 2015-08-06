@@ -4,6 +4,7 @@
 
 #include "fmt/alice_soft/afa_archive.h"
 #include "fmt/alice_soft/aff_converter.h"
+#include "fmt/alice_soft/ajp_converter.h"
 #include "fmt/alice_soft/ald_archive.h"
 #include "fmt/bgi/arc_archive.h"
 #include "fmt/bgi/cbg_converter.h"
@@ -83,6 +84,7 @@ TransformerFactory::TransformerFactory() : p(new Priv)
 {
     p->add("alice/afa",     []() { return new alice_soft::AfaArchive();     });
     p->add("alice/aff",     []() { return new alice_soft::AffConverter();   });
+    p->add("alice/ajp",     []() { return new alice_soft::AjpConverter();   });
     p->add("alice/ald",     []() { return new alice_soft::AldArchive();     });
     p->add("bgi/arc",       []() { return new bgi::ArcArchive();            });
     p->add("bgi/cbg",       []() { return new bgi::CbgConverter();          });

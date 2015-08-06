@@ -9,6 +9,7 @@
 
 #include "fmt/alice_soft/afa_archive.h"
 #include "fmt/alice_soft/aff_converter.h"
+#include "fmt/alice_soft/ajp_converter.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
@@ -77,11 +78,13 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 struct AfaArchive::Priv
 {
     AffConverter aff_converter;
+    AjpConverter ajp_converter;
 };
 
 AfaArchive::AfaArchive() : p(new Priv)
 {
     add_transformer(&p->aff_converter);
+    add_transformer(&p->ajp_converter);
 }
 
 AfaArchive::~AfaArchive()
