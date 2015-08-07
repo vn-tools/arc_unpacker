@@ -312,6 +312,13 @@ u32 Image::color_at(size_t x, size_t y) const
             a = data[i * 4 + 3];
             break;
 
+        case PixelFormat::BGRA:
+            r = data[i * 4 + 2];
+            g = data[i * 4 + 1];
+            b = data[i * 4];
+            a = data[i * 4 + 3];
+            break;
+
         default:
             throw std::runtime_error("Unsupported pixel format");
     }

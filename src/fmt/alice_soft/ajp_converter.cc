@@ -8,9 +8,10 @@
 // Known games:
 // - Daiakuji
 
-#include <iostream>
 #include "fmt/alice_soft/ajp_converter.h"
+#include "fmt/alice_soft/pm_converter.h"
 #include "io/buffered_io.h"
+#include "util/colors.h"
 #include "util/image.h"
 #include "util/range.h"
 
@@ -53,20 +54,38 @@ std::unique_ptr<File> AjpConverter::decode_internal(File &file) const
     file.io.seek(jpeg_offset);
     auto jpeg_io = decrypt(file.io, jpeg_size);
 
-    if (mask_size)
-    {
-        file.io.seek(mask_offset);
-        auto mask_io = decrypt(file.io, mask_size);
+    file.io.seek(mask_offset);
+    auto mask_io = decrypt(file.io, mask_size);
 
-        //TODO:
-        //1. add PM converter
-        //2. pass the mask through the PM converter
-        //3. apply the mask to JPEG image
+    if (!mask_size)
+    {
+        std::unique_ptr<File> output_file(new File);
+        output_file->name = file.name;
+        output_file->io.write_from_io(*jpeg_io);
+        output_file->guess_extension();
+        return output_file;
     }
 
-    std::unique_ptr<File> output_file(new File);
-    output_file->io.write_from_io(*jpeg_io);
-    output_file->name = file.name;
-    output_file->guess_extension();
-    return output_file;
+    PmConverter pm_converter;
+    auto mask_image = pm_converter.decode_to_image(*mask_io);
+    auto jpeg_image = util::Image::from_boxed(*jpeg_io);
+
+    std::unique_ptr<u32[]> pixels(new u32[width * height]);
+    for (auto y : util::range(height))
+    {
+        for (auto x : util::range(width))
+        {
+            auto color = jpeg_image->color_at(x, y);
+            auto alpha = util::color::get_channel(
+                mask_image->color_at(x, y), util::color::Channel::Red);
+            util::color::set_alpha(color, alpha);
+            pixels[y * width + x] = color;
+        }
+    }
+
+    auto output_image = util::Image::from_pixels(
+        width, height,
+        std::string(reinterpret_cast<char*>(pixels.get()), width * height * 4),
+        util::PixelFormat::RGBA);
+    return output_image->create_file(file.name);
 }

@@ -12,7 +12,6 @@
 #include "fmt/alice_soft/pm_converter.h"
 #include "util/colors.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -92,6 +91,45 @@ static std::string decompress(
     return std::string(reinterpret_cast<char*>(output.get()), output_size);
 }
 
+std::unique_ptr<util::Image> PmConverter::decode_to_image(io::IO &io) const
+{
+    io.skip(magic.size());
+    io.skip(2);
+    auto depth = io.read_u16_le();
+    if (depth != 8)
+    {
+        throw std::runtime_error(util::format(
+            "Unsupported bit depth: %d", depth));
+    }
+    io.skip(4 * 4);
+    auto width = io.read_u32_le();
+    auto height = io.read_u32_le();
+    auto data_offset = io.read_u32_le();
+    auto palette_offset = io.read_u32_le();
+
+    io.seek(palette_offset);
+    std::array<u32, 256> palette;
+    for (auto i : util::range(256))
+    {
+        auto r = io.read_u8();
+        auto g = io.read_u8();
+        auto b = io.read_u8();
+        palette[i] = util::color::rgb888(r, g, b);
+    }
+
+    io.seek(data_offset);
+    auto data = decompress(io.read_until_end(), width, height);
+
+    std::unique_ptr<u32[]> pixels(new u32[width * height]);
+    for (auto i : util::range(width * height))
+        pixels[i] = palette[static_cast<u8>(data[i])];
+
+    return util::Image::from_pixels(
+        width, height,
+        std::string(reinterpret_cast<char*>(pixels.get()), width * height * 4),
+        util::PixelFormat::BGRA);
+}
+
 bool PmConverter::is_recognized_internal(File &file) const
 {
     return file.io.read(magic.size()) == magic;
@@ -99,40 +137,6 @@ bool PmConverter::is_recognized_internal(File &file) const
 
 std::unique_ptr<File> PmConverter::decode_internal(File &file) const
 {
-    file.io.skip(magic.size());
-    file.io.skip(2);
-    auto depth = file.io.read_u16_le();
-    if (depth != 8)
-    {
-        throw std::runtime_error(util::format(
-            "Unsupported bit depth: %d", depth));
-    }
-    file.io.skip(4 * 4);
-    auto width = file.io.read_u32_le();
-    auto height = file.io.read_u32_le();
-    auto data_offset = file.io.read_u32_le();
-    auto palette_offset = file.io.read_u32_le();
-
-    file.io.seek(palette_offset);
-    std::array<u32, 256> palette;
-    for (auto i : util::range(256))
-    {
-        auto r = file.io.read_u8();
-        auto g = file.io.read_u8();
-        auto b = file.io.read_u8();
-        palette[i] = util::color::rgb888(r, g, b);
-    }
-
-    file.io.seek(data_offset);
-    auto data = decompress(file.io.read_until_end(), width, height);
-
-    std::unique_ptr<u32[]> pixels(new u32[width * height]);
-    for (auto i : util::range(width * height))
-        pixels[i] = palette[static_cast<u8>(data[i])];
-
-    auto image = util::Image::from_pixels(
-        width, height,
-        std::string(reinterpret_cast<char*>(pixels.get()), width * height * 4),
-        util::PixelFormat::BGRA);
+    auto image = decode_to_image(file.io);
     return image->create_file(file.name);
 }
