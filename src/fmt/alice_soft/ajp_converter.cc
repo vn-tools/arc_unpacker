@@ -21,7 +21,7 @@ using namespace au::fmt::alice_soft;
 
 static const std::string magic = "AJP\x00"_s;
 static const std::string key =
-    "\x5d\x91\xAE\x87\x4A\x56\x41\xCD\x83\xEC\x4C\x92\xB5\xCB\x16\x34";
+    "\x5D\x91\xAE\x87\x4A\x56\x41\xCD\x83\xEC\x4C\x92\xB5\xCB\x16\x34";
 
 static std::unique_ptr<io::IO> decrypt(io::IO &input_io, size_t size)
 {
