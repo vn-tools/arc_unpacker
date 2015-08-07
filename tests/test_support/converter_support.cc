@@ -20,7 +20,10 @@ static void compare_images(
             u32 expected_rgba = expected_image.color_at(x, y);
             u32 actual_rgba = actual_image.color_at(x, y);
             if (expected_rgba != actual_rgba) //speed up
+            {
+                INFO("Pixels differ at " << x << ", " << y);
                 REQUIRE(expected_rgba == actual_rgba);
+            }
         }
     }
 }
