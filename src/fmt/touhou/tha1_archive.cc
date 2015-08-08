@@ -14,6 +14,7 @@
 // - Touhou 13 - Ten Desires
 // - Touhou 14 - Double Dealing Character
 // - Touhou 14.3 - Impossible Spell Card
+// - Touhou 15 - Legacy of Lunatic Kingdom (trial)
 
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/crypt.h"
@@ -228,6 +229,7 @@ static int detect_encryption_version(File &arc_file, const Table &table)
     if (arc_file.name.find("th13.") != std::string::npos) return 2;
     if (arc_file.name.find("th14.") != std::string::npos) return 3;
     if (arc_file.name.find("th143.") != std::string::npos) return 3;
+    if (arc_file.name.find("th15tr.") != std::string::npos) return 3;
     return -1;
 }
 
