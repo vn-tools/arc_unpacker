@@ -16,7 +16,6 @@
 #include "util/range.h"
 
 using namespace au;
-using namespace au::fmt;
 using namespace au::fmt::alice_soft;
 
 static const std::string magic = "AJP\x00"_s;
