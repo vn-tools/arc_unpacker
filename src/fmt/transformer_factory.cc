@@ -7,6 +7,7 @@
 #include "fmt/alice_soft/ajp_converter.h"
 #include "fmt/alice_soft/ald_archive.h"
 #include "fmt/alice_soft/pm_converter.h"
+#include "fmt/alice_soft/qnt_converter.h"
 #include "fmt/bgi/arc_archive.h"
 #include "fmt/bgi/cbg_converter.h"
 #include "fmt/bgi/sound_converter.h"
@@ -88,6 +89,7 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("alice/ajp",     []() { return new alice_soft::AjpConverter();   });
     p->add("alice/ald",     []() { return new alice_soft::AldArchive();     });
     p->add("alice/pm",      []() { return new alice_soft::PmConverter();    });
+    p->add("alice/qnt",     []() { return new alice_soft::QntConverter();   });
     p->add("bgi/arc",       []() { return new bgi::ArcArchive();            });
     p->add("bgi/cbg",       []() { return new bgi::CbgConverter();          });
     p->add("bgi/sound",     []() { return new bgi::SoundConverter();        });
