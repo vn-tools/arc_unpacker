@@ -49,16 +49,14 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
     auto bit_depth = file.io.read_u8();
-    auto image_width = file.io.read_u32_le();
-    auto image_height = file.io.read_u32_le();
+    auto width = file.io.read_u32_le();
+    auto height = file.io.read_u32_le();
     auto stride = file.io.read_u32_le();
     auto source_size = file.io.read_u32_le();
-    size_t target_size = image_width * image_height * 4;
 
+    io::BufferedIO source_io(util::pack::zlib_inflate(file.io.read_to_eof()));
     io::BufferedIO target_io;
-    io::BufferedIO source_io(
-        util::pack::zlib_inflate(file.io.read_to_eof()));
-    target_io.reserve(target_size);
+    target_io.reserve(width * height * 4);
 
     Palette palette;
     if (bit_depth == 8)
@@ -74,7 +72,7 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
             : create_default_palette();
     }
 
-    for (size_t y : util::range(image_height))
+    for (size_t y : util::range(height))
     {
         for (size_t x : util::range(stride))
         {
@@ -100,16 +98,13 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
                         "Unsupported channel count: %d", bit_depth));
             }
 
-            if (x < image_width)
+            if (x < width)
                 target_io.write_u32_le(rgba);
         }
     }
 
     target_io.seek(0);
     auto image = util::Image::from_pixels(
-        image_width,
-        image_height,
-        target_io.read(target_io.size()),
-        util::PixelFormat::BGRA);
+        width, height, target_io.read_to_eof(), util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }

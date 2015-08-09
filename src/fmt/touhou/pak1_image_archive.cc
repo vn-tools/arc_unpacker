@@ -21,18 +21,15 @@ using namespace au::fmt::touhou;
 static std::unique_ptr<File> read_image(
     io::IO &arc_io, size_t index, Palette palette)
 {
-    auto image_width = arc_io.read_u32_le();
-    auto image_height = arc_io.read_u32_le();
+    auto width = arc_io.read_u32_le();
+    auto height = arc_io.read_u32_le();
     arc_io.skip(4);
     auto bit_depth = arc_io.read_u8();
     size_t source_size = arc_io.read_u32_le();
-    size_t target_size = image_width * image_height * 4;
 
+    io::BufferedIO source_io(arc_io, source_size);
     io::BufferedIO target_io;
-    target_io.reserve(target_size);
-    io::BufferedIO source_io;
-    source_io.write_from_io(arc_io, source_size);
-    source_io.seek(0);
+    target_io.reserve(width * height * 4);
 
     while (source_io.tell() < source_io.size())
     {
@@ -75,10 +72,7 @@ static std::unique_ptr<File> read_image(
 
     target_io.seek(0);
     auto image = util::Image::from_pixels(
-        image_width,
-        image_height,
-        target_io.read(target_io.size()),
-        util::PixelFormat::BGRA);
+        width, height, target_io.read_to_eof(), util::PixelFormat::BGRA);
     return image->create_file(util::format("%04d", index));
 }
 
