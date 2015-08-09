@@ -1,4 +1,3 @@
-#include <iostream>
 #include "fmt/archive.h"
 
 using namespace au;

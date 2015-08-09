@@ -53,11 +53,8 @@ namespace
 static const bstr magic_100 = "TArc1.00\x00\x00\x00\x00"_b;
 static const bstr magic_110 = "TArc1.10\x00\x00\x00\x00"_b;
 
-static bstr decrypt(
-    const bstr &input, size_t size, const bstr &key)
+static bstr decrypt(const bstr &input, size_t size, const bstr &key)
 {
-    bstr output;
-
     util::crypt::Blowfish bf(key);
     size_t left = (size / bf.block_size()) * bf.block_size();
     return bf.decrypt(input.substr(0, left)) + input.substr(left);

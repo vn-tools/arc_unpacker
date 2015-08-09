@@ -7,7 +7,6 @@
 // Known games:
 // - Ever 17
 
-#include <iostream>
 #include "fmt/kid/cps_converter.h"
 #include "fmt/kid/decompressor.h"
 #include "fmt/kid/lnk_archive.h"

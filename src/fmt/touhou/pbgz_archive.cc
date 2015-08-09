@@ -9,7 +9,6 @@
 // - Touhou 09 - Phantasmagoria of Flower View
 
 #include <cstring>
-#include <iostream>
 #include <map>
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/crypt.h"
