@@ -61,7 +61,7 @@ static std::unique_ptr<File> read_file(
     bstr data = arc_io.read(entry.size);
 
     static const size_t block_size = 0x2172;
-    for (auto i : util::range(std::min(block_size, entry.size)))
+    for (auto i : util::range(std::min(block_size + 1, entry.size)))
         data[i] ^= entry.name[i % entry.name.size()] + i + 3;
 
     file->name = entry.name;
