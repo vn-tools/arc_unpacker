@@ -45,14 +45,37 @@ std::string Blowfish::decrypt(const std::string &input) const
 
     std::string output;
 
-    BF_LONG transit;
+    BF_LONG transit[2];
     while (left)
     {
-        std::memcpy(&transit, input.data() + done, BF_BLOCK);
-        BF_decrypt(&transit, p->key.get());
+        std::memcpy(transit, input.data() + done, BF_BLOCK);
+        BF_decrypt(transit, p->key.get());
         output += std::string(reinterpret_cast<char*>(&transit), BF_BLOCK);
         left -= BF_BLOCK;
         done += BF_BLOCK;
+    }
+
+    return output;
+}
+
+std::string Blowfish::encrypt(const std::string &input) const
+{
+    size_t left = input.size();
+    size_t done = 0;
+
+    std::string output;
+
+    while (left)
+    {
+        size_t block_size = BF_BLOCK;
+        if (left < block_size)
+            block_size = left;
+        BF_LONG transit[2] = {0, 0};
+        std::memcpy(&transit[0], input.data() + done, block_size);
+        BF_encrypt(transit, p->key.get());
+        output += std::string(reinterpret_cast<char*>(&transit), BF_BLOCK);
+        left -= block_size;
+        done += block_size;
     }
 
     return output;

@@ -25,3 +25,8 @@ std::string Blowfish::decrypt(const std::string &input) const
 {
     return "";
 }
+
+std::string Blowfish::encrypt(const std::string &input) const
+{
+    return "";
+}
