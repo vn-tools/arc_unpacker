@@ -51,12 +51,12 @@ void au::util::mt::init_genrand(unsigned long s)
     }
 }
 
-void au::util::mt::init_by_array(unsigned long init_key[], int key_length)
+void au::util::mt::init_by_array(unsigned long init_key[], int key_size)
 {
     init_genrand(19650218ul);
     int i = 1;
     int j = 0;
-    int k = (N > key_length ? N : key_length);
+    int k = (N > key_size ? N : key_size);
     for (; k; k--)
     {
         mts[i] = (mts[i] ^ ((mts[i - 1] ^ (mts[i - 1] >> 30)) * 1664525ul))
@@ -69,7 +69,7 @@ void au::util::mt::init_by_array(unsigned long init_key[], int key_length)
             mts[0] = mts[N - 1];
             i = 1;
         }
-        if (j >= key_length)
+        if (j >= key_size)
         {
             j = 0;
         }

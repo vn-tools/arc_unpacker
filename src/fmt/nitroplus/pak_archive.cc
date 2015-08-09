@@ -23,8 +23,8 @@ static std::unique_ptr<File> read_file(
 {
     std::unique_ptr<File> file(new File);
 
-    size_t file_name_length = table_io.read_u32_le();
-    file->name = util::sjis_to_utf8(table_io.read(file_name_length)).str();
+    size_t file_name_size = table_io.read_u32_le();
+    file->name = util::sjis_to_utf8(table_io.read(file_name_size)).str();
 
     size_t offset = table_io.read_u32_le();
     size_t size_original = table_io.read_u32_le();

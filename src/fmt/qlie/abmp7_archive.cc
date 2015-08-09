@@ -8,9 +8,9 @@ static const bstr magic = "ABMP7"_b;
 
 static void read_first_file(io::IO &arc_io, FileSaver &file_saver)
 {
-    size_t length = arc_io.read_u32_le();
+    size_t size = arc_io.read_u32_le();
     std::unique_ptr<File> subfile(new File);
-    subfile->io.write_from_io(arc_io, length);
+    subfile->io.write_from_io(arc_io, size);
     subfile->name = "base.dat";
     subfile->guess_extension();
     file_saver.save(std::move(subfile));
@@ -21,9 +21,9 @@ static void read_next_file(io::IO &arc_io, FileSaver &file_saver)
     bstr encoded_name = arc_io.read(arc_io.read_u8());
     arc_io.skip(31 - encoded_name.size());
     bstr name = util::sjis_to_utf8(encoded_name);
-    size_t length = arc_io.read_u32_le();
+    size_t size = arc_io.read_u32_le();
     std::unique_ptr<File> subfile(new File);
-    subfile->io.write_from_io(arc_io, length);
+    subfile->io.write_from_io(arc_io, size);
     subfile->name = (name == ""_b ? "unknown" : name.str()) + ".dat";
     subfile->guess_extension();
     file_saver.save(std::move(subfile));

@@ -156,17 +156,17 @@ static void unpickle(io::IO &table_io, UnpickleContext *context)
 
             case PickleOpcode::Long1:
             {
-                size_t length = table_io.read_u8();
+                size_t size = table_io.read_u8();
                 u32 number = 0;
                 size_t pos = table_io.tell();
-                for (auto i : util::range(length))
+                for (auto i : util::range(size))
                 {
-                    table_io.seek(pos + length - 1 - i);
+                    table_io.seek(pos + size - 1 - i);
                     number *= 256;
                     number += table_io.read_u8();
                 }
                 unpickle_handle_number(number, context);
-                table_io.seek(pos + length);
+                table_io.seek(pos + size);
                 break;
             }
 
@@ -247,10 +247,10 @@ static int guess_version(io::IO &arc_io)
     return -1;
 }
 
-static u32 read_hex_number(io::IO &arc_io, size_t length)
+static u32 read_hex_number(io::IO &arc_io, size_t size)
 {
     u32 result = 0;
-    for (auto i : util::range(length))
+    for (auto i : util::range(size))
     {
         char c = arc_io.read_u8();
         result *= 16;

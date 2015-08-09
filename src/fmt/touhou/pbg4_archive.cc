@@ -50,8 +50,8 @@ static bstr decompress(io::IO &arc_io, size_t size_original)
 {
     util::pack::LzssSettings settings;
     settings.position_bits = 13;
-    settings.length_bits = 4;
-    settings.min_match_length = 3;
+    settings.size_bits = 4;
+    settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
     settings.reuse_compressed = true;
     io::BitReader bit_reader(arc_io);

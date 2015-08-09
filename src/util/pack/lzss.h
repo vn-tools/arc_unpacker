@@ -10,8 +10,8 @@ namespace pack {
     struct LzssSettings
     {
         size_t position_bits;
-        size_t length_bits;
-        size_t min_match_length;
+        size_t size_bits;
+        size_t min_match_size;
         size_t initial_dictionary_pos;
         bool reuse_compressed;
     };

@@ -35,7 +35,7 @@ static bstr decompress(
     const bstr &input,
     size_t output_size,
     size_t byte_count,
-    size_t length_delta)
+    size_t size_delta)
 {
     const u8 *src = input.get<u8>();
     const u8 *src_guardian = src + input.size();
@@ -75,8 +75,8 @@ static bstr decompress(
             tmp |= (*src++) << 8;
 
             int look_behind = (tmp >> 4) * byte_count;
-            size_t length = ((tmp & 0x0F) + length_delta) * byte_count;
-            for (auto i : util::range(length))
+            size_t size = ((tmp & 0x0F) + size_delta) * byte_count;
+            for (auto i : util::range(size))
             {
                 if (dst >= dst_guardian)
                     break;

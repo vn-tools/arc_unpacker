@@ -486,7 +486,7 @@ void Cxdec::set_arc_path(const std::string &path)
             continue;
 
         auto fn = it->path().string();
-        if (fn.find(".tpm") != fn.length() - 4)
+        if (fn.find(".tpm") != fn.size() - 4)
             continue;
 
         io::FileIO tmp_io(it->path(), io::FileMode::Read);

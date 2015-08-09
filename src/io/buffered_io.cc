@@ -28,9 +28,9 @@ char *BufferedIO::buffer()
     return p->buffer;
 }
 
-void BufferedIO::reserve(size_t length)
+void BufferedIO::reserve(size_t size)
 {
-    size_t new_size = p->buffer_pos + length;
+    size_t new_size = p->buffer_pos + size;
     if (new_size <= p->buffer_size)
         return;
     char *new_buffer = reinterpret_cast<char*>(
@@ -55,32 +55,32 @@ void BufferedIO::skip(int offset)
     p->buffer_pos += offset;
 }
 
-void BufferedIO::read(void *destination, size_t length)
+void BufferedIO::read(void *destination, size_t size)
 {
-    if (!length)
+    if (!size)
         return;
     assert(destination);
-    if (p->buffer_pos + length > p->buffer_size)
+    if (p->buffer_pos + size > p->buffer_size)
         throw std::runtime_error("Reading beyond EOF");
-    memcpy(destination, p->buffer + p->buffer_pos, length);
-    p->buffer_pos += length;
+    memcpy(destination, p->buffer + p->buffer_pos, size);
+    p->buffer_pos += size;
 }
 
-void BufferedIO::write(const void *source, size_t length)
+void BufferedIO::write(const void *source, size_t size)
 {
-    if (!length)
+    if (!size)
         return;
     assert(source);
-    reserve(length);
-    memcpy(p->buffer + p->buffer_pos, source, length);
-    p->buffer_pos += length;
+    reserve(size);
+    memcpy(p->buffer + p->buffer_pos, source, size);
+    p->buffer_pos += size;
 }
 
-void BufferedIO::write_from_io(IO &source, size_t length)
+void BufferedIO::write_from_io(IO &source, size_t size)
 {
-    reserve(length);
-    source.read(p->buffer + p->buffer_pos, length);
-    p->buffer_pos += length;
+    reserve(size);
+    source.read(p->buffer + p->buffer_pos, size);
+    p->buffer_pos += size;
 }
 
 size_t BufferedIO::tell() const
@@ -116,10 +116,10 @@ BufferedIO::BufferedIO() : p(new Priv("", 0))
 {
 }
 
-BufferedIO::BufferedIO(IO &other_io, size_t length)
+BufferedIO::BufferedIO(IO &other_io, size_t size)
     : p(new Priv("", 0))
 {
-    write_from_io(other_io, length);
+    write_from_io(other_io, size);
     seek(0);
 }
 

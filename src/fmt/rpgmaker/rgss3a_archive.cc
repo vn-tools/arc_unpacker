@@ -27,9 +27,9 @@ static rgs::Table read_table(io::IO &arc_io, u32 key)
         entry->size = arc_io.read_u32_le() ^ key;
         entry->key = arc_io.read_u32_le() ^ key;
 
-        size_t name_length = arc_io.read_u32_le() ^ key;
-        entry->name = arc_io.read(name_length).str();
-        for (auto i : util::range(name_length))
+        size_t name_size = arc_io.read_u32_le() ^ key;
+        entry->name = arc_io.read(name_size).str();
+        for (auto i : util::range(name_size))
             entry->name[i] ^= key >> (i << 3);
 
         if (!entry->offset)

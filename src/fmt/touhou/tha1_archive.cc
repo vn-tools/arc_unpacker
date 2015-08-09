@@ -105,8 +105,8 @@ static bstr decompress(io::IO &io, size_t size_compressed, size_t size_original)
 {
     util::pack::LzssSettings settings;
     settings.position_bits = 13;
-    settings.length_bits = 4;
-    settings.min_match_length = 3;
+    settings.size_bits = 4;
+    settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
     settings.reuse_compressed = true;
 
@@ -158,10 +158,10 @@ static Table read_table(io::IO &arc_io, const Header &header)
         std::unique_ptr<TableEntry> entry(new TableEntry);
 
         entry->name = table_io->read_to_zero().str();
-        table_io->skip(3 - entry->name.length() % 4);
+        table_io->skip(3 - entry->name.size() % 4);
 
         entry->decryptor_id = 0;
-        for (auto j : util::range(entry->name.length()))
+        for (auto j : util::range(entry->name.size()))
             entry->decryptor_id += entry->name[j];
         entry->decryptor_id %= 8;
 

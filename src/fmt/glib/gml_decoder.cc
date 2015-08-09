@@ -33,22 +33,22 @@ bstr GmlDecoder::decode(const bstr &source, size_t target_size)
 
         u8 tmp1 = source_ptr < source_guardian ? *source_ptr++ : 0;
         u8 tmp2 = source_ptr < source_guardian ? *source_ptr++ : 0;
-        size_t length = ((~tmp2) & 0xF) + 3;
+        size_t size = ((~tmp2) & 0xF) + 3;
         i32 look_behind = (tmp1 | ((tmp2 << 4) & 0xF00)) + 18;
         look_behind -= target_ptr - target.get<u8>();
         look_behind |= 0xFFFFF000;
 
         while (target_ptr - target.get<u8>() + look_behind < 0
-            && length
+            && size
             && target_ptr < target_guardian)
         {
-            --length;
+            --size;
             *target_ptr++ = 0;
         }
 
-        while (length && target_ptr < target_guardian)
+        while (size && target_ptr < target_guardian)
         {
-            --length;
+            --size;
             u8 tmp = target_ptr[look_behind];
             *target_ptr++ = tmp;
         }

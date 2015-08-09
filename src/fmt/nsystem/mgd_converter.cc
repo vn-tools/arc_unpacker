@@ -42,9 +42,9 @@ static void decompress_sgd_alpha(const bstr &input, io::IO &output_io)
         auto flag = input_io.read_u16_le();
         if (flag & 0x8000)
         {
-            size_t length = (flag & 0x7FFF) + 1;
+            size_t size = (flag & 0x7FFF) + 1;
             u8 alpha = input_io.read_u8();
-            for (auto i : util::range(length))
+            for (auto i : util::range(size))
             {
                 output_io.skip(3);
                 output_io.write_u8(alpha ^ 0xFF);
@@ -66,13 +66,13 @@ static void decompress_sgd_alpha(const bstr &input, io::IO &output_io)
 static void decompress_sgd_bgr_strategy_1(
     io::IO &input_io, io::IO &output_io, u8 flag)
 {
-    auto length = flag & 0x3F;
+    auto size = flag & 0x3F;
     output_io.skip(-4);
     u8 b = output_io.read_u8();
     u8 g = output_io.read_u8();
     u8 r = output_io.read_u8();
     output_io.skip(1);
-    for (auto i : util::range(length))
+    for (auto i : util::range(size))
     {
         u16 delta = input_io.read_u16_le();
         if (delta & 0x8000)
@@ -98,11 +98,11 @@ static void decompress_sgd_bgr_strategy_1(
 static void decompress_sgd_bgr_strategy_2(
     io::IO &input_io, io::IO &output_io, u8 flag)
 {
-    auto length = (flag & 0x3F) + 1;
+    auto size = (flag & 0x3F) + 1;
     u8 b = input_io.read_u8();
     u8 g = input_io.read_u8();
     u8 r = input_io.read_u8();
-    for (auto i : util::range(length))
+    for (auto i : util::range(size))
     {
         output_io.write_u8(b);
         output_io.write_u8(g);
@@ -114,8 +114,8 @@ static void decompress_sgd_bgr_strategy_2(
 static void decompress_sgd_bgr_strategy_3(
     io::IO &input_io, io::IO &output_io, u8 flag)
 {
-    auto length = flag;
-    for (auto i : util::range(length))
+    auto size = flag;
+    for (auto i : util::range(size))
     {
         output_io.write(input_io.read(3));
         output_io.skip(1);

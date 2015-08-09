@@ -25,10 +25,10 @@ static rgs::Table read_table(io::IO &arc_io, u32 key)
     {
         std::unique_ptr<rgs::TableEntry> entry(new rgs::TableEntry);
 
-        size_t name_length = arc_io.read_u32_le() ^ key;
+        size_t name_size = arc_io.read_u32_le() ^ key;
         key = rgs::advance_key(key);
-        entry->name = arc_io.read(name_length).str();
-        for (auto i : util::range(name_length))
+        entry->name = arc_io.read(name_size).str();
+        for (auto i : util::range(name_size))
         {
             entry->name[i] ^= key;
             key = rgs::advance_key(key);

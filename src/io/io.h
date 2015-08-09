@@ -20,9 +20,9 @@ namespace io {
         void peek(size_t offset, std::function<void()> func);
         bool eof() const;
 
-        virtual void read(void *input, size_t length) = 0;
-        virtual void write(const void *str, size_t length) = 0;
-        virtual void write_from_io(IO &input, size_t length) = 0;
+        virtual void read(void *input, size_t size) = 0;
+        virtual void write(const void *str, size_t size) = 0;
+        virtual void write_from_io(IO &input, size_t size) = 0;
         void write_from_io(IO &input);
 
         bstr read(size_t bytes);

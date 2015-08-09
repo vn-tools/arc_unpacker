@@ -27,12 +27,12 @@ namespace io {
         virtual void truncate(size_t new_size) override;
 
         using IO::read;
-        virtual void read(void *destination, size_t length) override;
+        virtual void read(void *destination, size_t size) override;
 
         using IO::write;
         using IO::write_from_io;
-        virtual void write(const void *source, size_t length) override;
-        virtual void write_from_io(IO &source, size_t length) override;
+        virtual void write(const void *source, size_t size) override;
+        virtual void write_from_io(IO &source, size_t size) override;
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

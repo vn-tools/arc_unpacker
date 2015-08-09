@@ -9,17 +9,17 @@ using namespace au;
 using namespace au::util;
 
 static void png_write_data(
-    png_structp png_ptr, png_bytep data, png_size_t length)
+    png_structp png_ptr, png_bytep data, png_size_t size)
 {
     io::IO *io = reinterpret_cast<io::IO*>(png_get_io_ptr(png_ptr));
-    io->write(data, length);
+    io->write(data, size);
 }
 
 static void png_read_data(
-    png_structp png_ptr, png_bytep data, png_size_t length)
+    png_structp png_ptr, png_bytep data, png_size_t size)
 {
     io::IO *io = reinterpret_cast<io::IO*>(png_get_io_ptr(png_ptr));
-    io->read(data, length);
+    io->read(data, size);
 }
 
 static void png_flush(png_structp)

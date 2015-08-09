@@ -81,11 +81,11 @@ static void read_info_chunk(io::IO &table_io, File &target_file)
     u64 file_size_original = table_io.read_u64_le();
     u64 file_size_compressed = table_io.read_u64_le();
 
-    size_t name_length = table_io.read_u16_le();
-    bstr name_utf16 = table_io.read(name_length * 2);
+    size_t file_name_size = table_io.read_u16_le();
+    bstr file_name_utf16 = table_io.read(file_name_size * 2);
     target_file.name
-        = util::convert_encoding(name_utf16, "utf-16le", "utf-8").str();
-    if (info_chunk_size != name_length * 2 + 22)
+        = util::convert_encoding(file_name_utf16, "utf-16le", "utf-8").str();
+    if (info_chunk_size != file_name_size * 2 + 22)
         throw std::runtime_error("Unexpected INFO chunk size");
 }
 

@@ -31,22 +31,22 @@ static bstr decompress(const bstr &input, size_t size_original)
 
         if (c < 0x20)
         {
-            u32 length = c + 1;
-            while (length--)
+            u32 size = c + 1;
+            while (size--)
                 *output_ptr++ = *input_ptr++;
         }
         else
         {
-            u32 length = c >> 5;
-            if (length == 7)
-                length += *input_ptr++;
-            length += 2;
+            u32 size = c >> 5;
+            if (size == 7)
+                size += *input_ptr++;
+            size += 2;
 
             u32 look_behind = ((c & 0x1F) << 8) + 1;
             look_behind += *input_ptr++;
 
             u8 *source = output_ptr - look_behind;
-            while (length--)
+            while (size--)
                 *output_ptr++ = *source++;
         }
     }

@@ -40,9 +40,9 @@ bstr bstr::substr(std::size_t start) const
     return bstr(get<const char>() + start, size() - start);
 }
 
-bstr bstr::substr(std::size_t start, std::size_t length) const
+bstr bstr::substr(std::size_t start, std::size_t size) const
 {
-    return bstr(get<const char>() + start, length);
+    return bstr(get<const char>() + start, size);
 }
 
 void bstr::resize(std::size_t how_much)

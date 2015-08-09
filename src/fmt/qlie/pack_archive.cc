@@ -226,7 +226,7 @@ static bstr decompress(const bstr &input, size_t output_size)
             "Try with --fkey or --gameexe?");
     }
 
-    bool use_short_length = input_io.read_u32_le() > 0;
+    bool use_short_size = input_io.read_u32_le() > 0;
     u32 file_size = input_io.read_u32_le();
     if (file_size != output_size)
         throw std::runtime_error("Unpexpected file size");
@@ -259,7 +259,7 @@ static bstr decompress(const bstr &input, size_t output_size)
             }
         }
 
-        int bytes_left = use_short_length
+        int bytes_left = use_short_size
             ? input_io.read_u16_le()
             : input_io.read_u32_le();
 
@@ -321,8 +321,8 @@ static Table read_table(io::IO &arc_io, int version)
         table_io.seek(0);
         for (auto i : util::range(file_count))
         {
-            size_t file_name_length = table_io.read_u16_le();
-            table_io.skip(file_name_length + 28);
+            size_t file_name_size = table_io.read_u16_le();
+            table_io.skip(file_name_size + 28);
         }
         table_io.skip(28);
         table_io.skip(table_io.read_u32_le());

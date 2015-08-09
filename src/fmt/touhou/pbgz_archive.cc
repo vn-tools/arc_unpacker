@@ -73,8 +73,8 @@ static bstr decompress(const bstr &input, size_t size_original)
 {
     util::pack::LzssSettings settings;
     settings.position_bits = 13;
-    settings.length_bits = 4;
-    settings.min_match_length = 3;
+    settings.size_bits = 4;
+    settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
     settings.reuse_compressed = true;
     return util::pack::lzss_decompress(input, size_original, settings);

@@ -14,4 +14,7 @@ grep '[0\\]x[0-9]*[a-f][0-9]*' **/*.{cc,h} && exit 1
 echo 'Checking for typedef...'
 grep 'typedef' **/*.{cc,h} && exit 1
 
+echo 'Checking for "length"...'
+grep 'length' **/*.{cc,h} && ( echo 'Use "size" instead.'; exit 1 )
+
 exit 0

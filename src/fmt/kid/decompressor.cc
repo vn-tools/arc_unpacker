@@ -29,11 +29,11 @@ bstr au::fmt::kid::decompress(const bstr &input, size_t size_original)
             }
             else
             {
-                int length = ((byte >> 2) & 0xF) + 2;
+                int size = ((byte >> 2) & 0xF) + 2;
                 int look_behind = ((byte & 3) << 8) + *input_ptr++ + 1;
                 if (look_behind < 0)
                     look_behind = 0;
-                for (auto i : util::range(length))
+                for (auto i : util::range(size))
                 {
                     u8 tmp = output_ptr[-look_behind];
                     *output_ptr++ = tmp;
@@ -45,18 +45,18 @@ bstr au::fmt::kid::decompress(const bstr &input, size_t size_original)
             if (byte & 0x40)
             {
                 int repetitions = *input_ptr++ + 1;
-                int length = (byte & 0x3F) + 2;
+                int size = (byte & 0x3F) + 2;
                 for (auto i : util::range(repetitions))
-                    for (auto i : util::range(length))
+                    for (auto i : util::range(size))
                         *output_ptr++ += input_ptr[i];
-                input_ptr += length;
+                input_ptr += size;
             }
             else
             {
-                int length = (byte & 0x1F) + 1;
+                int size = (byte & 0x1F) + 1;
                 if (byte & 0x20)
-                    length += *input_ptr++ << 5;
-                for (auto i : util::range(length))
+                    size += *input_ptr++ << 5;
+                for (auto i : util::range(size))
                     *output_ptr++ = *input_ptr++;
             }
         }

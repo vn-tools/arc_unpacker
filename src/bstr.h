@@ -17,7 +17,7 @@ struct bstr
 
     std::size_t find(const bstr &other);
     bstr substr(std::size_t start) const;
-    bstr substr(std::size_t start, std::size_t length) const;
+    bstr substr(std::size_t start, std::size_t size) const;
 
     template<typename T> T *get()
     {

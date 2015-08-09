@@ -34,9 +34,9 @@ bstr au::util::pack::lzss_decompress(
         else
         {
             unsigned int pos = bit_reader.get(settings.position_bits);
-            unsigned int length = bit_reader.get(settings.length_bits);
-            length += settings.min_match_length;
-            for (auto i : util::range(length))
+            unsigned int size = bit_reader.get(settings.size_bits);
+            size += settings.min_match_size;
+            for (auto i : util::range(size))
             {
                 u8 byte = dictionary_ptr[pos];
                 pos += 1;

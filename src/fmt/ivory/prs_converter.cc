@@ -25,12 +25,12 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
     const u8 *source_guardian = source_ptr + source.size();
 
     int flag = 0;
-    int length_lookup[256];
+    int size_lookup[256];
     for (auto i : util::range(256))
-        length_lookup[i] = i + 3;
-    length_lookup[0xFF] = 0x1000;
-    length_lookup[0xFE] = 0x400;
-    length_lookup[0xFD] = 0x100;
+        size_lookup[i] = i + 3;
+    size_lookup[0xFF] = 0x1000;
+    size_lookup[0xFE] = 0x400;
+    size_lookup[0xFD] = 0x100;
 
     while (source_ptr < source_guardian && target_ptr < target_guardian)
     {
@@ -49,7 +49,7 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
         else
         {
             int tmp = *source_ptr++;
-            size_t length = 0;
+            size_t size = 0;
             size_t shift = 0;
 
             if (tmp & 0x80)
@@ -60,22 +60,22 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
                     if (source_ptr >= source_guardian)
                         break;
                     auto index = static_cast<size_t>(*source_ptr++);
-                    length = length_lookup[index];
+                    size = size_lookup[index];
                 }
                 else
                 {
-                    length = (shift & 0xF) + 3;
+                    size = (shift & 0xF) + 3;
                     shift >>= 4;
                 }
             }
             else
             {
-                length = tmp >> 2;
+                size = tmp >> 2;
                 tmp &= 3;
                 if (tmp == 3)
                 {
-                    length += 9;
-                    for (auto i : util::range(length))
+                    size += 9;
+                    for (auto i : util::range(size))
                     {
                         if (source_ptr >= source_guardian
                             || target_ptr >= target_guardian)
@@ -86,12 +86,12 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
                     }
                     continue;
                 }
-                shift = length;
-                length = tmp + 2;
+                shift = size;
+                size = tmp + 2;
             }
 
             shift += 1;
-            for (auto i : util::range(length))
+            for (auto i : util::range(size))
             {
                 if (target_ptr >= target_guardian)
                     break;

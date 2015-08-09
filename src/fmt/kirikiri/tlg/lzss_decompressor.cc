@@ -59,15 +59,15 @@ bstr LzssDecompressor::decompress(const bstr &input, size_t output_size)
                 return output;
             u8 x1 = *input_ptr++;
             size_t position = x0 | ((x1 & 0xF) << 8);
-            size_t length = 3 + ((x1 & 0xF0) >> 4);
-            if (length == 18)
+            size_t size = 3 + ((x1 & 0xF0) >> 4);
+            if (size == 18)
             {
                 if (input_ptr >= input_guardian)
                     return output;
-                length += *input_ptr++;
+                size += *input_ptr++;
             }
 
-            for (auto j : util::range(length))
+            for (auto j : util::range(size))
             {
                 u8 c = p->dictionary[position];
                 if (output_ptr >= output_guardian)

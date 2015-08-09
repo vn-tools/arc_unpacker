@@ -447,8 +447,8 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
     if (entry.name_is_string)
     {
         args.io.seek(args.base_offset + entry.name_offset);
-        size_t max_length = args.io.read_u16_le();
-        bstr name_utf16 = args.io.read(max_length * 2);
+        size_t max_size = args.io.read_u16_le();
+        bstr name_utf16 = args.io.read(max_size * 2);
         return util::convert_encoding(name_utf16, "utf-16le", "utf-8").str();
     }
 

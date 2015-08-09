@@ -158,17 +158,17 @@ static bstr decompress_rle(bstr &huffman, size_t output_size)
     bool zero_flag = false;
     while (huffman_ptr < huffman_guardian)
     {
-        u32 length = read_variable_data(huffman_ptr, huffman_guardian);
+        u32 size = read_variable_data(huffman_ptr, huffman_guardian);
         if (zero_flag)
         {
-            memset(output_ptr, 0, length);
-            output_ptr += length;
+            memset(output_ptr, 0, size);
+            output_ptr += size;
         }
         else
         {
-            memcpy(output_ptr, huffman_ptr, length);
-            huffman_ptr += length;
-            output_ptr += length;
+            memcpy(output_ptr, huffman_ptr, size);
+            huffman_ptr += size;
+            output_ptr += size;
         }
         zero_flag = !zero_flag;
     }

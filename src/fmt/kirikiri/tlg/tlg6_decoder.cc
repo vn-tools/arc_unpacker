@@ -14,7 +14,7 @@ static const int leading_zero_table_bits = 12;
 static const int leading_zero_table_size = (1 << leading_zero_table_bits);
 
 static u8 leading_zero_table[leading_zero_table_size];
-static u8 golomb_bit_length_table[golomb_n_count * 2 * 128][golomb_n_count];
+static u8 golomb_bit_size_table[golomb_n_count * 2 * 128][golomb_n_count];
 
 namespace
 {
@@ -26,7 +26,7 @@ namespace
         u8 external_golomb_table;
         size_t image_width;
         size_t image_height;
-        size_t max_bit_length;
+        size_t max_bit_size;
 
         size_t x_block_count;
         size_t y_block_count;
@@ -242,7 +242,7 @@ static void init_table()
         for (auto i : util::range(9))
         {
             for (auto j : util::range(golomb_compression_table[n][i]))
-                golomb_bit_length_table[a++][n] = i;
+                golomb_bit_size_table[a++][n] = i;
         }
     }
 }
@@ -337,7 +337,7 @@ static void decode_golomb_values(u8 *pixel_buf, int pixel_count, u8 *bit_pool)
                 if (a >= golomb_n_count * 2 * 128) a = 0;
                 if (n >= golomb_n_count) n = 0;
 
-                int k = golomb_bit_length_table[a][n];
+                int k = golomb_bit_size_table[a][n];
                 int v = (bit_count << k) + ((t >> b) & ((1 << k) - 1));
                 int sign = (v & 1) - 1;
                 v >>= 1;
@@ -466,16 +466,16 @@ static void read_pixels(io::IO &io, bstr &output, Header &header)
         int pixel_count = (ylim - y) * header.image_width;
         for (auto c : util::range(header.channel_count))
         {
-            u32 bit_length = io.read_u32_le();
+            u32 bit_size = io.read_u32_le();
 
-            int method = (bit_length >> 30) & 3;
-            bit_length &= 0x3FFFFFFF;
+            int method = (bit_size >> 30) & 3;
+            bit_size &= 0x3FFFFFFF;
 
-            int byte_length = bit_length / 8;
-            if (bit_length % 8)
-                byte_length++;
+            int byte_size = bit_size / 8;
+            if (bit_size % 8)
+                byte_size++;
 
-            bstr bit_pool = io.read(byte_length);
+            bstr bit_pool = io.read(byte_size);
 
             if (method != 0)
                 throw std::runtime_error("Unsupported encoding method");
@@ -552,7 +552,7 @@ std::unique_ptr<File> Tlg6Decoder::decode(File &file)
     header.external_golomb_table = file.io.read_u8();
     header.image_width = file.io.read_u32_le();
     header.image_height = file.io.read_u32_le();
-    header.max_bit_length = file.io.read_u32_le();
+    header.max_bit_size = file.io.read_u32_le();
 
     header.x_block_count = ((header.image_width - 1) / w_block_size) + 1;
     header.y_block_count = ((header.image_height - 1) / h_block_size) + 1;

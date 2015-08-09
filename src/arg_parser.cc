@@ -4,11 +4,11 @@
 
 using namespace au;
 
-static bool is_alphanumeric(std::string string)
+static bool is_alphanumeric(const std::string &str)
 {
-    for (auto i : util::range(string.length()))
+    for (auto i : util::range(str.size()))
     {
-        char c = string[i];
+        char c = str[i];
         if (c < '0' && c > '9' && c < 'a' && c > 'a' && c < 'A' && c > 'A')
             return false;
     }
@@ -68,9 +68,9 @@ static std::vector<std::string> create_words(const std::string sentence)
 {
     std::vector<std::string> words;
     size_t pos = 0, new_pos = 0;
-    while (new_pos != sentence.length())
+    while (new_pos != sentence.size())
     {
-        for (new_pos = pos; new_pos < sentence.length(); new_pos++)
+        for (new_pos = pos; new_pos < sentence.size(); new_pos++)
         {
             char c = sentence[new_pos];
             if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
@@ -91,15 +91,15 @@ static std::vector<std::string> word_wrap(
     for (auto &word : words)
     {
         line += word;
-        if (word.length() > 0 && word[word.length() - 1] == '\n')
+        if (word.size() > 0 && word[word.size() - 1] == '\n')
         {
             lines.push_back(line);
             line = "";
         }
-        else if (line.length() > max)
+        else if (line.size() > max)
         {
-            if (line.length() > 0)
-                line.erase(line.length() - 1, 1);
+            if (line.size() > 0)
+                line.erase(line.size() - 1, 1);
             lines.push_back(line + "\n");
             line = "";
         }
@@ -192,10 +192,10 @@ const std::vector<std::string> ArgParser::get_stray() const
 
 void ArgParser::print_help() const
 {
-    const size_t max_invocation_length = 25;
-    const size_t max_line_length = 78;
-    const size_t max_description_length
-        = max_line_length - max_invocation_length;
+    const size_t max_invocation_size = 25;
+    const size_t max_line_size = 78;
+    const size_t max_description_size
+        = max_line_size - max_invocation_size;
 
     if (p->help_items.size() == 0)
     {
@@ -208,23 +208,23 @@ void ArgParser::print_help() const
         std::string invocation = item.first;
         std::string description = item.second;
 
-        size_t tmp_length = invocation.length();
-        if (tmp_length >= 2 && invocation.compare(0, 2, "--") == 0)
+        size_t tmp_size = invocation.size();
+        if (tmp_size >= 2 && invocation.compare(0, 2, "--") == 0)
         {
             std::cout << "    ";
-            tmp_length += 4;
+            tmp_size += 4;
         }
         std::cout << invocation;
 
-        for (; tmp_length < max_invocation_length; tmp_length++)
+        for (; tmp_size < max_invocation_size; tmp_size++)
             std::cout << " ";
 
         std::vector<std::string> lines = word_wrap(
-            description, max_description_length);
+            description, max_description_size);
         for (auto line : lines)
         {
             std::cout << line;
-            for (size_t i = 0; i < max_invocation_length; i++)
+            for (size_t i = 0; i < max_invocation_size; i++)
                 std::cout << " ";
         }
         std::cout << "\n";

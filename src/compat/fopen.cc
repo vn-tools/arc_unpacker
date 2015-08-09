@@ -11,7 +11,7 @@ FILE *fopen(const boost::filesystem::path &path, const char *mode)
             std::string(mode), "utf-8", "utf-16le");
         std::wstring widemode(
             reinterpret_cast<const wchar_t*>(cmode.c_str()),
-            cmode.length() / 2);
+            cmode.size() / 2);
         return _wfopen(path.native().c_str(), widemode.c_str());
     #else
         return std::fopen(path.native().c_str(), mode);

@@ -23,27 +23,27 @@ void FileIO::skip(int offset)
         throw std::runtime_error("Seeking beyond EOF");
 }
 
-void FileIO::read(void *destination, size_t length)
+void FileIO::read(void *destination, size_t size)
 {
-    if (!length)
+    if (!size)
         return;
     assert(destination);
-    if (fread(destination, 1, length, p->file) != length)
+    if (fread(destination, 1, size, p->file) != size)
         throw std::runtime_error("Could not read full data");
 }
 
-void FileIO::write(const void *source, size_t length)
+void FileIO::write(const void *source, size_t size)
 {
-    if (!length)
+    if (!size)
         return;
     assert(source);
-    if (fwrite(source, 1, length, p->file) != length)
+    if (fwrite(source, 1, size, p->file) != size)
         throw std::runtime_error("Could not write full data");
 }
 
-void FileIO::write_from_io(IO &source, size_t length)
+void FileIO::write_from_io(IO &source, size_t size)
 {
-    write(source.read(length));
+    write(source.read(size));
 }
 
 size_t FileIO::tell() const

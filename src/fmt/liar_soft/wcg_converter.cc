@@ -61,33 +61,33 @@ static size_t wcg_unpack(
     io::BitReader bit_reader(io);
     while (output_ptr != output_guardian)
     {
-        size_t sequence_length = 1;
-        size_t table_offset_length = bit_reader.get(var2);
+        size_t sequence_size = 1;
+        size_t table_offset_size = bit_reader.get(var2);
 
-        if (!table_offset_length)
+        if (!table_offset_size)
         {
-            sequence_length = bit_reader.get(4) + 2;
-            table_offset_length = bit_reader.get(var2);
+            sequence_size = bit_reader.get(4) + 2;
+            table_offset_size = bit_reader.get(var2);
         }
-        if (!table_offset_length)
-            throw std::runtime_error("Table offset length = 0");
+        if (!table_offset_size)
+            throw std::runtime_error("Table offset size = 0");
 
         u32 table_offset = 0;
-        --table_offset_length;
-        if (!table_offset_length)
+        --table_offset_size;
+        if (!table_offset_size)
         {
             table_offset = (table_offset << 1) + bit_reader.get(1);
         }
         else
         {
-            if (table_offset_length >= var1)
+            if (table_offset_size >= var1)
             {
                 while (bit_reader.get(1))
-                    ++table_offset_length;
+                    ++table_offset_size;
             }
             ++table_offset;
-            table_offset <<= table_offset_length;
-            table_offset |= bit_reader.get(table_offset_length);
+            table_offset <<= table_offset_size;
+            table_offset |= bit_reader.get(table_offset_size);
         }
 
         if (table_offset >= table_entry_count)
@@ -97,7 +97,7 @@ static size_t wcg_unpack(
         {
             auto table16 = table.get<u16>();
             auto fragment = table16[table_offset];
-            while (sequence_length--)
+            while (sequence_size--)
             {
                 *reinterpret_cast<u16*>(output_ptr) = fragment;
                 output_ptr += output_shift;
@@ -107,7 +107,7 @@ static size_t wcg_unpack(
         {
             auto table8 = table.get<u8>();
             auto fragment = table8[table_offset];
-            while (sequence_length--)
+            while (sequence_size--)
             {
                 *reinterpret_cast<u8*>(output_ptr) = fragment;
                 output_ptr += output_shift;

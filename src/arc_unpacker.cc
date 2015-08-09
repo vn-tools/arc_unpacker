@@ -89,7 +89,7 @@ static bool add_input_paths_option(
             {
                 std::unique_ptr<PathInfo> pi(new PathInfo);
                 pi->input_path = it->path().string();
-                pi->base_name = pi->input_path.substr(path.length());
+                pi->base_name = pi->input_path.substr(path.size());
                 while (pi->base_name.size() > 0 &&
                     (pi->base_name[0] == '/' || pi->base_name[0] == '\\'))
                 {
@@ -241,17 +241,17 @@ std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
 {
     std::vector<std::unique_ptr<Transformer>> transformers;
 
-    size_t max_format_length = 0;
+    size_t max_format_size = 0;
     for (auto &format : p->factory.get_formats())
-        if (format.length() > max_format_length)
-            max_format_length = format.length();
+        if (format.size() > max_format_size)
+            max_format_size = format.size();
 
     for (auto &format : p->factory.get_formats())
     {
         auto current_transformer = p->factory.create(format);
         std::cout
             << "Trying "
-            << std::setw(max_format_length + 2)
+            << std::setw(max_format_size + 2)
             << std::left
             << (format + ": ");
 

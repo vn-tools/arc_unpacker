@@ -85,8 +85,8 @@ static std::unique_ptr<File> read_file(
         {
             util::pack::LzssSettings settings;
             settings.position_bits = 8;
-            settings.length_bits = 4;
-            settings.min_match_length = 2;
+            settings.size_bits = 4;
+            settings.min_match_size = 2;
             settings.initial_dictionary_pos = 239;
             settings.reuse_compressed = true;
             file->io.write(util::pack::lzss_decompress(

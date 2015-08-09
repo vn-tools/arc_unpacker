@@ -27,16 +27,16 @@ static std::unique_ptr<File> decode_proxy(int version, File &file);
 
 static std::string extract_string(std::string &container)
 {
-    size_t length = 0;
-    while (container.length() && container[0] >= '0' && container[0] <= '9')
+    size_t size = 0;
+    while (container.size() && container[0] >= '0' && container[0] <= '9')
     {
-        length *= 10;
-        length += container[0] - '0';
+        size *= 10;
+        size += container[0] - '0';
         container.erase(0, 1);
     }
     container.erase(0, 1);
-    std::string str = container.substr(0, length);
-    container.erase(0, length + 1);
+    std::string str = container.substr(0, size);
+    container.erase(0, size + 1);
     return str;
 }
 

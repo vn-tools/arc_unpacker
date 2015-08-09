@@ -13,7 +13,7 @@ TEST_CASE("Formatting strings works")
 TEST_CASE("Formatting big strings works")
 {
     std::string big_string(1000, '-');
-    REQUIRE(big_string.length() == 1000);
+    REQUIRE(big_string.size() == 1000);
     REQUIRE(format(big_string + "%d", 1) == big_string + "1");
     REQUIRE(format(big_string + "%02d", 5) == big_string + "05");
     REQUIRE(format(big_string + "%.02f", 3.14f) == big_string + "3.14");
