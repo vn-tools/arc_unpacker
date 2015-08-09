@@ -156,7 +156,7 @@ std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
     for (auto i : util::range(0, pixels.size(), 4))
         pixels[i + 3] ^= 0xFF;
 
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
+    auto image = util::Image::from_pixels(
         width, height, pixels, util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }

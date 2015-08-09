@@ -340,7 +340,7 @@ std::unique_ptr<File> DdsConverter::decode_internal(File &file) const
         throw std::runtime_error("Not supported");
 
     pixels_io->seek(0);
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
+    auto image = util::Image::from_pixels(
         header->width,
         header->height,
         pixels_io->read_to_eof(),

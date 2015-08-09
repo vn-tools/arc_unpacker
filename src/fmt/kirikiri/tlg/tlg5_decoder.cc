@@ -137,7 +137,7 @@ std::unique_ptr<File> Tlg5Decoder::decode(File &file)
     pixels.resize(header.image_width * header.image_height * 4);
     read_pixels(file.io, pixels, header);
 
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
+    auto image = util::Image::from_pixels(
         header.image_width,
         header.image_height,
         pixels,

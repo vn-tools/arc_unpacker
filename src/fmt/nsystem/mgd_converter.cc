@@ -201,32 +201,30 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::IO &file_io)
 }
 
 static std::unique_ptr<util::Image> read_image(
-    io::IO &file_io,
+    const bstr &input,
     CompressionType compression_type,
-    size_t size_compressed,
     size_t size_original,
     size_t width,
     size_t height)
 {
-    bstr data_compressed = file_io.read(size_compressed);
     switch (compression_type)
     {
         case CompressionType::None:
             return util::Image::from_pixels(
                 width,
                 height,
-                data_compressed,
+                input,
                 util::PixelFormat::BGRA);
 
         case CompressionType::Sgd:
             return util::Image::from_pixels(
                 width,
                 height,
-                decompress_sgd(data_compressed, size_original),
+                decompress_sgd(input, size_original),
                 util::PixelFormat::BGRA);
 
         case CompressionType::Png:
-            return util::Image::from_boxed(data_compressed);
+            return util::Image::from_boxed(input);
 
         default:
             throw std::runtime_error("Unsupported compression type");
@@ -256,10 +254,9 @@ std::unique_ptr<File> MgdConverter::decode_internal(File &file) const
     if (size_compressed + 4 != size_compressed_total)
         throw std::runtime_error("Compressed data size mismatch");
 
-    std::unique_ptr<util::Image> image = read_image(
-        file.io,
+    auto image = read_image(
+        file.io.read(size_compressed),
         compression_type,
-        size_compressed,
         size_original,
         width,
         height);

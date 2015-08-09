@@ -59,7 +59,7 @@ std::unique_ptr<File> DpngConverter::decode_internal(File &file) const
         }
     }
 
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
+    auto image = util::Image::from_pixels(
         width, height, pixels, util::PixelFormat::RGBA);
     return image->create_file(file.name);
 }

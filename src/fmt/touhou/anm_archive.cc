@@ -210,7 +210,7 @@ static std::unique_ptr<File> read_texture(io::IO &file_io, Table &entries)
     for (auto &entry : entries)
         write_pixels(file_io, *entry, pixels.get<u32>(), width);
 
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
+    auto image = util::Image::from_pixels(
         width, height, pixels, util::PixelFormat::BGRA);
     return image->create_file(entries[0]->name);
 }
