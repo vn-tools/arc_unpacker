@@ -1,5 +1,5 @@
 #include <algorithm>
-#include "bstr.h"
+#include "types.h"
 
 const std::size_t bstr::npos = static_cast<std::size_t>(-1);
 

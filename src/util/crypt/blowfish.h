@@ -1,8 +1,7 @@
 #ifndef AU_UTIL_CRYPT_BLOWFISH_H
 #define AU_UTIL_CRYPT_BLOWFISH_H
-
 #include <memory>
-#include "bstr.h"
+#include "types.h"
 
 namespace au {
 namespace util {

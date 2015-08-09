@@ -8,7 +8,6 @@
 #include "fmt/ivory/prs_converter.h"
 #include "util/image.h"
 #include "util/range.h"
-#include "bstr.h"
 
 using namespace au;
 using namespace au::fmt::ivory;

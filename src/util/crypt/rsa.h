@@ -1,6 +1,5 @@
 #ifndef AU_UTIL_CRYPT_RSA_H
 #define AU_UTIL_CRYPT_RSA_H
-
 #include <memory>
 #include <array>
 #include "types.h"
