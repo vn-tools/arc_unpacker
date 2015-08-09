@@ -125,12 +125,12 @@ static u64 crc64(const bstr &buffer)
 }
 
 static void transform_regular_content(
-    io::BufferedIO &io, const bstr &sjis_file_name)
+    bstr &buffer, const bstr &sjis_file_name)
 {
     auto block_size = static_cast<size_t>(
-        floor(io.size() / static_cast<float>(sjis_file_name.size())));
-    u8 *buffer_ptr = reinterpret_cast<u8*>(io.buffer());
-    u8 *buffer_guardian = buffer_ptr + io.size();
+        floor(buffer.size() / static_cast<float>(sjis_file_name.size())));
+    u8 *buffer_ptr = buffer.get<u8>();
+    u8 *buffer_guardian = buffer_ptr + buffer.size();
     for (auto j : util::range(sjis_file_name.size() - 1))
     {
         for (auto k : util::range(block_size))
@@ -143,11 +143,11 @@ static void transform_regular_content(
 }
 
 static void transform_script_content(
-    io::BufferedIO &io, u64 hash, const bstr &sjis_game_title)
+    bstr &buffer, u64 hash, const bstr &sjis_game_title)
 {
     u32 xor_value = (hash ^ crc64(sjis_game_title)) & 0xFFFFFFFF;
-    u32 *buffer_ptr = reinterpret_cast<u32*>(io.buffer());
-    for (auto i : util::range(io.size() / 4))
+    u32 *buffer_ptr = buffer.get<u32>();
+    for (auto i : util::range(buffer.size() / 4))
         *buffer_ptr++ ^= xor_value;
 }
 
@@ -210,19 +210,18 @@ static std::unique_ptr<File> read_file(
     file->name = util::sjis_to_utf8(entry.sjis_name).str();
 
     arc_io.seek(entry.offset);
-    io::BufferedIO output_io(arc_io, entry.size_compressed);
+    auto data = arc_io.read(entry.size_compressed);
 
     if (entry.type == TableEntryType::Compressed)
     {
-        transform_script_content(output_io, entry.hash, sjis_game_title);
-        output_io.seek(0);
-        file->io.write(util::pack::zlib_inflate(output_io.read_to_eof()));
+        transform_script_content(data, entry.hash, sjis_game_title);
+        file->io.write(util::pack::zlib_inflate(data));
     }
     else
     {
         if (entry.type == TableEntryType::Obfuscated)
-            transform_regular_content(output_io, entry.sjis_name);
-        file->io.write_from_io(output_io);
+            transform_regular_content(data, entry.sjis_name);
+        file->io.write(data);
     }
 
     return file;

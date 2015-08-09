@@ -23,11 +23,6 @@ struct BufferedIO::Priv
     }
 };
 
-char *BufferedIO::buffer()
-{
-    return p->buffer;
-}
-
 void BufferedIO::reserve(size_t size)
 {
     size_t new_size = p->buffer_pos + size;
