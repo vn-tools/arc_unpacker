@@ -1,6 +1,8 @@
 #include "test_support/catch.hpp"
 #include "types.h"
 
+using namespace au;
+
 TEST_CASE("bstr()", "[au]")
 {
     bstr x;

@@ -1,6 +1,8 @@
 #include <algorithm>
 #include "types.h"
 
+using namespace au;
+
 const std::size_t bstr::npos = static_cast<std::size_t>(-1);
 
 bstr::bstr()

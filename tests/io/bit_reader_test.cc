@@ -2,6 +2,7 @@
 #include "io/buffered_io.h"
 #include "test_support/catch.hpp"
 
+using namespace au;
 using namespace au::io;
 
 TEST_CASE("Reading missing bits throws exceptions")

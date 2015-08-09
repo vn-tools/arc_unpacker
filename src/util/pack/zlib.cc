@@ -8,7 +8,9 @@
 #define SIZE_MAX ((size_t) -1)
 #endif
 
-bstr au::util::pack::zlib_inflate(const bstr &input)
+using namespace au;
+
+bstr util::pack::zlib_inflate(const bstr &input)
 {
     bstr output;
     size_t written = 0;

@@ -1,6 +1,7 @@
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
 #include "util/range.h"
 
+using namespace au;
 using namespace au::fmt::kirikiri::tlg;
 
 struct LzssDecompressor::Priv

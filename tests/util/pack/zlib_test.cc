@@ -2,6 +2,7 @@
 #include "util/pack/zlib.h"
 #include "types.h"
 
+using namespace au;
 using namespace au::util::pack;
 
 TEST_CASE("Inflating works")

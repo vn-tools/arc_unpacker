@@ -1,5 +1,6 @@
 #include "util/crypt/blowfish.h"
 
+using namespace au;
 using namespace au::util::crypt;
 
 struct Blowfish::Priv

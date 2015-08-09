@@ -1,5 +1,6 @@
 #include "fmt/nitroplus/npa_filters/chaos_head.h"
 
+using namespace au;
 using namespace au::fmt::nitroplus;
 using namespace au::fmt::nitroplus::npa_filters;
 

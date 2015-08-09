@@ -2,6 +2,7 @@
 #include "util/encoding.h"
 #include "types.h"
 
+using namespace au;
 using namespace au::util;
 
 // sjis の"あいうえおかきくけこさしすせそたちつてと"

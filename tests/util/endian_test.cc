@@ -1,6 +1,7 @@
 #include "test_support/catch.hpp"
 #include "util/endian.h"
 
+using namespace au;
 using namespace au::util;
 
 TEST_CASE("Converting endianness works")

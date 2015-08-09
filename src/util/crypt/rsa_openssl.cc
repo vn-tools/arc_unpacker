@@ -4,6 +4,7 @@
 #include <openssl/rsa.h>
 #include "util/crypt/rsa.h"
 
+using namespace au;
 using namespace au::util::crypt;
 
 struct Rsa::Priv
