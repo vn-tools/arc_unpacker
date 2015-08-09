@@ -216,7 +216,7 @@ static std::unique_ptr<File> read_file(
     {
         transform_script_content(output_io, entry.hash, sjis_game_title);
         output_io.seek(0);
-        file->io.write(util::pack::zlib_inflate(output_io.read_until_end()));
+        file->io.write(util::pack::zlib_inflate(output_io.read_to_eof()));
     }
     else
     {

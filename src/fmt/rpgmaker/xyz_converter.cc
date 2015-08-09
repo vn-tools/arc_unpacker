@@ -31,7 +31,7 @@ std::unique_ptr<File> XyzConverter::decode_internal(File &file) const
     u16 width = file.io.read_u16_le();
     u16 height = file.io.read_u16_le();
 
-    bstr data = util::pack::zlib_inflate(file.io.read_until_end());
+    bstr data = util::pack::zlib_inflate(file.io.read_to_eof());
     if (data.size() != static_cast<size_t>(256 * 3 + width * height))
         throw std::runtime_error("Unexpected data size");
 

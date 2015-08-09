@@ -33,8 +33,7 @@ static void compare_files(const File &expected_file, const File &actual_file)
     REQUIRE(expected_file.io.size() == actual_file.io.size());
     expected_file.io.seek(0);
     actual_file.io.seek(0);
-    REQUIRE(
-        expected_file.io.read_until_end() == actual_file.io.read_until_end());
+    REQUIRE(expected_file.io.read_to_eof() == actual_file.io.read_to_eof());
 }
 
 static std::unique_ptr<File> file_from_path(const boost::filesystem::path &path)

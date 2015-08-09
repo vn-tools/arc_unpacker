@@ -296,7 +296,7 @@ static std::unique_ptr<TableEntry> read_table_entry(
         file_name_offset,
         [&]()
         {
-            std::string name = table_io.read_until_zero().str();
+            std::string name = table_io.read_to_zero().str();
             entry->name = parent_dir != -1
                 ? table[parent_dir]->name + "/" + name
                 : name;

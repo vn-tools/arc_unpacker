@@ -76,7 +76,7 @@ void TestArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     while (!arc_file.io.eof())
     {
         std::unique_ptr<File> output_file(new File);
-        output_file->name = arc_file.io.read_until_zero().str();
+        output_file->name = arc_file.io.read_to_zero().str();
         size_t output_file_size = arc_file.io.read_u32_le();
         output_file->io.write(arc_file.io.read(output_file_size));
         file_saver.save(std::move(output_file));
@@ -138,7 +138,7 @@ TEST_CASE("Simple archive unpacks correctly")
 
     REQUIRE(saved_files.size() == 1);
     REQUIRE(path(saved_files[0]->name) == path("deeply/nested/file.txt"));
-    REQUIRE(saved_files[0]->io.read_until_end() == "abc"_b);
+    REQUIRE(saved_files[0]->io.read_to_eof() == "abc"_b);
 }
 
 TEST_CASE("Simple archive with converter unpacks correctly")
@@ -154,7 +154,7 @@ TEST_CASE("Simple archive with converter unpacks correctly")
 
     REQUIRE(saved_files.size() == 1);
     REQUIRE(path(saved_files[0]->name) == path("deeply/nested/test.png"));
-    REQUIRE(saved_files[0]->io.read_until_end() == "image"_b);
+    REQUIRE(saved_files[0]->io.read_to_eof() == "image"_b);
 }
 
 TEST_CASE("Converter receives full path")
@@ -220,10 +220,10 @@ TEST_CASE("Nested archives unpack correctly")
     REQUIRE(saved_files.size() == 2);
     REQUIRE(path(saved_files[0]->name)
         == path("deeply/nested/test.archive/further/nested/file.txt"));
-    REQUIRE(saved_files[0]->io.read_until_end() == ""_b);
+    REQUIRE(saved_files[0]->io.read_to_eof() == ""_b);
     REQUIRE(path(saved_files[1]->name)
         == path("deeply/nested/test.archive/further/nested/test.png"));
-    REQUIRE(saved_files[1]->io.read_until_end() == "image"_b);
+    REQUIRE(saved_files[1]->io.read_to_eof() == "image"_b);
 }
 
 TEST_CASE("Files get correct location")

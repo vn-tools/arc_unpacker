@@ -43,7 +43,7 @@ static bstr lnd_decompress(const bstr &input)
     input_io.skip(4);
     size_t size_original = input_io.read_u32_le();
     input_io.skip(4);
-    return decompress(input_io.read_until_end(), size_original);
+    return decompress(input_io.read_to_eof(), size_original);
 }
 
 static Table read_table(io::IO &arc_io)
@@ -59,7 +59,7 @@ static Table read_table(io::IO &arc_io)
         u32 tmp = arc_io.read_u32_le();
         entry->compressed = tmp & 1;
         entry->size = tmp >> 1;
-        entry->name = arc_io.read_until_zero(24).str();
+        entry->name = arc_io.read_to_zero(24).str();
         table.push_back(std::move(entry));
     }
     return table;

@@ -66,5 +66,5 @@ bstr au::fmt::touhou::decrypt(
     io::BufferedIO input_io(input);
     io::BufferedIO output_io;
     ::decrypt(input_io, output_io, context);
-    return output_io.read_until_end();
+    return output_io.read_to_eof();
 }

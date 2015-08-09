@@ -157,7 +157,7 @@ static Table read_table(io::IO &arc_io, const Header &header)
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
 
-        entry->name = table_io->read_until_zero().str();
+        entry->name = table_io->read_to_zero().str();
         table_io->skip(3 - entry->name.length() % 4);
 
         entry->decryptor_id = 0;

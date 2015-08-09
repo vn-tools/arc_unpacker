@@ -52,7 +52,7 @@ static const bstr texture_magic = "THTX"_b;
 static std::string read_name(io::IO &file_io, size_t offset)
 {
     std::string name;
-    file_io.peek(offset, [&]() { name = file_io.read_until_zero().str(); });
+    file_io.peek(offset, [&]() { name = file_io.read_to_zero().str(); });
     return name;
 }
 

@@ -19,7 +19,7 @@ static void test(const boost::filesystem::path &path)
     {
         io::FileIO file_io(path, io::FileMode::Read);
         REQUIRE(file_io.size() == 4);
-        REQUIRE(file_io.read_until_end() == "test"_b);
+        REQUIRE(file_io.read_to_eof() == "test"_b);
     }
     boost::filesystem::remove(path);
 }

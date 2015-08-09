@@ -57,7 +57,7 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
 
     io::BufferedIO target_io;
     io::BufferedIO source_io(
-        util::pack::zlib_inflate(file.io.read_until_end()));
+        util::pack::zlib_inflate(file.io.read_to_eof()));
     target_io.reserve(target_size);
 
     Palette palette;

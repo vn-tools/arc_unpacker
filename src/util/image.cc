@@ -108,7 +108,7 @@ std::unique_ptr<Image> Image::Priv::from_png(io::IO &io)
 
 std::unique_ptr<Image> Image::Priv::from_jpeg(io::IO &io)
 {
-    bstr source = io.read_until_end();
+    bstr source = io.read_to_eof();
 
     struct jpeg_decompress_struct info;
     struct jpeg_error_mgr err;

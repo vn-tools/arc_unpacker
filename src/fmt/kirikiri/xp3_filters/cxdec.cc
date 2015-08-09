@@ -490,7 +490,7 @@ void Cxdec::set_arc_path(const std::string &path)
             continue;
 
         io::FileIO tmp_io(it->path(), io::FileMode::Read);
-        bstr content = tmp_io.read_until_end();
+        bstr content = tmp_io.read_to_eof();
         auto pos = content.find(encryption_block_magic);
         if (pos == bstr::npos)
         {

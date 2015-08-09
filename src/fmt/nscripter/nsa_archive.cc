@@ -49,9 +49,9 @@ static Table read_table(io::IO &arc_io)
     for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = arc_io.read_until_zero().str();
-        entry->compression_type
-            = static_cast<CompressionType>(arc_io.read_u8());
+        entry->name = arc_io.read_to_zero().str();
+        entry->compression_type =
+            static_cast<CompressionType>(arc_io.read_u8());
         entry->offset = arc_io.read_u32_be();
         entry->size_compressed = arc_io.read_u32_be();
         entry->size_original = arc_io.read_u32_be();
@@ -124,7 +124,7 @@ bool NsaArchive::is_recognized_internal(File &arc_file) const
         return false;
     for (auto i : util::range(file_count))
     {
-        arc_file.io.read_until_zero();
+        arc_file.io.read_to_zero();
         arc_file.io.read_u8();
         size_t offset = arc_file.io.read_u32_be();
         size_t size_compressed = arc_file.io.read_u32_be();

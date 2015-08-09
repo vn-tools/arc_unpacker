@@ -266,7 +266,7 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
     NodeInfo node_info[511];
     int last_node = read_node_info(freq_table, node_info);
 
-    io::BitReader bit_reader(file.io.read_until_end());
+    io::BitReader bit_reader(file.io.read_to_eof());
     bstr huffman;
     huffman.resize(huffman_size);
     decompress_huffman(bit_reader, last_node, node_info, huffman);

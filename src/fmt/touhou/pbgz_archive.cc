@@ -96,14 +96,14 @@ static Table read_table(io::IO &arc_io, const Header &header)
     arc_io.seek(header.table_offset);
     io::BufferedIO table_io(
         decompress(
-            decrypt(arc_io.read_until_end(), { 0x3E, 0x9B, 0x80, 0x400 }),
+            decrypt(arc_io.read_to_eof(), { 0x3E, 0x9B, 0x80, 0x400 }),
             header.table_size));
 
     Table table;
     for (auto i : util::range(header.file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = table_io.read_until_zero().str();
+        entry->name = table_io.read_to_zero().str();
         entry->offset = table_io.read_u32_le();
         entry->size_original = table_io.read_u32_le();
         table_io.skip(4);
@@ -115,8 +115,8 @@ static Table read_table(io::IO &arc_io, const Header &header)
 
     if (table.size() > 0)
     {
-        table[table.size() - 1]->size_compressed
-            = header.table_offset - table[table.size() - 1]->offset;
+        table[table.size() - 1]->size_compressed =
+            header.table_offset - table[table.size() - 1]->offset;
     }
 
     return table;
@@ -139,7 +139,7 @@ static std::unique_ptr<File> read_file(
 
     file->io.write(
         decrypt(
-            uncompressed_io.read_until_end(),
+            uncompressed_io.read_to_eof(),
             decryptors[encryption_version][uncompressed_io.read_u8()]));
 
     return file;

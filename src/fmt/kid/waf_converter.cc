@@ -42,7 +42,7 @@ std::unique_ptr<File> WafConverter::decode_internal(File &file) const
     output_file->io.write(file.io.read(32)); //aditional header?
 
     output_file->io.write("data"_b);
-    output_file->io.write(file.io.read_until_end());
+    output_file->io.write(file.io.read_to_eof());
 
     output_file->io.seek(4);
     output_file->io.write_u32_le(file.io.size());

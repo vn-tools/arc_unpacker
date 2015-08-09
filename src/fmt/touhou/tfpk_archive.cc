@@ -271,7 +271,7 @@ static HashLookupMap read_fn_map(
 
         for (auto j : util::range(dir_entry->file_count))
         {
-            auto fn = util::sjis_to_utf8(tmp_io->read_until_zero()).str();
+            auto fn = util::sjis_to_utf8(tmp_io->read_to_zero()).str();
             auto hash = get_file_name_hash(
                 fn, version, dir_entry->initial_hash);
             fn_map[hash] = dn + fn;
@@ -333,7 +333,7 @@ static Table read_table(
                 key_io.write_u32_le(neg32(b3->read_u32_le()));
 
             key_io.seek(0);
-            entry->key = key_io.read_until_end();
+            entry->key = key_io.read_to_eof();
         }
         table.push_back(std::move(entry));
     }

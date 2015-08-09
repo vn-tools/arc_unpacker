@@ -449,7 +449,7 @@ void PackArchive::parse_cli_options(const ArgParser &arg_parser)
         const std::string path = arg_parser.get_switch("gameexe");
 
         File file(path, io::FileMode::Read);
-        auto exe_data = file.io.read_until_end();
+        auto exe_data = file.io.read_to_eof();
 
         bool found = false;
         for (size_t i = file.io.size() - magic.size() - key2_size; i; i--)

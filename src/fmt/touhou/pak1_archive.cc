@@ -90,7 +90,7 @@ static Table read_table(io::IO &arc_io)
     for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = table_io->read_until_zero(0x64).str();
+        entry->name = table_io->read_to_zero(0x64).str();
         entry->size = table_io->read_u32_le();
         entry->offset = table_io->read_u32_le();
         if (entry->offset + entry->size > arc_io.size())

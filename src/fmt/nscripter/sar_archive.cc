@@ -49,7 +49,7 @@ void SarArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = arc_file.io.read_until_zero().str();
+        entry->name = arc_file.io.read_to_zero().str();
         entry->offset = arc_file.io.read_u32_be() + offset_to_files;
         entry->size = arc_file.io.read_u32_be();
         table.push_back(std::move(entry));

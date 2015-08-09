@@ -343,7 +343,7 @@ std::unique_ptr<File> DdsConverter::decode_internal(File &file) const
     std::unique_ptr<util::Image> image = util::Image::from_pixels(
         header->width,
         header->height,
-        pixels_io->read_until_end(),
+        pixels_io->read_to_eof(),
         util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }

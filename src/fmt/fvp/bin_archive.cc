@@ -41,7 +41,7 @@ static Table read_table(io::IO &arc_io)
         size_t name_offset = arc_io.read_u32_le();
         arc_io.peek(names_start + name_offset, [&]()
         {
-            entry->name = util::sjis_to_utf8(arc_io.read_until_zero()).str();
+            entry->name = util::sjis_to_utf8(arc_io.read_to_zero()).str();
         });
         entry->offset = arc_io.read_u32_le();
         entry->size = arc_io.read_u32_le();

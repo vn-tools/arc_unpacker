@@ -105,8 +105,8 @@ TEST_CASE("Seeking and telling position works")
 TEST_CASE("Reading NULL-terminated strings works")
 {
     BufferedIO io("abc\x00""def\x00"_b);
-    REQUIRE(io.read_until_zero() == "abc"_b);
-    REQUIRE(io.read_until_zero() == "def"_b);
+    REQUIRE(io.read_to_zero() == "abc"_b);
+    REQUIRE(io.read_to_zero() == "def"_b);
 }
 
 TEST_CASE("Reading lines works")

@@ -91,7 +91,7 @@ static Table read_table(io::IO &arc_io, size_t file_count)
     {
         size_t pos = table_io.tell();
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = util::sjis_to_utf8(table_io.read_until_zero()).str();
+        entry->name = util::sjis_to_utf8(table_io.read_to_zero()).str();
         table_io.seek(pos + 0x40);
         entry->offset = table_io.read_u32_le();
         entry->size_original = table_io.read_u32_le();

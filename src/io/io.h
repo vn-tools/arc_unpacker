@@ -26,9 +26,9 @@ namespace io {
         void write_from_io(IO &input);
 
         bstr read(size_t bytes);
-        bstr read_until_zero();
-        bstr read_until_zero(size_t bytes);
-        bstr read_until_end();
+        bstr read_to_zero();
+        bstr read_to_zero(size_t bytes);
+        bstr read_to_eof();
         bstr read_line();
         u8 read_u8();
         u16 read_u16_le();

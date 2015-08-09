@@ -41,7 +41,7 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
     size_t image_count = file.io.read_u32_le();
     file.io.skip(8);
 
-    bstr data = util::pack::zlib_inflate(file.io.read_until_end());
+    bstr data = util::pack::zlib_inflate(file.io.read_to_eof());
     if (data.size() != uncompressed_size)
         throw std::runtime_error("Unexpected data size");
 

@@ -21,9 +21,9 @@ TEST_CASE("Decoding EX3 images works")
 
     io::FileIO expected_io(expected_path, io::FileMode::Read);
     const auto expected_data = au::util::pack::zlib_inflate(
-        expected_io.read_until_end());
+        expected_io.read_to_eof());
 
     output_file->io.seek(0);
     REQUIRE(expected_data.size() == output_file->io.size());
-    REQUIRE(expected_data == output_file->io.read_until_end());
+    REQUIRE(expected_data == output_file->io.read_to_eof());
 }

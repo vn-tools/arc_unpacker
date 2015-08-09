@@ -165,7 +165,7 @@ static bstr decompress_sgd(const bstr &input, size_t output_size)
     auto color_data = tmp_io.read(color_size);
     decompress_sgd_bgr(color_data, output_io);
 
-    return output_io.read_until_end();
+    return output_io.read_to_eof();
 }
 
 static std::vector<std::unique_ptr<Region>> read_region_data(io::IO &file_io)

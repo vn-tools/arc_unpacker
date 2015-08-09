@@ -119,7 +119,7 @@ std::unique_ptr<File> SpbConverter::decode_internal(File &file) const
     u16 width = file.io.read_u16_be();
     u16 height = file.io.read_u16_be();
 
-    io::BitReader bit_reader(file.io.read_until_end());
+    io::BitReader bit_reader(file.io.read_to_eof());
     auto uncompressed_data = decode_pixels(width, height, bit_reader);
     auto image = util::Image::from_pixels(
         width, height, uncompressed_data, util::PixelFormat::RGB);

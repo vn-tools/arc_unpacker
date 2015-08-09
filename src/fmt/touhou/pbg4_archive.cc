@@ -67,7 +67,7 @@ static Table read_table(io::IO &arc_io, Header &header)
     for (auto i : util::range(header.file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = table_io.read_until_zero().str();
+        entry->name = table_io.read_to_zero().str();
         entry->offset = table_io.read_u32_le();
         entry->size = table_io.read_u32_le();
         table_io.skip(4);

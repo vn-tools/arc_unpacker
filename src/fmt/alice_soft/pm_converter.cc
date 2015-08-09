@@ -117,7 +117,7 @@ static std::unique_ptr<util::Image> decode_to_image(io::IO &io)
     }
 
     io.seek(data_offset);
-    auto data = decompress(io.read_until_end(), width, height);
+    auto data = decompress(io.read_to_eof(), width, height);
 
     bstr pixels;
     pixels.resize(width * height * 4);

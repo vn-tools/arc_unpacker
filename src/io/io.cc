@@ -39,7 +39,7 @@ bstr IO::read(size_t bytes)
     return ret;
 }
 
-bstr IO::read_until_zero()
+bstr IO::read_to_zero()
 {
     bstr output;
     char c;
@@ -48,7 +48,7 @@ bstr IO::read_until_zero()
     return output;
 }
 
-bstr IO::read_until_zero(size_t bytes)
+bstr IO::read_to_zero(size_t bytes)
 {
     bstr output = read(bytes);
     for (auto i : util::range(output.size()))
@@ -57,7 +57,7 @@ bstr IO::read_until_zero(size_t bytes)
     return output;
 }
 
-bstr IO::read_until_end()
+bstr IO::read_to_eof()
 {
     return read(size() - tell());
 }

@@ -40,7 +40,7 @@ std::unique_ptr<File> TfcsConverter::decode_internal(File &file) const
     size_t compressed_size = file.io.read_u32_le();
     size_t original_size = file.io.read_u32_le();
     io::BufferedIO uncompressed_io(
-        util::pack::zlib_inflate(file.io.read_until_end()));
+        util::pack::zlib_inflate(file.io.read_to_eof()));
     if (uncompressed_io.size() != original_size)
         throw std::runtime_error("Unexpected file size");
 

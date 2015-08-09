@@ -43,7 +43,7 @@ static bstr decrypt(const bstr &input, size_t size_compressed, size_t offset)
     output_io.write_u32_le(0);
 
     output_io.seek(4);
-    return output_io.read_until_end();
+    return output_io.read_to_eof();
 }
 
 bool CpsConverter::is_recognized_internal(File &file) const
