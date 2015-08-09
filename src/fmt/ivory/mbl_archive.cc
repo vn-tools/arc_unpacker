@@ -50,8 +50,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, size_t name_length)
     std::unique_ptr<File> file(new File);
 
     size_t old_pos = arc_io.tell();
-    std::string name = arc_io.read_until_zero();
-    file->name = util::sjis_to_utf8(name);
+    file->name = util::sjis_to_utf8(arc_io.read_until_zero()).str();
     arc_io.seek(old_pos + name_length);
 
     size_t offset = arc_io.read_u32_le();

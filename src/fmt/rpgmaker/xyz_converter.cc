@@ -17,7 +17,7 @@
 using namespace au;
 using namespace au::fmt::rpgmaker;
 
-static const std::string magic = "XYZ1"_s;
+static const bstr magic = "XYZ1"_b;
 
 bool XyzConverter::is_recognized_internal(File &file) const
 {
@@ -31,29 +31,25 @@ std::unique_ptr<File> XyzConverter::decode_internal(File &file) const
     u16 width = file.io.read_u16_le();
     u16 height = file.io.read_u16_le();
 
-    std::string data = util::pack::zlib_inflate(file.io.read_until_end());
+    bstr data = util::pack::zlib_inflate(file.io.read_until_end());
     if (data.size() != static_cast<size_t>(256 * 3 + width * height))
         throw std::runtime_error("Unexpected data size");
 
-    size_t pixels_size = width * height * 3;
-    std::unique_ptr<char[]> pixels(new char[pixels_size]);
+    bstr pixels;
+    pixels.resize(width * height * 3);
 
-    const char *palette = data.data();
-    const char *palette_indices = data.data() + 256 * 3;
-    char *out = pixels.get();
+    auto *palette = data.get<const u8>();
+    auto *palette_indices = data.get<const u8>() + 256 * 3;
+    auto *pixels_ptr = pixels.get<u8>();
 
     for (auto i : util::range(width * height))
     {
         size_t index = *palette_indices++;
-        *out++ = palette[index * 3 + 0];
-        *out++ = palette[index * 3 + 1];
-        *out++ = palette[index * 3 + 2];
+        for (auto c : util::range(3))
+            *pixels_ptr++ = palette[index * 3 + c];
     }
 
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
-        width,
-        height,
-        std::string(pixels.get(), pixels_size),
-        util::PixelFormat::RGB);
+    auto image = util::Image::from_pixels(
+        width, height, pixels, util::PixelFormat::RGB);
     return image->create_file(file.name);
 }

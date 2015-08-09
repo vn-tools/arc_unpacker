@@ -15,15 +15,15 @@
 using namespace au;
 using namespace au::fmt::propeller;
 
-static void decompress(
-    io::BufferedIO &input_io, io::IO &output_io, size_t size_original)
+static bstr decompress(const bstr &input, size_t size_original)
 {
-    u8 *input_ptr = reinterpret_cast<u8*>(input_io.buffer());
-    u8 *input_guardian = input_ptr + input_io.size();
+    const u8 *input_ptr = input.get<const u8>();
+    const u8 *input_guardian = input_ptr + input.size();
 
-    std::unique_ptr<u8[]> output(new u8[size_original]);
-    u8 *output_ptr = output.get();
-    u8 *output_guardian = output.get() + size_original;
+    bstr output;
+    output.resize(size_original);
+    u8 *output_ptr = output.get<u8>();
+    u8 *output_guardian = output_ptr + size_original;
 
     while (output_ptr < output_guardian)
     {
@@ -51,7 +51,7 @@ static void decompress(
         }
     }
 
-    output_io.write(output.get(), size_original);
+    return output;
 }
 
 bool MgrArchive::is_recognized_internal(File &arc_file) const
@@ -86,8 +86,9 @@ void MgrArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         std::unique_ptr<File> file(new File);
         file->name = util::format("%d.bmp", ++file_number);
 
-        io::BufferedIO input(arc_file.io, size_compressed);
-        decompress(input, file->io, size_original);
+        auto data = arc_file.io.read(size_compressed);
+        data = decompress(data, size_original);
+        file->io.write(data);
 
         file_saver.save(std::move(file));
     }

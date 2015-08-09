@@ -27,12 +27,12 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static const std::string key = "\xBD\xAA\xBC\xB4\xAB\xB6\xBC\xB4"_s;
+static const bstr key = "\xBD\xAA\xBC\xB4\xAB\xB6\xBC\xB4"_b;
 
-static void decrypt(char *data, size_t data_size)
+static void decrypt(bstr &data)
 {
-    for (auto i : util::range(data_size))
-        data[i] ^= key[i % key.length()];
+    for (auto i : util::range(data.size()))
+        data[i] ^= key[i % key.size()];
 }
 
 static Table read_table(io::IO &table_io, const io::IO &arc_io)
@@ -43,7 +43,7 @@ static Table read_table(io::IO &table_io, const io::IO &arc_io)
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = util::convert_encoding(
-            table_io.read(table_io.read_u32_le()), "utf-16le", "utf-8");
+            table_io.read(table_io.read_u32_le()), "utf-16le", "utf-8").str();
         entry->size = table_io.read_u32_le();
         entry->offset = table_io.read_u32_le();
         table_io.skip(4);
@@ -57,12 +57,11 @@ static Table read_table(io::IO &table_io, const io::IO &arc_io)
 static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
-    std::unique_ptr<char[]> data(new char[entry.size]);
+    auto data = arc_io.read(entry.size);
     arc_io.seek(entry.offset);
-    arc_io.read(data.get(), entry.size);
-    decrypt(data.get(), entry.size);
+    decrypt(data);
     file->name = entry.name;
-    file->io.write(data.get(), entry.size);
+    file->io.write(data);
     return file;
 }
 
@@ -80,11 +79,10 @@ void NpaSgArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     if (table_size > arc_file.io.size())
         throw std::runtime_error("Bad table size");
 
-    std::unique_ptr<char[]> table_bytes(new char[table_size]);
-    arc_file.io.read(table_bytes.get(), table_size);
-    decrypt(table_bytes.get(), table_size);
+    auto table_bytes = arc_file.io.read(table_size);
+    decrypt(table_bytes);
 
-    io::BufferedIO table_io(table_bytes.get(), table_size);
+    io::BufferedIO table_io(table_bytes);
     Table table = read_table(table_io, arc_file.io);
     for (auto &entry : table)
         file_saver.save(read_file(arc_file.io, *entry));

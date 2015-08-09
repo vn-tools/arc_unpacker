@@ -1,29 +1,30 @@
 #include "fmt/qlie/abmp10_archive.h"
 #include "util/encoding.h"
+#include "util/format.h"
 #include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::qlie;
 
-static const std::string magic10 = "abmp10\0\0\0\0\0\0\0\0\0\0"_s;
-static const std::string magic11 = "abmp11\0\0\0\0\0\0\0\0\0\0"_s;
-static const std::string magic12 = "abmp12\0\0\0\0\0\0\0\0\0\0"_s;
-static const std::string magic_imgdat10 = "abimgdat10\0\0\0\0\0\0"_s;
-static const std::string magic_imgdat11 = "abimgdat11\0\0\0\0\0\0"_s;
-static const std::string magic_imgdat13 = "abimgdat13\0\0\0\0\0\0"_s;
-static const std::string magic_imgdat14 = "abimgdat14\0\0\0\0\0\0"_s;
-static const std::string magic_snddat10 = "absnddat10\0\0\0\0\0\0"_s;
-static const std::string magic_snddat11 = "absnddat11\0\0\0\0\0\0"_s;
-static const std::string magic_data10 = "abdata10\0\0\0\0\0\0\0\0"_s;
-static const std::string magic_data11 = "abdata11\0\0\0\0\0\0\0\0"_s;
-static const std::string magic_data12 = "abdata12\0\0\0\0\0\0\0\0"_s;
-static const std::string magic_data13 = "abdata13\0\0\0\0\0\0\0\0"_s;
-static const std::string magic_image10 = "abimage10\0\0\0\0\0\0\0"_s;
-static const std::string magic_sound10 = "absound10\0\0\0\0\0\0\0"_s;
+static const bstr magic10 = "abmp10\0\0\0\0\0\0\0\0\0\0"_b;
+static const bstr magic11 = "abmp11\0\0\0\0\0\0\0\0\0\0"_b;
+static const bstr magic12 = "abmp12\0\0\0\0\0\0\0\0\0\0"_b;
+static const bstr magic_imgdat10 = "abimgdat10\0\0\0\0\0\0"_b;
+static const bstr magic_imgdat11 = "abimgdat11\0\0\0\0\0\0"_b;
+static const bstr magic_imgdat13 = "abimgdat13\0\0\0\0\0\0"_b;
+static const bstr magic_imgdat14 = "abimgdat14\0\0\0\0\0\0"_b;
+static const bstr magic_snddat10 = "absnddat10\0\0\0\0\0\0"_b;
+static const bstr magic_snddat11 = "absnddat11\0\0\0\0\0\0"_b;
+static const bstr magic_data10 = "abdata10\0\0\0\0\0\0\0\0"_b;
+static const bstr magic_data11 = "abdata11\0\0\0\0\0\0\0\0"_b;
+static const bstr magic_data12 = "abdata12\0\0\0\0\0\0\0\0"_b;
+static const bstr magic_data13 = "abdata13\0\0\0\0\0\0\0\0"_b;
+static const bstr magic_image10 = "abimage10\0\0\0\0\0\0\0"_b;
+static const bstr magic_sound10 = "absound10\0\0\0\0\0\0\0"_b;
 
 static int guess_version(io::IO &arc_io)
 {
-    std::string magic = arc_io.read(16);
+    bstr magic = arc_io.read(16);
     if (magic == magic10)
         return 10;
     if (magic == magic11)
@@ -35,9 +36,9 @@ static int guess_version(io::IO &arc_io)
 
 static std::unique_ptr<File> read_file(io::IO &arc_io)
 {
-    std::string magic = arc_io.read(16);
-    std::string encoded_name = arc_io.read(arc_io.read_u16_le());
-    std::string name = util::sjis_to_utf8(encoded_name);
+    bstr magic = arc_io.read(16);
+    bstr encoded_name = arc_io.read(arc_io.read_u16_le());
+    std::string name = util::sjis_to_utf8(encoded_name).str();
 
     if (magic == magic_snddat11
         || magic == magic_imgdat11
@@ -47,7 +48,10 @@ static std::unique_ptr<File> read_file(io::IO &arc_io)
         arc_io.skip(arc_io.read_u16_le());
     }
     else if (magic != magic_imgdat10 && magic != magic_snddat10)
-        throw std::runtime_error("Unknown image magic " + magic);
+    {
+        throw std::runtime_error(util::format(
+            "Unknown image magic: %s", magic.get<char>()));
+    }
 
     arc_io.skip(1);
 
@@ -77,7 +81,7 @@ void Abmp10Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
     while (arc_file.io.tell() < arc_file.io.size())
     {
-        std::string magic = arc_file.io.read(16);
+        bstr magic = arc_file.io.read(16);
         if (magic == magic_data10
         || magic == magic_data11
         || magic == magic_data12
@@ -102,7 +106,8 @@ void Abmp10Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         }
         else
         {
-            throw std::runtime_error("Unknown section " + magic);
+            throw std::runtime_error(util::format(
+                "Unknown section: %s", magic.get<char>()));
         }
     }
 }

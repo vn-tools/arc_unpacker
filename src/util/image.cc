@@ -1,6 +1,7 @@
 #include <cassert>
 #include <png.h>
 #include <jpeglib.h>
+#include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/range.h"
 
@@ -29,8 +30,7 @@ struct Image::Priv
 {
     size_t width;
     size_t height;
-    std::string data;
-    size_t data_size;
+    bstr data;
     PixelFormat fmt;
 
     static std::unique_ptr<Image> from_png(io::IO &io);
@@ -90,16 +90,14 @@ std::unique_ptr<Image> Image::Priv::from_png(io::IO &io)
             throw std::runtime_error("Bad pixel format");
     }
 
-    image->p->data_size = png_width * png_height * bpp;
-    image->p->data = std::string(image->p->data_size, '\0');
+    image->p->data = ""_b;
+    image->p->data.reserve(png_width * png_height * bpp);
 
     png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
     size_t scanline_size = png_width * bpp;
     for (auto y : util::range(png_height))
     {
-        image->p->data.replace(
-            y * scanline_size,
-            scanline_size,
+        image->p->data += bstr(
             reinterpret_cast<char*>(row_pointers[y]),
             scanline_size);
     }
@@ -110,15 +108,13 @@ std::unique_ptr<Image> Image::Priv::from_png(io::IO &io)
 
 std::unique_ptr<Image> Image::Priv::from_jpeg(io::IO &io)
 {
-    auto input_size = io.size();
-    std::unique_ptr<u8[]> source(new u8[input_size]);
-    io.read(source.get(), input_size);
+    bstr source = io.read_until_end();
 
     struct jpeg_decompress_struct info;
     struct jpeg_error_mgr err;
     info.err = jpeg_std_error(&err);
     jpeg_create_decompress(&info);
-    jpeg_mem_src(&info, source.get(), input_size);
+    jpeg_mem_src(&info, source.get<u8>(), source.size());
     jpeg_read_header(&info, true);
     jpeg_start_decompress(&info);
 
@@ -138,19 +134,14 @@ std::unique_ptr<Image> Image::Priv::from_jpeg(io::IO &io)
     }
 
     auto stride = image->p->width * info.num_components;
-    auto output_size = image->p->height * stride;
-    std::unique_ptr<u8[]> output(new u8[output_size]);
+    image->p->data.resize(image->p->height * stride);
     while (info.output_scanline < image->p->height)
     {
-        u8 *rowptr = &output[info.output_scanline * stride];
+        u8 *rowptr = &image->p->data.get<u8>()[info.output_scanline * stride];
         jpeg_read_scanlines(&info, &rowptr, 1);
     }
 
     jpeg_finish_decompress(&info);
-
-    image->p->data_size = output_size;
-    image->p->data = std::string(
-        reinterpret_cast<char*>(output.get()), output_size);
     return image;
 }
 
@@ -232,7 +223,7 @@ Image::~Image()
 }
 
 std::unique_ptr<Image> Image::from_pixels(
-    size_t width, size_t height, const std::string &data, PixelFormat fmt)
+    size_t width, size_t height, const bstr &data, PixelFormat fmt)
 {
     std::unique_ptr<Image> image(new Image);
     if (width == 0 || height == 0)
@@ -244,10 +235,16 @@ std::unique_ptr<Image> Image::from_pixels(
     return image;
 }
 
+std::unique_ptr<Image> Image::from_boxed(const bstr &data)
+{
+    io::BufferedIO tmp_io(data);
+    return from_boxed(tmp_io);
+}
+
 std::unique_ptr<Image> Image::from_boxed(io::IO &io)
 {
-    static const std::string png_magic = "\x89PNG"_s;
-    static const std::string jpeg_magic = "\xFF\xD8\xFF"_s;
+    static const bstr png_magic = "\x89PNG"_b;
+    static const bstr jpeg_magic = "\xFF\xD8\xFF"_b;
 
     io.seek(0);
     if (io.read(png_magic.size()) == png_magic)
@@ -290,7 +287,7 @@ u32 Image::color_at(size_t x, size_t y) const
     u8 r, g, b, a;
     size_t i = y * p->width + x;
 
-    const u8 *data = reinterpret_cast<const u8*>(p->data.data());
+    const u8 *data = p->data.get<const u8>();
     switch (p->fmt)
     {
         case PixelFormat::Grayscale:

@@ -11,12 +11,13 @@
 #include "fmt/fvp/nvsg_converter.h"
 #include "util/pack/zlib.h"
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::fvp;
 
-static const std::string hzc1_magic = "hzc1"_s;
-static const std::string nvsg_magic = "NVSG"_s;
+static const bstr hzc1_magic = "hzc1"_b;
+static const bstr nvsg_magic = "NVSG"_b;
 
 bool NvsgConverter::is_recognized_internal(File &file) const
 {
@@ -40,7 +41,7 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
     size_t image_count = file.io.read_u32_le();
     file.io.skip(8);
 
-    std::string data = util::pack::zlib_inflate(file.io.read_until_end());
+    bstr data = util::pack::zlib_inflate(file.io.read_until_end());
     if (data.size() != uncompressed_size)
         throw std::runtime_error("Unexpected data size");
 
@@ -73,18 +74,11 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
             break;
 
         case 4:
-        {
-            u8 *ptr = reinterpret_cast<u8*>(&data[0]);
-            u8 *guardian = ptr + data.size();
-            while (ptr < guardian)
-            {
-                if (*ptr)
-                    *ptr = 255;
-                ptr++;
-            }
+            for (auto i : util::range(data.size()))
+                if (data.get<u8>(i))
+                    data.get<u8>(i) = 255;
             pixel_format = util::PixelFormat::Grayscale;
             break;
-        }
 
         default:
             throw std::runtime_error("Unexpected pixel format");

@@ -13,7 +13,7 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
-static const std::string magic = "TFWA\x00"_s;
+static const bstr magic = "TFWA\x00"_b;
 
 bool TfwaConverter::is_recognized_internal(File &file) const
 {

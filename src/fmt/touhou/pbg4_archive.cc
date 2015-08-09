@@ -35,7 +35,7 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static const std::string magic = "PBG4"_s;
+static const bstr magic = "PBG4"_b;
 
 static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {
@@ -46,7 +46,7 @@ static std::unique_ptr<Header> read_header(io::IO &arc_io)
     return header;
 }
 
-static std::string decompress(io::IO &arc_io, size_t size_original)
+static bstr decompress(io::IO &arc_io, size_t size_original)
 {
     util::pack::LzssSettings settings;
     settings.position_bits = 13;
@@ -67,7 +67,7 @@ static Table read_table(io::IO &arc_io, Header &header)
     for (auto i : util::range(header.file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = table_io.read_until_zero();
+        entry->name = table_io.read_until_zero().str();
         entry->offset = table_io.read_u32_le();
         entry->size = table_io.read_u32_le();
         table_io.skip(4);

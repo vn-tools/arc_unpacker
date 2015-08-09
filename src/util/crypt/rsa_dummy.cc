@@ -16,7 +16,7 @@ Rsa::~Rsa()
 {
 }
 
-std::string Rsa::decrypt(const std::string &input) const
+bstr Rsa::decrypt(const bstr &input) const
 {
-    return "";
+    return ""_b;
 }

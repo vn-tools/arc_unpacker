@@ -27,7 +27,7 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static const std::string magic = "ALK0"_s;
+static const bstr magic = "ALK0"_b;
 
 static Table read_table(io::IO &arc_io)
 {

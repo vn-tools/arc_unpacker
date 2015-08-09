@@ -1,12 +1,12 @@
 #ifndef AU_UTIL_PACK_ZLIB_H
 #define AU_UTIL_PACK_ZLIB_H
-#include <string>
+#include "types.h"
 
 namespace au {
 namespace util {
 namespace pack {
 
-    std::string zlib_inflate(const std::string &input);
+    bstr zlib_inflate(const bstr &input);
 
 } } }
 

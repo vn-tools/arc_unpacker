@@ -16,18 +16,19 @@
 using namespace au;
 using namespace au::fmt::nscripter;
 
-static std::unique_ptr<u8[]> decode_pixels(
-    size_t width, size_t height, io::BitReader &bit_reader, size_t &output_size)
+static bstr decode_pixels(
+    size_t width, size_t height, io::BitReader &bit_reader)
 {
-    output_size = width * height * 3;
-    std::unique_ptr<u8[]> output(new u8[output_size]);
+    bstr output;
+    output.resize(width * height * 3);
 
-    size_t channel_data_size = width * height;
-    std::unique_ptr<u8[]> channel_data(new u8[channel_data_size]);
+    bstr channel_data;
+    channel_data.resize(width * height);
+
     for (int rgb = 2; rgb >= 0; rgb--)
     {
-        u8 *channel_ptr = channel_data.get();
-        const u8 *channel_guardian = channel_ptr + channel_data_size;
+        u8 *channel_ptr = channel_data.get<u8>();
+        const u8 *channel_guardian = channel_ptr + channel_data.size();
 
         u8 ch = bit_reader.try_get(8);
         if (channel_ptr >= channel_guardian) break;
@@ -70,8 +71,8 @@ static std::unique_ptr<u8[]> decode_pixels(
             }
         }
 
-        const u8 *p = channel_data.get();
-        u8 *q = output.get() + rgb;
+        const u8 *p = channel_data.get<const u8>();
+        u8 *q = &output.get<u8>()[rgb];
         for (auto j : util::range(height >> 1))
         {
             for (auto i : util::range(width))
@@ -118,21 +119,9 @@ std::unique_ptr<File> SpbConverter::decode_internal(File &file) const
     u16 width = file.io.read_u16_be();
     u16 height = file.io.read_u16_be();
 
-    size_t uncompressed_size = file.io.size() - file.io.tell();
-    std::unique_ptr<char[]> uncompressed(new char[uncompressed_size]);
-    file.io.read(uncompressed.get(), uncompressed_size);
-    io::BitReader bit_reader(uncompressed.get(), uncompressed_size);
-
-    size_t uncompressed_data_size;
-    std::unique_ptr<u8[]> uncompressed_data
-        = decode_pixels(width, height, bit_reader, uncompressed_data_size);
-
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
-        width,
-        height,
-        std::string(
-            reinterpret_cast<char*>(uncompressed_data.get()),
-            uncompressed_data_size),
-        util::PixelFormat::RGB);
+    io::BitReader bit_reader(file.io.read_until_end());
+    auto uncompressed_data = decode_pixels(width, height, bit_reader);
+    auto image = util::Image::from_pixels(
+        width, height, uncompressed_data, util::PixelFormat::RGB);
     return image->create_file(file.name);
 }

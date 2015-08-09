@@ -4,6 +4,7 @@
 #include <string>
 #include "io/io.h"
 #include "file.h"
+#include "bstr.h"
 
 namespace au {
 namespace util {
@@ -22,11 +23,12 @@ namespace util {
     public:
         ~Image();
 
+        static std::unique_ptr<Image> from_boxed(const bstr &data);
         static std::unique_ptr<Image> from_boxed(io::IO &io);
         static std::unique_ptr<Image> from_pixels(
             size_t width,
             size_t height,
-            const std::string &data,
+            const bstr &data,
             PixelFormat fmt);
 
         std::unique_ptr<File> create_file(const std::string &name) const;

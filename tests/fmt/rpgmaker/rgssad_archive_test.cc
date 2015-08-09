@@ -12,8 +12,8 @@ TEST_CASE("Unpacking RGSSAD archives works")
     std::shared_ptr<File> file2(new File);
     file1->name = "abc.txt";
     file2->name = "another.txt";
-    file1->io.write("123"_s);
-    file2->io.write("abcdefghij"_s);
+    file1->io.write("123"_b);
+    file2->io.write("abcdefghij"_b);
     std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
     std::unique_ptr<Archive> archive(new RgssadArchive);

@@ -32,7 +32,7 @@ namespace
     };
 }
 
-static const std::string magic = "YKG000"_s;
+static const bstr magic = "YKG000"_b;
 
 static std::unique_ptr<Header> read_header(io::IO &file_io)
 {
@@ -76,8 +76,8 @@ static std::vector<std::unique_ptr<Region>> read_regions(
 static std::unique_ptr<File> decode_png(File &file, Header &header)
 {
     file.io.seek(header.data_offset);
-    std::string data = file.io.read(header.data_size);
-    if (data.substr(1, 3) != "GNP")
+    bstr data = file.io.read(header.data_size);
+    if (data.substr(1, 3) != "GNP"_b)
     {
         throw std::runtime_error(
             "Decoding non-PNG based YKG images is not supported");

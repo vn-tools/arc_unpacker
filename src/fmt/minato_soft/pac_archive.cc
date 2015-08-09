@@ -30,7 +30,7 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static const std::string magic = "PAC\x00"_s;
+static const bstr magic = "PAC\x00"_b;
 
 static int init_huffman(io::BitReader &bit_reader, u16 nodes[2][512], int &pos)
 {
@@ -49,25 +49,27 @@ static int init_huffman(io::BitReader &bit_reader, u16 nodes[2][512], int &pos)
     return bit_reader.get(8);
 }
 
-static void decompress_table(
-    const char *input, int input_size, char *output, int output_size)
+static bstr decompress_table(const bstr &input, size_t output_size)
 {
-    char *output_guardian = output + output_size;
-    std::unique_ptr<io::BitReader> bit_reader(
-        new io::BitReader(input, input_size));
+    bstr output;
+    output.resize(output_size);
+    u8 *output_ptr = output.get<u8>();
+    u8 *output_guardian = output_ptr + output_size;
+    io::BitReader bit_reader(input);
 
     u16 nodes[2][512];
     int pos = 256;
-    int initial_pos = init_huffman(*bit_reader, nodes, pos);
+    int initial_pos = init_huffman(bit_reader, nodes, pos);
 
-    while (output < output_guardian)
+    while (output_ptr < output_guardian)
     {
         unsigned int pos = initial_pos;
         while (pos >= 256)
-            pos = nodes[bit_reader->get(1)][pos];
+            pos = nodes[bit_reader.get(1)][pos];
 
-        *output++ = pos;
+        *output_ptr++ = pos;
     }
+    return output;
 }
 
 static Table read_table(io::IO &arc_io, size_t file_count)
@@ -76,23 +78,12 @@ static Table read_table(io::IO &arc_io, size_t file_count)
     size_t compressed_size = arc_io.read_u32_le();
     size_t uncompressed_size = file_count * 76;
 
-    std::unique_ptr<char[]> compressed(new char[compressed_size]);
     arc_io.seek(arc_io.size() - 4 - compressed_size);
-    arc_io.read(compressed.get(), compressed_size);
-    for (auto i : util::range(compressed_size))
-        compressed.get()[i] ^= 0xFF;
+    bstr compressed = arc_io.read(compressed_size);
+    for (auto i : util::range(compressed.size()))
+        compressed.get<u8>(i) ^= 0xFF;
 
-    std::unique_ptr<char[]> uncompressed(new char[uncompressed_size]);
-    for (auto i : util::range(uncompressed_size))
-        uncompressed.get()[i] = 0;
-
-    decompress_table(
-        compressed.get(),
-        compressed_size,
-        uncompressed.get(),
-        uncompressed_size);
-
-    io::BufferedIO table_io(uncompressed.get(), uncompressed_size);
+    io::BufferedIO table_io(decompress_table(compressed, uncompressed_size));
     table_io.seek(0);
 
     Table table;
@@ -100,7 +91,7 @@ static Table read_table(io::IO &arc_io, size_t file_count)
     {
         size_t pos = table_io.tell();
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = table_io.read_until_zero();
+        entry->name = util::sjis_to_utf8(table_io.read_until_zero()).str();
         table_io.seek(pos + 0x40);
         entry->offset = table_io.read_u32_le();
         entry->size_original = table_io.read_u32_le();
@@ -120,11 +111,11 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
     }
     else
     {
-        std::string data = arc_io.read(entry.size_compressed);
-        data = util::pack::zlib_inflate(data);
-        file->io.write(data);
+        file->io.write(
+            util::pack::zlib_inflate(
+                arc_io.read(entry.size_compressed)));
     }
-    file->name = util::sjis_to_utf8(entry.name);
+    file->name = entry.name;
     return file;
 }
 

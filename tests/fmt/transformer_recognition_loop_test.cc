@@ -44,7 +44,7 @@ TEST_CASE("Infinite recognition loops don't cause stack overflow")
     TestArchive test_archive;
     File dummy_file;
     dummy_file.name = "test.archive";
-    dummy_file.io.write("whatever");
+    dummy_file.io.write("whatever"_b);
 
     std::vector<std::shared_ptr<File>> saved_files;
     FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
@@ -56,5 +56,5 @@ TEST_CASE("Infinite recognition loops don't cause stack overflow")
 
     REQUIRE(saved_files.size() == 1);
     REQUIRE(boost::filesystem::basename(saved_files[0]->name) == "infinity");
-    REQUIRE(saved_files[0]->io.read_until_end() == "whatever");
+    REQUIRE(saved_files[0]->io.read_until_end() == "whatever"_b);
 }

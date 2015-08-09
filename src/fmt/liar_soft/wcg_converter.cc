@@ -21,17 +21,17 @@
 using namespace au;
 using namespace au::fmt::liar_soft;
 
-static const std::string magic = "WG"_s;
+static const bstr magic = "WG"_b;
 
 static size_t wcg_unpack(
     io::IO &io,
-    char *output,
+    u8 *output,
     unsigned int output_size,
     int input_shift,
     int output_shift)
 {
-    char *output_ptr = output;
-    char *output_guardian = output + output_size * output_shift;
+    u8 *output_ptr = output;
+    u8 *output_guardian = output + output_size * output_shift;
     size_t expected_size = output_size << input_shift;
     size_t actual_size = io.read_u32_le();
     if (expected_size != actual_size)
@@ -45,8 +45,7 @@ static size_t wcg_unpack(
     io.skip(2);
 
     u32 table_size = table_entry_count << input_shift;
-    std::unique_ptr<char[]> table(new char[table_size]);
-    io.read(table.get(), table_size);
+    auto table = io.read(table_size);
 
     base_offset += io.tell();
 
@@ -96,7 +95,7 @@ static size_t wcg_unpack(
 
         if (input_shift == 1)
         {
-            auto table16 = reinterpret_cast<const u16*>(table.get());
+            auto table16 = table.get<u16>();
             auto fragment = table16[table_offset];
             while (sequence_length--)
             {
@@ -106,7 +105,7 @@ static size_t wcg_unpack(
         }
         else
         {
-            auto table8 = reinterpret_cast<const u8*>(table.get());
+            auto table8 = table.get<u8>();
             auto fragment = table8[table_offset];
             while (sequence_length--)
             {
@@ -140,34 +139,24 @@ std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
         throw std::runtime_error("Unknown WCG version");
     file.io.skip(2);
 
-    size_t image_width = file.io.read_u32_le();
-    size_t image_height = file.io.read_u32_le();
-    size_t pixels_size = image_width * image_height * 4;
-    std::unique_ptr<char[]> pixels(new char[pixels_size]);
+    size_t width = file.io.read_u32_le();
+    size_t height = file.io.read_u32_le();
+
+    bstr pixels;
+    pixels.resize(width * height * 4);
 
     io::BufferedIO buffered_io(file.io);
     auto ret = wcg_unpack(
-        buffered_io,
-        pixels.get() + 2,
-        image_width * image_height,
-        1,
-        4);
+        buffered_io, pixels.get<u8>() + 2, width * height, 1, 4);
 
     buffered_io.seek(ret);
     wcg_unpack(
-        buffered_io,
-        pixels.get(),
-        image_width * image_height,
-        1,
-        4);
+        buffered_io, pixels.get<u8>(), width * height, 1, 4);
 
-    for (auto i : util::range(0, pixels_size, 4))
+    for (auto i : util::range(0, pixels.size(), 4))
         pixels[i + 3] ^= 0xFF;
 
     std::unique_ptr<util::Image> image = util::Image::from_pixels(
-        image_width,
-        image_height,
-        std::string(pixels.get(), pixels_size),
-        util::PixelFormat::BGRA);
+        width, height, pixels, util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }

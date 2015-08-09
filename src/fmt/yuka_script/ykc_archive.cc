@@ -26,7 +26,7 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static const std::string magic = "YKC001"_s;
+static const bstr magic = "YKC001"_b;
 
 static Table read_table(io::IO &arc_io, size_t table_offset, size_t table_size)
 {
@@ -45,7 +45,7 @@ static Table read_table(io::IO &arc_io, size_t table_offset, size_t table_size)
         arc_io.skip(4);
 
         arc_io.seek(name_origin);
-        entry->name = arc_io.read(name_size);
+        entry->name = arc_io.read(name_size).str();
         table.push_back(std::move(entry));
     }
 

@@ -25,11 +25,11 @@ namespace io {
         virtual void write_from_io(IO &input, size_t length) = 0;
         void write_from_io(IO &input);
 
-        std::string read_until_zero();
-        std::string read_until_zero(size_t bytes);
-        std::string read_line();
-        std::string read_until_end();
-        std::string read(size_t bytes);
+        bstr read(size_t bytes);
+        bstr read_until_zero();
+        bstr read_until_zero(size_t bytes);
+        bstr read_until_end();
+        bstr read_line();
         u8 read_u8();
         u16 read_u16_le();
         u16 read_u16_be();
@@ -38,7 +38,7 @@ namespace io {
         u64 read_u64_le();
         u64 read_u64_be();
 
-        void write(const std::string &bytes);
+        void write(const bstr &bytes);
         void write_u8(u8);
         void write_u16_le(u16);
         void write_u16_be(u16);

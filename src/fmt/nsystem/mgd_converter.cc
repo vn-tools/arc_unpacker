@@ -6,10 +6,8 @@
 // Archives:  FJSYS
 
 #include <cassert>
-#include <stdexcept>
 #include "fmt/nsystem/mgd_converter.h"
 #include "io/buffered_io.h"
-#include "util/endian.h"
 #include "util/image.h"
 #include "util/range.h"
 
@@ -18,11 +16,11 @@ using namespace au::fmt::nsystem;
 
 namespace
 {
-    enum CompressionType
+    enum class CompressionType : u8
     {
-        COMPRESSION_NONE = 0,
-        COMPRESSION_SGD = 1,
-        COMPRESSION_PNG = 2,
+        None = 0,
+        Sgd = 1,
+        Png = 2,
     };
 
     struct Region
@@ -34,73 +32,49 @@ namespace
     };
 }
 
-static const std::string magic = "MGD "_s;
+static const bstr magic = "MGD "_b;
 
-static void decompress_sgd_alpha(
-    const u8 *&input_ptr,
-    const u8 *const input_guardian,
-    u8 *&output_ptr,
-    const u8 *const output_guardian)
+static void decompress_sgd_alpha(const bstr &input, io::IO &output_io)
 {
-    output_ptr += 3; //ignore first RGB
-    while (input_ptr < input_guardian)
+    io::BufferedIO input_io(input);
+    while (!input_io.eof())
     {
-        u16 flag = util::from_little_endian<u16>(
-            *reinterpret_cast<const u16*>(input_ptr));
-        input_ptr += 2;
+        auto flag = input_io.read_u16_le();
         if (flag & 0x8000)
         {
-            size_t pixels = (flag & 0x7FFF) + 1;
-            u8 alpha = *input_ptr++;
-            for (auto i : util::range(pixels))
+            size_t length = (flag & 0x7FFF) + 1;
+            u8 alpha = input_io.read_u8();
+            for (auto i : util::range(length))
             {
-                if (output_ptr > output_guardian)
-                {
-                    throw std::runtime_error(
-                        "Trying to write alpha beyond EOF");
-                }
-                *output_ptr = alpha ^ 0xFF;
-                output_ptr += 4;
+                output_io.skip(3);
+                output_io.write_u8(alpha ^ 0xFF);
             }
         }
         else
         {
-            while (flag-- && input_ptr < input_guardian)
+            while (flag-- && !input_io.eof())
             {
-                u8 alpha = *input_ptr;
-                input_ptr++;
-                if (output_ptr > output_guardian)
-                {
-                    throw std::runtime_error(
-                        "Trying to write alpha beyond EOF");
-                }
-                *output_ptr = alpha ^ 0xFF;
-                output_ptr += 4;
+                u8 alpha = input_io.read_u8();
+                output_io.skip(3);
+                output_io.write_u8(alpha ^ 0xFF);
             }
         }
     }
+    output_io.seek(0);
 }
 
 static void decompress_sgd_bgr_strategy_1(
-    const u8 *&input_ptr,
-    const u8 *const input_guardian,
-    u8 *&output_ptr,
-    const u8 *const output_guardian,
-    u8 flag)
+    io::IO &input_io, io::IO &output_io, u8 flag)
 {
-    size_t pixels = flag & 0x3F;
-    u8 b = output_ptr[-4];
-    u8 g = output_ptr[-3];
-    u8 r = output_ptr[-2];
-    for (auto i : util::range(pixels))
+    auto length = flag & 0x3F;
+    output_io.skip(-4);
+    u8 b = output_io.read_u8();
+    u8 g = output_io.read_u8();
+    u8 r = output_io.read_u8();
+    output_io.skip(1);
+    for (auto i : util::range(length))
     {
-        if (input_ptr + 2 > input_guardian)
-            throw std::runtime_error("Trying to read length beyond EOF");
-
-        u16 delta = util::from_little_endian<u16>(*
-            reinterpret_cast<const u16*>(input_ptr));
-        input_ptr += 2;
-
+        u16 delta = input_io.read_u16_le();
         if (delta & 0x8000)
         {
             b += delta & 0x1F;
@@ -114,149 +88,84 @@ static void decompress_sgd_bgr_strategy_1(
             r += ((delta >> 10) & 0xF) * (delta & 0x4000 ? -1 : 1);
         }
 
-        if (output_ptr + 4 > output_guardian)
-            throw std::runtime_error("Trying to write colors beyond EOF");
-
-        *output_ptr++ = b;
-        *output_ptr++ = g;
-        *output_ptr++ = r;
-        output_ptr++;
+        output_io.write_u8(b);
+        output_io.write_u8(g);
+        output_io.write_u8(r);
+        output_io.skip(1);
     }
 }
 
 static void decompress_sgd_bgr_strategy_2(
-    const u8 *&input_ptr,
-    const u8 *const input_guardian,
-    u8 *&output_ptr,
-    const u8 *const output_guardian,
-    u8 flag)
+    io::IO &input_io, io::IO &output_io, u8 flag)
 {
-    if (input_ptr + 3 > input_guardian)
-        throw std::runtime_error("Trying to read colors beyond EOF");
-
-    size_t pixels = (flag & 0x3F) + 1;
-    u8 b = *input_ptr++;
-    u8 g = *input_ptr++;
-    u8 r = *input_ptr++;
-    for (auto i : util::range(pixels))
+    auto length = (flag & 0x3F) + 1;
+    u8 b = input_io.read_u8();
+    u8 g = input_io.read_u8();
+    u8 r = input_io.read_u8();
+    for (auto i : util::range(length))
     {
-        if (output_ptr + 4 > output_guardian)
-            throw std::runtime_error("Trying to write colors beyond EOF");
-
-        *output_ptr++ = b;
-        *output_ptr++ = g;
-        *output_ptr++ = r;
-        output_ptr++;
+        output_io.write_u8(b);
+        output_io.write_u8(g);
+        output_io.write_u8(r);
+        output_io.skip(1);
     }
 }
 
 static void decompress_sgd_bgr_strategy_3(
-    const u8 *&input_ptr,
-    const u8 *const input_guardian,
-    u8 *&output_ptr,
-    const u8 *const output_guardian,
-    u8 flag)
+    io::IO &input_io, io::IO &output_io, u8 flag)
 {
-    size_t pixels = flag;
-    for (auto i : util::range(pixels))
+    auto length = flag;
+    for (auto i : util::range(length))
     {
-        if (input_ptr + 3 > input_guardian)
-        {
-            throw std::runtime_error(
-                "Trying to read colors beyond EOF");
-        }
-        if (output_ptr + 4 > output_guardian)
-        {
-            throw std::runtime_error(
-                "Trying to write colors beyond EOF");
-        }
-
-        *output_ptr++ = *input_ptr++;
-        *output_ptr++ = *input_ptr++;
-        *output_ptr++ = *input_ptr++;
-        output_ptr++;
+        output_io.write(input_io.read(3));
+        output_io.skip(1);
     }
 }
 
-static void decompress_sgd_bgr(
-    const u8 *&input_ptr,
-    const u8 *const input_guardian,
-    u8 *&output_ptr,
-    const u8 *const output_guardian)
+static void decompress_sgd_bgr(const bstr &input, io::IO &output_io)
 {
-    while (input_ptr < input_guardian)
+    io::BufferedIO input_io(input);
+    while (!input_io.eof())
     {
-        u8 flag = *input_ptr++;
+        u8 flag = input_io.read_u8();
         switch (flag & 0xC0)
         {
             case 0x80:
-                decompress_sgd_bgr_strategy_1(
-                    input_ptr, input_guardian,
-                    output_ptr, output_guardian,
-                    flag);
+                decompress_sgd_bgr_strategy_1(input_io, output_io, flag);
                 break;
 
             case 0x40:
-                decompress_sgd_bgr_strategy_2(
-                    input_ptr, input_guardian,
-                    output_ptr, output_guardian,
-                    flag);
+                decompress_sgd_bgr_strategy_2(input_io, output_io, flag);
                 break;
 
             case 0:
-                decompress_sgd_bgr_strategy_3(
-                    input_ptr, input_guardian,
-                    output_ptr, output_guardian,
-                    flag);
+                decompress_sgd_bgr_strategy_3(input_io, output_io, flag);
                 break;
 
             default:
                 throw std::runtime_error("Bad decompression flag");
         }
     }
+    output_io.seek(0);
 }
 
-static void decompress_sgd(
-    const u8 *const input,
-    size_t input_size,
-    u8 *const output,
-    size_t output_size)
+static bstr decompress_sgd(const bstr &input, size_t output_size)
 {
-    assert(input != nullptr);
-    assert(output != nullptr);
+    bstr output;
+    output.resize(output_size);
+    io::BufferedIO output_io(output);
 
-    size_t length;
-    const u8 *input_guardian;
-    const u8 *output_guardian = output + output_size;
-    u8 *output_ptr = output;
+    io::BufferedIO tmp_io(input);
 
-    const u8 *input_ptr = input;
-    length = util::from_little_endian<u32>(
-        *reinterpret_cast<const u32*>(input_ptr));
-    input_ptr += 4;
-    input_guardian = input_ptr + length;
-    if (length > input_size)
-        throw std::runtime_error("Insufficient alpha channel data");
+    auto alpha_size = tmp_io.read_u32_le();
+    auto alpha_data = tmp_io.read(alpha_size);
+    decompress_sgd_alpha(alpha_data, output_io);
 
-    decompress_sgd_alpha(
-        input_ptr,
-        input_guardian,
-        output_ptr,
-        output_guardian);
+    auto color_size = tmp_io.read_u32_le();
+    auto color_data = tmp_io.read(color_size);
+    decompress_sgd_bgr(color_data, output_io);
 
-    length = util::from_little_endian<u32>(
-        *reinterpret_cast<const u32*>(input_ptr));
-    input_ptr += 4;
-    input_guardian = input_ptr + length;
-    if (length > input_size)
-        throw std::runtime_error("Insufficient color data");
-
-    output_ptr = output;
-    decompress_sgd_bgr(
-        input_ptr,
-        input_guardian,
-        output_ptr,
-        output_guardian);
+    return output_io.read_until_end();
 }
 
 static std::vector<std::unique_ptr<Region>> read_region_data(io::IO &file_io)
@@ -296,42 +205,28 @@ static std::unique_ptr<util::Image> read_image(
     CompressionType compression_type,
     size_t size_compressed,
     size_t size_original,
-    size_t image_width,
-    size_t image_height)
+    size_t width,
+    size_t height)
 {
-    std::string data_compressed = file_io.read(size_compressed);
+    bstr data_compressed = file_io.read(size_compressed);
     switch (compression_type)
     {
-        case COMPRESSION_NONE:
+        case CompressionType::None:
             return util::Image::from_pixels(
-                image_width,
-                image_height,
+                width,
+                height,
                 data_compressed,
                 util::PixelFormat::BGRA);
 
-        case COMPRESSION_SGD:
-        {
-            std::unique_ptr<char[]> data_uncompressed(
-                new char[size_original]);
-
-            decompress_sgd(
-                reinterpret_cast<const u8*>(data_compressed.data()),
-                size_compressed,
-                reinterpret_cast<u8*>(data_uncompressed.get()),
-                size_original);
-
+        case CompressionType::Sgd:
             return util::Image::from_pixels(
-                image_width,
-                image_height,
-                std::string(data_uncompressed.get(), size_original),
+                width,
+                height,
+                decompress_sgd(data_compressed, size_original),
                 util::PixelFormat::BGRA);
-        }
 
-        case COMPRESSION_PNG:
-        {
-            io::BufferedIO buffered_io(data_compressed);
-            return util::Image::from_boxed(buffered_io);
-        }
+        case CompressionType::Png:
+            return util::Image::from_boxed(data_compressed);
 
         default:
             throw std::runtime_error("Unsupported compression type");
@@ -350,8 +245,8 @@ std::unique_ptr<File> MgdConverter::decode_internal(File &file) const
     u16 data_offset = file.io.read_u16_le();
     u16 format = file.io.read_u16_le();
     file.io.skip(4);
-    u16 image_width = file.io.read_u16_le();
-    u16 image_height = file.io.read_u16_le();
+    u16 width = file.io.read_u16_le();
+    u16 height = file.io.read_u16_le();
     u32 size_original = file.io.read_u32_le();
     u32 size_compressed_total = file.io.read_u32_le();
     auto compression_type = static_cast<CompressionType>(file.io.read_u32_le());
@@ -366,10 +261,9 @@ std::unique_ptr<File> MgdConverter::decode_internal(File &file) const
         compression_type,
         size_compressed,
         size_original,
-        image_width,
-        image_height);
+        width,
+        height);
 
     read_region_data(file.io);
-
     return image->create_file(file.name);
 }

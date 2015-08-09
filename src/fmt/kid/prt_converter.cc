@@ -17,7 +17,7 @@
 using namespace au;
 using namespace au::fmt::kid;
 
-static const std::string magic = "PRT\x00"_s;
+static const bstr magic = "PRT\x00"_b;
 
 bool PrtConverter::is_recognized_internal(File &file) const
 {
@@ -54,7 +54,9 @@ std::unique_ptr<File> PrtConverter::decode_internal(File &file) const
     }
 
     auto stride = (((width * bit_depth / 8) + 3) / 4) * 4;
-    std::unique_ptr<u32[]> pixel_data(new u32[width * height]());
+    bstr pixels;
+    pixels.resize(width * height * 4);
+    u32 *pixels_ptr = pixels.get<u32>();
 
     std::unique_ptr<u32[]> palette(new u32[256]);
     if (bit_depth == 8)
@@ -71,7 +73,7 @@ std::unique_ptr<File> PrtConverter::decode_internal(File &file) const
     for (auto y : util::range(height))
     {
         file.io.seek(data_offset + stride * y);
-        u32 *out = &pixel_data[(height - 1 - y) * width];
+        u32 *out = &pixels_ptr[(height - 1 - y) * width];
         for (auto x : util::range(width))
         {
             if (bit_depth == 8)
@@ -102,17 +104,12 @@ std::unique_ptr<File> PrtConverter::decode_internal(File &file) const
             for (auto x : util::range(width))
             {
                 auto alpha = file.io.read_u8();
-                util::color::set_alpha(pixel_data[y * width + x], alpha);
+                util::color::set_alpha(pixels_ptr[y * width + x], alpha);
             }
         }
     }
 
     auto image = util::Image::from_pixels(
-        width,
-        height,
-        std::string(
-            reinterpret_cast<char*>(pixel_data.get()), width * height * 4),
-        util::PixelFormat::BGRA);
-
+        width, height, pixels, util::PixelFormat::BGRA);
     return image->create_file(file.name);
 }

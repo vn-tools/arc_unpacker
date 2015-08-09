@@ -16,7 +16,7 @@
 using namespace au;
 using namespace au::fmt::nitroplus;
 
-static const std::string magic = "\x02\x00\x00\x00"_s;
+static const bstr magic = "\x02\x00\x00\x00"_b;
 
 static std::unique_ptr<File> read_file(
     io::IO &arc_io, io::IO &table_io, size_t offset_to_files)
@@ -24,8 +24,7 @@ static std::unique_ptr<File> read_file(
     std::unique_ptr<File> file(new File);
 
     size_t file_name_length = table_io.read_u32_le();
-    std::string file_name = table_io.read(file_name_length);
-    file->name = util::sjis_to_utf8(file_name);
+    file->name = util::sjis_to_utf8(table_io.read(file_name_length)).str();
 
     size_t offset = table_io.read_u32_le();
     size_t size_original = table_io.read_u32_le();

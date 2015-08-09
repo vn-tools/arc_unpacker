@@ -50,7 +50,7 @@ static Table read_table(io::IO &arc_io)
                 std::unique_ptr<TableEntry> entry(new TableEntry);
                 entry->size = arc_io.read_u32_le();
                 arc_io.skip(8);
-                entry->name = arc_io.read_until_zero(header_size - 16);
+                entry->name = arc_io.read_until_zero(header_size - 16).str();
                 entry->offset = arc_io.tell();
                 table.push_back(std::move(entry));
             }

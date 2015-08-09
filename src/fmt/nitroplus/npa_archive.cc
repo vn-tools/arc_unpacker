@@ -39,6 +39,7 @@ namespace
 
     struct TableEntry
     {
+        bstr name_original;
         std::string name;
         u32 offset;
         u32 size_compressed;
@@ -48,7 +49,7 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static const std::string magic = "NPA\x01\x00\x00\x00"_s;
+static const bstr magic = "NPA\x01\x00\x00\x00"_b;
 
 static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {
@@ -67,7 +68,7 @@ static std::unique_ptr<Header> read_header(io::IO &arc_io)
 }
 
 static void decrypt_file_name(
-    std::string &name,
+    bstr &name,
     const Header &header,
     const NpaFilter &filter,
     size_t file_pos)
@@ -84,30 +85,28 @@ static void decrypt_file_name(
         key -= file_pos >> 0x10;
         key -= file_pos >> 0x08;
         key -= file_pos;
-        name[char_pos] += (key & 0xFF);
+        name.get<u8>()[char_pos] += (key & 0xFF);
     }
 }
 
 static void decrypt_file_data(
-    std::string &data,
+    bstr &data,
     const TableEntry &entry,
     const Header &header,
     const NpaFilter &filter)
 {
     u32 key = filter.data_key;
-    for (auto i : util::range(entry.name.size()))
-        key -= reinterpret_cast<const u8&>(entry.name[i]);
-    key *= entry.name.size();
+    for (auto i : util::range(entry.name_original.size()))
+        key -= entry.name_original.get<u8>()[i];
+    key *= entry.name_original.size();
     key += header.key1 * header.key2;
     key *= entry.size_original;
     key &= 0xFF;
 
-    size_t length = 0x1000 + entry.name.size();
-    for (size_t i = 0; i < length && i < entry.size_compressed; i++)
-    {
-        char p = filter.permutation[static_cast<u8>(data[i])];
-        data[i] = static_cast<char>(p - key - i);
-    }
+    u8 *data_ptr = data.get<u8>();
+    size_t size = 0x1000 + entry.name_original.size();
+    for (auto i : util::range(std::min(size, data.size())))
+        data_ptr[i] = filter.permutation[data_ptr[i]] - key - i;
 }
 
 static std::unique_ptr<TableEntry> read_table_entry(
@@ -118,8 +117,9 @@ static std::unique_ptr<TableEntry> read_table_entry(
 {
     std::unique_ptr<TableEntry> entry(new TableEntry);
 
-    entry->name = arc_io.read(arc_io.read_u32_le());
-    decrypt_file_name(entry->name, header, filter, file_pos);
+    entry->name_original = arc_io.read(arc_io.read_u32_le());
+    decrypt_file_name(entry->name_original, header, filter, file_pos);
+    entry->name = util::sjis_to_utf8(entry->name_original).str();
 
     FileType file_type = static_cast<FileType>(arc_io.read_u8());
     arc_io.skip(4);
@@ -157,10 +157,10 @@ static std::unique_ptr<File> read_file(
     const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
-    file->name = util::sjis_to_utf8(entry.name);
+    file->name = entry.name;
 
     arc_io.seek(entry.offset);
-    std::string data = arc_io.read(entry.size_compressed);
+    auto data = arc_io.read(entry.size_compressed);
 
     if (header.encrypted)
         decrypt_file_data(data, entry, header, filter);

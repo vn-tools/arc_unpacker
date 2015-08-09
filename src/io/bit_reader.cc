@@ -22,12 +22,12 @@ namespace
     class BufferBasedReader : public Reader
     {
     private:
-        std::string buffer;
+        bstr buffer;
         size_t bytes_left;
         const u8 *ptr;
 
     public:
-        BufferBasedReader(const std::string &buffer);
+        BufferBasedReader(const bstr &buffer);
         bool eof() override;
         u8 fetch_byte() override;
     };
@@ -83,10 +83,10 @@ int Reader::getn(size_t n, bool exception)
 }
 
 
-BufferBasedReader::BufferBasedReader(const std::string &buffer)
+BufferBasedReader::BufferBasedReader(const bstr &buffer)
     : buffer(buffer), bytes_left(buffer.size())
 {
-    ptr = reinterpret_cast<const u8*>(this->buffer.data());
+    ptr = this->buffer.get<const u8>();
 }
 
 bool BufferBasedReader::eof()
@@ -135,7 +135,7 @@ BitReader::BitReader(IO &io)
 {
 }
 
-BitReader::BitReader(const std::string &buffer)
+BitReader::BitReader(const bstr &buffer)
     : p(new Priv(std::unique_ptr<Reader>(new BufferBasedReader(buffer))))
 {
 }
@@ -144,7 +144,7 @@ BitReader::BitReader(const char *buffer, size_t size)
     : p(new Priv(
         std::unique_ptr<Reader>(
             new BufferBasedReader(
-                std::string(buffer, size)))))
+                bstr(buffer, size)))))
 {
 }
 

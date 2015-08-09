@@ -7,6 +7,7 @@
 // Known games:
 // - Melty Blood
 
+#include <algorithm>
 #include "fmt/french_bread/ex3_converter.h"
 #include "fmt/french_bread/p_archive.h"
 #include "util/range.h"
@@ -30,7 +31,7 @@ static const u32 encryption_key = 0xE3DF59AC;
 
 static std::string read_file_name(io::IO &arc_io, size_t file_id)
 {
-    std::string file_name = arc_io.read(60);
+    std::string file_name = arc_io.read(60).str();
     for (auto i : util::range(60))
         file_name[i] ^= file_id * i * 3 + 0x3D;
     return file_name.substr(0, file_name.find('\0'));
@@ -55,16 +56,16 @@ static std::unique_ptr<File> read_file(
     io::IO &arc_io, TableEntry &entry, bool encrypted)
 {
     std::unique_ptr<File> file(new File);
-    std::unique_ptr<char[]> data(new char[entry.size]);
-    char *ptr = data.get();
-    arc_io.seek(entry.offset);
-    arc_io.read(ptr, entry.size);
 
-    for (size_t i = 0; i <= 0x2172 && i < entry.size; i++)
+    arc_io.seek(entry.offset);
+    bstr data = arc_io.read(entry.size);
+
+    static const size_t block_size = 0x2172;
+    for (auto i : util::range(std::min(block_size, entry.size)))
         data[i] ^= entry.name[i % entry.name.size()] + i + 3;
 
     file->name = entry.name;
-    file->io.write(ptr, entry.size);
+    file->io.write(data);
 
     return file;
 }

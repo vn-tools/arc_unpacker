@@ -38,25 +38,26 @@ static size_t guess_image_dimension(
     throw std::runtime_error("Cannot figure out the image dimensions");
 }
 
-static void mirror(char *pixel_data, size_t pixel_data_size, size_t stride)
+static void mirror(bstr &pixels, size_t stride)
 {
-    size_t height = pixel_data_size / stride;
-    std::unique_ptr<char[]> old_line(new char[stride]);
+    size_t height = pixels.size() / stride;
+    bstr old_line;
+    old_line.resize(stride);
     for (auto y : util::range(height / 2))
     {
         memcpy(
-            old_line.get(),
-            &pixel_data[y * stride],
+            old_line.get<u8>(),
+            &pixels.get<u8>()[y * stride],
             stride);
 
         memcpy(
-            &pixel_data[y * stride],
-            &pixel_data[(height - 1 - y) * stride],
+            &pixels.get<u8>()[y * stride],
+            &pixels.get<u8>()[(height - 1 - y) * stride],
             stride);
 
         memcpy(
-            &pixel_data[(height - 1 - y) * stride],
-            old_line.get(),
+            &pixels.get<u8>()[(height - 1 - y) * stride],
+            old_line.get<u8>(),
             stride);
     }
 }
@@ -69,7 +70,7 @@ bool SotesConverter::is_recognized_internal(File &file) const
     file.io.skip(256 * 4);
     file.io.read(weird_data2, 14 * 4);
     file.io.skip(8);
-    if (file.io.read(2) != "BM")
+    if (file.io.read(2) != "BM"_b)
         return false;
 
     size_t pixel_data_offset = weird_data2[12] - weird_data2[10];
@@ -110,20 +111,18 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
 
     bool use_palette = width * height * 3 != raw_data_size;
 
-    size_t pixel_data_size;
-    std::unique_ptr<char[]> pixel_data(nullptr);
+    bstr pixels;
+    pixels.resize(width * height * 3);
+
+    bstr data = file.io.read(raw_data_size);
     if (use_palette)
     {
-        pixel_data_size = width * height * 3;
-        pixel_data.reset(new char[pixel_data_size]);
-
-        char *pixels_ptr = pixel_data.get();
+        u8 *pixels_ptr = pixels.get<u8>();
         for (auto i : util::range(raw_data_size))
         {
-            if (pixels_ptr >= pixel_data.get() + width * height * 3)
+            if (pixels_ptr >= pixels.get<u8>() + pixels.size())
                 throw std::runtime_error("Trying to write pixels beyond EOF");
-            size_t palette_index = static_cast<size_t>(file.io.read_u8());
-            u32 rgba = palette[palette_index];
+            u32 rgba = palette[data.get<u8>(i)];
             *pixels_ptr++ = rgba;
             *pixels_ptr++ = rgba >> 8;
             *pixels_ptr++ = rgba >> 16;
@@ -131,17 +130,12 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
     }
     else
     {
-        pixel_data_size = raw_data_size;
-        pixel_data.reset(new char[pixel_data_size]);
-        file.io.read(pixel_data.get(), pixel_data_size);
+        pixels = data;
     }
 
-    mirror(pixel_data.get(), pixel_data_size, 3 * width);
+    mirror(pixels, 3 * width);
 
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
-        width,
-        height,
-        std::string(pixel_data.get(), pixel_data_size),
-        util::PixelFormat::BGR);
+    auto image = util::Image::from_pixels(
+        width, height, pixels, util::PixelFormat::BGR);
     return image->create_file(file.name);
 }

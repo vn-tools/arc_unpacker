@@ -11,7 +11,6 @@
 #include "fmt/nscripter/nsa_archive.h"
 #include "fmt/nscripter/spb_converter.h"
 #include "io/buffered_io.h"
-#include "io/bit_reader.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"
 
@@ -50,7 +49,7 @@ static Table read_table(io::IO &arc_io)
     for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = arc_io.read_until_zero();
+        entry->name = arc_io.read_until_zero().str();
         entry->compression_type
             = static_cast<CompressionType>(arc_io.read_u8());
         entry->offset = arc_io.read_u32_be();
@@ -74,7 +73,7 @@ static std::unique_ptr<File> read_file(
 
     file->name = entry.name;
     arc_io.seek(entry.offset);
-    std::string data = arc_io.read(entry.size_compressed);
+    bstr data = arc_io.read(entry.size_compressed);
 
     switch (entry.compression_type)
     {
@@ -84,8 +83,6 @@ static std::unique_ptr<File> read_file(
 
         case COMPRESSION_LZSS:
         {
-            io::BitReader bit_reader(data);
-
             util::pack::LzssSettings settings;
             settings.position_bits = 8;
             settings.length_bits = 4;
@@ -93,7 +90,7 @@ static std::unique_ptr<File> read_file(
             settings.initial_dictionary_pos = 239;
             settings.reuse_compressed = true;
             file->io.write(util::pack::lzss_decompress(
-                bit_reader, entry.size_original, settings));
+                data, entry.size_original, settings));
             break;
         }
 

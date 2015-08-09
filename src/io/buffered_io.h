@@ -1,7 +1,6 @@
 #ifndef AU_IO_BUFFERED_IO_H
 #define AU_IO_BUFFERED_IO_H
 #include <memory>
-#include <string>
 #include "io/io.h"
 
 namespace au {
@@ -12,7 +11,7 @@ namespace io {
     public:
         BufferedIO();
         BufferedIO(const char *buffer, size_t buffer_size);
-        BufferedIO(const std::string &buffer);
+        BufferedIO(const bstr &buffer);
         BufferedIO(IO &other_io, size_t length);
         BufferedIO(IO &other_io);
         ~BufferedIO();

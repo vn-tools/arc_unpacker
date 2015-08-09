@@ -15,14 +15,14 @@
 using namespace au;
 using namespace au::fmt::bgi;
 
-static const std::string magic = "PackFile    "_s;
+static const bstr magic = "PackFile\x20\x20\x20\x20"_b;
 
 static std::unique_ptr<File> read_file(io::IO &arc_io, size_t file_count)
 {
     std::unique_ptr<File> file(new File);
 
     size_t old_pos = arc_io.tell();
-    file->name = arc_io.read_until_zero();
+    file->name = arc_io.read_until_zero().str();
     arc_io.seek(old_pos + 16);
 
     size_t offset = arc_io.read_u32_le();

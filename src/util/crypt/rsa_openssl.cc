@@ -37,14 +37,14 @@ Rsa::~Rsa()
 {
 }
 
-std::string Rsa::decrypt(const std::string &input) const
+bstr Rsa::decrypt(const bstr &input) const
 {
     size_t output_size = RSA_size(p->key_impl);
     std::unique_ptr<u8[]> output(new u8[output_size]);
 
     int result = RSA_public_decrypt(
         input.size(),
-        reinterpret_cast<const u8*>(input.data()),
+        input.get<const u8>(),
         output.get(),
         p->key_impl,
         RSA_PKCS1_PADDING);
@@ -57,5 +57,5 @@ std::string Rsa::decrypt(const std::string &input) const
         throw std::runtime_error(std::string(err.get()));
     }
 
-    return std::string(reinterpret_cast<char*>(output.get()), output_size);
+    return bstr(reinterpret_cast<char*>(output.get()), output_size);
 }

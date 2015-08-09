@@ -21,9 +21,10 @@ std::vector<std::string> get_arguments(int argc, const wchar_t **argv)
     arguments.reserve(argc);
     for (int i = 0; i < argc; i++)
     {
-        auto str = std::string(
+        auto str = bstr(
             reinterpret_cast<const char*>(argv[i]), wcslen(argv[i]) * 2);
-        arguments.push_back(util::convert_encoding(str, "utf-16le", "utf-8"));
+        auto arg = util::convert_encoding(str, "utf-16le", "utf-8");
+        arguments.push_back(arg.str());
     }
     return arguments;
 }

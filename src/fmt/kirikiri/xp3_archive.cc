@@ -24,11 +24,11 @@
 using namespace au;
 using namespace au::fmt::kirikiri;
 
-static const std::string xp3_magic = "XP3\r\n\x20\x0A\x1A\x8B\x67\x01"_s;
-static const std::string file_magic = "File"_s;
-static const std::string adlr_magic = "adlr"_s;
-static const std::string info_magic = "info"_s;
-static const std::string segm_magic = "segm"_s;
+static const bstr xp3_magic = "XP3\r\n\x20\x0A\x1A\x8B\x67\x01"_b;
+static const bstr file_magic = "File"_b;
+static const bstr adlr_magic = "adlr"_b;
+static const bstr info_magic = "info"_b;
+static const bstr segm_magic = "segm"_b;
 
 static int detect_version(io::IO &arc_io)
 {
@@ -65,13 +65,10 @@ static std::unique_ptr<io::IO> read_raw_table(io::IO &arc_io)
         ? arc_io.read_u64_le()
         : size_compressed;
 
-    std::string compressed = arc_io.read(size_compressed);
+    bstr data = arc_io.read(size_compressed);
     if (use_zlib)
-    {
-        std::string uncompressed = util::pack::zlib_inflate(compressed);
-        return std::unique_ptr<io::IO>(new io::BufferedIO(uncompressed));
-    }
-    return std::unique_ptr<io::IO>(new io::BufferedIO(compressed));
+        data = util::pack::zlib_inflate(data);
+    return std::unique_ptr<io::IO>(new io::BufferedIO(data));
 }
 
 static void read_info_chunk(io::IO &table_io, File &target_file)
@@ -85,8 +82,9 @@ static void read_info_chunk(io::IO &table_io, File &target_file)
     u64 file_size_compressed = table_io.read_u64_le();
 
     size_t name_length = table_io.read_u16_le();
-    std::string name_utf16 = table_io.read(name_length * 2);
-    target_file.name = util::convert_encoding(name_utf16, "utf-16le", "utf-8");
+    bstr name_utf16 = table_io.read(name_length * 2);
+    target_file.name
+        = util::convert_encoding(name_utf16, "utf-16le", "utf-8").str();
     if (info_chunk_size != name_length * 2 + 22)
         throw std::runtime_error("Unexpected INFO chunk size");
 }
@@ -156,7 +154,7 @@ static std::unique_ptr<File> read_file(
     if (table_io.tell() - file_chunk_start_offset != file_chunk_size)
         throw std::runtime_error("Unexpected FILE chunk size");
 
-    if (filter != nullptr)
+    if (filter)
         filter->decode(*target_file, encryption_key);
 
     return target_file;
@@ -206,7 +204,7 @@ void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     int version = detect_version(arc_file.io);
     u64 table_offset = get_table_offset(arc_file.io, version);
     arc_file.io.seek(table_offset);
-    std::unique_ptr<io::IO> table_io = read_raw_table(arc_file.io);
+    auto table_io = read_raw_table(arc_file.io);
 
     if (p->filter)
         p->filter->set_arc_path(arc_file.name);

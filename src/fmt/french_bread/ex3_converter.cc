@@ -10,13 +10,12 @@
 
 #include <stdexcept>
 #include "fmt/french_bread/ex3_converter.h"
-#include "io/buffered_io.h"
 #include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::french_bread;
 
-static const std::string magic = "LLIF"_s;
+static const bstr magic = "LLIF"_b;
 
 bool Ex3Converter::is_recognized_internal(File &file) const
 {
@@ -31,7 +30,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
     u8 table1[256];
     u8 table2[256];
 
-    io::BufferedIO output;
+    bstr output;
     file.io.read(table0, 0x40);
 
     u8 b = file.io.read_u8();
@@ -85,7 +84,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
 
             if (b == table1[b])
             {
-                output.write_u8(b);
+                output += b;
             }
             else
             {
@@ -99,9 +98,8 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
             b = file.io.read_u8();
     }
 
-    output.seek(0);
     std::unique_ptr<File> output_file(new File);
-    output_file->io.write_from_io(output);
+    output_file->io.write(output);
     output_file->name = file.name;
     output_file->change_extension(".bmp");
     return output_file;

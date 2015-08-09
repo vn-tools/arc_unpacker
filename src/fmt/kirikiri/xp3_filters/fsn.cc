@@ -8,19 +8,17 @@ void Fsn::decode(File &file, u32) const
 {
     size_t size = file.io.size();
     file.io.seek(0);
-    std::unique_ptr<char[]> data(new char[size]);
-    char *ptr = data.get();
-    file.io.read(ptr, size);
 
+    auto data = file.io.read(size);
     for (auto i : util::range(size))
-        ptr[i] ^= 0x36;
+        data[i] ^= 0x36;
 
     if (size > 0x2EA29)
-        ptr[0x2EA29] ^= 3;
+        data[0x2EA29] ^= 3;
 
     if (size > 0x13)
-        ptr[0x13] ^= 1;
+        data[0x13] ^= 1;
 
     file.io.seek(0);
-    file.io.write(ptr, size);
+    file.io.write(data);
 }

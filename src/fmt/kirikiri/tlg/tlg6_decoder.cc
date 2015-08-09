@@ -34,25 +34,19 @@ namespace
 
     struct FilterTypes
     {
-        u32 data_size;
-        std::unique_ptr<u8[]> data;
+        bstr data;
         FilterTypes(io::IO &io);
         void decompress(Header &header);
     };
 }
 
-FilterTypes::FilterTypes(io::IO &io) : data(nullptr)
+FilterTypes::FilterTypes(io::IO &io)
 {
-    data_size = io.read_u32_le();
-    data.reset(new u8[data_size]);
-    io.read(data.get(), data_size);
+    data = io.read(io.read_u32_le());
 }
 
 void FilterTypes::decompress(Header &header)
 {
-    size_t output_size = header.x_block_count * header.y_block_count;
-    std::unique_ptr<u8[]> output(new u8[output_size]);
-
     LzssDecompressor decompressor;
     u8 dictionary[4096];
     u8 *ptr = dictionary;
@@ -69,14 +63,8 @@ void FilterTypes::decompress(Header &header)
     }
     decompressor.init_dictionary(dictionary);
 
-    decompressor.decompress(
-        data.get(),
-        data_size,
-        output.get(),
-        output_size);
-
-    data = std::move(output);
-    data_size = output_size;
+    size_t output_size = header.x_block_count * header.y_block_count;
+    data = decompressor.decompress(data, output_size);
 }
 
 static void transformer1(u8 &, u8 &, u8 &)
@@ -457,15 +445,16 @@ static void decode_line(
     }
 }
 
-static void read_pixels(io::IO &io, u8 *output, Header &header)
+static void read_pixels(io::IO &io, bstr &output, Header &header)
 {
     FilterTypes filter_types(io);
     filter_types.decompress(header);
 
-    std::unique_ptr<u32[]> pixel_buf(
-        new u32[4 * header.image_width * h_block_size]);
-    std::unique_ptr<u32[]> zero_line(new u32[header.image_width]());
-    u32 *prev_line = zero_line.get();
+    bstr pixel_buf;
+    pixel_buf.resize(4 * header.image_width * h_block_size);
+    bstr zero_line;
+    zero_line.resize(header.image_width * 4);
+    u32 *prev_line = zero_line.get<u32>();
 
     u32 main_count = header.image_width / w_block_size;
     for (auto y : util::range(0, header.image_height, h_block_size))
@@ -486,27 +475,24 @@ static void read_pixels(io::IO &io, u8 *output, Header &header)
             if (bit_length % 8)
                 byte_length++;
 
-            std::unique_ptr<u8[]> bit_pool(new u8[byte_length]);
-            io.read(bit_pool.get(), byte_length);
+            bstr bit_pool = io.read(byte_length);
 
             if (method != 0)
                 throw std::runtime_error("Unsupported encoding method");
 
             decode_golomb_values(
-                reinterpret_cast<u8*>(pixel_buf.get()) + c,
+                pixel_buf.get<u8>() + c,
                 pixel_count,
-                bit_pool.get());
+                bit_pool.get<u8>());
         }
 
-        u8 *ft = filter_types.data.get()
+        u8 *ft = filter_types.data.get<u8>()
             + (y / h_block_size) * header.x_block_count;
         int skip_bytes = (ylim - y) * w_block_size;
 
         for (auto yy : util::range(y, ylim))
         {
-            u32 *current_line
-                = &reinterpret_cast<u32*>(output)
-                    [yy * header.image_width];
+            u32 *current_line = output.get<u32>() + yy * header.image_width;
 
             int dir = (yy & 1) ^ 1;
             int odd_skip = ((ylim - yy -1) - (yy - y));
@@ -524,7 +510,7 @@ static void read_pixels(io::IO &io, u8 *output, Header &header)
                     main_count,
                     ft,
                     skip_bytes,
-                    pixel_buf.get() + start,
+                    pixel_buf.get<u32>() + start,
                     odd_skip,
                     dir,
                     header);
@@ -544,7 +530,7 @@ static void read_pixels(io::IO &io, u8 *output, Header &header)
                     header.x_block_count,
                     ft,
                     skip_bytes,
-                    pixel_buf.get() + start,
+                    pixel_buf.get<u32>() + start,
                     odd_skip,
                     dir,
                     header);
@@ -573,15 +559,14 @@ std::unique_ptr<File> Tlg6Decoder::decode(File &file)
     if (header.channel_count != 3 && header.channel_count != 4)
         throw std::runtime_error("Unsupported channel count");
 
-    size_t pixels_size = header.image_width * header.image_height * 4;
-    std::unique_ptr<u8[]> pixels(new u8[pixels_size]());
+    bstr pixels;
+    pixels.resize(header.image_width * header.image_height * 4);
+    read_pixels(file.io, pixels, header);
 
-    read_pixels(file.io, pixels.get(), header);
-
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
+    auto image = util::Image::from_pixels(
         header.image_width,
         header.image_height,
-        std::string(reinterpret_cast<char*>(pixels.get()), pixels_size),
+        pixels,
         util::PixelFormat::RGBA);
     return image->create_file(file.name);
 }

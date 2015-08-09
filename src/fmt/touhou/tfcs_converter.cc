@@ -17,7 +17,7 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
-static const std::string magic = "TFCS\x00"_s;
+static const bstr magic = "TFCS\x00"_b;
 
 static void write_cell(io::IO &output_io, std::string cell)
 {
@@ -55,14 +55,14 @@ std::unique_ptr<File> TfcsConverter::decode_internal(File &file) const
         for (size_t j : util::range(column_count))
         {
             size_t cell_size = uncompressed_io.read_u32_le();
-            std::string cell = uncompressed_io.read(cell_size);
+            std::string cell = uncompressed_io.read(cell_size).str();
 
             //escaping etc. is too boring
             write_cell(output_file->io, cell);
             if (j != column_count - 1)
-                output_file->io.write(",");
+                output_file->io.write(","_b);
         }
-        output_file->io.write("\n");
+        output_file->io.write("\n"_b);
     }
 
     return output_file;

@@ -13,8 +13,8 @@ TEST_CASE("Unpacking uncompressed NSA archives works")
     std::shared_ptr<File> file2(new File);
     file1->name = "abc.txt";
     file2->name = "another.txt";
-    file1->io.write("123"_s);
-    file2->io.write("abcdefghij"_s);
+    file1->io.write("123"_b);
+    file2->io.write("abcdefghij"_b);
     std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
 
     std::unique_ptr<Archive> archive(new NsaArchive);
@@ -28,7 +28,7 @@ TEST_CASE("Unpacking NSA archives compressed with LZSS works")
 {
     std::shared_ptr<File> file(new File);
     file->name = "test.bmp";
-    file->io.write(util::pack::zlib_inflate(std::string(
+    file->io.write(util::pack::zlib_inflate(
         "\x78\xDA\x8D\xD3\x3D\x6E\x13\x40\x10\x86\xE1\xB5\x44\x81\x70\x9C"
         "\x38\xF1\x25\xA8\x53\x50\x20\x2A\x8A\xE9\xB8\xD4\x9C\x69\x6E\x40"
         "\x9D\x1B\xCC\x11\xF2\xE7\x38\xB4\x63\x1E\x82\xA0\xCE\x4A\x9F\x56"
@@ -58,8 +58,7 @@ TEST_CASE("Unpacking NSA archives compressed with LZSS works")
         "\x0C\xCF\xF0\x0C\xCF\xF0\x0C\xCF\xF0\x0C\xCF\xF0\x0C\xCF\xFD\xFD"
         "\xFD\x7A\x78\x78\x58\x8F\x8F\x8F\xEB\xE9\xE9\x69\x3D\x3F\x3F\xAF"
         "\xE3\xF1\xB8\x5E\x5E\x5E\xD6\xE9\x74\x5A\xAF\xAF\xAF\xEB\x7C\x3E"
-        "\xBF\xEB\x3F\xFF\xBC\xFB\xB5\xEE\xDC\xBF\x01\x89\x72\x8B\xEC",
-        479)));
+        "\xBF\xEB\x3F\xFF\xBC\xFB\xB5\xEE\xDC\xBF\x01\x89\x72\x8B\xEC"_b));
     std::vector<std::shared_ptr<File>> expected_files { file };
 
     std::unique_ptr<Archive> archive(new NsaArchive);

@@ -17,9 +17,9 @@
 using namespace au;
 using namespace au::fmt::alice_soft;
 
-static const std::string magic = "AFF\x00"_s;
-static const std::string key =
-    "\xC8\xBB\x8F\xB7\xED\x43\x99\x4A\xA2\x7E\x5B\xB0\x68\x18\xF8\x88"_s;
+static const bstr magic = "AFF\x00"_b;
+static const bstr key =
+    "\xC8\xBB\x8F\xB7\xED\x43\x99\x4A\xA2\x7E\x5B\xB0\x68\x18\xF8\x88"_b;
 
 bool AffConverter::is_recognized_internal(File &file) const
 {

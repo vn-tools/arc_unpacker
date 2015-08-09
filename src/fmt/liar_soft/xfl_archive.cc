@@ -30,7 +30,7 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static const std::string magic = "LB\x01\x00"_s;
+static const bstr magic = "LB\x01\x00"_b;
 
 static Table read_table(io::IO &arc_io)
 {
@@ -42,7 +42,7 @@ static Table read_table(io::IO &arc_io)
     for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = util::sjis_to_utf8(arc_io.read_until_zero(0x20));
+        entry->name = util::sjis_to_utf8(arc_io.read_until_zero(0x20)).str();
         entry->offset = file_start + arc_io.read_u32_le();
         entry->size = arc_io.read_u32_le();
         table.push_back(std::move(entry));

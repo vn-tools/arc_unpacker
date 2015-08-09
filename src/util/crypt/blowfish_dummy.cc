@@ -6,7 +6,7 @@ struct Blowfish::Priv
 {
 };
 
-Blowfish::Blowfish(const std::string &key)
+Blowfish::Blowfish(const bstr &key)
 {
     throw std::runtime_error(
         "Blowfish is unavailable - need to compile with OpenSSL.");
@@ -21,7 +21,12 @@ size_t Blowfish::block_size()
     return 8;
 }
 
-std::string Blowfish::decrypt(const std::string &input) const
+bstr Blowfish::decrypt(const bstr &input) const
+{
+    return ""_b;
+}
+
+bstr Blowfish::encrypt(const bstr &input) const
 {
     return "";
 }

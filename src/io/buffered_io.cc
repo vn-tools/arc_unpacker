@@ -15,7 +15,7 @@ struct BufferedIO::Priv
     Priv(const char *buffer, size_t buffer_size)
     {
         this->buffer = reinterpret_cast<char*>(malloc(buffer_size));
-        if (this->buffer == nullptr)
+        if (!this->buffer)
             throw std::bad_alloc();
         memcpy(this->buffer, buffer, buffer_size);
         this->buffer_pos = 0;
@@ -35,7 +35,7 @@ void BufferedIO::reserve(size_t length)
         return;
     char *new_buffer = reinterpret_cast<char*>(
         realloc(p->buffer, new_size));
-    if (new_buffer == nullptr)
+    if (!new_buffer)
         throw std::bad_alloc();
     p->buffer = new_buffer;
     p->buffer_size = new_size;
@@ -57,7 +57,9 @@ void BufferedIO::skip(int offset)
 
 void BufferedIO::read(void *destination, size_t length)
 {
-    assert(destination != nullptr);
+    if (!length)
+        return;
+    assert(destination);
     if (p->buffer_pos + length > p->buffer_size)
         throw std::runtime_error("Reading beyond EOF");
     memcpy(destination, p->buffer + p->buffer_pos, length);
@@ -66,7 +68,9 @@ void BufferedIO::read(void *destination, size_t length)
 
 void BufferedIO::write(const void *source, size_t length)
 {
-    assert(source != nullptr);
+    if (!length)
+        return;
+    assert(source);
     reserve(length);
     memcpy(p->buffer + p->buffer_pos, source, length);
     p->buffer_pos += length;
@@ -100,7 +104,7 @@ void BufferedIO::truncate(size_t new_size)
     }
     char *new_buffer = reinterpret_cast<char*>(
         realloc(p->buffer, new_size));
-    if (new_buffer == nullptr)
+    if (!new_buffer)
         throw std::bad_alloc();
     p->buffer = new_buffer;
     p->buffer_size = new_size;
@@ -126,8 +130,8 @@ BufferedIO::BufferedIO(IO &other_io)
     seek(0);
 }
 
-BufferedIO::BufferedIO(const std::string &buffer)
-    : p(new Priv(buffer.data(), buffer.size()))
+BufferedIO::BufferedIO(const bstr &buffer)
+    : p(new Priv(buffer.get<char>(), buffer.size()))
 {
 }
 
@@ -138,6 +142,6 @@ BufferedIO::BufferedIO(const char *buffer, size_t buffer_size)
 
 BufferedIO::~BufferedIO()
 {
-    if (p != nullptr)
+    if (p)
         free(p->buffer);
 }

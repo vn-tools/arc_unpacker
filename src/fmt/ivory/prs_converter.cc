@@ -8,19 +8,21 @@
 #include "fmt/ivory/prs_converter.h"
 #include "util/image.h"
 #include "util/range.h"
+#include "bstr.h"
 
 using namespace au;
 using namespace au::fmt::ivory;
 
-static const std::string magic = "YB"_s;
+static const bstr magic = "YB"_b;
 
-static void decode_pixels(
-    const u8 *source, size_t source_size, u8 *target, size_t target_size)
+static bstr decode_pixels(const bstr &source, size_t width, size_t height)
 {
-    const u8 *source_ptr = source;
-    const u8 *source_guardian = source + source_size;
-    u8 *target_ptr = target;
-    u8 *target_guardian = target + target_size;
+    bstr target;
+    target.resize(width * height * 3);
+    u8 *target_ptr = target.get<u8>();
+    u8 *target_guardian = target_ptr + target.size();
+    const u8 *source_ptr = source.get<const u8>();
+    const u8 *source_guardian = source_ptr + source.size();
 
     int flag = 0;
     int length_lookup[256];
@@ -30,13 +32,11 @@ static void decode_pixels(
     length_lookup[0xFE] = 0x400;
     length_lookup[0xFD] = 0x100;
 
-    while (1)
+    while (source_ptr < source_guardian && target_ptr < target_guardian)
     {
         flag <<= 1;
         if ((flag & 0xFF) == 0)
         {
-            if (source_ptr >= source_guardian)
-                break;
             flag = *source_ptr++;
             flag <<= 1;
             flag += 1;
@@ -44,12 +44,6 @@ static void decode_pixels(
 
         if ((flag & 0x100) != 0x100)
         {
-            if (source_ptr >= source_guardian
-                || target_ptr >= target_guardian)
-            {
-                break;
-            }
-
             *target_ptr++ = *source_ptr++;
         }
         else
@@ -60,9 +54,6 @@ static void decode_pixels(
 
             if (tmp & 0x80)
             {
-                if (source_ptr >= source_guardian)
-                    break;
-
                 shift = (*source_ptr++) | ((tmp & 0x3F) << 8);
                 if (tmp & 0x40)
                 {
@@ -104,13 +95,14 @@ static void decode_pixels(
             {
                 if (target_ptr >= target_guardian)
                     break;
-                if (target_ptr - shift < target)
+                if (target_ptr - shift < target.get<u8>())
                     throw std::runtime_error("Invalid shift value");
                 *target_ptr = *(target_ptr - shift);
                 target_ptr++;
             }
         }
     }
+    return target;
 }
 
 bool PrsConverter::is_recognized_internal(File &file) const
@@ -128,28 +120,18 @@ std::unique_ptr<File> PrsConverter::decode_internal(File &file) const
 
     u32 source_size = file.io.read_u32_le();
     file.io.skip(4);
-    u16 image_width = file.io.read_u16_le();
-    u16 image_height = file.io.read_u16_le();
+    u16 width = file.io.read_u16_le();
+    u16 height = file.io.read_u16_le();
 
-    const size_t target_size = image_width * image_height * 3;
-    std::unique_ptr<char[]> source(new char[source_size]);
-    std::unique_ptr<char[]> target(new char[target_size]);
-    file.io.read(source.get(), source_size);
-
-    decode_pixels(
-        reinterpret_cast<u8*>(source.get()), source_size,
-        reinterpret_cast<u8*>(target.get()), target_size);
+    auto target = decode_pixels(file.io.read(source_size), width, height);
 
     if (using_differences)
     {
-        for (auto i : util::range(3, target_size))
+        for (auto i : util::range(3, target.size()))
             target[i] += target[i - 3];
     }
 
-    std::unique_ptr<util::Image> image = util::Image::from_pixels(
-        image_width,
-        image_height,
-        std::string(target.get(), target_size),
-        util::PixelFormat::BGR);
+    auto image = util::Image::from_pixels(
+        width, height, target, util::PixelFormat::BGR);
     return image->create_file(file.name);
 }

@@ -35,7 +35,7 @@ namespace
     };
 }
 
-static const std::string magic = "FJSYS\x00\x00\x00"_s;
+static const bstr magic = "FJSYS\x00\x00\x00"_b;
 
 static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {
@@ -57,7 +57,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const Header &header)
     size_t file_names_start = header.header_size - header.file_names_size;
 
     arc_io.seek(file_name_offset + file_names_start);
-    file->name = arc_io.read_until_zero();
+    file->name = arc_io.read_until_zero().str();
 
     arc_io.seek(data_offset);
     file->io.write_from_io(arc_io, data_size);

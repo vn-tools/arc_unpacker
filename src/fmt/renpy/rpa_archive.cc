@@ -84,7 +84,7 @@ namespace
 {
     struct UnpickleContext
     {
-        std::vector<std::string> strings;
+        std::vector<bstr> strings;
         std::vector<int> numbers;
     };
 
@@ -93,14 +93,13 @@ namespace
         std::string name;
         u32 offset;
         u32 size;
-        std::string prefix;
-        size_t prefix_size;
+        bstr prefix;
     };
 
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static void unpickle_handle_string(std::string str, UnpickleContext *context)
+static void unpickle_handle_string(bstr str, UnpickleContext *context)
 {
     context->strings.push_back(str);
 }
@@ -227,7 +226,7 @@ static Table decode_table(io::IO &table_io, u32 key)
     for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = context.strings[i * 2 ];
+        entry->name = context.strings[i * 2 ].str();
         entry->prefix = context.strings[i * 2 + 1];
         entry->offset = context.numbers[i * 2] ^ key;
         entry->size = context.numbers[i * 2 + 1] ^ key;
@@ -238,8 +237,8 @@ static Table decode_table(io::IO &table_io, u32 key)
 
 static int guess_version(io::IO &arc_io)
 {
-    const std::string magic_3 = "RPA-3.0 "_s;
-    const std::string magic_2 = "RPA-2.0 "_s;
+    static const bstr magic_3 = "RPA-3.0 "_b;
+    static const bstr magic_2 = "RPA-2.0 "_b;
     if (arc_io.read(magic_3.size()) == magic_3)
         return 3;
     arc_io.seek(0);
@@ -267,12 +266,10 @@ static u32 read_hex_number(io::IO &arc_io, size_t length)
     return result;
 }
 
-static std::string read_raw_table(io::IO &arc_io)
+static bstr read_raw_table(io::IO &arc_io)
 {
     size_t compressed_size = arc_io.size() - arc_io.tell();
-    std::string compressed = arc_io.read(compressed_size);
-    std::string uncompressed = util::pack::zlib_inflate(compressed);
-    return uncompressed;
+    return util::pack::zlib_inflate(arc_io.read(compressed_size));
 }
 
 static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)

@@ -45,12 +45,12 @@ static Table read_table(io::IO &arc_io)
 
         for (auto i : util::range(32))
             name[i] ^= key8;
-        name = util::sjis_to_utf8(name);
-        if (name[0] == '\\')
-            name = name.substr(1);
-        name.erase(name.find('\x00'));
 
-        entry->name = name;
+        entry->name = util::sjis_to_utf8(name).str();
+        if (entry->name[0] == '\\')
+            entry->name = entry->name.substr(1);
+        entry->name.erase(entry->name.find('\x00'));
+
         entry->offset = arc_io.read_u32_le() ^ key32;
         entry->size = arc_io.read_u32_le() ^ key32;
 

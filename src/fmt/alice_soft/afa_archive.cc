@@ -19,9 +19,9 @@
 using namespace au;
 using namespace au::fmt::alice_soft;
 
-static const std::string magic1 = "AFAH"_s;
-static const std::string magic2 = "AlicArch"_s;
-static const std::string magic3 = "INFO"_s;
+static const bstr magic1 = "AFAH"_b;
+static const bstr magic2 = "AlicArch"_b;
+static const bstr magic3 = "INFO"_b;
 
 namespace
 {
@@ -56,7 +56,8 @@ static Table read_table(io::IO &arc_io)
 
         table_io.skip(4);
         auto name_size = table_io.read_u32_le();
-        entry->name = util::sjis_to_utf8(table_io.read_until_zero(name_size));
+        entry->name
+            = util::sjis_to_utf8(table_io.read_until_zero(name_size)).str();
 
         table_io.skip(4 * 3); //for some games, apparently this is 4 * 2
         entry->offset = table_io.read_u32_le() + file_data_start;

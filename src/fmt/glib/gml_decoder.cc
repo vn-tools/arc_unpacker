@@ -4,11 +4,14 @@ using namespace au;
 using namespace au::fmt::glib;
 
 // modified LZSS
-void GmlDecoder::decode(io::BufferedIO &source_io, io::BufferedIO &target_io)
+bstr GmlDecoder::decode(const bstr &source, size_t target_size)
 {
-    char *target = target_io.buffer();
-    char *target_ptr = target;
-    char *target_guardian = target + target_io.size();
+    bstr target;
+    target.resize(target_size);
+    u8 *target_ptr = target.get<u8>();
+    u8 *target_guardian = target_ptr + target.size();
+    const u8 *source_ptr = source.get<const u8>();
+    const u8 *source_guardian = source_ptr + source.size();
 
     int unk1 = 0;
     while (target_ptr < target_guardian)
@@ -17,25 +20,25 @@ void GmlDecoder::decode(io::BufferedIO &source_io, io::BufferedIO &target_io)
         unk1 >>= 1;
         if (!unk1)
         {
-            unk1 = source_io.eof() ? 0 : source_io.read_u8();
+            unk1 = source_ptr < source_guardian ? *source_ptr++ : 0;
             carry = unk1 & 1;
             unk1 = (unk1 >> 1) | 0x80;
         }
 
         if (carry)
         {
-            *target_ptr++ = source_io.eof() ? 0 : source_io.read_u8();
+            *target_ptr++ = source_ptr < source_guardian ? *source_ptr++ : 0;
             continue;
         }
 
-        u8 tmp1 = source_io.eof() ? 0 : source_io.read_u8();
-        u8 tmp2 = source_io.eof() ? 0 : source_io.read_u8();
+        u8 tmp1 = source_ptr < source_guardian ? *source_ptr++ : 0;
+        u8 tmp2 = source_ptr < source_guardian ? *source_ptr++ : 0;
         size_t length = ((~tmp2) & 0xF) + 3;
         i32 look_behind = (tmp1 | ((tmp2 << 4) & 0xF00)) + 18;
-        look_behind -= target_ptr - target;
+        look_behind -= target_ptr - target.get<u8>();
         look_behind |= 0xFFFFF000;
 
-        while (target_ptr - target + look_behind < 0
+        while (target_ptr - target.get<u8>() + look_behind < 0
             && length
             && target_ptr < target_guardian)
         {
@@ -51,5 +54,5 @@ void GmlDecoder::decode(io::BufferedIO &source_io, io::BufferedIO &target_io)
         }
     }
 
-    target_io.write(target, target_io.size());
+    return target;
 }

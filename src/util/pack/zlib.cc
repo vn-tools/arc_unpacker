@@ -8,14 +8,14 @@
 #define SIZE_MAX ((size_t) -1)
 #endif
 
-std::string au::util::pack::zlib_inflate(const std::string &input)
+bstr au::util::pack::zlib_inflate(const bstr &input)
 {
-    std::string output;
+    bstr output;
     size_t written = 0;
     output.reserve(input.size() * ((input.size() < SIZE_MAX / 10) ? 3 : 1));
 
     z_stream stream;
-    stream.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(input.data()));
+    stream.next_in = const_cast<Bytef*>(input.get<const Bytef>());
     stream.avail_in = input.size();
     stream.zalloc = nullptr;
     stream.zfree = nullptr;
@@ -29,12 +29,13 @@ std::string au::util::pack::zlib_inflate(const std::string &input)
     do
     {
         const size_t buffer_size = 8192;
-        std::unique_ptr<char[]> output_buffer(new char[buffer_size]);
-        stream.next_out = reinterpret_cast<Bytef*>(output_buffer.get());
+        bstr output_chunk;
+        output_chunk.resize(buffer_size);
+        stream.next_out = output_chunk.get<Bytef>();
         stream.avail_out = buffer_size;
         ret = inflate(&stream, 0);
         if (output.size() < stream.total_out)
-            output.append(output_buffer.get(), stream.total_out - written);
+            output += output_chunk.substr(0, stream.total_out - written);
         written = stream.total_out;
     }
     while (ret == Z_OK);

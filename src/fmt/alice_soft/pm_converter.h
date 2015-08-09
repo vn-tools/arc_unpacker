@@ -10,7 +10,8 @@ namespace alice_soft {
     class PmConverter final : public Converter
     {
     public:
-        std::unique_ptr<au::util::Image> decode_to_image(io::IO &io) const;
+        std::unique_ptr<au::util::Image> decode_to_image(
+            const bstr &data) const;
     protected:
         bool is_recognized_internal(File &) const override;
         std::unique_ptr<File> decode_internal(File &) const override;

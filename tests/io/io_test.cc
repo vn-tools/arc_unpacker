@@ -8,7 +8,7 @@ using namespace au::io;
 TEST_CASE("Reading real files works")
 {
     FileIO io("tests/files/reimu_transparent.png", FileMode::Read);
-    const std::string png_magic = "\x89PNG"_s;
+    static const bstr png_magic = "\x89PNG"_b;
     REQUIRE(io.read(png_magic.size()) == png_magic);
 }
 
@@ -33,18 +33,18 @@ TEST_CASE("Initial IO has proper data")
 
 TEST_CASE("NULL bytes in binary data don't cause anomalies")
 {
-    BufferedIO io("\x00\x00\x00\x01"_s);
+    BufferedIO io("\x00\x00\x00\x01"_b);
     REQUIRE(io.size() == 4);
     REQUIRE(io.read_u32_le() == 0x01000000);
     io.seek(0);
-    io.write("\x00\x00\x00\x02"_s);
+    io.write("\x00\x00\x00\x02"_b);
     io.seek(0);
     REQUIRE(io.read_u32_le() == 0x02000000);
 }
 
 TEST_CASE("Reading integers works")
 {
-    BufferedIO io("\x01\x00\x00\x00"_s);
+    BufferedIO io("\x01\x00\x00\x00"_b);
     REQUIRE(io.read_u32_le() == 1);
     REQUIRE(io.size() == 4);
 }
@@ -60,7 +60,7 @@ TEST_CASE("Writing integers works")
 
 TEST_CASE("Skipping and telling position works")
 {
-    BufferedIO io("\x01\x0F\x00\x00"_s);
+    BufferedIO io("\x01\x0F\x00\x00"_b);
     io.skip(1);
     REQUIRE(io.tell() == 1);
     REQUIRE(io.read_u16_le() == 15);
@@ -69,7 +69,7 @@ TEST_CASE("Skipping and telling position works")
 
 TEST_CASE("Seeking and telling position works")
 {
-    BufferedIO io("\x01\x00\x00\x00"_s);
+    BufferedIO io("\x01\x00\x00\x00"_b);
 
     REQUIRE(io.tell() == 0);
 
@@ -104,40 +104,40 @@ TEST_CASE("Seeking and telling position works")
 
 TEST_CASE("Reading NULL-terminated strings works")
 {
-    BufferedIO io("abc\x00""def\x00"_s);
-    REQUIRE(io.read_until_zero() == "abc\x00");
-    REQUIRE(io.read_until_zero() == "def\x00");
+    BufferedIO io("abc\x00""def\x00"_b);
+    REQUIRE(io.read_until_zero() == "abc"_b);
+    REQUIRE(io.read_until_zero() == "def"_b);
 }
 
 TEST_CASE("Reading lines works")
 {
-    BufferedIO io("line1\nline2\n"_s);
-    REQUIRE(io.read_line() == "line1");
-    REQUIRE(io.read_line() == "line2");
+    BufferedIO io("line1\nline2\n"_b);
+    REQUIRE(io.read_line() == "line1"_b);
+    REQUIRE(io.read_line() == "line2"_b);
 }
 
 TEST_CASE("Reading unterminated lines works")
 {
-    BufferedIO io("line"_s);
-    REQUIRE(io.read_line() == "line");
+    BufferedIO io("line"_b);
+    REQUIRE(io.read_line() == "line"_b);
 }
 
 TEST_CASE("Reading NULL-terminated lines works")
 {
-    BufferedIO io("line\x00"_s);
-    REQUIRE(io.read_line() == "line");
+    BufferedIO io("line\x00"_b);
+    REQUIRE(io.read_line() == "line"_b);
 }
 
 TEST_CASE("Reading lines containing carriage returns works")
 {
-    BufferedIO io("line1\r\nline2\r\n"_s);
-    REQUIRE(io.read_line() == "line1");
-    REQUIRE(io.read_line() == "line2");
+    BufferedIO io("line1\r\nline2\r\n"_b);
+    REQUIRE(io.read_line() == "line1"_b);
+    REQUIRE(io.read_line() == "line2"_b);
 }
 
 TEST_CASE("Reading strings works")
 {
-    BufferedIO io("abc\x00"_s);
+    BufferedIO io("abc\x00"_b);
     char result[2];
     io.read(result, 2);
     REQUIRE(memcmp("ab", result, 2) == 0);
@@ -145,8 +145,8 @@ TEST_CASE("Reading strings works")
 
 TEST_CASE("Writing strings works")
 {
-    BufferedIO io("abc\x00"_s);
-    io.write("xy"_s);
+    BufferedIO io("abc\x00"_b);
+    io.write("xy"_b);
     io.skip(-2);
     char result[3];
     io.read(result, 3);
@@ -155,7 +155,7 @@ TEST_CASE("Writing strings works")
 
 TEST_CASE("Reading integers with endianness conversions works")
 {
-    BufferedIO io("\x12\x34\x56\x78"_s);
+    BufferedIO io("\x12\x34\x56\x78"_b);
     REQUIRE(io.read_u8() == 0x12); io.skip(-1);
     REQUIRE(io.read_u16_le() == 0x3412); io.skip(-2);
     REQUIRE(io.read_u16_be() == 0x1234); io.skip(-2);

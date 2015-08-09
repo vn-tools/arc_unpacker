@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <string>
+#include "bstr.h"
 
 using u8 = uint8_t;
 using u16 = uint16_t;
@@ -24,9 +25,9 @@ constexpr const u8* operator "" _u8(const char *value, size_t n)
     return reinterpret_cast<const u8*>(value);
 }
 
-inline std::string operator "" _s(const char *value, size_t n)
+inline bstr operator "" _b(const char *value, size_t n)
 {
-    return std::string(value, n);
+    return bstr(value, n);
 }
 
 #endif

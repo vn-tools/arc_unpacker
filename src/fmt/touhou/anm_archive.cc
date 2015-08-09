@@ -47,12 +47,12 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static const std::string texture_magic = "THTX"_s;
+static const bstr texture_magic = "THTX"_b;
 
 static std::string read_name(io::IO &file_io, size_t offset)
 {
     std::string name;
-    file_io.peek(offset, [&]() { name = file_io.read_until_zero(); });
+    file_io.peek(offset, [&]() { name = file_io.read_until_zero().str(); });
     return name;
 }
 
@@ -205,17 +205,13 @@ static std::unique_ptr<File> read_texture(io::IO &file_io, Table &entries)
     if (!width || !height)
         return nullptr;
 
-    size_t pixel_data_size = width * height;
-    std::unique_ptr<u32[]> pixel_data(new u32[pixel_data_size]());
+    bstr pixels;
+    pixels.resize(width * height * 4);
     for (auto &entry : entries)
-        write_pixels(file_io, *entry, pixel_data.get(), width);
+        write_pixels(file_io, *entry, pixels.get<u32>(), width);
 
     std::unique_ptr<util::Image> image = util::Image::from_pixels(
-        width,
-        height,
-        std::string(
-            reinterpret_cast<char*>(pixel_data.get()), pixel_data_size * 4),
-        util::PixelFormat::BGRA);
+        width, height, pixels, util::PixelFormat::BGRA);
     return image->create_file(entries[0]->name);
 }
 

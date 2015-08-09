@@ -17,7 +17,7 @@
 using namespace au;
 using namespace au::fmt::alice_soft;
 
-static const std::string magic = "QNT\x00"_s;
+static const bstr magic = "QNT\x00"_b;
 
 namespace
 {
@@ -41,11 +41,11 @@ namespace
         std::unique_ptr<util::Image> to_image() const;
 
         size_t width, height;
-        std::unique_ptr<u8[]> pixels;
+        bstr pixels;
     };
 }
 
-static void deinterleave(PixelArray &pix, const std::string &input)
+static void deinterleave(PixelArray &pix, const bstr &input)
 {
     size_t expected_size = 3;
     expected_size *= ((pix.width + 1) / 2) * 2;
@@ -53,7 +53,7 @@ static void deinterleave(PixelArray &pix, const std::string &input)
     if (input.size() != expected_size)
         throw std::runtime_error("Unexpected color data size");
 
-    const u8 *input_ptr = reinterpret_cast<const u8*>(input.data());
+    const u8 *input_ptr = input.get<const u8>();
     size_t x, y;
     for (size_t i : util::range(2, -1, -1))
     {
@@ -115,7 +115,7 @@ static void apply_differences(PixelArray &pix)
     }
 }
 
-static void apply_alpha(PixelArray &pix, const std::string &input)
+static void apply_alpha(PixelArray &pix, const bstr &input)
 {
     if (!input.size())
         return;
@@ -127,7 +127,7 @@ static void apply_alpha(PixelArray &pix, const std::string &input)
     if (input.size() != expected_size)
         throw std::runtime_error("Unexpected alpha data size");
 
-    const u8 *input_ptr = reinterpret_cast<const u8*>(input.data());
+    const u8 *input_ptr = input.get<const u8>();
     if (pix.width > 1)
     {
         pix[{0, 0, 3}] = *input_ptr++;
@@ -155,24 +155,21 @@ static void apply_alpha(PixelArray &pix, const std::string &input)
 }
 
 PixelArray::PixelArray(size_t width, size_t height)
-    : width(width), height(height), pixels(new u8[width * height * 4])
+    : width(width), height(height)
 {
-    memset(pixels.get(), 0xFF, width * height * 4);
+    pixels.resize(width * height * 4);
+    memset(pixels.get<u8>(), 0xFF, pixels.size());
 }
 
 u8 &PixelArray::operator[](const PixelLocator &loc)
 {
-    return pixels[(loc.x + loc.y * width) * 4 + loc.channel];
+    return pixels.get<u8>((loc.x + loc.y * width) * 4 + loc.channel);
 }
 
 std::unique_ptr<util::Image> PixelArray::to_image() const
 {
     return util::Image::from_pixels(
-        width, height,
-        std::string(
-            reinterpret_cast<char*>(pixels.get()),
-            width * height * 4),
-        util::PixelFormat::RGBA);
+        width, height, pixels, util::PixelFormat::RGBA);
 }
 
 bool QntConverter::is_recognized_internal(File &file) const
@@ -200,8 +197,8 @@ std::unique_ptr<File> QntConverter::decode_internal(File &file) const
     auto alpha_size = file.io.read_u32_le();
     file.io.skip(24);
 
-    std::string color_data = util::pack::zlib_inflate(file.io.read(pixel_size));
-    std::string alpha_data;
+    bstr color_data = util::pack::zlib_inflate(file.io.read(pixel_size));
+    bstr alpha_data;
     if (alpha_size)
         alpha_data = util::pack::zlib_inflate(file.io.read(alpha_size));
 

@@ -16,12 +16,12 @@ namespace pack {
         bool reuse_compressed;
     };
 
-    std::string lzss_decompress(
-        const std::string &input,
+    bstr lzss_decompress(
+        const bstr &input,
         size_t orig_size,
         const LzssSettings &settings);
 
-    std::string lzss_decompress(
+    bstr lzss_decompress(
         io::BitReader &bit_reader,
         size_t orig_size,
         const LzssSettings &settings);

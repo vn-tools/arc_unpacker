@@ -62,12 +62,12 @@ static void nwa_validate_header(const NwaHeader &header)
     }
 }
 
-static std::string nwa_read_uncompressed(io::IO &io, const NwaHeader &header)
+static bstr nwa_read_uncompressed(io::IO &io, const NwaHeader &header)
 {
     return io.read(header.block_size * header.channel_count);
 }
 
-static std::string nwa_read_compressed(io::IO &, const NwaHeader &)
+static bstr nwa_read_compressed(io::IO &, const NwaHeader &)
 {
     throw std::runtime_error("Reading compressed streams is not supported");
 }
@@ -91,7 +91,7 @@ std::unique_ptr<File> NwaConverter::decode_internal(File &file) const
     header.block_size = file.io.read_u32_le();
     header.rest_size = file.io.read_u32_le();
 
-    std::string samples;
+    bstr samples;
 
     if (header.compression_level == -1
         || header.block_count == 0
@@ -107,7 +107,7 @@ std::unique_ptr<File> NwaConverter::decode_internal(File &file) const
         samples = nwa_read_compressed(file.io, header);
     }
 
-    std::unique_ptr<util::Sound> sound = util::Sound::from_samples(
+    auto sound = util::Sound::from_samples(
         header.channel_count,
         header.bits_per_sample / 8,
         header.sample_rate,

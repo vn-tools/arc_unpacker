@@ -10,6 +10,7 @@
 
 #include <array>
 #include "fmt/alice_soft/pm_converter.h"
+#include "io/buffered_io.h"
 #include "util/colors.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -17,16 +18,15 @@
 using namespace au;
 using namespace au::fmt::alice_soft;
 
-static const std::string magic = "PM\x02\x00"_s;
+static const bstr magic = "PM\x02\x00"_b;
 
-static std::string decompress(
-    const std::string &input, size_t width, size_t height)
+static bstr decompress(const bstr &input, size_t width, size_t height)
 {
-    auto output_size = width * height;
-    std::unique_ptr<u8[]> output(new u8[output_size]);
-    u8 *output_ptr = output.get();
-    const u8 *output_guardian = output_ptr + output_size;
-    const u8 *input_ptr = reinterpret_cast<const u8*>(input.data());
+    bstr output;
+    output.resize(width * height);
+    u8 *output_ptr = output.get<u8>();
+    const u8 *output_guardian = output_ptr + output.size();
+    const u8 *input_ptr = input.get<const u8>();
     const u8 *input_guardian = input_ptr + input.size();
 
     while (input_ptr < input_guardian && output_ptr < output_guardian)
@@ -87,10 +87,10 @@ static std::string decompress(
         }
     }
 
-    return std::string(reinterpret_cast<char*>(output.get()), output_size);
+    return output;
 }
 
-std::unique_ptr<util::Image> PmConverter::decode_to_image(io::IO &io) const
+static std::unique_ptr<util::Image> decode_to_image(io::IO &io)
 {
     io.skip(magic.size());
     io.skip(2);
@@ -119,14 +119,21 @@ std::unique_ptr<util::Image> PmConverter::decode_to_image(io::IO &io) const
     io.seek(data_offset);
     auto data = decompress(io.read_until_end(), width, height);
 
-    std::unique_ptr<u32[]> pixels(new u32[width * height]);
+    bstr pixels;
+    pixels.resize(width * height * 4);
+    u32 *pixels_ptr = pixels.get<u32>();
     for (auto i : util::range(width * height))
-        pixels[i] = palette[static_cast<u8>(data[i])];
+        *pixels_ptr++ = palette[static_cast<u8>(data[i])];
 
     return util::Image::from_pixels(
-        width, height,
-        std::string(reinterpret_cast<char*>(pixels.get()), width * height * 4),
-        util::PixelFormat::BGRA);
+        width, height, pixels, util::PixelFormat::BGRA);
+}
+
+std::unique_ptr<util::Image> PmConverter::decode_to_image(
+    const bstr &data) const
+{
+    io::BufferedIO tmp_io(data);
+    return ::decode_to_image(tmp_io);
 }
 
 bool PmConverter::is_recognized_internal(File &file) const
@@ -136,6 +143,6 @@ bool PmConverter::is_recognized_internal(File &file) const
 
 std::unique_ptr<File> PmConverter::decode_internal(File &file) const
 {
-    auto image = decode_to_image(file.io);
+    auto image = ::decode_to_image(file.io);
     return image->create_file(file.name);
 }

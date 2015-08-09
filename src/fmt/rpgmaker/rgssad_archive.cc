@@ -14,7 +14,7 @@
 using namespace au;
 using namespace au::fmt::rpgmaker;
 
-static const std::string magic = "RGSSAD\x00\x01"_s;
+static const bstr magic = "RGSSAD\x00\x01"_b;
 static const u32 initial_key = 0xDEADCAFE;
 
 static rgs::Table read_table(io::IO &arc_io, u32 key)
@@ -27,7 +27,7 @@ static rgs::Table read_table(io::IO &arc_io, u32 key)
 
         size_t name_length = arc_io.read_u32_le() ^ key;
         key = rgs::advance_key(key);
-        entry->name = arc_io.read(name_length);
+        entry->name = arc_io.read(name_length).str();
         for (auto i : util::range(name_length))
         {
             entry->name[i] ^= key;

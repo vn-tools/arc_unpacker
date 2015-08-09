@@ -12,7 +12,6 @@
 #include <iomanip>
 #include <map>
 #include <set>
-#include <sstream>
 #include <vector>
 #include "fmt/microsoft/dds_converter.h"
 #include "fmt/touhou/tfbm_converter.h"
@@ -21,9 +20,10 @@
 #include "fmt/touhou/tfwa_converter.h"
 #include "io/buffered_io.h"
 #include "util/colors.h"
-#include "util/encoding.h"
-#include "util/pack/zlib.h"
 #include "util/crypt/rsa.h"
+#include "util/encoding.h"
+#include "util/format.h"
+#include "util/pack/zlib.h"
 #include "util/range.h"
 
 using namespace au;
@@ -55,7 +55,7 @@ namespace
         size_t size;
         size_t offset;
         std::string name;
-        std::string key;
+        bstr key;
     };
 
     struct DirEntry
@@ -69,8 +69,8 @@ namespace
     using HashLookupMap = std::map<u32, std::string>;
 }
 
-static const std::string pal_magic = "TFPA\x00"_s;
-static const std::string magic = "TFPK"_s;
+static const bstr pal_magic = "TFPA\x00"_b;
+static const bstr magic = "TFPK"_b;
 
 static const std::vector<util::crypt::RsaKey> rsa_keys({
     //TH13.5 Japanese version
@@ -121,7 +121,7 @@ static const std::vector<util::crypt::RsaKey> rsa_keys({
 
 RsaReader::RsaReader(io::IO &io) : io(io)
 {
-    std::string test_chunk;
+    bstr test_chunk;
     io.peek(io.tell(), [&]() { test_chunk = io.read(0x40); });
 
     for (auto &rsa_key : rsa_keys)
@@ -151,11 +151,8 @@ size_t RsaReader::tell() const
 
 std::unique_ptr<io::BufferedIO> RsaReader::read_block()
 {
-    auto input = io.read(0x40);
-    std::unique_ptr<io::BufferedIO> block_io(
-        new io::BufferedIO(rsa->decrypt(input)));
-    block_io->truncate(0x20);
-    return block_io;
+    auto block = rsa->decrypt(io.read(0x40)).substr(0, 0x20);
+    return std::unique_ptr<io::BufferedIO>(new io::BufferedIO(block));
 }
 
 static u32 neg32(u32 x)
@@ -186,7 +183,7 @@ static u32 get_file_name_hash(
     u32 initial_hash = 0x811C9DC5)
 {
     std::string name_processed = util::utf8_to_sjis(
-        replace_slash_with_backslash(lower_ascii_only(name)));
+        replace_slash_with_backslash(lower_ascii_only(name))).str();
 
     if (version == TfpkVersion::Th135)
     {
@@ -213,12 +210,9 @@ static u32 get_file_name_hash(
 static std::string get_unknown_name(
     int index, u32 hash, const std::string &ext = ".dat")
 {
-    std::stringstream stream;
-    stream << std::setfill('0');
-    if (index > 0)
-        stream << std::dec << std::setw(5) << index << "-";
-    stream << std::setw(8) << std::hex << hash;
-    return "unk-" + stream.str() + ext;
+    if (index)
+        return util::format("unk-%05d-%08x%s", index, hash, ext.c_str());
+    return util::format("unk-%08x%s", hash, ext.c_str());
 }
 
 static std::string get_dir_name(DirEntry &dir_entry, HashLookupMap user_fn_map)
@@ -271,14 +265,13 @@ static HashLookupMap read_fn_map(
 
     for (auto &dir_entry : dir_entries)
     {
-        std::string dn = get_dir_name(*dir_entry, user_fn_map);
+        auto dn = get_dir_name(*dir_entry, user_fn_map);
         if (dn.size() > 0 && dn[dn.size() - 1] != '/')
             dn += "/";
 
         for (auto j : util::range(dir_entry->file_count))
         {
-            std::string fn = util::sjis_to_utf8(tmp_io->read_until_zero());
-
+            auto fn = util::sjis_to_utf8(tmp_io->read_until_zero()).str();
             auto hash = get_file_name_hash(
                 fn, version, dir_entry->initial_hash);
             fn_map[hash] = dn + fn;
@@ -356,20 +349,18 @@ static std::unique_ptr<File> read_file(
     io::IO &arc_io, const TableEntry &entry, TfpkVersion version)
 {
     std::unique_ptr<File> file(new File);
-    file->name = entry.name;
-
     arc_io.seek(entry.offset);
-    io::BufferedIO tmp_io(arc_io, entry.size);
+    auto data = arc_io.read(entry.size);
     size_t key_size = entry.key.size();
     if (version == TfpkVersion::Th135)
     {
         for (auto i : util::range(entry.size))
-            tmp_io.buffer()[i] ^= entry.key[i % key_size];
+            data[i] ^= entry.key[i % key_size];
     }
     else
     {
-        const u8 *key = reinterpret_cast<const u8*>(entry.key.c_str());
-        u8 *buf = reinterpret_cast<u8*>(tmp_io.buffer());
+        auto *key = entry.key.get<const u8>();
+        auto *buf = data.get<u8>();
         u8 aux[4];
         for (auto i : util::range(4))
             aux[i] = key[i];
@@ -380,9 +371,9 @@ static std::unique_ptr<File> read_file(
             aux[i%4] = tmp;
         }
     }
-    file->io.write_from_io(tmp_io);
+    file->io.write(data);
+    file->name = entry.name;
     file->guess_extension();
-
     return file;
 }
 
@@ -394,8 +385,9 @@ static Palette read_palette_file(
     if (pal_file->io.read(pal_magic.size()) != pal_magic)
         throw std::runtime_error("Not a TFPA palette file");
     size_t pal_size = pal_file->io.read_u32_le();
-    io::BufferedIO pal_io(util::pack::zlib_inflate(
-        pal_file->io.read(pal_size)));
+    io::BufferedIO pal_io(
+        util::pack::zlib_inflate(
+            pal_file->io.read(pal_size)));
     Palette palette;
     for (auto i : util::range(256))
         palette[i] = util::color::rgba5551(pal_io.read_u16_le());
@@ -469,7 +461,7 @@ void TfpkArchive::parse_cli_options(const ArgParser &arg_parser)
     {
         io::FileIO io(path, io::FileMode::Read);
         std::string line;
-        while ((line = io.read_line()) != "")
+        while ((line = io.read_line().str()) != "")
             p->fn_set.insert(line);
     }
 

@@ -16,9 +16,7 @@ namespace tlg {
 
         void init_dictionary(u8 dictionary[4096]);
 
-        void decompress(
-            u8 *input, size_t input_size,
-            u8 *output, size_t output_size);
+        bstr decompress(const bstr &input, size_t output_size);
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

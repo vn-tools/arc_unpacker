@@ -10,7 +10,7 @@ static void test(const boost::filesystem::path &path)
     FileSaverHdd file_saver(".", true);
 
     std::shared_ptr<File> file(new File);
-    file->io.write("test");
+    file->io.write("test"_b);
     file->name = path.string();
 
     file_saver.save(file);
@@ -19,7 +19,7 @@ static void test(const boost::filesystem::path &path)
     {
         io::FileIO file_io(path, io::FileMode::Read);
         REQUIRE(file_io.size() == 4);
-        REQUIRE(file_io.read_until_end() == "test");
+        REQUIRE(file_io.read_until_end() == "test"_b);
     }
     boost::filesystem::remove(path);
 }

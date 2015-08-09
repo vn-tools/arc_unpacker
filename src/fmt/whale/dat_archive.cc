@@ -36,7 +36,7 @@ namespace
         size_t offset;
         size_t size_original;
         size_t size_compressed;
-        std::string sjis_name;
+        bstr sjis_name;
     };
 
     using Table = std::vector<std::unique_ptr<TableEntry>>;
@@ -112,7 +112,7 @@ static u64 CRC_TABLE[0x100] =
     0x5DEDC41A34BBEEB2,0x1F1D25F19D51D821,0xD80C07CD676F8394,0x9AFCE626CE85B507
 };
 
-static u64 crc64(const std::string &buffer)
+static u64 crc64(const bstr &buffer)
 {
     u64 crc = 0xFFFFFFFFFFFFFFFF;
     for (auto i : util::range(buffer.size()))
@@ -125,7 +125,7 @@ static u64 crc64(const std::string &buffer)
 }
 
 static void transform_regular_content(
-    io::BufferedIO &io, const std::string &sjis_file_name)
+    io::BufferedIO &io, const bstr &sjis_file_name)
 {
     auto block_size = static_cast<size_t>(
         floor(io.size() / static_cast<float>(sjis_file_name.size())));
@@ -143,7 +143,7 @@ static void transform_regular_content(
 }
 
 static void transform_script_content(
-    io::BufferedIO &io, u64 hash, const std::string &sjis_game_title)
+    io::BufferedIO &io, u64 hash, const bstr &sjis_game_title)
 {
     u32 xor_value = (hash ^ crc64(sjis_game_title)) & 0xFFFFFFFF;
     u32 *buffer_ptr = reinterpret_cast<u32*>(io.buffer());
@@ -157,7 +157,7 @@ static u32 read_file_count(io::IO &arc_io)
 }
 
 static Table read_table(
-    io::IO &arc_io, std::map<u64, std::string> &sjis_file_names_map)
+    io::IO &arc_io, std::map<u64, bstr> &sjis_file_names_map)
 {
     Table table;
     auto file_count = read_file_count(arc_io);
@@ -204,10 +204,10 @@ static Table read_table(
 }
 
 static std::unique_ptr<File> read_file(
-    io::IO &arc_io, const TableEntry &entry, const std::string &sjis_game_title)
+    io::IO &arc_io, const TableEntry &entry, const bstr &sjis_game_title)
 {
     std::unique_ptr<File> file(new File);
-    file->name = util::sjis_to_utf8(entry.sjis_name);
+    file->name = util::sjis_to_utf8(entry.sjis_name).str();
 
     arc_io.seek(entry.offset);
     io::BufferedIO output_io(arc_io, entry.size_compressed);
@@ -230,8 +230,8 @@ static std::unique_ptr<File> read_file(
 
 struct DatArchive::Priv
 {
-    std::string sjis_game_title;
-    std::map<u64, std::string> sjis_file_names_map;
+    bstr sjis_game_title;
+    std::map<u64, bstr> sjis_file_names_map;
     fmt::kirikiri::TlgConverter tlg_converter;
 };
 
@@ -268,8 +268,8 @@ void DatArchive::parse_cli_options(const ArgParser &arg_parser)
     if (path != "")
     {
         io::FileIO io(path, io::FileMode::Read);
-        std::string line;
-        while ((line = io.read_line()) != "")
+        bstr line;
+        while ((line = io.read_line()) != ""_b)
         {
             line = util::utf8_to_sjis(line);
             p->sjis_file_names_map[crc64(line)] = line;

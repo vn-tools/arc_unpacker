@@ -57,22 +57,22 @@ void File::change_extension(const std::string &new_extension)
 
 void File::guess_extension()
 {
-    std::vector<std::pair<std::string, std::string>> definitions
+    std::vector<std::pair<std::string, bstr>> definitions
     {
-        { "b",      "abmp"_s         }, //QLiE
-        { "imoavi", "IMOAVI"_s       }, //QLiE
-        { "png",    "\x89PNG"_s      },
-        { "bmp",    "BM"_s           },
-        { "wav",    "RIFF"_s         },
-        { "ogg",    "OggS"_s         },
-        { "jpeg",   "\xFF\xD8\xFF"_s },
+        { "b",      "abmp"_b         }, //QLiE
+        { "imoavi", "IMOAVI"_b       }, //QLiE
+        { "png",    "\x89PNG"_b      },
+        { "bmp",    "BM"_b           },
+        { "wav",    "RIFF"_b         },
+        { "ogg",    "OggS"_b         },
+        { "jpeg",   "\xFF\xD8\xFF"_b },
     };
 
     size_t old_pos = io.tell();
     for (auto &def : definitions)
     {
         const std::string ext = def.first;
-        const std::string magic = def.second;
+        const bstr magic = def.second;
         io.seek(0);
         if (io.size() < magic.size()) continue;
         if (io.read(magic.size()) != magic) continue;

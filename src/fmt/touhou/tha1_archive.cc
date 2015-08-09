@@ -48,7 +48,7 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static const std::string magic = "THA1"_s;
+static const bstr magic = "THA1"_b;
 
 static std::vector<std::vector<DecryptorContext>> decryptors
 {
@@ -101,8 +101,7 @@ static std::vector<std::vector<DecryptorContext>> decryptors
     },
 };
 
-static std::string decompress(
-    io::IO &io, size_t size_compressed, size_t size_original)
+static bstr decompress(io::IO &io, size_t size_compressed, size_t size_original)
 {
     util::pack::LzssSettings settings;
     settings.position_bits = 13;
@@ -121,8 +120,8 @@ static std::string decompress(
 static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {
     std::unique_ptr<Header> header(new Header);
-    io::BufferedIO header_io;
-    decrypt(arc_io, 16, header_io, { 0x1B, 0x37, 0x10, 0x400 });
+    io::BufferedIO header_io(
+        decrypt(arc_io.read(16), { 0x1B, 0x37, 0x10, 0x400 }));
     if (header_io.read(magic.size()) != magic)
         throw std::runtime_error("Not a THA1 archive");
     header->table_size_original = header_io.read_u32_le() - 123456789;
@@ -135,13 +134,11 @@ static std::unique_ptr<Header> read_header(io::IO &arc_io)
 static std::unique_ptr<io::BufferedIO> read_raw_table(
     io::IO &arc_io, const Header &header)
 {
-    io::BufferedIO decrypted_io;
     arc_io.seek(header.table_offset);
-    decrypt(
-        arc_io,
-        header.table_size_compressed,
-        decrypted_io,
-        { 0x3E, 0x9B, 0x80, header.table_size_compressed });
+    io::BufferedIO decrypted_io(
+        decrypt(
+            arc_io.read(header.table_size_compressed),
+            { 0x3E, 0x9B, 0x80, header.table_size_compressed }));
 
     return std::unique_ptr<io::BufferedIO>(
         new io::BufferedIO(
@@ -160,7 +157,7 @@ static Table read_table(io::IO &arc_io, const Header &header)
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
 
-        entry->name = table_io->read_until_zero();
+        entry->name = table_io->read_until_zero().str();
         table_io->skip(3 - entry->name.length() % 4);
 
         entry->decryptor_id = 0;
@@ -193,12 +190,10 @@ static std::unique_ptr<File> read_file(
     file->name = entry.name;
 
     arc_io.seek(entry.offset);
-    io::BufferedIO decrypted_io;
-    decrypt(
-        arc_io,
-        entry.size_compressed,
-        decrypted_io,
-        decryptors[encryption_version][entry.decryptor_id]);
+    io::BufferedIO decrypted_io(
+        decrypt(
+            arc_io.read(entry.size_compressed),
+            decryptors[encryption_version][entry.decryptor_id]));
 
     if (entry.size_compressed == entry.size_original)
     {

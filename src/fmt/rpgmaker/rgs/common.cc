@@ -18,7 +18,7 @@ std::unique_ptr<File> rgs::read_file(io::IO &arc_io, TableEntry &entry)
 
     io::BufferedIO tmp_io;
     tmp_io.write_from_io(arc_io, entry.size);
-    tmp_io.write("\x00\x00\x00\x00"_s);
+    tmp_io.write("\x00\x00\x00\x00"_b);
     tmp_io.seek(0);
 
     u32 key = entry.key;

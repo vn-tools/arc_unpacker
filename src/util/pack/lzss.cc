@@ -3,17 +3,18 @@
 
 using namespace au;
 
-std::string au::util::pack::lzss_decompress(
-    const std::string &input, size_t orig_size, const LzssSettings &settings)
+bstr au::util::pack::lzss_decompress(
+    const bstr &input, size_t orig_size, const LzssSettings &settings)
 {
-    io::BitReader bit_reader(input.data(), input.size());
+    io::BitReader bit_reader(input);
     return lzss_decompress(bit_reader, orig_size, settings);
 }
 
-std::string au::util::pack::lzss_decompress(
+bstr au::util::pack::lzss_decompress(
     io::BitReader &bit_reader, size_t orig_size, const LzssSettings &settings)
 {
-    std::string output;
+    bstr output;
+    output.reserve(orig_size);
     size_t dictionary_size = 1 << settings.position_bits;
     size_t dictionary_pos = settings.initial_dictionary_pos;
     std::unique_ptr<u8[]> dictionary(new u8[dictionary_size]);
@@ -25,7 +26,7 @@ std::string au::util::pack::lzss_decompress(
         if (bit_reader.get(1) > 0)
         {
             u8 byte = bit_reader.get(8);
-            output.push_back(byte);
+            output += byte;
             dictionary_ptr[dictionary_pos] = byte;
             dictionary_pos++;
             dictionary_pos %= dictionary_size;
@@ -47,7 +48,7 @@ std::string au::util::pack::lzss_decompress(
                     dictionary_pos++;
                     dictionary_pos %= dictionary_size;
                 }
-                output.push_back(byte);
+                output += byte;
                 if (output.size() >= orig_size)
                     break;
             }

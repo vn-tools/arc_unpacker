@@ -50,13 +50,13 @@ namespace
     };
 }
 
-static const std::string magic_100 = "TArc1.00\x00\x00\x00\x00"_s;
-static const std::string magic_110 = "TArc1.10\x00\x00\x00\x00"_s;
+static const bstr magic_100 = "TArc1.00\x00\x00\x00\x00"_b;
+static const bstr magic_110 = "TArc1.10\x00\x00\x00\x00"_b;
 
-static std::string decrypt(
-    const std::string &input, size_t size, const std::string &key)
+static bstr decrypt(
+    const bstr &input, size_t size, const bstr &key)
 {
-    std::string output;
+    bstr output;
 
     util::crypt::Blowfish bf(key);
     size_t left = (size / bf.block_size()) * bf.block_size();
@@ -76,7 +76,7 @@ static std::vector<std::unique_ptr<TableDirectory>> read_table(
 
     io::BufferedIO table_io(
         util::pack::zlib_inflate(
-            decrypt(arc_io.read(table_size), table_size, "TLibArchiveData")));
+            decrypt(arc_io.read(table_size), table_size, "TLibArchiveData"_b)));
 
     std::vector<std::unique_ptr<TableDirectory>> directories;
     for (auto i : util::range(directory_count))
@@ -121,13 +121,13 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     arc_io.seek(entry.offset);
-    std::string data = arc_io.read(entry.size_compressed);
+    bstr data = arc_io.read(entry.size_compressed);
     if (entry.compressed)
         data = util::pack::zlib_inflate(data);
 
     if (!entry.compressed)
     {
-        std::string key = util::format("%llu_tlib_secure_", entry.hash);
+        bstr key = util::format("%llu_tlib_secure_", entry.hash);
         size_t bytes_to_decrypt = 10240;
         if (data.size() < bytes_to_decrypt)
             bytes_to_decrypt = data.size();
@@ -137,7 +137,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
                 data.substr(0, util::crypt::Blowfish::block_size()),
                 util::crypt::Blowfish::block_size(),
                 key).substr(0, 4);
-            if (header == "RIFF" || header == "TArc")
+            if (header == "RIFF"_b || header == "TArc"_b)
                 bytes_to_decrypt = data.size();
         }
 

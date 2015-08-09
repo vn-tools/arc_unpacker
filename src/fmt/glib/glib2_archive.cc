@@ -37,9 +37,9 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static const std::string table_magic = "CDBD"_s;
-static const std::string magic_21 = "GLibArchiveData2.1\x00"_s;
-static const std::string magic_20 = "GLibArchiveData2.0\x00"_s;
+static const bstr table_magic = "CDBD"_b;
+static const bstr magic_21 = "GLibArchiveData2.1\x00"_b;
+static const bstr magic_20 = "GLibArchiveData2.0\x00"_b;
 
 static const u32 table_decoder = 0x8465B49B;
 static const size_t header_size = 0x5C;
@@ -178,7 +178,7 @@ static const std::function<u8(u8, u8)> decoders[] =
     },
 };
 
-static void decode(u32 decoder, char *buffer, size_t size)
+static void decode(bstr &buffer, u32 decoder)
 {
     u32 target = ((decoder * 95) >> 13) & 0xFFFF;
     int index = -1;
@@ -201,7 +201,7 @@ static void decode(u32 decoder, char *buffer, size_t size)
     int dst_permutation = tmp2 - 5 * tmp1 - ((tmp2 - 5 * tmp1 < tmp1) - 1);
 
     u32 written = 0;
-    size_t left = size;
+    size_t left = buffer.size();
     while (left >= 4)
     {
         char temp_buffer[4];
@@ -214,26 +214,24 @@ static void decode(u32 decoder, char *buffer, size_t size)
             temp_buffer[dst_index] = output;
             written++;
         }
-        memcpy(buffer + written - 4, temp_buffer, 4);
+        memcpy(&buffer.get<u8>()[written - 4], temp_buffer, 4);
         left -= 4;
     }
     while (left--)
     {
-        u8 input = buffer[written];
+        u8 input = buffer.get<u8>()[written];
         u8 output = func1(func2(input, written), written);
-        buffer[written] = output;
+        buffer.get<u8>()[written] = output;
         written++;
     }
 }
 
 static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {
-    std::unique_ptr<Header> header(new Header);
-    std::unique_ptr<char[]> buffer(new char[header_size]);
-    arc_io.read(buffer.get(), header_size);
-    decode(table_decoder, buffer.get(), header_size);
+    auto buffer = arc_io.read(header_size);
+    decode(buffer, table_decoder);
 
-    io::BufferedIO header_io(buffer.get(), header_size);
+    io::BufferedIO header_io(buffer);
     if (header_io.read(magic_21.size()) != magic_21)
     {
         header_io.seek(0);
@@ -241,6 +239,8 @@ static std::unique_ptr<Header> read_header(io::IO &arc_io)
             throw std::runtime_error("Not a GLIB2 archive");
     }
     header_io.skip(1);
+
+    std::unique_ptr<Header> header(new Header);
     for (auto i : util::range(4))
     {
         header->keys[i] = header_io.read_u32_le();
@@ -296,7 +296,7 @@ static std::unique_ptr<TableEntry> read_table_entry(
         file_name_offset,
         [&]()
         {
-            std::string name = table_io.read_until_zero();
+            std::string name = table_io.read_until_zero().str();
             entry->name = parent_dir != -1
                 ? table[parent_dir]->name + "/" + name
                 : name;
@@ -308,12 +308,11 @@ static std::unique_ptr<TableEntry> read_table_entry(
 static Table read_table(io::IO &arc_io, Header &header)
 {
     arc_io.seek(header.table_offset);
-    std::unique_ptr<char[]> buffer(new char[header.table_size]);
-    arc_io.read(buffer.get(), header.table_size);
+    auto buffer = arc_io.read(header.table_size);
     for (auto i : util::range(4))
-        decode(header.keys[3 - i], buffer.get(), header.table_size);
+        decode(buffer, header.keys[3 - i]);
 
-    io::BufferedIO table_io(buffer.get(), header.table_size);
+    io::BufferedIO table_io(buffer);
     if (table_io.read(table_magic.size()) != table_magic)
         throw std::runtime_error("Corrupted file table");
 
@@ -338,9 +337,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     std::unique_ptr<File> file(new File);
     file->name = entry.name;
 
-    std::unique_ptr<char[]> buffer(new char[entry.size]);
     arc_io.seek(entry.offset);
-    arc_io.read(buffer.get(), entry.size);
 
     u8 key_id = 0;
     size_t chunk_size = 0x20000;
@@ -348,12 +345,13 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     {
         if (done + chunk_size > entry.size)
             chunk_size = entry.size - done;
-        decode(entry.keys[key_id], buffer.get() + done, chunk_size);
+        auto buffer = arc_io.read(chunk_size);
+        decode(buffer, entry.keys[key_id]);
+        file->io.write(buffer);
         key_id++;
         key_id %= 4;
     }
 
-    file->io.write(buffer.get(), entry.size);
     return file;
 }
 
@@ -374,15 +372,14 @@ Glib2Archive::~Glib2Archive()
 
 bool Glib2Archive::is_recognized_internal(File &arc_file) const
 {
-    io::BufferedIO buffer(arc_file.io, header_size);
-    decode(table_decoder, buffer.buffer(), header_size);
+    auto buffer = arc_file.io.read(header_size);
+    decode(buffer, table_decoder);
 
-    buffer.seek(0);
-    if (buffer.read(magic_21.size()) == magic_21)
+    io::BufferedIO header_io(buffer);
+    if (header_io.read(magic_21.size()) == magic_21)
         return true;
-
-    buffer.seek(0);
-    return buffer.read(magic_20.size()) == magic_20;
+    header_io.seek(0);
+    return header_io.read(magic_20.size()) == magic_20;
 }
 
 void Glib2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const

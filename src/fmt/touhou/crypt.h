@@ -1,6 +1,6 @@
 #ifndef AU_FMT_TOUHOU_CRYPT_H
 #define AU_FMT_TOUHOU_CRYPT_H
-#include "io/io.h"
+#include "types.h"
 
 namespace au {
 namespace fmt {
@@ -16,11 +16,7 @@ namespace touhou {
         bool operator ==(const DecryptorContext &other) const;
     };
 
-    void decrypt(
-        io::IO &input,
-        size_t size,
-        io::IO &output,
-        const DecryptorContext &context);
+    bstr decrypt(const bstr &input, const DecryptorContext &context);
 
 } } }
 

@@ -2,7 +2,6 @@
 #define AU_UTIL_CRYPT_RSA_H
 
 #include <memory>
-#include <string>
 #include <array>
 #include "types.h"
 
@@ -21,7 +20,7 @@ namespace crypt {
     public:
         Rsa(const RsaKey &key);
         ~Rsa();
-        std::string decrypt(const std::string &input) const;
+        bstr decrypt(const bstr &input) const;
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

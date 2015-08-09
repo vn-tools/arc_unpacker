@@ -1,7 +1,9 @@
 #include <memory>
 #include "util/endian.h"
+#include "util/range.h"
 #include "io/io.h"
 
+using namespace au;
 using namespace au::io;
 
 IO::~IO()
@@ -29,27 +31,40 @@ bool IO::eof() const
     return tell() == size();
 }
 
-std::string IO::read_until_zero()
+bstr IO::read(size_t bytes)
 {
-    std::string output;
+    bstr ret;
+    ret.resize(bytes);
+    read(&ret[0], bytes);
+    return ret;
+}
+
+bstr IO::read_until_zero()
+{
+    bstr output;
     char c;
     while ((c = read_u8()) != '\0')
-        output.push_back(c);
+        output += c;
     return output;
 }
 
-std::string IO::read_until_zero(size_t bytes)
+bstr IO::read_until_zero(size_t bytes)
 {
-    std::string output = read(bytes);
-    size_t pos = output.find('\x00');
-    if (pos != std::string::npos)
-        output = output.substr(0, pos);
+    bstr output = read(bytes);
+    for (auto i : util::range(output.size()))
+        if (!output[i])
+            return output.substr(0, i);
     return output;
 }
 
-std::string IO::read_line()
+bstr IO::read_until_end()
 {
-    std::string output;
+    return read(size() - tell());
+}
+
+bstr IO::read_line()
+{
+    bstr output;
     char c;
     while (!eof())
     {
@@ -57,21 +72,9 @@ std::string IO::read_line()
         if (c == '\0' || c == '\n')
             break;
         if (c != '\r')
-            output.push_back(c);
+            output += c;
     }
     return output;
-}
-
-std::string IO::read_until_end()
-{
-    return read(size() - tell());
-}
-
-std::string IO::read(size_t bytes)
-{
-    std::unique_ptr<char[]> buffer(new char[bytes]);
-    read(buffer.get(), bytes);
-    return std::string(buffer.get(), bytes);
 }
 
 u8 IO::read_u8()
@@ -128,9 +131,9 @@ void IO::write_from_io(IO &input)
     write_from_io(input, input.size() - input.tell());
 }
 
-void IO::write(const std::string &bytes)
+void IO::write(const bstr &bytes)
 {
-    write(bytes.data(), bytes.size());
+    write(bytes.get<char>(), bytes.size());
 }
 
 void IO::write_u8(u8 value)

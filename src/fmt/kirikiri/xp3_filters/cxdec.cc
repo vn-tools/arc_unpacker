@@ -7,8 +7,8 @@ using namespace au;
 using namespace au::fmt::kirikiri::xp3_filters;
 
 static const size_t encryption_block_size = 4096;
-static const std::string encryption_block_magic =
-    "\x20\x45\x6E\x63\x72\x79\x70\x74\x69\x6F\x6E\x20\x63\x6F\x6E\x74"_s;
+static const bstr encryption_block_magic =
+    "\x20\x45\x6E\x63\x72\x79\x70\x74\x69\x6F\x6E\x20\x63\x6F\x6E\x74"_b;
 
 namespace
 {
@@ -31,12 +31,12 @@ namespace
     private:
         const CxdecSettings &settings;
         const std::array<char, encryption_block_size> encryption_block;
-        std::string shellcode;
+        bstr shellcode;
         u32 seed;
         size_t parameter;
         u32 encryption_block_addr;
 
-        void add_shellcode(const std::string &bytes_s);
+        void add_shellcode(const bstr &bytes_s);
         u32 rand();
         u32 derive_for_stage(size_t stage);
         u32 run_first_stage();
@@ -45,9 +45,9 @@ namespace
     };
 }
 
-static std::string u32_to_string(u32 value)
+static bstr u32_to_string(u32 value)
 {
-    return std::string(reinterpret_cast<char*>(&value), 4);
+    return bstr(reinterpret_cast<char*>(&value), 4);
 }
 
 KeyDeriver::KeyDeriver(
@@ -93,7 +93,7 @@ u32 KeyDeriver::derive(u32 seed, u32 parameter)
         "Failed to derive the key from the parameter");
 }
 
-void KeyDeriver::add_shellcode(const std::string &bytes)
+void KeyDeriver::add_shellcode(const bstr &bytes)
 {
     // The execution for current stage must fail when we run code for too long.
     shellcode += bytes;
@@ -113,21 +113,21 @@ u32 KeyDeriver::rand()
 
 u32 KeyDeriver::derive_for_stage(size_t stage)
 {
-    shellcode = "";
+    shellcode = ""_b;
 
     // push edi, push esi, push ebx, push ecx, push edx
-    add_shellcode("\x57\x56\x53\x51\x52"_s);
+    add_shellcode("\x57\x56\x53\x51\x52"_b);
 
     // mov edi, dword ptr ss:[esp+18] (esp+18 == parameter)
-    add_shellcode("\x86\x7C\x24\x18"_s);
+    add_shellcode("\x86\x7C\x24\x18"_b);
 
     u32 eax = run_stage_strategy_1(stage);
 
     // pop edx, pop ecx, pop ebx, pop esi, pop edi
-    add_shellcode("\x5A\x59\x5B\x5E\x5F"_s);
+    add_shellcode("\x5A\x59\x5B\x5E\x5F"_b);
 
     // retn
-    add_shellcode("\xC3"_s);
+    add_shellcode("\xC3"_b);
 
     return eax;
 }
@@ -142,7 +142,7 @@ u32 KeyDeriver::run_first_stage()
         case 0:
         {
             // mov eax, rand()
-            add_shellcode("\xB8"_s);
+            add_shellcode("\xB8"_b);
             u32 tmp = rand();
             add_shellcode(u32_to_string(tmp));
             eax = tmp;
@@ -151,18 +151,18 @@ u32 KeyDeriver::run_first_stage()
 
         case 1:
             // mov eax, edi
-            add_shellcode("\xB8\xC7"_s);
+            add_shellcode("\xB8\xC7"_b);
             eax = parameter;
             break;
 
         case 2:
         {
             // mov esi, &encryption_block
-            add_shellcode("\xBE"_s);
+            add_shellcode("\xBE"_b);
             add_shellcode(u32_to_string(encryption_block_addr));
 
             // mov eax, dword ptr ds:[esi+((rand() & 0x3FF) * 4]
-            add_shellcode("\x8B\x86"_s);
+            add_shellcode("\x8B\x86"_b);
             u32 pos = (rand() & 0x3FF) * 4;
             add_shellcode(u32_to_string(pos));
 
@@ -192,38 +192,38 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
     {
         case 0:
             // not eax
-            add_shellcode("\xF7\xD0"_s);
+            add_shellcode("\xF7\xD0"_b);
             eax ^= 0xFFFFFFFF;
             break;
 
         case 1:
             // dec eax
-            add_shellcode("\x48"_s);
+            add_shellcode("\x48"_b);
             eax -= 1;
             break;
 
         case 2:
             // neg eax
-            add_shellcode("\xF7\xD8"_s);
+            add_shellcode("\xF7\xD8"_b);
             eax = static_cast<u32>(-static_cast<i32>(eax));
             break;
 
         case 3:
             // inc eax
-            add_shellcode("\x40"_s);
+            add_shellcode("\x40"_b);
             eax += 1;
             break;
 
         case 4:
             // mov esi, &encryption_block
-            add_shellcode("\xBE"_s);
+            add_shellcode("\xBE"_b);
             add_shellcode(u32_to_string(encryption_block_addr));
 
             // and eax, 3ff
-            add_shellcode("\x25\xFF\x03\x00\x00"_s);
+            add_shellcode("\x25\xFF\x03\x00\x00"_b);
 
             // mov eax, dword ptr ds:[esi+eax*4]
-            add_shellcode("\x8B\x04\x86"_s);
+            add_shellcode("\x8B\x04\x86"_b);
 
             eax = *reinterpret_cast<const u32*>(
                 &encryption_block[(eax & 0x3FF) * 4]);
@@ -232,28 +232,28 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
         case 5:
         {
             // push ebx
-            add_shellcode("\x53"_s);
+            add_shellcode("\x53"_b);
 
             // mov ebx, eax
-            add_shellcode("\x89\xC3"_s);
+            add_shellcode("\x89\xC3"_b);
 
             // and ebx, aaaaaaaa
-            add_shellcode("\x81\xE3\xAA\xAA\xAA\xAA"_s);
+            add_shellcode("\x81\xE3\xAA\xAA\xAA\xAA"_b);
 
             // and eax, 55555555
-            add_shellcode("\x25\x55\x55\x55\x55"_s);
+            add_shellcode("\x25\x55\x55\x55\x55"_b);
 
             // shr ebx, 1
-            add_shellcode("\xD1\xEB"_s);
+            add_shellcode("\xD1\xEB"_b);
 
             // shl eax, 1
-            add_shellcode("\xD1\xE0"_s);
+            add_shellcode("\xD1\xE0"_b);
 
             // or eax, ebx
-            add_shellcode("\x09\xD8"_s);
+            add_shellcode("\x09\xD8"_b);
 
             // pop ebx
-            add_shellcode("\x5B"_s);
+            add_shellcode("\x5B"_b);
 
             u32 ebx = eax;
             ebx &= 0xAAAAAAAA;
@@ -267,7 +267,7 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
         case 6:
         {
             // xor eax, rand()
-            add_shellcode("\x35"_s);
+            add_shellcode("\x35"_b);
             u32 tmp = rand();
             add_shellcode(u32_to_string(tmp));
 
@@ -280,7 +280,7 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
             if (rand() & 1)
             {
                 // add eax, rand()
-                add_shellcode("\x05"_s);
+                add_shellcode("\x05"_b);
                 u32 tmp = rand();
                 add_shellcode(u32_to_string(tmp));
 
@@ -289,7 +289,7 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
             else
             {
                 // sub eax, rand()
-                add_shellcode("\x2D"_s);
+                add_shellcode("\x2D"_b);
                 u32 tmp = rand();
                 add_shellcode(u32_to_string(tmp));
 
@@ -311,14 +311,14 @@ u32 KeyDeriver::run_stage_strategy_1(size_t stage)
         return run_first_stage();
 
     // push ebx
-    add_shellcode("\x53"_s);
+    add_shellcode("\x53"_b);
 
     u32 eax = (rand() & 1)
         ? run_stage_strategy_1(stage - 1)
         : run_stage_strategy_0(stage - 1);
 
     // mov ebx, eax
-    add_shellcode("\x89\xC3"_s);
+    add_shellcode("\x89\xC3"_b);
     u32 ebx = eax;
 
     eax = (rand() & 1)
@@ -331,19 +331,19 @@ u32 KeyDeriver::run_stage_strategy_1(size_t stage)
         case 0:
         {
             // push ecx
-            add_shellcode("\x51"_s);
+            add_shellcode("\x51"_b);
 
             // mov ecx, ebx
-            add_shellcode("\x89\xD9"_s);
+            add_shellcode("\x89\xD9"_b);
 
             // and ecx, 0f
-            add_shellcode("\x83\xE1\x0F"_s);
+            add_shellcode("\x83\xE1\x0F"_b);
 
             // shr eax, cl
-            add_shellcode("\xD3\xE8"_s);
+            add_shellcode("\xD3\xE8"_b);
 
             // pop ecx
-            add_shellcode("\x59"_s);
+            add_shellcode("\x59"_b);
 
             u8 ecx = ebx & 0x0F;
             eax >>= ecx;
@@ -353,19 +353,19 @@ u32 KeyDeriver::run_stage_strategy_1(size_t stage)
         case 1:
         {
             // push ecx
-            add_shellcode("\x51"_s);
+            add_shellcode("\x51"_b);
 
             // mov ecx, ebx
-            add_shellcode("\x89\xD9"_s);
+            add_shellcode("\x89\xD9"_b);
 
             // and ecx, 0f
-            add_shellcode("\x83\xE1\x0F"_s);
+            add_shellcode("\x83\xE1\x0F"_b);
 
             // shl eax, cl
-            add_shellcode("\xD3\xE0"_s);
+            add_shellcode("\xD3\xE0"_b);
 
             // pop ecx
-            add_shellcode("\x59"_s);
+            add_shellcode("\x59"_b);
 
             u8 ecx = ebx & 0x0F;
             eax <<= ecx;
@@ -374,27 +374,27 @@ u32 KeyDeriver::run_stage_strategy_1(size_t stage)
 
         case 2:
             // add eax, ebx
-            add_shellcode("\x01\xD8"_s);
+            add_shellcode("\x01\xD8"_b);
             eax += ebx;
             break;
 
         case 3:
             // neg eax
-            add_shellcode("\xF7\xD8"_s);
+            add_shellcode("\xF7\xD8"_b);
             // add eax, ebx
-            add_shellcode("\x01\xD8"_s);
+            add_shellcode("\x01\xD8"_b);
             eax = ebx - eax;
             break;
 
         case 4:
             // imul eax, ebx
-            add_shellcode("\x0F\xAF\xC3"_s);
+            add_shellcode("\x0F\xAF\xC3"_b);
             eax *= ebx;
             break;
 
         case 5:
             // sub eax, ebx
-            add_shellcode("\x29\xD8"_s);
+            add_shellcode("\x29\xD8"_b);
             eax -= ebx;
             break;
 
@@ -403,7 +403,7 @@ u32 KeyDeriver::run_stage_strategy_1(size_t stage)
     }
 
     // pop ebx
-    add_shellcode("\x5B"_s);
+    add_shellcode("\x5B"_b);
 
     return eax;
 }
@@ -429,22 +429,20 @@ static void decrypt_chunk(
     size_t offset0 = ret1 >> 16;
     size_t offset1 = ret1 & 0xFFFF;
 
-    std::unique_ptr<char[]> data(new char[size]);
-    char *ptr = data.get();
     io.seek(base_offset);
-    io.read(ptr, size);
+    auto data = io.read(size);
 
     if (offset0 >= base_offset && offset0 < base_offset + size)
-        ptr[offset0 - base_offset] ^= xor0;
+        data[offset0 - base_offset] ^= xor0;
 
     if (offset1 >= base_offset && offset1 < base_offset + size)
-        ptr[offset1 - base_offset] ^= xor1;
+        data[offset1 - base_offset] ^= xor1;
 
     for (auto i : util::range(size))
-        ptr[i] ^= xor2;
+        data[i] ^= xor2;
 
     io.seek(base_offset);
-    io.write(ptr, size);
+    io.write(data);
 }
 
 struct Cxdec::Priv
@@ -492,9 +490,9 @@ void Cxdec::set_arc_path(const std::string &path)
             continue;
 
         io::FileIO tmp_io(it->path(), io::FileMode::Read);
-        std::string content = tmp_io.read_until_end();
+        bstr content = tmp_io.read_until_end();
         auto pos = content.find(encryption_block_magic);
-        if (pos == std::string::npos)
+        if (pos == bstr::npos)
         {
             throw std::runtime_error(
                 "Encryption file found, but without encryption block");

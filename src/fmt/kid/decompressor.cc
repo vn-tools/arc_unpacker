@@ -1,64 +1,66 @@
 #include "fmt/kid/decompressor.h"
-#include "io/buffered_io.h"
-#include "util/format.h"
 #include "util/range.h"
 
 using namespace au;
 
-std::unique_ptr<io::IO> au::fmt::kid::decompress(
-    io::IO &input_io, size_t size_original)
+bstr au::fmt::kid::decompress(const bstr &input, size_t size_original)
 {
-    std::unique_ptr<io::BufferedIO> output_io(new io::BufferedIO);
-    output_io->reserve(size_original);
-    while (output_io->tell() < size_original)
+    bstr output;
+    output.resize(size_original);
+
+    u8 *output_ptr = output.get<u8>();
+    const u8 *output_guardian = output_ptr + output.size();
+
+    const u8 *input_ptr = input.get<u8>();
+
+    while (output_ptr < output_guardian)
     {
-        if (input_io.eof())
-        {
-            throw std::runtime_error(util::format(
-                "EOF reached at %d/%d", output_io->tell(), size_original));
-        }
-        u8 byte = input_io.read_u8();
+        u8 byte = *input_ptr++;
         if (byte & 0x80)
         {
             if (byte & 0x40)
             {
                 int repetitions = (byte & 0x1F) + 2;
                 if (byte & 0x20)
-                    repetitions += input_io.read_u8() << 5;
-                u8 data_byte = input_io.read_u8();
+                    repetitions += *input_ptr++ << 5;
                 for (auto i : util::range(repetitions))
-                    output_io->write_u8(data_byte);
+                    *output_ptr++ = *input_ptr;
+                input_ptr++;
             }
             else
             {
                 int length = ((byte >> 2) & 0xF) + 2;
-                int look_behind = ((byte & 3) << 8) + input_io.read_u8() + 1;
-                size_t start_pos = output_io->tell() - look_behind;
-                if (start_pos > output_io->tell())
-                    start_pos = output_io->tell();
+                int look_behind = ((byte & 3) << 8) + *input_ptr++ + 1;
+                if (look_behind < 0)
+                    look_behind = 0;
                 for (auto i : util::range(length))
-                    output_io->write_u8(output_io->buffer()[start_pos + i]);
+                {
+                    u8 tmp = output_ptr[-look_behind];
+                    *output_ptr++ = tmp;
+                }
             }
         }
         else
         {
             if (byte & 0x40)
             {
-                int repetitions = input_io.read_u8() + 1;
+                int repetitions = *input_ptr++ + 1;
                 int length = (byte & 0x3F) + 2;
-                auto chunk = input_io.read(length);
                 for (auto i : util::range(repetitions))
-                    output_io->write(chunk);
+                    for (auto i : util::range(length))
+                        *output_ptr++ += input_ptr[i];
+                input_ptr += length;
             }
             else
             {
                 int length = (byte & 0x1F) + 1;
                 if (byte & 0x20)
-                    length += input_io.read_u8() << 5;
-                output_io->write(input_io.read(length));
+                    length += *input_ptr++ << 5;
+                for (auto i : util::range(length))
+                    *output_ptr++ = *input_ptr++;
             }
         }
     }
-    output_io->seek(0);
-    return std::unique_ptr<io::IO>(std::move(output_io));
+
+    return output;
 }

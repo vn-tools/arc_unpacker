@@ -12,6 +12,7 @@
 #include "io/buffered_io.h"
 #include "util/colors.h"
 #include "util/endian.h"
+#include "util/format.h"
 #include "util/image.h"
 #include "util/range.h"
 
@@ -43,7 +44,7 @@ namespace
     {
         u32 size;
         DdsPixelFormatFlags flags;
-        std::string four_cc;
+        bstr four_cc;
         u32 rgb_bit_count;
         u32 r_bit_mask;
         u32 g_bit_mask;
@@ -86,13 +87,13 @@ namespace
     };
 }
 
-static const std::string magic = "DDS\x20"_s;
-static const std::string magic_dxt1 = "DXT1"_s;
-static const std::string magic_dxt2 = "DXT2"_s;
-static const std::string magic_dxt3 = "DXT3"_s;
-static const std::string magic_dxt4 = "DXT4"_s;
-static const std::string magic_dxt5 = "DXT5"_s;
-static const std::string magic_dx10 = "DX10"_s;
+static const bstr magic = "DDS\x20"_b;
+static const bstr magic_dxt1 = "DXT1"_b;
+static const bstr magic_dxt2 = "DXT2"_b;
+static const bstr magic_dxt3 = "DXT3"_b;
+static const bstr magic_dxt4 = "DXT4"_b;
+static const bstr magic_dxt5 = "DXT5"_b;
+static const bstr magic_dx10 = "DX10"_b;
 
 static void fill_pixel_format(io::IO &io, DdsPixelFormat &pixel_format)
 {
@@ -321,8 +322,9 @@ std::unique_ptr<File> DdsConverter::decode_internal(File &file) const
             pixels_io = decode_dxt5(file.io, header->width, header->height);
         else
         {
-            throw std::runtime_error(
-                header->pixel_format.four_cc + " textures are not supported");
+            throw std::runtime_error(util::format(
+                "%s textures are not supported",
+                header->pixel_format.four_cc.get<char>()));
         }
     }
     else if (header->pixel_format.flags & DDPF_RGB)

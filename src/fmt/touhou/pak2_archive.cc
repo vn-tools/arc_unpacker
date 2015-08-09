@@ -34,37 +34,29 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static void decrypt(io::IO &io, u32 mt_seed, u8 a, u8 b, u8 delta)
+static void decrypt(bstr &buffer, u32 mt_seed, u8 a, u8 b, u8 delta)
 {
-    size_t size = io.size();
-    std::unique_ptr<char[]> buffer(new char[size]);
-    io.seek(0);
-    io.read(buffer.get(), size);
     util::mt::init_genrand(mt_seed);
-    for (auto i : util::range(size))
+    for (auto i : util::range(buffer.size()))
     {
         buffer[i] ^= util::mt::genrand_int32();
         buffer[i] ^= a;
         a += b;
         b += delta;
     }
-    io.seek(0);
-    io.write(buffer.get(), size);
-    io.seek(0);
 }
 
 static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
-    std::unique_ptr<char[]> data(new char[entry.size]);
     arc_io.seek(entry.offset);
-    arc_io.read(data.get(), entry.size);
+    auto data = arc_io.read(entry.size);
 
     u8 key = (entry.offset >> 1) | 0x23;
     for (auto i : util::range(entry.size))
         data[i] ^= key;
 
     std::unique_ptr<File> file(new File);
-    file->io.write(data.get(), entry.size);
+    file->io.write(data);
     file->name = entry.name;
     return file;
 }
@@ -77,10 +69,9 @@ static std::unique_ptr<io::BufferedIO> read_raw_table(
         throw std::runtime_error("Not a PAK2 archive");
     if (table_size > file_count * (4 + 4 + 256 + 1))
         throw std::runtime_error("Not a PAK2 archive");
-    std::unique_ptr<io::BufferedIO> table_io(new io::BufferedIO());
-    table_io->write_from_io(arc_io, table_size);
-    decrypt(*table_io, table_size + 6, 0xC5, 0x83, 0x53);
-    return table_io;
+    auto buffer = arc_io.read(table_size);
+    decrypt(buffer, table_size + 6, 0xC5, 0x83, 0x53);
+    return std::unique_ptr<io::BufferedIO>(new io::BufferedIO(buffer));
 }
 
 static Table read_table(io::IO &arc_io)
@@ -96,7 +87,8 @@ static Table read_table(io::IO &arc_io)
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->offset = table_io->read_u32_le();
         entry->size = table_io->read_u32_le();
-        entry->name = util::sjis_to_utf8(table_io->read(table_io->read_u8()));
+        auto name_size = table_io->read_u8();
+        entry->name = util::sjis_to_utf8(table_io->read(name_size)).str();
         if (entry->offset + entry->size > arc_io.size())
             throw std::runtime_error("Bad offset to file");
         table.push_back(std::move(entry));

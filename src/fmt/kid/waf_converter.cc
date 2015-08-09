@@ -13,7 +13,7 @@
 using namespace au;
 using namespace au::fmt::kid;
 
-static const std::string magic = "WAF\x00\x00\x00"_s;
+static const bstr magic = "WAF\x00\x00\x00"_b;
 
 bool WafConverter::is_recognized_internal(File &file) const
 {
@@ -26,10 +26,10 @@ std::unique_ptr<File> WafConverter::decode_internal(File &file) const
 
     file.io.skip(6);
 
-    output_file->io.write("RIFF");
-    output_file->io.write("\x00\x00\x00\x00"_s);
-    output_file->io.write("WAVE");
-    output_file->io.write("fmt\x20");
+    output_file->io.write("RIFF"_b);
+    output_file->io.write("\x00\x00\x00\x00"_b);
+    output_file->io.write("WAVE"_b);
+    output_file->io.write("fmt\x20"_b);
     output_file->io.write_u32_le(50); //fmt header size
     output_file->io.write_u16_le(2); //compression type - some kind of ADPCM
     output_file->io.write_u16_le(file.io.read_u16_le()); //channels
@@ -41,7 +41,7 @@ std::unique_ptr<File> WafConverter::decode_internal(File &file) const
     output_file->io.write_u16_le(32); //additional header size?
     output_file->io.write(file.io.read(32)); //aditional header?
 
-    output_file->io.write("data");
+    output_file->io.write("data"_b);
     output_file->io.write(file.io.read_until_end());
 
     output_file->io.seek(4);

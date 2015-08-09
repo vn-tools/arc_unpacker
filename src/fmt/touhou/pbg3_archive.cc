@@ -35,7 +35,7 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static const std::string magic = "PBG3"_s;
+static const bstr magic = "PBG3"_b;
 
 static unsigned int read_integer(io::BitReader &bit_reader)
 {

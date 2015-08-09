@@ -21,7 +21,7 @@ namespace
 {
     struct DosHeader
     {
-        std::string magic;
+        bstr magic;
         u16 e_cblp;
         u16 e_cp;
         u16 e_crlc;
@@ -291,7 +291,7 @@ ImageDataDir::ImageDataDir(io::IO &io)
 
 ImageSectionHeader::ImageSectionHeader(io::IO &io)
 {
-    name                    = io.read(8);
+    name                    = io.read(8).str();
     virtual_size            = io.read_u32_le();
     virtual_address         = io.read_u32_le();
     size_of_raw_data        = io.read_u32_le();
@@ -448,8 +448,8 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
     {
         args.io.seek(args.base_offset + entry.name_offset);
         size_t max_length = args.io.read_u16_le();
-        std::string utf16le = args.io.read(max_length * 2);
-        return util::convert_encoding(utf16le, "utf-16le", "utf-8");
+        bstr name_utf16 = args.io.read(max_length * 2);
+        return util::convert_encoding(name_utf16, "utf-16le", "utf-8").str();
     }
 
     switch (entry.id)
@@ -481,7 +481,7 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
 bool ExeArchive::is_recognized_internal(File &arc_file) const
 {
     DosHeader dos_header(arc_file.io);
-    return dos_header.magic == "MZ";
+    return dos_header.magic == "MZ"_b;
 }
 
 void ExeArchive::unpack_internal(File &file, FileSaver &file_saver) const

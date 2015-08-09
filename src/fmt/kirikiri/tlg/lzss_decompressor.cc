@@ -30,50 +30,49 @@ void LzssDecompressor::init_dictionary(u8 dictionary[4096])
         p->dictionary[i] = dictionary[i];
 }
 
-void LzssDecompressor::decompress(
-    u8 *input, size_t input_size,
-    u8 *output, size_t output_size)
+bstr LzssDecompressor::decompress(const bstr &input, size_t output_size)
 {
-    u8 *input_guardian = input + input_size;
-    u8 *output_guardian = output + output_size;
-
-    for (auto i : util::range(output_size))
-        output[i] = 0;
+    bstr output;
+    output.resize(output_size);
+    u8 *output_ptr = output.get<u8>();
+    const u8 *input_ptr = input.get<u8>();
+    const u8 *input_guardian = input_ptr + input.size();
+    const u8 *output_guardian = output_ptr + output.size();
 
     int flags = 0;
-    while (input < input_guardian)
+    while (input_ptr < input_guardian)
     {
         flags >>= 1;
         if ((flags & 0x100) != 0x100)
         {
-            if (input >= input_guardian)
-                return;
-            flags = *input++ | 0xFF00;
+            if (input_ptr >= input_guardian)
+                return output;
+            flags = *input_ptr++ | 0xFF00;
         }
 
         if ((flags & 1) == 1)
         {
-            if (input >= input_guardian)
-                return;
-            u8 x0 = *input++;
-            if (input >= input_guardian)
-                return;
-            u8 x1 = *input++;
+            if (input_ptr >= input_guardian)
+                return output;
+            u8 x0 = *input_ptr++;
+            if (input_ptr >= input_guardian)
+                return output;
+            u8 x1 = *input_ptr++;
             size_t position = x0 | ((x1 & 0xF) << 8);
             size_t length = 3 + ((x1 & 0xF0) >> 4);
             if (length == 18)
             {
-                if (input >= input_guardian)
-                    return;
-                length += *input++;
+                if (input_ptr >= input_guardian)
+                    return output;
+                length += *input_ptr++;
             }
 
             for (auto j : util::range(length))
             {
                 u8 c = p->dictionary[position];
-                if (output >= output_guardian)
-                    return;
-                *output++ = c;
+                if (output_ptr >= output_guardian)
+                    return output;
+                *output_ptr++ = c;
                 p->dictionary[p->offset] = c;
                 p->offset++;
                 p->offset &= 0xFFF;
@@ -83,15 +82,17 @@ void LzssDecompressor::decompress(
         }
         else
         {
-            if (input >= input_guardian)
-                return;
-            u8 c = *input++;
-            if (output >= output_guardian)
-                return;
-            *output++ = c;
+            if (input_ptr >= input_guardian)
+                return output;
+            u8 c = *input_ptr++;
+            if (output_ptr >= output_guardian)
+                return output;
+            *output_ptr++ = c;
             p->dictionary[p->offset] = c;
             p->offset++;
             p->offset &= 0xFFF;
         }
     }
+
+    return output;
 }

@@ -18,9 +18,9 @@ using namespace au;
 using namespace au::fmt::kirikiri;
 using namespace au::fmt::kirikiri::tlg;
 
-static const std::string magic_tlg_0 = "TLG0.0\x00sds\x1A"_s;
-static const std::string magic_tlg_5 = "TLG5.0\x00raw\x1A"_s;
-static const std::string magic_tlg_6 = "TLG6.0\x00raw\x1A"_s;
+static const bstr magic_tlg_0 = "TLG0.0\x00sds\x1A"_b;
+static const bstr magic_tlg_5 = "TLG5.0\x00raw\x1A"_b;
+static const bstr magic_tlg_6 = "TLG6.0\x00raw\x1A"_b;
 
 static int guess_version(io::IO &io);
 static std::unique_ptr<File> decode_proxy(int version, File &file);
@@ -50,9 +50,9 @@ static std::unique_ptr<File> decode_tlg_0(File &file)
     file.io.skip(raw_data_size);
     while (file.io.tell() < file.io.size())
     {
-        std::string chunk_name = file.io.read(4);
+        std::string chunk_name = file.io.read(4).str();
         size_t chunk_size = file.io.read_u32_le();
-        std::string chunk_data = file.io.read(chunk_size);
+        std::string chunk_data = file.io.read(chunk_size).str();
 
         if (chunk_name == "tags")
         {
@@ -60,8 +60,7 @@ static std::unique_ptr<File> decode_tlg_0(File &file)
             {
                 std::string key = extract_string(chunk_data);
                 std::string value = extract_string(chunk_data);
-                tags.push_back(
-                    std::pair<std::string, std::string>(key, value));
+                tags.push_back(std::pair<std::string, std::string>(key, value));
             }
         }
         else

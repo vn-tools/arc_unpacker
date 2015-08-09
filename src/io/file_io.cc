@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdio>
 #include <stdexcept>
 #include "compat/fopen.h"
@@ -24,22 +25,25 @@ void FileIO::skip(int offset)
 
 void FileIO::read(void *destination, size_t length)
 {
+    if (!length)
+        return;
+    assert(destination);
     if (fread(destination, 1, length, p->file) != length)
         throw std::runtime_error("Could not read full data");
 }
 
 void FileIO::write(const void *source, size_t length)
 {
+    if (!length)
+        return;
+    assert(source);
     if (fwrite(source, 1, length, p->file) != length)
         throw std::runtime_error("Could not write full data");
 }
 
 void FileIO::write_from_io(IO &source, size_t length)
 {
-    // TODO improvement: use static buffer instead of such allocation
-    std::unique_ptr<char[]> buffer(new char[length]);
-    source.read(buffer.get(), length);
-    write(buffer.get(), length);
+    write(source.read(length));
 }
 
 size_t FileIO::tell() const
@@ -69,12 +73,12 @@ FileIO::FileIO(const boost::filesystem::path &path, const FileMode mode)
     : p(new Priv())
 {
     p->file = fopen(path, mode == FileMode::Write ? "w+b" : "r+b");
-    if (p->file == nullptr)
+    if (!p->file)
         throw std::runtime_error("Could not open " + path.string());
 }
 
 FileIO::~FileIO()
 {
-    if (p->file != nullptr)
+    if (p->file)
         fclose(p->file);
 }

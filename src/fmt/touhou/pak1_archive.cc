@@ -28,29 +28,41 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static void decrypt(io::IO &io, u8 a, u8 b, u8 delta)
+static void decrypt(bstr &buffer, u8 a, u8 b, u8 delta)
 {
-    size_t size = io.size();
-    std::unique_ptr<char[]> buffer(new char[size]);
-    io.seek(0);
-    io.read(buffer.get(), size);
-    for (auto i : util::range(size))
+    for (auto i : util::range(buffer.size()))
     {
         buffer[i] ^= a;
         a += b;
         b += delta;
     }
-    io.seek(0);
-    io.write(buffer.get(), size);
-    io.seek(0);
 }
 
 static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
-    arc_io.seek(entry.offset);
-    file->io.write_from_io(arc_io, entry.size);
     file->name = entry.name;
+
+    arc_io.seek(entry.offset);
+    auto data = arc_io.read(entry.size);
+
+    if (file->name.find("musicroom.dat") != std::string::npos)
+    {
+        decrypt(data, 0x5C, 0x5A, 0x3D);
+        file->change_extension(".txt");
+    }
+    else if (file->name.find(".sce") != std::string::npos)
+    {
+        decrypt(data, 0x63, 0x62, 0x42);
+        file->change_extension(".txt");
+    }
+    else if (file->name.find("cardlist.dat") != std::string::npos)
+    {
+        decrypt(data, 0x60, 0x61, 0x41);
+        file->change_extension(".txt");
+    }
+
+    file->io.write(data);
     return file;
 }
 
@@ -62,10 +74,9 @@ static std::unique_ptr<io::BufferedIO> read_raw_table(
         throw std::runtime_error("Not a PAK1 archive");
     if (table_size > file_count * (0x64 + 4 + 4))
         throw std::runtime_error("Not a PAK1 archive");
-    std::unique_ptr<io::BufferedIO> table_io(new io::BufferedIO());
-    table_io->write_from_io(arc_io, table_size);
-    decrypt(*table_io, 0x64, 0x64, 0x4D);
-    return table_io;
+    auto buffer = arc_io.read(table_size);
+    decrypt(buffer, 0x64, 0x64, 0x4D);
+    return std::unique_ptr<io::BufferedIO>(new io::BufferedIO(buffer));
 }
 
 static Table read_table(io::IO &arc_io)
@@ -79,7 +90,7 @@ static Table read_table(io::IO &arc_io)
     for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = table_io->read_until_zero(0x64);
+        entry->name = table_io->read_until_zero(0x64).str();
         entry->size = table_io->read_u32_le();
         entry->offset = table_io->read_u32_le();
         if (entry->offset + entry->size > arc_io.size())
@@ -122,26 +133,5 @@ void Pak1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     auto table = read_table(arc_file.io);
     for (auto &entry : table)
-    {
-        auto file = read_file(arc_file.io, *entry);
-
-        //decode the file
-        if (file->name.find("musicroom.dat") != std::string::npos)
-        {
-            decrypt(file->io, 0x5C, 0x5A, 0x3D);
-            file->change_extension(".txt");
-        }
-        else if (file->name.find(".sce") != std::string::npos)
-        {
-            decrypt(file->io, 0x63, 0x62, 0x42);
-            file->change_extension(".txt");
-        }
-        else if (file->name.find("cardlist.dat") != std::string::npos)
-        {
-            decrypt(file->io, 0x60, 0x61, 0x41);
-            file->change_extension(".txt");
-        }
-
-        file_saver.save(std::move(file));
-    }
+        file_saver.save(read_file(arc_file.io, *entry));
 }

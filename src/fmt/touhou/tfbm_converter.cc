@@ -18,7 +18,7 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
-static const std::string magic = "TFBM\x00"_s;
+static const bstr magic = "TFBM\x00"_b;
 
 struct TfbmConverter::Priv
 {

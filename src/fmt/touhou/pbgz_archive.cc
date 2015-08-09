@@ -9,6 +9,7 @@
 // - Touhou 09 - Phantasmagoria of Flower View
 
 #include <cstring>
+#include <iostream>
 #include <map>
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/crypt.h"
@@ -40,9 +41,9 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static const std::string crypt_magic = "edz"_s;
-static const std::string jpeg_magic = "\xFF\xD8\xFF\xE0"_s;
-static const std::string magic = "PBGZ"_s;
+static const bstr crypt_magic = "edz"_b;
+static const bstr jpeg_magic = "\xFF\xD8\xFF\xE0"_b;
+static const bstr magic = "PBGZ"_b;
 
 static std::vector<std::map<u8, DecryptorContext>> decryptors
 {
@@ -68,8 +69,7 @@ static std::vector<std::map<u8, DecryptorContext>> decryptors
     },
 };
 
-static std::string decompress(
-    io::IO &arc_io, size_t size_compressed, size_t size_original)
+static bstr decompress(const bstr &input, size_t size_original)
 {
     util::pack::LzssSettings settings;
     settings.position_bits = 13;
@@ -77,52 +77,36 @@ static std::string decompress(
     settings.min_match_length = 3;
     settings.initial_dictionary_pos = 1;
     settings.reuse_compressed = true;
-
-    io::BufferedIO buffered_io;
-    buffered_io.write_from_io(arc_io, size_compressed);
-    buffered_io.seek(0);
-    io::BitReader bit_reader(buffered_io);
-    return util::pack::lzss_decompress(bit_reader, size_original, settings);
+    return util::pack::lzss_decompress(input, size_original, settings);
 }
 
 static std::unique_ptr<Header> read_header(io::IO &arc_io)
 {
     std::unique_ptr<Header> header(new Header);
-    io::BufferedIO header_io;
-    decrypt(arc_io, 12, header_io, { 0x1B, 0x37, 0x0C, 0x400 });
+    io::BufferedIO header_io(
+        decrypt(arc_io.read(12), { 0x1B, 0x37, 0x0C, 0x400 }));
     header->file_count = header_io.read_u32_le() - 123456;
     header->table_offset = header_io.read_u32_le() - 345678;
     header->table_size = header_io.read_u32_le() - 567891;
     return header;
 }
 
-static std::unique_ptr<io::BufferedIO> read_raw_table(
-    io::IO &arc_io, const Header &header)
-{
-    size_t size_compressed = arc_io.size() - header.table_offset;
-    size_t size_original = header.table_size;
-
-    io::BufferedIO table_io;
-    arc_io.seek(header.table_offset);
-    decrypt(arc_io, size_compressed, table_io, { 0x3E, 0x9B, 0x80, 0x400 });
-
-    return std::unique_ptr<io::BufferedIO>(
-        new io::BufferedIO(
-            decompress(table_io, size_compressed, size_original)));
-}
-
 static Table read_table(io::IO &arc_io, const Header &header)
 {
-    Table table;
-    auto table_io = read_raw_table(arc_io, header);
+    arc_io.seek(header.table_offset);
+    io::BufferedIO table_io(
+        decompress(
+            decrypt(arc_io.read_until_end(), { 0x3E, 0x9B, 0x80, 0x400 }),
+            header.table_size));
 
+    Table table;
     for (auto i : util::range(header.file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = table_io->read_until_zero();
-        entry->offset = table_io->read_u32_le();
-        entry->size_original = table_io->read_u32_le();
-        table_io->skip(4);
+        entry->name = table_io.read_until_zero().str();
+        entry->offset = table_io.read_u32_le();
+        entry->size_original = table_io.read_u32_le();
+        table_io.skip(4);
         table.push_back(std::move(entry));
     }
 
@@ -147,18 +131,16 @@ static std::unique_ptr<File> read_file(
     arc_io.seek(entry.offset);
     io::BufferedIO uncompressed_io(
         decompress(
-            arc_io,
-            entry.size_compressed,
+            arc_io.read(entry.size_compressed),
             entry.size_original));
 
     if (uncompressed_io.read(crypt_magic.size()) != crypt_magic)
         throw std::runtime_error("Unknown encryption");
 
-    decrypt(
-        uncompressed_io,
-        entry.size_original,
-        file->io,
-        decryptors[encryption_version][uncompressed_io.read_u8()]);
+    file->io.write(
+        decrypt(
+            uncompressed_io.read_until_end(),
+            decryptors[encryption_version][uncompressed_io.read_u8()]));
 
     return file;
 }

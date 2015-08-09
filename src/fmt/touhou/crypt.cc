@@ -1,10 +1,11 @@
+#include <algorithm>
 #include <memory>
 #include "fmt/touhou/crypt.h"
+#include "util/range.h"
+#include "io/buffered_io.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
-
-static inline int min(int a, int b) { return a < b ? a : b; }
 
 bool DecryptorContext::operator ==(const DecryptorContext &other) const
 {
@@ -14,14 +15,14 @@ bool DecryptorContext::operator ==(const DecryptorContext &other) const
         && limit == other.limit;
 }
 
-void au::fmt::touhou::decrypt(
-    io::IO &input, size_t size, io::IO &output, const DecryptorContext &context)
+static void decrypt(
+    io::IO &input_io,
+    io::IO &output_io,
+    const DecryptorContext &context)
 {
-    int left = min(size, input.size() - input.tell());
+    int left = input_io.size();
     size_t current_block_size = context.block_size;
     u8 key = context.key;
-    std::unique_ptr<char[]> input_block(new char[context.block_size]);
-    std::unique_ptr<char[]> output_block(new char[context.block_size]);
 
     size_t shift = left % current_block_size;
     if (shift >= (current_block_size >> 2))
@@ -29,33 +30,41 @@ void au::fmt::touhou::decrypt(
     shift += (left & 1);
     left -= shift;
 
-    while (left > 0 && output.tell() < context.limit)
+    while (left > 0 && output_io.tell() < context.limit)
     {
         if (left < static_cast<int>(current_block_size))
             current_block_size = left;
-        input.read(input_block.get(), current_block_size);
-
-        const char *input_block_ptr = input_block.get();
-        for (int j = 0; j < 2; j++)
+        auto input_block = input_io.read(current_block_size);
+        auto *input_block_ptr = input_block.get<const char>();
+        bstr output_block;
+        output_block.resize(current_block_size);
+        for (auto j : util::range(2))
         {
             char *output_block_ptr = &output_block[current_block_size - j - 1];
-            for (size_t i = 0; i < (current_block_size - j + 1) >> 1; i++)
+            for (auto i : util::range((current_block_size - j + 1) >> 1))
             {
-                *output_block_ptr = *input_block_ptr ^ key;
+                *output_block_ptr = *input_block_ptr++ ^ key;
                 output_block_ptr -= 2;
-                input_block_ptr++;
                 key += context.step;
             }
         }
 
-        output.write(output_block.get(), current_block_size);
+        output_io.write(output_block);
         left -= current_block_size;
     }
 
     left += shift;
-    left = min(left, input.size() - input.tell());
+    left = std::min(left, static_cast<int>(input_io.size() - input_io.tell()));
     if (left > 0)
-        output.write_from_io(input,left);
+        output_io.write_from_io(input_io, left);
+    output_io.seek(0);
+}
 
-    output.seek(0);
+bstr au::fmt::touhou::decrypt(
+    const bstr &input, const DecryptorContext &context)
+{
+    io::BufferedIO input_io(input);
+    io::BufferedIO output_io;
+    ::decrypt(input_io, output_io, context);
+    return output_io.read_until_end();
 }

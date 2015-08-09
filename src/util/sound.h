@@ -15,7 +15,7 @@ namespace util {
             size_t channel_count,
             size_t bytes_per_sample,
             size_t sample_rate,
-            const std::string &samples);
+            const bstr &samples);
 
         std::unique_ptr<File> create_file(const std::string &base_file) const;
 

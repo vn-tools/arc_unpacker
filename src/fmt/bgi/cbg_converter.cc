@@ -9,7 +9,6 @@
 #include <cstring>
 #include "fmt/bgi/cbg_converter.h"
 #include "io/bit_reader.h"
-#include "io/buffered_io.h"
 #include "util/range.h"
 #include "util/image.h"
 
@@ -27,7 +26,7 @@ namespace
     };
 }
 
-static const std::string magic = "CompressedBG___\x00"_s;
+static const bstr magic = "CompressedBG___\x00"_b;
 
 static u32 get_key(u32 *pkey)
 {
@@ -39,10 +38,10 @@ static u32 get_key(u32 *pkey)
     return tmp & 0x7FFF;
 }
 
-static void decrypt(char *input, u32 decrypt_size, u32 key)
+static void decrypt(bstr &input, u32 key)
 {
-    for (auto i : util::range(decrypt_size))
-        *input++ -= static_cast<char>(get_key(&key));
+    for (auto i : util::range(input.size()))
+        input[i] -= static_cast<char>(get_key(&key));
 }
 
 static u32 read_variable_data(char *&input, const char *input_guardian)
@@ -62,12 +61,10 @@ static u32 read_variable_data(char *&input, const char *input_guardian)
 
 static void read_freq_table(io::IO &io, u32 raw_size, u32 key, u32 freq_table[])
 {
-    std::unique_ptr<char[]> raw_data(new char[raw_size]);
-    io.read(raw_data.get(), raw_size);
+    bstr raw_data = io.read(raw_size);
+    decrypt(raw_data, key);
 
-    decrypt(raw_data.get(), raw_size, key);
-
-    char *raw_data_ptr = raw_data.get();
+    char *raw_data_ptr = raw_data.get<char>();
     const char *raw_data_guardian = raw_data_ptr + raw_size;
     for (auto i : util::range(256))
         freq_table[i] = read_variable_data(raw_data_ptr, raw_data_guardian);
@@ -75,8 +72,8 @@ static void read_freq_table(io::IO &io, u32 raw_size, u32 key, u32 freq_table[])
 
 static int read_node_info(u32 freq_table[], NodeInfo node_info[])
 {
-    assert(freq_table != nullptr);
-    assert(node_info != nullptr);
+    assert(freq_table);
+    assert(node_info);
     u32 frequency_sum = 0;
     for (auto i : util::range(256))
     {
@@ -131,13 +128,12 @@ static void decompress_huffman(
     io::BitReader &bit_reader,
     int last_node,
     NodeInfo node_info[],
-    u32 huffman_size,
-    u8 *huffman)
+    bstr &huffman)
 {
-    assert(node_info != nullptr);
+    assert(node_info);
     u32 root = last_node;
 
-    for (auto i : util::range(huffman_size))
+    for (auto i : util::range(huffman.size()))
     {
         int node = root;
         while (node >= 256)
@@ -150,41 +146,46 @@ static void decompress_huffman(
     }
 }
 
-static void decompress_rle(u32 huffman_size, char *huffman, char *output)
+static bstr decompress_rle(bstr &huffman, size_t output_size)
 {
-    assert(huffman != nullptr);
-    assert(output != nullptr);
-    char *huffman_ptr = huffman;
-    const char *huffman_guardian = huffman + huffman_size;
+    char *huffman_ptr = huffman.get<char>();
+    const char *huffman_guardian = huffman_ptr + huffman.size();
+
+    bstr output;
+    output.resize(output_size);
+    u8 *output_ptr = output.get<u8>();
+
     bool zero_flag = false;
     while (huffman_ptr < huffman_guardian)
     {
         u32 length = read_variable_data(huffman_ptr, huffman_guardian);
         if (zero_flag)
         {
-            memset(output, 0, length);
-            output += length;
+            memset(output_ptr, 0, length);
+            output_ptr += length;
         }
         else
         {
-            memcpy(output, huffman_ptr, length);
+            memcpy(output_ptr, huffman_ptr, length);
             huffman_ptr += length;
-            output += length;
+            output_ptr += length;
         }
         zero_flag = !zero_flag;
     }
+
+    return output;
 }
 
-static void transform_colors(u8 *input, u16 width, u16 height, u16 bpp)
+static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
 {
-    assert(input != nullptr);
     u16 channels = bpp >> 3;
 
-    u8 *left = &input[- channels];
-    u8 *above = &input[- width * channels];
+    u8 *input_ptr = input.get<u8>();
+    u8 *left = &input_ptr[- channels];
+    u8 *above = &input_ptr[- width * channels];
 
     //ignore 0,0
-    input += channels;
+    input_ptr += channels;
     above += channels;
     left += channels;
 
@@ -193,8 +194,8 @@ static void transform_colors(u8 *input, u16 width, u16 height, u16 bpp)
     {
         for (auto i : util::range(channels))
         {
-            *input += input[-channels];
-            input++;
+            *input_ptr += input_ptr[-channels];
+            input_ptr++;
             above++;
             left++;
         }
@@ -205,8 +206,8 @@ static void transform_colors(u8 *input, u16 width, u16 height, u16 bpp)
     {
         for (auto i : util::range(channels))
         {
-            *input += *above;
-            input++;
+            *input_ptr += *above;
+            input_ptr++;
             above++;
             left++;
         }
@@ -215,8 +216,8 @@ static void transform_colors(u8 *input, u16 width, u16 height, u16 bpp)
         {
             for (auto i : util::range(channels))
             {
-                *input += (*left  + *above) >> 1;
-                input++;
+                *input_ptr += (*left  + *above) >> 1;
+                input_ptr++;
                 above++;
                 left++;
             }
@@ -265,26 +266,18 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
     NodeInfo node_info[511];
     int last_node = read_node_info(freq_table, node_info);
 
-    std::unique_ptr<char[]> huffman(new char[huffman_size]);
+    io::BitReader bit_reader(file.io.read_until_end());
+    bstr huffman;
+    huffman.resize(huffman_size);
+    decompress_huffman(bit_reader, last_node, node_info, huffman);
 
-    io::BufferedIO buffered_io(file.io);
-    io::BitReader bit_reader(buffered_io);
-    decompress_huffman(
-        bit_reader,
-        last_node,
-        node_info,
-        huffman_size,
-        reinterpret_cast<u8*>(huffman.get()));
-
-    size_t output_size = width * height * (bpp >> 3);
-    std::unique_ptr<char[]> output(new char[output_size]);
-    decompress_rle(huffman_size, huffman.get(), output.get());
-    transform_colors(reinterpret_cast<u8*>(output.get()), width, height, bpp);
+    auto output = decompress_rle(huffman, width * height * (bpp >> 3));
+    transform_colors(output, width, height, bpp);
 
     auto image = util::Image::from_pixels(
         width,
         height,
-        std::string(output.get(), output_size),
+        output,
         bpp_to_image_pixel_format(bpp));
     return image->create_file(file.name);
 }
