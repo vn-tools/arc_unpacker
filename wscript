@@ -84,6 +84,8 @@ def configure_packages(ctx):
             global_define = True,
             mandatory = False)
 
+    ctx.check_cxx(header_name = 'windows.h', global_define = True, mandatory = False)
+
     boost_found = False
     for suffix in ['', '-mt']:
         try:
@@ -120,6 +122,8 @@ def build(bld):
 
     deps = OrderedDict()
     deps['_openssl'] = bld.is_defined('HAVE_OPENSSL_RSA_H')
+    deps['_ansi'] = not bld.is_defined('HAVE_WINDOWS_H') or bld.env.DEST_OS == 'cygwin'
+    deps['_win'] = bld.is_defined('HAVE_WINDOWS_H')
     deps['_dummy'] = True
     common_sources = _filter_deps(common_sources, bld, deps)
 

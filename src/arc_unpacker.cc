@@ -110,7 +110,7 @@ static bool add_input_paths_option(
 
     if (options.input_paths.size() < 1)
     {
-        Log.info( "Error: required more arguments.\n\n");
+        Log.err( "Error: required more arguments.\n\n");
         arc_unpacker.print_help(stray[0]);
         return false;
     }
@@ -252,18 +252,18 @@ std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
 
         if (current_transformer->is_recognized(file))
         {
-            Log.info("recognized\n");
+            Log.success("recognized\n");
             transformers.push_back(std::move(current_transformer));
         }
         else
         {
-            Log.info("not recognized\n");
+            Log.err("not recognized\n");
         }
     }
 
     if (transformers.size() == 0)
     {
-        Log.info("File not recognized.\n");
+        Log.err("File not recognized.\n");
         return nullptr;
     }
     else if (transformers.size() == 1)
@@ -272,8 +272,8 @@ std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
     }
     else
     {
-        Log.info("File was recognized by multiple engines.\n");
-        Log.info("Please provide --fmt and proceed manually.\n");
+        Log.warn("File was recognized by multiple engines.\n");
+        Log.warn("Please provide --fmt and proceed manually.\n");
         return nullptr;
     }
 }
@@ -298,13 +298,13 @@ bool ArcUnpacker::guess_transformer_and_unpack(
     try
     {
         unpack(*transformer, file, base_name);
-        Log.info("Unpacking finished successfully.\n");
+        Log.success("Unpacking finished successfully.\n");
         return true;
     }
     catch (std::exception &e)
     {
-        Log.info("Error: " + std::string(e.what()) + "\n");
-        Log.info("Unpacking finished with errors.\n");
+        Log.err("Error: " + std::string(e.what()) + "\n");
+        Log.err("Unpacking finished with errors.\n");
         return false;
     }
 }

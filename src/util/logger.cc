@@ -22,10 +22,34 @@ void Logger::info(const std::string &str)
         std::cout << str;
 }
 
+void Logger::success(const std::string &str)
+{
+    if (!p->muted)
+    {
+        set_color(Color::Lime);
+        std::cerr << str;
+        set_color(Color::Original);
+    }
+}
+
+void Logger::warn(const std::string &str)
+{
+    if (!p->muted)
+    {
+        set_color(Color::Yellow);
+        std::cerr << str;
+        set_color(Color::Original);
+    }
+}
+
 void Logger::err(const std::string &str)
 {
     if (!p->muted)
+    {
+        set_color(Color::Red);
         std::cerr << str;
+        set_color(Color::Original);
+    }
 }
 
 void Logger::flush()
