@@ -29,10 +29,5 @@ bstr Blowfish::decrypt(const bstr &input) const
 
 bstr Blowfish::encrypt(const bstr &input) const
 {
-    return "";
-}
-
-std::string Blowfish::encrypt(const std::string &input) const
-{
-    return "";
+    return ""_b;
 }
