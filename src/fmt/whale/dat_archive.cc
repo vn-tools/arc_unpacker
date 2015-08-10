@@ -7,11 +7,11 @@
 // Known games:
 // - Tsujidou-san no Junai Road
 
-#include <iostream>
 #include <map>
 #include "fmt/whale/dat_archive.h"
 #include "fmt/kirikiri/tlg_converter.h"
 #include "io/buffered_io.h"
+#include "log.h"
 #include "util/encoding.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"
@@ -186,10 +186,9 @@ static Table read_table(
             auto size = sjis_name.size();
             if (!size)
             {
-                std::cerr
-                    << "Unknown hash: "
-                    << std::hex << entry->hash
-                    << ". File cannot be unpacked.\n";
+                Log.err(util::format(
+                    "Unknown hash: %08llx. File cannot be unpacked.\n",
+                    entry->hash));
                 continue;
             }
             entry->offset          ^= sjis_name[size >> 1] & 0xFF;

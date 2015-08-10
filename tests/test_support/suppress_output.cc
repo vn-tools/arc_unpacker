@@ -1,20 +1,21 @@
-#include <iostream>
+#include "log.h"
 #include "test_support/suppress_output.h"
+
+using namespace au;
 
 void suppress_output(std::function<void()> callback)
 {
-    auto *old_cout_buf = std::cout.rdbuf();
     //don't log garbage from intermediate classes in tests...
-    std::cout.rdbuf(nullptr);
+    Log.mute();
     try
     {
         callback();
-        std::cout.rdbuf(old_cout_buf);
+        Log.unmute();
     }
     catch (...)
     {
         //...but log the exceptions
-        std::cout.rdbuf(old_cout_buf);
+        Log.unmute();
         throw;
     }
 }

@@ -1,7 +1,7 @@
 #include <boost/filesystem.hpp>
-#include <iostream>
-#include <iomanip>
 #include "arc_unpacker.h"
+#include "log.h"
+#include "util/format.h"
 #include "util/range.h"
 
 using namespace au;
@@ -110,7 +110,7 @@ static bool add_input_paths_option(
 
     if (options.input_paths.size() < 1)
     {
-        std::cout << "Error: required more arguments.\n\n";
+        Log.info( "Error: required more arguments.\n\n");
         arc_unpacker.print_help(stray[0]);
         return false;
     }
@@ -146,13 +146,11 @@ ArcUnpacker::~ArcUnpacker()
 
 void ArcUnpacker::print_help(const std::string &path_to_self)
 {
-    std::cout
-        << "arc_unpacker v" << p->version << "\n"
-        << "Extracts images and sounds from various visual novels.\n\n"
-        << "Usage: " << path_to_self.c_str() << " \\\n"
-        << "       [options] [fmt_options] input_path [input_path...]\n\n";
-
-    std::cout <<
+    Log.info("arc_unpacker v" + p->version + "\n");
+    Log.info("Extracts images and sounds from various visual novels.\n\n");
+    Log.info("Usage: " + path_to_self + " \\\n");
+    Log.info("       [options] [fmt_options] input_path [input_path...]\n\n");
+    Log.info(
 R"(Depending on the format, files will be saved either in a subdirectory
 (archives), or aside the input files (images, music etc.). If no output
 directory is provided, files are going to be saved inside current working
@@ -160,11 +158,11 @@ directory.
 
 [options] can be:
 
-)";
+)");
 
     p->arg_parser.print_help();
     p->arg_parser.clear_help();
-    std::cout << "\n";
+    Log.info("\n");
 
     auto format = p->options.format;
     if (format != "")
@@ -174,22 +172,20 @@ directory.
         if (transformer != nullptr)
         {
             transformer->add_cli_help(p->arg_parser);
-            std::cout
-                << "[fmt_options] specific to "
-                << p->options.format
-                << ":\n\n";
+            Log.info(
+                "[fmt_options] specific to " + p->options.format + ":\n\n");
             p->arg_parser.print_help();
             return;
         }
     }
 
-    std::cout <<
+    Log.info(
 R"([fmt_options] depend on chosen format and are required at runtime.
 See --help --fmt=FORMAT to get detailed help for given transformer.
 
 Supported FORMAT values:
 
-)";
+)");
 
     const int columns = 5;
     auto formats = p->factory.get_formats();
@@ -202,12 +198,12 @@ Supported FORMAT values:
             if (i < formats.size())
             {
                 auto &format = formats[i];
-                std::cout << "- " << std::setw(14) << std::left << format;
+                Log.info(util::format("- %-14s", format.c_str()));
             }
         }
-        std::cout << "\n";
+        Log.info("\n");
     }
-    std::cout << "\n";
+    Log.info("\n");
 }
 
 void ArcUnpacker::unpack(
@@ -249,26 +245,25 @@ std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
     for (auto &format : p->factory.get_formats())
     {
         auto current_transformer = p->factory.create(format);
-        std::cout
-            << "Trying "
-            << std::setw(max_format_size + 2)
-            << std::left
-            << (format + ": ");
+        Log.info(
+            util::format(
+                util::format("Trying %%-%ds", max_format_size + 2).c_str(),
+                (format + ": ").c_str()));
 
         if (current_transformer->is_recognized(file))
         {
-            std::cout << "recognized\n";
+            Log.info("recognized\n");
             transformers.push_back(std::move(current_transformer));
         }
         else
         {
-            std::cout << "not recognized\n";
+            Log.info("not recognized\n");
         }
     }
 
     if (transformers.size() == 0)
     {
-        std::cout << "File not recognized.\n";
+        Log.info("File not recognized.\n");
         return nullptr;
     }
     else if (transformers.size() == 1)
@@ -277,8 +272,8 @@ std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
     }
     else
     {
-        std::cout << "File was recognized by multiple engines.\n";
-        std::cout << "Please provide --fmt and proceed manually.\n";
+        Log.info("File was recognized by multiple engines.\n");
+        Log.info("Please provide --fmt and proceed manually.\n");
         return nullptr;
     }
 }
@@ -299,17 +294,17 @@ bool ArcUnpacker::guess_transformer_and_unpack(
         transformer = p->factory.create(p->options.format);
     }
 
-    std::cout << "Unpacking...\n";
+    Log.info("Unpacking...\n");
     try
     {
         unpack(*transformer, file, base_name);
-        std::cout << "Unpacking finished successfully.\n";
+        Log.info("Unpacking finished successfully.\n");
         return true;
     }
     catch (std::exception &e)
     {
-        std::cout << "Error: " << e.what() << "\n";
-        std::cout << "Unpacking finished with errors.\n";
+        Log.info("Error: " + std::string(e.what()) + "\n");
+        Log.info("Unpacking finished with errors.\n");
         return false;
     }
 }
