@@ -1,6 +1,7 @@
 # vi: ft=python
 from waflib import Logs
 import os
+from collections import OrderedDict
 
 APPNAME = 'arc_unpacker'
 try:
@@ -66,18 +67,21 @@ def configure_packages(ctx):
             lib = ['crypto', 'gdi32'],
             header_name = 'openssl/rsa.h',
             uselib_store = 'LIBOPENSSL',
+            global_define = True,
             mandatory = False)
 
         ctx.check_cxx(
             lib = ['iconv'],
             header_name = 'iconv.h',
             uselib_store = 'LIBICONV',
+            global_define = True,
             mandatory = True)
     else:
         ctx.check_cxx(
             lib = ['crypto'],
             header_name = 'openssl/rsa.h',
             uselib_store = 'LIBOPENSSL',
+            global_define = True,
             mandatory = False)
 
     boost_found = False
@@ -88,6 +92,7 @@ def configure_packages(ctx):
                 header_name = 'boost/filesystem.hpp',
                 uselib_store = 'LIBBOOST_FILESYSTEM',
                 mandatory = True,
+                global_define = True,
                 msg = 'Checking for boost_filesystem' + suffix)
 
             ctx.check_cxx(
@@ -95,6 +100,7 @@ def configure_packages(ctx):
                 header_name = 'boost/locale.hpp',
                 uselib_store = 'LIBBOOST_LOCALE',
                 mandatory = True,
+                global_define = True,
                 msg = 'Checking for boost_locale' + suffix)
 
             boost_found = True
@@ -108,22 +114,22 @@ def configure(ctx):
     configure_flags(ctx)
     configure_packages(ctx)
 
-def build(ctx):
-    common_sources = ctx.path.ant_glob('src/**/*.cc')
+def build(bld):
+    common_sources = bld.path.ant_glob('src/**/*.cc')
     common_sources = [f for f in common_sources if f.name != 'main.cc']
 
-    if not ctx.env.LIB_LIBOPENSSL:
-        common_sources = [f for f in common_sources if '_openssl' not in f.name]
-    else:
-        common_sources = [f for f in common_sources if '_dummy' not in f.name]
+    deps = OrderedDict()
+    deps['_openssl'] = bld.is_defined('HAVE_OPENSSL_RSA_H')
+    deps['_dummy'] = True
+    common_sources = _filter_deps(common_sources, bld, deps)
 
-    path_to_src = ctx.path.find_node('src').abspath()
-    path_to_tests = ctx.path.find_node('tests').abspath()
+    path_to_src = bld.path.find_node('src').abspath()
+    path_to_tests = bld.path.find_node('tests').abspath()
 
-    program_sources = [ctx.path.find_node('src/main.cc')]
-    tests_sources = ctx.path.ant_glob('tests/**/*.cc')
+    program_sources = [bld.path.find_node('src/main.cc')]
+    tests_sources = bld.path.ant_glob('tests/**/*.cc')
 
-    ctx.objects(
+    bld.objects(
         source = common_sources,
         target = 'common',
         cxxflags = ['-iquote', path_to_src],
@@ -138,7 +144,7 @@ def build(ctx):
             'LIBOPENSSL',
         ])
 
-    ctx.program(
+    bld.program(
         source = program_sources,
         target = 'arc_unpacker',
         cxxflags = ['-iquote', path_to_src],
@@ -149,7 +155,7 @@ def build(ctx):
             'UNICODE',
         ])
 
-    ctx.program(
+    bld.program(
         source = tests_sources,
         target = 'run_tests',
         cxxflags = [
@@ -158,6 +164,38 @@ def build(ctx):
         ],
         includes = ['src'],
         use = [ 'common' ])
+
+# each file that depends on something that might or might not be there,
+# contains fitting _INFIX in its name. (*_dummy files are expected to always
+# contain fallback implementation.) This function is responsible for telling
+# which implementation for each group should be compiled.
+def _filter_deps(sources, bld, deps):
+    def _filter_group(group, deps):
+        for infix, enabled in deps.items():
+            if enabled:
+                for group_item in group:
+                    file, file_infix = group_item
+                    if file_infix == infix:
+                        return file
+        raise AssertionError('Can\'t figure out what to compile for %s' % group)
+    default_files = []
+    groups = {}
+    for file in sources:
+        group_key = file.relpath()
+        file_infix = None
+        for infix in deps.keys():
+            if infix in group_key:
+                file_infix = infix
+                group_key = group_key.replace(infix, '')
+                break
+        if file_infix is None:
+            default_files.append(file)
+        else:
+            if group_key not in groups:
+                groups[group_key] = []
+            groups[group_key].append([file, file_infix])
+    chosen_files = [_filter_group(group, deps) for group in groups.values()]
+    return default_files + chosen_files
 
 def dist(ctx):
     ctx.algo  = 'zip'
