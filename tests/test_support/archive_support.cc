@@ -33,7 +33,10 @@ void au::tests::compare_files(
         REQUIRE(expected_file->io.size() == actual_file->io.size());
         expected_file->io.seek(0);
         actual_file->io.seek(0);
-        for (size_t j = 0; j < expected_file->io.size(); j++)
-            REQUIRE(expected_file->io.read_u8() == actual_file->io.read_u8());
+        auto expected_content = expected_file->io.read_to_eof();
+        auto actual_content = actual_file->io.read_to_eof();
+        INFO("Expected content: " << expected_content.str());
+        INFO("Actual content: " << actual_content.str());
+        REQUIRE(expected_content == actual_content);
     }
 }
