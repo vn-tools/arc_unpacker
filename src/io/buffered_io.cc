@@ -1,8 +1,8 @@
-#include <cassert>
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
 #include "io/buffered_io.h"
+#include "util/require.h"
 
 using namespace au::io;
 
@@ -54,7 +54,7 @@ void BufferedIO::read(void *destination, size_t size)
 {
     if (!size)
         return;
-    assert(destination);
+    util::require(destination);
     if (p->buffer_pos + size > p->buffer_size)
         throw std::runtime_error("Reading beyond EOF");
     memcpy(destination, p->buffer + p->buffer_pos, size);
@@ -65,7 +65,7 @@ void BufferedIO::write(const void *source, size_t size)
 {
     if (!size)
         return;
-    assert(source);
+    util::require(source);
     reserve(size);
     memcpy(p->buffer + p->buffer_pos, source, size);
     p->buffer_pos += size;

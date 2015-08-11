@@ -1,4 +1,3 @@
-#include <cassert>
 #include "util/sound.h"
 
 using namespace au;

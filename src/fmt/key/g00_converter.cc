@@ -9,11 +9,11 @@
 // - Clannad
 // - Little Busters
 
-#include <cassert>
 #include "fmt/key/g00_converter.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/range.h"
+#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::key;
@@ -80,7 +80,7 @@ static bstr decompress(
             {
                 if (dst >= dst_guardian)
                     break;
-                assert(&dst[-look_behind] >= output.get<u8>());
+                util::require(&dst[-look_behind] >= output.get<u8>());
                 *dst = dst[-look_behind];
                 dst++;
             }
@@ -181,7 +181,7 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
         decompressed_io.seek(block_offset);
         u16 block_type = decompressed_io.read_u16_le();
         u16 part_count = decompressed_io.read_u16_le();
-        assert(block_type == 1);
+        util::require(block_type == 1);
 
         decompressed_io.skip(0x70);
         for (auto j : util::range(part_count))
@@ -195,8 +195,8 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
 
             size_t target_x = region.x1 + part_x;
             size_t target_y = region.y1 + part_y;
-            assert(target_x + part_width <= width);
-            assert(target_y + part_height <= height);
+            util::require(target_x + part_width <= width);
+            util::require(target_y + part_height <= height);
             for (auto y : util::range(part_height))
             {
                 decompressed_io.read(

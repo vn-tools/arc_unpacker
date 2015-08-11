@@ -5,11 +5,11 @@
 // Extension: .MGD
 // Archives:  FJSYS
 
-#include <cassert>
 #include "fmt/nsystem/mgd_converter.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/range.h"
+#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::nsystem;
@@ -143,7 +143,7 @@ static void decompress_sgd_bgr(const bstr &input, io::IO &output_io)
                 break;
 
             default:
-                throw std::runtime_error("Bad decompression flag");
+                util::fail("Bad decompression flag");
         }
     }
     output_io.seek(0);
@@ -178,10 +178,8 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::IO &file_io)
         size_t region_count = file_io.read_u16_le();
         size_t meta_format = file_io.read_u16_le();
         size_t bytes_left = file_io.size() - file_io.tell();
-        if (meta_format != 4)
-            throw std::runtime_error("Unexpected region format");
-        if (regions_size != bytes_left)
-            throw std::runtime_error("Region size mismatch");
+        util::require(meta_format == 4);
+        util::require(regions_size == bytes_left);
 
         for (auto i : util::range(region_count))
         {
@@ -227,7 +225,7 @@ static std::unique_ptr<util::Image> read_image(
             return util::Image::from_boxed(input);
 
         default:
-            throw std::runtime_error("Unsupported compression type");
+            util::fail("Unsupported compression type");
     }
 }
 
@@ -251,8 +249,7 @@ std::unique_ptr<File> MgdConverter::decode_internal(File &file) const
     file.io.skip(64);
 
     size_t size_compressed = file.io.read_u32_le();
-    if (size_compressed + 4 != size_compressed_total)
-        throw std::runtime_error("Compressed data size mismatch");
+    util::require(size_compressed + 4 == size_compressed_total);
 
     auto image = read_image(
         file.io.read(size_compressed),

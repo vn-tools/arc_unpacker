@@ -1,9 +1,9 @@
-#include <cassert>
 #include <png.h>
 #include <jpeglib.h>
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/range.h"
+#include "util/require.h"
 
 using namespace au;
 using namespace au::util;
@@ -42,10 +42,10 @@ std::unique_ptr<Image> Image::Priv::from_png(io::IO &io)
 {
     png_structp png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-    assert(png_ptr);
+    util::require(png_ptr);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
-    assert(info_ptr);
+    util::require(info_ptr);
 
     png_set_read_fn(png_ptr, &io, &png_read_data);
     png_read_png(
@@ -65,7 +65,7 @@ std::unique_ptr<Image> Image::Priv::from_png(io::IO &io)
         &png_width, &png_height,
         &bits_per_channel, &color_type,
         nullptr, nullptr, nullptr);
-    assert(bits_per_channel == 8);
+    util::require(bits_per_channel == 8);
 
     std::unique_ptr<Image> image(new Image);
     image->p->width = png_width;
@@ -149,10 +149,10 @@ void Image::Priv::save_png(io::IO &io)
 {
     png_structp png_ptr = png_create_write_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-    assert(png_ptr != nullptr);
+    util::require(png_ptr);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
-    assert(info_ptr != nullptr);
+    util::require(info_ptr);
 
     unsigned long bpp;
     unsigned long color_type;

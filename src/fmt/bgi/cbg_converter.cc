@@ -5,12 +5,12 @@
 // Extension: -
 // Archives:  ARC
 
-#include <cassert>
 #include <cstring>
 #include "fmt/bgi/cbg_converter.h"
 #include "io/bit_reader.h"
-#include "util/range.h"
 #include "util/image.h"
+#include "util/range.h"
+#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::bgi;
@@ -51,7 +51,7 @@ static u32 read_variable_data(u8 *&input, const u8 *input_guardian)
     u32 shift = 0;
     do
     {
-        assert(input < input_guardian);
+        util::require(input < input_guardian);
         current = *input++;
         result |= (current & 0x7F) << shift;
         shift += 7;
@@ -75,8 +75,8 @@ static void read_freq_table(io::IO &io, u32 raw_size, u32 key, u32 freq_table[])
         checksum2 ^= raw_data.get<u8>()[i];
     }
 
-    assert(checksum1 == expected_checksum1);
-    assert(checksum2 == expected_checksum2);
+    util::require(checksum1 == expected_checksum1);
+    util::require(checksum2 == expected_checksum2);
 
     u8 *raw_data_ptr = raw_data.get<u8>();
     const u8 *raw_data_guardian = raw_data_ptr + raw_size;
@@ -86,8 +86,8 @@ static void read_freq_table(io::IO &io, u32 raw_size, u32 key, u32 freq_table[])
 
 static int read_node_info(u32 freq_table[], NodeInfo node_info[])
 {
-    assert(freq_table);
-    assert(node_info);
+    util::require(freq_table);
+    util::require(node_info);
     u32 frequency_sum = 0;
     for (auto i : util::range(256))
     {
@@ -144,7 +144,7 @@ static void decompress_huffman(
     NodeInfo node_info[],
     bstr &huffman)
 {
-    assert(node_info);
+    util::require(node_info);
     u32 root = last_node;
 
     for (auto i : util::range(huffman.size()))
