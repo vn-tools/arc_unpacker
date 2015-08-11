@@ -41,18 +41,18 @@ static u32 get_key(u32 *pkey)
 static void decrypt(bstr &input, u32 key)
 {
     for (auto i : util::range(input.size()))
-        input[i] -= static_cast<char>(get_key(&key));
+        input.get<u8>()[i] -= static_cast<u8>(get_key(&key));
 }
 
-static u32 read_variable_data(char *&input, const char *input_guardian)
+static u32 read_variable_data(u8 *&input, const u8 *input_guardian)
 {
-    char current;
+    u8 current;
     u32 result = 0;
     u32 shift = 0;
     do
     {
+        assert(input < input_guardian);
         current = *input++;
-        assert(input <= input_guardian);
         result |= (current & 0x7F) << shift;
         shift += 7;
     } while (current & 0x80);
@@ -61,11 +61,25 @@ static u32 read_variable_data(char *&input, const char *input_guardian)
 
 static void read_freq_table(io::IO &io, u32 raw_size, u32 key, u32 freq_table[])
 {
+    u8 expected_checksum1 = io.read_u8();
+    u8 expected_checksum2 = io.read_u8();
+    io.skip(2);
+
     bstr raw_data = io.read(raw_size);
     decrypt(raw_data, key);
 
-    char *raw_data_ptr = raw_data.get<char>();
-    const char *raw_data_guardian = raw_data_ptr + raw_size;
+    u8 checksum1 = 0, checksum2 = 0;
+    for (auto i : util::range(raw_size))
+    {
+        checksum1 += raw_data.get<u8>()[i];
+        checksum2 ^= raw_data.get<u8>()[i];
+    }
+
+    assert(checksum1 == expected_checksum1);
+    assert(checksum2 == expected_checksum2);
+
+    u8 *raw_data_ptr = raw_data.get<u8>();
+    const u8 *raw_data_guardian = raw_data_ptr + raw_size;
     for (auto i : util::range(256))
         freq_table[i] = read_variable_data(raw_data_ptr, raw_data_guardian);
 }
@@ -148,8 +162,8 @@ static void decompress_huffman(
 
 static bstr decompress_rle(bstr &huffman, size_t output_size)
 {
-    char *huffman_ptr = huffman.get<char>();
-    const char *huffman_guardian = huffman_ptr + huffman.size();
+    u8 *huffman_ptr = huffman.get<u8>();
+    const u8 *huffman_guardian = huffman_ptr + huffman.size();
 
     bstr output;
     output.resize(output_size);
@@ -246,19 +260,16 @@ bool CbgConverter::is_recognized_internal(File &file) const
 
 std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
 {
-    file.io.seek(0);
-    if (file.io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a CBG image");
+    file.io.skip(magic.size());
 
     u16 width = file.io.read_u16_le();
     u16 height = file.io.read_u16_le();
-    u16 bpp = file.io.read_u16_le();
-    file.io.skip(10);
+    u16 bpp = file.io.read_u32_le();
+    file.io.skip(8);
 
     u32 huffman_size = file.io.read_u32_le();
     u32 key = file.io.read_u32_le();
     u32 freq_table_data_size = file.io.read_u32_le();
-    file.io.skip(4);
 
     u32 freq_table[256];
     read_freq_table(file.io, freq_table_data_size, key, freq_table);
@@ -275,9 +286,6 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
     transform_colors(output, width, height, bpp);
 
     auto image = util::Image::from_pixels(
-        width,
-        height,
-        output,
-        bpp_to_image_pixel_format(bpp));
+        width, height, output, bpp_to_image_pixel_format(bpp));
     return image->create_file(file.name);
 }
