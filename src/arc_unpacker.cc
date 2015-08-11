@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <boost/filesystem.hpp>
 #include "arc_unpacker.h"
 #include "log.h"
@@ -187,18 +188,24 @@ Supported FORMAT values:
 
 )");
 
-    const int columns = 5;
     auto formats = p->factory.get_formats();
-    int max_y = (formats.size() + columns - 1) / columns;
-    for (auto y : util::range(max_y))
+
+    size_t max_format_size = 0;
+    for (auto &format : p->factory.get_formats())
+        max_format_size = std::max(format.size(), max_format_size);
+    int columns = (79 - max_format_size - 2) / max_format_size;
+    int rows = (formats.size() + columns - 1) / columns;
+    for (auto y : util::range(rows))
     {
         for (auto x : util::range(columns))
         {
-            size_t i = x * max_y + y;
+            size_t i = x * rows + y;
             if (i < formats.size())
             {
-                auto &format = formats[i];
-                Log.info(util::format("- %-14s", format.c_str()));
+                Log.info(
+                    util::format(
+                        util::format("- %%-%ds ", max_format_size).c_str(),
+                        formats[i].c_str()));
             }
         }
         Log.info("\n");
@@ -239,8 +246,7 @@ std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
 
     size_t max_format_size = 0;
     for (auto &format : p->factory.get_formats())
-        if (format.size() > max_format_size)
-            max_format_size = format.size();
+        max_format_size = std::max(format.size(), max_format_size);
 
     for (auto &format : p->factory.get_formats())
     {
