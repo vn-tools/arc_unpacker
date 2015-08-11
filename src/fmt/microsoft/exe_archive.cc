@@ -7,9 +7,9 @@
 // Known games:
 // - Fortune Summoners: Secret Of The Elemental Stone
 
-#include <iostream>
 #include <cstdio>
 #include "fmt/microsoft/exe_archive.h"
+#include "log.h"
 #include "util/encoding.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -420,10 +420,10 @@ void ResourceCrawler::process_dir(size_t offset, const std::string path)
         }
         catch (std::exception &e)
         {
-            std::cerr
-                << "Can't read resource entry located at 0x"
-                << std::hex << args.base_offset + entry.offset_to_data
-                << " (" << e.what() << ")\n";
+            Log.err(util::format(
+                "Can't read resource entry located at 0x%08x (%s)",
+                args.base_offset + entry.offset_to_data,
+                e.what()));
         }
     }
 }

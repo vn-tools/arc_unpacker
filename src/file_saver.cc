@@ -1,10 +1,10 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem/operations.hpp>
-#include <iostream>
 #include <set>
 #include <stdexcept>
 #include "file_saver.h"
 #include "io/file_io.h"
+#include "log.h"
 #include "util/format.h"
 
 using namespace au;
@@ -63,7 +63,7 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
         full_path /= boost::filesystem::path(name_part);
         full_path = p->make_path_unique(full_path);
 
-        std::cout << "Saving to " << full_path.generic_string() << "... ";
+        Log.info("Saving to " + full_path.generic_string() + "... ");
 
         if (full_path.parent_path() != "")
             boost::filesystem::create_directories(full_path.parent_path());
@@ -71,13 +71,13 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
         io::FileIO output_io(full_path.string(), io::FileMode::Write);
         file->io.seek(0);
         output_io.write_from_io(file->io, file->io.size());
-        std::cout << "ok\n";
+        Log.success("ok\n");
     }
     catch (std::runtime_error &e)
     {
-        std::cout << "error (" << e.what() << ")\n";
+        Log.err("error (" + std::string(e.what()) + ")\n");
     }
-    std::cout.flush();
+    Log.flush();
 }
 
 

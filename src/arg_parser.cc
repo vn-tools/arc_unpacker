@@ -1,5 +1,5 @@
-#include <iostream>
 #include "arg_parser.h"
+#include "log.h"
 #include "util/range.h"
 
 using namespace au;
@@ -199,7 +199,7 @@ void ArgParser::print_help() const
 
     if (p->help_items.size() == 0)
     {
-        std::cout << "No additional switches are available.\n";
+        Log.info("No additional switches are available.\n");
         return;
     }
 
@@ -211,22 +211,21 @@ void ArgParser::print_help() const
         size_t tmp_size = invocation.size();
         if (tmp_size >= 2 && invocation.compare(0, 2, "--") == 0)
         {
-            std::cout << "    ";
+            Log.info("    ");
             tmp_size += 4;
         }
-        std::cout << invocation;
+        Log.info(invocation);
 
         for (; tmp_size < max_invocation_size; tmp_size++)
-            std::cout << " ";
+            Log.info(" ");
 
-        std::vector<std::string> lines = word_wrap(
-            description, max_description_size);
+        auto lines = word_wrap(description, max_description_size);
         for (auto line : lines)
         {
-            std::cout << line;
-            for (size_t i = 0; i < max_invocation_size; i++)
-                std::cout << " ";
+            Log.info(line);
+            for (auto i : util::range(max_invocation_size))
+                Log.info(" ");
         }
-        std::cout << "\n";
+        Log.info("\n");
     }
 }

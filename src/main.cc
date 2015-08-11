@@ -1,6 +1,6 @@
-#include <iostream>
 #include "compat/entry_point.h"
 #include "arc_unpacker.h"
+#include "log.h"
 
 using namespace au;
 
@@ -17,7 +17,7 @@ ENTRY_POINT(
     }
     catch (std::exception &e)
     {
-        std::cerr << "Error: " << e.what() << "\n";
+        Log.info("Error: " + std::string(e.what()) + "\n");
         return 1;
     }
 )
