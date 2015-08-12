@@ -47,7 +47,7 @@ static WORD get_win_color(Logger::Color c)
     if (c == Logger::Color::Yellow)
         return FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN;
 
-    if (c == Logger::Color::White | c == Logger::Color::Original)
+    if (c == Logger::Color::White || c == Logger::Color::Original)
     {
         return FOREGROUND_INTENSITY
             | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
