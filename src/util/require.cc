@@ -9,7 +9,7 @@ std::exception util::fail_impl(
     const std::string &file,
     int line)
 {
-    return std::runtime_error(util::format(
+    throw std::runtime_error(util::format(
         "Assertion failed in %s() at %s:%d: %s",
         func.c_str(),
         file.c_str(),
