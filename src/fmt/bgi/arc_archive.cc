@@ -9,6 +9,7 @@
 
 #include "fmt/bgi/arc_archive.h"
 #include "fmt/bgi/cbg_converter.h"
+#include "fmt/bgi/dsc_converter.h"
 #include "fmt/bgi/sound_converter.h"
 #include "util/range.h"
 
@@ -58,12 +59,14 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 struct ArcArchive::Priv
 {
     CbgConverter cbg_converter;
+    DscConverter dsc_converter;
     SoundConverter sound_converter;
 };
 
 ArcArchive::ArcArchive() : p(new Priv)
 {
     add_transformer(&p->cbg_converter);
+    add_transformer(&p->dsc_converter);
     add_transformer(&p->sound_converter);
 }
 

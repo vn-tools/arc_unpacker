@@ -11,6 +11,7 @@
 #include "fmt/alice_soft/qnt_converter.h"
 #include "fmt/bgi/arc_archive.h"
 #include "fmt/bgi/cbg_converter.h"
+#include "fmt/bgi/dsc_converter.h"
 #include "fmt/bgi/sound_converter.h"
 #include "fmt/french_bread/ex3_converter.h"
 #include "fmt/french_bread/p_archive.h"
@@ -95,6 +96,7 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("alice/qnt",     []() { return new alice_soft::QntConverter();   });
     p->add("bgi/arc",       []() { return new bgi::ArcArchive();            });
     p->add("bgi/cbg",       []() { return new bgi::CbgConverter();          });
+    p->add("bgi/dsc",       []() { return new bgi::DscConverter();          });
     p->add("bgi/sound",     []() { return new bgi::SoundConverter();        });
     p->add("fbread/ex3",    []() { return new french_bread::Ex3Converter(); });
     p->add("fbread/p",      []() { return new french_bread::PArchive();     });

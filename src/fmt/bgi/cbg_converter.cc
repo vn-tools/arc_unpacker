@@ -4,9 +4,13 @@
 // Engine:    BGI/Ethornell
 // Extension: -
 // Archives:  ARC
+//
+// Known games:
+// - Higurashi No Naku Koro Ni
 
 #include <cstring>
 #include "fmt/bgi/cbg_converter.h"
+#include "fmt/bgi/common.h"
 #include "io/bit_reader.h"
 #include "util/image.h"
 #include "util/range.h"
@@ -28,20 +32,10 @@ namespace
 
 static const bstr magic = "CompressedBG___\x00"_b;
 
-static u32 get_key(u32 *pkey)
-{
-    u32 key = *pkey;
-    u32 tmp1 = 0x4E35 * (key & 0xFFFF);
-    u32 tmp2 = 0x4E35 * (key >> 16);
-    u32 tmp = 0x15A * key + tmp2 + (tmp1 >> 16);
-    *pkey = (tmp << 16) + (tmp1 & 0xFFFF) + 1;
-    return tmp & 0x7FFF;
-}
-
 static void decrypt(bstr &input, u32 key)
 {
     for (auto i : util::range(input.size()))
-        input.get<u8>()[i] -= static_cast<u8>(get_key(&key));
+        input.get<u8>()[i] -= get_and_update_key(key);
 }
 
 static u32 read_variable_data(u8 *&input, const u8 *input_guardian)
