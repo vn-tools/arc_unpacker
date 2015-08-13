@@ -9,12 +9,12 @@
 // - Higurashi No Naku Koro Ni
 // - Go! Go! Nippon! ~My First Trip to Japan~
 
-#include <iostream>
 #include <algorithm>
-#include "fmt/bgi/dsc_converter.h"
 #include "fmt/bgi/common.h"
+#include "fmt/bgi/dsc_converter.h"
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
+#include "util/format.h"
 #include "util/image.h"
 #include "util/range.h"
 #include "util/require.h"
@@ -171,36 +171,31 @@ std::unique_ptr<File> DscConverter::decode_internal(File &file) const
         auto bpp = data_io.read_u8();
         data_io.skip(11);
 
-        bstr pixels;
-        pixels.resize(width * height * 4);
-        u8 *pixels_ptr = pixels.get<u8>();
-
-        for (auto y : util::range(height))
+        bstr pixels = data_io.read_to_eof();
+        util::PixelFormat fmt;
+        switch (bpp)
         {
-            for (auto x : util::range(width))
-            {
-                u8 a = 255;
-                u8 b = data_io.read_u8();
-                u8 g = data_io.read_u8();
-                u8 r = data_io.read_u8();
-                if (bpp == 32)
-                    a = data_io.read_u8();
-
-                *pixels_ptr++ = r;
-                *pixels_ptr++ = g;
-                *pixels_ptr++ = b;
-                *pixels_ptr++ = a;
-            }
+            case 8:
+                fmt = util::PixelFormat::Grayscale;
+                break;
+            case 24:
+                fmt = util::PixelFormat::BGR;
+                break;
+            case 32:
+                fmt = util::PixelFormat::BGRA;
+                break;
+            default:
+                util::fail(util::format("Unsupported bit depth: %d", bpp));
         }
-
-        auto image = util::Image::from_pixels(
-            width, height, pixels, util::PixelFormat::RGBA);
+        auto image = util::Image::from_pixels(width, height, pixels, fmt);
         return image->create_file(file.name);
     }
 
     std::unique_ptr<File> output_file(new File);
     output_file->io.write(data);
-    output_file->name = file.name + ".dat";
+    output_file->name = file.name;
+    if (!output_file->has_extension())
+        output_file->change_extension("dat");
     output_file->guess_extension();
     return output_file;
 }
