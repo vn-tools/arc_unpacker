@@ -85,5 +85,9 @@ void ArcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     arc_file.io.skip(magic.size());
     auto table = read_table(arc_file.io);
     for (auto &entry : table)
-        file_saver.save(read_file(arc_file.io, *entry));
+    {
+        auto file = read_file(arc_file.io, *entry);
+        file->guess_extension();
+        file_saver.save(std::move(file));
+    }
 }
