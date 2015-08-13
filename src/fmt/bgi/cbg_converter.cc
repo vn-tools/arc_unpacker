@@ -10,6 +10,7 @@
 // - Go! Go! Nippon! ~My First Trip to Japan~
 
 #include <cstring>
+#include <array>
 #include "fmt/bgi/cbg_converter.h"
 #include "fmt/bgi/common.h"
 #include "io/bit_reader.h"
@@ -29,17 +30,40 @@ namespace
         int left_node;
         int right_node;
     };
+
+    using NodeList = std::vector<std::unique_ptr<NodeInfo>>;
+    using FreqTable = std::array<u32, 256>;
 }
 
 static const bstr magic = "CompressedBG___\x00"_b;
 
-static void decrypt(bstr &input, u32 key)
+static bstr get_decrypted_data(io::IO &io)
 {
-    for (auto i : util::range(input.size()))
-        input.get<u8>()[i] -= get_and_update_key(key);
+    u32 key = io.read_u32_le();
+    u32 data_size = io.read_u32_le();
+
+    u8 expected_checksum1 = io.read_u8();
+    u8 expected_checksum2 = io.read_u8();
+    io.skip(2);
+
+    bstr data = io.read(data_size);
+    u8 *data_ptr = data.get<u8>();
+
+    u8 checksum1 = 0, checksum2 = 0;
+    for (auto i : util::range(data.size()))
+    {
+        *data_ptr -= get_and_update_key(key);
+        checksum1 += *data_ptr;
+        checksum2 ^= *data_ptr;
+        data_ptr++;
+    }
+
+    util::require(checksum1 == expected_checksum1);
+    util::require(checksum2 == expected_checksum2);
+    return data;
 }
 
-static u32 read_variable_data(u8 *&input, const u8 *input_guardian)
+static u32 read_variable_data(const u8 *&input, const u8 *input_guardian)
 {
     u8 current;
     u32 result = 0;
@@ -54,54 +78,33 @@ static u32 read_variable_data(u8 *&input, const u8 *input_guardian)
     return result;
 }
 
-static void read_freq_table(io::IO &io, u32 raw_size, u32 key, u32 freq_table[])
+static FreqTable read_freq_table(const bstr &raw_data)
 {
-    u8 expected_checksum1 = io.read_u8();
-    u8 expected_checksum2 = io.read_u8();
-    io.skip(2);
-
-    bstr raw_data = io.read(raw_size);
-    decrypt(raw_data, key);
-
-    u8 checksum1 = 0, checksum2 = 0;
-    for (auto i : util::range(raw_size))
-    {
-        checksum1 += raw_data.get<u8>()[i];
-        checksum2 ^= raw_data.get<u8>()[i];
-    }
-
-    util::require(checksum1 == expected_checksum1);
-    util::require(checksum2 == expected_checksum2);
-
-    u8 *raw_data_ptr = raw_data.get<u8>();
-    const u8 *raw_data_guardian = raw_data_ptr + raw_size;
+    FreqTable freq_table;
+    const u8 *raw_data_ptr = raw_data.get<const u8>();
+    const u8 *raw_data_guardian = raw_data_ptr + raw_data.size();
     for (auto i : util::range(256))
         freq_table[i] = read_variable_data(raw_data_ptr, raw_data_guardian);
+    return freq_table;
 }
 
-static int read_node_info(u32 freq_table[], NodeInfo node_info[])
+static NodeList read_nodes(const FreqTable &freq_table)
 {
-    util::require(freq_table);
-    util::require(node_info);
+    NodeList nodes;
+
     u32 frequency_sum = 0;
     for (auto i : util::range(256))
     {
-        node_info[i].frequency = freq_table[i];
-        node_info[i].valid = freq_table[i] > 0;
-        node_info[i].left_node = i;
-        node_info[i].right_node = i;
+        std::unique_ptr<NodeInfo> node(new NodeInfo);
+        node->frequency = freq_table[i];
+        node->valid = freq_table[i] > 0;
+        node->left_node = i;
+        node->right_node = i;
         frequency_sum += freq_table[i];
+        nodes.push_back(std::move(node));
     }
 
-    for (auto i : util::range(256, 511))
-    {
-        node_info[i].frequency = 0;
-        node_info[i].valid = false;
-        node_info[i].left_node = -1;
-        node_info[i].right_node = -1;
-    }
-
-    for (auto i : util::range(256, 511))
+    for (auto i : util::range(256, 512))
     {
         u32 frequency = 0;
         int children[2];
@@ -111,53 +114,55 @@ static int read_node_info(u32 freq_table[], NodeInfo node_info[])
             children[j] = -1;
             for (auto k : util::range(i))
             {
-                if (node_info[k].valid && node_info[k].frequency < min)
+                if (nodes[k]->valid && nodes[k]->frequency < min)
                 {
-                    min = node_info[k].frequency;
+                    min = nodes[k]->frequency;
                     children[j] = k;
                 }
             }
             if (children[j] != -1)
             {
-                node_info[children[j]].valid = false;
-                frequency += node_info[children[j]].frequency;
+                nodes[children[j]]->valid = false;
+                frequency += nodes[children[j]]->frequency;
             }
         }
-        node_info[i].valid = true;
-        node_info[i].frequency = frequency;
-        node_info[i].left_node = children[0];
-        node_info[i].right_node = children[1];
+
+        std::unique_ptr<NodeInfo> node(new NodeInfo);
+        node->valid = true;
+        node->frequency = frequency;
+        node->left_node = children[0];
+        node->right_node = children[1];
+        nodes.push_back(std::move(node));
+
         if (frequency == frequency_sum)
-            return i;
+            break;
     }
-    return 511;
+    return nodes;
 }
 
-static void decompress_huffman(
-    io::BitReader &bit_reader,
-    int last_node,
-    NodeInfo node_info[],
-    bstr &huffman)
+static bstr decompress_huffman(
+    io::BitReader &bit_reader, const NodeList &nodes, size_t huffman_size)
 {
-    util::require(node_info);
-    u32 root = last_node;
-
+    bstr huffman;
+    huffman.resize(huffman_size);
+    u32 root = nodes.size() - 1;
     for (auto i : util::range(huffman.size()))
     {
-        int node = root;
+        size_t node = root;
         while (node >= 256)
         {
             node = bit_reader.get(1)
-                ? node_info[node].right_node
-                : node_info[node].left_node;
+                ? nodes[node]->right_node
+                : nodes[node]->left_node;
         }
         huffman[i] = node;
     }
+    return huffman;
 }
 
 static bstr decompress_rle(bstr &huffman, size_t output_size)
 {
-    u8 *huffman_ptr = huffman.get<u8>();
+    const u8 *huffman_ptr = huffman.get<const u8>();
     const u8 *huffman_guardian = huffman_ptr + huffman.size();
 
     bstr output;
@@ -263,19 +268,13 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
     file.io.skip(8);
 
     u32 huffman_size = file.io.read_u32_le();
-    u32 key = file.io.read_u32_le();
-    u32 freq_table_data_size = file.io.read_u32_le();
+    bstr decrypted_data = get_decrypted_data(file.io);
 
-    u32 freq_table[256];
-    read_freq_table(file.io, freq_table_data_size, key, freq_table);
-
-    NodeInfo node_info[511];
-    int last_node = read_node_info(freq_table, node_info);
+    auto freq_table = read_freq_table(decrypted_data);
+    auto nodes = read_nodes(freq_table);
 
     io::BitReader bit_reader(file.io.read_to_eof());
-    bstr huffman;
-    huffman.resize(huffman_size);
-    decompress_huffman(bit_reader, last_node, node_info, huffman);
+    bstr huffman = decompress_huffman(bit_reader, nodes, huffman_size);
 
     auto output = decompress_rle(huffman, width * height * (bpp >> 3));
     transform_colors(output, width, height, bpp);
