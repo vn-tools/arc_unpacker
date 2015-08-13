@@ -7,6 +7,7 @@
 //
 // Known games:
 // - Higurashi No Naku Koro Ni
+// - Go! Go! Nippon! ~My First Trip to Japan~
 
 #include <iostream>
 #include <algorithm>
