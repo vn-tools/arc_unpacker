@@ -1,6 +1,6 @@
 #include "fmt/yuka_script/ykc_archive.h"
 #include "test_support/archive_support.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 
 using namespace au;
 using namespace au::fmt;

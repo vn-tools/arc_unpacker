@@ -1,5 +1,5 @@
 #include "fmt/lizsoft/sotes_converter.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 #include "test_support/converter_support.h"
 
 using namespace au::fmt::lizsoft;

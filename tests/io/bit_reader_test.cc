@@ -1,6 +1,6 @@
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 
 using namespace au;
 using namespace au::io;

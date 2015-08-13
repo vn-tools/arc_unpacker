@@ -1,6 +1,6 @@
 #include "fmt/liar_soft/wcg_converter.h"
 #include "test_support/converter_support.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 
 using namespace au::fmt::liar_soft;
 

@@ -1,6 +1,6 @@
 #include "fmt/nscripter/nsa_archive.h"
 #include "test_support/archive_support.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 #include "util/pack/zlib.h"
 
 using namespace au;

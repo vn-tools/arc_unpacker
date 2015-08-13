@@ -1,6 +1,6 @@
 #include "fmt/touhou/anm_archive.h"
 #include "test_support/archive_support.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 #include "test_support/converter_support.h"
 
 using namespace au;

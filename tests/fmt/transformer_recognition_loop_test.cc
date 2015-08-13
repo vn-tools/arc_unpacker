@@ -1,7 +1,7 @@
 #include <boost/filesystem.hpp>
 #include "fmt/archive.h"
 #include "fmt/converter.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 
 using namespace au;
 using namespace au::fmt;

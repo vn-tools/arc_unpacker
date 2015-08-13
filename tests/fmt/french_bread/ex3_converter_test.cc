@@ -1,6 +1,6 @@
 #include "fmt/french_bread/ex3_converter.h"
 #include "io/file_io.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 #include "util/pack/zlib.h"
 
 using namespace au;

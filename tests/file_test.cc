@@ -1,5 +1,5 @@
 #include "file.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 
 using namespace au;
 

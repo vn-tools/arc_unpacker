@@ -1,6 +1,6 @@
 #include <boost/filesystem/path.hpp>
 #include "fmt/transformer.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 
 using path = boost::filesystem::path;
 

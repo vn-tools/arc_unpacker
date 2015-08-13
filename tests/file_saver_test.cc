@@ -1,6 +1,6 @@
 #include <boost/filesystem.hpp>
 #include "file_saver.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 #include "test_support/suppress_output.h"
 
 using namespace au;

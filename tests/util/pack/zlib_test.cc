@@ -1,4 +1,4 @@
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 #include "util/pack/zlib.h"
 #include "types.h"
 

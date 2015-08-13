@@ -1,5 +1,5 @@
 #include "io/file_io.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 #include "util/endian.h"
 #include "util/image.h"
 

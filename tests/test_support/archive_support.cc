@@ -2,7 +2,7 @@
 #include "file.h"
 #include "io/file_io.h"
 #include "test_support/archive_support.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 
 using namespace au;
 

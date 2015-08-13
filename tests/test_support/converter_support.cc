@@ -1,6 +1,6 @@
 #include "file.h"
 #include "io/file_io.h"
-#include "test_support/catch.hpp"
+#include "test_support/catch.hh"
 #include "test_support/converter_support.h"
 #include "util/image.h"
 
