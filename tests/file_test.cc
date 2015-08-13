@@ -27,6 +27,20 @@ TEST_CASE("Setting name works")
     REQUIRE(file.name == "abc");
 }
 
+TEST_CASE("Checking extension works")
+{
+    File extensionless_file;
+    extensionless_file.name = "test";
+    REQUIRE(!extensionless_file.has_extension());
+    REQUIRE(!extensionless_file.has_extension("test"));
+    REQUIRE(!extensionless_file.has_extension("dat"));
+    File dat_file;
+    dat_file.name = "test.dat";
+    REQUIRE(dat_file.has_extension());
+    REQUIRE(!dat_file.has_extension("test"));
+    REQUIRE(dat_file.has_extension("dat"));
+}
+
 TEST_CASE("Changing file extension work")
 {
     test_changing_extension("",          "xyz",  "");

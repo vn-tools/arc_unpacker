@@ -41,6 +41,12 @@ File::~File()
     delete &io;
 }
 
+bool File::has_extension()
+{
+    auto path = boost::filesystem::path(name);
+    return path.extension() != "";
+}
+
 bool File::has_extension(const std::string &extension)
 {
     auto path = boost::filesystem::path(name);
