@@ -301,7 +301,7 @@ bool ArcUnpacker::guess_transformer_and_unpack(
         transformer = p->factory.create(p->options.format);
     }
 
-    Log.info("Unpacking...\n");
+    Log.info(util::format("Unpacking %s...\n", file.name.c_str()));
     try
     {
         unpack(*transformer, file, base_name);
