@@ -41,28 +41,20 @@ static void add_rename_option(ArgParser &arg_parser, Options &options)
     arg_parser.add_help(
         "-r, --rename",
         "Renames existing target files.\nBy default, they're overwritten.");
-
-    options.overwrite = true;
-    if (arg_parser.has_flag("-r") || arg_parser.has_flag("--rename"))
-        options.overwrite = false;
+    options.overwrite
+        = !arg_parser.has_flag("-r") && !arg_parser.has_flag("--rename");
 }
 
 static void add_disable_colors_option(ArgParser &arg_parser, Options &options)
 {
-    arg_parser.add_help(
-        "--no-color",
-        "Disables color output.");
-
+    arg_parser.add_help("--no-color", "Disables color output.");
     if (arg_parser.has_flag("--no-color") || arg_parser.has_flag("--no-colors"))
         Log.disable_colors();
 }
 
-static void add_output_folder_option(ArgParser &arg_parser, Options &options)
+static void add_output_dir_option(ArgParser &arg_parser, Options &options)
 {
-    arg_parser.add_help(
-        "-o, --out=FOLDER",
-        "Where to put the output files.");
-
+    arg_parser.add_help("-o, --out=DIR", "Where to put the output files.");
     if (arg_parser.has_switch("-o"))
         options.output_dir = arg_parser.get_switch("-o");
     else if (arg_parser.has_switch("--out"))
@@ -142,7 +134,7 @@ struct ArcUnpacker::Priv
 ArcUnpacker::ArcUnpacker(ArgParser &arg_parser, const std::string &version)
     : p(new Priv(arg_parser, version))
 {
-    add_output_folder_option(arg_parser, p->options);
+    add_output_dir_option(arg_parser, p->options);
     add_format_option(arg_parser, p->options);
     add_rename_option(arg_parser, p->options);
     add_disable_colors_option(arg_parser, p->options);
@@ -176,7 +168,7 @@ directory.
     auto format = p->options.format;
     if (format != "")
     {
-        std::unique_ptr<Transformer> transformer = p->factory.create(format);
+        auto transformer = p->factory.create(format);
 
         if (transformer != nullptr)
         {
@@ -198,23 +190,21 @@ Supported FORMAT values:
 
     auto formats = p->factory.get_formats();
 
-    size_t max_format_size = 0;
-    for (auto &format : p->factory.get_formats())
-        max_format_size = std::max(format.size(), max_format_size);
-    int columns = (79 - max_format_size - 2) / max_format_size;
+    size_t max_fmt_size = 0;
+    for (auto &fmt : p->factory.get_formats())
+        max_fmt_size = std::max(fmt.size(), max_fmt_size);
+    int columns = (79 - max_fmt_size - 2) / max_fmt_size;
     int rows = (formats.size() + columns - 1) / columns;
     for (auto y : util::range(rows))
     {
         for (auto x : util::range(columns))
         {
             size_t i = x * rows + y;
-            if (i < formats.size())
-            {
-                Log.info(
-                    util::format(
-                        util::format("- %%-%ds ", max_format_size).c_str(),
-                        formats[i].c_str()));
-            }
+            if (i >= formats.size())
+                continue;
+            Log.info(util::format(
+                util::format("- %%-%ds ", max_fmt_size).c_str(),
+                formats[i].c_str()));
         }
         Log.info("\n");
     }
@@ -288,18 +278,12 @@ std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
 bool ArcUnpacker::guess_transformer_and_unpack(
     File &file, const std::string &base_name) const
 {
-    std::unique_ptr<Transformer> transformer(nullptr);
+    auto transformer = p->options.format != ""
+        ? p->factory.create(p->options.format)
+        : guess_transformer(file);
 
-    if (p->options.format == "")
-    {
-        transformer = guess_transformer(file);
-        if (transformer == nullptr)
-            return false;
-    }
-    else
-    {
-        transformer = p->factory.create(p->options.format);
-    }
+    if (!transformer)
+        return false;
 
     Log.info(util::format("Unpacking %s...\n", file.name.c_str()));
     try
@@ -324,25 +308,19 @@ bool ArcUnpacker::run()
         print_help(path_to_self);
         return true;
     }
-    else
+
+    if (!add_input_paths_option(*this, p->arg_parser, p->options))
+        return false;
+
+    bool result = true;
+    for (auto &path_info : p->options.input_paths)
     {
-        if (!add_input_paths_option(
-            *this, p->arg_parser, p->options))
-        {
-            return false;
-        }
+        File file(path_info->input_path, io::FileMode::Read);
 
-        bool result = true;
-        for (auto &path_info : p->options.input_paths)
-        {
-            File file(path_info->input_path, io::FileMode::Read);
+        auto tmp = boost::filesystem::path(path_info->base_name);
+        auto base_name = tmp.stem().string() + "~" + tmp.extension().string();
 
-            auto tmp = boost::filesystem::path(path_info->base_name);
-            std::string base_name
-                = tmp.stem().string() + "~" + tmp.extension().string();
-
-            result &= guess_transformer_and_unpack(file, base_name);
-        }
-        return result;
+        result &= guess_transformer_and_unpack(file, base_name);
     }
+    return result;
 }
