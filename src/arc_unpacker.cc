@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
+#include <map>
 #include "arc_unpacker.h"
 #include "log.h"
 #include "util/format.h"
@@ -249,46 +250,39 @@ void ArcUnpacker::unpack(
 
 std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
 {
-    std::vector<std::unique_ptr<Transformer>> transformers;
+    std::map<std::string, std::unique_ptr<Transformer>> transformers;
 
-    size_t max_format_size = 0;
-    for (auto &format : p->factory.get_formats())
-        max_format_size = std::max(format.size(), max_format_size);
+    size_t max_fmt_size = 0;
+    for (auto &fmt : p->factory.get_formats())
+        max_fmt_size = std::max(fmt.size(), max_fmt_size);
 
-    for (auto &format : p->factory.get_formats())
+    for (auto &fmt : p->factory.get_formats())
     {
-        auto current_transformer = p->factory.create(format);
-        Log.info(
-            util::format(
-                util::format("Trying %%-%ds", max_format_size + 2).c_str(),
-                (format + ": ").c_str()));
-
+        auto current_transformer = p->factory.create(fmt);
         if (current_transformer->is_recognized(file))
-        {
-            Log.success("recognized\n");
-            transformers.push_back(std::move(current_transformer));
-        }
-        else
-        {
-            Log.err("not recognized\n");
-        }
+            transformers[fmt] = std::move(current_transformer);
     }
 
-    if (transformers.size() == 0)
+    if (transformers.size() == 1)
     {
-        Log.err("File not recognized.\n");
-        return nullptr;
+        Log.success(util::format(
+            "File was recognized as %s.\n",
+            transformers.begin()->first.c_str()));
+        return std::move(transformers.begin()->second);
     }
-    else if (transformers.size() == 1)
+
+    if (transformers.size() > 1)
     {
-        return std::move(transformers[0]);
+        Log.warn("File wa recognized by multiple transformers:\n");
+        for (const auto &it : transformers)
+            Log.warn("- " + it.first + "\n");
+        Log.warn("Please provide --fmt and proceed manually.\n");
     }
     else
     {
-        Log.warn("File was recognized by multiple engines.\n");
-        Log.warn("Please provide --fmt and proceed manually.\n");
-        return nullptr;
+        Log.err("File was not recognized by any transformer.\n");
     }
+    return nullptr;
 }
 
 bool ArcUnpacker::guess_transformer_and_unpack(
