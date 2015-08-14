@@ -33,14 +33,21 @@ namespace util {
 
         Logger();
         ~Logger();
+
         void set_color(Color c);
         void info(const std::string &str);
         void success(const std::string &str);
         void warn(const std::string &str);
         void err(const std::string &str);
         void flush();
+
         void mute();
         void unmute();
+
+        bool colors_enabled() const;
+        void disable_colors();
+        void enable_colors();
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

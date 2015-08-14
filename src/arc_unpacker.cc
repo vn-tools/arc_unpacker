@@ -46,8 +46,17 @@ static void add_rename_option(ArgParser &arg_parser, Options &options)
         options.overwrite = false;
 }
 
-static void add_output_folder_option(
-    ArgParser &arg_parser, Options &options)
+static void add_disable_colors_option(ArgParser &arg_parser, Options &options)
+{
+    arg_parser.add_help(
+        "--no-color",
+        "Disables color output.");
+
+    if (arg_parser.has_flag("--no-color") || arg_parser.has_flag("--no-colors"))
+        Log.disable_colors();
+}
+
+static void add_output_folder_option(ArgParser &arg_parser, Options &options)
 {
     arg_parser.add_help(
         "-o, --out=FOLDER",
@@ -74,14 +83,12 @@ static void add_format_option(ArgParser &arg_parser, Options &options)
 }
 
 static bool add_input_paths_option(
-    ArcUnpacker &arc_unpacker,
-    ArgParser &arg_parser,
-    Options &options)
+    ArcUnpacker &arc_unpacker, ArgParser &arg_parser, Options &options)
 {
-    const std::vector<std::string> stray = arg_parser.get_stray();
+    const auto stray = arg_parser.get_stray();
     for (auto i : util::range(1, stray.size()))
     {
-        std::string path = stray[i];
+        auto path = stray[i];
         if (boost::filesystem::is_directory(path))
         {
             for (boost::filesystem::recursive_directory_iterator it(path);
@@ -103,15 +110,14 @@ static bool add_input_paths_option(
         {
             std::unique_ptr<PathInfo> pi(new PathInfo);
             pi->input_path = path;
-            pi->base_name
-                = boost::filesystem::path(path).filename().string();
+            pi->base_name = boost::filesystem::path(path).filename().string();
             options.input_paths.push_back(std::move(pi));
         }
     }
 
     if (options.input_paths.size() < 1)
     {
-        Log.err( "Error: required more arguments.\n\n");
+        Log.err("Error: required more arguments.\n\n");
         arc_unpacker.print_help(stray[0]);
         return false;
     }
@@ -138,6 +144,7 @@ ArcUnpacker::ArcUnpacker(ArgParser &arg_parser, const std::string &version)
     add_output_folder_option(arg_parser, p->options);
     add_format_option(arg_parser, p->options);
     add_rename_option(arg_parser, p->options);
+    add_disable_colors_option(arg_parser, p->options);
     add_help_option(arg_parser);
 }
 
