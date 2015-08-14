@@ -31,7 +31,7 @@ static size_t wcg_unpack(
     int output_shift)
 {
     u8 *output_ptr = output;
-    u8 *output_guardian = output + output_size * output_shift;
+    u8 *output_end = output + output_size * output_shift;
     size_t expected_size = output_size << input_shift;
     size_t actual_size = io.read_u32_le();
     if (expected_size != actual_size)
@@ -59,7 +59,7 @@ static size_t wcg_unpack(
     size_t var2 = tmp + 4;
 
     io::BitReader bit_reader(io);
-    while (output_ptr != output_guardian)
+    while (output_ptr != output_end)
     {
         size_t sequence_size = 1;
         size_t table_offset_size = bit_reader.get(var2);

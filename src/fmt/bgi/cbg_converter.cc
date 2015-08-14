@@ -10,6 +10,7 @@
 // - Go! Go! Nippon! ~My First Trip to Japan~
 
 #include <cstring>
+#include <iostream>
 #include <array>
 #include "fmt/bgi/cbg_converter.h"
 #include "fmt/bgi/common.h"
@@ -23,6 +24,12 @@ using namespace au::fmt::bgi;
 
 namespace
 {
+    enum class Version : u8
+    {
+        Version3 = 3,
+        Version4 = 4,
+    };
+
     struct NodeInfo
     {
         bool valid;
@@ -36,6 +43,17 @@ namespace
 }
 
 static const bstr magic = "CompressedBG___\x00"_b;
+
+static Version get_version(io::IO &io)
+{
+    Version ret = Version::Version3;
+    io.peek(46, [&]()
+    {
+        if (io.read_u8() != 2 || io.read_u8())
+            ret = Version::Version4;
+    });
+    return ret;
+}
 
 static bstr get_decrypted_data(io::IO &io)
 {
@@ -63,14 +81,14 @@ static bstr get_decrypted_data(io::IO &io)
     return data;
 }
 
-static u32 read_variable_data(const u8 *&input, const u8 *input_guardian)
+static u32 read_variable_data(const u8 *&input, const u8 *input_end)
 {
     u8 current;
     u32 result = 0;
     u32 shift = 0;
     do
     {
-        util::require(input < input_guardian);
+        util::require(input < input_end);
         current = *input++;
         result |= (current & 0x7F) << shift;
         shift += 7;
@@ -82,9 +100,9 @@ static FreqTable read_freq_table(const bstr &raw_data)
 {
     FreqTable freq_table;
     const u8 *raw_data_ptr = raw_data.get<const u8>();
-    const u8 *raw_data_guardian = raw_data_ptr + raw_data.size();
+    const u8 *raw_data_end = raw_data_ptr + raw_data.size();
     for (auto i : util::range(256))
-        freq_table[i] = read_variable_data(raw_data_ptr, raw_data_guardian);
+        freq_table[i] = read_variable_data(raw_data_ptr, raw_data_end);
     return freq_table;
 }
 
@@ -163,16 +181,16 @@ static bstr decompress_huffman(
 static bstr decompress_rle(bstr &huffman, size_t output_size)
 {
     const u8 *huffman_ptr = huffman.get<const u8>();
-    const u8 *huffman_guardian = huffman_ptr + huffman.size();
+    const u8 *huffman_end = huffman_ptr + huffman.size();
 
     bstr output;
     output.resize(output_size);
     u8 *output_ptr = output.get<u8>();
 
     bool zero_flag = false;
-    while (huffman_ptr < huffman_guardian)
+    while (huffman_ptr < huffman_end)
     {
-        u32 size = read_variable_data(huffman_ptr, huffman_guardian);
+        u32 size = read_variable_data(huffman_ptr, huffman_end);
         if (zero_flag)
         {
             memset(output_ptr, 0, size);
@@ -258,9 +276,21 @@ bool CbgConverter::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
+//a4+0:magic
+//a4+16: width
+//a4+18: height
+//a4+20: bpp
+//a4+24: unk0
+//a4+28: unk0
+//a4+32: huffman_size
+//a4+36: key
+//a4+40: decrypted data size
+
 std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
+
+    auto version = get_version(file.io);
 
     u16 width = file.io.read_u16_le();
     u16 height = file.io.read_u16_le();
@@ -270,16 +300,28 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
     u32 huffman_size = file.io.read_u32_le();
     bstr decrypted_data = get_decrypted_data(file.io);
 
-    auto freq_table = read_freq_table(decrypted_data);
-    auto nodes = read_nodes(freq_table);
+    if (version == Version::Version4)
+    {
+        auto freq_table = read_freq_table(decrypted_data);
+        auto nodes = read_nodes(freq_table);
 
-    io::BitReader bit_reader(file.io.read_to_eof());
-    bstr huffman = decompress_huffman(bit_reader, nodes, huffman_size);
+        io::BitReader bit_reader(file.io.read_to_eof());
+        bstr huffman = decompress_huffman(bit_reader, nodes, huffman_size);
 
-    auto output = decompress_rle(huffman, width * height * (bpp >> 3));
-    transform_colors(output, width, height, bpp);
+        auto output = decompress_rle(huffman, width * height * (bpp >> 3));
+        transform_colors(output, width, height, bpp);
 
-    auto image = util::Image::from_pixels(
-        width, height, output, bpp_to_image_pixel_format(bpp));
-    return image->create_file(file.name);
+        auto image = util::Image::from_pixels(
+            width, height, output, bpp_to_image_pixel_format(bpp));
+        return image->create_file(file.name);
+    }
+    else if (version == Version::Version3)
+    {
+        bstr output;
+        output.resize(width * height * 4);
+        std::cerr << std::hex << width * height * 4 << std::endl;
+        util::fail("Reading version 3 is not supported");
+    }
+
+    util::fail("Unknown version");
 }

@@ -19,9 +19,9 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
     bstr target;
     target.resize(width * height * 3);
     u8 *target_ptr = target.get<u8>();
-    u8 *target_guardian = target_ptr + target.size();
+    u8 *target_end = target_ptr + target.size();
     const u8 *source_ptr = source.get<const u8>();
-    const u8 *source_guardian = source_ptr + source.size();
+    const u8 *source_end = source_ptr + source.size();
 
     int flag = 0;
     int size_lookup[256];
@@ -31,7 +31,7 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
     size_lookup[0xFE] = 0x400;
     size_lookup[0xFD] = 0x100;
 
-    while (source_ptr < source_guardian && target_ptr < target_guardian)
+    while (source_ptr < source_end && target_ptr < target_end)
     {
         flag <<= 1;
         if ((flag & 0xFF) == 0)
@@ -56,7 +56,7 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
                 shift = (*source_ptr++) | ((tmp & 0x3F) << 8);
                 if (tmp & 0x40)
                 {
-                    if (source_ptr >= source_guardian)
+                    if (source_ptr >= source_end)
                         break;
                     auto index = static_cast<size_t>(*source_ptr++);
                     size = size_lookup[index];
@@ -76,8 +76,8 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
                     size += 9;
                     for (auto i : util::range(size))
                     {
-                        if (source_ptr >= source_guardian
-                            || target_ptr >= target_guardian)
+                        if (source_ptr >= source_end
+                            || target_ptr >= target_end)
                         {
                             break;
                         }
@@ -92,7 +92,7 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
             shift += 1;
             for (auto i : util::range(size))
             {
-                if (target_ptr >= target_guardian)
+                if (target_ptr >= target_end)
                     break;
                 if (target_ptr - shift < target.get<u8>())
                     throw std::runtime_error("Invalid shift value");

@@ -214,7 +214,7 @@ static bstr decompress(const bstr &input, size_t output_size)
     bstr output;
     output.resize(output_size);
     char *output_ptr = output.get<char>();
-    const char *output_guardian = output_ptr + output_size;
+    const char *output_end = output_ptr + output_size;
 
     io::BufferedIO input_io(input);
 
@@ -282,7 +282,7 @@ static bstr decompress(const bstr &input, size_t output_size)
             if (dict1[d] == d)
             {
                 *output_ptr++ = d;
-                if (output_ptr >= output_guardian)
+                if (output_ptr >= output_end)
                     return output;
             }
             else

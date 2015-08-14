@@ -54,14 +54,14 @@ static bstr decompress_table(const bstr &input, size_t output_size)
     bstr output;
     output.resize(output_size);
     u8 *output_ptr = output.get<u8>();
-    u8 *output_guardian = output_ptr + output_size;
+    u8 *output_end = output_ptr + output_size;
     io::BitReader bit_reader(input);
 
     u16 nodes[2][512];
     int pos = 256;
     int initial_pos = init_huffman(bit_reader, nodes, pos);
 
-    while (output_ptr < output_guardian)
+    while (output_ptr < output_end)
     {
         unsigned int pos = initial_pos;
         while (pos >= 256)

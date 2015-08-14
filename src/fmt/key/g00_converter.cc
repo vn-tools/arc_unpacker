@@ -37,22 +37,22 @@ static bstr decompress(
     size_t byte_count,
     size_t size_delta)
 {
-    const u8 *src = input.get<u8>();
-    const u8 *src_guardian = src + input.size();
+    const u8 *src_ptr = input.get<u8>();
+    const u8 *src_end = src_ptr + input.size();
     bstr output;
     output.resize(output_size);
-    u8 *dst = output.get<u8>();
-    u8 *dst_guardian = dst + output.size();
+    u8 *dst_ptr = output.get<u8>();
+    u8 *dst_end = dst_ptr + output.size();
 
-    int flag = *src++;
+    int flag = *src_ptr++;
     int bit = 1;
-    while (dst < dst_guardian)
+    while (dst_ptr < dst_end)
     {
         if (bit == 256)
         {
-            if (src >= src_guardian)
+            if (src_ptr >= src_end)
                 break;
-            flag = *src++;
+            flag = *src_ptr++;
             bit = 1;
         }
 
@@ -60,29 +60,29 @@ static bstr decompress(
         {
             for (auto i : util::range(byte_count))
             {
-                if (src >= src_guardian || dst >= dst_guardian)
+                if (src_ptr >= src_end || dst_ptr >= dst_end)
                     break;
-                *dst++ = *src++;
+                *dst_ptr++ = *src_ptr++;
             }
         }
         else
         {
-            if (src >= src_guardian)
+            if (src_ptr >= src_end)
                 break;
-            size_t tmp = *src++;
-            if (src >= src_guardian)
+            size_t tmp = *src_ptr++;
+            if (src_ptr >= src_end)
                 break;
-            tmp |= (*src++) << 8;
+            tmp |= (*src_ptr++) << 8;
 
             int look_behind = (tmp >> 4) * byte_count;
             size_t size = ((tmp & 0x0F) + size_delta) * byte_count;
             for (auto i : util::range(size))
             {
-                if (dst >= dst_guardian)
+                if (dst_ptr >= dst_end)
                     break;
-                util::require(&dst[-look_behind] >= output.get<u8>());
-                *dst = dst[-look_behind];
-                dst++;
+                util::require(&dst_ptr[-look_behind] >= output.get<u8>());
+                *dst_ptr = dst_ptr[-look_behind];
+                dst_ptr++;
             }
         }
         bit <<= 1;

@@ -18,14 +18,14 @@ using namespace au::fmt::propeller;
 static bstr decompress(const bstr &input, size_t size_original)
 {
     const u8 *input_ptr = input.get<const u8>();
-    const u8 *input_guardian = input_ptr + input.size();
+    const u8 *input_end = input_ptr + input.size();
 
     bstr output;
     output.resize(size_original);
     u8 *output_ptr = output.get<u8>();
-    u8 *output_guardian = output_ptr + size_original;
+    u8 *output_end = output_ptr + size_original;
 
-    while (output_ptr < output_guardian)
+    while (output_ptr < output_end)
     {
         u32 c = *input_ptr++;
 

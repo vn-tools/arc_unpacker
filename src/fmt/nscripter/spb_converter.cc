@@ -28,24 +28,24 @@ static bstr decode_pixels(
     for (int rgb = 2; rgb >= 0; rgb--)
     {
         u8 *channel_ptr = channel_data.get<u8>();
-        const u8 *channel_guardian = channel_ptr + channel_data.size();
+        const u8 *channel_end = channel_ptr + channel_data.size();
 
         u8 ch = bit_reader.try_get(8);
-        if (channel_ptr >= channel_guardian) break;
+        if (channel_ptr >= channel_end) break;
         *channel_ptr++ = ch;
 
-        while (channel_ptr < channel_guardian)
+        while (channel_ptr < channel_end)
         {
             size_t t = bit_reader.try_get(3);
             if (t == 0)
             {
-                if (channel_ptr >= channel_guardian) break;
+                if (channel_ptr >= channel_end) break;
                 *channel_ptr++ = ch;
-                if (channel_ptr >= channel_guardian) break;
+                if (channel_ptr >= channel_end) break;
                 *channel_ptr++ = ch;
-                if (channel_ptr >= channel_guardian) break;
+                if (channel_ptr >= channel_end) break;
                 *channel_ptr++ = ch;
-                if (channel_ptr >= channel_guardian) break;
+                if (channel_ptr >= channel_end) break;
                 *channel_ptr++ = ch;
                 continue;
             }
@@ -66,7 +66,7 @@ static bstr decode_pixels(
                     else
                         ch -= (t >> 1);
                 }
-                if (channel_ptr >= channel_guardian) break;
+                if (channel_ptr >= channel_end) break;
                 *channel_ptr++ = ch;
             }
         }

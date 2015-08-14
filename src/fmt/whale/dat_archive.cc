@@ -130,12 +130,12 @@ static void transform_regular_content(
     auto block_size = static_cast<size_t>(
         floor(buffer.size() / static_cast<float>(sjis_file_name.size())));
     u8 *buffer_ptr = buffer.get<u8>();
-    u8 *buffer_guardian = buffer_ptr + buffer.size();
+    u8 *buffer_end = buffer_ptr + buffer.size();
     for (auto j : util::range(sjis_file_name.size() - 1))
     {
         for (auto k : util::range(block_size))
         {
-            if (buffer_ptr >= buffer_guardian)
+            if (buffer_ptr >= buffer_end)
                 return;
             *buffer_ptr++ ^= sjis_file_name[j];
         }

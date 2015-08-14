@@ -9,11 +9,11 @@ bstr au::fmt::kid::decompress(const bstr &input, size_t size_original)
     output.resize(size_original);
 
     u8 *output_ptr = output.get<u8>();
-    const u8 *output_guardian = output_ptr + output.size();
+    const u8 *output_end = output_ptr + output.size();
 
     const u8 *input_ptr = input.get<u8>();
 
-    while (output_ptr < output_guardian)
+    while (output_ptr < output_end)
     {
         u8 byte = *input_ptr++;
         if (byte & 0x80)

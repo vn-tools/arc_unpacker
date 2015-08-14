@@ -25,11 +25,11 @@ static bstr decompress(const bstr &input, size_t width, size_t height)
     bstr output;
     output.resize(width * height);
     u8 *output_ptr = output.get<u8>();
-    const u8 *output_guardian = output_ptr + output.size();
+    const u8 *output_end = output_ptr + output.size();
     const u8 *input_ptr = input.get<const u8>();
-    const u8 *input_guardian = input_ptr + input.size();
+    const u8 *input_end = input_ptr + input.size();
 
-    while (input_ptr < input_guardian && output_ptr < output_guardian)
+    while (input_ptr < input_end && output_ptr < output_end)
     {
         u8 c = *input_ptr++;
 
@@ -42,7 +42,7 @@ static bstr decompress(const bstr &input, size_t width, size_t height)
             case 0xFC:
             {
                 size_t n = *input_ptr++ + 3;
-                while (n-- && output_ptr < output_guardian)
+                while (n-- && output_ptr < output_end)
                 {
                     *output_ptr++ = *input_ptr;
                     *output_ptr++ = *(input_ptr + 1);
@@ -54,7 +54,7 @@ static bstr decompress(const bstr &input, size_t width, size_t height)
             case 0xFD:
             {
                 size_t n = *input_ptr++ + 4;
-                while (n-- && output_ptr < output_guardian)
+                while (n-- && output_ptr < output_end)
                     *output_ptr++ = *input_ptr;
                 input_ptr++;
                 break;
@@ -63,7 +63,7 @@ static bstr decompress(const bstr &input, size_t width, size_t height)
             case 0xFE:
             {
                 size_t n = *input_ptr++ + 3;
-                while (n-- && output_ptr < output_guardian)
+                while (n-- && output_ptr < output_end)
                 {
                     *output_ptr = *(output_ptr - width * 2);
                     output_ptr++;
@@ -74,7 +74,7 @@ static bstr decompress(const bstr &input, size_t width, size_t height)
             case 0xFF:
             {
                 size_t n = *input_ptr++ + 3;
-                while (n-- && output_ptr < output_guardian)
+                while (n-- && output_ptr < output_end)
                 {
                     *output_ptr = *(output_ptr - width);
                     output_ptr++;

@@ -147,7 +147,7 @@ static void write_pixels(
     size_t height = file_io.read_u16_le();
     size_t data_size = file_io.read_u32_le();
 
-    u32 *guardian = &pixel_data[stride * height];
+    u32 *pixel_end = &pixel_data[stride * height];
 
     for (auto y : util::range(height))
     {
@@ -155,7 +155,7 @@ static void write_pixels(
         u32 *pixel_ptr = &pixel_data[shift];
         for (auto x : util::range(width))
         {
-            if (pixel_ptr >= guardian)
+            if (pixel_ptr >= pixel_end)
                 return;
             switch (format)
             {
