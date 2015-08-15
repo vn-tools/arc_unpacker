@@ -133,7 +133,10 @@ static Table read_table(io::IO &file_io)
 }
 
 static void write_pixels(
-    io::IO &file_io, TableEntry &entry, u32 *pixel_data, size_t stride)
+    io::IO &file_io,
+    TableEntry &entry,
+    std::vector<util::Color> &pixels,
+    size_t stride)
 {
     if (!entry.has_data)
         return;
@@ -147,38 +150,41 @@ static void write_pixels(
     size_t height = file_io.read_u16_le();
     size_t data_size = file_io.read_u32_le();
 
-    u32 *pixel_end = &pixel_data[stride * height];
-
+    const auto *pixels_end = &pixels[stride * height];
     for (auto y : util::range(height))
     {
-        size_t shift = (y + entry.y) * stride + entry.x;
-        u32 *pixel_ptr = &pixel_data[shift];
+        auto shift = (y + entry.y) * width + entry.x;
+        auto *pixels_ptr = &pixels[shift];
         for (auto x : util::range(width))
         {
-            if (pixel_ptr >= pixel_end)
+            if (pixels_ptr >= pixels_end)
                 return;
+
+            util::Color color;
             switch (format)
             {
                 case 1:
-                    *pixel_ptr++ = file_io.read_u32_le();
+                    color = util::color::bgra8888(file_io);
                     break;
 
                 case 3:
-                    *pixel_ptr++ = util::color::rgb565(file_io.read_u16_le());
+                    color = util::color::bgr565(file_io);
                     break;
 
                 case 5:
-                    *pixel_ptr++ = util::color::rgba4444(file_io.read_u16_le());
+                    color = util::color::bgra4444(file_io);
                     break;
 
                 case 7:
-                    *pixel_ptr++ = util::color::rgba_gray(file_io.read_u8());
+                    color = util::color::gray8(file_io);
                     break;
 
                 default:
                     throw std::runtime_error(util::format(
                         "Unknown color format: %d", format));
             }
+
+            *pixels_ptr++ = color;
         }
     }
 }
@@ -205,13 +211,11 @@ static std::unique_ptr<File> read_texture(io::IO &file_io, Table &entries)
     if (!width || !height)
         return nullptr;
 
-    bstr pixels;
-    pixels.resize(width * height * 4);
+    std::vector<util::Color> pixels(width * height);
     for (auto &entry : entries)
-        write_pixels(file_io, *entry, pixels.get<u32>(), width);
+        write_pixels(file_io, *entry, pixels, width);
 
-    auto image = util::Image::from_pixels(
-        width, height, pixels, util::PixelFormat::BGRA);
+    auto image = util::Image::from_pixels(width, height, pixels);
     return image->create_file(entries[0]->name);
 }
 

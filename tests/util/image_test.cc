@@ -1,6 +1,5 @@
 #include "io/file_io.h"
 #include "test_support/catch.hh"
-#include "util/endian.h"
 #include "util/image.h"
 
 using namespace au;
@@ -14,8 +13,11 @@ TEST_CASE("Reading transparent PNG images works")
     REQUIRE(image->width() == 641);
     REQUIRE(image->height() == 720);
 
-    u32 rgba = image->color_at(200, 100);
-    REQUIRE(rgba == util::from_big_endian<u32>(0xFE0A17FF));
+    auto color = image->color_at(200, 100);
+    REQUIRE(static_cast<int>(color.r) == 0xFE);
+    REQUIRE(static_cast<int>(color.g) == 0x0A);
+    REQUIRE(static_cast<int>(color.b) == 0x17);
+    REQUIRE(static_cast<int>(color.a) == 0xFF);
 }
 
 TEST_CASE("Reading opaque PNG images works")
@@ -26,8 +28,11 @@ TEST_CASE("Reading opaque PNG images works")
     REQUIRE(image->width() == 640);
     REQUIRE(image->height() == 480);
 
-    u32 rgba = image->color_at(200, 100);
-    REQUIRE(rgba == util::from_big_endian<u32>(0x7C6A34FF));
+    auto color = image->color_at(200, 100);
+    REQUIRE(static_cast<int>(color.r) == 0x7C);
+    REQUIRE(static_cast<int>(color.g) == 0x6A);
+    REQUIRE(static_cast<int>(color.b) == 0x34);
+    REQUIRE(static_cast<int>(color.a) == 0xFF);
 }
 
 TEST_CASE("Reading JPEG images works")
@@ -38,6 +43,9 @@ TEST_CASE("Reading JPEG images works")
     REQUIRE(image->width() == 1024);
     REQUIRE(image->height() == 1024);
 
-    u32 rgba = image->color_at(200, 100);
-    REQUIRE(rgba == util::from_big_endian<u32>(0x6097E7FF));
+    auto color = image->color_at(200, 100);
+    REQUIRE(static_cast<int>(color.r) == 0x60);
+    REQUIRE(static_cast<int>(color.g) == 0x97);
+    REQUIRE(static_cast<int>(color.b) == 0xE7);
+    REQUIRE(static_cast<int>(color.a) == 0xFF);
 }

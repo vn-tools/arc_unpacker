@@ -235,6 +235,22 @@ std::unique_ptr<Image> Image::from_pixels(
     return image;
 }
 
+std::unique_ptr<Image> Image::from_pixels(
+    size_t width, size_t height, const std::vector<Color> &data)
+{
+    std::unique_ptr<Image> image(new Image);
+    util::require(width > 0);
+    util::require(height >  0);
+    util::require(data.size() >= width * height);
+    image->p->width = width;
+    image->p->height = height;
+    image->p->data = bstr(
+        reinterpret_cast<const char*>(&data[0]),
+        width * height * 4);
+    image->p->fmt = PixelFormat::BGRA;
+    return image;
+}
+
 std::unique_ptr<Image> Image::from_boxed(const bstr &data)
 {
     io::BufferedIO tmp_io(data);
@@ -282,7 +298,7 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
     return output_file;
 }
 
-u32 Image::color_at(size_t x, size_t y) const
+Color Image::color_at(size_t x, size_t y) const
 {
     u8 r, g, b, a;
     size_t i = y * p->width + x;
@@ -319,5 +335,10 @@ u32 Image::color_at(size_t x, size_t y) const
         default:
             throw std::runtime_error("Unsupported pixel format");
     }
-    return r | (g << 8) | (b << 16) | (a << 24);
+    Color ret;
+    ret.r = r;
+    ret.g = g;
+    ret.b = b;
+    ret.a = a;
+    return ret;
 }

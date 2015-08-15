@@ -32,9 +32,7 @@ std::unique_ptr<File> DpngConverter::decode_internal(File &file) const
     size_t width = file.io.read_u32_le();
     size_t height = file.io.read_u32_le();
 
-    bstr pixels;
-    pixels.resize(width * height * 4);
-
+    std::vector<util::Color> pixels(width * height);
     for (auto i : util::range(file_count))
     {
         size_t region_x = file.io.read_u32_le();
@@ -54,12 +52,11 @@ std::unique_ptr<File> DpngConverter::decode_internal(File &file) const
             {
                 size_t x2 = x + region_x;
                 size_t y2 = y + region_y;
-                pixels.get<u32>()[x2 + y2 * width] = region->color_at(x, y);
+                pixels[x2 + y2 * width] = region->color_at(x, y);
             }
         }
     }
 
-    auto image = util::Image::from_pixels(
-        width, height, pixels, util::PixelFormat::RGBA);
+    auto image = util::Image::from_pixels(width, height, pixels);
     return image->create_file(file.name);
 }

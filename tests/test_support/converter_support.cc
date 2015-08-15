@@ -17,8 +17,8 @@ static void compare_images(
     {
         for (x = 0; x < expected_image.width(); x++)
         {
-            u32 expected_rgba = expected_image.color_at(x, y);
-            u32 actual_rgba = actual_image.color_at(x, y);
+            auto expected_rgba = expected_image.color_at(x, y);
+            auto actual_rgba = actual_image.color_at(x, y);
             if (expected_rgba != actual_rgba) //speed up
             {
                 INFO("Pixels differ at " << x << ", " << y);

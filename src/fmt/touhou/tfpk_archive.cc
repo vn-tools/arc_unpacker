@@ -390,7 +390,7 @@ static Palette read_palette_file(
             pal_file->io.read(pal_size)));
     Palette palette;
     for (auto i : util::range(256))
-        palette[i] = util::color::rgba5551(pal_io.read_u16_le());
+        palette[i] = util::color::bgra5551(pal_io);
     return palette;
 }
 

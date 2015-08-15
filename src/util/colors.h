@@ -1,31 +1,83 @@
 #ifndef AU_UTIL_COLORS_H
 #define AU_UTIL_COLORS_H
 #include "types.h"
+#include "io/io.h"
+#include "util/image.h"
 
 namespace au {
 namespace util {
 namespace color {
 
-    enum Channel
+    inline Color gray8(io::IO &io)
     {
-        Red   = 0,
-        Green = 1,
-        Blue  = 2,
-        Alpha = 3
-    };
+        Color c;
+        c.r = c.g = c.b = io.read_u8();
+        c.a = 0xFF;
+        return c;
+    }
 
-    u32 rgb888(u8 r, u8 g, u8 b);
-    u32 rgb565(u16 word);
-    u32 rgba5551(u16 word);
-    u32 rgba4444(u16 word);
-    u32 rgba_gray(u8 byte);
+    inline Color bgra4444(io::IO &io)
+    {
+        auto word = io.read_u16_le();
+        Color c;
+        c.b = (word & 0x000F) << 4;
+        c.g = (word & 0x00F0) << 0;
+        c.r = (word & 0x0F00) >> 4;
+        c.a = (word & 0xF000) >> 8;
+        return c;
+    }
 
-    void set_alpha(u32 &color, u8 value);
-    void set_channel(u32 &color, Channel channel, u8 value);
-    u8 get_channel(u32 color, Channel channel);
+    inline Color bgr565(io::IO &io)
+    {
+        auto word = io.read_u16_le();
+        Color c;
+        c.b = (word & 0x001F) << 3;
+        c.g = (word & 0x07E0) >> 3;
+        c.r = (word & 0xF800) >> 8;
+        c.a = 0xFF;
+        return c;
+    }
 
-    void split_channels(u32 color, u8 channels[4]);
-    void merge_channels(u8 channels[4], u32 &color);
+    inline Color bgra5551(io::IO &io)
+    {
+        auto word = io.read_u16_le();
+        Color c;
+        c.b = (word & 0x001F) << 3;
+        c.g = (word & 0x03E0) >> 2;
+        c.r = (word & 0x7C00) >> 7;
+        c.a = (word & 0x8000) ? 0xFF : 0;
+        return c;
+    }
+
+    inline Color bgra8888(io::IO &io)
+    {
+        Color c;
+        c.b = io.read_u8();
+        c.g = io.read_u8();
+        c.r = io.read_u8();
+        c.a = io.read_u8();
+        return c;
+    }
+
+    inline Color bgr888(io::IO &io)
+    {
+        Color c;
+        c.b = io.read_u8();
+        c.g = io.read_u8();
+        c.r = io.read_u8();
+        c.a = 0xFF;
+        return c;
+    }
+
+    inline Color rgb888(io::IO &io)
+    {
+        Color c;
+        c.r = io.read_u8();
+        c.g = io.read_u8();
+        c.b = io.read_u8();
+        c.a = 0xFF;
+        return c;
+    }
 
 } } }
 

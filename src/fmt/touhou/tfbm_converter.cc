@@ -55,8 +55,6 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
     auto source_size = file.io.read_u32_le();
 
     io::BufferedIO source_io(util::pack::zlib_inflate(file.io.read_to_eof()));
-    io::BufferedIO target_io;
-    target_io.reserve(width * height * 4);
 
     Palette palette;
     if (bit_depth == 8)
@@ -72,25 +70,27 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
             : create_default_palette();
     }
 
+    std::vector<util::Color> pixels(width * height);
+    auto *pixels_ptr = &pixels[0];
     for (size_t y : util::range(height))
     {
         for (size_t x : util::range(stride))
         {
-            u32 rgba;
+            util::Color color;
 
             switch (bit_depth)
             {
                 case 32:
                 case 24:
-                    rgba = source_io.read_u32_le();
+                    color = util::color::bgra8888(source_io);
                     break;
 
                 case 16:
-                    rgba = util::color::rgb565(source_io.read_u16_le());
+                    color = util::color::bgr565(source_io);
                     break;
 
                 case 8:
-                    rgba = palette[source_io.read_u8()];
+                    color = palette[source_io.read_u8()];
                     break;
 
                 default:
@@ -99,12 +99,10 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
             }
 
             if (x < width)
-                target_io.write_u32_le(rgba);
+                *pixels_ptr++ = color;
         }
     }
 
-    target_io.seek(0);
-    auto image = util::Image::from_pixels(
-        width, height, target_io.read_to_eof(), util::PixelFormat::BGRA);
+    auto image = util::Image::from_pixels(width, height, pixels);
     return image->create_file(file.name);
 }

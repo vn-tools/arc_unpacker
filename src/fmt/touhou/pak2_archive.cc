@@ -122,10 +122,7 @@ static PaletteMap find_all_palettes(const std::string &arc_path)
                 pal_file->io.seek(1);
                 Palette palette;
                 for (auto i : util::range(256))
-                {
-                    palette[i] = util::color::rgba5551(
-                        pal_file->io.read_u16_le());
-                }
+                    palette[i] = util::color::bgra5551(pal_file->io);
                 palettes[entry->name] = palette;
             }
         }

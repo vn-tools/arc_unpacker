@@ -107,26 +107,18 @@ static std::unique_ptr<util::Image> decode_to_image(io::IO &io)
     auto palette_offset = io.read_u32_le();
 
     io.seek(palette_offset);
-    std::array<u32, 256> palette;
+    std::array<util::Color, 256> palette;
     for (auto i : util::range(256))
-    {
-        auto r = io.read_u8();
-        auto g = io.read_u8();
-        auto b = io.read_u8();
-        palette[i] = util::color::rgb888(r, g, b);
-    }
+        palette[i] = util::color::bgr888(io);
 
     io.seek(data_offset);
     auto data = decompress(io.read_to_eof(), width, height);
 
-    bstr pixels;
-    pixels.resize(width * height * 4);
-    u32 *pixels_ptr = pixels.get<u32>();
+    std::vector<util::Color> pixels(width * height);
     for (auto i : util::range(width * height))
-        *pixels_ptr++ = palette[static_cast<u8>(data[i])];
+        pixels[i] = palette[data.get<u8>(i)];
 
-    return util::Image::from_pixels(
-        width, height, pixels, util::PixelFormat::BGRA);
+    return util::Image::from_pixels(width, height, pixels);
 }
 
 std::unique_ptr<util::Image> PmConverter::decode_to_image(

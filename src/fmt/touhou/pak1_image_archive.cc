@@ -28,38 +28,35 @@ static std::unique_ptr<File> read_image(
     size_t source_size = arc_io.read_u32_le();
 
     io::BufferedIO source_io(arc_io, source_size);
-    io::BufferedIO target_io;
-    target_io.reserve(width * height * 4);
 
+    std::vector<util::Color> pixels(width * height);
+    auto *pixels_ptr = &pixels[0];
     while (source_io.tell() < source_io.size())
     {
         size_t repeat;
-        u32 rgba;
+        util::Color color;
 
         switch (bit_depth)
         {
             case 32:
                 repeat = source_io.read_u32_le();
-                rgba = source_io.read_u32_le();
+                color = util::color::bgra8888(source_io);
                 break;
 
             case 24:
                 repeat = source_io.read_u32_le();
-                rgba = source_io.read_u8()
-                    | (source_io.read_u8() << 8)
-                    | (source_io.read_u8() << 16)
-                    | 0xFF000000;
+                color = util::color::bgr888(source_io);
                 source_io.skip(1);
                 break;
 
             case 16:
                 repeat = source_io.read_u16_le();
-                rgba = util::color::rgba5551(source_io.read_u16_le());
+                color = util::color::bgra5551(source_io);
                 break;
 
             case 8:
                 repeat = source_io.read_u8();
-                rgba = palette[static_cast<size_t>(source_io.read_u8())];
+                color = palette[source_io.read_u8()];
                 break;
 
             default:
@@ -67,12 +64,10 @@ static std::unique_ptr<File> read_image(
         }
 
         while (repeat--)
-            target_io.write_u32_le(rgba);
+            *pixels_ptr++ = color;
     }
 
-    target_io.seek(0);
-    auto image = util::Image::from_pixels(
-        width, height, target_io.read_to_eof(), util::PixelFormat::BGRA);
+    auto image = util::Image::from_pixels(width, height, pixels);
     return image->create_file(util::format("%04d", index));
 }
 
@@ -90,7 +85,7 @@ void Pak1ImageArchive::unpack_internal(
     {
         Palette palette;
         for (auto i : util::range(256))
-            palette[i] = util::color::rgba5551(arc_file.io.read_u16_le());
+            palette[i] = util::color::bgra5551(arc_file.io);
         palettes.push_back(palette);
     }
     palettes.push_back(create_default_palette());

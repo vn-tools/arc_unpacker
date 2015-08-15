@@ -11,7 +11,6 @@
 #include <algorithm>
 #include "fmt/alice_soft/ajp_converter.h"
 #include "fmt/alice_soft/pm_converter.h"
-#include "util/colors.h"
 #include "util/image.h"
 #include "util/range.h"
 
@@ -65,22 +64,18 @@ std::unique_ptr<File> AjpConverter::decode_internal(File &file) const
     auto mask_image = pm_converter.decode_to_image(mask_data);
     auto jpeg_image = util::Image::from_boxed(jpeg_data);
 
-    bstr pixels;
-    pixels.resize(width * height * 4);
-    auto *pixels_ptr = pixels.get<u32>();
+    std::vector<util::Color> pixels(width * height);
+    auto *pixels_ptr = &pixels[0];
     for (auto y : util::range(height))
     {
         for (auto x : util::range(width))
         {
             auto color = jpeg_image->color_at(x, y);
-            auto alpha = util::color::get_channel(
-                mask_image->color_at(x, y), util::color::Channel::Red);
-            util::color::set_alpha(color, alpha);
+            color.a = mask_image->color_at(x, y).r;
             *pixels_ptr++ = color;
         }
     }
 
-    auto output_image = util::Image::from_pixels(
-        width, height, pixels, util::PixelFormat::RGBA);
+    auto output_image = util::Image::from_pixels(width, height, pixels);
     return output_image->create_file(file.name);
 }
