@@ -17,7 +17,7 @@ ENTRY_POINT(
     }
     catch (std::exception &e)
     {
-        Log.info("Error: " + std::string(e.what()) + "\n");
+        Log.err("Error: " + std::string(e.what()) + "\n");
         return 1;
     }
 )
