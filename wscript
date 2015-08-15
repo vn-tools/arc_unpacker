@@ -31,7 +31,7 @@ def configure_flags(ctx):
         '-Wno-unused-variable',
         '-Wno-unused-parameter',
         '-Wold-style-cast',
-        '-std=c++11']
+        '-std=c++14']
 
     if ctx.options.debug:
         ctx.env.CXXFLAGS += ['-ggdb']

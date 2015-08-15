@@ -20,10 +20,10 @@ namespace color {
     {
         auto word = io.read_u16_le();
         Color c;
-        c.b = (word & 0x000F) << 4;
-        c.g = (word & 0x00F0) << 0;
-        c.r = (word & 0x0F00) >> 4;
-        c.a = (word & 0xF000) >> 8;
+        c.b = (word & 0b00000000'00001111) << 4;
+        c.g = (word & 0b00000000'11110000) << 0;
+        c.r = (word & 0b00001111'00000000) >> 4;
+        c.a = (word & 0b11110000'00000000) >> 8;
         return c;
     }
 
@@ -31,9 +31,9 @@ namespace color {
     {
         auto word = io.read_u16_le();
         Color c;
-        c.b = (word & 0x001F) << 3;
-        c.g = (word & 0x07E0) >> 3;
-        c.r = (word & 0xF800) >> 8;
+        c.b = (word & 0b00000000'00011111) << 3;
+        c.g = (word & 0b00000111'11100000) >> 3;
+        c.r = (word & 0b11111000'00000000) >> 8;
         c.a = 0xFF;
         return c;
     }
@@ -42,10 +42,10 @@ namespace color {
     {
         auto word = io.read_u16_le();
         Color c;
-        c.b = (word & 0x001F) << 3;
-        c.g = (word & 0x03E0) >> 2;
-        c.r = (word & 0x7C00) >> 7;
-        c.a = (word & 0x8000) ? 0xFF : 0;
+        c.b = (word & 0b00000000'00011111) << 3;
+        c.g = (word & 0b00000011'11100000) >> 2;
+        c.r = (word & 0b01111100'00000000) >> 7;
+        c.a = (word & 0b10000000'00000000) ? 0xFF : 0;
         return c;
     }
 
