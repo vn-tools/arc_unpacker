@@ -26,15 +26,15 @@ static void test(
 TEST_CASE("Decoding format 1 ANM image archives works")
 {
     test(
-        "tests/fmt/touhou/files/eff01.anm",
-        { "tests/fmt/touhou/files/eff01-out.png" });
+        "tests/fmt/touhou/files/face_01_00.anm",
+        { "tests/fmt/touhou/files/face_01_00-out.png" });
 }
 
 TEST_CASE("Decoding format 3 ANM image archives works")
 {
     test(
-        "tests/fmt/touhou/files/face_01_00.anm",
-        { "tests/fmt/touhou/files/face_01_00-out.png" });
+        "tests/fmt/touhou/files/eff01.anm",
+        { "tests/fmt/touhou/files/eff01-out.png" });
 }
 
 TEST_CASE("Decoding format 5 ANM image archives works")
