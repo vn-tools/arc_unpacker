@@ -17,7 +17,7 @@ using namespace au::fmt::touhou;
 
 static std::unique_ptr<File> read_sound(io::IO &arc_io, size_t index)
 {
-    size_t size = arc_io.read_u32_le();
+    auto size = arc_io.read_u32_le();
     auto format = arc_io.read_u16_le();
     auto channel_count = arc_io.read_u16_le();
     auto sample_rate = arc_io.read_u32_le();
@@ -37,7 +37,18 @@ static std::unique_ptr<File> read_sound(io::IO &arc_io, size_t index)
 
 bool Pak1SoundArchive::is_recognized_internal(File &arc_file) const
 {
-    return arc_file.name.find("wave") != std::string::npos;
+    if (!arc_file.has_extension("dat"))
+        return false;
+    size_t file_count = arc_file.io.read_u32_le();
+    for (auto i : util::range(file_count))
+    {
+        if (!arc_file.io.read_u8())
+            continue;
+        auto size = arc_file.io.read_u32_le();
+        arc_file.io.skip(18);
+        arc_file.io.skip(size);
+    }
+    return true;
 }
 
 void Pak1SoundArchive::unpack_internal(

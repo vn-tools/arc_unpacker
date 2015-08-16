@@ -31,11 +31,13 @@ Pak2ImageConverter::~Pak2ImageConverter()
 {
 }
 
-void Pak2ImageConverter::set_palette_map(const PaletteMap &palette_map)
+void Pak2ImageConverter::add_palette(
+    const std::string &name, const bstr &palette_data)
 {
-    p->palette_map.clear();
-    for (auto &it : palette_map)
-        p->palette_map[it.first] = it.second;
+    io::BufferedIO palette_io(palette_data);
+    palette_io.skip(1);
+    p->palette_map[name] = std::shared_ptr<pix::Palette>(
+        new pix::Palette(256, palette_io, pix::Format::BGRA5551));
 }
 
 bool Pak2ImageConverter::is_recognized_internal(File &file) const

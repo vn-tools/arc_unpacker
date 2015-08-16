@@ -95,10 +95,9 @@ static Table read_table(io::IO &arc_io)
     return table;
 }
 
-static PaletteMap find_all_palettes(const std::string &arc_path)
+static void register_palettes(
+    const std::string &arc_path, Pak2ImageConverter &image_converter)
 {
-    PaletteMap palettes;
-
     auto dir = boost::filesystem::path(arc_path).parent_path();
     for (boost::filesystem::directory_iterator it(dir);
         it != boost::filesystem::directory_iterator();
@@ -118,10 +117,9 @@ static PaletteMap find_all_palettes(const std::string &arc_path)
                     continue;
 
                 auto pal_file = read_file(file_io, *entry);
-                pal_file->io.seek(1);
-                palettes[entry->name]
-                    = std::shared_ptr<pix::Palette>(new pix::Palette(
-                        256, pal_file->io, pix::Format::BGRA5551));
+                pal_file->io.seek(0);
+                image_converter.add_palette(
+                    entry->name, pal_file->io.read_to_eof());
             }
         }
         catch (...)
@@ -129,8 +127,6 @@ static PaletteMap find_all_palettes(const std::string &arc_path)
             continue;
         }
     }
-
-    return palettes;
 }
 
 struct Pak2Archive::Priv
@@ -165,10 +161,7 @@ bool Pak2Archive::is_recognized_internal(File &arc_file) const
 void Pak2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     auto table = read_table(arc_file.io);
-
-    auto palette_map = find_all_palettes(arc_file.name);
-    p->image_converter.set_palette_map(palette_map);
-
+    register_palettes(arc_file.name, p->image_converter);
     for (auto &entry : table)
         file_saver.save(read_file(arc_file.io, *entry));
 }

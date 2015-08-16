@@ -56,7 +56,11 @@
 #include "fmt/tanuki_soft/tac_archive.h"
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/pak1_archive.h"
+#include "fmt/touhou/pak1_image_archive.h"
+#include "fmt/touhou/pak1_sound_archive.h"
 #include "fmt/touhou/pak2_archive.h"
+#include "fmt/touhou/pak2_image_converter.h"
+#include "fmt/touhou/pak2_sound_converter.h"
 #include "fmt/touhou/pbg3_archive.h"
 #include "fmt/touhou/pbg4_archive.h"
 #include "fmt/touhou/pbgz_archive.h"
@@ -141,7 +145,11 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("tanuki/tac",    []() { return new tanuki_soft::TacArchive();    });
     p->add("th/anm",        []() { return new touhou::AnmArchive();         });
     p->add("th/pak1",       []() { return new touhou::Pak1Archive();        });
+    p->add("th/pak1-gfx",   []() { return new touhou::Pak1ImageArchive();   });
+    p->add("th/pak1-sfx",   []() { return new touhou::Pak1SoundArchive();   });
     p->add("th/pak2",       []() { return new touhou::Pak2Archive();        });
+    p->add("th/pak2-gfx",   []() { return new touhou::Pak2ImageConverter(); });
+    p->add("th/pak2-sfx",   []() { return new touhou::Pak2SoundConverter(); });
     p->add("th/pbg3",       []() { return new touhou::Pbg3Archive();        });
     p->add("th/pbg4",       []() { return new touhou::Pbg4Archive();        });
     p->add("th/pbgz",       []() { return new touhou::PbgzArchive();        });

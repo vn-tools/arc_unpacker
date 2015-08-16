@@ -56,7 +56,8 @@ static std::unique_ptr<File> read_image(
                 break;
 
             default:
-                throw std::runtime_error("Unsupported channel count");
+                throw std::runtime_error(util::format(
+                    "Unsupported bit depth: %d", bit_depth));
         }
 
         while (repeat--)
@@ -69,7 +70,17 @@ static std::unique_ptr<File> read_image(
 
 bool Pak1ImageArchive::is_recognized_internal(File &arc_file) const
 {
-    return arc_file.has_extension("dat");
+    if (!arc_file.has_extension("dat"))
+        return false;
+    auto palette_count = arc_file.io.read_u8();
+    arc_file.io.skip(palette_count * 512);
+    while (!arc_file.io.eof())
+    {
+        arc_file.io.skip(4 * 3);
+        arc_file.io.skip(1);
+        arc_file.io.skip(arc_file.io.read_u32_le());
+    }
+    return true;
 }
 
 void Pak1ImageArchive::unpack_internal(
