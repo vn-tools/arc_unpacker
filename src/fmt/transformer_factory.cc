@@ -64,7 +64,10 @@
 #include "fmt/touhou/pbg3_archive.h"
 #include "fmt/touhou/pbg4_archive.h"
 #include "fmt/touhou/pbgz_archive.h"
+#include "fmt/touhou/tfbm_converter.h"
+#include "fmt/touhou/tfcs_converter.h"
 #include "fmt/touhou/tfpk_archive.h"
+#include "fmt/touhou/tfwa_converter.h"
 #include "fmt/touhou/tha1_archive.h"
 #include "fmt/whale/dat_archive.h"
 #include "fmt/yuka_script/ykc_archive.h"
@@ -153,7 +156,10 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("th/pbg3",       []() { return new touhou::Pbg3Archive();        });
     p->add("th/pbg4",       []() { return new touhou::Pbg4Archive();        });
     p->add("th/pbgz",       []() { return new touhou::PbgzArchive();        });
+    p->add("th/tfbm",       []() { return new touhou::TfbmConverter();      });
+    p->add("th/tfcs",       []() { return new touhou::TfcsConverter();      });
     p->add("th/tfpk",       []() { return new touhou::TfpkArchive();        });
+    p->add("th/tfwa",       []() { return new touhou::TfwaConverter();      });
     p->add("th/tha1",       []() { return new touhou::Tha1Archive();        });
     p->add("whale/dat",     []() { return new whale::DatArchive();          });
     p->add("yuka/ykc",      []() { return new yuka_script::YkcArchive();    });

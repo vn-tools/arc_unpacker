@@ -6,6 +6,7 @@
 //
 // Known games:
 // - Touhou 13.5 - Hopeless Masquerade
+// - Touhou 14.5 - Urban Legend in Limbo
 
 #include "fmt/touhou/tfwa_converter.h"
 #include "util/sound.h"

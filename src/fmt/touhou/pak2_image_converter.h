@@ -2,7 +2,6 @@
 #define AU_FMT_TOUHOU_PAK2_IMAGE_CONVERTER_H
 #include <string>
 #include "fmt/converter.h"
-#include "fmt/touhou/palette_map.h"
 
 namespace au {
 namespace fmt {

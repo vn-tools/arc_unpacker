@@ -6,7 +6,9 @@
 //
 // Known games:
 // - Touhou 13.5 - Hopeless Masquerade
+// - Touhou 14.5 - Urban Legend in Limbo
 
+#include <map>
 #include "fmt/touhou/tfbm_converter.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
@@ -17,7 +19,13 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
+static const bstr pal_magic = "TFPA\x00"_b;
 static const bstr magic = "TFBM\x00"_b;
+
+namespace
+{
+    using PaletteMap = std::map<std::string, std::shared_ptr<pix::Palette>>;
+}
 
 struct TfbmConverter::Priv
 {
@@ -32,11 +40,20 @@ TfbmConverter::~TfbmConverter()
 {
 }
 
-void TfbmConverter::set_palette_map(const PaletteMap &palette_map)
+void TfbmConverter::add_palette(
+    const std::string &name, const bstr &palette_data)
 {
-    p->palette_map.clear();
-    for (auto &it : palette_map)
-        p->palette_map[it.first] = it.second;
+    io::BufferedIO palette_io(palette_data);
+    if (palette_io.read(pal_magic.size()) != pal_magic)
+        throw std::runtime_error("Not a TFPA palette file");
+
+    io::BufferedIO colors_io(
+        util::pack::zlib_inflate(
+            palette_io.read(
+                palette_io.read_u32_le())));
+
+    p->palette_map[name] = std::shared_ptr<pix::Palette>(
+        new pix::Palette(256, colors_io, pix::Format::BGRA5551));
 }
 
 bool TfbmConverter::is_recognized_internal(File &file) const
@@ -78,7 +95,6 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
         switch (bit_depth)
         {
             case 32:
-            case 24:
                 pixel = pix::read<pix::Format::BGRA8888>(source_io);
                 break;
 

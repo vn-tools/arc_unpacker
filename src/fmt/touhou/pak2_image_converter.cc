@@ -9,6 +9,7 @@
 // - Touhou 12.3 - Unthinkable Natural Law
 
 #include <boost/filesystem.hpp>
+#include <map>
 #include "fmt/touhou/pak2_image_converter.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
@@ -17,6 +18,11 @@
 
 using namespace au;
 using namespace au::fmt::touhou;
+
+namespace
+{
+    using PaletteMap = std::map<std::string, std::shared_ptr<pix::Palette>>;
+}
 
 struct Pak2ImageConverter::Priv
 {

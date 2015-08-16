@@ -68,7 +68,6 @@ namespace
     using HashLookupMap = std::map<u32, std::string>;
 }
 
-static const bstr pal_magic = "TFPA\x00"_b;
 static const bstr magic = "TFPK"_b;
 
 static const std::vector<util::crypt::RsaKey> rsa_keys({
@@ -376,27 +375,12 @@ static std::unique_ptr<File> read_file(
     return file;
 }
 
-static std::shared_ptr<pix::Palette> read_palette_file(
-    io::IO &arc_io, TableEntry &entry, TfpkVersion version)
-{
-    auto pal_file = read_file(arc_io, entry, version);
-    pal_file->io.seek(0);
-    if (pal_file->io.read(pal_magic.size()) != pal_magic)
-        throw std::runtime_error("Not a TFPA palette file");
-    size_t pal_size = pal_file->io.read_u32_le();
-    io::BufferedIO pal_io(util::pack::zlib_inflate(
-        pal_file->io.read(pal_size)));
-    return std::shared_ptr<pix::Palette>(new pix::Palette(
-        256, pal_io, pix::Format::BGRA5551));
-}
-
-static PaletteMap find_all_palettes(
+static void register_palettes(
     const boost::filesystem::path &arc_path,
     HashLookupMap &user_fn_map,
-    TfpkVersion version)
+    TfpkVersion version,
+    TfbmConverter &converter)
 {
-    PaletteMap palettes;
-
     auto dir = boost::filesystem::path(arc_path).parent_path();
     for (boost::filesystem::directory_iterator it(dir);
         it != boost::filesystem::directory_iterator();
@@ -418,8 +402,9 @@ static PaletteMap find_all_palettes(
             {
                 if (entry->name.find("palette") == std::string::npos)
                     continue;
-                palettes[entry->name]
-                    = read_palette_file(sub_arc_io, *entry, version);
+                auto pal_file = read_file(sub_arc_io, *entry, version);
+                pal_file->io.seek(0);
+                converter.add_palette(entry->name, pal_file->io.read_to_eof());
             }
         }
         catch (...)
@@ -427,8 +412,6 @@ static PaletteMap find_all_palettes(
             continue;
         }
     }
-
-    return palettes;
 }
 
 struct TfpkArchive::Priv
@@ -495,8 +478,7 @@ void TfpkArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (auto &fn : p->fn_set)
         user_fn_map[get_file_name_hash(fn, version)] = fn;
 
-    auto palette_map = find_all_palettes(arc_file.name, user_fn_map, version);
-    p->tfbm_converter.set_palette_map(palette_map);
+    register_palettes(arc_file.name, user_fn_map, version, p->tfbm_converter);
 
     RsaReader reader(arc_file.io);
     Table table = read_table(reader, user_fn_map, version);
