@@ -10,7 +10,6 @@
 // - Go! Go! Nippon! ~My First Trip to Japan~
 
 #include <cstring>
-#include <iostream>
 #include <array>
 #include "fmt/bgi/cbg_converter.h"
 #include "fmt/bgi/common.h"
@@ -257,16 +256,16 @@ static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
     }
 }
 
-static util::PixelFormat bpp_to_image_pixel_format(int bpp)
+static pix::Format bpp_to_pixel_format(int bpp)
 {
     switch (bpp)
     {
         case 8:
-            return util::PixelFormat::Grayscale;
+            return pix::Format::Gray8;
         case 24:
-            return util::PixelFormat::BGR;
+            return pix::Format::BGR888;
         case 32:
-            return util::PixelFormat::BGRA;
+            return pix::Format::BGRA8888;
     }
     throw std::runtime_error("Unsupported BPP");
 }
@@ -275,16 +274,6 @@ bool CbgConverter::is_recognized_internal(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
-
-//a4+0:magic
-//a4+16: width
-//a4+18: height
-//a4+20: bpp
-//a4+24: unk0
-//a4+28: unk0
-//a4+32: huffman_size
-//a4+36: key
-//a4+40: decrypted data size
 
 std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
 {
@@ -308,18 +297,15 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
         io::BitReader bit_reader(file.io.read_to_eof());
         bstr huffman = decompress_huffman(bit_reader, nodes, huffman_size);
 
-        auto output = decompress_rle(huffman, width * height * (bpp >> 3));
-        transform_colors(output, width, height, bpp);
+        auto pixel_data = decompress_rle(huffman, width * height * (bpp >> 3));
+        transform_colors(pixel_data, width, height, bpp);
 
-        auto image = util::Image::from_pixels(
-            width, height, output, bpp_to_image_pixel_format(bpp));
-        return image->create_file(file.name);
+        pix::Format format = bpp_to_pixel_format(bpp);
+        pix::Grid pixels(width, height, pixel_data, format);
+        return util::Image::from_pixels(pixels)->create_file(file.name);
     }
     else if (version == Version::Version3)
     {
-        bstr output;
-        output.resize(width * height * 4);
-        std::cerr << std::hex << width * height * 4 << std::endl;
         util::fail("Reading version 3 is not supported");
     }
 

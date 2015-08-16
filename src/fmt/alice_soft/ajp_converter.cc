@@ -64,18 +64,11 @@ std::unique_ptr<File> AjpConverter::decode_internal(File &file) const
     auto mask_image = pm_converter.decode_to_image(mask_data);
     auto jpeg_image = util::Image::from_boxed(jpeg_data);
 
-    std::vector<util::Color> pixels(width * height);
-    auto *pixels_ptr = &pixels[0];
     for (auto y : util::range(height))
+    for (auto x : util::range(width))
     {
-        for (auto x : util::range(width))
-        {
-            auto color = jpeg_image->color_at(x, y);
-            color.a = mask_image->color_at(x, y).r;
-            *pixels_ptr++ = color;
-        }
+        jpeg_image->pixels().at(x, y).a = mask_image->pixels().at(x, y).r;
     }
 
-    auto output_image = util::Image::from_pixels(width, height, pixels);
-    return output_image->create_file(file.name);
+    return jpeg_image->create_file(file.name);
 }

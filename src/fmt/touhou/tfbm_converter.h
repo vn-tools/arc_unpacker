@@ -1,7 +1,7 @@
 #ifndef AU_FMT_TOUHOU_TFBM_CONVERTER_H
 #define AU_FMT_TOUHOU_TFBM_CONVERTER_H
 #include "fmt/converter.h"
-#include "fmt/touhou/palette.h"
+#include "fmt/touhou/palette_map.h"
 
 namespace au {
 namespace fmt {

@@ -99,9 +99,8 @@ static std::unique_ptr<File> decode_v0(File &file, size_t width, size_t height)
     auto decompressed = decompress(
         file.io.read(compressed_size), decompressed_size, 3, 1);
 
-    auto image = util::Image::from_pixels(
-        width, height, decompressed, util::PixelFormat::BGR);
-    return image->create_file(file.name);
+    pix::Grid pixels(width, height, decompressed, pix::Format::BGR888);
+    return util::Image::from_pixels(pixels)->create_file(file.name);
 }
 
 static std::unique_ptr<File> decode_v1(File &file, size_t width, size_t height)
@@ -111,23 +110,15 @@ static std::unique_ptr<File> decode_v1(File &file, size_t width, size_t height)
 
     auto decompressed = decompress(
         file.io.read(compressed_size), decompressed_size, 1, 2);
-
     io::BufferedIO tmp_io(decompressed);
 
-    std::unique_ptr<u32[]> palette(new u32[256]);
-    size_t color_count = tmp_io.read_u16_le();
-    for (auto i : util::range(color_count))
-        palette[i] = tmp_io.read_u32_le();
+    size_t colors = tmp_io.read_u16_le();
+    auto pal_data = tmp_io.read(4 * colors);
+    auto pix_data = tmp_io.read_to_eof();
 
-    bstr pixels;
-    pixels.resize(width * height * 4);
-    u32 *pixels_ptr = pixels.get<u32>();
-    for (auto i : util::range(width * height))
-        *pixels_ptr++ = palette[tmp_io.read_u8()];
-
-    auto image = util::Image::from_pixels(
-        width, height, pixels, util::PixelFormat::BGRA);
-    return image->create_file(file.name);
+    pix::Palette palette(colors, pal_data, pix::Format::BGRA8888);
+    pix::Grid pixels(width, height, pix_data, palette);
+    return util::Image::from_pixels(pixels)->create_file(file.name);
 }
 
 static std::vector<std::unique_ptr<Region>> read_v2_regions(
@@ -161,8 +152,7 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
     auto decompressed = decompress(
         file.io.read(compressed_size), decompressed_size, 1, 2);
 
-    bstr pixels;
-    pixels.resize(width * height * 4);
+    pix::Grid pixels(width, height);
 
     io::BufferedIO decompressed_io(decompressed);
     if (region_count != decompressed_io.read_u32_le())
@@ -193,22 +183,25 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
             u16 part_height = decompressed_io.read_u16_le();
             decompressed_io.skip(0x52);
 
+            pix::Grid part(
+                part_width,
+                part_height,
+                decompressed_io,
+                pix::Format::BGRA8888);
+
             size_t target_x = region.x1 + part_x;
             size_t target_y = region.y1 + part_y;
             util::require(target_x + part_width <= width);
             util::require(target_y + part_height <= height);
             for (auto y : util::range(part_height))
+            for (auto x : util::range(part_width))
             {
-                decompressed_io.read(
-                    &pixels.get<u32>()[target_x + (target_y + y) * width],
-                    part_width * 4);
+                pixels.at(target_x + x, target_y + y) = part.at(x, y);
             }
         }
     }
 
-    auto image = util::Image::from_pixels(
-        width, height, pixels, util::PixelFormat::BGRA);
-    return image->create_file(file.name);
+    return util::Image::from_pixels(pixels)->create_file(file.name);
 }
 
 bool G00Converter::is_recognized_internal(File &file) const

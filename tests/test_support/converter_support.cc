@@ -2,28 +2,31 @@
 #include "io/file_io.h"
 #include "test_support/catch.hh"
 #include "test_support/converter_support.h"
+#include "util/format.h"
 #include "util/image.h"
+#include "util/range.h"
 
 using namespace au;
 
 static void compare_images(
     const util::Image &expected_image, const util::Image &actual_image)
 {
-    REQUIRE(expected_image.width() == actual_image.width());
-    REQUIRE(expected_image.height() == actual_image.height());
+    REQUIRE(expected_image.pixels().width() == actual_image.pixels().width());
+    REQUIRE(expected_image.pixels().height() == actual_image.pixels().height());
 
-    size_t x, y;
-    for (y = 0; y < expected_image.height(); y++)
+    for (auto y : util::range(expected_image.pixels().height()))
+    for (auto x : util::range(expected_image.pixels().width()))
     {
-        for (x = 0; x < expected_image.width(); x++)
+        auto expected_pix = expected_image.pixels().at(x, y);
+        auto actual_pix = actual_image.pixels().at(x, y);
+        if (expected_pix != actual_pix) //speed up
         {
-            auto expected_rgba = expected_image.color_at(x, y);
-            auto actual_rgba = actual_image.color_at(x, y);
-            if (expected_rgba != actual_rgba) //speed up
-            {
-                INFO("Pixels differ at " << x << ", " << y);
-                REQUIRE(expected_rgba == actual_rgba);
-            }
+            INFO(util::format(
+                "Pixels differ at %d, %d: %02x%02x%02x%02x != %02x%02x%02x%02x",
+                x, y,
+                expected_pix.b, expected_pix.g, expected_pix.r, expected_pix.a,
+                actual_pix.b, actual_pix.g, actual_pix.r, actual_pix.a));
+            REQUIRE(expected_pix == actual_pix);
         }
     }
 }

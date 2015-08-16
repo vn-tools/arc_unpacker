@@ -1,5 +1,4 @@
-#include <cstring>
-#include <stdexcept>
+#include <algorithm>
 #include <vector>
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
 #include "fmt/kirikiri/tlg/tlg5_decoder.h"
@@ -42,69 +41,49 @@ void BlockInfo::decompress(LzssDecompressor &decompressor, Header &header)
 }
 
 static void load_pixel_block_row(
-    bstr &zero_line,
-    bstr &output,
+    pix::Grid &pixels,
     std::vector<std::unique_ptr<BlockInfo>> channel_data,
     Header &header,
     int block_y)
 {
-    size_t max_y = block_y + header.block_height;
-    if (max_y > header.image_height)
-        max_y = header.image_height;
+    size_t max_y = std::min(block_y + header.block_height, header.image_height);
     bool use_alpha = header.channel_count == 4;
-
-    u8 *current_line = output.get<u8>() + block_y * header.image_width * 4;
-    u8 *previous_line = block_y == 0
-        ? zero_line.get<u8>()
-        : output.get<u8>() + (block_y - 1) * header.image_width * 4;
 
     for (auto y : util::range(block_y, max_y))
     {
         size_t block_y_shift = (y - block_y) * header.image_width;
-        u8 *current_line_start = current_line;
-        u8 prev_rgba[4] = { 0, 0, 0, 0 };
+        u8 prev_pixel[4] = { 0, 0, 0, 0 };
 
         for (auto x : util::range(header.image_width))
         {
-            u8 rgba[4] =
-            {
-                channel_data[2]->data.get<u8>(block_y_shift + x),
-                channel_data[1]->data.get<u8>(block_y_shift + x),
-                channel_data[0]->data.get<u8>(block_y_shift + x),
-                use_alpha
-                    ? channel_data[3]->data.get<u8>(block_y_shift + x)
-                    : static_cast<u8>(0)
-            };
-            rgba[0] += rgba[1];
-            rgba[2] += rgba[1];
+            pix::Pixel pixel;
+            pixel.b = channel_data[0]->data.get<u8>(block_y_shift + x);
+            pixel.g = channel_data[1]->data.get<u8>(block_y_shift + x);
+            pixel.r = channel_data[2]->data.get<u8>(block_y_shift + x);
+            if (use_alpha)
+                pixel.a = channel_data[3]->data.get<u8>(block_y_shift + x);
+            pixel.b += pixel.g;
+            pixel.r += pixel.g;
 
-            u8 output_rgba[4];
-            for (auto c : util::range(4))
+            for (auto c : util::range(header.channel_count))
             {
-                prev_rgba[c] += rgba[c];
-                output_rgba[c] = prev_rgba[c];
-                output_rgba[c] += *previous_line++;
+                prev_pixel[c] += pixel[c];
+                pixels.at(x, y)[c] = prev_pixel[c];
+                pixels.at(x, y)[c] += y > 0 ? pixels.at(x, y - 1)[c] : 0;
             }
             if (!use_alpha)
-                output_rgba[3] = 0xFF;
-
-            for (auto c : util::range(4))
-                *current_line++ = output_rgba[c];
+                pixels.at(x, y).a = 0xFF;
         }
-        previous_line = current_line_start;
     }
 }
 
-static void read_pixels(io::IO &io, bstr &output, Header &header)
+static void read_pixels(io::IO &io, pix::Grid &pixels, Header &header)
 {
     // ignore block sizes
     size_t block_count = (header.image_height - 1) / header.block_height + 1;
     io.skip(4 * block_count);
 
     LzssDecompressor decompressor;
-
-    bstr zero_line;
-    zero_line.resize(header.image_width * 4);
 
     for (auto y : util::range(0, header.image_height, header.block_height))
     {
@@ -118,8 +97,7 @@ static void read_pixels(io::IO &io, bstr &output, Header &header)
             channel_data.push_back(std::move(block_info));
         }
 
-        load_pixel_block_row(
-            zero_line, output, std::move(channel_data), header, y);
+        load_pixel_block_row(pixels, std::move(channel_data), header, y);
     }
 }
 
@@ -133,14 +111,7 @@ std::unique_ptr<File> Tlg5Decoder::decode(File &file)
     if (header.channel_count != 3 && header.channel_count != 4)
         throw std::runtime_error("Unsupported channel count");
 
-    bstr pixels;
-    pixels.resize(header.image_width * header.image_height * 4);
+    pix::Grid pixels(header.image_width, header.image_height);
     read_pixels(file.io, pixels, header);
-
-    auto image = util::Image::from_pixels(
-        header.image_width,
-        header.image_height,
-        pixels,
-        util::PixelFormat::RGBA);
-    return image->create_file(file.name);
+    return util::Image::from_pixels(pixels)->create_file(file.name);
 }

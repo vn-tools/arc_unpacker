@@ -125,12 +125,9 @@ std::unique_ptr<File> PrsConverter::decode_internal(File &file) const
     auto target = decode_pixels(file.io.read(source_size), width, height);
 
     if (using_differences)
-    {
         for (auto i : util::range(3, target.size()))
             target[i] += target[i - 3];
-    }
 
-    auto image = util::Image::from_pixels(
-        width, height, target, util::PixelFormat::BGR);
-    return image->create_file(file.name);
+    pix::Grid pixels(width, height, target, pix::Format::BGR888);
+    return util::Image::from_pixels(pixels)->create_file(file.name);
 }

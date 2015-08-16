@@ -42,11 +42,11 @@ std::unique_ptr<File> PgxConverter::decode_internal(File &file) const
 
     auto target = GmlDecoder::decode(source, target_size);
 
+    pix::Grid pixels(width, height, target, pix::Format::BGRA8888);
     if (!transparent)
-        for (auto i : util::range(0, target_size, 4))
-            target.get<u8>(i + 3) = 0xFF;
+        for (auto y : util::range(height))
+            for (auto x : util::range(width))
+                pixels.at(x, y).a = 0xFF;
 
-    auto image = util::Image::from_pixels(
-        width, height, target, util::PixelFormat::BGRA);
-    return image->create_file(file.name);
+    return util::Image::from_pixels(pixels)->create_file(file.name);
 }

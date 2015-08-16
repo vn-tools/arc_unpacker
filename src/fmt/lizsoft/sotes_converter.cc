@@ -38,30 +38,6 @@ static size_t guess_image_dimension(
     throw std::runtime_error("Cannot figure out the image dimensions");
 }
 
-static void mirror(bstr &pixels, size_t stride)
-{
-    size_t height = pixels.size() / stride;
-    bstr old_line;
-    old_line.resize(stride);
-    for (auto y : util::range(height / 2))
-    {
-        memcpy(
-            old_line.get<u8>(),
-            &pixels.get<u8>()[y * stride],
-            stride);
-
-        memcpy(
-            &pixels.get<u8>()[y * stride],
-            &pixels.get<u8>()[(height - 1 - y) * stride],
-            stride);
-
-        memcpy(
-            &pixels.get<u8>()[(height - 1 - y) * stride],
-            old_line.get<u8>(),
-            stride);
-    }
-}
-
 bool SotesConverter::is_recognized_internal(File &file) const
 {
     u32 weird_data1[8];
@@ -86,10 +62,11 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
         throw std::runtime_error("Not a SOTES image");
 
     u32 weird_data1[8];
-    u32 palette[256];
-    u32 weird_data2[14];
     file.io.read(weird_data1, 8 * 4);
-    file.io.read(palette, 256 * 4);
+
+    pix::Palette palette(256, file.io, pix::Format::BGRA8888);
+
+    u32 weird_data2[14];
     file.io.read(weird_data2, 14 * 4);
 
     size_t pixel_data_offset = weird_data2[12] - weird_data2[10];
@@ -97,7 +74,7 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
 
     size_t raw_data_size = file.io.size() - file.io.tell();
 
-    size_t width = guess_image_dimension(
+    auto width = guess_image_dimension(
         std::vector<u32>(&weird_data1[1], &weird_data1[5]),
         -static_cast<i32>(weird_data1[6]),
         3,
@@ -111,31 +88,23 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
 
     bool use_palette = width * height * 3 != raw_data_size;
 
-    bstr pixels;
-    pixels.resize(width * height * 3);
+    std::unique_ptr<pix::Grid> pixels;
 
-    bstr data = file.io.read(raw_data_size);
+    auto pix_data = file.io.read(raw_data_size);
     if (use_palette)
     {
-        u8 *pixels_ptr = pixels.get<u8>();
-        for (auto i : util::range(raw_data_size))
-        {
-            if (pixels_ptr >= pixels.get<u8>() + pixels.size())
-                throw std::runtime_error("Trying to write pixels beyond EOF");
-            u32 rgba = palette[data.get<u8>(i)];
-            *pixels_ptr++ = rgba;
-            *pixels_ptr++ = rgba >> 8;
-            *pixels_ptr++ = rgba >> 16;
-        }
+        pixels.reset(new pix::Grid(width, height, pix_data, palette));
+        for (auto y : util::range(height))
+        for (auto x : util::range(width))
+            pixels->at(x, y).a = 0xFF;
     }
     else
     {
-        pixels = data;
+        pixels.reset(new pix::Grid(
+            width, height, pix_data, pix::Format::BGR888));
     }
 
-    mirror(pixels, 3 * width);
+    pixels->flip();
 
-    auto image = util::Image::from_pixels(
-        width, height, pixels, util::PixelFormat::BGR);
-    return image->create_file(file.name);
+    return util::Image::from_pixels(*pixels)->create_file(file.name);
 }

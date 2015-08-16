@@ -171,24 +171,23 @@ std::unique_ptr<File> DscConverter::decode_internal(File &file) const
         auto bpp = data_io.read_u8();
         data_io.skip(11);
 
-        bstr pixels = data_io.read_to_eof();
-        util::PixelFormat fmt;
+        pix::Format fmt;
         switch (bpp)
         {
             case 8:
-                fmt = util::PixelFormat::Grayscale;
+                fmt = pix::Format::Gray8;
                 break;
             case 24:
-                fmt = util::PixelFormat::BGR;
+                fmt = pix::Format::BGR888;
                 break;
             case 32:
-                fmt = util::PixelFormat::BGRA;
+                fmt = pix::Format::BGRA8888;
                 break;
             default:
                 util::fail(util::format("Unsupported bit depth: %d", bpp));
         }
-        auto image = util::Image::from_pixels(width, height, pixels, fmt);
-        return image->create_file(file.name);
+        pix::Grid pixels(width, height, data_io.read_to_eof(), fmt);
+        return util::Image::from_pixels(pixels)->create_file(file.name);
     }
 
     std::unique_ptr<File> output_file(new File);

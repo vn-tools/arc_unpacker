@@ -16,11 +16,13 @@
 using namespace au;
 using namespace au::fmt::nscripter;
 
-static bstr decode_pixels(
+static std::unique_ptr<pix::Grid> decode_pixels(
     size_t width, size_t height, io::BitReader &bit_reader)
 {
-    bstr output;
-    output.resize(width * height * 3);
+    std::unique_ptr<pix::Grid> output(new pix::Grid(width, height));
+    for (auto y : util::range(height))
+    for (auto x : util::range(width))
+        output->at(x, y).a = 0xFF;
 
     bstr channel_data;
     channel_data.resize(width * height);
@@ -72,28 +74,17 @@ static bstr decode_pixels(
         }
 
         const u8 *p = channel_data.get<const u8>();
-        u8 *q = &output.get<u8>()[rgb];
-        for (auto j : util::range(height >> 1))
+        for (auto y : util::range(0, height))
         {
-            for (auto i : util::range(width))
+            if (y & 1)
             {
-                *q = *p++;
-                q += 3;
+                for (auto x : util::range(width))
+                    output->at(width - 1 - x, y)[2 - rgb] = *p++;
             }
-            q += width * 3;
-            for (auto i : util::range(width))
+            else
             {
-                q -= 3;
-                *q = *p++;
-            }
-            q += width * 3;
-        }
-        if (height & 1)
-        {
-            for (auto i : util::range(width))
-            {
-                *q = *p++;
-                q += 3;
+                for (auto x : util::range(width))
+                    output->at(x, y)[2 - rgb] = *p++;
             }
         }
     }
@@ -120,8 +111,6 @@ std::unique_ptr<File> SpbConverter::decode_internal(File &file) const
     u16 height = file.io.read_u16_be();
 
     io::BitReader bit_reader(file.io.read_to_eof());
-    auto uncompressed_data = decode_pixels(width, height, bit_reader);
-    auto image = util::Image::from_pixels(
-        width, height, uncompressed_data, util::PixelFormat::RGB);
-    return image->create_file(file.name);
+    auto pixels = decode_pixels(width, height, bit_reader);
+    return util::Image::from_pixels(*pixels)->create_file(file.name);
 }

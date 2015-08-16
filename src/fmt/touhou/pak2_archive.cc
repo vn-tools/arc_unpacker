@@ -14,7 +14,6 @@
 #include "fmt/touhou/pak2_sound_converter.h"
 #include "io/buffered_io.h"
 #include "io/file_io.h"
-#include "util/colors.h"
 #include "util/encoding.h"
 #include "util/mt.h"
 #include "util/range.h"
@@ -120,10 +119,9 @@ static PaletteMap find_all_palettes(const std::string &arc_path)
 
                 auto pal_file = read_file(file_io, *entry);
                 pal_file->io.seek(1);
-                Palette palette;
-                for (auto i : util::range(256))
-                    palette[i] = util::color::bgra5551(pal_file->io);
-                palettes[entry->name] = palette;
+                palettes[entry->name]
+                    = std::shared_ptr<pix::Palette>(new pix::Palette(
+                        256, pal_file->io, pix::Format::BGRA5551));
             }
         }
         catch (...)
@@ -168,7 +166,7 @@ void Pak2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     auto table = read_table(arc_file.io);
 
-    PaletteMap palette_map = find_all_palettes(arc_file.name);
+    auto palette_map = find_all_palettes(arc_file.name);
     p->image_converter.set_palette_map(palette_map);
 
     for (auto &entry : table)

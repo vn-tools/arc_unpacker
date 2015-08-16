@@ -142,21 +142,20 @@ std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
     size_t width = file.io.read_u32_le();
     size_t height = file.io.read_u32_le();
 
-    bstr pixels;
-    pixels.resize(width * height * 4);
+    bstr output;
+    output.resize(width * height * 4);
 
     io::BufferedIO buffered_io(file.io);
     auto ret = wcg_unpack(
-        buffered_io, pixels.get<u8>() + 2, width * height, 1, 4);
+        buffered_io, output.get<u8>() + 2, width * height, 1, 4);
 
     buffered_io.seek(ret);
     wcg_unpack(
-        buffered_io, pixels.get<u8>(), width * height, 1, 4);
+        buffered_io, output.get<u8>(), width * height, 1, 4);
 
-    for (auto i : util::range(0, pixels.size(), 4))
-        pixels[i + 3] ^= 0xFF;
+    for (auto i : util::range(0, output.size(), 4))
+        output[i + 3] ^= 0xFF;
 
-    auto image = util::Image::from_pixels(
-        width, height, pixels, util::PixelFormat::BGRA);
-    return image->create_file(file.name);
+    pix::Grid pixels(width, height, output, pix::Format::BGRA8888);
+    return util::Image::from_pixels(pixels)->create_file(file.name);
 }

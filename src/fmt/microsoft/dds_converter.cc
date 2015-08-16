@@ -10,7 +10,6 @@
 
 #include "fmt/microsoft/dds_converter.h"
 #include "io/buffered_io.h"
-#include "util/colors.h"
 #include "util/endian.h"
 #include "util/format.h"
 #include "util/image.h"
@@ -137,19 +136,20 @@ static std::unique_ptr<DdsHeaderDx10> read_header_dx10(io::IO &io)
     return header;
 }
 
-static std::unique_ptr<std::vector<util::Color>> create_pixels(
+static std::unique_ptr<pix::Grid> create_pixels(
     size_t width, size_t height)
 {
-    return std::unique_ptr<std::vector<util::Color>>(
-        new std::vector<util::Color>(
-            ((width + 3) / 4) * ((height + 3) / 4) * 64));
+    return std::unique_ptr<pix::Grid>(
+        new pix::Grid(((width + 3) / 4) * 4, ((height + 3) / 4) * 4));
 }
 
-static void decode_dxt1_block(io::IO &io, util::Color output_colors[4][4])
+static void decode_dxt1_block(io::IO &io, pix::Pixel output_colors[4][4])
 {
-    util::Color colors[4];
-    colors[0] = util::color::bgr565(io);
-    colors[1] = util::color::bgr565(io);
+    pix::Pixel colors[4];
+    bstr tmp = io.read(4);
+    const u8 *tmp_ptr = tmp.get<u8>();
+    colors[0] = pix::read<pix::Format::BGR565>(tmp_ptr);
+    colors[1] = pix::read<pix::Format::BGR565>(tmp_ptr);
     bool transparent
         = colors[0].b <= colors[1].b
         && colors[0].g <= colors[1].g
@@ -215,23 +215,23 @@ static void decode_dxt5_block(io::IO &io, u8 output_alpha[4][4])
     }
 }
 
-static std::unique_ptr<std::vector<util::Color>> decode_dxt1(
+static std::unique_ptr<pix::Grid> decode_dxt1(
     io::IO &io, size_t width, size_t height)
 {
     auto pixels = create_pixels(width, height);
     for (auto block_y : util::range(0, height, 4))
     for (auto block_x : util::range(0, width, 4))
     {
-        util::Color colors[4][4];
+        pix::Pixel colors[4][4];
         decode_dxt1_block(io, colors);
         for (auto y : util::range(4))
         for (auto x : util::range(4))
-            (*pixels)[(block_y + y) * width + block_x + x] = colors[y][x];
+            pixels->at(block_x + x, block_y + y) = colors[y][x];
     }
     return pixels;
 }
 
-static std::unique_ptr<std::vector<util::Color>> decode_dxt3(
+static std::unique_ptr<pix::Grid> decode_dxt3(
     io::IO &io, size_t width, size_t height)
 {
     auto pixels = create_pixels(width, height);
@@ -249,19 +249,19 @@ static std::unique_ptr<std::vector<util::Color>> decode_dxt3(
             }
         }
 
-        util::Color colors[4][4];
+        pix::Pixel colors[4][4];
         decode_dxt1_block(io, colors);
         for (auto y : util::range(4))
         for (auto x : util::range(4))
         {
             colors[y][x].a = alpha[y][x];
-            (*pixels)[(block_y + y) * width + block_x + x] = colors[y][x];
+            pixels->at(block_x + x, block_y + y) = colors[y][x];
         }
     }
     return pixels;
 }
 
-static std::unique_ptr<std::vector<util::Color>> decode_dxt5(
+static std::unique_ptr<pix::Grid> decode_dxt5(
     io::IO &io, size_t width, size_t height)
 {
     auto pixels = create_pixels(width, height);
@@ -271,13 +271,13 @@ static std::unique_ptr<std::vector<util::Color>> decode_dxt5(
         u8 alpha[4][4];
         decode_dxt5_block(io, alpha);
 
-        util::Color colors[4][4];
+        pix::Pixel colors[4][4];
         decode_dxt1_block(io, colors);
         for (auto y : util::range(4))
         for (auto x : util::range(4))
         {
             colors[y][x].a = alpha[y][x];
-            (*pixels)[(block_y + y) * width + block_x + x] = colors[y][x];
+            pixels->at(block_x + x, block_y + y) = colors[y][x];
         }
     }
     return pixels;
@@ -299,7 +299,7 @@ std::unique_ptr<File> DdsConverter::decode_internal(File &file) const
     auto width = header->width;
     auto height = header->height;
 
-    std::unique_ptr<std::vector<util::Color>> pixels(nullptr);
+    std::unique_ptr<pix::Grid> pixels(nullptr);
     if (header->pixel_format.flags & DDPF_FOURCC)
     {
         if (header->pixel_format.four_cc == magic_dxt1)
@@ -319,15 +319,13 @@ std::unique_ptr<File> DdsConverter::decode_internal(File &file) const
     {
         if (header->pixel_format.rgb_bit_count == 32)
         {
-            pixels.reset(new std::vector<util::Color>(width * height));
-            for (auto i : util::range(width * height))
-                (*pixels)[i] = util::color::bgra8888(file.io);
+            pixels.reset(new pix::Grid(
+                width, height, file.io, pix::Format::BGRA8888));
         }
     }
 
     if (pixels == nullptr)
         throw std::runtime_error("Not supported");
 
-    auto image = util::Image::from_pixels(width, height, *pixels);
-    return image->create_file(file.name);
+    return util::Image::from_pixels(*pixels)->create_file(file.name);
 }

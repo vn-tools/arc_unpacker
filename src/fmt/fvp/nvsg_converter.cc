@@ -45,45 +45,45 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
     if (data.size() != uncompressed_size)
         throw std::runtime_error("Unexpected data size");
 
-    util::PixelFormat pixel_format;
+    pix::Format pixel_format;
     switch (format)
     {
         case 0:
             if (width * height * 3 != uncompressed_size)
                 throw std::runtime_error("Unexpected data size");
-            pixel_format = util::PixelFormat::BGR;
+            pixel_format = pix::Format::BGR888;
             break;
 
         case 1:
             if (width * height * 4 != uncompressed_size)
                 throw std::runtime_error("Unexpected data size");
-            pixel_format = util::PixelFormat::BGRA;
+            pixel_format = pix::Format::BGRA8888;
             break;
 
         case 2:
             if (width * height * 4 * image_count != uncompressed_size)
                 throw std::runtime_error("Unexpected data size");
             height *= image_count;
-            pixel_format = util::PixelFormat::BGRA;
+            pixel_format = pix::Format::BGRA8888;
             break;
 
         case 3:
             if (width * height != uncompressed_size)
                 throw std::runtime_error("Unexpected data size");
-            pixel_format = util::PixelFormat::Grayscale;
+            pixel_format = pix::Format::Gray8;
             break;
 
         case 4:
             for (auto i : util::range(data.size()))
                 if (data.get<u8>(i))
                     data.get<u8>(i) = 255;
-            pixel_format = util::PixelFormat::Grayscale;
+            pixel_format = pix::Format::Gray8;
             break;
 
         default:
             throw std::runtime_error("Unexpected pixel format");
     }
 
-    auto image = util::Image::from_pixels(width, height, data, pixel_format);
-    return image->create_file(file.name);
+    pix::Grid pixels(width, height, data, pixel_format);
+    return util::Image::from_pixels(pixels)->create_file(file.name);
 }

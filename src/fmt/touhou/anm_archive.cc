@@ -21,7 +21,6 @@
 #include <algorithm>
 #include <map>
 #include "fmt/touhou/anm_archive.h"
-#include "util/colors.h"
 #include "util/format.h"
 #include "util/image.h"
 #include "util/range.h"
@@ -133,10 +132,7 @@ static Table read_table(io::IO &file_io)
 }
 
 static void write_pixels(
-    io::IO &file_io,
-    TableEntry &entry,
-    std::vector<util::Color> &pixels,
-    size_t stride)
+    io::IO &file_io, TableEntry &entry, pix::Grid &pixels, size_t stride)
 {
     if (!entry.has_data)
         return;
@@ -145,47 +141,41 @@ static void write_pixels(
     if (file_io.read(texture_magic.size()) != texture_magic)
         throw std::runtime_error("Corrupt texture data");
     file_io.skip(2);
-    int format = file_io.read_u16_le();
-    size_t width = file_io.read_u16_le();
-    size_t height = file_io.read_u16_le();
-    size_t data_size = file_io.read_u32_le();
+    auto format = file_io.read_u16_le();
+    auto width = file_io.read_u16_le();
+    auto height = file_io.read_u16_le();
+    auto data_size = file_io.read_u32_le();
+    auto data = file_io.read(data_size);
+    auto data_ptr = data.get<const u8>();
 
-    const auto *pixels_end = &pixels[stride * height];
     for (auto y : util::range(height))
+    for (auto x : util::range(width))
     {
-        auto shift = (y + entry.y) * width + entry.x;
-        auto *pixels_ptr = &pixels[shift];
-        for (auto x : util::range(width))
+        pix::Pixel color;
+        switch (format)
         {
-            if (pixels_ptr >= pixels_end)
-                return;
+            case 1:
+                color = pix::read<pix::Format::BGRA8888>(data_ptr);
+                break;
 
-            util::Color color;
-            switch (format)
-            {
-                case 1:
-                    color = util::color::bgra8888(file_io);
-                    break;
+            case 3:
+                color = pix::read<pix::Format::BGR565>(data_ptr);
+                break;
 
-                case 3:
-                    color = util::color::bgr565(file_io);
-                    break;
+            case 5:
+                color = pix::read<pix::Format::BGRA4444>(data_ptr);
+                break;
 
-                case 5:
-                    color = util::color::bgra4444(file_io);
-                    break;
+            case 7:
+                color = pix::read<pix::Format::Gray8>(data_ptr);
+                break;
 
-                case 7:
-                    color = util::color::gray8(file_io);
-                    break;
-
-                default:
-                    throw std::runtime_error(util::format(
-                        "Unknown color format: %d", format));
-            }
-
-            *pixels_ptr++ = color;
+            default:
+                throw std::runtime_error(util::format(
+                    "Unknown color format: %d", format));
         }
+
+        pixels.at(x + entry.x, y + entry.y) = color;
     }
 }
 
@@ -211,12 +201,11 @@ static std::unique_ptr<File> read_texture(io::IO &file_io, Table &entries)
     if (!width || !height)
         return nullptr;
 
-    std::vector<util::Color> pixels(width * height);
+    pix::Grid pixels(width, height);
     for (auto &entry : entries)
         write_pixels(file_io, *entry, pixels, width);
 
-    auto image = util::Image::from_pixels(width, height, pixels);
-    return image->create_file(entries[0]->name);
+    return util::Image::from_pixels(pixels)->create_file(entries[0]->name);
 }
 
 FileNamingStrategy AnmArchive::get_file_naming_strategy() const

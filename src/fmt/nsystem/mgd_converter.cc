@@ -205,28 +205,21 @@ static std::unique_ptr<util::Image> read_image(
     size_t width,
     size_t height)
 {
-    switch (compression_type)
+    if (compression_type == CompressionType::None)
     {
-        case CompressionType::None:
-            return util::Image::from_pixels(
-                width,
-                height,
-                input,
-                util::PixelFormat::BGRA);
-
-        case CompressionType::Sgd:
-            return util::Image::from_pixels(
-                width,
-                height,
-                decompress_sgd(input, size_original),
-                util::PixelFormat::BGRA);
-
-        case CompressionType::Png:
-            return util::Image::from_boxed(input);
-
-        default:
-            util::fail("Unsupported compression type");
+        pix::Grid pixels(width, height, input, pix::Format::BGRA8888);
+        return util::Image::from_pixels(pixels);
     }
+    else if (compression_type == CompressionType::Sgd)
+    {
+        auto decompressed = decompress_sgd(input, size_original);
+        pix::Grid pixels(width, height, decompressed, pix::Format::BGRA8888);
+        return util::Image::from_pixels(pixels);
+    }
+    else if (compression_type == CompressionType::Png)
+        return util::Image::from_boxed(input);
+
+    util::fail("Unsupported compression type");
 }
 
 bool MgdConverter::is_recognized_internal(File &file) const

@@ -9,7 +9,6 @@
 // - Ever 17
 
 #include "fmt/kid/prt_converter.h"
-#include "util/colors.h"
 #include "util/format.h"
 #include "util/image.h"
 #include "util/range.h"
@@ -54,36 +53,30 @@ std::unique_ptr<File> PrtConverter::decode_internal(File &file) const
     }
 
     auto stride = (((width * bit_depth / 8) + 3) / 4) * 4;
-    std::vector<util::Color> pixels(width * height);
 
-    std::unique_ptr<util::Color[]> palette(new util::Color[256]);
-    if (bit_depth == 8)
-    {
-        file.io.seek(palette_offset);
-        for (auto i : util::range(256))
-        {
-            palette[i] = util::color::bgr888(file.io);
-            file.io.skip(1);
-        }
-    }
+    file.io.seek(palette_offset);
+    pix::Palette palette(
+        bit_depth == 8 ? 256 : 0, file.io, pix::Format::BGR888X);
 
+    pix::Grid pixels(width, height);
     for (auto y : util::range(height))
     {
-        file.io.seek(data_offset + stride * y);
-        auto *pixels_ptr = &pixels[(height - 1 - y) * width];
+        file.io.seek(data_offset + y * stride);
+        auto row = file.io.read(stride);
+        auto row_ptr = row.get<const u8>();
         for (auto x : util::range(width))
         {
             if (bit_depth == 8)
             {
-                *pixels_ptr++ = palette[file.io.read_u8()];
+                pixels.at(x, y) = palette[*row_ptr++];
             }
             else if (bit_depth == 24)
             {
-                *pixels_ptr++ = util::color::bgr888(file.io);
+                pixels.at(x, y) = pix::read<pix::Format::BGR888>(row_ptr);
             }
             else if (bit_depth == 32)
             {
-                *pixels_ptr++ = util::color::bgra8888(file.io);
+                pixels.at(x, y) = pix::read<pix::Format::BGRA8888>(row_ptr);
             }
             else
             {
@@ -93,11 +86,14 @@ std::unique_ptr<File> PrtConverter::decode_internal(File &file) const
         }
     }
 
-    if (has_alpha)
-        for (auto y : util::range(height))
-            for (auto x : util::range(width))
-                pixels[y * width + x].a = file.io.read_u8();
+    pixels.flip();
 
-    auto image = util::Image::from_pixels(width, height, pixels);
-    return image->create_file(file.name);
+    if (has_alpha)
+    {
+        for (auto y : util::range(height))
+        for (auto x : util::range(width))
+            pixels.at(x, y).a = file.io.read_u8();
+    }
+
+    return util::Image::from_pixels(pixels)->create_file(file.name);
 }

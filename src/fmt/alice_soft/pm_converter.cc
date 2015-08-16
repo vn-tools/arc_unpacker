@@ -11,7 +11,6 @@
 #include <array>
 #include "fmt/alice_soft/pm_converter.h"
 #include "io/buffered_io.h"
-#include "util/colors.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -107,18 +106,14 @@ static std::unique_ptr<util::Image> decode_to_image(io::IO &io)
     auto palette_offset = io.read_u32_le();
 
     io.seek(palette_offset);
-    std::array<util::Color, 256> palette;
-    for (auto i : util::range(256))
-        palette[i] = util::color::bgr888(io);
+    auto palette_data = io.read(256 * 3);
 
     io.seek(data_offset);
-    auto data = decompress(io.read_to_eof(), width, height);
+    auto pixel_data = decompress(io.read_to_eof(), width, height);
 
-    std::vector<util::Color> pixels(width * height);
-    for (auto i : util::range(width * height))
-        pixels[i] = palette[data.get<u8>(i)];
-
-    return util::Image::from_pixels(width, height, pixels);
+    pix::Palette palette(256, palette_data, pix::Format::BGR888);
+    pix::Grid pixels(width, height, pixel_data, palette);
+    return util::Image::from_pixels(pixels);
 }
 
 std::unique_ptr<util::Image> PmConverter::decode_to_image(

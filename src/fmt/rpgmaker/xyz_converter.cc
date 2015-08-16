@@ -10,6 +10,7 @@
 
 #include <stdexcept>
 #include "fmt/rpgmaker/xyz_converter.h"
+#include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
@@ -32,24 +33,12 @@ std::unique_ptr<File> XyzConverter::decode_internal(File &file) const
     u16 height = file.io.read_u16_le();
 
     bstr data = util::pack::zlib_inflate(file.io.read_to_eof());
-    if (data.size() != static_cast<size_t>(256 * 3 + width * height))
-        throw std::runtime_error("Unexpected data size");
 
-    bstr pixels;
-    pixels.resize(width * height * 3);
+    io::BufferedIO data_io(data);
+    auto pal_data = data_io.read(256 * 3);
+    auto pix_data = data_io.read_to_eof();
 
-    auto *palette = data.get<const u8>();
-    auto *palette_indices = data.get<const u8>() + 256 * 3;
-    auto *pixels_ptr = pixels.get<u8>();
-
-    for (auto i : util::range(width * height))
-    {
-        size_t index = *palette_indices++;
-        for (auto c : util::range(3))
-            *pixels_ptr++ = palette[index * 3 + c];
-    }
-
-    auto image = util::Image::from_pixels(
-        width, height, pixels, util::PixelFormat::RGB);
-    return image->create_file(file.name);
+    pix::Palette palette(256, pal_data, pix::Format::RGB888);
+    pix::Grid pixels(width, height, pix_data, palette);
+    return util::Image::from_pixels(pixels)->create_file(file.name);
 }

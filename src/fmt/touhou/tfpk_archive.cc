@@ -19,7 +19,6 @@
 #include "fmt/touhou/tfpk_archive.h"
 #include "fmt/touhou/tfwa_converter.h"
 #include "io/buffered_io.h"
-#include "util/colors.h"
 #include "util/crypt/rsa.h"
 #include "util/encoding.h"
 #include "util/format.h"
@@ -377,7 +376,7 @@ static std::unique_ptr<File> read_file(
     return file;
 }
 
-static Palette read_palette_file(
+static std::shared_ptr<pix::Palette> read_palette_file(
     io::IO &arc_io, TableEntry &entry, TfpkVersion version)
 {
     auto pal_file = read_file(arc_io, entry, version);
@@ -385,13 +384,10 @@ static Palette read_palette_file(
     if (pal_file->io.read(pal_magic.size()) != pal_magic)
         throw std::runtime_error("Not a TFPA palette file");
     size_t pal_size = pal_file->io.read_u32_le();
-    io::BufferedIO pal_io(
-        util::pack::zlib_inflate(
-            pal_file->io.read(pal_size)));
-    Palette palette;
-    for (auto i : util::range(256))
-        palette[i] = util::color::bgra5551(pal_io);
-    return palette;
+    io::BufferedIO pal_io(util::pack::zlib_inflate(
+        pal_file->io.read(pal_size)));
+    return std::shared_ptr<pix::Palette>(new pix::Palette(
+        256, pal_io, pix::Format::BGRA5551));
 }
 
 static PaletteMap find_all_palettes(
