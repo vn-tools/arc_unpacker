@@ -1,25 +1,25 @@
 #include "fmt/touhou/anm_archive.h"
 #include "test_support/archive_support.h"
 #include "test_support/catch.hh"
-#include "test_support/converter_support.h"
+#include "test_support/image_support.h"
+#include "util/range.h"
 
 using namespace au;
-using namespace au::fmt;
 using namespace au::fmt::touhou;
 
 static void test(
     const std::string path_to_anm,
     const std::vector<std::string> paths_to_png)
 {
-    std::unique_ptr<Archive> archive(new AnmArchive);
-    auto actual_files = au::tests::unpack_to_memory(path_to_anm, *archive);
+    std::unique_ptr<fmt::Archive> archive(new AnmArchive);
+    auto actual_files = tests::unpack_to_memory(path_to_anm, *archive);
 
     REQUIRE(actual_files.size() == paths_to_png.size());
-    for (size_t i = 0; i < paths_to_png.size(); i++)
+    for (auto i : util::range(paths_to_png.size()))
     {
-        std::unique_ptr<File> expected_file(
-            new File(paths_to_png[i], io::FileMode::Read));
-        au::tests::assert_decoded_image(*actual_files[i], *expected_file);
+        auto expected_image = tests::image_from_path(paths_to_png[i]);
+        auto actual_image = util::Image::from_boxed(actual_files[i]->io);
+        tests::compare_images(*expected_image, *actual_image);
     }
 }
 

@@ -1,9 +1,9 @@
 #include "fmt/renpy/rpa_archive.h"
 #include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/file_support.h"
 
 using namespace au;
-using namespace au::fmt;
 using namespace au::fmt::renpy;
 
 // import cPickle
@@ -20,17 +20,15 @@ using namespace au::fmt::renpy;
 
 static void test(const std::string &path)
 {
-    std::shared_ptr<File> file1(new File);
-    std::shared_ptr<File> file2(new File);
-    file1->name = "another.txt";
-    file2->name = "abc.txt";
-    file1->io.write("abcdefghij"_b);
-    file2->io.write("123"_b);
-    std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
+    std::vector<std::shared_ptr<File>> expected_files
+    {
+        tests::create_file("another.txt", "abcdefghij"_b),
+        tests::create_file("abc.txt", "123"_b),
+    };
 
-    std::unique_ptr<Archive> archive(new RpaArchive);
-    au::tests::compare_files(
-        expected_files, au::tests::unpack_to_memory(path, *archive));
+    RpaArchive archive;
+    tests::compare_files(
+        expected_files, tests::unpack_to_memory(path, archive), true);
 }
 
 TEST_CASE("Unpacking version 3 RPA archives works")

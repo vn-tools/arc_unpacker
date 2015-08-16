@@ -1,24 +1,22 @@
 #include "fmt/ivory/mbl_archive.h"
 #include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/file_support.h"
 
 using namespace au;
-using namespace au::fmt;
 using namespace au::fmt::ivory;
 
 static void test_mbl_archive(const std::string &path)
 {
-    std::shared_ptr<File> file1(new File);
-    std::shared_ptr<File> file2(new File);
-    file1->name = "abc.txt";
-    file2->name = "テスト";
-    file1->io.write("abc"_b);
-    file2->io.write("AAAAAAAAAAAAAAAA"_b);
-    std::vector<std::shared_ptr<File>> expected_files { file1, file2 };
+    std::vector<std::shared_ptr<File>> expected_files
+    {
+        tests::create_file("abc.txt", "abc"_b),
+        tests::create_file("テスト", "AAAAAAAAAAAAAAAA"_b),
+    };
 
-    std::unique_ptr<Archive> archive(new MblArchive);
-    au::tests::compare_files(
-        expected_files, au::tests::unpack_to_memory(path, *archive));
+    MblArchive archive;
+    tests::compare_files(
+        expected_files, au::tests::unpack_to_memory(path, archive), true);
 }
 
 TEST_CASE("Unpacking version 1 MBL archives works")

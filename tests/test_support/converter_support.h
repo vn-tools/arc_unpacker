@@ -1,24 +1,28 @@
 #ifndef AU_TEST_SUPPORT_CONVERTER_SUPPORT_H
 #define AU_TEST_SUPPORT_CONVERTER_SUPPORT_H
 #include <boost/filesystem/path.hpp>
-#include <string>
+#include "file.h"
 #include "fmt/converter.h"
+#include "util/image.h"
 
 namespace au {
 namespace tests {
 
-    void assert_decoded_image(
-        const File &actual_file, const File &expected_file);
+    std::shared_ptr<File> file_from_converter(
+        const boost::filesystem::path &path, const fmt::Converter &converter);
 
-    void assert_decoded_image(
-        fmt::Converter &converter,
-        const boost::filesystem::path &path_to_input,
-        const boost::filesystem::path &path_to_expected);
+    std::shared_ptr<util::Image> image_from_converter(
+        const boost::filesystem::path &path, const fmt::Converter &converter);
 
-    void assert_decoded_file(
-        fmt::Converter &converter,
-        const boost::filesystem::path &path_to_input,
-        const boost::filesystem::path &path_to_expected);
+    void assert_file_conversion(
+        const fmt::Converter &converter,
+        const std::string &input_image_path,
+        const std::string &expected_image_path);
+
+    void assert_image_conversion(
+        const fmt::Converter &converter,
+        const std::string &input_image_path,
+        const std::string &expected_image_path);
 
 } }
 
