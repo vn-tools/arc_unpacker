@@ -278,6 +278,8 @@ std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
 bool ArcUnpacker::guess_transformer_and_unpack(
     File &file, const std::string &base_name) const
 {
+    Log.info(util::format("Unpacking %s...\n", file.name.c_str()));
+
     auto transformer = p->options.format != ""
         ? p->factory.create(p->options.format)
         : guess_transformer(file);
@@ -285,7 +287,6 @@ bool ArcUnpacker::guess_transformer_and_unpack(
     if (!transformer)
         return false;
 
-    Log.info(util::format("Unpacking %s...\n", file.name.c_str()));
     try
     {
         unpack(*transformer, file, base_name);
