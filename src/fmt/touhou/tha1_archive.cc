@@ -88,7 +88,7 @@ static std::vector<std::vector<DecryptorContext>> decryptors
         { 0x99, 0x7D, 0x0080, 0x4400 },
     },
 
-    //TH14
+    //TH14, TH15 trial, TH15
     {
         { 0x1B, 0x73, 0x0100, 0x3800 },
         { 0x12, 0x43, 0x0200, 0x3E00 },
@@ -225,6 +225,7 @@ static int detect_encryption_version(File &arc_file, const Table &table)
     if (arc_file.name.find("th14.") != std::string::npos) return 3;
     if (arc_file.name.find("th143.") != std::string::npos) return 3;
     if (arc_file.name.find("th15tr.") != std::string::npos) return 3;
+    if (arc_file.name.find("th15.") != std::string::npos) return 3;
     return -1;
 }
 
