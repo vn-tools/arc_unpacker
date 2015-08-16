@@ -16,7 +16,7 @@ struct FileSaverHdd::Priv
     bool overwrite;
 
     Priv(const boost::filesystem::path &output_dir, bool overwrite)
-         : output_dir(output_dir), overwrite(overwrite)
+        : output_dir(output_dir), overwrite(overwrite)
     {
     }
 
@@ -25,7 +25,7 @@ struct FileSaverHdd::Priv
         boost::filesystem::path new_path = path;
         int i = 1;
         while (paths.find(new_path) != paths.end()
-        || (!overwrite && boost::filesystem::exists(new_path)))
+            || (!overwrite && boost::filesystem::exists(new_path)))
         {
             std::string suffix = util::format("(%d)", i++);
             new_path = path.parent_path();
@@ -79,8 +79,6 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
     }
     Log.flush();
 }
-
-
 
 struct FileSaverCallback::Priv
 {
