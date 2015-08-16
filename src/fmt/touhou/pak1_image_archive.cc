@@ -80,7 +80,7 @@ bool Pak1ImageArchive::is_recognized_internal(File &arc_file) const
         arc_file.io.skip(1);
         arc_file.io.skip(arc_file.io.read_u32_le());
     }
-    return true;
+    return arc_file.io.eof();
 }
 
 void Pak1ImageArchive::unpack_internal(

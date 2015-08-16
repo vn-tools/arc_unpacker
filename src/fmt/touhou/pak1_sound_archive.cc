@@ -48,7 +48,7 @@ bool Pak1SoundArchive::is_recognized_internal(File &arc_file) const
         arc_file.io.skip(18);
         arc_file.io.skip(size);
     }
-    return true;
+    return arc_file.io.eof();
 }
 
 void Pak1SoundArchive::unpack_internal(
