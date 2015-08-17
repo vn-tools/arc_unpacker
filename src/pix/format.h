@@ -19,7 +19,8 @@ namespace pix {
         RGBA8888,
     };
 
-    constexpr int format_to_bpp(Format fmt)
+    // TODO: constexpr once cygwin adapts mingw-w64 for its g++
+    inline int format_to_bpp(Format fmt)
     {
         switch (fmt)
         {
@@ -37,7 +38,8 @@ namespace pix {
 
     template<Format fmt> Pixel read(const u8 *&ptr);
 
-    template<Format fmt> constexpr Pixel read(io::IO &io)
+    // TODO: constexpr once cygwin adapts mingw-w64 for its g++
+    template<Format fmt> inline Pixel read(io::IO &io)
     {
         auto str = io.read(format_to_bpp(fmt));
         auto str_ptr = str.get<const u8>();
