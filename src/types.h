@@ -21,6 +21,7 @@ namespace au {
 
         bstr();
         bstr(const std::string &other);
+        bstr(const u8 *str, size_t size);
         bstr(const char *str, size_t size);
 
         std::size_t size() const;
