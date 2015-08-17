@@ -28,6 +28,7 @@ namespace pix {
         const Pixel &at(size_t x, size_t y) const;
 
         void flip();
+        void crop(size_t width, size_t height);
 
     private:
         struct Priv;

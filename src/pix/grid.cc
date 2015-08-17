@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "pix/grid.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -151,5 +152,20 @@ void Grid::flip()
         auto t = at(x, p->height - 1 - y);
         at(x, p->height - 1 - y) = at(x, y);
         at(x, y) = t;
+    }
+}
+
+void Grid::crop(size_t new_width, size_t new_height)
+{
+    std::vector<Pixel> old_pixels(p->pixels.begin(), p->pixels.end());
+    auto old_width = p->width;
+    auto old_height = p->height;
+    p->width = new_width;
+    p->height = new_height;
+    p->pixels.resize(new_width * new_height);
+    for (auto y : util::range(std::min(old_height, new_height)))
+    for (auto x : util::range(std::min(old_width, new_width)))
+    {
+        p->pixels[y * new_width + x] = old_pixels[y * old_width + x];
     }
 }
