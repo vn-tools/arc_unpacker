@@ -7,6 +7,7 @@
 // Known games:
 // - Higurashi No Naku Koro Ni
 // - Go! Go! Nippon! ~My First Trip to Japan~
+// - Magical Charming!
 
 #include "fmt/bgi/arc_archive.h"
 #include "fmt/bgi/cbg_converter.h"

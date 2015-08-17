@@ -14,6 +14,7 @@ namespace io {
         BitReader(const char *buffer, size_t buffer_size);
         ~BitReader();
 
+        size_t tell() const;
         unsigned int get(size_t n);
         unsigned int try_get(size_t n);
     private:

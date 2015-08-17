@@ -11,13 +11,15 @@ namespace
     private:
         u8 mask;
         u8 value;
-        virtual bool eof() = 0;
+        size_t pos;
         virtual u8 fetch_byte() = 0;
 
     public:
         Reader();
-        bool get(bool exception);
-        int getn(size_t n, bool exception);
+        bool get(bool use_exceptions);
+        int getn(size_t n, bool use_exceptions);
+        size_t tell() const;
+        virtual bool eof() const = 0;
     };
 
     class BufferBasedReader : public Reader
@@ -29,7 +31,7 @@ namespace
 
     public:
         BufferBasedReader(const bstr &buffer);
-        bool eof() override;
+        bool eof() const override;
         u8 fetch_byte() override;
     };
 
@@ -40,7 +42,7 @@ namespace
 
     public:
         IoBasedReader(IO &io);
-        bool eof() override;
+        bool eof() const override;
         u8 fetch_byte() override;
     };
 }
@@ -49,16 +51,22 @@ Reader::Reader()
 {
     mask = 0;
     value = 0;
+    pos = 0;
 }
 
-bool Reader::get(bool exception)
+size_t Reader::tell() const
+{
+    return pos;
+}
+
+bool Reader::get(bool use_exceptions)
 {
     mask >>= 1;
-    if (mask == 0x00)
+    if (!mask)
     {
         if (eof())
         {
-            if (!exception)
+            if (!use_exceptions)
                 return 0;
             throw std::runtime_error("Trying to read bits beyond EOF");
         }
@@ -66,10 +74,11 @@ bool Reader::get(bool exception)
         mask = 0x80;
         value = fetch_byte();
     }
+    ++pos;
     return (value & mask) != 0;
 }
 
-int Reader::getn(size_t n, bool exception)
+int Reader::getn(size_t n, bool use_exceptions)
 {
     if (n > 32)
         throw std::runtime_error("Too many bits");
@@ -78,7 +87,7 @@ int Reader::getn(size_t n, bool exception)
     while (n--)
     {
         value <<= 1;
-        value |= static_cast<int>(get(exception));
+        value |= static_cast<int>(get(use_exceptions));
     }
     return value;
 }
@@ -90,7 +99,7 @@ BufferBasedReader::BufferBasedReader(const bstr &buffer)
     ptr = this->buffer.get<const u8>();
 }
 
-bool BufferBasedReader::eof()
+bool BufferBasedReader::eof() const
 {
     return bytes_left == 0;
 }
@@ -105,7 +114,7 @@ IoBasedReader::IoBasedReader(IO &io) : io(io)
 {
 }
 
-bool IoBasedReader::eof()
+bool IoBasedReader::eof() const
 {
     return io.tell() >= io.size();
 }
@@ -161,4 +170,9 @@ unsigned int BitReader::get(size_t n)
 unsigned int BitReader::try_get(size_t n)
 {
     return p->reader->getn(n, false);
+}
+
+size_t BitReader::tell() const
+{
+    return p->reader->tell();
 }
