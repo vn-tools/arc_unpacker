@@ -52,7 +52,7 @@ TEST_CASE("Infinite recognition loops don't cause stack overflow")
         saved_file->io.seek(0);
         saved_files.push_back(saved_file);
     });
-    test_archive.unpack(dummy_file, file_saver);
+    test_archive.unpack(dummy_file, file_saver, true);
 
     REQUIRE(saved_files.size() == 1);
     REQUIRE(boost::filesystem::basename(saved_files[0]->name) == "infinity");

@@ -13,6 +13,6 @@ std::vector<std::shared_ptr<File>> tests::unpack_to_memory(
     {
         files.push_back(file);
     });
-    archive.unpack(file, file_saver);
+    archive.unpack(file, file_saver, true);
     return files;
 }

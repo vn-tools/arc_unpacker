@@ -4,7 +4,8 @@
 using namespace au;
 using namespace au::fmt;
 
-void Converter::unpack(File &input_file, FileSaver &file_saver) const
+void Converter::unpack(
+    File &input_file, FileSaver &file_saver, bool recurse) const
 {
     auto output_file = decode(input_file);
     output_file->name

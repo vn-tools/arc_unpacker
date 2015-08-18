@@ -23,6 +23,7 @@ namespace
         boost::filesystem::path output_dir;
         std::vector<std::unique_ptr<PathInfo>> input_paths;
         bool overwrite;
+        bool recurse;
     };
 }
 
@@ -45,11 +46,19 @@ static void add_rename_option(ArgParser &arg_parser, Options &options)
         = !arg_parser.has_flag("-r") && !arg_parser.has_flag("--rename");
 }
 
-static void add_disable_colors_option(ArgParser &arg_parser, Options &options)
+static void add_disable_colors_option(ArgParser &arg_parser)
 {
     arg_parser.add_help("--no-color", "Disables color output.");
     if (arg_parser.has_flag("--no-color") || arg_parser.has_flag("--no-colors"))
         Log.disable_colors();
+}
+
+static void add_disable_recursion_option(
+    ArgParser &arg_parser, Options &options)
+{
+    arg_parser.add_help(
+        "--no-recurse", "Disables automatic decoding of nested files.");
+    options.recurse = !arg_parser.has_flag("--no-recurse");
 }
 
 static void add_output_dir_option(ArgParser &arg_parser, Options &options)
@@ -137,7 +146,8 @@ ArcUnpacker::ArcUnpacker(ArgParser &arg_parser, const std::string &version)
     add_output_dir_option(arg_parser, p->options);
     add_format_option(arg_parser, p->options);
     add_rename_option(arg_parser, p->options);
-    add_disable_colors_option(arg_parser, p->options);
+    add_disable_colors_option(arg_parser);
+    add_disable_recursion_option(arg_parser, p->options);
     add_help_option(arg_parser);
 }
 
@@ -235,7 +245,7 @@ void ArcUnpacker::unpack(
     });
 
     transformer.parse_cli_options(p->arg_parser);
-    transformer.unpack(file, file_saver_proxy);
+    transformer.unpack(file, file_saver_proxy, p->options.recurse);
 }
 
 std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const

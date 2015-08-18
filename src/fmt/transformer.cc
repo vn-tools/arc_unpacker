@@ -32,19 +32,6 @@ std::string FileNameDecorator::decorate(
     }
 }
 
-bool Transformer::try_unpack(File &file, FileSaver &file_saver) const
-{
-    try
-    {
-        unpack(file, file_saver);
-        return true;
-    }
-    catch (...)
-    {
-        return false;
-    }
-}
-
 bool Transformer::is_recognized(File &file) const
 {
     try

@@ -44,14 +44,20 @@ static bool pass_through_transformers(
             recognition_proxy.save(converted_file);
         });
 
-        if (transformer->try_unpack(*original_file, transformer_proxy))
+        try
+        {
+            transformer->unpack(*original_file, transformer_proxy, true);
             return true;
+        }
+        catch (...)
+        {
+        }
     }
 
     return false;
 }
 
-void Archive::unpack(File &file, FileSaver &file_saver) const
+void Archive::unpack(File &file, FileSaver &file_saver, bool recurse) const
 {
     if (!is_recognized(file))
         throw std::runtime_error("File is not recognized");
@@ -63,7 +69,7 @@ void Archive::unpack(File &file, FileSaver &file_saver) const
         DepthKeeper keeper;
 
         bool save_normally;
-        if (depth > max_depth)
+        if (depth > max_depth || !recurse)
         {
             save_normally = true;
         }
