@@ -290,13 +290,13 @@ bool ArcUnpacker::guess_transformer_and_unpack(
     try
     {
         unpack(*transformer, file, base_name);
-        Log.success("Unpacking finished successfully.\n");
+        Log.success("Unpacking finished successfully.\n\n");
         return true;
     }
     catch (std::exception &e)
     {
         Log.err("Error: " + std::string(e.what()) + "\n");
-        Log.err("Unpacking finished with errors.\n");
+        Log.err("Unpacking finished with errors.\n\n");
         return false;
     }
 }
