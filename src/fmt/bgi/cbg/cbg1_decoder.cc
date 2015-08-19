@@ -90,7 +90,7 @@ static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
         {
             for (auto i : util::range(channels))
             {
-                *input_ptr += (*left  + *above) >> 1;
+                *input_ptr += (*left + *above) >> 1;
                 input_ptr++;
                 above++;
                 left++;
