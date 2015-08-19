@@ -93,7 +93,7 @@ static void jpeg_dct_float(
         dv[i] = ac_mul[i];
     }
 
-    for (auto i : util::range(8))
+    for (auto i : util::range(block_dim))
     {
         if (!inptr[8 + i] && !inptr[16 + i]
             && !inptr[24 + i] && !inptr[32 + i]
@@ -153,24 +153,25 @@ static void jpeg_dct_float(
         tp[24 + i] = tmp3 - tmp4;
     }
 
-    for (auto i : util::range(8))
+    for (auto i : util::range(block_dim))
     {
-        z5 = tp[i * 8];
-        tmp10 = z5 + tp[8 * i + 4];
-        tmp11 = z5 - tp[8 * i + 4];
+        z5 = tp[i * block_dim];
+        tmp10 = z5 + tp[block_dim * i + 4];
+        tmp11 = z5 - tp[block_dim * i + 4];
 
-        tmp13 = tp[8 * i + 2] + tp[8 * i + 6];
-        tmp12 = (tp[8 * i + 2] - tp[8 * i + 6]) * 1.414213562f - tmp13;
+        tmp13 = tp[block_dim * i + 2] + tp[block_dim * i + 6];
+        tmp12 = (tp[block_dim * i + 2] - tp[block_dim * i + 6])
+            * 1.414213562f - tmp13;
 
         tmp0 = tmp10 + tmp13;
         tmp3 = tmp10 - tmp13;
         tmp1 = tmp11 + tmp12;
         tmp2 = tmp11 - tmp12;
 
-        z13 = tp[8 * i + 5] + tp[8 * i + 3];
-        z10 = tp[8 * i + 5] - tp[8 * i + 3];
-        z11 = tp[8 * i + 1] + tp[8 * i + 7];
-        z12 = tp[8 * i + 1] - tp[8 * i + 7];
+        z13 = tp[block_dim * i + 5] + tp[block_dim * i + 3];
+        z10 = tp[block_dim * i + 5] - tp[block_dim * i + 3];
+        z11 = tp[block_dim * i + 1] + tp[block_dim * i + 7];
+        z12 = tp[block_dim * i + 1] - tp[block_dim * i + 7];
 
         tmp7 = z11 + z13;
         tmp11 = (z11 - z13) * 1.414213562;
@@ -183,14 +184,14 @@ static void jpeg_dct_float(
         tmp5 = tmp11 - tmp6;
         tmp4 = tmp10 - tmp5;
 
-        output[i * 8] = jpeg_ftoi(tmp0 + tmp7);
-        output[i * 8 + 7] = jpeg_ftoi(tmp0 - tmp7);
-        output[i * 8 + 1] = jpeg_ftoi(tmp1 + tmp6);
-        output[i * 8 + 6] = jpeg_ftoi(tmp1 - tmp6);
-        output[i * 8 + 2] = jpeg_ftoi(tmp2 + tmp5);
-        output[i * 8 + 5] = jpeg_ftoi(tmp2 - tmp5);
-        output[i * 8 + 3] = jpeg_ftoi(tmp3 + tmp4);
-        output[i * 8 + 4] = jpeg_ftoi(tmp3 - tmp4);
+        output[i * block_dim] = jpeg_ftoi(tmp0 + tmp7);
+        output[i * block_dim + 7] = jpeg_ftoi(tmp0 - tmp7);
+        output[i * block_dim + 1] = jpeg_ftoi(tmp1 + tmp6);
+        output[i * block_dim + 6] = jpeg_ftoi(tmp1 - tmp6);
+        output[i * block_dim + 2] = jpeg_ftoi(tmp2 + tmp5);
+        output[i * block_dim + 5] = jpeg_ftoi(tmp2 - tmp5);
+        output[i * block_dim + 3] = jpeg_ftoi(tmp3 + tmp4);
+        output[i * block_dim + 4] = jpeg_ftoi(tmp3 - tmp4);
     }
 }
 
@@ -275,10 +276,10 @@ static void process_24bit_block(
                 ac_mul_pair[channel > 0]);
         }
 
-        for (auto y : util::range(8))
-        for (auto x : util::range(8))
+        for (auto y : util::range(block_dim))
+        for (auto x : util::range(block_dim))
         {
-            auto offset = y * 8 + x;
+            auto offset = y * block_dim + x;
             auto cy = yuv_in[0][offset];
             auto cb = yuv_in[1][offset];
             auto cr = yuv_in[2][offset];
@@ -310,9 +311,9 @@ static void process_8bit_block(
         for (auto x : util::range(block_dim))
         {
             u8 *rgb_ptr = &rgb_out[(i * block_dim + (y * width + x)) * 4];
-            rgb_ptr[0] = color_data[y * 8 + x];
-            rgb_ptr[1] = color_data[y * 8 + x];
-            rgb_ptr[2] = color_data[y * 8 + x];
+            rgb_ptr[0] = color_data[y * block_dim + x];
+            rgb_ptr[1] = color_data[y * block_dim + x];
+            rgb_ptr[2] = color_data[y * block_dim + x];
         }
     }
 }
