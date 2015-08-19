@@ -292,7 +292,7 @@ static void process_24bit_block(
             rgb_ptr[1] = get_component(g);
             rgb_ptr[2] = get_component(r);
         }
-        rgb_out += 32;
+        rgb_out += 4 * block_dim;
     }
 }
 
@@ -309,7 +309,7 @@ static void process_8bit_block(
         for (auto y : util::range(block_dim))
         for (auto x : util::range(block_dim))
         {
-            u8 *rgb_ptr = &rgb_out[i * 32 + (y * width + x) * 4];
+            u8 *rgb_ptr = &rgb_out[(i * block_dim + (y * width + x)) * 4];
             rgb_ptr[0] = color_data[y * 8 + x];
             rgb_ptr[1] = color_data[y * 8 + x];
             rgb_ptr[2] = color_data[y * 8 + x];

@@ -8,7 +8,9 @@ namespace au {
 namespace tests {
 
     void compare_images(
-        const util::Image &expected_image, const util::Image &actual_image);
+        const util::Image &expected_image,
+        const util::Image &actual_image,
+        int max_component_diff = 0);
 
     std::shared_ptr<util::Image> image_from_path(
         const boost::filesystem::path &path);

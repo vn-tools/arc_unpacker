@@ -22,7 +22,8 @@ namespace tests {
     void assert_image_conversion(
         const fmt::Converter &converter,
         const std::string &input_image_path,
-        const std::string &expected_image_path);
+        const std::string &expected_image_path,
+        int max_component_diff = 0);
 
 } }
 

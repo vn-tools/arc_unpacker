@@ -38,7 +38,8 @@ TEST_CASE("Decoding 32-bit CBG2 images works")
     tests::assert_image_conversion(
         converter,
         "tests/fmt/bgi/files/cbg-v2/ms_wn_base",
-        "tests/fmt/bgi/files/cbg-v2/ms_wn_base-out.png");
+        "tests/fmt/bgi/files/cbg-v2/ms_wn_base-out.png",
+        2);
 }
 
 TEST_CASE("Decoding 24-bit CBG2 images works")
@@ -47,7 +48,8 @@ TEST_CASE("Decoding 24-bit CBG2 images works")
     tests::assert_image_conversion(
         converter,
         "tests/fmt/bgi/files/cbg-v2/l_card000",
-        "tests/fmt/bgi/files/cbg-v2/l_card000-out.png");
+        "tests/fmt/bgi/files/cbg-v2/l_card000-out.png",
+        2);
 }
 
 TEST_CASE("Decoding 8-bit CBG2 images works")
@@ -56,5 +58,6 @@ TEST_CASE("Decoding 8-bit CBG2 images works")
     tests::assert_image_conversion(
         converter,
         "tests/fmt/bgi/files/cbg-v2/mask04r",
-        "tests/fmt/bgi/files/cbg-v2/mask04r-out.png");
+        "tests/fmt/bgi/files/cbg-v2/mask04r-out.png",
+        2);
 }

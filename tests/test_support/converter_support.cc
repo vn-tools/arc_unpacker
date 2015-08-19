@@ -31,9 +31,10 @@ void tests::assert_file_conversion(
 void tests::assert_image_conversion(
     const fmt::Converter &converter,
     const std::string &input_image_path,
-    const std::string &expected_image_path)
+    const std::string &expected_image_path,
+    int max_component_diff)
 {
     auto actual = tests::image_from_converter(input_image_path, converter);
     auto expected = tests::image_from_path(expected_image_path);
-    tests::compare_images(*expected, *actual);
+    tests::compare_images(*expected, *actual, max_component_diff);
 }

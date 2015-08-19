@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "test_support/catch.hh"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
@@ -6,8 +7,32 @@
 
 using namespace au;
 
+static inline void compare_pixels(
+    pix::Pixel expected,
+    pix::Pixel actual,
+    size_t x,
+    size_t y,
+    size_t c,
+    size_t max_component_diff)
+{
+    if (std::abs(expected[c] - actual[c]) > max_component_diff)
+    {
+        INFO(util::format(
+            "Pixels differ at %d, %d: %02x%02x%02x%02x != %02x%02x%02x%02x",
+            x, y,
+            expected.b, expected.g, expected.r, expected.a,
+            actual.b, actual.g, actual.r, actual.a));
+        REQUIRE(std::abs(expected.r - actual.r) <= max_component_diff);
+        REQUIRE(std::abs(expected.g - actual.g) <= max_component_diff);
+        REQUIRE(std::abs(expected.b - actual.b) <= max_component_diff);
+        REQUIRE(std::abs(expected.a - actual.a) <= max_component_diff);
+    }
+}
+
 void tests::compare_images(
-    const util::Image &expected_image, const util::Image &actual_image)
+    const util::Image &expected_image,
+    const util::Image &actual_image,
+    int max_component_diff)
 {
     REQUIRE(expected_image.pixels().width() == actual_image.pixels().width());
     REQUIRE(expected_image.pixels().height() == actual_image.pixels().height());
@@ -17,14 +42,10 @@ void tests::compare_images(
     {
         auto expected_pix = expected_image.pixels().at(x, y);
         auto actual_pix = actual_image.pixels().at(x, y);
-        if (expected_pix != actual_pix) //speed up
+        for (auto c : util::range(4))
         {
-            INFO(util::format(
-                "Pixels differ at %d, %d: %02x%02x%02x%02x != %02x%02x%02x%02x",
-                x, y,
-                expected_pix.b, expected_pix.g, expected_pix.r, expected_pix.a,
-                actual_pix.b, actual_pix.g, actual_pix.r, actual_pix.a));
-            REQUIRE(expected_pix == actual_pix);
+            compare_pixels(
+                expected_pix, actual_pix, x, y, c, max_component_diff);
         }
     }
 }

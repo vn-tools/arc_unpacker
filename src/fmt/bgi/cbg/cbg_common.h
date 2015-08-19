@@ -23,7 +23,6 @@ namespace cbg {
 
     struct Tree
     {
-        u32 root;
         u32 size;
         std::vector<std::shared_ptr<NodeInfo>> nodes;
         NodeInfo &operator[](size_t);
