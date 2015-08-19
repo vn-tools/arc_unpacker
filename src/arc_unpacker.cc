@@ -276,11 +276,11 @@ std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
         Log.warn("File wa recognized by multiple transformers:\n");
         for (const auto &it : transformers)
             Log.warn("- " + it.first + "\n");
-        Log.warn("Please provide --fmt and proceed manually.\n");
+        Log.warn("Please provide --fmt and proceed manually.\n\n");
     }
     else
     {
-        Log.err("File was not recognized by any transformer.\n");
+        Log.err("File was not recognized by any transformer.\n\n");
     }
     return nullptr;
 }
