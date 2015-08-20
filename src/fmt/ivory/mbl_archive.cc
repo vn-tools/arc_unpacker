@@ -15,6 +15,8 @@
 using namespace au;
 using namespace au::fmt::ivory;
 
+static const bstr key = "\x82\xED\x82\xF1\x82\xB1\x88\xC3\x8D\x86\x89\xBB"_b;
+
 namespace
 {
     enum Version
@@ -73,11 +75,16 @@ static Table read_table(io::IO &arc_io, Version version)
     return table;
 }
 
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
+static std::unique_ptr<File> read_file(
+    io::IO &arc_io, const TableEntry &entry, bool encrypted)
 {
     std::unique_ptr<File> file(new File);
     arc_io.seek(entry.offset);
-    file->io.write_from_io(arc_io, entry.size);
+    auto data = arc_io.read(entry.size);
+    if (encrypted)
+        for (auto i : util::range(entry.size))
+            data[i] ^= key[i % key.size()];
+    file->io.write(data);
     file->name = entry.name;
     return file;
 }
@@ -104,13 +111,14 @@ bool MblArchive::is_recognized_internal(File &arc_file) const
 void MblArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     auto version = get_version(arc_file.io);
+    bool encrypted = arc_file.name.find("mg_data") != std::string::npos;
     arc_file.io.seek(0);
 
     auto table = read_table(arc_file.io, version);
 
     for (auto &entry : table)
     {
-        auto file = read_file(arc_file.io, *entry);
+        auto file = read_file(arc_file.io, *entry, encrypted);
         file->guess_extension();
         file_saver.save(std::move(file));
     }
