@@ -15,52 +15,70 @@
 using namespace au;
 using namespace au::fmt::ivory;
 
-static int check_version(
-    io::IO &arc_io, size_t initial_position, u32 file_count, u32 name_size)
+namespace
 {
-    arc_io.seek(initial_position + file_count * (name_size + 8));
-    arc_io.skip(-8);
-    u32 last_file_offset = arc_io.read_u32_le();
-    u32 last_file_size = arc_io.read_u32_le();
+    enum Version
+    {
+        Unknown,
+        Version1,
+        Version2,
+    };
+
+    struct TableEntry
+    {
+        std::string name;
+        size_t offset;
+        size_t size;
+    };
+
+    using Table = std::vector<std::unique_ptr<TableEntry>>;
+}
+
+static int check_version(io::IO &arc_io, size_t file_count, size_t name_size)
+{
+    arc_io.skip((file_count - 1) * (name_size + 8));
+    arc_io.skip(name_size);
+    auto last_file_offset = arc_io.read_u32_le();
+    auto last_file_size = arc_io.read_u32_le();
     return last_file_offset + last_file_size == arc_io.size();
 }
 
-static int get_version(io::IO &arc_io)
+static Version get_version(io::IO &arc_io)
 {
-    u32 file_count = arc_io.read_u32_le();
-    if (check_version(arc_io, 4, file_count, 16))
-    {
-        arc_io.seek(0);
-        return 1;
-    }
+    auto file_count = arc_io.read_u32_le();
+    if (check_version(arc_io, file_count, 16))
+        return Version::Version1;
 
     arc_io.seek(4);
-    u32 name_size = arc_io.read_u32_le();
-    if (check_version(arc_io, 8, file_count, name_size))
-    {
-        arc_io.seek(0);
-        return 2;
-    }
+    auto name_size = arc_io.read_u32_le();
+    if (check_version(arc_io, file_count, name_size))
+        return Version::Version2;
 
-    return -1;
+    return Version::Unknown;
 }
 
-static std::unique_ptr<File> read_file(io::IO &arc_io, size_t name_size)
+static Table read_table(io::IO &arc_io, Version version)
+{
+    Table table;
+    auto file_count = arc_io.read_u32_le();
+    auto name_size = version == Version::Version2 ? arc_io.read_u32_le() : 16;
+    for (auto i : util::range(file_count))
+    {
+        std::unique_ptr<TableEntry> entry(new TableEntry);
+        entry->name = util::sjis_to_utf8(arc_io.read_to_zero(name_size)).str();
+        entry->offset = arc_io.read_u32_le();
+        entry->size = arc_io.read_u32_le();
+        table.push_back(std::move(entry));
+    }
+    return table;
+}
+
+static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
-
-    size_t old_pos = arc_io.tell();
-    file->name = util::sjis_to_utf8(arc_io.read_to_zero()).str();
-    arc_io.seek(old_pos + name_size);
-
-    size_t offset = arc_io.read_u32_le();
-    size_t size = arc_io.read_u32_le();
-
-    old_pos = arc_io.tell();
-    arc_io.seek(offset);
-    file->io.write_from_io(arc_io, size);
-    arc_io.seek(old_pos);
-
+    arc_io.seek(entry.offset);
+    file->io.write_from_io(arc_io, entry.size);
+    file->name = entry.name;
     return file;
 }
 
@@ -80,18 +98,19 @@ MblArchive::~MblArchive()
 
 bool MblArchive::is_recognized_internal(File &arc_file) const
 {
-    return get_version(arc_file.io) != -1;
+    return get_version(arc_file.io) != Version::Unknown;
 }
 
 void MblArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    int version = get_version(arc_file.io);
-    u32 file_count = arc_file.io.read_u32_le();
-    u32 name_size = version == 2 ? arc_file.io.read_u32_le() : 16;
+    auto version = get_version(arc_file.io);
+    arc_file.io.seek(0);
 
-    for (auto i : util::range(file_count))
+    auto table = read_table(arc_file.io, version);
+
+    for (auto &entry : table)
     {
-        auto file = read_file(arc_file.io, name_size);
+        auto file = read_file(arc_file.io, *entry);
         file->guess_extension();
         file_saver.save(std::move(file));
     }
