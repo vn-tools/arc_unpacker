@@ -9,6 +9,7 @@
 
 #include "fmt/ivory/mbl_archive.h"
 #include "fmt/ivory/prs_converter.h"
+#include "fmt/ivory/wady_converter.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -92,11 +93,13 @@ static std::unique_ptr<File> read_file(
 struct MblArchive::Priv
 {
     PrsConverter prs_converter;
+    WadyConverter wady_converter;
 };
 
 MblArchive::MblArchive() : p(new Priv)
 {
     add_transformer(&p->prs_converter);
+    add_transformer(&p->wady_converter);
 }
 
 MblArchive::~MblArchive()

@@ -22,6 +22,7 @@
 #include "fmt/glib/pgx_converter.h"
 #include "fmt/ivory/mbl_archive.h"
 #include "fmt/ivory/prs_converter.h"
+#include "fmt/ivory/wady_converter.h"
 #include "fmt/key/g00_converter.h"
 #include "fmt/key/nwa_converter.h"
 #include "fmt/kid/cps_converter.h"
@@ -114,6 +115,7 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("glib/pgx",      []() { return new glib::PgxConverter();         });
     p->add("ivory/mbl",     []() { return new ivory::MblArchive();          });
     p->add("ivory/prs",     []() { return new ivory::PrsConverter();        });
+    p->add("ivory/wady",    []() { return new ivory::WadyConverter();       });
     p->add("key/g00",       []() { return new key::G00Converter();          });
     p->add("key/nwa",       []() { return new key::NwaConverter();          });
     p->add("kid/cps",       []() { return new kid::CpsConverter();          });

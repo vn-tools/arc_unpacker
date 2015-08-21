@@ -43,7 +43,7 @@ std::unique_ptr<File> Sound::create_file(const std::string &name) const
     std::unique_ptr<File> output_file(new File);
 
     output_file->io.write("RIFF"_b);
-    output_file->io.write("\x00\x09\x00\x00"_b);
+    output_file->io.write("\x00\x00\x00\x00"_b);
     output_file->io.write("WAVE"_b);
     output_file->io.write("fmt "_b);
     output_file->io.write_u32_le(16);
