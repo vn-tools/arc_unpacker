@@ -29,3 +29,17 @@ TEST_CASE("Unpacking version 2 MBL archives works")
 {
     test_mbl_archive("tests/fmt/ivory/files/mbl/mbl-v2.mbl");
 }
+
+TEST_CASE("Unpacking encrypted dialog MBL archives works")
+{
+    std::vector<std::shared_ptr<File>> expected_files
+    {
+        tests::file_from_path("tests/fmt/ivory/files/mbl/TEST"),
+    };
+
+    MblArchive archive;
+    auto actual_files = au::tests::unpack_to_memory(
+        "tests/fmt/ivory/files/mbl/mg_data.mbl", archive);
+
+    tests::compare_files(expected_files, actual_files, false);
+}
