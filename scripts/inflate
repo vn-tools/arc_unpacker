@@ -1,0 +1,3 @@
+#!/usr/bin/python3
+import sys, zlib
+sys.stdout.buffer.write(zlib.decompress(sys.stdin.buffer.read()))
