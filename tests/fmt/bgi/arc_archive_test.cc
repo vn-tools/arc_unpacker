@@ -10,8 +10,8 @@ TEST_CASE("Unpacking ARC archives works")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {
-        tests::create_file("abc.txt", "123"_b),
-        tests::create_file("another.txt", "abcdefghij"_b),
+        tests::stub_file("abc.txt", "123"_b),
+        tests::stub_file("another.txt", "abcdefghij"_b),
     };
 
     std::string path = "tests/fmt/bgi/files/arc/test.arc";

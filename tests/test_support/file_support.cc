@@ -4,6 +4,15 @@
 
 using namespace au;
 
+std::shared_ptr<File> tests::stub_file(
+    const std::string &name, const bstr &data)
+{
+    std::shared_ptr<File> f(new File);
+    f->name = name;
+    f->io.write(data);
+    return f;
+}
+
 std::shared_ptr<File> tests::file_from_path(
     const boost::filesystem::path &path)
 {
@@ -20,15 +29,6 @@ std::shared_ptr<File> tests::zlib_file_from_path(
     decompressed_file->name = compressed_file.name;
     decompressed_file->io.write(decompressed_data);
     return decompressed_file;
-}
-
-std::shared_ptr<File> tests::create_file(
-    const std::string &name, const bstr &data)
-{
-    std::shared_ptr<File> f(new File);
-    f->name = name;
-    f->io.write(data);
-    return f;
 }
 
 void tests::compare_files(

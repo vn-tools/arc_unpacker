@@ -11,21 +11,20 @@ TEST_CASE("Unpacking uncompressed NSA archives works")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {
-        tests::create_file("abc.txt", "123"_b),
-        tests::create_file("another.txt", "abcdefghij"_b),
+        tests::stub_file("abc.txt", "123"_b),
+        tests::stub_file("another.txt", "abcdefghij"_b),
     };
 
     NsaArchive archive;
-    tests::compare_files(
-        expected_files,
-        tests::unpack_to_memory(
-            "tests/fmt/nscripter/files/nsa/uncompressed.nsa", archive),
-        true);
+    auto actual_files = tests::unpack_to_memory(
+        "tests/fmt/nscripter/files/nsa/uncompressed.nsa", archive);
+
+    tests::compare_files(expected_files, actual_files, true);
 }
 
 TEST_CASE("Unpacking NSA archives compressed with LZSS works")
 {
-    auto file = tests::create_file(
+    auto file = tests::stub_file(
         "test.bmp",
         util::pack::zlib_inflate(
             "\x78\xDA\x8D\xD3\x3D\x6E\x13\x40\x10\x86\xE1\xB5\x44\x81\x70\x9C"

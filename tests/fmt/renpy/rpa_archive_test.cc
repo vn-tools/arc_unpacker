@@ -22,8 +22,8 @@ static void test(const std::string &path)
 {
     std::vector<std::shared_ptr<File>> expected_files
     {
-        tests::create_file("another.txt", "abcdefghij"_b),
-        tests::create_file("abc.txt", "123"_b),
+        tests::stub_file("another.txt", "abcdefghij"_b),
+        tests::stub_file("abc.txt", "123"_b),
     };
 
     RpaArchive archive;

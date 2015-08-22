@@ -7,13 +7,13 @@
 namespace au {
 namespace tests {
 
+    std::shared_ptr<File> stub_file(
+        const std::string &name, const bstr &data);
+
     std::shared_ptr<File> file_from_path(const boost::filesystem::path &path);
 
     std::shared_ptr<File> zlib_file_from_path(
         const boost::filesystem::path &path);
-
-    std::shared_ptr<File> create_file(
-        const std::string &name, const bstr &data);
 
     void compare_files(
         const std::vector<std::shared_ptr<File>> &expected_files,

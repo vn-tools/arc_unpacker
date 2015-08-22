@@ -10,8 +10,8 @@ TEST_CASE("Unpacking PBG4 archives works")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {
-        tests::create_file("abc.txt", "123"_b),
-        tests::create_file("another.txt", "abcdefghijaaabcd"_b),
+        tests::stub_file("abc.txt", "123"_b),
+        tests::stub_file("another.txt", "abcdefghijaaabcd"_b),
     };
 
     Pbg4Archive archive;

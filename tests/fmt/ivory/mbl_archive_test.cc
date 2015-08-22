@@ -10,8 +10,8 @@ static void test_mbl_archive(const std::string &path)
 {
     std::vector<std::shared_ptr<File>> expected_files
     {
-        tests::create_file("abc.txt", "abc"_b),
-        tests::create_file("テスト", "AAAAAAAAAAAAAAAA"_b),
+        tests::stub_file("abc.txt", "abc"_b),
+        tests::stub_file("テスト", "AAAAAAAAAAAAAAAA"_b),
     };
 
     MblArchive archive;
