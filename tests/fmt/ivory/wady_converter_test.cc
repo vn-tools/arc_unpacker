@@ -5,26 +5,26 @@
 using namespace au;
 using namespace au::fmt::ivory;
 
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
+{
+    WadyConverter converter;
+    auto input_file = tests::zlib_file_from_path(input_path);
+    auto expected_file = tests::zlib_file_from_path(expected_path);
+    auto actual_file = converter.decode(*input_file);
+    tests::compare_files(*expected_file, *actual_file, false);
+}
+
 TEST_CASE("Decoding uncompressed (v1) WADY sound files works")
 {
-    auto input = tests::zlib_file_from_path(
-        "tests/fmt/ivory/files/wady/m01-zlib");
-    auto expected = tests::zlib_file_from_path(
+    do_test(
+        "tests/fmt/ivory/files/wady/m01-zlib",
         "tests/fmt/ivory/files/wady/m01-zlib-out.wav");
-
-    WadyConverter converter;
-    auto actual = converter.decode(*input);
-    tests::compare_files(*expected, *actual, false);
 }
 
 TEST_CASE("Decoding compressed (v2) WADY sound files works")
 {
-    auto input = tests::zlib_file_from_path(
-        "tests/fmt/ivory/files/wady/071-zlib");
-    auto expected = tests::zlib_file_from_path(
+    do_test(
+        "tests/fmt/ivory/files/wady/071-zlib",
         "tests/fmt/ivory/files/wady/071-zlib-out.wav");
-
-    WadyConverter converter;
-    auto actual = converter.decode(*input);
-    tests::compare_files(*expected, *actual, false);
 }

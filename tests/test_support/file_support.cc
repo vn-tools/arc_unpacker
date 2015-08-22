@@ -1,4 +1,5 @@
 #include "util/pack/zlib.h"
+#include "util/range.h"
 #include "test_support/catch.hh"
 #include "test_support/file_support.h"
 
@@ -37,7 +38,7 @@ void tests::compare_files(
     bool compare_file_names)
 {
     REQUIRE(actual_files.size() == expected_files.size());
-    for (size_t i = 0; i < expected_files.size(); i++)
+    for (auto i : util::range(expected_files.size()))
     {
         auto &expected_file = expected_files[i];
         auto &actual_file = actual_files[i];

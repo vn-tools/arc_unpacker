@@ -1,6 +1,6 @@
 #include "fmt/kid/cps_converter.h"
 #include "test_support/catch.hh"
-#include "test_support/converter_support.h"
+#include "test_support/file_support.h"
 
 using namespace au;
 using namespace au::fmt::kid;
@@ -8,8 +8,10 @@ using namespace au::fmt::kid;
 TEST_CASE("Decoding CPS containers works")
 {
     CpsConverter converter;
-    tests::assert_file_conversion(
-        converter,
-        "tests/fmt/kid/files/cps/yh04adm.cps",
+    auto input_file = tests::file_from_path(
+        "tests/fmt/kid/files/cps/yh04adm.cps");
+    auto expected_file = tests::file_from_path(
         "tests/fmt/kid/files/cps/yh04adm.prt");
+    auto actual_file = converter.decode(*input_file);
+    tests::compare_files(*expected_file, *actual_file, false);
 }

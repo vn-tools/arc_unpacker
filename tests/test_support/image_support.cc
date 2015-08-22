@@ -29,6 +29,18 @@ static inline void compare_pixels(
     }
 }
 
+std::shared_ptr<util::Image> tests::image_from_file(File &file)
+{
+    file.io.seek(0);
+    return util::Image::from_boxed(file.io);
+}
+
+std::shared_ptr<util::Image> tests::image_from_path(
+    const boost::filesystem::path &path)
+{
+    return tests::image_from_file(*tests::file_from_path(path));
+}
+
 void tests::compare_images(
     const util::Image &expected_image,
     const util::Image &actual_image,
@@ -48,10 +60,4 @@ void tests::compare_images(
                 expected_pix, actual_pix, x, y, c, max_component_diff);
         }
     }
-}
-
-std::shared_ptr<util::Image> tests::image_from_path(
-    const boost::filesystem::path &path)
-{
-    return util::Image::from_boxed(tests::file_from_path(path)->io);
 }
