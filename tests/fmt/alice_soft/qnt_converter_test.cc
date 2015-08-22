@@ -10,8 +10,8 @@ TEST_CASE("Decoding opaque QNT images works")
     QntConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/alice_soft/files/CG00505.QNT",
-        "tests/fmt/alice_soft/files/CG00505-out.png");
+        "tests/fmt/alice_soft/files/qnt/CG00505.QNT",
+        "tests/fmt/alice_soft/files/qnt/CG00505-out.png");
 }
 
 TEST_CASE("Decoding transparent QNT images with size divisible by 2 works")
@@ -19,8 +19,8 @@ TEST_CASE("Decoding transparent QNT images with size divisible by 2 works")
     QntConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/alice_soft/files/CG64100.QNT",
-        "tests/fmt/alice_soft/files/CG64100-out.png");
+        "tests/fmt/alice_soft/files/qnt/CG64100.QNT",
+        "tests/fmt/alice_soft/files/qnt/CG64100-out.png");
 }
 
 TEST_CASE(
@@ -29,6 +29,6 @@ TEST_CASE(
     QntConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/alice_soft/files/CG64214.QNT",
-        "tests/fmt/alice_soft/files/CG64214-out.png");
+        "tests/fmt/alice_soft/files/qnt/CG64214.QNT",
+        "tests/fmt/alice_soft/files/qnt/CG64214-out.png");
 }

@@ -10,8 +10,8 @@ TEST_CASE("Decoding TLG5 works")
     TlgConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/kirikiri/files/14凛ペンダント.tlg",
-        "tests/fmt/kirikiri/files/14凛ペンダント-out.png");
+        "tests/fmt/kirikiri/files/tlg5/14凛ペンダント.tlg",
+        "tests/fmt/kirikiri/files/tlg5/14凛ペンダント-out.png");
 }
 
 TEST_CASE("Decoding TLG6 works")
@@ -19,8 +19,8 @@ TEST_CASE("Decoding TLG6 works")
     TlgConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/kirikiri/files/tlg6.tlg",
-        "tests/fmt/kirikiri/files/tlg6-out.png");
+        "tests/fmt/kirikiri/files/tlg6/tlg6.tlg",
+        "tests/fmt/kirikiri/files/tlg6/tlg6-out.png");
 }
 
 TEST_CASE("Decoding TLG0 works")
@@ -28,6 +28,6 @@ TEST_CASE("Decoding TLG0 works")
     TlgConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/kirikiri/files/bg08d.tlg",
-        "tests/fmt/kirikiri/files/bg08d-out.png");
+        "tests/fmt/kirikiri/files/tlg0/bg08d.tlg",
+        "tests/fmt/kirikiri/files/tlg0/bg08d-out.png");
 }

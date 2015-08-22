@@ -12,7 +12,7 @@ TEST_CASE("Converting single files with CLI facade works")
         ArgParser arg_parser;
         arg_parser.parse({
             "path-to-self",
-            "./tests/fmt/key/files/AYU_03.g00",
+            "./tests/fmt/key/files/g00-2/AYU_03.g00",
             "--fmt=key/g00" });
         ArcUnpacker arc_unpacker(arg_parser, "0.0");
         arc_unpacker.run();
@@ -29,7 +29,7 @@ TEST_CASE("Unpacking archives with CLI facade works")
         ArgParser arg_parser;
         arg_parser.parse({
             "path-to-self",
-            "./tests/fmt/kirikiri/files/xp3-v2.xp3",
+            "./tests/fmt/kirikiri/files/xp3/xp3-v2.xp3",
             "--fmt=krkr/xp3",
             "--plugin=noop" });
         ArcUnpacker arc_unpacker(arg_parser, "0.0");

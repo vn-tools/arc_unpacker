@@ -10,6 +10,6 @@ TEST_CASE("Decoding XYZ images works")
     XyzConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/rpgmaker/files/浅瀬部屋a.xyz",
-        "tests/fmt/rpgmaker/files/浅瀬部屋a-out.png");
+        "tests/fmt/rpgmaker/files/xyz/浅瀬部屋a.xyz",
+        "tests/fmt/rpgmaker/files/xyz/浅瀬部屋a-out.png");
 }

@@ -10,6 +10,6 @@ TEST_CASE("Decoding DPNG images works")
     DpngConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/qlie/files/雷02.png",
-        "tests/fmt/qlie/files/雷02-out.png");
+        "tests/fmt/qlie/files/dpng/雷02.png",
+        "tests/fmt/qlie/files/dpng/雷02-out.png");
 }

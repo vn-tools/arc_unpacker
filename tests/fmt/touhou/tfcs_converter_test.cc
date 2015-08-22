@@ -10,6 +10,6 @@ TEST_CASE("Decoding TFCS files works")
     TfcsConverter converter;
     tests::assert_file_conversion(
         converter,
-        "tests/fmt/touhou/files/ItemCommon.csv",
-        "tests/fmt/touhou/files/ItemCommon-out.csv");
+        "tests/fmt/touhou/files/tfcs/ItemCommon.csv",
+        "tests/fmt/touhou/files/tfcs/ItemCommon-out.csv");
 }

@@ -33,15 +33,15 @@ static void test(const std::string &path)
 
 TEST_CASE("Unpacking version 3 RPA archives works")
 {
-    test("tests/fmt/renpy/files/v3.rpa");
+    test("tests/fmt/renpy/files/rpa/v3.rpa");
 }
 
 TEST_CASE("Unpacking version 2 RPA archives works")
 {
-    test("tests/fmt/renpy/files/v2.rpa");
+    test("tests/fmt/renpy/files/rpa/v2.rpa");
 }
 
 TEST_CASE("Unpacking RPA archives using data prefixes works")
 {
-    test("tests/fmt/renpy/files/prefixes.rpa");
+    test("tests/fmt/renpy/files/rpa/prefixes.rpa");
 }

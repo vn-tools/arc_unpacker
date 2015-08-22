@@ -17,6 +17,7 @@ TEST_CASE("Unpacking PBG3 archives works")
     Pbg3Archive archive;
     tests::compare_files(
         expected_files,
-        tests::unpack_to_memory("tests/fmt/touhou/files/test.pbg3", archive),
+        tests::unpack_to_memory(
+            "tests/fmt/touhou/files/pbg3/test.pbg3", archive),
         true);
 }

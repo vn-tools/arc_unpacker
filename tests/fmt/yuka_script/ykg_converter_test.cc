@@ -10,6 +10,6 @@ TEST_CASE("Decoding YKG images works")
     YkgConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/yuka_script/files/reimu.ykg",
-        "tests/fmt/yuka_script/files/reimu-out.png");
+        "tests/fmt/yuka_script/files/ykg/reimu.ykg",
+        "tests/fmt/yuka_script/files/ykg/reimu-out.png");
 }

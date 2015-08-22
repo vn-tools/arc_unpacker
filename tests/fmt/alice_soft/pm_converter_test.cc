@@ -10,6 +10,6 @@ TEST_CASE("Decoding PM images works")
     PmConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/alice_soft/files/CG40000.pm",
-        "tests/fmt/alice_soft/files/CG40000-out.png");
+        "tests/fmt/alice_soft/files/pm/CG40000.pm",
+        "tests/fmt/alice_soft/files/pm/CG40000-out.png");
 }

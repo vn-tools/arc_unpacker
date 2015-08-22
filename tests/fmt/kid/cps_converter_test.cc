@@ -10,6 +10,6 @@ TEST_CASE("Decoding CPS containers works")
     CpsConverter converter;
     tests::assert_file_conversion(
         converter,
-        "tests/fmt/kid/files/yh04adm.cps",
-        "tests/fmt/kid/files/yh04adm.prt");
+        "tests/fmt/kid/files/cps/yh04adm.cps",
+        "tests/fmt/kid/files/cps/yh04adm.prt");
 }

@@ -18,6 +18,7 @@ TEST_CASE("Unpacking SAR archives works")
     SarArchive archive;
     tests::compare_files(
         expected_files,
-        tests::unpack_to_memory("tests/fmt/nscripter/files/test.sar", archive),
+        tests::unpack_to_memory(
+            "tests/fmt/nscripter/files/sar/test.sar", archive),
         true);
 }

@@ -21,10 +21,10 @@ static void test_pak_archive(const std::string &path)
 
 TEST_CASE("Unpacking uncompressed PAK archives works")
 {
-    test_pak_archive("tests/fmt/nitroplus/files/uncompressed.pak");
+    test_pak_archive("tests/fmt/nitroplus/files/pak/uncompressed.pak");
 }
 
 TEST_CASE("Unpacking compressed PAK archives works")
 {
-    test_pak_archive("tests/fmt/nitroplus/files/compressed.pak");
+    test_pak_archive("tests/fmt/nitroplus/files/pak/compressed.pak");
 }

@@ -10,6 +10,6 @@ TEST_CASE("Decoding PRS images works")
     PrsConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/ivory/files/BMIK_A16",
-        "tests/fmt/ivory/files/BMIK_A16-out.png");
+        "tests/fmt/ivory/files/prs/BMIK_A16",
+        "tests/fmt/ivory/files/prs/BMIK_A16-out.png");
 }

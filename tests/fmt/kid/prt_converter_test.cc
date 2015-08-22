@@ -10,8 +10,8 @@ TEST_CASE("Decoding PRT images works")
     PrtConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/kid/files/bg01a1.prt",
-        "tests/fmt/kid/files/bg01a1-out.png");
+        "tests/fmt/kid/files/prt/bg01a1.prt",
+        "tests/fmt/kid/files/prt/bg01a1-out.png");
 }
 
 TEST_CASE("Decoding PRT images with alpha channel works")
@@ -19,8 +19,8 @@ TEST_CASE("Decoding PRT images with alpha channel works")
     PrtConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/kid/files/yh04adm.prt",
-        "tests/fmt/kid/files/yh04adm-out.png");
+        "tests/fmt/kid/files/cps/yh04adm.prt",
+        "tests/fmt/kid/files/prt/yh04adm-out.png");
 }
 
 TEST_CASE("Decoding 8-bit PRT images works")
@@ -28,6 +28,6 @@ TEST_CASE("Decoding 8-bit PRT images works")
     PrtConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/kid/files/saver_sm.prt",
-        "tests/fmt/kid/files/saver_sm-out.png");
+        "tests/fmt/kid/files/prt/saver_sm.prt",
+        "tests/fmt/kid/files/prt/saver_sm-out.png");
 }

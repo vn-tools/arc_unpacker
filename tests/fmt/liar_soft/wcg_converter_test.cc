@@ -10,6 +10,6 @@ TEST_CASE("Decoding WCG images works")
     WcgConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/liar_soft/files/0003.wcg",
-        "tests/fmt/liar_soft/files/0003-out.png");
+        "tests/fmt/liar_soft/files/wcg/0003.wcg",
+        "tests/fmt/liar_soft/files/wcg/0003-out.png");
 }

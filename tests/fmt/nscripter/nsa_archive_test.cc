@@ -19,7 +19,7 @@ TEST_CASE("Unpacking uncompressed NSA archives works")
     tests::compare_files(
         expected_files,
         tests::unpack_to_memory(
-            "tests/fmt/nscripter/files/uncompressed.nsa", archive),
+            "tests/fmt/nscripter/files/nsa/uncompressed.nsa", archive),
         true);
 }
 
@@ -63,6 +63,7 @@ TEST_CASE("Unpacking NSA archives compressed with LZSS works")
     NsaArchive archive;
     tests::compare_files(
         expected_files,
-        tests::unpack_to_memory("tests/fmt/nscripter/files//lzss.nsa", archive),
+        tests::unpack_to_memory(
+            "tests/fmt/nscripter/files/nsa/lzss.nsa", archive),
         true);
 }

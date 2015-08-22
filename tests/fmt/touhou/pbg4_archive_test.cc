@@ -17,6 +17,7 @@ TEST_CASE("Unpacking PBG4 archives works")
     Pbg4Archive archive;
     tests::compare_files(
         expected_files,
-        tests::unpack_to_memory("tests/fmt/touhou/files/test.pbg4", archive),
+        tests::unpack_to_memory(
+            "tests/fmt/touhou/files/pbg4/test.pbg4", archive),
         true);
 }

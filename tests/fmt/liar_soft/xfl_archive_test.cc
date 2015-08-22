@@ -18,7 +18,7 @@ TEST_CASE("Unpacking XFL archives works")
     au::tests::compare_files(
         expected_files,
         au::tests::unpack_to_memory(
-            "tests/fmt/liar_soft/files/test.xfl",
+            "tests/fmt/liar_soft/files/xfl/test.xfl",
             archive),
         true);
 }

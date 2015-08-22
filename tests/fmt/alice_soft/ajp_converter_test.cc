@@ -10,6 +10,6 @@ TEST_CASE("Decoding transparent AJP images works")
     AjpConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/alice_soft/files/CG51478.ajp",
-        "tests/fmt/alice_soft/files/CG51478-out.png");
+        "tests/fmt/alice_soft/files/ajp/CG51478.ajp",
+        "tests/fmt/alice_soft/files/ajp/CG51478-out.png");
 }

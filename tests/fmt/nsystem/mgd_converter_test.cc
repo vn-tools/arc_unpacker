@@ -11,8 +11,8 @@ TEST_CASE("Decoding RGB-based MGD images works")
     MgdConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/nsystem/files/GS_UD.MGD",
-        "tests/fmt/nsystem/files/GS_UD-out.png");
+        "tests/fmt/nsystem/files/mgd/GS_UD.MGD",
+        "tests/fmt/nsystem/files/mgd/GS_UD-out.png");
 }
 
 TEST_CASE("Decoding PNG-based MGD images works")
@@ -20,6 +20,6 @@ TEST_CASE("Decoding PNG-based MGD images works")
     MgdConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/nsystem/files/saveload_p.MGD",
-        "tests/fmt/nsystem/files/saveload_p-out.png");
+        "tests/fmt/nsystem/files/mgd/saveload_p.MGD",
+        "tests/fmt/nsystem/files/mgd/saveload_p-out.png");
 }

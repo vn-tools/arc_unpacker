@@ -21,10 +21,10 @@ static void test_mbl_archive(const std::string &path)
 
 TEST_CASE("Unpacking version 1 MBL archives works")
 {
-    test_mbl_archive("tests/fmt/ivory/files/mbl-v1.mbl");
+    test_mbl_archive("tests/fmt/ivory/files/mbl/mbl-v1.mbl");
 }
 
 TEST_CASE("Unpacking version 2 MBL archives works")
 {
-    test_mbl_archive("tests/fmt/ivory/files/mbl-v2.mbl");
+    test_mbl_archive("tests/fmt/ivory/files/mbl/mbl-v2.mbl");
 }

@@ -26,37 +26,37 @@ static void test(
 TEST_CASE("Decoding format 1 ANM image archives works")
 {
     test(
-        "tests/fmt/touhou/files/face_01_00.anm",
-        { "tests/fmt/touhou/files/face_01_00-out.png" });
+        "tests/fmt/touhou/files/anm-1/face_01_00.anm",
+        { "tests/fmt/touhou/files/anm-1/face_01_00-out.png" });
 }
 
 TEST_CASE("Decoding format 3 ANM image archives works")
 {
     test(
-        "tests/fmt/touhou/files/eff01.anm",
-        { "tests/fmt/touhou/files/eff01-out.png" });
+        "tests/fmt/touhou/files/anm-3/eff01.anm",
+        { "tests/fmt/touhou/files/anm-3/eff01-out.png" });
 }
 
 TEST_CASE("Decoding format 5 ANM image archives works")
 {
     test(
-        "tests/fmt/touhou/files/player00.anm",
-        { "tests/fmt/touhou/files/player00-out.png" });
+        "tests/fmt/touhou/files/anm-5/player00.anm",
+        { "tests/fmt/touhou/files/anm-5/player00-out.png" });
 }
 
 TEST_CASE("Decoding format 7 ANM image archives works")
 {
     test(
-        "tests/fmt/touhou/files/clouds.anm",
-        { "tests/fmt/touhou/files/clouds-out.png" });
+        "tests/fmt/touhou/files/anm-7/clouds.anm",
+        { "tests/fmt/touhou/files/anm-7/clouds-out.png" });
 }
 
 TEST_CASE("Decoding ANM image archives containing multiple sprites works")
 {
     test(
-        "tests/fmt/touhou/files/eff05.anm",
+        "tests/fmt/touhou/files/anm-multi/eff05.anm",
         {
-            "tests/fmt/touhou/files/eff05-out.png",
-            "tests/fmt/touhou/files/eff05-out2.png"
+            "tests/fmt/touhou/files/anm-multi/eff05-out.png",
+            "tests/fmt/touhou/files/anm-multi/eff05-out2.png"
         });
 }

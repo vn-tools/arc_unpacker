@@ -10,6 +10,6 @@ TEST_CASE("Decoding SPB-compressed stream works")
     SpbConverter converter;
     tests::assert_image_conversion(
         converter,
-        "tests/fmt/nscripter/files/grimoire_btn.bmp",
-        "tests/fmt/nscripter/files/grimoire_btn-out.png");
+        "tests/fmt/nscripter/files/spb/grimoire_btn.bmp",
+        "tests/fmt/nscripter/files/spb/grimoire_btn-out.png");
 }
