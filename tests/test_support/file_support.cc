@@ -1,3 +1,4 @@
+#include "util/pack/zlib.h"
 #include "test_support/catch.hh"
 #include "test_support/file_support.h"
 
@@ -7,6 +8,18 @@ std::shared_ptr<File> tests::file_from_path(
     const boost::filesystem::path &path)
 {
     return std::shared_ptr<File>(new File(path, io::FileMode::Read));
+}
+
+std::shared_ptr<File> tests::zlib_file_from_path(
+    const boost::filesystem::path &path)
+{
+    File compressed_file(path, io::FileMode::Read);
+    auto compressed_data = compressed_file.io.read_to_eof();
+    auto decompressed_data = util::pack::zlib_inflate(compressed_data);
+    std::shared_ptr<File> decompressed_file(new File);
+    decompressed_file->name = compressed_file.name;
+    decompressed_file->io.write(decompressed_data);
+    return decompressed_file;
 }
 
 std::shared_ptr<File> tests::create_file(

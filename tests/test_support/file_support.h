@@ -9,6 +9,9 @@ namespace tests {
 
     std::shared_ptr<File> file_from_path(const boost::filesystem::path &path);
 
+    std::shared_ptr<File> zlib_file_from_path(
+        const boost::filesystem::path &path);
+
     std::shared_ptr<File> create_file(
         const std::string &name, const bstr &data);
 
