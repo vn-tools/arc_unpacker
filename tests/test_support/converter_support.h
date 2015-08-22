@@ -16,8 +16,8 @@ namespace tests {
 
     void assert_file_conversion(
         const fmt::Converter &converter,
-        const std::string &input_image_path,
-        const std::string &expected_image_path);
+        const std::string &input_file_path,
+        const std::string &expected_file_path);
 
     void assert_image_conversion(
         const fmt::Converter &converter,

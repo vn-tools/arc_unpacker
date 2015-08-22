@@ -20,11 +20,11 @@ std::shared_ptr<util::Image> tests::image_from_converter(
 
 void tests::assert_file_conversion(
     const fmt::Converter &converter,
-    const std::string &input_image_path,
-    const std::string &expected_image_path)
+    const std::string &input_file_path,
+    const std::string &expected_file_path)
 {
-    auto actual = tests::file_from_converter(input_image_path, converter);
-    auto expected = tests::file_from_path(expected_image_path);
+    auto actual = tests::file_from_converter(input_file_path, converter);
+    auto expected = tests::file_from_path(expected_file_path);
     tests::compare_files(*expected, *actual, false);
 }
 
