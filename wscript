@@ -166,7 +166,7 @@ def build(bld):
             '-iquote', path_to_src,
             '-iquote', path_to_tests,
         ],
-        includes = ['src'],
+        includes = ['src', 'tests'],
         use = [ 'common' ])
 
 # each file that depends on something that might or might not be there,
