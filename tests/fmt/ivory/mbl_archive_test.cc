@@ -15,8 +15,9 @@ static void test_mbl_archive(const std::string &path)
     };
 
     MblArchive archive;
-    tests::compare_files(
-        expected_files, au::tests::unpack_to_memory(path, archive), true);
+    auto actual_files = au::tests::unpack_to_memory(path, archive);
+
+    tests::compare_files(expected_files, actual_files, true);
 }
 
 TEST_CASE("Unpacking version 1 MBL archives works")

@@ -16,9 +16,8 @@ TEST_CASE("Unpacking FJSYS archives works")
     };
 
     FjsysArchive archive;
-    tests::compare_files(
-        expected_files,
-        tests::unpack_to_memory(
-            "tests/fmt/nsystem/files/fjsys/test.fjsys", archive),
-        true);
+    auto actual_files = tests::unpack_to_memory(
+        "tests/fmt/nsystem/files/fjsys/test.fjsys", archive);
+
+    tests::compare_files(expected_files, actual_files, true);
 }

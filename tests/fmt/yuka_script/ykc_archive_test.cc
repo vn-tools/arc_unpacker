@@ -15,9 +15,8 @@ TEST_CASE("Unpacking YKC archives works")
     };
 
     YkcArchive archive;
-    tests::compare_files(
-        expected_files,
-        tests::unpack_to_memory(
-            "tests/fmt/yuka_script/files/ykc/test.ykc", archive),
-        true);
+    auto actual_files = tests::unpack_to_memory(
+        "tests/fmt/yuka_script/files/ykc/test.ykc", archive);
+
+    tests::compare_files(expected_files, actual_files, true);
 }

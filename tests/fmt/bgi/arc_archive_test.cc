@@ -14,8 +14,9 @@ TEST_CASE("Unpacking ARC archives works")
         tests::stub_file("another.txt", "abcdefghij"_b),
     };
 
-    std::string path = "tests/fmt/bgi/files/arc/test.arc";
     ArcArchive archive;
-    tests::compare_files(
-        expected_files, tests::unpack_to_memory(path, archive), true);
+    auto actual_files = tests::unpack_to_memory(
+        "tests/fmt/bgi/files/arc/test.arc", archive);
+
+    tests::compare_files(expected_files, actual_files, true);
 }

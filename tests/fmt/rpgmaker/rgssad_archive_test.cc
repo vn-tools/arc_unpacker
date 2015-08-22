@@ -15,9 +15,8 @@ TEST_CASE("Unpacking RGSSAD archives works")
     };
 
     RgssadArchive archive;
-    tests::compare_files(
-        expected_files,
-        tests::unpack_to_memory(
-            "tests/fmt/rpgmaker/files/rgssad/test.rgssad", archive),
-        true);
+    auto actual_files = tests::unpack_to_memory(
+        "tests/fmt/rpgmaker/files/rgssad/test.rgssad", archive);
+
+    tests::compare_files(expected_files, actual_files, true);
 }

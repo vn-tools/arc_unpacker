@@ -60,9 +60,8 @@ TEST_CASE("Unpacking NSA archives compressed with LZSS works")
     std::vector<std::shared_ptr<File>> expected_files { file };
 
     NsaArchive archive;
-    tests::compare_files(
-        expected_files,
-        tests::unpack_to_memory(
-            "tests/fmt/nscripter/files/nsa/lzss.nsa", archive),
-        true);
+    auto actual_files = tests::unpack_to_memory(
+        "tests/fmt/nscripter/files/nsa/lzss.nsa", archive);
+
+    tests::compare_files(expected_files, actual_files, true);
 }
