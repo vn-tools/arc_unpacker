@@ -11,6 +11,9 @@ namespace ivory {
     public:
         MblArchive();
         ~MblArchive();
+        void add_cli_help(ArgParser &) const override;
+        void parse_cli_options(const ArgParser &) override;
+        void set_plugin(const std::string &name);
     protected:
         bool is_recognized_internal(File &) const override;
         void unpack_internal(File &, FileSaver &) const override;

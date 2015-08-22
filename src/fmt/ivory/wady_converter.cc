@@ -4,6 +4,10 @@
 // Engine:    MarbleEngine
 // Extension: -
 // Archives:  MBL
+//
+// Known games:
+// - Candy Toys
+// - Wanko to Kurasou
 
 #include "fmt/ivory/wady_converter.h"
 #include "io/buffered_io.h"
