@@ -9,7 +9,6 @@ struct Sound::Priv
     size_t bytes_per_sample;
     size_t sample_rate;
     bstr samples;
-    size_t sample_count;
 };
 
 Sound::Sound() : p(new Priv())
@@ -39,6 +38,7 @@ std::unique_ptr<File> Sound::create_file(const std::string &name) const
     size_t block_align = p->channel_count * p->bytes_per_sample;
     size_t byte_rate = block_align * p->sample_rate;
     size_t bits_per_sample = p->bytes_per_sample * 8;
+    size_t sample_count = p->samples.size() / p->bytes_per_sample;
 
     std::unique_ptr<File> output_file(new File);
 
@@ -54,7 +54,7 @@ std::unique_ptr<File> Sound::create_file(const std::string &name) const
     output_file->io.write_u16_le(block_align);
     output_file->io.write_u16_le(bits_per_sample);
     output_file->io.write("data"_b);
-    output_file->io.write_u32_le(p->sample_count);
+    output_file->io.write_u32_le(sample_count);
     output_file->io.write(p->samples);
     output_file->io.seek(4);
     output_file->io.write_u32_le(output_file->io.size());
