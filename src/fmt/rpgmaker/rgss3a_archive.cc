@@ -24,6 +24,9 @@ static rgs::Table read_table(io::IO &arc_io, u32 key)
     {
         std::unique_ptr<rgs::TableEntry> entry(new rgs::TableEntry);
         entry->offset = arc_io.read_u32_le() ^ key;
+        if (!entry->offset)
+            break;
+
         entry->size = arc_io.read_u32_le() ^ key;
         entry->key = arc_io.read_u32_le() ^ key;
 
@@ -31,9 +34,6 @@ static rgs::Table read_table(io::IO &arc_io, u32 key)
         entry->name = arc_io.read(name_size).str();
         for (auto i : util::range(name_size))
             entry->name[i] ^= key >> (i << 3);
-
-        if (!entry->offset)
-            break;
 
         table.push_back(std::move(entry));
     }
