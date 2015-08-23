@@ -34,6 +34,7 @@
 #include "fmt/liar_soft/lwg_archive.h"
 #include "fmt/liar_soft/wcg_converter.h"
 #include "fmt/liar_soft/xfl_archive.h"
+#include "fmt/libido/arc_archive.h"
 #include "fmt/lizsoft/sotes_converter.h"
 #include "fmt/microsoft/dds_converter.h"
 #include "fmt/microsoft/exe_archive.h"
@@ -166,6 +167,7 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("whale/dat",     []() { return new whale::DatArchive();          });
     p->add("yuka/ykc",      []() { return new yuka_script::YkcArchive();    });
     p->add("yuka/ykg",      []() { return new yuka_script::YkgConverter();  });
+    p->add("libido/arc",    []() { return new libido::ArcArchive();         });
 }
 
 TransformerFactory::~TransformerFactory()
