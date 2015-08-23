@@ -40,6 +40,9 @@ TEST_CASE("bstr.str", "[au]")
     bstr x("test\x00\x01", 6);
     REQUIRE(x.str() == std::string("test\x00\x01", 6));
     REQUIRE(x.str().size() == 6);
+    bstr y("test\x00\x01", 6);
+    REQUIRE(y.str(true) == std::string("test", 4));
+    REQUIRE(y.str(true).size() == 4);
 }
 
 TEST_CASE("bstr.find", "[au]")

@@ -21,8 +21,10 @@ bstr::bstr(const std::string &other) : v(other.begin(), other.end())
 {
 }
 
-std::string bstr::str() const
+std::string bstr::str(bool trim_to_zero) const
 {
+    if (trim_to_zero)
+        return std::string(&v[0]);
     return std::string(&v[0], size());
 }
 

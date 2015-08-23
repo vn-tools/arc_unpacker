@@ -52,7 +52,7 @@ namespace au {
             return reinterpret_cast<const T*>(&v[size()]);
         }
 
-        std::string str() const;
+        std::string str(bool trim_to_zero = false) const;
 
         bstr operator +(const bstr &other);
         void operator +=(const bstr &other);
