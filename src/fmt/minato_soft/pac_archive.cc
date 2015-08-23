@@ -81,7 +81,7 @@ static Table read_table(io::IO &arc_io, size_t file_count)
     arc_io.seek(arc_io.size() - 4 - compressed_size);
     bstr compressed = arc_io.read(compressed_size);
     for (auto i : util::range(compressed.size()))
-        compressed.get<u8>(i) ^= 0xFF;
+        compressed.get<u8>()[i] ^= 0xFF;
 
     io::BufferedIO table_io(decompress_table(compressed, uncompressed_size));
     table_io.seek(0);

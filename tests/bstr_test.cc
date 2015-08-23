@@ -124,8 +124,8 @@ TEST_CASE("bstr.operator[]", "[au]")
 TEST_CASE("bstr.get", "[au]")
 {
     bstr x = "\x00\x01"_b;
-    REQUIRE(x.get<char>(0) == 0);
-    REQUIRE(x.get<char>(1) == 1);
+    REQUIRE(x.get<char>()[0] == 0);
+    REQUIRE(x.get<char>()[1] == 1);
     REQUIRE(bstr(x.get<char>(), 2) == "\x00\x01"_b);
 }
 
@@ -135,7 +135,6 @@ TEST_CASE("bstr.end", "[au]")
     REQUIRE(x.end<char>()[-1] == 1);
     REQUIRE(x.end<char>() == x.get<char>() + 2);
     REQUIRE(x.end<u16>()[-1] == 0x100);
-    REQUIRE(x.end<u16>() == &x.get<u16>(2));
     REQUIRE(x.end<u16>() == &x.get<u16>()[1]);
 
     bstr y = "\x00\x01\x02"_b;

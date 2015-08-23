@@ -42,16 +42,6 @@ namespace au {
             return reinterpret_cast<const T*>(&v[0]);
         }
 
-        template<typename T> T &get(std::size_t pos)
-        {
-            return reinterpret_cast<T&>(v[pos]);
-        }
-
-        template<typename T> const T &get(std::size_t pos) const
-        {
-            return reinterpret_cast<const T&>(v[pos]);
-        }
-
         template<typename T> T *end()
         {
             return reinterpret_cast<T*>(&v[size()]);

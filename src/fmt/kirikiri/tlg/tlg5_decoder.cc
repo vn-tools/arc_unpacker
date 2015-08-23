@@ -57,11 +57,11 @@ static void load_pixel_block_row(
         for (auto x : util::range(header.image_width))
         {
             pix::Pixel pixel;
-            pixel.b = channel_data[0]->data.get<u8>(block_y_shift + x);
-            pixel.g = channel_data[1]->data.get<u8>(block_y_shift + x);
-            pixel.r = channel_data[2]->data.get<u8>(block_y_shift + x);
+            pixel.b = channel_data[0]->data.get<u8>()[block_y_shift + x];
+            pixel.g = channel_data[1]->data.get<u8>()[block_y_shift + x];
+            pixel.r = channel_data[2]->data.get<u8>()[block_y_shift + x];
             if (use_alpha)
-                pixel.a = channel_data[3]->data.get<u8>(block_y_shift + x);
+                pixel.a = channel_data[3]->data.get<u8>()[block_y_shift + x];
             pixel.b += pixel.g;
             pixel.r += pixel.g;
 

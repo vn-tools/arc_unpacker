@@ -392,7 +392,7 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
     bstr bmp_data;
     bmp_data.resize(pad_width * pad_height * 4);
     for (auto i : util::range(bmp_data.size()))
-        bmp_data.get<u8>(i) = 0xFF;
+        bmp_data.get<u8>()[i] = 0xFF;
 
     for (auto i : util::range(block_count))
     {
@@ -415,7 +415,7 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
                 color_info,
                 ac_mul_pair,
                 pad_width,
-                &bmp_data.get<u8>(pad_width * block_dim * 4 * i));
+                &bmp_data.get<u8>()[pad_width * block_dim * 4 * i]);
         }
         else if (channels == 1)
         {
@@ -423,7 +423,7 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
                 color_info,
                 ac_mul_pair,
                 pad_width,
-                &bmp_data.get<u8>(pad_width * block_dim * 4 * i));
+                &bmp_data.get<u8>()[pad_width * block_dim * 4 * i]);
         }
         else
         {

@@ -36,7 +36,7 @@ static std::unique_ptr<io::BufferedIO> get_header_io(
 {
     bstr buffer = arc_io.read(header_size_compressed);
     for (auto i : util::range(buffer.size()))
-        buffer.get<u8>(i) ^= 0xFF;
+        buffer.get<u8>()[i] ^= 0xFF;
 
     return std::unique_ptr<io::BufferedIO>(
         new io::BufferedIO(
@@ -70,7 +70,7 @@ static std::unique_ptr<File> read_file(
     arc_io.skip(entry.prefix.size());
     auto suffix = arc_io.read(entry.size - entry.prefix.size());
     for (auto i : util::range(suffix.size()))
-        suffix.get<u8>(i) = permutation[suffix.get<u8>(i)];
+        suffix.get<u8>()[i] = permutation[suffix.get<u8>()[i]];
 
     file->io.write(entry.prefix);
     file->io.write(suffix);

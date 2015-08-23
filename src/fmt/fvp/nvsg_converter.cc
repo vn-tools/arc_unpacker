@@ -75,8 +75,8 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
 
         case 4:
             for (auto i : util::range(data.size()))
-                if (data.get<u8>(i))
-                    data.get<u8>(i) = 255;
+                if (data.get<u8>()[i])
+                    data.get<u8>()[i] = 255;
             pixel_format = pix::Format::Gray8;
             break;
 

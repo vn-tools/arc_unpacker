@@ -88,7 +88,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 
         for (size_t i = 0; i < 0x100 && key_pos + i < entry.size; i++)
         {
-            data.get<u8>(key_pos + i) -= key;
+            data.get<u8>()[key_pos + i] -= key;
             key = key * 0x6D - 0x25;
         }
     }
