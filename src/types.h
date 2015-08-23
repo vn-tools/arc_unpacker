@@ -52,6 +52,16 @@ namespace au {
             return reinterpret_cast<const T&>(v[pos]);
         }
 
+        template<typename T> T *end()
+        {
+            return reinterpret_cast<T*>(&v[size()]);
+        }
+
+        template<typename T> const T *end() const
+        {
+            return reinterpret_cast<const T*>(&v[size()]);
+        }
+
         std::string str() const;
 
         bstr operator +(const bstr &other);
