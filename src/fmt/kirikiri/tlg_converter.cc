@@ -8,6 +8,7 @@
 // Known Games:
 // - Fate/Stay Night
 // - Fate/Hollow Ataraxia
+// - G-Senjou no Maou
 
 #include <stdexcept>
 #include "fmt/kirikiri/tlg/tlg5_decoder.h"
