@@ -38,11 +38,25 @@ static Version detect_version(io::IO &io)
         try
         {
             io.seek(0x30);
-            for (auto i : util::range(channels))
+            if (channels == 2)
             {
-                auto channel_size = io.read_u32_le();
-                io.skip(channel_size);
-            };
+                for (auto i : util::range(2))
+                {
+                    auto compressed_size = io.read_u32_le();
+                    io.skip(compressed_size);
+                }
+            }
+            else if (channels == 1)
+            {
+                io.skip(4);
+                auto left = io.read_u32_le();
+                io.skip(2);
+                while (left--)
+                {
+                    if (!(io.read_u8() & 1))
+                        io.read_u8();
+                }
+            }
             if (io.eof())
                 version = Version::Version2;
         }
