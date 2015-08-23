@@ -15,14 +15,21 @@ static void do_test(
     tests::compare_files(*expected_file, *actual_file, false);
 }
 
-TEST_CASE("Decoding uncompressed (v1) WADY sound files works")
+TEST_CASE("Decoding uncompressed (v1) stereo WADY sound files works")
 {
     do_test(
         "tests/fmt/ivory/files/wady/m01-zlib",
         "tests/fmt/ivory/files/wady/m01-zlib-out.wav");
 }
 
-TEST_CASE("Decoding compressed (v2) WADY sound files works")
+TEST_CASE("Decoding compressed (v2) mono WADY sound files works")
+{
+    do_test(
+        "tests/fmt/ivory/files/wady/10510-zlib",
+        "tests/fmt/ivory/files/wady/10510-zlib-out.wav");
+}
+
+TEST_CASE("Decoding compressed (v2) stereo WADY sound files works")
 {
     do_test(
         "tests/fmt/ivory/files/wady/071-zlib",

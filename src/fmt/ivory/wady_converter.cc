@@ -83,9 +83,9 @@ static bstr decode_v1(
     };
 
     bstr samples;
-    samples.resize(sample_count * 2);
+    samples.resize(sample_count * 2 * channels);
     auto samples_ptr = samples.get<u16>();
-    auto samples_end = samples_ptr + samples.size();
+    auto samples_end = samples.end<u16>();
 
     u16 prev_sample[2] = { 0, 0 };
     io::BufferedIO tmp_io(io);
@@ -112,12 +112,8 @@ static bstr decode_v1(
     return samples;
 }
 
-static bstr decode_v2(
-    io::IO &io, size_t sample_count, size_t channels)
+static bstr decode_v2(io::IO &io, size_t sample_count, size_t channels)
 {
-    bstr samples;
-    samples.resize(sample_count * 2);
-
     static const u16 table1[] =
     {
         0x0000, 0x0004, 0x0008, 0x000C, 0x0013, 0x0018, 0x001E, 0x0026,
@@ -127,18 +123,22 @@ static bstr decode_v2(
     };
     static const u32 table2[] = { 3, 4, 5, 6, 8, 16, 32, 256 };
 
+    bstr samples;
+    samples.resize(sample_count * 2 * channels);
+
     for (auto i : util::range(channels))
     {
-        auto compressed_size = io.read_u32_le();
-        auto input = io.read(compressed_size);
-        auto input_start = input.get<u8>();
-        io::BufferedIO tmp_io(input);
+        auto compressed_size = channels == 1
+            ? io.size() - io.tell()
+            : io.read_u32_le();
+
+        io::BufferedIO tmp_io(io, compressed_size);
         tmp_io.skip(4);
         auto left = tmp_io.read_u32_le();
         i16 prev_sample = tmp_io.read_u16_le();
 
         auto samples_ptr = samples.get<u16>();
-        auto samples_end = samples_ptr + samples.size();
+        auto samples_end = samples.end<u16>();
         samples_ptr[0] = prev_sample;
         samples_ptr += channels + i;
 
@@ -169,7 +169,7 @@ static bstr decode_v2(
                 i16 tmp2 = tmp & 0xFFF0;
                 float sample = prev_sample;
                 float delta = (tmp2 - sample) / static_cast<float>(dividend);
-                while (repetitions--)
+                while (repetitions-- && samples_ptr < samples_end)
                 {
                     sample += delta;
                     *samples_ptr = sample;
@@ -197,12 +197,16 @@ std::unique_ptr<File> WadyConverter::decode_internal(File &file) const
 
     auto channels = file.io.read_u16_le();
     auto sample_rate = file.io.read_u32_le();
-    file.io.skip(4 * 2);
+
     auto sample_count = file.io.read_u32_le();
+    auto channel_sample_count = file.io.read_u32_le();
+    auto size_uncompressed = file.io.read_u32_le();
+    util::require(channel_sample_count * channels == sample_count);
+    util::require(sample_count * 2 == size_uncompressed);
     file.io.skip(4 * 2 + 2);
     util::require(file.io.read_u16_le() == channels);
     util::require(file.io.read_u32_le() == sample_rate);
-    auto bytes_per_sample = file.io.read_u32_le();
+    auto byte_rate = file.io.read_u32_le();
     auto block_align = file.io.read_u16_le();
     auto bits_per_sample = file.io.read_u16_le();
 
