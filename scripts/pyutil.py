@@ -77,6 +77,10 @@ class open_ext(object):
     def write_u64_be(self, x):
         self.fibe.write(struct.pack('>Q', x))
 
+    def write_zero_padded(self, x, size):
+        self.file.write(x)
+        self.file.write(b'\x00' * (size - len(x)))
+
     class PeekObject(object):
         def __init__(self, file, *seek_args):
             self.file = file
