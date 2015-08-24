@@ -69,13 +69,13 @@ class open_ext(object):
         self.file.write(struct.pack('<Q', x))
 
     def write_u16_be(self, x):
-        self.fibe.write(struct.pack('>H', x))
+        self.file.write(struct.pack('>H', x))
 
     def write_u32_be(self, x):
-        self.fibe.write(struct.pack('>I', x))
+        self.file.write(struct.pack('>I', x))
 
     def write_u64_be(self, x):
-        self.fibe.write(struct.pack('>Q', x))
+        self.file.write(struct.pack('>Q', x))
 
     def write_zero_padded(self, x, size):
         self.file.write(x)
