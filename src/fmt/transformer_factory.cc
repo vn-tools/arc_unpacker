@@ -128,6 +128,7 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("liar/lwg",      []() { return new liar_soft::LwgArchive();      });
     p->add("liar/wcg",      []() { return new liar_soft::WcgConverter();    });
     p->add("liar/xfl",      []() { return new liar_soft::XflArchive();      });
+    p->add("libido/arc",    []() { return new libido::ArcArchive();         });
     p->add("lizsoft/sotes", []() { return new lizsoft::SotesConverter();    });
     p->add("minato/pac",    []() { return new minato_soft::PacArchive();    });
     p->add("ms/dds",        []() { return new microsoft::DdsConverter();    });
@@ -167,7 +168,6 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("whale/dat",     []() { return new whale::DatArchive();          });
     p->add("yuka/ykc",      []() { return new yuka_script::YkcArchive();    });
     p->add("yuka/ykg",      []() { return new yuka_script::YkgConverter();  });
-    p->add("libido/arc",    []() { return new libido::ArcArchive();         });
 }
 
 TransformerFactory::~TransformerFactory()
