@@ -28,6 +28,7 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
+//TODO: this is identical to Cronus's GRP image; move it to pack/lzss
 static bstr decompress(const bstr &input, size_t output_size)
 {
     bstr output;
@@ -40,7 +41,7 @@ static bstr decompress(const bstr &input, size_t output_size)
         dict[i] = 0;
 
     u8 *output_ptr = output.get<u8>();
-    const u8 *output_end = output.end<u8>();
+    const u8 *output_end = output.end<const u8>();
     const u8 *input_ptr = input.get<const u8>();
     const u8 *input_end = input.end<const u8>();
 
@@ -51,7 +52,7 @@ static bstr decompress(const bstr &input, size_t output_size)
         if (!(control & 0x100))
         {
             control = *input_ptr++ | 0xFF00;
-            if (input_ptr == input_end)
+            if (input_ptr >= input_end)
                 break;
         }
 
@@ -59,16 +60,16 @@ static bstr decompress(const bstr &input, size_t output_size)
         {
             dict[dict_pos++] = *output_ptr++ = *input_ptr++;
             dict_pos %= dict_size;
-            if (input_ptr == input_end)
+            if (input_ptr >= input_end)
                 break;
         }
         else
         {
             u8 tmp1 = *input_ptr++;
-            if (input_ptr == input_end)
+            if (input_ptr >= input_end)
                 break;
             u8 tmp2 = *input_ptr++;
-            if (input_ptr == input_end)
+            if (input_ptr >= input_end)
                 break;
 
             u16 look_behind_pos = (((tmp2 & 0xF0) << 4) | tmp1) % dict_size;

@@ -14,6 +14,7 @@
 #include "fmt/bgi/dsc_converter.h"
 #include "fmt/bgi/sound_converter.h"
 #include "fmt/cronus/pak_archive.h"
+#include "fmt/cronus/image_converter.h"
 #include "fmt/french_bread/ex3_converter.h"
 #include "fmt/french_bread/p_archive.h"
 #include "fmt/fvp/bin_archive.h"
@@ -109,6 +110,7 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("bgi/dsc",       []() { return new bgi::DscConverter();          });
     p->add("bgi/sound",     []() { return new bgi::SoundConverter();        });
     p->add("cronus/pak",    []() { return new cronus::PakArchive();         });
+    p->add("cronus/image",  []() { return new cronus::ImageConverter();     });
     p->add("fbread/ex3",    []() { return new french_bread::Ex3Converter(); });
     p->add("fbread/p",      []() { return new french_bread::PArchive();     });
     p->add("fvp/bin",       []() { return new fvp::BinArchive();            });
