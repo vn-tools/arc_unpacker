@@ -41,13 +41,9 @@ bstr au::util::pack::lzss_decompress(
                 u8 byte = dictionary_ptr[pos];
                 pos += 1;
                 pos %= dictionary_size;
-
-                if (settings.reuse_compressed)
-                {
-                    dictionary_ptr[dictionary_pos] = byte;
-                    dictionary_pos++;
-                    dictionary_pos %= dictionary_size;
-                }
+                dictionary_ptr[dictionary_pos] = byte;
+                dictionary_pos++;
+                dictionary_pos %= dictionary_size;
                 output += byte;
                 if (output.size() >= orig_size)
                     break;

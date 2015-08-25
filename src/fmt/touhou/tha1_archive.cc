@@ -108,7 +108,6 @@ static bstr decompress(io::IO &io, size_t size_compressed, size_t size_original)
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-    settings.reuse_compressed = true;
 
     io::BufferedIO buffered_io;
     buffered_io.write_from_io(io, size_compressed);

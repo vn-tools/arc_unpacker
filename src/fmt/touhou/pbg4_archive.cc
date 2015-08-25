@@ -53,7 +53,6 @@ static bstr decompress(io::IO &arc_io, size_t size_original)
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-    settings.reuse_compressed = true;
     io::BitReader bit_reader(arc_io);
     return util::pack::lzss_decompress(bit_reader, size_original, settings);
 }
