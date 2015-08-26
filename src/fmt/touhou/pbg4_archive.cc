@@ -54,7 +54,8 @@ static bstr decompress(io::IO &arc_io, size_t size_original)
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
     io::BitReader bit_reader(arc_io);
-    return util::pack::lzss_decompress(bit_reader, size_original, settings);
+    return util::pack::lzss_decompress_bitwise(
+        bit_reader, size_original, settings);
 }
 
 static Table read_table(io::IO &arc_io, Header &header)

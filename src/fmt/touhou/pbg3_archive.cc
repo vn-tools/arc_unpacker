@@ -90,7 +90,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-    file->io.write(util::pack::lzss_decompress(
+    file->io.write(util::pack::lzss_decompress_bitwise(
         bit_reader, entry.size, settings));
 
     return file;

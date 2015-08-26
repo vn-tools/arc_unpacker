@@ -113,7 +113,8 @@ static bstr decompress(io::IO &io, size_t size_compressed, size_t size_original)
     buffered_io.write_from_io(io, size_compressed);
     buffered_io.seek(0);
     io::BitReader bit_reader(buffered_io);
-    return util::pack::lzss_decompress(bit_reader, size_original, settings);
+    return util::pack::lzss_decompress_bitwise(
+        bit_reader, size_original, settings);
 }
 
 static std::unique_ptr<Header> read_header(io::IO &arc_io)

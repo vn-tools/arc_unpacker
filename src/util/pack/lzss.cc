@@ -3,25 +3,25 @@
 
 using namespace au;
 
-bstr au::util::pack::lzss_decompress(
-    const bstr &input, size_t orig_size, const LzssSettings &settings)
+bstr util::pack::lzss_decompress_bitwise(
+    const bstr &input, size_t output_size, const LzssSettings &settings)
 {
     io::BitReader bit_reader(input);
-    return lzss_decompress(bit_reader, orig_size, settings);
+    return lzss_decompress_bitwise(bit_reader, output_size, settings);
 }
 
-bstr au::util::pack::lzss_decompress(
-    io::BitReader &bit_reader, size_t orig_size, const LzssSettings &settings)
+bstr util::pack::lzss_decompress_bitwise(
+    io::BitReader &bit_reader, size_t output_size, const LzssSettings &settings)
 {
     bstr output;
-    output.reserve(orig_size);
+    output.reserve(output_size);
     size_t dictionary_size = 1 << settings.position_bits;
     size_t dictionary_pos = settings.initial_dictionary_pos;
     std::unique_ptr<u8[]> dictionary(new u8[dictionary_size]);
 
     u8 *dictionary_ptr = dictionary.get();
 
-    while (output.size() < orig_size)
+    while (output.size() < output_size)
     {
         if (bit_reader.get(1) > 0)
         {
@@ -45,11 +45,67 @@ bstr au::util::pack::lzss_decompress(
                 dictionary_pos++;
                 dictionary_pos %= dictionary_size;
                 output += byte;
-                if (output.size() >= orig_size)
+                if (output.size() >= output_size)
                     break;
             }
         }
     }
 
+    return output;
+}
+
+bstr util::pack::lzss_decompress_bytewise(const bstr &input, size_t output_size)
+{
+    bstr output;
+    output.resize(output_size);
+
+    const size_t dict_size = 0x1000;
+    size_t dict_pos = 0xFEE;
+    u8 dict[dict_size];
+    for (auto i : util::range(dict_size))
+        dict[i] = 0;
+
+    u8 *output_ptr = output.get<u8>();
+    const u8 *output_end = output.end<const u8>();
+    const u8 *input_ptr = input.get<const u8>();
+    const u8 *input_end = input.end<const u8>();
+
+    u16 control = 0;
+    int input_pos = 0;
+    while (output_ptr < output_end && input_ptr < input_end)
+    {
+        control >>= 1;
+        if (!(control & 0x100))
+        {
+            control = *input_ptr++ | 0xFF00;
+            if (input_ptr >= input_end)
+                break;
+        }
+        if (control & 1)
+        {
+            dict[dict_pos++] = *output_ptr++ = *input_ptr++;
+            dict_pos %= dict_size;
+            if (input_ptr >= input_end)
+                break;
+        }
+        else
+        {
+            u8 tmp1 = *input_ptr++;
+            if (input_ptr >= input_end)
+                break;
+            u8 tmp2 = *input_ptr++;
+            if (input_ptr >= input_end)
+                break;
+
+            u16 look_behind_pos = (((tmp2 & 0xF0) << 4) | tmp1) % dict_size;
+            u16 repetitions = (tmp2 & 0xF) + 3;
+            while (repetitions-- && output_ptr < output_end)
+            {
+                dict[dict_pos++] = *output_ptr++ = dict[look_behind_pos++];
+                look_behind_pos %= dict_size;
+                dict_pos %= dict_size;
+            }
+        }
+    }
     return output;
 }

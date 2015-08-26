@@ -75,7 +75,7 @@ static bstr decompress(const bstr &input, size_t size_original)
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-    return util::pack::lzss_decompress(input, size_original, settings);
+    return util::pack::lzss_decompress_bitwise(input, size_original, settings);
 }
 
 static std::unique_ptr<Header> read_header(io::IO &arc_io)

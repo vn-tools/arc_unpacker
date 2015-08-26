@@ -9,6 +9,7 @@
 // - Doki Doki Princess
 
 #include "fmt/cronus/image_converter.h"
+#include "util/pack/lzss.h"
 #include "util/image.h"
 #include "util/require.h"
 #include "util/range.h"
@@ -30,63 +31,6 @@ static void decrypt(bstr &input, size_t encrypted_size)
         *input_ptr = ((*input_ptr << 8) | (*input_ptr >> 8)) ^ 0x33CC;
         input_ptr++;
     }
-}
-
-//TODO: this is identical to Libido's ARC archive; move it to pack/lzss
-static bstr decompress(const bstr &input, size_t output_size)
-{
-    bstr output;
-    output.resize(output_size);
-
-    const size_t dict_size = 0x1000;
-    size_t dict_pos = 0xFEE;
-    u8 dict[dict_size];
-    for (auto i : util::range(dict_size))
-        dict[i] = 0;
-
-    u8 *output_ptr = output.get<u8>();
-    const u8 *output_end = output.end<const u8>();
-    const u8 *input_ptr = input.get<const u8>();
-    const u8 *input_end = input.end<const u8>();
-
-    u16 control = 0;
-    int input_pos = 0;
-    while (output_ptr < output_end && input_ptr < input_end)
-    {
-        control >>= 1;
-        if (!(control & 0x100))
-        {
-            control = *input_ptr++ | 0xFF00;
-            if (input_ptr >= input_end)
-                break;
-        }
-        if (control & 1)
-        {
-            dict[dict_pos++] = *output_ptr++ = *input_ptr++;
-            dict_pos %= dict_size;
-            if (input_ptr >= input_end)
-                break;
-        }
-        else
-        {
-            u8 tmp1 = *input_ptr++;
-            if (input_ptr >= input_end)
-                break;
-            u8 tmp2 = *input_ptr++;
-            if (input_ptr >= input_end)
-                break;
-
-            u16 look_behind_pos = (((tmp2 & 0xF0) << 4) | tmp1) % dict_size;
-            u16 repetitions = (tmp2 & 0xF) + 3;
-            while (repetitions-- && output_ptr < output_end)
-            {
-                dict[dict_pos++] = *output_ptr++ = dict[look_behind_pos++];
-                look_behind_pos %= dict_size;
-                dict_pos %= dict_size;
-            }
-        }
-    }
-    return output;
 }
 
 bool ImageConverter::is_recognized_internal(File &file) const
@@ -119,7 +63,7 @@ std::unique_ptr<File> ImageConverter::decode_internal(File &file) const
 
     auto data = file.io.read_to_eof();
     decrypt(data, output_size);
-    data = decompress(data, output_size);
+    data = util::pack::lzss_decompress_bytewise(data, output_size);
 
     if (bpp == 8)
     {
