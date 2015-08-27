@@ -54,6 +54,7 @@
 #include "fmt/qlie/dpng_converter.h"
 #include "fmt/qlie/pack_archive.h"
 #include "fmt/renpy/rpa_archive.h"
+#include "fmt/riddle_soft/pac_archive.h"
 #include "fmt/rpgmaker/rgss3a_archive.h"
 #include "fmt/rpgmaker/rgssad_archive.h"
 #include "fmt/rpgmaker/xyz_converter.h"
@@ -150,6 +151,7 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("qlie/dpng",      []() { return new qlie::DpngConverter();        });
     p->add("qlie/pack",      []() { return new qlie::PackArchive();          });
     p->add("renpy/rpa",      []() { return new renpy::RpaArchive();          });
+    p->add("riddle/pac",     []() { return new riddle_soft::PacArchive();    });
     p->add("rm/rgss3a",      []() { return new rpgmaker::Rgss3aArchive();    });
     p->add("rm/rgssad",      []() { return new rpgmaker::RgssadArchive();    });
     p->add("rm/xyz",         []() { return new rpgmaker::XyzConverter();     });
