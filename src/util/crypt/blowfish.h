@@ -1,5 +1,5 @@
-#ifndef AU_UTIL_CRYPT_BLOWFISH_H
-#define AU_UTIL_CRYPT_BLOWFISH_H
+#pragma once
+
 #include <memory>
 #include "types.h"
 
@@ -21,5 +21,3 @@ namespace crypt {
     };
 
 } } }
-
-#endif

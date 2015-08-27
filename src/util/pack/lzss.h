@@ -1,5 +1,5 @@
-#ifndef AU_UTIL_LZSS_H
-#define AU_UTIL_LZSS_H
+#pragma once
+
 #include <string>
 #include "io/bit_reader.h"
 
@@ -28,5 +28,3 @@ namespace pack {
     bstr lzss_decompress_bytewise(const bstr &input, size_t output_size);
 
 } } }
-
-#endif

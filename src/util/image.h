@@ -1,5 +1,5 @@
-#ifndef AU_UTIL_IMAGE_H
-#define AU_UTIL_IMAGE_H
+#pragma once
+
 #include <memory>
 #include <string>
 #include "file.h"
@@ -30,5 +30,3 @@ namespace util {
     };
 
 } }
-
-#endif

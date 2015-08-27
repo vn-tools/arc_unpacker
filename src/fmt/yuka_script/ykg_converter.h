@@ -1,5 +1,5 @@
-#ifndef AU_FMT_YUKASCRIPT_YKG_CONVERTER_H
-#define AU_FMT_YUKASCRIPT_YKG_CONVERTER_H
+#pragma once
+
 #include "fmt/converter.h"
 
 namespace au {
@@ -14,5 +14,3 @@ namespace yuka_script {
     };
 
 } } }
-
-#endif

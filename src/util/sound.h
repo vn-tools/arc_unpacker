@@ -1,5 +1,5 @@
-#ifndef AU_UTIL_SOUND_H
-#define AU_UTIL_SOUND_H
+#pragma once
+
 #include <memory>
 #include "file.h"
 
@@ -26,5 +26,3 @@ namespace util {
     };
 
 } }
-
-#endif

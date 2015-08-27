@@ -1,5 +1,5 @@
-#ifndef AU_FMT_TANUKISOFT_XFL_ARCHIVE_H
-#define AU_FMT_TANUKISOFT_XFL_ARCHIVE_H
+#pragma once
+
 #include "fmt/archive.h"
 
 namespace au {
@@ -16,5 +16,3 @@ namespace tanuki_soft {
     };
 
 } } }
-
-#endif

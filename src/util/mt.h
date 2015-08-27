@@ -1,5 +1,4 @@
-#ifndef AU_UTIL_MT_H
-#define AU_UTIL_MT_H
+#pragma once
 
 namespace au {
 namespace util {
@@ -15,5 +14,3 @@ namespace mt {
     double genrand_res53();
 
 } } }
-
-#endif

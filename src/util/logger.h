@@ -1,5 +1,5 @@
-#ifndef AU_UTIL_LOG_H
-#define AU_UTIL_LOG_H
+#pragma once
+
 #include <memory>
 #include <string>
 
@@ -54,5 +54,3 @@ namespace util {
     };
 
 } }
-
-#endif

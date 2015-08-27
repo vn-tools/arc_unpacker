@@ -1,5 +1,5 @@
-#ifndef AU_UTIL_REQUIRE_H
-#define AU_UTIL_REQUIRE_H
+#pragma once
+
 #include <string>
 #include <stdexcept>
 
@@ -30,5 +30,3 @@ namespace util {
         int line);
 
 } }
-
-#endif

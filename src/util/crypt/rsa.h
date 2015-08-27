@@ -1,5 +1,5 @@
-#ifndef AU_UTIL_CRYPT_RSA_H
-#define AU_UTIL_CRYPT_RSA_H
+#pragma once
+
 #include <memory>
 #include <array>
 #include "types.h"
@@ -26,5 +26,3 @@ namespace crypt {
     };
 
 } } }
-
-#endif

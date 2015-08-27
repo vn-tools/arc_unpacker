@@ -1,5 +1,5 @@
-#ifndef AU_IO_FILE_IO_H
-#define AU_IO_FILE_IO_H
+#pragma once
+
 #include <boost/filesystem/path.hpp>
 #include <memory>
 #include <string>
@@ -39,5 +39,3 @@ namespace io {
     };
 
 } }
-
-#endif

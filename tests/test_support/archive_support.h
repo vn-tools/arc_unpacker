@@ -1,5 +1,5 @@
-#ifndef AU_TEST_SUPPORT_ARCHIVE_SUPPORT_H
-#define AU_TEST_SUPPORT_ARCHIVE_SUPPORT_H
+#pragma once
+
 #include <boost/filesystem/path.hpp>
 #include <memory>
 #include <vector>
@@ -12,5 +12,3 @@ namespace tests {
         const boost::filesystem::path &input_path, fmt::Archive &archive);
 
 } }
-
-#endif

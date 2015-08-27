@@ -1,5 +1,5 @@
-#ifndef AU_FMT_KIRIKIRI_XP3_FILTERS_CXDEC_SETTINGS_H
-#define AU_FMT_KIRIKIRI_XP3_FILTERS_CXDEC_SETTINGS_H
+#pragma once
+
 #include <array>
 #include "types.h"
 
@@ -19,5 +19,3 @@ namespace xp3_filters {
     };
 
 } } } }
-
-#endif

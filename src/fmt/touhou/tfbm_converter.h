@@ -1,5 +1,5 @@
-#ifndef AU_FMT_TOUHOU_TFBM_CONVERTER_H
-#define AU_FMT_TOUHOU_TFBM_CONVERTER_H
+#pragma once
+
 #include <string>
 #include "fmt/converter.h"
 
@@ -22,5 +22,3 @@ namespace touhou {
     };
 
 } } }
-
-#endif

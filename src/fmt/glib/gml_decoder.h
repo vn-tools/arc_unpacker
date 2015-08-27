@@ -1,5 +1,5 @@
-#ifndef AU_FMT_GLIB2_GML_DECODER_H
-#define AU_FMT_GLIB2_GML_DECODER_H
+#pragma once
+
 #include "types.h"
 
 namespace au {
@@ -13,5 +13,3 @@ namespace glib {
     };
 
 } } }
-
-#endif

@@ -1,5 +1,5 @@
-#ifndef AU_FMT_FRENCH_BREAD_P_ARCHIVE_H
-#define AU_FMT_FRENCH_BREAD_P_ARCHIVE_H
+#pragma once
+
 #include "fmt/archive.h"
 
 namespace au {
@@ -20,5 +20,3 @@ namespace french_bread {
     };
 
 } } }
-
-#endif

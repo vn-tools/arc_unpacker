@@ -1,5 +1,5 @@
-#ifndef AU_FMT_KIRIKIRI_XP3_FILTERS_NOOP_H
-#define AU_FMT_KIRIKIRI_XP3_FILTERS_NOOP_H
+#pragma once
+
 #include "fmt/kirikiri/xp3_filter.h"
 
 namespace au {
@@ -14,5 +14,3 @@ namespace xp3_filters {
     };
 
 } } } }
-
-#endif

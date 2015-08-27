@@ -1,5 +1,5 @@
-#ifndef AU_FILE_SAVER_H
-#define AU_FILE_SAVER_H
+#pragma once
+
 #include <boost/filesystem/path.hpp>
 #include <memory>
 #include <string>
@@ -43,5 +43,3 @@ namespace au {
     };
 
 }
-
-#endif

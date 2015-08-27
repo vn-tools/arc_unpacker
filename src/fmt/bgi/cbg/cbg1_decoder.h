@@ -1,5 +1,5 @@
-#ifndef AU_FMT_BGI_CBG_CBG1_DECODER_H
-#define AU_FMT_BGI_CBG_CBG1_DECODER_H
+#pragma once
+
 #include "io/io.h"
 #include "pix/grid.h"
 
@@ -15,5 +15,3 @@ namespace cbg {
     };
 
 } } } }
-
-#endif

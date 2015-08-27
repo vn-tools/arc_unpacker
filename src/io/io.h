@@ -1,5 +1,5 @@
-#ifndef AU_IO_IO_H
-#define AU_IO_IO_H
+#pragma once
+
 #include <functional>
 #include <string>
 #include "types.h"
@@ -49,5 +49,3 @@ namespace io {
     };
 
 } }
-
-#endif

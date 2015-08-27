@@ -1,5 +1,5 @@
-#ifndef AU_UTIL_RANGE_H
-#define AU_UTIL_RANGE_H
+#pragma once
+
 #include <algorithm>
 #include <cstdio>
 
@@ -67,5 +67,3 @@ namespace util {
     }
 
 } }
-
-#endif

@@ -1,5 +1,5 @@
-#ifndef AU_FMT_KIRIKIRI_XP3_ARCHIVE_H
-#define AU_FMT_KIRIKIRI_XP3_ARCHIVE_H
+#pragma once
+
 #include "fmt/archive.h"
 
 namespace au {
@@ -22,5 +22,3 @@ namespace kirikiri {
     };
 
 } } }
-
-#endif

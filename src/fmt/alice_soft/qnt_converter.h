@@ -1,5 +1,5 @@
-#ifndef AU_FMT_ALICE_SOFT_QNT_CONVERTER_H
-#define AU_FMT_ALICE_SOFT_QNT_CONVERTER_H
+#pragma once
+
 #include "fmt/converter.h"
 
 namespace au {
@@ -14,5 +14,3 @@ namespace alice_soft {
     };
 
 } } }
-
-#endif

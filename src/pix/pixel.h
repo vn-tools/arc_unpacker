@@ -1,5 +1,5 @@
-#ifndef AU_PIX_PIXEL_H
-#define AU_PIX_PIXEL_H
+#pragma once
+
 #include <memory>
 #include <type_traits>
 #include "types.h"
@@ -36,5 +36,3 @@ namespace pix {
     static_assert(std::is_pod<Pixel>::value, "!");
 
 } }
-
-#endif

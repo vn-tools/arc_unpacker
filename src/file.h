@@ -1,5 +1,5 @@
-#ifndef AU_FILE_H
-#define AU_FILE_H
+#pragma once
+
 #include <boost/filesystem/path.hpp>
 #include <string>
 #include "io/file_io.h"
@@ -21,5 +21,3 @@ namespace au {
     };
 
 }
-
-#endif

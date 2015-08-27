@@ -1,5 +1,5 @@
-#ifndef AU_FMT_ALICE_SOFT_PM_CONVERTER_H
-#define AU_FMT_ALICE_SOFT_PM_CONVERTER_H
+#pragma once
+
 #include "fmt/converter.h"
 #include "util/image.h"
 
@@ -18,5 +18,3 @@ namespace alice_soft {
     };
 
 } } }
-
-#endif

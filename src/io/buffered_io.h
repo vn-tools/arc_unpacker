@@ -1,5 +1,5 @@
-#ifndef AU_IO_BUFFERED_IO_H
-#define AU_IO_BUFFERED_IO_H
+#pragma once
+
 #include <memory>
 #include "io/io.h"
 
@@ -37,5 +37,3 @@ namespace io {
     };
 
 } }
-
-#endif

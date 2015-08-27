@@ -1,5 +1,5 @@
-#ifndef AU_PIX_GRID_H
-#define AU_PIX_GRID_H
+#pragma once
+
 #include <memory>
 #include "io/io.h"
 #include "pix/format.h"
@@ -36,5 +36,3 @@ namespace pix {
     };
 
 } }
-
-#endif

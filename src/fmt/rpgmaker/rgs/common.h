@@ -1,5 +1,5 @@
-#ifndef AU_FMT_RPGMAKER_RGS_COMMON_H
-#define AU_FMT_RPGMAKER_RGS_COMMON_H
+#pragma once
+
 #include "fmt/archive.h"
 
 namespace au {
@@ -21,5 +21,3 @@ namespace rgs {
     std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry);
 
 } } } }
-
-#endif

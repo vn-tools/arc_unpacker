@@ -1,5 +1,5 @@
-#ifndef AU_FMT_MINATOSOFT_PAC_ARCHIVE_H
-#define AU_FMT_MINATOSOFT_PAC_ARCHIVE_H
+#pragma once
+
 #include "fmt/archive.h"
 
 namespace au {
@@ -14,5 +14,3 @@ namespace minato_soft {
     };
 
 } } }
-
-#endif

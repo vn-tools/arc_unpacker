@@ -1,5 +1,5 @@
-#ifndef AU_TYPES_H
-#define AU_TYPES_H
+#pragma once
+
 #include <string>
 #include <vector>
 
@@ -83,5 +83,3 @@ namespace au {
     }
 
 }
-
-#endif

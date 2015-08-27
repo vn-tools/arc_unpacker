@@ -1,5 +1,5 @@
-#ifndef AU_UTIL_ENCODING_H
-#define AU_UTIL_ENCODING_H
+#pragma once
+
 #include "types.h"
 
 namespace au {
@@ -14,5 +14,3 @@ namespace util {
     bstr utf8_to_sjis(const bstr &input);
 
 } }
-
-#endif

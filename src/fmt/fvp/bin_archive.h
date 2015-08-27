@@ -1,5 +1,5 @@
-#ifndef AU_FMT_FVP_BIN_ARCHIVE_H
-#define AU_FMT_FVP_BIN_ARCHIVE_H
+#pragma once
+
 #include "fmt/archive.h"
 
 namespace au {
@@ -20,5 +20,3 @@ namespace fvp {
     };
 
 } } }
-
-#endif

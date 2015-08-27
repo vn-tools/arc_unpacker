@@ -1,5 +1,5 @@
-#ifndef AU_FMT_KIRIKIRI_TLG_LZSS_COMPRESSOR_H
-#define AU_FMT_KIRIKIRI_TLG_LZSS_COMPRESSOR_H
+#pragma once
+
 #include <memory>
 #include "types.h"
 
@@ -23,5 +23,3 @@ namespace tlg {
     };
 
 } } } }
-
-#endif

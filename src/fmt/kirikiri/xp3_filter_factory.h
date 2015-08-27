@@ -1,5 +1,5 @@
-#ifndef AU_FMT_KIRIKIRI_XP3_FILTER_FACTORY_H
-#define AU_FMT_KIRIKIRI_XP3_FILTER_FACTORY_H
+#pragma once
+
 #include "fmt/kirikiri/xp3_filter.h"
 #include "arg_parser.h"
 
@@ -21,5 +21,3 @@ namespace kirikiri {
     };
 
 } } }
-
-#endif

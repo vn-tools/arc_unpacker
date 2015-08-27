@@ -1,5 +1,5 @@
-#ifndef AU_PIX_FORMAT_H
-#define AU_PIX_FORMAT_H
+#pragma once
+
 #include "io/io.h"
 #include "pix/pixel.h"
 
@@ -47,5 +47,3 @@ namespace pix {
     }
 
 } }
-
-#endif

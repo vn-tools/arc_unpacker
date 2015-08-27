@@ -1,5 +1,5 @@
-#ifndef AU_PIX_PALETTE_H
-#define AU_PIX_PALETTE_H
+#pragma once
+
 #include <memory>
 #include "io/io.h"
 #include "pix/format.h"
@@ -26,5 +26,3 @@ namespace pix {
     };
 
 } }
-
-#endif

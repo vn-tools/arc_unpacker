@@ -1,5 +1,5 @@
-#ifndef AU_FMT_LIAR_SOFT_LWG_ARCHIVE_H
-#define AU_FMT_LIAR_SOFT_LWG_ARCHIVE_H
+#pragma once
+
 #include "fmt/archive.h"
 
 namespace au {
@@ -20,5 +20,3 @@ namespace liar_soft {
     };
 
 } } }
-
-#endif

@@ -1,5 +1,5 @@
-#ifndef AU_UTIL_ENDIAN_H
-#define AU_UTIL_ENDIAN_H
+#pragma once
+
 #include <limits.h>
 #include <stdint.h>
 #include "types.h"
@@ -102,5 +102,3 @@ namespace util {
         return from_big_endian(value);
     }
 } }
-
-#endif

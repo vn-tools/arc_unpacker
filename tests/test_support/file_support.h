@@ -1,5 +1,5 @@
-#ifndef AU_TESTS_TEST_SUPPORT_FILE_SUPPORT_H
-#define AU_TESTS_TEST_SUPPORT_FILE_SUPPORT_H
+#pragma once
+
 #include <boost/filesystem/path.hpp>
 #include <memory>
 #include "file.h"
@@ -26,5 +26,3 @@ namespace tests {
         bool compare_file_names);
 
 } }
-
-#endif

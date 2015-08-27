@@ -1,5 +1,5 @@
-#ifndef AU_FMT_ARCHIVE_H
-#define AU_FMT_ARCHIVE_H
+#pragma once
+
 #include "transformer.h"
 
 namespace au {
@@ -23,5 +23,3 @@ namespace fmt {
     };
 
 } }
-
-#endif

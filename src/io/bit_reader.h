@@ -1,5 +1,5 @@
-#ifndef AU_IO_BIT_READER_H
-#define AU_IO_BIT_READER_H
+#pragma once
+
 #include <memory>
 #include "io/io.h"
 
@@ -23,5 +23,3 @@ namespace io {
     };
 
 } }
-
-#endif

@@ -1,7 +1,5 @@
-#ifndef AU_COMPAT_FOPEN_H
-#define AU_COMPAT_FOPEN_H
+#pragma once
+
 #include <boost/filesystem.hpp>
 
 FILE *fopen(const boost::filesystem::path &path, const char *mode);
-
-#endif

@@ -1,5 +1,5 @@
-#ifndef AU_ARG_PARSER_H
-#define AU_ARG_PARSER_H
+#pragma once
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -30,5 +30,3 @@ namespace au {
     };
 
 }
-
-#endif

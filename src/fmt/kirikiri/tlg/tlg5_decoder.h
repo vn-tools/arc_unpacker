@@ -1,5 +1,5 @@
-#ifndef AU_FMT_KIRIKIRI_TLG_TLG5_DECODER_H
-#define AU_FMT_KIRIKIRI_TLG_TLG5_DECODER_H
+#pragma once
+
 #include "file.h"
 
 namespace au {
@@ -14,5 +14,3 @@ namespace tlg {
     };
 
 } } } }
-
-#endif

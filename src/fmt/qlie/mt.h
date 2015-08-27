@@ -1,5 +1,4 @@
-#ifndef AU_FMT_QLIE_MT_H
-#define AU_FMT_QLIE_MT_H
+#pragma once
 
 namespace au {
 namespace fmt {
@@ -11,5 +10,3 @@ namespace mt {
     unsigned long genrand_int32(void);
 
 } } } }
-
-#endif

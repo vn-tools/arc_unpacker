@@ -1,5 +1,5 @@
-#ifndef AU_TESTS_TEST_SUPPORT_IMAGE_SUPPORT_H
-#define AU_TESTS_TEST_SUPPORT_IMAGE_SUPPORT_H
+#pragma once
+
 #include <boost/filesystem/path.hpp>
 #include <memory>
 #include "util/image.h"
@@ -18,5 +18,3 @@ namespace tests {
         int max_component_diff = 0);
 
 } }
-
-#endif

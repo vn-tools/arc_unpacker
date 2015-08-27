@@ -1,5 +1,5 @@
-#ifndef AU_FMT_RPGMAKER_RGSSAD_ARCHIVE_H
-#define AU_FMT_RPGMAKER_RGSSAD_ARCHIVE_H
+#pragma once
+
 #include "fmt/archive.h"
 
 namespace au {
@@ -14,5 +14,3 @@ namespace rpgmaker {
     };
 
 } } }
-
-#endif

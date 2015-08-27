@@ -1,5 +1,5 @@
-#ifndef AU_FMT_TOUHOU_CRYPT_H
-#define AU_FMT_TOUHOU_CRYPT_H
+#pragma once
+
 #include "types.h"
 
 namespace au {
@@ -19,5 +19,3 @@ namespace touhou {
     bstr decrypt(const bstr &input, const DecryptorContext &context);
 
 } } }
-
-#endif

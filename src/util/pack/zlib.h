@@ -1,5 +1,5 @@
-#ifndef AU_UTIL_PACK_ZLIB_H
-#define AU_UTIL_PACK_ZLIB_H
+#pragma once
+
 #include "types.h"
 
 namespace au {
@@ -9,5 +9,3 @@ namespace pack {
     bstr zlib_inflate(const bstr &input);
 
 } } }
-
-#endif

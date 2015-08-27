@@ -1,5 +1,5 @@
-#ifndef AU_LOG_H
-#define AU_LOG_H
+#pragma once
+
 #include "util/logger.h"
 
 namespace au {
@@ -7,5 +7,3 @@ namespace au {
     extern au::util::Logger Log;
 
 }
-
-#endif

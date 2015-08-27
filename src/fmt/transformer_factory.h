@@ -1,5 +1,5 @@
-#ifndef AU_FMT_TRANSFORMER_FACTORY_H
-#define AU_FMT_TRANSFORMER_FACTORY_H
+#pragma once
+
 #include <vector>
 #include "transformer.h"
 
@@ -19,5 +19,3 @@ namespace fmt {
     };
 
 } }
-
-#endif

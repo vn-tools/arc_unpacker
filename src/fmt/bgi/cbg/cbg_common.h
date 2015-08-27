@@ -1,5 +1,5 @@
-#ifndef AU_FMT_BGI_CBG_CBG_COMMON_H
-#define AU_FMT_BGI_CBG_CBG_COMMON_H
+#pragma once
+
 #include <memory>
 #include "io/io.h"
 #include "io/bit_reader.h"
@@ -34,5 +34,3 @@ namespace cbg {
     Tree build_tree(const FreqTable &freq_table, bool greedy);
 
 } } } }
-
-#endif

@@ -1,5 +1,5 @@
-#ifndef AU_FMT_IVORY_MBL_ARCHIVE_H
-#define AU_FMT_IVORY_MBL_ARCHIVE_H
+#pragma once
+
 #include "fmt/archive.h"
 
 namespace au {
@@ -23,5 +23,3 @@ namespace ivory {
     };
 
 } } }
-
-#endif

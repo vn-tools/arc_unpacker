@@ -1,5 +1,5 @@
-#ifndef AU_FMT_TRANSFORMER_H
-#define AU_FMT_TRANSFORMER_H
+#pragma once
+
 #include <memory>
 #include <vector>
 #include "arg_parser.h"
@@ -42,5 +42,3 @@ namespace fmt {
     };
 
 } }
-
-#endif
