@@ -7,7 +7,7 @@
 // Known games:
 // - Doki Doki Princess
 
-#include "fmt/cronus/image_converter.h"
+#include "fmt/cronus/pak_image_converter.h"
 #include "fmt/cronus/pak_archive.h"
 #include "util/range.h"
 
@@ -55,12 +55,12 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 
 struct PakArchive::Priv
 {
-    ImageConverter image_converter;
+    PakImageConverter pak_image_converter;
 };
 
 PakArchive::PakArchive() : p(new Priv)
 {
-    add_transformer(&p->image_converter);
+    add_transformer(&p->pak_image_converter);
 }
 
 PakArchive::~PakArchive()

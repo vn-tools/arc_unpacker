@@ -1,12 +1,12 @@
-#ifndef AU_FMT_CRONUS_IMAGE_CONVERTER_H
-#define AU_FMT_CRONUS_IMAGE_CONVERTER_H
+#ifndef AU_FMT_CRONUS_PAK_IMAGE_CONVERTER_H
+#define AU_FMT_CRONUS_PAK_IMAGE_CONVERTER_H
 #include "fmt/converter.h"
 
 namespace au {
 namespace fmt {
 namespace cronus {
 
-    class ImageConverter final : public Converter
+    class PakImageConverter final : public Converter
     {
     protected:
         bool is_recognized_internal(File &) const override;

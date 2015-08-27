@@ -14,7 +14,7 @@
 #include "fmt/bgi/dsc_converter.h"
 #include "fmt/bgi/sound_converter.h"
 #include "fmt/cronus/pak_archive.h"
-#include "fmt/cronus/image_converter.h"
+#include "fmt/cronus/pak_image_converter.h"
 #include "fmt/french_bread/ex3_converter.h"
 #include "fmt/french_bread/p_archive.h"
 #include "fmt/fvp/bin_archive.h"
@@ -98,80 +98,80 @@ struct TransformerFactory::Priv
 
 TransformerFactory::TransformerFactory() : p(new Priv)
 {
-    p->add("alice/afa",     []() { return new alice_soft::AfaArchive();     });
-    p->add("alice/aff",     []() { return new alice_soft::AffConverter();   });
-    p->add("alice/ajp",     []() { return new alice_soft::AjpConverter();   });
-    p->add("alice/ald",     []() { return new alice_soft::AldArchive();     });
-    p->add("alice/alk",     []() { return new alice_soft::AlkArchive();     });
-    p->add("alice/pm",      []() { return new alice_soft::PmConverter();    });
-    p->add("alice/qnt",     []() { return new alice_soft::QntConverter();   });
-    p->add("bgi/arc",       []() { return new bgi::ArcArchive();            });
-    p->add("bgi/cbg",       []() { return new bgi::CbgConverter();          });
-    p->add("bgi/dsc",       []() { return new bgi::DscConverter();          });
-    p->add("bgi/sound",     []() { return new bgi::SoundConverter();        });
-    p->add("cronus/pak",    []() { return new cronus::PakArchive();         });
-    p->add("cronus/image",  []() { return new cronus::ImageConverter();     });
-    p->add("fbread/ex3",    []() { return new french_bread::Ex3Converter(); });
-    p->add("fbread/p",      []() { return new french_bread::PArchive();     });
-    p->add("fvp/bin",       []() { return new fvp::BinArchive();            });
-    p->add("fvp/nvsg",      []() { return new fvp::NvsgConverter();         });
-    p->add("glib/g2",       []() { return new glib::Glib2Archive();         });
-    p->add("glib/gml",      []() { return new glib::GmlArchive();           });
-    p->add("glib/pgx",      []() { return new glib::PgxConverter();         });
-    p->add("ivory/mbl",     []() { return new ivory::MblArchive();          });
-    p->add("ivory/prs",     []() { return new ivory::PrsConverter();        });
-    p->add("ivory/wady",    []() { return new ivory::WadyConverter();       });
-    p->add("key/g00",       []() { return new key::G00Converter();          });
-    p->add("key/nwa",       []() { return new key::NwaConverter();          });
-    p->add("kid/cps",       []() { return new kid::CpsConverter();          });
-    p->add("kid/lnk",       []() { return new kid::LnkArchive();            });
-    p->add("kid/prt",       []() { return new kid::PrtConverter();          });
-    p->add("kid/waf",       []() { return new kid::WafConverter();          });
-    p->add("krkr/tlg",      []() { return new kirikiri::TlgConverter();     });
-    p->add("krkr/xp3",      []() { return new kirikiri::Xp3Archive();       });
-    p->add("liar/lwg",      []() { return new liar_soft::LwgArchive();      });
-    p->add("liar/wcg",      []() { return new liar_soft::WcgConverter();    });
-    p->add("liar/xfl",      []() { return new liar_soft::XflArchive();      });
-    p->add("libido/arc",    []() { return new libido::ArcArchive();         });
-    p->add("lizsoft/sotes", []() { return new lizsoft::SotesConverter();    });
-    p->add("minato/pac",    []() { return new minato_soft::PacArchive();    });
-    p->add("ms/dds",        []() { return new microsoft::DdsConverter();    });
-    p->add("ms/exe",        []() { return new microsoft::ExeArchive();      });
-    p->add("nitro/npa",     []() { return new nitroplus::NpaArchive();      });
-    p->add("nitro/npa_sg",  []() { return new nitroplus::NpaSgArchive();    });
-    p->add("nitro/pak",     []() { return new nitroplus::PakArchive();      });
-    p->add("nscripter/nsa", []() { return new nscripter::NsaArchive();      });
-    p->add("nscripter/sar", []() { return new nscripter::SarArchive();      });
-    p->add("nscripter/spb", []() { return new nscripter::SpbConverter();    });
-    p->add("nsystem/fjsys", []() { return new nsystem::FjsysArchive();      });
-    p->add("nsystem/mgd",   []() { return new nsystem::MgdConverter();      });
-    p->add("propeller/mgr", []() { return new propeller::MgrArchive();      });
-    p->add("propeller/mpk", []() { return new propeller::MpkArchive();      });
-    p->add("qlie/dpng",     []() { return new qlie::DpngConverter();        });
-    p->add("qlie/pack",     []() { return new qlie::PackArchive();          });
-    p->add("renpy/rpa",     []() { return new renpy::RpaArchive();          });
-    p->add("rm/rgss3a",     []() { return new rpgmaker::Rgss3aArchive();    });
-    p->add("rm/rgssad",     []() { return new rpgmaker::RgssadArchive();    });
-    p->add("rm/xyz",        []() { return new rpgmaker::XyzConverter();     });
-    p->add("tanuki/tac",    []() { return new tanuki_soft::TacArchive();    });
-    p->add("th/anm",        []() { return new touhou::AnmArchive();         });
-    p->add("th/pak1",       []() { return new touhou::Pak1Archive();        });
-    p->add("th/pak1-gfx",   []() { return new touhou::Pak1ImageArchive();   });
-    p->add("th/pak1-sfx",   []() { return new touhou::Pak1SoundArchive();   });
-    p->add("th/pak2",       []() { return new touhou::Pak2Archive();        });
-    p->add("th/pak2-gfx",   []() { return new touhou::Pak2ImageConverter(); });
-    p->add("th/pak2-sfx",   []() { return new touhou::Pak2SoundConverter(); });
-    p->add("th/pbg3",       []() { return new touhou::Pbg3Archive();        });
-    p->add("th/pbg4",       []() { return new touhou::Pbg4Archive();        });
-    p->add("th/pbgz",       []() { return new touhou::PbgzArchive();        });
-    p->add("th/tfbm",       []() { return new touhou::TfbmConverter();      });
-    p->add("th/tfcs",       []() { return new touhou::TfcsConverter();      });
-    p->add("th/tfpk",       []() { return new touhou::TfpkArchive();        });
-    p->add("th/tfwa",       []() { return new touhou::TfwaConverter();      });
-    p->add("th/tha1",       []() { return new touhou::Tha1Archive();        });
-    p->add("whale/dat",     []() { return new whale::DatArchive();          });
-    p->add("yuka/ykc",      []() { return new yuka_script::YkcArchive();    });
-    p->add("yuka/ykg",      []() { return new yuka_script::YkgConverter();  });
+    p->add("alice/afa",      []() { return new alice_soft::AfaArchive();     });
+    p->add("alice/aff",      []() { return new alice_soft::AffConverter();   });
+    p->add("alice/ajp",      []() { return new alice_soft::AjpConverter();   });
+    p->add("alice/ald",      []() { return new alice_soft::AldArchive();     });
+    p->add("alice/alk",      []() { return new alice_soft::AlkArchive();     });
+    p->add("alice/pm",       []() { return new alice_soft::PmConverter();    });
+    p->add("alice/qnt",      []() { return new alice_soft::QntConverter();   });
+    p->add("bgi/arc",        []() { return new bgi::ArcArchive();            });
+    p->add("bgi/cbg",        []() { return new bgi::CbgConverter();          });
+    p->add("bgi/dsc",        []() { return new bgi::DscConverter();          });
+    p->add("bgi/sound",      []() { return new bgi::SoundConverter();        });
+    p->add("cronus/pak",     []() { return new cronus::PakArchive();         });
+    p->add("cronus/pak-gfx", []() { return new cronus::PakImageConverter();  });
+    p->add("fbread/ex3",     []() { return new french_bread::Ex3Converter(); });
+    p->add("fbread/p",       []() { return new french_bread::PArchive();     });
+    p->add("fvp/bin",        []() { return new fvp::BinArchive();            });
+    p->add("fvp/nvsg",       []() { return new fvp::NvsgConverter();         });
+    p->add("glib/g2",        []() { return new glib::Glib2Archive();         });
+    p->add("glib/gml",       []() { return new glib::GmlArchive();           });
+    p->add("glib/pgx",       []() { return new glib::PgxConverter();         });
+    p->add("ivory/mbl",      []() { return new ivory::MblArchive();          });
+    p->add("ivory/prs",      []() { return new ivory::PrsConverter();        });
+    p->add("ivory/wady",     []() { return new ivory::WadyConverter();       });
+    p->add("key/g00",        []() { return new key::G00Converter();          });
+    p->add("key/nwa",        []() { return new key::NwaConverter();          });
+    p->add("kid/cps",        []() { return new kid::CpsConverter();          });
+    p->add("kid/lnk",        []() { return new kid::LnkArchive();            });
+    p->add("kid/prt",        []() { return new kid::PrtConverter();          });
+    p->add("kid/waf",        []() { return new kid::WafConverter();          });
+    p->add("krkr/tlg",       []() { return new kirikiri::TlgConverter();     });
+    p->add("krkr/xp3",       []() { return new kirikiri::Xp3Archive();       });
+    p->add("liar/lwg",       []() { return new liar_soft::LwgArchive();      });
+    p->add("liar/wcg",       []() { return new liar_soft::WcgConverter();    });
+    p->add("liar/xfl",       []() { return new liar_soft::XflArchive();      });
+    p->add("libido/arc",     []() { return new libido::ArcArchive();         });
+    p->add("lizsoft/sotes",  []() { return new lizsoft::SotesConverter();    });
+    p->add("minato/pac",     []() { return new minato_soft::PacArchive();    });
+    p->add("ms/dds",         []() { return new microsoft::DdsConverter();    });
+    p->add("ms/exe",         []() { return new microsoft::ExeArchive();      });
+    p->add("nitro/npa",      []() { return new nitroplus::NpaArchive();      });
+    p->add("nitro/npa_sg",   []() { return new nitroplus::NpaSgArchive();    });
+    p->add("nitro/pak",      []() { return new nitroplus::PakArchive();      });
+    p->add("nscripter/nsa",  []() { return new nscripter::NsaArchive();      });
+    p->add("nscripter/sar",  []() { return new nscripter::SarArchive();      });
+    p->add("nscripter/spb",  []() { return new nscripter::SpbConverter();    });
+    p->add("nsystem/fjsys",  []() { return new nsystem::FjsysArchive();      });
+    p->add("nsystem/mgd",    []() { return new nsystem::MgdConverter();      });
+    p->add("propeller/mgr",  []() { return new propeller::MgrArchive();      });
+    p->add("propeller/mpk",  []() { return new propeller::MpkArchive();      });
+    p->add("qlie/dpng",      []() { return new qlie::DpngConverter();        });
+    p->add("qlie/pack",      []() { return new qlie::PackArchive();          });
+    p->add("renpy/rpa",      []() { return new renpy::RpaArchive();          });
+    p->add("rm/rgss3a",      []() { return new rpgmaker::Rgss3aArchive();    });
+    p->add("rm/rgssad",      []() { return new rpgmaker::RgssadArchive();    });
+    p->add("rm/xyz",         []() { return new rpgmaker::XyzConverter();     });
+    p->add("tanuki/tac",     []() { return new tanuki_soft::TacArchive();    });
+    p->add("th/anm",         []() { return new touhou::AnmArchive();         });
+    p->add("th/pak1",        []() { return new touhou::Pak1Archive();        });
+    p->add("th/pak1-gfx",    []() { return new touhou::Pak1ImageArchive();   });
+    p->add("th/pak1-sfx",    []() { return new touhou::Pak1SoundArchive();   });
+    p->add("th/pak2",        []() { return new touhou::Pak2Archive();        });
+    p->add("th/pak2-gfx",    []() { return new touhou::Pak2ImageConverter(); });
+    p->add("th/pak2-sfx",    []() { return new touhou::Pak2SoundConverter(); });
+    p->add("th/pbg3",        []() { return new touhou::Pbg3Archive();        });
+    p->add("th/pbg4",        []() { return new touhou::Pbg4Archive();        });
+    p->add("th/pbgz",        []() { return new touhou::PbgzArchive();        });
+    p->add("th/tfbm",        []() { return new touhou::TfbmConverter();      });
+    p->add("th/tfcs",        []() { return new touhou::TfcsConverter();      });
+    p->add("th/tfpk",        []() { return new touhou::TfpkArchive();        });
+    p->add("th/tfwa",        []() { return new touhou::TfwaConverter();      });
+    p->add("th/tha1",        []() { return new touhou::Tha1Archive();        });
+    p->add("whale/dat",      []() { return new whale::DatArchive();          });
+    p->add("yuka/ykc",       []() { return new yuka_script::YkcArchive();    });
+    p->add("yuka/ykg",       []() { return new yuka_script::YkgConverter();  });
 }
 
 TransformerFactory::~TransformerFactory()

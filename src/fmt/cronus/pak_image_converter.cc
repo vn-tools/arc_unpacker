@@ -1,4 +1,4 @@
-// Cronus image
+// Cronus PAK image
 //
 // Company:   Cronus
 // Engine:    -
@@ -8,7 +8,7 @@
 // Known games:
 // - Doki Doki Princess
 
-#include "fmt/cronus/image_converter.h"
+#include "fmt/cronus/pak_image_converter.h"
 #include "util/pack/lzss.h"
 #include "util/image.h"
 #include "util/require.h"
@@ -33,7 +33,7 @@ static void decrypt(bstr &input, size_t encrypted_size)
     }
 }
 
-bool ImageConverter::is_recognized_internal(File &file) const
+bool PakImageConverter::is_recognized_internal(File &file) const
 {
     auto width = file.io.read_u32_le() ^ key1;
     auto height = file.io.read_u32_le() ^ key2;
@@ -52,7 +52,7 @@ bool ImageConverter::is_recognized_internal(File &file) const
     return output_size == expected_output_size;
 }
 
-std::unique_ptr<File> ImageConverter::decode_internal(File &file) const
+std::unique_ptr<File> PakImageConverter::decode_internal(File &file) const
 {
     auto width = file.io.read_u32_le() ^ key1;
     auto height = file.io.read_u32_le() ^ key2;
