@@ -7,6 +7,7 @@
 // Known games:
 // - Brightia
 
+#include "fmt/riddle_soft/cmp_converter.h"
 #include "fmt/riddle_soft/pac_archive.h"
 #include "util/require.h"
 #include "util/range.h"
@@ -57,6 +58,20 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     file->io.write_from_io(arc_io, entry.size);
     file->name = entry.name;
     return file;
+}
+
+struct PacArchive::Priv
+{
+    CmpConverter cmp_converter;
+};
+
+PacArchive::PacArchive() : p(new Priv)
+{
+    add_transformer(&p->cmp_converter);
+}
+
+PacArchive::~PacArchive()
+{
 }
 
 bool PacArchive::is_recognized_internal(File &arc_file) const
