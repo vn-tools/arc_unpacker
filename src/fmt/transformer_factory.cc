@@ -60,6 +60,7 @@
 #include "fmt/rpgmaker/rgssad_archive.h"
 #include "fmt/rpgmaker/xyz_converter.h"
 #include "fmt/sysadv/pak_archive.h"
+#include "fmt/sysadv/pga_converter.h"
 #include "fmt/tanuki_soft/tac_archive.h"
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/pak1_archive.h"
@@ -159,6 +160,7 @@ TransformerFactory::TransformerFactory() : p(new Priv)
     p->add("rm/rgssad",      []() { return new rpgmaker::RgssadArchive();    });
     p->add("rm/xyz",         []() { return new rpgmaker::XyzConverter();     });
     p->add("sysadv/pak",     []() { return new sysadv::PakArchive();         });
+    p->add("sysadv/pga",     []() { return new sysadv::PgaConverter();       });
     p->add("tanuki/tac",     []() { return new tanuki_soft::TacArchive();    });
     p->add("th/anm",         []() { return new touhou::AnmArchive();         });
     p->add("th/pak1",        []() { return new touhou::Pak1Archive();        });

@@ -8,6 +8,7 @@
 // - Moshimo Ashita ga Harenaraba
 
 #include "fmt/sysadv/pak_archive.h"
+#include "fmt/sysadv/pga_converter.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -53,6 +54,20 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     file->io.write_from_io(arc_io, entry.size);
     file->name = entry.name;
     return file;
+}
+
+struct PakArchive::Priv
+{
+    PgaConverter pga_converter;
+};
+
+PakArchive::PakArchive() : p(new Priv)
+{
+    add_transformer(&p->pga_converter);
+}
+
+PakArchive::~PakArchive()
+{
 }
 
 bool PakArchive::is_recognized_internal(File &arc_file) const
