@@ -63,3 +63,5 @@ void Pak1SoundArchive::unpack_internal(
         file_saver.save(read_sound(arc_file.io, i));
     }
 }
+
+static auto dummy = fmt::Registry::add<Pak1SoundArchive>("th/pak1-sfx");

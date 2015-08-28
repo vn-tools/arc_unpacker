@@ -83,3 +83,5 @@ std::unique_ptr<File> PakImageConverter::decode_internal(File &file) const
     else
         util::fail("Unsupported BPP");
 }
+
+static auto dummy = fmt::Registry::add<PakImageConverter>("cronus/pak-gfx");

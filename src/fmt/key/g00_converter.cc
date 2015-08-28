@@ -230,3 +230,5 @@ std::unique_ptr<File> G00Converter::decode_internal(File &file) const
             throw std::runtime_error("Unknown G00 version");
     }
 }
+
+static auto dummy = fmt::Registry::add<G00Converter>("key/g00");

@@ -130,3 +130,5 @@ std::unique_ptr<File> TlgConverter::decode_internal(File &file) const
     int version = guess_version(file.io);
     return decode_proxy(version, file);
 }
+
+static auto dummy = fmt::Registry::add<TlgConverter>("krkr/tlg");

@@ -159,3 +159,5 @@ std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
     pix::Grid pixels(width, height, output, pix::Format::BGRA8888);
     return util::Image::from_pixels(pixels)->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<WcgConverter>("liar/wcg");

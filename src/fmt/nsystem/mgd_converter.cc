@@ -254,3 +254,5 @@ std::unique_ptr<File> MgdConverter::decode_internal(File &file) const
     read_region_data(file.io);
     return image->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<MgdConverter>("nsystem/mgd");

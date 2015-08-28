@@ -510,3 +510,5 @@ void ExeArchive::unpack_internal(File &file, FileSaver &file_saver) const
     ResourceCrawler::crawl(
         ResourceCrawlerArgs(file.io, file_saver, rva_helper, base_offset));
 }
+
+static auto dummy = fmt::Registry::add<ExeArchive>("ms/exe");

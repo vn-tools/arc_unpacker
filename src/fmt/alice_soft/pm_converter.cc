@@ -133,3 +133,5 @@ std::unique_ptr<File> PmConverter::decode_internal(File &file) const
     auto image = ::decode_to_image(file.io);
     return image->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<PmConverter>("alice/pm");

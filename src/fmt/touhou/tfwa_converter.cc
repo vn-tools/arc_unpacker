@@ -41,3 +41,5 @@ std::unique_ptr<File> TfwaConverter::decode_internal(File &file) const
         file.io.read(size));
     return sound->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<TfwaConverter>("th/tfwa");

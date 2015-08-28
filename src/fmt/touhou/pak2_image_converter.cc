@@ -100,3 +100,5 @@ std::unique_ptr<File> Pak2ImageConverter::decode_internal(File &file) const
 
     return util::Image::from_pixels(pixels)->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<Pak2ImageConverter>("th/pak2-gfx");

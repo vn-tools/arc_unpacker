@@ -2,12 +2,12 @@
 #include <boost/filesystem.hpp>
 #include <map>
 #include "arc_unpacker.h"
+#include "fmt/registry.h"
 #include "log.h"
 #include "util/format.h"
 #include "util/range.h"
 
 using namespace au;
-using namespace au::fmt;
 
 namespace
 {
@@ -131,11 +131,13 @@ struct ArcUnpacker::Priv
 {
     Options options;
     ArgParser &arg_parser;
-    TransformerFactory factory;
+    fmt::Registry &registry;
     std::string version;
 
     Priv(ArgParser &arg_parser, const std::string &version)
-        : arg_parser(arg_parser), version(version)
+        : arg_parser(arg_parser),
+            registry(fmt::Registry::instance()),
+            version(version)
     {
     }
 };
@@ -178,7 +180,7 @@ directory.
     auto format = p->options.format;
     if (format != "")
     {
-        auto transformer = p->factory.create(format);
+        auto transformer = p->registry.create(format);
 
         if (transformer != nullptr)
         {
@@ -198,23 +200,23 @@ Supported FORMAT values:
 
 )");
 
-    auto formats = p->factory.get_formats();
+    auto names = p->registry.get_names();
 
-    size_t max_fmt_size = 0;
-    for (auto &fmt : p->factory.get_formats())
-        max_fmt_size = std::max(fmt.size(), max_fmt_size);
-    int columns = (79 - max_fmt_size - 2) / max_fmt_size;
-    int rows = (formats.size() + columns - 1) / columns;
+    size_t max_name_size = 0;
+    for (auto &name : p->registry.get_names())
+        max_name_size = std::max(name.size(), max_name_size);
+    int columns = (79 - max_name_size - 2) / max_name_size;
+    int rows = (names.size() + columns - 1) / columns;
     for (auto y : util::range(rows))
     {
         for (auto x : util::range(columns))
         {
             size_t i = x * rows + y;
-            if (i >= formats.size())
+            if (i >= names.size())
                 continue;
             Log.info(util::format(
-                util::format("- %%-%ds ", max_fmt_size).c_str(),
-                formats[i].c_str()));
+                util::format("- %%-%ds ", max_name_size).c_str(),
+                names[i].c_str()));
         }
         Log.info("\n");
     }
@@ -222,14 +224,16 @@ Supported FORMAT values:
 }
 
 void ArcUnpacker::unpack(
-    Transformer &transformer, File &file, const std::string &base_name) const
+    fmt::Transformer &transformer,
+    File &file,
+    const std::string &base_name) const
 {
     FileSaverHdd file_saver(p->options.output_dir, p->options.overwrite);
     unpack(transformer, file, base_name, file_saver);
 }
 
 void ArcUnpacker::unpack(
-    Transformer &transformer,
+    fmt::Transformer &transformer,
     File &file,
     const std::string &base_name,
     FileSaver &file_saver) const
@@ -237,7 +241,7 @@ void ArcUnpacker::unpack(
     FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> saved_file)
     {
         saved_file->name =
-            FileNameDecorator::decorate(
+            fmt::FileNameDecorator::decorate(
                 transformer.get_file_naming_strategy(),
                 base_name,
                 saved_file->name);
@@ -248,19 +252,20 @@ void ArcUnpacker::unpack(
     transformer.unpack(file, file_saver_proxy, p->options.recurse);
 }
 
-std::unique_ptr<Transformer> ArcUnpacker::guess_transformer(File &file) const
+std::unique_ptr<fmt::Transformer> ArcUnpacker::guess_transformer(
+    File &file) const
 {
-    std::map<std::string, std::unique_ptr<Transformer>> transformers;
+    std::map<std::string, std::unique_ptr<fmt::Transformer>> transformers;
 
-    size_t max_fmt_size = 0;
-    for (auto &fmt : p->factory.get_formats())
-        max_fmt_size = std::max(fmt.size(), max_fmt_size);
+    size_t max_name_size = 0;
+    for (auto &name : p->registry.get_names())
+        max_name_size = std::max(name.size(), max_name_size);
 
-    for (auto &fmt : p->factory.get_formats())
+    for (auto &name : p->registry.get_names())
     {
-        auto current_transformer = p->factory.create(fmt);
+        auto current_transformer = p->registry.create(name);
         if (current_transformer->is_recognized(file))
-            transformers[fmt] = std::move(current_transformer);
+            transformers[name] = std::move(current_transformer);
     }
 
     if (transformers.size() == 1)
@@ -291,7 +296,7 @@ bool ArcUnpacker::guess_transformer_and_unpack(
     Log.info(util::format("Unpacking %s...\n", file.name.c_str()));
 
     auto transformer = p->options.format != ""
-        ? p->factory.create(p->options.format)
+        ? p->registry.create(p->options.format)
         : guess_transformer(file);
 
     if (!transformer)

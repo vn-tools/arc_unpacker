@@ -72,3 +72,5 @@ std::unique_ptr<File> AjpConverter::decode_internal(File &file) const
 
     return jpeg_image->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<AjpConverter>("alice/ajp");

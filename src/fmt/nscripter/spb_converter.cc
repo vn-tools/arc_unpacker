@@ -114,3 +114,5 @@ std::unique_ptr<File> SpbConverter::decode_internal(File &file) const
     auto pixels = decode_pixels(width, height, bit_reader);
     return util::Image::from_pixels(*pixels)->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<SpbConverter>("nscripter/spb");

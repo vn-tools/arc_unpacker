@@ -37,3 +37,5 @@ std::unique_ptr<File> Pak2SoundConverter::decode_internal(File &file) const
         file.io.read(size));
     return sound->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<Pak2SoundConverter>("th/pak2-sfx");

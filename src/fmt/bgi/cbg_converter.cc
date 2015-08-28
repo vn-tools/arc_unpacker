@@ -69,3 +69,5 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
 
     util::fail("Unknown version");
 }
+
+static auto dummy = fmt::Registry::add<CbgConverter>("bgi/cbg");

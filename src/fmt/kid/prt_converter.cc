@@ -97,3 +97,5 @@ std::unique_ptr<File> PrtConverter::decode_internal(File &file) const
 
     return util::Image::from_pixels(pixels)->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<PrtConverter>("kid/prt");

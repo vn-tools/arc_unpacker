@@ -114,3 +114,5 @@ std::unique_ptr<File> NwaConverter::decode_internal(File &file) const
         samples);
     return sound->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<NwaConverter>("key/nwa");

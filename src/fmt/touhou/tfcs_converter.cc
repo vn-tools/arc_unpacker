@@ -68,3 +68,5 @@ std::unique_ptr<File> TfcsConverter::decode_internal(File &file) const
 
     return output_file;
 }
+
+static auto dummy = fmt::Registry::add<TfcsConverter>("th/tfcs");

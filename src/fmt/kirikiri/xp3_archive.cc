@@ -213,3 +213,5 @@ void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     while (table_io->tell() < table_io->size())
         file_saver.save(read_file(arc_file.io, *table_io, p->filter.get()));
 }
+
+static auto dummy = fmt::Registry::add<Xp3Archive>("krkr/xp3");

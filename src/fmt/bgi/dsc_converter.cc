@@ -198,3 +198,5 @@ std::unique_ptr<File> DscConverter::decode_internal(File &file) const
     output_file->guess_extension();
     return output_file;
 }
+
+static auto dummy = fmt::Registry::add<DscConverter>("bgi/dsc");

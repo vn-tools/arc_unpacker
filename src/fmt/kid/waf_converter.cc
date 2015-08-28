@@ -51,3 +51,5 @@ std::unique_ptr<File> WafConverter::decode_internal(File &file) const
     output_file->change_extension("wav");
     return output_file;
 }
+
+static auto dummy = fmt::Registry::add<WafConverter>("kid/waf");

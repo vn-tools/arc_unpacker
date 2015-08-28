@@ -135,3 +135,5 @@ std::unique_ptr<File> PrsConverter::decode_internal(File &file) const
     pix::Grid pixels(width, height, target, pix::Format::BGR888);
     return util::Image::from_pixels(pixels)->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<PrsConverter>("ivory/prs");

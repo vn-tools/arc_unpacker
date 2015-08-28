@@ -100,3 +100,5 @@ void Pak1ImageArchive::unpack_internal(
     while (arc_file.io.tell() < arc_file.io.size())
         file_saver.save(read_image(arc_file.io, i++, *palettes[0]));
 }
+
+static auto dummy = fmt::Registry::add<Pak1ImageArchive>("th/pak1-gfx");

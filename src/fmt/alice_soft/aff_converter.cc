@@ -43,3 +43,5 @@ std::unique_ptr<File> AffConverter::decode_internal(File &file) const
     output_file->guess_extension();
     return output_file;
 }
+
+static auto dummy = fmt::Registry::add<AffConverter>("alice/aff");

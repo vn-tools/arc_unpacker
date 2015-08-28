@@ -75,3 +75,5 @@ void PakArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (auto i : util::range(file_count))
         file_saver.save(read_file(arc_file.io, table_io, offset_to_files));
 }
+
+static auto dummy = fmt::Registry::add<PakArchive>("nitro/pak");

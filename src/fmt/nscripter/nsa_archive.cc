@@ -140,3 +140,5 @@ void NsaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (auto &entry : table)
         file_saver.save(read_file(arc_file.io, *entry, p->spb_converter));
 }
+
+static auto dummy = fmt::Registry::add<NsaArchive>("nscripter/nsa");

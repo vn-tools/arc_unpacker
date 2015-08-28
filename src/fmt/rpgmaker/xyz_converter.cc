@@ -42,3 +42,5 @@ std::unique_ptr<File> XyzConverter::decode_internal(File &file) const
     pix::Grid pixels(width, height, pix_data, palette);
     return util::Image::from_pixels(pixels)->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<XyzConverter>("rm/xyz");

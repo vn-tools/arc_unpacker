@@ -53,3 +53,5 @@ void Rgss3aArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (auto &entry : table)
         file_saver.save(rgs::read_file(arc_file.io, *entry));
 }
+
+static auto dummy = fmt::Registry::add<Rgss3aArchive>("rm/rgss3a");

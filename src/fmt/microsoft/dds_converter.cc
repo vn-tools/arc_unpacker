@@ -329,3 +329,5 @@ std::unique_ptr<File> DdsConverter::decode_internal(File &file) const
 
     return util::Image::from_pixels(*pixels)->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<DdsConverter>("ms/dds");

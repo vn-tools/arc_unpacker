@@ -108,3 +108,5 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
 
     return util::Image::from_pixels(*pixels)->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<SotesConverter>("lizsoft/sotes");

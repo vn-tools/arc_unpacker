@@ -42,3 +42,5 @@ std::unique_ptr<File> CmpConverter::decode_internal(File &file) const
     output_file->guess_extension();
     return output_file;
 }
+
+static auto dummy = fmt::Registry::add<CmpConverter>("riddle/cmp");

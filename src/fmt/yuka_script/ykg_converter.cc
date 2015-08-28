@@ -112,3 +112,5 @@ std::unique_ptr<File> YkgConverter::decode_internal(File &file) const
     read_regions(file.io, *header);
     return decode_png(file, *header);
 }
+
+static auto dummy = fmt::Registry::add<YkgConverter>("yuka/ykg");

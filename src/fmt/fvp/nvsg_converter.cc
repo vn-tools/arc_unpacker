@@ -87,3 +87,5 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
     pix::Grid pixels(width, height, data, pixel_format);
     return util::Image::from_pixels(pixels)->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<NvsgConverter>("fvp/nvsg");

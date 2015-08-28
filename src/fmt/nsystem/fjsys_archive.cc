@@ -93,3 +93,5 @@ void FjsysArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (auto i : util::range(header->file_count))
         file_saver.save(read_file(arc_file.io, *header));
 }
+
+static auto dummy = fmt::Registry::add<FjsysArchive>("nsystem/fjsys");

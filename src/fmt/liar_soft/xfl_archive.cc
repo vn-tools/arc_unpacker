@@ -93,3 +93,5 @@ void XflArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         file_saver.save(std::move(file));
     }
 }
+
+static auto dummy = fmt::Registry::add<XflArchive>("liar/xfl");

@@ -393,3 +393,5 @@ void Glib2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
             file_saver.save(read_file(arc_file.io, *entry));
     }
 }
+
+static auto dummy = fmt::Registry::add<Glib2Archive>("glib/g2");

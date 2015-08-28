@@ -50,3 +50,5 @@ std::unique_ptr<File> PgxConverter::decode_internal(File &file) const
 
     return util::Image::from_pixels(pixels)->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<PgxConverter>("glib/pgx");

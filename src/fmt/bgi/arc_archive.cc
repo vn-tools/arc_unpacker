@@ -92,3 +92,5 @@ void ArcArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         file_saver.save(std::move(file));
     }
 }
+
+static auto dummy = fmt::Registry::add<ArcArchive>("bgi/arc");

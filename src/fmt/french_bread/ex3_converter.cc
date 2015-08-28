@@ -104,3 +104,5 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
     output_file->change_extension(".bmp");
     return output_file;
 }
+
+static auto dummy = fmt::Registry::add<Ex3Converter>("fbread/ex3");

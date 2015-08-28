@@ -4,7 +4,6 @@
 #include <memory>
 #include <string>
 #include "fmt/transformer.h"
-#include "fmt/transformer_factory.h"
 
 namespace au {
 

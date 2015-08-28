@@ -35,3 +35,5 @@ std::unique_ptr<File> SoundConverter::decode_internal(File &file) const
     output_file->change_extension("ogg");
     return output_file;
 }
+
+static auto dummy = fmt::Registry::add<SoundConverter>("bgi/sound");

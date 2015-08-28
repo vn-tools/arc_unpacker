@@ -235,3 +235,5 @@ void NpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     for (auto &entry : table)
         file_saver.save(read_file(arc_file.io, *header, *p->filter, *entry));
 }
+
+static auto dummy = fmt::Registry::add<NpaArchive>("nitro/npa");

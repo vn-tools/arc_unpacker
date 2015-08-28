@@ -34,3 +34,5 @@ std::unique_ptr<File> PgaConverter::decode_internal(File &file) const
     output_file->change_extension("png");
     return output_file;
 }
+
+static auto dummy = fmt::Registry::add<PgaConverter>("sysadv/pga");

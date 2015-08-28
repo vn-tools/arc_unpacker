@@ -75,3 +75,5 @@ std::unique_ptr<File> CpsConverter::decode_internal(File &file) const
     output_file->change_extension("prt");
     return output_file;
 }
+
+static auto dummy = fmt::Registry::add<CpsConverter>("kid/cps");

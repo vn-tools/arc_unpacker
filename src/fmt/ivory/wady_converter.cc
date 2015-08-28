@@ -223,3 +223,5 @@ std::unique_ptr<File> WadyConverter::decode_internal(File &file) const
         channels, bits_per_sample / 8, sample_rate, samples);
     return sound->create_file(file.name);
 }
+
+static auto dummy = fmt::Registry::add<WadyConverter>("ivory/wady");
