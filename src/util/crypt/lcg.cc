@@ -7,11 +7,20 @@ using namespace au::util::crypt;
 struct Lcg::Priv
 {
     u32 seed;
-    u32 multiplier;
-    u32 increment;
-    u8 shift;
-    u32 mask;
+    std::function<u32(u32&)> next;
 };
+
+static inline u32 minstd(u32 &seed, u32 a, u32 q, u32 r, u32 m)
+{
+    i32 x = seed;
+    i32 hi = x / q;
+    i32 lo = x % q;
+    x = a * lo - r * hi;
+    if (x < 0)
+        x += m;
+    seed = x;
+    return x * 4.656612875245797e-10 * 256;
+}
 
 Lcg::Lcg(LcgKind kind, u32 seed) : p(new Priv)
 {
@@ -19,10 +28,25 @@ Lcg::Lcg(LcgKind kind, u32 seed) : p(new Priv)
     switch (kind)
     {
         case LcgKind::MicrosoftVisualC:
-            p->multiplier = 0x343FD;
-            p->increment = 0x269EC3;
-            p->shift = 16;
-            p->mask = 0x7FFF;
+            p->next = [](u32 &seed)
+            {
+                seed = seed * 0x343FD + 0x269EC3;
+                return (seed >> 16) & 0x7FFF;
+            };
+            break;
+
+        case LcgKind::ParkMiller:
+            p->next = [](u32 &seed)
+            {
+                return minstd(seed, 16807, 127773, 2836, 2147483647);
+            };
+            break;
+
+        case LcgKind::ParkMillerRevised:
+            p->next = [](u32 &seed)
+            {
+                return minstd(seed, 48271, 44488, 3399, 2147483647);
+            };
             break;
 
         default:
@@ -36,6 +60,5 @@ Lcg::~Lcg()
 
 u32 Lcg::next()
 {
-    p->seed = p->seed * p->multiplier + p->increment;
-    return (p->seed >> p->shift) & p->mask;
+    return p->next(p->seed);
 }

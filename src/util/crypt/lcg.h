@@ -10,6 +10,8 @@ namespace crypt {
     enum class LcgKind : u8
     {
         MicrosoftVisualC,
+        ParkMiller,
+        ParkMillerRevised,
     };
 
     class Lcg
