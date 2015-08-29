@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <boost/filesystem.hpp>
+#include "fmt/eagls/gr_converter.h"
 #include "fmt/eagls/pak_archive.h"
 #include "fmt/eagls/pak_script_converter.h"
 #include "io/buffered_io.h"
@@ -82,11 +83,13 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 
 struct PakArchive::Priv
 {
+    GrConverter gr_converter;
     PakScriptConverter pak_script_converter;
 };
 
 PakArchive::PakArchive() : p(new Priv)
 {
+    add_transformer(&p->gr_converter);
     add_transformer(&p->pak_script_converter);
 }
 
