@@ -2,21 +2,24 @@ import io
 import sys
 import struct
 
-class open_ext(object):
-    def __init__ (self, *args):
-        if args:
-            self.file = open(*args)
+class io_ext(object):
+    def __init__(self, file=None):
+        if file is None:
+            self.file = io.BytesIO()
         else:
-            self.file = sys.stdout.buffer
-
-    def __getattr__(self, attr):
-        return getattr(self.file, attr)
+            self.file = file
 
     def __enter__ (self):
         return self
 
     def __exit__ (self, exc_type, exc_value, traceback):
         self.file.close()
+
+    def tell(self):
+        return self.file.tell()
+
+    def seek(self, *args):
+        return self.file.seek(*args)
 
     def skip(self, bytes):
         self.file.seek(bytes, io.SEEK_CUR)
@@ -34,6 +37,9 @@ class open_ext(object):
 
     def read_to_eof(self):
         return self.file.read()
+
+    def read(self, *args):
+        return self.file.read(*args)
 
     def read_u8(self):
         return struct.unpack('B', self.file.read(1))[0]
@@ -55,6 +61,9 @@ class open_ext(object):
 
     def read_u64_be(self):
         return struct.unpack('>Q', self.file.read(8))[0]
+
+    def write(self, *args):
+        self.file.write(*args)
 
     def write_u8(self, x):
         self.file.write(struct.pack('B', x))
@@ -90,3 +99,16 @@ class open_ext(object):
             self.file.seek(*self.seek_args)
         def __exit__(self, *unused):
             self.file.seek(self.old_pos)
+
+class open_ext(object):
+    def __init__ (self, *args):
+        if args:
+            self.file = io_ext(open(*args))
+        else:
+            self.file = io_ext(sys.stdout.buffer)
+
+    def __enter__ (self):
+        return self.file.__enter__()
+
+    def __exit__ (self, exc_type, exc_value, traceback):
+        self.file.__exit__(exc_type, exc_value, traceback)
