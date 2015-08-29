@@ -12,6 +12,7 @@
 #include "fmt/eagls/pak_archive.h"
 #include "io/buffered_io.h"
 #include "io/file_io.h"
+#include "util/crypt/lcg.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -29,26 +30,7 @@ namespace
         size_t size;
     };
 
-    class Randomizer
-    {
-    public:
-        Randomizer(u32 seed);
-        u32 next();
-    private:
-        u32 seed;
-    };
-
     using Table = std::vector<std::unique_ptr<TableEntry>>;
-}
-
-Randomizer::Randomizer(u32 seed) : seed(seed)
-{
-}
-
-u32 Randomizer::next()
-{
-    seed = seed * 0x343FD + 0x269EC3;
-    return (seed >> 0x10) & 0x7FFF;
 }
 
 static std::string get_path_to_index(const std::string &path_to_data)
@@ -62,9 +44,9 @@ static Table read_table(io::IO &index_io)
 {
     auto data = index_io.read(index_io.size() - 4);
     auto seed = index_io.read_u32_le();
-    Randomizer randomizer(seed);
+    util::crypt::Lcg lcg(util::crypt::LcgKind::MicrosoftVisualC, seed);
     for (auto i : util::range(data.size()))
-        data[i] ^= key[randomizer.next() % key.size()];
+        data[i] ^= key[lcg.next() % key.size()];
 
     Table table;
     io::BufferedIO data_io(data);
