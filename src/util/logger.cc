@@ -42,7 +42,7 @@ void Logger::success(const std::string &str)
     if (!p->muted)
     {
         p->try_set_color(Color::Lime);
-        std::cerr << str;
+        std::cout << str;
         p->try_set_color(Color::Original);
     }
 }
