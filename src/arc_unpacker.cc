@@ -24,17 +24,15 @@ namespace
         std::vector<std::unique_ptr<PathInfo>> input_paths;
         bool overwrite;
         bool recurse;
+        bool should_show_help;
     };
 }
 
-static void add_help_option(ArgParser &arg_parser)
+static void add_help_option(ArgParser &arg_parser, Options &options)
 {
     arg_parser.add_help("-h, --help", "Shows this message.");
-}
-
-static bool should_show_help(ArgParser &arg_parser)
-{
-    return arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
+    options.should_show_help
+        = arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
 }
 
 static void add_rename_option(ArgParser &arg_parser, Options &options)
@@ -150,7 +148,7 @@ ArcUnpacker::ArcUnpacker(ArgParser &arg_parser, const std::string &version)
     add_rename_option(arg_parser, p->options);
     add_disable_colors_option(arg_parser);
     add_disable_recursion_option(arg_parser, p->options);
-    add_help_option(arg_parser);
+    add_help_option(arg_parser, p->options);
 }
 
 ArcUnpacker::~ArcUnpacker()
@@ -177,12 +175,10 @@ directory.
     p->arg_parser.clear_help();
     Log.info("\n");
 
-    auto format = p->options.format;
-    if (format != "")
+    if (p->options.format != "")
     {
-        auto transformer = p->registry.create(format);
-
-        if (transformer != nullptr)
+        auto transformer = p->registry.create(p->options.format);
+        if (transformer)
         {
             transformer->add_cli_help(p->arg_parser);
             Log.info(
@@ -201,7 +197,6 @@ Supported FORMAT values:
 )");
 
     auto names = p->registry.get_names();
-
     size_t max_name_size = 0;
     for (auto &name : p->registry.get_names())
         max_name_size = std::max(name.size(), max_name_size);
@@ -215,7 +210,7 @@ Supported FORMAT values:
             if (i >= names.size())
                 continue;
             Log.info(util::format(
-                util::format("- %%-%ds ", max_name_size).c_str(),
+                util::format("- %%-%ds ", max_name_size),
                 names[i].c_str()));
         }
         Log.info("\n");
@@ -257,10 +252,6 @@ std::unique_ptr<fmt::Transformer> ArcUnpacker::guess_transformer(
 {
     std::map<std::string, std::unique_ptr<fmt::Transformer>> transformers;
 
-    size_t max_name_size = 0;
-    for (auto &name : p->registry.get_names())
-        max_name_size = std::max(name.size(), max_name_size);
-
     for (auto &name : p->registry.get_names())
     {
         auto current_transformer = p->registry.create(name);
@@ -276,17 +267,16 @@ std::unique_ptr<fmt::Transformer> ArcUnpacker::guess_transformer(
         return std::move(transformers.begin()->second);
     }
 
-    if (transformers.size() > 1)
-    {
-        Log.warn("File wa recognized by multiple transformers:\n");
-        for (const auto &it : transformers)
-            Log.warn("- " + it.first + "\n");
-        Log.warn("Please provide --fmt and proceed manually.\n\n");
-    }
-    else
+    if (transformers.size() == 0)
     {
         Log.err("File was not recognized by any transformer.\n\n");
+        return nullptr;
     }
+
+    Log.warn("File wa recognized by multiple transformers:\n");
+    for (const auto &it : transformers)
+        Log.warn("- " + it.first + "\n");
+    Log.warn("Please provide --fmt and proceed manually.\n\n");
     return nullptr;
 }
 
@@ -318,7 +308,7 @@ bool ArcUnpacker::guess_transformer_and_unpack(
 
 bool ArcUnpacker::run()
 {
-    if (should_show_help(p->arg_parser))
+    if (p->options.should_show_help)
     {
         auto path_to_self = p->arg_parser.get_stray()[0];
         print_help(path_to_self);
