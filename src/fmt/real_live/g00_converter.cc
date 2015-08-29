@@ -1,7 +1,7 @@
 // G00 image
 //
-// Company:   Key
-// Engine:    -
+// Company:   -
+// Engine:    RealLive
 // Extension: .g00
 // Archives:  -
 //
@@ -9,14 +9,14 @@
 // - Clannad
 // - Little Busters
 
-#include "fmt/key/g00_converter.h"
+#include "fmt/real_live/g00_converter.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/range.h"
 #include "util/require.h"
 
 using namespace au;
-using namespace au::fmt::key;
+using namespace au::fmt::real_live;
 
 namespace
 {
@@ -231,4 +231,4 @@ std::unique_ptr<File> G00Converter::decode_internal(File &file) const
     }
 }
 
-static auto dummy = fmt::Registry::add<G00Converter>("key/g00");
+static auto dummy = fmt::Registry::add<G00Converter>("rl/g00");

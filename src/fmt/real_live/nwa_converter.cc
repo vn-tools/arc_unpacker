@@ -1,7 +1,7 @@
 // NWA music
 //
-// Company:   Key
-// Engine:    -
+// Company:   -
+// Engine:    RealLive
 // Extension: .nwa
 // Archives:  -
 //
@@ -9,11 +9,11 @@
 // - Clannad
 // - Little Busters
 
-#include "fmt/key/nwa_converter.h"
+#include "fmt/real_live/nwa_converter.h"
 #include "util/sound.h"
 
 using namespace au;
-using namespace au::fmt::key;
+using namespace au::fmt::real_live;
 
 namespace
 {
@@ -115,4 +115,4 @@ std::unique_ptr<File> NwaConverter::decode_internal(File &file) const
     return sound->create_file(file.name);
 }
 
-static auto dummy = fmt::Registry::add<NwaConverter>("key/nwa");
+static auto dummy = fmt::Registry::add<NwaConverter>("rl/nwa");

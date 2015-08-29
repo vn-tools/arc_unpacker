@@ -12,8 +12,8 @@ TEST_CASE("Converting single files with CLI facade works")
         ArgParser arg_parser;
         arg_parser.parse({
             "path-to-self",
-            "./tests/fmt/key/files/g00-2/AYU_03.g00",
-            "--fmt=key/g00" });
+            "./tests/fmt/real_live/files/g00-2/AYU_03.g00",
+            "--fmt=rl/g00" });
         ArcUnpacker arc_unpacker(arg_parser, "0.0");
         arc_unpacker.run();
 

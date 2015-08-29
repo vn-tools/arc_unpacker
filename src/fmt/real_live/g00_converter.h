@@ -4,9 +4,9 @@
 
 namespace au {
 namespace fmt {
-namespace key {
+namespace real_live {
 
-    class NwaConverter final : public Converter
+    class G00Converter final : public Converter
     {
     protected:
         bool is_recognized_internal(File &) const override;
