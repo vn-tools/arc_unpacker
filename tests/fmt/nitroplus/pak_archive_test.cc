@@ -10,8 +10,8 @@ static void test_pak_archive(const std::string &path)
 {
     std::vector<std::shared_ptr<File>> expected_files
     {
-        tests::stub_file("abc.txt", "123"_b),
-        tests::stub_file("another.txt", "abcdefghij"_b),
+        tests::stub_file("123.txt", "1234567890"_b),
+        tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),
     };
 
     PakArchive archive;
