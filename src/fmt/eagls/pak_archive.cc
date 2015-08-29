@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include "fmt/eagls/pak_archive.h"
+#include "fmt/eagls/pak_script_converter.h"
 #include "io/buffered_io.h"
 #include "io/file_io.h"
 #include "util/crypt/lcg.h"
@@ -62,8 +63,11 @@ static Table read_table(io::IO &index_io)
         min_offset = std::min(min_offset, entry->offset);
         table.push_back(std::move(entry));
     }
+
+    // According to Crass min_offset is calculated differently for some games.
     for (auto &entry : table)
         entry->offset -= min_offset;
+
     return table;
 }
 
@@ -74,6 +78,20 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     file->io.write_from_io(arc_io, entry.size);
     file->name = entry.name;
     return file;
+}
+
+struct PakArchive::Priv
+{
+    PakScriptConverter pak_script_converter;
+};
+
+PakArchive::PakArchive() : p(new Priv)
+{
+    add_transformer(&p->pak_script_converter);
+}
+
+PakArchive::~PakArchive()
+{
 }
 
 bool PakArchive::is_recognized_internal(File &arc_file) const
