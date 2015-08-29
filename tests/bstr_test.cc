@@ -84,7 +84,7 @@ TEST_CASE("bstr.operator+", "[au]")
     REQUIRE(z == "\x00\x01\x00\x02"_b);
 }
 
-TEST_CASE("bstr.operator+=", "[au]")
+TEST_CASE("bstr.operator+=(bstr)", "[au]")
 {
     bstr x = "\x00\x01"_b;
     bstr y = "\x00\x02"_b;
@@ -93,6 +93,15 @@ TEST_CASE("bstr.operator+=", "[au]")
     z += x;
     z += y;
     REQUIRE(z == "\x00\x01\x00\x02"_b);
+}
+
+TEST_CASE("bstr.operator+=(char)", "[au]")
+{
+    bstr z = ""_b;
+    REQUIRE(z == ""_b);
+    z += 'A';
+    z += static_cast<u8>('\xFF');
+    REQUIRE(z == "A\xFF"_b);
 }
 
 TEST_CASE("bstr.operator==", "[au]")

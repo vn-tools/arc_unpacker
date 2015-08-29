@@ -77,12 +77,12 @@ void bstr::operator +=(const bstr &other)
 
 void bstr::operator +=(char c)
 {
-    v.insert(v.end(), c);
+    v.push_back(c);
 }
 
 void bstr::operator +=(uint8_t c)
 {
-    v.insert(v.end(), c);
+    v.push_back(c);
 }
 
 bool bstr::operator ==(const bstr &other) const
