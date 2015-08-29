@@ -16,13 +16,14 @@ namespace
 
     public:
         Reader();
+        virtual ~Reader();
         bool get(bool use_exceptions);
         int getn(size_t n, bool use_exceptions);
         size_t tell() const;
         virtual bool eof() const = 0;
     };
 
-    class BufferBasedReader : public Reader
+    class BufferBasedReader final : public Reader
     {
     private:
         bstr buffer;
@@ -35,7 +36,7 @@ namespace
         u8 fetch_byte() override;
     };
 
-    class IoBasedReader : public Reader
+    class IoBasedReader final : public Reader
     {
     private:
         IO &io;
@@ -52,6 +53,10 @@ Reader::Reader()
     mask = 0;
     value = 0;
     pos = 0;
+}
+
+Reader::~Reader()
+{
 }
 
 size_t Reader::tell() const
@@ -138,10 +143,7 @@ struct BitReader::Priv
 };
 
 BitReader::BitReader(IO &io)
-    : p(
-        new Priv(
-            std::unique_ptr<Reader>(
-                new IoBasedReader(io))))
+    : p(new Priv(std::unique_ptr<Reader>(new IoBasedReader(io))))
 {
 }
 
@@ -151,9 +153,7 @@ BitReader::BitReader(const bstr &buffer)
 }
 
 BitReader::BitReader(const char *buffer, size_t size)
-    : p(new Priv(
-        std::unique_ptr<Reader>(
-            new BufferBasedReader(
+    : p(new Priv(std::unique_ptr<Reader>(new BufferBasedReader(
                 bstr(buffer, size)))))
 {
 }
