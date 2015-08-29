@@ -7,8 +7,9 @@
 //
 // Known games:
 // - Clannad
-// - Little Busters
+// - Imouto ni! Sukumizu Kisetara Nugasanai!
 // - Kanon
+// - Little Busters
 
 #include "fmt/real_live/nwa_converter.h"
 #include "util/sound.h"

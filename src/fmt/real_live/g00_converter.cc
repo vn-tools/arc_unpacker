@@ -7,8 +7,9 @@
 //
 // Known games:
 // - Clannad
-// - Little Busters
+// - Imouto ni! Sukumizu Kisetara Nugasanai!
 // - Kanon
+// - Little Busters
 
 #include "fmt/real_live/g00_converter.h"
 #include "io/buffered_io.h"
