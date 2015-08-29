@@ -43,3 +43,5 @@ void Abmp7Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     while (arc_file.io.tell() < arc_file.io.size())
         read_next_file(arc_file.io, file_saver);
 }
+
+static auto dummy = fmt::Registry::add<Abmp7Archive>("qlie/abmp7");

@@ -111,3 +111,5 @@ void Abmp10Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         }
     }
 }
+
+static auto dummy = fmt::Registry::add<Abmp10Archive>("qlie/abmp10");
