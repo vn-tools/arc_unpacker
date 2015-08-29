@@ -6,97 +6,42 @@ using namespace au::io;
 
 namespace
 {
-    class Reader
+    struct Reader
     {
-    private:
-        u8 mask;
-        u8 value;
-        size_t pos;
-        virtual u8 fetch_byte() = 0;
-
-    public:
         Reader();
         virtual ~Reader();
-        bool get(bool use_exceptions);
-        int getn(size_t n, bool use_exceptions);
-        size_t tell() const;
         virtual bool eof() const = 0;
+        virtual u8 fetch_byte() = 0;
     };
 
-    class BufferBasedReader final : public Reader
+    struct BufferBasedReader final : public Reader
     {
-    private:
         bstr buffer;
         size_t bytes_left;
         const u8 *ptr;
 
-    public:
         BufferBasedReader(const bstr &buffer);
-        bool eof() const override;
-        u8 fetch_byte() override;
+        inline bool eof() const override;
+        inline u8 fetch_byte() override;
     };
 
-    class IoBasedReader final : public Reader
+    struct IoBasedReader final : public Reader
     {
-    private:
         IO &io;
 
-    public:
         IoBasedReader(IO &io);
-        bool eof() const override;
-        u8 fetch_byte() override;
+        inline bool eof() const override;
+        inline u8 fetch_byte() override;
     };
 }
 
 Reader::Reader()
 {
-    mask = 0;
-    value = 0;
-    pos = 0;
 }
 
 Reader::~Reader()
 {
 }
-
-size_t Reader::tell() const
-{
-    return pos;
-}
-
-bool Reader::get(bool use_exceptions)
-{
-    mask >>= 1;
-    if (!mask)
-    {
-        if (eof())
-        {
-            if (!use_exceptions)
-                return 0;
-            throw std::runtime_error("Trying to read bits beyond EOF");
-        }
-
-        mask = 0x80;
-        value = fetch_byte();
-    }
-    ++pos;
-    return (value & mask) != 0;
-}
-
-int Reader::getn(size_t n, bool use_exceptions)
-{
-    if (n > 32)
-        throw std::runtime_error("Too many bits");
-
-    unsigned int value = 0;
-    while (n--)
-    {
-        value <<= 1;
-        value |= static_cast<int>(get(use_exceptions));
-    }
-    return value;
-}
-
 
 BufferBasedReader::BufferBasedReader(const bstr &buffer)
     : buffer(buffer), bytes_left(buffer.size())
@@ -104,12 +49,12 @@ BufferBasedReader::BufferBasedReader(const bstr &buffer)
     ptr = this->buffer.get<const u8>();
 }
 
-bool BufferBasedReader::eof() const
+inline bool BufferBasedReader::eof() const
 {
     return bytes_left == 0;
 }
 
-u8 BufferBasedReader::fetch_byte()
+inline u8 BufferBasedReader::fetch_byte()
 {
     --bytes_left;
     return *ptr++;
@@ -119,12 +64,12 @@ IoBasedReader::IoBasedReader(IO &io) : io(io)
 {
 }
 
-bool IoBasedReader::eof() const
+inline bool IoBasedReader::eof() const
 {
     return io.tell() >= io.size();
 }
 
-u8 IoBasedReader::fetch_byte()
+inline u8 IoBasedReader::fetch_byte()
 {
     return io.read_u8();
 }
@@ -132,15 +77,58 @@ u8 IoBasedReader::fetch_byte()
 struct BitReader::Priv
 {
     std::unique_ptr<Reader> reader;
+    u32 shift;
+    u32 value;
+    u32 pos;
 
-    Priv(std::unique_ptr<Reader> reader) : reader(std::move(reader))
-    {
-    }
-
-    ~Priv()
-    {
-    }
+    Priv(std::unique_ptr<Reader> reader);
+    ~Priv();
+    inline u32 tell() const;
+    inline u32 get(size_t n, bool use_exceptions);
 };
+
+BitReader::Priv::Priv(std::unique_ptr<Reader> reader)
+    : reader(std::move(reader))
+{
+    value = 0;
+    pos = 0;
+    shift = 8;
+}
+
+BitReader::Priv::~Priv()
+{
+}
+
+inline u32 BitReader::Priv::tell() const
+{
+    return pos;
+}
+
+inline u32 BitReader::Priv::get(size_t n, bool use_exceptions)
+{
+    if (n > 32)
+        throw std::runtime_error("Too many bits");
+
+    auto mask = ((1 << n) - 1);
+
+    pos += n;
+    shift += n;
+    while (shift > 8)
+    {
+        value <<= 8;
+        if (reader->eof())
+        {
+            if (use_exceptions)
+                throw std::runtime_error("Trying to read bits beyond EOF");
+        }
+        else
+            value |= reader->fetch_byte();
+        shift -= 8;
+    }
+
+    return (value >> ((32 - shift) & 7)) & mask;
+}
+
 
 BitReader::BitReader(IO &io)
     : p(new Priv(std::unique_ptr<Reader>(new IoBasedReader(io))))
@@ -164,15 +152,15 @@ BitReader::~BitReader()
 
 unsigned int BitReader::get(size_t n)
 {
-    return p->reader->getn(n, true);
+    return p->get(n, true);
 }
 
 unsigned int BitReader::try_get(size_t n)
 {
-    return p->reader->getn(n, false);
+    return p->get(n, false);
 }
 
 size_t BitReader::tell() const
 {
-    return p->reader->tell();
+    return p->tell();
 }
