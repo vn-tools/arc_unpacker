@@ -1,101 +1,86 @@
-/*
-   Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
-   All rights reserved.
-
-   2009/09/25 - Modifications by asmodean to match the non-standard
-                implementation found in FilePackVer3.0 archives used
-                by Signal Hearts.
-
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions
-   are met:
-
-     1. Redistributions of source code must retain the above copyright
-        notice, this list of conditions and the following disclaimer.
-
-     2. Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
-
-     3. The names of its contributors may not be used to endorse or promote
-        products derived from this software without specific prior written
-        permission.
-
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER
-   OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
 #include "fmt/qlie/mt.h"
+#include "util/range.h"
 
-static const int N = 64;
-static const int M = 39;
-static const unsigned long MATRIX_A = 0x9908B0DFul;
-static const unsigned long UPPER_MASK = 0x80000000ul;
-static const unsigned long LOWER_MASK = 0x7FFFFFFFul;
+using namespace au;
+using namespace au::fmt::qlie;
 
-static unsigned long mts[N];
-static int mti = N + 1;
+static const int n = 64;
+static const int m = 39;
+static const u32 matrix_a = 0x9908B0DFul;
+static const u32 upper_mask = 0x80000000ul;
+static const u32 lower_mask = 0x7FFFFFFFul;
 
-void au::fmt::qlie::mt::xor_state(const unsigned char* buff, unsigned long len)
+struct CustomMersenneTwister::Priv
 {
-    const unsigned long *words = reinterpret_cast<const unsigned long*>(buff);
-    unsigned long word_count = len / 4;
-    unsigned long i;
+    u32 state[n];
+    int mti;
+};
 
-    if (word_count > N)
-        word_count = N;
-
-    for (i = 0; i < word_count; i++)
-        mts[i] ^= words[i];
-}
-
-void au::fmt::qlie::mt::init_genrand(unsigned long s)
+static void init_state(u32 state[], const u32 seed, int &mti)
 {
-    mts[0] = s & 0xFFFFFFFFul;
-    for (mti = 1; mti < N; mti++)
+    state[0] = seed & 0xFFFFFFFFul;
+    for (mti = 1; mti < n; mti++)
     {
-        mts[mti] = (1712438297ul * (mts[mti - 1] ^ (mts[mti - 1] >> 30)) + mti);
-        mts[mti] &= 0xFFFFFFFFul;
+        u32 tmp = state[mti - 1] ^ (state[mti - 1] >> 30);
+        state[mti] = (1712438297ul * tmp + mti) & 0xFFFFFFFFul;
     }
 }
 
-unsigned long au::fmt::qlie::mt::genrand_int32()
+CustomMersenneTwister::CustomMersenneTwister(u32 seed) : p(new Priv)
 {
-    unsigned long y;
-    static unsigned long mag01[2] = { 0x0ul, MATRIX_A };
+    init_state(p->state, seed, p->mti);
+}
 
-    if (mti >= N)
+CustomMersenneTwister::~CustomMersenneTwister()
+{
+}
+
+void CustomMersenneTwister::xor_state(const bstr &data)
+{
+    const u32 *data_ptr = data.get<const u32>();
+    const u32 *data_end = data.end<const u32>();
+
+    size_t i = 0;
+    while (i < n && data_ptr < data_end)
+        p->state[i++] ^= *data_ptr++;
+}
+
+u32 CustomMersenneTwister::get_next_integer()
+{
+    u32 y;
+    static u32 mag01[2] = { 0x0ul, matrix_a };
+
+    if (p->mti >= n)
     {
         int kk;
 
-        if (mti == N + 1)
-            au::fmt::qlie::mt::init_genrand(5489ul);
+        if (p->mti == n + 1)
+            init_state(p->state, 5489ul, p->mti);
 
-        for (kk = 0; kk < N - M; kk++)
+        for (kk = 0; kk < n - m; kk++)
         {
-            y = (mts[kk] & UPPER_MASK) | ((mts[kk + 1] & LOWER_MASK) >> 1);
-            mts[kk] = mts[kk + M] ^ y ^ mag01[mts[kk + 1] & 0x1ul];
+            y = (p->state[kk] & upper_mask)
+                | ((p->state[kk + 1] & lower_mask) >> 1);
+
+            p->state[kk]
+                = p->state[kk + m] ^ y ^ mag01[p->state[kk + 1] & 0x1ul];
         }
-        for (; kk < N - 1; kk++)
+
+        for (; kk < n - 1; kk++)
         {
-            y = (mts[kk] & UPPER_MASK) | ((mts[kk + 1] & LOWER_MASK) >> 1);
-            mts[kk] = mts[kk + (M - N)] ^ y ^ mag01[mts[kk + 1] & 0x1ul];
+            y = (p->state[kk] & upper_mask)
+                | ((p->state[kk + 1] & lower_mask) >> 1);
+
+            p->state[kk]
+                = p->state[kk + (m - n)] ^ y ^ mag01[p->state[kk + 1] & 0x1ul];
         }
-        y = (mts[N - 1] & UPPER_MASK) | ((mts[0] & LOWER_MASK) >> 1);
-        mts[N - 1] = mts[M - 1] ^ y ^ mag01[mts[N - 1] & 0x1ul];
-        mti = 0;
+
+        y = (p->state[n - 1] & upper_mask) | ((p->state[0] & lower_mask) >> 1);
+        p->state[n - 1] = p->state[m - 1] ^ y ^ mag01[p->state[n - 1] & 0x1ul];
+        p->mti = 0;
     }
 
-    y = mts[mti++];
+    y = p->state[p->mti++];
 
     y ^= (y >> 11);
     y ^= (y << 7) & 0x9C4F88E3ul;

@@ -1,12 +1,24 @@
 #pragma once
 
+#include <memory>
+#include "types.h"
+
 namespace au {
 namespace fmt {
 namespace qlie {
-namespace mt {
 
-    void xor_state(const unsigned char *buff, unsigned long len);
-    void init_genrand(unsigned long s);
-    unsigned long genrand_int32(void);
+    class CustomMersenneTwister final
+    {
+    public:
+        CustomMersenneTwister(u32 seed);
+        ~CustomMersenneTwister();
 
-} } } }
+        void xor_state(const bstr &data);
+        u32 get_next_integer();
+
+    private:
+        struct Priv;
+        std::unique_ptr<Priv> p;
+    };
+
+} } }
