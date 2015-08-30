@@ -12,6 +12,7 @@
 #include "fmt/liar_soft/lwg_archive.h"
 #include "fmt/liar_soft/wcg_converter.h"
 #include "fmt/liar_soft/xfl_archive.h"
+#include "fmt/liar_soft/packed_ogg_converter.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -63,12 +64,14 @@ struct XflArchive::Priv
 {
     LwgArchive lwg_archive;
     WcgConverter wcg_converter;
+    PackedOggConverter packed_ogg_converter;
 };
 
 XflArchive::XflArchive() : p(new Priv)
 {
     add_transformer(&p->wcg_converter);
     add_transformer(&p->lwg_archive);
+    add_transformer(&p->packed_ogg_converter);
     add_transformer(this);
 }
 
