@@ -83,21 +83,21 @@ void Abmp10Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     {
         bstr magic = arc_file.io.read(16);
         if (magic == magic_data10
-        || magic == magic_data11
-        || magic == magic_data12
-        || magic == magic_data13)
+            || magic == magic_data11
+            || magic == magic_data12
+            || magic == magic_data13)
         {
             //interesting
             size_t size = arc_file.io.read_u32_le();
             arc_file.io.skip(size);
         }
-        else if (magic == magic_image10 || magic == magic_image10)
+        else if (magic == magic_image10 || magic == magic_sound10)
         {
             size_t file_count = arc_file.io.read_u8();
             for (auto i : util::range(file_count))
             {
                 auto subfile = read_file(arc_file.io);
-                if (subfile != nullptr)
+                if (subfile)
                 {
                     subfile->guess_extension();
                     file_saver.save(std::move(subfile));
