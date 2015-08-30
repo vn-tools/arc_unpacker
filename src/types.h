@@ -44,12 +44,12 @@ namespace au {
 
         template<typename T> T *end()
         {
-            return reinterpret_cast<T*>(&v[size()]);
+            return get<T>() + v.size() / sizeof(T);
         }
 
         template<typename T> const T *end() const
         {
-            return reinterpret_cast<const T*>(&v[size()]);
+            return get<T>() + v.size() / sizeof(T);
         }
 
         std::string str(bool trim_to_zero = false) const;
