@@ -15,7 +15,7 @@ echo 'Checking for typedef...'
 grep 'typedef' **/*.{cc,h} && exit 1
 
 echo 'Checking for "length"...'
-grep 'length' **/*.{cc,h} && ( echo 'Use "size" instead.'; exit 1 )
+grep 'length' **/*.{cc,h} | grep -v run_length && ( echo 'Use "size" instead.'; exit 1 )
 
 echo 'Checking for iostream outside logger...'
 grep 'iostream' **/*.{cc,h} | grep -v logger && exit 1
