@@ -223,10 +223,45 @@ static std::unique_ptr<File> read_file(
     return file;
 }
 
+static void do_unpack(
+    const Table &table,
+    io::IO &arc_io,
+    const bstr &game_title,
+    FileSaver &file_saver)
+{
+    for (auto &entry : table)
+    {
+        if (!entry->valid)
+        {
+            Log.err(util::format(
+                "Unknown hash: %016llx. File cannot be unpacked.\n",
+                entry->hash));
+            continue;
+        }
+        file_saver.save(read_file(arc_io, *entry, game_title));
+    }
+}
+
+static void dump(const Table &table, const std::string &dump_path)
+{
+    // make it static, so that ./au *.dat --dump=x doesn't write info only
+    // about the last archive
+    static io::FileIO io(dump_path, io::FileMode::Write);
+
+    for (auto &entry : table)
+    {
+        if (entry->valid)
+            io.write(util::sjis_to_utf8(entry->name).str() + "\n");
+        else
+            io.write(util::format("unk:%016llx\n", entry->hash));
+    }
+}
+
 struct DatArchive::Priv
 {
     bstr game_title;
     std::map<u64, bstr> file_names_map;
+    std::string dump_path;
     fmt::kirikiri::TlgConverter tlg_converter;
 };
 
@@ -245,15 +280,21 @@ void DatArchive::add_cli_help(ArgParser &arg_parser) const
         "--file-names=PATH",
         "Specifies path to file containing list of game's file names.\n");
 
+    arg_parser.add_help(
+        "--dump=PATH",
+        "Rather than unpacking, create dump of the file names.\n"
+        "This is useful when adding support for new games.\n");
+
     Archive::add_cli_help(arg_parser);
 }
 
 void DatArchive::parse_cli_options(const ArgParser &arg_parser)
 {
-    auto path = arg_parser.get_switch("file-names");
-    if (path != "")
+    p->dump_path = arg_parser.get_switch("dump");
+
+    if (arg_parser.has_switch("file-names"))
     {
-        io::FileIO io(path, io::FileMode::Read);
+        io::FileIO io(arg_parser.get_switch("file-names"), io::FileMode::Read);
         bstr line = io.read_line();
         p->game_title = util::utf8_to_sjis(line);
         while ((line = io.read_line()) != ""_b)
@@ -277,16 +318,13 @@ bool DatArchive::is_recognized_internal(File &arc_file) const
 void DatArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     Table table = read_table(arc_file.io, p->file_names_map);
-    for (auto &entry : table)
+    if (p->dump_path != "")
     {
-        if (!entry->valid)
-        {
-            Log.err(util::format(
-                "Unknown hash: %016llx. File cannot be unpacked.\n",
-                entry->hash));
-            continue;
-        }
-        file_saver.save(read_file(arc_file.io, *entry, p->game_title));
+        dump(table, p->dump_path);
+    }
+    else
+    {
+        do_unpack(table, arc_file.io, p->game_title, file_saver);
     }
 }
 
