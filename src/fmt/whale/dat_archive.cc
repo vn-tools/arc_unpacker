@@ -5,7 +5,8 @@
 // Extension: .dat
 //
 // Known games:
-// - Tsujidou-san no Junai Road
+// - Tsujidou-san no Jun'ai Road
+// - Tsujidou-san no Virgin Road
 
 #include <map>
 #include "fmt/whale/dat_archive.h"
