@@ -187,7 +187,7 @@ static Table read_table(
             if (!size)
             {
                 Log.err(util::format(
-                    "Unknown hash: %08llx. File cannot be unpacked.\n",
+                    "Unknown hash: %016llx. File cannot be unpacked.\n",
                     entry->hash));
                 continue;
             }
