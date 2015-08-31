@@ -33,10 +33,11 @@ namespace
     {
         u64 hash;
         TableEntryType type;
+        bool valid;
         size_t offset;
-        size_t size_original;
-        size_t size_compressed;
-        bstr sjis_name;
+        size_t size_orig;
+        size_t size_comp;
+        bstr name;
     };
 
     using Table = std::vector<std::unique_ptr<TableEntry>>;
@@ -125,27 +126,27 @@ static u64 crc64(const bstr &buffer)
 }
 
 static void transform_regular_content(
-    bstr &buffer, const bstr &sjis_file_name)
+    bstr &buffer, const bstr &file_name)
 {
     auto block_size = static_cast<size_t>(
-        floor(buffer.size() / static_cast<float>(sjis_file_name.size())));
+        floor(buffer.size() / static_cast<float>(file_name.size())));
     u8 *buffer_ptr = buffer.get<u8>();
     u8 *buffer_end = buffer_ptr + buffer.size();
-    for (auto j : util::range(sjis_file_name.size() - 1))
+    for (auto j : util::range(file_name.size() - 1))
     {
         for (auto k : util::range(block_size))
         {
             if (buffer_ptr >= buffer_end)
                 return;
-            *buffer_ptr++ ^= sjis_file_name[j];
+            *buffer_ptr++ ^= file_name[j];
         }
     }
 }
 
 static void transform_script_content(
-    bstr &buffer, u64 hash, const bstr &sjis_game_title)
+    bstr &buffer, u64 hash, const bstr &game_title)
 {
-    u32 xor_value = (hash ^ crc64(sjis_game_title)) & 0xFFFFFFFF;
+    u32 xor_value = (hash ^ crc64(game_title)) & 0xFFFFFFFF;
     u32 *buffer_ptr = buffer.get<u32>();
     for (auto i : util::range(buffer.size() / 4))
         *buffer_ptr++ ^= xor_value;
@@ -157,7 +158,7 @@ static u32 read_file_count(io::IO &arc_io)
 }
 
 static Table read_table(
-    io::IO &arc_io, std::map<u64, bstr> &sjis_file_names_map)
+    io::IO &arc_io, std::map<u64, bstr> &file_names_map)
 {
     Table table;
     auto file_count = read_file_count(arc_io);
@@ -165,36 +166,32 @@ static Table read_table(
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
 
+        entry->valid = true;
         entry->hash = arc_io.read_u64_le();
-
         entry->type = static_cast<TableEntryType>(
             arc_io.read_u8() ^ (entry->hash & 0xFF));
-        entry->offset          = arc_io.read_u32_le();
-        entry->size_compressed = arc_io.read_u32_le();
-        entry->size_original   = arc_io.read_u32_le();
-        entry->offset          ^= (entry->hash & 0xFFFFFFFF);
-        entry->size_compressed ^= (entry->hash & 0xFFFFFFFF);
-        entry->size_original   ^= (entry->hash & 0xFFFFFFFF);
+
+        entry->offset    = arc_io.read_u32_le() ^ (entry->hash & 0xFFFFFFFF);
+        entry->size_comp = arc_io.read_u32_le() ^ (entry->hash & 0xFFFFFFFF);;
+        entry->size_orig = arc_io.read_u32_le() ^ (entry->hash & 0xFFFFFFFF);;
 
         if (entry->type == TableEntryType::Compressed)
         {
-            entry->sjis_name = util::format("%04d.txt", i);
+            entry->name = util::format("%04d.txt", i);
+            entry->valid = true;
         }
         else
         {
-            auto sjis_name = sjis_file_names_map[entry->hash];
-            auto size = sjis_name.size();
-            if (!size)
+            auto name = file_names_map[entry->hash];
+            if (name.size())
             {
-                Log.err(util::format(
-                    "Unknown hash: %016llx. File cannot be unpacked.\n",
-                    entry->hash));
-                continue;
+                entry->name = name;
+                entry->offset    ^= entry->name[entry->name.size() >> 1] & 0xFF;
+                entry->size_comp ^= entry->name[entry->name.size() >> 2] & 0xFF;
+                entry->size_orig ^= entry->name[entry->name.size() >> 3] & 0xFF;
             }
-            entry->offset          ^= sjis_name[size >> 1] & 0xFF;
-            entry->size_compressed ^= sjis_name[size >> 2] & 0xFF;
-            entry->size_original   ^= sjis_name[size >> 3] & 0xFF;
-            entry->sjis_name = sjis_name;
+            else
+                entry->valid = false;
         }
 
         table.push_back(std::move(entry));
@@ -203,23 +200,23 @@ static Table read_table(
 }
 
 static std::unique_ptr<File> read_file(
-    io::IO &arc_io, const TableEntry &entry, const bstr &sjis_game_title)
+    io::IO &arc_io, const TableEntry &entry, const bstr &game_title)
 {
     std::unique_ptr<File> file(new File);
-    file->name = util::sjis_to_utf8(entry.sjis_name).str();
+    file->name = util::sjis_to_utf8(entry.name).str();
 
     arc_io.seek(entry.offset);
-    auto data = arc_io.read(entry.size_compressed);
+    auto data = arc_io.read(entry.size_comp);
 
     if (entry.type == TableEntryType::Compressed)
     {
-        transform_script_content(data, entry.hash, sjis_game_title);
+        transform_script_content(data, entry.hash, game_title);
         file->io.write(util::pack::zlib_inflate(data));
     }
     else
     {
         if (entry.type == TableEntryType::Obfuscated)
-            transform_regular_content(data, entry.sjis_name);
+            transform_regular_content(data, entry.name);
         file->io.write(data);
     }
 
@@ -228,8 +225,8 @@ static std::unique_ptr<File> read_file(
 
 struct DatArchive::Priv
 {
-    bstr sjis_game_title;
-    std::map<u64, bstr> sjis_file_names_map;
+    bstr game_title;
+    std::map<u64, bstr> file_names_map;
     fmt::kirikiri::TlgConverter tlg_converter;
 };
 
@@ -258,11 +255,11 @@ void DatArchive::parse_cli_options(const ArgParser &arg_parser)
     {
         io::FileIO io(path, io::FileMode::Read);
         bstr line = io.read_line();
-        p->sjis_game_title = util::utf8_to_sjis(line);
+        p->game_title = util::utf8_to_sjis(line);
         while ((line = io.read_line()) != ""_b)
         {
             line = util::utf8_to_sjis(line);
-            p->sjis_file_names_map[crc64(line)] = line;
+            p->file_names_map[crc64(line)] = line;
         }
     }
 
@@ -279,9 +276,18 @@ bool DatArchive::is_recognized_internal(File &arc_file) const
 
 void DatArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
-    Table table = read_table(arc_file.io, p->sjis_file_names_map);
+    Table table = read_table(arc_file.io, p->file_names_map);
     for (auto &entry : table)
-        file_saver.save(read_file(arc_file.io, *entry, p->sjis_game_title));
+    {
+        if (!entry->valid)
+        {
+            Log.err(util::format(
+                "Unknown hash: %016llx. File cannot be unpacked.\n",
+                entry->hash));
+            continue;
+        }
+        file_saver.save(read_file(arc_file.io, *entry, p->game_title));
+    }
 }
 
 static auto dummy = fmt::Registry::add<DatArchive>("whale/dat");
