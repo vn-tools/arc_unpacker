@@ -173,21 +173,25 @@ static Table read_table(
             arc_io.read_u8() ^ (entry->hash & 0xFF));
 
         entry->offset    = arc_io.read_u32_le() ^ (entry->hash & 0xFFFFFFFF);
-        entry->size_comp = arc_io.read_u32_le() ^ (entry->hash & 0xFFFFFFFF);;
-        entry->size_orig = arc_io.read_u32_le() ^ (entry->hash & 0xFFFFFFFF);;
+        entry->size_comp = arc_io.read_u32_le() ^ (entry->hash & 0xFFFFFFFF);
+        entry->size_orig = arc_io.read_u32_le() ^ (entry->hash & 0xFFFFFFFF);
+
+        auto name = file_names_map[entry->hash];
+        auto name_found = name.size();
 
         if (entry->type == TableEntryType::Compressed)
         {
-            entry->name = util::format("%04d.txt", i);
+            entry->name = name_found
+                ? name
+                : util::format("%04d.txt", i);
             entry->valid = true;
         }
         else
         {
-            auto name = file_names_map[entry->hash];
-            if (name.size())
+            if (name_found)
             {
                 entry->name = name;
-                entry->offset    ^= entry->name[entry->name.size() >> 1] & 0xFF;
+                entry->offset ^= entry->name[entry->name.size() >> 1] & 0xFF;
                 entry->size_comp ^= entry->name[entry->name.size() >> 2] & 0xFF;
                 entry->size_orig ^= entry->name[entry->name.size() >> 3] & 0xFF;
             }
@@ -296,16 +300,24 @@ void DatArchive::parse_cli_options(const ArgParser &arg_parser)
     if (arg_parser.has_switch("file-names"))
     {
         io::FileIO io(arg_parser.get_switch("file-names"), io::FileMode::Read);
-        bstr line = io.read_line();
-        p->game_title = util::utf8_to_sjis(line);
+        set_game_title(io.read_line().str());
+        bstr line;
         while ((line = io.read_line()) != ""_b)
-        {
-            line = util::utf8_to_sjis(line);
-            p->file_names_map[crc64(line)] = line;
-        }
+            add_file_name(line.str());
     }
 
     Archive::parse_cli_options(arg_parser);
+}
+
+void DatArchive::set_game_title(const std::string &game_title)
+{
+    p->game_title = util::utf8_to_sjis(game_title);
+}
+
+void DatArchive::add_file_name(const std::string &file_name)
+{
+    auto file_name_sjis = util::utf8_to_sjis(file_name);
+    p->file_names_map[crc64(file_name_sjis)] = file_name_sjis;
 }
 
 bool DatArchive::is_recognized_internal(File &arc_file) const
