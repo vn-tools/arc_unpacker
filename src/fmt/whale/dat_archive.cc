@@ -245,12 +245,6 @@ DatArchive::~DatArchive()
 void DatArchive::add_cli_help(ArgParser &arg_parser) const
 {
     arg_parser.add_help(
-        "--game-title=TITLE",
-        "Chooses game title.\n"
-            "Known values:\n"
-            "- 辻堂さんの純愛ロード");
-
-    arg_parser.add_help(
         "--file-names=PATH",
         "Specifies path to file containing list of game's file names.\n");
 
@@ -259,14 +253,12 @@ void DatArchive::add_cli_help(ArgParser &arg_parser) const
 
 void DatArchive::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->sjis_game_title = util::utf8_to_sjis(
-        arg_parser.get_switch("game-title"));
-
     auto path = arg_parser.get_switch("file-names");
     if (path != "")
     {
         io::FileIO io(path, io::FileMode::Read);
-        bstr line;
+        bstr line = io.read_line();
+        p->sjis_game_title = util::utf8_to_sjis(line);
         while ((line = io.read_line()) != ""_b)
         {
             line = util::utf8_to_sjis(line);
@@ -288,7 +280,6 @@ bool DatArchive::is_recognized_internal(File &arc_file) const
 void DatArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     Table table = read_table(arc_file.io, p->sjis_file_names_map);
-
     for (auto &entry : table)
         file_saver.save(read_file(arc_file.io, *entry, p->sjis_game_title));
 }
