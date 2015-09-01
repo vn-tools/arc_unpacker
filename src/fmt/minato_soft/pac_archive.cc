@@ -7,6 +7,7 @@
 // Known games:
 // - Maji de Watashi ni Koishinasai!
 
+#include "fmt/minato_soft/fil_converter.h"
 #include "fmt/minato_soft/pac_archive.h"
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
@@ -105,18 +106,26 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
 {
     std::unique_ptr<File> file(new File);
     arc_io.seek(entry.offset);
-    if (entry.size_original == entry.size_compressed)
-    {
-        file->io.write_from_io(arc_io, entry.size_original);
-    }
-    else
-    {
-        file->io.write(
-            util::pack::zlib_inflate(
-                arc_io.read(entry.size_compressed)));
-    }
+    auto data = arc_io.read(entry.size_compressed);
+    if (entry.size_original != entry.size_compressed)
+        data = util::pack::zlib_inflate(data);
+    file->io.write(data);
     file->name = entry.name;
     return file;
+}
+
+struct PacArchive::Priv
+{
+    FilConverter fil_converter;
+};
+
+PacArchive::PacArchive() : p(new Priv)
+{
+    add_transformer(&p->fil_converter);
+}
+
+PacArchive::~PacArchive()
+{
 }
 
 bool PacArchive::is_recognized_internal(File &arc_file) const
