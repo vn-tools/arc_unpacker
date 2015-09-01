@@ -37,7 +37,7 @@ static int init_huffman(io::BitReader &bit_reader, u16 nodes[2][512], int &pos)
 {
     if (bit_reader.get(1))
     {
-        int old_pos = pos;
+        auto old_pos = pos;
         pos++;
         if (old_pos < 511)
         {
@@ -54,18 +54,18 @@ static bstr decompress_table(const bstr &input, size_t output_size)
 {
     bstr output;
     output.resize(output_size);
-    u8 *output_ptr = output.get<u8>();
-    u8 *output_end = output_ptr + output_size;
+    auto output_ptr = output.get<u8>();
+    auto output_end = output.end<const u8>();
     io::BitReader bit_reader(input);
 
     u16 nodes[2][512];
-    int pos = 256;
-    int initial_pos = init_huffman(bit_reader, nodes, pos);
+    auto pos = 256;
+    auto initial_pos = init_huffman(bit_reader, nodes, pos);
 
     while (output_ptr < output_end)
     {
-        unsigned int pos = initial_pos;
-        while (pos >= 256)
+        auto pos = initial_pos;
+        while (pos >= 256 && pos <= 511)
             pos = nodes[bit_reader.get(1)][pos];
 
         *output_ptr++ = pos;
@@ -90,10 +90,8 @@ static Table read_table(io::IO &arc_io, size_t file_count)
     Table table;
     for (auto i : util::range(file_count))
     {
-        size_t pos = table_io.tell();
         std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = util::sjis_to_utf8(table_io.read_to_zero()).str();
-        table_io.seek(pos + 0x40);
+        entry->name = util::sjis_to_utf8(table_io.read_to_zero(0x40)).str();
         entry->offset = table_io.read_u32_le();
         entry->size_original = table_io.read_u32_le();
         entry->size_compressed = table_io.read_u32_le();
