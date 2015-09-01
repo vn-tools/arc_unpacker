@@ -112,3 +112,32 @@ class open_ext(object):
 
     def __exit__ (self, exc_type, exc_value, traceback):
         self.file.__exit__(exc_type, exc_value, traceback)
+
+class BitWriter:
+    def __init__(self, f):
+        self.accumulator = 0
+        self.bcount = 0
+        self.out = f
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.flush()
+
+    def write_bit(self, bit):
+        if self.bcount == 8:
+            self.flush()
+        if bit > 0:
+            self.accumulator |= (1 << (7 - self.bcount))
+        self.bcount += 1
+
+    def write_bits(self, bits, n):
+        while n > 0:
+            self.write_bit(bits & (1 << (n - 1)))
+            n -= 1
+
+    def flush(self):
+        self.out.write(bytes([self.accumulator]))
+        self.accumulator = 0
+        self.bcount = 0
