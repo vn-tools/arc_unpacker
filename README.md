@@ -33,7 +33,7 @@ Caveats:
    can be discovered with `--help --fmt=FORMAT` switch). In such cases you need
    to supply them manually. For example, XP3 archives need `--plugin` that
    tells what kind of decryption to use. To tell it to use Fate/Stay Night
-   decryption, supply `--fmt=xp3 --plugin=fsn`.
+   decryption, supply `--fmt=krkr/xp3 --plugin=fsn`.
 
 ## License
 
