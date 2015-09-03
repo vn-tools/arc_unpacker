@@ -28,7 +28,101 @@ namespace
     };
 }
 
-static void register_cli_options(ArgParser &arg_parser)
+struct ArcUnpacker::Priv
+{
+    Options options;
+    fmt::Registry &registry;
+    ArgParser &arg_parser;
+    std::string version;
+    std::string path_to_self;
+
+    Priv(ArgParser &arg_parser, const std::string &version);
+
+    void register_cli_options();
+    void print_cli_help() const;
+    void parse_cli_options();
+    bool run();
+
+    std::unique_ptr<fmt::Transformer> guess_transformer(File &file) const;
+    bool guess_transformer_and_unpack(
+        File &file, const std::string &base_name) const;
+    void unpack(
+        fmt::Transformer &transformer,
+        File &file,
+        const std::string &base_name) const;
+};
+
+ArcUnpacker::Priv::Priv(ArgParser &arg_parser, const std::string &version)
+    : registry(fmt::Registry::instance()),
+        arg_parser(arg_parser),
+        version(version)
+{
+}
+
+void ArcUnpacker::Priv::print_cli_help() const
+{
+    Log.info("arc_unpacker v" + version + "\n");
+    Log.info("Extracts images and sounds from various visual novels.\n\n");
+    Log.info("Usage: " + path_to_self + " \\\n");
+    Log.info("       [options] [fmt_options] input_path [input_path...]\n\n");
+    Log.info(
+R"(Depending on the format, files will be saved either in a subdirectory
+(archives), or aside the input files (images, music etc.). If no output
+directory is provided, files are going to be saved inside current working
+directory.
+
+[options] can be:
+
+)");
+
+    arg_parser.print_help();
+    arg_parser.clear_help();
+    Log.info("\n");
+
+    if (options.format != "")
+    {
+        auto transformer = registry.create(options.format);
+        if (transformer)
+        {
+            transformer->register_cli_options(arg_parser);
+            Log.info(
+                "[fmt_options] specific to " + options.format + ":\n\n");
+            arg_parser.print_help();
+            return;
+        }
+    }
+
+    Log.info(
+R"([fmt_options] depend on chosen format and are required at runtime.
+See --help --fmt=FORMAT to get detailed help for given transformer.
+
+Supported FORMAT values:
+
+)");
+
+    auto names = registry.get_names();
+    size_t max_name_size = 0;
+    for (auto &name : registry.get_names())
+        max_name_size = std::max(name.size(), max_name_size);
+    int columns = (79 - max_name_size - 2) / max_name_size;
+    int rows = (names.size() + columns - 1) / columns;
+    for (auto y : util::range(rows))
+    {
+        for (auto x : util::range(columns))
+        {
+            size_t i = x * rows + y;
+            if (i >= names.size())
+                continue;
+            Log.info(util::format(
+                util::format("- %%-%ds ", max_name_size),
+                names[i].c_str()));
+        }
+        Log.info("\n");
+    }
+    Log.info("\n");
+}
+
+void ArcUnpacker::Priv::register_cli_options()
 {
     arg_parser.register_flag({"-h", "--help"}, "Shows this message.");
     arg_parser.register_flag(
@@ -46,8 +140,10 @@ static void register_cli_options(ArgParser &arg_parser)
         "Disables guessing and selects given format.");
 }
 
-static void parse_cli_options(ArgParser &arg_parser, Options &options)
+void ArcUnpacker::Priv::parse_cli_options()
 {
+    path_to_self = arg_parser.get_stray()[0];
+
     options.should_show_help
         = arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
 
@@ -102,109 +198,43 @@ static void parse_cli_options(ArgParser &arg_parser, Options &options)
     }
 }
 
-struct ArcUnpacker::Priv
+bool ArcUnpacker::Priv::run()
 {
-    Options options;
-    ArgParser &arg_parser;
-    fmt::Registry &registry;
-    std::string version;
+    register_cli_options();
+    parse_cli_options();
 
-    Priv(ArgParser &arg_parser, const std::string &version)
-        : arg_parser(arg_parser),
-            registry(fmt::Registry::instance()),
-            version(version)
+    if (options.should_show_help)
     {
-    }
-};
-
-ArcUnpacker::ArcUnpacker(ArgParser &arg_parser, const std::string &version)
-    : p(new Priv(arg_parser, version))
-{
-    register_cli_options(arg_parser);
-}
-
-ArcUnpacker::~ArcUnpacker()
-{
-}
-
-void ArcUnpacker::print_help(const std::string &path_to_self)
-{
-    Log.info("arc_unpacker v" + p->version + "\n");
-    Log.info("Extracts images and sounds from various visual novels.\n\n");
-    Log.info("Usage: " + path_to_self + " \\\n");
-    Log.info("       [options] [fmt_options] input_path [input_path...]\n\n");
-    Log.info(
-R"(Depending on the format, files will be saved either in a subdirectory
-(archives), or aside the input files (images, music etc.). If no output
-directory is provided, files are going to be saved inside current working
-directory.
-
-[options] can be:
-
-)");
-
-    p->arg_parser.print_help();
-    p->arg_parser.clear_help();
-    Log.info("\n");
-
-    if (p->options.format != "")
-    {
-        auto transformer = p->registry.create(p->options.format);
-        if (transformer)
-        {
-            transformer->register_cli_options(p->arg_parser);
-            Log.info(
-                "[fmt_options] specific to " + p->options.format + ":\n\n");
-            p->arg_parser.print_help();
-            return;
-        }
+        print_cli_help();
+        return true;
     }
 
-    Log.info(
-R"([fmt_options] depend on chosen format and are required at runtime.
-See --help --fmt=FORMAT to get detailed help for given transformer.
-
-Supported FORMAT values:
-
-)");
-
-    auto names = p->registry.get_names();
-    size_t max_name_size = 0;
-    for (auto &name : p->registry.get_names())
-        max_name_size = std::max(name.size(), max_name_size);
-    int columns = (79 - max_name_size - 2) / max_name_size;
-    int rows = (names.size() + columns - 1) / columns;
-    for (auto y : util::range(rows))
+    if (options.input_paths.size() < 1)
     {
-        for (auto x : util::range(columns))
-        {
-            size_t i = x * rows + y;
-            if (i >= names.size())
-                continue;
-            Log.info(util::format(
-                util::format("- %%-%ds ", max_name_size),
-                names[i].c_str()));
-        }
-        Log.info("\n");
+        Log.err("Error: required more arguments.\n\n");
+        print_cli_help();
+        return false;
     }
-    Log.info("\n");
+
+    bool result = true;
+    for (auto &path_info : options.input_paths)
+    {
+        File file(path_info->input_path, io::FileMode::Read);
+
+        auto tmp = boost::filesystem::path(path_info->base_name);
+        auto base_name = tmp.stem().string() + "~" + tmp.extension().string();
+
+        result &= guess_transformer_and_unpack(file, base_name);
+    }
+    return result;
 }
 
-void ArcUnpacker::unpack(
+void ArcUnpacker::Priv::unpack(
     fmt::Transformer &transformer,
     File &file,
     const std::string &base_name) const
 {
-    FileSaverHdd file_saver(p->options.output_dir, p->options.overwrite);
-    unpack(transformer, file, base_name, file_saver);
-}
-
-void ArcUnpacker::unpack(
-    fmt::Transformer &transformer,
-    File &file,
-    const std::string &base_name,
-    FileSaver &file_saver) const
-{
+    FileSaverHdd file_saver(options.output_dir, options.overwrite);
     FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> saved_file)
     {
         saved_file->name =
@@ -215,18 +245,18 @@ void ArcUnpacker::unpack(
         file_saver.save(saved_file);
     });
 
-    transformer.parse_cli_options(p->arg_parser);
-    transformer.unpack(file, file_saver_proxy, p->options.recurse);
+    transformer.parse_cli_options(arg_parser);
+    transformer.unpack(file, file_saver_proxy, options.recurse);
 }
 
-std::unique_ptr<fmt::Transformer> ArcUnpacker::guess_transformer(
+std::unique_ptr<fmt::Transformer> ArcUnpacker::Priv::guess_transformer(
     File &file) const
 {
     std::map<std::string, std::unique_ptr<fmt::Transformer>> transformers;
 
-    for (auto &name : p->registry.get_names())
+    for (auto &name : registry.get_names())
     {
-        auto current_transformer = p->registry.create(name);
+        auto current_transformer = registry.create(name);
         if (current_transformer->is_recognized(file))
             transformers[name] = std::move(current_transformer);
     }
@@ -252,13 +282,13 @@ std::unique_ptr<fmt::Transformer> ArcUnpacker::guess_transformer(
     return nullptr;
 }
 
-bool ArcUnpacker::guess_transformer_and_unpack(
+bool ArcUnpacker::Priv::guess_transformer_and_unpack(
     File &file, const std::string &base_name) const
 {
     Log.info(util::format("Unpacking %s...\n", file.name.c_str()));
 
-    auto transformer = p->options.format != ""
-        ? p->registry.create(p->options.format)
+    auto transformer = options.format != ""
+        ? registry.create(options.format)
         : guess_transformer(file);
 
     if (!transformer)
@@ -278,34 +308,16 @@ bool ArcUnpacker::guess_transformer_and_unpack(
     }
 }
 
+ArcUnpacker::ArcUnpacker(ArgParser &arg_parser, const std::string &version)
+    : p(new Priv(arg_parser, version))
+{
+}
+
+ArcUnpacker::~ArcUnpacker()
+{
+}
+
 bool ArcUnpacker::run()
 {
-    parse_cli_options(p->arg_parser, p->options);
-
-    auto path_to_self = p->arg_parser.get_stray()[0];
-
-    if (p->options.should_show_help)
-    {
-        print_help(path_to_self);
-        return true;
-    }
-
-    if (p->options.input_paths.size() < 1)
-    {
-        Log.err("Error: required more arguments.\n\n");
-        print_help(path_to_self);
-        return false;
-    }
-
-    bool result = true;
-    for (auto &path_info : p->options.input_paths)
-    {
-        File file(path_info->input_path, io::FileMode::Read);
-
-        auto tmp = boost::filesystem::path(path_info->base_name);
-        auto base_name = tmp.stem().string() + "~" + tmp.extension().string();
-
-        result &= guess_transformer_and_unpack(file, base_name);
-    }
-    return result;
+    return p->run();
 }
