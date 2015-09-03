@@ -87,12 +87,12 @@ void Archive::unpack(File &file, FileSaver &file_saver, bool recurse) const
     return unpack_internal(file, recognition_proxy);
 }
 
-void Archive::add_cli_help(ArgParser &arg_parser) const
+void Archive::register_cli_options(ArgParser &arg_parser) const
 {
     for (auto &transformer : transformers)
     {
         if (transformer != this)
-            transformer->add_cli_help(arg_parser);
+            transformer->register_cli_options(arg_parser);
     }
 }
 

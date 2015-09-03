@@ -279,18 +279,20 @@ DatArchive::~DatArchive()
 {
 }
 
-void DatArchive::add_cli_help(ArgParser &arg_parser) const
+void DatArchive::register_cli_options(ArgParser &arg_parser) const
 {
-    arg_parser.add_help(
-        "--file-names=PATH",
-        "Specifies path to file containing list of game's file names.\n");
+    arg_parser.register_switch(
+        {"--file-names"},
+        "PATH",
+        "Specifies path to file containing list of game's file names");
 
-    arg_parser.add_help(
-        "--dump=PATH",
+    arg_parser.register_switch(
+        {"--dump"},
+        "PATH",
         "Rather than unpacking, create dump of the file names.\n"
-        "This is useful when adding support for new games.\n");
+        "This is useful when adding support for new games.");
 
-    Archive::add_cli_help(arg_parser);
+    Archive::register_cli_options(arg_parser);
 }
 
 void DatArchive::parse_cli_options(const ArgParser &arg_parser)

@@ -11,7 +11,7 @@ namespace qlie {
     public:
         PackArchive();
         ~PackArchive();
-        void add_cli_help(ArgParser &) const override;
+        void register_cli_options(ArgParser &) const override;
         void parse_cli_options(const ArgParser &) override;
     protected:
         bool is_recognized_internal(File &) const override;

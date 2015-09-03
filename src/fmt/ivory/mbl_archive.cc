@@ -135,14 +135,14 @@ MblArchive::~MblArchive()
 {
 }
 
-void MblArchive::add_cli_help(ArgParser &arg_parser) const
+void MblArchive::register_cli_options(ArgParser &arg_parser) const
 {
     std::string description
         = "Specifies plugin for decoding dialog files.\n\nAvailable plugins:\n";
     for (auto &it : p->all_plugins)
         description += util::format("- %s\n", it.first.c_str());
-    arg_parser.add_help("--plugin=PLUGIN", description);
-    Archive::add_cli_help(arg_parser);
+    arg_parser.register_switch({"--plugin"}, "PLUGIN", description);
+    Archive::register_cli_options(arg_parser);
 }
 
 void MblArchive::parse_cli_options(const ArgParser &arg_parser)

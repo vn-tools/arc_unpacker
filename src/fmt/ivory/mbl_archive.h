@@ -11,7 +11,7 @@ namespace ivory {
     public:
         MblArchive();
         ~MblArchive();
-        void add_cli_help(ArgParser &) const override;
+        void register_cli_options(ArgParser &) const override;
         void parse_cli_options(const ArgParser &) override;
         void set_plugin(const std::string &name);
     protected:

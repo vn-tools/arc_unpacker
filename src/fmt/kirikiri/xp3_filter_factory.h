@@ -12,7 +12,7 @@ namespace kirikiri {
     public:
         Xp3FilterFactory();
         ~Xp3FilterFactory();
-        void add_cli_help(ArgParser &arg_parser);
+        void register_cli_options(ArgParser &arg_parser);
         std::unique_ptr<Xp3Filter> get_filter_from_cli_options(
             const ArgParser &arg_parser);
     private:

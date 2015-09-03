@@ -185,15 +185,14 @@ NpaArchive::~NpaArchive()
 {
 }
 
-void NpaArchive::add_cli_help(ArgParser &arg_parser) const
+void NpaArchive::register_cli_options(ArgParser &arg_parser) const
 {
-    arg_parser.add_help(
-        "--plugin=PLUGIN",
-        "Selects NPA decryption routine.\n"
-            "Possible values:\n"
-            "- chaos_head");
+    arg_parser.register_switch(
+        {"--plugin"},
+        "PLUGIN",
+        "Selects NPA decryption routine.\nPossible values:\n- chaos_head");
 
-    Archive::add_cli_help(arg_parser);
+    Archive::register_cli_options(arg_parser);
 }
 
 void NpaArchive::parse_cli_options(const ArgParser &arg_parser)

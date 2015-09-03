@@ -423,14 +423,15 @@ struct TfpkArchive::Priv
     std::set<std::string> fn_set;
 };
 
-void TfpkArchive::add_cli_help(ArgParser &arg_parser) const
+void TfpkArchive::register_cli_options(ArgParser &arg_parser) const
 {
-    arg_parser.add_help(
-        "--file-names=PATH",
+    arg_parser.register_switch(
+        {"--file-names"},
+        "PATH",
         "Specifies path to file containing list of game's file names.\n"
-        "Used to get proper file names and to find palettes for sprites.\n");
+        "Used to get proper file names and to find palettes for sprites.");
 
-    Archive::add_cli_help(arg_parser);
+    Archive::register_cli_options(arg_parser);
 }
 
 void TfpkArchive::parse_cli_options(const ArgParser &arg_parser)

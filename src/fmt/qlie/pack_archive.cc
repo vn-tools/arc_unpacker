@@ -386,15 +386,15 @@ PackArchive::~PackArchive()
 {
 }
 
-void PackArchive::add_cli_help(ArgParser &arg_parser) const
+void PackArchive::register_cli_options(ArgParser &arg_parser) const
 {
-    arg_parser.add_help(
-        "--fkey=PATH", "Selects path to fkey file.\n");
+    arg_parser.register_switch(
+        {"--fkey"}, "PATH", "Selects path to fkey file");
 
-    arg_parser.add_help(
-        "--gameexe=PATH", "Selects path to game executable.\n");
+    arg_parser.register_switch(
+        {"--gameexe"}, "PATH", "Selects path to game executable");
 
-    Archive::add_cli_help(arg_parser);
+    Archive::register_cli_options(arg_parser);
 }
 
 void PackArchive::parse_cli_options(const ArgParser &arg_parser)

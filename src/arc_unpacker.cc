@@ -28,63 +28,49 @@ namespace
     };
 }
 
-static void add_help_option(ArgParser &arg_parser, Options &options)
+static void register_cli_options(ArgParser &arg_parser)
 {
-    arg_parser.add_help("-h, --help", "Shows this message.");
+    arg_parser.register_flag({"-h", "--help"}, "Shows this message.");
+    arg_parser.register_flag(
+        {"-r", "--rename"},
+        "Renames existing target files.\nBy default, they're overwritten.");
+    arg_parser.register_flag(
+        {"--no-color", "--no-colors"}, "Disables color output.");
+    arg_parser.register_flag(
+        {"--no-recurse"}, "Disables automatic decoding of nested files.");
+    arg_parser.register_switch(
+        {"-o", "--out"}, "DIR", "Where to put the output files.");
+    arg_parser.register_switch(
+        {"-f", "--fmt"},
+        "FORMAT",
+        "Disables guessing and selects given format.");
+}
+
+static void parse_cli_options(ArgParser &arg_parser, Options &options)
+{
     options.should_show_help
         = arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
-}
 
-static void add_rename_option(ArgParser &arg_parser, Options &options)
-{
-    arg_parser.add_help(
-        "-r, --rename",
-        "Renames existing target files.\nBy default, they're overwritten.");
     options.overwrite
         = !arg_parser.has_flag("-r") && !arg_parser.has_flag("--rename");
-}
 
-static void add_disable_colors_option(ArgParser &arg_parser)
-{
-    arg_parser.add_help("--no-color", "Disables color output.");
     if (arg_parser.has_flag("--no-color") || arg_parser.has_flag("--no-colors"))
         Log.disable_colors();
-}
 
-static void add_disable_recursion_option(
-    ArgParser &arg_parser, Options &options)
-{
-    arg_parser.add_help(
-        "--no-recurse", "Disables automatic decoding of nested files.");
     options.recurse = !arg_parser.has_flag("--no-recurse");
-}
 
-static void add_output_dir_option(ArgParser &arg_parser, Options &options)
-{
-    arg_parser.add_help("-o, --out=DIR", "Where to put the output files.");
     if (arg_parser.has_switch("-o"))
         options.output_dir = arg_parser.get_switch("-o");
     else if (arg_parser.has_switch("--out"))
         options.output_dir = arg_parser.get_switch("--out");
     else
         options.output_dir = "./";
-}
-
-static void add_format_option(ArgParser &arg_parser, Options &options)
-{
-    arg_parser.add_help(
-        "-f, --fmt=FORMAT",
-        "Disables guessing and selects given format.");
 
     if (arg_parser.has_switch("-f"))
         options.format = arg_parser.get_switch("-f");
     if (arg_parser.has_switch("--fmt"))
         options.format = arg_parser.get_switch("--fmt");
-}
 
-static bool add_input_paths_option(
-    ArcUnpacker &arc_unpacker, ArgParser &arg_parser, Options &options)
-{
     const auto stray = arg_parser.get_stray();
     for (auto i : util::range(1, stray.size()))
     {
@@ -114,15 +100,6 @@ static bool add_input_paths_option(
             options.input_paths.push_back(std::move(pi));
         }
     }
-
-    if (options.input_paths.size() < 1)
-    {
-        Log.err("Error: required more arguments.\n\n");
-        arc_unpacker.print_help(stray[0]);
-        return false;
-    }
-
-    return true;
 }
 
 struct ArcUnpacker::Priv
@@ -143,12 +120,7 @@ struct ArcUnpacker::Priv
 ArcUnpacker::ArcUnpacker(ArgParser &arg_parser, const std::string &version)
     : p(new Priv(arg_parser, version))
 {
-    add_output_dir_option(arg_parser, p->options);
-    add_format_option(arg_parser, p->options);
-    add_rename_option(arg_parser, p->options);
-    add_disable_colors_option(arg_parser);
-    add_disable_recursion_option(arg_parser, p->options);
-    add_help_option(arg_parser, p->options);
+    register_cli_options(arg_parser);
 }
 
 ArcUnpacker::~ArcUnpacker()
@@ -180,7 +152,7 @@ directory.
         auto transformer = p->registry.create(p->options.format);
         if (transformer)
         {
-            transformer->add_cli_help(p->arg_parser);
+            transformer->register_cli_options(p->arg_parser);
             Log.info(
                 "[fmt_options] specific to " + p->options.format + ":\n\n");
             p->arg_parser.print_help();
@@ -308,15 +280,22 @@ bool ArcUnpacker::guess_transformer_and_unpack(
 
 bool ArcUnpacker::run()
 {
+    parse_cli_options(p->arg_parser, p->options);
+
+    auto path_to_self = p->arg_parser.get_stray()[0];
+
     if (p->options.should_show_help)
     {
-        auto path_to_self = p->arg_parser.get_stray()[0];
         print_help(path_to_self);
         return true;
     }
 
-    if (!add_input_paths_option(*this, p->arg_parser, p->options))
+    if (p->options.input_paths.size() < 1)
+    {
+        Log.err("Error: required more arguments.\n\n");
+        print_help(path_to_self);
         return false;
+    }
 
     bool result = true;
     for (auto &path_info : p->options.input_paths)

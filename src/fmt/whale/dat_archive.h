@@ -13,7 +13,7 @@ namespace whale {
         ~DatArchive();
         void set_game_title(const std::string &game_title);
         void add_file_name(const std::string &file_name);
-        void add_cli_help(ArgParser &) const override;
+        void register_cli_options(ArgParser &) const override;
         void parse_cli_options(const ArgParser &) override;
     protected:
         bool is_recognized_internal(File &) const override;

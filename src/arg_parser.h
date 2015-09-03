@@ -13,15 +13,23 @@ namespace au {
         ~ArgParser();
 
         void clear_help();
-        void add_help(const std::string invocation, const std::string desc);
         void print_help() const;
 
-        void parse(const std::vector<std::string> args);
+        void register_flag(
+            const std::initializer_list<std::string> &names,
+            const std::string &description);
 
-        bool has_flag(const std::string argument) const;
-        bool has_switch(const std::string key) const;
+        void register_switch(
+            const std::initializer_list<std::string> &names,
+            const std::string &value_name,
+            const std::string &description);
 
-        const std::string get_switch(const std::string key) const;
+        void parse(const std::vector<std::string> &args);
+
+        bool has_flag(const std::string &name) const;
+        bool has_switch(const std::string &name) const;
+
+        const std::string get_switch(const std::string &name) const;
         const std::vector<std::string> get_stray() const;
 
     private:

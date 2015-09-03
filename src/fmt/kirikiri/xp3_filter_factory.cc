@@ -51,7 +51,7 @@ Xp3FilterFactory::~Xp3FilterFactory()
 {
 }
 
-void Xp3FilterFactory::add_cli_help(ArgParser &arg_parser)
+void Xp3FilterFactory::register_cli_options(ArgParser &arg_parser)
 {
     std::string help = "Selects XP3 decryption routine.\nPossible values:\n";
     for (auto &definition : p->definitions)
@@ -61,7 +61,7 @@ void Xp3FilterFactory::add_cli_help(ArgParser &arg_parser)
             help += " (" + definition.description + ")";
         help += "\n";
     }
-    arg_parser.add_help("--plugin=PLUGIN", help);
+    arg_parser.register_switch({"--plugin"}, "PLUGIN", help);
 }
 
 std::unique_ptr<Xp3Filter> Xp3FilterFactory::get_filter_from_cli_options(

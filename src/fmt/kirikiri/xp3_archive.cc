@@ -181,10 +181,10 @@ Xp3Archive::~Xp3Archive()
 {
 }
 
-void Xp3Archive::add_cli_help(ArgParser &arg_parser) const
+void Xp3Archive::register_cli_options(ArgParser &arg_parser) const
 {
-    p->filter_factory.add_cli_help(arg_parser);
-    Archive::add_cli_help(arg_parser);
+    p->filter_factory.register_cli_options(arg_parser);
+    Archive::register_cli_options(arg_parser);
 }
 
 void Xp3Archive::parse_cli_options(const ArgParser &arg_parser)

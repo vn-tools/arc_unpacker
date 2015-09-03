@@ -13,7 +13,7 @@ void Converter::unpack(
     file_saver.save(std::move(output_file));
 }
 
-void Converter::add_cli_help(ArgParser &) const
+void Converter::register_cli_options(ArgParser &) const
 {
 }
 
