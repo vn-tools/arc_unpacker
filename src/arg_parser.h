@@ -7,22 +7,37 @@
 
 namespace au {
 
+    struct Option
+    {
+        virtual Option *set_description(const std::string &desc) = 0;
+    };
+
+    struct Switch : Option
+    {
+        virtual Switch *set_description(const std::string &desc) = 0;
+        virtual Switch *set_value_name(const std::string &name) = 0;
+        virtual Switch *add_possible_value(
+            const std::string &value, const std::string &description = "") = 0;
+    };
+
+    struct Flag : Option
+    {
+        virtual Flag *set_description(const std::string &desc) = 0;
+    };
+
     class ArgParser final
     {
+    private:
+        using NameList = const std::initializer_list<std::string>;
+
     public:
         ArgParser();
         ~ArgParser();
 
         void print_help() const;
 
-        void register_flag(
-            const std::initializer_list<std::string> &names,
-            const std::string &description);
-
-        void register_switch(
-            const std::initializer_list<std::string> &names,
-            const std::string &value_name,
-            const std::string &description);
+        Flag *register_flag(NameList &names);
+        Switch *register_switch(NameList &names);
 
         void parse(const std::vector<std::string> &args);
 

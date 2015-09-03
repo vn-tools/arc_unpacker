@@ -80,7 +80,6 @@ directory.
 )");
 
     arg_parser.print_help();
-    Log.info("\n");
 
     if (options.format != "")
     {
@@ -89,8 +88,7 @@ directory.
         if (transformer)
         {
             transformer->register_cli_options(transformer_arg_parser);
-            Log.info(
-                "[fmt_options] specific to " + options.format + ":\n\n");
+            Log.info("[fmt_options] specific to " + options.format + ":\n\n");
             transformer_arg_parser.print_help();
             return;
         }
@@ -100,48 +98,33 @@ directory.
 R"([fmt_options] depend on chosen format and are required at runtime.
 See --help --fmt=FORMAT to get detailed help for given transformer.
 
-Supported FORMAT values:
-
 )");
-
-    auto names = registry.get_names();
-    size_t max_name_size = 0;
-    for (auto &name : registry.get_names())
-        max_name_size = std::max(name.size(), max_name_size);
-    int columns = (79 - max_name_size - 2) / max_name_size;
-    int rows = (names.size() + columns - 1) / columns;
-    for (auto y : util::range(rows))
-    {
-        for (auto x : util::range(columns))
-        {
-            size_t i = x * rows + y;
-            if (i >= names.size())
-                continue;
-            Log.info(util::format(
-                util::format("- %%-%ds ", max_name_size),
-                names[i].c_str()));
-        }
-        Log.info("\n");
-    }
-    Log.info("\n");
 }
 
 void ArcUnpacker::Priv::register_cli_options()
 {
-    arg_parser.register_flag({"-h", "--help"}, "Shows this message.");
-    arg_parser.register_flag(
-        {"-r", "--rename"},
-        "Renames existing target files.\nBy default, they're overwritten.");
-    arg_parser.register_flag(
-        {"--no-color", "--no-colors"}, "Disables color output.");
-    arg_parser.register_flag(
-        {"--no-recurse"}, "Disables automatic decoding of nested files.");
-    arg_parser.register_switch(
-        {"-o", "--out"}, "DIR", "Specifies where to put the output files.");
-    arg_parser.register_switch(
-        {"-f", "--fmt"},
-        "FORMAT",
-        "Disables guessing and selects given format.");
+    arg_parser.register_flag({"-h", "--help"})
+        ->set_description("Shows this message.");
+
+    arg_parser.register_flag({"-r", "--rename"})
+        ->set_description(
+            "Renames existing target files.\nBy default, they're overwritten.");
+
+    arg_parser.register_flag({"--no-color", "--no-colors"})
+        ->set_description("Disables color output.");
+
+    arg_parser.register_flag({"--no-recurse"})
+        ->set_description("Disables automatic decoding of nested files.");
+
+    arg_parser.register_switch({"-o", "--out"})
+        ->set_value_name("DIR")
+        ->set_description("Specifies where to put the output files.");
+
+    auto sw = arg_parser.register_switch({"-f", "--fmt"})
+        ->set_value_name("FORMAT")
+        ->set_description("Disables guessing and selects given format.");
+    for (auto &name : registry.get_names())
+        sw->add_possible_value(name);
 }
 
 void ArcUnpacker::Priv::parse_cli_options()

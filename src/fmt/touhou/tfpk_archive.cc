@@ -425,11 +425,11 @@ struct TfpkArchive::Priv
 
 void TfpkArchive::register_cli_options(ArgParser &arg_parser) const
 {
-    arg_parser.register_switch(
-        {"--file-names"},
-        "PATH",
-        "Specifies path to file containing list of game's file names.\n"
-        "Used to get proper file names and to find palettes for sprites.");
+    arg_parser.register_switch({"--file-names"})
+        ->set_value_name("PATH")
+        ->set_description(
+            "Specifies path to file containing list of game's file names.\n"
+            "Used to get proper file names and to find palettes for sprites.");
 
     Archive::register_cli_options(arg_parser);
 }

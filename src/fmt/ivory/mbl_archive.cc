@@ -137,11 +137,11 @@ MblArchive::~MblArchive()
 
 void MblArchive::register_cli_options(ArgParser &arg_parser) const
 {
-    std::string description
-        = "Specifies plugin for decoding dialog files.\n\nAvailable plugins:\n";
+    auto sw = arg_parser.register_switch({"-p", "--plugin"})
+        ->set_value_name("PLUGIN")
+        ->set_description("Specifies plugin for decoding dialog files.");
     for (auto &it : p->all_plugins)
-        description += util::format("- %s\n", it.first.c_str());
-    arg_parser.register_switch({"--plugin"}, "PLUGIN", description);
+        sw->add_possible_value(it.first);
     Archive::register_cli_options(arg_parser);
 }
 

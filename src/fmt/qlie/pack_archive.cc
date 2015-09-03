@@ -388,11 +388,13 @@ PackArchive::~PackArchive()
 
 void PackArchive::register_cli_options(ArgParser &arg_parser) const
 {
-    arg_parser.register_switch(
-        {"--fkey"}, "PATH", "Selects path to fkey file");
+    arg_parser.register_switch({"--fkey"})
+        ->set_value_name("PATH")
+        ->set_description("Selects path to fkey file");
 
-    arg_parser.register_switch(
-        {"--gameexe"}, "PATH", "Selects path to game executable");
+    arg_parser.register_switch({"--gameexe"})
+        ->set_value_name("PATH")
+        ->set_description("Selects path to game executable");
 
     Archive::register_cli_options(arg_parser);
 }

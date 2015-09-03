@@ -187,10 +187,10 @@ NpaArchive::~NpaArchive()
 
 void NpaArchive::register_cli_options(ArgParser &arg_parser) const
 {
-    arg_parser.register_switch(
-        {"--plugin"},
-        "PLUGIN",
-        "Selects NPA decryption routine.\nPossible values:\n- chaos_head");
+    arg_parser.register_switch({"-p", "--plugin"})
+        ->set_value_name("PLUGIN")
+        ->set_description("Selects NPA decryption routine.")
+        ->add_possible_value("chaos_head");
 
     Archive::register_cli_options(arg_parser);
 }

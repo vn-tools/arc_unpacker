@@ -25,9 +25,9 @@ struct Xp3FilterFactory::Priv
     std::vector<struct Definition> definitions;
 
     void add(
-        std::string name,
-        std::function<Xp3Filter*()> creator,
-        std::string description = "")
+        const std::string &name,
+        const std::string &description,
+        std::function<Xp3Filter*()> creator)
     {
         struct Definition d;
         d.name = name;
@@ -39,12 +39,30 @@ struct Xp3FilterFactory::Priv
 
 Xp3FilterFactory::Xp3FilterFactory() : p(new Priv)
 {
-    p->add("comyu",    []() { return new xp3_filters::CxdecComyu;    });
-    p->add("fsn",      []() { return new xp3_filters::Fsn;           });
-    p->add("fha",      []() { return new xp3_filters::CxdecFha;      });
-    p->add("mahoyoru", []() { return new xp3_filters::CxdecMahoYoru; });
-    p->add("noop",     []() { return new xp3_filters::Noop;          },
-        "for unecrypted games");
+    p->add(
+        "noop",
+        "Unecrypted games",
+        []() { return new xp3_filters::Noop; });
+
+    p->add(
+        "comyu",
+        "Comyu - Kuroi Ryuu to Yasashii Oukoku",
+        []() { return new xp3_filters::CxdecComyu; });
+
+    p->add(
+        "fsn",
+        "Fate/Stay Night",
+        []() { return new xp3_filters::Fsn; });
+
+    p->add(
+        "fha",
+        "Fate/Hollow Ataraxia",
+        []() { return new xp3_filters::CxdecFha; });
+
+    p->add(
+        "mahoyoru",
+        "Mahou Tsukai no Yoru",
+        []() { return new xp3_filters::CxdecMahoYoru; });
 }
 
 Xp3FilterFactory::~Xp3FilterFactory()
@@ -53,20 +71,18 @@ Xp3FilterFactory::~Xp3FilterFactory()
 
 void Xp3FilterFactory::register_cli_options(ArgParser &arg_parser)
 {
-    std::string help = "Selects XP3 decryption routine.\nPossible values:\n";
+    auto sw = arg_parser.register_switch({"-p", "--plugin"})
+        ->set_value_name("PLUGIN")
+        ->set_description("Selects XP3 decryption routine.");
     for (auto &definition : p->definitions)
-    {
-        help += "- " + definition.name;
-        if (definition.description != "")
-            help += " (" + definition.description + ")";
-        help += "\n";
-    }
-    arg_parser.register_switch({"--plugin"}, "PLUGIN", help);
+        sw->add_possible_value(definition.name, definition.description);
 }
 
 std::unique_ptr<Xp3Filter> Xp3FilterFactory::get_filter_from_cli_options(
     const ArgParser &arg_parser)
 {
+    if (!arg_parser.has_switch("plugin"))
+        throw std::runtime_error("Plugin not specified");
     const std::string plugin = arg_parser.get_switch("plugin");
     for (auto &definition : p->definitions)
         if (definition.name == plugin)
