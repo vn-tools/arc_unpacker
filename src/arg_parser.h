@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -12,7 +13,6 @@ namespace au {
         ArgParser();
         ~ArgParser();
 
-        void clear_help();
         void print_help() const;
 
         void register_flag(

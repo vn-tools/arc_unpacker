@@ -1,6 +1,7 @@
 #include <set>
 #include "arg_parser.h"
 #include "log.h"
+#include "util/format.h"
 #include "util/range.h"
 
 using namespace au;
@@ -11,6 +12,7 @@ namespace
     {
         std::vector<std::string> names;
         std::string description;
+        bool is_set;
 
         bool has_name(const std::string &name) const;
         virtual std::string get_invocation_help() const;
@@ -23,19 +25,9 @@ namespace
     struct Switch : Option
     {
         std::string value_name;
+        std::string value;
         virtual std::string get_invocation_help() const override;
     };
-}
-
-static bool is_alphanumeric(const std::string &str)
-{
-    for (auto i : util::range(str.size()))
-    {
-        char c = str[i];
-        if (c < '0' && c > '9' && c < 'a' && c > 'a' && c < 'A' && c > 'A')
-            return false;
-    }
-    return true;
 }
 
 std::string Option::get_invocation_help() const
@@ -70,47 +62,6 @@ static std::string strip_dashes(const std::string argument)
     while (ret[0] == '-')
         ret.erase(0, 1);
     return ret;
-}
-
-static bool get_switch(
-    const std::string argument, std::string &key, std::string &value)
-{
-    key = "";
-    value = "";
-
-    if (argument[0] != '-')
-        return false;
-    std::string argument_copy = strip_dashes(argument);
-
-    size_t pos = argument_copy.find("=");
-    if (pos == std::string::npos)
-        return false;
-
-    key = argument_copy.substr(0, pos);
-    if (!is_alphanumeric(key))
-    {
-        key = "";
-        return false;
-    }
-    value = argument_copy.substr(pos + 1);
-    return true;
-}
-
-static bool get_flag(const std::string argument, std::string &value)
-{
-    value = "";
-    if (argument[0] != '-')
-        return false;
-
-    std::string argument_copy = argument;
-    while (argument_copy[0] == '-')
-        argument_copy.erase(0, 1);
-
-    if (!is_alphanumeric(argument_copy))
-        return false;
-
-    value = argument_copy;
-    return true;
 }
 
 bool Option::has_name(const std::string &name) const
@@ -174,11 +125,24 @@ struct ArgParser::Priv
     std::set<Switch*> switches;
     std::vector<std::string> stray;
 
-    std::vector<std::pair<std::string, std::string>> switch_values;
-    std::vector<std::string> set_flags;
-
-    std::vector<Option*> help_items;
+    void check_names(const std::vector<std::string> &names);
 };
+
+void ArgParser::Priv::check_names(const std::vector<std::string> &names)
+{
+    for (auto &name : names)
+    {
+        for (auto &option : options)
+        {
+            if (option->has_name(name))
+            {
+                throw std::runtime_error(util::format(
+                    "An option with name \"%s\" was already registered.",
+                    name.c_str()));
+            }
+        }
+    }
+}
 
 ArgParser::ArgParser() : p(new Priv)
 {
@@ -193,40 +157,68 @@ void ArgParser::parse(const std::vector<std::string> &args)
     if (args.size() == 0)
         return;
 
-    for (auto &arg : args)
+    size_t i = 0;
+    while (i < args.size())
     {
+        bool found = false;
+
+        auto arg = args[i++];
+        if (arg[0] != '-')
+        {
+            p->stray.push_back(arg);
+            continue;
+        }
+
+        for (auto &flag : p->flags)
+        {
+            if (flag->has_name(arg))
+            {
+                flag->is_set = true;
+                found = true;
+                break;
+            }
+        }
+        if (found)
+            continue;
+
         std::string key = "";
         std::string value = "";
-        if (::get_switch(arg, key, value))
+        for (auto j : util::range(arg.size()))
         {
-            p->switch_values.push_back(
-                std::pair<std::string, std::string>(key, value));
+            if (arg[j] == '=')
+            {
+                key = arg.substr(0, j);
+                value = arg.substr(j + 1);
+            }
         }
-        else if (::get_flag(arg, value))
-        {
-            p->set_flags.push_back(value);
-        }
-        else
-        {
-            p->stray.push_back(std::string(arg));
-        }
-    }
-}
 
-void ArgParser::clear_help()
-{
-    p->help_items.clear();
+        for (auto &sw : p->switches)
+        {
+            if (sw->has_name(key))
+            {
+                sw->is_set = true;
+                sw->value = value;
+                found = true;
+                break;
+            }
+        }
+        if (found)
+            continue;
+
+        //throw std::runtime_error("Unrecognized option \"" + arg + "\"");
+    }
 }
 
 void ArgParser::register_flag(
     const std::initializer_list<std::string> &names,
     const std::string &description)
 {
+    p->check_names(names);
     std::unique_ptr<Flag> f(new Flag);
+    f->is_set = false;
     f->names = names;
     f->description = description;
     p->flags.insert(f.get());
-    p->help_items.push_back(f.get());
     p->options.push_back(std::move(f));
 }
 
@@ -235,37 +227,38 @@ void ArgParser::register_switch(
     const std::string &value_name,
     const std::string &description)
 {
+    p->check_names(names);
     std::unique_ptr<Switch> sw(new Switch);
+    sw->is_set = false;
     sw->names = names;
     sw->description = description;
     sw->value_name = value_name;
     p->switches.insert(sw.get());
-    p->help_items.push_back(sw.get());
     p->options.push_back(std::move(sw));
 }
 
 bool ArgParser::has_switch(const std::string &name) const
 {
-    for (auto &it : p->switch_values)
-        if (it.first == strip_dashes(name))
-            return true;
-    return false;
+    for (auto &sw : p->switches)
+        if (sw->has_name(name))
+            return sw->is_set;
+    throw std::runtime_error("Trying to use undefined switch \"" + name + "\"");
 }
 
 const std::string ArgParser::get_switch(const std::string &name) const
 {
-    for (auto &it : p->switch_values)
-        if (it.first == strip_dashes(name))
-            return it.second;
-    return "";
+    for (auto &sw : p->switches)
+        if (sw->has_name(name))
+            return sw->value;
+    throw std::runtime_error("Trying to use undefined switch \"" + name + "\"");
 }
 
 bool ArgParser::has_flag(const std::string &name) const
 {
-    for (auto &f : p->set_flags)
-        if (f == strip_dashes(name))
-            return true;
-    return false;
+    for (auto &f : p->flags)
+        if (f->has_name(name))
+            return f->is_set;
+    throw std::runtime_error("Trying to use undefined flag \"" + name + "\"");
 }
 
 const std::vector<std::string> ArgParser::get_stray() const
@@ -277,14 +270,14 @@ void ArgParser::print_help() const
 {
     const auto max_line_size = 78;
 
-    if (!p->help_items.size())
+    if (!p->options.size())
     {
         Log.info("No additional switches are available.\n");
         return;
     }
 
     size_t max_invocation_size = 0;
-    for (auto &option : p->help_items)
+    for (auto &option : p->options)
     {
         max_invocation_size = std::max<size_t>(
             max_invocation_size, option->get_invocation_help().size());
@@ -293,7 +286,7 @@ void ArgParser::print_help() const
 
     const auto max_description_size = max_line_size - max_invocation_size;
 
-    for (auto &option : p->help_items)
+    for (auto &option : p->options)
     {
         auto invocation = option->get_invocation_help();
         auto description = option->description;

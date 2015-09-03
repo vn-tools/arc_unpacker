@@ -7,9 +7,7 @@ using namespace au;
 ENTRY_POINT(
     try
     {
-        ArgParser arg_parser;
-        arg_parser.parse(arguments);
-        ArcUnpacker arc_unpacker(arg_parser, AU_VERSION);
+        ArcUnpacker arc_unpacker(arguments, AU_VERSION);
 
         if (!arc_unpacker.run())
             return -1;

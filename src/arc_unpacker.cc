@@ -30,31 +30,35 @@ namespace
 
 struct ArcUnpacker::Priv
 {
-    Options options;
-    fmt::Registry &registry;
-    ArgParser &arg_parser;
-    std::string version;
-    std::string path_to_self;
+public:
+    bool run();
+    Priv(const std::vector<std::string> &arguments, const std::string &version);
 
-    Priv(ArgParser &arg_parser, const std::string &version);
-
+private:
     void register_cli_options();
     void print_cli_help() const;
     void parse_cli_options();
-    bool run();
 
     std::unique_ptr<fmt::Transformer> guess_transformer(File &file) const;
-    bool guess_transformer_and_unpack(
-        File &file, const std::string &base_name) const;
+    bool guess_transformer_and_unpack(File &file, const std::string &base_name);
     void unpack(
         fmt::Transformer &transformer,
         File &file,
         const std::string &base_name) const;
+
+    fmt::Registry &registry;
+    const std::vector<std::string> arguments;
+    std::string version;
+
+    ArgParser arg_parser;
+    std::string path_to_self;
+    Options options;
 };
 
-ArcUnpacker::Priv::Priv(ArgParser &arg_parser, const std::string &version)
+ArcUnpacker::Priv::Priv(
+    const std::vector<std::string> &arguments, const std::string &version)
     : registry(fmt::Registry::instance()),
-        arg_parser(arg_parser),
+        arguments(arguments),
         version(version)
 {
 }
@@ -76,18 +80,18 @@ directory.
 )");
 
     arg_parser.print_help();
-    arg_parser.clear_help();
     Log.info("\n");
 
     if (options.format != "")
     {
+        ArgParser transformer_arg_parser;
         auto transformer = registry.create(options.format);
         if (transformer)
         {
-            transformer->register_cli_options(arg_parser);
+            transformer->register_cli_options(transformer_arg_parser);
             Log.info(
                 "[fmt_options] specific to " + options.format + ":\n\n");
-            arg_parser.print_help();
+            transformer_arg_parser.print_help();
             return;
         }
     }
@@ -133,7 +137,7 @@ void ArcUnpacker::Priv::register_cli_options()
     arg_parser.register_flag(
         {"--no-recurse"}, "Disables automatic decoding of nested files.");
     arg_parser.register_switch(
-        {"-o", "--out"}, "DIR", "Where to put the output files.");
+        {"-o", "--out"}, "DIR", "Specifies where to put the output files.");
     arg_parser.register_switch(
         {"-f", "--fmt"},
         "FORMAT",
@@ -196,11 +200,14 @@ void ArcUnpacker::Priv::parse_cli_options()
             options.input_paths.push_back(std::move(pi));
         }
     }
+
+    path_to_self = arg_parser.get_stray()[0];
 }
 
 bool ArcUnpacker::Priv::run()
 {
     register_cli_options();
+    arg_parser.parse(arguments);
     parse_cli_options();
 
     if (options.should_show_help)
@@ -245,7 +252,10 @@ void ArcUnpacker::Priv::unpack(
         file_saver.save(saved_file);
     });
 
-    transformer.parse_cli_options(arg_parser);
+    ArgParser transformer_arg_parser;
+    transformer.register_cli_options(transformer_arg_parser);
+    transformer_arg_parser.parse(arguments);
+    transformer.parse_cli_options(transformer_arg_parser);
     transformer.unpack(file, file_saver_proxy, options.recurse);
 }
 
@@ -283,7 +293,7 @@ std::unique_ptr<fmt::Transformer> ArcUnpacker::Priv::guess_transformer(
 }
 
 bool ArcUnpacker::Priv::guess_transformer_and_unpack(
-    File &file, const std::string &base_name) const
+    File &file, const std::string &base_name)
 {
     Log.info(util::format("Unpacking %s...\n", file.name.c_str()));
 
@@ -308,8 +318,9 @@ bool ArcUnpacker::Priv::guess_transformer_and_unpack(
     }
 }
 
-ArcUnpacker::ArcUnpacker(ArgParser &arg_parser, const std::string &version)
-    : p(new Priv(arg_parser, version))
+ArcUnpacker::ArcUnpacker(
+    const std::vector<std::string> &arguments, const std::string &version)
+    : p(new Priv(arguments, version))
 {
 }
 

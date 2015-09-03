@@ -10,7 +10,9 @@ namespace au {
     class ArcUnpacker
     {
     public:
-        ArcUnpacker(ArgParser &, const std::string &version);
+        ArcUnpacker(
+            const std::vector<std::string> &arguments,
+            const std::string &version);
         ~ArcUnpacker();
         bool run();
     private:
