@@ -11,6 +11,7 @@
 #include "fmt/nitroplus/npa_filters/chaos_head.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
+#include "util/plugin_mgr.hh"
 #include "util/range.h"
 
 using namespace au;
@@ -174,11 +175,18 @@ static std::unique_ptr<File> read_file(
 
 struct NpaArchive::Priv
 {
+    util::PluginManager<std::unique_ptr<NpaFilter>> plugin_mgr;
     std::unique_ptr<NpaFilter> filter;
 };
 
 NpaArchive::NpaArchive() : p(new Priv)
 {
+    p->plugin_mgr.add("chaos_head", "ChaoS;HEAd", []()
+        {
+            std::unique_ptr<NpaFilter> filter(new NpaFilter);
+            npa_filters::chaos_head_filter_init(*filter);
+            return filter;
+        });
 }
 
 NpaArchive::~NpaArchive()
@@ -187,33 +195,14 @@ NpaArchive::~NpaArchive()
 
 void NpaArchive::register_cli_options(ArgParser &arg_parser) const
 {
-    arg_parser.register_switch({"-p", "--plugin"})
-        ->set_value_name("PLUGIN")
-        ->set_description("Selects NPA decryption routine.")
-        ->add_possible_value("chaos_head");
-
+    p->plugin_mgr.register_cli_options(
+        arg_parser, "Selects NPA decryption routine.");
     Archive::register_cli_options(arg_parser);
 }
 
 void NpaArchive::parse_cli_options(const ArgParser &arg_parser)
 {
-    const std::string plugin = arg_parser.get_switch("plugin").c_str();
-    void (*initializer)(NpaFilter&) = nullptr;
-    if (plugin == "chaos_head")
-        initializer = &npa_filters::chaos_head_filter_init;
-    else
-        throw std::runtime_error("Unrecognized plugin: " + plugin);
-
-    if (initializer != nullptr)
-    {
-        p->filter.reset(new NpaFilter);
-        initializer(*p->filter);
-    }
-    else
-    {
-        p->filter.reset(nullptr);
-    }
-
+    p->filter = p->plugin_mgr.get_from_cli_options(arg_parser, true);
     Archive::parse_cli_options(arg_parser);
 }
 

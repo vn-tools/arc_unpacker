@@ -14,6 +14,7 @@
 #include "fmt/ivory/wady_converter.h"
 #include "util/encoding.h"
 #include "util/format.h"
+#include "util/plugin_mgr.hh"
 #include "util/range.h"
 #include "log.h"
 
@@ -100,10 +101,10 @@ static std::unique_ptr<File> read_file(
 
 struct MblArchive::Priv
 {
+    util::PluginManager<PluginFunc> plugin_mgr;
     PrsConverter prs_converter;
     WadyConverter wady_converter;
     PluginFunc plugin;
-    PluginTable all_plugins;
 };
 
 MblArchive::MblArchive() : p(new Priv)
@@ -111,24 +112,30 @@ MblArchive::MblArchive() : p(new Priv)
     add_transformer(&p->prs_converter);
     add_transformer(&p->wady_converter);
 
-    p->all_plugins["candy"] = [](bstr &data)
+    p->plugin_mgr.add("noop", "Unencrypted games", []()
         {
-            for (auto i : util::range(data.size()))
-                data[i] = -data[i];
-        };
+            return [](bstr &) { };
+        });
 
-    p->all_plugins["wanko"] = [](bstr &data)
+    p->plugin_mgr.add("candy", "Candy Toys", []()
         {
-            static const bstr key =
-                "\x82\xED\x82\xF1\x82\xB1"
-                "\x88\xC3\x8D\x86\x89\xBB"_b;
-            for (auto i : util::range(data.size()))
-                data[i] ^= key[i % key.size()];
-        };
+            return [](bstr &data)
+            {
+                for (auto i : util::range(data.size()))
+                    data[i] = -data[i];
+            };
+        });
 
-    p->all_plugins["noop"] = [](bstr &)
+    p->plugin_mgr.add("wanko", "Wanko to Kurasou", []()
         {
-        };
+            return [](bstr &data)
+            {
+                static const bstr key =
+                    "\x82\xED\x82\xF1\x82\xB1\x88\xC3\x8D\x86\x89\xBB"_b;
+                for (auto i : util::range(data.size()))
+                    data[i] ^= key[i % key.size()];
+            };
+        });
 }
 
 MblArchive::~MblArchive()
@@ -137,26 +144,20 @@ MblArchive::~MblArchive()
 
 void MblArchive::register_cli_options(ArgParser &arg_parser) const
 {
-    auto sw = arg_parser.register_switch({"-p", "--plugin"})
-        ->set_value_name("PLUGIN")
-        ->set_description("Specifies plugin for decoding dialog files.");
-    for (auto &it : p->all_plugins)
-        sw->add_possible_value(it.first);
+    p->plugin_mgr.register_cli_options(
+        arg_parser, "Specifies plugin for decoding dialog files.");
     Archive::register_cli_options(arg_parser);
 }
 
 void MblArchive::parse_cli_options(const ArgParser &arg_parser)
 {
-    if (arg_parser.has_switch("--plugin"))
-        set_plugin(arg_parser.get_switch("--plugin"));
+    p->plugin = p->plugin_mgr.get_from_cli_options(arg_parser, false);
     Archive::parse_cli_options(arg_parser);
 }
 
 void MblArchive::set_plugin(const std::string &plugin_name)
 {
-    if (p->all_plugins.find(plugin_name) == p->all_plugins.end())
-        throw std::runtime_error("Unknown plugin: " + plugin_name);
-    p->plugin = p->all_plugins[plugin_name];
+    p->plugin = p->plugin_mgr.get_from_string(plugin_name);
 }
 
 bool MblArchive::is_recognized_internal(File &arc_file) const

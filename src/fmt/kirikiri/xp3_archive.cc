@@ -17,10 +17,15 @@
 
 #include "fmt/kirikiri/tlg_converter.h"
 #include "fmt/kirikiri/xp3_archive.h"
-#include "fmt/kirikiri/xp3_filter_factory.h"
+#include "fmt/kirikiri/xp3_filters/cxdec_comyu.h"
+#include "fmt/kirikiri/xp3_filters/cxdec_fha.h"
+#include "fmt/kirikiri/xp3_filters/cxdec_mahoyoru.h"
+#include "fmt/kirikiri/xp3_filters/fsn.h"
+#include "fmt/kirikiri/xp3_filters/noop.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
+#include "util/plugin_mgr.hh"
 
 using namespace au;
 using namespace au::fmt::kirikiri;
@@ -30,6 +35,11 @@ static const bstr file_magic = "File"_b;
 static const bstr adlr_magic = "adlr"_b;
 static const bstr info_magic = "info"_b;
 static const bstr segm_magic = "segm"_b;
+
+namespace
+{
+    using FilterPtr = std::unique_ptr<Xp3Filter>;
+}
 
 static int detect_version(io::IO &arc_io)
 {
@@ -163,7 +173,7 @@ static std::unique_ptr<File> read_file(
 
 struct Xp3Archive::Priv
 {
-    Xp3FilterFactory filter_factory;
+    util::PluginManager<FilterPtr> plugin_mgr;
     TlgConverter tlg_converter;
     std::unique_ptr<Xp3Filter> filter;
 
@@ -175,6 +185,21 @@ struct Xp3Archive::Priv
 Xp3Archive::Xp3Archive() : p(new Priv)
 {
     add_transformer(&p->tlg_converter);
+
+    p->plugin_mgr.add("noop", "Unecrypted games",
+        []() { return FilterPtr(new xp3_filters::Noop); });
+
+    p->plugin_mgr.add("comyu", "Comyu - Kuroi Ryuu to Yasashii Oukoku",
+        []() { return FilterPtr(new xp3_filters::CxdecComyu); });
+
+    p->plugin_mgr.add("fsn", "Fate/Stay Night",
+        []() { return FilterPtr(new xp3_filters::Fsn); });
+
+    p->plugin_mgr.add("fha", "Fate/Hollow Ataraxia",
+        []() { return FilterPtr(new xp3_filters::CxdecFha); });
+
+    p->plugin_mgr.add("mahoyoru", "Mahou Tsukai no Yoru",
+        []() { return FilterPtr(new xp3_filters::CxdecMahoYoru); });
 }
 
 Xp3Archive::~Xp3Archive()
@@ -183,13 +208,14 @@ Xp3Archive::~Xp3Archive()
 
 void Xp3Archive::register_cli_options(ArgParser &arg_parser) const
 {
-    p->filter_factory.register_cli_options(arg_parser);
+    p->plugin_mgr.register_cli_options(
+        arg_parser, "Selects XP3 decryption routine.");
     Archive::register_cli_options(arg_parser);
 }
 
 void Xp3Archive::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->filter = p->filter_factory.get_filter_from_cli_options(arg_parser);
+    p->filter = p->plugin_mgr.get_from_cli_options(arg_parser, true);
     Archive::parse_cli_options(arg_parser);
 }
 
