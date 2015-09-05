@@ -6,7 +6,7 @@
 //
 // Known games:
 // - Musume Shimai
-// - Pure My Imouto Milk Purin
+// - Pure My Imouto Milk Purun
 
 #include "fmt/glib/glib2_archive.h"
 #include "fmt/glib/pgx_converter.h"
