@@ -1,3 +1,4 @@
+#include <boost/algorithm/string.hpp>
 #include <string>
 #include "file.h"
 #include "io/buffered_io.h"
@@ -51,7 +52,7 @@ bool File::has_extension(const std::string &extension)
 {
     auto path = boost::filesystem::path(name);
     ::change_extension(path, extension);
-    return name == path;
+    return boost::iequals(name, path.string());
 }
 
 void File::change_extension(const std::string &new_extension)
