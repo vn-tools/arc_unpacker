@@ -1,13 +1,14 @@
-#include <stdexcept>
+#include <algorithm>
 #include <boost/filesystem.hpp>
-#include "fmt/kirikiri/xp3_filters/cxdec.h"
+#include "fmt/kirikiri/cxdec.h"
+#include "io/file_io.h"
 #include "util/range.h"
 
 using namespace au;
-using namespace au::fmt::kirikiri::xp3_filters;
+using namespace au::fmt::kirikiri;
 
-static const size_t encryption_block_size = 4096;
-static const bstr encryption_block_magic =
+static const size_t control_block_size = 4096;
+static const bstr control_block_magic =
     "\x20\x45\x6E\x63\x72\x79\x70\x74\x69\x6F\x6E\x20\x63\x6F\x6E\x74"_b;
 
 namespace
@@ -18,23 +19,27 @@ namespace
         KeyDerivationError() : std::runtime_error("") { }
     };
 
-    /**
-     *A class used to derive the nontrivial key in CXDEC based encryption.
-     */
+    struct CxdecSettings
+    {
+        bstr control_block;
+        u16 key1;
+        u16 key2;
+        std::array<size_t, 3> key_derivation_order1;
+        std::array<size_t, 8> key_derivation_order2;
+        std::array<size_t, 6> key_derivation_order3;
+    };
+
     class KeyDeriver
     {
     public:
-        KeyDeriver(
-            const CxdecSettings &settings,
-            const std::array<char, encryption_block_size> encryption_block);
+        KeyDeriver(const CxdecSettings &settings);
         u32 derive(u32 seed, u32 parameter);
     private:
         const CxdecSettings &settings;
-        const std::array<char, encryption_block_size> encryption_block;
         bstr shellcode;
         u32 seed;
         size_t parameter;
-        u32 encryption_block_addr;
+        u32 control_block_addr;
 
         void add_shellcode(const bstr &bytes_s);
         u32 rand();
@@ -50,14 +55,11 @@ static bstr u32_to_string(u32 value)
     return bstr(reinterpret_cast<char*>(&value), 4);
 }
 
-KeyDeriver::KeyDeriver(
-    const CxdecSettings &settings,
-    const std::array<char, encryption_block_size> encryption_block)
-    : settings(settings), encryption_block(encryption_block)
+KeyDeriver::KeyDeriver(const CxdecSettings &settings) : settings(settings)
 {
     seed = 0;
     parameter = 0;
-    encryption_block_addr = reinterpret_cast<size_t>(&encryption_block[0]);
+    control_block_addr = reinterpret_cast<size_t>(&settings.control_block);
 }
 
 u32 KeyDeriver::derive(u32 seed, u32 parameter)
@@ -77,7 +79,7 @@ u32 KeyDeriver::derive(u32 seed, u32 parameter)
     // Maintaining the randomizer state is essential for the decryption to
     // work.
 
-    for (size_t stage = 5; stage >= 1; stage--)
+    for (size_t stage = 5; stage > 0; stage--)
     {
         try
         {
@@ -89,8 +91,7 @@ u32 KeyDeriver::derive(u32 seed, u32 parameter)
         }
     }
 
-    throw std::runtime_error(
-        "Failed to derive the key from the parameter");
+    throw std::runtime_error("Failed to derive the key from the parameter");
 }
 
 void KeyDeriver::add_shellcode(const bstr &bytes)
@@ -157,16 +158,16 @@ u32 KeyDeriver::run_first_stage()
 
         case 2:
         {
-            // mov esi, &encryption_block
+            // mov esi, &settings.control_block
             add_shellcode("\xBE"_b);
-            add_shellcode(u32_to_string(encryption_block_addr));
+            add_shellcode(u32_to_string(control_block_addr));
 
             // mov eax, dword ptr ds:[esi+((rand() & 0x3FF) * 4]
             add_shellcode("\x8B\x86"_b);
             u32 pos = (rand() & 0x3FF) * 4;
             add_shellcode(u32_to_string(pos));
 
-            eax = *reinterpret_cast<const u32*>(&encryption_block[pos]);
+            eax = *reinterpret_cast<const u32*>(&settings.control_block[pos]);
             break;
         }
 
@@ -199,7 +200,7 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
         case 1:
             // dec eax
             add_shellcode("\x48"_b);
-            eax -= 1;
+            eax--;
             break;
 
         case 2:
@@ -211,13 +212,13 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
         case 3:
             // inc eax
             add_shellcode("\x40"_b);
-            eax += 1;
+            eax++;
             break;
 
         case 4:
-            // mov esi, &encryption_block
+            // mov esi, &settings.control_block
             add_shellcode("\xBE"_b);
-            add_shellcode(u32_to_string(encryption_block_addr));
+            add_shellcode(u32_to_string(control_block_addr));
 
             // and eax, 3ff
             add_shellcode("\x25\xFF\x03\x00\x00"_b);
@@ -226,7 +227,7 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
             add_shellcode("\x8B\x04\x86"_b);
 
             eax = *reinterpret_cast<const u32*>(
-                &encryption_block[(eax & 0x3FF) * 4]);
+                &settings.control_block[(eax & 0x3FF) * 4]);
             break;
 
         case 5:
@@ -410,7 +411,7 @@ u32 KeyDeriver::run_stage_strategy_1(size_t stage)
 
 static void decrypt_chunk(
     KeyDeriver &key_deriver,
-    io::IO &io,
+    bstr &data,
     u32 hash,
     size_t base_offset,
     size_t size)
@@ -429,53 +430,19 @@ static void decrypt_chunk(
     size_t offset0 = ret1 >> 16;
     size_t offset1 = ret1 & 0xFFFF;
 
-    io.seek(base_offset);
-    auto data = io.read(size);
+    auto data_ptr = &data[base_offset];
 
     if (offset0 >= base_offset && offset0 < base_offset + size)
-        data[offset0 - base_offset] ^= xor0;
+        data_ptr[offset0 - base_offset] ^= xor0;
 
     if (offset1 >= base_offset && offset1 < base_offset + size)
-        data[offset1 - base_offset] ^= xor1;
+        data_ptr[offset1 - base_offset] ^= xor1;
 
     for (auto i : util::range(size))
-        data[i] ^= xor2;
-
-    io.seek(base_offset);
-    io.write(data);
+        data_ptr[i] ^= xor2;
 }
 
-struct Cxdec::Priv
-{
-    std::array<char, encryption_block_size> encryption_block;
-};
-
-Cxdec::Cxdec() : p(new Priv())
-{
-}
-
-Cxdec::~Cxdec()
-{
-}
-
-void Cxdec::decode(File &file, u32 encryption_key) const
-{
-    CxdecSettings settings = get_settings();
-    KeyDeriver key_deriver(settings, p->encryption_block);
-
-    u32 hash = encryption_key;
-    u32 key = (hash & settings.key1) + settings.key2;
-
-    size_t size = file.io.size() > key ? key : file.io.size();
-
-    decrypt_chunk(key_deriver, file.io, hash, 0, size);
-    size_t offset = size;
-    size = file.io.size() - offset;
-    hash = (hash >> 16) ^ hash;
-    decrypt_chunk(key_deriver, file.io, hash, offset, size);
-}
-
-void Cxdec::set_arc_path(const std::string &path)
+static bstr find_control_block(const std::string &path)
 {
     auto dir = boost::filesystem::path(path).parent_path();
     for (boost::filesystem::recursive_directory_iterator it(dir);
@@ -491,20 +458,49 @@ void Cxdec::set_arc_path(const std::string &path)
 
         io::FileIO tmp_io(it->path(), io::FileMode::Read);
         bstr content = tmp_io.read_to_eof();
-        auto pos = content.find(encryption_block_magic);
+        auto pos = content.find(control_block_magic);
         if (pos == bstr::npos)
         {
             throw std::runtime_error(
-                "Encryption file found, but without encryption block");
+                "TPM file found, but without control block");
         }
 
-        if (pos + encryption_block_size > content.size())
-            throw std::runtime_error("Encryption block found, but truncated");
+        if (pos + control_block_size > content.size())
+            throw std::runtime_error("Control block found, but truncated");
 
-        for (auto i : util::range(encryption_block_size))
-            p->encryption_block[i] = content[pos + i];
-        return;
+        return content.substr(pos, control_block_size);
     }
 
-    throw std::runtime_error("Encryption file not found");
+    throw std::runtime_error("TPM file not found");
+}
+
+Xp3FilterFunc au::fmt::kirikiri::create_cxdec_filter(
+    const std::string &arc_path,
+    u16 key1,
+    u16 key2,
+    const std::array<size_t, 3> key_derivation_order1,
+    const std::array<size_t, 8> key_derivation_order2,
+    const std::array<size_t, 6> key_derivation_order3)
+{
+    CxdecSettings settings;
+    settings.control_block = find_control_block(arc_path);
+    settings.key1 = key1;
+    settings.key2 = key2;
+    settings.key_derivation_order1 = key_derivation_order1;
+    settings.key_derivation_order2 = key_derivation_order2;
+    settings.key_derivation_order3 = key_derivation_order3;
+
+    return [=](bstr &data, u32 adlr_key)
+    {
+        KeyDeriver key_deriver(settings);
+        size_t size = std::min<size_t>(
+            data.size(), (adlr_key & settings.key1) + settings.key2);
+
+        auto hash1 = adlr_key;
+        auto hash2 = (adlr_key >> 16) ^ adlr_key;
+        size_t offset1 = 0;
+        size_t offset2 = size;
+        decrypt_chunk(key_deriver, data, hash1, offset1, offset2);
+        decrypt_chunk(key_deriver, data, hash2, offset2, data.size() - offset2);
+    };
 }

@@ -18,30 +18,31 @@
 
 #include "fmt/kirikiri/tlg_converter.h"
 #include "fmt/kirikiri/xp3_archive.h"
-#include "fmt/kirikiri/xp3_filters/cxdec_comyu.h"
-#include "fmt/kirikiri/xp3_filters/cxdec_fha.h"
-#include "fmt/kirikiri/xp3_filters/cxdec_mahoyoru.h"
-#include "fmt/kirikiri/xp3_filters/fsn.h"
-#include "fmt/kirikiri/xp3_filters/mixed_xor.h"
-#include "fmt/kirikiri/xp3_filters/noop.h"
+#include "fmt/kirikiri/xp3_filter_registry.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
-#include "util/plugin_mgr.hh"
+#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri;
+
+namespace
+{
+    struct InfoChunk
+    {
+        u32 flags;
+        u64 file_size_original;
+        u64 file_size_compressed;
+        std::string name;
+    };
+}
 
 static const bstr xp3_magic = "XP3\r\n\x20\x0A\x1A\x8B\x67\x01"_b;
 static const bstr file_magic = "File"_b;
 static const bstr adlr_magic = "adlr"_b;
 static const bstr info_magic = "info"_b;
 static const bstr segm_magic = "segm"_b;
-
-namespace
-{
-    using FilterPtr = std::unique_ptr<Xp3Filter>;
-}
 
 static int detect_version(io::IO &arc_io)
 {
@@ -84,25 +85,24 @@ static std::unique_ptr<io::IO> read_raw_table(io::IO &arc_io)
     return std::unique_ptr<io::IO>(new io::BufferedIO(data));
 }
 
-static void read_info_chunk(io::IO &table_io, File &target_file)
+static InfoChunk read_info_chunk(io::IO &table_io)
 {
     if (table_io.read(info_magic.size()) != info_magic)
         throw std::runtime_error("Expected INFO chunk");
     u64 info_chunk_size = table_io.read_u64_le();
 
-    u32 info_flags = table_io.read_u32_le();
-    u64 file_size_original = table_io.read_u64_le();
-    u64 file_size_compressed = table_io.read_u64_le();
+    InfoChunk info_chunk;
+    info_chunk.flags = table_io.read_u32_le();
+    info_chunk.file_size_original = table_io.read_u64_le();
+    info_chunk.file_size_compressed = table_io.read_u64_le();
 
     size_t file_name_size = table_io.read_u16_le();
-    bstr file_name_utf16 = table_io.read(file_name_size * 2);
-    target_file.name
-        = util::convert_encoding(file_name_utf16, "utf-16le", "utf-8").str();
-    if (info_chunk_size != file_name_size * 2 + 22)
-        throw std::runtime_error("Unexpected INFO chunk size");
+    auto name = table_io.read(file_name_size * 2);
+    info_chunk.name = util::convert_encoding(name, "utf-16le", "utf-8").str();
+    return info_chunk;
 }
 
-static bool read_segm_chunk(io::IO &table_io, io::IO &arc_io, File &target_file)
+static bstr read_data_from_segm_chunk(io::IO &table_io, io::IO &arc_io)
 {
     if (table_io.read(segm_magic.size()) != segm_magic)
         throw std::runtime_error("Expected SEGM chunk");
@@ -110,6 +110,7 @@ static bool read_segm_chunk(io::IO &table_io, io::IO &arc_io, File &target_file)
     u64 segm_chunk_size = table_io.read_u64_le();
     if (segm_chunk_size % 28 != 0)
         throw std::runtime_error("Unexpected SEGM chunk size");
+    bstr full_data;
     size_t initial_pos = table_io.tell();
     while (segm_chunk_size > table_io.tell() - initial_pos)
     {
@@ -124,18 +125,18 @@ static bool read_segm_chunk(io::IO &table_io, io::IO &arc_io, File &target_file)
         {
             auto data_compressed = arc_io.read(data_size_compressed);
             auto data_uncompressed = util::pack::zlib_inflate(data_compressed);
-            target_file.io.write(data_uncompressed);
+            full_data += data_uncompressed;
         }
         else
         {
-            target_file.io.write_from_io(arc_io, data_size_original);
+            full_data += arc_io.read(data_size_original);
         }
     }
 
-    return true;
+    return full_data;
 }
 
-static u32 read_adlr_chunk(io::IO &table_io, u32 *encryption_key)
+static u32 read_key_from_adlr_chunk(io::IO &table_io)
 {
     if (table_io.read(adlr_magic.size()) != adlr_magic)
         throw std::runtime_error("Expected ADLR chunk");
@@ -144,68 +145,43 @@ static u32 read_adlr_chunk(io::IO &table_io, u32 *encryption_key)
     if (adlr_chunk_size != 4)
         throw std::runtime_error("Unexpected ADLR chunk size");
 
-    *encryption_key = table_io.read_u32_le();
-    return true;
+    return table_io.read_u32_le();
 }
 
 static std::unique_ptr<File> read_file(
-    io::IO &arc_io, io::IO &table_io, Xp3Filter *filter)
+    io::IO &arc_io, io::IO &table_io, const Xp3FilterFunc &filter_func)
 {
     std::unique_ptr<File> target_file(new File());
 
     if (table_io.read(file_magic.size()) != file_magic)
         throw std::runtime_error("Expected FILE chunk");
 
-    u32 encryption_key;
     u64 file_chunk_size = table_io.read_u64_le();
     size_t file_chunk_start_offset = table_io.tell();
 
-    read_info_chunk(table_io, *target_file);
-    read_segm_chunk(table_io, arc_io, *target_file);
-    read_adlr_chunk(table_io, &encryption_key);
+    auto info_chunk = read_info_chunk(table_io);
+    auto data = read_data_from_segm_chunk(table_io, arc_io);
+    auto key = read_key_from_adlr_chunk(table_io);
 
-    if (table_io.tell() - file_chunk_start_offset != file_chunk_size)
-        throw std::runtime_error("Unexpected FILE chunk size");
+    util::require(table_io.tell() - file_chunk_start_offset == file_chunk_size);
 
-    if (filter)
-        filter->decode(*target_file, encryption_key);
+    if (filter_func)
+        filter_func(data, key);
 
+    target_file->name = info_chunk.name;
+    target_file->io.write(data);
     return target_file;
 }
 
 struct Xp3Archive::Priv
 {
-    util::PluginManager<FilterPtr> plugin_mgr;
+    Xp3FilterRegistry filter_registry;
     TlgConverter tlg_converter;
-    std::unique_ptr<Xp3Filter> filter;
-
-    Priv() : filter(nullptr)
-    {
-    }
 };
 
 Xp3Archive::Xp3Archive() : p(new Priv)
 {
     add_transformer(&p->tlg_converter);
-
-    p->plugin_mgr.add("noop", "Unecrypted games",
-        []() { return FilterPtr(new xp3_filters::Noop); });
-
-    p->plugin_mgr.add("comyu", "Comyu - Kuroi Ryuu to Yasashii Oukoku",
-        []() { return FilterPtr(new xp3_filters::CxdecComyu); });
-
-    p->plugin_mgr.add("fsn", "Fate/Stay Night",
-        []() { return FilterPtr(new xp3_filters::Fsn); });
-
-    p->plugin_mgr.add("fha", "Fate/Hollow Ataraxia",
-        []() { return FilterPtr(new xp3_filters::CxdecFha); });
-
-    p->plugin_mgr.add("mahoyoru", "Mahou Tsukai no Yoru",
-        []() { return FilterPtr(new xp3_filters::CxdecMahoYoru); });
-
-    p->plugin_mgr.add(
-        "mixed-xor", "Gokkun! Onii-chan Milk ~Punipuni Oppai na Imouto to~",
-        []() { return FilterPtr(new xp3_filters::MixedXor); });
 }
 
 Xp3Archive::~Xp3Archive()
@@ -214,14 +190,13 @@ Xp3Archive::~Xp3Archive()
 
 void Xp3Archive::register_cli_options(ArgParser &arg_parser) const
 {
-    p->plugin_mgr.register_cli_options(
-        arg_parser, "Selects XP3 decryption routine.");
+    p->filter_registry.register_cli_options(arg_parser);
     Archive::register_cli_options(arg_parser);
 }
 
 void Xp3Archive::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->filter = p->plugin_mgr.get_from_cli_options(arg_parser, true);
+    p->filter_registry.parse_cli_options(arg_parser);
     Archive::parse_cli_options(arg_parser);
 }
 
@@ -239,11 +214,11 @@ void Xp3Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     arc_file.io.seek(table_offset);
     auto table_io = read_raw_table(arc_file.io);
 
-    if (p->filter)
-        p->filter->set_arc_path(arc_file.name);
+    Xp3Filter filter(arc_file.name);
+    p->filter_registry.set_decoder(filter);
 
     while (table_io->tell() < table_io->size())
-        file_saver.save(read_file(arc_file.io, *table_io, p->filter.get()));
+        file_saver.save(read_file(arc_file.io, *table_io, filter.decoder));
 }
 
 static auto dummy = fmt::Registry::add<Xp3Archive>("krkr/xp3");

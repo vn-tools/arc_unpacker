@@ -175,7 +175,7 @@ static std::unique_ptr<File> read_file(
 
 struct NpaArchive::Priv
 {
-    util::PluginManager<std::unique_ptr<NpaFilter>> plugin_mgr;
+    util::PluginManager<std::function<std::unique_ptr<NpaFilter>()>> plugin_mgr;
     std::unique_ptr<NpaFilter> filter;
 };
 
@@ -202,7 +202,7 @@ void NpaArchive::register_cli_options(ArgParser &arg_parser) const
 
 void NpaArchive::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->filter = p->plugin_mgr.get_from_cli_options(arg_parser, true);
+    p->filter = p->plugin_mgr.get_from_cli_options(arg_parser, true)();
     Archive::parse_cli_options(arg_parser);
 }
 

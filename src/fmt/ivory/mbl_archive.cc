@@ -112,29 +112,22 @@ MblArchive::MblArchive() : p(new Priv)
     add_transformer(&p->prs_converter);
     add_transformer(&p->wady_converter);
 
-    p->plugin_mgr.add("noop", "Unencrypted games", []()
+    p->plugin_mgr.add("noop", "Unencrypted games", [](bstr &) { });
+
+    p->plugin_mgr.add("candy", "Candy Toys",
+        [](bstr &data)
         {
-            return [](bstr &) { };
+            for (auto i : util::range(data.size()))
+                data[i] = -data[i];
         });
 
-    p->plugin_mgr.add("candy", "Candy Toys", []()
+    p->plugin_mgr.add("wanko", "Wanko to Kurasou",
+        [](bstr &data)
         {
-            return [](bstr &data)
-            {
-                for (auto i : util::range(data.size()))
-                    data[i] = -data[i];
-            };
-        });
-
-    p->plugin_mgr.add("wanko", "Wanko to Kurasou", []()
-        {
-            return [](bstr &data)
-            {
-                static const bstr key =
-                    "\x82\xED\x82\xF1\x82\xB1\x88\xC3\x8D\x86\x89\xBB"_b;
-                for (auto i : util::range(data.size()))
-                    data[i] ^= key[i % key.size()];
-            };
+            static const bstr key =
+                "\x82\xED\x82\xF1\x82\xB1\x88\xC3\x8D\x86\x89\xBB"_b;
+            for (auto i : util::range(data.size()))
+                data[i] ^= key[i % key.size()];
         });
 }
 

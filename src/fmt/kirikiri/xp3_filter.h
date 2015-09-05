@@ -1,18 +1,20 @@
 #pragma once
 
-#include "file.h"
+#include <functional>
+#include <string>
+#include "types.h"
 
 namespace au {
 namespace fmt {
 namespace kirikiri {
 
-    class Xp3Filter
+    using Xp3FilterFunc = std::function<void(bstr &, u32)>;
+
+    struct Xp3Filter final
     {
-    public:
-        virtual void decode(File &file, u32 key) const = 0;
-        virtual void set_arc_path(const std::string &path);
-    protected:
+        Xp3Filter(const std::string &arc_path);
         std::string arc_path;
+        Xp3FilterFunc decoder;
     };
 
 } } }

@@ -10,7 +10,7 @@ namespace util {
     {
         std::string name;
         std::string description;
-        std::function<T()> factory;
+        T factory;
     };
 
     template<typename T> class PluginManager final
@@ -27,7 +27,7 @@ namespace util {
         void add(
             const std::string &name,
             const std::string &description,
-            std::function<T()> factory)
+            T factory)
         {
             PluginDefinition<T> d;
             d.name = name;
@@ -50,7 +50,7 @@ namespace util {
         {
             for (const auto &definition : definitions)
                 if (definition.name == plugin)
-                    return definition.factory();
+                    return definition.factory;
             throw std::runtime_error("Unrecognized plugin: " + plugin);
         }
 
