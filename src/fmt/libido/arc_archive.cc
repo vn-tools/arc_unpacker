@@ -7,6 +7,7 @@
 // Known games:
 // - Cherry Boy, Innocent Girl
 // - Fifteen ~School Girls Digital Tokuhon~
+// - Girl Friends
 
 #include <algorithm>
 #include "fmt/libido/arc_archive.h"
