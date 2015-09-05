@@ -6,18 +6,25 @@
 using namespace au;
 using namespace au::fmt::libido;
 
-TEST_CASE("Unpacking Libido's ARC archives works")
+static void do_test(const std::string &input_path)
 {
     std::vector<std::shared_ptr<File>> expected_files
     {
-        tests::zlib_file_from_path(
-            "tests/fmt/libido/files/arc/Game9999-zlib.bmp"),
+        tests::stub_file("123.txt", "1234567890 123 456789 0"_b),
+        tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-    expected_files[0]->name = "Game9999.bmp";
 
     ArcArchive archive;
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/libido/files/arc/test.arc", archive);
-
+    auto actual_files = tests::unpack_to_memory(input_path, archive);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("Unpacking Libido's unencrypted ARC archives works")
+{
+    do_test("tests/fmt/libido/files/arc/unencrypted.arc");
+}
+
+TEST_CASE("Unpacking Libido's encrypted ARC archives works")
+{
+    do_test("tests/fmt/libido/files/arc/encrypted.arc");
 }

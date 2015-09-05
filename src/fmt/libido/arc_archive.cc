@@ -6,6 +6,7 @@
 //
 // Known games:
 // - Cherry Boy, Innocent Girl
+// - Fifteen ~School Girls Digital Tokuhon~
 
 #include <algorithm>
 #include "fmt/libido/arc_archive.h"
@@ -38,7 +39,7 @@ static Table read_table(io::IO &arc_io)
         std::unique_ptr<TableEntry> entry(new TableEntry);
         auto tmp = arc_io.read(20);
         for (auto i : util::range(tmp.size()))
-            tmp[i] ^= 0xFF;
+            tmp[i] ^= tmp[tmp.size() - 1];
         entry->name = tmp.str(true);
         entry->size_original = arc_io.read_u32_le();
         entry->size_compressed = arc_io.read_u32_le();
