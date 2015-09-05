@@ -9,6 +9,7 @@
 // - Fate/Hollow Ataraxia
 // - Fate/Stay Night
 // - G-Senjou no Maou
+// - Gokkun! Onii-chan Milk ~Punipuni Oppai na Imouto to~
 // - Hare Nochi Kitto Nanohana Biyori
 // - Koiimo SWEET☆DAYS
 // - Mahou Tsukai no Yoru
@@ -21,6 +22,7 @@
 #include "fmt/kirikiri/xp3_filters/cxdec_fha.h"
 #include "fmt/kirikiri/xp3_filters/cxdec_mahoyoru.h"
 #include "fmt/kirikiri/xp3_filters/fsn.h"
+#include "fmt/kirikiri/xp3_filters/mixed_xor.h"
 #include "fmt/kirikiri/xp3_filters/noop.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
@@ -200,6 +202,10 @@ Xp3Archive::Xp3Archive() : p(new Priv)
 
     p->plugin_mgr.add("mahoyoru", "Mahou Tsukai no Yoru",
         []() { return FilterPtr(new xp3_filters::CxdecMahoYoru); });
+
+    p->plugin_mgr.add(
+        "mixed-xor", "Gokkun! Onii-chan Milk ~Punipuni Oppai na Imouto to~",
+        []() { return FilterPtr(new xp3_filters::MixedXor); });
 }
 
 Xp3Archive::~Xp3Archive()
