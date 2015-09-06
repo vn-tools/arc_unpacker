@@ -78,15 +78,11 @@ bstr util::pack::lzss_decompress_bytewise(const bstr &input, size_t output_size)
         if (!(control & 0x100))
         {
             control = *input_ptr++ | 0xFF00;
-            if (input_ptr >= input_end)
-                break;
         }
         if (control & 1)
         {
             dict[dict_pos++] = *output_ptr++ = *input_ptr++;
             dict_pos %= dict_size;
-            if (input_ptr >= input_end)
-                break;
         }
         else
         {
@@ -94,8 +90,6 @@ bstr util::pack::lzss_decompress_bytewise(const bstr &input, size_t output_size)
             if (input_ptr >= input_end)
                 break;
             u8 tmp2 = *input_ptr++;
-            if (input_ptr >= input_end)
-                break;
 
             u16 look_behind_pos = (((tmp2 & 0xF0) << 4) | tmp1) % dict_size;
             u16 repetitions = (tmp2 & 0xF) + 3;
