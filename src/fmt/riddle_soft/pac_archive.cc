@@ -6,6 +6,7 @@
 //
 // Known games:
 // - Brightia
+// - Caliz
 
 #include "fmt/riddle_soft/cmp_converter.h"
 #include "fmt/riddle_soft/pac_archive.h"
