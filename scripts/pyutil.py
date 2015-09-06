@@ -141,3 +141,43 @@ class BitWriter:
         self.out.write(bytes([self.accumulator]))
         self.accumulator = 0
         self.bcount = 0
+
+def lzss_compress_bytewise(input):
+    WINDOW_BITS = 12
+    LENGTH_BITS  = 4
+    MIN_MATCH = 3
+    WINDOW_SIZE = (1 << WINDOW_BITS)
+    MAX_MATCH = MIN_MATCH + (1 << LENGTH_BITS) - 1
+    out = []
+    read_ptr = 0
+    while read_ptr < len(input):
+        flag_ptr = len(out)
+        flag, bit = 0, -1
+        out += [[]]
+        while bit < 7 and read_ptr < len(input):
+            bit += 1
+            window_ptr = max(0, read_ptr - WINDOW_SIZE)
+            best_match_len, best_match_ptr = 0, 0
+            window_str = input[window_ptr:read_ptr]
+            match = input[read_ptr:read_ptr + MIN_MATCH]
+            i = window_str.find(match)
+            while (i != -1
+            and best_match_len < MAX_MATCH
+            and len(match) > best_match_len):
+                best_match_len = len(match)
+                best_match_ptr = i
+                match = input[read_ptr : read_ptr + len(match) + 1]
+                i = window_str.find(match)
+            if best_match_len >= MIN_MATCH:
+                best_match_ptr += 0xFEE
+                best_match_ptr %= WINDOW_SIZE
+                out.append(best_match_ptr & 0xFF)
+                out.append((best_match_len - MIN_MATCH)
+                    | ((best_match_ptr & 0xF00) >> 4))
+                read_ptr += best_match_len
+            else:
+                flag |= 1 << bit
+                out += [input[read_ptr]]
+                read_ptr += 1
+        out[flag_ptr] = flag
+    return bytes(out)
