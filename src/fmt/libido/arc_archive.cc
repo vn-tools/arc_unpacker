@@ -11,7 +11,6 @@
 
 #include <algorithm>
 #include "fmt/libido/arc_archive.h"
-#include "io/buffered_io.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"
 
