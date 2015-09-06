@@ -113,6 +113,9 @@ void ArcUnpacker::Priv::register_cli_options()
     arg_parser.register_flag({"--no-color", "--no-colors"})
         ->set_description("Disables color output.");
 
+    arg_parser.register_flag({"-q", "--quiet"})
+        ->set_description("Disables all output.");
+
     arg_parser.register_flag({"--no-recurse"})
         ->set_description("Disables automatic decoding of nested files.");
 
@@ -139,6 +142,9 @@ void ArcUnpacker::Priv::parse_cli_options()
 
     if (arg_parser.has_flag("--no-color") || arg_parser.has_flag("--no-colors"))
         Log.disable_colors();
+
+    if (arg_parser.has_flag("-q") || arg_parser.has_flag("--quiet"))
+        Log.mute();
 
     options.recurse = !arg_parser.has_flag("--no-recurse");
 
