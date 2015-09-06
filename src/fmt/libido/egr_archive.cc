@@ -36,10 +36,8 @@ bool EgrArchive::is_recognized_internal(File &arc_file) const
 void EgrArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     auto i = 0;
-    io::FileIO tmp_io("test.EGR", io::FileMode::Write);
     while (!arc_file.io.eof())
     {
-        auto pos = arc_file.io.tell();
         auto width = arc_file.io.read_u32_le();
         auto height = arc_file.io.read_u32_le();
         util::require(arc_file.io.read_u32_le() == width * height);
@@ -57,13 +55,6 @@ void EgrArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         arc_file.io.skip(0x174);
         pix::Grid pixels(
             width, height, arc_file.io.read(width * height), palette);
-
-        if (i == 0 || i == 43)
-        {
-            auto size = arc_file.io.tell() - pos;
-            arc_file.io.seek(pos);
-            tmp_io.write_from_io(arc_file.io, size);
-        }
 
         auto name = util::format("Image%03d.png", i++);
         file_saver.save(util::Image::from_pixels(pixels)->create_file(name));
