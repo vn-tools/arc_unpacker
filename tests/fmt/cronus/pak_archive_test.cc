@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::cronus;
 
-TEST_CASE("Unpacking Cronus PAK archives works")
+static void do_test(const std::string &input_path)
 {
     std::vector<std::shared_ptr<File>> expected_files
     {
@@ -15,8 +15,21 @@ TEST_CASE("Unpacking Cronus PAK archives works")
     };
 
     PakArchive archive;
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/cronus/files/pak/test.pak", archive);
-
+    auto actual_files = tests::unpack_to_memory(input_path, archive);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("Unpacking unencrypted uncompressed Cronus PAK archives works")
+{
+    do_test("tests/fmt/cronus/files/pak/unencrypted-uncompressed.pak");
+}
+
+TEST_CASE("Unpacking encrypted uncompressed Cronus PAK archives works")
+{
+    do_test("tests/fmt/cronus/files/pak/encrypted-uncompressed.pak");
+}
+
+TEST_CASE("Unpacking encrypted compressed Cronus PAK archives works")
+{
+    do_test("tests/fmt/cronus/files/pak/encrypted-compressed.pak");
 }

@@ -10,7 +10,7 @@ namespace util {
     {
         std::string name;
         std::string description;
-        T factory;
+        T value;
     };
 
     template<typename T> class PluginManager final
@@ -27,12 +27,12 @@ namespace util {
         void add(
             const std::string &name,
             const std::string &description,
-            T factory)
+            T value)
         {
             PluginDefinition<T> d;
             d.name = name;
             d.description = description;
-            d.factory = factory;
+            d.value = value;
             definitions.push_back(d);
         }
 
@@ -50,7 +50,7 @@ namespace util {
         {
             for (const auto &definition : definitions)
                 if (definition.name == plugin)
-                    return definition.factory;
+                    return definition.value;
             throw std::runtime_error("Unrecognized plugin: " + plugin);
         }
 
@@ -63,6 +63,14 @@ namespace util {
                 return nullptr;
             }
             return get_from_string(arg_parser.get_switch("plugin"));
+        }
+
+        std::vector<T> get_all() const
+        {
+            std::vector<T> ret;
+            for (auto &def : definitions)
+                ret.push_back(def.value);
+            return ret;
         }
 
     private:

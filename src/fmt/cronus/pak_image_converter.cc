@@ -7,21 +7,38 @@
 //
 // Known games:
 // - Doki Doki Princess
+// - Sweet Pleasure
 
+#include <boost/filesystem/path.hpp>
+#include "fmt/cronus/common.h"
 #include "fmt/cronus/pak_image_converter.h"
-#include "util/pack/lzss.h"
 #include "util/image.h"
-#include "util/require.h"
+#include "util/pack/lzss.h"
+#include "util/plugin_mgr.hh"
 #include "util/range.h"
+#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::cronus;
 
-static const int key1 = 0xA53CC35A;
-static const int key2 = 0x35421005;
-static const int key3 = 0xCF42355D;
+namespace
+{
+    enum EncType
+    {
+        Delta,
+        SwapBytes,
+    };
 
-static void decrypt(bstr &input, size_t encrypted_size)
+    struct Plugin
+    {
+        u32 key1;
+        u32 key2;
+        u32 key3;
+        EncType encryption_type;
+    };
+}
+
+static void swap_decrypt(bstr &input, size_t encrypted_size)
 {
     u16 *input_ptr = input.get<u16>();
     const u16 *input_end = input.end<const u16>();
@@ -33,36 +50,70 @@ static void decrypt(bstr &input, size_t encrypted_size)
     }
 }
 
+struct PakImageConverter::Priv
+{
+    util::PluginManager<Plugin> plugin_mgr;
+    Plugin plugin;
+};
+
+PakImageConverter::PakImageConverter() : p(new Priv)
+{
+    p->plugin_mgr.add(
+        "dokidoki", "Doki Doki Princess",
+        {0xA53CC35A, 0x35421005, 0xCF42355D, EncType::SwapBytes});
+
+    p->plugin_mgr.add(
+        "sweet", "Sweet Pleasure",
+        {0x2468FCDA, 0x4FC2CC4D, 0xCF42355D, EncType::Delta});
+}
+
+PakImageConverter::~PakImageConverter()
+{
+}
+
 bool PakImageConverter::is_recognized_internal(File &file) const
 {
-    auto width = file.io.read_u32_le() ^ key1;
-    auto height = file.io.read_u32_le() ^ key2;
-    auto bpp = file.io.read_u32_le();
-    file.io.skip(4);
-    auto output_size = file.io.read_u32_le() ^ key3;
+    for (auto plugin : p->plugin_mgr.get_all())
+    {
+        file.io.seek(0);
+        auto width = file.io.read_u32_le() ^ plugin.key1;
+        auto height = file.io.read_u32_le() ^ plugin.key2;
+        auto bpp = file.io.read_u32_le();
+        file.io.skip(4);
+        auto output_size = file.io.read_u32_le() ^ plugin.key3;
 
-    size_t expected_output_size = width * height;
-    if (bpp == 8)
-        expected_output_size += 1024;
-    else if (bpp == 24)
-        expected_output_size *= 3;
-    else
-        return false;
+        size_t expected_output_size = width * height;
+        if (bpp == 8)
+            expected_output_size += 1024;
+        else if (bpp == 24)
+            expected_output_size *= 3;
+        else
+            return false;
 
-    return output_size == expected_output_size;
+        if (output_size == expected_output_size)
+        {
+            p->plugin = plugin;
+            return true;
+        }
+    }
+    return false;
 }
 
 std::unique_ptr<File> PakImageConverter::decode_internal(File &file) const
 {
-    auto width = file.io.read_u32_le() ^ key1;
-    auto height = file.io.read_u32_le() ^ key2;
+    auto width = file.io.read_u32_le() ^ p->plugin.key1;
+    auto height = file.io.read_u32_le() ^ p->plugin.key2;
     auto bpp = file.io.read_u32_le();
-    auto unk0 = file.io.read_u32_le();
-    auto output_size = file.io.read_u32_le() ^ key3;
-    auto unk1 = file.io.read_u32_le();
+    file.io.skip(4);
+    auto output_size = file.io.read_u32_le() ^ p->plugin.key3;
+    file.io.skip(4);
 
     auto data = file.io.read_to_eof();
-    decrypt(data, output_size);
+    boost::filesystem::path path(file.name);
+    if (p->plugin.encryption_type == EncType::Delta)
+        delta_decrypt(data, get_delta_key(path.filename().string()));
+    else
+        swap_decrypt(data, output_size);
     data = util::pack::lzss_decompress_bytewise(data, output_size);
 
     if (bpp == 8)

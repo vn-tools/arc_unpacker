@@ -16,16 +16,23 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("Decoding 8 bit Cronus images works")
+TEST_CASE("Decoding 8 bit Cronus images works (DokiDoki Princess plugin)")
 {
     do_test(
         "tests/fmt/cronus/files/pak_image/DPBG03D",
         "tests/fmt/cronus/files/pak_image/DPBG03D-out.png");
 }
 
-TEST_CASE("Decoding 24 bit Cronus images works")
+TEST_CASE("Decoding 24 bit Cronus images works (DokiDoki Princess plugin)")
 {
     do_test(
         "tests/fmt/cronus/files/pak_image/TCF12",
         "tests/fmt/cronus/files/pak_image/TCF12-out.png");
+}
+
+TEST_CASE("Decoding 24 bit Cronus images works (Sweet Pleasure plugin)")
+{
+    do_test(
+        "tests/fmt/cronus/files/pak_image/MSGPARTS",
+        "tests/fmt/cronus/files/pak_image/MSGPARTS-out.png");
 }
