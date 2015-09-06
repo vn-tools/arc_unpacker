@@ -52,6 +52,26 @@ namespace au {
             return get<T>() + v.size() / sizeof(T);
         }
 
+        u8 *begin()
+        {
+            return get<u8>();
+        }
+
+        u8 *end()
+        {
+            return end<u8>();
+        }
+
+        const u8 *begin() const
+        {
+            return get<const u8>();
+        }
+
+        const u8 *end() const
+        {
+            return end<const u8>();
+        }
+
         std::string str(bool trim_to_zero = false) const;
 
         bstr operator +(const bstr &other);

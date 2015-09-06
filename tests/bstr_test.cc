@@ -154,3 +154,14 @@ TEST_CASE("bstr.end", "[au]")
     REQUIRE(y.end<u16>() == &y.get<u16>()[1]);
     REQUIRE(y.end<u16>()[-1] == 0x100);
 }
+
+TEST_CASE("iterating over bstr", "[au]")
+{
+    bstr tmp = ""_b;
+    for (auto c : "123"_b)
+    {
+        tmp += c;
+        tmp += "|"_b;
+    }
+    REQUIRE(tmp == "1|2|3|"_b);
+}
