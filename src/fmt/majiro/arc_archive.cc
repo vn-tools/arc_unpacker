@@ -9,6 +9,7 @@
 
 #include "fmt/majiro/arc_archive.h"
 #include "io/buffered_io.h"
+#include "util/encoding.h"
 #include "util/range.h"
 
 using namespace au;
@@ -47,7 +48,7 @@ static Table read_table(io::IO &arc_io)
 
     arc_io.seek(names_offset);
     for (auto &entry : table)
-        entry->name = arc_io.read_to_zero().str();
+        entry->name = util::sjis_to_utf8(arc_io.read_to_zero()).str();
 
     return table;
 }
