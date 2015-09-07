@@ -1,4 +1,4 @@
-// Cronus GRP image
+// GRP image
 //
 // Company:   Cronus
 // Engine:    -
@@ -7,6 +7,7 @@
 //
 // Known games:
 // - Doki Doki Princess
+// - Nursery Song
 // - Sweet Pleasure
 
 #include <boost/filesystem/path.hpp>
@@ -27,15 +28,22 @@ namespace
     {
         Delta,
         SwapBytes,
+        None,
     };
 
-    struct Plugin
+    struct Header
     {
-        u32 key1;
-        u32 key2;
-        u32 key3;
+        size_t width;
+        size_t height;
+        size_t bpp;
+        size_t input_offset;
+        size_t output_size;
+        bool flip;
+        bool use_transparency;
         EncType encryption_type;
     };
+
+    using HeaderFunc = std::function<Header(io::IO&)>;
 }
 
 static void swap_decrypt(bstr &input, size_t encrypted_size)
@@ -52,19 +60,72 @@ static void swap_decrypt(bstr &input, size_t encrypted_size)
 
 struct GrpConverter::Priv
 {
-    util::PluginManager<Plugin> plugin_mgr;
-    Plugin plugin;
+    util::PluginManager<HeaderFunc> plugin_mgr;
+    Header header;
 };
+
+static bool validate_header(const Header &header)
+{
+    size_t expected_output_size = header.width * header.height;
+    if (header.bpp == 8)
+        expected_output_size += 1024;
+    else if (header.bpp == 24)
+        expected_output_size *= 3;
+    else if (header.bpp == 32)
+        expected_output_size *= 4;
+    else
+        return false;
+    return header.output_size == expected_output_size;
+}
+
+static HeaderFunc reader_v1(u32 key1, u32 key2, u32 key3, EncType enc_type)
+{
+    return [=](io::IO &file_io)
+    {
+        Header header;
+        header.width = file_io.read_u32_le() ^ key1;
+        header.height = file_io.read_u32_le() ^ key2;
+        header.bpp = file_io.read_u32_le();
+        file_io.skip(4);
+        header.output_size = file_io.read_u32_le() ^ key3;
+        file_io.skip(4);
+        header.use_transparency = false;
+        header.flip = true;
+        header.encryption_type = enc_type;
+        return header;
+    };
+}
+
+static HeaderFunc reader_v2()
+{
+    return [](io::IO &file_io)
+    {
+        Header header;
+        file_io.skip(4);
+        header.output_size = file_io.read_u32_le();
+        file_io.skip(8);
+        header.width = file_io.read_u32_le();
+        header.height = file_io.read_u32_le();
+        header.bpp = file_io.read_u32_le();
+        file_io.skip(8);
+        header.flip = false;
+        header.use_transparency = file_io.read_u32_le();
+        header.encryption_type = EncType::None;
+        return header;
+    };
+}
 
 GrpConverter::GrpConverter() : p(new Priv)
 {
     p->plugin_mgr.add(
         "dokidoki", "Doki Doki Princess",
-        {0xA53CC35A, 0x35421005, 0xCF42355D, EncType::SwapBytes});
+        reader_v1(0xA53CC35A, 0x35421005, 0xCF42355D, EncType::SwapBytes));
 
     p->plugin_mgr.add(
         "sweet", "Sweet Pleasure",
-        {0x2468FCDA, 0x4FC2CC4D, 0xCF42355D, EncType::Delta});
+        reader_v1(0x2468FCDA, 0x4FC2CC4D, 0xCF42355D, EncType::Delta));
+
+    p->plugin_mgr.add("nursery", "Nursery Song", reader_v2());
 }
 
 GrpConverter::~GrpConverter()
@@ -73,27 +134,20 @@ GrpConverter::~GrpConverter()
 
 bool GrpConverter::is_recognized_internal(File &file) const
 {
-    for (auto plugin : p->plugin_mgr.get_all())
+    for (auto header_func : p->plugin_mgr.get_all())
     {
         file.io.seek(0);
-        auto width = file.io.read_u32_le() ^ plugin.key1;
-        auto height = file.io.read_u32_le() ^ plugin.key2;
-        auto bpp = file.io.read_u32_le();
-        file.io.skip(4);
-        auto output_size = file.io.read_u32_le() ^ plugin.key3;
-
-        size_t expected_output_size = width * height;
-        if (bpp == 8)
-            expected_output_size += 1024;
-        else if (bpp == 24)
-            expected_output_size *= 3;
-        else
-            return false;
-
-        if (output_size == expected_output_size)
+        try
         {
-            p->plugin = plugin;
+            p->header = header_func(file.io);
+            if (!validate_header(p->header))
+                continue;
+            p->header.input_offset = file.io.tell();
             return true;
+        }
+        catch (...)
+        {
+            continue;
         }
     }
     return false;
@@ -101,38 +155,47 @@ bool GrpConverter::is_recognized_internal(File &file) const
 
 std::unique_ptr<File> GrpConverter::decode_internal(File &file) const
 {
-    auto width = file.io.read_u32_le() ^ p->plugin.key1;
-    auto height = file.io.read_u32_le() ^ p->plugin.key2;
-    auto bpp = file.io.read_u32_le();
-    file.io.skip(4);
-    auto output_size = file.io.read_u32_le() ^ p->plugin.key3;
-    file.io.skip(4);
-
+    file.io.seek(p->header.input_offset);
     auto data = file.io.read_to_eof();
-    boost::filesystem::path path(file.name);
-    if (p->plugin.encryption_type == EncType::Delta)
-        delta_decrypt(data, get_delta_key(path.filename().string()));
-    else
-        swap_decrypt(data, output_size);
-    data = util::pack::lzss_decompress_bytewise(data, output_size);
 
-    if (bpp == 8)
+    boost::filesystem::path path(file.name);
+    if (p->header.encryption_type == EncType::Delta)
+        delta_decrypt(data, get_delta_key(path.filename().string()));
+    else if (p->header.encryption_type == EncType::SwapBytes)
+        swap_decrypt(data, p->header.output_size);
+    data = util::pack::lzss_decompress_bytewise(data, p->header.output_size);
+
+    std::unique_ptr<pix::Grid> pixels;
+
+    if (p->header.bpp == 8)
     {
         pix::Palette palette(256, data, pix::Format::BGRA8888);
-        for (auto i : util::range(palette.size()))
-            palette[i].a = 0xFF;
-        pix::Grid pixels(width, height, data.substr(1024), palette);
-        pixels.flip();
-        return util::Image::from_pixels(pixels)->create_file(file.name);
+        pixels.reset(new pix::Grid(
+            p->header.width, p->header.height, data.substr(1024), palette));
     }
-    else if (bpp == 24)
+    else if (p->header.bpp == 24)
     {
-        pix::Grid pixels(width, height, data, pix::Format::BGR888);
-        pixels.flip();
-        return util::Image::from_pixels(pixels)->create_file(file.name);
+        pixels.reset(new pix::Grid(
+            p->header.width, p->header.height, data, pix::Format::BGR888));
+    }
+    else if (p->header.bpp == 32)
+    {
+        pixels.reset(new pix::Grid(
+            p->header.width, p->header.height, data, pix::Format::BGRA8888));
     }
     else
         util::fail("Unsupported BPP");
+
+    if (!p->header.use_transparency)
+    {
+        for (auto x : util::range(p->header.width))
+        for (auto y : util::range(p->header.height))
+            pixels->at(x, y).a = 0xFF;
+    }
+    if (p->header.flip)
+        pixels->flip();
+
+    return util::Image::from_pixels(*pixels)->create_file(file.name);
 }
 
 static auto dummy = fmt::Registry::add<GrpConverter>("cronus/grp");
