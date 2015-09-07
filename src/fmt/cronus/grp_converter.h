@@ -6,11 +6,11 @@ namespace au {
 namespace fmt {
 namespace cronus {
 
-    class PakImageConverter final : public Converter
+    class GrpConverter final : public Converter
     {
     public:
-        PakImageConverter();
-        ~PakImageConverter();
+        GrpConverter();
+        ~GrpConverter();
     protected:
         bool is_recognized_internal(File &) const override;
         std::unique_ptr<File> decode_internal(File &) const override;

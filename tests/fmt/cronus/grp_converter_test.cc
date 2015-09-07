@@ -1,4 +1,4 @@
-#include "fmt/cronus/pak_image_converter.h"
+#include "fmt/cronus/grp_converter.h"
 #include "test_support/catch.hh"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
@@ -9,7 +9,7 @@ using namespace au::fmt::cronus;
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    PakImageConverter converter;
+    GrpConverter converter;
     auto input_file = tests::file_from_path(input_path);
     auto expected_image = tests::image_from_path(expected_path);
     auto actual_image = tests::image_from_file(*converter.decode(*input_file));
@@ -19,20 +19,20 @@ static void do_test(
 TEST_CASE("Decoding 8 bit Cronus images works (DokiDoki Princess plugin)")
 {
     do_test(
-        "tests/fmt/cronus/files/pak_image/DPBG03D",
-        "tests/fmt/cronus/files/pak_image/DPBG03D-out.png");
+        "tests/fmt/cronus/files/grp/DPBG03D",
+        "tests/fmt/cronus/files/grp/DPBG03D-out.png");
 }
 
 TEST_CASE("Decoding 24 bit Cronus images works (DokiDoki Princess plugin)")
 {
     do_test(
-        "tests/fmt/cronus/files/pak_image/TCF12",
-        "tests/fmt/cronus/files/pak_image/TCF12-out.png");
+        "tests/fmt/cronus/files/grp/TCF12",
+        "tests/fmt/cronus/files/grp/TCF12-out.png");
 }
 
 TEST_CASE("Decoding 24 bit Cronus images works (Sweet Pleasure plugin)")
 {
     do_test(
-        "tests/fmt/cronus/files/pak_image/MSGPARTS",
-        "tests/fmt/cronus/files/pak_image/MSGPARTS-out.png");
+        "tests/fmt/cronus/files/grp/MSGPARTS",
+        "tests/fmt/cronus/files/grp/MSGPARTS-out.png");
 }

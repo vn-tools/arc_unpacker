@@ -10,7 +10,7 @@
 
 #include "fmt/cronus/common.h"
 #include "fmt/cronus/pak_archive.h"
-#include "fmt/cronus/pak_image_converter.h"
+#include "fmt/cronus/grp_converter.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
 #include "util/plugin_mgr.hh"
@@ -103,7 +103,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 
 struct PakArchive::Priv
 {
-    PakImageConverter pak_image_converter;
+    GrpConverter grp_converter;
     util::PluginManager<Plugin> plugin_mgr;
 };
 
@@ -117,7 +117,7 @@ PakArchive::PakArchive() : p(new Priv)
         "sweet", "Sweet Pleasure",
         {0xBC138744, 0x64E0BA23});
 
-    add_transformer(&p->pak_image_converter);
+    add_transformer(&p->grp_converter);
 }
 
 PakArchive::~PakArchive()

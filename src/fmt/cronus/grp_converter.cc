@@ -1,9 +1,9 @@
-// Cronus PAK image
+// Cronus GRP image
 //
 // Company:   Cronus
 // Engine:    -
 // Extension: -
-// Archives:  PAK
+// Archives:  GRP.PAK
 //
 // Known games:
 // - Doki Doki Princess
@@ -11,7 +11,7 @@
 
 #include <boost/filesystem/path.hpp>
 #include "fmt/cronus/common.h"
-#include "fmt/cronus/pak_image_converter.h"
+#include "fmt/cronus/grp_converter.h"
 #include "util/image.h"
 #include "util/pack/lzss.h"
 #include "util/plugin_mgr.hh"
@@ -50,13 +50,13 @@ static void swap_decrypt(bstr &input, size_t encrypted_size)
     }
 }
 
-struct PakImageConverter::Priv
+struct GrpConverter::Priv
 {
     util::PluginManager<Plugin> plugin_mgr;
     Plugin plugin;
 };
 
-PakImageConverter::PakImageConverter() : p(new Priv)
+GrpConverter::GrpConverter() : p(new Priv)
 {
     p->plugin_mgr.add(
         "dokidoki", "Doki Doki Princess",
@@ -67,11 +67,11 @@ PakImageConverter::PakImageConverter() : p(new Priv)
         {0x2468FCDA, 0x4FC2CC4D, 0xCF42355D, EncType::Delta});
 }
 
-PakImageConverter::~PakImageConverter()
+GrpConverter::~GrpConverter()
 {
 }
 
-bool PakImageConverter::is_recognized_internal(File &file) const
+bool GrpConverter::is_recognized_internal(File &file) const
 {
     for (auto plugin : p->plugin_mgr.get_all())
     {
@@ -99,7 +99,7 @@ bool PakImageConverter::is_recognized_internal(File &file) const
     return false;
 }
 
-std::unique_ptr<File> PakImageConverter::decode_internal(File &file) const
+std::unique_ptr<File> GrpConverter::decode_internal(File &file) const
 {
     auto width = file.io.read_u32_le() ^ p->plugin.key1;
     auto height = file.io.read_u32_le() ^ p->plugin.key2;
@@ -135,4 +135,4 @@ std::unique_ptr<File> PakImageConverter::decode_internal(File &file) const
         util::fail("Unsupported BPP");
 }
 
-static auto dummy = fmt::Registry::add<PakImageConverter>("cronus/pak-gfx");
+static auto dummy = fmt::Registry::add<GrpConverter>("cronus/grp");
