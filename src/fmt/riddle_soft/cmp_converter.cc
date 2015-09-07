@@ -2,11 +2,13 @@
 //
 // Company:   Riddle Soft
 // Engine:    Rage's Adventure Game Engine
-// Extension: gcp
+// Extension: .gcp
 // Archives:  PAC
 //
 // Known games:
-// - Brightia
+// - [Cronus] [021129] Caliz
+// - [Cronus] [050805] Brightia Plus
+// - [Cronus] [060630] Sweet Pleasure NS
 
 #include "fmt/riddle_soft/cmp_converter.h"
 #include "io/buffered_io.h"

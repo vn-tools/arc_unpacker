@@ -5,7 +5,7 @@
 // Extension: .ald
 //
 // Known games:
-// - Daiakuji
+// - [Alice Soft] [011130] Daiakuji
 
 #include "fmt/alice_soft/ald_archive.h"
 #include "util/encoding.h"

@@ -5,7 +5,7 @@
 // Extension: .afa
 //
 // Known games:
-// - Daiakuji
+// - [Alice Soft] [011130] Daiakuji
 
 #include "fmt/alice_soft/afa_archive.h"
 #include "fmt/alice_soft/aff_converter.h"

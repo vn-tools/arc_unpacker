@@ -5,7 +5,7 @@
 // Extension: .exe
 //
 // Known games:
-// - Fortune Summoners: Secret Of The Elemental Stone
+// - [LizSoft] [080910] Fortune Summoners: Secret Of The Elemental Stone (SOTES)
 
 #include <cstdio>
 #include "fmt/microsoft/exe_archive.h"

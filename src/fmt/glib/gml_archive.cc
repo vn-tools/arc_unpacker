@@ -5,7 +5,7 @@
 // Extension: .g, .xp
 //
 // Known games:
-// - Watashi no Puni Puni
+// - [Rune & Cage] [040227] Watashi no Puni Puni
 
 #include "fmt/glib/gml_archive.h"
 #include "fmt/glib/gml_decoder.h"

@@ -5,8 +5,8 @@
 // Extension: .g2, .stx
 //
 // Known games:
-// - Musume Shimai
-// - Pure My Imouto Milk Purun
+// - [Rune & Cage] [080328] Pure My Imouto Milk Purun
+// - [Rune] [071214] Musume Shimai
 
 #include "fmt/glib/glib2_archive.h"
 #include "fmt/glib/pgx_converter.h"

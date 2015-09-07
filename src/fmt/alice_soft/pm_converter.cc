@@ -6,7 +6,7 @@
 // Archives:  AJP
 //
 // Known games:
-// - Daiakuji
+// - [Alice Soft] [011130] Daiakuji
 
 #include <array>
 #include "fmt/alice_soft/pm_converter.h"

@@ -4,6 +4,9 @@
 // Engine:    YukaScript
 // Extension: .ykg
 // Archives:  YKC
+//
+// Known games:
+// - [feng] [101015] Hoshizora e Kakaru Hashi
 
 #include <memory>
 #include "fmt/yuka_script/ykg_converter.h"

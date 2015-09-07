@@ -6,7 +6,7 @@
 // Archives:  AFA
 //
 // Known games:
-// - Daiakuji
+// - [Alice Soft] [011130] Daiakuji
 
 #include <algorithm>
 #include "fmt/alice_soft/ajp_converter.h"

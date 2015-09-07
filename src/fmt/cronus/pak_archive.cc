@@ -5,9 +5,9 @@
 // Extension: .pak, .PAK
 //
 // Known games:
-// - Doki Doki Princess
-// - Nursery Song
-// - Sweet Pleasure
+// - [Cronus] [000922] Sweet Pleasure
+// - [Cronus] [011019] Dokidoki Princess
+// - [Cronus] [060630] Nursery Song
 
 #include "fmt/cronus/common.h"
 #include "fmt/cronus/grp_converter.h"

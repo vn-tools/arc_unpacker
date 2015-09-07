@@ -5,7 +5,7 @@
 // Extension: .rgss3a
 //
 // Known games:
-// - ElEMENTS
+// - [Nibarera] [120818] ElEMENTS!
 
 #include "fmt/rpgmaker/rgs/common.h"
 #include "fmt/rpgmaker/rgss3a_archive.h"

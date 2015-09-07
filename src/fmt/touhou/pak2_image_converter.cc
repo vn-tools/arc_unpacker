@@ -5,8 +5,8 @@
 // Extension: .cv2
 //
 // Known games:
-// - Touhou 10.5 - Scarlet Weather Rhapsody
-// - Touhou 12.3 - Unthinkable Natural Law
+// - [Team Shanghai Alice] [080525] TH10.5 - Scarlet Weather Rhapsody
+// - [Team Shanghai Alice] [090815] TH12.3 - Unthinkable Natural Law
 
 #include <boost/filesystem.hpp>
 #include <map>

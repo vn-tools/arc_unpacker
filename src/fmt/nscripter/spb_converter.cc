@@ -6,7 +6,7 @@
 // Archives:  NSA
 //
 // Known games:
-// - Umineko no naku koro ni
+// - [07th Expansion & Alchemist] [070817] Umineko no Naku Koro ni 1-4
 
 #include "fmt/nscripter/spb_converter.h"
 #include "io/bit_reader.h"

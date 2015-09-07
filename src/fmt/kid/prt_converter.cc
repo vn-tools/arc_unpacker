@@ -6,7 +6,7 @@
 // Archives:  LNK
 //
 // Known games:
-// - Ever 17
+// - [KID] [031127] Ever 17
 
 #include "fmt/kid/prt_converter.h"
 #include "util/format.h"

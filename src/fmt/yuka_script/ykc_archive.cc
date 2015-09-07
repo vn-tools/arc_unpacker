@@ -5,7 +5,7 @@
 // Extension: .ykc
 //
 // Known games:
-// - Hoshizora e Kakaru Hashi
+// - [feng] [101015] Hoshizora e Kakaru Hashi
 
 #include "fmt/yuka_script/ykc_archive.h"
 #include "fmt/yuka_script/ykg_converter.h"

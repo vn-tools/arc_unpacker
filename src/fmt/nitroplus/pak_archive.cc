@@ -5,7 +5,7 @@
 // Extension: .pak
 //
 // Known games:
-// - Saya no Uta
+// - [Nitroplus] [031226] Saya no Uta
 
 #include "fmt/nitroplus/pak_archive.h"
 #include "io/buffered_io.h"

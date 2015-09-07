@@ -5,9 +5,9 @@
 // Extension: .arc
 //
 // Known games:
-// - Cherry Boy, Innocent Girl
-// - Fifteen ~School Girls Digital Tokuhon~
-// - Girl Friends
+// - [Libido] [000929] Cherry Boy, Innocent Girl
+// - [Libido] [980911] Fifteen ~School Girls Digital Tokuhon~
+// - [Libido] [990423] Girl Friends
 
 #include <algorithm>
 #include "fmt/libido/arc_archive.h"

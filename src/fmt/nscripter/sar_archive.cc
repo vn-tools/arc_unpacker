@@ -5,7 +5,7 @@
 // Extension: .sar
 //
 // Known games:
-// - Tsukihime
+// - [Type-Moon] [001229] Tsukihime
 
 #include "fmt/nscripter/sar_archive.h"
 #include "util/range.h"

@@ -6,9 +6,9 @@
 // Archives:  GRP.PAK
 //
 // Known games:
-// - Doki Doki Princess
-// - Nursery Song
-// - Sweet Pleasure
+// - [Cronus] [000922] Sweet Pleasure
+// - [Cronus] [011019] Dokidoki Princess
+// - [Cronus] [060630] Nursery Song
 
 #include <boost/filesystem/path.hpp>
 #include "fmt/cronus/common.h"

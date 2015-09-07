@@ -6,7 +6,7 @@
 // Archives:  .dll
 //
 // Known games:
-// - Fortune Summoners: Secret Of The Elemental Stone (SOTES)
+// - [LizSoft] [080910] Fortune Summoners: Secret Of The Elemental Stone (SOTES)
 
 #include <cstring>
 #include "fmt/lizsoft/sotes_converter.h"

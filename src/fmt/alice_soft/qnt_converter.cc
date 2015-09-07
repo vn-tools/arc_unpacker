@@ -6,7 +6,7 @@
 // Archives:  AFA
 //
 // Known games:
-// - Daiakuji
+// - [Alice Soft] [011130] Daiakuji
 
 #include "fmt/alice_soft/qnt_converter.h"
 #include "util/image.h"

@@ -5,7 +5,7 @@
 // Extension: .dat
 //
 // Known games:
-// - Touhou 07 - Perfect Cherry Blossom
+// - [Team Shanghai Alice] [030817] TH07 - Perfect Cherry Blossom
 
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/pbg4_archive.h"

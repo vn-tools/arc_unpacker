@@ -6,7 +6,7 @@
 // Archives:  -
 //
 // Known games:
-// - Yume Nikki
+// - [Kikiyama] [040626] Yume Nikki
 
 #include <stdexcept>
 #include "fmt/rpgmaker/xyz_converter.h"

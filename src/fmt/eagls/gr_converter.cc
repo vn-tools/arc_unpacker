@@ -6,7 +6,7 @@
 // Archives:  PAK
 //
 // Known games:
-// - Honoo no Haramase Tenkousei
+// - [SQUEEZ] [050922] Honoo no Haramase Tenkousei
 
 #include <algorithm>
 #include "fmt/eagls/gr_converter.h"

@@ -6,8 +6,8 @@
 // Archives:  ARC
 //
 // Known games:
-// - Higurashi No Naku Koro Ni
-// - Go! Go! Nippon! ~My First Trip to Japan~
+// - [07th Expansion] [020810] Higurashi No Naku Koro Ni
+// - [Overdrive] [110930] Go! Go! Nippon! ~My First Trip to Japan~
 
 #include <algorithm>
 #include "fmt/bgi/common.h"

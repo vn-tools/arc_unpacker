@@ -6,7 +6,7 @@
 // Archives:  BIN
 //
 // Known games:
-// - Irotoridori no Sekai
+// - [Favorite] [110729] Irotoridori no Sekai
 
 #include "fmt/fvp/nvsg_converter.h"
 #include "util/pack/zlib.h"

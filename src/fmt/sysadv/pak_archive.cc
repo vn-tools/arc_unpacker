@@ -5,7 +5,7 @@
 // Extension: .pak
 //
 // Known games:
-// - Moshimo Ashita ga Harenaraba
+// - [Palette] [060224] Moshimo Ashita ga Harenaraba
 
 #include "fmt/sysadv/pak_archive.h"
 #include "fmt/sysadv/pga_converter.h"

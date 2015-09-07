@@ -5,7 +5,8 @@
 // Extension: .arc
 //
 // Known games:
-// - Dainikai Imouto Senbatsu☆Sousenkyo 2
+// - [Latte] [120727] Dainikai Imouto Senbatsu☆Sousenkyo ~366ninme no Imouto
+//   Icha Love Nijitsudan~
 
 #include "fmt/microsoft/dds_converter.h"
 #include "fmt/tactics/arc_archive.h"

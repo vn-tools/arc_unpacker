@@ -6,7 +6,7 @@
 // Archives:  .p
 //
 // Known games:
-// - Melty Blood
+// - [Type-Moon & French Bread] [021230] Melty Blood
 
 #include <stdexcept>
 #include "fmt/french_bread/ex3_converter.h"

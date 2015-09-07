@@ -5,7 +5,7 @@
 // Extension: .pac
 //
 // Known games:
-// - Maji de Watashi ni Koishinasai!
+// - [Minato Soft] [091030] Maji de Watashi ni Koishinasai!
 
 #include "fmt/minato_soft/fil_converter.h"
 #include "fmt/minato_soft/pac_archive.h"

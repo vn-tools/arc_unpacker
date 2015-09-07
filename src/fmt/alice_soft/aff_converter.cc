@@ -6,7 +6,7 @@
 // Archives:  AFA
 //
 // Known games:
-// - Daiakuji
+// - [Alice Soft] [011130] Daiakuji
 //
 // Doesn't encode anything, just wraps real files.
 

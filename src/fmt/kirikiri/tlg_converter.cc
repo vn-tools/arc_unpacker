@@ -6,9 +6,9 @@
 // Archives:  XP3
 //
 // Known Games:
-// - Fate/Stay Night
-// - Fate/Hollow Ataraxia
-// - G-Senjou no Maou
+// - [Akabei Soft2] [080529] G-senjou no Maou
+// - [Type-Moon] [040326] Fate Stay Night
+// - [Type-Moon] [051229] Fate Hollow Ataraxia
 
 #include <stdexcept>
 #include "fmt/kirikiri/tlg/tlg5_decoder.h"

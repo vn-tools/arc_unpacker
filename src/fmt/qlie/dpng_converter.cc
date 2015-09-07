@@ -6,7 +6,7 @@
 // Archives:  .pack
 //
 // Known games:
-// - Koiken Otome
+// - [Eufonie] [121221] Koiken Otome
 
 #include "fmt/qlie/dpng_converter.h"
 #include "io/buffered_io.h"

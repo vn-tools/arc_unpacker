@@ -5,7 +5,7 @@
 // Extension: .mpk
 //
 // Known games:
-// - Sukimazakura to Uso no Machi
+// - [Propeller] [110624] Sukimazakura to Uso no Machi
 
 #include "fmt/propeller/mpk_archive.h"
 #include "fmt/propeller/mgr_archive.h"

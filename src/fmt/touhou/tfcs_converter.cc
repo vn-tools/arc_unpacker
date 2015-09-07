@@ -5,8 +5,8 @@
 // Extension: .csv
 //
 // Known games:
-// - Touhou 13.5 - Hopeless Masquerade
-// - Touhou 14.5 - Urban Legend in Limbo
+// - [Tasofro & Team Shanghai Alice] [130526] TH13.5 - Hopeless Masquerade
+// - [Tasofro & Team Shanghai Alice] [150510] TH14.5 - Urban Legend in Limbo
 
 #include <boost/algorithm/string.hpp>
 #include "fmt/touhou/tfcs_converter.h"

@@ -5,8 +5,8 @@
 // Extension: .tac
 //
 // Known games:
-// - Mebae
-// - Shoukoujo
+// - [Tanuki Soft] [101217] Shoukoujo
+// - [Tanuki Soft] [111118] Mebae
 
 #include "fmt/tanuki_soft/tac_archive.h"
 #include "io/buffered_io.h"

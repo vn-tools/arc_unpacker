@@ -6,8 +6,8 @@
 // Archives:  MBL
 //
 // Known games:
-// - Candy Toys
-// - Wanko to Kurasou
+// - [Ivory] [030606] Candy Toys
+// - [Ivory] [060414] Wanko To Kurasou
 
 #include "fmt/ivory/prs_converter.h"
 #include "util/image.h"

@@ -5,16 +5,17 @@
 // Extension: .dat
 //
 // Known games:
-// - Touhou 09.5 - Shoot the Bullet
-// - Touhou 10 - Mountain of Faith
-// - Touhou 11 - Subterranean Animism
-// - Touhou 12 - Undefined Fantastic Object
-// - Touhou 12.5 - Double Spoiler
-// - Touhou 12.8 - Fairy Wars
-// - Touhou 13 - Ten Desires
-// - Touhou 14 - Double Dealing Character
-// - Touhou 14.3 - Impossible Spell Card
-// - Touhou 15 - Legacy of Lunatic Kingdom (trial)
+// - [Team Shanghai Alice] [051230] TH09.5 - Shoot the Bullet
+// - [Team Shanghai Alice] [070817] TH10 - Mountain of Faith
+// - [Team Shanghai Alice] [080816] TH11 - Subterranean Animism
+// - [Team Shanghai Alice] [090815] TH12 - Undefined Fantastic Object
+// - [Team Shanghai Alice] [100314] TH12.5 - Double Spoiler
+// - [Team Shanghai Alice] [100814] TH12.8 - Fairy Wars
+// - [Team Shanghai Alice] [110813] TH13 - Ten Desires
+// - [Team Shanghai Alice] [130812] TH14 - Double Dealing Character
+// - [Team Shanghai Alice] [140511] TH14.3 - Impossible Spell Card
+// - [Team Shanghai Alice] [150510] TH15 - Legacy of Lunatic Kingdom (trial)
+// - [Team Shanghai Alice] [150814] TH15 - Legacy of Lunatic Kingdom
 
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/crypt.h"

@@ -5,8 +5,8 @@
 // Extension: .mbl
 //
 // Known games:
-// - Candy Toys
-// - Wanko to Kurasou
+// - [Ivory] [030606] Candy Toys
+// - [Ivory] [060414] Wanko To Kurasou
 
 #include <map>
 #include "fmt/ivory/mbl_archive.h"

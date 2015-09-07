@@ -5,9 +5,9 @@
 // Extension: .pack
 //
 // Known games:
-// - Koiken Otome
-// - Soshite Ashita no Sekai yori
-// - Kimihagu
+// - [Etude] [071122] Soshite Ashita no Sekai yori
+// - [Eufonie] [121221] Koiken Otome
+// - [Front Wing] [070323] Kimihagu Master
 
 #include <cstring>
 #include "fmt/qlie/abmp10_archive.h"

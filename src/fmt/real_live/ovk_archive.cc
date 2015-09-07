@@ -5,9 +5,9 @@
 // Extension: .ovk
 //
 // Known games:
-// - Clannad
-// - Imouto ni! Sukumizu Kisetara Nugasanai!
-// - Little Busters
+// - [Hamham Soft] [071221] Imouto ni! Sukumizu Kisetara Nugasanai!
+// - [Key] [070928] Little Busters!
+// - [Key] [080229] Clannad
 
 #include "fmt/real_live/ovk_archive.h"
 #include "util/range.h"

@@ -6,9 +6,9 @@
 // Archives:  XFL
 //
 // Known games:
-// - Souten No Celenaria - What a Beautiful World
-// - Sekien no Inganock - What a Beautiful People
-// - Shikkoku no Sharnoth - What a Beautiful Tomorrow
+// - [Liar-soft] [060707] Souten No Celenaria - What a Beautiful World
+// - [Liar-soft] [071122] Sekien no Inganock - What a Beautiful People
+// - [Liar-soft] [081121] Shikkoku no Sharnoth - What a Beautiful Tomorrow
 
 #include <stdexcept>
 #include "fmt/liar_soft/wcg_converter.h"

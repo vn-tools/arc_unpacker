@@ -6,7 +6,7 @@
 // Archives:  -
 //
 // Known games:
-// - Touhou 13.5 - Hopeless Masquerade
+// - [Team Shanghai Alice] [130526] Touhou 13.5 - Hopeless Masquerade
 
 #include "fmt/microsoft/dds_converter.h"
 #include "io/buffered_io.h"

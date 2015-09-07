@@ -5,7 +5,7 @@
 // Extension: .alk
 //
 // Known games:
-// - Daiakuji
+// - [Alice Soft] [011130] Daiakuji
 
 #include "fmt/alice_soft/qnt_converter.h"
 #include "fmt/alice_soft/alk_archive.h"

@@ -5,7 +5,7 @@
 // Extension: .bin
 //
 // Known games:
-// - Irotoridori no Sekai
+// - [Favorite] [110729] Irotoridori no Sekai
 
 #include "fmt/fvp/bin_archive.h"
 #include "fmt/fvp/nvsg_converter.h"

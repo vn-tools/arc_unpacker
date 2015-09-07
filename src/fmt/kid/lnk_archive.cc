@@ -5,7 +5,7 @@
 // Extension: .dat
 //
 // Known games:
-// - Ever 17
+// - [KID] [031127] Ever 17
 
 #include "fmt/kid/cps_converter.h"
 #include "fmt/kid/decompressor.h"

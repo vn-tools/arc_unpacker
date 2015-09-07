@@ -5,7 +5,7 @@
 // Extension: .dat
 //
 // Known games:
-// - Touhou 06 - The Embodiment of Scarlet Devil
+// - [Team Shanghai Alice] [020811] TH06 - The Embodiment of Scarlet Devil
 
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/pbg3_archive.h"

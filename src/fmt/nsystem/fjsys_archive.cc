@@ -5,18 +5,18 @@
 // Extension: none
 //
 // Known games:
-// - Sono Hanabira ni Kuchizuke o 1
-// - Sono Hanabira ni Kuchizuke o 2 - Watashi no Ouji-Sama
-// - Sono Hanabira ni Kuchizuke o 3 - Anata to Koibito Tsunagi
-// - Sono Hanabira ni Kuchizuke o 4 - Itoshisa no Photograph
-// - Sono Hanabira ni Kuchizuke o 5 - Anata o Suki na Shiawase
-// - Sono Hanabira ni Kuchizuke o 6 - Kuchibiru to Kiss de Tsubuyaite
-// - Sono Hanabira ni Kuchizuke o 7 - Amakute Hoshikute Torokeru Chuu
-// - Sono Hanabira ni Kuchizuke o 8 - Tenshi no Hanabira Zome
-// - Sono Hanabira ni Kuchizuke o 9 - Amakute Otona no Torokeru Chuu
-// - Sono Hanabira ni Kuchizuke o 10 - Lily Platinum
-// - Sono Hanabira ni Kuchizuke o 11 - Michael no Otome-tachi
-// - Hanahira
+// - [Fuguriya] [060929] Sonohana 1
+// - [Fuguriya] [070529] Sonohana 2 - Watashi no Ouji-sama
+// - [Fuguriya] [070714] Sonohana 3 - Anata to Koibito Tsunagi
+// - [Fuguriya] [080606] Sonohana 4 - Itoshisa no Photograph
+// - [Fuguriya] [080725] Sonohana 5 - Anata o Suki na Shiawase
+// - [Fuguriya] [080725] Sonohana 6 - Kuchibiru to Kiss de Tsubuyaite
+// - [Fuguriya] [081205] Sonohana 7 - Amakute Hoshikute Torokeru Chuu
+// - [Fuguriya] [091211] Sonohana 8 - Tenshi no Hanabira Zome
+// - [Fuguriya] [100212] Sonohana 9 - Amakute Otona no Torokeru Chuu
+// - [Fuguriya] [101129] Sonohana 10 - Lily Platinum
+// - [Yurin Yurin] [111120] Sonohana 11 - Michael no Otome-tachi
+// - [Yurin Yurin] [101008] Hanahira!
 
 #include "fmt/nsystem/fjsys_archive.h"
 #include "fmt/nsystem/mgd_converter.h"

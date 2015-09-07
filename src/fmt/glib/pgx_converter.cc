@@ -6,9 +6,9 @@
 // Archives:  GLib2
 //
 // Known games:
-// - Musume Shimai
-// - Watashi no Puni Puni
-// - Pure My Imouto Milk Purin
+// - [Rune & Cage] [080328] Pure My Imouto Milk Purun
+// - [Rune] [040227] Watashi no Puni Puni
+// - [Rune] [071214] Musume Shimai
 
 #include "fmt/glib/gml_decoder.h"
 #include "fmt/glib/pgx_converter.h"

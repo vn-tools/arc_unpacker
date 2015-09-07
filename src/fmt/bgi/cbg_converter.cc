@@ -6,9 +6,9 @@
 // Archives:  ARC
 //
 // Known games:
-// - Higurashi No Naku Koro Ni
-// - Go! Go! Nippon! ~My First Trip to Japan~
-// - Magical Charming!
+// - [07th Expansion] [020810] Higurashi No Naku Koro Ni
+// - [Lump of Sugar] [20130531] Magical Charming
+// - [Overdrive] [110930] Go! Go! Nippon! ~My First Trip to Japan~
 
 #include <cstring>
 #include <array>

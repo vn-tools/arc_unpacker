@@ -5,7 +5,7 @@
 // Extension: .npa
 //
 // Known games:
-// - Chaos;Head
+// - [Nitroplus] [080425] CHAOS;HEAD
 
 #include "fmt/nitroplus/npa_archive.h"
 #include "fmt/nitroplus/npa_filters/chaos_head.h"

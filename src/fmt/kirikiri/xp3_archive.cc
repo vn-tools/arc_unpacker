@@ -5,16 +5,16 @@
 // Extension: .xp3
 //
 // Known games:
-// - Comyu Kuroi Ryuu to Yasashii Oukoku
-// - Fate/Hollow Ataraxia
-// - Fate/Stay Night
-// - G-Senjou no Maou
-// - Gokkun! Onii-chan Milk ~Punipuni Oppai na Imouto to~
-// - Hare Nochi Kitto Nanohana Biyori
-// - Koiimo SWEET☆DAYS
-// - Mahou Tsukai no Yoru
-// - Sharin no Kuni, Himawari no Shoujo
-// - Sono Hanabira ni Kuchizuke o 12 - Atelier no Koibito-tachi
+// - [Akabei Soft2] [051125] Sharin no Kuni, Himawari no Shoujo
+// - [Akabei Soft2] [080529] G-senjou no Maou
+// - [Akatsuki Works] [091022] Comyu Kuroi Ryuu to Yasashii Oukoku
+// - [Parasol] [120525] Koiimo - SWEET DAYS
+// - [Parasol] [140829] Hare Nochi Kitto Nanohana Biyori
+// - [Pita Fetish] [110428] Gokkun! Onii-chan Milk ~Punipuni Oppai na Imouto to~
+// - [Type-Moon] [040326] Fate Stay Night
+// - [Type-Moon] [051229] Fate Hollow Ataraxia
+// - [Type-Moon] [120412] Mahou Tsukai no Yoru
+// - [Yurin Yurin] [121130] Sonohana 12 - Atelier no Koibito-tachi
 
 #include "fmt/kirikiri/tlg_converter.h"
 #include "fmt/kirikiri/xp3_archive.h"

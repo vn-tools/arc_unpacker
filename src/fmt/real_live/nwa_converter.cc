@@ -6,10 +6,10 @@
 // Archives:  -
 //
 // Known games:
-// - Clannad                                 (uncompressed)
-// - Imouto ni! Sukumizu Kisetara Nugasanai! (level-0 compressed)
-// - Kanon                                   (uncompressed)
-// - Little Busters                          (level-0 compressed)
+// - [Hamham Soft] [071221] Imouto ni! Sukumizu Kisetara Nugasanai!
+// - [Key] [041126] Kanon
+// - [Key] [070928] Little Busters!
+// - [Key] [080229] Clannad
 
 #include "fmt/real_live/nwa_converter.h"
 #include "io/buffered_io.h"

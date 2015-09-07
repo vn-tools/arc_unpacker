@@ -6,7 +6,7 @@
 // Archives:  PAK
 //
 // Known games:
-// - Moshimo Ashita ga Harenaraba
+// - [Palette] [060224] Moshimo Ashita ga Harenaraba
 
 #include "fmt/sysadv/pga_converter.h"
 

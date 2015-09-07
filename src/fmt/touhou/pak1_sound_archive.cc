@@ -5,7 +5,8 @@
 // Extension: .dat
 //
 // Known games:
-// - Touhou 07.5 - Immaterial and Missing Power
+// - [Tasofro & Team Shanghai Alice] [041230] TH07.5 - Immaterial and Missing
+//   Power
 
 #include "fmt/touhou/pak1_sound_archive.h"
 #include "util/format.h"
