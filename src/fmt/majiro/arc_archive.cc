@@ -8,6 +8,7 @@
 // - [Empress] [150626] Closed Game
 
 #include "fmt/majiro/arc_archive.h"
+#include "fmt/majiro/rc8_converter.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/range.h"
@@ -60,6 +61,20 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     output_file->io.write_from_io(arc_io, entry.size);
     output_file->name = entry.name;
     return output_file;
+}
+
+struct ArcArchive::Priv
+{
+    Rc8Converter rc8_converter;
+};
+
+ArcArchive::ArcArchive() : p(new Priv)
+{
+    add_transformer(&p->rc8_converter);
+}
+
+ArcArchive::~ArcArchive()
+{
 }
 
 bool ArcArchive::is_recognized_internal(File &arc_file) const
