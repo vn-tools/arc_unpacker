@@ -23,7 +23,6 @@
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/range.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::nsystem;
@@ -157,7 +156,7 @@ static void decompress_sgd_bgr(const bstr &input, io::IO &output_io)
                 break;
 
             default:
-                util::fail("Bad decompression flag");
+                throw std::runtime_error("Bad decompression flag");
         }
     }
     output_io.seek(0);
@@ -192,8 +191,10 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::IO &file_io)
         size_t region_count = file_io.read_u16_le();
         size_t meta_format = file_io.read_u16_le();
         size_t bytes_left = file_io.size() - file_io.tell();
-        util::require(meta_format == 4);
-        util::require(regions_size == bytes_left);
+        if (meta_format != 4)
+            throw std::runtime_error("Unexpected meta format");
+        if (regions_size != bytes_left)
+            throw std::runtime_error("Unexpected regions size");
 
         for (auto i : util::range(region_count))
         {
@@ -233,7 +234,7 @@ static std::unique_ptr<util::Image> read_image(
     else if (compression_type == CompressionType::Png)
         return util::Image::from_boxed(input);
 
-    util::fail("Unsupported compression type");
+    throw std::runtime_error("Unsupported compression type");
 }
 
 bool MgdConverter::is_recognized_internal(File &file) const
@@ -256,7 +257,8 @@ std::unique_ptr<File> MgdConverter::decode_internal(File &file) const
     file.io.skip(64);
 
     size_t size_compressed = file.io.read_u32_le();
-    util::require(size_compressed + 4 == size_compressed_total);
+    if (size_compressed_total != size_compressed + 4)
+        throw std::runtime_error("Unexpected compressed size");
 
     auto image = read_image(
         file.io.read(size_compressed),

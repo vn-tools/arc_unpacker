@@ -11,7 +11,6 @@
 
 #include "fmt/riddle_soft/cmp_converter.h"
 #include "fmt/riddle_soft/pac_archive.h"
-#include "util/require.h"
 #include "util/range.h"
 
 using namespace au;
@@ -45,7 +44,8 @@ static Table read_table(io::IO &arc_io)
         auto prefix = arc_io.read(4);
         auto unk1 = arc_io.read_u32_le();
         auto unk2 = arc_io.read_u32_le();
-        util::require(unk1 == unk2);
+        if (unk1 != unk2)
+            throw std::runtime_error("Data mismatch");
         entry->offset = file_data_start + current_file_offset;
         current_file_offset += entry->size;
         table.push_back(std::move(entry));

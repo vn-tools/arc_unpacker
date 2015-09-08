@@ -3,7 +3,6 @@
 #include "fmt/bgi/common.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::bgi::cbg;

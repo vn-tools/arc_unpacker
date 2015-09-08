@@ -17,7 +17,6 @@
 #include "util/format.h"
 #include "util/image.h"
 #include "util/range.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::bgi;
@@ -134,9 +133,11 @@ static bstr decompress(io::IO &io, const NodeList &nodes, size_t output_size)
             auto offset = bit_reader.get(12);
             u32 repetitions = nodes[node_index]->value + 2;
             u8 *look_behind = output_ptr - offset - 2;
-            util::require(look_behind >= output_start);
-            util::require(look_behind + repetitions < output_end);
-            while (repetitions--)
+            if (look_behind < output_start)
+                break;
+            if (look_behind + repetitions >= output_end)
+                break;
+            while (repetitions-- && output_ptr < output_end)
                 *output_ptr++ = *look_behind++;
         }
         else
@@ -184,7 +185,8 @@ std::unique_ptr<File> DscConverter::decode_internal(File &file) const
                 fmt = pix::Format::BGRA8888;
                 break;
             default:
-                util::fail(util::format("Unsupported bit depth: %d", bpp));
+                throw std::runtime_error(util::format(
+                    "Unsupported bit depth: %d", bpp));
         }
         pix::Grid pixels(width, height, data_io.read_to_eof(), fmt);
         return util::Image::from_pixels(pixels)->create_file(file.name);

@@ -2,7 +2,6 @@
 #include <cstring>
 #include <stdexcept>
 #include "io/buffered_io.h"
-#include "util/require.h"
 
 using namespace au::io;
 
@@ -54,7 +53,8 @@ void BufferedIO::read(void *destination, size_t size)
 {
     if (!size)
         return;
-    util::require(destination);
+    if (!destination)
+        throw std::logic_error("Reading to nullptr");
     if (p->buffer_pos + size > p->buffer_size)
         throw std::runtime_error("Reading beyond EOF");
     memcpy(destination, p->buffer + p->buffer_pos, size);
@@ -65,7 +65,8 @@ void BufferedIO::write(const void *source, size_t size)
 {
     if (!size)
         return;
-    util::require(source);
+    if (!source)
+        throw std::logic_error("Writing from nullptr");
     reserve(size);
     memcpy(p->buffer + p->buffer_pos, source, size);
     p->buffer_pos += size;

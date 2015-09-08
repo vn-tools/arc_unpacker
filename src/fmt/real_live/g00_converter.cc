@@ -15,7 +15,6 @@
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/range.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::real_live;
@@ -43,8 +42,9 @@ static bstr decompress(
     const u8 *src_end = src_ptr + input.size();
     bstr output;
     output.resize(output_size);
-    u8 *dst_ptr = output.get<u8>();
-    u8 *dst_end = dst_ptr + output.size();
+    auto dst_ptr = output.get<u8>();
+    auto dst_start = output.get<const u8>();
+    auto dst_end = output.end<const u8>();
 
     int flag = *src_ptr++;
     int bit = 1;
@@ -78,11 +78,10 @@ static bstr decompress(
 
             int look_behind = (tmp >> 4) * byte_count;
             size_t size = ((tmp & 0x0F) + size_delta) * byte_count;
-            for (auto i : util::range(size))
+            while (size-- && dst_ptr < dst_end)
             {
-                if (dst_ptr >= dst_end)
+                if (&dst_ptr[-look_behind] < dst_start)
                     break;
-                util::require(&dst_ptr[-look_behind] >= output.get<u8>());
                 *dst_ptr = dst_ptr[-look_behind];
                 dst_ptr++;
             }
@@ -173,7 +172,8 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
         decompressed_io.seek(block_offset);
         u16 block_type = decompressed_io.read_u16_le();
         u16 part_count = decompressed_io.read_u16_le();
-        util::require(block_type == 1);
+        if (block_type != 1)
+            throw std::runtime_error("Unexpected block type");
 
         decompressed_io.skip(0x70);
         for (auto j : util::range(part_count))
@@ -193,8 +193,11 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
 
             size_t target_x = region.x1 + part_x;
             size_t target_y = region.y1 + part_y;
-            util::require(target_x + part_width <= width);
-            util::require(target_y + part_height <= height);
+            if (target_x + part_width > width
+                || target_y + part_height > height)
+            {
+                throw std::runtime_error("Region out of bounds");
+            }
             for (auto y : util::range(part_height))
             for (auto x : util::range(part_width))
             {

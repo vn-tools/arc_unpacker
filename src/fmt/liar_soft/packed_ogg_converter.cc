@@ -13,7 +13,6 @@
 #include "fmt/liar_soft/packed_ogg_converter.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::liar_soft;
@@ -39,7 +38,8 @@ static void rewrite_ogg_stream(io::IO &ogg_io, io::IO &target_io)
     bool serial_number_known = false;
     while (!ogg_io.eof())
     {
-        util::require(ogg_io.read(4) == ogg_magic);
+        if (ogg_io.read(4) != ogg_magic)
+            throw std::runtime_error("Corrupt data");
         auto version = ogg_io.read_u8();
         auto header_type = ogg_io.read_u8();
         auto granule_position = ogg_io.read(8);
@@ -82,17 +82,21 @@ static void rewrite_ogg_stream(io::IO &ogg_io, io::IO &target_io)
 
 std::unique_ptr<File> PackedOggConverter::decode_internal(File &file) const
 {
-    util::require(file.io.read(4) == "RIFF"_b);
+    if (file.io.read(4) != "RIFF"_b)
+        throw std::runtime_error("Corrupt RIFF signature");
     file.io.skip(4); //file size without RIFF header - usually corrupted
-    util::require(file.io.read(4) == "WAVE"_b);
-    util::require(file.io.read(4) == "fmt\x20"_b);
+    if (file.io.read(8) != "WAVEfmt\x20"_b)
+        throw std::runtime_error("Corrupt WAVE header");
     file.io.skip(file.io.read_u32_le());
 
-    util::require(file.io.read(4) == "fact"_b);
-    util::require(file.io.read_u32_le() == 4);
+    if (file.io.read(4) != "fact"_b)
+        throw std::runtime_error("Expected fact chunk");
+    if (file.io.read_u32_le() != 4)
+        throw std::runtime_error("Corrupt fact chunk");
     file.io.skip(4);
 
-    util::require(file.io.read(4) == "data"_b);
+    if (file.io.read(4) != "data"_b)
+        throw std::runtime_error("Expected data chunk");
     auto data_size = file.io.read_u32_le();
     io::BufferedIO ogg_io(file.io, data_size);
 

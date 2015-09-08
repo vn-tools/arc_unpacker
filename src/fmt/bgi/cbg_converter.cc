@@ -16,7 +16,6 @@
 #include "fmt/bgi/cbg/cbg2_decoder.h"
 #include "fmt/bgi/cbg_converter.h"
 #include "util/image.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::bgi;
@@ -67,7 +66,7 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
         return util::Image::from_pixels(*pixels)->create_file(file.name);
     }
 
-    util::fail("Unknown version");
+    throw std::runtime_error("Unknown version");
 }
 
 static auto dummy = fmt::Registry::add<CbgConverter>("bgi/cbg");

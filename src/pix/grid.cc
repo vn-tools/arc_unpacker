@@ -2,7 +2,6 @@
 #include "pix/grid.h"
 #include "util/format.h"
 #include "util/range.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::pix;
@@ -27,7 +26,8 @@ struct Grid::Priv
 void Grid::Priv::load(const bstr &input, Format fmt)
 {
     int bpp = format_to_bpp(fmt);
-    util::require(input.size() >= width * height * bpp);
+    if (input.size() < width * height * bpp)
+        throw std::runtime_error("Insufficient bytes to create pixel grid");
     auto size = width * height;
     auto *input_ptr = input.get<const u8>();
     auto *pixels_ptr = &pixels[0];
@@ -72,13 +72,15 @@ void Grid::Priv::load(const bstr &input, Format fmt)
             break;
 
         default:
-            util::fail(util::format("Unsupported pixel format: %d", fmt));
+            throw std::logic_error(
+                util::format("Unsupported pixel format: %d", fmt));
     }
 }
 
 void Grid::Priv::load(const bstr &input, const Palette &palette)
 {
-    util::require(input.size() >= width * height);
+    if (input.size() < width * height)
+        throw std::runtime_error("Insufficient bytes to create pixel grid");
     auto *input_ptr = input.get<const u8>();
     auto *pixels_ptr = &pixels[0];
     for (auto y : util::range(height))

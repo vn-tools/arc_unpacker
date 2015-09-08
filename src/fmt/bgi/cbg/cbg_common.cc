@@ -1,7 +1,6 @@
 #include "fmt/bgi/common.h"
 #include "fmt/bgi/cbg/cbg_common.h"
 #include "util/range.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::bgi;
@@ -29,8 +28,8 @@ bstr cbg::read_decrypted_data(io::IO &io)
         data_ptr++;
     }
 
-    util::require(actual_sum == expected_sum);
-    util::require(actual_xor == expected_xor);
+    if (actual_sum != expected_sum || actual_xor != expected_xor)
+        throw std::runtime_error("Checksum test failed, data corrupt");
     return data;
 }
 
@@ -117,7 +116,8 @@ Tree cbg::build_tree(const FreqTable &freq_table, bool greedy)
             }
             if (children[j] == 0xFFFFFFFF)
                 continue;
-            util::require(tree[children[j]].valid);
+            if (!tree[children[j]].valid)
+                throw std::logic_error("Invalid Huffman node");
             tree[children[j]].valid = false;
             freq += tree[children[j]].frequency;
         }

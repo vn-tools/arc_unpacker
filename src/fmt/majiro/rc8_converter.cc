@@ -12,7 +12,6 @@
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/range.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::majiro;
@@ -27,6 +26,7 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
     output.resize(width * height);
 
     auto output_ptr = output.get<u8>();
+    auto output_start = output.get<const u8>();
     auto output_end = output.end<const u8>();
 
     std::vector<int> shift_table;
@@ -37,7 +37,8 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
     for (auto i : util::range(5))
         shift_table.push_back(2 - i - width * 2);
 
-    util::require(output_ptr < output_end);
+    if (output.size() < 1)
+        return output;
     *output_ptr++ = input_io.read_u8();
 
     while (output_ptr < output_end)
@@ -51,8 +52,8 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
                 ? input_io.read_u16_le() + 0x0A
                 : size + 3;
             auto source_ptr = &output_ptr[shift_table[look_behind]];
-            util::require(source_ptr >= output.get<u8>());
-            util::require(source_ptr < output_end);
+            if (source_ptr < output_start || source_ptr + size >= output_end)
+                return output;
             while (size-- && output_ptr < output_end)
                 *output_ptr++ = *source_ptr++;
         }

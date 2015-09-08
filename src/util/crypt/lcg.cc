@@ -1,5 +1,4 @@
 #include "util/crypt/lcg.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::util::crypt;
@@ -50,7 +49,7 @@ Lcg::Lcg(LcgKind kind, u32 seed) : p(new Priv)
             break;
 
         default:
-            util::fail("Unknown LCG kind");
+            throw std::logic_error("Unknown LCG kind");
     }
 }
 

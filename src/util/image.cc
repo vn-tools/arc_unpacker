@@ -3,7 +3,6 @@
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/range.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::util;
@@ -44,10 +43,12 @@ std::unique_ptr<Image> Image::Priv::from_png(io::IO &io)
 {
     png_structp png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-    require(png_ptr);
+    if (!png_ptr)
+        throw std::logic_error("Failed to create PNG read structure");
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
-    require(info_ptr);
+    if (!info_ptr)
+        throw std::logic_error("Failed to create PNG info structure");
 
     png_set_read_fn(png_ptr, &io, &png_read_data);
     png_read_png(
@@ -68,7 +69,8 @@ std::unique_ptr<Image> Image::Priv::from_png(io::IO &io)
         &width, &height,
         &bits_per_channel, &color_type,
         nullptr, nullptr, nullptr);
-    require(bits_per_channel == 8);
+    if (bits_per_channel != 8)
+        throw std::runtime_error("Unsupported bit depth");
 
     std::unique_ptr<Image> image(new Image(width, height));
 
@@ -159,10 +161,12 @@ void Image::Priv::save_png(io::IO &io)
 {
     png_structp png_ptr = png_create_write_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-    require(png_ptr);
+    if (!png_ptr)
+        throw std::logic_error("Failed to create PNG write structure");
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
-    require(info_ptr);
+    if (!info_ptr)
+        throw std::logic_error("Failed to create PNG info structure");
 
     auto width = pixels.width();
     auto height = pixels.height();

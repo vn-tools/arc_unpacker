@@ -6,7 +6,6 @@
 #include "io/buffered_io.h"
 #include "util/format.h"
 #include "util/range.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::bgi::cbg;
@@ -348,8 +347,8 @@ static void process_alpha(bstr &output, io::IO &input_io, int width)
                 y |= 0xFFFFFFF8;
 
             u8 *look_behind = &output_ptr[(look_behind_pos + y * width) * 4];
-            util::require(look_behind >= output_start);
-            util::require(look_behind < output_end);
+            if (look_behind < output_start || look_behind >= output_end)
+                return;
 
             for (auto i : util::range(count))
             {
@@ -403,7 +402,11 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
         if (block_size_compressed < 0)
             block_size_compressed = raw_data_io.size() - raw_data_io.tell();
         auto expected_width = pad_width * block_dim * (depth == 8 ? 1 : 3);
-        util::require(block_size_original == expected_width);
+        if (expected_width != block_size_original)
+        {
+            throw std::runtime_error(util::format(
+                "Unexpected block size: %d", block_size_original));
+        }
         auto block_data = raw_data_io.read(block_size_compressed);
 
         auto color_info = decompress_block(
@@ -427,7 +430,8 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
         }
         else
         {
-            util::fail(util::format("Unsupported channel count: %d", channels));
+            throw std::runtime_error(util::format(
+                "Unsupported channel count: %d", channels));
         }
     }
 

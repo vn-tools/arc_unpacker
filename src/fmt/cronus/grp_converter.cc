@@ -17,7 +17,6 @@
 #include "util/pack/lzss.h"
 #include "util/plugin_mgr.hh"
 #include "util/range.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::cronus;
@@ -184,7 +183,7 @@ std::unique_ptr<File> GrpConverter::decode_internal(File &file) const
             p->header.width, p->header.height, data, pix::Format::BGRA8888));
     }
     else
-        util::fail("Unsupported BPP");
+        throw std::runtime_error("Unsupported BPP");
 
     if (!p->header.use_transparency)
     {

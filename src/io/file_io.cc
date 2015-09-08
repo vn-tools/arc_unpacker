@@ -2,7 +2,6 @@
 #include <stdexcept>
 #include "compat/fopen.h"
 #include "io/file_io.h"
-#include "util/require.h"
 
 using namespace au::io;
 
@@ -27,7 +26,8 @@ void FileIO::read(void *destination, size_t size)
 {
     if (!size)
         return;
-    util::require(destination);
+    if (!destination)
+        throw std::logic_error("Reading to nullptr");
     if (fread(destination, 1, size, p->file) != size)
         throw std::runtime_error("Could not read full data");
 }
@@ -36,7 +36,8 @@ void FileIO::write(const void *source, size_t size)
 {
     if (!size)
         return;
-    util::require(source);
+    if (!source)
+        throw std::logic_error("Writing from nullptr");
     if (fwrite(source, 1, size, p->file) != size)
         throw std::runtime_error("Could not write full data");
 }

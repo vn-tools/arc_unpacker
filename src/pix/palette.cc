@@ -1,7 +1,6 @@
 #include "pix/palette.h"
 #include "util/format.h"
 #include "util/range.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::pix;
@@ -34,7 +33,8 @@ Palette::Priv::Priv(size_t color_count)
 Palette::Priv::Priv(size_t color_count, const bstr &input, Format fmt)
 {
     colors.resize(color_count);
-    util::require(input.size() >= format_to_bpp(fmt) * color_count);
+    if (input.size() < format_to_bpp(fmt) * color_count)
+        throw std::runtime_error("Insufficient data to create color palette");
     auto input_ptr = input.get<const u8>();
 
     //anyone knows of sane alternative?
@@ -77,7 +77,8 @@ Palette::Priv::Priv(size_t color_count, const bstr &input, Format fmt)
             break;
 
         default:
-            util::fail(util::format("Unsupported pixel format: %d", fmt));
+            throw std::logic_error(
+                util::format("Unsupported pixel format: %d", fmt));
     }
 }
 

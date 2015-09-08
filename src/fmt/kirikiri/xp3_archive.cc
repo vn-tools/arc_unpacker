@@ -22,7 +22,6 @@
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
-#include "util/require.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri;
@@ -163,7 +162,8 @@ static std::unique_ptr<File> read_file(
     auto data = read_data_from_segm_chunk(table_io, arc_io);
     auto key = read_key_from_adlr_chunk(table_io);
 
-    util::require(table_io.tell() - file_chunk_start_offset == file_chunk_size);
+    if (table_io.tell() - file_chunk_start_offset != file_chunk_size)
+        throw std::runtime_error("Unexpected file data size");
 
     if (filter_func)
         filter_func(data, key);
