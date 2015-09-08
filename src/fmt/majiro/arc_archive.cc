@@ -9,6 +9,7 @@
 
 #include "fmt/majiro/arc_archive.h"
 #include "fmt/majiro/rc8_converter.h"
+#include "fmt/majiro/rct_converter.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/range.h"
@@ -66,11 +67,13 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 struct ArcArchive::Priv
 {
     Rc8Converter rc8_converter;
+    RctConverter rct_converter;
 };
 
 ArcArchive::ArcArchive() : p(new Priv)
 {
     add_transformer(&p->rc8_converter);
+    add_transformer(&p->rct_converter);
 }
 
 ArcArchive::~ArcArchive()
