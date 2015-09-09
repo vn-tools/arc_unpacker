@@ -71,14 +71,12 @@ bstr util::pack::lzss_decompress_bytewise(const bstr &input, size_t output_size)
     const u8 *input_end = input.end<const u8>();
 
     u16 control = 0;
-    int input_pos = 0;
     while (output_ptr < output_end && input_ptr < input_end)
     {
         control >>= 1;
         if (!(control & 0x100))
-        {
             control = *input_ptr++ | 0xFF00;
-        }
+
         if (control & 1)
         {
             dict[dict_pos++] = *output_ptr++ = *input_ptr++;
