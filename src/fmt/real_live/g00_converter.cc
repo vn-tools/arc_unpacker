@@ -24,82 +24,63 @@ namespace
 {
     struct Region
     {
-        size_t x1;
-        size_t y1;
-        size_t x2;
-        size_t y2;
-        size_t ox;
-        size_t oy;
+        size_t x1, y1;
+        size_t x2, y2;
+        size_t ox, oy;
+        size_t block_offset, block_size;
     };
 }
 
 static bstr decompress(
-    const bstr &input,
-    size_t output_size,
-    size_t byte_count,
-    size_t size_delta)
+    const bstr &input, size_t output_size, size_t byte_count, size_t size_delta)
 {
-    const u8 *src_ptr = input.get<u8>();
-    const u8 *src_end = src_ptr + input.size();
     bstr output;
     output.resize(output_size);
-    auto dst_ptr = output.get<u8>();
-    auto dst_start = output.get<const u8>();
-    auto dst_end = output.end<const u8>();
 
-    int flag = *src_ptr++;
-    int bit = 1;
-    while (dst_ptr < dst_end)
+    u8 *output_ptr = output.get<u8>();
+    const u8 *output_end = output.end<const u8>();
+    const u8 *input_ptr = input.get<const u8>();
+    const u8 *input_end = input.end<const u8>();
+
+    u16 control = 1;
+    while (output_ptr < output_end && input_ptr < input_end)
     {
-        if (bit == 256)
-        {
-            if (src_ptr >= src_end)
-                break;
-            flag = *src_ptr++;
-            bit = 1;
-        }
+        control >>= 1;
+        if (!(control & 0x100))
+            control = *input_ptr++ | 0xFF00;
 
-        if (flag & bit)
+        if (control & 1)
         {
-            for (auto i : util::range(byte_count))
-            {
-                if (src_ptr >= src_end || dst_ptr >= dst_end)
-                    break;
-                *dst_ptr++ = *src_ptr++;
-            }
+            auto size = byte_count;
+            while (size-- && output_ptr < output_end && input_ptr < input_end)
+                *output_ptr++ = *input_ptr++;
         }
         else
         {
-            if (src_ptr >= src_end)
+            u16 tmp = *input_ptr++;
+            if (input_ptr >= input_end)
                 break;
-            size_t tmp = *src_ptr++;
-            if (src_ptr >= src_end)
-                break;
-            tmp |= (*src_ptr++) << 8;
+            tmp |= *input_ptr++ << 8;
 
             int look_behind = (tmp >> 4) * byte_count;
             size_t size = ((tmp & 0x0F) + size_delta) * byte_count;
-            while (size-- && dst_ptr < dst_end)
-            {
-                if (&dst_ptr[-look_behind] < dst_start)
-                    break;
-                *dst_ptr = dst_ptr[-look_behind];
-                dst_ptr++;
-            }
+            u8 *source_ptr = &output_ptr[-look_behind];
+            if (source_ptr < output.get<const u8>())
+                break;
+            while (size-- && output_ptr < output_end && source_ptr < output_end)
+                *output_ptr++ = *source_ptr++;
         }
-        bit <<= 1;
     }
-
     return output;
 }
 
 static std::unique_ptr<File> decode_v0(File &file, size_t width, size_t height)
 {
-    size_t compressed_size = file.io.read_u32_le() - 8;
-    size_t decompressed_size = file.io.read_u32_le();
+    size_t size_comp = file.io.read_u32_le() - 8;
+    size_t size_orig = file.io.read_u32_le();
 
     auto decompressed = decompress(
-        file.io.read(compressed_size), decompressed_size, 3, 1);
+        file.io.read(size_comp), size_orig, 3, 1);
 
     pix::Grid pixels(width, height, decompressed, pix::Format::BGR888);
     return util::Image::from_pixels(pixels)->create_file(file.name);
@@ -107,11 +88,10 @@ static std::unique_ptr<File> decode_v0(File &file, size_t width, size_t height)
 
 static std::unique_ptr<File> decode_v1(File &file, size_t width, size_t height)
 {
-    size_t compressed_size = file.io.read_u32_le() - 8;
-    size_t decompressed_size = file.io.read_u32_le();
+    size_t size_comp = file.io.read_u32_le() - 8;
+    size_t size_orig = file.io.read_u32_le();
 
-    auto decompressed = decompress(
-        file.io.read(compressed_size), decompressed_size, 1, 2);
+    auto decompressed = decompress(file.io.read(size_comp), size_orig, 1, 2);
     io::BufferedIO tmp_io(decompressed);
 
     size_t colors = tmp_io.read_u16_le();
@@ -123,54 +103,43 @@ static std::unique_ptr<File> decode_v1(File &file, size_t width, size_t height)
     return util::Image::from_pixels(pixels)->create_file(file.name);
 }
 
-static std::vector<std::unique_ptr<Region>> read_v2_regions(
-    io::IO &file_io, size_t region_count)
-{
-    std::vector<std::unique_ptr<Region>> regions;
-    regions.reserve(region_count);
-
-    for (auto i : util::range(region_count))
-    {
-        std::unique_ptr<Region> region(new Region);
-        region->x1 = file_io.read_u32_le();
-        region->y1 = file_io.read_u32_le();
-        region->x2 = file_io.read_u32_le();
-        region->y2 = file_io.read_u32_le();
-        region->ox = file_io.read_u32_le();
-        region->oy = file_io.read_u32_le();
-        regions.push_back(std::move(region));
-    }
-    return regions;
-}
-
 static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
 {
-    size_t region_count = file.io.read_u32_le();
-    auto regions = read_v2_regions(file.io, region_count);
+    std::vector<std::unique_ptr<Region>> regions;
+    regions.resize(file.io.read_u32_le());
+    for (auto i : util::range(regions.size()))
+    {
+        std::unique_ptr<Region> region(new Region);
+        region->x1 = file.io.read_u32_le();
+        region->y1 = file.io.read_u32_le();
+        region->x2 = file.io.read_u32_le();
+        region->y2 = file.io.read_u32_le();
+        region->ox = file.io.read_u32_le();
+        region->oy = file.io.read_u32_le();
+        regions[i] = std::move(region);
+    }
 
-    size_t compressed_size = file.io.read_u32_le() - 8;
-    size_t decompressed_size = file.io.read_u32_le();
+    size_t size_comp = file.io.read_u32_le() - 8;
+    size_t size_orig = file.io.read_u32_le();
 
-    auto decompressed = decompress(
-        file.io.read(compressed_size), decompressed_size, 1, 2);
-
-    pix::Grid pixels(width, height);
-
+    auto decompressed = decompress(file.io.read(size_comp), size_orig, 1, 2);
     io::BufferedIO decompressed_io(decompressed);
-    if (region_count != decompressed_io.read_u32_le())
+    if (decompressed_io.read_u32_le() != regions.size())
         throw err::CorruptDataError("Region count mismatch");
 
-    for (auto i : util::range(region_count))
+    pix::Grid pixels(width, height);
+    for (auto &region : regions)
     {
-        decompressed_io.seek(4 + i * 8);
-        size_t block_offset = decompressed_io.read_u32_le();
-        size_t block_size = decompressed_io.read_u32_le();
+        region->block_offset = decompressed_io.read_u32_le();
+        region->block_size = decompressed_io.read_u32_le();
+    }
 
-        Region &region = *regions[i];
-        if (block_size <= 0)
+    for (auto &region : regions)
+    {
+        if (region->block_size <= 0)
             continue;
 
-        decompressed_io.seek(block_offset);
+        decompressed_io.seek(region->block_offset);
         u16 block_type = decompressed_io.read_u16_le();
         u16 part_count = decompressed_io.read_u16_le();
         if (block_type != 1)
@@ -192,8 +161,8 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
                 decompressed_io,
                 pix::Format::BGRA8888);
 
-            size_t target_x = region.x1 + part_x;
-            size_t target_y = region.y1 + part_y;
+            size_t target_x = region->x1 + part_x;
+            size_t target_y = region->y1 + part_y;
             if (target_x + part_width > width
                 || target_y + part_height > height)
             {
