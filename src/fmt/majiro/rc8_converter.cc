@@ -10,13 +10,14 @@
 
 #include "fmt/majiro/rc8_converter.h"
 #include "io/buffered_io.h"
+#include "util/encoding.h"
 #include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::majiro;
 
-static const bstr magic = "\x98\x5A\x92\x9A\x38\x5f\x30\x30"_b;
+static const bstr magic = util::utf8_to_sjis("六丁8_00"_b);
 
 static bstr uncompress(const bstr &input, size_t width, size_t height)
 {
