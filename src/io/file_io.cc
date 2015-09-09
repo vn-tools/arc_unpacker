@@ -10,6 +10,20 @@ struct FileIO::Priv
     FILE *file;
 };
 
+FileIO::FileIO(const boost::filesystem::path &path, const FileMode mode)
+    : p(new Priv())
+{
+    p->file = fopen(path, mode == FileMode::Write ? "w+b" : "r+b");
+    if (!p->file)
+        throw err::FileNotFoundError("Could not open " + path.string());
+}
+
+FileIO::~FileIO()
+{
+    if (p->file)
+        fclose(p->file);
+}
+
 void FileIO::seek(size_t offset)
 {
     if (fseek(p->file, offset, SEEK_SET) != 0)
@@ -66,18 +80,4 @@ void FileIO::truncate(size_t new_size)
     if (new_size == size())
         return;
     throw err::NotSupportedError("Truncating real files is not implemented");
-}
-
-FileIO::FileIO(const boost::filesystem::path &path, const FileMode mode)
-    : p(new Priv())
-{
-    p->file = fopen(path, mode == FileMode::Write ? "w+b" : "r+b");
-    if (!p->file)
-        throw err::FileNotFoundError("Could not open " + path.string());
-}
-
-FileIO::~FileIO()
-{
-    if (p->file)
-        fclose(p->file);
 }
