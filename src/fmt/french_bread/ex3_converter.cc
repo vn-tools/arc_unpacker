@@ -8,6 +8,7 @@
 // Known games:
 // - [Type-Moon & French Bread] [021230] Melty Blood
 
+#include "err.h"
 #include "fmt/french_bread/ex3_converter.h"
 #include "util/range.h"
 
@@ -51,7 +52,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
             for (u8 j : util::range(b + 1))
             {
                 if (offset >= 256)
-                    throw std::runtime_error("Bad offset");
+                    throw err::BadDataOffsetError();
                 table1[offset] = file.io.read_u8();
                 if (offset != table1[offset])
                     table2[offset] = file.io.read_u8();
@@ -70,7 +71,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
             {
                 --offset;
                 if (offset >= 60)
-                    throw std::runtime_error("Bad offset");
+                    throw err::BadDataOffsetError();
                 b = table0[offset];
             }
             else
@@ -88,7 +89,7 @@ std::unique_ptr<File> Ex3Converter::decode_internal(File &file) const
             else
             {
                 if (offset >= 58)
-                    throw std::runtime_error("Bad offset");
+                    throw err::BadDataOffsetError();
                 table0[offset++] = table2[b];
                 table0[offset++] = table1[b];
             }

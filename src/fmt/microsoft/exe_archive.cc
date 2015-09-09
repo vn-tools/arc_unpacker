@@ -7,7 +7,7 @@
 // Known games:
 // - [LizSoft] [080910] Fortune Summoners: Secret Of The Elemental Stone (SOTES)
 
-#include <cstdio>
+#include "err.h"
 #include "fmt/microsoft/exe_archive.h"
 #include "log.h"
 #include "util/encoding.h"
@@ -361,7 +361,7 @@ const ImageSectionHeader &RvaHelper::section_for_rva(u32 rva) const
             return section;
         }
     }
-    throw std::runtime_error("Section not found");
+    throw err::CorruptDataError("Section not found");
 }
 
 u32 RvaHelper::adjust_file_alignment(u32 offset) const

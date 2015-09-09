@@ -9,6 +9,7 @@
 // - [Cronus] [011019] Dokidoki Princess
 // - [Cronus] [060630] Nursery Song
 
+#include "err.h"
 #include "fmt/cronus/common.h"
 #include "fmt/cronus/grp_converter.h"
 #include "fmt/cronus/pak_archive.h"
@@ -88,7 +89,7 @@ static Table guess_plugin_and_read_table(
             continue;
         }
     }
-    throw std::runtime_error("Unknown encryption scheme");
+    throw err::RecognitionError("Unknown encryption scheme");
 }
 
 static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)

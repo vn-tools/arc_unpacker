@@ -9,6 +9,7 @@
 // - [Cronus] [050805] Brightia Plus
 // - [Cronus] [060630] Sweet Pleasure NS
 
+#include "err.h"
 #include "fmt/riddle_soft/cmp_converter.h"
 #include "fmt/riddle_soft/pac_archive.h"
 #include "util/range.h"
@@ -45,7 +46,7 @@ static Table read_table(io::IO &arc_io)
         auto unk1 = arc_io.read_u32_le();
         auto unk2 = arc_io.read_u32_le();
         if (unk1 != unk2)
-            throw std::runtime_error("Data mismatch");
+            throw err::CorruptDataError("Data mismatch");
         entry->offset = file_data_start + current_file_offset;
         current_file_offset += entry->size;
         table.push_back(std::move(entry));

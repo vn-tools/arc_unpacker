@@ -10,6 +10,7 @@
 // - [Overdrive] [110930] Go! Go! Nippon! ~My First Trip to Japan~
 
 #include <algorithm>
+#include "err.h"
 #include "fmt/bgi/common.h"
 #include "fmt/bgi/dsc_converter.h"
 #include "io/bit_reader.h"
@@ -185,8 +186,7 @@ std::unique_ptr<File> DscConverter::decode_internal(File &file) const
                 fmt = pix::Format::BGRA8888;
                 break;
             default:
-                throw std::runtime_error(util::format(
-                    "Unsupported bit depth: %d", bpp));
+                throw err::UnsupportedBitDepthError(bpp);
         }
         pix::Grid pixels(width, height, data_io.read_to_eof(), fmt);
         return util::Image::from_pixels(pixels)->create_file(file.name);

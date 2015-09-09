@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "err.h"
 #include "arg_parser.h"
 
 namespace au {
@@ -51,7 +52,7 @@ namespace util {
             for (const auto &definition : definitions)
                 if (definition.name == plugin)
                     return definition.value;
-            throw std::runtime_error("Unrecognized plugin: " + plugin);
+            throw err::UsageError("Unrecognized plugin: " + plugin);
         }
 
         T get_from_cli_options(const ArgParser &arg_parser, bool mandatory)
@@ -59,7 +60,7 @@ namespace util {
             if (!arg_parser.has_switch("plugin"))
             {
                 if (mandatory)
-                    throw std::runtime_error("Plugin not specified");
+                    throw err::UsageError("Plugin not specified");
                 return nullptr;
             }
             return get_from_string(arg_parser.get_switch("plugin"));

@@ -8,6 +8,7 @@
 // - [Tanuki Soft] [101217] Shoukoujo
 // - [Tanuki Soft] [111118] Mebae
 
+#include "err.h"
 #include "fmt/tanuki_soft/tac_archive.h"
 #include "io/buffered_io.h"
 #include "util/crypt/blowfish.h"
@@ -103,7 +104,7 @@ static std::vector<std::unique_ptr<TableDirectory>> read_table(
         for (auto i : util::range(directory->entry_count))
         {
             if (i + directory->start_index >= entries.size())
-                throw std::runtime_error("Corrupt file table");
+                throw err::CorruptDataError("Corrupt file table");
             auto &entry = entries[directory->start_index + i];
             entry->hash = (entry->hash << 16) | directory->hash;
             entry->directory = directory.get();

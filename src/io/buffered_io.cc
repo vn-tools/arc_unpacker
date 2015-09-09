@@ -1,6 +1,6 @@
 #include <cstdlib>
 #include <cstring>
-#include <stdexcept>
+#include "err.h"
 #include "io/buffered_io.h"
 
 using namespace au::io;
@@ -13,10 +13,10 @@ struct BufferedIO::Priv
 
     Priv(const char *buffer, size_t buffer_size)
     {
-        this->buffer = reinterpret_cast<char*>(malloc(buffer_size));
+        this->buffer = reinterpret_cast<char*>(std::malloc(buffer_size));
         if (!this->buffer)
             throw std::bad_alloc();
-        memcpy(this->buffer, buffer, buffer_size);
+        std::memcpy(this->buffer, buffer, buffer_size);
         this->buffer_pos = 0;
         this->buffer_size = buffer_size;
     }
@@ -28,7 +28,7 @@ void BufferedIO::reserve(size_t size)
     if (new_size <= p->buffer_size)
         return;
     char *new_buffer = reinterpret_cast<char*>(
-        realloc(p->buffer, new_size));
+        std::realloc(p->buffer, new_size));
     if (!new_buffer)
         throw std::bad_alloc();
     p->buffer = new_buffer;
@@ -38,14 +38,14 @@ void BufferedIO::reserve(size_t size)
 void BufferedIO::seek(size_t offset)
 {
     if (offset > p->buffer_size)
-        throw std::runtime_error("Seeking beyond EOF");
+        throw err::IoError("Seeking beyond EOF");
     p->buffer_pos = offset;
 }
 
 void BufferedIO::skip(int offset)
 {
     if (p->buffer_pos + offset > p->buffer_size)
-        throw std::runtime_error("Seeking beyond EOF");
+        throw err::IoError("Seeking beyond EOF");
     p->buffer_pos += offset;
 }
 
@@ -56,8 +56,8 @@ void BufferedIO::read(void *destination, size_t size)
     if (!destination)
         throw std::logic_error("Reading to nullptr");
     if (p->buffer_pos + size > p->buffer_size)
-        throw std::runtime_error("Reading beyond EOF");
-    memcpy(destination, p->buffer + p->buffer_pos, size);
+        throw err::IoError("Reading beyond EOF");
+    std::memcpy(destination, p->buffer + p->buffer_pos, size);
     p->buffer_pos += size;
 }
 
@@ -68,7 +68,7 @@ void BufferedIO::write(const void *source, size_t size)
     if (!source)
         throw std::logic_error("Writing from nullptr");
     reserve(size);
-    memcpy(p->buffer + p->buffer_pos, source, size);
+    std::memcpy(p->buffer + p->buffer_pos, source, size);
     p->buffer_pos += size;
 }
 
@@ -99,7 +99,7 @@ void BufferedIO::truncate(size_t new_size)
         p->buffer = nullptr;
     }
     char *new_buffer = reinterpret_cast<char*>(
-        realloc(p->buffer, new_size));
+        std::realloc(p->buffer, new_size));
     if (!new_buffer)
         throw std::bad_alloc();
     p->buffer = new_buffer;

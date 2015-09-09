@@ -7,6 +7,7 @@
 // Known games:
 // - [KID] [031127] Ever 17
 
+#include "err.h"
 #include "fmt/kid/cps_converter.h"
 #include "fmt/kid/decompressor.h"
 #include "fmt/kid/lnk_archive.h"
@@ -38,7 +39,7 @@ static bstr lnd_decompress(const bstr &input)
 {
     io::BufferedIO input_io(input);
     if (input_io.read(compress_magic.size()) != compress_magic)
-        throw std::runtime_error("Unexpected file header");
+        throw err::CorruptDataError("Unexpected file header");
     input_io.skip(4);
     size_t size_original = input_io.read_u32_le();
     input_io.skip(4);

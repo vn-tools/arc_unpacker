@@ -9,6 +9,7 @@
 // - [Ivory] [030606] Candy Toys
 // - [Ivory] [060414] Wanko To Kurasou
 
+#include "err.h"
 #include "fmt/ivory/wady_converter.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
@@ -201,14 +202,14 @@ std::unique_ptr<File> WadyConverter::decode_internal(File &file) const
     auto channel_sample_count = file.io.read_u32_le();
     auto size_uncompressed = file.io.read_u32_le();
     if (channel_sample_count * channels != sample_count)
-        throw std::runtime_error("Unexpected data size");
+        throw err::CorruptDataError("Sample count mismatch");
     if (sample_count * 2 != size_uncompressed)
-        throw std::runtime_error("Unexpected data size");
+        throw err::CorruptDataError("Data size mismatch");
     file.io.skip(4 * 2 + 2);
     if (file.io.read_u16_le() != channels)
-        throw std::runtime_error("Channel count mismatch");
+        throw err::CorruptDataError("Channel count mismatch");
     if (file.io.read_u32_le() != sample_rate)
-        throw std::runtime_error("Sample rate mismatch");
+        throw err::CorruptDataError("Sample rate mismatch");
     auto byte_rate = file.io.read_u32_le();
     auto block_align = file.io.read_u16_le();
     auto bits_per_sample = file.io.read_u16_le();
@@ -220,7 +221,7 @@ std::unique_ptr<File> WadyConverter::decode_internal(File &file) const
     else if (version == Version::Version2)
         samples = decode_v2(file.io, sample_count, channels);
     else
-        throw std::logic_error("Unknown version");
+        throw err::UnsupportedVersionError(version);
 
     auto sound = util::Sound::from_samples(
         channels, bits_per_sample / 8, sample_rate, samples);

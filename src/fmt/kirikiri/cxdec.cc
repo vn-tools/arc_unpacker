@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
+#include "err.h"
 #include "fmt/kirikiri/cxdec.h"
 #include "io/file_io.h"
 #include "util/range.h"
@@ -91,7 +92,7 @@ u32 KeyDeriver::derive(u32 seed, u32 parameter)
         }
     }
 
-    throw std::runtime_error("Failed to derive the key from the parameter");
+    throw err::NotSupportedError("Failed to derive the key from the parameter");
 }
 
 void KeyDeriver::add_shellcode(const bstr &bytes)
@@ -172,7 +173,7 @@ u32 KeyDeriver::run_first_stage()
         }
 
         default:
-            throw std::runtime_error("Bad routine number");
+            throw std::logic_error("Bad routine number");
     }
 
     return eax;
@@ -300,7 +301,7 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
         }
 
         default:
-            throw std::runtime_error("Bad routine number");
+            throw std::logic_error("Bad routine number");
     }
 
     return eax;
@@ -400,7 +401,7 @@ u32 KeyDeriver::run_stage_strategy_1(size_t stage)
             break;
 
         default:
-            throw std::runtime_error("Bad routine number");
+            throw std::logic_error("Bad routine number");
     }
 
     // pop ebx
@@ -461,17 +462,17 @@ static bstr find_control_block(const std::string &path)
         auto pos = content.find(control_block_magic);
         if (pos == bstr::npos)
         {
-            throw std::runtime_error(
+            throw err::CorruptDataError(
                 "TPM file found, but without control block");
         }
 
         if (pos + control_block_size > content.size())
-            throw std::runtime_error("Control block found, but truncated");
+            throw err::CorruptDataError("Control block found, but truncated");
 
         return content.substr(pos, control_block_size);
     }
 
-    throw std::runtime_error("TPM file not found");
+    throw err::FileNotFoundError("TPM file not found");
 }
 
 Xp3FilterFunc au::fmt::kirikiri::create_cxdec_filter(

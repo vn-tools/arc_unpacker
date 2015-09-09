@@ -2,6 +2,7 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
+#include "err.h"
 #include "util/crypt/rsa.h"
 
 using namespace au;
@@ -55,7 +56,7 @@ bstr Rsa::decrypt(const bstr &input) const
         std::unique_ptr<char[]> err(new char[130]);
         ERR_load_crypto_strings();
         ERR_error_string(ERR_get_error(), err.get());
-        throw std::runtime_error(std::string(err.get()));
+        throw err::CorruptDataError(std::string(err.get()));
     }
 
     return bstr(reinterpret_cast<char*>(output.get()), output_size);

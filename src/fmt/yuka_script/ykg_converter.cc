@@ -8,7 +8,7 @@
 // Known games:
 // - [feng] [101015] Hoshizora e Kakaru Hashi
 
-#include <memory>
+#include "err.h"
 #include "fmt/yuka_script/ykg_converter.h"
 #include "util/range.h"
 
@@ -44,7 +44,7 @@ static std::unique_ptr<Header> read_header(io::IO &file_io)
 
     size_t header_size = file_io.read_u32_le();
     if (header_size != 64)
-        throw std::runtime_error("Unexpected header size");
+        throw err::NotSupportedError("Unexpected header size");
     file_io.skip(28);
 
     header->data_offset = file_io.read_u32_le();
@@ -82,7 +82,7 @@ static std::unique_ptr<File> decode_png(File &file, Header &header)
     bstr data = file.io.read(header.data_size);
     if (data.substr(1, 3) != "GNP"_b)
     {
-        throw std::runtime_error(
+        throw err::NotSupportedError(
             "Decoding non-PNG based YKG images is not supported");
     }
     data[1] = 'P';
@@ -108,7 +108,7 @@ std::unique_ptr<File> YkgConverter::decode_internal(File &file) const
     std::unique_ptr<Header> header = read_header(file.io);
     if (header->encrypted)
     {
-        throw std::runtime_error(
+        throw err::NotSupportedError(
             "Decoding encrypted YKG images is not supported");
     }
 

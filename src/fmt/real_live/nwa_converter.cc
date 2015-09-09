@@ -11,6 +11,7 @@
 // - [Key] [070928] Little Busters!
 // - [Key] [080229] Clannad
 
+#include "err.h"
 #include "fmt/real_live/nwa_converter.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
@@ -66,7 +67,7 @@ u32 CustomBitReader::get(size_t bits)
         shift -= 8;
     }
     if (str_ptr + offset >= str_end)
-        throw std::runtime_error("Reading bits beyond EOF");
+        throw err::IoError("Reading bits beyond EOF");
     ret = *reinterpret_cast<const u16*>(&str_ptr[offset]) >> shift;
     shift += bits;
     return ret & ((1 << bits) - 1);
@@ -189,30 +190,30 @@ static bstr decode_block(
 static bstr nwa_read_compressed(io::IO &io, const NwaHeader &header)
 {
     if (header.compression_level < 0 || header.compression_level > 5)
-        throw std::runtime_error("Unsupported compression level");
+        throw err::NotSupportedError("Unsupported compression level");
 
     if (header.channel_count != 1 && header.channel_count != 2)
-        throw std::runtime_error("Unsupported channel count");
+        throw err::NotSupportedError("Unsupported channel count");
 
     if (header.bits_per_sample != 8 && header.bits_per_sample != 16)
-        throw std::runtime_error("Unsupported bits per sample");
+        throw err::NotSupportedError("Unsupported bits per sample");
 
     if (!header.block_count)
-        throw std::runtime_error("No blocks found");
+        throw err::CorruptDataError("No blocks found");
 
     if (!header.compressed_size)
-        throw std::runtime_error("No data found");
+        throw err::CorruptDataError("No data found");
 
     if (header.uncompressed_size
         != header.sample_count * header.bits_per_sample / 8)
     {
-        throw std::runtime_error("Bad data size");
+        throw err::BadDataSizeError();
     }
 
     if (header.sample_count
         != (header.block_count - 1) * header.block_size + header.rest_size)
     {
-        throw std::runtime_error("Bad sample count");
+        throw err::CorruptDataError("Bad sample count");
     }
 
     io.skip(4);

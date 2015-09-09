@@ -42,25 +42,16 @@ static Table read_table(io::IO &arc_io)
 {
     Table table;
     size_t file_count = arc_io.read_u16_be();
-    size_t offset_to_files = arc_io.read_u32_be();
-    if (offset_to_files > arc_io.size())
-        throw std::runtime_error("Bad offset to files");
-
+    size_t offset_to_data = arc_io.read_u32_be();
     for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = arc_io.read_to_zero().str();
         entry->compression_type =
             static_cast<CompressionType>(arc_io.read_u8());
-        entry->offset = arc_io.read_u32_be();
+        entry->offset = arc_io.read_u32_be() + offset_to_data;
         entry->size_compressed = arc_io.read_u32_be();
         entry->size_original = arc_io.read_u32_be();
-
-        entry->offset += offset_to_files;
-
-        if (entry->offset + entry->size_compressed > arc_io.size())
-            throw std::runtime_error("Bad offset to file");
-
         table.push_back(std::move(entry));
     }
     return table;

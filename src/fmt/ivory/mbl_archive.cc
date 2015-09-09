@@ -91,7 +91,7 @@ static std::unique_ptr<File> read_file(
     if (encrypted)
     {
         if (!decrypt)
-            throw std::runtime_error("File is decrypted, but plugin not set.");
+            throw err::UsageError("File is decrypted, but plugin not set.");
         decrypt(data);
     }
     file->io.write(data);

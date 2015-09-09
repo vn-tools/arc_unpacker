@@ -9,6 +9,7 @@
 // - [Alice Soft] [011130] Daiakuji
 
 #include <array>
+#include "err.h"
 #include "fmt/alice_soft/pm_converter.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
@@ -95,10 +96,7 @@ static std::unique_ptr<util::Image> decode_to_image(io::IO &io)
     io.skip(2);
     auto depth = io.read_u16_le();
     if (depth != 8)
-    {
-        throw std::runtime_error(util::format(
-            "Unsupported bit depth: %d", depth));
-    }
+        throw err::UnsupportedBitDepthError(depth);
     io.skip(4 * 4);
     auto width = io.read_u32_le();
     auto height = io.read_u32_le();

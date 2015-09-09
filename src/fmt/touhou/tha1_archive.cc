@@ -17,6 +17,7 @@
 // - [Team Shanghai Alice] [150510] TH15 - Legacy of Lunatic Kingdom (trial)
 // - [Team Shanghai Alice] [150814] TH15 - Legacy of Lunatic Kingdom
 
+#include "err.h"
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/crypt.h"
 #include "fmt/touhou/tha1_archive.h"
@@ -124,7 +125,7 @@ static std::unique_ptr<Header> read_header(io::IO &arc_io)
     io::BufferedIO header_io(
         decrypt(arc_io.read(16), { 0x1B, 0x37, 0x10, 0x400 }));
     if (header_io.read(magic.size()) != magic)
-        throw std::runtime_error("Not a THA1 archive");
+        throw err::RecognitionError();
     header->table_size_original = header_io.read_u32_le() - 123456789;
     header->table_size_compressed = header_io.read_u32_le() - 987654321;
     header->file_count = header_io.read_u32_le() - 135792468;
@@ -206,9 +207,6 @@ static std::unique_ptr<File> read_file(
             decrypted_io,
             entry.size_compressed,
             entry.size_original));
-
-        if (file->io.size() != entry.size_original)
-            throw std::runtime_error("Badly compressed stream");
     }
 
     return file;
@@ -258,9 +256,6 @@ void Tha1Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     auto header = read_header(arc_file.io);
     auto table = read_table(arc_file.io, *header);
     auto encryption_version = detect_encryption_version(arc_file, table);
-    if (encryption_version == -1)
-        throw std::runtime_error("Unknown encryption version");
-
     for (auto &entry : table)
         file_saver.save(read_file(arc_file.io, *entry, encryption_version));
 }

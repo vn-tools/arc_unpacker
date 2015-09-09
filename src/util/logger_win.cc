@@ -53,7 +53,7 @@ static WORD get_win_color(Logger::Color c)
             | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
     }
 
-    throw std::runtime_error("Unknown color");
+    throw std::logic_error("Unknown color");
 }
 
 void Logger::set_color(Logger::Color c)

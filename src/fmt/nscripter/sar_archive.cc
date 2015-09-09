@@ -28,18 +28,16 @@ namespace
 static Table read_table(io::IO &arc_io)
 {
     u16 file_count = arc_io.read_u16_be();
-    u32 offset_to_files = arc_io.read_u32_be();
-
+    u32 offset_to_data = arc_io.read_u32_be();
     Table table;
     for (auto i : util::range(file_count))
     {
         std::unique_ptr<TableEntry> entry(new TableEntry);
         entry->name = arc_io.read_to_zero().str();
-        entry->offset = arc_io.read_u32_be() + offset_to_files;
+        entry->offset = arc_io.read_u32_be() + offset_to_data;
         entry->size = arc_io.read_u32_be();
         table.push_back(std::move(entry));
     }
-
     return table;
 }
 

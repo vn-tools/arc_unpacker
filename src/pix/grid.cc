@@ -1,4 +1,5 @@
 #include <algorithm>
+#include "err.h"
 #include "pix/grid.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -27,7 +28,7 @@ void Grid::Priv::load(const bstr &input, Format fmt)
 {
     int bpp = format_to_bpp(fmt);
     if (input.size() < width * height * bpp)
-        throw std::runtime_error("Insufficient bytes to create pixel grid");
+        throw err::BadDataSizeError();
     auto size = width * height;
     auto *input_ptr = input.get<const u8>();
     auto *pixels_ptr = &pixels[0];
@@ -80,7 +81,7 @@ void Grid::Priv::load(const bstr &input, Format fmt)
 void Grid::Priv::load(const bstr &input, const Palette &palette)
 {
     if (input.size() < width * height)
-        throw std::runtime_error("Insufficient bytes to create pixel grid");
+        throw err::BadDataSizeError();
     auto *input_ptr = input.get<const u8>();
     auto *pixels_ptr = &pixels[0];
     for (auto y : util::range(height))

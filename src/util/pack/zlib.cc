@@ -1,6 +1,6 @@
 #include <memory>
-#include <stdexcept>
 #include <zlib.h>
+#include "err.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"
 
@@ -25,7 +25,7 @@ bstr util::pack::zlib_inflate(const bstr &input)
     stream.total_out = 0;
 
     if (inflateInit(&stream) != Z_OK)
-        throw std::runtime_error("Failed to initialize zlib stream");
+        throw std::logic_error("Failed to initialize zlib stream");
 
     int ret;
     do
@@ -46,7 +46,7 @@ bstr util::pack::zlib_inflate(const bstr &input)
 
     if (ret != Z_STREAM_END)
     {
-        throw std::runtime_error(util::format(
+        throw err::CorruptDataError(util::format(
             "Failed to inflate zlib stream (%s)", stream.msg));
     }
 

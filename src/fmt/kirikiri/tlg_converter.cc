@@ -10,7 +10,7 @@
 // - [Type-Moon] [040326] Fate Stay Night
 // - [Type-Moon] [051229] Fate Hollow Ataraxia
 
-#include <stdexcept>
+#include "err.h"
 #include "fmt/kirikiri/tlg/tlg5_decoder.h"
 #include "fmt/kirikiri/tlg/tlg6_decoder.h"
 #include "fmt/kirikiri/tlg_converter.h"
@@ -65,13 +65,13 @@ static std::unique_ptr<File> decode_tlg_0(File &file)
             }
         }
         else
-            throw std::runtime_error("Unknown chunk: " + chunk_name);
+            throw err::NotSupportedError("Unknown chunk: " + chunk_name);
     }
 
     file.io.seek(raw_data_offset);
     int version = guess_version(file.io);
     if (version == -1)
-        throw std::runtime_error("Unknown TLG version");
+        throw err::UnsupportedVersionError();
     return decode_proxy(version, file);
 }
 
@@ -117,7 +117,7 @@ static std::unique_ptr<File> decode_proxy(int version, File &file)
         case 6:
             return decode_tlg_6(file);
     }
-    throw std::runtime_error("Unknown TLG version");
+    throw std::logic_error("Unknown TLG version");
 }
 
 bool TlgConverter::is_recognized_internal(File &file) const

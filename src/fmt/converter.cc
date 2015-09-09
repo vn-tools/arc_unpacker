@@ -1,4 +1,4 @@
-#include <stdexcept>
+#include "err.h"
 #include "fmt/converter.h"
 
 using namespace au;
@@ -29,7 +29,7 @@ FileNamingStrategy Converter::get_file_naming_strategy() const
 std::unique_ptr<File> Converter::decode(File &file) const
 {
     if (!is_recognized(file))
-        throw std::runtime_error("File is not recognized");
+        throw err::RecognitionError();
 
     file.io.seek(0);
     return decode_internal(file);

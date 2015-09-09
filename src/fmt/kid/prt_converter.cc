@@ -8,6 +8,7 @@
 // Known games:
 // - [KID] [031127] Ever 17
 
+#include "err.h"
 #include "fmt/kid/prt_converter.h"
 #include "util/format.h"
 #include "util/image.h"
@@ -29,10 +30,7 @@ std::unique_ptr<File> PrtConverter::decode_internal(File &file) const
     auto version = file.io.read_u16_le();
 
     if (version != 0x66 && version != 0x65)
-    {
-        throw std::runtime_error(util::format(
-            "Unsupported version: %d", version));
-    }
+        throw err::UnsupportedVersionError(version);
 
     u16 bit_depth = file.io.read_u16_le();
     u16 palette_offset = file.io.read_u16_le();
@@ -67,22 +65,13 @@ std::unique_ptr<File> PrtConverter::decode_internal(File &file) const
         for (auto x : util::range(width))
         {
             if (bit_depth == 8)
-            {
                 pixels.at(x, y) = palette[*row_ptr++];
-            }
             else if (bit_depth == 24)
-            {
                 pixels.at(x, y) = pix::read<pix::Format::BGR888>(row_ptr);
-            }
             else if (bit_depth == 32)
-            {
                 pixels.at(x, y) = pix::read<pix::Format::BGRA8888>(row_ptr);
-            }
             else
-            {
-                throw std::runtime_error(util::format(
-                    "Unsupported bit depth: %d", bit_depth));
-            }
+                throw err::UnsupportedBitDepthError(bit_depth);
         }
     }
 

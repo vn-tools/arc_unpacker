@@ -9,6 +9,7 @@
 // - [Tasofro & Team Shanghai Alice] [150510] TH14.5 - Urban Legend in Limbo
 
 #include <map>
+#include "err.h"
 #include "fmt/touhou/tfbm_converter.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
@@ -45,7 +46,7 @@ void TfbmConverter::add_palette(
 {
     io::BufferedIO palette_io(palette_data);
     if (palette_io.read(pal_magic.size()) != pal_magic)
-        throw std::runtime_error("Not a TFPA palette file");
+        throw err::RecognitionError();
 
     io::BufferedIO colors_io(
         util::pack::zlib_inflate(
@@ -107,8 +108,7 @@ std::unique_ptr<File> TfbmConverter::decode_internal(File &file) const
                 break;
 
             default:
-                throw std::runtime_error(util::format(
-                    "Unsupported channel count: %d", bit_depth));
+                throw err::UnsupportedBitDepthError(bit_depth);
         }
 
         if (x < width)

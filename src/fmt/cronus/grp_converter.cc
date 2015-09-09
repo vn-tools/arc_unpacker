@@ -11,6 +11,7 @@
 // - [Cronus] [060630] Nursery Song
 
 #include <boost/filesystem/path.hpp>
+#include "err.h"
 #include "fmt/cronus/common.h"
 #include "fmt/cronus/grp_converter.h"
 #include "util/image.h"
@@ -183,7 +184,7 @@ std::unique_ptr<File> GrpConverter::decode_internal(File &file) const
             p->header.width, p->header.height, data, pix::Format::BGRA8888));
     }
     else
-        throw std::runtime_error("Unsupported BPP");
+        throw err::UnsupportedBitDepthError(p->header.bpp);
 
     if (!p->header.use_transparency)
     {

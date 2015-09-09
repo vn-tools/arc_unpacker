@@ -8,6 +8,7 @@
 // Known games:
 // - [Favorite] [110729] Irotoridori no Sekai
 
+#include "err.h"
 #include "fmt/fvp/nvsg_converter.h"
 #include "util/pack/zlib.h"
 #include "util/image.h"
@@ -42,34 +43,24 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
     file.io.skip(8);
 
     bstr data = util::pack::zlib_inflate(file.io.read_to_eof());
-    if (data.size() != uncompressed_size)
-        throw std::runtime_error("Unexpected data size");
 
     pix::Format pixel_format;
     switch (format)
     {
         case 0:
-            if (width * height * 3 != uncompressed_size)
-                throw std::runtime_error("Unexpected data size");
             pixel_format = pix::Format::BGR888;
             break;
 
         case 1:
-            if (width * height * 4 != uncompressed_size)
-                throw std::runtime_error("Unexpected data size");
             pixel_format = pix::Format::BGRA8888;
             break;
 
         case 2:
-            if (width * height * 4 * image_count != uncompressed_size)
-                throw std::runtime_error("Unexpected data size");
             height *= image_count;
             pixel_format = pix::Format::BGRA8888;
             break;
 
         case 3:
-            if (width * height != uncompressed_size)
-                throw std::runtime_error("Unexpected data size");
             pixel_format = pix::Format::Gray8;
             break;
 
@@ -81,7 +72,7 @@ std::unique_ptr<File> NvsgConverter::decode_internal(File &file) const
             break;
 
         default:
-            throw std::runtime_error("Unexpected pixel format");
+            throw err::NotSupportedError("Unexpected pixel format");
     }
 
     pix::Grid pixels(width, height, data, pixel_format);

@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <array>
+#include "err.h"
 #include "fmt/bgi/cbg/cbg_common.h"
 #include "fmt/bgi/cbg/cbg2_decoder.h"
 #include "fmt/bgi/common.h"
@@ -403,10 +404,7 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
             block_size_compressed = raw_data_io.size() - raw_data_io.tell();
         auto expected_width = pad_width * block_dim * (depth == 8 ? 1 : 3);
         if (expected_width != block_size_original)
-        {
-            throw std::runtime_error(util::format(
-                "Unexpected block size: %d", block_size_original));
-        }
+            throw err::BadDataSizeError();
         auto block_data = raw_data_io.read(block_size_compressed);
 
         auto color_info = decompress_block(
@@ -429,10 +427,7 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
                 &bmp_data.get<u8>()[pad_width * block_dim * 4 * i]);
         }
         else
-        {
-            throw std::runtime_error(util::format(
-                "Unsupported channel count: %d", channels));
-        }
+            throw err::UnsupportedChannelCountError(channels);
     }
 
     if (channels == 4)

@@ -10,6 +10,7 @@
 
 #include <boost/filesystem.hpp>
 #include <map>
+#include "err.h"
 #include "fmt/touhou/pak2_image_converter.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
@@ -91,7 +92,7 @@ std::unique_ptr<File> Pak2ImageConverter::decode_internal(File &file) const
                 break;
 
             default:
-                throw std::runtime_error("Unsupported channel count");
+                throw err::UnsupportedBitDepthError(bit_depth);
         }
 
         if (x < width)

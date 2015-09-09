@@ -1,3 +1,4 @@
+#include "err.h"
 #include "fmt/archive.h"
 
 using namespace au;
@@ -60,7 +61,7 @@ static bool pass_through_transformers(
 void Archive::unpack(File &file, FileSaver &file_saver, bool recurse) const
 {
     if (!is_recognized(file))
-        throw std::runtime_error("File is not recognized");
+        throw err::RecognitionError();
 
     //every file should be passed through registered transformers
     FileSaverCallback recognition_proxy;

@@ -1,5 +1,5 @@
 #include <cstdio>
-#include <stdexcept>
+#include "err.h"
 #include "compat/fopen.h"
 #include "io/file_io.h"
 
@@ -13,13 +13,13 @@ struct FileIO::Priv
 void FileIO::seek(size_t offset)
 {
     if (fseek(p->file, offset, SEEK_SET) != 0)
-        throw std::runtime_error("Seeking beyond EOF");
+        throw err::IoError("Seeking beyond EOF");
 }
 
 void FileIO::skip(int offset)
 {
     if (fseek(p->file, offset, SEEK_CUR) != 0)
-        throw std::runtime_error("Seeking beyond EOF");
+        throw err::IoError("Seeking beyond EOF");
 }
 
 void FileIO::read(void *destination, size_t size)
@@ -29,7 +29,7 @@ void FileIO::read(void *destination, size_t size)
     if (!destination)
         throw std::logic_error("Reading to nullptr");
     if (fread(destination, 1, size, p->file) != size)
-        throw std::runtime_error("Could not read full data");
+        throw err::IoError("Could not read full data");
 }
 
 void FileIO::write(const void *source, size_t size)
@@ -39,7 +39,7 @@ void FileIO::write(const void *source, size_t size)
     if (!source)
         throw std::logic_error("Writing from nullptr");
     if (fwrite(source, 1, size, p->file) != size)
-        throw std::runtime_error("Could not write full data");
+        throw err::IoError("Could not write full data");
 }
 
 void FileIO::write_from_io(IO &source, size_t size)
@@ -65,9 +65,7 @@ void FileIO::truncate(size_t new_size)
 {
     if (new_size == size())
         return;
-    //if (ftruncate(p->file, new_size) != 0)
-        //throw std::runtime_error("Failed to truncate file");
-    throw std::runtime_error("Not implemented");
+    throw err::NotSupportedError("Truncating real files is not implemented");
 }
 
 FileIO::FileIO(const boost::filesystem::path &path, const FileMode mode)
@@ -75,7 +73,7 @@ FileIO::FileIO(const boost::filesystem::path &path, const FileMode mode)
 {
     p->file = fopen(path, mode == FileMode::Write ? "w+b" : "r+b");
     if (!p->file)
-        throw std::runtime_error("Could not open " + path.string());
+        throw err::FileNotFoundError("Could not open " + path.string());
 }
 
 FileIO::~FileIO()

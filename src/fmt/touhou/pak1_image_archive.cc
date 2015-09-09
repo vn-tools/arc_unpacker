@@ -8,6 +8,7 @@
 // - [Tasofro & Team Shanghai Alice] [041230] TH07.5 - Immaterial and Missing
 //   Power
 
+#include "err.h"
 #include "fmt/touhou/pak1_image_archive.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
@@ -57,8 +58,7 @@ static std::unique_ptr<File> read_image(
                 break;
 
             default:
-                throw std::runtime_error(util::format(
-                    "Unsupported bit depth: %d", bit_depth));
+                throw err::UnsupportedBitDepthError(bit_depth);
         }
 
         while (repeat--)

@@ -1,4 +1,4 @@
-#include <stdexcept>
+#include "err.h"
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
 #include "fmt/kirikiri/tlg/tlg6_decoder.h"
 #include "util/image.h"
@@ -486,7 +486,7 @@ static void read_pixels(io::IO &io, pix::Grid &pixels, Header &header)
             bstr bit_pool = io.read(byte_size);
 
             if (method != 0)
-                throw std::runtime_error("Unsupported encoding method");
+                throw err::NotSupportedError("Unsupported encoding method");
 
             decode_golomb_values(
                 pixel_buf.get<u8>() + c, pixel_count, bit_pool.get<u8>());
@@ -563,7 +563,7 @@ std::unique_ptr<File> Tlg6Decoder::decode(File &file)
     header.x_block_count = ((header.image_width - 1) / w_block_size) + 1;
     header.y_block_count = ((header.image_height - 1) / h_block_size) + 1;
     if (header.channel_count != 3 && header.channel_count != 4)
-        throw std::runtime_error("Unsupported channel count");
+        throw err::UnsupportedChannelCountError(header.channel_count);
 
     pix::Grid pixels(header.image_width, header.image_height);
     read_pixels(file.io, pixels, header);

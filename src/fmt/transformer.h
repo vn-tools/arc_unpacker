@@ -5,7 +5,8 @@
 #include "arg_parser.h"
 #include "file.h"
 #include "file_saver.h"
-#include "registry.h"
+#include "fmt/registry.h"
+
 #include "types.h"
 
 namespace au {

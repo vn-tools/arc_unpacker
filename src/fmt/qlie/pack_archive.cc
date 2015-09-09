@@ -10,6 +10,7 @@
 // - [Front Wing] [070323] Kimihagu Master
 
 #include <cstring>
+#include "err.h"
 #include "fmt/qlie/abmp10_archive.h"
 #include "fmt/qlie/abmp7_archive.h"
 #include "fmt/qlie/dpng_converter.h"
@@ -210,7 +211,7 @@ static bstr decompress(const bstr &input, size_t output_size)
 
     if (input_io.read(compression_magic.size()) != compression_magic)
     {
-        throw std::runtime_error(
+        throw err::CorruptDataError(
             "Unexpected magic in compressed file. "
             "Try with --fkey or --gameexe?");
     }
@@ -218,7 +219,7 @@ static bstr decompress(const bstr &input, size_t output_size)
     bool use_short_size = input_io.read_u32_le() > 0;
     u32 file_size = input_io.read_u32_le();
     if (file_size != output_size)
-        throw std::runtime_error("Unpexpected file size");
+        throw err::BadDataSizeError();
 
     u8 dict1[256];
     u8 dict2[256];
@@ -412,7 +413,7 @@ void PackArchive::parse_cli_options(const ArgParser &arg_parser)
     if (arg_parser.has_switch("gameexe"))
     {
         if (!arg_parser.has_switch("fkey"))
-            throw std::runtime_error("Must specify also --fkey.");
+            throw err::UsageError("Must specify also --fkey.");
 
         static const int key2_size = 256;
         const std::string path = arg_parser.get_switch("gameexe");
@@ -424,7 +425,7 @@ void PackArchive::parse_cli_options(const ArgParser &arg_parser)
         auto start = file.io.size() - exe_key_magic.size() - key2_size;
         for (auto i : util::range(start, 0, -1))
         {
-            if (!memcmp(&exe_data[i],
+            if (!std::memcmp(&exe_data[i],
                 exe_key_magic.get<char>(),
                 exe_key_magic.size()))
             {
@@ -436,7 +437,7 @@ void PackArchive::parse_cli_options(const ArgParser &arg_parser)
         }
 
         if (!found)
-            throw std::runtime_error("Cannot find the key in the .exe file");
+            throw err::RecognitionError("Cannot find the key in the .exe file");
     }
 
     Archive::parse_cli_options(arg_parser);

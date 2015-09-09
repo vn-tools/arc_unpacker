@@ -19,6 +19,7 @@
 // - [Yurin Yurin] [111120] Sonohana 11 - Michael no Otome-tachi
 // - [Yurin Yurin] [101008] Hanahira!
 
+#include "err.h"
 #include "fmt/nsystem/mgd_converter.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
@@ -156,7 +157,7 @@ static void decompress_sgd_bgr(const bstr &input, io::IO &output_io)
                 break;
 
             default:
-                throw std::runtime_error("Bad decompression flag");
+                throw err::CorruptDataError("Bad decompression flag");
         }
     }
     output_io.seek(0);
@@ -192,9 +193,9 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::IO &file_io)
         size_t meta_format = file_io.read_u16_le();
         size_t bytes_left = file_io.size() - file_io.tell();
         if (meta_format != 4)
-            throw std::runtime_error("Unexpected meta format");
+            throw err::NotSupportedError("Unexpected meta format");
         if (regions_size != bytes_left)
-            throw std::runtime_error("Unexpected regions size");
+            throw err::CorruptDataError("Region size mismatch");
 
         for (auto i : util::range(region_count))
         {
@@ -234,7 +235,7 @@ static std::unique_ptr<util::Image> read_image(
     else if (compression_type == CompressionType::Png)
         return util::Image::from_boxed(input);
 
-    throw std::runtime_error("Unsupported compression type");
+    throw err::NotSupportedError("Unsupported compression type");
 }
 
 bool MgdConverter::is_recognized_internal(File &file) const
@@ -258,7 +259,7 @@ std::unique_ptr<File> MgdConverter::decode_internal(File &file) const
 
     size_t size_compressed = file.io.read_u32_le();
     if (size_compressed_total != size_compressed + 4)
-        throw std::runtime_error("Unexpected compressed size");
+        throw err::CorruptDataError("Compressed data size mismatch");
 
     auto image = read_image(
         file.io.read(size_compressed),

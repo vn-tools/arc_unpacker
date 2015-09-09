@@ -1,5 +1,6 @@
 #include <png.h>
 #include <jpeglib.h>
+#include "err.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/range.h"
@@ -70,7 +71,7 @@ std::unique_ptr<Image> Image::Priv::from_png(io::IO &io)
         &bits_per_channel, &color_type,
         nullptr, nullptr, nullptr);
     if (bits_per_channel != 8)
-        throw std::runtime_error("Unsupported bit depth");
+        throw err::UnsupportedBitDepthError(bits_per_channel);
 
     std::unique_ptr<Image> image(new Image(width, height));
 
@@ -100,7 +101,7 @@ std::unique_ptr<Image> Image::Priv::from_png(io::IO &io)
                     break;
 
                 default:
-                    throw std::runtime_error("Bad pixel format");
+                    throw err::NotSupportedError("Bad pixel format");
             }
         }
     }
@@ -148,7 +149,8 @@ std::unique_ptr<Image> Image::Priv::from_jpeg(io::IO &io)
                     break;
 
                 default:
-                    throw std::runtime_error("Invalid channel count");
+                    throw err::UnsupportedChannelCountError(
+                        info.num_components);
             }
         }
     }
@@ -237,7 +239,7 @@ std::unique_ptr<Image> Image::from_boxed(io::IO &io)
         return Priv::from_jpeg(io);
     }
 
-    throw std::runtime_error("Not a PNG nor a JPEG file");
+    throw err::RecognitionError("Not a PNG nor a JPEG file");
 }
 
 std::unique_ptr<File> Image::create_file(const std::string &name) const

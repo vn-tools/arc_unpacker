@@ -1,5 +1,6 @@
 #include <cstring>
 #include <openssl/blowfish.h>
+#include "err.h"
 #include "types.h"
 #include "util/crypt/blowfish.h"
 
@@ -39,7 +40,7 @@ size_t Blowfish::block_size()
 bstr Blowfish::decrypt(const bstr &input) const
 {
     if (input.size() % BF_BLOCK != 0)
-        throw std::runtime_error("Unexpected input size");
+        throw err::BadDataSizeError();
 
     size_t left = input.size();
     size_t done = 0;

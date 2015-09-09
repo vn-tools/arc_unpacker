@@ -8,6 +8,7 @@
 // Known games:
 // - [Team Shanghai Alice] [130526] Touhou 13.5 - Hopeless Masquerade
 
+#include "err.h"
 #include "fmt/microsoft/dds_converter.h"
 #include "io/buffered_io.h"
 #include "util/endian.h"
@@ -310,7 +311,7 @@ std::unique_ptr<File> DdsConverter::decode_internal(File &file) const
             pixels = decode_dxt5(file.io, width, height);
         else
         {
-            throw std::runtime_error(util::format(
+            throw err::NotSupportedError(util::format(
                 "%s textures are not supported",
                 header->pixel_format.four_cc.get<char>()));
         }
@@ -325,7 +326,7 @@ std::unique_ptr<File> DdsConverter::decode_internal(File &file) const
     }
 
     if (pixels == nullptr)
-        throw std::runtime_error("Not supported");
+        throw err::NotSupportedError("Unsupported pixel format");
 
     return util::Image::from_pixels(*pixels)->create_file(file.name);
 }

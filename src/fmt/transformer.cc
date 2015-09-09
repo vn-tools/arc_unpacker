@@ -1,5 +1,4 @@
 #include <boost/filesystem/path.hpp>
-#include <stdexcept>
 #include "fmt/transformer.h"
 
 using namespace au;
@@ -28,7 +27,7 @@ std::string FileNameDecorator::decorate(
         }
 
         default:
-            throw std::runtime_error("Invalid file naming strategy");
+            throw std::logic_error("Invalid file naming strategy");
     }
 }
 

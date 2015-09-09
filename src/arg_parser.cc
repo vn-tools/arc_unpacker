@@ -1,4 +1,5 @@
 #include "arg_parser.h"
+#include "err.h"
 #include "log.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -275,7 +276,7 @@ void ArgParser::Priv::check_names(const std::vector<std::string> &names)
     {
         if (option->has_name(name))
         {
-            throw std::runtime_error(util::format(
+            throw std::logic_error(util::format(
                 "An option with name \"%s\" was already registered.",
                 name.c_str()));
         }
@@ -317,7 +318,7 @@ void ArgParser::Priv::parse_single_arg(const std::string &arg)
                     found = true;
             if (!found)
             {
-                throw std::runtime_error(
+                throw err::UsageError(
                     "Bad value for option \"" + key + "\". "
                     "See --help for usage.");
             }
@@ -369,7 +370,7 @@ bool ArgParser::has_switch(const std::string &name) const
     for (auto &sw : p->switches)
         if (sw->has_name(name))
             return sw->is_set;
-    throw std::runtime_error("Trying to use undefined switch \"" + name + "\"");
+    throw std::logic_error("Trying to use undefined switch \"" + name + "\"");
 }
 
 const std::string ArgParser::get_switch(const std::string &name) const
@@ -377,7 +378,7 @@ const std::string ArgParser::get_switch(const std::string &name) const
     for (auto &sw : p->switches)
         if (sw->has_name(name))
             return sw->value;
-    throw std::runtime_error("Trying to use undefined switch \"" + name + "\"");
+    throw std::logic_error("Trying to use undefined switch \"" + name + "\"");
 }
 
 bool ArgParser::has_flag(const std::string &name) const
@@ -385,7 +386,7 @@ bool ArgParser::has_flag(const std::string &name) const
     for (auto &f : p->flags)
         if (f->has_name(name))
             return f->is_set;
-    throw std::runtime_error("Trying to use undefined flag \"" + name + "\"");
+    throw std::logic_error("Trying to use undefined flag \"" + name + "\"");
 }
 
 const std::vector<std::string> ArgParser::get_stray() const

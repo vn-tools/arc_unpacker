@@ -16,6 +16,7 @@
 // - [Type-Moon] [120412] Mahou Tsukai no Yoru
 // - [Yurin Yurin] [121130] Sonohana 12 - Atelier no Koibito-tachi
 
+#include "err.h"
 #include "fmt/kirikiri/tlg_converter.h"
 #include "fmt/kirikiri/xp3_archive.h"
 #include "fmt/kirikiri/xp3_filter_registry.h"
@@ -62,7 +63,7 @@ static u64 get_table_offset(io::IO &arc_io, int version)
     u64 additional_header_offset = arc_io.read_u64_le();
     u32 minor_version = arc_io.read_u32_le();
     if (minor_version != 1)
-        throw std::runtime_error("Unexpected XP3 version");
+        throw err::CorruptDataError("Unexpected XP3 version");
 
     arc_io.seek(additional_header_offset);
     arc_io.skip(1); // flags?
@@ -87,7 +88,7 @@ static std::unique_ptr<io::IO> read_raw_table(io::IO &arc_io)
 static InfoChunk read_info_chunk(io::IO &table_io)
 {
     if (table_io.read(info_magic.size()) != info_magic)
-        throw std::runtime_error("Expected INFO chunk");
+        throw err::CorruptDataError("Expected INFO chunk");
     u64 info_chunk_size = table_io.read_u64_le();
 
     InfoChunk info_chunk;
@@ -104,11 +105,11 @@ static InfoChunk read_info_chunk(io::IO &table_io)
 static bstr read_data_from_segm_chunk(io::IO &table_io, io::IO &arc_io)
 {
     if (table_io.read(segm_magic.size()) != segm_magic)
-        throw std::runtime_error("Expected SEGM chunk");
+        throw err::CorruptDataError("Expected SEGM chunk");
 
     u64 segm_chunk_size = table_io.read_u64_le();
     if (segm_chunk_size % 28 != 0)
-        throw std::runtime_error("Unexpected SEGM chunk size");
+        throw err::CorruptDataError("Unexpected SEGM chunk size");
     bstr full_data;
     size_t initial_pos = table_io.tell();
     while (segm_chunk_size > table_io.tell() - initial_pos)
@@ -138,11 +139,11 @@ static bstr read_data_from_segm_chunk(io::IO &table_io, io::IO &arc_io)
 static u32 read_key_from_adlr_chunk(io::IO &table_io)
 {
     if (table_io.read(adlr_magic.size()) != adlr_magic)
-        throw std::runtime_error("Expected ADLR chunk");
+        throw err::CorruptDataError("Expected ADLR chunk");
 
     u64 adlr_chunk_size = table_io.read_u64_le();
     if (adlr_chunk_size != 4)
-        throw std::runtime_error("Unexpected ADLR chunk size");
+        throw err::CorruptDataError("Unexpected ADLR chunk size");
 
     return table_io.read_u32_le();
 }
@@ -153,7 +154,7 @@ static std::unique_ptr<File> read_file(
     std::unique_ptr<File> target_file(new File());
 
     if (table_io.read(file_magic.size()) != file_magic)
-        throw std::runtime_error("Expected FILE chunk");
+        throw err::CorruptDataError("Expected FILE chunk");
 
     u64 file_chunk_size = table_io.read_u64_le();
     size_t file_chunk_start_offset = table_io.tell();
@@ -163,7 +164,7 @@ static std::unique_ptr<File> read_file(
     auto key = read_key_from_adlr_chunk(table_io);
 
     if (table_io.tell() - file_chunk_start_offset != file_chunk_size)
-        throw std::runtime_error("Unexpected file data size");
+        throw err::CorruptDataError("Unexpected file data size");
 
     if (filter_func)
         filter_func(data, key);

@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <map>
+#include "err.h"
 #include "fmt/touhou/anm_archive.h"
 #include "util/format.h"
 #include "util/image.h"
@@ -142,7 +143,7 @@ static void write_pixels(
 
     file_io.seek(entry.texture_offset);
     if (file_io.read(texture_magic.size()) != texture_magic)
-        throw std::runtime_error("Corrupt texture data");
+        throw err::CorruptDataError("Corrupt texture data");
     file_io.skip(2);
     auto format = file_io.read_u16_le();
     auto width = file_io.read_u16_le();
@@ -174,7 +175,7 @@ static void write_pixels(
                 break;
 
             default:
-                throw std::runtime_error(util::format(
+                throw err::NotSupportedError(util::format(
                     "Unknown color format: %d", format));
         }
 

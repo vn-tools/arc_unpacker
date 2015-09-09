@@ -1,3 +1,4 @@
+#include "err.h"
 #include "fmt/bgi/common.h"
 #include "fmt/bgi/cbg/cbg_common.h"
 #include "util/range.h"
@@ -29,7 +30,7 @@ bstr cbg::read_decrypted_data(io::IO &io)
     }
 
     if (actual_sum != expected_sum || actual_xor != expected_xor)
-        throw std::runtime_error("Checksum test failed, data corrupt");
+        throw err::CorruptDataError("Checksum test failed");
     return data;
 }
 

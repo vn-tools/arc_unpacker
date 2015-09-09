@@ -9,10 +9,9 @@
 // - [Tasofro & Team Shanghai Alice] [150510] TH14.5 - Urban Legend in Limbo
 
 #include <boost/filesystem.hpp>
-#include <iomanip>
 #include <map>
 #include <set>
-#include <vector>
+#include "err.h"
 #include "fmt/microsoft/dds_converter.h"
 #include "fmt/touhou/tfbm_converter.h"
 #include "fmt/touhou/tfcs_converter.h"
@@ -135,7 +134,7 @@ RsaReader::RsaReader(io::IO &io) : io(io)
         {
         }
     }
-    throw std::runtime_error("Unknown public key");
+    throw err::NotSupportedError("Unknown public key");
 }
 
 RsaReader::~RsaReader()
@@ -253,8 +252,6 @@ static HashLookupMap read_fn_map(
     tmp_io.reset(new io::BufferedIO);
     for (auto i : util::range(block_count))
         tmp_io->write_from_io(*reader.read_block());
-    if (tmp_io->size() < table_size_compressed)
-        throw std::runtime_error("Invalid file table size");
 
     tmp_io->seek(0);
     tmp_io.reset(

@@ -1,7 +1,7 @@
 #include <cerrno>
 #include <memory>
-#include <stdexcept>
 #include <iconv.h>
+#include "err.h"
 #include "util/encoding.h"
 
 using namespace au;
@@ -10,8 +10,8 @@ bstr util::convert_encoding(
     const bstr &input, const std::string &from, const std::string &to)
 {
     iconv_t conv = iconv_open(to.c_str(), from.c_str());
-    if (conv == nullptr)
-        throw std::runtime_error("Failed to initialize iconv");
+    if (!conv)
+        throw std::logic_error("Failed to initialize iconv");
 
     bstr output;
     output.reserve(input.size() * 2);
@@ -41,13 +41,14 @@ bstr util::convert_encoding(
         {
             case EINVAL:
             case EILSEQ:
-                throw std::runtime_error("Invalid byte sequence");
+                throw err::CorruptDataError("Invalid byte sequence");
 
             case E2BIG:
                 //repeat the iteration unless we got nothing at all
                 if (output_bytes_left != buffer.size())
                     continue;
-                throw std::runtime_error("Code point too large to decode (?)");
+                throw err::CorruptDataError(
+                    "Code point too large to decode (?)");
         }
     }
 

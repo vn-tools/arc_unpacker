@@ -8,8 +8,8 @@
 // - [Team Shanghai Alice] [040815] TH08 - Imperishable Night
 // - [Team Shanghai Alice] [050814] TH09 - Phantasmagoria of Flower View
 
-#include <cstring>
 #include <map>
+#include "err.h"
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/crypt.h"
 #include "fmt/touhou/pbgz_archive.h"
@@ -133,7 +133,7 @@ static std::unique_ptr<File> read_file(
             entry.size_original));
 
     if (uncompressed_io.read(crypt_magic.size()) != crypt_magic)
-        throw std::runtime_error("Unknown encryption");
+        throw err::NotSupportedError("Unknown encryption");
 
     file->io.write(
         decrypt(
@@ -157,7 +157,7 @@ static size_t detect_encryption_version(io::IO &arc_io, const Table &table)
                 return version;
         }
     }
-    throw std::runtime_error("No means to detect the encryption version");
+    throw err::NotSupportedError("No means to detect the encryption version");
 }
 
 struct PbgzArchive::Priv

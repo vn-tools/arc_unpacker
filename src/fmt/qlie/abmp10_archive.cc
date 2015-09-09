@@ -1,3 +1,4 @@
+#include "err.h"
 #include "fmt/qlie/abmp10_archive.h"
 #include "util/encoding.h"
 #include "util/format.h"
@@ -49,7 +50,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io)
     }
     else if (magic != magic_imgdat10 && magic != magic_snddat10)
     {
-        throw std::runtime_error(util::format(
+        throw err::NotSupportedError(util::format(
             "Unknown image magic: %s", magic.get<char>()));
     }
 
@@ -106,7 +107,7 @@ void Abmp10Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
         }
         else
         {
-            throw std::runtime_error(util::format(
+            throw err::NotSupportedError(util::format(
                 "Unknown section: %s", magic.get<char>()));
         }
     }

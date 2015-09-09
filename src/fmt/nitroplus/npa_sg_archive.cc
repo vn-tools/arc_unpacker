@@ -7,6 +7,7 @@
 // Known games:
 // - [Nitroplus] [100826] Steins;Gate
 
+#include "err.h"
 #include "fmt/nitroplus/npa_sg_archive.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
@@ -48,7 +49,7 @@ static Table read_table(io::IO &table_io, const io::IO &arc_io)
         entry->offset = table_io.read_u32_le();
         table_io.skip(4);
         if (entry->offset + entry->size > arc_io.size())
-            throw std::runtime_error("Bad offset to file");
+            throw err::BadDataOffsetError();
         table.push_back(std::move(entry));
     }
     return table;
@@ -77,7 +78,7 @@ void NpaSgArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 {
     size_t table_size = arc_file.io.read_u32_le();
     if (table_size > arc_file.io.size())
-        throw std::runtime_error("Bad table size");
+        throw err::BadDataSizeError();
 
     auto table_bytes = arc_file.io.read(table_size);
     decrypt(table_bytes);

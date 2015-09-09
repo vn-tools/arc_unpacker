@@ -10,7 +10,7 @@
 // - [Liar-soft] [071122] Sekien no Inganock - What a Beautiful People
 // - [Liar-soft] [081121] Shikkoku no Sharnoth - What a Beautiful Tomorrow
 
-#include <stdexcept>
+#include "err.h"
 #include "fmt/liar_soft/wcg_converter.h"
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
@@ -35,10 +35,7 @@ static size_t wcg_unpack(
     size_t expected_size = output_size << input_shift;
     size_t actual_size = io.read_u32_le();
     if (expected_size != actual_size)
-    {
-        throw std::runtime_error(util::format(
-            "Unexpected size: %d != %d", actual_size, expected_size));
-    }
+        throw err::BadDataSizeError();
 
     u32 base_offset = io.read_u32_le();
     u32 table_entry_count = io.read_u16_le();
@@ -51,7 +48,7 @@ static size_t wcg_unpack(
 
     int tmp = table_entry_count - 1;
     if (tmp < 0)
-        throw std::runtime_error("No table entries found");
+        throw err::CorruptDataError("No table entries found");
 
     //risky
     tmp = tmp < 0x1001 ? -1 : 0;
@@ -70,7 +67,7 @@ static size_t wcg_unpack(
             table_offset_size = bit_reader.get(var2);
         }
         if (!table_offset_size)
-            throw std::runtime_error("Table offset size = 0");
+            throw err::BadDataSizeError();
 
         u32 table_offset = 0;
         --table_offset_size;
@@ -91,7 +88,7 @@ static size_t wcg_unpack(
         }
 
         if (table_offset >= table_entry_count)
-            throw std::runtime_error("Bad table offset");
+            throw err::BadDataOffsetError();
 
         if (input_shift == 1)
         {
@@ -135,8 +132,9 @@ std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
     file.io.skip(magic.size());
 
     file.io.skip(2);
-    if (file.io.read_u16_le() != 0x20)
-        throw std::runtime_error("Unknown WCG version");
+    auto version = file.io.read_u16_le();
+    if (version != 0x20)
+        throw err::UnsupportedVersionError(version);
     file.io.skip(2);
 
     size_t width = file.io.read_u32_le();

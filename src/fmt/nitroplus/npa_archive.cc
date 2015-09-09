@@ -133,7 +133,7 @@ static std::unique_ptr<TableEntry> read_table_entry(
     if (file_type == FILE_TYPE_DIRECTORY)
         return nullptr;
     if (file_type != FILE_TYPE_FILE)
-        throw std::runtime_error("Unknown file type");
+        throw err::NotSupportedError("Unknown file type");
 
     return entry;
 }
@@ -216,7 +216,7 @@ void NpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     arc_file.io.skip(magic.size());
 
     if (p->filter == nullptr)
-        throw std::runtime_error("No plugin selected");
+        throw err::UsageError("No plugin selected");
 
     std::unique_ptr<Header> header = read_header(arc_file.io);
     Table table = read_table(arc_file.io, *header, *p->filter);

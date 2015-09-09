@@ -8,6 +8,7 @@
 // - [Tasofro & Team Shanghai Alice] [041230] TH07.5 - Immaterial and Missing
 //   Power
 
+#include "err.h"
 #include "fmt/touhou/pak1_archive.h"
 #include "fmt/touhou/pak1_image_archive.h"
 #include "fmt/touhou/pak1_sound_archive.h"
@@ -72,9 +73,9 @@ static std::unique_ptr<io::BufferedIO> read_raw_table(
 {
     size_t table_size = file_count * 0x6C;
     if (table_size > arc_io.size() - arc_io.tell())
-        throw std::runtime_error("Not a PAK1 archive");
+        throw err::RecognitionError();
     if (table_size > file_count * (0x64 + 4 + 4))
-        throw std::runtime_error("Not a PAK1 archive");
+        throw err::RecognitionError();
     auto buffer = arc_io.read(table_size);
     decrypt(buffer, 0x64, 0x64, 0x4D);
     return std::unique_ptr<io::BufferedIO>(new io::BufferedIO(buffer));
@@ -84,7 +85,7 @@ static Table read_table(io::IO &arc_io)
 {
     u16 file_count = arc_io.read_u16_le();
     if (file_count == 0 && arc_io.size() != 6)
-        throw std::runtime_error("Not a PAK1 archive");
+        throw err::RecognitionError();
     auto table_io = read_raw_table(arc_io, file_count);
     Table table;
     table.reserve(file_count);
@@ -95,7 +96,7 @@ static Table read_table(io::IO &arc_io)
         entry->size = table_io->read_u32_le();
         entry->offset = table_io->read_u32_le();
         if (entry->offset + entry->size > arc_io.size())
-            throw std::runtime_error("Bad offset to file");
+            throw err::BadDataOffsetError();
         table.push_back(std::move(entry));
     }
     return table;

@@ -1,3 +1,4 @@
+#include "err.h"
 #include "fmt/bgi/cbg/cbg_common.h"
 #include "fmt/bgi/cbg/cbg1_decoder.h"
 #include "fmt/bgi/common.h"
@@ -109,7 +110,7 @@ static pix::Format bpp_to_pixel_format(int bpp)
         case 32:
             return pix::Format::BGRA8888;
     }
-    throw std::runtime_error("Unsupported BPP");
+    throw err::UnsupportedBitDepthError(bpp);
 }
 
 std::unique_ptr<pix::Grid> Cbg1Decoder::decode(io::IO &io) const

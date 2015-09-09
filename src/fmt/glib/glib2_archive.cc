@@ -8,6 +8,7 @@
 // - [Rune & Cage] [080328] Pure My Imouto Milk Purun
 // - [Rune] [071214] Musume Shimai
 
+#include "err.h"
 #include "fmt/glib/glib2_archive.h"
 #include "fmt/glib/pgx_converter.h"
 #include "io/buffered_io.h"
@@ -188,7 +189,7 @@ static void decode(bstr &buffer, u32 decoder)
             index = i;
     }
     if (index == -1)
-        throw std::runtime_error("Unknown decoder");
+        throw err::NotSupportedError("Unknown decoder");
 
     int func1_index = (index / 5) % 6;
     int func2_index = index % 5 - ((index % 5 < func1_index) - 1);
@@ -236,7 +237,7 @@ static std::unique_ptr<Header> read_header(io::IO &arc_io)
     {
         header_io.seek(0);
         if (header_io.read(magic_20.size()) != magic_20)
-            throw std::runtime_error("Not a GLIB2 archive");
+            throw err::RecognitionError("Not a GLIB2 archive");
     }
     header_io.skip(1);
 
@@ -275,7 +276,7 @@ static std::unique_ptr<TableEntry> read_table_entry(
             {
                 size_t file_header_size2 = table_io.read_u32_le();
                 if (file_header_size2 + 4 != file_header_size)
-                    throw std::runtime_error("Unexpected file header size");
+                    throw err::BadDataSizeError();
                 table_io.skip(4); //null
                 entry->size = table_io.read_u32_le();
                 entry->offset = table_io.read_u32_le();
@@ -314,7 +315,7 @@ static Table read_table(io::IO &arc_io, Header &header)
 
     io::BufferedIO table_io(buffer);
     if (table_io.read(table_magic.size()) != table_magic)
-        throw std::runtime_error("Corrupted file table");
+        throw err::CorruptDataError("Corrupt table data");
 
     size_t file_count = table_io.read_u32_le();
     size_t file_names_start = file_count * 0x18 + 0x10;

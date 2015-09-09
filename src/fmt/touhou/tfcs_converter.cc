@@ -9,6 +9,7 @@
 // - [Tasofro & Team Shanghai Alice] [150510] TH14.5 - Urban Legend in Limbo
 
 #include <boost/algorithm/string.hpp>
+#include "err.h"
 #include "fmt/touhou/tfcs_converter.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
@@ -42,8 +43,6 @@ std::unique_ptr<File> TfcsConverter::decode_internal(File &file) const
     size_t original_size = file.io.read_u32_le();
     io::BufferedIO uncompressed_io(
         util::pack::zlib_inflate(file.io.read_to_eof()));
-    if (uncompressed_io.size() != original_size)
-        throw std::runtime_error("Unexpected file size");
 
     std::unique_ptr<File> output_file(new File);
     output_file->name = file.name;

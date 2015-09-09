@@ -8,7 +8,7 @@
 // Known games:
 // - [LizSoft] [080910] Fortune Summoners: Secret Of The Elemental Stone (SOTES)
 
-#include <cstring>
+#include "err.h"
 #include "fmt/lizsoft/sotes_converter.h"
 #include "util/image.h"
 #include "util/range.h"
@@ -35,7 +35,7 @@ static size_t guess_image_dimension(
                 return possible_dimension;
         }
     }
-    throw std::runtime_error("Cannot figure out the image dimensions");
+    throw err::CorruptDataError("Cannot figure out the image dimensions");
 }
 
 bool SotesConverter::is_recognized_internal(File &file) const
@@ -59,7 +59,7 @@ bool SotesConverter::is_recognized_internal(File &file) const
 std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
 {
     if (file.io.size() < 1112)
-        throw std::runtime_error("Not a SOTES image");
+        throw err::CorruptDataError("Not a SOTES image");
 
     u32 weird_data1[8];
     file.io.read(weird_data1, 8 * 4);

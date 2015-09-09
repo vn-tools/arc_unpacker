@@ -1,3 +1,4 @@
+#include "err.h"
 #include "util/crypt/blowfish.h"
 
 using namespace au;
@@ -9,7 +10,7 @@ struct Blowfish::Priv
 
 Blowfish::Blowfish(const bstr &key)
 {
-    throw std::runtime_error(
+    throw err::NotSupportedError(
         "Blowfish is unavailable - need to compile with OpenSSL.");
 }
 

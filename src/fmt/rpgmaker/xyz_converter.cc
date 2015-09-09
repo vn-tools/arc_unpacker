@@ -8,7 +8,6 @@
 // Known games:
 // - [Kikiyama] [040626] Yume Nikki
 
-#include <stdexcept>
 #include "fmt/rpgmaker/xyz_converter.h"
 #include "io/buffered_io.h"
 #include "util/image.h"

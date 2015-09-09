@@ -1,3 +1,4 @@
+#include "err.h"
 #include "util/crypt/rsa.h"
 
 using namespace au;
@@ -9,7 +10,7 @@ struct Rsa::Priv
 
 Rsa::Rsa(const RsaKey &key)
 {
-    throw std::runtime_error(
+    throw err::NotSupportedError(
         "RSA is unavailable - need to compile with OpenSSL.");
 }
 

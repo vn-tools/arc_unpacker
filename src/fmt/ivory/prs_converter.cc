@@ -9,6 +9,7 @@
 // - [Ivory] [030606] Candy Toys
 // - [Ivory] [060414] Wanko To Kurasou
 
+#include "err.h"
 #include "fmt/ivory/prs_converter.h"
 #include "util/image.h"
 #include "util/range.h"
@@ -99,7 +100,7 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
                 if (target_ptr >= target_end)
                     break;
                 if (target_ptr - shift < target.get<u8>())
-                    throw std::runtime_error("Invalid shift value");
+                    throw err::BadDataOffsetError();
                 *target_ptr = *(target_ptr - shift);
                 target_ptr++;
             }
@@ -118,8 +119,9 @@ std::unique_ptr<File> PrsConverter::decode_internal(File &file) const
     file.io.skip(magic.size());
 
     bool using_differences = file.io.read_u8() > 0;
-    if (file.io.read_u8() != 3)
-        throw std::runtime_error("Unknown PRS version");
+    auto version = file.io.read_u8();
+    if (version != 3)
+        throw err::UnsupportedVersionError(version);
 
     u32 source_size = file.io.read_u32_le();
     file.io.skip(4);

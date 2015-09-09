@@ -7,6 +7,7 @@
 // Known games:
 // - [Alice Soft] [011130] Daiakuji
 
+#include "err.h"
 #include "fmt/alice_soft/afa_archive.h"
 #include "fmt/alice_soft/aff_converter.h"
 #include "fmt/alice_soft/ajp_converter.h"
@@ -39,7 +40,7 @@ static Table read_table(io::IO &arc_io)
 {
     auto file_data_start = arc_io.read_u32_le();
     if (arc_io.read(magic3.size()) != magic3)
-        throw std::runtime_error("Corrupt header");
+        throw err::CorruptDataError("Corrupt file table");
 
     Table table;
     auto table_size_compressed = arc_io.read_u32_le();

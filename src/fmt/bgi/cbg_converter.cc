@@ -10,8 +10,7 @@
 // - [Lump of Sugar] [20130531] Magical Charming
 // - [Overdrive] [110930] Go! Go! Nippon! ~My First Trip to Japan~
 
-#include <cstring>
-#include <array>
+#include "err.h"
 #include "fmt/bgi/cbg/cbg1_decoder.h"
 #include "fmt/bgi/cbg/cbg2_decoder.h"
 #include "fmt/bgi/cbg_converter.h"
@@ -66,7 +65,7 @@ std::unique_ptr<File> CbgConverter::decode_internal(File &file) const
         return util::Image::from_pixels(*pixels)->create_file(file.name);
     }
 
-    throw std::runtime_error("Unknown version");
+    throw err::UnsupportedVersionError(static_cast<int>(version));
 }
 
 static auto dummy = fmt::Registry::add<CbgConverter>("bgi/cbg");

@@ -1,4 +1,4 @@
-#include <stdexcept>
+#include "err.h"
 #include "io/bit_reader.h"
 
 using namespace au;
@@ -107,7 +107,7 @@ inline u32 BitReader::Priv::tell() const
 inline u32 BitReader::Priv::get(size_t n, bool use_exceptions)
 {
     if (n > 32)
-        throw std::runtime_error("Too many bits");
+        throw err::NotSupportedError("Too many bits");
 
     auto mask = ((1 << n) - 1);
 
@@ -119,7 +119,7 @@ inline u32 BitReader::Priv::get(size_t n, bool use_exceptions)
         if (reader->eof())
         {
             if (use_exceptions)
-                throw std::runtime_error("Trying to read bits beyond EOF");
+                throw err::IoError("Trying to read bits beyond EOF");
         }
         else
             value |= reader->fetch_byte();

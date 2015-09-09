@@ -11,6 +11,7 @@
 // - [Key] [070928] Little Busters!
 // - [Key] [080229] Clannad
 
+#include "err.h"
 #include "fmt/real_live/g00_converter.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
@@ -157,7 +158,7 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
 
     io::BufferedIO decompressed_io(decompressed);
     if (region_count != decompressed_io.read_u32_le())
-        throw std::runtime_error("Invalid region count");
+        throw err::CorruptDataError("Region count mismatch");
 
     for (auto i : util::range(region_count))
     {
@@ -173,7 +174,7 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
         u16 block_type = decompressed_io.read_u16_le();
         u16 part_count = decompressed_io.read_u16_le();
         if (block_type != 1)
-            throw std::runtime_error("Unexpected block type");
+            throw err::NotSupportedError("Unexpected block type");
 
         decompressed_io.skip(0x70);
         for (auto j : util::range(part_count))
@@ -196,7 +197,7 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
             if (target_x + part_width > width
                 || target_y + part_height > height)
             {
-                throw std::runtime_error("Region out of bounds");
+                throw err::CorruptDataError("Region out of bounds");
             }
             for (auto y : util::range(part_height))
             for (auto x : util::range(part_width))
@@ -232,7 +233,7 @@ std::unique_ptr<File> G00Converter::decode_internal(File &file) const
             return decode_v2(file, width, height);
 
         default:
-            throw std::runtime_error("Unknown G00 version");
+            throw err::UnsupportedVersionError(version);
     }
 }
 

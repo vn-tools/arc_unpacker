@@ -9,6 +9,7 @@
 // - [Soviet Games] [131221] Everlasting Summer
 // - [Spiky Caterpillar] [120602] Long Live the Queen
 
+#include "err.h"
 #include "fmt/renpy/rpa_archive.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
@@ -197,7 +198,7 @@ static void unpickle(io::IO &table_io, UnpickleContext *context)
 
             default:
             {
-                throw std::runtime_error(util::format(
+                throw err::NotSupportedError(util::format(
                     "Unsupported pickle operator %c", static_cast<char>(c)));
             }
         }
@@ -215,9 +216,9 @@ static Table decode_table(io::IO &table_io, u32 key)
     // to empty.  Since I haven't seen such games, I leave this remark only
     // as a comment.
     if (context.strings.size() % 2 != 0)
-        throw std::runtime_error("Unsupported table format");
+        throw err::NotSupportedError("Unsupported table format");
     if (context.numbers.size() != context.strings.size())
-        throw std::runtime_error("Unsupported table format");
+        throw err::NotSupportedError("Unsupported table format");
 
     size_t file_count = context.strings.size() / 2;
     Table entries;
@@ -307,7 +308,7 @@ void RpaArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     }
     else
     {
-        throw std::runtime_error("Unknown RPA version");
+        throw err::UnsupportedVersionError(version);
     }
 
     arc_file.io.seek(table_offset);

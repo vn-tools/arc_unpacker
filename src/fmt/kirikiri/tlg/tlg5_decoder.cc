@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <vector>
+#include "err.h"
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
 #include "fmt/kirikiri/tlg/tlg5_decoder.h"
 #include "util/image.h"
@@ -109,7 +110,7 @@ std::unique_ptr<File> Tlg5Decoder::decode(File &file)
     header.image_height = file.io.read_u32_le();
     header.block_height = file.io.read_u32_le();
     if (header.channel_count != 3 && header.channel_count != 4)
-        throw std::runtime_error("Unsupported channel count");
+        throw err::UnsupportedChannelCountError(header.channel_count);
 
     pix::Grid pixels(header.image_width, header.image_height);
     read_pixels(file.io, pixels, header);

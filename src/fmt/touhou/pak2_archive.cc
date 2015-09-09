@@ -9,6 +9,7 @@
 // - [Team Shanghai Alice] [090815] TH12.3 - Unthinkable Natural Law
 
 #include <boost/filesystem.hpp>
+#include "err.h"
 #include "fmt/touhou/pak2_archive.h"
 #include "fmt/touhou/pak2_image_converter.h"
 #include "fmt/touhou/pak2_sound_converter.h"
@@ -65,9 +66,9 @@ static std::unique_ptr<io::BufferedIO> read_raw_table(
 {
     size_t table_size = arc_io.read_u32_le();
     if (table_size > arc_io.size() - arc_io.tell())
-        throw std::runtime_error("Not a PAK2 archive");
+        throw err::RecognitionError();
     if (table_size > file_count * (4 + 4 + 256 + 1))
-        throw std::runtime_error("Not a PAK2 archive");
+        throw err::RecognitionError();
     auto buffer = arc_io.read(table_size);
     decrypt(buffer, table_size + 6, 0xC5, 0x83, 0x53);
     return std::unique_ptr<io::BufferedIO>(new io::BufferedIO(buffer));
@@ -77,7 +78,7 @@ static Table read_table(io::IO &arc_io)
 {
     u16 file_count = arc_io.read_u16_le();
     if (file_count == 0 && arc_io.size() != 6)
-        throw std::runtime_error("Not a PAK2 archive");
+        throw err::RecognitionError();
     auto table_io = read_raw_table(arc_io, file_count);
     Table table;
     table.reserve(file_count);
@@ -89,7 +90,7 @@ static Table read_table(io::IO &arc_io)
         auto name_size = table_io->read_u8();
         entry->name = util::sjis_to_utf8(table_io->read(name_size)).str();
         if (entry->offset + entry->size > arc_io.size())
-            throw std::runtime_error("Bad offset to file");
+            throw err::BadDataOffsetError();
         table.push_back(std::move(entry));
     }
     return table;
