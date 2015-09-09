@@ -6,6 +6,7 @@
 //
 // Known games:
 // - [Cronus] [021129] Caliz
+// - [Cronus] [040227] Fruit Punch
 // - [Cronus] [050805] Brightia Plus
 // - [Cronus] [060630] Sweet Pleasure NS
 
