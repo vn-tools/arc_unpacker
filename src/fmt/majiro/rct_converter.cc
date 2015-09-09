@@ -8,6 +8,7 @@
 // Known games:
 // - [Empress] [150626] Closed Game
 
+#include "err.h"
 #include "fmt/majiro/rct_converter.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
@@ -17,13 +18,7 @@
 using namespace au;
 using namespace au::fmt::majiro;
 
-static const std::vector<bstr> magic =
-{
-    util::utf8_to_sjis("六丁TC00"_b),
-    util::utf8_to_sjis("六丁TC01"_b),
-    util::utf8_to_sjis("六丁TS00"_b),
-    util::utf8_to_sjis("六丁TS01"_b)
-};
+static const bstr magic = util::utf8_to_sjis("六丁T"_b);
 
 static bstr uncompress(const bstr &input, size_t width, size_t height)
 {
@@ -85,30 +80,52 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
 
 bool RctConverter::is_recognized_internal(File &file) const
 {
-    for (const auto &m : magic)
-    {
-        file.io.seek(0);
-        if (file.io.read(m.size()) == m)
-            return true;
-    }
-    return false;
+    return file.io.read(magic.size()) == magic;
 }
 
 std::unique_ptr<File> RctConverter::decode_internal(File &file) const
 {
-    for (const auto &m : magic)
-    {
-        file.io.seek(0);
-        if (file.io.read(m.size()) == m)
-            break;
-    }
+    file.io.skip(magic.size());
+
+    bool encrypted;
+    auto tmp = file.io.read_u8();
+    if (tmp == 'S')
+        encrypted = true;
+    else if (tmp == 'C')
+        encrypted = false;
+    else
+        throw err::NotSupportedError("Unexpected encryption flag");
+
+    if (encrypted)
+        throw err::NotSupportedError("Encrypted RCT images are not supported");
+
+    int version = std::stoi(file.io.read(2).str());
+    if (version < 0 || version > 1)
+        throw err::UnsupportedVersionError(version);
 
     auto width = file.io.read_u32_le();
     auto height = file.io.read_u32_le();
-    file.io.skip(4);
-    auto data_comp = file.io.read_to_eof();
+    auto data_size = file.io.read_u32_le();
+
+    std::string base_file;
+    if (version == 1)
+        base_file = file.io.read(file.io.read_u16_le()).str();
+
+    auto data_comp = file.io.read(data_size);
     auto data_orig = uncompress(data_comp, width, height);
     pix::Grid pixels(width, height, data_orig, pix::Format::BGR888);
+
+    if (version == 1)
+    {
+        for (auto y : util::range(height))
+        for (auto x : util::range(width))
+        {
+            auto &p = pixels.at(x, y);
+            if (p.r == 0xFF && p.g == 0 && p.g == 0)
+                p.a = p.r = 0;
+        }
+    }
+
     return util::Image::from_pixels(pixels)->create_file(file.name);
 }
 

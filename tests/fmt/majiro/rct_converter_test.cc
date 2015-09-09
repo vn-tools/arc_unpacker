@@ -6,13 +6,25 @@
 using namespace au;
 using namespace au::fmt::majiro;
 
-TEST_CASE("Decoding Majiro's RCT images works")
+void do_test(const std::string &input_path, const std::string &expected_path)
 {
     RctConverter converter;
-    auto input_file = tests::file_from_path(
-        "tests/fmt/majiro/files/rct/face_dummy.rct");
-    auto expected_image = tests::image_from_path(
-        "tests/fmt/majiro/files/rct/face_dummy-out.png");
+    auto input_file = tests::file_from_path(input_path);
+    auto expected_image = tests::image_from_path(expected_path);
     auto actual_image = tests::image_from_file(*converter.decode(*input_file));
     tests::compare_images(*expected_image, *actual_image, false);
+}
+
+TEST_CASE("Decoding Majiro's RCT v0 images works")
+{
+    do_test(
+        "tests/fmt/majiro/files/rct/face_dummy.rct",
+        "tests/fmt/majiro/files/rct/face_dummy-out.png");
+}
+
+TEST_CASE("Decoding Majiro's RCT v1 images works")
+{
+    do_test(
+        "tests/fmt/majiro/files/rct/ev04_01c.rct",
+        "tests/fmt/majiro/files/rct/ev04_01c-out.png");
 }

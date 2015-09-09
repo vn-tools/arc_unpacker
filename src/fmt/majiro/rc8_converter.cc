@@ -8,6 +8,7 @@
 // Known games:
 // - [Empress] [150626] Closed Game
 
+#include "err.h"
 #include "fmt/majiro/rc8_converter.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
@@ -17,7 +18,7 @@
 using namespace au;
 using namespace au::fmt::majiro;
 
-static const bstr magic = util::utf8_to_sjis("六丁8_00"_b);
+static const bstr magic = util::utf8_to_sjis("六丁8"_b);
 
 static bstr uncompress(const bstr &input, size_t width, size_t height)
 {
@@ -79,6 +80,14 @@ bool Rc8Converter::is_recognized_internal(File &file) const
 std::unique_ptr<File> Rc8Converter::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
+
+    if (file.io.read_u8() != '_')
+        throw err::NotSupportedError("Unexpected encryption flag");
+
+    int version = std::stoi(file.io.read(2).str());
+    if (version != 0)
+        throw err::UnsupportedVersionError(version);
+
     auto width = file.io.read_u32_le();
     auto height = file.io.read_u32_le();
     file.io.skip(4);
