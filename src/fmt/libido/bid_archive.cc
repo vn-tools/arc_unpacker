@@ -8,6 +8,7 @@
 // - [Libido] [970613] Houkago Mania Club
 
 #include "fmt/libido/bid_archive.h"
+#include "fmt/libido/mnc_converter.h"
 #include "util/range.h"
 
 using namespace au;
@@ -48,6 +49,20 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     file->io.write_from_io(arc_io, entry.size);
     file->name = entry.name;
     return file;
+}
+
+struct BidArchive::Priv
+{
+    MncConverter mnc_converter;
+};
+
+BidArchive::BidArchive() : p(new Priv)
+{
+    add_transformer(&p->mnc_converter);
+}
+
+BidArchive::~BidArchive()
+{
 }
 
 bool BidArchive::is_recognized_internal(File &arc_file) const
