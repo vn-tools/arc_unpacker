@@ -5,6 +5,7 @@ projects are listed below in alphabetical order.
 - [ALD Explorer 2](http://www.hongfire.com/forum/showthread.php/423698)
 - [arc_conv](https://github.com/dsp2003/arc_conv)
 - [Brightmoon](http://touhou.wikia.com/wiki/Brightmoon)
+- [chinesize](https://github.com/regomne/chinesize)
 - Crass / CUI
 - [ExtractData](https://github.com/lioncash/ExtractData)
 - [GARbro](https://github.com/morkt/GARbro)
