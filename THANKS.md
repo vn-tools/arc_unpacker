@@ -7,6 +7,7 @@ projects are listed below in alphabetical order.
 - [Brightmoon](http://touhou.wikia.com/wiki/Brightmoon)
 - Crass / CUI
 - [ExtractData](https://github.com/lioncash/ExtractData)
+- [GARbro](https://github.com/morkt/GARbro)
 - [Kirikiri Z](https://github.com/krkrz/krkrz)
 - [mkxp](https://github.com/Ancurio/mkxp)
 - [nipa](https://github.com/Wilhansen/nipa)
