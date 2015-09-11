@@ -15,7 +15,7 @@ static inline void compare_pixels(
     size_t c,
     size_t max_component_diff)
 {
-    if (std::abs(expected[c] - actual[c]) > max_component_diff)
+    if (std::abs<size_t>(expected[c] - actual[c]) > max_component_diff)
     {
         INFO(util::format(
             "Pixels differ at %d, %d: %02x%02x%02x%02x != %02x%02x%02x%02x",
