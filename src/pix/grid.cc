@@ -172,3 +172,23 @@ void Grid::crop(size_t new_width, size_t new_height)
         p->pixels[y * new_width + x] = old_pixels[y * old_width + x];
     }
 }
+
+Pixel *Grid::begin()
+{
+    return &p->pixels[0];
+}
+
+Pixel *Grid::end()
+{
+    return &p->pixels[p->width * p->height];
+}
+
+const Pixel *Grid::begin() const
+{
+    return &p->pixels[0];
+}
+
+const Pixel *Grid::end() const
+{
+    return &p->pixels[p->width * p->height];
+}

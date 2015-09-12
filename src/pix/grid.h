@@ -30,6 +30,11 @@ namespace pix {
         void flip();
         void crop(size_t width, size_t height);
 
+        Pixel *begin();
+        Pixel *end();
+        const Pixel *begin() const;
+        const Pixel *end() const;
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;
