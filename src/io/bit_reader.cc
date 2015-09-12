@@ -11,6 +11,7 @@ namespace
         Reader();
         virtual ~Reader();
         virtual bool eof() const = 0;
+        virtual size_t size() const = 0;
         virtual u8 fetch_byte() = 0;
     };
 
@@ -22,6 +23,7 @@ namespace
 
         BufferBasedReader(const bstr &buffer);
         inline bool eof() const override;
+        inline size_t size() const override;
         inline u8 fetch_byte() override;
     };
 
@@ -31,6 +33,7 @@ namespace
 
         IoBasedReader(IO &io);
         inline bool eof() const override;
+        inline size_t size() const override;
         inline u8 fetch_byte() override;
     };
 }
@@ -54,6 +57,11 @@ inline bool BufferBasedReader::eof() const
     return bytes_left == 0;
 }
 
+inline size_t BufferBasedReader::size() const
+{
+    return buffer.size();
+}
+
 inline u8 BufferBasedReader::fetch_byte()
 {
     --bytes_left;
@@ -67,6 +75,11 @@ IoBasedReader::IoBasedReader(IO &io) : io(io)
 inline bool IoBasedReader::eof() const
 {
     return io.tell() >= io.size();
+}
+
+inline size_t IoBasedReader::size() const
+{
+    return io.size();
 }
 
 inline u8 IoBasedReader::fetch_byte()
@@ -86,6 +99,7 @@ struct BitReader::Priv
     inline u32 tell() const;
     inline u32 get(size_t n, bool use_exceptions);
     bool eof() const;
+    size_t size() const;
 };
 
 BitReader::Priv::Priv(std::unique_ptr<Reader> reader)
@@ -135,6 +149,11 @@ inline bool BitReader::Priv::eof() const
     return pos % 8 == 0 && reader->eof();
 }
 
+inline size_t BitReader::Priv::size() const
+{
+    return reader->size() * 8;
+}
+
 
 BitReader::BitReader(IO &io)
     : p(new Priv(std::unique_ptr<Reader>(new IoBasedReader(io))))
@@ -169,6 +188,11 @@ unsigned int BitReader::try_get(size_t n)
 bool BitReader::eof() const
 {
     return p->eof();
+}
+
+size_t BitReader::size() const
+{
+    return p->size();
 }
 
 size_t BitReader::tell() const

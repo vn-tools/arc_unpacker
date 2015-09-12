@@ -94,3 +94,13 @@ TEST_CASE("Checking for EOF works", "[util][bit_reader]")
     reader.get(1);
     REQUIRE(reader.eof());
 }
+
+TEST_CASE("Checking size works", "[util][bit_reader]")
+{
+    BitReader reader1("\x00\x00"_b);
+    REQUIRE(reader1.size() == 16);
+    BitReader reader2("\x00"_b);
+    REQUIRE(reader2.size() == 8);
+    BitReader reader3(""_b);
+    REQUIRE(reader3.size() == 0);
+}
