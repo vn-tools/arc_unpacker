@@ -81,3 +81,16 @@ TEST_CASE("Reading multiple bytes works", "[util][bit_reader]")
         REQUIRE(reader.get(32) == 0b11001100101010101111000000110011);
     }
 }
+
+TEST_CASE("Checking for EOF works", "[util][bit_reader]")
+{
+    BitReader reader("\x00\x00"_b);
+    reader.get(7);
+    REQUIRE(!reader.eof());
+    reader.get(7);
+    REQUIRE(!reader.eof());
+    reader.get(1);
+    REQUIRE(!reader.eof());
+    reader.get(1);
+    REQUIRE(reader.eof());
+}

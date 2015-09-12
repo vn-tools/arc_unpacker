@@ -85,6 +85,7 @@ struct BitReader::Priv
     ~Priv();
     inline u32 tell() const;
     inline u32 get(size_t n, bool use_exceptions);
+    bool eof() const;
 };
 
 BitReader::Priv::Priv(std::unique_ptr<Reader> reader)
@@ -129,6 +130,11 @@ inline u32 BitReader::Priv::get(size_t n, bool use_exceptions)
     return (value >> ((32 - shift) & 7)) & mask;
 }
 
+inline bool BitReader::Priv::eof() const
+{
+    return pos % 8 == 0 && reader->eof();
+}
+
 
 BitReader::BitReader(IO &io)
     : p(new Priv(std::unique_ptr<Reader>(new IoBasedReader(io))))
@@ -158,6 +164,11 @@ unsigned int BitReader::get(size_t n)
 unsigned int BitReader::try_get(size_t n)
 {
     return p->get(n, false);
+}
+
+bool BitReader::eof() const
+{
+    return p->eof();
 }
 
 size_t BitReader::tell() const
