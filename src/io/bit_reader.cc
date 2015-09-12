@@ -109,7 +109,7 @@ inline u32 BitReader::Priv::get(size_t n, bool use_exceptions)
     if (n > 32)
         throw err::NotSupportedError("Too many bits");
 
-    auto mask = ((1 << n) - 1);
+    auto mask = ((1ull << n) - 1);
 
     pos += n;
     shift += n;

@@ -73,4 +73,11 @@ TEST_CASE("Reading multiple bytes works", "[util][bit_reader]")
         REQUIRE(reader.get(1) == 1);
         REQUIRE(reader.get(23) == 0b01010101111000000110011);
     }
+
+    SECTION("Max bit reader capacity test")
+    {
+        BitReader reader(from_bits({
+            0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+        REQUIRE(reader.get(32) == 0b11001100101010101111000000110011);
+    }
 }
