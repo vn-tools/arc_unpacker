@@ -14,6 +14,8 @@ namespace io {
         BitReader(const char *buffer, size_t buffer_size);
         ~BitReader();
 
+        void seek(size_t pos);
+        void skip(int offset);
         bool eof() const;
         size_t tell() const;
         size_t size() const;

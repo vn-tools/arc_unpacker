@@ -1,4 +1,5 @@
 #include "io/bit_reader.h"
+#include "util/range.h"
 #include "test_support/catch.hh"
 
 using namespace au;
@@ -103,4 +104,86 @@ TEST_CASE("Checking size works", "[util][bit_reader]")
     REQUIRE(reader2.size() == 8);
     BitReader reader3(""_b);
     REQUIRE(reader3.size() == 0);
+}
+
+TEST_CASE("Seeking works", "[util][bit_reader]")
+{
+    SECTION("Integer aligned")
+    {
+        BitReader reader(from_bits({
+            0b00000000, 0b00000000, 0b00000000, 0b00000000,
+            0b11111111, 0b11111111, 0b11111111, 0b11111111,
+            0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+        reader.seek(0);
+        REQUIRE(reader.get(32) == 0b00000000000000000000000000000000);
+        reader.seek(32);
+        REQUIRE(reader.get(32) == 0b11111111111111111111111111111111);
+        reader.seek(64);
+        REQUIRE(reader.get(32) == 0b11001100101010101111000000110011);
+    }
+
+    SECTION("Byte aligned")
+    {
+        BitReader reader(from_bits({
+            0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+        reader.seek(0);  REQUIRE(reader.get(8) == 0b11001100);
+        reader.seek(8);  REQUIRE(reader.get(8) == 0b10101010);
+        reader.seek(16); REQUIRE(reader.get(8) == 0b11110000);
+        reader.seek(24); REQUIRE(reader.get(8) == 0b00110011);
+    }
+
+    SECTION("Unaligned")
+    {
+        BitReader reader(from_bits({
+            0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+        reader.seek(0);  REQUIRE(reader.get(8) == 0b11001100);
+        reader.seek(1);  REQUIRE(reader.get(8) == 0b10011001);
+        reader.seek(2);  REQUIRE(reader.get(8) == 0b00110010);
+        reader.seek(3);  REQUIRE(reader.get(8) == 0b01100101);
+        reader.seek(4);  REQUIRE(reader.get(8) == 0b11001010);
+        reader.seek(5);  REQUIRE(reader.get(8) == 0b10010101);
+        reader.seek(6);  REQUIRE(reader.get(8) == 0b00101010);
+        reader.seek(7);  REQUIRE(reader.get(8) == 0b01010101);
+        reader.seek(8);  REQUIRE(reader.get(8) == 0b10101010);
+        reader.seek(9);  REQUIRE(reader.get(8) == 0b01010101);
+        reader.seek(10); REQUIRE(reader.get(8) == 0b10101011);
+        reader.seek(11); REQUIRE(reader.get(8) == 0b01010111);
+        reader.seek(12); REQUIRE(reader.get(8) == 0b10101111);
+        reader.seek(13); REQUIRE(reader.get(8) == 0b01011110);
+        reader.seek(14); REQUIRE(reader.get(8) == 0b10111100);
+        reader.seek(15); REQUIRE(reader.get(8) == 0b01111000);
+        reader.seek(16); REQUIRE(reader.get(8) == 0b11110000);
+        reader.seek(17); REQUIRE(reader.get(8) == 0b11100000);
+        reader.seek(18); REQUIRE(reader.get(8) == 0b11000000);
+        reader.seek(19); REQUIRE(reader.get(8) == 0b10000001);
+        reader.seek(20); REQUIRE(reader.get(8) == 0b00000011);
+        reader.seek(21); REQUIRE(reader.get(8) == 0b00000110);
+        reader.seek(22); REQUIRE(reader.get(8) == 0b00001100);
+        reader.seek(23); REQUIRE(reader.get(8) == 0b00011001);
+        reader.seek(24); REQUIRE(reader.get(8) == 0b00110011);
+    }
+
+    SECTION("Unaligned (automatic)")
+    {
+        BitReader reader(from_bits({
+            0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+        for (auto i : util::range(32))
+        {
+            reader.seek(i);
+            INFO("Position: " << reader.tell());
+            auto mask = (1ul << (32 - i)) - 1;
+            auto expected = 0b11001100101010101111000000110011 & mask;
+            REQUIRE(reader.get(32 - i) == expected);
+        }
+    }
+}
+
+TEST_CASE("Skipping works", "[util][bit_reader]")
+{
+    BitReader reader(from_bits({
+        0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+    reader.seek(0);
+    REQUIRE(reader.get(8) == 0b11001100);
+    reader.skip(-7);
+    REQUIRE(reader.get(8) == 0b10011001);
 }

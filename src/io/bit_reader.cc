@@ -13,6 +13,7 @@ namespace
         virtual bool eof() const = 0;
         virtual size_t size() const = 0;
         virtual u8 fetch_byte() = 0;
+        virtual void seek(size_t) = 0;
     };
 
     struct BufferBasedReader final : public Reader
@@ -25,6 +26,7 @@ namespace
         inline bool eof() const override;
         inline size_t size() const override;
         inline u8 fetch_byte() override;
+        inline void seek(size_t pos) override;
     };
 
     struct IoBasedReader final : public Reader
@@ -35,6 +37,7 @@ namespace
         inline bool eof() const override;
         inline size_t size() const override;
         inline u8 fetch_byte() override;
+        inline void seek(size_t pos) override;
     };
 }
 
@@ -62,6 +65,12 @@ inline size_t BufferBasedReader::size() const
     return buffer.size();
 }
 
+inline void BufferBasedReader::seek(size_t pos)
+{
+    ptr = &buffer.get<const u8>()[pos];
+    bytes_left = buffer.size() - pos;
+}
+
 inline u8 BufferBasedReader::fetch_byte()
 {
     --bytes_left;
@@ -82,6 +91,11 @@ inline size_t IoBasedReader::size() const
     return io.size();
 }
 
+inline void IoBasedReader::seek(size_t pos)
+{
+    io.seek(pos);
+}
+
 inline u8 IoBasedReader::fetch_byte()
 {
     return io.read_u8();
@@ -100,6 +114,7 @@ struct BitReader::Priv
     inline u32 get(size_t n, bool use_exceptions);
     bool eof() const;
     size_t size() const;
+    void seek(size_t pos);
 };
 
 BitReader::Priv::Priv(std::unique_ptr<Reader> reader)
@@ -117,6 +132,15 @@ BitReader::Priv::~Priv()
 inline u32 BitReader::Priv::tell() const
 {
     return pos;
+}
+
+inline void BitReader::Priv::seek(size_t new_pos)
+{
+    pos = (new_pos / 32) * 32;
+    shift = 8;
+    value = 0;
+    reader->seek(pos / 8);
+    get(new_pos % 32, false);
 }
 
 inline u32 BitReader::Priv::get(size_t n, bool use_exceptions)
@@ -198,4 +222,14 @@ size_t BitReader::size() const
 size_t BitReader::tell() const
 {
     return p->tell();
+}
+
+void BitReader::seek(size_t pos)
+{
+    return p->seek(pos);
+}
+
+void BitReader::skip(int offset)
+{
+    return p->seek(p->tell() + offset);
 }
