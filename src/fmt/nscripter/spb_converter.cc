@@ -32,43 +32,48 @@ static std::unique_ptr<pix::Grid> decode_pixels(
         u8 *channel_ptr = channel_data.get<u8>();
         const u8 *channel_end = channel_ptr + channel_data.size();
 
-        u8 ch = bit_reader.try_get(8);
+        u8 ch = bit_reader.get(8);
         if (channel_ptr >= channel_end) break;
         *channel_ptr++ = ch;
 
         while (channel_ptr < channel_end)
         {
-            size_t t = bit_reader.try_get(3);
+            size_t t = bit_reader.get(3);
             if (t == 0)
             {
-                if (channel_ptr >= channel_end) break;
+                if (channel_ptr >= channel_end)
+                    break;
                 *channel_ptr++ = ch;
-                if (channel_ptr >= channel_end) break;
+                if (channel_ptr >= channel_end)
+                    break;
                 *channel_ptr++ = ch;
-                if (channel_ptr >= channel_end) break;
+                if (channel_ptr >= channel_end)
+                    break;
                 *channel_ptr++ = ch;
-                if (channel_ptr >= channel_end) break;
+                if (channel_ptr >= channel_end)
+                    break;
                 *channel_ptr++ = ch;
                 continue;
             }
 
-            size_t mask = t == 7 ? bit_reader.try_get(1) + 1 : t + 2;
+            size_t mask = t == 7 ? bit_reader.get(1) + 1 : t + 2;
 
             for (auto i : util::range(4))
             {
                 if (mask == 8)
                 {
-                    ch = bit_reader.try_get(8);
+                    ch = bit_reader.get(8);
                 }
                 else
                 {
-                    t = bit_reader.try_get(mask);
+                    t = bit_reader.get(mask);
                     if (t & 1)
                         ch += (t >> 1) + 1;
                     else
                         ch -= (t >> 1);
                 }
-                if (channel_ptr >= channel_end) break;
+                if (channel_ptr >= channel_end)
+                    break;
                 *channel_ptr++ = ch;
             }
         }

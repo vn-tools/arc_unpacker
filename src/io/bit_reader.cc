@@ -111,7 +111,7 @@ struct BitReader::Priv
     Priv(std::unique_ptr<Reader> reader);
     ~Priv();
     inline u32 tell() const;
-    inline u32 get(size_t n, bool use_exceptions);
+    inline u32 get(size_t n);
     bool eof() const;
     size_t size() const;
     void seek(size_t pos);
@@ -140,10 +140,10 @@ inline void BitReader::Priv::seek(size_t new_pos)
     shift = 8;
     value = 0;
     reader->seek(pos / 8);
-    get(new_pos % 32, false);
+    get(new_pos % 32);
 }
 
-inline u32 BitReader::Priv::get(size_t n, bool use_exceptions)
+inline u32 BitReader::Priv::get(size_t n)
 {
     if (n > 32)
         throw err::NotSupportedError("Too many bits");
@@ -156,10 +156,7 @@ inline u32 BitReader::Priv::get(size_t n, bool use_exceptions)
     {
         value <<= 8;
         if (reader->eof())
-        {
-            if (use_exceptions)
-                throw err::IoError("Trying to read bits beyond EOF");
-        }
+            throw err::IoError("Trying to read bits beyond EOF");
         else
             value |= reader->fetch_byte();
         shift -= 8;
@@ -201,12 +198,7 @@ BitReader::~BitReader()
 
 unsigned int BitReader::get(size_t n)
 {
-    return p->get(n, true);
-}
-
-unsigned int BitReader::try_get(size_t n)
-{
-    return p->get(n, false);
+    return p->get(n);
 }
 
 bool BitReader::eof() const

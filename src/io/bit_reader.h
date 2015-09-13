@@ -20,7 +20,6 @@ namespace io {
         size_t tell() const;
         size_t size() const;
         unsigned int get(size_t n);
-        unsigned int try_get(size_t n);
     private:
         struct Priv;
         std::unique_ptr<Priv> p;
