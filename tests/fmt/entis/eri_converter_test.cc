@@ -16,9 +16,16 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("Decoding ENTIS's lossless Huffman 32-bit images works")
+TEST_CASE("Decoding ENTIS's lossless Huffman 32-bit unflipped images works")
 {
     do_test(
         "tests/fmt/entis/files/eri/img_rgba32.eri",
         "tests/fmt/entis/files/eri/img_rgba32-out.png");
+}
+
+TEST_CASE("Decoding ENTIS's lossless Gamma 32-bit flipped images works")
+{
+    do_test(
+        "tests/fmt/entis/files/eri/cb10_14.eri",
+        "tests/fmt/entis/files/eri/cb10_14-out.png");
 }

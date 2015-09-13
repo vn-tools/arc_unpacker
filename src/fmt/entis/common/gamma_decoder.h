@@ -10,4 +10,18 @@ namespace common {
 
     int get_gamma_code(io::BitReader &bit_reader);
 
+    class GammaDecoder final : public Decoder
+    {
+    public:
+        GammaDecoder(const bstr &data);
+        ~GammaDecoder();
+
+        void init();
+        virtual void decode(u8 *output, size_t output_size) override;
+
+    private:
+        struct Priv;
+        std::unique_ptr<Priv> p;
+    };
+
 } } } }

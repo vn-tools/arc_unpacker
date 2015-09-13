@@ -298,7 +298,7 @@ static u8 get_transformer_code(
         if (!(ctx.encode_type & 0x01) && header.architecture
             == common::Architecture::RunLengthGamma)
         {
-            throw err::NotSupportedError("Architecutre not supported");
+            dynamic_cast<common::GammaDecoder&>(decoder).init();
         }
         if (header.format_type == EriImage::Gray)
             return 0b11'00'0000;
@@ -306,17 +306,19 @@ static u8 get_transformer_code(
     }
 
     if (ctx.encode_type & 1)
-    {
         return *transformer_codes_ptr++;
-    }
-    else if (header.architecture == common::Architecture::RunLengthHuffman)
+
+    if (header.architecture == common::Architecture::RunLengthHuffman)
     {
         return dynamic_cast<common::HuffmanDecoder&>(decoder)
                 .get_huffman_code(huffman_tree);
     }
-    else if (header.architecture == common::Architecture::RunLengthGamma)
+
+    if (header.architecture == common::Architecture::RunLengthGamma)
     {
-        throw err::NotSupportedError("Architecutre not supported");
+        auto transformer_code = 0b11'00'0000 | decoder.bit_reader.get(4);
+        dynamic_cast<common::GammaDecoder&>(decoder).init();
+        return transformer_code;
     }
 
     throw err::NotSupportedError("Architecture not supported");
@@ -329,25 +331,23 @@ static std::vector<u8> prefetch_transformer_codes(
     common::HuffmanTree &huffman_tree)
 {
     std::vector<u8> transformer_codes;
-    if ((ctx.encode_type & 0x01) && (ctx.channel_count >= 3))
+    if (!(ctx.encode_type & 0x01) || (ctx.channel_count < 3))
+        return transformer_codes;
+    for (auto i : util::range(ctx.width_blocks * ctx.height_blocks))
     {
-        for (auto i : util::range(ctx.width_blocks * ctx.height_blocks))
+        u8 op_code;
+        if (header.architecture == common::Architecture::RunLengthGamma)
         {
-            u8 op_code;
-            if (header.architecture == common::Architecture::RunLengthGamma)
-            {
-                op_code = 0b11'00'0000 | decoder.bit_reader.get(4);
-            }
-            else if (header.architecture
-                == common::Architecture::RunLengthHuffman)
-            {
-                op_code = dynamic_cast<common::HuffmanDecoder&>(decoder)
-                    .get_huffman_code(huffman_tree);
-            }
-            else
-                throw err::NotSupportedError("Architecture not supported");
-            transformer_codes.push_back(op_code);
+            op_code = 0b11'00'0000 | decoder.bit_reader.get(4);
         }
+        else if (header.architecture == common::Architecture::RunLengthHuffman)
+        {
+            op_code = dynamic_cast<common::HuffmanDecoder&>(decoder)
+                .get_huffman_code(huffman_tree);
+        }
+        else
+            throw err::NotSupportedError("Architecture not supported");
+        transformer_codes.push_back(op_code);
     }
     return transformer_codes;
 }
@@ -432,7 +432,8 @@ bstr image::decode_lossless_pixel_data(
         throw err::CorruptDataError("Expected 0 bit");
 
     if (header.architecture == common::Architecture::RunLengthGamma)
-        throw err::NotSupportedError("Architecture not supported");
+        if (ctx.encode_type & 0x01)
+            dynamic_cast<common::GammaDecoder&>(decoder).init();
 
     bstr output(ctx.width_blocks * ctx.height_blocks * ctx.block_samples);
     bstr arrange_buf(ctx.block_samples);

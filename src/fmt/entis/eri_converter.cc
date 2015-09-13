@@ -42,10 +42,10 @@ static image::EriHeader read_header(
 
     header.format_type      = io.read_u32_le();
     i32 width               = io.read_u32_le();
-    i32 height              = -io.read_u32_le();
+    i32 height              = io.read_u32_le();
     header.width            = std::abs(width);
     header.height           = std::abs(height);
-    header.flip             = height < 0;
+    header.flip             = height > 0;
     header.bit_depth        = io.read_u32_le();
     header.clipped_pixel    = io.read_u32_le();
     header.sampling_flags   = io.read_u32_le();
@@ -69,7 +69,9 @@ static bstr decode_pixel_data(
     const image::EriHeader &header, const bstr &encoded_pixel_data)
 {
     std::unique_ptr<common::Decoder> decoder;
-    if (header.architecture == common::Architecture::RunLengthHuffman)
+    if (header.architecture == common::Architecture::RunLengthGamma)
+        decoder.reset(new common::GammaDecoder(encoded_pixel_data));
+    else if (header.architecture == common::Architecture::RunLengthHuffman)
         decoder.reset(new common::HuffmanDecoder(encoded_pixel_data));
     else
     {
