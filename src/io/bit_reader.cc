@@ -136,6 +136,8 @@ inline u32 BitReader::Priv::tell() const
 
 inline void BitReader::Priv::seek(size_t new_pos)
 {
+    if (new_pos > size())
+        throw err::IoError("Seeking beyond EOF");
     pos = (new_pos / 32) * 32;
     shift = 8;
     value = 0;
@@ -154,11 +156,13 @@ inline u32 BitReader::Priv::get(size_t n)
     shift += n;
     while (shift > 8)
     {
-        value <<= 8;
         if (reader->eof())
+        {
+            seek(pos - n);
             throw err::IoError("Trying to read bits beyond EOF");
-        else
-            value |= reader->fetch_byte();
+        }
+        value <<= 8;
+        value |= reader->fetch_byte();
         shift -= 8;
     }
 

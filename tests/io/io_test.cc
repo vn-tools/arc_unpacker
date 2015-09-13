@@ -62,45 +62,63 @@ TEST_CASE("Writing integers works")
 TEST_CASE("Skipping and telling position works")
 {
     BufferedIO io("\x01\x0F\x00\x00"_b);
-    io.skip(1);
-    REQUIRE(io.tell() == 1);
-    REQUIRE(io.read_u16_le() == 15);
-    REQUIRE(io.tell() == 3);
+
+    SECTION("Positive offset")
+    {
+        io.skip(1);
+        REQUIRE(io.tell() == 1);
+        REQUIRE(io.read_u16_le() == 15);
+        REQUIRE(io.tell() == 3);
+    }
+
+    SECTION("Negative offset")
+    {
+        io.read(2);
+        io.skip(-1);
+        REQUIRE(io.read_u16_le() == 15);
+        REQUIRE(io.tell() == 3);
+    }
 }
 
 TEST_CASE("Seeking and telling position works")
 {
     BufferedIO io("\x01\x00\x00\x00"_b);
 
-    REQUIRE(io.tell() == 0);
-
-    io.seek(4);
-    REQUIRE(io.tell() == 4);
-
-    try
+    SECTION("Initial seeking")
     {
-        io.seek(5);
-        REQUIRE(0);
+        REQUIRE(io.tell() == 0);
     }
-    catch (...)
+
+    SECTION("Seeking to EOF")
     {
+        io.seek(4);
         REQUIRE(io.tell() == 4);
     }
 
-    io.seek(0);
-    REQUIRE(io.read_u32_le() == 1);
+    SECTION("Seeking beyond EOF throws errors")
+    {
+        io.seek(3);
+        REQUIRE_THROWS(io.seek(5));
+        REQUIRE(io.tell() == 3);
+    }
 
-    io.seek(0);
-    REQUIRE(io.tell() == 0);
-    REQUIRE(io.read_u32_le() == 1);
-    io.seek(2);
-    REQUIRE(io.tell() == 2);
+    SECTION("Seeking affects what gets read")
+    {
+        io.seek(1);
+        REQUIRE(io.read_u16_le() == 0);
+        io.seek(0);
+        REQUIRE(io.read_u32_le() == 1);
+    }
 
-    io.skip(1);
-    REQUIRE(io.tell() == 3);
-
-    io.skip(-1);
-    REQUIRE(io.tell() == 2);
+    SECTION("Seeking affects telling position")
+    {
+        io.seek(2);
+        REQUIRE(io.tell() == 2);
+        io.skip(1);
+        REQUIRE(io.tell() == 3);
+        io.skip(-1);
+        REQUIRE(io.tell() == 2);
+    }
 }
 
 TEST_CASE("Reading NULL-terminated strings works")

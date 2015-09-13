@@ -176,6 +176,20 @@ TEST_CASE("Seeking works", "[util][bit_reader]")
             REQUIRE(reader.get(32 - i) == expected);
         }
     }
+
+    SECTION("Seeking beyond EOF throws errors")
+    {
+        BitReader reader(from_bits({
+            0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+        for (auto i : util::range(32))
+        {
+            reader.seek(31);
+            REQUIRE_THROWS(reader.skip(2 + i));
+            REQUIRE(reader.tell() == 31);
+        }
+        for (auto i : util::range(32))
+            REQUIRE_THROWS(reader.seek(33 + i));
+    }
 }
 
 TEST_CASE("Skipping works", "[util][bit_reader]")
@@ -186,4 +200,49 @@ TEST_CASE("Skipping works", "[util][bit_reader]")
     REQUIRE(reader.get(8) == 0b11001100);
     reader.skip(-7);
     REQUIRE(reader.get(8) == 0b10011001);
+}
+
+TEST_CASE("Reading beyond EOF retracts to prior offset", "[util][bit_reader]")
+{
+    SECTION("Byte-aligned without byte retrieval")
+    {
+        BitReader reader("\x00"_b);
+        reader.get(7);
+        reader.get(1);
+        REQUIRE(reader.eof());
+        REQUIRE_THROWS(reader.get(1));
+        REQUIRE(reader.eof());
+        REQUIRE(reader.tell() == 8);
+    }
+
+    SECTION("Byte-aligned with byte retrieval")
+    {
+        BitReader reader("\x00\xFF"_b);
+        reader.get(7);
+        reader.get(1);
+        REQUIRE_THROWS(reader.get(16));
+        REQUIRE(!reader.eof());
+        REQUIRE(reader.tell() == 8);
+        REQUIRE(reader.get(8) == 0xFF);
+    }
+
+    SECTION("Byte-unaligned without byte retrieval")
+    {
+        BitReader reader("\x01"_b);
+        reader.get(7);
+        REQUIRE_THROWS(reader.get(2));
+        REQUIRE(!reader.eof());
+        REQUIRE(reader.tell() == 7);
+        REQUIRE(reader.get(1));
+    }
+
+    SECTION("Byte-unaligned with byte retrieval")
+    {
+        BitReader reader("\x01\x00"_b);
+        reader.get(7);
+        REQUIRE_THROWS(reader.get(10));
+        REQUIRE(!reader.eof());
+        REQUIRE(reader.tell() == 7);
+        REQUIRE(reader.get(1));
+    }
 }
