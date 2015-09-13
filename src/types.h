@@ -20,6 +20,7 @@ namespace au {
         static const std::size_t npos;
 
         bstr();
+        bstr(size_t n, u8 fill = 0);
         bstr(const std::string &other);
         bstr(const u8 *str, size_t size);
         bstr(const char *str, size_t size);

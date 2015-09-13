@@ -9,6 +9,10 @@ bstr::bstr()
 {
 }
 
+bstr::bstr(size_t n, u8 fill) : v(n, fill)
+{
+}
+
 bstr::bstr(const u8 *str, std::size_t size) : v(str, str + size)
 {
 }

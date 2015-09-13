@@ -10,6 +10,16 @@ TEST_CASE("bstr()", "[au]")
     REQUIRE(x.size() == 0);
 }
 
+TEST_CASE("bstr(size_t, u8", "[au]")
+{
+    bstr x(6);
+    REQUIRE(x == "\x00\x00\x00\x00\x00\x00"_b);
+    REQUIRE(x.size() == 6);
+    bstr y(6, '\xFF');
+    REQUIRE(y == "\xFF\xFF\xFF\xFF\xFF\xFF"_b);
+    REQUIRE(y.size() == 6);
+}
+
 TEST_CASE("bstr(char*)", "[au]")
 {
     bstr x("test\x00\x01", 6);
