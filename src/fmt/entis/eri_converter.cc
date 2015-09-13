@@ -70,9 +70,9 @@ static bstr decode_pixel_data(
 {
     std::unique_ptr<common::Decoder> decoder;
     if (header.architecture == common::Architecture::RunLengthGamma)
-        decoder.reset(new common::GammaDecoder(encoded_pixel_data));
+        decoder.reset(new common::GammaDecoder());
     else if (header.architecture == common::Architecture::RunLengthHuffman)
-        decoder.reset(new common::HuffmanDecoder(encoded_pixel_data));
+        decoder.reset(new common::HuffmanDecoder());
     else
     {
         throw err::NotSupportedError(util::format(
@@ -85,7 +85,8 @@ static bstr decode_pixel_data(
             "Transformation type %d not supported", header.transformation));
     }
 
-    return decode_lossless_pixel_data(header, encoded_pixel_data, *decoder);
+    decoder->set_input(encoded_pixel_data);
+    return decode_lossless_pixel_data(header, *decoder);
 }
 
 std::unique_ptr<File> EriConverter::decode_internal(File &file) const

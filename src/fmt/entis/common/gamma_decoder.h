@@ -13,10 +13,10 @@ namespace common {
     class GammaDecoder final : public Decoder
     {
     public:
-        GammaDecoder(const bstr &data);
+        GammaDecoder();
         ~GammaDecoder();
 
-        void init();
+        virtual void reset() override;
         virtual void decode(u8 *output, size_t output_size) override;
 
     private:

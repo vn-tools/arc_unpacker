@@ -28,51 +28,50 @@ int common::get_gamma_code(io::BitReader &bit_reader)
 
 struct GammaDecoder::Priv
 {
-    Priv(io::BitReader &bit_reader);
-    ~Priv();
-
-    void init();
-    void decode(u8 *output, size_t output_size);
-
-    io::BitReader &bit_reader;
     u8 zero_flag;
     size_t available_size;
 };
 
-GammaDecoder::Priv::Priv(io::BitReader &bit_reader) : bit_reader(bit_reader)
+GammaDecoder::GammaDecoder() : p(new Priv())
 {
-    zero_flag = 0;
+    p->zero_flag = 0;
 }
 
-GammaDecoder::Priv::~Priv()
+GammaDecoder::~GammaDecoder()
 {
 }
 
-void GammaDecoder::Priv::init()
+void GammaDecoder::reset()
 {
-    zero_flag = bit_reader.get(1);
-    available_size = 0;
+    if (!bit_reader)
+        throw std::logic_error("Trying to reset with unitialized input");
+
+    p->zero_flag = bit_reader->get(1);
+    p->available_size = 0;
 }
 
-void GammaDecoder::Priv::decode(u8 *output, size_t output_size)
+void GammaDecoder::decode(u8 *output, size_t output_size)
 {
+    if (!bit_reader)
+        throw std::logic_error("Trying to decode with unitialized input");
+
     auto output_ptr = output;
     auto output_end = output + output_size;
 
-    if (!available_size)
+    if (!p->available_size)
     {
-        available_size = get_gamma_code(bit_reader);
-        if (!available_size)
+        p->available_size = get_gamma_code(*bit_reader);
+        if (!p->available_size)
             return;
     }
 
     while (output_ptr < output_end)
     {
-        unsigned int size = std::min(available_size, output_size);
-        available_size -= size;
+        unsigned int size = std::min(p->available_size, output_size);
+        p->available_size -= size;
         output_size -= size;
 
-        if (!zero_flag)
+        if (!p->zero_flag)
         {
             while (size--)
                 *output_ptr++ = 0;
@@ -81,48 +80,25 @@ void GammaDecoder::Priv::decode(u8 *output, size_t output_size)
         {
             while (size--)
             {
-                auto sign = bit_reader.get(1) ? 0xFF : 0;
-                auto code = get_gamma_code(bit_reader);
+                auto sign = bit_reader->get(1) ? 0xFF : 0;
+                auto code = get_gamma_code(*bit_reader);
                 if (!code)
                     return;
                 if (output_ptr >= output_end)
                     throw err::BadDataOffsetError();
                 u8 out = (code ^ sign) - sign;
-
-                //std::cerr << util::format("bit:%d,",sign);
-                //std::cerr << util::format("code:%02x\n",code);
-                //std::cerr << util::format("out:%02x\n",out);
                 *output_ptr++ = out;
             }
         }
         if (!output_size)
         {
-            if (!available_size)
-                zero_flag ^= 1;
+            if (!p->available_size)
+                p->zero_flag ^= 1;
             return;
         }
-        zero_flag ^= 1;
-        available_size = get_gamma_code(bit_reader);
-        if (!available_size)
+        p->zero_flag ^= 1;
+        p->available_size = get_gamma_code(*bit_reader);
+        if (!p->available_size)
             return;
     }
-}
-
-GammaDecoder::GammaDecoder(const bstr &data)
-    : Decoder(data), p(new Priv(bit_reader))
-{
-}
-
-GammaDecoder::~GammaDecoder()
-{
-}
-
-void GammaDecoder::init()
-{
-    p->init();
-}
-
-void GammaDecoder::decode(u8 *output, size_t output_size)
-{
-    p->decode(output, output_size);
 }

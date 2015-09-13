@@ -3,10 +3,15 @@
 using namespace au;
 using namespace au::fmt::entis::common;
 
-Decoder::Decoder(const bstr &data) : bit_reader(data)
+Decoder::Decoder()
 {
 }
 
 Decoder::~Decoder()
 {
+}
+
+void Decoder::set_input(const bstr &data)
+{
+    bit_reader.reset(new io::BitReader(data));
 }

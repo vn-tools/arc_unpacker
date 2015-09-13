@@ -1,5 +1,4 @@
 #include "err.h"
-#include "fmt/entis/common/enums.h"
 #include "fmt/entis/common/gamma_decoder.h"
 #include "fmt/entis/common/huffman_decoder.h"
 #include "fmt/entis/image/lossless.h"
@@ -298,7 +297,7 @@ static u8 get_transformer_code(
         if (!(ctx.encode_type & 0x01) && header.architecture
             == common::Architecture::RunLengthGamma)
         {
-            dynamic_cast<common::GammaDecoder&>(decoder).init();
+            decoder.reset();
         }
         if (header.format_type == EriImage::Gray)
             return 0b11'00'0000;
@@ -316,8 +315,8 @@ static u8 get_transformer_code(
 
     if (header.architecture == common::Architecture::RunLengthGamma)
     {
-        auto transformer_code = 0b11'00'0000 | decoder.bit_reader.get(4);
-        dynamic_cast<common::GammaDecoder&>(decoder).init();
+        auto transformer_code = 0b11'00'0000 | decoder.bit_reader->get(4);
+        decoder.reset();
         return transformer_code;
     }
 
@@ -338,7 +337,7 @@ static std::vector<u8> prefetch_transformer_codes(
         u8 op_code;
         if (header.architecture == common::Architecture::RunLengthGamma)
         {
-            op_code = 0b11'00'0000 | decoder.bit_reader.get(4);
+            op_code = 0b11'00'0000 | decoder.bit_reader->get(4);
         }
         else if (header.architecture == common::Architecture::RunLengthHuffman)
         {
@@ -398,15 +397,13 @@ static bstr crop(
 }
 
 bstr image::decode_lossless_pixel_data(
-    const EriHeader &header,
-    const bstr &encoded_pixel_data,
-    common::Decoder &decoder)
+    const EriHeader &header, common::Decoder &decoder)
 {
     DecodeContext ctx;
-    ctx.eri_version = decoder.bit_reader.get(8);
-    ctx.op_table = decoder.bit_reader.get(8);
-    ctx.encode_type = decoder.bit_reader.get(8);
-    ctx.bit_count = decoder.bit_reader.get(8);
+    ctx.eri_version = decoder.bit_reader->get(8);
+    ctx.op_table = decoder.bit_reader->get(8);
+    ctx.encode_type = decoder.bit_reader->get(8);
+    ctx.bit_count = decoder.bit_reader->get(8);
 
     ctx.channel_count = get_channel_count(header);
     ctx.block_size = (1 << header.blocking_degree);
@@ -428,12 +425,18 @@ bstr image::decode_lossless_pixel_data(
         decoder,
         huffman_tree);
 
-    if (decoder.bit_reader.get(1))
+    if (decoder.bit_reader->get(1))
         throw err::CorruptDataError("Expected 0 bit");
 
     if (header.architecture == common::Architecture::RunLengthGamma)
+    {
         if (ctx.encode_type & 0x01)
-            dynamic_cast<common::GammaDecoder&>(decoder).init();
+            decoder.reset();
+    }
+    else if (header.architecture == common::Architecture::RunLengthHuffman)
+        decoder.reset();
+    else
+        throw err::NotSupportedError("Architecture not supported");
 
     bstr output(ctx.width_blocks * ctx.height_blocks * ctx.block_samples);
     bstr arrange_buf(ctx.block_samples);

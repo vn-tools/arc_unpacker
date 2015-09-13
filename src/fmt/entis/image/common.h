@@ -1,5 +1,6 @@
 #pragma once
 
+#include "fmt/entis/common/enums.h"
 #include "types.h"
 
 namespace au {

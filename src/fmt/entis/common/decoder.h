@@ -10,11 +10,14 @@ namespace common {
     class Decoder
     {
     public:
-        Decoder(const bstr &data);
+        Decoder();
         virtual ~Decoder();
+
+        void set_input(const bstr &data);
+        virtual void reset() = 0;
         virtual void decode(u8 *output, size_t output_size) = 0;
 
-        io::BitReader bit_reader;
+        std::unique_ptr<io::BitReader> bit_reader;
     };
 
 } } } }

@@ -9,8 +9,6 @@ namespace entis {
 namespace image {
 
     bstr decode_lossless_pixel_data(
-        const EriHeader &header,
-        const bstr &encoded_pixel_data,
-        common::Decoder &decoder);
+        const EriHeader &header, common::Decoder &decoder);
 
 } } } }

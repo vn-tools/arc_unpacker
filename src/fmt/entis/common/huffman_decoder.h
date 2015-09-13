@@ -11,10 +11,12 @@ namespace common {
     class HuffmanDecoder final : public Decoder
     {
     public:
-        HuffmanDecoder(const bstr &data);
+        HuffmanDecoder();
         ~HuffmanDecoder();
 
+        virtual void reset() override;
         virtual void decode(u8 *output, size_t output_size) override;
+
         int get_huffman_code(HuffmanTree &tree);
         int get_huffman_size(HuffmanTree &tree);
 
