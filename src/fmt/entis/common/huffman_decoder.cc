@@ -4,7 +4,61 @@
 #include "util/range.h"
 
 using namespace au;
+using namespace au::fmt::entis;
 using namespace au::fmt::entis::common;
+
+int common::get_huffman_code(io::BitReader &bit_reader, HuffmanTree &tree)
+{
+    if (tree.escape != HuffmanNodes::Null)
+    {
+        int entry = HuffmanNodes::Root;
+        int child = tree.nodes[HuffmanNodes::Root].code;
+        while (!(child & HuffmanFlags::Code))
+        {
+            if (bit_reader.eof())
+                return HuffmanFlags::Escape;
+            entry = child + bit_reader.get(1);
+            child = tree.nodes[entry].code;
+        }
+
+        tree.increase_occurrences(entry);
+        int code = child & ~HuffmanFlags::Code;
+        if (code != HuffmanFlags::Escape)
+            return code;
+    }
+    if (bit_reader.eof())
+        return HuffmanFlags::Escape;
+    int code = bit_reader.get(8);
+    tree.add_new_entry(code);
+    return code;
+}
+
+int common::get_huffman_size(io::BitReader &bit_reader, HuffmanTree &tree)
+{
+    if (tree.escape != HuffmanNodes::Null)
+    {
+        int entry = HuffmanNodes::Root;
+        int child = tree.nodes[HuffmanNodes::Root].code;
+        do
+        {
+            if (bit_reader.eof())
+                return HuffmanFlags::Escape;
+            entry = child + bit_reader.get(1);
+            child = tree.nodes[entry].code;
+        }
+        while (!(child & HuffmanFlags::Code));
+
+        tree.increase_occurrences(entry);
+        int code = child & ~HuffmanFlags::Code;
+        if (code != HuffmanFlags::Escape)
+            return code;
+    }
+    int code = get_gamma_code(bit_reader);
+    if (code == -1)
+        return HuffmanFlags::Escape;
+    tree.add_new_entry(code);
+    return code;
+}
 
 struct HuffmanDecoder::Priv
 {
@@ -33,65 +87,6 @@ void HuffmanDecoder::reset()
     p->available_size = 0;
 }
 
-int HuffmanDecoder::get_huffman_code(HuffmanTree &tree)
-{
-    if (!bit_reader)
-        throw std::logic_error("Trying to decode with unitialized input");
-
-    if (tree.escape != HuffmanNodes::Null)
-    {
-        int entry = HuffmanNodes::Root;
-        int child = tree.nodes[HuffmanNodes::Root].code;
-        while (!(child & HuffmanFlags::Code))
-        {
-            if (bit_reader->eof())
-                return HuffmanFlags::Escape;
-            entry = child + bit_reader->get(1);
-            child = tree.nodes[entry].code;
-        }
-
-        tree.increase_occurrences(entry);
-        int code = child & ~HuffmanFlags::Code;
-        if (code != HuffmanFlags::Escape)
-            return code;
-    }
-    if (bit_reader->eof())
-        return HuffmanFlags::Escape;
-    int code = bit_reader->get(8);
-    tree.add_new_entry(code);
-    return code;
-}
-
-int HuffmanDecoder::get_huffman_size(HuffmanTree &tree)
-{
-    if (!bit_reader)
-        throw std::logic_error("Trying to decode with unitialized input");
-
-    if (tree.escape != HuffmanNodes::Null)
-    {
-        int entry = HuffmanNodes::Root;
-        int child = tree.nodes[HuffmanNodes::Root].code;
-        do
-        {
-            if (bit_reader->eof())
-                return HuffmanFlags::Escape;
-            entry = child + bit_reader->get(1);
-            child = tree.nodes[entry].code;
-        }
-        while (!(child & HuffmanFlags::Code));
-
-        tree.increase_occurrences(entry);
-        int code = child & ~HuffmanFlags::Code;
-        if (code != HuffmanFlags::Escape)
-            return code;
-    }
-    int code = get_gamma_code(*bit_reader);
-    if (code == -1)
-        return HuffmanFlags::Escape;
-    tree.add_new_entry(code);
-    return code;
-}
-
 void HuffmanDecoder::decode(u8 *output, size_t output_size)
 {
     if (!bit_reader)
@@ -114,14 +109,14 @@ void HuffmanDecoder::decode(u8 *output, size_t output_size)
 
     while (output_ptr < output_end)
     {
-        int symbol = get_huffman_code(*tree);
+        int symbol = get_huffman_code(*bit_reader, *tree);
         if (symbol == HuffmanFlags::Escape)
             break;
         *output_ptr++ = symbol;
 
         if (!symbol)
         {
-            int size = get_huffman_size(*p->huffman_trees[0x100]);
+            int size = get_huffman_size(*bit_reader, *p->huffman_trees[0x100]);
             if (size == HuffmanFlags::Escape)
                 break;
             if (--size)

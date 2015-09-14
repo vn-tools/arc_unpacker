@@ -12,6 +12,7 @@
 #include "fmt/entis/common/enums.h"
 #include "fmt/entis/common/gamma_decoder.h"
 #include "fmt/entis/common/huffman_decoder.h"
+#include "fmt/entis/common/nemesis_decoder.h"
 #include "fmt/entis/common/sections.h"
 #include "fmt/entis/eri_converter.h"
 #include "fmt/entis/image/lossless.h"
@@ -73,6 +74,8 @@ static bstr decode_pixel_data(
         decoder.reset(new common::GammaDecoder());
     else if (header.architecture == common::Architecture::RunLengthHuffman)
         decoder.reset(new common::HuffmanDecoder());
+    else if (header.architecture == common::Architecture::Nemesis)
+        decoder.reset(new common::NemesisDecoder());
     else
     {
         throw err::NotSupportedError(util::format(

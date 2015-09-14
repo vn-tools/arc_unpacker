@@ -1,6 +1,7 @@
 #include "err.h"
 #include "fmt/entis/common/gamma_decoder.h"
 #include "fmt/entis/common/huffman_decoder.h"
+#include "fmt/entis/common/nemesis_decoder.h"
 #include "fmt/entis/image/lossless.h"
 #include "util/range.h"
 
@@ -290,7 +291,8 @@ static u8 get_transformer_code(
     common::Decoder &decoder,
 
     u8 *&transformer_codes_ptr,
-    common::HuffmanTree &huffman_tree)
+    common::HuffmanTree &huffman_tree,
+    common::ProbModel &prob_model)
 {
     if (ctx.channel_count < 3)
     {
@@ -308,9 +310,12 @@ static u8 get_transformer_code(
         return *transformer_codes_ptr++;
 
     if (header.architecture == common::Architecture::RunLengthHuffman)
+        return get_huffman_code(*decoder.bit_reader, huffman_tree);
+
+    if (header.architecture == common::Architecture::Nemesis)
     {
-        return dynamic_cast<common::HuffmanDecoder&>(decoder)
-                .get_huffman_code(huffman_tree);
+        return dynamic_cast<common::NemesisDecoder&>(decoder)
+            .decode_erisa_code(prob_model);
     }
 
     if (header.architecture == common::Architecture::RunLengthGamma)
@@ -341,8 +346,7 @@ static std::vector<u8> prefetch_transformer_codes(
         }
         else if (header.architecture == common::Architecture::RunLengthHuffman)
         {
-            op_code = dynamic_cast<common::HuffmanDecoder&>(decoder)
-                .get_huffman_code(huffman_tree);
+            op_code = get_huffman_code(*decoder.bit_reader, huffman_tree);
         }
         else
             throw err::NotSupportedError("Architecture not supported");
@@ -416,7 +420,8 @@ bstr image::decode_lossless_pixel_data(
 
     validate_ctx(ctx, header);
 
-    common::HuffmanTree huffman_tree;
+    common::ProbModel prob_model; //for nemesis decoder
+    common::HuffmanTree huffman_tree; //for huffman decoder
 
     auto permutation = init_permutation(ctx);
     auto transformer_codes = prefetch_transformer_codes(
@@ -434,6 +439,8 @@ bstr image::decode_lossless_pixel_data(
             decoder.reset();
     }
     else if (header.architecture == common::Architecture::RunLengthHuffman)
+        decoder.reset();
+    else if (header.architecture == common::Architecture::Nemesis)
         decoder.reset();
     else
         throw err::NotSupportedError("Architecture not supported");
@@ -454,7 +461,8 @@ bstr image::decode_lossless_pixel_data(
                 ctx,
                 decoder,
                 transformer_codes_ptr,
-                huffman_tree);
+                huffman_tree,
+                prob_model);
 
             decoder.decode(arrange_buf.get<u8>(), arrange_buf.size());
 
