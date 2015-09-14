@@ -13,6 +13,7 @@
 #include "fmt/entis/common/sections.h"
 #include "fmt/entis/mio_converter.h"
 #include "fmt/entis/sound/lossless.h"
+#include "fmt/entis/sound/lossy.h"
 #include "util/format.h"
 #include "util/sound.h"
 
@@ -87,6 +88,10 @@ std::unique_ptr<File> MioConverter::decode_internal(File &file) const
     std::unique_ptr<sound::SoundDecoderImpl> impl;
     if (header.transformation == common::Transformation::Lossless)
         impl.reset(new sound::LosslessSoundDecoder(header));
+    else if (header.transformation == common::Transformation::Lot)
+        impl.reset(new sound::LossySoundDecoder(header));
+    else if (header.transformation == common::Transformation::LotMss)
+        impl.reset(new sound::LossySoundDecoder(header));
     else
     {
         throw err::NotSupportedError(util::format(
