@@ -105,7 +105,7 @@ struct BitReader::Priv
 {
     std::unique_ptr<Reader> reader;
     u32 shift;
-    u32 value;
+    u64 value;
     u32 pos;
 
     Priv(std::unique_ptr<Reader> reader);
