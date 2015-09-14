@@ -36,3 +36,10 @@ TEST_CASE("Decoding ENTIS's lossless Nemesis 32-bit flipped images works")
         "tests/fmt/entis/files/eri/FRM_0201.eri",
         "tests/fmt/entis/files/eri/FRM_0201-out.png");
 }
+
+TEST_CASE("Decoding ENTIS's multi images works")
+{
+    do_test(
+        "tests/fmt/entis/files/eri/FRM_0102.eri",
+        "tests/fmt/entis/files/eri/FRM_0102-out.png");
+}

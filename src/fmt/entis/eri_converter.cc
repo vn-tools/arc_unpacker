@@ -17,6 +17,7 @@
 #include "fmt/entis/eri_converter.h"
 #include "fmt/entis/image/lossless.h"
 #include "util/image.h"
+#include "util/range.h"
 #include "util/format.h"
 
 using namespace au;
@@ -105,23 +106,36 @@ std::unique_ptr<File> EriConverter::decode_internal(File &file) const
     file.io.seek(stream_section.offset);
     common::SectionReader stream_section_reader(file.io);
 
-    auto pixel_data_section = stream_section_reader.get_section("ImageFrm");
-    file.io.seek(pixel_data_section.offset);
-    auto encoded_pixel_data = file.io.read(pixel_data_section.size);
-    auto decoded_pixel_data = decode_pixel_data(header, encoded_pixel_data);
+    auto pixel_data_sections = stream_section_reader.get_sections("ImageFrm");
+    if (!pixel_data_sections.size())
+        throw err::CorruptDataError("No pixel data found");
 
-    pix::Format fmt;
-    if (header.bit_depth == 32)
-        fmt = pix::Format::BGRA8888;
-    else if (header.bit_depth == 24)
-        fmt = pix::Format::BGR888;
-    else
-        throw err::UnsupportedBitDepthError(header.bit_depth);
+    pix::Grid pixels(header.width, header.height * pixel_data_sections.size());
 
-    pix::Grid pixels(
-        header.width, header.height, decoded_pixel_data, fmt);
-    if (header.flip)
-        pixels.flip();
+    for (auto i : util::range(pixel_data_sections.size()))
+    {
+        auto &pixel_data_section = pixel_data_sections[i];
+        file.io.seek(pixel_data_section.offset);
+        auto encoded_pixel_data = file.io.read(pixel_data_section.size);
+        auto decoded_pixel_data = decode_pixel_data(header, encoded_pixel_data);
+
+        pix::Format fmt;
+        if (header.bit_depth == 32)
+            fmt = pix::Format::BGRA8888;
+        else if (header.bit_depth == 24)
+            fmt = pix::Format::BGR888;
+        else
+            throw err::UnsupportedBitDepthError(header.bit_depth);
+
+        pix::Grid subimage_pixels(
+            header.width, header.height, decoded_pixel_data, fmt);
+        if (header.flip)
+            subimage_pixels.flip();
+        for (auto y : util::range(header.height))
+            for (auto x : util::range(header.width))
+                pixels.at(x, y + i * header.height) = subimage_pixels.at(x, y);
+    }
+
     return util::Image::from_pixels(pixels)->create_file(file.name);
 }
 
