@@ -6,7 +6,8 @@
 using namespace au;
 using namespace au::fmt::majiro;
 
-void do_test(const std::string &input_path, const std::string &expected_path)
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
 {
     RctConverter converter;
     auto input_file = tests::file_from_path(input_path);

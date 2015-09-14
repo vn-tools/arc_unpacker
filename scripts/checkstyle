@@ -23,4 +23,11 @@ grep 'iostream' **/*.{cc,h} | grep -v logger && exit 1
 echo 'Checking for sloppy exceptions...'
 grep 'throw std' **/*.cc|grep -v logic_error
 
+echo 'Checking for nonstatic constructs....'
+grep '^[A-Z0-9a-z:<>_]\{1,\} [^:]*[(;]' **/*.cc \
+    | grep -v 'using namespace' \
+    | grep -v 'int main' \
+    | grep -v 'compat/' \
+    | grep -v static
+
 exit 0
