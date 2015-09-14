@@ -15,6 +15,13 @@ class io_ext(object):
     def __exit__ (self, exc_type, exc_value, traceback):
         self.file.close()
 
+    def size(self):
+        pos = self.file.tell()
+        self.file.seek(0, io.SEEK_END)
+        size = self.file.tell()
+        self.file.seek(pos, io.SEEK_SET)
+        return size
+
     def tell(self):
         return self.file.tell()
 
