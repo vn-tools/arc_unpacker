@@ -56,7 +56,7 @@ static void do_test_overwriting(
 
 TEST_CASE("Unicode file names work")
 {
-    suppress_output([&]()
+    tests::suppress_output([&]()
     {
         test("test.out");
         test("ąćę.out");
@@ -66,7 +66,7 @@ TEST_CASE("Unicode file names work")
 
 TEST_CASE("Two file savers overwrite the same file")
 {
-    suppress_output([&]()
+    tests::suppress_output([&]()
     {
         FileSaverHdd file_saver1(".", true);
         FileSaverHdd file_saver2(".", true);
@@ -76,7 +76,7 @@ TEST_CASE("Two file savers overwrite the same file")
 
 TEST_CASE("Two file savers don't overwrite the same file")
 {
-    suppress_output([&]()
+    tests::suppress_output([&]()
     {
         FileSaverHdd file_saver1(".", false);
         FileSaverHdd file_saver2(".", false);
@@ -86,7 +86,7 @@ TEST_CASE("Two file savers don't overwrite the same file")
 
 TEST_CASE("One file saver never overwrites the same file")
 {
-    suppress_output([&]()
+    tests::suppress_output([&]()
     {
         //even if we pass overwrite=true, files within the same archive with the
         //same name are too valuable to be ovewritten silently

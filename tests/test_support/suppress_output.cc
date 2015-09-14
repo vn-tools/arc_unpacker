@@ -3,7 +3,7 @@
 
 using namespace au;
 
-void suppress_output(std::function<void()> callback)
+void tests::suppress_output(std::function<void()> callback)
 {
     //don't log garbage from intermediate classes in tests...
     Log.mute();

@@ -7,7 +7,7 @@ using namespace au;
 
 TEST_CASE("Converting single files with CLI facade works")
 {
-    suppress_output([&]()
+    tests::suppress_output([&]()
     {
         ArcUnpacker arc_unpacker(
             {
@@ -26,7 +26,7 @@ TEST_CASE("Converting single files with CLI facade works")
 
 TEST_CASE("Unpacking archives with CLI facade works")
 {
-    suppress_output([&]()
+    tests::suppress_output([&]()
     {
         ArcUnpacker arc_unpacker(
             {

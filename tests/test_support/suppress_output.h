@@ -2,4 +2,9 @@
 
 #include <functional>
 
-void suppress_output(std::function<void()> callback);
+namespace au {
+namespace tests {
+
+    void suppress_output(std::function<void()> callback);
+
+} }
