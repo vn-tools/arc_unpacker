@@ -9,7 +9,7 @@
 
 using namespace au;
 
-struct FileSaverHdd::Priv
+struct FileSaverHdd::Priv final
 {
     boost::filesystem::path output_dir;
     std::set<boost::filesystem::path> paths;
@@ -80,7 +80,7 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
     Log.flush();
 }
 
-struct FileSaverCallback::Priv
+struct FileSaverCallback::Priv final
 {
     FileSaveCallback callback;
 

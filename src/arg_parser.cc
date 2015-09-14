@@ -22,13 +22,13 @@ namespace
         bool is_set;
     };
 
-    struct FlagImpl : OptionImpl, Flag
+    struct FlagImpl final : OptionImpl, Flag
     {
         FlagImpl(const std::initializer_list<std::string> &names);
         virtual Flag *set_description(const std::string &desc) override;
     };
 
-    struct SwitchImpl : OptionImpl, Switch
+    struct SwitchImpl final : OptionImpl, Switch
     {
         SwitchImpl(const std::initializer_list<std::string> &names);
         virtual std::string get_invocation_help() const override;
@@ -258,7 +258,7 @@ static void print_options(
     }
 }
 
-struct ArgParser::Priv
+struct ArgParser::Priv final
 {
     void check_names(const std::vector<std::string> &names);
     void parse_single_arg(const std::string &arg);

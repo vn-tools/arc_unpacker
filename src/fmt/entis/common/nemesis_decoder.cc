@@ -6,7 +6,7 @@ using namespace au;
 using namespace au::fmt::entis;
 using namespace au::fmt::entis::common;
 
-struct NemesisDecoder::Priv
+struct NemesisDecoder::Priv final
 {
     u8 zero_flag;
     size_t available_size;

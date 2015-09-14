@@ -24,7 +24,7 @@ static const bstr compress_magic = "lnd\x00"_b;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         bool compressed;
@@ -102,7 +102,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct LnkArchive::Priv
+struct LnkArchive::Priv final
 {
     CpsConverter cps_converter;
     PrtConverter prt_converter;

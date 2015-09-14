@@ -21,7 +21,7 @@ using namespace au::fmt::liar_soft;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         u32 offset;
@@ -60,7 +60,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct XflArchive::Priv
+struct XflArchive::Priv final
 {
     LwgArchive lwg_archive;
     WcgConverter wcg_converter;

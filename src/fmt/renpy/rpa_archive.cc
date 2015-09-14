@@ -83,13 +83,13 @@ namespace
 
 namespace
 {
-    struct UnpickleContext
+    struct UnpickleContext final
     {
         std::vector<bstr> strings;
         std::vector<int> numbers;
     };
 
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         u32 offset;

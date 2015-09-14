@@ -7,7 +7,7 @@ namespace au {
 namespace util {
 namespace crypt {
 
-    class Blowfish
+    class Blowfish final
     {
     public:
         Blowfish(const bstr &key);

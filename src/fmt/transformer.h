@@ -19,7 +19,7 @@ namespace fmt {
         Child = 3,
     };
 
-    class FileNameDecorator
+    class FileNameDecorator final
     {
     public:
         static std::string decorate(

@@ -7,7 +7,7 @@ namespace fmt {
 namespace rpgmaker {
 namespace rgs {
 
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t size;

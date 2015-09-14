@@ -7,7 +7,7 @@ namespace au {
 namespace fmt {
 namespace touhou {
 
-    class Pak2ImageConverter : public Converter
+    class Pak2ImageConverter final : public Converter
     {
     public:
         Pak2ImageConverter();

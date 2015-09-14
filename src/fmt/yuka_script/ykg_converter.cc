@@ -17,7 +17,7 @@ using namespace au::fmt::yuka_script;
 
 namespace
 {
-    struct Header
+    struct Header final
     {
         bool encrypted;
         size_t data_offset;
@@ -26,7 +26,7 @@ namespace
         size_t regions_size;
     };
 
-    struct Region
+    struct Region final
     {
         size_t width;
         size_t height;

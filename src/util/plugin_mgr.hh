@@ -7,7 +7,7 @@
 namespace au {
 namespace util {
 
-    template<typename T> struct PluginDefinition
+    template<typename T> struct PluginDefinition final
     {
         std::string name;
         std::string description;

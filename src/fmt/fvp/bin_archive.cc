@@ -17,7 +17,7 @@ using namespace au::fmt::fvp;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         u32 offset;
@@ -59,7 +59,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
     return file;
 }
 
-struct BinArchive::Priv
+struct BinArchive::Priv final
 {
     NvsgConverter nvsg_converter;
 };

@@ -63,7 +63,7 @@ static bstr decode_chunk_pcm16(
     return output;
 }
 
-struct LosslessSoundDecoder::Priv
+struct LosslessSoundDecoder::Priv final
 {
     const MioHeader &header;
     common::HuffmanDecoder decoder;

@@ -11,7 +11,7 @@ using namespace au::fmt::entis::image;
 
 namespace
 {
-    struct DecodeContext
+    struct DecodeContext final
     {
         u8 eri_version;
         u8 op_table;

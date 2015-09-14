@@ -20,7 +20,7 @@ using namespace au::fmt::minato_soft;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t offset;
@@ -112,7 +112,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
     return file;
 }
 
-struct PacArchive::Priv
+struct PacArchive::Priv final
 {
     FilConverter fil_converter;
 };

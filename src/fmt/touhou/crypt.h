@@ -6,7 +6,7 @@ namespace au {
 namespace fmt {
 namespace touhou {
 
-    struct DecryptorContext
+    struct DecryptorContext final
     {
         u8 key;
         u8 step;

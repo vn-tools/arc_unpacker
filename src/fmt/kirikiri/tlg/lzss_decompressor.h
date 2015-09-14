@@ -8,7 +8,7 @@ namespace fmt {
 namespace kirikiri {
 namespace tlg {
 
-    class LzssDecompressor
+    class LzssDecompressor final
     {
     public:
         LzssDecompressor();

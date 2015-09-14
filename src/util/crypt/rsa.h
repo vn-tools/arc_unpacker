@@ -8,13 +8,13 @@ namespace au {
 namespace util {
 namespace crypt {
 
-    struct RsaKey
+    struct RsaKey final
     {
         std::array<u8, 64> modulus;
         unsigned int exponent;
     };
 
-    class Rsa
+    class Rsa final
     {
     public:
         Rsa(const RsaKey &key);

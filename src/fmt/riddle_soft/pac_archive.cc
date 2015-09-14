@@ -23,7 +23,7 @@ static const bstr magic = "PAC1"_b;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t offset;
@@ -65,7 +65,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct PacArchive::Priv
+struct PacArchive::Priv final
 {
     CmpConverter cmp_converter;
 };

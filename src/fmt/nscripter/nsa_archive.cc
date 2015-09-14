@@ -26,7 +26,7 @@ namespace
         COMPRESSION_LZSS = 2,
     };
 
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         CompressionType compression_type;
@@ -93,7 +93,7 @@ static std::unique_ptr<File> read_file(
     return file;
 }
 
-struct NsaArchive::Priv
+struct NsaArchive::Priv final
 {
     SpbConverter spb_converter;
 };

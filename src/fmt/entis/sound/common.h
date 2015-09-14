@@ -8,7 +8,7 @@ namespace fmt {
 namespace entis {
 namespace sound {
 
-    struct MioHeader
+    struct MioHeader final
     {
         u32 version;
         common::Transformation transformation;
@@ -22,7 +22,7 @@ namespace sound {
         u32 bits_per_sample;
     };
 
-    struct MioChunk
+    struct MioChunk final
     {
         u8 version;
         bool initial;

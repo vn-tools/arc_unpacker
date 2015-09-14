@@ -16,7 +16,7 @@ using namespace au::fmt::alice_soft;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         u32 offset;

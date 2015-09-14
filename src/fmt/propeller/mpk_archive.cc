@@ -17,7 +17,7 @@ using namespace au::fmt::propeller;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         u32 offset;
@@ -72,7 +72,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct MpkArchive::Priv
+struct MpkArchive::Priv final
 {
     MgrArchive mgr_archive;
 };

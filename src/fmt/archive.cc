@@ -6,7 +6,7 @@ using namespace au::fmt;
 
 namespace
 {
-    struct DepthKeeper
+    struct DepthKeeper final
     {
         DepthKeeper();
         ~DepthKeeper();

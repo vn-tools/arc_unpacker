@@ -10,7 +10,7 @@ static const u32 matrix_a = 0x9908B0DFul;
 static const u32 upper_mask = 0x80000000ul;
 static const u32 lower_mask = 0x7FFFFFFFul;
 
-struct CustomMersenneTwister::Priv
+struct CustomMersenneTwister::Priv final
 {
     u32 state[n];
     int mti;

@@ -24,7 +24,7 @@ static const bstr magic3 = "ERISA-Archive file"_b;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t offset;
@@ -92,7 +92,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct NoaArchive::Priv
+struct NoaArchive::Priv final
 {
     EriConverter eri_converter;
     MioConverter mio_converter;

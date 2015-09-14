@@ -14,7 +14,7 @@ template<Format fmt> static void read_many(
         *pixels_ptr++ = read<fmt>(input_ptr);
 }
 
-struct Grid::Priv
+struct Grid::Priv final
 {
     std::vector<Pixel> pixels;
     size_t width;

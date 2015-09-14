@@ -13,7 +13,7 @@ template<Format fmt> static void read_many(
         colors[i] = read<fmt>(input_ptr);
 }
 
-struct Palette::Priv
+struct Palette::Priv final
 {
     std::vector<Pixel> colors;
 

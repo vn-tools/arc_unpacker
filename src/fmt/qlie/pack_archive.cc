@@ -36,7 +36,7 @@ namespace
         WithGameExe = 3,
     };
 
-    struct TableEntry
+    struct TableEntry final
     {
         bstr name;
         size_t size_compressed;
@@ -360,7 +360,7 @@ static std::unique_ptr<File> read_file(
     return file;
 }
 
-struct PackArchive::Priv
+struct PackArchive::Priv final
 {
     DpngConverter dpng_converter;
     Abmp7Archive abmp7_archive;

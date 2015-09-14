@@ -18,7 +18,7 @@ using namespace au::fmt::libido;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t size;

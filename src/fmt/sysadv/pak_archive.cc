@@ -19,7 +19,7 @@ static const bstr magic = "\x05PACK2"_b;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t offset;
@@ -56,7 +56,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct PakArchive::Priv
+struct PakArchive::Priv final
 {
     PgaConverter pga_converter;
 };

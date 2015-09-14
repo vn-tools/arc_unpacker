@@ -26,7 +26,7 @@ int common::get_gamma_code(io::BitReader &bit_reader)
     }
 }
 
-struct GammaDecoder::Priv
+struct GammaDecoder::Priv final
 {
     u8 zero_flag;
     size_t available_size;

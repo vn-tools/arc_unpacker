@@ -40,7 +40,7 @@ namespace
         DDPF_LUMINACE = 0x20000,
     };
 
-    struct DdsPixelFormat
+    struct DdsPixelFormat final
     {
         u32 size;
         DdsPixelFormatFlags flags;
@@ -52,7 +52,7 @@ namespace
         u32 a_bit_mask;
     };
 
-    struct DdsHeaderDx10
+    struct DdsHeaderDx10 final
     {
         u32 dxgi_format;
         D3d10ResourceDimension resource_dimension;
@@ -73,7 +73,7 @@ namespace
         DDSD_DEPTH       = 0x800000,
     };
 
-    struct DdsHeader
+    struct DdsHeader final
     {
         u32 size;
         DdsHeaderFlags flags;

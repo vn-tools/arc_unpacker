@@ -22,14 +22,14 @@ using namespace au::fmt::touhou;
 
 namespace
 {
-    struct Header
+    struct Header final
     {
         size_t file_count;
         size_t table_offset;
         size_t table_size;
     };
 
-    struct TableEntry
+    struct TableEntry final
     {
         size_t size_compressed;
         size_t size_original;
@@ -160,7 +160,7 @@ static size_t detect_encryption_version(io::IO &arc_io, const Table &table)
     throw err::NotSupportedError("No means to detect the encryption version");
 }
 
-struct PbgzArchive::Priv
+struct PbgzArchive::Priv final
 {
     AnmArchive anm_archive;
 };

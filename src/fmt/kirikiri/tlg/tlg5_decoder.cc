@@ -11,7 +11,7 @@ using namespace au::fmt::kirikiri::tlg;
 
 namespace
 {
-    struct Header
+    struct Header final
     {
         u8 channel_count;
         u32 image_width;
@@ -19,7 +19,7 @@ namespace
         u32 block_height;
     };
 
-    struct BlockInfo
+    struct BlockInfo final
     {
         bool mark;
         size_t block_size;

@@ -6,7 +6,7 @@ namespace au {
 namespace fmt {
 namespace touhou {
 
-    class Pak1ImageArchive : public Archive
+    class Pak1ImageArchive final : public Archive
     {
     protected:
         bool is_recognized_internal(File &) const override;

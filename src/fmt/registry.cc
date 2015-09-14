@@ -4,7 +4,7 @@
 
 using namespace au::fmt;
 
-struct Registry::Priv
+struct Registry::Priv final
 {
     std::map<std::string, TransformerCreator> transformer_map;
 };

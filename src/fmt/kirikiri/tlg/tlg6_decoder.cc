@@ -18,7 +18,7 @@ static u8 golomb_bit_size_table[golomb_n_count * 2 * 128][golomb_n_count];
 
 namespace
 {
-    struct Header
+    struct Header final
     {
         u8 channel_count;
         u8 data_flags;
@@ -32,7 +32,7 @@ namespace
         size_t y_block_count;
     };
 
-    struct FilterTypes
+    struct FilterTypes final
     {
         bstr data;
         FilterTypes(io::IO &io);

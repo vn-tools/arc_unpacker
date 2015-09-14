@@ -4,7 +4,7 @@
 using namespace au;
 using namespace au::fmt::entis::common;
 
-struct SectionReader::Priv
+struct SectionReader::Priv final
 {
     Priv(io::IO &io) : io(io)
     {

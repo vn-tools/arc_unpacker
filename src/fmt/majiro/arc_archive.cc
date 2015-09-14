@@ -21,7 +21,7 @@ static const bstr magic = "MajiroArcV3.000\x00"_b;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t size;
@@ -64,7 +64,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return output_file;
 }
 
-struct ArcArchive::Priv
+struct ArcArchive::Priv final
 {
     Rc8Converter rc8_converter;
     RctConverter rct_converter;

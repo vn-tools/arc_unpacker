@@ -37,7 +37,7 @@ namespace
         Png = 2,
     };
 
-    struct Region
+    struct Region final
     {
         u16 x;
         u16 y;

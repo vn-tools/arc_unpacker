@@ -26,7 +26,7 @@ static void png_flush(png_structp)
 {
 }
 
-struct Image::Priv
+struct Image::Priv final
 {
     pix::Grid pixels;
 
@@ -114,8 +114,8 @@ std::unique_ptr<Image> Image::Priv::from_jpeg(io::IO &io)
 {
     bstr source = io.read_to_eof();
 
-    struct jpeg_decompress_struct info;
-    struct jpeg_error_mgr err;
+    jpeg_decompress_struct info;
+    jpeg_error_mgr err;
     info.err = jpeg_std_error(&err);
     jpeg_create_decompress(&info);
     jpeg_mem_src(&info, source.get<u8>(), source.size());

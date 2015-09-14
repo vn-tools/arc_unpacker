@@ -15,7 +15,7 @@ using namespace au::fmt::nscripter;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         u32 offset;

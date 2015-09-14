@@ -3,7 +3,7 @@
 
 using namespace au::util;
 
-struct Logger::Priv
+struct Logger::Priv final
 {
     bool muted = false;
     bool colors_enabled = true;

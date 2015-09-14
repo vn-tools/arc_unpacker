@@ -23,7 +23,7 @@ static const bstr key = "mlnebzqm"_b;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t size_comp;
@@ -68,7 +68,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return output_file;
 }
 
-struct ArcArchive::Priv
+struct ArcArchive::Priv final
 {
     fmt::microsoft::DdsConverter dds_converter;
 };

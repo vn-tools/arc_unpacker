@@ -24,7 +24,7 @@ using namespace au::fmt::bgi;
 
 namespace
 {
-    struct NodeInfo
+    struct NodeInfo final
     {
         bool has_children;
         bool look_behind;

@@ -25,7 +25,7 @@ namespace
         FILE_TYPE_FILE = 2
     };
 
-    struct Header
+    struct Header final
     {
         u32 key1;
         u32 key2;
@@ -38,7 +38,7 @@ namespace
         size_t table_offset;
     };
 
-    struct TableEntry
+    struct TableEntry final
     {
         bstr name_original;
         std::string name;
@@ -173,7 +173,7 @@ static std::unique_ptr<File> read_file(
     return file;
 }
 
-struct NpaArchive::Priv
+struct NpaArchive::Priv final
 {
     util::PluginManager<std::function<std::unique_ptr<NpaFilter>()>> plugin_mgr;
     std::unique_ptr<NpaFilter> filter;

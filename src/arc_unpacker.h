@@ -7,7 +7,7 @@
 
 namespace au {
 
-    class ArcUnpacker
+    class ArcUnpacker final
     {
     public:
         ArcUnpacker(

@@ -30,7 +30,7 @@ using namespace au::fmt::kirikiri;
 
 namespace
 {
-    struct InfoChunk
+    struct InfoChunk final
     {
         u32 flags;
         u64 file_size_original;
@@ -175,7 +175,7 @@ static std::unique_ptr<File> read_file(
     return target_file;
 }
 
-struct Xp3Archive::Priv
+struct Xp3Archive::Priv final
 {
     Xp3FilterRegistry filter_registry;
     TlgConverter tlg_converter;

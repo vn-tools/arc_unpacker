@@ -19,14 +19,14 @@ using namespace au::fmt::glib;
 
 namespace
 {
-    struct Header
+    struct Header final
     {
         u32 keys[4];
         size_t table_offset;
         size_t table_size;
     };
 
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         bool is_file;
@@ -356,7 +356,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct Glib2Archive::Priv
+struct Glib2Archive::Priv final
 {
     PgxConverter pgx_converter;
 };

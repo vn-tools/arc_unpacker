@@ -4,7 +4,7 @@
 using namespace au;
 using namespace au::util::crypt;
 
-struct Blowfish::Priv
+struct Blowfish::Priv final
 {
 };
 

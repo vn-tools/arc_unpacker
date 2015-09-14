@@ -26,7 +26,7 @@ static const bstr magic3 = "INFO"_b;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         u32 offset;
@@ -78,7 +78,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct AfaArchive::Priv
+struct AfaArchive::Priv final
 {
     AffConverter aff_converter;
     AjpConverter ajp_converter;

@@ -30,7 +30,7 @@ using namespace au::fmt::touhou;
 
 namespace
 {
-    struct Header
+    struct Header final
     {
         size_t file_count;
         size_t table_offset;
@@ -38,7 +38,7 @@ namespace
         size_t table_size_compressed;
     };
 
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t offset;
@@ -228,7 +228,7 @@ static int detect_encryption_version(File &arc_file, const Table &table)
     return -1;
 }
 
-struct Tha1Archive::Priv
+struct Tha1Archive::Priv final
 {
     AnmArchive anm_archive;
 };

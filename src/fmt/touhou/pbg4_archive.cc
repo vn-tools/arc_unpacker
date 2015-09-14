@@ -18,14 +18,14 @@ using namespace au::fmt::touhou;
 
 namespace
 {
-    struct Header
+    struct Header final
     {
         size_t file_count;
         size_t table_offset;
         size_t table_size;
     };
 
-    struct TableEntry
+    struct TableEntry final
     {
         size_t size;
         size_t offset;
@@ -85,7 +85,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct Pbg4Archive::Priv
+struct Pbg4Archive::Priv final
 {
     AnmArchive anm_archive;
 };

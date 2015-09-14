@@ -27,7 +27,7 @@ using namespace au::fmt::nsystem;
 
 namespace
 {
-    struct Header
+    struct Header final
     {
         size_t header_size;
         size_t file_names_size;
@@ -66,7 +66,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const Header &header)
     return file;
 }
 
-struct FjsysArchive::Priv
+struct FjsysArchive::Priv final
 {
     MgdConverter mgd_converter;
 };

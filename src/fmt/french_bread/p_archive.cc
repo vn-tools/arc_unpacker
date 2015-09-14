@@ -17,7 +17,7 @@ using namespace au::fmt::french_bread;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t offset;
@@ -70,7 +70,7 @@ static std::unique_ptr<File> read_file(
     return file;
 }
 
-struct PArchive::Priv
+struct PArchive::Priv final
 {
     Ex3Converter ex3_converter;
 };

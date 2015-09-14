@@ -7,7 +7,7 @@
 namespace au {
 namespace pix {
 
-    struct Pixel
+    struct Pixel final
     {
         u8 b, g, r, a;
 

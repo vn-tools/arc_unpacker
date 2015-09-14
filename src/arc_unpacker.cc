@@ -11,13 +11,13 @@ using namespace au;
 
 namespace
 {
-    struct PathInfo
+    struct PathInfo final
     {
         std::string input_path;
         std::string base_name;
     };
 
-    struct Options
+    struct Options final
     {
         std::string format;
         boost::filesystem::path output_dir;
@@ -28,7 +28,7 @@ namespace
     };
 }
 
-struct ArcUnpacker::Priv
+struct ArcUnpacker::Priv final
 {
 public:
     bool run();

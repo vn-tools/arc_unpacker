@@ -15,7 +15,7 @@ namespace au {
     using i32 = int32_t;
     using i64 = int64_t;
 
-    struct bstr
+    struct bstr final
     {
         static const std::size_t npos;
 

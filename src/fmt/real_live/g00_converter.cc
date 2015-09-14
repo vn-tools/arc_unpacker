@@ -22,7 +22,7 @@ using namespace au::fmt::real_live;
 
 namespace
 {
-    struct Region
+    struct Region final
     {
         size_t x1, y1;
         size_t x2, y2;

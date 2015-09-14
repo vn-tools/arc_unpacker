@@ -3,7 +3,7 @@
 using namespace au;
 using namespace au::util::crypt;
 
-struct Lcg::Priv
+struct Lcg::Priv final
 {
     u32 seed;
     std::function<u32(u32&)> next;

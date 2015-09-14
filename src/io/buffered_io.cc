@@ -3,7 +3,7 @@
 
 using namespace au::io;
 
-struct BufferedIO::Priv
+struct BufferedIO::Priv final
 {
     bstr buffer;
     size_t buffer_pos;

@@ -20,7 +20,7 @@ namespace image {
         SideBySide  = 0x10000000,
     };
 
-    struct EriHeader
+    struct EriHeader final
     {
         u32 version;
         common::Transformation transformation;

@@ -60,7 +60,7 @@ int common::get_huffman_size(io::BitReader &bit_reader, HuffmanTree &tree)
     return code;
 }
 
-struct HuffmanDecoder::Priv
+struct HuffmanDecoder::Priv final
 {
     std::vector<std::shared_ptr<HuffmanTree>> huffman_trees;
     std::shared_ptr<HuffmanTree> last_huffman_tree;

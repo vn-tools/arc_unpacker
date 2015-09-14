@@ -16,7 +16,7 @@ using namespace au::fmt::yuka_script;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t size;
@@ -62,7 +62,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct YkcArchive::Priv
+struct YkcArchive::Priv final
 {
     YkgConverter ykg_converter;
 };

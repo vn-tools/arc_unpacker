@@ -30,7 +30,7 @@ namespace
         Compressed = 2,
     };
 
-    struct TableEntry
+    struct TableEntry final
     {
         u64 hash;
         TableEntryType type;
@@ -262,7 +262,7 @@ static void dump(const Table &table, const std::string &dump_path)
     }
 }
 
-struct DatArchive::Priv
+struct DatArchive::Priv final
 {
     bstr game_title;
     std::map<u64, bstr> file_names_map;

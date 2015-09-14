@@ -6,9 +6,10 @@
 namespace au {
 namespace util {
 
-    struct RangeImpl
+    struct RangeImpl final
     {
-        struct Iterator : std::iterator<std::random_access_iterator_tag,int,int>
+        struct Iterator final
+            : std::iterator<std::random_access_iterator_tag,int,int>
         {
             int i, stride;
 

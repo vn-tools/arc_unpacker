@@ -24,7 +24,7 @@ using namespace au::fmt::touhou;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         u32 offset;
@@ -130,7 +130,7 @@ static void register_palettes(
     }
 }
 
-struct Pak2Archive::Priv
+struct Pak2Archive::Priv final
 {
     Pak2ImageConverter image_converter;
     Pak2SoundConverter sound_converter;

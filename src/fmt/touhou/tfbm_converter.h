@@ -1,13 +1,12 @@
 #pragma once
 
-#include <string>
 #include "fmt/converter.h"
 
 namespace au {
 namespace fmt {
 namespace touhou {
 
-    class TfbmConverter : public Converter
+    class TfbmConverter final : public Converter
     {
     public:
         TfbmConverter();

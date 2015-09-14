@@ -14,7 +14,7 @@ namespace crypt {
         ParkMillerRevised,
     };
 
-    class Lcg
+    class Lcg final
     {
     public:
         Lcg(LcgKind kind, u32 seed);

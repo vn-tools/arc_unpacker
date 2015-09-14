@@ -6,7 +6,7 @@
 namespace au {
 namespace io {
 
-    class BitReader
+    class BitReader final
     {
     public:
         BitReader(IO &io);

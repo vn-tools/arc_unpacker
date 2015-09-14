@@ -31,7 +31,7 @@ namespace
         None,
     };
 
-    struct Header
+    struct Header final
     {
         size_t width;
         size_t height;
@@ -58,7 +58,7 @@ static void swap_decrypt(bstr &input, size_t encrypted_size)
     }
 }
 
-struct GrpConverter::Priv
+struct GrpConverter::Priv final
 {
     util::PluginManager<HeaderFunc> plugin_mgr;
     Header header;

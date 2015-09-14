@@ -11,13 +11,13 @@ namespace common {
     static const size_t prob_symbol_sorts = 0x101;
     static const size_t prob_total_limit = 0x2000;
 
-    struct CodeSymbol
+    struct CodeSymbol final
     {
         u16 occurrences;
         i16 symbol;
     };
 
-    struct ProbModel
+    struct ProbModel final
     {
         ProbModel();
         void half_occurrence_count();

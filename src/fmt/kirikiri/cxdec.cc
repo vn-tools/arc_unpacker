@@ -14,13 +14,13 @@ static const bstr control_block_magic =
 
 namespace
 {
-    class KeyDerivationError : public std::runtime_error
+    class KeyDerivationError final : public std::runtime_error
     {
     public:
         KeyDerivationError() : std::runtime_error("") { }
     };
 
-    struct CxdecSettings
+    struct CxdecSettings final
     {
         bstr control_block;
         u16 key1;
@@ -30,7 +30,7 @@ namespace
         std::array<size_t, 6> key_derivation_order3;
     };
 
-    class KeyDeriver
+    class KeyDeriver final
     {
     public:
         KeyDeriver(const CxdecSettings &settings);

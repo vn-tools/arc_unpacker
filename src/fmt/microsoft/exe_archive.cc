@@ -19,7 +19,7 @@ using namespace au::fmt::microsoft;
 
 namespace
 {
-    struct DosHeader
+    struct DosHeader final
     {
         bstr magic;
         u16 e_cblp;
@@ -42,7 +42,7 @@ namespace
         DosHeader(io::IO &io);
     };
 
-    struct ImageOptionalHeader
+    struct ImageOptionalHeader final
     {
         u16 magic;
         u8 major_linker_version;
@@ -78,7 +78,7 @@ namespace
         ImageOptionalHeader(io::IO &io);
     };
 
-    struct ImageFileHeader
+    struct ImageFileHeader final
     {
         u16 machine;
         u16 number_of_sections;
@@ -90,7 +90,7 @@ namespace
         ImageFileHeader(io::IO &io);
     };
 
-    struct ImageNtHeader
+    struct ImageNtHeader final
     {
         u32 signature;
         ImageFileHeader file_header;
@@ -98,14 +98,14 @@ namespace
         ImageNtHeader(io::IO &io);
     };
 
-    struct ImageDataDir
+    struct ImageDataDir final
     {
         u32 virtual_address;
         u32 size;
         ImageDataDir(io::IO &io);
     };
 
-    struct ImageSectionHeader
+    struct ImageSectionHeader final
     {
         std::string name;
         u32 virtual_size;
@@ -121,7 +121,7 @@ namespace
         ImageSectionHeader(io::IO &io);
     };
 
-    struct ImageResourceDir
+    struct ImageResourceDir final
     {
         u32 characteristics;
         u32 timestamp;
@@ -132,7 +132,7 @@ namespace
         ImageResourceDir(io::IO &io);
     };
 
-    struct ImageResourceDirEntry
+    struct ImageResourceDirEntry final
     {
         u32 offset_to_data;
         bool name_is_string;
@@ -143,7 +143,7 @@ namespace
         ImageResourceDirEntry(io::IO &io);
     };
 
-    struct ImageResourceDataEntry
+    struct ImageResourceDataEntry final
     {
         u32 offset_to_data;
         u32 size;
@@ -171,7 +171,7 @@ namespace
         const std::vector<ImageSectionHeader> &sections;
     };
 
-    struct ResourceCrawlerArgs
+    struct ResourceCrawlerArgs final
     {
         ResourceCrawlerArgs(io::IO &, FileSaver &, const RvaHelper &, size_t);
 

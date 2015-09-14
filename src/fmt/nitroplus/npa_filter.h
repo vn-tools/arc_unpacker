@@ -6,7 +6,7 @@ namespace au {
 namespace fmt {
 namespace nitroplus {
 
-    struct NpaFilter
+    struct NpaFilter final
     {
         const u8 *permutation;
         u32 data_key;

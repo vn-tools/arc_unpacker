@@ -6,7 +6,7 @@ namespace au {
 namespace fmt {
 namespace touhou {
 
-    class Pak2SoundConverter : public Converter
+    class Pak2SoundConverter final : public Converter
     {
     protected:
         bool is_recognized_internal(File &) const override;

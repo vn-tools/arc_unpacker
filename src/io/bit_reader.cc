@@ -101,7 +101,7 @@ inline u8 IoBasedReader::fetch_byte()
     return io.read_u8();
 }
 
-struct BitReader::Priv
+struct BitReader::Priv final
 {
     std::unique_ptr<Reader> reader;
     u32 shift;

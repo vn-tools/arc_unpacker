@@ -26,13 +26,13 @@ static const bstr magic3 = "CHERRY PACK 3.0\x00"_b;
 
 namespace
 {
-    struct Plugin
+    struct Plugin final
     {
         u32 key1;
         u32 key2;
     };
 
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t offset;
@@ -101,7 +101,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct PakArchive::Priv
+struct PakArchive::Priv final
 {
     GrpConverter grp_converter;
     util::PluginManager<Plugin> plugin_mgr;

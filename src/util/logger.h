@@ -6,7 +6,7 @@
 namespace au {
 namespace util {
 
-    class Logger
+    class Logger final
     {
     public:
         enum class Color : unsigned char

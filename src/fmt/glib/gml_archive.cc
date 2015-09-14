@@ -18,7 +18,7 @@ using namespace au::fmt::glib;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         u32 offset;
@@ -77,7 +77,7 @@ static std::unique_ptr<File> read_file(
     return file;
 }
 
-struct GmlArchive::Priv
+struct GmlArchive::Priv final
 {
     PgxConverter pgx_converter;
 };

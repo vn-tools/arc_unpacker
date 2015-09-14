@@ -5,7 +5,7 @@
 
 using namespace au::io;
 
-struct FileIO::Priv
+struct FileIO::Priv final
 {
     FILE *file;
 };

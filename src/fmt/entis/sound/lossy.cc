@@ -45,14 +45,14 @@ static float *dct_of_k_matrix[max_dct_degree] =
 
 namespace
 {
-    struct EriSinCos
+    struct EriSinCos final
     {
         float rsin;
         float rcos;
     };
 }
 
-struct LossySoundDecoder::Priv
+struct LossySoundDecoder::Priv final
 {
     Priv(const MioHeader &header);
     ~Priv();

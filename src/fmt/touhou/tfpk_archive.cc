@@ -48,7 +48,7 @@ namespace
         Th145,
     };
 
-    struct TableEntry
+    struct TableEntry final
     {
         size_t size;
         size_t offset;
@@ -56,7 +56,7 @@ namespace
         bstr key;
     };
 
-    struct DirEntry
+    struct DirEntry final
     {
         u32 initial_hash;
         size_t file_count;
@@ -411,7 +411,7 @@ static void register_palettes(
     }
 }
 
-struct TfpkArchive::Priv
+struct TfpkArchive::Priv final
 {
     TfbmConverter tfbm_converter;
     TfcsConverter tfcs_converter;

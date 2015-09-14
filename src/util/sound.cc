@@ -3,7 +3,7 @@
 using namespace au;
 using namespace au::util;
 
-struct Sound::Priv
+struct Sound::Priv final
 {
     size_t channel_count;
     size_t bytes_per_sample;

@@ -17,7 +17,7 @@ using namespace au::fmt::alice_soft;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         u32 offset;
@@ -57,7 +57,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct AlkArchive::Priv
+struct AlkArchive::Priv final
 {
     QntConverter qnt_converter;
 };

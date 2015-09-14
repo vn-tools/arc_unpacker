@@ -20,7 +20,7 @@ static std::function<void(Xp3Filter&)> cxdec(
     };
 }
 
-struct Xp3FilterRegistry::Priv
+struct Xp3FilterRegistry::Priv final
 {
     util::PluginManager<std::function<void(Xp3Filter&)>> plugin_mgr;
     std::function<void(Xp3Filter&)> filter_decorator;

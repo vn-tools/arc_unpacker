@@ -18,7 +18,7 @@ using namespace au::fmt::real_live;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t offset;

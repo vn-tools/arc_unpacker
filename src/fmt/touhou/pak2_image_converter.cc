@@ -25,7 +25,7 @@ namespace
     using PaletteMap = std::map<std::string, std::shared_ptr<pix::Palette>>;
 }
 
-struct Pak2ImageConverter::Priv
+struct Pak2ImageConverter::Priv final
 {
     PaletteMap palette_map;
 };

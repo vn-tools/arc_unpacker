@@ -20,7 +20,7 @@ static const bstr magic = "\x02\x00\x00\x00"_b;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t offset;

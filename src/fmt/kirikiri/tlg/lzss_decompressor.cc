@@ -4,7 +4,7 @@
 using namespace au;
 using namespace au::fmt::kirikiri::tlg;
 
-struct LzssDecompressor::Priv
+struct LzssDecompressor::Priv final
 {
     u8 dictionary[4096];
     size_t offset;

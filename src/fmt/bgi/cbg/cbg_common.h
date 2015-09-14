@@ -14,14 +14,14 @@ namespace cbg {
 
     using FreqTable = std::vector<u32>;
 
-    struct NodeInfo
+    struct NodeInfo final
     {
         bool valid;
         u32 frequency;
         u32 children[2];
     };
 
-    struct Tree
+    struct Tree final
     {
         u32 size;
         std::vector<std::shared_ptr<NodeInfo>> nodes;

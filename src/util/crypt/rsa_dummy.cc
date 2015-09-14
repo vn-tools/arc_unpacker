@@ -4,7 +4,7 @@
 using namespace au;
 using namespace au::util::crypt;
 
-struct Rsa::Priv
+struct Rsa::Priv final
 {
 };
 

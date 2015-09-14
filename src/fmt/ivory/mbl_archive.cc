@@ -30,7 +30,7 @@ namespace
         Version2,
     };
 
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t offset;
@@ -99,7 +99,7 @@ static std::unique_ptr<File> read_file(
     return file;
 }
 
-struct MblArchive::Priv
+struct MblArchive::Priv final
 {
     util::PluginManager<PluginFunc> plugin_mgr;
     PrsConverter prs_converter;

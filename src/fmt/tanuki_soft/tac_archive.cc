@@ -24,18 +24,18 @@ namespace
 {
     struct TableDirectory;
 
-    struct TableEntry
+    struct TableEntry final
     {
         u64 hash;
         bool compressed;
         u32 size_original;
         u32 offset;
         u32 size_compressed;
-        struct TableDirectory *directory;
+        TableDirectory *directory;
         size_t index;
     };
 
-    struct TableDirectory
+    struct TableDirectory final
     {
         u16 hash;
         u16 entry_count;

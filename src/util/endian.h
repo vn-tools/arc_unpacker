@@ -33,7 +33,7 @@ namespace util {
 
     namespace priv {
 
-        template<typename T, size_t sz> struct swap_bytes
+        template<typename T, size_t sz> struct swap_bytes final
         {
             T operator()(T val)
             {
@@ -41,7 +41,7 @@ namespace util {
             }
         };
 
-        template<typename T> struct swap_bytes<T, 1>
+        template<typename T> struct swap_bytes<T, 1> final
         {
             constexpr T operator()(T val)
             {
@@ -49,7 +49,7 @@ namespace util {
             }
         };
 
-        template<typename T> struct swap_bytes<T, 2>
+        template<typename T> struct swap_bytes<T, 2> final
         {
             constexpr T operator()(T val)
             {
@@ -57,7 +57,7 @@ namespace util {
             }
         };
 
-        template<typename T> struct swap_bytes<T, 4>
+        template<typename T> struct swap_bytes<T, 4> final
         {
             constexpr T operator()(T val)
             {
@@ -65,7 +65,7 @@ namespace util {
             }
         };
 
-        template<typename T> struct swap_bytes<T, 8>
+        template<typename T> struct swap_bytes<T, 8> final
         {
             constexpr T operator()(T val)
             {

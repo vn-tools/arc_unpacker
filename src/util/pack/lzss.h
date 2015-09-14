@@ -7,7 +7,7 @@ namespace au {
 namespace util {
 namespace pack {
 
-    struct LzssSettings
+    struct LzssSettings final
     {
         size_t position_bits;
         size_t size_bits;

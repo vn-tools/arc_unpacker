@@ -35,7 +35,7 @@ using namespace au::fmt::touhou;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         size_t width;
         size_t height;

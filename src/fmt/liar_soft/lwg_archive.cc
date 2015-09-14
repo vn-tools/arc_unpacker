@@ -19,7 +19,7 @@ using namespace au::fmt::liar_soft;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t offset;
@@ -62,7 +62,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct LwgArchive::Priv
+struct LwgArchive::Priv final
 {
     WcgConverter wcg_converter;
 };

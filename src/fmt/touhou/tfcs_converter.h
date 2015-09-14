@@ -6,7 +6,7 @@ namespace au {
 namespace fmt {
 namespace touhou {
 
-    class TfcsConverter : public Converter
+    class TfcsConverter final : public Converter
     {
     protected:
         bool is_recognized_internal(File &) const override;

@@ -20,7 +20,7 @@ using namespace au::fmt::touhou;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         u32 offset;
@@ -102,7 +102,7 @@ static Table read_table(io::IO &arc_io)
     return table;
 }
 
-struct Pak1Archive::Priv
+struct Pak1Archive::Priv final
 {
     Pak1ImageArchive image_archive;
     Pak1SoundArchive sound_archive;

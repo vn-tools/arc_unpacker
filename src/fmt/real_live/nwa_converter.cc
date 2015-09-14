@@ -22,7 +22,7 @@ using namespace au::fmt::real_live;
 
 namespace
 {
-    struct NwaHeader
+    struct NwaHeader final
     {
         u16 channel_count;
         u16 bits_per_sample;
@@ -36,7 +36,7 @@ namespace
         u32 rest_size;
     };
 
-    class CustomBitReader
+    class CustomBitReader final
     {
     public:
         CustomBitReader(const bstr &str);

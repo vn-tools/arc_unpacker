@@ -22,7 +22,7 @@ static const bstr magic = "PackFile\x20\x20\x20\x20"_b;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         u32 offset;
@@ -58,7 +58,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct ArcArchive::Priv
+struct ArcArchive::Priv final
 {
     CbgConverter cbg_converter;
     DscConverter dsc_converter;

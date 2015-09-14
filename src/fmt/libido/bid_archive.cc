@@ -16,7 +16,7 @@ using namespace au::fmt::libido;
 
 namespace
 {
-    struct TableEntry
+    struct TableEntry final
     {
         std::string name;
         size_t size;
@@ -51,7 +51,7 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     return file;
 }
 
-struct BidArchive::Priv
+struct BidArchive::Priv final
 {
     MncConverter mnc_converter;
 };
