@@ -1,7 +1,6 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <set>
-#include "err.h"
 #include "file_saver.h"
 #include "io/file_io.h"
 #include "log.h"
@@ -84,39 +83,4 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
         Log.err("error (" + std::string(e.what()) + ")\n");
     }
     Log.flush();
-}
-
-struct FileSaverCallback::Priv final
-{
-    Priv(FileSaveCallback callback);
-
-    FileSaveCallback callback;
-};
-
-FileSaverCallback::Priv::Priv(FileSaveCallback callback) : callback(callback)
-{
-}
-
-FileSaverCallback::FileSaverCallback()
-    : p(new Priv(nullptr))
-{
-}
-
-FileSaverCallback::FileSaverCallback(FileSaveCallback callback)
-    : p(new Priv(callback))
-{
-}
-
-FileSaverCallback::~FileSaverCallback()
-{
-}
-
-void FileSaverCallback::set_callback(FileSaveCallback callback)
-{
-    p->callback = callback;
-}
-
-void FileSaverCallback::save(std::shared_ptr<File> file) const
-{
-    p->callback(file);
 }
