@@ -1,6 +1,6 @@
+#include "fmt/registry.h"
 #include <map>
 #include "err.h"
-#include "fmt/registry.h"
 
 using namespace au::fmt;
 

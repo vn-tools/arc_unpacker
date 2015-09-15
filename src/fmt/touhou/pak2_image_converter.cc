@@ -8,10 +8,10 @@
 // - [Team Shanghai Alice] [080525] TH10.5 - Scarlet Weather Rhapsody
 // - [Team Shanghai Alice] [090815] TH12.3 - Unthinkable Natural Law
 
+#include "fmt/touhou/pak2_image_converter.h"
 #include <boost/filesystem.hpp>
 #include <map>
 #include "err.h"
-#include "fmt/touhou/pak2_image_converter.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
 #include "util/image.h"

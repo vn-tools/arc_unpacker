@@ -21,10 +21,10 @@
 // - [Team Shanghai Alice] [150510] TH15 - Legacy of Lunatic Kingdom (trial)
 // - [Team Shanghai Alice] [150814] TH15 - Legacy of Lunatic Kingdom
 
+#include "fmt/touhou/anm_archive.h"
 #include <algorithm>
 #include <map>
 #include "err.h"
-#include "fmt/touhou/anm_archive.h"
 #include "util/format.h"
 #include "util/image.h"
 #include "util/range.h"

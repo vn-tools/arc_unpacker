@@ -11,9 +11,9 @@
 // - [Cronus] [050805] Brightia Plus
 // - [Cronus] [060630] Sweet Pleasure NS
 
+#include "fmt/riddle_soft/pac_archive.h"
 #include "err.h"
 #include "fmt/riddle_soft/cmp_converter.h"
-#include "fmt/riddle_soft/pac_archive.h"
 #include "util/range.h"
 
 using namespace au;

@@ -7,8 +7,8 @@
 // Known games:
 // - [Nibarera] [120818] ElEMENTS!
 
-#include "fmt/rpgmaker/rgs/common.h"
 #include "fmt/rpgmaker/rgss3a_archive.h"
+#include "fmt/rpgmaker/rgs/common.h"
 #include "util/range.h"
 
 using namespace au;

@@ -10,10 +10,10 @@
 // - [Cronus] [011019] Dokidoki Princess
 // - [Cronus] [060630] Nursery Song
 
+#include "fmt/cronus/grp_converter.h"
 #include <boost/filesystem/path.hpp>
 #include "err.h"
 #include "fmt/cronus/common.h"
-#include "fmt/cronus/grp_converter.h"
 #include "util/image.h"
 #include "util/pack/lzss.h"
 #include "util/plugin_mgr.hh"

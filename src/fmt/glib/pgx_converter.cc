@@ -10,8 +10,8 @@
 // - [Rune] [040227] Watashi no Puni Puni
 // - [Rune] [071214] Musume Shimai
 
-#include "fmt/glib/gml_decoder.h"
 #include "fmt/glib/pgx_converter.h"
+#include "fmt/glib/gml_decoder.h"
 #include "util/range.h"
 #include "util/image.h"
 

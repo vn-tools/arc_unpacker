@@ -1,8 +1,8 @@
+#include "util/image.h"
 #include <png.h>
 #include <jpeglib.h>
 #include "err.h"
 #include "io/buffered_io.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;

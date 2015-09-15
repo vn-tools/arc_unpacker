@@ -7,8 +7,8 @@
 // Known games:
 // - [Team Shanghai Alice] [030817] TH07 - Perfect Cherry Blossom
 
-#include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/pbg4_archive.h"
+#include "fmt/touhou/anm_archive.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"

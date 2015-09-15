@@ -8,8 +8,8 @@
 // Known games:
 // - [Alice Soft] [011130] Daiakuji
 
-#include <algorithm>
 #include "fmt/alice_soft/ajp_converter.h"
+#include <algorithm>
 #include "fmt/alice_soft/pm_converter.h"
 #include "util/image.h"
 #include "util/range.h"

@@ -1,5 +1,5 @@
-#include "fmt/kirikiri/cxdec.h"
 #include "fmt/kirikiri/xp3_filter_registry.h"
+#include "fmt/kirikiri/cxdec.h"
 #include "util/plugin_mgr.hh"
 #include "util/range.h"
 

@@ -8,11 +8,11 @@
 // - [Team Shanghai Alice] [040815] TH08 - Imperishable Night
 // - [Team Shanghai Alice] [050814] TH09 - Phantasmagoria of Flower View
 
+#include "fmt/touhou/pbgz_archive.h"
 #include <map>
 #include "err.h"
 #include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/crypt.h"
-#include "fmt/touhou/pbgz_archive.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"

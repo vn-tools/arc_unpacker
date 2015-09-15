@@ -8,9 +8,9 @@
 // Known games:
 // - [Alice Soft] [011130] Daiakuji
 
+#include "fmt/alice_soft/pm_converter.h"
 #include <array>
 #include "err.h"
-#include "fmt/alice_soft/pm_converter.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
 #include "util/range.h"

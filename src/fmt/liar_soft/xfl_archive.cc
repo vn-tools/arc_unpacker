@@ -9,9 +9,9 @@
 // - [Liar-soft] [071122] Sekien no Inganock - What a Beautiful People
 // - [Liar-soft] [081121] Shikkoku no Sharnoth - What a Beautiful Tomorrow
 
+#include "fmt/liar_soft/xfl_archive.h"
 #include "fmt/liar_soft/lwg_archive.h"
 #include "fmt/liar_soft/wcg_converter.h"
-#include "fmt/liar_soft/xfl_archive.h"
 #include "fmt/liar_soft/packed_ogg_converter.h"
 #include "util/encoding.h"
 #include "util/range.h"

@@ -7,8 +7,8 @@
 // Known games:
 // - [Alice Soft] [011130] Daiakuji
 
-#include "fmt/alice_soft/qnt_converter.h"
 #include "fmt/alice_soft/alk_archive.h"
+#include "fmt/alice_soft/qnt_converter.h"
 #include "util/format.h"
 #include "util/range.h"
 

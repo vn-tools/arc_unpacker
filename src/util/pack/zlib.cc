@@ -1,8 +1,8 @@
+#include "util/pack/zlib.h"
 #include <memory>
 #include <zlib.h>
 #include "err.h"
 #include "util/format.h"
-#include "util/pack/zlib.h"
 
 #ifndef SIZE_MAX
 #define SIZE_MAX ((size_t) -1)

@@ -1,7 +1,7 @@
+#include "fmt/entis/sound/lossy.h"
 #include "err.h"
 #include "fmt/entis/common/gamma_decoder.h"
 #include "fmt/entis/common/huffman_decoder.h"
-#include "fmt/entis/sound/lossy.h"
 #include "util/range.h"
 
 using namespace au;

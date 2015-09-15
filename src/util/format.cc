@@ -1,7 +1,7 @@
+#include "util/format.h"
 #include <cstdio>
 #include <cstdarg>
 #include <memory>
-#include "util/format.h"
 
 std::string au::util::format(const std::string fmt, ...)
 {

@@ -8,10 +8,10 @@
 // Known games:
 // - [Cuffs] [050805] Sakura Musubi
 
+#include "fmt/entis/mio_converter.h"
 #include "err.h"
 #include "fmt/entis/common/enums.h"
 #include "fmt/entis/common/sections.h"
-#include "fmt/entis/mio_converter.h"
 #include "fmt/entis/sound/lossless.h"
 #include "fmt/entis/sound/lossy.h"
 #include "util/format.h"

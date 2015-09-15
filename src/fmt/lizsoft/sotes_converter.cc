@@ -8,8 +8,8 @@
 // Known games:
 // - [LizSoft] [080910] Fortune Summoners: Secret Of The Elemental Stone (SOTES)
 
-#include "err.h"
 #include "fmt/lizsoft/sotes_converter.h"
+#include "err.h"
 #include "util/image.h"
 #include "util/range.h"
 

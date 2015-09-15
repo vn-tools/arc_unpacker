@@ -19,8 +19,8 @@
 // - [Yurin Yurin] [111120] Sonohana 11 - Michael no Otome-tachi
 // - [Yurin Yurin] [101008] Hanahira!
 
-#include "err.h"
 #include "fmt/nsystem/mgd_converter.h"
+#include "err.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/range.h"

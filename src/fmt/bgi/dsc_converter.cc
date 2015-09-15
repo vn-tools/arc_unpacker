@@ -9,10 +9,10 @@
 // - [07th Expansion] [020810] Higurashi No Naku Koro Ni
 // - [Overdrive] [110930] Go! Go! Nippon! ~My First Trip to Japan~
 
+#include "fmt/bgi/dsc_converter.h"
 #include <algorithm>
 #include "err.h"
 #include "fmt/bgi/common.h"
-#include "fmt/bgi/dsc_converter.h"
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
 #include "util/format.h"

@@ -8,8 +8,8 @@
 // - [Latte] [120727] Dainikai Imouto Senbatsu☆Sousenkyo ~366ninme no Imouto
 //   Icha Love Nijitsudan~
 
-#include "fmt/microsoft/dds_converter.h"
 #include "fmt/tactics/arc_archive.h"
+#include "fmt/microsoft/dds_converter.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/pack/lzss.h"

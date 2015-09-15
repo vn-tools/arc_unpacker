@@ -1,7 +1,7 @@
+#include "compat/entry_point.h"
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 #include <boost/locale.hpp>
-#include "compat/entry_point.h"
 #include "util/encoding.h"
 
 using namespace au;

@@ -1,8 +1,7 @@
+#include "fmt/kirikiri/tlg/tlg5_decoder.h"
 #include <algorithm>
-#include <vector>
 #include "err.h"
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
-#include "fmt/kirikiri/tlg/tlg5_decoder.h"
 #include "util/image.h"
 #include "util/range.h"
 

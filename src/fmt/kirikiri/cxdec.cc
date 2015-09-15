@@ -1,7 +1,7 @@
+#include "fmt/kirikiri/cxdec.h"
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include "err.h"
-#include "fmt/kirikiri/cxdec.h"
 #include "io/file_io.h"
 #include "util/range.h"
 

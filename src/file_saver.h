@@ -2,8 +2,6 @@
 
 #include <boost/filesystem/path.hpp>
 #include <memory>
-#include <string>
-#include <vector>
 #include "file.h"
 
 namespace au {

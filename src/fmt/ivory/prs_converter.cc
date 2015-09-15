@@ -9,8 +9,8 @@
 // - [Ivory] [030606] Candy Toys
 // - [Ivory] [060414] Wanko To Kurasou
 
-#include "err.h"
 #include "fmt/ivory/prs_converter.h"
+#include "err.h"
 #include "util/image.h"
 #include "util/range.h"
 

@@ -7,8 +7,8 @@
 // Known games:
 // - [Minato Soft] [091030] Maji de Watashi ni Koishinasai!
 
-#include "fmt/minato_soft/fil_converter.h"
 #include "fmt/minato_soft/pac_archive.h"
+#include "fmt/minato_soft/fil_converter.h"
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"

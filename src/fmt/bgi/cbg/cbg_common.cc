@@ -1,6 +1,6 @@
+#include "fmt/bgi/cbg/cbg_common.h"
 #include "err.h"
 #include "fmt/bgi/common.h"
-#include "fmt/bgi/cbg/cbg_common.h"
 #include "util/range.h"
 
 using namespace au;

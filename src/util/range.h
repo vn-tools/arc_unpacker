@@ -1,7 +1,6 @@
 #pragma once
 
 #include <algorithm>
-#include <cstdio>
 
 namespace au {
 namespace util {

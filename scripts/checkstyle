@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 shopt -s globstar
 
 echo 'Checking for whitespace errors...'
@@ -23,11 +23,21 @@ grep 'iostream' **/*.{cc,h} | grep -v logger && exit 1
 echo 'Checking for sloppy exceptions...'
 grep 'throw std' **/*.cc|grep -v logic_error
 
-echo 'Checking for nonstatic constructs....'
+echo 'Checking for nonstatic constructs...'
 grep '^[A-Z0-9a-z:<>_]\{1,\} [^:]*[(;]' **/*.cc \
     | grep -v 'using namespace' \
     | grep -v 'int main' \
     | grep -v 'compat/' \
     | grep -v static
+
+echo 'Checking for .cc #including their .h not in the top entry...'
+for path in **/*.cc; do
+    name="${path/*\//}"
+    header="${name/.cc/.h}"
+    grep '#include' "$path" \
+        | grep -n -m 1 "$header" \
+        | grep -v '1:' >/dev/null \
+        && echo "$path"
+done
 
 exit 0

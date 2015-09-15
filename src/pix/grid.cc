@@ -1,6 +1,6 @@
+#include "pix/grid.h"
 #include <algorithm>
 #include "err.h"
-#include "pix/grid.h"
 #include "util/format.h"
 #include "util/range.h"
 

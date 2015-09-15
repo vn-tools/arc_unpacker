@@ -1,7 +1,6 @@
-#include <cstdio>
+#include "io/file_io.h"
 #include "err.h"
 #include "compat/fopen.h"
-#include "io/file_io.h"
 
 using namespace au::io;
 

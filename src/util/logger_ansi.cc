@@ -1,7 +1,7 @@
+#include "util/logger.h"
 #include <iostream>
 #include <unistd.h>
 #include <stdio.h>
-#include "util/logger.h"
 
 using namespace au::util;
 

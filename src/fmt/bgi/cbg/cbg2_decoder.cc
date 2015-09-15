@@ -1,8 +1,8 @@
+#include "fmt/bgi/cbg/cbg2_decoder.h"
 #include <algorithm>
 #include <array>
 #include "err.h"
 #include "fmt/bgi/cbg/cbg_common.h"
-#include "fmt/bgi/cbg/cbg2_decoder.h"
 #include "fmt/bgi/common.h"
 #include "io/buffered_io.h"
 #include "util/format.h"

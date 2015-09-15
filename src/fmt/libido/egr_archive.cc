@@ -7,8 +7,8 @@
 // Known games:
 // - Libido 7
 
-#include "err.h"
 #include "fmt/libido/egr_archive.h"
+#include "err.h"
 #include "util/format.h"
 #include "util/image.h"
 #include "util/range.h"

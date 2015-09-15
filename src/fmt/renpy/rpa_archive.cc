@@ -9,8 +9,8 @@
 // - [Soviet Games] [131221] Everlasting Summer
 // - [Spiky Caterpillar] [120602] Long Live the Queen
 
-#include "err.h"
 #include "fmt/renpy/rpa_archive.h"
+#include "err.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"

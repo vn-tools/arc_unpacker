@@ -1,8 +1,8 @@
+#include "util/encoding.h"
 #include <cerrno>
 #include <memory>
 #include <iconv.h>
 #include "err.h"
-#include "util/encoding.h"
 
 using namespace au;
 

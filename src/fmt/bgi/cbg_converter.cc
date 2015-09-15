@@ -10,10 +10,10 @@
 // - [Lump of Sugar] [20130531] Magical Charming
 // - [Overdrive] [110930] Go! Go! Nippon! ~My First Trip to Japan~
 
+#include "fmt/bgi/cbg_converter.h"
 #include "err.h"
 #include "fmt/bgi/cbg/cbg1_decoder.h"
 #include "fmt/bgi/cbg/cbg2_decoder.h"
-#include "fmt/bgi/cbg_converter.h"
 #include "util/image.h"
 
 using namespace au;

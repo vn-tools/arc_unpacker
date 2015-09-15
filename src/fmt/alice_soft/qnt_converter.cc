@@ -8,8 +8,8 @@
 // Known games:
 // - [Alice Soft] [011130] Daiakuji
 
-#include "err.h"
 #include "fmt/alice_soft/qnt_converter.h"
+#include "err.h"
 #include "util/image.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"

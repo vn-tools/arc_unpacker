@@ -1,8 +1,8 @@
+#include "fmt/entis/image/lossless.h"
 #include "err.h"
 #include "fmt/entis/common/gamma_decoder.h"
 #include "fmt/entis/common/huffman_decoder.h"
 #include "fmt/entis/common/nemesis_decoder.h"
-#include "fmt/entis/image/lossless.h"
 #include "util/range.h"
 
 using namespace au;

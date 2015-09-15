@@ -1,7 +1,7 @@
+#include "test_support/file_support.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
 #include "test_support/catch.hh"
-#include "test_support/file_support.h"
 
 using namespace au;
 

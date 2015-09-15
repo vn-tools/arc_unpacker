@@ -7,10 +7,10 @@
 // Known games:
 // - [SQUEEZ] [050922] Honoo no Haramase Tenkousei
 
+#include "fmt/eagls/pak_archive.h"
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include "fmt/eagls/gr_converter.h"
-#include "fmt/eagls/pak_archive.h"
 #include "fmt/eagls/pak_script_converter.h"
 #include "io/buffered_io.h"
 #include "io/file_io.h"

@@ -1,7 +1,7 @@
+#include "io/io.h"
 #include <memory>
 #include "util/endian.h"
 #include "util/range.h"
-#include "io/io.h"
 
 using namespace au;
 using namespace au::io;

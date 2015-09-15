@@ -8,8 +8,8 @@
 // Known games:
 // - [Team Shanghai Alice] [130526] Touhou 13.5 - Hopeless Masquerade
 
-#include "err.h"
 #include "fmt/microsoft/dds_converter.h"
+#include "err.h"
 #include "io/buffered_io.h"
 #include "util/endian.h"
 #include "util/format.h"

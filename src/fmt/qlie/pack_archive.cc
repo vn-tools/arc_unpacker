@@ -9,13 +9,12 @@
 // - [Eufonie] [121221] Koiken Otome
 // - [Front Wing] [070323] Kimihagu Master
 
-#include <cstring>
+#include "fmt/qlie/pack_archive.h"
 #include "err.h"
 #include "fmt/qlie/abmp10_archive.h"
 #include "fmt/qlie/abmp7_archive.h"
 #include "fmt/qlie/dpng_converter.h"
 #include "fmt/qlie/mt.h"
-#include "fmt/qlie/pack_archive.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/range.h"

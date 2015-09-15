@@ -1,5 +1,5 @@
-#include <iostream>
 #include "util/logger.h"
+#include <iostream>
 
 using namespace au::util;
 

@@ -8,8 +8,8 @@
 // Known games:
 // - [Libido] [970613] Houkago Mania Club
 
-#include "err.h"
 #include "fmt/libido/mnc_converter.h"
+#include "err.h"
 #include "util/image.h"
 
 using namespace au;

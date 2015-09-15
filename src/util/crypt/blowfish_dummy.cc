@@ -1,5 +1,5 @@
-#include "err.h"
 #include "util/crypt/blowfish.h"
+#include "err.h"
 
 using namespace au;
 using namespace au::util::crypt;

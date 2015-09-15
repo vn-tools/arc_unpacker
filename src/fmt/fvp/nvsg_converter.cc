@@ -8,8 +8,8 @@
 // Known games:
 // - [Favorite] [110729] Irotoridori no Sekai
 
-#include "err.h"
 #include "fmt/fvp/nvsg_converter.h"
+#include "err.h"
 #include "util/pack/zlib.h"
 #include "util/image.h"
 #include "util/range.h"

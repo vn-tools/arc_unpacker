@@ -8,13 +8,13 @@
 // Known games:
 // - [Cuffs] [050805] Sakura Musubi
 
+#include "fmt/entis/eri_converter.h"
 #include "err.h"
 #include "fmt/entis/common/enums.h"
 #include "fmt/entis/common/gamma_decoder.h"
 #include "fmt/entis/common/huffman_decoder.h"
 #include "fmt/entis/common/nemesis_decoder.h"
 #include "fmt/entis/common/sections.h"
-#include "fmt/entis/eri_converter.h"
 #include "fmt/entis/image/lossless.h"
 #include "util/image.h"
 #include "util/range.h"

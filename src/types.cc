@@ -1,5 +1,5 @@
-#include <algorithm>
 #include "types.h"
+#include <algorithm>
 
 using namespace au;
 

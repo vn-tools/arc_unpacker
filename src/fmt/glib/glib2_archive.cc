@@ -8,8 +8,8 @@
 // - [Rune & Cage] [080328] Pure My Imouto Milk Purun
 // - [Rune] [071214] Musume Shimai
 
-#include "err.h"
 #include "fmt/glib/glib2_archive.h"
+#include "err.h"
 #include "fmt/glib/pgx_converter.h"
 #include "io/buffered_io.h"
 #include "util/range.h"

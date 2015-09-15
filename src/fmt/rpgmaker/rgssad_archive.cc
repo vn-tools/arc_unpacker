@@ -8,8 +8,8 @@
 // - [atelier773] [100621] Cherry Tree High Comedy Club
 // - [atelier773] [101231] Cherry Tree High I My Girls
 
-#include "fmt/rpgmaker/rgs/common.h"
 #include "fmt/rpgmaker/rgssad_archive.h"
+#include "fmt/rpgmaker/rgs/common.h"
 #include "util/range.h"
 
 using namespace au;

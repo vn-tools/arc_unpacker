@@ -9,8 +9,8 @@
 // - [Ivory] [030606] Candy Toys
 // - [Ivory] [060414] Wanko To Kurasou
 
-#include "err.h"
 #include "fmt/ivory/wady_converter.h"
+#include "err.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 #include "util/sound.h"

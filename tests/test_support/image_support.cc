@@ -1,7 +1,7 @@
+#include "test_support/image_support.h"
 #include <algorithm>
 #include "test_support/catch.hh"
 #include "test_support/file_support.h"
-#include "test_support/image_support.h"
 #include "util/format.h"
 #include "util/range.h"
 

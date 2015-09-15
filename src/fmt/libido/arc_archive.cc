@@ -9,8 +9,8 @@
 // - [Libido] [980911] Fifteen ~School Girls Digital Tokuhon~
 // - [Libido] [990423] Girl Friends
 
-#include <algorithm>
 #include "fmt/libido/arc_archive.h"
+#include <algorithm>
 #include "util/pack/lzss.h"
 #include "util/range.h"
 

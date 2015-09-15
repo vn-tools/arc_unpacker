@@ -8,8 +8,8 @@
 // - [Tasofro & Team Shanghai Alice] [041230] TH07.5 - Immaterial and Missing
 //   Power
 
-#include "err.h"
 #include "fmt/touhou/pak1_image_archive.h"
+#include "err.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
 #include "util/image.h"

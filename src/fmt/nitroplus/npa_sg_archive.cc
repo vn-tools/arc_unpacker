@@ -7,8 +7,8 @@
 // Known games:
 // - [Nitroplus] [100826] Steins;Gate
 
-#include "err.h"
 #include "fmt/nitroplus/npa_sg_archive.h"
+#include "err.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/range.h"

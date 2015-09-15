@@ -11,8 +11,8 @@
 // - [Key] [070928] Little Busters!
 // - [Key] [080229] Clannad
 
-#include "err.h"
 #include "fmt/real_live/g00_converter.h"
+#include "err.h"
 #include "io/buffered_io.h"
 #include "util/image.h"
 #include "util/range.h"

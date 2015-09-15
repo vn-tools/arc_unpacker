@@ -1,5 +1,5 @@
-#include <windows.h>
 #include "util/logger.h"
+#include <windows.h>
 
 using namespace au::util;
 

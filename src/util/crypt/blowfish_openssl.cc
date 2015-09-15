@@ -1,8 +1,8 @@
+#include "util/crypt/blowfish.h"
 #include <cstring>
 #include <openssl/blowfish.h>
 #include "err.h"
 #include "types.h"
-#include "util/crypt/blowfish.h"
 
 using namespace au;
 using namespace au::util::crypt;

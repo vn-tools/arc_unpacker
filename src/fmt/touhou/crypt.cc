@@ -1,6 +1,6 @@
+#include "fmt/touhou/crypt.h"
 #include <algorithm>
 #include <memory>
-#include "fmt/touhou/crypt.h"
 #include "util/range.h"
 #include "io/buffered_io.h"
 

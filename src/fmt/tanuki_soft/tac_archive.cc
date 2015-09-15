@@ -8,8 +8,8 @@
 // - [Tanuki Soft] [101217] Shoukoujo
 // - [Tanuki Soft] [111118] Mebae
 
-#include "err.h"
 #include "fmt/tanuki_soft/tac_archive.h"
+#include "err.h"
 #include "io/buffered_io.h"
 #include "util/crypt/blowfish.h"
 #include "util/encoding.h"

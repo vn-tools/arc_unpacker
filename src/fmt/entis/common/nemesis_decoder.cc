@@ -1,5 +1,5 @@
-#include <algorithm>
 #include "fmt/entis/common/nemesis_decoder.h"
+#include <algorithm>
 #include "util/range.h"
 
 using namespace au;

@@ -1,5 +1,5 @@
-#include "log.h"
 #include "test_support/suppress_output.h"
+#include "log.h"
 
 using namespace au;
 

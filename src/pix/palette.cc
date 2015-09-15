@@ -1,5 +1,5 @@
-#include "err.h"
 #include "pix/palette.h"
+#include "err.h"
 #include "util/format.h"
 #include "util/range.h"
 

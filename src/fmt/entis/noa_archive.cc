@@ -7,10 +7,10 @@
 // Known games:
 // - [Cuffs] [050805] Sakura Musubi
 
+#include "fmt/entis/noa_archive.h"
 #include "fmt/entis/common/sections.h"
 #include "fmt/entis/eri_converter.h"
 #include "fmt/entis/mio_converter.h"
-#include "fmt/entis/noa_archive.h"
 #include "log.h"
 #include "util/format.h"
 #include "util/range.h"

@@ -1,5 +1,5 @@
-#include "err.h"
 #include "fmt/entis/sound/lossless.h"
+#include "err.h"
 #include "fmt/entis/common/huffman_decoder.h"
 #include "util/range.h"
 

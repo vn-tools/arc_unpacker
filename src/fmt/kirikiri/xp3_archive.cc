@@ -17,9 +17,9 @@
 // - [Yurin Yurin] [121130] Sonohana 12 - Atelier no Koibito-tachi
 // - [Yurin Yurin] [130830] Sonohana 14 - Tenshi-tachi no Harukoi
 
+#include "fmt/kirikiri/xp3_archive.h"
 #include "err.h"
 #include "fmt/kirikiri/tlg_converter.h"
-#include "fmt/kirikiri/xp3_archive.h"
 #include "fmt/kirikiri/xp3_filter_registry.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"

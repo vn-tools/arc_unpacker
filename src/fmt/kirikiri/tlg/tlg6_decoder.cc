@@ -1,6 +1,6 @@
+#include "fmt/kirikiri/tlg/tlg6_decoder.h"
 #include "err.h"
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
-#include "fmt/kirikiri/tlg/tlg6_decoder.h"
 #include "util/image.h"
 #include "util/range.h"
 

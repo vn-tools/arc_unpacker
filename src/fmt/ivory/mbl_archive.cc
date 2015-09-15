@@ -8,7 +8,6 @@
 // - [Ivory] [030606] Candy Toys
 // - [Ivory] [060414] Wanko To Kurasou
 
-#include <map>
 #include "fmt/ivory/mbl_archive.h"
 #include "fmt/ivory/prs_converter.h"
 #include "fmt/ivory/wady_converter.h"
@@ -38,9 +37,7 @@ namespace
     };
 
     using Table = std::vector<std::unique_ptr<TableEntry>>;
-
     using PluginFunc = std::function<void(bstr &)>;
-    using PluginTable = std::map<std::string, PluginFunc>;
 }
 
 static int check_version(io::IO &arc_io, size_t file_count, size_t name_size)

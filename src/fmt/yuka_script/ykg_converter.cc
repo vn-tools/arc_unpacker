@@ -8,8 +8,8 @@
 // Known games:
 // - [feng] [101015] Hoshizora e Kakaru Hashi
 
-#include "err.h"
 #include "fmt/yuka_script/ykg_converter.h"
+#include "err.h"
 #include "util/range.h"
 
 using namespace au;

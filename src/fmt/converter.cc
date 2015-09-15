@@ -1,5 +1,5 @@
-#include "err.h"
 #include "fmt/converter.h"
+#include "err.h"
 
 using namespace au;
 using namespace au::fmt;

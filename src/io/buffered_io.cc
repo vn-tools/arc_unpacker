@@ -1,5 +1,5 @@
-#include "err.h"
 #include "io/buffered_io.h"
+#include "err.h"
 
 using namespace au::io;
 

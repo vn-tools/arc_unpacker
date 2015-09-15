@@ -8,8 +8,8 @@
 // Known games:
 // - [KID] [031127] Ever 17
 
-#include "err.h"
 #include "fmt/kid/prt_converter.h"
+#include "err.h"
 #include "util/format.h"
 #include "util/image.h"
 #include "util/range.h"

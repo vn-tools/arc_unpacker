@@ -7,8 +7,8 @@
 // Known games:
 // - [Team Shanghai Alice] [020811] TH06 - The Embodiment of Scarlet Devil
 
-#include "fmt/touhou/anm_archive.h"
 #include "fmt/touhou/pbg3_archive.h"
+#include "fmt/touhou/anm_archive.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"

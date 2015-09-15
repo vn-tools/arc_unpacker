@@ -1,5 +1,5 @@
-#include <cstdio>
 #include "compat/fopen.h"
+#include <cstdio>
 #include "util/encoding.h"
 
 using namespace au;

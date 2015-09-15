@@ -12,10 +12,10 @@
 // - [Yurin Yurin] [121130] Sonohana 12 - Atelier no Koibito-tachi
 // - [Yurin Yurin] [130830] Sonohana 14 - Tenshi-tachi no Harukoi
 
+#include "fmt/kirikiri/tlg_converter.h"
 #include "err.h"
 #include "fmt/kirikiri/tlg/tlg5_decoder.h"
 #include "fmt/kirikiri/tlg/tlg6_decoder.h"
-#include "fmt/kirikiri/tlg_converter.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri;

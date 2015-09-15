@@ -9,10 +9,10 @@
 // - [Cronus] [011019] Dokidoki Princess
 // - [Cronus] [060630] Nursery Song
 
+#include "fmt/cronus/pak_archive.h"
 #include "err.h"
 #include "fmt/cronus/common.h"
 #include "fmt/cronus/grp_converter.h"
-#include "fmt/cronus/pak_archive.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
 #include "util/plugin_mgr.hh"

@@ -8,8 +8,8 @@
 // - [Minato Carnival] [120928] Tsujidou-san 1 - Tsujidou-san no Junai Road
 // - [Minato Carnival] [130830] Tsujidou-san 2 - Tsujidou-san no Virgin Road
 
-#include <map>
 #include "fmt/whale/dat_archive.h"
+#include <map>
 #include "fmt/kirikiri/tlg_converter.h"
 #include "io/buffered_io.h"
 #include "log.h"

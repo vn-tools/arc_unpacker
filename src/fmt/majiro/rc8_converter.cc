@@ -8,8 +8,8 @@
 // Known games:
 // - [Empress] [150626] Closed Game
 
-#include "err.h"
 #include "fmt/majiro/rc8_converter.h"
+#include "err.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/image.h"

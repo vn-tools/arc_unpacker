@@ -1,5 +1,5 @@
-#include "err.h"
 #include "io/bit_reader.h"
+#include "err.h"
 
 using namespace au;
 using namespace au::io;

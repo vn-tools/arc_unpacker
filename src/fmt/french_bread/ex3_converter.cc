@@ -8,8 +8,8 @@
 // Known games:
 // - [Type-Moon & French Bread] [021230] Melty Blood
 
-#include "err.h"
 #include "fmt/french_bread/ex3_converter.h"
+#include "err.h"
 #include "util/range.h"
 
 using namespace au;

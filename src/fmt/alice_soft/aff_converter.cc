@@ -10,8 +10,8 @@
 //
 // Doesn't encode anything, just wraps real files.
 
-#include <algorithm>
 #include "fmt/alice_soft/aff_converter.h"
+#include <algorithm>
 #include "util/range.h"
 
 using namespace au;
