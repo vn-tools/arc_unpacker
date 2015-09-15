@@ -124,6 +124,8 @@ std::unique_ptr<File> EriConverter::decode_internal(File &file) const
             fmt = pix::Format::BGRA8888;
         else if (header.bit_depth == 24)
             fmt = pix::Format::BGR888;
+        else if (header.bit_depth == 8)
+            fmt = pix::Format::Gray8;
         else
             throw err::UnsupportedBitDepthError(header.bit_depth);
 
