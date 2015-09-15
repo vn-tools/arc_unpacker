@@ -9,7 +9,7 @@
 // - [Akabei Soft2] [080529] G-senjou no Maou
 // - [Type-Moon] [040326] Fate Stay Night
 // - [Type-Moon] [051229] Fate Hollow Ataraxia
-// - [Yurin Yurin] [121130] Sonohana 12 - Atelier no Koibito-tachi
+// - [Yurin Yurin] [130329] Sonohana 12 - Atelier no Koibito-tachi
 // - [Yurin Yurin] [130830] Sonohana 14 - Tenshi-tachi no Harukoi
 
 #include "fmt/kirikiri/tlg_converter.h"

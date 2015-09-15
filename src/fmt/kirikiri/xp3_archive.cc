@@ -14,7 +14,7 @@
 // - [Type-Moon] [040326] Fate Stay Night
 // - [Type-Moon] [051229] Fate Hollow Ataraxia
 // - [Type-Moon] [120412] Mahou Tsukai no Yoru
-// - [Yurin Yurin] [121130] Sonohana 12 - Atelier no Koibito-tachi
+// - [Yurin Yurin] [130329] Sonohana 12 - Atelier no Koibito-tachi
 // - [Yurin Yurin] [130830] Sonohana 14 - Tenshi-tachi no Harukoi
 
 #include "fmt/kirikiri/xp3_archive.h"
