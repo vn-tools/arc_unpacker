@@ -25,6 +25,7 @@ namespace util {
 
     private:
         Image(size_t width, size_t height);
+
         struct Priv;
         std::unique_ptr<Priv> p;
     };

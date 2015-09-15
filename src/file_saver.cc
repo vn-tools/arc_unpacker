@@ -11,31 +11,37 @@ using namespace au;
 
 struct FileSaverHdd::Priv final
 {
+    Priv(const boost::filesystem::path &output_dir, bool overwrite);
+    boost::filesystem::path make_path_unique(
+        const boost::filesystem::path path);
+
     boost::filesystem::path output_dir;
     std::set<boost::filesystem::path> paths;
     bool overwrite;
-
-    Priv(const boost::filesystem::path &output_dir, bool overwrite)
-        : output_dir(output_dir), overwrite(overwrite)
-    {
-    }
-
-    boost::filesystem::path make_path_unique(const boost::filesystem::path path)
-    {
-        boost::filesystem::path new_path = path;
-        int i = 1;
-        while (paths.find(new_path) != paths.end()
-            || (!overwrite && boost::filesystem::exists(new_path)))
-        {
-            std::string suffix = util::format("(%d)", i++);
-            new_path = path.parent_path();
-            new_path /= boost::filesystem::path(
-                path.stem().string() + suffix + path.extension().string());
-        }
-        paths.insert(new_path);
-        return new_path;
-    }
 };
+
+FileSaverHdd::Priv::Priv(
+    const boost::filesystem::path &output_dir, bool overwrite)
+        : output_dir(output_dir), overwrite(overwrite)
+{
+}
+
+boost::filesystem::path FileSaverHdd::Priv::make_path_unique(
+    const boost::filesystem::path path)
+{
+    boost::filesystem::path new_path = path;
+    int i = 1;
+    while (paths.find(new_path) != paths.end()
+        || (!overwrite && boost::filesystem::exists(new_path)))
+    {
+        std::string suffix = util::format("(%d)", i++);
+        new_path = path.parent_path();
+        new_path /= boost::filesystem::path(
+            path.stem().string() + suffix + path.extension().string());
+    }
+    paths.insert(new_path);
+    return new_path;
+}
 
 FileSaverHdd::FileSaverHdd(
     const boost::filesystem::path &output_dir, bool overwrite)
@@ -82,12 +88,14 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
 
 struct FileSaverCallback::Priv final
 {
-    FileSaveCallback callback;
+    Priv(FileSaveCallback callback);
 
-    Priv(FileSaveCallback callback) : callback(callback)
-    {
-    }
+    FileSaveCallback callback;
 };
+
+FileSaverCallback::Priv::Priv(FileSaveCallback callback) : callback(callback)
+{
+}
 
 FileSaverCallback::FileSaverCallback()
     : p(new Priv(nullptr))

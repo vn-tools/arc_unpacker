@@ -31,6 +31,7 @@ namespace io {
         virtual void write_from_io(IO &source, size_t size) override;
 
         void reserve(size_t count);
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

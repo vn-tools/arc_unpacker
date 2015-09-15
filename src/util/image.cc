@@ -28,12 +28,12 @@ static void png_flush(png_structp)
 
 struct Image::Priv final
 {
-    pix::Grid pixels;
-
     Priv(size_t width, size_t height);
     static std::unique_ptr<Image> from_png(io::IO &io);
     static std::unique_ptr<Image> from_jpeg(io::IO &io);
     void save_png(io::IO &io);
+
+    pix::Grid pixels;
 };
 
 Image::Priv::Priv(size_t width, size_t height) : pixels(width, height)

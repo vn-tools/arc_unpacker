@@ -23,10 +23,12 @@ namespace cbg {
 
     struct Tree final
     {
+        u32 get_leaf(io::BitReader &bit_reader) const;
+
+        NodeInfo &operator[](size_t);
+
         u32 size;
         std::vector<std::shared_ptr<NodeInfo>> nodes;
-        NodeInfo &operator[](size_t);
-        u32 get_leaf(io::BitReader &bit_reader) const;
     };
 
     u32 read_variable_data(io::IO &input_io);

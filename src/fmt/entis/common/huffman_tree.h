@@ -21,19 +21,20 @@ namespace common {
 
     struct HuffmanNode final
     {
+        HuffmanNode();
+
         u16 weight;
         u16 parent;
         u32 code;
-        HuffmanNode();
     };
 
     struct HuffmanTree final
     {
         HuffmanTree();
-        void increase_occurrences(int iEntry);
-        void recount_occurrences(int iParent);
-        void normalize(int iEntry);
-        void add_new_entry(int nNewCode);
+        void increase_occurrences(int entry);
+        void recount_occurrences(int parent);
+        void normalize(int entry);
+        void add_new_entry(int new_code);
         void half_and_rebuild();
 
         HuffmanNode nodes[0x201];

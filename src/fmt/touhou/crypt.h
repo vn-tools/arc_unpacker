@@ -8,12 +8,12 @@ namespace touhou {
 
     struct DecryptorContext final
     {
+        bool operator ==(const DecryptorContext &other) const;
+
         u8 key;
         u8 step;
         size_t block_size;
         size_t limit;
-
-        bool operator ==(const DecryptorContext &other) const;
     };
 
     bstr decrypt(const bstr &input, const DecryptorContext &context);

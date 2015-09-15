@@ -16,12 +16,12 @@ template<Format fmt> static void read_many(
 
 struct Grid::Priv final
 {
+    void load(const bstr &input, Format fmt);
+    void load(const bstr &input, const Palette &palette);
+
     std::vector<Pixel> pixels;
     size_t width;
     size_t height;
-
-    void load(const bstr &input, Format fmt);
-    void load(const bstr &input, const Palette &palette);
 };
 
 void Grid::Priv::load(const bstr &input, Format fmt)

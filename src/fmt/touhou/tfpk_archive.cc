@@ -36,8 +36,10 @@ namespace
         ~RsaReader();
         std::unique_ptr<io::BufferedIO> read_block();
         size_t tell() const;
+
     private:
         std::unique_ptr<io::BufferedIO> decrypt(std::basic_string<u8> input);
+
         io::IO &io;
         std::unique_ptr<util::crypt::Rsa> rsa;
     };

@@ -27,16 +27,16 @@ namespace
         size_t image_width;
         size_t image_height;
         size_t max_bit_size;
-
         size_t x_block_count;
         size_t y_block_count;
     };
 
     struct FilterTypes final
     {
-        bstr data;
         FilterTypes(io::IO &io);
         void decompress(Header &header);
+
+        bstr data;
     };
 }
 

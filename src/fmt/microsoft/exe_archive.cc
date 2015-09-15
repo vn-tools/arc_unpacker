@@ -21,6 +21,8 @@ namespace
 {
     struct DosHeader final
     {
+        DosHeader(io::IO &io);
+
         bstr magic;
         u16 e_cblp;
         u16 e_cp;
@@ -38,12 +40,12 @@ namespace
         u16 e_oemid;
         u16 e_oeminfo;
         u32 e_lfanew;
-
-        DosHeader(io::IO &io);
     };
 
     struct ImageOptionalHeader final
     {
+        ImageOptionalHeader(io::IO &io);
+
         u16 magic;
         u8 major_linker_version;
         u8 minor_linker_version;
@@ -74,12 +76,12 @@ namespace
         u64 size_of_heap_commit;
         u32 loader_flags;
         u32 number_of_rva_and_sizes;
-
-        ImageOptionalHeader(io::IO &io);
     };
 
     struct ImageFileHeader final
     {
+        ImageFileHeader(io::IO &io);
+
         u16 machine;
         u16 number_of_sections;
         u32 timestamp;
@@ -87,26 +89,29 @@ namespace
         u32 number_of_symbols;
         u16 size_of_optional_header;
         u16 characteristics;
-        ImageFileHeader(io::IO &io);
     };
 
     struct ImageNtHeader final
     {
+        ImageNtHeader(io::IO &io);
+
         u32 signature;
         ImageFileHeader file_header;
         ImageOptionalHeader optional_header;
-        ImageNtHeader(io::IO &io);
     };
 
     struct ImageDataDir final
     {
+        ImageDataDir(io::IO &io);
+
         u32 virtual_address;
         u32 size;
-        ImageDataDir(io::IO &io);
     };
 
     struct ImageSectionHeader final
     {
+        ImageSectionHeader(io::IO &io);
+
         std::string name;
         u32 virtual_size;
         u32 physical_address;
@@ -118,37 +123,39 @@ namespace
         u16 number_of_relocations;
         u16 number_of_line_numbers;
         u32 characteristics;
-        ImageSectionHeader(io::IO &io);
     };
 
     struct ImageResourceDir final
     {
+        ImageResourceDir(io::IO &io);
+
         u32 characteristics;
         u32 timestamp;
         u16 major_version;
         u16 minor_version;
         u16 number_of_named_entries;
         u16 number_of_id_entries;
-        ImageResourceDir(io::IO &io);
     };
 
     struct ImageResourceDirEntry final
     {
+        ImageResourceDirEntry(io::IO &io);
+
         u32 offset_to_data;
         bool name_is_string;
         u32 name_offset;
         u32 name;
         u32 id;
         u32 data_is_dir;
-        ImageResourceDirEntry(io::IO &io);
     };
 
     struct ImageResourceDataEntry final
     {
+        ImageResourceDataEntry(io::IO &io);
+
         u32 offset_to_data;
         u32 size;
         u32 code_page;
-        ImageResourceDataEntry(io::IO &io);
     };
 
     class RvaHelper

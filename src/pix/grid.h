@@ -19,7 +19,6 @@ namespace pix {
             const Palette &palette);
         Grid(size_t width, size_t height, io::IO &input_io,
             const Palette &palette);
-
         ~Grid();
 
         size_t width() const;

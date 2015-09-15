@@ -21,11 +21,12 @@ namespace
 
     struct BlockInfo final
     {
+        BlockInfo(io::IO &io);
+        void decompress(LzssDecompressor &decompressor, Header &header);
+
         bool mark;
         size_t block_size;
         bstr data;
-        BlockInfo(io::IO &io);
-        void decompress(LzssDecompressor &decompressor, Header &header);
     };
 }
 

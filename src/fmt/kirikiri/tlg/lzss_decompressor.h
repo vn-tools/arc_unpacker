@@ -15,8 +15,8 @@ namespace tlg {
         ~LzssDecompressor();
 
         void init_dictionary(u8 dictionary[4096]);
-
         bstr decompress(const bstr &input, size_t output_size);
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

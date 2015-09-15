@@ -5,12 +5,12 @@ using namespace au::util;
 
 struct Logger::Priv final
 {
+    Priv(Logger &logger);
+    void try_set_color(Logger::Color color);
+
     bool muted = false;
     bool colors_enabled = true;
     Logger &logger;
-
-    Priv(Logger &logger);
-    void try_set_color(Logger::Color color);
 };
 
 Logger::Priv::Priv(Logger &logger) : logger(logger)

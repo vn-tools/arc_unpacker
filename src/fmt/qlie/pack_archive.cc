@@ -361,6 +361,8 @@ static std::unique_ptr<File> read_file(
 
 struct PackArchive::Priv final
 {
+    Priv();
+
     DpngConverter dpng_converter;
     Abmp7Archive abmp7_archive;
     Abmp10Archive abmp10_archive;
@@ -368,12 +370,11 @@ struct PackArchive::Priv final
     EncryptionType enc_type;
     bstr key1;
     bstr key2;
-
-    Priv()
-    {
-        enc_type = EncryptionType::Basic;
-    }
 };
+
+PackArchive::Priv::Priv() : enc_type(EncryptionType::Basic)
+{
+}
 
 PackArchive::PackArchive() : p(new Priv)
 {

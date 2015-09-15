@@ -10,26 +10,29 @@ using namespace au::util::crypt;
 
 struct Rsa::Priv final
 {
+    Priv(const RsaKey &key);
+    ~Priv();
+
     RSA *key_impl;
-
-    Priv(const RsaKey &key) : key_impl(RSA_new())
-    {
-        BIGNUM *bn_modulus = BN_new();
-        BIGNUM *bn_exponent = BN_new();
-        BN_set_word(bn_exponent, key.exponent);
-        BN_bin2bn(key.modulus.data(), key.modulus.size(), bn_modulus);
-
-        key_impl->e = bn_exponent;
-        key_impl->n = bn_modulus;
-    }
-
-    ~Priv()
-    {
-        //BN_free(key_impl->e)?
-        //BN_free(key_impl->n)?
-        RSA_free(key_impl);
-    }
 };
+
+Rsa::Priv::Priv(const RsaKey &key) : key_impl(RSA_new())
+{
+    BIGNUM *bn_modulus = BN_new();
+    BIGNUM *bn_exponent = BN_new();
+    BN_set_word(bn_exponent, key.exponent);
+    BN_bin2bn(key.modulus.data(), key.modulus.size(), bn_modulus);
+
+    key_impl->e = bn_exponent;
+    key_impl->n = bn_modulus;
+}
+
+Rsa::Priv::~Priv()
+{
+    //BN_free(key_impl->e)?
+    //BN_free(key_impl->n)?
+    RSA_free(key_impl);
+}
 
 Rsa::Rsa(const RsaKey &key) : p(new Priv(key))
 {

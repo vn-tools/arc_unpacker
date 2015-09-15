@@ -21,6 +21,7 @@ namespace util {
 
     private:
         Sound();
+
         struct Priv;
         std::unique_ptr<Priv> p;
     };

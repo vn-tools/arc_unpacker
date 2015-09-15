@@ -32,7 +32,6 @@ namespace fmt {
     {
     public:
         virtual ~Transformer();
-
         bool is_recognized(File &) const;
         virtual void register_cli_options(ArgParser &) const = 0;
         virtual void parse_cli_options(const ArgParser &) = 0;

@@ -35,19 +35,20 @@ namespace
     public:
         KeyDeriver(const CxdecSettings &settings);
         u32 derive(u32 seed, u32 parameter);
-    private:
-        const CxdecSettings &settings;
-        bstr shellcode;
-        u32 seed;
-        size_t parameter;
-        u32 control_block_addr;
 
+    private:
         void add_shellcode(const bstr &bytes_s);
         u32 rand();
         u32 derive_for_stage(size_t stage);
         u32 run_first_stage();
         u32 run_stage_strategy_0(size_t stage);
         u32 run_stage_strategy_1(size_t stage);
+
+        const CxdecSettings &settings;
+        bstr shellcode;
+        u32 seed;
+        size_t parameter;
+        u32 control_block_addr;
     };
 }
 

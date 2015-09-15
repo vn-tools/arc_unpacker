@@ -15,6 +15,7 @@ namespace au {
             const std::string &version);
         ~ArcUnpacker();
         bool run();
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

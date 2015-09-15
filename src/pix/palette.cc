@@ -15,10 +15,10 @@ template<Format fmt> static void read_many(
 
 struct Palette::Priv final
 {
-    std::vector<Pixel> colors;
-
     Priv(size_t color_count);
     Priv(size_t color_count, const bstr &input, Format fmt);
+
+    std::vector<Pixel> colors;
 };
 
 Palette::Priv::Priv(size_t color_count)

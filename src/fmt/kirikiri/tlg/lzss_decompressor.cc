@@ -6,16 +6,18 @@ using namespace au::fmt::kirikiri::tlg;
 
 struct LzssDecompressor::Priv final
 {
+    Priv();
+
     u8 dictionary[4096];
     size_t offset;
-
-    Priv()
-    {
-        offset = 0;
-        for (auto i : util::range(4096))
-            dictionary[i] = 0;
-    }
 };
+
+LzssDecompressor::Priv::Priv()
+{
+    offset = 0;
+    for (auto i : util::range(4096))
+        dictionary[i] = 0;
+}
 
 LzssDecompressor::LzssDecompressor() : p(new Priv)
 {

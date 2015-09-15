@@ -9,20 +9,23 @@ using namespace au::util::crypt;
 
 struct Blowfish::Priv final
 {
+    Priv(const bstr &key_str);
+    ~Priv();
+
     std::unique_ptr<BF_KEY> key;
-
-    Priv(const bstr &key_str) : key(new BF_KEY)
-    {
-        BF_set_key(
-            key.get(),
-            key_str.size(),
-            key_str.get<const u8>());
-    }
-
-    ~Priv()
-    {
-    }
 };
+
+Blowfish::Priv::Priv(const bstr &key_str) : key(new BF_KEY)
+{
+    BF_set_key(
+        key.get(),
+        key_str.size(),
+        key_str.get<const u8>());
+}
+
+Blowfish::Priv::~Priv()
+{
+}
 
 Blowfish::Blowfish(const bstr &key) : p(new Priv(key))
 {

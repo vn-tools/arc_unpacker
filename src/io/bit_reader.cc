@@ -6,8 +6,9 @@ using namespace au::io;
 
 namespace
 {
-    struct Reader
+    class Reader
     {
+    public:
         Reader();
         virtual ~Reader();
         virtual bool eof() const = 0;
@@ -16,28 +17,32 @@ namespace
         virtual void seek(size_t) = 0;
     };
 
-    struct BufferBasedReader final : public Reader
+    class BufferBasedReader final : public Reader
     {
-        bstr buffer;
-        size_t bytes_left;
-        const u8 *ptr;
-
+    public:
         BufferBasedReader(const bstr &buffer);
         inline bool eof() const override;
         inline size_t size() const override;
         inline u8 fetch_byte() override;
         inline void seek(size_t pos) override;
+
+    private:
+        bstr buffer;
+        size_t bytes_left;
+        const u8 *ptr;
     };
 
-    struct IoBasedReader final : public Reader
+    class IoBasedReader final : public Reader
     {
-        IO &io;
-
+    public:
         IoBasedReader(IO &io);
         inline bool eof() const override;
         inline size_t size() const override;
         inline u8 fetch_byte() override;
         inline void seek(size_t pos) override;
+
+    private:
+        IO &io;
     };
 }
 
@@ -103,11 +108,6 @@ inline u8 IoBasedReader::fetch_byte()
 
 struct BitReader::Priv final
 {
-    std::unique_ptr<Reader> reader;
-    u32 shift;
-    u64 value;
-    u32 pos;
-
     Priv(std::unique_ptr<Reader> reader);
     ~Priv();
     inline u32 tell() const;
@@ -115,6 +115,11 @@ struct BitReader::Priv final
     bool eof() const;
     size_t size() const;
     void seek(size_t pos);
+
+    std::unique_ptr<Reader> reader;
+    u32 shift;
+    u64 value;
+    u32 pos;
 };
 
 BitReader::Priv::Priv(std::unique_ptr<Reader> reader)

@@ -5,13 +5,15 @@ using namespace au::io;
 
 struct BufferedIO::Priv final
 {
+    Priv(bstr buffer);
+
     bstr buffer;
     size_t buffer_pos;
-
-    Priv(bstr buffer) : buffer(buffer), buffer_pos(0)
-    {
-    }
 };
+
+BufferedIO::Priv::Priv(bstr buffer) : buffer(buffer), buffer_pos(0)
+{
+}
 
 BufferedIO::BufferedIO() : p(new Priv(""_b))
 {

@@ -33,6 +33,7 @@ namespace io {
         using IO::write_from_io;
         virtual void write(const void *source, size_t size) override;
         virtual void write_from_io(IO &source, size_t size) override;
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;
