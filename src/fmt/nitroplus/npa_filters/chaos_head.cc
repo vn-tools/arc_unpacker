@@ -4,11 +4,6 @@ using namespace au;
 using namespace au::fmt::nitroplus;
 using namespace au::fmt::nitroplus::npa_filters;
 
-static u32 chaos_head_file_name_filter(u32 key1, u32 key2)
-{
-    return key1 * key2;
-}
-
 void au::fmt::nitroplus::npa_filters::chaos_head_filter_init(NpaFilter &filter)
 {
     filter.permutation =
@@ -29,5 +24,5 @@ void au::fmt::nitroplus::npa_filters::chaos_head_filter_init(NpaFilter &filter)
         "\xC8\xC3\x69\x7C\x31\x58\xE3\x75\xD8\xE1\xC0\x9F\x11\xB5\x93\x56"
         "\xF5\x1E\xB1\x1A\x70\x3D\xFB\x82\xDC\xDF\x7E\x07\x15\x49\xFC\xB8"_u8;
     filter.data_key = 0x87654321;
-    filter.file_name_key = &chaos_head_file_name_filter;
+    filter.file_name_key = [](u32 key1, u32 key2) { return key1 * key2; };
 }

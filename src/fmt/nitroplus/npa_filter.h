@@ -10,7 +10,7 @@ namespace nitroplus {
     {
         const u8 *permutation;
         u32 data_key;
-        u32 (*file_name_key)(u32 key1, u32 key2);
+        std::function<u32(u32 key1, u32 key2)> file_name_key;
     };
 
 } } }
