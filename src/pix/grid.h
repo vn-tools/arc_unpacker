@@ -12,6 +12,7 @@ namespace pix {
     class Grid final
     {
     public:
+        Grid(const Grid &other);
         Grid(size_t width, size_t height);
         Grid(size_t width, size_t height, const bstr &input, Format fmt);
         Grid(size_t width, size_t height, io::IO &input_io, Format fmt);

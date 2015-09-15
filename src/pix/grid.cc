@@ -89,6 +89,13 @@ void Grid::Priv::load(const bstr &input, const Palette &palette)
         *pixels_ptr++ = palette[*input_ptr++];
 }
 
+Grid::Grid(const Grid &other) : Grid(other.width(), other.height())
+{
+    for (auto y : util::range(p->height))
+    for (auto x : util::range(p->width))
+        at(x, y) = other.at(x, y);
+}
+
 Grid::Grid(size_t width, size_t height) : p(new Priv)
 {
     p->width = width;
