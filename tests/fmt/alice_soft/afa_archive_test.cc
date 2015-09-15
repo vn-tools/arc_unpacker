@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::alice_soft;
 
-TEST_CASE("Unpacking AliceSoft's AFA archives works")
+TEST_CASE("Unpacking AliceSoft's AFA archives works", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

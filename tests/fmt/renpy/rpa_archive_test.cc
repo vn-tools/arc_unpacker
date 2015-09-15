@@ -32,17 +32,17 @@ static void test(const std::string &path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Unpacking version 3 RPA archives works")
+TEST_CASE("Unpacking version 3 RPA archives works", "[fmt]")
 {
     test("tests/fmt/renpy/files/rpa/v3.rpa");
 }
 
-TEST_CASE("Unpacking version 2 RPA archives works")
+TEST_CASE("Unpacking version 2 RPA archives works", "[fmt]")
 {
     test("tests/fmt/renpy/files/rpa/v2.rpa");
 }
 
-TEST_CASE("Unpacking RPA archives using data prefixes works")
+TEST_CASE("Unpacking RPA archives using data prefixes works", "[fmt]")
 {
     test("tests/fmt/renpy/files/rpa/prefixes.rpa");
 }

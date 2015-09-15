@@ -18,28 +18,28 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image, max_delta);
 }
 
-TEST_CASE("Decoding 32-bit CBG1 images works")
+TEST_CASE("Decoding 32-bit CBG1 images works", "[fmt]")
 {
     do_test(
         "tests/fmt/bgi/files/cbg-v1/ti_si_de_a1",
         "tests/fmt/bgi/files/cbg-v1/ti_si_de_a1-out.png");
 }
 
-TEST_CASE("Decoding 24-bit CBG1 images works")
+TEST_CASE("Decoding 24-bit CBG1 images works", "[fmt]")
 {
     do_test(
         "tests/fmt/bgi/files/cbg-v1/3",
         "tests/fmt/bgi/files/cbg-v1/3-out.png");
 }
 
-TEST_CASE("Decoding 8-bit CBG1 images works")
+TEST_CASE("Decoding 8-bit CBG1 images works", "[fmt]")
 {
     do_test(
         "tests/fmt/bgi/files/cbg-v1/4",
         "tests/fmt/bgi/files/cbg-v1/4-out.png");
 }
 
-TEST_CASE("Decoding 32-bit CBG2 images works")
+TEST_CASE("Decoding 32-bit CBG2 images works", "[fmt]")
 {
     do_test(
         "tests/fmt/bgi/files/cbg-v2/ms_wn_base",
@@ -47,7 +47,7 @@ TEST_CASE("Decoding 32-bit CBG2 images works")
         2);
 }
 
-TEST_CASE("Decoding 24-bit CBG2 images works")
+TEST_CASE("Decoding 24-bit CBG2 images works", "[fmt]")
 {
     do_test(
         "tests/fmt/bgi/files/cbg-v2/l_card000",
@@ -55,7 +55,7 @@ TEST_CASE("Decoding 24-bit CBG2 images works")
         2);
 }
 
-TEST_CASE("Decoding 8-bit CBG2 images works")
+TEST_CASE("Decoding 8-bit CBG2 images works", "[fmt]")
 {
     do_test(
         "tests/fmt/bgi/files/cbg-v2/mask04r",

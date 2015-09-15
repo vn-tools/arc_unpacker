@@ -4,7 +4,7 @@
 using namespace au;
 using namespace au::util;
 
-TEST_CASE("Converting endianness works")
+TEST_CASE("Converting endianness works", "[util]")
 {
     const char *x = "\x12\x34\x56\x78";
     bool big_endian = *reinterpret_cast<const u32*>(x) == 0x12345678;

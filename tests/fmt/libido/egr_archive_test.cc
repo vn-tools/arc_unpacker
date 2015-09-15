@@ -8,7 +8,7 @@
 using namespace au;
 using namespace au::fmt::libido;
 
-TEST_CASE("Unpacking Libido's unencrypted EGR image archives works")
+TEST_CASE("Unpacking Libido's unencrypted EGR image archives works", "[fmt]")
 {
     std::vector<std::shared_ptr<util::Image>> expected_images
     {

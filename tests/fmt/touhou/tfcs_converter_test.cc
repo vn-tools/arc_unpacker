@@ -5,7 +5,7 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
-TEST_CASE("Decoding TFCS files works")
+TEST_CASE("Decoding TFCS files works", "[fmt]")
 {
     TfcsConverter converter;
     auto input_file = tests::file_from_path(

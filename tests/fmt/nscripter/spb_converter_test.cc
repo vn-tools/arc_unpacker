@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::nscripter;
 
-TEST_CASE("Decoding SPB-compressed stream works")
+TEST_CASE("Decoding SPB-compressed stream works", "[fmt]")
 {
     SpbConverter converter;
     auto input_file = tests::file_from_path(

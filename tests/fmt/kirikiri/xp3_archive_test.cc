@@ -20,27 +20,27 @@ static void test_xp3_archive(const std::string &path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Unpacking version 1 XP3 archives works")
+TEST_CASE("Unpacking version 1 XP3 archives works", "[fmt]")
 {
     test_xp3_archive("tests/fmt/kirikiri/files/xp3/xp3-v1.xp3");
 }
 
-TEST_CASE("Unpacking version 2 XP3 archives works")
+TEST_CASE("Unpacking version 2 XP3 archives works", "[fmt]")
 {
     test_xp3_archive("tests/fmt/kirikiri/files/xp3/xp3-v2.xp3");
 }
 
-TEST_CASE("Unpacking XP3 archives with compressed file table works")
+TEST_CASE("Unpacking XP3 archives with compressed file table works", "[fmt]")
 {
     test_xp3_archive("tests/fmt/kirikiri/files/xp3/xp3-compressed-table.xp3");
 }
 
-TEST_CASE("Unpacking XP3 archives with compressed file data works")
+TEST_CASE("Unpacking XP3 archives with compressed file data works", "[fmt]")
 {
     test_xp3_archive("tests/fmt/kirikiri/files/xp3/xp3-compressed-files.xp3");
 }
 
-TEST_CASE("Unpacking XP3 archives with multiple SEGM chunks works")
+TEST_CASE("Unpacking XP3 archives with multiple SEGM chunks works", "[fmt]")
 {
     test_xp3_archive("tests/fmt/kirikiri/files/xp3/xp3-multiple-segm.xp3");
 }

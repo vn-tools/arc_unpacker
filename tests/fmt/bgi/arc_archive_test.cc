@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::bgi;
 
-TEST_CASE("Unpacking ARC archives works")
+TEST_CASE("Unpacking ARC archives works", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

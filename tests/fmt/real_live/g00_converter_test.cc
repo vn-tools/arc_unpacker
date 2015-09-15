@@ -16,21 +16,21 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("Decoding version 0 G00 images works")
+TEST_CASE("Decoding version 0 G00 images works", "[fmt]")
 {
     do_test(
         "tests/fmt/real_live/files/g00-0/ayu_02.g00",
         "tests/fmt/real_live/files/g00-0/ayu_02-out.png");
 }
 
-TEST_CASE("Decoding version 1 G00 images works")
+TEST_CASE("Decoding version 1 G00 images works", "[fmt]")
 {
     do_test(
         "tests/fmt/real_live/files/g00-1/ayu_05.g00",
         "tests/fmt/real_live/files/g00-1/ayu_05-out.png");
 }
 
-TEST_CASE("Decoding version 2 G00 images works")
+TEST_CASE("Decoding version 2 G00 images works", "[fmt]")
 {
     do_test(
         "tests/fmt/real_live/files/g00-2/AYU_03.g00",

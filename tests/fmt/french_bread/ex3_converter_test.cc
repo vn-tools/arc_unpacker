@@ -7,7 +7,7 @@
 using namespace au;
 using namespace au::fmt::french_bread;
 
-TEST_CASE("Decoding EX3 images works")
+TEST_CASE("Decoding EX3 images works", "[fmt]")
 {
     Ex3Converter converter;
     auto input_file = tests::file_from_path(

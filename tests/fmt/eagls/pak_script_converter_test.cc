@@ -16,7 +16,7 @@ static void do_test(
     tests::compare_files(*expected_file, *actual_file, false);
 }
 
-TEST_CASE("Decoding EAGLS's PAK scripts works")
+TEST_CASE("Decoding EAGLS's PAK scripts works", "[fmt]")
 {
     do_test(
         "tests/fmt/eagls/files/pak-script/00Init.dat",

@@ -16,28 +16,28 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("Decoding DXT1 DDS textures works")
+TEST_CASE("Decoding DXT1 DDS textures works", "[fmt]")
 {
     do_test(
         "tests/fmt/microsoft/files/dds/back0.dds",
         "tests/fmt/microsoft/files/dds/back0-out.png");
 }
 
-TEST_CASE("Decoding DXT3 DDS textures works")
+TEST_CASE("Decoding DXT3 DDS textures works", "[fmt]")
 {
     do_test(
         "tests/fmt/microsoft/files/dds/006_disconnect.dds",
         "tests/fmt/microsoft/files/dds/006_disconnect-out.png");
 }
 
-TEST_CASE("Decoding DXT5 DDS textures works")
+TEST_CASE("Decoding DXT5 DDS textures works", "[fmt]")
 {
     do_test(
         "tests/fmt/microsoft/files/dds/決1.dds",
         "tests/fmt/microsoft/files/dds/決1-out.png");
 }
 
-TEST_CASE("Decoding raw 32-bit DDS textures works")
+TEST_CASE("Decoding raw 32-bit DDS textures works", "[fmt]")
 {
     do_test(
         "tests/fmt/microsoft/files/dds/koishi_7.dds",

@@ -118,7 +118,7 @@ static std::vector<std::shared_ptr<File>> unpack(File &file, Archive &archive)
     return saved_files;
 }
 
-TEST_CASE("Simple archive unpacks correctly")
+TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
 {
     TestArchive test_archive;
     File dummy_file;
@@ -141,7 +141,7 @@ TEST_CASE("Simple archive unpacks correctly")
     REQUIRE(saved_files[0]->io.read_to_eof() == "abc"_b);
 }
 
-TEST_CASE("Simple archive with converter unpacks correctly")
+TEST_CASE("Simple archive with converter unpacks correctly", "[fmt_core]")
 {
     TestArchive test_archive;
     File dummy_file;
@@ -157,7 +157,7 @@ TEST_CASE("Simple archive with converter unpacks correctly")
     REQUIRE(saved_files[0]->io.read_to_eof() == "image"_b);
 }
 
-TEST_CASE("Converter receives full path")
+TEST_CASE("Converter receives full path", "[fmt_core]")
 {
     TestArchive test_archive;
     File dummy_file;
@@ -196,7 +196,7 @@ TEST_CASE("Converter receives full path")
     REQUIRE(names_for_conversion[0] == path("further/nested/test.image"));
 }
 
-TEST_CASE("Nested archives unpack correctly")
+TEST_CASE("Nested archives unpack correctly", "[fmt_core]")
 {
     TestArchive test_archive;
     File dummy_file;
@@ -226,7 +226,7 @@ TEST_CASE("Nested archives unpack correctly")
     REQUIRE(saved_files[1]->io.read_to_eof() == "image"_b);
 }
 
-TEST_CASE("Files get correct location")
+TEST_CASE("Files get correct location", "[fmt_core]")
 {
     FilesystemTestArchive test_archive;
     File dummy_file("./tests/fmt/transformer_test.cc", io::FileMode::Read);

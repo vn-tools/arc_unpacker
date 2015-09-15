@@ -3,7 +3,9 @@
 
 using namespace au::util::crypt;
 
-TEST_CASE("Linear congruential generators work (Microsoft Visual C++)")
+TEST_CASE(
+    "Linear congruential generators work (Microsoft Visual C++)",
+    "[util][crypt]")
 {
     Lcg l(LcgKind::MicrosoftVisualC, 0xDEADBEEF);
     REQUIRE(l.next() == 18337);
@@ -16,7 +18,7 @@ TEST_CASE("Linear congruential generators work (Microsoft Visual C++)")
     REQUIRE(l.next() == 19149);
 }
 
-TEST_CASE("Linear congruential generators work (Park&Miller)")
+TEST_CASE("Linear congruential generators work (Park&Miller)", "[util][crypt]")
 {
     Lcg l(LcgKind::ParkMiller, 0xDEADBEEF);
     REQUIRE(l.next() == 193);
@@ -29,7 +31,9 @@ TEST_CASE("Linear congruential generators work (Park&Miller)")
     REQUIRE(l.next() == 114);
 }
 
-TEST_CASE("Linear congruential generators work (Park&Miller revised)")
+TEST_CASE(
+    "Linear congruential generators work (Park&Miller revised)",
+    "[util][crypt]")
 {
     Lcg l(LcgKind::ParkMillerRevised, 0xDEADBEEF);
     REQUIRE(l.next() == 246);

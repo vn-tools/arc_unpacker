@@ -15,14 +15,14 @@ static void do_test(
     tests::compare_files(*expected_file, *actual_file, false);
 }
 
-TEST_CASE("Decoding ENTIS's lossy LOT/DCT audio works")
+TEST_CASE("Decoding ENTIS's lossy LOT/DCT audio works", "[fmt]")
 {
     do_test(
         "tests/fmt/entis/files/mio/explosion.mio",
         "tests/fmt/entis/files/mio/explosion-out.wav");
 }
 
-TEST_CASE("Decoding ENTIS's lossy LOT/DCT+MSS audio works")
+TEST_CASE("Decoding ENTIS's lossy LOT/DCT+MSS audio works", "[fmt]")
 {
     do_test(
         "tests/fmt/entis/files/mio/SE_017.mio",

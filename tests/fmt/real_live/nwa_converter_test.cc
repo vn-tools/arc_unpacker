@@ -15,14 +15,18 @@ static void do_test(
     tests::compare_files(*expected_file, *actual_file, false);
 }
 
-TEST_CASE("Decoding RealLive's NWA level 0-compressed mono sound files works")
+TEST_CASE(
+    "Decoding RealLive's NWA level 0-compressed mono sound files works",
+    "[fmt]")
 {
     do_test(
         "tests/fmt/real_live/files/nwa/BT_KOE_HCC01-zlib.nwa",
         "tests/fmt/real_live/files/nwa/BT_KOE_HCC01-zlib-out.wav");
 }
 
-TEST_CASE("Decoding RealLive's NWA level 0-compressed stereo sound files works")
+TEST_CASE(
+    "Decoding RealLive's NWA level 0-compressed stereo sound files works",
+    "[fmt]")
 {
     do_test(
         "tests/fmt/real_live/files/nwa/BATSWING-zlib.nwa",

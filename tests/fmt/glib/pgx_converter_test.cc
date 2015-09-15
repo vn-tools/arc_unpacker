@@ -16,14 +16,14 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("Decoding transparent PGX images works")
+TEST_CASE("Decoding transparent PGX images works", "[fmt]")
 {
     do_test(
         "tests/fmt/glib/files/pgx/CFG_PAGEBTN.PGX",
         "tests/fmt/glib/files/pgx/CFG_PAGEBTN-out.png");
 }
 
-TEST_CASE("Decoding opaque PGX images works")
+TEST_CASE("Decoding opaque PGX images works", "[fmt]")
 {
     do_test(
         "tests/fmt/glib/files/pgx/BG010A.PGX",

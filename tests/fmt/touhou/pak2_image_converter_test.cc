@@ -25,28 +25,28 @@ static void do_test(
     do_test(converter, input_path, expected_path);
 }
 
-TEST_CASE("Decoding CV2 32-bit images works")
+TEST_CASE("Decoding CV2 32-bit images works", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/pak2/0000_00.cv2",
         "tests/fmt/touhou/files/pak2/0000_00-out.png");
 }
 
-TEST_CASE("Decoding CV2 24-bit images works")
+TEST_CASE("Decoding CV2 24-bit images works", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/pak2/0000_00.cv2",
         "tests/fmt/touhou/files/pak2/0000_00-out.png");
 }
 
-TEST_CASE("Decoding CV2 8-bit images without external palette works")
+TEST_CASE("Decoding CV2 8-bit images without external palette works", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/pak2/stand000.cv2",
         "tests/fmt/touhou/files/pak2/stand000-out.png");
 }
 
-TEST_CASE("Decoding CV2 8-bit images with external palette works")
+TEST_CASE("Decoding CV2 8-bit images with external palette works", "[fmt]")
 {
     Pak2ImageConverter converter;
 

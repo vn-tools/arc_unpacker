@@ -16,35 +16,39 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("Decoding ENTIS's lossless Huffman 32-bit non-flipped images works")
+TEST_CASE(
+    "Decoding ENTIS's lossless Huffman 32-bit non-flipped images works",
+    "[fmt]")
 {
     do_test(
         "tests/fmt/entis/files/eri/img_rgba32.eri",
         "tests/fmt/entis/files/eri/img_rgba32-out.png");
 }
 
-TEST_CASE("Decoding ENTIS's lossless Gamma 32-bit flipped images works")
+TEST_CASE(
+    "Decoding ENTIS's lossless Gamma 32-bit flipped images works", "[fmt]")
 {
     do_test(
         "tests/fmt/entis/files/eri/cb10_14.eri",
         "tests/fmt/entis/files/eri/cb10_14-out.png");
 }
 
-TEST_CASE("Decoding ENTIS's lossless Nemesis 32-bit flipped images works")
+TEST_CASE(
+    "Decoding ENTIS's lossless Nemesis 32-bit flipped images works", "[fmt]")
 {
     do_test(
         "tests/fmt/entis/files/eri/FRM_0201.eri",
         "tests/fmt/entis/files/eri/FRM_0201-out.png");
 }
 
-TEST_CASE("Decoding ENTIS's multi images works")
+TEST_CASE("Decoding ENTIS's multi images works", "[fmt]")
 {
     do_test(
         "tests/fmt/entis/files/eri/FRM_0102.eri",
         "tests/fmt/entis/files/eri/FRM_0102-out.png");
 }
 
-TEST_CASE("Decoding ENTIS's 8-bit non-paletted images works")
+TEST_CASE("Decoding ENTIS's 8-bit non-paletted images works", "[fmt]")
 {
     do_test(
         "tests/fmt/entis/files/eri/font24.eri",

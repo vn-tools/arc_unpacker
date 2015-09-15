@@ -23,12 +23,12 @@ static const bstr utf8 =
     "\xA1\xE3\x81\xA4\xE3\x81\xA6\xE3\x81\xA8"
     "\x00"_b;
 
-TEST_CASE("Converting SJIS to UTF8 works")
+TEST_CASE("Converting SJIS to UTF8 works", "[util]")
 {
     REQUIRE(convert_encoding(sjis, "sjis", "utf-8") == utf8);
 }
 
-TEST_CASE("Converting UTF8 to SJIS works")
+TEST_CASE("Converting UTF8 to SJIS works", "[util]")
 {
     REQUIRE(convert_encoding(utf8, "utf-8", "sjis") == sjis);
 }

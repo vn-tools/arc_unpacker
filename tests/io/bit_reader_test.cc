@@ -13,7 +13,7 @@ static bstr from_bits(std::initializer_list<u8> s)
     return x;
 }
 
-TEST_CASE("Reading missing bits throws exceptions", "[util][bit_reader]")
+TEST_CASE("Reading missing bits throws exceptions", "[io]")
 {
     BitReader reader(""_b);
     try
@@ -26,7 +26,7 @@ TEST_CASE("Reading missing bits throws exceptions", "[util][bit_reader]")
     }
 }
 
-TEST_CASE("Reading single bits works", "[util][bit_reader]")
+TEST_CASE("Reading single bits works", "[io]")
 {
     BitReader reader("\x8F"_b); //10001111
     REQUIRE(reader.get(1));
@@ -39,14 +39,14 @@ TEST_CASE("Reading single bits works", "[util][bit_reader]")
     REQUIRE(reader.get(1));
 }
 
-TEST_CASE("Reading multiple bits works", "[util][bit_reader]")
+TEST_CASE("Reading multiple bits works", "[io]")
 {
     BitReader reader(from_bits({ 0b10001111 }));
     REQUIRE(reader.get(7) == 0b1000111);
     REQUIRE(reader.get(1));
 }
 
-TEST_CASE("Reading multiple bytes works", "[util][bit_reader]")
+TEST_CASE("Reading multiple bytes works", "[io]")
 {
     SECTION("Smaller test")
     {
@@ -91,7 +91,7 @@ TEST_CASE("Reading multiple bytes works", "[util][bit_reader]")
     }
 }
 
-TEST_CASE("Checking for EOF works", "[util][bit_reader]")
+TEST_CASE("Checking for EOF works", "[io]")
 {
     BitReader reader("\x00\x00"_b);
     reader.get(7);
@@ -104,7 +104,7 @@ TEST_CASE("Checking for EOF works", "[util][bit_reader]")
     REQUIRE(reader.eof());
 }
 
-TEST_CASE("Checking size works", "[util][bit_reader]")
+TEST_CASE("Checking size works", "[io]")
 {
     BitReader reader1("\x00\x00"_b);
     REQUIRE(reader1.size() == 16);
@@ -114,7 +114,7 @@ TEST_CASE("Checking size works", "[util][bit_reader]")
     REQUIRE(reader3.size() == 0);
 }
 
-TEST_CASE("Seeking works", "[util][bit_reader]")
+TEST_CASE("Seeking works", "[io]")
 {
     SECTION("Integer aligned")
     {
@@ -200,7 +200,7 @@ TEST_CASE("Seeking works", "[util][bit_reader]")
     }
 }
 
-TEST_CASE("Skipping works", "[util][bit_reader]")
+TEST_CASE("Skipping works", "[io]")
 {
     BitReader reader(from_bits({
         0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
@@ -210,7 +210,7 @@ TEST_CASE("Skipping works", "[util][bit_reader]")
     REQUIRE(reader.get(8) == 0b10011001);
 }
 
-TEST_CASE("Reading beyond EOF retracts to prior offset", "[util][bit_reader]")
+TEST_CASE("Reading beyond EOF retracts to prior offset", "[io]")
 {
     SECTION("Byte-aligned without byte retrieval")
     {

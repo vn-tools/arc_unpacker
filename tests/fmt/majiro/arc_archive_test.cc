@@ -19,7 +19,7 @@ static void do_test(const std::string &input_path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Unpacking Majiro's v3 ARC archives works")
+TEST_CASE("Unpacking Majiro's v3 ARC archives works", "[fmt]")
 {
     do_test("tests/fmt/majiro/files/arc/v3.arc");
 }

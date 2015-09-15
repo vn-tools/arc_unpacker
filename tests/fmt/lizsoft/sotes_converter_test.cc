@@ -16,14 +16,14 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("Decoding RGB SOTES sprites works")
+TEST_CASE("Decoding RGB SOTES sprites works", "[fmt]")
 {
     do_test(
         "tests/fmt/lizsoft/files/#1410",
         "tests/fmt/lizsoft/files/#1410-out.png");
 }
 
-TEST_CASE("Decoding palette-based SOTES sprites works")
+TEST_CASE("Decoding palette-based SOTES sprites works", "[fmt]")
 {
     do_test(
         "tests/fmt/lizsoft/files/#1726",

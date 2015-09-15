@@ -5,7 +5,7 @@
 
 using namespace au;
 
-TEST_CASE("Converting single files with CLI facade works")
+TEST_CASE("Converting single files with CLI facade works", "[core][frontend]")
 {
     ArcUnpacker arc_unpacker(
         {
@@ -23,7 +23,7 @@ TEST_CASE("Converting single files with CLI facade works")
     boost::filesystem::remove("./AYU_03.png");
 }
 
-TEST_CASE("Unpacking archives with CLI facade works")
+TEST_CASE("Unpacking archives with CLI facade works", "[core][frontend]")
 {
     ArcUnpacker arc_unpacker(
         {

@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::yuka_script;
 
-TEST_CASE("Unpacking YKC archives works")
+TEST_CASE("Unpacking YKC archives works", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

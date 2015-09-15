@@ -39,7 +39,7 @@ void TestArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     file_saver.save(std::move(output_file));
 }
 
-TEST_CASE("Infinite recognition loops don't cause stack overflow")
+TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
 {
     TestArchive test_archive;
     File dummy_file;

@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::libido;
 
-TEST_CASE("Unpacking Libido's BID archives works")
+TEST_CASE("Unpacking Libido's BID archives works", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

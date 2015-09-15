@@ -3,14 +3,14 @@
 
 using namespace au::util;
 
-TEST_CASE("Formatting strings works")
+TEST_CASE("Formatting strings works", "[util]")
 {
     REQUIRE(format("%d", 1) == "1");
     REQUIRE(format("%02d", 5) == "05");
     REQUIRE(format("%.02f", 3.14f) == "3.14");
 }
 
-TEST_CASE("Formatting big strings works")
+TEST_CASE("Formatting big strings works", "[util]")
 {
     std::string big_string(1000, '-');
     REQUIRE(big_string.size() == 1000);

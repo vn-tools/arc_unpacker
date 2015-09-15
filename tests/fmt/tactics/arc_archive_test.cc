@@ -19,12 +19,12 @@ static void do_test(const std::string &input_path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Unpacking TACTICS's uncompressed ARC archives works")
+TEST_CASE("Unpacking TACTICS's uncompressed ARC archives works", "[fmt]")
 {
     do_test("tests/fmt/tactics/files/arc/uncompressed.arc");
 }
 
-TEST_CASE("Unpacking TACTICS's compressed ARC archives works")
+TEST_CASE("Unpacking TACTICS's compressed ARC archives works", "[fmt]")
 {
     do_test("tests/fmt/tactics/files/arc/compressed.arc");
 }

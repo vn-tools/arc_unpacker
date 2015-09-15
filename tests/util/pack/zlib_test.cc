@@ -5,7 +5,7 @@
 using namespace au;
 using namespace au::util::pack;
 
-TEST_CASE("Inflating works")
+TEST_CASE("Inflating works", "[util][pack]")
 {
     const bstr input =
         "\x78\xDA\xCB\xC9\x4C\x4B\x55\xC8"

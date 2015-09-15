@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::alice_soft;
 
-TEST_CASE("Decoding transparent AJP images works")
+TEST_CASE("Decoding transparent AJP images works", "[fmt]")
 {
     AjpConverter converter;
     auto input_file = tests::file_from_path(

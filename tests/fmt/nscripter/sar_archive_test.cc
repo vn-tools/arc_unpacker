@@ -7,7 +7,7 @@ using namespace au;
 using namespace au::fmt;
 using namespace au::fmt::nscripter;
 
-TEST_CASE("Unpacking SAR archives works")
+TEST_CASE("Unpacking SAR archives works", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

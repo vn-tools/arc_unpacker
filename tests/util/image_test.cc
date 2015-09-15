@@ -5,7 +5,7 @@
 using namespace au;
 using namespace au::util;
 
-TEST_CASE("Reading transparent PNG images works")
+TEST_CASE("Reading transparent PNG images works", "[util]")
 {
     io::FileIO io("tests/files/reimu_transparent.png", io::FileMode::Read);
 
@@ -20,7 +20,7 @@ TEST_CASE("Reading transparent PNG images works")
     REQUIRE(static_cast<int>(color.a) == 0xFF);
 }
 
-TEST_CASE("Reading opaque PNG images works")
+TEST_CASE("Reading opaque PNG images works", "[util]")
 {
     io::FileIO io("tests/files/usagi_opaque.png", io::FileMode::Read);
 
@@ -35,7 +35,7 @@ TEST_CASE("Reading opaque PNG images works")
     REQUIRE(static_cast<int>(color.a) == 0xFF);
 }
 
-TEST_CASE("Reading JPEG images works")
+TEST_CASE("Reading JPEG images works", "[util]")
 {
     io::FileIO io("tests/files/reimu_opaque.jpg", io::FileMode::Read);
 

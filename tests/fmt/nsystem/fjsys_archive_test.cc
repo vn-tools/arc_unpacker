@@ -7,7 +7,7 @@ using namespace au;
 using namespace au::fmt;
 using namespace au::fmt::nsystem;
 
-TEST_CASE("Unpacking FJSYS archives works")
+TEST_CASE("Unpacking FJSYS archives works", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

@@ -5,7 +5,7 @@
 using namespace au;
 using namespace au::fmt::riddle_soft;
 
-TEST_CASE("Decoding Riddle Soft's CMP files works")
+TEST_CASE("Decoding Riddle Soft's CMP files works", "[fmt]")
 {
     CmpConverter converter;
     auto input_file = tests::file_from_path(

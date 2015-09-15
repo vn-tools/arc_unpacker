@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::minato_soft;
 
-TEST_CASE("Decoding MinatoSoft's FIL mask images works")
+TEST_CASE("Decoding MinatoSoft's FIL mask images works", "[fmt]")
 {
     FilConverter converter;
     auto input_file = tests::zlib_file_from_path(

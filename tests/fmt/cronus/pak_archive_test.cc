@@ -19,17 +19,20 @@ static void do_test(const std::string &input_path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Unpacking unencrypted uncompressed Cronus PAK archives works")
+TEST_CASE(
+    "Unpacking unencrypted uncompressed Cronus PAK archives works", "[fmt]")
 {
     do_test("tests/fmt/cronus/files/pak/unencrypted-uncompressed.pak");
 }
 
-TEST_CASE("Unpacking encrypted uncompressed Cronus PAK archives works")
+TEST_CASE(
+    "Unpacking encrypted uncompressed Cronus PAK archives works", "[fmt]")
 {
     do_test("tests/fmt/cronus/files/pak/encrypted-uncompressed.pak");
 }
 
-TEST_CASE("Unpacking encrypted compressed Cronus PAK archives works")
+TEST_CASE(
+    "Unpacking encrypted compressed Cronus PAK archives works", "[fmt]")
 {
     do_test("tests/fmt/cronus/files/pak/encrypted-compressed.pak");
 }

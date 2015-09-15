@@ -5,7 +5,7 @@
 using namespace au;
 using namespace au::fmt::liar_soft;
 
-TEST_CASE("Decoding LiarSoft's packed OGG sound files works")
+TEST_CASE("Decoding LiarSoft's packed OGG sound files works", "[fmt]")
 {
     PackedOggConverter converter;
     auto input_file = tests::file_from_path(

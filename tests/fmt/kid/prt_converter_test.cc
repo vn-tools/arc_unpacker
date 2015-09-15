@@ -16,21 +16,21 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("Decoding PRT images works")
+TEST_CASE("Decoding PRT images works", "[fmt]")
 {
     do_test(
         "tests/fmt/kid/files/prt/bg01a1.prt",
         "tests/fmt/kid/files/prt/bg01a1-out.png");
 }
 
-TEST_CASE("Decoding PRT images with alpha channel works")
+TEST_CASE("Decoding PRT images with alpha channel works", "[fmt]")
 {
     do_test(
         "tests/fmt/kid/files/cps/yh04adm.prt",
         "tests/fmt/kid/files/prt/yh04adm-out.png");
 }
 
-TEST_CASE("Decoding 8-bit PRT images works")
+TEST_CASE("Decoding 8-bit PRT images works", "[fmt]")
 {
     do_test(
         "tests/fmt/kid/files/prt/saver_sm.prt",

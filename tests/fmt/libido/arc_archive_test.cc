@@ -19,12 +19,12 @@ static void do_test(const std::string &input_path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Unpacking Libido's unencrypted ARC archives works")
+TEST_CASE("Unpacking Libido's unencrypted ARC archives works", "[fmt]")
 {
     do_test("tests/fmt/libido/files/arc/unencrypted.arc");
 }
 
-TEST_CASE("Unpacking Libido's encrypted ARC archives works")
+TEST_CASE("Unpacking Libido's encrypted ARC archives works", "[fmt]")
 {
     do_test("tests/fmt/libido/files/arc/encrypted.arc");
 }

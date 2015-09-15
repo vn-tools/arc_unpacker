@@ -19,7 +19,7 @@ static void do_test(DatArchive &archive, const std::string &path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Unpacking plain Whale's DAT archives works")
+TEST_CASE("Unpacking plain Whale's DAT archives works", "[fmt]")
 {
     DatArchive archive;
     archive.add_file_name("123.txt");
@@ -27,7 +27,7 @@ TEST_CASE("Unpacking plain Whale's DAT archives works")
     do_test(archive, "tests/fmt/whale/files/dat/plain.dat");
 }
 
-TEST_CASE("Unpacking compressed Whale's DAT archives works")
+TEST_CASE("Unpacking compressed Whale's DAT archives works", "[fmt]")
 {
     DatArchive archive;
     archive.add_file_name("123.txt");
@@ -36,7 +36,9 @@ TEST_CASE("Unpacking compressed Whale's DAT archives works")
     do_test(archive, "tests/fmt/whale/files/dat/compressed.dat");
 }
 
-TEST_CASE("Unpacking compressed Whale's DAT archives with unknown names works")
+TEST_CASE(
+    "Unpacking compressed Whale's DAT archives with unknown names works",
+    "[fmt]")
 {
     DatArchive archive;
     archive.set_game_title("A Dog Story");
@@ -53,7 +55,7 @@ TEST_CASE("Unpacking compressed Whale's DAT archives with unknown names works")
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Unpacking fully encrypted Whale's DAT archives works")
+TEST_CASE("Unpacking fully encrypted Whale's DAT archives works", "[fmt]")
 {
     DatArchive archive;
     archive.add_file_name("123.txt");

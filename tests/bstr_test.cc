@@ -3,14 +3,14 @@
 
 using namespace au;
 
-TEST_CASE("bstr()", "[au]")
+TEST_CASE("bstr()", "[core][types]")
 {
     bstr x;
     REQUIRE(x == ""_b);
     REQUIRE(x.size() == 0);
 }
 
-TEST_CASE("bstr(size_t, u8", "[au]")
+TEST_CASE("bstr(size_t, u8", "[core][types]")
 {
     bstr x(6);
     REQUIRE(x == "\x00\x00\x00\x00\x00\x00"_b);
@@ -20,14 +20,14 @@ TEST_CASE("bstr(size_t, u8", "[au]")
     REQUIRE(y.size() == 6);
 }
 
-TEST_CASE("bstr(char*)", "[au]")
+TEST_CASE("bstr(char*)", "[core][types]")
 {
     bstr x("test\x00\x01", 6);
     REQUIRE(x == "test\x00\x01"_b);
     REQUIRE(x.size() == 6);
 }
 
-TEST_CASE("bstr(std::string)", "[au]")
+TEST_CASE("bstr(std::string)", "[core][types]")
 {
     bstr x(std::string("test\x00\x01", 6));
     REQUIRE(x == "test\x00\x01"_b);
@@ -37,7 +37,7 @@ TEST_CASE("bstr(std::string)", "[au]")
     REQUIRE(y.size() == 4);
 }
 
-TEST_CASE("bstr.str", "[au]")
+TEST_CASE("bstr.str", "[core][types]")
 {
     bstr x("test\x00\x01", 6);
     REQUIRE(x.str() == std::string("test\x00\x01", 6));
@@ -47,7 +47,7 @@ TEST_CASE("bstr.str", "[au]")
     REQUIRE(y.str(true).size() == 4);
 }
 
-TEST_CASE("bstr.find", "[au]")
+TEST_CASE("bstr.find", "[core][types]")
 {
     bstr x("test\x00\x01", 6);
     REQUIRE(x.find("y"_b) == bstr::npos);
@@ -56,7 +56,7 @@ TEST_CASE("bstr.find", "[au]")
     REQUIRE(x.find("\x00\x01"_b) == 4);
 }
 
-TEST_CASE("bstr.substr", "[au]")
+TEST_CASE("bstr.substr", "[core][types]")
 {
     bstr x("test\x00\x01", 6);
     REQUIRE(x.substr(0, 6) == x);
@@ -69,7 +69,7 @@ TEST_CASE("bstr.substr", "[au]")
     //REQUIRE_THROWS(x.substr(-1, 1));
 }
 
-TEST_CASE("bstr.resize()", "[au]")
+TEST_CASE("bstr.resize()", "[core][types]")
 {
     bstr x = "\x01\x02"_b;
     x.resize(2);
@@ -80,7 +80,7 @@ TEST_CASE("bstr.resize()", "[au]")
     REQUIRE(x == "\x01"_b);
 }
 
-TEST_CASE("bstr.operator+", "[au]")
+TEST_CASE("bstr.operator+", "[core][types]")
 {
     bstr x = "\x00\x01"_b;
     bstr y = "\x00\x02"_b;
@@ -88,7 +88,7 @@ TEST_CASE("bstr.operator+", "[au]")
     REQUIRE(z == "\x00\x01\x00\x02"_b);
 }
 
-TEST_CASE("bstr.operator+=(bstr)", "[au]")
+TEST_CASE("bstr.operator+=(bstr)", "[core][types]")
 {
     bstr x = "\x00\x01"_b;
     bstr y = "\x00\x02"_b;
@@ -99,7 +99,7 @@ TEST_CASE("bstr.operator+=(bstr)", "[au]")
     REQUIRE(z == "\x00\x01\x00\x02"_b);
 }
 
-TEST_CASE("bstr.operator+=(char)", "[au]")
+TEST_CASE("bstr.operator+=(char)", "[core][types]")
 {
     bstr z = ""_b;
     REQUIRE(z == ""_b);
@@ -108,7 +108,7 @@ TEST_CASE("bstr.operator+=(char)", "[au]")
     REQUIRE(z == "A\xFF"_b);
 }
 
-TEST_CASE("bstr.operator==", "[au]")
+TEST_CASE("bstr.operator==", "[core][types]")
 {
     bstr x = "\x00\x01"_b;
     bstr y = "\x00\x01"_b;
@@ -118,7 +118,7 @@ TEST_CASE("bstr.operator==", "[au]")
     REQUIRE(y == y);
 }
 
-TEST_CASE("bstr.operator!=", "[au]")
+TEST_CASE("bstr.operator!=", "[core][types]")
 {
     bstr x = "\x00\x01"_b;
     bstr y = "\x00\x00"_b;
@@ -128,7 +128,7 @@ TEST_CASE("bstr.operator!=", "[au]")
     REQUIRE(y == y);
 }
 
-TEST_CASE("bstr.operator[]", "[au]")
+TEST_CASE("bstr.operator[]", "[core][types]")
 {
     bstr x = "\x00\x01"_b;
     REQUIRE(x[0] == '\x00');
@@ -137,7 +137,7 @@ TEST_CASE("bstr.operator[]", "[au]")
     REQUIRE(x[0] == '\x0F');
 }
 
-TEST_CASE("bstr.get", "[au]")
+TEST_CASE("bstr.get", "[core][types]")
 {
     bstr x = "\x00\x01"_b;
     REQUIRE(x.get<char>()[0] == 0);
@@ -145,7 +145,7 @@ TEST_CASE("bstr.get", "[au]")
     REQUIRE(bstr(x.get<char>(), 2) == "\x00\x01"_b);
 }
 
-TEST_CASE("bstr.end", "[au]")
+TEST_CASE("bstr.end", "[core][types]")
 {
     bstr x = "\x00\x01"_b;
     REQUIRE(x.end<char>()[-1] == 1);
@@ -159,7 +159,7 @@ TEST_CASE("bstr.end", "[au]")
     REQUIRE(y.end<u16>()[-1] == 0x100);
 }
 
-TEST_CASE("iterating over bstr", "[au]")
+TEST_CASE("iterating over bstr", "[core][types]")
 {
     bstr tmp = ""_b;
     for (auto c : "123"_b)

@@ -20,12 +20,12 @@ static void test_pak_archive(const std::string &path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Unpacking uncompressed PAK archives works")
+TEST_CASE("Unpacking uncompressed PAK archives works", "[fmt]")
 {
     test_pak_archive("tests/fmt/nitroplus/files/pak/uncompressed.pak");
 }
 
-TEST_CASE("Unpacking compressed PAK archives works")
+TEST_CASE("Unpacking compressed PAK archives works", "[fmt]")
 {
     test_pak_archive("tests/fmt/nitroplus/files/pak/compressed.pak");
 }

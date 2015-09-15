@@ -16,35 +16,35 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("Decoding 8 bit Cronus images works (DokiDoki Princess)")
+TEST_CASE("Decoding 8 bit Cronus images works (DokiDoki Princess)", "[fmt]")
 {
     do_test(
         "tests/fmt/cronus/files/grp/DPBG03D",
         "tests/fmt/cronus/files/grp/DPBG03D-out.png");
 }
 
-TEST_CASE("Decoding 24 bit Cronus images works (DokiDoki Princess)")
+TEST_CASE("Decoding 24 bit Cronus images works (DokiDoki Princess)", "[fmt]")
 {
     do_test(
         "tests/fmt/cronus/files/grp/TCF12",
         "tests/fmt/cronus/files/grp/TCF12-out.png");
 }
 
-TEST_CASE("Decoding 24 bit Cronus images works (Sweet Pleasure)")
+TEST_CASE("Decoding 24 bit Cronus images works (Sweet Pleasure)", "[fmt]")
 {
     do_test(
         "tests/fmt/cronus/files/grp/MSGPARTS",
         "tests/fmt/cronus/files/grp/MSGPARTS-out.png");
 }
 
-TEST_CASE("Decoding 8 bit v2 Cronus images works (Nursery Song)")
+TEST_CASE("Decoding 8 bit v2 Cronus images works (Nursery Song)", "[fmt]")
 {
     do_test(
         "tests/fmt/cronus/files/grp/SR1",
         "tests/fmt/cronus/files/grp/SR1-out.png");
 }
 
-TEST_CASE("Decoding 32 bit v2 Cronus images works (Nursery Song)")
+TEST_CASE("Decoding 32 bit v2 Cronus images works (Nursery Song)", "[fmt]")
 {
     do_test(
         "tests/fmt/cronus/files/grp/SELWIN",
