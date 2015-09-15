@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 #include "file.h"
 #include "io/io.h"
 #include "pix/grid.h"
@@ -24,7 +23,7 @@ namespace util {
         const pix::Grid &pixels() const;
 
     private:
-        Image(size_t width, size_t height);
+        Image();
 
         struct Priv;
         std::unique_ptr<Priv> p;

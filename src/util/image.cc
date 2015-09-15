@@ -28,15 +28,21 @@ static void png_flush(png_structp)
 
 struct Image::Priv final
 {
-    Priv(size_t width, size_t height);
+    Priv();
+    ~Priv();
+
     static std::unique_ptr<Image> from_png(io::IO &io);
     static std::unique_ptr<Image> from_jpeg(io::IO &io);
     void save_png(io::IO &io);
 
-    pix::Grid pixels;
+    std::unique_ptr<pix::Grid> pixels;
 };
 
-Image::Priv::Priv(size_t width, size_t height) : pixels(width, height)
+Image::Priv::Priv()
+{
+}
+
+Image::Priv::~Priv()
 {
 }
 
@@ -73,40 +79,26 @@ std::unique_ptr<Image> Image::Priv::from_png(io::IO &io)
     if (bits_per_channel != 8)
         throw err::UnsupportedBitDepthError(bits_per_channel);
 
-    std::unique_ptr<Image> image(new Image(width, height));
-
-    io::BufferedIO tmp_io;
     png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
 
+    pix::Format format;
+    if (color_type == PNG_COLOR_TYPE_RGB)
+        format = pix::Format::BGR888;
+    else if (color_type == PNG_COLOR_TYPE_RGBA)
+        format = pix::Format::BGRA8888;
+    else if (color_type == PNG_COLOR_TYPE_GRAY)
+        format = pix::Format::Gray8;
+    else
+        throw err::NotSupportedError("Bad pixel format");
+
+    bstr data;
+    data.reserve(width * height * format_to_bpp(format));
     for (auto y : range(height))
-    {
-        const u8 *row_ptr = reinterpret_cast<const u8*>(row_pointers[y]);
-        for (auto x : range(width))
-        {
-            switch (color_type)
-            {
-                case PNG_COLOR_TYPE_RGB:
-                    image->p->pixels.at(x, y)
-                        = pix::read<pix::Format::BGR888>(row_ptr);
-                    break;
-
-                case PNG_COLOR_TYPE_RGBA:
-                    image->p->pixels.at(x, y)
-                        = pix::read<pix::Format::BGRA8888>(row_ptr);
-                    break;
-
-                case PNG_COLOR_TYPE_GRAY:
-                    image->p->pixels.at(x, y)
-                        = pix::read<pix::Format::Gray8>(row_ptr);
-                    break;
-
-                default:
-                    throw err::NotSupportedError("Bad pixel format");
-            }
-        }
-    }
-
+        data += bstr(row_pointers[y], width * format_to_bpp(format));
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+
+    std::unique_ptr<Image> image(new Image);
+    image->p->pixels.reset(new pix::Grid(width, height, data, format));
     return image;
 }
 
@@ -124,37 +116,26 @@ std::unique_ptr<Image> Image::Priv::from_jpeg(io::IO &io)
 
     auto width = info.output_width;
     auto height = info.output_height;
-    std::unique_ptr<Image> image(new Image(width, height));
+    auto channels = info.num_components;
 
-    bstr row(width * info.num_components);
+    pix::Format format;
+    if (channels == 3)
+        format = pix::Format::RGB888;
+    else if (channels == 4)
+        format = pix::Format::RGBA8888;
+    else
+        throw err::NotSupportedError("Bad pixel format");
+
+    bstr raw_data(width * height * channels);
     for (auto y : range(height))
     {
-        auto row_in_ptr = row.get<u8>();
-        jpeg_read_scanlines(&info, &row_in_ptr, 1);
-
-        auto row_ptr = row.get<const u8>();
-        for (auto x : range(width))
-        {
-            switch (info.num_components)
-            {
-                case 3:
-                    image->p->pixels.at(x, y)
-                        = pix::read<pix::Format::RGB888>(row_ptr);
-                    break;
-
-                case 4:
-                    image->p->pixels.at(x, y)
-                        = pix::read<pix::Format::RGBA8888>(row_ptr);
-                    break;
-
-                default:
-                    throw err::UnsupportedChannelCountError(
-                        info.num_components);
-            }
-        }
+        auto ptr = raw_data.get<u8>() + y * width * channels;
+        jpeg_read_scanlines(&info, &ptr, 1);
     }
-
     jpeg_finish_decompress(&info);
+
+    std::unique_ptr<Image> image(new Image);
+    image->p->pixels.reset(new pix::Grid(width, height, raw_data, format));
     return image;
 }
 
@@ -169,8 +150,8 @@ void Image::Priv::save_png(io::IO &io)
     if (!info_ptr)
         throw std::logic_error("Failed to create PNG info structure");
 
-    auto width = pixels.width();
-    auto height = pixels.height();
+    auto width = pixels->width();
+    auto height = pixels->height();
     const auto bpp = 4;
     const auto color_type = PNG_COLOR_TYPE_RGBA;
     int transformations = PNG_TRANSFORM_BGR;
@@ -190,13 +171,13 @@ void Image::Priv::save_png(io::IO &io)
 
     std::unique_ptr<png_bytep[]> rows(new png_bytep[height]);
     for (auto y : range(height))
-        rows.get()[y] = reinterpret_cast<png_bytep>(&pixels.at(0, y));
+        rows.get()[y] = reinterpret_cast<png_bytep>(&pixels->at(0, y));
     png_set_rows(png_ptr, info_ptr, rows.get());
     png_write_png(png_ptr, info_ptr, transformations, nullptr);
     png_destroy_write_struct(&png_ptr, &info_ptr);
 }
 
-Image::Image(size_t width, size_t height) : p(new Priv(width, height))
+Image::Image() : p(new Priv())
 {
 }
 
@@ -206,10 +187,8 @@ Image::~Image()
 
 std::unique_ptr<Image> Image::from_pixels(const pix::Grid &pixels)
 {
-    std::unique_ptr<Image> image(new Image(pixels.width(), pixels.height()));
-    for (auto y : range(pixels.height()))
-    for (auto x : range(pixels.width()))
-        image->p->pixels.at(x, y) = pixels.at(x, y);
+    std::unique_ptr<Image> image(new Image);
+    image->p->pixels.reset(new pix::Grid(pixels));
     return image;
 }
 
@@ -252,10 +231,10 @@ std::unique_ptr<File> Image::create_file(const std::string &name) const
 
 pix::Grid &Image::pixels()
 {
-    return p->pixels;
+    return *p->pixels;
 }
 
 const pix::Grid &Image::pixels() const
 {
-    return p->pixels;
+    return *p->pixels;
 }
