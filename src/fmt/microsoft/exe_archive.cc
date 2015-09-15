@@ -158,7 +158,7 @@ namespace
         u32 code_page;
     };
 
-    class RvaHelper
+    class RvaHelper final
     {
     public:
         RvaHelper(
@@ -188,7 +188,7 @@ namespace
         size_t base_offset;
     };
 
-    class ResourceCrawler
+    class ResourceCrawler final
     {
     public:
         static void crawl(const ResourceCrawlerArgs &args);

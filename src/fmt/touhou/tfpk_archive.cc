@@ -29,7 +29,7 @@ using namespace au::fmt::touhou;
 
 namespace
 {
-    class RsaReader
+    class RsaReader final
     {
     public:
         RsaReader(io::IO &io);

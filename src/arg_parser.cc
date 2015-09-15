@@ -13,6 +13,7 @@ namespace
     struct OptionImpl : Option
     {
         OptionImpl(const std::initializer_list<std::string> &names);
+        virtual ~OptionImpl();
         virtual Option *set_description(const std::string &desc) override;
         bool has_name(const std::string &name) const;
         virtual std::string get_invocation_help() const;
@@ -45,6 +46,10 @@ namespace
 
 OptionImpl::OptionImpl(const std::initializer_list<std::string> &names)
     : names(names), description("No description"), is_set(false)
+{
+}
+
+OptionImpl::~OptionImpl()
 {
 }
 

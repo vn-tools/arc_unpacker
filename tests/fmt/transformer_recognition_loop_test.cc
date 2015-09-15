@@ -10,7 +10,7 @@ using path = boost::filesystem::path;
 
 namespace
 {
-    class TestArchive : public Archive
+    class TestArchive final : public Archive
     {
     public:
         TestArchive();

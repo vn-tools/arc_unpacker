@@ -10,7 +10,7 @@ using path = boost::filesystem::path;
 
 namespace
 {
-    class TestConverter : public Converter
+    class TestConverter final : public Converter
     {
     public:
         std::function<void(File&)> recognition_callback;
@@ -20,7 +20,7 @@ namespace
         std::unique_ptr<File> decode_internal(File &file) const override;
     };
 
-    class TestArchive : public Archive
+    class TestArchive final : public Archive
     {
     public:
         TestConverter test_converter;
@@ -31,7 +31,7 @@ namespace
             File &arc_file, FileSaver &file_saver) const override;
     };
 
-    class FilesystemTestArchive : public Archive
+    class FilesystemTestArchive final : public Archive
     {
     public:
         FilesystemTestArchive();

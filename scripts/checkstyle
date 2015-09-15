@@ -23,6 +23,24 @@ grep 'iostream' **/*.{cc,h} | grep -v logger && exit 1
 echo 'Checking for sloppy exceptions...'
 grep 'throw std' **/*.cc|grep -v logic_error
 
+echo 'Checking for nonfinal struct/classes...'
+grep 'struct\|class' **/*.{cc,h} \
+    | grep -v 'structure' \
+    | grep -v '_struct' \
+    | grep -v 'pngstruct' \
+    | grep -v 'enum class' \
+    | grep -v ';$' \
+    | grep -v 'file_saver.*class FileSaver' \
+    | grep -v 'io.*class IO' \
+    | grep -v 'err.*struct .*Error' \
+    | grep -v 'arg_parser.*Option' \
+    | grep -v 'bit_reader.*class Reader' \
+    | grep -v 'archive.*class Archive' \
+    | grep -v 'converter.*class Converter' \
+    | grep -v 'transformer.*class Transformer' \
+    | grep -v 'fmt/entis.*class \(SoundDecoderImpl\|Decoder\)' \
+    | grep -v ' final'
+
 echo 'Checking for nonstatic constructs...'
 grep '^[A-Z0-9a-z:<>_]\{1,\} [^:]*[(;]' **/*.cc \
     | grep -v 'using namespace' \

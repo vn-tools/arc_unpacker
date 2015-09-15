@@ -33,7 +33,7 @@ namespace sound {
     class SoundDecoderImpl
     {
     public:
-        virtual ~SoundDecoderImpl() { }
+        virtual ~SoundDecoderImpl();
         virtual bstr process_chunk(const MioChunk &) = 0;
     };
 
