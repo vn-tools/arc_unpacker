@@ -37,14 +37,6 @@ TEST_CASE("bstr(std::string)", "[au]")
     REQUIRE(y.size() == 4);
 }
 
-TEST_CASE("bstr.resize", "[au]")
-{
-    bstr x;
-    x.resize(5);
-    REQUIRE(x == "\x00\x00\x00\x00\x00"_b);
-    REQUIRE(x.size() == 5);
-}
-
 TEST_CASE("bstr.str", "[au]")
 {
     bstr x("test\x00\x01", 6);
@@ -79,11 +71,13 @@ TEST_CASE("bstr.substr", "[au]")
 
 TEST_CASE("bstr.resize()", "[au]")
 {
-    bstr x = "\x00\x01"_b;
+    bstr x = "\x01\x02"_b;
     x.resize(2);
-    REQUIRE(x == "\x00\x01"_b);
+    REQUIRE(x == "\x01\x02"_b);
     x.resize(4);
-    REQUIRE(x == "\x00\x01\x00\x00"_b);
+    REQUIRE(x == "\x01\x02\x00\x00"_b);
+    x.resize(1);
+    REQUIRE(x == "\x01"_b);
 }
 
 TEST_CASE("bstr.operator+", "[au]")
