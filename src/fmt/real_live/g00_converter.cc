@@ -34,8 +34,7 @@ namespace
 static bstr decompress(
     const bstr &input, size_t output_size, size_t byte_count, size_t size_delta)
 {
-    bstr output;
-    output.resize(output_size);
+    bstr output(output_size);
 
     u8 *output_ptr = output.get<u8>();
     const u8 *output_end = output.end<const u8>();
@@ -105,8 +104,7 @@ static std::unique_ptr<File> decode_v1(File &file, size_t width, size_t height)
 
 static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
 {
-    std::vector<std::unique_ptr<Region>> regions;
-    regions.resize(file.io.read_u32_le());
+    std::vector<std::unique_ptr<Region>> regions(file.io.read_u32_le());
     for (auto i : util::range(regions.size()))
     {
         std::unique_ptr<Region> region(new Region);

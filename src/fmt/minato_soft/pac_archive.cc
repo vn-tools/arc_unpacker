@@ -52,8 +52,7 @@ static int init_huffman(io::BitReader &bit_reader, u16 nodes[2][512], int &pos)
 
 static bstr decompress_table(const bstr &input, size_t output_size)
 {
-    bstr output;
-    output.resize(output_size);
+    bstr output(output_size);
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<const u8>();
     io::BitReader bit_reader(input);

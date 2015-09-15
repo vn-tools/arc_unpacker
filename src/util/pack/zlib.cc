@@ -30,11 +30,9 @@ bstr util::pack::zlib_inflate(const bstr &input)
     int ret;
     do
     {
-        const size_t buffer_size = 8192;
-        bstr output_chunk;
-        output_chunk.resize(buffer_size);
+        bstr output_chunk(8192);
         stream.next_out = output_chunk.get<Bytef>();
-        stream.avail_out = buffer_size;
+        stream.avail_out = output_chunk.size();
         ret = inflate(&stream, 0);
         if (output.size() < stream.total_out)
             output += output_chunk.substr(0, stream.total_out - written);

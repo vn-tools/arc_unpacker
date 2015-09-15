@@ -93,8 +93,7 @@ static bstr decode_block(
         ? offsets.at(current_block + 1) - offsets.at(current_block)
         : io.size() - offsets.at(current_block);
 
-    bstr output;
-    output.resize(output_size * 2);
+    bstr output(output_size * 2);
     s16 *output_ptr = output.get<s16>();
 
     io.seek(offsets.at(current_block));

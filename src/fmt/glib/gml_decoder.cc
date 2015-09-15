@@ -6,8 +6,7 @@ using namespace au::fmt::glib;
 // modified LZSS
 bstr GmlDecoder::decode(const bstr &source, size_t target_size)
 {
-    bstr target;
-    target.resize(target_size);
+    bstr target(target_size);
     u8 *target_ptr = target.get<u8>();
     u8 *target_end = target_ptr + target.size();
     const u8 *source_ptr = source.get<const u8>();

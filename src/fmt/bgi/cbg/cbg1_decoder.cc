@@ -11,8 +11,7 @@ using namespace au::fmt::bgi::cbg;
 static bstr decompress_huffman(
     io::BitReader &bit_reader, const Tree &tree, size_t output_size)
 {
-    bstr output;
-    output.resize(output_size);
+    bstr output(output_size);
     for (auto i : util::range(output.size()))
         output[i] = tree.get_leaf(bit_reader);
     return output;
@@ -22,8 +21,7 @@ static bstr decompress_rle(bstr &input, size_t output_size)
 {
     io::BufferedIO input_io(input);
 
-    bstr output;
-    output.resize(output_size);
+    bstr output(output_size);
     auto output_ptr = output.get<u8>();
     auto output_end = output.get<const u8>() + output.size();
 

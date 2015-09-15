@@ -82,8 +82,7 @@ static bstr decode_v1(
         0x0244, 0x0262, 0x028A, 0x02BC, 0x02EE, 0x0320, 0x0384, 0x03E8,
     };
 
-    bstr samples;
-    samples.resize(sample_count * 2 * channels);
+    bstr samples(sample_count * 2 * channels);
     auto samples_ptr = samples.get<u16>();
     auto samples_end = samples.end<u16>();
 
@@ -123,8 +122,7 @@ static bstr decode_v2(io::IO &io, size_t sample_count, size_t channels)
     };
     static const u32 table2[] = { 3, 4, 5, 6, 8, 16, 32, 256 };
 
-    bstr samples;
-    samples.resize(sample_count * 2 * channels);
+    bstr samples(sample_count * 2 * channels);
 
     for (auto i : util::range(channels))
     {

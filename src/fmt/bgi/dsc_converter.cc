@@ -115,8 +115,7 @@ static NodeList get_nodes(io::IO &io, u32 key)
 
 static bstr decompress(io::IO &io, const NodeList &nodes, size_t output_size)
 {
-    bstr output;
-    output.resize(output_size);
+    bstr output(output_size);
     u8 *output_ptr = output.get<u8>();
     const u8 *output_start = output_ptr;
     const u8 *output_end = output_ptr + output.size();

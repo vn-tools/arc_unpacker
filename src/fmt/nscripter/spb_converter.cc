@@ -24,8 +24,7 @@ static std::unique_ptr<pix::Grid> decode_pixels(
     for (auto x : util::range(width))
         output->at(x, y).a = 0xFF;
 
-    bstr channel_data;
-    channel_data.resize(width * height);
+    bstr channel_data(width * height);
 
     for (int rgb = 2; rgb >= 0; rgb--)
     {

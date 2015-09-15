@@ -35,8 +35,7 @@ namespace
 
 static Permutation init_permutation(const DecodeContext &ctx)
 {
-    Permutation permutation;
-    permutation.resize(ctx.block_samples * 4);
+    Permutation permutation(ctx.block_samples * 4);
 
     auto permutation_ptr = &permutation[0];
     for (auto c : util::range(ctx.channel_count))

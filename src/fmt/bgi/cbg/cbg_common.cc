@@ -50,8 +50,7 @@ u32 cbg::read_variable_data(io::IO &input_io)
 
 FreqTable cbg::read_freq_table(io::IO &input_io, size_t tree_size)
 {
-    FreqTable freq_table;
-    freq_table.resize(tree_size);
+    FreqTable freq_table(tree_size);
     for (auto i : util::range(tree_size))
         freq_table[i] = cbg::read_variable_data(input_io);
     return freq_table;

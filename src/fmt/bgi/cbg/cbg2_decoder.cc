@@ -389,8 +389,7 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
     for (auto i : util::range(block_count + 1))
         block_offsets[i] = raw_data_io.read_u32_le();
 
-    bstr bmp_data;
-    bmp_data.resize(pad_width * pad_height * 4);
+    bstr bmp_data(pad_width * pad_height * 4);
     for (auto i : util::range(bmp_data.size()))
         bmp_data.get<u8>()[i] = 0xFF;
 

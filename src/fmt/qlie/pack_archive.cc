@@ -202,8 +202,7 @@ static void decrypt_file_data(
 
 static bstr decompress(const bstr &input, size_t output_size)
 {
-    bstr output;
-    output.resize(output_size);
+    bstr output(output_size);
     char *output_ptr = output.get<char>();
     const char *output_end = output_ptr + output_size;
 

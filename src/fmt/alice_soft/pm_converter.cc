@@ -22,8 +22,7 @@ static const bstr magic = "PM\x02\x00"_b;
 
 static bstr decompress(const bstr &input, size_t width, size_t height)
 {
-    bstr output;
-    output.resize(width * height);
+    bstr output(width * height);
     u8 *output_ptr = output.get<u8>();
     const u8 *output_end = output_ptr + output.size();
     const u8 *input_ptr = input.get<const u8>();

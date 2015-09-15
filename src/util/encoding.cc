@@ -18,8 +18,7 @@ bstr util::convert_encoding(
 
     char *input_ptr = const_cast<char*>(input.get<const char>());
     size_t input_bytes_left = input.size();
-    bstr buffer;
-    buffer.resize(32);
+    bstr buffer(32);
 
     while (true)
     {

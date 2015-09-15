@@ -20,8 +20,7 @@ static bstr decompress(const bstr &input, size_t size_original)
     const u8 *input_ptr = input.get<const u8>();
     const u8 *input_end = input_ptr + input.size();
 
-    bstr output;
-    output.resize(size_original);
+    bstr output(size_original);
     u8 *output_ptr = output.get<u8>();
     u8 *output_end = output_ptr + size_original;
 

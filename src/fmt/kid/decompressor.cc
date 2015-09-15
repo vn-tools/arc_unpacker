@@ -5,8 +5,7 @@ using namespace au;
 
 bstr au::fmt::kid::decompress(const bstr &input, size_t size_original)
 {
-    bstr output;
-    output.resize(size_original);
+    bstr output(size_original);
 
     u8 *output_ptr = output.get<u8>();
     const u8 *output_end = output_ptr + output.size();

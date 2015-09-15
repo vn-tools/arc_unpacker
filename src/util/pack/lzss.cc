@@ -56,8 +56,7 @@ bstr util::pack::lzss_decompress_bitwise(
 
 bstr util::pack::lzss_decompress_bytewise(const bstr &input, size_t output_size)
 {
-    bstr output;
-    output.resize(output_size);
+    bstr output(output_size);
 
     const size_t dict_size = 0x1000;
     size_t dict_pos = 0xFEE;

@@ -21,8 +21,7 @@ static const bstr magic = "YB"_b;
 
 static bstr decode_pixels(const bstr &source, size_t width, size_t height)
 {
-    bstr target;
-    target.resize(width * height * 3);
+    bstr target(width * height * 3);
     u8 *target_ptr = target.get<u8>();
     u8 *target_end = target_ptr + target.size();
     const u8 *source_ptr = source.get<const u8>();

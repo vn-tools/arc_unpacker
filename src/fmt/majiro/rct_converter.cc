@@ -24,8 +24,7 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
 {
     io::BufferedIO input_io(input);
 
-    bstr output;
-    output.resize(width * height * 3);
+    bstr output(width * height * 3);
 
     auto output_ptr = output.get<u8>();
     auto output_start = output.get<const u8>();

@@ -165,8 +165,7 @@ static void decompress_sgd_bgr(const bstr &input, io::IO &output_io)
 
 static bstr decompress_sgd(const bstr &input, size_t output_size)
 {
-    bstr output;
-    output.resize(output_size);
+    bstr output(output_size);
     io::BufferedIO output_io(output);
 
     io::BufferedIO tmp_io(input);

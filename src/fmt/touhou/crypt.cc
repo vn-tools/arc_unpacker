@@ -36,8 +36,7 @@ static void decrypt(
             current_block_size = left;
         auto input_block = input_io.read(current_block_size);
         auto *input_block_ptr = input_block.get<const char>();
-        bstr output_block;
-        output_block.resize(current_block_size);
+        bstr output_block(current_block_size);
         for (auto j : util::range(2))
         {
             char *output_block_ptr = &output_block[current_block_size - j - 1];

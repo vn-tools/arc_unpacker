@@ -140,8 +140,7 @@ std::unique_ptr<File> WcgConverter::decode_internal(File &file) const
     size_t width = file.io.read_u32_le();
     size_t height = file.io.read_u32_le();
 
-    bstr output;
-    output.resize(width * height * 4);
+    bstr output(width * height * 4);
 
     io::BufferedIO buffered_io(file.io);
     auto ret = wcg_unpack(

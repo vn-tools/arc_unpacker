@@ -33,8 +33,7 @@ void LzssDecompressor::init_dictionary(u8 dictionary[4096])
 
 bstr LzssDecompressor::decompress(const bstr &input, size_t output_size)
 {
-    bstr output;
-    output.resize(output_size);
+    bstr output(output_size);
     u8 *output_ptr = output.get<u8>();
     const u8 *input_ptr = input.get<u8>();
     const u8 *input_end = input_ptr + input.size();

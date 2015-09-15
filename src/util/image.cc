@@ -126,8 +126,7 @@ std::unique_ptr<Image> Image::Priv::from_jpeg(io::IO &io)
     auto height = info.output_height;
     std::unique_ptr<Image> image(new Image(width, height));
 
-    bstr row;
-    row.resize(width * info.num_components);
+    bstr row(width * info.num_components);
     for (auto y : range(height))
     {
         auto row_in_ptr = row.get<u8>();

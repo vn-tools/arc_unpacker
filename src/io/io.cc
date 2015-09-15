@@ -33,8 +33,7 @@ bool IO::eof() const
 
 bstr IO::read(size_t bytes)
 {
-    bstr ret;
-    ret.resize(bytes);
+    bstr ret(bytes);
     read(&ret[0], bytes);
     return ret;
 }
