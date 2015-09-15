@@ -14,7 +14,7 @@ namespace common {
     struct CodeSymbol final
     {
         u16 occurrences;
-        i16 symbol;
+        s16 symbol;
     };
 
     struct ProbModel final
@@ -22,7 +22,7 @@ namespace common {
         ProbModel();
         void half_occurrence_count();
         void increase_symbol(int index);
-        i16 find_symbol(i16 symbol);
+        s16 find_symbol(s16 symbol);
 
         u32 total_count;
         u32 symbol_sorts;

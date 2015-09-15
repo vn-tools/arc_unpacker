@@ -262,8 +262,8 @@ static std::unique_ptr<TableEntry> read_table_entry(
 
     size_t file_name_offset = table_io.read_u32_le() + file_names_start;
     table_io.skip(4);
-    i32 parent_dir = table_io.read_u32_le();
-    i32 flags2 = table_io.read_u32_le();
+    s32 parent_dir = table_io.read_u32_le();
+    s32 flags2 = table_io.read_u32_le();
     entry->is_file = flags2 == 0x100;
     size_t file_header_offset = table_io.read_u32_le() + file_headers_start;
     size_t file_header_size = table_io.read_u32_le();

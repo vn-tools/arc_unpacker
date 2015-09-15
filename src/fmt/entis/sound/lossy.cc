@@ -63,29 +63,29 @@ struct LossySoundDecoder::Priv final
     bstr decode_dct_mss(const MioChunk &chunk);
 
     void decode_lead_block();
-    void decode_post_block(i16 *output_ptr, size_t samples);
-    void decode_internal_block(i16 *output_ptr, size_t samples);
+    void decode_post_block(s16 *output_ptr, size_t samples);
+    void decode_internal_block(s16 *output_ptr, size_t samples);
 
     void decode_lead_block_mss();
-    void decode_post_block_mss(i16 *output_ptr, size_t samples);
-    void decode_internal_block_mss(i16 *output_ptr, size_t samples);
+    void decode_post_block_mss(s16 *output_ptr, size_t samples);
+    void decode_internal_block_mss(s16 *output_ptr, size_t samples);
 
     void dequantumize(
         float *destination,
-        const i32 *quantumized,
-        i32 weight_code,
+        const s32 *quantumized,
+        s32 weight_code,
         int coefficient);
 
     const MioHeader &header;
     std::unique_ptr<common::Decoder> decoder;
 
     size_t buf_size;
-    std::unique_ptr<i32[]> buffer1;
-    std::unique_ptr<i32[]> buffer2;
-    std::unique_ptr<i8[]> buffer3;
+    std::unique_ptr<s32[]> buffer1;
+    std::unique_ptr<s32[]> buffer2;
+    std::unique_ptr<s8[]> buffer3;
     std::unique_ptr<u8[]> division_table;
     std::unique_ptr<u8[]> revolve_code_table;
-    std::unique_ptr<i32[]> weight_code_table;
+    std::unique_ptr<s32[]> weight_code_table;
     std::unique_ptr<u32[]> coefficient_table;
     std::unique_ptr<float[]> matrix_buf;
     std::unique_ptr<float[]> internal_buf;
@@ -96,9 +96,9 @@ struct LossySoundDecoder::Priv final
 
     u8 *division_ptr;
     u8 *rev_code_ptr;
-    i32 *weight_ptr;
+    s32 *weight_ptr;
     u32 *coefficient_ptr;
-    i32 *source_ptr;
+    s32 *source_ptr;
     float *last_dct_buf;
     size_t subband_degree;
     size_t degree_num;
@@ -131,11 +131,11 @@ static int round32(float r)
 }
 
 static void round32_array(
-    i16 *output, int step, const float *source, size_t size)
+    s16 *output, int step, const float *source, size_t size)
 {
     while (size--)
     {
-        i16 value = round32(*source++);
+        s16 value = round32(*source++);
         if (value <= -0x8000)
             *output = -0x8000;
         else if (value >= 0x7FFF)
@@ -410,7 +410,7 @@ LossySoundDecoder::Priv::Priv(const MioHeader &header) : header(header)
     buf_size = 0;
 
     auto subband_size = 1 << header.subband_degree;
-    buffer1.reset(new i32[header.channel_count * subband_size]);
+    buffer1.reset(new s32[header.channel_count * subband_size]);
     matrix_buf.reset(new float[header.channel_count * subband_size]);
     internal_buf.reset(new float[header.channel_count * subband_size]);
     work_buf.reset(new float[subband_size]);
@@ -449,8 +449,8 @@ void LossySoundDecoder::Priv::initialize_with_degree(size_t subband_degree)
 
 void LossySoundDecoder::Priv::dequantumize(
     float *destination,
-    const i32 *quantumized,
-    i32 weight_code,
+    const s32 *quantumized,
+    s32 weight_code,
     int coefficient)
 {
     double matrix_scale = sqrt(2.0 / degree_num);
@@ -510,7 +510,7 @@ void LossySoundDecoder::Priv::decode_lead_block()
 }
 
 void LossySoundDecoder::Priv::decode_internal_block(
-    i16 * output_ptr, size_t samples)
+    s16 * output_ptr, size_t samples)
 {
     auto weight_code = *weight_ptr++;
     auto coefficient = *coefficient_ptr++;
@@ -535,7 +535,7 @@ void LossySoundDecoder::Priv::decode_internal_block(
 }
 
 void LossySoundDecoder::Priv::decode_post_block(
-    i16 * output_ptr, size_t samples)
+    s16 * output_ptr, size_t samples)
 {
     auto weight_code = *weight_ptr++;
     auto coefficient = *coefficient_ptr++;
@@ -575,11 +575,11 @@ bstr LossySoundDecoder::Priv::decode_dct(const MioChunk &chunk)
 
     if (all_sample_count > buf_size)
     {
-        buffer2.reset(new i32[all_sample_count]);
-        buffer3.reset(new i8[all_sample_count * 2]);
+        buffer2.reset(new s32[all_sample_count]);
+        buffer3.reset(new s8[all_sample_count * 2]);
         division_table.reset(new u8[all_subband_count]);
         revolve_code_table.reset(new u8[all_subband_count * 5]);
-        weight_code_table.reset(new i32[all_subband_count * 5]);
+        weight_code_table.reset(new s32[all_subband_count * 5]);
         coefficient_table.reset(new u32[all_subband_count * 5]);
         buf_size = all_sample_count;
     }
@@ -645,8 +645,8 @@ bstr LossySoundDecoder::Priv::decode_dct(const MioChunk &chunk)
             auto quantumized_ptr = buffer2.get() + i;
             for (auto j : util::range(all_subband_count))
             {
-                i32 low = *lo_buf++;
-                i32 high = *hi_buf++ ^ (low >> 8);
+                s32 low = *lo_buf++;
+                s32 high = *hi_buf++ ^ (low >> 8);
                 *quantumized_ptr = (low & 0xFF) | (high << 8);
                 quantumized_ptr += degree_width;
             }
@@ -655,8 +655,8 @@ bstr LossySoundDecoder::Priv::decode_dct(const MioChunk &chunk)
     else
         throw err::NotSupportedError("Unsupported architecture");
 
-    bstr output(all_sample_count * sizeof(i16));
-    std::unique_ptr<i16*[]> output_ptrs(new i16*[channel_count]);
+    bstr output(all_sample_count * sizeof(s16));
+    std::unique_ptr<s16*[]> output_ptrs(new s16*[channel_count]);
     std::unique_ptr<size_t[]> samples_left(new size_t[channel_count]);
     division_ptr = division_table.get();
     weight_ptr = weight_code_table.get();
@@ -666,7 +666,7 @@ bstr LossySoundDecoder::Priv::decode_dct(const MioChunk &chunk)
     {
         last_division[i] = -1;
         samples_left[i] = chunk.sample_count;
-        output_ptrs[i] = output.get<i16>() + i;
+        output_ptrs[i] = output.get<s16>() + i;
     }
 
     int current_division = -1;
@@ -774,7 +774,7 @@ void LossySoundDecoder::Priv::decode_lead_block_mss()
 }
 
 void LossySoundDecoder::Priv::decode_post_block_mss(
-    i16 *output_ptr, size_t samples)
+    s16 *output_ptr, size_t samples)
 {
     auto matrix_ptr = matrix_buf.get();
     auto lap_buf = last_dct.get();
@@ -815,7 +815,7 @@ void LossySoundDecoder::Priv::decode_post_block_mss(
 }
 
 void LossySoundDecoder::Priv::decode_internal_block_mss(
-    i16 *output_ptr, size_t samples)
+    s16 *output_ptr, size_t samples)
 {
     auto matrix_ptr = matrix_buf.get();
     auto lap_buf = last_dct.get();
@@ -872,11 +872,11 @@ bstr LossySoundDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
 
     if (all_sample_count > buf_size)
     {
-        buffer2.reset(new i32[all_sample_count]);
-        buffer3.reset(new i8[all_sample_count * 2]);
+        buffer2.reset(new s32[all_sample_count]);
+        buffer3.reset(new s8[all_sample_count * 2]);
         division_table.reset(new u8[all_subband_count]);
         revolve_code_table.reset(new u8[all_subband_count * 10]);
-        weight_code_table.reset(new i32[all_subband_count * 10]);
+        weight_code_table.reset(new s32[all_subband_count * 10]);
         coefficient_table.reset(new u32[all_subband_count * 10]);
         buf_size = all_sample_count;
     }
@@ -949,8 +949,8 @@ bstr LossySoundDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
             auto quantumized_ptr = buffer2.get() + i;
             for (auto j : util::range(all_subband_count))
             {
-                i32 low = *lo_buf++;
-                i32 high = *hi_buf++ ^ (low >> 8);
+                s32 low = *lo_buf++;
+                s32 high = *hi_buf++ ^ (low >> 8);
                 *quantumized_ptr = (low & 0xFF) | (high << 8);
                 quantumized_ptr += degree_width * 2;
             }
@@ -959,9 +959,9 @@ bstr LossySoundDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
     else
         throw err::NotSupportedError("Unsupported architecture");
 
-    bstr output(all_sample_count * sizeof(i16));
+    bstr output(all_sample_count * sizeof(s16));
     size_t samples_left = chunk.sample_count;
-    i16 *output_ptr = output.get<i16>();
+    s16 *output_ptr = output.get<s16>();
 
     last_division_code = -1;
     division_ptr = division_table.get();

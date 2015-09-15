@@ -36,7 +36,7 @@ std::unique_ptr<File> PakScriptConverter::decode_internal(File &file) const
 
     file.io.skip(3600);
     auto data = file.io.read(file.io.size() - file.io.tell() - 1);
-    auto seed = static_cast<i8>(file.io.read_u8());
+    s8 seed = file.io.read_u8();
     util::crypt::Lcg lcg(util::crypt::LcgKind::MicrosoftVisualC, seed);
     for (auto i : util::range(0, data.size(), 2))
         data[i] ^= key[lcg.next() % key.size()];

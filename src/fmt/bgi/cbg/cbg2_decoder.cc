@@ -65,13 +65,13 @@ static FloatTablePair read_ac_mul_pair(const bstr &input)
     return ac_mul_pair;
 }
 
-static i16 jpeg_ftoi(float result)
+static s16 jpeg_ftoi(float result)
 {
     int a = 0x80 + ((static_cast<int>(result)) >> 3);
     if (a < 0)
         return 0;
     if (a < 0xFF)
-        return static_cast<i16>(a);
+        return static_cast<s16>(a);
     if (a < 0x180)
         return 0xFF;
     return 0;
@@ -80,7 +80,7 @@ static i16 jpeg_ftoi(float result)
 static void jpeg_dct_float(
     FloatTable &output, const u16 *ac, const FloatTable &ac_mul)
 {
-    i16 inptr[block_dim2];
+    s16 inptr[block_dim2];
     float dv[block_dim2];
     float tp[block_dim2];
     float tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;

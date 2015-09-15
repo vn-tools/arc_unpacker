@@ -207,7 +207,7 @@ u32 KeyDeriver::run_stage_strategy_0(size_t stage)
         case 2:
             // neg eax
             add_shellcode("\xF7\xD8"_b);
-            eax = static_cast<u32>(-static_cast<i32>(eax));
+            eax = static_cast<u32>(-static_cast<s32>(eax));
             break;
 
         case 3:

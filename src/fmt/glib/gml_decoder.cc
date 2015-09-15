@@ -34,7 +34,7 @@ bstr GmlDecoder::decode(const bstr &source, size_t target_size)
         u8 tmp1 = source_ptr < source_end ? *source_ptr++ : 0;
         u8 tmp2 = source_ptr < source_end ? *source_ptr++ : 0;
         size_t size = ((~tmp2) & 0xF) + 3;
-        i32 look_behind = (tmp1 | ((tmp2 << 4) & 0xF00)) + 18;
+        s32 look_behind = (tmp1 | ((tmp2 << 4) & 0xF00)) + 18;
         look_behind -= target_ptr - target.get<u8>();
         look_behind |= 0xFFFFF000;
 

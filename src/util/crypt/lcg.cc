@@ -11,9 +11,9 @@ struct Lcg::Priv final
 
 static inline u32 minstd(u32 &seed, u32 a, u32 q, u32 r, u32 m)
 {
-    i32 x = seed;
-    i32 hi = x / q;
-    i32 lo = x % q;
+    s32 x = seed;
+    s32 hi = x / q;
+    s32 lo = x % q;
     x = a * lo - r * hi;
     if (x < 0)
         x += m;

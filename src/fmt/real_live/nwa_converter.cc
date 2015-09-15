@@ -27,7 +27,7 @@ namespace
         u16 channel_count;
         u16 bits_per_sample;
         u32 sample_rate;
-        i32 compression_level;
+        s32 compression_level;
         u32 block_count;
         u32 uncompressed_size;
         u32 compressed_size;
@@ -95,10 +95,10 @@ static bstr decode_block(
 
     bstr output;
     output.resize(output_size * 2);
-    i16 *output_ptr = output.get<i16>();
+    s16 *output_ptr = output.get<s16>();
 
     io.seek(offsets.at(current_block));
-    i16 d[2];
+    s16 d[2];
     for (auto i : util::range(header.channel_count))
     {
         if (header.bits_per_sample == 8)
@@ -246,7 +246,7 @@ std::unique_ptr<File> NwaConverter::decode_internal(File &file) const
     header.channel_count = io.read_u16_le();
     header.bits_per_sample = io.read_u16_le();
     header.sample_rate = io.read_u32_le();
-    header.compression_level = static_cast<i32>(io.read_u32_le());
+    header.compression_level = static_cast<s32>(io.read_u32_le());
     io.skip(4);
     header.block_count = io.read_u32_le();
     header.uncompressed_size = io.read_u32_le();

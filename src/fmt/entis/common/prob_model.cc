@@ -44,7 +44,7 @@ void ProbModel::half_occurrence_count()
     }
 }
 
-i16 ProbModel::find_symbol(i16 symbol)
+s16 ProbModel::find_symbol(s16 symbol)
 {
     u32 sym = 0;
     while (sym_table[sym].symbol != symbol)

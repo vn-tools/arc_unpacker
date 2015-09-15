@@ -7,7 +7,7 @@ namespace fmt {
 namespace entis {
 namespace common {
 
-    enum class Architecture : i32
+    enum class Architecture : s32
     {
         RunLengthGamma   = -1,
         RunLengthHuffman = -4,

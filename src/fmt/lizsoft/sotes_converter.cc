@@ -76,13 +76,13 @@ std::unique_ptr<File> SotesConverter::decode_internal(File &file) const
 
     auto width = guess_image_dimension(
         std::vector<u32>(&weird_data1[1], &weird_data1[5]),
-        -static_cast<i32>(weird_data1[6]),
+        -static_cast<s32>(weird_data1[6]),
         3,
         raw_data_size);
 
     size_t height = guess_image_dimension(
         std::vector<u32>(&weird_data2[0], &weird_data2[5]),
-        -static_cast<i32>(weird_data2[10]),
+        -static_cast<s32>(weird_data2[10]),
         0,
         raw_data_size);
 

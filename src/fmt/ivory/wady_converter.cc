@@ -100,7 +100,7 @@ static bstr decode_v1(
             }
             else
             {
-                u16 tmp = static_cast<i16>(b << 9) >> 15;
+                u16 tmp = static_cast<s16>(b << 9) >> 15;
                 tmp = (tmp ^ table[b & 0x3F]) - tmp;
                 tmp *= block_align;
                 prev_sample[i] += tmp;
@@ -135,7 +135,7 @@ static bstr decode_v2(io::IO &io, size_t sample_count, size_t channels)
         io::BufferedIO tmp_io(io, compressed_size);
         tmp_io.skip(4);
         auto left = tmp_io.read_u32_le();
-        i16 prev_sample = tmp_io.read_u16_le();
+        s16 prev_sample = tmp_io.read_u16_le();
 
         auto samples_ptr = samples.get<u16>();
         auto samples_end = samples.end<u16>();
@@ -155,7 +155,7 @@ static bstr decode_v2(io::IO &io, size_t sample_count, size_t channels)
                 }
                 else
                 {
-                    u16 tmp = static_cast<i16>(b << 9) >> 15;
+                    u16 tmp = static_cast<s16>(b << 9) >> 15;
                     prev_sample += (tmp ^ table1[(b >> 1) & 0x1F]) - tmp;
                 }
                 *samples_ptr = prev_sample;
@@ -166,7 +166,7 @@ static bstr decode_v2(io::IO &io, size_t sample_count, size_t channels)
                 u32 tmp = (tmp_io.read_u8() << 8) | b;
                 auto dividend = table2[(tmp >> 1) & 7];
                 auto repetitions = table2[(tmp >> 1) & 7];
-                i16 tmp2 = tmp & 0xFFF0;
+                s16 tmp2 = tmp & 0xFFF0;
                 float sample = prev_sample;
                 float delta = (tmp2 - sample) / static_cast<float>(dividend);
                 while (repetitions-- && samples_ptr < samples_end)

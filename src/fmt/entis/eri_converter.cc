@@ -43,8 +43,8 @@ static image::EriHeader read_header(
     header.architecture = static_cast<common::Architecture>(io.read_u32_le());
 
     header.format_type      = io.read_u32_le();
-    i32 width               = io.read_u32_le();
-    i32 height              = io.read_u32_le();
+    s32 width               = io.read_u32_le();
+    s32 height              = io.read_u32_le();
     header.width            = std::abs(width);
     header.height           = std::abs(height);
     header.flip             = height > 0;
