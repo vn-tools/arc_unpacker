@@ -5,7 +5,7 @@
 // Extension: .egr
 //
 // Known games:
-// - Libido 7
+// - [Libido] [940601] Libido 7
 
 #include "fmt/libido/egr_archive.h"
 #include "err.h"

@@ -5,8 +5,8 @@
 // Extension: .pak
 //
 // Known games:
-// - [Team Shanghai Alice] [080525] TH10.5 - Scarlet Weather Rhapsody
-// - [Team Shanghai Alice] [090815] TH12.3 - Unthinkable Natural Law
+// - [Tasofro & Team Shanghai Alice] [080525] TH10.5 - Scarlet Weather Rhapsody
+// - [Tasofro & Team Shanghai Alice] [090815] TH12.3 - Unthinkable Natural Law
 
 #include "fmt/touhou/pak2_archive.h"
 #include <boost/filesystem.hpp>
