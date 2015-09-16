@@ -16,14 +16,14 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image, false);
 }
 
-TEST_CASE("Decoding Majiro's RCT v0 images works", "[fmt]")
+TEST_CASE("Majiro RCT v0 images", "[fmt]")
 {
     do_test(
         "tests/fmt/majiro/files/rct/face_dummy.rct",
         "tests/fmt/majiro/files/rct/face_dummy-out.png");
 }
 
-TEST_CASE("Decoding Majiro's RCT v1 images works", "[fmt]")
+TEST_CASE("Majiro RCT v1 images", "[fmt]")
 {
     do_test(
         "tests/fmt/majiro/files/rct/ev04_01c.rct",

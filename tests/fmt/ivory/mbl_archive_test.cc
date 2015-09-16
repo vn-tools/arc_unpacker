@@ -37,17 +37,17 @@ static void do_test_encrypted(
     tests::compare_files(expected_files, actual_files, false);
 }
 
-TEST_CASE("Unpacking version 1 MBL archives works", "[fmt]")
+TEST_CASE("Ivory MBL v1 archives", "[fmt]")
 {
     do_test("tests/fmt/ivory/files/mbl/mbl-v1.mbl");
 }
 
-TEST_CASE("Unpacking version 2 MBL archives works", "[fmt]")
+TEST_CASE("Ivory MBL v2 archives", "[fmt]")
 {
     do_test("tests/fmt/ivory/files/mbl/mbl-v2.mbl");
 }
 
-TEST_CASE("Unpacking encrypted Candy Toys dialog MBL archives works", "[fmt]")
+TEST_CASE("Ivory MBL dialogs (Candy Toys encryption)", "[fmt]")
 {
     do_test_encrypted(
         "tests/fmt/ivory/files/mbl/mg_data-candy.mbl",
@@ -55,8 +55,7 @@ TEST_CASE("Unpacking encrypted Candy Toys dialog MBL archives works", "[fmt]")
         "candy");
 }
 
-TEST_CASE(
-    "Unpacking encrypted Wanko to Kurasou dialog MBL archives works", "[fmt]")
+TEST_CASE("Ivory MBL dialogs (Wanko to Kurasou encryption)", "[fmt]")
 {
     do_test_encrypted(
         "tests/fmt/ivory/files/mbl/mg_data-wanko.mbl",

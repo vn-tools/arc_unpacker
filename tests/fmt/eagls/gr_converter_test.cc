@@ -5,7 +5,7 @@
 using namespace au;
 using namespace au::fmt::eagls;
 
-TEST_CASE("Decoding EAGLS's GR images works", "[fmt]")
+TEST_CASE("EAGLS GR images", "[fmt]")
 {
     GrConverter converter;
     auto input_file = tests::file_from_path(

@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::qlie;
 
-TEST_CASE("Decoding DPNG images works", "[fmt]")
+TEST_CASE("QLiE DPNG images", "[fmt]")
 {
     DpngConverter converter;
     auto input_file = tests::file_from_path(

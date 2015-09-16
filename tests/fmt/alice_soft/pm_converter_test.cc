@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::alice_soft;
 
-TEST_CASE("Decoding PM images works", "[fmt]")
+TEST_CASE("AliceSoft PM images", "[fmt]")
 {
     PmConverter converter;
     auto input_file = tests::file_from_path(

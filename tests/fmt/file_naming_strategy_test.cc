@@ -13,7 +13,7 @@ static path test(
         strategy, parent_path, child_path));
 }
 
-TEST_CASE("File naming strategies work", "[fmt_core]")
+TEST_CASE("File naming strategies", "[fmt_core]")
 {
     auto root    = au::fmt::FileNamingStrategy::Root;
     auto sibling = au::fmt::FileNamingStrategy::Sibling;

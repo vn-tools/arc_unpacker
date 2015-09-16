@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::sysadv;
 
-TEST_CASE("Decoding sysadv's PGA images works", "[fmt]")
+TEST_CASE("sysadv PGA images", "[fmt]")
 {
     PgaConverter converter;
     auto input_file = tests::file_from_path(

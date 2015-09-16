@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::libido;
 
-TEST_CASE("Decoding Libido's MNC images works", "[fmt]")
+TEST_CASE("Libido MNC images", "[fmt]")
 {
     MncConverter converter;
     auto input_file = tests::zlib_file_from_path(

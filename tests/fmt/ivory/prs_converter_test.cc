@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::ivory;
 
-TEST_CASE("Decoding PRS images works", "[fmt]")
+TEST_CASE("Ivory PRS images", "[fmt]")
 {
     PrsConverter converter;
     auto input_file = tests::file_from_path(

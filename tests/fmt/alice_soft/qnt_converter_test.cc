@@ -16,24 +16,21 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("Decoding opaque QNT images works", "[fmt]")
+TEST_CASE("AliceSoft QNT opaque images", "[fmt]")
 {
     do_test(
         "tests/fmt/alice_soft/files/qnt/CG00505.QNT",
         "tests/fmt/alice_soft/files/qnt/CG00505-out.png");
 }
 
-TEST_CASE(
-    "Decoding transparent QNT images with size divisible by 2 works", "[fmt]")
+TEST_CASE("AliceSoft QNT transparent images with resolution of 2^n", "[fmt]")
 {
     do_test(
         "tests/fmt/alice_soft/files/qnt/CG64100.QNT",
         "tests/fmt/alice_soft/files/qnt/CG64100-out.png");
 }
 
-TEST_CASE(
-    "Decoding transparent QNT images works with size not divisible by 2 works",
-    "[fmt]")
+TEST_CASE("AliceSoft QNT transparent images with arbitrary resolution", "[fmt]")
 {
     do_test(
         "tests/fmt/alice_soft/files/qnt/CG64214.QNT",

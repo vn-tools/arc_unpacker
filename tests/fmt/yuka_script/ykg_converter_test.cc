@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::yuka_script;
 
-TEST_CASE("Decoding YKG images works", "[fmt]")
+TEST_CASE("YukaScript YKG images", "[fmt]")
 {
     YkgConverter converter;
     auto input_file = tests::file_from_path(

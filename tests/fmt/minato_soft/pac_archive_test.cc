@@ -20,12 +20,12 @@ static void do_test(const std::string &input_path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Unpacking MinatoSoft's PAC uncompressed archives works", "[fmt]")
+TEST_CASE("MinatoSoft PAC uncompressed archives", "[fmt]")
 {
     do_test("tests/fmt/minato_soft/files/pac/uncompressed.pac");
 }
 
-TEST_CASE("Unpacking MinatoSoft's PAC compressed archives works", "[fmt]")
+TEST_CASE("MinatoSoft PAC compressed archives", "[fmt]")
 {
     do_test("tests/fmt/minato_soft/files/pac/compressed.pac");
 }

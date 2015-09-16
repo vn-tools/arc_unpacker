@@ -20,14 +20,14 @@ TEST_CASE("Empty file creation", "[core][file]")
     REQUIRE(file.name == "");
 }
 
-TEST_CASE("Setting name works", "[core][file]")
+TEST_CASE("Setting File's name", "[core][file]")
 {
     File file;
     file.name = "abc";
     REQUIRE(file.name == "abc");
 }
 
-TEST_CASE("Checking extension works", "[core][file]")
+TEST_CASE("Checking File's extension", "[core][file]")
 {
     File extensionless_file;
     extensionless_file.name = "test";
@@ -41,7 +41,7 @@ TEST_CASE("Checking extension works", "[core][file]")
     REQUIRE(dat_file.has_extension("dat"));
 }
 
-TEST_CASE("Changing file extension work", "[core][file]")
+TEST_CASE("Changing File's extension", "[core][file]")
 {
     test_changing_extension("",          "xyz",  "");
     test_changing_extension(".",         "xyz",  ".");

@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::rpgmaker;
 
-TEST_CASE("Unpacking RGSSAD archives works", "[fmt]")
+TEST_CASE("RpgMaker RGSSAD archives", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

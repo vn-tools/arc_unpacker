@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::eagls;
 
-TEST_CASE("Unpacking EAGLS's PAK archives works", "[fmt]")
+TEST_CASE("EAGLS PAK archives", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

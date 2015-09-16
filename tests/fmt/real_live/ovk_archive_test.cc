@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::real_live;
 
-TEST_CASE("Unpacking RealLive's OVK archives works", "[fmt]")
+TEST_CASE("RealLive OVK archives", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

@@ -5,7 +5,7 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
-TEST_CASE("Decoding CV3 sound files works", "[fmt]")
+TEST_CASE("Touhou CV3 audio", "[fmt]")
 {
     Pak2SoundConverter converter;
     auto input_file = tests::file_from_path(

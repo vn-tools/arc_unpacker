@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
-TEST_CASE("Unpacking PBG4 archives works", "[fmt]")
+TEST_CASE("Touhou PBG4 archives", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

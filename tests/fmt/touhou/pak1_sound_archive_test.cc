@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
-TEST_CASE("Unpacking PAK1 sound archives works", "[fmt]")
+TEST_CASE("Touhou PAK1 audio", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

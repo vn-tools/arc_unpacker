@@ -16,7 +16,7 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("Decoding raw DSC files works", "[fmt]")
+TEST_CASE("BGI DSC raw files", "[fmt]")
 {
     DscConverter converter;
     auto input_file = tests::file_from_path(
@@ -27,21 +27,21 @@ TEST_CASE("Decoding raw DSC files works", "[fmt]")
     tests::compare_files(*expected_file, *actual_file, false);
 }
 
-TEST_CASE("Decoding 8-bit DSC images works", "[fmt]")
+TEST_CASE("BGI DSC 8-bit images", "[fmt]")
 {
     do_test(
         "tests/fmt/bgi/files/dsc/SGTitle010000",
         "tests/fmt/bgi/files/dsc/SGTitle010000-out.png");
 }
 
-TEST_CASE("Decoding 24-bit DSC images works", "[fmt]")
+TEST_CASE("BGI DSC 24-bit images", "[fmt]")
 {
     do_test(
         "tests/fmt/bgi/files/dsc/SGMsgWnd010300",
         "tests/fmt/bgi/files/dsc/SGMsgWnd010300-out.png");
 }
 
-TEST_CASE("Decoding 32-bit DSC images works", "[fmt]")
+TEST_CASE("BGI DSC 32-bit images", "[fmt]")
 {
     do_test(
         "tests/fmt/bgi/files/dsc/SGTitle000000",

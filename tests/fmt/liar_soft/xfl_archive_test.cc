@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::liar_soft;
 
-TEST_CASE("Unpacking XFL archives works", "[fmt]")
+TEST_CASE("LiarSoft XFL archives", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

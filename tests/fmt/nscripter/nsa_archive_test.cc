@@ -7,7 +7,7 @@
 using namespace au;
 using namespace au::fmt::nscripter;
 
-TEST_CASE("Unpacking uncompressed NSA archives works", "[fmt]")
+TEST_CASE("NScripter NSA uncompressed archives", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {
@@ -22,7 +22,7 @@ TEST_CASE("Unpacking uncompressed NSA archives works", "[fmt]")
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Unpacking NSA archives compressed with LZSS works", "[fmt]")
+TEST_CASE("NScripter NSA archives compressed with LZSS", "[fmt]")
 {
     auto file = tests::stub_file(
         "test.bmp",

@@ -25,7 +25,7 @@ static void do_test(
     }
 }
 
-TEST_CASE("Unpacking PAK1 32-bit images works", "[fmt]")
+TEST_CASE("Touhou PAK1 32-bit images", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/pak1/stage3.dat",
@@ -35,21 +35,21 @@ TEST_CASE("Unpacking PAK1 32-bit images works", "[fmt]")
         });
 }
 
-TEST_CASE("Unpacking PAK1 24-bit images works", "[fmt]")
+TEST_CASE("Touhou PAK1 24-bit images", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/pak1/stage10.dat",
         { "tests/fmt/touhou/files/pak1/stage10-0000-out.png" });
 }
 
-TEST_CASE("Unpacking PAK1 16-bit images works", "[fmt]")
+TEST_CASE("Touhou PAK1 16-bit images", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/pak1/effect.dat",
         { "tests/fmt/touhou/files/pak1/effect-0000-out.png" });
 }
 
-TEST_CASE("Unpacking PAK1 8-bit images works", "[fmt]")
+TEST_CASE("Touhou PAK1 8-bit images", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/pak1/07.dat",

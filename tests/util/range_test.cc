@@ -4,7 +4,7 @@
 
 using namespace au::util;
 
-TEST_CASE("Simple range iterating works", "[util]")
+TEST_CASE("Simple range iterating", "[util]")
 {
     std::string out;
     for (auto i : range(0, 2))
@@ -12,7 +12,7 @@ TEST_CASE("Simple range iterating works", "[util]")
     REQUIRE(out == "01");
 }
 
-TEST_CASE("Range iterating with stride works", "[util]")
+TEST_CASE("Range iterating with stride", "[util]")
 {
     std::string out;
     for (auto i : range(0, 4, 2))
@@ -20,7 +20,7 @@ TEST_CASE("Range iterating with stride works", "[util]")
     REQUIRE(out == "02");
 }
 
-TEST_CASE("Range iterating with unaligned stride works", "[util]")
+TEST_CASE("Range iterating with unaligned stride", "[util]")
 {
     std::string out;
     for (auto i : range(0, 5, 2))
@@ -28,7 +28,7 @@ TEST_CASE("Range iterating with unaligned stride works", "[util]")
     REQUIRE(out == "024");
 }
 
-TEST_CASE("Range iterating starting at negative offset works", "[util]")
+TEST_CASE("Range iterating starting at negative offset", "[util]")
 {
     std::string out;
     for (auto i : range(-5, 5))
@@ -36,7 +36,7 @@ TEST_CASE("Range iterating starting at negative offset works", "[util]")
     REQUIRE(out == "-5-4-3-2-101234");
 }
 
-TEST_CASE("Range iterating at negative offsets works", "[util]")
+TEST_CASE("Range iterating at negative offsets", "[util]")
 {
     std::string out;
     for (auto i : range(-8, -4))
@@ -44,7 +44,7 @@ TEST_CASE("Range iterating at negative offsets works", "[util]")
     REQUIRE(out == "-8-7-6-5");
 }
 
-TEST_CASE("Reverse range iterating works", "[util]")
+TEST_CASE("Reverse range iterating", "[util]")
 {
     std::string out;
     for (auto i : range(5, -5, -1))

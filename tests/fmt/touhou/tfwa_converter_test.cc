@@ -5,7 +5,7 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
-TEST_CASE("Decoding TFWA sound files works", "[fmt]")
+TEST_CASE("Touhou TFWA audio", "[fmt]")
 {
     TfwaConverter converter;
     auto input_file = tests::file_from_path(

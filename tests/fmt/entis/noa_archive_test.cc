@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::entis;
 
-TEST_CASE("Unpacking Entis's NOA unencrypted archives works", "[fmt]")
+TEST_CASE("Entis NOA unencrypted archives", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

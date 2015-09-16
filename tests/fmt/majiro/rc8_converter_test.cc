@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::majiro;
 
-TEST_CASE("Decoding Majiro's RC8 images works", "[fmt]")
+TEST_CASE("Majiro RC8 images", "[fmt]")
 {
     Rc8Converter converter;
     auto input_file = tests::file_from_path(

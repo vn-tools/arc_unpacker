@@ -23,36 +23,35 @@ static void do_test(
     }
 }
 
-TEST_CASE("Decoding format 1 ANM image archives works", "[fmt]")
+TEST_CASE("Touhou ANM format 1 sprite containers", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/anm-1/face_01_00.anm",
         { "tests/fmt/touhou/files/anm-1/face_01_00-out.png" });
 }
 
-TEST_CASE("Decoding format 3 ANM image archives works", "[fmt]")
+TEST_CASE("Touhou ANM format 3 sprite containers", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/anm-3/eff01.anm",
         { "tests/fmt/touhou/files/anm-3/eff01-out.png" });
 }
 
-TEST_CASE("Decoding format 5 ANM image archives works", "[fmt]")
+TEST_CASE("Touhou ANM format 5 sprite containers", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/anm-5/player00.anm",
         { "tests/fmt/touhou/files/anm-5/player00-out.png" });
 }
 
-TEST_CASE("Decoding format 7 ANM image archives works", "[fmt]")
+TEST_CASE("Touhou ANM format 7 sprite containers", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/anm-7/clouds.anm",
         { "tests/fmt/touhou/files/anm-7/clouds-out.png" });
 }
 
-TEST_CASE(
-    "Decoding ANM image archives containing multiple sprites works", "[fmt]")
+TEST_CASE("Touhou ANM multi sprite containers", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/anm-multi/eff05.anm",

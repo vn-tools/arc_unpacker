@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::riddle_soft;
 
-TEST_CASE("Unpacking Riddle Soft's PAC archives works", "[fmt]")
+TEST_CASE("RiddleSoft PAC archives", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

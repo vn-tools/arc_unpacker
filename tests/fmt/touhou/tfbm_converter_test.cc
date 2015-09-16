@@ -25,28 +25,28 @@ static void do_test(
     do_test(converter, input_path, expected_path);
 }
 
-TEST_CASE("Decoding 32-bit TFBM images works", "[fmt]")
+TEST_CASE("Touhou TFBM 32-bit images", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/tfbm/climaxCutA0000.png",
         "tests/fmt/touhou/files/tfbm/climaxCutA0000-out.png");
 }
 
-TEST_CASE("Decoding 16-bit TFBM images works", "[fmt]")
+TEST_CASE("Touhou TFBM 16-bit images", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/tfbm/unk-02479-4461dee8.dat",
         "tests/fmt/touhou/files/tfbm/unk-02479-4461dee8-out.png");
 }
 
-TEST_CASE("Decoding 8-bit TFBM images without external palette works", "[fmt]")
+TEST_CASE("Touhou TFBM 8-bit images without external palette", "[fmt]")
 {
     do_test(
         "tests/fmt/touhou/files/tfbm/spellB0000.bmp",
         "tests/fmt/touhou/files/tfbm/spellB0000-out.png");
 }
 
-TEST_CASE("Decoding 8-bit TFBM images with external palette works", "[fmt]")
+TEST_CASE("Touhou TFBM 8-bit images with external palette", "[fmt]")
 {
     TfbmConverter converter;
 

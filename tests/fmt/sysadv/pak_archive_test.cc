@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::sysadv;
 
-TEST_CASE("Unpacking sysadv's PAK archives works", "[fmt]")
+TEST_CASE("sysadv PAK archives", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {

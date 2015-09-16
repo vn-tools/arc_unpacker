@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::liar_soft;
 
-TEST_CASE("Decoding WCG images works", "[fmt]")
+TEST_CASE("LiarSoft WCG images", "[fmt]")
 {
     WcgConverter converter;
     auto input_file = tests::file_from_path(

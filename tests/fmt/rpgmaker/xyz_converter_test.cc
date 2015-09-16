@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::rpgmaker;
 
-TEST_CASE("Decoding XYZ images works", "[fmt]")
+TEST_CASE("RpgMaker XYZ images", "[fmt]")
 {
     XyzConverter converter;
     auto input_file = tests::file_from_path(

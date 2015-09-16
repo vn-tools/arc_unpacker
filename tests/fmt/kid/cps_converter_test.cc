@@ -5,7 +5,7 @@
 using namespace au;
 using namespace au::fmt::kid;
 
-TEST_CASE("Decoding CPS containers works", "[fmt]")
+TEST_CASE("KID CPS containers", "[fmt]")
 {
     CpsConverter converter;
     auto input_file = tests::file_from_path(
