@@ -39,6 +39,7 @@ grep 'struct\|class' **/*.{cc,h} \
     | grep -v 'converter.*class Converter' \
     | grep -v 'transformer.*class Transformer' \
     | grep -v 'fmt/entis.*class \(SoundDecoderImpl\|Decoder\)' \
+    | grep -v 'fmt/glib.*class Plugin' \
     | grep -v ' final'
 
 echo 'Checking for nonstatic constructs...'

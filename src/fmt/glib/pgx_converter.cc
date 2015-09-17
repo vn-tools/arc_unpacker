@@ -9,6 +9,7 @@
 // - [Rune & Cage] [080328] Pure My Imouto Milk Purun
 // - [Rune] [040227] Watashi no Puni Puni
 // - [Rune] [071214] Musume Shimai
+// - [Tanuki Soft] [081212] Mei Shoujo
 
 #include "fmt/glib/pgx_converter.h"
 #include "fmt/glib/gml_decoder.h"
