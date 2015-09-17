@@ -14,6 +14,7 @@
 #include "fmt/glib/glib2/mei.h"
 #include "fmt/glib/glib2/musume.h"
 #include "fmt/glib/pgx_converter.h"
+#include "fmt/vorbis/packed_ogg_converter.h"
 #include "io/buffered_io.h"
 #include "log.h"
 #include "util/range.h"
@@ -240,11 +241,13 @@ static std::unique_ptr<glib2::Plugin> guess_plugin(io::IO &arc_io)
 struct Glib2Archive::Priv final
 {
     PgxConverter pgx_converter;
+    fmt::vorbis::PackedOggConverter packed_ogg_converter;
 };
 
 Glib2Archive::Glib2Archive() : p(new Priv)
 {
     add_transformer(&p->pgx_converter);
+    add_transformer(&p->packed_ogg_converter);
     add_transformer(this);
 }
 

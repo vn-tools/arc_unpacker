@@ -4,7 +4,7 @@
 
 namespace au {
 namespace fmt {
-namespace liar_soft {
+namespace vorbis {
 
     class PackedOggConverter final : public Converter
     {

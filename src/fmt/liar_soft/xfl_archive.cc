@@ -12,7 +12,7 @@
 #include "fmt/liar_soft/xfl_archive.h"
 #include "fmt/liar_soft/lwg_archive.h"
 #include "fmt/liar_soft/wcg_converter.h"
-#include "fmt/liar_soft/packed_ogg_converter.h"
+#include "fmt/vorbis/packed_ogg_converter.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -64,7 +64,7 @@ struct XflArchive::Priv final
 {
     LwgArchive lwg_archive;
     WcgConverter wcg_converter;
-    PackedOggConverter packed_ogg_converter;
+    fmt::vorbis::PackedOggConverter packed_ogg_converter;
 };
 
 XflArchive::XflArchive() : p(new Priv)

@@ -10,6 +10,7 @@
 #include "fmt/glib/gml_archive.h"
 #include "fmt/glib/gml_decoder.h"
 #include "fmt/glib/pgx_converter.h"
+#include "fmt/vorbis/packed_ogg_converter.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
@@ -80,11 +81,13 @@ static std::unique_ptr<File> read_file(
 struct GmlArchive::Priv final
 {
     PgxConverter pgx_converter;
+    fmt::vorbis::PackedOggConverter packed_ogg_converter;
 };
 
 GmlArchive::GmlArchive() : p(new Priv)
 {
     add_transformer(&p->pgx_converter);
+    add_transformer(&p->packed_ogg_converter);
 }
 
 GmlArchive::~GmlArchive()
