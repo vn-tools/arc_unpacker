@@ -17,12 +17,61 @@
 #include "fmt/vorbis/packed_ogg_converter.h"
 #include "err.h"
 #include "io/buffered_io.h"
+#include "log.h"
+#include "util/format.h"
 #include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::vorbis;
 
+namespace
+{
+    struct OggPage final
+    {
+        u8 version;
+        u8 header_type;
+        bstr granule_position;
+        u32 bitstream_serial_number;
+        u32 page_sequence_number;
+        u32 checksum;
+        std::vector<bstr> segments;
+    };
+}
+
 static const bstr ogg_magic = "OggS"_b;
+
+static OggPage read_ogg_page(io::IO &io)
+{
+    OggPage page;
+    page.version = io.read_u8();
+    page.header_type = io.read_u8();
+    page.granule_position = io.read(8);
+    page.bitstream_serial_number = io.read_u32_le();
+    page.page_sequence_number = io.read_u32_le();
+    page.checksum = io.read_u32_le();
+    page.segments.resize(io.read_u8());
+    for (auto &segment : page.segments)
+        segment.resize(io.read_u8());
+    for (auto &segment : page.segments)
+        io.read(segment.get<u8>(), segment.size());
+    return page;
+}
+
+static void write_ogg_page(io::IO &target_io, const OggPage &page)
+{
+    target_io.write(ogg_magic);
+    target_io.write_u8(page.version);
+    target_io.write_u8(page.header_type);
+    target_io.write(page.granule_position);
+    target_io.write_u32_le(page.bitstream_serial_number);
+    target_io.write_u32_le(page.page_sequence_number);
+    target_io.write_u32_le(page.checksum);
+    target_io.write_u8(page.segments.size());
+    for (auto &page_segment : page.segments)
+        target_io.write_u8(page_segment.size());
+    for (auto &page_segment : page.segments)
+        target_io.write(page_segment);
+}
 
 bool PackedOggConverter::is_recognized_internal(File &file) const
 {
@@ -40,48 +89,39 @@ static void rewrite_ogg_stream(io::IO &ogg_io, io::IO &target_io)
     // which only the first one contains actual audio data.
 
     u32 initial_serial_number = 0;
-    bool serial_number_known = false;
+    auto pages = 0;
+    auto serial_number_known = false;
     while (!ogg_io.eof())
     {
-        if (ogg_io.read(4) != ogg_magic)
-            throw err::CorruptDataError("Expected OGG signature");
-        auto version = ogg_io.read_u8();
-        auto header_type = ogg_io.read_u8();
-        auto granule_position = ogg_io.read(8);
-        auto bitstream_serial_number = ogg_io.read_u32_le();
-        auto page_sequence_number = ogg_io.read_u32_le();
-        auto checksum = ogg_io.read_u32_le();
+        OggPage page;
+        try
+        {
+            if (ogg_io.read(4) != ogg_magic)
+                throw err::CorruptDataError("Expected OGG signature");
 
-        std::vector<bstr> page_segments(ogg_io.read_u8());
-        for (auto &segment : page_segments)
-            segment.resize(ogg_io.read_u8());
-
-        for (auto &segment : page_segments)
-            ogg_io.read(segment.get<u8>(), segment.size());
+            page = read_ogg_page(ogg_io);
+        }
+        catch (err::IoError)
+        {
+            // Ignore EOF problems manifested by GLib2...
+            Log.warn(util::format(
+                "Last OGG page is truncated; recovered %d pages.\n", pages));
+            break;
+        }
 
         if (!serial_number_known)
         {
-            initial_serial_number = bitstream_serial_number;
+            initial_serial_number = page.bitstream_serial_number;
             serial_number_known = true;
         }
 
         // The extra streams cause problems with popular (notably, all
         // ffmpeg-based) audio players, so we discard these streams here.
-        if (bitstream_serial_number != initial_serial_number)
-            continue;
-
-        target_io.write(ogg_magic);
-        target_io.write_u8(version);
-        target_io.write_u8(header_type);
-        target_io.write(granule_position);
-        target_io.write_u32_le(bitstream_serial_number);
-        target_io.write_u32_le(page_sequence_number);
-        target_io.write_u32_le(checksum);
-        target_io.write_u8(page_segments.size());
-        for (auto &page_segment : page_segments)
-            target_io.write_u8(page_segment.size());
-        for (auto &page_segment : page_segments)
-            target_io.write(page_segment);
+        if (page.bitstream_serial_number == initial_serial_number)
+        {
+            write_ogg_page(target_io, page);
+            pages++;
+        }
     }
 }
 
