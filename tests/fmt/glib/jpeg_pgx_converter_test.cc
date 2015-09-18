@@ -19,6 +19,6 @@ static void do_test(
 TEST_CASE("GLib JPEG PGX opaque images", "[fmt]")
 {
     do_test(
-        "tests/fmt/glib/files/pgx/BG110D.PGX.JPG",
-        "tests/fmt/glib/files/pgx/BG110D.PGX-out.png");
+        "tests/fmt/glib/files/jpeg_pgx/BG110D.PGX.JPG",
+        "tests/fmt/glib/files/jpeg_pgx/BG110D.PGX-out.png");
 }
