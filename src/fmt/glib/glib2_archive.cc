@@ -54,17 +54,14 @@ static bstr decode(const bstr &input, const glib2::Decoder &decoder)
 {
     bstr output(input.size());
     u32 acc = 0;
-    if (input.size() >= 4)
+    while (acc < (input.size() & (~3)))
     {
-        while (acc < input.size())
-        {
-            auto src_index = (acc & (~3)) + decoder.src_permutation[acc & 3];
-            auto dst_index = (acc & (~3)) + decoder.dst_permutation[acc & 3];
-            auto byte = input[src_index];
-            byte = decoder.func2(decoder.func1(byte, acc), acc);
-            output[dst_index] = byte;
-            acc++;
-        }
+        auto src_index = (acc & (~3)) + decoder.src_permutation[acc & 3];
+        auto dst_index = (acc & (~3)) + decoder.dst_permutation[acc & 3];
+        auto byte = input[src_index];
+        byte = decoder.func2(decoder.func1(byte, acc), acc);
+        output[dst_index] = byte;
+        acc++;
     }
     while (acc < input.size())
     {
@@ -156,13 +153,11 @@ static Table read_table(
     size_t file_headers_start = table_io.read_u32_le() + 0x10;
     size_t file_headers_size = table_io.read_u32_le();
 
-    Table table;
-    table.reserve(file_count);
+    Table table(file_count);
     for (auto i : util::range(file_count))
     {
-        auto entry = read_table_entry(
+        table[i] = read_table_entry(
             table_io, table, file_names_start, file_headers_start);
-        table.push_back(std::move(entry));
     }
     return table;
 }
@@ -268,7 +263,6 @@ void Glib2Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     auto plugin = guess_plugin(arc_file.io);
     auto header = read_header(arc_file.io, *plugin);
     auto table = read_table(arc_file.io, *header, *plugin);
-
     for (auto &entry : table)
         if (entry->is_file)
             file_saver.save(read_file(arc_file.io, *entry, *plugin));

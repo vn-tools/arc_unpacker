@@ -103,7 +103,6 @@ static void rewrite_ogg_stream(io::IO &ogg_io, io::IO &target_io)
         }
         catch (err::IoError)
         {
-            // Ignore EOF problems manifested by GLib2...
             Log.warn(util::format(
                 "Last OGG page is truncated; recovered %d pages.\n", pages));
             break;
