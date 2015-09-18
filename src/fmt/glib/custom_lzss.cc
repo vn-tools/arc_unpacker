@@ -1,19 +1,19 @@
-#include "fmt/glib/gml_decoder.h"
+#include "fmt/glib/custom_lzss.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
 using namespace au;
-using namespace au::fmt::glib;
+using namespace au::fmt;
 
 // Modified LZSS routines (repetition count is negated)
 
-bstr GmlDecoder::decode(const bstr &input, size_t output_size)
+bstr glib::custom_lzss_decompress(const bstr &input, size_t output_size)
 {
     io::BufferedIO io(input);
-    return decode(io, output_size);
+    return glib::custom_lzss_decompress(io, output_size);
 }
 
-bstr GmlDecoder::decode(io::IO &input_io, size_t output_size)
+bstr glib::custom_lzss_decompress(io::IO &input_io, size_t output_size)
 {
     bstr output(output_size);
 

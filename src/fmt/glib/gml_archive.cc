@@ -8,7 +8,7 @@
 // - [Rune & Cage] [040227] Watashi no Puni Puni
 
 #include "fmt/glib/gml_archive.h"
-#include "fmt/glib/gml_decoder.h"
+#include "fmt/glib/custom_lzss.h"
 #include "fmt/glib/pgx_converter.h"
 #include "fmt/vorbis/packed_ogg_converter.h"
 #include "io/buffered_io.h"
@@ -41,7 +41,7 @@ static std::unique_ptr<io::BufferedIO> get_header_io(
 
     return std::unique_ptr<io::BufferedIO>(
         new io::BufferedIO(
-            GmlDecoder::decode(buffer, header_size_original)));
+            custom_lzss_decompress(buffer, header_size_original)));
 }
 
 static Table read_table(io::IO &table_io, size_t file_data_start)

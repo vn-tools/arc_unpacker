@@ -12,7 +12,7 @@
 // - [Tanuki Soft] [081212] Mei Shoujo
 
 #include "fmt/glib/pgx_converter.h"
-#include "fmt/glib/gml_decoder.h"
+#include "fmt/glib/custom_lzss.h"
 #include "util/range.h"
 #include "util/image.h"
 
@@ -41,7 +41,7 @@ std::unique_ptr<File> PgxConverter::decode_internal(File &file) const
     file.io.seek(file.io.size() - source_size);
     auto source = file.io.read(source_size);
 
-    auto target = GmlDecoder::decode(source, target_size);
+    auto target = custom_lzss_decompress(source, target_size);
 
     pix::Grid pixels(width, height, target, pix::Format::BGRA8888);
     if (!transparent)

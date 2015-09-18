@@ -11,7 +11,7 @@
 // This is a bit different from plain PGX - namely, it involves two LZSS passes.
 
 #include "fmt/glib/jpeg_pgx_converter.h"
-#include "fmt/glib/gml_decoder.h"
+#include "fmt/glib/custom_lzss.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
 #include "util/image.h"
@@ -77,10 +77,10 @@ std::unique_ptr<File> JpegPgxConverter::decode_internal(File &file) const
         auto tmp2 = pgx_io.read_u32_le();
         auto extra_size = (tmp2 & 0x00FF00FF) | (tmp1 & 0xFF00FF00);
         // why?
-        GmlDecoder::decode(pgx_io, extra_size);
+        custom_lzss_decompress(pgx_io, extra_size);
     }
 
-    auto target = GmlDecoder::decode(pgx_io.read_to_eof(), target_size);
+    auto target = custom_lzss_decompress(pgx_io.read_to_eof(), target_size);
 
     pix::Grid pixels(width, height, target, pix::Format::BGRA8888);
     if (!transparent)
