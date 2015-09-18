@@ -1,57 +1,57 @@
 #include "fmt/glib/gml_decoder.h"
+#include "io/buffered_io.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::glib;
 
-// modified LZSS
-bstr GmlDecoder::decode(const bstr &source, size_t target_size)
+// Modified LZSS routines
+// - reading beyond EOF assumes 0 bytes
+// - repetition count is negated
+
+bstr GmlDecoder::decode(const bstr &input, size_t output_size)
 {
-    bstr target(target_size);
-    u8 *target_ptr = target.get<u8>();
-    u8 *target_end = target_ptr + target.size();
-    const u8 *source_ptr = source.get<const u8>();
-    const u8 *source_end = source_ptr + source.size();
+    io::BufferedIO io(input);
+    return decode(io, output_size);
+}
 
-    int unk1 = 0;
-    while (target_ptr < target_end)
+bstr GmlDecoder::decode(io::IO &input_io, size_t output_size)
+{
+    bstr output(output_size);
+
+    const size_t dict_size = 0x1000;
+    size_t dict_pos = 0xFEE;
+    u8 dict[dict_size] { };
+
+    u8 *output_ptr = output.get<u8>();
+    const u8 *output_end = output.end<const u8>();
+
+    u16 control = 0;
+    while (output_ptr < output_end)
     {
-        int carry = unk1 & 1;
-        unk1 >>= 1;
-        if (!unk1)
-        {
-            unk1 = source_ptr < source_end ? *source_ptr++ : 0;
-            carry = unk1 & 1;
-            unk1 = (unk1 >> 1) | 0x80;
-        }
+        control >>= 1;
+        if (!(control & 0x100))
+            control = (input_io.eof() ? 0 : input_io.read_u8()) | 0xFF00;
 
-        if (carry)
+        if (control & 1)
         {
-            *target_ptr++ = source_ptr < source_end ? *source_ptr++ : 0;
+            auto byte = (input_io.eof() ? 0 : input_io.read_u8());
+            dict[dict_pos++] = *output_ptr++ = byte;
+            dict_pos %= dict_size;
             continue;
         }
 
-        u8 tmp1 = source_ptr < source_end ? *source_ptr++ : 0;
-        u8 tmp2 = source_ptr < source_end ? *source_ptr++ : 0;
-        size_t size = ((~tmp2) & 0xF) + 3;
-        s32 look_behind = (tmp1 | ((tmp2 << 4) & 0xF00)) + 18;
-        look_behind -= target_ptr - target.get<u8>();
-        look_behind |= 0xFFFFF000;
+        u32 tmp1 = input_io.eof() ? 0 : input_io.read_u8();
+        u32 tmp2 = input_io.eof() ? 0 : input_io.read_u8();
 
-        while (target_ptr - target.get<u8>() + look_behind < 0
-            && size
-            && target_ptr < target_end)
+        u32 look_behind_pos = (((tmp2 & 0xF0) << 4) | tmp1) % dict_size;
+        u16 repetitions = (~tmp2 & 0xF) + 3;
+        while (repetitions-- && output_ptr < output_end)
         {
-            --size;
-            *target_ptr++ = 0;
-        }
-
-        while (size && target_ptr < target_end)
-        {
-            --size;
-            u8 tmp = target_ptr[look_behind];
-            *target_ptr++ = tmp;
+            dict[dict_pos++] = *output_ptr++ = dict[look_behind_pos++];
+            look_behind_pos %= dict_size;
+            dict_pos %= dict_size;
         }
     }
-
-    return target;
+    return output;
 }

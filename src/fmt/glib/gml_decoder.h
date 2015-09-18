@@ -1,5 +1,6 @@
 #pragma once
 
+#include "io/io.h"
 #include "types.h"
 
 namespace au {
@@ -9,7 +10,8 @@ namespace glib {
     class GmlDecoder final
     {
     public:
-        static bstr decode(const bstr &source, size_t target_size);
+        static bstr decode(const bstr &input, size_t output_size);
+        static bstr decode(io::IO &input_io, size_t output_size);
     };
 
 } } }
