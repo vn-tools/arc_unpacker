@@ -16,8 +16,10 @@
 // - [Fuguriya] [100212] Sonohana 8 - Tenshi no Hanabira Zome
 // - [Fuguriya] [101129] Sonohana 9 - Amakute Otona no Torokeru Chuu
 // - [Fuguriya] [111120] Sonohana 10 - Lily Platinum
-// - [Yurin Yurin] [121115] Sonohana 11 - Michael no Otome-tachi
+// - [Fuguriya] [140328] Sonohana 17 - Anata ni Chikau Ai
+// - [Sei Mikaeru Joshi Gakuen] [150626] Sonohana 18 - Nyuu Jene!
 // - [Yurin Yurin] [100925] Hanahira!
+// - [Yurin Yurin] [121115] Sonohana 11 - Michael no Otome-tachi
 
 #include "fmt/nsystem/mgd_converter.h"
 #include "err.h"
