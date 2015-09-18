@@ -7,6 +7,8 @@
 //
 // Known games:
 // - [07th Expansion] [020810] Higurashi No Naku Koro Ni
+// - [Lump of Sugar] [070126] Itsuka, Todoku, Ano Sora ni.
+// - [Lump of Sugar] [130531] Magical Charming
 // - [Overdrive] [110930] Go! Go! Nippon! ~My First Trip to Japan~
 
 #include "fmt/bgi/sound_converter.h"
