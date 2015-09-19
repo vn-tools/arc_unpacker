@@ -3,7 +3,7 @@
 // Company:   Alice Soft
 // Engine:    AliceSystem / NV-SYSTEM
 // Extension: .pm, .PMS
-// Archives:  AJP
+// Archives:  AJP, ALD
 //
 // Known games:
 // - [Alice Soft] [971218] Atlach-Nacha
@@ -198,7 +198,8 @@ static bstr decompress_16bit(io::IO &input_io, size_t width, size_t height)
 
 static std::unique_ptr<util::Image> do_decode(io::IO &io)
 {
-    io.skip(magic1.size());
+    io.skip(2);
+    auto version = io.read_u16_le();
     io.skip(2);
     auto depth = io.read_u16_le();
     io.skip(4 * 4);
@@ -214,7 +215,8 @@ static std::unique_ptr<util::Image> do_decode(io::IO &io)
         io.seek(data_offset);
         auto pixel_data = decompress_8bit(io, width, height);
         io.seek(palette_offset);
-        pix::Palette palette(256, io, pix::Format::BGR888);
+        pix::Palette palette(
+            256, io, version == 1 ? pix::Format::RGB888 : pix::Format::BGR888);
         pixels.reset(new pix::Grid(width, height, pixel_data, palette));
     }
     else if (depth == 16)

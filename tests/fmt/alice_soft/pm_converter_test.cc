@@ -36,3 +36,10 @@ TEST_CASE("AliceSoft PM 16-bit images without transparency", "[fmt]")
         "tests/fmt/alice_soft/files/pm/G214.PMS",
         "tests/fmt/alice_soft/files/pm/G214-out.png");
 }
+
+TEST_CASE("AliceSoft PM 8-bit images with inverted channels", "[fmt]")
+{
+    do_test(
+        "tests/fmt/alice_soft/files/pm/ALCG0016.PMS",
+        "tests/fmt/alice_soft/files/pm/ALCG0016-out.png");
+}
