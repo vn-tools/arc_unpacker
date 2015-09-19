@@ -43,10 +43,10 @@ namespace util {
         ~Logger();
 
         void set_color(Color c);
-        void info(const std::string &str);
-        void success(const std::string &str);
-        void warn(const std::string &str);
-        void err(const std::string &str);
+        void info(const std::string &str, ...);
+        void success(const std::string &str, ...);
+        void warn(const std::string &str, ...);
+        void err(const std::string &str, ...);
         void flush();
 
         void mute();

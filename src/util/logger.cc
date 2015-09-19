@@ -1,12 +1,14 @@
 #include "util/logger.h"
+#include <cstdarg>
 #include <iostream>
+#include "util/format.h"
 
 using namespace au::util;
 
 struct Logger::Priv final
 {
     Priv(Logger &logger);
-    void log(MessageType type, const std::string &str);
+    void log(MessageType type, const std::string &fmt, std::va_list args);
 
     Logger &logger;
     Color colors[4];
@@ -22,7 +24,8 @@ Logger::Priv::Priv(Logger &logger) : logger(logger)
     colors[MessageType::Error] = Color::Red;
 }
 
-void Logger::Priv::log(MessageType type, const std::string &str)
+void Logger::Priv::log(
+    MessageType type, const std::string &fmt, std::va_list args)
 {
     if (muted & (1 << type))
         return;
@@ -31,7 +34,7 @@ void Logger::Priv::log(MessageType type, const std::string &str)
         out = &std::cerr;
     if (colors_enabled && colors[type] != Color::Original)
         logger.set_color(colors[type]);
-    (*out) << str;
+    (*out) << format(fmt, args);
     if (colors_enabled && colors[type] != Color::Original)
         logger.set_color(Color::Original);
 }
@@ -45,24 +48,36 @@ Logger::~Logger()
 {
 }
 
-void Logger::info(const std::string &str)
+void Logger::info(const std::string &fmt, ...)
 {
-    p->log(MessageType::Info, str);
+    std::va_list args;
+    va_start(args, fmt);
+    p->log(MessageType::Info, fmt, args);
+    va_end(args);
 }
 
-void Logger::success(const std::string &str)
+void Logger::success(const std::string &fmt, ...)
 {
-    p->log(MessageType::Success, str);
+    std::va_list args;
+    va_start(args, fmt);
+    p->log(MessageType::Success, fmt, args);
+    va_end(args);
 }
 
-void Logger::warn(const std::string &str)
+void Logger::warn(const std::string &fmt, ...)
 {
-    p->log(MessageType::Warning, str);
+    std::va_list args;
+    va_start(args, fmt);
+    p->log(MessageType::Warning, fmt, args);
+    va_end(args);
 }
 
-void Logger::err(const std::string &str)
+void Logger::err(const std::string &fmt, ...)
 {
-    p->log(MessageType::Error, str);
+    std::va_list args;
+    va_start(args, fmt);
+    p->log(MessageType::Error, fmt, args);
+    va_end(args);
 }
 
 void Logger::flush()
