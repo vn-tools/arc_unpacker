@@ -16,28 +16,28 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("AliceSoft PMS 8-bit images", "[fmt]")
+TEST_CASE("Alice Soft PMS 8-bit images", "[fmt]")
 {
     do_test(
         "tests/fmt/alice_soft/files/pms/CG40000.pm",
         "tests/fmt/alice_soft/files/pms/CG40000-out.png");
 }
 
-TEST_CASE("AliceSoft PMS 16-bit images with transparency", "[fmt]")
+TEST_CASE("Alice Soft PMS 16-bit images with transparency", "[fmt]")
 {
     do_test(
         "tests/fmt/alice_soft/files/pms/G006.PMS",
         "tests/fmt/alice_soft/files/pms/G006-out.png");
 }
 
-TEST_CASE("AliceSoft PMS 16-bit images without transparency", "[fmt]")
+TEST_CASE("Alice Soft PMS 16-bit images without transparency", "[fmt]")
 {
     do_test(
         "tests/fmt/alice_soft/files/pms/G214.PMS",
         "tests/fmt/alice_soft/files/pms/G214-out.png");
 }
 
-TEST_CASE("AliceSoft PMS 8-bit images with inverted channels", "[fmt]")
+TEST_CASE("Alice Soft PMS 8-bit images with inverted channels", "[fmt]")
 {
     do_test(
         "tests/fmt/alice_soft/files/pms/ALCG0016.PMS",
