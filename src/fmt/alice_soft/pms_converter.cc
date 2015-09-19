@@ -1,4 +1,4 @@
-// PM image mask
+// PMS image
 //
 // Company:   Alice Soft
 // Engine:    AliceSystem / NV-SYSTEM
@@ -17,7 +17,7 @@
 // - [Alice Soft] [971218] Zero
 // - [Alice Soft] [011130] Daiakuji
 
-#include "fmt/alice_soft/pm_converter.h"
+#include "fmt/alice_soft/pms_converter.h"
 #include "err.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
@@ -241,14 +241,14 @@ static std::unique_ptr<util::Image> do_decode(io::IO &io)
     return util::Image::from_pixels(*pixels);
 }
 
-std::unique_ptr<util::Image> PmConverter::decode_to_image(
+std::unique_ptr<util::Image> PmsConverter::decode_to_image(
     const bstr &data) const
 {
     io::BufferedIO tmp_io(data);
     return do_decode(tmp_io);
 }
 
-bool PmConverter::is_recognized_internal(File &file) const
+bool PmsConverter::is_recognized_internal(File &file) const
 {
     if (file.io.read(magic1.size()) == magic1)
         return true;
@@ -256,10 +256,10 @@ bool PmConverter::is_recognized_internal(File &file) const
     return file.io.read(magic2.size()) == magic2;
 }
 
-std::unique_ptr<File> PmConverter::decode_internal(File &file) const
+std::unique_ptr<File> PmsConverter::decode_internal(File &file) const
 {
     auto image = do_decode(file.io);
     return image->create_file(file.name);
 }
 
-static auto dummy = fmt::Registry::add<PmConverter>("alice/pm");
+static auto dummy = fmt::Registry::add<PmsConverter>("alice/pms");

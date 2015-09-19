@@ -17,7 +17,7 @@
 // - [Alice Soft] [011130] Daiakuji
 
 #include "fmt/alice_soft/ald_archive.h"
-#include "fmt/alice_soft/pm_converter.h"
+#include "fmt/alice_soft/pms_converter.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -82,12 +82,12 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 
 struct AldArchive::Priv final
 {
-    PmConverter pm_converter;
+    PmsConverter pms_converter;
 };
 
 AldArchive::AldArchive() : p(new Priv)
 {
-    add_transformer(&p->pm_converter);
+    add_transformer(&p->pms_converter);
 }
 
 AldArchive::~AldArchive()

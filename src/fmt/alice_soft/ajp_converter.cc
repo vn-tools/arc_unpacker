@@ -10,7 +10,7 @@
 
 #include "fmt/alice_soft/ajp_converter.h"
 #include <algorithm>
-#include "fmt/alice_soft/pm_converter.h"
+#include "fmt/alice_soft/pms_converter.h"
 #include "util/image.h"
 #include "util/range.h"
 
@@ -60,8 +60,8 @@ std::unique_ptr<File> AjpConverter::decode_internal(File &file) const
         return output_file;
     }
 
-    PmConverter pm_converter;
-    auto mask_image = pm_converter.decode_to_image(mask_data);
+    PmsConverter pms_converter;
+    auto mask_image = pms_converter.decode_to_image(mask_data);
     auto jpeg_image = util::Image::from_boxed(jpeg_data);
 
     for (auto y : util::range(height))
