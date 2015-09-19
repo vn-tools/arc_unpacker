@@ -2,23 +2,23 @@
 shopt -s globstar
 
 echo 'Checking for whitespace errors...'
-grep '\s$' **/*.{cc,h} && exit 1
-pcregrep -M '\n\n\Z' **/*.{cc,h} && exit 1
+grep '\s$' **/*.{cc,h}
+pcregrep -M '\n\n\Z' **/*.{cc,h}
 
 echo 'Checking for too long lines...'
-grep '^.\{81,\}$' **/*.{cc,h} && exit 1
+grep '^.\{81,\}$' **/*.{cc,h}
 
 echo 'Checking for lowercase hex literals...'
-grep '[0\\]x[0-9]*[a-f][0-9]*' **/*.{cc,h} && exit 1
+grep '[0\\]x[0-9]*[a-f][0-9]*' **/*.{cc,h}
 
 echo 'Checking for typedef...'
-grep 'typedef' **/*.{cc,h} && exit 1
+grep 'typedef' **/*.{cc,h}
 
 echo 'Checking for "length"...'
-grep 'length' **/*.{cc,h} | grep -v run_length && ( echo 'Use "size" instead.'; exit 1 )
+grep 'length' **/*.{cc,h} | grep -v run_length && echo 'Use "size" instead.'
 
 echo 'Checking for iostream outside logger...'
-grep 'iostream' **/*.{cc,h} | grep -v logger && exit 1
+grep 'iostream' **/*.{cc,h} | grep -v logger
 
 echo 'Checking for sloppy exceptions...'
 grep 'throw std' **/*.cc|grep -v logic_error
