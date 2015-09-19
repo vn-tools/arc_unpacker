@@ -11,7 +11,7 @@ struct Logger::Priv final
     void log(MessageType type, const std::string &fmt, std::va_list args);
 
     Logger &logger;
-    Color colors[4];
+    Color colors[5];
     int muted = 0;
     bool colors_enabled = true;
 };
@@ -22,6 +22,7 @@ Logger::Priv::Priv(Logger &logger) : logger(logger)
     colors[MessageType::Success] = Color::Lime;
     colors[MessageType::Warning] = Color::Yellow;
     colors[MessageType::Error] = Color::Red;
+    colors[MessageType::Debug] = Color::Magenta;
 }
 
 void Logger::Priv::log(
@@ -30,7 +31,7 @@ void Logger::Priv::log(
     if (muted & (1 << type))
         return;
     auto *out = &std::cout;
-    if (type != MessageType::Info && type != MessageType::Success)
+    if (type == MessageType::Warning || type == MessageType::Error)
         out = &std::cerr;
     if (colors_enabled && colors[type] != Color::Original)
         logger.set_color(colors[type]);
@@ -77,6 +78,14 @@ void Logger::err(const std::string &fmt, ...)
     std::va_list args;
     va_start(args, fmt);
     p->log(MessageType::Error, fmt, args);
+    va_end(args);
+}
+
+void Logger::debug(const std::string &fmt, ...)
+{
+    std::va_list args;
+    va_start(args, fmt);
+    p->log(MessageType::Debug, fmt, args);
     va_end(args);
 }
 

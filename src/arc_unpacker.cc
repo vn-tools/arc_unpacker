@@ -144,7 +144,10 @@ void ArcUnpacker::Priv::parse_cli_options()
         Log.disable_colors();
 
     if (arg_parser.has_flag("-q") || arg_parser.has_flag("--quiet"))
+    {
         Log.mute();
+        Log.unmute(util::MessageType::Debug);
+    }
 
     options.recurse = !arg_parser.has_flag("--no-recurse");
 
