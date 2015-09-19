@@ -8,6 +8,7 @@
 // - [Tanuki Soft] [101217] Shoukoujo
 // - [Tanuki Soft] [111118] Mebae
 // - [Tanuki Soft] [121221] Tonari no Puu-san
+// - [Tanuki Soft] [150731] Shoujo Ramune
 
 #include "fmt/tanuki_soft/tac_archive.h"
 #include "err.h"
