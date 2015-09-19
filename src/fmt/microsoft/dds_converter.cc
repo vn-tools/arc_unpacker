@@ -6,6 +6,9 @@
 // Archives:  -
 //
 // Known games:
+// - [Latte] [111222] Imouto Senbatsu☆Sousenkyo
+// - [Latte] [120727] Dainikai Imouto Senbatsu☆Sousenkyo ~366ninme no Imouto
+//   Icha Love Nijitsudan~
 // - [Team Shanghai Alice] [130526] Touhou 13.5 - Hopeless Masquerade
 
 #include "fmt/microsoft/dds_converter.h"

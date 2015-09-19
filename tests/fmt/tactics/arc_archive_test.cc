@@ -19,12 +19,22 @@ static void do_test(const std::string &input_path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("TACTICS ARC uncompressed archives", "[fmt]")
+TEST_CASE("TACTICS ARC v0 compressed archives", "[fmt]")
 {
-    do_test("tests/fmt/tactics/files/arc/uncompressed.arc");
+    do_test("tests/fmt/tactics/files/arc/v0-compressed.arc");
 }
 
-TEST_CASE("TACTICS ARC compressed archives", "[fmt]")
+TEST_CASE("TACTICS ARC v0 uncompressed archives", "[fmt]")
 {
-    do_test("tests/fmt/tactics/files/arc/compressed.arc");
+    do_test("tests/fmt/tactics/files/arc/v0-uncompressed.arc");
+}
+
+TEST_CASE("TACTICS ARC v1 uncompressed archives", "[fmt]")
+{
+    do_test("tests/fmt/tactics/files/arc/v1-uncompressed.arc");
+}
+
+TEST_CASE("TACTICS ARC v1 compressed archives", "[fmt]")
+{
+    do_test("tests/fmt/tactics/files/arc/v1-compressed.arc");
 }
