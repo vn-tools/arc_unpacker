@@ -1,13 +1,23 @@
 // ALD archive
 //
 // Company:   Alice Soft
-// Engine:    -
+// Engine:    AliceSystem / NV-SYSTEM
 // Extension: .ald
 //
 // Known games:
+// - [Alice Soft] [971218] Atlach-Nacha
+// - [Alice Soft] [971218] Ningen Gari
+// - [Alice Soft] [971218] Dalk
+// - [Alice Soft] [971218] Dr. Stop!
+// - [Alice Soft] [971218] Rance 1 - Hikari o Motomete
+// - [Alice Soft] [971218] Rance 2 - Hangyaku no Shoujo-tachi
+// - [Alice Soft] [971218] Rance 3 - Leazas Kanraku
+// - [Alice Soft] [971218] Toushin Toshi
+// - [Alice Soft] [971218] Zero
 // - [Alice Soft] [011130] Daiakuji
 
 #include "fmt/alice_soft/ald_archive.h"
+#include "fmt/alice_soft/pm_converter.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -33,28 +43,29 @@ static u32 read_24_le(io::IO &io)
 
 static Table read_table(io::IO &arc_io)
 {
-    Table table;
     auto file_count = read_24_le(arc_io) / 3;
 
+    std::vector<size_t> offsets(file_count);
     for (auto i : util::range(file_count))
+        offsets[i] = read_24_le(arc_io);
+
+    Table table;
+    for (auto &offset : offsets)
     {
-        auto offset = read_24_le(arc_io);
         if (!offset)
             break;
-
-        arc_io.peek(offset, [&]()
+        arc_io.seek(offset);
+        auto header_size = arc_io.read_u32_le();
+        if (arc_io.tell() + header_size < arc_io.size())
         {
-            auto header_size = arc_io.read_u32_le();
-            if (arc_io.tell() + header_size < arc_io.size())
-            {
-                std::unique_ptr<TableEntry> entry(new TableEntry);
-                entry->size = arc_io.read_u32_le();
-                arc_io.skip(8);
-                entry->name = arc_io.read_to_zero(header_size - 16).str();
-                entry->offset = arc_io.tell();
-                table.push_back(std::move(entry));
-            }
-        });
+            std::unique_ptr<TableEntry> entry(new TableEntry);
+            entry->size = arc_io.read_u32_le();
+            arc_io.skip(8);
+            auto name = arc_io.read_to_zero(header_size - 16);
+            entry->name = util::sjis_to_utf8(name).str();
+            entry->offset = arc_io.tell();
+            table.push_back(std::move(entry));
+        }
     }
 
     return table;
@@ -67,6 +78,20 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     file->io.write_from_io(arc_io, entry.size);
     file->name = entry.name;
     return file;
+}
+
+struct AldArchive::Priv final
+{
+    PmConverter pm_converter;
+};
+
+AldArchive::AldArchive() : p(new Priv)
+{
+    add_transformer(&p->pm_converter);
+}
+
+AldArchive::~AldArchive()
+{
 }
 
 bool AldArchive::is_recognized_internal(File &arc_file) const
