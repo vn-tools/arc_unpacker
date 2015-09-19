@@ -6,6 +6,14 @@
 namespace au {
 namespace util {
 
+    enum MessageType
+    {
+        Info,
+        Success,
+        Warning,
+        Error,
+    };
+
     class Logger final
     {
     public:
@@ -43,6 +51,8 @@ namespace util {
 
         void mute();
         void unmute();
+        void mute(MessageType type);
+        void unmute(MessageType type);
 
         bool colors_enabled() const;
         void disable_colors();

@@ -110,11 +110,11 @@ void ArcUnpacker::Priv::register_cli_options()
         ->set_description(
             "Renames existing target files.\nBy default, they're overwritten.");
 
-    arg_parser.register_flag({"--no-color", "--no-colors"})
-        ->set_description("Disables color output.");
-
     arg_parser.register_flag({"-q", "--quiet"})
         ->set_description("Disables all output.");
+
+    arg_parser.register_flag({"--no-color", "--no-colors"})
+        ->set_description("Disables color output.");
 
     arg_parser.register_flag({"--no-recurse"})
         ->set_description("Disables automatic decoding of nested files.");
