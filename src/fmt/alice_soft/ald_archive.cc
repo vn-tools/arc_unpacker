@@ -18,6 +18,7 @@
 
 #include "fmt/alice_soft/ald_archive.h"
 #include "fmt/alice_soft/pms_converter.h"
+#include "fmt/alice_soft/vsp_converter.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -83,11 +84,13 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 struct AldArchive::Priv final
 {
     PmsConverter pms_converter;
+    VspConverter vsp_converter;
 };
 
 AldArchive::AldArchive() : p(new Priv)
 {
     add_transformer(&p->pms_converter);
+    add_transformer(&p->vsp_converter);
 }
 
 AldArchive::~AldArchive()
