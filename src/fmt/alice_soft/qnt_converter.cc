@@ -8,6 +8,8 @@
 // Known games:
 // - [Alice Soft] [011130] Daiakuji
 // - [Alice Soft] [021025] Rance 5D - Hitoribocchi no Onna no Ko
+// - [Alice Soft] [040827] Rance 6 - Zeth Houkai -
+// - [Alice Soft] [061215] Sengoku Rance
 
 #include "fmt/alice_soft/qnt_converter.h"
 #include "err.h"

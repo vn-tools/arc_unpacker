@@ -7,6 +7,7 @@
 //
 // Known games:
 // - [Alice Soft] [011130] Daiakuji
+// - [Alice Soft] [061215] Sengoku Rance
 
 #include "fmt/alice_soft/ajp_converter.h"
 #include <algorithm>

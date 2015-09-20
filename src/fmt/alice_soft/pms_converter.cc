@@ -17,6 +17,7 @@
 // - [Alice Soft] [971218] Toushin Toshi
 // - [Alice Soft] [971218] Zero
 // - [Alice Soft] [011130] Daiakuji
+// - [Alice Soft] [040827] Rance 6 - Zeth Houkai -
 
 #include "fmt/alice_soft/pms_converter.h"
 #include "err.h"
