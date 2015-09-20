@@ -20,6 +20,16 @@
 // - [Alice Soft] [021025] Rance 5D - Hitoribocchi no Onna no Ko
 // - [Alice Soft] [040827] Rance 6 - Zeth Houkai -
 // - [Alice Soft] [061215] Sengoku Rance
+// - [Alice Soft] [091218] Choukou Sennin Haruka - Haruka VS Escalayer
+// - [Alice Soft] [091218] Choukou Sennin Haruka - Shippuu! Ninja Dai Sakusen
+// - [Alice Soft] [091218] Haru Urare - Kounai Akasen Kuiki
+// - [Alice Soft] [091218] Jinmu - Kamunagara
+// - [Alice Soft] [091218] Mamanyonyo
+// - [Alice Soft] [091218] Megane no Mei to Natsuyasumi
+// - [Alice Soft] [091218] Rachel no Sakuragai
+// - [Alice Soft] [091218] Rance 2 - Hangyuaku no Shoujo-tachi
+// - [Alice Soft] [091218] Sabaku no Nikka
+// - [Alice Soft] [091218] Vanish! - Kono Te no Hira ni Oppai o
 
 #include "fmt/alice_soft/ald_archive.h"
 #include "fmt/alice_soft/qnt_converter.h"

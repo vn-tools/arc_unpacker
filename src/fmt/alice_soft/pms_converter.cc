@@ -3,7 +3,7 @@
 // Company:   Alice Soft
 // Engine:    AliceSystem / NV-SYSTEM
 // Extension: .pm, .PMS
-// Archives:  AJP, ALD
+// Related:   AJP, ALD
 //
 // Known games:
 // - [Alice Soft] [970404] Kichikuou Rance
