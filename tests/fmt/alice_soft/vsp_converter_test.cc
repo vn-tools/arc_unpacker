@@ -16,9 +16,16 @@ static void do_test(
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("Alice Soft VSP images", "[fmt]")
+TEST_CASE("Alice Soft VSP images (VSP compression)", "[fmt]")
 {
     do_test(
         "tests/fmt/alice_soft/files/vsp/CG8367.VSP",
         "tests/fmt/alice_soft/files/vsp/CG8367-out.png");
+}
+
+TEST_CASE("Alice Soft VSP images (8-bit PMS compression)", "[fmt]")
+{
+    do_test(
+        "tests/fmt/alice_soft/files/vsp/CG_0295.VSP",
+        "tests/fmt/alice_soft/files/vsp/CG_0295-out.png");
 }

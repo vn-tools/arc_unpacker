@@ -14,6 +14,7 @@
 // - [Alice Soft] [971218] Toushin Toshi
 
 #include "fmt/alice_soft/vsp_converter.h"
+#include "fmt/alice_soft/pms_converter.h"
 #include "err.h"
 #include "util/image.h"
 #include "util/range.h"
@@ -162,25 +163,42 @@ std::unique_ptr<File> VspConverter::decode_internal(File &file) const
 {
     auto x = file.io.read_u16_le();
     auto y = file.io.read_u16_le();
-    auto width = (file.io.read_u16_le() - x) * 8;
+    auto width = (file.io.read_u16_le() - x);
     auto height = file.io.read_u16_le() - y;
     auto use_pms = file.io.read_u8() > 0;
-    if (use_pms)
-        throw err::NotSupportedError("VSP using PMS is not yet supported");
 
-    file.io.seek(0x0A);
-    pix::Palette palette(16);
-    for (auto &c : palette)
+    std::unique_ptr<pix::Grid> pixels;
+
+    if (use_pms)
     {
-        c.b = (file.io.read_u8() & 0x0F) * 0x11;
-        c.r = (file.io.read_u8() & 0x0F) * 0x11;
-        c.g = (file.io.read_u8() & 0x0F) * 0x11;
+        width = ((width + 7) / 8) * 8;
+
+        file.io.seek(0x20);
+        pix::Palette palette(256, file.io, pix::Format::BGR888);
+
+        file.io.seek(0x320);
+        auto pixel_data = PmsConverter::decompress_8bit(file.io, width, height);
+        pixels.reset(new pix::Grid(width, height, pixel_data, palette));
+    }
+    else
+    {
+        width *= 8;
+
+        file.io.seek(0x0A);
+        pix::Palette palette(16);
+        for (auto &c : palette)
+        {
+            c.b = (file.io.read_u8() & 0x0F) * 0x11;
+            c.r = (file.io.read_u8() & 0x0F) * 0x11;
+            c.g = (file.io.read_u8() & 0x0F) * 0x11;
+        }
+
+        file.io.seek(0x3A);
+        auto pixel_data = decompress_vsp(file.io, width, height);
+        pixels.reset(new pix::Grid(width, height, pixel_data, palette));
     }
 
-    file.io.seek(0x3A);
-    auto pixel_data = decompress_vsp(file.io, width, height);
-    pix::Grid pixels(width, height, pixel_data, palette);
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return util::Image::from_pixels(*pixels)->create_file(file.name);
 }
 
 static auto dummy = fmt::Registry::add<VspConverter>("alice/vsp");
