@@ -5,18 +5,22 @@
 // Extension: .ald
 //
 // Known games:
+// - [Alice Soft] [970404] Kichikuou Rance
+// - [Alice Soft] [970404] Rance 4 - Kyoudan no Isan
 // - [Alice Soft] [971218] Atlach-Nacha
-// - [Alice Soft] [971218] Ningen Gari
 // - [Alice Soft] [971218] Dalk
 // - [Alice Soft] [971218] Dr. Stop!
+// - [Alice Soft] [971218] Ningen Gari
 // - [Alice Soft] [971218] Rance 1 - Hikari o Motomete
 // - [Alice Soft] [971218] Rance 2 - Hangyaku no Shoujo-tachi
 // - [Alice Soft] [971218] Rance 3 - Leazas Kanraku
 // - [Alice Soft] [971218] Toushin Toshi
 // - [Alice Soft] [971218] Zero
 // - [Alice Soft] [011130] Daiakuji
+// - [Alice Soft] [021025] Rance 5D - Hitoribocchi no Onna no Ko
 
 #include "fmt/alice_soft/ald_archive.h"
+#include "fmt/alice_soft/qnt_converter.h"
 #include "fmt/alice_soft/pms_converter.h"
 #include "fmt/alice_soft/vsp_converter.h"
 #include "util/encoding.h"
@@ -85,12 +89,14 @@ struct AldArchive::Priv final
 {
     PmsConverter pms_converter;
     VspConverter vsp_converter;
+    QntConverter qnt_converter;
 };
 
 AldArchive::AldArchive() : p(new Priv)
 {
     add_transformer(&p->pms_converter);
     add_transformer(&p->vsp_converter);
+    add_transformer(&p->qnt_converter);
 }
 
 AldArchive::~AldArchive()

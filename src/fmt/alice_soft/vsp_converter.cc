@@ -6,6 +6,7 @@
 // Archives:  ALD
 //
 // Known games:
+// - [Alice Soft] [970404] Rance 4 - Kyoudan no Isan
 // - [Alice Soft] [971218] Dalk
 // - [Alice Soft] [971218] Dr. Stop!
 // - [Alice Soft] [971218] Rance 1 - Hikari o Motomete

@@ -7,6 +7,7 @@
 //
 // Known games:
 // - [Alice Soft] [011130] Daiakuji
+// - [Alice Soft] [021025] Rance 5D - Hitoribocchi no Onna no Ko
 
 #include "fmt/alice_soft/qnt_converter.h"
 #include "err.h"
