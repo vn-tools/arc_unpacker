@@ -20,6 +20,11 @@ namespace pix {
         Pixel &operator [](size_t i);
         const Pixel &operator [](size_t i) const;
 
+        Pixel *begin();
+        Pixel *end();
+        const Pixel *begin() const;
+        const Pixel *end() const;
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

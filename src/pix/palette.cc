@@ -115,3 +115,23 @@ const Pixel &Palette::operator [](size_t i) const
 {
     return p->colors[i];
 }
+
+Pixel *Palette::begin()
+{
+    return &p->colors[0];
+}
+
+Pixel *Palette::end()
+{
+    return &p->colors[p->colors.size()];
+}
+
+const Pixel *Palette::begin() const
+{
+    return &p->colors[0];
+}
+
+const Pixel *Palette::end() const
+{
+    return &p->colors[p->colors.size()];
+}
