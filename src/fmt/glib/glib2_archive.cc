@@ -1,15 +1,3 @@
-// GLib2 archive
-//
-// Company:   Rune
-// Engine:    GLib
-// Extension: .g2, .stx
-//
-// Known games:
-// - [Rune & Cage] [080328] Pure My Imouto Milk Purun
-// - [Rune] [071214] Musume Shimai
-// - [Tanuki Soft] [081212] Mei Shoujo
-// - [Tanuki Soft] [091218] Bishoujo
-
 #include "fmt/glib/glib2_archive.h"
 #include "err.h"
 #include "fmt/glib/glib2/mei.h"

@@ -1,12 +1,3 @@
-// MGR image container
-//
-// Company:   Propeller
-// Engine:    -
-// Extension: .mgr
-//
-// Known games:
-// - [Propeller] [110624] Sukimazakura to Uso no Machi
-
 #include "fmt/propeller/mgr_archive.h"
 #include "io/buffered_io.h"
 #include "util/format.h"

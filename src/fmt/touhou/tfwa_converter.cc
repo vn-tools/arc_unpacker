@@ -1,13 +1,3 @@
-// TFWA sound file
-//
-// Company:   Team Shanghai Alice
-// Engine:    -
-// Extension: .wav
-//
-// Known games:
-// - [Tasofro & Team Shanghai Alice] [130526] TH13.5 - Hopeless Masquerade
-// - [Tasofro & Team Shanghai Alice] [150510] TH14.5 - Urban Legend in Limbo
-
 #include "fmt/touhou/tfwa_converter.h"
 #include "util/sound.h"
 

@@ -1,12 +1,3 @@
-// GML archive
-//
-// Company:   Rune
-// Engine:    GLib
-// Extension: .g, .xp
-//
-// Known games:
-// - [Rune & Cage] [040227] Watashi no Puni Puni
-
 #include "fmt/glib/gml_archive.h"
 #include "fmt/glib/custom_lzss.h"
 #include "fmt/glib/pgx_converter.h"

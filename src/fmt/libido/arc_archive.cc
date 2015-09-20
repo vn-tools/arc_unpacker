@@ -1,14 +1,3 @@
-// ARC archive
-//
-// Company:   Libido
-// Engine:    -
-// Extension: .arc
-//
-// Known games:
-// - [Libido] [000929] Cherry Boy, Innocent Girl
-// - [Libido] [980911] Fifteen ~School Girls Digital Tokuhon~
-// - [Libido] [990423] Girl Friends
-
 #include "fmt/libido/arc_archive.h"
 #include <algorithm>
 #include "util/pack/lzss.h"

@@ -1,13 +1,3 @@
-// EAGLS GR image file
-//
-// Company:   TechArts
-// Engine:    Enhanced Adventure Game Language System
-// Extension: .gr
-// Archives:  PAK
-//
-// Known games:
-// - [SQUEEZ] [050922] Honoo no Haramase Tenkousei
-
 #include "fmt/eagls/gr_converter.h"
 #include <algorithm>
 #include "io/buffered_io.h"

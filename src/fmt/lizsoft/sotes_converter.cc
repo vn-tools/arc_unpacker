@@ -1,13 +1,3 @@
-// SOTES image
-//
-// Company:   Lizsoft
-// Engine:    FOR-D System
-// Extension: - (embedded in executables)
-// Archives:  .dll
-//
-// Known games:
-// - [LizSoft] [080910] Fortune Summoners: Secret Of The Elemental Stone (SOTES)
-
 #include "fmt/lizsoft/sotes_converter.h"
 #include "err.h"
 #include "util/image.h"

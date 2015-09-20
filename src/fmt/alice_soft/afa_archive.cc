@@ -1,12 +1,3 @@
-// AFA archive
-//
-// Company:   Alice Soft
-// Engine:    -
-// Extension: .afa
-//
-// Known games:
-// - [Alice Soft] [011130] Daiakuji
-
 #include "fmt/alice_soft/afa_archive.h"
 #include "err.h"
 #include "fmt/alice_soft/aff_converter.h"

@@ -1,14 +1,3 @@
-// PRS image
-//
-// Company:   Ivory
-// Engine:    MarbleEngine
-// Extension: -
-// Archives:  MBL
-//
-// Known games:
-// - [Ivory] [030606] Candy Toys
-// - [Ivory] [060414] Wanko To Kurasou
-
 #include "fmt/ivory/prs_converter.h"
 #include "err.h"
 #include "util/image.h"

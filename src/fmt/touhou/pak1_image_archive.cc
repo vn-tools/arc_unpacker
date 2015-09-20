@@ -1,13 +1,3 @@
-// PAK1 image file
-//
-// Company:   Team Shanghai Alice
-// Engine:    -
-// Extension: .dat
-//
-// Known games:
-// - [Tasofro & Team Shanghai Alice] [041230] TH07.5 - Immaterial and Missing
-//   Power
-
 #include "fmt/touhou/pak1_image_archive.h"
 #include "err.h"
 #include "io/buffered_io.h"

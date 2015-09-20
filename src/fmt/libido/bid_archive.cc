@@ -1,12 +1,3 @@
-// BID archive
-//
-// Company:   Libido
-// Engine:    -
-// Extension: .BID
-//
-// Known games:
-// - [Libido] [970613] Houkago Mania Club
-
 #include "fmt/libido/bid_archive.h"
 #include "fmt/libido/mnc_converter.h"
 #include "util/range.h"

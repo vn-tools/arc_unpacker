@@ -1,20 +1,3 @@
-// TLG image
-//
-// Company:   -
-// Engine:    Kirikiri
-// Extension: .tlg
-// Archives:  XP3
-//
-// Known Games:
-// - [Akabei Soft2] [080529] G-senjou no Maou
-// - [Type-Moon] [040326] Fate Stay Night
-// - [Type-Moon] [051229] Fate Hollow Ataraxia
-// - [Yurin Yurin] [130329] Sonohana 12 - Atelier no Koibito-tachi
-// - [Yurin Yurin] [130531] Sonohana 13 - Tenshi no Akogare
-// - [Yurin Yurin] [130830] Sonohana 14 - Tenshi-tachi no Harukoi
-// - [Yurin Yurin] [131220] Sonohana 15 - Shirayuki no Kishi
-// - [Yurin Yurin] [140328] Sonohana 16 - Tenshi-tachi no Yakusoku
-
 #include "fmt/kirikiri/tlg_converter.h"
 #include "err.h"
 #include "fmt/kirikiri/tlg/tlg5_decoder.h"

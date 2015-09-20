@@ -1,13 +1,3 @@
-// MNC image
-//
-// Company:   Libido
-// Engine:    -
-// Extension: .MNC
-// Archives:  BID
-//
-// Known games:
-// - [Libido] [970613] Houkago Mania Club
-
 #include "fmt/libido/mnc_converter.h"
 #include "err.h"
 #include "util/image.h"

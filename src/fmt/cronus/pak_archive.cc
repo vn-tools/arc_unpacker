@@ -1,14 +1,3 @@
-// PAK archive
-//
-// Company:   Cronus
-// Engine:    -
-// Extension: .pak, .PAK
-//
-// Known games:
-// - [Cronus] [000922] Sweet Pleasure
-// - [Cronus] [011019] Dokidoki Princess
-// - [Cronus] [060630] Nursery Song
-
 #include "fmt/cronus/pak_archive.h"
 #include "err.h"
 #include "fmt/cronus/common.h"

@@ -1,14 +1,3 @@
-// OVK voice archive
-//
-// Company:   -
-// Engine:    RealLive
-// Extension: .ovk
-//
-// Known games:
-// - [Hamham Soft] [071221] Imouto ni! Sukumizu Kisetara Nugasanai!
-// - [Key] [070928] Little Busters!
-// - [Key] [080229] Clannad
-
 #include "fmt/real_live/ovk_archive.h"
 #include "util/range.h"
 #include "util/format.h"

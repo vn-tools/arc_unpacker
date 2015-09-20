@@ -1,7 +1,3 @@
-// Known games:
-// - [Rune & Cage] [080328] Pure My Imouto Milk Purun
-// - [Rune] [071214] Musume Shimai
-
 #include "fmt/glib/glib2/musume.h"
 #include "err.h"
 #include "util/format.h"

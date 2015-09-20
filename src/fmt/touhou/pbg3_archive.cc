@@ -1,12 +1,3 @@
-// PBG3 archive
-//
-// Company:   Team Shanghai Alice
-// Engine:    -
-// Extension: .dat
-//
-// Known games:
-// - [Team Shanghai Alice] [020811] TH06 - The Embodiment of Scarlet Devil
-
 #include "fmt/touhou/pbg3_archive.h"
 #include "fmt/touhou/anm_archive.h"
 #include "io/buffered_io.h"

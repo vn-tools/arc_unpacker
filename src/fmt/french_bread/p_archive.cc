@@ -1,12 +1,3 @@
-// P archive
-//
-// Company:   French Bread
-// Engine:    -
-// Extension: .p
-//
-// Known games:
-// - [Type-Moon & French Bread] [021230] Melty Blood
-
 #include "fmt/french_bread/p_archive.h"
 #include <algorithm>
 #include "fmt/french_bread/ex3_converter.h"

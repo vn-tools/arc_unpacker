@@ -1,12 +1,3 @@
-// NPA archive
-//
-// Company:   Nitroplus
-// Engine:    -
-// Extension: .npa
-//
-// Known games:
-// - [Nitroplus] [080425] CHAOS;HEAD
-
 #include "fmt/nitroplus/npa_archive.h"
 #include "fmt/nitroplus/npa_filters/chaos_head.h"
 #include "util/encoding.h"

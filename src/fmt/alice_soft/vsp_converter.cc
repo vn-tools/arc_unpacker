@@ -1,19 +1,3 @@
-// VSP image
-//
-// Company:   Alice Soft
-// Engine:    AliceSystem / NV-SYSTEM
-// Extension: .VSP
-// Archives:  ALD
-//
-// Known games:
-// - [Alice Soft] [970404] Rance 4 - Kyoudan no Isan
-// - [Alice Soft] [971218] Dalk
-// - [Alice Soft] [971218] Dr. Stop!
-// - [Alice Soft] [971218] Rance 1 - Hikari o Motomete
-// - [Alice Soft] [971218] Rance 2 - Hangyaku no Shoujo-tachi
-// - [Alice Soft] [971218] Rance 3 - Leazas Kanraku
-// - [Alice Soft] [971218] Toushin Toshi
-
 #include "fmt/alice_soft/vsp_converter.h"
 #include "fmt/alice_soft/pms_converter.h"
 #include "err.h"

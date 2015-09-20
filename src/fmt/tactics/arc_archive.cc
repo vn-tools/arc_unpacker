@@ -1,14 +1,3 @@
-// ARC archive
-//
-// Company:   Tactics
-// Engine:    -
-// Extension: .arc
-//
-// Known games:
-// - [Latte] [111222] Imouto Senbatsu☆Sousenkyo
-// - [Latte] [120727] Dainikai Imouto Senbatsu☆Sousenkyo ~366ninme no Imouto
-//   Icha Love Nijitsudan~
-
 #include "fmt/tactics/arc_archive.h"
 #include "err.h"
 #include "fmt/microsoft/dds_converter.h"

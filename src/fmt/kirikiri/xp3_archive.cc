@@ -1,25 +1,3 @@
-// XP3 archive
-//
-// Company:   -
-// Engine:    Kirikiri
-// Extension: .xp3
-//
-// Known games:
-// - [Akabei Soft2] [051125] Sharin no Kuni, Himawari no Shoujo
-// - [Akabei Soft2] [080529] G-senjou no Maou
-// - [Akatsuki Works] [091022] Comyu Kuroi Ryuu to Yasashii Oukoku
-// - [Parasol] [120525] Koiimo - SWEET DAYS
-// - [Parasol] [140829] Hare Nochi Kitto Nanohana Biyori
-// - [Pita Fetish] [110428] Gokkun! Onii-chan Milk ~Punipuni Oppai na Imouto to~
-// - [Type-Moon] [040326] Fate Stay Night
-// - [Type-Moon] [051229] Fate Hollow Ataraxia
-// - [Type-Moon] [120412] Mahou Tsukai no Yoru
-// - [Yurin Yurin] [130329] Sonohana 12 - Atelier no Koibito-tachi
-// - [Yurin Yurin] [130531] Sonohana 13 - Tenshi no Akogare
-// - [Yurin Yurin] [130830] Sonohana 14 - Tenshi-tachi no Harukoi
-// - [Yurin Yurin] [131220] Sonohana 15 - Shirayuki no Kishi
-// - [Yurin Yurin] [140328] Sonohana 16 - Tenshi-tachi no Yakusoku
-
 #include "fmt/kirikiri/xp3_archive.h"
 #include "err.h"
 #include "fmt/kirikiri/tlg_converter.h"

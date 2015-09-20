@@ -1,12 +1,3 @@
-// NPA archive
-//
-// Company:   Nitroplus
-// Engine:    -
-// Extension: .npa
-//
-// Known games:
-// - [Nitroplus] [100826] Steins;Gate
-
 #include "fmt/nitroplus/npa_sg_archive.h"
 #include "err.h"
 #include "io/buffered_io.h"

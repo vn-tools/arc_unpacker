@@ -1,13 +1,3 @@
-// EX3 image
-//
-// Company:   French Bread
-// Engine:    -
-// Extension: .ex3
-// Archives:  .p
-//
-// Known games:
-// - [Type-Moon & French Bread] [021230] Melty Blood
-
 #include "fmt/french_bread/ex3_converter.h"
 #include "err.h"
 #include "util/range.h"

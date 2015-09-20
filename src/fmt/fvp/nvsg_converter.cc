@@ -1,13 +1,3 @@
-// NVSG image file
-//
-// Company:   Favorite
-// Engine:    Favorite View Point
-// Extension: -
-// Archives:  BIN
-//
-// Known games:
-// - [Favorite] [110729] Irotoridori no Sekai
-
 #include "fmt/fvp/nvsg_converter.h"
 #include "err.h"
 #include "util/pack/zlib.h"

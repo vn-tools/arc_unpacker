@@ -1,12 +1,3 @@
-// PBG4 archive
-//
-// Company:   Team Shanghai Alice
-// Engine:    -
-// Extension: .dat
-//
-// Known games:
-// - [Team Shanghai Alice] [030817] TH07 - Perfect Cherry Blossom
-
 #include "fmt/touhou/pbg4_archive.h"
 #include "fmt/touhou/anm_archive.h"
 #include "io/buffered_io.h"

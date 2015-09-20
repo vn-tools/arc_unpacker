@@ -1,13 +1,3 @@
-// PBGZ archive
-//
-// Company:   Team Shanghai Alice
-// Engine:    -
-// Extension: .dat
-//
-// Known games:
-// - [Team Shanghai Alice] [040815] TH08 - Imperishable Night
-// - [Team Shanghai Alice] [050814] TH09 - Phantasmagoria of Flower View
-
 #include "fmt/touhou/pbgz_archive.h"
 #include <map>
 #include "err.h"

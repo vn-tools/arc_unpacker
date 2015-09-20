@@ -1,13 +1,3 @@
-// PRT image file
-//
-// Company:   KID
-// Engine:    -
-// Extension: - (inside .cps files)
-// Archives:  LNK
-//
-// Known games:
-// - [KID] [031127] Ever 17
-
 #include "fmt/kid/prt_converter.h"
 #include "err.h"
 #include "util/format.h"

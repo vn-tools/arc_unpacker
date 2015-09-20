@@ -1,12 +1,3 @@
-// EGR image archive
-//
-// Company:   Libido
-// Engine:    -
-// Extension: .egr
-//
-// Known games:
-// - [Libido] [940601] Libido 7
-
 #include "fmt/libido/egr_archive.h"
 #include "err.h"
 #include "util/format.h"

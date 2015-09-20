@@ -1,12 +1,3 @@
-// SAR archive
-//
-// Company:   -
-// Engine:    NScripter
-// Extension: .sar
-//
-// Known games:
-// - [Type-Moon] [001229] Tsukihime
-
 #include "fmt/nscripter/sar_archive.h"
 #include "util/range.h"
 

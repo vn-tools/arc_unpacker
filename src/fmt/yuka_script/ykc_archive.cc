@@ -1,12 +1,3 @@
-// YKC archive
-//
-// Company:   -
-// Engine:    YukaScript
-// Extension: .ykc
-//
-// Known games:
-// - [feng] [101015] Hoshizora e Kakaru Hashi
-
 #include "fmt/yuka_script/ykc_archive.h"
 #include "fmt/yuka_script/ykg_converter.h"
 #include "util/range.h"

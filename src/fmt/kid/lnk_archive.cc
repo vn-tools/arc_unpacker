@@ -1,12 +1,3 @@
-// LNK archive
-//
-// Company:   KID
-// Engine:    -
-// Extension: .dat
-//
-// Known games:
-// - [KID] [031127] Ever 17
-
 #include "fmt/kid/lnk_archive.h"
 #include "err.h"
 #include "fmt/kid/cps_converter.h"

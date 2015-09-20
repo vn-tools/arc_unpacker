@@ -1,13 +1,3 @@
-// MBL archive
-//
-// Company:   Ivory
-// Engine:    MarbleEngine
-// Extension: .mbl
-//
-// Known games:
-// - [Ivory] [030606] Candy Toys
-// - [Ivory] [060414] Wanko To Kurasou
-
 #include "fmt/ivory/mbl_archive.h"
 #include "fmt/ivory/prs_converter.h"
 #include "fmt/ivory/wady_converter.h"

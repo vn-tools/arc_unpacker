@@ -1,7 +1,3 @@
-// Known games:
-// - [Tanuki Soft] [081212] Mei Shoujo
-// - [Tanuki Soft] [091218] Bishoujo
-
 #include "fmt/glib/glib2/mei.h"
 #include <map>
 #include "err.h"

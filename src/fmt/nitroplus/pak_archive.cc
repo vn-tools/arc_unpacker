@@ -1,12 +1,3 @@
-// PAK2 archive
-//
-// Company:   Nitroplus
-// Engine:    -
-// Extension: .pak
-//
-// Known games:
-// - [Nitroplus] [031226] Saya no Uta
-
 #include "fmt/nitroplus/pak_archive.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"

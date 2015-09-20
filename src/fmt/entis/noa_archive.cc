@@ -1,12 +1,3 @@
-// NOA archive
-//
-// Company:   Leshade Entis
-// Engine:    Entis
-// Extension: .noa
-//
-// Known games:
-// - [Cuffs] [050805] Sakura Musubi
-
 #include "fmt/entis/noa_archive.h"
 #include "fmt/entis/common/sections.h"
 #include "fmt/entis/eri_converter.h"

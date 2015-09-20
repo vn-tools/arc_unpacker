@@ -1,13 +1,3 @@
-// PAK2 archive
-//
-// Company:   Team Shanghai Alice
-// Engine:    -
-// Extension: .pak
-//
-// Known games:
-// - [Tasofro & Team Shanghai Alice] [080525] TH10.5 - Scarlet Weather Rhapsody
-// - [Tasofro & Team Shanghai Alice] [090815] TH12.3 - Unthinkable Natural Law
-
 #include "fmt/touhou/pak2_archive.h"
 #include <boost/filesystem.hpp>
 #include "err.h"

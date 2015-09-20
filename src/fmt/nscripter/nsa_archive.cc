@@ -1,13 +1,3 @@
-// NSA archive
-//
-// Company:   -
-// Engine:    NScripter
-// Extension: .nsa
-//
-// Known games:
-// - [Type-Moon] [001229] Tsukihime
-// - [07th Expansion & Alchemist] [070817] Umineko no Naku Koro ni 1-4
-
 #include "fmt/nscripter/nsa_archive.h"
 #include "fmt/nscripter/spb_converter.h"
 #include "io/buffered_io.h"

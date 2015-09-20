@@ -1,13 +1,3 @@
-// FIL image mask file
-//
-// Company:   Minato Soft
-// Engine:    -
-// Extension: .fil
-// Archives:  PAC
-//
-// Known games:
-// - [Minato Soft] [091030] Maji de Watashi ni Koishinasai!
-
 #include "fmt/minato_soft/fil_converter.h"
 #include "util/image.h"
 

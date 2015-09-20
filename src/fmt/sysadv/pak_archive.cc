@@ -1,12 +1,3 @@
-// PAK archive
-//
-// Company:   Palette
-// Engine:    sysadv
-// Extension: .pak
-//
-// Known games:
-// - [Palette] [060224] Moshimo Ashita ga Harenaraba
-
 #include "fmt/sysadv/pak_archive.h"
 #include "fmt/sysadv/pga_converter.h"
 #include "util/encoding.h"

@@ -1,36 +1,3 @@
-// ALD archive
-//
-// Company:   Alice Soft
-// Engine:    AliceSystem / NV-SYSTEM
-// Extension: .ald
-//
-// Known games:
-// - [Alice Soft] [970404] Kichikuou Rance
-// - [Alice Soft] [970404] Rance 4 - Kyoudan no Isan
-// - [Alice Soft] [971218] Atlach-Nacha
-// - [Alice Soft] [971218] Dalk
-// - [Alice Soft] [971218] Dr. Stop!
-// - [Alice Soft] [971218] Ningen Gari
-// - [Alice Soft] [971218] Rance 1 - Hikari o Motomete
-// - [Alice Soft] [971218] Rance 2 - Hangyaku no Shoujo-tachi
-// - [Alice Soft] [971218] Rance 3 - Leazas Kanraku
-// - [Alice Soft] [971218] Toushin Toshi
-// - [Alice Soft] [971218] Zero
-// - [Alice Soft] [011130] Daiakuji
-// - [Alice Soft] [021025] Rance 5D - Hitoribocchi no Onna no Ko
-// - [Alice Soft] [040827] Rance 6 - Zeth Houkai -
-// - [Alice Soft] [061215] Sengoku Rance
-// - [Alice Soft] [091218] Choukou Sennin Haruka - Haruka VS Escalayer
-// - [Alice Soft] [091218] Choukou Sennin Haruka - Shippuu! Ninja Dai Sakusen
-// - [Alice Soft] [091218] Haru Urare - Kounai Akasen Kuiki
-// - [Alice Soft] [091218] Jinmu - Kamunagara
-// - [Alice Soft] [091218] Mamanyonyo
-// - [Alice Soft] [091218] Megane no Mei to Natsuyasumi
-// - [Alice Soft] [091218] Rachel no Sakuragai
-// - [Alice Soft] [091218] Rance 2 - Hangyuaku no Shoujo-tachi
-// - [Alice Soft] [091218] Sabaku no Nikka
-// - [Alice Soft] [091218] Vanish! - Kono Te no Hira ni Oppai o
-
 #include "fmt/alice_soft/ald_archive.h"
 #include "fmt/alice_soft/qnt_converter.h"
 #include "fmt/alice_soft/pms_converter.h"

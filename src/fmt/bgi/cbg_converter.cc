@@ -1,16 +1,3 @@
-// CBG image
-//
-// Company:   -
-// Engine:    BGI/Ethornell
-// Extension: -
-// Archives:  ARC
-//
-// Known games:
-// - [07th Expansion] [020810] Higurashi No Naku Koro Ni
-// - [Lump of Sugar] [070126] Itsuka, Todoku, Ano Sora ni.
-// - [Lump of Sugar] [130531] Magical Charming
-// - [Overdrive] [110930] Go! Go! Nippon! ~My First Trip to Japan~
-
 #include "fmt/bgi/cbg_converter.h"
 #include "err.h"
 #include "fmt/bgi/cbg/cbg1_decoder.h"

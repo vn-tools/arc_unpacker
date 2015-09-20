@@ -1,16 +1,3 @@
-// PAC archive
-//
-// Company:   Riddle Soft
-// Engine:    Rage's Adventure Game Engine
-// Extension: .pac
-//
-// Known games:
-// - [Cronus] [021129] Caliz
-// - [Cronus] [030425] Kaikan Senshi Busty
-// - [Cronus] [040227] Fruit Punch
-// - [Cronus] [050805] Brightia Plus
-// - [Cronus] [060630] Sweet Pleasure NS
-
 #include "fmt/riddle_soft/pac_archive.h"
 #include "err.h"
 #include "fmt/riddle_soft/cmp_converter.h"

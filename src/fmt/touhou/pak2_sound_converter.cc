@@ -1,13 +1,3 @@
-// PAK2 sound file
-//
-// Company:   Team Shanghai Alice
-// Engine:    -
-// Extension: .cv3
-//
-// Known games:
-// - [Tasofro & Team Shanghai Alice] [080525] TH10.5 - Scarlet Weather Rhapsody
-// - [Tasofro & Team Shanghai Alice] [090815] TH12.3 - Unthinkable Natural Law
-
 #include "fmt/touhou/pak2_sound_converter.h"
 #include "util/sound.h"
 

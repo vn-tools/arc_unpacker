@@ -1,21 +1,11 @@
-// PGX image wrapped in JPEG
-//
-// Company:   Rune
-// Engine:    GLib
-// Extension: -
-// Archives:  GLib2
-//
-// Known games:
-// - [Tanuki Soft] [081212] Mei Shoujo
-//
-// This is a bit different from plain PGX - namely, it involves two LZSS passes.
-
 #include "fmt/glib/jpeg_pgx_converter.h"
 #include "fmt/glib/custom_lzss.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
 #include "util/image.h"
 #include "util/range.h"
+
+// This is a bit different from plain PGX - namely, it involves two LZSS passes.
 
 using namespace au;
 using namespace au::fmt::glib;

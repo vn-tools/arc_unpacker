@@ -1,13 +1,3 @@
-// PAK1 sound file
-//
-// Company:   Team Shanghai Alice
-// Engine:    -
-// Extension: .dat
-//
-// Known games:
-// - [Tasofro & Team Shanghai Alice] [041230] TH07.5 - Immaterial and Missing
-//   Power
-
 #include "fmt/touhou/pak1_sound_archive.h"
 #include "util/format.h"
 #include "util/sound.h"

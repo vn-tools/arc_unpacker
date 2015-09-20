@@ -1,16 +1,3 @@
-// G00 image
-//
-// Company:   -
-// Engine:    RealLive
-// Extension: .g00
-// Archives:  -
-//
-// Known games:
-// - [Hamham Soft] [071221] Imouto ni! Sukumizu Kisetara Nugasanai!
-// - [Key] [041126] Kanon
-// - [Key] [070928] Little Busters!
-// - [Key] [080229] Clannad
-
 #include "fmt/real_live/g00_converter.h"
 #include "err.h"
 #include "io/buffered_io.h"

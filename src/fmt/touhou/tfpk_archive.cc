@@ -1,13 +1,3 @@
-// TFPK archive
-//
-// Company:   Team Shanghai Alice
-// Engine:    -
-// Extension: .pak
-//
-// Known games:
-// - [Tasofro & Team Shanghai Alice] [130526] TH13.5 - Hopeless Masquerade
-// - [Tasofro & Team Shanghai Alice] [150510] TH14.5 - Urban Legend in Limbo
-
 #include "fmt/touhou/tfpk_archive.h"
 #include <boost/filesystem.hpp>
 #include <map>

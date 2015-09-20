@@ -1,13 +1,3 @@
-// RGSSAD archive
-//
-// Company:   Enterbrain
-// Engine:    Ruby Game Scripting System (RPG Maker XP)
-// Extension: .rgssad
-//
-// Known games:
-// - [atelier773] [100621] Cherry Tree High Comedy Club
-// - [atelier773] [101231] Cherry Tree High I My Girls
-
 #include "fmt/rpgmaker/rgssad_archive.h"
 #include "fmt/rpgmaker/rgs/common.h"
 #include "util/range.h"

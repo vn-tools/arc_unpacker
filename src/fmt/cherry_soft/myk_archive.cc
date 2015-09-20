@@ -1,12 +1,3 @@
-// MYK archive
-//
-// Company:   Cherry Soft
-// Engine:    -
-// Extension: .DAT
-//
-// Known games:
-// - [Cherry Soft] [990723] Heroine
-
 #include "fmt/cherry_soft/myk_archive.h"
 #include "util/range.h"
 

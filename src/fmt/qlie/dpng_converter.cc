@@ -1,13 +1,3 @@
-// DPNG image
-//
-// Company:   -
-// Engine:    QLiE
-// Extension: .png
-// Archives:  .pack
-//
-// Known games:
-// - [Eufonie] [121221] Koiken Otome
-
 #include "fmt/qlie/dpng_converter.h"
 #include "io/buffered_io.h"
 #include "util/image.h"

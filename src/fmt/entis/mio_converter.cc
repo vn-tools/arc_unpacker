@@ -1,13 +1,3 @@
-// MIO music/sound file
-//
-// Company:   Leshade Entis
-// Engine:    Entis
-// Extension: .mio
-// Archives:  -
-//
-// Known games:
-// - [Cuffs] [050805] Sakura Musubi
-
 #include "fmt/entis/mio_converter.h"
 #include "err.h"
 #include "fmt/entis/common/enums.h"

@@ -1,19 +1,3 @@
-// Packed OGG sound file
-//
-// Company:   Vorbis
-// Engine:    -
-// Extension: .wav
-// Archives:  -
-//
-// Known games:
-// - [Liar-soft] [060707] Souten No Celenaria - What a Beautiful World
-// - [Liar-soft] [071122] Sekien no Inganock - What a Beautiful People
-// - [Liar-soft] [081121] Shikkoku no Sharnoth - What a Beautiful Tomorrow
-// - [Rune & Cage] [040227] Watashi no Puni Puni
-// - [Rune & Cage] [080328] Pure My Imouto Milk Purun
-// - [Rune] [071214] Musume Shimai
-// - [Tanuki Soft] [081212] Mei Shoujo
-
 #include "fmt/vorbis/packed_ogg_converter.h"
 #include "err.h"
 #include "io/buffered_io.h"

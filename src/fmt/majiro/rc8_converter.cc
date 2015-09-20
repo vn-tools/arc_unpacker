@@ -1,13 +1,3 @@
-// Majiro paletted image
-//
-// Company:   Majiro
-// Engine:    -
-// Extension: .rc8
-// Archives:  ARC
-//
-// Known games:
-// - [Empress] [150626] Closed Game
-
 #include "fmt/majiro/rc8_converter.h"
 #include "err.h"
 #include "io/buffered_io.h"

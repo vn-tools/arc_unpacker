@@ -1,13 +1,3 @@
-// CPS image container
-//
-// Company:   KID
-// Engine:    -
-// Extension: .cps
-// Archives:  LNK
-//
-// Known games:
-// - [KID] [031127] Ever 17
-
 #include "fmt/kid/cps_converter.h"
 #include "fmt/kid/decompressor.h"
 #include "io/buffered_io.h"

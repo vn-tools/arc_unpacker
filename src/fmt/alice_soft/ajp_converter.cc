@@ -1,19 +1,3 @@
-// AJP JPEG image wrapper
-//
-// Company:   Alice Soft
-// Engine:    -
-// Extension: .ajp
-// Archives:  AFA, ALD
-//
-// Known games:
-// - [Alice Soft] [011130] Daiakuji
-// - [Alice Soft] [061215] Sengoku Rance
-// - [Alice Soft] [091218] Choukou Sennin Haruka - Haruka VS Escalayer
-// - [Alice Soft] [091218] Choukou Sennin Haruka - Shippuu! Ninja Dai Sakusen
-// - [Alice Soft] [091218] Mamanyonyo
-// - [Alice Soft] [091218] Rachel no Sakuragai
-// - [Alice Soft] [091218] Rance 2 - Hangyuaku no Shoujo-tachi
-
 #include "fmt/alice_soft/ajp_converter.h"
 #include <algorithm>
 #include "fmt/alice_soft/pms_converter.h"

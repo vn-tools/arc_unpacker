@@ -1,14 +1,3 @@
-// RPA archive
-//
-// Company:   -
-// Engine:    Ren'Py
-// Extension: .rpa
-//
-// Known games:
-// - [Four Leaf Studios] [120104] Katawa Shoujo
-// - [Soviet Games] [131221] Everlasting Summer
-// - [Spiky Caterpillar] [120602] Long Live the Queen
-
 #include "fmt/renpy/rpa_archive.h"
 #include "err.h"
 #include "io/buffered_io.h"

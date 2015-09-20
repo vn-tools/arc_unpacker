@@ -1,13 +1,3 @@
-// XYZ image
-//
-// Company:   Enterbrain
-// Engine:    RPGMaker
-// Extension: .xyz
-// Archives:  -
-//
-// Known games:
-// - [Kikiyama] [040626] Yume Nikki
-
 #include "fmt/rpgmaker/xyz_converter.h"
 #include "io/buffered_io.h"
 #include "util/image.h"

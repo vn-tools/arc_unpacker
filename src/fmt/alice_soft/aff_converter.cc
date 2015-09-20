@@ -1,18 +1,8 @@
-// AFF file wrapper
-//
-// Company:   Alice Soft
-// Engine:    -
-// Extension: .aff
-// Archives:  AFA
-//
-// Known games:
-// - [Alice Soft] [011130] Daiakuji
-//
-// Doesn't encode anything, just wraps real files.
-
 #include "fmt/alice_soft/aff_converter.h"
 #include <algorithm>
 #include "util/range.h"
+
+// Doesn't encode anything, just wraps real files.
 
 using namespace au;
 using namespace au::fmt::alice_soft;

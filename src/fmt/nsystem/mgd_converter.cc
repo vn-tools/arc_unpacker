@@ -1,26 +1,3 @@
-// MGD image
-//
-// Company:   -
-// Engine:    NSystem
-// Extension: .MGD
-// Archives:  FJSYS
-//
-// Known games:
-// - [Fuguriya] [060929] Sonohana 1
-// - [Fuguriya] [070529] Sonohana 2 - Watashi no Ouji-sama
-// - [Fuguriya] [070714] Sonohana 3 - Anata to Koibito Tsunagi
-// - [Fuguriya] [080606] Sonohana 4 - Itoshisa no Photograph
-// - [Fuguriya] [080725] Sonohana 5 - Anata o Suki na Shiawase
-// - [Fuguriya] [081205] Sonohana 6 - Kuchibiru to Kiss de Tsubuyaite
-// - [Fuguriya] [091211] Sonohana 7 - Amakute Hoshikute Torokeru Chuu
-// - [Fuguriya] [100212] Sonohana 8 - Tenshi no Hanabira Zome
-// - [Fuguriya] [101129] Sonohana 9 - Amakute Otona no Torokeru Chuu
-// - [Fuguriya] [111120] Sonohana 10 - Lily Platinum
-// - [Fuguriya] [140328] Sonohana 17 - Anata ni Chikau Ai
-// - [Sei Mikaeru Joshi Gakuen] [150626] Sonohana 18 - Nyuu Jene!
-// - [Yurin Yurin] [100925] Hanahira!
-// - [Yurin Yurin] [121115] Sonohana 11 - Michael no Otome-tachi
-
 #include "fmt/nsystem/mgd_converter.h"
 #include "err.h"
 #include "io/buffered_io.h"

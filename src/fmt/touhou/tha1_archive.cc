@@ -1,22 +1,3 @@
-// THA1 archive
-//
-// Company:   Team Shanghai Alice
-// Engine:    -
-// Extension: .dat
-//
-// Known games:
-// - [Team Shanghai Alice] [051230] TH09.5 - Shoot the Bullet
-// - [Team Shanghai Alice] [070817] TH10 - Mountain of Faith
-// - [Team Shanghai Alice] [080816] TH11 - Subterranean Animism
-// - [Team Shanghai Alice] [090815] TH12 - Undefined Fantastic Object
-// - [Team Shanghai Alice] [100314] TH12.5 - Double Spoiler
-// - [Team Shanghai Alice] [100814] TH12.8 - Fairy Wars
-// - [Team Shanghai Alice] [110813] TH13 - Ten Desires
-// - [Team Shanghai Alice] [130812] TH14 - Double Dealing Character
-// - [Team Shanghai Alice] [140511] TH14.3 - Impossible Spell Card
-// - [Team Shanghai Alice] [150510] TH15 - Legacy of Lunatic Kingdom (trial)
-// - [Team Shanghai Alice] [150814] TH15 - Legacy of Lunatic Kingdom
-
 #include "fmt/touhou/tha1_archive.h"
 #include "err.h"
 #include "fmt/touhou/anm_archive.h"

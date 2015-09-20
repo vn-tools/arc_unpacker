@@ -1,12 +1,3 @@
-// PAC archive
-//
-// Company:   Minato Soft
-// Engine:    -
-// Extension: .pac
-//
-// Known games:
-// - [Minato Soft] [091030] Maji de Watashi ni Koishinasai!
-
 #include "fmt/minato_soft/pac_archive.h"
 #include "fmt/minato_soft/fil_converter.h"
 #include "io/bit_reader.h"

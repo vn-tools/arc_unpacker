@@ -1,24 +1,3 @@
-// PMS image
-//
-// Company:   Alice Soft
-// Engine:    AliceSystem / NV-SYSTEM
-// Extension: .pm, .PMS
-// Related:   AJP, ALD
-//
-// Known games:
-// - [Alice Soft] [970404] Kichikuou Rance
-// - [Alice Soft] [971218] Atlach-Nacha
-// - [Alice Soft] [971218] Dalk
-// - [Alice Soft] [971218] Dr. Stop!
-// - [Alice Soft] [971218] Ningen Gari
-// - [Alice Soft] [971218] Rance 1 - Hikari o Motomete
-// - [Alice Soft] [971218] Rance 2 - Hangyaku no Shoujo-tachi
-// - [Alice Soft] [971218] Rance 3 - Leazas Kanraku
-// - [Alice Soft] [971218] Toushin Toshi
-// - [Alice Soft] [971218] Zero
-// - [Alice Soft] [011130] Daiakuji
-// - [Alice Soft] [040827] Rance 6 - Zeth Houkai -
-
 #include "fmt/alice_soft/pms_converter.h"
 #include "err.h"
 #include "io/buffered_io.h"

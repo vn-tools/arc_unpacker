@@ -1,17 +1,3 @@
-// Riddle Soft CMP compressed file
-//
-// Company:   Riddle Soft
-// Engine:    Rage's Adventure Game Engine
-// Extension: .gcp
-// Archives:  PAC
-//
-// Known games:
-// - [Cronus] [021129] Caliz
-// - [Cronus] [030425] Kaikan Senshi Busty
-// - [Cronus] [040227] Fruit Punch
-// - [Cronus] [050805] Brightia Plus
-// - [Cronus] [060630] Sweet Pleasure NS
-
 #include "fmt/riddle_soft/cmp_converter.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"

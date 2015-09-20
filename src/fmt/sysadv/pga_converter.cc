@@ -1,13 +1,3 @@
-// PGA image file
-//
-// Company:   Palette
-// Engine:    sysadv
-// Extension: .pga
-// Archives:  PAK
-//
-// Known games:
-// - [Palette] [060224] Moshimo Ashita ga Harenaraba
-
 #include "fmt/sysadv/pga_converter.h"
 
 using namespace au;

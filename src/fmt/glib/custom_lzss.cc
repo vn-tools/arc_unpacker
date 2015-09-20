@@ -2,10 +2,10 @@
 #include "io/buffered_io.h"
 #include "util/range.h"
 
+// Modified LZSS routines (repetition count is negated)
+
 using namespace au;
 using namespace au::fmt;
-
-// Modified LZSS routines (repetition count is negated)
 
 bstr glib::custom_lzss_decompress(const bstr &input, size_t output_size)
 {

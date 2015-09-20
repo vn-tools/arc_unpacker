@@ -1,13 +1,3 @@
-// SPB image
-//
-// Company:   -
-// Engine:    NScripter
-// Extension: -
-// Archives:  NSA
-//
-// Known games:
-// - [07th Expansion & Alchemist] [070817] Umineko no Naku Koro ni 1-4
-
 #include "fmt/nscripter/spb_converter.h"
 #include "io/bit_reader.h"
 #include "util/image.h"

@@ -1,13 +1,3 @@
-// KID music/sound file
-//
-// Company:   KID
-// Engine:    -
-// Extension: .waf
-// Archives:  LNK
-//
-// Known games:
-// - [KID] [031127] Ever 17
-
 #include "fmt/kid/waf_converter.h"
 
 using namespace au;

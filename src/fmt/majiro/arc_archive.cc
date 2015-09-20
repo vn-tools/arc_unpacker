@@ -1,12 +1,3 @@
-// ARC archive
-//
-// Company:   Majiro
-// Engine:    -
-// Extension: .arc
-//
-// Known games:
-// - [Empress] [150626] Closed Game
-
 #include "fmt/majiro/arc_archive.h"
 #include "fmt/majiro/rc8_converter.h"
 #include "fmt/majiro/rct_converter.h"

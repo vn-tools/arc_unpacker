@@ -1,15 +1,3 @@
-// GRP image
-//
-// Company:   Cronus
-// Engine:    -
-// Extension: -
-// Archives:  GRP.PAK
-//
-// Known games:
-// - [Cronus] [000922] Sweet Pleasure
-// - [Cronus] [011019] Dokidoki Princess
-// - [Cronus] [060630] Nursery Song
-
 #include "fmt/cronus/grp_converter.h"
 #include <boost/filesystem/path.hpp>
 #include "err.h"

@@ -1,12 +1,3 @@
-// EAGLS PAK archive
-//
-// Company:   TechArts
-// Engine:    Enhanced Adventure Game Language System
-// Extension: .pak
-//
-// Known games:
-// - [SQUEEZ] [050922] Honoo no Haramase Tenkousei
-
 #include "fmt/eagls/pak_archive.h"
 #include <algorithm>
 #include <boost/filesystem.hpp>

@@ -1,12 +1,3 @@
-// MPK archive
-//
-// Company:   Propeller
-// Engine:    -
-// Extension: .mpk
-//
-// Known games:
-// - [Propeller] [110624] Sukimazakura to Uso no Machi
-
 #include "fmt/propeller/mpk_archive.h"
 #include "fmt/propeller/mgr_archive.h"
 #include "util/encoding.h"

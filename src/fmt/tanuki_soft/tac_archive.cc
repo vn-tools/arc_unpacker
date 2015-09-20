@@ -1,16 +1,3 @@
-// TAC archive
-//
-// Company:   Tanuki Soft
-// Engine:    -
-// Extension: .tac
-//
-// Known games:
-// - [Tanuki Soft] [101217] Shoukoujo
-// - [Tanuki Soft] [111118] Mebae
-// - [Tanuki Soft] [121221] Tonari no Puu-san
-// - [Tanuki Soft] [140228] Shoujo Kyouiku
-// - [Tanuki Soft] [150731] Shoujo Ramune
-
 #include "fmt/tanuki_soft/tac_archive.h"
 #include "err.h"
 #include "io/buffered_io.h"

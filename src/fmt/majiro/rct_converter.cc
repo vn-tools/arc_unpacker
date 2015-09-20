@@ -1,13 +1,3 @@
-// Majiro true color image
-//
-// Company:   Majiro
-// Engine:    -
-// Extension: .rct
-// Archives:  ARC
-//
-// Known games:
-// - [Empress] [150626] Closed Game
-
 #include "fmt/majiro/rct_converter.h"
 #include "err.h"
 #include "io/buffered_io.h"
