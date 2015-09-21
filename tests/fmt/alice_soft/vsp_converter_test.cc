@@ -23,9 +23,17 @@ TEST_CASE("Alice Soft VSP images (VSP compression)", "[fmt]")
         "tests/fmt/alice_soft/files/vsp/CG8367-out.png");
 }
 
-TEST_CASE("Alice Soft VSP images (8-bit PMS compression)", "[fmt]")
+TEST_CASE("Alice Soft VSP images (PMS compression, monochrome)", "[fmt]")
 {
     do_test(
         "tests/fmt/alice_soft/files/vsp/CG_0295.VSP",
         "tests/fmt/alice_soft/files/vsp/CG_0295-out.png");
+}
+
+TEST_CASE(
+    "Alice Soft VSP images (PMS compression, true color palette)", "[fmt]")
+{
+    do_test(
+        "tests/fmt/alice_soft/files/vsp/045.vsp",
+        "tests/fmt/alice_soft/files/vsp/045-out.png");
 }

@@ -148,7 +148,7 @@ std::unique_ptr<File> VspConverter::decode_internal(File &file) const
 {
     auto x = file.io.read_u16_le();
     auto y = file.io.read_u16_le();
-    auto width = (file.io.read_u16_le() - x);
+    auto width = file.io.read_u16_le() - x;
     auto height = file.io.read_u16_le() - y;
     auto use_pms = file.io.read_u8() > 0;
 
@@ -159,7 +159,7 @@ std::unique_ptr<File> VspConverter::decode_internal(File &file) const
         width = ((width + 7) / 8) * 8;
 
         file.io.seek(0x20);
-        pix::Palette palette(256, file.io, pix::Format::BGR888);
+        pix::Palette palette(256, file.io, pix::Format::RGB888);
 
         file.io.seek(0x320);
         auto pixel_data = PmsConverter::decompress_8bit(file.io, width, height);
