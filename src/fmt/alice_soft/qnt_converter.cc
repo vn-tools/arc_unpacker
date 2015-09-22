@@ -156,13 +156,16 @@ std::unique_ptr<File> QntConverter::decode_internal(File &file) const
     auto alpha_size = file.io.read_u32_le();
     file.io.skip(24);
 
-    bstr color_data = util::pack::zlib_inflate(file.io.read(pixel_size));
-    bstr alpha_data;
-    if (alpha_size)
-        alpha_data = util::pack::zlib_inflate(file.io.read(alpha_size));
+    bstr color_data = pixel_size
+        ? util::pack::zlib_inflate(file.io.read(pixel_size))
+        : ""_b;
+    bstr alpha_data = alpha_size
+        ? util::pack::zlib_inflate(file.io.read(alpha_size))
+        : ""_b;
 
     pix::Grid pixels(width, height);
-    deinterleave(pixels, color_data);
+    if (color_data.size())
+        deinterleave(pixels, color_data);
     apply_differences(pixels);
     apply_alpha(pixels, alpha_data);
 

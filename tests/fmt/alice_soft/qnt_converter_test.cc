@@ -37,3 +37,10 @@ TEST_CASE(
         "tests/fmt/alice_soft/files/qnt/CG64214.QNT",
         "tests/fmt/alice_soft/files/qnt/CG64214-out.png");
 }
+
+TEST_CASE("Alice Soft QNT images with transparency data only", "[fmt]")
+{
+    do_test(
+        "tests/fmt/alice_soft/files/qnt/cg50121.QNT",
+        "tests/fmt/alice_soft/files/qnt/cg50121-out.png");
+}
