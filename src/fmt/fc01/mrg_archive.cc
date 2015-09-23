@@ -1,4 +1,5 @@
 #include "fmt/fc01/mrg_archive.h"
+#include "fmt/fc01/acd_converter.h"
 #include "err.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
@@ -94,6 +95,20 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     file->io.write(data);
     file->name = entry.name;
     return file;
+}
+
+struct MrgArchive::Priv final
+{
+    AcdConverter acd_converter;
+};
+
+MrgArchive::MrgArchive() : p(new Priv)
+{
+    add_transformer(&p->acd_converter);
+}
+
+MrgArchive::~MrgArchive()
+{
 }
 
 bool MrgArchive::is_recognized_internal(File &arc_file) const
