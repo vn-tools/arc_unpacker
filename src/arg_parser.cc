@@ -242,7 +242,7 @@ static void print_options(
     for (auto &option : options)
         max_invocation_size = std::max<size_t>(
             max_invocation_size, option->get_invocation_help().size());
-    max_invocation_size += 2; //keep two spaces
+    max_invocation_size += 2; // keep two spaces
     const auto max_description_size = max_line_size - max_invocation_size;
     for (auto &option : options)
     {

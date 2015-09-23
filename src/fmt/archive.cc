@@ -63,7 +63,7 @@ void Archive::unpack(File &file, FileSaver &file_saver, bool recurse) const
     if (!is_recognized(file))
         throw err::RecognitionError();
 
-    //every file should be passed through registered transformers
+    // every file should be passed through registered transformers
     FileSaverCallback recognition_proxy;
     recognition_proxy.set_callback([&](std::shared_ptr<File> original_file)
     {

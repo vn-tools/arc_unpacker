@@ -88,7 +88,7 @@ void Abmp10Archive::unpack_internal(File &arc_file, FileSaver &file_saver) const
             || magic == magic_data12
             || magic == magic_data13)
         {
-            //interesting
+            // interesting
             size_t size = arc_file.io.read_u32_le();
             arc_file.io.skip(size);
         }

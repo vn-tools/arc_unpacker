@@ -33,7 +33,7 @@ void Grid::Priv::load(const bstr &input, Format fmt)
     auto *input_ptr = input.get<const u8>();
     auto *pixels_ptr = &pixels[0];
 
-    //anyone knows of sane alternative?
+    // anyone knows of sane alternative?
     switch (fmt)
     {
         case Format::Gray8:

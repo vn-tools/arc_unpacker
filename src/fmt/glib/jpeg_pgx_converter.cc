@@ -17,8 +17,8 @@ static bstr extract_pgx_stream(const bstr &jpeg_data)
     bstr output;
     output.reserve(jpeg_data.size());
     io::BufferedIO jpeg_io(jpeg_data);
-    jpeg_io.skip(2); //soi
-    jpeg_io.skip(2); //header chunk
+    jpeg_io.skip(2); // soi
+    jpeg_io.skip(2); // header chunk
     jpeg_io.skip(jpeg_io.read_u16_be() - 2);
     while (jpeg_io.read_u16_be() == 0xFFE3)
         output += jpeg_io.read(jpeg_io.read_u16_be() - 2);
@@ -28,15 +28,15 @@ static bstr extract_pgx_stream(const bstr &jpeg_data)
 bool JpegPgxConverter::is_recognized_internal(File &file) const
 {
     u16 marker = file.io.read_u16_be();
-    //soi
+    // soi
     if (marker != 0xFFD8)
         return false;
     marker = file.io.read_u16_be();
-    //header chunk
+    // header chunk
     if (marker != 0xFFE0)
         return false;
     file.io.skip(file.io.read_u16_be() - 2);
-    //PGX start
+    // PGX start
     marker = file.io.read_u16_be();
     if (marker != 0xFFE3)
         return false;

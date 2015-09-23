@@ -48,7 +48,7 @@ static Table read_table(io::IO &arc_io, std::string arc_name)
         if (offset == arc_io.size())
             continue;
 
-        //necessary for VSP recognition
+        // necessary for VSP recognition
         std::string ext = "dat";
         if (arc_name.find("cg") != std::string::npos)
             ext = "vsp";

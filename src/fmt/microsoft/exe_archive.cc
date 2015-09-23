@@ -194,7 +194,7 @@ namespace
     };
 }
 
-//keep flat hierarchy for unpacked files
+// keep flat hierarchy for unpacked files
 static const std::string path_sep = "／";
 
 DosHeader::DosHeader(io::IO &io)
@@ -313,7 +313,7 @@ ImageResourceDir::ImageResourceDir(io::IO &io)
 
 ImageResourceDirEntry::ImageResourceDirEntry(io::IO &io)
 {
-    //i am ugliness
+    // I am ugliness
     name = io.read_u32_le();
     offset_to_data = io.read_u32_le();
     id = name;

@@ -112,7 +112,7 @@ std::unique_ptr<File> PackedOggConverter::decode_internal(File &file) const
 {
     if (file.io.read(4) != "RIFF"_b)
         throw err::CorruptDataError("Expected RIFF signature");
-    file.io.skip(4); //file size without RIFF header - usually corrupted
+    file.io.skip(4); // file size without RIFF header - usually corrupted
     if (file.io.read(8) != "WAVEfmt\x20"_b)
         throw err::CorruptDataError("Expected WAVE header");
     file.io.skip(file.io.read_u32_le());

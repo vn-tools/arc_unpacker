@@ -92,7 +92,7 @@ void Logger::debug(const std::string &fmt, ...)
 void Logger::flush()
 {
     std::cout.flush();
-    //stderr should be nonbuffered
+    // stderr should be nonbuffered
 }
 
 void Logger::mute()

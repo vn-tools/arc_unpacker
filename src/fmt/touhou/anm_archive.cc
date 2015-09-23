@@ -39,16 +39,16 @@ static std::string read_name(io::IO &file_io, size_t offset)
 static size_t read_old_entry(
     TableEntry &entry, io::IO &file_io, size_t base_offset)
 {
-    file_io.skip(4); //sprite count
-    file_io.skip(4); //script count
-    file_io.skip(4); //zero
+    file_io.skip(4); // sprite count
+    file_io.skip(4); // script count
+    file_io.skip(4); // zero
 
     entry.width = file_io.read_u32_le();
     entry.height = file_io.read_u32_le();
     entry.format = file_io.read_u32_le();
     entry.x = file_io.read_u16_le();
     entry.y = file_io.read_u16_le();
-    //file_io.skip(4);
+    // file_io.skip(4);
 
     size_t name_offset1 = base_offset + file_io.read_u32_le();
     file_io.skip(4);
@@ -67,9 +67,9 @@ static size_t read_new_entry(
     TableEntry &entry, io::IO &file_io, size_t base_offset)
 {
     entry.version = file_io.read_u32_le();
-    file_io.skip(2); //sprite count
-    file_io.skip(2); //script count
-    file_io.skip(2); //zero
+    file_io.skip(2); // sprite count
+    file_io.skip(2); // script count
+    file_io.skip(2); // zero
 
     entry.width = file_io.read_u16_le();
     entry.height = file_io.read_u16_le();

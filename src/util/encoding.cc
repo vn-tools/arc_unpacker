@@ -43,7 +43,7 @@ bstr util::convert_encoding(
                 throw err::CorruptDataError("Invalid byte sequence");
 
             case E2BIG:
-                //repeat the iteration unless we got nothing at all
+                // repeat the iteration unless we got nothing at all
                 if (output_bytes_left != buffer.size())
                     continue;
                 throw err::CorruptDataError(

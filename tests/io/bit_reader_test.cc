@@ -28,7 +28,7 @@ TEST_CASE("Reading missing bits throws exceptions", "[io][bit_reader]")
 
 TEST_CASE("Reading single bits", "[io][bit_reader]")
 {
-    BitReader reader("\x8F"_b); //10001111
+    BitReader reader("\x8F"_b); // 10001111
     REQUIRE(reader.get(1));
     REQUIRE(!reader.get(1));
     REQUIRE(!reader.get(1));
@@ -50,7 +50,7 @@ TEST_CASE("Reading multiple bytes", "[io][bit_reader]")
 {
     SECTION("Smaller test")
     {
-        BitReader reader("\x8F\x8F"_b); //10001111
+        BitReader reader("\x8F\x8F"_b); // 10001111
         REQUIRE(reader.get(7) == (0x8F >> 1));
         REQUIRE(reader.get(1));
 

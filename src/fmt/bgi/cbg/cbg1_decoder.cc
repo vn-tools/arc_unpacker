@@ -56,12 +56,12 @@ static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
     u8 *left = &input_ptr[- channels];
     u8 *above = &input_ptr[- width * channels];
 
-    //ignore 0,0
+    // ignore 0,0
     input_ptr += channels;
     above += channels;
     left += channels;
 
-    //add left to first row
+    // add left to first row
     for (auto x : util::range(1, width))
     {
         for (auto i : util::range(channels))
@@ -73,7 +73,7 @@ static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
         }
     }
 
-    //add left and top to all other pixels
+    // add left and top to all other pixels
     for (auto y : util::range(1, height))
     {
         for (auto i : util::range(channels))

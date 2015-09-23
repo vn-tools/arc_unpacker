@@ -11,7 +11,7 @@ bool PakScriptConverter::is_recognized_internal(File &file) const
 {
     if (!file.has_extension("dat") || file.io.size() < 3600)
         return false;
-    //header should consist mostly of zeros
+    // header should consist mostly of zeros
     auto data = file.io.read(3600);
     size_t zeros = 0;
     for (auto i : util::range(data.size()))

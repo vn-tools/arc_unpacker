@@ -35,7 +35,7 @@ static const bstr magic = "THA1"_b;
 
 static std::vector<std::vector<DecryptorContext>> decryptors
 {
-    //TH9.5, TH10, TH11
+    // TH9.5, TH10, TH11
     {
         { 0x1B, 0x37,  0x40, 0x2800 },
         { 0x51, 0xE9,  0x40, 0x3000 },
@@ -47,7 +47,7 @@ static std::vector<std::vector<DecryptorContext>> decryptors
         { 0x99, 0x37, 0x400, 0x2000 },
     },
 
-    //TH12, TH12.5, TH12.8
+    // TH12, TH12.5, TH12.8
     {
         { 0x1B, 0x73,  0x40, 0x3800 },
         { 0x51, 0x9E,  0x40, 0x4000 },
@@ -59,7 +59,7 @@ static std::vector<std::vector<DecryptorContext>> decryptors
         { 0x99, 0x7D,  0x80, 0x2800 },
     },
 
-    //TH13
+    // TH13
     {
         { 0x1B, 0x73, 0x0100, 0x3800 },
         { 0x12, 0x43, 0x0200, 0x3E00 },
@@ -71,7 +71,7 @@ static std::vector<std::vector<DecryptorContext>> decryptors
         { 0x99, 0x7D, 0x0080, 0x4400 },
     },
 
-    //TH14, TH15 trial, TH15
+    // TH14, TH15 trial, TH15
     {
         { 0x1B, 0x73, 0x0100, 0x3800 },
         { 0x12, 0x43, 0x0200, 0x3E00 },

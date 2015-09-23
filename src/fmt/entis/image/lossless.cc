@@ -419,8 +419,8 @@ bstr image::decode_lossless_pixel_data(
 
     validate_ctx(ctx, header);
 
-    common::ProbModel prob_model; //for nemesis decoder
-    common::HuffmanTree huffman_tree; //for huffman decoder
+    common::ProbModel prob_model; // for nemesis decoder
+    common::HuffmanTree huffman_tree; // for huffman decoder
 
     auto permutation = init_permutation(ctx);
     auto transformer_codes = prefetch_transformer_codes(

@@ -63,7 +63,7 @@ static Table read_table_v0(io::IO &arc_io)
 
 static Table read_table_v1(io::IO &arc_io)
 {
-    static const bstr key = "mlnebzqm"_b; //found in .exe
+    static const bstr key = "mlnebzqm"_b; // found in .exe
     Table table;
     while (!arc_io.eof())
     {

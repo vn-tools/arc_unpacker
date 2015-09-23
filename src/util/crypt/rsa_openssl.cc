@@ -29,8 +29,8 @@ Rsa::Priv::Priv(const RsaKey &key) : key_impl(RSA_new())
 
 Rsa::Priv::~Priv()
 {
-    //BN_free(key_impl->e)?
-    //BN_free(key_impl->n)?
+    // BN_free(key_impl->e)?
+    // BN_free(key_impl->n)?
     RSA_free(key_impl);
 }
 

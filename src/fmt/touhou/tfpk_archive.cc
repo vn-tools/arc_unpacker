@@ -62,7 +62,7 @@ namespace
 static const bstr magic = "TFPK"_b;
 
 static const std::vector<util::crypt::RsaKey> rsa_keys({
-    //TH13.5 Japanese version
+    // TH13.5 Japanese version
     {
         {
             0xC7, 0x9A, 0x9E, 0x9B, 0xFB, 0xC2, 0x0C, 0xB0,
@@ -77,7 +77,7 @@ static const std::vector<util::crypt::RsaKey> rsa_keys({
         65537,
     },
 
-    //TH13.5 English patch
+    // TH13.5 English patch
     {
         {
             0xFF, 0x65, 0x72, 0x74, 0x61, 0x69, 0x52, 0x20,
@@ -92,7 +92,7 @@ static const std::vector<util::crypt::RsaKey> rsa_keys({
         65537,
     },
 
-    //TH14.5 Japanese version
+    // TH14.5 Japanese version
     {
         {
             0xC6, 0x43, 0xE0, 0x9D, 0x35, 0x5E, 0x98, 0x1D,
@@ -151,8 +151,8 @@ static u32 neg32(u32 x)
 
 static std::string lower_ascii_only(std::string name_utf8)
 {
-    //while SJIS can use ASCII for encoding multibyte characters,
-    //UTF-8 uses the codes 0–127 only for the ASCII characters.
+    // while SJIS can use ASCII for encoding multibyte characters,
+    // UTF-8 uses the codes 0–127 only for the ASCII characters.
     for (auto i : util::range(name_utf8.size()))
         if (name_utf8[i] >= 'A' && name_utf8[i] <= 'Z')
             name_utf8[i] += 'a' - 'A';
@@ -272,7 +272,7 @@ static Table read_table(
 {
     HashLookupMap fn_map;
 
-    //TH135 contains file hashes, TH145 contains garbage
+    // TH135 contains file hashes, TH145 contains garbage
     auto dir_entries = read_dir_entries(reader);
     if (dir_entries.size() > 0)
         fn_map = read_fn_map(reader, dir_entries, user_fn_map, version);

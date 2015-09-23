@@ -38,7 +38,7 @@ Palette::Priv::Priv(size_t color_count, const bstr &input, Format fmt)
         throw err::BadDataSizeError();
     auto input_ptr = input.get<const u8>();
 
-    //anyone knows of sane alternative?
+    // anyone knows of sane alternative?
     switch (fmt)
     {
         case Format::Gray8:

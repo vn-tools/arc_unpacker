@@ -62,4 +62,7 @@ done
 echo 'Checking for Log.debug()...'
 grep 'Log\.debug(' **/*.cc && echo "Don't use Log.debug() in production code."
 
+echo 'Checking for comments without spaces...'
+grep '//[^ ]' **/*.{cc,h}|grep -v '//$'
+
 exit 0

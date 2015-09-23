@@ -66,8 +66,8 @@ void File::guess_extension()
 {
     std::vector<std::pair<std::string, bstr>> definitions
     {
-        { "b",      "abmp"_b         }, //QLiE
-        { "imoavi", "IMOAVI"_b       }, //QLiE
+        { "b",      "abmp"_b         }, // QLiE
+        { "imoavi", "IMOAVI"_b       }, // QLiE
         { "png",    "\x89PNG"_b      },
         { "bmp",    "BM"_b           },
         { "wav",    "RIFF"_b         },

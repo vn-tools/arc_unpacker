@@ -103,7 +103,7 @@ static std::unique_ptr<TableEntry> read_table_entry(
                 auto file_header_size2 = table_io.read_u32_le();
                 if (file_header_size2 + 4 != file_header_size)
                     throw err::BadDataSizeError();
-                table_io.skip(4); //null
+                table_io.skip(4); // null
                 entry->size = table_io.read_u32_le();
                 entry->offset = table_io.read_u32_le();
                 for (auto i : util::range(4))

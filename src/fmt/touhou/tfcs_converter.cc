@@ -47,7 +47,7 @@ std::unique_ptr<File> TfcsConverter::decode_internal(File &file) const
             size_t cell_size = uncompressed_io.read_u32_le();
             std::string cell = uncompressed_io.read(cell_size).str();
 
-            //escaping etc. is too boring
+            // escaping etc. is too boring
             write_cell(output_file->io, cell);
             if (j != column_count - 1)
                 output_file->io.write(","_b);

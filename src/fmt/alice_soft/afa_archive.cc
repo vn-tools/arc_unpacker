@@ -51,7 +51,7 @@ static Table read_table(io::IO &arc_io)
         entry->name = util::sjis_to_utf8(
             table_io.read_to_zero(name_size)).str();
 
-        table_io.skip(4 * 3); //for some games, apparently this is 4 * 2
+        table_io.skip(4 * 3); // for some games, apparently this is 4 * 2
         entry->offset = table_io.read_u32_le() + file_data_start;
         entry->size = table_io.read_u32_le();
         table.push_back(std::move(entry));

@@ -38,7 +38,7 @@ static size_t wcg_unpack(
     if (tmp < 0)
         throw err::CorruptDataError("No table entries found");
 
-    //risky
+    // risky
     tmp = tmp < 0x1001 ? -1 : 0;
     size_t var1 = tmp * 8 + 0xE;
     size_t var2 = tmp + 4;

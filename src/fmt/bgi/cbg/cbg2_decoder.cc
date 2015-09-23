@@ -223,7 +223,7 @@ static std::vector<u16> decompress_block(
         color_info.at(i) = init_value & 0xFFFF;
     }
 
-    //align to regular byte
+    // align to regular byte
     bit_reader.get((8 - (bit_reader.tell() & 7)) & 7);
 
     for (auto i : util::range(0, output_size, block_dim2))

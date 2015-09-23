@@ -66,7 +66,7 @@ TEST_CASE("bstr.substr", "[core][types]")
     REQUIRE(x.substr(2) == "st\x00\x01"_b);
     REQUIRE(x.substr(1, 0) == ""_b);
     REQUIRE_THROWS(x.substr(1, -1));
-    //REQUIRE_THROWS(x.substr(-1, 1));
+    // REQUIRE_THROWS(x.substr(-1, 1));
 }
 
 TEST_CASE("bstr.resize()", "[core][types]")
