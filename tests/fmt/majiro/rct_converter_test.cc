@@ -13,7 +13,7 @@ static void do_test(
     auto input_file = tests::file_from_path(input_path);
     auto expected_image = tests::image_from_path(expected_path);
     auto actual_image = tests::image_from_file(*converter.decode(*input_file));
-    tests::compare_images(*expected_image, *actual_image, false);
+    tests::compare_images(*expected_image, *actual_image);
 }
 
 TEST_CASE("Majiro RCT v0 images", "[fmt]")

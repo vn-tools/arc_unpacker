@@ -31,6 +31,7 @@ def configure_flags(ctx):
         '-Wno-unused-variable',
         '-Wno-unused-parameter',
         '-Wold-style-cast',
+        '-ffloat-store',
         '-std=c++14']
 
     if ctx.options.debug:

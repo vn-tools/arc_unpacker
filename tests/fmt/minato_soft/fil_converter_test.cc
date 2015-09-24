@@ -14,5 +14,5 @@ TEST_CASE("MinatoSoft FIL mask images", "[fmt]")
     auto expected_file = tests::image_from_path(
         "tests/fmt/minato_soft/files/fil/Rule07-out.png");
     auto actual_file = tests::image_from_file(*converter.decode(*input_file));
-    tests::compare_images(*expected_file, *actual_file, false);
+    tests::compare_images(*expected_file, *actual_file);
 }

@@ -14,5 +14,5 @@ TEST_CASE("Majiro RC8 images", "[fmt]")
     auto expected_image = tests::image_from_path(
         "tests/fmt/majiro/files/rc8/style_tc_geo00_a_-out.png");
     auto actual_image = tests::image_from_file(*converter.decode(*input_file));
-    tests::compare_images(*expected_image, *actual_image, false);
+    tests::compare_images(*expected_image, *actual_image);
 }

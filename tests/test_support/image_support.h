@@ -13,8 +13,6 @@ namespace tests {
         const boost::filesystem::path &path);
 
     void compare_images(
-        const util::Image &expected_image,
-        const util::Image &actual_image,
-        int max_component_diff = 0);
+        const util::Image &expected_image, const util::Image &actual_image);
 
 } }
