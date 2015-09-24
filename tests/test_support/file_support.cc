@@ -56,7 +56,11 @@ void tests::compare_files(
     actual_file.io.seek(0);
     auto expected_content = expected_file.io.read_to_eof();
     auto actual_content = actual_file.io.read_to_eof();
-    INFO("Expected content: " << expected_content.str());
-    INFO("Actual content: " << actual_content.str());
+    INFO("Expected content: " << (expected_content.size() < 1000
+        ? expected_content.str()
+        : "(too big to display)"));
+    INFO("Actual content: " << (actual_content.size() < 1000
+        ? actual_content.str()
+        : "(too big to display)"));
     REQUIRE(expected_content == actual_content);
 }

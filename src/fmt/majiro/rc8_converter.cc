@@ -1,4 +1,5 @@
 #include "fmt/majiro/rc8_converter.h"
+#include <boost/lexical_cast.hpp>
 #include "err.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
@@ -72,7 +73,7 @@ std::unique_ptr<File> Rc8Converter::decode_internal(File &file) const
     if (file.io.read_u8() != '_')
         throw err::NotSupportedError("Unexpected encryption flag");
 
-    int version = std::stoi(file.io.read(2).str());
+    int version = boost::lexical_cast<int>(file.io.read(2).str());
     if (version != 0)
         throw err::UnsupportedVersionError(version);
 

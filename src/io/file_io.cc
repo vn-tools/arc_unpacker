@@ -1,4 +1,5 @@
 #include "io/file_io.h"
+#include <cstdio>
 #include "err.h"
 #include "compat/fopen.h"
 

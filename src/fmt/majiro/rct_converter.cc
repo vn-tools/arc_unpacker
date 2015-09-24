@@ -1,4 +1,5 @@
 #include "fmt/majiro/rct_converter.h"
+#include <boost/lexical_cast.hpp>
 #include "err.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
@@ -88,7 +89,7 @@ std::unique_ptr<File> RctConverter::decode_internal(File &file) const
     if (encrypted)
         throw err::NotSupportedError("Encrypted RCT images are not supported");
 
-    int version = std::stoi(file.io.read(2).str());
+    int version = boost::lexical_cast<int>(file.io.read(2).str());
     if (version < 0 || version > 1)
         throw err::UnsupportedVersionError(version);
 

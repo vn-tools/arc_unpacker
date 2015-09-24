@@ -179,8 +179,8 @@ TEST_CASE("Seeking", "[io][bit_reader]")
         {
             reader.seek(i);
             INFO("Position: " << reader.tell());
-            auto mask = (1ul << (32 - i)) - 1;
-            auto expected = 0b11001100101010101111000000110011 & mask;
+            auto mask = (1ull << (32 - i)) - 1;
+            auto expected = 0b11001100101010101111000000110011ull & mask;
             REQUIRE(reader.get(32 - i) == expected);
         }
     }
