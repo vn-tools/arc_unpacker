@@ -2,6 +2,7 @@
 #include "err.h"
 #include "fmt/fc01/acd_converter.h"
 #include "fmt/fc01/custom_lzss.h"
+#include "fmt/fc01/mcg_converter.h"
 #include "fmt/fc01/mrg_decryptor.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
@@ -110,11 +111,13 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 struct MrgArchive::Priv final
 {
     AcdConverter acd_converter;
+    McgConverter mcg_converter;
 };
 
 MrgArchive::MrgArchive() : p(new Priv)
 {
     add_transformer(&p->acd_converter);
+    add_transformer(&p->mcg_converter);
 }
 
 MrgArchive::~MrgArchive()

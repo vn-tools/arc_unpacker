@@ -1,0 +1,118 @@
+#include "fmt/fc01/mcg_converter.h"
+#include <boost/lexical_cast.hpp>
+#include "err.h"
+#include "fmt/fc01/custom_lzss.h"
+#include "util/format.h"
+#include "util/image.h"
+#include "util/range.h"
+
+using namespace au;
+using namespace au::fmt::fc01;
+
+static const bstr magic = "MCG "_b;
+
+static u8 rol8(u8 x, size_t n)
+{
+    n &= 7;
+    return (x << n) | (x >> (8 - n));
+}
+
+static bstr decrypt(const bstr &input, size_t output_size, u8 initial_key)
+{
+    auto data = input;
+    auto key = initial_key;
+    for (auto i : util::range(data.size()))
+    {
+        data[i] = rol8(data[i], 1) ^ key;
+        key += data.size() - 1 - i;
+    }
+    return custom_lzss_decompress(data, output_size);
+}
+
+struct McgConverter::Priv final
+{
+    u8 key;
+    bool key_set;
+};
+
+McgConverter::McgConverter() : p(new Priv())
+{
+}
+
+McgConverter::~McgConverter()
+{
+}
+
+void McgConverter::register_cli_options(ArgParser &arg_parser) const
+{
+    arg_parser.register_switch({"--mcg-key"})
+        ->set_value_name("KEY")
+        ->set_description("Decryption key (0..255, same for all files)");
+    Converter::register_cli_options(arg_parser);
+}
+
+void McgConverter::parse_cli_options(const ArgParser &arg_parser)
+{
+    if (arg_parser.has_switch("mcg-key"))
+        set_key(boost::lexical_cast<int>(arg_parser.get_switch("mcg-key")));
+    Converter::parse_cli_options(arg_parser);
+}
+
+bool McgConverter::is_recognized_internal(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
+}
+
+void McgConverter::set_key(u8 key)
+{
+    p->key = key;
+    p->key_set = true;
+}
+
+std::unique_ptr<File> McgConverter::decode_internal(File &file) const
+{
+    file.io.skip(magic.size());
+    auto version_float = boost::lexical_cast<float>(file.io.read(4).str());
+    auto version = static_cast<int>(100 * version_float + 0.5);
+
+    if (version != 101)
+        throw err::UnsupportedVersionError(version);
+
+    file.io.seek(16);
+    auto header_size = file.io.read_u32_le();
+    if (header_size != 64)
+    {
+        throw err::NotSupportedError(
+            util::format("Unknown header size: %d", header_size));
+    }
+    auto x = file.io.read_u32_le();
+    auto y = file.io.read_u32_le();
+    auto width = file.io.read_u32_le();
+    auto height = file.io.read_u32_le();
+    auto depth = file.io.read_u32_le();
+    auto output_size = file.io.read_u32_le();
+
+    file.io.seek(header_size);
+    if (!p->key_set)
+        throw err::UsageError("MCG decryption key not set");
+    auto data = decrypt(file.io.read_to_eof(), output_size, p->key);
+
+    if (depth != 24)
+        throw err::UnsupportedBitDepthError(depth);
+
+    auto output_stride = width * (depth >> 3);
+    auto input_stride = (((width * (depth >> 3)) + 3) / 4) * 4;
+    bstr fixed_output(height * output_stride);
+    for (auto y : util::range(height))
+    {
+        auto output_ptr = &fixed_output[y * output_stride];
+        auto input_ptr = &data[y * input_stride];
+        for (auto x : util::range(width * (depth >> 3)))
+            *output_ptr++ = *input_ptr++;
+    }
+
+    pix::Grid pixels(width, height, fixed_output, pix::Format::BGR888);
+    return util::Image::from_pixels(pixels)->create_file(file.name);
+}
+
+static auto dummy = fmt::Registry::add<McgConverter>("fc01/mcg");
