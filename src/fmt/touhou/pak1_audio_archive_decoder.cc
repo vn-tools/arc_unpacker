@@ -1,7 +1,7 @@
 #include "fmt/touhou/pak1_audio_archive_decoder.h"
+#include "util/audio.h"
 #include "util/format.h"
 #include "util/range.h"
-#include "util/sound.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -17,7 +17,7 @@ static std::unique_ptr<File> read_audio(io::IO &arc_io, size_t index)
     auto bits_per_sample = arc_io.read_u16_le();
     arc_io.skip(2);
 
-    auto audio = util::Sound::from_samples(
+    auto audio = util::Audio::from_samples(
         channel_count,
         bits_per_sample / 8,
         sample_rate,

@@ -1,9 +1,9 @@
-#include "util/sound.h"
+#include "util/audio.h"
 
 using namespace au;
 using namespace au::util;
 
-struct Sound::Priv final
+struct Audio::Priv final
 {
     size_t channel_count;
     size_t bytes_per_sample;
@@ -11,29 +11,29 @@ struct Sound::Priv final
     bstr samples;
 };
 
-Sound::Sound() : p(new Priv())
+Audio::Audio() : p(new Priv())
 {
 }
 
-Sound::~Sound()
+Audio::~Audio()
 {
 }
 
-std::unique_ptr<Sound> Sound::from_samples(
+std::unique_ptr<Audio> Audio::from_samples(
     size_t channel_count,
     size_t bytes_per_sample,
     size_t sample_rate,
     const bstr &samples)
 {
-    std::unique_ptr<Sound> sound(new Sound);
-    sound->p->channel_count = channel_count;
-    sound->p->bytes_per_sample = bytes_per_sample;
-    sound->p->sample_rate = sample_rate;
-    sound->p->samples = samples;
-    return sound;
+    std::unique_ptr<Audio> audio(new Audio);
+    audio->p->channel_count = channel_count;
+    audio->p->bytes_per_sample = bytes_per_sample;
+    audio->p->sample_rate = sample_rate;
+    audio->p->samples = samples;
+    return audio;
 }
 
-std::unique_ptr<File> Sound::create_file(const std::string &name) const
+std::unique_ptr<File> Audio::create_file(const std::string &name) const
 {
     size_t block_align = p->channel_count * p->bytes_per_sample;
     size_t byte_rate = block_align * p->sample_rate;

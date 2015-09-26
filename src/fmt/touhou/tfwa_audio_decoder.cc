@@ -1,5 +1,5 @@
 #include "fmt/touhou/tfwa_audio_decoder.h"
-#include "util/sound.h"
+#include "util/audio.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -24,12 +24,12 @@ std::unique_ptr<File> TfwaAudioDecoder::decode_internal(File &file) const
     file.io.skip(2);
     size_t size = file.io.read_u32_le();
 
-    auto sound = util::Sound::from_samples(
+    auto audio = util::Audio::from_samples(
         channel_count,
         bits_per_sample / 8,
         sample_rate,
         file.io.read(size));
-    return sound->create_file(file.name);
+    return audio->create_file(file.name);
 }
 
 static auto dummy = fmt::Registry::add<TfwaAudioDecoder>("th/tfwa");

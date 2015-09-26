@@ -1,8 +1,8 @@
 #include "fmt/real_live/nwa_audio_decoder.h"
 #include "err.h"
 #include "io/buffered_io.h"
+#include "util/audio.h"
 #include "util/range.h"
-#include "util/sound.h"
 
 using namespace au;
 using namespace au::fmt::real_live;
@@ -245,12 +245,12 @@ std::unique_ptr<File> NwaAudioDecoder::decode_internal(File &file) const
         ? nwa_read_uncompressed(io, header)
         : nwa_read_compressed(io, header);
 
-    auto sound = util::Sound::from_samples(
+    auto audio = util::Audio::from_samples(
         header.channel_count,
         header.bits_per_sample / 8,
         header.sample_rate,
         samples);
-    return sound->create_file(file.name);
+    return audio->create_file(file.name);
 }
 
 static auto dummy = fmt::Registry::add<NwaAudioDecoder>("rl/nwa");

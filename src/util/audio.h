@@ -6,12 +6,12 @@
 namespace au {
 namespace util {
 
-    class Sound final
+    class Audio final
     {
     public:
-        ~Sound();
+        ~Audio();
 
-        static std::unique_ptr<Sound> from_samples(
+        static std::unique_ptr<Audio> from_samples(
             size_t channel_count,
             size_t bytes_per_sample,
             size_t sample_rate,
@@ -20,7 +20,7 @@ namespace util {
         std::unique_ptr<File> create_file(const std::string &base_file) const;
 
     private:
-        Sound();
+        Audio();
 
         struct Priv;
         std::unique_ptr<Priv> p;

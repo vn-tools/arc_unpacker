@@ -4,8 +4,8 @@
 #include "fmt/entis/audio/lossy.h"
 #include "fmt/entis/common/enums.h"
 #include "fmt/entis/common/sections.h"
+#include "util/audio.h"
 #include "util/format.h"
-#include "util/sound.h"
 
 using namespace au;
 using namespace au::fmt::entis;
@@ -92,7 +92,7 @@ std::unique_ptr<File> MioAudioDecoder::decode_internal(File &file) const
     for (auto chunk : chunks)
         samples += impl->process_chunk(chunk);
 
-    auto audio = util::Sound::from_samples(
+    auto audio = util::Audio::from_samples(
         header.channel_count,
         header.bits_per_sample / 8,
         header.sample_rate,

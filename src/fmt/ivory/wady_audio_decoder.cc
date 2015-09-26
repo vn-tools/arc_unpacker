@@ -1,8 +1,8 @@
 #include "fmt/ivory/wady_audio_decoder.h"
 #include "err.h"
 #include "io/buffered_io.h"
+#include "util/audio.h"
 #include "util/range.h"
-#include "util/sound.h"
 
 using namespace au;
 using namespace au::fmt::ivory;
@@ -210,7 +210,7 @@ std::unique_ptr<File> WadyAudioDecoder::decode_internal(File &file) const
     else
         throw err::UnsupportedVersionError(version);
 
-    auto sound = util::Sound::from_samples(
+    auto sound = util::Audio::from_samples(
         channels, bits_per_sample / 8, sample_rate, samples);
     return sound->create_file(file.name);
 }

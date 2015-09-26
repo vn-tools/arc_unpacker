@@ -1,5 +1,5 @@
 #include "fmt/touhou/pak2_audio_decoder.h"
-#include "util/sound.h"
+#include "util/audio.h"
 
 using namespace au;
 using namespace au::fmt::touhou;
@@ -20,7 +20,7 @@ std::unique_ptr<File> Pak2AudioDecoder::decode_internal(File &file) const
     file.io.skip(2);
     size_t size = file.io.read_u32_le();
 
-    auto audio = util::Sound::from_samples(
+    auto audio = util::Audio::from_samples(
         channel_count,
         bits_per_sample / 8,
         sample_rate,
