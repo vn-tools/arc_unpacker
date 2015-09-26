@@ -152,6 +152,8 @@ void Image::Priv::save_png(io::IO &io)
 
     auto width = pixels->width();
     auto height = pixels->height();
+    if (!width || !height)
+        throw err::BadDataSizeError();
     const auto bpp = 4;
     const auto color_type = PNG_COLOR_TYPE_RGBA;
     int transformations = PNG_TRANSFORM_BGR;
