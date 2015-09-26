@@ -33,7 +33,7 @@ namespace
 }
 
 static std::vector<std::shared_ptr<File>> unpack(
-    File &file, ArchiveDecoder &archive)
+    File &file, ArchiveDecoder &decoder)
 {
     std::vector<std::shared_ptr<File>> saved_files;
     FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
@@ -41,7 +41,7 @@ static std::vector<std::shared_ptr<File>> unpack(
         saved_file->io.seek(0);
         saved_files.push_back(saved_file);
     });
-    archive.unpack(file, file_saver, true);
+    decoder.unpack(file, file_saver, true);
     return saved_files;
 }
 

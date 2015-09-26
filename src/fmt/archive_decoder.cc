@@ -96,8 +96,7 @@ bool ArchiveDecoder::is_recognized(File &file) const
     }
 }
 
-void ArchiveDecoder::unpack(
-    File &file, FileSaver &file_saver, bool recurse) const
+void ArchiveDecoder::unpack(File &file, FileSaver &saver, bool recurse) const
 {
     if (!is_recognized(file))
         throw err::RecognitionError();
@@ -120,7 +119,7 @@ void ArchiveDecoder::unpack(
         }
 
         if (save_normally)
-            file_saver.save(original_file);
+            saver.save(original_file);
     });
 
     file.io.seek(0);
