@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace real_live {
 
-    class NwaConverter final : public Converter
+    class NwaConverter final : public FileDecoder
     {
     protected:
         bool is_recognized_internal(File &) const override;

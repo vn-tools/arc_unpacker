@@ -110,7 +110,7 @@ struct DatArchive::Priv final
 
 DatArchive::DatArchive() : p(new Priv)
 {
-    add_transformer(&p->vsp_converter);
+    add_decoder(&p->vsp_converter);
 }
 
 DatArchive::~DatArchive()

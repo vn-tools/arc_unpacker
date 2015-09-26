@@ -53,7 +53,7 @@ struct FjsysArchive::Priv final
 
 FjsysArchive::FjsysArchive() : p(new Priv)
 {
-    add_transformer(&p->mgd_converter);
+    add_decoder(&p->mgd_converter);
 }
 
 FjsysArchive::~FjsysArchive()

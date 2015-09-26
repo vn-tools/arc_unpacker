@@ -216,7 +216,7 @@ struct Tha1Archive::Priv final
 
 Tha1Archive::Tha1Archive() : p(new Priv)
 {
-    add_transformer(&p->anm_archive);
+    add_decoder(&p->anm_archive);
 }
 
 Tha1Archive::~Tha1Archive()

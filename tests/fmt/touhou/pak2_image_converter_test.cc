@@ -8,13 +8,13 @@ using namespace au;
 using namespace au::fmt::touhou;
 
 static void do_test(
-    const fmt::Converter &converter,
+    const Pak2ImageConverter &decoder,
     const std::string &input_path,
     const std::string &expected_path)
 {
     auto input_file = tests::file_from_path(input_path);
     auto expected_image = tests::image_from_path(expected_path);
-    auto actual_image = tests::image_from_file(*converter.decode(*input_file));
+    auto actual_image = tests::image_from_file(*decoder.decode(*input_file));
     tests::compare_images(*expected_image, *actual_image);
 }
 

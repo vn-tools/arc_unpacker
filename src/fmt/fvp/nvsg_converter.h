@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace fvp {
 
-    class NvsgConverter final : public Converter
+    class NvsgConverter final : public FileDecoder
     {
     protected:
         bool is_recognized_internal(File &) const override;

@@ -63,8 +63,8 @@ struct ArcArchive::Priv final
 
 ArcArchive::ArcArchive() : p(new Priv)
 {
-    add_transformer(&p->rc8_converter);
-    add_transformer(&p->rct_converter);
+    add_decoder(&p->rc8_converter);
+    add_decoder(&p->rct_converter);
 }
 
 ArcArchive::~ArcArchive()

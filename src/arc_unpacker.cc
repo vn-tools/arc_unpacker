@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include <map>
+#include "fmt/abstract_decoder.h"
 #include "fmt/registry.h"
 #include "log.h"
 #include "util/format.h"
@@ -39,10 +40,10 @@ private:
     void print_cli_help() const;
     void parse_cli_options();
 
-    std::unique_ptr<fmt::Transformer> guess_transformer(File &file) const;
-    bool guess_transformer_and_unpack(File &file, const std::string &base_name);
+    std::unique_ptr<fmt::AbstractDecoder> guess_decoder(File &file) const;
+    bool guess_decoder_and_unpack(File &file, const std::string &base_name);
     void unpack(
-        fmt::Transformer &transformer,
+        fmt::AbstractDecoder &decoder,
         File &file,
         const std::string &base_name) const;
 
@@ -83,20 +84,20 @@ directory.
 
     if (options.format != "")
     {
-        ArgParser transformer_arg_parser;
-        auto transformer = registry.create(options.format);
-        if (transformer)
+        ArgParser decoder_arg_parser;
+        auto decoder = registry.create(options.format);
+        if (decoder)
         {
-            transformer->register_cli_options(transformer_arg_parser);
+            decoder->register_cli_options(decoder_arg_parser);
             Log.info("[fmt_options] specific to " + options.format + ":\n\n");
-            transformer_arg_parser.print_help();
+            decoder_arg_parser.print_help();
             return;
         }
     }
 
     Log.info(
 R"([fmt_options] depend on chosen format and are required at runtime.
-See --help --fmt=FORMAT to get detailed help for given transformer.
+See --help --fmt=FORMAT to get detailed help for given decoder.
 
 )");
 }
@@ -223,13 +224,13 @@ bool ArcUnpacker::Priv::run()
         auto tmp = boost::filesystem::path(path_info->base_name);
         auto base_name = tmp.stem().string() + "~" + tmp.extension().string();
 
-        result &= guess_transformer_and_unpack(file, base_name);
+        result &= guess_decoder_and_unpack(file, base_name);
     }
     return result;
 }
 
 void ArcUnpacker::Priv::unpack(
-    fmt::Transformer &transformer,
+    fmt::AbstractDecoder &decoder,
     File &file,
     const std::string &base_name) const
 {
@@ -238,67 +239,67 @@ void ArcUnpacker::Priv::unpack(
     {
         saved_file->name =
             fmt::FileNameDecorator::decorate(
-                transformer.get_file_naming_strategy(),
+                decoder.get_file_naming_strategy(),
                 base_name,
                 saved_file->name);
         file_saver.save(saved_file);
     });
 
-    ArgParser transformer_arg_parser;
-    transformer.register_cli_options(transformer_arg_parser);
-    transformer_arg_parser.parse(arguments);
-    transformer.parse_cli_options(transformer_arg_parser);
-    transformer.unpack(file, file_saver_proxy, options.recurse);
+    ArgParser decoder_arg_parser;
+    decoder.register_cli_options(decoder_arg_parser);
+    decoder_arg_parser.parse(arguments);
+    decoder.parse_cli_options(decoder_arg_parser);
+    decoder.unpack(file, file_saver_proxy, options.recurse);
 }
 
-std::unique_ptr<fmt::Transformer> ArcUnpacker::Priv::guess_transformer(
+std::unique_ptr<fmt::AbstractDecoder> ArcUnpacker::Priv::guess_decoder(
     File &file) const
 {
-    std::map<std::string, std::unique_ptr<fmt::Transformer>> transformers;
+    std::map<std::string, std::unique_ptr<fmt::AbstractDecoder>> decoders;
 
     for (auto &name : registry.get_names())
     {
-        auto current_transformer = registry.create(name);
-        if (current_transformer->is_recognized(file))
-            transformers[name] = std::move(current_transformer);
+        auto current_decoder = registry.create(name);
+        if (current_decoder->is_recognized(file))
+            decoders[name] = std::move(current_decoder);
     }
 
-    if (transformers.size() == 1)
+    if (decoders.size() == 1)
     {
         Log.success(util::format(
             "File was recognized as %s.\n",
-            transformers.begin()->first.c_str()));
-        return std::move(transformers.begin()->second);
+            decoders.begin()->first.c_str()));
+        return std::move(decoders.begin()->second);
     }
 
-    if (transformers.size() == 0)
+    if (decoders.size() == 0)
     {
-        Log.err("File was not recognized by any transformer.\n\n");
+        Log.err("File was not recognized by any decoder.\n\n");
         return nullptr;
     }
 
-    Log.warn("File wa recognized by multiple transformers:\n");
-    for (const auto &it : transformers)
+    Log.warn("File wa recognized by multiple decoders:\n");
+    for (const auto &it : decoders)
         Log.warn("- " + it.first + "\n");
     Log.warn("Please provide --fmt and proceed manually.\n\n");
     return nullptr;
 }
 
-bool ArcUnpacker::Priv::guess_transformer_and_unpack(
+bool ArcUnpacker::Priv::guess_decoder_and_unpack(
     File &file, const std::string &base_name)
 {
     Log.info(util::format("Unpacking %s...\n", file.name.c_str()));
 
-    auto transformer = options.format != ""
+    auto decoder = options.format != ""
         ? registry.create(options.format)
-        : guess_transformer(file);
+        : guess_decoder(file);
 
-    if (!transformer)
+    if (!decoder)
         return false;
 
     try
     {
-        unpack(*transformer, file, base_name);
+        unpack(*decoder, file, base_name);
         Log.success("Unpacking finished successfully.\n\n");
         return true;
     }

@@ -1,6 +1,6 @@
 #include <boost/filesystem.hpp>
-#include "fmt/archive.h"
-#include "fmt/converter.h"
+#include "fmt/archive_decoder.h"
+#include "fmt/file_decoder.h"
 #include "test_support/catch.hh"
 
 using namespace au;
@@ -10,7 +10,7 @@ using path = boost::filesystem::path;
 
 namespace
 {
-    class TestConverter final : public Converter
+    class TestFileDecoder final : public FileDecoder
     {
     public:
         std::function<void(File&)> recognition_callback;
@@ -20,21 +20,21 @@ namespace
         std::unique_ptr<File> decode_internal(File &file) const override;
     };
 
-    class TestArchive final : public Archive
+    class TestArchiveDecoder final : public ArchiveDecoder
     {
     public:
-        TestConverter test_converter;
-        TestArchive();
+        TestFileDecoder test_file_decoder;
+        TestArchiveDecoder();
     protected:
         bool is_recognized_internal(File &arc_file) const override;
         void unpack_internal(
             File &arc_file, FileSaver &file_saver) const override;
     };
 
-    class FilesystemTestArchive final : public Archive
+    class FilesystemTestArchiveDecoder final : public ArchiveDecoder
     {
     public:
-        FilesystemTestArchive();
+        FilesystemTestArchiveDecoder();
     protected:
         bool is_recognized_internal(File &arc_file) const override;
         void unpack_internal(
@@ -42,14 +42,14 @@ namespace
     };
 }
 
-bool TestConverter::is_recognized_internal(File &file) const
+bool TestFileDecoder::is_recognized_internal(File &file) const
 {
     if (recognition_callback != nullptr)
         recognition_callback(file);
     return file.has_extension("image");
 }
 
-std::unique_ptr<File> TestConverter::decode_internal(File &file) const
+std::unique_ptr<File> TestFileDecoder::decode_internal(File &file) const
 {
     if (conversion_callback != nullptr)
         conversion_callback(file);
@@ -60,18 +60,19 @@ std::unique_ptr<File> TestConverter::decode_internal(File &file) const
     return output_file;
 }
 
-TestArchive::TestArchive()
+TestArchiveDecoder::TestArchiveDecoder()
 {
-    add_transformer(&test_converter);
-    add_transformer(this);
+    add_decoder(&test_file_decoder);
+    add_decoder(this);
 }
 
-bool TestArchive::is_recognized_internal(File &arc_file) const
+bool TestArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
     return arc_file.has_extension("archive");
 }
 
-void TestArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
+void TestArchiveDecoder::unpack_internal(
+    File &arc_file, FileSaver &file_saver) const
 {
     while (!arc_file.io.eof())
     {
@@ -83,16 +84,16 @@ void TestArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
     }
 }
 
-FilesystemTestArchive::FilesystemTestArchive()
+FilesystemTestArchiveDecoder::FilesystemTestArchiveDecoder()
 {
 }
 
-bool FilesystemTestArchive::is_recognized_internal(File &arc_file) const
+bool FilesystemTestArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
     return true;
 }
 
-void FilesystemTestArchive::unpack_internal(
+void FilesystemTestArchiveDecoder::unpack_internal(
     File &arc_file, FileSaver &file_saver) const
 {
     auto dir = boost::filesystem::path(arc_file.name).parent_path();
@@ -106,7 +107,8 @@ void FilesystemTestArchive::unpack_internal(
     }
 }
 
-static std::vector<std::shared_ptr<File>> unpack(File &file, Archive &archive)
+static std::vector<std::shared_ptr<File>> unpack(
+    File &file, ArchiveDecoder &archive)
 {
     std::vector<std::shared_ptr<File>> saved_files;
     FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
@@ -120,7 +122,7 @@ static std::vector<std::shared_ptr<File>> unpack(File &file, Archive &archive)
 
 TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
 {
-    TestArchive test_archive;
+    TestArchiveDecoder test_archive_decoder;
     File dummy_file;
     dummy_file.name = "test.archive";
     dummy_file.io.write("deeply/nested/file.txt"_b);
@@ -134,32 +136,32 @@ TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
         saved_file->io.seek(0);
         saved_files.push_back(saved_file);
     });
-    test_archive.unpack(dummy_file, file_saver, true);
+    test_archive_decoder.unpack(dummy_file, file_saver, true);
 
     REQUIRE(saved_files.size() == 1);
     REQUIRE(path(saved_files[0]->name) == path("deeply/nested/file.txt"));
     REQUIRE(saved_files[0]->io.read_to_eof() == "abc"_b);
 }
 
-TEST_CASE("Simple archive with converter unpacks correctly", "[fmt_core]")
+TEST_CASE("Simple archive with nested decoders unpacks correctly", "[fmt_core]")
 {
-    TestArchive test_archive;
+    TestArchiveDecoder test_archive_decoder;
     File dummy_file;
     dummy_file.name = "test.archive";
     dummy_file.io.write("deeply/nested/test.image"_b);
     dummy_file.io.write_u8(0);
     dummy_file.io.write_u32_le(0);
 
-    auto saved_files = unpack(dummy_file, test_archive);
+    auto saved_files = unpack(dummy_file, test_archive_decoder);
 
     REQUIRE(saved_files.size() == 1);
     REQUIRE(path(saved_files[0]->name) == path("deeply/nested/test.png"));
     REQUIRE(saved_files[0]->io.read_to_eof() == "image"_b);
 }
 
-TEST_CASE("Converter receives full path", "[fmt_core]")
+TEST_CASE("Decoder receives full path", "[fmt_core]")
 {
-    TestArchive test_archive;
+    TestArchiveDecoder test_archive_decoder;
     File dummy_file;
     dummy_file.name = "test.archive";
     dummy_file.io.write("deeply/nested/test.archive"_b);
@@ -175,15 +177,15 @@ TEST_CASE("Converter receives full path", "[fmt_core]")
 
     std::vector<path> names_for_recognition;
     std::vector<path> names_for_conversion;
-    test_archive.test_converter.recognition_callback = [&](File &file)
+    test_archive_decoder.test_file_decoder.recognition_callback = [&](File &f)
     {
-        names_for_recognition.push_back(path(file.name));
+        names_for_recognition.push_back(path(f.name));
     };
-    test_archive.test_converter.conversion_callback = [&](File &file)
+    test_archive_decoder.test_file_decoder.conversion_callback = [&](File &f)
     {
-        names_for_conversion.push_back(path(file.name));
+        names_for_conversion.push_back(path(f.name));
     };
-    unpack(dummy_file, test_archive);
+    unpack(dummy_file, test_archive_decoder);
 
     REQUIRE(names_for_recognition.size() == 4);
     REQUIRE(names_for_recognition[0] == path("deeply/nested/test.archive"));
@@ -198,7 +200,7 @@ TEST_CASE("Converter receives full path", "[fmt_core]")
 
 TEST_CASE("Nested archives unpack correctly", "[fmt_core]")
 {
-    TestArchive test_archive;
+    TestArchiveDecoder test_archive_decoder;
     File dummy_file;
     dummy_file.name = "test.archive";
     dummy_file.io.write("deeply/nested/test.archive"_b);
@@ -215,7 +217,7 @@ TEST_CASE("Nested archives unpack correctly", "[fmt_core]")
     dummy_file.io.seek(pos - 4);
     dummy_file.io.write_u32_le(sub_archive_size);
 
-    auto saved_files = unpack(dummy_file, test_archive);
+    auto saved_files = unpack(dummy_file, test_archive_decoder);
 
     REQUIRE(saved_files.size() == 2);
     REQUIRE(path(saved_files[0]->name)
@@ -228,16 +230,16 @@ TEST_CASE("Nested archives unpack correctly", "[fmt_core]")
 
 TEST_CASE("Files get correct location", "[fmt_core]")
 {
-    FilesystemTestArchive test_archive;
-    File dummy_file("./tests/fmt/transformer_test.cc", io::FileMode::Read);
+    FilesystemTestArchiveDecoder test_archive_decoder;
+    File dummy_file("./tests/fmt/abstract_decoder_test.cc", io::FileMode::Read);
 
-    auto saved_files = unpack(dummy_file, test_archive);
+    auto saved_files = unpack(dummy_file, test_archive_decoder);
     REQUIRE(saved_files.size() > 1);
 
     bool correct = false;
     for (auto &file : saved_files)
     {
-        if (path(file->name) == path("./tests/fmt/transformer_test.cc"))
+        if (path(file->name) == path("./tests/fmt/abstract_decoder_test.cc"))
             correct = true;
     }
     REQUIRE(correct);

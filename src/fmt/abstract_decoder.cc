@@ -1,4 +1,4 @@
-#include "fmt/transformer.h"
+#include "fmt/abstract_decoder.h"
 #include <boost/filesystem/path.hpp>
 
 using namespace au;
@@ -31,7 +31,7 @@ std::string FileNameDecorator::decorate(
     }
 }
 
-bool Transformer::is_recognized(File &file) const
+bool AbstractDecoder::is_recognized(File &file) const
 {
     try
     {
@@ -44,6 +44,6 @@ bool Transformer::is_recognized(File &file) const
     }
 }
 
-Transformer::~Transformer()
+AbstractDecoder::~AbstractDecoder()
 {
 }

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace touhou {
 
-    class Pak1ImageArchive final : public Archive
+    class Pak1ImageArchive final : public ArchiveDecoder
     {
     protected:
         bool is_recognized_internal(File &) const override;

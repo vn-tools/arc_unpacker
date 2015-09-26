@@ -1,10 +1,10 @@
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 #include "err.h"
 
 using namespace au;
 using namespace au::fmt;
 
-void Converter::unpack(
+void FileDecoder::unpack(
     File &input_file, FileSaver &file_saver, bool recurse) const
 {
     auto output_file = decode(input_file);
@@ -13,20 +13,20 @@ void Converter::unpack(
     file_saver.save(std::move(output_file));
 }
 
-void Converter::register_cli_options(ArgParser &) const
+void FileDecoder::register_cli_options(ArgParser &) const
 {
 }
 
-void Converter::parse_cli_options(const ArgParser &)
+void FileDecoder::parse_cli_options(const ArgParser &)
 {
 }
 
-FileNamingStrategy Converter::get_file_naming_strategy() const
+FileNamingStrategy FileDecoder::get_file_naming_strategy() const
 {
     return FileNamingStrategy::Sibling;
 }
 
-std::unique_ptr<File> Converter::decode(File &file) const
+std::unique_ptr<File> FileDecoder::decode(File &file) const
 {
     if (!is_recognized(file))
         throw err::RecognitionError();
@@ -35,6 +35,6 @@ std::unique_ptr<File> Converter::decode(File &file) const
     return decode_internal(file);
 }
 
-Converter::~Converter()
+FileDecoder::~FileDecoder()
 {
 }

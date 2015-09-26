@@ -73,9 +73,9 @@ struct AldArchive::Priv final
 
 AldArchive::AldArchive() : p(new Priv)
 {
-    add_transformer(&p->pms_converter);
-    add_transformer(&p->vsp_converter);
-    add_transformer(&p->qnt_converter);
+    add_decoder(&p->pms_converter);
+    add_decoder(&p->vsp_converter);
+    add_decoder(&p->qnt_converter);
 }
 
 AldArchive::~AldArchive()

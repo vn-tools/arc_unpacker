@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace touhou {
 
-    class TfbmConverter final : public Converter
+    class TfbmConverter final : public FileDecoder
     {
     public:
         TfbmConverter();

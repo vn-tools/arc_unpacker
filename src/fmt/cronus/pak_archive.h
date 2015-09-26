@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace cronus {
 
-    class PakArchive final : public Archive
+    class PakArchive final : public ArchiveDecoder
     {
     public:
         PakArchive();

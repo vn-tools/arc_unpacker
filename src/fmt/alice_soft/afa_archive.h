@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace alice_soft {
 
-    class AfaArchive final : public Archive
+    class AfaArchive final : public ArchiveDecoder
     {
     public:
         AfaArchive();

@@ -49,7 +49,7 @@ struct BidArchive::Priv final
 
 BidArchive::BidArchive() : p(new Priv)
 {
-    add_transformer(&p->mnc_converter);
+    add_decoder(&p->mnc_converter);
 }
 
 BidArchive::~BidArchive()

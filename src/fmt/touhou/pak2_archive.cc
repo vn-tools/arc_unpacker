@@ -128,8 +128,8 @@ struct Pak2Archive::Priv final
 
 Pak2Archive::Pak2Archive() : p(new Priv)
 {
-    add_transformer(&p->image_converter);
-    add_transformer(&p->sound_converter);
+    add_decoder(&p->image_converter);
+    add_decoder(&p->sound_converter);
 }
 
 Pak2Archive::~Pak2Archive()

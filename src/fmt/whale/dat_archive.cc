@@ -262,7 +262,7 @@ struct DatArchive::Priv final
 
 DatArchive::DatArchive() : p(new Priv)
 {
-    add_transformer(&p->tlg_converter);
+    add_decoder(&p->tlg_converter);
 }
 
 DatArchive::~DatArchive()
@@ -282,7 +282,7 @@ void DatArchive::register_cli_options(ArgParser &arg_parser) const
             "Rather than unpacking, create dump of the file names.\n"
             "This is useful when adding support for new games.");
 
-    Archive::register_cli_options(arg_parser);
+    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void DatArchive::parse_cli_options(const ArgParser &arg_parser)
@@ -298,7 +298,7 @@ void DatArchive::parse_cli_options(const ArgParser &arg_parser)
             add_file_name(line.str());
     }
 
-    Archive::parse_cli_options(arg_parser);
+    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 void DatArchive::set_game_title(const std::string &game_title)

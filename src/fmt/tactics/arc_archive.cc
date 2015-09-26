@@ -105,7 +105,7 @@ struct ArcArchive::Priv final
 
 ArcArchive::ArcArchive() : p(new Priv)
 {
-    add_transformer(&p->dds_converter);
+    add_decoder(&p->dds_converter);
 }
 
 ArcArchive::~ArcArchive()

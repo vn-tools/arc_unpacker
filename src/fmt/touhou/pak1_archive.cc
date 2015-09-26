@@ -100,8 +100,8 @@ struct Pak1Archive::Priv final
 
 Pak1Archive::Pak1Archive() : p(new Priv)
 {
-    add_transformer(&p->image_archive);
-    add_transformer(&p->sound_archive);
+    add_decoder(&p->image_archive);
+    add_decoder(&p->sound_archive);
 }
 
 Pak1Archive::~Pak1Archive()

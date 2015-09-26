@@ -102,9 +102,9 @@ struct LnkArchive::Priv final
 
 LnkArchive::LnkArchive() : p(new Priv)
 {
-    add_transformer(&p->cps_converter);
-    add_transformer(&p->prt_converter);
-    add_transformer(&p->waf_converter);
+    add_decoder(&p->cps_converter);
+    add_decoder(&p->prt_converter);
+    add_decoder(&p->waf_converter);
 }
 
 LnkArchive::~LnkArchive()

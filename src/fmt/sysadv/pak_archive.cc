@@ -54,7 +54,7 @@ struct PakArchive::Priv final
 
 PakArchive::PakArchive() : p(new Priv)
 {
-    add_transformer(&p->pga_converter);
+    add_decoder(&p->pga_converter);
 }
 
 PakArchive::~PakArchive()

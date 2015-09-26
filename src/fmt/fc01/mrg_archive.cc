@@ -113,9 +113,9 @@ struct MrgArchive::Priv final
 
 MrgArchive::MrgArchive() : p(new Priv)
 {
-    add_transformer(&p->acd_converter);
-    add_transformer(&p->mca_archive);
-    add_transformer(&p->mcg_converter);
+    add_decoder(&p->acd_converter);
+    add_decoder(&p->mca_archive);
+    add_decoder(&p->mcg_converter);
 }
 
 MrgArchive::~MrgArchive()

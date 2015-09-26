@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace nsystem {
 
-    class FjsysArchive final : public Archive
+    class FjsysArchive final : public ArchiveDecoder
     {
     public:
         FjsysArchive();

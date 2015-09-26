@@ -1,13 +1,13 @@
 #pragma once
 
 #include <string>
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace touhou {
 
-    class Pak2ImageConverter final : public Converter
+    class Pak2ImageConverter final : public FileDecoder
     {
     public:
         Pak2ImageConverter();

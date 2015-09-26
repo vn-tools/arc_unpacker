@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace fc01 {
 
-    class MrgArchive final : public Archive
+    class MrgArchive final : public ArchiveDecoder
     {
     public:
         MrgArchive();

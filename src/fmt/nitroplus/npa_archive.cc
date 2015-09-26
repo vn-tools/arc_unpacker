@@ -188,13 +188,13 @@ void NpaArchive::register_cli_options(ArgParser &arg_parser) const
 {
     p->plugin_mgr.register_cli_options(
         arg_parser, "Selects NPA decryption routine.");
-    Archive::register_cli_options(arg_parser);
+    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void NpaArchive::parse_cli_options(const ArgParser &arg_parser)
 {
     p->filter = p->plugin_mgr.get_from_cli_options(arg_parser, true)();
-    Archive::parse_cli_options(arg_parser);
+    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 bool NpaArchive::is_recognized_internal(File &arc_file) const

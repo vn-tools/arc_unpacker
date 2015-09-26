@@ -55,7 +55,7 @@ struct AlkArchive::Priv final
 
 AlkArchive::AlkArchive() : p(new Priv)
 {
-    add_transformer(&p->qnt_converter);
+    add_decoder(&p->qnt_converter);
 }
 
 AlkArchive::~AlkArchive()

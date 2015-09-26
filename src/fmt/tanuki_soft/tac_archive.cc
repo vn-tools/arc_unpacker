@@ -150,7 +150,7 @@ static Version read_version(io::IO &io)
 
 TacArchive::TacArchive()
 {
-    add_transformer(this);
+    add_decoder(this);
 }
 
 bool TacArchive::is_recognized_internal(File &arc_file) const

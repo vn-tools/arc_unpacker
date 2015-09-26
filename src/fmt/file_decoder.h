@@ -1,14 +1,14 @@
 #pragma once
 
-#include "transformer.h"
+#include "abstract_decoder.h"
 
 namespace au {
 namespace fmt {
 
-    class Converter : public Transformer
+    class FileDecoder : public AbstractDecoder
     {
     public:
-        virtual ~Converter();
+        virtual ~FileDecoder();
         virtual void register_cli_options(ArgParser &) const override;
         virtual void parse_cli_options(const ArgParser &) override;
         virtual FileNamingStrategy get_file_naming_strategy() const override;

@@ -232,10 +232,10 @@ struct Glib2Archive::Priv final
 
 Glib2Archive::Glib2Archive() : p(new Priv)
 {
-    add_transformer(&p->pgx_converter);
-    add_transformer(&p->jpeg_pgx_converter);
-    add_transformer(&p->packed_ogg_converter);
-    add_transformer(this);
+    add_decoder(&p->pgx_converter);
+    add_decoder(&p->jpeg_pgx_converter);
+    add_decoder(&p->packed_ogg_converter);
+    add_decoder(this);
 }
 
 Glib2Archive::~Glib2Archive()

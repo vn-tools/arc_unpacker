@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace libido {
 
-    class EgrArchive final : public Archive
+    class EgrArchive final : public ArchiveDecoder
     {
     protected:
         bool is_recognized_internal(File &) const override;

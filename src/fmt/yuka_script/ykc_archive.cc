@@ -60,7 +60,7 @@ struct YkcArchive::Priv final
 
 YkcArchive::YkcArchive() : p(new Priv)
 {
-    add_transformer(&p->ykg_converter);
+    add_decoder(&p->ykg_converter);
 }
 
 YkcArchive::~YkcArchive()

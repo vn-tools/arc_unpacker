@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace entis {
 
-    class NoaArchive final : public Archive
+    class NoaArchive final : public ArchiveDecoder
     {
     public:
         NoaArchive();

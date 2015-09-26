@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace fc01 {
 
-    class McgConverter final : public Converter
+    class McgConverter final : public FileDecoder
     {
     public:
         McgConverter();

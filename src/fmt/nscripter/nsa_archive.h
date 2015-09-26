@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace nscripter {
 
-    class NsaArchive final : public Archive
+    class NsaArchive final : public ArchiveDecoder
     {
     public:
         NsaArchive();

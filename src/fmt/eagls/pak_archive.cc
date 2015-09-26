@@ -80,8 +80,8 @@ struct PakArchive::Priv final
 
 PakArchive::PakArchive() : p(new Priv)
 {
-    add_transformer(&p->gr_converter);
-    add_transformer(&p->pak_script_converter);
+    add_decoder(&p->gr_converter);
+    add_decoder(&p->pak_script_converter);
 }
 
 PakArchive::~PakArchive()

@@ -164,7 +164,7 @@ struct Xp3Archive::Priv final
 
 Xp3Archive::Xp3Archive() : p(new Priv)
 {
-    add_transformer(&p->tlg_converter);
+    add_decoder(&p->tlg_converter);
 }
 
 Xp3Archive::~Xp3Archive()
@@ -174,13 +174,13 @@ Xp3Archive::~Xp3Archive()
 void Xp3Archive::register_cli_options(ArgParser &arg_parser) const
 {
     p->filter_registry.register_cli_options(arg_parser);
-    Archive::register_cli_options(arg_parser);
+    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void Xp3Archive::parse_cli_options(const ArgParser &arg_parser)
 {
     p->filter_registry.parse_cli_options(arg_parser);
-    Archive::parse_cli_options(arg_parser);
+    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 bool Xp3Archive::is_recognized_internal(File &arc_file) const

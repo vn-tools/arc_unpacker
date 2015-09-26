@@ -100,7 +100,7 @@ PakArchive::PakArchive() : p(new Priv)
 {
     p->plugin_mgr.add("default", "Unencrypted games", {0, 0});
     p->plugin_mgr.add("sweet", "Sweet Pleasure", {0xBC138744, 0x64E0BA23});
-    add_transformer(&p->grp_converter);
+    add_decoder(&p->grp_converter);
 }
 
 PakArchive::~PakArchive()

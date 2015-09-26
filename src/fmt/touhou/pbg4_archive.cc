@@ -83,7 +83,7 @@ struct Pbg4Archive::Priv final
 
 Pbg4Archive::Pbg4Archive() : p(new Priv)
 {
-    add_transformer(&p->anm_archive);
+    add_decoder(&p->anm_archive);
 }
 
 Pbg4Archive::~Pbg4Archive()

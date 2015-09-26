@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace eagls {
 
-    class GrConverter final : public Converter
+    class GrConverter final : public FileDecoder
     {
     protected:
         bool is_recognized_internal(File &) const override;

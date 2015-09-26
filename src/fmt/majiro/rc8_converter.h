@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace majiro {
 
-    class Rc8Converter final : public Converter
+    class Rc8Converter final : public FileDecoder
     {
     protected:
         bool is_recognized_internal(File &) const override;

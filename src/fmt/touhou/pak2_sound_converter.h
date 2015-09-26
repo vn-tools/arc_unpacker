@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace touhou {
 
-    class Pak2SoundConverter final : public Converter
+    class Pak2SoundConverter final : public FileDecoder
     {
     protected:
         bool is_recognized_internal(File &) const override;

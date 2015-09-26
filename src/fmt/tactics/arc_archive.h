@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace tactics {
 
-    class ArcArchive final : public Archive
+    class ArcArchive final : public ArchiveDecoder
     {
     public:
         ArcArchive();

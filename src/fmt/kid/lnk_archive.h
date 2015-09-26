@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace kid {
 
-    class LnkArchive final : public Archive
+    class LnkArchive final : public ArchiveDecoder
     {
     public:
         LnkArchive();

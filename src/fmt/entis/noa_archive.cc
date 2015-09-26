@@ -91,8 +91,8 @@ struct NoaArchive::Priv final
 
 NoaArchive::NoaArchive() : p(new Priv)
 {
-    add_transformer(&p->eri_converter);
-    add_transformer(&p->mio_converter);
+    add_decoder(&p->eri_converter);
+    add_decoder(&p->mio_converter);
 }
 
 NoaArchive::~NoaArchive()

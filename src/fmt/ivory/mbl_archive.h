@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace ivory {
 
-    class MblArchive final : public Archive
+    class MblArchive final : public ArchiveDecoder
     {
     public:
         MblArchive();

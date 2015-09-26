@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace french_bread {
 
-    class PArchive final : public Archive
+    class PArchive final : public ArchiveDecoder
     {
     public:
         PArchive();

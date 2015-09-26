@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace touhou {
 
-    class Pbg4Archive final : public Archive
+    class Pbg4Archive final : public ArchiveDecoder
     {
     public:
         Pbg4Archive();

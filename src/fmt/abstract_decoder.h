@@ -28,10 +28,10 @@ namespace fmt {
             const std::string &current_file_name);
     };
 
-    class Transformer
+    class AbstractDecoder
     {
     public:
-        virtual ~Transformer();
+        virtual ~AbstractDecoder();
         bool is_recognized(File &) const;
         virtual void register_cli_options(ArgParser &) const = 0;
         virtual void parse_cli_options(const ArgParser &) = 0;

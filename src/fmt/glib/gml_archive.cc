@@ -77,8 +77,8 @@ struct GmlArchive::Priv final
 
 GmlArchive::GmlArchive() : p(new Priv)
 {
-    add_transformer(&p->pgx_converter);
-    add_transformer(&p->packed_ogg_converter);
+    add_decoder(&p->pgx_converter);
+    add_decoder(&p->packed_ogg_converter);
 }
 
 GmlArchive::~GmlArchive()

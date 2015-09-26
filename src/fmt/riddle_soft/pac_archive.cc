@@ -59,7 +59,7 @@ struct PacArchive::Priv final
 
 PacArchive::PacArchive() : p(new Priv)
 {
-    add_transformer(&p->cmp_converter);
+    add_decoder(&p->cmp_converter);
 }
 
 PacArchive::~PacArchive()

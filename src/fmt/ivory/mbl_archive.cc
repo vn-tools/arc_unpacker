@@ -96,8 +96,8 @@ struct MblArchive::Priv final
 
 MblArchive::MblArchive() : p(new Priv)
 {
-    add_transformer(&p->prs_converter);
-    add_transformer(&p->wady_converter);
+    add_decoder(&p->prs_converter);
+    add_decoder(&p->wady_converter);
 
     p->plugin_mgr.add("noop", "Unencrypted games", [](bstr &) { });
 
@@ -126,13 +126,13 @@ void MblArchive::register_cli_options(ArgParser &arg_parser) const
 {
     p->plugin_mgr.register_cli_options(
         arg_parser, "Specifies plugin for decoding dialog files.");
-    Archive::register_cli_options(arg_parser);
+    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void MblArchive::parse_cli_options(const ArgParser &arg_parser)
 {
     p->plugin = p->plugin_mgr.get_from_cli_options(arg_parser, false);
-    Archive::parse_cli_options(arg_parser);
+    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 void MblArchive::set_plugin(const std::string &plugin_name)

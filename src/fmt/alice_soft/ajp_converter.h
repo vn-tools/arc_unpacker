@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace alice_soft {
 
-    class AjpConverter final : public Converter
+    class AjpConverter final : public FileDecoder
     {
     protected:
         bool is_recognized_internal(File &) const override;

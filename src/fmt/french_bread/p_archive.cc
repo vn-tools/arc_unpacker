@@ -68,7 +68,7 @@ struct PArchive::Priv final
 
 PArchive::PArchive() : p(new Priv)
 {
-    add_transformer(&p->ex3_converter);
+    add_decoder(&p->ex3_converter);
 }
 
 PArchive::~PArchive()

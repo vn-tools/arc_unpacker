@@ -1,14 +1,14 @@
 #pragma once
 
-#include "transformer.h"
+#include "abstract_decoder.h"
 
 namespace au {
 namespace fmt {
 
-    class Archive : public Transformer
+    class ArchiveDecoder : public AbstractDecoder
     {
     public:
-        virtual ~Archive();
+        virtual ~ArchiveDecoder();
         virtual void register_cli_options(ArgParser &) const override;
         virtual void parse_cli_options(const ArgParser &) override;
         virtual FileNamingStrategy get_file_naming_strategy() const override;
@@ -16,10 +16,10 @@ namespace fmt {
 
     protected:
         virtual void unpack_internal(File &, FileSaver &) const = 0;
-        void add_transformer(Transformer *transformer);
+        void add_decoder(AbstractDecoder *decoder);
 
     private:
-        std::vector<Transformer*> transformers;
+        std::vector<AbstractDecoder*> decoders;
     };
 
 } }

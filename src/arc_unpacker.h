@@ -3,7 +3,6 @@
 #include <boost/filesystem/path.hpp>
 #include <memory>
 #include <string>
-#include "fmt/transformer.h"
 
 namespace au {
 

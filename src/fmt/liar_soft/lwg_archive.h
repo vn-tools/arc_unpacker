@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace liar_soft {
 
-    class LwgArchive final : public Archive
+    class LwgArchive final : public ArchiveDecoder
     {
     public:
         LwgArchive();

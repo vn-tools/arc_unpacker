@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace cronus {
 
-    class GrpConverter final : public Converter
+    class GrpConverter final : public FileDecoder
     {
     public:
         GrpConverter();

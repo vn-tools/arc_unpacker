@@ -1,6 +1,5 @@
 #include <boost/filesystem.hpp>
-#include "fmt/archive.h"
-#include "fmt/converter.h"
+#include "fmt/archive_decoder.h"
 #include "test_support/catch.hh"
 
 using namespace au;
@@ -10,28 +9,29 @@ using path = boost::filesystem::path;
 
 namespace
 {
-    class TestArchive final : public Archive
+    class TestArchiveDecoder final : public ArchiveDecoder
     {
     public:
-        TestArchive();
+        TestArchiveDecoder();
     protected:
         bool is_recognized_internal(File &arc_file) const override;
         void unpack_internal(
             File &arc_file, FileSaver &file_saver) const override;
     };
 
-    TestArchive::TestArchive()
+    TestArchiveDecoder::TestArchiveDecoder()
     {
-        add_transformer(this);
+        add_decoder(this);
     }
 }
 
-bool TestArchive::is_recognized_internal(File &arc_file) const
+bool TestArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
     return true;
 }
 
-void TestArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
+void TestArchiveDecoder::unpack_internal(
+    File &arc_file, FileSaver &file_saver) const
 {
     std::unique_ptr<File> output_file(new File);
     output_file->name = "infinity";
@@ -41,7 +41,7 @@ void TestArchive::unpack_internal(File &arc_file, FileSaver &file_saver) const
 
 TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
 {
-    TestArchive test_archive;
+    TestArchiveDecoder test_archive_decoder;
     File dummy_file;
     dummy_file.name = "test.archive";
     dummy_file.io.write("whatever"_b);
@@ -52,7 +52,7 @@ TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
         saved_file->io.seek(0);
         saved_files.push_back(saved_file);
     });
-    test_archive.unpack(dummy_file, file_saver, true);
+    test_archive_decoder.unpack(dummy_file, file_saver, true);
 
     REQUIRE(saved_files.size() == 1);
     REQUIRE(boost::filesystem::basename(saved_files[0]->name) == "infinity");

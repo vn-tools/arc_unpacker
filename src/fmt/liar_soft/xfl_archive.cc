@@ -58,10 +58,10 @@ struct XflArchive::Priv final
 
 XflArchive::XflArchive() : p(new Priv)
 {
-    add_transformer(&p->wcg_converter);
-    add_transformer(&p->lwg_archive);
-    add_transformer(&p->packed_ogg_converter);
-    add_transformer(this);
+    add_decoder(&p->wcg_converter);
+    add_decoder(&p->lwg_archive);
+    add_decoder(&p->packed_ogg_converter);
+    add_decoder(this);
 }
 
 XflArchive::~XflArchive()

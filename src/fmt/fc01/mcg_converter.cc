@@ -43,14 +43,14 @@ void McgConverter::register_cli_options(ArgParser &arg_parser) const
     arg_parser.register_switch({"--mcg-key"})
         ->set_value_name("KEY")
         ->set_description("Decryption key (0..255, same for all files)");
-    Converter::register_cli_options(arg_parser);
+    FileDecoder::register_cli_options(arg_parser);
 }
 
 void McgConverter::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("mcg-key"))
         set_key(boost::lexical_cast<int>(arg_parser.get_switch("mcg-key")));
-    Converter::parse_cli_options(arg_parser);
+    FileDecoder::parse_cli_options(arg_parser);
 }
 
 bool McgConverter::is_recognized_internal(File &file) const

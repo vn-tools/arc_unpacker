@@ -56,9 +56,9 @@ struct ArcArchive::Priv final
 
 ArcArchive::ArcArchive() : p(new Priv)
 {
-    add_transformer(&p->cbg_converter);
-    add_transformer(&p->dsc_converter);
-    add_transformer(&p->sound_converter);
+    add_decoder(&p->cbg_converter);
+    add_decoder(&p->dsc_converter);
+    add_decoder(&p->sound_converter);
 }
 
 ArcArchive::~ArcArchive()

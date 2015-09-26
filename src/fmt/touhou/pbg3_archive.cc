@@ -94,7 +94,7 @@ struct Pbg3Archive::Priv final
 
 Pbg3Archive::Pbg3Archive() : p(new Priv)
 {
-    add_transformer(&p->anm_archive);
+    add_decoder(&p->anm_archive);
 }
 
 Pbg3Archive::~Pbg3Archive()

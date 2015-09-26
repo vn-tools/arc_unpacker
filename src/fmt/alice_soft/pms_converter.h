@@ -1,13 +1,13 @@
 #pragma once
 
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 #include "util/image.h"
 
 namespace au {
 namespace fmt {
 namespace alice_soft {
 
-    class PmsConverter final : public Converter
+    class PmsConverter final : public FileDecoder
     {
     public:
         static bstr decompress_8bit(io::IO &, size_t width, size_t height);

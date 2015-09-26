@@ -366,9 +366,9 @@ PackArchive::Priv::Priv() : enc_type(EncryptionType::Basic)
 
 PackArchive::PackArchive() : p(new Priv)
 {
-    add_transformer(&p->dpng_converter);
-    add_transformer(&p->abmp7_archive);
-    add_transformer(&p->abmp10_archive);
+    add_decoder(&p->dpng_converter);
+    add_decoder(&p->abmp7_archive);
+    add_decoder(&p->abmp10_archive);
 }
 
 PackArchive::~PackArchive()
@@ -385,7 +385,7 @@ void PackArchive::register_cli_options(ArgParser &arg_parser) const
         ->set_value_name("PATH")
         ->set_description("Selects path to game executable");
 
-    Archive::register_cli_options(arg_parser);
+    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void PackArchive::parse_cli_options(const ArgParser &arg_parser)
@@ -428,7 +428,7 @@ void PackArchive::parse_cli_options(const ArgParser &arg_parser)
             throw err::RecognitionError("Cannot find the key in the .exe file");
     }
 
-    Archive::parse_cli_options(arg_parser);
+    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 bool PackArchive::is_recognized_internal(File &arc_file) const

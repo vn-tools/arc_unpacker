@@ -57,7 +57,7 @@ struct BinArchive::Priv final
 
 BinArchive::BinArchive() : p(new Priv)
 {
-    add_transformer(&p->nvsg_converter);
+    add_decoder(&p->nvsg_converter);
 }
 
 BinArchive::~BinArchive()

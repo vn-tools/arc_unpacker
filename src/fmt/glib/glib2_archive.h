@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace glib {
 
-    class Glib2Archive final : public Archive
+    class Glib2Archive final : public ArchiveDecoder
     {
     public:
         Glib2Archive();

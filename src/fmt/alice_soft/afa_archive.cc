@@ -78,9 +78,9 @@ struct AfaArchive::Priv final
 
 AfaArchive::AfaArchive() : p(new Priv)
 {
-    add_transformer(&p->aff_converter);
-    add_transformer(&p->ajp_converter);
-    add_transformer(&p->qnt_converter);
+    add_decoder(&p->aff_converter);
+    add_decoder(&p->ajp_converter);
+    add_decoder(&p->qnt_converter);
 }
 
 AfaArchive::~AfaArchive()

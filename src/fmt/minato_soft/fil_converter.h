@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/converter.h"
+#include "fmt/file_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace minato_soft {
 
-    class FilConverter final : public Converter
+    class FilConverter final : public FileDecoder
     {
     protected:
         bool is_recognized_internal(File &) const override;

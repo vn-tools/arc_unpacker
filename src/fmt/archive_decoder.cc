@@ -1,4 +1,4 @@
-#include "fmt/archive.h"
+#include "fmt/archive_decoder.h"
 #include "err.h"
 
 using namespace au;
@@ -26,20 +26,20 @@ DepthKeeper::~DepthKeeper()
     depth--;
 }
 
-static bool pass_through_transformers(
+static bool pass_through_decoders(
     FileSaverCallback &recognition_proxy,
     std::shared_ptr<File> original_file,
-    std::vector<Transformer*> transformers)
+    std::vector<AbstractDecoder*> decoders)
 {
-    for (auto &transformer : transformers)
+    for (auto &decoder : decoders)
     {
-        FileSaverCallback transformer_proxy(
-            [original_file, &recognition_proxy, &transformer]
+        FileSaverCallback decoder_proxy(
+            [original_file, &recognition_proxy, &decoder]
             (std::shared_ptr<File> converted_file)
         {
             converted_file->name =
                 FileNameDecorator::decorate(
-                    transformer->get_file_naming_strategy(),
+                    decoder->get_file_naming_strategy(),
                     original_file->name,
                     converted_file->name);
             recognition_proxy.save(converted_file);
@@ -47,7 +47,7 @@ static bool pass_through_transformers(
 
         try
         {
-            transformer->unpack(*original_file, transformer_proxy, true);
+            decoder->unpack(*original_file, decoder_proxy, true);
             return true;
         }
         catch (...)
@@ -58,12 +58,13 @@ static bool pass_through_transformers(
     return false;
 }
 
-void Archive::unpack(File &file, FileSaver &file_saver, bool recurse) const
+void ArchiveDecoder::unpack(
+    File &file, FileSaver &file_saver, bool recurse) const
 {
     if (!is_recognized(file))
         throw err::RecognitionError();
 
-    // every file should be passed through registered transformers
+    // every file should be passed through registered decoders
     FileSaverCallback recognition_proxy;
     recognition_proxy.set_callback([&](std::shared_ptr<File> original_file)
     {
@@ -76,8 +77,8 @@ void Archive::unpack(File &file, FileSaver &file_saver, bool recurse) const
         }
         else
         {
-            save_normally = !pass_through_transformers(
-                recognition_proxy, original_file, transformers);
+            save_normally = !pass_through_decoders(
+                recognition_proxy, original_file, decoders);
         }
 
         if (save_normally)
@@ -88,34 +89,34 @@ void Archive::unpack(File &file, FileSaver &file_saver, bool recurse) const
     return unpack_internal(file, recognition_proxy);
 }
 
-void Archive::register_cli_options(ArgParser &arg_parser) const
+void ArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 {
-    for (auto &transformer : transformers)
+    for (auto &decoder : decoders)
     {
-        if (transformer != this)
-            transformer->register_cli_options(arg_parser);
+        if (decoder != this)
+            decoder->register_cli_options(arg_parser);
     }
 }
 
-void Archive::parse_cli_options(const ArgParser &arg_parser)
+void ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
-    for (auto &transformer : transformers)
+    for (auto &decoder : decoders)
     {
-        if (transformer != this)
-            transformer->parse_cli_options(arg_parser);
+        if (decoder != this)
+            decoder->parse_cli_options(arg_parser);
     }
 }
 
-void Archive::add_transformer(Transformer *transformer)
+void ArchiveDecoder::add_decoder(AbstractDecoder *decoder)
 {
-    transformers.push_back(transformer);
+    decoders.push_back(decoder);
 }
 
-FileNamingStrategy Archive::get_file_naming_strategy() const
+FileNamingStrategy ArchiveDecoder::get_file_naming_strategy() const
 {
     return FileNamingStrategy::Child;
 }
 
-Archive::~Archive()
+ArchiveDecoder::~ArchiveDecoder()
 {
 }

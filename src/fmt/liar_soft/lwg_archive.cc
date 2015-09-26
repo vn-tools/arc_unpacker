@@ -58,8 +58,8 @@ struct LwgArchive::Priv final
 
 LwgArchive::LwgArchive() : p(new Priv)
 {
-    add_transformer(&p->wcg_converter);
-    add_transformer(this);
+    add_decoder(&p->wcg_converter);
+    add_decoder(this);
 }
 
 LwgArchive::~LwgArchive()

@@ -70,7 +70,7 @@ struct MpkArchive::Priv final
 
 MpkArchive::MpkArchive() : p(new Priv)
 {
-    add_transformer(&p->mgr_archive);
+    add_decoder(&p->mgr_archive);
 }
 
 MpkArchive::~MpkArchive()
