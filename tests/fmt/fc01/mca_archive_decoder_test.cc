@@ -9,7 +9,7 @@ using namespace au::fmt::fc01;
 
 TEST_CASE("FC01 MCA image archives (unaligned)", "[fmt]")
 {
-    std::vector<std::shared_ptr<util::Image>> expected_images
+    std::vector<std::shared_ptr<pix::Grid>> expected_images
     {
         tests::image_from_path("tests/fmt/fc01/files/mca/blin3-out-000.png"),
         tests::image_from_path("tests/fmt/fc01/files/mca/blin3-out-001.png"),
@@ -27,7 +27,7 @@ TEST_CASE("FC01 MCA image archives (unaligned)", "[fmt]")
 
 TEST_CASE("FC01 MCA image archives (aligned)", "[fmt]")
 {
-    std::vector<std::shared_ptr<util::Image>> expected_images
+    std::vector<std::shared_ptr<pix::Grid>> expected_images
     {
         tests::image_from_path("tests/fmt/fc01/files/mca/ok-out-000.png"),
         tests::image_from_path("tests/fmt/fc01/files/mca/ok-out-001.png"),

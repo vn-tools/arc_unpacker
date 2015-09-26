@@ -18,7 +18,7 @@ static void do_test(
     for (auto i : util::range(expected_paths.size()))
     {
         auto expected_image = tests::image_from_path(expected_paths[i]);
-        auto actual_image = util::Image::from_boxed(actual_files[i]->io);
+        auto actual_image = tests::image_from_file(*actual_files[i]);
         tests::compare_images(*expected_image, *actual_image);
     }
 }

@@ -10,7 +10,7 @@ using namespace au::fmt::libido;
 
 TEST_CASE("Libido EGR unencrypted image archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<util::Image>> expected_images
+    std::vector<std::shared_ptr<pix::Grid>> expected_images
     {
         tests::image_from_path("tests/fmt/libido/files/egr/Image000-out.png"),
         tests::image_from_path("tests/fmt/libido/files/egr/Image001-out.png"),
