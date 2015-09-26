@@ -4,6 +4,9 @@
 using namespace au;
 using namespace au::fmt;
 
+static const int max_depth = 10;
+static int depth = 0;
+
 namespace
 {
     struct DepthKeeper final
@@ -13,23 +16,10 @@ namespace
     };
 }
 
-static const int max_depth = 10;
-static int depth = 0;
-
-DepthKeeper::DepthKeeper()
-{
-    depth++;
-}
-
-DepthKeeper::~DepthKeeper()
-{
-    depth--;
-}
-
 static bool pass_through_decoders(
     FileSaverCallback &recognition_proxy,
     std::shared_ptr<File> original_file,
-    std::vector<AbstractDecoder*> decoders)
+    std::vector<IDecoder*> decoders)
 {
     for (auto &decoder : decoders)
     {
@@ -56,6 +46,56 @@ static bool pass_through_decoders(
     }
 
     return false;
+}
+
+DepthKeeper::DepthKeeper()
+{
+    depth++;
+}
+
+DepthKeeper::~DepthKeeper()
+{
+    depth--;
+}
+
+ArchiveDecoder::~ArchiveDecoder()
+{
+}
+
+FileNamingStrategy ArchiveDecoder::get_file_naming_strategy() const
+{
+    return FileNamingStrategy::Child;
+}
+
+void ArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
+{
+    for (auto &decoder : decoders)
+    {
+        if (decoder != this)
+            decoder->register_cli_options(arg_parser);
+    }
+}
+
+void ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
+{
+    for (auto &decoder : decoders)
+    {
+        if (decoder != this)
+            decoder->parse_cli_options(arg_parser);
+    }
+}
+
+bool ArchiveDecoder::is_recognized(File &file) const
+{
+    try
+    {
+        file.io.seek(0);
+        return is_recognized_internal(file);
+    }
+    catch (...)
+    {
+        return false;
+    }
 }
 
 void ArchiveDecoder::unpack(
@@ -89,34 +129,7 @@ void ArchiveDecoder::unpack(
     return unpack_internal(file, recognition_proxy);
 }
 
-void ArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    for (auto &decoder : decoders)
-    {
-        if (decoder != this)
-            decoder->register_cli_options(arg_parser);
-    }
-}
-
-void ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    for (auto &decoder : decoders)
-    {
-        if (decoder != this)
-            decoder->parse_cli_options(arg_parser);
-    }
-}
-
-void ArchiveDecoder::add_decoder(AbstractDecoder *decoder)
+void ArchiveDecoder::add_decoder(IDecoder *decoder)
 {
     decoders.push_back(decoder);
-}
-
-FileNamingStrategy ArchiveDecoder::get_file_naming_strategy() const
-{
-    return FileNamingStrategy::Child;
-}
-
-ArchiveDecoder::~ArchiveDecoder()
-{
 }

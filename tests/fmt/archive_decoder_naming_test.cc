@@ -1,5 +1,6 @@
 #include <boost/filesystem.hpp>
 #include "fmt/archive_decoder.h"
+#include "fmt/file_decoder.h"
 #include "test_support/catch.hh"
 
 using namespace au;
@@ -18,33 +19,40 @@ namespace
         void unpack_internal(
             File &arc_file, FileSaver &file_saver) const override;
     };
+}
 
-    TestArchiveDecoder::TestArchiveDecoder()
-    {
-        add_decoder(this);
-    }
+TestArchiveDecoder::TestArchiveDecoder()
+{
+    add_decoder(this);
 }
 
 bool TestArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
-    return true;
+    return arc_file.has_extension("archive");
 }
 
 void TestArchiveDecoder::unpack_internal(
     File &arc_file, FileSaver &file_saver) const
 {
-    std::unique_ptr<File> output_file(new File);
-    output_file->name = "infinity";
-    output_file->io.write_from_io(arc_file.io);
-    file_saver.save(std::move(output_file));
+    while (!arc_file.io.eof())
+    {
+        std::unique_ptr<File> output_file(new File);
+        output_file->name = arc_file.io.read_to_zero().str();
+        size_t output_file_size = arc_file.io.read_u32_le();
+        output_file->io.write(arc_file.io.read(output_file_size));
+        file_saver.save(std::move(output_file));
+    }
 }
 
-TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
+TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
 {
     TestArchiveDecoder test_archive_decoder;
     File dummy_file;
     dummy_file.name = "test.archive";
-    dummy_file.io.write("whatever"_b);
+    dummy_file.io.write("deeply/nested/file.txt"_b);
+    dummy_file.io.write_u8(0);
+    dummy_file.io.write_u32_le(3);
+    dummy_file.io.write("abc"_b);
 
     std::vector<std::shared_ptr<File>> saved_files;
     FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
@@ -55,6 +63,6 @@ TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
     test_archive_decoder.unpack(dummy_file, file_saver, true);
 
     REQUIRE(saved_files.size() == 1);
-    REQUIRE(boost::filesystem::basename(saved_files[0]->name) == "infinity");
-    REQUIRE(saved_files[0]->io.read_to_eof() == "whatever"_b);
+    REQUIRE(path(saved_files[0]->name) == path("deeply/nested/file.txt"));
+    REQUIRE(saved_files[0]->io.read_to_eof() == "abc"_b);
 }

@@ -1,5 +1,5 @@
 #include <boost/filesystem/path.hpp>
-#include "fmt/abstract_decoder.h"
+#include "fmt/idecoder.h"
 #include "test_support/catch.hh"
 
 using path = boost::filesystem::path;

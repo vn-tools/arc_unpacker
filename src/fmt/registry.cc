@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <map>
 #include "err.h"
-#include "fmt/abstract_decoder.h"
+#include "fmt/idecoder.h"
 
 using namespace au::fmt;
 
@@ -28,7 +28,7 @@ const std::vector<std::string> Registry::get_names() const
     return names;
 }
 
-std::unique_ptr<AbstractDecoder> Registry::create(const std::string &name) const
+std::unique_ptr<IDecoder> Registry::create(const std::string &name) const
 {
     for (auto &item : p->decoder_map)
         if (item.first == name)

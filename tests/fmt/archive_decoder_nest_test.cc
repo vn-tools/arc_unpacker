@@ -6,10 +6,10 @@
 using namespace au;
 using namespace au::fmt;
 
-using path = boost::filesystem::path;
-
 namespace
 {
+    using path = boost::filesystem::path;
+
     class TestFileDecoder final : public FileDecoder
     {
     public:
@@ -30,16 +30,19 @@ namespace
         void unpack_internal(
             File &arc_file, FileSaver &file_saver) const override;
     };
+}
 
-    class FilesystemTestArchiveDecoder final : public ArchiveDecoder
+static std::vector<std::shared_ptr<File>> unpack(
+    File &file, ArchiveDecoder &archive)
+{
+    std::vector<std::shared_ptr<File>> saved_files;
+    FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
     {
-    public:
-        FilesystemTestArchiveDecoder();
-    protected:
-        bool is_recognized_internal(File &arc_file) const override;
-        void unpack_internal(
-            File &arc_file, FileSaver &file_saver) const override;
-    };
+        saved_file->io.seek(0);
+        saved_files.push_back(saved_file);
+    });
+    archive.unpack(file, file_saver, true);
+    return saved_files;
 }
 
 bool TestFileDecoder::is_recognized_internal(File &file) const
@@ -84,66 +87,7 @@ void TestArchiveDecoder::unpack_internal(
     }
 }
 
-FilesystemTestArchiveDecoder::FilesystemTestArchiveDecoder()
-{
-}
-
-bool FilesystemTestArchiveDecoder::is_recognized_internal(File &arc_file) const
-{
-    return true;
-}
-
-void FilesystemTestArchiveDecoder::unpack_internal(
-    File &arc_file, FileSaver &file_saver) const
-{
-    auto dir = boost::filesystem::path(arc_file.name).parent_path();
-    for (boost::filesystem::directory_iterator it(dir);
-        it != boost::filesystem::directory_iterator();
-        it++)
-    {
-        std::unique_ptr<File> output_file(new File);
-        output_file->name = it->path().string();
-        file_saver.save(std::move(output_file));
-    }
-}
-
-static std::vector<std::shared_ptr<File>> unpack(
-    File &file, ArchiveDecoder &archive)
-{
-    std::vector<std::shared_ptr<File>> saved_files;
-    FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
-    {
-        saved_file->io.seek(0);
-        saved_files.push_back(saved_file);
-    });
-    archive.unpack(file, file_saver, true);
-    return saved_files;
-}
-
-TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
-{
-    TestArchiveDecoder test_archive_decoder;
-    File dummy_file;
-    dummy_file.name = "test.archive";
-    dummy_file.io.write("deeply/nested/file.txt"_b);
-    dummy_file.io.write_u8(0);
-    dummy_file.io.write_u32_le(3);
-    dummy_file.io.write("abc"_b);
-
-    std::vector<std::shared_ptr<File>> saved_files;
-    FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
-    {
-        saved_file->io.seek(0);
-        saved_files.push_back(saved_file);
-    });
-    test_archive_decoder.unpack(dummy_file, file_saver, true);
-
-    REQUIRE(saved_files.size() == 1);
-    REQUIRE(path(saved_files[0]->name) == path("deeply/nested/file.txt"));
-    REQUIRE(saved_files[0]->io.read_to_eof() == "abc"_b);
-}
-
-TEST_CASE("Simple archive with nested decoders unpacks correctly", "[fmt_core]")
+TEST_CASE("Nested files unpack correctly", "[fmt_core]")
 {
     TestArchiveDecoder test_archive_decoder;
     File dummy_file;
@@ -157,6 +101,36 @@ TEST_CASE("Simple archive with nested decoders unpacks correctly", "[fmt_core]")
     REQUIRE(saved_files.size() == 1);
     REQUIRE(path(saved_files[0]->name) == path("deeply/nested/test.png"));
     REQUIRE(saved_files[0]->io.read_to_eof() == "image"_b);
+}
+
+TEST_CASE("Deeply nested archives unpack correctly", "[fmt_core]")
+{
+    TestArchiveDecoder test_archive_decoder;
+    File dummy_file;
+    dummy_file.name = "test.archive";
+    dummy_file.io.write("deeply/nested/test.archive"_b);
+    dummy_file.io.write_u8(0);
+    dummy_file.io.write_u32_le(0);
+    size_t pos = dummy_file.io.tell();
+    dummy_file.io.write("further/nested/file.txt"_b);
+    dummy_file.io.write_u8(0);
+    dummy_file.io.write_u32_le(0);
+    dummy_file.io.write("further/nested/test.image"_b);
+    dummy_file.io.write_u8(0);
+    dummy_file.io.write_u32_le(0);
+    size_t sub_archive_size = dummy_file.io.tell() - pos;
+    dummy_file.io.seek(pos - 4);
+    dummy_file.io.write_u32_le(sub_archive_size);
+
+    auto saved_files = unpack(dummy_file, test_archive_decoder);
+
+    REQUIRE(saved_files.size() == 2);
+    REQUIRE(path(saved_files[0]->name)
+        == path("deeply/nested/test.archive/further/nested/file.txt"));
+    REQUIRE(saved_files[0]->io.read_to_eof() == ""_b);
+    REQUIRE(path(saved_files[1]->name)
+        == path("deeply/nested/test.archive/further/nested/test.png"));
+    REQUIRE(saved_files[1]->io.read_to_eof() == "image"_b);
 }
 
 TEST_CASE("Decoder receives full path", "[fmt_core]")
@@ -196,51 +170,4 @@ TEST_CASE("Decoder receives full path", "[fmt_core]")
 
     REQUIRE(names_for_conversion.size() == 1);
     REQUIRE(names_for_conversion[0] == path("further/nested/test.image"));
-}
-
-TEST_CASE("Nested archives unpack correctly", "[fmt_core]")
-{
-    TestArchiveDecoder test_archive_decoder;
-    File dummy_file;
-    dummy_file.name = "test.archive";
-    dummy_file.io.write("deeply/nested/test.archive"_b);
-    dummy_file.io.write_u8(0);
-    dummy_file.io.write_u32_le(0);
-    size_t pos = dummy_file.io.tell();
-    dummy_file.io.write("further/nested/file.txt"_b);
-    dummy_file.io.write_u8(0);
-    dummy_file.io.write_u32_le(0);
-    dummy_file.io.write("further/nested/test.image"_b);
-    dummy_file.io.write_u8(0);
-    dummy_file.io.write_u32_le(0);
-    size_t sub_archive_size = dummy_file.io.tell() - pos;
-    dummy_file.io.seek(pos - 4);
-    dummy_file.io.write_u32_le(sub_archive_size);
-
-    auto saved_files = unpack(dummy_file, test_archive_decoder);
-
-    REQUIRE(saved_files.size() == 2);
-    REQUIRE(path(saved_files[0]->name)
-        == path("deeply/nested/test.archive/further/nested/file.txt"));
-    REQUIRE(saved_files[0]->io.read_to_eof() == ""_b);
-    REQUIRE(path(saved_files[1]->name)
-        == path("deeply/nested/test.archive/further/nested/test.png"));
-    REQUIRE(saved_files[1]->io.read_to_eof() == "image"_b);
-}
-
-TEST_CASE("Files get correct location", "[fmt_core]")
-{
-    FilesystemTestArchiveDecoder test_archive_decoder;
-    File dummy_file("./tests/fmt/abstract_decoder_test.cc", io::FileMode::Read);
-
-    auto saved_files = unpack(dummy_file, test_archive_decoder);
-    REQUIRE(saved_files.size() > 1);
-
-    bool correct = false;
-    for (auto &file : saved_files)
-    {
-        if (path(file->name) == path("./tests/fmt/abstract_decoder_test.cc"))
-            correct = true;
-    }
-    REQUIRE(correct);
 }

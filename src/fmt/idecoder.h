@@ -28,18 +28,15 @@ namespace fmt {
             const std::string &current_file_name);
     };
 
-    class AbstractDecoder
+    class IDecoder
     {
     public:
-        virtual ~AbstractDecoder();
-        bool is_recognized(File &) const;
+        virtual ~IDecoder();
+        virtual bool is_recognized(File &) const = 0;
         virtual void register_cli_options(ArgParser &) const = 0;
         virtual void parse_cli_options(const ArgParser &) = 0;
         virtual FileNamingStrategy get_file_naming_strategy() const = 0;
         virtual void unpack(File &, FileSaver &, bool) const = 0;
-
-    protected:
-        virtual bool is_recognized_internal(File &) const = 0;
     };
 
 } }

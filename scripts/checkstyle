@@ -37,7 +37,7 @@ grep 'struct\|class' **/*.{cc,h} \
     | grep -v 'bit_reader.*class Reader' \
     | grep -v 'archive_decoder.*class ArchiveDecoder' \
     | grep -v 'file_decoder.*class FileDecoder' \
-    | grep -v 'abstract_decoder.*class AbstractDecoder' \
+    | grep -v 'idecoder.*class IDecoder' \
     | grep -v 'fmt/entis.*class \(SoundDecoderImpl\|Decoder\)' \
     | grep -v 'fmt/glib.*class Plugin' \
     | grep -v ' final'

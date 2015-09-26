@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include <map>
-#include "fmt/abstract_decoder.h"
+#include "fmt/idecoder.h"
 #include "fmt/registry.h"
 #include "log.h"
 #include "util/format.h"
@@ -40,12 +40,10 @@ private:
     void print_cli_help() const;
     void parse_cli_options();
 
-    std::unique_ptr<fmt::AbstractDecoder> guess_decoder(File &file) const;
+    std::unique_ptr<fmt::IDecoder> guess_decoder(File &file) const;
     bool guess_decoder_and_unpack(File &file, const std::string &base_name);
     void unpack(
-        fmt::AbstractDecoder &decoder,
-        File &file,
-        const std::string &base_name) const;
+        fmt::IDecoder &decoder, File &file, const std::string &base_name) const;
 
     fmt::Registry &registry;
     const std::vector<std::string> arguments;
@@ -230,9 +228,7 @@ bool ArcUnpacker::Priv::run()
 }
 
 void ArcUnpacker::Priv::unpack(
-    fmt::AbstractDecoder &decoder,
-    File &file,
-    const std::string &base_name) const
+    fmt::IDecoder &decoder, File &file, const std::string &base_name) const
 {
     FileSaverHdd file_saver(options.output_dir, options.overwrite);
     FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> saved_file)
@@ -252,10 +248,10 @@ void ArcUnpacker::Priv::unpack(
     decoder.unpack(file, file_saver_proxy, options.recurse);
 }
 
-std::unique_ptr<fmt::AbstractDecoder> ArcUnpacker::Priv::guess_decoder(
+std::unique_ptr<fmt::IDecoder> ArcUnpacker::Priv::guess_decoder(
     File &file) const
 {
-    std::map<std::string, std::unique_ptr<fmt::AbstractDecoder>> decoders;
+    std::map<std::string, std::unique_ptr<fmt::IDecoder>> decoders;
 
     for (auto &name : registry.get_names())
     {

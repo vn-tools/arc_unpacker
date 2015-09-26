@@ -1,4 +1,4 @@
-#include "fmt/abstract_decoder.h"
+#include "fmt/idecoder.h"
 #include <boost/filesystem/path.hpp>
 
 using namespace au;
@@ -31,19 +31,6 @@ std::string FileNameDecorator::decorate(
     }
 }
 
-bool AbstractDecoder::is_recognized(File &file) const
-{
-    try
-    {
-        file.io.seek(0);
-        return is_recognized_internal(file);
-    }
-    catch (...)
-    {
-        return false;
-    }
-}
-
-AbstractDecoder::~AbstractDecoder()
+IDecoder::~IDecoder()
 {
 }
