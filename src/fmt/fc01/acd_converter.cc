@@ -1,5 +1,5 @@
 #include "fmt/fc01/acd_converter.h"
-#include "fmt/fc01/custom_lzss.h"
+#include "fmt/fc01/common/custom_lzss.h"
 #include "err.h"
 #include "io/bit_reader.h"
 #include "util/image.h"
@@ -64,7 +64,7 @@ std::unique_ptr<File> AcdConverter::decode_internal(File &file) const
 
     file.io.seek(data_offset);
     auto pixel_data = file.io.read(size_comp);
-    pixel_data = custom_lzss_decompress(pixel_data, size_orig);
+    pixel_data = common::custom_lzss_decompress(pixel_data, size_orig);
     pixel_data = do_decode(pixel_data, width * height);
 
     pix::Grid pixels(width, height, pixel_data, pix::Format::Gray8);

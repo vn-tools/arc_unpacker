@@ -6,6 +6,7 @@
 namespace au {
 namespace fmt {
 namespace fc01 {
+namespace common {
 
     class MrgDecryptor final
     {
@@ -18,4 +19,4 @@ namespace fc01 {
         std::unique_ptr<Priv> p;
     };
 
-} } }
+} } } }

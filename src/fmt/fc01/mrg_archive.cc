@@ -1,9 +1,10 @@
 #include "fmt/fc01/mrg_archive.h"
 #include "err.h"
 #include "fmt/fc01/acd_converter.h"
-#include "fmt/fc01/custom_lzss.h"
+#include "fmt/fc01/common/custom_lzss.h"
+#include "fmt/fc01/common/mrg_decryptor.h"
+#include "fmt/fc01/common/util.h"
 #include "fmt/fc01/mcg_converter.h"
-#include "fmt/fc01/mrg_decryptor.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
@@ -26,22 +27,16 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static u8 rol8(u8 x, size_t n)
-{
-    n &= 7;
-    return (x << n) | (x >> (8 - n));
-}
-
 static u8 guess_key(const bstr &table_data, size_t file_size)
 {
-    u8 tmp = rol8(table_data.get<u8>()[table_data.size() - 1], 1);
+    u8 tmp = common::rol8(table_data.get<u8>()[table_data.size() - 1], 1);
     u8 key = tmp ^ (file_size >> 24);
     u32 pos = 1;
     u32 last_offset = tmp ^ key;
     for (auto i = table_data.size() - 2; i >= table_data.size() - 4; --i)
     {
         key -= ++pos;
-        tmp = rol8(table_data.get<u8>()[i], 1);
+        tmp = common::rol8(table_data.get<u8>()[i], 1);
         last_offset = (last_offset << 8) | (tmp ^ key);
     }
     if (last_offset != file_size)
@@ -61,7 +56,7 @@ static Table read_table(io::IO &arc_io)
     auto key = guess_key(table_data, arc_io.size());
     for (auto i : util::range(table_data.size()))
     {
-        table_data[i] = rol8(table_data[i], 1) ^ key;
+        table_data[i] = common::rol8(table_data[i], 1) ^ key;
         key += table_data.size() - i;
     }
 
@@ -97,11 +92,11 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     {
         if (entry.filter >= 2)
         {
-            MrgDecryptor decryptor(data);
+            common::MrgDecryptor decryptor(data);
             data = decryptor.decrypt(0);
         }
         if (entry.filter < 3)
-            data = custom_lzss_decompress(data, entry.size_orig);
+            data = common::custom_lzss_decompress(data, entry.size_orig);
     }
     file->io.write(data);
     file->name = entry.name;

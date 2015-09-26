@@ -1,4 +1,4 @@
-#include "fmt/fc01/custom_lzss.h"
+#include "fmt/fc01/common/custom_lzss.h"
 #include "err.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
@@ -8,15 +8,15 @@
 // - EOF is okay
 
 using namespace au;
-using namespace au::fmt;
+using namespace au::fmt::fc01;
 
-bstr fc01::custom_lzss_decompress(const bstr &input, size_t output_size)
+bstr common::custom_lzss_decompress(const bstr &input, size_t output_size)
 {
     io::BufferedIO io(input);
-    return fc01::custom_lzss_decompress(io, output_size);
+    return common::custom_lzss_decompress(io, output_size);
 }
 
-bstr fc01::custom_lzss_decompress(io::IO &input_io, size_t output_size)
+bstr common::custom_lzss_decompress(io::IO &input_io, size_t output_size)
 {
     const size_t dict_size = 0x1000;
     size_t dict_pos = 0xFEE;

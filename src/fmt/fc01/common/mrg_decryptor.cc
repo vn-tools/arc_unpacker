@@ -1,10 +1,11 @@
-#include "fmt/fc01/mrg_decryptor.h"
+#include "fmt/fc01/common/mrg_decryptor.h"
 #include "err.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::fc01;
+using namespace au::fmt::fc01::common;
 
 static u16 get_mask(u16 d)
 {
