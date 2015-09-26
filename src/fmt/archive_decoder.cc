@@ -1,5 +1,6 @@
 #include "fmt/archive_decoder.h"
 #include "err.h"
+#include "fmt/naming_strategies.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -27,11 +28,8 @@ static bool pass_through_decoders(
             [original_file, &recognition_proxy, &decoder]
             (std::shared_ptr<File> converted_file)
         {
-            converted_file->name =
-                FileNameDecorator::decorate(
-                    decoder->get_file_naming_strategy(),
-                    original_file->name,
-                    converted_file->name);
+            converted_file->name = decoder->naming_strategy()->decorate(
+                original_file->name, converted_file->name);
             recognition_proxy.save(converted_file);
         });
 
@@ -62,9 +60,9 @@ ArchiveDecoder::~ArchiveDecoder()
 {
 }
 
-FileNamingStrategy ArchiveDecoder::get_file_naming_strategy() const
+std::unique_ptr<INamingStrategy> ArchiveDecoder::naming_strategy() const
 {
-    return FileNamingStrategy::Child;
+    return std::unique_ptr<INamingStrategy>(new ChildNamingStrategy);
 }
 
 void ArchiveDecoder::register_cli_options(ArgParser &arg_parser) const

@@ -3,6 +3,7 @@
 #include <boost/filesystem.hpp>
 #include <map>
 #include "fmt/idecoder.h"
+#include "fmt/naming_strategies.h"
 #include "fmt/registry.h"
 #include "log.h"
 #include "util/format.h"
@@ -233,11 +234,8 @@ void ArcUnpacker::Priv::unpack(
     FileSaverHdd file_saver(options.output_dir, options.overwrite);
     FileSaverCallback file_saver_proxy([&](std::shared_ptr<File> saved_file)
     {
-        saved_file->name =
-            fmt::FileNameDecorator::decorate(
-                decoder.get_file_naming_strategy(),
-                base_name,
-                saved_file->name);
+        saved_file->name = decoder.naming_strategy()->decorate(
+            base_name, saved_file->name);
         file_saver.save(saved_file);
     });
 

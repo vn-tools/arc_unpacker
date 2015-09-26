@@ -29,6 +29,7 @@ grep 'struct\|class' **/*.{cc,h} \
     | grep -v '_struct' \
     | grep -v 'pngstruct' \
     | grep -v 'enum class' \
+    | grep -v 'class I[A-Z]' \
     | grep -v ';$' \
     | grep -v 'file_saver.*class FileSaver' \
     | grep -v 'io.*class IO' \
@@ -37,7 +38,6 @@ grep 'struct\|class' **/*.{cc,h} \
     | grep -v 'bit_reader.*class Reader' \
     | grep -v 'archive_decoder.*class ArchiveDecoder' \
     | grep -v 'file_decoder.*class FileDecoder' \
-    | grep -v 'idecoder.*class IDecoder' \
     | grep -v 'fmt/entis.*class \(SoundDecoderImpl\|Decoder\)' \
     | grep -v 'fmt/glib.*class Plugin' \
     | grep -v ' final'

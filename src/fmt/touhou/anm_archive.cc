@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <map>
 #include "err.h"
+#include "fmt/naming_strategies.h"
 #include "util/format.h"
 #include "util/image.h"
 #include "util/range.h"
@@ -189,9 +190,9 @@ static std::unique_ptr<File> read_texture(io::IO &file_io, Table &entries)
     return util::Image::from_pixels(pixels)->create_file(entries[0]->name);
 }
 
-FileNamingStrategy AnmArchive::get_file_naming_strategy() const
+std::unique_ptr<INamingStrategy> AnmArchive::naming_strategy() const
 {
-    return FileNamingStrategy::Root;
+    return std::unique_ptr<INamingStrategy>(new RootNamingStrategy);
 }
 
 bool AnmArchive::is_recognized_internal(File &arc_file) const

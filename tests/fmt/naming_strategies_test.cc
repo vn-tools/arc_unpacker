@@ -1,23 +1,24 @@
 #include <boost/filesystem/path.hpp>
-#include "fmt/idecoder.h"
+#include "fmt/naming_strategies.h"
 #include "test_support/catch.hh"
 
+using namespace au::fmt;
 using path = boost::filesystem::path;
 
 static path test(
-    const au::fmt::FileNamingStrategy &strategy,
+    const INamingStrategy &strategy,
     const std::string &parent_path,
     const std::string &child_path)
 {
-    return path(au::fmt::FileNameDecorator::decorate(
-        strategy, parent_path, child_path));
+    return path(strategy.decorate(parent_path, child_path));
 }
 
 TEST_CASE("File naming strategies", "[fmt_core]")
 {
-    auto root    = au::fmt::FileNamingStrategy::Root;
-    auto sibling = au::fmt::FileNamingStrategy::Sibling;
-    auto child   = au::fmt::FileNamingStrategy::Child;
+    RootNamingStrategy    root;
+    SiblingNamingStrategy sibling;
+    ChildNamingStrategy   child;
+
     REQUIRE(test(root,    "",           "file") == path("file"));
     REQUIRE(test(root,    "test",       "file") == path("file"));
     REQUIRE(test(root,    "test/",      "file") == path("file"));
