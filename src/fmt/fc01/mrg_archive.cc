@@ -4,6 +4,7 @@
 #include "fmt/fc01/common/custom_lzss.h"
 #include "fmt/fc01/common/mrg_decryptor.h"
 #include "fmt/fc01/common/util.h"
+#include "fmt/fc01/mca_archive.h"
 #include "fmt/fc01/mcg_converter.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
@@ -106,12 +107,14 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 struct MrgArchive::Priv final
 {
     AcdConverter acd_converter;
+    McaArchive mca_archive;
     McgConverter mcg_converter;
 };
 
 MrgArchive::MrgArchive() : p(new Priv)
 {
     add_transformer(&p->acd_converter);
+    add_transformer(&p->mca_archive);
     add_transformer(&p->mcg_converter);
 }
 

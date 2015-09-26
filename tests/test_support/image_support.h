@@ -15,4 +15,12 @@ namespace tests {
     void compare_images(
         const util::Image &expected_image, const util::Image &actual_image);
 
+    void compare_images(
+        const std::vector<std::shared_ptr<util::Image>> &expected_images,
+        const std::vector<std::shared_ptr<util::Image>> &actual_images);
+
+    void compare_images(
+        const std::vector<std::shared_ptr<util::Image>> &expected_images,
+        const std::vector<std::shared_ptr<File>> &actual_files);
+
 } }

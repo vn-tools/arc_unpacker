@@ -51,3 +51,26 @@ void tests::compare_images(
             compare_pixels(expected_pix, actual_pix, x, y, c);
     }
 }
+
+void tests::compare_images(
+    const std::vector<std::shared_ptr<util::Image>> &expected_images,
+    const std::vector<std::shared_ptr<util::Image>> &actual_images)
+{
+    REQUIRE(expected_images.size() == actual_images.size());
+    for (auto i : util::range(expected_images.size()))
+        tests::compare_images(*expected_images[i], *actual_images[i]);
+}
+
+void tests::compare_images(
+    const std::vector<std::shared_ptr<util::Image>> &expected_images,
+    const std::vector<std::shared_ptr<File>> &actual_files)
+{
+    std::vector<std::shared_ptr<util::Image>> actual_images(
+        actual_files.size());
+    for (auto i : util::range(actual_files.size()))
+    {
+        actual_images[i]
+            = util::Image::from_boxed(actual_files[i]->io);
+    }
+    tests::compare_images(expected_images, actual_images);
+}
