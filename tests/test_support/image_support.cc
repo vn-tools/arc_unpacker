@@ -65,7 +65,10 @@ void tests::compare_images(
 {
     REQUIRE(expected_images.size() == actual_images.size());
     for (auto i : util::range(expected_images.size()))
+    {
+        INFO(util::format("Images at index %d differ", i));
         tests::compare_images(*expected_images[i], *actual_images[i]);
+    }
 }
 
 void tests::compare_images(

@@ -1,7 +1,8 @@
 #include "test_support/file_support.h"
+#include "test_support/catch.hh"
+#include "util/format.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
-#include "test_support/catch.hh"
 
 using namespace au;
 
@@ -42,6 +43,7 @@ void tests::compare_files(
     {
         auto &expected_file = expected_files[i];
         auto &actual_file = actual_files[i];
+        INFO(util::format("Files at index %d differ", i));
         tests::compare_files(*expected_file, *actual_file, compare_file_names);
     }
 }
