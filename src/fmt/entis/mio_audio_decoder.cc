@@ -4,7 +4,7 @@
 #include "fmt/entis/audio/lossy.h"
 #include "fmt/entis/common/enums.h"
 #include "fmt/entis/common/sections.h"
-#include "util/audio.h"
+#include "util/file_from_samples.h"
 #include "util/format.h"
 
 using namespace au;
@@ -92,12 +92,12 @@ std::unique_ptr<File> MioAudioDecoder::decode_internal(File &file) const
     for (auto chunk : chunks)
         samples += impl->process_chunk(chunk);
 
-    auto audio = util::Audio::from_samples(
+    return util::file_from_samples(
         header.channel_count,
         header.bits_per_sample / 8,
         header.sample_rate,
-        samples);
-    return audio->create_file(file.name);
+        samples,
+        file.name);
 }
 
 static auto dummy = fmt::Registry::add<MioAudioDecoder>("entis/mio");
