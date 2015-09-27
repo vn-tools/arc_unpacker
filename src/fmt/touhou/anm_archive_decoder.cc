@@ -187,7 +187,7 @@ static std::unique_ptr<File> read_texture(io::IO &file_io, Table &entries)
     for (auto &entry : entries)
         write_pixels(file_io, *entry, pixels, width);
 
-    return util::Image::from_pixels(pixels)->create_file(entries[0]->name);
+    return util::grid_to_boxed(pixels, entries[0]->name);
 }
 
 std::unique_ptr<INamingStrategy> AnmArchiveDecoder::naming_strategy() const

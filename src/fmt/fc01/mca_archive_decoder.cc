@@ -110,9 +110,7 @@ void McaArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
         data = common::fix_stride(data, width, height, 24);
 
         pix::Grid pixels(width, height, data, pix::Format::BGR888);
-        saver.save(
-            util::Image::from_pixels(pixels)
-                ->create_file(util::format("%03d.png", i)));
+        saver.save(util::grid_to_boxed(pixels, util::format("%03d.png", i)));
     }
 }
 

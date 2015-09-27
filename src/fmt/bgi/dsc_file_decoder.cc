@@ -177,7 +177,7 @@ std::unique_ptr<File> DscFileDecoder::decode_internal(File &file) const
                 throw err::UnsupportedBitDepthError(bpp);
         }
         pix::Grid pixels(width, height, data_io.read_to_eof(), fmt);
-        return util::Image::from_pixels(pixels)->create_file(file.name);
+        return util::grid_to_boxed(pixels, file.name);
     }
 
     std::unique_ptr<File> output_file(new File);

@@ -56,7 +56,7 @@ static std::unique_ptr<File> read_image(
     }
 
     auto name = util::format("%04d", index);
-    return util::Image::from_pixels(pixels)->create_file(name);
+    return util::grid_to_boxed(pixels, name);
 }
 
 bool Pak1ImageArchiveDecoder::is_recognized_internal(File &arc_file) const

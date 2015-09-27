@@ -77,8 +77,8 @@ static std::unique_ptr<File> read_file(
 
         case COMPRESSION_SPB:
             file->io.write(data);
-            file = util::Image::from_pixels(
-                spb_image_decoder.decode(*file))->create_file(file->name);
+            file = util::grid_to_boxed(
+                spb_image_decoder.decode(*file), file->name);
             break;
     }
 

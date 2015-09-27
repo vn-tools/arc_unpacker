@@ -49,7 +49,7 @@ void EgrArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
             width, height, arc_file.io.read(width * height), palette);
 
         auto name = util::format("Image%03d.png", i++);
-        saver.save(util::Image::from_pixels(pixels)->create_file(name));
+        saver.save(util::grid_to_boxed(pixels, name));
     }
 }
 

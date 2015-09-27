@@ -33,10 +33,56 @@ struct Image::Priv final
 
     static std::unique_ptr<Image> from_png(io::IO &io);
     static std::unique_ptr<Image> from_jpeg(io::IO &io);
-    void save_png(io::IO &io);
 
     std::unique_ptr<pix::Grid> pixels;
 };
+
+std::unique_ptr<File> util::grid_to_boxed(
+    const pix::Grid &pixels, const std::string &name)
+{
+    std::unique_ptr<File> output_file(new File);
+    output_file->name = name;
+    output_file->change_extension("png");
+
+    png_structp png_ptr = png_create_write_struct(
+        PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+    if (!png_ptr)
+        throw std::logic_error("Failed to create PNG write structure");
+
+    png_infop info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr)
+        throw std::logic_error("Failed to create PNG info structure");
+
+    auto width = pixels.width();
+    auto height = pixels.height();
+    if (!width || !height)
+        throw err::BadDataSizeError();
+    const auto bpp = 4;
+    const auto color_type = PNG_COLOR_TYPE_RGBA;
+    int transformations = PNG_TRANSFORM_BGR;
+
+    png_set_IHDR(
+        png_ptr, info_ptr, width, height, 8, color_type,
+        PNG_INTERLACE_NONE,
+        PNG_COMPRESSION_TYPE_BASE,
+        PNG_FILTER_TYPE_BASE);
+
+    // 0 = no compression, 9 = max compression
+    // 1 produces good file size and is still fast.
+    png_set_compression_level(png_ptr, 1);
+
+    png_set_write_fn(png_ptr, &output_file->io, &png_write_data, &png_flush);
+    png_write_info(png_ptr, info_ptr);
+
+    std::unique_ptr<const u8*[]> rows(new const u8*[height]);
+    for (auto y : range(height))
+        rows.get()[y] = reinterpret_cast<const u8*>(&pixels.at(0, y));
+    png_set_rows(png_ptr, info_ptr, const_cast<u8**>(rows.get()));
+    png_write_png(png_ptr, info_ptr, transformations, nullptr);
+    png_destroy_write_struct(&png_ptr, &info_ptr);
+
+    return output_file;
+}
 
 Image::Priv::Priv()
 {
@@ -139,46 +185,6 @@ std::unique_ptr<Image> Image::Priv::from_jpeg(io::IO &io)
     return image;
 }
 
-void Image::Priv::save_png(io::IO &io)
-{
-    png_structp png_ptr = png_create_write_struct(
-        PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-    if (!png_ptr)
-        throw std::logic_error("Failed to create PNG write structure");
-
-    png_infop info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr)
-        throw std::logic_error("Failed to create PNG info structure");
-
-    auto width = pixels->width();
-    auto height = pixels->height();
-    if (!width || !height)
-        throw err::BadDataSizeError();
-    const auto bpp = 4;
-    const auto color_type = PNG_COLOR_TYPE_RGBA;
-    int transformations = PNG_TRANSFORM_BGR;
-
-    png_set_IHDR(
-        png_ptr, info_ptr, width, height, 8, color_type,
-        PNG_INTERLACE_NONE,
-        PNG_COMPRESSION_TYPE_BASE,
-        PNG_FILTER_TYPE_BASE);
-
-    // 0 = no compression, 9 = max compression
-    // 1 produces good file size and is still fast.
-    png_set_compression_level(png_ptr, 1);
-
-    png_set_write_fn(png_ptr, &io, &png_write_data, &png_flush);
-    png_write_info(png_ptr, info_ptr);
-
-    std::unique_ptr<png_bytep[]> rows(new png_bytep[height]);
-    for (auto y : range(height))
-        rows.get()[y] = reinterpret_cast<png_bytep>(&pixels->at(0, y));
-    png_set_rows(png_ptr, info_ptr, rows.get());
-    png_write_png(png_ptr, info_ptr, transformations, nullptr);
-    png_destroy_write_struct(&png_ptr, &info_ptr);
-}
-
 Image::Image() : p(new Priv())
 {
 }
@@ -220,15 +226,6 @@ std::unique_ptr<Image> Image::from_boxed(io::IO &io)
     }
 
     throw err::RecognitionError("Not a PNG nor a JPEG file");
-}
-
-std::unique_ptr<File> Image::create_file(const std::string &name) const
-{
-    std::unique_ptr<File> output_file(new File);
-    output_file->name = name;
-    output_file->change_extension("png");
-    p->save_png(output_file->io);
-    return output_file;
 }
 
 pix::Grid &Image::pixels()

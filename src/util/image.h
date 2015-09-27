@@ -8,6 +8,9 @@
 namespace au {
 namespace util {
 
+    std::unique_ptr<File> grid_to_boxed(
+        const pix::Grid &pixels, const std::string &name);
+
     class Image final
     {
     public:
@@ -16,8 +19,6 @@ namespace util {
         static std::unique_ptr<Image> from_boxed(const bstr &data);
         static std::unique_ptr<Image> from_boxed(io::IO &io);
         static std::unique_ptr<Image> from_pixels(const pix::Grid &pixels);
-
-        std::unique_ptr<File> create_file(const std::string &name) const;
 
         pix::Grid &pixels();
         const pix::Grid &pixels() const;
