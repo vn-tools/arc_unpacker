@@ -1,4 +1,5 @@
 #include "fmt/gs/pak_archive_decoder.h"
+#include "fmt/gs/gs_image_decoder.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"
@@ -60,6 +61,20 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     file->io.write_from_io(arc_io, entry.size);
     file->name = entry.name;
     return file;
+}
+
+struct PakArchiveDecoder::Priv final
+{
+    GsImageDecoder gs_image_decoder;
+};
+
+PakArchiveDecoder::PakArchiveDecoder() : p(new Priv)
+{
+    add_decoder(&p->gs_image_decoder);
+}
+
+PakArchiveDecoder::~PakArchiveDecoder()
+{
 }
 
 bool PakArchiveDecoder::is_recognized_internal(File &arc_file) const
