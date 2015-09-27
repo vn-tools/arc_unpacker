@@ -1,5 +1,6 @@
 #include "fmt/will/arc_archive_decoder.h"
 #include "err.h"
+#include "fmt/will/wipf_archive_decoder.h"
 #include "util/range.h"
 
 using namespace au;
@@ -97,6 +98,20 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 
     file->io.write(data);
     return file;
+}
+
+struct ArcArchiveDecoder::Priv final
+{
+    WipfArchiveDecoder wipf_archive_decoder;
+};
+
+ArcArchiveDecoder::ArcArchiveDecoder() : p(new Priv)
+{
+    add_decoder(&p->wipf_archive_decoder);
+}
+
+ArcArchiveDecoder::~ArcArchiveDecoder()
+{
 }
 
 bool ArcArchiveDecoder::is_recognized_internal(File &arc_file) const

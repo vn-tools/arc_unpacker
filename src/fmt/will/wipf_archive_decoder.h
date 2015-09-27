@@ -6,17 +6,12 @@ namespace au {
 namespace fmt {
 namespace will {
 
-    class ArcArchiveDecoder final : public ArchiveDecoder
+    class WipfArchiveDecoder final : public ArchiveDecoder
     {
-    public:
-        ArcArchiveDecoder();
-        ~ArcArchiveDecoder();
     protected:
         bool is_recognized_internal(File &) const override;
         void unpack_internal(File &, FileSaver &) const override;
-    private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
+        std::unique_ptr<INamingStrategy> naming_strategy() const override;
     };
 
 } } }
