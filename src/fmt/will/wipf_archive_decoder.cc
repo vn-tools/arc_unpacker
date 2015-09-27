@@ -1,4 +1,5 @@
 #include "fmt/will/wipf_archive_decoder.h"
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include "err.h"
 #include "fmt/naming_strategies.h"
@@ -90,6 +91,7 @@ bool WipfArchiveDecoder::is_recognized_internal(File &file) const
 void WipfArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
 {
     auto base_name = boost::filesystem::path(arc_file.name).filename().string();
+    boost::algorithm::replace_all(base_name, ".", "-");
     arc_file.io.skip(magic.size());
 
     Table table(arc_file.io.read_u16_le());
