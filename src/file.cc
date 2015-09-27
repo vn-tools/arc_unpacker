@@ -10,22 +10,21 @@ static void change_extension(
     boost::filesystem::path &path, const std::string &new_extension)
 {
     if (path.filename().empty()
-        || new_extension.empty()
+        || path.stem().empty()
         || path.filename() == "."
-        || path.filename() == ".."
-        || path.stem() == "")
+        || path.filename() == "..")
     {
         return;
     }
 
-    if (new_extension[0] == '.')
-    {
-        path.replace_extension(new_extension);
-    }
-    else
-    {
-        path.replace_extension("." + new_extension);
-    }
+    auto plain_path = path.string();
+    auto extension = new_extension;
+    auto index = plain_path.find_last_of('.');
+    while (extension[0] == '.')
+        extension.erase(0, 1);
+    if (!extension.empty() && extension[0] != '.')
+        extension = "." + extension;
+    path = plain_path.substr(0, index) + extension;
 }
 
 File::File(const boost::filesystem::path &path, const io::FileMode mode)

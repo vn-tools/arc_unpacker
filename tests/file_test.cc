@@ -59,3 +59,22 @@ TEST_CASE("Changing File's extension", "[core][file]")
     test_changing_extension("abc/def.",  "xyz",  "abc/def.xyz");
     test_changing_extension("abc/.def.", "xyz",  "abc/.def.xyz");
 }
+
+TEST_CASE("Stripping File's extension", "[core][file]")
+{
+    test_changing_extension("",          "",  "");
+    test_changing_extension(".",         "",  ".");
+    test_changing_extension("..",        "",  "..");
+    test_changing_extension("abc",       "",  "abc");
+    test_changing_extension("abc.de",    "",  "abc");
+    test_changing_extension("abc.de",    ".", "abc");
+    test_changing_extension("abc.",      "",  "abc");
+    test_changing_extension(".abc.",     "",  ".abc");
+    test_changing_extension("abc",       "",  "abc");
+    test_changing_extension("abc/",      "",  "abc/");
+    test_changing_extension("abc/.",     "",  "abc/.");
+    test_changing_extension("abc/..",    "",  "abc/..");
+    test_changing_extension("abc/def",   "",  "abc/def");
+    test_changing_extension("abc/def.",  "",  "abc/def");
+    test_changing_extension("abc/.def.", "",  "abc/.def");
+}
