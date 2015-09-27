@@ -65,7 +65,9 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 
 bool PakArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
-    return arc_file.io.read(magic.size()) == magic;
+    if (arc_file.io.read(magic.size()) != magic)
+        return false;
+    return read_table(arc_file.io).size() > 0;
 }
 
 void PakArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
