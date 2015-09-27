@@ -12,8 +12,8 @@ static void do_test(
     EriImageDecoder decoder;
     auto input_file = tests::file_from_path(input_path);
     auto expected_image = tests::image_from_path(expected_path);
-    auto actual_image = tests::image_from_file(*decoder.decode(*input_file));
-    tests::compare_images(*expected_image, *actual_image);
+    auto actual_image = decoder.decode(*input_file);
+    tests::compare_images(*expected_image, actual_image);
 }
 
 TEST_CASE("Entis ERI lossless Huffman 32-bit non-flipped images", "[fmt]")

@@ -13,6 +13,6 @@ TEST_CASE("RpgMaker XYZ images", "[fmt]")
         "tests/fmt/rpgmaker/files/xyz/浅瀬部屋a.xyz");
     auto expected_image = tests::image_from_path(
         "tests/fmt/rpgmaker/files/xyz/浅瀬部屋a-out.png");
-    auto actual_image = tests::image_from_file(*decoder.decode(*input_file));
-    tests::compare_images(*expected_image, *actual_image);
+    auto actual_image = decoder.decode(*input_file);
+    tests::compare_images(*expected_image, actual_image);
 }

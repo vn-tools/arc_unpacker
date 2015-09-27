@@ -1,6 +1,5 @@
 #include "fmt/libido/mnc_image_decoder.h"
 #include "err.h"
-#include "util/image.h"
 
 using namespace au;
 using namespace au::fmt::libido;
@@ -12,7 +11,7 @@ bool MncImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> MncImageDecoder::decode_internal(File &file) const
+pix::Grid MncImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
     auto offset_to_pixels = file.io.read_u32_le();
@@ -31,7 +30,7 @@ std::unique_ptr<File> MncImageDecoder::decode_internal(File &file) const
 
     pix::Grid pixels(width, height, data, pix::Format::BGR888);
     pixels.flip();
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pixels;
 }
 
 static auto dummy = fmt::Registry::add<MncImageDecoder>("libido/mnc");

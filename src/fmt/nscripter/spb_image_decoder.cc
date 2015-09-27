@@ -1,18 +1,16 @@
 #include "fmt/nscripter/spb_image_decoder.h"
 #include "io/bit_reader.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nscripter;
 
-static std::unique_ptr<pix::Grid> decode_pixels(
+static pix::Grid decode_pixels(
     size_t width, size_t height, io::BitReader &bit_reader)
 {
-    std::unique_ptr<pix::Grid> output(new pix::Grid(width, height));
-    for (auto y : util::range(height))
-    for (auto x : util::range(width))
-        output->at(x, y).a = 0xFF;
+    pix::Grid output(width, height);
+    for (auto &c : output)
+        c.a = 0xFF;
 
     bstr channel_data(width * height);
 
@@ -73,12 +71,12 @@ static std::unique_ptr<pix::Grid> decode_pixels(
             if (y & 1)
             {
                 for (auto x : util::range(width))
-                    output->at(width - 1 - x, y)[2 - rgb] = *p++;
+                    output.at(width - 1 - x, y)[2 - rgb] = *p++;
             }
             else
             {
                 for (auto x : util::range(width))
-                    output->at(x, y)[2 - rgb] = *p++;
+                    output.at(x, y)[2 - rgb] = *p++;
             }
         }
     }
@@ -99,14 +97,13 @@ bool SpbImageDecoder::is_recognized_internal(File &file) const
     return true;
 }
 
-std::unique_ptr<File> SpbImageDecoder::decode_internal(File &file) const
+pix::Grid SpbImageDecoder::decode_internal(File &file) const
 {
     u16 width = file.io.read_u16_be();
     u16 height = file.io.read_u16_be();
 
     io::BitReader bit_reader(file.io.read_to_eof());
-    auto pixels = decode_pixels(width, height, bit_reader);
-    return util::Image::from_pixels(*pixels)->create_file(file.name);
+    return decode_pixels(width, height, bit_reader);
 }
 
 static auto dummy = fmt::Registry::add<SpbImageDecoder>("nscripter/spb");

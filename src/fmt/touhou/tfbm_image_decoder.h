@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/file_decoder.h"
+#include "fmt/image_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace touhou {
 
-    class TfbmImageDecoder final : public FileDecoder
+    class TfbmImageDecoder final : public ImageDecoder
     {
     public:
         TfbmImageDecoder();
@@ -14,7 +14,7 @@ namespace touhou {
         void add_palette(const std::string &name, const bstr &palette_data);
     protected:
         bool is_recognized_internal(File &) const override;
-        std::unique_ptr<File> decode_internal(File &) const override;
+        pix::Grid decode_internal(File &) const override;
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

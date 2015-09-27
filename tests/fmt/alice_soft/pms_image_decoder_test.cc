@@ -12,8 +12,8 @@ static void do_test(
     PmsImageDecoder decoder;
     auto input_file = tests::file_from_path(input_path);
     auto expected_image = tests::image_from_path(expected_path);
-    auto actual_image = tests::image_from_file(*decoder.decode(*input_file));
-    tests::compare_images(*expected_image, *actual_image);
+    auto actual_image = decoder.decode(*input_file);
+    tests::compare_images(*expected_image, actual_image);
 }
 
 TEST_CASE("Alice Soft PMS 8-bit images", "[fmt]")

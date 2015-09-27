@@ -179,42 +179,49 @@ bstr PmsImageDecoder::decompress_16bit(
     return output;
 }
 
-std::unique_ptr<util::Image> PmsImageDecoder::decode_to_image(const bstr &data)
+bool PmsImageDecoder::is_recognized_internal(File &file) const
 {
-    io::BufferedIO input_io(data);
-    input_io.skip(2);
-    auto version = input_io.read_u16_le();
-    input_io.skip(2);
-    auto depth = input_io.read_u16_le();
-    input_io.skip(4 * 4);
-    auto width = input_io.read_u32_le();
-    auto height = input_io.read_u32_le();
-    auto data_offset = input_io.read_u32_le();
-    auto palette_offset = input_io.read_u32_le();
+    if (file.io.read(magic1.size()) == magic1)
+        return true;
+    file.io.seek(0);
+    return file.io.read(magic2.size()) == magic2;
+}
+
+pix::Grid PmsImageDecoder::decode_internal(File &file) const
+{
+    file.io.skip(2);
+    auto version = file.io.read_u16_le();
+    file.io.skip(2);
+    auto depth = file.io.read_u16_le();
+    file.io.skip(4 * 4);
+    auto width = file.io.read_u32_le();
+    auto height = file.io.read_u32_le();
+    auto data_offset = file.io.read_u32_le();
+    auto palette_offset = file.io.read_u32_le();
 
     std::unique_ptr<pix::Grid> pixels;
 
     if (depth == 8)
     {
-        input_io.seek(data_offset);
-        auto pixel_data = decompress_8bit(input_io, width, height);
-        input_io.seek(palette_offset);
+        file.io.seek(data_offset);
+        auto pixel_data = decompress_8bit(file.io, width, height);
+        file.io.seek(palette_offset);
         pix::Palette palette(
             256,
-            input_io,
+            file.io,
             version == 1 ? pix::Format::RGB888 : pix::Format::BGR888);
         pixels.reset(new pix::Grid(width, height, pixel_data, palette));
     }
     else if (depth == 16)
     {
-        input_io.seek(data_offset);
-        auto pixel_data = decompress_16bit(input_io, width, height);
+        file.io.seek(data_offset);
+        auto pixel_data = decompress_16bit(file.io, width, height);
         pixels.reset(new pix::Grid(
             width, height, pixel_data, pix::Format::BGR565));
         if (palette_offset)
         {
-            input_io.seek(palette_offset);
-            auto alpha = decompress_8bit(input_io, width, height);
+            file.io.seek(palette_offset);
+            auto alpha = decompress_8bit(file.io, width, height);
             pix::Grid alpha_channel(width, height, alpha, pix::Format::Gray8);
             for (auto y : util::range(height))
             for (auto x : util::range(width))
@@ -226,21 +233,7 @@ std::unique_ptr<util::Image> PmsImageDecoder::decode_to_image(const bstr &data)
         throw err::UnsupportedBitDepthError(depth);
     }
 
-    return util::Image::from_pixels(*pixels);
-}
-
-bool PmsImageDecoder::is_recognized_internal(File &file) const
-{
-    if (file.io.read(magic1.size()) == magic1)
-        return true;
-    file.io.seek(0);
-    return file.io.read(magic2.size()) == magic2;
-}
-
-std::unique_ptr<File> PmsImageDecoder::decode_internal(File &file) const
-{
-    auto image = decode_to_image(file.io.read_to_eof());
-    return image->create_file(file.name);
+    return *pixels;
 }
 
 static auto dummy = fmt::Registry::add<PmsImageDecoder>("alice/pms");

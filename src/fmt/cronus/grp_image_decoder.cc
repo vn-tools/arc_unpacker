@@ -2,7 +2,6 @@
 #include <boost/filesystem/path.hpp>
 #include "err.h"
 #include "fmt/cronus/common.h"
-#include "util/image.h"
 #include "util/pack/lzss.h"
 #include "util/plugin_mgr.hh"
 #include "util/range.h"
@@ -141,7 +140,7 @@ bool GrpImageDecoder::is_recognized_internal(File &file) const
     return false;
 }
 
-std::unique_ptr<File> GrpImageDecoder::decode_internal(File &file) const
+pix::Grid GrpImageDecoder::decode_internal(File &file) const
 {
     file.io.seek(p->header.input_offset);
     auto data = file.io.read_to_eof();
@@ -153,22 +152,22 @@ std::unique_ptr<File> GrpImageDecoder::decode_internal(File &file) const
         swap_decrypt(data, p->header.output_size);
     data = util::pack::lzss_decompress_bytewise(data, p->header.output_size);
 
-    std::unique_ptr<pix::Grid> pixels;
+    std::unique_ptr<pix::Grid> grid;
 
     if (p->header.bpp == 8)
     {
         pix::Palette palette(256, data, pix::Format::BGRA8888);
-        pixels.reset(new pix::Grid(
+        grid.reset(new pix::Grid(
             p->header.width, p->header.height, data.substr(1024), palette));
     }
     else if (p->header.bpp == 24)
     {
-        pixels.reset(new pix::Grid(
+        grid.reset(new pix::Grid(
             p->header.width, p->header.height, data, pix::Format::BGR888));
     }
     else if (p->header.bpp == 32)
     {
-        pixels.reset(new pix::Grid(
+        grid.reset(new pix::Grid(
             p->header.width, p->header.height, data, pix::Format::BGRA8888));
     }
     else
@@ -178,12 +177,12 @@ std::unique_ptr<File> GrpImageDecoder::decode_internal(File &file) const
     {
         for (auto x : util::range(p->header.width))
         for (auto y : util::range(p->header.height))
-            pixels->at(x, y).a = 0xFF;
+            grid->at(x, y).a = 0xFF;
     }
     if (p->header.flip)
-        pixels->flip();
+        grid->flip();
 
-    return util::Image::from_pixels(*pixels)->create_file(file.name);
+    return *grid;
 }
 
 static auto dummy = fmt::Registry::add<GrpImageDecoder>("cronus/grp");

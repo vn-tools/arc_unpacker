@@ -13,6 +13,6 @@ TEST_CASE("NScripter SPB-compressed stream", "[fmt]")
         "tests/fmt/nscripter/files/spb/grimoire_btn.bmp");
     auto expected_image = tests::image_from_path(
         "tests/fmt/nscripter/files/spb/grimoire_btn-out.png");
-    auto actual_image = tests::image_from_file(*decoder.decode(*input_file));
-    tests::compare_images(*expected_image, *actual_image);
+    auto actual_image = decoder.decode(*input_file);
+    tests::compare_images(*expected_image, actual_image);
 }

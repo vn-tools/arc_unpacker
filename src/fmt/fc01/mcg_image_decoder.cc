@@ -4,7 +4,6 @@
 #include "fmt/fc01/common/custom_lzss.h"
 #include "fmt/fc01/common/util.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -43,14 +42,14 @@ void McgImageDecoder::register_cli_options(ArgParser &arg_parser) const
     arg_parser.register_switch({"--mcg-key"})
         ->set_value_name("KEY")
         ->set_description("Decryption key (0..255, same for all files)");
-    FileDecoder::register_cli_options(arg_parser);
+    ImageDecoder::register_cli_options(arg_parser);
 }
 
 void McgImageDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("mcg-key"))
         set_key(boost::lexical_cast<int>(arg_parser.get_switch("mcg-key")));
-    FileDecoder::parse_cli_options(arg_parser);
+    ImageDecoder::parse_cli_options(arg_parser);
 }
 
 bool McgImageDecoder::is_recognized_internal(File &file) const
@@ -64,7 +63,7 @@ void McgImageDecoder::set_key(u8 key)
     p->key_set = true;
 }
 
-std::unique_ptr<File> McgImageDecoder::decode_internal(File &file) const
+pix::Grid McgImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
     auto version_float = boost::lexical_cast<float>(file.io.read(4).str());
@@ -96,8 +95,7 @@ std::unique_ptr<File> McgImageDecoder::decode_internal(File &file) const
     if (depth != 24)
         throw err::UnsupportedBitDepthError(depth);
 
-    pix::Grid pixels(width, height, data, pix::Format::BGR888);
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pix::Grid(width, height, data, pix::Format::BGR888);
 }
 
 static auto dummy = fmt::Registry::add<McgImageDecoder>("fc01/mcg");

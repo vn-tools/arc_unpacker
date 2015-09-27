@@ -13,6 +13,6 @@ TEST_CASE("Libido MNC images", "[fmt]")
         "tests/fmt/libido/files/mnc/test-zlib.MNC");
     auto expected_image = tests::image_from_path(
         "tests/fmt/libido/files/mnc/test-out.png");
-    auto actual_image = tests::image_from_file(*decoder.decode(*input_file));
-    tests::compare_images(*expected_image, *actual_image);
+    auto actual_image = decoder.decode(*input_file);
+    tests::compare_images(*expected_image, actual_image);
 }

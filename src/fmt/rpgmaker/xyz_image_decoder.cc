@@ -1,6 +1,5 @@
 #include "fmt/rpgmaker/xyz_image_decoder.h"
 #include "io/buffered_io.h"
-#include "util/image.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
 
@@ -14,7 +13,7 @@ bool XyzImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> XyzImageDecoder::decode_internal(File &file) const
+pix::Grid XyzImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
@@ -28,8 +27,7 @@ std::unique_ptr<File> XyzImageDecoder::decode_internal(File &file) const
     auto pix_data = data_io.read_to_eof();
 
     pix::Palette palette(256, pal_data, pix::Format::RGB888);
-    pix::Grid pixels(width, height, pix_data, palette);
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pix::Grid(width, height, pix_data, palette);
 }
 
 static auto dummy = fmt::Registry::add<XyzImageDecoder>("rm/xyz");

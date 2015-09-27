@@ -1,7 +1,6 @@
 #include "fmt/kid/prt_image_decoder.h"
 #include "err.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -14,7 +13,7 @@ bool PrtImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> PrtImageDecoder::decode_internal(File &file) const
+pix::Grid PrtImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
     auto version = file.io.read_u16_le();
@@ -74,7 +73,7 @@ std::unique_ptr<File> PrtImageDecoder::decode_internal(File &file) const
             pixels.at(x, y).a = file.io.read_u8();
     }
 
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pixels;
 }
 
 static auto dummy = fmt::Registry::add<PrtImageDecoder>("kid/prt");

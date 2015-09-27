@@ -2,7 +2,6 @@
 #include "err.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
 
@@ -119,7 +118,7 @@ bool QntImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> QntImageDecoder::decode_internal(File &file) const
+pix::Grid QntImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
     Version version = static_cast<Version>(file.io.read_u32_le());
@@ -149,7 +148,7 @@ std::unique_ptr<File> QntImageDecoder::decode_internal(File &file) const
     apply_differences(pixels);
     apply_alpha(pixels, alpha_data);
 
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pixels;
 }
 
 static auto dummy = fmt::Registry::add<QntImageDecoder>("alice/qnt");

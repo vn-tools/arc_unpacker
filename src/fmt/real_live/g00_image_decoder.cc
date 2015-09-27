@@ -1,7 +1,6 @@
 #include "fmt/real_live/g00_image_decoder.h"
 #include "err.h"
 #include "io/buffered_io.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -60,7 +59,7 @@ static bstr decompress(
     return output;
 }
 
-static std::unique_ptr<File> decode_v0(File &file, size_t width, size_t height)
+static pix::Grid decode_v0(File &file, size_t width, size_t height)
 {
     size_t size_comp = file.io.read_u32_le() - 8;
     size_t size_orig = file.io.read_u32_le();
@@ -68,11 +67,10 @@ static std::unique_ptr<File> decode_v0(File &file, size_t width, size_t height)
     auto decompressed = decompress(
         file.io.read(size_comp), size_orig, 3, 1);
 
-    pix::Grid pixels(width, height, decompressed, pix::Format::BGR888);
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pix::Grid(width, height, decompressed, pix::Format::BGR888);
 }
 
-static std::unique_ptr<File> decode_v1(File &file, size_t width, size_t height)
+static pix::Grid decode_v1(File &file, size_t width, size_t height)
 {
     size_t size_comp = file.io.read_u32_le() - 8;
     size_t size_orig = file.io.read_u32_le();
@@ -85,11 +83,10 @@ static std::unique_ptr<File> decode_v1(File &file, size_t width, size_t height)
     auto pix_data = tmp_io.read_to_eof();
 
     pix::Palette palette(colors, pal_data, pix::Format::BGRA8888);
-    pix::Grid pixels(width, height, pix_data, palette);
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pix::Grid(width, height, pix_data, palette);
 }
 
-static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
+static pix::Grid decode_v2(File &file, size_t width, size_t height)
 {
     std::vector<std::unique_ptr<Region>> regions(file.io.read_u32_le());
     for (auto i : util::range(regions.size()))
@@ -161,7 +158,7 @@ static std::unique_ptr<File> decode_v2(File &file, size_t width, size_t height)
         }
     }
 
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pixels;
 }
 
 bool G00ImageDecoder::is_recognized_internal(File &file) const
@@ -169,7 +166,7 @@ bool G00ImageDecoder::is_recognized_internal(File &file) const
     return file.has_extension("g00");
 }
 
-std::unique_ptr<File> G00ImageDecoder::decode_internal(File &file) const
+pix::Grid G00ImageDecoder::decode_internal(File &file) const
 {
     u8 version = file.io.read_u8();
     u16 width = file.io.read_u16_le();
@@ -185,10 +182,9 @@ std::unique_ptr<File> G00ImageDecoder::decode_internal(File &file) const
 
         case 2:
             return decode_v2(file, width, height);
-
-        default:
-            throw err::UnsupportedVersionError(version);
     }
+
+    throw err::UnsupportedVersionError(version);
 }
 
 static auto dummy = fmt::Registry::add<G00ImageDecoder>("rl/g00");

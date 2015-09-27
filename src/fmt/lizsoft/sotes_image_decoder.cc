@@ -1,6 +1,5 @@
 #include "fmt/lizsoft/sotes_image_decoder.h"
 #include "err.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -46,7 +45,7 @@ bool SotesImageDecoder::is_recognized_internal(File &file) const
     return true;
 }
 
-std::unique_ptr<File> SotesImageDecoder::decode_internal(File &file) const
+pix::Grid SotesImageDecoder::decode_internal(File &file) const
 {
     if (file.io.size() < 1112)
         throw err::CorruptDataError("Not a SOTES image");
@@ -95,8 +94,7 @@ std::unique_ptr<File> SotesImageDecoder::decode_internal(File &file) const
     }
 
     pixels->flip();
-
-    return util::Image::from_pixels(*pixels)->create_file(file.name);
+    return *pixels;
 }
 
 static auto dummy = fmt::Registry::add<SotesImageDecoder>("lizsoft/sotes");

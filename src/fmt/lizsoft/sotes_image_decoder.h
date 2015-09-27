@@ -1,16 +1,16 @@
 #pragma once
 
-#include "fmt/file_decoder.h"
+#include "fmt/image_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace lizsoft {
 
-    class SotesImageDecoder final : public FileDecoder
+    class SotesImageDecoder final : public ImageDecoder
     {
     protected:
         bool is_recognized_internal(File &) const override;
-        std::unique_ptr<File> decode_internal(File &) const override;
+        pix::Grid decode_internal(File &) const override;
     };
 
 } } }

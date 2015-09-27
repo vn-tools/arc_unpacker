@@ -22,7 +22,7 @@ bool AjpImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> AjpImageDecoder::decode_internal(File &file) const
+pix::Grid AjpImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
     file.io.skip(4 * 2);
@@ -42,25 +42,21 @@ std::unique_ptr<File> AjpImageDecoder::decode_internal(File &file) const
     decrypt(mask_data);
 
     if (!mask_size)
-    {
-        std::unique_ptr<File> output_file(new File);
-        output_file->name = file.name;
-        output_file->io.write(jpeg_data);
-        output_file->guess_extension();
-        return output_file;
-    }
+        return util::Image::from_boxed(jpeg_data)->pixels();
 
     PmsImageDecoder pms_image_decoder;
-    auto mask_image = pms_image_decoder.decode_to_image(mask_data);
-    auto jpeg_image = util::Image::from_boxed(jpeg_data);
+    File mask_file;
+    mask_file.io.write(mask_data);
+    auto mask_pixels = pms_image_decoder.decode(mask_file);
+    auto jpeg_pixels = util::Image::from_boxed(jpeg_data)->pixels();
 
     for (auto y : util::range(height))
     for (auto x : util::range(width))
     {
-        jpeg_image->pixels().at(x, y).a = mask_image->pixels().at(x, y).r;
+        jpeg_pixels.at(x, y).a = mask_pixels.at(x, y).r;
     }
 
-    return jpeg_image->create_file(file.name);
+    return jpeg_pixels;
 }
 
 static auto dummy = fmt::Registry::add<AjpImageDecoder>("alice/ajp");

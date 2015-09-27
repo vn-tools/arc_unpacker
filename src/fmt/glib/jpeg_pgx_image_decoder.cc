@@ -2,7 +2,6 @@
 #include "fmt/glib/custom_lzss.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/range.h"
 
 // This is a bit different from plain PGX - namely, it involves two LZSS passes.
@@ -45,7 +44,7 @@ bool JpegPgxImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> JpegPgxImageDecoder::decode_internal(File &file) const
+pix::Grid JpegPgxImageDecoder::decode_internal(File &file) const
 {
     auto pgx_data = extract_pgx_stream(file.io.read_to_eof());
     io::BufferedIO pgx_io(pgx_data);
@@ -74,11 +73,10 @@ std::unique_ptr<File> JpegPgxImageDecoder::decode_internal(File &file) const
 
     pix::Grid pixels(width, height, target, pix::Format::BGRA8888);
     if (!transparent)
-        for (auto y : util::range(height))
-            for (auto x : util::range(width))
-                pixels.at(x, y).a = 0xFF;
+        for (auto &c : pixels)
+            c.a = 0xFF;
 
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pixels;
 }
 
 static auto dummy = fmt::Registry::add<JpegPgxImageDecoder>("glib/jpeg-pgx");

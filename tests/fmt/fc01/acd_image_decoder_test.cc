@@ -13,6 +13,6 @@ TEST_CASE("FC01 ACD monochrome images", "[fmt]")
         "tests/fmt/fc01/files/acd/CSD02_35.ACD");
     auto expected_image = tests::image_from_path(
         "tests/fmt/fc01/files/acd/CSD02_35-out.png");
-    auto actual_image = tests::image_from_file(*decoder.decode(*input_file));
-    tests::compare_images(*expected_image, *actual_image);
+    auto actual_image = decoder.decode(*input_file);
+    tests::compare_images(*expected_image, actual_image);
 }

@@ -3,7 +3,6 @@
 #include "err.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -73,7 +72,7 @@ bool RctImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> RctImageDecoder::decode_internal(File &file) const
+pix::Grid RctImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
@@ -116,7 +115,7 @@ std::unique_ptr<File> RctImageDecoder::decode_internal(File &file) const
         }
     }
 
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pixels;
 }
 
 static auto dummy = fmt::Registry::add<RctImageDecoder>("majiro/rct");

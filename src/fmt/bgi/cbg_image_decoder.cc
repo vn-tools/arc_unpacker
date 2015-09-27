@@ -2,7 +2,6 @@
 #include "err.h"
 #include "fmt/bgi/cbg/cbg1_decoder.h"
 #include "fmt/bgi/cbg/cbg2_decoder.h"
-#include "util/image.h"
 
 using namespace au;
 using namespace au::fmt::bgi;
@@ -35,7 +34,7 @@ bool CbgImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> CbgImageDecoder::decode_internal(File &file) const
+pix::Grid CbgImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
@@ -43,14 +42,12 @@ std::unique_ptr<File> CbgImageDecoder::decode_internal(File &file) const
     if (version == Version::Version1)
     {
         cbg::Cbg1Decoder decoder;
-        auto pixels = decoder.decode(file.io);
-        return util::Image::from_pixels(*pixels)->create_file(file.name);
+        return *decoder.decode(file.io);
     }
     else if (version == Version::Version2)
     {
         cbg::Cbg2Decoder decoder;
-        auto pixels = decoder.decode(file.io);
-        return util::Image::from_pixels(*pixels)->create_file(file.name);
+        return *decoder.decode(file.io);
     }
 
     throw err::UnsupportedVersionError(static_cast<int>(version));

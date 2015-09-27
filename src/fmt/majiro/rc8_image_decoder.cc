@@ -3,7 +3,6 @@
 #include "err.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -66,7 +65,7 @@ bool Rc8ImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> Rc8ImageDecoder::decode_internal(File &file) const
+pix::Grid Rc8ImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
@@ -84,8 +83,7 @@ std::unique_ptr<File> Rc8ImageDecoder::decode_internal(File &file) const
     pix::Palette palette(256, file.io, pix::Format::BGR888);
     auto data_comp = file.io.read_to_eof();
     auto data_orig = uncompress(data_comp, width, height);
-    pix::Grid pixels(width, height, data_orig, palette);
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pix::Grid(width, height, data_orig, palette);
 }
 
 static auto dummy = fmt::Registry::add<Rc8ImageDecoder>("majiro/rc8");

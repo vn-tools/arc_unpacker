@@ -7,7 +7,6 @@
 #include "fmt/entis/common/sections.h"
 #include "fmt/entis/image/lossless.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -83,7 +82,7 @@ static bstr decode_pixel_data(
     return decode_lossless_pixel_data(header, *decoder);
 }
 
-std::unique_ptr<File> EriImageDecoder::decode_internal(File &file) const
+pix::Grid EriImageDecoder::decode_internal(File &file) const
 {
     file.io.seek(0x40);
 
@@ -128,7 +127,7 @@ std::unique_ptr<File> EriImageDecoder::decode_internal(File &file) const
                 pixels.at(x, y + i * header.height) = subimage_pixels.at(x, y);
     }
 
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pixels;
 }
 
 static auto dummy = fmt::Registry::add<EriImageDecoder>("entis/eri");

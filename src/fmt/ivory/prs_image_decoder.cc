@@ -1,6 +1,5 @@
 #include "fmt/ivory/prs_image_decoder.h"
 #include "err.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -102,7 +101,7 @@ bool PrsImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> PrsImageDecoder::decode_internal(File &file) const
+pix::Grid PrsImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
@@ -122,8 +121,7 @@ std::unique_ptr<File> PrsImageDecoder::decode_internal(File &file) const
         for (auto i : util::range(3, target.size()))
             target[i] += target[i - 3];
 
-    pix::Grid pixels(width, height, target, pix::Format::BGR888);
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pix::Grid(width, height, target, pix::Format::BGR888);
 }
 
 static auto dummy = fmt::Registry::add<PrsImageDecoder>("ivory/prs");

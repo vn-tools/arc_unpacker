@@ -13,6 +13,6 @@ TEST_CASE("MinatoSoft FIL mask images", "[fmt]")
         "tests/fmt/minato_soft/files/fil/Rule07-zlib.fil");
     auto expected_file = tests::image_from_path(
         "tests/fmt/minato_soft/files/fil/Rule07-out.png");
-    auto actual_file = tests::image_from_file(*decoder.decode(*input_file));
-    tests::compare_images(*expected_file, *actual_file);
+    auto actual_file = decoder.decode(*input_file);
+    tests::compare_images(*expected_file, actual_file);
 }

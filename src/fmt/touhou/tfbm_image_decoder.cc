@@ -3,7 +3,6 @@
 #include "err.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
 
@@ -52,7 +51,7 @@ bool TfbmImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> TfbmImageDecoder::decode_internal(File &file) const
+pix::Grid TfbmImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
     auto bit_depth = file.io.read_u8();
@@ -105,7 +104,7 @@ std::unique_ptr<File> TfbmImageDecoder::decode_internal(File &file) const
             *pixels_ptr++ = pixel;
     }
 
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pixels;
 }
 
 static auto dummy = fmt::Registry::add<TfbmImageDecoder>("th/tfbm");

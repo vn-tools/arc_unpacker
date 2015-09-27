@@ -2,7 +2,6 @@
 #include "err.h"
 #include "fmt/fc01/common/custom_lzss.h"
 #include "io/bit_reader.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -53,7 +52,7 @@ static bstr do_decode(const bstr &input, size_t canvas_size)
     return output;
 }
 
-std::unique_ptr<File> AcdImageDecoder::decode_internal(File &file) const
+pix::Grid AcdImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
     auto data_offset = file.io.read_u32_le();
@@ -67,8 +66,7 @@ std::unique_ptr<File> AcdImageDecoder::decode_internal(File &file) const
     pixel_data = common::custom_lzss_decompress(pixel_data, size_orig);
     pixel_data = do_decode(pixel_data, width * height);
 
-    pix::Grid pixels(width, height, pixel_data, pix::Format::Gray8);
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pix::Grid(width, height, pixel_data, pix::Format::Gray8);
 }
 
 static auto dummy = fmt::Registry::add<AcdImageDecoder>("fc01/acd");

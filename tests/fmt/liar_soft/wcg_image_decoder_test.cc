@@ -13,6 +13,6 @@ TEST_CASE("LiarSoft WCG images", "[fmt]")
         "tests/fmt/liar_soft/files/wcg/0003.wcg");
     auto expected_image = tests::image_from_path(
         "tests/fmt/liar_soft/files/wcg/0003-out.png");
-    auto actual_image = tests::image_from_file(*decoder.decode(*input_file));
-    tests::compare_images(*expected_image, *actual_image);
+    auto actual_image = decoder.decode(*input_file);
+    tests::compare_images(*expected_image, actual_image);
 }

@@ -13,7 +13,7 @@ bool DpngImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> DpngImageDecoder::decode_internal(File &file) const
+pix::Grid DpngImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
@@ -41,7 +41,7 @@ std::unique_ptr<File> DpngImageDecoder::decode_internal(File &file) const
             pixels.at(region_x + x, region_y + y) = region->pixels().at(x, y);
     }
 
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pixels;
 }
 
 static auto dummy = fmt::Registry::add<DpngImageDecoder>("qlie/dpng");

@@ -1,7 +1,6 @@
 #include "fmt/kirikiri/tlg/tlg6_decoder.h"
 #include "err.h"
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -546,7 +545,7 @@ static void read_pixels(io::IO &io, pix::Grid &pixels, Header &header)
     }
 }
 
-std::unique_ptr<File> Tlg6Decoder::decode(File &file)
+pix::Grid Tlg6Decoder::decode(File &file)
 {
     init_table();
 
@@ -566,5 +565,5 @@ std::unique_ptr<File> Tlg6Decoder::decode(File &file)
 
     pix::Grid pixels(header.image_width, header.image_height);
     read_pixels(file.io, pixels, header);
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pixels;
 }

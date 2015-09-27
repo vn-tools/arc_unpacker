@@ -4,7 +4,6 @@
 #include "err.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -42,7 +41,7 @@ bool Pak2ImageDecoder::is_recognized_internal(File &file) const
     return file.has_extension("cv2");
 }
 
-std::unique_ptr<File> Pak2ImageDecoder::decode_internal(File &file) const
+pix::Grid Pak2ImageDecoder::decode_internal(File &file) const
 {
     auto bit_depth = file.io.read_u8();
     auto width = file.io.read_u32_le();
@@ -89,7 +88,7 @@ std::unique_ptr<File> Pak2ImageDecoder::decode_internal(File &file) const
             pixels.at(x, y) = pixel;
     }
 
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pixels;
 }
 
 static auto dummy = fmt::Registry::add<Pak2ImageDecoder>("th/pak2-gfx");

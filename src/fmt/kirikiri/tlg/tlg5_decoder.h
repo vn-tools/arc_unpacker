@@ -1,6 +1,7 @@
 #pragma once
 
 #include "file.h"
+#include "pix/grid.h"
 
 namespace au {
 namespace fmt {
@@ -10,7 +11,7 @@ namespace tlg {
     class Tlg5Decoder final
     {
     public:
-        std::unique_ptr<File> decode(File &file);
+        pix::Grid decode(File &file);
     };
 
 } } } }

@@ -1,7 +1,6 @@
 #include "fmt/alice_soft/vsp_image_decoder.h"
 #include "err.h"
 #include "fmt/alice_soft/pms_image_decoder.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -144,7 +143,7 @@ static bstr decompress_vsp(io::IO &input_io, size_t width, size_t height)
     return output;
 }
 
-std::unique_ptr<File> VspImageDecoder::decode_internal(File &file) const
+pix::Grid VspImageDecoder::decode_internal(File &file) const
 {
     auto x = file.io.read_u16_le();
     auto y = file.io.read_u16_le();
@@ -184,7 +183,7 @@ std::unique_ptr<File> VspImageDecoder::decode_internal(File &file) const
         pixels.reset(new pix::Grid(width, height, pixel_data, palette));
     }
 
-    return util::Image::from_pixels(*pixels)->create_file(file.name);
+    return *pixels;
 }
 
 static auto dummy = fmt::Registry::add<VspImageDecoder>("alice/vsp");

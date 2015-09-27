@@ -1,6 +1,5 @@
 #include "fmt/fvp/nvsg_image_decoder.h"
 #include "err.h"
-#include "util/image.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
 
@@ -18,7 +17,7 @@ bool NvsgImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(nvsg_magic.size()) == nvsg_magic;
 }
 
-std::unique_ptr<File> NvsgImageDecoder::decode_internal(File &file) const
+pix::Grid NvsgImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(hzc1_magic.size());
     size_t uncompressed_size = file.io.read_u32_le();
@@ -65,8 +64,7 @@ std::unique_ptr<File> NvsgImageDecoder::decode_internal(File &file) const
             throw err::NotSupportedError("Unexpected pixel format");
     }
 
-    pix::Grid pixels(width, height, data, pixel_format);
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pix::Grid(width, height, data, pixel_format);
 }
 
 static auto dummy = fmt::Registry::add<NvsgImageDecoder>("fvp/nvsg");

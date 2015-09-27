@@ -3,7 +3,6 @@
 #include "io/buffered_io.h"
 #include "util/endian.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -279,7 +278,7 @@ bool DdsImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> DdsImageDecoder::decode_internal(File &file) const
+pix::Grid DdsImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
@@ -318,7 +317,7 @@ std::unique_ptr<File> DdsImageDecoder::decode_internal(File &file) const
     if (pixels == nullptr)
         throw err::NotSupportedError("Unsupported pixel format");
 
-    return util::Image::from_pixels(*pixels)->create_file(file.name);
+    return *pixels;
 }
 
 static auto dummy = fmt::Registry::add<DdsImageDecoder>("ms/dds");

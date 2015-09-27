@@ -2,7 +2,6 @@
 #include <algorithm>
 #include "err.h"
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -102,7 +101,7 @@ static void read_pixels(io::IO &io, pix::Grid &pixels, Header &header)
     }
 }
 
-std::unique_ptr<File> Tlg5Decoder::decode(File &file)
+pix::Grid Tlg5Decoder::decode(File &file)
 {
     Header header;
     header.channel_count = file.io.read_u8();
@@ -114,5 +113,5 @@ std::unique_ptr<File> Tlg5Decoder::decode(File &file)
 
     pix::Grid pixels(header.image_width, header.image_height);
     read_pixels(file.io, pixels, header);
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pixels;
 }

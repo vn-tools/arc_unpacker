@@ -12,7 +12,7 @@ static const bstr magic_tlg_5 = "TLG5.0\x00raw\x1A"_b;
 static const bstr magic_tlg_6 = "TLG6.0\x00raw\x1A"_b;
 
 static int guess_version(io::IO &io);
-static std::unique_ptr<File> decode_proxy(int version, File &file);
+static pix::Grid decode_proxy(int version, File &file);
 
 static std::string extract_string(std::string &container)
 {
@@ -29,7 +29,7 @@ static std::string extract_string(std::string &container)
     return str;
 }
 
-static std::unique_ptr<File> decode_tlg_0(File &file)
+static pix::Grid decode_tlg_0(File &file)
 {
     size_t raw_data_size = file.io.read_u32_le();
     size_t raw_data_offset = file.io.tell();
@@ -63,13 +63,13 @@ static std::unique_ptr<File> decode_tlg_0(File &file)
     return decode_proxy(version, file);
 }
 
-static std::unique_ptr<File> decode_tlg_5(File &file)
+static pix::Grid decode_tlg_5(File &file)
 {
     Tlg5Decoder decoder;
     return decoder.decode(file);
 }
 
-static std::unique_ptr<File> decode_tlg_6(File &file)
+static pix::Grid decode_tlg_6(File &file)
 {
     Tlg6Decoder decoder;
     return decoder.decode(file);
@@ -92,7 +92,7 @@ static int guess_version(io::IO &io)
     return -1;
 }
 
-static std::unique_ptr<File> decode_proxy(int version, File &file)
+static pix::Grid decode_proxy(int version, File &file)
 {
     switch (version)
     {
@@ -113,7 +113,7 @@ bool TlgImageDecoder::is_recognized_internal(File &file) const
     return guess_version(file.io) >= 0;
 }
 
-std::unique_ptr<File> TlgImageDecoder::decode_internal(File &file) const
+pix::Grid TlgImageDecoder::decode_internal(File &file) const
 {
     int version = guess_version(file.io);
     return decode_proxy(version, file);

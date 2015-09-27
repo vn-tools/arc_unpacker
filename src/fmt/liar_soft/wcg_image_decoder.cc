@@ -3,7 +3,6 @@
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -115,7 +114,7 @@ bool WcgImageDecoder::is_recognized_internal(File &file) const
     return true;
 }
 
-std::unique_ptr<File> WcgImageDecoder::decode_internal(File &file) const
+pix::Grid WcgImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
@@ -141,8 +140,7 @@ std::unique_ptr<File> WcgImageDecoder::decode_internal(File &file) const
     for (auto i : util::range(0, output.size(), 4))
         output[i + 3] ^= 0xFF;
 
-    pix::Grid pixels(width, height, output, pix::Format::BGRA8888);
-    return util::Image::from_pixels(pixels)->create_file(file.name);
+    return pix::Grid(width, height, output, pix::Format::BGRA8888);
 }
 
 static auto dummy = fmt::Registry::add<WcgImageDecoder>("liar/wcg");

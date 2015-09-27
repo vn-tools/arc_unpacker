@@ -192,7 +192,7 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::IO &file_io)
     return regions;
 }
 
-static std::unique_ptr<util::Image> read_image(
+static pix::Grid read_pixels(
     const bstr &input,
     CompressionType compression_type,
     size_t size_original,
@@ -200,18 +200,16 @@ static std::unique_ptr<util::Image> read_image(
     size_t height)
 {
     if (compression_type == CompressionType::None)
-    {
-        pix::Grid pixels(width, height, input, pix::Format::BGRA8888);
-        return util::Image::from_pixels(pixels);
-    }
-    else if (compression_type == CompressionType::Sgd)
+        return pix::Grid(width, height, input, pix::Format::BGRA8888);
+
+    if (compression_type == CompressionType::Sgd)
     {
         auto decompressed = decompress_sgd(input, size_original);
-        pix::Grid pixels(width, height, decompressed, pix::Format::BGRA8888);
-        return util::Image::from_pixels(pixels);
+        return pix::Grid(width, height, decompressed, pix::Format::BGRA8888);
     }
-    else if (compression_type == CompressionType::Png)
-        return util::Image::from_boxed(input);
+
+    if (compression_type == CompressionType::Png)
+        return util::Image::from_boxed(input)->pixels();
 
     throw err::NotSupportedError("Unsupported compression type");
 }
@@ -221,7 +219,7 @@ bool MgdImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> MgdImageDecoder::decode_internal(File &file) const
+pix::Grid MgdImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
@@ -239,7 +237,7 @@ std::unique_ptr<File> MgdImageDecoder::decode_internal(File &file) const
     if (size_compressed_total != size_compressed + 4)
         throw err::CorruptDataError("Compressed data size mismatch");
 
-    auto image = read_image(
+    auto pixels = read_pixels(
         file.io.read(size_compressed),
         compression_type,
         size_original,
@@ -247,7 +245,7 @@ std::unique_ptr<File> MgdImageDecoder::decode_internal(File &file) const
         height);
 
     read_region_data(file.io);
-    return image->create_file(file.name);
+    return pixels;
 }
 
 static auto dummy = fmt::Registry::add<MgdImageDecoder>("nsystem/mgd");
