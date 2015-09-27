@@ -8,7 +8,7 @@ using namespace au::io;
 
 TEST_CASE("Reading real files", "[io][io_cls]")
 {
-    FileIO io("tests/files/reimu_transparent.png", FileMode::Read);
+    FileIO io("tests/fmt/png/files/reimu_transparent.png", FileMode::Read);
     static const bstr png_magic = "\x89PNG"_b;
     REQUIRE(io.read(png_magic.size()) == png_magic);
 }
@@ -16,13 +16,13 @@ TEST_CASE("Reading real files", "[io][io_cls]")
 TEST_CASE("Writing to real files", "[io][io_cls]")
 {
     {
-        FileIO io("tests/files/trash.out", FileMode::Write);
+        FileIO io("tests/trash.out", FileMode::Write);
         io.write_u32_le(1);
         io.seek(0);
         REQUIRE(io.read_u32_le() == 1);
         REQUIRE(io.size() == 4);
     }
-    boost::filesystem::remove("tests/files/trash.out");
+    boost::filesystem::remove("tests/trash.out");
 }
 
 TEST_CASE("Proper file position after initialization", "[io][io_cls]")

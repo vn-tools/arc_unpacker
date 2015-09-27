@@ -1,7 +1,7 @@
 #include "fmt/nsystem/mgd_image_decoder.h"
 #include "err.h"
+#include "fmt/png/png_image_decoder.h"
 #include "io/buffered_io.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -209,7 +209,12 @@ static pix::Grid read_pixels(
     }
 
     if (compression_type == CompressionType::Png)
-        return util::Image::from_boxed(input)->pixels();
+    {
+        fmt::png::PngImageDecoder png_decoder;
+        File tmp_file;
+        tmp_file.io.write(input);
+        return png_decoder.decode(tmp_file);
+    }
 
     throw err::NotSupportedError("Unsupported compression type");
 }

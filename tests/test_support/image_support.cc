@@ -1,8 +1,9 @@
 #include "test_support/image_support.h"
 #include <algorithm>
+#include "fmt/jpeg/jpeg_image_decoder.h"
+#include "fmt/png/png_image_decoder.h"
 #include "test_support/catch.hh"
 #include "test_support/file_support.h"
-#include "util/image.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -27,9 +28,13 @@ static inline void compare_pixels(
 
 std::shared_ptr<pix::Grid> tests::image_from_file(File &file)
 {
-    file.io.seek(0);
-    return std::make_shared<pix::Grid>(
-        util::Image::from_boxed(file.io)->pixels());
+    fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
+    fmt::png::PngImageDecoder png_image_decoder;
+    if (jpeg_image_decoder.is_recognized(file))
+        return std::make_shared<pix::Grid>(jpeg_image_decoder.decode(file));
+    if (png_image_decoder.is_recognized(file))
+        return std::make_shared<pix::Grid>(png_image_decoder.decode(file));
+    throw std::logic_error("Only JPEG and PNG files are supported");
 }
 
 std::shared_ptr<pix::Grid> tests::image_from_path(

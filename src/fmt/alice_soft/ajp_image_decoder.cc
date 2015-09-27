@@ -1,7 +1,7 @@
 #include "fmt/alice_soft/ajp_image_decoder.h"
 #include <algorithm>
 #include "fmt/alice_soft/pms_image_decoder.h"
-#include "util/image.h"
+#include "fmt/jpeg/jpeg_image_decoder.h"
 #include "util/range.h"
 
 using namespace au;
@@ -41,19 +41,23 @@ pix::Grid AjpImageDecoder::decode_internal(File &file) const
     auto mask_data = file.io.read(mask_size);
     decrypt(mask_data);
 
-    if (!mask_size)
-        return util::Image::from_boxed(jpeg_data)->pixels();
+    fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
+    File jpeg_file;
+    jpeg_file.io.write(jpeg_data);
+    auto jpeg_pixels = jpeg_image_decoder.decode(jpeg_file);
 
-    PmsImageDecoder pms_image_decoder;
-    File mask_file;
-    mask_file.io.write(mask_data);
-    auto mask_pixels = pms_image_decoder.decode(mask_file);
-    auto jpeg_pixels = util::Image::from_boxed(jpeg_data)->pixels();
-
-    for (auto y : util::range(height))
-    for (auto x : util::range(width))
+    if (mask_size)
     {
-        jpeg_pixels.at(x, y).a = mask_pixels.at(x, y).r;
+        PmsImageDecoder pms_image_decoder;
+        File mask_file;
+        mask_file.io.write(mask_data);
+        auto mask_pixels = pms_image_decoder.decode(mask_file);
+
+        for (auto y : util::range(height))
+        for (auto x : util::range(width))
+        {
+            jpeg_pixels.at(x, y).a = mask_pixels.at(x, y).r;
+        }
     }
 
     return jpeg_pixels;

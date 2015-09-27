@@ -1,6 +1,6 @@
 #include "fmt/qlie/dpng_image_decoder.h"
+#include "fmt/png/png_image_decoder.h"
 #include "io/buffered_io.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -22,6 +22,8 @@ pix::Grid DpngImageDecoder::decode_internal(File &file) const
     size_t width = file.io.read_u32_le();
     size_t height = file.io.read_u32_le();
 
+    fmt::png::PngImageDecoder png_image_decoder;
+
     pix::Grid pixels(width, height);
     for (auto i : util::range(file_count))
     {
@@ -35,10 +37,13 @@ pix::Grid DpngImageDecoder::decode_internal(File &file) const
         if (!region_data_size)
             continue;
 
-        auto region = util::Image::from_boxed(file.io.read(region_data_size));
+        File tmp_file;
+        tmp_file.io.write(file.io.read(region_data_size));
+        auto region = png_image_decoder.decode(tmp_file);
+
         for (auto x : util::range(region_width))
         for (auto y : util::range(region_height))
-            pixels.at(region_x + x, region_y + y) = region->pixels().at(x, y);
+            pixels.at(region_x + x, region_y + y) = region.at(x, y);
     }
 
     return pixels;
