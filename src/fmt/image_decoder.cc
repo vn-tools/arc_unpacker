@@ -1,7 +1,7 @@
 #include "fmt/image_decoder.h"
 #include "err.h"
 #include "fmt/naming_strategies.h"
-#include "util/image.h"
+#include "util/file_from_grid.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -40,7 +40,7 @@ void ImageDecoder::unpack(
     File &input_file, FileSaver &file_saver, bool recurse) const
 {
     auto output_grid = decode(input_file);
-    auto output_file = util::grid_to_boxed(output_grid, input_file.name);
+    auto output_file = util::file_from_grid(output_grid, input_file.name);
     output_file->name
         = boost::filesystem::path(output_file->name).filename().string();
     file_saver.save(std::move(output_file));

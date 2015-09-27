@@ -1,7 +1,7 @@
 #include "fmt/nscripter/nsa_archive_decoder.h"
 #include "fmt/nscripter/spb_image_decoder.h"
 #include "io/buffered_io.h"
-#include "util/image.h"
+#include "util/file_from_grid.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"
 
@@ -77,7 +77,7 @@ static std::unique_ptr<File> read_file(
 
         case COMPRESSION_SPB:
             file->io.write(data);
-            file = util::grid_to_boxed(
+            file = util::file_from_grid(
                 spb_image_decoder.decode(*file), file->name);
             break;
     }

@@ -3,8 +3,8 @@
 #include <map>
 #include "err.h"
 #include "fmt/naming_strategies.h"
+#include "util/file_from_grid.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -187,7 +187,7 @@ static std::unique_ptr<File> read_texture(io::IO &file_io, Table &entries)
     for (auto &entry : entries)
         write_pixels(file_io, *entry, pixels, width);
 
-    return util::grid_to_boxed(pixels, entries[0]->name);
+    return util::file_from_grid(pixels, entries[0]->name);
 }
 
 std::unique_ptr<INamingStrategy> AnmArchiveDecoder::naming_strategy() const

@@ -7,7 +7,7 @@
 namespace au {
 namespace util {
 
-    std::unique_ptr<File> grid_to_boxed(
+    std::unique_ptr<File> file_from_grid(
         const pix::Grid &pixels, const std::string &name);
 
 } }

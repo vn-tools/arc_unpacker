@@ -1,4 +1,4 @@
-#include "util/image.h"
+#include "util/file_from_grid.h"
 #include <png.h>
 #include "err.h"
 #include "io/buffered_io.h"
@@ -18,7 +18,7 @@ static void png_flush(png_structp)
 {
 }
 
-std::unique_ptr<File> util::grid_to_boxed(
+std::unique_ptr<File> util::file_from_grid(
     const pix::Grid &pixels, const std::string &name)
 {
     std::unique_ptr<File> output_file(new File);

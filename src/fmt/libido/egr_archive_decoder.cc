@@ -1,7 +1,7 @@
 #include "fmt/libido/egr_archive_decoder.h"
 #include "err.h"
+#include "util/file_from_grid.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -49,7 +49,7 @@ void EgrArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
             width, height, arc_file.io.read(width * height), palette);
 
         auto name = util::format("Image%03d.png", i++);
-        saver.save(util::grid_to_boxed(pixels, name));
+        saver.save(util::file_from_grid(pixels, name));
     }
 }
 

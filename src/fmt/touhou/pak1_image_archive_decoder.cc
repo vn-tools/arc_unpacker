@@ -1,8 +1,8 @@
 #include "fmt/touhou/pak1_image_archive_decoder.h"
 #include "err.h"
 #include "io/buffered_io.h"
+#include "util/file_from_grid.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -56,7 +56,7 @@ static std::unique_ptr<File> read_image(
     }
 
     auto name = util::format("%04d", index);
-    return util::grid_to_boxed(pixels, name);
+    return util::file_from_grid(pixels, name);
 }
 
 bool Pak1ImageArchiveDecoder::is_recognized_internal(File &arc_file) const

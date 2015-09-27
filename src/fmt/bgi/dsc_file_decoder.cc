@@ -4,8 +4,8 @@
 #include "fmt/bgi/common.h"
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
+#include "util/file_from_grid.h"
 #include "util/format.h"
-#include "util/image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -177,7 +177,7 @@ std::unique_ptr<File> DscFileDecoder::decode_internal(File &file) const
                 throw err::UnsupportedBitDepthError(bpp);
         }
         pix::Grid pixels(width, height, data_io.read_to_eof(), fmt);
-        return util::grid_to_boxed(pixels, file.name);
+        return util::file_from_grid(pixels, file.name);
     }
 
     std::unique_ptr<File> output_file(new File);
