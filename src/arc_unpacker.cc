@@ -181,7 +181,8 @@ void ArcUnpacker::Priv::parse_cli_options()
                 {
                     pi->base_name = pi->base_name.substr(1);
                 }
-                options.input_paths.push_back(std::move(pi));
+                if (!boost::filesystem::is_directory(*it))
+                    options.input_paths.push_back(std::move(pi));
             }
         }
         else
