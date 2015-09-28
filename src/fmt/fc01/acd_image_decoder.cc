@@ -9,11 +9,6 @@ using namespace au::fmt::fc01;
 
 static const bstr magic = "ACD 1.00"_b;
 
-bool AcdImageDecoder::is_recognized_internal(File &file) const
-{
-    return file.io.read(magic.size()) == magic;
-}
-
 static bstr do_decode(const bstr &input, size_t canvas_size)
 {
     io::BitReader bit_reader(input);
@@ -50,6 +45,11 @@ static bstr do_decode(const bstr &input, size_t canvas_size)
         *output_ptr++ = byte;
     }
     return output;
+}
+
+bool AcdImageDecoder::is_recognized_internal(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
 }
 
 pix::Grid AcdImageDecoder::decode_internal(File &file) const
