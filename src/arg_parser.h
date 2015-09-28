@@ -17,6 +17,7 @@ namespace au {
         virtual Switch *set_value_name(const std::string &name) = 0;
         virtual Switch *add_possible_value(
             const std::string &value, const std::string &description = "") = 0;
+        virtual Switch *hide_possible_values() = 0;
     };
 
     struct Flag : Option

@@ -37,10 +37,12 @@ namespace
         virtual Switch *set_value_name(const std::string &name) override;
         virtual Switch *add_possible_value(
             const std::string &value, const std::string &description) override;
+        virtual Switch *hide_possible_values() override;
 
         std::string value_name;
         std::string value;
         std::vector<std::pair<std::string, std::string>> possible_values;
+        bool possible_values_hidden;
     };
 }
 
@@ -127,6 +129,12 @@ Switch *SwitchImpl::add_possible_value(
 {
     possible_values.push_back(std::pair<std::string, std::string>(
         value, description));
+    return this;
+}
+
+Switch *SwitchImpl::hide_possible_values()
+{
+    possible_values_hidden = true;
     return this;
 }
 
@@ -220,7 +228,7 @@ static void print_switches(const std::vector<SwitchImpl*> &switches)
     for (auto &sw : switches)
     {
         auto possible_values = sw->possible_values;
-        if (!possible_values.size())
+        if (!possible_values.size() || sw->possible_values_hidden)
             continue;
         Log.info(util::format(
             "\nAvailable %s values:\n\n", sw->value_name.c_str()));

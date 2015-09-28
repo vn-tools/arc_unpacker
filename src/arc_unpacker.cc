@@ -27,6 +27,7 @@ namespace
         bool overwrite;
         bool recurse;
         bool should_show_help;
+        bool should_list_fmt;
     };
 }
 
@@ -38,6 +39,7 @@ public:
 
 private:
     void register_cli_options();
+    void print_fmt_list() const;
     void print_cli_help() const;
     void parse_cli_options();
 
@@ -61,6 +63,12 @@ ArcUnpacker::Priv::Priv(
         arguments(arguments),
         version(version)
 {
+}
+
+void ArcUnpacker::Priv::print_fmt_list() const
+{
+    for (auto &name : registry.get_names())
+        Log.info("%s\n", name.c_str());
 }
 
 void ArcUnpacker::Priv::print_cli_help() const
@@ -128,6 +136,9 @@ void ArcUnpacker::Priv::register_cli_options()
         ->set_description("Disables guessing and selects given format.");
     for (auto &name : registry.get_names())
         sw->add_possible_value(name);
+
+    arg_parser.register_flag({"--list-fmt"})
+        ->set_description("Lists available FORMAT values.");
 }
 
 void ArcUnpacker::Priv::parse_cli_options()
@@ -136,6 +147,8 @@ void ArcUnpacker::Priv::parse_cli_options()
 
     options.should_show_help
         = arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
+
+    options.should_list_fmt = arg_parser.has_flag("--list-fmt");
 
     options.overwrite
         = !arg_parser.has_flag("-r") && !arg_parser.has_flag("--rename");
@@ -206,6 +219,12 @@ bool ArcUnpacker::Priv::run()
     if (options.should_show_help)
     {
         print_cli_help();
+        return true;
+    }
+
+    if (options.should_list_fmt)
+    {
+        print_fmt_list();
         return true;
     }
 
