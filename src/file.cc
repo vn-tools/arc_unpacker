@@ -17,14 +17,14 @@ static void change_extension(
         return;
     }
 
-    auto plain_path = path.string();
+    auto filename = path.filename().string();
     auto extension = new_extension;
-    auto index = plain_path.find_last_of('.');
+    auto index = filename.find_last_of('.');
     while (extension[0] == '.')
         extension.erase(0, 1);
     if (!extension.empty() && extension[0] != '.')
         extension = "." + extension;
-    path = plain_path.substr(0, index) + extension;
+    path = path.parent_path() / (filename.substr(0, index) + extension);
 }
 
 File::File(const boost::filesystem::path &path, const io::FileMode mode)
