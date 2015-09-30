@@ -88,11 +88,10 @@ bool WipfArchiveDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-void WipfArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::vector<std::shared_ptr<pix::Grid>> WipfArchiveDecoder::unpack_to_images(
+    File &arc_file) const
 {
-    auto base_name = boost::filesystem::path(arc_file.name).filename().string();
-    boost::algorithm::replace_all(base_name, ".", "-");
-    arc_file.io.skip(magic.size());
+    arc_file.io.seek(magic.size());
 
     Table table(arc_file.io.read_u16_le());
     auto depth = arc_file.io.read_u16_le();
@@ -107,6 +106,7 @@ void WipfArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
         table[i] = std::move(entry);
     }
 
+    std::vector<std::shared_ptr<pix::Grid>> output;
     for (auto &entry : table)
     {
         std::shared_ptr<pix::Palette> palette;
@@ -124,7 +124,7 @@ void WipfArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
         auto w = entry->width;
         auto h = entry->height;
 
-        std::unique_ptr<pix::Grid> pixels;
+        std::shared_ptr<pix::Grid> pixels;
         if (depth == 8)
         {
             pixels.reset(new pix::Grid(w, h, data, *palette));
@@ -144,8 +144,17 @@ void WipfArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
         else
             throw err::UnsupportedBitDepthError(depth);
 
-        saver.save(util::file_from_grid(*pixels, base_name));
+        output.push_back(pixels);
     }
+    return output;
+}
+
+void WipfArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+{
+    auto base_name = boost::filesystem::path(arc_file.name).filename().string();
+    boost::algorithm::replace_all(base_name, ".", "-");
+    for (auto &image : unpack_to_images(arc_file))
+        saver.save(util::file_from_grid(*image, base_name));
 }
 
 static auto dummy = fmt::Registry::add<WipfArchiveDecoder>("will/wipf");

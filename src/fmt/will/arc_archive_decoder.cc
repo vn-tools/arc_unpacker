@@ -1,7 +1,6 @@
 #include "fmt/will/arc_archive_decoder.h"
 #include <map>
 #include "err.h"
-#include "fmt/png/png_image_decoder.h"
 #include "fmt/will/wipf_archive_decoder.h"
 #include "util/file_from_grid.h"
 #include "util/range.h"
@@ -138,30 +137,22 @@ void ArcArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
             sprite_entries[fn] = entry.get();
     }
 
-    fmt::png::PngImageDecoder png_decoder;
     for (auto it : sprite_entries)
     {
         try
         {
             auto sprite_entry = it.second;
             auto mask_entry = mask_entries.at(it.first);
-            auto sprites = p->wipf_archive_decoder.unpack(
-                *read_file(arc_file.io, *sprite_entry), false);
-            auto masks = p->wipf_archive_decoder.unpack(
-                *read_file(arc_file.io, *mask_entry), false);
-
-            std::vector<pix::Grid> images;
+            auto sprites = p->wipf_archive_decoder.unpack_to_images(
+                *read_file(arc_file.io, *sprite_entry));
+            auto masks = p->wipf_archive_decoder.unpack_to_images(
+                *read_file(arc_file.io, *mask_entry));
             for (auto i : util::range(sprites.size()))
-            {
-                auto img = png_decoder.decode(*sprites[i]);
-                img.apply_alpha_from_mask(png_decoder.decode(*masks.at(i)));
-                images.push_back(img);
-            }
-
+                sprites[i]->apply_alpha_from_mask(*masks.at(i));
             sprite_entry->already_unpacked = true;
             mask_entry->already_unpacked = true;
-            for (auto &img : images)
-                saver.save(util::file_from_grid(img, sprite_entry->name));
+            for (auto &sprite : sprites)
+                saver.save(util::file_from_grid(*sprite, sprite_entry->name));
         }
         catch (...)
         {
