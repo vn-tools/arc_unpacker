@@ -5,93 +5,49 @@
 using namespace au;
 using namespace au::fmt::lizsoft;
 
-static size_t guess_image_dimension(
-    const std::vector<u32> candidates,
-    int main_delta,
-    int max_delta_correction,
-    size_t pixels_size)
-{
-    for (auto &base : candidates)
-    {
-        for (int delta = 0; delta <= max_delta_correction; delta++)
-        {
-            size_t possible_dimension = base + main_delta + delta;
-            if (possible_dimension == 0)
-                continue;
-            if (possible_dimension > pixels_size)
-                continue;
-            if (pixels_size % possible_dimension == 0)
-                return possible_dimension;
-        }
-    }
-    throw err::CorruptDataError("Cannot figure out the image dimensions");
-}
-
 bool SotesImageDecoder::is_recognized_internal(File &file) const
 {
-    u32 weird_data1[8];
-    u32 weird_data2[14];
-    file.io.read(weird_data1, 8 * 4);
-    file.io.skip(256 * 4);
-    file.io.read(weird_data2, 14 * 4);
-    file.io.skip(8);
-    if (file.io.read(2) != "BM"_b)
-        return false;
-
-    size_t pixel_data_offset = weird_data2[12] - weird_data2[10];
-    if (pixel_data_offset >= file.io.size())
-        return false;
-
-    return true;
+    file.io.seek(0x438);
+    auto a = file.io.read_u32_le();
+    file.io.seek(0x448);
+    auto b = file.io.read_u32_le();
+    file.io.seek(0x450);
+    auto c = file.io.read_u32_le();
+    return a - b == 0x2711 && c - b <= 0x80;
 }
 
 pix::Grid SotesImageDecoder::decode_internal(File &file) const
 {
-    if (file.io.size() < 1112)
-        throw err::CorruptDataError("Not a SOTES image");
+    file.io.seek(0x448);
+    auto base = file.io.read_u32_le();
 
-    u32 weird_data1[8];
-    file.io.read(weird_data1, 8 * 4);
+    file.io.seek(0x450);
+    auto pixel_data_offset = 0x458 + file.io.read_u32_le() - base;
 
-    pix::Palette palette(256, file.io, pix::Format::BGRA8888);
+    file.io.seek(0x430);
+    auto depth = file.io.read_u16_le() - base;
 
-    u32 weird_data2[14];
-    file.io.read(weird_data2, 14 * 4);
+    file.io.seek(0x440);
+    file.io.seek(4 + 4 * (file.io.read_u32_le() - base));
+    auto width = file.io.read_u32_le() - base;
 
-    size_t pixel_data_offset = weird_data2[12] - weird_data2[10];
-    file.io.skip(pixel_data_offset);
+    file.io.seek(0x18);
+    file.io.seek(0x420 + 4 * (file.io.read_u32_le() - base));
+    auto height = file.io.read_u32_le() - base;
 
-    size_t raw_data_size = file.io.size() - file.io.tell();
+    file.io.seek(0x20);
+    pix::Palette palette(256, file.io, pix::Format::BGR888X);
 
-    auto width = guess_image_dimension(
-        std::vector<u32>(&weird_data1[1], &weird_data1[5]),
-        -static_cast<s32>(weird_data1[6]),
-        3,
-        raw_data_size);
-
-    size_t height = guess_image_dimension(
-        std::vector<u32>(&weird_data2[0], &weird_data2[5]),
-        -static_cast<s32>(weird_data2[10]),
-        0,
-        raw_data_size);
-
-    bool use_palette = width * height * 3 != raw_data_size;
+    file.io.seek(pixel_data_offset);
+    auto data = file.io.read(width * height * (depth >> 3));
 
     std::unique_ptr<pix::Grid> pixels;
-
-    auto pix_data = file.io.read(raw_data_size);
-    if (use_palette)
-    {
-        pixels.reset(new pix::Grid(width, height, pix_data, palette));
-        for (auto y : util::range(height))
-        for (auto x : util::range(width))
-            pixels->at(x, y).a = 0xFF;
-    }
+    if (depth == 8)
+        pixels.reset(new pix::Grid(width, height, data, palette));
+    else if (depth == 24)
+        pixels.reset(new pix::Grid(width, height, data, pix::Format::BGR888));
     else
-    {
-        pixels.reset(new pix::Grid(
-            width, height, pix_data, pix::Format::BGR888));
-    }
+        throw err::UnsupportedBitDepthError(depth);
 
     pixels->flip();
     return *pixels;
