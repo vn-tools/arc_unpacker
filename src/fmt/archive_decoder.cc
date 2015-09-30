@@ -126,6 +126,18 @@ void ArchiveDecoder::unpack(File &file, FileSaver &saver, bool recurse) const
     return unpack_internal(file, recognition_proxy);
 }
 
+std::vector<std::shared_ptr<File>> ArchiveDecoder::unpack(
+    File &file, bool recurse) const
+{
+    std::vector<std::shared_ptr<File>> files;
+    FileSaverCallback saver([&](std::shared_ptr<File> unpacked_file)
+    {
+        files.push_back(unpacked_file);
+    });
+    unpack(file, saver, recurse);
+    return files;
+}
+
 void ArchiveDecoder::add_decoder(IDecoder *decoder)
 {
     decoders.push_back(decoder);

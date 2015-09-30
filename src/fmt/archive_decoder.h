@@ -16,6 +16,8 @@ namespace fmt {
         virtual std::unique_ptr<INamingStrategy> naming_strategy()
             const override;
 
+        std::vector<std::shared_ptr<File>> unpack(File &, bool) const;
+
     protected:
         virtual bool is_recognized_internal(File &) const = 0;
         virtual void unpack_internal(File &, FileSaver &) const = 0;

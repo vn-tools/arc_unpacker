@@ -52,6 +52,6 @@ TEST_CASE("GLib GLib2 archives with multiple decryption passes", "[fmt]")
     Glib2ArchiveDecoder decoder;
     auto arc_file = tests::zlib_file_from_path(
         "tests/fmt/glib/files/glib2/big-zlib.g2");
-    auto actual_files = tests::unpack_to_memory(*arc_file, decoder);
+    auto actual_files = decoder.unpack(*arc_file, true);
     tests::compare_files(expected_files, actual_files, true);
 }
