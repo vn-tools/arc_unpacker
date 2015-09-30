@@ -180,6 +180,15 @@ void Grid::crop(size_t new_width, size_t new_height)
     }
 }
 
+void Grid::apply_alpha_from_mask(const Grid &other)
+{
+    if (other.width() != p->width || other.height() != p->height)
+        throw std::logic_error("Mask image size is different from image size");
+    for (auto y : util::range(p->height))
+    for (auto x : util::range(p->width))
+        at(x, y).a = other.at(x, y).r;
+}
+
 Pixel *Grid::begin()
 {
     return &p->pixels[0];

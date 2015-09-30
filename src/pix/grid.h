@@ -29,6 +29,7 @@ namespace pix {
 
         void flip();
         void crop(size_t width, size_t height);
+        void apply_alpha_from_mask(const Grid &other);
 
         Pixel *begin();
         Pixel *end();
