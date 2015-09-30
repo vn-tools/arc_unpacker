@@ -64,7 +64,10 @@ static Table read_inner_table(
 
 static Table read_table(io::IO &arc_io)
 {
-    std::vector<DirectoryEntry> directories(arc_io.read_u32_le());
+    auto dir_count = arc_io.read_u32_le();
+    if (dir_count > 100)
+        throw err::BadDataSizeError();
+    std::vector<DirectoryEntry> directories(dir_count);
     for (auto i : util::range(directories.size()))
     {
         directories[i].extension = arc_io.read_to_zero(4).str();
