@@ -1,6 +1,9 @@
 #include "fmt/will/arc_archive_decoder.h"
+#include <map>
 #include "err.h"
+#include "fmt/png/png_image_decoder.h"
 #include "fmt/will/wipf_archive_decoder.h"
+#include "util/file_from_grid.h"
 #include "util/range.h"
 
 using namespace au;
@@ -13,6 +16,7 @@ namespace
         std::string name;
         u32 offset;
         u32 size;
+        bool already_unpacked;
     };
 
     struct DirectoryEntry final
@@ -40,7 +44,7 @@ static Table read_inner_table(
         arc_io.seek(directory.offset);
         for (auto i : util::range(directory.file_count))
         {
-            std::unique_ptr<TableEntry> entry(new TableEntry);
+            std::unique_ptr<TableEntry> entry(new TableEntry());
             auto name = arc_io.read_to_zero(name_size).str();
             entry->name = name + "." + directory.extension;
             entry->size = arc_io.read_u32_le();
@@ -122,8 +126,52 @@ bool ArcArchiveDecoder::is_recognized_internal(File &arc_file) const
 void ArcArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
 {
     auto table = read_table(arc_file.io);
+
+    // apply image masks to original sprites
+    std::map<std::string, TableEntry*> mask_entries, sprite_entries;
     for (auto &entry : table)
-        saver.save(read_file(arc_file.io, *entry));
+    {
+        auto fn = entry->name.substr(0, entry->name.find_first_of('.'));
+        if (entry->name.find("MSK") != std::string::npos)
+            mask_entries[fn] = entry.get();
+        else if (entry->name.find("WIP") != std::string::npos)
+            sprite_entries[fn] = entry.get();
+    }
+
+    fmt::png::PngImageDecoder png_decoder;
+    for (auto it : sprite_entries)
+    {
+        try
+        {
+            auto sprite_entry = it.second;
+            auto mask_entry = mask_entries.at(it.first);
+            auto sprites = p->wipf_archive_decoder.unpack(
+                *read_file(arc_file.io, *sprite_entry), false);
+            auto masks = p->wipf_archive_decoder.unpack(
+                *read_file(arc_file.io, *mask_entry), false);
+
+            std::vector<pix::Grid> images;
+            for (auto i : util::range(sprites.size()))
+            {
+                auto img = png_decoder.decode(*sprites[i]);
+                img.apply_alpha_from_mask(png_decoder.decode(*masks.at(i)));
+                images.push_back(img);
+            }
+
+            sprite_entry->already_unpacked = true;
+            mask_entry->already_unpacked = true;
+            for (auto &img : images)
+                saver.save(util::file_from_grid(img, sprite_entry->name));
+        }
+        catch (...)
+        {
+            continue;
+        }
+    }
+
+    for (auto &entry : table)
+        if (!entry->already_unpacked)
+            saver.save(read_file(arc_file.io, *entry));
 }
 
 static auto dummy = fmt::Registry::add<ArcArchiveDecoder>("will/arc");
