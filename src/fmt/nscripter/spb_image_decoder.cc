@@ -92,7 +92,7 @@ bool SpbImageDecoder::is_recognized_internal(File &file) const
     u16 height = file.io.read_u16_be();
     if (height == 0 || width == 0)
         return false;
-    if (static_cast<u32>(width * height) > 0x0FFFFFFF)
+    if (width > 5000 || height > 5000)
         return false;
     return true;
 }
