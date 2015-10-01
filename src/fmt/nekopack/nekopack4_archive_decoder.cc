@@ -1,6 +1,10 @@
 #include "fmt/nekopack/nekopack4_archive_decoder.h"
+#include "log.h"
+#include <map>
 #include "err.h"
+#include "fmt/microsoft/bmp_image_decoder.h"
 #include "io/buffered_io.h"
+#include "util/file_from_grid.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
 
@@ -16,6 +20,7 @@ namespace
         std::string name;
         u32 offset;
         u32 size_comp;
+        bool already_unpacked;
     };
 
     using Table = std::vector<TableEntry>;
@@ -31,7 +36,7 @@ static Table read_table(io::IO &arc_io)
         if (!name_size)
             break;
 
-        TableEntry entry;
+        TableEntry entry { };
         entry.name = arc_io.read_to_zero(name_size).str();
         u32 key = 0;
         for (auto &c : entry.name)
@@ -75,8 +80,48 @@ void Nekopack4ArchiveDecoder::unpack_internal(
 {
     arc_file.io.skip(magic.size());
     auto table = read_table(arc_file.io);
+
+    // apply image masks to original sprites
+    std::map<std::string, TableEntry*> mask_entries, sprite_entries;
+    for (auto i : util::range(table.size()))
+    {
+        auto fn = table[i].name.substr(0, table[i].name.find_first_of('.'));
+        if (table[i].name.find("alp") != std::string::npos)
+            mask_entries[fn] = &table[i];
+        else if (table[i].name.find("bmp") != std::string::npos)
+            sprite_entries[fn] = &table[i];
+    }
+
+    fmt::microsoft::BmpImageDecoder bmp_image_decoder;
+    for (auto it : sprite_entries)
+    {
+        try
+        {
+            auto sprite_entry = it.second;
+            auto mask_entry = mask_entries.at(it.first);
+            auto sprite_file = read_file(arc_file.io, *sprite_entry);
+            auto mask_file = read_file(arc_file.io, *mask_entry);
+            mask_file->io.seek(0);
+            auto sprite = bmp_image_decoder.decode(*sprite_file);
+            pix::Grid mask(
+                sprite.width(),
+                sprite.height(),
+                mask_file->io,
+                pix::Format::Gray8);
+            sprite.apply_alpha_from_mask(mask);
+            sprite_entry->already_unpacked = true;
+            mask_entry->already_unpacked = true;
+            saver.save(util::file_from_grid(sprite, sprite_entry->name));
+        }
+        catch (...)
+        {
+            continue;
+        }
+    }
+
     for (auto &entry : table)
-        saver.save(read_file(arc_file.io, entry));
+        if (!entry.already_unpacked)
+            saver.save(read_file(arc_file.io, entry));
 }
 
 static auto dummy = fmt::Registry::add<Nekopack4ArchiveDecoder>(
