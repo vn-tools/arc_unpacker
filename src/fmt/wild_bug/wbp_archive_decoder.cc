@@ -1,5 +1,6 @@
 #include "fmt/wild_bug/wbp_archive_decoder.h"
 #include <map>
+#include "fmt/wild_bug/wpn_audio_decoder.h"
 #include "util/range.h"
 
 using namespace au;
@@ -92,6 +93,20 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
     file->name = entry.name;
     file->io.write(data);
     return file;
+}
+
+struct WbpArchiveDecoder::Priv final
+{
+    WpnAudioDecoder wpn_audio_decoder;
+};
+
+WbpArchiveDecoder::WbpArchiveDecoder() : p(new Priv)
+{
+    add_decoder(&p->wpn_audio_decoder);
+}
+
+WbpArchiveDecoder::~WbpArchiveDecoder()
+{
 }
 
 bool WbpArchiveDecoder::is_recognized_internal(File &arc_file) const
