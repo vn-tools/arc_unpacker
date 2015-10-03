@@ -63,3 +63,20 @@ TranscriptionSpec TranscriptionStrategy2::get_spec(DecoderContext &context)
     spec.size += read_count(context.bit_reader);
     return spec;
 }
+
+TranscriptionSpec TranscriptionStrategy3::get_spec(DecoderContext &context)
+{
+    TranscriptionSpec spec;
+    if (context.bit_reader.get(1))
+    {
+        spec.look_behind = context.io.read_u8() + 1;
+        spec.size = 2;
+    }
+    else
+    {
+        spec.look_behind = context.io.read_u16_le() + 1;
+        spec.size = 3;
+    }
+    spec.size += read_count(context.bit_reader);
+    return spec;
+}

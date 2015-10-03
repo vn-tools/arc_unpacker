@@ -25,10 +25,9 @@ namespace wpx {
 
     struct RetrievalStrategy2 final : IRetrievalStrategy
     {
-        RetrievalStrategy2(io::BitReader &bit_reader, s8 quant_size);
+        RetrievalStrategy2(io::BitReader &bit_reader);
         virtual u8 fetch_byte(DecoderContext &, const u8 *) override;
         std::vector<u8> table;
-        s8 quant_size;
     };
 
     struct RetrievalStrategy3 final : IRetrievalStrategy

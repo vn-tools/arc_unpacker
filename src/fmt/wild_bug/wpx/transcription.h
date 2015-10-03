@@ -38,4 +38,9 @@ namespace wpx {
         s8 quant_size;
     };
 
+    struct TranscriptionStrategy3 final : ITranscriptionStrategy
+    {
+        virtual TranscriptionSpec get_spec(DecoderContext &context) override;
+    };
+
 } } } }

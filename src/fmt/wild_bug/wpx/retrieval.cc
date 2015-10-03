@@ -55,7 +55,7 @@ static int find_table_index(
         if (n == table[2 * index])
             break;
         if (!(mask >>= 1))
-            throw err::CorruptDataError("Corrupt data");
+            throw err::CorruptDataError("Failed to locate table value");
     }
     return index;
 }
@@ -67,8 +67,7 @@ RetrievalStrategy1::RetrievalStrategy1(io::BitReader &bit_reader, s8 quant_size)
     table = build_table(bit_reader);
 }
 
-u8 RetrievalStrategy1::fetch_byte(
-    DecoderContext &context, const u8 *output_ptr)
+u8 RetrievalStrategy1::fetch_byte(DecoderContext &context, const u8 *output_ptr)
 {
     auto start_pos = output_ptr[-quant_size] << 8;
     auto index = find_table_index(table, context.bit_reader);
@@ -83,8 +82,8 @@ u8 RetrievalStrategy1::fetch_byte(
     return value;
 }
 
-RetrievalStrategy2::RetrievalStrategy2(io::BitReader &bit_reader, s8 quant_size)
-    : IRetrievalStrategy(bit_reader), quant_size(quant_size)
+RetrievalStrategy2::RetrievalStrategy2(io::BitReader &bit_reader)
+    : IRetrievalStrategy(bit_reader)
 {
     table = build_table(bit_reader);
 }
@@ -92,7 +91,6 @@ RetrievalStrategy2::RetrievalStrategy2(io::BitReader &bit_reader, s8 quant_size)
 u8 RetrievalStrategy2::fetch_byte(
     DecoderContext &context, const u8 *output_ptr)
 {
-    auto start_pos = output_ptr[-quant_size] << 8;
     auto index = find_table_index(table, context.bit_reader);
     return table[2 * index + 1];
 }

@@ -2,6 +2,7 @@
 #include <map>
 #include "fmt/wild_bug/wbm_image_decoder.h"
 #include "fmt/wild_bug/wpn_audio_decoder.h"
+#include "fmt/wild_bug/wwa_audio_decoder.h"
 #include "util/range.h"
 
 using namespace au;
@@ -100,12 +101,14 @@ struct WbpArchiveDecoder::Priv final
 {
     WpnAudioDecoder wpn_audio_decoder;
     WbmImageDecoder wbm_image_decoder;
+    WwaAudioDecoder wwa_audio_decoder;
 };
 
 WbpArchiveDecoder::WbpArchiveDecoder() : p(new Priv)
 {
     add_decoder(&p->wpn_audio_decoder);
     add_decoder(&p->wbm_image_decoder);
+    add_decoder(&p->wwa_audio_decoder);
 }
 
 WbpArchiveDecoder::~WbpArchiveDecoder()

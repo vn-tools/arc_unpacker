@@ -88,6 +88,11 @@ bstr Decoder::read_plain_section(u8 section_id)
     throw err::CorruptDataError("Section is compressed");
 }
 
+bstr Decoder::read_compressed_section(u8 section_id)
+{
+    return read_compressed_section(section_id, -1, {});
+}
+
 bstr Decoder::read_compressed_section(
     u8 section_id, s8 quant_size, const std::array<size_t, 8> &offsets)
 {
@@ -103,6 +108,13 @@ bstr Decoder::read_compressed_section(
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<const u8>();
 
+    bool use_plain_transcriptors = false;
+    if (quant_size == -1)
+    {
+        quant_size = 1;
+        use_plain_transcriptors = true;
+    }
+
     for (auto i : util::range(quant_size))
         *output_ptr++ = section_io.read_u8();
     int remaining = section.size_orig - quant_size;
@@ -110,28 +122,36 @@ bstr Decoder::read_compressed_section(
     io::BitReader bit_reader(section_io);
 
     std::unique_ptr<ITranscriptionStrategy> transcriptor;
-    std::unique_ptr<IRetrievalStrategy> retriever;
-
-    if (section.data_format & 1)
+    if (use_plain_transcriptors)
     {
         if (section.data_format & 8)
             throw err::NotSupportedError("Unknown compression type");
         else
-            transcriptor.reset(
-                new TranscriptionStrategy1(offsets, quant_size));
+            transcriptor.reset(new TranscriptionStrategy3());
     }
     else
-        transcriptor.reset(new TranscriptionStrategy2(offsets, quant_size));
+    {
+        if (section.data_format & 1)
+        {
+            if (section.data_format & 8)
+                throw err::NotSupportedError("Unknown compression type");
+            else
+                transcriptor.reset(
+                    new TranscriptionStrategy1(offsets, quant_size));
+        }
+        else
+            transcriptor.reset(new TranscriptionStrategy2(offsets, quant_size));
+    }
 
+    std::unique_ptr<IRetrievalStrategy> retriever;
     if (section.data_format & 4)
         retriever.reset(new RetrievalStrategy1(bit_reader, quant_size));
     else if (section.data_format & 2)
-        retriever.reset(new RetrievalStrategy2(bit_reader, quant_size));
+        retriever.reset(new RetrievalStrategy2(bit_reader));
     else
         retriever.reset(new RetrievalStrategy3(bit_reader));
 
     DecoderContext context { section_io, bit_reader };
-
     while (output_ptr < output_end)
     {
         if (context.bit_reader.get(1))
