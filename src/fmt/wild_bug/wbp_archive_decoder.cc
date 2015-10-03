@@ -1,5 +1,6 @@
 #include "fmt/wild_bug/wbp_archive_decoder.h"
 #include <map>
+#include "fmt/wild_bug/wbm_image_decoder.h"
 #include "fmt/wild_bug/wpn_audio_decoder.h"
 #include "util/range.h"
 
@@ -98,11 +99,13 @@ static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
 struct WbpArchiveDecoder::Priv final
 {
     WpnAudioDecoder wpn_audio_decoder;
+    WbmImageDecoder wbm_image_decoder;
 };
 
 WbpArchiveDecoder::WbpArchiveDecoder() : p(new Priv)
 {
     add_decoder(&p->wpn_audio_decoder);
+    add_decoder(&p->wbm_image_decoder);
 }
 
 WbpArchiveDecoder::~WbpArchiveDecoder()

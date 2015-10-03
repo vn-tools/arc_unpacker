@@ -29,7 +29,7 @@ grep 'struct\|class' **/*.{cc,h} \
     | grep -v '_struct' \
     | grep -v 'pngstruct' \
     | grep -v 'enum class' \
-    | grep -v 'class I[A-Z]' \
+    | grep -v '\(class\|struct\) I[A-Z]' \
     | grep -v ';$' \
     | grep -v 'file_saver.*class FileSaver' \
     | grep -v 'io.*class IO' \
