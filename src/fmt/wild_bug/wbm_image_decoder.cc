@@ -1,6 +1,6 @@
 #include "fmt/wild_bug/wbm_image_decoder.h"
 #include "err.h"
-#include "fmt/wild_bug/wpx_decoder.h"
+#include "fmt/wild_bug/wpx/decoder.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
@@ -48,7 +48,7 @@ static void remove_pad(
 }
 
 static pix::Grid get_pixels(
-    WpxDecoder &decoder,
+    wpx::Decoder &decoder,
     u8 section_id,
     size_t width,
     size_t height,
@@ -70,7 +70,7 @@ static pix::Grid get_pixels(
 
 pix::Grid WbmImageDecoder::decode_internal(File &file) const
 {
-    WpxDecoder decoder(file.io);
+    wpx::Decoder decoder(file.io);
 
     io::BufferedIO metadata_io(decoder.read_plain_section(0x10));
     metadata_io.skip(4);
