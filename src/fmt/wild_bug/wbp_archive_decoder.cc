@@ -1,5 +1,6 @@
 #include "fmt/wild_bug/wbp_archive_decoder.h"
 #include <map>
+#include "fmt/wild_bug/wbi_file_decoder.h"
 #include "fmt/wild_bug/wbm_image_decoder.h"
 #include "fmt/wild_bug/wpn_audio_decoder.h"
 #include "fmt/wild_bug/wwa_audio_decoder.h"
@@ -102,6 +103,7 @@ struct WbpArchiveDecoder::Priv final
     WpnAudioDecoder wpn_audio_decoder;
     WbmImageDecoder wbm_image_decoder;
     WwaAudioDecoder wwa_audio_decoder;
+    WbiFileDecoder wbi_file_decoder;
 };
 
 WbpArchiveDecoder::WbpArchiveDecoder() : p(new Priv)
@@ -109,6 +111,7 @@ WbpArchiveDecoder::WbpArchiveDecoder() : p(new Priv)
     add_decoder(&p->wpn_audio_decoder);
     add_decoder(&p->wbm_image_decoder);
     add_decoder(&p->wwa_audio_decoder);
+    add_decoder(&p->wbi_file_decoder);
 }
 
 WbpArchiveDecoder::~WbpArchiveDecoder()

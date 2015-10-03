@@ -15,6 +15,7 @@ namespace wpx {
         ~Decoder();
 
         std::string get_tag() const;
+        const std::vector<u8> get_sections() const;
         bool has_section(u8 section_id) const;
         bstr read_plain_section(u8 section_id);
         bstr read_compressed_section(u8 section_id);

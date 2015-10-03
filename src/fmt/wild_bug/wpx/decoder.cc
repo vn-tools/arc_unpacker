@@ -72,6 +72,14 @@ std::string Decoder::get_tag() const
     return p->tag;
 }
 
+const std::vector<u8> Decoder::get_sections() const
+{
+    std::vector<u8> ids;
+    for (auto it : p->sections)
+        ids.push_back(it.first);
+    return ids;
+}
+
 bool Decoder::has_section(u8 section_id) const
 {
     return p->sections.find(section_id) != p->sections.end();
