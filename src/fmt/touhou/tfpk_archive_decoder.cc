@@ -17,23 +17,10 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
+static const bstr magic = "TFPK"_b;
+
 namespace
 {
-    class RsaReader final
-    {
-    public:
-        RsaReader(io::IO &io);
-        ~RsaReader();
-        std::unique_ptr<io::BufferedIO> read_block();
-        size_t tell() const;
-
-    private:
-        std::unique_ptr<io::BufferedIO> decrypt(std::basic_string<u8> input);
-
-        io::IO &io;
-        std::unique_ptr<util::crypt::Rsa> rsa;
-    };
-
     enum class TfpkVersion : u8
     {
         Th135,
@@ -57,9 +44,22 @@ namespace
     using Table = std::vector<std::unique_ptr<TableEntry>>;
     using DirTable = std::vector<std::unique_ptr<DirEntry>>;
     using HashLookupMap = std::map<u32, std::string>;
-}
 
-static const bstr magic = "TFPK"_b;
+    class RsaReader final
+    {
+    public:
+        RsaReader(io::IO &io);
+        ~RsaReader();
+        std::unique_ptr<io::BufferedIO> read_block();
+        size_t tell() const;
+
+    private:
+        std::unique_ptr<io::BufferedIO> decrypt(std::basic_string<u8> input);
+
+        io::IO &io;
+        std::unique_ptr<util::crypt::Rsa> rsa;
+    };
+}
 
 static const std::vector<util::crypt::RsaKey> rsa_keys({
     // TH13.5 Japanese version
@@ -110,6 +110,7 @@ static const std::vector<util::crypt::RsaKey> rsa_keys({
 
 RsaReader::RsaReader(io::IO &io) : io(io)
 {
+    // test chunk = one block with dir count
     bstr test_chunk;
     io.peek(io.tell(), [&]() { test_chunk = io.read(0x40); });
 
@@ -126,6 +127,12 @@ RsaReader::RsaReader(io::IO &io) : io(io)
         {
         }
     }
+
+    // no encryption - TH14.5 English patch.
+    // First 4 bytes are integer meaning dir count, so the rest should be zero.
+    if (test_chunk.substr(4, 12) == "\0\0\0\0\0\0\0\0\0\0\0\0"_b)
+        return;
+
     throw err::NotSupportedError("Unknown public key");
 }
 
@@ -140,7 +147,9 @@ size_t RsaReader::tell() const
 
 std::unique_ptr<io::BufferedIO> RsaReader::read_block()
 {
-    auto block = rsa->decrypt(io.read(0x40)).substr(0, 0x20);
+    bstr block = rsa
+        ? rsa->decrypt(io.read(0x40)).substr(0, 0x20)
+        : io.read(0x40).substr(0, 0x20);
     return std::unique_ptr<io::BufferedIO>(new io::BufferedIO(block));
 }
 
@@ -258,10 +267,17 @@ static HashLookupMap read_fn_map(
 
         for (auto j : util::range(dir_entry->file_count))
         {
-            auto fn = util::sjis_to_utf8(tmp_io->read_to_zero()).str();
-            auto hash = get_file_name_hash(
-                fn, version, dir_entry->initial_hash);
-            fn_map[hash] = dn + fn;
+            // TH145 English patch contains invalid directory names
+            try
+            {
+                auto fn = util::sjis_to_utf8(tmp_io->read_to_zero()).str();
+                auto hash = get_file_name_hash(
+                    fn, version, dir_entry->initial_hash);
+                fn_map[hash] = dn + fn;
+            }
+            catch (...)
+            {
+            }
         }
     }
     return fn_map;
