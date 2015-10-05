@@ -138,7 +138,7 @@ void ArcUnpacker::Priv::register_cli_options()
     for (auto &name : registry.get_names())
         sw->add_possible_value(name);
 
-    arg_parser.register_flag({"--list-fmt"})
+    arg_parser.register_flag({"-l", "--list-fmt"})
         ->set_description("Lists available FORMAT values.");
 }
 
@@ -149,7 +149,8 @@ void ArcUnpacker::Priv::parse_cli_options()
     options.should_show_help
         = arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
 
-    options.should_list_fmt = arg_parser.has_flag("--list-fmt");
+    options.should_list_fmt
+        = arg_parser.has_flag("-l") || arg_parser.has_flag("--list-fmt");
 
     options.overwrite
         = !arg_parser.has_flag("-r") && !arg_parser.has_flag("--rename");
