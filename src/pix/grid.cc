@@ -189,6 +189,16 @@ void Grid::apply_alpha_from_mask(const Grid &other)
         at(x, y).a = other.at(x, y).r;
 }
 
+void Grid::apply_palette(const Palette &palette)
+{
+    auto palette_size = palette.size();
+    for (auto &c : p->pixels)
+        if (c.r < palette_size)
+            c = palette[c.r];
+        else
+            c.a = 0xFF;
+}
+
 Pixel *Grid::begin()
 {
     return &p->pixels[0];
