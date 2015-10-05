@@ -103,7 +103,7 @@ Flag *FlagImpl::set_description(const std::string &desc)
 }
 
 SwitchImpl::SwitchImpl(const std::initializer_list<std::string> &names)
-    : OptionImpl(names)
+    : OptionImpl(names), possible_values_hidden(false)
 {
 }
 

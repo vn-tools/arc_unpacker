@@ -133,7 +133,8 @@ void ArcUnpacker::Priv::register_cli_options()
 
     auto sw = arg_parser.register_switch({"-f", "--fmt"})
         ->set_value_name("FORMAT")
-        ->set_description("Disables guessing and selects given format.");
+        ->set_description("Disables guessing and selects given format.")
+        ->hide_possible_values();
     for (auto &name : registry.get_names())
         sw->add_possible_value(name);
 
