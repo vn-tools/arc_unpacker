@@ -35,8 +35,7 @@ bool FileDecoder::is_recognized(File &file) const
     }
 }
 
-void FileDecoder::unpack(
-    File &input_file, FileSaver &file_saver, bool recurse) const
+void FileDecoder::unpack(File &input_file, FileSaver &file_saver) const
 {
     auto output_file = decode(input_file);
     output_file->name

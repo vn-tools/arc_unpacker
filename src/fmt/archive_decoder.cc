@@ -35,7 +35,7 @@ static bool pass_through_decoders(
 
         try
         {
-            decoder->unpack(*original_file, decoder_proxy, true);
+            decoder->unpack(*original_file, decoder_proxy);
             return true;
         }
         catch (...)
@@ -54,6 +54,10 @@ DepthKeeper::DepthKeeper()
 DepthKeeper::~DepthKeeper()
 {
     depth--;
+}
+
+ArchiveDecoder::ArchiveDecoder() : nested_decoding_enabled(true)
+{
 }
 
 ArchiveDecoder::~ArchiveDecoder()
@@ -96,7 +100,7 @@ bool ArchiveDecoder::is_recognized(File &file) const
     }
 }
 
-void ArchiveDecoder::unpack(File &file, FileSaver &saver, bool recurse) const
+void ArchiveDecoder::unpack(File &file, FileSaver &saver) const
 {
     if (!is_recognized(file))
         throw err::RecognitionError();
@@ -108,7 +112,7 @@ void ArchiveDecoder::unpack(File &file, FileSaver &saver, bool recurse) const
         DepthKeeper keeper;
 
         bool save_normally;
-        if (depth > max_depth || !recurse)
+        if (depth > max_depth || !nested_decoding_enabled)
         {
             save_normally = true;
         }
@@ -126,15 +130,19 @@ void ArchiveDecoder::unpack(File &file, FileSaver &saver, bool recurse) const
     return unpack_internal(file, recognition_proxy);
 }
 
-std::vector<std::shared_ptr<File>> ArchiveDecoder::unpack(
-    File &file, bool recurse) const
+void ArchiveDecoder::disable_nested_decoding()
+{
+   nested_decoding_enabled = false;
+}
+
+std::vector<std::shared_ptr<File>> ArchiveDecoder::unpack(File &file) const
 {
     std::vector<std::shared_ptr<File>> files;
     FileSaverCallback saver([&](std::shared_ptr<File> unpacked_file)
     {
         files.push_back(unpacked_file);
     });
-    unpack(file, saver, recurse);
+    unpack(file, saver);
     return files;
 }
 

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include <map>
+#include "fmt/archive_decoder.h"
 #include "fmt/idecoder.h"
 #include "fmt/naming_strategies.h"
 #include "fmt/registry.h"
@@ -25,7 +26,7 @@ namespace
         boost::filesystem::path output_dir;
         std::vector<std::unique_ptr<PathInfo>> input_paths;
         bool overwrite;
-        bool recurse;
+        bool enable_nested_decoding;
         bool should_show_help;
         bool should_list_fmt;
     };
@@ -172,7 +173,7 @@ void ArcUnpacker::Priv::parse_cli_options()
         Log.unmute(util::MessageType::Debug);
     }
 
-    options.recurse = !arg_parser.has_flag("--no-recurse");
+    options.enable_nested_decoding = !arg_parser.has_flag("--no-recurse");
 
     if (arg_parser.has_switch("-o"))
         options.output_dir = arg_parser.get_switch("-o");
@@ -273,7 +274,13 @@ void ArcUnpacker::Priv::unpack(
     decoder.register_cli_options(decoder_arg_parser);
     decoder_arg_parser.parse(arguments);
     decoder.parse_cli_options(decoder_arg_parser);
-    decoder.unpack(file, file_saver_proxy, options.recurse);
+    if (!options.enable_nested_decoding)
+    {
+        auto archive_decoder = dynamic_cast<fmt::ArchiveDecoder*>(&decoder);
+        if (archive_decoder)
+            archive_decoder->disable_nested_decoding();
+    }
+    decoder.unpack(file, file_saver_proxy);
 }
 
 std::unique_ptr<fmt::IDecoder> ArcUnpacker::Priv::guess_decoder(

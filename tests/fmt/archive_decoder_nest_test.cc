@@ -41,7 +41,7 @@ static std::vector<std::shared_ptr<File>> unpack(
         saved_file->io.seek(0);
         saved_files.push_back(saved_file);
     });
-    decoder.unpack(file, file_saver, true);
+    decoder.unpack(file, file_saver);
     return saved_files;
 }
 

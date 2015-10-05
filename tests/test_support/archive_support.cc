@@ -8,5 +8,5 @@ std::vector<std::shared_ptr<File>> tests::unpack_to_memory(
     const boost::filesystem::path &input_path, fmt::ArchiveDecoder &decoder)
 {
     File file(input_path, io::FileMode::Read);
-    return decoder.unpack(file, true);
+    return decoder.unpack(file);
 }
