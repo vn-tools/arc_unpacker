@@ -89,23 +89,31 @@ directory.
 
     arg_parser.print_help();
 
+    std::unique_ptr<fmt::IDecoder> decoder;
     if (options.format != "")
+        decoder = registry.create(options.format);
+
+    if (decoder)
     {
         ArgParser decoder_arg_parser;
-        auto decoder = registry.create(options.format);
-        if (decoder)
-        {
-            decoder->register_cli_options(decoder_arg_parser);
-            Log.info("[fmt_options] specific to " + options.format + ":\n\n");
-            decoder_arg_parser.print_help();
-            return;
-        }
+        decoder->register_cli_options(decoder_arg_parser);
+        Log.info("[fmt_options] specific to " + options.format + ":\n\n");
+        decoder_arg_parser.print_help();
     }
-
-    Log.info(
+    else
+    {
+        Log.info(
 R"([fmt_options] depend on chosen format and are required at runtime.
 See --help --fmt=FORMAT to get detailed help for given decoder.
 
+)");
+    }
+
+    Log.info(
+R"(Useful places:
+Source code   - https://github.com/vn-tools/arc_unpacker
+Bug reporting - https://github.com/vn-tools/arc_unpacker/issues
+Game requests - #arc_unpacker on Rizon
 )");
 }
 
