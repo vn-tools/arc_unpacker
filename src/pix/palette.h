@@ -11,6 +11,7 @@ namespace pix {
     class Palette final
     {
     public:
+        Palette(const Palette &other);
         Palette(size_t color_count);
         Palette(size_t color_count, const bstr &input, Format format);
         Palette(size_t color_count, io::IO &input_io, Format format);

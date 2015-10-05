@@ -83,6 +83,12 @@ Palette::Priv::Priv(size_t color_count, const bstr &input, Format fmt)
     }
 }
 
+Palette::Palette(const Palette &other) : p(new Priv(other.p->colors.size()))
+{
+    for (auto i : util::range(size()))
+        p->colors[i] = other.p->colors[i];
+}
+
 Palette::Palette(size_t colors) : p(new Priv(colors))
 {
 }
