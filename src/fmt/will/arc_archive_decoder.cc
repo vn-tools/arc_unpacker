@@ -129,37 +129,43 @@ void ArcArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
 {
     auto table = read_table(arc_file.io);
 
-    // apply image masks to original sprites
-    std::map<std::string, TableEntry*> mask_entries, sprite_entries;
-    for (auto &entry : table)
+    if (nested_decoding_enabled)
     {
-        auto fn = entry->name.substr(0, entry->name.find_first_of('.'));
-        if (entry->name.find("MSK") != std::string::npos)
-            mask_entries[fn] = entry.get();
-        else if (entry->name.find("WIP") != std::string::npos)
-            sprite_entries[fn] = entry.get();
-    }
-
-    for (auto it : sprite_entries)
-    {
-        try
+        // apply image masks to original sprites
+        std::map<std::string, TableEntry*> mask_entries, sprite_entries;
+        for (auto &entry : table)
         {
-            auto sprite_entry = it.second;
-            auto mask_entry = mask_entries.at(it.first);
-            auto sprites = p->wipf_archive_decoder.unpack_to_images(
-                *read_file(arc_file.io, *sprite_entry));
-            auto masks = p->wipf_archive_decoder.unpack_to_images(
-                *read_file(arc_file.io, *mask_entry));
-            for (auto i : util::range(sprites.size()))
-                sprites[i]->apply_alpha_from_mask(*masks.at(i));
-            sprite_entry->already_unpacked = true;
-            mask_entry->already_unpacked = true;
-            for (auto &sprite : sprites)
-                saver.save(util::file_from_grid(*sprite, sprite_entry->name));
+            auto fn = entry->name.substr(0, entry->name.find_first_of('.'));
+            if (entry->name.find("MSK") != std::string::npos)
+                mask_entries[fn] = entry.get();
+            else if (entry->name.find("WIP") != std::string::npos)
+                sprite_entries[fn] = entry.get();
         }
-        catch (...)
+
+        for (auto it : sprite_entries)
         {
-            continue;
+            try
+            {
+                auto sprite_entry = it.second;
+                auto mask_entry = mask_entries.at(it.first);
+                auto sprites = p->wipf_archive_decoder.unpack_to_images(
+                    *read_file(arc_file.io, *sprite_entry));
+                auto masks = p->wipf_archive_decoder.unpack_to_images(
+                    *read_file(arc_file.io, *mask_entry));
+                for (auto i : util::range(sprites.size()))
+                    sprites[i]->apply_alpha_from_mask(*masks.at(i));
+                sprite_entry->already_unpacked = true;
+                mask_entry->already_unpacked = true;
+                for (auto &sprite : sprites)
+                {
+                    saver.save(util::file_from_grid(
+                        *sprite, sprite_entry->name));
+                }
+            }
+            catch (...)
+            {
+                continue;
+            }
         }
     }
 

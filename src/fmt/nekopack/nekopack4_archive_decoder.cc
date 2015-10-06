@@ -81,41 +81,44 @@ void Nekopack4ArchiveDecoder::unpack_internal(
     arc_file.io.skip(magic.size());
     auto table = read_table(arc_file.io);
 
-    // apply image masks to original sprites
-    std::map<std::string, TableEntry*> mask_entries, sprite_entries;
-    for (auto i : util::range(table.size()))
+    if (nested_decoding_enabled)
     {
-        auto fn = table[i].name.substr(0, table[i].name.find_first_of('.'));
-        if (table[i].name.find("alp") != std::string::npos)
-            mask_entries[fn] = &table[i];
-        else if (table[i].name.find("bmp") != std::string::npos)
-            sprite_entries[fn] = &table[i];
-    }
-
-    fmt::microsoft::BmpImageDecoder bmp_image_decoder;
-    for (auto it : sprite_entries)
-    {
-        try
+        // apply image masks to original sprites
+        std::map<std::string, TableEntry*> mask_entries, sprite_entries;
+        for (auto i : util::range(table.size()))
         {
-            auto sprite_entry = it.second;
-            auto mask_entry = mask_entries.at(it.first);
-            auto sprite_file = read_file(arc_file.io, *sprite_entry);
-            auto mask_file = read_file(arc_file.io, *mask_entry);
-            mask_file->io.seek(0);
-            auto sprite = bmp_image_decoder.decode(*sprite_file);
-            pix::Grid mask(
-                sprite.width(),
-                sprite.height(),
-                mask_file->io,
-                pix::Format::Gray8);
-            sprite.apply_alpha_from_mask(mask);
-            sprite_entry->already_unpacked = true;
-            mask_entry->already_unpacked = true;
-            saver.save(util::file_from_grid(sprite, sprite_entry->name));
+            auto fn = table[i].name.substr(0, table[i].name.find_first_of('.'));
+            if (table[i].name.find("alp") != std::string::npos)
+                mask_entries[fn] = &table[i];
+            else if (table[i].name.find("bmp") != std::string::npos)
+                sprite_entries[fn] = &table[i];
         }
-        catch (...)
+
+        fmt::microsoft::BmpImageDecoder bmp_image_decoder;
+        for (auto it : sprite_entries)
         {
-            continue;
+            try
+            {
+                auto sprite_entry = it.second;
+                auto mask_entry = mask_entries.at(it.first);
+                auto sprite_file = read_file(arc_file.io, *sprite_entry);
+                auto mask_file = read_file(arc_file.io, *mask_entry);
+                mask_file->io.seek(0);
+                auto sprite = bmp_image_decoder.decode(*sprite_file);
+                pix::Grid mask(
+                    sprite.width(),
+                    sprite.height(),
+                    mask_file->io,
+                    pix::Format::Gray8);
+                sprite.apply_alpha_from_mask(mask);
+                sprite_entry->already_unpacked = true;
+                mask_entry->already_unpacked = true;
+                saver.save(util::file_from_grid(sprite, sprite_entry->name));
+            }
+            catch (...)
+            {
+                continue;
+            }
         }
     }
 
