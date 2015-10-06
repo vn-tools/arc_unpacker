@@ -9,29 +9,29 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
+static const bstr magic = "THA1"_b;
+
 namespace
 {
     struct Header final
     {
         size_t file_count;
         size_t table_offset;
-        size_t table_size_original;
-        size_t table_size_compressed;
+        size_t table_size_orig;
+        size_t table_size_comp;
     };
 
     struct TableEntry final
     {
         std::string name;
         size_t offset;
-        size_t size_compressed;
-        size_t size_original;
+        size_t size_comp;
+        size_t size_orig;
         u8 decryptor_id;
     };
 
     using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
-
-static const bstr magic = "THA1"_b;
 
 static std::vector<std::vector<DecryptorContext>> decryptors
 {
@@ -84,51 +84,41 @@ static std::vector<std::vector<DecryptorContext>> decryptors
     },
 };
 
-static bstr decompress(io::IO &io, size_t size_compressed, size_t size_original)
+static bstr decompress(const bstr &input, size_t size_orig)
 {
     util::pack::LzssSettings settings;
     settings.position_bits = 13;
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-
-    io::BufferedIO buffered_io;
-    buffered_io.write_from_io(io, size_compressed);
-    buffered_io.seek(0);
-    io::BitReader bit_reader(buffered_io);
-    return util::pack::lzss_decompress_bitwise(
-        bit_reader, size_original, settings);
+    return util::pack::lzss_decompress_bitwise(input, size_orig, settings);
 }
 
-static std::unique_ptr<Header> read_header(io::IO &arc_io)
+static Header read_header(io::IO &arc_io)
 {
-    std::unique_ptr<Header> header(new Header);
-    io::BufferedIO header_io(
-        decrypt(arc_io.read(16), { 0x1B, 0x37, 0x10, 0x400 }));
+    arc_io.seek(0);
+    auto header_data = arc_io.read(16);
+    header_data = decrypt(header_data, { 0x1B, 0x37, 0x10, 0x400 });
+    io::BufferedIO header_io(header_data);
     if (header_io.read(magic.size()) != magic)
         throw err::RecognitionError();
-    header->table_size_original = header_io.read_u32_le() - 123456789;
-    header->table_size_compressed = header_io.read_u32_le() - 987654321;
-    header->file_count = header_io.read_u32_le() - 135792468;
-    header->table_offset = arc_io.size() - header->table_size_compressed;
+    Header header;
+    header.table_size_orig = header_io.read_u32_le() - 123456789;
+    header.table_size_comp = header_io.read_u32_le() - 987654321;
+    header.file_count = header_io.read_u32_le() - 135792468;
+    header.table_offset = arc_io.size() - header.table_size_comp;
     return header;
 }
 
-static std::unique_ptr<io::BufferedIO> read_raw_table(
+static std::unique_ptr<io::IO> read_raw_table(
     io::IO &arc_io, const Header &header)
 {
     arc_io.seek(header.table_offset);
-    io::BufferedIO decrypted_io(
-        decrypt(
-            arc_io.read(header.table_size_compressed),
-            { 0x3E, 0x9B, 0x80, header.table_size_compressed }));
-
-    return std::unique_ptr<io::BufferedIO>(
-        new io::BufferedIO(
-            decompress(
-                decrypted_io,
-                header.table_size_compressed,
-                header.table_size_original)));
+    auto table_data = arc_io.read(header.table_size_comp);
+    table_data = decrypt(
+        table_data, { 0x3E, 0x9B, 0x80, header.table_size_comp });
+    table_data = decompress(table_data, header.table_size_orig);
+    return std::unique_ptr<io::IO>(new io::BufferedIO(table_data));
 }
 
 static Table read_table(io::IO &arc_io, const Header &header)
@@ -149,17 +139,17 @@ static Table read_table(io::IO &arc_io, const Header &header)
         entry->decryptor_id %= 8;
 
         entry->offset = table_io->read_u32_le();
-        entry->size_original = table_io->read_u32_le();
+        entry->size_orig = table_io->read_u32_le();
         table_io->skip(4);
         table.push_back(std::move(entry));
     }
 
     for (auto i : util::range(table.size() - 1))
-        table[i]->size_compressed = table[i + 1]->offset - table[i]->offset;
+        table[i]->size_comp = table[i + 1]->offset - table[i]->offset;
 
     if (table.size() > 0)
     {
-        table[table.size() - 1]->size_compressed
+        table[table.size() - 1]->size_comp
             = header.table_offset - table[table.size() - 1]->offset;
     }
 
@@ -169,31 +159,19 @@ static Table read_table(io::IO &arc_io, const Header &header)
 static std::unique_ptr<File> read_file(
     io::IO &arc_io, const TableEntry &entry, int encryption_version)
 {
-    std::unique_ptr<File> file(new File);
-    file->name = entry.name;
-
     arc_io.seek(entry.offset);
-    io::BufferedIO decrypted_io(
-        decrypt(
-            arc_io.read(entry.size_compressed),
-            decryptors[encryption_version][entry.decryptor_id]));
+    auto data = arc_io.read(entry.size_comp);
+    data = decrypt(data, decryptors[encryption_version][entry.decryptor_id]);
+    if (entry.size_comp != entry.size_orig)
+        data = decompress(data, entry.size_orig);
 
-    if (entry.size_compressed == entry.size_original)
-    {
-        file->io.write_from_io(decrypted_io, entry.size_original);
-    }
-    else
-    {
-        file->io.write(decompress(
-            decrypted_io,
-            entry.size_compressed,
-            entry.size_original));
-    }
-
-    return file;
+    std::unique_ptr<File> output_file(new File);
+    output_file->name = entry.name;
+    output_file->io.write(data);
+    return output_file;
 }
 
-static int detect_encryption_version(File &arc_file, const Table &table)
+static int detect_encryption_version(File &arc_file)
 {
     if (arc_file.name.find("th095.") != std::string::npos) return 0;
     if (arc_file.name.find("th10.") != std::string::npos) return 0;
@@ -227,16 +205,14 @@ bool Tha1ArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
     if (!arc_file.has_extension("dat"))
         return false;
-    auto header = read_header(arc_file.io);
-    auto table = read_table(arc_file.io, *header);
-    return detect_encryption_version(arc_file, table) >= 0;
+    return detect_encryption_version(arc_file) >= 0;
 }
 
 void Tha1ArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
 {
     auto header = read_header(arc_file.io);
-    auto table = read_table(arc_file.io, *header);
-    auto encryption_version = detect_encryption_version(arc_file, table);
+    auto table = read_table(arc_file.io, header);
+    auto encryption_version = detect_encryption_version(arc_file);
     for (auto &entry : table)
         saver.save(read_file(arc_file.io, *entry, encryption_version));
 }
