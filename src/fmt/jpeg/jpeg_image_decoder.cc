@@ -34,8 +34,10 @@ pix::Grid JpegImageDecoder::decode_internal(File &file) const
         format = pix::Format::RGB888;
     else if (channels == 4)
         format = pix::Format::RGBA8888;
+    else if (channels == 1)
+        format = pix::Format::Gray8;
     else
-        throw err::NotSupportedError("Bad pixel format");
+        throw err::UnsupportedChannelCountError(channels);
 
     bstr raw_data(width * height * channels);
     for (auto y : util::range(height))
