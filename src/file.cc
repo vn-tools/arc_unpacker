@@ -32,6 +32,13 @@ File::File(const boost::filesystem::path &path, const io::FileMode mode)
 {
 }
 
+File::File(const std::string &name, const bstr &data)
+    : io(*new io::BufferedIO), name(name)
+{
+    io.seek(0);
+    io.write(data);
+}
+
 File::File() : io(*new io::BufferedIO)
 {
 }

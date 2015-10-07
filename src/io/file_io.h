@@ -8,7 +8,7 @@
 namespace au {
 namespace io {
 
-    enum FileMode
+    enum class FileMode : u8
     {
         Read = 1,
         Write = 2,

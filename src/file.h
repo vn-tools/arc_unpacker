@@ -10,6 +10,7 @@ namespace au {
     {
     public:
         File(const boost::filesystem::path &path, const io::FileMode mode);
+        File(const std::string &name, const bstr &data);
         File();
         ~File();
         bool has_extension();
