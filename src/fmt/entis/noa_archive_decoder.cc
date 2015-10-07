@@ -46,7 +46,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
             if (flags & 0x70)
                 entry->extra = io.read(extra_size);
 
-            entry->name = io.read(io.read_u32_le()).str();
+            entry->name = io.read_to_zero(io.read_u32_le()).str();
             if (root != "")
                 entry->name = root + "/" + entry->name;
 
