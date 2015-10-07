@@ -22,16 +22,18 @@ namespace
         size_t table_size;
     };
 
-    struct TableEntry final
+    struct ArchiveMetaImpl final : fmt::ArchiveMeta
     {
-        std::array<u32, 4> content_keys[4];
-        std::string name;
-        bool is_file;
-        u32 offset;
-        u32 size;
+        std::shared_ptr<glib2::Plugin> plugin;
     };
 
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
+    {
+        std::array<u32, 4> content_keys[4];
+        bool is_file;
+        size_t offset;
+        size_t size;
+    };
 }
 
 static const bstr table_magic = "CDBD"_b;
@@ -60,31 +62,31 @@ static bstr decode(const bstr &input, const glib2::Decoder &decoder)
     return output;
 }
 
-static std::unique_ptr<Header> read_header(
-    io::IO &arc_io, glib2::Plugin &plugin)
+static Header read_header(io::IO &arc_io, glib2::Plugin &plugin)
 {
+    arc_io.seek(0);
     auto decoder = plugin.create_header_decoder();
     auto buffer = decode(arc_io.read(header_size), *decoder);
     io::BufferedIO header_io(buffer);
 
-    std::unique_ptr<Header> header(new Header);
-    header->magic = header_io.read(magic_21.size());
+    Header header;
+    header.magic = header_io.read(magic_21.size());
     header_io.skip(1);
     for (auto i : util::range(4))
     for (auto j : util::range(4))
-        header->table_keys[3 - i][j] = header_io.read_u32_le();
-    header->table_offset = header_io.read_u32_le();
-    header->table_size = header_io.read_u32_le();
+        header.table_keys[3 - i][j] = header_io.read_u32_le();
+    header.table_offset = header_io.read_u32_le();
+    header.table_size = header_io.read_u32_le();
     return header;
 }
 
-static std::unique_ptr<TableEntry> read_table_entry(
+static std::unique_ptr<ArchiveEntryImpl> read_table_entry(
     io::IO &table_io,
-    Table &table,
+    const std::vector<std::unique_ptr<ArchiveEntryImpl>> &entries,
     size_t file_names_start,
     size_t file_headers_start)
 {
-    std::unique_ptr<TableEntry> entry(new TableEntry());
+    auto entry = std::make_unique<ArchiveEntryImpl>();
 
     auto file_name_offset = table_io.read_u32_le() + file_names_start;
     table_io.skip(4);
@@ -118,101 +120,28 @@ static std::unique_ptr<TableEntry> read_table_entry(
         {
             std::string name = table_io.read_to_zero().str();
             entry->name = parent_dir != -1
-                ? table[parent_dir]->name + "/" + name
+                ? entries.at(parent_dir)->name + "/" + name
                 : name;
         });
 
     return entry;
 }
 
-static Table read_table(
-    io::IO &arc_io, const Header &header, const glib2::Plugin &plugin)
+static std::shared_ptr<glib2::Plugin> guess_plugin(io::IO &arc_io)
 {
-    arc_io.seek(header.table_offset);
-    auto buffer = arc_io.read(header.table_size);
-    for (const auto &key : header.table_keys)
-        buffer = decode(buffer, *plugin.create_decoder(key));
-
-    io::BufferedIO table_io(buffer);
-    if (table_io.read(table_magic.size()) != table_magic)
-        throw err::CorruptDataError("Corrupt table data");
-
-    size_t file_count = table_io.read_u32_le();
-    size_t file_names_start = file_count * 0x18 + 0x10;
-    size_t file_headers_start = table_io.read_u32_le() + 0x10;
-    size_t file_headers_size = table_io.read_u32_le();
-
-    Table table(file_count);
-    for (auto i : util::range(file_count))
-    {
-        table[i] = read_table_entry(
-            table_io, table, file_names_start, file_headers_start);
-    }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(
-    io::IO &arc_io, const TableEntry &entry, const glib2::Plugin &plugin)
-{
-    std::unique_ptr<File> file(new File);
-    file->name = entry.name;
-
-    arc_io.seek(entry.offset);
-
-    const size_t chunk_size = 0x20000;
-    size_t offset = 0;
-    std::vector<std::unique_ptr<glib2::Decoder>> decoders(4);
-    for (auto i : util::range(4))
-    {
-        try
-        {
-            decoders[i] = plugin.create_decoder(entry.content_keys[i]);
-            offset += chunk_size;
-            if (offset >= entry.size)
-                break;
-        }
-        catch (err::NotSupportedError &e)
-        {
-            for (auto j : util::range(i))
-                decoders[i] = nullptr;
-            Log.warn(std::string(e.what()) + "\n");
-        }
-    }
-
-    auto key_id = 0;
-    for (auto written : util::range(0, entry.size, chunk_size))
-    {
-        auto current_chunk_size = std::min<size_t>(
-            chunk_size, entry.size - written);
-        auto buffer = arc_io.read(current_chunk_size);
-        if (decoders[key_id])
-            buffer = decode(buffer, *decoders[key_id]);
-        file->io.write(buffer);
-        key_id++;
-        key_id %= 4;
-    }
-
-    return file;
-}
-
-static std::unique_ptr<glib2::Plugin> guess_plugin(io::IO &arc_io)
-{
-    std::vector<std::unique_ptr<glib2::Plugin>> plugins;
-    plugins.push_back(std::unique_ptr<glib2::Plugin>(
-        new glib2::MeiPlugin()));
-    plugins.push_back(std::unique_ptr<glib2::Plugin>(
-        new glib2::MusumePlugin()));
+    std::vector<std::shared_ptr<glib2::Plugin>> plugins;
+    plugins.push_back(std::make_shared<glib2::MeiPlugin>());
+    plugins.push_back(std::make_shared<glib2::MusumePlugin>());
 
     for (auto &plugin : plugins)
     {
         try
         {
-            arc_io.seek(0);
             auto header = read_header(arc_io, *plugin);
-            if (header->magic == magic_21 || header->magic == magic_21)
+            if (header.magic == magic_21 || header.magic == magic_21)
             {
                 arc_io.seek(0);
-                return std::move(plugin);
+                return plugin;
             }
         }
         catch (...)
@@ -247,15 +176,83 @@ bool Glib2ArchiveDecoder::is_recognized_internal(File &arc_file) const
     return guess_plugin(arc_file.io) != nullptr;
 }
 
-void Glib2ArchiveDecoder::unpack_internal(
-    File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    Glib2ArchiveDecoder::read_meta(File &arc_file) const
 {
     auto plugin = guess_plugin(arc_file.io);
     auto header = read_header(arc_file.io, *plugin);
-    auto table = read_table(arc_file.io, *header, *plugin);
-    for (auto &entry : table)
+
+    arc_file.io.seek(header.table_offset);
+    auto table_data = arc_file.io.read(header.table_size);
+    for (const auto &key : header.table_keys)
+        table_data = decode(table_data, *plugin->create_decoder(key));
+
+    io::BufferedIO table_io(table_data);
+    if (table_io.read(table_magic.size()) != table_magic)
+        throw err::CorruptDataError("Corrupt table data");
+
+    size_t file_count = table_io.read_u32_le();
+    size_t file_names_start = file_count * 0x18 + 0x10;
+    size_t file_headers_start = table_io.read_u32_le() + 0x10;
+    size_t file_headers_size = table_io.read_u32_le();
+
+    std::vector<std::unique_ptr<ArchiveEntryImpl>> entries;
+    for (auto i : util::range(file_count))
+        entries.push_back(read_table_entry(
+            table_io, entries, file_names_start, file_headers_start));
+
+    auto meta = std::make_unique<ArchiveMetaImpl>();
+    meta->plugin = plugin;
+    for (auto &entry : entries)
         if (entry->is_file)
-            saver.save(read_file(arc_file.io, *entry, *plugin));
+            meta->entries.push_back(std::move(entry));
+    return meta;
+}
+
+std::unique_ptr<File> Glib2ArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto output_file = std::make_unique<File>();
+    output_file->name = entry->name;
+
+    arc_file.io.seek(entry->offset);
+
+    const size_t chunk_size = 0x20000;
+    size_t offset = 0;
+    std::vector<std::unique_ptr<glib2::Decoder>> decoders(4);
+    for (auto i : util::range(4))
+    {
+        try
+        {
+            decoders[i] = meta->plugin->create_decoder(entry->content_keys[i]);
+            offset += chunk_size;
+            if (offset >= entry->size)
+                break;
+        }
+        catch (err::NotSupportedError &e)
+        {
+            for (auto j : util::range(i))
+                decoders[i] = nullptr;
+            Log.warn(std::string(e.what()) + "\n");
+        }
+    }
+
+    auto key_id = 0;
+    for (auto written : util::range(0, entry->size, chunk_size))
+    {
+        auto current_chunk_size = std::min<size_t>(
+            chunk_size, entry->size - written);
+        auto buffer = arc_file.io.read(current_chunk_size);
+        if (decoders[key_id])
+            buffer = decode(buffer, *decoders[key_id]);
+        output_file->io.write(buffer);
+        key_id++;
+        key_id %= 4;
+    }
+
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<Glib2ArchiveDecoder>("glib/g2");

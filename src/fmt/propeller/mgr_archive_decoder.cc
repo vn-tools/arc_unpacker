@@ -6,6 +6,14 @@
 using namespace au;
 using namespace au::fmt::propeller;
 
+namespace
+{
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
+    {
+        size_t offset;
+    };
+}
+
 static bstr decompress(const bstr &input, size_t size_original)
 {
     const u8 *input_ptr = input.get<const u8>();
@@ -49,39 +57,34 @@ bool MgrArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.has_extension("mgr");
 }
 
-void MgrArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    MgrArchiveDecoder::read_meta(File &arc_file) const
 {
-    size_t entry_count = arc_file.io.read_u16_le();
-
-    std::vector<size_t> offsets;
-    offsets.reserve(entry_count);
-
-    if (entry_count == 1)
+    auto entry_count = arc_file.io.read_u16_le();
+    auto meta = std::make_unique<ArchiveMeta>();
+    for (auto i : util::range(entry_count))
     {
-        offsets.push_back(arc_file.io.tell());
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->offset = entry_count == 1
+            ? arc_file.io.tell()
+            : arc_file.io.read_u32_le();
+        entry->name = util::format("%d.bmp", i);
+        meta->entries.push_back(std::move(entry));
     }
-    else
-    {
-        for (auto i : util::range(entry_count))
-            offsets.push_back(arc_file.io.read_u32_le());
-    }
+    return meta;
+}
 
-    size_t file_number = 0;
-    for (auto &offset : offsets)
-    {
-        arc_file.io.seek(offset);
-        size_t size_original = arc_file.io.read_u32_le();
-        size_t size_compressed = arc_file.io.read_u32_le();
+std::unique_ptr<File> MgrArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    size_t size_orig = arc_file.io.read_u32_le();
+    size_t size_comp = arc_file.io.read_u32_le();
 
-        std::unique_ptr<File> file(new File);
-        file->name = util::format("%d.bmp", ++file_number);
-
-        auto data = arc_file.io.read(size_compressed);
-        data = decompress(data, size_original);
-        file->io.write(data);
-
-        saver.save(std::move(file));
-    }
+    auto data = arc_file.io.read(size_comp);
+    data = decompress(data, size_orig);
+    return std::make_unique<File>(entry->name, data);
 }
 
 static auto dummy = fmt::Registry::add<MgrArchiveDecoder>("propeller/mgr");

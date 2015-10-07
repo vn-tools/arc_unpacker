@@ -27,11 +27,15 @@ namespace
         Th145,
     };
 
-    struct TableEntry final
+    struct ArchiveMetaImpl final : fmt::ArchiveMeta
+    {
+        TfpkVersion version;
+    };
+
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
         size_t size;
         size_t offset;
-        std::string name;
         bstr key;
     };
 
@@ -41,8 +45,6 @@ namespace
         size_t file_count;
     };
 
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
-    using DirTable = std::vector<std::unique_ptr<DirEntry>>;
     using HashLookupMap = std::map<u32, std::string>;
 
     class RsaReader final
@@ -213,7 +215,8 @@ static std::string get_unknown_name(
     return util::format("unk-%08x%s", hash, ext.c_str());
 }
 
-static std::string get_dir_name(DirEntry &dir_entry, HashLookupMap user_fn_map)
+static std::string get_dir_name(
+    const DirEntry &dir_entry, const HashLookupMap user_fn_map)
 {
     auto it = user_fn_map.find(dir_entry.initial_hash);
     if (it != user_fn_map.end())
@@ -221,26 +224,25 @@ static std::string get_dir_name(DirEntry &dir_entry, HashLookupMap user_fn_map)
     return get_unknown_name(-1, dir_entry.initial_hash, "");
 }
 
-static DirTable read_dir_entries(RsaReader &reader)
+static std::vector<DirEntry> read_dir_entries(RsaReader &reader)
 {
-    auto tmp_io = reader.read_block();
-    std::vector<std::unique_ptr<DirEntry>> dir_entries;
-    size_t dir_count = tmp_io->read_u32_le();
+    std::vector<DirEntry> dirs;
+    auto dir_count = reader.read_block()->read_u32_le();
     for (auto i : util::range(dir_count))
     {
-        tmp_io = reader.read_block();
-        std::unique_ptr<DirEntry> entry(new DirEntry);
-        entry->initial_hash = tmp_io->read_u32_le();
-        entry->file_count = tmp_io->read_u32_le();
-        dir_entries.push_back(std::move(entry));
+        auto tmp_io = reader.read_block();
+        DirEntry entry;
+        entry.initial_hash = tmp_io->read_u32_le();
+        entry.file_count = tmp_io->read_u32_le();
+        dirs.push_back(entry);
     }
-    return dir_entries;
+    return dirs;
 }
 
 static HashLookupMap read_fn_map(
     RsaReader &reader,
-    DirTable &dir_entries,
-    HashLookupMap &user_fn_map,
+    const std::vector<DirEntry> &dir_entries,
+    const HashLookupMap &user_fn_map,
     TfpkVersion version)
 {
     HashLookupMap fn_map;
@@ -261,18 +263,18 @@ static HashLookupMap read_fn_map(
 
     for (auto &dir_entry : dir_entries)
     {
-        auto dn = get_dir_name(*dir_entry, user_fn_map);
+        auto dn = get_dir_name(dir_entry, user_fn_map);
         if (dn.size() > 0 && dn[dn.size() - 1] != '/')
             dn += "/";
 
-        for (auto j : util::range(dir_entry->file_count))
+        for (auto j : util::range(dir_entry.file_count))
         {
             // TH145 English patch contains invalid directory names
             try
             {
                 auto fn = util::sjis_to_utf8(tmp_io->read_to_zero()).str();
                 auto hash = get_file_name_hash(
-                    fn, version, dir_entry->initial_hash);
+                    fn, version, dir_entry.initial_hash);
                 fn_map[hash] = dn + fn;
             }
             catch (...)
@@ -281,142 +283,6 @@ static HashLookupMap read_fn_map(
         }
     }
     return fn_map;
-}
-
-static Table read_table(
-    RsaReader &reader, HashLookupMap user_fn_map, TfpkVersion version)
-{
-    HashLookupMap fn_map;
-
-    // TH135 contains file hashes, TH145 contains garbage
-    auto dir_entries = read_dir_entries(reader);
-    if (dir_entries.size() > 0)
-        fn_map = read_fn_map(reader, dir_entries, user_fn_map, version);
-
-    for (auto &it : user_fn_map)
-        fn_map[it.first] = it.second;
-
-    size_t file_count = reader.read_block()->read_u32_le();
-
-    Table table;
-    for (auto i : util::range(file_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        auto b1 = reader.read_block();
-        auto b2 = reader.read_block();
-        auto b3 = reader.read_block();
-        if (version == TfpkVersion::Th135)
-        {
-            entry->size = b1->read_u32_le();
-            entry->offset = b1->read_u32_le();
-
-            auto fn_hash = b2->read_u32_le();
-            auto it = fn_map.find(fn_hash);
-            entry->name = it == fn_map.end()
-                ? get_unknown_name(i, fn_hash)
-                : it->second;
-
-            entry->key = b3->read(16);
-        }
-        else
-        {
-            entry->size   = b1->read_u32_le() ^ b3->read_u32_le();
-            entry->offset = b1->read_u32_le() ^ b3->read_u32_le();
-
-            u32 fn_hash = b2->read_u32_le() ^ b3->read_u32_le();
-            u32 unk = b2->read_u32_le() ^ b3->read_u32_le();
-            auto it = fn_map.find(fn_hash);
-            entry->name = it == fn_map.end()
-                ? get_unknown_name(i, fn_hash)
-                : it->second;
-
-            b3->seek(0);
-            io::BufferedIO key_io;
-            for (auto j : util::range(4))
-                key_io.write_u32_le(neg32(b3->read_u32_le()));
-
-            key_io.seek(0);
-            entry->key = key_io.read_to_eof();
-        }
-        table.push_back(std::move(entry));
-    }
-
-    auto table_end = reader.tell();
-    for (auto &entry : table)
-        entry->offset += table_end;
-
-    return table;
-}
-
-static std::unique_ptr<File> read_file(
-    io::IO &arc_io, const TableEntry &entry, TfpkVersion version)
-{
-    std::unique_ptr<File> file(new File);
-    arc_io.seek(entry.offset);
-    auto data = arc_io.read(entry.size);
-    size_t key_size = entry.key.size();
-    if (version == TfpkVersion::Th135)
-    {
-        for (auto i : util::range(entry.size))
-            data[i] ^= entry.key[i % key_size];
-    }
-    else
-    {
-        auto *key = entry.key.get<const u8>();
-        auto *buf = data.get<u8>();
-        u8 aux[4];
-        for (auto i : util::range(4))
-            aux[i] = key[i];
-        for (auto i : util::range(entry.size))
-        {
-            u8 tmp = buf[i];
-            buf[i] = tmp ^ key[i % key_size] ^ aux[i%4];
-            aux[i%4] = tmp;
-        }
-    }
-    file->io.write(data);
-    file->name = entry.name;
-    file->guess_extension();
-    return file;
-}
-
-static void register_palettes(
-    const boost::filesystem::path &arc_path,
-    HashLookupMap &user_fn_map,
-    TfpkVersion version,
-    TfbmImageDecoder &decoder)
-{
-    auto dir = boost::filesystem::path(arc_path).parent_path();
-    for (boost::filesystem::directory_iterator it(dir);
-        it != boost::filesystem::directory_iterator();
-        it++)
-    {
-        if (!boost::filesystem::is_regular_file(it->path()))
-            continue;
-        if (it->path().string().find(".pak") == std::string::npos)
-            continue;
-
-        try
-        {
-            io::FileIO sub_arc_io(it->path(), io::FileMode::Read);
-            if (sub_arc_io.read(magic.size()) != magic)
-                continue;
-            sub_arc_io.skip(1);
-            RsaReader reader(sub_arc_io);
-            for (auto &entry : read_table(reader, user_fn_map, version))
-            {
-                if (entry->name.find("palette") == std::string::npos)
-                    continue;
-                auto pal_file = read_file(sub_arc_io, *entry, version);
-                pal_file->io.seek(0);
-                decoder.add_palette(entry->name, pal_file->io.read_to_eof());
-            }
-        }
-        catch (...)
-        {
-            continue;
-        }
-    }
 }
 
 struct TfpkArchiveDecoder::Priv final
@@ -473,25 +339,142 @@ bool TfpkArchiveDecoder::is_recognized_internal(File &arc_file) const
     return version == 0 || version == 1;
 }
 
-void TfpkArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    TfpkArchiveDecoder::read_meta(File &arc_file) const
 {
-    arc_file.io.skip(magic.size());
-    auto version = arc_file.io.read_u8() == 0
+    arc_file.io.seek(magic.size());
+
+    auto meta = std::make_unique<ArchiveMetaImpl>();
+    meta->version = arc_file.io.read_u8() == 0
         ? TfpkVersion::Th135
         : TfpkVersion::Th145;
 
     HashLookupMap user_fn_map;
     for (auto &fn : p->fn_set)
-        user_fn_map[get_file_name_hash(fn, version)] = fn;
-
-    register_palettes(
-        arc_file.name, user_fn_map, version, p->tfbm_image_decoder);
+        user_fn_map[get_file_name_hash(fn, meta->version)] = fn;
 
     RsaReader reader(arc_file.io);
-    Table table = read_table(reader, user_fn_map, version);
+    HashLookupMap fn_map;
 
-    for (auto &entry : table)
-        saver.save(read_file(arc_file.io, *entry, version));
+    // TH135 contains file hashes, TH145 contains garbage
+    auto dir_entries = read_dir_entries(reader);
+    if (dir_entries.size() > 0)
+        fn_map = read_fn_map(reader, dir_entries, user_fn_map, meta->version);
+
+    for (auto &it : user_fn_map)
+        fn_map[it.first] = it.second;
+
+    size_t file_count = reader.read_block()->read_u32_le();
+    for (auto i : util::range(file_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        auto b1 = reader.read_block();
+        auto b2 = reader.read_block();
+        auto b3 = reader.read_block();
+        if (meta->version == TfpkVersion::Th135)
+        {
+            entry->size = b1->read_u32_le();
+            entry->offset = b1->read_u32_le();
+
+            auto fn_hash = b2->read_u32_le();
+            auto it = fn_map.find(fn_hash);
+            entry->name = it == fn_map.end()
+                ? get_unknown_name(i, fn_hash)
+                : it->second;
+
+            entry->key = b3->read(16);
+        }
+        else
+        {
+            entry->size   = b1->read_u32_le() ^ b3->read_u32_le();
+            entry->offset = b1->read_u32_le() ^ b3->read_u32_le();
+
+            u32 fn_hash = b2->read_u32_le() ^ b3->read_u32_le();
+            u32 unk = b2->read_u32_le() ^ b3->read_u32_le();
+            auto it = fn_map.find(fn_hash);
+            entry->name = it == fn_map.end()
+                ? get_unknown_name(i, fn_hash)
+                : it->second;
+
+            b3->seek(0);
+            io::BufferedIO key_io;
+            for (auto j : util::range(4))
+                key_io.write_u32_le(neg32(b3->read_u32_le()));
+
+            key_io.seek(0);
+            entry->key = key_io.read_to_eof();
+        }
+        meta->entries.push_back(std::move(entry));
+    }
+
+    auto table_end = reader.tell();
+    for (auto &entry : meta->entries)
+        static_cast<ArchiveEntryImpl*>(entry.get())->offset += table_end;
+
+    return meta;
+}
+
+std::unique_ptr<File> TfpkArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+    size_t key_size = entry->key.size();
+    if (meta->version == TfpkVersion::Th135)
+    {
+        for (auto i : util::range(entry->size))
+            data[i] ^= entry->key[i % key_size];
+    }
+    else
+    {
+        auto *key = entry->key.get<const u8>();
+        auto *buf = data.get<u8>();
+        u8 aux[4];
+        for (auto i : util::range(4))
+            aux[i] = key[i];
+        for (auto i : util::range(entry->size))
+        {
+            u8 tmp = buf[i];
+            buf[i] = tmp ^ key[i % key_size] ^ aux[i%4];
+            aux[i%4] = tmp;
+        }
+    }
+    auto output_file = std::make_unique<File>(entry->name, data);
+    output_file->guess_extension();
+    return output_file;
+}
+
+void TfpkArchiveDecoder::preprocess(
+    File &arc_file, ArchiveMeta &m, FileSaver &saver) const
+{
+    p->tfbm_image_decoder.clear_palettes();
+    auto dir = boost::filesystem::path(arc_file.name).parent_path();
+    for (boost::filesystem::directory_iterator it(dir);
+        it != boost::filesystem::directory_iterator();
+        it++)
+    {
+        if (!boost::filesystem::is_regular_file(it->path()))
+            continue;
+        if (it->path().string().find(".pak") == std::string::npos)
+            continue;
+
+        File other_arc_file(it->path(), io::FileMode::Read);
+        if (!is_recognized(other_arc_file))
+            continue;
+
+        auto meta = read_meta(other_arc_file);
+        for (auto &entry : meta->entries)
+        {
+            if (entry->name.find("palette") == std::string::npos)
+                continue;
+            auto pal_file = read_file(other_arc_file, *meta, *entry);
+            pal_file->io.seek(0);
+            p->tfbm_image_decoder.add_palette(
+                entry->name, pal_file->io.read_to_eof());
+        }
+    }
 }
 
 static auto dummy = fmt::Registry::add<TfpkArchiveDecoder>("th/tfpk");

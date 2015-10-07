@@ -8,47 +8,47 @@ using namespace au::fmt::rpgmaker;
 static const bstr magic = "RGSSAD\x00\x01"_b;
 static const u32 initial_key = 0xDEADCAFE;
 
-static rgs::Table read_table(io::IO &arc_io, u32 key)
+bool RgssadArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
-    rgs::Table table;
+    return arc_file.io.read(magic.size()) == magic;
+}
 
-    while (arc_io.tell() < arc_io.size())
+std::unique_ptr<fmt::ArchiveMeta>
+    RgssadArchiveDecoder::read_meta(File &arc_file) const
+{
+    arc_file.io.seek(magic.size());
+    auto key = initial_key;
+    auto meta = std::make_unique<ArchiveMeta>();
+    while (!arc_file.io.eof())
     {
-        std::unique_ptr<rgs::TableEntry> entry(new rgs::TableEntry);
+        auto entry = std::make_unique<rgs::ArchiveEntryImpl>();
 
-        size_t name_size = arc_io.read_u32_le() ^ key;
+        size_t name_size = arc_file.io.read_u32_le() ^ key;
         key = rgs::advance_key(key);
-        entry->name = arc_io.read(name_size).str();
+        entry->name = arc_file.io.read(name_size).str();
         for (auto i : util::range(name_size))
         {
             entry->name[i] ^= key;
             key = rgs::advance_key(key);
         }
 
-        entry->size = arc_io.read_u32_le() ^ key;
+        entry->size = arc_file.io.read_u32_le() ^ key;
         key = rgs::advance_key(key);
 
         entry->key = key;
-        entry->offset = arc_io.tell();
+        entry->offset = arc_file.io.tell();
 
-        arc_io.skip(entry->size);
-        table.push_back(std::move(entry));
+        arc_file.io.skip(entry->size);
+        meta->entries.push_back(std::move(entry));
     }
-    return table;
+    return meta;
 }
 
-bool RgssadArchiveDecoder::is_recognized_internal(File &arc_file) const
+std::unique_ptr<File> RgssadArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
-    return arc_file.io.read(magic.size()) == magic;
-}
-
-void RgssadArchiveDecoder::unpack_internal(
-    File &arc_file, FileSaver &saver) const
-{
-    arc_file.io.skip(magic.size());
-    auto table = read_table(arc_file.io, initial_key);
-    for (auto &entry : table)
-        saver.save(rgs::read_file(arc_file.io, *entry));
+    return rgs::read_file(
+        arc_file, *static_cast<const rgs::ArchiveEntryImpl*>(&e));
 }
 
 static auto dummy = fmt::Registry::add<RgssadArchiveDecoder>("rm/rgssad");

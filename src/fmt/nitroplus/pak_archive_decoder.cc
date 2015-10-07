@@ -11,71 +11,61 @@ static const bstr magic = "\x02\x00\x00\x00"_b;
 
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
+        bool compressed;
         size_t offset;
-        size_t flags;
-        size_t size_original;
-        size_t size_compressed;
+        size_t size_orig;
+        size_t size_comp;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
-}
-
-static Table read_table(io::IO &arc_io)
-{
-    auto file_count = arc_io.read_u32_le();
-    auto table_size_original = arc_io.read_u32_le();
-    auto table_size_compressed = arc_io.read_u32_le();
-    arc_io.skip(0x104);
-
-    io::BufferedIO table_io(
-        util::pack::zlib_inflate(
-            arc_io.read(table_size_compressed)));
-
-    Table table;
-    auto file_data_offset = arc_io.tell();
-    for (auto i : util::range(file_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        size_t file_name_size = table_io.read_u32_le();
-        entry->name = util::sjis_to_utf8(table_io.read(file_name_size)).str();
-        entry->offset = table_io.read_u32_le() + file_data_offset;
-        entry->size_original = table_io.read_u32_le();
-        table_io.skip(4);
-        entry->flags = table_io.read_u32_le();
-        entry->size_compressed = table_io.read_u32_le();
-        table.push_back(std::move(entry));
-    }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
-{
-    arc_io.seek(entry.offset);
-    auto data = entry.flags > 0
-        ? util::pack::zlib_inflate(arc_io.read(entry.size_compressed))
-        : arc_io.read(entry.size_original);
-    std::unique_ptr<File> file(new File);
-    file->io.write(data);
-    file->name = entry.name;
-    return file;
 }
 
 bool PakArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
     if (arc_file.io.read(magic.size()) != magic)
         return false;
-    return read_table(arc_file.io).size() > 0;
+    return read_meta(arc_file)->entries.size() > 0;
 }
 
-void PakArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    PakArchiveDecoder::read_meta(File &arc_file) const
 {
-    arc_file.io.skip(magic.size());
-    auto table = read_table(arc_file.io);
-    for (auto &entry : table)
-        saver.save(read_file(arc_file.io, *entry));
+    arc_file.io.seek(magic.size());
+    auto file_count = arc_file.io.read_u32_le();
+    auto table_size_orig = arc_file.io.read_u32_le();
+    auto table_size_comp = arc_file.io.read_u32_le();
+    arc_file.io.skip(0x104);
+
+    io::BufferedIO table_io(
+        util::pack::zlib_inflate(
+            arc_file.io.read(table_size_comp)));
+
+    auto meta = std::make_unique<ArchiveMeta>();
+    auto file_data_offset = arc_file.io.tell();
+    for (auto i : util::range(file_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        size_t file_name_size = table_io.read_u32_le();
+        entry->name = util::sjis_to_utf8(table_io.read(file_name_size)).str();
+        entry->offset = table_io.read_u32_le() + file_data_offset;
+        entry->size_orig = table_io.read_u32_le();
+        table_io.skip(4);
+        entry->compressed = table_io.read_u32_le() > 0;
+        entry->size_comp = table_io.read_u32_le();
+        meta->entries.push_back(std::move(entry));
+    }
+    return meta;
+}
+
+std::unique_ptr<File> PakArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = entry->compressed
+        ? util::pack::zlib_inflate(arc_file.io.read(entry->size_comp))
+        : arc_file.io.read(entry->size_orig);
+    return std::make_unique<File>(entry->name, data);
 }
 
 static auto dummy = fmt::Registry::add<PakArchiveDecoder>("nitro/pak");

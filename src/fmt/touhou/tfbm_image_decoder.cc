@@ -30,6 +30,11 @@ TfbmImageDecoder::~TfbmImageDecoder()
 {
 }
 
+void TfbmImageDecoder::clear_palettes()
+{
+    p->palette_map.clear();
+}
+
 void TfbmImageDecoder::add_palette(
     const std::string &name, const bstr &palette_data)
 {

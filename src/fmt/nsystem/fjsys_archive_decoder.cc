@@ -5,45 +5,15 @@
 using namespace au;
 using namespace au::fmt::nsystem;
 
-namespace
-{
-    struct Header final
-    {
-        size_t header_size;
-        size_t file_names_size;
-        size_t file_count;
-    };
-}
-
 static const bstr magic = "FJSYS\x00\x00\x00"_b;
 
-static std::unique_ptr<Header> read_header(io::IO &arc_io)
+namespace
 {
-    std::unique_ptr<Header> header(new Header);
-    header->header_size = arc_io.read_u32_le();
-    header->file_names_size = arc_io.read_u32_le();
-    header->file_count = arc_io.read_u32_le();
-    arc_io.skip(64);
-    return header;
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, const Header &header)
-{
-    std::unique_ptr<File> file(new File);
-    size_t file_name_offset = arc_io.read_u32_le();
-    size_t data_size = arc_io.read_u32_le();
-    size_t data_offset = static_cast<size_t>(arc_io.read_u64_le());
-    size_t old_pos = arc_io.tell();
-    size_t file_names_start = header.header_size - header.file_names_size;
-
-    arc_io.seek(file_name_offset + file_names_start);
-    file->name = arc_io.read_to_zero().str();
-
-    arc_io.seek(data_offset);
-    file->io.write_from_io(arc_io, data_size);
-
-    arc_io.seek(old_pos);
-    return file;
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
+    {
+        size_t offset;
+        size_t size;
+    };
 }
 
 struct FjsysArchiveDecoder::Priv final
@@ -65,14 +35,39 @@ bool FjsysArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.io.read(magic.size()) == magic;
 }
 
-void FjsysArchiveDecoder::unpack_internal(
-    File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    FjsysArchiveDecoder::read_meta(File &arc_file) const
 {
-    arc_file.io.skip(magic.size());
+    arc_file.io.seek(magic.size());
+    auto header_size = arc_file.io.read_u32_le();
+    auto file_names_size = arc_file.io.read_u32_le();
+    auto file_names_start = header_size - file_names_size;
+    auto file_count = arc_file.io.read_u32_le();
+    arc_file.io.skip(64);
 
-    std::unique_ptr<Header> header = read_header(arc_file.io);
-    for (auto i : util::range(header->file_count))
-        saver.save(read_file(arc_file.io, *header));
+    auto meta = std::make_unique<ArchiveMeta>();
+    for (auto i : util::range(file_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        size_t file_name_offset = arc_file.io.read_u32_le();
+        entry->size = arc_file.io.read_u32_le();
+        entry->offset = arc_file.io.read_u64_le();
+        arc_file.io.peek(file_name_offset + file_names_start, [&]()
+        {
+            entry->name = arc_file.io.read_to_zero().str();
+        });
+        meta->entries.push_back(std::move(entry));
+    }
+    return meta;
+}
+
+std::unique_ptr<File> FjsysArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+    return std::make_unique<File>(entry->name, data);
 }
 
 static auto dummy = fmt::Registry::add<FjsysArchiveDecoder>("nsystem/fjsys");

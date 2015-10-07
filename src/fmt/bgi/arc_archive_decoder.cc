@@ -11,40 +11,11 @@ static const bstr magic = "PackFile\x20\x20\x20\x20"_b;
 
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
-        u32 offset;
-        u32 size;
+        size_t offset;
+        size_t size;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
-}
-
-static Table read_table(io::IO &arc_io)
-{
-    auto file_count = arc_io.read_u32_le();
-    Table table;
-    auto file_data_start = arc_io.tell() + file_count * 32;
-    for (auto i : util::range(file_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = arc_io.read_to_zero(16).str();
-        entry->offset = arc_io.read_u32_le() + file_data_start;
-        entry->size = arc_io.read_u32_le();
-        arc_io.skip(8);
-        table.push_back(std::move(entry));
-    }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
-{
-    std::unique_ptr<File> file(new File);
-    arc_io.seek(entry.offset);
-    file->io.write_from_io(arc_io, entry.size);
-    file->name = entry.name;
-    return file;
 }
 
 struct ArcArchiveDecoder::Priv final
@@ -70,16 +41,34 @@ bool ArcArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.io.read(magic.size()) == magic;
 }
 
-void ArcArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    ArcArchiveDecoder::read_meta(File &arc_file) const
 {
-    arc_file.io.skip(magic.size());
-    auto table = read_table(arc_file.io);
-    for (auto &entry : table)
+    arc_file.io.seek(magic.size());
+    auto file_count = arc_file.io.read_u32_le();
+    auto file_data_start = arc_file.io.tell() + file_count * 32;
+    auto meta = std::make_unique<ArchiveMeta>();
+    for (auto i : util::range(file_count))
     {
-        auto file = read_file(arc_file.io, *entry);
-        file->guess_extension();
-        saver.save(std::move(file));
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->name = arc_file.io.read_to_zero(16).str();
+        entry->offset = arc_file.io.read_u32_le() + file_data_start;
+        entry->size = arc_file.io.read_u32_le();
+        arc_file.io.skip(8);
+        meta->entries.push_back(std::move(entry));
     }
+    return meta;
+}
+
+std::unique_ptr<File> ArcArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+    auto output_file = std::make_unique<File>(entry->name, data);
+    output_file->guess_extension();
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<ArcArchiveDecoder>("bgi/arc");

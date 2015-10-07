@@ -15,21 +15,19 @@ static const bstr magic3 = "ERISA-Archive file"_b;
 
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
         size_t offset;
         size_t size;
         bool encrypted;
         bstr extra;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static Table read_table(io::IO &io, std::string root = "")
+static std::unique_ptr<fmt::ArchiveMeta> read_meta(
+    io::IO &io, std::string root = "")
 {
-    Table table;
+    auto meta = std::make_unique<fmt::ArchiveMeta>();
     common::SectionReader section_reader(io);
     for (auto &section : section_reader.get_sections("DirEntry"))
     {
@@ -37,7 +35,7 @@ static Table read_table(io::IO &io, std::string root = "")
         auto entry_count = io.read_u32_le();
         for (auto i : util::range(entry_count))
         {
-            std::unique_ptr<TableEntry> entry(new TableEntry);
+            auto entry = std::make_unique<ArchiveEntryImpl>();
             entry->size = io.read_u64_le();
             auto flags = io.read_u32_le();
             entry->encrypted = io.read_u32_le() > 0;
@@ -54,33 +52,22 @@ static Table read_table(io::IO &io, std::string root = "")
 
             if (flags == 0x10)
             {
-                Table sub_table;
                 io.peek(entry->offset, [&]()
                 {
-                    sub_table = read_table(io, entry->name);
+                    for (auto &sub_entry : read_meta(io, entry->name)->entries)
+                        meta->entries.push_back(std::move(sub_entry));
                 });
-                for (auto &sub_entry : sub_table)
-                    table.push_back(std::move(sub_entry));
             }
             else if (flags == 0x20 || flags == 0x40)
             {
             }
             else
             {
-                table.push_back(std::move(entry));
+                meta->entries.push_back(std::move(entry));
             }
         }
     }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
-{
-    std::unique_ptr<File> file(new File);
-    file->name = entry.name;
-    arc_io.seek(entry.offset);
-    file->io.write_from_io(arc_io, entry.size);
-    return file;
+    return meta;
 }
 
 struct NoaArchiveDecoder::Priv final
@@ -106,20 +93,28 @@ bool NoaArchiveDecoder::is_recognized_internal(File &arc_file) const
         && arc_file.io.read(magic3.size()) == magic3;
 }
 
-void NoaArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    NoaArchiveDecoder::read_meta(File &arc_file) const
 {
     arc_file.io.seek(0x40);
-    auto table = read_table(arc_file.io);
-    for (auto &entry : table)
+    return ::read_meta(arc_file.io);
+}
+
+std::unique_ptr<File> NoaArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    if (entry->encrypted)
     {
-        if (entry->encrypted)
-        {
-            Log.warn(util::format(
-                "%s is encrypted, but encrypted files are not supported\n",
-                entry->name.c_str()));
-        }
-        saver.save(read_file(arc_file.io, *entry));
+        Log.warn(util::format(
+            "%s is encrypted, but encrypted files are not supported\n",
+            entry->name.c_str()));
     }
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+    auto output_file = std::make_unique<File>(entry->name, data);
+    output_file->guess_extension();
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<NoaArchiveDecoder>("entis/noa");

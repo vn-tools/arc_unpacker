@@ -10,29 +10,24 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
-namespace
-{
-    struct Header final
-    {
-        size_t file_count;
-        size_t table_offset;
-        size_t table_size;
-    };
-
-    struct TableEntry final
-    {
-        size_t size_compressed;
-        size_t size_original;
-        size_t offset;
-        std::string name;
-    };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
-}
-
+static const bstr magic = "PBGZ"_b;
 static const bstr crypt_magic = "edz"_b;
 static const bstr jpeg_magic = "\xFF\xD8\xFF\xE0"_b;
-static const bstr magic = "PBGZ"_b;
+
+namespace
+{
+    struct ArchiveMetaImpl final : fmt::ArchiveMeta
+    {
+        size_t encryption_version;
+    };
+
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
+    {
+        size_t offset;
+        size_t size_comp;
+        size_t size_orig;
+    };
+}
 
 static std::vector<std::map<u8, DecryptorContext>> decryptors
 {
@@ -58,90 +53,47 @@ static std::vector<std::map<u8, DecryptorContext>> decryptors
     },
 };
 
-static bstr decompress(const bstr &input, size_t size_original)
+static bstr decompress(const bstr &input, size_t size_orig)
 {
     util::pack::LzssSettings settings;
     settings.position_bits = 13;
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-    return util::pack::lzss_decompress_bitwise(input, size_original, settings);
-}
-
-static std::unique_ptr<Header> read_header(io::IO &arc_io)
-{
-    std::unique_ptr<Header> header(new Header);
-    io::BufferedIO header_io(
-        decrypt(arc_io.read(12), { 0x1B, 0x37, 0x0C, 0x400 }));
-    header->file_count = header_io.read_u32_le() - 123456;
-    header->table_offset = header_io.read_u32_le() - 345678;
-    header->table_size = header_io.read_u32_le() - 567891;
-    return header;
-}
-
-static Table read_table(io::IO &arc_io, const Header &header)
-{
-    arc_io.seek(header.table_offset);
-    io::BufferedIO table_io(
-        decompress(
-            decrypt(arc_io.read_to_eof(), { 0x3E, 0x9B, 0x80, 0x400 }),
-            header.table_size));
-
-    Table table;
-    for (auto i : util::range(header.file_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = table_io.read_to_zero().str();
-        entry->offset = table_io.read_u32_le();
-        entry->size_original = table_io.read_u32_le();
-        table_io.skip(4);
-        table.push_back(std::move(entry));
-    }
-
-    for (auto i : util::range(table.size() - 1))
-        table[i]->size_compressed = table[i + 1]->offset - table[i]->offset;
-
-    if (table.size() > 0)
-    {
-        table[table.size() - 1]->size_compressed =
-            header.table_offset - table[table.size() - 1]->offset;
-    }
-
-    return table;
+    return util::pack::lzss_decompress_bitwise(input, size_orig, settings);
 }
 
 static std::unique_ptr<File> read_file(
-    io::IO &arc_io, const TableEntry &entry, size_t encryption_version)
+    File &arc_file, const fmt::ArchiveEntry &e, u8 encryption_version)
 {
-    std::unique_ptr<File> file(new File);
-    file->name = entry.name;
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
-    arc_io.seek(entry.offset);
+    arc_file.io.seek(entry->offset);
     io::BufferedIO uncompressed_io(
         decompress(
-            arc_io.read(entry.size_compressed),
-            entry.size_original));
+            arc_file.io.read(entry->size_comp),
+            entry->size_orig));
 
     if (uncompressed_io.read(crypt_magic.size()) != crypt_magic)
         throw err::NotSupportedError("Unknown encryption");
 
-    file->io.write(
-        decrypt(
-            uncompressed_io.read_to_eof(),
-            decryptors[encryption_version][uncompressed_io.read_u8()]));
+    auto data = decrypt(
+        uncompressed_io.read_to_eof(),
+        decryptors[encryption_version][uncompressed_io.read_u8()]);
 
-    return file;
+    return std::make_unique<File>(entry->name, data);
 }
 
-static size_t detect_encryption_version(io::IO &arc_io, const Table &table)
+static size_t detect_encryption_version(
+    File &arc_file, const fmt::ArchiveMeta &meta)
 {
-    for (auto &entry : table)
+    for (auto &entry : meta.entries)
     {
         if (entry->name.find(".jpg") == std::string::npos)
             continue;
         for (auto version : util::range(decryptors.size()))
         {
-            auto file = read_file(arc_io, *entry, version);
+            auto file = read_file(arc_file, *entry, version);
             file->io.seek(0);
             if (file->io.read(jpeg_magic.size()) == jpeg_magic)
                 return version;
@@ -169,15 +121,50 @@ bool PbgzArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.io.read(magic.size()) == magic;
 }
 
-void PbgzArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    PbgzArchiveDecoder::read_meta(File &arc_file) const
 {
-    arc_file.io.skip(magic.size());
-    auto header = read_header(arc_file.io);
-    auto table = read_table(arc_file.io, *header);
-    int encryption_version = detect_encryption_version(arc_file.io, table);
+    arc_file.io.seek(magic.size());
 
-    for (auto &entry : table)
-        saver.save(read_file(arc_file.io, *entry, encryption_version));
+    io::BufferedIO header_io(
+        decrypt(arc_file.io.read(12), { 0x1B, 0x37, 0x0C, 0x400 }));
+    auto file_count = header_io.read_u32_le() - 123456;
+    auto table_offset = header_io.read_u32_le() - 345678;
+    auto table_size_orig = header_io.read_u32_le() - 567891;
+
+    arc_file.io.seek(table_offset);
+    io::BufferedIO table_io(
+        decompress(
+            decrypt(arc_file.io.read_to_eof(), { 0x3E, 0x9B, 0x80, 0x400 }),
+            table_size_orig));
+
+    ArchiveEntryImpl *last_entry = nullptr;
+    auto meta = std::make_unique<ArchiveMetaImpl>();
+    for (auto i : util::range(file_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->name = table_io.read_to_zero().str();
+        entry->offset = table_io.read_u32_le();
+        entry->size_orig = table_io.read_u32_le();
+        table_io.skip(4);
+        if (last_entry)
+            last_entry->size_comp = entry->offset - last_entry->offset;
+        last_entry = entry.get();
+        meta->entries.push_back(std::move(entry));
+    }
+
+    if (last_entry)
+        last_entry->size_comp = table_offset - last_entry->offset;
+
+    meta->encryption_version = detect_encryption_version(arc_file, *meta);
+    return meta;
+}
+
+std::unique_ptr<File> PbgzArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    return ::read_file(arc_file, e, meta->encryption_version);
 }
 
 static auto dummy = fmt::Registry::add<PbgzArchiveDecoder>("th/pbgz");

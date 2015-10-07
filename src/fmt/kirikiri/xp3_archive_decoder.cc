@@ -5,6 +5,7 @@
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri;
@@ -14,9 +15,33 @@ namespace
     struct InfoChunk final
     {
         u32 flags;
-        u64 file_size_original;
-        u64 file_size_compressed;
+        u64 file_size_orig;
+        u64 file_size_comp;
         std::string name;
+    };
+
+    struct SegmChunk final
+    {
+        u32 flags;
+        u64 offset;
+        u64 size_orig;
+        u64 size_comp;
+    };
+
+    struct AdlrChunk final
+    {
+        u32 key;
+    };
+
+    struct ArchiveMetaImpl final : fmt::ArchiveMeta
+    {
+        std::unique_ptr<Xp3Filter> filter;
+    };
+
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
+    {
+        std::vector<SegmChunk> segm_chunks;
+        AdlrChunk adlr_chunk;
     };
 }
 
@@ -53,20 +78,6 @@ static u64 get_table_offset(io::IO &arc_io, int version)
     return arc_io.read_u64_le();
 }
 
-static std::unique_ptr<io::IO> read_raw_table(io::IO &arc_io)
-{
-    bool use_zlib = arc_io.read_u8() != 0;
-    const u64 size_compressed = arc_io.read_u64_le();
-    const u64 size_original = use_zlib
-        ? arc_io.read_u64_le()
-        : size_compressed;
-
-    bstr data = arc_io.read(size_compressed);
-    if (use_zlib)
-        data = util::pack::zlib_inflate(data);
-    return std::unique_ptr<io::IO>(new io::BufferedIO(data));
-}
-
 static InfoChunk read_info_chunk(io::IO &table_io)
 {
     if (table_io.read(info_magic.size()) != info_magic)
@@ -75,8 +86,8 @@ static InfoChunk read_info_chunk(io::IO &table_io)
 
     InfoChunk info_chunk;
     info_chunk.flags = table_io.read_u32_le();
-    info_chunk.file_size_original = table_io.read_u64_le();
-    info_chunk.file_size_compressed = table_io.read_u64_le();
+    info_chunk.file_size_orig = table_io.read_u64_le();
+    info_chunk.file_size_comp = table_io.read_u64_le();
 
     size_t file_name_size = table_io.read_u16_le();
     auto name = table_io.read(file_name_size * 2);
@@ -84,41 +95,29 @@ static InfoChunk read_info_chunk(io::IO &table_io)
     return info_chunk;
 }
 
-static bstr read_data_from_segm_chunk(io::IO &table_io, io::IO &arc_io)
+static std::vector<SegmChunk> read_segm_chunks(io::IO &table_io)
 {
     if (table_io.read(segm_magic.size()) != segm_magic)
         throw err::CorruptDataError("Expected SEGM chunk");
 
-    u64 segm_chunk_size = table_io.read_u64_le();
+    auto segm_chunk_size = table_io.read_u64_le();
     if (segm_chunk_size % 28 != 0)
         throw err::CorruptDataError("Unexpected SEGM chunk size");
-    bstr full_data;
-    size_t initial_pos = table_io.tell();
-    while (segm_chunk_size > table_io.tell() - initial_pos)
+
+    std::vector<SegmChunk> segm_chunks;
+    for (auto i : util::range(segm_chunk_size / 28))
     {
-        u32 segm_flags = table_io.read_u32_le();
-        u64 data_offset = table_io.read_u64_le();
-        u64 data_size_original = table_io.read_u64_le();
-        u64 data_size_compressed = table_io.read_u64_le();
-        arc_io.seek(data_offset);
-
-        bool use_zlib = (segm_flags & 7) > 0;
-        if (use_zlib)
-        {
-            auto data_compressed = arc_io.read(data_size_compressed);
-            auto data_uncompressed = util::pack::zlib_inflate(data_compressed);
-            full_data += data_uncompressed;
-        }
-        else
-        {
-            full_data += arc_io.read(data_size_original);
-        }
+        SegmChunk segm_chunk;
+        segm_chunk.flags = table_io.read_u32_le();
+        segm_chunk.offset = table_io.read_u64_le();
+        segm_chunk.size_orig = table_io.read_u64_le();
+        segm_chunk.size_comp = table_io.read_u64_le();
+        segm_chunks.push_back(segm_chunk);
     }
-
-    return full_data;
+    return segm_chunks;
 }
 
-static u32 read_key_from_adlr_chunk(io::IO &table_io)
+static AdlrChunk read_adlr_chunk(io::IO &table_io)
 {
     if (table_io.read(adlr_magic.size()) != adlr_magic)
         throw err::CorruptDataError("Expected ADLR chunk");
@@ -127,33 +126,9 @@ static u32 read_key_from_adlr_chunk(io::IO &table_io)
     if (adlr_chunk_size != 4)
         throw err::CorruptDataError("Unexpected ADLR chunk size");
 
-    return table_io.read_u32_le();
-}
-
-static std::unique_ptr<File> read_file(
-    io::IO &arc_io, io::IO &table_io, const Xp3FilterFunc &filter_func)
-{
-    std::unique_ptr<File> target_file(new File());
-
-    if (table_io.read(file_magic.size()) != file_magic)
-        throw err::CorruptDataError("Expected FILE chunk");
-
-    u64 file_chunk_size = table_io.read_u64_le();
-    size_t file_chunk_start_offset = table_io.tell();
-
-    auto info_chunk = read_info_chunk(table_io);
-    auto data = read_data_from_segm_chunk(table_io, arc_io);
-    auto key = read_key_from_adlr_chunk(table_io);
-
-    if (table_io.tell() - file_chunk_start_offset != file_chunk_size)
-        throw err::CorruptDataError("Unexpected file data size");
-
-    if (filter_func)
-        filter_func(data, key);
-
-    target_file->name = info_chunk.name;
-    target_file->io.write(data);
-    return target_file;
+    AdlrChunk adlr_chunk;
+    adlr_chunk.key = table_io.read_u32_le();
+    return adlr_chunk;
 }
 
 struct Xp3ArchiveDecoder::Priv final
@@ -188,20 +163,70 @@ bool Xp3ArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.io.read(xp3_magic.size()) == xp3_magic;
 }
 
-void Xp3ArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    Xp3ArchiveDecoder::read_meta(File &arc_file) const
 {
-    arc_file.io.skip(xp3_magic.size());
+    arc_file.io.seek(xp3_magic.size());
+    auto version = detect_version(arc_file.io);
+    auto table_offset = get_table_offset(arc_file.io, version);
 
-    int version = detect_version(arc_file.io);
-    u64 table_offset = get_table_offset(arc_file.io, version);
     arc_file.io.seek(table_offset);
-    auto table_io = read_raw_table(arc_file.io);
+    auto table_is_compressed = arc_file.io.read_u8() != 0;
+    auto table_size_comp = arc_file.io.read_u64_le();
+    auto table_size_orig = table_is_compressed
+        ? arc_file.io.read_u64_le()
+        : table_size_comp;
+    auto table_data = arc_file.io.read(table_size_comp);
+    if (table_is_compressed)
+        table_data = util::pack::zlib_inflate(table_data);
+    io::BufferedIO table_io(table_data);
 
-    Xp3Filter filter(arc_file.name);
-    p->filter_registry.set_decoder(filter);
+    auto meta = std::make_unique<ArchiveMetaImpl>();
+    meta->filter.reset(new Xp3Filter(arc_file.name));
+    p->filter_registry.set_decoder(*meta->filter);
 
-    while (table_io->tell() < table_io->size())
-        saver.save(read_file(arc_file.io, *table_io, filter.decoder));
+    while (table_io.tell() < table_io.size())
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        if (table_io.read(file_magic.size()) != file_magic)
+            throw err::CorruptDataError("Expected FILE chunk");
+
+        auto file_chunk_size = table_io.read_u64_le();
+        auto file_chunk_start_offset = table_io.tell();
+
+        auto info_chunk = read_info_chunk(table_io);
+        entry->segm_chunks = read_segm_chunks(table_io);
+        entry->adlr_chunk = read_adlr_chunk(table_io);
+
+        if (table_io.tell() - file_chunk_start_offset != file_chunk_size)
+            throw err::CorruptDataError("Unexpected file data size");
+
+        entry->name = info_chunk.name;
+        meta->entries.push_back(std::move(entry));
+    }
+    return meta;
+}
+
+std::unique_ptr<File> Xp3ArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+
+    bstr data;
+    for (auto &segm_chunk : entry->segm_chunks)
+    {
+        arc_file.io.seek(segm_chunk.offset);
+        bool data_is_compressed = (segm_chunk.flags & 7) > 0;
+        data += data_is_compressed
+            ? util::pack::zlib_inflate(arc_file.io.read(segm_chunk.size_comp))
+            : arc_file.io.read(segm_chunk.size_orig);
+    }
+
+    if (meta->filter && meta->filter->decoder)
+        meta->filter->decoder(data, entry->adlr_chunk.key);
+
+    return std::make_unique<File>(entry->name, data);
 }
 
 static auto dummy = fmt::Registry::add<Xp3ArchiveDecoder>("krkr/xp3");

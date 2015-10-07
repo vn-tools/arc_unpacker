@@ -9,14 +9,11 @@ using namespace au::fmt::libido;
 
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
-        size_t size;
         size_t offset;
+        size_t width, height;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 bool EgrArchiveDecoder::is_recognized_internal(File &arc_file) const
@@ -24,33 +21,49 @@ bool EgrArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.has_extension("egr");
 }
 
-void EgrArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    EgrArchiveDecoder::read_meta(File &arc_file) const
 {
     auto i = 0;
+    auto meta = std::make_unique<ArchiveMeta>();
     while (!arc_file.io.eof())
     {
-        auto width = arc_file.io.read_u32_le();
-        auto height = arc_file.io.read_u32_le();
-        if (arc_file.io.read_u32_le() != width * height)
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->width = arc_file.io.read_u32_le();
+        entry->height = arc_file.io.read_u32_le();
+        if (arc_file.io.read_u32_le() != entry->width * entry->height)
             throw err::BadDataSizeError();
-
-        pix::Palette palette(256);
-        for (auto i : util::range(palette.size()))
-        {
-            arc_file.io.skip(1);
-            palette[i].a = 0xFF;
-            palette[i].b = arc_file.io.read_u8();
-            palette[i].r = arc_file.io.read_u8();
-            palette[i].g = arc_file.io.read_u8();
-        }
-
-        arc_file.io.skip(0x174);
-        pix::Grid pixels(
-            width, height, arc_file.io.read(width * height), palette);
-
-        auto name = util::format("Image%03d.png", i++);
-        saver.save(util::file_from_grid(pixels, name));
+        entry->offset = arc_file.io.tell();
+        arc_file.io.skip(0x574 + entry->width * entry->height);
+        entry->name = util::format("Image%03d.png", i++);
+        meta->entries.push_back(std::move(entry));
     }
+    return meta;
+}
+
+std::unique_ptr<File> EgrArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    pix::Palette palette(256);
+    for (auto i : util::range(palette.size()))
+    {
+        arc_file.io.skip(1);
+        palette[i].a = 0xFF;
+        palette[i].b = arc_file.io.read_u8();
+        palette[i].r = arc_file.io.read_u8();
+        palette[i].g = arc_file.io.read_u8();
+    }
+
+    arc_file.io.skip(0x174);
+    pix::Grid pixels(
+        entry->width,
+        entry->height,
+        arc_file.io.read(entry->width * entry->height),
+        palette);
+
+    return util::file_from_grid(pixels, entry->name);
 }
 
 static auto dummy = fmt::Registry::add<EgrArchiveDecoder>("libido/egr");

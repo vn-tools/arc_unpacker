@@ -10,97 +10,11 @@ using namespace au::fmt::alice_soft;
 
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
-        u32 offset;
-        u32 size;
+        size_t offset;
+        size_t size;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
-}
-
-static Table read_table(io::IO &arc_io, std::string arc_name)
-{
-    boost::algorithm::to_lower(arc_name);
-
-    auto header_size = (arc_io.read_u16_le() - 1) * 256;
-    Table table;
-
-    size_t last_offset = 0;
-    bool finished = false;
-    for (auto i : util::range((header_size / 2) - 1))
-    {
-        size_t offset = arc_io.read_u16_le();
-        if (offset == 0)
-        {
-            finished = true;
-            continue;
-        }
-        offset = (offset - 1) * 256;
-
-        if (offset < last_offset)
-            throw err::CorruptDataError("Expected offsets to be sorted");
-        if (finished)
-            throw err::CorruptDataError("Expected remaining offsets to be 0");
-        if (offset > arc_io.size())
-            throw err::BadDataOffsetError();
-        if (offset == arc_io.size())
-            continue;
-
-        // necessary for VSP recognition
-        std::string ext = "dat";
-        if (arc_name.find("cg") != std::string::npos)
-            ext = "vsp";
-        else if (arc_name.find("dis") != std::string::npos)
-            ext = "sco";
-        else if (arc_name.find("mus") != std::string::npos)
-            ext = "mus";
-        else if (arc_name.find("map") != std::string::npos)
-            ext = "map";
-
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->offset = offset;
-        entry->name = util::format("%03d.%s", i, ext.c_str());
-        table.push_back(std::move(entry));
-
-        last_offset = offset;
-    }
-
-    if (!table.size())
-        throw err::CorruptDataError("File table cannot be empty");
-
-    for (size_t i : util::range(table.size()))
-    {
-        size_t next_offset = i + 1 < table.size()
-            ? table[i + 1]->offset
-            : arc_io.size();
-        table[i]->size = next_offset - table[i]->offset;
-    }
-
-    return table;
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
-{
-    std::unique_ptr<File> file(new File);
-    arc_io.seek(entry.offset);
-    file->io.write_from_io(arc_io, entry.size);
-    file->name = entry.name;
-    return file;
-}
-
-bool DatArchiveDecoder::is_recognized_internal(File &arc_file) const
-{
-    try
-    {
-        read_table(arc_file.io, arc_file.name);
-        return true;
-    }
-    catch (...)
-    {
-        return false;
-    }
 }
 
 struct DatArchiveDecoder::Priv final
@@ -117,15 +31,86 @@ DatArchiveDecoder::~DatArchiveDecoder()
 {
 }
 
-void DatArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+bool DatArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
-    auto table = read_table(arc_file.io, arc_file.name);
-    for (auto &entry : table)
+    try
     {
-        auto file = read_file(arc_file.io, *entry);
-        file->guess_extension();
-        saver.save(std::move(file));
+        read_meta(arc_file);
+        return true;
     }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+std::unique_ptr<fmt::ArchiveMeta>
+    DatArchiveDecoder::read_meta(File &arc_file) const
+{
+    auto arc_name = arc_file.name;
+    boost::algorithm::to_lower(arc_name);
+
+    auto header_size = (arc_file.io.read_u16_le() - 1) * 256;
+    auto meta = std::make_unique<ArchiveMeta>();
+
+    ArchiveEntryImpl *last_entry = nullptr;
+    bool finished = false;
+    for (auto i : util::range((header_size / 2) - 1))
+    {
+        size_t offset = arc_file.io.read_u16_le();
+        if (offset == 0)
+        {
+            finished = true;
+            continue;
+        }
+        offset = (offset - 1) * 256;
+
+        if (last_entry && offset < last_entry->offset)
+            throw err::CorruptDataError("Expected offsets to be sorted");
+        if (finished)
+            throw err::CorruptDataError("Expected remaining offsets to be 0");
+        if (offset > arc_file.io.size())
+            throw err::BadDataOffsetError();
+        if (offset == arc_file.io.size())
+            continue;
+
+        // necessary for VSP recognition
+        std::string ext = "dat";
+        if (arc_name.find("cg") != std::string::npos)
+            ext = "vsp";
+        else if (arc_name.find("dis") != std::string::npos)
+            ext = "sco";
+        else if (arc_name.find("mus") != std::string::npos)
+            ext = "mus";
+        else if (arc_name.find("map") != std::string::npos)
+            ext = "map";
+
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->offset = offset;
+        entry->name = util::format("%03d.%s", i, ext.c_str());
+        if (last_entry)
+            last_entry->size = entry->offset - last_entry->offset;
+        last_entry = entry.get();
+        meta->entries.push_back(std::move(entry));
+    }
+
+    if (last_entry)
+        last_entry->size = arc_file.io.size() - last_entry->offset;
+    else
+        throw err::CorruptDataError("File table cannot be empty");
+
+    return meta;
+}
+
+std::unique_ptr<File> DatArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+    auto output_file = std::make_unique<File>(entry->name, data);
+    output_file->guess_extension();
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<DatArchiveDecoder>("alice/dat");

@@ -11,15 +11,12 @@ using namespace au::fmt::minato_soft;
 
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
         size_t offset;
-        size_t size_original;
-        size_t size_compressed;
+        size_t size_orig;
+        size_t size_comp;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const bstr magic = "PAC\x00"_b;
@@ -63,45 +60,6 @@ static bstr decompress_table(const bstr &input, size_t output_size)
     return output;
 }
 
-static Table read_table(io::IO &arc_io, size_t file_count)
-{
-    arc_io.seek(arc_io.size() - 4);
-    size_t compressed_size = arc_io.read_u32_le();
-    size_t uncompressed_size = file_count * 76;
-
-    arc_io.seek(arc_io.size() - 4 - compressed_size);
-    bstr compressed = arc_io.read(compressed_size);
-    for (auto i : util::range(compressed.size()))
-        compressed.get<u8>()[i] ^= 0xFF;
-
-    io::BufferedIO table_io(decompress_table(compressed, uncompressed_size));
-    table_io.seek(0);
-
-    Table table;
-    for (auto i : util::range(file_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = util::sjis_to_utf8(table_io.read_to_zero(0x40)).str();
-        entry->offset = table_io.read_u32_le();
-        entry->size_original = table_io.read_u32_le();
-        entry->size_compressed = table_io.read_u32_le();
-        table.push_back(std::move(entry));
-    }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
-{
-    std::unique_ptr<File> file(new File);
-    arc_io.seek(entry.offset);
-    auto data = arc_io.read(entry.size_compressed);
-    if (entry.size_original != entry.size_compressed)
-        data = util::pack::zlib_inflate(data);
-    file->io.write(data);
-    file->name = entry.name;
-    return file;
-}
-
 struct PacArchiveDecoder::Priv final
 {
     FilImageDecoder fil_image_decoder;
@@ -121,15 +79,45 @@ bool PacArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.io.read(magic.size()) == magic;
 }
 
-void PacArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    PacArchiveDecoder::read_meta(File &arc_file) const
 {
-    arc_file.io.skip(magic.size());
-
+    arc_file.io.seek(magic.size());
     size_t file_count = arc_file.io.read_u32_le();
-    auto table = read_table(arc_file.io, file_count);
+    arc_file.io.seek(arc_file.io.size() - 4);
+    size_t compressed_size = arc_file.io.read_u32_le();
+    size_t uncompressed_size = file_count * 76;
 
-    for (auto &entry : table)
-        saver.save(read_file(arc_file.io, *entry));
+    arc_file.io.seek(arc_file.io.size() - 4 - compressed_size);
+    bstr compressed = arc_file.io.read(compressed_size);
+    for (auto i : util::range(compressed.size()))
+        compressed.get<u8>()[i] ^= 0xFF;
+
+    io::BufferedIO table_io(decompress_table(compressed, uncompressed_size));
+    table_io.seek(0);
+
+    auto meta = std::make_unique<ArchiveMeta>();
+    for (auto i : util::range(file_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->name = util::sjis_to_utf8(table_io.read_to_zero(0x40)).str();
+        entry->offset = table_io.read_u32_le();
+        entry->size_orig = table_io.read_u32_le();
+        entry->size_comp = table_io.read_u32_le();
+        meta->entries.push_back(std::move(entry));
+    }
+    return meta;
+}
+
+std::unique_ptr<File> PacArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size_comp);
+    if (entry->size_orig != entry->size_comp)
+        data = util::pack::zlib_inflate(data);
+    return std::make_unique<File>(entry->name, data);
 }
 
 static auto dummy = fmt::Registry::add<PacArchiveDecoder>("minato/pac");

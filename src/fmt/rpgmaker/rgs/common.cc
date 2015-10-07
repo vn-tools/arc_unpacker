@@ -10,14 +10,15 @@ u32 rgs::advance_key(const u32 key)
     return key * 7 + 3;
 }
 
-std::unique_ptr<File> rgs::read_file(io::IO &arc_io, TableEntry &entry)
+std::unique_ptr<File> rgs::read_file(
+    File &arc_file, const ArchiveEntryImpl &entry)
 {
     std::unique_ptr<File> file(new File);
     file->name = entry.name;
-    arc_io.seek(entry.offset);
+    arc_file.io.seek(entry.offset);
 
     io::BufferedIO tmp_io;
-    tmp_io.write_from_io(arc_io, entry.size);
+    tmp_io.write_from_io(arc_file.io, entry.size);
     tmp_io.write("\x00\x00\x00\x00"_b);
     tmp_io.seek(0);
 

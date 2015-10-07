@@ -27,6 +27,11 @@ Pak2ImageDecoder::~Pak2ImageDecoder()
 {
 }
 
+void Pak2ImageDecoder::clear_palettes()
+{
+    p->palette_map.clear();
+}
+
 void Pak2ImageDecoder::add_palette(
     const std::string &name, const bstr &palette_data)
 {

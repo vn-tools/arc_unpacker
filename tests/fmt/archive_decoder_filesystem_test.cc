@@ -14,10 +14,11 @@ namespace
     {
     public:
         TestArchiveDecoder();
+        std::unique_ptr<ArchiveMeta> read_meta(File &) const override;
+        std::unique_ptr<File> read_file(
+            File &, const ArchiveMeta &, const ArchiveEntry &) const override;
     protected:
         bool is_recognized_internal(File &arc_file) const override;
-        void unpack_internal(
-            File &arc_file, FileSaver &file_saver) const override;
     };
 }
 
@@ -43,16 +44,23 @@ bool TestArchiveDecoder::is_recognized_internal(File &arc_file) const
     return true;
 }
 
-void TestArchiveDecoder::unpack_internal(
-    File &arc_file, FileSaver &file_saver) const
+std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta(File &arc_file) const
 {
     auto dir = path(arc_file.name).parent_path();
+    auto meta = std::make_unique<ArchiveMeta>();
     for (directory_iterator it(dir); it != directory_iterator(); it++)
     {
-        std::unique_ptr<File> output_file(new File);
-        output_file->name = it->path().string();
-        file_saver.save(std::move(output_file));
+        auto entry = std::make_unique<ArchiveEntry>();
+        entry->name = it->path().string();
+        meta->entries.push_back(std::move(entry));
     }
+    return meta;
+}
+
+std::unique_ptr<File> TestArchiveDecoder::read_file(
+    File &, const ArchiveMeta &, const ArchiveEntry &e) const
+{
+    return std::make_unique<File>(e.name, ""_b);
 }
 
 TEST_CASE("Files get correct location", "[fmt_core]")

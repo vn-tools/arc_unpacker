@@ -10,6 +10,12 @@ using namespace au::fmt::microsoft;
 
 namespace
 {
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
+    {
+        size_t offset;
+        size_t size;
+    };
+
     struct DosHeader final
     {
         DosHeader(io::IO &io);
@@ -171,10 +177,11 @@ namespace
 
     struct ResourceCrawlerArgs final
     {
-        ResourceCrawlerArgs(io::IO &, FileSaver &, const RvaHelper &, size_t);
+        ResourceCrawlerArgs(
+            io::IO &, fmt::ArchiveMeta &, const RvaHelper &, size_t);
 
         io::IO &io;
-        FileSaver &saver;
+        fmt::ArchiveMeta &meta;
         const RvaHelper &rva_helper;
         size_t base_offset;
     };
@@ -378,8 +385,11 @@ u32 RvaHelper::adjust_section_alignment(u32 offset) const
 }
 
 ResourceCrawlerArgs::ResourceCrawlerArgs(
-    io::IO &io, FileSaver &saver, const RvaHelper &helper, size_t base_offset)
-    : io(io), saver(saver), rva_helper(helper), base_offset(base_offset)
+    io::IO &io,
+    fmt::ArchiveMeta &meta,
+    const RvaHelper &helper,
+    size_t base_offset)
+    : io(io), meta(meta), rva_helper(helper), base_offset(base_offset)
 {
 }
 
@@ -429,15 +439,14 @@ void ResourceCrawler::process_dir(size_t offset, const std::string path)
 void ResourceCrawler::process_entry(size_t offset, const std::string &path)
 {
     args.io.seek(args.base_offset + offset);
-    ImageResourceDataEntry entry(args.io);
+    ImageResourceDataEntry resource_entry(args.io);
 
-    std::unique_ptr<File> file(new File);
-    file->name = path;
-    args.io.seek(args.rva_helper.rva_to_offset(entry.offset_to_data));
-    file->io.write_from_io(args.io, entry.size);
-
-    file->guess_extension();
-    args.saver.save(std::move(file));
+    auto entry = std::make_unique<ArchiveEntryImpl>();
+    entry->name = path;
+    entry->offset = args.rva_helper.rva_to_offset(
+        resource_entry.offset_to_data);
+    entry->size = resource_entry.size;
+    args.meta.entries.push_back(std::move(entry));
 }
 
 std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
@@ -482,21 +491,22 @@ bool ExeArchiveDecoder::is_recognized_internal(File &arc_file) const
     return dos_header.magic == "MZ"_b;
 }
 
-void ExeArchiveDecoder::unpack_internal(File &file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    ExeArchiveDecoder::read_meta(File &arc_file) const
 {
-    DosHeader dos_header(file.io);
-    file.io.seek(dos_header.e_lfanew);
-    ImageNtHeader nt_header(file.io);
+    DosHeader dos_header(arc_file.io);
+    arc_file.io.seek(dos_header.e_lfanew);
+    ImageNtHeader nt_header(arc_file.io);
 
     size_t data_dir_count = nt_header.optional_header.number_of_rva_and_sizes;
     std::vector<ImageDataDir> data_dirs;
     data_dirs.reserve(data_dir_count);
     for (auto i : util::range(data_dir_count))
-        data_dirs.push_back(ImageDataDir(file.io));
+        data_dirs.push_back(ImageDataDir(arc_file.io));
 
     std::vector<ImageSectionHeader> sections;
     for (auto i : util::range(nt_header.file_header.number_of_sections))
-        sections.push_back(ImageSectionHeader(file.io));
+        sections.push_back(ImageSectionHeader(arc_file.io));
 
     RvaHelper rva_helper(
         nt_header.optional_header.file_alignment,
@@ -505,8 +515,21 @@ void ExeArchiveDecoder::unpack_internal(File &file, FileSaver &saver) const
 
     auto resource_dir = data_dirs[2];
     size_t base_offset = rva_helper.rva_to_offset(resource_dir.virtual_address);
+    auto meta = std::make_unique<ArchiveMeta>();
     ResourceCrawler::crawl(
-        ResourceCrawlerArgs(file.io, saver, rva_helper, base_offset));
+        ResourceCrawlerArgs(arc_file.io, *meta, rva_helper, base_offset));
+    return meta;
+}
+
+std::unique_ptr<File> ExeArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+    auto output_file = std::make_unique<File>(entry->name, data);
+    output_file->guess_extension();
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<ExeArchiveDecoder>("ms/exe");

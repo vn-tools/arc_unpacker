@@ -10,14 +10,21 @@ namespace
 {
     using path = boost::filesystem::path;
 
+    struct ArchiveEntryImpl final : ArchiveEntry
+    {
+        size_t offset;
+        size_t size;
+    };
+
     class TestArchiveDecoder final : public ArchiveDecoder
     {
     public:
         TestArchiveDecoder();
+        std::unique_ptr<ArchiveMeta> read_meta(File &) const override;
+        std::unique_ptr<File> read_file(
+            File &, const ArchiveMeta &, const ArchiveEntry &) const override;
     protected:
         bool is_recognized_internal(File &arc_file) const override;
-        void unpack_internal(
-            File &arc_file, FileSaver &file_saver) const override;
     };
 }
 
@@ -31,17 +38,27 @@ bool TestArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.has_extension("archive");
 }
 
-void TestArchiveDecoder::unpack_internal(
-    File &arc_file, FileSaver &file_saver) const
+std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta(File &arc_file) const
 {
+    auto meta = std::make_unique<ArchiveMeta>();
     while (!arc_file.io.eof())
     {
-        std::unique_ptr<File> output_file(new File);
-        output_file->name = arc_file.io.read_to_zero().str();
-        size_t output_file_size = arc_file.io.read_u32_le();
-        output_file->io.write(arc_file.io.read(output_file_size));
-        file_saver.save(std::move(output_file));
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->name = arc_file.io.read_to_zero().str();
+        entry->size = arc_file.io.read_u32_le();
+        entry->offset = arc_file.io.tell();
+        arc_file.io.skip(entry->size);
+        meta->entries.push_back(std::move(entry));
     }
+    return meta;
+}
+
+std::unique_ptr<File> TestArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    return std::make_unique<File>(entry->name, arc_file.io.read(entry->size));
 }
 
 TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")

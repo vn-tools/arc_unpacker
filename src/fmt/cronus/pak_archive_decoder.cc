@@ -21,24 +21,22 @@ namespace
         u32 key2;
     };
 
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
         size_t offset;
         size_t size;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static Table read_table(io::IO &arc_io, const Plugin &plugin, bool encrypted)
+static std::unique_ptr<fmt::ArchiveMeta> read_meta(
+    File &arc_file, const Plugin &plugin, bool encrypted)
 {
-    auto file_count = arc_io.read_u32_le() ^ plugin.key1;
-    auto file_data_start = arc_io.read_u32_le() ^ plugin.key2;
+    auto file_count = arc_file.io.read_u32_le() ^ plugin.key1;
+    auto file_data_start = arc_file.io.read_u32_le() ^ plugin.key2;
 
     auto table_size_orig = file_count * 24;
-    auto table_size_comp = file_data_start - arc_io.tell();
-    auto table_data = arc_io.read(table_size_comp);
+    auto table_size_comp = file_data_start - arc_file.io.tell();
+    auto table_data = arc_file.io.read(table_size_comp);
     if (encrypted)
     {
         auto key = get_delta_key("CHERRYSOFT"_b);
@@ -48,46 +46,16 @@ static Table read_table(io::IO &arc_io, const Plugin &plugin, bool encrypted)
     }
     io::BufferedIO table_io(table_data);
 
-    Table table;
+    auto meta = std::make_unique<fmt::ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
+        auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->name = table_io.read_to_zero(16).str();
         entry->offset = table_io.read_u32_le() + file_data_start;
         entry->size = table_io.read_u32_le();
-        table.push_back(std::move(entry));
+        meta->entries.push_back(std::move(entry));
     }
-    return table;
-}
-
-static Table guess_plugin_and_read_table(
-    io::IO &arc_io, const std::vector<Plugin> &plugins, bool encrypted)
-{
-    auto pos = arc_io.tell();
-    for (auto &plugin : plugins)
-    {
-        arc_io.seek(pos);
-        try
-        {
-            auto table = read_table(arc_io, plugin, encrypted);
-            if (table.size())
-                return table;
-        }
-        catch (...)
-        {
-            continue;
-        }
-    }
-    throw err::RecognitionError("Unknown encryption scheme");
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
-{
-    std::unique_ptr<File> file(new File);
-    arc_io.seek(entry.offset);
-    file->io.write_from_io(arc_io, entry.size);
-    file->name = entry.name;
-    return file;
+    return meta;
 }
 
 struct PakArchiveDecoder::Priv final
@@ -115,19 +83,39 @@ bool PakArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.io.read(magic3.size()) == magic3;
 }
 
-void PakArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    PakArchiveDecoder::read_meta(File &arc_file) const
 {
     if (arc_file.io.read(magic2.size()) != magic2)
         arc_file.io.seek(magic3.size());
     bool encrypted = arc_file.io.read_u32_le() > 0;
-    Table table = guess_plugin_and_read_table(
-        arc_file.io, p->plugin_mgr.get_all(), encrypted);
-    for (auto &entry : table)
+    auto pos = arc_file.io.tell();
+    for (auto &plugin : p->plugin_mgr.get_all())
     {
-        auto file = read_file(arc_file.io, *entry);
-        file->guess_extension();
-        saver.save(std::move(file));
+        arc_file.io.seek(pos);
+        try
+        {
+            auto meta = ::read_meta(arc_file, plugin, encrypted);
+            if (meta->entries.size())
+                return meta;
+        }
+        catch (...)
+        {
+            continue;
+        }
     }
+    throw err::RecognitionError("Unknown encryption scheme");
+}
+
+std::unique_ptr<File> PakArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+    auto output_file = std::make_unique<File>(entry->name, data);
+    output_file->guess_extension();
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<PakArchiveDecoder>("cronus/pak");

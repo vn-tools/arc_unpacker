@@ -10,14 +10,11 @@ using namespace au::fmt::touhou;
 
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
-        u32 offset;
-        u32 size;
+        size_t offset;
+        size_t size;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static void decrypt(bstr &buffer, u8 a, u8 b, u8 delta)
@@ -28,34 +25,6 @@ static void decrypt(bstr &buffer, u8 a, u8 b, u8 delta)
         a += b;
         b += delta;
     }
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
-{
-    std::unique_ptr<File> file(new File);
-    file->name = entry.name;
-
-    arc_io.seek(entry.offset);
-    auto data = arc_io.read(entry.size);
-
-    if (file->name.find("musicroom.dat") != std::string::npos)
-    {
-        decrypt(data, 0x5C, 0x5A, 0x3D);
-        file->change_extension(".txt");
-    }
-    else if (file->name.find(".sce") != std::string::npos)
-    {
-        decrypt(data, 0x63, 0x62, 0x42);
-        file->change_extension(".txt");
-    }
-    else if (file->name.find("cardlist.dat") != std::string::npos)
-    {
-        decrypt(data, 0x60, 0x61, 0x41);
-        file->change_extension(".txt");
-    }
-
-    file->io.write(data);
-    return file;
 }
 
 static std::unique_ptr<io::BufferedIO> read_raw_table(
@@ -69,27 +38,6 @@ static std::unique_ptr<io::BufferedIO> read_raw_table(
     auto buffer = arc_io.read(table_size);
     decrypt(buffer, 0x64, 0x64, 0x4D);
     return std::unique_ptr<io::BufferedIO>(new io::BufferedIO(buffer));
-}
-
-static Table read_table(io::IO &arc_io)
-{
-    u16 file_count = arc_io.read_u16_le();
-    if (file_count == 0 && arc_io.size() != 6)
-        throw err::RecognitionError();
-    auto table_io = read_raw_table(arc_io, file_count);
-    Table table;
-    table.reserve(file_count);
-    for (auto i : util::range(file_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = table_io->read_to_zero(0x64).str();
-        entry->size = table_io->read_u32_le();
-        entry->offset = table_io->read_u32_le();
-        if (entry->offset + entry->size > arc_io.size())
-            throw err::BadDataOffsetError();
-        table.push_back(std::move(entry));
-    }
-    return table;
 }
 
 struct Pak1ArchiveDecoder::Priv final
@@ -112,7 +60,7 @@ bool Pak1ArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
     try
     {
-        read_table(arc_file.io);
+        read_meta(arc_file);
         return true;
     }
     catch (...)
@@ -121,11 +69,55 @@ bool Pak1ArchiveDecoder::is_recognized_internal(File &arc_file) const
     }
 }
 
-void Pak1ArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    Pak1ArchiveDecoder::read_meta(File &arc_file) const
 {
-    auto table = read_table(arc_file.io);
-    for (auto &entry : table)
-        saver.save(read_file(arc_file.io, *entry));
+    u16 file_count = arc_file.io.read_u16_le();
+    if (file_count == 0 && arc_file.io.size() != 6)
+        throw err::RecognitionError();
+    auto table_io = read_raw_table(arc_file.io, file_count);
+    auto meta = std::make_unique<ArchiveMeta>();
+    for (auto i : util::range(file_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->name = table_io->read_to_zero(0x64).str();
+        entry->size = table_io->read_u32_le();
+        entry->offset = table_io->read_u32_le();
+        if (entry->offset + entry->size > arc_file.io.size())
+            throw err::BadDataOffsetError();
+        meta->entries.push_back(std::move(entry));
+    }
+    return meta;
+}
+
+std::unique_ptr<File> Pak1ArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto output_file = std::make_unique<File>();
+    output_file->name = entry->name;
+
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+
+    if (output_file->name.find("musicroom.dat") != std::string::npos)
+    {
+        decrypt(data, 0x5C, 0x5A, 0x3D);
+        output_file->change_extension(".txt");
+    }
+    else if (output_file->name.find(".sce") != std::string::npos)
+    {
+        decrypt(data, 0x63, 0x62, 0x42);
+        output_file->change_extension(".txt");
+    }
+    else if (output_file->name.find("cardlist.dat") != std::string::npos)
+    {
+        decrypt(data, 0x60, 0x61, 0x41);
+        output_file->change_extension(".txt");
+    }
+
+    output_file->io.write(data);
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<Pak1ArchiveDecoder>("th/pak1");

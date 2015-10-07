@@ -78,15 +78,12 @@ namespace
         std::vector<int> numbers;
     };
 
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
-        u32 offset;
-        u32 size;
+        size_t offset;
+        size_t size;
         bstr prefix;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static void unpickle_handle_string(bstr str, UnpickleContext *context)
@@ -194,37 +191,6 @@ static void unpickle(io::IO &table_io, UnpickleContext *context)
     }
 }
 
-static Table decode_table(io::IO &table_io, u32 key)
-{
-    UnpickleContext context;
-    unpickle(table_io, &context);
-
-    // Suspicion: reading renpy sources leaves me under impression that
-    // older games might not embed prefixes at all. This means that there
-    // are twice as many numbers as strings, and all prefixes should be set
-    // to empty.  Since I haven't seen such games, I leave this remark only
-    // as a comment.
-    if (context.strings.size() % 2 != 0)
-        throw err::NotSupportedError("Unsupported table format");
-    if (context.numbers.size() != context.strings.size())
-        throw err::NotSupportedError("Unsupported table format");
-
-    size_t file_count = context.strings.size() / 2;
-    Table entries;
-    entries.reserve(file_count);
-
-    for (auto i : util::range(file_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = context.strings[i * 2 ].str();
-        entry->prefix = context.strings[i * 2 + 1];
-        entry->offset = context.numbers[i * 2] ^ key;
-        entry->size = context.numbers[i * 2 + 1] ^ key;
-        entries.push_back(std::move(entry));
-    }
-    return entries;
-}
-
 static int guess_version(io::IO &arc_io)
 {
     static const bstr magic_3 = "RPA-3.0 "_b;
@@ -262,25 +228,13 @@ static bstr read_raw_table(io::IO &arc_io)
     return util::pack::zlib_inflate(arc_io.read(compressed_size));
 }
 
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
-{
-    std::unique_ptr<File> file(new File);
-
-    arc_io.seek(entry.offset);
-
-    file->io.write(entry.prefix);
-    file->io.write_from_io(arc_io, entry.size);
-
-    file->name = entry.name;
-    return file;
-}
-
 bool RpaArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
     return guess_version(arc_file.io) >= 0;
 }
 
-void RpaArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    RpaArchiveDecoder::read_meta(File &arc_file) const
 {
     int version = guess_version(arc_file.io);
     size_t table_offset = read_hex_number(arc_file.io, 16);
@@ -302,10 +256,44 @@ void RpaArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
 
     arc_file.io.seek(table_offset);
     io::BufferedIO table_io(read_raw_table(arc_file.io));
-    auto table = decode_table(table_io, key);
 
-    for (auto &entry : table)
-        saver.save(read_file(arc_file.io, *entry));
+    UnpickleContext context;
+    unpickle(table_io, &context);
+
+    // Suspicion: reading renpy sources leaves me under impression that
+    // older games might not embed prefixes at all. This means that there
+    // are twice as many numbers as strings, and all prefixes should be set
+    // to empty.  Since I haven't seen such games, I leave this remark only
+    // as a comment.
+    if (context.strings.size() % 2 != 0)
+        throw err::NotSupportedError("Unsupported table format");
+    if (context.numbers.size() != context.strings.size())
+        throw err::NotSupportedError("Unsupported table format");
+
+    size_t file_count = context.strings.size() / 2;
+    auto meta = std::make_unique<ArchiveMeta>();
+    for (auto i : util::range(file_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->name = context.strings[i * 2 ].str();
+        entry->prefix = context.strings[i * 2 + 1];
+        entry->offset = context.numbers[i * 2] ^ key;
+        entry->size = context.numbers[i * 2 + 1] ^ key;
+        meta->entries.push_back(std::move(entry));
+    }
+    return meta;
+}
+
+std::unique_ptr<File> RpaArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto output_file = std::make_unique<File>();
+    arc_file.io.seek(entry->offset);
+    output_file->io.write(entry->prefix);
+    output_file->io.write_from_io(arc_file.io, entry->size);
+    output_file->name = entry->name;
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<RpaArchiveDecoder>("renpy/rpa");

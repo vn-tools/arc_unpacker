@@ -7,6 +7,15 @@
 using namespace au;
 using namespace au::fmt::qlie;
 
+namespace
+{
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
+    {
+        size_t offset;
+        size_t size;
+    };
+}
+
 static const bstr magic10 = "abmp10\0\0\0\0\0\0\0\0\0\0"_b;
 static const bstr magic11 = "abmp11\0\0\0\0\0\0\0\0\0\0"_b;
 static const bstr magic12 = "abmp12\0\0\0\0\0\0\0\0\0\0"_b;
@@ -35,18 +44,33 @@ static int guess_version(io::IO &arc_io)
     return -1;
 }
 
-static std::unique_ptr<File> read_file(io::IO &arc_io)
+static void read_data_entry(File &arc_file, fmt::ArchiveMeta &meta)
 {
-    bstr magic = arc_io.read(16);
-    bstr encoded_name = arc_io.read(arc_io.read_u16_le());
-    std::string name = util::sjis_to_utf8(encoded_name).str();
+    auto entry = std::make_unique<ArchiveEntryImpl>();
+    entry->name = "unknown.dat";
+    entry->size = arc_file.io.read_u32_le();
+    entry->offset = arc_file.io.tell();
+    arc_file.io.skip(entry->size);
+    meta.entries.push_back(std::move(entry));
+}
+
+static void read_resource_entry(File &arc_file, fmt::ArchiveMeta &meta)
+{
+    bstr magic = arc_file.io.read(16);
+
+    auto entry = std::make_unique<ArchiveEntryImpl>();
+    auto name_size = arc_file.io.read_u16_le();
+    entry->name = util::sjis_to_utf8(arc_file.io.read(name_size)).str();
+    if (entry->name.empty())
+        entry->name = "unknown";
+    entry->name += ".dat";
 
     if (magic == magic_snddat11
         || magic == magic_imgdat11
         || magic == magic_imgdat13
         || magic == magic_imgdat14)
     {
-        arc_io.skip(arc_io.read_u16_le());
+        arc_file.io.skip(arc_file.io.read_u16_le());
     }
     else if (magic != magic_imgdat10 && magic != magic_snddat10)
     {
@@ -54,21 +78,17 @@ static std::unique_ptr<File> read_file(io::IO &arc_io)
             "Unknown image magic: %s", magic.get<char>()));
     }
 
-    arc_io.skip(1);
-
+    arc_file.io.skip(1);
     if (magic == magic_imgdat14)
-        arc_io.skip(76);
-    else if (magic == magic_imgdat13)
-        arc_io.skip(12);
+        arc_file.io.skip(76);
+    if (magic == magic_imgdat13)
+        arc_file.io.skip(12);
 
-    size_t len = arc_io.read_u32_le();
-    if (len == 0)
-        return nullptr;
-
-    std::unique_ptr<File> subfile(new File);
-    subfile->io.write_from_io(arc_io, len);
-    subfile->name = (name == "" ? "unknown" : name) + ".dat";
-    return subfile;
+    entry->size = arc_file.io.read_u32_le();
+    entry->offset = arc_file.io.tell();
+    arc_file.io.skip(entry->size);
+    if (entry->size)
+        meta.entries.push_back(std::move(entry));
 }
 
 bool Abmp10ArchiveDecoder::is_recognized_internal(File &arc_file) const
@@ -76,35 +96,26 @@ bool Abmp10ArchiveDecoder::is_recognized_internal(File &arc_file) const
     return guess_version(arc_file.io) >= 0;
 }
 
-void Abmp10ArchiveDecoder::unpack_internal(
-    File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    Abmp10ArchiveDecoder::read_meta(File &arc_file) const
 {
-    int version = guess_version(arc_file.io);
-
+    arc_file.io.seek(16);
+    auto meta = std::make_unique<ArchiveMeta>();
     while (arc_file.io.tell() < arc_file.io.size())
     {
-        bstr magic = arc_file.io.read(16);
+        auto magic = arc_file.io.read(16);
         if (magic == magic_data10
             || magic == magic_data11
             || magic == magic_data12
             || magic == magic_data13)
         {
-            // interesting
-            size_t size = arc_file.io.read_u32_le();
-            arc_file.io.skip(size);
+            read_data_entry(arc_file, *meta);
         }
         else if (magic == magic_image10 || magic == magic_sound10)
         {
             size_t file_count = arc_file.io.read_u8();
             for (auto i : util::range(file_count))
-            {
-                auto subfile = read_file(arc_file.io);
-                if (subfile)
-                {
-                    subfile->guess_extension();
-                    saver.save(std::move(subfile));
-                }
-            }
+                read_resource_entry(arc_file, *meta);
         }
         else
         {
@@ -112,6 +123,18 @@ void Abmp10ArchiveDecoder::unpack_internal(
                 "Unknown section: %s", magic.get<char>()));
         }
     }
+    return meta;
+}
+
+std::unique_ptr<File> Abmp10ArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+    auto output_file = std::make_unique<File>(entry->name, data);
+    output_file->guess_extension();
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<Abmp10ArchiveDecoder>("qlie/abmp10");

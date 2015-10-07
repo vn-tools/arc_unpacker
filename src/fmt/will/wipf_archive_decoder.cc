@@ -14,15 +14,14 @@ static const bstr magic = "WIPF"_b;
 
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
         size_t width;
         size_t height;
         size_t size_comp;
         size_t size_orig;
+        size_t depth;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 // Modified LZSS routine
@@ -88,73 +87,87 @@ bool WipfArchiveDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-std::vector<std::shared_ptr<pix::Grid>> WipfArchiveDecoder::unpack_to_images(
-    File &arc_file) const
+std::unique_ptr<fmt::ArchiveMeta>
+    WipfArchiveDecoder::read_meta(File &arc_file) const
 {
-    arc_file.io.seek(magic.size());
+    auto base_name = boost::filesystem::path(arc_file.name).filename().string();
+    boost::algorithm::replace_all(base_name, ".", "-");
 
-    Table table(arc_file.io.read_u16_le());
+    arc_file.io.seek(magic.size());
+    auto meta = std::make_unique<ArchiveMeta>();
+    auto file_count = arc_file.io.read_u16_le();
     auto depth = arc_file.io.read_u16_le();
-    for (auto i : util::range(table.size()))
+    for (auto i : util::range(file_count))
     {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->name = base_name;
         entry->width = arc_file.io.read_u32_le();
         entry->height = arc_file.io.read_u32_le();
         arc_file.io.skip(12);
         entry->size_comp = arc_file.io.read_u32_le();
         entry->size_orig = entry->width * entry->height * (depth >> 3);
-        table[i] = std::move(entry);
+        entry->depth = depth;
+        meta->entries.push_back(std::move(entry));
     }
-
-    std::vector<std::shared_ptr<pix::Grid>> output;
-    for (auto &entry : table)
-    {
-        std::shared_ptr<pix::Palette> palette;
-        if (depth == 8)
-        {
-            palette.reset(new pix::Palette(
-                256, arc_file.io, pix::Format::BGRA8888));
-            for (auto &c : *palette)
-                c.a ^= 0xFF;
-        }
-
-        auto data = arc_file.io.read(entry->size_comp);
-        data = custom_lzss_decompress(data, entry->size_orig);
-
-        auto w = entry->width;
-        auto h = entry->height;
-
-        std::shared_ptr<pix::Grid> pixels;
-        if (depth == 8)
-        {
-            pixels.reset(new pix::Grid(w, h, data, *palette));
-        }
-        else if (depth == 24)
-        {
-            pixels.reset(new pix::Grid(w, h));
-            for (auto y : util::range(h))
-            for (auto x : util::range(w))
-            {
-                pixels->at(x, y).b = data[w * h * 0 + y * w + x];
-                pixels->at(x, y).g = data[w * h * 1 + y * w + x];
-                pixels->at(x, y).r = data[w * h * 2 + y * w + x];
-                pixels->at(x, y).a = 0xFF;
-            }
-        }
-        else
-            throw err::UnsupportedBitDepthError(depth);
-
-        output.push_back(pixels);
-    }
-    return output;
+    return meta;
 }
 
-void WipfArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<pix::Grid> WipfArchiveDecoder::read_image(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
-    auto base_name = boost::filesystem::path(arc_file.name).filename().string();
-    boost::algorithm::replace_all(base_name, ".", "-");
-    for (auto &image : unpack_to_images(arc_file))
-        saver.save(util::file_from_grid(*image, base_name));
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    std::unique_ptr<pix::Palette> palette;
+    if (entry->depth == 8)
+    {
+        palette.reset(new pix::Palette(
+            256, arc_file.io, pix::Format::BGRA8888));
+        for (auto &c : *palette)
+            c.a ^= 0xFF;
+    }
+
+    auto data = arc_file.io.read(entry->size_comp);
+    data = custom_lzss_decompress(data, entry->size_orig);
+
+    auto w = entry->width;
+    auto h = entry->height;
+
+    std::unique_ptr<pix::Grid> pixels;
+    if (entry->depth == 8)
+    {
+        pixels.reset(new pix::Grid(w, h, data, *palette));
+    }
+    else if (entry->depth == 24)
+    {
+        pixels.reset(new pix::Grid(w, h));
+        for (auto y : util::range(h))
+        for (auto x : util::range(w))
+        {
+            pixels->at(x, y).b = data[w * h * 0 + y * w + x];
+            pixels->at(x, y).g = data[w * h * 1 + y * w + x];
+            pixels->at(x, y).r = data[w * h * 2 + y * w + x];
+            pixels->at(x, y).a = 0xFF;
+        }
+    }
+    else
+        throw err::UnsupportedBitDepthError(entry->depth);
+
+    return pixels;
+}
+
+std::unique_ptr<File> WipfArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    return util::file_from_grid(*read_image(arc_file, m, e), e.name);
+}
+
+std::vector<std::shared_ptr<pix::Grid>> WipfArchiveDecoder::unpack_to_images(
+    File &arc_file) const
+{
+    auto meta = read_meta(arc_file);
+    std::vector<std::shared_ptr<pix::Grid>> output;
+    for (auto &entry : meta->entries)
+        output.push_back(read_image(arc_file, *meta, *entry));
+    return output;
 }
 
 static auto dummy = fmt::Registry::add<WipfArchiveDecoder>("will/wipf");

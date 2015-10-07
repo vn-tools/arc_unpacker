@@ -100,9 +100,9 @@ bool ArchiveDecoder::is_recognized(File &file) const
     }
 }
 
-void ArchiveDecoder::unpack(File &file, FileSaver &saver) const
+void ArchiveDecoder::unpack(File &arc_file, FileSaver &saver) const
 {
-    if (!is_recognized(file))
+    if (!is_recognized(arc_file))
         throw err::RecognitionError();
 
     // every file should be passed through registered decoders
@@ -126,13 +126,16 @@ void ArchiveDecoder::unpack(File &file, FileSaver &saver) const
             saver.save(original_file);
     });
 
-    file.io.seek(0);
-    return unpack_internal(file, recognition_proxy);
-}
-
-void ArchiveDecoder::disable_nested_decoding()
-{
-   nested_decoding_enabled = false;
+    arc_file.io.seek(0);
+    auto meta = read_meta(arc_file);
+    if (nested_decoding_enabled)
+        preprocess(arc_file, *meta, recognition_proxy);
+    for (auto &entry : meta->entries)
+    {
+        auto output_file = read_file(arc_file, *meta, *entry);
+        if (output_file)
+            recognition_proxy.save(std::move(output_file));
+    }
 }
 
 std::vector<std::shared_ptr<File>> ArchiveDecoder::unpack(File &file) const
@@ -144,6 +147,15 @@ std::vector<std::shared_ptr<File>> ArchiveDecoder::unpack(File &file) const
     });
     unpack(file, saver);
     return files;
+}
+
+void ArchiveDecoder::preprocess(File &, ArchiveMeta &, FileSaver &) const
+{
+}
+
+void ArchiveDecoder::disable_nested_decoding()
+{
+   nested_decoding_enabled = false;
 }
 
 void ArchiveDecoder::add_decoder(IDecoder *decoder)

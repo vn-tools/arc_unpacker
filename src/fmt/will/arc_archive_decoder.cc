@@ -10,100 +10,52 @@ using namespace au::fmt::will;
 
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
-        u32 offset;
-        u32 size;
+        size_t offset;
+        size_t size;
         bool already_unpacked;
     };
 
-    struct DirectoryEntry final
+    struct Directory final
     {
         std::string extension;
-        u32 offset;
-        u32 file_count;
+        size_t offset;
+        size_t file_count;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static Table read_inner_table(
-    io::IO &arc_io,
-    const std::vector<DirectoryEntry> &directories,
-    size_t name_size)
+static std::unique_ptr<fmt::ArchiveMeta> read_meta(
+    File &arc_file, const std::vector<Directory> &dirs, size_t name_size)
 {
-    auto min_offset = 4 + directories.size() * 12;
-    for (auto &directory : directories)
-        min_offset += directory.file_count * (name_size + 8);
+    auto min_offset = 4 + dirs.size() * 12;
+    for (auto &dir : dirs)
+        min_offset += dir.file_count * (name_size + 8);
 
-    Table table;
-    for (auto &directory : directories)
+    auto meta = std::make_unique<fmt::ArchiveMeta>();
+    for (auto &dir : dirs)
     {
-        arc_io.seek(directory.offset);
-        for (auto i : util::range(directory.file_count))
+        arc_file.io.seek(dir.offset);
+        for (auto i : util::range(dir.file_count))
         {
-            std::unique_ptr<TableEntry> entry(new TableEntry());
-            auto name = arc_io.read_to_zero(name_size).str();
-            entry->name = name + "." + directory.extension;
-            entry->size = arc_io.read_u32_le();
-            entry->offset = arc_io.read_u32_le();
+            auto entry = std::make_unique<ArchiveEntryImpl>();
+            auto name = arc_file.io.read_to_zero(name_size).str();
+            entry->already_unpacked = false;
+            entry->name = name + "." + dir.extension;
+            entry->size = arc_file.io.read_u32_le();
+            entry->offset = arc_file.io.read_u32_le();
 
             if (!entry->name.size())
                 throw err::CorruptDataError("Empty file name");
             if (entry->offset < min_offset)
                 throw err::BadDataOffsetError();
-            if (entry->offset + entry->size > arc_io.size())
+            if (entry->offset + entry->size > arc_file.io.size())
                 throw err::BadDataOffsetError();
 
-            table.push_back(std::move(entry));
+            meta->entries.push_back(std::move(entry));
         }
     }
-    return table;
-}
-
-static Table read_table(io::IO &arc_io)
-{
-    auto dir_count = arc_io.read_u32_le();
-    if (dir_count > 100)
-        throw err::BadDataSizeError();
-    std::vector<DirectoryEntry> directories(dir_count);
-    for (auto i : util::range(directories.size()))
-    {
-        directories[i].extension = arc_io.read_to_zero(4).str();
-        directories[i].file_count = arc_io.read_u32_le();
-        directories[i].offset = arc_io.read_u32_le();
-    }
-
-    for (auto name_size : {9, 13})
-    {
-        try
-        {
-            return read_inner_table(arc_io, directories, name_size);
-        }
-        catch (...)
-        {
-            continue;
-        }
-    }
-
-    throw err::CorruptDataError("Failed to read file table");
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
-{
-    arc_io.seek(entry.offset);
-    auto data = arc_io.read(entry.size);
-
-    std::unique_ptr<File> file(new File);
-    file->name = entry.name;
-
-    if (file->has_extension("wsc") || file->has_extension("scr"))
-        for (auto &c : data)
-            c = (c >> 2) | (c << 6);
-
-    file->io.write(data);
-    return file;
+    return meta;
 }
 
 struct ArcArchiveDecoder::Priv final
@@ -122,56 +74,95 @@ ArcArchiveDecoder::~ArcArchiveDecoder()
 
 bool ArcArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
-    return read_table(arc_file.io).size() > 0;
+    return read_meta(arc_file)->entries.size() > 0;
 }
 
-void ArcArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+void ArcArchiveDecoder::preprocess(
+    File &arc_file, fmt::ArchiveMeta &meta, FileSaver &saver) const
 {
-    auto table = read_table(arc_file.io);
-
-    if (nested_decoding_enabled)
+    // apply image masks to original sprites
+    std::map<std::string, ArchiveEntryImpl*> mask_entries, sprite_entries;
+    for (auto &entry : meta.entries)
     {
-        // apply image masks to original sprites
-        std::map<std::string, TableEntry*> mask_entries, sprite_entries;
-        for (auto &entry : table)
-        {
-            auto fn = entry->name.substr(0, entry->name.find_first_of('.'));
-            if (entry->name.find("MSK") != std::string::npos)
-                mask_entries[fn] = entry.get();
-            else if (entry->name.find("WIP") != std::string::npos)
-                sprite_entries[fn] = entry.get();
-        }
+        auto fn = entry->name.substr(0, entry->name.find_first_of('.'));
+        if (entry->name.find("MSK") != std::string::npos)
+            mask_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
+        else if (entry->name.find("WIP") != std::string::npos)
+            sprite_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
+    }
 
-        for (auto it : sprite_entries)
+    for (auto it : sprite_entries)
+    {
+        try
         {
-            try
+            auto sprite_entry = it.second;
+            auto mask_entry = mask_entries.at(it.first);
+            auto sprites = p->wipf_archive_decoder.unpack_to_images(
+                *read_file(arc_file, meta, *sprite_entry));
+            auto masks = p->wipf_archive_decoder.unpack_to_images(
+                *read_file(arc_file, meta, *mask_entry));
+            for (auto i : util::range(sprites.size()))
+                sprites[i]->apply_alpha_from_mask(*masks.at(i));
+            sprite_entry->already_unpacked = true;
+            mask_entry->already_unpacked = true;
+            for (auto &sprite : sprites)
             {
-                auto sprite_entry = it.second;
-                auto mask_entry = mask_entries.at(it.first);
-                auto sprites = p->wipf_archive_decoder.unpack_to_images(
-                    *read_file(arc_file.io, *sprite_entry));
-                auto masks = p->wipf_archive_decoder.unpack_to_images(
-                    *read_file(arc_file.io, *mask_entry));
-                for (auto i : util::range(sprites.size()))
-                    sprites[i]->apply_alpha_from_mask(*masks.at(i));
-                sprite_entry->already_unpacked = true;
-                mask_entry->already_unpacked = true;
-                for (auto &sprite : sprites)
-                {
-                    saver.save(util::file_from_grid(
-                        *sprite, sprite_entry->name));
-                }
+                saver.save(util::file_from_grid(
+                    *sprite, sprite_entry->name));
             }
-            catch (...)
-            {
-                continue;
-            }
+        }
+        catch (...)
+        {
+            continue;
+        }
+    }
+}
+
+std::unique_ptr<fmt::ArchiveMeta>
+    ArcArchiveDecoder::read_meta(File &arc_file) const
+{
+    auto dir_count = arc_file.io.read_u32_le();
+    if (dir_count > 100)
+        throw err::BadDataSizeError();
+    std::vector<Directory> dirs(dir_count);
+    for (auto i : util::range(dirs.size()))
+    {
+        dirs[i].extension = arc_file.io.read_to_zero(4).str();
+        dirs[i].file_count = arc_file.io.read_u32_le();
+        dirs[i].offset = arc_file.io.read_u32_le();
+    }
+
+    for (auto name_size : {9, 13})
+    {
+        try
+        {
+            return ::read_meta(arc_file, dirs, name_size);
+        }
+        catch (...)
+        {
+            continue;
         }
     }
 
-    for (auto &entry : table)
-        if (!entry->already_unpacked)
-            saver.save(read_file(arc_file.io, *entry));
+    throw err::CorruptDataError("Failed to read file table");
+}
+
+std::unique_ptr<File> ArcArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+
+    auto output_file = std::make_unique<File>();
+    output_file->name = entry->name;
+
+    if (output_file->has_extension("wsc") || output_file->has_extension("scr"))
+        for (auto &c : data)
+            c = (c >> 2) | (c << 6);
+
+    output_file->io.write(data);
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<ArcArchiveDecoder>("will/arc");

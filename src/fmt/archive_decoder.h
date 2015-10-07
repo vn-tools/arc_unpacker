@@ -5,6 +5,18 @@
 namespace au {
 namespace fmt {
 
+    struct ArchiveEntry
+    {
+        virtual ~ArchiveEntry() { }
+        std::string name;
+    };
+
+    struct ArchiveMeta
+    {
+        virtual ~ArchiveMeta() { }
+        std::vector<std::unique_ptr<ArchiveEntry>> entries;
+    };
+
     class ArchiveDecoder : public IDecoder
     {
     public:
@@ -19,10 +31,13 @@ namespace fmt {
 
         void disable_nested_decoding();
         std::vector<std::shared_ptr<File>> unpack(File &) const;
+        virtual std::unique_ptr<ArchiveMeta> read_meta(File &) const = 0;
+        virtual std::unique_ptr<File> read_file(
+            File &, const ArchiveMeta &, const ArchiveEntry &) const = 0;
 
     protected:
+        virtual void preprocess(File &, ArchiveMeta &, FileSaver &) const;
         virtual bool is_recognized_internal(File &) const = 0;
-        virtual void unpack_internal(File &, FileSaver &) const = 0;
         void add_decoder(IDecoder *decoder);
 
         bool nested_decoding_enabled;

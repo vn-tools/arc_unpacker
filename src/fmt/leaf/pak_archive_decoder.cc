@@ -11,16 +11,13 @@ using namespace au::fmt::leaf;
 
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
-        u32 offset;
-        u32 size;
+        size_t offset;
+        size_t size;
         bool compressed;
         bool already_unpacked;
     };
-
-    using Table = std::vector<TableEntry>;
 }
 
 // Modified LZSS routine
@@ -86,45 +83,6 @@ static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
     return output;
 }
 
-static Table read_table(io::IO &arc_io)
-{
-    auto file_count = arc_io.read_u32_le();
-    Table table;
-    for (auto i : util::range(file_count))
-    {
-        TableEntry entry { };
-        entry.name = util::sjis_to_utf8(arc_io.read_to_zero(16)).str();
-        entry.size = arc_io.read_u32_le();
-        entry.compressed = arc_io.read_u32_le() > 0;
-        entry.offset = arc_io.read_u32_le();
-        if (entry.size)
-            table.push_back(entry);
-    }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
-{
-    arc_io.seek(entry.offset);
-    bstr data;
-    if (entry.compressed)
-    {
-        auto size_comp = arc_io.read_u32_le();
-        auto size_orig = arc_io.read_u32_le();
-        data = arc_io.read(size_comp - 8);
-        data = custom_lzss_decompress(data, size_orig);
-    }
-    else
-    {
-        data = arc_io.read(entry.size);
-    }
-
-    std::unique_ptr<File> file(new File);
-    file->name = entry.name;
-    file->io.write(data);
-    return file;
-}
-
 struct PakArchiveDecoder::Priv final
 {
     GrpImageDecoder grp_image_decoder;
@@ -140,54 +98,90 @@ PakArchiveDecoder::~PakArchiveDecoder()
 
 bool PakArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
-    auto table = read_table(arc_file.io);
-    if (!table.size())
+    auto meta = read_meta(arc_file);
+    if (!meta->entries.size())
         return false;
-    auto &last_entry = table[table.size() - 1];
-    return last_entry.offset + last_entry.size == arc_file.io.size();
+    auto last_entry = static_cast<const ArchiveEntryImpl*>(
+        meta->entries[meta->entries.size() - 1].get());
+    return last_entry->offset + last_entry->size == arc_file.io.size();
 }
 
-void PakArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    PakArchiveDecoder::read_meta(File &arc_file) const
 {
-    auto table = read_table(arc_file.io);
-
-    if (nested_decoding_enabled)
+    auto file_count = arc_file.io.read_u32_le();
+    auto meta = std::make_unique<ArchiveMeta>();
+    for (auto i : util::range(file_count))
     {
-        // decode GRP
-        std::map<std::string, TableEntry*> palette_entries, sprite_entries;
-        for (auto i : util::range(table.size()))
-        {
-            auto fn = table[i].name.substr(0, table[i].name.find_first_of('.'));
-            if (table[i].name.find("c16") != std::string::npos)
-                palette_entries[fn] = &table[i];
-            else if (table[i].name.find("grp") != std::string::npos)
-                sprite_entries[fn] = &table[i];
-        }
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->already_unpacked = false;
+        entry->name = util::sjis_to_utf8(arc_file.io.read_to_zero(16)).str();
+        entry->size = arc_file.io.read_u32_le();
+        entry->compressed = arc_file.io.read_u32_le() > 0;
+        entry->offset = arc_file.io.read_u32_le();
+        if (entry->size)
+            meta->entries.push_back(std::move(entry));
+    }
+    return meta;
+}
 
-        for (auto it : sprite_entries)
-        {
-            try
-            {
-                auto &sprite_entry = it.second;
-                auto &palette_entry = palette_entries.at(it.first);
-                auto sprite_file = read_file(arc_file.io, *sprite_entry);
-                auto palette_file = read_file(arc_file.io, *palette_entry);
-                auto sprite
-                    = p->grp_image_decoder.decode(*sprite_file, *palette_file);
-                sprite_entry->already_unpacked = true;
-                palette_entry->already_unpacked = true;
-                saver.save(util::file_from_grid(sprite, sprite_entry->name));
-            }
-            catch (...)
-            {
-                continue;
-            }
-        }
+std::unique_ptr<File> PakArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    if (entry->already_unpacked)
+        return nullptr;
+
+    arc_file.io.seek(entry->offset);
+    bstr data;
+    if (entry->compressed)
+    {
+        auto size_comp = arc_file.io.read_u32_le();
+        auto size_orig = arc_file.io.read_u32_le();
+        data = arc_file.io.read(size_comp - 8);
+        data = custom_lzss_decompress(data, size_orig);
+    }
+    else
+    {
+        data = arc_file.io.read(entry->size);
     }
 
-    for (auto &entry : table)
-        if (!entry.already_unpacked)
-            saver.save(read_file(arc_file.io, entry));
+    return std::make_unique<File>(entry->name, data);
+}
+
+void PakArchiveDecoder::preprocess(
+    File &arc_file, fmt::ArchiveMeta &meta, FileSaver &saver) const
+{
+    std::map<std::string, ArchiveEntryImpl*>
+        palette_entries, sprite_entries;
+    for (auto &entry : meta.entries)
+    {
+        auto fn = entry->name.substr(0, entry->name.find_first_of('.'));
+        if (entry->name.find("c16") != std::string::npos)
+            palette_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
+        else if (entry->name.find("grp") != std::string::npos)
+            sprite_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
+    }
+
+    for (auto it : sprite_entries)
+    {
+        try
+        {
+            auto &sprite_entry = it.second;
+            auto &palette_entry = palette_entries.at(it.first);
+            auto sprite_file = read_file(arc_file, meta, *sprite_entry);
+            auto palette_file = read_file(arc_file, meta, *palette_entry);
+            auto sprite
+                = p->grp_image_decoder.decode(*sprite_file, *palette_file);
+            sprite_entry->already_unpacked = true;
+            palette_entry->already_unpacked = true;
+            saver.save(util::file_from_grid(sprite, sprite_entry->name));
+        }
+        catch (...)
+        {
+            continue;
+        }
+    }
 }
 
 static auto dummy = fmt::Registry::add<PakArchiveDecoder>("leaf/pak");

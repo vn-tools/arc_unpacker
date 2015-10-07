@@ -20,7 +20,12 @@ namespace
         Compressed = 2,
     };
 
-    struct TableEntry final
+    struct ArchiveMetaImpl final : fmt::ArchiveMeta
+    {
+        bstr game_title;
+    };
+
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
         u64 hash;
         TableEntryType type;
@@ -28,10 +33,8 @@ namespace
         size_t offset;
         size_t size_orig;
         size_t size_comp;
-        bstr name;
+        bstr name_orig;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static const u32 file_count_hash = 0x26ACA46E;
@@ -148,105 +151,17 @@ static u32 read_file_count(io::IO &arc_io)
     return arc_io.read_u32_le() ^ file_count_hash;
 }
 
-static Table read_table(
-    io::IO &arc_io, std::map<u64, bstr> &file_names_map)
-{
-    Table table;
-    auto file_count = read_file_count(arc_io);
-    for (auto i : util::range(file_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-
-        entry->valid = true;
-        entry->hash = arc_io.read_u64_le();
-        entry->type = static_cast<TableEntryType>(
-            arc_io.read_u8() ^ (entry->hash & 0xFF));
-
-        entry->offset    = arc_io.read_u32_le() ^ (entry->hash & 0xFFFFFFFF);
-        entry->size_comp = arc_io.read_u32_le() ^ (entry->hash & 0xFFFFFFFF);
-        entry->size_orig = arc_io.read_u32_le() ^ (entry->hash & 0xFFFFFFFF);
-
-        auto name = file_names_map[entry->hash];
-        auto name_found = name.size();
-
-        if (entry->type == TableEntryType::Compressed)
-        {
-            entry->name = name_found
-                ? name
-                : util::format("%04d.txt", i);
-            entry->valid = true;
-        }
-        else
-        {
-            if (name_found)
-            {
-                entry->name = name;
-                entry->offset ^= entry->name[entry->name.size() >> 1] & 0xFF;
-                entry->size_comp ^= entry->name[entry->name.size() >> 2] & 0xFF;
-                entry->size_orig ^= entry->name[entry->name.size() >> 3] & 0xFF;
-            }
-            else
-                entry->valid = false;
-        }
-
-        table.push_back(std::move(entry));
-    }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(
-    io::IO &arc_io, const TableEntry &entry, const bstr &game_title)
-{
-    std::unique_ptr<File> file(new File);
-    file->name = util::sjis_to_utf8(entry.name).str();
-
-    arc_io.seek(entry.offset);
-    auto data = arc_io.read(entry.size_comp);
-
-    if (entry.type == TableEntryType::Compressed)
-    {
-        transform_script_content(data, entry.hash, game_title);
-        file->io.write(util::pack::zlib_inflate(data));
-    }
-    else
-    {
-        if (entry.type == TableEntryType::Obfuscated)
-            transform_regular_content(data, entry.name);
-        file->io.write(data);
-    }
-
-    return file;
-}
-
-static void do_unpack(
-    const Table &table,
-    io::IO &arc_io,
-    const bstr &game_title,
-    FileSaver &saver)
-{
-    for (auto &entry : table)
-    {
-        if (!entry->valid)
-        {
-            Log.err(util::format(
-                "Unknown hash: %016llx. File cannot be unpacked.\n",
-                entry->hash));
-            continue;
-        }
-        saver.save(read_file(arc_io, *entry, game_title));
-    }
-}
-
-static void dump(const Table &table, const std::string &dump_path)
+static void dump(const ArchiveMetaImpl &meta, const std::string &dump_path)
 {
     // make it static, so that ./au *.dat --dump=x doesn't write info only
     // about the last archive
     static io::FileIO io(dump_path, io::FileMode::Write);
 
-    for (auto &entry : table)
+    for (auto &e : meta.entries)
     {
+        auto entry = dynamic_cast<ArchiveEntryImpl*>(e.get());
         if (entry->valid)
-            io.write(util::sjis_to_utf8(entry->name).str() + "\n");
+            io.write(entry->name + "\n");
         else
             io.write(util::format("unk:%016llx\n", entry->hash));
     }
@@ -320,17 +235,92 @@ bool DatArchiveDecoder::is_recognized_internal(File &arc_file) const
     return file_count * (8 + 1 + 4 + 4 + 4) < arc_file.io.size();
 }
 
-void DatArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    DatArchiveDecoder::read_meta(File &arc_file) const
 {
-    Table table = read_table(arc_file.io, p->file_names_map);
+    auto meta = std::make_unique<ArchiveMetaImpl>();
+    meta->game_title = p->game_title;
+
+    auto file_count = read_file_count(arc_file.io);
+    for (auto i : util::range(file_count))
+    {
+        auto hash64 = arc_file.io.read_u64_le();
+        auto hash32 = hash64 & 0xFFFFFFFF;
+        auto hash8 = hash64 & 0xFF;
+
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->hash = hash64;
+        entry->type = static_cast<TableEntryType>(
+            arc_file.io.read_u8() ^ hash8);
+
+        entry->offset    = arc_file.io.read_u32_le() ^ hash32;
+        entry->size_comp = arc_file.io.read_u32_le() ^ hash32;
+        entry->size_orig = arc_file.io.read_u32_le() ^ hash32;
+
+        auto name = p->file_names_map[entry->hash];
+        auto name_found = name.size();
+
+        if (entry->type == TableEntryType::Compressed)
+        {
+            entry->name_orig = name_found ? name : util::format("%04d.txt", i);
+            entry->valid = true;
+        }
+        else
+        {
+            if (name_found)
+            {
+                entry->name_orig = name;
+                entry->offset ^= name[name.size() >> 1] & 0xFF;
+                entry->size_comp ^= name[name.size() >> 2] & 0xFF;
+                entry->size_orig ^= name[name.size() >> 3] & 0xFF;
+                entry->valid = true;
+            }
+            else
+                entry->valid = false;
+        }
+
+        entry->name = util::sjis_to_utf8(entry->name_orig).str();
+        meta->entries.push_back(std::move(entry));
+    }
+
     if (p->dump_path != "")
     {
-        dump(table, p->dump_path);
+        dump(*meta, p->dump_path);
+        meta->entries.clear();
+        return meta;
+    }
+
+    return meta;
+}
+
+std::unique_ptr<File> DatArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    if (!entry->valid)
+    {
+        Log.err(util::format(
+            "Unknown hash: %016llx. File cannot be unpacked.\n",
+            entry->hash));
+        return nullptr;
+    }
+
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size_comp);
+
+    if (entry->type == TableEntryType::Compressed)
+    {
+        transform_script_content(data, entry->hash, meta->game_title);
+        data = util::pack::zlib_inflate(data);
     }
     else
     {
-        do_unpack(table, arc_file.io, p->game_title, saver);
+        if (entry->type == TableEntryType::Obfuscated)
+            transform_regular_content(data, entry->name_orig);
     }
+
+    return std::make_unique<File>(entry->name, data);
 }
 
 static auto dummy = fmt::Registry::add<DatArchiveDecoder>("whale/dat");

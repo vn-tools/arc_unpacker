@@ -13,29 +13,26 @@ static const bstr magic = "TACTICS_ARC_FILE"_b;
 
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
         size_t size_comp;
         size_t size_orig;
         size_t offset;
         bstr key;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
-static Table read_table_v0(io::IO &arc_io)
+static std::unique_ptr<fmt::ArchiveMeta> read_meta_v0(File &arc_file)
 {
-    auto size_comp = arc_io.read_u32_le();
-    auto size_orig = arc_io.read_u32_le();
-    auto file_count = arc_io.read_u32_le();
+    auto size_comp = arc_file.io.read_u32_le();
+    auto size_orig = arc_file.io.read_u32_le();
+    auto file_count = arc_file.io.read_u32_le();
     if (size_comp > 1024 * 1024 * 10)
         throw err::BadDataSizeError();
 
-    arc_io.skip(4);
-    auto table_buf = arc_io.read(size_comp);
-    auto data_start = arc_io.tell();
+    arc_file.io.skip(4);
+    auto table_buf = arc_file.io.read(size_comp);
+    auto data_start = arc_file.io.tell();
 
     for (auto &c : table_buf)
         c ^= 0xFF;
@@ -43,11 +40,10 @@ static Table read_table_v0(io::IO &arc_io)
         util::pack::lzss_decompress_bytewise(table_buf, size_orig));
 
     auto key = table_io.read_to_zero();
-
-    Table table(file_count);
+    auto meta = std::make_unique<fmt::ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
+        auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = table_io.read_u32_le() + data_start;
         entry->size_comp = table_io.read_u32_le();
         entry->size_orig = table_io.read_u32_le();
@@ -56,46 +52,31 @@ static Table read_table_v0(io::IO &arc_io)
 
         table_io.skip(8);
         entry->name = util::sjis_to_utf8(table_io.read(name_size)).str();
-        table[i] = std::move(entry);
+        meta->entries.push_back(std::move(entry));
     }
-    return table;
+    return meta;
 }
 
-static Table read_table_v1(io::IO &arc_io)
+static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(File &arc_file)
 {
     static const bstr key = "mlnebzqm"_b; // found in .exe
-    Table table;
-    while (!arc_io.eof())
+    auto meta = std::make_unique<fmt::ArchiveMeta>();
+    while (!arc_file.io.eof())
     {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->size_comp = arc_io.read_u32_le();
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->size_comp = arc_file.io.read_u32_le();
         if (!entry->size_comp)
             break;
-        entry->size_orig = arc_io.read_u32_le();
-        auto name_size = arc_io.read_u32_le();
-        arc_io.skip(8);
-        entry->name = util::sjis_to_utf8(arc_io.read(name_size)).str();
-        entry->offset = arc_io.tell();
+        entry->size_orig = arc_file.io.read_u32_le();
+        auto name_size = arc_file.io.read_u32_le();
+        arc_file.io.skip(8);
+        entry->name = util::sjis_to_utf8(arc_file.io.read(name_size)).str();
+        entry->offset = arc_file.io.tell();
         entry->key = key;
-        arc_io.skip(entry->size_comp);
-        table.push_back(std::move(entry));
+        arc_file.io.skip(entry->size_comp);
+        meta->entries.push_back(std::move(entry));
     }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
-{
-    std::unique_ptr<File> output_file(new File);
-    arc_io.seek(entry.offset);
-    auto data = arc_io.read(entry.size_comp);
-    if (entry.key.size())
-        for (auto i : util::range(data.size()))
-            data[i] ^= entry.key[i % entry.key.size()];
-    if (entry.size_orig)
-        data = util::pack::lzss_decompress_bytewise(data, entry.size_orig);
-    output_file->name = entry.name;
-    output_file->io.write(data);
-    return output_file;
+    return meta;
 }
 
 struct ArcArchiveDecoder::Priv final
@@ -117,21 +98,22 @@ bool ArcArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.io.read(magic.size()) == magic;
 }
 
-void ArcArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    ArcArchiveDecoder::read_meta(File &arc_file) const
 {
-    std::unique_ptr<Table> table;
-    std::vector<std::function<Table(io::IO &)>> table_readers
-    {
-        read_table_v0,
-        read_table_v1
-    };
+    std::vector<std::function<std::unique_ptr<fmt::ArchiveMeta>(File &)>>
+        meta_readers
+        {
+            read_meta_v0,
+            read_meta_v1
+        };
 
-    for (auto table_reader : table_readers)
+    for (auto meta_reader : meta_readers)
     {
         arc_file.io.seek(magic.size());
         try
         {
-            table = std::make_unique<Table>(table_reader(arc_file.io));
+            return meta_reader(arc_file);
         }
         catch (std::exception &e)
         {
@@ -139,11 +121,21 @@ void ArcArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
         }
     }
 
-    if (!table)
-        throw err::NotSupportedError("Archive is encrypted in unknown way.");
+    throw err::NotSupportedError("Archive is encrypted in unknown way.");
+}
 
-    for (auto &entry : *table)
-        saver.save(read_file(arc_file.io, *entry));
+std::unique_ptr<File> ArcArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size_comp);
+    if (entry->key.size())
+        for (auto i : util::range(data.size()))
+            data[i] ^= entry->key[i % entry->key.size()];
+    if (entry->size_orig)
+        data = util::pack::lzss_decompress_bytewise(data, entry->size_orig);
+    return std::make_unique<File>(entry->name, data);
 }
 
 static auto dummy = fmt::Registry::add<ArcArchiveDecoder>("tactics/arc");

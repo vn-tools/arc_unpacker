@@ -7,54 +7,21 @@
 using namespace au;
 using namespace au::fmt::nitroplus;
 
+static const bstr key = "\xBD\xAA\xBC\xB4\xAB\xB6\xBC\xB4"_b;
+
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
         size_t offset;
         size_t size;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
-
-static const bstr key = "\xBD\xAA\xBC\xB4\xAB\xB6\xBC\xB4"_b;
 
 static void decrypt(bstr &data)
 {
     for (auto i : util::range(data.size()))
         data[i] ^= key[i % key.size()];
-}
-
-static Table read_table(io::IO &table_io, const io::IO &arc_io)
-{
-    Table table;
-    size_t file_count = table_io.read_u32_le();
-    for (auto i : util::range(file_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = util::convert_encoding(
-            table_io.read(table_io.read_u32_le()), "utf-16le", "utf-8").str();
-        entry->size = table_io.read_u32_le();
-        entry->offset = table_io.read_u32_le();
-        table_io.skip(4);
-        if (entry->offset + entry->size > arc_io.size())
-            throw err::BadDataOffsetError();
-        table.push_back(std::move(entry));
-    }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
-{
-    std::unique_ptr<File> file(new File);
-    auto data = arc_io.read(entry.size);
-    arc_io.seek(entry.offset);
-    decrypt(data);
-    file->name = entry.name;
-    file->io.write(data);
-    return file;
 }
 
 bool NpaSgArchiveDecoder::is_recognized_internal(File &arc_file) const
@@ -65,20 +32,39 @@ bool NpaSgArchiveDecoder::is_recognized_internal(File &arc_file) const
     return table_size < arc_file.io.size();
 }
 
-void NpaSgArchiveDecoder::unpack_internal(
-    File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    NpaSgArchiveDecoder::read_meta(File &arc_file) const
 {
     size_t table_size = arc_file.io.read_u32_le();
-    if (table_size > arc_file.io.size())
-        throw err::BadDataSizeError();
+    auto table_data = arc_file.io.read(table_size);
+    decrypt(table_data);
+    io::BufferedIO table_io(table_data);
 
-    auto table_bytes = arc_file.io.read(table_size);
-    decrypt(table_bytes);
+    auto meta = std::make_unique<ArchiveMeta>();
+    size_t file_count = table_io.read_u32_le();
+    for (auto i : util::range(file_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->name = util::convert_encoding(
+            table_io.read(table_io.read_u32_le()), "utf-16le", "utf-8").str();
+        entry->size = table_io.read_u32_le();
+        entry->offset = table_io.read_u32_le();
+        table_io.skip(4);
+        if (entry->offset + entry->size > arc_file.io.size())
+            throw err::BadDataOffsetError();
+        meta->entries.push_back(std::move(entry));
+    }
+    return meta;
+}
 
-    io::BufferedIO table_io(table_bytes);
-    Table table = read_table(table_io, arc_file.io);
-    for (auto &entry : table)
-        saver.save(read_file(arc_file.io, *entry));
+std::unique_ptr<File> NpaSgArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+    decrypt(data);
+    return std::make_unique<File>(entry->name, data);
 }
 
 static auto dummy = fmt::Registry::add<NpaSgArchiveDecoder>("nitro/npa-sg");

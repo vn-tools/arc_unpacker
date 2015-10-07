@@ -1,6 +1,7 @@
 #pragma once
 
-#include "fmt/archive_decoder.h"
+#include <functional>
+#include "types.h"
 
 namespace au {
 namespace fmt {

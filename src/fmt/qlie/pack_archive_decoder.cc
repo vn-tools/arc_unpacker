@@ -24,9 +24,16 @@ namespace
         WithGameExe = 3,
     };
 
-    struct TableEntry final
+    struct ArchiveMetaImpl final : fmt::ArchiveMeta
     {
-        bstr name;
+        EncryptionType enc_type;
+        bstr key1;
+        bstr key2;
+    };
+
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
+    {
+        bstr name_orig;
         size_t size_compressed;
         size_t size_original;
         size_t offset;
@@ -34,8 +41,6 @@ namespace
         bool compressed;
         u32 seed;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static u64 padb(u64 a, u64 b)
@@ -101,12 +106,7 @@ static void decrypt_file_data_basic(bstr &data, u32 seed)
 }
 
 static void decrypt_file_data_with_external_keys(
-    bstr &data,
-    u32 seed,
-    EncryptionType enc_type,
-    const bstr &file_name,
-    const bstr &key1,
-    const bstr &key2)
+    bstr &data, u32 seed, const bstr &file_name, const ArchiveMetaImpl &meta)
 {
     u32 mt_mutator = 0x85F532;
     u32 mt_seed = 0x33F641;
@@ -123,12 +123,12 @@ static void decrypt_file_data_with_external_keys(
         + (mt_mutator ^ data.size() ^ 0x8F32DC));
     mt_seed = 9 * (mt_seed & 0xFFFFFF);
 
-    if (enc_type == EncryptionType::WithGameExe)
+    if (meta.enc_type == EncryptionType::WithGameExe)
         mt_seed ^= 0x453A;
 
     CustomMersenneTwister mt(mt_seed);
-    mt.xor_state(key1);
-    mt.xor_state(key2);
+    mt.xor_state(meta.key1);
+    mt.xor_state(meta.key2);
 
     std::vector<u64> table(16);
     for (auto i : util::range(table.size()))
@@ -169,12 +169,10 @@ static void decrypt_file_data_with_external_keys(
 static void decrypt_file_data(
     bstr &data,
     u32 seed,
-    EncryptionType enc_type,
     const bstr &file_name,
-    const bstr &key1,
-    const bstr &key2)
+    const ArchiveMetaImpl &meta)
 {
-    switch (enc_type)
+    switch (meta.enc_type)
     {
         case EncryptionType::Basic:
             decrypt_file_data_basic(data, seed);
@@ -183,7 +181,7 @@ static void decrypt_file_data(
         case EncryptionType::WithFKey:
         case EncryptionType::WithGameExe:
             decrypt_file_data_with_external_keys(
-                data, seed, enc_type, file_name, key1, key2);
+                data, seed, file_name, meta);
             break;
     }
 }
@@ -272,97 +270,15 @@ static bstr decompress(const bstr &input, size_t output_size)
     return output;
 }
 
-static bstr read_file_name(io::IO &table_io, u32 key)
-{
-    size_t file_name_size = table_io.read_u16_le();
-    bstr file_name = table_io.read(file_name_size);
-    decrypt_file_name(file_name, key);
-    return file_name;
-}
-
-static Table read_table(io::IO &arc_io)
-{
-    arc_io.seek(get_magic_start(arc_io) + magic.size());
-    auto file_count = arc_io.read_u32_le();
-    auto table_offset = arc_io.read_u64_le();
-    auto table_size = get_magic_start(arc_io) - table_offset;
-    arc_io.seek(table_offset);
-
-    io::BufferedIO table_io;
-    table_io.write_from_io(arc_io, table_size);
-
-    u32 seed = 0;
-    table_io.seek(0);
-    for (auto i : util::range(file_count))
-    {
-        size_t file_name_size = table_io.read_u16_le();
-        table_io.skip(file_name_size + 28);
-    }
-    table_io.skip(28);
-    table_io.skip(table_io.read_u32_le());
-    table_io.skip(36);
-    seed = derive_seed(table_io.read(256)) & 0x0FFFFFFF;
-
-    Table table;
-    table_io.seek(0);
-    for (auto i : util::range(file_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-
-        entry->name = read_file_name(table_io, seed);
-        entry->offset = table_io.read_u64_le();
-        entry->size_compressed = table_io.read_u32_le();
-        entry->size_original = table_io.read_u32_le();
-        entry->compressed = table_io.read_u32_le() > 0;
-        entry->encrypted = table_io.read_u32_le() > 0;
-
-        entry->seed = seed;
-        table_io.skip(4);
-
-        table.push_back(std::move(entry));
-    }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(
-    io::IO &arc_io,
-    const TableEntry &entry,
-    EncryptionType enc_type,
-    const bstr key1,
-    const bstr key2)
-{
-    std::unique_ptr<File> file(new File);
-    file->name = util::sjis_to_utf8(entry.name).str();
-
-    arc_io.seek(entry.offset);
-    auto data = arc_io.read(entry.size_compressed);
-
-    if (entry.encrypted)
-        decrypt_file_data(data, entry.seed, enc_type, entry.name, key1, key2);
-
-    if (entry.compressed)
-        data = decompress(data, entry.size_original);
-
-    file->io.write(data);
-    return file;
-}
-
 struct PackArchiveDecoder::Priv final
 {
-    Priv();
+    std::string fkey_path;
+    std::string game_exe_path;
 
     DpngImageDecoder dpng_image_decoder;
     Abmp7ArchiveDecoder abmp7_archive_decoder;
     Abmp10ArchiveDecoder abmp10_archive_decoder;
-
-    EncryptionType enc_type;
-    bstr key1;
-    bstr key2;
 };
-
-PackArchiveDecoder::Priv::Priv() : enc_type(EncryptionType::Basic)
-{
-}
 
 PackArchiveDecoder::PackArchiveDecoder() : p(new Priv)
 {
@@ -391,41 +307,13 @@ void PackArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 void PackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("fkey"))
-    {
-        const std::string file_path = arg_parser.get_switch("fkey");
-        p->enc_type = EncryptionType::WithFKey;
-        File file(file_path, io::FileMode::Read);
-        p->key1 = file.io.read_to_eof();
-    }
+        p->fkey_path = arg_parser.get_switch("fkey");
 
     if (arg_parser.has_switch("gameexe"))
     {
         if (!arg_parser.has_switch("fkey"))
             throw err::UsageError("Must specify also --fkey.");
-
-        static const int key2_size = 256;
-        const std::string path = arg_parser.get_switch("gameexe");
-
-        File file(path, io::FileMode::Read);
-        auto exe_data = file.io.read_to_eof();
-
-        bool found = false;
-        auto start = file.io.size() - exe_key_magic.size() - key2_size;
-        for (auto i : util::range(start, 0, -1))
-        {
-            if (!std::memcmp(&exe_data[i],
-                exe_key_magic.get<char>(),
-                exe_key_magic.size()))
-            {
-                found = true;
-                p->enc_type = EncryptionType::WithGameExe;
-                p->key2 = bstr(
-                    &exe_data[i + exe_key_magic.size() - 1], key2_size);
-            }
-        }
-
-        if (!found)
-            throw err::RecognitionError("Cannot find the key in the .exe file");
+        p->game_exe_path = arg_parser.get_switch("gameexe");
     }
 
     ArchiveDecoder::parse_cli_options(arg_parser);
@@ -437,20 +325,114 @@ bool PackArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.io.read(magic.size()) == magic;
 }
 
-void PackArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    PackArchiveDecoder::read_meta(File &arc_file) const
 {
-    Table table = read_table(arc_file.io);
-    for (auto &entry : table)
+    auto meta = std::make_unique<ArchiveMetaImpl>();
+    meta->enc_type = EncryptionType::Basic;
+
+    if (!p->fkey_path.empty())
     {
-        auto file = read_file(
-            arc_file.io, *entry, p->enc_type, p->key1, p->key2);
-        if (file->name.find("pack_keyfile") != std::string::npos)
-        {
-            file->io.seek(0);
-            p->key1 = file->io.read_to_eof();
-        }
-        saver.save(std::move(file));
+        meta->enc_type = EncryptionType::WithFKey;
+        File file(p->fkey_path, io::FileMode::Read);
+        meta->key1 = file.io.read_to_eof();
     }
+
+    if (!p->game_exe_path.empty())
+    {
+        static const int key2_size = 256;
+
+        File file(p->game_exe_path, io::FileMode::Read);
+        auto exe_data = file.io.read_to_eof();
+
+        bool found = false;
+        auto start = file.io.size() - exe_key_magic.size() - key2_size;
+        for (auto i : util::range(start, 0, -1))
+        {
+            if (!std::memcmp(&exe_data[i],
+                exe_key_magic.get<char>(),
+                exe_key_magic.size()))
+            {
+                found = true;
+                meta->enc_type = EncryptionType::WithGameExe;
+                meta->key2 = bstr(
+                    &exe_data[i + exe_key_magic.size() - 1], key2_size);
+            }
+        }
+
+        if (!found)
+            throw err::RecognitionError("Cannot find the key in the .exe file");
+    }
+
+    arc_file.io.seek(get_magic_start(arc_file.io) + magic.size());
+    auto file_count = arc_file.io.read_u32_le();
+    auto table_offset = arc_file.io.read_u64_le();
+    auto table_size = get_magic_start(arc_file.io) - table_offset;
+    arc_file.io.seek(table_offset);
+    io::BufferedIO table_io(arc_file.io, table_size);
+
+    u32 seed = 0;
+    table_io.seek(0);
+    for (auto i : util::range(file_count))
+    {
+        size_t file_name_size = table_io.read_u16_le();
+        table_io.skip(file_name_size + 28);
+    }
+    table_io.skip(28);
+    table_io.skip(table_io.read_u32_le());
+    table_io.skip(36);
+    seed = derive_seed(table_io.read(256)) & 0x0FFFFFFF;
+
+    table_io.seek(0);
+    for (auto i : util::range(file_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+
+        size_t name_size = table_io.read_u16_le();
+        entry->name_orig = table_io.read(name_size);
+        decrypt_file_name(entry->name_orig, seed);
+        entry->name = util::sjis_to_utf8(entry->name_orig).str();
+
+        entry->offset = table_io.read_u64_le();
+        entry->size_compressed = table_io.read_u32_le();
+        entry->size_original = table_io.read_u32_le();
+        entry->compressed = table_io.read_u32_le() > 0;
+        entry->encrypted = table_io.read_u32_le() > 0;
+
+        entry->seed = seed;
+        table_io.skip(4);
+
+        meta->entries.push_back(std::move(entry));
+    }
+
+    for (auto &entry : meta->entries)
+    {
+        if (entry->name.find("pack_keyfile") != std::string::npos)
+        {
+            auto file = read_file(arc_file, *meta, *entry);
+            file->io.seek(0);
+            meta->key1 = file->io.read_to_eof();
+        }
+    }
+
+    return meta;
+}
+
+std::unique_ptr<File> PackArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size_compressed);
+
+    if (entry->encrypted)
+        decrypt_file_data(data, entry->seed, entry->name_orig, *meta);
+
+    if (entry->compressed)
+        data = decompress(data, entry->size_original);
+
+    return std::make_unique<File>(entry->name, data);
 }
 
 static auto dummy = fmt::Registry::add<PackArchiveDecoder>("qlie/pack");

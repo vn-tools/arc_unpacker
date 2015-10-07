@@ -19,15 +19,19 @@ namespace
         Version2,
     };
 
-    struct TableEntry final
+    using PluginFunc = std::function<void(bstr &)>;
+
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
         size_t offset;
         size_t size;
     };
 
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
-    using PluginFunc = std::function<void(bstr &)>;
+    struct ArchiveMetaImpl final : fmt::ArchiveMeta
+    {
+        bool encrypted;
+        PluginFunc decrypt;
+    };
 }
 
 static int check_version(io::IO &arc_io, size_t file_count, size_t name_size)
@@ -51,39 +55,6 @@ static Version get_version(io::IO &arc_io)
         return Version::Version2;
 
     return Version::Unknown;
-}
-
-static Table read_table(io::IO &arc_io, Version version)
-{
-    Table table;
-    auto file_count = arc_io.read_u32_le();
-    auto name_size = version == Version::Version2 ? arc_io.read_u32_le() : 16;
-    for (auto i : util::range(file_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = util::sjis_to_utf8(arc_io.read_to_zero(name_size)).str();
-        entry->offset = arc_io.read_u32_le();
-        entry->size = arc_io.read_u32_le();
-        table.push_back(std::move(entry));
-    }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(
-    io::IO &arc_io, const TableEntry &entry, bool encrypted, PluginFunc decrypt)
-{
-    std::unique_ptr<File> file(new File);
-    arc_io.seek(entry.offset);
-    auto data = arc_io.read(entry.size);
-    if (encrypted)
-    {
-        if (!decrypt)
-            throw err::UsageError("File is decrypted, but plugin not set.");
-        decrypt(data);
-    }
-    file->io.write(data);
-    file->name = entry.name;
-    return file;
 }
 
 struct MblArchiveDecoder::Priv final
@@ -145,19 +116,49 @@ bool MblArchiveDecoder::is_recognized_internal(File &arc_file) const
     return get_version(arc_file.io) != Version::Unknown;
 }
 
-void MblArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    MblArchiveDecoder::read_meta(File &arc_file) const
 {
+    auto meta = std::make_unique<ArchiveMetaImpl>();
     auto version = get_version(arc_file.io);
-    bool encrypted = arc_file.name.find("mg_data") != std::string::npos;
+    meta->encrypted = arc_file.name.find("mg_data") != std::string::npos;
+    meta->decrypt = p->plugin;
     arc_file.io.seek(0);
 
-    auto table = read_table(arc_file.io, version);
-    for (auto &entry : table)
+    auto file_count = arc_file.io.read_u32_le();
+    auto name_size = version == Version::Version2
+        ? arc_file.io.read_u32_le()
+        : 16;
+    for (auto i : util::range(file_count))
     {
-        auto file = read_file(arc_file.io, *entry, encrypted, p->plugin);
-        file->guess_extension();
-        saver.save(std::move(file));
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->name = util::sjis_to_utf8(
+            arc_file.io.read_to_zero(name_size)).str();
+        entry->offset = arc_file.io.read_u32_le();
+        entry->size = arc_file.io.read_u32_le();
+        meta->entries.push_back(std::move(entry));
     }
+    return meta;
+}
+
+std::unique_ptr<File> MblArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+    if (meta->encrypted)
+    {
+        if (!meta->decrypt)
+            throw err::UsageError("File is decrypted, but plugin not set.");
+        meta->decrypt(data);
+    }
+
+    auto output_file = std::make_unique<File>(entry->name, data);
+    output_file->guess_extension();
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<MblArchiveDecoder>("ivory/mbl");

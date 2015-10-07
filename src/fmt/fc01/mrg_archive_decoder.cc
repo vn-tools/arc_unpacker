@@ -16,16 +16,13 @@ static const bstr magic = "MRG\x00"_b;
 
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
         u32 offset;
         u32 size_orig;
         u32 size_comp;
         u8 filter;
     };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
 }
 
 static u8 guess_key(const bstr &table_data, size_t file_size)
@@ -45,63 +42,6 @@ static u8 guess_key(const bstr &table_data, size_t file_size)
     while (pos++ < table_data.size())
         key -= pos;
     return key;
-}
-
-static Table read_table(io::IO &arc_io)
-{
-    arc_io.skip(4);
-    auto table_size = arc_io.read_u32_le() - 12 - magic.size();
-    auto file_count = arc_io.read_u32_le();
-
-    auto table_data = arc_io.read(table_size);
-    auto key = guess_key(table_data, arc_io.size());
-    for (auto i : util::range(table_data.size()))
-    {
-        table_data[i] = common::rol8(table_data[i], 1) ^ key;
-        key += table_data.size() - i;
-    }
-
-    io::BufferedIO table_io(table_data);
-    Table table(file_count);
-    for (auto i : util::range(file_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = table_io.read_to_zero(0x0E).str();
-        entry->size_orig = table_io.read_u32_le();
-        entry->filter = table_io.read_u8();
-        table_io.skip(9);
-        entry->offset = table_io.read_u32_le();
-        table[i] = std::move(entry);
-    }
-
-    table_io.seek(0x20);
-    for (size_t i : util::range(file_count))
-    {
-        table_io.skip(0x1C);
-        table[i]->size_comp = table_io.read_u32_le() - table[i]->offset;
-    }
-
-    return table;
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
-{
-    std::unique_ptr<File> file(new File);
-    arc_io.seek(entry.offset);
-    auto data = arc_io.read(entry.size_comp);
-    if (entry.filter)
-    {
-        if (entry.filter >= 2)
-        {
-            common::MrgDecryptor decryptor(data);
-            data = decryptor.decrypt(0);
-        }
-        if (entry.filter < 3)
-            data = common::custom_lzss_decompress(data, entry.size_orig);
-    }
-    file->io.write(data);
-    file->name = entry.name;
-    return file;
 }
 
 struct MrgArchiveDecoder::Priv final
@@ -127,12 +67,64 @@ bool MrgArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.io.read(magic.size()) == magic;
 }
 
-void MrgArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    MrgArchiveDecoder::read_meta(File &arc_file) const
 {
-    arc_file.io.skip(magic.size());
-    Table table = read_table(arc_file.io);
-    for (auto &entry : table)
-        saver.save(read_file(arc_file.io, *entry));
+    arc_file.io.seek(magic.size() + 4);
+    auto table_size = arc_file.io.read_u32_le() - 12 - magic.size();
+    auto file_count = arc_file.io.read_u32_le();
+
+    auto table_data = arc_file.io.read(table_size);
+    auto key = guess_key(table_data, arc_file.io.size());
+    for (auto i : util::range(table_data.size()))
+    {
+        table_data[i] = common::rol8(table_data[i], 1) ^ key;
+        key += table_data.size() - i;
+    }
+
+    io::BufferedIO table_io(table_data);
+    ArchiveEntryImpl *last_entry = nullptr;
+    auto meta = std::make_unique<ArchiveMeta>();
+    for (auto i : util::range(file_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->name = table_io.read_to_zero(0x0E).str();
+        entry->size_orig = table_io.read_u32_le();
+        entry->filter = table_io.read_u8();
+        table_io.skip(9);
+        entry->offset = table_io.read_u32_le();
+        if (last_entry)
+            last_entry->size_comp = entry->offset - last_entry->offset;
+        last_entry = entry.get();
+        meta->entries.push_back(std::move(entry));
+    }
+
+    if (last_entry)
+    {
+        table_io.skip(0x1C);
+        last_entry->size_comp = table_io.read_u32_le() - last_entry->offset;
+    }
+
+    return meta;
+}
+
+std::unique_ptr<File> MrgArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size_comp);
+    if (entry->filter)
+    {
+        if (entry->filter >= 2)
+        {
+            common::MrgDecryptor decryptor(data);
+            data = decryptor.decrypt(0);
+        }
+        if (entry->filter < 3)
+            data = common::custom_lzss_decompress(data, entry->size_orig);
+    }
+    return std::make_unique<File>(entry->name, data);
 }
 
 static auto dummy = fmt::Registry::add<MrgArchiveDecoder>("fc01/mrg");

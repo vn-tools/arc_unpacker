@@ -11,9 +11,13 @@ namespace will {
     {
     public:
         std::vector<std::shared_ptr<pix::Grid>> unpack_to_images(File &) const;
+        std::unique_ptr<ArchiveMeta> read_meta(File &) const override;
+        std::unique_ptr<File> read_file(
+            File &, const ArchiveMeta &, const ArchiveEntry &) const override;
+        std::unique_ptr<pix::Grid> read_image(
+            File &, const ArchiveMeta &, const ArchiveEntry &) const;
     protected:
         bool is_recognized_internal(File &) const override;
-        void unpack_internal(File &, FileSaver &) const override;
         std::unique_ptr<INamingStrategy> naming_strategy() const override;
     };
 

@@ -12,25 +12,21 @@ using namespace au::fmt::tanuki_soft;
 
 namespace
 {
-    struct TableDirectory;
-
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
         u64 hash;
         bool compressed;
         u32 size_original;
         u32 offset;
         u32 size_compressed;
-        TableDirectory *directory;
         size_t index;
     };
 
-    struct TableDirectory final
+    struct Directory final
     {
         u16 hash;
         u16 entry_count;
         u32 start_index;
-        std::vector<std::unique_ptr<TableEntry>> entries;
     };
 
     enum Version
@@ -49,93 +45,6 @@ static bstr decrypt(const bstr &input, size_t size, const bstr &key)
     util::crypt::Blowfish bf(key);
     size_t left = (size / bf.block_size()) * bf.block_size();
     return bf.decrypt(input.substr(0, left)) + input.substr(left);
-}
-
-static std::vector<std::unique_ptr<TableDirectory>> read_table(
-    io::IO &arc_io, Version version)
-{
-    size_t entry_count = arc_io.read_u32_le();
-    size_t directory_count = arc_io.read_u32_le();
-    size_t table_size = arc_io.read_u32_le();
-    arc_io.skip(4);
-    if (version == Version::Version110)
-        arc_io.skip(8);
-    size_t file_data_start = arc_io.tell() + table_size;
-
-    io::BufferedIO table_io(
-        util::pack::zlib_inflate(
-            decrypt(arc_io.read(table_size), table_size, "TLibArchiveData"_b)));
-
-    std::vector<std::unique_ptr<TableDirectory>> directories;
-    for (auto i : util::range(directory_count))
-    {
-        std::unique_ptr<TableDirectory> dir(new TableDirectory);
-        dir->hash = table_io.read_u16_le();
-        dir->entry_count = table_io.read_u16_le();
-        dir->start_index = table_io.read_u32_le();
-        directories.push_back(std::move(dir));
-    }
-
-    std::vector<std::unique_ptr<TableEntry>> entries;
-    for (auto i : util::range(entry_count))
-    {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->hash = table_io.read_u64_le();
-        entry->compressed = table_io.read_u32_le();
-        entry->size_original = table_io.read_u32_le();
-        entry->offset = table_io.read_u32_le() + file_data_start;
-        entry->size_compressed = table_io.read_u32_le();
-        entry->index = i;
-        entries.push_back(std::move(entry));
-    }
-
-    for (auto &directory : directories)
-    {
-        for (auto i : util::range(directory->entry_count))
-        {
-            if (i + directory->start_index >= entries.size())
-                throw err::CorruptDataError("Corrupt file table");
-            auto &entry = entries[directory->start_index + i];
-            entry->hash = (entry->hash << 16) | directory->hash;
-            entry->directory = directory.get();
-            directory->entries.push_back(std::move(entry));
-        }
-    }
-
-    return directories;
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, TableEntry &entry)
-{
-    std::unique_ptr<File> file(new File);
-    arc_io.seek(entry.offset);
-    bstr data = arc_io.read(entry.size_compressed);
-    if (entry.compressed)
-        data = util::pack::zlib_inflate(data);
-
-    if (!entry.compressed)
-    {
-        bstr key = util::format("%llu_tlib_secure_", entry.hash);
-        size_t bytes_to_decrypt = 10240;
-        if (data.size() < bytes_to_decrypt)
-            bytes_to_decrypt = data.size();
-
-        {
-            auto header = decrypt(
-                data.substr(0, util::crypt::Blowfish::block_size()),
-                util::crypt::Blowfish::block_size(),
-                key).substr(0, 4);
-            if (header == "RIFF"_b || header == "TArc"_b)
-                bytes_to_decrypt = data.size();
-        }
-
-        data = decrypt(data, bytes_to_decrypt, key);
-    }
-
-    file->io.write(data);
-    file->name = util::format("%05d.dat", entry.index);
-    file->guess_extension();
-    return file;
 }
 
 static Version read_version(io::IO &io)
@@ -158,15 +67,95 @@ bool TacArchiveDecoder::is_recognized_internal(File &arc_file) const
     return read_version(arc_file.io) != Version::Unknown;
 }
 
-void TacArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    TacArchiveDecoder::read_meta(File &arc_file) const
 {
     auto version = read_version(arc_file.io);
     arc_file.io.skip(8);
+    size_t entry_count = arc_file.io.read_u32_le();
+    size_t dir_count = arc_file.io.read_u32_le();
+    size_t table_size = arc_file.io.read_u32_le();
+    arc_file.io.skip(4);
+    if (version == Version::Version110)
+        arc_file.io.skip(8);
+    size_t file_data_start = arc_file.io.tell() + table_size;
 
-    auto directories = read_table(arc_file.io, version);
-    for (auto &directory : directories)
-        for (auto &entry : directory->entries)
-            saver.save(read_file(arc_file.io, *entry));
+    auto table_data = arc_file.io.read(table_size);
+    table_data = decrypt(table_data, table_size, "TLibArchiveData"_b);
+    table_data = util::pack::zlib_inflate(table_data);
+    io::BufferedIO table_io(table_data);
+
+    std::vector<std::unique_ptr<Directory>> dirs;
+    for (auto i : util::range(dir_count))
+    {
+        auto dir = std::make_unique<Directory>();
+        dir->hash = table_io.read_u16_le();
+        dir->entry_count = table_io.read_u16_le();
+        dir->start_index = table_io.read_u32_le();
+        dirs.push_back(std::move(dir));
+    }
+
+    auto meta = std::make_unique<ArchiveMeta>();
+    for (auto i : util::range(entry_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->hash = table_io.read_u64_le();
+        entry->compressed = table_io.read_u32_le();
+        entry->size_original = table_io.read_u32_le();
+        entry->offset = table_io.read_u32_le() + file_data_start;
+        entry->size_compressed = table_io.read_u32_le();
+        entry->index = i;
+        meta->entries.push_back(std::move(entry));
+    }
+
+    for (auto &dir : dirs)
+    {
+        for (auto i : util::range(dir->entry_count))
+        {
+            if (i + dir->start_index >= meta->entries.size())
+                throw err::CorruptDataError("Corrupt file table");
+            auto entry = static_cast<ArchiveEntryImpl*>(
+                meta->entries[dir->start_index + i].get());
+            entry->hash = (entry->hash << 16) | dir->hash;
+        }
+    }
+
+    return meta;
+}
+
+std::unique_ptr<File> TacArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    std::unique_ptr<File> file(new File);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size_compressed);
+    if (entry->compressed)
+        data = util::pack::zlib_inflate(data);
+
+    if (!entry->compressed)
+    {
+        bstr key = util::format("%llu_tlib_secure_", entry->hash);
+        size_t bytes_to_decrypt = 10240;
+        if (data.size() < bytes_to_decrypt)
+            bytes_to_decrypt = data.size();
+
+        {
+            auto header = decrypt(
+                data.substr(0, util::crypt::Blowfish::block_size()),
+                util::crypt::Blowfish::block_size(),
+                key).substr(0, 4);
+            if (header == "RIFF"_b || header == "TArc"_b)
+                bytes_to_decrypt = data.size();
+        }
+
+        data = decrypt(data, bytes_to_decrypt, key);
+    }
+
+    file->io.write(data);
+    file->name = util::format("%05d.dat", entry->index);
+    file->guess_extension();
+    return file;
 }
 
 static auto dummy = fmt::Registry::add<TacArchiveDecoder>("tanuki/tac");

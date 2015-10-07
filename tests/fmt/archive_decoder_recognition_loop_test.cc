@@ -13,16 +13,17 @@ namespace
     {
     public:
         TestArchiveDecoder();
+        std::unique_ptr<ArchiveMeta> read_meta(File &) const override;
+        std::unique_ptr<File> read_file(
+            File &, const ArchiveMeta &, const ArchiveEntry &) const override;
     protected:
         bool is_recognized_internal(File &arc_file) const override;
-        void unpack_internal(
-            File &arc_file, FileSaver &file_saver) const override;
     };
+}
 
-    TestArchiveDecoder::TestArchiveDecoder()
-    {
-        add_decoder(this);
-    }
+TestArchiveDecoder::TestArchiveDecoder()
+{
+    add_decoder(this);
 }
 
 bool TestArchiveDecoder::is_recognized_internal(File &arc_file) const
@@ -30,13 +31,20 @@ bool TestArchiveDecoder::is_recognized_internal(File &arc_file) const
     return true;
 }
 
-void TestArchiveDecoder::unpack_internal(
-    File &arc_file, FileSaver &file_saver) const
+std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta(File &arc_file) const
 {
-    std::unique_ptr<File> output_file(new File);
-    output_file->name = "infinity";
-    output_file->io.write_from_io(arc_file.io);
-    file_saver.save(std::move(output_file));
+    auto meta = std::make_unique<ArchiveMeta>();
+    auto entry = std::make_unique<ArchiveEntry>();
+    entry->name = "infinity";
+    meta->entries.push_back(std::move(entry));
+    return meta;
+}
+
+std::unique_ptr<File> TestArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &, const ArchiveEntry &e) const
+{
+    arc_file.io.seek(0);
+    return std::make_unique<File>(e.name, arc_file.io.read_to_eof());
 }
 
 TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")

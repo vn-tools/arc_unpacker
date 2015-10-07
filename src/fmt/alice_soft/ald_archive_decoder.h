@@ -11,9 +11,11 @@ namespace alice_soft {
     public:
         AldArchiveDecoder();
         ~AldArchiveDecoder();
+        std::unique_ptr<fmt::ArchiveMeta> read_meta(File &arc_file) const;
+        std::unique_ptr<File> read_file(
+            File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const;
     protected:
         bool is_recognized_internal(File &) const override;
-        void unpack_internal(File &, FileSaver &) const override;
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

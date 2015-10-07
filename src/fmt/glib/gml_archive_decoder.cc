@@ -8,65 +8,21 @@
 using namespace au;
 using namespace au::fmt::glib;
 
+static const bstr magic = "GML_ARC\x00"_b;
+
 namespace
 {
-    struct TableEntry final
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::string name;
-        u32 offset;
-        u32 size;
+        size_t offset;
+        size_t size;
         bstr prefix;
     };
 
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
-}
-
-static const bstr magic = "GML_ARC\x00"_b;
-
-static std::unique_ptr<io::BufferedIO> get_header_io(
-    io::IO &arc_io, size_t header_size_compressed, size_t header_size_original)
-{
-    bstr buffer = arc_io.read(header_size_compressed);
-    for (auto i : util::range(buffer.size()))
-        buffer.get<u8>()[i] ^= 0xFF;
-
-    return std::unique_ptr<io::BufferedIO>(
-        new io::BufferedIO(
-            custom_lzss_decompress(buffer, header_size_original)));
-}
-
-static Table read_table(io::IO &table_io, size_t file_data_start)
-{
-    size_t file_count = table_io.read_u32_le();
-    Table table;
-    table.reserve(file_count);
-    for (auto i : util::range(file_count))
+    struct ArchiveMetaImpl final : fmt::ArchiveMeta
     {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = table_io.read(table_io.read_u32_le()).str();
-        entry->offset = table_io.read_u32_le() + file_data_start;
-        entry->size = table_io.read_u32_le();
-        entry->prefix = table_io.read(4);
-        table.push_back(std::move(entry));
-    }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(
-    io::IO &arc_io, const TableEntry &entry, const bstr &permutation)
-{
-    std::unique_ptr<File> file(new File);
-    file->name = entry.name;
-
-    arc_io.seek(entry.offset);
-    arc_io.skip(entry.prefix.size());
-    auto suffix = arc_io.read(entry.size - entry.prefix.size());
-    for (auto i : util::range(suffix.size()))
-        suffix.get<u8>()[i] = permutation[suffix.get<u8>()[i]];
-
-    file->io.write(entry.prefix);
-    file->io.write(suffix);
-    return file;
+        bstr permutation;
+    };
 }
 
 struct GmlArchiveDecoder::Priv final
@@ -90,22 +46,52 @@ bool GmlArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.io.read(magic.size()) == magic;
 }
 
-void GmlArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    GmlArchiveDecoder::read_meta(File &arc_file) const
 {
-    arc_file.io.skip(magic.size());
+    arc_file.io.seek(magic.size());
+    auto file_data_start = arc_file.io.read_u32_le();
+    auto table_size_orig = arc_file.io.read_u32_le();
+    auto table_size_comp = arc_file.io.read_u32_le();
+    auto table_data = arc_file.io.read(table_size_comp);
+    for (auto i : util::range(table_data.size()))
+        table_data[i] ^= 0xFF;
+    table_data = custom_lzss_decompress(table_data, table_size_orig);
+    io::BufferedIO table_io(table_data);
 
-    u32 file_data_start = arc_file.io.read_u32_le();
-    u32 header_size_original = arc_file.io.read_u32_le();
-    u32 header_size_compressed = arc_file.io.read_u32_le();
+    auto meta = std::make_unique<ArchiveMetaImpl>();
+    meta->permutation = table_io.read(0x100);
 
-    auto header_io = get_header_io(
-        arc_file.io, header_size_compressed, header_size_original);
-    header_io->seek(0);
+    auto file_count = table_io.read_u32_le();
+    for (auto i : util::range(file_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->name = table_io.read(table_io.read_u32_le()).str();
+        entry->offset = table_io.read_u32_le() + file_data_start;
+        entry->size = table_io.read_u32_le();
+        entry->prefix = table_io.read(4);
+        meta->entries.push_back(std::move(entry));
+    }
+    return meta;
+}
 
-    bstr permutation = header_io->read(0x100);
-    Table table = read_table(*header_io, file_data_start);
-    for (auto &entry : table)
-        saver.save(read_file(arc_file.io, *entry, permutation));
+std::unique_ptr<File> GmlArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+
+    arc_file.io.seek(entry->offset);
+    arc_file.io.skip(entry->prefix.size());
+    auto suffix = arc_file.io.read(entry->size - entry->prefix.size());
+    for (auto i : util::range(suffix.size()))
+        suffix[i] = meta->permutation[suffix.get<u8>()[i]];
+
+    auto output_file = std::make_unique<File>();
+    output_file->name = entry->name;
+    output_file->io.write(entry->prefix);
+    output_file->io.write(suffix);
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<GmlArchiveDecoder>("glib/gml");

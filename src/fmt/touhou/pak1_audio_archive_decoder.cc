@@ -6,23 +6,19 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
-static std::unique_ptr<File> read_audio(io::IO &arc_io, size_t index)
+namespace
 {
-    auto size = arc_io.read_u32_le();
-    auto format = arc_io.read_u16_le();
-    auto channel_count = arc_io.read_u16_le();
-    auto sample_rate = arc_io.read_u32_le();
-    auto byte_rate = arc_io.read_u32_le();
-    auto block_align = arc_io.read_u16_le();
-    auto bits_per_sample = arc_io.read_u16_le();
-    arc_io.skip(2);
-
-    return util::file_from_samples(
-        channel_count,
-        bits_per_sample / 8,
-        sample_rate,
-        arc_io.read(size),
-        util::format("%04d", index));
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
+    {
+        size_t offset;
+        size_t size;
+        size_t format;
+        size_t channel_count;
+        size_t sample_rate;
+        size_t byte_rate;
+        size_t block_align;
+        size_t bits_per_sample;
+    };
 }
 
 bool Pak1AudioArchiveDecoder::is_recognized_internal(File &arc_file) const
@@ -41,17 +37,45 @@ bool Pak1AudioArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.io.eof();
 }
 
-void Pak1AudioArchiveDecoder::unpack_internal(
-    File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    Pak1AudioArchiveDecoder::read_meta(File &arc_file) const
 {
-    size_t file_count = arc_file.io.read_u32_le();
+    auto file_count = arc_file.io.read_u32_le();
+    auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
         if (!arc_file.io.read_u8())
             continue;
 
-        saver.save(read_audio(arc_file.io, i));
+        entry->size = arc_file.io.read_u32_le();
+        entry->format = arc_file.io.read_u16_le();
+        entry->channel_count = arc_file.io.read_u16_le();
+        entry->sample_rate = arc_file.io.read_u32_le();
+        entry->byte_rate = arc_file.io.read_u32_le();
+        entry->block_align = arc_file.io.read_u16_le();
+        entry->bits_per_sample = arc_file.io.read_u16_le();
+        arc_file.io.skip(2);
+
+        entry->offset = arc_file.io.tell();
+        arc_file.io.skip(entry->size);
+        entry->name = util::format("%04d", i);
+        meta->entries.push_back(std::move(entry));
     }
+    return meta;
+}
+
+std::unique_ptr<File> Pak1AudioArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    return util::file_from_samples(
+        entry->channel_count,
+        entry->bits_per_sample / 8,
+        entry->sample_rate,
+        arc_file.io.read(entry->size),
+        entry->name);
 }
 
 static auto dummy = fmt::Registry::add<Pak1AudioArchiveDecoder>("th/pak1-sfx");

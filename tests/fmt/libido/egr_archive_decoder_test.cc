@@ -19,10 +19,5 @@ TEST_CASE("Libido EGR unencrypted image archives", "[fmt]")
     EgrArchiveDecoder decoder;
     auto actual_files = decoder.unpack(*tests::zlib_file_from_path(
         "tests/fmt/libido/files/egr/test-zlib.EGR"));
-    REQUIRE(expected_images.size() == actual_files.size());
-    for (auto i : util::range(expected_images.size()))
-    {
-        tests::compare_images(
-            *expected_images[i], *tests::image_from_file(*actual_files[i]));
-    }
+    tests::compare_images(expected_images, actual_files);
 }

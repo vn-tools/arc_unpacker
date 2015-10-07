@@ -8,45 +8,15 @@
 using namespace au;
 using namespace au::fmt::liar_soft;
 
-namespace
-{
-    struct TableEntry final
-    {
-        std::string name;
-        u32 offset;
-        u32 size;
-    };
-
-    using Table = std::vector<std::unique_ptr<TableEntry>>;
-}
-
 static const bstr magic = "LB\x01\x00"_b;
 
-static Table read_table(io::IO &arc_io)
+namespace
 {
-    Table table;
-    size_t table_size = arc_io.read_u32_le();
-    size_t file_count = arc_io.read_u32_le();
-    size_t file_start = arc_io.tell() + table_size;
-    table.reserve(file_count);
-    for (auto i : util::range(file_count))
+    struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        std::unique_ptr<TableEntry> entry(new TableEntry);
-        entry->name = util::sjis_to_utf8(arc_io.read_to_zero(0x20)).str();
-        entry->offset = file_start + arc_io.read_u32_le();
-        entry->size = arc_io.read_u32_le();
-        table.push_back(std::move(entry));
-    }
-    return table;
-}
-
-static std::unique_ptr<File> read_file(io::IO &arc_io, const TableEntry &entry)
-{
-    std::unique_ptr<File> file(new File);
-    file->name = entry.name;
-    arc_io.seek(entry.offset);
-    file->io.write_from_io(arc_io, entry.size);
-    return file;
+        size_t offset;
+        size_t size;
+    };
 }
 
 struct XflArchiveDecoder::Priv final
@@ -73,17 +43,34 @@ bool XflArchiveDecoder::is_recognized_internal(File &arc_file) const
     return arc_file.io.read(magic.size()) == magic;
 }
 
-void XflArchiveDecoder::unpack_internal(File &arc_file, FileSaver &saver) const
+std::unique_ptr<fmt::ArchiveMeta>
+    XflArchiveDecoder::read_meta(File &arc_file) const
 {
-    arc_file.io.skip(magic.size());
-
-    Table table = read_table(arc_file.io);
-    for (auto &entry : table)
+    arc_file.io.seek(magic.size());
+    auto table_size = arc_file.io.read_u32_le();
+    auto file_count = arc_file.io.read_u32_le();
+    auto file_start = arc_file.io.tell() + table_size;
+    auto meta = std::make_unique<ArchiveMeta>();
+    for (auto i : util::range(file_count))
     {
-        auto file = read_file(arc_file.io, *entry);
-        file->guess_extension();
-        saver.save(std::move(file));
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->name = util::sjis_to_utf8(arc_file.io.read_to_zero(0x20)).str();
+        entry->offset = file_start + arc_file.io.read_u32_le();
+        entry->size = arc_file.io.read_u32_le();
+        meta->entries.push_back(std::move(entry));
     }
+    return meta;
+}
+
+std::unique_ptr<File> XflArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+{
+    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    arc_file.io.seek(entry->offset);
+    auto data = arc_file.io.read(entry->size);
+    auto output_file = std::make_unique<File>(entry->name, data);
+    output_file->guess_extension();
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<XflArchiveDecoder>("liar/xfl");
