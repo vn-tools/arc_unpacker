@@ -122,7 +122,14 @@ bool Tha1ArchiveDecoder::is_recognized_internal(File &arc_file) const
 {
     if (!arc_file.has_extension("dat"))
         return false;
-    return detect_encryption_version(arc_file) >= 0;
+    auto encryption_version = detect_encryption_version(arc_file);
+    if (encryption_version < 0)
+        return false;
+    arc_file.io.seek(0);
+    auto header_data = arc_file.io.read(16);
+    header_data = decrypt(header_data, { 0x1B, 0x37, 0x10, 0x400 });
+    io::BufferedIO header_io(header_data);
+    return header_io.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
