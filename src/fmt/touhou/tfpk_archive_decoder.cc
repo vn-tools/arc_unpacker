@@ -122,7 +122,7 @@ RsaReader::RsaReader(io::IO &io) : io(io)
         try
         {
             tester.decrypt(test_chunk);
-            rsa.reset(new util::crypt::Rsa(rsa_key));
+            rsa = std::make_unique<util::crypt::Rsa>(rsa_key);
             return;
         }
         catch (...)
@@ -252,14 +252,13 @@ static HashLookupMap read_fn_map(
     size_t table_size_original = tmp_io->read_u32_le();
     size_t block_count = tmp_io->read_u32_le();
 
-    tmp_io.reset(new io::BufferedIO);
+    tmp_io = std::make_unique<io::BufferedIO>();
     for (auto i : util::range(block_count))
         tmp_io->write_from_io(*reader.read_block());
 
     tmp_io->seek(0);
-    tmp_io.reset(
-        new io::BufferedIO(
-            util::pack::zlib_inflate(tmp_io->read(table_size_compressed))));
+    tmp_io = std::make_unique<io::BufferedIO>(
+        util::pack::zlib_inflate(tmp_io->read(table_size_compressed)));
 
     for (auto &dir_entry : dir_entries)
     {

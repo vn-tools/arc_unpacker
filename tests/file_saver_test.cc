@@ -9,9 +9,7 @@ static void do_test(const boost::filesystem::path &path)
 {
     FileSaverHdd file_saver(".", true);
 
-    std::shared_ptr<File> file(new File);
-    file->io.write("test"_b);
-    file->name = path.string();
+    auto file = std::make_shared<File>(path.string(), "test"_b);
 
     Log.mute();
     file_saver.save(file);
@@ -34,8 +32,7 @@ static void do_test_overwriting(
     boost::filesystem::path path = "test.txt";
     boost::filesystem::path path2 = "test(1).txt";
 
-    std::shared_ptr<File> file(new File);
-    file->name = path.string();
+    auto file = std::make_shared<File>(path.string(), ""_b);
 
     try
     {

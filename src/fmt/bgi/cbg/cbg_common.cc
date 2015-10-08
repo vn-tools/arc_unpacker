@@ -76,7 +76,7 @@ Tree cbg::build_tree(const FreqTable &freq_table, bool greedy)
     u32 freq_sum = 0;
     for (auto i : util::range(tree.size))
     {
-        std::shared_ptr<NodeInfo> node(new NodeInfo);
+        auto node = std::make_shared<NodeInfo>();
         node->frequency = freq_table[i];
         node->valid = freq_table[i] > 0;
         node->children[0] = i;
@@ -121,7 +121,7 @@ Tree cbg::build_tree(const FreqTable &freq_table, bool greedy)
             tree[children[j]].valid = false;
             freq += tree[children[j]].frequency;
         }
-        std::shared_ptr<NodeInfo> node(new NodeInfo);
+        auto node = std::make_shared<NodeInfo>();
         node->valid = true;
         node->frequency = freq;
         node->children[0] = children[0];

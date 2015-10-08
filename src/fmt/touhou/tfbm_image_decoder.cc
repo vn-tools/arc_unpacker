@@ -47,8 +47,8 @@ void TfbmImageDecoder::add_palette(
             palette_io.read(
                 palette_io.read_u32_le())));
 
-    p->palette_map[name] = std::shared_ptr<pix::Palette>(
-        new pix::Palette(256, colors_io, pix::Format::BGRA5551));
+    p->palette_map[name] = std::make_shared<pix::Palette>(
+        256, colors_io, pix::Format::BGRA5551);
 }
 
 bool TfbmImageDecoder::is_recognized_internal(File &file) const
@@ -77,7 +77,7 @@ pix::Grid TfbmImageDecoder::decode_internal(File &file) const
         auto it = p->palette_map.find(path.generic_string());
         palette = it != p->palette_map.end()
             ? it->second
-            : std::shared_ptr<pix::Palette>(new pix::Palette(256));
+            : std::make_shared<pix::Palette>(256);
     }
 
     pix::Grid pixels(width, height);

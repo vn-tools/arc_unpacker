@@ -37,8 +37,8 @@ void Pak2ImageDecoder::add_palette(
 {
     io::BufferedIO palette_io(palette_data);
     palette_io.skip(1);
-    p->palette_map[name] = std::shared_ptr<pix::Palette>(
-        new pix::Palette(256, palette_io, pix::Format::BGRA5551));
+    p->palette_map[name] = std::make_shared<pix::Palette>(
+        256, palette_io, pix::Format::BGRA5551);
 }
 
 bool Pak2ImageDecoder::is_recognized_internal(File &file) const
@@ -65,7 +65,7 @@ pix::Grid Pak2ImageDecoder::decode_internal(File &file) const
         auto it = p->palette_map.find(path.generic_string());
         palette = it != p->palette_map.end()
             ? it->second
-            : std::shared_ptr<pix::Palette>(new pix::Palette(256));
+            : std::make_shared<pix::Palette>(256);
     }
 
     pix::Grid pixels(width, height);

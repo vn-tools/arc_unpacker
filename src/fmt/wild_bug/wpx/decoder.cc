@@ -144,8 +144,8 @@ bstr Decoder::read_compressed_section(
             if (section.data_format & 8)
                 throw err::NotSupportedError("Unknown compression type");
             else
-                transcriptor.reset(
-                    new TranscriptionStrategy1(offsets, quant_size));
+                transcriptor.reset(new TranscriptionStrategy1(
+                    offsets, quant_size));
         }
         else
             transcriptor.reset(new TranscriptionStrategy2(offsets, quant_size));
