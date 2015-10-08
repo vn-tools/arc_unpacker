@@ -363,15 +363,15 @@ static void validate_ctx(const DecodeContext &ctx, const EriHeader &header)
     {
         case 1:
             if (ctx.bit_count != 0)
-                throw new err::UnsupportedBitDepthError(ctx.bit_count);
+                throw err::UnsupportedBitDepthError(ctx.bit_count);
             break;
         case 8:
             if (ctx.bit_count != 8)
-                throw new err::UnsupportedBitDepthError(ctx.bit_count);
+                throw err::UnsupportedBitDepthError(ctx.bit_count);
             break;
         case 16:
             if (ctx.bit_count != 8 || ctx.encode_type)
-                throw new err::UnsupportedBitDepthError(ctx.bit_count);
+                throw err::UnsupportedBitDepthError(ctx.bit_count);
             break;
         default:
             throw err::UnsupportedVersionError(ctx.eri_version);
