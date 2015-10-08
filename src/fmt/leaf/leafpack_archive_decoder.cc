@@ -1,4 +1,5 @@
 #include "fmt/leaf/leafpack_archive_decoder.h"
+#include "fmt/leaf/lf2_image_decoder.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
@@ -21,6 +22,20 @@ static void decrypt(bstr &data)
 {
     for (auto i : util::range(data.size()))
         data[i] -= key[i % key.size()];
+}
+
+struct LeafpackArchiveDecoder::Priv final
+{
+    Lf2ImageDecoder lf2_image_decoder;
+};
+
+LeafpackArchiveDecoder::LeafpackArchiveDecoder() : p(new Priv)
+{
+    add_decoder(&p->lf2_image_decoder);
+}
+
+LeafpackArchiveDecoder::~LeafpackArchiveDecoder()
+{
 }
 
 bool LeafpackArchiveDecoder::is_recognized_internal(File &arc_file) const
