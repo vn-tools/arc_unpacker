@@ -47,14 +47,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     size_t file_count = arc_file.io.read_u32_le();
     arc_file.io.skip(4);
     size_t table_size = arc_file.io.read_u32_le();
-    size_t file_start = arc_file.io.tell() + table_size + 4;
+    size_t file_data_start = arc_file.io.tell() + table_size + 4;
 
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         arc_file.io.skip(9);
-        entry->offset = file_start + arc_file.io.read_u32_le();
+        entry->offset = file_data_start + arc_file.io.read_u32_le();
         entry->size = arc_file.io.read_u32_le();
         auto name_size = arc_file.io.read_u8();
         entry->name = util::sjis_to_utf8(arc_file.io.read(name_size)).str();
