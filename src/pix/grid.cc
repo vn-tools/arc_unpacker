@@ -17,7 +17,6 @@ template<Format fmt> static void read_many(
 struct Grid::Priv final
 {
     void load(const bstr &input, Format fmt);
-    void load(const bstr &input, const Palette &palette);
 
     std::vector<Pixel> pixels;
     size_t width;
@@ -78,17 +77,6 @@ void Grid::Priv::load(const bstr &input, Format fmt)
     }
 }
 
-void Grid::Priv::load(const bstr &input, const Palette &palette)
-{
-    if (input.size() < width * height)
-        throw err::BadDataSizeError();
-    auto *input_ptr = input.get<const u8>();
-    auto *pixels_ptr = &pixels[0];
-    for (auto y : util::range(height))
-    for (auto x : util::range(width))
-        *pixels_ptr++ = palette[*input_ptr++];
-}
-
 Grid::Grid(const Grid &other) : Grid(other.width(), other.height())
 {
     for (auto y : util::range(p->height))
@@ -120,14 +108,16 @@ Grid::Grid(
     size_t width, size_t height, const bstr &input, const Palette &palette)
     : Grid(width, height)
 {
-    p->load(input, palette);
+    p->load(input, pix::Format::Gray8);
+    apply_palette(palette);
 }
 
 Grid::Grid(
     size_t width, size_t height, io::IO &input_io, const Palette &palette)
     : Grid(width, height)
 {
-    p->load(input_io.read(width * height), palette);
+    p->load(input_io.read(width * height), pix::Format::Gray8);
+    apply_palette(palette);
 }
 
 Grid::~Grid()
@@ -193,10 +183,12 @@ void Grid::apply_palette(const Palette &palette)
 {
     auto palette_size = palette.size();
     for (auto &c : p->pixels)
+    {
         if (c.r < palette_size)
             c = palette[c.r];
         else
-            c.a = 0xFF;
+            c.a = 0x00;
+    }
 }
 
 Pixel *Grid::begin()
