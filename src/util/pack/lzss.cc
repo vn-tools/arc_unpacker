@@ -17,7 +17,7 @@ bstr util::pack::lzss_decompress_bitwise(
     output.reserve(output_size);
     size_t dictionary_size = 1 << settings.position_bits;
     size_t dictionary_pos = settings.initial_dictionary_pos;
-    std::unique_ptr<u8[]> dictionary(new u8[dictionary_size]);
+    auto dictionary = std::make_unique<u8[]>(dictionary_size);
 
     u8 *dictionary_ptr = dictionary.get();
 

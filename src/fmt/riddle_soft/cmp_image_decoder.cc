@@ -26,7 +26,7 @@ std::unique_ptr<File> CmpImageDecoder::decode_internal(File &file) const
     settings.initial_dictionary_pos = 2031;
     data = util::pack::lzss_decompress_bitwise(data, size_original, settings);
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->io.write(data);
     output_file->name = file.name;
     output_file->guess_extension();

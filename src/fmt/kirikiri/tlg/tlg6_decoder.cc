@@ -458,8 +458,7 @@ static void read_pixels(io::IO &io, pix::Grid &pixels, Header &header)
     filter_types.decompress(header);
 
     bstr pixel_buf(4 * header.image_width * h_block_size);
-    std::unique_ptr<pix::Pixel[]> zero_line(
-        new pix::Pixel[header.image_width]());
+    auto zero_line = std::make_unique<pix::Pixel[]>(header.image_width);
     pix::Pixel *prev_line = zero_line.get();
 
     u32 main_count = header.image_width / w_block_size;

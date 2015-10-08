@@ -29,7 +29,7 @@ static const bstr magic = "YKG000"_b;
 
 static std::unique_ptr<Header> read_header(io::IO &file_io)
 {
-    std::unique_ptr<Header> header(new Header);
+    auto header = std::make_unique<Header>();
     header->encrypted = file_io.read_u16_le() > 0;
 
     size_t header_size = file_io.read_u32_le();
@@ -55,7 +55,7 @@ static std::vector<std::unique_ptr<Region>> read_regions(
     size_t region_count = header.regions_size / 64;
     for (auto i : util::range(region_count))
     {
-        std::unique_ptr<Region> region(new Region);
+        auto region = std::make_unique<Region>();
         region->x = file_io.read_u32_le();
         region->y = file_io.read_u32_le();
         region->width = file_io.read_u32_le();
@@ -79,10 +79,10 @@ static std::unique_ptr<File> decode_png(File &file, Header &header)
     data[2] = 'N';
     data[3] = 'G';
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->io.write(data);
     output_file->name = file.name;
-    output_file->change_extension(".png");
+    output_file->change_extension("png");
     return output_file;
 }
 
@@ -95,7 +95,7 @@ std::unique_ptr<File> YkgImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
 
-    std::unique_ptr<Header> header = read_header(file.io);
+    auto header = read_header(file.io);
     if (header->encrypted)
     {
         throw err::NotSupportedError(

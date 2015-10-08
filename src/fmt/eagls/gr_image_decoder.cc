@@ -44,7 +44,7 @@ std::unique_ptr<File> GrImageDecoder::decode_internal(File &file) const
     auto output_size = guess_output_size(data);
     data = util::pack::lzss_decompress_bytewise(data, output_size);
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->name = file.name;
     output_file->change_extension("bmp");
     output_file->io.write(data);

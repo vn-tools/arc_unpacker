@@ -18,8 +18,8 @@ static bstr decompress_vsp(io::IO &input_io, size_t width, size_t height)
 
     bstr output(width * height);
 
-    std::unique_ptr<u8[][4]> buf1(new u8[height][4]);
-    std::unique_ptr<u8[][4]> buf2(new u8[height][4]);
+    auto buf1 = std::make_unique<u8[][4]>(height);
+    auto buf2 = std::make_unique<u8[][4]>(height);
 
     auto bp = buf1.get();
     auto bc = buf2.get();

@@ -17,7 +17,7 @@ std::unique_ptr<File> WbiFileDecoder::decode_internal(File &file) const
     wpx::Decoder decoder(file.io);
     auto data = decoder.read_compressed_section(0x02);
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->io.write(data);
     output_file->name = file.name;
     output_file->change_extension("dat");

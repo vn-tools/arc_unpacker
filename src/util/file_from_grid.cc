@@ -21,7 +21,7 @@ static void png_flush(png_structp)
 std::unique_ptr<File> util::file_from_grid(
     const pix::Grid &pixels, const std::string &name)
 {
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->name = name;
     output_file->change_extension("png");
 
@@ -55,7 +55,7 @@ std::unique_ptr<File> util::file_from_grid(
     png_set_write_fn(png_ptr, &output_file->io, &png_write_data, &png_flush);
     png_write_info(png_ptr, info_ptr);
 
-    std::unique_ptr<const u8*[]> rows(new const u8*[height]);
+    auto rows = std::make_unique<const u8*[]>(height);
     for (auto y : range(height))
         rows.get()[y] = reinterpret_cast<const u8*>(&pixels.at(0, y));
     png_set_rows(png_ptr, info_ptr, const_cast<u8**>(rows.get()));

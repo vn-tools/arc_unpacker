@@ -128,7 +128,7 @@ std::unique_ptr<File> PackedOggAudioDecoder::decode_internal(File &file) const
     auto data_size = file.io.read_u32_le();
     io::BufferedIO ogg_io(file.io, data_size);
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     rewrite_ogg_stream(ogg_io, output_file->io);
     output_file->name = file.name;
     output_file->guess_extension();

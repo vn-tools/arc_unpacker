@@ -79,7 +79,7 @@ static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
 std::unique_ptr<fmt::INamingStrategy>
     WipfArchiveDecoder::naming_strategy() const
 {
-    return std::unique_ptr<fmt::INamingStrategy>(new SiblingNamingStrategy);
+    return std::make_unique<SiblingNamingStrategy>();
 }
 
 bool WipfArchiveDecoder::is_recognized_internal(File &file) const

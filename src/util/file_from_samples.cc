@@ -15,7 +15,7 @@ std::unique_ptr<File> util::file_from_samples(
     size_t bits_per_sample = bytes_per_sample * 8;
     size_t data_chunk_size = samples.size();
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
 
     output_file->io.write("RIFF"_b);
     output_file->io.write("\x00\x00\x00\x00"_b);

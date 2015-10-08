@@ -44,7 +44,7 @@ static NodeList get_nodes(io::IO &io, u32 key)
     NodeList nodes;
     for (auto i : util::range(1024))
     {
-        std::unique_ptr<NodeInfo> node_info(new NodeInfo);
+        auto node_info = std::make_unique<NodeInfo>();
         node_info->has_children = false;
         node_info->value = 0;
         nodes.push_back(std::move(node_info));
@@ -180,7 +180,7 @@ std::unique_ptr<File> DscFileDecoder::decode_internal(File &file) const
         return util::file_from_grid(pixels, file.name);
     }
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->io.write(data);
     output_file->name = file.name;
     if (!output_file->has_extension())

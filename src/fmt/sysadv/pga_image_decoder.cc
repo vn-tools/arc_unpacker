@@ -13,7 +13,7 @@ bool PgaImageDecoder::is_recognized_internal(File &file) const
 std::unique_ptr<File> PgaImageDecoder::decode_internal(File &file) const
 {
     file.io.skip(magic.size());
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->io.write("\x89\x50\x4E\x47"_b);
     output_file->io.write("\x0D\x0A\x1A\x0A"_b);
     output_file->io.write("\x00\x00\x00\x0D"_b);

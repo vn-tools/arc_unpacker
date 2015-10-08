@@ -36,7 +36,7 @@ std::unique_ptr<File> WpnAudioDecoder::decode_internal(File &file) const
         chunks.push_back(chunk);
     }
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->io.write("RIFF"_b);
     output_file->io.write_u32_le(0);
     output_file->io.write("WAVE"_b);

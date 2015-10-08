@@ -91,7 +91,7 @@ static pix::Grid decode_v2(File &file, size_t width, size_t height)
     std::vector<std::unique_ptr<Region>> regions(file.io.read_u32_le());
     for (auto i : util::range(regions.size()))
     {
-        std::unique_ptr<Region> region(new Region);
+        auto region = std::make_unique<Region>();
         region->x1 = file.io.read_u32_le();
         region->y1 = file.io.read_u32_le();
         region->x2 = file.io.read_u32_le();

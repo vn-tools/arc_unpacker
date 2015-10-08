@@ -13,8 +13,8 @@ u32 rgs::advance_key(const u32 key)
 std::unique_ptr<File> rgs::read_file(
     File &arc_file, const ArchiveEntryImpl &entry)
 {
-    std::unique_ptr<File> file(new File);
-    file->name = entry.name;
+    auto output_file = std::make_unique<File>();
+    output_file->name = entry.name;
     arc_file.io.seek(entry.offset);
 
     io::BufferedIO tmp_io;
@@ -28,8 +28,8 @@ std::unique_ptr<File> rgs::read_file(
         u32 chunk = tmp_io.read_u32_le();
         chunk ^= key;
         key = rgs::advance_key(key);
-        file->io.write_u32_le(chunk);
+        output_file->io.write_u32_le(chunk);
     }
-    file->io.truncate(entry.size);
-    return file;
+    output_file->io.truncate(entry.size);
+    return output_file;
 }

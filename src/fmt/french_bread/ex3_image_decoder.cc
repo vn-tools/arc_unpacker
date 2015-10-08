@@ -88,7 +88,7 @@ std::unique_ptr<File> Ex3ImageDecoder::decode_internal(File &file) const
             b = file.io.read_u8();
     }
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->io.write(output);
     output_file->name = file.name;
     output_file->change_extension(".bmp");

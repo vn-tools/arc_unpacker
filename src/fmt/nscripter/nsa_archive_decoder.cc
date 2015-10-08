@@ -69,7 +69,7 @@ std::unique_ptr<File> NsaArchiveDecoder::read_file(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
 
     output_file->name = entry->name;
     arc_file.io.seek(entry->offset);

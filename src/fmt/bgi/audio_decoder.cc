@@ -18,7 +18,7 @@ std::unique_ptr<File> AudioDecoder::decode_internal(File &file) const
 
     u32 file_size = file.io.read_u32_le();
     file.io.seek(header_size);
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->io.write_from_io(file.io, file_size);
     output_file->name = file.name;
     output_file->change_extension("ogg");

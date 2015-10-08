@@ -45,7 +45,7 @@ Rsa::~Rsa()
 bstr Rsa::decrypt(const bstr &input) const
 {
     size_t output_size = RSA_size(p->key_impl);
-    std::unique_ptr<u8[]> output(new u8[output_size]);
+    auto output = std::make_unique<u8[]>(output_size);
 
     int result = RSA_public_decrypt(
         input.size(),
@@ -56,7 +56,7 @@ bstr Rsa::decrypt(const bstr &input) const
 
     if (result == -1)
     {
-        std::unique_ptr<char[]> err(new char[130]);
+        auto err = std::make_unique<char[]>(130);
         ERR_load_crypto_strings();
         ERR_error_string(ERR_get_error(), err.get());
         throw err::CorruptDataError(std::string(err.get()));

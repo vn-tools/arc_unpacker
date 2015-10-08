@@ -66,7 +66,7 @@ ArchiveDecoder::~ArchiveDecoder()
 
 std::unique_ptr<INamingStrategy> ArchiveDecoder::naming_strategy() const
 {
-    return std::unique_ptr<INamingStrategy>(new ChildNamingStrategy);
+    return std::make_unique<ChildNamingStrategy>();
 }
 
 void ArchiveDecoder::register_cli_options(ArgParser &arg_parser) const

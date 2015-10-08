@@ -51,7 +51,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
-        std::unique_ptr<ArchiveEntryImpl> entry(new ArchiveEntryImpl);
+        auto entry = std::make_unique<ArchiveEntryImpl>();
         auto name = arc_file.io.read(60).str();
         for (auto j : util::range(name.size()))
             name[j] ^= i * j * 3 + 0x3D;

@@ -37,7 +37,7 @@ static std::unique_ptr<io::BufferedIO> read_raw_table(
         throw err::RecognitionError();
     auto buffer = arc_io.read(table_size);
     decrypt(buffer, 0x64, 0x64, 0x4D);
-    return std::unique_ptr<io::BufferedIO>(new io::BufferedIO(buffer));
+    return std::make_unique<io::BufferedIO>(buffer);
 }
 
 struct Pak1ArchiveDecoder::Priv final

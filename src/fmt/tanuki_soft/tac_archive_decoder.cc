@@ -19,7 +19,6 @@ namespace
         u32 size_original;
         u32 offset;
         u32 size_compressed;
-        size_t index;
     };
 
     struct Directory final
@@ -104,7 +103,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->size_original = table_io.read_u32_le();
         entry->offset = table_io.read_u32_le() + file_data_start;
         entry->size_compressed = table_io.read_u32_le();
-        entry->index = i;
+        entry->name = util::format("%05d.dat", i);
         meta->entries.push_back(std::move(entry));
     }
 
@@ -127,7 +126,6 @@ std::unique_ptr<File> TacArchiveDecoder::read_file(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    std::unique_ptr<File> file(new File);
     arc_file.io.seek(entry->offset);
     auto data = arc_file.io.read(entry->size_compressed);
     if (entry->compressed)
@@ -152,10 +150,9 @@ std::unique_ptr<File> TacArchiveDecoder::read_file(
         data = decrypt(data, bytes_to_decrypt, key);
     }
 
-    file->io.write(data);
-    file->name = util::format("%05d.dat", entry->index);
-    file->guess_extension();
-    return file;
+    auto output_file = std::make_unique<File>(entry->name, data);
+    output_file->guess_extension();
+    return output_file;
 }
 
 static auto dummy = fmt::Registry::add<TacArchiveDecoder>("tanuki/tac");

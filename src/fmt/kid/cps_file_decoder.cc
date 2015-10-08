@@ -59,7 +59,7 @@ std::unique_ptr<File> CpsFileDecoder::decode_internal(File &file) const
     if (compression_type & 1)
         data = LndFileDecoder::decompress_raw_data(data, size_original);
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->io.write(data);
     output_file->name = file.name;
     output_file->change_extension("prt");

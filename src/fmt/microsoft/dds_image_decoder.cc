@@ -98,7 +98,7 @@ static void fill_pixel_format(io::IO &io, DdsPixelFormat &pixel_format)
 
 static std::unique_ptr<DdsHeader> read_header(io::IO &io)
 {
-    std::unique_ptr<DdsHeader> header(new DdsHeader);
+    auto header = std::make_unique<DdsHeader>();
     header->size = io.read_u32_le();
     header->flags = static_cast<DdsHeaderFlags>(io.read_u32_le());
     header->height = io.read_u32_le();
@@ -116,7 +116,7 @@ static std::unique_ptr<DdsHeader> read_header(io::IO &io)
 
 static std::unique_ptr<DdsHeaderDx10> read_header_dx10(io::IO &io)
 {
-    std::unique_ptr<DdsHeaderDx10> header(new DdsHeaderDx10);
+    auto header = std::make_unique<DdsHeaderDx10>();
     header->dxgi_format = io.read_u32_le();
     header->resource_dimension = static_cast<D3d10ResourceDimension>(
         io.read_u32_le());
@@ -129,8 +129,8 @@ static std::unique_ptr<DdsHeaderDx10> read_header_dx10(io::IO &io)
 static std::unique_ptr<pix::Grid> create_pixels(
     size_t width, size_t height)
 {
-    return std::unique_ptr<pix::Grid>(
-        new pix::Grid(((width + 3) / 4) * 4, ((height + 3) / 4) * 4));
+    return std::make_unique<pix::Grid>(
+        ((width + 3) / 4) * 4, ((height + 3) / 4) * 4);
 }
 
 static void decode_dxt1_block(io::IO &io, pix::Pixel output_colors[4][4])

@@ -360,10 +360,10 @@ void ArgParser::parse(const std::vector<std::string> &args)
 Flag *ArgParser::register_flag(const std::initializer_list<std::string> &names)
 {
     p->check_names(names);
-    std::unique_ptr<FlagImpl> f(new FlagImpl(names));
-    auto ret = f.get();
-    p->flags.push_back(f.get());
-    p->options.push_back(std::move(f));
+    auto flag = std::make_unique<FlagImpl>(names);
+    auto ret = flag.get();
+    p->flags.push_back(ret);
+    p->options.push_back(std::move(flag));
     return ret;
 }
 
@@ -371,10 +371,10 @@ Switch *ArgParser::register_switch(
     const std::initializer_list<std::string> &names)
 {
     p->check_names(names);
-    std::unique_ptr<SwitchImpl> sw(new SwitchImpl(names));
-    auto ret = sw.get();
-    p->switches.push_back(sw.get());
-    p->options.push_back(std::move(sw));
+    auto switch_ = std::make_unique<SwitchImpl>(names);
+    auto ret = switch_.get();
+    p->switches.push_back(ret);
+    p->options.push_back(std::move(switch_));
     return ret;
 }
 

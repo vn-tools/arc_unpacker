@@ -171,7 +171,7 @@ static std::vector<TextureInfo> read_texture_info_list(io::IO &file_io)
 
 std::unique_ptr<INamingStrategy> AnmArchiveDecoder::naming_strategy() const
 {
-    return std::unique_ptr<INamingStrategy>(new RootNamingStrategy);
+    return std::make_unique<RootNamingStrategy>();
 }
 
 bool AnmArchiveDecoder::is_recognized_internal(File &arc_file) const

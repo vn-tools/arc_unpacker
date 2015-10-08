@@ -86,7 +86,7 @@ NpaArchiveDecoder::NpaArchiveDecoder() : p(new Priv)
 {
     p->plugin_mgr.add("chaos_head", "ChaoS;HEAd", []()
         {
-            std::unique_ptr<NpaFilter> filter(new NpaFilter);
+            auto filter = std::make_unique<NpaFilter>();
             npa_filters::chaos_head_filter_init(*filter);
             return filter;
         });

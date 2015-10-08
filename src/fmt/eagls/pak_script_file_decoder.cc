@@ -31,7 +31,7 @@ std::unique_ptr<File> PakScriptFileDecoder::decode_internal(File &file) const
     for (auto i : util::range(0, data.size(), 2))
         data[i] ^= key[lcg.next() % key.size()];
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->name = file.name;
     output_file->change_extension("txt");
     output_file->io.write(data);

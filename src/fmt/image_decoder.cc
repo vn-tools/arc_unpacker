@@ -12,7 +12,7 @@ ImageDecoder::~ImageDecoder()
 
 std::unique_ptr<INamingStrategy> ImageDecoder::naming_strategy() const
 {
-    return std::unique_ptr<INamingStrategy>(new SiblingNamingStrategy);
+    return std::make_unique<SiblingNamingStrategy>();
 }
 
 void ImageDecoder::register_cli_options(ArgParser &) const

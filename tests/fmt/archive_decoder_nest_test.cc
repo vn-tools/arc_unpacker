@@ -75,7 +75,7 @@ std::unique_ptr<File> TestFileDecoder::decode_internal(File &file) const
 {
     if (conversion_callback)
         conversion_callback(file);
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->io.write("image"_b);
     output_file->name = file.name;
     output_file->change_extension("png");

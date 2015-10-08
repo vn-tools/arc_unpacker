@@ -385,7 +385,7 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
     auto tree1 = build_tree(read_freq_table(raw_data_io, tree1_size), true);
     auto tree2 = build_tree(read_freq_table(raw_data_io, tree2_size), true);
 
-    std::unique_ptr<u32[]> block_offsets(new u32[block_count + 1]);
+    auto block_offsets = std::make_unique<u32[]>(block_count + 1);
     for (auto i : util::range(block_count + 1))
         block_offsets[i] = raw_data_io.read_u32_le();
 
@@ -436,10 +436,8 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
             process_alpha(bmp_data, raw_data_io, pad_width);
     }
 
-    std::unique_ptr<pix::Grid> grid(new pix::Grid(
-        pad_width, pad_height, bmp_data, pix::Format::BGRA8888));
-
+    auto grid = std::make_unique<pix::Grid>(
+        pad_width, pad_height, bmp_data, pix::Format::BGRA8888);
     grid->crop(width, height);
-
     return grid;
 }

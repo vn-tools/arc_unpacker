@@ -34,7 +34,7 @@ std::unique_ptr<File> TfcsFileDecoder::decode_internal(File &file) const
     io::BufferedIO uncompressed_io(
         util::pack::zlib_inflate(file.io.read_to_eof()));
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     output_file->name = file.name;
     output_file->change_extension("csv");
 

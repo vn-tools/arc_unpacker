@@ -24,7 +24,7 @@ std::unique_ptr<File> AffFileDecoder::decode_internal(File &file) const
     auto size = file.io.read_u32_le();
     file.io.skip(4);
 
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
     for (auto i : util::range(64))
         if (!file.io.eof())
             output_file->io.write_u8(file.io.read_u8() ^ key[i % key.size()]);

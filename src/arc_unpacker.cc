@@ -197,7 +197,7 @@ void ArcUnpacker::Priv::parse_cli_options()
                 it != boost::filesystem::recursive_directory_iterator();
                 it++)
             {
-                std::unique_ptr<PathInfo> pi(new PathInfo);
+                auto pi = std::make_unique<PathInfo>();
                 pi->input_path = it->path().string();
                 pi->base_name = pi->input_path.substr(path.size());
                 while (pi->base_name.size() > 0 &&
@@ -211,7 +211,7 @@ void ArcUnpacker::Priv::parse_cli_options()
         }
         else
         {
-            std::unique_ptr<PathInfo> pi(new PathInfo);
+            auto pi = std::make_unique<PathInfo>();
             pi->input_path = path;
             pi->base_name = boost::filesystem::path(path).filename().string();
             options.input_paths.push_back(std::move(pi));

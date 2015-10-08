@@ -152,7 +152,7 @@ std::unique_ptr<io::BufferedIO> RsaReader::read_block()
     bstr block = rsa
         ? rsa->decrypt(io.read(0x40)).substr(0, 0x20)
         : io.read(0x40).substr(0, 0x20);
-    return std::unique_ptr<io::BufferedIO>(new io::BufferedIO(block));
+    return std::make_unique<io::BufferedIO>(block);
 }
 
 static u32 neg32(u32 x)

@@ -30,7 +30,7 @@ std::string au::util::format(const std::string &fmt, std::va_list args)
     }
 
     size++;
-    std::unique_ptr<char[]> buf(new char[size]);
+    auto buf = std::make_unique<char[]>(size);
     vsnprintf(buf.get(), size, fmt.c_str(), args_copy);
     va_end(args_copy);
     return std::string(buf.get(), buf.get() + size - 1);

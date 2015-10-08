@@ -91,7 +91,7 @@ static void read_pixels(io::IO &io, pix::Grid &pixels, Header &header)
 
         for (auto channel : util::range(header.channel_count))
         {
-            std::unique_ptr<BlockInfo> block_info(new BlockInfo(io));
+            auto block_info = std::make_unique<BlockInfo>(io);
             if (!block_info->mark)
                 block_info->decompress(decompressor, header);
             channel_data.push_back(std::move(block_info));

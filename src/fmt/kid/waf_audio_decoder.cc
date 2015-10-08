@@ -12,7 +12,7 @@ bool WafAudioDecoder::is_recognized_internal(File &file) const
 
 std::unique_ptr<File> WafAudioDecoder::decode_internal(File &file) const
 {
-    std::unique_ptr<File> output_file(new File);
+    auto output_file = std::make_unique<File>();
 
     file.io.skip(6);
 

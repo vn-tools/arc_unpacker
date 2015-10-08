@@ -11,7 +11,7 @@ FileDecoder::~FileDecoder()
 
 std::unique_ptr<INamingStrategy> FileDecoder::naming_strategy() const
 {
-    return std::unique_ptr<INamingStrategy>(new SiblingNamingStrategy);
+    return std::make_unique<SiblingNamingStrategy>();
 }
 
 void FileDecoder::register_cli_options(ArgParser &) const

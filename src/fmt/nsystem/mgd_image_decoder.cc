@@ -177,7 +177,7 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::IO &file_io)
 
         for (auto i : util::range(region_count))
         {
-            std::unique_ptr<Region> region(new Region);
+            auto region = std::make_unique<Region>();
             region->x = file_io.read_u16_le();
             region->y = file_io.read_u16_le();
             region->width = file_io.read_u16_le();

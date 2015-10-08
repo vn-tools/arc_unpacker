@@ -587,7 +587,7 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
     if (decoder->bit_reader->get(1))
         throw err::CorruptDataError("Expected 0 bit");
 
-    std::unique_ptr<int[]> last_division(new int[channel_count]);
+    auto last_division = std::make_unique<int[]>(channel_count);
     division_ptr = division_table.get();
     weight_ptr = weight_code_table.get();
     coefficient_ptr = coefficient_table.get();
@@ -656,8 +656,8 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
         throw err::NotSupportedError("Unsupported architecture");
 
     bstr output(all_sample_count * sizeof(s16));
-    std::unique_ptr<s16*[]> output_ptrs(new s16*[channel_count]);
-    std::unique_ptr<size_t[]> samples_left(new size_t[channel_count]);
+    auto output_ptrs = std::make_unique<s16*[]>(channel_count);
+    auto samples_left = std::make_unique<size_t[]>(channel_count);
     division_ptr = division_table.get();
     weight_ptr = weight_code_table.get();
     coefficient_ptr = coefficient_table.get();
