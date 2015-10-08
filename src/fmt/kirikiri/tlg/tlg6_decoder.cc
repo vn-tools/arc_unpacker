@@ -477,11 +477,9 @@ static void read_pixels(io::IO &io, pix::Grid &pixels, Header &header)
             int method = (bit_size >> 30) & 3;
             bit_size &= 0x3FFFFFFF;
 
-            int byte_size = bit_size / 8;
-            if (bit_size % 8)
-                byte_size++;
-
+            int byte_size = (bit_size + 7) / 8;
             bstr bit_pool = io.read(byte_size);
+            bit_pool.resize(byte_size + 1);
 
             if (method != 0)
                 throw err::NotSupportedError("Unsupported encoding method");
