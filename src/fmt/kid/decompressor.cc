@@ -7,12 +7,12 @@ bstr au::fmt::kid::decompress(const bstr &input, size_t size_original)
 {
     bstr output(size_original);
 
-    u8 *output_ptr = output.get<u8>();
-    const u8 *output_end = output_ptr + output.size();
+    auto output_ptr = output.get<u8>();
+    auto output_end = output.end<const u8>();
+    auto input_ptr = input.get<const u8>();
+    auto input_end = input.end<const u8>();
 
-    const u8 *input_ptr = input.get<u8>();
-
-    while (output_ptr < output_end)
+    while (output_ptr < output_end && input_ptr < input_end)
     {
         u8 byte = *input_ptr++;
         if (byte & 0x80)
@@ -23,7 +23,11 @@ bstr au::fmt::kid::decompress(const bstr &input, size_t size_original)
                 if (byte & 0x20)
                     repetitions += *input_ptr++ << 5;
                 for (auto i : util::range(repetitions))
+                {
+                    if (output_ptr >= output_end)
+                        break;
                     *output_ptr++ = *input_ptr;
+                }
                 input_ptr++;
             }
             else
@@ -35,6 +39,8 @@ bstr au::fmt::kid::decompress(const bstr &input, size_t size_original)
                 for (auto i : util::range(size))
                 {
                     u8 tmp = output_ptr[-look_behind];
+                    if (output_ptr >= output_end)
+                        break;
                     *output_ptr++ = tmp;
                 }
             }
@@ -47,7 +53,11 @@ bstr au::fmt::kid::decompress(const bstr &input, size_t size_original)
                 int size = (byte & 0x3F) + 2;
                 for (auto i : util::range(repetitions))
                     for (auto i : util::range(size))
+                    {
+                        if (output_ptr >= output_end)
+                            break;
                         *output_ptr++ += input_ptr[i];
+                    }
                 input_ptr += size;
             }
             else
@@ -56,7 +66,11 @@ bstr au::fmt::kid::decompress(const bstr &input, size_t size_original)
                 if (byte & 0x20)
                     size += *input_ptr++ << 5;
                 for (auto i : util::range(size))
+                {
+                    if (output_ptr >= output_end)
+                        break;
                     *output_ptr++ = *input_ptr++;
+                }
             }
         }
     }
