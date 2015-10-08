@@ -184,7 +184,6 @@ inline size_t BitReader::Priv::size() const
     return reader->size() * 8;
 }
 
-
 BitReader::BitReader(IO &io)
     : p(new Priv(std::unique_ptr<Reader>(new IoBasedReader(io))))
 {

@@ -29,5 +29,3 @@ TEST_CASE("French Bread P v1 archives", "[fmt]")
 {
     do_test("tests/fmt/french_bread/files/p/test-v1.p");
 }
-
-
