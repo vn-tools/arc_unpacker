@@ -1,11 +1,15 @@
-#include "fmt/kid/decompressor.h"
+#include "fmt/kid/lnd_file_decoder.h"
+#include "io/buffered_io.h"
 #include "util/range.h"
 
 using namespace au;
+using namespace au::fmt::kid;
 
-bstr au::fmt::kid::decompress(const bstr &input, size_t size_original)
+static const bstr magic = "lnd\x00"_b;
+
+bstr LndFileDecoder::decompress_raw_data(const bstr &input, size_t size_orig)
 {
-    bstr output(size_original);
+    bstr output(size_orig);
 
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<const u8>();
@@ -77,3 +81,21 @@ bstr au::fmt::kid::decompress(const bstr &input, size_t size_original)
 
     return output;
 }
+
+bool LndFileDecoder::is_recognized_internal(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
+}
+
+std::unique_ptr<File> LndFileDecoder::decode_internal(File &file) const
+{
+    file.io.seek(magic.size());
+    file.io.skip(4);
+    auto size_orig = file.io.read_u32_le();
+    file.io.skip(4);
+    auto data = file.io.read_to_eof();
+    data = decompress_raw_data(data, size_orig);
+    return std::make_unique<File>(file.name, data);
+}
+
+static auto dummy = fmt::Registry::add<LndFileDecoder>("kid/lnd");

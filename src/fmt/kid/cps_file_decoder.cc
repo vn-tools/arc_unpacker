@@ -1,5 +1,5 @@
 #include "fmt/kid/cps_file_decoder.h"
-#include "fmt/kid/decompressor.h"
+#include "fmt/kid/lnd_file_decoder.h"
 #include "io/buffered_io.h"
 
 using namespace au;
@@ -57,7 +57,7 @@ std::unique_ptr<File> CpsFileDecoder::decode_internal(File &file) const
         data = decrypt(data, size_compressed, offset);
 
     if (compression_type & 1)
-        data = decompress(data, size_original);
+        data = LndFileDecoder::decompress_raw_data(data, size_original);
 
     std::unique_ptr<File> output_file(new File);
     output_file->io.write(data);

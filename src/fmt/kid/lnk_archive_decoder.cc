@@ -1,7 +1,7 @@
 #include "fmt/kid/lnk_archive_decoder.h"
 #include "err.h"
 #include "fmt/kid/cps_file_decoder.h"
-#include "fmt/kid/decompressor.h"
+#include "fmt/kid/lnd_file_decoder.h"
 #include "fmt/kid/prt_image_decoder.h"
 #include "fmt/kid/waf_audio_decoder.h"
 #include "io/buffered_io.h"
@@ -11,7 +11,6 @@ using namespace au;
 using namespace au::fmt::kid;
 
 static const bstr magic = "LNK\x00"_b;
-static const bstr compress_magic = "lnd\x00"_b;
 
 namespace
 {
@@ -23,19 +22,9 @@ namespace
     };
 }
 
-static bstr lnd_decompress(const bstr &input)
-{
-    io::BufferedIO input_io(input);
-    if (input_io.read(compress_magic.size()) != compress_magic)
-        throw err::CorruptDataError("Unexpected file header");
-    input_io.skip(4);
-    size_t size_original = input_io.read_u32_le();
-    input_io.skip(4);
-    return decompress(input_io.read_to_eof(), size_original);
-}
-
 struct LnkArchiveDecoder::Priv final
 {
+    LndFileDecoder lnd_file_decoder;
     CpsFileDecoder cps_file_decoder;
     PrtImageDecoder prt_image_decoder;
     WafAudioDecoder waf_audio_decoder;
@@ -108,12 +97,12 @@ std::unique_ptr<File> LnkArchiveDecoder::read_file(
             key = key * 0x6D - 0x25;
         }
     }
+    output_file->io.write(data);
 
     if (entry->compressed)
-        data = lnd_decompress(data);
-
-    output_file->io.write(data);
-    return output_file;
+        return p->lnd_file_decoder.decode(*output_file);
+    else
+        return output_file;
 }
 
 static auto dummy = fmt::Registry::add<LnkArchiveDecoder>("kid/lnk");
