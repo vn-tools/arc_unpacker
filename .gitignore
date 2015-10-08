@@ -1,6 +1,6 @@
 *.o
 *.so
-build
-waf
-.waf*
-.lock-waf*
+/build
+/waf
+/.waf*
+/.lock-waf*
