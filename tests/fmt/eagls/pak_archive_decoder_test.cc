@@ -1,5 +1,5 @@
 #include "fmt/eagls/pak_archive_decoder.h"
-#include "test_support/archive_support.h"
+#include "test_support/decoder_support.h"
 #include "test_support/catch.hh"
 #include "test_support/file_support.h"
 
@@ -15,8 +15,8 @@ TEST_CASE("EAGLS PAK archives", "[fmt]")
     };
 
     PakArchiveDecoder decoder;
-    auto actual_files = au::tests::unpack_to_memory(
-        "tests/fmt/eagls/files/pak/test.pak", decoder);
-
+    auto input_file = tests::file_from_path(
+        "tests/fmt/eagls/files/pak/test.pak");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

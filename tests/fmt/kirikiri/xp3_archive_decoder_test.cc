@@ -1,7 +1,7 @@
 #include "fmt/kirikiri/xp3_archive_decoder.h"
-#include "test_support/archive_support.h"
-#include "test_support/file_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
+#include "test_support/file_support.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri;
@@ -15,8 +15,8 @@ static void test_xp3_archive(const std::string &path)
     };
 
     Xp3ArchiveDecoder decoder;
-    auto actual_files = au::tests::unpack_to_memory(path, decoder);
-
+    auto input_file = tests::file_from_path(path);
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 

@@ -1,6 +1,7 @@
 #include "fmt/png/png_image_decoder.h"
 #include "io/file_io.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 
 using namespace au;
 using namespace au::fmt::png;
@@ -9,8 +10,8 @@ TEST_CASE("PNG images with transparency", "[fmt]")
 {
     File file("tests/fmt/png/files/reimu_transparent.png", io::FileMode::Read);
 
-    PngImageDecoder png_image_decoder;
-    auto pixels = png_image_decoder.decode(file);
+    PngImageDecoder decoder;
+    auto pixels = tests::decode(decoder, file);
     REQUIRE(pixels.width() == 641);
     REQUIRE(pixels.height() == 720);
 
@@ -25,8 +26,8 @@ TEST_CASE("Reading opaque PNG images", "[util]")
 {
     File file("tests/fmt/png/files/usagi_opaque.png", io::FileMode::Read);
 
-    PngImageDecoder png_image_decoder;
-    auto pixels = png_image_decoder.decode(file);
+    PngImageDecoder decoder;
+    auto pixels = tests::decode(decoder, file);
     REQUIRE(pixels.width() == 640);
     REQUIRE(pixels.height() == 480);
 

@@ -1,5 +1,5 @@
 #include "fmt/cronus/pak_archive_decoder.h"
-#include "test_support/archive_support.h"
+#include "test_support/decoder_support.h"
 #include "test_support/catch.hh"
 #include "test_support/file_support.h"
 
@@ -15,7 +15,8 @@ static void do_test(const std::string &input_path)
     };
 
     PakArchiveDecoder decoder;
-    auto actual_files = tests::unpack_to_memory(input_path, decoder);
+    auto input_file = tests::file_from_path(input_path);
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 

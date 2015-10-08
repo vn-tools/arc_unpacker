@@ -1,5 +1,6 @@
 #include "fmt/bgi/dsc_file_decoder.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
 
@@ -12,7 +13,8 @@ static void do_test(
     DscFileDecoder decoder;
     auto input_file = tests::file_from_path(input_path);
     auto expected_image = tests::image_from_path(expected_path);
-    auto actual_image = tests::image_from_file(*decoder.decode(*input_file));
+    auto actual_file = tests::decode(decoder, *input_file);
+    auto actual_image = tests::image_from_file(*actual_file);
     tests::compare_images(*expected_image, *actual_image);
 }
 
@@ -23,7 +25,7 @@ TEST_CASE("BGI DSC raw files", "[fmt]")
         "tests/fmt/bgi/files/dsc/setupforgallery");
     auto expected_file = tests::file_from_path(
         "tests/fmt/bgi/files/dsc/setupforgallery-out.dat");
-    auto actual_file = decoder.decode(*input_file);
+    auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
 }
 

@@ -1,6 +1,6 @@
 #include "fmt/libido/egr_archive_decoder.h"
-#include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
 #include "util/range.h"
@@ -17,7 +17,8 @@ TEST_CASE("Libido EGR unencrypted image archives", "[fmt]")
     };
 
     EgrArchiveDecoder decoder;
-    auto actual_files = decoder.unpack(*tests::zlib_file_from_path(
-        "tests/fmt/libido/files/egr/test-zlib.EGR"));
+    auto input_file = tests::zlib_file_from_path(
+        "tests/fmt/libido/files/egr/test-zlib.EGR");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_images(expected_images, actual_files);
 }

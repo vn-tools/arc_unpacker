@@ -1,5 +1,6 @@
 #include "fmt/leaf/grp_image_decoder.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
 

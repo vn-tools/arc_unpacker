@@ -1,6 +1,6 @@
 #include "fmt/nsystem/fjsys_archive_decoder.h"
-#include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 
 using namespace au;
@@ -16,8 +16,8 @@ TEST_CASE("NSystem FJSYS archives", "[fmt]")
     };
 
     FjsysArchiveDecoder decoder;
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/nsystem/files/fjsys/test.fjsys", decoder);
-
+    auto input_file = tests::file_from_path(
+        "tests/fmt/nsystem/files/fjsys/test.fjsys");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

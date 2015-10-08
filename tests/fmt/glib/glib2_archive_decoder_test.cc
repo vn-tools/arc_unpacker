@@ -1,6 +1,6 @@
 #include "fmt/glib/glib2_archive_decoder.h"
-#include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 
 using namespace au;
@@ -15,7 +15,8 @@ static void do_test(const std::string &input_path)
     };
 
     Glib2ArchiveDecoder decoder;
-    auto actual_files = tests::unpack_to_memory(input_path, decoder);
+    auto input_file = tests::file_from_path(input_path);
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
@@ -38,8 +39,9 @@ TEST_CASE("GLib GLib2 archives with nested directories", "[fmt]")
     };
 
     Glib2ArchiveDecoder decoder;
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/glib/files/glib2/nest.g2", decoder);
+    auto input_file = tests::file_from_path(
+        "tests/fmt/glib/files/glib2/nest.g2");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
@@ -50,8 +52,8 @@ TEST_CASE("GLib GLib2 archives with multiple decryption passes", "[fmt]")
     std::vector<std::shared_ptr<File>> expected_files { big_file };
 
     Glib2ArchiveDecoder decoder;
-    auto arc_file = tests::zlib_file_from_path(
+    auto input_file = tests::zlib_file_from_path(
         "tests/fmt/glib/files/glib2/big-zlib.g2");
-    auto actual_files = decoder.unpack(*arc_file);
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

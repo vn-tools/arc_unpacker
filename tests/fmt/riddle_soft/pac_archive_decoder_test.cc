@@ -1,6 +1,6 @@
 #include "fmt/riddle_soft/pac_archive_decoder.h"
-#include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 
 using namespace au;
@@ -15,8 +15,8 @@ TEST_CASE("RiddleSoft PAC archives", "[fmt]")
     };
 
     PacArchiveDecoder decoder;
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/riddle_soft/files/pac/test.pac", decoder);
-
+    auto input_file = tests::file_from_path(
+        "tests/fmt/riddle_soft/files/pac/test.pac");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

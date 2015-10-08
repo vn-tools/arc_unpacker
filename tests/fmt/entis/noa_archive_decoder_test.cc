@@ -1,6 +1,6 @@
 #include "fmt/entis/noa_archive_decoder.h"
-#include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 
 using namespace au;
@@ -15,7 +15,8 @@ TEST_CASE("Entis NOA unencrypted archives", "[fmt]")
     };
 
     NoaArchiveDecoder decoder;
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/entis/files/noa/unencrypted.noa", decoder);
+    auto input_file = tests::file_from_path(
+        "tests/fmt/entis/files/noa/unencrypted.noa");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

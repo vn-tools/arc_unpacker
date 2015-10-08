@@ -1,6 +1,6 @@
 #include "fmt/touhou/pbg4_archive_decoder.h"
-#include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 
 using namespace au;
@@ -15,8 +15,8 @@ TEST_CASE("Touhou PBG4 archives", "[fmt]")
     };
 
     Pbg4ArchiveDecoder decoder;
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/touhou/files/pbg4/test.pbg4", decoder);
-
+    auto input_file = tests::file_from_path(
+        "tests/fmt/touhou/files/pbg4/test.pbg4");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

@@ -1,6 +1,7 @@
 #include "fmt/jpeg/jpeg_image_decoder.h"
 #include "io/file_io.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
 
@@ -12,8 +13,8 @@ TEST_CASE("JPEG 24-bit images", "[util]")
     auto input_file = tests::file_from_path(
         "tests/fmt/jpeg/files/reimu_opaque.jpg");
 
-    JpegImageDecoder jpeg_image_decoder;
-    auto pixels = jpeg_image_decoder.decode(*input_file);
+    JpegImageDecoder decoder;
+    auto pixels = tests::decode(decoder, *input_file);
     REQUIRE(pixels.width() == 1024);
     REQUIRE(pixels.height() == 1024);
 
@@ -31,6 +32,6 @@ TEST_CASE("JPEG 8-bit images", "[util]")
         "tests/fmt/jpeg/files/NoName.jpeg");
     auto expected_image = tests::image_from_path(
         "tests/fmt/jpeg/files/NoName-out.png");
-    auto actual_image = decoder.decode(*input_file);
+    auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }

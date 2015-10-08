@@ -1,6 +1,6 @@
 #include "fmt/touhou/pak1_audio_archive_decoder.h"
-#include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 
 using namespace au;
@@ -17,8 +17,8 @@ TEST_CASE("Touhou PAK1 audio", "[fmt]")
     expected_files[1]->name = "0002.wav";
 
     Pak1AudioArchiveDecoder decoder;
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/touhou/files/pak1/se.dat", decoder);
-
+    auto input_file = tests::file_from_path(
+        "tests/fmt/touhou/files/pak1/se.dat");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

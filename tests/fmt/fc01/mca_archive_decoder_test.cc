@@ -1,6 +1,6 @@
 #include "fmt/fc01/mca_archive_decoder.h"
-#include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
 
@@ -20,8 +20,9 @@ TEST_CASE("FC01 MCA image archives (unaligned)", "[fmt]")
 
     McaArchiveDecoder decoder;
     decoder.set_key(209);
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/fc01/files/mca/BLIN3.MCA", decoder);
+    auto input_file = tests::file_from_path(
+        "tests/fmt/fc01/files/mca/BLIN3.MCA");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_images(expected_images, actual_files);
 }
 
@@ -37,7 +38,7 @@ TEST_CASE("FC01 MCA image archives (aligned)", "[fmt]")
 
     McaArchiveDecoder decoder;
     decoder.set_key(209);
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/fc01/files/mca/OK.MCA", decoder);
+    auto input_file = tests::file_from_path("tests/fmt/fc01/files/mca/OK.MCA");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_images(expected_images, actual_files);
 }

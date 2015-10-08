@@ -1,6 +1,7 @@
 #include "fmt/touhou/anm_archive_decoder.h"
-#include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
+#include "test_support/file_support.h"
 #include "test_support/image_support.h"
 #include "util/range.h"
 
@@ -12,7 +13,8 @@ static void do_test(
     const std::vector<std::string> expected_paths)
 {
     AnmArchiveDecoder decoder;
-    auto actual_files = tests::unpack_to_memory(input_path, decoder);
+    auto input_file = tests::file_from_path(input_path);
+    auto actual_files = tests::unpack(decoder, *input_file);
 
     REQUIRE(actual_files.size() == expected_paths.size());
     for (auto i : util::range(expected_paths.size()))

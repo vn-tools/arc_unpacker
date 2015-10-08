@@ -1,6 +1,6 @@
 #include "fmt/nscripter/nsa_archive_decoder.h"
-#include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "util/pack/zlib.h"
 
@@ -16,9 +16,9 @@ TEST_CASE("NScripter NSA uncompressed archives", "[fmt]")
     };
 
     NsaArchiveDecoder decoder;
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/nscripter/files/nsa/uncompressed.nsa", decoder);
-
+    auto input_file = tests::file_from_path(
+        "tests/fmt/nscripter/files/nsa/uncompressed.nsa");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
@@ -60,8 +60,8 @@ TEST_CASE("NScripter NSA archives compressed with LZSS", "[fmt]")
     std::vector<std::shared_ptr<File>> expected_files { file };
 
     NsaArchiveDecoder decoder;
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/nscripter/files/nsa/lzss.nsa", decoder);
-
+    auto input_file = tests::file_from_path(
+        "tests/fmt/nscripter/files/nsa/lzss.nsa");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

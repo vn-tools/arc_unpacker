@@ -1,6 +1,6 @@
 #include "fmt/alice_soft/afa_archive_decoder.h"
-#include "test_support/archive_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 
 using namespace au;
@@ -15,8 +15,8 @@ TEST_CASE("Alice Soft AFA archives", "[fmt]")
     };
 
     AfaArchiveDecoder decoder;
-    auto actual_files = au::tests::unpack_to_memory(
-        "tests/fmt/alice_soft/files/afa/test.afa", decoder);
-
-    au::tests::compare_files(expected_files, actual_files, true);
+    auto input_file = tests::file_from_path(
+        "tests/fmt/alice_soft/files/afa/test.afa");
+    auto actual_files = tests::unpack(decoder, *input_file);
+    tests::compare_files(expected_files, actual_files, true);
 }

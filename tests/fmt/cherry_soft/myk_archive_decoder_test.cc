@@ -1,5 +1,5 @@
 #include "fmt/cherry_soft/myk_archive_decoder.h"
-#include "test_support/archive_support.h"
+#include "test_support/decoder_support.h"
 #include "test_support/catch.hh"
 #include "test_support/file_support.h"
 
@@ -15,8 +15,8 @@ TEST_CASE("CherrySoft MYK archives", "[fmt]")
     };
 
     MykArchiveDecoder decoder;
-    auto actual_files = tests::unpack_to_memory(
-        "tests/fmt/cherry_soft/files/myk/test.myk", decoder);
-
+    auto input_file = tests::file_from_path(
+        "tests/fmt/cherry_soft/files/myk/test.myk");
+    auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

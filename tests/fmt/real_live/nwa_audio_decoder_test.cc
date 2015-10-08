@@ -1,5 +1,6 @@
 #include "fmt/real_live/nwa_audio_decoder.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 
 using namespace au;
@@ -11,7 +12,7 @@ static void do_test(
     NwaAudioDecoder decoder;
     auto input_file = tests::zlib_file_from_path(input_path);
     auto expected_file = tests::zlib_file_from_path(expected_path);
-    auto actual_file = decoder.decode(*input_file);
+    auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
 }
 
