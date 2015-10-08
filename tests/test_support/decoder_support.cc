@@ -4,19 +4,36 @@
 
 using namespace au;
 
+// This is to test whether ImageDecoder::decode, IDecoder::is_recognized etc.
+// take care of stream position themselves rather than relying on the callers.
+static void navigate_to_random_place(io::IO &io)
+{
+    if (io.size())
+        io.seek(rand() % io.size());
+}
+
 std::vector<std::shared_ptr<File>> tests::unpack(
     const fmt::ArchiveDecoder &decoder, File &input_file)
 {
+    navigate_to_random_place(input_file.io);
+    REQUIRE(decoder.is_recognized(input_file));
+    navigate_to_random_place(input_file.io);
     return decoder.unpack(input_file);
 }
 
 std::unique_ptr<File> tests::decode(
     const fmt::FileDecoder &decoder, File &input_file)
 {
+    navigate_to_random_place(input_file.io);
+    REQUIRE(decoder.is_recognized(input_file));
+    navigate_to_random_place(input_file.io);
     return decoder.decode(input_file);
 }
 
 pix::Grid tests::decode(const fmt::ImageDecoder &decoder, File &input_file)
 {
+    navigate_to_random_place(input_file.io);
+    REQUIRE(decoder.is_recognized(input_file));
+    navigate_to_random_place(input_file.io);
     return decoder.decode(input_file);
 }

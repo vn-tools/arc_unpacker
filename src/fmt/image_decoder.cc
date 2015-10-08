@@ -49,7 +49,6 @@ pix::Grid ImageDecoder::decode(File &file) const
 {
     if (!is_recognized(file))
         throw err::RecognitionError();
-
     file.io.seek(0);
     return decode_internal(file);
 }

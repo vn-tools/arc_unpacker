@@ -46,6 +46,7 @@ bool TestArchiveDecoder::is_recognized_internal(File &arc_file) const
 
 std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta(File &arc_file) const
 {
+    arc_file.io.seek(0);
     auto dir = path(arc_file.name).parent_path();
     auto meta = std::make_unique<ArchiveMeta>();
     for (directory_iterator it(dir); it != directory_iterator(); it++)

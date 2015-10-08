@@ -95,6 +95,7 @@ bool TestArchiveDecoder::is_recognized_internal(File &arc_file) const
 
 std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta(File &arc_file) const
 {
+    arc_file.io.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
     while (!arc_file.io.eof())
     {

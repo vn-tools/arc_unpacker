@@ -87,12 +87,12 @@ void ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     }
 }
 
-bool ArchiveDecoder::is_recognized(File &file) const
+bool ArchiveDecoder::is_recognized(File &arc_file) const
 {
     try
     {
-        file.io.seek(0);
-        return is_recognized_internal(file);
+        arc_file.io.seek(0);
+        return is_recognized_internal(arc_file);
     }
     catch (...)
     {
