@@ -1,4 +1,4 @@
-#include "fmt/will/wipf_archive_decoder.h"
+#include "fmt/will/wipf_image_archive_decoder.h"
 #include "test_support/catch.hh"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -12,7 +12,7 @@ static void do_test(
     const std::string input_path,
     const std::vector<std::string> expected_paths)
 {
-    WipfArchiveDecoder decoder;
+    WipfImageArchiveDecoder decoder;
     auto input_file = tests::file_from_path(input_path);
     auto actual_files = tests::unpack(decoder, *input_file);
 

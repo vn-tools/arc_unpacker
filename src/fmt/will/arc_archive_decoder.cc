@@ -1,7 +1,7 @@
 #include "fmt/will/arc_archive_decoder.h"
 #include <map>
 #include "err.h"
-#include "fmt/will/wipf_archive_decoder.h"
+#include "fmt/will/wipf_image_archive_decoder.h"
 #include "util/file_from_grid.h"
 #include "util/range.h"
 
@@ -60,12 +60,12 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
 
 struct ArcArchiveDecoder::Priv final
 {
-    WipfArchiveDecoder wipf_archive_decoder;
+    WipfImageArchiveDecoder wipf_image_archive_decoder;
 };
 
 ArcArchiveDecoder::ArcArchiveDecoder() : p(new Priv)
 {
-    add_decoder(&p->wipf_archive_decoder);
+    add_decoder(&p->wipf_image_archive_decoder);
 }
 
 ArcArchiveDecoder::~ArcArchiveDecoder()
@@ -97,9 +97,9 @@ void ArcArchiveDecoder::preprocess(
         {
             auto sprite_entry = it.second;
             auto mask_entry = mask_entries.at(it.first);
-            auto sprites = p->wipf_archive_decoder.unpack_to_images(
+            auto sprites = p->wipf_image_archive_decoder.unpack_to_images(
                 *read_file(arc_file, meta, *sprite_entry));
-            auto masks = p->wipf_archive_decoder.unpack_to_images(
+            auto masks = p->wipf_image_archive_decoder.unpack_to_images(
                 *read_file(arc_file, meta, *mask_entry));
             for (auto i : util::range(sprites.size()))
                 sprites[i]->apply_alpha_from_mask(*masks.at(i));

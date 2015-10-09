@@ -1,4 +1,4 @@
-#include "fmt/will/wipf_archive_decoder.h"
+#include "fmt/will/wipf_image_archive_decoder.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include "err.h"
@@ -77,18 +77,18 @@ static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
 }
 
 std::unique_ptr<fmt::INamingStrategy>
-    WipfArchiveDecoder::naming_strategy() const
+    WipfImageArchiveDecoder::naming_strategy() const
 {
     return std::make_unique<SiblingNamingStrategy>();
 }
 
-bool WipfArchiveDecoder::is_recognized_impl(File &file) const
+bool WipfImageArchiveDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    WipfArchiveDecoder::read_meta_impl(File &arc_file) const
+    WipfImageArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto base_name = boost::filesystem::path(arc_file.name).filename().string();
     boost::algorithm::replace_all(base_name, ".", "-");
@@ -112,7 +112,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<pix::Grid> WipfArchiveDecoder::read_image(
+std::unique_ptr<pix::Grid> WipfImageArchiveDecoder::read_image(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -154,14 +154,14 @@ std::unique_ptr<pix::Grid> WipfArchiveDecoder::read_image(
     return pixels;
 }
 
-std::unique_ptr<File> WipfArchiveDecoder::read_file_impl(
+std::unique_ptr<File> WipfImageArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     return util::file_from_grid(*read_image(arc_file, m, e), e.name);
 }
 
-std::vector<std::shared_ptr<pix::Grid>> WipfArchiveDecoder::unpack_to_images(
-    File &arc_file) const
+std::vector<std::shared_ptr<pix::Grid>>
+    WipfImageArchiveDecoder::unpack_to_images(File &arc_file) const
 {
     auto meta = read_meta(arc_file);
     std::vector<std::shared_ptr<pix::Grid>> output;
@@ -170,4 +170,4 @@ std::vector<std::shared_ptr<pix::Grid>> WipfArchiveDecoder::unpack_to_images(
     return output;
 }
 
-static auto dummy = fmt::Registry::add<WipfArchiveDecoder>("will/wipf");
+static auto dummy = fmt::Registry::add<WipfImageArchiveDecoder>("will/wipf");

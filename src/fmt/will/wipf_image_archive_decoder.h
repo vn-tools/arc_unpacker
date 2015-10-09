@@ -7,7 +7,7 @@ namespace au {
 namespace fmt {
 namespace will {
 
-    class WipfArchiveDecoder final : public ArchiveDecoder
+    class WipfImageArchiveDecoder final : public ArchiveDecoder
     {
     public:
         std::vector<std::shared_ptr<pix::Grid>> unpack_to_images(File &) const;
