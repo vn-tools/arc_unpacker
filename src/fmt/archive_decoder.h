@@ -31,11 +31,14 @@ namespace fmt {
 
         void disable_nested_decoding();
         std::vector<std::shared_ptr<File>> unpack(File &) const;
-        virtual std::unique_ptr<ArchiveMeta> read_meta(File &) const = 0;
-        virtual std::unique_ptr<File> read_file(
-            File &, const ArchiveMeta &, const ArchiveEntry &) const = 0;
+        std::unique_ptr<ArchiveMeta> read_meta(File &) const;
+        std::unique_ptr<File> read_file(
+            File &, const ArchiveMeta &, const ArchiveEntry &) const;
 
     protected:
+        virtual std::unique_ptr<ArchiveMeta> read_meta_impl(File &) const = 0;
+        virtual std::unique_ptr<File> read_file_impl(
+            File &, const ArchiveMeta &, const ArchiveEntry &) const = 0;
         virtual void preprocess(File &, ArchiveMeta &, FileSaver &) const;
         virtual bool is_recognized_internal(File &) const = 0;
         void add_decoder(IDecoder *decoder);

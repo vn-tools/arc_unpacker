@@ -180,7 +180,7 @@ bool AnmArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    AnmArchiveDecoder::read_meta(File &arc_file) const
+    AnmArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto texture_info_list = read_texture_info_list(arc_file.io);
 
@@ -199,7 +199,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> AnmArchiveDecoder::read_file(
+std::unique_ptr<File> AnmArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

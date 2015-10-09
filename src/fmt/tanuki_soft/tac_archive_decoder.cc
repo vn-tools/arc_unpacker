@@ -67,7 +67,7 @@ bool TacArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    TacArchiveDecoder::read_meta(File &arc_file) const
+    TacArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto version = read_version(arc_file.io);
     arc_file.io.skip(8);
@@ -122,7 +122,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> TacArchiveDecoder::read_file(
+std::unique_ptr<File> TacArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

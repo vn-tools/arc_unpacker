@@ -40,7 +40,7 @@ bool Pak1ImageArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak1ImageArchiveDecoder::read_meta(File &arc_file) const
+    Pak1ImageArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     auto palette_count = arc_file.io.read_u8();
@@ -68,7 +68,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Pak1ImageArchiveDecoder::read_file(
+std::unique_ptr<File> Pak1ImageArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);

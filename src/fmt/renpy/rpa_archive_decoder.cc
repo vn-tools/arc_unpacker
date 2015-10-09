@@ -234,7 +234,7 @@ bool RpaArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    RpaArchiveDecoder::read_meta(File &arc_file) const
+    RpaArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     int version = guess_version(arc_file.io);
     size_t table_offset = read_hex_number(arc_file.io, 16);
@@ -284,7 +284,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> RpaArchiveDecoder::read_file(
+std::unique_ptr<File> RpaArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

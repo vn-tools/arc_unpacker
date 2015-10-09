@@ -88,7 +88,7 @@ bool WipfArchiveDecoder::is_recognized_internal(File &file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    WipfArchiveDecoder::read_meta(File &arc_file) const
+    WipfArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto base_name = boost::filesystem::path(arc_file.name).filename().string();
     boost::algorithm::replace_all(base_name, ".", "-");
@@ -154,7 +154,7 @@ std::unique_ptr<pix::Grid> WipfArchiveDecoder::read_image(
     return pixels;
 }
 
-std::unique_ptr<File> WipfArchiveDecoder::read_file(
+std::unique_ptr<File> WipfArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     return util::file_from_grid(*read_image(arc_file, m, e), e.name);

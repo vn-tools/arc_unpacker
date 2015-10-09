@@ -46,7 +46,7 @@ bool AldArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    AldArchiveDecoder::read_meta(File &arc_file) const
+    AldArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto file_count = read_24_le(arc_file.io) / 3;
 
@@ -75,7 +75,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> AldArchiveDecoder::read_file(
+std::unique_ptr<File> AldArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

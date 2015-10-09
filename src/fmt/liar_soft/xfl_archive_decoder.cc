@@ -44,7 +44,7 @@ bool XflArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    XflArchiveDecoder::read_meta(File &arc_file) const
+    XflArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     arc_file.io.seek(magic.size());
     auto table_size = arc_file.io.read_u32_le();
@@ -62,7 +62,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> XflArchiveDecoder::read_file(
+std::unique_ptr<File> XflArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

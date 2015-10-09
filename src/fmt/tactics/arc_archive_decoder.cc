@@ -99,7 +99,7 @@ bool ArcArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    ArcArchiveDecoder::read_meta(File &arc_file) const
+    ArcArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     std::vector<std::function<std::unique_ptr<fmt::ArchiveMeta>(File &)>>
         meta_readers
@@ -124,7 +124,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     throw err::NotSupportedError("Archive is encrypted in unknown way.");
 }
 
-std::unique_ptr<File> ArcArchiveDecoder::read_file(
+std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

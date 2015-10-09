@@ -18,7 +18,6 @@ TEST_CASE("Leaf PAK archives", "[fmt]")
     expected_files[1]->name = "leaflogo.grp";
 
     PakArchiveDecoder decoder;
-    decoder.disable_nested_decoding();
     auto input_file = tests::file_from_path(
         "tests/fmt/leaf/files/pak/LEAFLOGO.PAK");
     auto actual_files = tests::unpack(decoder, *input_file);

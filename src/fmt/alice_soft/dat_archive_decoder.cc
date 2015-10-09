@@ -45,7 +45,7 @@ bool DatArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    DatArchiveDecoder::read_meta(File &arc_file) const
+    DatArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto arc_name = arc_file.name;
     boost::algorithm::to_lower(arc_name);
@@ -102,7 +102,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> DatArchiveDecoder::read_file(
+std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

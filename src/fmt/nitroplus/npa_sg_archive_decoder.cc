@@ -33,7 +33,7 @@ bool NpaSgArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    NpaSgArchiveDecoder::read_meta(File &arc_file) const
+    NpaSgArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     size_t table_size = arc_file.io.read_u32_le();
     auto table_data = arc_file.io.read(table_size);
@@ -57,7 +57,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> NpaSgArchiveDecoder::read_file(
+std::unique_ptr<File> NpaSgArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

@@ -164,7 +164,7 @@ bool Xp3ArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Xp3ArchiveDecoder::read_meta(File &arc_file) const
+    Xp3ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     arc_file.io.seek(xp3_magic.size());
     auto version = detect_version(arc_file.io);
@@ -207,7 +207,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Xp3ArchiveDecoder::read_file(
+std::unique_ptr<File> Xp3ArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);

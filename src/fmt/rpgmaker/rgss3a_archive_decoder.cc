@@ -13,7 +13,7 @@ bool Rgss3aArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Rgss3aArchiveDecoder::read_meta(File &arc_file) const
+    Rgss3aArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     arc_file.io.seek(magic.size());
     u32 key = arc_file.io.read_u32_le() * 9 + 3;
@@ -38,10 +38,10 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Rgss3aArchiveDecoder::read_file(
+std::unique_ptr<File> Rgss3aArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
-    return rgs::read_file(
+    return rgs::read_file_impl(
         arc_file, *static_cast<const rgs::ArchiveEntryImpl*>(&e));
 }
 

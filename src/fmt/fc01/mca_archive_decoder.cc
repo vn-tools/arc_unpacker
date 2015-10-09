@@ -73,7 +73,7 @@ bool McaArchiveDecoder::is_recognized_internal(File &file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    McaArchiveDecoder::read_meta(File &arc_file) const
+    McaArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     arc_file.io.seek(16);
     auto header_size = arc_file.io.read_u32_le();
@@ -92,7 +92,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> McaArchiveDecoder::read_file(
+std::unique_ptr<File> McaArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

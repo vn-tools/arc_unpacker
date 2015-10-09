@@ -177,7 +177,7 @@ bool Glib2ArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Glib2ArchiveDecoder::read_meta(File &arc_file) const
+    Glib2ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto plugin = guess_plugin(arc_file.io);
     auto header = read_header(arc_file.io, *plugin);
@@ -209,7 +209,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Glib2ArchiveDecoder::read_file(
+std::unique_ptr<File> Glib2ArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);

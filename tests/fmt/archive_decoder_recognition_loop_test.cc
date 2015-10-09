@@ -13,8 +13,8 @@ namespace
     {
     public:
         TestArchiveDecoder();
-        std::unique_ptr<ArchiveMeta> read_meta(File &) const override;
-        std::unique_ptr<File> read_file(
+        std::unique_ptr<ArchiveMeta> read_meta_impl(File &) const override;
+        std::unique_ptr<File> read_file_impl(
             File &, const ArchiveMeta &, const ArchiveEntry &) const override;
     protected:
         bool is_recognized_internal(File &arc_file) const override;
@@ -31,7 +31,8 @@ bool TestArchiveDecoder::is_recognized_internal(File &arc_file) const
     return true;
 }
 
-std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta(File &arc_file) const
+std::unique_ptr<ArchiveMeta>
+    TestArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
     auto entry = std::make_unique<ArchiveEntry>();
@@ -40,7 +41,7 @@ std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta(File &arc_file) const
     return meta;
 }
 
-std::unique_ptr<File> TestArchiveDecoder::read_file(
+std::unique_ptr<File> TestArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &, const ArchiveEntry &e) const
 {
     arc_file.io.seek(0);

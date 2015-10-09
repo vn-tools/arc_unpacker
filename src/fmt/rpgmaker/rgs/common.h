@@ -15,6 +15,6 @@ namespace rgs {
     };
 
     u32 advance_key(const u32 key);
-    std::unique_ptr<File> read_file(File &, const ArchiveEntryImpl &);
+    std::unique_ptr<File> read_file_impl(File &, const ArchiveEntryImpl &);
 
 } } } }

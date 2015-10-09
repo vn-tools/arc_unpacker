@@ -126,7 +126,6 @@ void ArchiveDecoder::unpack(File &arc_file, FileSaver &saver) const
             saver.save(original_file);
     });
 
-    arc_file.io.seek(0);
     auto meta = read_meta(arc_file);
     if (nested_decoding_enabled)
         preprocess(arc_file, *meta, recognition_proxy);
@@ -138,14 +137,27 @@ void ArchiveDecoder::unpack(File &arc_file, FileSaver &saver) const
     }
 }
 
-std::vector<std::shared_ptr<File>> ArchiveDecoder::unpack(File &file) const
+std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(File &arc_file) const
+{
+    arc_file.io.seek(0);
+    return read_meta_impl(arc_file);
+}
+
+std::unique_ptr<File> ArchiveDecoder::read_file(
+    File &arc_file, const ArchiveMeta &e, const ArchiveEntry &m) const
+{
+    // wrapper reserved for future usage
+    return read_file_impl(arc_file, e, m);
+}
+
+std::vector<std::shared_ptr<File>> ArchiveDecoder::unpack(File &arc_file) const
 {
     std::vector<std::shared_ptr<File>> files;
     FileSaverCallback saver([&](std::shared_ptr<File> unpacked_file)
     {
         files.push_back(unpacked_file);
     });
-    unpack(file, saver);
+    unpack(arc_file, saver);
     return files;
 }
 

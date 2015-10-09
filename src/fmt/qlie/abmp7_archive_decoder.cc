@@ -21,7 +21,7 @@ bool Abmp7ArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Abmp7ArchiveDecoder::read_meta(File &arc_file) const
+    Abmp7ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     arc_file.io.seek(12);
     arc_file.io.skip(arc_file.io.read_u32_le());
@@ -52,7 +52,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Abmp7ArchiveDecoder::read_file(
+std::unique_ptr<File> Abmp7ArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

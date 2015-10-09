@@ -339,7 +339,7 @@ bool TfpkArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    TfpkArchiveDecoder::read_meta(File &arc_file) const
+    TfpkArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     arc_file.io.seek(magic.size());
 
@@ -413,7 +413,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> TfpkArchiveDecoder::read_file(
+std::unique_ptr<File> TfpkArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);

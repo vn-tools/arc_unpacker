@@ -119,7 +119,7 @@ void ArcArchiveDecoder::preprocess(
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    ArcArchiveDecoder::read_meta(File &arc_file) const
+    ArcArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto dir_count = arc_file.io.read_u32_le();
     if (dir_count > 100)
@@ -147,7 +147,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     throw err::CorruptDataError("Failed to read file table");
 }
 
-std::unique_ptr<File> ArcArchiveDecoder::read_file(
+std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

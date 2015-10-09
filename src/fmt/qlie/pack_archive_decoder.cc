@@ -326,7 +326,7 @@ bool PackArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PackArchiveDecoder::read_meta(File &arc_file) const
+    PackArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->enc_type = EncryptionType::Basic;
@@ -418,7 +418,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> PackArchiveDecoder::read_file(
+std::unique_ptr<File> PackArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);

@@ -25,7 +25,7 @@ bool DatArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    DatArchiveDecoder::read_meta(File &arc_file) const
+    DatArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     arc_file.io.seek(0xA8);
     auto file_count = arc_file.io.read_u32_le();
@@ -58,7 +58,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> DatArchiveDecoder::read_file(
+std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

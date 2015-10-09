@@ -63,7 +63,7 @@ bool Pak2ArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak2ArchiveDecoder::read_meta(File &arc_file) const
+    Pak2ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     arc_file.io.seek(0);
     u16 file_count = arc_file.io.read_u16_le();
@@ -94,7 +94,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Pak2ArchiveDecoder::read_file(
+std::unique_ptr<File> Pak2ArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

@@ -22,7 +22,7 @@ bool EgrArchiveDecoder::is_recognized_internal(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    EgrArchiveDecoder::read_meta(File &arc_file) const
+    EgrArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto i = 0;
     auto meta = std::make_unique<ArchiveMeta>();
@@ -41,7 +41,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> EgrArchiveDecoder::read_file(
+std::unique_ptr<File> EgrArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
