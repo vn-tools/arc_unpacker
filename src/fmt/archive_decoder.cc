@@ -1,21 +1,10 @@
 #include "fmt/archive_decoder.h"
 #include "err.h"
 #include "fmt/naming_strategies.h"
+#include "util/call_stack_keeper.h"
 
 using namespace au;
 using namespace au::fmt;
-
-static const int max_depth = 10;
-static int depth = 0;
-
-namespace
-{
-    struct DepthKeeper final
-    {
-        DepthKeeper();
-        ~DepthKeeper();
-    };
-}
 
 static bool pass_through_decoders(
     FileSaverCallback &recognition_proxy,
@@ -44,16 +33,6 @@ static bool pass_through_decoders(
     }
 
     return false;
-}
-
-DepthKeeper::DepthKeeper()
-{
-    depth++;
-}
-
-DepthKeeper::~DepthKeeper()
-{
-    depth--;
 }
 
 ArchiveDecoder::ArchiveDecoder() : nested_decoding_enabled(true)
@@ -106,23 +85,20 @@ void ArchiveDecoder::unpack(File &arc_file, FileSaver &saver) const
         throw err::RecognitionError();
 
     // every file should be passed through registered decoders
+    static const int max_depth = 10;
     FileSaverCallback recognition_proxy;
     recognition_proxy.set_callback([&](std::shared_ptr<File> original_file)
     {
-        DepthKeeper keeper;
+        util::CallStackKeeper keeper;
 
-        bool save_normally;
-        if (depth > max_depth || !nested_decoding_enabled)
+        bool bypass_normal_saving = false;
+        if (keeper.current_call_depth() <= max_depth && nested_decoding_enabled)
         {
-            save_normally = true;
-        }
-        else
-        {
-            save_normally = !pass_through_decoders(
+            bypass_normal_saving = pass_through_decoders(
                 recognition_proxy, original_file, decoders);
         }
 
-        if (save_normally)
+        if (!bypass_normal_saving)
             saver.save(original_file);
     });
 
