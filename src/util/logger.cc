@@ -8,7 +8,7 @@ using namespace au::util;
 struct Logger::Priv final
 {
     Priv(Logger &logger);
-    void log(MessageType type, const std::string &fmt, std::va_list args);
+    void log(MessageType type, std::string fmt, std::va_list args);
 
     Logger &logger;
     Color colors[5];
@@ -26,7 +26,7 @@ Logger::Priv::Priv(Logger &logger) : logger(logger)
 }
 
 void Logger::Priv::log(
-    MessageType type, const std::string &fmt, std::va_list args)
+    MessageType type, std::string fmt, std::va_list args)
 {
     if (muted & (1 << type))
         return;
@@ -49,7 +49,7 @@ Logger::~Logger()
 {
 }
 
-void Logger::info(const std::string &fmt, ...)
+void Logger::info(std::string fmt, ...)
 {
     std::va_list args;
     va_start(args, fmt);
@@ -57,7 +57,7 @@ void Logger::info(const std::string &fmt, ...)
     va_end(args);
 }
 
-void Logger::success(const std::string &fmt, ...)
+void Logger::success(std::string fmt, ...)
 {
     std::va_list args;
     va_start(args, fmt);
@@ -65,7 +65,7 @@ void Logger::success(const std::string &fmt, ...)
     va_end(args);
 }
 
-void Logger::warn(const std::string &fmt, ...)
+void Logger::warn(std::string fmt, ...)
 {
     std::va_list args;
     va_start(args, fmt);
@@ -73,7 +73,7 @@ void Logger::warn(const std::string &fmt, ...)
     va_end(args);
 }
 
-void Logger::err(const std::string &fmt, ...)
+void Logger::err(std::string fmt, ...)
 {
     std::va_list args;
     va_start(args, fmt);
@@ -81,7 +81,7 @@ void Logger::err(const std::string &fmt, ...)
     va_end(args);
 }
 
-void Logger::debug(const std::string &fmt, ...)
+void Logger::debug(std::string fmt, ...)
 {
     std::va_list args;
     va_start(args, fmt);

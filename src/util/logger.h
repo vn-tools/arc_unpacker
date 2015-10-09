@@ -44,11 +44,11 @@ namespace util {
         ~Logger();
 
         void set_color(Color c);
-        void info(const std::string &str, ...);
-        void success(const std::string &str, ...);
-        void warn(const std::string &str, ...);
-        void err(const std::string &str, ...);
-        void debug(const std::string &str, ...);
+        void info(std::string str, ...);
+        void success(std::string str, ...);
+        void warn(std::string str, ...);
+        void err(std::string str, ...);
+        void debug(std::string str, ...);
         void flush();
 
         void mute();
