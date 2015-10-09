@@ -79,7 +79,7 @@ bool ArchiveDecoder::is_recognized(File &arc_file) const
     }
 }
 
-void ArchiveDecoder::unpack(File &arc_file, FileSaver &saver) const
+void ArchiveDecoder::unpack(File &arc_file, const FileSaver &saver) const
 {
     if (!is_recognized(arc_file))
         throw err::RecognitionError();
@@ -137,7 +137,7 @@ std::vector<std::shared_ptr<File>> ArchiveDecoder::unpack(File &arc_file) const
     return files;
 }
 
-void ArchiveDecoder::preprocess(File &, ArchiveMeta &, FileSaver &) const
+void ArchiveDecoder::preprocess(File &, ArchiveMeta &, const FileSaver &) const
 {
 }
 

@@ -13,7 +13,7 @@ namespace fmt {
         virtual void register_cli_options(ArgParser &) const override;
         virtual void parse_cli_options(const ArgParser &) override;
         virtual bool is_recognized(File &) const override;
-        virtual void unpack(File &, FileSaver &) const override;
+        virtual void unpack(File &, const FileSaver &) const override;
         virtual std::unique_ptr<INamingStrategy> naming_strategy()
             const override;
 

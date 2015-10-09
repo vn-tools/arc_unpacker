@@ -78,7 +78,7 @@ std::unique_ptr<File> Nekopack4ArchiveDecoder::read_file_impl(
 }
 
 void Nekopack4ArchiveDecoder::preprocess(
-    File &arc_file, fmt::ArchiveMeta &meta, FileSaver &saver) const
+    File &arc_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
 {
     // apply image masks to original sprites
     std::map<std::string, ArchiveEntryImpl*> mask_entries, sprite_entries;

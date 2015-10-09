@@ -21,7 +21,7 @@ namespace fmt {
         virtual void register_cli_options(ArgParser &) const = 0;
         virtual void parse_cli_options(const ArgParser &) = 0;
         virtual bool is_recognized(File &) const = 0;
-        virtual void unpack(File &, FileSaver &) const = 0;
+        virtual void unpack(File &, const FileSaver &) const = 0;
         virtual std::unique_ptr<INamingStrategy> naming_strategy() const = 0;
     };
 

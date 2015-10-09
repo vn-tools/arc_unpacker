@@ -25,7 +25,7 @@ namespace fmt {
         virtual void register_cli_options(ArgParser &) const override;
         virtual void parse_cli_options(const ArgParser &) override;
         virtual bool is_recognized(File &) const override;
-        virtual void unpack(File &, FileSaver &) const override;
+        virtual void unpack(File &, const FileSaver &) const override;
         virtual std::unique_ptr<INamingStrategy> naming_strategy()
             const override;
 
@@ -39,7 +39,7 @@ namespace fmt {
         virtual std::unique_ptr<ArchiveMeta> read_meta_impl(File &) const = 0;
         virtual std::unique_ptr<File> read_file_impl(
             File &, const ArchiveMeta &, const ArchiveEntry &) const = 0;
-        virtual void preprocess(File &, ArchiveMeta &, FileSaver &) const;
+        virtual void preprocess(File &, ArchiveMeta &, const FileSaver &) const;
         virtual bool is_recognized_impl(File &) const = 0;
         void add_decoder(IDecoder *decoder);
 

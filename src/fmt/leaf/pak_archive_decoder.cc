@@ -150,7 +150,7 @@ std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
 }
 
 void PakArchiveDecoder::preprocess(
-    File &arc_file, fmt::ArchiveMeta &meta, FileSaver &saver) const
+    File &arc_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
 {
     std::map<std::string, ArchiveEntryImpl*>
         palette_entries, sprite_entries;

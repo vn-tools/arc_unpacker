@@ -107,7 +107,7 @@ std::unique_ptr<File> Pak2ArchiveDecoder::read_file_impl(
 }
 
 void Pak2ArchiveDecoder::preprocess(
-    File &arc_file, ArchiveMeta &m, FileSaver &) const
+    File &arc_file, ArchiveMeta &m, const FileSaver &) const
 {
     p->image_decoder.clear_palettes();
     auto dir = boost::filesystem::path(arc_file.name).parent_path();

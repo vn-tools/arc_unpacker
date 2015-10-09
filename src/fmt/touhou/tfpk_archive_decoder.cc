@@ -446,7 +446,7 @@ std::unique_ptr<File> TfpkArchiveDecoder::read_file_impl(
 }
 
 void TfpkArchiveDecoder::preprocess(
-    File &arc_file, ArchiveMeta &m, FileSaver &saver) const
+    File &arc_file, ArchiveMeta &m, const FileSaver &saver) const
 {
     p->tfbm_image_decoder.clear_palettes();
     auto dir = boost::filesystem::path(arc_file.name).parent_path();

@@ -36,7 +36,7 @@ bool ImageDecoder::is_recognized(File &file) const
     }
 }
 
-void ImageDecoder::unpack(File &input_file, FileSaver &file_saver) const
+void ImageDecoder::unpack(File &input_file, const FileSaver &file_saver) const
 {
     auto output_grid = decode(input_file);
     auto output_file = util::file_from_grid(output_grid, input_file.name);
