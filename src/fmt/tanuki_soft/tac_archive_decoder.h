@@ -9,7 +9,7 @@ namespace tanuki_soft {
     class TacArchiveDecoder final : public ArchiveDecoder
     {
     public:
-        TacArchiveDecoder();
+        std::vector<std::string> get_linked_formats() const override;
     protected:
         bool is_recognized_impl(File &) const override;
         std::unique_ptr<ArchiveMeta> read_meta_impl(File &) const override;

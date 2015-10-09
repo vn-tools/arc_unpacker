@@ -1,5 +1,4 @@
 #include "fmt/sysadv/pak_archive_decoder.h"
-#include "fmt/sysadv/pga_image_decoder.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -15,20 +14,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct PakArchiveDecoder::Priv final
-{
-    PgaImageDecoder pga_image_decoder;
-};
-
-PakArchiveDecoder::PakArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->pga_image_decoder);
-}
-
-PakArchiveDecoder::~PakArchiveDecoder()
-{
 }
 
 bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -65,6 +50,11 @@ std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
+}
+
+std::vector<std::string> PakArchiveDecoder::get_linked_formats() const
+{
+    return { "sysadv/pga" };
 }
 
 static auto dummy = fmt::register_fmt<PakArchiveDecoder>("sysadv/pak");

@@ -1,5 +1,6 @@
 #include <boost/filesystem.hpp>
 #include "fmt/archive_decoder.h"
+#include "fmt/decoder_util.h"
 #include "test_support/catch.hh"
 
 using namespace au;
@@ -12,18 +13,18 @@ namespace
     class TestArchiveDecoder final : public ArchiveDecoder
     {
     public:
-        TestArchiveDecoder();
+        std::vector<std::string> get_linked_formats() const override;
+    protected:
+        bool is_recognized_impl(File &arc_file) const override;
         std::unique_ptr<ArchiveMeta> read_meta_impl(File &) const override;
         std::unique_ptr<File> read_file_impl(
             File &, const ArchiveMeta &, const ArchiveEntry &) const override;
-    protected:
-        bool is_recognized_impl(File &arc_file) const override;
     };
 }
 
-TestArchiveDecoder::TestArchiveDecoder()
+std::vector<std::string> TestArchiveDecoder::get_linked_formats() const
 {
-    add_decoder(this);
+    return { "test/test" };
 }
 
 bool TestArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -50,6 +51,10 @@ std::unique_ptr<File> TestArchiveDecoder::read_file_impl(
 
 TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
 {
+    auto registry = Registry::create_mock();
+    registry->add_decoder(
+        "test/test", []() { return std::make_unique<TestArchiveDecoder>(); });
+
     TestArchiveDecoder test_archive_decoder;
     File dummy_file;
     dummy_file.name = "test.archive";
@@ -61,7 +66,8 @@ TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
         saved_file->io.seek(0);
         saved_files.push_back(saved_file);
     });
-    test_archive_decoder.unpack(dummy_file, file_saver);
+    fmt::unpack_recursive(
+        {}, test_archive_decoder, dummy_file, file_saver, *registry);
 
     REQUIRE(saved_files.size() == 1);
     REQUIRE(boost::filesystem::basename(saved_files[0]->name) == "infinity");

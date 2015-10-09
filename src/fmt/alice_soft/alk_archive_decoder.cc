@@ -1,5 +1,4 @@
 #include "fmt/alice_soft/alk_archive_decoder.h"
-#include "fmt/alice_soft/qnt_image_decoder.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -15,20 +14,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct AlkArchiveDecoder::Priv final
-{
-    QntImageDecoder qnt_image_decoder;
-};
-
-AlkArchiveDecoder::AlkArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->qnt_image_decoder);
-}
-
-AlkArchiveDecoder::~AlkArchiveDecoder()
-{
 }
 
 bool AlkArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -65,6 +50,11 @@ std::unique_ptr<File> AlkArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
+}
+
+std::vector<std::string> AlkArchiveDecoder::get_linked_formats() const
+{
+    return { "alice/qnt" };
 }
 
 static auto dummy = fmt::register_fmt<AlkArchiveDecoder>("alice/alk");

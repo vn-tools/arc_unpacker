@@ -1,5 +1,4 @@
 #include "fmt/touhou/pbg3_archive_decoder.h"
-#include "fmt/touhou/anm_archive_decoder.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"
@@ -24,20 +23,6 @@ static unsigned int read_integer(io::BitReader &bit_reader)
 {
     size_t integer_size = bit_reader.get(2) + 1;
     return bit_reader.get(integer_size << 3);
-}
-
-struct Pbg3ArchiveDecoder::Priv final
-{
-    AnmArchiveDecoder anm_archive_decoder;
-};
-
-Pbg3ArchiveDecoder::Pbg3ArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->anm_archive_decoder);
-}
-
-Pbg3ArchiveDecoder::~Pbg3ArchiveDecoder()
-{
 }
 
 bool Pbg3ArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -100,6 +85,11 @@ std::unique_ptr<File> Pbg3ArchiveDecoder::read_file_impl(
         bit_reader, entry->size_orig, settings);
 
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> Pbg3ArchiveDecoder::get_linked_formats() const
+{
+    return { "th/anm" };
 }
 
 static auto dummy = fmt::register_fmt<Pbg3ArchiveDecoder>("th/pbg3");

@@ -3,13 +3,11 @@
 #include <map>
 #include <set>
 #include "err.h"
-#include "fmt/microsoft/dds_image_decoder.h"
 #include "fmt/touhou/tfbm_image_decoder.h"
-#include "fmt/touhou/tfcs_file_decoder.h"
-#include "fmt/touhou/tfwa_audio_decoder.h"
 #include "io/buffered_io.h"
 #include "util/crypt/rsa.h"
 #include "util/encoding.h"
+#include "util/file_from_grid.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
@@ -37,6 +35,7 @@ namespace
         size_t size;
         size_t offset;
         bstr key;
+        bool already_unpacked;
     };
 
     struct DirEntry final
@@ -153,6 +152,37 @@ std::unique_ptr<io::BufferedIO> RsaReader::read_block()
         ? rsa->decrypt(io.read(0x40)).substr(0, 0x20)
         : io.read(0x40).substr(0, 0x20);
     return std::make_unique<io::BufferedIO>(block);
+}
+
+static bstr read_file_content(
+    File &arc_file,
+    const ArchiveMetaImpl &meta,
+    const ArchiveEntryImpl &entry,
+    size_t max_size)
+{
+    arc_file.io.seek(entry.offset);
+    auto data = arc_file.io.read(std::min<size_t>(max_size, entry.size));
+    size_t key_size = entry.key.size();
+    if (meta.version == TfpkVersion::Th135)
+    {
+        for (auto i : util::range(data.size()))
+            data[i] ^= entry.key[i % key_size];
+    }
+    else
+    {
+        auto *key = entry.key.get<const u8>();
+        auto *buf = data.get<u8>();
+        u8 aux[4];
+        for (auto i : util::range(4))
+            aux[i] = key[i];
+        for (auto i : util::range(data.size()))
+        {
+            u8 tmp = buf[i];
+            buf[i] = tmp ^ key[i % key_size] ^ aux[i & 3];
+            aux[i & 3] = tmp;
+        }
+    }
+    return data;
 }
 
 static u32 neg32(u32 x)
@@ -286,10 +316,6 @@ static HashLookupMap read_fn_map(
 
 struct TfpkArchiveDecoder::Priv final
 {
-    TfbmImageDecoder tfbm_image_decoder;
-    TfcsFileDecoder tfcs_file_decoder;
-    TfwaAudioDecoder tfwa_audio_decoder;
-    fmt::microsoft::DdsImageDecoder dds_image_decoder;
     std::set<std::string> fn_set;
 };
 
@@ -320,10 +346,6 @@ void TfpkArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 
 TfpkArchiveDecoder::TfpkArchiveDecoder() : p(new Priv)
 {
-    add_decoder(&p->tfbm_image_decoder);
-    add_decoder(&p->tfcs_file_decoder);
-    add_decoder(&p->tfwa_audio_decoder);
-    add_decoder(&p->dds_image_decoder);
 }
 
 TfpkArchiveDecoder::~TfpkArchiveDecoder()
@@ -367,6 +389,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->already_unpacked = false;
         auto b1 = reader.read_block();
         auto b2 = reader.read_block();
         auto b3 = reader.read_block();
@@ -418,28 +441,9 @@ std::unique_ptr<File> TfpkArchiveDecoder::read_file_impl(
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
-    size_t key_size = entry->key.size();
-    if (meta->version == TfpkVersion::Th135)
-    {
-        for (auto i : util::range(entry->size))
-            data[i] ^= entry->key[i % key_size];
-    }
-    else
-    {
-        auto *key = entry->key.get<const u8>();
-        auto *buf = data.get<u8>();
-        u8 aux[4];
-        for (auto i : util::range(4))
-            aux[i] = key[i];
-        for (auto i : util::range(entry->size))
-        {
-            u8 tmp = buf[i];
-            buf[i] = tmp ^ key[i % key_size] ^ aux[i%4];
-            aux[i%4] = tmp;
-        }
-    }
+    if (entry->already_unpacked)
+        return nullptr;
+    auto data = read_file_content(arc_file, *meta, *entry, entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
@@ -448,7 +452,9 @@ std::unique_ptr<File> TfpkArchiveDecoder::read_file_impl(
 void TfpkArchiveDecoder::preprocess(
     File &arc_file, ArchiveMeta &m, const FileSaver &saver) const
 {
-    p->tfbm_image_decoder.clear_palettes();
+    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+
+    TfbmImageDecoder tfbm_image_decoder;
     auto dir = boost::filesystem::path(arc_file.name).parent_path();
     for (boost::filesystem::directory_iterator it(dir);
         it != boost::filesystem::directory_iterator();
@@ -470,10 +476,37 @@ void TfpkArchiveDecoder::preprocess(
                 continue;
             auto pal_file = read_file(other_arc_file, *meta, *entry);
             pal_file->io.seek(0);
-            p->tfbm_image_decoder.add_palette(
+            tfbm_image_decoder.add_palette(
                 entry->name, pal_file->io.read_to_eof());
         }
     }
+
+    static const bstr tfbm_magic = "TFBM"_b;
+    for (auto &e : meta->entries)
+    {
+        auto entry = static_cast<ArchiveEntryImpl*>(e.get());
+        auto chunk = read_file_content(
+            arc_file, *meta, *entry, tfbm_magic.size());
+        if (chunk != tfbm_magic)
+            continue;
+
+        File full_file(entry->name, read_file_content(
+            arc_file, *meta, *entry, entry->size));
+        try
+        {
+            auto pixels = tfbm_image_decoder.decode(full_file);
+            saver.save(util::file_from_grid(pixels, entry->name));
+            entry->already_unpacked = true;
+        }
+        catch (...)
+        {
+        }
+    }
+}
+
+std::vector<std::string> TfpkArchiveDecoder::get_linked_formats() const
+{
+    return { "th/tfcs", "th/tfwa", "th/tfbm", "ms/dds" };
 }
 
 static auto dummy = fmt::register_fmt<TfpkArchiveDecoder>("th/tfpk");

@@ -9,16 +9,12 @@ namespace bgi {
     class ArcArchiveDecoder final : public ArchiveDecoder
     {
     public:
-        ArcArchiveDecoder();
-        ~ArcArchiveDecoder();
+        std::vector<std::string> get_linked_formats() const override;
     protected:
         bool is_recognized_impl(File &) const override;
         std::unique_ptr<ArchiveMeta> read_meta_impl(File &) const override;
         std::unique_ptr<File> read_file_impl(
             File &, const ArchiveMeta &, const ArchiveEntry &) const override;
-    private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
     };
 
 } } }

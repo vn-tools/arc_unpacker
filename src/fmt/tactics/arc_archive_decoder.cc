@@ -1,6 +1,5 @@
 #include "fmt/tactics/arc_archive_decoder.h"
 #include "err.h"
-#include "fmt/microsoft/dds_image_decoder.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/pack/lzss.h"
@@ -79,20 +78,6 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(File &arc_file)
     return meta;
 }
 
-struct ArcArchiveDecoder::Priv final
-{
-    fmt::microsoft::DdsImageDecoder dds_image_decoder;
-};
-
-ArcArchiveDecoder::ArcArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->dds_image_decoder);
-}
-
-ArcArchiveDecoder::~ArcArchiveDecoder()
-{
-}
-
 bool ArcArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.io.read(magic.size()) == magic;
@@ -136,6 +121,11 @@ std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
     if (entry->size_orig)
         data = util::pack::lzss_decompress_bytewise(data, entry->size_orig);
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> ArcArchiveDecoder::get_linked_formats() const
+{
+    return { "ms/dds" };
 }
 
 static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("tactics/arc");

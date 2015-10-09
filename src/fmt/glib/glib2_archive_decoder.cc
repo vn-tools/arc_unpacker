@@ -2,9 +2,6 @@
 #include "err.h"
 #include "fmt/glib/glib2/mei.h"
 #include "fmt/glib/glib2/musume.h"
-#include "fmt/glib/jpeg_pgx_image_decoder.h"
-#include "fmt/glib/pgx_image_decoder.h"
-#include "fmt/vorbis/packed_ogg_audio_decoder.h"
 #include "io/buffered_io.h"
 #include "log.h"
 #include "util/range.h"
@@ -152,25 +149,6 @@ static std::shared_ptr<glib2::Plugin> guess_plugin(io::IO &arc_io)
     return nullptr;
 }
 
-struct Glib2ArchiveDecoder::Priv final
-{
-    PgxImageDecoder pgx_image_decoder;
-    JpegPgxImageDecoder jpeg_pgx_image_decoder;
-    fmt::vorbis::PackedOggAudioDecoder packed_ogg_audio_decoder;
-};
-
-Glib2ArchiveDecoder::Glib2ArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->pgx_image_decoder);
-    add_decoder(&p->jpeg_pgx_image_decoder);
-    add_decoder(&p->packed_ogg_audio_decoder);
-    add_decoder(this);
-}
-
-Glib2ArchiveDecoder::~Glib2ArchiveDecoder()
-{
-}
-
 bool Glib2ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return guess_plugin(arc_file.io) != nullptr;
@@ -253,6 +231,11 @@ std::unique_ptr<File> Glib2ArchiveDecoder::read_file_impl(
     }
 
     return output_file;
+}
+
+std::vector<std::string> Glib2ArchiveDecoder::get_linked_formats() const
+{
+    return { "glib/pgx", "glib/jpeg-pgx", "vorbis/wav", "glib/g2" };
 }
 
 static auto dummy = fmt::register_fmt<Glib2ArchiveDecoder>("glib/g2");

@@ -1,6 +1,5 @@
 #include "fmt/whale/dat_archive_decoder.h"
 #include <map>
-#include "fmt/kirikiri/tlg_image_decoder.h"
 #include "io/buffered_io.h"
 #include "log.h"
 #include "util/encoding.h"
@@ -172,12 +171,10 @@ struct DatArchiveDecoder::Priv final
     bstr game_title;
     std::map<u64, bstr> file_names_map;
     std::string dump_path;
-    fmt::kirikiri::TlgImageDecoder tlg_image_decoder;
 };
 
 DatArchiveDecoder::DatArchiveDecoder() : p(new Priv)
 {
-    add_decoder(&p->tlg_image_decoder);
 }
 
 DatArchiveDecoder::~DatArchiveDecoder()
@@ -321,6 +318,11 @@ std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
     }
 
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> DatArchiveDecoder::get_linked_formats() const
+{
+    return { "krkr/tlg" };
 }
 
 static auto dummy = fmt::register_fmt<DatArchiveDecoder>("whale/dat");

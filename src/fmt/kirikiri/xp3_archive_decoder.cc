@@ -1,6 +1,5 @@
 #include "fmt/kirikiri/xp3_archive_decoder.h"
 #include "err.h"
-#include "fmt/kirikiri/tlg_image_decoder.h"
 #include "fmt/kirikiri/xp3_filter_registry.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
@@ -134,12 +133,10 @@ static AdlrChunk read_adlr_chunk(io::IO &table_io)
 struct Xp3ArchiveDecoder::Priv final
 {
     Xp3FilterRegistry filter_registry;
-    TlgImageDecoder tlg_image_decoder;
 };
 
 Xp3ArchiveDecoder::Xp3ArchiveDecoder() : p(new Priv)
 {
-    add_decoder(&p->tlg_image_decoder);
 }
 
 Xp3ArchiveDecoder::~Xp3ArchiveDecoder()
@@ -227,6 +224,11 @@ std::unique_ptr<File> Xp3ArchiveDecoder::read_file_impl(
         meta->filter->decoder(data, entry->adlr_chunk.key);
 
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> Xp3ArchiveDecoder::get_linked_formats() const
+{
+    return { "krkr/tlg" };
 }
 
 static auto dummy = fmt::register_fmt<Xp3ArchiveDecoder>("krkr/xp3");

@@ -1,7 +1,4 @@
 #include "fmt/liar_soft/xfl_archive_decoder.h"
-#include "fmt/liar_soft/lwg_archive_decoder.h"
-#include "fmt/liar_soft/wcg_image_decoder.h"
-#include "fmt/vorbis/packed_ogg_audio_decoder.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -17,25 +14,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct XflArchiveDecoder::Priv final
-{
-    LwgArchiveDecoder lwg_archive_decoder;
-    WcgImageDecoder wcg_image_decoder;
-    fmt::vorbis::PackedOggAudioDecoder packed_ogg_audio_decoder;
-};
-
-XflArchiveDecoder::XflArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->wcg_image_decoder);
-    add_decoder(&p->lwg_archive_decoder);
-    add_decoder(&p->packed_ogg_audio_decoder);
-    add_decoder(this);
-}
-
-XflArchiveDecoder::~XflArchiveDecoder()
-{
 }
 
 bool XflArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -71,6 +49,11 @@ std::unique_ptr<File> XflArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
+}
+
+std::vector<std::string> XflArchiveDecoder::get_linked_formats() const
+{
+    return { "liar/xfl", "liar/wcg", "liar/lwg", "vorbis/wav" };
 }
 
 static auto dummy = fmt::register_fmt<XflArchiveDecoder>("liar/xfl");

@@ -1,9 +1,6 @@
 #include "fmt/kid/lnk_archive_decoder.h"
 #include "err.h"
-#include "fmt/kid/cps_file_decoder.h"
 #include "fmt/kid/lnd_file_decoder.h"
-#include "fmt/kid/prt_image_decoder.h"
-#include "fmt/kid/waf_audio_decoder.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
@@ -20,25 +17,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct LnkArchiveDecoder::Priv final
-{
-    LndFileDecoder lnd_file_decoder;
-    CpsFileDecoder cps_file_decoder;
-    PrtImageDecoder prt_image_decoder;
-    WafAudioDecoder waf_audio_decoder;
-};
-
-LnkArchiveDecoder::LnkArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->cps_file_decoder);
-    add_decoder(&p->prt_image_decoder);
-    add_decoder(&p->waf_audio_decoder);
-}
-
-LnkArchiveDecoder::~LnkArchiveDecoder()
-{
 }
 
 bool LnkArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -100,9 +78,17 @@ std::unique_ptr<File> LnkArchiveDecoder::read_file_impl(
     output_file->io.write(data);
 
     if (entry->compressed)
-        return p->lnd_file_decoder.decode(*output_file);
+    {
+        LndFileDecoder lnd_file_decoder;
+        return lnd_file_decoder.decode(*output_file);
+    }
     else
         return output_file;
+}
+
+std::vector<std::string> LnkArchiveDecoder::get_linked_formats() const
+{
+    return { "kid/cps", "kid/prt", "kid/waf" };
 }
 
 static auto dummy = fmt::register_fmt<LnkArchiveDecoder>("kid/lnk");

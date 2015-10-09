@@ -1,7 +1,4 @@
 #include "fmt/alice_soft/ald_archive_decoder.h"
-#include "fmt/alice_soft/pms_image_decoder.h"
-#include "fmt/alice_soft/qnt_image_decoder.h"
-#include "fmt/alice_soft/vsp_image_decoder.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -20,24 +17,6 @@ namespace
 static u32 read_24_le(io::IO &io)
 {
     return (io.read_u8() << 8) | (io.read_u8() << 16) | (io.read_u8() << 24);
-}
-
-struct AldArchiveDecoder::Priv final
-{
-    PmsImageDecoder pms_image_decoder;
-    VspImageDecoder vsp_image_decoder;
-    QntImageDecoder qnt_image_decoder;
-};
-
-AldArchiveDecoder::AldArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->pms_image_decoder);
-    add_decoder(&p->vsp_image_decoder);
-    add_decoder(&p->qnt_image_decoder);
-}
-
-AldArchiveDecoder::~AldArchiveDecoder()
-{
 }
 
 bool AldArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -84,6 +63,11 @@ std::unique_ptr<File> AldArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
+}
+
+std::vector<std::string> AldArchiveDecoder::get_linked_formats() const
+{
+    return { "alice/pms", "alice/vsp", "alice/qnt" };
 }
 
 static auto dummy = fmt::register_fmt<AldArchiveDecoder>("alice/ald");

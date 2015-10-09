@@ -1,5 +1,4 @@
 #include "fmt/touhou/pbg4_archive_decoder.h"
-#include "fmt/touhou/anm_archive_decoder.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"
@@ -27,20 +26,6 @@ static bstr decompress(const bstr &data, size_t size_orig)
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
     return util::pack::lzss_decompress_bitwise(data, size_orig, settings);
-}
-
-struct Pbg4ArchiveDecoder::Priv final
-{
-    AnmArchiveDecoder anm_archive_decoder;
-};
-
-Pbg4ArchiveDecoder::Pbg4ArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->anm_archive_decoder);
-}
-
-Pbg4ArchiveDecoder::~Pbg4ArchiveDecoder()
-{
 }
 
 bool Pbg4ArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -88,6 +73,11 @@ std::unique_ptr<File> Pbg4ArchiveDecoder::read_file_impl(
     auto data = arc_file.io.read(entry->size_comp);
     data = decompress(data, entry->size_orig);
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> Pbg4ArchiveDecoder::get_linked_formats() const
+{
+    return { "th/anm" };
 }
 
 static auto dummy = fmt::register_fmt<Pbg4ArchiveDecoder>("th/pbg4");

@@ -1,8 +1,5 @@
 #include "fmt/qlie/pack_archive_decoder.h"
 #include "err.h"
-#include "fmt/qlie/abmp7_archive_decoder.h"
-#include "fmt/qlie/abmp10_archive_decoder.h"
-#include "fmt/qlie/dpng_image_decoder.h"
 #include "fmt/qlie/mt.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
@@ -274,17 +271,10 @@ struct PackArchiveDecoder::Priv final
 {
     std::string fkey_path;
     std::string game_exe_path;
-
-    DpngImageDecoder dpng_image_decoder;
-    Abmp7ArchiveDecoder abmp7_archive_decoder;
-    Abmp10ArchiveDecoder abmp10_archive_decoder;
 };
 
 PackArchiveDecoder::PackArchiveDecoder() : p(new Priv)
 {
-    add_decoder(&p->dpng_image_decoder);
-    add_decoder(&p->abmp7_archive_decoder);
-    add_decoder(&p->abmp10_archive_decoder);
 }
 
 PackArchiveDecoder::~PackArchiveDecoder()
@@ -433,6 +423,11 @@ std::unique_ptr<File> PackArchiveDecoder::read_file_impl(
         data = decompress(data, entry->size_original);
 
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> PackArchiveDecoder::get_linked_formats() const
+{
+    return { "qlie/abmp7", "qlie/abmp10", "qlie/dpng" };
 }
 
 static auto dummy = fmt::register_fmt<PackArchiveDecoder>("qlie/pack");

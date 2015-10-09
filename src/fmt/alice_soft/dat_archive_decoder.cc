@@ -1,7 +1,6 @@
 #include "fmt/alice_soft/dat_archive_decoder.h"
 #include <boost/algorithm/string.hpp>
 #include "err.h"
-#include "fmt/alice_soft/vsp_image_decoder.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -15,20 +14,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct DatArchiveDecoder::Priv final
-{
-    VspImageDecoder vsp_image_decoder;
-};
-
-DatArchiveDecoder::DatArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->vsp_image_decoder);
-}
-
-DatArchiveDecoder::~DatArchiveDecoder()
-{
 }
 
 bool DatArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -111,6 +96,11 @@ std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
+}
+
+std::vector<std::string> DatArchiveDecoder::get_linked_formats() const
+{
+    return { "alice/vsp" };
 }
 
 static auto dummy = fmt::register_fmt<DatArchiveDecoder>("alice/dat");

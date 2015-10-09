@@ -83,19 +83,6 @@ static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
     return output;
 }
 
-struct PakArchiveDecoder::Priv final
-{
-    GrpImageDecoder grp_image_decoder;
-};
-
-PakArchiveDecoder::PakArchiveDecoder() : p(new Priv)
-{
-}
-
-PakArchiveDecoder::~PakArchiveDecoder()
-{
-}
-
 bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     auto meta = read_meta(arc_file);
@@ -163,6 +150,7 @@ void PakArchiveDecoder::preprocess(
             sprite_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
     }
 
+    GrpImageDecoder grp_image_decoder;
     for (auto it : sprite_entries)
     {
         try
@@ -171,8 +159,7 @@ void PakArchiveDecoder::preprocess(
             auto &palette_entry = palette_entries.at(it.first);
             auto sprite_file = read_file(arc_file, meta, *sprite_entry);
             auto palette_file = read_file(arc_file, meta, *palette_entry);
-            auto sprite
-                = p->grp_image_decoder.decode(*sprite_file, *palette_file);
+            auto sprite = grp_image_decoder.decode(*sprite_file, *palette_file);
             sprite_entry->already_unpacked = true;
             palette_entry->already_unpacked = true;
             saver.save(util::file_from_grid(sprite, sprite_entry->name));
@@ -182,6 +169,11 @@ void PakArchiveDecoder::preprocess(
             continue;
         }
     }
+}
+
+std::vector<std::string> PakArchiveDecoder::get_linked_formats() const
+{
+    return { "leaf/grp" };
 }
 
 static auto dummy = fmt::register_fmt<PakArchiveDecoder>("leaf/pak");

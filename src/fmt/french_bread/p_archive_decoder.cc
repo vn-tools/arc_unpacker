@@ -1,6 +1,5 @@
 #include "fmt/french_bread/p_archive_decoder.h"
 #include "err.h"
-#include "fmt/french_bread/ex3_image_decoder.h"
 #include "util/range.h"
 
 using namespace au;
@@ -13,20 +12,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct PArchiveDecoder::Priv final
-{
-    Ex3ImageDecoder ex3_image_decoder;
-};
-
-PArchiveDecoder::PArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->ex3_image_decoder);
-}
-
-PArchiveDecoder::~PArchiveDecoder()
-{
 }
 
 bool PArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -73,6 +58,11 @@ std::unique_ptr<File> PArchiveDecoder::read_file_impl(
     for (auto i : util::range(std::min(encrypted_block_size, entry->size)))
         data[i] ^= entry->name[i % entry->name.size()] + i + 3;
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> PArchiveDecoder::get_linked_formats() const
+{
+    return { "fbread/ex3" };
 }
 
 static auto dummy = fmt::register_fmt<PArchiveDecoder>("fbread/p");

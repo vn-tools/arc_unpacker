@@ -1,7 +1,5 @@
 #include "fmt/glib/gml_archive_decoder.h"
 #include "fmt/glib/custom_lzss.h"
-#include "fmt/glib/pgx_image_decoder.h"
-#include "fmt/vorbis/packed_ogg_audio_decoder.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
@@ -23,22 +21,6 @@ namespace
     {
         bstr permutation;
     };
-}
-
-struct GmlArchiveDecoder::Priv final
-{
-    PgxImageDecoder pgx_image_decoder;
-    fmt::vorbis::PackedOggAudioDecoder packed_ogg_audio_decoder;
-};
-
-GmlArchiveDecoder::GmlArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->pgx_image_decoder);
-    add_decoder(&p->packed_ogg_audio_decoder);
-}
-
-GmlArchiveDecoder::~GmlArchiveDecoder()
-{
 }
 
 bool GmlArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -92,6 +74,11 @@ std::unique_ptr<File> GmlArchiveDecoder::read_file_impl(
     output_file->io.write(entry->prefix);
     output_file->io.write(suffix);
     return output_file;
+}
+
+std::vector<std::string> GmlArchiveDecoder::get_linked_formats() const
+{
+    return { "glib/pgx", "vorbis/wav" };
 }
 
 static auto dummy = fmt::register_fmt<GmlArchiveDecoder>("glib/gml");

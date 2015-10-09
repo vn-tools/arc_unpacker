@@ -1,7 +1,6 @@
 #include "fmt/touhou/pbgz_archive_decoder.h"
 #include <map>
 #include "err.h"
-#include "fmt/touhou/anm_archive_decoder.h"
 #include "fmt/touhou/crypt.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
@@ -102,20 +101,6 @@ static size_t detect_encryption_version(
     throw err::NotSupportedError("No means to detect the encryption version");
 }
 
-struct PbgzArchiveDecoder::Priv final
-{
-    AnmArchiveDecoder anm_archive_decoder;
-};
-
-PbgzArchiveDecoder::PbgzArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->anm_archive_decoder);
-}
-
-PbgzArchiveDecoder::~PbgzArchiveDecoder()
-{
-}
-
 bool PbgzArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.io.read(magic.size()) == magic;
@@ -165,6 +150,11 @@ std::unique_ptr<File> PbgzArchiveDecoder::read_file_impl(
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     return ::read_file(arc_file, e, meta->encryption_version);
+}
+
+std::vector<std::string> PbgzArchiveDecoder::get_linked_formats() const
+{
+    return { "th/anm" };
 }
 
 static auto dummy = fmt::register_fmt<PbgzArchiveDecoder>("th/pbgz");

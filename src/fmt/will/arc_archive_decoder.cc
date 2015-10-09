@@ -58,20 +58,6 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
     return meta;
 }
 
-struct ArcArchiveDecoder::Priv final
-{
-    WipfImageArchiveDecoder wipf_image_archive_decoder;
-};
-
-ArcArchiveDecoder::ArcArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->wipf_image_archive_decoder);
-}
-
-ArcArchiveDecoder::~ArcArchiveDecoder()
-{
-}
-
 bool ArcArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return read_meta(arc_file)->entries.size() > 0;
@@ -91,15 +77,16 @@ void ArcArchiveDecoder::preprocess(
             sprite_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
     }
 
+    WipfImageArchiveDecoder wipf_archive_decoder;
     for (auto it : sprite_entries)
     {
         try
         {
             auto sprite_entry = it.second;
             auto mask_entry = mask_entries.at(it.first);
-            auto sprites = p->wipf_image_archive_decoder.unpack_to_images(
+            auto sprites = wipf_archive_decoder.unpack_to_images(
                 *read_file(arc_file, meta, *sprite_entry));
-            auto masks = p->wipf_image_archive_decoder.unpack_to_images(
+            auto masks = wipf_archive_decoder.unpack_to_images(
                 *read_file(arc_file, meta, *mask_entry));
             for (auto i : util::range(sprites.size()))
                 sprites[i]->apply_alpha_from_mask(*masks.at(i));
@@ -163,6 +150,11 @@ std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
 
     output_file->io.write(data);
     return output_file;
+}
+
+std::vector<std::string> ArcArchiveDecoder::get_linked_formats() const
+{
+    return { "will/wipf" };
 }
 
 static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("will/arc");

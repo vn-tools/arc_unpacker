@@ -1,6 +1,5 @@
 #include "fmt/riddle_soft/pac_archive_decoder.h"
 #include "err.h"
-#include "fmt/riddle_soft/cmp_image_decoder.h"
 #include "util/range.h"
 
 using namespace au;
@@ -15,20 +14,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct PacArchiveDecoder::Priv final
-{
-    CmpImageDecoder cmp_image_decoder;
-};
-
-PacArchiveDecoder::PacArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->cmp_image_decoder);
-}
-
-PacArchiveDecoder::~PacArchiveDecoder()
-{
 }
 
 bool PacArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -68,6 +53,11 @@ std::unique_ptr<File> PacArchiveDecoder::read_file_impl(
     arc_file.io.seek(entry->offset);
     auto data = arc_file.io.read(entry->size);
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> PacArchiveDecoder::get_linked_formats() const
+{
+    return { "riddle/cmp" };
 }
 
 static auto dummy = fmt::register_fmt<PacArchiveDecoder>("riddle/pac");

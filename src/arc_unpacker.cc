@@ -2,7 +2,8 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include <map>
-#include "fmt/archive_decoder.h"
+#include "arg_parser.h"
+#include "fmt/decoder_util.h"
 #include "fmt/idecoder.h"
 #include "fmt/naming_strategies.h"
 #include "fmt/registry.h"
@@ -270,17 +271,10 @@ void ArcUnpacker::Priv::unpack(
         file_saver.save(saved_file);
     });
 
-    ArgParser decoder_arg_parser;
-    decoder.register_cli_options(decoder_arg_parser);
-    decoder_arg_parser.parse(arguments);
-    decoder.parse_cli_options(decoder_arg_parser);
-    if (!options.enable_nested_decoding)
-    {
-        auto archive_decoder = dynamic_cast<fmt::ArchiveDecoder*>(&decoder);
-        if (archive_decoder)
-            archive_decoder->disable_nested_decoding();
-    }
-    decoder.unpack(file, file_saver_proxy);
+    return options.enable_nested_decoding
+        ? fmt::unpack_recursive(
+            arguments, decoder, file, file_saver_proxy, registry)
+        : fmt::unpack_non_recursive(arguments, decoder, file, file_saver_proxy);
 }
 
 std::unique_ptr<fmt::IDecoder> ArcUnpacker::Priv::guess_decoder(

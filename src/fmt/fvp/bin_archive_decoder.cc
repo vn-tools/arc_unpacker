@@ -1,5 +1,4 @@
 #include "fmt/fvp/bin_archive_decoder.h"
-#include "fmt/fvp/nvsg_image_decoder.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -13,20 +12,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct BinArchiveDecoder::Priv final
-{
-    NvsgImageDecoder nvsg_image_decoder;
-};
-
-BinArchiveDecoder::BinArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->nvsg_image_decoder);
-}
-
-BinArchiveDecoder::~BinArchiveDecoder()
-{
 }
 
 bool BinArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -66,6 +51,11 @@ std::unique_ptr<File> BinArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
+}
+
+std::vector<std::string> BinArchiveDecoder::get_linked_formats() const
+{
+    return { "fvp/nvsg" };
 }
 
 static auto dummy = fmt::register_fmt<BinArchiveDecoder>("fvp/bin");

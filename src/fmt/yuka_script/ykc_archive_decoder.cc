@@ -1,5 +1,4 @@
 #include "fmt/yuka_script/ykc_archive_decoder.h"
-#include "fmt/yuka_script/ykg_image_decoder.h"
 #include "util/range.h"
 
 using namespace au;
@@ -14,20 +13,6 @@ namespace
         size_t size;
         size_t offset;
     };
-}
-
-struct YkcArchiveDecoder::Priv final
-{
-    YkgImageDecoder ykg_image_decoder;
-};
-
-YkcArchiveDecoder::YkcArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->ykg_image_decoder);
-}
-
-YkcArchiveDecoder::~YkcArchiveDecoder()
-{
 }
 
 bool YkcArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -69,6 +54,11 @@ std::unique_ptr<File> YkcArchiveDecoder::read_file_impl(
     arc_file.io.seek(entry->offset);
     auto data = arc_file.io.read(entry->size);
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> YkcArchiveDecoder::get_linked_formats() const
+{
+    return { "yuka/ykg" };
 }
 
 static auto dummy = fmt::register_fmt<YkcArchiveDecoder>("yuka/ykc");

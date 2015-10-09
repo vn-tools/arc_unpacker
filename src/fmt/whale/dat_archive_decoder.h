@@ -13,6 +13,7 @@ namespace whale {
         ~DatArchiveDecoder();
         void set_game_title(const std::string &game_title);
         void add_file_name(const std::string &file_name);
+        std::vector<std::string> get_linked_formats() const override;
         void register_cli_options(ArgParser &) const override;
         void parse_cli_options(const ArgParser &) override;
     protected:

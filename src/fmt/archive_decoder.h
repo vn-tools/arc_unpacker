@@ -22,6 +22,7 @@ namespace fmt {
     public:
         ArchiveDecoder();
         virtual ~ArchiveDecoder();
+
         virtual void register_cli_options(ArgParser &) const override;
         virtual void parse_cli_options(const ArgParser &) override;
         virtual bool is_recognized(File &) const override;
@@ -29,21 +30,22 @@ namespace fmt {
         virtual std::unique_ptr<INamingStrategy> naming_strategy()
             const override;
 
-        void disable_nested_decoding();
+        void disable_preprocessing();
+        virtual std::vector<std::string> get_linked_formats() const;
+
         std::vector<std::shared_ptr<File>> unpack(File &) const;
         std::unique_ptr<ArchiveMeta> read_meta(File &) const;
         std::unique_ptr<File> read_file(
             File &, const ArchiveMeta &, const ArchiveEntry &) const;
 
     protected:
+        virtual bool is_recognized_impl(File &) const = 0;
         virtual std::unique_ptr<ArchiveMeta> read_meta_impl(File &) const = 0;
         virtual std::unique_ptr<File> read_file_impl(
             File &, const ArchiveMeta &, const ArchiveEntry &) const = 0;
         virtual void preprocess(File &, ArchiveMeta &, const FileSaver &) const;
-        virtual bool is_recognized_impl(File &) const = 0;
-        void add_decoder(IDecoder *decoder);
 
-        bool nested_decoding_enabled;
+        bool preprocessing_disabled;
 
     private:
         std::vector<IDecoder*> decoders;

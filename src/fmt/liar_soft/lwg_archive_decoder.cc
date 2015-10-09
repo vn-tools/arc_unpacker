@@ -17,21 +17,6 @@ namespace
     };
 }
 
-struct LwgArchiveDecoder::Priv final
-{
-    WcgImageDecoder wcg_image_decoder;
-};
-
-LwgArchiveDecoder::LwgArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->wcg_image_decoder);
-    add_decoder(this);
-}
-
-LwgArchiveDecoder::~LwgArchiveDecoder()
-{
-}
-
 bool LwgArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.io.read(magic.size()) == magic;
@@ -70,6 +55,11 @@ std::unique_ptr<File> LwgArchiveDecoder::read_file_impl(
     arc_file.io.seek(entry->offset);
     auto data = arc_file.io.read(entry->size);
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> LwgArchiveDecoder::get_linked_formats() const
+{
+    return { "liar/wcg", "liar/lwg" };
 }
 
 static auto dummy = fmt::register_fmt<LwgArchiveDecoder>("liar/lwg");

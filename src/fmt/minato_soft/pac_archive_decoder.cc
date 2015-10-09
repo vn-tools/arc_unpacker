@@ -1,5 +1,4 @@
 #include "fmt/minato_soft/pac_archive_decoder.h"
-#include "fmt/minato_soft/fil_image_decoder.h"
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
@@ -60,20 +59,6 @@ static bstr decompress_table(const bstr &input, size_t output_size)
     return output;
 }
 
-struct PacArchiveDecoder::Priv final
-{
-    FilImageDecoder fil_image_decoder;
-};
-
-PacArchiveDecoder::PacArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->fil_image_decoder);
-}
-
-PacArchiveDecoder::~PacArchiveDecoder()
-{
-}
-
 bool PacArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.io.read(magic.size()) == magic;
@@ -118,6 +103,11 @@ std::unique_ptr<File> PacArchiveDecoder::read_file_impl(
     if (entry->size_orig != entry->size_comp)
         data = util::pack::zlib_inflate(data);
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> PacArchiveDecoder::get_linked_formats() const
+{
+    return { "minato/fil" };
 }
 
 static auto dummy = fmt::register_fmt<PacArchiveDecoder>("minato/pac");

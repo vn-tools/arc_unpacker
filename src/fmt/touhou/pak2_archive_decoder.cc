@@ -1,11 +1,10 @@
 #include "fmt/touhou/pak2_archive_decoder.h"
 #include <boost/filesystem.hpp>
 #include "err.h"
-#include "fmt/touhou/pak2_audio_decoder.h"
 #include "fmt/touhou/pak2_image_decoder.h"
 #include "io/buffered_io.h"
-#include "io/file_io.h"
 #include "util/encoding.h"
+#include "util/file_from_grid.h"
 #include "util/mt.h"
 #include "util/range.h"
 
@@ -18,6 +17,7 @@ namespace
     {
         size_t offset;
         size_t size;
+        bool already_unpacked;
     };
 }
 
@@ -31,22 +31,6 @@ static void decrypt(bstr &buffer, u32 mt_seed, u8 a, u8 b, u8 delta)
         a += b;
         b += delta;
     }
-}
-
-struct Pak2ArchiveDecoder::Priv final
-{
-    Pak2ImageDecoder image_decoder;
-    Pak2AudioDecoder audio_decoder;
-};
-
-Pak2ArchiveDecoder::Pak2ArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->image_decoder);
-    add_decoder(&p->audio_decoder);
-}
-
-Pak2ArchiveDecoder::~Pak2ArchiveDecoder()
-{
 }
 
 bool Pak2ArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -83,6 +67,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->already_unpacked = false;
         entry->offset = table_io.read_u32_le();
         entry->size = table_io.read_u32_le();
         auto name_size = table_io.read_u8();
@@ -98,6 +83,8 @@ std::unique_ptr<File> Pak2ArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    if (entry->already_unpacked)
+        return nullptr;
     arc_file.io.seek(entry->offset);
     auto data = arc_file.io.read(entry->size);
     u8 key = (entry->offset >> 1) | 0x23;
@@ -107,9 +94,11 @@ std::unique_ptr<File> Pak2ArchiveDecoder::read_file_impl(
 }
 
 void Pak2ArchiveDecoder::preprocess(
-    File &arc_file, ArchiveMeta &m, const FileSaver &) const
+    File &arc_file, ArchiveMeta &m, const FileSaver &saver) const
 {
-    p->image_decoder.clear_palettes();
+    Pak2ImageDecoder image_decoder;
+
+    image_decoder.clear_palettes();
     auto dir = boost::filesystem::path(arc_file.name).parent_path();
     for (boost::filesystem::directory_iterator it(dir);
         it != boost::filesystem::directory_iterator();
@@ -132,10 +121,31 @@ void Pak2ArchiveDecoder::preprocess(
 
             auto pal_file = read_file(other_arc_file, *meta, *entry);
             pal_file->io.seek(0);
-            p->image_decoder.add_palette(
+            image_decoder.add_palette(
                 entry->name, pal_file->io.read_to_eof());
         }
     }
+
+    for (auto &e : m.entries)
+    {
+        auto entry = static_cast<ArchiveEntryImpl*>(e.get());
+        if (entry->name.find(".cv2") == std::string::npos)
+            continue;
+        auto full_file = read_file(arc_file, m, *entry);
+        try
+        {
+            auto pixels = image_decoder.decode(*full_file);
+            saver.save(util::file_from_grid(pixels, entry->name));
+        }
+        catch (...)
+        {
+        }
+    }
+}
+
+std::vector<std::string> Pak2ArchiveDecoder::get_linked_formats() const
+{
+    return { "th/pak2-sfx", "th/pak2-gfx" };
 }
 
 static auto dummy = fmt::register_fmt<Pak2ArchiveDecoder>("th/pak2");

@@ -1,8 +1,5 @@
 #include "fmt/alice_soft/afa_archive_decoder.h"
 #include "err.h"
-#include "fmt/alice_soft/aff_file_decoder.h"
-#include "fmt/alice_soft/ajp_image_decoder.h"
-#include "fmt/alice_soft/qnt_image_decoder.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
@@ -22,24 +19,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct AfaArchiveDecoder::Priv final
-{
-    AffFileDecoder aff_file_decoder;
-    AjpImageDecoder ajp_image_decoder;
-    QntImageDecoder qnt_image_decoder;
-};
-
-AfaArchiveDecoder::AfaArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->aff_file_decoder);
-    add_decoder(&p->ajp_image_decoder);
-    add_decoder(&p->qnt_image_decoder);
-}
-
-AfaArchiveDecoder::~AfaArchiveDecoder()
-{
 }
 
 bool AfaArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -93,6 +72,11 @@ std::unique_ptr<File> AfaArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
+}
+
+std::vector<std::string> AfaArchiveDecoder::get_linked_formats() const
+{
+    return { "alice/aff", "alice/ajp", "alice/qnt" };
 }
 
 static auto dummy = fmt::register_fmt<AfaArchiveDecoder>("alice/afa");

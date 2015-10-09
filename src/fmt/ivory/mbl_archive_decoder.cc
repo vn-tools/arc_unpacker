@@ -60,16 +60,11 @@ static Version get_version(io::IO &arc_io)
 struct MblArchiveDecoder::Priv final
 {
     util::PluginManager<PluginFunc> plugin_mgr;
-    PrsImageDecoder prs_image_decoder;
-    WadyAudioDecoder wady_audio_decoder;
     PluginFunc plugin;
 };
 
 MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)
 {
-    add_decoder(&p->prs_image_decoder);
-    add_decoder(&p->wady_audio_decoder);
-
     p->plugin_mgr.add("noop", "Unencrypted games", [](bstr &) { });
 
     p->plugin_mgr.add("candy", "Candy Toys",
@@ -159,6 +154,11 @@ std::unique_ptr<File> MblArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
+}
+
+std::vector<std::string> MblArchiveDecoder::get_linked_formats() const
+{
+    return { "ivory/prs", "ivory/wady" };
 }
 
 static auto dummy = fmt::register_fmt<MblArchiveDecoder>("ivory/mbl");

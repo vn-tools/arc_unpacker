@@ -1,5 +1,4 @@
 #include "fmt/nsystem/fjsys_archive_decoder.h"
-#include "fmt/nsystem/mgd_image_decoder.h"
 #include "util/range.h"
 
 using namespace au;
@@ -14,20 +13,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct FjsysArchiveDecoder::Priv final
-{
-    MgdImageDecoder mgd_image_decoder;
-};
-
-FjsysArchiveDecoder::FjsysArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->mgd_image_decoder);
-}
-
-FjsysArchiveDecoder::~FjsysArchiveDecoder()
-{
 }
 
 bool FjsysArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -68,6 +53,11 @@ std::unique_ptr<File> FjsysArchiveDecoder::read_file_impl(
     arc_file.io.seek(entry->offset);
     auto data = arc_file.io.read(entry->size);
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> FjsysArchiveDecoder::get_linked_formats() const
+{
+    return { "nsystem/mgd" };
 }
 
 static auto dummy = fmt::register_fmt<FjsysArchiveDecoder>("nsystem/fjsys");

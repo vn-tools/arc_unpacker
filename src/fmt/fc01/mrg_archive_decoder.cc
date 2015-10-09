@@ -1,11 +1,8 @@
 #include "fmt/fc01/mrg_archive_decoder.h"
 #include "err.h"
-#include "fmt/fc01/acd_image_decoder.h"
 #include "fmt/fc01/common/custom_lzss.h"
 #include "fmt/fc01/common/mrg_decryptor.h"
 #include "fmt/fc01/common/util.h"
-#include "fmt/fc01/mca_archive_decoder.h"
-#include "fmt/fc01/mcg_image_decoder.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
@@ -42,24 +39,6 @@ static u8 guess_key(const bstr &table_data, size_t file_size)
     while (pos++ < table_data.size())
         key -= pos;
     return key;
-}
-
-struct MrgArchiveDecoder::Priv final
-{
-    AcdImageDecoder acd_image_decoder;
-    McaArchiveDecoder mca_archive_decoder;
-    McgImageDecoder mcg_image_decoder;
-};
-
-MrgArchiveDecoder::MrgArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->acd_image_decoder);
-    add_decoder(&p->mca_archive_decoder);
-    add_decoder(&p->mcg_image_decoder);
-}
-
-MrgArchiveDecoder::~MrgArchiveDecoder()
-{
 }
 
 bool MrgArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -125,6 +104,11 @@ std::unique_ptr<File> MrgArchiveDecoder::read_file_impl(
             data = common::custom_lzss_decompress(data, entry->size_orig);
     }
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> MrgArchiveDecoder::get_linked_formats() const
+{
+    return { "fc01/acd", "fc01/mca", "fc01/mcg" };
 }
 
 static auto dummy = fmt::register_fmt<MrgArchiveDecoder>("fc01/mrg");

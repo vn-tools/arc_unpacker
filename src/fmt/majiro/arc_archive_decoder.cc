@@ -1,6 +1,4 @@
 #include "fmt/majiro/arc_archive_decoder.h"
-#include "fmt/majiro/rc8_image_decoder.h"
-#include "fmt/majiro/rct_image_decoder.h"
 #include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/range.h"
@@ -18,22 +16,6 @@ namespace
         size_t size;
         u64 hash;
     };
-}
-
-struct ArcArchiveDecoder::Priv final
-{
-    Rc8ImageDecoder rc8_image_decoder;
-    RctImageDecoder rct_image_decoder;
-};
-
-ArcArchiveDecoder::ArcArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->rc8_image_decoder);
-    add_decoder(&p->rct_image_decoder);
-}
-
-ArcArchiveDecoder::~ArcArchiveDecoder()
-{
 }
 
 bool ArcArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -76,6 +58,11 @@ std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
     arc_file.io.seek(entry->offset);
     auto data = arc_file.io.read(entry->size);
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> ArcArchiveDecoder::get_linked_formats() const
+{
+    return { "majiro/rc8", "majiro/rct" };
 }
 
 static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("majiro/arc");

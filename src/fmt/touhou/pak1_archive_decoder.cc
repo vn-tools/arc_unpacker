@@ -1,7 +1,5 @@
 #include "fmt/touhou/pak1_archive_decoder.h"
 #include "err.h"
-#include "fmt/touhou/pak1_audio_archive_decoder.h"
-#include "fmt/touhou/pak1_image_archive_decoder.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
@@ -38,22 +36,6 @@ static std::unique_ptr<io::BufferedIO> read_raw_table(
     auto buffer = arc_io.read(table_size);
     decrypt(buffer, 0x64, 0x64, 0x4D);
     return std::make_unique<io::BufferedIO>(buffer);
-}
-
-struct Pak1ArchiveDecoder::Priv final
-{
-    Pak1ImageArchiveDecoder image_archive_decoder;
-    Pak1AudioArchiveDecoder audio_archive_decoder;
-};
-
-Pak1ArchiveDecoder::Pak1ArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->image_archive_decoder);
-    add_decoder(&p->audio_archive_decoder);
-}
-
-Pak1ArchiveDecoder::~Pak1ArchiveDecoder()
-{
 }
 
 bool Pak1ArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -118,6 +100,11 @@ std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
 
     output_file->io.write(data);
     return output_file;
+}
+
+std::vector<std::string> Pak1ArchiveDecoder::get_linked_formats() const
+{
+    return { "th/pak1-sfx", "th/pak1-gfx" };
 }
 
 static auto dummy = fmt::register_fmt<Pak1ArchiveDecoder>("th/pak1");

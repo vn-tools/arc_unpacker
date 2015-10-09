@@ -1,7 +1,5 @@
 #include "fmt/entis/noa_archive_decoder.h"
 #include "fmt/entis/common/sections.h"
-#include "fmt/entis/eri_image_decoder.h"
-#include "fmt/entis/mio_audio_decoder.h"
 #include "log.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -70,22 +68,6 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
     return meta;
 }
 
-struct NoaArchiveDecoder::Priv final
-{
-    EriImageDecoder eri_image_decoder;
-    MioAudioDecoder mio_audio_decoder;
-};
-
-NoaArchiveDecoder::NoaArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->eri_image_decoder);
-    add_decoder(&p->mio_audio_decoder);
-}
-
-NoaArchiveDecoder::~NoaArchiveDecoder()
-{
-}
-
 bool NoaArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.io.read(magic1.size()) == magic1
@@ -115,6 +97,11 @@ std::unique_ptr<File> NoaArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
+}
+
+std::vector<std::string> NoaArchiveDecoder::get_linked_formats() const
+{
+    return { "entis/mio", "entis/eri" };
 }
 
 static auto dummy = fmt::register_fmt<NoaArchiveDecoder>("entis/noa");

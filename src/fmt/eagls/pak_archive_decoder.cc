@@ -1,8 +1,6 @@
 #include "fmt/eagls/pak_archive_decoder.h"
 #include <algorithm>
 #include <boost/filesystem.hpp>
-#include "fmt/eagls/gr_image_decoder.h"
-#include "fmt/eagls/pak_script_file_decoder.h"
 #include "io/buffered_io.h"
 #include "io/file_io.h"
 #include "util/crypt/lcg.h"
@@ -28,22 +26,6 @@ static std::string get_path_to_index(const std::string &path_to_data)
     boost::filesystem::path index_path(path_to_data);
     index_path.replace_extension("idx");
     return index_path.string();
-}
-
-struct PakArchiveDecoder::Priv final
-{
-    GrImageDecoder gr_image_decoder;
-    PakScriptFileDecoder pak_script_file_decoder;
-};
-
-PakArchiveDecoder::PakArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->gr_image_decoder);
-    add_decoder(&p->pak_script_file_decoder);
-}
-
-PakArchiveDecoder::~PakArchiveDecoder()
-{
 }
 
 bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -94,6 +76,11 @@ std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
+}
+
+std::vector<std::string> PakArchiveDecoder::get_linked_formats() const
+{
+    return { "eagls/gr", "eagls/pak-txt" };
 }
 
 static auto dummy = fmt::register_fmt<PakArchiveDecoder>("eagls/pak");

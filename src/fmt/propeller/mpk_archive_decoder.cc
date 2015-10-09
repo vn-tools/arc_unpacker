@@ -1,5 +1,4 @@
 #include "fmt/propeller/mpk_archive_decoder.h"
-#include "fmt/propeller/mgr_archive_decoder.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -13,20 +12,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct MpkArchiveDecoder::Priv final
-{
-    MgrArchiveDecoder mgr_archive_decoder;
-};
-
-MpkArchiveDecoder::MpkArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->mgr_archive_decoder);
-}
-
-MpkArchiveDecoder::~MpkArchiveDecoder()
-{
 }
 
 bool MpkArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -73,6 +58,11 @@ std::unique_ptr<File> MpkArchiveDecoder::read_file_impl(
     arc_file.io.seek(entry->offset);
     auto data = arc_file.io.read(entry->size);
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> MpkArchiveDecoder::get_linked_formats() const
+{
+    return { "propeller/mgr" };
 }
 
 static auto dummy = fmt::register_fmt<MpkArchiveDecoder>("propeller/mpk");

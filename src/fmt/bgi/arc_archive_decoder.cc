@@ -1,7 +1,4 @@
 #include "fmt/bgi/arc_archive_decoder.h"
-#include "fmt/bgi/audio_decoder.h"
-#include "fmt/bgi/cbg_image_decoder.h"
-#include "fmt/bgi/dsc_file_decoder.h"
 #include "util/range.h"
 
 using namespace au;
@@ -16,24 +13,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct ArcArchiveDecoder::Priv final
-{
-    CbgImageDecoder cbg_image_decoder;
-    DscFileDecoder dsc_file_decoder;
-    AudioDecoder audio_decoder;
-};
-
-ArcArchiveDecoder::ArcArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->cbg_image_decoder);
-    add_decoder(&p->dsc_file_decoder);
-    add_decoder(&p->audio_decoder);
-}
-
-ArcArchiveDecoder::~ArcArchiveDecoder()
-{
 }
 
 bool ArcArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -69,6 +48,11 @@ std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
+}
+
+std::vector<std::string> ArcArchiveDecoder::get_linked_formats() const
+{
+    return { "bgi/cbg", "bgi/dsc", "bgi/sound" };
 }
 
 static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("bgi/arc");

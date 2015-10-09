@@ -1,7 +1,6 @@
 #include "fmt/cronus/pak_archive_decoder.h"
 #include "err.h"
 #include "fmt/cronus/common.h"
-#include "fmt/cronus/grp_image_decoder.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
 #include "util/plugin_mgr.hh"
@@ -60,7 +59,6 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
 
 struct PakArchiveDecoder::Priv final
 {
-    GrpImageDecoder grp_image_decoder;
     util::PluginManager<Plugin> plugin_mgr;
 };
 
@@ -68,7 +66,6 @@ PakArchiveDecoder::PakArchiveDecoder() : p(new Priv)
 {
     p->plugin_mgr.add("default", "Unencrypted games", {0, 0});
     p->plugin_mgr.add("sweet", "Sweet Pleasure", {0xBC138744, 0x64E0BA23});
-    add_decoder(&p->grp_image_decoder);
 }
 
 PakArchiveDecoder::~PakArchiveDecoder()
@@ -116,6 +113,11 @@ std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
+}
+
+std::vector<std::string> PakArchiveDecoder::get_linked_formats() const
+{
+    return { "cronus/grp" };
 }
 
 static auto dummy = fmt::register_fmt<PakArchiveDecoder>("cronus/pak");

@@ -1,6 +1,5 @@
 #include "fmt/touhou/tha1_archive_decoder.h"
 #include "err.h"
-#include "fmt/touhou/anm_archive_decoder.h"
 #include "fmt/touhou/crypt.h"
 #include "io/buffered_io.h"
 #include "util/pack/lzss.h"
@@ -104,20 +103,6 @@ static int detect_encryption_version(File &arc_file)
     return -1;
 }
 
-struct Tha1ArchiveDecoder::Priv final
-{
-    AnmArchiveDecoder anm_archive_decoder;
-};
-
-Tha1ArchiveDecoder::Tha1ArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->anm_archive_decoder);
-}
-
-Tha1ArchiveDecoder::~Tha1ArchiveDecoder()
-{
-}
-
 bool Tha1ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     if (!arc_file.has_extension("dat"))
@@ -195,6 +180,11 @@ std::unique_ptr<File> Tha1ArchiveDecoder::read_file_impl(
         data = decompress(data, entry->size_orig);
 
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> Tha1ArchiveDecoder::get_linked_formats() const
+{
+    return { "th/anm" };
 }
 
 static auto dummy = fmt::register_fmt<Tha1ArchiveDecoder>("th/tha1");

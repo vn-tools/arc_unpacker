@@ -1,9 +1,5 @@
 #include "fmt/wild_bug/wbp_archive_decoder.h"
 #include <map>
-#include "fmt/wild_bug/wbi_file_decoder.h"
-#include "fmt/wild_bug/wbm_image_decoder.h"
-#include "fmt/wild_bug/wpn_audio_decoder.h"
-#include "fmt/wild_bug/wwa_audio_decoder.h"
 #include "util/range.h"
 
 using namespace au;
@@ -18,26 +14,6 @@ namespace
         size_t offset;
         size_t size;
     };
-}
-
-struct WbpArchiveDecoder::Priv final
-{
-    WpnAudioDecoder wpn_audio_decoder;
-    WbmImageDecoder wbm_image_decoder;
-    WwaAudioDecoder wwa_audio_decoder;
-    WbiFileDecoder wbi_file_decoder;
-};
-
-WbpArchiveDecoder::WbpArchiveDecoder() : p(new Priv)
-{
-    add_decoder(&p->wpn_audio_decoder);
-    add_decoder(&p->wbm_image_decoder);
-    add_decoder(&p->wwa_audio_decoder);
-    add_decoder(&p->wbi_file_decoder);
-}
-
-WbpArchiveDecoder::~WbpArchiveDecoder()
-{
 }
 
 bool WbpArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -118,6 +94,11 @@ std::unique_ptr<File> WbpArchiveDecoder::read_file_impl(
     arc_file.io.seek(entry->offset);
     auto data = arc_file.io.read(entry->size);
     return std::make_unique<File>(entry->name, data);
+}
+
+std::vector<std::string> WbpArchiveDecoder::get_linked_formats() const
+{
+    return { "wild-bug/wbi", "wild-bug/wbm", "wild-bug/wpn", "wild-bug/wwa" };
 }
 
 static auto dummy = fmt::register_fmt<WbpArchiveDecoder>("wild-bug/wbp");
