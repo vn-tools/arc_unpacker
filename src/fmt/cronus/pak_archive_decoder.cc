@@ -32,6 +32,8 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
 {
     auto file_count = arc_file.io.read_u32_le() ^ plugin.key1;
     auto file_data_start = arc_file.io.read_u32_le() ^ plugin.key2;
+    if (file_data_start > arc_file.io.size())
+        return nullptr;
 
     auto table_size_orig = file_count * 24;
     auto table_size_comp = file_data_start - arc_file.io.tell();
@@ -93,7 +95,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         try
         {
             auto meta = ::read_meta(arc_file, plugin, encrypted);
-            if (meta->entries.size())
+            if (meta && meta->entries.size())
                 return meta;
         }
         catch (...)
