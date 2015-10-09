@@ -1,4 +1,5 @@
 #include "io/bit_reader.h"
+#include "io/buffered_io.h"
 #include "util/range.h"
 #include "test_support/catch.hh"
 
@@ -208,6 +209,50 @@ TEST_CASE("Skipping", "[io][bit_reader]")
     REQUIRE(reader.get(8) == 0b11001100);
     reader.skip(-7);
     REQUIRE(reader.get(8) == 0b10011001);
+}
+
+TEST_CASE("IO-based buffering", "[io][bit_reader]")
+{
+    SECTION("Aligned")
+    {
+        io::BufferedIO io("\xFF\x01"_b);
+        BitReader reader(io);
+        REQUIRE(reader.get(8) == 0xFF);
+        REQUIRE(io.read_u8() == 1);
+    }
+
+    SECTION("Unaligned")
+    {
+        io::BufferedIO io("\xFF\x80\x02"_b);
+        BitReader reader(io);
+        REQUIRE(reader.get(8) == 0xFF);
+        REQUIRE(reader.get(1) == 0x01);
+        REQUIRE(io.read_u8() == 2);
+    }
+
+    SECTION("Interleaving")
+    {
+        io::BufferedIO io("\xFF\xC0\x02\x01\xFF"_b);
+        BitReader reader(io);
+        REQUIRE(reader.get(8) == 0xFF);
+        REQUIRE(reader.get(1) == 0x01);
+        REQUIRE(io.read_u8() == 2);
+        REQUIRE(reader.get(7) == 0x40);
+        REQUIRE(io.read_u8() == 1);
+        REQUIRE(reader.get(8) == 0xFF);
+    }
+
+    SECTION("Interleaving with seeking")
+    {
+        io::BufferedIO io("\xFF\xC0\x02\x01\xFF"_b);
+        BitReader reader(io);
+        REQUIRE(reader.get(8) == 0xFF);
+        REQUIRE(reader.get(1) == 0x01);
+        REQUIRE(io.read_u8() == 2);
+        reader.seek(io.tell() << 3);
+        REQUIRE(reader.get(8) == 1);
+        REQUIRE(io.read_u8() == 0xFF);
+    }
 }
 
 TEST_CASE("Reading beyond EOF retracts to prior offset", "[io][bit_reader]")
