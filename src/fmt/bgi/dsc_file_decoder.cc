@@ -189,4 +189,4 @@ std::unique_ptr<File> DscFileDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<DscFileDecoder>("bgi/dsc");
+static auto dummy = fmt::register_fmt<DscFileDecoder>("bgi/dsc");

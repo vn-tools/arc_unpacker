@@ -71,4 +71,4 @@ std::unique_ptr<File> YkcArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<YkcArchiveDecoder>("yuka/ykc");
+static auto dummy = fmt::register_fmt<YkcArchiveDecoder>("yuka/ykc");

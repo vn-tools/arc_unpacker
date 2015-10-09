@@ -92,4 +92,4 @@ pix::Grid WbmImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::Registry::add<WbmImageDecoder>("wild-bug/wbm");
+static auto dummy = fmt::register_fmt<WbmImageDecoder>("wild-bug/wbm");

@@ -106,4 +106,4 @@ std::unique_ptr<File> NsaArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<NsaArchiveDecoder>("nscripter/nsa");
+static auto dummy = fmt::register_fmt<NsaArchiveDecoder>("nscripter/nsa");

@@ -72,4 +72,4 @@ std::unique_ptr<File> LwgArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<LwgArchiveDecoder>("liar/lwg");
+static auto dummy = fmt::register_fmt<LwgArchiveDecoder>("liar/lwg");

@@ -161,4 +161,4 @@ std::unique_ptr<File> MblArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<MblArchiveDecoder>("ivory/mbl");
+static auto dummy = fmt::register_fmt<MblArchiveDecoder>("ivory/mbl");

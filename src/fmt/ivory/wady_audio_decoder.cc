@@ -214,4 +214,4 @@ std::unique_ptr<File> WadyAudioDecoder::decode_impl(File &file) const
         channels, bits_per_sample / 8, sample_rate, samples, file.name);
 }
 
-static auto dummy = fmt::Registry::add<WadyAudioDecoder>("ivory/wady");
+static auto dummy = fmt::register_fmt<WadyAudioDecoder>("ivory/wady");

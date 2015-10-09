@@ -33,4 +33,4 @@ pix::Grid MncImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::Registry::add<MncImageDecoder>("libido/mnc");
+static auto dummy = fmt::register_fmt<MncImageDecoder>("libido/mnc");

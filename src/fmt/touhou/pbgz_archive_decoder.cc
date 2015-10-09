@@ -167,4 +167,4 @@ std::unique_ptr<File> PbgzArchiveDecoder::read_file_impl(
     return ::read_file(arc_file, e, meta->encryption_version);
 }
 
-static auto dummy = fmt::Registry::add<PbgzArchiveDecoder>("th/pbgz");
+static auto dummy = fmt::register_fmt<PbgzArchiveDecoder>("th/pbgz");

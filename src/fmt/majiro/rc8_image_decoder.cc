@@ -86,4 +86,4 @@ pix::Grid Rc8ImageDecoder::decode_impl(File &file) const
     return pix::Grid(width, height, data_orig, palette);
 }
 
-static auto dummy = fmt::Registry::add<Rc8ImageDecoder>("majiro/rc8");
+static auto dummy = fmt::register_fmt<Rc8ImageDecoder>("majiro/rc8");

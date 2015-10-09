@@ -49,4 +49,4 @@ pix::Grid GrpImageDecoder::decode_impl(File &file) const
     return decode_pixels(file);
 }
 
-static auto dummy = fmt::Registry::add<GrpImageDecoder>("leaf/grp");
+static auto dummy = fmt::register_fmt<GrpImageDecoder>("leaf/grp");

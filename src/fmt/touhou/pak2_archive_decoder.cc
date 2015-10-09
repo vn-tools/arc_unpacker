@@ -138,4 +138,4 @@ void Pak2ArchiveDecoder::preprocess(
     }
 }
 
-static auto dummy = fmt::Registry::add<Pak2ArchiveDecoder>("th/pak2");
+static auto dummy = fmt::register_fmt<Pak2ArchiveDecoder>("th/pak2");

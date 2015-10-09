@@ -137,4 +137,4 @@ std::unique_ptr<File> Abmp10ArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<Abmp10ArchiveDecoder>("qlie/abmp10");
+static auto dummy = fmt::register_fmt<Abmp10ArchiveDecoder>("qlie/abmp10");

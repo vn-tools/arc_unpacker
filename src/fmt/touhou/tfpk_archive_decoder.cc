@@ -476,4 +476,4 @@ void TfpkArchiveDecoder::preprocess(
     }
 }
 
-static auto dummy = fmt::Registry::add<TfpkArchiveDecoder>("th/tfpk");
+static auto dummy = fmt::register_fmt<TfpkArchiveDecoder>("th/tfpk");

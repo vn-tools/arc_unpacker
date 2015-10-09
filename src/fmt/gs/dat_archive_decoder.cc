@@ -70,4 +70,4 @@ std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<DatArchiveDecoder>("gs/dat");
+static auto dummy = fmt::register_fmt<DatArchiveDecoder>("gs/dat");

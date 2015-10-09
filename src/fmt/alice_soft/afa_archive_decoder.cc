@@ -95,4 +95,4 @@ std::unique_ptr<File> AfaArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<AfaArchiveDecoder>("alice/afa");
+static auto dummy = fmt::register_fmt<AfaArchiveDecoder>("alice/afa");

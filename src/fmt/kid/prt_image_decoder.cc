@@ -76,4 +76,4 @@ pix::Grid PrtImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::Registry::add<PrtImageDecoder>("kid/prt");
+static auto dummy = fmt::register_fmt<PrtImageDecoder>("kid/prt");

@@ -135,4 +135,4 @@ std::unique_ptr<File> PackedOggAudioDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<PackedOggAudioDecoder>("vorbis/wav");
+static auto dummy = fmt::register_fmt<PackedOggAudioDecoder>("vorbis/wav");

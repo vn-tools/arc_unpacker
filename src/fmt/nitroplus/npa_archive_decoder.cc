@@ -177,4 +177,4 @@ std::unique_ptr<File> NpaArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<NpaArchiveDecoder>("nitro/npa");
+static auto dummy = fmt::register_fmt<NpaArchiveDecoder>("nitro/npa");

@@ -53,4 +53,4 @@ pix::Grid CbgImageDecoder::decode_impl(File &file) const
     throw err::UnsupportedVersionError(static_cast<int>(version));
 }
 
-static auto dummy = fmt::Registry::add<CbgImageDecoder>("bgi/cbg");
+static auto dummy = fmt::register_fmt<CbgImageDecoder>("bgi/cbg");

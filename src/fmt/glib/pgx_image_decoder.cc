@@ -37,4 +37,4 @@ pix::Grid PgxImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::Registry::add<PgxImageDecoder>("glib/pgx");
+static auto dummy = fmt::register_fmt<PgxImageDecoder>("glib/pgx");

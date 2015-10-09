@@ -124,4 +124,4 @@ pix::Grid PrsImageDecoder::decode_impl(File &file) const
     return pix::Grid(width, height, target, pix::Format::BGR888);
 }
 
-static auto dummy = fmt::Registry::add<PrsImageDecoder>("ivory/prs");
+static auto dummy = fmt::register_fmt<PrsImageDecoder>("ivory/prs");

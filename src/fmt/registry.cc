@@ -19,7 +19,7 @@ Registry::~Registry()
 {
 }
 
-const std::vector<std::string> Registry::get_names() const
+const std::vector<std::string> Registry::get_decoder_names() const
 {
     std::vector<std::string> names;
     for (auto &item : p->decoder_map)
@@ -28,21 +28,24 @@ const std::vector<std::string> Registry::get_names() const
     return names;
 }
 
-std::unique_ptr<IDecoder> Registry::create(const std::string &name) const
+bool Registry::has_decoder(const std::string &name) const
 {
-    for (auto &item : p->decoder_map)
-        if (item.first == name)
-            return item.second();
-    throw err::UsageError("Invalid format: " + name);
+    return p->decoder_map.find(name) != p->decoder_map.end();
 }
 
-void Registry::add(DecoderCreator creator, const std::string &name)
+std::unique_ptr<IDecoder>
+    Registry::create_decoder(const std::string &name) const
 {
-    if (p->decoder_map.find(name) != p->decoder_map.end())
-    {
+    if (!has_decoder(name))
+        throw err::UsageError("Unknown decoder: " + name);
+    return p->decoder_map[name]();
+}
+
+void Registry::add_decoder(const std::string &name, DecoderCreator creator)
+{
+    if (has_decoder(name))
         throw std::logic_error(
             "Decoder with name " + name + " was already registered.");
-    }
     p->decoder_map[name] = creator;
 }
 
@@ -50,4 +53,9 @@ Registry &Registry::instance()
 {
     static Registry instance;
     return instance;
+}
+
+std::unique_ptr<Registry> Registry::create_mock()
+{
+    return std::unique_ptr<Registry>(new Registry());
 }

@@ -119,4 +119,4 @@ pix::Grid TlgImageDecoder::decode_impl(File &file) const
     return decode_proxy(version, file);
 }
 
-static auto dummy = fmt::Registry::add<TlgImageDecoder>("krkr/tlg");
+static auto dummy = fmt::register_fmt<TlgImageDecoder>("krkr/tlg");

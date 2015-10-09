@@ -42,4 +42,4 @@ std::unique_ptr<File> WafAudioDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<WafAudioDecoder>("kid/waf");
+static auto dummy = fmt::register_fmt<WafAudioDecoder>("kid/waf");

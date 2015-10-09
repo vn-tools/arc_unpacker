@@ -33,4 +33,4 @@ std::unique_ptr<File> CmpImageDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<CmpImageDecoder>("riddle/cmp");
+static auto dummy = fmt::register_fmt<CmpImageDecoder>("riddle/cmp");

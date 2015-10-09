@@ -66,4 +66,4 @@ std::unique_ptr<File> EgrArchiveDecoder::read_file_impl(
     return util::file_from_grid(pixels, entry->name);
 }
 
-static auto dummy = fmt::Registry::add<EgrArchiveDecoder>("libido/egr");
+static auto dummy = fmt::register_fmt<EgrArchiveDecoder>("libido/egr");

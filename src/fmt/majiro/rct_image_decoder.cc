@@ -118,4 +118,4 @@ pix::Grid RctImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::Registry::add<RctImageDecoder>("majiro/rct");
+static auto dummy = fmt::register_fmt<RctImageDecoder>("majiro/rct");

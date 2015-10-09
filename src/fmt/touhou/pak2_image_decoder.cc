@@ -96,4 +96,4 @@ pix::Grid Pak2ImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::Registry::add<Pak2ImageDecoder>("th/pak2-gfx");
+static auto dummy = fmt::register_fmt<Pak2ImageDecoder>("th/pak2-gfx");

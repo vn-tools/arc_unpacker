@@ -185,4 +185,4 @@ pix::Grid GrpImageDecoder::decode_impl(File &file) const
     return *grid;
 }
 
-static auto dummy = fmt::Registry::add<GrpImageDecoder>("cronus/grp");
+static auto dummy = fmt::register_fmt<GrpImageDecoder>("cronus/grp");

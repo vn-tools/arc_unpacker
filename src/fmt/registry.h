@@ -16,27 +16,27 @@ namespace fmt {
             = std::function<std::unique_ptr<IDecoder>()>;
 
     public:
+        ~Registry();
         static Registry &instance();
-        const std::vector<std::string> get_names() const;
-        std::unique_ptr<IDecoder> create(const std::string &name) const;
+        static std::unique_ptr<Registry> create_mock();
 
-        template<typename T> static bool add(const std::string &name)
-        {
-            Registry::instance().add([]()
-            {
-                return std::unique_ptr<IDecoder>(new T());
-            }, name);
-            return true;
-        }
+        const std::vector<std::string> get_decoder_names() const;
+        bool has_decoder(const std::string &name) const;
+        void add_decoder(const std::string &name, DecoderCreator creator);
+        std::unique_ptr<IDecoder> create_decoder(const std::string &name) const;
 
     private:
         Registry();
-        ~Registry();
-
-        void add(DecoderCreator creator, const std::string &name);
 
         struct Priv;
         std::unique_ptr<Priv> p;
     };
+
+    template<typename T> static bool register_fmt(const std::string &name)
+    {
+        Registry::instance().add_decoder(
+            name, []() { return std::unique_ptr<IDecoder>(new T()); });
+        return true;
+    }
 
 } }

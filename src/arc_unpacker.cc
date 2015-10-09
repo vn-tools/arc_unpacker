@@ -68,7 +68,7 @@ ArcUnpacker::Priv::Priv(
 
 void ArcUnpacker::Priv::print_fmt_list() const
 {
-    for (auto &name : registry.get_names())
+    for (auto &name : registry.get_decoder_names())
         Log.info("%s\n", name.c_str());
 }
 
@@ -92,7 +92,7 @@ directory.
 
     std::unique_ptr<fmt::IDecoder> decoder;
     if (options.format != "")
-        decoder = registry.create(options.format);
+        decoder = registry.create_decoder(options.format);
 
     if (decoder)
     {
@@ -144,7 +144,7 @@ void ArcUnpacker::Priv::register_cli_options()
         ->set_value_name("FORMAT")
         ->set_description("Disables guessing and selects given format.")
         ->hide_possible_values();
-    for (auto &name : registry.get_names())
+    for (auto &name : registry.get_decoder_names())
         sw->add_possible_value(name);
 
     arg_parser.register_flag({"-l", "--list-fmt"})
@@ -288,9 +288,9 @@ std::unique_ptr<fmt::IDecoder> ArcUnpacker::Priv::guess_decoder(
 {
     std::map<std::string, std::unique_ptr<fmt::IDecoder>> decoders;
 
-    for (auto &name : registry.get_names())
+    for (auto &name : registry.get_decoder_names())
     {
-        auto current_decoder = registry.create(name);
+        auto current_decoder = registry.create_decoder(name);
         if (current_decoder->is_recognized(file))
             decoders[name] = std::move(current_decoder);
     }
@@ -322,7 +322,7 @@ bool ArcUnpacker::Priv::guess_decoder_and_unpack(
     Log.info(util::format("Unpacking %s...\n", file.name.c_str()));
 
     auto decoder = options.format != ""
-        ? registry.create(options.format)
+        ? registry.create_decoder(options.format)
         : guess_decoder(file);
 
     if (!decoder)

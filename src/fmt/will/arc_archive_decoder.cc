@@ -165,4 +165,4 @@ std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<ArcArchiveDecoder>("will/arc");
+static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("will/arc");

@@ -98,4 +98,4 @@ pix::Grid McgImageDecoder::decode_impl(File &file) const
     return pix::Grid(width, height, data, pix::Format::BGR888);
 }
 
-static auto dummy = fmt::Registry::add<McgImageDecoder>("fc01/mcg");
+static auto dummy = fmt::register_fmt<McgImageDecoder>("fc01/mcg");

@@ -95,4 +95,4 @@ std::unique_ptr<File> Ex3ImageDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<Ex3ImageDecoder>("fbread/ex3");
+static auto dummy = fmt::register_fmt<Ex3ImageDecoder>("fbread/ex3");

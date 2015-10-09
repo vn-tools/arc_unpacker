@@ -67,4 +67,4 @@ std::unique_ptr<File> NpaSgArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<NpaSgArchiveDecoder>("nitro/npa-sg");
+static auto dummy = fmt::register_fmt<NpaSgArchiveDecoder>("nitro/npa-sg");

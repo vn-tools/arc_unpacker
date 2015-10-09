@@ -117,4 +117,4 @@ std::unique_ptr<File> NoaArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<NoaArchiveDecoder>("entis/noa");
+static auto dummy = fmt::register_fmt<NoaArchiveDecoder>("entis/noa");

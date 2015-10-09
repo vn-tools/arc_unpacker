@@ -67,4 +67,4 @@ std::unique_ptr<File> AlkArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<AlkArchiveDecoder>("alice/alk");
+static auto dummy = fmt::register_fmt<AlkArchiveDecoder>("alice/alk");

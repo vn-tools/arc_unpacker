@@ -296,4 +296,4 @@ std::unique_ptr<File> RpaArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<RpaArchiveDecoder>("renpy/rpa");
+static auto dummy = fmt::register_fmt<RpaArchiveDecoder>("renpy/rpa");

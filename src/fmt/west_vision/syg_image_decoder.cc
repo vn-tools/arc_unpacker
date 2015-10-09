@@ -19,4 +19,4 @@ pix::Grid SygImageDecoder::decode_impl(File &file) const
     return pix::Grid(width, height, file.io, pix::Format::BGR888);
 }
 
-static auto dummy = fmt::Registry::add<SygImageDecoder>("west-vision/syg");
+static auto dummy = fmt::register_fmt<SygImageDecoder>("west-vision/syg");

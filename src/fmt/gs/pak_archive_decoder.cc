@@ -84,4 +84,4 @@ std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<PakArchiveDecoder>("gs/pak");
+static auto dummy = fmt::register_fmt<PakArchiveDecoder>("gs/pak");

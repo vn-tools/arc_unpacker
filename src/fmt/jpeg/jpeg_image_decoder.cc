@@ -50,4 +50,4 @@ pix::Grid JpegImageDecoder::decode_impl(File &file) const
     return pix::Grid(width, height, raw_data, format);
 }
 
-static auto dummy = fmt::Registry::add<JpegImageDecoder>("jpeg/jpeg");
+static auto dummy = fmt::register_fmt<JpegImageDecoder>("jpeg/jpeg");

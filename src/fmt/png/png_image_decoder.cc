@@ -74,4 +74,4 @@ pix::Grid PngImageDecoder::decode_impl(File &file) const
     return pix::Grid(width, height, data, format);
 }
 
-static auto dummy = fmt::Registry::add<PngImageDecoder>("png/png");
+static auto dummy = fmt::register_fmt<PngImageDecoder>("png/png");

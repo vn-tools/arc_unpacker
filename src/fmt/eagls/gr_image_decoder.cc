@@ -51,4 +51,4 @@ std::unique_ptr<File> GrImageDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<GrImageDecoder>("eagls/gr");
+static auto dummy = fmt::register_fmt<GrImageDecoder>("eagls/gr");

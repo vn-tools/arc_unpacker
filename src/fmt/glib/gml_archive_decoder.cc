@@ -94,4 +94,4 @@ std::unique_ptr<File> GmlArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<GmlArchiveDecoder>("glib/gml");
+static auto dummy = fmt::register_fmt<GmlArchiveDecoder>("glib/gml");

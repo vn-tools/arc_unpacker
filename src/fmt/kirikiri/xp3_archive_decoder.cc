@@ -229,4 +229,4 @@ std::unique_ptr<File> Xp3ArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<Xp3ArchiveDecoder>("krkr/xp3");
+static auto dummy = fmt::register_fmt<Xp3ArchiveDecoder>("krkr/xp3");

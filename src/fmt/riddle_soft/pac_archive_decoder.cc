@@ -70,4 +70,4 @@ std::unique_ptr<File> PacArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<PacArchiveDecoder>("riddle/pac");
+static auto dummy = fmt::register_fmt<PacArchiveDecoder>("riddle/pac");

@@ -127,4 +127,4 @@ std::unique_ptr<File> MrgArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<MrgArchiveDecoder>("fc01/mrg");
+static auto dummy = fmt::register_fmt<MrgArchiveDecoder>("fc01/mrg");

@@ -90,4 +90,4 @@ std::unique_ptr<File> Pbg4ArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<Pbg4ArchiveDecoder>("th/pbg4");
+static auto dummy = fmt::register_fmt<Pbg4ArchiveDecoder>("th/pbg4");

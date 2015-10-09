@@ -100,4 +100,4 @@ std::unique_ptr<File> MioAudioDecoder::decode_impl(File &file) const
         file.name);
 }
 
-static auto dummy = fmt::Registry::add<MioAudioDecoder>("entis/mio");
+static auto dummy = fmt::register_fmt<MioAudioDecoder>("entis/mio");

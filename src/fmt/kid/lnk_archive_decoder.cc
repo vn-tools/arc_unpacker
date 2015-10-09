@@ -105,4 +105,4 @@ std::unique_ptr<File> LnkArchiveDecoder::read_file_impl(
         return output_file;
 }
 
-static auto dummy = fmt::Registry::add<LnkArchiveDecoder>("kid/lnk");
+static auto dummy = fmt::register_fmt<LnkArchiveDecoder>("kid/lnk");

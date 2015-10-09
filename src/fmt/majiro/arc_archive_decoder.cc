@@ -78,4 +78,4 @@ std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<ArcArchiveDecoder>("majiro/arc");
+static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("majiro/arc");

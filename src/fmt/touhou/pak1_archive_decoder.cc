@@ -120,4 +120,4 @@ std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<Pak1ArchiveDecoder>("th/pak1");
+static auto dummy = fmt::register_fmt<Pak1ArchiveDecoder>("th/pak1");

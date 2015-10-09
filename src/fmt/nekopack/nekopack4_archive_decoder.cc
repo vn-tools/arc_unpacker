@@ -119,5 +119,5 @@ void Nekopack4ArchiveDecoder::preprocess(
     }
 }
 
-static auto dummy = fmt::Registry::add<Nekopack4ArchiveDecoder>(
+static auto dummy = fmt::register_fmt<Nekopack4ArchiveDecoder>(
     "nekopack/nekopack4");

@@ -170,4 +170,4 @@ std::vector<std::shared_ptr<pix::Grid>>
     return output;
 }
 
-static auto dummy = fmt::Registry::add<WipfImageArchiveDecoder>("will/wipf");
+static auto dummy = fmt::register_fmt<WipfImageArchiveDecoder>("will/wipf");

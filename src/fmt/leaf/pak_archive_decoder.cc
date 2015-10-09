@@ -184,4 +184,4 @@ void PakArchiveDecoder::preprocess(
     }
 }
 
-static auto dummy = fmt::Registry::add<PakArchiveDecoder>("leaf/pak");
+static auto dummy = fmt::register_fmt<PakArchiveDecoder>("leaf/pak");

@@ -112,4 +112,4 @@ pix::Grid TfbmImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::Registry::add<TfbmImageDecoder>("th/tfbm");
+static auto dummy = fmt::register_fmt<TfbmImageDecoder>("th/tfbm");

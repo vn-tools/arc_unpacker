@@ -68,4 +68,4 @@ std::unique_ptr<File> BinArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<BinArchiveDecoder>("fvp/bin");
+static auto dummy = fmt::register_fmt<BinArchiveDecoder>("fvp/bin");

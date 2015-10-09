@@ -48,4 +48,4 @@ pix::Grid GsImageDecoder::decode_impl(File &file) const
     throw err::UnsupportedBitDepthError(depth);
 }
 
-static auto dummy = fmt::Registry::add<GsImageDecoder>("gs/gfx");
+static auto dummy = fmt::register_fmt<GsImageDecoder>("gs/gfx");

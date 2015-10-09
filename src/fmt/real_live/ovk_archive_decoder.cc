@@ -47,4 +47,4 @@ std::unique_ptr<File> OvkArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<OvkArchiveDecoder>("rl/ovk");
+static auto dummy = fmt::register_fmt<OvkArchiveDecoder>("rl/ovk");

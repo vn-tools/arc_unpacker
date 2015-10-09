@@ -32,4 +32,4 @@ std::unique_ptr<File> TfwaAudioDecoder::decode_impl(File &file) const
         file.name);
 }
 
-static auto dummy = fmt::Registry::add<TfwaAudioDecoder>("th/tfwa");
+static auto dummy = fmt::register_fmt<TfwaAudioDecoder>("th/tfwa");

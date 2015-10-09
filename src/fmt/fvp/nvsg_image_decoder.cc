@@ -67,4 +67,4 @@ pix::Grid NvsgImageDecoder::decode_impl(File &file) const
     return pix::Grid(width, height, data, pixel_format);
 }
 
-static auto dummy = fmt::Registry::add<NvsgImageDecoder>("fvp/nvsg");
+static auto dummy = fmt::register_fmt<NvsgImageDecoder>("fvp/nvsg");

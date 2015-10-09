@@ -63,4 +63,4 @@ std::unique_ptr<File> BidArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<BidArchiveDecoder>("libido/bid");
+static auto dummy = fmt::register_fmt<BidArchiveDecoder>("libido/bid");

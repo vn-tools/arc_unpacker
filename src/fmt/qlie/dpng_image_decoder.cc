@@ -49,4 +49,4 @@ pix::Grid DpngImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::Registry::add<DpngImageDecoder>("qlie/dpng");
+static auto dummy = fmt::register_fmt<DpngImageDecoder>("qlie/dpng");

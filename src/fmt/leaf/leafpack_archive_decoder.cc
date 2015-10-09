@@ -85,4 +85,4 @@ std::unique_ptr<File> LeafpackArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<LeafpackArchiveDecoder>("leaf/leafpack");
+static auto dummy = fmt::register_fmt<LeafpackArchiveDecoder>("leaf/leafpack");

@@ -220,4 +220,4 @@ pix::Grid BmpImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::Registry::add<BmpImageDecoder>("ms/bmp");
+static auto dummy = fmt::register_fmt<BmpImageDecoder>("ms/bmp");

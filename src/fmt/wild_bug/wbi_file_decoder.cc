@@ -24,4 +24,4 @@ std::unique_ptr<File> WbiFileDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<WbiFileDecoder>("wild-bug/wbi");
+static auto dummy = fmt::register_fmt<WbiFileDecoder>("wild-bug/wbi");

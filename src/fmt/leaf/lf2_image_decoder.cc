@@ -84,4 +84,4 @@ pix::Grid Lf2ImageDecoder::decode_impl(File &file) const
     return grid;
 }
 
-static auto dummy = fmt::Registry::add<Lf2ImageDecoder>("leaf/lf2");
+static auto dummy = fmt::register_fmt<Lf2ImageDecoder>("leaf/lf2");

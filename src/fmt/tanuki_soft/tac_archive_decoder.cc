@@ -155,4 +155,4 @@ std::unique_ptr<File> TacArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<TacArchiveDecoder>("tanuki/tac");
+static auto dummy = fmt::register_fmt<TacArchiveDecoder>("tanuki/tac");

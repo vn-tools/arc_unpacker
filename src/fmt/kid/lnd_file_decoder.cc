@@ -98,4 +98,4 @@ std::unique_ptr<File> LndFileDecoder::decode_impl(File &file) const
     return std::make_unique<File>(file.name, data);
 }
 
-static auto dummy = fmt::Registry::add<LndFileDecoder>("kid/lnd");
+static auto dummy = fmt::register_fmt<LndFileDecoder>("kid/lnd");

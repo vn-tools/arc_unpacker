@@ -255,4 +255,4 @@ std::unique_ptr<File> Glib2ArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<Glib2ArchiveDecoder>("glib/g2");
+static auto dummy = fmt::register_fmt<Glib2ArchiveDecoder>("glib/g2");

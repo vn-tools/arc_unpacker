@@ -25,4 +25,4 @@ std::unique_ptr<File> PgaImageDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<PgaImageDecoder>("sysadv/pga");
+static auto dummy = fmt::register_fmt<PgaImageDecoder>("sysadv/pga");

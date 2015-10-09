@@ -435,4 +435,4 @@ std::unique_ptr<File> PackArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<PackArchiveDecoder>("qlie/pack");
+static auto dummy = fmt::register_fmt<PackArchiveDecoder>("qlie/pack");

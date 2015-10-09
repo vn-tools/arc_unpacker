@@ -34,4 +34,4 @@ std::unique_ptr<File> AffFileDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<AffFileDecoder>("alice/aff");
+static auto dummy = fmt::register_fmt<AffFileDecoder>("alice/aff");

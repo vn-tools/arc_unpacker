@@ -187,4 +187,4 @@ pix::Grid G00ImageDecoder::decode_impl(File &file) const
     throw err::UnsupportedVersionError(version);
 }
 
-static auto dummy = fmt::Registry::add<G00ImageDecoder>("rl/g00");
+static auto dummy = fmt::register_fmt<G00ImageDecoder>("rl/g00");

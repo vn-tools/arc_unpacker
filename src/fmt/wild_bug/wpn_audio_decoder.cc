@@ -56,4 +56,4 @@ std::unique_ptr<File> WpnAudioDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<WpnAudioDecoder>("wild-bug/wpn");
+static auto dummy = fmt::register_fmt<WpnAudioDecoder>("wild-bug/wpn");

@@ -52,4 +52,4 @@ std::unique_ptr<File> WwaAudioDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<WwaAudioDecoder>("wild-bug/wwa");
+static auto dummy = fmt::register_fmt<WwaAudioDecoder>("wild-bug/wwa");

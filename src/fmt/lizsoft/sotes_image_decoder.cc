@@ -53,4 +53,4 @@ pix::Grid SotesImageDecoder::decode_impl(File &file) const
     return *pixels;
 }
 
-static auto dummy = fmt::Registry::add<SotesImageDecoder>("lizsoft/sotes");
+static auto dummy = fmt::register_fmt<SotesImageDecoder>("lizsoft/sotes");

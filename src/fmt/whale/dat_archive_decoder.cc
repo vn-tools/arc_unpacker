@@ -323,4 +323,4 @@ std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<DatArchiveDecoder>("whale/dat");
+static auto dummy = fmt::register_fmt<DatArchiveDecoder>("whale/dat");

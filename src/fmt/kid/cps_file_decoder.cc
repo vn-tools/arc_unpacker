@@ -66,4 +66,4 @@ std::unique_ptr<File> CpsFileDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<CpsFileDecoder>("kid/cps");
+static auto dummy = fmt::register_fmt<CpsFileDecoder>("kid/cps");

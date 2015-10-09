@@ -151,4 +151,4 @@ pix::Grid QntImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::Registry::add<QntImageDecoder>("alice/qnt");
+static auto dummy = fmt::register_fmt<QntImageDecoder>("alice/qnt");

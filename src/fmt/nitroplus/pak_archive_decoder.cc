@@ -68,4 +68,4 @@ std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<PakArchiveDecoder>("nitro/pak");
+static auto dummy = fmt::register_fmt<PakArchiveDecoder>("nitro/pak");

@@ -63,4 +63,4 @@ pix::Grid AjpImageDecoder::decode_impl(File &file) const
     return jpeg_pixels;
 }
 
-static auto dummy = fmt::Registry::add<AjpImageDecoder>("alice/ajp");
+static auto dummy = fmt::register_fmt<AjpImageDecoder>("alice/ajp");

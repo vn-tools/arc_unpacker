@@ -129,4 +129,4 @@ std::unique_ptr<File> McaArchiveDecoder::read_file_impl(
     return util::file_from_grid(pixels, entry->name);
 }
 
-static auto dummy = fmt::Registry::add<McaArchiveDecoder>("fc01/mca");
+static auto dummy = fmt::register_fmt<McaArchiveDecoder>("fc01/mca");

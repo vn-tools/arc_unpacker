@@ -86,4 +86,4 @@ std::unique_ptr<File> AldArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<AldArchiveDecoder>("alice/ald");
+static auto dummy = fmt::register_fmt<AldArchiveDecoder>("alice/ald");

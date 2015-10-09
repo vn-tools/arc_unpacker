@@ -73,4 +73,4 @@ std::unique_ptr<File> XflArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::Registry::add<XflArchiveDecoder>("liar/xfl");
+static auto dummy = fmt::register_fmt<XflArchiveDecoder>("liar/xfl");

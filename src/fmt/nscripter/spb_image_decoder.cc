@@ -106,4 +106,4 @@ pix::Grid SpbImageDecoder::decode_impl(File &file) const
     return decode_pixels(width, height, bit_reader);
 }
 
-static auto dummy = fmt::Registry::add<SpbImageDecoder>("nscripter/spb");
+static auto dummy = fmt::register_fmt<SpbImageDecoder>("nscripter/spb");

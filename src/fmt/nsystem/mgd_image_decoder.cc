@@ -253,4 +253,4 @@ pix::Grid MgdImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::Registry::add<MgdImageDecoder>("nsystem/mgd");
+static auto dummy = fmt::register_fmt<MgdImageDecoder>("nsystem/mgd");

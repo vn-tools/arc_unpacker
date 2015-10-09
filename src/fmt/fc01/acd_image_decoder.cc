@@ -69,4 +69,4 @@ pix::Grid AcdImageDecoder::decode_impl(File &file) const
     return pix::Grid(width, height, pixel_data, pix::Format::Gray8);
 }
 
-static auto dummy = fmt::Registry::add<AcdImageDecoder>("fc01/acd");
+static auto dummy = fmt::register_fmt<AcdImageDecoder>("fc01/acd");

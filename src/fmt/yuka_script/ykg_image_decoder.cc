@@ -106,4 +106,4 @@ std::unique_ptr<File> YkgImageDecoder::decode_impl(File &file) const
     return decode_png(file, *header);
 }
 
-static auto dummy = fmt::Registry::add<YkgImageDecoder>("yuka/ykg");
+static auto dummy = fmt::register_fmt<YkgImageDecoder>("yuka/ykg");

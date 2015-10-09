@@ -75,4 +75,4 @@ std::unique_ptr<File> PArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<PArchiveDecoder>("fbread/p");
+static auto dummy = fmt::register_fmt<PArchiveDecoder>("fbread/p");

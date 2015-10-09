@@ -236,4 +236,4 @@ pix::Grid PmsImageDecoder::decode_impl(File &file) const
     return *pixels;
 }
 
-static auto dummy = fmt::Registry::add<PmsImageDecoder>("alice/pms");
+static auto dummy = fmt::register_fmt<PmsImageDecoder>("alice/pms");

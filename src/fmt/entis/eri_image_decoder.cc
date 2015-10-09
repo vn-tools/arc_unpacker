@@ -130,4 +130,4 @@ pix::Grid EriImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::Registry::add<EriImageDecoder>("entis/eri");
+static auto dummy = fmt::register_fmt<EriImageDecoder>("entis/eri");

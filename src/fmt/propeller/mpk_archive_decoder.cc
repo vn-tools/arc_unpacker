@@ -75,4 +75,4 @@ std::unique_ptr<File> MpkArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::Registry::add<MpkArchiveDecoder>("propeller/mpk");
+static auto dummy = fmt::register_fmt<MpkArchiveDecoder>("propeller/mpk");
