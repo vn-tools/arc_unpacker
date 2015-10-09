@@ -227,7 +227,7 @@ void DatArchiveDecoder::add_file_name(const std::string &file_name)
     p->file_names_map[crc64(file_name_sjis)] = file_name_sjis;
 }
 
-bool DatArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool DatArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     if (!arc_file.has_extension("dat"))
         return false;

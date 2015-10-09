@@ -64,11 +64,11 @@ struct LossyAudioDecoder::Priv final
 
     void decode_lead_block();
     void decode_post_block(s16 *output_ptr, size_t samples);
-    void decode_internal_block(s16 *output_ptr, size_t samples);
+    void decode_impl_block(s16 *output_ptr, size_t samples);
 
     void decode_lead_block_mss();
     void decode_post_block_mss(s16 *output_ptr, size_t samples);
-    void decode_internal_block_mss(s16 *output_ptr, size_t samples);
+    void decode_impl_block_mss(s16 *output_ptr, size_t samples);
 
     void dequantumize(
         float *destination,
@@ -509,7 +509,7 @@ void LossyAudioDecoder::Priv::decode_lead_block()
     iplot(last_dct_buf, subband_degree);
 }
 
-void LossyAudioDecoder::Priv::decode_internal_block(
+void LossyAudioDecoder::Priv::decode_impl_block(
     s16 * output_ptr, size_t samples)
 {
     auto weight_code = *weight_ptr++;
@@ -711,7 +711,7 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
             else
             {
                 auto samples_to_process = std::min(samples_left[j], degree_num);
-                decode_internal_block(output_ptrs[j], samples_to_process);
+                decode_impl_block(output_ptrs[j], samples_to_process);
                 samples_left[j] -= samples_to_process;
                 output_ptrs[j] += samples_to_process * channel_count;
             }
@@ -814,7 +814,7 @@ void LossyAudioDecoder::Priv::decode_post_block_mss(
     }
 }
 
-void LossyAudioDecoder::Priv::decode_internal_block_mss(
+void LossyAudioDecoder::Priv::decode_impl_block_mss(
     s16 *output_ptr, size_t samples)
 {
     auto matrix_ptr = matrix_buf.get();
@@ -1000,7 +1000,7 @@ bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
             else
             {
                 auto samples_to_process = std::min(samples_left, degree_num);
-                decode_internal_block_mss(output_ptr, samples_to_process);
+                decode_impl_block_mss(output_ptr, samples_to_process);
                 samples_left -= samples_to_process;
                 output_ptr += samples_to_process * channel_count;
             }

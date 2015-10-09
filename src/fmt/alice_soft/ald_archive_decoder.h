@@ -12,7 +12,7 @@ namespace alice_soft {
         AldArchiveDecoder();
         ~AldArchiveDecoder();
     protected:
-        bool is_recognized_internal(File &) const override;
+        bool is_recognized_impl(File &) const override;
         std::unique_ptr<fmt::ArchiveMeta> read_meta_impl(File &arc_file) const;
         std::unique_ptr<File> read_file_impl(
             File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const;

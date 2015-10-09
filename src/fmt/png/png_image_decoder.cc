@@ -15,12 +15,12 @@ static void png_read_data(
     io->read(data, size);
 }
 
-bool PngImageDecoder::is_recognized_internal(File &file) const
+bool PngImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-pix::Grid PngImageDecoder::decode_internal(File &file) const
+pix::Grid PngImageDecoder::decode_impl(File &file) const
 {
     png_structp png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);

@@ -9,8 +9,8 @@ namespace kirikiri {
     class TlgImageDecoder final : public ImageDecoder
     {
     protected:
-        bool is_recognized_internal(File &) const override;
-        pix::Grid decode_internal(File &) const override;
+        bool is_recognized_impl(File &) const override;
+        pix::Grid decode_impl(File &) const override;
     };
 
 } } }

@@ -113,12 +113,12 @@ static void apply_alpha(pix::Grid &pixels, const bstr &input)
     }
 }
 
-bool QntImageDecoder::is_recognized_internal(File &file) const
+bool QntImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-pix::Grid QntImageDecoder::decode_internal(File &file) const
+pix::Grid QntImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
     Version version = static_cast<Version>(file.io.read_u32_le());

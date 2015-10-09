@@ -40,7 +40,7 @@ namespace fmt {
         virtual std::unique_ptr<File> read_file_impl(
             File &, const ArchiveMeta &, const ArchiveEntry &) const = 0;
         virtual void preprocess(File &, ArchiveMeta &, FileSaver &) const;
-        virtual bool is_recognized_internal(File &) const = 0;
+        virtual bool is_recognized_impl(File &) const = 0;
         void add_decoder(IDecoder *decoder);
 
         bool nested_decoding_enabled;

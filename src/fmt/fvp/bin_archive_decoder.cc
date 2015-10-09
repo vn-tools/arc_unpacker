@@ -29,7 +29,7 @@ BinArchiveDecoder::~BinArchiveDecoder()
 {
 }
 
-bool BinArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool BinArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.has_extension("bin");
 }

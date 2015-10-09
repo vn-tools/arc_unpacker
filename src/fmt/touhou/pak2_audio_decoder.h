@@ -9,8 +9,8 @@ namespace touhou {
     class Pak2AudioDecoder final : public FileDecoder
     {
     protected:
-        bool is_recognized_internal(File &) const override;
-        std::unique_ptr<File> decode_internal(File &) const override;
+        bool is_recognized_impl(File &) const override;
+        std::unique_ptr<File> decode_impl(File &) const override;
     };
 
 } } }

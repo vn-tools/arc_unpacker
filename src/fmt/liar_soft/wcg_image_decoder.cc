@@ -102,7 +102,7 @@ static size_t wcg_unpack(
     return base_offset;
 }
 
-bool WcgImageDecoder::is_recognized_internal(File &file) const
+bool WcgImageDecoder::is_recognized_impl(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
         return false;
@@ -114,7 +114,7 @@ bool WcgImageDecoder::is_recognized_internal(File &file) const
     return true;
 }
 
-pix::Grid WcgImageDecoder::decode_internal(File &file) const
+pix::Grid WcgImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
 

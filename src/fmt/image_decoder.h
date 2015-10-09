@@ -20,8 +20,8 @@ namespace fmt {
         pix::Grid decode(File &) const;
 
     protected:
-        virtual bool is_recognized_internal(File &) const = 0;
-        virtual pix::Grid decode_internal(File &) const = 0;
+        virtual bool is_recognized_impl(File &) const = 0;
+        virtual pix::Grid decode_impl(File &) const = 0;
     };
 
 } }

@@ -24,7 +24,7 @@ namespace
     };
 }
 
-bool Pak1ImageArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool Pak1ImageArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     if (!arc_file.has_extension("dat"))
         return false;

@@ -9,7 +9,7 @@ using namespace au::fmt::wild_bug;
 
 static const bstr magic = "WPX\x1A""BMP\x00"_b;
 
-bool WbmImageDecoder::is_recognized_internal(File &file) const
+bool WbmImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
@@ -68,7 +68,7 @@ static pix::Grid get_pixels(
         throw err::UnsupportedChannelCountError(channels);
 }
 
-pix::Grid WbmImageDecoder::decode_internal(File &file) const
+pix::Grid WbmImageDecoder::decode_impl(File &file) const
 {
     wpx::Decoder decoder(file.io);
 

@@ -485,7 +485,7 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
     return util::format("%d", entry.id);
 }
 
-bool ExeArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool ExeArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     DosHeader dos_header(arc_file.io);
     return dos_header.magic == "MZ"_b;

@@ -25,12 +25,12 @@ static size_t guess_output_size(const bstr &data)
     return pixels_start + stride * height * (bpp >> 3);
 }
 
-bool GrImageDecoder::is_recognized_internal(File &file) const
+bool GrImageDecoder::is_recognized_impl(File &file) const
 {
     return file.has_extension("gr");
 }
 
-std::unique_ptr<File> GrImageDecoder::decode_internal(File &file) const
+std::unique_ptr<File> GrImageDecoder::decode_impl(File &file) const
 {
     // According to Crass the offset, key and LCG kind vary for other games.
 

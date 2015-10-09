@@ -16,7 +16,7 @@ namespace
     };
 }
 
-bool ArcArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool ArcArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     auto file_count = arc_file.io.read_u32_le();
     if (file_count)

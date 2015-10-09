@@ -82,12 +82,12 @@ bstr LndFileDecoder::decompress_raw_data(const bstr &input, size_t size_orig)
     return output;
 }
 
-bool LndFileDecoder::is_recognized_internal(File &file) const
+bool LndFileDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> LndFileDecoder::decode_internal(File &file) const
+std::unique_ptr<File> LndFileDecoder::decode_impl(File &file) const
 {
     file.io.seek(magic.size());
     file.io.skip(4);

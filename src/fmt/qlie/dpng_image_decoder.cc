@@ -8,12 +8,12 @@ using namespace au::fmt::qlie;
 
 static const bstr magic = "DPNG"_b;
 
-bool DpngImageDecoder::is_recognized_internal(File &file) const
+bool DpngImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-pix::Grid DpngImageDecoder::decode_internal(File &file) const
+pix::Grid DpngImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
 

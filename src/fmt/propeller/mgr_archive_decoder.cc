@@ -52,7 +52,7 @@ static bstr decompress(const bstr &input, size_t size_original)
     return output;
 }
 
-bool MgrArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool MgrArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.has_extension("mgr");
 }

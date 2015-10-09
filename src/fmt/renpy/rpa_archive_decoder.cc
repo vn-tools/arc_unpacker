@@ -228,7 +228,7 @@ static bstr read_raw_table(io::IO &arc_io)
     return util::pack::zlib_inflate(arc_io.read(compressed_size));
 }
 
-bool RpaArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool RpaArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return guess_version(arc_file.io) >= 0;
 }

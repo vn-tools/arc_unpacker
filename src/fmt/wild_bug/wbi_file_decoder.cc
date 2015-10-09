@@ -7,12 +7,12 @@ using namespace au::fmt::wild_bug;
 
 static const bstr magic = "WPX\x1A""EX2\x00"_b;
 
-bool WbiFileDecoder::is_recognized_internal(File &file) const
+bool WbiFileDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> WbiFileDecoder::decode_internal(File &file) const
+std::unique_ptr<File> WbiFileDecoder::decode_impl(File &file) const
 {
     wpx::Decoder decoder(file.io);
     auto data = decoder.read_compressed_section(0x02);

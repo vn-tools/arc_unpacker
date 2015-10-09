@@ -21,12 +21,12 @@ static void write_cell(io::IO &output_io, std::string cell)
     output_io.write(util::sjis_to_utf8(cell));
 }
 
-bool TfcsFileDecoder::is_recognized_internal(File &file) const
+bool TfcsFileDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> TfcsFileDecoder::decode_internal(File &file) const
+std::unique_ptr<File> TfcsFileDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
     size_t compressed_size = file.io.read_u32_le();

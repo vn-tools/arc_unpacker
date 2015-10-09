@@ -67,7 +67,7 @@ void McaArchiveDecoder::set_key(u8 key)
     p->key_set = true;
 }
 
-bool McaArchiveDecoder::is_recognized_internal(File &file) const
+bool McaArchiveDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }

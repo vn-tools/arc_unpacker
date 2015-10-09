@@ -174,7 +174,7 @@ std::unique_ptr<INamingStrategy> AnmArchiveDecoder::naming_strategy() const
     return std::make_unique<RootNamingStrategy>();
 }
 
-bool AnmArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool AnmArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.has_extension("anm");
 }

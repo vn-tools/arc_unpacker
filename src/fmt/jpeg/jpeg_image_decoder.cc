@@ -8,12 +8,12 @@ using namespace au::fmt::jpeg;
 
 static const bstr magic = "\xFF\xD8\xFF"_b;
 
-bool JpegImageDecoder::is_recognized_internal(File &file) const
+bool JpegImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-pix::Grid JpegImageDecoder::decode_internal(File &file) const
+pix::Grid JpegImageDecoder::decode_impl(File &file) const
 {
     bstr source = file.io.read_to_eof();
 

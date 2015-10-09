@@ -92,7 +92,7 @@ bool ArchiveDecoder::is_recognized(File &arc_file) const
     try
     {
         arc_file.io.seek(0);
-        return is_recognized_internal(arc_file);
+        return is_recognized_impl(arc_file);
     }
     catch (...)
     {

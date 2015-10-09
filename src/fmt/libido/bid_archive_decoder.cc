@@ -28,7 +28,7 @@ BidArchiveDecoder::~BidArchiveDecoder()
 {
 }
 
-bool BidArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool BidArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     auto data_start = arc_file.io.read_u32_le();
     arc_file.io.seek(data_start - 8);

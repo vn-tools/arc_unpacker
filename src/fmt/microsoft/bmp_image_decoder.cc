@@ -141,14 +141,14 @@ static Header read_header(io::IO &io)
     return h;
 }
 
-bool BmpImageDecoder::is_recognized_internal(File &file) const
+bool BmpImageDecoder::is_recognized_impl(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
         return false;
     return file.io.read_u32_le() == file.io.size();
 }
 
-pix::Grid BmpImageDecoder::decode_internal(File &file) const
+pix::Grid BmpImageDecoder::decode_impl(File &file) const
 {
     file.io.seek(10);
     auto data_offset = file.io.read_u32_le();

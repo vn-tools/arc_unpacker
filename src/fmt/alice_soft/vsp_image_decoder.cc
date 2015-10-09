@@ -6,7 +6,7 @@
 using namespace au;
 using namespace au::fmt::alice_soft;
 
-bool VspImageDecoder::is_recognized_internal(File &file) const
+bool VspImageDecoder::is_recognized_impl(File &file) const
 {
     return file.has_extension("vsp");
 }
@@ -143,7 +143,7 @@ static bstr decompress_vsp(io::IO &input_io, size_t width, size_t height)
     return output;
 }
 
-pix::Grid VspImageDecoder::decode_internal(File &file) const
+pix::Grid VspImageDecoder::decode_impl(File &file) const
 {
     auto x = file.io.read_u16_le();
     auto y = file.io.read_u16_le();

@@ -72,7 +72,7 @@ ArcArchiveDecoder::~ArcArchiveDecoder()
 {
 }
 
-bool ArcArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool ArcArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return read_meta(arc_file)->entries.size() > 0;
 }

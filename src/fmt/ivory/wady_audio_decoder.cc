@@ -170,12 +170,12 @@ static bstr decode_v2(io::IO &io, size_t sample_count, size_t channels)
     return samples;
 }
 
-bool WadyAudioDecoder::is_recognized_internal(File &file) const
+bool WadyAudioDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> WadyAudioDecoder::decode_internal(File &file) const
+std::unique_ptr<File> WadyAudioDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
     file.io.skip(2);

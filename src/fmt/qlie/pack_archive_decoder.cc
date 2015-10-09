@@ -319,7 +319,7 @@ void PackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
-bool PackArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool PackArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     arc_file.io.seek(get_magic_start(arc_file.io));
     return arc_file.io.read(magic.size()) == magic;

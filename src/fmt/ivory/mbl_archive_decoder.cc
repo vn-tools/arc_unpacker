@@ -111,7 +111,7 @@ void MblArchiveDecoder::set_plugin(const std::string &plugin_name)
     p->plugin = p->plugin_mgr.get_from_string(plugin_name);
 }
 
-bool MblArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool MblArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return get_version(arc_file.io) != Version::Unknown;
 }

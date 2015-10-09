@@ -75,7 +75,7 @@ PakArchiveDecoder::~PakArchiveDecoder()
 {
 }
 
-bool PakArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     if (arc_file.io.read(magic2.size()) == magic2)
         return true;

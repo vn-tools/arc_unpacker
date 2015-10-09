@@ -138,12 +138,12 @@ static bstr decompress(io::IO &io, const NodeList &nodes, size_t output_size)
     return output;
 }
 
-bool DscFileDecoder::is_recognized_internal(File &file) const
+bool DscFileDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> DscFileDecoder::decode_internal(File &file) const
+std::unique_ptr<File> DscFileDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
     auto key = file.io.read_u32_le();

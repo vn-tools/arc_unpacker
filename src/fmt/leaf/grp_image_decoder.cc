@@ -30,7 +30,7 @@ static pix::Palette decode_palette(File &file)
     return palette;
 }
 
-bool GrpImageDecoder::is_recognized_internal(File &file) const
+bool GrpImageDecoder::is_recognized_impl(File &file) const
 {
     size_t expected_size = file.io.read_u16_le() * file.io.read_u16_le() + 4;
     return expected_size == file.io.size();
@@ -44,7 +44,7 @@ pix::Grid GrpImageDecoder::decode(File &file, File &palette_file) const
     return pixels;
 }
 
-pix::Grid GrpImageDecoder::decode_internal(File &file) const
+pix::Grid GrpImageDecoder::decode_impl(File &file) const
 {
     return decode_pixels(file);
 }

@@ -158,7 +158,7 @@ void Xp3ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
-bool Xp3ArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool Xp3ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.io.read(xp3_magic.size()) == xp3_magic;
 }

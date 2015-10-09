@@ -57,7 +57,7 @@ static void write_ogg_page(io::IO &target_io, const OggPage &page)
         target_io.write(page_segment);
 }
 
-bool PackedOggAudioDecoder::is_recognized_internal(File &file) const
+bool PackedOggAudioDecoder::is_recognized_impl(File &file) const
 {
     if (!file.has_extension("wav"))
         return false;
@@ -108,7 +108,7 @@ static void rewrite_ogg_stream(io::IO &ogg_io, io::IO &target_io)
     }
 }
 
-std::unique_ptr<File> PackedOggAudioDecoder::decode_internal(File &file) const
+std::unique_ptr<File> PackedOggAudioDecoder::decode_impl(File &file) const
 {
     if (file.io.read(4) != "RIFF"_b)
         throw err::CorruptDataError("Expected RIFF signature");

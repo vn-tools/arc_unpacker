@@ -46,7 +46,7 @@ PakArchiveDecoder::~PakArchiveDecoder()
 {
 }
 
-bool PakArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return boost::filesystem::exists(get_path_to_index(arc_file.name))
         && arc_file.has_extension("pak");

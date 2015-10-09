@@ -42,7 +42,7 @@ AfaArchiveDecoder::~AfaArchiveDecoder()
 {
 }
 
-bool AfaArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool AfaArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     if (arc_file.io.read(magic1.size()) != magic1)
         return false;

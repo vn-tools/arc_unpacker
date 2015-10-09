@@ -7,12 +7,12 @@ using namespace au::fmt::wild_bug;
 
 static const bstr magic = "WPX\x1AWAV\x00"_b;
 
-bool WwaAudioDecoder::is_recognized_internal(File &file) const
+bool WwaAudioDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> WwaAudioDecoder::decode_internal(File &file) const
+std::unique_ptr<File> WwaAudioDecoder::decode_impl(File &file) const
 {
     wpx::Decoder decoder(file.io);
     io::BufferedIO metadata_io(decoder.read_plain_section(0x20));

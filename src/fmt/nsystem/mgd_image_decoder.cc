@@ -219,12 +219,12 @@ static pix::Grid read_pixels(
     throw err::NotSupportedError("Unsupported compression type");
 }
 
-bool MgdImageDecoder::is_recognized_internal(File &file) const
+bool MgdImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-pix::Grid MgdImageDecoder::decode_internal(File &file) const
+pix::Grid MgdImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
 

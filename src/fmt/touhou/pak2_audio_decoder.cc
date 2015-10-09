@@ -4,12 +4,12 @@
 using namespace au;
 using namespace au::fmt::touhou;
 
-bool Pak2AudioDecoder::is_recognized_internal(File &file) const
+bool Pak2AudioDecoder::is_recognized_impl(File &file) const
 {
     return file.has_extension("cv3");
 }
 
-std::unique_ptr<File> Pak2AudioDecoder::decode_internal(File &file) const
+std::unique_ptr<File> Pak2AudioDecoder::decode_impl(File &file) const
 {
     auto format = file.io.read_u16_le();
     auto channel_count = file.io.read_u16_le();

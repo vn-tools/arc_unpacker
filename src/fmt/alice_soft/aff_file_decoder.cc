@@ -11,12 +11,12 @@ static const bstr magic = "AFF\x00"_b;
 static const bstr key =
     "\xC8\xBB\x8F\xB7\xED\x43\x99\x4A\xA2\x7E\x5B\xB0\x68\x18\xF8\x88"_b;
 
-bool AffFileDecoder::is_recognized_internal(File &file) const
+bool AffFileDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> AffFileDecoder::decode_internal(File &file) const
+std::unique_ptr<File> AffFileDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
 

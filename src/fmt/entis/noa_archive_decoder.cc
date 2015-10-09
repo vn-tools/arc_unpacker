@@ -86,7 +86,7 @@ NoaArchiveDecoder::~NoaArchiveDecoder()
 {
 }
 
-bool NoaArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool NoaArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.io.read(magic1.size()) == magic1
         && arc_file.io.read(magic2.size()) == magic2

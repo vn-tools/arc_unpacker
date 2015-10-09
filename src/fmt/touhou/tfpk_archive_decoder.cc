@@ -330,7 +330,7 @@ TfpkArchiveDecoder::~TfpkArchiveDecoder()
 {
 }
 
-bool TfpkArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool TfpkArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     if (arc_file.io.read(magic.size()) != magic)
         return false;

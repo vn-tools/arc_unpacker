@@ -43,7 +43,7 @@ Pbg4ArchiveDecoder::~Pbg4ArchiveDecoder()
 {
 }
 
-bool Pbg4ArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool Pbg4ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.io.read(magic.size()) == magic;
 }

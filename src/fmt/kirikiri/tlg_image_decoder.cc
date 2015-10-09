@@ -108,12 +108,12 @@ static pix::Grid decode_proxy(int version, File &file)
     throw std::logic_error("Unknown TLG version");
 }
 
-bool TlgImageDecoder::is_recognized_internal(File &file) const
+bool TlgImageDecoder::is_recognized_impl(File &file) const
 {
     return guess_version(file.io) >= 0;
 }
 
-pix::Grid TlgImageDecoder::decode_internal(File &file) const
+pix::Grid TlgImageDecoder::decode_impl(File &file) const
 {
     int version = guess_version(file.io);
     return decode_proxy(version, file);

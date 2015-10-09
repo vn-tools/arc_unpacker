@@ -12,8 +12,8 @@ namespace alice_soft {
         static bstr decompress_8bit(io::IO &, size_t width, size_t height);
         static bstr decompress_16bit(io::IO &, size_t width, size_t height);
     protected:
-        bool is_recognized_internal(File &) const override;
-        pix::Grid decode_internal(File &) const override;
+        bool is_recognized_impl(File &) const override;
+        pix::Grid decode_impl(File &) const override;
     };
 
 } } }

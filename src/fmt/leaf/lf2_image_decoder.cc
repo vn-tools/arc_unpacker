@@ -57,12 +57,12 @@ static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
     return output;
 }
 
-bool Lf2ImageDecoder::is_recognized_internal(File &file) const
+bool Lf2ImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-pix::Grid Lf2ImageDecoder::decode_internal(File &file) const
+pix::Grid Lf2ImageDecoder::decode_impl(File &file) const
 {
     file.io.seek(magic.size());
     file.io.skip(4);

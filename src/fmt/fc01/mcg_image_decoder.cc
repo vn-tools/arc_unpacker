@@ -52,7 +52,7 @@ void McgImageDecoder::parse_cli_options(const ArgParser &arg_parser)
     ImageDecoder::parse_cli_options(arg_parser);
 }
 
-bool McgImageDecoder::is_recognized_internal(File &file) const
+bool McgImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
@@ -63,7 +63,7 @@ void McgImageDecoder::set_key(u8 key)
     p->key_set = true;
 }
 
-pix::Grid McgImageDecoder::decode_internal(File &file) const
+pix::Grid McgImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
     auto version_float = boost::lexical_cast<float>(file.io.read(4).str());

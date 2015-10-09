@@ -16,12 +16,12 @@ namespace
     };
 }
 
-bool WpnAudioDecoder::is_recognized_internal(File &file) const
+bool WpnAudioDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> WpnAudioDecoder::decode_internal(File &file) const
+std::unique_ptr<File> WpnAudioDecoder::decode_impl(File &file) const
 {
     file.io.seek(magic.size());
     auto chunk_count = file.io.read_u32_le();

@@ -24,7 +24,7 @@ static void decrypt(bstr &data)
         data[i] ^= key[i % key.size()];
 }
 
-bool NpaSgArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool NpaSgArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     if (!arc_file.has_extension("npa"))
         return false;

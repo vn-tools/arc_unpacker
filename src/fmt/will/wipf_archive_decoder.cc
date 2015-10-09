@@ -82,7 +82,7 @@ std::unique_ptr<fmt::INamingStrategy>
     return std::make_unique<SiblingNamingStrategy>();
 }
 
-bool WipfArchiveDecoder::is_recognized_internal(File &file) const
+bool WipfArchiveDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }

@@ -49,7 +49,7 @@ Pak2ArchiveDecoder::~Pak2ArchiveDecoder()
 {
 }
 
-bool Pak2ArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool Pak2ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     try
     {

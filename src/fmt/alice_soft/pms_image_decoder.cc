@@ -179,7 +179,7 @@ bstr PmsImageDecoder::decompress_16bit(
     return output;
 }
 
-bool PmsImageDecoder::is_recognized_internal(File &file) const
+bool PmsImageDecoder::is_recognized_impl(File &file) const
 {
     if (file.io.read(magic1.size()) == magic1)
         return true;
@@ -187,7 +187,7 @@ bool PmsImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic2.size()) == magic2;
 }
 
-pix::Grid PmsImageDecoder::decode_internal(File &file) const
+pix::Grid PmsImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(2);
     auto version = file.io.read_u16_le();

@@ -19,8 +19,8 @@ namespace fmt {
         std::unique_ptr<File> decode(File &) const;
 
     protected:
-        virtual bool is_recognized_internal(File &) const = 0;
-        virtual std::unique_ptr<File> decode_internal(File &) const = 0;
+        virtual bool is_recognized_impl(File &) const = 0;
+        virtual std::unique_ptr<File> decode_impl(File &) const = 0;
     };
 
 } }

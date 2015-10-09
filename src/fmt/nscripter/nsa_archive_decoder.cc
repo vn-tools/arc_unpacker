@@ -26,7 +26,7 @@ namespace
     };
 }
 
-bool NsaArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool NsaArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     size_t file_count = arc_file.io.read_u16_be();
     size_t offset_to_files = arc_file.io.read_u32_be();

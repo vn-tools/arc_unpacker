@@ -118,7 +118,7 @@ Tha1ArchiveDecoder::~Tha1ArchiveDecoder()
 {
 }
 
-bool Tha1ArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool Tha1ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     if (!arc_file.has_extension("dat"))
         return false;

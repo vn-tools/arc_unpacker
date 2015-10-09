@@ -13,7 +13,7 @@ namespace
     };
 }
 
-bool SarArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool SarArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.has_extension("sar");
 }

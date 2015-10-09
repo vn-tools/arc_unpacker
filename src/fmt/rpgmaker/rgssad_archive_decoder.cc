@@ -8,7 +8,7 @@ using namespace au::fmt::rpgmaker;
 static const bstr magic = "RGSSAD\x00\x01"_b;
 static const u32 initial_key = 0xDEADCAFE;
 
-bool RgssadArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool RgssadArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.io.read(magic.size()) == magic;
 }

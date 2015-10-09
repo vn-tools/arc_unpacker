@@ -6,12 +6,12 @@ using namespace au::fmt::touhou;
 
 static const bstr magic = "TFWA\x00"_b;
 
-bool TfwaAudioDecoder::is_recognized_internal(File &file) const
+bool TfwaAudioDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> TfwaAudioDecoder::decode_internal(File &file) const
+std::unique_ptr<File> TfwaAudioDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
 

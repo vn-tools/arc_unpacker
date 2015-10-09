@@ -171,7 +171,7 @@ Glib2ArchiveDecoder::~Glib2ArchiveDecoder()
 {
 }
 
-bool Glib2ArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool Glib2ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return guess_plugin(arc_file.io) != nullptr;
 }

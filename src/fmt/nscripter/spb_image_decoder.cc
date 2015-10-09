@@ -84,7 +84,7 @@ static pix::Grid decode_pixels(
     return output;
 }
 
-bool SpbImageDecoder::is_recognized_internal(File &file) const
+bool SpbImageDecoder::is_recognized_impl(File &file) const
 {
     if (!file.has_extension("bmp"))
         return false;
@@ -97,7 +97,7 @@ bool SpbImageDecoder::is_recognized_internal(File &file) const
     return true;
 }
 
-pix::Grid SpbImageDecoder::decode_internal(File &file) const
+pix::Grid SpbImageDecoder::decode_impl(File &file) const
 {
     u16 width = file.io.read_u16_be();
     u16 height = file.io.read_u16_be();

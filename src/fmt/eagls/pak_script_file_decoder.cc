@@ -7,7 +7,7 @@ using namespace au::fmt::eagls;
 
 static const bstr key = "EAGLS_SYSTEM"_b;
 
-bool PakScriptFileDecoder::is_recognized_internal(File &file) const
+bool PakScriptFileDecoder::is_recognized_impl(File &file) const
 {
     if (!file.has_extension("dat") || file.io.size() < 3600)
         return false;
@@ -19,7 +19,7 @@ bool PakScriptFileDecoder::is_recognized_internal(File &file) const
     return zeros > data.size() * 0.8;
 }
 
-std::unique_ptr<File> PakScriptFileDecoder::decode_internal(File &file) const
+std::unique_ptr<File> PakScriptFileDecoder::decode_impl(File &file) const
 {
     // According to Crass the offset, key and even the presence of LCG
     // vary for other games.

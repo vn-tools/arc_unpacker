@@ -24,7 +24,7 @@ namespace
         std::unique_ptr<File> read_file_impl(
             File &, const ArchiveMeta &, const ArchiveEntry &) const override;
     protected:
-        bool is_recognized_internal(File &arc_file) const override;
+        bool is_recognized_impl(File &arc_file) const override;
     };
 }
 
@@ -33,7 +33,7 @@ TestArchiveDecoder::TestArchiveDecoder()
     add_decoder(this);
 }
 
-bool TestArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool TestArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.has_extension("archive");
 }

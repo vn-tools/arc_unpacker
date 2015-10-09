@@ -5,13 +5,13 @@ using namespace au::fmt::bgi;
 
 static const bstr magic = "bw\x20\x20"_b;
 
-bool AudioDecoder::is_recognized_internal(File &file) const
+bool AudioDecoder::is_recognized_impl(File &file) const
 {
     file.io.skip(4);
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> AudioDecoder::decode_internal(File &file) const
+std::unique_ptr<File> AudioDecoder::decode_impl(File &file) const
 {
     size_t header_size = file.io.read_u32_le();
     file.io.skip(magic.size());

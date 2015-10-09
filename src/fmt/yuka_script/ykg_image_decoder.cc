@@ -86,12 +86,12 @@ static std::unique_ptr<File> decode_png(File &file, Header &header)
     return output_file;
 }
 
-bool YkgImageDecoder::is_recognized_internal(File &file) const
+bool YkgImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> YkgImageDecoder::decode_internal(File &file) const
+std::unique_ptr<File> YkgImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
 

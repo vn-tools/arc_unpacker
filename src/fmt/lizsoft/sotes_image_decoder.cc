@@ -5,7 +5,7 @@
 using namespace au;
 using namespace au::fmt::lizsoft;
 
-bool SotesImageDecoder::is_recognized_internal(File &file) const
+bool SotesImageDecoder::is_recognized_impl(File &file) const
 {
     file.io.seek(0x438);
     auto a = file.io.read_u32_le();
@@ -16,7 +16,7 @@ bool SotesImageDecoder::is_recognized_internal(File &file) const
     return a - b == 0x2711 && c - b <= 0x80;
 }
 
-pix::Grid SotesImageDecoder::decode_internal(File &file) const
+pix::Grid SotesImageDecoder::decode_impl(File &file) const
 {
     file.io.seek(0x448);
     auto base = file.io.read_u32_le();

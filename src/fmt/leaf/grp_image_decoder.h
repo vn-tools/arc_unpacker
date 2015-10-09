@@ -11,8 +11,8 @@ namespace leaf {
     public:
         pix::Grid decode(File &file, File &palette_file) const;
     protected:
-        bool is_recognized_internal(File &) const override;
-        pix::Grid decode_internal(File &) const override;
+        bool is_recognized_impl(File &) const override;
+        pix::Grid decode_impl(File &) const override;
     };
 
 } } }

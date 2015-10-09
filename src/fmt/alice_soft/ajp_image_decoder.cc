@@ -17,12 +17,12 @@ static void decrypt(bstr &input)
         input[i] ^= key[i];
 }
 
-bool AjpImageDecoder::is_recognized_internal(File &file) const
+bool AjpImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-pix::Grid AjpImageDecoder::decode_internal(File &file) const
+pix::Grid AjpImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
     file.io.skip(4 * 2);

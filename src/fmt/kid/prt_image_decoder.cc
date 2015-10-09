@@ -8,12 +8,12 @@ using namespace au::fmt::kid;
 
 static const bstr magic = "PRT\x00"_b;
 
-bool PrtImageDecoder::is_recognized_internal(File &file) const
+bool PrtImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-pix::Grid PrtImageDecoder::decode_internal(File &file) const
+pix::Grid PrtImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
     auto version = file.io.read_u16_le();

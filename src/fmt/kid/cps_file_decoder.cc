@@ -36,12 +36,12 @@ static bstr decrypt(const bstr &input, size_t size_compressed, size_t offset)
     return output_io.read_to_eof();
 }
 
-bool CpsFileDecoder::is_recognized_internal(File &file) const
+bool CpsFileDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> CpsFileDecoder::decode_internal(File &file) const
+std::unique_ptr<File> CpsFileDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
 

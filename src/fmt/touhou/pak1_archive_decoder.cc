@@ -56,7 +56,7 @@ Pak1ArchiveDecoder::~Pak1ArchiveDecoder()
 {
 }
 
-bool Pak1ArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool Pak1ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     try
     {

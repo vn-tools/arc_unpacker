@@ -7,12 +7,12 @@ using namespace au::fmt::french_bread;
 
 static const bstr magic = "LLIF"_b;
 
-bool Ex3ImageDecoder::is_recognized_internal(File &file) const
+bool Ex3ImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> Ex3ImageDecoder::decode_internal(File &file) const
+std::unique_ptr<File> Ex3ImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
 

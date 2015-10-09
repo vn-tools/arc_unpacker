@@ -161,12 +161,12 @@ static pix::Grid decode_v2(File &file, size_t width, size_t height)
     return pixels;
 }
 
-bool G00ImageDecoder::is_recognized_internal(File &file) const
+bool G00ImageDecoder::is_recognized_impl(File &file) const
 {
     return file.has_extension("g00");
 }
 
-pix::Grid G00ImageDecoder::decode_internal(File &file) const
+pix::Grid G00ImageDecoder::decode_impl(File &file) const
 {
     u8 version = file.io.read_u8();
     u16 width = file.io.read_u16_le();

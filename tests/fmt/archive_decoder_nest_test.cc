@@ -17,8 +17,8 @@ namespace
         std::function<void(File&)> recognition_callback;
         std::function<void(File&)> conversion_callback;
     protected:
-        bool is_recognized_internal(File &file) const override;
-        std::unique_ptr<File> decode_internal(File &file) const override;
+        bool is_recognized_impl(File &file) const override;
+        std::unique_ptr<File> decode_impl(File &file) const override;
     };
 
     struct ArchiveEntryImpl final : ArchiveEntry
@@ -36,7 +36,7 @@ namespace
         std::unique_ptr<File> read_file_impl(
             File &, const ArchiveMeta &, const ArchiveEntry &) const override;
     protected:
-        bool is_recognized_internal(File &arc_file) const override;
+        bool is_recognized_impl(File &arc_file) const override;
     };
 }
 
@@ -64,14 +64,14 @@ static bstr serialize_file(const std::string &name, const bstr &content)
     return io.read_to_eof();
 }
 
-bool TestFileDecoder::is_recognized_internal(File &file) const
+bool TestFileDecoder::is_recognized_impl(File &file) const
 {
     if (recognition_callback)
         recognition_callback(file);
     return file.has_extension("image");
 }
 
-std::unique_ptr<File> TestFileDecoder::decode_internal(File &file) const
+std::unique_ptr<File> TestFileDecoder::decode_impl(File &file) const
 {
     if (conversion_callback)
         conversion_callback(file);
@@ -88,7 +88,7 @@ TestArchiveDecoder::TestArchiveDecoder()
     add_decoder(this);
 }
 
-bool TestArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool TestArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.has_extension("archive");
 }

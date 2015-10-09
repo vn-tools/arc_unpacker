@@ -61,7 +61,7 @@ TacArchiveDecoder::TacArchiveDecoder()
     add_decoder(this);
 }
 
-bool TacArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool TacArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return read_version(arc_file.io) != Version::Unknown;
 }

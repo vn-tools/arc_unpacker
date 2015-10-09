@@ -7,7 +7,7 @@ using namespace au::fmt::rpgmaker;
 
 static const bstr magic = "RGSSAD\x00\x03"_b;
 
-bool Rgss3aArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool Rgss3aArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.io.read(magic.size()) == magic;
 }

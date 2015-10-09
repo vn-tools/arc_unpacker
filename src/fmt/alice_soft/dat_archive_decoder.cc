@@ -31,7 +31,7 @@ DatArchiveDecoder::~DatArchiveDecoder()
 {
 }
 
-bool DatArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool DatArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     try
     {

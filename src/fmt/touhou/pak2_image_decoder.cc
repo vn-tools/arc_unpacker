@@ -41,12 +41,12 @@ void Pak2ImageDecoder::add_palette(
         256, palette_io, pix::Format::BGRA5551);
 }
 
-bool Pak2ImageDecoder::is_recognized_internal(File &file) const
+bool Pak2ImageDecoder::is_recognized_impl(File &file) const
 {
     return file.has_extension("cv2");
 }
 
-pix::Grid Pak2ImageDecoder::decode_internal(File &file) const
+pix::Grid Pak2ImageDecoder::decode_impl(File &file) const
 {
     auto bit_depth = file.io.read_u8();
     auto width = file.io.read_u32_le();

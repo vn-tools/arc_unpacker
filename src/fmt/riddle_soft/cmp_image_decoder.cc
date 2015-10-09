@@ -7,12 +7,12 @@ using namespace au::fmt::riddle_soft;
 
 static const bstr magic = "CMP1"_b;
 
-bool CmpImageDecoder::is_recognized_internal(File &file) const
+bool CmpImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> CmpImageDecoder::decode_internal(File &file) const
+std::unique_ptr<File> CmpImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
     auto size_original = file.io.read_u32_le();

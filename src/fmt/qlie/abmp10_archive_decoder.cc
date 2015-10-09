@@ -91,7 +91,7 @@ static void read_resource_entry(File &arc_file, fmt::ArchiveMeta &meta)
         meta.entries.push_back(std::move(entry));
 }
 
-bool Abmp10ArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool Abmp10ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return guess_version(arc_file.io) >= 0;
 }

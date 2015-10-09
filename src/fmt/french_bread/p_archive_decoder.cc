@@ -29,7 +29,7 @@ PArchiveDecoder::~PArchiveDecoder()
 {
 }
 
-bool PArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool PArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     auto meta = read_meta(arc_file);
     if (!meta->entries.size())

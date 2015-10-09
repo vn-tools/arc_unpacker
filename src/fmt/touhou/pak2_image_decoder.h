@@ -15,8 +15,8 @@ namespace touhou {
         void clear_palettes();
         void add_palette(const std::string &name, const bstr &palette_data);
     protected:
-        bool is_recognized_internal(File &) const override;
-        pix::Grid decode_internal(File &) const override;
+        bool is_recognized_impl(File &) const override;
+        pix::Grid decode_impl(File &) const override;
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

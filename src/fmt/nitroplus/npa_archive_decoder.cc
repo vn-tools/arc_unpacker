@@ -109,7 +109,7 @@ void NpaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
-bool NpaArchiveDecoder::is_recognized_internal(File &arc_file) const
+bool NpaArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     return arc_file.io.read(magic.size()) == magic;
 }

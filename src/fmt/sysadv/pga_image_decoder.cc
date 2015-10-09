@@ -5,12 +5,12 @@ using namespace au::fmt::sysadv;
 
 static const bstr magic = "PGAPGAH\x0A"_b;
 
-bool PgaImageDecoder::is_recognized_internal(File &file) const
+bool PgaImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> PgaImageDecoder::decode_internal(File &file) const
+std::unique_ptr<File> PgaImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
     auto output_file = std::make_unique<File>();

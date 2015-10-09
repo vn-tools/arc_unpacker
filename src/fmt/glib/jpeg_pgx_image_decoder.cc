@@ -24,7 +24,7 @@ static bstr extract_pgx_stream(const bstr &jpeg_data)
     return output;
 }
 
-bool JpegPgxImageDecoder::is_recognized_internal(File &file) const
+bool JpegPgxImageDecoder::is_recognized_impl(File &file) const
 {
     u16 marker = file.io.read_u16_be();
     // soi
@@ -44,7 +44,7 @@ bool JpegPgxImageDecoder::is_recognized_internal(File &file) const
     return file.io.read(magic.size()) == magic;
 }
 
-pix::Grid JpegPgxImageDecoder::decode_internal(File &file) const
+pix::Grid JpegPgxImageDecoder::decode_impl(File &file) const
 {
     auto pgx_data = extract_pgx_stream(file.io.read_to_eof());
     io::BufferedIO pgx_io(pgx_data);
