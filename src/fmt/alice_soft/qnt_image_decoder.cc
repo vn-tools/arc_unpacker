@@ -1,7 +1,6 @@
 #include "fmt/alice_soft/qnt_image_decoder.h"
 #include "err.h"
 #include "io/buffered_io.h"
-#include "util/format.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
 

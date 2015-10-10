@@ -1,7 +1,6 @@
 #include "fmt/ivory/mbl_archive_decoder.h"
 #include "fmt/ivory/prs_image_decoder.h"
 #include "fmt/ivory/wady_audio_decoder.h"
-#include "log.h"
 #include "util/encoding.h"
 #include "util/format.h"
 #include "util/plugin_mgr.hh"

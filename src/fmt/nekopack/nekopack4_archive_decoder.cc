@@ -1,5 +1,4 @@
 #include "fmt/nekopack/nekopack4_archive_decoder.h"
-#include "log.h"
 #include <map>
 #include "err.h"
 #include "fmt/microsoft/bmp_image_decoder.h"

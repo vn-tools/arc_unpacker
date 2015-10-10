@@ -1,7 +1,5 @@
 #include "fmt/alice_soft/pms_image_decoder.h"
 #include "err.h"
-#include "io/buffered_io.h"
-#include "util/format.h"
 #include "util/range.h"
 
 using namespace au;

@@ -1,11 +1,9 @@
 #include "fmt/bgi/dsc_file_decoder.h"
-#include <algorithm>
 #include "err.h"
 #include "fmt/bgi/common.h"
 #include "io/bit_reader.h"
 #include "io/buffered_io.h"
 #include "util/file_from_grid.h"
-#include "util/format.h"
 #include "util/range.h"
 
 using namespace au;

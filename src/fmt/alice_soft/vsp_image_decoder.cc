@@ -1,5 +1,4 @@
 #include "fmt/alice_soft/vsp_image_decoder.h"
-#include "err.h"
 #include "fmt/alice_soft/pms_image_decoder.h"
 #include "util/range.h"
 

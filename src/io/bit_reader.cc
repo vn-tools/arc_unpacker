@@ -1,4 +1,3 @@
-#include "log.h"
 #include "io/bit_reader.h"
 #include "err.h"
 

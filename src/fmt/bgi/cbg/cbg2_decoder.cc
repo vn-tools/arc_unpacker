@@ -3,9 +3,7 @@
 #include <array>
 #include "err.h"
 #include "fmt/bgi/cbg/cbg_common.h"
-#include "fmt/bgi/common.h"
 #include "io/buffered_io.h"
-#include "util/format.h"
 #include "util/range.h"
 
 using namespace au;

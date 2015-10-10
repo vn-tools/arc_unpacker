@@ -1,6 +1,5 @@
 #include "fmt/entis/common/huffman_decoder.h"
 #include "fmt/entis/common/gamma_decoder.h"
-#include "io/bit_reader.h"
 #include "util/range.h"
 
 using namespace au;

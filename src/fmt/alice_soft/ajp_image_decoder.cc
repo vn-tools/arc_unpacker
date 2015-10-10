@@ -1,5 +1,4 @@
 #include "fmt/alice_soft/ajp_image_decoder.h"
-#include <algorithm>
 #include "fmt/alice_soft/pms_image_decoder.h"
 #include "fmt/jpeg/jpeg_image_decoder.h"
 #include "util/range.h"
