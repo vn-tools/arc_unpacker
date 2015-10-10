@@ -81,11 +81,6 @@ R"(  __ _ _   _
 
 Usage: arc_unpacker [options] [fmt_options] input_path [input_path...]
 
-Depending on the format, files will be saved either in a subdirectory
-(archives), or aside the input files (images, music etc.). If no output
-directory is provided, files are going to be saved inside current working
-directory.
-
 [options] can be:
 
 )", version.c_str()));
@@ -127,7 +122,8 @@ void ArcUnpacker::Priv::register_cli_options()
 
     arg_parser.register_flag({"-r", "--rename"})
         ->set_description(
-            "Renames existing target files.\nBy default, they're overwritten.");
+            "Renames output files to preserve existing files. "
+            "By default, existing files are overwritten with output files.");
 
     arg_parser.register_flag({"-q", "--quiet"})
         ->set_description("Disables all console output.");
@@ -140,7 +136,9 @@ void ArcUnpacker::Priv::register_cli_options()
 
     arg_parser.register_switch({"-o", "--out"})
         ->set_value_name("DIR")
-        ->set_description("Specifies where to put the output files.");
+        ->set_description("Specifies where to place the output files. "
+            "By default, the files are placed in current working directory. "
+            "(Archives always create an intermediate directory.)");
 
     auto sw = arg_parser.register_switch({"-f", "--fmt"})
         ->set_value_name("FORMAT")
