@@ -70,6 +70,8 @@ static std::unique_ptr<File> decode_png(File &file, Header &header)
 {
     file.io.seek(header.data_offset);
     bstr data = file.io.read(header.data_size);
+    if (data.empty())
+        throw std::logic_error("File doesn't contain any data");
     if (data.substr(1, 3) != "GNP"_b)
     {
         throw err::NotSupportedError(
