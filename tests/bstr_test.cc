@@ -65,11 +65,11 @@ TEST_CASE("bstr(std::string)", "[core][types]")
 TEST_CASE("bstr.str", "[core][types]")
 {
     bstr x("test\x00\x01", 6);
-    REQUIRE(x.str() == std::string("test\x00\x01", 6));
     REQUIRE(x.str().size() == 6);
+    REQUIRE(x.str() == std::string("test\x00\x01", 6));
     bstr y("test\x00\x01", 6);
-    REQUIRE(y.str(true) == std::string("test", 4));
     REQUIRE(y.str(true).size() == 4);
+    REQUIRE(y.str(true) == std::string("test", 4));
 }
 
 TEST_CASE("bstr.find", "[core][types]")
@@ -135,22 +135,42 @@ TEST_CASE("bstr.operator+=(char)", "[core][types]")
 
 TEST_CASE("bstr.operator==", "[core][types]")
 {
-    bstr x = "\x00\x01"_b;
-    bstr y = "\x00\x01"_b;
-    REQUIRE(x == x);
-    REQUIRE(x == y);
-    REQUIRE(y == x);
-    REQUIRE(y == y);
+    SECTION("Plain")
+    {
+        bstr x = "a"_b;
+        bstr y = "a"_b;
+        REQUIRE(x == x);
+        REQUIRE(x == y);
+        REQUIRE(y == x);
+        REQUIRE(y == y);
+    }
+    SECTION("NULL terminated")
+    {
+        bstr x = "\x00\x01"_b;
+        bstr y = "\x00\x01"_b;
+        REQUIRE(x == x);
+        REQUIRE(x == y);
+        REQUIRE(y == x);
+        REQUIRE(y == y);
+    }
 }
 
 TEST_CASE("bstr.operator!=", "[core][types]")
 {
-    bstr x = "\x00\x01"_b;
-    bstr y = "\x00\x00"_b;
-    REQUIRE(x == x);
-    REQUIRE(x != y);
-    REQUIRE(y != x);
-    REQUIRE(y == y);
+    SECTION("Plain")
+    {
+        bstr x = "a"_b;
+        bstr y = "b"_b;
+        REQUIRE(x != y);
+        REQUIRE(y != x);
+    }
+    SECTION("NULL terminated")
+    {
+        bstr x = "\x00\x01"_b;
+        bstr y = "\x00\x00"_b;
+        REQUIRE(x != y);
+        REQUIRE(y != x);
+    }
 }
 
 TEST_CASE("bstr.operator[]", "[core][types]")
