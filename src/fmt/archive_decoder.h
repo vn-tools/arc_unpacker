@@ -33,7 +33,6 @@ namespace fmt {
         void disable_preprocessing();
         virtual std::vector<std::string> get_linked_formats() const;
 
-        std::vector<std::shared_ptr<File>> unpack(File &) const;
         std::unique_ptr<ArchiveMeta> read_meta(File &) const;
         std::unique_ptr<File> read_file(
             File &, const ArchiveMeta &, const ArchiveEntry &) const;

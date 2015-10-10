@@ -55,17 +55,6 @@ void ArchiveDecoder::unpack(File &arc_file, const FileSaver &saver) const
     }
 }
 
-std::vector<std::shared_ptr<File>> ArchiveDecoder::unpack(File &arc_file) const
-{
-    std::vector<std::shared_ptr<File>> files;
-    FileSaverCallback saver([&](std::shared_ptr<File> unpacked_file)
-    {
-        files.push_back(unpacked_file);
-    });
-    unpack(arc_file, saver);
-    return files;
-}
-
 std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(File &arc_file) const
 {
     arc_file.io.seek(0);
