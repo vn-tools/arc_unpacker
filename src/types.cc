@@ -32,6 +32,11 @@ std::string bstr::str(bool trim_to_zero) const
     return std::string(&v[0], size());
 }
 
+bool bstr::empty() const
+{
+    return v.size() == 0;
+}
+
 std::size_t bstr::size() const
 {
     return v.size();

@@ -25,6 +25,7 @@ namespace au {
         bstr(const u8 *str, size_t size);
         bstr(const char *str, size_t size);
 
+        bool empty() const;
         std::size_t size() const;
         void resize(std::size_t how_much);
         void reserve(std::size_t how_much);

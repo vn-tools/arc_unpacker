@@ -10,6 +10,31 @@ TEST_CASE("bstr()", "[core][types]")
     REQUIRE(x.size() == 0);
 }
 
+TEST_CASE("bstr.size and bstr.empty", "[core][types]")
+{
+    SECTION("Empty")
+    {
+        bstr x("");
+        REQUIRE(x.size() == 0);
+        REQUIRE(x.empty());
+    }
+    SECTION("Plain")
+    {
+        bstr x("test", 4);
+        REQUIRE(x.size() == 4);
+        REQUIRE(!x.empty());
+    }
+    SECTION("NULL terminated")
+    {
+        bstr x("\x00\x01", 2);
+        REQUIRE(x.size() == 2);
+        REQUIRE(!x.empty());
+        bstr y(std::string("\x00\x01", 2));
+        REQUIRE(y.size() == 2);
+        REQUIRE(!y.empty());
+    }
+}
+
 TEST_CASE("bstr(size_t, u8", "[core][types]")
 {
     bstr x(6);
