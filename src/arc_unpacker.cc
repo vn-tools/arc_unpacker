@@ -55,7 +55,6 @@ private:
     std::string version;
 
     ArgParser arg_parser;
-    std::string path_to_self;
     Options options;
 };
 
@@ -75,19 +74,21 @@ void ArcUnpacker::Priv::print_fmt_list() const
 
 void ArcUnpacker::Priv::print_cli_help() const
 {
-    Log.info("arc_unpacker v" + version + "\n");
-    Log.info("Extracts images and sounds from various visual novels.\n\n");
-    Log.info("Usage: " + path_to_self + " \\\n");
-    Log.info("       [options] [fmt_options] input_path [input_path...]\n\n");
-    Log.info(
-R"(Depending on the format, files will be saved either in a subdirectory
+    Log.info(util::format(
+R"(  __ _ _   _
+ / _` | |_| |  arc_unpacker v%s
+ \__,_|\__,_|  Extracts images and sounds from various visual novels.
+
+Usage: arc_unpacker [options] [fmt_options] input_path [input_path...]
+
+Depending on the format, files will be saved either in a subdirectory
 (archives), or aside the input files (images, music etc.). If no output
 directory is provided, files are going to be saved inside current working
 directory.
 
 [options] can be:
 
-)");
+)", version.c_str()));
 
     arg_parser.print_help();
 
@@ -154,8 +155,6 @@ void ArcUnpacker::Priv::register_cli_options()
 
 void ArcUnpacker::Priv::parse_cli_options()
 {
-    path_to_self = arg_parser.get_stray()[0];
-
     options.should_show_help
         = arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
 
@@ -218,8 +217,6 @@ void ArcUnpacker::Priv::parse_cli_options()
             options.input_paths.push_back(std::move(pi));
         }
     }
-
-    path_to_self = arg_parser.get_stray()[0];
 }
 
 bool ArcUnpacker::Priv::run()
