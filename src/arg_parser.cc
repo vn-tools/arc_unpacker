@@ -164,19 +164,18 @@ static std::vector<std::string> word_wrap(const std::string &text, size_t max)
     std::string line;
     for (auto &word : words)
     {
-        line += word;
         if (word.size() > 0 && word[word.size() - 1] == '\n')
         {
-            lines.push_back(line);
+            lines.push_back(line + word);
             line = "";
         }
-        else if (line.size() > max)
+        else if (line.size() + word.size() >= max)
         {
-            if (line.size() > 0)
-                line.erase(line.size() - 1, 1);
             lines.push_back(line + "\n");
-            line = "";
+            line = word;
         }
+        else
+            line += word;
     }
     if (line != "")
         lines.push_back(line);
