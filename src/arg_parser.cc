@@ -6,7 +6,7 @@
 
 using namespace au;
 
-static const size_t max_line_size = 78;
+static const size_t line_size = 78;
 
 namespace
 {
@@ -59,7 +59,7 @@ std::string OptionImpl::get_invocation_help() const
 {
     std::string invocation;
     bool primary_long_option_shown = false;
-    for (auto &name : names)
+    for (const auto &name : names)
     {
         bool is_long_option = name.compare(0, 2, "--") == 0;
         if (is_long_option)
@@ -78,8 +78,8 @@ std::string OptionImpl::get_invocation_help() const
 
 bool OptionImpl::has_name(const std::string &name) const
 {
-    auto name_normalized = name.substr(name.find_first_not_of('-'));
-    for (auto &other : names)
+    const auto name_normalized = name.substr(name.find_first_not_of('-'));
+    for (const auto &other : names)
         if (name_normalized == other.substr(other.find_first_not_of('-')))
             return true;
     return false;
@@ -98,7 +98,7 @@ FlagImpl::FlagImpl(const std::initializer_list<std::string> &names)
 
 Flag *FlagImpl::set_description(const std::string &desc)
 {
-    description = desc;
+    OptionImpl::set_description(desc);
     return this;
 }
 
@@ -114,7 +114,7 @@ std::string SwitchImpl::get_invocation_help() const
 
 Switch *SwitchImpl::set_description(const std::string &desc)
 {
-    description = desc;
+    OptionImpl::set_description(desc);
     return this;
 }
 
@@ -127,8 +127,7 @@ Switch *SwitchImpl::set_value_name(const std::string &name)
 Switch *SwitchImpl::add_possible_value(
     const std::string &value, const std::string &description)
 {
-    possible_values.push_back(std::pair<std::string, std::string>(
-        value, description));
+    possible_values.push_back({value, description});
     return this;
 }
 
@@ -142,29 +141,23 @@ static std::vector<std::string> split_to_words(const std::string &sentence)
 {
     std::vector<std::string> words;
     size_t pos = 0, new_pos = 0;
-    while (new_pos != sentence.size())
+    while ((new_pos = sentence.find_first_of(" \r\n\t", pos)) != sentence.npos)
     {
-        for (new_pos = pos; new_pos < sentence.size(); new_pos++)
-        {
-            char c = sentence[new_pos];
-            if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
-                break;
-        }
         words.push_back(sentence.substr(pos, new_pos + 1 - pos));
         pos = new_pos + 1;
     }
+    words.push_back(sentence.substr(pos));
     return words;
 }
 
-static std::vector<std::string> word_wrap(const std::string &text, size_t max)
+static std::vector<std::string> word_wrap(
+    const std::string &text, const size_t max)
 {
-    auto words = split_to_words(text);
-
     std::vector<std::string> lines;
     std::string line;
-    for (auto &word : words)
+    for (const auto &word : split_to_words(text))
     {
-        if (word.size() > 0 && word[word.size() - 1] == '\n')
+        if (!word.empty() && word.back() == '\n')
         {
             lines.push_back(line + word);
             line = "";
@@ -183,24 +176,21 @@ static std::vector<std::string> word_wrap(const std::string &text, size_t max)
 }
 
 static void print_possible_values_table(
-    const std::vector<std::pair<std::string, std::string>> &possible_values)
+    const std::vector<std::pair<std::string, std::string>> &values)
 {
-    auto max_value_size = 0;
-    for (auto &it : possible_values)
-        max_value_size = std::max<size_t>(it.first.size(), max_value_size);
-    auto columns = (max_line_size - max_value_size - 2) / max_value_size;
-    auto rows = (possible_values.size() + columns - 1) / columns;
-    for (auto y : util::range(rows))
+    auto value_size = 0;
+    for (const auto &it : values)
+        value_size = std::max<size_t>(it.first.size(), value_size);
+    value_size += 2; // keep two spaces around value names
+    const auto columns = (line_size - value_size) / value_size;
+    const auto rows = (values.size() + columns - 1) / columns;
+    for (const auto y : util::range(rows))
     {
-        for (auto x : util::range(columns))
+        for (const auto x : util::range(columns))
         {
-            auto i = x * rows + y;
-            if (i >= possible_values.size())
-                continue;
-            Log.info(
-                util::format(
-                    util::format("- %%-%ds ", max_value_size),
-                    possible_values[i].first.c_str()));
+            const auto i = x * rows + y;
+            if (i < values.size())
+                Log.info("- %-*s ", value_size, values[i].first.c_str());
         }
         Log.info("\n");
     }
@@ -209,63 +199,49 @@ static void print_possible_values_table(
 static void print_possible_values_list(
     const std::vector<std::pair<std::string, std::string>> &possible_values)
 {
-    auto max_value_size = 0;
-    for (auto &it : possible_values)
-        max_value_size = std::max<size_t>(it.first.size(), max_value_size);
-    for (auto &it : possible_values)
+    size_t value_size = 0;
+    for (const auto &it : possible_values)
+        value_size = std::max(it.first.size(), value_size);
+    for (const auto &it : possible_values)
     {
         Log.info(
-            util::format(
-                util::format("- %%-%ds  %%s\n", max_value_size),
-                it.first.c_str(),
-                it.second.c_str()));
+            "- %-*s  %s\n", value_size, it.first.c_str(), it.second.c_str());
     }
 }
 
 static void print_switches(const std::vector<SwitchImpl*> &switches)
 {
-    for (auto &sw : switches)
+    for (const auto &sw : switches)
     {
-        auto possible_values = sw->possible_values;
-        if (!possible_values.size() || sw->possible_values_hidden)
+        const auto &values = sw->possible_values;
+        if (!values.size() || sw->possible_values_hidden)
             continue;
-        Log.info(util::format(
-            "\nAvailable %s values:\n\n", sw->value_name.c_str()));
-        bool use_descriptions = false;
-        for (auto &p : possible_values)
-            if (p.second != "")
-                use_descriptions = true;
+        Log.info("\nAvailable %s values:\n\n", sw->value_name.c_str());
+        const bool use_descriptions = std::all_of(
+            values.begin(),
+            values.end(),
+            [](const auto &it) { return !it.second.empty(); });
         if (use_descriptions)
-            print_possible_values_list(possible_values);
+            print_possible_values_list(values);
         else
-            print_possible_values_table(possible_values);
+            print_possible_values_table(values);
     }
 }
 
 static void print_options(
     const std::vector<std::unique_ptr<OptionImpl>> &options)
 {
-    size_t max_invocation_size = 0;
-    for (auto &option : options)
-        max_invocation_size = std::max<size_t>(
-            max_invocation_size, option->get_invocation_help().size());
-    max_invocation_size += 2; // keep two spaces
-    const auto max_description_size = max_line_size - max_invocation_size;
-    for (auto &option : options)
+    size_t invocation_size = 0;
+    for (const auto &opt : options)
+        invocation_size = std::max<size_t>(
+            invocation_size, opt->get_invocation_help().size());
+    invocation_size += 2; // keep two spaces around parameter descriptions
+    const auto description_size = line_size - invocation_size;
+    for (const auto &opt : options)
     {
-        auto invocation = option->get_invocation_help();
-        auto description = option->description;
-        auto tmp_size = invocation.size();
-        Log.info(invocation);
-        for (; tmp_size < max_invocation_size; tmp_size++)
-            Log.info(" ");
-        auto lines = word_wrap(description, max_description_size);
-        for (auto line : lines)
-        {
-            Log.info(line);
-            for (auto i : util::range(max_invocation_size))
-                Log.info(" ");
-        }
+        Log.info("%-*s", invocation_size, opt->get_invocation_help().c_str());
+        for (const auto &line : word_wrap(opt->description, description_size))
+            Log.info(line + std::string(invocation_size, ' '));
         Log.info("\n");
     }
 }
@@ -283,8 +259,8 @@ struct ArgParser::Priv final
 
 void ArgParser::Priv::check_names(const std::vector<std::string> &names)
 {
-    for (auto &name : names)
-    for (auto &option : options)
+    for (const auto &name : names)
+    for (const auto &option : options)
     {
         if (option->has_name(name))
         {
@@ -303,7 +279,7 @@ void ArgParser::Priv::parse_single_arg(const std::string &arg)
         return;
     }
 
-    for (auto &flag : flags)
+    for (const auto &flag : flags)
     {
         if (!flag->has_name(arg))
             continue;
@@ -311,29 +287,26 @@ void ArgParser::Priv::parse_single_arg(const std::string &arg)
         return;
     }
 
-    auto tmp = arg.find_first_of('=');
+    const auto tmp = arg.find_first_of('=');
     if (tmp == std::string::npos)
         return;
-    auto key = arg.substr(0, tmp);
-    auto value = arg.substr(tmp + 1);
+    const auto key = arg.substr(0, tmp);
+    const auto value = arg.substr(tmp + 1);
 
-    for (auto &sw : switches)
+    for (const auto &sw : switches)
     {
         if (!sw->has_name(key))
             continue;
 
-        if (sw->possible_values.size())
+        if (sw->possible_values.size()
+            && std::all_of(
+                sw->possible_values.begin(),
+                sw->possible_values.end(),
+                [&](const auto &it) { return it.first != value; }))
         {
-            bool found = false;
-            for (auto &it : sw->possible_values)
-                if (it.first == value)
-                    found = true;
-            if (!found)
-            {
-                throw err::UsageError(
-                    "Bad value for option \"" + key + "\". "
-                    "See --help for usage.");
-            }
+            throw err::UsageError(
+                "Bad value for option \"" + key + "\". "
+                "See --help for usage.");
         }
 
         sw->is_set = true;
@@ -352,7 +325,7 @@ ArgParser::~ArgParser()
 
 void ArgParser::parse(const std::vector<std::string> &args)
 {
-    for (auto &arg : args)
+    for (const auto &arg : args)
         p->parse_single_arg(arg);
 }
 
@@ -379,7 +352,7 @@ Switch *ArgParser::register_switch(
 
 bool ArgParser::has_switch(const std::string &name) const
 {
-    for (auto &sw : p->switches)
+    for (const auto &sw : p->switches)
         if (sw->has_name(name))
             return sw->is_set;
     throw std::logic_error("Trying to use undefined switch \"" + name + "\"");
@@ -387,7 +360,7 @@ bool ArgParser::has_switch(const std::string &name) const
 
 const std::string ArgParser::get_switch(const std::string &name) const
 {
-    for (auto &sw : p->switches)
+    for (const auto &sw : p->switches)
         if (sw->has_name(name))
             return sw->value;
     throw std::logic_error("Trying to use undefined switch \"" + name + "\"");
@@ -395,7 +368,7 @@ const std::string ArgParser::get_switch(const std::string &name) const
 
 bool ArgParser::has_flag(const std::string &name) const
 {
-    for (auto &f : p->flags)
+    for (const auto &f : p->flags)
         if (f->has_name(name))
             return f->is_set;
     throw std::logic_error("Trying to use undefined flag \"" + name + "\"");

@@ -13,8 +13,7 @@ FileSaverCallback::Priv::Priv(FileSaveCallback callback) : callback(callback)
 {
 }
 
-FileSaverCallback::FileSaverCallback()
-    : p(new Priv(nullptr))
+FileSaverCallback::FileSaverCallback() : p(new Priv(nullptr))
 {
 }
 

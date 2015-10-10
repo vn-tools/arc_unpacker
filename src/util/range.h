@@ -8,7 +8,7 @@ namespace util {
     struct RangeImpl final
     {
         struct Iterator final
-            : std::iterator<std::random_access_iterator_tag,int,int>
+            : std::iterator<std::random_access_iterator_tag, int, int>
         {
             int i, stride;
 
@@ -40,8 +40,8 @@ namespace util {
         int stride;
         Iterator b, e;
 
-        constexpr RangeImpl(int b, int e, int stride=1)
-            : stride(stride), b(b,stride), e(e,stride)
+        constexpr RangeImpl(int b, int e, int stride = 1)
+            : stride(stride), b(b, stride), e(e, stride)
         {
         }
 

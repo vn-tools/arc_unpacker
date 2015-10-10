@@ -12,7 +12,7 @@ struct FileSaverHdd::Priv final
 {
     Priv(const boost::filesystem::path &output_dir, bool overwrite);
     boost::filesystem::path make_path_unique(
-        const boost::filesystem::path path);
+        const boost::filesystem::path &path);
 
     boost::filesystem::path output_dir;
     std::set<boost::filesystem::path> paths;
@@ -26,14 +26,14 @@ FileSaverHdd::Priv::Priv(
 }
 
 boost::filesystem::path FileSaverHdd::Priv::make_path_unique(
-    const boost::filesystem::path path)
+    const boost::filesystem::path &path)
 {
     boost::filesystem::path new_path = path;
     int i = 1;
     while (paths.find(new_path) != paths.end()
         || (!overwrite && boost::filesystem::exists(new_path)))
     {
-        std::string suffix = util::format("(%d)", i++);
+        const auto suffix = util::format("(%d)", i++);
         new_path = path.parent_path();
         new_path /= boost::filesystem::path(
             path.stem().string() + suffix + path.extension().string());
@@ -56,7 +56,7 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
 {
     try
     {
-        std::string name_part = file->name;
+        auto name_part = file->name;
         size_t pos = 0;
         while ((pos = name_part.find("\\", pos)) != std::string::npos)
         {
@@ -70,17 +70,17 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
 
         Log.info("Saving to " + full_path.generic_string() + "... ");
 
-        if (full_path.parent_path() != "")
+        if (!full_path.parent_path().empty())
             boost::filesystem::create_directories(full_path.parent_path());
 
         io::FileIO output_io(full_path.string(), io::FileMode::Write);
         file->io.seek(0);
-        output_io.write_from_io(file->io, file->io.size());
+        output_io.write_from_io(file->io);
         Log.success("ok\n");
     }
     catch (std::runtime_error &e)
     {
-        Log.err("error (" + std::string(e.what()) + ")\n");
+        Log.err("error (%s)\n", e.what() ? e.what() : "unknown error");
     }
     Log.flush();
 }

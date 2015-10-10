@@ -26,9 +26,7 @@ namespace util {
         }
 
         void add(
-            const std::string &name,
-            const std::string &description,
-            T value)
+            const std::string &name, const std::string &description, T value)
         {
             PluginDefinition<T> d;
             d.name = name;
@@ -38,7 +36,7 @@ namespace util {
         }
 
         void register_cli_options(
-            ArgParser &arg_parser, const std::string &description)
+            ArgParser &arg_parser, const std::string &description) const
         {
             auto sw = arg_parser.register_switch({"-p", "--plugin"})
                 ->set_value_name("PLUGIN")
@@ -47,7 +45,7 @@ namespace util {
                 sw->add_possible_value(def.name, def.description);
         }
 
-        T get_from_string(const std::string &plugin)
+        T get_from_string(const std::string &plugin) const
         {
             for (const auto &definition : definitions)
                 if (definition.name == plugin)
@@ -55,7 +53,8 @@ namespace util {
             throw err::UsageError("Unrecognized plugin: " + plugin);
         }
 
-        T get_from_cli_options(const ArgParser &arg_parser, bool mandatory)
+        T get_from_cli_options(
+            const ArgParser &arg_parser, bool mandatory) const
         {
             if (!arg_parser.has_switch("plugin"))
             {

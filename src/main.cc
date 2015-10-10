@@ -7,11 +7,10 @@ using namespace au;
 ENTRY_POINT(
     try
     {
+        arguments.erase(arguments.begin());
         ArcUnpacker arc_unpacker(arguments, AU_VERSION);
 
-        if (!arc_unpacker.run())
-            return -1;
-        return 0;
+        return arc_unpacker.run();
     }
     catch (std::exception &e)
     {

@@ -13,7 +13,7 @@ namespace au {
             const std::vector<std::string> &arguments,
             const std::string &version);
         ~ArcUnpacker();
-        bool run();
+        int run() const;
 
     private:
         struct Priv;

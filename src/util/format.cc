@@ -14,7 +14,6 @@ std::string au::util::format(const std::string &fmt, ...)
 std::string au::util::format(const std::string &fmt, std::va_list args)
 {
     size_t size;
-
     std::va_list args_copy;
     va_copy(args_copy, args);
 
