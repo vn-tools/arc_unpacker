@@ -45,10 +45,8 @@ namespace fmt {
             File &, const ArchiveMeta &, const ArchiveEntry &) const = 0;
         virtual void preprocess(File &, ArchiveMeta &, const FileSaver &) const;
 
-        bool preprocessing_disabled;
-
     private:
-        std::vector<IDecoder*> decoders;
+        bool preprocessing_disabled;
     };
 
 } }
