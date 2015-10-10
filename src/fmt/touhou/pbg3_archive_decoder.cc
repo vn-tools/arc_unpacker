@@ -65,7 +65,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         meta->entries.push_back(std::move(entry));
     }
     if (last_entry)
-        last_entry->size_comp = arc_file.io.size() - last_entry->offset;
+        last_entry->size_comp = table_offset - last_entry->offset;
     return meta;
 }
 
