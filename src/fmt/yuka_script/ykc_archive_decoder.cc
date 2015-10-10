@@ -1,4 +1,5 @@
 #include "fmt/yuka_script/ykc_archive_decoder.h"
+#include "util/encoding.h"
 #include "util/range.h"
 
 using namespace au;
@@ -41,7 +42,8 @@ std::unique_ptr<fmt::ArchiveMeta>
         arc_file.io.skip(4);
 
         arc_file.io.seek(name_origin);
-        entry->name = arc_file.io.read(name_size).str();
+        entry->name = util::sjis_to_utf8(
+            arc_file.io.read_to_zero(name_size)).str();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
