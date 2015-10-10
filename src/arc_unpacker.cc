@@ -15,17 +15,11 @@ using namespace au;
 
 namespace
 {
-    struct PathInfo final
-    {
-        std::string input_path;
-        std::string base_name;
-    };
-
     struct Options final
     {
         std::string format;
         boost::filesystem::path output_dir;
-        std::vector<std::unique_ptr<PathInfo>> input_paths;
+        std::vector<std::string> input_paths;
         bool overwrite;
         bool enable_nested_decoding;
         bool should_show_help;
@@ -195,24 +189,13 @@ void ArcUnpacker::Priv::parse_cli_options()
                 it != boost::filesystem::recursive_directory_iterator();
                 it++)
             {
-                auto pi = std::make_unique<PathInfo>();
-                pi->input_path = it->path().string();
-                pi->base_name = pi->input_path.substr(path.size());
-                while (pi->base_name.size() > 0 &&
-                    (pi->base_name[0] == '/' || pi->base_name[0] == '\\'))
-                {
-                    pi->base_name = pi->base_name.substr(1);
-                }
                 if (!boost::filesystem::is_directory(*it))
-                    options.input_paths.push_back(std::move(pi));
+                    options.input_paths.push_back(it->path().string());
             }
         }
         else
         {
-            auto pi = std::make_unique<PathInfo>();
-            pi->input_path = path;
-            pi->base_name = boost::filesystem::path(path).filename().string();
-            options.input_paths.push_back(std::move(pi));
+            options.input_paths.push_back(path);
         }
     }
 }
@@ -243,13 +226,11 @@ bool ArcUnpacker::Priv::run()
     }
 
     bool result = true;
-    for (auto &path_info : options.input_paths)
+    for (auto &input_path : options.input_paths)
     {
-        File file(path_info->input_path, io::FileMode::Read);
-
-        auto tmp = boost::filesystem::path(path_info->base_name);
-        auto base_name = tmp.stem().string() + "~" + tmp.extension().string();
-
+        File file(input_path, io::FileMode::Read);
+        auto path = boost::filesystem::path(input_path);
+        auto base_name = path.stem().string() + "~" + path.extension().string();
         result &= guess_decoder_and_unpack(file, base_name);
     }
     return result;
