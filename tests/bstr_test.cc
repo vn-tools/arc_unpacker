@@ -84,14 +84,34 @@ TEST_CASE("bstr.find", "[core][types]")
 TEST_CASE("bstr.substr", "[core][types]")
 {
     bstr x("test\x00\x01", 6);
-    REQUIRE(x.substr(0, 6) == x);
-    REQUIRE(x.substr(0, 5) == "test\x00"_b);
-    REQUIRE(x.substr(1, 5) == "est\x00\x01"_b);
-    REQUIRE(x.substr(1) == "est\x00\x01"_b);
-    REQUIRE(x.substr(2) == "st\x00\x01"_b);
-    REQUIRE(x.substr(1, 0) == ""_b);
-    REQUIRE_THROWS(x.substr(1, -1));
-    // REQUIRE_THROWS(x.substr(-1, 1));
+    SECTION("Plain substring")
+    {
+        REQUIRE(x.substr(0, 6) == x);
+        REQUIRE(x.substr(0, 5) == "test\x00"_b);
+        REQUIRE(x.substr(1, 5) == "est\x00\x01"_b);
+        REQUIRE(x.substr(1) == "est\x00\x01"_b);
+        REQUIRE(x.substr(2) == "st\x00\x01"_b);
+        REQUIRE(x.substr(1, 0) == ""_b);
+    }
+    SECTION("Size out of bounds")
+    {
+        REQUIRE(x.substr(0, 7) == "test\x00\x01"_b);
+        REQUIRE(x.substr(1, 7) == "est\x00\x01"_b);
+    }
+    SECTION("Pseudo negative offsets")
+    {
+        REQUIRE(x.substr(-1, 0) == ""_b);
+        REQUIRE(x.substr(-1, 1) == ""_b);
+        REQUIRE(x.substr(-1, 2) == ""_b); // note: not "t"_b...
+        REQUIRE(x.substr(-1) == x.substr(0xFFFFFFFFull)); // because of this
+        REQUIRE(x.substr(0xFFFFFFFFull) == x.substr(7)); // and this
+    }
+    SECTION("Pseudo negative sizes")
+    {
+        REQUIRE(x.substr(1, -1) == "est\x00\x01"_b); // similarly, not ""_b
+        REQUIRE(x.substr(1, -1) == x.substr(1, 0xFFFFFFFFull));
+        REQUIRE(x.substr(1, 0xFFFFFFFFull) == x.substr(1, 7));
+    }
 }
 
 TEST_CASE("bstr.resize()", "[core][types]")

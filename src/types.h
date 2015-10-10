@@ -17,7 +17,7 @@ namespace au {
 
     struct bstr final
     {
-        static const std::size_t npos;
+        static const size_t npos;
 
         bstr();
         bstr(size_t n, u8 fill = 0);
@@ -26,13 +26,13 @@ namespace au {
         bstr(const char *str, size_t size);
 
         bool empty() const;
-        std::size_t size() const;
-        void resize(std::size_t how_much);
-        void reserve(std::size_t how_much);
+        size_t size() const;
+        void resize(size_t how_much);
+        void reserve(size_t how_much);
 
-        std::size_t find(const bstr &other);
-        bstr substr(std::size_t start) const;
-        bstr substr(std::size_t start, std::size_t size) const;
+        size_t find(const bstr &other);
+        bstr substr(size_t start) const;
+        bstr substr(size_t start, size_t size) const;
 
         template<typename T> T *get()
         {
@@ -82,8 +82,8 @@ namespace au {
         void operator +=(u8 c);
         bool operator !=(const bstr &other) const;
         bool operator ==(const bstr &other) const;
-        char &operator [](std::size_t pos);
-        const char &operator [](std::size_t pos) const;
+        char &operator [](size_t pos);
+        const char &operator [](size_t pos) const;
 
     private:
         std::vector<char> v;
