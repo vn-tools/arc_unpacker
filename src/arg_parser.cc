@@ -175,9 +175,10 @@ static std::vector<std::string> word_wrap(
     return lines;
 }
 
-static void print_possible_values_table(
+static std::string format_possible_values_table(
     const std::vector<std::pair<std::string, std::string>> &values)
 {
+    std::string out;
     auto value_size = 0;
     for (const auto &it : values)
         value_size = std::max<size_t>(it.first.size(), value_size);
@@ -190,42 +191,51 @@ static void print_possible_values_table(
         {
             const auto i = x * rows + y;
             if (i < values.size())
-                Log.info("- %-*s ", value_size, values[i].first.c_str());
+            {
+                out += util::format(
+                    "- %-*s ", value_size, values[i].first.c_str());
+            }
         }
-        Log.info("\n");
+        out += "\n";
     }
+    return out;
 }
 
-static void print_possible_values_list(
+static std::string format_possible_values_list(
     const std::vector<std::pair<std::string, std::string>> &possible_values)
 {
     size_t value_size = 0;
     for (const auto &it : possible_values)
         value_size = std::max(it.first.size(), value_size);
+    std::string out;
     for (const auto &it : possible_values)
     {
-        Log.info(
+        out += util::format(
             "- %-*s  %s\n", value_size, it.first.c_str(), it.second.c_str());
     }
+    return out;
+}
+
+static std::string format_switch_help(const SwitchImpl &sw)
+{
+    const auto &values = sw.possible_values;
+    if (!values.size() || sw.possible_values_hidden)
+        return "";
+    auto out
+        = util::format("\nAvailable %s values:\n\n", sw.value_name.c_str());
+    const bool use_descriptions = std::all_of(
+        values.begin(), values.end(),
+        [](const auto &it) { return !it.second.empty(); });
+    out += use_descriptions
+        ? format_possible_values_list(values)
+        : format_possible_values_table(values);
+    return out;
 }
 
 static void print_switches(const std::vector<SwitchImpl*> &switches)
 {
     for (const auto &sw : switches)
-    {
-        const auto &values = sw->possible_values;
-        if (!values.size() || sw->possible_values_hidden)
-            continue;
-        Log.info("\nAvailable %s values:\n\n", sw->value_name.c_str());
-        const bool use_descriptions = std::all_of(
-            values.begin(),
-            values.end(),
-            [](const auto &it) { return !it.second.empty(); });
-        if (use_descriptions)
-            print_possible_values_list(values);
-        else
-            print_possible_values_table(values);
-    }
+        Log.info(format_switch_help(*sw));
 }
 
 static void print_options(
@@ -305,8 +315,8 @@ void ArgParser::Priv::parse_single_arg(const std::string &arg)
                 [&](const auto &it) { return it.first != value; }))
         {
             throw err::UsageError(
-                "Bad value for option \"" + key + "\". "
-                "See --help for usage.");
+                "Bad value for option \"" + key + "\".\n"
+                + format_switch_help(*sw));
         }
 
         sw->is_set = true;
