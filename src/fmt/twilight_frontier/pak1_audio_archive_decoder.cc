@@ -78,4 +78,5 @@ std::unique_ptr<File> Pak1AudioArchiveDecoder::read_file_impl(
         entry->name);
 }
 
-static auto dummy = fmt::register_fmt<Pak1AudioArchiveDecoder>("th/pak1-sfx");
+static auto dummy
+    = fmt::register_fmt<Pak1AudioArchiveDecoder>("twilight-frontier/pak1-sfx");

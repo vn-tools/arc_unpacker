@@ -233,7 +233,7 @@ void Xp3ArchiveDecoder::set_plugin(const std::string &plugin_name)
 
 std::vector<std::string> Xp3ArchiveDecoder::get_linked_formats() const
 {
-    return { "krkr/tlg" };
+    return { "kirikiri/tlg" };
 }
 
-static auto dummy = fmt::register_fmt<Xp3ArchiveDecoder>("krkr/xp3");
+static auto dummy = fmt::register_fmt<Xp3ArchiveDecoder>("kirikiri/xp3");

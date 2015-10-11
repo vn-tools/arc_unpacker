@@ -158,4 +158,5 @@ std::unique_ptr<File> ThbgmAudioArchiveDecoder::read_file_impl(
         entry->name);
 }
 
-static auto dummy = fmt::register_fmt<ThbgmAudioArchiveDecoder>("th/thbgm");
+static auto dummy
+    = fmt::register_fmt<ThbgmAudioArchiveDecoder>("team-shanghai-alice/thbgm");

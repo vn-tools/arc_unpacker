@@ -58,4 +58,5 @@ std::unique_ptr<File> TfcsFileDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::register_fmt<TfcsFileDecoder>("th/tfcs");
+static auto dummy
+    = fmt::register_fmt<TfcsFileDecoder>("twilight-frontier/tfcs");

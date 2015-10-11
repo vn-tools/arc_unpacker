@@ -25,4 +25,4 @@ std::unique_ptr<File> AudioDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::register_fmt<AudioDecoder>("bgi/sound");
+static auto dummy = fmt::register_fmt<AudioDecoder>("bgi/audio");

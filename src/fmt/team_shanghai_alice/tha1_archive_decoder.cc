@@ -184,7 +184,8 @@ std::unique_ptr<File> Tha1ArchiveDecoder::read_file_impl(
 
 std::vector<std::string> Tha1ArchiveDecoder::get_linked_formats() const
 {
-    return { "th/anm" };
+    return { "team-shanghai-alice/anm" };
 }
 
-static auto dummy = fmt::register_fmt<Tha1ArchiveDecoder>("th/tha1");
+static auto dummy
+    = fmt::register_fmt<Tha1ArchiveDecoder>("team-shanghai-alice/tha1");

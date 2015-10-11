@@ -104,7 +104,8 @@ std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
 
 std::vector<std::string> Pak1ArchiveDecoder::get_linked_formats() const
 {
-    return { "th/pak1-sfx", "th/pak1-gfx" };
+    return { "twilight-frontier/pak1-sfx", "twilight-frontier/pak1-gfx" };
 }
 
-static auto dummy = fmt::register_fmt<Pak1ArchiveDecoder>("th/pak1");
+static auto dummy
+    = fmt::register_fmt<Pak1ArchiveDecoder>("twilight-frontier/pak1");

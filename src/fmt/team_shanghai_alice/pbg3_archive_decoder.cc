@@ -89,7 +89,8 @@ std::unique_ptr<File> Pbg3ArchiveDecoder::read_file_impl(
 
 std::vector<std::string> Pbg3ArchiveDecoder::get_linked_formats() const
 {
-    return { "th/anm" };
+    return { "team-shanghai-alice/anm" };
 }
 
-static auto dummy = fmt::register_fmt<Pbg3ArchiveDecoder>("th/pbg3");
+static auto dummy
+    = fmt::register_fmt<Pbg3ArchiveDecoder>("team-shanghai-alice/pbg3");

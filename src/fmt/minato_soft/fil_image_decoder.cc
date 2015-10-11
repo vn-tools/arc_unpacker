@@ -16,4 +16,4 @@ pix::Grid FilImageDecoder::decode_impl(File &file) const
     return pix::Grid(width, height, data, pix::Format::Gray8);
 }
 
-static auto dummy = fmt::register_fmt<FilImageDecoder>("minato/fil");
+static auto dummy = fmt::register_fmt<FilImageDecoder>("minato-soft/fil");

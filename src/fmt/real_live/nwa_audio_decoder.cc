@@ -253,4 +253,4 @@ std::unique_ptr<File> NwaAudioDecoder::decode_impl(File &file) const
         file.name);
 }
 
-static auto dummy = fmt::register_fmt<NwaAudioDecoder>("rl/nwa");
+static auto dummy = fmt::register_fmt<NwaAudioDecoder>("real-live/nwa");

@@ -53,4 +53,4 @@ pix::Grid LimImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::register_fmt<LimImageDecoder>("liar/lim");
+static auto dummy = fmt::register_fmt<LimImageDecoder>("liar-soft/lim");

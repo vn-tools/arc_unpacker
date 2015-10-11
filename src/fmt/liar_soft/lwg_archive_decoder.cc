@@ -59,7 +59,7 @@ std::unique_ptr<File> LwgArchiveDecoder::read_file_impl(
 
 std::vector<std::string> LwgArchiveDecoder::get_linked_formats() const
 {
-    return { "liar/wcg", "liar/lwg" };
+    return { "liar-soft/wcg", "liar-soft/lwg" };
 }
 
-static auto dummy = fmt::register_fmt<LwgArchiveDecoder>("liar/lwg");
+static auto dummy = fmt::register_fmt<LwgArchiveDecoder>("liar-soft/lwg");

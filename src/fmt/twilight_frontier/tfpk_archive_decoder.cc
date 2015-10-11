@@ -506,7 +506,14 @@ void TfpkArchiveDecoder::preprocess(
 
 std::vector<std::string> TfpkArchiveDecoder::get_linked_formats() const
 {
-    return { "th/tfcs", "th/tfwa", "th/tfbm", "ms/dds" };
+    return
+    {
+        "twilight-frontier/tfcs",
+        "twilight-frontier/tfwa",
+        "twilight-frontier/tfbm",
+        "microsoft/dds"
+    };
 }
 
-static auto dummy = fmt::register_fmt<TfpkArchiveDecoder>("th/tfpk");
+static auto dummy
+    = fmt::register_fmt<TfpkArchiveDecoder>("twilight-frontier/tfpk");

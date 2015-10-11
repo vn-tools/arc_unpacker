@@ -30,4 +30,4 @@ pix::Grid XyzImageDecoder::decode_impl(File &file) const
     return pix::Grid(width, height, pix_data, palette);
 }
 
-static auto dummy = fmt::register_fmt<XyzImageDecoder>("rm/xyz");
+static auto dummy = fmt::register_fmt<XyzImageDecoder>("rpgmaker/xyz");

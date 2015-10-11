@@ -46,4 +46,4 @@ pix::Grid WcgImageDecoder::decode_impl(File &file) const
     return pix::Grid(width, height, output, pix::Format::BGRA8888);
 }
 
-static auto dummy = fmt::register_fmt<WcgImageDecoder>("liar/wcg");
+static auto dummy = fmt::register_fmt<WcgImageDecoder>("liar-soft/wcg");

@@ -51,4 +51,4 @@ std::unique_ptr<File> RgssadArchiveDecoder::read_file_impl(
         arc_file, *static_cast<const rgs::ArchiveEntryImpl*>(&e));
 }
 
-static auto dummy = fmt::register_fmt<RgssadArchiveDecoder>("rm/rgssad");
+static auto dummy = fmt::register_fmt<RgssadArchiveDecoder>("rpgmaker/rgssad");

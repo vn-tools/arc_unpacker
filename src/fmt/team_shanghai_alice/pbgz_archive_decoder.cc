@@ -154,7 +154,8 @@ std::unique_ptr<File> PbgzArchiveDecoder::read_file_impl(
 
 std::vector<std::string> PbgzArchiveDecoder::get_linked_formats() const
 {
-    return { "th/anm" };
+    return { "team-shanghai-alice/anm" };
 }
 
-static auto dummy = fmt::register_fmt<PbgzArchiveDecoder>("th/pbgz");
+static auto dummy
+    = fmt::register_fmt<PbgzArchiveDecoder>("team-shanghai-alice/pbgz");

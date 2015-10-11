@@ -77,7 +77,8 @@ std::unique_ptr<File> Pbg4ArchiveDecoder::read_file_impl(
 
 std::vector<std::string> Pbg4ArchiveDecoder::get_linked_formats() const
 {
-    return { "th/anm" };
+    return { "team-shanghai-alice/anm" };
 }
 
-static auto dummy = fmt::register_fmt<Pbg4ArchiveDecoder>("th/pbg4");
+static auto dummy
+    = fmt::register_fmt<Pbg4ArchiveDecoder>("team-shanghai-alice/pbg4");

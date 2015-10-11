@@ -135,4 +135,5 @@ std::unique_ptr<File> Pak1ImageArchiveDecoder::read_file_impl(
     return util::file_from_grid(*pixels, entry->name);
 }
 
-static auto dummy = fmt::register_fmt<Pak1ImageArchiveDecoder>("th/pak1-gfx");
+static auto dummy
+    = fmt::register_fmt<Pak1ImageArchiveDecoder>("twilight-frontier/pak1-gfx");

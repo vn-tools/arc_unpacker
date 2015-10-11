@@ -51,4 +51,4 @@ std::unique_ptr<File> MykArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-static auto dummy = fmt::register_fmt<MykArchiveDecoder>("cherry/myk");
+static auto dummy = fmt::register_fmt<MykArchiveDecoder>("cherry-soft/myk");

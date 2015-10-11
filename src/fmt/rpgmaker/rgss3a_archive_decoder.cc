@@ -45,4 +45,4 @@ std::unique_ptr<File> Rgss3aArchiveDecoder::read_file_impl(
         arc_file, *static_cast<const rgs::ArchiveEntryImpl*>(&e));
 }
 
-static auto dummy = fmt::register_fmt<Rgss3aArchiveDecoder>("rm/rgss3a");
+static auto dummy = fmt::register_fmt<Rgss3aArchiveDecoder>("rpgmaker/rgss3a");

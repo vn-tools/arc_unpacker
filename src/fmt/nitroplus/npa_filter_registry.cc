@@ -64,7 +64,7 @@ struct NpaFilterRegistry::Priv final
 
 NpaFilterRegistry::NpaFilterRegistry() : p(new Priv)
 {
-    p->plugin_mgr.add("chaos_head", "ChaoS;HEAd", create_chaos_head_filter);
+    p->plugin_mgr.add("chaos-head", "ChaoS;HEAd", create_chaos_head_filter);
     p->plugin_mgr.add(
         "muramasa", "Full Metal Daemon Muramasa", create_muramasa_filter);
 }

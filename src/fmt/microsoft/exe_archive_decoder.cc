@@ -532,4 +532,4 @@ std::unique_ptr<File> ExeArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::register_fmt<ExeArchiveDecoder>("ms/exe");
+static auto dummy = fmt::register_fmt<ExeArchiveDecoder>("microsoft/exe");

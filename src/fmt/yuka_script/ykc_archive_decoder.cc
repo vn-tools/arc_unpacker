@@ -60,7 +60,7 @@ std::unique_ptr<File> YkcArchiveDecoder::read_file_impl(
 
 std::vector<std::string> YkcArchiveDecoder::get_linked_formats() const
 {
-    return { "yuka/ykg" };
+    return { "yuka-script/ykg" };
 }
 
-static auto dummy = fmt::register_fmt<YkcArchiveDecoder>("yuka/ykc");
+static auto dummy = fmt::register_fmt<YkcArchiveDecoder>("yuka-script/ykc");

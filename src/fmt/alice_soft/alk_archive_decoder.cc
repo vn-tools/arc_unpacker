@@ -54,7 +54,7 @@ std::unique_ptr<File> AlkArchiveDecoder::read_file_impl(
 
 std::vector<std::string> AlkArchiveDecoder::get_linked_formats() const
 {
-    return { "alice/qnt" };
+    return { "alice-soft/qnt" };
 }
 
-static auto dummy = fmt::register_fmt<AlkArchiveDecoder>("alice/alk");
+static auto dummy = fmt::register_fmt<AlkArchiveDecoder>("alice-soft/alk");

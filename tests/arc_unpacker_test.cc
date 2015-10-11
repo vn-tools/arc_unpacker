@@ -10,7 +10,7 @@ TEST_CASE("Converting single files with CLI facade", "[core][frontend]")
     ArcUnpacker arc_unpacker(
         {
             "./tests/fmt/real_live/files/g00-2/AYU_03.g00",
-            "--fmt=rl/g00"
+            "--fmt=real-live/g00"
         },
         "0.0");
 
@@ -27,7 +27,7 @@ TEST_CASE("Unpacking archives with CLI facade", "[core][frontend]")
     ArcUnpacker arc_unpacker(
         {
             "./tests/fmt/kirikiri/files/xp3/xp3-v2.xp3",
-            "--fmt=krkr/xp3",
+            "--fmt=kirikiri/xp3",
             "--plugin=noop"
         },
         "0.0");

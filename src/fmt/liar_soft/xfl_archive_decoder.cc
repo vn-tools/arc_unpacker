@@ -53,7 +53,7 @@ std::unique_ptr<File> XflArchiveDecoder::read_file_impl(
 
 std::vector<std::string> XflArchiveDecoder::get_linked_formats() const
 {
-    return { "liar/xfl", "liar/wcg", "liar/lwg", "vorbis/wav" };
+    return { "liar-soft/xfl", "liar-soft/wcg", "liar-soft/lwg", "vorbis/wav" };
 }
 
-static auto dummy = fmt::register_fmt<XflArchiveDecoder>("liar/xfl");
+static auto dummy = fmt::register_fmt<XflArchiveDecoder>("liar-soft/xfl");

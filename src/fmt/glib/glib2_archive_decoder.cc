@@ -235,7 +235,7 @@ std::unique_ptr<File> Glib2ArchiveDecoder::read_file_impl(
 
 std::vector<std::string> Glib2ArchiveDecoder::get_linked_formats() const
 {
-    return { "glib/pgx", "glib/jpeg-pgx", "vorbis/wav", "glib/g2" };
+    return { "glib/pgx", "glib/jpeg-pgx", "vorbis/wav", "glib/glib2" };
 }
 
-static auto dummy = fmt::register_fmt<Glib2ArchiveDecoder>("glib/g2");
+static auto dummy = fmt::register_fmt<Glib2ArchiveDecoder>("glib/glib2");

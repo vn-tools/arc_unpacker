@@ -67,7 +67,7 @@ std::unique_ptr<File> AldArchiveDecoder::read_file_impl(
 
 std::vector<std::string> AldArchiveDecoder::get_linked_formats() const
 {
-    return { "alice/pms", "alice/vsp", "alice/qnt" };
+    return { "alice-soft/pms", "alice-soft/vsp", "alice-soft/qnt" };
 }
 
-static auto dummy = fmt::register_fmt<AldArchiveDecoder>("alice/ald");
+static auto dummy = fmt::register_fmt<AldArchiveDecoder>("alice-soft/ald");

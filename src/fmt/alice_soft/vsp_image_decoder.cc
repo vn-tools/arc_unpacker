@@ -185,4 +185,4 @@ pix::Grid VspImageDecoder::decode_impl(File &file) const
     return *pixels;
 }
 
-static auto dummy = fmt::register_fmt<VspImageDecoder>("alice/vsp");
+static auto dummy = fmt::register_fmt<VspImageDecoder>("alice-soft/vsp");

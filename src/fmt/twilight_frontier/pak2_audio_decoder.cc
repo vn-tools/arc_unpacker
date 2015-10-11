@@ -28,4 +28,5 @@ std::unique_ptr<File> Pak2AudioDecoder::decode_impl(File &file) const
         file.name);
 }
 
-static auto dummy = fmt::register_fmt<Pak2AudioDecoder>("th/pak2-sfx");
+static auto dummy
+    = fmt::register_fmt<Pak2AudioDecoder>("twilight-frontier/pak2-sfx");

@@ -320,4 +320,4 @@ pix::Grid DdsImageDecoder::decode_impl(File &file) const
     return *pixels;
 }
 
-static auto dummy = fmt::register_fmt<DdsImageDecoder>("ms/dds");
+static auto dummy = fmt::register_fmt<DdsImageDecoder>("microsoft/dds");

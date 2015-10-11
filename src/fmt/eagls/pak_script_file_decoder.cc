@@ -45,4 +45,4 @@ std::unique_ptr<File> PakScriptFileDecoder::decode_impl(File &file) const
     return output_file;
 }
 
-static auto dummy = fmt::register_fmt<PakScriptFileDecoder>("eagls/pak-txt");
+static auto dummy = fmt::register_fmt<PakScriptFileDecoder>("eagls/pak-script");

@@ -226,4 +226,5 @@ std::unique_ptr<File> AnmArchiveDecoder::read_file_impl(
     return util::file_from_grid(pixels, entry->name);
 }
 
-static auto dummy = fmt::register_fmt<AnmArchiveDecoder>("th/anm");
+static auto dummy
+    = fmt::register_fmt<AnmArchiveDecoder>("team-shanghai-alice/anm");
