@@ -16,19 +16,19 @@ namespace io {
         BufferedIO(IO &other_io);
         ~BufferedIO();
 
-        virtual size_t size() const override;
-        virtual size_t tell() const override;
-        virtual void seek(size_t offset) override;
-        virtual void skip(int offset) override;
-        virtual void truncate(size_t new_size) override;
+        size_t size() const override;
+        size_t tell() const override;
+        void seek(size_t offset) override;
+        void skip(int offset) override;
+        void truncate(size_t new_size) override;
 
         using IO::read;
-        virtual void read(void *destination, size_t size) override;
+        void read(void *destination, size_t size) override;
 
         using IO::write;
         using IO::write_from_io;
-        virtual void write(const void *source, size_t size) override;
-        virtual void write_from_io(IO &source, size_t size) override;
+        void write(const void *source, size_t size) override;
+        void write_from_io(IO &source, size_t size) override;
 
         void reserve(size_t count);
 

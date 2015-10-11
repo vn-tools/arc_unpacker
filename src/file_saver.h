@@ -9,6 +9,7 @@ namespace au {
     class FileSaver
     {
     public:
+        virtual ~FileSaver() { }
         virtual void save(std::shared_ptr<File> file) const = 0;
     };
 
@@ -18,7 +19,7 @@ namespace au {
         FileSaverHdd(const boost::filesystem::path &output_dir, bool overwrite);
         ~FileSaverHdd();
 
-        virtual void save(std::shared_ptr<File> file) const override;
+        void save(std::shared_ptr<File> file) const override;
     private:
         struct Priv;
         std::unique_ptr<Priv> p;
@@ -34,7 +35,7 @@ namespace au {
         ~FileSaverCallback();
 
         void set_callback(FileSaveCallback callback);
-        virtual void save(std::shared_ptr<File> file) const override;
+        void save(std::shared_ptr<File> file) const override;
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

@@ -14,7 +14,7 @@ namespace audio {
         LosslessAudioDecoder(const MioHeader &header);
         ~LosslessAudioDecoder();
 
-        virtual bstr process_chunk(const MioChunk &chunk) override;
+        bstr process_chunk(const MioChunk &chunk) override;
 
     private:
         struct Priv;

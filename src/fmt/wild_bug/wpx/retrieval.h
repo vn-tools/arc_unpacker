@@ -17,7 +17,7 @@ namespace wpx {
     struct RetrievalStrategy1 final : IRetrievalStrategy
     {
         RetrievalStrategy1(io::BitReader &bit_reader, s8 quant_size);
-        virtual u8 fetch_byte(DecoderContext &, const u8 *) override;
+        u8 fetch_byte(DecoderContext &, const u8 *) override;
         std::vector<u8> dict;
         std::vector<u8> table;
         s8 quant_size;
@@ -26,14 +26,14 @@ namespace wpx {
     struct RetrievalStrategy2 final : IRetrievalStrategy
     {
         RetrievalStrategy2(io::BitReader &bit_reader);
-        virtual u8 fetch_byte(DecoderContext &, const u8 *) override;
+        u8 fetch_byte(DecoderContext &, const u8 *) override;
         std::vector<u8> table;
     };
 
     struct RetrievalStrategy3 final : IRetrievalStrategy
     {
         RetrievalStrategy3(io::BitReader &bit_reader);
-        virtual u8 fetch_byte(DecoderContext &, const u8 *) override;
+        u8 fetch_byte(DecoderContext &, const u8 *) override;
     };
 
 } } } }

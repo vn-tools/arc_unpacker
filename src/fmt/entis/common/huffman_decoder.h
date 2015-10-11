@@ -17,8 +17,8 @@ namespace common {
         HuffmanDecoder();
         ~HuffmanDecoder();
 
-        virtual void reset() override;
-        virtual void decode(u8 *output, size_t output_size) override;
+        void reset() override;
+        void decode(u8 *output, size_t output_size) override;
 
     private:
         struct Priv;

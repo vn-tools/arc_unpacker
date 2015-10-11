@@ -24,7 +24,7 @@ namespace wpx {
     {
         TranscriptionStrategy1(
             const std::array<size_t, 8> &offsets, s8 quant_size);
-        virtual TranscriptionSpec get_spec(DecoderContext &context) override;
+        TranscriptionSpec get_spec(DecoderContext &context) override;
         const std::array<size_t, 8> &offsets;
         s8 quant_size;
     };
@@ -33,14 +33,14 @@ namespace wpx {
     {
         TranscriptionStrategy2(
             const std::array<size_t, 8> &offsets, s8 quant_size);
-        virtual TranscriptionSpec get_spec(DecoderContext &context) override;
+        TranscriptionSpec get_spec(DecoderContext &context) override;
         const std::array<size_t, 8> &offsets;
         s8 quant_size;
     };
 
     struct TranscriptionStrategy3 final : ITranscriptionStrategy
     {
-        virtual TranscriptionSpec get_spec(DecoderContext &context) override;
+        TranscriptionSpec get_spec(DecoderContext &context) override;
     };
 
 } } } }

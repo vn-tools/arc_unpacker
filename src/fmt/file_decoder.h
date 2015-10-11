@@ -9,12 +9,11 @@ namespace fmt {
     {
     public:
         virtual ~FileDecoder();
-        virtual void register_cli_options(ArgParser &) const override;
-        virtual void parse_cli_options(const ArgParser &) override;
-        virtual bool is_recognized(File &) const override;
-        virtual void unpack(File &, const FileSaver &) const override;
-        virtual std::unique_ptr<INamingStrategy> naming_strategy()
-            const override;
+        void register_cli_options(ArgParser &) const override;
+        void parse_cli_options(const ArgParser &) override;
+        bool is_recognized(File &) const override;
+        void unpack(File &, const FileSaver &) const override;
+        std::unique_ptr<INamingStrategy> naming_strategy() const override;
 
         std::unique_ptr<File> decode(File &) const;
 

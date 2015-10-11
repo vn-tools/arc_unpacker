@@ -10,8 +10,8 @@ namespace glib2  {
     class MeiPlugin final : public Plugin
     {
     public:
-        virtual std::unique_ptr<Decoder> create_header_decoder() const override;
-        virtual std::unique_ptr<Decoder> create_decoder(
+        std::unique_ptr<Decoder> create_header_decoder() const override;
+        std::unique_ptr<Decoder> create_decoder(
             const std::array<u32, 4> &keys) const override;
     };
 

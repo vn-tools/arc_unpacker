@@ -16,21 +16,21 @@ namespace fmt {
 
     class RootNamingStrategy final : public INamingStrategy
     {
-        virtual std::string decorate(
+        std::string decorate(
             const std::string &parent_name,
             const std::string &current_name) const override;
     };
 
     class SiblingNamingStrategy final : public INamingStrategy
     {
-        virtual std::string decorate(
+        std::string decorate(
             const std::string &parent_name,
             const std::string &current_name) const override;
     };
 
     class ChildNamingStrategy final : public INamingStrategy
     {
-        virtual std::string decorate(
+        std::string decorate(
             const std::string &parent_name,
             const std::string &current_name) const override;
     };
