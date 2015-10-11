@@ -81,10 +81,10 @@ void NpaFilterRegistry::register_cli_options(ArgParser &arg_parser) const
 
 void NpaFilterRegistry::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->filter = p->plugin_mgr.get_from_cli_options(arg_parser, true)();
+    p->plugin_mgr.parse_cli_options(arg_parser);
 }
 
 std::shared_ptr<NpaFilter> NpaFilterRegistry::get_filter() const
 {
-    return p->filter;
+    return p->plugin_mgr.get()();
 }

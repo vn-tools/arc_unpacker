@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <string>
 #include "err.h"
 #include "arg_parser.h"
@@ -7,7 +8,7 @@
 namespace au {
 namespace util {
 
-    template<typename T> struct PluginDefinition final
+    template<typename T> struct PluginDefinition
     {
         std::string name;
         std::string description;
@@ -17,64 +18,71 @@ namespace util {
     template<typename T> class PluginManager final
     {
     public:
-        PluginManager()
-        {
-        }
-
-        ~PluginManager()
-        {
-        }
-
-        void add(
+        inline void add(
             const std::string &name, const std::string &description, T value)
         {
-            PluginDefinition<T> d;
-            d.name = name;
-            d.description = description;
-            d.value = value;
-            definitions.push_back(d);
+            auto def = std::make_unique<PluginDefinition<T>>();
+            def->name = name;
+            def->description = description;
+            def->value = value;
+            definitions.push_back(std::move(def));
         }
 
-        void register_cli_options(
-            ArgParser &arg_parser, const std::string &description) const
+        inline void register_cli_options(
+            ArgParser &parser, const std::string &description) const
         {
-            auto sw = arg_parser.register_switch({"-p", "--plugin"})
+            auto sw = parser.register_switch({"-p", "--plugin"})
                 ->set_value_name("PLUGIN")
                 ->set_description(description);
             for (auto &def : definitions)
-                sw->add_possible_value(def.name, def.description);
+                sw->add_possible_value(def->name, def->description);
         }
 
-        T get_from_string(const std::string &plugin) const
+        inline void parse_cli_options(const ArgParser &parser)
         {
-            for (const auto &definition : definitions)
-                if (definition.name == plugin)
-                    return definition.value;
-            throw err::UsageError("Unrecognized plugin: " + plugin);
+            if (parser.has_switch("plugin"))
+                set(parser.get_switch("plugin"));
         }
 
-        T get_from_cli_options(
-            const ArgParser &arg_parser, bool mandatory) const
+        inline bool is_set() const
         {
-            if (!arg_parser.has_switch("plugin"))
+            return !used_value_name.empty();
+        }
+
+        inline void set(const std::string &name)
+        {
+            for (auto &def : definitions)
             {
-                if (mandatory)
-                    throw err::UsageError("Plugin not specified");
-                return nullptr;
+                if (def->name == name)
+                {
+                    used_value_name = name;
+                    return;
+                }
             }
-            return get_from_string(arg_parser.get_switch("plugin"));
+            throw err::UsageError("Unrecognized plugin: " + name);
         }
 
-        std::vector<T> get_all() const
+        inline T get() const
+        {
+            if (definitions.empty())
+                throw std::logic_error("No plugins were defined!");
+            for (auto &def : definitions)
+                if (def->name == used_value_name)
+                    return def->value;
+            throw err::UsageError("No plugin was selected.");
+        }
+
+        inline std::vector<T> get_all() const
         {
             std::vector<T> ret;
             for (auto &def : definitions)
-                ret.push_back(def.value);
+                ret.push_back(def->value);
             return ret;
         }
 
     private:
-        std::vector<PluginDefinition<T>> definitions;
+        std::vector<std::unique_ptr<PluginDefinition<T>>> definitions;
+        std::string used_value_name;
     };
 
 } }

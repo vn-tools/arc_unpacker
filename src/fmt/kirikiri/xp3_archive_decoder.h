@@ -13,6 +13,7 @@ namespace kirikiri {
         ~Xp3ArchiveDecoder();
         void register_cli_options(ArgParser &) const override;
         void parse_cli_options(const ArgParser &) override;
+        void set_plugin(const std::string &);
         std::vector<std::string> get_linked_formats() const override;
     protected:
         bool is_recognized_impl(File &) const override;

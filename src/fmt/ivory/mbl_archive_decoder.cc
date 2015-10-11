@@ -59,7 +59,6 @@ static Version get_version(io::IO &arc_io)
 struct MblArchiveDecoder::Priv final
 {
     util::PluginManager<PluginFunc> plugin_mgr;
-    PluginFunc plugin;
 };
 
 MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)
@@ -96,13 +95,13 @@ void MblArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 
 void MblArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->plugin = p->plugin_mgr.get_from_cli_options(arg_parser, false);
+    p->plugin_mgr.parse_cli_options(arg_parser);
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 void MblArchiveDecoder::set_plugin(const std::string &plugin_name)
 {
-    p->plugin = p->plugin_mgr.get_from_string(plugin_name);
+    p->plugin_mgr.set(plugin_name);
 }
 
 bool MblArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -116,7 +115,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto meta = std::make_unique<ArchiveMetaImpl>();
     auto version = get_version(arc_file.io);
     meta->encrypted = arc_file.name.find("mg_data") != std::string::npos;
-    meta->decrypt = p->plugin;
+    meta->decrypt = p->plugin_mgr.is_set() ? p->plugin_mgr.get() : nullptr;
     arc_file.io.seek(0);
 
     auto file_count = arc_file.io.read_u32_le();

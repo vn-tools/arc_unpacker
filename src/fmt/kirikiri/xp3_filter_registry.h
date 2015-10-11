@@ -13,9 +13,10 @@ namespace kirikiri {
     public:
         Xp3FilterRegistry();
         ~Xp3FilterRegistry();
+        void use_plugin(const std::string &plugin_name);
         void register_cli_options(ArgParser &arg_parser) const;
         void parse_cli_options(const ArgParser &arg_parser);
-        void set_decoder(Xp3Filter &filter);
+        void set_decoder(Xp3Filter &filter) const;
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

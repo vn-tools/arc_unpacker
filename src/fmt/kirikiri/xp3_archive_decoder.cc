@@ -226,6 +226,11 @@ std::unique_ptr<File> Xp3ArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
+void Xp3ArchiveDecoder::set_plugin(const std::string &plugin_name)
+{
+    p->filter_registry.use_plugin(plugin_name);
+}
+
 std::vector<std::string> Xp3ArchiveDecoder::get_linked_formats() const
 {
     return { "krkr/tlg" };

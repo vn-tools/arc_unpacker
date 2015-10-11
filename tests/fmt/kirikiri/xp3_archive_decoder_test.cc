@@ -15,6 +15,7 @@ static void test_xp3_archive(const std::string &path)
     };
 
     Xp3ArchiveDecoder decoder;
+    decoder.set_plugin("noop");
     auto input_file = tests::file_from_path(path);
     auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);

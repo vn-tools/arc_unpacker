@@ -26,23 +26,6 @@ struct Xp3FilterRegistry::Priv final
     std::function<void(Xp3Filter&)> filter_decorator;
 };
 
-void Xp3FilterRegistry::register_cli_options(ArgParser &arg_parser) const
-{
-    p->plugin_mgr.register_cli_options(
-        arg_parser, "Selects XP3 decryption routine.");
-}
-
-void Xp3FilterRegistry::parse_cli_options(const ArgParser &arg_parser)
-{
-    p->filter_decorator = p->plugin_mgr.get_from_cli_options(arg_parser, true);
-}
-
-void Xp3FilterRegistry::set_decoder(Xp3Filter &filter)
-{
-    if (p->filter_decorator)
-        p->filter_decorator(filter);
-}
-
 Xp3FilterRegistry::Xp3FilterRegistry() : p(new Priv)
 {
     p->plugin_mgr.add(
@@ -92,4 +75,25 @@ Xp3FilterRegistry::Xp3FilterRegistry() : p(new Priv)
 
 Xp3FilterRegistry::~Xp3FilterRegistry()
 {
+}
+
+void Xp3FilterRegistry::use_plugin(const std::string &plugin_name)
+{
+    p->plugin_mgr.set(plugin_name);
+}
+
+void Xp3FilterRegistry::register_cli_options(ArgParser &arg_parser) const
+{
+    p->plugin_mgr.register_cli_options(
+        arg_parser, "Selects XP3 decryption routine.");
+}
+
+void Xp3FilterRegistry::parse_cli_options(const ArgParser &arg_parser)
+{
+    p->plugin_mgr.parse_cli_options(arg_parser);
+}
+
+void Xp3FilterRegistry::set_decoder(Xp3Filter &filter) const
+{
+    p->plugin_mgr.get()(filter);
 }
