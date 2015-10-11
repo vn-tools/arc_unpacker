@@ -1,5 +1,5 @@
 #include "fmt/nitroplus/npa_archive_decoder.h"
-#include "fmt/nitroplus/npa_filters/chaos_head.h"
+#include "fmt/nitroplus/npa_filter_registry.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
 #include "util/plugin_mgr.hh"
@@ -20,7 +20,7 @@ namespace
 
     struct ArchiveMetaImpl final : fmt::ArchiveMeta
     {
-        NpaFilter *filter;
+        std::shared_ptr<NpaFilter> filter;
         u32 key1, key2;
         bool files_are_encrypted;
         bool files_are_compressed;
@@ -78,18 +78,11 @@ static void decrypt_file_data(
 
 struct NpaArchiveDecoder::Priv final
 {
-    util::PluginManager<std::function<std::unique_ptr<NpaFilter>()>> plugin_mgr;
-    std::unique_ptr<NpaFilter> filter;
+    NpaFilterRegistry filter_registry;
 };
 
 NpaArchiveDecoder::NpaArchiveDecoder() : p(new Priv)
 {
-    p->plugin_mgr.add("chaos_head", "ChaoS;HEAd", []()
-        {
-            auto filter = std::make_unique<NpaFilter>();
-            npa_filters::chaos_head_filter_init(*filter);
-            return filter;
-        });
 }
 
 NpaArchiveDecoder::~NpaArchiveDecoder()
@@ -98,14 +91,13 @@ NpaArchiveDecoder::~NpaArchiveDecoder()
 
 void NpaArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 {
-    p->plugin_mgr.register_cli_options(
-        arg_parser, "Selects NPA decryption routine.");
+    p->filter_registry.register_cli_options(arg_parser);
     ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void NpaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->filter = p->plugin_mgr.get_from_cli_options(arg_parser, true)();
+    p->filter_registry.parse_cli_options(arg_parser);
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
@@ -117,11 +109,10 @@ bool NpaArchiveDecoder::is_recognized_impl(File &arc_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     NpaArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    if (!p->filter)
-        throw err::UsageError("No plugin selected");
-
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    meta->filter = p->filter.get();
+    meta->filter = p->filter_registry.get_filter();
+    if (!meta->filter)
+        throw err::UsageError("Plugin not specified");
 
     arc_file.io.seek(magic.size());
     meta->key1 = arc_file.io.read_u32_le();

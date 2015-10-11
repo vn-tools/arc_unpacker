@@ -9,9 +9,9 @@ namespace nitroplus {
 
     struct NpaFilter final
     {
-        const u8 *permutation;
-        u32 data_key;
-        std::function<u32(u32 key1, u32 key2)> file_name_key;
+        const bstr permutation;
+        const u32 data_key;
+        std::function<u32(const u32 key1, const u32 key2)> file_name_key;
     };
 
 } } }

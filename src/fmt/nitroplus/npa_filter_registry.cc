@@ -1,12 +1,14 @@
-#include "fmt/nitroplus/npa_filters/chaos_head.h"
+#include "fmt/nitroplus/npa_filter_registry.h"
+#include "util/plugin_mgr.hh"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nitroplus;
-using namespace au::fmt::nitroplus::npa_filters;
 
-void au::fmt::nitroplus::npa_filters::chaos_head_filter_init(NpaFilter &filter)
+static std::shared_ptr<NpaFilter> create_chaos_head_filter()
 {
-    filter.permutation =
+    return std::shared_ptr<NpaFilter>(new NpaFilter
+    {
         "\xF1\x71\x80\x19\x17\x01\x74\x7D\x90\x47\xF9\x68\xDE\xB4\x24\x40"
         "\x73\x9E\x5B\x38\x4C\x3A\x2A\x0D\x2E\xB9\x5C\xE9\xCE\xE8\x3E\x39"
         "\xA2\xF8\xA8\x5E\x1D\x1B\xD3\x23\xCB\x9B\xB0\xD5\x59\xF0\x3B\x09"
@@ -22,7 +24,40 @@ void au::fmt::nitroplus::npa_filters::chaos_head_filter_init(NpaFilter &filter)
         "\xC4\xC1\x16\x61\x6F\xC7\xBE\x05\xAD\x22\x34\xB2\x54\x37\xF7\xD0"
         "\xFA\x60\x8B\x14\x08\xBC\xEC\xBB\x26\x9C\x57\x32\x5A\x3F\x35\x6D"
         "\xC8\xC3\x69\x7C\x31\x58\xE3\x75\xD8\xE1\xC0\x9F\x11\xB5\x93\x56"
-        "\xF5\x1E\xB1\x1A\x70\x3D\xFB\x82\xDC\xDF\x7E\x07\x15\x49\xFC\xB8"_u8;
-    filter.data_key = 0x87654321;
-    filter.file_name_key = [](u32 key1, u32 key2) { return key1 * key2; };
+        "\xF5\x1E\xB1\x1A\x70\x3D\xFB\x82\xDC\xDF\x7E\x07\x15\x49\xFC\xB8"_b,
+        0x87654321,
+        [](u32 key1, u32 key2) { return key1 * key2; },
+    });
+}
+
+struct NpaFilterRegistry::Priv final
+{
+    using FilterBuilder = std::function<std::shared_ptr<NpaFilter>()>;
+    util::PluginManager<FilterBuilder> plugin_mgr;
+    std::shared_ptr<NpaFilter> filter;
+};
+
+NpaFilterRegistry::NpaFilterRegistry() : p(new Priv)
+{
+    p->plugin_mgr.add("chaos_head", "ChaoS;HEAd", create_chaos_head_filter);
+}
+
+NpaFilterRegistry::~NpaFilterRegistry()
+{
+}
+
+void NpaFilterRegistry::register_cli_options(ArgParser &arg_parser) const
+{
+    p->plugin_mgr.register_cli_options(
+        arg_parser, "Selects NPA decryption routine.");
+}
+
+void NpaFilterRegistry::parse_cli_options(const ArgParser &arg_parser)
+{
+    p->filter = p->plugin_mgr.get_from_cli_options(arg_parser, true)();
+}
+
+std::shared_ptr<NpaFilter> NpaFilterRegistry::get_filter() const
+{
+    return p->filter;
 }
