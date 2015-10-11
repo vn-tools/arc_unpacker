@@ -5,7 +5,7 @@
 
 using namespace au;
 
-TEST_CASE("GAMELIST refers to valid --fmt switches", "[core][docs]")
+TEST_CASE("GAMELIST refers to valid --fmt switches", "[core][fmt_core][docs]")
 {
     io::FileIO gamelist_file("GAMELIST.htm", io::FileMode::Read);
     const auto content = gamelist_file.read_to_eof().str();
@@ -23,5 +23,17 @@ TEST_CASE("GAMELIST refers to valid --fmt switches", "[core][docs]")
         INFO("Format not present in the registry: " << fmt);
         REQUIRE(registry.has_decoder(fmt));
         it++;
+    }
+}
+
+TEST_CASE(
+    "--fmt switches contain hyphens rather than underscores",
+    "[core][fmt_core][docs]")
+{
+    const auto &registry = fmt::Registry::instance();
+    for (const auto &name : registry.get_decoder_names())
+    {
+        INFO("Format contains underscore: " << name);
+        REQUIRE(name.find_first_of("_") == name.npos);
     }
 }
