@@ -36,6 +36,10 @@ IoError::IoError(const std::string &desc) : std::runtime_error(desc)
 {
 }
 
+EofError::EofError() : IoError("Premature end of file")
+{
+}
+
 FileNotFoundError::FileNotFoundError(const std::string &desc) : IoError(desc)
 {
 }

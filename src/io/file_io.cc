@@ -27,13 +27,13 @@ FileIO::~FileIO()
 void FileIO::seek(size_t offset)
 {
     if (fseek(p->file, offset, SEEK_SET) != 0)
-        throw err::IoError("Seeking beyond EOF");
+        throw err::EofError();
 }
 
 void FileIO::skip(int offset)
 {
     if (fseek(p->file, offset, SEEK_CUR) != 0)
-        throw err::IoError("Seeking beyond EOF");
+        throw err::EofError();
 }
 
 void FileIO::read(void *destination, size_t size)
@@ -43,7 +43,7 @@ void FileIO::read(void *destination, size_t size)
     if (!destination)
         throw std::logic_error("Reading to nullptr");
     if (fread(destination, 1, size, p->file) != size)
-        throw err::IoError("Could not read full data");
+        throw err::EofError();
 }
 
 void FileIO::write(const void *source, size_t size)

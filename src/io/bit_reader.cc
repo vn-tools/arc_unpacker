@@ -191,7 +191,7 @@ unsigned int BitReader::Priv::get(size_t n)
             if (reader->eof())
             {
                 seek(pos - n);
-                throw err::IoError("Trying to read bits beyond EOF");
+                throw err::EofError();
             }
             buffer = reader->fetch_buffer();
             buffer_ptr = buffer.get<const u8>();
@@ -208,7 +208,7 @@ unsigned int BitReader::Priv::get(size_t n)
 void BitReader::Priv::seek(size_t new_pos)
 {
     if (new_pos > size())
-        throw err::IoError("Seeking beyond EOF");
+        throw err::EofError();
     pos = (new_pos / 32) * 32;
     shift = 8;
     value = 0;

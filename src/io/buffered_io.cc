@@ -53,14 +53,14 @@ void BufferedIO::reserve(size_t size)
 void BufferedIO::seek(size_t offset)
 {
     if (offset > p->buffer.size())
-        throw err::IoError("Seeking beyond EOF");
+        throw err::EofError();
     p->buffer_pos = offset;
 }
 
 void BufferedIO::skip(int offset)
 {
     if (p->buffer_pos + offset > p->buffer.size())
-        throw err::IoError("Seeking beyond EOF");
+        throw err::EofError();
     p->buffer_pos += offset;
 }
 
@@ -71,7 +71,7 @@ void BufferedIO::read(void *destination, size_t size)
     if (!destination)
         throw std::logic_error("Reading to nullptr");
     if (p->buffer_pos + size > p->buffer.size())
-        throw err::IoError("Reading beyond EOF");
+        throw err::EofError();
     auto source_ptr = p->buffer.get<u8>() + p->buffer_pos;
     auto destination_ptr = reinterpret_cast<u8*>(destination);
     p->buffer_pos += size;

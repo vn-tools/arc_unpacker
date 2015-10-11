@@ -42,6 +42,11 @@ namespace err {
         IoError(const std::string &description);
     };
 
+    struct EofError : public IoError
+    {
+        EofError();
+    };
+
     struct FileNotFoundError : public IoError
     {
         FileNotFoundError(const std::string &description);
