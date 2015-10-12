@@ -48,4 +48,9 @@ std::unique_ptr<File> PacArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
+std::vector<std::string> PacArchiveDecoder::get_linked_formats() const
+{
+    return { "amuse-craft/pgd" };
+}
+
 static auto dummy = fmt::register_fmt<PacArchiveDecoder>("amuse-craft/pac");
