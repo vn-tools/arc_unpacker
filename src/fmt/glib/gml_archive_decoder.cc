@@ -54,7 +54,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->prefix = table_io.read(4);
         meta->entries.push_back(std::move(entry));
     }
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<File> GmlArchiveDecoder::read_file_impl(

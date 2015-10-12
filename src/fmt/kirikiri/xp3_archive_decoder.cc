@@ -201,7 +201,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->name = info_chunk.name;
         meta->entries.push_back(std::move(entry));
     }
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<File> Xp3ArchiveDecoder::read_file_impl(

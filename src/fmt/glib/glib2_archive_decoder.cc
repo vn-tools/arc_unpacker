@@ -184,7 +184,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto &entry : entries)
         if (entry->is_file)
             meta->entries.push_back(std::move(entry));
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<File> Glib2ArchiveDecoder::read_file_impl(

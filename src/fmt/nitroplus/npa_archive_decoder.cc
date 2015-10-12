@@ -147,7 +147,7 @@ std::unique_ptr<fmt::ArchiveMeta>
             throw err::NotSupportedError("Unknown file type");
         meta->entries.push_back(std::move(entry));
     }
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<File> NpaArchiveDecoder::read_file_impl(

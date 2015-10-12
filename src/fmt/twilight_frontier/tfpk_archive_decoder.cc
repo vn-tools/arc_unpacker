@@ -433,7 +433,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto &entry : meta->entries)
         static_cast<ArchiveEntryImpl*>(entry.get())->offset += table_end;
 
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<File> TfpkArchiveDecoder::read_file_impl(

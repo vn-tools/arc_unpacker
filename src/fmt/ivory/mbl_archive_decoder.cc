@@ -131,7 +131,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->size = arc_file.io.read_u32_le();
         meta->entries.push_back(std::move(entry));
     }
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<File> MblArchiveDecoder::read_file_impl(

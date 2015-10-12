@@ -405,7 +405,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         }
     }
 
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<File> PackArchiveDecoder::read_file_impl(

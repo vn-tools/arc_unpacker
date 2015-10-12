@@ -284,10 +284,9 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         dump(*meta, p->dump_path);
         meta->entries.clear();
-        return meta;
     }
 
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<File> DatArchiveDecoder::read_file_impl(

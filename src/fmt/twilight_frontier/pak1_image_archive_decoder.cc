@@ -65,7 +65,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         arc_file.io.skip(entry->size);
         meta->entries.push_back(std::move(entry));
     }
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<File> Pak1ImageArchiveDecoder::read_file_impl(

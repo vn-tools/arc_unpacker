@@ -163,7 +163,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         last_entry->size_comp = table_offset - last_entry->offset;
 
     meta->encryption_version = detect_encryption_version(arc_file);
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<File> Tha1ArchiveDecoder::read_file_impl(
