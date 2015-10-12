@@ -4,7 +4,7 @@
 using namespace au;
 using namespace au::fmt::amuse_craft;
 
-static const bstr magic = "PAC\x20\x00\x00\x00\x00"_b;
+static const bstr magic = "PAC\x20"_b;
 
 namespace
 {
@@ -24,6 +24,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     PacArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     arc_file.io.seek(magic.size());
+    arc_file.io.skip(4);
     const auto file_count = arc_file.io.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
     arc_file.io.seek(0x804);
