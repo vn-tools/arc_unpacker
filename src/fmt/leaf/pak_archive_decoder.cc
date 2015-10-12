@@ -160,9 +160,9 @@ void PakArchiveDecoder::preprocess(
             auto sprite_file = read_file(arc_file, meta, *sprite_entry);
             auto palette_file = read_file(arc_file, meta, *palette_entry);
             auto sprite = grp_image_decoder.decode(*sprite_file, *palette_file);
+            saver.save(util::file_from_grid(sprite, sprite_entry->name));
             sprite_entry->already_unpacked = true;
             palette_entry->already_unpacked = true;
-            saver.save(util::file_from_grid(sprite, sprite_entry->name));
         }
         catch (...)
         {
