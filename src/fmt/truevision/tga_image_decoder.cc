@@ -1,4 +1,3 @@
-#include "log.h"
 #include "fmt/truevision/tga_image_decoder.h"
 #include "err.h"
 #include "io/bit_reader.h"
@@ -132,8 +131,8 @@ pix::Grid TgaImageDecoder::decode_impl(File &file) const
     const auto flags = file.io.read_u8();
 
     const auto channels = depth / 8;
-    const bool flip_horizontally = !(flags & Flags::TopToBottom);
-    const bool flip_vertically = flags & Flags::RightToLeft;
+    const bool flip_horizontally = flags & Flags::RightToLeft;
+    const bool flip_vertically = !(flags & Flags::TopToBottom);
     const bool compressed = data_type & 8;
     const size_t interleave
         = flags & Flags::Interleave2 ? 2
@@ -164,4 +163,4 @@ pix::Grid TgaImageDecoder::decode_impl(File &file) const
     return pixels;
 }
 
-static auto dummy = fmt::register_fmt<TgaImageDecoder>("true-vision/tga");
+static auto dummy = fmt::register_fmt<TgaImageDecoder>("truevision/tga");
