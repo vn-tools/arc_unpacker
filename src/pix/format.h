@@ -13,6 +13,7 @@ namespace pix {
         BGR888X,
         BGRA8888,
         BGR565,
+        BGR555X,
         BGRA5551,
         BGRA4444,
         RGB888,
@@ -29,6 +30,7 @@ namespace pix {
             case Format::BGR888X: return 4;
             case Format::BGRA8888: return 4;
             case Format::BGR565: return 2;
+            case Format::BGR555X: return 2;
             case Format::BGRA5551: return 2;
             case Format::BGRA4444: return 2;
             case Format::RGB888: return 3;

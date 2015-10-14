@@ -61,6 +61,10 @@ Palette::Priv::Priv(size_t color_count, const bstr &input, Format fmt)
             read_many<Format::BGR565>(input_ptr, colors);
             break;
 
+        case Format::BGR555X:
+            read_many<Format::BGR555X>(input_ptr, colors);
+            break;
+
         case Format::BGRA5551:
             read_many<Format::BGRA5551>(input_ptr, colors);
             break;

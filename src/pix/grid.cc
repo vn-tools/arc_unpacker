@@ -55,6 +55,10 @@ void Grid::Priv::load(const bstr &input, Format fmt)
             read_many<Format::BGR565>(size, pixels_ptr, input_ptr);
             break;
 
+        case Format::BGR555X:
+            read_many<Format::BGR555X>(size, pixels_ptr, input_ptr);
+            break;
+
         case Format::BGRA5551:
             read_many<Format::BGRA5551>(size, pixels_ptr, input_ptr);
             break;

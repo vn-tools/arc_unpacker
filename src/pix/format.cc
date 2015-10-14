@@ -65,6 +65,13 @@ namespace pix {
         return c;
     }
 
+    template<> Pixel read<Format::BGR555X>(const u8 *&ptr)
+    {
+        Pixel c = read<Format::BGRA5551>(ptr);
+        c.a = 0xFF;
+        return c;
+    }
+
     template<> Pixel read<Format::BGR565>(const u8 *&ptr)
     {
         Pixel c;
