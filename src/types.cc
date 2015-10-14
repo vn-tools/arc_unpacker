@@ -42,6 +42,11 @@ size_t bstr::size() const
     return v.size();
 }
 
+size_t bstr::capacity() const
+{
+    return v.capacity();
+}
+
 size_t bstr::find(const bstr &other)
 {
     auto pos = std::search(

@@ -27,6 +27,7 @@ namespace au {
 
         bool empty() const;
         size_t size() const;
+        size_t capacity() const;
         void resize(size_t how_much);
         void reserve(size_t how_much);
 
