@@ -64,7 +64,7 @@ pix::Grid PrtImageDecoder::decode_impl(File &file) const
         }
     }
 
-    pixels.flip();
+    pixels.flip_vertically();
 
     if (has_alpha)
     {

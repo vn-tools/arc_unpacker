@@ -80,7 +80,7 @@ pix::Grid Lf2ImageDecoder::decode_impl(File &file) const
         c ^= 0xFF;
     data = custom_lzss_decompress(data, width * height);
     pix::Grid grid(width, height, data, palette);
-    grid.flip();
+    grid.flip_vertically();
     return grid;
 }
 

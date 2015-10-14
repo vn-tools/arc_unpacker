@@ -27,7 +27,8 @@ namespace pix {
         Pixel &at(size_t x, size_t y);
         const Pixel &at(size_t x, size_t y) const;
 
-        void flip();
+        void flip_vertically();
+        void flip_horizontally();
         void crop(size_t width, size_t height);
         void apply_alpha_from_mask(const Grid &other);
         void apply_palette(const Palette &palette);

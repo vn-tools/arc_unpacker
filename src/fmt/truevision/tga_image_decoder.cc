@@ -156,7 +156,9 @@ pix::Grid TgaImageDecoder::decode_impl(File &file) const
         : get_pixels_without_palette(data, width, height, depth);
 
     if (flip_vertically)
-        pixels.flip();
+        pixels.flip_vertically();
+    if (flip_horizontally)
+        pixels.flip_horizontally();
     if (depth == 16 || depth == 32)
         for (auto &c : pixels)
             c.a ^= 0xFF;

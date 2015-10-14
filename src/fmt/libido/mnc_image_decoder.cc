@@ -29,7 +29,7 @@ pix::Grid MncImageDecoder::decode_impl(File &file) const
         throw err::UnsupportedBitDepthError(bit_depth);
 
     pix::Grid pixels(width, height, data, pix::Format::BGR888);
-    pixels.flip();
+    pixels.flip_vertically();
     return pixels;
 }
 

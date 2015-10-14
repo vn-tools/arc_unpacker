@@ -180,7 +180,7 @@ pix::Grid GrpImageDecoder::decode_impl(File &file) const
             grid->at(x, y).a = 0xFF;
     }
     if (p->header.flip)
-        grid->flip();
+        grid->flip_vertically();
 
     return *grid;
 }

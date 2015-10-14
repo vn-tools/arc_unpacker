@@ -49,7 +49,7 @@ pix::Grid SotesImageDecoder::decode_impl(File &file) const
     else
         throw err::UnsupportedBitDepthError(depth);
 
-    pixels->flip();
+    pixels->flip_vertically();
     return *pixels;
 }
 

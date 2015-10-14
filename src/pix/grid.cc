@@ -148,13 +148,24 @@ const Pixel &Grid::at(size_t x, size_t y) const
     return p->pixels[x + y * p->width];
 }
 
-void Grid::flip()
+void Grid::flip_vertically()
 {
     for (auto y : util::range(p->height >> 1))
     for (auto x : util::range(p->width))
     {
         auto t = at(x, p->height - 1 - y);
         at(x, p->height - 1 - y) = at(x, y);
+        at(x, y) = t;
+    }
+}
+
+void Grid::flip_horizontally()
+{
+    for (auto y : util::range(p->height))
+    for (auto x : util::range(p->width >> 1))
+    {
+        auto t = at(p->width - 1 - x, y);
+        at(p->width - 1 - x, y) = at(x, y);
         at(x, y) = t;
     }
 }

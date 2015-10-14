@@ -216,7 +216,7 @@ pix::Grid BmpImageDecoder::decode_impl(File &file) const
     }
 
     if (header.flip)
-        pixels.flip();
+        pixels.flip_vertically();
     return pixels;
 }
 

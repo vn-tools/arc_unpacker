@@ -121,7 +121,7 @@ pix::Grid EriImageDecoder::decode_impl(File &file) const
         pix::Grid subimage_pixels(
             header.width, header.height, decoded_pixel_data, fmt);
         if (header.flip)
-            subimage_pixels.flip();
+            subimage_pixels.flip_vertically();
         for (auto y : util::range(header.height))
             for (auto x : util::range(header.width))
                 pixels.at(x, y + i * header.height) = subimage_pixels.at(x, y);
