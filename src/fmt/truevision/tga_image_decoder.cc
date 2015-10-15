@@ -161,9 +161,6 @@ pix::Grid TgaImageDecoder::decode_impl(File &file) const
         pixels.flip_vertically();
     if (flip_horizontally)
         pixels.flip_horizontally();
-    if (depth == 16 || depth == 32)
-        for (auto &c : pixels)
-            c.a ^= 0xFF;
     return pixels;
 }
 
