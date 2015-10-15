@@ -1,7 +1,5 @@
 #include "fmt/leaf/kcap_archive_decoder.h"
 #include "err.h"
-#include "fmt/truevision/tga_image_decoder.h"
-#include "io/buffered_io.h"
 #include "util/encoding.h"
 #include "util/format.h"
 #include "util/pack/lzss.h"
@@ -86,7 +84,7 @@ std::unique_ptr<File> KcapArchiveDecoder::read_file_impl(
 
 std::vector<std::string> KcapArchiveDecoder::get_linked_formats() const
 {
-    return { "truevision/tga" };
+    return { "truevision/tga", "leaf/bbm" };
 }
 
 static auto dummy = fmt::register_fmt<KcapArchiveDecoder>("leaf/kcap");

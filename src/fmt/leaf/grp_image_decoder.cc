@@ -1,5 +1,4 @@
 #include "fmt/leaf/grp_image_decoder.h"
-#include "err.h"
 #include "util/range.h"
 
 using namespace au;
