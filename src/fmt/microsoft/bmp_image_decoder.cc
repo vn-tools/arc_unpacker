@@ -14,6 +14,7 @@ namespace
 {
     struct Header final
     {
+        size_t data_offset;
         u32 width;
         u32 height;
         u16 planes;
@@ -25,6 +26,7 @@ namespace
         u32 masks[4]; // BGRA
         int rotation;
         bool flip;
+        size_t stride;
     };
 }
 
@@ -42,10 +44,12 @@ static u64 rotr(u64 value, size_t value_size, size_t how_much)
 
 static Header read_header(io::IO &io)
 {
+    Header h;
+    h.data_offset = io.read_u32_le();
+
     auto header_size = io.read_u32_le();
     io::BufferedIO header_io(io.read(header_size - 4));
 
-    Header h;
     h.width = header_io.read_u32_le();
     s32 height = header_io.read_u32_le();
     h.height = std::abs(height);
@@ -138,20 +142,133 @@ static Header read_header(io::IO &io)
         }
     }
 
+    h.stride = ((h.depth * h.width + 31) / 32) * 4;
     return h;
+}
+
+static pix::Grid get_pixels_from_palette(
+    io::IO &io,
+    const Header &header,
+    const pix::Palette &palette)
+{
+    pix::Grid pixels(header.width, header.height);
+    for (auto y : util::range(header.height))
+    {
+        io.seek(header.data_offset + header.stride * y);
+        io::BitReader bit_reader(io);
+        for (auto x : util::range(header.width))
+        {
+            auto c = bit_reader.get(header.depth);
+            if (c < palette.size())
+                pixels.at(x, y) = palette[c];
+        }
+    }
+    return pixels;
+}
+
+static std::unique_ptr<pix::Grid> get_pixels_without_palette_fast24(
+    io::IO &io, const Header &header)
+{
+    auto pixels = std::make_unique<pix::Grid>(header.width, header.height);
+    for (auto y : util::range(header.height))
+    {
+        io.seek(header.data_offset + header.stride * y);
+        pix::Grid row(header.width, 1, io, pix::Format::BGR888);
+        for (auto x : util::range(header.width))
+            pixels->at(x, y) = row.at(x, 0);
+    }
+    return pixels;
+}
+
+static std::unique_ptr<pix::Grid> get_pixels_without_palette_fast32(
+    io::IO &io, const Header &header)
+{
+    auto pixels = std::make_unique<pix::Grid>(header.width, header.height);
+    for (auto y : util::range(header.height))
+    {
+        io.seek(header.data_offset + header.stride * y);
+        pix::Grid row(header.width, 1, io, pix::Format::BGRA8888);
+        for (auto x : util::range(header.width))
+            pixels->at(x, y) = row.at(x, 0);
+    }
+    return pixels;
+}
+
+static std::unique_ptr<pix::Grid> get_pixels_without_palette_generic(
+    io::IO &io, const Header &header)
+{
+    auto pixels = std::make_unique<pix::Grid>(header.width, header.height);
+    double multipliers[4];
+    for (auto i : util::range(4))
+        multipliers[i] = 255.0 / std::max<size_t>(1, header.masks[i]);
+
+    for (auto y : util::range(header.height))
+    {
+        io.seek(header.data_offset + header.stride * y);
+        io::BitReader bit_reader(io);
+        for (auto x : util::range(header.width))
+        {
+            u64 c = bit_reader.get(header.depth);
+            if (header.rotation < 0)
+                c = rotl(c, header.depth, -header.rotation);
+            else if (header.rotation > 0)
+                c = rotr(c, header.depth, header.rotation);
+            auto &p = pixels->at(x, y);
+            p.b = (c & header.masks[0]) * multipliers[0];
+            p.g = (c & header.masks[1]) * multipliers[1];
+            p.r = (c & header.masks[2]) * multipliers[2];
+            p.a = (c & header.masks[3]) * multipliers[3];
+        }
+    }
+    return pixels;
+}
+
+static pix::Grid get_pixels_without_palette(
+    io::IO &io, const Header &header)
+{
+    std::unique_ptr<pix::Grid> pixels;
+
+    if (header.depth == 24
+        && header.masks[0] == 0xFF0000
+        && header.masks[1] == 0xFF00
+        && header.masks[2] == 0xFF
+        && header.masks[3] == 0)
+    {
+        pixels = get_pixels_without_palette_fast24(io, header);
+    }
+
+    else if (header.depth == 32
+        && header.masks[0] == 0xFF000000
+        && header.masks[1] == 0xFF0000
+        && header.masks[2] == 0xFF00
+        && (header.masks[3] == 0 || header.masks[3] == 0xFF))
+    {
+        pixels = get_pixels_without_palette_fast32(io, header);
+    }
+
+    else
+    {
+        pixels = get_pixels_without_palette_generic(io, header);
+    }
+
+    if (!header.masks[3])
+        for (auto &c : *pixels)
+            c.a = 0xFF;
+
+    return *pixels;
 }
 
 bool BmpImageDecoder::is_recognized_impl(File &file) const
 {
     if (file.io.read(magic.size()) != magic)
         return false;
-    return file.io.read_u32_le() == file.io.size();
+    file.io.skip(4); // file size, some encoders corrupt this value
+    return file.io.read_u32_le() == 0; // but these should be always zero
 }
 
 pix::Grid BmpImageDecoder::decode_impl(File &file) const
 {
     file.io.seek(10);
-    auto data_offset = file.io.read_u32_le();
     auto header = read_header(file.io);
     pix::Palette palette(header.palette_size);
     for (auto i : util::range(palette.size()))
@@ -169,51 +286,9 @@ pix::Grid BmpImageDecoder::decode_impl(File &file) const
     if (header.compression != 0 && header.compression != 3)
         throw err::NotSupportedError("Compressed BMPs are not supported");
 
-    pix::Grid pixels(header.width, header.height);
-
-    auto stride = ((header.depth * header.width + 31) / 32) * 4;
-    if (palette.size() > 0)
-    {
-        for (auto y : util::range(header.height))
-        {
-            file.io.seek(data_offset + stride * y);
-            io::BitReader bit_reader(file.io);
-            for (auto x : util::range(header.width))
-            {
-                auto c = bit_reader.get(header.depth);
-                if (c < palette.size())
-                    pixels.at(x, y) = palette[c];
-            }
-        }
-    }
-    else
-    {
-        double multipliers[4];
-        for (auto i : util::range(4))
-            multipliers[i] = 255.0 / std::max<size_t>(1, header.masks[i]);
-
-        for (auto y : util::range(header.height))
-        {
-            file.io.seek(data_offset + stride * y);
-            io::BitReader bit_reader(file.io);
-            for (auto x : util::range(header.width))
-            {
-                u64 c = bit_reader.get(header.depth);
-                if (header.rotation < 0)
-                    c = rotl(c, header.depth, -header.rotation);
-                else if (header.rotation > 0)
-                    c = rotr(c, header.depth, header.rotation);
-                auto &p = pixels.at(x, y);
-                p.b = (c & header.masks[0]) * multipliers[0];
-                p.g = (c & header.masks[1]) * multipliers[1];
-                p.r = (c & header.masks[2]) * multipliers[2];
-                p.a = (c & header.masks[3]) * multipliers[3];
-            }
-        }
-        if (!header.masks[3])
-            for (auto &c : pixels)
-                c.a = 0xFF;
-    }
+    pix::Grid pixels = palette.size() > 0
+        ? get_pixels_from_palette(file.io, header, palette)
+        : get_pixels_without_palette(file.io, header);
 
     if (header.flip)
         pixels.flip_vertically();
