@@ -20,12 +20,17 @@ static void do_test(const std::string &input_path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Leaf KCAP compressed archives", "[fmt]")
+TEST_CASE("Leaf KCAP archives (v1)", "[fmt]")
 {
-    do_test("tests/fmt/leaf/files/kcap/compressed.pak");
+    do_test("tests/fmt/leaf/files/kcap/v1.pak");
 }
 
-TEST_CASE("Leaf KCAP uncompressed archives", "[fmt]")
+TEST_CASE("Leaf KCAP archives (v2, compressed)", "[fmt]")
 {
-    do_test("tests/fmt/leaf/files/kcap/uncompressed.pak");
+    do_test("tests/fmt/leaf/files/kcap/v2-compressed.pak");
+}
+
+TEST_CASE("Leaf KCAP archives (v2, uncompressed)", "[fmt]")
+{
+    do_test("tests/fmt/leaf/files/kcap/v2-uncompressed.pak");
 }

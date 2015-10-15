@@ -1,6 +1,6 @@
-#include "log.h"
 #include "fmt/leaf/kcap_archive_decoder.h"
 #include "err.h"
+#include "log.h"
 #include "util/encoding.h"
 #include "util/format.h"
 #include "util/pack/lzss.h"
@@ -27,18 +27,50 @@ namespace
     };
 }
 
-bool KcapArchiveDecoder::is_recognized_impl(File &arc_file) const
+static size_t detect_version(File &arc_file, const size_t file_count)
 {
-    return arc_file.io.read(magic.size()) == magic;
+    size_t version = 0;
+    arc_file.io.peek(arc_file.io.tell(), [&]()
+    {
+        arc_file.io.skip((file_count - 1) * (24 + 8));
+        arc_file.io.skip(24);
+        const auto last_entry_offset = arc_file.io.read_u32_le();
+        const auto last_entry_size = arc_file.io.read_u32_le();
+        if (last_entry_offset + last_entry_size == arc_file.io.size())
+            version = 1;
+    });
+    arc_file.io.peek(arc_file.io.tell(), [&]()
+    {
+        arc_file.io.skip((file_count - 1) * (4 + 24 + 8));
+        arc_file.io.skip(4 + 24);
+        const auto last_entry_offset = arc_file.io.read_u32_le();
+        const auto last_entry_size = arc_file.io.read_u32_le();
+        if (last_entry_offset + last_entry_size == arc_file.io.size())
+            version = 2;
+    });
+    return version;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    KcapArchiveDecoder::read_meta_impl(File &arc_file) const
+static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(
+    File &arc_file, const size_t file_count)
 {
-    arc_file.io.seek(magic.size());
-    auto file_count = arc_file.io.read_u32_le();
+    auto meta = std::make_unique<fmt::ArchiveMeta>();
+    for (auto i : util::range(file_count))
+    {
+        auto entry = std::make_unique<ArchiveEntryImpl>();
+        entry->compressed = true;
+        entry->name = util::sjis_to_utf8(arc_file.io.read_to_zero(24)).str();
+        entry->offset = arc_file.io.read_u32_le();
+        entry->size = arc_file.io.read_u32_le();
+        meta->entries.push_back(std::move(entry));
+    }
+    return meta;
+}
 
-    auto meta = std::make_unique<ArchiveMeta>();
+static std::unique_ptr<fmt::ArchiveMeta> read_meta_v2(
+    File &arc_file, const size_t file_count)
+{
+    auto meta = std::make_unique<fmt::ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
@@ -46,7 +78,6 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->name = util::sjis_to_utf8(arc_file.io.read_to_zero(24)).str();
         entry->offset = arc_file.io.read_u32_le();
         entry->size = arc_file.io.read_u32_le();
-
         if (type == EntryType::RegularFile)
             entry->compressed = false;
         else if (type == EntryType::CompressedFile)
@@ -57,10 +88,28 @@ std::unique_ptr<fmt::ArchiveMeta>
                 continue;
             Log.warn("Unknown entry type: %08x\n", type);
         }
-
         meta->entries.push_back(std::move(entry));
     }
     return meta;
+}
+
+bool KcapArchiveDecoder::is_recognized_impl(File &arc_file) const
+{
+    return arc_file.io.read(magic.size()) == magic;
+}
+
+std::unique_ptr<fmt::ArchiveMeta>
+    KcapArchiveDecoder::read_meta_impl(File &arc_file) const
+{
+    arc_file.io.seek(magic.size());
+    const auto file_count = arc_file.io.read_u32_le();
+    const auto version = detect_version(arc_file, file_count);
+    if (version == 1)
+        return read_meta_v1(arc_file, file_count);
+    else if (version == 2)
+        return read_meta_v2(arc_file, file_count);
+    else
+        throw err::UnsupportedVersionError(version);
 }
 
 std::unique_ptr<File> KcapArchiveDecoder::read_file_impl(
