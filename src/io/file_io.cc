@@ -32,7 +32,7 @@ void FileIO::seek(size_t offset)
 
 void FileIO::skip(int offset)
 {
-    if (fseek(p->file, offset, SEEK_CUR) != 0)
+    if (tell() + offset > size() || fseek(p->file, offset, SEEK_CUR) != 0)
         throw err::EofError();
 }
 
