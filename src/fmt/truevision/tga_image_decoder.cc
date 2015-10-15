@@ -127,7 +127,9 @@ pix::Grid TgaImageDecoder::decode_impl(File &file) const
     file.io.skip(4); // x and y
     const auto width = file.io.read_u16_le();
     const auto height = file.io.read_u16_le();
-    const auto depth = file.io.read_u8();
+    auto depth = file.io.read_u8();
+    if (!depth)
+        depth = 32;
     const auto flags = file.io.read_u8();
 
     const auto channels = depth / 8;
