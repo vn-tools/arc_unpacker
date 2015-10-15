@@ -1,3 +1,4 @@
+#include "log.h"
 #include "fmt/leaf/kcap_archive_decoder.h"
 #include "err.h"
 #include "util/encoding.h"
@@ -16,7 +17,6 @@ namespace
     {
         RegularFile    = 0x00000000,
         CompressedFile = 0x00000001,
-        Folder         = 0xCCCCCCCC,
     };
 
     struct ArchiveEntryImpl final : fmt::ArchiveEntry
@@ -47,16 +47,15 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->offset = arc_file.io.read_u32_le();
         entry->size = arc_file.io.read_u32_le();
 
-        if (type == EntryType::Folder)
-            continue;
-        else if (type == EntryType::RegularFile)
+        if (type == EntryType::RegularFile)
             entry->compressed = false;
         else if (type == EntryType::CompressedFile)
             entry->compressed = true;
         else
         {
-            throw err::CorruptDataError(
-                util::format("Unknown entry type: %08x", type));
+            if (!entry->size)
+                continue;
+            Log.warn("Unknown entry type: %08x\n", type);
         }
 
         meta->entries.push_back(std::move(entry));
