@@ -5,19 +5,13 @@
 #include "util/format.h"
 #include "util/plugin_mgr.hh"
 #include "util/range.h"
+#include "util/version_recognizer.h"
 
 using namespace au;
 using namespace au::fmt::ivory;
 
 namespace
 {
-    enum Version
-    {
-        Unknown,
-        Version1,
-        Version2,
-    };
-
     using PluginFunc = std::function<void(bstr &)>;
 
     struct ArchiveEntryImpl final : fmt::ArchiveEntry
@@ -37,32 +31,38 @@ static int check_version(io::IO &arc_io, size_t file_count, size_t name_size)
 {
     arc_io.skip((file_count - 1) * (name_size + 8));
     arc_io.skip(name_size);
-    auto last_file_offset = arc_io.read_u32_le();
-    auto last_file_size = arc_io.read_u32_le();
+    const auto last_file_offset = arc_io.read_u32_le();
+    const auto last_file_size = arc_io.read_u32_le();
     return last_file_offset + last_file_size == arc_io.size();
-}
-
-static Version get_version(io::IO &arc_io)
-{
-    auto file_count = arc_io.read_u32_le();
-    if (check_version(arc_io, file_count, 16))
-        return Version::Version1;
-
-    arc_io.seek(4);
-    auto name_size = arc_io.read_u32_le();
-    if (check_version(arc_io, file_count, name_size))
-        return Version::Version2;
-
-    return Version::Unknown;
 }
 
 struct MblArchiveDecoder::Priv final
 {
+    util::VersionRecognizer recognizer;
     util::PluginManager<PluginFunc> plugin_mgr;
 };
 
 MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)
 {
+    p->recognizer.add_recognizer(
+        1,
+        [&](File &arc_file)
+        {
+            arc_file.io.seek(0);
+            const auto file_count = arc_file.io.read_u32_le();
+            return check_version(arc_file.io, file_count, 16);
+        });
+
+    p->recognizer.add_recognizer(
+        2,
+        [&](File &arc_file)
+        {
+            arc_file.io.seek(0);
+            const auto file_count = arc_file.io.read_u32_le();
+            const auto name_size = arc_file.io.read_u32_le();
+            return check_version(arc_file.io, file_count, name_size);
+        });
+
     p->plugin_mgr.add("noop", "Unencrypted games", [](bstr &) { });
 
     p->plugin_mgr.add("candy", "Candy Toys",
@@ -106,20 +106,20 @@ void MblArchiveDecoder::set_plugin(const std::string &plugin_name)
 
 bool MblArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return get_version(arc_file.io) != Version::Unknown;
+    return p->recognizer.tell_version(arc_file) > 0;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     MblArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    auto version = get_version(arc_file.io);
+    const auto version = p->recognizer.tell_version(arc_file);
     meta->encrypted = arc_file.name.find("mg_data") != std::string::npos;
     meta->decrypt = p->plugin_mgr.is_set() ? p->plugin_mgr.get() : nullptr;
     arc_file.io.seek(0);
 
-    auto file_count = arc_file.io.read_u32_le();
-    auto name_size = version == Version::Version2
+    const auto file_count = arc_file.io.read_u32_le();
+    const auto name_size = version == 2
         ? arc_file.io.read_u32_le()
         : 16;
     for (auto i : util::range(file_count))
@@ -137,8 +137,8 @@ std::unique_ptr<fmt::ArchiveMeta>
 std::unique_ptr<File> MblArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
-    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
     arc_file.io.seek(entry->offset);
     auto data = arc_file.io.read(entry->size);
