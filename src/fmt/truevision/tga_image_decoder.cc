@@ -42,9 +42,10 @@ static pix::Palette read_palette(io::IO &io, size_t size, size_t depth)
 static bstr read_compressed_pixel_data(
     io::IO &io, const size_t width, const size_t height, const size_t channels)
 {
+    const auto size_orig = width * height * channels;
     bstr output;
-    output.reserve(width * height * channels);
-    while (output.size() < output.capacity())
+    output.reserve(size_orig);
+    while (output.size() < size_orig)
     {
         const auto control = io.read_u8();
         const auto repetitions = (control & 0x7F) + 1;
