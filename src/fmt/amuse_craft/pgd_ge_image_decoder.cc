@@ -1,4 +1,4 @@
-#include "fmt/amuse_craft/pgd_image_decoder.h"
+#include "fmt/amuse_craft/pgd_ge_image_decoder.h"
 #include "err.h"
 #include "io/buffered_io.h"
 #include "util/format.h"
@@ -154,12 +154,12 @@ static bstr apply_delta_filter(
     return output;
 }
 
-bool PgdImageDecoder::is_recognized_impl(File &file) const
+bool PgdGeImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-pix::Grid PgdImageDecoder::decode_impl(File &file) const
+pix::Grid PgdGeImageDecoder::decode_impl(File &file) const
 {
     file.io.seek(magic.size());
     file.io.skip(8);
@@ -202,4 +202,4 @@ pix::Grid PgdImageDecoder::decode_impl(File &file) const
         util::format("Unknown filter: %d", filter_type));
 }
 
-static auto dummy = fmt::register_fmt<PgdImageDecoder>("amuse-craft/pgd");
+static auto dummy = fmt::register_fmt<PgdGeImageDecoder>("amuse-craft/pgd-ge");

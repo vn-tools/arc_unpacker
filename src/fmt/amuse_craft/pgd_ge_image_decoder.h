@@ -6,7 +6,7 @@ namespace au {
 namespace fmt {
 namespace amuse_craft {
 
-    class PgdImageDecoder final : public ImageDecoder
+    class PgdGeImageDecoder final : public ImageDecoder
     {
     protected:
         bool is_recognized_impl(File &) const override;
