@@ -9,15 +9,15 @@ bstr::bstr()
 {
 }
 
-bstr::bstr(size_t n, u8 fill) : v(n, fill)
+bstr::bstr(const size_t n, u8 fill) : v(n, fill)
 {
 }
 
-bstr::bstr(const u8 *str, size_t size) : v(str, str + size)
+bstr::bstr(const u8 *str, const size_t size) : v(str, str + size)
 {
 }
 
-bstr::bstr(const char *str, size_t size) : v(str, str + size)
+bstr::bstr(const char *str, const size_t size) : v(str, str + size)
 {
 }
 
@@ -57,14 +57,14 @@ size_t bstr::find(const bstr &other)
     return pos - v.begin();
 }
 
-bstr bstr::substr(size_t start) const
+bstr bstr::substr(const size_t start) const
 {
     if (start > size())
         return ""_b;
     return bstr(get<const char>() + start, size() - start);
 }
 
-bstr bstr::substr(size_t start, size_t size) const
+bstr bstr::substr(const size_t start, const size_t size) const
 {
     if (start > v.size())
         return ""_b;
@@ -73,12 +73,12 @@ bstr bstr::substr(size_t start, size_t size) const
     return bstr(get<const char>() + start, size);
 }
 
-void bstr::resize(size_t how_much)
+void bstr::resize(const size_t how_much)
 {
     v.resize(how_much);
 }
 
-void bstr::reserve(size_t how_much)
+void bstr::reserve(const size_t how_much)
 {
     v.reserve(how_much);
 }
@@ -95,12 +95,12 @@ void bstr::operator +=(const bstr &other)
     v.insert(v.end(), other.get<char>(), other.get<char>() + other.size());
 }
 
-void bstr::operator +=(char c)
+void bstr::operator +=(const char c)
 {
     v.push_back(c);
 }
 
-void bstr::operator +=(uint8_t c)
+void bstr::operator +=(const uint8_t c)
 {
     v.push_back(c);
 }
@@ -115,12 +115,12 @@ bool bstr::operator !=(const bstr &other) const
     return v != other.v;
 }
 
-char &bstr::operator [](size_t pos)
+char &bstr::operator [](const size_t pos)
 {
     return v[pos];
 }
 
-const char &bstr::operator [](size_t pos) const
+const char &bstr::operator [](const size_t pos) const
 {
     return v[pos];
 }

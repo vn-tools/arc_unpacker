@@ -20,20 +20,20 @@ namespace au {
         static const size_t npos;
 
         bstr();
-        bstr(size_t n, u8 fill = 0);
+        bstr(const size_t n, u8 fill = 0);
         bstr(const std::string &other);
-        bstr(const u8 *str, size_t size);
-        bstr(const char *str, size_t size);
+        bstr(const u8 *str, const size_t size);
+        bstr(const char *str, const size_t size);
 
         bool empty() const;
         size_t size() const;
         size_t capacity() const;
-        void resize(size_t how_much);
-        void reserve(size_t how_much);
+        void resize(const size_t how_much);
+        void reserve(const size_t how_much);
 
         size_t find(const bstr &other);
-        bstr substr(size_t start) const;
-        bstr substr(size_t start, size_t size) const;
+        bstr substr(const size_t start) const;
+        bstr substr(const size_t start, const size_t size) const;
 
         template<typename T> T *get()
         {
@@ -79,12 +79,12 @@ namespace au {
 
         bstr operator +(const bstr &other);
         void operator +=(const bstr &other);
-        void operator +=(char c);
-        void operator +=(u8 c);
+        void operator +=(const char c);
+        void operator +=(const u8 c);
         bool operator !=(const bstr &other) const;
         bool operator ==(const bstr &other) const;
-        char &operator [](size_t pos);
-        const char &operator [](size_t pos) const;
+        char &operator [](const size_t pos);
+        const char &operator [](const size_t pos) const;
 
     private:
         std::vector<char> v;
@@ -95,12 +95,12 @@ namespace au {
         return static_cast<u8>(value);
     }
 
-    constexpr const u8* operator "" _u8(const char *value, size_t n)
+    constexpr const u8* operator "" _u8(const char *value, const size_t n)
     {
         return reinterpret_cast<const u8*>(value);
     }
 
-    inline bstr operator "" _b(const char *value, size_t n)
+    inline bstr operator "" _b(const char *value, const size_t n)
     {
         return bstr(value, n);
     }
