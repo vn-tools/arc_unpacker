@@ -6,7 +6,22 @@
 using namespace au;
 using namespace au::fmt::amuse_craft;
 
-TEST_CASE("Amuse Craft PAC archives", "[fmt]")
+TEST_CASE("Amuse Craft PAC archives (v1)", "[fmt]")
+{
+    const std::vector<std::shared_ptr<File>> expected_files
+    {
+        tests::stub_file("123.txt", "1234567890"_b),
+        tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
+    };
+
+    PacArchiveDecoder decoder;
+    auto input_file = tests::file_from_path(
+        "tests/fmt/amuse_craft/files/pac/test-v1.pac");
+    auto actual_files = tests::unpack(decoder, *input_file);
+    tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("Amuse Craft PAC archives (v2)", "[fmt]")
 {
     const std::vector<std::shared_ptr<File>> expected_files
     {
@@ -16,7 +31,7 @@ TEST_CASE("Amuse Craft PAC archives", "[fmt]")
 
     PacArchiveDecoder decoder;
     auto input_file = tests::file_from_path(
-        "tests/fmt/amuse_craft/files/pac/test.pac");
+        "tests/fmt/amuse_craft/files/pac/test-v2.pac");
     auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
