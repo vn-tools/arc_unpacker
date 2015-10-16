@@ -6,8 +6,6 @@
 using namespace au;
 using namespace au::fmt::truevision;
 
-static const bstr magic = "TRUEVISION-XFILE\x2E\x00"_b;
-
 namespace
 {
     enum Flags
@@ -109,10 +107,11 @@ static pix::Grid get_pixels_without_palette(
 
 bool TgaImageDecoder::is_recognized_impl(File &file) const
 {
-    file.io.seek(file.io.size() - magic.size());
-    if (file.io.read(magic.size()) == magic)
-        return true;
-    return file.has_extension("tga"); // the footer is optional...
+    // there's no magic in the header. there is *optional* footer that *might*
+    // contain the magic, but checking for this causes conflicts with certain
+    // archives that contain TGA files at the end (they understandably get
+    // mistaken for TGA footer).
+    return file.has_extension("tga");
 }
 
 pix::Grid TgaImageDecoder::decode_impl(File &file) const
