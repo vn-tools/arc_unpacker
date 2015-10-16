@@ -71,7 +71,7 @@ std::unique_ptr<File> LnkArchiveDecoder::read_file_impl(
 
         for (size_t i = 0; i < 0x100 && key_pos + i < entry->size; i++)
         {
-            data.get<u8>()[key_pos + i] -= key;
+            data[key_pos + i] -= key;
             key = key * 0x6D - 0x25;
         }
     }

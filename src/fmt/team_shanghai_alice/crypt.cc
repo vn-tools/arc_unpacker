@@ -39,7 +39,7 @@ static void decrypt(
         bstr output_block(current_block_size);
         for (auto j : util::range(2))
         {
-            char *output_block_ptr = &output_block[current_block_size - j - 1];
+            u8 *output_block_ptr = &output_block[current_block_size - j - 1];
             for (auto i : util::range((current_block_size - j + 1) >> 1))
             {
                 *output_block_ptr = *input_block_ptr++ ^ key;

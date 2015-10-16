@@ -83,13 +83,13 @@ namespace au {
         void operator +=(const u8 c);
         bool operator !=(const bstr &other) const;
         bool operator ==(const bstr &other) const;
-        char &operator [](const size_t pos);
-        const char &operator [](const size_t pos) const;
-        char &at(const size_t pos);
-        const char &at(const size_t pos) const;
+        u8 &operator [](const size_t pos);
+        const u8 &operator [](const size_t pos) const;
+        u8 &at(const size_t pos);
+        const u8 &at(const size_t pos) const;
 
     private:
-        std::vector<char> v;
+        std::vector<u8> v;
     };
 
     constexpr u8 operator "" _u8(char value)

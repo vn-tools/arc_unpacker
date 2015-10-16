@@ -55,7 +55,7 @@ static void decrypt_file_name(
         key -= file_index >> 0x10;
         key -= file_index >> 0x08;
         key -= file_index;
-        name.get<u8>()[char_pos] += (key & 0xFF);
+        name[char_pos] += (key & 0xFF);
     }
 }
 
@@ -64,7 +64,7 @@ static void decrypt_file_data(
 {
     u32 key = meta.filter->data_key;
     for (auto i : util::range(entry.name_orig.size()))
-        key -= entry.name_orig.get<u8>()[i];
+        key -= entry.name_orig[i];
     key *= entry.name_orig.size();
     key += meta.key1 * meta.key2;
     key *= entry.size_orig;
