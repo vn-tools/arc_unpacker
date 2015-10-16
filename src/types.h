@@ -85,6 +85,8 @@ namespace au {
         bool operator ==(const bstr &other) const;
         char &operator [](const size_t pos);
         const char &operator [](const size_t pos) const;
+        char &at(const size_t pos);
+        const char &at(const size_t pos) const;
 
     private:
         std::vector<char> v;

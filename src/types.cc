@@ -124,3 +124,13 @@ const char &bstr::operator [](const size_t pos) const
 {
     return v[pos];
 }
+
+char &bstr::at(const size_t pos)
+{
+    return v.at(pos);
+}
+
+const char &bstr::at(const size_t pos) const
+{
+    return v.at(pos);
+}

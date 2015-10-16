@@ -234,3 +234,12 @@ TEST_CASE("iterating over bstr", "[core][types]")
     }
     REQUIRE(tmp == "1|2|3|"_b);
 }
+
+TEST_CASE("bstr.at", "[core][types]")
+{
+    bstr x = "\x00\x01"_b;
+    REQUIRE(x.at(0) == 0);
+    REQUIRE(x.at(1) == 1);
+    REQUIRE_THROWS(x.at(2));
+    REQUIRE_THROWS(x.at(-1));
+}
