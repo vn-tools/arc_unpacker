@@ -24,8 +24,7 @@ echo 'Checking for sloppy exceptions...'
 grep 'throw std' **/*.cc|grep -v logic_error
 
 echo 'Checking for nonfinal struct/classes...'
-grep 'struct\|class' **/*.{cc,h} \
-    | grep -v 'structure' \
+grep 'struct \|class ' **/*.{cc,h} \
     | grep -v '_struct' \
     | grep -v 'pngstruct' \
     | grep -v 'enum class' \
