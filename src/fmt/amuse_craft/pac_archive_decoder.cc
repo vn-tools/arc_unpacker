@@ -106,7 +106,13 @@ std::unique_ptr<File> PacArchiveDecoder::read_file_impl(
 
 std::vector<std::string> PacArchiveDecoder::get_linked_formats() const
 {
-    return { "truevision/tga", "amuse-craft/pgd-ge" };
+    return
+    {
+        "truevision/tga",
+        "amuse-craft/pgd-ge",
+        "amuse-craft/pgd-c00",
+        "amuse-craft/bgm",
+    };
 }
 
 static auto dummy = fmt::register_fmt<PacArchiveDecoder>("amuse-craft/pac");
