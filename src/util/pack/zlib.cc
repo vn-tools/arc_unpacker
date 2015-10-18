@@ -45,8 +45,9 @@ bstr util::pack::zlib_inflate(const bstr &input)
     if (ret != Z_STREAM_END)
     {
         throw err::CorruptDataError(util::format(
-            "Failed to inflate zlib stream (%s)",
-            stream.msg ? stream.msg : "unknown error"));
+            "Failed to inflate zlib stream (%s near %x)",
+            stream.msg ? stream.msg : "unknown error",
+            stream.next_in - input.get<const Bytef>()));
     }
 
     return output;
