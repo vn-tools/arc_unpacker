@@ -1,0 +1,20 @@
+#!/usr/bin/python3
+import sys, errno
+if len(sys.argv) < 2:
+    print('Provide XOR key...', file=sys.stderr)
+key = bytearray.fromhex(sys.argv[1])
+
+i = 0
+try:
+    for c in sys.stdin.buffer.read():
+        c ^= key[i % len(key)]
+        sys.stdout.buffer.write(bytes([c]))
+        i += 1
+except IOError as e:
+    if e.errno != errno.EPIPE:
+        raise
+
+try:
+    sys.stdout.close()
+except IOError:
+    pass
