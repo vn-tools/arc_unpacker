@@ -1,6 +1,8 @@
 #include "fmt/archive_decoder.h"
 #include "err.h"
 #include "fmt/naming_strategies.h"
+#include "log.h"
+#include "util/format.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -44,14 +46,31 @@ void ArchiveDecoder::unpack(File &arc_file, const FileSaver &saver) const
     if (!is_recognized(arc_file))
         throw err::RecognitionError();
 
+    size_t error_count = 0;
     auto meta = read_meta(arc_file);
     if (!preprocessing_disabled)
         preprocess(arc_file, *meta, saver);
     for (auto &entry : meta->entries)
     {
-        auto output_file = read_file(arc_file, *meta, *entry);
-        if (output_file)
-            saver.save(std::move(output_file));
+        try
+        {
+            auto output_file = read_file(arc_file, *meta, *entry);
+            if (output_file)
+                saver.save(std::move(output_file));
+        }
+        catch (std::exception &e)
+        {
+            ++error_count;
+            Log.err(
+                "Can't unpack %s: %s\n",
+                entry->name.c_str(),
+                e.what());
+        }
+    }
+    if (error_count)
+    {
+        throw err::GeneralError(
+            util::format("%d files couldn't be unpacked.", error_count));
     }
 }
 
