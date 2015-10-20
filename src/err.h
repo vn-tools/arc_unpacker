@@ -5,12 +5,17 @@
 namespace au {
 namespace err {
 
-    struct UsageError : public std::runtime_error
+    struct GeneralError : public std::runtime_error
+    {
+        GeneralError(const std::string &description);
+    };
+
+    struct UsageError : public GeneralError
     {
         UsageError(const std::string &description);
     };
 
-    struct DataError : public std::runtime_error
+    struct DataError : public GeneralError
     {
     protected:
         DataError(const std::string &description);
@@ -37,7 +42,7 @@ namespace err {
         BadDataOffsetError();
     };
 
-    struct IoError : public std::runtime_error
+    struct IoError : public GeneralError
     {
         IoError(const std::string &description);
     };
@@ -52,7 +57,7 @@ namespace err {
         FileNotFoundError(const std::string &description);
     };
 
-    struct NotSupportedError : public std::runtime_error
+    struct NotSupportedError : public GeneralError
     {
         NotSupportedError(const std::string &description);
     };

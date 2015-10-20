@@ -4,11 +4,15 @@
 using namespace au;
 using namespace au::err;
 
-UsageError::UsageError(const std::string &desc) : std::runtime_error(desc)
+GeneralError::GeneralError(const std::string &desc) : std::runtime_error(desc)
 {
 }
 
-DataError::DataError(const std::string &desc) : std::runtime_error(desc)
+UsageError::UsageError(const std::string &desc) : GeneralError(desc)
+{
+}
+
+DataError::DataError(const std::string &desc) : GeneralError(desc)
 {
 }
 
@@ -32,7 +36,7 @@ BadDataOffsetError::BadDataOffsetError() : DataError("Bad data offset")
 {
 }
 
-IoError::IoError(const std::string &desc) : std::runtime_error(desc)
+IoError::IoError(const std::string &desc) : GeneralError(desc)
 {
 }
 
@@ -45,7 +49,7 @@ FileNotFoundError::FileNotFoundError(const std::string &desc) : IoError(desc)
 }
 
 NotSupportedError::NotSupportedError(const std::string &desc)
-    : std::runtime_error(desc)
+    : GeneralError(desc)
 {
 }
 
