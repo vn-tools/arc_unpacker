@@ -176,7 +176,7 @@ std::unique_ptr<File> WarcArchiveDecoder::read_file_impl(
 
 std::vector<std::string> WarcArchiveDecoder::get_linked_formats() const
 {
-    return { "shiina-rio/ogv" };
+    return { "shiina-rio/ogv", "shiina-rio/s25" };
 }
 
 static auto dummy = fmt::register_fmt<WarcArchiveDecoder>("shiina-rio/warc");
