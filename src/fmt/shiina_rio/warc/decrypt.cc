@@ -19,6 +19,7 @@ static const unsigned int year_day_acc[2][13] =
     { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
     { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 },
 };
+static const double pi = 3.14159265358979323846;
 
 namespace
 {
@@ -211,7 +212,7 @@ static double get_lcg_xor(const double a)
         }
         while (flags != 0xF);
 
-        return (M_PI
+        return (pi
             - (std::cos(a) * (unk0_l + unk0_h))
             - (std::sin(a) * (unk1_l + unk1_h))) / 2.0;
     }
@@ -494,7 +495,7 @@ void warc::decrypt_essential(
     {
         token = std::acos(static_cast<double>(a)
             / std::sqrt(static_cast<double>(a * a + b * b)));
-        token = token / M_PI * 180.0;
+        token = token / pi * 180.0;
     }
     if (b < 0)
         token = 360.0 - token;
