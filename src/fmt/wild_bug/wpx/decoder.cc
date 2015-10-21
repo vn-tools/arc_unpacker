@@ -98,7 +98,7 @@ bstr Decoder::read_plain_section(u8 section_id)
 
 bstr Decoder::read_compressed_section(u8 section_id)
 {
-    return read_compressed_section(section_id, -1, {});
+    return read_compressed_section(section_id, -1, {0, 0, 0, 0, 0, 0, 0, 0});
 }
 
 bstr Decoder::read_compressed_section(
