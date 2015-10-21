@@ -90,6 +90,7 @@ PluginRegistry::PluginRegistry() : p(new Priv)
             plugin->logo_data = read_file("logo4.jpg").substr(0, 0xBFAE);
             plugin->flag_crypt.pre1 = false;
             plugin->flag_crypt.pre2 = true;
+            plugin->flag_crypt.post = false;
             return plugin;
         });
 
