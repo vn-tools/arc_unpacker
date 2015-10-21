@@ -249,10 +249,17 @@ int ArcUnpacker::Priv::run() const
     }
 
     bool result = 0;
+    size_t processed = 0;
     for (auto &input_path : options.input_paths)
     {
         File file(input_path, io::FileMode::Read);
         result |= !guess_decoder_and_unpack(file);
+
+        // keep one blank line between logs from each processed file
+        processed++;
+        const bool last = processed == options.input_paths.size();
+        if (!last)
+            Log.info("\n");
     }
     return result;
 }
@@ -289,13 +296,13 @@ bool ArcUnpacker::Priv::guess_decoder_and_unpack(File &file) const
     try
     {
         unpack(*decoder, file);
-        Log.success("Unpacking finished successfully.\n\n");
+        Log.success("Unpacking finished successfully.\n");
         return true;
     }
     catch (std::exception &e)
     {
         Log.err("Error: " + std::string(e.what()) + "\n");
-        Log.err("Unpacking finished with errors.\n\n");
+        Log.err("Unpacking finished with errors.\n");
         return false;
     }
 }
