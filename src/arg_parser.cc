@@ -216,10 +216,10 @@ static std::string format_possible_values_list(
     return out;
 }
 
-static std::string format_switch_help(const SwitchImpl &sw)
+static std::string format_switch_help(const SwitchImpl &sw, bool force)
 {
     const auto &values = sw.possible_values;
-    if (!values.size() || sw.possible_values_hidden)
+    if (!values.size() || (sw.possible_values_hidden && !force))
         return "";
     auto out
         = util::format("\nAvailable %s values:\n\n", sw.value_name.c_str());
@@ -235,7 +235,7 @@ static std::string format_switch_help(const SwitchImpl &sw)
 static void print_switches(const std::vector<SwitchImpl*> &switches)
 {
     for (const auto &sw : switches)
-        Log.info(format_switch_help(*sw));
+        Log.info(format_switch_help(*sw, false));
 }
 
 static void print_options(
@@ -316,7 +316,7 @@ void ArgParser::Priv::parse_single_arg(const std::string &arg)
         {
             throw err::UsageError(
                 "Bad value for option \"" + key + "\".\n"
-                + format_switch_help(*sw));
+                + format_switch_help(*sw, true));
         }
 
         sw->is_set = true;
