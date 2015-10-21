@@ -126,6 +126,7 @@ std::unique_ptr<File> WarcArchiveDecoder::read_file_impl(
 
     const bstr head = arc_file.io.read(4);
     const auto size_orig = arc_file.io.read_u32_le();
+    const bool compress_crypt = head[3] > 0;
     const u32 tmp = *head.get<u32>() ^ 0x82AD82 ^ size_orig;
     bstr file_magic(3);
     file_magic[0] = tmp & 0xFF;
@@ -142,22 +143,17 @@ std::unique_ptr<File> WarcArchiveDecoder::read_file_impl(
     if (entry->flags & 0x20000000)
         warc::decrypt_with_crc(meta->plugin, data);
 
-    std::function<bstr(const bstr &, const size_t)> decompressor;
+    std::function<bstr(const bstr &, const size_t, const bool)> decompressor;
     if (file_magic == "YH1"_b)
         decompressor = warc::decompress_yh1;
     else if (file_magic == "YLZ"_b)
         decompressor = warc::decompress_ylz;
     else if (file_magic == "YPK"_b)
-    {
-        decompressor = [&](const bstr &input, const size_t size_orig)
-            {
-                return warc::decompress_ypk(data, size_orig, head[3] > 0);
-            };
-    }
+        decompressor = warc::decompress_ypk;
 
     if (decompressor)
     {
-        data = decompressor(data, size_orig);
+        data = decompressor(data, size_orig, compress_crypt);
         if (entry->flags & 0x40000000)
             warc::decrypt_with_crc(meta->plugin, data);
         if (meta->plugin.flag_crypt.post)
