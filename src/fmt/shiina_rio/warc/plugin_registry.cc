@@ -1,6 +1,7 @@
 #include "fmt/shiina_rio/warc/plugin_registry.h"
 #include "file.h"
 #include "fmt/png/png_image_decoder.h"
+#include "fmt/shiina_rio/warc/decrypt.h"
 #include "util/encoding.h"
 #include "util/plugin_mgr.hh"
 #include "util/program_path.h"
@@ -44,10 +45,6 @@ static std::shared_ptr<Plugin> create_plugin(
         : version < 2490 ? read_file("logo2.jpg")
         : read_file("logo3.jpg");
     plugin->flag_crypt.table = read_file("flag.png");
-    plugin->flag_crypt.pre1 = version >= 2490;
-    plugin->flag_crypt.pre2 = false;
-    plugin->flag_crypt.post = version >= 2490;
-
     return plugin;
 }
 
@@ -76,6 +73,8 @@ PluginRegistry::PluginRegistry() : p(new Priv)
         {
             auto plugin = create_plugin(
                 2490, { 0x4B535453, 0xA15FA15F, 0, 0, 0 });
+            plugin->flag_crypt.pre = warc::decrypt_with_flags1;
+            plugin->flag_crypt.post = warc::decrypt_with_flags1;
             return plugin;
         });
 
@@ -88,9 +87,8 @@ PluginRegistry::PluginRegistry() : p(new Priv)
             auto plugin = create_plugin(
                 2490, { 0xF1AD65AB, 0x55B7E1AD, 0x62B875B8, 0, 0 });
             plugin->logo_data = read_file("logo4.jpg").substr(0, 0xBFAE);
-            plugin->flag_crypt.pre1 = false;
-            plugin->flag_crypt.pre2 = true;
-            plugin->flag_crypt.post = false;
+            plugin->flag_crypt.pre = nullptr;
+            plugin->flag_crypt.pre = warc::decrypt_with_flags2;
             return plugin;
         });
 

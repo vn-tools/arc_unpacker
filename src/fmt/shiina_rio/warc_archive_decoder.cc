@@ -136,10 +136,8 @@ std::unique_ptr<File> WarcArchiveDecoder::read_file_impl(
     auto data = arc_file.io.read(entry->size_comp - 8);
     if (entry->flags & 0x80000000)
         warc::decrypt_essential(meta->plugin, meta->warc_version, data);
-    if (meta->plugin.flag_crypt.pre1)
-        warc::decrypt_with_flags1(meta->plugin, data, 0x202);
-    if (meta->plugin.flag_crypt.pre2)
-        warc::decrypt_with_flags2(meta->plugin, data, 0x202);
+    if (meta->plugin.flag_crypt.pre)
+        meta->plugin.flag_crypt.pre(meta->plugin, data, 0x202);
     if (entry->flags & 0x20000000)
         warc::decrypt_with_crc(meta->plugin, data);
 
@@ -157,7 +155,7 @@ std::unique_ptr<File> WarcArchiveDecoder::read_file_impl(
         if (entry->flags & 0x40000000)
             warc::decrypt_with_crc(meta->plugin, data);
         if (meta->plugin.flag_crypt.post)
-            warc::decrypt_with_flags1(meta->plugin, data, 0x204);
+            meta->plugin.flag_crypt.post(meta->plugin, data, 0x204);
     }
 
     if (entry->suspicious)

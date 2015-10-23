@@ -27,9 +27,8 @@ namespace warc {
         struct
         {
             bstr table;
-            bool pre1;
-            bool pre2;
-            bool post;
+            std::function<void(const Plugin &, bstr &, const u32)> pre;
+            std::function<void(const Plugin &, bstr &, const u32)> post;
         } flag_crypt;
     };
 
