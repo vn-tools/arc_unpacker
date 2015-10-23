@@ -593,6 +593,70 @@ void warc::decrypt_with_flags2(
     data.get<u32>()[0x41] ^= acc;
 }
 
+void warc::decrypt_with_flags3(
+    const Plugin &plugin, bstr &data, const u32 flags)
+{
+    if (data.size() < 0x400)
+        return;
+
+    if ((flags & 0x204) == 0x204)
+    {
+        if (data.get<u32>()[0] == 0x718E958D)
+        {
+            io::BufferedIO data_io(data);
+            data_io.skip(8);
+
+            const auto size = data_io.read_u32_le();
+            int base_table[256];
+            int diff_table_buf[257];
+            int *diff_table = &diff_table_buf[1]; // allow accessing index -1
+
+            diff_table[-1] = 0;
+            for (const auto i : util::range(256))
+            {
+                base_table[i] = data_io.read_u8();
+                diff_table[i] = base_table[i] + diff_table[i - 1];
+            }
+
+            bstr buffer(diff_table[0xFF]);
+            for (const auto i : util::range(256))
+            {
+                const auto offset1 = diff_table[i - 1];
+                const auto offset2 = diff_table[i];
+                for (const auto j : util::range(offset2 - offset1))
+                    buffer[offset1 + j] = i;
+            }
+
+            u32 unk0 = 0;
+            u32 unk1 = 0xFFFFFFFF;
+            u32 unk2 = data_io.read_u32_be();
+
+            for (const auto i : util::range(size))
+            {
+                const u32 scale = unk1 / buffer.size();
+                const size_t idx = buffer.at((unk2 - unk0) / scale);
+                data[i] = idx;
+                unk0 += diff_table[idx - 1] * scale;
+                unk1 = base_table[idx] * scale;
+                while (!((unk0 ^ (unk1 + unk0)) & 0xFF000000))
+                {
+                    unk0 <<= 8;
+                    unk1 <<= 8;
+                    unk2 = (unk2 << 8) | data_io.read_u8();
+                }
+                while (unk1 < 0x10000)
+                {
+                    unk0 <<= 8;
+                    unk1 = 0x1000000 - (unk0 & 0xFFFFFF);
+                    unk2 = (unk2 << 8) | data_io.read_u8();
+                }
+            }
+        }
+
+        data.get<u32>()[0x80] ^= data.size();
+    }
+}
+
 void warc::decrypt_with_crc(const Plugin &plugin, bstr &data)
 {
     if (data.size() < 0x400 || !plugin.crc_crypt.table.size())

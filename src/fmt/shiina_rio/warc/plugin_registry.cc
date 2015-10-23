@@ -39,7 +39,8 @@ static std::shared_ptr<Plugin> create_plugin(
     plugin->crc_crypt.table
         = version < 2410 ? read_file("table1.bin")
         : version < 2490 ? read_file("table2.bin")
-        : read_file("table3.bin");
+        : version < 2450 ? read_file("table3.bin")
+        : read_file("table4.bin");
     plugin->logo_data
         = version < 2390 ? read_file("logo1.png")
         : version < 2490 ? read_file("logo2.jpg")
@@ -92,16 +93,17 @@ PluginRegistry::PluginRegistry() : p(new Priv)
             return plugin;
         });
 
-    /*p->plugin_mgr.add(
+    p->plugin_mgr.add(
         "sorcery-jokers",
         "Sorcery Jokers", []()
         {
             auto plugin = create_plugin(
                 2500, { 0x6C877787, 0x00007787, 0, 0, 0 });
             plugin->logo_data = read_file("logo5.jpg");
-            // TODO: work this out, onii-chan!
+            plugin->flag_crypt.pre = nullptr;
+            plugin->flag_crypt.post = warc::decrypt_with_flags3;
             return plugin;
-        });*/
+        });
 }
 
 PluginRegistry::~PluginRegistry()
