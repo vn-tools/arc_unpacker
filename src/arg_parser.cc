@@ -175,43 +175,49 @@ static std::vector<std::string> word_wrap(
     return lines;
 }
 
-static std::string format_possible_values_table(
-    const std::vector<std::pair<std::string, std::string>> &values)
+static std::string format_dictionary_as_table(
+    const std::string &prefix,
+    const std::vector<std::pair<std::string, std::string>> &dict)
 {
     std::string out;
-    auto value_size = 0;
-    for (const auto &it : values)
-        value_size = std::max<size_t>(it.first.size(), value_size);
-    value_size += 2; // keep two spaces around value names
-    const auto columns = (line_size - value_size) / value_size;
-    const auto rows = (values.size() + columns - 1) / columns;
+    size_t key_size = 0;
+    for (const auto &it : dict)
+        key_size = std::max(prefix.size () + it.first.size(), key_size);
+    key_size += 2; // keep two spaces around value names
+    const auto columns = (line_size - key_size) / key_size;
+    const auto rows = (dict.size() + columns - 1) / columns;
     for (const auto y : util::range(rows))
     {
         for (const auto x : util::range(columns))
         {
             const auto i = x * rows + y;
-            if (i < values.size())
-            {
-                out += util::format(
-                    "- %-*s ", value_size, values[i].first.c_str());
-            }
+            if (i >= dict.size())
+                continue;
+            out += prefix + dict[i].first + std::string(
+                key_size - prefix.size() - dict[i].first.size(), ' ');
         }
         out += "\n";
     }
     return out;
 }
 
-static std::string format_possible_values_list(
-    const std::vector<std::pair<std::string, std::string>> &possible_values)
+static std::string format_dictionary_as_list(
+    const std::string &prefix,
+    const std::vector<std::pair<std::string, std::string>> &dict)
 {
-    size_t value_size = 0;
-    for (const auto &it : possible_values)
-        value_size = std::max(it.first.size(), value_size);
+    size_t key_size = 0;
+    for (const auto &it : dict)
+        key_size = std::max(it.first.size() + prefix.size(), key_size);
+    key_size += 2; // keep two spaces around parameter descriptions
+    const auto description_size = line_size - key_size;
     std::string out;
-    for (const auto &it : possible_values)
+    for (const auto &it : dict)
     {
-        out += util::format(
-            "- %-*s  %s\n", value_size, it.first.c_str(), it.second.c_str());
+        out += prefix + it.first + std::string(
+            key_size - prefix.size() - it.first.size(), ' ');
+        for (const auto &line : word_wrap(it.second, description_size))
+            out += line + std::string(key_size, ' ');
+        out += "\n";
     }
     return out;
 }
@@ -226,9 +232,12 @@ static std::string format_switch_help(const SwitchImpl &sw, bool force)
     const bool use_descriptions = std::all_of(
         values.begin(), values.end(),
         [](const auto &it) { return !it.second.empty(); });
+    std::vector<std::pair<std::string, std::string>> dict;
+    for (auto it : values)
+        dict.push_back({ it.first, it.second });
     out += use_descriptions
-        ? format_possible_values_list(values)
-        : format_possible_values_table(values);
+        ? format_dictionary_as_list("- ", dict)
+        : format_dictionary_as_table("- ", dict);
     return out;
 }
 
@@ -241,19 +250,10 @@ static void print_switches(const std::vector<SwitchImpl*> &switches)
 static void print_options(
     const std::vector<std::unique_ptr<OptionImpl>> &options)
 {
-    size_t invocation_size = 0;
+    std::vector<std::pair<std::string, std::string>> dict;
     for (const auto &opt : options)
-        invocation_size = std::max<size_t>(
-            invocation_size, opt->get_invocation_help().size());
-    invocation_size += 2; // keep two spaces around parameter descriptions
-    const auto description_size = line_size - invocation_size;
-    for (const auto &opt : options)
-    {
-        Log.info("%-*s", invocation_size, opt->get_invocation_help().c_str());
-        for (const auto &line : word_wrap(opt->description, description_size))
-            Log.info(line + std::string(invocation_size, ' '));
-        Log.info("\n");
-    }
+        dict.push_back({ opt->get_invocation_help(), opt->description });
+    Log.info(format_dictionary_as_list("", dict));
 }
 
 struct ArgParser::Priv final
