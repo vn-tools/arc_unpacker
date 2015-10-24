@@ -50,6 +50,7 @@ std::unique_ptr<File> util::file_from_grid(
 
     // 0 = no compression, 9 = max compression
     // 1 produces good file size and is still fast.
+    png_set_filter(png_ptr, 0, PNG_FILTER_NONE);
     png_set_compression_level(png_ptr, 1);
 
     png_set_write_fn(png_ptr, &output_file->io, &png_write_data, &png_flush);
