@@ -1,4 +1,5 @@
 #include "pix/grid.h"
+#include <cstring>
 #include <algorithm>
 #include "err.h"
 #include "util/format.h"
@@ -25,12 +26,20 @@ struct Grid::Priv final
 
 void Grid::Priv::load(const bstr &input, Format fmt)
 {
-    int bpp = format_to_bpp(fmt);
-    if (input.size() < width * height * bpp)
+    const auto bpp = format_to_bpp(fmt);
+    const auto size = width * height;
+    if (input.size() < size * bpp)
         throw err::BadDataSizeError();
-    auto size = width * height;
     auto *input_ptr = input.get<const u8>();
     auto *pixels_ptr = &pixels[0];
+
+    // save those precious CPU cycles
+    if (fmt == Format::BGRA8888)
+    {
+        auto input_pixel_ptr = input.get<const pix::Pixel>();
+        std::memcpy(pixels_ptr, input_pixel_ptr, size * 4);
+        return;
+    }
 
     // anyone knows of sane alternative?
     switch (fmt)
