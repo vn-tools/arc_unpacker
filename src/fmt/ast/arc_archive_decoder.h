@@ -4,7 +4,7 @@
 
 namespace au {
 namespace fmt {
-namespace adv {
+namespace ast {
 
     class ArcArchiveDecoder final : public ArchiveDecoder
     {

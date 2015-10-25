@@ -1,10 +1,10 @@
-#include "fmt/adv/arc_archive_decoder.h"
+#include "fmt/ast/arc_archive_decoder.h"
 #include "test_support/catch.hh"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 
 using namespace au;
-using namespace au::fmt::adv;
+using namespace au::fmt::ast;
 
 static void do_test(const std::string &input_path)
 {
@@ -20,22 +20,22 @@ static void do_test(const std::string &input_path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("ADV ARC1 archives", "[fmt]")
+TEST_CASE("AST ARC1 archives", "[fmt]")
 {
-    do_test("tests/fmt/adv/files/arc/test-v1");
+    do_test("tests/fmt/ast/files/arc/test-v1");
 }
 
-TEST_CASE("ADV ARC2 plain archives", "[fmt]")
+TEST_CASE("AST ARC2 plain archives", "[fmt]")
 {
-    do_test("tests/fmt/adv/files/arc/test-v2-plain");
+    do_test("tests/fmt/ast/files/arc/test-v2-plain");
 }
 
-TEST_CASE("ADV ARC2 compressed archives", "[fmt]")
+TEST_CASE("AST ARC2 compressed archives", "[fmt]")
 {
-    do_test("tests/fmt/adv/files/arc/test-v2-compressed");
+    do_test("tests/fmt/ast/files/arc/test-v2-compressed");
 }
 
-TEST_CASE("ADV ARC2 encrypted archives", "[fmt]")
+TEST_CASE("AST ARC2 encrypted archives", "[fmt]")
 {
-    do_test("tests/fmt/adv/files/arc/test-v2-encrypted");
+    do_test("tests/fmt/ast/files/arc/test-v2-encrypted");
 }

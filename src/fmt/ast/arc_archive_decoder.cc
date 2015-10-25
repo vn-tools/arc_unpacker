@@ -1,11 +1,11 @@
-#include "fmt/adv/arc_archive_decoder.h"
+#include "fmt/ast/arc_archive_decoder.h"
 #include <algorithm>
 #include "util/pack/lzss.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
 using namespace au;
-using namespace au::fmt::adv;
+using namespace au::fmt::ast;
 
 static const bstr magic1 = "ARC1"_b;
 static const bstr magic2 = "ARC2"_b;
@@ -100,4 +100,4 @@ std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
     return output_file;
 }
 
-static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("adv/arc");
+static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("ast/arc");
