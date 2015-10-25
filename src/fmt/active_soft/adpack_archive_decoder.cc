@@ -54,7 +54,7 @@ std::unique_ptr<File> AdpackArchiveDecoder::read_file_impl(
 
 std::vector<std::string> AdpackArchiveDecoder::get_linked_formats() const
 {
-    return { "active-soft/ed8" };
+    return { "active-soft/ed8", "active-soft/edt" };
 }
 
 static auto dummy
