@@ -52,5 +52,10 @@ std::unique_ptr<File> AdpackArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, arc_file.io.read(entry->size));
 }
 
+std::vector<std::string> AdpackArchiveDecoder::get_linked_formats() const
+{
+    return { "active-soft/ed8" };
+}
+
 static auto dummy
     = fmt::register_fmt<AdpackArchiveDecoder>("active-soft/adpack");
