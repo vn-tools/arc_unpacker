@@ -8,6 +8,7 @@ using namespace au;
 using namespace au::fmt::active_soft;
 
 static const bstr magic = ".TRUE\x8D\x5D\x8C\xCB\x00"_b;
+static const bstr diff_magic = ".EDT_DIFF\x00"_b;
 
 static inline u8 clamp(const u8 input, const u8 min, const u8 max)
 {
@@ -24,9 +25,23 @@ pix::Grid EdtImageDecoder::decode_impl(File &file) const
     file.io.seek(magic.size() + 4);
     const auto width = file.io.read_u16_le();
     const auto height = file.io.read_u16_le();
-    file.io.skip(8);
+    file.io.skip(4);
+    const auto meta_size = file.io.read_u32_le();
     const auto data_size = file.io.read_u32_le();
     const auto raw_size = file.io.read_u32_le();
+
+    pix::Pixel transparent_color = { 0, 0, 0, 0xFF };
+    std::string base_file_name;
+    if (meta_size)
+    {
+        io::BufferedIO meta_io(file.io.read(meta_size));
+        if (meta_io.read(diff_magic.size()) == diff_magic)
+        {
+            transparent_color = pix::read<pix::Format::BGR888>(meta_io);
+            meta_io.skip(1);
+            base_file_name = meta_io.read_to_eof().str();
+        }
+    }
 
     const size_t channels = 3;
     const size_t stride = width * channels;
@@ -42,7 +57,7 @@ pix::Grid EdtImageDecoder::decode_impl(File &file) const
     std::vector<size_t> look_behind_table;
     for (const auto shift : shift_table)
         look_behind_table.push_back(
-            (shift.first + shift.second * width) * channels);
+            -(shift.first + shift.second * width) * channels);
 
     bstr output;
     output.reserve(target_size);
@@ -60,15 +75,17 @@ pix::Grid EdtImageDecoder::decode_impl(File &file) const
 
         if (bit_reader.get(1))
         {
-            auto look_behind = -static_cast<int>(channels);
+            auto look_behind = channels;
             if (bit_reader.get(1))
             {
                 const auto idx = bit_reader.get(2) << 3;
                 look_behind = look_behind_table[(0x11'19'17'18 >> idx) & 0xFF];
             }
+            if (look_behind > output.size())
+                throw err::BadDataOffsetError();
             for (const auto i : util::range(channels))
             {
-                s16 b = clamp(output[output.size() + look_behind], 0x02, 0xFD);
+                u8 b = clamp(output[output.size() - look_behind], 0x02, 0xFD);
                 if (bit_reader.get(1))
                 {
                     const int b2 = bit_reader.get(1) + 1;
@@ -81,16 +98,19 @@ pix::Grid EdtImageDecoder::decode_impl(File &file) const
         {
             const auto look_behind = look_behind_table[bit_reader.get(5)];
             auto repetitions = bit_reader.get_variable_integer() * channels;
-            if (static_cast<int>(output.size() + look_behind) < 0)
+            if (look_behind > output.size())
                 throw err::BadDataOffsetError();
-            if (output.size() + repetitions > target_size)
-                throw err::BadDataSizeError();
             while (repetitions-- && output.size() < target_size)
-                output += output[output.size() + look_behind];
+                output += output[output.size() - look_behind];
         }
     }
 
-    return pix::Grid(width, height, output, pix::Format::BGR888);
+    auto ret = pix::Grid(width, height, output, pix::Format::BGR888);
+    if (!base_file_name.empty())
+        for (auto &c : ret)
+            if (c == transparent_color)
+                c.a = 0;
+    return ret;
 }
 
 static auto dummy = fmt::register_fmt<EdtImageDecoder>("active-soft/edt");
