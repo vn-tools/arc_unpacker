@@ -1,4 +1,5 @@
 #include "fmt/majiro/rct_image_decoder.h"
+#include <boost/algorithm/hex.hpp>
 #include <boost/lexical_cast.hpp>
 #include "err.h"
 #include "io/buffered_io.h"
@@ -9,6 +10,32 @@ using namespace au;
 using namespace au::fmt::majiro;
 
 static const bstr magic = util::utf8_to_sjis("六丁T"_b);
+
+static bstr decrypt(const bstr &input, const bstr &key)
+{
+    u32 crc_table[0x100];
+    for (const auto i : util::range(0x100))
+    {
+        u32 poly = i;
+        for (const auto j : util::range(8))
+            poly = (poly >> 1) ^ ((poly & 1) ? 0xEDB88320 : 0);
+        crc_table[i] = poly;
+    }
+
+    u32 checksum = 0xFFFFFFFF;
+    for (const auto c : key)
+        checksum = (checksum >> 8) ^ crc_table[(c ^ (checksum & 0xFF)) & 0xFF];
+    checksum ^= 0xFFFFFFFF;
+
+    bstr derived_key(0x400);
+    for (const auto i : util::range(0x100))
+        derived_key.get<u32>()[i] = checksum ^ crc_table[(i + checksum) & 0xFF];
+
+    bstr output(input);
+    for (const auto i : util::range(output.size()))
+        output[i] ^= derived_key[i % derived_key.size()];
+    return output;
+}
 
 static bstr uncompress(const bstr &input, size_t width, size_t height)
 {
@@ -67,6 +94,44 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
     return output;
 }
 
+struct RctImageDecoder::Priv final
+{
+    bstr key;
+};
+
+RctImageDecoder::RctImageDecoder() : p(new Priv())
+{
+}
+
+RctImageDecoder::~RctImageDecoder()
+{
+}
+
+void RctImageDecoder::register_cli_options(ArgParser &arg_parser) const
+{
+    arg_parser.register_switch({"--rct-key"})
+        ->set_value_name("KEY")
+        ->set_description("Decryption key (same for all files)");
+    ImageDecoder::register_cli_options(arg_parser);
+}
+
+void RctImageDecoder::parse_cli_options(const ArgParser &arg_parser)
+{
+    if (arg_parser.has_switch("rct-key"))
+    {
+        std::string key;
+        boost::algorithm::unhex(
+            arg_parser.get_switch("rct-key"), std::back_inserter(key));
+        set_key(key);
+    }
+    ImageDecoder::parse_cli_options(arg_parser);
+}
+
+void RctImageDecoder::set_key(const bstr &key)
+{
+    p->key = key;
+}
+
 bool RctImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
@@ -85,9 +150,6 @@ pix::Grid RctImageDecoder::decode_impl(File &file) const
     else
         throw err::NotSupportedError("Unexpected encryption flag");
 
-    if (encrypted)
-        throw err::NotSupportedError("Encrypted RCT images are not supported");
-
     int version = boost::lexical_cast<int>(file.io.read(2).str());
     if (version < 0 || version > 1)
         throw err::UnsupportedVersionError(version);
@@ -100,9 +162,19 @@ pix::Grid RctImageDecoder::decode_impl(File &file) const
     if (version == 1)
         base_file = file.io.read(file.io.read_u16_le()).str();
 
-    auto data_comp = file.io.read(data_size);
-    auto data_orig = uncompress(data_comp, width, height);
-    pix::Grid pixels(width, height, data_orig, pix::Format::BGR888);
+    auto data = file.io.read(data_size);
+    if (encrypted)
+    {
+        if (p->key.empty())
+        {
+            throw err::UsageError(
+                "File is encrypted, but key not set. "
+                "Please supply one with --rct-key switch.");
+        }
+        data = decrypt(data, p->key);
+    }
+    data = uncompress(data, width, height);
+    pix::Grid pixels(width, height, data, pix::Format::BGR888);
 
     if (version == 1)
     {
