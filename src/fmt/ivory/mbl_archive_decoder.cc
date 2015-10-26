@@ -145,7 +145,11 @@ std::unique_ptr<File> MblArchiveDecoder::read_file_impl(
     if (meta->encrypted)
     {
         if (!meta->decrypt)
-            throw err::UsageError("File is decrypted, but plugin not set.");
+        {
+            throw err::UsageError(
+                "File is encrypted, but plugin not set. "
+                "Please supply one with --plugin switch.");
+        }
         meta->decrypt(data);
     }
 
