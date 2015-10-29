@@ -1,0 +1,101 @@
+::START
+
+var %temp    # 汎用パラメータ
+var %sentaku # 選択肢用パラメータ
+var %gameover # ゲームオーバー用パラメータ
+
+var %ic_prm  # アイキャッチ用パラメータ
+			 # 0: 
+			 # 1: 
+			 # 2: 
+			 # 3: 
+			 # 4: 
+			 # 5: 
+			 # 6: 
+			 # 7: 
+
+
+
+var %H_MODE_FLAG   # シーン観賞用パラメータ
+var %DEBUG_FLAG    # デバッグ用パラメータ（メニュー選択による部ジャンプする）
+var %DEBUG_ON      # デバッグ用パラメータ
+var %TAIKEN_FLAG   # 体験版用パラメータ（１の時は体験版処理となる）
+
+var $cast #汎用文字列
+
+
+
+var %H_MENU_00		# シーン観賞用
+var %H_MENU_01		# シーン観賞用
+
+
+
+#★★★(ここから以下、ＤＢ専用変数)
+
+
+
+var %goodend_ot	# 音羽GoodEndローカルフラグ
+var %goodend_sz	# 鈴香GoodEndローカルフラグ
+var %goodend_an	# アニスGoodEndローカルフラグ
+
+var %story_date	# ゲーム中の日付
+var %story_time	# ゲーム中の時間帯
+var %f_badend	# バッドエンドフラグ
+var %next_route	# ブロック終了時ルートフラグ
+var %sel_heroine# ヒロイン選択肢における選択
+var %mis_count	# 各ヒロインルートのループ選択肢で間違った選択を選んだ回数
+var %sn_ot_04a	# ot_04a（音羽救出成功）選択時の選択回数を保存する変数
+
+var %save_ot	#「玲矢の行動を阻止している」フラグ
+var %save_sz	#「鈴香を助けている」フラグ
+var %save_an	#「アニスを助けている」フラグ
+
+var %03_E02a	# 「３日目_E02_個別・館内見回り」を通過している場合フラグ
+var %05_A01		# 「５日目_A01_分岐・最悪の目覚め」を通過している場合フラグ
+var %05_C02a	# 「５日目_C02_選択・アニスを助ける」を通過している場合フラグ
+var %05_C04b	# 「５日目_C04_選択・阻止しない」を通過している場合フラグ
+var %06_D03b	# 「６日目_D03_選択・鈴香を助けない」を通過している場合フラグ
+var %06_E03b	# 「６日目_E03_選択・アニスを助けない」を通過している場合フラグ
+var %07_B01		# 「７日目_B01_鈴香・場所を探している鷹峰」を通過している場合フラグ
+
+
+var %BIT1ON
+var %BIT2ON
+var %BIT3ON
+var %BIT4ON
+var %BIT5ON
+var %BIT6ON
+
+# 以下、各ループ選択肢サブルーチン用
+var %select_num		# 選択肢数
+var %select_status	# 選択状態
+var %select_org_y	# 第１選択肢左上原点
+var %select_temp_y	# 
+
+var $select_text1	# 
+var $select_text2	
+var $select_text3	
+var $select_text4	
+var $select_text5	
+var $select_text6	
+
+# 以下、各ループ選択肢コ・サブルーチン用
+var %selsub_num		# 選択肢数
+var %selsub_status	# 選択状態
+var %selsub_org_y	# 第１選択肢左上原点
+var %selsub_temp_y	# 
+
+var $selsub_text1	# 
+var $selsub_text2	
+var $selsub_text3	
+var $selsub_text4	
+var $selsub_text5	
+var $selsub_text6	
+
+
+
+#★★★(ここまで以上、ＤＢ専用変数)
+
+^ret
+
+::END

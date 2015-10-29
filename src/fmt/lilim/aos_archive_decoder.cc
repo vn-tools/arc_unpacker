@@ -1,4 +1,5 @@
 #include "fmt/lilim/aos_archive_decoder.h"
+#include "io/bit_reader.h"
 #include "util/range.h"
 
 using namespace au;
@@ -53,6 +54,11 @@ std::unique_ptr<File> AosArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     arc_file.io.seek(entry->offset);
     return std::make_unique<File>(entry->name, arc_file.io.read(entry->size));
+}
+
+std::vector<std::string> AosArchiveDecoder::get_linked_formats() const
+{
+    return { "lilim/scr" };
 }
 
 static auto dummy = fmt::register_fmt<AosArchiveDecoder>("lilim/aos");
