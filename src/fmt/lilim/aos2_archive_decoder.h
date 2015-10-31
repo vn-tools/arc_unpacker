@@ -6,7 +6,7 @@ namespace au {
 namespace fmt {
 namespace lilim {
 
-    class AosArchiveDecoder final : public ArchiveDecoder
+    class Aos2ArchiveDecoder final : public ArchiveDecoder
     {
     public:
         std::vector<std::string> get_linked_formats() const override;

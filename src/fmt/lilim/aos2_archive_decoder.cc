@@ -1,4 +1,4 @@
-#include "fmt/lilim/aos_archive_decoder.h"
+#include "fmt/lilim/aos2_archive_decoder.h"
 #include "io/bit_reader.h"
 #include "util/range.h"
 
@@ -14,7 +14,7 @@ namespace
     };
 }
 
-bool AosArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Aos2ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     arc_file.io.seek(0);
     if (arc_file.io.read_u32_le() != 0)
@@ -29,7 +29,7 @@ bool AosArchiveDecoder::is_recognized_impl(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    AosArchiveDecoder::read_meta_impl(File &arc_file) const
+    Aos2ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     arc_file.io.seek(4);
     const auto data_offset = arc_file.io.read_u32_le();
@@ -48,7 +48,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> AosArchiveDecoder::read_file_impl(
+std::unique_ptr<File> Aos2ArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -56,9 +56,9 @@ std::unique_ptr<File> AosArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, arc_file.io.read(entry->size));
 }
 
-std::vector<std::string> AosArchiveDecoder::get_linked_formats() const
+std::vector<std::string> Aos2ArchiveDecoder::get_linked_formats() const
 {
     return { "lilim/scr", "lilim/abm", "microsoft/bmp" };
 }
 
-static auto dummy = fmt::register_fmt<AosArchiveDecoder>("lilim/aos");
+static auto dummy = fmt::register_fmt<Aos2ArchiveDecoder>("lilim/aos2");
