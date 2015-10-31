@@ -58,7 +58,7 @@ std::unique_ptr<File> AosArchiveDecoder::read_file_impl(
 
 std::vector<std::string> AosArchiveDecoder::get_linked_formats() const
 {
-    return { "lilim/scr" };
+    return { "lilim/scr", "lilim/abm", "microsoft/bmp" };
 }
 
 static auto dummy = fmt::register_fmt<AosArchiveDecoder>("lilim/aos");
