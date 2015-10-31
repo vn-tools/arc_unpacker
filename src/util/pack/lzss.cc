@@ -57,17 +57,14 @@ bstr util::pack::lzss_decompress_bitwise(
 bstr util::pack::lzss_decompress_bytewise(const bstr &input, size_t output_size)
 {
     bstr output(output_size);
-
     const size_t dict_size = 0x1000;
     size_t dict_pos = 0xFEE;
-    u8 dict[dict_size];
-    for (auto i : util::range(dict_size))
-        dict[i] = 0;
+    u8 dict[dict_size] = { 0 };
 
-    u8 *output_ptr = output.get<u8>();
-    const u8 *output_end = output.end<const u8>();
-    const u8 *input_ptr = input.get<const u8>();
-    const u8 *input_end = input.end<const u8>();
+    auto input_ptr = input.get<const u8>();
+    auto output_ptr = output.get<u8>();
+    const auto input_end = input.end<const u8>();
+    const auto output_end = output.end<const u8>();
 
     u16 control = 0;
     while (output_ptr < output_end && input_ptr < input_end)
