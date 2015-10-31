@@ -1,7 +1,7 @@
 #include "fmt/lilim/dbm_image_decoder.h"
 #include "err.h"
+#include "fmt/lilim/common.h"
 #include "util/format.h"
-#include "util/pack/lzss.h"
 
 using namespace au;
 using namespace au::fmt::lilim;
@@ -26,17 +26,7 @@ pix::Grid DbmImageDecoder::decode_impl(File &file) const
     if (file.io.read_u16_le() != 1)
         throw err::CorruptDataError("Expected '1'");
     const auto size_comp = file.io.read_u32_le();
-
-    file.io.skip(1);
-    if (file.io.read_u32_le() != size_comp)
-        throw err::CorruptDataError("Expected compressed size");
-    const size_t size_orig = file.io.read_u32_le();
-    const size_t size_orig_expected = width * height * 3;
-    if (size_orig != size_orig_expected)
-        throw err::CorruptDataError("Size doesn't match expected target size");
-
-    auto data = file.io.read(size_comp - 9);
-    data = util::pack::lzss_decompress_bytewise(data, size_orig);
+    const auto data = sysd_decompress(file.io.read(size_comp));
 
     if (format == 1 || format == 2 || format == 3)
     {

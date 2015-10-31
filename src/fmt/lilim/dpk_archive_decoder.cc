@@ -53,4 +53,9 @@ std::unique_ptr<File> DpkArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, arc_file.io.read(entry->size));
 }
 
+std::vector<std::string> DpkArchiveDecoder::get_linked_formats() const
+{
+    return { "lilim/dbm", "lilim/doj" };
+}
+
 static auto dummy = fmt::register_fmt<DpkArchiveDecoder>("lilim/dpk");

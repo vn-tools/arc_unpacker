@@ -8,6 +8,8 @@ namespace lilim {
 
     class DpkArchiveDecoder final : public ArchiveDecoder
     {
+    public:
+        std::vector<std::string> get_linked_formats() const override;
     protected:
         bool is_recognized_impl(File &) const override;
         std::unique_ptr<ArchiveMeta> read_meta_impl(File &) const override;
