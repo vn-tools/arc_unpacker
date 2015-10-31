@@ -152,7 +152,7 @@ std::unique_ptr<File> ThbgmAudioArchiveDecoder::read_file_impl(
     }
     return util::file_from_samples(
         entry->channel_count,
-        entry->bits_per_sample / 8,
+        entry->bits_per_sample,
         entry->sample_rate,
         samples,
         entry->name);

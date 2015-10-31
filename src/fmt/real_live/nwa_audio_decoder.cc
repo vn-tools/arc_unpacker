@@ -247,7 +247,7 @@ std::unique_ptr<File> NwaAudioDecoder::decode_impl(File &file) const
 
     return util::file_from_samples(
         header.channel_count,
-        header.bits_per_sample / 8,
+        header.bits_per_sample,
         header.sample_rate,
         samples,
         file.name);

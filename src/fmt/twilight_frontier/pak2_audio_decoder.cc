@@ -22,7 +22,7 @@ std::unique_ptr<File> Pak2AudioDecoder::decode_impl(File &file) const
 
     return util::file_from_samples(
         channel_count,
-        bits_per_sample / 8,
+        bits_per_sample,
         sample_rate,
         file.io.read(size),
         file.name);

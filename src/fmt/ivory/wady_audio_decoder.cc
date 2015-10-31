@@ -211,7 +211,7 @@ std::unique_ptr<File> WadyAudioDecoder::decode_impl(File &file) const
         throw err::UnsupportedVersionError(version);
 
     return util::file_from_samples(
-        channels, bits_per_sample / 8, sample_rate, samples, file.name);
+        channels, bits_per_sample, sample_rate, samples, file.name);
 }
 
 static auto dummy = fmt::register_fmt<WadyAudioDecoder>("ivory/wady");

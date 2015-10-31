@@ -72,7 +72,7 @@ std::unique_ptr<File> Pak1AudioArchiveDecoder::read_file_impl(
     arc_file.io.seek(entry->offset);
     return util::file_from_samples(
         entry->channel_count,
-        entry->bits_per_sample / 8,
+        entry->bits_per_sample,
         entry->sample_rate,
         arc_file.io.read(entry->size),
         entry->name);

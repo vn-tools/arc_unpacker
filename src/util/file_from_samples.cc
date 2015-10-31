@@ -5,14 +5,13 @@ using namespace au::util;
 
 std::unique_ptr<File> util::file_from_samples(
     size_t channel_count,
-    size_t bytes_per_sample,
+    size_t bits_per_sample,
     size_t sample_rate,
     const bstr &samples,
     const std::string &name)
 {
-    size_t block_align = channel_count * bytes_per_sample;
+    size_t block_align = ((channel_count * bits_per_sample) + 7) / 8;
     size_t byte_rate = block_align * sample_rate;
-    size_t bits_per_sample = bytes_per_sample * 8;
     size_t data_chunk_size = samples.size();
 
     auto output_file = std::make_unique<File>();
