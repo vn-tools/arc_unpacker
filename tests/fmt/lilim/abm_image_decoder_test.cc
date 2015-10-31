@@ -23,3 +23,10 @@ TEST_CASE("Lilim ABM 32-bit images", "[fmt]")
         "tests/fmt/lilim/files/abm/popsave.abm",
         "tests/fmt/lilim/files/abm/popsave-out.png");
 }
+
+TEST_CASE("Lilim ABM 8-bit images", "[fmt]")
+{
+    do_test(
+        "tests/fmt/lilim/files/abm/kj_ase.abm",
+        "tests/fmt/lilim/files/abm/kj_ase-out.png");
+}

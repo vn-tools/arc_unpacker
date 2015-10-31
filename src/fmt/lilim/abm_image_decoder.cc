@@ -7,7 +7,38 @@ using namespace au::fmt::lilim;
 
 static const bstr magic = "BM"_b;
 
-static bstr decompress(const bstr &input, const size_t size_hint)
+static bstr decompress_opaque(const bstr &input, const size_t size_hint)
+{
+    bstr output;
+    output.reserve(size_hint);
+    io::BufferedIO input_io(input);
+
+    while (!input_io.eof())
+    {
+        const auto control = input_io.read_u8();
+
+        if (control == 0x00)
+        {
+            auto repetitions = input_io.read_u8();
+            while (repetitions--)
+                output += '\x00';
+        }
+
+        else if (control == 0xFF)
+        {
+            auto repetitions = input_io.read_u8();
+            while (repetitions--)
+                output += input_io.read_u8();
+        }
+
+        else
+            output += input_io.read_u8();
+    }
+
+    return output;
+}
+
+static bstr decompress_alpha(const bstr &input, const size_t size_hint)
 {
     bstr output;
     output.reserve(size_hint);
@@ -74,13 +105,21 @@ pix::Grid AbmImageDecoder::decode_impl(File &file) const
     const auto width = file.io.read_u32_le();
     const auto height = file.io.read_u32_le();
     file.io.skip(2);
-    const auto depth = file.io.read_u16_le();
+    const s16 depth = file.io.read_u16_le();
 
-    if (depth == 32)
+    if (depth == -8)
     {
         const auto size = width * height * 4;
         file.io.seek(54);
-        const auto pixel_data = decompress(file.io.read_to_eof(), size);
+        pix::Palette palette(256, file.io, pix::Format::BGR888X);
+        const auto pixel_data = decompress_opaque(file.io.read_to_eof(), size);
+        return pix::Grid(width, height, pixel_data, palette);
+    }
+    else if (depth == 32)
+    {
+        const auto size = width * height * 4;
+        file.io.seek(54);
+        const auto pixel_data = decompress_alpha(file.io.read_to_eof(), size);
         return pix::Grid(width, height, pixel_data, pix::Format::BGRA8888);
     }
     else
