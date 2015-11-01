@@ -70,14 +70,14 @@ static std::unique_ptr<fmt::IDecoder> guess_decoder(
 
     if (decoders.empty())
     {
-        Log.err("File was not recognized by any decoder.\n\n");
+        Log.err("File was not recognized by any decoder.\n");
         return nullptr;
     }
 
     Log.warn("File wa recognized by multiple decoders:\n");
     for (const auto &it : decoders)
         Log.warn("- " + it.first + "\n");
-    Log.warn("Please provide --fmt and proceed manually.\n\n");
+    Log.warn("Please provide --fmt and proceed manually.\n");
     return nullptr;
 }
 
