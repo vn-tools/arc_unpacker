@@ -5,10 +5,11 @@
 #include "util/format.h"
 
 using namespace au;
+using namespace au::util::pack;
 
 static const int buffer_size = 8192;
 
-static std::unique_ptr<z_stream> create_stream()
+static std::unique_ptr<z_stream> create_stream(const ZlibKind kind)
 {
     auto s = std::make_unique<z_stream>();
     s->zalloc = nullptr;
@@ -17,7 +18,14 @@ static std::unique_ptr<z_stream> create_stream()
     s->total_out = 0;
     s->avail_in = 0;
 
-    if (inflateInit(s.get()) != Z_OK)
+    int window_bits
+        = kind == ZlibKind::RawDeflate ? -MAX_WBITS
+        : kind == ZlibKind::PlainZlib ? MAX_WBITS
+        : kind == ZlibKind::Gzip ? MAX_WBITS | 16
+        : 0;
+    if (!window_bits)
+        throw std::logic_error("Bad zlib kind");
+    if (inflateInit2(s.get(), window_bits) != Z_OK)
         throw std::logic_error("Failed to initialize zlib stream");
     return s;
 }
@@ -34,12 +42,12 @@ static void finalize_stream(std::unique_ptr<z_stream> s, int ret, int pos)
     }
 }
 
-bstr util::pack::zlib_inflate(const bstr &input)
+bstr util::pack::zlib_inflate(const bstr &input, const ZlibKind kind)
 {
     size_t written = 0;
     bstr output;
     output.reserve(input.size() * 3);
-    auto s = create_stream();
+    auto s = create_stream(kind);
     s->next_in = const_cast<Bytef*>(input.get<const Bytef>());
     s->avail_in = input.size();
     int ret;
@@ -58,11 +66,11 @@ bstr util::pack::zlib_inflate(const bstr &input)
     return output;
 }
 
-bstr util::pack::zlib_inflate(io::IO &io)
+bstr util::pack::zlib_inflate(io::IO &io, const ZlibKind kind)
 {
     bstr input, output;
     size_t written = 0;
-    auto s = create_stream();
+    auto s = create_stream(kind);
     int ret;
     const auto initial_pos = io.tell();
     do
