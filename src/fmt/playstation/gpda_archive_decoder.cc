@@ -39,12 +39,17 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->size = arc_file.io.read_u32_le();
 
         const auto name_offset = arc_file.io.read_u32_le();
-        arc_file.io.peek(name_offset, [&]()
-            {
-                const auto name_size = arc_file.io.read_u32_le();
-                entry->name = arc_file.io.read(name_size).str();
-            });
+        if (!name_offset)
+            entry->name = "";
+        else
+            arc_file.io.peek(name_offset, [&]()
+                {
+                    const auto name_size = arc_file.io.read_u32_le();
+                    entry->name = arc_file.io.read(name_size).str();
+                });
 
+        if (!entry->size)
+            continue;
         meta->entries.push_back(std::move(entry));
     }
     return meta;

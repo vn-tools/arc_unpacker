@@ -6,13 +6,10 @@
 using namespace au;
 using namespace au::fmt::playstation;
 
-static void do_test(const std::string &input_path)
+static void do_test(
+    const std::string &input_path,
+    const std::initializer_list<std::shared_ptr<File>> &expected_files)
 {
-    std::vector<std::shared_ptr<File>> expected_files
-    {
-        tests::stub_file("123.txt", "1234567890"_b),
-        tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
-    };
     GpdaArchiveDecoder decoder;
     auto input_file = tests::file_from_path(input_path);
     auto actual_files = tests::unpack(decoder, *input_file);
@@ -21,5 +18,20 @@ static void do_test(const std::string &input_path)
 
 TEST_CASE("Playstation GPDA archives", "[fmt]")
 {
-    do_test("tests/fmt/playstation/files/gpda/test.dat");
+    do_test(
+        "tests/fmt/playstation/files/gpda/test.dat",
+        {
+            tests::stub_file("123.txt", "1234567890"_b),
+            tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
+        });
+}
+
+TEST_CASE("Playstation GPDA archives (nameless files)", "[fmt]")
+{
+    do_test(
+        "tests/fmt/playstation/files/gpda/test.dat",
+        {
+            tests::stub_file("123.txt", "1234567890"_b),
+            tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
+        });
 }
