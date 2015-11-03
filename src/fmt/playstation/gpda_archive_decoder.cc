@@ -60,7 +60,7 @@ std::unique_ptr<File> GpdaArchiveDecoder::read_file_impl(
 
 std::vector<std::string> GpdaArchiveDecoder::get_linked_formats() const
 {
-    return { "playstation/gpda" };
+    return { "playstation/gpda", "cri/hca", "gnu/gzip" };
 }
 
 static auto dummy = fmt::register_fmt<GpdaArchiveDecoder>("playstation/gpda");
