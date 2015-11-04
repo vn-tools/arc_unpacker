@@ -18,6 +18,8 @@ namespace pix {
         ~Palette();
 
         size_t size() const;
+        Pixel &at(size_t i);
+        const Pixel &at(size_t i) const;
         Pixel &operator [](size_t i);
         const Pixel &operator [](size_t i) const;
 

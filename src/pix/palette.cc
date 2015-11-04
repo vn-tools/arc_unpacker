@@ -61,6 +61,16 @@ size_t Palette::size() const
     return p->colors.size();
 }
 
+Pixel &Palette::at(size_t i)
+{
+    return p->colors.at(i);
+}
+
+const Pixel &Palette::at(size_t i) const
+{
+    return p->colors.at(i);
+}
+
 Pixel &Palette::operator [](size_t i)
 {
     return p->colors[i];
