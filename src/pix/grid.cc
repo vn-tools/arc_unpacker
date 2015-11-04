@@ -1,5 +1,4 @@
 #include "pix/grid.h"
-#include <cstring>
 #include <algorithm>
 #include "err.h"
 #include "util/format.h"
@@ -7,13 +6,6 @@
 
 using namespace au;
 using namespace au::pix;
-
-template<Format fmt> static void read_many(
-    size_t size, Pixel *pixels_ptr, const u8 *input_ptr)
-{
-    for (auto i : util::range(size))
-        *pixels_ptr++ = read<fmt>(input_ptr);
-}
 
 struct Grid::Priv final
 {
@@ -26,68 +18,9 @@ struct Grid::Priv final
 
 void Grid::Priv::load(const bstr &input, Format fmt)
 {
-    const auto bpp = format_to_bpp(fmt);
-    const auto size = width * height;
-    if (input.size() < size * bpp)
+    if (input.size() < format_to_bpp(fmt) * width * height)
         throw err::BadDataSizeError();
-    auto *input_ptr = input.get<const u8>();
-    auto *pixels_ptr = &pixels[0];
-
-    // save those precious CPU cycles
-    if (fmt == Format::BGRA8888)
-    {
-        auto input_pixel_ptr = input.get<const pix::Pixel>();
-        std::memcpy(pixels_ptr, input_pixel_ptr, size * 4);
-        return;
-    }
-
-    // anyone knows of sane alternative?
-    switch (fmt)
-    {
-        case Format::Gray8:
-            read_many<Format::Gray8>(size, pixels_ptr, input_ptr);
-            break;
-
-        case Format::BGR888:
-            read_many<Format::BGR888>(size, pixels_ptr, input_ptr);
-            break;
-
-        case Format::BGR888X:
-            read_many<Format::BGR888X>(size, pixels_ptr, input_ptr);
-            break;
-
-        case Format::BGRA8888:
-            read_many<Format::BGRA8888>(size, pixels_ptr, input_ptr);
-            break;
-
-        case Format::BGR565:
-            read_many<Format::BGR565>(size, pixels_ptr, input_ptr);
-            break;
-
-        case Format::BGR555X:
-            read_many<Format::BGR555X>(size, pixels_ptr, input_ptr);
-            break;
-
-        case Format::BGRA5551:
-            read_many<Format::BGRA5551>(size, pixels_ptr, input_ptr);
-            break;
-
-        case Format::BGRA4444:
-            read_many<Format::BGRA4444>(size, pixels_ptr, input_ptr);
-            break;
-
-        case Format::RGB888:
-            read_many<Format::RGB888>(size, pixels_ptr, input_ptr);
-            break;
-
-        case Format::RGBA8888:
-            read_many<Format::RGBA8888>(size, pixels_ptr, input_ptr);
-            break;
-
-        default:
-            throw std::logic_error(
-                util::format("Unsupported pixel format: %d", fmt));
-    }
+    read_many(input.get<const u8>(), pixels, fmt);
 }
 
 Grid::Grid(const Grid &other) : Grid(other.width(), other.height())

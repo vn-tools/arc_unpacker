@@ -6,13 +6,6 @@
 using namespace au;
 using namespace au::pix;
 
-template<Format fmt> static void read_many(
-    const u8 *input_ptr, std::vector<Pixel> &colors)
-{
-    for (auto i : util::range(colors.size()))
-        colors[i] = read<fmt>(input_ptr);
-}
-
 struct Palette::Priv final
 {
     Priv(size_t color_count);
@@ -36,55 +29,7 @@ Palette::Priv::Priv(size_t color_count, const bstr &input, Format fmt)
     colors.resize(color_count);
     if (input.size() < format_to_bpp(fmt) * color_count)
         throw err::BadDataSizeError();
-    auto input_ptr = input.get<const u8>();
-
-    // anyone knows of sane alternative?
-    switch (fmt)
-    {
-        case Format::Gray8:
-            read_many<Format::Gray8>(input_ptr, colors);
-            break;
-
-        case Format::BGR888:
-            read_many<Format::BGR888>(input_ptr, colors);
-            break;
-
-        case Format::BGR888X:
-            read_many<Format::BGR888X>(input_ptr, colors);
-            break;
-
-        case Format::BGRA8888:
-            read_many<Format::BGRA8888>(input_ptr, colors);
-            break;
-
-        case Format::BGR565:
-            read_many<Format::BGR565>(input_ptr, colors);
-            break;
-
-        case Format::BGR555X:
-            read_many<Format::BGR555X>(input_ptr, colors);
-            break;
-
-        case Format::BGRA5551:
-            read_many<Format::BGRA5551>(input_ptr, colors);
-            break;
-
-        case Format::BGRA4444:
-            read_many<Format::BGRA4444>(input_ptr, colors);
-            break;
-
-        case Format::RGB888:
-            read_many<Format::RGB888>(input_ptr, colors);
-            break;
-
-        case Format::RGBA8888:
-            read_many<Format::RGBA8888>(input_ptr, colors);
-            break;
-
-        default:
-            throw std::logic_error(
-                util::format("Unsupported pixel format: %d", fmt));
-    }
+    read_many(input.get<const u8>(), colors, fmt);
 }
 
 Palette::Palette(const Palette &other) : p(new Priv(other.p->colors.size()))
