@@ -17,6 +17,9 @@ namespace pix {
         BGRA4444,
         BGRA5551,
         BGRA8888,
+        BGRnA4444,
+        BGRnA5551,
+        BGRnA8888,
 
         RGB555X,
         RGB565,
@@ -25,6 +28,9 @@ namespace pix {
         RGBA4444,
         RGBA5551,
         RGBA8888,
+        RGBnA4444,
+        RGBnA5551,
+        RGBnA8888,
     };
 
     // TODO: constexpr once cygwin adapts mingw-w64 for its g++
@@ -40,6 +46,9 @@ namespace pix {
             case Format::BGRA4444: return 2;
             case Format::BGRA5551: return 2;
             case Format::BGRA8888: return 4;
+            case Format::BGRnA4444: return 2;
+            case Format::BGRnA5551: return 2;
+            case Format::BGRnA8888: return 4;
             case Format::RGB555X: return 2;
             case Format::RGB565: return 2;
             case Format::RGB888: return 3;
@@ -47,6 +56,9 @@ namespace pix {
             case Format::RGBA4444: return 2;
             case Format::RGBA5551: return 2;
             case Format::RGBA8888: return 4;
+            case Format::RGBnA4444: return 2;
+            case Format::RGBnA5551: return 2;
+            case Format::RGBnA8888: return 4;
             default: return 0;
         }
     }
