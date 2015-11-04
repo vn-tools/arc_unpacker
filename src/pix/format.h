@@ -9,6 +9,7 @@ namespace pix {
     enum class Format : u8
     {
         Gray8,
+
         BGR555X,
         BGR565,
         BGR888,
@@ -16,7 +17,13 @@ namespace pix {
         BGRA4444,
         BGRA5551,
         BGRA8888,
+
+        RGB555X,
+        RGB565,
         RGB888,
+        RGB888X,
+        RGBA4444,
+        RGBA5551,
         RGBA8888,
     };
 
@@ -33,7 +40,12 @@ namespace pix {
             case Format::BGRA4444: return 2;
             case Format::BGRA5551: return 2;
             case Format::BGRA8888: return 4;
+            case Format::RGB555X: return 2;
+            case Format::RGB565: return 2;
             case Format::RGB888: return 3;
+            case Format::RGB888X: return 4;
+            case Format::RGBA4444: return 2;
+            case Format::RGBA5551: return 2;
             case Format::RGBA8888: return 4;
             default: return 0;
         }
