@@ -1,4 +1,5 @@
 #include "util/pack/lzss.h"
+#include "util/cyclic_buffer.h"
 #include "util/range.h"
 
 using namespace au;
@@ -57,9 +58,7 @@ bstr util::pack::lzss_decompress_bitwise(
 bstr util::pack::lzss_decompress_bytewise(const bstr &input, size_t output_size)
 {
     bstr output(output_size);
-    const size_t dict_size = 0x1000;
-    size_t dict_pos = 0xFEE;
-    u8 dict[dict_size] = { 0 };
+    util::CyclicBuffer<0x1000> dict(0xFEE);
 
     auto input_ptr = input.get<const u8>();
     auto output_ptr = output.get<u8>();
@@ -75,8 +74,8 @@ bstr util::pack::lzss_decompress_bytewise(const bstr &input, size_t output_size)
 
         if (control & 1)
         {
-            dict[dict_pos++] = *output_ptr++ = *input_ptr++;
-            dict_pos %= dict_size;
+            *output_ptr++ = *input_ptr++;
+            dict << output_ptr[-1];
         }
         else
         {
@@ -85,13 +84,12 @@ bstr util::pack::lzss_decompress_bytewise(const bstr &input, size_t output_size)
                 break;
             u8 tmp2 = *input_ptr++;
 
-            u16 look_behind_pos = (((tmp2 & 0xF0) << 4) | tmp1) % dict_size;
+            u16 look_behind_pos = ((tmp2 & 0xF0) << 4) | tmp1;
             u16 repetitions = (tmp2 & 0xF) + 3;
             while (repetitions-- && output_ptr < output_end)
             {
-                dict[dict_pos++] = *output_ptr++ = dict[look_behind_pos++];
-                look_behind_pos %= dict_size;
-                dict_pos %= dict_size;
+                *output_ptr++ = dict[look_behind_pos++];
+                dict << output_ptr[-1];
             }
         }
     }

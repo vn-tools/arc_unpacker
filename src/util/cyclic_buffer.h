@@ -6,22 +6,68 @@
 namespace au {
 namespace util {
 
-    class CyclicBuffer final
+    template<const size_t n> class CyclicBuffer final
     {
     public:
-        CyclicBuffer(const size_t size, const size_t start_pos = 0);
-        ~CyclicBuffer();
-        size_t size() const;
-        size_t start() const;
-        size_t pos() const;
-        void operator <<(const bstr &s);
-        void operator <<(const u8 c);
-        u8 &operator [](const size_t n);
-        const u8 &operator [](const size_t n) const;
+        CyclicBuffer(const size_t start_pos = 0)
+            : start_pos(start_pos),
+            current_pos(start_pos),
+            written((start_pos % n) - n),
+            a { 0 }
+        {
+        }
+
+        constexpr size_t size() const
+        {
+            return n;
+        }
+
+        constexpr size_t start() const
+        {
+            return written < 0 ? start_pos : written % n;
+        }
+
+        constexpr size_t pos() const
+        {
+            return current_pos;
+        }
+
+        constexpr void operator <<(const bstr &s)
+        {
+            for (const auto c : s)
+            {
+                a[current_pos++] = c;
+                current_pos %= n;
+            }
+            written += s.size();
+        }
+
+        constexpr void operator <<(const u8 c)
+        {
+            a[current_pos++] = c;
+            current_pos %= n;
+            written++;
+        }
+
+        constexpr u8 &operator [](const size_t i)
+        {
+            if (i < n)
+                return a[i];
+            return a[i % n];
+        }
+
+        constexpr const u8 &operator [](const size_t i) const
+        {
+            if (i < n)
+                return a[i];
+            return a[i % n];
+        }
 
     private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
+        size_t start_pos;
+        size_t current_pos;
+        int written;
+        u8 a[n];
     };
 
 } }

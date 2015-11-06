@@ -14,8 +14,7 @@ static bstr decompress(const bstr &input, const size_t size_orig)
     bstr output;
     output.reserve(size_orig);
     io::BufferedIO input_io(input);
-    const size_t dict_size = 0xBB8;
-    util::CyclicBuffer dict(dict_size, 0);
+    util::CyclicBuffer<0xBB8> dict(0);
     u16 control = 0;
     while (output.size() < size_orig)
     {
