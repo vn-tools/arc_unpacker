@@ -49,7 +49,8 @@ namespace hca {
     {
         size_t start;
         size_t end;
-        u16 unk[2];
+        size_t repetitions;
+        u16 unk;
         bool enabled;
     };
 

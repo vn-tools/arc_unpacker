@@ -39,8 +39,8 @@ static void extend_meta(Meta &meta)
         meta.loop = std::make_unique<LoopChunk>();
         meta.loop->start = 0;
         meta.loop->end = 0;
-        meta.loop->unk[0] = 0;
-        meta.loop->unk[1] = 0x400;
+        meta.loop->repetitions = 0;
+        meta.loop->unk = 0x400;
         meta.loop->enabled = false;
     }
 
@@ -117,8 +117,8 @@ Meta fmt::cri::hca::read_meta(const bstr &input)
             out.loop = std::make_unique<LoopChunk>();
             out.loop->start = io.read_u32_be();
             out.loop->end = io.read_u32_be();
-            out.loop->unk[0] = io.read_u16_be();
-            out.loop->unk[1] = io.read_u16_be();
+            out.loop->repetitions = io.read_u16_be();
+            out.loop->unk = io.read_u16_be();
             out.loop->enabled = true;
         }
 
