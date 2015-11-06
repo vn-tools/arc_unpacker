@@ -9,9 +9,11 @@ projects are listed below in alphabetical order.
 - Crass / CUI
 - [ExtractData](https://github.com/lioncash/ExtractData)
 - [GARbro](https://github.com/morkt/GARbro)
+- HCA decoder
 - [Kirikiri Z](https://github.com/krkrz/krkrz)
 - [mkxp](https://github.com/Ancurio/mkxp)
 - [nipa](https://github.com/Wilhansen/nipa)
+- [Puyo Tools](https://github.com/nickworonekin/puyotools)
 - [PyTouhou](http://pytouhou.linkmauve.fr/)
 - [rldev](https://github.com/eglaysher/rldev)
 - [rlvm](https://github.com/eglaysher/rlvm)
