@@ -26,12 +26,17 @@ static void read_handler(
     io->read(data, size);
 }
 
-bool PngImageDecoder::is_recognized_impl(File &file) const
+static int custom_chunk_handler(png_structp png_ptr, png_unknown_chunkp chunk)
 {
-    return file.io.read(magic.size()) == magic;
+    const auto handler = reinterpret_cast<PngImageDecoder::ChunkHandler*>(
+        png_get_user_chunk_ptr(png_ptr));
+    const auto name = std::string(reinterpret_cast<const char*>(chunk->name));
+    const auto data = bstr(chunk->data, chunk->size);
+    (*handler)(name, data);
+    return 1; // == handled
 }
 
-pix::Grid PngImageDecoder::decode_impl(File &file) const
+static pix::Grid decode(File &file, PngImageDecoder::ChunkHandler handler)
 {
     png_structp png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
@@ -48,6 +53,7 @@ pix::Grid PngImageDecoder::decode_impl(File &file) const
         error_handler,
         warning_handler);
 
+    png_set_read_user_chunk_fn(png_ptr, &handler, custom_chunk_handler);
     png_set_read_fn(png_ptr, &file.io, &read_handler);
     png_read_png(
         png_ptr,
@@ -89,6 +95,25 @@ pix::Grid PngImageDecoder::decode_impl(File &file) const
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
     return pix::Grid(width, height, data, format);
+}
+
+bool PngImageDecoder::is_recognized_impl(File &file) const
+{
+    return file.io.read(magic.size()) == magic;
+}
+
+pix::Grid PngImageDecoder::decode_impl(File &file) const
+{
+    return ::decode(file, [](const std::string &name, const bstr &data)
+    {
+        Log.warn("Ignoring unknown PNG chunk: %s\n", name.c_str());
+    });
+}
+
+pix::Grid PngImageDecoder::decode(
+    File &file, PngImageDecoder::ChunkHandler chunk_handler) const
+{
+    return ::decode(file, chunk_handler);
 }
 
 static auto dummy = fmt::register_fmt<PngImageDecoder>("png/png");

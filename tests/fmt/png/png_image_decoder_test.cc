@@ -1,10 +1,29 @@
+#include <map>
 #include "fmt/png/png_image_decoder.h"
-#include "io/file_io.h"
+#include "log.h"
 #include "test_support/catch.hh"
 #include "test_support/decoder_support.h"
+#include "test_support/file_support.h"
+#include "test_support/image_support.h"
 
 using namespace au;
 using namespace au::fmt::png;
+
+TEST_CASE("PNG images", "[util]")
+{
+    File file("tests/fmt/png/files/usagi_opaque.png", io::FileMode::Read);
+
+    PngImageDecoder decoder;
+    auto pixels = tests::decode(decoder, file);
+    REQUIRE(pixels.width() == 640);
+    REQUIRE(pixels.height() == 480);
+
+    auto color = pixels.at(200, 100);
+    REQUIRE(static_cast<int>(color.r) == 0x7C);
+    REQUIRE(static_cast<int>(color.g) == 0x6A);
+    REQUIRE(static_cast<int>(color.b) == 0x34);
+    REQUIRE(static_cast<int>(color.a) == 0xFF);
+}
 
 TEST_CASE("PNG images with transparency", "[fmt]")
 {
@@ -22,18 +41,31 @@ TEST_CASE("PNG images with transparency", "[fmt]")
     REQUIRE(static_cast<int>(color.a) == 0xFF);
 }
 
-TEST_CASE("Reading opaque PNG images", "[util]")
+TEST_CASE("PNG images with extra chunks", "[util]")
 {
-    File file("tests/fmt/png/files/usagi_opaque.png", io::FileMode::Read);
-
     PngImageDecoder decoder;
-    auto pixels = tests::decode(decoder, file);
-    REQUIRE(pixels.width() == 640);
-    REQUIRE(pixels.height() == 480);
+    auto input_file = tests::file_from_path(
+        "tests/fmt/png/files/b09s_hs02l_.png");
 
-    auto color = pixels.at(200, 100);
-    REQUIRE(static_cast<int>(color.r) == 0x7C);
-    REQUIRE(static_cast<int>(color.g) == 0x6A);
-    REQUIRE(static_cast<int>(color.b) == 0x34);
-    REQUIRE(static_cast<int>(color.a) == 0xFF);
+    SECTION("Default chunk handler")
+    {
+        REQUIRE_NOTHROW({
+            Log.mute();
+            auto actual_image = tests::decode(decoder, *input_file);
+            Log.unmute();
+        });
+    }
+    SECTION("Custom chunk handler")
+    {
+        std::map<std::string, bstr> chunks;
+        REQUIRE_NOTHROW({
+            decoder.decode(
+                *input_file, [&](const std::string &name, const bstr &data)
+                {
+                    chunks[name] = data;
+                });
+        });
+        REQUIRE(chunks.size() == 1);
+        REQUIRE(chunks["POSn"] == "\x00\x00\x00\x6C\x00\x00\x00\x60"_b);
+    }
 }
