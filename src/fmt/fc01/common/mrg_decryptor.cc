@@ -23,6 +23,7 @@ static u16 get_mask(u16 d)
 struct MrgDecryptor::Priv final
 {
     Priv(const bstr &input);
+    Priv(const bstr &input, const size_t size_orig);
 
     io::BufferedIO input_io;
     size_t size_orig;
@@ -30,13 +31,26 @@ struct MrgDecryptor::Priv final
 
 MrgDecryptor::Priv::Priv(const bstr &input) : input_io(input)
 {
+    // the size is encoded in the stream
     input_io.seek(0x104);
     size_orig = input_io.read_u32_le();
     input_io.seek(0);
     size_orig ^= input_io.read_u32_le();
+    input_io.seek(4);
+}
+
+MrgDecryptor::Priv::Priv(const bstr &input, const size_t size_orig)
+    : input_io(input), size_orig(size_orig)
+{
+    // the size is given from the outside
 }
 
 MrgDecryptor::MrgDecryptor(const bstr &input) : p(new Priv(input))
+{
+}
+
+MrgDecryptor::MrgDecryptor(const bstr &input, const size_t size_orig)
+    : p(new Priv(input, size_orig))
 {
 }
 
@@ -44,9 +58,13 @@ MrgDecryptor::~MrgDecryptor()
 {
 }
 
-bstr MrgDecryptor::decrypt(u8 initial_key)
+bstr MrgDecryptor::decrypt_without_key()
 {
-    p->input_io.seek(4);
+    return decrypt_with_key(0);
+}
+
+bstr MrgDecryptor::decrypt_with_key(const u8 initial_key)
+{
     bstr output(p->size_orig);
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<const u8>();

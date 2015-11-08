@@ -50,8 +50,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     MrgArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     arc_file.io.seek(magic.size() + 4);
-    auto table_size = arc_file.io.read_u32_le() - 12 - magic.size();
-    auto file_count = arc_file.io.read_u32_le();
+    const auto table_size = arc_file.io.read_u32_le() - 12 - magic.size();
+    const auto file_count = arc_file.io.read_u32_le();
 
     auto table_data = arc_file.io.read(table_size);
     auto key = guess_key(table_data, arc_file.io.size());
@@ -90,7 +90,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 std::unique_ptr<File> MrgArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     arc_file.io.seek(entry->offset);
     auto data = arc_file.io.read(entry->size_comp);
     if (entry->filter)
@@ -98,7 +98,7 @@ std::unique_ptr<File> MrgArchiveDecoder::read_file_impl(
         if (entry->filter >= 2)
         {
             common::MrgDecryptor decryptor(data);
-            data = decryptor.decrypt(0);
+            data = decryptor.decrypt_without_key();
         }
         if (entry->filter < 3)
             data = common::custom_lzss_decompress(data, entry->size_orig);

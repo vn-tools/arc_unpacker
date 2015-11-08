@@ -3,6 +3,7 @@
 #include "err.h"
 #include "fmt/fc01/common/custom_lzss.h"
 #include "fmt/fc01/common/util.h"
+#include "fmt/fc01/common/mrg_decryptor.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -11,7 +12,7 @@ using namespace au::fmt::fc01;
 
 static const bstr magic = "MCG "_b;
 
-static bstr decrypt(const bstr &input, size_t output_size, u8 initial_key)
+static bstr decrypt_v101(const bstr &input, size_t output_size, u8 initial_key)
 {
     auto data = input;
     auto key = initial_key;
@@ -21,6 +22,46 @@ static bstr decrypt(const bstr &input, size_t output_size, u8 initial_key)
         key += data.size() - 1 - i;
     }
     return common::custom_lzss_decompress(data, output_size);
+}
+
+static bstr transform_v200(
+    bstr planes[3], const size_t width, const size_t height)
+{
+    for (const auto y : util::range(height - 1))
+    for (const auto x : util::range(width - 1))
+    for (const auto i : util::range(3))
+    {
+        const auto pos = y * width + x;
+        int p00 = planes[i][pos];
+        int p10 = planes[i][pos + width] - p00;
+        int p01 = planes[i][pos + 1] - p00;
+        p00 = std::abs(p01 + p10);
+        p01 = std::abs(p01);
+        p10 = std::abs(p10);
+        s8 p11a;
+        if (p00 >= p01 && p10 >= p01)
+            p11a = planes[i][pos + width];
+        else if (p00 < p10)
+            p11a = planes[i][pos];
+        else
+            p11a = planes[i][pos + 1];
+        planes[i][pos + width + 1] += p11a + 0x80;
+    }
+
+    bstr output(width * height * 3);
+    auto output_ptr = output.get<u8>();
+    for (const auto y : util::range(height))
+    for (const auto x : util::range(width))
+    {
+        const auto pos = y * width + x;
+        s8 b = -128 + static_cast<s8>(planes[2][pos]);
+        s8 r = -128 + static_cast<s8>(planes[1][pos]);
+        s8 g = planes[0][pos] - ((b + r) >> 2);
+        *output_ptr++ = r + g;
+        *output_ptr++ = g;
+        *output_ptr++ = b + g;
+    }
+    return output;
 }
 
 struct McgImageDecoder::Priv final
@@ -66,30 +107,40 @@ void McgImageDecoder::set_key(u8 key)
 pix::Grid McgImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
-    auto version_float = boost::lexical_cast<float>(file.io.read(4).str());
-    auto version = static_cast<int>(100 * version_float + 0.5);
-
-    if (version != 101)
-        throw err::UnsupportedVersionError(version);
+    const auto versionf = boost::lexical_cast<float>(file.io.read(4).str());
+    const auto version = static_cast<int>(100 * versionf + 0.5);
 
     file.io.seek(16);
-    auto header_size = file.io.read_u32_le();
+    const auto header_size = file.io.read_u32_le();
     if (header_size != 64)
     {
         throw err::NotSupportedError(
             util::format("Unknown header size: %d", header_size));
     }
-    auto x = file.io.read_u32_le();
-    auto y = file.io.read_u32_le();
-    auto width = file.io.read_u32_le();
-    auto height = file.io.read_u32_le();
-    auto depth = file.io.read_u32_le();
-    auto output_size = file.io.read_u32_le();
+    const auto x = file.io.read_u32_le();
+    const auto y = file.io.read_u32_le();
+    const auto width = file.io.read_u32_le();
+    const auto height = file.io.read_u32_le();
+    const auto depth = file.io.read_u32_le();
+    const auto size_orig = file.io.read_u32_le();
 
-    file.io.seek(header_size);
     if (!p->key_set)
         throw err::UsageError("MCG decryption key not set");
-    auto data = decrypt(file.io.read_to_eof(), output_size, p->key);
+
+    file.io.seek(header_size);
+    bstr data = file.io.read_to_eof();
+    if (version == 101)
+        data = decrypt_v101(data, size_orig, p->key);
+    else if (version == 200)
+    {
+        common::MrgDecryptor decryptor(data, width * height);
+        bstr planes[3];
+        for (const auto i : util::range(3))
+            planes[i] = decryptor.decrypt_with_key(p->key);
+        data = transform_v200(planes, width, height);
+    }
+    else
+        throw err::UnsupportedVersionError(version);
     data = common::fix_stride(data, width, height, depth);
 
     if (depth != 24)
