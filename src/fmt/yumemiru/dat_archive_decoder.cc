@@ -52,4 +52,9 @@ std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
+std::vector<std::string> DatArchiveDecoder::get_linked_formats() const
+{
+    return { "yumemiru/epf" };
+}
+
 static auto dummy = fmt::register_fmt<DatArchiveDecoder>("yumemiru/dat");
