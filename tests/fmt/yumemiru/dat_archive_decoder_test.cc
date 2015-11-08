@@ -20,7 +20,12 @@ static void do_test(const std::string &input_path)
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Yumemiru DAT archives", "[fmt]")
+TEST_CASE("Yumemiru DAT archives (Yumemiru variant)", "[fmt]")
 {
     do_test("tests/fmt/yumemiru/files/dat/test.dat");
+}
+
+TEST_CASE("Yumemiru DAT archives (EEE variant)", "[fmt]")
+{
+    do_test("tests/fmt/yumemiru/files/dat/test.cab");
 }

@@ -5,7 +5,8 @@
 using namespace au;
 using namespace au::fmt::yumemiru;
 
-static const bstr magic = "yanepkDx"_b;
+static const bstr magic1 = "yanepkDx"_b;
+static const bstr magic2 = "PackDat3"_b;
 
 namespace
 {
@@ -20,13 +21,16 @@ namespace
 bool DatArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     arc_file.io.seek(0);
-    return arc_file.io.read(magic.size()) == magic;
+    if (arc_file.io.read(magic1.size()) == magic1)
+        return true;
+    arc_file.io.seek(0);
+    return arc_file.io.read(magic2.size()) == magic2;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     DatArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(magic.size());
+    arc_file.io.seek(8);
     const auto file_count = arc_file.io.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
