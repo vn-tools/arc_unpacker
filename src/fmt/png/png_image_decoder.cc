@@ -1,6 +1,7 @@
 #include "fmt/png/png_image_decoder.h"
 #include <png.h>
 #include "err.h"
+#include "log.h"
 #include "util/range.h"
 
 using namespace au;
@@ -8,7 +9,17 @@ using namespace au::fmt::png;
 
 static const bstr magic = "\x89PNG"_b;
 
-static void png_read_data(
+static void error_handler(png_structp png_ptr, png_const_charp error_msg)
+{
+    throw err::CorruptDataError(error_msg);
+}
+
+static void warning_handler(png_structp png_ptr, png_const_charp warning_msg)
+{
+    Log.warn("libpng warning: %s\n", warning_msg);
+}
+
+static void read_handler(
     png_structp png_ptr, png_bytep data, png_size_t size)
 {
     io::IO *io = reinterpret_cast<io::IO*>(png_get_io_ptr(png_ptr));
@@ -31,7 +42,13 @@ pix::Grid PngImageDecoder::decode_impl(File &file) const
     if (!info_ptr)
         throw std::logic_error("Failed to create PNG info structure");
 
-    png_set_read_fn(png_ptr, &file.io, &png_read_data);
+    png_set_error_fn(
+        png_ptr,
+        png_get_error_ptr(png_ptr),
+        error_handler,
+        warning_handler);
+
+    png_set_read_fn(png_ptr, &file.io, &read_handler);
     png_read_png(
         png_ptr,
         info_ptr,
