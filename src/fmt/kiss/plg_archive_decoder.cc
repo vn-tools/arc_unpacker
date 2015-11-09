@@ -54,7 +54,7 @@ std::unique_ptr<File> PlgArchiveDecoder::read_file_impl(
 
 std::vector<std::string> PlgArchiveDecoder::get_linked_formats() const
 {
-    return { "kiss/plg" };
+    return { "kiss/plg", "kiss/custom-png" };
 }
 
 static auto dummy = fmt::register_fmt<PlgArchiveDecoder>("kiss/plg");
