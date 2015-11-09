@@ -33,6 +33,17 @@ Xp3FilterRegistry::Xp3FilterRegistry() : p(new Priv)
         [](Xp3Filter &filter) { filter.decoder = [](bstr &, u32) { }; });
 
     p->plugin_mgr.add(
+        "xor", "Basic XOR encryption",
+        [](Xp3Filter &filter)
+        {
+            filter.decoder = [](bstr &data, u32 key)
+            {
+                for (const auto i : util::range(data.size()))
+                    data[i] ^= key;
+            };
+        });
+
+    p->plugin_mgr.add(
         "fsn", "Fate/Stay Night",
         [](Xp3Filter &filter)
         {
