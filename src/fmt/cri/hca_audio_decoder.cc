@@ -6,6 +6,7 @@
 #include "fmt/cri/hca/meta.h"
 #include "fmt/cri/hca/permutator.h"
 #include "io/bit_reader.h"
+#include "util/file_from_wave.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -17,111 +18,6 @@ static const bstr magic = "HCA\x00"_b;
 
 namespace
 {
-    struct FormatChunk final
-    {
-        u16 pcm_type;
-        u16 channel_count;
-        u32 sample_rate;
-        u16 bits_per_sample;
-        bstr extra_data;
-    };
-
-    struct SampleLoop final
-    {
-        u32 type;
-        size_t start;
-        size_t end;
-        size_t fraction;
-        size_t play_count;
-    };
-
-    struct SamplerChunk final
-    {
-        u32 manufacturer;
-        u32 product;
-        u32 sample_period;
-        u32 midi_unity_note;
-        u32 midi_pitch_fraction;
-        u32 smpte_format;
-        u32 smpte_offset;
-        std::vector<SampleLoop> loops;
-        bstr extra_data;
-    };
-
-    struct DataChunk final
-    {
-        bstr samples;
-    };
-
-    struct WaveAudio final
-    {
-        FormatChunk fmt;
-        DataChunk data;
-        std::unique_ptr<SamplerChunk> smpl;
-    };
-
-    std::unique_ptr<File> file_from_wave_audio(
-        const WaveAudio &audio, const std::string &name)
-    {
-        const auto block_align
-            = audio.fmt.channel_count * audio.fmt.bits_per_sample / 8;
-        const auto byte_rate = audio.fmt.sample_rate * block_align;
-
-        auto output_file = std::make_unique<File>();
-        output_file->io.write("RIFF"_b);
-        output_file->io.write("\x00\x00\x00\x00"_b);
-        output_file->io.write("WAVE"_b);
-
-        output_file->io.write("fmt "_b);
-        output_file->io.write_u32_le(18 + audio.fmt.extra_data.size());
-        output_file->io.write_u16_le(audio.fmt.pcm_type);
-        output_file->io.write_u16_le(audio.fmt.channel_count);
-        output_file->io.write_u32_le(audio.fmt.sample_rate);
-        output_file->io.write_u32_le(byte_rate);
-        output_file->io.write_u16_le(block_align);
-        output_file->io.write_u16_le(audio.fmt.bits_per_sample);
-        output_file->io.write_u16_le(audio.fmt.extra_data.size());
-        output_file->io.write(audio.fmt.extra_data);
-
-        if (audio.smpl)
-        {
-            output_file->io.write("smpl"_b);
-            output_file->io.write_u32_le(36
-                + (24 * audio.smpl->loops.size())
-                + audio.smpl->extra_data.size());
-            output_file->io.write_u32_le(audio.smpl->manufacturer);
-            output_file->io.write_u32_le(audio.smpl->product);
-            output_file->io.write_u32_le(audio.smpl->sample_period);
-            output_file->io.write_u32_le(audio.smpl->midi_unity_note);
-            output_file->io.write_u32_le(audio.smpl->midi_pitch_fraction);
-            output_file->io.write_u32_le(audio.smpl->smpte_format);
-            output_file->io.write_u32_le(audio.smpl->smpte_offset);
-            output_file->io.write_u32_le(audio.smpl->loops.size());
-            output_file->io.write_u32_le(audio.smpl->extra_data.size());
-            for (const auto i : util::range(audio.smpl->loops.size()))
-            {
-                const auto loop = audio.smpl->loops[i];
-                output_file->io.write_u32_le(i);
-                output_file->io.write_u32_le(loop.type);
-                output_file->io.write_u32_le(loop.start);
-                output_file->io.write_u32_le(loop.end);
-                output_file->io.write_u32_le(loop.fraction);
-                output_file->io.write_u32_le(loop.play_count);
-            }
-            output_file->io.write(audio.smpl->extra_data);
-        }
-
-        output_file->io.write("data"_b);
-        output_file->io.write_u32_le(audio.data.samples.size());
-        output_file->io.write(audio.data.samples);
-
-        output_file->io.seek(4);
-        output_file->io.write_u32_le(output_file->io.size() - 8);
-
-        output_file->name = name;
-        output_file->change_extension("wav");
-        return output_file;
-    }
 }
 
 static inline float clamp(const float input)
@@ -352,7 +248,7 @@ std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &file) const
         }
     }
 
-    WaveAudio wave;
+    sfx::Wave wave;
     wave.fmt.pcm_type = 1;
     wave.fmt.channel_count = channel_count;
     wave.fmt.sample_rate = sample_rate;
@@ -361,8 +257,8 @@ std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &file) const
         = bstr(reinterpret_cast<const u8*>(&samples[0]), samples.size() * 2);
     if (meta.loop->enabled)
     {
-        wave.smpl = std::make_unique<SamplerChunk>();
-        wave.smpl->loops.push_back(SampleLoop
+        wave.smpl = std::make_unique<sfx::WaveSamplerChunk>();
+        wave.smpl->loops.push_back(sfx::WaveSampleLoop
         {
             0,
             meta.loop->start * 8 * 0x80 * sample_rate,
@@ -371,7 +267,7 @@ std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &file) const
             meta.loop->repetitions == 0x80 ? 0 : meta.loop->repetitions,
         });
     }
-    return file_from_wave_audio(wave, file.name);
+    return util::file_from_wave(wave, file.name);
 }
 
 static auto dummy = fmt::register_fmt<HcaAudioDecoder>("cri/hca");
