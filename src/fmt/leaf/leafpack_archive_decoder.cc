@@ -1,4 +1,6 @@
 #include "fmt/leaf/leafpack_archive_decoder.h"
+#include <boost/algorithm/hex.hpp>
+#include "err.h"
 #include "io/buffered_io.h"
 #include "util/range.h"
 
@@ -6,7 +8,6 @@ using namespace au;
 using namespace au::fmt::leaf;
 
 static const bstr magic = "LEAFPACK"_b;
-static const bstr key = "\x51\x42\xFE\x77\x2D\x65\x48\x7E\x0A\x8A\xE5"_b;
 
 namespace
 {
@@ -17,10 +18,23 @@ namespace
     };
 }
 
-static void decrypt(bstr &data)
+static void decrypt(bstr &data, const bstr &key)
 {
     for (auto i : util::range(data.size()))
         data[i] -= key[i % key.size()];
+}
+
+struct LeafpackArchiveDecoder::Priv final
+{
+    bstr key;
+};
+
+LeafpackArchiveDecoder::LeafpackArchiveDecoder() : p(new Priv())
+{
+}
+
+LeafpackArchiveDecoder::~LeafpackArchiveDecoder()
+{
 }
 
 bool LeafpackArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -28,16 +42,48 @@ bool LeafpackArchiveDecoder::is_recognized_impl(File &arc_file) const
     return arc_file.io.read(magic.size()) == magic;
 }
 
+void LeafpackArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
+{
+    arg_parser.register_switch({"--leafpack-key"})
+        ->set_value_name("KEY")
+        ->set_description("Decryption key");
+    ArchiveDecoder::register_cli_options(arg_parser);
+}
+
+void LeafpackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
+{
+    if (arg_parser.has_switch("leafpack-key"))
+    {
+        std::string key;
+        boost::algorithm::unhex(
+            arg_parser.get_switch("leafpack-key"), std::back_inserter(key));
+        set_key(key);
+    }
+    ArchiveDecoder::parse_cli_options(arg_parser);
+}
+
+void LeafpackArchiveDecoder::set_key(const bstr &key)
+{
+    p->key = key;
+}
+
 std::unique_ptr<fmt::ArchiveMeta>
     LeafpackArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(magic.size());
-    auto file_count = arc_file.io.read_u16_le();
+    if (p->key.empty())
+    {
+        throw err::UsageError(
+            "File needs key to be unpacked. "
+            "Please supply one with --leafpack-key switch.");
+    }
 
-    auto table_size = file_count * 24;
+    arc_file.io.seek(magic.size());
+    const auto file_count = arc_file.io.read_u16_le();
+
+    const auto table_size = file_count * 24;
     arc_file.io.seek(arc_file.io.size() - table_size);
     auto table_data = arc_file.io.read(table_size);
-    decrypt(table_data);
+    decrypt(table_data, p->key);
 
     io::BufferedIO table_io(table_data);
     auto meta = std::make_unique<ArchiveMeta>();
@@ -45,7 +91,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->name = table_io.read_to_zero(12).str();
-        auto space_pos = entry->name.find_first_of(' ');
+        const auto space_pos = entry->name.find_first_of(' ');
         if (space_pos != std::string::npos)
         {
             entry->name[space_pos] = '.';
@@ -63,10 +109,10 @@ std::unique_ptr<fmt::ArchiveMeta>
 std::unique_ptr<File> LeafpackArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     arc_file.io.seek(entry->offset);
     auto data = arc_file.io.read(entry->size);
-    decrypt(data);
+    decrypt(data, p->key);
     return std::make_unique<File>(entry->name, data);
 }
 

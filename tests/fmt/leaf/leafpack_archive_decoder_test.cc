@@ -15,6 +15,7 @@ TEST_CASE("Leaf LEAFPACK archives", "[fmt]")
     };
 
     LeafpackArchiveDecoder decoder;
+    decoder.set_key("\x51\x42\xFE\x77\x2D\x65\x48\x7E\x0A\x8A\xE5"_b);
     auto input_file = tests::file_from_path(
         "tests/fmt/leaf/files/leafpack/test.pak");
     auto actual_files = tests::unpack(decoder, *input_file);
