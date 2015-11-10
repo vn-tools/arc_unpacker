@@ -4,19 +4,35 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
+static int detect_version(File &file)
+{
+    int version = 1;
+    file.io.seek(0);
+    size_t width = file.io.read_u16_le();
+    size_t height = file.io.read_u16_le();
+    if (!width && !height)
+    {
+        width = file.io.read_u16_le();
+        height = file.io.read_u16_le();
+        version = 2;
+    }
+    return width * height + version * 4 == file.io.size() ? version : -1;
+}
+
 static pix::Grid decode_pixels(File &file)
 {
-    file.io.seek(0);
-    auto width = file.io.read_u16_le();
-    auto height = file.io.read_u16_le();
-    auto data =  file.io.read(width * height);
+    const auto version = detect_version(file);
+    file.io.seek(version == 1 ? 0 : 4);
+    const auto width = file.io.read_u16_le();
+    const auto height = file.io.read_u16_le();
+    const auto data = file.io.read(width * height);
     return pix::Grid(width, height, data, pix::Format::Gray8);
 }
 
 static pix::Palette decode_palette(File &file)
 {
     file.io.seek(0);
-    auto count = file.io.read_u16_le();
+    const auto count = file.io.read_u16_le();
     auto palette = pix::Palette(256);
     for (auto i : util::range(count))
     {
@@ -31,14 +47,13 @@ static pix::Palette decode_palette(File &file)
 
 bool GrpImageDecoder::is_recognized_impl(File &file) const
 {
-    size_t expected_size = file.io.read_u16_le() * file.io.read_u16_le() + 4;
-    return expected_size == file.io.size();
+    return detect_version(file) > 0;
 }
 
 pix::Grid GrpImageDecoder::decode(File &file, File &palette_file) const
 {
     auto pixels = decode_pixels(file);
-    auto palette = decode_palette(palette_file);
+    const auto palette = decode_palette(palette_file);
     pixels.apply_palette(palette);
     return pixels;
 }

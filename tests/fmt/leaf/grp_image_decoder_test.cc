@@ -20,3 +20,17 @@ TEST_CASE("Leaf GRP images", "[fmt]")
     auto actual_file = decoder.decode(*input_file, *palette_file);
     tests::compare_images(*expected_file, actual_file);
 }
+
+TEST_CASE("Leaf GRP images (variant with extra 0 bytes at beginning)", "[fmt]")
+{
+    auto palette_file
+        = tests::file_from_path("tests/fmt/leaf/files/pak/leaf-out.c16");
+    auto input_file
+        = tests::file_from_path("tests/fmt/leaf/files/pak/leaf-out.grp");
+    auto expected_file
+        = tests::image_from_path("tests/fmt/leaf/files/grp/leaf-out.png");
+
+    GrpImageDecoder decoder;
+    auto actual_file = decoder.decode(*input_file, *palette_file);
+    tests::compare_images(*expected_file, actual_file);
+}
