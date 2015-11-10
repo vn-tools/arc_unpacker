@@ -118,7 +118,7 @@ std::unique_ptr<File> LeafpackArchiveDecoder::read_file_impl(
 
 std::vector<std::string> LeafpackArchiveDecoder::get_linked_formats() const
 {
-    return { "leaf/lf2" };
+    return { "leaf/lf2", "leaf/lc3" };
 }
 
 static auto dummy = fmt::register_fmt<LeafpackArchiveDecoder>("leaf/leafpack");

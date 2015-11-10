@@ -1,11 +1,12 @@
-#include "fmt/leaf/lf2_image_decoder.h"
+#include "fmt/leaf/lc3_image_decoder.h"
+#include "util/pack/lzss.h"
 #include "err.h"
 #include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
 
-static const bstr magic = "LEAF256\x00"_b;
+static const bstr magic = "LEAFC64\x00"_b;
 
 // Modified LZSS routine (the bit shifts proceed in opposite direction)
 static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
@@ -14,9 +15,7 @@ static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
 
     const size_t dict_size = 0x1000;
     size_t dict_pos = 0xFEE;
-    u8 dict[dict_size];
-    for (auto i : util::range(dict_size))
-        dict[i] = 0;
+    u8 dict[dict_size] = { 0 };
 
     u8 *output_ptr = output.get<u8>();
     const u8 *output_end = output.end<const u8>();
@@ -56,30 +55,44 @@ static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
     return output;
 }
 
-bool Lf2ImageDecoder::is_recognized_impl(File &file) const
+static bstr get_data(io::IO &io, const size_t size_comp, const size_t size_orig)
+{
+    auto data = io.read(size_comp);
+    for (auto &c : data)
+        c ^= 0xFF;
+    return custom_lzss_decompress(data, size_orig);
+}
+
+bool Lc3ImageDecoder::is_recognized_impl(File &file) const
 {
     return file.io.read(magic.size()) == magic;
 }
 
-pix::Grid Lf2ImageDecoder::decode_impl(File &file) const
+pix::Grid Lc3ImageDecoder::decode_impl(File &file) const
 {
     file.io.seek(magic.size());
     file.io.skip(4);
-    auto width = file.io.read_u16_le();
-    auto height = file.io.read_u16_le();
-    auto size_orig = width * height;
+    const auto width = file.io.read_u16_le();
+    const auto height = file.io.read_u16_le();
 
-    file.io.seek(0x16);
-    auto color_count = file.io.read_u16_le();
-    pix::Palette palette(color_count, file.io, pix::Format::BGR888);
+    const auto alpha_pos = file.io.read_u32_le();
+    const auto color_pos = file.io.read_u32_le();
 
-    auto data = file.io.read_to_eof();
-    for (auto &c : data)
-        c ^= 0xFF;
-    data = custom_lzss_decompress(data, width * height);
-    pix::Grid image(width, height, data, palette);
+    file.io.seek(color_pos);
+    const auto color_data
+        = get_data(file.io, file.io.size() - color_pos, width * height * 2);
+    pix::Grid image(width, height, color_data, pix::Format::BGR555X);
+
+    file.io.seek(alpha_pos);
+    auto mask_data
+        = get_data(file.io, color_pos - alpha_pos, width * height);
+    for (auto &c : mask_data)
+        c <<= 3;
+    pix::Grid mask(width, height, mask_data, pix::Format::Gray8);
+
+    image.apply_mask(mask);
     image.flip_vertically();
     return image;
 }
 
-static auto dummy = fmt::register_fmt<Lf2ImageDecoder>("leaf/lf2");
+static auto dummy = fmt::register_fmt<Lc3ImageDecoder>("leaf/lc3");
