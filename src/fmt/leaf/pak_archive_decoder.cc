@@ -1,4 +1,6 @@
 #include "fmt/leaf/pak_archive_decoder.h"
+#include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 #include <map>
 #include "err.h"
 #include "fmt/leaf/grp_image_decoder.h"
@@ -24,10 +26,10 @@ namespace
 // - starting position at 0 rather than 0xFEE
 // - optionally, additional byte for repetition count
 // - dictionary writing in two passes
-static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
+static bstr custom_lzss_decompress(
+    const bstr &input, size_t output_size, const size_t dict_capacity)
 {
-    const size_t dict_capacity = 0x1000;
-    u8 dict[dict_capacity] { 0 };
+    std::vector<u8> dict(dict_capacity);
     size_t dict_size = 0;
     size_t dict_pos = 0;
 
@@ -83,6 +85,44 @@ static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
     return output;
 }
 
+struct PakArchiveDecoder::Priv final
+{
+    boost::optional<int> version;
+};
+
+PakArchiveDecoder::PakArchiveDecoder() : p(new Priv())
+{
+}
+
+PakArchiveDecoder::~PakArchiveDecoder()
+{
+}
+
+void PakArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
+{
+    arg_parser.register_switch({"--pak-version"})
+        ->set_value_name("NUMBER")
+        ->set_description("File version (1 or 2)");
+    ArchiveDecoder::register_cli_options(arg_parser);
+}
+
+void PakArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
+{
+    if (arg_parser.has_switch("pak-version"))
+    {
+        set_version(boost::lexical_cast<int>(
+            arg_parser.get_switch("pak-version")));
+    }
+    ArchiveDecoder::parse_cli_options(arg_parser);
+}
+
+void PakArchiveDecoder::set_version(const int version)
+{
+    if (version != 1 && version != 2)
+        throw err::UsageError("PAK version can be either '1' or '2'");
+    p->version = version;
+}
+
 bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     auto meta = read_meta(arc_file);
@@ -115,6 +155,12 @@ std::unique_ptr<fmt::ArchiveMeta>
 std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
+    if (!p->version)
+    {
+        throw err::UsageError(
+            "Please choose PAK version with --pak-version switch.");
+    }
+
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->already_unpacked)
         return nullptr;
@@ -126,7 +172,8 @@ std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
         auto size_comp = arc_file.io.read_u32_le();
         auto size_orig = arc_file.io.read_u32_le();
         data = arc_file.io.read(size_comp - 8);
-        data = custom_lzss_decompress(data, size_orig);
+        data = custom_lzss_decompress(
+            data, size_orig, p->version == 1 ? 0x1000 : 0x800);
     }
     else
     {
@@ -139,8 +186,7 @@ std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
 void PakArchiveDecoder::preprocess(
     File &arc_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
 {
-    std::map<std::string, ArchiveEntryImpl*>
-        palette_entries, sprite_entries;
+    std::map<std::string, ArchiveEntryImpl*> palette_entries, sprite_entries;
     for (auto &entry : meta.entries)
     {
         auto fn = entry->name.substr(0, entry->name.find_first_of('.'));
