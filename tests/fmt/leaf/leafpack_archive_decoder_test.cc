@@ -10,6 +10,7 @@ TEST_CASE("Leaf LEAFPACK archives", "[fmt]")
 {
     std::vector<std::shared_ptr<File>> expected_files
     {
+        tests::stub_file("123456789.txt", "1234567890"_b),
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };

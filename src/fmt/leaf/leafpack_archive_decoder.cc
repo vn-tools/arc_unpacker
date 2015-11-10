@@ -93,11 +93,10 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->name = table_io.read_to_zero(12).str();
         const auto space_pos = entry->name.find_first_of(' ');
         if (space_pos != std::string::npos)
-        {
-            entry->name[space_pos] = '.';
-            while (entry->name[space_pos + 1] == ' ')
-                entry->name.erase(space_pos + 1, 1);
-        }
+            while (entry->name[space_pos] == ' ')
+                entry->name.erase(space_pos, 1);
+        if (entry->name.size() > 3)
+            entry->name.insert(entry->name.size() - 3, ".");
         entry->offset = table_io.read_u32_le();
         entry->size = table_io.read_u32_le();
         table_io.skip(4);
