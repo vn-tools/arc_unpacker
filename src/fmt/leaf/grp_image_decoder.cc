@@ -50,12 +50,27 @@ bool GrpImageDecoder::is_recognized_impl(File &file) const
     return detect_version(file) > 0;
 }
 
-pix::Grid GrpImageDecoder::decode(File &file, File &palette_file) const
+pix::Grid GrpImageDecoder::decode(
+    File &file,
+    std::shared_ptr<File> palette_file,
+    std::shared_ptr<File> mask_file) const
 {
-    auto pixels = decode_pixels(file);
-    const auto palette = decode_palette(palette_file);
-    pixels.apply_palette(palette);
-    return pixels;
+    auto image = decode_pixels(file);
+    if (palette_file)
+    {
+        const auto palette = decode_palette(*palette_file);
+        image.apply_palette(palette);
+    }
+    if (mask_file)
+    {
+        mask_file->io.seek(0);
+        auto mask_data = mask_file->io.read_to_eof();
+        for (auto &c : mask_data)
+            c ^= 0xFF;
+        image.apply_mask(pix::Grid(
+            image.width(), image.height(), mask_data, pix::Format::Gray8));
+    }
+    return image;
 }
 
 pix::Grid GrpImageDecoder::decode_impl(File &file) const

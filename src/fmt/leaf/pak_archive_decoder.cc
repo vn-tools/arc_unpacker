@@ -186,7 +186,8 @@ std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
 void PakArchiveDecoder::preprocess(
     File &arc_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
 {
-    std::map<std::string, ArchiveEntryImpl*> palette_entries, sprite_entries;
+    std::map<std::string, ArchiveEntryImpl*>
+        palette_entries, sprite_entries, mask_entries;
     for (auto &entry : meta.entries)
     {
         auto fn = entry->name.substr(0, entry->name.find_first_of('.'));
@@ -194,6 +195,8 @@ void PakArchiveDecoder::preprocess(
             palette_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
         else if (entry->name.find("grp") != std::string::npos)
             sprite_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
+        else if (entry->name.find("msk") != std::string::npos)
+            mask_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
     }
 
     GrpImageDecoder grp_image_decoder;
@@ -201,14 +204,33 @@ void PakArchiveDecoder::preprocess(
     {
         try
         {
-            auto &sprite_entry = it.second;
-            auto &palette_entry = palette_entries.at(it.first);
+            ArchiveEntryImpl *sprite_entry = it.second;
+            ArchiveEntryImpl *palette_entry = nullptr;
+            ArchiveEntryImpl *mask_entry = nullptr;
+            std::shared_ptr<File> palette_file;
+            std::shared_ptr<File> mask_file;
+
             auto sprite_file = read_file(arc_file, meta, *sprite_entry);
-            auto palette_file = read_file(arc_file, meta, *palette_entry);
-            auto sprite = grp_image_decoder.decode(*sprite_file, *palette_file);
+            if (palette_entries.find(it.first) != palette_entries.end())
+            {
+                palette_entry = palette_entries[it.first];
+                palette_file = read_file(arc_file, meta, *palette_entry);
+            }
+            if (mask_entries.find(it.first) != mask_entries.end())
+            {
+                mask_entry = mask_entries[it.first];
+                mask_file = read_file(arc_file, meta, *mask_entry);
+            }
+
+            auto sprite = grp_image_decoder.decode(
+                *sprite_file, palette_file, mask_file);
             saver.save(util::file_from_grid(sprite, sprite_entry->name));
+
             sprite_entry->already_unpacked = true;
-            palette_entry->already_unpacked = true;
+            if (mask_entry)
+                mask_entry->already_unpacked = true;
+            if (palette_entry)
+                palette_entry->already_unpacked = true;
         }
         catch (...)
         {
