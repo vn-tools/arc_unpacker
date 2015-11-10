@@ -15,6 +15,6 @@ TEST_CASE("Leaf BJR images", "[fmt]")
     auto expected_file = tests::image_from_path(
         "tests/fmt/leaf/files/bjr/v00232-out.png");
     BjrImageDecoder decoder;
-    auto actual_file = decoder.decode(*input_file);
+    auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
 }

@@ -14,6 +14,6 @@ TEST_CASE("Leaf BBM images", "[fmt]")
     auto expected_file = tests::image_from_path(
         "tests/fmt/leaf/files/bbm/Stage_14_E0_OBJ-out.png");
     BbmImageDecoder decoder;
-    auto actual_file = decoder.decode(*input_file);
+    auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
 }

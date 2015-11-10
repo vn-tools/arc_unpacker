@@ -4,7 +4,6 @@
 #include "test_support/file_support.h"
 
 using namespace au;
-using namespace au::fmt;
 using namespace au::fmt::leaf;
 
 TEST_CASE("Leaf PAK archives", "[fmt]")
