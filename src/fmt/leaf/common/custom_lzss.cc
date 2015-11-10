@@ -4,7 +4,9 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
-// Modified LZSS routine (the bit shifts proceed in opposite direction)
+// Modified LZSS routine
+// - the bit shifts proceed in opposite direction
+// - input is negated
 bstr common::custom_lzss_decompress(const bstr &input, size_t output_size)
 {
     bstr output(output_size);
@@ -25,11 +27,11 @@ bstr common::custom_lzss_decompress(const bstr &input, size_t output_size)
     {
         control <<= 1;
         if (!(control & 0x80))
-            control = (*input_ptr++ << 8) | 0xFF;
+            control = (~*input_ptr++ << 8) | 0xFF;
 
         if ((control >> 15) & 1)
         {
-            auto v = *input_ptr++;
+            auto v = ~*input_ptr++;
             dict[dict_pos++] = *output_ptr++ = v;
             dict_pos %= dict_size;
         }
@@ -37,7 +39,7 @@ bstr common::custom_lzss_decompress(const bstr &input, size_t output_size)
         {
             if (input_ptr + 2 > input_end)
                 break;
-            u16 tmp = reinterpret_cast<const u16&>(*input_ptr);
+            u16 tmp = ~reinterpret_cast<const u16&>(*input_ptr);
             input_ptr += 2;
 
             u16 look_behind_pos = (tmp >> 4) % dict_size;

@@ -1,7 +1,5 @@
 #include "fmt/leaf/lf2_image_decoder.h"
 #include "fmt/leaf/common/custom_lzss.h"
-#include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -25,10 +23,8 @@ pix::Grid Lf2ImageDecoder::decode_impl(File &file) const
     auto color_count = file.io.read_u16_le();
     pix::Palette palette(color_count, file.io, pix::Format::BGR888);
 
-    auto data = file.io.read_to_eof();
-    for (auto &c : data)
-        c ^= 0xFF;
-    data = common::custom_lzss_decompress(data, width * height);
+    const auto data = common::custom_lzss_decompress(
+        file.io.read_to_eof(), width * height);
     pix::Grid image(width, height, data, palette);
     image.flip_vertically();
     return image;
