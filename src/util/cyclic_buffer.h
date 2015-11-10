@@ -32,7 +32,7 @@ namespace util {
             return current_pos;
         }
 
-        constexpr void operator <<(const bstr &s)
+        inline void operator <<(const bstr &s)
         {
             for (const auto c : s)
             {
@@ -42,21 +42,21 @@ namespace util {
             written += s.size();
         }
 
-        constexpr void operator <<(const u8 c)
+        inline void operator <<(const u8 c)
         {
             a[current_pos++] = c;
             current_pos %= n;
             written++;
         }
 
-        constexpr u8 &operator [](const size_t i)
+        inline u8 &operator [](const size_t i)
         {
             if (i < n)
                 return a[i];
             return a[i % n];
         }
 
-        constexpr const u8 &operator [](const size_t i) const
+        inline const u8 &operator [](const size_t i) const
         {
             if (i < n)
                 return a[i];
