@@ -89,7 +89,7 @@ void ArcArchiveDecoder::preprocess(
             auto masks = wipf_archive_decoder.unpack_to_images(
                 *read_file(arc_file, meta, *mask_entry));
             for (auto i : util::range(sprites.size()))
-                sprites[i]->apply_alpha_from_mask(*masks.at(i));
+                sprites[i]->apply_mask(*masks.at(i));
             sprite_entry->already_unpacked = true;
             mask_entry->already_unpacked = true;
             for (auto &sprite : sprites)

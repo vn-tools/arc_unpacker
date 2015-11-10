@@ -42,7 +42,7 @@ pix::Grid DbmImageDecoder::decode_impl(File &file) const
             height / 2,
             data.substr(3 * width * height / 2),
             pix::Format::BGR888);
-        image.apply_alpha_from_mask(mask);
+        image.apply_mask(mask);
         image.flip_vertically();
         return image;
     }

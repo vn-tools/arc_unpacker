@@ -127,7 +127,7 @@ void Grid::crop(size_t new_width, size_t new_height)
     }
 }
 
-void Grid::apply_alpha_from_mask(const Grid &other)
+void Grid::apply_mask(const Grid &other)
 {
     if (other.width() != p->width || other.height() != p->height)
         throw std::logic_error("Mask image size is different from image size");

@@ -106,7 +106,7 @@ void Nekopack4ArchiveDecoder::preprocess(
                 sprite.height(),
                 mask_file->io,
                 pix::Format::Gray8);
-            sprite.apply_alpha_from_mask(mask);
+            sprite.apply_mask(mask);
             sprite_entry->already_unpacked = true;
             mask_entry->already_unpacked = true;
             saver.save(util::file_from_grid(sprite, sprite_entry->name));

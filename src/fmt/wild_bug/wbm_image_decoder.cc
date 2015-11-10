@@ -86,7 +86,7 @@ pix::Grid WbmImageDecoder::decode_impl(File &file) const
     if (decoder.has_section(0x13))
     {
         auto mask = get_pixels(decoder, 0x13, width, height, 1);
-        pixels.apply_alpha_from_mask(mask);
+        pixels.apply_mask(mask);
     }
 
     return pixels;

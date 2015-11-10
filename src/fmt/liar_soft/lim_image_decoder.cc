@@ -47,7 +47,7 @@ pix::Grid LimImageDecoder::decode_impl(File &file) const
         for (auto &c : output)
             c ^= 0xFF;
         pix::Grid mask(width, height, output, pix::Format::Gray8);
-        pixels.apply_alpha_from_mask(mask);
+        pixels.apply_mask(mask);
     }
 
     return pixels;
