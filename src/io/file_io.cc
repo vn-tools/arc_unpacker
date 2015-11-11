@@ -24,16 +24,18 @@ FileIO::~FileIO()
         fclose(p->file);
 }
 
-void FileIO::seek(size_t offset)
+IO &FileIO::seek(size_t offset)
 {
     if (fseek(p->file, offset, SEEK_SET) != 0)
         throw err::EofError();
+    return *this;
 }
 
-void FileIO::skip(int offset)
+IO &FileIO::skip(int offset)
 {
     if (tell() + offset > size() || fseek(p->file, offset, SEEK_CUR) != 0)
         throw err::EofError();
+    return *this;
 }
 
 void FileIO::read(void *destination, size_t size)

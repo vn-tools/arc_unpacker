@@ -50,18 +50,20 @@ void BufferedIO::reserve(size_t size)
         p->buffer.resize(size);
 }
 
-void BufferedIO::seek(size_t offset)
+IO &BufferedIO::seek(size_t offset)
 {
     if (offset > p->buffer.size())
         throw err::EofError();
     p->buffer_pos = offset;
+    return *this;
 }
 
-void BufferedIO::skip(int offset)
+IO &BufferedIO::skip(int offset)
 {
     if (p->buffer_pos + offset > p->buffer.size())
         throw err::EofError();
     p->buffer_pos += offset;
+    return *this;
 }
 
 void BufferedIO::read(void *destination, size_t size)

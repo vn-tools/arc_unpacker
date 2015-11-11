@@ -18,8 +18,8 @@ namespace io {
 
         size_t size() const override;
         size_t tell() const override;
-        void seek(size_t offset) override;
-        void skip(int offset) override;
+        IO &seek(size_t offset) override;
+        IO &skip(int offset) override;
         void truncate(size_t new_size) override;
 
         using IO::read;
