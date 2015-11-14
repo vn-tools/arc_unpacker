@@ -72,6 +72,7 @@ std::vector<std::string> Pak2ArchiveDecoder::get_linked_formats() const
     return
     {
         "leaf/pak2-compressed-file",
+        "leaf/pak2-image",
     };
 }
 
