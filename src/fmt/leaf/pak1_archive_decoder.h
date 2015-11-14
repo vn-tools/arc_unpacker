@@ -6,11 +6,11 @@ namespace au {
 namespace fmt {
 namespace leaf {
 
-    class PakArchiveDecoder final : public ArchiveDecoder
+    class Pak1ArchiveDecoder final : public ArchiveDecoder
     {
     public:
-        PakArchiveDecoder();
-        ~PakArchiveDecoder();
+        Pak1ArchiveDecoder();
+        ~Pak1ArchiveDecoder();
         void register_cli_options(ArgParser &) const;
         void parse_cli_options(const ArgParser &);
         void set_version(const int);

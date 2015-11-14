@@ -1,4 +1,4 @@
-#include "fmt/leaf/pak_archive_decoder.h"
+#include "fmt/leaf/pak1_archive_decoder.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <map>
@@ -85,20 +85,20 @@ static bstr custom_lzss_decompress(
     return output;
 }
 
-struct PakArchiveDecoder::Priv final
+struct Pak1ArchiveDecoder::Priv final
 {
     boost::optional<int> version;
 };
 
-PakArchiveDecoder::PakArchiveDecoder() : p(new Priv())
+Pak1ArchiveDecoder::Pak1ArchiveDecoder() : p(new Priv())
 {
 }
 
-PakArchiveDecoder::~PakArchiveDecoder()
+Pak1ArchiveDecoder::~Pak1ArchiveDecoder()
 {
 }
 
-void PakArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
+void Pak1ArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 {
     arg_parser.register_switch({"--pak-version"})
         ->set_value_name("NUMBER")
@@ -106,7 +106,7 @@ void PakArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
     ArchiveDecoder::register_cli_options(arg_parser);
 }
 
-void PakArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
+void Pak1ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("pak-version"))
     {
@@ -116,14 +116,14 @@ void PakArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
-void PakArchiveDecoder::set_version(const int version)
+void Pak1ArchiveDecoder::set_version(const int version)
 {
     if (version != 1 && version != 2)
         throw err::UsageError("PAK version can be either '1' or '2'");
     p->version = version;
 }
 
-bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Pak1ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     auto meta = read_meta(arc_file);
     if (!meta->entries.size())
@@ -134,7 +134,7 @@ bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PakArchiveDecoder::read_meta_impl(File &arc_file) const
+    Pak1ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto file_count = arc_file.io.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
@@ -152,7 +152,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
+std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     if (!p->version)
@@ -183,7 +183,7 @@ std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
-void PakArchiveDecoder::preprocess(
+void Pak1ArchiveDecoder::preprocess(
     File &arc_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
 {
     std::map<std::string, ArchiveEntryImpl*>
@@ -239,9 +239,9 @@ void PakArchiveDecoder::preprocess(
     }
 }
 
-std::vector<std::string> PakArchiveDecoder::get_linked_formats() const
+std::vector<std::string> Pak1ArchiveDecoder::get_linked_formats() const
 {
     return { "leaf/grp" };
 }
 
-static auto dummy = fmt::register_fmt<PakArchiveDecoder>("leaf/pak");
+static auto dummy = fmt::register_fmt<Pak1ArchiveDecoder>("leaf/pak1");

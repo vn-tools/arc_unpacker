@@ -10,9 +10,9 @@ using namespace au::fmt::leaf;
 TEST_CASE("Leaf GRP images", "[fmt]")
 {
     auto palette_file
-        = tests::file_from_path("tests/fmt/leaf/files/pak/leaflogo-out.c16");
+        = tests::file_from_path("tests/fmt/leaf/files/pak1/leaflogo-out.c16");
     auto input_file
-        = tests::file_from_path("tests/fmt/leaf/files/pak/leaflogo-out.grp");
+        = tests::file_from_path("tests/fmt/leaf/files/pak1/leaflogo-out.grp");
     auto expected_file
         = tests::image_from_path("tests/fmt/leaf/files/grp/leaflogo-out.png");
 
@@ -24,9 +24,9 @@ TEST_CASE("Leaf GRP images", "[fmt]")
 TEST_CASE("Leaf GRP images (variant with extra 0 bytes at beginning)", "[fmt]")
 {
     auto palette_file
-        = tests::file_from_path("tests/fmt/leaf/files/pak/leaf-out.c16");
+        = tests::file_from_path("tests/fmt/leaf/files/pak1/leaf-out.c16");
     auto input_file
-        = tests::file_from_path("tests/fmt/leaf/files/pak/leaf-out.grp");
+        = tests::file_from_path("tests/fmt/leaf/files/pak1/leaf-out.grp");
     auto expected_file
         = tests::image_from_path("tests/fmt/leaf/files/grp/leaf-out.png");
 
