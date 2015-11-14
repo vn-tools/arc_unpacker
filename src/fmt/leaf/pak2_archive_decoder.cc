@@ -67,4 +67,12 @@ std::unique_ptr<File> Pak2ArchiveDecoder::read_file_impl(
     return std::make_unique<File>(e.name, data);
 }
 
+std::vector<std::string> Pak2ArchiveDecoder::get_linked_formats() const
+{
+    return
+    {
+        "leaf/pak2-compressed-file",
+    };
+}
+
 static auto dummy = fmt::register_fmt<Pak2ArchiveDecoder>("leaf/pak2");
