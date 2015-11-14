@@ -1,0 +1,54 @@
+#!/bin/python3
+# because xxd sucks
+import argparse
+import os, sys
+import re
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Hex (un)dump a file.')
+    parser.add_argument('-r', '--reverse', action='store_true',
+        help='reverses the dump (i.e. converts hex dump to a binary file.)')
+    parser.add_argument('file', metavar='PATH',
+        help='file to convert (- for stdin)')
+    parser.add_argument('--raw', action='store_true',
+        help='don\'t use fancy C formatting.')
+    parser.add_argument(
+        '-w', '--width', type=int, default=16, help='max hex numbers per row')
+    return parser.parse_args()
+
+def main():
+    args = parse_args()
+
+    if args.file == '-':
+        input = sys.stdin.buffer.read()
+    else:
+        if not os.path.exists(args.file):
+            print('File {0} does not exist.'.format(args.file), file=sys.stderr)
+            sys.exit(1)
+        with open(args.file, 'rb') as f:
+            input = f.read()
+
+    if args.reverse:
+        sys.stdout.buffer.write(
+            bytes(
+                int(c, 16)
+                for c in re.findall(
+                    '[0-9a-fA-F]{2}', input.decode('ascii'))))
+    else:
+        width = 1 if args.width < 1 else args.width
+        char_template = '{0:02X}' if args.raw else '\\x{0:02X}'
+        row_template = '{0}' if args.raw else '"{0}"'
+
+        output = ''
+        for i in range((len(input) + width - 1) // width):
+            row = ''
+            for j in range(width):
+                idx = i * width + j
+                if idx < len(input):
+                    row += char_template.format(input[idx])
+            output += row_template.format(row) + '\n'
+        print(output, end='')
+
+
+if __name__ == '__main__':
+    main()
