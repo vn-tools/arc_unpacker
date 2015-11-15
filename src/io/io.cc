@@ -33,6 +33,8 @@ bool IO::eof() const
 
 bstr IO::read(size_t bytes)
 {
+    if (!bytes)
+        return ""_b;
     bstr ret(bytes);
     read_impl(&ret[0], bytes);
     return ret;
@@ -127,6 +129,8 @@ u64 IO::read_u64_be()
 
 void IO::write(const bstr &bytes)
 {
+    if (!bytes.size())
+        return;
     write_impl(bytes.get<char>(), bytes.size());
 }
 

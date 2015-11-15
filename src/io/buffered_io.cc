@@ -65,10 +65,7 @@ IO &BufferedIO::skip(int offset)
 
 void BufferedIO::read_impl(void *destination, size_t size)
 {
-    if (!size)
-        return;
-    if (!destination)
-        throw std::logic_error("Reading to nullptr");
+    // destination MUST exist and size MUST be at least 1
     if (p->buffer_pos + size > p->buffer.size())
         throw err::EofError();
     auto source_ptr = p->buffer.get<u8>() + p->buffer_pos;
@@ -80,10 +77,7 @@ void BufferedIO::read_impl(void *destination, size_t size)
 
 void BufferedIO::write_impl(const void *source, size_t size)
 {
-    if (!size)
-        return;
-    if (!source)
-        throw std::logic_error("Writing from nullptr");
+    // source MUST exist and size MUST be at least 1
     reserve(p->buffer_pos + size);
     auto source_ptr = reinterpret_cast<const u8*>(source);
     auto destination_ptr = p->buffer.get<u8>() + p->buffer_pos;

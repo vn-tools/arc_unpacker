@@ -40,20 +40,14 @@ IO &FileIO::skip(int offset)
 
 void FileIO::read_impl(void *destination, size_t size)
 {
-    if (!size)
-        return;
-    if (!destination)
-        throw std::logic_error("Reading to nullptr");
+    // destination MUST exist and size MUST be at least 1
     if (fread(destination, 1, size, p->file) != size)
         throw err::EofError();
 }
 
 void FileIO::write_impl(const void *source, size_t size)
 {
-    if (!size)
-        return;
-    if (!source)
-        throw std::logic_error("Writing from nullptr");
+    // source MUST exist and size MUST be at least 1
     if (fwrite(source, 1, size, p->file) != size)
         throw err::IoError("Could not write full data");
 }
