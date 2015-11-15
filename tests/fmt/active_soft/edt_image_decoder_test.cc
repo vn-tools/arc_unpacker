@@ -7,26 +7,27 @@
 using namespace au;
 using namespace au::fmt::active_soft;
 
+static const std::string dir = "tests/fmt/active_soft/files/edt/";
+
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
     const EdtImageDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
-    const auto expected_file = tests::image_from_path(expected_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_file = tests::image_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
 }
 
-TEST_CASE("ActiveSoft EDT plain images", "[fmt]")
+TEST_CASE("ActiveSoft EDT images", "[fmt]")
 {
-    do_test(
-        "tests/fmt/active_soft/files/edt/nowprit.edt",
-        "tests/fmt/active_soft/files/edt/nowprit-out.png");
-}
+    SECTION("Plain")
+    {
+        do_test("nowprit.edt", "nowprit-out.png");
+    }
 
-TEST_CASE("ActiveSoft EDT diff images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/active_soft/files/edt/nowprit.edt",
-        "tests/fmt/active_soft/files/edt/nowprit-out.png");
+    SECTION("Difference-based")
+    {
+        do_test("nowprit.edt", "nowprit-out.png");
+    }
 }

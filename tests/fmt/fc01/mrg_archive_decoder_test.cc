@@ -6,6 +6,8 @@
 using namespace au;
 using namespace au::fmt::fc01;
 
+static const std::string dir = "tests/fmt/fc01/files/mrg/";
+
 static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
@@ -13,19 +15,21 @@ static void do_test(const std::string &input_path)
         tests::stub_file("123.txt", "123123123 123123123 321"_b),
         tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-
     const MrgArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("FC01 MRG plain archives", "[fmt]")
+TEST_CASE("FC01 MRG archives", "[fmt]")
 {
-    do_test("tests/fmt/fc01/files/mrg/plain.mrg");
-}
+    SECTION("Plain")
+    {
+        do_test("plain.mrg");
+    }
 
-TEST_CASE("FC01 MRG compressed archives", "[fmt]")
-{
-    do_test("tests/fmt/fc01/files/mrg/compressed.mrg");
+    SECTION("Compressed")
+    {
+        do_test("compressed.mrg");
+    }
 }

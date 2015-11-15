@@ -7,40 +7,37 @@
 using namespace au;
 using namespace au::fmt::microsoft;
 
+static const std::string dir = "tests/fmt/microsoft/files/dds/";
+
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
     const DdsImageDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
-    const auto expected_image = tests::image_from_path(expected_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_image = tests::image_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }
 
-TEST_CASE("Microsoft DDS DXT1 textures", "[fmt]")
+TEST_CASE("Microsoft DDS textures", "[fmt]")
 {
-    do_test(
-        "tests/fmt/microsoft/files/dds/back0.dds",
-        "tests/fmt/microsoft/files/dds/back0-out.png");
-}
+    SECTION("DXT1")
+    {
+        do_test("back0.dds", "back0-out.png");
+    }
 
-TEST_CASE("Microsoft DDS DXT3 textures", "[fmt]")
-{
-    do_test(
-        "tests/fmt/microsoft/files/dds/006_disconnect.dds",
-        "tests/fmt/microsoft/files/dds/006_disconnect-out.png");
-}
+    SECTION("DXT3")
+    {
+        do_test("006_disconnect.dds", "006_disconnect-out.png");
+    }
 
-TEST_CASE("Microsoft DDS DXT5 textures", "[fmt]")
-{
-    do_test(
-        "tests/fmt/microsoft/files/dds/決1.dds",
-        "tests/fmt/microsoft/files/dds/決1-out.png");
-}
+    SECTION("DXT5")
+    {
+        do_test("決1.dds", "決1-out.png");
+    }
 
-TEST_CASE("Microsoft DDS raw 32-bit textures", "[fmt]")
-{
-    do_test(
-        "tests/fmt/microsoft/files/dds/koishi_7.dds",
-        "tests/fmt/microsoft/files/dds/koishi_7-out.png");
+    SECTION("Raw 32-bit")
+    {
+        do_test("koishi_7.dds", "koishi_7-out.png");
+    }
 }

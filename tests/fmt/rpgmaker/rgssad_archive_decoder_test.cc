@@ -6,17 +6,22 @@
 using namespace au;
 using namespace au::fmt::rpgmaker;
 
-TEST_CASE("RpgMaker RGSSAD archives", "[fmt]")
+static const std::string dir = "tests/fmt/rpgmaker/files/rgssad/";
+
+static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("another.txt", "abcdefghij"_b),
     };
-
     const RgssadArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/rpgmaker/files/rgssad/test.rgssad");
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("RpgMaker RGSSAD archives", "[fmt]")
+{
+    do_test("test.rgssad");
 }

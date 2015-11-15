@@ -6,14 +6,19 @@
 using namespace au;
 using namespace au::fmt::lilim;
 
-TEST_CASE("Lilim AOS scripts", "[fmt]")
+static const std::string dir = "tests/fmt/lilim/files/scr/";
+
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
 {
     const ScrFileDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/lilim/files/scr/var.scr");
-    auto expected_file = tests::file_from_path(
-        "tests/fmt/lilim/files/scr/var-out.txt");
-    expected_file->name = "tests/fmt/lilim/files/scr/var.txt";
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
-    tests::compare_files(*expected_file, *actual_file, true);
+    tests::compare_files(*expected_file, *actual_file, false);
+}
+
+TEST_CASE("Lilim AOS scripts", "[fmt]")
+{
+    do_test("var.scr", "var-out.txt");
 }

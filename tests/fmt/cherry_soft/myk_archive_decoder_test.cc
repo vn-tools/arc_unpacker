@@ -6,17 +6,22 @@
 using namespace au;
 using namespace au::fmt::cherry_soft;
 
-TEST_CASE("CherrySoft MYK archives", "[fmt]")
+static const std::string dir = "tests/fmt/cherry_soft/files/myk/";
+
+static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("123.txt", "123"_b),
         tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-
     const MykArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/cherry_soft/files/myk/test.myk");
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("CherrySoft MYK archives", "[fmt]")
+{
+    do_test("test.myk");
 }

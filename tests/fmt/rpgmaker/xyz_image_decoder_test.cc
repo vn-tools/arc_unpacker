@@ -7,13 +7,19 @@
 using namespace au;
 using namespace au::fmt::rpgmaker;
 
-TEST_CASE("RpgMaker XYZ images", "[fmt]")
+static const std::string dir = "tests/fmt/rpgmaker/files/xyz/";
+
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
 {
     const XyzImageDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/rpgmaker/files/xyz/浅瀬部屋a.xyz");
-    const auto expected_image = tests::image_from_path(
-        "tests/fmt/rpgmaker/files/xyz/浅瀬部屋a-out.png");
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_image = tests::image_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
+}
+
+TEST_CASE("RpgMaker XYZ images", "[fmt]")
+{
+    do_test("浅瀬部屋a.xyz", "浅瀬部屋a-out.png");
 }

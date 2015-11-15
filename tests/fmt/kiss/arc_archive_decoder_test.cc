@@ -6,6 +6,8 @@
 using namespace au;
 using namespace au::fmt::kiss;
 
+static const std::string dir = "tests/fmt/kiss/files/arc/";
+
 static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
@@ -13,14 +15,13 @@ static void do_test(const std::string &input_path)
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-
     const ArcArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
 TEST_CASE("Kiss ARC archives", "[fmt]")
 {
-    do_test("tests/fmt/kiss/files/arc/test.arc");
+    do_test("test.arc");
 }

@@ -6,17 +6,22 @@
 using namespace au;
 using namespace au::fmt::riddle_soft;
 
-TEST_CASE("RiddleSoft PAC archives", "[fmt]")
+static const std::string dir = "tests/fmt/riddle_soft/files/pac/";
+
+static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-
     const PacArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/riddle_soft/files/pac/test.pac");
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("RiddleSoft PAC archives", "[fmt]")
+{
+    do_test("test.pac");
 }

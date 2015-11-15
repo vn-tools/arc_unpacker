@@ -8,13 +8,15 @@
 using namespace au;
 using namespace au::fmt::twilight_frontier;
 
+static const std::string dir = "tests/fmt/twilight_frontier/files/tfbm/";
+
 static void do_test(
     const TfbmImageDecoder &decoder,
     const std::string &input_path,
     const std::string &expected_path)
 {
-    const auto input_file = tests::file_from_path(input_path);
-    const auto expected_image = tests::image_from_path(expected_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_image = tests::image_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }
@@ -26,39 +28,32 @@ static void do_test(
     do_test(decoder, input_path, expected_path);
 }
 
-TEST_CASE("Twilight Frontier TFBM 32-bit images", "[fmt]")
+TEST_CASE("Twilight Frontier TFBM images", "[fmt]")
 {
-    do_test(
-        "tests/fmt/twilight_frontier/files/tfbm/climaxCutA0000.png",
-        "tests/fmt/twilight_frontier/files/tfbm/climaxCutA0000-out.png");
-}
+    SECTION("32-bit")
+    {
+        do_test("climaxCutA0000.png", "climaxCutA0000-out.png");
+    }
 
-TEST_CASE("Twilight Frontier TFBM 16-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/twilight_frontier/files/tfbm/unk-02479-4461dee8.dat",
-        "tests/fmt/twilight_frontier/files/tfbm/unk-02479-4461dee8-out.png");
-}
+    SECTION("16-bit")
+    {
+        do_test("unk-02479-4461dee8.dat", "unk-02479-4461dee8-out.png");
+    }
 
-TEST_CASE(
-    "Twilight Frontier TFBM 8-bit images without external palette", "[fmt]")
-{
-    do_test(
-        "tests/fmt/twilight_frontier/files/tfbm/spellB0000.bmp",
-        "tests/fmt/twilight_frontier/files/tfbm/spellB0000-out.png");
-}
+    SECTION("8-bit, missing external palette")
+    {
+        do_test("spellB0000.bmp", "spellB0000-out.png");
+    }
 
-TEST_CASE("Twilight Frontier TFBM 8-bit images with external palette", "[fmt]")
-{
-    TfbmImageDecoder decoder;
+    SECTION("8-bit, external palette")
+    {
+        const auto palette_path = dir + "palette000.bmp";
+        const auto palette_data
+            = tests::file_from_path(palette_path)->io.read_to_eof();
 
-    const auto palette_path
-        = "tests/fmt/twilight_frontier/files/tfbm/palette000.bmp";
-    io::FileIO palette_io(palette_path, io::FileMode::Read);
-    decoder.add_palette(palette_path, palette_io.read_to_eof());
+        TfbmImageDecoder decoder;
+        decoder.add_palette(palette_path, palette_data);
 
-    do_test(
-        decoder,
-        "tests/fmt/twilight_frontier/files/tfbm/spellB0000.bmp",
-        "tests/fmt/twilight_frontier/files/tfbm/spellB0000-out2.png");
+        do_test(decoder, "spellB0000.bmp", "spellB0000-out2.png");
+    }
 }

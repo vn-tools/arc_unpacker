@@ -7,14 +7,20 @@
 using namespace au;
 using namespace au::fmt::yuka_script;
 
-TEST_CASE("YukaScript YKG images", "[fmt]")
+static const std::string dir = "tests/fmt/yuka_script/files/ykg/";
+
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
 {
     const YkgImageDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/yuka_script/files/ykg/reimu.ykg");
-    const auto expected_image = tests::image_from_path(
-        "tests/fmt/yuka_script/files/ykg/reimu-out.png");
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_image = tests::image_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     const auto actual_image = tests::image_from_file(*actual_file);
     tests::compare_images(*expected_image, *actual_image);
+}
+
+TEST_CASE("YukaScript YKG images", "[fmt]")
+{
+    do_test("reimu.ykg", "reimu-out.png");
 }

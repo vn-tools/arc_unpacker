@@ -6,17 +6,22 @@
 using namespace au;
 using namespace au::fmt::team_shanghai_alice;
 
-TEST_CASE("Team Shanghai Alice PBG4 archives", "[fmt]")
+static const std::string dir = "tests/fmt/team_shanghai_alice/files/pbg4/";
+
+static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("another.txt", "abcdefghijaaabcd"_b),
     };
-
     const Pbg4ArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/team_shanghai_alice/files/pbg4/test.pbg4");
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("Team Shanghai Alice PBG4 archives", "[fmt]")
+{
+    do_test("test.pbg4");
 }

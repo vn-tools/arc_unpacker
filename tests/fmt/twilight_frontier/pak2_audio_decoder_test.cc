@@ -6,13 +6,19 @@
 using namespace au;
 using namespace au::fmt::twilight_frontier;
 
-TEST_CASE("Twilight Frontier CV3 audio", "[fmt]")
+static const std::string dir = "tests/fmt/twilight_frontier/files/pak2/";
+
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
 {
     const Pak2AudioDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/twilight_frontier/files/pak2/049.cv3");
-    const auto expected_file = tests::file_from_path(
-        "tests/fmt/twilight_frontier/files/pak2/049-out.wav");
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
+}
+
+TEST_CASE("Twilight Frontier CV3 audio", "[fmt]")
+{
+    do_test("049.cv3", "049-out.wav");
 }

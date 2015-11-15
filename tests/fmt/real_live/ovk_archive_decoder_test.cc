@@ -6,17 +6,24 @@
 using namespace au;
 using namespace au::fmt::real_live;
 
-TEST_CASE("RealLive OVK archives", "[fmt]")
-{
-    const std::vector<std::shared_ptr<File>> expected_files
-    {
-        tests::stub_file("sample00010", "1234567890"_b),
-        tests::stub_file("sample00025", "abcdefghijklmnopqrstuvwxyz"_b),
-    };
+static const std::string dir = "tests/fmt/real_live/files/ovk/";
 
+static void do_test(
+    const std::string &input_path,
+    const std::vector<std::shared_ptr<File>> &expected_files)
+{
     const OvkArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/real_live/files/ovk/test.ovk");
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("RealLive OVK archives", "[fmt]")
+{
+    do_test(
+        "test.ovk",
+        {
+            tests::stub_file("sample00010", "1234567890"_b),
+            tests::stub_file("sample00025", "abcdefghijklmnopqrstuvwxyz"_b),
+        });
 }

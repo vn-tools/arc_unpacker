@@ -7,41 +7,37 @@
 using namespace au;
 using namespace au::fmt::alice_soft;
 
+static const std::string dir = "tests/fmt/alice_soft/files/qnt/";
+
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
     const QntImageDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
-    const auto expected_image = tests::image_from_path(expected_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_image = tests::image_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }
 
-TEST_CASE("Alice Soft QNT opaque images", "[fmt]")
+TEST_CASE("Alice Soft QNT images", "[fmt]")
 {
-    do_test(
-        "tests/fmt/alice_soft/files/qnt/CG00505.QNT",
-        "tests/fmt/alice_soft/files/qnt/CG00505-out.png");
-}
+    SECTION("Opaque")
+    {
+        do_test("CG00505.QNT", "CG00505-out.png");
+    }
 
-TEST_CASE("Alice Soft QNT transparent images with resolution of 2^n", "[fmt]")
-{
-    do_test(
-        "tests/fmt/alice_soft/files/qnt/CG64100.QNT",
-        "tests/fmt/alice_soft/files/qnt/CG64100-out.png");
-}
+    SECTION("Transparent images with resolution of 2^n")
+    {
+        do_test("CG64100.QNT", "CG64100-out.png");
+    }
 
-TEST_CASE(
-    "Alice Soft QNT transparent images with arbitrary resolution", "[fmt]")
-{
-    do_test(
-        "tests/fmt/alice_soft/files/qnt/CG64214.QNT",
-        "tests/fmt/alice_soft/files/qnt/CG64214-out.png");
-}
+    SECTION("Transparent images with arbitrary resolution")
+    {
+        do_test("CG64214.QNT", "CG64214-out.png");
+    }
 
-TEST_CASE("Alice Soft QNT images with transparency data only", "[fmt]")
-{
-    do_test(
-        "tests/fmt/alice_soft/files/qnt/cg50121.QNT",
-        "tests/fmt/alice_soft/files/qnt/cg50121-out.png");
+    SECTION("Transparency data only")
+    {
+        do_test("cg50121.QNT", "cg50121-out.png");
+    }
 }

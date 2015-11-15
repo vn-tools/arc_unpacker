@@ -7,33 +7,32 @@
 using namespace au;
 using namespace au::fmt::kirikiri;
 
+static const std::string dir = "tests/fmt/kirikiri/files/tlg/";
+
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
     const TlgImageDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
-    const auto expected_image = tests::image_from_path(expected_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_image = tests::image_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }
 
-TEST_CASE("KiriKiri TLG5 images", "[fmt]")
+TEST_CASE("KiriKiri TLG images", "[fmt]")
 {
-    do_test(
-        "tests/fmt/kirikiri/files/tlg5/14凛ペンダント.tlg",
-        "tests/fmt/kirikiri/files/tlg5/14凛ペンダント-out.png");
-}
+    SECTION("TLG5")
+    {
+        do_test("14凛ペンダント.tlg", "14凛ペンダント-out.png");
+    }
 
-TEST_CASE("KiriKiri TLG6 images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/kirikiri/files/tlg6/tlg6.tlg",
-        "tests/fmt/kirikiri/files/tlg6/tlg6-out.png");
-}
+    SECTION("TLG6")
+    {
+        do_test("tlg6.tlg", "tlg6-out.png");
+    }
 
-TEST_CASE("KiriKiri TLG0 image wrappers", "[fmt]")
-{
-    do_test(
-        "tests/fmt/kirikiri/files/tlg0/bg08d.tlg",
-        "tests/fmt/kirikiri/files/tlg0/bg08d-out.png");
+    SECTION("TLG0")
+    {
+        do_test("bg08d.tlg", "bg08d-out.png");
+    }
 }

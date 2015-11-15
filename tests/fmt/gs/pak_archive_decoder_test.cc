@@ -6,17 +6,22 @@
 using namespace au;
 using namespace au::fmt::gs;
 
-TEST_CASE("GS PAK v5 archives", "[fmt]")
+static const std::string dir = "tests/fmt/gs/files/pak/";
+
+static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-
     const PakArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/gs/files/pak/v5.pak");
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("GS PAK v5 archives", "[fmt]")
+{
+    do_test("v5.pak");
 }

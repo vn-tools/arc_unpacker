@@ -4,10 +4,11 @@
 #include "test_support/file_support.h"
 
 using namespace au;
-using namespace au::fmt;
 using namespace au::fmt::wild_bug;
 
-TEST_CASE("Wild Bug WBP archives", "[fmt]")
+static const std::string dir = "tests/fmt/wild_bug/files/wbp/";
+
+static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
     {
@@ -15,10 +16,13 @@ TEST_CASE("Wild Bug WBP archives", "[fmt]")
         tests::stub_file("\\derp\\abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
         tests::stub_file("\\derp\\!@#.txt", "!@#$%^&*()_+"_b),
     };
-
     const WbpArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/wild_bug/files/wbp/test.wbp");
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("Wild Bug WBP archives", "[fmt]")
+{
+    do_test("test.wbp");
 }

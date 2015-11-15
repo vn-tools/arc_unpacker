@@ -6,13 +6,19 @@
 using namespace au;
 using namespace au::fmt::kid;
 
-TEST_CASE("KID LND files", "[fmt]")
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
 {
     const LndFileDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/kid/files/lnd/CEP037.waf.lnd");
-    const auto expected_file = tests::file_from_path(
-        "tests/fmt/kid/files/waf/CEP037.waf");
+    const auto input_file = tests::file_from_path(input_path);
+    const auto expected_file = tests::file_from_path(expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
+}
+
+TEST_CASE("KID LND files", "[fmt]")
+{
+    do_test(
+        "tests/fmt/kid/files/lnd/CEP037.waf.lnd",
+        "tests/fmt/kid/files/waf/CEP037.waf");
 }

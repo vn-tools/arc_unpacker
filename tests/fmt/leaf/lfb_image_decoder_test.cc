@@ -7,13 +7,19 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
-TEST_CASE("Leaf LFB images", "[fmt]")
+static const std::string dir = "tests/fmt/leaf/files/lfb/";
+
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
 {
     const LfbImageDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/leaf/files/lfb/LIFEM.LFB");
-    const auto expected_file = tests::image_from_path(
-        "tests/fmt/leaf/files/lfb/LIFEM-out.png");
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_file = tests::image_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
+}
+
+TEST_CASE("Leaf LFB images", "[fmt]")
+{
+    do_test("LIFEM.LFB", "LIFEM-out.png");
 }

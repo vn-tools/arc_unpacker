@@ -6,42 +6,46 @@
 using namespace au;
 using namespace au::fmt::kirikiri;
 
-static void test_xp3_archive(const std::string &path)
+static const std::string dir = "tests/fmt/kirikiri/files/xp3/";
+
+static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("abc2.txt", "AAAAAAAAAA"_b),
     };
-
     Xp3ArchiveDecoder decoder;
     decoder.set_plugin("noop");
-    const auto input_file = tests::file_from_path(path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("KiriKiri XP3 v1 archives", "[fmt]")
+TEST_CASE("KiriKiri XP3 archives", "[fmt]")
 {
-    test_xp3_archive("tests/fmt/kirikiri/files/xp3/xp3-v1.xp3");
-}
+    SECTION("Version 1")
+    {
+        do_test("xp3-v1.xp3");
+    }
 
-TEST_CASE("KiriKiri XP3 v2 archives", "[fmt]")
-{
-    test_xp3_archive("tests/fmt/kirikiri/files/xp3/xp3-v2.xp3");
-}
+    SECTION("Version 2")
+    {
+        do_test("xp3-v2.xp3");
+    }
 
-TEST_CASE("KiriKiri XP3 archives with compressed file table", "[fmt]")
-{
-    test_xp3_archive("tests/fmt/kirikiri/files/xp3/xp3-compressed-table.xp3");
-}
+    SECTION("Compressed file table")
+    {
+        do_test("xp3-compressed-table.xp3");
+    }
 
-TEST_CASE("KiriKiri XP3 archives with compressed file data", "[fmt]")
-{
-    test_xp3_archive("tests/fmt/kirikiri/files/xp3/xp3-compressed-files.xp3");
-}
+    SECTION("Compressed file data")
+    {
+        do_test("xp3-compressed-files.xp3");
+    }
 
-TEST_CASE("KiriKiri XP3 archives with multiple SEGM chunks", "[fmt]")
-{
-    test_xp3_archive("tests/fmt/kirikiri/files/xp3/xp3-multiple-segm.xp3");
+    SECTION("Multiple SEGM chunks")
+    {
+        do_test("xp3-multiple-segm.xp3");
+    }
 }

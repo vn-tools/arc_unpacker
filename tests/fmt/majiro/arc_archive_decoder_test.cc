@@ -6,6 +6,8 @@
 using namespace au;
 using namespace au::fmt::majiro;
 
+static const std::string dir = "tests/fmt/majiro/files/arc/";
+
 static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
@@ -13,14 +15,16 @@ static void do_test(const std::string &input_path)
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-
     const ArcArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Majiro ARC v3 archives", "[fmt]")
+TEST_CASE("Majiro ARC archives", "[fmt]")
 {
-    do_test("tests/fmt/majiro/files/arc/v3.arc");
+    SECTION("Version 3")
+    {
+        do_test("v3.arc");
+    }
 }

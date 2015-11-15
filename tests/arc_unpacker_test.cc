@@ -9,7 +9,7 @@ TEST_CASE("Converting single files with CLI facade", "[core][frontend]")
 {
     const ArcUnpacker arc_unpacker(
         {
-            "./tests/fmt/real_live/files/g00-2/AYU_03.g00",
+            "./tests/fmt/real_live/files/g00/AYU_03.g00",
             "--fmt=real-live/g00"
         },
         "0.0");

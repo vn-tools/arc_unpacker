@@ -7,13 +7,19 @@
 using namespace au;
 using namespace au::fmt::active_soft;
 
-TEST_CASE("ActiveSoft ED8 images", "[fmt]")
+static const std::string dir = "tests/fmt/active_soft/files/ed8/";
+
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
 {
     const Ed8ImageDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/active_soft/files/ed8/EFFECT15.ed8");
-    const auto expected_file = tests::image_from_path(
-        "tests/fmt/active_soft/files/ed8/EFFECT15-out.png");
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_file = tests::image_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
+}
+
+TEST_CASE("ActiveSoft ED8 images", "[fmt]")
+{
+    do_test("EFFECT15.ed8", "EFFECT15-out.png");
 }

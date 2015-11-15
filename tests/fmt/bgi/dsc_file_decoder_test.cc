@@ -7,45 +7,48 @@
 using namespace au;
 using namespace au::fmt::bgi;
 
-static void do_test(
+static const std::string dir = "tests/fmt/bgi/files/dsc/";
+
+static void do_test_image(
     const std::string &input_path, const std::string &expected_path)
 {
     const DscFileDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
-    const auto expected_image = tests::image_from_path(expected_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_image = tests::image_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     const auto actual_image = tests::image_from_file(*actual_file);
     tests::compare_images(*expected_image, *actual_image);
 }
 
-TEST_CASE("BGI DSC raw files", "[fmt]")
+static void do_test_file(
+    const std::string &input_path, const std::string &expected_path)
 {
     const DscFileDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/bgi/files/dsc/setupforgallery");
-    const auto expected_file = tests::file_from_path(
-        "tests/fmt/bgi/files/dsc/setupforgallery-out.dat");
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
 }
 
-TEST_CASE("BGI DSC 8-bit images", "[fmt]")
+TEST_CASE("BGI DSC files / images", "[fmt]")
 {
-    do_test(
-        "tests/fmt/bgi/files/dsc/SGTitle010000",
-        "tests/fmt/bgi/files/dsc/SGTitle010000-out.png");
-}
+    SECTION("Raw files")
+    {
+        do_test_file("setupforgallery", "setupforgallery-out.dat");
+    }
 
-TEST_CASE("BGI DSC 24-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/bgi/files/dsc/SGMsgWnd010300",
-        "tests/fmt/bgi/files/dsc/SGMsgWnd010300-out.png");
-}
+    SECTION("8-bit images")
+    {
+        do_test_image("SGTitle010000", "SGTitle010000-out.png");
+    }
 
-TEST_CASE("BGI DSC 32-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/bgi/files/dsc/SGTitle000000",
-        "tests/fmt/bgi/files/dsc/SGTitle000000-out.png");
+    SECTION("24-bit images")
+    {
+        do_test_image("SGMsgWnd010300", "SGMsgWnd010300-out.png");
+    }
+
+    SECTION("32-bit images")
+    {
+        do_test_image("SGTitle000000", "SGTitle000000-out.png");
+    }
 }

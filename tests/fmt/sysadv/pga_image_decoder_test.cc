@@ -7,14 +7,20 @@
 using namespace au;
 using namespace au::fmt::sysadv;
 
-TEST_CASE("sysadv PGA images", "[fmt]")
+static const std::string dir = "tests/fmt/sysadv/files/pga/";
+
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
 {
     const PgaImageDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/sysadv/files/pga/flower.pga");
-    const auto expected_image = tests::image_from_path(
-        "tests/fmt/sysadv/files/pga/flower-out.png");
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_image = tests::image_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     const auto actual_image = tests::image_from_file(*actual_file);
     tests::compare_images(*expected_image, *actual_image);
+}
+
+TEST_CASE("sysadv PGA images", "[fmt]")
+{
+    do_test("flower.pga", "flower-out.png");
 }

@@ -6,41 +6,49 @@
 using namespace au;
 using namespace au::fmt::will;
 
-static void do_test(const std::string &input_path)
+static const std::string dir = "tests/fmt/will/files/arc/";
+
+static void do_test(
+    const std::string &input_path,
+    const std::vector<std::shared_ptr<File>> &expected_files)
 {
-    const std::vector<std::shared_ptr<File>> expected_files
-    {
-        tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
-        tests::stub_file("123.txt", "1234567890"_b),
-        tests::stub_file("!@#.txt", "!@#$%^&*()"_b),
-    };
     const ArcArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Will Co. ARC archives (9 character long names)", "[fmt]")
+TEST_CASE("Will Co. ARC archives", "[fmt]")
 {
-    do_test("tests/fmt/will/files/arc/names-9.arc");
-}
-
-TEST_CASE("Will Co. ARC archives (13 character long names)", "[fmt]")
-{
-    do_test("tests/fmt/will/files/arc/names-13.arc");
-}
-
-TEST_CASE("Will Co. ARC archives (script encryption)", "[fmt]")
-{
-    const std::vector<std::shared_ptr<File>> expected_files
+    SECTION("9 character long names")
     {
-        tests::stub_file("123.SCR", "1234567890"_b),
-        tests::stub_file("abc.WSC", "abcdefghijklmnopqrstuvwxyz"_b),
-    };
+        do_test(
+            "names-9.arc",
+            {
+                tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
+                tests::stub_file("123.txt", "1234567890"_b),
+                tests::stub_file("!@#.txt", "!@#$%^&*()"_b),
+            });
+    }
 
-    const ArcArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/will/files/arc/scripts.arc");
-    const auto actual_files = tests::unpack(decoder, *input_file);
-    tests::compare_files(expected_files, actual_files, true);
+    SECTION("13 character long names")
+    {
+        do_test(
+            "names-13.arc",
+            {
+                tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
+                tests::stub_file("123.txt", "1234567890"_b),
+                tests::stub_file("!@#.txt", "!@#$%^&*()"_b),
+            });
+    }
+
+    SECTION("Script encryption")
+    {
+        do_test(
+            "scripts.arc",
+            {
+                tests::stub_file("123.SCR", "1234567890"_b),
+                tests::stub_file("abc.WSC", "abcdefghijklmnopqrstuvwxyz"_b),
+            });
+    }
 }

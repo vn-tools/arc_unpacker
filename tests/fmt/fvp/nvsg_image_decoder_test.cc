@@ -7,47 +7,42 @@
 using namespace au;
 using namespace au::fmt::fvp;
 
+static const std::string dir = "tests/fmt/fvp/files/nvsg/";
+
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
     const NvsgImageDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
-    const auto expected_image = tests::image_from_path(expected_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_image = tests::image_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }
 
-TEST_CASE("FVP NVSG format 0 images", "[fmt]")
+TEST_CASE("FVP NVSG images", "[fmt]")
 {
-    do_test(
-        "tests/fmt/fvp/files/nvsg-0/BG085_001",
-        "tests/fmt/fvp/files/nvsg-0/BG085_001-out.png");
-}
+    SECTION("Format 0")
+    {
+        do_test("BG085_001", "BG085_001-out.png");
+    }
 
-TEST_CASE("FVP NVSG format 1 images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/fvp/files/nvsg-1/bu_effect22_F_1",
-        "tests/fmt/fvp/files/nvsg-1/bu_effect22_F_1-out.png");
-}
+    SECTION("Format 1")
+    {
+        do_test("bu_effect22_F_1", "bu_effect22_F_1-out.png");
+    }
 
-TEST_CASE("FVP NVSG format 2 images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/fvp/files/nvsg-2/CHR_時雨_基_夏私服_表情",
-        "tests/fmt/fvp/files/nvsg-2/CHR_時雨_基_夏私服_表情-out.png");
-}
+    SECTION("Format 2")
+    {
+        do_test("CHR_時雨_基_夏私服_表情", "CHR_時雨_基_夏私服_表情-out.png");
+    }
 
-TEST_CASE("FVP NVSG format 3 images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/fvp/files/nvsg-3/diss48",
-        "tests/fmt/fvp/files/nvsg-3/diss48-out.png");
-}
+    SECTION("Format 3")
+    {
+        do_test("diss48", "diss48-out.png");
+    }
 
-TEST_CASE("FVP NVSG format 4 images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/fvp/files/nvsg-4/gaiji_heart",
-        "tests/fmt/fvp/files/nvsg-4/gaiji_heart-out.png");
+    SECTION("Format 4")
+    {
+        do_test("gaiji_heart", "gaiji_heart-out.png");
+    }
 }

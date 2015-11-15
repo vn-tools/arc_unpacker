@@ -6,42 +6,52 @@
 using namespace au;
 using namespace au::fmt::kid;
 
-static void do_test(const std::string &input_path)
-{
-    const std::vector<std::shared_ptr<File>> expected_files
-    {
-        tests::stub_file("123.txt", "1234567890"_b),
-        tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
-    };
+static const std::string dir = "tests/fmt/kid/files/lnk/";
 
+static void do_test(
+    const std::string &input_path,
+    const std::vector<std::shared_ptr<File>> expected_files,
+    const bool input_file_is_compressed = false)
+{
     const LnkArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = input_file_is_compressed
+        ? tests::zlib_file_from_path(dir + input_path)
+        : tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Kid LNK uncompressed unencrypted archives", "[fmt]")
+TEST_CASE("Kid LNK archives", "[fmt]")
 {
-    do_test("tests/fmt/kid/files/lnk/uncompressed.lnk");
-}
-
-TEST_CASE("Kid LNK compressed unencrypted archives", "[fmt]")
-{
-    do_test("tests/fmt/kid/files/lnk/compressed.lnk");
-}
-
-TEST_CASE("Kid LNK uncompressed encrypted archives", "[fmt]")
-{
-    const std::vector<std::shared_ptr<File>> expected_files
+    SECTION("Plain")
     {
-        tests::stub_file("audio.wav", bstr(0x2000, '\xFF')),
-        tests::stub_file("image.jpg", bstr(0x2000, '\xFF')),
-        tests::stub_file("screensaver.scr", bstr(0x2000, '\xFF')),
-    };
+        do_test(
+            "uncompressed.lnk",
+            {
+                tests::stub_file("123.txt", "1234567890"_b),
+                tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
+            });
+    }
 
-    const LnkArchiveDecoder decoder;
-    const auto input_file = tests::zlib_file_from_path(
-        "tests/fmt/kid/files/lnk/encrypted.lnk");
-    const auto actual_files = tests::unpack(decoder, *input_file);
-    tests::compare_files(expected_files, actual_files, true);
+    SECTION("Compressed")
+    {
+        do_test(
+            "compressed.lnk",
+            {
+                tests::stub_file("123.txt", "1234567890"_b),
+                tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
+            });
+    }
+
+    SECTION("Encrypted")
+    {
+        do_test(
+            "encrypted.lnk",
+            {
+                tests::stub_file("audio.wav", bstr(0x2000, '\xFF')),
+                tests::stub_file("image.jpg", bstr(0x2000, '\xFF')),
+                tests::stub_file("screensaver.scr", bstr(0x2000, '\xFF')),
+            },
+            true);
+    }
 }

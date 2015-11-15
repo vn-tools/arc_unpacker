@@ -6,6 +6,8 @@
 using namespace au;
 using namespace au::fmt::gnu;
 
+static const std::string dir = "tests/fmt/gnu/files/gzip/";
+
 static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
@@ -13,14 +15,13 @@ static void do_test(const std::string &input_path)
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-
     const GzipArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("GNU gzip plain archives", "[fmt]")
+TEST_CASE("GNU gzip archives", "[fmt]")
 {
-    do_test("tests/fmt/gnu/files/gzip/test.gz");
+    do_test("test.gz");
 }

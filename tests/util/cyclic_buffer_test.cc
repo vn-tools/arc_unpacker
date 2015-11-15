@@ -106,85 +106,53 @@ TEST_CASE("Cyclic buffer start position", "[util]")
     {
         CyclicBuffer<5> buffer(0);
         REQUIRE(buffer.start() == 0);
-        buffer << "123"_b;
-        REQUIRE(buffer.start() == 0);
-        buffer << "45"_b;
-        REQUIRE(buffer.start() == 0);
-        buffer << "6"_b;
-        REQUIRE(buffer.start() == 1);
-        buffer << "7"_b;
-        REQUIRE(buffer.start() == 2);
-        buffer << "89"_b;
-        REQUIRE(buffer.start() == 4);
-        buffer << "0"_b;
-        REQUIRE(buffer.start() == 0);
+        buffer << "123"_b; REQUIRE(buffer.start() == 0);
+        buffer << "45"_b; REQUIRE(buffer.start() == 0);
+        buffer << "6"_b; REQUIRE(buffer.start() == 1);
+        buffer << "7"_b; REQUIRE(buffer.start() == 2);
+        buffer << "89"_b; REQUIRE(buffer.start() == 4);
+        buffer << "0"_b; REQUIRE(buffer.start() == 0);
     }
     SECTION("Custom start position, strings")
     {
         CyclicBuffer<5> buffer(1);
         REQUIRE(buffer.start() == 1);
-        buffer << "123"_b;
-        REQUIRE(buffer.start() == 1);
-        buffer << "45"_b;
-        REQUIRE(buffer.start() == 1);
-        buffer << "6"_b;
-        REQUIRE(buffer.start() == 2);
-        buffer << "7"_b;
-        REQUIRE(buffer.start() == 3);
-        buffer << "89"_b;
-        REQUIRE(buffer.start() == 0);
-        buffer << "0"_b;
-        REQUIRE(buffer.start() == 1);
+        buffer << "123"_b; REQUIRE(buffer.start() == 1);
+        buffer << "45"_b; REQUIRE(buffer.start() == 1);
+        buffer << "6"_b; REQUIRE(buffer.start() == 2);
+        buffer << "7"_b; REQUIRE(buffer.start() == 3);
+        buffer << "89"_b; REQUIRE(buffer.start() == 0);
+        buffer << "0"_b; REQUIRE(buffer.start() == 1);
     }
     SECTION("Zero start position bytes")
     {
         CyclicBuffer<5> buffer(0);
         REQUIRE(buffer.start() == 0);
-        buffer << '1';
-        REQUIRE(buffer.start() == 0);
-        buffer << '2';
-        REQUIRE(buffer.start() == 0);
-        buffer << '3';
-        REQUIRE(buffer.start() == 0);
-        buffer << '4';
-        REQUIRE(buffer.start() == 0);
-        buffer << '5';
-        REQUIRE(buffer.start() == 0);
-        buffer << '6';
-        REQUIRE(buffer.start() == 1);
-        buffer << '7';
-        REQUIRE(buffer.start() == 2);
-        buffer << '8';
-        REQUIRE(buffer.start() == 3);
-        buffer << '9';
-        REQUIRE(buffer.start() == 4);
-        buffer << '0';
-        REQUIRE(buffer.start() == 0);
+        buffer << '1'; REQUIRE(buffer.start() == 0);
+        buffer << '2'; REQUIRE(buffer.start() == 0);
+        buffer << '3'; REQUIRE(buffer.start() == 0);
+        buffer << '4'; REQUIRE(buffer.start() == 0);
+        buffer << '5'; REQUIRE(buffer.start() == 0);
+        buffer << '6'; REQUIRE(buffer.start() == 1);
+        buffer << '7'; REQUIRE(buffer.start() == 2);
+        buffer << '8'; REQUIRE(buffer.start() == 3);
+        buffer << '9'; REQUIRE(buffer.start() == 4);
+        buffer << '0'; REQUIRE(buffer.start() == 0);
     }
     SECTION("Custom start position bytes")
     {
         CyclicBuffer<5> buffer(1);
         REQUIRE(buffer.start() == 1);
-        buffer << '1';
-        REQUIRE(buffer.start() == 1);
-        buffer << '2';
-        REQUIRE(buffer.start() == 1);
-        buffer << '3';
-        REQUIRE(buffer.start() == 1);
-        buffer << '4';
-        REQUIRE(buffer.start() == 0);
-        buffer << '5';
-        REQUIRE(buffer.start() == 1);
-        buffer << '6';
-        REQUIRE(buffer.start() == 2);
-        buffer << '7';
-        REQUIRE(buffer.start() == 3);
-        buffer << '8';
-        REQUIRE(buffer.start() == 4);
-        buffer << '9';
-        REQUIRE(buffer.start() == 0);
-        buffer << '0';
-        REQUIRE(buffer.start() == 1);
+        buffer << '1'; REQUIRE(buffer.start() == 1);
+        buffer << '2'; REQUIRE(buffer.start() == 1);
+        buffer << '3'; REQUIRE(buffer.start() == 1);
+        buffer << '4'; REQUIRE(buffer.start() == 0);
+        buffer << '5'; REQUIRE(buffer.start() == 1);
+        buffer << '6'; REQUIRE(buffer.start() == 2);
+        buffer << '7'; REQUIRE(buffer.start() == 3);
+        buffer << '8'; REQUIRE(buffer.start() == 4);
+        buffer << '9'; REQUIRE(buffer.start() == 0);
+        buffer << '0'; REQUIRE(buffer.start() == 1);
     }
 }
 

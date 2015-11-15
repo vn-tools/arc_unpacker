@@ -6,6 +6,8 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
+static const std::string dir = "tests/fmt/leaf/files/kcap/";
+
 static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
@@ -13,24 +15,26 @@ static void do_test(const std::string &input_path)
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-
     const KcapArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Leaf KCAP archives (v1)", "[fmt]")
+TEST_CASE("Leaf KCAP archives", "[fmt]")
 {
-    do_test("tests/fmt/leaf/files/kcap/v1.pak");
-}
+    SECTION("Version 1")
+    {
+        do_test("v1.pak");
+    }
 
-TEST_CASE("Leaf KCAP archives (v2, compressed)", "[fmt]")
-{
-    do_test("tests/fmt/leaf/files/kcap/v2-compressed.pak");
-}
+    SECTION("Version 2, compressed")
+    {
+        do_test("v2-compressed.pak");
+    }
 
-TEST_CASE("Leaf KCAP archives (v2, uncompressed)", "[fmt]")
-{
-    do_test("tests/fmt/leaf/files/kcap/v2-uncompressed.pak");
+    SECTION("Version 2, uncompressed")
+    {
+        do_test("v2-uncompressed.pak");
+    }
 }

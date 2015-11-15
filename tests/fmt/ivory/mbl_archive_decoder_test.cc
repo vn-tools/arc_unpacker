@@ -6,59 +6,56 @@
 using namespace au;
 using namespace au::fmt::ivory;
 
-static void do_test(const std::string &path)
-{
-    std::vector<std::shared_ptr<File>> expected_files
-    {
-        tests::stub_file("abc.txt", "abc"_b),
-        tests::stub_file("テスト", "AAAAAAAAAAAAAAAA"_b),
-    };
+static const std::string dir = "tests/fmt/ivory/files/mbl/";
 
+static void do_test(
+    const std::string &input_path,
+    const std::vector<std::shared_ptr<File>> &expected_files,
+    const std::string &plugin_name = "")
+{
     MblArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(path);
-    auto actual_files = tests::unpack(decoder, *input_file);
+    if (!plugin_name.empty())
+        decoder.set_plugin(plugin_name);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-static void do_test_encrypted(
-    const std::string &input_arc_path,
-    const std::string &expected_file_path,
-    const std::string &plugin_name)
+TEST_CASE("Ivory MBL archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    SECTION("Version 1")
     {
-        tests::file_from_path(expected_file_path),
-    };
+        do_test(
+            "mbl-v1.mbl",
+            {
+                tests::stub_file("abc.txt", "abc"_b),
+                tests::stub_file("テスト", "AAAAAAAAAAAAAAAA"_b),
+            });
+    }
 
-    MblArchiveDecoder decoder;
-    decoder.set_plugin(plugin_name);
-    auto input_file = tests::file_from_path(input_arc_path);
-    auto actual_files = tests::unpack(decoder, *input_file);
-    tests::compare_files(expected_files, actual_files, false);
-}
+    SECTION("Version 2")
+    {
+        do_test(
+            "mbl-v2.mbl",
+            {
+                tests::stub_file("abc.txt", "abc"_b),
+                tests::stub_file("テスト", "AAAAAAAAAAAAAAAA"_b),
+            });
+    }
 
-TEST_CASE("Ivory MBL v1 archives", "[fmt]")
-{
-    do_test("tests/fmt/ivory/files/mbl/mbl-v1.mbl");
-}
+    SECTION("Dialogs, Candy Toys encryption")
+    {
+        do_test(
+            "mg_data-candy.mbl",
+            { tests::file_from_path(dir + "MAIN-candy", "MAIN") },
+            "candy");
+    }
 
-TEST_CASE("Ivory MBL v2 archives", "[fmt]")
-{
-    do_test("tests/fmt/ivory/files/mbl/mbl-v2.mbl");
-}
-
-TEST_CASE("Ivory MBL dialogs (Candy Toys encryption)", "[fmt]")
-{
-    do_test_encrypted(
-        "tests/fmt/ivory/files/mbl/mg_data-candy.mbl",
-        "tests/fmt/ivory/files/mbl/MAIN-candy",
-        "candy");
-}
-
-TEST_CASE("Ivory MBL dialogs (Wanko to Kurasou encryption)", "[fmt]")
-{
-    do_test_encrypted(
-        "tests/fmt/ivory/files/mbl/mg_data-wanko.mbl",
-        "tests/fmt/ivory/files/mbl/TEST-wanko",
-        "wanko");
+    SECTION("Dialogs, Wanko to Kurasou encryption")
+    {
+        do_test(
+            "mg_data-wanko.mbl",
+            { tests::file_from_path(dir + "TEST-wanko", "TEST") },
+            "wanko");
+    }
 }

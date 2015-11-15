@@ -8,17 +8,27 @@
 using namespace au;
 using namespace au::fmt::libido;
 
-TEST_CASE("Libido EGR unencrypted image archives", "[fmt]")
-{
-    const std::vector<std::shared_ptr<pix::Grid>> expected_images
-    {
-        tests::image_from_path("tests/fmt/libido/files/egr/Image000-out.png"),
-        tests::image_from_path("tests/fmt/libido/files/egr/Image001-out.png"),
-    };
+static const std::string dir = "tests/fmt/libido/files/egr/";
 
+static void do_test(
+    const std::string &input_path,
+    const std::vector<std::shared_ptr<pix::Grid>> &expected_images)
+{
     const EgrArchiveDecoder decoder;
-    const auto input_file = tests::zlib_file_from_path(
-        "tests/fmt/libido/files/egr/test-zlib.EGR");
+    const auto input_file = tests::zlib_file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_images(expected_images, actual_files);
+}
+
+TEST_CASE("Libido EGR image archives", "[fmt]")
+{
+    SECTION("Unencrypted")
+    {
+        do_test(
+            "test-zlib.EGR",
+            {
+                tests::image_from_path(dir + "Image000-out.png"),
+                tests::image_from_path(dir + "Image001-out.png"),
+            });
+    }
 }

@@ -6,17 +6,22 @@
 using namespace au;
 using namespace au::fmt::bgi;
 
-TEST_CASE("BGI ARC archives", "[fmt]")
+static const std::string dir = "tests/fmt/bgi/files/arc/";
+
+static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("another.txt", "abcdefghij"_b),
     };
-
     const ArcArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/bgi/files/arc/test.arc");
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("BGI ARC archives", "[fmt]")
+{
+    do_test("test.arc");
 }

@@ -7,6 +7,9 @@
 using namespace au;
 using namespace au::fmt::kid;
 
+static const std::string cps_dir = "tests/fmt/kid/files/cps/";
+static const std::string prt_dir = "tests/fmt/kid/files/prt/";
+
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
@@ -19,21 +22,18 @@ static void do_test(
 
 TEST_CASE("KID PRT images", "[fmt]")
 {
-    do_test(
-        "tests/fmt/kid/files/prt/bg01a1.prt",
-        "tests/fmt/kid/files/prt/bg01a1-out.png");
-}
+    SECTION("Plain")
+    {
+        do_test(prt_dir + "bg01a1.prt", prt_dir + "bg01a1-out.png");
+    }
 
-TEST_CASE("KID PRT images with alpha channel", "[fmt]")
-{
-    do_test(
-        "tests/fmt/kid/files/cps/yh04adm.prt",
-        "tests/fmt/kid/files/prt/yh04adm-out.png");
-}
+    SECTION("Transparency")
+    {
+        do_test(cps_dir + "yh04adm.prt", prt_dir + "yh04adm-out.png");
+    }
 
-TEST_CASE("KID PRT 8-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/kid/files/prt/saver_sm.prt",
-        "tests/fmt/kid/files/prt/saver_sm-out.png");
+    SECTION("8-bit")
+    {
+        do_test(prt_dir + "saver_sm.prt", prt_dir + "saver_sm-out.png");
+    }
 }

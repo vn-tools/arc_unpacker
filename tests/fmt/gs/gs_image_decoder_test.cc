@@ -7,33 +7,32 @@
 using namespace au;
 using namespace au::fmt::gs;
 
+static const std::string dir = "tests/fmt/gs/files/gs-gfx/";
+
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
     const GsImageDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
-    const auto expected_image = tests::image_from_path(expected_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_image = tests::image_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }
 
 TEST_CASE("GS 8-bit images", "[fmt]")
 {
-    do_test(
-        "tests/fmt/gs/files/gs-gfx/TRMASK16",
-        "tests/fmt/gs/files/gs-gfx/TRMASK16-out.png");
-}
+    SECTION("8-bit")
+    {
+        do_test("TRMASK16", "TRMASK16-out.png");
+    }
 
-TEST_CASE("GS 32-bit opaque images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/gs/files/gs-gfx/SYSLOGO",
-        "tests/fmt/gs/files/gs-gfx/SYSLOGO-out.png");
-}
+    SECTION("32-bit, opaque")
+    {
+        do_test("SYSLOGO", "SYSLOGO-out.png");
+    }
 
-TEST_CASE("GS 32-bit transparent images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/gs/files/gs-gfx/IMG019KBS",
-        "tests/fmt/gs/files/gs-gfx/IMG019KBS-out.png");
+    SECTION("32-bit, transparent")
+    {
+        do_test("IMG019KBS", "IMG019KBS-out.png");
+    }
 }

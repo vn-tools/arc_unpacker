@@ -6,38 +6,41 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
-TEST_CASE("Leaf PAK archives (version 1)", "[fmt]")
-{
-    std::vector<std::shared_ptr<File>> expected_files
-    {
-        tests::file_from_path("tests/fmt/leaf/files/pak1/leaflogo-out.c16"),
-        tests::file_from_path("tests/fmt/leaf/files/pak1/leaflogo-out.grp"),
-    };
-    expected_files[0]->name = "leaflogo.c16";
-    expected_files[1]->name = "leaflogo.grp";
+static const std::string dir = "tests/fmt/leaf/files/pak1/";
 
+static void do_test(
+    const std::string &input_path,
+    const std::vector<std::shared_ptr<File>> &expected_files,
+    int version)
+{
     Pak1ArchiveDecoder decoder;
-    decoder.set_version(1);
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/leaf/files/pak1/LEAFLOGO.PAK");
+    decoder.set_version(version);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Leaf PAK archives (version 2)", "[fmt]")
+TEST_CASE("Leaf PAK1 archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    SECTION("Version 1")
     {
-        tests::file_from_path("tests/fmt/leaf/files/pak1/leaf-out.c16"),
-        tests::file_from_path("tests/fmt/leaf/files/pak1/leaf-out.grp"),
-    };
-    expected_files[0]->name = "leaf.c16";
-    expected_files[1]->name = "leaf.grp";
+        do_test(
+            "LEAFLOGO.PAK",
+            {
+                tests::file_from_path(dir + "leaflogo-out.c16", "leaflogo.c16"),
+                tests::file_from_path(dir + "leaflogo-out.grp", "leaflogo.grp"),
+            },
+            1);
+    }
 
-    Pak1ArchiveDecoder decoder;
-    decoder.set_version(2);
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/leaf/files/pak1/LEAFLOGO2.PAK");
-    const auto actual_files = tests::unpack(decoder, *input_file);
-    tests::compare_files(expected_files, actual_files, true);
+    SECTION("Version 2")
+    {
+        do_test(
+            "LEAFLOGO2.PAK",
+            {
+                tests::file_from_path(dir + "leaf-out.c16", "leaf.c16"),
+                tests::file_from_path(dir + "leaf-out.grp", "leaf.grp"),
+            },
+            2);
+    }
 }

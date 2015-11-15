@@ -6,6 +6,8 @@
 using namespace au;
 using namespace au::fmt::innocent_grey;
 
+static const std::string dir = "tests/fmt/innocent_grey/files/packdat/";
+
 static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
@@ -14,19 +16,21 @@ static void do_test(const std::string &input_path)
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
         tests::stub_file("big.txt", bstr(100, '\xFF')),
     };
-
     const PackdatArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Innocent Grey PACKDAT archives (encrypted)", "[fmt]")
+TEST_CASE("Innocent Grey PACKDAT archives", "[fmt]")
 {
-    do_test("tests/fmt/innocent_grey/files/packdat/encrypted.dat");
-}
+    SECTION("Encrypted")
+    {
+        do_test("encrypted.dat");
+    }
 
-TEST_CASE("Innocent Grey PACKDAT archives (unencrypted)", "[fmt]")
-{
-    do_test("tests/fmt/innocent_grey/files/packdat/unencrypted.dat");
+    SECTION("Unencrypted")
+    {
+        do_test("unencrypted.dat");
+    }
 }

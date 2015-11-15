@@ -6,6 +6,8 @@
 using namespace au;
 using namespace au::fmt::french_bread;
 
+static const std::string dir = "tests/fmt/french_bread/files/p/";
+
 static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
@@ -14,19 +16,21 @@ static void do_test(const std::string &input_path)
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
         tests::stub_file("big.000", bstr(0x3000, '\xFF')),
     };
-
     const PArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("French Bread P v0 archives", "[fmt]")
+TEST_CASE("French Bread P archives", "[fmt]")
 {
-    do_test("tests/fmt/french_bread/files/p/test-v0.p");
-}
+    SECTION("Version 0")
+    {
+        do_test("test-v0.p");
+    }
 
-TEST_CASE("French Bread P v1 archives", "[fmt]")
-{
-    do_test("tests/fmt/french_bread/files/p/test-v1.p");
+    SECTION("Version 1")
+    {
+        do_test("test-v1.p");
+    }
 }

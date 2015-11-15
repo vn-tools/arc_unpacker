@@ -13,21 +13,23 @@ std::shared_ptr<File> tests::stub_file(
 }
 
 std::shared_ptr<File> tests::file_from_path(
-    const boost::filesystem::path &path)
+    const boost::filesystem::path &path, const std::string &cust_name)
 {
-    return std::make_shared<File>(path, io::FileMode::Read);
+    auto ret = std::make_shared<File>(path, io::FileMode::Read);
+    if (!cust_name.empty())
+        ret->name = cust_name;
+    return ret;
 }
 
 std::shared_ptr<File> tests::zlib_file_from_path(
-    const boost::filesystem::path &path)
+    const boost::filesystem::path &path, const std::string &cust_name)
 {
     File compressed_file(path, io::FileMode::Read);
-    auto compressed_data = compressed_file.io.read_to_eof();
-    auto decompressed_data = util::pack::zlib_inflate(compressed_data);
-    auto decompressed_file = std::make_shared<File>();
-    decompressed_file->name = compressed_file.name;
-    decompressed_file->io.write(decompressed_data);
-    return decompressed_file;
+    const auto compressed_data = compressed_file.io.read_to_eof();
+    const auto decompressed_data = util::pack::zlib_inflate(compressed_data);
+    return std::make_shared<File>(
+        cust_name.empty() ? compressed_file.name : cust_name,
+        decompressed_data);
 }
 
 void tests::compare_files(

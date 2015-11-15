@@ -7,13 +7,19 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
-TEST_CASE("Leaf BBM images", "[fmt]")
+static const std::string dir = "tests/fmt/leaf/files/bbm/";
+
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
 {
-    const auto input_file = tests::zlib_file_from_path(
-        "tests/fmt/leaf/files/bbm/Stage_14_E0_OBJ-zlib.bbm");
-    const auto expected_file = tests::image_from_path(
-        "tests/fmt/leaf/files/bbm/Stage_14_E0_OBJ-out.png");
+    const auto input_file = tests::zlib_file_from_path(dir + input_path);
+    const auto expected_file = tests::image_from_path(dir + expected_path);
     const BbmImageDecoder decoder;
     const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
+}
+
+TEST_CASE("Leaf BBM images", "[fmt]")
+{
+    do_test("Stage_14_E0_OBJ-zlib.bbm", "Stage_14_E0_OBJ-out.png");
 }

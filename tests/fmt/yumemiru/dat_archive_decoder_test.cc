@@ -6,6 +6,8 @@
 using namespace au;
 using namespace au::fmt::yumemiru;
 
+static const std::string dir = "tests/fmt/yumemiru/files/dat/";
+
 static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
@@ -13,19 +15,21 @@ static void do_test(const std::string &input_path)
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-
     const DatArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("Yumemiru DAT archives (Yumemiru variant)", "[fmt]")
+TEST_CASE("Yumemiru DAT archives", "[fmt]")
 {
-    do_test("tests/fmt/yumemiru/files/dat/test.dat");
-}
+    SECTION("Yumemiru variant")
+    {
+        do_test("test.dat");
+    }
 
-TEST_CASE("Yumemiru DAT archives (EEE variant)", "[fmt]")
-{
-    do_test("tests/fmt/yumemiru/files/dat/test.cab");
+    SECTION("EEE variant")
+    {
+        do_test("test.cab");
+    }
 }

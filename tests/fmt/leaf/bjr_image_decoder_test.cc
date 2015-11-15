@@ -7,14 +7,20 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
-TEST_CASE("Leaf BJR images", "[fmt]")
+static const std::string dir = "tests/fmt/leaf/files/bjr/";
+
+static void do_test(
+    const std::shared_ptr<File> input_file, const std::string &expected_path)
 {
-    auto input_file = tests::zlib_file_from_path(
-        "tests/fmt/leaf/files/bjr/v00232-zlib.BJR");
-    input_file->name = "v00232.BJR";
-    const auto expected_file = tests::image_from_path(
-        "tests/fmt/leaf/files/bjr/v00232-out.png");
+    const auto expected_file = tests::image_from_path(dir + expected_path);
     const BjrImageDecoder decoder;
     const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
+}
+
+TEST_CASE("Leaf BJR images", "[fmt]")
+{
+    do_test(
+        tests::zlib_file_from_path(dir + "v00232-zlib.BJR", "v00232.BJR"),
+        "v00232-out.png");
 }

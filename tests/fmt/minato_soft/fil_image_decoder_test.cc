@@ -7,13 +7,19 @@
 using namespace au;
 using namespace au::fmt::minato_soft;
 
-TEST_CASE("MinatoSoft FIL mask images", "[fmt]")
+static const std::string dir = "tests/fmt/minato_soft/files/fil/";
+
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
 {
     const FilImageDecoder decoder;
-    const auto input_file = tests::zlib_file_from_path(
-        "tests/fmt/minato_soft/files/fil/Rule07-zlib.fil");
-    const auto expected_file = tests::image_from_path(
-        "tests/fmt/minato_soft/files/fil/Rule07-out.png");
+    const auto input_file = tests::zlib_file_from_path(dir + input_path);
+    const auto expected_file = tests::image_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
+}
+
+TEST_CASE("MinatoSoft FIL mask images", "[fmt]")
+{
+    do_test("Rule07-zlib.fil", "Rule07-out.png");
 }

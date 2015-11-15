@@ -6,6 +6,8 @@
 using namespace au;
 using namespace au::fmt::tactics;
 
+static const std::string dir = "tests/fmt/tactics/files/arc/";
+
 static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
@@ -13,29 +15,31 @@ static void do_test(const std::string &input_path)
         tests::stub_file("123.txt", "123123123123123123123"_b),
         tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-
     const ArcArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
-TEST_CASE("TACTICS ARC v0 compressed archives", "[fmt]")
+TEST_CASE("TACTICS ARC archives", "[fmt]")
 {
-    do_test("tests/fmt/tactics/files/arc/v0-compressed.arc");
-}
+    SECTION("Version 0, compressed")
+    {
+        do_test("v0-compressed.arc");
+    }
 
-TEST_CASE("TACTICS ARC v0 uncompressed archives", "[fmt]")
-{
-    do_test("tests/fmt/tactics/files/arc/v0-uncompressed.arc");
-}
+    SECTION("Version 0, uncompressed")
+    {
+        do_test("v0-uncompressed.arc");
+    }
 
-TEST_CASE("TACTICS ARC v1 uncompressed archives", "[fmt]")
-{
-    do_test("tests/fmt/tactics/files/arc/v1-uncompressed.arc");
-}
+    SECTION("Version 1, uncompressed")
+    {
+        do_test("v1-uncompressed.arc");
+    }
 
-TEST_CASE("TACTICS ARC v1 compressed archives", "[fmt]")
-{
-    do_test("tests/fmt/tactics/files/arc/v1-compressed.arc");
+    SECTION("Version 1, compressed")
+    {
+        do_test("v1-compressed.arc");
+    }
 }

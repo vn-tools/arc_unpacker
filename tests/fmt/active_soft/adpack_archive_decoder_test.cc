@@ -6,17 +6,22 @@
 using namespace au;
 using namespace au::fmt::active_soft;
 
-TEST_CASE("ActiveSoft ADPACK32 archives", "[fmt]")
+static const std::string dir = "tests/fmt/active_soft/files/adpack/";
+
+static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-
     const AdpackArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/active_soft/files/adpack/test.pak");
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("ActiveSoft ADPACK32 archives", "[fmt]")
+{
+    do_test("test.pak");
 }

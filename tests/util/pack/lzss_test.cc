@@ -16,10 +16,7 @@ static void do_test(const bstr &input, const bstr &expected)
 
 static void do_test(const bstr &input, size_t size)
 {
-    auto s = ""_b;
-    for (auto i : util::range(size))
-        s += "a"_b;
-    do_test(input, s);
+    do_test(input, bstr(size, 'a'));
 }
 
 TEST_CASE("Decompressing bytewise LZSS streams", "[util][pack]")

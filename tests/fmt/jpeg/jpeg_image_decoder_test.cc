@@ -8,10 +8,11 @@
 using namespace au;
 using namespace au::fmt::jpeg;
 
+static const std::string dir = "tests/fmt/jpeg/files/";
+
 TEST_CASE("JPEG 24-bit images", "[util]")
 {
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/jpeg/files/reimu_opaque.jpg");
+    const auto input_file = tests::file_from_path(dir + "reimu_opaque.jpg");
 
     const JpegImageDecoder decoder;
     const auto pixels = tests::decode(decoder, *input_file);
@@ -28,10 +29,8 @@ TEST_CASE("JPEG 24-bit images", "[util]")
 TEST_CASE("JPEG 8-bit images", "[util]")
 {
     JpegImageDecoder decoder;
-    auto input_file = tests::file_from_path(
-        "tests/fmt/jpeg/files/NoName.jpeg");
-    auto expected_image = tests::image_from_path(
-        "tests/fmt/jpeg/files/NoName-out.png");
+    auto input_file = tests::file_from_path(dir + "NoName.jpeg");
+    auto expected_image = tests::image_from_path(dir + "NoName-out.png");
     auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }

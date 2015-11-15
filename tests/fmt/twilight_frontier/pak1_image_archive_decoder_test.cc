@@ -9,51 +9,40 @@
 using namespace au;
 using namespace au::fmt::twilight_frontier;
 
+static const std::string dir = "tests/fmt/twilight_frontier/files/pak1/";
+
 static void do_test(
-    const std::string input_path,
-    const std::vector<std::string> expected_paths)
+    const std::string &input_path,
+    const std::vector<std::string> &expected_paths)
 {
     const Pak1ImageArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
+    std::vector<std::shared_ptr<pix::Grid>> expected_images;
+    for (auto &path : expected_paths)
+        expected_images.push_back(tests::image_from_path(dir + path));
+    tests::compare_images(expected_images, actual_files);
+}
 
-    REQUIRE(actual_files.size() == expected_paths.size());
-    for (const auto i : util::range(expected_paths.size()))
+TEST_CASE("Twilight Frontier PAK1 images", "[fmt]")
+{
+    SECTION("32-bit")
     {
-        const auto expected_image = tests::image_from_path(expected_paths[i]);
-        const auto actual_image = tests::image_from_file(*actual_files[i]);
-        tests::compare_images(*expected_image, *actual_image);
-        REQUIRE(actual_files[i]->name == util::format("%04d.png", i));
+        do_test("stage3.dat", {"stage3-0000-out.png", "stage3-0001-out.png"});
     }
-}
 
-TEST_CASE("Twilight Frontier PAK1 32-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/twilight_frontier/files/pak1/stage3.dat",
-        {
-            "tests/fmt/twilight_frontier/files/pak1/stage3-0000-out.png",
-            "tests/fmt/twilight_frontier/files/pak1/stage3-0001-out.png",
-        });
-}
+    SECTION("24-bit")
+    {
+        do_test("stage10.dat", {"stage10-0000-out.png"});
+    }
 
-TEST_CASE("Twilight Frontier PAK1 24-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/twilight_frontier/files/pak1/stage10.dat",
-        { "tests/fmt/twilight_frontier/files/pak1/stage10-0000-out.png" });
-}
+    SECTION("16-bit")
+    {
+        do_test("effect.dat", {"effect-0000-out.png"});
+    }
 
-TEST_CASE("Twilight Frontier PAK1 16-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/twilight_frontier/files/pak1/effect.dat",
-        { "tests/fmt/twilight_frontier/files/pak1/effect-0000-out.png" });
-}
-
-TEST_CASE("Twilight Frontier PAK1 8-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/twilight_frontier/files/pak1/07.dat",
-        { "tests/fmt/twilight_frontier/files/pak1/07-0000-out.png" });
+    SECTION("8-bit")
+    {
+        do_test("07.dat", {"07-0000-out.png"});
+    }
 }

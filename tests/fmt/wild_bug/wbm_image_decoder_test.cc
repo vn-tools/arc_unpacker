@@ -7,82 +7,67 @@
 using namespace au;
 using namespace au::fmt::wild_bug;
 
+static const std::string dir = "tests/fmt/wild_bug/files/wbm/";
+
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
     const WbmImageDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
-    const auto expected_file = tests::image_from_path(expected_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_file = tests::image_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
 }
 
-TEST_CASE("Wild Bug WBM 32-bit images", "[fmt]")
+TEST_CASE("Wild Bug WBM images", "[fmt]")
 {
-    do_test(
-        "tests/fmt/wild_bug/files/wbm/S_M01.WBM",
-        "tests/fmt/wild_bug/files/wbm/S_M01-out.png");
-}
+    SECTION("32-bit")
+    {
+        do_test("S_M01.WBM", "S_M01-out.png");
+    }
 
-TEST_CASE("Wild Bug WBM 24-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/wild_bug/files/wbm/S_Y08.WBM",
-        "tests/fmt/wild_bug/files/wbm/S_Y08-out.png");
-}
+    SECTION("24-bit")
+    {
+        do_test("S_Y08.WBM", "S_Y08-out.png");
+    }
 
-TEST_CASE("Wild Bug WBM 8-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/wild_bug/files/wbm/EF_WIPE_LR.WBM",
-        "tests/fmt/wild_bug/files/wbm/EF_WIPE_LR-out.png");
-}
+    SECTION("8-bit")
+    {
+        do_test("EF_WIPE_LR.WBM", "EF_WIPE_LR-out.png");
+    }
 
-TEST_CASE("Wild Bug WBM images with external alpha channel", "[fmt]")
-{
-    do_test(
-        "tests/fmt/wild_bug/files/wbm/ZD0211.WBM",
-        "tests/fmt/wild_bug/files/wbm/ZD0211-out.png");
-}
+    SECTION("External alpha channel")
+    {
+        do_test("ZD0211.WBM", "ZD0211-out.png");
+    }
 
-TEST_CASE("Wild Bug WBM images with unaligned stride", "[fmt]")
-{
-    do_test(
-        "tests/fmt/wild_bug/files/wbm/ZD0710.WBM",
-        "tests/fmt/wild_bug/files/wbm/ZD0710-out.png");
-}
+    SECTION("Unaligned stride")
+    {
+        do_test("ZD0710.WBM", "ZD0710-out.png");
+    }
 
-TEST_CASE("Wild Bug WBM images using transcription strategy 1", "[fmt]")
-{
-    do_test(
-        "tests/fmt/wild_bug/files/wbm/ZD0710.WBM",
-        "tests/fmt/wild_bug/files/wbm/ZD0710-out.png");
-}
+    SECTION("Transcription strategy 1")
+    {
+        do_test("ZD0710.WBM", "ZD0710-out.png");
+    }
 
-TEST_CASE("Wild Bug WBM images using transcription strategy 2", "[fmt]")
-{
-    do_test(
-        "tests/fmt/wild_bug/files/wbm/S_M01.WBM",
-        "tests/fmt/wild_bug/files/wbm/S_M01-out.png");
-}
+    SECTION("Transcription strategy 2")
+    {
+        do_test("S_M01.WBM", "S_M01-out.png");
+    }
 
-TEST_CASE("Wild Bug WBM images using retrieval strategy 1", "[fmt]")
-{
-    do_test(
-        "tests/fmt/wild_bug/files/wbm/S_M01.WBM",
-        "tests/fmt/wild_bug/files/wbm/S_M01-out.png");
-}
+    SECTION("Retrieval strategy 1")
+    {
+        do_test("S_M01.WBM", "S_M01-out.png");
+    }
 
-TEST_CASE("Wild Bug WBM images using retrieval strategy 2", "[fmt]")
-{
-    do_test(
-        "tests/fmt/wild_bug/files/wbm/E_AT06S.WBM",
-        "tests/fmt/wild_bug/files/wbm/E_AT06S-out.png");
-}
+    SECTION("Retrieval strategy 2")
+    {
+        do_test("E_AT06S.WBM", "E_AT06S-out.png");
+    }
 
-TEST_CASE("Wild Bug WBM images using retrieval strategy 3", "[fmt]")
-{
-    do_test(
-        "tests/fmt/wild_bug/files/wbm/ZD0710.WBM",
-        "tests/fmt/wild_bug/files/wbm/ZD0710-out.png");
+    SECTION("Retrieval strategy 3")
+    {
+        do_test("ZD0710.WBM", "ZD0710-out.png");
+    }
 }

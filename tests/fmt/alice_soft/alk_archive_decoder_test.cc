@@ -6,17 +6,22 @@
 using namespace au;
 using namespace au::fmt::alice_soft;
 
-TEST_CASE("Alice Soft ALK archives", "[fmt]")
+static const std::string dir = "tests/fmt/alice_soft/files/alk/";
+
+static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("000.dat", "1234567890"_b),
         tests::stub_file("001.dat", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-
     const AlkArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/alice_soft/files/alk/test.alk");
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("Alice Soft ALK archives", "[fmt]")
+{
+    do_test("test.alk");
 }

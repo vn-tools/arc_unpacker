@@ -6,24 +6,27 @@
 using namespace au;
 using namespace au::fmt::qlie;
 
-TEST_CASE("QLiE ABMP7 archives", "[fmt]")
+static const std::string dir = "tests/fmt/qlie/files/abmp7/";
+
+static void do_test(
+    const std::string &input_path,
+    const std::vector<std::shared_ptr<File>> &expected_files)
 {
-    std::vector<std::shared_ptr<File>> expected_files
-    {
-        tests::file_from_path("tests/fmt/qlie/files/abmp7/out/base.png"),
-        tests::file_from_path(
-            "tests/fmt/qlie/files/abmp7/out/ボタン効果音1.ogg"),
-        tests::file_from_path(
-            "tests/fmt/qlie/files/abmp7/out/ボタン効果音2.ogg"),
-    };
-
-    expected_files[0]->name = "base.png";
-    expected_files[1]->name = "ボタン効果音1.ogg";
-    expected_files[2]->name = "ボタン効果音2.ogg";
-
     const Abmp7ArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/qlie/files/abmp7/ボタン.b");
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
+}
+
+TEST_CASE("QLiE ABMP7 archives", "[fmt]")
+{
+    do_test(
+        "ボタン.b",
+        {
+            tests::file_from_path(dir + "out/base.png", "base.png"),
+            tests::file_from_path(
+                dir + "out/ボタン効果音1.ogg", "ボタン効果音1.ogg"),
+            tests::file_from_path(
+                dir + "out/ボタン効果音2.ogg", "ボタン効果音2.ogg"),
+        });
 }

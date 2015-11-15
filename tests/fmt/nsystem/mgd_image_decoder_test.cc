@@ -7,27 +7,28 @@
 using namespace au;
 using namespace au::fmt::nsystem;
 
+static const std::string dir = "tests/fmt/nsystem/files/mgd/";
+
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
     const MgdImageDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
-    const auto expected_image = tests::image_from_path(expected_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_image = tests::image_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }
 
-TEST_CASE("NSystem MGD RGB-based images", "[fmt]")
+TEST_CASE("NSystem MGD images", "[fmt]")
 {
-    // possible BGR-RGB issues. Need a non-monochrome sample file.
-    do_test(
-        "tests/fmt/nsystem/files/mgd/GS_UD.MGD",
-        "tests/fmt/nsystem/files/mgd/GS_UD-out.png");
-}
+    SECTION("RGB")
+    {
+        // possible BGR-RGB issues. Need a non-monochrome sample file.
+        do_test("GS_UD.MGD", "GS_UD-out.png");
+    }
 
-TEST_CASE("NSystem MGD PNG-based images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/nsystem/files/mgd/saveload_p.MGD",
-        "tests/fmt/nsystem/files/mgd/saveload_p-out.png");
+    SECTION("PNG")
+    {
+        do_test("saveload_p.MGD", "saveload_p-out.png");
+    }
 }

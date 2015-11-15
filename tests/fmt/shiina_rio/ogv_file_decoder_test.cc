@@ -6,13 +6,19 @@
 using namespace au;
 using namespace au::fmt::shiina_rio;
 
-TEST_CASE("Shiina Rio OGV audio", "[fmt]")
+static const std::string dir = "tests/fmt/shiina_rio/files/ogv/";
+
+static void do_test(
+    const std::string &input_path, const std::string &expected_path)
 {
     const OgvFileDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/shiina_rio/files/ogv/TPSE070.OGV");
-    const auto expected_file = tests::file_from_path(
-        "tests/fmt/shiina_rio/files/ogv/TPSE070-out.ogg");
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
+}
+
+TEST_CASE("Shiina Rio OGV audio", "[fmt]")
+{
+    do_test("TPSE070.OGV", "TPSE070-out.ogg");
 }

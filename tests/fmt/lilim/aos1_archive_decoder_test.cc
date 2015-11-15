@@ -8,6 +8,8 @@
 using namespace au;
 using namespace au::fmt::lilim;
 
+static const std::string dir = "tests/fmt/lilim/files/aos1/";
+
 static void do_test(const std::string &input_path)
 {
     std::vector<std::shared_ptr<File>> expected_files
@@ -21,12 +23,12 @@ static void do_test(const std::string &input_path)
             bstr(util::format("content%d", i))));
 
     const Aos1ArchiveDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
 TEST_CASE("Lilim AOS1 archives", "[fmt]")
 {
-    do_test("tests/fmt/lilim/files/aos1/test.aos");
+    do_test("test.aos");
 }

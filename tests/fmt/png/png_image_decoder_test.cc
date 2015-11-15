@@ -9,9 +9,11 @@
 using namespace au;
 using namespace au::fmt::png;
 
+static const std::string dir = "tests/fmt/png/files/";
+
 TEST_CASE("PNG images", "[util]")
 {
-    File file("tests/fmt/png/files/usagi_opaque.png", io::FileMode::Read);
+    File file(dir + "usagi_opaque.png", io::FileMode::Read);
 
     const PngImageDecoder decoder;
     const auto pixels = tests::decode(decoder, file);
@@ -27,7 +29,7 @@ TEST_CASE("PNG images", "[util]")
 
 TEST_CASE("PNG images with transparency", "[fmt]")
 {
-    File file("tests/fmt/png/files/reimu_transparent.png", io::FileMode::Read);
+    File file(dir + "reimu_transparent.png", io::FileMode::Read);
 
     const PngImageDecoder decoder;
     const auto pixels = tests::decode(decoder, file);
@@ -44,8 +46,7 @@ TEST_CASE("PNG images with transparency", "[fmt]")
 TEST_CASE("PNG images with extra chunks", "[util]")
 {
     const PngImageDecoder decoder;
-    const auto input_file = tests::file_from_path(
-        "tests/fmt/png/files/b09s_hs02l_.png");
+    const auto input_file = tests::file_from_path(dir + "b09s_hs02l_.png");
 
     SECTION("Default chunk handler")
     {

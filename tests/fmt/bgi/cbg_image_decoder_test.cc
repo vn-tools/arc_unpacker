@@ -7,54 +7,47 @@
 using namespace au;
 using namespace au::fmt::bgi;
 
+static const std::string dir = "tests/fmt/bgi/files/cbg/";
+
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
     const CbgImageDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
-    const auto expected_image = tests::image_from_path(expected_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_image = tests::image_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }
 
-TEST_CASE("BGI CBG1 32-bit images", "[fmt]")
+TEST_CASE("BGI CBG images", "[fmt]")
 {
-    do_test(
-        "tests/fmt/bgi/files/cbg-v1/ti_si_de_a1",
-        "tests/fmt/bgi/files/cbg-v1/ti_si_de_a1-out.png");
-}
+    SECTION("Version 1, 8-bit")
+    {
+        do_test("v1/4", "v1/4-out.png");
+    }
 
-TEST_CASE("BGI CBG1 24-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/bgi/files/cbg-v1/3",
-        "tests/fmt/bgi/files/cbg-v1/3-out.png");
-}
+    SECTION("Version 1, 24-bit")
+    {
+        do_test("v1/3", "v1/3-out.png");
+    }
 
-TEST_CASE("BGI CBG1 8-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/bgi/files/cbg-v1/4",
-        "tests/fmt/bgi/files/cbg-v1/4-out.png");
-}
+    SECTION("Version 1, 32-bit")
+    {
+        do_test("v1/ti_si_de_a1", "v1/ti_si_de_a1-out.png");
+    }
 
-TEST_CASE("BGI CBG2 32-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/bgi/files/cbg-v2/ms_wn_base",
-        "tests/fmt/bgi/files/cbg-v2/ms_wn_base-out.png");
-}
+    SECTION("Version 2, 8-bit")
+    {
+        do_test("v2/mask04r", "v2/mask04r-out.png");
+    }
 
-TEST_CASE("BGI CBG2 24-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/bgi/files/cbg-v2/l_card000",
-        "tests/fmt/bgi/files/cbg-v2/l_card000-out.png");
-}
+    SECTION("Version 2, 24-bit")
+    {
+        do_test("v2/l_card000", "v2/l_card000-out.png");
+    }
 
-TEST_CASE("BGI CBG2 8-bit images", "[fmt]")
-{
-    do_test(
-        "tests/fmt/bgi/files/cbg-v2/mask04r",
-        "tests/fmt/bgi/files/cbg-v2/mask04r-out.png");
+    SECTION("Version 2, 32-bit")
+    {
+        do_test("v2/ms_wn_base", "v2/ms_wn_base-out.png");
+    }
 }

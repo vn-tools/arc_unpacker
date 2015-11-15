@@ -7,26 +7,27 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
+static const std::string dir = "tests/fmt/leaf/files/lfg/";
+
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
     const LfgImageDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
-    const auto expected_file = tests::image_from_path(expected_path);
+    const auto input_file = tests::file_from_path(dir + input_path);
+    const auto expected_file = tests::image_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
 }
 
-TEST_CASE("Leaf LFG audio (vertical coding)", "[fmt]")
+TEST_CASE("Leaf LFG images", "[fmt]")
 {
-    do_test(
-        "tests/fmt/leaf/files/lfg/OP_L6.LFG",
-        "tests/fmt/leaf/files/lfg/OP_L6-out.png");
-}
+    SECTION("Vertical coding")
+    {
+        do_test("OP_L6.LFG", "OP_L6-out.png");
+    }
 
-TEST_CASE("Leaf LFG audio (horizontal coding)", "[fmt]")
-{
-    do_test(
-        "tests/fmt/leaf/files/lfg/MAX_C09.LFG",
-        "tests/fmt/leaf/files/lfg/MAX_C09-out.png");
+    SECTION("Horizontal coding")
+    {
+        do_test("MAX_C09.LFG", "MAX_C09-out.png");
+    }
 }
