@@ -38,7 +38,7 @@ IO &FileIO::skip(int offset)
     return *this;
 }
 
-void FileIO::read(void *destination, size_t size)
+void FileIO::read_impl(void *destination, size_t size)
 {
     if (!size)
         return;
@@ -48,7 +48,7 @@ void FileIO::read(void *destination, size_t size)
         throw err::EofError();
 }
 
-void FileIO::write(const void *source, size_t size)
+void FileIO::write_impl(const void *source, size_t size)
 {
     if (!size)
         return;

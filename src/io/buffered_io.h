@@ -22,14 +22,11 @@ namespace io {
         IO &skip(int offset) override;
         void truncate(size_t new_size) override;
 
-        using IO::read;
-        using IO::write;
-
         void reserve(size_t count);
 
     protected:
-        void read(void *destination, size_t size) override;
-        void write(const void *source, size_t size) override;
+        void read_impl(void *destination, size_t size) override;
+        void write_impl(const void *source, size_t size) override;
 
     private:
         struct Priv;

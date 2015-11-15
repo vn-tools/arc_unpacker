@@ -63,7 +63,7 @@ IO &BufferedIO::skip(int offset)
     return *this;
 }
 
-void BufferedIO::read(void *destination, size_t size)
+void BufferedIO::read_impl(void *destination, size_t size)
 {
     if (!size)
         return;
@@ -78,7 +78,7 @@ void BufferedIO::read(void *destination, size_t size)
         *destination_ptr++ = *source_ptr++;
 }
 
-void BufferedIO::write(const void *source, size_t size)
+void BufferedIO::write_impl(const void *source, size_t size)
 {
     if (!size)
         return;

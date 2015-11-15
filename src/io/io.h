@@ -42,8 +42,8 @@ namespace io {
         void write_u64_be(u64);
 
     protected:
-        virtual void read(void *input, size_t size) = 0;
-        virtual void write(const void *str, size_t size) = 0;
+        virtual void read_impl(void *input, size_t size) = 0;
+        virtual void write_impl(const void *str, size_t size) = 0;
     };
 
 } }

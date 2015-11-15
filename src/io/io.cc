@@ -34,7 +34,7 @@ bool IO::eof() const
 bstr IO::read(size_t bytes)
 {
     bstr ret(bytes);
-    read(&ret[0], bytes);
+    read_impl(&ret[0], bytes);
     return ret;
 }
 
@@ -79,94 +79,94 @@ bstr IO::read_line()
 u8 IO::read_u8()
 {
     u8 ret = 0;
-    read(&ret, 1);
+    read_impl(&ret, 1);
     return ret;
 }
 
 u16 IO::read_u16_le()
 {
     u16 ret = 0;
-    read(&ret, 2);
+    read_impl(&ret, 2);
     return util::from_little_endian<u16>(ret);
 }
 
 u32 IO::read_u32_le()
 {
     u32 ret = 0;
-    read(&ret, 4);
+    read_impl(&ret, 4);
     return util::from_little_endian<u32>(ret);
 }
 
 u64 IO::read_u64_le()
 {
     u64 ret = 0;
-    read(&ret, 8);
+    read_impl(&ret, 8);
     return util::from_little_endian<u64>(ret);
 }
 
 u16 IO::read_u16_be()
 {
     u16 ret = 0;
-    read(&ret, 2);
+    read_impl(&ret, 2);
     return util::from_big_endian<u16>(ret);
 }
 
 u32 IO::read_u32_be()
 {
     u32 ret = 0;
-    read(&ret, 4);
+    read_impl(&ret, 4);
     return util::from_big_endian<u32>(ret);
 }
 
 u64 IO::read_u64_be()
 {
     u64 ret = 0;
-    read(&ret, 8);
+    read_impl(&ret, 8);
     return util::from_big_endian<u64>(ret);
 }
 
 void IO::write(const bstr &bytes)
 {
-    write(bytes.get<char>(), bytes.size());
+    write_impl(bytes.get<char>(), bytes.size());
 }
 
 void IO::write_u8(u8 value)
 {
-    write(&value, 1);
+    write_impl(&value, 1);
 }
 
 void IO::write_u16_le(u16 value)
 {
     value = util::to_little_endian<u16>(value);
-    write(&value, 2);
+    write_impl(&value, 2);
 }
 
 void IO::write_u32_le(u32 value)
 {
     value = util::to_little_endian<u32>(value);
-    write(&value, 4);
+    write_impl(&value, 4);
 }
 
 void IO::write_u64_le(u64 value)
 {
     value = util::to_little_endian<u64>(value);
-    write(&value, 8);
+    write_impl(&value, 8);
 }
 
 void IO::write_u16_be(u16 value)
 {
     value = util::to_big_endian<u16>(value);
-    write(&value, 2);
+    write_impl(&value, 2);
 }
 
 void IO::write_u32_be(u32 value)
 {
     value = util::to_big_endian<u32>(value);
-    write(&value, 4);
+    write_impl(&value, 4);
 }
 
 void IO::write_u64_be(u64 value)
 {
     value = util::to_big_endian<u64>(value);
-    write(&value, 8);
+    write_impl(&value, 8);
 }
