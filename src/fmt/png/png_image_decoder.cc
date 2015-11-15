@@ -1,4 +1,5 @@
 #include "fmt/png/png_image_decoder.h"
+#include <cstring>
 #include <png.h>
 #include "err.h"
 #include "log.h"
@@ -19,11 +20,11 @@ static void warning_handler(png_structp png_ptr, png_const_charp warning_msg)
     Log.warn("libpng warning: %s\n", warning_msg);
 }
 
-static void read_handler(
-    png_structp png_ptr, png_bytep data, png_size_t size)
+static void read_handler(png_structp png_ptr, png_bytep output, png_size_t size)
 {
-    io::IO *io = reinterpret_cast<io::IO*>(png_get_io_ptr(png_ptr));
-    io->read(data, size);
+    auto io = reinterpret_cast<io::IO*>(png_get_io_ptr(png_ptr));
+    const auto input = io->read(size);
+    std::memcpy(output, input.get<u8>(), size);
 }
 
 static int custom_chunk_handler(png_structp png_ptr, png_unknown_chunkp chunk)

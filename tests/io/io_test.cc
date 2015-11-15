@@ -157,9 +157,8 @@ TEST_CASE("Reading lines containing carriage returns", "[io][io_cls]")
 TEST_CASE("Reading strings", "[io][io_cls]")
 {
     BufferedIO io("abc\x00"_b);
-    char result[2];
-    io.read(result, 2);
-    REQUIRE(memcmp("ab", result, 2) == 0);
+    const auto result = io.read(2);
+    REQUIRE(result == "ab"_b);
 }
 
 TEST_CASE("Writing strings", "[io][io_cls]")
@@ -167,9 +166,8 @@ TEST_CASE("Writing strings", "[io][io_cls]")
     BufferedIO io("abc\x00"_b);
     io.write("xy"_b);
     io.skip(-2);
-    char result[3];
-    io.read(result, 3);
-    REQUIRE(memcmp("xyc", result, 3) == 0);
+    const auto result = io.read(3);
+    REQUIRE(result == "xyc"_b);
 }
 
 TEST_CASE("Reading integers with endianness conversions", "[io][io_cls]")

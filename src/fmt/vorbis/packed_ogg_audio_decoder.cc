@@ -33,11 +33,11 @@ static OggPage read_ogg_page(io::IO &io)
     page.bitstream_serial_number = io.read_u32_le();
     page.page_sequence_number = io.read_u32_le();
     page.checksum = io.read_u32_le();
-    page.segments.resize(io.read_u8());
-    for (auto &segment : page.segments)
-        segment.resize(io.read_u8());
-    for (auto &segment : page.segments)
-        io.read(segment.get<u8>(), segment.size());
+    std::vector<size_t> sizes(io.read_u8());
+    for (auto &size : sizes)
+        size = io.read_u8();
+    for (auto &size : sizes)
+        page.segments.push_back(io.read(size));
     return page;
 }
 

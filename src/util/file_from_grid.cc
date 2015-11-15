@@ -7,14 +7,14 @@
 using namespace au;
 using namespace au::util;
 
-static void png_write_data(
-    png_structp png_ptr, png_bytep data, png_size_t size)
+static void write_handler(
+    png_structp png_ptr, png_bytep input, png_size_t size)
 {
-    io::IO *io = reinterpret_cast<io::IO*>(png_get_io_ptr(png_ptr));
-    io->write(data, size);
+    auto io = reinterpret_cast<io::IO*>(png_get_io_ptr(png_ptr));
+    io->write(bstr(input, size));
 }
 
-static void png_flush(png_structp)
+static void flush_handler(png_structp)
 {
 }
 
@@ -53,7 +53,7 @@ std::unique_ptr<File> util::file_from_grid(
     png_set_filter(png_ptr, 0, PNG_FILTER_NONE);
     png_set_compression_level(png_ptr, 1);
 
-    png_set_write_fn(png_ptr, &output_file->io, &png_write_data, &png_flush);
+    png_set_write_fn(png_ptr, &output_file->io, &write_handler, &flush_handler);
     png_write_info(png_ptr, info_ptr);
 
     auto rows = std::make_unique<const u8*[]>(height);

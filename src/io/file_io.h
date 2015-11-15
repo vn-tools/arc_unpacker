@@ -27,9 +27,10 @@ namespace io {
         void truncate(size_t new_size) override;
 
         using IO::read;
-        void read(void *destination, size_t size) override;
-
         using IO::write;
+
+    protected:
+        void read(void *destination, size_t size) override;
         void write(const void *source, size_t size) override;
 
     private:

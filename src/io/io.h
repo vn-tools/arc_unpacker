@@ -19,9 +19,6 @@ namespace io {
         void peek(size_t offset, std::function<void()> func);
         bool eof() const;
 
-        virtual void read(void *input, size_t size) = 0;
-        virtual void write(const void *str, size_t size) = 0;
-
         bstr read(size_t bytes);
         bstr read_to_zero();
         bstr read_to_zero(size_t bytes);
@@ -43,6 +40,10 @@ namespace io {
         void write_u32_be(u32);
         void write_u64_le(u64);
         void write_u64_be(u64);
+
+    protected:
+        virtual void read(void *input, size_t size) = 0;
+        virtual void write(const void *str, size_t size) = 0;
     };
 
 } }

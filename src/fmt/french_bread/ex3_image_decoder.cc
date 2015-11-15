@@ -16,12 +16,10 @@ std::unique_ptr<File> Ex3ImageDecoder::decode_impl(File &file) const
 {
     file.io.skip(magic.size());
 
-    u8 table0[60];
-    u8 table1[256];
-    u8 table2[256];
-
     bstr output;
-    file.io.read(table0, 0x40);
+    bstr table0 = file.io.read(0x40);
+    bstr table1(256);
+    bstr table2(256);
 
     u8 b = file.io.read_u8();
     while (file.io.tell() < file.io.size())
