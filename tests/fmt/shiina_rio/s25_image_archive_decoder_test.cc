@@ -12,9 +12,9 @@ static void do_test(
     const std::string input_path,
     const std::vector<std::string> expected_paths)
 {
-    S25ImageArchiveDecoder decoder;
-    auto input_file = tests::zlib_file_from_path(input_path);
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const S25ImageArchiveDecoder decoder;
+    const auto input_file = tests::zlib_file_from_path(input_path);
+    const auto actual_files = tests::unpack(decoder, *input_file);
 
     std::vector<std::shared_ptr<pix::Grid>> expected_images;
     for (auto &path : expected_paths)

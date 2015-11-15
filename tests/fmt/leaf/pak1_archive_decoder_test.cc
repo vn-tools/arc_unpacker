@@ -18,9 +18,9 @@ TEST_CASE("Leaf PAK archives (version 1)", "[fmt]")
 
     Pak1ArchiveDecoder decoder;
     decoder.set_version(1);
-    auto input_file = tests::file_from_path(
+    const auto input_file = tests::file_from_path(
         "tests/fmt/leaf/files/pak1/LEAFLOGO.PAK");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
@@ -36,8 +36,8 @@ TEST_CASE("Leaf PAK archives (version 2)", "[fmt]")
 
     Pak1ArchiveDecoder decoder;
     decoder.set_version(2);
-    auto input_file = tests::file_from_path(
+    const auto input_file = tests::file_from_path(
         "tests/fmt/leaf/files/pak1/LEAFLOGO2.PAK");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

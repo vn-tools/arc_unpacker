@@ -13,12 +13,12 @@ TEST_CASE("PNG images", "[util]")
 {
     File file("tests/fmt/png/files/usagi_opaque.png", io::FileMode::Read);
 
-    PngImageDecoder decoder;
-    auto pixels = tests::decode(decoder, file);
+    const PngImageDecoder decoder;
+    const auto pixels = tests::decode(decoder, file);
     REQUIRE(pixels.width() == 640);
     REQUIRE(pixels.height() == 480);
 
-    auto color = pixels.at(200, 100);
+    const auto color = pixels.at(200, 100);
     REQUIRE(static_cast<int>(color.r) == 0x7C);
     REQUIRE(static_cast<int>(color.g) == 0x6A);
     REQUIRE(static_cast<int>(color.b) == 0x34);
@@ -29,12 +29,12 @@ TEST_CASE("PNG images with transparency", "[fmt]")
 {
     File file("tests/fmt/png/files/reimu_transparent.png", io::FileMode::Read);
 
-    PngImageDecoder decoder;
-    auto pixels = tests::decode(decoder, file);
+    const PngImageDecoder decoder;
+    const auto pixels = tests::decode(decoder, file);
     REQUIRE(pixels.width() == 641);
     REQUIRE(pixels.height() == 720);
 
-    auto color = pixels.at(200, 100);
+    const auto color = pixels.at(200, 100);
     REQUIRE(static_cast<int>(color.r) == 0xFE);
     REQUIRE(static_cast<int>(color.g) == 0x0A);
     REQUIRE(static_cast<int>(color.b) == 0x17);
@@ -43,8 +43,8 @@ TEST_CASE("PNG images with transparency", "[fmt]")
 
 TEST_CASE("PNG images with extra chunks", "[util]")
 {
-    PngImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const PngImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/png/files/b09s_hs02l_.png");
 
     SECTION("Default chunk handler")

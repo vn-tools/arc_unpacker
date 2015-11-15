@@ -9,11 +9,11 @@ using namespace au::fmt::nscripter;
 
 TEST_CASE("NScripter SPB-compressed stream", "[fmt]")
 {
-    SpbImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const SpbImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/nscripter/files/spb/grimoire_btn.bmp");
-    auto expected_image = tests::image_from_path(
+    const auto expected_image = tests::image_from_path(
         "tests/fmt/nscripter/files/spb/grimoire_btn-out.png");
-    auto actual_image = tests::decode(decoder, *input_file);
+    const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }

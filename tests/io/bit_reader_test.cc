@@ -9,8 +9,8 @@ using namespace au::io;
 static bstr from_bits(std::initializer_list<u8> s)
 {
     bstr x;
-    for (auto i : s)
-        x += static_cast<char>(i);
+    for (const u8 &c : s)
+        x += c;
     return x;
 }
 

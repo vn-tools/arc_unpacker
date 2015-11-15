@@ -10,22 +10,22 @@ using namespace au::fmt::bgi;
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    DscFileDecoder decoder;
-    auto input_file = tests::file_from_path(input_path);
-    auto expected_image = tests::image_from_path(expected_path);
-    auto actual_file = tests::decode(decoder, *input_file);
-    auto actual_image = tests::image_from_file(*actual_file);
+    const DscFileDecoder decoder;
+    const auto input_file = tests::file_from_path(input_path);
+    const auto expected_image = tests::image_from_path(expected_path);
+    const auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_image = tests::image_from_file(*actual_file);
     tests::compare_images(*expected_image, *actual_image);
 }
 
 TEST_CASE("BGI DSC raw files", "[fmt]")
 {
-    DscFileDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const DscFileDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/bgi/files/dsc/setupforgallery");
-    auto expected_file = tests::file_from_path(
+    const auto expected_file = tests::file_from_path(
         "tests/fmt/bgi/files/dsc/setupforgallery-out.dat");
-    auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
 }
 

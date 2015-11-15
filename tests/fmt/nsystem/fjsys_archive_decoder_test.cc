@@ -9,15 +9,15 @@ using namespace au::fmt::nsystem;
 
 TEST_CASE("NSystem FJSYS archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("another.txt", "abcdefghij"_b),
     };
 
-    FjsysArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const FjsysArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/nsystem/files/fjsys/test.fjsys");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

@@ -8,15 +8,15 @@ using namespace au::fmt::fvp;
 
 TEST_CASE("FVP BIN archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };
 
-    BinArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const BinArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/fvp/files/bin/test.bin");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

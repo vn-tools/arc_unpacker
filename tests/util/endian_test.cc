@@ -6,8 +6,8 @@ using namespace au::util;
 
 TEST_CASE("Converting endianness", "[util]")
 {
-    const char *x = "\x12\x34\x56\x78";
-    bool big_endian = *reinterpret_cast<const u32*>(x) == 0x12345678;
+    const auto x = "\x12\x34\x56\x78";
+    const auto big_endian = *reinterpret_cast<const u32*>(x) == 0x12345678;
     if (big_endian)
     {
         REQUIRE(from_little_endian<u8>(0x12) == 0x12);

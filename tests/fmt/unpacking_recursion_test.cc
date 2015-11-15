@@ -118,12 +118,12 @@ std::unique_ptr<File> TestArchiveDecoder::read_file_impl(
 
 TEST_CASE("Recursive unpacking with nested files", "[fmt_core]")
 {
-    auto registry = create_registry();
+    const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;
     File dummy_file("archive.arc", serialize_file("image.rgb", ""_b));
 
     std::vector<std::shared_ptr<File>> saved_files;
-    FileSaverCallback saver([&](std::shared_ptr<File> saved_file)
+    const FileSaverCallback saver([&](std::shared_ptr<File> saved_file)
     {
         saved_file->io.seek(0);
         saved_files.push_back(saved_file);
@@ -136,20 +136,20 @@ TEST_CASE("Recursive unpacking with nested files", "[fmt_core]")
 
 TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
 {
-    auto registry = create_registry();
+    const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;
 
     io::BufferedIO nested_archive_io;
     nested_archive_io.write(serialize_file("nested/text.txt", "text"_b));
     nested_archive_io.write(serialize_file("nested/image.rgb", "discard"_b));
     nested_archive_io.seek(0);
-    auto nested_archive_content = nested_archive_io.read_to_eof();
+    const auto nested_archive_content = nested_archive_io.read_to_eof();
 
     File dummy_file(
         "archive.arc", serialize_file("archive.arc", nested_archive_content));
 
     std::vector<std::shared_ptr<File>> saved_files;
-    FileSaverCallback saver([&](std::shared_ptr<File> saved_file)
+    const FileSaverCallback saver([&](std::shared_ptr<File> saved_file)
     {
         saved_file->io.seek(0);
         saved_files.push_back(saved_file);
@@ -166,20 +166,20 @@ TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
 TEST_CASE(
     "Non-recursive unpacking doesn't execute child decoders", "[fmt_core]")
 {
-    auto registry = create_registry();
+    const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;
 
     io::BufferedIO nested_archive_io;
     nested_archive_io.write(serialize_file("nested/text", "text"_b));
     nested_archive_io.write(serialize_file("nested/image", "keep"_b));
     nested_archive_io.seek(0);
-    auto nested_archive_content = nested_archive_io.read_to_eof();
+    const auto nested_archive_content = nested_archive_io.read_to_eof();
 
     File dummy_file(
         "archive.arc", serialize_file("archive.arc", nested_archive_content));
 
     std::vector<std::shared_ptr<File>> saved_files;
-    FileSaverCallback saver([&](std::shared_ptr<File> saved_file)
+    const FileSaverCallback saver([&](std::shared_ptr<File> saved_file)
     {
         saved_file->io.seek(0);
         saved_files.push_back(saved_file);
@@ -210,17 +210,17 @@ TEST_CASE(
                 { names_for_conversion.push_back(path(f.name)); };
             return decoder;
         });
-    TestArchiveDecoder archive_decoder;
 
+    TestArchiveDecoder archive_decoder;
     io::BufferedIO nested_archive_io;
     nested_archive_io.write(serialize_file("nested/test.image", ""_b));
     nested_archive_io.seek(0);
-    auto nested_archive_content = nested_archive_io.read_to_eof();
+    const auto nested_archive_content = nested_archive_io.read_to_eof();
 
     File dummy_file(
         "fs/archive", serialize_file("archive.arc", nested_archive_content));
 
-    FileSaverCallback saver([](std::shared_ptr<File>) {});
+    const FileSaverCallback saver([](std::shared_ptr<File>) {});
     fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
 
     REQUIRE(names_for_recognition.size() == 3);

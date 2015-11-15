@@ -9,12 +9,12 @@ using namespace au::fmt::yuka_script;
 
 TEST_CASE("YukaScript YKG images", "[fmt]")
 {
-    YkgImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const YkgImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/yuka_script/files/ykg/reimu.ykg");
-    auto expected_image = tests::image_from_path(
+    const auto expected_image = tests::image_from_path(
         "tests/fmt/yuka_script/files/ykg/reimu-out.png");
-    auto actual_file = tests::decode(decoder, *input_file);
-    auto actual_image = tests::image_from_file(*actual_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_image = tests::image_from_file(*actual_file);
     tests::compare_images(*expected_image, *actual_image);
 }

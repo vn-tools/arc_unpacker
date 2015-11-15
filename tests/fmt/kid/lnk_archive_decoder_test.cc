@@ -8,15 +8,15 @@ using namespace au::fmt::kid;
 
 static void do_test(const std::string &input_path)
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };
 
-    LnkArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(input_path);
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const LnkArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(input_path);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
@@ -32,16 +32,16 @@ TEST_CASE("Kid LNK compressed unencrypted archives", "[fmt]")
 
 TEST_CASE("Kid LNK uncompressed encrypted archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("audio.wav", bstr(0x2000, '\xFF')),
         tests::stub_file("image.jpg", bstr(0x2000, '\xFF')),
         tests::stub_file("screensaver.scr", bstr(0x2000, '\xFF')),
     };
 
-    LnkArchiveDecoder decoder;
-    auto input_file = tests::zlib_file_from_path(
+    const LnkArchiveDecoder decoder;
+    const auto input_file = tests::zlib_file_from_path(
         "tests/fmt/kid/files/lnk/encrypted.lnk");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

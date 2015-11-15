@@ -8,15 +8,15 @@ using namespace au::fmt::liar_soft;
 
 TEST_CASE("LiarSoft XFL archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("another.txt", "abcdefghij"_b),
     };
 
-    XflArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const XflArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/liar_soft/files/xfl/test.xfl");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

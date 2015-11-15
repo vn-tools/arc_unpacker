@@ -51,14 +51,14 @@ std::unique_ptr<ArchiveMeta>
 std::unique_ptr<File> TestArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &, const ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     arc_file.io.seek(entry->offset);
     return std::make_unique<File>(entry->name, arc_file.io.read(entry->size));
 }
 
 TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
 {
-    TestArchiveDecoder test_archive_decoder;
+    const TestArchiveDecoder test_archive_decoder;
     File dummy_file;
     dummy_file.name = "test.archive";
     dummy_file.io.write("deeply/nested/file.txt"_b);
@@ -67,7 +67,7 @@ TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
     dummy_file.io.write("abc"_b);
 
     std::vector<std::shared_ptr<File>> saved_files;
-    FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
+    const FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
     {
         saved_file->io.seek(0);
         saved_files.push_back(saved_file);

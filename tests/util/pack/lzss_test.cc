@@ -8,7 +8,7 @@ using namespace au::util::pack;
 
 static void do_test(const bstr &input, const bstr &expected)
 {
-    auto actual = lzss_decompress_bytewise(input, expected.size());
+    const auto actual = lzss_decompress_bytewise(input, expected.size());
     INFO("Actual: " + actual.str());
     INFO("Expected: " + expected.str());
     REQUIRE(actual == expected);

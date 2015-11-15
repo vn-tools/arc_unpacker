@@ -9,10 +9,10 @@ using namespace au::fmt::leaf;
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    P16AudioDecoder decoder;
-    auto input_file = tests::zlib_file_from_path(input_path);
-    auto expected_file = tests::zlib_file_from_path(expected_path);
-    auto actual_file = tests::decode(decoder, *input_file);
+    const P16AudioDecoder decoder;
+    const auto input_file = tests::zlib_file_from_path(input_path);
+    const auto expected_file = tests::zlib_file_from_path(expected_path);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
 }
 

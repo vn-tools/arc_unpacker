@@ -9,11 +9,11 @@ using namespace au::fmt::leaf;
 
 TEST_CASE("Leaf BBM images", "[fmt]")
 {
-    auto input_file = tests::zlib_file_from_path(
+    const auto input_file = tests::zlib_file_from_path(
         "tests/fmt/leaf/files/bbm/Stage_14_E0_OBJ-zlib.bbm");
-    auto expected_file = tests::image_from_path(
+    const auto expected_file = tests::image_from_path(
         "tests/fmt/leaf/files/bbm/Stage_14_E0_OBJ-out.png");
-    BbmImageDecoder decoder;
-    auto actual_file = tests::decode(decoder, *input_file);
+    const BbmImageDecoder decoder;
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
 }

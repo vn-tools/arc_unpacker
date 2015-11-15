@@ -18,9 +18,9 @@ std::vector<std::shared_ptr<File>> tests::unpack(
     navigate_to_random_place(input_file.io);
     REQUIRE(decoder.is_recognized(input_file));
     navigate_to_random_place(input_file.io);
-    auto meta = decoder.read_meta(input_file);
+    const auto meta = decoder.read_meta(input_file);
     std::vector<std::shared_ptr<File>> files;
-    for (auto &entry : meta->entries)
+    for (const auto &entry : meta->entries)
         files.push_back(decoder.read_file(input_file, *meta, *entry));
     return files;
 }

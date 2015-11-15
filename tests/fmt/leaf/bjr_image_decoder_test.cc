@@ -12,9 +12,9 @@ TEST_CASE("Leaf BJR images", "[fmt]")
     auto input_file = tests::zlib_file_from_path(
         "tests/fmt/leaf/files/bjr/v00232-zlib.BJR");
     input_file->name = "v00232.BJR";
-    auto expected_file = tests::image_from_path(
+    const auto expected_file = tests::image_from_path(
         "tests/fmt/leaf/files/bjr/v00232-out.png");
-    BjrImageDecoder decoder;
-    auto actual_file = tests::decode(decoder, *input_file);
+    const BjrImageDecoder decoder;
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
 }

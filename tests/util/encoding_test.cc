@@ -5,7 +5,7 @@
 using namespace au;
 using namespace au::util;
 
-// sjis の"あいうえおかきくけこさしすせそたちつてと"
+// sjis "あいうえおかきくけこさしすせそたちつてと"
 static const bstr sjis =
     "\x82\xA0\x82\xA2\x82\xA4\x82\xA6\x82\xA8"
     "\x82\xA9\x82\xAB\x82\xAD\x82\xAF\x82\xB1"
@@ -13,7 +13,7 @@ static const bstr sjis =
     "\x82\xBD\x82\xBF\x82\xC2\x82\xC4\x82\xC6"
     "\x00"_b;
 
-// utf8 の"あいうえおかきくけこさしすせそたちつてと"
+// utf8 "あいうえおかきくけこさしすせそたちつてと"
 static const bstr utf8 =
     "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3"
     "\x81\x88\xE3\x81\x8A\xE3\x81\x8B\xE3\x81"

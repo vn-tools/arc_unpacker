@@ -9,11 +9,11 @@ using namespace au::fmt::liar_soft;
 
 TEST_CASE("LiarSoft WCG images", "[fmt]")
 {
-    WcgImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const WcgImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/liar_soft/files/wcg/0003.wcg");
-    auto expected_image = tests::image_from_path(
+    const auto expected_image = tests::image_from_path(
         "tests/fmt/liar_soft/files/wcg/0003-out.png");
-    auto actual_image = tests::decode(decoder, *input_file);
+    const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }

@@ -13,16 +13,16 @@ static void do_test(
     const std::string &input_path,
     const std::string &expected_path)
 {
-    auto input_file = tests::file_from_path(input_path);
-    auto expected_image = tests::image_from_path(expected_path);
-    auto actual_image = tests::decode(decoder, *input_file);
+    const auto input_file = tests::file_from_path(input_path);
+    const auto expected_image = tests::image_from_path(expected_path);
+    const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }
 
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    TfbmImageDecoder decoder;
+    const TfbmImageDecoder decoder;
     do_test(decoder, input_path, expected_path);
 }
 

@@ -8,7 +8,7 @@ using namespace au::fmt::kirikiri;
 
 static void test_xp3_archive(const std::string &path)
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("abc2.txt", "AAAAAAAAAA"_b),
@@ -16,8 +16,8 @@ static void test_xp3_archive(const std::string &path)
 
     Xp3ArchiveDecoder decoder;
     decoder.set_plugin("noop");
-    auto input_file = tests::file_from_path(path);
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto input_file = tests::file_from_path(path);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 

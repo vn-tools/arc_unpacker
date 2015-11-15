@@ -9,11 +9,11 @@ using namespace au::fmt::minato_soft;
 
 TEST_CASE("MinatoSoft FIL mask images", "[fmt]")
 {
-    FilImageDecoder decoder;
-    auto input_file = tests::zlib_file_from_path(
+    const FilImageDecoder decoder;
+    const auto input_file = tests::zlib_file_from_path(
         "tests/fmt/minato_soft/files/fil/Rule07-zlib.fil");
-    auto expected_file = tests::image_from_path(
+    const auto expected_file = tests::image_from_path(
         "tests/fmt/minato_soft/files/fil/Rule07-out.png");
-    auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
 }

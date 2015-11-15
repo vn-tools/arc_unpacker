@@ -8,16 +8,15 @@ using namespace au::fmt::will;
 
 static void do_test(const std::string &input_path)
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("!@#.txt", "!@#$%^&*()"_b),
     };
-
-    ArcArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(input_path);
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const ArcArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(input_path);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
@@ -33,15 +32,15 @@ TEST_CASE("Will Co. ARC archives (13 character long names)", "[fmt]")
 
 TEST_CASE("Will Co. ARC archives (script encryption)", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("123.SCR", "1234567890"_b),
         tests::stub_file("abc.WSC", "abcdefghijklmnopqrstuvwxyz"_b),
     };
 
-    ArcArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const ArcArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/will/files/arc/scripts.arc");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

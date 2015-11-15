@@ -12,14 +12,12 @@ static void do_test(
     const std::string input_path,
     const std::vector<std::string> expected_paths)
 {
-    WipfImageArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(input_path);
-    auto actual_files = tests::unpack(decoder, *input_file);
-
+    const WipfImageArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(input_path);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     std::vector<std::shared_ptr<pix::Grid>> expected_images;
     for (auto &path : expected_paths)
         expected_images.push_back(tests::image_from_path(path));
-
     tests::compare_images(expected_images, actual_files);
 }
 

@@ -8,11 +8,11 @@ using namespace au::fmt::kid;
 
 TEST_CASE("KID CPS containers", "[fmt]")
 {
-    CpsFileDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const CpsFileDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/kid/files/cps/yh04adm.cps");
-    auto expected_file = tests::file_from_path(
+    const auto expected_file = tests::file_from_path(
         "tests/fmt/kid/files/cps/yh04adm.prt");
-    auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
 }

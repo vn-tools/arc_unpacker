@@ -9,11 +9,11 @@ using namespace au::fmt::ivory;
 
 TEST_CASE("Ivory PRS images", "[fmt]")
 {
-    PrsImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const PrsImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/ivory/files/prs/BMIK_A16");
-    auto expected_image = tests::image_from_path(
+    const auto expected_image = tests::image_from_path(
         "tests/fmt/ivory/files/prs/BMIK_A16-out.png");
-    auto actual_image = tests::decode(decoder, *input_file);
+    const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }

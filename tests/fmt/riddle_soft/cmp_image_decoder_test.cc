@@ -8,11 +8,11 @@ using namespace au::fmt::riddle_soft;
 
 TEST_CASE("RiddleSoft CMP files", "[fmt]")
 {
-    CmpImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const CmpImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/riddle_soft/files/cmp/SLParts.gcp");
-    auto expected_file = tests::zlib_file_from_path(
+    const auto expected_file = tests::zlib_file_from_path(
         "tests/fmt/riddle_soft/files/cmp/SLParts-zlib-out.bmp");
-    auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
 }

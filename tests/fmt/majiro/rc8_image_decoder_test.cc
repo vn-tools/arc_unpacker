@@ -9,11 +9,11 @@ using namespace au::fmt::majiro;
 
 TEST_CASE("Majiro RC8 images", "[fmt]")
 {
-    Rc8ImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const Rc8ImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/majiro/files/rc8/style_tc_geo00_a_.rc8");
-    auto expected_image = tests::image_from_path(
+    const auto expected_image = tests::image_from_path(
         "tests/fmt/majiro/files/rc8/style_tc_geo00_a_-out.png");
-    auto actual_image = tests::decode(decoder, *input_file);
+    const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }

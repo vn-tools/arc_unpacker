@@ -8,11 +8,11 @@ using namespace au::fmt::lilim;
 
 TEST_CASE("Lilim DOJ scripts", "[fmt]")
 {
-    DojFileDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const DojFileDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/lilim/files/doj/trueblue.doj");
-    auto expected_file = tests::file_from_path(
+    const auto expected_file = tests::file_from_path(
         "tests/fmt/lilim/files/doj/trueblue-out.doj");
-    auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
 }

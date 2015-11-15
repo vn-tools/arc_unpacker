@@ -8,15 +8,15 @@ using namespace au::fmt::real_live;
 
 TEST_CASE("RealLive OVK archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("sample00010", "1234567890"_b),
         tests::stub_file("sample00025", "abcdefghijklmnopqrstuvwxyz"_b),
     };
 
-    OvkArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const OvkArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/real_live/files/ovk/test.ovk");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

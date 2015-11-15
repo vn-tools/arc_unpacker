@@ -8,14 +8,14 @@ using namespace au::fmt::whale;
 
 static void do_test(DatArchiveDecoder &decoder, const std::string &path)
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),
     };
 
-    auto input_file = tests::file_from_path(path);
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto input_file = tests::file_from_path(path);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
@@ -41,15 +41,15 @@ TEST_CASE("Whale DAT compressed archives with unknown names", "[fmt]")
     DatArchiveDecoder decoder;
     decoder.set_game_title("A Dog Story");
 
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("0000.txt", "1234567890"_b),
         tests::stub_file("0001.txt", "abcdefghijklmnopqrstuvwxyz"_b),
     };
 
-    auto input_file = tests::file_from_path(
+    const auto input_file = tests::file_from_path(
         "tests/fmt/whale/files/dat/compressed.dat");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 

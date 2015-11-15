@@ -9,22 +9,22 @@ using namespace au::fmt::nscripter;
 
 TEST_CASE("NScripter NSA uncompressed archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("another.txt", "abcdefghij"_b),
     };
 
-    NsaArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const NsaArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/nscripter/files/nsa/uncompressed.nsa");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
 TEST_CASE("NScripter NSA archives compressed with LZSS", "[fmt]")
 {
-    auto file = tests::stub_file(
+    const auto file = tests::stub_file(
         "test.bmp",
         util::pack::zlib_inflate(
             "\x78\xDA\x8D\xD3\x3D\x6E\x13\x40\x10\x86\xE1\xB5\x44\x81\x70\x9C"
@@ -59,9 +59,9 @@ TEST_CASE("NScripter NSA archives compressed with LZSS", "[fmt]")
             "\xBF\xEB\x3F\xFF\xBC\xFB\xB5\xEE\xDC\xBF\x01\x89\x72\x8B\xEC"_b));
     std::vector<std::shared_ptr<File>> expected_files { file };
 
-    NsaArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const NsaArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/nscripter/files/nsa/lzss.nsa");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

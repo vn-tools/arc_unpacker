@@ -9,15 +9,15 @@ using namespace au::fmt::nscripter;
 
 TEST_CASE("NScripter SAR archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("dir/another.txt", "AAAAAAAAAAAAAAAA"_b),
     };
 
-    SarArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const SarArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/nscripter/files/sar/test.sar");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

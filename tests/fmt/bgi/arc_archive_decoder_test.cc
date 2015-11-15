@@ -8,14 +8,15 @@ using namespace au::fmt::bgi;
 
 TEST_CASE("BGI ARC archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("another.txt", "abcdefghij"_b),
     };
 
-    ArcArchiveDecoder decoder;
-    auto input_file = tests::file_from_path("tests/fmt/bgi/files/arc/test.arc");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const ArcArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
+        "tests/fmt/bgi/files/arc/test.arc");
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

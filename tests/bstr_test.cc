@@ -5,7 +5,7 @@ using namespace au;
 
 TEST_CASE("bstr()", "[core][types]")
 {
-    bstr x;
+    const bstr x;
     REQUIRE(x == ""_b);
     REQUIRE(x.size() == 0);
 }
@@ -14,22 +14,22 @@ TEST_CASE("bstr.size and bstr.empty", "[core][types]")
 {
     SECTION("Empty")
     {
-        bstr x("");
+        const bstr x("");
         REQUIRE(x.size() == 0);
         REQUIRE(x.empty());
     }
     SECTION("Plain")
     {
-        bstr x("test", 4);
+        const bstr x("test", 4);
         REQUIRE(x.size() == 4);
         REQUIRE(!x.empty());
     }
     SECTION("NULL terminated")
     {
-        bstr x("\x00\x01", 2);
+        const bstr x("\x00\x01", 2);
         REQUIRE(x.size() == 2);
         REQUIRE(!x.empty());
-        bstr y(std::string("\x00\x01", 2));
+        const bstr y(std::string("\x00\x01", 2));
         REQUIRE(y.size() == 2);
         REQUIRE(!y.empty());
     }
@@ -37,44 +37,44 @@ TEST_CASE("bstr.size and bstr.empty", "[core][types]")
 
 TEST_CASE("bstr(size_t, u8", "[core][types]")
 {
-    bstr x(6);
+    const bstr x(6);
     REQUIRE(x == "\x00\x00\x00\x00\x00\x00"_b);
     REQUIRE(x.size() == 6);
-    bstr y(6, '\xFF');
+    const bstr y(6, '\xFF');
     REQUIRE(y == "\xFF\xFF\xFF\xFF\xFF\xFF"_b);
     REQUIRE(y.size() == 6);
 }
 
 TEST_CASE("bstr(char*)", "[core][types]")
 {
-    bstr x("test\x00\x01", 6);
+    const bstr x("test\x00\x01", 6);
     REQUIRE(x == "test\x00\x01"_b);
     REQUIRE(x.size() == 6);
 }
 
 TEST_CASE("bstr(std::string)", "[core][types]")
 {
-    bstr x(std::string("test\x00\x01", 6));
+    const bstr x(std::string("test\x00\x01", 6));
     REQUIRE(x == "test\x00\x01"_b);
     REQUIRE(x.size() == 6);
-    bstr y(std::string("test\x00\x01"));
+    const bstr y(std::string("test\x00\x01"));
     REQUIRE(y == "test"_b);
     REQUIRE(y.size() == 4);
 }
 
 TEST_CASE("bstr.str", "[core][types]")
 {
-    bstr x("test\x00\x01", 6);
+    const bstr x("test\x00\x01", 6);
     REQUIRE(x.str().size() == 6);
     REQUIRE(x.str() == std::string("test\x00\x01", 6));
-    bstr y("test\x00\x01", 6);
+    const bstr y("test\x00\x01", 6);
     REQUIRE(y.str(true).size() == 4);
     REQUIRE(y.str(true) == std::string("test", 4));
 }
 
 TEST_CASE("bstr.find", "[core][types]")
 {
-    bstr x("test\x00\x01", 6);
+    const bstr x("test\x00\x01", 6);
     REQUIRE(x.find("y"_b) == bstr::npos);
     REQUIRE(x.find("e"_b) != bstr::npos);
     REQUIRE(x.find("e"_b) == 1);
@@ -83,7 +83,7 @@ TEST_CASE("bstr.find", "[core][types]")
 
 TEST_CASE("bstr.substr", "[core][types]")
 {
-    bstr x("test\x00\x01", 6);
+    const bstr x("test\x00\x01", 6);
     SECTION("Plain substring")
     {
         REQUIRE(x.substr(0, 6) == x);
@@ -127,16 +127,16 @@ TEST_CASE("bstr.resize()", "[core][types]")
 
 TEST_CASE("bstr.operator+", "[core][types]")
 {
-    bstr x = "\x00\x01"_b;
-    bstr y = "\x00\x02"_b;
-    bstr z = x + y;
+    const bstr x = "\x00\x01"_b;
+    const bstr y = "\x00\x02"_b;
+    const bstr z = x + y;
     REQUIRE(z == "\x00\x01\x00\x02"_b);
 }
 
 TEST_CASE("bstr.operator+=(bstr)", "[core][types]")
 {
-    bstr x = "\x00\x01"_b;
-    bstr y = "\x00\x02"_b;
+    const bstr x = "\x00\x01"_b;
+    const bstr y = "\x00\x02"_b;
     bstr z = ""_b;
     REQUIRE(z == ""_b);
     z += x;
@@ -157,8 +157,8 @@ TEST_CASE("bstr.operator==", "[core][types]")
 {
     SECTION("Plain")
     {
-        bstr x = "a"_b;
-        bstr y = "a"_b;
+        const bstr x = "a"_b;
+        const bstr y = "a"_b;
         REQUIRE(x == x);
         REQUIRE(x == y);
         REQUIRE(y == x);
@@ -166,8 +166,8 @@ TEST_CASE("bstr.operator==", "[core][types]")
     }
     SECTION("NULL terminated")
     {
-        bstr x = "\x00\x01"_b;
-        bstr y = "\x00\x01"_b;
+        const bstr x = "\x00\x01"_b;
+        const bstr y = "\x00\x01"_b;
         REQUIRE(x == x);
         REQUIRE(x == y);
         REQUIRE(y == x);
@@ -179,15 +179,15 @@ TEST_CASE("bstr.operator!=", "[core][types]")
 {
     SECTION("Plain")
     {
-        bstr x = "a"_b;
-        bstr y = "b"_b;
+        const bstr x = "a"_b;
+        const bstr y = "b"_b;
         REQUIRE(x != y);
         REQUIRE(y != x);
     }
     SECTION("NULL terminated")
     {
-        bstr x = "\x00\x01"_b;
-        bstr y = "\x00\x00"_b;
+        const bstr x = "\x00\x01"_b;
+        const bstr y = "\x00\x00"_b;
         REQUIRE(x != y);
         REQUIRE(y != x);
     }
@@ -204,24 +204,24 @@ TEST_CASE("bstr.operator[]", "[core][types]")
 
 TEST_CASE("bstr.get", "[core][types]")
 {
-    bstr x = "\x00\x01"_b;
-    REQUIRE(x.get<char>()[0] == 0);
-    REQUIRE(x.get<char>()[1] == 1);
-    REQUIRE(bstr(x.get<char>(), 2) == "\x00\x01"_b);
+    const bstr x = "\x00\x01"_b;
+    REQUIRE(x.get<const char>()[0] == 0);
+    REQUIRE(x.get<const char>()[1] == 1);
+    REQUIRE(bstr(x.get<const char>(), 2) == "\x00\x01"_b);
 }
 
 TEST_CASE("bstr.end", "[core][types]")
 {
-    bstr x = "\x00\x01"_b;
-    REQUIRE(x.end<char>()[-1] == 1);
-    REQUIRE(x.end<char>() == x.get<char>() + 2);
-    REQUIRE(x.end<u16>() == &x.get<u16>()[1]);
-    REQUIRE(x.end<u16>()[-1] == 0x100);
+    const bstr x = "\x00\x01"_b;
+    REQUIRE(x.end<const char>()[-1] == 1);
+    REQUIRE(x.end<const char>() == x.get<const char>() + 2);
+    REQUIRE(x.end<const u16>() == &x.get<const u16>()[1]);
+    REQUIRE(x.end<const u16>()[-1] == 0x100);
 
     // align the boundary to the sizeof(T)
-    bstr y = "\x00\x01\x02"_b;
-    REQUIRE(y.end<u16>() == &y.get<u16>()[1]);
-    REQUIRE(y.end<u16>()[-1] == 0x100);
+    const bstr y = "\x00\x01\x02"_b;
+    REQUIRE(y.end<const u16>() == &y.get<const u16>()[1]);
+    REQUIRE(y.end<const u16>()[-1] == 0x100);
 }
 
 TEST_CASE("iterating over bstr", "[core][types]")
@@ -237,7 +237,7 @@ TEST_CASE("iterating over bstr", "[core][types]")
 
 TEST_CASE("bstr.at", "[core][types]")
 {
-    bstr x = "\x00\x01"_b;
+    const bstr x = "\x00\x01"_b;
     REQUIRE(x.at(0) == 0);
     REQUIRE(x.at(1) == 1);
     REQUIRE_THROWS(x.at(2));

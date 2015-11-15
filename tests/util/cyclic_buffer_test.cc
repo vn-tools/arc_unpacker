@@ -7,14 +7,14 @@ using namespace au::util;
 
 TEST_CASE("Empty cyclic buffer content", "[util]")
 {
-    CyclicBuffer<5> buffer(1);
+    const CyclicBuffer<5> buffer(1);
     for (auto i : util::range(5))
         REQUIRE(!buffer[i]);
 }
 
 TEST_CASE("Cyclic buffer size", "[util]")
 {
-    CyclicBuffer<5> buffer(1);
+    const CyclicBuffer<5> buffer(1);
     REQUIRE(buffer.size() == 5);
     REQUIRE(buffer.pos() == 1);
 }

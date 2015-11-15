@@ -9,7 +9,7 @@ using namespace au::fmt::fc01;
 
 TEST_CASE("FC01 MCA image archives (unaligned)", "[fmt]")
 {
-    std::vector<std::shared_ptr<pix::Grid>> expected_images
+    const std::vector<std::shared_ptr<pix::Grid>> expected_images
     {
         tests::image_from_path("tests/fmt/fc01/files/mca/blin3-out-000.png"),
         tests::image_from_path("tests/fmt/fc01/files/mca/blin3-out-001.png"),
@@ -20,15 +20,15 @@ TEST_CASE("FC01 MCA image archives (unaligned)", "[fmt]")
 
     McaArchiveDecoder decoder;
     decoder.set_key(209);
-    auto input_file = tests::file_from_path(
+    const auto input_file = tests::file_from_path(
         "tests/fmt/fc01/files/mca/BLIN3.MCA");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_images(expected_images, actual_files);
 }
 
 TEST_CASE("FC01 MCA image archives (aligned)", "[fmt]")
 {
-    std::vector<std::shared_ptr<pix::Grid>> expected_images
+    const std::vector<std::shared_ptr<pix::Grid>> expected_images
     {
         tests::image_from_path("tests/fmt/fc01/files/mca/ok-out-000.png"),
         tests::image_from_path("tests/fmt/fc01/files/mca/ok-out-001.png"),
@@ -38,7 +38,8 @@ TEST_CASE("FC01 MCA image archives (aligned)", "[fmt]")
 
     McaArchiveDecoder decoder;
     decoder.set_key(209);
-    auto input_file = tests::file_from_path("tests/fmt/fc01/files/mca/OK.MCA");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto input_file = tests::file_from_path(
+        "tests/fmt/fc01/files/mca/OK.MCA");
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_images(expected_images, actual_files);
 }

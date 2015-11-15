@@ -9,11 +9,11 @@ using namespace au::fmt::rpgmaker;
 
 TEST_CASE("RpgMaker XYZ images", "[fmt]")
 {
-    XyzImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const XyzImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/rpgmaker/files/xyz/浅瀬部屋a.xyz");
-    auto expected_image = tests::image_from_path(
+    const auto expected_image = tests::image_from_path(
         "tests/fmt/rpgmaker/files/xyz/浅瀬部屋a-out.png");
-    auto actual_image = tests::decode(decoder, *input_file);
+    const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }

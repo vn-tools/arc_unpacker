@@ -18,13 +18,13 @@ static std::vector<std::shared_ptr<IDecoder>> collect_linked_decoders(
     decoders_to_inspect.push(&base_decoder);
     while (!decoders_to_inspect.empty())
     {
-        auto decoder_to_inspect = decoders_to_inspect.top();
+        const auto decoder_to_inspect = decoders_to_inspect.top();
         decoders_to_inspect.pop();
-        auto archive_decoder
+        const auto archive_decoder
             = dynamic_cast<const ArchiveDecoder*>(decoder_to_inspect);
         if (!archive_decoder)
             continue;
-        for (auto &format : archive_decoder->get_linked_formats())
+        for (const auto &format : archive_decoder->get_linked_formats())
         {
             if (known_formats.find(format) != known_formats.end())
                 continue;
@@ -39,14 +39,14 @@ static std::vector<std::shared_ptr<IDecoder>> collect_linked_decoders(
 
 static bool pass_through_decoders(
     const FileSaverCallback &recognition_proxy,
-    std::shared_ptr<File> original_file,
-    std::vector<std::shared_ptr<fmt::IDecoder>> decoders)
+    const std::shared_ptr<File> original_file,
+    const std::vector<std::shared_ptr<fmt::IDecoder>> &decoders)
 {
-    for (auto &decoder : decoders)
+    for (const auto &decoder : decoders)
     {
         FileSaverCallback decoder_proxy(
             [original_file, &recognition_proxy, &decoder]
-            (std::shared_ptr<File> converted_file)
+            (const std::shared_ptr<File> converted_file)
         {
             converted_file->name = decoder->naming_strategy()->decorate(
                 original_file->name, converted_file->name);

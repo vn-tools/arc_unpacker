@@ -9,11 +9,11 @@ using namespace au::fmt::fc01;
 
 TEST_CASE("FC01 ACD monochrome images", "[fmt]")
 {
-    AcdImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const AcdImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/fc01/files/acd/CSD02_35.ACD");
-    auto expected_image = tests::image_from_path(
+    const auto expected_image = tests::image_from_path(
         "tests/fmt/fc01/files/acd/CSD02_35-out.png");
-    auto actual_image = tests::decode(decoder, *input_file);
+    const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }

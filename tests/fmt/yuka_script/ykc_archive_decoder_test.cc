@@ -8,15 +8,15 @@ using namespace au::fmt::yuka_script;
 
 TEST_CASE("YukaScript YKC archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("another.txt", "abcdefghij"_b),
     };
 
-    YkcArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const YkcArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/yuka_script/files/ykc/test.ykc");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

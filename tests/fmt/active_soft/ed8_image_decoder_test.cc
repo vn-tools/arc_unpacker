@@ -9,11 +9,11 @@ using namespace au::fmt::active_soft;
 
 TEST_CASE("ActiveSoft ED8 images", "[fmt]")
 {
-    Ed8ImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const Ed8ImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/active_soft/files/ed8/EFFECT15.ed8");
-    auto expected_file = tests::image_from_path(
+    const auto expected_file = tests::image_from_path(
         "tests/fmt/active_soft/files/ed8/EFFECT15-out.png");
-    auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
 }

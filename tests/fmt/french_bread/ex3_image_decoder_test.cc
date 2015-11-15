@@ -10,11 +10,11 @@ using namespace au::fmt::french_bread;
 
 TEST_CASE("FrenchBread EX3 images", "[fmt]")
 {
-    Ex3ImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const Ex3ImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/french_bread/files/ex3/WIN_HISUI&KOHAKU.EX3");
-    auto expected_file = tests::zlib_file_from_path(
+    const auto expected_file = tests::zlib_file_from_path(
         "tests/fmt/french_bread/files/ex3/WIN_HISUI&KOHAKU-zlib-out.bmp");
-    auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
 }

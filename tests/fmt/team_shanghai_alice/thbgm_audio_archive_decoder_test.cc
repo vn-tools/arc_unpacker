@@ -20,9 +20,9 @@ TEST_CASE("Team Shanghai Alice THBGM audio (manual number of loops)", "[fmt]")
 
     ThbgmAudioArchiveDecoder decoder;
     decoder.set_loop_count(0);
-    auto input_file = tests::file_from_path(
+    const auto input_file = tests::file_from_path(
         "tests/fmt/team_shanghai_alice/files/thbgm/thbgm-data.dat");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
@@ -38,9 +38,9 @@ TEST_CASE("Team Shanghai Alice THBGM audio (default number of loops)", "[fmt]")
     expected_files[0]->name = "1.wav";
     expected_files[1]->name = "2.wav";
 
-    ThbgmAudioArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const ThbgmAudioArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/team_shanghai_alice/files/thbgm/thbgm-data.dat");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

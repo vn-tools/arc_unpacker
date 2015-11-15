@@ -9,11 +9,11 @@ using namespace au::fmt::west_vision;
 
 TEST_CASE("WestVision SYG images", "[fmt]")
 {
-    SygImageDecoder decoder;
-    auto input_file = tests::zlib_file_from_path(
+    const SygImageDecoder decoder;
+    const auto input_file = tests::zlib_file_from_path(
         "tests/fmt/west_vision/files/syg/loadx-zlib.syg");
-    auto expected_file = tests::image_from_path(
+    const auto expected_file = tests::image_from_path(
         "tests/fmt/west_vision/files/syg/loadx-out.png");
-    auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
 }

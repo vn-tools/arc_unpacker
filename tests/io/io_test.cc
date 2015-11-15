@@ -27,7 +27,7 @@ TEST_CASE("Writing to real files", "[io][io_cls]")
 
 TEST_CASE("Proper file position after initialization", "[io][io_cls]")
 {
-    BufferedIO io;
+    const BufferedIO io;
     REQUIRE(io.size() == 0);
     REQUIRE(io.tell() == 0);
 }

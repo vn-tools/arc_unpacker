@@ -8,15 +8,15 @@ using namespace au::fmt::gs;
 
 TEST_CASE("GS DAT archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("00000.dat", "1234567890"_b),
         tests::stub_file("00001.dat", "abcdefghijklmnopqrstuvwxyz"_b),
     };
 
-    DatArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const DatArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/gs/files/dat/test.dat");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

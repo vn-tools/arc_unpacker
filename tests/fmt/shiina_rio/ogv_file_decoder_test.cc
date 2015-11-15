@@ -8,11 +8,11 @@ using namespace au::fmt::shiina_rio;
 
 TEST_CASE("Shiina Rio OGV audio", "[fmt]")
 {
-    OgvFileDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const OgvFileDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/shiina_rio/files/ogv/TPSE070.OGV");
-    auto expected_file = tests::file_from_path(
+    const auto expected_file = tests::file_from_path(
         "tests/fmt/shiina_rio/files/ogv/TPSE070-out.ogg");
-    auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
 }

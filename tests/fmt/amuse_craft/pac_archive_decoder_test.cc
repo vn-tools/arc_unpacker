@@ -14,10 +14,10 @@ TEST_CASE("Amuse Craft PAC archives (v1)", "[fmt]")
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };
 
-    PacArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const PacArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/amuse_craft/files/pac/test-v1.pac");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 
@@ -29,9 +29,9 @@ TEST_CASE("Amuse Craft PAC archives (v2)", "[fmt]")
         tests::stub_file("dir/abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };
 
-    PacArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const PacArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/amuse_craft/files/pac/test-v2.pac");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

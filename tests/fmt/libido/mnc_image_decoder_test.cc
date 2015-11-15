@@ -9,11 +9,11 @@ using namespace au::fmt::libido;
 
 TEST_CASE("Libido MNC images", "[fmt]")
 {
-    MncImageDecoder decoder;
-    auto input_file = tests::zlib_file_from_path(
+    const MncImageDecoder decoder;
+    const auto input_file = tests::zlib_file_from_path(
         "tests/fmt/libido/files/mnc/test-zlib.MNC");
-    auto expected_image = tests::image_from_path(
+    const auto expected_image = tests::image_from_path(
         "tests/fmt/libido/files/mnc/test-out.png");
-    auto actual_image = tests::decode(decoder, *input_file);
+    const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_image, actual_image);
 }

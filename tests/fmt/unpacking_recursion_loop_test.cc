@@ -56,12 +56,10 @@ TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
         "test/test", []() { return std::make_unique<TestArchiveDecoder>(); });
 
     TestArchiveDecoder test_archive_decoder;
-    File dummy_file;
-    dummy_file.name = "test.archive";
-    dummy_file.io.write("whatever"_b);
+    File dummy_file("test.archive", "whatever"_b);
 
     std::vector<std::shared_ptr<File>> saved_files;
-    FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
+    const FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
     {
         saved_file->io.seek(0);
         saved_files.push_back(saved_file);

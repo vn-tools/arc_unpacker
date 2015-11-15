@@ -18,9 +18,9 @@ TEST_CASE("Twilight Frontier PAK1 audio", "[fmt]")
     expected_files[0]->name = "0001.wav";
     expected_files[1]->name = "0002.wav";
 
-    Pak1AudioArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const Pak1AudioArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/twilight_frontier/files/pak1/se.dat");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

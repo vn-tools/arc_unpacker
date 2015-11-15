@@ -12,15 +12,15 @@ static void do_test(
     const std::string input_path,
     const std::vector<std::string> expected_paths)
 {
-    AnmArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(input_path);
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const AnmArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(input_path);
+    const auto actual_files = tests::unpack(decoder, *input_file);
 
     REQUIRE(actual_files.size() == expected_paths.size());
-    for (auto i : util::range(expected_paths.size()))
+    for (const auto i : util::range(expected_paths.size()))
     {
-        auto expected_image = tests::image_from_path(expected_paths[i]);
-        auto actual_image = tests::image_from_file(*actual_files[i]);
+        const auto expected_image = tests::image_from_path(expected_paths[i]);
+        const auto actual_image = tests::image_from_file(*actual_files[i]);
         tests::compare_images(*expected_image, *actual_image);
     }
 }

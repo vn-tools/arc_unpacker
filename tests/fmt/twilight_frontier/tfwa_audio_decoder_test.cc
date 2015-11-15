@@ -8,11 +8,11 @@ using namespace au::fmt::twilight_frontier;
 
 TEST_CASE("Twilight Frontier TFWA audio", "[fmt]")
 {
-    TfwaAudioDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const TfwaAudioDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/twilight_frontier/files/tfwa/2592.wav");
-    auto expected_file = tests::file_from_path(
+    const auto expected_file = tests::file_from_path(
         "tests/fmt/twilight_frontier/files/tfwa/2592-out.wav");
-    auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, false);
 }

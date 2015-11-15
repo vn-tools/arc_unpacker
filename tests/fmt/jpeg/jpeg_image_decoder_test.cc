@@ -10,15 +10,15 @@ using namespace au::fmt::jpeg;
 
 TEST_CASE("JPEG 24-bit images", "[util]")
 {
-    auto input_file = tests::file_from_path(
+    const auto input_file = tests::file_from_path(
         "tests/fmt/jpeg/files/reimu_opaque.jpg");
 
-    JpegImageDecoder decoder;
-    auto pixels = tests::decode(decoder, *input_file);
+    const JpegImageDecoder decoder;
+    const auto pixels = tests::decode(decoder, *input_file);
     REQUIRE(pixels.width() == 1024);
     REQUIRE(pixels.height() == 1024);
 
-    auto color = pixels.at(200, 100);
+    const auto color = pixels.at(200, 100);
     REQUIRE(static_cast<int>(color.r) == 0x60);
     REQUIRE(static_cast<int>(color.g) == 0x97);
     REQUIRE(static_cast<int>(color.b) == 0xE7);

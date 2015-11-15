@@ -9,11 +9,11 @@ using namespace au::fmt::leaf;
 
 TEST_CASE("Leaf LF3 images", "[fmt]")
 {
-    Lf3ImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const Lf3ImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/leaf/files/lf3/KEY2.LF3");
-    auto expected_file = tests::image_from_path(
+    const auto expected_file = tests::image_from_path(
         "tests/fmt/leaf/files/lf3/KEY2-out.png");
-    auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_file);
 }

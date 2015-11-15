@@ -8,12 +8,12 @@ using namespace au::fmt::lilim;
 
 TEST_CASE("Lilim AOS scripts", "[fmt]")
 {
-    ScrFileDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const ScrFileDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/lilim/files/scr/var.scr");
     auto expected_file = tests::file_from_path(
         "tests/fmt/lilim/files/scr/var-out.txt");
     expected_file->name = "tests/fmt/lilim/files/scr/var.txt";
-    auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
     tests::compare_files(*expected_file, *actual_file, true);
 }

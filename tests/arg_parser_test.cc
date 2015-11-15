@@ -145,7 +145,7 @@ TEST_CASE(
     REQUIRE(ap.has_flag("flag"));
     REQUIRE_THROWS(ap.has_switch("flag"));
     REQUIRE_THROWS(ap.get_switch("flag"));
-    auto stray = ap.get_stray();
+    const auto stray = ap.get_stray();
     REQUIRE(stray.size() == 1);
     REQUIRE(stray[0] == "stray");
 }
@@ -171,7 +171,7 @@ TEST_CASE("Basic stray arguments", "[core][arg_parser]")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"stray1", "stray2"});
-    auto stray = ap.get_stray();
+    const auto stray = ap.get_stray();
     REQUIRE(stray.size() == 2);
     REQUIRE(stray[0] == "stray1");
     REQUIRE(stray[1] == "stray2");
@@ -181,7 +181,7 @@ TEST_CASE("Stray arguments with spaces", "[core][arg_parser]")
 {
     ArgParser ap;
     ap.parse(std::vector<std::string>{"long stray"});
-    auto stray = ap.get_stray();
+    const auto stray = ap.get_stray();
     REQUIRE(stray.size() == 1);
     REQUIRE(stray[0] == "long stray");
 }
@@ -189,7 +189,7 @@ TEST_CASE("Stray arguments with spaces", "[core][arg_parser]")
 TEST_CASE("Empty stray arguments", "[core][arg_parser]")
 {
     ArgParser ap;
-    auto stray = ap.get_stray();
+    const auto stray = ap.get_stray();
     REQUIRE(stray.size() == 0);
 }
 
@@ -199,7 +199,7 @@ TEST_CASE("Mixed types of arguments", "[core][arg_parser]")
     ap.register_switch({"--switch"});
     ap.register_flag({"--flag1"});
     ap.register_flag({"--flag2"});
-    std::vector<std::string> args
+    const std::vector<std::string> args
     {
         "stray1",
         "--switch=s",
@@ -213,7 +213,7 @@ TEST_CASE("Mixed types of arguments", "[core][arg_parser]")
     REQUIRE(ap.has_flag("flag1"));
     REQUIRE(ap.has_flag("flag2"));
 
-    auto stray = ap.get_stray();
+    const auto stray = ap.get_stray();
     REQUIRE(stray.size() == 2);
     REQUIRE(stray[0] == "stray1");
     REQUIRE(stray[1] == "stray2");

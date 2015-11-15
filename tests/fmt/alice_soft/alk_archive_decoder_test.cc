@@ -8,15 +8,15 @@ using namespace au::fmt::alice_soft;
 
 TEST_CASE("Alice Soft ALK archives", "[fmt]")
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("000.dat", "1234567890"_b),
         tests::stub_file("001.dat", "abcdefghijklmnopqrstuvwxyz"_b),
     };
 
-    AlkArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const AlkArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/alice_soft/files/alk/test.alk");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

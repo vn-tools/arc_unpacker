@@ -20,9 +20,9 @@ static void do_test(const std::string &input_path)
             util::format("extra%d.txt", i),
             bstr(util::format("content%d", i))));
 
-    Aos1ArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(input_path);
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const Aos1ArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(input_path);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 

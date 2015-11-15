@@ -21,9 +21,9 @@ TEST_CASE("QLiE ABMP7 archives", "[fmt]")
     expected_files[1]->name = "ボタン効果音1.ogg";
     expected_files[2]->name = "ボタン効果音2.ogg";
 
-    Abmp7ArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const Abmp7ArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/qlie/files/abmp7/ボタン.b");
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }

@@ -14,7 +14,7 @@ TEST_CASE("Formatting strings", "[util]")
 
     SECTION("Big strings")
     {
-        std::string big_string(1000, '-');
+        const std::string big_string(1000, '-');
         REQUIRE(big_string.size() == 1000);
         REQUIRE(format(big_string + "%d", 1) == big_string + "1");
         REQUIRE(format(big_string + "%02d", 5) == big_string + "05");

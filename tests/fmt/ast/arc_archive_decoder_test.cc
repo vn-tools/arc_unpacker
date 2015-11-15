@@ -8,15 +8,15 @@ using namespace au::fmt::ast;
 
 static void do_test(const std::string &input_path)
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<File>> expected_files
     {
         tests::stub_file("123.txt", "RIFF123123123 123123123 321"_b),
         tests::stub_file("abc.xyz", "RIFFabcdefghijklmnopqrstuvwxyz"_b),
     };
 
-    ArcArchiveDecoder decoder;
-    auto input_file = tests::file_from_path(input_path);
-    auto actual_files = tests::unpack(decoder, *input_file);
+    const ArcArchiveDecoder decoder;
+    const auto input_file = tests::file_from_path(input_path);
+    const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);
 }
 

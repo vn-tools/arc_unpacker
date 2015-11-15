@@ -9,12 +9,12 @@ using namespace au::fmt::sysadv;
 
 TEST_CASE("sysadv PGA images", "[fmt]")
 {
-    PgaImageDecoder decoder;
-    auto input_file = tests::file_from_path(
+    const PgaImageDecoder decoder;
+    const auto input_file = tests::file_from_path(
         "tests/fmt/sysadv/files/pga/flower.pga");
-    auto expected_image = tests::image_from_path(
+    const auto expected_image = tests::image_from_path(
         "tests/fmt/sysadv/files/pga/flower-out.png");
-    auto actual_file = tests::decode(decoder, *input_file);
-    auto actual_image = tests::image_from_file(*actual_file);
+    const auto actual_file = tests::decode(decoder, *input_file);
+    const auto actual_image = tests::image_from_file(*actual_file);
     tests::compare_images(*expected_image, *actual_image);
 }
