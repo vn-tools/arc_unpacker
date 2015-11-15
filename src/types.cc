@@ -47,9 +47,9 @@ size_t bstr::capacity() const
     return v.capacity();
 }
 
-size_t bstr::find(const bstr &other)
+size_t bstr::find(const bstr &other) const
 {
-    auto pos = std::search(
+    const auto pos = std::search(
         v.begin(), v.end(),
         other.get<u8>(), other.get<u8>() + other.size());
     if (pos == v.end())

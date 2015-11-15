@@ -31,7 +31,7 @@ namespace au {
         void resize(const size_t how_much);
         void reserve(const size_t how_much);
 
-        size_t find(const bstr &other);
+        size_t find(const bstr &other) const;
         bstr substr(const size_t start) const;
         bstr substr(const size_t start, const size_t size) const;
 
