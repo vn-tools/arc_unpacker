@@ -22,6 +22,11 @@ namespace io {
         IO &skip(int offset) override;
         void truncate(size_t new_size) override;
 
+        // specialize most commonly used functions
+        u8 read_u8() override;
+        u16 read_u16_le() override;
+        u32 read_u32_le() override;
+
         void reserve(size_t count);
 
     protected:

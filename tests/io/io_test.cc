@@ -46,6 +46,7 @@ TEST_CASE("NULL bytes in binary data don't cause anomalies", "[io][io_cls]")
 TEST_CASE("Reading integers", "[io][io_cls]")
 {
     BufferedIO io("\x01\x00\x00\x00"_b);
+    io.seek(0);
     REQUIRE(io.read_u32_le() == 1);
     REQUIRE(io.size() == 4);
 }

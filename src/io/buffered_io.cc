@@ -1,11 +1,23 @@
 #include "io/buffered_io.h"
+#include <cstring>
 #include "err.h"
 
+using namespace au;
 using namespace au::io;
 
 struct BufferedIO::Priv final
 {
     Priv(bstr buffer);
+
+    template<typename T> inline T read_primitive()
+    {
+        const auto size = sizeof(T);
+        if (buffer_pos + size > buffer.size())
+            throw err::EofError();
+        const auto ret = reinterpret_cast<const u32&>(buffer[buffer_pos]);
+        buffer_pos += size;
+        return ret;
+    }
 
     bstr buffer;
     size_t buffer_pos;
@@ -63,6 +75,21 @@ IO &BufferedIO::skip(int offset)
     return *this;
 }
 
+u8 BufferedIO::read_u8()
+{
+    return p->read_primitive<u8>();
+}
+
+u16 BufferedIO::read_u16_le()
+{
+    return p->read_primitive<u16>();
+}
+
+u32 BufferedIO::read_u32_le()
+{
+    return p->read_primitive<u32>();
+}
+
 void BufferedIO::read_impl(void *destination, size_t size)
 {
     // destination MUST exist and size MUST be at least 1
@@ -71,8 +98,7 @@ void BufferedIO::read_impl(void *destination, size_t size)
     auto source_ptr = p->buffer.get<u8>() + p->buffer_pos;
     auto destination_ptr = reinterpret_cast<u8*>(destination);
     p->buffer_pos += size;
-    while (size--)
-        *destination_ptr++ = *source_ptr++;
+    std::memcpy(destination_ptr, source_ptr, size);
 }
 
 void BufferedIO::write_impl(const void *source, size_t size)

@@ -24,22 +24,22 @@ namespace io {
         bstr read_to_zero(size_t bytes);
         bstr read_to_eof();
         bstr read_line();
-        u8 read_u8();
-        u16 read_u16_le();
-        u16 read_u16_be();
-        u32 read_u32_le();
-        u32 read_u32_be();
-        u64 read_u64_le();
-        u64 read_u64_be();
+        virtual u8 read_u8();
+        virtual u16 read_u16_le();
+        virtual u16 read_u16_be();
+        virtual u32 read_u32_le();
+        virtual u32 read_u32_be();
+        virtual u64 read_u64_le();
+        virtual u64 read_u64_be();
 
-        void write(const bstr &bytes);
-        void write_u8(u8);
-        void write_u16_le(u16);
-        void write_u16_be(u16);
-        void write_u32_le(u32);
-        void write_u32_be(u32);
-        void write_u64_le(u64);
-        void write_u64_be(u64);
+        virtual void write(const bstr &bytes);
+        virtual void write_u8(u8);
+        virtual void write_u16_le(u16);
+        virtual void write_u16_be(u16);
+        virtual void write_u32_le(u32);
+        virtual void write_u32_be(u32);
+        virtual void write_u64_le(u64);
+        virtual void write_u64_be(u64);
 
     protected:
         virtual void read_impl(void *input, size_t size) = 0;
