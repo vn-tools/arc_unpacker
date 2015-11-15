@@ -77,7 +77,7 @@ namespace au {
 
         std::string str(bool trim_to_zero = false) const;
 
-        bstr operator +(const bstr &other);
+        bstr operator +(const bstr &other) const;
         void operator +=(const bstr &other);
         void operator +=(const char c);
         void operator +=(const u8 c);

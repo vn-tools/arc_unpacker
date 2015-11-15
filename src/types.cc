@@ -83,7 +83,7 @@ void bstr::reserve(const size_t how_much)
     v.reserve(how_much);
 }
 
-bstr bstr::operator +(const bstr &other)
+bstr bstr::operator +(const bstr &other) const
 {
     bstr ret(&v[0], size());
     ret += other;
