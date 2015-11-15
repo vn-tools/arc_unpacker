@@ -17,18 +17,14 @@ bool AffFileDecoder::is_recognized_impl(File &file) const
 
 std::unique_ptr<File> AffFileDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
-
-    file.io.skip(4);
-    auto size = file.io.read_u32_le();
+    file.io.seek(magic.size() + 4);
+    const auto size = file.io.read_u32_le();
     file.io.skip(4);
 
-    auto output_file = std::make_unique<File>();
-    for (auto i : util::range(64))
-        if (!file.io.eof())
-            output_file->io.write_u8(file.io.read_u8() ^ key[i % key.size()]);
-    output_file->io.write_from_io(file.io);
-    output_file->name = file.name;
+    auto data = file.io.read_to_eof();
+    for (const auto i : util::range(std::min<size_t>(data.size(), 64)))
+        data[i] ^= key[i % key.size()];
+    auto output_file = std::make_unique<File>(file.name, data);
     output_file->guess_extension();
     return output_file;
 }

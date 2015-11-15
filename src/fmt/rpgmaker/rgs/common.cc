@@ -18,7 +18,7 @@ std::unique_ptr<File> rgs::read_file_impl(
     arc_file.io.seek(entry.offset);
 
     io::BufferedIO tmp_io;
-    tmp_io.write_from_io(arc_file.io, entry.size);
+    tmp_io.write(arc_file.io.read(entry.size));
     tmp_io.write("\x00\x00\x00\x00"_b);
     tmp_io.seek(0);
 

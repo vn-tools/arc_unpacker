@@ -19,7 +19,7 @@ std::unique_ptr<File> PgaImageDecoder::decode_impl(File &file) const
     output_file->io.write("\x00\x00\x00\x0D"_b);
     output_file->io.write("IHDR"_b);
     file.io.seek(0xB);
-    output_file->io.write_from_io(file.io);
+    output_file->io.write(file.io.read_to_eof());
     output_file->name = file.name;
     output_file->change_extension("png");
     return output_file;

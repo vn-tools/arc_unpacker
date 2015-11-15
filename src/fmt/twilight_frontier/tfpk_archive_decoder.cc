@@ -284,7 +284,7 @@ static HashLookupMap read_fn_map(
 
     tmp_io = std::make_unique<io::BufferedIO>();
     for (auto i : util::range(block_count))
-        tmp_io->write_from_io(*reader.read_block());
+        tmp_io->write(reader.read_block()->read_to_eof());
 
     tmp_io->seek(0);
     tmp_io = std::make_unique<io::BufferedIO>(

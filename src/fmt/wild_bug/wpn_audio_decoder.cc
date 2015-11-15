@@ -46,7 +46,7 @@ std::unique_ptr<File> WpnAudioDecoder::decode_impl(File &file) const
         output_file->io.write(chunk.prefix);
         output_file->io.write_u32_le(chunk.size);
         file.io.seek(chunk.offset);
-        output_file->io.write_from_io(file.io, chunk.size);
+        output_file->io.write(file.io.read(chunk.size));
     }
 
     output_file->io.seek(4);

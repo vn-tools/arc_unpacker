@@ -55,7 +55,7 @@ static void decrypt(
     left += shift;
     left = std::min(left, static_cast<int>(input_io.size() - input_io.tell()));
     if (left > 0)
-        output_io.write_from_io(input_io, left);
+        output_io.write(input_io.read(left));
     output_io.seek(0);
 }
 

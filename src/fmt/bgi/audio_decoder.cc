@@ -13,14 +13,14 @@ bool AudioDecoder::is_recognized_impl(File &file) const
 
 std::unique_ptr<File> AudioDecoder::decode_impl(File &file) const
 {
-    size_t header_size = file.io.read_u32_le();
+    file.io.seek(0);
+    const auto header_size = file.io.read_u32_le();
     file.io.skip(magic.size());
-
-    u32 file_size = file.io.read_u32_le();
+    const auto file_size = file.io.read_u32_le();
     file.io.seek(header_size);
-    auto output_file = std::make_unique<File>();
-    output_file->io.write_from_io(file.io, file_size);
-    output_file->name = file.name;
+    const auto data = file.io.read(file_size);
+
+    auto output_file = std::make_unique<File>(file.name, data);
     output_file->change_extension("ogg");
     return output_file;
 }

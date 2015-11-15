@@ -125,11 +125,6 @@ u64 IO::read_u64_be()
     return util::from_big_endian<u64>(ret);
 }
 
-void IO::write_from_io(IO &input)
-{
-    write_from_io(input, input.size() - input.tell());
-}
-
 void IO::write(const bstr &bytes)
 {
     write(bytes.get<char>(), bytes.size());

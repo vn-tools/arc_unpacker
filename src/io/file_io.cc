@@ -58,11 +58,6 @@ void FileIO::write(const void *source, size_t size)
         throw err::IoError("Could not write full data");
 }
 
-void FileIO::write_from_io(IO &source, size_t size)
-{
-    write(source.read(size));
-}
-
 size_t FileIO::tell() const
 {
     return ftell(p->file);

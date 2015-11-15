@@ -28,16 +28,13 @@ BufferedIO::BufferedIO(const char *buffer, size_t buffer_size)
 {
 }
 
-BufferedIO::BufferedIO(IO &other_io, size_t size) : p(new Priv(""_b))
+BufferedIO::BufferedIO(IO &other_io, size_t size)
+    : p(new Priv(other_io.read(size)))
 {
-    write_from_io(other_io, size);
-    seek(0);
 }
 
-BufferedIO::BufferedIO(IO &other_io) : p(new Priv(""_b))
+BufferedIO::BufferedIO(IO &other_io) : p(new Priv(other_io.read_to_eof()))
 {
-    write_from_io(other_io, other_io.size() - other_io.tell());
-    seek(0);
 }
 
 BufferedIO::~BufferedIO()
@@ -93,13 +90,6 @@ void BufferedIO::write(const void *source, size_t size)
     p->buffer_pos += size;
     while (size--)
         *destination_ptr++ = *source_ptr++;
-}
-
-void BufferedIO::write_from_io(IO &source, size_t size)
-{
-    reserve(p->buffer_pos + size);
-    source.read(p->buffer.get<u8>() + p->buffer_pos, size);
-    p->buffer_pos += size;
 }
 
 size_t BufferedIO::tell() const

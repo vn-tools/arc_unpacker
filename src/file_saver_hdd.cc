@@ -75,7 +75,7 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
 
         io::FileIO output_io(full_path.string(), io::FileMode::Write);
         file->io.seek(0);
-        output_io.write_from_io(file->io);
+        output_io.write(file->io.read_to_eof());
         Log.success("ok\n");
     }
     catch (std::runtime_error &e)

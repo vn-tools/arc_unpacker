@@ -26,9 +26,7 @@ namespace io {
         void read(void *destination, size_t size) override;
 
         using IO::write;
-        using IO::write_from_io;
         void write(const void *source, size_t size) override;
-        void write_from_io(IO &source, size_t size) override;
 
         void reserve(size_t count);
 
