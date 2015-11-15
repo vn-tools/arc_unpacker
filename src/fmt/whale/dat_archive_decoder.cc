@@ -321,7 +321,7 @@ std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
 
 std::vector<std::string> DatArchiveDecoder::get_linked_formats() const
 {
-    return { "kirikiri/tlg" };
+    return {"kirikiri/tlg"};
 }
 
 static auto dummy = fmt::register_fmt<DatArchiveDecoder>("whale/dat");

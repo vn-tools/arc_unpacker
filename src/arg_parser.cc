@@ -234,7 +234,7 @@ static std::string format_switch_help(const SwitchImpl &sw, bool force)
         [](const auto &it) { return !it.second.empty(); });
     std::vector<std::pair<std::string, std::string>> dict;
     for (auto it : values)
-        dict.push_back({ it.first, it.second });
+        dict.push_back({it.first, it.second});
     out += use_descriptions
         ? format_dictionary_as_list("- ", dict)
         : format_dictionary_as_table("- ", dict);
@@ -252,7 +252,7 @@ static void print_options(
 {
     std::vector<std::pair<std::string, std::string>> dict;
     for (const auto &opt : options)
-        dict.push_back({ opt->get_invocation_help(), opt->description });
+        dict.push_back({opt->get_invocation_help(), opt->description});
     Log.info(format_dictionary_as_list("", dict));
 }
 

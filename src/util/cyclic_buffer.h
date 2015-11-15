@@ -13,7 +13,7 @@ namespace util {
             : start_pos(start_pos),
             current_pos(start_pos),
             written((start_pos % n) - n),
-            a { 0 }
+            a {0}
         {
         }
 

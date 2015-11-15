@@ -20,8 +20,11 @@ grep 'length' **/*.{cc,h} | grep -v run_length && echo 'Use "size" instead.'
 echo 'Checking for iostream outside logger...'
 grep 'iostream' **/*.{cc,h} | grep -v logger
 
+echo 'Checking for whitespace around braces...'
+grep '[({] [0-9"]\|[0-9"] [})]\|[]=] *{  *}' **/*.{cc,h}
+
 echo 'Checking for sloppy exceptions...'
-grep 'throw std' **/*.cc|grep -v logic_error
+grep 'throw std' **/*.cc | grep -v logic_error
 
 echo 'Checking for nonfinal struct/classes...'
 grep 'struct \|class ' **/*.{cc,h} \
@@ -62,6 +65,6 @@ echo 'Checking for Log.debug()...'
 grep 'Log\.debug(' **/*.cc && echo "Don't use Log.debug() in production code."
 
 echo 'Checking for comments without spaces...'
-grep '//[^ ]' **/*.{cc,h}|grep -v '//$'|grep -v 'https\?://'
+grep '//[^ ]' **/*.{cc,h} | grep -v '//$' | grep -v 'https\?://'
 
 exit 0

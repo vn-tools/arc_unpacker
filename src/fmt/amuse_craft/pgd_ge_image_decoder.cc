@@ -81,7 +81,7 @@ static bstr apply_filter_2(
     bstr output(height * out_stride);
     auto output_ptr = output.get<u8>();
 
-    const std::initializer_list<size_t> indices = { 0, 1, width, width + 1 };
+    const std::initializer_list<size_t> indices = {0, 1, width, width + 1};
     for (auto y : util::range(height / 2))
     {
         for (auto x : util::range(width / 2))

@@ -26,11 +26,11 @@ TEST_CASE("Leaf PAK2 images", "[fmt]")
 {
     SECTION("Opaque")
     {
-        do_test("SpMoji-zlib", { "SpMoji-out.png" });
+        do_test("SpMoji-zlib", {"SpMoji-out.png"});
     }
 
     SECTION("Masked")
     {
-        do_test("c010101b-zlib", { "c010101b-out.png" });
+        do_test("c010101b-zlib", {"c010101b-out.png"});
     }
 }

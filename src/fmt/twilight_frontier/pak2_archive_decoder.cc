@@ -145,7 +145,7 @@ void Pak2ArchiveDecoder::preprocess(
 
 std::vector<std::string> Pak2ArchiveDecoder::get_linked_formats() const
 {
-    return { "twilight-frontier/pak2-sfx", "twilight-frontier/pak2-gfx" };
+    return {"twilight-frontier/pak2-sfx", "twilight-frontier/pak2-gfx"};
 }
 
 static auto dummy

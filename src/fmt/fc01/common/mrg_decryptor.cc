@@ -69,8 +69,8 @@ bstr MrgDecryptor::decrypt_with_key(const u8 initial_key)
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<const u8>();
 
-    u16 arr1[0x101] { };
-    u16 arr2[0x101] { };
+    u16 arr1[0x101] {};
+    u16 arr2[0x101] {};
     std::vector<u8> arr3;
 
     auto key = initial_key;

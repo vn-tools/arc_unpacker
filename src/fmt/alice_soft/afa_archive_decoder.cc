@@ -76,7 +76,7 @@ std::unique_ptr<File> AfaArchiveDecoder::read_file_impl(
 
 std::vector<std::string> AfaArchiveDecoder::get_linked_formats() const
 {
-    return { "alice-soft/aff", "alice-soft/ajp", "alice-soft/qnt" };
+    return {"alice-soft/aff", "alice-soft/ajp", "alice-soft/qnt"};
 }
 
 static auto dummy = fmt::register_fmt<AfaArchiveDecoder>("alice-soft/afa");

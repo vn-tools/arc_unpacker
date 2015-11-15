@@ -427,7 +427,7 @@ std::unique_ptr<File> PackArchiveDecoder::read_file_impl(
 
 std::vector<std::string> PackArchiveDecoder::get_linked_formats() const
 {
-    return { "qlie/abmp7", "qlie/abmp10", "qlie/dpng" };
+    return {"qlie/abmp7", "qlie/abmp10", "qlie/dpng"};
 }
 
 static auto dummy = fmt::register_fmt<PackArchiveDecoder>("qlie/pack");

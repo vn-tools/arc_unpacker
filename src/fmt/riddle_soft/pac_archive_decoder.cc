@@ -57,7 +57,7 @@ std::unique_ptr<File> PacArchiveDecoder::read_file_impl(
 
 std::vector<std::string> PacArchiveDecoder::get_linked_formats() const
 {
-    return { "riddle-soft/cmp" };
+    return {"riddle-soft/cmp"};
 }
 
 static auto dummy = fmt::register_fmt<PacArchiveDecoder>("riddle-soft/pac");

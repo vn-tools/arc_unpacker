@@ -24,7 +24,7 @@ namespace
 
 std::vector<std::string> TestArchiveDecoder::get_linked_formats() const
 {
-    return { "test/test" };
+    return {"test/test"};
 }
 
 bool TestArchiveDecoder::is_recognized_impl(File &arc_file) const

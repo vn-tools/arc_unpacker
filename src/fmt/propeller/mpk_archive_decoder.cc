@@ -62,7 +62,7 @@ std::unique_ptr<File> MpkArchiveDecoder::read_file_impl(
 
 std::vector<std::string> MpkArchiveDecoder::get_linked_formats() const
 {
-    return { "propeller/mgr" };
+    return {"propeller/mgr"};
 }
 
 static auto dummy = fmt::register_fmt<MpkArchiveDecoder>("propeller/mpk");

@@ -89,7 +89,7 @@ std::unique_ptr<File> Pbg3ArchiveDecoder::read_file_impl(
 
 std::vector<std::string> Pbg3ArchiveDecoder::get_linked_formats() const
 {
-    return { "team-shanghai-alice/anm" };
+    return {"team-shanghai-alice/anm"};
 }
 
 static auto dummy

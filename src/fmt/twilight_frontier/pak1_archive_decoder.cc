@@ -104,7 +104,7 @@ std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
 
 std::vector<std::string> Pak1ArchiveDecoder::get_linked_formats() const
 {
-    return { "twilight-frontier/pak1-sfx", "twilight-frontier/pak1-gfx" };
+    return {"twilight-frontier/pak1-sfx", "twilight-frontier/pak1-gfx"};
 }
 
 static auto dummy

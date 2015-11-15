@@ -65,7 +65,7 @@ static bstr serialize_file(const std::string &name, const bstr &content)
 
 std::vector<std::string> TestArchiveDecoder::get_linked_formats() const
 {
-    return { "test/test-file", "test/test-archive" };
+    return {"test/test-file", "test/test-archive"};
 }
 
 bool TestFileDecoder::is_recognized_impl(File &file) const
@@ -220,7 +220,7 @@ TEST_CASE(
     File dummy_file(
         "fs/archive", serialize_file("archive.arc", nested_archive_content));
 
-    const FileSaverCallback saver([](std::shared_ptr<File>) {});
+    const FileSaverCallback saver([](std::shared_ptr<File>) { });
     fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
 
     REQUIRE(names_for_recognition.size() == 3);

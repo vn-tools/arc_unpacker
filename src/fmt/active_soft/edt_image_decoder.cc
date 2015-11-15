@@ -30,7 +30,7 @@ pix::Grid EdtImageDecoder::decode_impl(File &file) const
     const auto data_size = file.io.read_u32_le();
     const auto raw_size = file.io.read_u32_le();
 
-    pix::Pixel transparent_color = { 0, 0, 0, 0xFF };
+    pix::Pixel transparent_color = {0, 0, 0, 0xFF};
     std::string base_file_name;
     if (meta_size)
     {
@@ -48,11 +48,11 @@ pix::Grid EdtImageDecoder::decode_impl(File &file) const
     const size_t target_size = height * stride;
 
     std::vector<std::pair<s8, s8>> shift_table;
-    for (const auto y : { -4, -3, -2, -1 })
-    for (const auto x : { -3, -2, -1, 0, 1, 2, 3 })
-        shift_table.push_back({ x, y });
-    for (const auto x : { -4, -3, -2, -1 })
-        shift_table.push_back({ x, 0 });
+    for (const auto y : {-4, -3, -2, -1})
+    for (const auto x : {-3, -2, -1, 0, 1, 2, 3})
+        shift_table.push_back({x, y});
+    for (const auto x : {-4, -3, -2, -1})
+        shift_table.push_back({x, 0});
 
     std::vector<size_t> look_behind_table;
     for (const auto shift : shift_table)

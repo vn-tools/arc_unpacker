@@ -88,7 +88,7 @@ std::unique_ptr<File> LnkArchiveDecoder::read_file_impl(
 
 std::vector<std::string> LnkArchiveDecoder::get_linked_formats() const
 {
-    return { "kid/cps", "kid/prt", "kid/waf" };
+    return {"kid/cps", "kid/prt", "kid/waf"};
 }
 
 static auto dummy = fmt::register_fmt<LnkArchiveDecoder>("kid/lnk");

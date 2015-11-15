@@ -16,8 +16,8 @@ static const unsigned int days_per_100_years = days_per_4_years * 25 - 1;
 static const unsigned int days_per_400_years = days_per_100_years * 4 + 1;
 static const unsigned int year_day_acc[2][13] =
 {
-    { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
-    { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 },
+    {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365},
+    {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366},
 };
 static const double pi = 3.14159265358979323846;
 
@@ -553,7 +553,7 @@ void warc::decrypt_with_flags1(
     if (data.size() < 0x400)
         return;
     const u32 key = 0xECB2F5B2;
-    u32 k[4] = { key + 1, key + 4, key + 2, key + 3 };
+    u32 k[4] = {key + 1, key + 4, key + 2, key + 3};
     if ((flags & 0x202) == 0x202)
     {
         for (const auto i : util::range(0xFF))

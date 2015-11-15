@@ -62,7 +62,7 @@ std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
 
 std::vector<std::string> ArcArchiveDecoder::get_linked_formats() const
 {
-    return { "majiro/rc8", "majiro/rct" };
+    return {"majiro/rc8", "majiro/rct"};
 }
 
 static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("majiro/arc");

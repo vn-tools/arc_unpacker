@@ -108,7 +108,7 @@ std::unique_ptr<File> MrgArchiveDecoder::read_file_impl(
 
 std::vector<std::string> MrgArchiveDecoder::get_linked_formats() const
 {
-    return { "fc01/acd", "fc01/mca", "fc01/mcg" };
+    return {"fc01/acd", "fc01/mca", "fc01/mcg"};
 }
 
 static auto dummy = fmt::register_fmt<MrgArchiveDecoder>("fc01/mrg");

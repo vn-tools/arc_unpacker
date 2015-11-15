@@ -93,7 +93,7 @@ void au::util::mt::init_by_array(unsigned long init_key[], int key_size)
 unsigned long au::util::mt::genrand_int32()
 {
     unsigned long y;
-    static unsigned long mag01[2] = { 0x0ul, MATRIX_A };
+    static unsigned long mag01[2] = {0x0ul, MATRIX_A};
 
     if (mti >= N)
     {

@@ -62,7 +62,7 @@ std::unique_ptr<File> PArchiveDecoder::read_file_impl(
 
 std::vector<std::string> PArchiveDecoder::get_linked_formats() const
 {
-    return { "french-bread/ex3" };
+    return {"french-bread/ex3"};
 }
 
 static auto dummy = fmt::register_fmt<PArchiveDecoder>("french-bread/p");

@@ -42,7 +42,7 @@ TEST_CASE("Reading single bits", "[io][bit_reader]")
 
 TEST_CASE("Reading multiple bits", "[io][bit_reader]")
 {
-    BitReader reader(from_bits({ 0b10001111 }));
+    BitReader reader(from_bits({0b10001111}));
     REQUIRE(reader.get(7) == 0b1000111);
     REQUIRE(reader.get(1));
 }
@@ -71,7 +71,7 @@ TEST_CASE("Reading multiple bytes", "[io][bit_reader]")
 
     SECTION("Bigger test")
     {
-        BitReader reader(from_bits({ 0b10101010, 0b11110000, 0b00110011 }));
+        BitReader reader(from_bits({0b10101010, 0b11110000, 0b00110011}));
         REQUIRE(reader.get(1) == 1);
         REQUIRE(reader.get(23) == 0b01010101111000000110011);
     }
@@ -79,14 +79,14 @@ TEST_CASE("Reading multiple bytes", "[io][bit_reader]")
     SECTION("Max bit reader capacity test (unaligned)")
     {
         BitReader reader(from_bits({
-            0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+            0b11001100, 0b10101010, 0b11110000, 0b00110011}));
         REQUIRE(reader.get(32) == 0b11001100'10101010'11110000'00110011);
     }
 
     SECTION("Max bit reader capacity test (aligned)")
     {
         BitReader reader(from_bits({
-            0b11001100, 0b10101010, 0b11110000, 0b00110011, 0b01010101 }));
+            0b11001100, 0b10101010, 0b11110000, 0b00110011, 0b01010101}));
         reader.get(1);
         REQUIRE(reader.get(32) == 0b1001100'10101010'11110000'00110011'0);
     }
@@ -122,7 +122,7 @@ TEST_CASE("Seeking", "[io][bit_reader]")
         BitReader reader(from_bits({
             0b00000000, 0b00000000, 0b00000000, 0b00000000,
             0b11111111, 0b11111111, 0b11111111, 0b11111111,
-            0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+            0b11001100, 0b10101010, 0b11110000, 0b00110011}));
         reader.seek(0);
         REQUIRE(reader.get(32) == 0b00000000000000000000000000000000);
         reader.seek(32);
@@ -134,7 +134,7 @@ TEST_CASE("Seeking", "[io][bit_reader]")
     SECTION("Byte aligned")
     {
         BitReader reader(from_bits({
-            0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+            0b11001100, 0b10101010, 0b11110000, 0b00110011}));
         reader.seek(0);  REQUIRE(reader.get(8) == 0b11001100);
         reader.seek(8);  REQUIRE(reader.get(8) == 0b10101010);
         reader.seek(16); REQUIRE(reader.get(8) == 0b11110000);
@@ -144,7 +144,7 @@ TEST_CASE("Seeking", "[io][bit_reader]")
     SECTION("Unaligned")
     {
         BitReader reader(from_bits({
-            0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+            0b11001100, 0b10101010, 0b11110000, 0b00110011}));
         reader.seek(0);  REQUIRE(reader.get(8) == 0b11001100);
         reader.seek(1);  REQUIRE(reader.get(8) == 0b10011001);
         reader.seek(2);  REQUIRE(reader.get(8) == 0b00110010);
@@ -175,7 +175,7 @@ TEST_CASE("Seeking", "[io][bit_reader]")
     SECTION("Unaligned (automatic)")
     {
         BitReader reader(from_bits({
-            0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+            0b11001100, 0b10101010, 0b11110000, 0b00110011}));
         for (auto i : util::range(32))
         {
             reader.seek(i);
@@ -189,7 +189,7 @@ TEST_CASE("Seeking", "[io][bit_reader]")
     SECTION("Seeking beyond EOF throws errors")
     {
         BitReader reader(from_bits({
-            0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+            0b11001100, 0b10101010, 0b11110000, 0b00110011}));
         for (auto i : util::range(32))
         {
             reader.seek(31);
@@ -204,7 +204,7 @@ TEST_CASE("Seeking", "[io][bit_reader]")
 TEST_CASE("Skipping", "[io][bit_reader]")
 {
     BitReader reader(from_bits({
-        0b11001100, 0b10101010, 0b11110000, 0b00110011 }));
+        0b11001100, 0b10101010, 0b11110000, 0b00110011}));
     reader.seek(0);
     REQUIRE(reader.get(8) == 0b11001100);
     reader.skip(-7);

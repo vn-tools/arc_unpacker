@@ -152,7 +152,7 @@ std::unique_ptr<File> TacArchiveDecoder::read_file_impl(
 
 std::vector<std::string> TacArchiveDecoder::get_linked_formats() const
 {
-    return { "tanuki/tac" };
+    return {"tanuki/tac"};
 }
 
 static auto dummy = fmt::register_fmt<TacArchiveDecoder>("tanuki/tac");

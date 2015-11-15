@@ -159,7 +159,7 @@ bstr Decoder::read_compressed_section(
     else
         retriever.reset(new RetrievalStrategy3(bit_reader));
 
-    DecoderContext context { section_io, bit_reader };
+    DecoderContext context {section_io, bit_reader};
     while (output_ptr < output_end)
     {
         if (context.bit_reader.get(1))

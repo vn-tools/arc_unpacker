@@ -8,13 +8,13 @@ using namespace au;
 
 static const std::vector<std::pair<std::string, bstr>> magic_definitions
 {
-    { "b",      "abmp"_b         }, // QLiE
-    { "imoavi", "IMOAVI"_b       }, // QLiE
-    { "png",    "\x89PNG"_b      },
-    { "bmp",    "BM"_b           },
-    { "wav",    "RIFF"_b         },
-    { "ogg",    "OggS"_b         },
-    { "jpeg",   "\xFF\xD8\xFF"_b },
+    {"b",      "abmp"_b},   // QLiE
+    {"imoavi", "IMOAVI"_b}, // QLiE
+    {"png",    "\x89PNG"_b},
+    {"bmp",    "BM"_b},
+    {"wav",    "RIFF"_b},
+    {"ogg",    "OggS"_b},
+    {"jpeg",   "\xFF\xD8\xFF"_b},
 };
 
 static void change_extension(

@@ -50,7 +50,7 @@ std::unique_ptr<File> BidArchiveDecoder::read_file_impl(
 
 std::vector<std::string> BidArchiveDecoder::get_linked_formats() const
 {
-    return { "libido/mnc" };
+    return {"libido/mnc"};
 }
 
 static auto dummy = fmt::register_fmt<BidArchiveDecoder>("libido/bid");

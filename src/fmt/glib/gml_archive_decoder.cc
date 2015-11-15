@@ -78,7 +78,7 @@ std::unique_ptr<File> GmlArchiveDecoder::read_file_impl(
 
 std::vector<std::string> GmlArchiveDecoder::get_linked_formats() const
 {
-    return { "glib/pgx", "vorbis/wav" };
+    return {"glib/pgx", "vorbis/wav"};
 }
 
 static auto dummy = fmt::register_fmt<GmlArchiveDecoder>("glib/gml");

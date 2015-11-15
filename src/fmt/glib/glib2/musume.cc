@@ -8,12 +8,12 @@ using namespace au::fmt::glib::glib2;
 
 static const std::array<size_t, 4> permutations[6] =
 {
-    { 3, 2, 1, 0 },
-    { 0, 2, 1, 3 },
-    { 1, 0, 3, 2 },
-    { 3, 0, 2, 1 },
-    { 2, 1, 3, 0 },
-    { 3, 2, 1, 0 },
+    {3, 2, 1, 0},
+    {0, 2, 1, 3},
+    {1, 0, 3, 2},
+    {3, 0, 2, 1},
+    {2, 1, 3, 0},
+    {3, 2, 1, 0},
 };
 
 static const std::function<u8(u8, size_t)> funcs[] =
@@ -156,5 +156,5 @@ std::unique_ptr<Decoder> MusumePlugin::create_decoder(
 
 std::unique_ptr<Decoder> MusumePlugin::create_header_decoder() const
 {
-    return create_decoder({ 0x8465B49B, 0x4D619A7B, 0x7365C6Ad, 0x7CFD70A7 });
+    return create_decoder({0x8465B49B, 0x4D619A7B, 0x7365C6Ad, 0x7CFD70A7});
 }

@@ -98,7 +98,7 @@ std::unique_ptr<File> WbpArchiveDecoder::read_file_impl(
 
 std::vector<std::string> WbpArchiveDecoder::get_linked_formats() const
 {
-    return { "wild-bug/wbi", "wild-bug/wbm", "wild-bug/wpn", "wild-bug/wwa" };
+    return {"wild-bug/wbi", "wild-bug/wbm", "wild-bug/wpn", "wild-bug/wwa"};
 }
 
 static auto dummy = fmt::register_fmt<WbpArchiveDecoder>("wild-bug/wbp");

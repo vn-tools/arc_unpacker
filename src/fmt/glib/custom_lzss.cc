@@ -17,7 +17,7 @@ bstr glib::custom_lzss_decompress(io::IO &input_io, size_t output_size)
 {
     const size_t dict_size = 0x1000;
     size_t dict_pos = 0xFEE;
-    u8 dict[dict_size] { };
+    u8 dict[dict_size] {};
 
     bstr output(output_size);
     auto output_ptr = output.get<u8>();

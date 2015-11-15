@@ -64,7 +64,7 @@ PluginRegistry::PluginRegistry() : p(new Priv)
         {
             auto plugin = create_plugin(
                 2370,
-                { 0xF182C682, 0xE882AA82, 0x718E5896, 0x8183CC82, 0xDAC98283 });
+                {0xF182C682, 0xE882AA82, 0x718E5896, 0x8183CC82, 0xDAC98283});
             return plugin;
         });
 
@@ -73,7 +73,7 @@ PluginRegistry::PluginRegistry() : p(new Priv)
         "Shojo Mama", []()
         {
             auto plugin = create_plugin(
-                2490, { 0x4B535453, 0xA15FA15F, 0, 0, 0 });
+                2490, {0x4B535453, 0xA15FA15F, 0, 0, 0});
             plugin->flag_crypt.pre = warc::decrypt_with_flags1;
             plugin->flag_crypt.post = warc::decrypt_with_flags1;
             return plugin;
@@ -86,7 +86,7 @@ PluginRegistry::PluginRegistry() : p(new Priv)
         []()
         {
             auto plugin = create_plugin(
-                2490, { 0xF1AD65AB, 0x55B7E1AD, 0x62B875B8, 0, 0 });
+                2490, {0xF1AD65AB, 0x55B7E1AD, 0x62B875B8, 0, 0});
             plugin->logo_data = read_file("logo4.jpg").substr(0, 0xBFAE);
             plugin->flag_crypt.pre = nullptr;
             plugin->flag_crypt.pre = warc::decrypt_with_flags2;
@@ -98,7 +98,7 @@ PluginRegistry::PluginRegistry() : p(new Priv)
         "Sorcery Jokers", []()
         {
             auto plugin = create_plugin(
-                2500, { 0x6C877787, 0x00007787, 0, 0, 0 });
+                2500, {0x6C877787, 0x00007787, 0, 0, 0});
             plugin->logo_data = read_file("logo5.jpg");
             plugin->flag_crypt.pre = nullptr;
             plugin->flag_crypt.post = warc::decrypt_with_flags3;

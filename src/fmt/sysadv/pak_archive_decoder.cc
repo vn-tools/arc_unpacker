@@ -54,7 +54,7 @@ std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
 
 std::vector<std::string> PakArchiveDecoder::get_linked_formats() const
 {
-    return { "sysadv/pga" };
+    return {"sysadv/pga"};
 }
 
 static auto dummy = fmt::register_fmt<PakArchiveDecoder>("sysadv/pak");

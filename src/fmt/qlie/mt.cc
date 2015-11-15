@@ -48,7 +48,7 @@ void CustomMersenneTwister::xor_state(const bstr &data)
 u32 CustomMersenneTwister::get_next_integer()
 {
     u32 y;
-    static u32 mag01[2] = { 0x0ul, matrix_a };
+    static u32 mag01[2] = {0x0ul, matrix_a};
 
     if (p->mti >= n)
     {

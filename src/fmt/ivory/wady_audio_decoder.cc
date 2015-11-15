@@ -75,7 +75,7 @@ static bstr decode_v1(
     auto samples_ptr = samples.get<u16>();
     auto samples_end = samples.end<u16>();
 
-    u16 prev_sample[2] = { 0, 0 };
+    u16 prev_sample[2] = {0, 0};
     io::BufferedIO tmp_io(io);
     while (!tmp_io.eof() && samples_ptr < samples_end)
     {
@@ -109,7 +109,7 @@ static bstr decode_v2(io::IO &io, size_t sample_count, size_t channels)
         0x0119, 0x0160, 0x01B8, 0x0226, 0x02AF, 0x035B, 0x0431, 0x053E,
         0x068E, 0x0831, 0x0A3D, 0x0CCD, 0x1000, 0x1400, 0x1900, 0x1F40,
     };
-    static const u32 table2[] = { 3, 4, 5, 6, 8, 16, 32, 256 };
+    static const u32 table2[] = {3, 4, 5, 6, 8, 16, 32, 256};
 
     bstr samples(sample_count * 2 * channels);
 

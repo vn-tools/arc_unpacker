@@ -160,7 +160,7 @@ std::unique_ptr<File> MblArchiveDecoder::read_file_impl(
 
 std::vector<std::string> MblArchiveDecoder::get_linked_formats() const
 {
-    return { "ivory/prs", "ivory/wady" };
+    return {"ivory/prs", "ivory/wady"};
 }
 
 static auto dummy = fmt::register_fmt<MblArchiveDecoder>("ivory/mbl");

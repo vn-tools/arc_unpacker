@@ -107,7 +107,7 @@ std::unique_ptr<File> PacArchiveDecoder::read_file_impl(
 
 std::vector<std::string> PacArchiveDecoder::get_linked_formats() const
 {
-    return { "minato-soft/fil" };
+    return {"minato-soft/fil"};
 }
 
 static auto dummy = fmt::register_fmt<PacArchiveDecoder>("minato-soft/pac");

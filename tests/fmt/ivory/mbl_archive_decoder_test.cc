@@ -47,7 +47,7 @@ TEST_CASE("Ivory MBL archives", "[fmt]")
     {
         do_test(
             "mg_data-candy.mbl",
-            { tests::file_from_path(dir + "MAIN-candy", "MAIN") },
+            {tests::file_from_path(dir + "MAIN-candy", "MAIN")},
             "candy");
     }
 
@@ -55,7 +55,7 @@ TEST_CASE("Ivory MBL archives", "[fmt]")
     {
         do_test(
             "mg_data-wanko.mbl",
-            { tests::file_from_path(dir + "TEST-wanko", "TEST") },
+            {tests::file_from_path(dir + "TEST-wanko", "TEST")},
             "wanko");
     }
 }

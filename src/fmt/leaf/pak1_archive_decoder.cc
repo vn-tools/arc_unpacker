@@ -241,7 +241,7 @@ void Pak1ArchiveDecoder::preprocess(
 
 std::vector<std::string> Pak1ArchiveDecoder::get_linked_formats() const
 {
-    return { "leaf/grp" };
+    return {"leaf/grp"};
 }
 
 static auto dummy = fmt::register_fmt<Pak1ArchiveDecoder>("leaf/pak1");

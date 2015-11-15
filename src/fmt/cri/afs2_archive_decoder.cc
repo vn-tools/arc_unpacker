@@ -58,7 +58,7 @@ std::unique_ptr<File> Afs2ArchiveDecoder::read_file_impl(
 
 std::vector<std::string> Afs2ArchiveDecoder::get_linked_formats() const
 {
-    return { "cri/hca" };
+    return {"cri/hca"};
 }
 
 static auto dummy = fmt::register_fmt<Afs2ArchiveDecoder>("cri/afs2");

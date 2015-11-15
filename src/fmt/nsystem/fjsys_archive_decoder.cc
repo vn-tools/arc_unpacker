@@ -57,7 +57,7 @@ std::unique_ptr<File> FjsysArchiveDecoder::read_file_impl(
 
 std::vector<std::string> FjsysArchiveDecoder::get_linked_formats() const
 {
-    return { "nsystem/mgd" };
+    return {"nsystem/mgd"};
 }
 
 static auto dummy = fmt::register_fmt<FjsysArchiveDecoder>("nsystem/fjsys");

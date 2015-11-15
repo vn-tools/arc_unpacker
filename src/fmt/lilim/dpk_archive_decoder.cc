@@ -55,7 +55,7 @@ std::unique_ptr<File> DpkArchiveDecoder::read_file_impl(
 
 std::vector<std::string> DpkArchiveDecoder::get_linked_formats() const
 {
-    return { "lilim/dbm", "lilim/doj", "lilim/dwv" };
+    return {"lilim/dbm", "lilim/doj", "lilim/dwv"};
 }
 
 static auto dummy = fmt::register_fmt<DpkArchiveDecoder>("lilim/dpk");

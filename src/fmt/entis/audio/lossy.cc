@@ -435,7 +435,7 @@ LossyAudioDecoder::Priv::~Priv()
 void LossyAudioDecoder::Priv::initialize_with_degree(size_t subband_degree)
 {
     revolve_param = create_revolve_param(subband_degree);
-    static const int freq_width[7] = { -6, -6, -5, -4, -3, -2, -1 };
+    static const int freq_width[7] = {-6, -6, -5, -4, -3, -2, -1};
     auto j = 0;
     for (auto i : util::range(7))
     {

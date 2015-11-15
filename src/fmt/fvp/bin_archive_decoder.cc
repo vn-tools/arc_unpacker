@@ -55,7 +55,7 @@ std::unique_ptr<File> BinArchiveDecoder::read_file_impl(
 
 std::vector<std::string> BinArchiveDecoder::get_linked_formats() const
 {
-    return { "fvp/nvsg" };
+    return {"fvp/nvsg"};
 }
 
 static auto dummy = fmt::register_fmt<BinArchiveDecoder>("fvp/bin");

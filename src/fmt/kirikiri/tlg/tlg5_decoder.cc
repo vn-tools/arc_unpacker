@@ -52,7 +52,7 @@ static void load_pixel_block_row(
     for (auto y : util::range(block_y, max_y))
     {
         size_t block_y_shift = (y - block_y) * header.image_width;
-        u8 prev_pixel[4] = { 0, 0, 0, 0 };
+        u8 prev_pixel[4] = {0, 0, 0, 0};
 
         for (auto x : util::range(header.image_width))
         {
