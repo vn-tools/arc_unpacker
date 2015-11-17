@@ -65,4 +65,9 @@ std::unique_ptr<File> Ar10ArchiveDecoder::read_file_impl(
     return std::make_unique<File>(entry->name, data);
 }
 
+std::vector<std::string> Ar10ArchiveDecoder::get_linked_formats() const
+{
+    return {"leaf/cz10"};
+}
+
 static auto dummy = fmt::register_fmt<Ar10ArchiveDecoder>("leaf/ar10");
