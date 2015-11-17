@@ -55,14 +55,19 @@ std::unique_ptr<File> Ar10ArchiveDecoder::read_file_impl(
 {
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+
     arc_file.io.seek(entry->offset);
     const auto data_size = arc_file.io.read_u32_le();
     const auto key_size = arc_file.io.read_u8() ^ meta->archive_key;
     const auto key = arc_file.io.read(key_size);
     auto data = arc_file.io.read(data_size);
+
     for (const auto i : util::range(data.size()))
         data[i] ^= key[i % key.size()];
-    return std::make_unique<File>(entry->name, data);
+
+    auto output_file = std::make_unique<File>(entry->name, data);
+    output_file->guess_extension();
+    return output_file;
 }
 
 std::vector<std::string> Ar10ArchiveDecoder::get_linked_formats() const
