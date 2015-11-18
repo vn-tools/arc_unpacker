@@ -23,5 +23,13 @@ static void do_test(const std::string &input_path)
 
 TEST_CASE("Leaf A archives", "[fmt]")
 {
-    do_test("test.a");
+    SECTION("Plain")
+    {
+        do_test("plain.a");
+    }
+
+    SECTION("Compressed")
+    {
+        do_test("compressed.a");
+    }
 }

@@ -1,4 +1,5 @@
 #include "fmt/leaf/single_letter_group/a_archive_decoder.h"
+#include "util/pack/lzss.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -13,6 +14,7 @@ namespace
     {
         size_t offset;
         size_t size;
+        bool compressed;
     };
 }
 
@@ -31,7 +33,9 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (const auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = arc_file.io.read_to_zero(24).str();
+        entry->name = arc_file.io.read_to_zero(23).str();
+        const auto tmp = arc_file.io.read_u8();
+        entry->compressed = tmp > 0;
         entry->size = arc_file.io.read_u32_le();
         entry->offset = arc_file.io.read_u32_le() + offset_to_data;
         meta->entries.push_back(std::move(entry));
@@ -43,7 +47,17 @@ std::unique_ptr<File> AArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    const auto data = arc_file.io.seek(entry->offset).read(entry->size);
+    arc_file.io.seek(entry->offset);
+
+    bstr data;
+    if (entry->compressed)
+    {
+        const auto size_orig = arc_file.io.read_u32_le();
+        data = arc_file.io.read(entry->size-4);
+        data = util::pack::lzss_decompress_bytewise(data, size_orig);
+    }
+    else
+        data = arc_file.io.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
