@@ -2,7 +2,6 @@
 #include "test_support/catch.hh"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
-#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
