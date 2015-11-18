@@ -63,4 +63,9 @@ std::unique_ptr<File> AArchiveDecoder::read_file_impl(
     return output_file;
 }
 
+std::vector<std::string> AArchiveDecoder::get_linked_formats() const
+{
+    return {"leaf/w"};
+}
+
 static auto dummy = fmt::register_fmt<AArchiveDecoder>("leaf/a");
