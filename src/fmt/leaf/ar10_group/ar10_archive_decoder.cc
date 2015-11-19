@@ -47,7 +47,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     }
     if (last_entry)
         last_entry->size = arc_file.io.size() - last_entry->offset;
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<File> Ar10ArchiveDecoder::read_file_impl(
