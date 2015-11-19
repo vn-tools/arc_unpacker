@@ -24,8 +24,19 @@ std::unique_ptr<File> WAudioDecoder::decode_impl(File &file) const
     wave.fmt.bits_per_sample = file.io.read_u16_le();
     const auto byte_rate = file.io.read_u32_le();
     const auto samples_size = file.io.read_u32_le();
-    if (file.io.read_u32_le())
-        throw err::CorruptDataError("Expected '0'");
+    const auto loop_pos = file.io.read_u32_le();
+    if (loop_pos)
+    {
+        wave.smpl = std::make_unique<sfx::WaveSamplerChunk>();
+        wave.smpl->loops.push_back(sfx::WaveSampleLoop
+        {
+            0,
+            loop_pos,
+            samples_size,
+            0,
+            0,
+        });
+    }
     const auto samples = file.io.read(samples_size);
 
     if (block_align != wave.fmt.channel_count * wave.fmt.bits_per_sample / 8)
