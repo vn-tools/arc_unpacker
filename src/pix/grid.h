@@ -32,6 +32,7 @@ namespace pix {
         void crop(size_t width, size_t height);
         void apply_mask(const Grid &other);
         void apply_palette(const Palette &palette);
+        void paste(const Grid &other, const int target_x, const int target_y);
 
         Pixel *begin();
         Pixel *end();

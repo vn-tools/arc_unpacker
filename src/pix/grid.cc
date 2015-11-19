@@ -148,6 +148,19 @@ void Grid::apply_palette(const Palette &palette)
     }
 }
 
+void Grid::paste(const Grid &other, const int target_x, const int target_y)
+{
+    const size_t x1 = std::max<size_t>(0, target_x);
+    const size_t x2 = std::min<size_t>(width(), target_x + other.width());
+    const size_t y1 = std::max<size_t>(0, target_y);
+    const size_t y2 = std::min<size_t>(height(), target_y + other.height());
+    const size_t source_x = std::max<size_t>(0, -target_x);
+    const size_t source_y = std::max<size_t>(0, -target_y);
+    for (const auto y : util::range(y1, y2, 1))
+    for (const auto x : util::range(x1, x2, 1))
+        at(x, y) = other.at(source_x + x, source_y + y);
+}
+
 Pixel *Grid::begin()
 {
     return &p->pixels[0];
