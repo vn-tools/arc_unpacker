@@ -15,49 +15,49 @@ namespace
     };
 }
 
-bool Abmp7ArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Abmp7ArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Abmp7ArchiveDecoder::read_meta_impl(File &arc_file) const
+    Abmp7ArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(12);
-    arc_file.stream.skip(arc_file.stream.read_u32_le());
+    input_file.stream.seek(12);
+    input_file.stream.skip(input_file.stream.read_u32_le());
 
     auto meta = std::make_unique<ArchiveMeta>();
 
     auto first_entry = std::make_unique<ArchiveEntryImpl>();
     first_entry->name = "base.dat";
-    first_entry->size = arc_file.stream.read_u32_le();
-    first_entry->offset = arc_file.stream.tell();
-    arc_file.stream.skip(first_entry->size);
+    first_entry->size = input_file.stream.read_u32_le();
+    first_entry->offset = input_file.stream.tell();
+    input_file.stream.skip(first_entry->size);
     meta->entries.push_back(std::move(first_entry));
 
-    while (!arc_file.stream.eof())
+    while (!input_file.stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        auto encoded_name = arc_file.stream.read(arc_file.stream.read_u8());
-        arc_file.stream.skip(31 - encoded_name.size());
+        auto encoded_name = input_file.stream.read(input_file.stream.read_u8());
+        input_file.stream.skip(31 - encoded_name.size());
         entry->name = util::sjis_to_utf8(encoded_name).str();
         if (entry->name.empty())
             entry->name = "unknown";
         entry->name += ".dat";
-        entry->size = arc_file.stream.read_u32_le();
-        entry->offset = arc_file.stream.tell();
-        arc_file.stream.skip(entry->size);
+        entry->size = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.tell();
+        input_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));
     }
     return meta;
 }
 
 std::unique_ptr<File> Abmp7ArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

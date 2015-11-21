@@ -228,22 +228,22 @@ static bstr read_raw_table(io::Stream &arc_stream)
     return util::pack::zlib_inflate(arc_stream.read(compressed_size));
 }
 
-bool RpaArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool RpaArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return guess_version(arc_file.stream) >= 0;
+    return guess_version(input_file.stream) >= 0;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    RpaArchiveDecoder::read_meta_impl(File &arc_file) const
+    RpaArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    int version = guess_version(arc_file.stream);
-    size_t table_offset = read_hex_number(arc_file.stream, 16);
+    int version = guess_version(input_file.stream);
+    size_t table_offset = read_hex_number(input_file.stream, 16);
 
     u32 key;
     if (version == 3)
     {
-        arc_file.stream.skip(1);
-        key = read_hex_number(arc_file.stream, 8);
+        input_file.stream.skip(1);
+        key = read_hex_number(input_file.stream, 8);
     }
     else if (version == 2)
     {
@@ -254,8 +254,8 @@ std::unique_ptr<fmt::ArchiveMeta>
         throw err::UnsupportedVersionError(version);
     }
 
-    arc_file.stream.seek(table_offset);
-    io::MemoryStream table_stream(read_raw_table(arc_file.stream));
+    input_file.stream.seek(table_offset);
+    io::MemoryStream table_stream(read_raw_table(input_file.stream));
 
     UnpickleContext context;
     unpickle(table_stream, &context);
@@ -285,10 +285,10 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> RpaArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    const auto data = arc_file.stream.seek(entry->offset).read(entry->size);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<File>(entry->name, entry->prefix + data);
 }
 

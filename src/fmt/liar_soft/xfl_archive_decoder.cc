@@ -16,37 +16,37 @@ namespace
     };
 }
 
-bool XflArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool XflArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    XflArchiveDecoder::read_meta_impl(File &arc_file) const
+    XflArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic.size());
-    auto table_size = arc_file.stream.read_u32_le();
-    auto file_count = arc_file.stream.read_u32_le();
-    auto file_start = arc_file.stream.tell() + table_size;
+    input_file.stream.seek(magic.size());
+    auto table_size = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_u32_le();
+    auto file_start = input_file.stream.tell() + table_size;
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->name = util::sjis_to_utf8(
-            arc_file.stream.read_to_zero(0x20)).str();
-        entry->offset = file_start + arc_file.stream.read_u32_le();
-        entry->size = arc_file.stream.read_u32_le();
+            input_file.stream.read_to_zero(0x20)).str();
+        entry->offset = file_start + input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
 }
 
 std::unique_ptr<File> XflArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

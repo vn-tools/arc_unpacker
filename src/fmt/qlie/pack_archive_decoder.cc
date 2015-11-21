@@ -309,14 +309,14 @@ void PackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
-bool PackArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool PackArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    arc_file.stream.seek(get_magic_start(arc_file.stream));
-    return arc_file.stream.read(magic.size()) == magic;
+    input_file.stream.seek(get_magic_start(input_file.stream));
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PackArchiveDecoder::read_meta_impl(File &arc_file) const
+    PackArchiveDecoder::read_meta_impl(File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->enc_type = EncryptionType::Basic;
@@ -354,12 +354,12 @@ std::unique_ptr<fmt::ArchiveMeta>
             throw err::RecognitionError("Cannot find the key in the .exe file");
     }
 
-    arc_file.stream.seek(get_magic_start(arc_file.stream) + magic.size());
-    auto file_count = arc_file.stream.read_u32_le();
-    auto table_offset = arc_file.stream.read_u64_le();
-    auto table_size = get_magic_start(arc_file.stream) - table_offset;
-    arc_file.stream.seek(table_offset);
-    io::MemoryStream table_stream(arc_file.stream, table_size);
+    input_file.stream.seek(get_magic_start(input_file.stream) + magic.size());
+    auto file_count = input_file.stream.read_u32_le();
+    auto table_offset = input_file.stream.read_u64_le();
+    auto table_size = get_magic_start(input_file.stream) - table_offset;
+    input_file.stream.seek(table_offset);
+    io::MemoryStream table_stream(input_file.stream, table_size);
 
     u32 seed = 0;
     table_stream.seek(0);
@@ -399,7 +399,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         if (entry->name.find("pack_keyfile") != std::string::npos)
         {
-            auto file = read_file(arc_file, *meta, *entry);
+            auto file = read_file(input_file, *meta, *entry);
             file->stream.seek(0);
             meta->key1 = file->stream.read_to_eof();
         }
@@ -409,12 +409,12 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> PackArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size_compressed);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size_compressed);
 
     if (entry->encrypted)
         decrypt_file_data(data, entry->seed, entry->name_orig, *meta);

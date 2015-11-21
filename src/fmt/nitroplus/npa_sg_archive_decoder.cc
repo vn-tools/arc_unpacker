@@ -24,19 +24,19 @@ static void decrypt(bstr &data)
         data[i] ^= key[i % key.size()];
 }
 
-bool NpaSgArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool NpaSgArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    if (!arc_file.has_extension("npa"))
+    if (!input_file.has_extension("npa"))
         return false;
-    size_t table_size = arc_file.stream.read_u32_le();
-    return table_size < arc_file.stream.size();
+    size_t table_size = input_file.stream.read_u32_le();
+    return table_size < input_file.stream.size();
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    NpaSgArchiveDecoder::read_meta_impl(File &arc_file) const
+    NpaSgArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    size_t table_size = arc_file.stream.read_u32_le();
-    auto table_data = arc_file.stream.read(table_size);
+    size_t table_size = input_file.stream.read_u32_le();
+    auto table_data = input_file.stream.read(table_size);
     decrypt(table_data);
     io::MemoryStream table_stream(table_data);
 
@@ -51,7 +51,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->size = table_stream.read_u32_le();
         entry->offset = table_stream.read_u32_le();
         table_stream.skip(4);
-        if (entry->offset + entry->size > arc_file.stream.size())
+        if (entry->offset + entry->size > input_file.stream.size())
             throw err::BadDataOffsetError();
         meta->entries.push_back(std::move(entry));
     }
@@ -59,11 +59,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> NpaSgArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     decrypt(data);
     return std::make_unique<File>(entry->name, data);
 }

@@ -84,27 +84,27 @@ bool Cz10ImageArchiveDecoder::is_recognized_impl(File &file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Cz10ImageArchiveDecoder::read_meta_impl(File &arc_file) const
+    Cz10ImageArchiveDecoder::read_meta_impl(File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
 
-    arc_file.stream.seek(magic.size());
-    const auto image_count = arc_file.stream.read_u32_le();
-    auto current_offset = arc_file.stream.tell() + image_count * 16;
+    input_file.stream.seek(magic.size());
+    const auto image_count = input_file.stream.read_u32_le();
+    auto current_offset = input_file.stream.tell() + image_count * 16;
     for (const auto i : util::range(image_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->width = arc_file.stream.read_u16_le();
-        entry->height = arc_file.stream.read_u16_le();
-        arc_file.stream.skip(4);
-        entry->size = arc_file.stream.read_u32_le();
-        entry->channels = arc_file.stream.read_u32_le();
+        entry->width = input_file.stream.read_u16_le();
+        entry->height = input_file.stream.read_u16_le();
+        input_file.stream.skip(4);
+        entry->size = input_file.stream.read_u32_le();
+        entry->channels = input_file.stream.read_u32_le();
         entry->offset = current_offset;
         current_offset += entry->size;
         meta->entries.push_back(std::move(entry));
     }
 
-    const auto base_name = fs::path(arc_file.name).stem().string();
+    const auto base_name = fs::path(input_file.name).stem().string();
     for (const auto i : util::range(meta->entries.size()))
         meta->entries[i]->name = meta->entries.size() > 1
             ? util::format("%s_%03d", base_name.c_str(), i)
@@ -114,11 +114,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> Cz10ImageArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = decompress(
-        arc_file.stream.seek(entry->offset).read(entry->size),
+        input_file.stream.seek(entry->offset).read(entry->size),
         entry->width,
         entry->height,
         entry->channels);

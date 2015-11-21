@@ -23,19 +23,19 @@ namespace
     };
 }
 
-bool GmlArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool GmlArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    GmlArchiveDecoder::read_meta_impl(File &arc_file) const
+    GmlArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic.size());
-    auto file_data_start = arc_file.stream.read_u32_le();
-    auto table_size_orig = arc_file.stream.read_u32_le();
-    auto table_size_comp = arc_file.stream.read_u32_le();
-    auto table_data = arc_file.stream.read(table_size_comp);
+    input_file.stream.seek(magic.size());
+    auto file_data_start = input_file.stream.read_u32_le();
+    auto table_size_orig = input_file.stream.read_u32_le();
+    auto table_size_comp = input_file.stream.read_u32_le();
+    auto table_data = input_file.stream.read(table_size_comp);
     for (auto i : util::range(table_data.size()))
         table_data[i] ^= 0xFF;
     table_data = custom_lzss_decompress(table_data, table_size_orig);
@@ -58,14 +58,14 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> GmlArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
-    arc_file.stream.seek(entry->offset);
-    arc_file.stream.skip(entry->prefix.size());
-    auto suffix = arc_file.stream.read(entry->size - entry->prefix.size());
+    input_file.stream.seek(entry->offset);
+    input_file.stream.skip(entry->prefix.size());
+    auto suffix = input_file.stream.read(entry->size - entry->prefix.size());
     for (auto i : util::range(suffix.size()))
         suffix[i] = meta->permutation[suffix.get<u8>()[i]];
 

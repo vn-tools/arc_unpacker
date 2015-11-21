@@ -123,30 +123,30 @@ void Pak1ArchiveDecoder::set_version(const int version)
     p->version = version;
 }
 
-bool Pak1ArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Pak1ArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    auto meta = read_meta(arc_file);
+    auto meta = read_meta(input_file);
     if (!meta->entries.size())
         return false;
     auto last_entry = static_cast<const ArchiveEntryImpl*>(
         meta->entries[meta->entries.size() - 1].get());
-    return last_entry->offset + last_entry->size == arc_file.stream.size();
+    return last_entry->offset + last_entry->size == input_file.stream.size();
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak1ArchiveDecoder::read_meta_impl(File &arc_file) const
+    Pak1ArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    auto file_count = arc_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->already_unpacked = false;
         entry->name = util::sjis_to_utf8(
-            arc_file.stream.read_to_zero(16)).str();
-        entry->size = arc_file.stream.read_u32_le();
-        entry->compressed = arc_file.stream.read_u32_le() > 0;
-        entry->offset = arc_file.stream.read_u32_le();
+            input_file.stream.read_to_zero(16)).str();
+        entry->size = input_file.stream.read_u32_le();
+        entry->compressed = input_file.stream.read_u32_le() > 0;
+        entry->offset = input_file.stream.read_u32_le();
         if (entry->size)
             meta->entries.push_back(std::move(entry));
     }
@@ -154,7 +154,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     if (!p->version)
     {
@@ -166,26 +166,26 @@ std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
     if (entry->already_unpacked)
         return nullptr;
 
-    arc_file.stream.seek(entry->offset);
+    input_file.stream.seek(entry->offset);
     bstr data;
     if (entry->compressed)
     {
-        auto size_comp = arc_file.stream.read_u32_le();
-        auto size_orig = arc_file.stream.read_u32_le();
-        data = arc_file.stream.read(size_comp - 8);
+        auto size_comp = input_file.stream.read_u32_le();
+        auto size_orig = input_file.stream.read_u32_le();
+        data = input_file.stream.read(size_comp - 8);
         data = custom_lzss_decompress(
             data, size_orig, p->version == 1 ? 0x1000 : 0x800);
     }
     else
     {
-        data = arc_file.stream.read(entry->size);
+        data = input_file.stream.read(entry->size);
     }
 
     return std::make_unique<File>(entry->name, data);
 }
 
 void Pak1ArchiveDecoder::preprocess(
-    File &arc_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
+    File &input_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
 {
     std::map<std::string, ArchiveEntryImpl*>
         palette_entries, sprite_entries, mask_entries;
@@ -211,16 +211,16 @@ void Pak1ArchiveDecoder::preprocess(
             std::shared_ptr<File> palette_file;
             std::shared_ptr<File> mask_file;
 
-            auto sprite_file = read_file(arc_file, meta, *sprite_entry);
+            auto sprite_file = read_file(input_file, meta, *sprite_entry);
             if (palette_entries.find(it.first) != palette_entries.end())
             {
                 palette_entry = palette_entries[it.first];
-                palette_file = read_file(arc_file, meta, *palette_entry);
+                palette_file = read_file(input_file, meta, *palette_entry);
             }
             if (mask_entries.find(it.first) != mask_entries.end())
             {
                 mask_entry = mask_entries[it.first];
-                mask_file = read_file(arc_file, meta, *mask_entry);
+                mask_file = read_file(input_file, meta, *mask_entry);
             }
 
             auto sprite = grp_image_decoder.decode(

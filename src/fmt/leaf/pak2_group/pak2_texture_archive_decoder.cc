@@ -29,23 +29,23 @@ namespace
     };
 }
 
-bool Pak2TextureArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Pak2TextureArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.seek(4).read(magic.size()) == magic;
+    return input_file.stream.seek(4).read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak2TextureArchiveDecoder::read_meta_impl(File &arc_file) const
+    Pak2TextureArchiveDecoder::read_meta_impl(File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
 
-    arc_file.stream.seek(24);
-    const auto image_count = arc_file.stream.read_u16_le();
-    const auto chunk_count = arc_file.stream.read_u16_le();
-    arc_file.stream.skip(4);
-    auto last_chunk_offset = arc_file.stream.read_u16_le();
+    input_file.stream.seek(24);
+    const auto image_count = input_file.stream.read_u16_le();
+    const auto chunk_count = input_file.stream.read_u16_le();
+    input_file.stream.skip(4);
+    auto last_chunk_offset = input_file.stream.read_u16_le();
 
-    const auto data_offset = arc_file.stream.tell()
+    const auto data_offset = input_file.stream.tell()
         + image_count * 2
         + chunk_count * 36
         + 36;
@@ -53,7 +53,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     std::vector<size_t> image_chunk_counts;
     for (const auto i : util::range(image_count))
     {
-        const auto chunk_offset = arc_file.stream.read_u16_le();
+        const auto chunk_offset = input_file.stream.read_u16_le();
         image_chunk_counts.push_back(chunk_offset - last_chunk_offset);
         last_chunk_offset = chunk_offset;
     }
@@ -65,22 +65,22 @@ std::unique_ptr<fmt::ArchiveMeta>
         for (const auto j : util::range(image_chunk_count))
         {
             Chunk chunk;
-            arc_file.stream.skip(8);
-            chunk.x = static_cast<s16>(arc_file.stream.read_u16_le());
-            chunk.y = static_cast<s16>(arc_file.stream.read_u16_le());
-            arc_file.stream.skip(4);
-            chunk.width = arc_file.stream.read_u16_le();
-            chunk.height = arc_file.stream.read_u16_le();
-            arc_file.stream.skip(4);
-            chunk.offset = arc_file.stream.read_u32_le() + data_offset;
-            arc_file.stream.skip(8);
+            input_file.stream.skip(8);
+            chunk.x = static_cast<s16>(input_file.stream.read_u16_le());
+            chunk.y = static_cast<s16>(input_file.stream.read_u16_le());
+            input_file.stream.skip(4);
+            chunk.width = input_file.stream.read_u16_le();
+            chunk.height = input_file.stream.read_u16_le();
+            input_file.stream.skip(4);
+            chunk.offset = input_file.stream.read_u32_le() + data_offset;
+            input_file.stream.skip(8);
             entry->chunks.push_back(chunk);
         }
         if (!entry->chunks.empty())
             meta->entries.push_back(std::move(entry));
     }
 
-    const auto base_name = fs::path(arc_file.name).stem().string();
+    const auto base_name = fs::path(input_file.name).stem().string();
     for (auto i : util::range(meta->entries.size()))
         meta->entries[i]->name = meta->entries.size() > 1
             ? util::format("%s_%03d", base_name.c_str(), i)
@@ -90,7 +90,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> Pak2TextureArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     int min_x = 0, min_y = 0, max_x = 0, max_y = 0;
@@ -111,17 +111,14 @@ std::unique_ptr<File> Pak2TextureArchiveDecoder::read_file_impl(
     }
     for (const auto &chunk : entry->chunks)
     {
-        arc_file.stream.seek(chunk.offset);
-        const auto data = arc_file.stream.read(chunk.width * chunk.height * 2);
+        input_file.stream.seek(chunk.offset);
         auto chunk_image = pix::Grid(
-            chunk.width, chunk.height, data, pix::Format::BGRnA5551);
+            chunk.width,
+            chunk.height,
+            input_file.stream.read(chunk.width * chunk.height * 2),
+            pix::Format::BGRnA5551);
         chunk_image.flip_vertically();
-        for (const auto y : util::range(chunk.height))
-        for (const auto x : util::range(chunk.width))
-        {
-            image.at(chunk.x + x - min_x, chunk.y + y - min_y)
-                = chunk_image.at(x, y);
-        }
+        image.paste(chunk_image, chunk.x, chunk.y);
     }
     return util::file_from_grid(image, entry->name);
 }

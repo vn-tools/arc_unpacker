@@ -52,22 +52,22 @@ static bstr decompress(const bstr &input, size_t size_original)
     return output;
 }
 
-bool MgrArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool MgrArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.has_extension("mgr");
+    return input_file.has_extension("mgr");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    MgrArchiveDecoder::read_meta_impl(File &arc_file) const
+    MgrArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    auto entry_count = arc_file.stream.read_u16_le();
+    auto entry_count = input_file.stream.read_u16_le();
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(entry_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = entry_count == 1
-            ? arc_file.stream.tell()
-            : arc_file.stream.read_u32_le();
+            ? input_file.stream.tell()
+            : input_file.stream.read_u32_le();
         entry->name = util::format("%d.bmp", i);
         meta->entries.push_back(std::move(entry));
     }
@@ -75,14 +75,14 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> MgrArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    size_t size_orig = arc_file.stream.read_u32_le();
-    size_t size_comp = arc_file.stream.read_u32_le();
+    input_file.stream.seek(entry->offset);
+    size_t size_orig = input_file.stream.read_u32_le();
+    size_t size_comp = input_file.stream.read_u32_le();
 
-    auto data = arc_file.stream.read(size_comp);
+    auto data = input_file.stream.read(size_comp);
     data = decompress(data, size_orig);
     return std::make_unique<File>(entry->name, data);
 }

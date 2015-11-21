@@ -101,45 +101,46 @@ void NpaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
-bool NpaArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool NpaArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    NpaArchiveDecoder::read_meta_impl(File &arc_file) const
+    NpaArchiveDecoder::read_meta_impl(File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->filter = p->filter_registry.get_filter();
     if (!meta->filter)
         throw err::UsageError("Plugin not specified");
 
-    arc_file.stream.seek(magic.size());
-    meta->key1 = arc_file.stream.read_u32_le();
-    meta->key2 = arc_file.stream.read_u32_le();
-    meta->files_are_compressed = arc_file.stream.read_u8() > 0;
-    meta->files_are_encrypted = arc_file.stream.read_u8() > 0;
-    const auto total_entry_count = arc_file.stream.read_u32_le();
-    const auto folder_count = arc_file.stream.read_u32_le();
-    const auto file_count = arc_file.stream.read_u32_le();
-    arc_file.stream.skip(8);
-    const auto table_size = arc_file.stream.read_u32_le();
-    const auto data_offset = arc_file.stream.tell() + table_size;
+    input_file.stream.seek(magic.size());
+    meta->key1 = input_file.stream.read_u32_le();
+    meta->key2 = input_file.stream.read_u32_le();
+    meta->files_are_compressed = input_file.stream.read_u8() > 0;
+    meta->files_are_encrypted = input_file.stream.read_u8() > 0;
+    const auto total_entry_count = input_file.stream.read_u32_le();
+    const auto folder_count = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_u32_le();
+    input_file.stream.skip(8);
+    const auto table_size = input_file.stream.read_u32_le();
+    const auto data_offset = input_file.stream.tell() + table_size;
 
     for (const auto i : util::range(total_entry_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
-        entry->name_orig = arc_file.stream.read(arc_file.stream.read_u32_le());
+        const auto name_size = input_file.stream.read_u32_le();
+        entry->name_orig = input_file.stream.read(name_size);
         decrypt_file_name(*meta, entry->name_orig, i);
         entry->name = util::sjis_to_utf8(entry->name_orig).str();
 
-        FileType file_type = static_cast<FileType>(arc_file.stream.read_u8());
-        arc_file.stream.skip(4);
+        FileType file_type = static_cast<FileType>(input_file.stream.read_u8());
+        input_file.stream.skip(4);
 
-        entry->offset = arc_file.stream.read_u32_le() + data_offset;
-        entry->size_comp = arc_file.stream.read_u32_le();
-        entry->size_orig = arc_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_u32_le() + data_offset;
+        entry->size_comp = input_file.stream.read_u32_le();
+        entry->size_orig = input_file.stream.read_u32_le();
 
         if (file_type == FILE_TYPE_DIRECTORY)
             continue;
@@ -151,11 +152,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> NpaArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    auto data = arc_file.stream.seek(entry->offset).read(entry->size_comp);
+    auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
 
     if (meta->files_are_encrypted)
         decrypt_file_data(*meta, *entry, data);

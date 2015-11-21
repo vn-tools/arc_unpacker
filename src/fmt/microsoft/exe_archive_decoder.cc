@@ -487,28 +487,28 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
     return util::format("%d", entry.id);
 }
 
-bool ExeArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool ExeArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    DosHeader dos_header(arc_file.stream);
+    DosHeader dos_header(input_file.stream);
     return dos_header.magic == "MZ"_b;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    ExeArchiveDecoder::read_meta_impl(File &arc_file) const
+    ExeArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    DosHeader dos_header(arc_file.stream);
-    arc_file.stream.seek(dos_header.e_lfanew);
-    ImageNtHeader nt_header(arc_file.stream);
+    DosHeader dos_header(input_file.stream);
+    input_file.stream.seek(dos_header.e_lfanew);
+    ImageNtHeader nt_header(input_file.stream);
 
     size_t data_dir_count = nt_header.optional_header.number_of_rva_and_sizes;
     std::vector<ImageDataDir> data_dirs;
     data_dirs.reserve(data_dir_count);
     for (auto i : util::range(data_dir_count))
-        data_dirs.push_back(ImageDataDir(arc_file.stream));
+        data_dirs.push_back(ImageDataDir(input_file.stream));
 
     std::vector<ImageSectionHeader> sections;
     for (auto i : util::range(nt_header.file_header.number_of_sections))
-        sections.push_back(ImageSectionHeader(arc_file.stream));
+        sections.push_back(ImageSectionHeader(input_file.stream));
 
     RvaHelper rva_helper(
         nt_header.optional_header.file_alignment,
@@ -519,16 +519,16 @@ std::unique_ptr<fmt::ArchiveMeta>
     size_t base_offset = rva_helper.rva_to_offset(resource_dir.virtual_address);
     auto meta = std::make_unique<ArchiveMeta>();
     ResourceCrawler::crawl(
-        ResourceCrawlerArgs(arc_file.stream, *meta, rva_helper, base_offset));
+        ResourceCrawlerArgs(input_file.stream, *meta, rva_helper, base_offset));
     return meta;
 }
 
 std::unique_ptr<File> ExeArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

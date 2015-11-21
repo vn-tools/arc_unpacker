@@ -59,22 +59,22 @@ static bstr decompress_table(const bstr &input, size_t output_size)
     return output;
 }
 
-bool PacArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool PacArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PacArchiveDecoder::read_meta_impl(File &arc_file) const
+    PacArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic.size());
-    size_t file_count = arc_file.stream.read_u32_le();
-    arc_file.stream.seek(arc_file.stream.size() - 4);
-    size_t compressed_size = arc_file.stream.read_u32_le();
+    input_file.stream.seek(magic.size());
+    size_t file_count = input_file.stream.read_u32_le();
+    input_file.stream.seek(input_file.stream.size() - 4);
+    size_t compressed_size = input_file.stream.read_u32_le();
     size_t uncompressed_size = file_count * 76;
 
-    arc_file.stream.seek(arc_file.stream.size() - 4 - compressed_size);
-    bstr compressed = arc_file.stream.read(compressed_size);
+    input_file.stream.seek(input_file.stream.size() - 4 - compressed_size);
+    bstr compressed = input_file.stream.read(compressed_size);
     for (auto i : util::range(compressed.size()))
         compressed.get<u8>()[i] ^= 0xFF;
 
@@ -96,11 +96,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> PacArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size_comp);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size_comp);
     if (entry->size_orig != entry->size_comp)
         data = util::pack::zlib_inflate(data);
     return std::make_unique<File>(entry->name, data);

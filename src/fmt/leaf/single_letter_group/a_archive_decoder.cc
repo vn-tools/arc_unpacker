@@ -18,46 +18,46 @@ namespace
     };
 }
 
-bool AArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool AArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.seek(0).read(magic.size()) == magic;
+    return input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    AArchiveDecoder::read_meta_impl(File &arc_file) const
+    AArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic.size());
-    const auto file_count = arc_file.stream.read_u16_le();
-    const auto offset_to_data = arc_file.stream.tell() + 32 * file_count;
+    input_file.stream.seek(magic.size());
+    const auto file_count = input_file.stream.read_u16_le();
+    const auto offset_to_data = input_file.stream.tell() + 32 * file_count;
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = arc_file.stream.read_to_zero(23).str();
-        const auto tmp = arc_file.stream.read_u8();
+        entry->name = input_file.stream.read_to_zero(23).str();
+        const auto tmp = input_file.stream.read_u8();
         entry->compressed = tmp > 0;
-        entry->size = arc_file.stream.read_u32_le();
-        entry->offset = arc_file.stream.read_u32_le() + offset_to_data;
+        entry->size = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_u32_le() + offset_to_data;
         meta->entries.push_back(std::move(entry));
     }
     return meta;
 }
 
 std::unique_ptr<File> AArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
+    input_file.stream.seek(entry->offset);
 
     bstr data;
     if (entry->compressed)
     {
-        const auto size_orig = arc_file.stream.read_u32_le();
-        data = arc_file.stream.read(entry->size-4);
+        const auto size_orig = input_file.stream.read_u32_le();
+        data = input_file.stream.read(entry->size-4);
         data = util::pack::lzss_decompress_bytewise(data, size_orig);
     }
     else
-        data = arc_file.stream.read(entry->size);
+        data = input_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

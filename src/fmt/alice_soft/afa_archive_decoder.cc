@@ -21,29 +21,29 @@ namespace
     };
 }
 
-bool AfaArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool AfaArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    if (arc_file.stream.read(magic1.size()) != magic1)
+    if (input_file.stream.read(magic1.size()) != magic1)
         return false;
-    arc_file.stream.skip(4);
-    return arc_file.stream.read(magic2.size()) == magic2;
+    input_file.stream.skip(4);
+    return input_file.stream.read(magic2.size()) == magic2;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    AfaArchiveDecoder::read_meta_impl(File &arc_file) const
+    AfaArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic1.size() + 4 + magic2.size() + 4 * 2);
-    auto file_data_start = arc_file.stream.read_u32_le();
-    if (arc_file.stream.read(magic3.size()) != magic3)
+    input_file.stream.seek(magic1.size() + 4 + magic2.size() + 4 * 2);
+    auto file_data_start = input_file.stream.read_u32_le();
+    if (input_file.stream.read(magic3.size()) != magic3)
         throw err::CorruptDataError("Corrupt file table");
 
-    auto table_size_compressed = arc_file.stream.read_u32_le();
-    auto table_size_original = arc_file.stream.read_u32_le();
-    auto file_count = arc_file.stream.read_u32_le();
+    auto table_size_compressed = input_file.stream.read_u32_le();
+    auto table_size_original = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_u32_le();
 
     io::MemoryStream table_stream(
         util::pack::zlib_inflate(
-            arc_file.stream.read(table_size_compressed)));
+            input_file.stream.read(table_size_compressed)));
 
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
@@ -64,11 +64,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> AfaArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

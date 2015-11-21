@@ -225,35 +225,35 @@ void DatArchiveDecoder::add_file_name(const std::string &file_name)
     p->file_names_map[crc64(file_name_sjis)] = file_name_sjis;
 }
 
-bool DatArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool DatArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    if (!arc_file.has_extension("dat"))
+    if (!input_file.has_extension("dat"))
         return false;
-    auto file_count = read_file_count(arc_file.stream);
-    return file_count * (8 + 1 + 4 + 4 + 4) < arc_file.stream.size();
+    auto file_count = read_file_count(input_file.stream);
+    return file_count * (8 + 1 + 4 + 4 + 4) < input_file.stream.size();
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    DatArchiveDecoder::read_meta_impl(File &arc_file) const
+    DatArchiveDecoder::read_meta_impl(File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->game_title = p->game_title;
 
-    auto file_count = read_file_count(arc_file.stream);
+    auto file_count = read_file_count(input_file.stream);
     for (auto i : util::range(file_count))
     {
-        auto hash64 = arc_file.stream.read_u64_le();
+        auto hash64 = input_file.stream.read_u64_le();
         auto hash32 = hash64 & 0xFFFFFFFF;
         auto hash8 = hash64 & 0xFF;
 
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->hash = hash64;
         entry->type = static_cast<TableEntryType>(
-            arc_file.stream.read_u8() ^ hash8);
+            input_file.stream.read_u8() ^ hash8);
 
-        entry->offset    = arc_file.stream.read_u32_le() ^ hash32;
-        entry->size_comp = arc_file.stream.read_u32_le() ^ hash32;
-        entry->size_orig = arc_file.stream.read_u32_le() ^ hash32;
+        entry->offset    = input_file.stream.read_u32_le() ^ hash32;
+        entry->size_comp = input_file.stream.read_u32_le() ^ hash32;
+        entry->size_orig = input_file.stream.read_u32_le() ^ hash32;
 
         auto name = p->file_names_map[entry->hash];
         auto name_found = name.size();
@@ -291,7 +291,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -303,8 +303,8 @@ std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
         return nullptr;
     }
 
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size_comp);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size_comp);
 
     if (entry->type == TableEntryType::Compressed)
     {

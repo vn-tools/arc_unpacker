@@ -14,45 +14,45 @@ namespace
     };
 }
 
-bool Aos2ArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Aos2ArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    arc_file.stream.seek(0);
-    if (arc_file.stream.read_u32_le() != 0)
+    input_file.stream.seek(0);
+    if (input_file.stream.read_u32_le() != 0)
         return false;
-    const auto data_offset = arc_file.stream.read_u32_le();
-    arc_file.stream.seek(data_offset - 8);
-    const auto last_entry_offset = arc_file.stream.read_u32_le();
-    const auto last_entry_size = arc_file.stream.read_u32_le();
+    const auto data_offset = input_file.stream.read_u32_le();
+    input_file.stream.seek(data_offset - 8);
+    const auto last_entry_offset = input_file.stream.read_u32_le();
+    const auto last_entry_size = input_file.stream.read_u32_le();
     const auto expected_size
         = data_offset + last_entry_offset + last_entry_size;
-    return arc_file.stream.size() == expected_size;
+    return input_file.stream.size() == expected_size;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Aos2ArchiveDecoder::read_meta_impl(File &arc_file) const
+    Aos2ArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(4);
-    const auto data_offset = arc_file.stream.read_u32_le();
-    const auto table_size = arc_file.stream.read_u32_le();
+    input_file.stream.seek(4);
+    const auto data_offset = input_file.stream.read_u32_le();
+    const auto table_size = input_file.stream.read_u32_le();
     const auto file_count = table_size / 0x28;
     auto meta = std::make_unique<ArchiveMeta>();
-    arc_file.stream.seek(data_offset - table_size);
+    input_file.stream.seek(data_offset - table_size);
     for (const auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = arc_file.stream.read_to_zero(0x20).str();
-        entry->offset = arc_file.stream.read_u32_le() + data_offset;
-        entry->size = arc_file.stream.read_u32_le();
+        entry->name = input_file.stream.read_to_zero(0x20).str();
+        entry->offset = input_file.stream.read_u32_le() + data_offset;
+        entry->size = input_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
 }
 
 std::unique_ptr<File> Aos2ArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    const auto data = arc_file.stream.seek(entry->offset).read(entry->size);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<File>(entry->name, data);
 }
 

@@ -149,19 +149,19 @@ static std::shared_ptr<glib2::Plugin> guess_plugin(io::Stream &arc_stream)
     return nullptr;
 }
 
-bool Glib2ArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Glib2ArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return guess_plugin(arc_file.stream) != nullptr;
+    return guess_plugin(input_file.stream) != nullptr;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Glib2ArchiveDecoder::read_meta_impl(File &arc_file) const
+    Glib2ArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    auto plugin = guess_plugin(arc_file.stream);
-    auto header = read_header(arc_file.stream, *plugin);
+    auto plugin = guess_plugin(input_file.stream);
+    auto header = read_header(input_file.stream, *plugin);
 
-    arc_file.stream.seek(header.table_offset);
-    auto table_data = arc_file.stream.read(header.table_size);
+    input_file.stream.seek(header.table_offset);
+    auto table_data = input_file.stream.read(header.table_size);
     for (const auto &key : header.table_keys)
         table_data = decode(table_data, *plugin->create_decoder(key));
 
@@ -188,14 +188,14 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> Glib2ArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto output_file = std::make_unique<File>();
     output_file->name = entry->name;
 
-    arc_file.stream.seek(entry->offset);
+    input_file.stream.seek(entry->offset);
 
     const size_t chunk_size = 0x20000;
     size_t offset = 0;
@@ -222,7 +222,7 @@ std::unique_ptr<File> Glib2ArchiveDecoder::read_file_impl(
     {
         auto current_chunk_size = std::min<size_t>(
             chunk_size, entry->size - written);
-        auto buffer = arc_file.stream.read(current_chunk_size);
+        auto buffer = input_file.stream.read(current_chunk_size);
         if (decoders[key_id])
             buffer = decode(buffer, *decoders[key_id]);
         output_file->stream.write(buffer);

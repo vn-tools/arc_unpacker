@@ -69,22 +69,22 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
     return meta;
 }
 
-bool NoaArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool NoaArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic1.size()) == magic1
-        && arc_file.stream.read(magic2.size()) == magic2
-        && arc_file.stream.read(magic3.size()) == magic3;
+    return input_file.stream.read(magic1.size()) == magic1
+        && input_file.stream.read(magic2.size()) == magic2
+        && input_file.stream.read(magic3.size()) == magic3;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    NoaArchiveDecoder::read_meta_impl(File &arc_file) const
+    NoaArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(0x40);
-    return ::read_meta(arc_file.stream);
+    input_file.stream.seek(0x40);
+    return ::read_meta(input_file.stream);
 }
 
 std::unique_ptr<File> NoaArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->encrypted)
@@ -93,8 +93,8 @@ std::unique_ptr<File> NoaArchiveDecoder::read_file_impl(
             "%s is encrypted, but encrypted files are not supported\n",
             entry->name.c_str()));
     }
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

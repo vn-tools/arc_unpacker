@@ -16,27 +16,27 @@ namespace
     };
 }
 
-bool PacArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool PacArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PacArchiveDecoder::read_meta_impl(File &arc_file) const
+    PacArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic.size());
-    auto file_count = arc_file.stream.read_u32_le();
+    input_file.stream.seek(magic.size());
+    auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
-    auto file_data_start = arc_file.stream.tell() + file_count * 32;
+    auto file_data_start = input_file.stream.tell() + file_count * 32;
     auto current_file_offset = 0;
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = arc_file.stream.read_to_zero(16).str();
-        entry->size = arc_file.stream.read_u32_le();
-        auto prefix = arc_file.stream.read(4);
-        auto unk1 = arc_file.stream.read_u32_le();
-        auto unk2 = arc_file.stream.read_u32_le();
+        entry->name = input_file.stream.read_to_zero(16).str();
+        entry->size = input_file.stream.read_u32_le();
+        auto prefix = input_file.stream.read(4);
+        auto unk1 = input_file.stream.read_u32_le();
+        auto unk2 = input_file.stream.read_u32_le();
         if (unk1 != unk2)
             throw err::CorruptDataError("Data mismatch");
         entry->offset = file_data_start + current_file_offset;
@@ -47,11 +47,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> PacArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     return std::make_unique<File>(entry->name, data);
 }
 

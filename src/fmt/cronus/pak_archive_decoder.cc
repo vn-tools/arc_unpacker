@@ -28,16 +28,16 @@ namespace
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta(
-    File &arc_file, const Plugin &plugin, bool encrypted)
+    File &input_file, const Plugin &plugin, bool encrypted)
 {
-    auto file_count = arc_file.stream.read_u32_le() ^ plugin.key1;
-    auto file_data_start = arc_file.stream.read_u32_le() ^ plugin.key2;
-    if (file_data_start > arc_file.stream.size())
+    auto file_count = input_file.stream.read_u32_le() ^ plugin.key1;
+    auto file_data_start = input_file.stream.read_u32_le() ^ plugin.key2;
+    if (file_data_start > input_file.stream.size())
         return nullptr;
 
     auto table_size_orig = file_count * 24;
-    auto table_size_comp = file_data_start - arc_file.stream.tell();
-    auto table_data = arc_file.stream.read(table_size_comp);
+    auto table_size_comp = file_data_start - input_file.stream.tell();
+    auto table_data = input_file.stream.read(table_size_comp);
     if (encrypted)
     {
         auto key = get_delta_key("CHERRYSOFT"_b);
@@ -74,27 +74,27 @@ PakArchiveDecoder::~PakArchiveDecoder()
 {
 }
 
-bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool PakArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    if (arc_file.stream.read(magic2.size()) == magic2)
+    if (input_file.stream.read(magic2.size()) == magic2)
         return true;
-    arc_file.stream.seek(0);
-    return arc_file.stream.read(magic3.size()) == magic3;
+    input_file.stream.seek(0);
+    return input_file.stream.read(magic3.size()) == magic3;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PakArchiveDecoder::read_meta_impl(File &arc_file) const
+    PakArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    if (arc_file.stream.read(magic2.size()) != magic2)
-        arc_file.stream.seek(magic3.size());
-    bool encrypted = arc_file.stream.read_u32_le() > 0;
-    auto pos = arc_file.stream.tell();
+    if (input_file.stream.read(magic2.size()) != magic2)
+        input_file.stream.seek(magic3.size());
+    bool encrypted = input_file.stream.read_u32_le() > 0;
+    auto pos = input_file.stream.tell();
     for (auto &plugin : p->plugin_mgr.get_all())
     {
-        arc_file.stream.seek(pos);
+        input_file.stream.seek(pos);
         try
         {
-            auto meta = ::read_meta(arc_file, plugin, encrypted);
+            auto meta = ::read_meta(input_file, plugin, encrypted);
             if (meta && meta->entries.size())
                 return meta;
         }
@@ -107,11 +107,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

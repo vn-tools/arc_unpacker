@@ -155,13 +155,13 @@ std::unique_ptr<io::MemoryStream> RsaReader::read_block()
 }
 
 static bstr read_file_content(
-    File &arc_file,
+    File &input_file,
     const ArchiveMetaImpl &meta,
     const ArchiveEntryImpl &entry,
     size_t max_size)
 {
-    arc_file.stream.seek(entry.offset);
-    auto data = arc_file.stream.read(std::min<size_t>(max_size, entry.size));
+    input_file.stream.seek(entry.offset);
+    auto data = input_file.stream.read(std::min<size_t>(max_size, entry.size));
     size_t key_size = entry.key.size();
     if (meta.version == TfpkVersion::Th135)
     {
@@ -352,21 +352,21 @@ TfpkArchiveDecoder::~TfpkArchiveDecoder()
 {
 }
 
-bool TfpkArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool TfpkArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    if (arc_file.stream.read(magic.size()) != magic)
+    if (input_file.stream.read(magic.size()) != magic)
         return false;
-    auto version = arc_file.stream.read_u8();
+    auto version = input_file.stream.read_u8();
     return version == 0 || version == 1;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    TfpkArchiveDecoder::read_meta_impl(File &arc_file) const
+    TfpkArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic.size());
+    input_file.stream.seek(magic.size());
 
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    meta->version = arc_file.stream.read_u8() == 0
+    meta->version = input_file.stream.read_u8() == 0
         ? TfpkVersion::Th135
         : TfpkVersion::Th145;
 
@@ -374,7 +374,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto &fn : p->fn_set)
         user_fn_map[get_file_name_hash(fn, meta->version)] = fn;
 
-    RsaReader reader(arc_file.stream);
+    RsaReader reader(input_file.stream);
     HashLookupMap fn_map;
 
     // TH135 contains file hashes, TH145 contains garbage
@@ -437,25 +437,25 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> TfpkArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->already_unpacked)
         return nullptr;
-    auto data = read_file_content(arc_file, *meta, *entry, entry->size);
+    auto data = read_file_content(input_file, *meta, *entry, entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
 }
 
 void TfpkArchiveDecoder::preprocess(
-    File &arc_file, ArchiveMeta &m, const FileSaver &saver) const
+    File &input_file, ArchiveMeta &m, const FileSaver &saver) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
 
     TfbmImageDecoder tfbm_image_decoder;
-    auto dir = boost::filesystem::path(arc_file.name).parent_path();
+    auto dir = boost::filesystem::path(input_file.name).parent_path();
     for (boost::filesystem::directory_iterator it(dir);
         it != boost::filesystem::directory_iterator();
         it++)
@@ -465,16 +465,16 @@ void TfpkArchiveDecoder::preprocess(
         if (it->path().string().find(".pak") == std::string::npos)
             continue;
 
-        File other_arc_file(it->path(), io::FileMode::Read);
-        if (!is_recognized(other_arc_file))
+        File other_input_file(it->path(), io::FileMode::Read);
+        if (!is_recognized(other_input_file))
             continue;
 
-        auto meta = read_meta(other_arc_file);
+        auto meta = read_meta(other_input_file);
         for (auto &entry : meta->entries)
         {
             if (entry->name.find("palette") == std::string::npos)
                 continue;
-            auto pal_file = read_file(other_arc_file, *meta, *entry);
+            auto pal_file = read_file(other_input_file, *meta, *entry);
             pal_file->stream.seek(0);
             tfbm_image_decoder.add_palette(
                 entry->name, pal_file->stream.read_to_eof());
@@ -486,12 +486,12 @@ void TfpkArchiveDecoder::preprocess(
     {
         auto entry = static_cast<ArchiveEntryImpl*>(e.get());
         auto chunk = read_file_content(
-            arc_file, *meta, *entry, tfbm_magic.size());
+            input_file, *meta, *entry, tfbm_magic.size());
         if (chunk != tfbm_magic)
             continue;
 
         File full_file(entry->name, read_file_content(
-            arc_file, *meta, *entry, entry->size));
+            input_file, *meta, *entry, entry->size));
         try
         {
             auto pixels = tfbm_image_decoder.decode(full_file);

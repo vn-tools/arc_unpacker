@@ -15,40 +15,40 @@ namespace
     };
 }
 
-bool AdpackArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool AdpackArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    AdpackArchiveDecoder::read_meta_impl(File &arc_file) const
+    AdpackArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic.size() + 4);
-    const auto file_count = arc_file.stream.read_u32_le() - 1;
-    arc_file.stream.seek(0x10);
+    input_file.stream.seek(magic.size() + 4);
+    const auto file_count = input_file.stream.read_u32_le() - 1;
+    input_file.stream.seek(0x10);
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = arc_file.stream.read_to_zero(0x18).str();
-        arc_file.stream.skip(4);
-        entry->offset = arc_file.stream.read_u32_le();
+        entry->name = input_file.stream.read_to_zero(0x18).str();
+        input_file.stream.skip(4);
+        entry->offset = input_file.stream.read_u32_le();
         if (last_entry)
             last_entry->size = entry->offset - last_entry->offset;
         last_entry = entry.get();
         meta->entries.push_back(std::move(entry));
     }
     if (last_entry)
-        last_entry->size = arc_file.stream.size() - last_entry->offset;
+        last_entry->size = input_file.stream.size() - last_entry->offset;
     return meta;
 }
 
 std::unique_ptr<File> AdpackArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    const auto data = arc_file.stream.seek(entry->offset).read(entry->size);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<File>(entry->name, data);
 }
 

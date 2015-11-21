@@ -87,40 +87,40 @@ static bstr decompress(const bstr &input, size_t size_orig)
     return util::pack::lzss_decompress_bitwise(input, size_orig, settings);
 }
 
-static int detect_encryption_version(File &arc_file)
+static int detect_encryption_version(File &input_file)
 {
-    if (arc_file.name.find("th095.") != std::string::npos) return 0;
-    if (arc_file.name.find("th10.") != std::string::npos) return 0;
-    if (arc_file.name.find("th11.") != std::string::npos) return 0;
-    if (arc_file.name.find("th12.") != std::string::npos) return 1;
-    if (arc_file.name.find("th125.") != std::string::npos) return 1;
-    if (arc_file.name.find("th128.") != std::string::npos) return 1;
-    if (arc_file.name.find("th13.") != std::string::npos) return 2;
-    if (arc_file.name.find("th14.") != std::string::npos) return 3;
-    if (arc_file.name.find("th143.") != std::string::npos) return 3;
-    if (arc_file.name.find("th15tr.") != std::string::npos) return 3;
-    if (arc_file.name.find("th15.") != std::string::npos) return 3;
+    if (input_file.name.find("th095.") != std::string::npos) return 0;
+    if (input_file.name.find("th10.") != std::string::npos) return 0;
+    if (input_file.name.find("th11.") != std::string::npos) return 0;
+    if (input_file.name.find("th12.") != std::string::npos) return 1;
+    if (input_file.name.find("th125.") != std::string::npos) return 1;
+    if (input_file.name.find("th128.") != std::string::npos) return 1;
+    if (input_file.name.find("th13.") != std::string::npos) return 2;
+    if (input_file.name.find("th14.") != std::string::npos) return 3;
+    if (input_file.name.find("th143.") != std::string::npos) return 3;
+    if (input_file.name.find("th15tr.") != std::string::npos) return 3;
+    if (input_file.name.find("th15.") != std::string::npos) return 3;
     return -1;
 }
 
-bool Tha1ArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Tha1ArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    if (!arc_file.has_extension("dat"))
+    if (!input_file.has_extension("dat"))
         return false;
-    auto encryption_version = detect_encryption_version(arc_file);
+    auto encryption_version = detect_encryption_version(input_file);
     if (encryption_version < 0)
         return false;
-    arc_file.stream.seek(0);
-    auto header_data = arc_file.stream.read(16);
+    input_file.stream.seek(0);
+    auto header_data = input_file.stream.read(16);
     header_data = decrypt(header_data, {0x1B, 0x37, 0x10, 0x400});
     io::MemoryStream header_stream(header_data);
     return header_stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Tha1ArchiveDecoder::read_meta_impl(File &arc_file) const
+    Tha1ArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    auto header_data = arc_file.stream.read(16);
+    auto header_data = input_file.stream.read(16);
     header_data = decrypt(header_data, {0x1B, 0x37, 0x10, 0x400});
     io::MemoryStream header_stream(header_data);
     if (header_stream.read(magic.size()) != magic)
@@ -128,10 +128,10 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto table_size_orig = header_stream.read_u32_le() - 123456789;
     auto table_size_comp = header_stream.read_u32_le() - 987654321;
     auto file_count = header_stream.read_u32_le() - 135792468;
-    auto table_offset = arc_file.stream.size() - table_size_comp;
+    auto table_offset = input_file.stream.size() - table_size_comp;
 
-    arc_file.stream.seek(table_offset);
-    auto table_data = arc_file.stream.read(table_size_comp);
+    input_file.stream.seek(table_offset);
+    auto table_data = input_file.stream.read(table_size_comp);
     table_data = decrypt(table_data, {0x3E, 0x9B, 0x80, table_size_comp});
     table_data = decompress(table_data, table_size_orig);
     io::MemoryStream table_stream(table_data);
@@ -162,18 +162,18 @@ std::unique_ptr<fmt::ArchiveMeta>
     if (last_entry)
         last_entry->size_comp = table_offset - last_entry->offset;
 
-    meta->encryption_version = detect_encryption_version(arc_file);
+    meta->encryption_version = detect_encryption_version(input_file);
     return std::move(meta);
 }
 
 std::unique_ptr<File> Tha1ArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size_comp);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size_comp);
     data = decrypt(
         data, decryptors[meta->encryption_version][entry->decryptor_id]);
     if (entry->size_comp != entry->size_orig)

@@ -28,12 +28,12 @@ void ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
 }
 
-bool ArchiveDecoder::is_recognized(File &arc_file) const
+bool ArchiveDecoder::is_recognized(File &input_file) const
 {
     try
     {
-        arc_file.stream.seek(0);
-        return is_recognized_impl(arc_file);
+        input_file.stream.seek(0);
+        return is_recognized_impl(input_file);
     }
     catch (...)
     {
@@ -41,20 +41,20 @@ bool ArchiveDecoder::is_recognized(File &arc_file) const
     }
 }
 
-void ArchiveDecoder::unpack(File &arc_file, const FileSaver &saver) const
+void ArchiveDecoder::unpack(File &input_file, const FileSaver &saver) const
 {
-    if (!is_recognized(arc_file))
+    if (!is_recognized(input_file))
         throw err::RecognitionError();
 
     size_t error_count = 0;
-    auto meta = read_meta(arc_file);
+    auto meta = read_meta(input_file);
     if (!preprocessing_disabled)
-        preprocess(arc_file, *meta, saver);
+        preprocess(input_file, *meta, saver);
     for (auto &entry : meta->entries)
     {
         try
         {
-            auto output_file = read_file(arc_file, *meta, *entry);
+            auto output_file = read_file(input_file, *meta, *entry);
             if (output_file)
                 saver.save(std::move(output_file));
         }
@@ -74,17 +74,17 @@ void ArchiveDecoder::unpack(File &arc_file, const FileSaver &saver) const
     }
 }
 
-std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(File &arc_file) const
+std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(File &input_file) const
 {
-    arc_file.stream.seek(0);
-    return read_meta_impl(arc_file);
+    input_file.stream.seek(0);
+    return read_meta_impl(input_file);
 }
 
 std::unique_ptr<File> ArchiveDecoder::read_file(
-    File &arc_file, const ArchiveMeta &e, const ArchiveEntry &m) const
+    File &input_file, const ArchiveMeta &e, const ArchiveEntry &m) const
 {
     // wrapper reserved for future usage
-    return read_file_impl(arc_file, e, m);
+    return read_file_impl(input_file, e, m);
 }
 
 void ArchiveDecoder::preprocess(File &, ArchiveMeta &, const FileSaver &) const

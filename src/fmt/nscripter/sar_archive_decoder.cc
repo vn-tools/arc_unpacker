@@ -13,34 +13,34 @@ namespace
     };
 }
 
-bool SarArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool SarArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.has_extension("sar");
+    return input_file.has_extension("sar");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    SarArchiveDecoder::read_meta_impl(File &arc_file) const
+    SarArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    u16 file_count = arc_file.stream.read_u16_be();
-    u32 offset_to_data = arc_file.stream.read_u32_be();
+    u16 file_count = input_file.stream.read_u16_be();
+    u32 offset_to_data = input_file.stream.read_u32_be();
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = arc_file.stream.read_to_zero().str();
-        entry->offset = arc_file.stream.read_u32_be() + offset_to_data;
-        entry->size = arc_file.stream.read_u32_be();
+        entry->name = input_file.stream.read_to_zero().str();
+        entry->offset = input_file.stream.read_u32_be() + offset_to_data;
+        entry->size = input_file.stream.read_u32_be();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
 }
 
 std::unique_ptr<File> SarArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     return std::make_unique<File>(entry->name, data);
 }
 

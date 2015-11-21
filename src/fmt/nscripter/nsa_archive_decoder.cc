@@ -26,54 +26,54 @@ namespace
     };
 }
 
-bool NsaArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool NsaArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    size_t file_count = arc_file.stream.read_u16_be();
-    size_t offset_to_files = arc_file.stream.read_u32_be();
+    size_t file_count = input_file.stream.read_u16_be();
+    size_t offset_to_files = input_file.stream.read_u32_be();
     if (file_count == 0)
         return false;
     for (auto i : util::range(file_count))
     {
-        arc_file.stream.read_to_zero();
-        arc_file.stream.read_u8();
-        size_t offset = arc_file.stream.read_u32_be();
-        size_t size_comp = arc_file.stream.read_u32_be();
-        size_t size_orig = arc_file.stream.read_u32_be();
-        if (offset_to_files + offset + size_comp > arc_file.stream.size())
+        input_file.stream.read_to_zero();
+        input_file.stream.read_u8();
+        size_t offset = input_file.stream.read_u32_be();
+        size_t size_comp = input_file.stream.read_u32_be();
+        size_t size_orig = input_file.stream.read_u32_be();
+        if (offset_to_files + offset + size_comp > input_file.stream.size())
             return false;
     }
     return true;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    NsaArchiveDecoder::read_meta_impl(File &arc_file) const
+    NsaArchiveDecoder::read_meta_impl(File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
-    size_t file_count = arc_file.stream.read_u16_be();
-    size_t offset_to_data = arc_file.stream.read_u32_be();
+    size_t file_count = input_file.stream.read_u16_be();
+    size_t offset_to_data = input_file.stream.read_u32_be();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = arc_file.stream.read_to_zero().str();
+        entry->name = input_file.stream.read_to_zero().str();
         entry->compression_type =
-            static_cast<CompressionType>(arc_file.stream.read_u8());
-        entry->offset = arc_file.stream.read_u32_be() + offset_to_data;
-        entry->size_comp = arc_file.stream.read_u32_be();
-        entry->size_orig = arc_file.stream.read_u32_be();
+            static_cast<CompressionType>(input_file.stream.read_u8());
+        entry->offset = input_file.stream.read_u32_be() + offset_to_data;
+        entry->size_comp = input_file.stream.read_u32_be();
+        entry->size_orig = input_file.stream.read_u32_be();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
 }
 
 std::unique_ptr<File> NsaArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto output_file = std::make_unique<File>();
 
     output_file->name = entry->name;
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size_comp);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size_comp);
 
     switch (entry->compression_type)
     {

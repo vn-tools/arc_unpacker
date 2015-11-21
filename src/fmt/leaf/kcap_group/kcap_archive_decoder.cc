@@ -27,32 +27,32 @@ namespace
     };
 }
 
-static size_t detect_version(File &arc_file, const size_t file_count)
+static size_t detect_version(File &input_file, const size_t file_count)
 {
     size_t version = 0;
-    arc_file.stream.peek(arc_file.stream.tell(), [&]()
+    input_file.stream.peek(input_file.stream.tell(), [&]()
     {
-        arc_file.stream.skip((file_count - 1) * (24 + 8));
-        arc_file.stream.skip(24);
-        const auto last_entry_offset = arc_file.stream.read_u32_le();
-        const auto last_entry_size = arc_file.stream.read_u32_le();
-        if (last_entry_offset + last_entry_size == arc_file.stream.size())
+        input_file.stream.skip((file_count - 1) * (24 + 8));
+        input_file.stream.skip(24);
+        const auto last_entry_offset = input_file.stream.read_u32_le();
+        const auto last_entry_size = input_file.stream.read_u32_le();
+        if (last_entry_offset + last_entry_size == input_file.stream.size())
             version = 1;
     });
-    arc_file.stream.peek(arc_file.stream.tell(), [&]()
+    input_file.stream.peek(input_file.stream.tell(), [&]()
     {
-        arc_file.stream.skip((file_count - 1) * (4 + 24 + 8));
-        arc_file.stream.skip(4 + 24);
-        const auto last_entry_offset = arc_file.stream.read_u32_le();
-        const auto last_entry_size = arc_file.stream.read_u32_le();
-        if (last_entry_offset + last_entry_size == arc_file.stream.size())
+        input_file.stream.skip((file_count - 1) * (4 + 24 + 8));
+        input_file.stream.skip(4 + 24);
+        const auto last_entry_offset = input_file.stream.read_u32_le();
+        const auto last_entry_size = input_file.stream.read_u32_le();
+        if (last_entry_offset + last_entry_size == input_file.stream.size())
             version = 2;
     });
     return version;
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(
-    File &arc_file, const size_t file_count)
+    File &input_file, const size_t file_count)
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
     for (auto i : util::range(file_count))
@@ -60,26 +60,27 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->compressed = true;
         entry->name = util::sjis_to_utf8(
-            arc_file.stream.read_to_zero(24)).str();
-        entry->offset = arc_file.stream.read_u32_le();
-        entry->size = arc_file.stream.read_u32_le();
+            input_file.stream.read_to_zero(24)).str();
+        entry->offset = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta_v2(
-    File &arc_file, const size_t file_count)
+    File &input_file, const size_t file_count)
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        const auto type = static_cast<EntryType>(arc_file.stream.read_u32_le());
+        const auto type = static_cast<EntryType>(
+            input_file.stream.read_u32_le());
         entry->name = util::sjis_to_utf8(
-            arc_file.stream.read_to_zero(24)).str();
-        entry->offset = arc_file.stream.read_u32_le();
-        entry->size = arc_file.stream.read_u32_le();
+            input_file.stream.read_to_zero(24)).str();
+        entry->offset = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_u32_le();
         if (type == EntryType::RegularFile)
             entry->compressed = false;
         else if (type == EntryType::CompressedFile)
@@ -95,40 +96,40 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v2(
     return meta;
 }
 
-bool KcapArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool KcapArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    KcapArchiveDecoder::read_meta_impl(File &arc_file) const
+    KcapArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic.size());
-    const auto file_count = arc_file.stream.read_u32_le();
-    const auto version = detect_version(arc_file, file_count);
+    input_file.stream.seek(magic.size());
+    const auto file_count = input_file.stream.read_u32_le();
+    const auto version = detect_version(input_file, file_count);
     if (version == 1)
-        return read_meta_v1(arc_file, file_count);
+        return read_meta_v1(input_file, file_count);
     else if (version == 2)
-        return read_meta_v2(arc_file, file_count);
+        return read_meta_v2(input_file, file_count);
     else
         throw err::UnsupportedVersionError(version);
 }
 
 std::unique_ptr<File> KcapArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
+    input_file.stream.seek(entry->offset);
     bstr data;
     if (entry->compressed)
     {
-        auto size_comp = arc_file.stream.read_u32_le();
-        auto size_orig = arc_file.stream.read_u32_le();
-        data = arc_file.stream.read(size_comp - 8);
+        auto size_comp = input_file.stream.read_u32_le();
+        auto size_orig = input_file.stream.read_u32_le();
+        data = input_file.stream.read(size_comp - 8);
         data = util::pack::lzss_decompress_bytewise(data, size_orig);
     }
     else
-        data = arc_file.stream.read(entry->size);
+        data = input_file.stream.read(entry->size);
     return std::make_unique<File>(entry->name, data);
 }
 

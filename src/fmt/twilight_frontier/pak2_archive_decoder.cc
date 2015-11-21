@@ -33,11 +33,11 @@ static void decrypt(bstr &buffer, u32 mt_seed, u8 a, u8 b, u8 delta)
     }
 }
 
-bool Pak2ArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Pak2ArchiveDecoder::is_recognized_impl(File &input_file) const
 {
     try
     {
-        read_meta(arc_file);
+        read_meta(input_file);
         return true;
     }
     catch (...)
@@ -47,19 +47,19 @@ bool Pak2ArchiveDecoder::is_recognized_impl(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak2ArchiveDecoder::read_meta_impl(File &arc_file) const
+    Pak2ArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(0);
-    u16 file_count = arc_file.stream.read_u16_le();
-    if (file_count == 0 && arc_file.stream.size() != 6)
+    input_file.stream.seek(0);
+    u16 file_count = input_file.stream.read_u16_le();
+    if (file_count == 0 && input_file.stream.size() != 6)
         throw err::RecognitionError();
 
-    size_t table_size = arc_file.stream.read_u32_le();
-    if (table_size > arc_file.stream.size() - arc_file.stream.tell())
+    size_t table_size = input_file.stream.read_u32_le();
+    if (table_size > input_file.stream.size() - input_file.stream.tell())
         throw err::RecognitionError();
     if (table_size > file_count * (4 + 4 + 256 + 1))
         throw err::RecognitionError();
-    auto table_data = arc_file.stream.read(table_size);
+    auto table_data = input_file.stream.read(table_size);
     decrypt(table_data, table_size + 6, 0xC5, 0x83, 0x53);
     io::MemoryStream table_stream(table_data);
 
@@ -72,7 +72,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->size = table_stream.read_u32_le();
         auto name_size = table_stream.read_u8();
         entry->name = util::sjis_to_utf8(table_stream.read(name_size)).str();
-        if (entry->offset + entry->size > arc_file.stream.size())
+        if (entry->offset + entry->size > input_file.stream.size())
             throw err::BadDataOffsetError();
         meta->entries.push_back(std::move(entry));
     }
@@ -80,13 +80,13 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> Pak2ArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->already_unpacked)
         return nullptr;
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     u8 key = (entry->offset >> 1) | 0x23;
     for (auto i : util::range(entry->size))
         data[i] ^= key;
@@ -94,12 +94,12 @@ std::unique_ptr<File> Pak2ArchiveDecoder::read_file_impl(
 }
 
 void Pak2ArchiveDecoder::preprocess(
-    File &arc_file, ArchiveMeta &m, const FileSaver &saver) const
+    File &input_file, ArchiveMeta &m, const FileSaver &saver) const
 {
     Pak2ImageDecoder image_decoder;
 
     image_decoder.clear_palettes();
-    auto dir = boost::filesystem::path(arc_file.name).parent_path();
+    auto dir = boost::filesystem::path(input_file.name).parent_path();
     for (boost::filesystem::directory_iterator it(dir);
         it != boost::filesystem::directory_iterator();
         it++)
@@ -109,17 +109,17 @@ void Pak2ArchiveDecoder::preprocess(
         if (it->path().string().find(".dat") == std::string::npos)
             continue;
 
-        File other_arc_file(it->path().string(), io::FileMode::Read);
-        if (!is_recognized(other_arc_file))
+        File other_input_file(it->path().string(), io::FileMode::Read);
+        if (!is_recognized(other_input_file))
             continue;
 
-        auto meta = read_meta(other_arc_file);
+        auto meta = read_meta(other_input_file);
         for (auto &entry : meta->entries)
         {
             if (entry->name.find(".pal") == std::string::npos)
                 continue;
 
-            auto pal_file = read_file(other_arc_file, *meta, *entry);
+            auto pal_file = read_file(other_input_file, *meta, *entry);
             pal_file->stream.seek(0);
             image_decoder.add_palette(
                 entry->name, pal_file->stream.read_to_eof());
@@ -131,7 +131,7 @@ void Pak2ArchiveDecoder::preprocess(
         auto entry = static_cast<ArchiveEntryImpl*>(e.get());
         if (entry->name.find(".cv2") == std::string::npos)
             continue;
-        auto full_file = read_file(arc_file, m, *entry);
+        auto full_file = read_file(input_file, m, *entry);
         try
         {
             auto pixels = image_decoder.decode(*full_file);

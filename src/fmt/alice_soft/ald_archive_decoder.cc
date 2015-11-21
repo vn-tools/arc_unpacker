@@ -21,35 +21,35 @@ static u32 read_24_le(io::Stream &stream)
         | (stream.read_u8() << 24);
 }
 
-bool AldArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool AldArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.has_extension("ald");
+    return input_file.has_extension("ald");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    AldArchiveDecoder::read_meta_impl(File &arc_file) const
+    AldArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    auto file_count = read_24_le(arc_file.stream) / 3;
+    auto file_count = read_24_le(input_file.stream) / 3;
 
     std::vector<size_t> offsets(file_count);
     for (auto i : util::range(file_count))
-        offsets[i] = read_24_le(arc_file.stream);
+        offsets[i] = read_24_le(input_file.stream);
 
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto &offset : offsets)
     {
         if (!offset)
             break;
-        arc_file.stream.seek(offset);
-        auto header_size = arc_file.stream.read_u32_le();
-        if (arc_file.stream.tell() + header_size < arc_file.stream.size())
+        input_file.stream.seek(offset);
+        auto header_size = input_file.stream.read_u32_le();
+        if (input_file.stream.tell() + header_size < input_file.stream.size())
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
-            entry->size = arc_file.stream.read_u32_le();
-            arc_file.stream.skip(8);
-            auto name = arc_file.stream.read_to_zero(header_size - 16);
+            entry->size = input_file.stream.read_u32_le();
+            input_file.stream.skip(8);
+            auto name = input_file.stream.read_to_zero(header_size - 16);
             entry->name = util::sjis_to_utf8(name).str();
-            entry->offset = arc_file.stream.tell();
+            entry->offset = input_file.stream.tell();
             meta->entries.push_back(std::move(entry));
         }
     }
@@ -57,11 +57,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> AldArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

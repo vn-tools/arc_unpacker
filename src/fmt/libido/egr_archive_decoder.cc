@@ -16,25 +16,25 @@ namespace
     };
 }
 
-bool EgrArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool EgrArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.has_extension("egr");
+    return input_file.has_extension("egr");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    EgrArchiveDecoder::read_meta_impl(File &arc_file) const
+    EgrArchiveDecoder::read_meta_impl(File &input_file) const
 {
     auto i = 0;
     auto meta = std::make_unique<ArchiveMeta>();
-    while (!arc_file.stream.eof())
+    while (!input_file.stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->width = arc_file.stream.read_u32_le();
-        entry->height = arc_file.stream.read_u32_le();
-        if (arc_file.stream.read_u32_le() != entry->width * entry->height)
+        entry->width = input_file.stream.read_u32_le();
+        entry->height = input_file.stream.read_u32_le();
+        if (input_file.stream.read_u32_le() != entry->width * entry->height)
             throw err::BadDataSizeError();
-        entry->offset = arc_file.stream.tell();
-        arc_file.stream.skip(0x574 + entry->width * entry->height);
+        entry->offset = input_file.stream.tell();
+        input_file.stream.skip(0x574 + entry->width * entry->height);
         entry->name = util::format("Image%03d.png", i++);
         meta->entries.push_back(std::move(entry));
     }
@@ -42,25 +42,25 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> EgrArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
+    input_file.stream.seek(entry->offset);
     pix::Palette palette(256);
     for (auto i : util::range(palette.size()))
     {
-        arc_file.stream.skip(1);
+        input_file.stream.skip(1);
         palette[i].a = 0xFF;
-        palette[i].b = arc_file.stream.read_u8();
-        palette[i].r = arc_file.stream.read_u8();
-        palette[i].g = arc_file.stream.read_u8();
+        palette[i].b = input_file.stream.read_u8();
+        palette[i].r = input_file.stream.read_u8();
+        palette[i].g = input_file.stream.read_u8();
     }
 
-    arc_file.stream.skip(0x174);
+    input_file.stream.skip(0x174);
     pix::Grid pixels(
         entry->width,
         entry->height,
-        arc_file.stream.read(entry->width * entry->height),
+        input_file.stream.read(entry->width * entry->height),
         palette);
 
     return util::file_from_grid(pixels, entry->name);

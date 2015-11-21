@@ -17,28 +17,28 @@ namespace
     };
 }
 
-bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool PakArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PakArchiveDecoder::read_meta_impl(File &arc_file) const
+    PakArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(0x30);
-    auto version = arc_file.stream.read_u32_le();
+    input_file.stream.seek(0x30);
+    auto version = input_file.stream.read_u32_le();
     auto entry_size = (version >> 16) < 5 ? 0x48 : 0x68;
 
-    auto table_size_comp = arc_file.stream.read_u32_le();
-    auto key = arc_file.stream.read_u32_le();
-    auto file_count = arc_file.stream.read_u32_le();
-    auto data_offset = arc_file.stream.read_u32_le();
-    auto table_offset = arc_file.stream.read_u32_le();
+    auto table_size_comp = input_file.stream.read_u32_le();
+    auto key = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_u32_le();
+    auto data_offset = input_file.stream.read_u32_le();
+    auto table_offset = input_file.stream.read_u32_le();
 
     auto table_size_orig = file_count * entry_size;
 
-    arc_file.stream.seek(table_offset);
-    auto table_data = arc_file.stream.read(table_size_comp);
+    input_file.stream.seek(table_offset);
+    auto table_data = input_file.stream.read(table_size_comp);
     for (auto i : util::range(table_data.size()))
         table_data[i] ^= i & key;
     table_data = util::pack::lzss_decompress_bytewise(
@@ -59,11 +59,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

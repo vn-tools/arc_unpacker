@@ -111,26 +111,26 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
     return output;
 }
 
-static pix::Grid read_plain(File &arc_file, const ArchiveEntryImpl &entry)
+static pix::Grid read_plain(File &input_file, const ArchiveEntryImpl &entry)
 {
     bstr data;
     data.reserve(entry.width * entry.height * 4);
 
-    arc_file.stream.seek(entry.offset);
+    input_file.stream.seek(entry.offset);
     std::vector<u32> row_offsets(entry.height);
     for (auto &offset : row_offsets)
-        offset = arc_file.stream.read_u32_le();
+        offset = input_file.stream.read_u32_le();
     for (const auto y : util::range(entry.height))
     {
         const auto row_offset = row_offsets[y];
-        arc_file.stream.seek(row_offset);
-        auto row_size = arc_file.stream.read_u16_le();
+        input_file.stream.seek(row_offset);
+        auto row_size = input_file.stream.read_u16_le();
         if (row_offset & 1)
         {
-            arc_file.stream.skip(1);
+            input_file.stream.skip(1);
             row_size--;
         }
-        const auto input_row = arc_file.stream.read(row_size);
+        const auto input_row = input_file.stream.read(row_size);
         const auto output_row = decode_row(input_row, entry);
         data += output_row;
     }
@@ -144,16 +144,16 @@ bool S25ImageArchiveDecoder::is_recognized_impl(File &file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    S25ImageArchiveDecoder::read_meta_impl(File &arc_file) const
+    S25ImageArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    const auto base_name = fs::path(arc_file.name).stem().string();
+    const auto base_name = fs::path(input_file.name).stem().string();
 
-    arc_file.stream.seek(magic.size());
-    const auto file_count = arc_file.stream.read_u32_le();
+    input_file.stream.seek(magic.size());
+    const auto file_count = input_file.stream.read_u32_le();
     std::vector<size_t> offsets;
     for (const auto i : util::range(file_count))
     {
-        const auto offset = arc_file.stream.read_u32_le();
+        const auto offset = input_file.stream.read_u32_le();
         if (offset)
             offsets.push_back(offset);
     }
@@ -162,12 +162,12 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (const auto offset : offsets)
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        arc_file.stream.seek(offset);
-        entry->width = arc_file.stream.read_u32_le();
-        entry->height = arc_file.stream.read_u32_le();
-        arc_file.stream.skip(8);
-        entry->flags = arc_file.stream.read_u32_le();
-        entry->offset = arc_file.stream.tell();
+        input_file.stream.seek(offset);
+        entry->width = input_file.stream.read_u32_le();
+        entry->height = input_file.stream.read_u32_le();
+        input_file.stream.skip(8);
+        entry->flags = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.tell();
         entry->name = offsets.size() > 1
             ? util::format("%s_%03d", base_name.c_str(), meta->entries.size())
             : base_name;
@@ -179,12 +179,12 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> S25ImageArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->flags & 0x80000000)
         throw err::NotSupportedError("Flagged S25 images are supported");
-    const auto image = read_plain(arc_file, *entry);
+    const auto image = read_plain(input_file, *entry);
     return util::file_from_grid(image, e.name);
 }
 

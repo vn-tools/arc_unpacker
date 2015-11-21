@@ -28,17 +28,17 @@ static std::string get_path_to_index(const std::string &path_to_data)
     return index_path.string();
 }
 
-bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool PakArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return boost::filesystem::exists(get_path_to_index(arc_file.name))
-        && arc_file.has_extension("pak");
+    return boost::filesystem::exists(get_path_to_index(input_file.name))
+        && input_file.has_extension("pak");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PakArchiveDecoder::read_meta_impl(File &arc_file) const
+    PakArchiveDecoder::read_meta_impl(File &input_file) const
 {
     io::FileStream index_stream(
-        get_path_to_index(arc_file.name), io::FileMode::Read);
+        get_path_to_index(input_file.name), io::FileMode::Read);
 
     auto data = index_stream.read(index_stream.size() - 4);
     auto seed = index_stream.read_u32_le();
@@ -69,11 +69,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

@@ -20,28 +20,28 @@ namespace
     };
 }
 
-bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool PakArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    if (arc_file.stream.read(magic.size()) != magic)
+    if (input_file.stream.read(magic.size()) != magic)
         return false;
-    return read_meta(arc_file)->entries.size() > 0;
+    return read_meta(input_file)->entries.size() > 0;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PakArchiveDecoder::read_meta_impl(File &arc_file) const
+    PakArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic.size());
-    auto file_count = arc_file.stream.read_u32_le();
-    auto table_size_orig = arc_file.stream.read_u32_le();
-    auto table_size_comp = arc_file.stream.read_u32_le();
-    arc_file.stream.skip(0x104);
+    input_file.stream.seek(magic.size());
+    auto file_count = input_file.stream.read_u32_le();
+    auto table_size_orig = input_file.stream.read_u32_le();
+    auto table_size_comp = input_file.stream.read_u32_le();
+    input_file.stream.skip(0x104);
 
     io::MemoryStream table_stream(
         util::pack::zlib_inflate(
-            arc_file.stream.read(table_size_comp)));
+            input_file.stream.read(table_size_comp)));
 
     auto meta = std::make_unique<ArchiveMeta>();
-    auto file_data_offset = arc_file.stream.tell();
+    auto file_data_offset = input_file.stream.tell();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
@@ -59,13 +59,13 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
+    input_file.stream.seek(entry->offset);
     auto data = entry->compressed
-        ? util::pack::zlib_inflate(arc_file.stream.read(entry->size_comp))
-        : arc_file.stream.read(entry->size_orig);
+        ? util::pack::zlib_inflate(input_file.stream.read(entry->size_comp))
+        : input_file.stream.read(entry->size_orig);
     return std::make_unique<File>(entry->name, data);
 }
 

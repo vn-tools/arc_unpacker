@@ -23,33 +23,33 @@ namespace
     };
 }
 
-bool Pak2ImageArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Pak2ImageArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.seek(4).read(magic.size()) == magic;
+    return input_file.stream.seek(4).read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak2ImageArchiveDecoder::read_meta_impl(File &arc_file) const
+    Pak2ImageArchiveDecoder::read_meta_impl(File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
 
-    arc_file.stream.seek(0);
+    input_file.stream.seek(0);
     ArchiveEntryImpl *last_entry = nullptr;
-    while (!arc_file.stream.eof())
+    while (!input_file.stream.eof())
     {
-        arc_file.stream.skip(4);
-        const auto entry_magic = arc_file.stream.read(4);
+        input_file.stream.skip(4);
+        const auto entry_magic = input_file.stream.read(4);
         if (entry_magic == magic)
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
-            arc_file.stream.skip(18);
-            entry->bpp = arc_file.stream.read_u16_le();
-            arc_file.stream.skip(8);
-            entry->width = arc_file.stream.read_u16_le();
-            entry->height = arc_file.stream.read_u16_le();
-            entry->color_offset = arc_file.stream.tell();
+            input_file.stream.skip(18);
+            entry->bpp = input_file.stream.read_u16_le();
+            input_file.stream.skip(8);
+            entry->width = input_file.stream.read_u16_le();
+            entry->height = input_file.stream.read_u16_le();
+            entry->color_offset = input_file.stream.tell();
             entry->size = entry->width * entry->height * entry->bpp >> 3;
-            arc_file.stream.skip(entry->size);
+            input_file.stream.skip(entry->size);
 
             if (!entry->width || !entry->height)
                 continue;
@@ -60,21 +60,21 @@ std::unique_ptr<fmt::ArchiveMeta>
         {
             if (!last_entry)
                 throw err::CorruptDataError("Mask found, but no color data");
-            arc_file.stream.skip(28);
-            last_entry->mask_offset = arc_file.stream.tell();
-            arc_file.stream.skip(last_entry->width * last_entry->height);
+            input_file.stream.skip(28);
+            last_entry->mask_offset = input_file.stream.tell();
+            input_file.stream.skip(last_entry->width * last_entry->height);
         }
         else if (entry_magic == end_magic)
         {
-            arc_file.stream.skip(12);
-            if (!arc_file.stream.eof())
+            input_file.stream.skip(12);
+            if (!input_file.stream.eof())
                 throw err::CorruptDataError("More data follow");
         }
         else
             throw err::CorruptDataError("Unexpected magic");
     }
 
-    const auto base_name = fs::path(arc_file.name).stem().string();
+    const auto base_name = fs::path(input_file.name).stem().string();
     for (auto i : util::range(meta->entries.size()))
         meta->entries[i]->name = meta->entries.size() > 1
             ? util::format("%s_%03d", base_name.c_str(), i)
@@ -84,7 +84,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> Pak2ImageArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     pix::Format format;
@@ -95,14 +95,14 @@ std::unique_ptr<File> Pak2ImageArchiveDecoder::read_file_impl(
     else
         throw err::UnsupportedBitDepthError(entry->bpp);
 
-    const auto data = arc_file.stream
+    const auto data = input_file.stream
         .seek(entry->color_offset)
         .read(entry->size);
     auto image = pix::Grid(entry->width, entry->height, data, format);
     image.flip_vertically();
     if (entry->mask_offset)
     {
-        const auto mask = arc_file
+        const auto mask = input_file
             .stream.seek(entry->mask_offset)
             .read(entry->width * entry->height);
         const auto mask_image

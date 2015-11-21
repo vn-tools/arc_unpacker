@@ -63,14 +63,14 @@ static bstr decompress(const bstr &input, size_t size_orig)
 }
 
 static std::unique_ptr<File> read_file(
-    File &arc_file, const fmt::ArchiveEntry &e, u8 encryption_version)
+    File &input_file, const fmt::ArchiveEntry &e, u8 encryption_version)
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
-    arc_file.stream.seek(entry->offset);
+    input_file.stream.seek(entry->offset);
     io::MemoryStream uncompressed_stream(
         decompress(
-            arc_file.stream.read(entry->size_comp),
+            input_file.stream.read(entry->size_comp),
             entry->size_orig));
 
     if (uncompressed_stream.read(crypt_magic.size()) != crypt_magic)
@@ -84,7 +84,7 @@ static std::unique_ptr<File> read_file(
 }
 
 static size_t detect_encryption_version(
-    File &arc_file, const fmt::ArchiveMeta &meta)
+    File &input_file, const fmt::ArchiveMeta &meta)
 {
     for (auto &entry : meta.entries)
     {
@@ -92,7 +92,7 @@ static size_t detect_encryption_version(
             continue;
         for (auto version : util::range(decryptors.size()))
         {
-            auto file = read_file(arc_file, *entry, version);
+            auto file = read_file(input_file, *entry, version);
             file->stream.seek(0);
             if (file->stream.read(jpeg_magic.size()) == jpeg_magic)
                 return version;
@@ -101,26 +101,26 @@ static size_t detect_encryption_version(
     throw err::NotSupportedError("No means to detect the encryption version");
 }
 
-bool PbgzArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool PbgzArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PbgzArchiveDecoder::read_meta_impl(File &arc_file) const
+    PbgzArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic.size());
+    input_file.stream.seek(magic.size());
 
     io::MemoryStream header_stream(
-        decrypt(arc_file.stream.read(12), {0x1B, 0x37, 0x0C, 0x400}));
+        decrypt(input_file.stream.read(12), {0x1B, 0x37, 0x0C, 0x400}));
     auto file_count = header_stream.read_u32_le() - 123456;
     auto table_offset = header_stream.read_u32_le() - 345678;
     auto table_size_orig = header_stream.read_u32_le() - 567891;
 
-    arc_file.stream.seek(table_offset);
+    input_file.stream.seek(table_offset);
     io::MemoryStream table_stream(
         decompress(
-            decrypt(arc_file.stream.read_to_eof(), {0x3E, 0x9B, 0x80, 0x400}),
+            decrypt(input_file.stream.read_to_eof(), {0x3E, 0x9B, 0x80, 0x400}),
             table_size_orig));
 
     ArchiveEntryImpl *last_entry = nullptr;
@@ -141,15 +141,15 @@ std::unique_ptr<fmt::ArchiveMeta>
     if (last_entry)
         last_entry->size_comp = table_offset - last_entry->offset;
 
-    meta->encryption_version = detect_encryption_version(arc_file, *meta);
+    meta->encryption_version = detect_encryption_version(input_file, *meta);
     return std::move(meta);
 }
 
 std::unique_ptr<File> PbgzArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    return ::read_file(arc_file, e, meta->encryption_version);
+    return ::read_file(input_file, e, meta->encryption_version);
 }
 
 std::vector<std::string> PbgzArchiveDecoder::get_linked_formats() const

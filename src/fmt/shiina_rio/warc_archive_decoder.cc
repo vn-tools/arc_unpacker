@@ -64,28 +64,28 @@ void WarcArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
-bool WarcArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool WarcArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    WarcArchiveDecoder::read_meta_impl(File &arc_file) const
+    WarcArchiveDecoder::read_meta_impl(File &input_file) const
 {
     const auto plugin = p->plugin_registry.get_plugin();
     if (!plugin)
         throw err::UsageError("Plugin not specified");
 
-    arc_file.stream.seek(magic.size());
+    input_file.stream.seek(magic.size());
     const int warc_version
-        = 100 * boost::lexical_cast<float>(arc_file.stream.read(3).str());
+        = 100 * boost::lexical_cast<float>(input_file.stream.read(3).str());
     if (warc_version != 170)
         throw err::UnsupportedVersionError(warc_version);
 
-    arc_file.stream.seek(8);
-    const auto table_offset = arc_file.stream.read_u32_le() ^ 0xF182AD82;
-    arc_file.stream.seek(table_offset);
-    auto table_data = arc_file.stream.read_to_eof();
+    input_file.stream.seek(8);
+    const auto table_offset = input_file.stream.read_u32_le() ^ 0xF182AD82;
+    input_file.stream.seek(table_offset);
+    auto table_data = input_file.stream.read_to_eof();
 
     warc::decrypt_table_data(*plugin, warc_version, table_offset, table_data);
     io::MemoryStream table_stream(table_data);
@@ -118,14 +118,14 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> WarcArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
+    input_file.stream.seek(entry->offset);
 
-    const bstr head = arc_file.stream.read(4);
-    const auto size_orig = arc_file.stream.read_u32_le();
+    const bstr head = input_file.stream.read(4);
+    const auto size_orig = input_file.stream.read_u32_le();
     const bool compress_crypt = head[3] > 0;
     const u32 tmp = *head.get<u32>() ^ 0x82AD82 ^ size_orig;
     bstr file_magic(3);
@@ -133,7 +133,7 @@ std::unique_ptr<File> WarcArchiveDecoder::read_file_impl(
     file_magic[1] = (tmp >> 8) & 0xFF;
     file_magic[2] = (tmp >> 16) & 0xFF;
 
-    auto data = arc_file.stream.read(entry->size_comp - 8);
+    auto data = input_file.stream.read(entry->size_comp - 8);
     if (entry->flags & 0x80000000)
         warc::decrypt_essential(meta->plugin, meta->warc_version, data);
     if (meta->plugin.flag_crypt.pre)

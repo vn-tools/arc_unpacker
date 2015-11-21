@@ -44,23 +44,23 @@ static int guess_version(io::Stream &arc_stream)
     return -1;
 }
 
-static void read_data_entry(File &arc_file, fmt::ArchiveMeta &meta)
+static void read_data_entry(File &input_file, fmt::ArchiveMeta &meta)
 {
     auto entry = std::make_unique<ArchiveEntryImpl>();
     entry->name = "unknown.dat";
-    entry->size = arc_file.stream.read_u32_le();
-    entry->offset = arc_file.stream.tell();
-    arc_file.stream.skip(entry->size);
+    entry->size = input_file.stream.read_u32_le();
+    entry->offset = input_file.stream.tell();
+    input_file.stream.skip(entry->size);
     meta.entries.push_back(std::move(entry));
 }
 
-static void read_resource_entry(File &arc_file, fmt::ArchiveMeta &meta)
+static void read_resource_entry(File &input_file, fmt::ArchiveMeta &meta)
 {
-    bstr magic = arc_file.stream.read(16);
+    bstr magic = input_file.stream.read(16);
 
     auto entry = std::make_unique<ArchiveEntryImpl>();
-    auto name_size = arc_file.stream.read_u16_le();
-    entry->name = util::sjis_to_utf8(arc_file.stream.read(name_size)).str();
+    auto name_size = input_file.stream.read_u16_le();
+    entry->name = util::sjis_to_utf8(input_file.stream.read(name_size)).str();
     if (entry->name.empty())
         entry->name = "unknown";
     entry->name += ".dat";
@@ -70,7 +70,7 @@ static void read_resource_entry(File &arc_file, fmt::ArchiveMeta &meta)
         || magic == magic_imgdat13
         || magic == magic_imgdat14)
     {
-        arc_file.stream.skip(arc_file.stream.read_u16_le());
+        input_file.stream.skip(input_file.stream.read_u16_le());
     }
     else if (magic != magic_imgdat10 && magic != magic_snddat10)
     {
@@ -78,44 +78,44 @@ static void read_resource_entry(File &arc_file, fmt::ArchiveMeta &meta)
             "Unknown image magic: %s", magic.get<char>()));
     }
 
-    arc_file.stream.skip(1);
+    input_file.stream.skip(1);
     if (magic == magic_imgdat14)
-        arc_file.stream.skip(76);
+        input_file.stream.skip(76);
     if (magic == magic_imgdat13)
-        arc_file.stream.skip(12);
+        input_file.stream.skip(12);
 
-    entry->size = arc_file.stream.read_u32_le();
-    entry->offset = arc_file.stream.tell();
-    arc_file.stream.skip(entry->size);
+    entry->size = input_file.stream.read_u32_le();
+    entry->offset = input_file.stream.tell();
+    input_file.stream.skip(entry->size);
     if (entry->size)
         meta.entries.push_back(std::move(entry));
 }
 
-bool Abmp10ArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Abmp10ArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return guess_version(arc_file.stream) >= 0;
+    return guess_version(input_file.stream) >= 0;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Abmp10ArchiveDecoder::read_meta_impl(File &arc_file) const
+    Abmp10ArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(16);
+    input_file.stream.seek(16);
     auto meta = std::make_unique<ArchiveMeta>();
-    while (arc_file.stream.tell() < arc_file.stream.size())
+    while (input_file.stream.tell() < input_file.stream.size())
     {
-        auto magic = arc_file.stream.read(16);
+        auto magic = input_file.stream.read(16);
         if (magic == magic_data10
             || magic == magic_data11
             || magic == magic_data12
             || magic == magic_data13)
         {
-            read_data_entry(arc_file, *meta);
+            read_data_entry(input_file, *meta);
         }
         else if (magic == magic_image10 || magic == magic_sound10)
         {
-            size_t file_count = arc_file.stream.read_u8();
+            size_t file_count = input_file.stream.read_u8();
             for (auto i : util::range(file_count))
-                read_resource_entry(arc_file, *meta);
+                read_resource_entry(input_file, *meta);
         }
         else
         {
@@ -127,11 +127,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> Abmp10ArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

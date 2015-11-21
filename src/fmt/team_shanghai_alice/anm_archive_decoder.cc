@@ -174,15 +174,15 @@ std::unique_ptr<INamingStrategy> AnmArchiveDecoder::naming_strategy() const
     return std::make_unique<RootNamingStrategy>();
 }
 
-bool AnmArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool AnmArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.has_extension("anm");
+    return input_file.has_extension("anm");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    AnmArchiveDecoder::read_meta_impl(File &arc_file) const
+    AnmArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    auto texture_info_list = read_texture_info_list(arc_file.stream);
+    auto texture_info_list = read_texture_info_list(input_file.stream);
 
     std::map<std::string, std::vector<TextureInfo>> map;
     for (auto &texture_info : texture_info_list)
@@ -200,20 +200,20 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> AnmArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     size_t width = 0;
     size_t height = 0;
     for (auto &texture_info : entry->texture_info_list)
     {
-        arc_file.stream.peek(texture_info.texture_offset, [&]()
+        input_file.stream.peek(texture_info.texture_offset, [&]()
         {
-            arc_file.stream.skip(texture_magic.size());
-            arc_file.stream.skip(2);
-            arc_file.stream.skip(2);
-            size_t chunk_width = arc_file.stream.read_u16_le();
-            size_t chunk_height = arc_file.stream.read_u16_le();
+            input_file.stream.skip(texture_magic.size());
+            input_file.stream.skip(2);
+            input_file.stream.skip(2);
+            size_t chunk_width = input_file.stream.read_u16_le();
+            size_t chunk_height = input_file.stream.read_u16_le();
             width = std::max(width, texture_info.x + chunk_width);
             height = std::max(height, texture_info.y + chunk_height);
         });
@@ -221,7 +221,7 @@ std::unique_ptr<File> AnmArchiveDecoder::read_file_impl(
 
     pix::Grid pixels(width, height);
     for (auto &texture_info : entry->texture_info_list)
-        write_pixels(arc_file.stream, texture_info, pixels, width);
+        write_pixels(input_file.stream, texture_info, pixels, width);
 
     return util::file_from_grid(pixels, entry->name);
 }

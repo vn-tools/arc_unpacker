@@ -22,46 +22,46 @@ namespace
     };
 }
 
-bool Nekopack4ArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Nekopack4ArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Nekopack4ArchiveDecoder::read_meta_impl(File &arc_file) const
+    Nekopack4ArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic.size());
-    auto table_size = arc_file.stream.read_u32_le();
+    input_file.stream.seek(magic.size());
+    auto table_size = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
     while (true)
     {
-        auto name_size = arc_file.stream.read_u32_le();
+        auto name_size = input_file.stream.read_u32_le();
         if (!name_size)
             break;
 
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->already_unpacked = false;
-        entry->name = arc_file.stream.read_to_zero(name_size).str();
+        entry->name = input_file.stream.read_to_zero(name_size).str();
         u32 key = 0;
         for (auto &c : entry->name)
             key += static_cast<u8>(c);
-        entry->offset = arc_file.stream.read_u32_le() ^ key;
-        entry->size_comp = arc_file.stream.read_u32_le() ^ key;
+        entry->offset = input_file.stream.read_u32_le() ^ key;
+        entry->size_comp = input_file.stream.read_u32_le() ^ key;
         meta->entries.push_back(std::move(entry));
     }
     return meta;
 }
 
 std::unique_ptr<File> Nekopack4ArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->already_unpacked)
         return nullptr;
 
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size_comp - 4);
-    auto size_orig = arc_file.stream.read_u32_le();
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size_comp - 4);
+    auto size_orig = input_file.stream.read_u32_le();
 
     u8 key = (entry->size_comp >> 3) + 0x22;
     auto output_ptr = data.get<u8>();
@@ -77,7 +77,7 @@ std::unique_ptr<File> Nekopack4ArchiveDecoder::read_file_impl(
 }
 
 void Nekopack4ArchiveDecoder::preprocess(
-    File &arc_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
+    File &input_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
 {
     // apply image masks to original sprites
     std::map<std::string, ArchiveEntryImpl*> mask_entries, sprite_entries;
@@ -97,8 +97,8 @@ void Nekopack4ArchiveDecoder::preprocess(
         {
             auto sprite_entry = it.second;
             auto mask_entry = mask_entries.at(it.first);
-            auto sprite_file = read_file(arc_file, meta, *sprite_entry);
-            auto mask_file = read_file(arc_file, meta, *mask_entry);
+            auto sprite_file = read_file(input_file, meta, *sprite_entry);
+            auto mask_file = read_file(input_file, meta, *mask_entry);
             mask_file->stream.seek(0);
             auto sprite = bmp_image_decoder.decode(*sprite_file);
             pix::Grid mask(

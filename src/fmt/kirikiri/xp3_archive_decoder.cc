@@ -155,31 +155,31 @@ void Xp3ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
-bool Xp3ArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Xp3ArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(xp3_magic.size()) == xp3_magic;
+    return input_file.stream.read(xp3_magic.size()) == xp3_magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Xp3ArchiveDecoder::read_meta_impl(File &arc_file) const
+    Xp3ArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(xp3_magic.size());
-    auto version = detect_version(arc_file.stream);
-    auto table_offset = get_table_offset(arc_file.stream, version);
+    input_file.stream.seek(xp3_magic.size());
+    auto version = detect_version(input_file.stream);
+    auto table_offset = get_table_offset(input_file.stream, version);
 
-    arc_file.stream.seek(table_offset);
-    auto table_is_compressed = arc_file.stream.read_u8() != 0;
-    auto table_size_comp = arc_file.stream.read_u64_le();
+    input_file.stream.seek(table_offset);
+    auto table_is_compressed = input_file.stream.read_u8() != 0;
+    auto table_size_comp = input_file.stream.read_u64_le();
     auto table_size_orig = table_is_compressed
-        ? arc_file.stream.read_u64_le()
+        ? input_file.stream.read_u64_le()
         : table_size_comp;
-    auto table_data = arc_file.stream.read(table_size_comp);
+    auto table_data = input_file.stream.read(table_size_comp);
     if (table_is_compressed)
         table_data = util::pack::zlib_inflate(table_data);
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    meta->filter.reset(new Xp3Filter(arc_file.name));
+    meta->filter.reset(new Xp3Filter(input_file.name));
     p->filter_registry.set_decoder(*meta->filter);
 
     while (table_stream.tell() < table_stream.size())
@@ -205,7 +205,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> Xp3ArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -213,12 +213,12 @@ std::unique_ptr<File> Xp3ArchiveDecoder::read_file_impl(
     bstr data;
     for (auto &segm_chunk : entry->segm_chunks)
     {
-        arc_file.stream.seek(segm_chunk.offset);
+        input_file.stream.seek(segm_chunk.offset);
         bool data_is_compressed = (segm_chunk.flags & 7) > 0;
         data += data_is_compressed
             ? util::pack::zlib_inflate(
-                arc_file.stream.read(segm_chunk.size_comp))
-            : arc_file.stream.read(segm_chunk.size_orig);
+                input_file.stream.read(segm_chunk.size_comp))
+            : input_file.stream.read(segm_chunk.size_orig);
     }
 
     if (meta->filter && meta->filter->decoder)

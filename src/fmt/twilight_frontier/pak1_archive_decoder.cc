@@ -38,11 +38,11 @@ static std::unique_ptr<io::MemoryStream> read_raw_table(
     return std::make_unique<io::MemoryStream>(buffer);
 }
 
-bool Pak1ArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Pak1ArchiveDecoder::is_recognized_impl(File &input_file) const
 {
     try
     {
-        read_meta(arc_file);
+        read_meta(input_file);
         return true;
     }
     catch (...)
@@ -52,12 +52,12 @@ bool Pak1ArchiveDecoder::is_recognized_impl(File &arc_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak1ArchiveDecoder::read_meta_impl(File &arc_file) const
+    Pak1ArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    u16 file_count = arc_file.stream.read_u16_le();
-    if (file_count == 0 && arc_file.stream.size() != 6)
+    u16 file_count = input_file.stream.read_u16_le();
+    if (file_count == 0 && input_file.stream.size() != 6)
         throw err::RecognitionError();
-    auto table_stream = read_raw_table(arc_file.stream, file_count);
+    auto table_stream = read_raw_table(input_file.stream, file_count);
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
@@ -65,7 +65,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->name = table_stream->read_to_zero(0x64).str();
         entry->size = table_stream->read_u32_le();
         entry->offset = table_stream->read_u32_le();
-        if (entry->offset + entry->size > arc_file.stream.size())
+        if (entry->offset + entry->size > input_file.stream.size())
             throw err::BadDataOffsetError();
         meta->entries.push_back(std::move(entry));
     }
@@ -73,14 +73,14 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto output_file = std::make_unique<File>();
     output_file->name = entry->name;
 
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
 
     if (output_file->name.find("musicroom.dat") != std::string::npos)
     {

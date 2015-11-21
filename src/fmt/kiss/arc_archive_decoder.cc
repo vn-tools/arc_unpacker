@@ -15,31 +15,32 @@ namespace
     };
 }
 
-bool ArcArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool ArcArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    if (!arc_file.has_extension("arc"))
+    if (!input_file.has_extension("arc"))
         return false;
-    const auto meta = read_meta_impl(arc_file);
+    const auto meta = read_meta_impl(input_file);
     if (meta->entries.empty())
         return false;
     const auto last_entry
         = dynamic_cast<ArchiveEntryImpl*>(meta->entries.back().get());
-    return last_entry->size + last_entry->offset == arc_file.stream.size();
+    return last_entry->size + last_entry->offset == input_file.stream.size();
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    ArcArchiveDecoder::read_meta_impl(File &arc_file) const
+    ArcArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(0);
-    const auto file_count = arc_file.stream.read_u32_le();
+    input_file.stream.seek(0);
+    const auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
     ArchiveEntryImpl *last_entry = nullptr;
     for (const size_t i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = util::sjis_to_utf8(arc_file.stream.read_to_zero()).str();
-        entry->offset = arc_file.stream.read_u32_le();
-        if (arc_file.stream.read_u32_le() != 0)
+        entry->name = util::sjis_to_utf8(
+            input_file.stream.read_to_zero()).str();
+        entry->offset = input_file.stream.read_u32_le();
+        if (input_file.stream.read_u32_le() != 0)
             throw err::CorruptDataError("Expected '0'");
         if (last_entry)
             last_entry->size = entry->offset - last_entry->offset;
@@ -47,15 +48,15 @@ std::unique_ptr<fmt::ArchiveMeta>
         meta->entries.push_back(std::move(entry));
     }
     if (last_entry)
-        last_entry->size = arc_file.stream.size() - last_entry->offset;
+        last_entry->size = input_file.stream.size() - last_entry->offset;
     return meta;
 }
 
 std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    const auto data = arc_file.stream.seek(entry->offset).read(entry->size);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<File>(entry->name, data);
 }
 

@@ -19,41 +19,41 @@ namespace
     };
 }
 
-bool LnkArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool LnkArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return arc_file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    LnkArchiveDecoder::read_meta_impl(File &arc_file) const
+    LnkArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    arc_file.stream.seek(magic.size());
+    input_file.stream.seek(magic.size());
     auto meta = std::make_unique<ArchiveMeta>();
-    auto file_count = arc_file.stream.read_u32_le();
-    arc_file.stream.skip(8);
-    auto file_data_start = arc_file.stream.tell() + (file_count << 5);
+    auto file_count = input_file.stream.read_u32_le();
+    input_file.stream.skip(8);
+    auto file_data_start = input_file.stream.tell() + (file_count << 5);
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->offset = arc_file.stream.read_u32_le() + file_data_start;
-        u32 tmp = arc_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_u32_le() + file_data_start;
+        u32 tmp = input_file.stream.read_u32_le();
         entry->compressed = tmp & 1;
         entry->size = tmp >> 1;
-        entry->name = arc_file.stream.read_to_zero(24).str();
+        entry->name = input_file.stream.read_to_zero(24).str();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
 }
 
 std::unique_ptr<File> LnkArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto output_file = std::make_unique<File>();
     output_file->name = entry->name;
 
-    arc_file.stream.seek(entry->offset);
-    auto data = arc_file.stream.read(entry->size);
+    input_file.stream.seek(entry->offset);
+    auto data = input_file.stream.read(entry->size);
 
     int key_pos = -1;
     if (output_file->has_extension(".wav"))

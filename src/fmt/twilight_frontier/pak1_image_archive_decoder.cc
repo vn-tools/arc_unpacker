@@ -24,52 +24,52 @@ namespace
     };
 }
 
-bool Pak1ImageArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool Pak1ImageArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    if (!arc_file.has_extension("dat"))
+    if (!input_file.has_extension("dat"))
         return false;
-    auto palette_count = arc_file.stream.read_u8();
-    arc_file.stream.skip(palette_count * 512);
-    while (!arc_file.stream.eof())
+    auto palette_count = input_file.stream.read_u8();
+    input_file.stream.skip(palette_count * 512);
+    while (!input_file.stream.eof())
     {
-        arc_file.stream.skip(4 * 3);
-        arc_file.stream.skip(1);
-        arc_file.stream.skip(arc_file.stream.read_u32_le());
+        input_file.stream.skip(4 * 3);
+        input_file.stream.skip(1);
+        input_file.stream.skip(input_file.stream.read_u32_le());
     }
-    return arc_file.stream.eof();
+    return input_file.stream.eof();
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak1ImageArchiveDecoder::read_meta_impl(File &arc_file) const
+    Pak1ImageArchiveDecoder::read_meta_impl(File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    auto palette_count = arc_file.stream.read_u8();
+    auto palette_count = input_file.stream.read_u8();
     for (auto i : util::range(palette_count))
     {
         meta->palettes.push_back(pix::Palette(
-            256, arc_file.stream.read(512), pix::Format::BGRA5551));
+            256, input_file.stream.read(512), pix::Format::BGRA5551));
     }
     meta->palettes.push_back(pix::Palette(256));
 
     size_t i = 0;
-    while (arc_file.stream.tell() < arc_file.stream.size())
+    while (input_file.stream.tell() < input_file.stream.size())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->width = arc_file.stream.read_u32_le();
-        entry->height = arc_file.stream.read_u32_le();
-        arc_file.stream.skip(4);
-        entry->depth = arc_file.stream.read_u8();
-        entry->size = arc_file.stream.read_u32_le();
+        entry->width = input_file.stream.read_u32_le();
+        entry->height = input_file.stream.read_u32_le();
+        input_file.stream.skip(4);
+        entry->depth = input_file.stream.read_u8();
+        entry->size = input_file.stream.read_u32_le();
         entry->name = util::format("%04d", i++);
-        entry->offset = arc_file.stream.tell();
-        arc_file.stream.skip(entry->size);
+        entry->offset = input_file.stream.tell();
+        input_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));
     }
     return std::move(meta);
 }
 
 std::unique_ptr<File> Pak1ImageArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -87,8 +87,8 @@ std::unique_ptr<File> Pak1ImageArchiveDecoder::read_file_impl(
     bstr output(entry->width * entry->height * chunk_size);
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<u8>();
-    arc_file.stream.seek(entry->offset);
-    io::MemoryStream input(arc_file.stream, entry->size);
+    input_file.stream.seek(entry->offset);
+    io::MemoryStream input(input_file.stream, entry->size);
 
     while (output_ptr < output_end && input.tell() < input.size())
     {

@@ -88,23 +88,24 @@ bool WipfImageArchiveDecoder::is_recognized_impl(File &file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    WipfImageArchiveDecoder::read_meta_impl(File &arc_file) const
+    WipfImageArchiveDecoder::read_meta_impl(File &input_file) const
 {
-    auto base_name = boost::filesystem::path(arc_file.name).filename().string();
+    auto base_name
+        = boost::filesystem::path(input_file.name).filename().string();
     boost::algorithm::replace_all(base_name, ".", "-");
 
-    arc_file.stream.seek(magic.size());
+    input_file.stream.seek(magic.size());
     auto meta = std::make_unique<ArchiveMeta>();
-    auto file_count = arc_file.stream.read_u16_le();
-    auto depth = arc_file.stream.read_u16_le();
+    auto file_count = input_file.stream.read_u16_le();
+    auto depth = input_file.stream.read_u16_le();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->name = base_name;
-        entry->width = arc_file.stream.read_u32_le();
-        entry->height = arc_file.stream.read_u32_le();
-        arc_file.stream.skip(12);
-        entry->size_comp = arc_file.stream.read_u32_le();
+        entry->width = input_file.stream.read_u32_le();
+        entry->height = input_file.stream.read_u32_le();
+        input_file.stream.skip(12);
+        entry->size_comp = input_file.stream.read_u32_le();
         entry->size_orig = entry->width * entry->height * (depth >> 3);
         entry->depth = depth;
         meta->entries.push_back(std::move(entry));
@@ -113,19 +114,19 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<pix::Grid> WipfImageArchiveDecoder::read_image(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     std::unique_ptr<pix::Palette> palette;
     if (entry->depth == 8)
     {
         palette.reset(new pix::Palette(
-            256, arc_file.stream, pix::Format::BGRA8888));
+            256, input_file.stream, pix::Format::BGRA8888));
         for (auto &c : *palette)
             c.a ^= 0xFF;
     }
 
-    auto data = arc_file.stream.read(entry->size_comp);
+    auto data = input_file.stream.read(entry->size_comp);
     data = custom_lzss_decompress(data, entry->size_orig);
 
     auto w = entry->width;
@@ -155,18 +156,18 @@ std::unique_ptr<pix::Grid> WipfImageArchiveDecoder::read_image(
 }
 
 std::unique_ptr<File> WipfImageArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
-    return util::file_from_grid(*read_image(arc_file, m, e), e.name);
+    return util::file_from_grid(*read_image(input_file, m, e), e.name);
 }
 
 std::vector<std::shared_ptr<pix::Grid>>
-    WipfImageArchiveDecoder::unpack_to_images(File &arc_file) const
+    WipfImageArchiveDecoder::unpack_to_images(File &input_file) const
 {
-    auto meta = read_meta(arc_file);
+    auto meta = read_meta(input_file);
     std::vector<std::shared_ptr<pix::Grid>> output;
     for (auto &entry : meta->entries)
-        output.push_back(read_image(arc_file, *meta, *entry));
+        output.push_back(read_image(input_file, *meta, *entry));
     return output;
 }
 
