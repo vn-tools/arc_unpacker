@@ -6,7 +6,7 @@ grep '\s$' **/*.{cc,h}
 pcregrep -M '\n\n\Z' **/*.{cc,h}
 
 echo 'Checking for too long lines...'
-grep '^.\{81,\}$' **/*.{cc,h}
+grep -n '^.\{81,\}$' **/*.{cc,h}
 
 echo 'Checking for lowercase hex literals...'
 grep '[0\\]x[0-9]*[a-f][0-9]*' **/*.{cc,h}
@@ -34,7 +34,7 @@ grep 'struct \|class ' **/*.{cc,h} \
     | grep -v '\(class\|struct\) I[A-Z]' \
     | grep -v ';$' \
     | grep -v 'file_saver.*class FileSaver' \
-    | grep -v 'io.*class IO' \
+    | grep -v 'io.*class Stream' \
     | grep -v 'err.*struct .*Error' \
     | grep -v 'arg_parser.*Option' \
     | grep -v 'bit_reader.*class Reader' \

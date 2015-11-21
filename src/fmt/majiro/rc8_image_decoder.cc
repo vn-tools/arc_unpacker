@@ -1,7 +1,7 @@
 #include "fmt/majiro/rc8_image_decoder.h"
 #include <boost/lexical_cast.hpp>
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -12,7 +12,7 @@ static const bstr magic = util::utf8_to_sjis("六丁8"_b);
 
 static bstr uncompress(const bstr &input, size_t width, size_t height)
 {
-    io::BufferedIO input_io(input);
+    io::MemoryStream input_stream(input);
 
     bstr output(width * height);
     auto output_ptr = output.get<u8>();
@@ -29,17 +29,17 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
 
     if (output.size() < 1)
         return output;
-    *output_ptr++ = input_io.read_u8();
+    *output_ptr++ = input_stream.read_u8();
 
     while (output_ptr < output_end)
     {
-        auto flag = input_io.read_u8();
+        auto flag = input_stream.read_u8();
         if (flag & 0x80)
         {
             auto size = flag & 7;
             auto look_behind = (flag >> 3) & 0x0F;
             size = size == 7
-                ? input_io.read_u16_le() + 0x0A
+                ? input_stream.read_u16_le() + 0x0A
                 : size + 3;
             auto source_ptr = &output_ptr[shift_table[look_behind]];
             if (source_ptr < output_start || source_ptr + size >= output_end)
@@ -50,10 +50,10 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
         else
         {
             auto size = flag == 0x7F
-                ? input_io.read_u16_le() + 0x80
+                ? input_stream.read_u16_le() + 0x80
                 : flag + 1;
             while (size-- && output_ptr < output_end)
-                *output_ptr++ = input_io.read_u8();
+                *output_ptr++ = input_stream.read_u8();
         }
     }
 
@@ -62,26 +62,26 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
 
 bool Rc8ImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid Rc8ImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
+    file.stream.skip(magic.size());
 
-    if (file.io.read_u8() != '_')
+    if (file.stream.read_u8() != '_')
         throw err::NotSupportedError("Unexpected encryption flag");
 
-    int version = boost::lexical_cast<int>(file.io.read(2).str());
+    int version = boost::lexical_cast<int>(file.stream.read(2).str());
     if (version != 0)
         throw err::UnsupportedVersionError(version);
 
-    auto width = file.io.read_u32_le();
-    auto height = file.io.read_u32_le();
-    file.io.skip(4);
+    auto width = file.stream.read_u32_le();
+    auto height = file.stream.read_u32_le();
+    file.stream.skip(4);
 
-    pix::Palette palette(256, file.io, pix::Format::BGR888);
-    auto data_comp = file.io.read_to_eof();
+    pix::Palette palette(256, file.stream, pix::Format::BGR888);
+    auto data_comp = file.stream.read_to_eof();
     auto data_orig = uncompress(data_comp, width, height);
     return pix::Grid(width, height, data_orig, palette);
 }

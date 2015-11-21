@@ -14,7 +14,7 @@ static bstr read_file(const std::string &name)
     const boost::filesystem::path path
         = util::get_extra_dir_path() / "shiina_rio" / name;
     File file(path, io::FileMode::Read);
-    return file.io.read_to_eof();
+    return file.stream.read_to_eof();
 }
 
 static std::shared_ptr<pix::Grid> read_image(const std::string &name)
@@ -33,7 +33,7 @@ static std::shared_ptr<Plugin> create_plugin(
     plugin->entry_name_size = version <= 2390 ? 0x10 : 0x20;
     plugin->initial_crypt_base_keys = initial_crypt_base_keys;
     plugin->essential_crypt_key = util::utf8_to_sjis(
-        "Crypt Type 20011002 - Copyright(C) 2000 Y.Yamada/STUDIO よしくん"_b);
+        "Crypt Type 20011002 - Copyright(C) 2000 Y.Yamada/STUDStream よしくん"_b);
     plugin->region_image = read_image("region.png");
 
     plugin->crc_crypt.table

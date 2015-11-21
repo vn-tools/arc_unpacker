@@ -7,16 +7,16 @@ static const bstr magic = "$SYG"_b;
 
 bool SygImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid SygImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(0x10);
-    auto width = file.io.read_u32_le();
-    auto height = file.io.read_u32_le();
-    file.io.seek(0x20);
-    return pix::Grid(width, height, file.io, pix::Format::BGR888);
+    file.stream.seek(0x10);
+    auto width = file.stream.read_u32_le();
+    auto height = file.stream.read_u32_le();
+    file.stream.seek(0x20);
+    return pix::Grid(width, height, file.stream, pix::Format::BGR888);
 }
 
 static auto dummy = fmt::register_fmt<SygImageDecoder>("west-vision/syg");

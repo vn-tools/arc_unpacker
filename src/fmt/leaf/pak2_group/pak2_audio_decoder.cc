@@ -8,17 +8,17 @@ static const bstr magic = "\x03\x95\xAD\x4B"_b;
 
 bool Pak2AudioDecoder::is_recognized_impl(File &file) const
 {
-    file.io.seek(4);
-    return file.io.read(4) == magic;
+    file.stream.seek(4);
+    return file.stream.read(4) == magic;
 }
 
 std::unique_ptr<File> Pak2AudioDecoder::decode_impl(File &file) const
 {
-    file.io.seek(12);
-    const auto size_comp = file.io.read_u32_le();
-    file.io.skip(4);
-    const auto data = file.io.read(size_comp);
-    if (!file.io.eof())
+    file.stream.seek(12);
+    const auto size_comp = file.stream.read_u32_le();
+    file.stream.skip(4);
+    const auto data = file.stream.read(size_comp);
+    if (!file.stream.eof())
         Log.warn("Extra data after EOF.\n");
     auto output_file = std::make_unique<File>(file.name, data);
     output_file->guess_extension();

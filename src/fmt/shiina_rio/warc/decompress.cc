@@ -1,6 +1,6 @@
 #include "fmt/shiina_rio/warc/decompress.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
 
@@ -19,28 +19,28 @@ namespace
     private:
         void fetch();
 
-        io::BufferedIO input_io;
+        io::MemoryStream input_stream;
         int available_bits;
         u32 value;
     };
 }
 
 CustomBitReader::CustomBitReader(const bstr &input)
-    : input_io(input), available_bits(0), value(0)
+    : input_stream(input), available_bits(0), value(0)
 {
 }
 
 void CustomBitReader::fetch()
 {
-    if (input_io.size() - input_io.tell() >= 4)
+    if (input_stream.size() - input_stream.tell() >= 4)
     {
-        value = input_io.read_u32_le();
+        value = input_stream.read_u32_le();
         return;
     }
-    while (!input_io.eof())
+    while (!input_stream.eof())
     {
         value <<= 8;
-        value |= input_io.read_u8();
+        value |= input_stream.read_u8();
     }
 }
 

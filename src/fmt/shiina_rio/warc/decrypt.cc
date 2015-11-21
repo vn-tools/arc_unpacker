@@ -1,6 +1,6 @@
 #include "fmt/shiina_rio/warc/decrypt.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/endian.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
@@ -350,11 +350,11 @@ static std::array<u32, 5> get_initial_crypt_key_addends(
 std::array<u32, 10> get_initial_crypt_keys(
     const Plugin &plugin, const bstr &data)
 {
-    io::BufferedIO data_io(data);
+    io::MemoryStream data_stream(data);
     std::array<u32, 0x50> buf;
-    data_io.seek(44);
+    data_stream.seek(44);
     for (const auto i : util::range(0x10))
-        buf[i] = data_io.read_u32_be();
+        buf[i] = data_stream.read_u32_be();
     for (const auto i : util::range(0x10, 0x50))
     {
         buf[i]
@@ -603,10 +603,10 @@ void warc::decrypt_with_flags3(
     {
         if (data.get<u32>()[0] == 0x718E958D)
         {
-            io::BufferedIO data_io(data);
-            data_io.skip(8);
+            io::MemoryStream data_stream(data);
+            data_stream.skip(8);
 
-            const auto size = data_io.read_u32_le();
+            const auto size = data_stream.read_u32_le();
             int base_table[256];
             int diff_table_buf[257];
             int *diff_table = &diff_table_buf[1]; // allow accessing index -1
@@ -614,7 +614,7 @@ void warc::decrypt_with_flags3(
             diff_table[-1] = 0;
             for (const auto i : util::range(256))
             {
-                base_table[i] = data_io.read_u8();
+                base_table[i] = data_stream.read_u8();
                 diff_table[i] = base_table[i] + diff_table[i - 1];
             }
 
@@ -629,7 +629,7 @@ void warc::decrypt_with_flags3(
 
             u32 unk0 = 0;
             u32 unk1 = 0xFFFFFFFF;
-            u32 unk2 = data_io.read_u32_be();
+            u32 unk2 = data_stream.read_u32_be();
 
             for (const auto i : util::range(size))
             {
@@ -642,13 +642,13 @@ void warc::decrypt_with_flags3(
                 {
                     unk0 <<= 8;
                     unk1 <<= 8;
-                    unk2 = (unk2 << 8) | data_io.read_u8();
+                    unk2 = (unk2 << 8) | data_stream.read_u8();
                 }
                 while (unk1 < 0x10000)
                 {
                     unk0 <<= 8;
                     unk1 = 0x1000000 - (unk0 & 0xFFFFFF);
-                    unk2 = (unk2 << 8) | data_io.read_u8();
+                    unk2 = (unk2 << 8) | data_stream.read_u8();
                 }
             }
         }

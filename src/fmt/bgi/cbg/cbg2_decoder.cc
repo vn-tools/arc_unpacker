@@ -3,7 +3,7 @@
 #include <array>
 #include "err.h"
 #include "fmt/bgi/cbg/cbg_common.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -56,10 +56,10 @@ static FloatTablePair read_ac_mul_pair(const bstr &input)
     };
 
     FloatTablePair ac_mul_pair;
-    io::BufferedIO input_io(input);
+    io::MemoryStream input_stream(input);
     for (auto i : util::range(ac_mul_pair.size()))
         for (auto j : util::range(dc_table.size()))
-            ac_mul_pair[i][j] = input_io.read_u8() * dc_table[j];
+            ac_mul_pair[i][j] = input_stream.read_u8() * dc_table[j];
     return ac_mul_pair;
 }
 
@@ -316,7 +316,7 @@ static void process_8bit_block(
     }
 }
 
-static void process_alpha(bstr &output, io::IO &input_io, int width)
+static void process_alpha(bstr &output, io::Stream &input_stream, int width)
 {
     auto output_start = output.get<u8>();
     auto output_end = output_start + output.size();
@@ -324,18 +324,18 @@ static void process_alpha(bstr &output, io::IO &input_io, int width)
 
     u8 mark;
     u8 current_bit = 0;
-    while (!input_io.eof())
+    while (!input_stream.eof())
     {
         if (!current_bit)
         {
             current_bit = 8;
-            mark = input_io.read_u8();
+            mark = input_stream.read_u8();
         }
 
         --current_bit;
         if (mark & (1 << (7 - current_bit)))
         {
-            int tmp = input_io.read_u16_le();
+            int tmp = input_stream.read_u16_le();
 
             int look_behind_pos = tmp & 0x3F;
             if (look_behind_pos > 0x1F)
@@ -358,34 +358,34 @@ static void process_alpha(bstr &output, io::IO &input_io, int width)
         }
         else
         {
-            *output_ptr = input_io.read_u8();
+            *output_ptr = input_stream.read_u8();
             output_ptr += 4;
         }
     }
 }
 
-std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
+std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::Stream &stream) const
 {
-    size_t width = io.read_u16_le();
-    size_t height = io.read_u16_le();
-    size_t depth = io.read_u32_le();
+    size_t width = stream.read_u16_le();
+    size_t height = stream.read_u16_le();
+    size_t depth = stream.read_u32_le();
     size_t channels = depth >> 3;
-    io.skip(12);
+    stream.skip(12);
 
-    auto decrypted_data = read_decrypted_data(io);
+    auto decrypted_data = read_decrypted_data(stream);
     auto ac_mul_pair = read_ac_mul_pair(decrypted_data);
-    io::BufferedIO raw_data_io(io);
+    io::MemoryStream raw_stream(stream);
 
     auto pad_width = width + ((block_dim - (width % block_dim)) % block_dim);
     auto pad_height = height + ((block_dim - (height % block_dim)) % block_dim);
     auto block_count = pad_height / block_dim;
 
-    auto tree1 = build_tree(read_freq_table(raw_data_io, tree1_size), true);
-    auto tree2 = build_tree(read_freq_table(raw_data_io, tree2_size), true);
+    auto tree1 = build_tree(read_freq_table(raw_stream, tree1_size), true);
+    auto tree2 = build_tree(read_freq_table(raw_stream, tree2_size), true);
 
     auto block_offsets = std::make_unique<u32[]>(block_count + 1);
     for (auto i : util::range(block_count + 1))
-        block_offsets[i] = raw_data_io.read_u32_le();
+        block_offsets[i] = raw_stream.read_u32_le();
 
     bstr bmp_data(pad_width * pad_height * 4);
     for (auto i : util::range(bmp_data.size()))
@@ -393,16 +393,16 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
 
     for (auto i : util::range(block_count))
     {
-        raw_data_io.seek(block_offsets[i]);
-        raw_data_io.skip((pad_width + block_dim2 - 1) / block_dim2);
-        size_t block_size_original = read_variable_data(raw_data_io);
-        int block_size_compressed = block_offsets[i + 1] - raw_data_io.tell();
+        raw_stream.seek(block_offsets[i]);
+        raw_stream.skip((pad_width + block_dim2 - 1) / block_dim2);
+        size_t block_size_original = read_variable_data(raw_stream);
+        int block_size_compressed = block_offsets[i + 1] - raw_stream.tell();
         if (block_size_compressed < 0)
-            block_size_compressed = raw_data_io.size() - raw_data_io.tell();
+            block_size_compressed = raw_stream.size() - raw_stream.tell();
         auto expected_width = pad_width * block_dim * (depth == 8 ? 1 : 3);
         if (expected_width != block_size_original)
             throw err::BadDataSizeError();
-        auto block_data = raw_data_io.read(block_size_compressed);
+        auto block_data = raw_stream.read(block_size_compressed);
 
         auto color_info = decompress_block(
             block_size_original, block_data, tree1, tree2);
@@ -429,9 +429,9 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::IO &io) const
 
     if (channels == 4)
     {
-        raw_data_io.seek(block_offsets[block_count]);
-        if (raw_data_io.read_u32_le() == 1)
-            process_alpha(bmp_data, raw_data_io, pad_width);
+        raw_stream.seek(block_offsets[block_count]);
+        if (raw_stream.read_u32_le() == 1)
+            process_alpha(bmp_data, raw_stream, pad_width);
     }
 
     auto grid = std::make_unique<pix::Grid>(

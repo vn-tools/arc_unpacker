@@ -47,8 +47,8 @@ Palette::Palette(size_t colors, const bstr &input, Format fmt)
 {
 }
 
-Palette::Palette(size_t colors, io::IO &input_io, Format fmt)
-    : p(new Priv(colors, input_io.read(format_to_bpp(fmt) * colors), fmt))
+Palette::Palette(size_t colors, io::Stream &input_stream, Format fmt)
+    : p(new Priv(colors, input_stream.read(format_to_bpp(fmt) * colors), fmt))
 {
 }
 

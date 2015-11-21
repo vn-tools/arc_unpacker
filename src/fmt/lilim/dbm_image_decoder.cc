@@ -10,23 +10,23 @@ static const bstr magic = "DM"_b;
 
 bool DbmImageDecoder::is_recognized_impl(File &file) const
 {
-    file.io.seek(0);
-    if (file.io.read(magic.size()) != magic)
+    file.stream.seek(0);
+    if (file.stream.read(magic.size()) != magic)
         return false;
-    file.io.skip(2);
-    return file.io.read_u32_le() == file.io.size();
+    file.stream.skip(2);
+    return file.stream.read_u32_le() == file.stream.size();
 }
 
 pix::Grid DbmImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(magic.size() + 8);
-    const auto width = file.io.read_u16_le();
-    const auto height = file.io.read_u16_le();
-    const auto format = file.io.read_u32_le();
-    if (file.io.read_u16_le() != 1)
+    file.stream.seek(magic.size() + 8);
+    const auto width = file.stream.read_u16_le();
+    const auto height = file.stream.read_u16_le();
+    const auto format = file.stream.read_u32_le();
+    if (file.stream.read_u16_le() != 1)
         throw err::CorruptDataError("Expected '1'");
-    const auto size_comp = file.io.read_u32_le();
-    const auto data = sysd_decompress(file.io.read(size_comp));
+    const auto size_comp = file.stream.read_u32_le();
+    const auto data = sysd_decompress(file.stream.read(size_comp));
 
     if (format == 1 || format == 2 || format == 3)
     {

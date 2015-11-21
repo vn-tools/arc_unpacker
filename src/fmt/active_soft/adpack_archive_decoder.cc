@@ -17,30 +17,30 @@ namespace
 
 bool AdpackArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return arc_file.io.read(magic.size()) == magic;
+    return arc_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     AdpackArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(magic.size() + 4);
-    const auto file_count = arc_file.io.read_u32_le() - 1;
-    arc_file.io.seek(0x10);
+    arc_file.stream.seek(magic.size() + 4);
+    const auto file_count = arc_file.stream.read_u32_le() - 1;
+    arc_file.stream.seek(0x10);
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = arc_file.io.read_to_zero(0x18).str();
-        arc_file.io.skip(4);
-        entry->offset = arc_file.io.read_u32_le();
+        entry->name = arc_file.stream.read_to_zero(0x18).str();
+        arc_file.stream.skip(4);
+        entry->offset = arc_file.stream.read_u32_le();
         if (last_entry)
             last_entry->size = entry->offset - last_entry->offset;
         last_entry = entry.get();
         meta->entries.push_back(std::move(entry));
     }
     if (last_entry)
-        last_entry->size = arc_file.io.size() - last_entry->offset;
+        last_entry->size = arc_file.stream.size() - last_entry->offset;
     return meta;
 }
 
@@ -48,8 +48,8 @@ std::unique_ptr<File> AdpackArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    return std::make_unique<File>(entry->name, arc_file.io.read(entry->size));
+    const auto data = arc_file.stream.seek(entry->offset).read(entry->size);
+    return std::make_unique<File>(entry->name, data);
 }
 
 std::vector<std::string> AdpackArchiveDecoder::get_linked_formats() const

@@ -1,6 +1,6 @@
 #include "fmt/fc01/common/custom_lzss.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 // Modified LZSS routine
@@ -12,11 +12,11 @@ using namespace au::fmt::fc01;
 
 bstr common::custom_lzss_decompress(const bstr &input, size_t output_size)
 {
-    io::BufferedIO io(input);
-    return common::custom_lzss_decompress(io, output_size);
+    io::MemoryStream stream(input);
+    return common::custom_lzss_decompress(stream, output_size);
 }
 
-bstr common::custom_lzss_decompress(io::IO &input_io, size_t output_size)
+bstr common::custom_lzss_decompress(io::Stream &input, size_t output_size)
 {
     const size_t dict_size = 0x1000;
     size_t dict_pos = 0xFEE;
@@ -27,22 +27,21 @@ bstr common::custom_lzss_decompress(io::IO &input_io, size_t output_size)
     auto output_end = output.end<const u8>();
 
     u16 control = 0;
-    while (output_ptr < output_end && !input_io.eof())
+    while (output_ptr < output_end && !input.eof())
     {
         control >>= 1;
         if (!(control & 0x100))
-            control = input_io.read_u8() | 0xFF00;
+            control = input.read_u8() | 0xFF00;
 
         if (control & 1)
         {
-            auto byte = input_io.read_u8();
+            const auto byte = input.read_u8();
             dict[dict_pos++] = *output_ptr++ = byte;
             dict_pos %= dict_size;
             continue;
         }
 
-        u16 tmp = input_io.read_u16_le();
-
+        const u16 tmp = input.read_u16_le();
         u32 look_behind_pos = tmp % dict_size;
         u16 repetitions = (tmp >> 12) + 3;
         while (repetitions-- && output_ptr < output_end)

@@ -10,12 +10,12 @@ static const bstr magic = "\xFF\xD8\xFF"_b;
 
 bool JpegImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid JpegImageDecoder::decode_impl(File &file) const
 {
-    bstr source = file.io.read_to_eof();
+    bstr source = file.stream.read_to_eof();
 
     jpeg_decompress_struct info;
     jpeg_error_mgr err;

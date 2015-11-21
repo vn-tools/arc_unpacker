@@ -6,15 +6,15 @@
 namespace au {
 namespace io {
 
-    class IO
+    class Stream
     {
     public:
-        virtual ~IO();
+        virtual ~Stream();
 
         virtual size_t size() const = 0;
         virtual size_t tell() const = 0;
-        virtual IO &seek(size_t offset) = 0;
-        virtual IO &skip(int offset) = 0;
+        virtual Stream &seek(size_t offset) = 0;
+        virtual Stream &skip(int offset) = 0;
         virtual void truncate(size_t new_size) = 0;
         void peek(size_t offset, std::function<void()> func);
         bool eof() const;

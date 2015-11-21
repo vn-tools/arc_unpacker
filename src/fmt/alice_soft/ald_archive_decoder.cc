@@ -14,9 +14,11 @@ namespace
     };
 }
 
-static u32 read_24_le(io::IO &io)
+static u32 read_24_le(io::Stream &stream)
 {
-    return (io.read_u8() << 8) | (io.read_u8() << 16) | (io.read_u8() << 24);
+    return (stream.read_u8() << 8)
+        | (stream.read_u8() << 16)
+        | (stream.read_u8() << 24);
 }
 
 bool AldArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -27,27 +29,27 @@ bool AldArchiveDecoder::is_recognized_impl(File &arc_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     AldArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    auto file_count = read_24_le(arc_file.io) / 3;
+    auto file_count = read_24_le(arc_file.stream) / 3;
 
     std::vector<size_t> offsets(file_count);
     for (auto i : util::range(file_count))
-        offsets[i] = read_24_le(arc_file.io);
+        offsets[i] = read_24_le(arc_file.stream);
 
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto &offset : offsets)
     {
         if (!offset)
             break;
-        arc_file.io.seek(offset);
-        auto header_size = arc_file.io.read_u32_le();
-        if (arc_file.io.tell() + header_size < arc_file.io.size())
+        arc_file.stream.seek(offset);
+        auto header_size = arc_file.stream.read_u32_le();
+        if (arc_file.stream.tell() + header_size < arc_file.stream.size())
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
-            entry->size = arc_file.io.read_u32_le();
-            arc_file.io.skip(8);
-            auto name = arc_file.io.read_to_zero(header_size - 16);
+            entry->size = arc_file.stream.read_u32_le();
+            arc_file.stream.skip(8);
+            auto name = arc_file.stream.read_to_zero(header_size - 16);
             entry->name = util::sjis_to_utf8(name).str();
-            entry->offset = arc_file.io.tell();
+            entry->offset = arc_file.stream.tell();
             meta->entries.push_back(std::move(entry));
         }
     }
@@ -58,8 +60,8 @@ std::unique_ptr<File> AldArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

@@ -2,7 +2,7 @@
 #include "err.h"
 #include "fmt/bgi/common.h"
 #include "io/bit_reader.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/file_from_grid.h"
 #include "util/range.h"
 
@@ -26,18 +26,18 @@ static const bstr magic = "DSC FORMAT 1.00\x00"_b;
 
 static int is_image(const bstr &input)
 {
-    io::BufferedIO input_io(input);
-    auto width = input_io.read_u16_le();
-    auto height = input_io.read_u16_le();
-    auto bpp = input_io.read_u8();
-    auto zeros = input_io.read(11);
+    io::MemoryStream input_stream(input);
+    auto width = input_stream.read_u16_le();
+    auto height = input_stream.read_u16_le();
+    auto bpp = input_stream.read_u8();
+    auto zeros = input_stream.read(11);
     for (auto i : util::range(zeros.size()))
         if (zeros[i])
             return false;
     return width && height && (bpp == 8 || bpp == 24 || bpp == 32);
 }
 
-static NodeList get_nodes(io::IO &io, u32 key)
+static NodeList get_nodes(io::Stream &stream, u32 key)
 {
     NodeList nodes;
     for (auto i : util::range(1024))
@@ -51,7 +51,7 @@ static NodeList get_nodes(io::IO &io, u32 key)
     std::vector<u32> arr0;
     for (auto n : util::range(512))
     {
-        u8 tmp = io.read_u8() - get_and_update_key(key);
+        u8 tmp = stream.read_u8() - get_and_update_key(key);
         if (tmp)
             arr0.push_back((tmp << 16) + n);
     }
@@ -100,13 +100,16 @@ static NodeList get_nodes(io::IO &io, u32 key)
     return nodes;
 }
 
-static bstr decompress(io::IO &io, const NodeList &nodes, size_t output_size)
+static bstr decompress(
+    io::Stream &stream,
+    const NodeList &nodes,
+    size_t output_size)
 {
     bstr output(output_size);
     u8 *output_ptr = output.get<u8>();
     const u8 *output_start = output_ptr;
     const u8 *output_end = output_ptr + output.size();
-    io::BitReader bit_reader(io.read_to_eof());
+    io::BitReader bit_reader(stream.read_to_eof());
 
     u32 bits = 0, bit_count = 0;
     while (output_ptr < output_end)
@@ -138,26 +141,26 @@ static bstr decompress(io::IO &io, const NodeList &nodes, size_t output_size)
 
 bool DscFileDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<File> DscFileDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
-    auto key = file.io.read_u32_le();
-    auto output_size = file.io.read_u32_le();
-    file.io.skip(8);
+    file.stream.skip(magic.size());
+    auto key = file.stream.read_u32_le();
+    auto output_size = file.stream.read_u32_le();
+    file.stream.skip(8);
 
-    auto nodes = get_nodes(file.io, key);
-    auto data = decompress(file.io, std::move(nodes), output_size);
+    auto nodes = get_nodes(file.stream, key);
+    auto data = decompress(file.stream, std::move(nodes), output_size);
 
     if (is_image(data))
     {
-        io::BufferedIO data_io(data);
-        auto width = data_io.read_u16_le();
-        auto height = data_io.read_u16_le();
-        auto bpp = data_io.read_u8();
-        data_io.skip(11);
+        io::MemoryStream data_stream(data);
+        auto width = data_stream.read_u16_le();
+        auto height = data_stream.read_u16_le();
+        auto bpp = data_stream.read_u8();
+        data_stream.skip(11);
 
         pix::Format fmt;
         switch (bpp)
@@ -174,12 +177,12 @@ std::unique_ptr<File> DscFileDecoder::decode_impl(File &file) const
             default:
                 throw err::UnsupportedBitDepthError(bpp);
         }
-        pix::Grid pixels(width, height, data_io.read_to_eof(), fmt);
+        pix::Grid pixels(width, height, data_stream.read_to_eof(), fmt);
         return util::file_from_grid(pixels, file.name);
     }
 
     auto output_file = std::make_unique<File>();
-    output_file->io.write(data);
+    output_file->stream.write(data);
     output_file->name = file.name;
     if (!output_file->has_extension())
         output_file->change_extension("dat");

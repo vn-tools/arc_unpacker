@@ -1,7 +1,7 @@
 #include "fmt/active_soft/edt_image_decoder.h"
 #include "err.h"
 #include "fmt/active_soft/custom_bit_reader.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -17,29 +17,29 @@ static inline u8 clamp(const u8 input, const u8 min, const u8 max)
 
 bool EdtImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid EdtImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(magic.size() + 4);
-    const auto width = file.io.read_u16_le();
-    const auto height = file.io.read_u16_le();
-    file.io.skip(4);
-    const auto meta_size = file.io.read_u32_le();
-    const auto data_size = file.io.read_u32_le();
-    const auto raw_size = file.io.read_u32_le();
+    file.stream.seek(magic.size() + 4);
+    const auto width = file.stream.read_u16_le();
+    const auto height = file.stream.read_u16_le();
+    file.stream.skip(4);
+    const auto meta_size = file.stream.read_u32_le();
+    const auto data_size = file.stream.read_u32_le();
+    const auto raw_size = file.stream.read_u32_le();
 
     pix::Pixel transparent_color = {0, 0, 0, 0xFF};
     std::string base_file_name;
     if (meta_size)
     {
-        io::BufferedIO meta_io(file.io.read(meta_size));
-        if (meta_io.read(diff_magic.size()) == diff_magic)
+        io::MemoryStream meta_stream(file.stream.read(meta_size));
+        if (meta_stream.read(diff_magic.size()) == diff_magic)
         {
-            transparent_color = pix::read<pix::Format::BGR888>(meta_io);
-            meta_io.skip(1);
-            base_file_name = meta_io.read_to_eof().str();
+            transparent_color = pix::read<pix::Format::BGR888>(meta_stream);
+            meta_stream.skip(1);
+            base_file_name = meta_stream.read_to_eof().str();
         }
     }
 
@@ -62,14 +62,14 @@ pix::Grid EdtImageDecoder::decode_impl(File &file) const
     bstr output;
     output.reserve(target_size);
 
-    CustomBitReader bit_reader(file.io.read(data_size));
-    io::BufferedIO raw_io(file.io.read(raw_size));
-    output += raw_io.read(channels);
+    CustomBitReader bit_reader(file.stream.read(data_size));
+    io::MemoryStream raw_stream(file.stream.read(raw_size));
+    output += raw_stream.read(channels);
     while (output.size() < target_size)
     {
         if (!bit_reader.get(1))
         {
-            output += raw_io.read(channels);
+            output += raw_stream.read(channels);
             continue;
         }
 

@@ -98,24 +98,24 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
 
 bool PrsImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid PrsImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
+    file.stream.skip(magic.size());
 
-    bool using_differences = file.io.read_u8() > 0;
-    auto version = file.io.read_u8();
+    bool using_differences = file.stream.read_u8() > 0;
+    auto version = file.stream.read_u8();
     if (version != 3)
         throw err::UnsupportedVersionError(version);
 
-    u32 source_size = file.io.read_u32_le();
-    file.io.skip(4);
-    u16 width = file.io.read_u16_le();
-    u16 height = file.io.read_u16_le();
+    u32 source_size = file.stream.read_u32_le();
+    file.stream.skip(4);
+    u16 width = file.stream.read_u16_le();
+    u16 height = file.stream.read_u16_le();
 
-    auto target = decode_pixels(file.io.read(source_size), width, height);
+    auto target = decode_pixels(file.stream.read(source_size), width, height);
 
     if (using_differences)
         for (auto i : util::range(3, target.size()))

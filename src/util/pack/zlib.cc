@@ -66,20 +66,20 @@ bstr util::pack::zlib_inflate(const bstr &input, const ZlibKind kind)
     return output;
 }
 
-bstr util::pack::zlib_inflate(io::IO &io, const ZlibKind kind)
+bstr util::pack::zlib_inflate(io::Stream &stream, const ZlibKind kind)
 {
     bstr input, output;
     size_t written = 0;
     auto s = create_stream(kind);
     int ret;
-    const auto initial_pos = io.tell();
+    const auto initial_pos = stream.tell();
     do
     {
         if (s->avail_in == 0)
         {
-            input = io.tell() + buffer_size > io.size()
-                ? io.read_to_eof()
-                : io.read(buffer_size);
+            input = stream.tell() + buffer_size > stream.size()
+                ? stream.read_to_eof()
+                : stream.read(buffer_size);
             s->next_in = const_cast<Bytef*>(input.get<const Bytef>());
             s->avail_in = input.size();
         }
@@ -93,15 +93,15 @@ bstr util::pack::zlib_inflate(io::IO &io, const ZlibKind kind)
         written = s->total_out;
         if (ret == Z_BUF_ERROR)
         {
-            input += io.tell() + buffer_size > io.size()
-                ? io.read_to_eof()
-                : io.read(buffer_size);
+            input += stream.tell() + buffer_size > stream.size()
+                ? stream.read_to_eof()
+                : stream.read(buffer_size);
             s->next_in = const_cast<Bytef*>(input.get<const Bytef>());
             s->avail_in = input.size();
         }
     }
     while (ret == Z_OK);
-    io.seek(initial_pos + s->total_in);
-    finalize_stream(std::move(s), ret, io.tell());
+    stream.seek(initial_pos + s->total_in);
+    finalize_stream(std::move(s), ret, stream.tell());
     return output;
 }

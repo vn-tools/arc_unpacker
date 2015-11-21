@@ -42,9 +42,9 @@ bool ScrFileDecoder::is_recognized_impl(File &file) const
 
 std::unique_ptr<File> ScrFileDecoder::decode_impl(File &file) const
 {
-    file.io.seek(0);
-    const auto size_orig = file.io.read_u32_le();
-    auto data = file.io.read_to_eof();
+    file.stream.seek(0);
+    const auto size_orig = file.stream.read_u32_le();
+    auto data = file.stream.read_to_eof();
     data = decode_huffman(data, size_orig);
     auto output_file = std::make_unique<File>(file.name, data);
     output_file->change_extension("txt");

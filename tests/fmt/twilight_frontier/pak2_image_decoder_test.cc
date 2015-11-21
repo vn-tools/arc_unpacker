@@ -1,5 +1,5 @@
 #include "fmt/twilight_frontier/pak2_image_decoder.h"
-#include "io/file_io.h"
+#include "io/file_stream.h"
 #include "test_support/catch.hh"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -50,7 +50,7 @@ TEST_CASE("Twilight Frontier CV2 images", "[fmt]")
     {
         const auto palette_path = dir + "palette000.pal";
         const auto palette_data
-            = tests::file_from_path(palette_path)->io.read_to_eof();
+            = tests::file_from_path(palette_path)->stream.read_to_eof();
 
         Pak2ImageDecoder decoder;
         decoder.add_palette(palette_path, palette_data);

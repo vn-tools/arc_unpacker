@@ -3,7 +3,7 @@
 #include "fmt/fc01/common/custom_lzss.h"
 #include "fmt/fc01/common/mrg_decryptor.h"
 #include "fmt/fc01/common/util.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -43,35 +43,35 @@ static u8 guess_key(const bstr &table_data, size_t file_size)
 
 bool MrgArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return arc_file.io.read(magic.size()) == magic;
+    return arc_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     MrgArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(magic.size() + 4);
-    const auto table_size = arc_file.io.read_u32_le() - 12 - magic.size();
-    const auto file_count = arc_file.io.read_u32_le();
+    arc_file.stream.seek(magic.size() + 4);
+    const auto table_size = arc_file.stream.read_u32_le() - 12 - magic.size();
+    const auto file_count = arc_file.stream.read_u32_le();
 
-    auto table_data = arc_file.io.read(table_size);
-    auto key = guess_key(table_data, arc_file.io.size());
+    auto table_data = arc_file.stream.read(table_size);
+    auto key = guess_key(table_data, arc_file.stream.size());
     for (auto i : util::range(table_data.size()))
     {
         table_data[i] = common::rol8(table_data[i], 1) ^ key;
         key += table_data.size() - i;
     }
 
-    io::BufferedIO table_io(table_data);
+    io::MemoryStream table_stream(table_data);
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = table_io.read_to_zero(0x0E).str();
-        entry->size_orig = table_io.read_u32_le();
-        entry->filter = table_io.read_u8();
-        table_io.skip(9);
-        entry->offset = table_io.read_u32_le();
+        entry->name = table_stream.read_to_zero(0x0E).str();
+        entry->size_orig = table_stream.read_u32_le();
+        entry->filter = table_stream.read_u8();
+        table_stream.skip(9);
+        entry->offset = table_stream.read_u32_le();
         if (last_entry)
             last_entry->size_comp = entry->offset - last_entry->offset;
         last_entry = entry.get();
@@ -80,8 +80,8 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     if (last_entry)
     {
-        table_io.skip(0x1C);
-        last_entry->size_comp = table_io.read_u32_le() - last_entry->offset;
+        table_stream.skip(0x1C);
+        last_entry->size_comp = table_stream.read_u32_le() - last_entry->offset;
     }
 
     return meta;
@@ -91,8 +91,8 @@ std::unique_ptr<File> MrgArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size_comp);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size_comp);
     if (entry->filter)
     {
         if (entry->filter >= 2)

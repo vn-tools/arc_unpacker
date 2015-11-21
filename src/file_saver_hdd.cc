@@ -2,7 +2,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <set>
-#include "io/file_io.h"
+#include "io/file_stream.h"
 #include "log.h"
 #include "util/format.h"
 
@@ -73,9 +73,9 @@ void FileSaverHdd::save(std::shared_ptr<File> file) const
         if (!full_path.parent_path().empty())
             boost::filesystem::create_directories(full_path.parent_path());
 
-        io::FileIO output_io(full_path.string(), io::FileMode::Write);
-        file->io.seek(0);
-        output_io.write(file->io.read_to_eof());
+        io::FileStream output_stream(full_path.string(), io::FileMode::Write);
+        file->stream.seek(0);
+        output_stream.write(file->stream.read_to_eof());
         Log.success("ok\n");
     }
     catch (std::runtime_error &e)

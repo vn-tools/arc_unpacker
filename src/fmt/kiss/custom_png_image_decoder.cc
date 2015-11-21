@@ -10,7 +10,7 @@ static const bstr magic = "\x89PNG"_b;
 
 bool CustomPngImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid CustomPngImageDecoder::decode_impl(File &file) const

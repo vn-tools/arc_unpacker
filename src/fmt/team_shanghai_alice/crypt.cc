@@ -1,7 +1,7 @@
 #include "fmt/team_shanghai_alice/crypt.h"
 #include <algorithm>
 #include <memory>
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -16,11 +16,11 @@ bool DecryptorContext::operator ==(const DecryptorContext &other) const
 }
 
 static void decrypt(
-    io::IO &input_io,
-    io::IO &output_io,
+    io::Stream &input_stream,
+    io::Stream &output_stream,
     const DecryptorContext &context)
 {
-    int left = input_io.size();
+    int left = input_stream.size();
     size_t current_block_size = context.block_size;
     u8 key = context.key;
 
@@ -30,11 +30,11 @@ static void decrypt(
     shift += (left & 1);
     left -= shift;
 
-    while (left > 0 && output_io.tell() < context.limit)
+    while (left > 0 && output_stream.tell() < context.limit)
     {
         if (left < static_cast<int>(current_block_size))
             current_block_size = left;
-        auto input_block = input_io.read(current_block_size);
+        auto input_block = input_stream.read(current_block_size);
         auto *input_block_ptr = input_block.get<const char>();
         bstr output_block(current_block_size);
         for (auto j : util::range(2))
@@ -48,22 +48,23 @@ static void decrypt(
             }
         }
 
-        output_io.write(output_block);
+        output_stream.write(output_block);
         left -= current_block_size;
     }
 
     left += shift;
-    left = std::min(left, static_cast<int>(input_io.size() - input_io.tell()));
+    left = std::min(left, static_cast<int>(
+        input_stream.size() - input_stream.tell()));
     if (left > 0)
-        output_io.write(input_io.read(left));
-    output_io.seek(0);
+        output_stream.write(input_stream.read(left));
+    output_stream.seek(0);
 }
 
 bstr au::fmt::team_shanghai_alice::decrypt(
     const bstr &input, const DecryptorContext &context)
 {
-    io::BufferedIO input_io(input);
-    io::BufferedIO output_io;
-    ::decrypt(input_io, output_io, context);
-    return output_io.read_to_eof();
+    io::MemoryStream input_stream(input);
+    io::MemoryStream output_stream;
+    ::decrypt(input_stream, output_stream, context);
+    return output_stream.read_to_eof();
 }

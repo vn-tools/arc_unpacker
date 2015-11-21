@@ -10,7 +10,7 @@ bool VspImageDecoder::is_recognized_impl(File &file) const
     return file.has_extension("vsp");
 }
 
-static bstr decompress_vsp(io::IO &input_io, size_t width, size_t height)
+static bstr decompress_vsp(io::Stream &input, size_t width, size_t height)
 {
     if (width % 8 != 0)
         throw std::logic_error("Invalid width");
@@ -31,12 +31,12 @@ static bstr decompress_vsp(io::IO &input_io, size_t width, size_t height)
             size_t y = 0;
             while (y < height)
             {
-                auto c = input_io.read_u8();
+                auto c = input.read_u8();
                 switch (c)
                 {
                     case 0x00:
                     {
-                        auto n = input_io.read_u8() + 1;
+                        auto n = input.read_u8() + 1;
                         while (n-- && y < height)
                         {
                             bc[y][plane] = bp[y][plane];
@@ -47,8 +47,8 @@ static bstr decompress_vsp(io::IO &input_io, size_t width, size_t height)
 
                     case 0x01:
                     {
-                        auto n = input_io.read_u8() + 1;
-                        auto b0 = input_io.read_u8();
+                        auto n = input.read_u8() + 1;
+                        auto b0 = input.read_u8();
                         while (n-- && y < height)
                             bc[y++][plane] = b0;
                         break;
@@ -56,9 +56,9 @@ static bstr decompress_vsp(io::IO &input_io, size_t width, size_t height)
 
                     case 0x02:
                     {
-                        auto n = input_io.read_u8() + 1;
-                        auto b0 = input_io.read_u8();
-                        auto b1 = input_io.read_u8();
+                        auto n = input.read_u8() + 1;
+                        auto b0 = input.read_u8();
+                        auto b1 = input.read_u8();
                         while (n-- && y < height)
                         {
                             bc[y++][plane] = b0;
@@ -70,7 +70,7 @@ static bstr decompress_vsp(io::IO &input_io, size_t width, size_t height)
 
                     case 0x03:
                     {
-                        auto n = input_io.read_u8() + 1;
+                        auto n = input.read_u8() + 1;
                         while (n-- && y < height)
                         {
                             bc[y][plane] = bc[y][0] ^ mask;
@@ -82,7 +82,7 @@ static bstr decompress_vsp(io::IO &input_io, size_t width, size_t height)
 
                     case 0x04:
                     {
-                        auto n = input_io.read_u8() + 1;
+                        auto n = input.read_u8() + 1;
                         while (n-- && y < height)
                         {
                             bc[y][plane] = bc[y][1] ^ mask;
@@ -94,7 +94,7 @@ static bstr decompress_vsp(io::IO &input_io, size_t width, size_t height)
 
                     case 0x05:
                     {
-                        auto n = input_io.read_u8() + 1;
+                        auto n = input.read_u8() + 1;
                         while (n-- && y < height)
                         {
                             bc[y][plane] = bc[y][2] ^ mask;
@@ -109,7 +109,7 @@ static bstr decompress_vsp(io::IO &input_io, size_t width, size_t height)
                         break;
 
                     case 0x07:
-                        bc[y++][plane] = input_io.read_u8();
+                        bc[y++][plane] = input.read_u8();
                         break;
 
                     default:
@@ -144,11 +144,11 @@ static bstr decompress_vsp(io::IO &input_io, size_t width, size_t height)
 
 pix::Grid VspImageDecoder::decode_impl(File &file) const
 {
-    auto x = file.io.read_u16_le();
-    auto y = file.io.read_u16_le();
-    auto width = file.io.read_u16_le() - x;
-    auto height = file.io.read_u16_le() - y;
-    auto use_pms = file.io.read_u8() > 0;
+    auto x = file.stream.read_u16_le();
+    auto y = file.stream.read_u16_le();
+    auto width = file.stream.read_u16_le() - x;
+    auto height = file.stream.read_u16_le() - y;
+    auto use_pms = file.stream.read_u8() > 0;
 
     std::unique_ptr<pix::Grid> pixels;
 
@@ -156,29 +156,29 @@ pix::Grid VspImageDecoder::decode_impl(File &file) const
     {
         width = ((width + 7) / 8) * 8;
 
-        file.io.seek(0x20);
-        pix::Palette palette(256, file.io, pix::Format::RGB888);
+        file.stream.seek(0x20);
+        pix::Palette palette(256, file.stream, pix::Format::RGB888);
 
-        file.io.seek(0x320);
+        file.stream.seek(0x320);
         auto pixel_data
-            = PmsImageDecoder::decompress_8bit(file.io, width, height);
+            = PmsImageDecoder::decompress_8bit(file.stream, width, height);
         pixels.reset(new pix::Grid(width, height, pixel_data, palette));
     }
     else
     {
         width *= 8;
 
-        file.io.seek(0x0A);
+        file.stream.seek(0x0A);
         pix::Palette palette(16);
         for (auto &c : palette)
         {
-            c.b = (file.io.read_u8() & 0x0F) * 0x11;
-            c.r = (file.io.read_u8() & 0x0F) * 0x11;
-            c.g = (file.io.read_u8() & 0x0F) * 0x11;
+            c.b = (file.stream.read_u8() & 0x0F) * 0x11;
+            c.r = (file.stream.read_u8() & 0x0F) * 0x11;
+            c.g = (file.stream.read_u8() & 0x0F) * 0x11;
         }
 
-        file.io.seek(0x3A);
-        auto pixel_data = decompress_vsp(file.io, width, height);
+        file.stream.seek(0x3A);
+        auto pixel_data = decompress_vsp(file.stream, width, height);
         pixels.reset(new pix::Grid(width, height, pixel_data, palette));
     }
 

@@ -17,12 +17,12 @@ namespace
 
 static const bstr magic = "CompressedBG___\x00"_b;
 
-static Version get_version(io::IO &io)
+static Version get_version(io::Stream &stream)
 {
     Version ret;
-    io.peek(46, [&]()
+    stream.peek(46, [&]()
     {
-        ret = io.read_u16_le() == 2
+        ret = stream.read_u16_le() == 2
             ? Version::Version2
             : Version::Version1;
     });
@@ -31,23 +31,23 @@ static Version get_version(io::IO &io)
 
 bool CbgImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid CbgImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
+    file.stream.skip(magic.size());
 
-    auto version = get_version(file.io);
+    auto version = get_version(file.stream);
     if (version == Version::Version1)
     {
         cbg::Cbg1Decoder decoder;
-        return *decoder.decode(file.io);
+        return *decoder.decode(file.stream);
     }
     else if (version == Version::Version2)
     {
         cbg::Cbg2Decoder decoder;
-        return *decoder.decode(file.io);
+        return *decoder.decode(file.stream);
     }
 
     throw err::UnsupportedVersionError(static_cast<int>(version));

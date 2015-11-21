@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/io.h"
+#include "io/stream.h"
 #include "pix/pixel.h"
 
 namespace au {
@@ -75,9 +75,9 @@ namespace pix {
     void read_many(const u8 *input_ptr, std::vector<Pixel> &output, Format fmt);
 
     // TODO: constexpr once cygwin adapts mingw-w64 for its g++
-    template<Format fmt> inline Pixel read(io::IO &io)
+    template<Format fmt> inline Pixel read(io::Stream &stream)
     {
-        auto str = io.read(format_to_bpp(fmt));
+        auto str = stream.read(format_to_bpp(fmt));
         auto str_ptr = str.get<const u8>();
         return read<fmt>(str_ptr);
     }

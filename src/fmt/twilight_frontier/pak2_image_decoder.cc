@@ -2,7 +2,7 @@
 #include <boost/filesystem.hpp>
 #include <map>
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -35,10 +35,10 @@ void Pak2ImageDecoder::clear_palettes()
 void Pak2ImageDecoder::add_palette(
     const std::string &name, const bstr &palette_data)
 {
-    io::BufferedIO palette_io(palette_data);
-    palette_io.skip(1);
+    io::MemoryStream palette_stream(palette_data);
+    palette_stream.skip(1);
     p->palette_map[name] = std::make_shared<pix::Palette>(
-        256, palette_io, pix::Format::BGRA5551);
+        256, palette_stream, pix::Format::BGRA5551);
 }
 
 bool Pak2ImageDecoder::is_recognized_impl(File &file) const
@@ -48,12 +48,12 @@ bool Pak2ImageDecoder::is_recognized_impl(File &file) const
 
 pix::Grid Pak2ImageDecoder::decode_impl(File &file) const
 {
-    auto bit_depth = file.io.read_u8();
-    auto width = file.io.read_u32_le();
-    auto height = file.io.read_u32_le();
-    auto stride = file.io.read_u32_le();
-    auto palette_number = file.io.read_u32_le();
-    io::BufferedIO source_io(file.io);
+    auto bit_depth = file.stream.read_u8();
+    auto width = file.stream.read_u32_le();
+    auto height = file.stream.read_u32_le();
+    auto stride = file.stream.read_u32_le();
+    auto palette_number = file.stream.read_u32_le();
+    io::MemoryStream source_stream(file.stream);
 
     std::shared_ptr<pix::Palette> palette;
     if (bit_depth == 8)
@@ -78,11 +78,11 @@ pix::Grid Pak2ImageDecoder::decode_impl(File &file) const
         {
             case 32:
             case 24:
-                pixel = pix::read<pix::Format::BGRA8888>(source_io);
+                pixel = pix::read<pix::Format::BGRA8888>(source_stream);
                 break;
 
             case 8:
-                pixel = (*palette)[source_io.read_u8()];
+                pixel = (*palette)[source_stream.read_u8()];
                 break;
 
             default:

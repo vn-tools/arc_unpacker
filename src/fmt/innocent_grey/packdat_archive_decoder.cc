@@ -20,24 +20,24 @@ namespace
 
 bool PackdatArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return arc_file.io.read(magic.size()) == magic;
+    return arc_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     PackdatArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(magic.size());
-    const auto file_count = arc_file.io.read_u32_le();
-    arc_file.io.skip(4);
+    arc_file.stream.seek(magic.size());
+    const auto file_count = arc_file.stream.read_u32_le();
+    arc_file.stream.skip(4);
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = arc_file.io.read_to_zero(32).str();
-        entry->offset = arc_file.io.read_u32_le();
-        entry->encrypted = arc_file.io.read_u32_le() & 0x10000;
-        entry->size_orig = arc_file.io.read_u32_le();
-        entry->size_comp = arc_file.io.read_u32_le();
+        entry->name = arc_file.stream.read_to_zero(32).str();
+        entry->offset = arc_file.stream.read_u32_le();
+        entry->encrypted = arc_file.stream.read_u32_le() & 0x10000;
+        entry->size_orig = arc_file.stream.read_u32_le();
+        entry->size_comp = arc_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -47,8 +47,8 @@ std::unique_ptr<File> PackdatArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size_comp);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size_comp);
     if (entry->size_comp != entry->size_orig)
         throw err::NotSupportedError("Compressed files are not supported");
     if (entry->encrypted)

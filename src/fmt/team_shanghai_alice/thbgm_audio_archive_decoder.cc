@@ -57,7 +57,7 @@ static std::unique_ptr<File> grab_definitions_file(
                     continue;
                 auto output_file = decoder->read_file(
                     other_file, *meta, *entry);
-                output_file->io.seek(0);
+                output_file->stream.seek(0);
                 return output_file;
             }
         }
@@ -104,7 +104,7 @@ void ThbgmAudioArchiveDecoder::set_loop_count(size_t loop_count)
 
 bool ThbgmAudioArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return arc_file.io.read(magic.size()) == magic;
+    return arc_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
@@ -117,23 +117,23 @@ std::unique_ptr<fmt::ArchiveMeta>
         throw err::NotSupportedError("BGM definitions not found");
 
     auto meta = std::make_unique<ArchiveMeta>();
-    while (!definitions_file->io.eof())
+    while (!definitions_file->stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = definitions_file->io.read_to_zero(16).str();
+        entry->name = definitions_file->stream.read_to_zero(16).str();
         if (entry->name.empty())
             break;
-        entry->offset = definitions_file->io.read_u32_le();
-        definitions_file->io.skip(4);
-        entry->intro_size = definitions_file->io.read_u32_le();
-        entry->size = definitions_file->io.read_u32_le();
-        entry->format = definitions_file->io.read_u16_le();
-        entry->channel_count = definitions_file->io.read_u16_le();
-        entry->sample_rate = definitions_file->io.read_u32_le();
-        entry->byte_rate = definitions_file->io.read_u32_le();
-        entry->block_align = definitions_file->io.read_u16_le();
-        entry->bits_per_sample = definitions_file->io.read_u16_le();
-        definitions_file->io.skip(4);
+        entry->offset = definitions_file->stream.read_u32_le();
+        definitions_file->stream.skip(4);
+        entry->intro_size = definitions_file->stream.read_u32_le();
+        entry->size = definitions_file->stream.read_u32_le();
+        entry->format = definitions_file->stream.read_u16_le();
+        entry->channel_count = definitions_file->stream.read_u16_le();
+        entry->sample_rate = definitions_file->stream.read_u32_le();
+        entry->byte_rate = definitions_file->stream.read_u32_le();
+        entry->block_align = definitions_file->stream.read_u16_le();
+        entry->bits_per_sample = definitions_file->stream.read_u16_le();
+        definitions_file->stream.skip(4);
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -143,12 +143,12 @@ std::unique_ptr<File> ThbgmAudioArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto samples = arc_file.io.read(entry->intro_size);
+    arc_file.stream.seek(entry->offset);
+    auto samples = arc_file.stream.read(entry->intro_size);
     for (auto i : util::range(p->loop_count))
     {
-        arc_file.io.seek(entry->offset + entry->intro_size);
-        samples += arc_file.io.read(entry->size - entry->intro_size);
+        arc_file.stream.seek(entry->offset + entry->intro_size);
+        samples += arc_file.stream.read(entry->size - entry->intro_size);
     }
     return util::file_from_samples(
         entry->channel_count,

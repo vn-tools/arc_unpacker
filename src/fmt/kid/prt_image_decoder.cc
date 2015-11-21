@@ -10,46 +10,46 @@ static const bstr magic = "PRT\x00"_b;
 
 bool PrtImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid PrtImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
-    auto version = file.io.read_u16_le();
+    file.stream.skip(magic.size());
+    auto version = file.stream.read_u16_le();
 
     if (version != 0x66 && version != 0x65)
         throw err::UnsupportedVersionError(version);
 
-    u16 bit_depth = file.io.read_u16_le();
-    u16 palette_offset = file.io.read_u16_le();
-    u16 data_offset = file.io.read_u16_le();
-    u32 width = file.io.read_u16_le();
-    u32 height = file.io.read_u16_le();
+    u16 bit_depth = file.stream.read_u16_le();
+    u16 palette_offset = file.stream.read_u16_le();
+    u16 data_offset = file.stream.read_u16_le();
+    u32 width = file.stream.read_u16_le();
+    u32 height = file.stream.read_u16_le();
     bool has_alpha = false;
 
     if (version == 0x66)
     {
-        has_alpha = file.io.read_u32_le();
-        auto x = file.io.read_u32_le();
-        auto y = file.io.read_u32_le();
-        auto width2 = file.io.read_u32_le();
-        auto height2 = file.io.read_u32_le();
+        has_alpha = file.stream.read_u32_le();
+        auto x = file.stream.read_u32_le();
+        auto y = file.stream.read_u32_le();
+        auto width2 = file.stream.read_u32_le();
+        auto height2 = file.stream.read_u32_le();
         if (width2) width = width2;
         if (height2) height = height2;
     }
 
     auto stride = (((width * bit_depth / 8) + 3) / 4) * 4;
 
-    file.io.seek(palette_offset);
+    file.stream.seek(palette_offset);
     pix::Palette palette(
-        bit_depth == 8 ? 256 : 0, file.io, pix::Format::BGR888X);
+        bit_depth == 8 ? 256 : 0, file.stream, pix::Format::BGR888X);
 
     pix::Grid pixels(width, height);
     for (auto y : util::range(height))
     {
-        file.io.seek(data_offset + y * stride);
-        auto row = file.io.read(stride);
+        file.stream.seek(data_offset + y * stride);
+        auto row = file.stream.read(stride);
         auto row_ptr = row.get<const u8>();
         for (auto x : util::range(width))
         {
@@ -70,7 +70,7 @@ pix::Grid PrtImageDecoder::decode_impl(File &file) const
     {
         for (auto y : util::range(height))
         for (auto x : util::range(width))
-            pixels.at(x, y).a = file.io.read_u8();
+            pixels.at(x, y).a = file.stream.read_u8();
     }
 
     return pixels;

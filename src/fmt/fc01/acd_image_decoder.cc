@@ -49,20 +49,20 @@ static bstr do_decode(const bstr &input, size_t canvas_size)
 
 bool AcdImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid AcdImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
-    auto data_offset = file.io.read_u32_le();
-    auto size_comp = file.io.read_u32_le();
-    auto size_orig = file.io.read_u32_le();
-    auto width = file.io.read_u32_le();
-    auto height = file.io.read_u32_le();
+    file.stream.skip(magic.size());
+    auto data_offset = file.stream.read_u32_le();
+    auto size_comp = file.stream.read_u32_le();
+    auto size_orig = file.stream.read_u32_le();
+    auto width = file.stream.read_u32_le();
+    auto height = file.stream.read_u32_le();
 
-    file.io.seek(data_offset);
-    auto pixel_data = file.io.read(size_comp);
+    file.stream.seek(data_offset);
+    auto pixel_data = file.stream.read(size_comp);
     pixel_data = common::custom_lzss_decompress(pixel_data, size_orig);
     pixel_data = do_decode(pixel_data, width * height);
 

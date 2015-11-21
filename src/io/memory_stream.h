@@ -1,25 +1,25 @@
 #pragma once
 
 #include <memory>
-#include "io/io.h"
+#include "io/stream.h"
 
 namespace au {
 namespace io {
 
-    class BufferedIO final : public IO
+    class MemoryStream final : public Stream
     {
     public:
-        BufferedIO();
-        BufferedIO(const char *buffer, size_t buffer_size);
-        BufferedIO(const bstr &buffer);
-        BufferedIO(IO &other_io, size_t size);
-        BufferedIO(IO &other_io);
-        ~BufferedIO();
+        MemoryStream();
+        MemoryStream(const char *buffer, size_t buffer_size);
+        MemoryStream(const bstr &buffer);
+        MemoryStream(Stream &other_stream, size_t size);
+        MemoryStream(Stream &other_stream);
+        ~MemoryStream();
 
         size_t size() const override;
         size_t tell() const override;
-        IO &seek(size_t offset) override;
-        IO &skip(int offset) override;
+        Stream &seek(size_t offset) override;
+        Stream &skip(int offset) override;
         void truncate(size_t new_size) override;
 
         // specialize most commonly used functions

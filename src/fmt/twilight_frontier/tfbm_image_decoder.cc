@@ -1,7 +1,7 @@
 #include "fmt/twilight_frontier/tfbm_image_decoder.h"
 #include <map>
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
@@ -38,33 +38,34 @@ void TfbmImageDecoder::clear_palettes()
 void TfbmImageDecoder::add_palette(
     const std::string &name, const bstr &palette_data)
 {
-    io::BufferedIO palette_io(palette_data);
-    if (palette_io.read(pal_magic.size()) != pal_magic)
+    io::MemoryStream palette_stream(palette_data);
+    if (palette_stream.read(pal_magic.size()) != pal_magic)
         throw err::RecognitionError();
 
-    io::BufferedIO colors_io(
+    io::MemoryStream colors_stream(
         util::pack::zlib_inflate(
-            palette_io.read(
-                palette_io.read_u32_le())));
+            palette_stream.read(
+                palette_stream.read_u32_le())));
 
     p->palette_map[name] = std::make_shared<pix::Palette>(
-        256, colors_io, pix::Format::BGRA5551);
+        256, colors_stream, pix::Format::BGRA5551);
 }
 
 bool TfbmImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid TfbmImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
-    auto bit_depth = file.io.read_u8();
-    auto width = file.io.read_u32_le();
-    auto height = file.io.read_u32_le();
-    auto stride = file.io.read_u32_le();
-    auto source_size = file.io.read_u32_le();
-    io::BufferedIO source_io(util::pack::zlib_inflate(file.io.read_to_eof()));
+    file.stream.skip(magic.size());
+    auto bit_depth = file.stream.read_u8();
+    auto width = file.stream.read_u32_le();
+    auto height = file.stream.read_u32_le();
+    auto stride = file.stream.read_u32_le();
+    auto source_size = file.stream.read_u32_le();
+    io::MemoryStream source_stream(
+        util::pack::zlib_inflate(file.stream.read_to_eof()));
 
     std::shared_ptr<pix::Palette> palette;
     if (bit_depth == 8)
@@ -90,15 +91,15 @@ pix::Grid TfbmImageDecoder::decode_impl(File &file) const
         switch (bit_depth)
         {
             case 32:
-                pixel = pix::read<pix::Format::BGRA8888>(source_io);
+                pixel = pix::read<pix::Format::BGRA8888>(source_stream);
                 break;
 
             case 16:
-                pixel = pix::read<pix::Format::BGR565>(source_io);
+                pixel = pix::read<pix::Format::BGR565>(source_stream);
                 break;
 
             case 8:
-                pixel = (*palette)[source_io.read_u8()];
+                pixel = (*palette)[source_stream.read_u8()];
                 break;
 
             default:

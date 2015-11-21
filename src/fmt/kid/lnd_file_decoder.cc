@@ -1,5 +1,5 @@
 #include "fmt/kid/lnd_file_decoder.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -84,16 +84,16 @@ bstr LndFileDecoder::decompress_raw_data(const bstr &input, size_t size_orig)
 
 bool LndFileDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<File> LndFileDecoder::decode_impl(File &file) const
 {
-    file.io.seek(magic.size());
-    file.io.skip(4);
-    auto size_orig = file.io.read_u32_le();
-    file.io.skip(4);
-    auto data = file.io.read_to_eof();
+    file.stream.seek(magic.size());
+    file.stream.skip(4);
+    auto size_orig = file.stream.read_u32_le();
+    file.stream.skip(4);
+    auto data = file.stream.read_to_eof();
     data = decompress_raw_data(data, size_orig);
     return std::make_unique<File>(file.name, data);
 }

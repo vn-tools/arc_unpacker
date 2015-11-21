@@ -1,5 +1,5 @@
 #include "fmt/team_shanghai_alice/pbg3_archive_decoder.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"
 
@@ -27,20 +27,20 @@ static unsigned int read_integer(io::BitReader &bit_reader)
 
 bool Pbg3ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return arc_file.io.read(magic.size()) == magic;
+    return arc_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     Pbg3ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(magic.size());
+    arc_file.stream.seek(magic.size());
 
-    io::BitReader header_bit_reader(arc_file.io);
+    io::BitReader header_bit_reader(arc_file.stream);
     auto file_count = read_integer(header_bit_reader);
     auto table_offset = read_integer(header_bit_reader);
 
-    arc_file.io.seek(table_offset);
-    io::BitReader table_bit_reader(arc_file.io);
+    arc_file.stream.seek(table_offset);
+    io::BitReader table_bit_reader(arc_file.stream);
 
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
@@ -73,8 +73,8 @@ std::unique_ptr<File> Pbg3ArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    io::BitReader bit_reader(arc_file.io.read(entry->size_comp));
+    arc_file.stream.seek(entry->offset);
+    io::BitReader bit_reader(arc_file.stream.read(entry->size_comp));
 
     util::pack::LzssSettings settings;
     settings.position_bits = 13;

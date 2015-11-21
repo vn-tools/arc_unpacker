@@ -7,40 +7,40 @@ using namespace au::fmt::leaf;
 static int detect_version(File &file)
 {
     int version = 1;
-    file.io.seek(0);
-    size_t width = file.io.read_u16_le();
-    size_t height = file.io.read_u16_le();
+    file.stream.seek(0);
+    size_t width = file.stream.read_u16_le();
+    size_t height = file.stream.read_u16_le();
     if (!width && !height)
     {
-        width = file.io.read_u16_le();
-        height = file.io.read_u16_le();
+        width = file.stream.read_u16_le();
+        height = file.stream.read_u16_le();
         version = 2;
     }
-    return width * height + version * 4 == file.io.size() ? version : -1;
+    return width * height + version * 4 == file.stream.size() ? version : -1;
 }
 
 static pix::Grid decode_pixels(File &file)
 {
     const auto version = detect_version(file);
-    file.io.seek(version == 1 ? 0 : 4);
-    const auto width = file.io.read_u16_le();
-    const auto height = file.io.read_u16_le();
-    const auto data = file.io.read(width * height);
+    file.stream.seek(version == 1 ? 0 : 4);
+    const auto width = file.stream.read_u16_le();
+    const auto height = file.stream.read_u16_le();
+    const auto data = file.stream.read(width * height);
     return pix::Grid(width, height, data, pix::Format::Gray8);
 }
 
 static pix::Palette decode_palette(File &file)
 {
-    file.io.seek(0);
-    const auto count = file.io.read_u16_le();
+    file.stream.seek(0);
+    const auto count = file.stream.read_u16_le();
     auto palette = pix::Palette(256);
     for (auto i : util::range(count))
     {
-        auto index = file.io.read_u8();
+        auto index = file.stream.read_u8();
         palette[index].a = 0xFF;
-        palette[index].b = file.io.read_u8();
-        palette[index].g = file.io.read_u8();
-        palette[index].r = file.io.read_u8();
+        palette[index].b = file.stream.read_u8();
+        palette[index].g = file.stream.read_u8();
+        palette[index].r = file.stream.read_u8();
     }
     return palette;
 }
@@ -63,8 +63,8 @@ pix::Grid GrpImageDecoder::decode(
     }
     if (mask_file)
     {
-        mask_file->io.seek(0);
-        auto mask_data = mask_file->io.read_to_eof();
+        mask_file->stream.seek(0);
+        auto mask_data = mask_file->stream.read_to_eof();
         for (auto &c : mask_data)
             c ^= 0xFF;
         image.apply_mask(pix::Grid(

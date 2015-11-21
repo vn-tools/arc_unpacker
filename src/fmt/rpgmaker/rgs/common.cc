@@ -1,5 +1,5 @@
 #include "fmt/rpgmaker/rgs/common.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -15,21 +15,21 @@ std::unique_ptr<File> rgs::read_file_impl(
 {
     auto output_file = std::make_unique<File>();
     output_file->name = entry.name;
-    arc_file.io.seek(entry.offset);
+    arc_file.stream.seek(entry.offset);
 
-    io::BufferedIO tmp_io;
-    tmp_io.write(arc_file.io.read(entry.size));
-    tmp_io.write("\x00\x00\x00\x00"_b);
-    tmp_io.seek(0);
+    io::MemoryStream tmp_stream;
+    tmp_stream.write(arc_file.stream.read(entry.size));
+    tmp_stream.write("\x00\x00\x00\x00"_b);
+    tmp_stream.seek(0);
 
     u32 key = entry.key;
     for (auto i : util::range(0, entry.size, 4))
     {
-        u32 chunk = tmp_io.read_u32_le();
+        u32 chunk = tmp_stream.read_u32_le();
         chunk ^= key;
         key = rgs::advance_key(key);
-        output_file->io.write_u32_le(chunk);
+        output_file->stream.write_u32_le(chunk);
     }
-    output_file->io.truncate(entry.size);
+    output_file->stream.truncate(entry.size);
     return output_file;
 }

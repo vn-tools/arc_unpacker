@@ -5,7 +5,7 @@
 #include "fmt/shiina_rio/warc/decompress.h"
 #include "fmt/shiina_rio/warc/decrypt.h"
 #include "fmt/shiina_rio/warc/plugin_registry.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "log.h"
 
 using namespace au;
@@ -66,7 +66,7 @@ void WarcArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 
 bool WarcArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return arc_file.io.read(magic.size()) == magic;
+    return arc_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
@@ -76,26 +76,26 @@ std::unique_ptr<fmt::ArchiveMeta>
     if (!plugin)
         throw err::UsageError("Plugin not specified");
 
-    arc_file.io.seek(magic.size());
+    arc_file.stream.seek(magic.size());
     const int warc_version
-        = 100 * boost::lexical_cast<float>(arc_file.io.read(3).str());
+        = 100 * boost::lexical_cast<float>(arc_file.stream.read(3).str());
     if (warc_version != 170)
         throw err::UnsupportedVersionError(warc_version);
 
-    arc_file.io.seek(8);
-    const auto table_offset = arc_file.io.read_u32_le() ^ 0xF182AD82;
-    arc_file.io.seek(table_offset);
-    auto table_data = arc_file.io.read_to_eof();
+    arc_file.stream.seek(8);
+    const auto table_offset = arc_file.stream.read_u32_le() ^ 0xF182AD82;
+    arc_file.stream.seek(table_offset);
+    auto table_data = arc_file.stream.read_to_eof();
 
     warc::decrypt_table_data(*plugin, warc_version, table_offset, table_data);
-    io::BufferedIO table_io(table_data);
+    io::MemoryStream table_stream(table_data);
 
     std::set<std::string> known_names;
     auto meta = std::make_unique<ArchiveMetaImpl>(*plugin, warc_version);
-    while (!table_io.eof())
+    while (!table_stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = table_io.read_to_zero(plugin->entry_name_size).str();
+        entry->name = table_stream.read_to_zero(plugin->entry_name_size).str();
         for (auto &c : entry->name)
         {
             if (static_cast<u8>(c) >= 0x80)
@@ -106,11 +106,11 @@ std::unique_ptr<fmt::ArchiveMeta>
         }
         entry->suspicious |= known_names.find(entry->name) != known_names.end();
         known_names.insert(entry->name);
-        entry->offset = table_io.read_u32_le();
-        entry->size_comp = table_io.read_u32_le();
-        entry->size_orig = table_io.read_u32_le();
-        entry->time = table_io.read_u64_le();
-        entry->flags = table_io.read_u32_le();
+        entry->offset = table_stream.read_u32_le();
+        entry->size_comp = table_stream.read_u32_le();
+        entry->size_orig = table_stream.read_u32_le();
+        entry->time = table_stream.read_u64_le();
+        entry->flags = table_stream.read_u32_le();
         if (entry->name.size())
             meta->entries.push_back(std::move(entry));
     }
@@ -122,10 +122,10 @@ std::unique_ptr<File> WarcArchiveDecoder::read_file_impl(
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
+    arc_file.stream.seek(entry->offset);
 
-    const bstr head = arc_file.io.read(4);
-    const auto size_orig = arc_file.io.read_u32_le();
+    const bstr head = arc_file.stream.read(4);
+    const auto size_orig = arc_file.stream.read_u32_le();
     const bool compress_crypt = head[3] > 0;
     const u32 tmp = *head.get<u32>() ^ 0x82AD82 ^ size_orig;
     bstr file_magic(3);
@@ -133,7 +133,7 @@ std::unique_ptr<File> WarcArchiveDecoder::read_file_impl(
     file_magic[1] = (tmp >> 8) & 0xFF;
     file_magic[2] = (tmp >> 16) & 0xFF;
 
-    auto data = arc_file.io.read(entry->size_comp - 8);
+    auto data = arc_file.stream.read(entry->size_comp - 8);
     if (entry->flags & 0x80000000)
         warc::decrypt_essential(meta->plugin, meta->warc_version, data);
     if (meta->plugin.flag_crypt.pre)

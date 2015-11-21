@@ -1,6 +1,6 @@
 #include "fmt/whale/dat_archive_decoder.h"
 #include <map>
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "log.h"
 #include "util/encoding.h"
 #include "util/format.h"
@@ -145,24 +145,24 @@ static void transform_script_content(
         *buffer_ptr++ ^= xor_value;
 }
 
-static u32 read_file_count(io::IO &arc_io)
+static u32 read_file_count(io::Stream &arc_stream)
 {
-    return arc_io.read_u32_le() ^ file_count_hash;
+    return arc_stream.read_u32_le() ^ file_count_hash;
 }
 
 static void dump(const ArchiveMetaImpl &meta, const std::string &dump_path)
 {
     // make it static, so that ./au *.dat --dump=x doesn't write info only
     // about the last archive
-    static io::FileIO io(dump_path, io::FileMode::Write);
+    static io::FileStream stream(dump_path, io::FileMode::Write);
 
     for (auto &e : meta.entries)
     {
         auto entry = dynamic_cast<ArchiveEntryImpl*>(e.get());
         if (entry->valid)
-            io.write(entry->name + "\n");
+            stream.write(entry->name + "\n");
         else
-            io.write(util::format("unk:%016llx\n", entry->hash));
+            stream.write(util::format("unk:%016llx\n", entry->hash));
     }
 }
 
@@ -203,10 +203,11 @@ void DatArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 
     if (arg_parser.has_switch("file-names"))
     {
-        io::FileIO io(arg_parser.get_switch("file-names"), io::FileMode::Read);
-        set_game_title(io.read_line().str());
+        io::FileStream stream(
+            arg_parser.get_switch("file-names"), io::FileMode::Read);
+        set_game_title(stream.read_line().str());
         bstr line;
-        while ((line = io.read_line()) != ""_b)
+        while ((line = stream.read_line()) != ""_b)
             add_file_name(line.str());
     }
 
@@ -228,8 +229,8 @@ bool DatArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     if (!arc_file.has_extension("dat"))
         return false;
-    auto file_count = read_file_count(arc_file.io);
-    return file_count * (8 + 1 + 4 + 4 + 4) < arc_file.io.size();
+    auto file_count = read_file_count(arc_file.stream);
+    return file_count * (8 + 1 + 4 + 4 + 4) < arc_file.stream.size();
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
@@ -238,21 +239,21 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->game_title = p->game_title;
 
-    auto file_count = read_file_count(arc_file.io);
+    auto file_count = read_file_count(arc_file.stream);
     for (auto i : util::range(file_count))
     {
-        auto hash64 = arc_file.io.read_u64_le();
+        auto hash64 = arc_file.stream.read_u64_le();
         auto hash32 = hash64 & 0xFFFFFFFF;
         auto hash8 = hash64 & 0xFF;
 
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->hash = hash64;
         entry->type = static_cast<TableEntryType>(
-            arc_file.io.read_u8() ^ hash8);
+            arc_file.stream.read_u8() ^ hash8);
 
-        entry->offset    = arc_file.io.read_u32_le() ^ hash32;
-        entry->size_comp = arc_file.io.read_u32_le() ^ hash32;
-        entry->size_orig = arc_file.io.read_u32_le() ^ hash32;
+        entry->offset    = arc_file.stream.read_u32_le() ^ hash32;
+        entry->size_comp = arc_file.stream.read_u32_le() ^ hash32;
+        entry->size_orig = arc_file.stream.read_u32_le() ^ hash32;
 
         auto name = p->file_names_map[entry->hash];
         auto name_found = name.size();
@@ -302,8 +303,8 @@ std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
         return nullptr;
     }
 
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size_comp);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size_comp);
 
     if (entry->type == TableEntryType::Compressed)
     {

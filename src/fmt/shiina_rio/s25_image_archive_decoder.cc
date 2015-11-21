@@ -2,7 +2,7 @@
 #include <boost/filesystem/path.hpp>
 #include "err.h"
 #include "fmt/naming_strategies.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/file_from_grid.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -30,30 +30,30 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
     const auto output_start = output.get<const u8>();
     const auto output_end = output.end<const u8>();
 
-    io::BufferedIO input_io(input);
+    io::MemoryStream input_stream(input);
     auto left = entry.width;
     while (output_ptr < output_end)
     {
-        if (input_io.tell() & 1)
-            input_io.skip(1);
+        if (input_stream.tell() & 1)
+            input_stream.skip(1);
 
-        const u16 tmp = input_io.read_u16_le();
+        const u16 tmp = input_stream.read_u16_le();
 
         const size_t method = tmp >> 13;
         const size_t skip = (tmp >> 11) & 3;
-        input_io.skip(skip);
+        input_stream.skip(skip);
         size_t count = tmp & 0x7FF;
         if (!count)
-            count = input_io.read_u32_le();
+            count = input_stream.read_u32_le();
         if (count > left)
             count = left;
         left -= count;
 
         if (method == 2)
         {
-            if (input_io.tell() + count * 3 > input_io.size())
-                count = (input_io.size() - input_io.tell()) / 3;
-            const auto chunk = input_io.read(3 * count);
+            if (input_stream.tell() + count * 3 > input_stream.size())
+                count = (input_stream.size() - input_stream.tell()) / 3;
+            const auto chunk = input_stream.read(3 * count);
             auto chunk_ptr = chunk.get<const u8>();
             for (const auto i : util::range(count))
             {
@@ -66,7 +66,7 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
 
         else if (method == 3)
         {
-            const auto chunk = input_io.read(3);
+            const auto chunk = input_stream.read(3);
             for (const auto i : util::range(count))
             {
                 *output_ptr++ += chunk[0];
@@ -78,9 +78,9 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
 
         else if (method == 4)
         {
-            if (input_io.tell() + count * 4 > input_io.size())
-                count = (input_io.size() - input_io.tell()) / 4;
-            const auto chunk = input_io.read(4 * count);
+            if (input_stream.tell() + count * 4 > input_stream.size())
+                count = (input_stream.size() - input_stream.tell()) / 4;
+            const auto chunk = input_stream.read(4 * count);
             auto chunk_ptr = chunk.get<const u8>();
             for (const auto i : util::range(count))
             {
@@ -94,7 +94,7 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
 
         else if (method == 5)
         {
-            const auto chunk = input_io.read(4);
+            const auto chunk = input_stream.read(4);
             for (const auto i : util::range(count))
             {
                 *output_ptr++ += chunk[1];
@@ -116,21 +116,21 @@ static pix::Grid read_plain(File &arc_file, const ArchiveEntryImpl &entry)
     bstr data;
     data.reserve(entry.width * entry.height * 4);
 
-    arc_file.io.seek(entry.offset);
+    arc_file.stream.seek(entry.offset);
     std::vector<u32> row_offsets(entry.height);
     for (auto &offset : row_offsets)
-        offset = arc_file.io.read_u32_le();
+        offset = arc_file.stream.read_u32_le();
     for (const auto y : util::range(entry.height))
     {
         const auto row_offset = row_offsets[y];
-        arc_file.io.seek(row_offset);
-        auto row_size = arc_file.io.read_u16_le();
+        arc_file.stream.seek(row_offset);
+        auto row_size = arc_file.stream.read_u16_le();
         if (row_offset & 1)
         {
-            arc_file.io.skip(1);
+            arc_file.stream.skip(1);
             row_size--;
         }
-        const auto input_row = arc_file.io.read(row_size);
+        const auto input_row = arc_file.stream.read(row_size);
         const auto output_row = decode_row(input_row, entry);
         data += output_row;
     }
@@ -140,7 +140,7 @@ static pix::Grid read_plain(File &arc_file, const ArchiveEntryImpl &entry)
 
 bool S25ImageArchiveDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
@@ -148,12 +148,12 @@ std::unique_ptr<fmt::ArchiveMeta>
 {
     const auto base_name = fs::path(arc_file.name).stem().string();
 
-    arc_file.io.seek(magic.size());
-    const auto file_count = arc_file.io.read_u32_le();
+    arc_file.stream.seek(magic.size());
+    const auto file_count = arc_file.stream.read_u32_le();
     std::vector<size_t> offsets;
     for (const auto i : util::range(file_count))
     {
-        const auto offset = arc_file.io.read_u32_le();
+        const auto offset = arc_file.stream.read_u32_le();
         if (offset)
             offsets.push_back(offset);
     }
@@ -162,12 +162,12 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (const auto offset : offsets)
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        arc_file.io.seek(offset);
-        entry->width = arc_file.io.read_u32_le();
-        entry->height = arc_file.io.read_u32_le();
-        arc_file.io.skip(8);
-        entry->flags = arc_file.io.read_u32_le();
-        entry->offset = arc_file.io.tell();
+        arc_file.stream.seek(offset);
+        entry->width = arc_file.stream.read_u32_le();
+        entry->height = arc_file.stream.read_u32_le();
+        arc_file.stream.skip(8);
+        entry->flags = arc_file.stream.read_u32_le();
+        entry->offset = arc_file.stream.tell();
         entry->name = offsets.size() > 1
             ? util::format("%s_%03d", base_name.c_str(), meta->entries.size())
             : base_name;

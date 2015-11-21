@@ -4,7 +4,7 @@
 #include <set>
 #include "err.h"
 #include "fmt/twilight_frontier/tfbm_image_decoder.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/crypt/rsa.h"
 #include "util/encoding.h"
 #include "util/file_from_grid.h"
@@ -49,15 +49,15 @@ namespace
     class RsaReader final
     {
     public:
-        RsaReader(io::IO &io);
+        RsaReader(io::Stream &stream);
         ~RsaReader();
-        std::unique_ptr<io::BufferedIO> read_block();
+        std::unique_ptr<io::MemoryStream> read_block();
         size_t tell() const;
 
     private:
-        std::unique_ptr<io::BufferedIO> decrypt(std::basic_string<u8> input);
+        std::unique_ptr<io::MemoryStream> decrypt(std::basic_string<u8> input);
 
-        io::IO &io;
+        io::Stream &stream;
         std::unique_ptr<util::crypt::Rsa> rsa;
     };
 }
@@ -109,11 +109,11 @@ static const std::vector<util::crypt::RsaKey> rsa_keys({
     },
 });
 
-RsaReader::RsaReader(io::IO &io) : io(io)
+RsaReader::RsaReader(io::Stream &stream) : stream(stream)
 {
     // test chunk = one block with dir count
     bstr test_chunk;
-    io.peek(io.tell(), [&]() { test_chunk = io.read(0x40); });
+    stream.peek(stream.tell(), [&]() { test_chunk = stream.read(0x40); });
 
     for (auto &rsa_key : rsa_keys)
     {
@@ -143,15 +143,15 @@ RsaReader::~RsaReader()
 
 size_t RsaReader::tell() const
 {
-    return io.tell();
+    return stream.tell();
 }
 
-std::unique_ptr<io::BufferedIO> RsaReader::read_block()
+std::unique_ptr<io::MemoryStream> RsaReader::read_block()
 {
     bstr block = rsa
-        ? rsa->decrypt(io.read(0x40)).substr(0, 0x20)
-        : io.read(0x40).substr(0, 0x20);
-    return std::make_unique<io::BufferedIO>(block);
+        ? rsa->decrypt(stream.read(0x40)).substr(0, 0x20)
+        : stream.read(0x40).substr(0, 0x20);
+    return std::make_unique<io::MemoryStream>(block);
 }
 
 static bstr read_file_content(
@@ -160,8 +160,8 @@ static bstr read_file_content(
     const ArchiveEntryImpl &entry,
     size_t max_size)
 {
-    arc_file.io.seek(entry.offset);
-    auto data = arc_file.io.read(std::min<size_t>(max_size, entry.size));
+    arc_file.stream.seek(entry.offset);
+    auto data = arc_file.stream.read(std::min<size_t>(max_size, entry.size));
     size_t key_size = entry.key.size();
     if (meta.version == TfpkVersion::Th135)
     {
@@ -260,10 +260,10 @@ static std::vector<DirEntry> read_dir_entries(RsaReader &reader)
     auto dir_count = reader.read_block()->read_u32_le();
     for (auto i : util::range(dir_count))
     {
-        auto tmp_io = reader.read_block();
+        auto tmp_stream = reader.read_block();
         DirEntry entry;
-        entry.initial_hash = tmp_io->read_u32_le();
-        entry.file_count = tmp_io->read_u32_le();
+        entry.initial_hash = tmp_stream->read_u32_le();
+        entry.file_count = tmp_stream->read_u32_le();
         dirs.push_back(entry);
     }
     return dirs;
@@ -277,18 +277,18 @@ static HashLookupMap read_fn_map(
 {
     HashLookupMap fn_map;
 
-    auto tmp_io = reader.read_block();
-    size_t table_size_compressed = tmp_io->read_u32_le();
-    size_t table_size_original = tmp_io->read_u32_le();
-    size_t block_count = tmp_io->read_u32_le();
+    auto tmp_stream = reader.read_block();
+    size_t table_size_compressed = tmp_stream->read_u32_le();
+    size_t table_size_original = tmp_stream->read_u32_le();
+    size_t block_count = tmp_stream->read_u32_le();
 
-    tmp_io = std::make_unique<io::BufferedIO>();
+    tmp_stream = std::make_unique<io::MemoryStream>();
     for (auto i : util::range(block_count))
-        tmp_io->write(reader.read_block()->read_to_eof());
+        tmp_stream->write(reader.read_block()->read_to_eof());
 
-    tmp_io->seek(0);
-    tmp_io = std::make_unique<io::BufferedIO>(
-        util::pack::zlib_inflate(tmp_io->read(table_size_compressed)));
+    tmp_stream->seek(0);
+    tmp_stream = std::make_unique<io::MemoryStream>(
+        util::pack::zlib_inflate(tmp_stream->read(table_size_compressed)));
 
     for (auto &dir_entry : dir_entries)
     {
@@ -301,7 +301,7 @@ static HashLookupMap read_fn_map(
             // TH145 English patch contains invalid directory names
             try
             {
-                auto fn = util::sjis_to_utf8(tmp_io->read_to_zero()).str();
+                auto fn = util::sjis_to_utf8(tmp_stream->read_to_zero()).str();
                 auto hash = get_file_name_hash(
                     fn, version, dir_entry.initial_hash);
                 fn_map[hash] = dn + fn;
@@ -335,9 +335,9 @@ void TfpkArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     auto path = arg_parser.get_switch("file-names");
     if (path != "")
     {
-        io::FileIO io(path, io::FileMode::Read);
+        io::FileStream stream(path, io::FileMode::Read);
         std::string line;
-        while ((line = io.read_line().str()) != "")
+        while ((line = stream.read_line().str()) != "")
             p->fn_set.insert(line);
     }
 
@@ -354,19 +354,19 @@ TfpkArchiveDecoder::~TfpkArchiveDecoder()
 
 bool TfpkArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    if (arc_file.io.read(magic.size()) != magic)
+    if (arc_file.stream.read(magic.size()) != magic)
         return false;
-    auto version = arc_file.io.read_u8();
+    auto version = arc_file.stream.read_u8();
     return version == 0 || version == 1;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     TfpkArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(magic.size());
+    arc_file.stream.seek(magic.size());
 
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    meta->version = arc_file.io.read_u8() == 0
+    meta->version = arc_file.stream.read_u8() == 0
         ? TfpkVersion::Th135
         : TfpkVersion::Th145;
 
@@ -374,7 +374,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto &fn : p->fn_set)
         user_fn_map[get_file_name_hash(fn, meta->version)] = fn;
 
-    RsaReader reader(arc_file.io);
+    RsaReader reader(arc_file.stream);
     HashLookupMap fn_map;
 
     // TH135 contains file hashes, TH145 contains garbage
@@ -419,12 +419,12 @@ std::unique_ptr<fmt::ArchiveMeta>
                 : it->second;
 
             b3->seek(0);
-            io::BufferedIO key_io;
+            io::MemoryStream key_stream;
             for (auto j : util::range(4))
-                key_io.write_u32_le(neg32(b3->read_u32_le()));
+                key_stream.write_u32_le(neg32(b3->read_u32_le()));
 
-            key_io.seek(0);
-            entry->key = key_io.read_to_eof();
+            key_stream.seek(0);
+            entry->key = key_stream.read_to_eof();
         }
         meta->entries.push_back(std::move(entry));
     }
@@ -475,9 +475,9 @@ void TfpkArchiveDecoder::preprocess(
             if (entry->name.find("palette") == std::string::npos)
                 continue;
             auto pal_file = read_file(other_arc_file, *meta, *entry);
-            pal_file->io.seek(0);
+            pal_file->stream.seek(0);
             tfbm_image_decoder.add_palette(
-                entry->name, pal_file->io.read_to_eof());
+                entry->name, pal_file->stream.read_to_eof());
         }
     }
 

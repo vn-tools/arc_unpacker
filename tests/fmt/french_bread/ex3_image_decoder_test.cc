@@ -1,5 +1,5 @@
 #include "fmt/french_bread/ex3_image_decoder.h"
-#include "io/file_io.h"
+#include "io/file_stream.h"
 #include "test_support/catch.hh"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"

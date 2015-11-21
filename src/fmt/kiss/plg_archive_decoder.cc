@@ -18,26 +18,26 @@ namespace
 
 bool PlgArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    arc_file.io.seek(0);
-    return arc_file.io.read(magic.size()) == magic;
+    arc_file.stream.seek(0);
+    return arc_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     PlgArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(magic.size());
-    const auto file_count = arc_file.io.read_u32_le();
-    arc_file.io.skip(4);
+    arc_file.stream.seek(magic.size());
+    const auto file_count = arc_file.stream.read_u32_le();
+    arc_file.stream.skip(4);
     auto meta = std::make_unique<ArchiveMeta>();
     for (const size_t i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = arc_file.io.read_to_zero(0x20).str();
-        if (arc_file.io.read_u32_le() != i)
+        entry->name = arc_file.stream.read_to_zero(0x20).str();
+        if (arc_file.stream.read_u32_le() != i)
             throw err::CorruptDataError("Unexpected entry index");
-        entry->size = arc_file.io.read_u32_le();
-        entry->offset = arc_file.io.read_u32_le();
-        if (arc_file.io.read_u32_le() != 0)
+        entry->size = arc_file.stream.read_u32_le();
+        entry->offset = arc_file.stream.read_u32_le();
+        if (arc_file.stream.read_u32_le() != 0)
             throw err::CorruptDataError("Expected '0'");
         meta->entries.push_back(std::move(entry));
     }
@@ -48,8 +48,8 @@ std::unique_ptr<File> PlgArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    return std::make_unique<File>(entry->name, arc_file.io.read(entry->size));
+    const auto data = arc_file.stream.seek(entry->offset).read(entry->size);
+    return std::make_unique<File>(entry->name, data);
 }
 
 std::vector<std::string> PlgArchiveDecoder::get_linked_formats() const

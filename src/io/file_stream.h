@@ -3,7 +3,7 @@
 #include <boost/filesystem/path.hpp>
 #include <memory>
 #include <string>
-#include "io/io.h"
+#include "io/stream.h"
 
 namespace au {
 namespace io {
@@ -14,16 +14,16 @@ namespace io {
         Write = 2,
     };
 
-    class FileIO final : public IO
+    class FileStream final : public Stream
     {
     public:
-        FileIO(const boost::filesystem::path &path, const FileMode mode);
-        ~FileIO();
+        FileStream(const boost::filesystem::path &path, const FileMode mode);
+        ~FileStream();
 
         size_t size() const override;
         size_t tell() const override;
-        IO &seek(size_t offset) override;
-        IO &skip(int offset) override;
+        Stream &seek(size_t offset) override;
+        Stream &skip(int offset) override;
         void truncate(size_t new_size) override;
 
     protected:

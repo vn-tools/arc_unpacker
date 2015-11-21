@@ -1,5 +1,5 @@
 #include "fmt/adv/dat_archive_decoder.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -29,12 +29,12 @@ namespace
 static std::unique_ptr<ArchiveMetaImpl> prepare_meta(File &arc_file)
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    arc_file.io.seek(53); // suspicious: varies for other games?
-    meta->arc_key = arc_file.io.read(8);
+    arc_file.stream.seek(53); // suspicious: varies for other games?
+    meta->arc_key = arc_file.stream.read(8);
 
-    arc_file.io.skip(20);
-    meta->header_offset = arc_file.io.tell();
-    bstr header_data = arc_file.io.read(0x24);
+    arc_file.stream.skip(20);
+    meta->header_offset = arc_file.stream.tell();
+    bstr header_data = arc_file.stream.read(0x24);
 
     // recover game key
     meta->game_key.resize(8);
@@ -56,7 +56,7 @@ bool DatArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     const auto meta = prepare_meta(arc_file);
     return meta->header_offset + meta->table_offset + 0x114 * meta->file_count
-        == arc_file.io.size();
+        == arc_file.stream.size();
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
@@ -64,22 +64,22 @@ std::unique_ptr<fmt::ArchiveMeta>
 {
     auto meta = prepare_meta(arc_file);
 
-    arc_file.io.seek(meta->header_offset + meta->table_offset);
-    auto table_data = arc_file.io.read(0x114 * meta->file_count);
+    arc_file.stream.seek(meta->header_offset + meta->table_offset);
+    auto table_data = arc_file.stream.read(0x114 * meta->file_count);
     auto key_idx = meta->table_offset;
     for (const auto i : util::range(table_data.size()))
         table_data[i] ^= meta->arc_key[(key_idx++) % meta->arc_key.size()];
-    io::BufferedIO table_io(table_data);
+    io::MemoryStream table_stream(table_data);
 
     for (const auto i : util::range(meta->file_count))
     {
-        table_io.seek(0x114 * i);
-        table_io.skip(1);
+        table_stream.seek(0x114 * i);
+        table_stream.skip(1);
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = util::sjis_to_utf8(table_io.read_to_zero()).str();
-        table_io.seek(0x114 * i + 0x108);
-        entry->offset = table_io.read_u32_le() + meta->header_offset;
-        entry->size = table_io.read_u32_le();
+        entry->name = util::sjis_to_utf8(table_stream.read_to_zero()).str();
+        table_stream.seek(0x114 * i + 0x108);
+        entry->offset = table_stream.read_u32_le() + meta->header_offset;
+        entry->size = table_stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
     }
     return std::move(meta);
@@ -90,8 +90,8 @@ std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
 {
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     auto key_idx = entry->offset - meta->header_offset;
     for (const auto i : util::range(data.size()))
         data[i] ^= meta->arc_key[key_idx++ % meta->arc_key.size()];

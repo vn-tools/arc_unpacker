@@ -32,9 +32,9 @@ static const bstr magic_data13 = "abdata13\0\0\0\0\0\0\0\0"_b;
 static const bstr magic_image10 = "abimage10\0\0\0\0\0\0\0"_b;
 static const bstr magic_sound10 = "absound10\0\0\0\0\0\0\0"_b;
 
-static int guess_version(io::IO &arc_io)
+static int guess_version(io::Stream &arc_stream)
 {
-    bstr magic = arc_io.read(16);
+    bstr magic = arc_stream.read(16);
     if (magic == magic10)
         return 10;
     if (magic == magic11)
@@ -48,19 +48,19 @@ static void read_data_entry(File &arc_file, fmt::ArchiveMeta &meta)
 {
     auto entry = std::make_unique<ArchiveEntryImpl>();
     entry->name = "unknown.dat";
-    entry->size = arc_file.io.read_u32_le();
-    entry->offset = arc_file.io.tell();
-    arc_file.io.skip(entry->size);
+    entry->size = arc_file.stream.read_u32_le();
+    entry->offset = arc_file.stream.tell();
+    arc_file.stream.skip(entry->size);
     meta.entries.push_back(std::move(entry));
 }
 
 static void read_resource_entry(File &arc_file, fmt::ArchiveMeta &meta)
 {
-    bstr magic = arc_file.io.read(16);
+    bstr magic = arc_file.stream.read(16);
 
     auto entry = std::make_unique<ArchiveEntryImpl>();
-    auto name_size = arc_file.io.read_u16_le();
-    entry->name = util::sjis_to_utf8(arc_file.io.read(name_size)).str();
+    auto name_size = arc_file.stream.read_u16_le();
+    entry->name = util::sjis_to_utf8(arc_file.stream.read(name_size)).str();
     if (entry->name.empty())
         entry->name = "unknown";
     entry->name += ".dat";
@@ -70,7 +70,7 @@ static void read_resource_entry(File &arc_file, fmt::ArchiveMeta &meta)
         || magic == magic_imgdat13
         || magic == magic_imgdat14)
     {
-        arc_file.io.skip(arc_file.io.read_u16_le());
+        arc_file.stream.skip(arc_file.stream.read_u16_le());
     }
     else if (magic != magic_imgdat10 && magic != magic_snddat10)
     {
@@ -78,32 +78,32 @@ static void read_resource_entry(File &arc_file, fmt::ArchiveMeta &meta)
             "Unknown image magic: %s", magic.get<char>()));
     }
 
-    arc_file.io.skip(1);
+    arc_file.stream.skip(1);
     if (magic == magic_imgdat14)
-        arc_file.io.skip(76);
+        arc_file.stream.skip(76);
     if (magic == magic_imgdat13)
-        arc_file.io.skip(12);
+        arc_file.stream.skip(12);
 
-    entry->size = arc_file.io.read_u32_le();
-    entry->offset = arc_file.io.tell();
-    arc_file.io.skip(entry->size);
+    entry->size = arc_file.stream.read_u32_le();
+    entry->offset = arc_file.stream.tell();
+    arc_file.stream.skip(entry->size);
     if (entry->size)
         meta.entries.push_back(std::move(entry));
 }
 
 bool Abmp10ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return guess_version(arc_file.io) >= 0;
+    return guess_version(arc_file.stream) >= 0;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     Abmp10ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(16);
+    arc_file.stream.seek(16);
     auto meta = std::make_unique<ArchiveMeta>();
-    while (arc_file.io.tell() < arc_file.io.size())
+    while (arc_file.stream.tell() < arc_file.stream.size())
     {
-        auto magic = arc_file.io.read(16);
+        auto magic = arc_file.stream.read(16);
         if (magic == magic_data10
             || magic == magic_data11
             || magic == magic_data12
@@ -113,7 +113,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         }
         else if (magic == magic_image10 || magic == magic_sound10)
         {
-            size_t file_count = arc_file.io.read_u8();
+            size_t file_count = arc_file.stream.read_u8();
             for (auto i : util::range(file_count))
                 read_resource_entry(arc_file, *meta);
         }
@@ -130,8 +130,8 @@ std::unique_ptr<File> Abmp10ArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

@@ -22,16 +22,16 @@ bool MpkArchiveDecoder::is_recognized_impl(File &arc_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     MpkArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    auto table_offset = arc_file.io.read_u32_le();
-    auto file_count = arc_file.io.read_u32_le();
+    auto table_offset = arc_file.stream.read_u32_le();
+    auto file_count = arc_file.stream.read_u32_le();
 
-    arc_file.io.seek(table_offset);
+    arc_file.stream.seek(table_offset);
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
-        auto name = arc_file.io.read(32);
+        auto name = arc_file.stream.read(32);
         u8 key8 = name[31];
         u32 key32 = (key8 << 24) | (key8 << 16) | (key8 << 8) | key8;
 
@@ -43,8 +43,8 @@ std::unique_ptr<fmt::ArchiveMeta>
             entry->name = entry->name.substr(1);
         entry->name.erase(entry->name.find('\x00'));
 
-        entry->offset = arc_file.io.read_u32_le() ^ key32;
-        entry->size = arc_file.io.read_u32_le() ^ key32;
+        entry->offset = arc_file.stream.read_u32_le() ^ key32;
+        entry->size = arc_file.stream.read_u32_le() ^ key32;
 
         meta->entries.push_back(std::move(entry));
     }
@@ -55,8 +55,8 @@ std::unique_ptr<File> MpkArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     return std::make_unique<File>(entry->name, data);
 }
 

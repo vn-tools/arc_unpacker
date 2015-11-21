@@ -1,7 +1,7 @@
 #include "fmt/bgi/cbg/cbg1_decoder.h"
 #include "err.h"
 #include "fmt/bgi/cbg/cbg_common.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -18,16 +18,16 @@ static bstr decompress_huffman(
 
 static bstr decompress_rle(bstr &input, size_t output_size)
 {
-    io::BufferedIO input_io(input);
+    io::MemoryStream input_stream(input);
 
     bstr output(output_size);
     auto output_ptr = output.get<u8>();
     auto output_end = output.get<const u8>() + output.size();
 
     bool zero_flag = false;
-    while (!input_io.eof())
+    while (!input_stream.eof())
     {
-        u32 size = read_variable_data(input_io);
+        u32 size = read_variable_data(input_stream);
         if (output_ptr + size >= output_end)
             size = output_end - output_ptr;
 
@@ -39,7 +39,7 @@ static bstr decompress_rle(bstr &input, size_t output_size)
         else
         {
             for (auto i : util::range(size))
-                *output_ptr++ = input_io.read_u8();
+                *output_ptr++ = input_stream.read_u8();
         }
         zero_flag = !zero_flag;
     }
@@ -110,18 +110,18 @@ static pix::Format bpp_to_pixel_format(int bpp)
     throw err::UnsupportedBitDepthError(bpp);
 }
 
-std::unique_ptr<pix::Grid> Cbg1Decoder::decode(io::IO &io) const
+std::unique_ptr<pix::Grid> Cbg1Decoder::decode(io::Stream &stream) const
 {
-    auto width = io.read_u16_le();
-    auto height = io.read_u16_le();
-    auto bpp = io.read_u32_le();
-    io.skip(8);
+    auto width = stream.read_u16_le();
+    auto height = stream.read_u16_le();
+    auto bpp = stream.read_u32_le();
+    stream.skip(8);
 
-    auto huffman_size = io.read_u32_le();
-    io::BufferedIO decrypted_io(read_decrypted_data(io));
-    auto raw_data = io.read_to_eof();
+    auto huffman_size = stream.read_u32_le();
+    io::MemoryStream decrypted_stream(read_decrypted_data(stream));
+    auto raw_data = stream.read_to_eof();
 
-    auto freq_table = read_freq_table(decrypted_io, 256);
+    auto freq_table = read_freq_table(decrypted_stream, 256);
     auto tree = build_tree(freq_table, false);
 
     io::BitReader bit_reader(raw_data);

@@ -9,23 +9,23 @@ static const bstr magic = "\x00\x00\x04\x00"_b;
 
 bool GsImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid GsImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
-    auto size_comp = file.io.read_u32_le();
-    auto size_orig = file.io.read_u32_le();
-    auto header_size = file.io.read_u32_le();
-    file.io.skip(4);
-    auto width = file.io.read_u32_le();
-    auto height = file.io.read_u32_le();
-    auto depth = file.io.read_u32_le();
-    bool use_transparency = file.io.read_u32_le() > 0;
+    file.stream.skip(magic.size());
+    auto size_comp = file.stream.read_u32_le();
+    auto size_orig = file.stream.read_u32_le();
+    auto header_size = file.stream.read_u32_le();
+    file.stream.skip(4);
+    auto width = file.stream.read_u32_le();
+    auto height = file.stream.read_u32_le();
+    auto depth = file.stream.read_u32_le();
+    bool use_transparency = file.stream.read_u32_le() > 0;
 
-    file.io.seek(header_size);
-    auto data =  file.io.read(size_comp);
+    file.stream.seek(header_size);
+    auto data =  file.stream.read(size_comp);
     data = util::pack::lzss_decompress_bytewise(data, size_orig);
 
     if (depth == 8)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "io/io.h"
+#include "io/stream.h"
 
 namespace au {
 namespace io {
@@ -9,7 +9,7 @@ namespace io {
     class BitReader final
     {
     public:
-        BitReader(IO &io);
+        BitReader(Stream &stream);
         BitReader(const bstr &buffer);
         BitReader(const char *buffer, size_t buffer_size);
         ~BitReader();

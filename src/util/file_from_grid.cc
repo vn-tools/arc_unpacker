@@ -1,7 +1,7 @@
 #include "util/file_from_grid.h"
 #include <png.h>
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -10,8 +10,8 @@ using namespace au::util;
 static void write_handler(
     png_structp png_ptr, png_bytep input, png_size_t size)
 {
-    auto io = reinterpret_cast<io::IO*>(png_get_io_ptr(png_ptr));
-    io->write(bstr(input, size));
+    auto stream = reinterpret_cast<io::Stream*>(png_get_io_ptr(png_ptr));
+    stream->write(bstr(input, size));
 }
 
 static void flush_handler(png_structp)
@@ -53,7 +53,8 @@ std::unique_ptr<File> util::file_from_grid(
     png_set_filter(png_ptr, 0, PNG_FILTER_NONE);
     png_set_compression_level(png_ptr, 1);
 
-    png_set_write_fn(png_ptr, &output_file->io, &write_handler, &flush_handler);
+    png_set_write_fn(
+        png_ptr, &output_file->stream, &write_handler, &flush_handler);
     png_write_info(png_ptr, info_ptr);
 
     auto rows = std::make_unique<const u8*[]>(height);

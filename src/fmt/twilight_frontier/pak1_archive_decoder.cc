@@ -1,6 +1,6 @@
 #include "fmt/twilight_frontier/pak1_archive_decoder.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -25,17 +25,17 @@ static void decrypt(bstr &buffer, u8 a, u8 b, u8 delta)
     }
 }
 
-static std::unique_ptr<io::BufferedIO> read_raw_table(
-    io::IO &arc_io, size_t file_count)
+static std::unique_ptr<io::MemoryStream> read_raw_table(
+    io::Stream &arc_stream, size_t file_count)
 {
     size_t table_size = file_count * 0x6C;
-    if (table_size > arc_io.size() - arc_io.tell())
+    if (table_size > arc_stream.size() - arc_stream.tell())
         throw err::RecognitionError();
     if (table_size > file_count * (0x64 + 4 + 4))
         throw err::RecognitionError();
-    auto buffer = arc_io.read(table_size);
+    auto buffer = arc_stream.read(table_size);
     decrypt(buffer, 0x64, 0x64, 0x4D);
-    return std::make_unique<io::BufferedIO>(buffer);
+    return std::make_unique<io::MemoryStream>(buffer);
 }
 
 bool Pak1ArchiveDecoder::is_recognized_impl(File &arc_file) const
@@ -54,18 +54,18 @@ bool Pak1ArchiveDecoder::is_recognized_impl(File &arc_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     Pak1ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    u16 file_count = arc_file.io.read_u16_le();
-    if (file_count == 0 && arc_file.io.size() != 6)
+    u16 file_count = arc_file.stream.read_u16_le();
+    if (file_count == 0 && arc_file.stream.size() != 6)
         throw err::RecognitionError();
-    auto table_io = read_raw_table(arc_file.io, file_count);
+    auto table_stream = read_raw_table(arc_file.stream, file_count);
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = table_io->read_to_zero(0x64).str();
-        entry->size = table_io->read_u32_le();
-        entry->offset = table_io->read_u32_le();
-        if (entry->offset + entry->size > arc_file.io.size())
+        entry->name = table_stream->read_to_zero(0x64).str();
+        entry->size = table_stream->read_u32_le();
+        entry->offset = table_stream->read_u32_le();
+        if (entry->offset + entry->size > arc_file.stream.size())
             throw err::BadDataOffsetError();
         meta->entries.push_back(std::move(entry));
     }
@@ -79,8 +79,8 @@ std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<File>();
     output_file->name = entry->name;
 
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
 
     if (output_file->name.find("musicroom.dat") != std::string::npos)
     {
@@ -98,7 +98,7 @@ std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
         output_file->change_extension(".txt");
     }
 
-    output_file->io.write(data);
+    output_file->stream.write(data);
     return output_file;
 }
 

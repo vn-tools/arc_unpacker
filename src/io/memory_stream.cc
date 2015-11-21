@@ -1,11 +1,11 @@
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include <cstring>
 #include "err.h"
 
 using namespace au;
 using namespace au::io;
 
-struct BufferedIO::Priv final
+struct MemoryStream::Priv final
 {
     Priv(bstr buffer);
 
@@ -23,43 +23,44 @@ struct BufferedIO::Priv final
     size_t buffer_pos;
 };
 
-BufferedIO::Priv::Priv(bstr buffer) : buffer(buffer), buffer_pos(0)
+MemoryStream::Priv::Priv(bstr buffer) : buffer(buffer), buffer_pos(0)
 {
 }
 
-BufferedIO::BufferedIO() : p(new Priv(""_b))
+MemoryStream::MemoryStream() : p(new Priv(""_b))
 {
 }
 
-BufferedIO::BufferedIO(const bstr &buffer) : p(new Priv(buffer))
+MemoryStream::MemoryStream(const bstr &buffer) : p(new Priv(buffer))
 {
 }
 
-BufferedIO::BufferedIO(const char *buffer, size_t buffer_size)
+MemoryStream::MemoryStream(const char *buffer, size_t buffer_size)
     : p(new Priv(bstr(buffer, buffer_size)))
 {
 }
 
-BufferedIO::BufferedIO(IO &other_io, size_t size)
-    : p(new Priv(other_io.read(size)))
+MemoryStream::MemoryStream(Stream &other, size_t size)
+    : p(new Priv(other.read(size)))
 {
 }
 
-BufferedIO::BufferedIO(IO &other_io) : p(new Priv(other_io.read_to_eof()))
+MemoryStream::MemoryStream(Stream &other)
+    : p(new Priv(other.read_to_eof()))
 {
 }
 
-BufferedIO::~BufferedIO()
+MemoryStream::~MemoryStream()
 {
 }
 
-void BufferedIO::reserve(size_t size)
+void MemoryStream::reserve(size_t size)
 {
     if (p->buffer.size() < size)
         p->buffer.resize(size);
 }
 
-IO &BufferedIO::seek(size_t offset)
+Stream &MemoryStream::seek(size_t offset)
 {
     if (offset > p->buffer.size())
         throw err::EofError();
@@ -67,7 +68,7 @@ IO &BufferedIO::seek(size_t offset)
     return *this;
 }
 
-IO &BufferedIO::skip(int offset)
+Stream &MemoryStream::skip(int offset)
 {
     if (p->buffer_pos + offset > p->buffer.size())
         throw err::EofError();
@@ -75,22 +76,22 @@ IO &BufferedIO::skip(int offset)
     return *this;
 }
 
-u8 BufferedIO::read_u8()
+u8 MemoryStream::read_u8()
 {
     return p->read_primitive<u8>();
 }
 
-u16 BufferedIO::read_u16_le()
+u16 MemoryStream::read_u16_le()
 {
     return p->read_primitive<u16>();
 }
 
-u32 BufferedIO::read_u32_le()
+u32 MemoryStream::read_u32_le()
 {
     return p->read_primitive<u32>();
 }
 
-void BufferedIO::read_impl(void *destination, size_t size)
+void MemoryStream::read_impl(void *destination, size_t size)
 {
     // destination MUST exist and size MUST be at least 1
     if (p->buffer_pos + size > p->buffer.size())
@@ -101,7 +102,7 @@ void BufferedIO::read_impl(void *destination, size_t size)
     std::memcpy(destination_ptr, source_ptr, size);
 }
 
-void BufferedIO::write_impl(const void *source, size_t size)
+void MemoryStream::write_impl(const void *source, size_t size)
 {
     // source MUST exist and size MUST be at least 1
     reserve(p->buffer_pos + size);
@@ -112,17 +113,17 @@ void BufferedIO::write_impl(const void *source, size_t size)
         *destination_ptr++ = *source_ptr++;
 }
 
-size_t BufferedIO::tell() const
+size_t MemoryStream::tell() const
 {
     return p->buffer_pos;
 }
 
-size_t BufferedIO::size() const
+size_t MemoryStream::size() const
 {
     return p->buffer.size();
 }
 
-void BufferedIO::truncate(size_t new_size)
+void MemoryStream::truncate(size_t new_size)
 {
     p->buffer.resize(new_size);
     if (p->buffer_pos > new_size)

@@ -19,7 +19,7 @@ namespace
 
     struct BlockInfo final
     {
-        BlockInfo(io::IO &io);
+        BlockInfo(io::Stream &stream);
         void decompress(LzssDecompressor &decompressor, Header &header);
 
         bool mark;
@@ -28,10 +28,10 @@ namespace
     };
 }
 
-BlockInfo::BlockInfo(io::IO &io)
+BlockInfo::BlockInfo(io::Stream &stream)
 {
-    mark = io.read_u8() > 0;
-    data = io.read(io.read_u32_le());
+    mark = stream.read_u8() > 0;
+    data = stream.read(stream.read_u32_le());
 }
 
 void BlockInfo::decompress(LzssDecompressor &decompressor, Header &header)
@@ -77,11 +77,11 @@ static void load_pixel_block_row(
     }
 }
 
-static void read_pixels(io::IO &io, pix::Grid &pixels, Header &header)
+static void read_pixels(io::Stream &stream, pix::Grid &pixels, Header &header)
 {
     // ignore block sizes
     size_t block_count = (header.image_height - 1) / header.block_height + 1;
-    io.skip(4 * block_count);
+    stream.skip(4 * block_count);
 
     LzssDecompressor decompressor;
 
@@ -91,7 +91,7 @@ static void read_pixels(io::IO &io, pix::Grid &pixels, Header &header)
 
         for (auto channel : util::range(header.channel_count))
         {
-            auto block_info = std::make_unique<BlockInfo>(io);
+            auto block_info = std::make_unique<BlockInfo>(stream);
             if (!block_info->mark)
                 block_info->decompress(decompressor, header);
             channel_data.push_back(std::move(block_info));
@@ -104,14 +104,14 @@ static void read_pixels(io::IO &io, pix::Grid &pixels, Header &header)
 pix::Grid Tlg5Decoder::decode(File &file)
 {
     Header header;
-    header.channel_count = file.io.read_u8();
-    header.image_width = file.io.read_u32_le();
-    header.image_height = file.io.read_u32_le();
-    header.block_height = file.io.read_u32_le();
+    header.channel_count = file.stream.read_u8();
+    header.image_width = file.stream.read_u32_le();
+    header.image_height = file.stream.read_u32_le();
+    header.block_height = file.stream.read_u32_le();
     if (header.channel_count != 3 && header.channel_count != 4)
         throw err::UnsupportedChannelCountError(header.channel_count);
 
     pix::Grid pixels(header.image_width, header.image_height);
-    read_pixels(file.io, pixels, header);
+    read_pixels(file.stream, pixels, header);
     return pixels;
 }

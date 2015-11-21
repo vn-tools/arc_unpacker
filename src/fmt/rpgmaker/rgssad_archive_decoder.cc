@@ -10,35 +10,35 @@ static const u32 initial_key = 0xDEADCAFE;
 
 bool RgssadArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return arc_file.io.read(magic.size()) == magic;
+    return arc_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     RgssadArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(magic.size());
+    arc_file.stream.seek(magic.size());
     auto key = initial_key;
     auto meta = std::make_unique<ArchiveMeta>();
-    while (!arc_file.io.eof())
+    while (!arc_file.stream.eof())
     {
         auto entry = std::make_unique<rgs::ArchiveEntryImpl>();
 
-        size_t name_size = arc_file.io.read_u32_le() ^ key;
+        size_t name_size = arc_file.stream.read_u32_le() ^ key;
         key = rgs::advance_key(key);
-        entry->name = arc_file.io.read(name_size).str();
+        entry->name = arc_file.stream.read(name_size).str();
         for (auto i : util::range(name_size))
         {
             entry->name[i] ^= key;
             key = rgs::advance_key(key);
         }
 
-        entry->size = arc_file.io.read_u32_le() ^ key;
+        entry->size = arc_file.stream.read_u32_le() ^ key;
         key = rgs::advance_key(key);
 
         entry->key = key;
-        entry->offset = arc_file.io.tell();
+        entry->offset = arc_file.stream.tell();
 
-        arc_file.io.skip(entry->size);
+        arc_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));
     }
     return meta;

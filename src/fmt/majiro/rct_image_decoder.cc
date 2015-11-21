@@ -2,7 +2,7 @@
 #include <boost/algorithm/hex.hpp>
 #include <boost/lexical_cast.hpp>
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -39,7 +39,7 @@ static bstr decrypt(const bstr &input, const bstr &key)
 
 static bstr uncompress(const bstr &input, size_t width, size_t height)
 {
-    io::BufferedIO input_io(input);
+    io::MemoryStream input_stream(input);
 
     bstr output(width * height * 3);
 
@@ -61,19 +61,19 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
 
     if (output.size() < 3)
         return output;
-    *output_ptr++ = input_io.read_u8();
-    *output_ptr++ = input_io.read_u8();
-    *output_ptr++ = input_io.read_u8();
+    *output_ptr++ = input_stream.read_u8();
+    *output_ptr++ = input_stream.read_u8();
+    *output_ptr++ = input_stream.read_u8();
 
     while (output_ptr < output_end)
     {
-        auto flag = input_io.read_u8();
+        auto flag = input_stream.read_u8();
         if (flag & 0x80)
         {
             auto size = flag & 3;
             auto look_behind = (flag >> 2) & 0x1F;
             size = size == 3
-                ? (input_io.read_u16_le() + 4) * 3
+                ? (input_stream.read_u16_le() + 4) * 3
                 : size * 3 + 3;
             auto source_ptr = &output_ptr[shift_table[look_behind]];
             if (source_ptr < output_start || source_ptr + size >= output_end)
@@ -84,10 +84,10 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
         else
         {
             auto size = flag == 0x7F
-                ? (input_io.read_u16_le() + 0x80) * 3
+                ? (input_stream.read_u16_le() + 0x80) * 3
                 : flag * 3 + 3;
             while (size-- && output_ptr < output_end)
-                *output_ptr++ = input_io.read_u8();
+                *output_ptr++ = input_stream.read_u8();
         }
     }
 
@@ -134,15 +134,15 @@ void RctImageDecoder::set_key(const bstr &key)
 
 bool RctImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid RctImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
+    file.stream.skip(magic.size());
 
     bool encrypted;
-    auto tmp = file.io.read_u8();
+    auto tmp = file.stream.read_u8();
     if (tmp == 'S')
         encrypted = true;
     else if (tmp == 'C')
@@ -150,19 +150,19 @@ pix::Grid RctImageDecoder::decode_impl(File &file) const
     else
         throw err::NotSupportedError("Unexpected encryption flag");
 
-    int version = boost::lexical_cast<int>(file.io.read(2).str());
+    int version = boost::lexical_cast<int>(file.stream.read(2).str());
     if (version < 0 || version > 1)
         throw err::UnsupportedVersionError(version);
 
-    auto width = file.io.read_u32_le();
-    auto height = file.io.read_u32_le();
-    auto data_size = file.io.read_u32_le();
+    auto width = file.stream.read_u32_le();
+    auto height = file.stream.read_u32_le();
+    auto data_size = file.stream.read_u32_le();
 
     std::string base_file;
     if (version == 1)
-        base_file = file.io.read(file.io.read_u16_le()).str();
+        base_file = file.stream.read(file.stream.read_u16_le()).str();
 
-    auto data = file.io.read(data_size);
+    auto data = file.stream.read(data_size);
     if (encrypted)
     {
         if (p->key.empty())

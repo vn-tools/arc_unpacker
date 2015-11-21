@@ -17,43 +17,44 @@ static const bstr magic2 = "\x00\x01\x00\x03\x00\x00\x00\x00"_b;
 static const bstr magic3 = "Entis Rasterized Image"_b;
 
 static image::EriHeader read_header(
-    io::IO &io, common::SectionReader &section_reader)
+    io::Stream &stream, common::SectionReader &section_reader)
 {
     auto header_section = section_reader.get_section("Header");
-    io.seek(header_section.offset);
-    common::SectionReader header_section_reader(io);
+    stream.seek(header_section.offset);
+    common::SectionReader header_section_reader(stream);
     header_section = header_section_reader.get_section("ImageInf");
-    io.seek(header_section.offset);
+    stream.seek(header_section.offset);
 
     image::EriHeader header;
-    header.version = io.read_u32_le();
+    header.version = stream.read_u32_le();
     header.transformation
-        = static_cast<common::Transformation>(io.read_u32_le());
-    header.architecture = static_cast<common::Architecture>(io.read_u32_le());
+        = static_cast<common::Transformation>(stream.read_u32_le());
+    header.architecture
+        = static_cast<common::Architecture>(stream.read_u32_le());
 
-    header.format_type      = io.read_u32_le();
-    s32 width               = io.read_u32_le();
-    s32 height              = io.read_u32_le();
+    header.format_type      = stream.read_u32_le();
+    s32 width               = stream.read_u32_le();
+    s32 height              = stream.read_u32_le();
     header.width            = std::abs(width);
     header.height           = std::abs(height);
     header.flip             = height > 0;
-    header.bit_depth        = io.read_u32_le();
-    header.clipped_pixel    = io.read_u32_le();
-    header.sampling_flags   = io.read_u32_le();
-    header.quantumized_bits = io.read_u64_le();
-    header.allotted_bits    = io.read_u64_le();
-    header.blocking_degree  = io.read_u32_le();
-    header.lapped_block     = io.read_u32_le();
-    header.frame_transform  = io.read_u32_le();
-    header.frame_degree     = io.read_u32_le();
+    header.bit_depth        = stream.read_u32_le();
+    header.clipped_pixel    = stream.read_u32_le();
+    header.sampling_flags   = stream.read_u32_le();
+    header.quantumized_bits = stream.read_u64_le();
+    header.allotted_bits    = stream.read_u64_le();
+    header.blocking_degree  = stream.read_u32_le();
+    header.lapped_block     = stream.read_u32_le();
+    header.frame_transform  = stream.read_u32_le();
+    header.frame_degree     = stream.read_u32_le();
     return header;
 }
 
 bool EriImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic1.size()) == magic1
-        && file.io.read(magic2.size()) == magic2
-        && file.io.read(magic3.size()) == magic3;
+    return file.stream.read(magic1.size()) == magic1
+        && file.stream.read(magic2.size()) == magic2
+        && file.stream.read(magic3.size()) == magic3;
 }
 
 static bstr decode_pixel_data(
@@ -84,16 +85,16 @@ static bstr decode_pixel_data(
 
 pix::Grid EriImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(0x40);
+    file.stream.seek(0x40);
 
-    common::SectionReader section_reader(file.io);
-    auto header = read_header(file.io, section_reader);
+    common::SectionReader section_reader(file.stream);
+    auto header = read_header(file.stream, section_reader);
     if (header.version != 0x00020100 && header.version != 0x00020200)
         throw err::UnsupportedVersionError(header.version);
 
     auto stream_section = section_reader.get_section("Stream");
-    file.io.seek(stream_section.offset);
-    common::SectionReader stream_section_reader(file.io);
+    file.stream.seek(stream_section.offset);
+    common::SectionReader stream_section_reader(file.stream);
 
     auto pixel_data_sections = stream_section_reader.get_sections("ImageFrm");
     if (!pixel_data_sections.size())
@@ -104,8 +105,8 @@ pix::Grid EriImageDecoder::decode_impl(File &file) const
     for (auto i : util::range(pixel_data_sections.size()))
     {
         auto &pixel_data_section = pixel_data_sections[i];
-        file.io.seek(pixel_data_section.offset);
-        auto encoded_pixel_data = file.io.read(pixel_data_section.size);
+        file.stream.seek(pixel_data_section.offset);
+        auto encoded_pixel_data = file.stream.read(pixel_data_section.size);
         auto decoded_pixel_data = decode_pixel_data(header, encoded_pixel_data);
 
         pix::Format fmt;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "io/io.h"
+#include "io/stream.h"
 #include "pix/format.h"
 #include "pix/palette.h"
 #include "pix/pixel.h"
@@ -15,10 +15,10 @@ namespace pix {
         Grid(const Grid &other);
         Grid(size_t width, size_t height);
         Grid(size_t width, size_t height, const bstr &input, Format fmt);
-        Grid(size_t width, size_t height, io::IO &input_io, Format fmt);
+        Grid(size_t width, size_t height, io::Stream &input_stream, Format fmt);
         Grid(size_t width, size_t height, const bstr &input,
             const Palette &palette);
-        Grid(size_t width, size_t height, io::IO &input_io,
+        Grid(size_t width, size_t height, io::Stream &input_stream,
             const Palette &palette);
         ~Grid();
 

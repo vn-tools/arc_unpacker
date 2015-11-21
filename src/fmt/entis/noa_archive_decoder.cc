@@ -23,36 +23,37 @@ namespace
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta(
-    io::IO &io, std::string root = "")
+    io::Stream &stream, std::string root = "")
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
-    common::SectionReader section_reader(io);
+    common::SectionReader section_reader(stream);
     for (auto &section : section_reader.get_sections("DirEntry"))
     {
-        io.seek(section.offset);
-        auto entry_count = io.read_u32_le();
+        stream.seek(section.offset);
+        auto entry_count = stream.read_u32_le();
         for (auto i : util::range(entry_count))
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
-            entry->size = io.read_u64_le();
-            auto flags = io.read_u32_le();
-            entry->encrypted = io.read_u32_le() > 0;
-            entry->offset = section.offset + io.read_u64_le();
-            io.skip(8);
+            entry->size = stream.read_u64_le();
+            auto flags = stream.read_u32_le();
+            entry->encrypted = stream.read_u32_le() > 0;
+            entry->offset = section.offset + stream.read_u64_le();
+            stream.skip(8);
 
-            auto extra_size = io.read_u32_le();
+            auto extra_size = stream.read_u32_le();
             if (flags & 0x70)
-                entry->extra = io.read(extra_size);
+                entry->extra = stream.read(extra_size);
 
-            entry->name = io.read_to_zero(io.read_u32_le()).str();
+            entry->name = stream.read_to_zero(stream.read_u32_le()).str();
             if (root != "")
                 entry->name = root + "/" + entry->name;
 
             if (flags == 0x10)
             {
-                io.peek(entry->offset, [&]()
+                const auto sub_meta = read_meta(stream, entry->name);
+                stream.peek(entry->offset, [&]()
                 {
-                    for (auto &sub_entry : read_meta(io, entry->name)->entries)
+                    for (auto &sub_entry : sub_meta->entries)
                         meta->entries.push_back(std::move(sub_entry));
                 });
             }
@@ -70,16 +71,16 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
 
 bool NoaArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return arc_file.io.read(magic1.size()) == magic1
-        && arc_file.io.read(magic2.size()) == magic2
-        && arc_file.io.read(magic3.size()) == magic3;
+    return arc_file.stream.read(magic1.size()) == magic1
+        && arc_file.stream.read(magic2.size()) == magic2
+        && arc_file.stream.read(magic3.size()) == magic3;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     NoaArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(0x40);
-    return ::read_meta(arc_file.io);
+    arc_file.stream.seek(0x40);
+    return ::read_meta(arc_file.stream);
 }
 
 std::unique_ptr<File> NoaArchiveDecoder::read_file_impl(
@@ -92,8 +93,8 @@ std::unique_ptr<File> NoaArchiveDecoder::read_file_impl(
             "%s is encrypted, but encrypted files are not supported\n",
             entry->name.c_str()));
     }
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

@@ -1,6 +1,6 @@
 #include "fmt/amuse_craft/pgd_ge_image_decoder.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -15,18 +15,18 @@ static bstr decompress(const bstr &input, const size_t size_orig)
     auto output_ptr = output.get<u8>();
     const auto output_start = output.get<const u8>();
     const auto output_end = output.end<const u8>();
-    io::BufferedIO input_io(input);
+    io::MemoryStream input_stream(input);
 
     u16 control = 0;
     while (output_ptr < output_end)
     {
         control >>= 1;
         if (!(control & 0x100))
-            control = input_io.read_u8() | 0xFF00;
+            control = input_stream.read_u8() | 0xFF00;
 
         if (control & 1)
         {
-            u32 tmp = input_io.read_u16_le();
+            u32 tmp = input_stream.read_u16_le();
             size_t repetitions = 0;
             size_t look_behind = 0;
             if (tmp & 8)
@@ -36,7 +36,7 @@ static bstr decompress(const bstr &input, const size_t size_orig)
             }
             else
             {
-                tmp = (tmp << 8) | input_io.read_u8();
+                tmp = (tmp << 8) | input_stream.read_u8();
                 repetitions = ((((tmp & 0xFFC) >> 2) + 1) << 2) | (tmp & 3);
                 look_behind = tmp >> 12;
             }
@@ -49,8 +49,8 @@ static bstr decompress(const bstr &input, const size_t size_orig)
         }
         else
         {
-            size_t repetitions = input_io.read_u8();
-            const auto src = input_io.read(repetitions);
+            size_t repetitions = input_stream.read_u8();
+            const auto src = input_stream.read(repetitions);
             auto src_ptr = src.get<const u8>();
             while (output_ptr < output_end && repetitions--)
                 *output_ptr++ = *src_ptr++;
@@ -156,21 +156,21 @@ static bstr apply_delta_filter(
 
 bool PgdGeImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid PgdGeImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(magic.size());
-    file.io.skip(8);
-    auto width = file.io.read_u32_le();
-    auto height = file.io.read_u32_le();
-    file.io.skip(8);
-    auto filter_type = file.io.read_u16_le();
-    file.io.skip(2);
-    auto size_orig = file.io.read_u32_le();
-    auto size_comp = file.io.read_u32_le();
-    auto data = file.io.read(size_comp);
+    file.stream.seek(magic.size());
+    file.stream.skip(8);
+    auto width = file.stream.read_u32_le();
+    auto height = file.stream.read_u32_le();
+    file.stream.skip(8);
+    auto filter_type = file.stream.read_u16_le();
+    file.stream.skip(2);
+    auto size_orig = file.stream.read_u32_le();
+    auto size_comp = file.stream.read_u32_le();
+    auto data = file.stream.read(size_comp);
     data = decompress(data, size_orig);
 
     if (filter_type == 2)
@@ -181,14 +181,16 @@ pix::Grid PgdGeImageDecoder::decode_impl(File &file) const
 
     if (filter_type == 3)
     {
-        io::BufferedIO filter_io(data);
-        filter_io.skip(2);
-        const auto depth = filter_io.read_u16_le();
+        io::MemoryStream filter_stream(data);
+        filter_stream.skip(2);
+        const auto depth = filter_stream.read_u16_le();
         const auto channels = depth >> 3;
-        if (filter_io.read_u16_le() != width) throw err::BadDataSizeError();
-        if (filter_io.read_u16_le() != height) throw err::BadDataSizeError();
-        const auto delta_spec = filter_io.read(height);
-        data = filter_io.read_to_eof();
+        const auto width2 = filter_stream.read_u16_le();
+        const auto height2 = filter_stream.read_u16_le();
+        if (width2 != width || height2 != height)
+            throw err::BadDataSizeError();
+        const auto delta_spec = filter_stream.read(height);
+        data = filter_stream.read_to_eof();
         data = apply_delta_filter(delta_spec, data, width, height, channels);
 
         if (channels == 4)

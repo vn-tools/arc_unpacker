@@ -25,7 +25,7 @@ namespace
 
 bool Pak2ImageArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return arc_file.io.seek(4).read(magic.size()) == magic;
+    return arc_file.stream.seek(4).read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
@@ -33,23 +33,23 @@ std::unique_ptr<fmt::ArchiveMeta>
 {
     auto meta = std::make_unique<ArchiveMeta>();
 
-    arc_file.io.seek(0);
+    arc_file.stream.seek(0);
     ArchiveEntryImpl *last_entry = nullptr;
-    while (!arc_file.io.eof())
+    while (!arc_file.stream.eof())
     {
-        arc_file.io.skip(4);
-        const auto entry_magic = arc_file.io.read(4);
+        arc_file.stream.skip(4);
+        const auto entry_magic = arc_file.stream.read(4);
         if (entry_magic == magic)
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
-            arc_file.io.skip(18);
-            entry->bpp = arc_file.io.read_u16_le();
-            arc_file.io.skip(8);
-            entry->width = arc_file.io.read_u16_le();
-            entry->height = arc_file.io.read_u16_le();
-            entry->color_offset = arc_file.io.tell();
+            arc_file.stream.skip(18);
+            entry->bpp = arc_file.stream.read_u16_le();
+            arc_file.stream.skip(8);
+            entry->width = arc_file.stream.read_u16_le();
+            entry->height = arc_file.stream.read_u16_le();
+            entry->color_offset = arc_file.stream.tell();
             entry->size = entry->width * entry->height * entry->bpp >> 3;
-            arc_file.io.skip(entry->size);
+            arc_file.stream.skip(entry->size);
 
             if (!entry->width || !entry->height)
                 continue;
@@ -60,14 +60,14 @@ std::unique_ptr<fmt::ArchiveMeta>
         {
             if (!last_entry)
                 throw err::CorruptDataError("Mask found, but no color data");
-            arc_file.io.skip(28);
-            last_entry->mask_offset = arc_file.io.tell();
-            arc_file.io.skip(last_entry->width * last_entry->height);
+            arc_file.stream.skip(28);
+            last_entry->mask_offset = arc_file.stream.tell();
+            arc_file.stream.skip(last_entry->width * last_entry->height);
         }
         else if (entry_magic == end_magic)
         {
-            arc_file.io.skip(12);
-            if (!arc_file.io.eof())
+            arc_file.stream.skip(12);
+            if (!arc_file.stream.eof())
                 throw err::CorruptDataError("More data follow");
         }
         else
@@ -95,13 +95,15 @@ std::unique_ptr<File> Pak2ImageArchiveDecoder::read_file_impl(
     else
         throw err::UnsupportedBitDepthError(entry->bpp);
 
-    const auto data = arc_file.io.seek(entry->color_offset).read(entry->size);
+    const auto data = arc_file.stream
+        .seek(entry->color_offset)
+        .read(entry->size);
     auto image = pix::Grid(entry->width, entry->height, data, format);
     image.flip_vertically();
     if (entry->mask_offset)
     {
         const auto mask = arc_file
-            .io.seek(entry->mask_offset)
+            .stream.seek(entry->mask_offset)
             .read(entry->width * entry->height);
         const auto mask_image
             = pix::Grid(entry->width, entry->height, mask, pix::Format::Gray8);

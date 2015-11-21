@@ -22,8 +22,8 @@ static void warning_handler(png_structp png_ptr, png_const_charp warning_msg)
 
 static void read_handler(png_structp png_ptr, png_bytep output, png_size_t size)
 {
-    auto io = reinterpret_cast<io::IO*>(png_get_io_ptr(png_ptr));
-    const auto input = io->read(size);
+    auto stream = reinterpret_cast<io::Stream*>(png_get_io_ptr(png_ptr));
+    const auto input = stream->read(size);
     std::memcpy(output, input.get<u8>(), size);
 }
 
@@ -55,7 +55,7 @@ static pix::Grid decode(File &file, PngImageDecoder::ChunkHandler handler)
         warning_handler);
 
     png_set_read_user_chunk_fn(png_ptr, &handler, custom_chunk_handler);
-    png_set_read_fn(png_ptr, &file.io, &read_handler);
+    png_set_read_fn(png_ptr, &file.stream, &read_handler);
     png_read_png(
         png_ptr,
         info_ptr,
@@ -100,7 +100,7 @@ static pix::Grid decode(File &file, PngImageDecoder::ChunkHandler handler)
 
 bool PngImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid PngImageDecoder::decode_impl(File &file) const

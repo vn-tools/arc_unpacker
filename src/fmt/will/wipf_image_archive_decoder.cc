@@ -3,7 +3,7 @@
 #include <boost/filesystem.hpp>
 #include "err.h"
 #include "fmt/naming_strategies.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/file_from_grid.h"
 #include "util/range.h"
 
@@ -29,7 +29,7 @@ namespace
 // - non-standard initial dictionary pos
 // - non-standard minimal match size
 
-static bstr custom_lzss_decompress(io::IO &input_io, size_t output_size)
+static bstr custom_lzss_decompress(io::Stream &input, size_t output_size)
 {
     const size_t dict_size = 0x1000;
     size_t dict_pos = 1;
@@ -38,28 +38,28 @@ static bstr custom_lzss_decompress(io::IO &input_io, size_t output_size)
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<const u8>();
     u16 control = 0;
-    while (output_ptr < output_end && !input_io.eof())
+    while (output_ptr < output_end && !input.eof())
     {
         control >>= 1;
         if (!(control & 0x100))
-            control = input_io.read_u8() | 0xFF00;
+            control = input.read_u8() | 0xFF00;
         if (control & 1)
         {
-            if (input_io.eof())
+            if (input.eof())
                 break;
-            auto byte = input_io.read_u8();
+            auto byte = input.read_u8();
             dict[dict_pos++] = *output_ptr++ = byte;
             dict_pos %= dict_size;
             continue;
         }
-            if (input_io.eof())
-                break;
-        u8 di = input_io.read_u8();
-            if (input_io.eof())
-                break;
-        u8 input = input_io.read_u8();
-        u32 look_behind_pos = (((di << 8) | input) >> 4);
-        u16 repetitions = (input & 0xF) + 2;
+        if (input.eof())
+            break;
+        u8 di = input.read_u8();
+        if (input.eof())
+            break;
+        u8 tmp = input.read_u8();
+        u32 look_behind_pos = (((di << 8) | tmp) >> 4);
+        u16 repetitions = (tmp & 0xF) + 2;
         while (repetitions-- && output_ptr < output_end)
         {
             dict[dict_pos++] = *output_ptr++ = dict[look_behind_pos++];
@@ -72,8 +72,8 @@ static bstr custom_lzss_decompress(io::IO &input_io, size_t output_size)
 
 static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
 {
-    io::BufferedIO io(input);
-    return custom_lzss_decompress(io, output_size);
+    io::MemoryStream stream(input);
+    return custom_lzss_decompress(stream, output_size);
 }
 
 std::unique_ptr<fmt::INamingStrategy>
@@ -84,7 +84,7 @@ std::unique_ptr<fmt::INamingStrategy>
 
 bool WipfImageArchiveDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
@@ -93,18 +93,18 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto base_name = boost::filesystem::path(arc_file.name).filename().string();
     boost::algorithm::replace_all(base_name, ".", "-");
 
-    arc_file.io.seek(magic.size());
+    arc_file.stream.seek(magic.size());
     auto meta = std::make_unique<ArchiveMeta>();
-    auto file_count = arc_file.io.read_u16_le();
-    auto depth = arc_file.io.read_u16_le();
+    auto file_count = arc_file.stream.read_u16_le();
+    auto depth = arc_file.stream.read_u16_le();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->name = base_name;
-        entry->width = arc_file.io.read_u32_le();
-        entry->height = arc_file.io.read_u32_le();
-        arc_file.io.skip(12);
-        entry->size_comp = arc_file.io.read_u32_le();
+        entry->width = arc_file.stream.read_u32_le();
+        entry->height = arc_file.stream.read_u32_le();
+        arc_file.stream.skip(12);
+        entry->size_comp = arc_file.stream.read_u32_le();
         entry->size_orig = entry->width * entry->height * (depth >> 3);
         entry->depth = depth;
         meta->entries.push_back(std::move(entry));
@@ -120,12 +120,12 @@ std::unique_ptr<pix::Grid> WipfImageArchiveDecoder::read_image(
     if (entry->depth == 8)
     {
         palette.reset(new pix::Palette(
-            256, arc_file.io, pix::Format::BGRA8888));
+            256, arc_file.stream, pix::Format::BGRA8888));
         for (auto &c : *palette)
             c.a ^= 0xFF;
     }
 
-    auto data = arc_file.io.read(entry->size_comp);
+    auto data = arc_file.stream.read(entry->size_comp);
     data = custom_lzss_decompress(data, entry->size_orig);
 
     auto w = entry->width;

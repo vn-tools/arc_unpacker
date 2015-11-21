@@ -9,20 +9,20 @@ static const bstr magic = "LLIF"_b;
 
 bool Ex3ImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<File> Ex3ImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
+    file.stream.skip(magic.size());
 
     bstr output;
-    bstr table0 = file.io.read(0x40);
+    bstr table0 = file.stream.read(0x40);
     bstr table1(256);
     bstr table2(256);
 
-    u8 b = file.io.read_u8();
-    while (file.io.tell() < file.io.size())
+    u8 b = file.stream.read_u8();
+    while (file.stream.tell() < file.stream.size())
     {
         for (auto j : util::range(256))
             table1[j] = j;
@@ -41,17 +41,17 @@ std::unique_ptr<File> Ex3ImageDecoder::decode_impl(File &file) const
             {
                 if (offset >= 256)
                     throw err::BadDataOffsetError();
-                table1[offset] = file.io.read_u8();
+                table1[offset] = file.stream.read_u8();
                 if (offset != table1[offset])
-                    table2[offset] = file.io.read_u8();
+                    table2[offset] = file.stream.read_u8();
                 ++offset;
             }
             if (offset == 256)
                 break;
-            b = file.io.read_u8();
+            b = file.stream.read_u8();
         }
 
-        int left = file.io.read_u16_be();
+        int left = file.stream.read_u16_be();
         offset = 0;
         while (true)
         {
@@ -67,7 +67,7 @@ std::unique_ptr<File> Ex3ImageDecoder::decode_impl(File &file) const
                 if (!left)
                     break;
                 --left;
-                b = file.io.read_u8();
+                b = file.stream.read_u8();
             }
 
             if (b == table1[b])
@@ -82,12 +82,12 @@ std::unique_ptr<File> Ex3ImageDecoder::decode_impl(File &file) const
                 table0[offset++] = table1[b];
             }
         }
-        if (file.io.tell() < file.io.size())
-            b = file.io.read_u8();
+        if (file.stream.tell() < file.stream.size())
+            b = file.stream.read_u8();
     }
 
     auto output_file = std::make_unique<File>();
-    output_file->io.write(output);
+    output_file->stream.write(output);
     output_file->name = file.name;
     output_file->change_extension(".bmp");
     return output_file;

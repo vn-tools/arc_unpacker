@@ -17,20 +17,20 @@ namespace
     };
 }
 
-static pix::Palette read_palette(io::IO &io, size_t size, size_t depth)
+static pix::Palette read_palette(io::Stream &stream, size_t size, size_t depth)
 {
     if (depth == 32)
-        return pix::Palette(size, io.read(size * 4), pix::Format::BGRA8888);
+        return pix::Palette(size, stream.read(size * 4), pix::Format::BGRA8888);
 
     if (depth == 24)
-        return pix::Palette(size, io.read(size * 3), pix::Format::BGR888);
+        return pix::Palette(size, stream.read(size * 3), pix::Format::BGR888);
 
     if (depth == 16 || depth == 15)
     {
         pix::Palette palette(size);
         for (auto i : util::range(size))
         {
-            palette[i] = pix::read<pix::Format::BGR555X>(io);
+            palette[i] = pix::read<pix::Format::BGR555X>(stream);
             palette[i].a = 0xFF;
         }
         return palette;
@@ -40,35 +40,41 @@ static pix::Palette read_palette(io::IO &io, size_t size, size_t depth)
 }
 
 static bstr read_compressed_pixel_data(
-    io::IO &io, const size_t width, const size_t height, const size_t channels)
+    io::Stream &stream,
+    const size_t width,
+    const size_t height,
+    const size_t channels)
 {
     const auto size_orig = width * height * channels;
     bstr output;
     output.reserve(size_orig);
     while (output.size() < size_orig)
     {
-        const auto control = io.read_u8();
+        const auto control = stream.read_u8();
         const auto repetitions = (control & 0x7F) + 1;
         const bool use_rle = control & 0x80;
         if (use_rle)
         {
-            const auto chunk = io.read(channels);
+            const auto chunk = stream.read(channels);
             for (auto i : util::range(repetitions))
                 output += chunk;
         }
         else
         {
             for (auto i : util::range(repetitions))
-                output += io.read(channels);
+                output += stream.read(channels);
         }
     }
     return output;
 }
 
 static bstr read_uncompressed_pixel_data(
-    io::IO &io, const size_t width, const size_t height, const size_t channels)
+    io::Stream &stream,
+    const size_t width,
+    const size_t height,
+    const size_t channels)
 {
-    return io.read(width * height * channels);
+    return stream.read(width * height * channels);
 }
 
 static pix::Grid get_pixels_from_palette(
@@ -117,20 +123,20 @@ bool TgaImageDecoder::is_recognized_impl(File &file) const
 
 pix::Grid TgaImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(0);
-    const auto id_size = file.io.read_u8();
-    const bool use_palette = file.io.read_u8() == 1;
-    const auto data_type = file.io.read_u8();
-    const auto palette_start = file.io.read_u16_le();
-    const auto palette_size = file.io.read_u16_le() - palette_start;
-    const auto palette_depth = file.io.read_u8();
-    file.io.skip(4); // x and y
-    const auto width = file.io.read_u16_le();
-    const auto height = file.io.read_u16_le();
-    auto depth = file.io.read_u8();
+    file.stream.seek(0);
+    const auto id_size = file.stream.read_u8();
+    const bool use_palette = file.stream.read_u8() == 1;
+    const auto data_type = file.stream.read_u8();
+    const auto palette_start = file.stream.read_u16_le();
+    const auto palette_size = file.stream.read_u16_le() - palette_start;
+    const auto palette_depth = file.stream.read_u8();
+    file.stream.skip(4); // x and y
+    const auto width = file.stream.read_u16_le();
+    const auto height = file.stream.read_u16_le();
+    auto depth = file.stream.read_u8();
     if (!depth)
         depth = 32;
-    const auto flags = file.io.read_u8();
+    const auto flags = file.stream.read_u8();
 
     const auto channels = depth / 8;
     const bool flip_horizontally = flags & Flags::RightToLeft;
@@ -140,18 +146,18 @@ pix::Grid TgaImageDecoder::decode_impl(File &file) const
         = flags & Flags::Interleave2 ? 2
         : flags & Flags::Interleave4 ? 4 : 1;
 
-    file.io.skip(id_size);
+    file.stream.skip(id_size);
 
     std::unique_ptr<pix::Palette> palette;
     if (use_palette)
     {
         palette = std::make_unique<pix::Palette>(
-            read_palette(file.io, palette_size, palette_depth));
+            read_palette(file.stream, palette_size, palette_depth));
     }
 
     const auto data = compressed
-        ? read_compressed_pixel_data(file.io, width, height, channels)
-        : read_uncompressed_pixel_data(file.io, width, height, channels);
+        ? read_compressed_pixel_data(file.stream, width, height, channels)
+        : read_uncompressed_pixel_data(file.stream, width, height, channels);
 
     pix::Grid pixels = use_palette
         ? get_pixels_from_palette(data, width, height, depth, *palette)

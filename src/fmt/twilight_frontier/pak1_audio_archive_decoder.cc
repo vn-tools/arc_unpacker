@@ -25,40 +25,40 @@ bool Pak1AudioArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     if (!arc_file.has_extension("dat"))
         return false;
-    size_t file_count = arc_file.io.read_u32_le();
+    size_t file_count = arc_file.stream.read_u32_le();
     for (auto i : util::range(file_count))
     {
-        if (!arc_file.io.read_u8())
+        if (!arc_file.stream.read_u8())
             continue;
-        auto size = arc_file.io.read_u32_le();
-        arc_file.io.skip(18);
-        arc_file.io.skip(size);
+        auto size = arc_file.stream.read_u32_le();
+        arc_file.stream.skip(18);
+        arc_file.stream.skip(size);
     }
-    return arc_file.io.eof();
+    return arc_file.stream.eof();
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     Pak1AudioArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    auto file_count = arc_file.io.read_u32_le();
+    auto file_count = arc_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        if (!arc_file.io.read_u8())
+        if (!arc_file.stream.read_u8())
             continue;
 
-        entry->size = arc_file.io.read_u32_le();
-        entry->format = arc_file.io.read_u16_le();
-        entry->channel_count = arc_file.io.read_u16_le();
-        entry->sample_rate = arc_file.io.read_u32_le();
-        entry->byte_rate = arc_file.io.read_u32_le();
-        entry->block_align = arc_file.io.read_u16_le();
-        entry->bits_per_sample = arc_file.io.read_u16_le();
-        arc_file.io.skip(2);
+        entry->size = arc_file.stream.read_u32_le();
+        entry->format = arc_file.stream.read_u16_le();
+        entry->channel_count = arc_file.stream.read_u16_le();
+        entry->sample_rate = arc_file.stream.read_u32_le();
+        entry->byte_rate = arc_file.stream.read_u32_le();
+        entry->block_align = arc_file.stream.read_u16_le();
+        entry->bits_per_sample = arc_file.stream.read_u16_le();
+        arc_file.stream.skip(2);
 
-        entry->offset = arc_file.io.tell();
-        arc_file.io.skip(entry->size);
+        entry->offset = arc_file.stream.tell();
+        arc_file.stream.skip(entry->size);
         entry->name = util::format("%04d", i);
         meta->entries.push_back(std::move(entry));
     }
@@ -69,12 +69,12 @@ std::unique_ptr<File> Pak1AudioArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
+    arc_file.stream.seek(entry->offset);
     return util::file_from_samples(
         entry->channel_count,
         entry->bits_per_sample,
         entry->sample_rate,
-        arc_file.io.read(entry->size),
+        arc_file.stream.read(entry->size),
         entry->name);
 }
 

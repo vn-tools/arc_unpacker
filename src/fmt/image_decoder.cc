@@ -27,7 +27,7 @@ bool ImageDecoder::is_recognized(File &file) const
 {
     try
     {
-        file.io.seek(0);
+        file.stream.seek(0);
         return is_recognized_impl(file);
     }
     catch (...)
@@ -49,6 +49,6 @@ pix::Grid ImageDecoder::decode(File &file) const
 {
     if (!is_recognized(file))
         throw err::RecognitionError();
-    file.io.seek(0);
+    file.stream.seek(0);
     return decode_impl(file);
 }

@@ -1,5 +1,5 @@
 #include "fmt/active_soft/custom_bit_reader.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 
 using namespace au;
 using namespace au::fmt::active_soft;
@@ -7,11 +7,11 @@ using namespace au::fmt::active_soft;
 struct CustomBitReader::Priv final
 {
     Priv(const bstr &input);
-    io::BufferedIO input_io;
+    io::MemoryStream input_stream;
     u32 value;
 };
 
-CustomBitReader::Priv::Priv(const bstr &input) : input_io(input), value(0)
+CustomBitReader::Priv::Priv(const bstr &input) : input_stream(input), value(0)
 {
 }
 
@@ -31,7 +31,7 @@ u32 CustomBitReader::get(size_t bits)
     {
         value >>= 1;
         if (!(value & 0xF00))
-            value = p->input_io.read_u8() | 0xFF00;
+            value = p->input_stream.read_u8() | 0xFF00;
         ret <<= 1;
         ret |= value & 1;
     }

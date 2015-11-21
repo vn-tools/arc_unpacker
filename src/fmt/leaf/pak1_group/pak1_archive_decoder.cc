@@ -130,22 +130,23 @@ bool Pak1ArchiveDecoder::is_recognized_impl(File &arc_file) const
         return false;
     auto last_entry = static_cast<const ArchiveEntryImpl*>(
         meta->entries[meta->entries.size() - 1].get());
-    return last_entry->offset + last_entry->size == arc_file.io.size();
+    return last_entry->offset + last_entry->size == arc_file.stream.size();
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     Pak1ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    auto file_count = arc_file.io.read_u32_le();
+    auto file_count = arc_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->already_unpacked = false;
-        entry->name = util::sjis_to_utf8(arc_file.io.read_to_zero(16)).str();
-        entry->size = arc_file.io.read_u32_le();
-        entry->compressed = arc_file.io.read_u32_le() > 0;
-        entry->offset = arc_file.io.read_u32_le();
+        entry->name = util::sjis_to_utf8(
+            arc_file.stream.read_to_zero(16)).str();
+        entry->size = arc_file.stream.read_u32_le();
+        entry->compressed = arc_file.stream.read_u32_le() > 0;
+        entry->offset = arc_file.stream.read_u32_le();
         if (entry->size)
             meta->entries.push_back(std::move(entry));
     }
@@ -165,19 +166,19 @@ std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
     if (entry->already_unpacked)
         return nullptr;
 
-    arc_file.io.seek(entry->offset);
+    arc_file.stream.seek(entry->offset);
     bstr data;
     if (entry->compressed)
     {
-        auto size_comp = arc_file.io.read_u32_le();
-        auto size_orig = arc_file.io.read_u32_le();
-        data = arc_file.io.read(size_comp - 8);
+        auto size_comp = arc_file.stream.read_u32_le();
+        auto size_orig = arc_file.stream.read_u32_le();
+        data = arc_file.stream.read(size_comp - 8);
         data = custom_lzss_decompress(
             data, size_orig, p->version == 1 ? 0x1000 : 0x800);
     }
     else
     {
-        data = arc_file.io.read(entry->size);
+        data = arc_file.stream.read(entry->size);
     }
 
     return std::make_unique<File>(entry->name, data);

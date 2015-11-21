@@ -11,8 +11,8 @@ bool P16AudioDecoder::is_recognized_impl(File &file) const
 
 std::unique_ptr<File> P16AudioDecoder::decode_impl(File &file) const
 {
-    file.io.seek(0);
-    const auto samples = file.io.read_to_eof();
+    file.stream.seek(0);
+    const auto samples = file.stream.read_to_eof();
     sfx::Wave wave;
     wave.data.samples = samples;
     return util::file_from_wave(wave, file.name);

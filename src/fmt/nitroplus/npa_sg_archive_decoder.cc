@@ -1,6 +1,6 @@
 #include "fmt/nitroplus/npa_sg_archive_decoder.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -28,29 +28,30 @@ bool NpaSgArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     if (!arc_file.has_extension("npa"))
         return false;
-    size_t table_size = arc_file.io.read_u32_le();
-    return table_size < arc_file.io.size();
+    size_t table_size = arc_file.stream.read_u32_le();
+    return table_size < arc_file.stream.size();
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     NpaSgArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    size_t table_size = arc_file.io.read_u32_le();
-    auto table_data = arc_file.io.read(table_size);
+    size_t table_size = arc_file.stream.read_u32_le();
+    auto table_data = arc_file.stream.read(table_size);
     decrypt(table_data);
-    io::BufferedIO table_io(table_data);
+    io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    size_t file_count = table_io.read_u32_le();
+    size_t file_count = table_stream.read_u32_le();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
+        const auto name_size = table_stream.read_u32_le();
         entry->name = util::convert_encoding(
-            table_io.read(table_io.read_u32_le()), "utf-16le", "utf-8").str();
-        entry->size = table_io.read_u32_le();
-        entry->offset = table_io.read_u32_le();
-        table_io.skip(4);
-        if (entry->offset + entry->size > arc_file.io.size())
+            table_stream.read(name_size), "utf-16le", "utf-8").str();
+        entry->size = table_stream.read_u32_le();
+        entry->offset = table_stream.read_u32_le();
+        table_stream.skip(4);
+        if (entry->offset + entry->size > arc_file.stream.size())
             throw err::BadDataOffsetError();
         meta->entries.push_back(std::move(entry));
     }
@@ -61,8 +62,8 @@ std::unique_ptr<File> NpaSgArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     decrypt(data);
     return std::make_unique<File>(entry->name, data);
 }

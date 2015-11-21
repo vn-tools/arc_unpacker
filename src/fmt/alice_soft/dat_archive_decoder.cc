@@ -35,14 +35,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto arc_name = arc_file.name;
     boost::algorithm::to_lower(arc_name);
 
-    auto header_size = (arc_file.io.read_u16_le() - 1) * 256;
+    auto header_size = (arc_file.stream.read_u16_le() - 1) * 256;
     auto meta = std::make_unique<ArchiveMeta>();
 
     ArchiveEntryImpl *last_entry = nullptr;
     bool finished = false;
     for (auto i : util::range((header_size / 2) - 1))
     {
-        size_t offset = arc_file.io.read_u16_le();
+        size_t offset = arc_file.stream.read_u16_le();
         if (offset == 0)
         {
             finished = true;
@@ -54,9 +54,9 @@ std::unique_ptr<fmt::ArchiveMeta>
             throw err::CorruptDataError("Expected offsets to be sorted");
         if (finished)
             throw err::CorruptDataError("Expected remaining offsets to be 0");
-        if (offset > arc_file.io.size())
+        if (offset > arc_file.stream.size())
             throw err::BadDataOffsetError();
-        if (offset == arc_file.io.size())
+        if (offset == arc_file.stream.size())
             continue;
 
         // necessary for VSP recognition
@@ -80,7 +80,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     }
 
     if (last_entry)
-        last_entry->size = arc_file.io.size() - last_entry->offset;
+        last_entry->size = arc_file.stream.size() - last_entry->offset;
     else
         throw err::CorruptDataError("File table cannot be empty");
 
@@ -91,8 +91,8 @@ std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

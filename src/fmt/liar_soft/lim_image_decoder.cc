@@ -11,24 +11,24 @@ static const bstr magic = "LM"_b;
 
 bool LimImageDecoder::is_recognized_impl(File &file) const
 {
-    if (file.io.read(magic.size()) != magic)
+    if (file.stream.read(magic.size()) != magic)
         return false;
-    if (!(file.io.read_u16_le() & 0x10))
+    if (!(file.stream.read_u16_le() & 0x10))
         return false;
     return true;
 }
 
 pix::Grid LimImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(magic.size());
-    const auto version = file.io.read_u16_le();
-    const auto depth = file.io.read_u16_le();
-    const auto bits_per_channel = file.io.read_u16_le();
+    file.stream.seek(magic.size());
+    const auto version = file.stream.read_u16_le();
+    const auto depth = file.stream.read_u16_le();
+    const auto bits_per_channel = file.stream.read_u16_le();
     if (bits_per_channel != 8)
         throw err::UnsupportedBitDepthError(bits_per_channel);
 
-    const auto width = file.io.read_u32_le();
-    const auto height = file.io.read_u32_le();
+    const auto width = file.stream.read_u32_le();
+    const auto height = file.stream.read_u32_le();
     const auto canvas_size = width * height;
 
     if (!(version & 0xF))
@@ -37,13 +37,13 @@ pix::Grid LimImageDecoder::decode_impl(File &file) const
         throw err::UnsupportedBitDepthError(depth);
 
     bstr output(canvas_size * 2);
-    cg_decompress(output, 0, 2, file.io, 2);
+    cg_decompress(output, 0, 2, file.stream, 2);
     pix::Grid pixels(width, height, output, pix::Format::BGR565);
 
-    if (!file.io.eof())
+    if (!file.stream.eof())
     {
         output.resize(canvas_size);
-        cg_decompress(output, 0, 1, file.io, 1);
+        cg_decompress(output, 0, 1, file.stream, 1);
         for (auto &c : output)
             c ^= 0xFF;
         pix::Grid mask(width, height, output, pix::Format::Gray8);

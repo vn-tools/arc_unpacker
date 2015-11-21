@@ -1,8 +1,8 @@
 #include "file.h"
 #include <boost/algorithm/string.hpp>
 #include <string>
-#include "io/buffered_io.h"
-#include "io/file_io.h"
+#include "io/memory_stream.h"
+#include "io/file_stream.h"
 
 using namespace au;
 
@@ -39,22 +39,22 @@ static void change_extension(
 }
 
 File::File(const boost::filesystem::path &path, const io::FileMode mode)
-    : io(*new io::FileIO(path, mode)), name(path.string())
+    : stream(*new io::FileStream(path, mode)), name(path.string())
 {
 }
 
 File::File(const std::string &name, const bstr &data)
-    : io(*new io::BufferedIO(data)), name(name)
+    : stream(*new io::MemoryStream(data)), name(name)
 {
 }
 
-File::File() : io(*new io::BufferedIO)
+File::File() : stream(*new io::MemoryStream)
 {
 }
 
 File::~File()
 {
-    delete &io;
+    delete &stream;
 }
 
 bool File::has_extension()
@@ -78,17 +78,17 @@ void File::change_extension(const std::string &new_extension)
 
 void File::guess_extension()
 {
-    const size_t old_pos = io.tell();
+    const size_t old_pos = stream.tell();
     for (auto &def : magic_definitions)
     {
         const std::string ext = def.first;
         const bstr magic = def.second;
-        io.seek(0);
-        if (io.size() < magic.size()) continue;
-        if (io.read(magic.size()) != magic) continue;
+        stream.seek(0);
+        if (stream.size() < magic.size()) continue;
+        if (stream.read(magic.size()) != magic) continue;
         change_extension(ext);
-        io.seek(old_pos);
+        stream.seek(old_pos);
         return;
     }
-    io.seek(old_pos);
+    stream.seek(old_pos);
 }

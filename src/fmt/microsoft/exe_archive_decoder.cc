@@ -18,7 +18,7 @@ namespace
 
     struct DosHeader final
     {
-        DosHeader(io::IO &io);
+        DosHeader(io::Stream &stream);
 
         bstr magic;
         u16 e_cblp;
@@ -41,7 +41,7 @@ namespace
 
     struct ImageOptionalHeader final
     {
-        ImageOptionalHeader(io::IO &io);
+        ImageOptionalHeader(io::Stream &stream);
 
         u16 magic;
         u8 major_linker_version;
@@ -77,7 +77,7 @@ namespace
 
     struct ImageFileHeader final
     {
-        ImageFileHeader(io::IO &io);
+        ImageFileHeader(io::Stream &stream);
 
         u16 machine;
         u16 number_of_sections;
@@ -90,7 +90,7 @@ namespace
 
     struct ImageNtHeader final
     {
-        ImageNtHeader(io::IO &io);
+        ImageNtHeader(io::Stream &stream);
 
         u32 signature;
         ImageFileHeader file_header;
@@ -99,7 +99,7 @@ namespace
 
     struct ImageDataDir final
     {
-        ImageDataDir(io::IO &io);
+        ImageDataDir(io::Stream &stream);
 
         u32 virtual_address;
         u32 size;
@@ -107,7 +107,7 @@ namespace
 
     struct ImageSectionHeader final
     {
-        ImageSectionHeader(io::IO &io);
+        ImageSectionHeader(io::Stream &stream);
 
         std::string name;
         u32 virtual_size;
@@ -124,7 +124,7 @@ namespace
 
     struct ImageResourceDir final
     {
-        ImageResourceDir(io::IO &io);
+        ImageResourceDir(io::Stream &stream);
 
         u32 characteristics;
         u32 timestamp;
@@ -136,7 +136,7 @@ namespace
 
     struct ImageResourceDirEntry final
     {
-        ImageResourceDirEntry(io::IO &io);
+        ImageResourceDirEntry(io::Stream &stream);
 
         u32 offset_to_data;
         bool name_is_string;
@@ -148,7 +148,7 @@ namespace
 
     struct ImageResourceDataEntry final
     {
-        ImageResourceDataEntry(io::IO &io);
+        ImageResourceDataEntry(io::Stream &stream);
 
         u32 offset_to_data;
         u32 size;
@@ -178,9 +178,9 @@ namespace
     struct ResourceCrawlerArgs final
     {
         ResourceCrawlerArgs(
-            io::IO &, fmt::ArchiveMeta &, const RvaHelper &, size_t);
+            io::Stream &, fmt::ArchiveMeta &, const RvaHelper &, size_t);
 
-        io::IO &io;
+        io::Stream &stream;
         fmt::ArchiveMeta &meta;
         const RvaHelper &rva_helper;
         size_t base_offset;
@@ -204,125 +204,127 @@ namespace
 // keep flat hierarchy for unpacked files
 static const std::string path_sep = "／";
 
-DosHeader::DosHeader(io::IO &io)
+DosHeader::DosHeader(io::Stream &stream)
 {
-    magic      = io.read(2);
-    e_cblp     = io.read_u16_le();
-    e_cp       = io.read_u16_le();
-    e_crlc     = io.read_u16_le();
-    e_cparhdr  = io.read_u16_le();
-    e_minalloc = io.read_u16_le();
-    e_maxalloc = io.read_u16_le();
-    e_ss       = io.read_u16_le();
-    e_sp       = io.read_u16_le();
-    e_csum     = io.read_u16_le();
-    e_ip       = io.read_u16_le();
-    e_cs       = io.read_u16_le();
-    e_lfarlc   = io.read_u16_le();
-    e_ovno     = io.read_u16_le();
-    io.skip(2 * 4);
-    e_oemid    = io.read_u16_le();
-    e_oeminfo  = io.read_u16_le();
-    io.skip(2 * 10);
-    e_lfanew   = io.read_u32_le();
+    magic      = stream.read(2);
+    e_cblp     = stream.read_u16_le();
+    e_cp       = stream.read_u16_le();
+    e_crlc     = stream.read_u16_le();
+    e_cparhdr  = stream.read_u16_le();
+    e_minalloc = stream.read_u16_le();
+    e_maxalloc = stream.read_u16_le();
+    e_ss       = stream.read_u16_le();
+    e_sp       = stream.read_u16_le();
+    e_csum     = stream.read_u16_le();
+    e_ip       = stream.read_u16_le();
+    e_cs       = stream.read_u16_le();
+    e_lfarlc   = stream.read_u16_le();
+    e_ovno     = stream.read_u16_le();
+    stream.skip(2 * 4);
+    e_oemid    = stream.read_u16_le();
+    e_oeminfo  = stream.read_u16_le();
+    stream.skip(2 * 10);
+    e_lfanew   = stream.read_u32_le();
 }
 
-ImageOptionalHeader::ImageOptionalHeader(io::IO &io)
+ImageOptionalHeader::ImageOptionalHeader(io::Stream &stream)
 {
-    magic                          = io.read_u16_le();
-    major_linker_version           = io.read_u8();
-    minor_linker_version           = io.read_u8();
-    size_of_code                   = io.read_u32_le();
-    size_of_initialized_data       = io.read_u32_le();
-    size_of_uninitialized_data     = io.read_u32_le();
-    address_of_entry_point         = io.read_u32_le();
-    base_of_code                   = io.read_u32_le();
-    base_of_data                   = io.read_u32_le();
-    image_base                     = io.read_u32_le();
-    section_alignment              = io.read_u32_le();
-    file_alignment                 = io.read_u32_le();
-    major_operating_system_version = io.read_u16_le();
-    minor_operating_system_version = io.read_u16_le();
-    major_image_version            = io.read_u16_le();
-    minor_image_version            = io.read_u16_le();
-    major_subsystem_version        = io.read_u16_le();
-    minor_subsystem_version        = io.read_u16_le();
-    win32_version_value            = io.read_u32_le();
-    size_of_image                  = io.read_u32_le();
-    size_of_headers                = io.read_u32_le();
-    checksum                       = io.read_u32_le();
-    subsystem                      = io.read_u16_le();
-    dll_characteristics            = io.read_u16_le();
+    magic                          = stream.read_u16_le();
+    major_linker_version           = stream.read_u8();
+    minor_linker_version           = stream.read_u8();
+    size_of_code                   = stream.read_u32_le();
+    size_of_initialized_data       = stream.read_u32_le();
+    size_of_uninitialized_data     = stream.read_u32_le();
+    address_of_entry_point         = stream.read_u32_le();
+    base_of_code                   = stream.read_u32_le();
+    base_of_data                   = stream.read_u32_le();
+    image_base                     = stream.read_u32_le();
+    section_alignment              = stream.read_u32_le();
+    file_alignment                 = stream.read_u32_le();
+    major_operating_system_version = stream.read_u16_le();
+    minor_operating_system_version = stream.read_u16_le();
+    major_image_version            = stream.read_u16_le();
+    minor_image_version            = stream.read_u16_le();
+    major_subsystem_version        = stream.read_u16_le();
+    minor_subsystem_version        = stream.read_u16_le();
+    win32_version_value            = stream.read_u32_le();
+    size_of_image                  = stream.read_u32_le();
+    size_of_headers                = stream.read_u32_le();
+    checksum                       = stream.read_u32_le();
+    subsystem                      = stream.read_u16_le();
+    dll_characteristics            = stream.read_u16_le();
     bool pe64 = magic == 0x20B;
     if (pe64)
     {
-        size_of_stack_reserve = io.read_u64_le();
-        size_of_stack_commit  = io.read_u64_le();
-        size_of_heap_reserve  = io.read_u64_le();
-        size_of_heap_commit   = io.read_u64_le();
+        size_of_stack_reserve = stream.read_u64_le();
+        size_of_stack_commit  = stream.read_u64_le();
+        size_of_heap_reserve  = stream.read_u64_le();
+        size_of_heap_commit   = stream.read_u64_le();
     }
     else
     {
-        size_of_stack_reserve = io.read_u32_le();
-        size_of_stack_commit  = io.read_u32_le();
-        size_of_heap_reserve  = io.read_u32_le();
-        size_of_heap_commit   = io.read_u32_le();
+        size_of_stack_reserve = stream.read_u32_le();
+        size_of_stack_commit  = stream.read_u32_le();
+        size_of_heap_reserve  = stream.read_u32_le();
+        size_of_heap_commit   = stream.read_u32_le();
     }
-    loader_flags = io.read_u32_le();
-    number_of_rva_and_sizes = io.read_u32_le();
+    loader_flags = stream.read_u32_le();
+    number_of_rva_and_sizes = stream.read_u32_le();
 }
 
-ImageFileHeader::ImageFileHeader(io::IO &io)
+ImageFileHeader::ImageFileHeader(io::Stream &stream)
 {
-    machine = io.read_u16_le();
-    number_of_sections = io.read_u16_le();
-    timestamp = io.read_u32_le();
-    pointer_to_symbol_table = io.read_u32_le();
-    number_of_symbols = io.read_u32_le();
-    size_of_optional_header = io.read_u16_le();
-    characteristics = io.read_u16_le();
+    machine = stream.read_u16_le();
+    number_of_sections = stream.read_u16_le();
+    timestamp = stream.read_u32_le();
+    pointer_to_symbol_table = stream.read_u32_le();
+    number_of_symbols = stream.read_u32_le();
+    size_of_optional_header = stream.read_u16_le();
+    characteristics = stream.read_u16_le();
 }
 
-ImageNtHeader::ImageNtHeader(io::IO &io)
-    : signature(io.read_u32_le()), file_header(io), optional_header(io)
+ImageNtHeader::ImageNtHeader(io::Stream &stream) :
+    signature(stream.read_u32_le()),
+    file_header(stream),
+    optional_header(stream)
 {
 }
 
-ImageDataDir::ImageDataDir(io::IO &io)
+ImageDataDir::ImageDataDir(io::Stream &stream)
 {
-    virtual_address = io.read_u32_le();
-    size = io.read_u32_le();
+    virtual_address = stream.read_u32_le();
+    size = stream.read_u32_le();
 }
 
-ImageSectionHeader::ImageSectionHeader(io::IO &io)
+ImageSectionHeader::ImageSectionHeader(io::Stream &stream)
 {
-    name                    = io.read(8).str();
-    virtual_size            = io.read_u32_le();
-    virtual_address         = io.read_u32_le();
-    size_of_raw_data        = io.read_u32_le();
-    pointer_to_raw_data     = io.read_u32_le();
-    pointer_to_relocations  = io.read_u32_le();
-    pointer_to_line_numbers = io.read_u32_le();
-    number_of_relocations   = io.read_u16_le();
-    number_of_line_numbers  = io.read_u16_le();
-    characteristics         = io.read_u32_le();
+    name                    = stream.read(8).str();
+    virtual_size            = stream.read_u32_le();
+    virtual_address         = stream.read_u32_le();
+    size_of_raw_data        = stream.read_u32_le();
+    pointer_to_raw_data     = stream.read_u32_le();
+    pointer_to_relocations  = stream.read_u32_le();
+    pointer_to_line_numbers = stream.read_u32_le();
+    number_of_relocations   = stream.read_u16_le();
+    number_of_line_numbers  = stream.read_u16_le();
+    characteristics         = stream.read_u32_le();
 }
 
-ImageResourceDir::ImageResourceDir(io::IO &io)
+ImageResourceDir::ImageResourceDir(io::Stream &stream)
 {
-    characteristics         = io.read_u32_le();
-    timestamp               = io.read_u32_le();
-    major_version           = io.read_u16_le();
-    minor_version           = io.read_u16_le();
-    number_of_named_entries = io.read_u16_le();
-    number_of_id_entries    = io.read_u16_le();
+    characteristics         = stream.read_u32_le();
+    timestamp               = stream.read_u32_le();
+    major_version           = stream.read_u16_le();
+    minor_version           = stream.read_u16_le();
+    number_of_named_entries = stream.read_u16_le();
+    number_of_id_entries    = stream.read_u16_le();
 }
 
-ImageResourceDirEntry::ImageResourceDirEntry(io::IO &io)
+ImageResourceDirEntry::ImageResourceDirEntry(io::Stream &stream)
 {
     // I am ugliness
-    name = io.read_u32_le();
-    offset_to_data = io.read_u32_le();
+    name = stream.read_u32_le();
+    offset_to_data = stream.read_u32_le();
     id = name;
     name_is_string = (name >> 31) > 0;
     name_offset = name & 0x7FFFFFFF;
@@ -330,12 +332,12 @@ ImageResourceDirEntry::ImageResourceDirEntry(io::IO &io)
     offset_to_data &= 0x7FFFFFFF;
 }
 
-ImageResourceDataEntry::ImageResourceDataEntry(io::IO &io)
+ImageResourceDataEntry::ImageResourceDataEntry(io::Stream &stream)
 {
-    offset_to_data = io.read_u32_le();
-    size = io.read_u32_le();
-    code_page = io.read_u32_le();
-    io.skip(4);
+    offset_to_data = stream.read_u32_le();
+    size = stream.read_u32_le();
+    code_page = stream.read_u32_le();
+    stream.skip(4);
 }
 
 RvaHelper::RvaHelper(
@@ -385,11 +387,11 @@ u32 RvaHelper::adjust_section_alignment(u32 offset) const
 }
 
 ResourceCrawlerArgs::ResourceCrawlerArgs(
-    io::IO &io,
+    io::Stream &stream,
     fmt::ArchiveMeta &meta,
     const RvaHelper &helper,
     size_t base_offset)
-    : io(io), meta(meta), rva_helper(helper), base_offset(base_offset)
+    : stream(stream), meta(meta), rva_helper(helper), base_offset(base_offset)
 {
 }
 
@@ -405,16 +407,16 @@ ResourceCrawler::ResourceCrawler(const ResourceCrawlerArgs &args) : args(args)
 
 void ResourceCrawler::process_dir(size_t offset, const std::string path)
 {
-    args.io.seek(args.base_offset + offset);
-    ImageResourceDir dir(args.io);
+    args.stream.seek(args.base_offset + offset);
+    ImageResourceDir dir(args.stream);
     size_t entry_count = dir.number_of_named_entries + dir.number_of_id_entries;
     for (auto i : util::range(entry_count))
     {
-        ImageResourceDirEntry entry(args.io);
+        ImageResourceDirEntry entry(args.stream);
 
         try
         {
-            args.io.peek(args.io.tell(), [&]()
+            args.stream.peek(args.stream.tell(), [&]()
             {
                 std::string entry_path = read_entry_name(entry);
                 if (path != "")
@@ -438,8 +440,8 @@ void ResourceCrawler::process_dir(size_t offset, const std::string path)
 
 void ResourceCrawler::process_entry(size_t offset, const std::string &path)
 {
-    args.io.seek(args.base_offset + offset);
-    ImageResourceDataEntry resource_entry(args.io);
+    args.stream.seek(args.base_offset + offset);
+    ImageResourceDataEntry resource_entry(args.stream);
 
     auto entry = std::make_unique<ArchiveEntryImpl>();
     entry->name = path;
@@ -453,9 +455,9 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
 {
     if (entry.name_is_string)
     {
-        args.io.seek(args.base_offset + entry.name_offset);
-        size_t max_size = args.io.read_u16_le();
-        bstr name_utf16 = args.io.read(max_size * 2);
+        args.stream.seek(args.base_offset + entry.name_offset);
+        size_t max_size = args.stream.read_u16_le();
+        bstr name_utf16 = args.stream.read(max_size * 2);
         return util::convert_encoding(name_utf16, "utf-16le", "utf-8").str();
     }
 
@@ -472,7 +474,7 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
         case 9: return "ACCELERATOR";
         case 10: return "RC_DATA";
         case 11: return "MESSAGE_TABLE";
-        case 16: return "VERSION";
+        case 16: return "VERSStreamN";
         case 17: return "DLG_INCLUDE";
         case 19: return "PLUG_AND_PLAY";
         case 20: return "VXD";
@@ -487,26 +489,26 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
 
 bool ExeArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    DosHeader dos_header(arc_file.io);
+    DosHeader dos_header(arc_file.stream);
     return dos_header.magic == "MZ"_b;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     ExeArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    DosHeader dos_header(arc_file.io);
-    arc_file.io.seek(dos_header.e_lfanew);
-    ImageNtHeader nt_header(arc_file.io);
+    DosHeader dos_header(arc_file.stream);
+    arc_file.stream.seek(dos_header.e_lfanew);
+    ImageNtHeader nt_header(arc_file.stream);
 
     size_t data_dir_count = nt_header.optional_header.number_of_rva_and_sizes;
     std::vector<ImageDataDir> data_dirs;
     data_dirs.reserve(data_dir_count);
     for (auto i : util::range(data_dir_count))
-        data_dirs.push_back(ImageDataDir(arc_file.io));
+        data_dirs.push_back(ImageDataDir(arc_file.stream));
 
     std::vector<ImageSectionHeader> sections;
     for (auto i : util::range(nt_header.file_header.number_of_sections))
-        sections.push_back(ImageSectionHeader(arc_file.io));
+        sections.push_back(ImageSectionHeader(arc_file.stream));
 
     RvaHelper rva_helper(
         nt_header.optional_header.file_alignment,
@@ -517,7 +519,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     size_t base_offset = rva_helper.rva_to_offset(resource_dir.virtual_address);
     auto meta = std::make_unique<ArchiveMeta>();
     ResourceCrawler::crawl(
-        ResourceCrawlerArgs(arc_file.io, *meta, rva_helper, base_offset));
+        ResourceCrawlerArgs(arc_file.stream, *meta, rva_helper, base_offset));
     return meta;
 }
 
@@ -525,8 +527,8 @@ std::unique_ptr<File> ExeArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

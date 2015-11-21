@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/io.h"
+#include "io/stream.h"
 #include "pix/grid.h"
 
 namespace au {
@@ -11,7 +11,7 @@ namespace cbg {
     class Cbg2Decoder final
     {
     public:
-        std::unique_ptr<pix::Grid> decode(io::IO &io) const;
+        std::unique_ptr<pix::Grid> decode(io::Stream &stream) const;
     };
 
 } } } }

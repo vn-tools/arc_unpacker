@@ -1,7 +1,7 @@
 #include "fmt/cronus/pak_archive_decoder.h"
 #include "err.h"
 #include "fmt/cronus/common.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/pack/lzss.h"
 #include "util/plugin_mgr.hh"
 #include "util/range.h"
@@ -30,14 +30,14 @@ namespace
 static std::unique_ptr<fmt::ArchiveMeta> read_meta(
     File &arc_file, const Plugin &plugin, bool encrypted)
 {
-    auto file_count = arc_file.io.read_u32_le() ^ plugin.key1;
-    auto file_data_start = arc_file.io.read_u32_le() ^ plugin.key2;
-    if (file_data_start > arc_file.io.size())
+    auto file_count = arc_file.stream.read_u32_le() ^ plugin.key1;
+    auto file_data_start = arc_file.stream.read_u32_le() ^ plugin.key2;
+    if (file_data_start > arc_file.stream.size())
         return nullptr;
 
     auto table_size_orig = file_count * 24;
-    auto table_size_comp = file_data_start - arc_file.io.tell();
-    auto table_data = arc_file.io.read(table_size_comp);
+    auto table_size_comp = file_data_start - arc_file.stream.tell();
+    auto table_data = arc_file.stream.read(table_size_comp);
     if (encrypted)
     {
         auto key = get_delta_key("CHERRYSOFT"_b);
@@ -45,15 +45,15 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
         table_data = util::pack::lzss_decompress_bytewise(
             table_data, table_size_orig);
     }
-    io::BufferedIO table_io(table_data);
+    io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<fmt::ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = table_io.read_to_zero(16).str();
-        entry->offset = table_io.read_u32_le() + file_data_start;
-        entry->size = table_io.read_u32_le();
+        entry->name = table_stream.read_to_zero(16).str();
+        entry->offset = table_stream.read_u32_le() + file_data_start;
+        entry->size = table_stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -76,22 +76,22 @@ PakArchiveDecoder::~PakArchiveDecoder()
 
 bool PakArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    if (arc_file.io.read(magic2.size()) == magic2)
+    if (arc_file.stream.read(magic2.size()) == magic2)
         return true;
-    arc_file.io.seek(0);
-    return arc_file.io.read(magic3.size()) == magic3;
+    arc_file.stream.seek(0);
+    return arc_file.stream.read(magic3.size()) == magic3;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     PakArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    if (arc_file.io.read(magic2.size()) != magic2)
-        arc_file.io.seek(magic3.size());
-    bool encrypted = arc_file.io.read_u32_le() > 0;
-    auto pos = arc_file.io.tell();
+    if (arc_file.stream.read(magic2.size()) != magic2)
+        arc_file.stream.seek(magic3.size());
+    bool encrypted = arc_file.stream.read_u32_le() > 0;
+    auto pos = arc_file.stream.tell();
     for (auto &plugin : p->plugin_mgr.get_all())
     {
-        arc_file.io.seek(pos);
+        arc_file.stream.seek(pos);
         try
         {
             auto meta = ::read_meta(arc_file, plugin, encrypted);
@@ -110,8 +110,8 @@ std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

@@ -18,38 +18,38 @@ static void decrypt(bstr &input)
 
 bool AjpImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid AjpImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
-    file.io.skip(4 * 2);
-    auto width = file.io.read_u32_le();
-    auto height = file.io.read_u32_le();
-    auto jpeg_offset = file.io.read_u32_le();
-    auto jpeg_size = file.io.read_u32_le();
-    auto mask_offset = file.io.read_u32_le();
-    auto mask_size = file.io.read_u32_le();
+    file.stream.skip(magic.size());
+    file.stream.skip(4 * 2);
+    auto width = file.stream.read_u32_le();
+    auto height = file.stream.read_u32_le();
+    auto jpeg_offset = file.stream.read_u32_le();
+    auto jpeg_size = file.stream.read_u32_le();
+    auto mask_offset = file.stream.read_u32_le();
+    auto mask_size = file.stream.read_u32_le();
 
-    file.io.seek(jpeg_offset);
-    auto jpeg_data = file.io.read(jpeg_size);
+    file.stream.seek(jpeg_offset);
+    auto jpeg_data = file.stream.read(jpeg_size);
     decrypt(jpeg_data);
 
-    file.io.seek(mask_offset);
-    auto mask_data = file.io.read(mask_size);
+    file.stream.seek(mask_offset);
+    auto mask_data = file.stream.read(mask_size);
     decrypt(mask_data);
 
     fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
     File jpeg_file;
-    jpeg_file.io.write(jpeg_data);
+    jpeg_file.stream.write(jpeg_data);
     auto jpeg_pixels = jpeg_image_decoder.decode(jpeg_file);
 
     if (mask_size)
     {
         PmsImageDecoder pms_image_decoder;
         File mask_file;
-        mask_file.io.write(mask_data);
+        mask_file.stream.write(mask_data);
         auto mask_pixels = pms_image_decoder.decode(mask_file);
 
         for (auto y : util::range(height))

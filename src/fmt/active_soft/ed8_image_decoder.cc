@@ -10,17 +10,17 @@ static const bstr magic = ".8Bit\x8D\x5D\x8C\xCB\x00"_b;
 
 bool Ed8ImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid Ed8ImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(magic.size() + 4);
-    const auto width = file.io.read_u16_le();
-    const auto height = file.io.read_u16_le();
-    const auto palette_size = file.io.read_u32_le();
-    const auto data_size = file.io.read_u32_le();
-    const pix::Palette palette(palette_size, file.io, pix::Format::BGR888);
+    file.stream.seek(magic.size() + 4);
+    const auto width = file.stream.read_u16_le();
+    const auto height = file.stream.read_u16_le();
+    const auto palette_size = file.stream.read_u32_le();
+    const auto data_size = file.stream.read_u32_le();
+    const pix::Palette palette(palette_size, file.stream, pix::Format::BGR888);
 
     static const std::vector<std::pair<s8, s8>> shift_table
         {
@@ -39,7 +39,7 @@ pix::Grid Ed8ImageDecoder::decode_impl(File &file) const
     const auto output_start = output.get<const u8>();
     const auto output_end = output.end<const u8>();
 
-    CustomBitReader bit_reader(file.io.read(data_size));
+    CustomBitReader bit_reader(file.stream.read(data_size));
     while (output_ptr < output_end)
     {
         *output_ptr++ = bit_reader.get(8);

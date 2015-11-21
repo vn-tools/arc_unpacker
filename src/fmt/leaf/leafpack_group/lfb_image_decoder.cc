@@ -12,10 +12,10 @@ bool LfbImageDecoder::is_recognized_impl(File &file) const
 
 pix::Grid LfbImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(0);
-    const auto size_orig = file.io.read_u32_le();
+    file.stream.seek(0);
+    const auto size_orig = file.stream.read_u32_le();
     const auto data
-        = common::custom_lzss_decompress(file.io.read_to_eof(), size_orig);
+        = common::custom_lzss_decompress(file.stream.read_to_eof(), size_orig);
     const auto pseudo_file = std::make_unique<File>(file.name, data);
     return fmt::microsoft::BmpImageDecoder().decode(*pseudo_file);
 }

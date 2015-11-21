@@ -51,50 +51,50 @@ namespace
 
 bool GzipArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    arc_file.io.seek(0);
-    return arc_file.io.read(magic.size()) == magic;
+    arc_file.stream.seek(0);
+    return arc_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     GzipArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(0);
+    arc_file.stream.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
 
-    while (!arc_file.io.eof())
+    while (!arc_file.stream.eof())
     {
-        arc_file.io.skip(magic.size());
+        arc_file.stream.skip(magic.size());
         const auto compression_method = static_cast<CompressionMethod>(
-            arc_file.io.read_u8());
-        const auto flags = arc_file.io.read_u8();
-        const auto mtime = arc_file.io.read_u32_le();
-        const auto extra_flags = arc_file.io.read_u8();
+            arc_file.stream.read_u8());
+        const auto flags = arc_file.stream.read_u8();
+        const auto mtime = arc_file.stream.read_u32_le();
+        const auto extra_flags = arc_file.stream.read_u8();
         const auto operation_system
-            = static_cast<OperatingSystem>(arc_file.io.read_u8());
+            = static_cast<OperatingSystem>(arc_file.stream.read_u8());
 
         if (flags & Flags::Extra)
         {
-            const auto extra_field_size = arc_file.io.read_u16_le();
-            arc_file.io.skip(extra_field_size);
+            const auto extra_field_size = arc_file.stream.read_u16_le();
+            arc_file.stream.skip(extra_field_size);
         }
 
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->name = "";
 
         if (flags & Flags::FileName)
-            entry->name = arc_file.io.read_to_zero().str();
+            entry->name = arc_file.stream.read_to_zero().str();
 
         if (flags & Flags::Comment)
-            arc_file.io.read_to_zero();
+            arc_file.stream.read_to_zero();
 
         if (flags & Flags::Crc)
-            arc_file.io.skip(2);
+            arc_file.stream.skip(2);
 
-        entry->offset = arc_file.io.tell();
+        entry->offset = arc_file.stream.tell();
         const auto data = util::pack::zlib_inflate(
-            arc_file.io, util::pack::ZlibKind::RawDeflate);
-        entry->size = arc_file.io.tell() - entry->offset;
-        arc_file.io.skip(8);
+            arc_file.stream, util::pack::ZlibKind::RawDeflate);
+        entry->size = arc_file.stream.tell() - entry->offset;
+        arc_file.stream.skip(8);
 
         meta->entries.push_back(std::move(entry));
     }
@@ -106,11 +106,11 @@ std::unique_ptr<File> GzipArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
+    arc_file.stream.seek(entry->offset);
     return std::make_unique<File>(
         entry->name,
         util::pack::zlib_inflate(
-            arc_file.io.read(entry->size),
+            arc_file.stream.read(entry->size),
             util::pack::ZlibKind::RawDeflate));
 }
 

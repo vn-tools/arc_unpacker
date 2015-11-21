@@ -1,7 +1,7 @@
 #include "fmt/wild_bug/wbm_image_decoder.h"
 #include "err.h"
 #include "fmt/wild_bug/wpx/decoder.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -11,7 +11,7 @@ static const bstr magic = "WPX\x1A""BMP\x00"_b;
 
 bool WbmImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 static size_t get_stride(size_t width, size_t channels)
@@ -70,14 +70,14 @@ static pix::Grid get_pixels(
 
 pix::Grid WbmImageDecoder::decode_impl(File &file) const
 {
-    wpx::Decoder decoder(file.io);
+    wpx::Decoder decoder(file.stream);
 
-    io::BufferedIO metadata_io(decoder.read_plain_section(0x10));
-    metadata_io.skip(4);
-    auto width = metadata_io.read_u16_le();
-    auto height = metadata_io.read_u16_le();
-    metadata_io.skip(4);
-    auto depth = metadata_io.read_u8();
+    io::MemoryStream metadata_stream(decoder.read_plain_section(0x10));
+    metadata_stream.skip(4);
+    auto width = metadata_stream.read_u16_le();
+    auto height = metadata_stream.read_u16_le();
+    metadata_stream.skip(4);
+    auto depth = metadata_stream.read_u8();
 
     if (depth != 32 && depth != 24 && depth != 8)
         throw err::UnsupportedBitDepthError(depth);

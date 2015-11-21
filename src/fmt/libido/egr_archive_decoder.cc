@@ -26,15 +26,15 @@ std::unique_ptr<fmt::ArchiveMeta>
 {
     auto i = 0;
     auto meta = std::make_unique<ArchiveMeta>();
-    while (!arc_file.io.eof())
+    while (!arc_file.stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->width = arc_file.io.read_u32_le();
-        entry->height = arc_file.io.read_u32_le();
-        if (arc_file.io.read_u32_le() != entry->width * entry->height)
+        entry->width = arc_file.stream.read_u32_le();
+        entry->height = arc_file.stream.read_u32_le();
+        if (arc_file.stream.read_u32_le() != entry->width * entry->height)
             throw err::BadDataSizeError();
-        entry->offset = arc_file.io.tell();
-        arc_file.io.skip(0x574 + entry->width * entry->height);
+        entry->offset = arc_file.stream.tell();
+        arc_file.stream.skip(0x574 + entry->width * entry->height);
         entry->name = util::format("Image%03d.png", i++);
         meta->entries.push_back(std::move(entry));
     }
@@ -45,22 +45,22 @@ std::unique_ptr<File> EgrArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
+    arc_file.stream.seek(entry->offset);
     pix::Palette palette(256);
     for (auto i : util::range(palette.size()))
     {
-        arc_file.io.skip(1);
+        arc_file.stream.skip(1);
         palette[i].a = 0xFF;
-        palette[i].b = arc_file.io.read_u8();
-        palette[i].r = arc_file.io.read_u8();
-        palette[i].g = arc_file.io.read_u8();
+        palette[i].b = arc_file.stream.read_u8();
+        palette[i].r = arc_file.stream.read_u8();
+        palette[i].g = arc_file.stream.read_u8();
     }
 
-    arc_file.io.skip(0x174);
+    arc_file.stream.skip(0x174);
     pix::Grid pixels(
         entry->width,
         entry->height,
-        arc_file.io.read(entry->width * entry->height),
+        arc_file.stream.read(entry->width * entry->height),
         palette);
 
     return util::file_from_grid(pixels, entry->name);

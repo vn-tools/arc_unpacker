@@ -9,22 +9,22 @@ static const bstr magic = "OGV\x00"_b;
 
 bool OgvFileDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<File> OgvFileDecoder::decode_impl(File &file) const
 {
-    file.io.seek(magic.size());
-    file.io.skip(4);
-    file.io.skip(4); // sort of file size
-    if (file.io.read(4) != "fmt\x20"_b)
+    file.stream.seek(magic.size());
+    file.stream.skip(4);
+    file.stream.skip(4); // sort of file size
+    if (file.stream.read(4) != "fmt\x20"_b)
         throw err::CorruptDataError("Expected fmt chunk");
-    file.io.skip(file.io.read_u32_le());
+    file.stream.skip(file.stream.read_u32_le());
 
-    if (file.io.read(4) != "data"_b)
+    if (file.stream.read(4) != "data"_b)
         throw err::CorruptDataError("Expected data chunk");
-    file.io.skip(4);
-    const auto data = file.io.read_to_eof();
+    file.stream.skip(4);
+    const auto data = file.stream.read_to_eof();
 
     auto output_file = std::make_unique<File>(file.name, data);
     output_file->guess_extension();

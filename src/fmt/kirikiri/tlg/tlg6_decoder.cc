@@ -32,16 +32,16 @@ namespace
 
     struct FilterTypes final
     {
-        FilterTypes(io::IO &io);
+        FilterTypes(io::Stream &stream);
         void decompress(Header &header);
 
         bstr data;
     };
 }
 
-FilterTypes::FilterTypes(io::IO &io)
+FilterTypes::FilterTypes(io::Stream &stream)
 {
-    data = io.read(io.read_u32_le());
+    data = stream.read(stream.read_u32_le());
 }
 
 void FilterTypes::decompress(Header &header)
@@ -452,9 +452,9 @@ static void decode_line(
     }
 }
 
-static void read_pixels(io::IO &io, pix::Grid &pixels, Header &header)
+static void read_pixels(io::Stream &stream, pix::Grid &pixels, Header &header)
 {
-    FilterTypes filter_types(io);
+    FilterTypes filter_types(stream);
     filter_types.decompress(header);
 
     bstr pixel_buf(4 * header.image_width * h_block_size);
@@ -471,13 +471,13 @@ static void read_pixels(io::IO &io, pix::Grid &pixels, Header &header)
         int pixel_count = (ylim - y) * header.image_width;
         for (auto c : util::range(header.channel_count))
         {
-            u32 bit_size = io.read_u32_le();
+            u32 bit_size = stream.read_u32_le();
 
             int method = (bit_size >> 30) & 3;
             bit_size &= 0x3FFFFFFF;
 
             int byte_size = (bit_size + 7) / 8;
-            bstr bit_pool = io.read(byte_size);
+            bstr bit_pool = stream.read(byte_size);
             bit_pool.resize(byte_size + 1);
 
             if (method != 0)
@@ -547,13 +547,13 @@ pix::Grid Tlg6Decoder::decode(File &file)
     init_table();
 
     Header header;
-    header.channel_count = file.io.read_u8();
-    header.data_flags = file.io.read_u8();
-    header.color_type = file.io.read_u8();
-    header.external_golomb_table = file.io.read_u8();
-    header.image_width = file.io.read_u32_le();
-    header.image_height = file.io.read_u32_le();
-    header.max_bit_size = file.io.read_u32_le();
+    header.channel_count = file.stream.read_u8();
+    header.data_flags = file.stream.read_u8();
+    header.color_type = file.stream.read_u8();
+    header.external_golomb_table = file.stream.read_u8();
+    header.image_width = file.stream.read_u32_le();
+    header.image_height = file.stream.read_u32_le();
+    header.max_bit_size = file.stream.read_u32_le();
 
     header.x_block_count = ((header.image_width - 1) / w_block_size) + 1;
     header.y_block_count = ((header.image_height - 1) / h_block_size) + 1;
@@ -561,6 +561,6 @@ pix::Grid Tlg6Decoder::decode(File &file)
         throw err::UnsupportedChannelCountError(header.channel_count);
 
     pix::Grid pixels(header.image_width, header.image_height);
-    read_pixels(file.io, pixels, header);
+    read_pixels(file.stream, pixels, header);
     return pixels;
 }

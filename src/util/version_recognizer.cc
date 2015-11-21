@@ -26,13 +26,13 @@ void VersionRecognizer::add_recognizer(
 
 int VersionRecognizer::tell_version(File &file) const
 {
-    const auto old_pos = file.io.tell();
+    const auto old_pos = file.stream.tell();
     for (const auto it : p->funcs)
     {
         try
         {
             const bool result = it.second(file);
-            file.io.seek(old_pos);
+            file.stream.seek(old_pos);
             if (result)
                 return it.first;
         }

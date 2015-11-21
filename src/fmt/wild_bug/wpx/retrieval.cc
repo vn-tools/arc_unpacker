@@ -103,5 +103,5 @@ RetrievalStrategy3::RetrievalStrategy3(io::BitReader &bit_reader)
 u8 RetrievalStrategy3::fetch_byte(
     DecoderContext &context, const u8 *output_ptr)
 {
-    return context.io.read_u8();
+    return context.stream.read_u8();
 }

@@ -21,15 +21,15 @@ bool SarArchiveDecoder::is_recognized_impl(File &arc_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     SarArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    u16 file_count = arc_file.io.read_u16_be();
-    u32 offset_to_data = arc_file.io.read_u32_be();
+    u16 file_count = arc_file.stream.read_u16_be();
+    u32 offset_to_data = arc_file.stream.read_u32_be();
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = arc_file.io.read_to_zero().str();
-        entry->offset = arc_file.io.read_u32_be() + offset_to_data;
-        entry->size = arc_file.io.read_u32_be();
+        entry->name = arc_file.stream.read_to_zero().str();
+        entry->offset = arc_file.stream.read_u32_be() + offset_to_data;
+        entry->size = arc_file.stream.read_u32_be();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -39,8 +39,8 @@ std::unique_ptr<File> SarArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     return std::make_unique<File>(entry->name, data);
 }
 

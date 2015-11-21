@@ -69,24 +69,24 @@ void McaArchiveDecoder::set_key(u8 key)
 
 bool McaArchiveDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     McaArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(16);
-    auto header_size = arc_file.io.read_u32_le();
-    arc_file.io.skip(12);
-    auto file_count = arc_file.io.read_u32_le();
-    arc_file.io.seek(header_size);
+    arc_file.stream.seek(16);
+    auto header_size = arc_file.stream.read_u32_le();
+    arc_file.stream.skip(12);
+    auto file_count = arc_file.stream.read_u32_le();
+    arc_file.stream.seek(header_size);
 
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->name = util::format("%03d.png", i);
-        entry->offset = arc_file.io.read_u32_le();
+        entry->offset = arc_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -96,16 +96,16 @@ std::unique_ptr<File> McaArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto encryption_type = arc_file.io.read_u32_le();
-    arc_file.io.skip(8);
-    auto width = arc_file.io.read_u32_le();
-    auto height = arc_file.io.read_u32_le();
-    auto size_comp = arc_file.io.read_u32_le();
-    auto size_orig = arc_file.io.read_u32_le();
-    arc_file.io.skip(4);
+    arc_file.stream.seek(entry->offset);
+    auto encryption_type = arc_file.stream.read_u32_le();
+    arc_file.stream.skip(8);
+    auto width = arc_file.stream.read_u32_le();
+    auto height = arc_file.stream.read_u32_le();
+    auto size_comp = arc_file.stream.read_u32_le();
+    auto size_orig = arc_file.stream.read_u32_le();
+    arc_file.stream.skip(4);
 
-    auto data = arc_file.io.read(size_comp);
+    auto data = arc_file.stream.read(size_comp);
 
     if (!p->key_set)
         throw err::UsageError("MCA decryption key not set");

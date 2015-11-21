@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "io/io.h"
+#include "io/stream.h"
 #include "pix/format.h"
 #include "pix/pixel.h"
 
@@ -14,7 +14,7 @@ namespace pix {
         Palette(const Palette &other);
         Palette(size_t color_count);
         Palette(size_t color_count, const bstr &input, Format format);
-        Palette(size_t color_count, io::IO &input_io, Format format);
+        Palette(size_t color_count, io::Stream &input_stream, Format format);
         ~Palette();
 
         size_t size() const;

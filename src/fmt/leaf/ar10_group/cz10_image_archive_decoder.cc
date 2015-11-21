@@ -3,7 +3,7 @@
 #include <boost/filesystem/path.hpp>
 #include "err.h"
 #include "fmt/naming_strategies.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/file_from_grid.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"
@@ -36,34 +36,34 @@ static bstr decompress(
     bstr output;
     output.reserve(stride * height);
 
-    io::BufferedIO input_io(input);
+    io::MemoryStream input_stream(input);
     for (const auto y : util::range(height))
     {
-        const auto control = input_io.read_u8();
+        const auto control = input_stream.read_u8();
         bstr line;
 
         if (control == 0)
         {
-            line = input_io.read(stride);
+            line = input_stream.read(stride);
         }
         else if (control == 1)
         {
-            const auto chunk_size = input_io.read_u16_be();
-            const auto chunk = input_io.read(chunk_size);
+            const auto chunk_size = input_stream.read_u16_be();
+            const auto chunk = input_stream.read(chunk_size);
             line = util::pack::zlib_inflate(chunk);
         }
         else if (control == 2)
         {
-            const auto chunk_size = input_io.read_u16_be();
-            const auto chunk = input_io.read(chunk_size);
+            const auto chunk_size = input_stream.read_u16_be();
+            const auto chunk = input_stream.read(chunk_size);
             line = util::pack::zlib_inflate(chunk);
             for (const auto i : util::range(1, stride))
                 line[i] = line[i - 1] - line[i];
         }
         else if (control == 3)
         {
-            const auto chunk_size = input_io.read_u16_be();
-            const auto chunk = input_io.read(chunk_size);
+            const auto chunk_size = input_stream.read_u16_be();
+            const auto chunk = input_stream.read(chunk_size);
             line = util::pack::zlib_inflate(chunk);
             for (const auto i : util::range(stride))
                 line[i] = last_line[i] - line[i];
@@ -80,7 +80,7 @@ static bstr decompress(
 
 bool Cz10ImageArchiveDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
@@ -88,17 +88,17 @@ std::unique_ptr<fmt::ArchiveMeta>
 {
     auto meta = std::make_unique<ArchiveMeta>();
 
-    arc_file.io.seek(magic.size());
-    const auto image_count = arc_file.io.read_u32_le();
-    auto current_offset = arc_file.io.tell() + image_count * 16;
+    arc_file.stream.seek(magic.size());
+    const auto image_count = arc_file.stream.read_u32_le();
+    auto current_offset = arc_file.stream.tell() + image_count * 16;
     for (const auto i : util::range(image_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->width = arc_file.io.read_u16_le();
-        entry->height = arc_file.io.read_u16_le();
-        arc_file.io.skip(4);
-        entry->size = arc_file.io.read_u32_le();
-        entry->channels = arc_file.io.read_u32_le();
+        entry->width = arc_file.stream.read_u16_le();
+        entry->height = arc_file.stream.read_u16_le();
+        arc_file.stream.skip(4);
+        entry->size = arc_file.stream.read_u32_le();
+        entry->channels = arc_file.stream.read_u32_le();
         entry->offset = current_offset;
         current_offset += entry->size;
         meta->entries.push_back(std::move(entry));
@@ -118,7 +118,7 @@ std::unique_ptr<File> Cz10ImageArchiveDecoder::read_file_impl(
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = decompress(
-        arc_file.io.seek(entry->offset).read(entry->size),
+        arc_file.stream.seek(entry->offset).read(entry->size),
         entry->width,
         entry->height,
         entry->channels);

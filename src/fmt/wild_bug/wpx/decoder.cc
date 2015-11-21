@@ -23,42 +23,42 @@ namespace
 
 struct Decoder::Priv final
 {
-    Priv(io::IO &io);
+    Priv(io::Stream &stream);
 
-    io::IO &io;
+    io::Stream &stream;
     std::string tag;
     std::map<u8, Section> sections;
 };
 
-Decoder::Priv::Priv(io::IO &io) : io(io)
+Decoder::Priv::Priv(io::Stream &stream) : stream(stream)
 {
 }
 
-Decoder::Decoder(io::IO &io) : p(new Priv(io))
+Decoder::Decoder(io::Stream &stream) : p(new Priv(stream))
 {
-    if (io.read(magic.size()) != magic)
+    if (stream.read(magic.size()) != magic)
         throw err::RecognitionError();
 
-    io.seek(0x04);
-    p->tag = io.read_to_zero(4).str();
+    stream.seek(0x04);
+    p->tag = stream.read_to_zero(4).str();
 
-    io.seek(0x0C);
-    if (io.read_u8() != 1)
+    stream.seek(0x0C);
+    if (stream.read_u8() != 1)
         throw err::CorruptDataError("Corrupt WPX header");
 
-    io.seek(0x0E);
-    auto section_count = io.read_u8();
-    auto dir_size = io.read_u8();
+    stream.seek(0x0E);
+    auto section_count = stream.read_u8();
+    auto dir_size = stream.read_u8();
 
     for (auto i : util::range(section_count))
     {
-        auto id = io.read_u8();
+        auto id = stream.read_u8();
         Section section;
-        section.data_format = io.read_u8();
-        io.skip(2);
-        section.offset = io.read_u32_le();
-        section.size_orig = io.read_u32_le();
-        section.size_comp = io.read_u32_le();
+        section.data_format = stream.read_u8();
+        stream.skip(2);
+        section.offset = stream.read_u32_le();
+        section.size_orig = stream.read_u32_le();
+        section.size_comp = stream.read_u32_le();
         p->sections[id] = section;
     }
 }
@@ -90,8 +90,8 @@ bstr Decoder::read_plain_section(u8 section_id)
     auto section = p->sections.at(section_id);
     if ((section.data_format & 0x80) || !section.size_comp)
     {
-        p->io.seek(section.offset);
-        return p->io.read(section.size_orig);
+        p->stream.seek(section.offset);
+        return p->stream.read(section.size_orig);
     }
     throw err::CorruptDataError("Section is compressed");
 }
@@ -108,8 +108,8 @@ bstr Decoder::read_compressed_section(
     if ((section.data_format & 0x80) || !section.size_comp)
         return read_plain_section(section_id);
 
-    p->io.seek(section.offset);
-    io::BufferedIO section_io(p->io);
+    p->stream.seek(section.offset);
+    io::MemoryStream section_stream(p->stream);
 
     bstr output(section.size_orig);
     auto output_start = output.get<u8>();
@@ -124,10 +124,10 @@ bstr Decoder::read_compressed_section(
     }
 
     for (auto i : util::range(quant_size))
-        *output_ptr++ = section_io.read_u8();
+        *output_ptr++ = section_stream.read_u8();
     int remaining = section.size_orig - quant_size;
-    section_io.seek((-quant_size & 3) + quant_size);
-    io::BitReader bit_reader(section_io);
+    section_stream.seek((-quant_size & 3) + quant_size);
+    io::BitReader bit_reader(section_stream);
 
     std::unique_ptr<ITranscriptionStrategy> transcriptor;
     if (use_plain_transcriptors)
@@ -159,7 +159,7 @@ bstr Decoder::read_compressed_section(
     else
         retriever.reset(new RetrievalStrategy3(bit_reader));
 
-    DecoderContext context {section_io, bit_reader};
+    DecoderContext context {section_stream, bit_reader};
     while (output_ptr < output_end)
     {
         if (context.bit_reader.get(1))

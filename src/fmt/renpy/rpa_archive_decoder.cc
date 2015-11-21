@@ -1,6 +1,6 @@
 #include "fmt/renpy/rpa_archive_decoder.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
@@ -96,77 +96,77 @@ static void unpickle_handle_number(size_t number, UnpickleContext *context)
     context->numbers.push_back(number);
 }
 
-static void unpickle(io::IO &table_io, UnpickleContext *context)
+static void unpickle(io::Stream &table_stream, UnpickleContext *context)
 {
     // Stupid unpickle "implementation" ahead: instead of twiddling with stack,
     // arrays, dictionaries and all that jazz, just remember all pushed strings
     // and integers for later interpretation. We also take advantage of RenPy
     // using Pickle's HIGHEST_PROTOCOL, which means there's no need to parse
     // 90% of the opcodes (such as "S" with escape stuff).
-    size_t table_size = table_io.size();
-    while (table_io.tell() < table_size)
+    size_t table_size = table_stream.size();
+    while (table_stream.tell() < table_size)
     {
-        PickleOpcode c = static_cast<PickleOpcode>(table_io.read_u8());
+        PickleOpcode c = static_cast<PickleOpcode>(table_stream.read_u8());
         switch (c)
         {
             case PickleOpcode::ShortBinString:
             {
-                char size = table_io.read_u8();
-                unpickle_handle_string(table_io.read(size), context);
+                char size = table_stream.read_u8();
+                unpickle_handle_string(table_stream.read(size), context);
                 break;
             }
 
             case PickleOpcode::BinUnicode:
             {
-                u32 size = table_io.read_u32_le();
-                unpickle_handle_string(table_io.read(size), context);
+                u32 size = table_stream.read_u32_le();
+                unpickle_handle_string(table_stream.read(size), context);
                 break;
             }
 
             case PickleOpcode::BinInt1:
             {
-                unpickle_handle_number(table_io.read_u8(), context);
+                unpickle_handle_number(table_stream.read_u8(), context);
                 break;
             }
 
             case PickleOpcode::BinInt2:
             {
-                unpickle_handle_number(table_io.read_u16_le(), context);
+                unpickle_handle_number(table_stream.read_u16_le(), context);
                 break;
             }
 
             case PickleOpcode::BinInt4:
             {
-                unpickle_handle_number(table_io.read_u32_le(), context);
+                unpickle_handle_number(table_stream.read_u32_le(), context);
                 break;
             }
 
             case PickleOpcode::Long1:
             {
-                size_t size = table_io.read_u8();
+                size_t size = table_stream.read_u8();
                 u32 number = 0;
-                size_t pos = table_io.tell();
+                size_t pos = table_stream.tell();
                 for (auto i : util::range(size))
                 {
-                    table_io.seek(pos + size - 1 - i);
+                    table_stream.seek(pos + size - 1 - i);
                     number *= 256;
-                    number += table_io.read_u8();
+                    number += table_stream.read_u8();
                 }
                 unpickle_handle_number(number, context);
-                table_io.seek(pos + size);
+                table_stream.seek(pos + size);
                 break;
             }
 
             case PickleOpcode::Proto:
-                table_io.skip(1);
+                table_stream.skip(1);
                 break;
 
             case PickleOpcode::BinPut:
-                table_io.skip(1);
+                table_stream.skip(1);
                 break;
 
             case PickleOpcode::LongBinPut:
-                table_io.skip(4);
+                table_stream.skip(4);
                 break;
 
             case PickleOpcode::Append:
@@ -191,24 +191,24 @@ static void unpickle(io::IO &table_io, UnpickleContext *context)
     }
 }
 
-static int guess_version(io::IO &arc_io)
+static int guess_version(io::Stream &arc_stream)
 {
     static const bstr magic_3 = "RPA-3.0 "_b;
     static const bstr magic_2 = "RPA-2.0 "_b;
-    if (arc_io.read(magic_3.size()) == magic_3)
+    if (arc_stream.read(magic_3.size()) == magic_3)
         return 3;
-    arc_io.seek(0);
-    if (arc_io.read(magic_2.size()) == magic_2)
+    arc_stream.seek(0);
+    if (arc_stream.read(magic_2.size()) == magic_2)
         return 2;
     return -1;
 }
 
-static u32 read_hex_number(io::IO &arc_io, size_t size)
+static u32 read_hex_number(io::Stream &arc_stream, size_t size)
 {
     u32 result = 0;
     for (auto i : util::range(size))
     {
-        char c = arc_io.read_u8();
+        char c = arc_stream.read_u8();
         result *= 16;
         if (c >= 'A' && c <= 'F')
             result += c + 10 - 'A';
@@ -222,28 +222,28 @@ static u32 read_hex_number(io::IO &arc_io, size_t size)
     return result;
 }
 
-static bstr read_raw_table(io::IO &arc_io)
+static bstr read_raw_table(io::Stream &arc_stream)
 {
-    size_t compressed_size = arc_io.size() - arc_io.tell();
-    return util::pack::zlib_inflate(arc_io.read(compressed_size));
+    size_t compressed_size = arc_stream.size() - arc_stream.tell();
+    return util::pack::zlib_inflate(arc_stream.read(compressed_size));
 }
 
 bool RpaArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return guess_version(arc_file.io) >= 0;
+    return guess_version(arc_file.stream) >= 0;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     RpaArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    int version = guess_version(arc_file.io);
-    size_t table_offset = read_hex_number(arc_file.io, 16);
+    int version = guess_version(arc_file.stream);
+    size_t table_offset = read_hex_number(arc_file.stream, 16);
 
     u32 key;
     if (version == 3)
     {
-        arc_file.io.skip(1);
-        key = read_hex_number(arc_file.io, 8);
+        arc_file.stream.skip(1);
+        key = read_hex_number(arc_file.stream, 8);
     }
     else if (version == 2)
     {
@@ -254,11 +254,11 @@ std::unique_ptr<fmt::ArchiveMeta>
         throw err::UnsupportedVersionError(version);
     }
 
-    arc_file.io.seek(table_offset);
-    io::BufferedIO table_io(read_raw_table(arc_file.io));
+    arc_file.stream.seek(table_offset);
+    io::MemoryStream table_stream(read_raw_table(arc_file.stream));
 
     UnpickleContext context;
-    unpickle(table_io, &context);
+    unpickle(table_stream, &context);
 
     // Suspicion: reading renpy sources leaves me under impression that
     // older games might not embed prefixes at all. This means that there
@@ -288,7 +288,7 @@ std::unique_ptr<File> RpaArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    const auto data = arc_file.io.seek(entry->offset).read(entry->size);
+    const auto data = arc_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<File>(entry->name, entry->prefix + data);
 }
 

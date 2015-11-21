@@ -45,8 +45,8 @@ std::unique_ptr<ArchiveMeta>
 std::unique_ptr<File> TestArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &, const ArchiveEntry &e) const
 {
-    arc_file.io.seek(0);
-    return std::make_unique<File>(e.name, arc_file.io.read_to_eof());
+    arc_file.stream.seek(0);
+    return std::make_unique<File>(e.name, arc_file.stream.read_to_eof());
 }
 
 TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
@@ -61,7 +61,7 @@ TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
     std::vector<std::shared_ptr<File>> saved_files;
     const FileSaverCallback file_saver([&](std::shared_ptr<File> saved_file)
     {
-        saved_file->io.seek(0);
+        saved_file->stream.seek(0);
         saved_files.push_back(saved_file);
     });
     fmt::unpack_recursive(
@@ -69,5 +69,5 @@ TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
 
     REQUIRE(saved_files.size() == 1);
     REQUIRE(boost::filesystem::basename(saved_files[0]->name) == "infinity");
-    REQUIRE(saved_files[0]->io.read_to_eof() == "whatever"_b);
+    REQUIRE(saved_files[0]->stream.read_to_eof() == "whatever"_b);
 }

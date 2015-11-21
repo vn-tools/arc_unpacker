@@ -25,7 +25,7 @@ std::shared_ptr<File> tests::zlib_file_from_path(
     const boost::filesystem::path &path, const std::string &cust_name)
 {
     File compressed_file(path, io::FileMode::Read);
-    const auto compressed_data = compressed_file.io.read_to_eof();
+    const auto compressed_data = compressed_file.stream.read_to_eof();
     const auto decompressed_data = util::pack::zlib_inflate(compressed_data);
     return std::make_shared<File>(
         cust_name.empty() ? compressed_file.name : cust_name,
@@ -54,11 +54,11 @@ void tests::compare_files(
 {
     if (compare_file_names)
         REQUIRE(expected_file.name == actual_file.name);
-    REQUIRE(expected_file.io.size() == actual_file.io.size());
-    expected_file.io.seek(0);
-    actual_file.io.seek(0);
-    const auto expected_content = expected_file.io.read_to_eof();
-    const auto actual_content = actual_file.io.read_to_eof();
+    REQUIRE(expected_file.stream.size() == actual_file.stream.size());
+    expected_file.stream.seek(0);
+    actual_file.stream.seek(0);
+    const auto expected_content = expected_file.stream.read_to_eof();
+    const auto actual_content = actual_file.stream.read_to_eof();
     INFO("Expected content: " << (expected_content.size() < 1000
         ? expected_content.str()
         : "(too big to display)"));

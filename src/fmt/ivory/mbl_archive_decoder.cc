@@ -27,13 +27,13 @@ namespace
     };
 }
 
-static int check_version(io::IO &arc_io, size_t file_count, size_t name_size)
+static int check_version(io::Stream &input, size_t file_count, size_t name_size)
 {
-    arc_io.skip((file_count - 1) * (name_size + 8));
-    arc_io.skip(name_size);
-    const auto last_file_offset = arc_io.read_u32_le();
-    const auto last_file_size = arc_io.read_u32_le();
-    return last_file_offset + last_file_size == arc_io.size();
+    input.skip((file_count - 1) * (name_size + 8));
+    input.skip(name_size);
+    const auto last_file_offset = input.read_u32_le();
+    const auto last_file_size = input.read_u32_le();
+    return last_file_offset + last_file_size == input.size();
 }
 
 struct MblArchiveDecoder::Priv final
@@ -48,19 +48,19 @@ MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)
         1,
         [&](File &arc_file)
         {
-            arc_file.io.seek(0);
-            const auto file_count = arc_file.io.read_u32_le();
-            return check_version(arc_file.io, file_count, 16);
+            arc_file.stream.seek(0);
+            const auto file_count = arc_file.stream.read_u32_le();
+            return check_version(arc_file.stream, file_count, 16);
         });
 
     p->recognizer.add_recognizer(
         2,
         [&](File &arc_file)
         {
-            arc_file.io.seek(0);
-            const auto file_count = arc_file.io.read_u32_le();
-            const auto name_size = arc_file.io.read_u32_le();
-            return check_version(arc_file.io, file_count, name_size);
+            arc_file.stream.seek(0);
+            const auto file_count = arc_file.stream.read_u32_le();
+            const auto name_size = arc_file.stream.read_u32_le();
+            return check_version(arc_file.stream, file_count, name_size);
         });
 
     p->plugin_mgr.add("noop", "Unencrypted games", [](bstr &) { });
@@ -116,19 +116,19 @@ std::unique_ptr<fmt::ArchiveMeta>
     const auto version = p->recognizer.tell_version(arc_file);
     meta->encrypted = arc_file.name.find("mg_data") != std::string::npos;
     meta->decrypt = p->plugin_mgr.is_set() ? p->plugin_mgr.get() : nullptr;
-    arc_file.io.seek(0);
+    arc_file.stream.seek(0);
 
-    const auto file_count = arc_file.io.read_u32_le();
+    const auto file_count = arc_file.stream.read_u32_le();
     const auto name_size = version == 2
-        ? arc_file.io.read_u32_le()
+        ? arc_file.stream.read_u32_le()
         : 16;
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->name = util::sjis_to_utf8(
-            arc_file.io.read_to_zero(name_size)).str();
-        entry->offset = arc_file.io.read_u32_le();
-        entry->size = arc_file.io.read_u32_le();
+            arc_file.stream.read_to_zero(name_size)).str();
+        entry->offset = arc_file.stream.read_u32_le();
+        entry->size = arc_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
     }
     return std::move(meta);
@@ -140,8 +140,8 @@ std::unique_ptr<File> MblArchiveDecoder::read_file_impl(
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     if (meta->encrypted)
     {
         if (!meta->decrypt)

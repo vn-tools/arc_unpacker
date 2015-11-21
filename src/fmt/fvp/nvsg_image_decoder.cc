@@ -11,27 +11,27 @@ static const bstr nvsg_magic = "NVSG"_b;
 
 bool NvsgImageDecoder::is_recognized_impl(File &file) const
 {
-    if (file.io.read(hzc1_magic.size()) != hzc1_magic)
+    if (file.stream.read(hzc1_magic.size()) != hzc1_magic)
         return false;
-    file.io.skip(8);
-    return file.io.read(nvsg_magic.size()) == nvsg_magic;
+    file.stream.skip(8);
+    return file.stream.read(nvsg_magic.size()) == nvsg_magic;
 }
 
 pix::Grid NvsgImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(hzc1_magic.size());
-    size_t uncompressed_size = file.io.read_u32_le();
-    file.io.skip(4); // nvsg header size
-    file.io.skip(nvsg_magic.size());
-    file.io.skip(2);
-    size_t format = file.io.read_u16_le();
-    size_t width = file.io.read_u16_le();
-    size_t height = file.io.read_u16_le();
-    file.io.skip(8);
-    size_t image_count = file.io.read_u32_le();
-    file.io.skip(8);
+    file.stream.skip(hzc1_magic.size());
+    size_t uncompressed_size = file.stream.read_u32_le();
+    file.stream.skip(4); // nvsg header size
+    file.stream.skip(nvsg_magic.size());
+    file.stream.skip(2);
+    size_t format = file.stream.read_u16_le();
+    size_t width = file.stream.read_u16_le();
+    size_t height = file.stream.read_u16_le();
+    file.stream.skip(8);
+    size_t image_count = file.stream.read_u32_le();
+    file.stream.skip(8);
 
-    bstr data = util::pack::zlib_inflate(file.io.read_to_eof());
+    bstr data = util::pack::zlib_inflate(file.stream.read_to_eof());
 
     pix::Format pixel_format;
     switch (format)

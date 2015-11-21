@@ -43,11 +43,11 @@ Grid::Grid(size_t width, size_t height, const bstr &input, Format fmt)
     p->load(input, fmt);
 }
 
-Grid::Grid(size_t width, size_t height, io::IO &input_io, Format fmt)
+Grid::Grid(size_t width, size_t height, io::Stream &input, Format fmt)
     : Grid(width, height)
 {
     auto bpp = format_to_bpp(fmt);
-    p->load(input_io.read(width * height * bpp), fmt);
+    p->load(input.read(width * height * bpp), fmt);
 }
 
 Grid::Grid(
@@ -59,10 +59,10 @@ Grid::Grid(
 }
 
 Grid::Grid(
-    size_t width, size_t height, io::IO &input_io, const Palette &palette)
+    size_t width, size_t height, io::Stream &stream, const Palette &palette)
     : Grid(width, height)
 {
-    p->load(input_io.read(width * height), pix::Format::Gray8);
+    p->load(stream.read(width * height), pix::Format::Gray8);
     apply_palette(palette);
 }
 

@@ -175,7 +175,7 @@ static void decode_block(
 
 bool HcaAudioDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &file) const
@@ -184,11 +184,11 @@ std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &file) const
     const u32 ciph_key1 = 0x30DBE1AB;
     const u32 ciph_key2 = 0xCC554639;
 
-    file.io.seek(6);
-    static const u16 meta_size = file.io.read_u16_be();
+    file.stream.seek(6);
+    static const u16 meta_size = file.stream.read_u16_be();
 
-    file.io.seek(0);
-    auto meta = read_meta(file.io.read(meta_size));
+    file.stream.seek(0);
+    auto meta = read_meta(file.stream.read(meta_size));
 
     if (!meta.hca) throw err::CorruptDataError("Missing 'hca' chunk");
     if (!meta.fmt) throw err::CorruptDataError("Missing 'fmt' chunk");
@@ -227,7 +227,7 @@ std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &file) const
         channel_decoders.push_back(channel_decoder);
     }
 
-    file.io.seek(meta.hca->data_offset);
+    file.stream.seek(meta.hca->data_offset);
     std::vector<s16> samples;
     samples.reserve(0x80 * 8 * channel_count * block_count);
     for (const auto b : util::range(block_count))
@@ -237,7 +237,7 @@ std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &file) const
             ath_table,
             channel_decoders,
             params,
-            permutator.permute(file.io.read(block_size)));
+            permutator.permute(file.stream.read(block_size)));
 
         for (const auto i : util::range(8))
         for (const auto j : util::range(0x80))

@@ -1,6 +1,6 @@
 #include "fmt/cri/hca/meta.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -54,84 +54,84 @@ static void extend_meta(Meta &meta)
 Meta fmt::cri::hca::read_meta(const bstr &input)
 {
     Meta out;
-    io::BufferedIO io(input);
-    while (!io.eof())
+    io::MemoryStream stream(input);
+    while (!stream.eof())
     {
-        const bstr magic = io.read(4);
+        const bstr magic = stream.read(4);
 
         if (magic == "HCA\x00"_b)
         {
             out.hca = std::make_unique<HcaChunk>();
-            out.hca->version = io.read_u16_be();
-            out.hca->data_offset = io.read_u16_be();
+            out.hca->version = stream.read_u16_be();
+            out.hca->data_offset = stream.read_u16_be();
         }
 
         else if (magic == "fmt\x00"_b)
         {
             out.fmt = std::make_unique<FmtChunk>();
-            out.fmt->channel_count = io.read_u8();
+            out.fmt->channel_count = stream.read_u8();
             out.fmt->sample_rate
-                = (io.read_u16_be() << 8) | io.read_u8();
-            out.fmt->block_count = io.read_u32_be();
-            io.skip(4);
+                = (stream.read_u16_be() << 8) | stream.read_u8();
+            out.fmt->block_count = stream.read_u32_be();
+            stream.skip(4);
         }
 
         else if (magic == "dec\x00"_b)
         {
             out.dec = std::make_unique<DecChunk>();
-            out.dec->block_size = io.read_u16_be();
-            out.dec->unk[0] = io.read_u8();
-            out.dec->unk[1] = io.read_u8();
-            out.dec->count[0] = io.read_u8();
-            out.dec->count[1] = io.read_u8();
-            const auto tmp = io.read_u8();
+            out.dec->block_size = stream.read_u16_be();
+            out.dec->unk[0] = stream.read_u8();
+            out.dec->unk[1] = stream.read_u8();
+            out.dec->count[0] = stream.read_u8();
+            out.dec->count[1] = stream.read_u8();
+            const auto tmp = stream.read_u8();
             out.dec->unk[2] = tmp >> 4;
             out.dec->unk[3] = tmp & 0b1111;
-            out.dec->enable_count2 = io.read_u8();
+            out.dec->enable_count2 = stream.read_u8();
         }
 
         else if (magic == "comp"_b)
         {
             out.comp = std::make_unique<CompChunk>();
-            out.comp->block_size = io.read_u16_be();
+            out.comp->block_size = stream.read_u16_be();
             for (const auto i : util::range(8))
-                out.comp->unk[i] = io.read_u8();
-            io.skip(2);
+                out.comp->unk[i] = stream.read_u8();
+            stream.skip(2);
         }
 
         else if (magic == "vbr\x00"_b)
         {
             out.vbr = std::make_unique<VbrChunk>();
-            out.vbr->unk[0] = io.read_u16_be();
-            out.vbr->unk[1] = io.read_u16_be();
+            out.vbr->unk[0] = stream.read_u16_be();
+            out.vbr->unk[1] = stream.read_u16_be();
         }
 
         else if (magic == "ath\x00"_b)
         {
             out.ath = std::make_unique<AthChunk>();
-            out.ath->type = io.read_u16_le();
+            out.ath->type = stream.read_u16_le();
         }
 
         else if (magic == "loop"_b)
         {
             out.loop = std::make_unique<LoopChunk>();
-            out.loop->start = io.read_u32_be();
-            out.loop->end = io.read_u32_be();
-            out.loop->repetitions = io.read_u16_be();
-            out.loop->unk = io.read_u16_be();
+            out.loop->start = stream.read_u32_be();
+            out.loop->end = stream.read_u32_be();
+            out.loop->repetitions = stream.read_u16_be();
+            out.loop->unk = stream.read_u16_be();
             out.loop->enabled = true;
         }
 
         else if (magic == "ciph"_b)
         {
             out.ciph = std::make_unique<CiphChunk>();
-            out.ciph->type = io.read_u16_be();
+            out.ciph->type = stream.read_u16_be();
         }
 
         else if (magic == "rva\x00"_b)
         {
             out.rva = std::make_unique<RvaChunk>();
-            const auto tmp = io.read(4);
+            const auto tmp = stream.read(4);
             bstr reversed(4);
             reversed[0] = tmp[3];
             reversed[1] = tmp[2];
@@ -143,8 +143,8 @@ Meta fmt::cri::hca::read_meta(const bstr &input)
         else if (magic == "comm"_b)
         {
             out.comm = std::make_unique<CommChunk>();
-            const auto tmp = io.read_u32_be();
-            out.comm->text = io.read(tmp);
+            const auto tmp = stream.read_u32_be();
+            out.comm->text = stream.read(tmp);
         }
 
         else if (magic == "pad\x00"_b)

@@ -12,16 +12,16 @@ static const bstr key =
 
 bool AffFileDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<File> AffFileDecoder::decode_impl(File &file) const
 {
-    file.io.seek(magic.size() + 4);
-    const auto size = file.io.read_u32_le();
-    file.io.skip(4);
+    file.stream.seek(magic.size() + 4);
+    const auto size = file.stream.read_u32_le();
+    file.stream.skip(4);
 
-    auto data = file.io.read_to_eof();
+    auto data = file.stream.read_to_eof();
     for (const auto i : util::range(std::min<size_t>(data.size(), 64)))
         data[i] ^= key[i % key.size()];
     auto output_file = std::make_unique<File>(file.name, data);

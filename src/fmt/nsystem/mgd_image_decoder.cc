@@ -1,7 +1,7 @@
 #include "fmt/nsystem/mgd_image_decoder.h"
 #include "err.h"
 #include "fmt/png/png_image_decoder.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -27,47 +27,47 @@ namespace
 
 static const bstr magic = "MGD "_b;
 
-static void decompress_sgd_alpha(const bstr &input, io::IO &output_io)
+static void decompress_sgd_alpha(const bstr &input, io::Stream &output_stream)
 {
-    io::BufferedIO input_io(input);
-    while (!input_io.eof())
+    io::MemoryStream input_stream(input);
+    while (!input_stream.eof())
     {
-        auto flag = input_io.read_u16_le();
+        auto flag = input_stream.read_u16_le();
         if (flag & 0x8000)
         {
             size_t size = (flag & 0x7FFF) + 1;
-            u8 alpha = input_io.read_u8();
+            u8 alpha = input_stream.read_u8();
             for (auto i : util::range(size))
             {
-                output_io.skip(3);
-                output_io.write_u8(alpha ^ 0xFF);
+                output_stream.skip(3);
+                output_stream.write_u8(alpha ^ 0xFF);
             }
         }
         else
         {
-            while (flag-- && !input_io.eof())
+            while (flag-- && !input_stream.eof())
             {
-                u8 alpha = input_io.read_u8();
-                output_io.skip(3);
-                output_io.write_u8(alpha ^ 0xFF);
+                u8 alpha = input_stream.read_u8();
+                output_stream.skip(3);
+                output_stream.write_u8(alpha ^ 0xFF);
             }
         }
     }
-    output_io.seek(0);
+    output_stream.seek(0);
 }
 
 static void decompress_sgd_bgr_strategy_1(
-    io::IO &input_io, io::IO &output_io, u8 flag)
+    io::Stream &input_stream, io::Stream &output_stream, u8 flag)
 {
     auto size = flag & 0x3F;
-    output_io.skip(-4);
-    u8 b = output_io.read_u8();
-    u8 g = output_io.read_u8();
-    u8 r = output_io.read_u8();
-    output_io.skip(1);
+    output_stream.skip(-4);
+    u8 b = output_stream.read_u8();
+    u8 g = output_stream.read_u8();
+    u8 r = output_stream.read_u8();
+    output_stream.skip(1);
     for (auto i : util::range(size))
     {
-        u16 delta = input_io.read_u16_le();
+        u16 delta = input_stream.read_u16_le();
         if (delta & 0x8000)
         {
             b += delta & 0x1F;
@@ -81,95 +81,87 @@ static void decompress_sgd_bgr_strategy_1(
             r += ((delta >> 10) & 0xF) * (delta & 0x4000 ? -1 : 1);
         }
 
-        output_io.write_u8(b);
-        output_io.write_u8(g);
-        output_io.write_u8(r);
-        output_io.skip(1);
+        output_stream.write_u8(b);
+        output_stream.write_u8(g);
+        output_stream.write_u8(r);
+        output_stream.skip(1);
     }
 }
 
 static void decompress_sgd_bgr_strategy_2(
-    io::IO &input_io, io::IO &output_io, u8 flag)
+    io::Stream &input_stream, io::Stream &output_stream, u8 flag)
 {
     auto size = (flag & 0x3F) + 1;
-    u8 b = input_io.read_u8();
-    u8 g = input_io.read_u8();
-    u8 r = input_io.read_u8();
+    u8 b = input_stream.read_u8();
+    u8 g = input_stream.read_u8();
+    u8 r = input_stream.read_u8();
     for (auto i : util::range(size))
     {
-        output_io.write_u8(b);
-        output_io.write_u8(g);
-        output_io.write_u8(r);
-        output_io.skip(1);
+        output_stream.write_u8(b);
+        output_stream.write_u8(g);
+        output_stream.write_u8(r);
+        output_stream.skip(1);
     }
 }
 
 static void decompress_sgd_bgr_strategy_3(
-    io::IO &input_io, io::IO &output_io, u8 flag)
+    io::Stream &input_stream, io::Stream &output_stream, u8 flag)
 {
     auto size = flag;
     for (auto i : util::range(size))
     {
-        output_io.write(input_io.read(3));
-        output_io.skip(1);
+        output_stream.write(input_stream.read(3));
+        output_stream.skip(1);
     }
 }
 
-static void decompress_sgd_bgr(const bstr &input, io::IO &output_io)
+static void decompress_sgd_bgr(const bstr &input, io::Stream &output_stream)
 {
-    io::BufferedIO input_io(input);
-    while (!input_io.eof())
+    io::MemoryStream input_stream(input);
+    while (!input_stream.eof())
     {
-        u8 flag = input_io.read_u8();
+        u8 flag = input_stream.read_u8();
+        std::function<void(io::Stream &, io::Stream &, u8)> func;
         switch (flag & 0xC0)
         {
-            case 0x80:
-                decompress_sgd_bgr_strategy_1(input_io, output_io, flag);
-                break;
-
-            case 0x40:
-                decompress_sgd_bgr_strategy_2(input_io, output_io, flag);
-                break;
-
-            case 0:
-                decompress_sgd_bgr_strategy_3(input_io, output_io, flag);
-                break;
-
-            default:
-                throw err::CorruptDataError("Bad decompression flag");
+            case 0x80: func = decompress_sgd_bgr_strategy_1; break;
+            case 0x40: func = decompress_sgd_bgr_strategy_2; break;
+            case 0x00: func = decompress_sgd_bgr_strategy_3; break;
+            default: throw err::CorruptDataError("Bad decompression flag");
         }
+        func(input_stream, output_stream, flag);
     }
-    output_io.seek(0);
+    output_stream.seek(0);
 }
 
 static bstr decompress_sgd(const bstr &input, size_t output_size)
 {
     bstr output(output_size);
-    io::BufferedIO output_io(output);
+    io::MemoryStream output_stream(output);
 
-    io::BufferedIO tmp_io(input);
+    io::MemoryStream tmp_stream(input);
 
-    auto alpha_size = tmp_io.read_u32_le();
-    auto alpha_data = tmp_io.read(alpha_size);
-    decompress_sgd_alpha(alpha_data, output_io);
+    auto alpha_size = tmp_stream.read_u32_le();
+    auto alpha_data = tmp_stream.read(alpha_size);
+    decompress_sgd_alpha(alpha_data, output_stream);
 
-    auto color_size = tmp_io.read_u32_le();
-    auto color_data = tmp_io.read(color_size);
-    decompress_sgd_bgr(color_data, output_io);
+    auto color_size = tmp_stream.read_u32_le();
+    auto color_data = tmp_stream.read(color_size);
+    decompress_sgd_bgr(color_data, output_stream);
 
-    return output_io.read_to_eof();
+    return output_stream.read_to_eof();
 }
 
-static std::vector<std::unique_ptr<Region>> read_region_data(io::IO &file_io)
+static std::vector<std::unique_ptr<Region>> read_region_data(io::Stream &stream)
 {
     std::vector<std::unique_ptr<Region>> regions;
-    while (file_io.tell() < file_io.size())
+    while (stream.tell() < stream.size())
     {
-        file_io.skip(4);
-        size_t regions_size = file_io.read_u32_le();
-        size_t region_count = file_io.read_u16_le();
-        size_t meta_format = file_io.read_u16_le();
-        size_t bytes_left = file_io.size() - file_io.tell();
+        stream.skip(4);
+        size_t regions_size = stream.read_u32_le();
+        size_t region_count = stream.read_u16_le();
+        size_t meta_format = stream.read_u16_le();
+        size_t bytes_left = stream.size() - stream.tell();
         if (meta_format != 4)
             throw err::NotSupportedError("Unexpected meta format");
         if (regions_size != bytes_left)
@@ -178,16 +170,16 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::IO &file_io)
         for (auto i : util::range(region_count))
         {
             auto region = std::make_unique<Region>();
-            region->x = file_io.read_u16_le();
-            region->y = file_io.read_u16_le();
-            region->width = file_io.read_u16_le();
-            region->height = file_io.read_u16_le();
+            region->x = stream.read_u16_le();
+            region->y = stream.read_u16_le();
+            region->width = stream.read_u16_le();
+            region->height = stream.read_u16_le();
             regions.push_back(std::move(region));
         }
 
-        if (file_io.tell() + 4 >= file_io.size())
+        if (stream.tell() + 4 >= stream.size())
             break;
-        file_io.skip(4);
+        stream.skip(4);
     }
     return regions;
 }
@@ -212,7 +204,7 @@ static pix::Grid read_pixels(
     {
         fmt::png::PngImageDecoder png_decoder;
         File tmp_file;
-        tmp_file.io.write(input);
+        tmp_file.stream.write(input);
         return png_decoder.decode(tmp_file);
     }
 
@@ -221,36 +213,36 @@ static pix::Grid read_pixels(
 
 bool MgdImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid MgdImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
+    file.stream.skip(magic.size());
 
-    u16 data_offset = file.io.read_u16_le();
-    u16 format = file.io.read_u16_le();
-    file.io.skip(4);
-    u16 width = file.io.read_u16_le();
-    u16 height = file.io.read_u16_le();
-    u32 size_original = file.io.read_u32_le();
-    u32 size_compressed_total = file.io.read_u32_le();
-    auto compression_type = static_cast<CompressionType>(file.io.read_u32_le());
-    file.io.skip(64);
+    u16 data_offset = file.stream.read_u16_le();
+    u16 format = file.stream.read_u16_le();
+    file.stream.skip(4);
+    u16 width = file.stream.read_u16_le();
+    u16 height = file.stream.read_u16_le();
+    u32 size_original = file.stream.read_u32_le();
+    u32 size_compressed_total = file.stream.read_u32_le();
+    const auto compression_type
+        = static_cast<const CompressionType>(file.stream.read_u32_le());
+    file.stream.skip(64);
 
-    size_t size_compressed = file.io.read_u32_le();
+    const size_t size_compressed = file.stream.read_u32_le();
     if (size_compressed_total != size_compressed + 4)
         throw err::CorruptDataError("Compressed data size mismatch");
 
-    auto pixels = read_pixels(
-        file.io.read(size_compressed),
+    auto image = read_pixels(
+        file.stream.read(size_compressed),
         compression_type,
         size_original,
         width,
         height);
-
-    read_region_data(file.io);
-    return pixels;
+    read_region_data(file.stream);
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<MgdImageDecoder>("nsystem/mgd");

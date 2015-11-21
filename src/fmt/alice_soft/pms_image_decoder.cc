@@ -9,7 +9,7 @@ static const bstr magic1 = "PM\x01\x00"_b;
 static const bstr magic2 = "PM\x02\x00"_b;
 
 bstr PmsImageDecoder::decompress_8bit(
-    io::IO &input_io, size_t width, size_t height)
+    io::Stream &input_stream, size_t width, size_t height)
 {
     bstr output(width * height);
     auto output_ptr = output.get<u8>();
@@ -17,13 +17,13 @@ bstr PmsImageDecoder::decompress_8bit(
 
     while (output_ptr < output_end)
     {
-        u8 c = input_io.read_u8();
+        u8 c = input_stream.read_u8();
 
         switch (c)
         {
             case 0xFF:
             {
-                auto n = input_io.read_u8() + 3;
+                auto n = input_stream.read_u8() + 3;
                 while (n-- && output_ptr < output_end)
                 {
                     *output_ptr = output_ptr[-width];
@@ -34,7 +34,7 @@ bstr PmsImageDecoder::decompress_8bit(
 
             case 0xFE:
             {
-                auto n = input_io.read_u8() + 3;
+                auto n = input_stream.read_u8() + 3;
                 while (n-- && output_ptr < output_end)
                 {
                     *output_ptr = output_ptr[-width * 2];
@@ -45,8 +45,8 @@ bstr PmsImageDecoder::decompress_8bit(
 
             case 0xFD:
             {
-                auto n = input_io.read_u8() + 4;
-                auto color = input_io.read_u8();
+                auto n = input_stream.read_u8() + 4;
+                auto color = input_stream.read_u8();
                 while (n-- && output_ptr < output_end)
                     *output_ptr++ = color;
                 break;
@@ -54,9 +54,9 @@ bstr PmsImageDecoder::decompress_8bit(
 
             case 0xFC:
             {
-                auto n = input_io.read_u8() + 3;
-                auto color1 = input_io.read_u8();
-                auto color2 = input_io.read_u8();
+                auto n = input_stream.read_u8() + 3;
+                auto color1 = input_stream.read_u8();
+                auto color2 = input_stream.read_u8();
                 while (n-- && output_ptr < output_end)
                 {
                     *output_ptr++ = color1;
@@ -66,7 +66,7 @@ bstr PmsImageDecoder::decompress_8bit(
             }
 
             case 0xF8:
-                *output_ptr++ = input_io.read_u8();
+                *output_ptr++ = input_stream.read_u8();
                 break;
 
             default:
@@ -78,7 +78,7 @@ bstr PmsImageDecoder::decompress_8bit(
 }
 
 bstr PmsImageDecoder::decompress_16bit(
-    io::IO &input_io, size_t width, size_t height)
+    io::Stream &input_stream, size_t width, size_t height)
 {
     bstr output(width * height * 2);
     auto output_ptr = output.get<u16>();
@@ -86,13 +86,13 @@ bstr PmsImageDecoder::decompress_16bit(
 
     while (output_ptr < output_end)
     {
-        u8 c = input_io.read_u8();
+        u8 c = input_stream.read_u8();
 
         switch (c)
         {
             case 0xFF:
             {
-                auto n = input_io.read_u8() + 2;
+                auto n = input_stream.read_u8() + 2;
                 while (n-- && output_ptr < output_end)
                 {
                     *output_ptr = output_ptr[-width];
@@ -103,7 +103,7 @@ bstr PmsImageDecoder::decompress_16bit(
 
             case 0xFE:
             {
-                auto n = input_io.read_u8() + 2;
+                auto n = input_stream.read_u8() + 2;
                 while (n-- && output_ptr < output_end)
                 {
                     *output_ptr = output_ptr[-width * 2];
@@ -114,8 +114,8 @@ bstr PmsImageDecoder::decompress_16bit(
 
             case 0xFD:
             {
-                auto size = input_io.read_u8() + 3;
-                auto color = input_io.read_u16_le();
+                auto size = input_stream.read_u8() + 3;
+                auto color = input_stream.read_u16_le();
                 while (size-- && output_ptr < output_end)
                     *output_ptr++ = color;
                 break;
@@ -123,9 +123,9 @@ bstr PmsImageDecoder::decompress_16bit(
 
             case 0xFC:
             {
-                auto n = input_io.read_u8() + 2;
-                auto color1 = input_io.read_u16_le();
-                auto color2 = input_io.read_u16_le();
+                auto n = input_stream.read_u8() + 2;
+                auto color1 = input_stream.read_u16_le();
+                auto color2 = input_stream.read_u16_le();
                 while (n-- && output_ptr < output_end)
                 {
                     *output_ptr++ = color1;
@@ -146,15 +146,15 @@ bstr PmsImageDecoder::decompress_16bit(
 
             case 0xF9:
             {
-                auto n = input_io.read_u8() + 1;
-                auto byte1 = input_io.read_u8();
+                auto n = input_stream.read_u8() + 1;
+                auto byte1 = input_stream.read_u8();
                 auto half1
                     = ((byte1 & 0b11100000) << 8)
                     | ((byte1 & 0b00011000) << 6)
                     | ((byte1 & 0b00000111) << 2);
                 while (n-- && output_ptr < output_end)
                 {
-                    auto byte2 = input_io.read_u8();
+                    auto byte2 = input_stream.read_u8();
                     auto half2
                         = ((byte2 & 0b11000000) << 5)
                         | ((byte2 & 0b00111100) << 3)
@@ -165,11 +165,11 @@ bstr PmsImageDecoder::decompress_16bit(
             }
 
             case 0xF8:
-                *output_ptr++ = input_io.read_u16_le();
+                *output_ptr++ = input_stream.read_u16_le();
                 break;
 
             default:
-                *output_ptr++ = c | (input_io.read_u8() << 8);
+                *output_ptr++ = c | (input_stream.read_u8() << 8);
                 break;
         }
     }
@@ -179,47 +179,47 @@ bstr PmsImageDecoder::decompress_16bit(
 
 bool PmsImageDecoder::is_recognized_impl(File &file) const
 {
-    if (file.io.read(magic1.size()) == magic1)
+    if (file.stream.read(magic1.size()) == magic1)
         return true;
-    file.io.seek(0);
-    return file.io.read(magic2.size()) == magic2;
+    file.stream.seek(0);
+    return file.stream.read(magic2.size()) == magic2;
 }
 
 pix::Grid PmsImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(2);
-    auto version = file.io.read_u16_le();
-    file.io.skip(2);
-    auto depth = file.io.read_u16_le();
-    file.io.skip(4 * 4);
-    auto width = file.io.read_u32_le();
-    auto height = file.io.read_u32_le();
-    auto data_offset = file.io.read_u32_le();
-    auto palette_offset = file.io.read_u32_le();
+    file.stream.skip(2);
+    auto version = file.stream.read_u16_le();
+    file.stream.skip(2);
+    auto depth = file.stream.read_u16_le();
+    file.stream.skip(4 * 4);
+    auto width = file.stream.read_u32_le();
+    auto height = file.stream.read_u32_le();
+    auto data_offset = file.stream.read_u32_le();
+    auto palette_offset = file.stream.read_u32_le();
 
     std::unique_ptr<pix::Grid> pixels;
 
     if (depth == 8)
     {
-        file.io.seek(data_offset);
-        auto pixel_data = decompress_8bit(file.io, width, height);
-        file.io.seek(palette_offset);
+        file.stream.seek(data_offset);
+        auto pixel_data = decompress_8bit(file.stream, width, height);
+        file.stream.seek(palette_offset);
         pix::Palette palette(
             256,
-            file.io,
+            file.stream,
             version == 1 ? pix::Format::RGB888 : pix::Format::BGR888);
         pixels.reset(new pix::Grid(width, height, pixel_data, palette));
     }
     else if (depth == 16)
     {
-        file.io.seek(data_offset);
-        auto pixel_data = decompress_16bit(file.io, width, height);
+        file.stream.seek(data_offset);
+        auto pixel_data = decompress_16bit(file.stream, width, height);
         pixels.reset(new pix::Grid(
             width, height, pixel_data, pix::Format::BGR565));
         if (palette_offset)
         {
-            file.io.seek(palette_offset);
-            auto alpha = decompress_8bit(file.io, width, height);
+            file.stream.seek(palette_offset);
+            auto alpha = decompress_8bit(file.stream, width, height);
             pix::Grid alpha_channel(width, height, alpha, pix::Format::Gray8);
             for (auto y : util::range(height))
             for (auto x : util::range(width))

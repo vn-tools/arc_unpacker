@@ -35,21 +35,21 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
     auto meta = std::make_unique<fmt::ArchiveMeta>();
     for (auto &dir : dirs)
     {
-        arc_file.io.seek(dir.offset);
+        arc_file.stream.seek(dir.offset);
         for (auto i : util::range(dir.file_count))
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
-            auto name = arc_file.io.read_to_zero(name_size).str();
+            auto name = arc_file.stream.read_to_zero(name_size).str();
             entry->already_unpacked = false;
             entry->name = name + "." + dir.extension;
-            entry->size = arc_file.io.read_u32_le();
-            entry->offset = arc_file.io.read_u32_le();
+            entry->size = arc_file.stream.read_u32_le();
+            entry->offset = arc_file.stream.read_u32_le();
 
             if (!entry->name.size())
                 throw err::CorruptDataError("Empty file name");
             if (entry->offset < min_offset)
                 throw err::BadDataOffsetError();
-            if (entry->offset + entry->size > arc_file.io.size())
+            if (entry->offset + entry->size > arc_file.stream.size())
                 throw err::BadDataOffsetError();
 
             meta->entries.push_back(std::move(entry));
@@ -108,15 +108,15 @@ void ArcArchiveDecoder::preprocess(
 std::unique_ptr<fmt::ArchiveMeta>
     ArcArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    auto dir_count = arc_file.io.read_u32_le();
+    auto dir_count = arc_file.stream.read_u32_le();
     if (dir_count > 100)
         throw err::BadDataSizeError();
     std::vector<Directory> dirs(dir_count);
     for (auto i : util::range(dirs.size()))
     {
-        dirs[i].extension = arc_file.io.read_to_zero(4).str();
-        dirs[i].file_count = arc_file.io.read_u32_le();
-        dirs[i].offset = arc_file.io.read_u32_le();
+        dirs[i].extension = arc_file.stream.read_to_zero(4).str();
+        dirs[i].file_count = arc_file.stream.read_u32_le();
+        dirs[i].offset = arc_file.stream.read_u32_le();
     }
 
     for (auto name_size : {9, 13})
@@ -138,8 +138,8 @@ std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
 
     auto output_file = std::make_unique<File>();
     output_file->name = entry->name;
@@ -148,7 +148,7 @@ std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
         for (auto &c : data)
             c = (c >> 2) | (c << 6);
 
-    output_file->io.write(data);
+    output_file->stream.write(data);
     return output_file;
 }
 

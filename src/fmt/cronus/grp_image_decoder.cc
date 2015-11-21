@@ -30,7 +30,7 @@ namespace
         EncType encryption_type;
     };
 
-    using HeaderFunc = std::function<Header(io::IO&)>;
+    using HeaderFunc = std::function<Header(io::Stream&)>;
 }
 
 static void swap_decrypt(bstr &input, size_t encrypted_size)
@@ -67,15 +67,15 @@ static bool validate_header(const Header &header)
 
 static HeaderFunc reader_v1(u32 key1, u32 key2, u32 key3, EncType enc_type)
 {
-    return [=](io::IO &file_io)
+    return [=](io::Stream &input)
     {
         Header header;
-        header.width = file_io.read_u32_le() ^ key1;
-        header.height = file_io.read_u32_le() ^ key2;
-        header.bpp = file_io.read_u32_le();
-        file_io.skip(4);
-        header.output_size = file_io.read_u32_le() ^ key3;
-        file_io.skip(4);
+        header.width = input.read_u32_le() ^ key1;
+        header.height = input.read_u32_le() ^ key2;
+        header.bpp = input.read_u32_le();
+        input.skip(4);
+        header.output_size = input.read_u32_le() ^ key3;
+        input.skip(4);
         header.use_transparency = false;
         header.flip = true;
         header.encryption_type = enc_type;
@@ -85,18 +85,18 @@ static HeaderFunc reader_v1(u32 key1, u32 key2, u32 key3, EncType enc_type)
 
 static HeaderFunc reader_v2()
 {
-    return [](io::IO &file_io)
+    return [](io::Stream &input)
     {
         Header header;
-        file_io.skip(4);
-        header.output_size = file_io.read_u32_le();
-        file_io.skip(8);
-        header.width = file_io.read_u32_le();
-        header.height = file_io.read_u32_le();
-        header.bpp = file_io.read_u32_le();
-        file_io.skip(8);
+        input.skip(4);
+        header.output_size = input.read_u32_le();
+        input.skip(8);
+        header.width = input.read_u32_le();
+        header.height = input.read_u32_le();
+        header.bpp = input.read_u32_le();
+        input.skip(8);
         header.flip = false;
-        header.use_transparency = file_io.read_u32_le();
+        header.use_transparency = input.read_u32_le();
         header.encryption_type = EncType::None;
         return header;
     };
@@ -123,13 +123,13 @@ bool GrpImageDecoder::is_recognized_impl(File &file) const
 {
     for (auto header_func : p->plugin_mgr.get_all())
     {
-        file.io.seek(0);
+        file.stream.seek(0);
         try
         {
-            p->header = header_func(file.io);
+            p->header = header_func(file.stream);
             if (!validate_header(p->header))
                 continue;
-            p->header.input_offset = file.io.tell();
+            p->header.input_offset = file.stream.tell();
             return true;
         }
         catch (...)
@@ -142,8 +142,8 @@ bool GrpImageDecoder::is_recognized_impl(File &file) const
 
 pix::Grid GrpImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(p->header.input_offset);
-    auto data = file.io.read_to_eof();
+    file.stream.seek(p->header.input_offset);
+    auto data = file.stream.read_to_eof();
 
     boost::filesystem::path path(file.name);
     if (p->header.encryption_type == EncType::Delta)

@@ -1,6 +1,6 @@
 #include "fmt/vorbis/packed_ogg_audio_decoder.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "log.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -24,50 +24,50 @@ namespace
 
 static const bstr ogg_magic = "OggS"_b;
 
-static OggPage read_ogg_page(io::IO &io)
+static OggPage read_ogg_page(io::Stream &input)
 {
     OggPage page;
-    page.version = io.read_u8();
-    page.header_type = io.read_u8();
-    page.granule_position = io.read(8);
-    page.bitstream_serial_number = io.read_u32_le();
-    page.page_sequence_number = io.read_u32_le();
-    page.checksum = io.read_u32_le();
-    std::vector<size_t> sizes(io.read_u8());
+    page.version = input.read_u8();
+    page.header_type = input.read_u8();
+    page.granule_position = input.read(8);
+    page.bitstream_serial_number = input.read_u32_le();
+    page.page_sequence_number = input.read_u32_le();
+    page.checksum = input.read_u32_le();
+    std::vector<size_t> sizes(input.read_u8());
     for (auto &size : sizes)
-        size = io.read_u8();
+        size = input.read_u8();
     for (auto &size : sizes)
-        page.segments.push_back(io.read(size));
+        page.segments.push_back(input.read(size));
     return page;
 }
 
-static void write_ogg_page(io::IO &target_io, const OggPage &page)
+static void write_ogg_page(io::Stream &output, const OggPage &page)
 {
-    target_io.write(ogg_magic);
-    target_io.write_u8(page.version);
-    target_io.write_u8(page.header_type);
-    target_io.write(page.granule_position);
-    target_io.write_u32_le(page.bitstream_serial_number);
-    target_io.write_u32_le(page.page_sequence_number);
-    target_io.write_u32_le(page.checksum);
-    target_io.write_u8(page.segments.size());
+    output.write(ogg_magic);
+    output.write_u8(page.version);
+    output.write_u8(page.header_type);
+    output.write(page.granule_position);
+    output.write_u32_le(page.bitstream_serial_number);
+    output.write_u32_le(page.page_sequence_number);
+    output.write_u32_le(page.checksum);
+    output.write_u8(page.segments.size());
     for (auto &page_segment : page.segments)
-        target_io.write_u8(page_segment.size());
+        output.write_u8(page_segment.size());
     for (auto &page_segment : page.segments)
-        target_io.write(page_segment);
+        output.write(page_segment);
 }
 
 bool PackedOggAudioDecoder::is_recognized_impl(File &file) const
 {
     if (!file.has_extension("wav"))
         return false;
-    file.io.seek(16);
-    file.io.skip(file.io.read_u32_le());
-    file.io.skip(20);
-    return file.io.read(4) == ogg_magic;
+    file.stream.seek(16);
+    file.stream.skip(file.stream.read_u32_le());
+    file.stream.skip(20);
+    return file.stream.read(4) == ogg_magic;
 }
 
-static void rewrite_ogg_stream(io::IO &ogg_io, io::IO &target_io)
+static void rewrite_ogg_stream(io::Stream &input, io::Stream &output)
 {
     // The OGG files used by LiarSoft may contain multiple streams, out of
     // which only the first one contains actual audio data.
@@ -75,15 +75,15 @@ static void rewrite_ogg_stream(io::IO &ogg_io, io::IO &target_io)
     u32 initial_serial_number = 0;
     auto pages = 0;
     auto serial_number_known = false;
-    while (!ogg_io.eof())
+    while (!input.eof())
     {
         OggPage page;
         try
         {
-            if (ogg_io.read(4) != ogg_magic)
+            if (input.read(4) != ogg_magic)
                 throw err::CorruptDataError("Expected OGG signature");
 
-            page = read_ogg_page(ogg_io);
+            page = read_ogg_page(input);
         }
         catch (err::IoError)
         {
@@ -102,7 +102,7 @@ static void rewrite_ogg_stream(io::IO &ogg_io, io::IO &target_io)
         // ffmpeg-based) audio players, so we discard these streams here.
         if (page.bitstream_serial_number == initial_serial_number)
         {
-            write_ogg_page(target_io, page);
+            write_ogg_page(output, page);
             pages++;
         }
     }
@@ -110,26 +110,26 @@ static void rewrite_ogg_stream(io::IO &ogg_io, io::IO &target_io)
 
 std::unique_ptr<File> PackedOggAudioDecoder::decode_impl(File &file) const
 {
-    if (file.io.read(4) != "RIFF"_b)
+    if (file.stream.read(4) != "RIFF"_b)
         throw err::CorruptDataError("Expected RIFF signature");
-    file.io.skip(4); // file size without RIFF header - usually corrupted
-    if (file.io.read(8) != "WAVEfmt\x20"_b)
+    file.stream.skip(4); // file size without RIFF header - usually corrupted
+    if (file.stream.read(8) != "WAVEfmt\x20"_b)
         throw err::CorruptDataError("Expected WAVE header");
-    file.io.skip(file.io.read_u32_le());
+    file.stream.skip(file.stream.read_u32_le());
 
-    if (file.io.read(4) != "fact"_b)
+    if (file.stream.read(4) != "fact"_b)
         throw err::CorruptDataError("Expected fact chunk");
-    if (file.io.read_u32_le() != 4)
+    if (file.stream.read_u32_le() != 4)
         throw err::CorruptDataError("Corrupt fact chunk");
-    file.io.skip(4);
+    file.stream.skip(4);
 
-    if (file.io.read(4) != "data"_b)
+    if (file.stream.read(4) != "data"_b)
         throw err::CorruptDataError("Expected data chunk");
-    auto data_size = file.io.read_u32_le();
-    io::BufferedIO ogg_io(file.io, data_size);
+    auto data_size = file.stream.read_u32_le();
+    io::MemoryStream input(file.stream, data_size);
 
     auto output_file = std::make_unique<File>();
-    rewrite_ogg_stream(ogg_io, output_file->io);
+    rewrite_ogg_stream(input, output_file->stream);
     output_file->name = file.name;
     output_file->guess_extension();
     return output_file;

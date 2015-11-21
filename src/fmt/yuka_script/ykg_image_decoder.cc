@@ -27,40 +27,40 @@ namespace
 
 static const bstr magic = "YKG000"_b;
 
-static std::unique_ptr<Header> read_header(io::IO &file_io)
+static std::unique_ptr<Header> read_header(io::Stream &input)
 {
     auto header = std::make_unique<Header>();
-    header->encrypted = file_io.read_u16_le() > 0;
+    header->encrypted = input.read_u16_le() > 0;
 
-    size_t header_size = file_io.read_u32_le();
+    size_t header_size = input.read_u32_le();
     if (header_size != 64)
         throw err::NotSupportedError("Unexpected header size");
-    file_io.skip(28);
+    input.skip(28);
 
-    header->data_offset = file_io.read_u32_le();
-    header->data_size = file_io.read_u32_le();
-    file_io.skip(8);
+    header->data_offset = input.read_u32_le();
+    header->data_size = input.read_u32_le();
+    input.skip(8);
 
-    header->regions_offset = file_io.read_u32_le();
-    header->regions_size = file_io.read_u32_le();
+    header->regions_offset = input.read_u32_le();
+    header->regions_size = input.read_u32_le();
     return header;
 }
 
 static std::vector<std::unique_ptr<Region>> read_regions(
-    io::IO &file_io, Header &header)
+    io::Stream &input, Header &header)
 {
     std::vector<std::unique_ptr<Region>> regions;
 
-    file_io.seek(header.regions_offset);
+    input.seek(header.regions_offset);
     size_t region_count = header.regions_size / 64;
     for (auto i : util::range(region_count))
     {
         auto region = std::make_unique<Region>();
-        region->x = file_io.read_u32_le();
-        region->y = file_io.read_u32_le();
-        region->width = file_io.read_u32_le();
-        region->height = file_io.read_u32_le();
-        file_io.skip(48);
+        region->x = input.read_u32_le();
+        region->y = input.read_u32_le();
+        region->width = input.read_u32_le();
+        region->height = input.read_u32_le();
+        input.skip(48);
         regions.push_back(std::move(region));
     }
     return regions;
@@ -68,8 +68,8 @@ static std::vector<std::unique_ptr<Region>> read_regions(
 
 static std::unique_ptr<File> decode_png(File &file, Header &header)
 {
-    file.io.seek(header.data_offset);
-    bstr data = file.io.read(header.data_size);
+    file.stream.seek(header.data_offset);
+    bstr data = file.stream.read(header.data_size);
     if (data.empty())
         throw std::logic_error("File doesn't contain any data");
     if (data.substr(1, 3) != "GNP"_b)
@@ -82,7 +82,7 @@ static std::unique_ptr<File> decode_png(File &file, Header &header)
     data[3] = 'G';
 
     auto output_file = std::make_unique<File>();
-    output_file->io.write(data);
+    output_file->stream.write(data);
     output_file->name = file.name;
     output_file->change_extension("png");
     return output_file;
@@ -90,21 +90,21 @@ static std::unique_ptr<File> decode_png(File &file, Header &header)
 
 bool YkgImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<File> YkgImageDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
+    file.stream.skip(magic.size());
 
-    auto header = read_header(file.io);
+    auto header = read_header(file.stream);
     if (header->encrypted)
     {
         throw err::NotSupportedError(
             "Decoding encrypted YKG images is not supported");
     }
 
-    read_regions(file.io, *header);
+    read_regions(file.stream, *header);
     return decode_png(file, *header);
 }
 

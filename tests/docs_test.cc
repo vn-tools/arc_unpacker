@@ -1,7 +1,7 @@
 #include <boost/algorithm/string.hpp>
 #include <regex>
 #include "fmt/registry.h"
-#include "io/file_io.h"
+#include "io/file_stream.h"
 #include "test_support/catch.hh"
 #include "log.h"
 
@@ -36,7 +36,7 @@ namespace
 
 static std::string read_gamelist_file()
 {
-    io::FileIO gamelist_file("GAMELIST.htm", io::FileMode::Read);
+    io::FileStream gamelist_file("GAMELIST.htm", io::FileMode::Read);
     return gamelist_file.read_to_eof().str();
 }
 

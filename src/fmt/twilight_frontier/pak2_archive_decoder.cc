@@ -2,7 +2,7 @@
 #include <boost/filesystem.hpp>
 #include "err.h"
 #include "fmt/twilight_frontier/pak2_image_decoder.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/encoding.h"
 #include "util/file_from_grid.h"
 #include "util/mt.h"
@@ -49,30 +49,30 @@ bool Pak2ArchiveDecoder::is_recognized_impl(File &arc_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     Pak2ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(0);
-    u16 file_count = arc_file.io.read_u16_le();
-    if (file_count == 0 && arc_file.io.size() != 6)
+    arc_file.stream.seek(0);
+    u16 file_count = arc_file.stream.read_u16_le();
+    if (file_count == 0 && arc_file.stream.size() != 6)
         throw err::RecognitionError();
 
-    size_t table_size = arc_file.io.read_u32_le();
-    if (table_size > arc_file.io.size() - arc_file.io.tell())
+    size_t table_size = arc_file.stream.read_u32_le();
+    if (table_size > arc_file.stream.size() - arc_file.stream.tell())
         throw err::RecognitionError();
     if (table_size > file_count * (4 + 4 + 256 + 1))
         throw err::RecognitionError();
-    auto table_data = arc_file.io.read(table_size);
+    auto table_data = arc_file.stream.read(table_size);
     decrypt(table_data, table_size + 6, 0xC5, 0x83, 0x53);
-    io::BufferedIO table_io(table_data);
+    io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->already_unpacked = false;
-        entry->offset = table_io.read_u32_le();
-        entry->size = table_io.read_u32_le();
-        auto name_size = table_io.read_u8();
-        entry->name = util::sjis_to_utf8(table_io.read(name_size)).str();
-        if (entry->offset + entry->size > arc_file.io.size())
+        entry->offset = table_stream.read_u32_le();
+        entry->size = table_stream.read_u32_le();
+        auto name_size = table_stream.read_u8();
+        entry->name = util::sjis_to_utf8(table_stream.read(name_size)).str();
+        if (entry->offset + entry->size > arc_file.stream.size())
             throw err::BadDataOffsetError();
         meta->entries.push_back(std::move(entry));
     }
@@ -85,8 +85,8 @@ std::unique_ptr<File> Pak2ArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->already_unpacked)
         return nullptr;
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     u8 key = (entry->offset >> 1) | 0x23;
     for (auto i : util::range(entry->size))
         data[i] ^= key;
@@ -120,9 +120,9 @@ void Pak2ArchiveDecoder::preprocess(
                 continue;
 
             auto pal_file = read_file(other_arc_file, *meta, *entry);
-            pal_file->io.seek(0);
+            pal_file->stream.seek(0);
             image_decoder.add_palette(
-                entry->name, pal_file->io.read_to_eof());
+                entry->name, pal_file->stream.read_to_eof());
         }
     }
 

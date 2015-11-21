@@ -7,16 +7,16 @@ using namespace au;
 using namespace au::fmt::bgi;
 using namespace au::fmt::bgi::cbg;
 
-bstr cbg::read_decrypted_data(io::IO &io)
+bstr cbg::read_decrypted_data(io::Stream &stream)
 {
-    u32 key = io.read_u32_le();
-    u32 data_size = io.read_u32_le();
+    u32 key = stream.read_u32_le();
+    u32 data_size = stream.read_u32_le();
 
-    u8 expected_sum = io.read_u8();
-    u8 expected_xor = io.read_u8();
-    io.skip(2);
+    u8 expected_sum = stream.read_u8();
+    u8 expected_xor = stream.read_u8();
+    stream.skip(2);
 
-    bstr data = io.read(data_size);
+    bstr data = stream.read(data_size);
     u8 *data_ptr = data.get<u8>();
 
     u8 actual_sum = 0;
@@ -34,25 +34,25 @@ bstr cbg::read_decrypted_data(io::IO &io)
     return data;
 }
 
-u32 cbg::read_variable_data(io::IO &input_io)
+u32 cbg::read_variable_data(io::Stream &input_stream)
 {
     u8 current;
     u32 result = 0;
     u32 shift = 0;
     do
     {
-        current = input_io.read_u8();
+        current = input_stream.read_u8();
         result |= (current & 0x7F) << shift;
         shift += 7;
     } while (current & 0x80);
     return result;
 }
 
-FreqTable cbg::read_freq_table(io::IO &input_io, size_t tree_size)
+FreqTable cbg::read_freq_table(io::Stream &input_stream, size_t tree_size)
 {
     FreqTable freq_table(tree_size);
     for (auto i : util::range(tree_size))
-        freq_table[i] = cbg::read_variable_data(input_io);
+        freq_table[i] = cbg::read_variable_data(input_stream);
     return freq_table;
 }
 

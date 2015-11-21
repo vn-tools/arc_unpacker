@@ -1,7 +1,7 @@
 #include "fmt/team_shanghai_alice/tha1_archive_decoder.h"
 #include "err.h"
 #include "fmt/team_shanghai_alice/crypt.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"
 
@@ -110,31 +110,31 @@ bool Tha1ArchiveDecoder::is_recognized_impl(File &arc_file) const
     auto encryption_version = detect_encryption_version(arc_file);
     if (encryption_version < 0)
         return false;
-    arc_file.io.seek(0);
-    auto header_data = arc_file.io.read(16);
+    arc_file.stream.seek(0);
+    auto header_data = arc_file.stream.read(16);
     header_data = decrypt(header_data, {0x1B, 0x37, 0x10, 0x400});
-    io::BufferedIO header_io(header_data);
-    return header_io.read(magic.size()) == magic;
+    io::MemoryStream header_stream(header_data);
+    return header_stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     Tha1ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    auto header_data = arc_file.io.read(16);
+    auto header_data = arc_file.stream.read(16);
     header_data = decrypt(header_data, {0x1B, 0x37, 0x10, 0x400});
-    io::BufferedIO header_io(header_data);
-    if (header_io.read(magic.size()) != magic)
+    io::MemoryStream header_stream(header_data);
+    if (header_stream.read(magic.size()) != magic)
         throw err::RecognitionError();
-    auto table_size_orig = header_io.read_u32_le() - 123456789;
-    auto table_size_comp = header_io.read_u32_le() - 987654321;
-    auto file_count = header_io.read_u32_le() - 135792468;
-    auto table_offset = arc_file.io.size() - table_size_comp;
+    auto table_size_orig = header_stream.read_u32_le() - 123456789;
+    auto table_size_comp = header_stream.read_u32_le() - 987654321;
+    auto file_count = header_stream.read_u32_le() - 135792468;
+    auto table_offset = arc_file.stream.size() - table_size_comp;
 
-    arc_file.io.seek(table_offset);
-    auto table_data = arc_file.io.read(table_size_comp);
+    arc_file.stream.seek(table_offset);
+    auto table_data = arc_file.stream.read(table_size_comp);
     table_data = decrypt(table_data, {0x3E, 0x9B, 0x80, table_size_comp});
     table_data = decompress(table_data, table_size_orig);
-    io::BufferedIO table_io(table_data);
+    io::MemoryStream table_stream(table_data);
 
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMetaImpl>();
@@ -142,17 +142,17 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
-        entry->name = table_io.read_to_zero().str();
-        table_io.skip(3 - entry->name.size() % 4);
+        entry->name = table_stream.read_to_zero().str();
+        table_stream.skip(3 - entry->name.size() % 4);
 
         entry->decryptor_id = 0;
         for (auto j : util::range(entry->name.size()))
             entry->decryptor_id += entry->name[j];
         entry->decryptor_id %= 8;
 
-        entry->offset = table_io.read_u32_le();
-        entry->size_orig = table_io.read_u32_le();
-        table_io.skip(4);
+        entry->offset = table_stream.read_u32_le();
+        entry->size_orig = table_stream.read_u32_le();
+        table_stream.skip(4);
         if (last_entry)
             last_entry->size_comp = entry->offset - last_entry->offset;
         last_entry = entry.get();
@@ -172,8 +172,8 @@ std::unique_ptr<File> Tha1ArchiveDecoder::read_file_impl(
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size_comp);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size_comp);
     data = decrypt(
         data, decryptors[meta->encryption_version][entry->decryptor_id]);
     if (entry->size_comp != entry->size_orig)

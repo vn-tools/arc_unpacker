@@ -7,39 +7,39 @@ using namespace au::fmt::lizsoft;
 
 bool SotesImageDecoder::is_recognized_impl(File &file) const
 {
-    file.io.seek(0x438);
-    auto a = file.io.read_u32_le();
-    file.io.seek(0x448);
-    auto b = file.io.read_u32_le();
-    file.io.seek(0x450);
-    auto c = file.io.read_u32_le();
+    file.stream.seek(0x438);
+    auto a = file.stream.read_u32_le();
+    file.stream.seek(0x448);
+    auto b = file.stream.read_u32_le();
+    file.stream.seek(0x450);
+    auto c = file.stream.read_u32_le();
     return a - b == 0x2711 && c - b <= 0x80;
 }
 
 pix::Grid SotesImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(0x448);
-    auto base = file.io.read_u32_le();
+    file.stream.seek(0x448);
+    auto base = file.stream.read_u32_le();
 
-    file.io.seek(0x450);
-    auto pixel_data_offset = 0x458 + file.io.read_u32_le() - base;
+    file.stream.seek(0x450);
+    auto pixel_data_offset = 0x458 + file.stream.read_u32_le() - base;
 
-    file.io.seek(0x430);
-    auto depth = file.io.read_u16_le() - base;
+    file.stream.seek(0x430);
+    auto depth = file.stream.read_u16_le() - base;
 
-    file.io.seek(0x440);
-    file.io.seek(4 + 4 * (file.io.read_u32_le() - base));
-    auto width = file.io.read_u32_le() - base;
+    file.stream.seek(0x440);
+    file.stream.seek(4 + 4 * (file.stream.read_u32_le() - base));
+    auto width = file.stream.read_u32_le() - base;
 
-    file.io.seek(0x18);
-    file.io.seek(0x420 + 4 * (file.io.read_u32_le() - base));
-    auto height = file.io.read_u32_le() - base;
+    file.stream.seek(0x18);
+    file.stream.seek(0x420 + 4 * (file.stream.read_u32_le() - base));
+    auto height = file.stream.read_u32_le() - base;
 
-    file.io.seek(0x20);
-    pix::Palette palette(256, file.io, pix::Format::BGR888X);
+    file.stream.seek(0x20);
+    pix::Palette palette(256, file.stream, pix::Format::BGR888X);
 
-    file.io.seek(pixel_data_offset);
-    auto data = file.io.read(width * height * (depth >> 3));
+    file.stream.seek(pixel_data_offset);
+    auto data = file.stream.read(width * height * (depth >> 3));
 
     std::unique_ptr<pix::Grid> pixels;
     if (depth == 8)

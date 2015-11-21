@@ -1,6 +1,6 @@
 #include "fmt/ivory/wady_audio_decoder.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/file_from_samples.h"
 #include "util/range.h"
 
@@ -18,35 +18,35 @@ namespace
     };
 }
 
-static Version detect_version(io::IO &io)
+static Version detect_version(io::Stream &stream)
 {
     auto version = Version::Version1;
-    io.peek(io.tell(), [&]()
+    stream.peek(stream.tell(), [&]()
     {
-        auto channels = io.read_u16_le();
+        auto channels = stream.read_u16_le();
         try
         {
-            io.seek(0x30);
+            stream.seek(0x30);
             if (channels == 2)
             {
                 for (auto i : util::range(2))
                 {
-                    auto compressed_size = io.read_u32_le();
-                    io.skip(compressed_size);
+                    auto compressed_size = stream.read_u32_le();
+                    stream.skip(compressed_size);
                 }
             }
             else if (channels == 1)
             {
-                io.skip(4);
-                auto left = io.read_u32_le();
-                io.skip(2);
+                stream.skip(4);
+                auto left = stream.read_u32_le();
+                stream.skip(2);
                 while (left--)
                 {
-                    if (!(io.read_u8() & 1))
-                        io.read_u8();
+                    if (!(stream.read_u8() & 1))
+                        stream.read_u8();
                 }
             }
-            if (io.eof())
+            if (stream.eof())
                 version = Version::Version2;
         }
         catch (...)
@@ -57,7 +57,10 @@ static Version detect_version(io::IO &io)
 }
 
 static bstr decode_v1(
-    io::IO &io, size_t sample_count, size_t channels, size_t block_align)
+    io::Stream &stream,
+    const size_t sample_count,
+    const size_t channels,
+    const size_t block_align)
 {
     static const u16 table[0x40] =
     {
@@ -76,12 +79,12 @@ static bstr decode_v1(
     auto samples_end = samples.end<u16>();
 
     u16 prev_sample[2] = {0, 0};
-    io::BufferedIO tmp_io(io);
-    while (!tmp_io.eof() && samples_ptr < samples_end)
+    io::MemoryStream tmp_stream(stream);
+    while (!tmp_stream.eof() && samples_ptr < samples_end)
     {
         for (auto i : util::range(channels))
         {
-            u16 b = tmp_io.read_u8();
+            u16 b = tmp_stream.read_u8();
             if (b & 0x80)
             {
                 prev_sample[i] = b << 9;
@@ -100,7 +103,8 @@ static bstr decode_v1(
     return samples;
 }
 
-static bstr decode_v2(io::IO &io, size_t sample_count, size_t channels)
+static bstr decode_v2(
+    io::Stream &stream, const size_t sample_count, const size_t channels)
 {
     static const u16 table1[] =
     {
@@ -116,13 +120,13 @@ static bstr decode_v2(io::IO &io, size_t sample_count, size_t channels)
     for (auto i : util::range(channels))
     {
         auto compressed_size = channels == 1
-            ? io.size() - io.tell()
-            : io.read_u32_le();
+            ? stream.size() - stream.tell()
+            : stream.read_u32_le();
 
-        io::BufferedIO tmp_io(io, compressed_size);
-        tmp_io.skip(4);
-        auto left = tmp_io.read_u32_le();
-        s16 prev_sample = tmp_io.read_u16_le();
+        io::MemoryStream tmp_stream(stream, compressed_size);
+        tmp_stream.skip(4);
+        auto left = tmp_stream.read_u32_le();
+        s16 prev_sample = tmp_stream.read_u16_le();
 
         auto samples_ptr = samples.get<u16>();
         auto samples_end = samples.end<u16>();
@@ -132,7 +136,7 @@ static bstr decode_v2(io::IO &io, size_t sample_count, size_t channels)
         while (left && samples_ptr < samples_end)
         {
             prev_sample = left == 300 ? 0 : prev_sample;
-            u16 b = tmp_io.read_u8();
+            u16 b = tmp_stream.read_u8();
 
             if (b & 1)
             {
@@ -150,7 +154,7 @@ static bstr decode_v2(io::IO &io, size_t sample_count, size_t channels)
             }
             else
             {
-                u32 tmp = (tmp_io.read_u8() << 8) | b;
+                u32 tmp = (tmp_stream.read_u8() << 8) | b;
                 auto dividend = table2[(tmp >> 1) & 7];
                 auto repetitions = table2[(tmp >> 1) & 7];
                 s16 tmp2 = tmp & 0xFFF0;
@@ -172,41 +176,41 @@ static bstr decode_v2(io::IO &io, size_t sample_count, size_t channels)
 
 bool WadyAudioDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<File> WadyAudioDecoder::decode_impl(File &file) const
 {
-    file.io.skip(magic.size());
-    file.io.skip(2);
+    file.stream.skip(magic.size());
+    file.stream.skip(2);
 
-    auto version = detect_version(file.io);
+    auto version = detect_version(file.stream);
 
-    auto channels = file.io.read_u16_le();
-    auto sample_rate = file.io.read_u32_le();
+    auto channels = file.stream.read_u16_le();
+    auto sample_rate = file.stream.read_u32_le();
 
-    auto sample_count = file.io.read_u32_le();
-    auto channel_sample_count = file.io.read_u32_le();
-    auto size_uncompressed = file.io.read_u32_le();
+    auto sample_count = file.stream.read_u32_le();
+    auto channel_sample_count = file.stream.read_u32_le();
+    auto size_uncompressed = file.stream.read_u32_le();
     if (channel_sample_count * channels != sample_count)
         throw err::CorruptDataError("Sample count mismatch");
     if (sample_count * 2 != size_uncompressed)
         throw err::CorruptDataError("Data size mismatch");
-    file.io.skip(4 * 2 + 2);
-    if (file.io.read_u16_le() != channels)
+    file.stream.skip(4 * 2 + 2);
+    if (file.stream.read_u16_le() != channels)
         throw err::CorruptDataError("Channel count mismatch");
-    if (file.io.read_u32_le() != sample_rate)
+    if (file.stream.read_u32_le() != sample_rate)
         throw err::CorruptDataError("Sample rate mismatch");
-    auto byte_rate = file.io.read_u32_le();
-    auto block_align = file.io.read_u16_le();
-    auto bits_per_sample = file.io.read_u16_le();
+    auto byte_rate = file.stream.read_u32_le();
+    auto block_align = file.stream.read_u16_le();
+    auto bits_per_sample = file.stream.read_u16_le();
 
-    file.io.seek(0x30);
+    file.stream.seek(0x30);
     bstr samples;
     if (version == Version::Version1)
-        samples = decode_v1(file.io, sample_count, channels, block_align);
+        samples = decode_v1(file.stream, sample_count, channels, block_align);
     else if (version == Version::Version2)
-        samples = decode_v2(file.io, sample_count, channels);
+        samples = decode_v2(file.stream, sample_count, channels);
     else
         throw err::UnsupportedVersionError(version);
 

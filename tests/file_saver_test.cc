@@ -16,9 +16,9 @@ static void do_test(const boost::filesystem::path &path)
 
     REQUIRE(boost::filesystem::exists(path));
     {
-        io::FileIO file_io(path, io::FileMode::Read);
-        REQUIRE(file_io.size() == 4);
-        REQUIRE(file_io.read_to_eof() == "test"_b);
+        io::FileStream file_stream(path, io::FileMode::Read);
+        REQUIRE(file_stream.size() == 4);
+        REQUIRE(file_stream.read_to_eof() == "test"_b);
     }
     boost::filesystem::remove(path);
 }

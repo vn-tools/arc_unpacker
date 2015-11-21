@@ -1,6 +1,6 @@
 #include "fmt/amuse_craft/pgd_c00_image_decoder.h"
 #include "fmt/truevision/tga_image_decoder.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/cyclic_buffer.h"
 #include "util/range.h"
 
@@ -13,18 +13,18 @@ static bstr decompress(const bstr &input, const size_t size_orig)
 {
     bstr output;
     output.reserve(size_orig);
-    io::BufferedIO input_io(input);
+    io::MemoryStream input_stream(input);
     util::CyclicBuffer<0xBB8> dict(0);
     u16 control = 0;
     while (output.size() < size_orig)
     {
         control >>= 1;
         if (!(control & 0x100))
-            control = input_io.read_u8() | 0xFF00;
+            control = input_stream.read_u8() | 0xFF00;
         if (control & 1)
         {
-            const auto look_behind_pos = input_io.read_u16_le();
-            const auto repetitions = input_io.read_u8();
+            const auto look_behind_pos = input_stream.read_u16_le();
+            const auto repetitions = input_stream.read_u8();
             const auto dict_start = dict.start();
             for (const auto i : util::range(repetitions))
             {
@@ -35,8 +35,8 @@ static bstr decompress(const bstr &input, const size_t size_orig)
         }
         else
         {
-            const auto repetitions = input_io.read_u8();
-            const auto chunk = input_io.read(repetitions);
+            const auto repetitions = input_stream.read_u8();
+            const auto chunk = input_stream.read(repetitions);
             output += chunk;
             dict << chunk;
         }
@@ -46,16 +46,16 @@ static bstr decompress(const bstr &input, const size_t size_orig)
 
 bool PgdC00ImageDecoder::is_recognized_impl(File &file) const
 {
-    file.io.seek(24);
-    return file.io.read(magic.size()) == magic;
+    file.stream.seek(24);
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid PgdC00ImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(24 + magic.size());
-    const auto size_orig = file.io.read_u32_le();
-    const auto size_comp = file.io.read_u32_le();
-    auto data = file.io.read(size_comp - 12);
+    file.stream.seek(24 + magic.size());
+    const auto size_orig = file.stream.read_u32_le();
+    const auto size_comp = file.stream.read_u32_le();
+    auto data = file.stream.read(size_comp - 12);
     data = decompress(data, size_orig);
     File tmp_file("test.tga", data);
     fmt::truevision::TgaImageDecoder tga_image_decoder;

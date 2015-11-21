@@ -1,6 +1,6 @@
 #include "fmt/real_live/nwa_audio_decoder.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/file_from_samples.h"
 #include "util/range.h"
 
@@ -68,7 +68,7 @@ static bool use_run_length(const NwaHeader &header)
 static bstr decode_block(
     const NwaHeader &header,
     size_t current_block,
-    io::IO &io,
+    io::Stream &stream,
     const std::vector<u32> &offsets)
 {
     size_t bytes_per_sample = header.bits_per_sample >> 3;
@@ -78,22 +78,23 @@ static bstr decode_block(
     auto output_size = current_block_size / bytes_per_sample;
     auto input_size = current_block != offsets.size() - 1
         ? offsets.at(current_block + 1) - offsets.at(current_block)
-        : io.size() - offsets.at(current_block);
+        : stream.size() - offsets.at(current_block);
 
     bstr output(output_size * 2);
     s16 *output_ptr = output.get<s16>();
 
-    io.seek(offsets.at(current_block));
+    stream.seek(offsets.at(current_block));
     s16 d[2];
     for (auto i : util::range(header.channel_count))
     {
         if (header.bits_per_sample == 8)
-            d[i] = io.read_u8();
+            d[i] = stream.read_u8();
         else
-            d[i] = io.read_u16_le();
+            d[i] = stream.read_u16_le();
     }
 
-    auto input = io.read(input_size - bytes_per_sample * header.channel_count);
+    auto input = stream.read(
+        input_size - bytes_per_sample * header.channel_count);
     CustomBitReader bit_reader(input);
     auto current_channel = 0;
     auto run_length = 0;
@@ -173,7 +174,7 @@ static bstr decode_block(
     return output;
 }
 
-static bstr nwa_read_compressed(io::IO &io, const NwaHeader &header)
+static bstr nwa_read_compressed(io::Stream &stream, const NwaHeader &header)
 {
     if (header.compression_level < 0 || header.compression_level > 5)
         throw err::NotSupportedError("Unsupported compression level");
@@ -202,20 +203,20 @@ static bstr nwa_read_compressed(io::IO &io, const NwaHeader &header)
         throw err::CorruptDataError("Bad sample count");
     }
 
-    io.skip(4);
+    stream.skip(4);
     std::vector<u32> offsets;
     for (auto i : util::range(header.block_count))
-        offsets.push_back(io.read_u32_le());
+        offsets.push_back(stream.read_u32_le());
 
     bstr output;
     for (auto i : util::range(header.block_count))
-        output += decode_block(header, i, io, offsets);
+        output += decode_block(header, i, stream, offsets);
     return output;
 }
 
-static bstr nwa_read_uncompressed(io::IO &io, const NwaHeader &header)
+static bstr nwa_read_uncompressed(io::Stream &stream, const NwaHeader &header)
 {
-    return io.read(header.uncompressed_size);
+    return stream.read(header.uncompressed_size);
 }
 
 bool NwaAudioDecoder::is_recognized_impl(File &file) const
@@ -226,24 +227,24 @@ bool NwaAudioDecoder::is_recognized_impl(File &file) const
 std::unique_ptr<File> NwaAudioDecoder::decode_impl(File &file) const
 {
     // buffer the file in memory for performance
-    io::BufferedIO io(file.io.read_to_eof());
+    io::MemoryStream stream(file.stream.read_to_eof());
 
     NwaHeader header;
-    header.channel_count = io.read_u16_le();
-    header.bits_per_sample = io.read_u16_le();
-    header.sample_rate = io.read_u32_le();
-    header.compression_level = static_cast<s32>(io.read_u32_le());
-    io.skip(4);
-    header.block_count = io.read_u32_le();
-    header.uncompressed_size = io.read_u32_le();
-    header.compressed_size = io.read_u32_le();
-    header.sample_count = io.read_u32_le();
-    header.block_size = io.read_u32_le();
-    header.rest_size = io.read_u32_le();
+    header.channel_count = stream.read_u16_le();
+    header.bits_per_sample = stream.read_u16_le();
+    header.sample_rate = stream.read_u32_le();
+    header.compression_level = static_cast<s32>(stream.read_u32_le());
+    stream.skip(4);
+    header.block_count = stream.read_u32_le();
+    header.uncompressed_size = stream.read_u32_le();
+    header.compressed_size = stream.read_u32_le();
+    header.sample_count = stream.read_u32_le();
+    header.block_size = stream.read_u32_le();
+    header.rest_size = stream.read_u32_le();
 
     bstr samples = header.compression_level == -1
-        ? nwa_read_uncompressed(io, header)
-        : nwa_read_compressed(io, header);
+        ? nwa_read_uncompressed(stream, header)
+        : nwa_read_compressed(stream, header);
 
     return util::file_from_samples(
         header.channel_count,

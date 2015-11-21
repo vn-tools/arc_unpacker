@@ -7,35 +7,35 @@ static const bstr magic = "WAF\x00\x00\x00"_b;
 
 bool WafAudioDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<File> WafAudioDecoder::decode_impl(File &file) const
 {
     auto output_file = std::make_unique<File>();
 
-    file.io.skip(6);
+    file.stream.skip(6);
 
-    output_file->io.write("RIFF"_b);
-    output_file->io.write("\x00\x00\x00\x00"_b);
-    output_file->io.write("WAVE"_b);
-    output_file->io.write("fmt\x20"_b);
-    output_file->io.write_u32_le(50); // fmt header size
-    output_file->io.write_u16_le(2); // compression type - some kind of ADPCM
-    output_file->io.write_u16_le(file.io.read_u16_le()); // channels
-    output_file->io.write_u32_le(file.io.read_u32_le()); // sample rate
-    output_file->io.write_u32_le(file.io.read_u32_le()); // average bytes / sec?
-    output_file->io.write_u16_le(file.io.read_u16_le()); // block align?
-    output_file->io.write_u16_le(file.io.read_u16_le()); // bits per sample?
+    output_file->stream.write("RIFF"_b);
+    output_file->stream.write("\x00\x00\x00\x00"_b);
+    output_file->stream.write("WAVE"_b);
+    output_file->stream.write("fmt\x20"_b);
+    output_file->stream.write_u32_le(50); // fmt header size
+    output_file->stream.write_u16_le(2); // compression type - ADPCM
+    output_file->stream.write_u16_le(file.stream.read_u16_le());
+    output_file->stream.write_u32_le(file.stream.read_u32_le());
+    output_file->stream.write_u32_le(file.stream.read_u32_le());
+    output_file->stream.write_u16_le(file.stream.read_u16_le());
+    output_file->stream.write_u16_le(file.stream.read_u16_le());
 
-    output_file->io.write_u16_le(32); // additional header size?
-    output_file->io.write(file.io.read(32)); // aditional header?
+    output_file->stream.write_u16_le(32); // size of additional header
+    output_file->stream.write(file.stream.read(32)); // aditional header
 
-    output_file->io.write("data"_b);
-    output_file->io.write(file.io.read_to_eof());
+    output_file->stream.write("data"_b);
+    output_file->stream.write(file.stream.read_to_eof());
 
-    output_file->io.seek(4);
-    output_file->io.write_u32_le(file.io.size());
+    output_file->stream.seek(4);
+    output_file->stream.write_u32_le(file.stream.size());
 
     output_file->name = file.name;
     output_file->change_extension("wav");

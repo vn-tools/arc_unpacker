@@ -1,7 +1,7 @@
 #include "fmt/playstation/gim_image_decoder.h"
 #include <map>
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -19,12 +19,12 @@ namespace
 }
 
 static std::unique_ptr<pix::Palette> read_palette(
-    io::IO &io, const Chunk &chunk)
+    io::Stream &stream, const Chunk &chunk)
 {
-    io.seek(chunk.offset + 0x14);
-    const auto format_id = io.read_u16_le();
-    io.skip(2);
-    const auto color_count = io.read_u16_le();
+    stream.seek(chunk.offset + 0x14);
+    const auto format_id = stream.read_u16_le();
+    stream.skip(2);
+    const auto color_count = stream.read_u16_le();
 
     pix::Format format;
     if      (format_id == 0) format = pix::Format::RGB565;
@@ -33,12 +33,12 @@ static std::unique_ptr<pix::Palette> read_palette(
     else if (format_id == 3) format = pix::Format::RGBA8888;
     else throw err::NotSupportedError("Unknown palette format");
 
-    io.seek(chunk.offset + 0x50);
-    return std::make_unique<pix::Palette>(color_count, io, format);
+    stream.seek(chunk.offset + 0x50);
+    return std::make_unique<pix::Palette>(color_count, stream, format);
 }
 
 static bstr read_data(
-    io::IO &io,
+    io::Stream &stream,
     const size_t width,
     const size_t height,
     const size_t bpp,
@@ -46,7 +46,7 @@ static bstr read_data(
 {
     const auto stride = width * bpp / 8;
     const auto block_stride = stride / 16;
-    auto data = io.read(height * stride);
+    auto data = stream.read(height * stride);
     if (swizzled)
     {
         const bstr source = data;
@@ -67,17 +67,19 @@ static bstr read_data(
 }
 
 static std::unique_ptr<pix::Grid> read_image(
-    io::IO &io, const Chunk &chunk, std::unique_ptr<pix::Palette> palette)
+    io::Stream &stream,
+    const Chunk &chunk,
+    std::unique_ptr<pix::Palette> palette)
 {
-    io.seek(chunk.offset + 0x14);
-    const auto format_id = io.read_u16_le();
-    const auto swizzled = io.read_u16_le() == 0x01;
-    const auto width = (io.read_u16_le() + 15) & ~15;
-    const auto height = (io.read_u16_le() + 7) & ~7;
+    stream.seek(chunk.offset + 0x14);
+    const auto format_id = stream.read_u16_le();
+    const auto swizzled = stream.read_u16_le() == 0x01;
+    const auto width = (stream.read_u16_le() + 15) & ~15;
+    const auto height = (stream.read_u16_le() + 7) & ~7;
 
-    io.seek(chunk.offset + 0x2C);
-    const auto data_offset = io.read_u32_le();
-    io.seek(chunk.offset + 0x10 + data_offset);
+    stream.seek(chunk.offset + 0x2C);
+    const auto data_offset = stream.read_u32_le();
+    stream.seek(chunk.offset + 0x10 + data_offset);
     std::unique_ptr<pix::Grid> image;
     if (format_id < 4)
     {
@@ -89,7 +91,7 @@ static std::unique_ptr<pix::Grid> read_image(
         else if (format_id == 3) format = pix::Format::RGBA8888;
 
         const auto data = read_data(
-            io, width, height, pix::format_to_bpp(format) * 8, swizzled);
+            stream, width, height, pix::format_to_bpp(format) * 8, swizzled);
         image = std::make_unique<pix::Grid>(width, height, data, format);
     }
     else
@@ -101,19 +103,20 @@ static std::unique_ptr<pix::Grid> read_image(
         else if (format_id == 7) palette_bits = 32;
         else throw err::NotSupportedError("Unknown pixel format");
 
-        const auto data = read_data(io, width, height, palette_bits, swizzled);
+        const auto data = read_data(
+            stream, width, height, palette_bits, swizzled);
         if (palette_bits == 8)
             image = std::make_unique<pix::Grid>(width, height, data, *palette);
         else if (palette_bits == 4)
         {
-            io::BufferedIO data_io(data);
+            io::MemoryStream data_stream(data);
             image = std::make_unique<pix::Grid>(width, height);
             if (palette_bits == 4)
             {
                 for (const auto y : util::range(height))
                 for (const auto x : util::range(0, width, 2))
                 {
-                    const auto tmp = data_io.read_u8();
+                    const auto tmp = data_stream.read_u8();
                     image->at(x + 0, y) = palette->at(tmp & 0xF);
                     image->at(x + 1, y) = palette->at(tmp >> 4);
                 }
@@ -122,13 +125,13 @@ static std::unique_ptr<pix::Grid> read_image(
             {
                 for (const auto y : util::range(height))
                 for (const auto x : util::range(width))
-                    image->at(x, y) = palette->at(data_io.read_u16_le());
+                    image->at(x, y) = palette->at(data_stream.read_u16_le());
             }
             else if (palette_bits == 32)
             {
                 for (const auto y : util::range(height))
                 for (const auto x : util::range(width))
-                    image->at(x, y) = palette->at(data_io.read_u32_le());
+                    image->at(x, y) = palette->at(data_stream.read_u32_le());
             }
         }
     }
@@ -138,32 +141,32 @@ static std::unique_ptr<pix::Grid> read_image(
 
 bool GimImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.io.read(magic.size()) == magic;
+    return file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid GimImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(0x30);
+    file.stream.seek(0x30);
     std::map<int, Chunk> chunks;
-    while (!file.io.eof())
+    while (!file.stream.eof())
     {
         Chunk chunk;
-        chunk.offset = file.io.tell();
-        chunk.type = file.io.read_u32_le();
-        chunk.size = file.io.read_u32_le();
-        if (file.io.read_u32_le() != chunk.size)
+        chunk.offset = file.stream.tell();
+        chunk.type = file.stream.read_u32_le();
+        chunk.size = file.stream.read_u32_le();
+        if (file.stream.read_u32_le() != chunk.size)
             throw err::NotSupportedError("Data is most probably compressed");
-        file.io.seek(chunk.offset + chunk.size);
+        file.stream.seek(chunk.offset + chunk.size);
         chunks[chunk.type] = chunk;
     }
 
     std::unique_ptr<pix::Palette> palette;
     if (chunks.find(0x05) != chunks.end())
-        palette = read_palette(file.io, chunks[0x05]);
+        palette = read_palette(file.stream, chunks[0x05]);
 
     if (chunks.find(0x04) == chunks.end())
         throw err::CorruptDataError("Missing bitmap");
-    return *read_image(file.io, chunks[0x04], std::move(palette));
+    return *read_image(file.stream, chunks[0x04], std::move(palette));
 }
 
 static auto dummy = fmt::register_fmt<GimImageDecoder>("playstation/gim");

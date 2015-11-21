@@ -2,7 +2,7 @@
 #include <map>
 #include "err.h"
 #include "fmt/team_shanghai_alice/crypt.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"
 
@@ -67,18 +67,18 @@ static std::unique_ptr<File> read_file(
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
-    arc_file.io.seek(entry->offset);
-    io::BufferedIO uncompressed_io(
+    arc_file.stream.seek(entry->offset);
+    io::MemoryStream uncompressed_stream(
         decompress(
-            arc_file.io.read(entry->size_comp),
+            arc_file.stream.read(entry->size_comp),
             entry->size_orig));
 
-    if (uncompressed_io.read(crypt_magic.size()) != crypt_magic)
+    if (uncompressed_stream.read(crypt_magic.size()) != crypt_magic)
         throw err::NotSupportedError("Unknown encryption");
 
     auto data = decrypt(
-        uncompressed_io.read_to_eof(),
-        decryptors[encryption_version][uncompressed_io.read_u8()]);
+        uncompressed_stream.read_to_eof(),
+        decryptors[encryption_version][uncompressed_stream.read_u8()]);
 
     return std::make_unique<File>(entry->name, data);
 }
@@ -93,8 +93,8 @@ static size_t detect_encryption_version(
         for (auto version : util::range(decryptors.size()))
         {
             auto file = read_file(arc_file, *entry, version);
-            file->io.seek(0);
-            if (file->io.read(jpeg_magic.size()) == jpeg_magic)
+            file->stream.seek(0);
+            if (file->stream.read(jpeg_magic.size()) == jpeg_magic)
                 return version;
         }
     }
@@ -103,24 +103,24 @@ static size_t detect_encryption_version(
 
 bool PbgzArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    return arc_file.io.read(magic.size()) == magic;
+    return arc_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     PbgzArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(magic.size());
+    arc_file.stream.seek(magic.size());
 
-    io::BufferedIO header_io(
-        decrypt(arc_file.io.read(12), {0x1B, 0x37, 0x0C, 0x400}));
-    auto file_count = header_io.read_u32_le() - 123456;
-    auto table_offset = header_io.read_u32_le() - 345678;
-    auto table_size_orig = header_io.read_u32_le() - 567891;
+    io::MemoryStream header_stream(
+        decrypt(arc_file.stream.read(12), {0x1B, 0x37, 0x0C, 0x400}));
+    auto file_count = header_stream.read_u32_le() - 123456;
+    auto table_offset = header_stream.read_u32_le() - 345678;
+    auto table_size_orig = header_stream.read_u32_le() - 567891;
 
-    arc_file.io.seek(table_offset);
-    io::BufferedIO table_io(
+    arc_file.stream.seek(table_offset);
+    io::MemoryStream table_stream(
         decompress(
-            decrypt(arc_file.io.read_to_eof(), {0x3E, 0x9B, 0x80, 0x400}),
+            decrypt(arc_file.stream.read_to_eof(), {0x3E, 0x9B, 0x80, 0x400}),
             table_size_orig));
 
     ArchiveEntryImpl *last_entry = nullptr;
@@ -128,10 +128,10 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = table_io.read_to_zero().str();
-        entry->offset = table_io.read_u32_le();
-        entry->size_orig = table_io.read_u32_le();
-        table_io.skip(4);
+        entry->name = table_stream.read_to_zero().str();
+        entry->offset = table_stream.read_u32_le();
+        entry->size_orig = table_stream.read_u32_le();
+        table_stream.skip(4);
         if (last_entry)
             last_entry->size_comp = entry->offset - last_entry->offset;
         last_entry = entry.get();

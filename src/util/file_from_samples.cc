@@ -16,22 +16,22 @@ std::unique_ptr<File> util::file_from_samples(
 
     auto output_file = std::make_unique<File>();
 
-    output_file->io.write("RIFF"_b);
-    output_file->io.write("\x00\x00\x00\x00"_b);
-    output_file->io.write("WAVE"_b);
-    output_file->io.write("fmt "_b);
-    output_file->io.write_u32_le(16);
-    output_file->io.write_u16_le(1);
-    output_file->io.write_u16_le(channel_count);
-    output_file->io.write_u32_le(sample_rate);
-    output_file->io.write_u32_le(byte_rate);
-    output_file->io.write_u16_le(block_align);
-    output_file->io.write_u16_le(bits_per_sample);
-    output_file->io.write("data"_b);
-    output_file->io.write_u32_le(data_chunk_size);
-    output_file->io.write(samples);
-    output_file->io.seek(4);
-    output_file->io.write_u32_le(output_file->io.size() - 8);
+    output_file->stream.write("RIFF"_b);
+    output_file->stream.write("\x00\x00\x00\x00"_b);
+    output_file->stream.write("WAVE"_b);
+    output_file->stream.write("fmt "_b);
+    output_file->stream.write_u32_le(16);
+    output_file->stream.write_u16_le(1);
+    output_file->stream.write_u16_le(channel_count);
+    output_file->stream.write_u32_le(sample_rate);
+    output_file->stream.write_u32_le(byte_rate);
+    output_file->stream.write_u16_le(block_align);
+    output_file->stream.write_u16_le(bits_per_sample);
+    output_file->stream.write("data"_b);
+    output_file->stream.write_u32_le(data_chunk_size);
+    output_file->stream.write(samples);
+    output_file->stream.seek(4);
+    output_file->stream.write_u32_le(output_file->stream.size() - 8);
 
     output_file->name = name;
     output_file->change_extension("wav");

@@ -11,7 +11,7 @@ static const bstr magic_tlg_0 = "TLG0.0\x00sds\x1A"_b;
 static const bstr magic_tlg_5 = "TLG5.0\x00raw\x1A"_b;
 static const bstr magic_tlg_6 = "TLG6.0\x00raw\x1A"_b;
 
-static int guess_version(io::IO &io);
+static int guess_version(io::Stream &stream);
 static pix::Grid decode_proxy(int version, File &file);
 
 static std::string extract_string(std::string &container)
@@ -31,17 +31,17 @@ static std::string extract_string(std::string &container)
 
 static pix::Grid decode_tlg_0(File &file)
 {
-    size_t raw_data_size = file.io.read_u32_le();
-    size_t raw_data_offset = file.io.tell();
+    size_t raw_data_size = file.stream.read_u32_le();
+    size_t raw_data_offset = file.stream.tell();
 
     std::vector<std::pair<std::string, std::string>> tags;
 
-    file.io.skip(raw_data_size);
-    while (file.io.tell() < file.io.size())
+    file.stream.skip(raw_data_size);
+    while (file.stream.tell() < file.stream.size())
     {
-        std::string chunk_name = file.io.read(4).str();
-        size_t chunk_size = file.io.read_u32_le();
-        std::string chunk_data = file.io.read(chunk_size).str();
+        std::string chunk_name = file.stream.read(4).str();
+        size_t chunk_size = file.stream.read_u32_le();
+        std::string chunk_data = file.stream.read(chunk_size).str();
 
         if (chunk_name == "tags")
         {
@@ -56,8 +56,8 @@ static pix::Grid decode_tlg_0(File &file)
             throw err::NotSupportedError("Unknown chunk: " + chunk_name);
     }
 
-    file.io.seek(raw_data_offset);
-    int version = guess_version(file.io);
+    file.stream.seek(raw_data_offset);
+    int version = guess_version(file.stream);
     if (version == -1)
         throw err::UnsupportedVersionError();
     return decode_proxy(version, file);
@@ -75,18 +75,18 @@ static pix::Grid decode_tlg_6(File &file)
     return decoder.decode(file);
 }
 
-static int guess_version(io::IO &io)
+static int guess_version(io::Stream &stream)
 {
-    size_t pos = io.tell();
-    if (io.read(magic_tlg_0.size()) == magic_tlg_0)
+    size_t pos = stream.tell();
+    if (stream.read(magic_tlg_0.size()) == magic_tlg_0)
         return 0;
 
-    io.seek(pos);
-    if (io.read(magic_tlg_5.size()) == magic_tlg_5)
+    stream.seek(pos);
+    if (stream.read(magic_tlg_5.size()) == magic_tlg_5)
         return 5;
 
-    io.seek(pos);
-    if (io.read(magic_tlg_6.size()) == magic_tlg_6)
+    stream.seek(pos);
+    if (stream.read(magic_tlg_6.size()) == magic_tlg_6)
         return 6;
 
     return -1;
@@ -110,12 +110,12 @@ static pix::Grid decode_proxy(int version, File &file)
 
 bool TlgImageDecoder::is_recognized_impl(File &file) const
 {
-    return guess_version(file.io) >= 0;
+    return guess_version(file.stream) >= 0;
 }
 
 pix::Grid TlgImageDecoder::decode_impl(File &file) const
 {
-    int version = guess_version(file.io);
+    int version = guess_version(file.stream);
     return decode_proxy(version, file);
 }
 

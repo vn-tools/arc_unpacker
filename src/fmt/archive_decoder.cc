@@ -32,7 +32,7 @@ bool ArchiveDecoder::is_recognized(File &arc_file) const
 {
     try
     {
-        arc_file.io.seek(0);
+        arc_file.stream.seek(0);
         return is_recognized_impl(arc_file);
     }
     catch (...)
@@ -76,7 +76,7 @@ void ArchiveDecoder::unpack(File &arc_file, const FileSaver &saver) const
 
 std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(File &arc_file) const
 {
-    arc_file.io.seek(0);
+    arc_file.stream.seek(0);
     return read_meta_impl(arc_file);
 }
 

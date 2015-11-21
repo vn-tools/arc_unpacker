@@ -32,66 +32,66 @@ namespace
 
 static const bstr texture_magic = "THTX"_b;
 
-static std::string read_name(io::IO &file_io, size_t offset)
+static std::string read_name(io::Stream &input, size_t offset)
 {
     std::string name;
-    file_io.peek(offset, [&]() { name = file_io.read_to_zero().str(); });
+    input.peek(offset, [&]() { name = input.read_to_zero().str(); });
     return name;
 }
 
 static size_t read_old_texture_info(
-    TextureInfo &texture_info, io::IO &file_io, size_t base_offset)
+    TextureInfo &texture_info, io::Stream &input, size_t base_offset)
 {
-    file_io.skip(4); // sprite count
-    file_io.skip(4); // script count
-    file_io.skip(4); // zero
+    input.skip(4); // sprite count
+    input.skip(4); // script count
+    input.skip(4); // zero
 
-    texture_info.width = file_io.read_u32_le();
-    texture_info.height = file_io.read_u32_le();
-    texture_info.format = file_io.read_u32_le();
-    texture_info.x = file_io.read_u16_le();
-    texture_info.y = file_io.read_u16_le();
-    // file_io.skip(4);
+    texture_info.width = input.read_u32_le();
+    texture_info.height = input.read_u32_le();
+    texture_info.format = input.read_u32_le();
+    texture_info.x = input.read_u16_le();
+    texture_info.y = input.read_u16_le();
+    // input.skip(4);
 
-    size_t name_offset1 = base_offset + file_io.read_u32_le();
-    file_io.skip(4);
-    size_t name_offset2 = base_offset + file_io.read_u32_le();
-    texture_info.name = read_name(file_io, name_offset1);
+    size_t name_offset1 = base_offset + input.read_u32_le();
+    input.skip(4);
+    size_t name_offset2 = base_offset + input.read_u32_le();
+    texture_info.name = read_name(input, name_offset1);
 
-    texture_info.version = file_io.read_u32_le();
-    file_io.skip(4);
-    texture_info.texture_offset = base_offset + file_io.read_u32_le();
-    texture_info.has_data = file_io.read_u32_le() > 0;
+    texture_info.version = input.read_u32_le();
+    input.skip(4);
+    texture_info.texture_offset = base_offset + input.read_u32_le();
+    texture_info.has_data = input.read_u32_le() > 0;
 
-    return base_offset + file_io.read_u32_le();
+    return base_offset + input.read_u32_le();
 }
 
 static size_t read_new_texture_info(
-    TextureInfo &texture_info, io::IO &file_io, size_t base_offset)
+    TextureInfo &texture_info, io::Stream &input, size_t base_offset)
 {
-    texture_info.version = file_io.read_u32_le();
-    file_io.skip(2); // sprite count
-    file_io.skip(2); // script count
-    file_io.skip(2); // zero
+    texture_info.version = input.read_u32_le();
+    input.skip(2); // sprite count
+    input.skip(2); // script count
+    input.skip(2); // zero
 
-    texture_info.width = file_io.read_u16_le();
-    texture_info.height = file_io.read_u16_le();
-    texture_info.format = file_io.read_u16_le();
-    size_t name_offset = base_offset + file_io.read_u32_le();
-    texture_info.name = read_name(file_io, name_offset);
-    texture_info.x = file_io.read_u16_le();
-    texture_info.y = file_io.read_u16_le();
-    file_io.skip(4);
+    texture_info.width = input.read_u16_le();
+    texture_info.height = input.read_u16_le();
+    texture_info.format = input.read_u16_le();
+    size_t name_offset = base_offset + input.read_u32_le();
+    texture_info.name = read_name(input, name_offset);
+    texture_info.x = input.read_u16_le();
+    texture_info.y = input.read_u16_le();
+    input.skip(4);
 
-    texture_info.texture_offset = base_offset + file_io.read_u32_le();
-    texture_info.has_data = file_io.read_u16_le() > 0;
-    file_io.skip(2);
+    texture_info.texture_offset = base_offset + input.read_u32_le();
+    texture_info.has_data = input.read_u16_le() > 0;
+    input.skip(2);
 
-    return base_offset + file_io.read_u32_le();
+    return base_offset + input.read_u32_le();
 }
 
 static void write_pixels(
-    io::IO &file_io,
+    io::Stream &input,
     const TextureInfo &texture_info,
     pix::Grid &pixels,
     size_t stride)
@@ -99,15 +99,15 @@ static void write_pixels(
     if (!texture_info.has_data)
         return;
 
-    file_io.seek(texture_info.texture_offset);
-    if (file_io.read(texture_magic.size()) != texture_magic)
+    input.seek(texture_info.texture_offset);
+    if (input.read(texture_magic.size()) != texture_magic)
         throw err::CorruptDataError("Corrupt texture data");
-    file_io.skip(2);
-    auto format = file_io.read_u16_le();
-    auto width = file_io.read_u16_le();
-    auto height = file_io.read_u16_le();
-    auto data_size = file_io.read_u32_le();
-    auto data = file_io.read(data_size);
+    input.skip(2);
+    auto format = input.read_u16_le();
+    auto width = input.read_u16_le();
+    auto height = input.read_u16_le();
+    auto data_size = input.read_u32_le();
+    auto data = input.read(data_size);
     auto data_ptr = data.get<const u8>();
 
     for (auto y : util::range(height))
@@ -141,7 +141,7 @@ static void write_pixels(
     }
 }
 
-static std::vector<TextureInfo> read_texture_info_list(io::IO &file_io)
+static std::vector<TextureInfo> read_texture_info_list(io::Stream &input)
 {
     std::vector<TextureInfo> texture_info_list;
     u32 base_offset = 0;
@@ -149,14 +149,14 @@ static std::vector<TextureInfo> read_texture_info_list(io::IO &file_io)
     {
         TextureInfo texture_info;
 
-        file_io.seek(base_offset);
-        file_io.skip(8);
-        bool use_old = file_io.read_u32_le() == 0;
+        input.seek(base_offset);
+        input.skip(8);
+        bool use_old = input.read_u32_le() == 0;
 
-        file_io.seek(base_offset);
+        input.seek(base_offset);
         size_t next_offset = use_old
-            ? read_old_texture_info(texture_info, file_io, base_offset)
-            : read_new_texture_info(texture_info, file_io, base_offset);
+            ? read_old_texture_info(texture_info, input, base_offset)
+            : read_new_texture_info(texture_info, input, base_offset);
 
         if (texture_info.has_data)
             if (texture_info.width > 0 && texture_info.height > 0)
@@ -182,7 +182,7 @@ bool AnmArchiveDecoder::is_recognized_impl(File &arc_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     AnmArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    auto texture_info_list = read_texture_info_list(arc_file.io);
+    auto texture_info_list = read_texture_info_list(arc_file.stream);
 
     std::map<std::string, std::vector<TextureInfo>> map;
     for (auto &texture_info : texture_info_list)
@@ -207,13 +207,13 @@ std::unique_ptr<File> AnmArchiveDecoder::read_file_impl(
     size_t height = 0;
     for (auto &texture_info : entry->texture_info_list)
     {
-        arc_file.io.peek(texture_info.texture_offset, [&]()
+        arc_file.stream.peek(texture_info.texture_offset, [&]()
         {
-            arc_file.io.skip(texture_magic.size());
-            arc_file.io.skip(2);
-            arc_file.io.skip(2);
-            size_t chunk_width = arc_file.io.read_u16_le();
-            size_t chunk_height = arc_file.io.read_u16_le();
+            arc_file.stream.skip(texture_magic.size());
+            arc_file.stream.skip(2);
+            arc_file.stream.skip(2);
+            size_t chunk_width = arc_file.stream.read_u16_le();
+            size_t chunk_height = arc_file.stream.read_u16_le();
             width = std::max(width, texture_info.x + chunk_width);
             height = std::max(height, texture_info.y + chunk_height);
         });
@@ -221,7 +221,7 @@ std::unique_ptr<File> AnmArchiveDecoder::read_file_impl(
 
     pix::Grid pixels(width, height);
     for (auto &texture_info : entry->texture_info_list)
-        write_pixels(arc_file.io, texture_info, pixels, width);
+        write_pixels(arc_file.stream, texture_info, pixels, width);
 
     return util::file_from_grid(pixels, entry->name);
 }

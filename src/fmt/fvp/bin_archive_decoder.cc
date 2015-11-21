@@ -22,21 +22,22 @@ bool BinArchiveDecoder::is_recognized_impl(File &arc_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     BinArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    size_t file_count = arc_file.io.read_u32_le();
-    arc_file.io.skip(4);
+    size_t file_count = arc_file.stream.read_u32_le();
+    arc_file.stream.skip(4);
 
     auto names_start = file_count * 12 + 8;
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        auto name_offset = arc_file.io.read_u32_le();
-        arc_file.io.peek(names_start + name_offset, [&]()
+        auto name_offset = arc_file.stream.read_u32_le();
+        arc_file.stream.peek(names_start + name_offset, [&]()
         {
-            entry->name = util::sjis_to_utf8(arc_file.io.read_to_zero()).str();
+            entry->name = util::sjis_to_utf8(
+                arc_file.stream.read_to_zero()).str();
         });
-        entry->offset = arc_file.io.read_u32_le();
-        entry->size = arc_file.io.read_u32_le();
+        entry->offset = arc_file.stream.read_u32_le();
+        entry->size = arc_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -46,8 +47,8 @@ std::unique_ptr<File> BinArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size);
     auto output_file = std::make_unique<File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

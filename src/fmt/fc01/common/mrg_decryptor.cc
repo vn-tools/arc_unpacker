@@ -1,6 +1,6 @@
 #include "fmt/fc01/common/mrg_decryptor.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -25,22 +25,22 @@ struct MrgDecryptor::Priv final
     Priv(const bstr &input);
     Priv(const bstr &input, const size_t size_orig);
 
-    io::BufferedIO input_io;
+    io::MemoryStream input_stream;
     size_t size_orig;
 };
 
-MrgDecryptor::Priv::Priv(const bstr &input) : input_io(input)
+MrgDecryptor::Priv::Priv(const bstr &input) : input_stream(input)
 {
     // the size is encoded in the stream
-    input_io.seek(0x104);
-    size_orig = input_io.read_u32_le();
-    input_io.seek(0);
-    size_orig ^= input_io.read_u32_le();
-    input_io.seek(4);
+    input_stream.seek(0x104);
+    size_orig = input_stream.read_u32_le();
+    input_stream.seek(0);
+    size_orig ^= input_stream.read_u32_le();
+    input_stream.seek(4);
 }
 
 MrgDecryptor::Priv::Priv(const bstr &input, const size_t size_orig)
-    : input_io(input), size_orig(size_orig)
+    : input_stream(input), size_orig(size_orig)
 {
     // the size is given from the outside
 }
@@ -76,7 +76,7 @@ bstr MrgDecryptor::decrypt_with_key(const u8 initial_key)
     auto key = initial_key;
     for (auto i : util::range(0x100))
     {
-        auto byte = p->input_io.read_u8();
+        auto byte = p->input_stream.read_u8();
         if (initial_key)
         {
             byte = (((byte << 1) | (byte >> 7)) ^ key);
@@ -94,7 +94,7 @@ bstr MrgDecryptor::decrypt_with_key(const u8 initial_key)
         throw err::CorruptDataError("Unexpected data");
     auto mask = get_mask(quant);
     auto scale = 0x10000 / quant;
-    auto a = p->input_io.read_u32_be();
+    auto a = p->input_stream.read_u32_be();
     auto b = 0;
     auto c = 0xFFFFFFFF;
     while (output_ptr < output_end)
@@ -112,12 +112,12 @@ bstr MrgDecryptor::decrypt_with_key(const u8 initial_key)
             a <<= 8;
             b <<= 8;
             c <<= 8;
-            a |= p->input_io.read_u8();
+            a |= p->input_stream.read_u8();
         }
         while (c <= mask)
         {
             c = (~b & mask) << 8;
-            a = (a << 8) | p->input_io.read_u8();
+            a = (a << 8) | p->input_stream.read_u8();
             b <<= 8;
         }
     }

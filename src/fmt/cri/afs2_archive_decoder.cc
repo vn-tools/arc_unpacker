@@ -19,24 +19,24 @@ namespace
 
 bool Afs2ArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    arc_file.io.seek(0);
-    return arc_file.io.read(magic.size()) == magic;
+    arc_file.stream.seek(0);
+    return arc_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     Afs2ArchiveDecoder::read_meta_impl(File &arc_file) const
 {
-    arc_file.io.seek(magic.size() + 4);
-    const auto file_count = arc_file.io.read_u32_le() - 1;
-    arc_file.io.skip(4);
-    arc_file.io.skip((file_count + 1) * 2);
+    arc_file.stream.seek(magic.size() + 4);
+    const auto file_count = arc_file.stream.read_u32_le() - 1;
+    arc_file.stream.skip(4);
+    arc_file.stream.skip((file_count + 1) * 2);
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->name = util::format("%d.dat", i);
-        entry->offset = arc_file.io.read_u32_le();
+        entry->offset = arc_file.stream.read_u32_le();
         if (last_entry)
             last_entry->size = entry->offset - last_entry->offset;
         last_entry = entry.get();
@@ -44,7 +44,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         meta->entries.push_back(std::move(entry));
     }
     if (last_entry)
-        last_entry->size = arc_file.io.size() - last_entry->offset;
+        last_entry->size = arc_file.stream.size() - last_entry->offset;
     return meta;
 }
 
@@ -52,8 +52,8 @@ std::unique_ptr<File> Afs2ArchiveDecoder::read_file_impl(
     File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    return std::make_unique<File>(entry->name, arc_file.io.read(entry->size));
+    const auto data = arc_file.stream.seek(entry->offset).read(entry->size);
+    return std::make_unique<File>(entry->name, data);
 }
 
 std::vector<std::string> Afs2ArchiveDecoder::get_linked_formats() const

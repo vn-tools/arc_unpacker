@@ -1,6 +1,6 @@
 #include "fmt/lilim/abm_image_decoder.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 
 using namespace au;
 using namespace au::fmt::lilim;
@@ -11,28 +11,28 @@ static bstr decompress_opaque(const bstr &input, const size_t size_hint)
 {
     bstr output;
     output.reserve(size_hint);
-    io::BufferedIO input_io(input);
+    io::MemoryStream input_stream(input);
 
-    while (!input_io.eof())
+    while (!input_stream.eof())
     {
-        const auto control = input_io.read_u8();
+        const auto control = input_stream.read_u8();
 
         if (control == 0x00)
         {
-            auto repetitions = input_io.read_u8();
+            auto repetitions = input_stream.read_u8();
             while (repetitions--)
                 output += '\x00';
         }
 
         else if (control == 0xFF)
         {
-            auto repetitions = input_io.read_u8();
+            auto repetitions = input_stream.read_u8();
             while (repetitions--)
-                output += input_io.read_u8();
+                output += input_stream.read_u8();
         }
 
         else
-            output += input_io.read_u8();
+            output += input_stream.read_u8();
     }
 
     return output;
@@ -42,16 +42,16 @@ static bstr decompress_alpha(const bstr &input, const size_t size_hint)
 {
     bstr output;
     output.reserve(size_hint);
-    io::BufferedIO input_io(input);
+    io::MemoryStream input_stream(input);
 
     size_t current_channel = 0;
-    while (!input_io.eof())
+    while (!input_stream.eof())
     {
-        const auto control = input_io.read_u8();
+        const auto control = input_stream.read_u8();
 
         if (control == 0x00)
         {
-            auto repetitions = input_io.read_u8();
+            auto repetitions = input_stream.read_u8();
             while (repetitions--)
             {
                 output += '\x00';
@@ -66,10 +66,10 @@ static bstr decompress_alpha(const bstr &input, const size_t size_hint)
 
         else if (control == 0xFF)
         {
-            auto repetitions = input_io.read_u8();
+            auto repetitions = input_stream.read_u8();
             while (repetitions--)
             {
-                output += input_io.read_u8();
+                output += input_stream.read_u8();
                 current_channel++;
                 if (current_channel == 3)
                 {
@@ -81,7 +81,7 @@ static bstr decompress_alpha(const bstr &input, const size_t size_hint)
 
         else
         {
-            output += input_io.read_u8();
+            output += input_stream.read_u8();
             current_channel++;
             if (current_channel == 3)
             {
@@ -96,31 +96,31 @@ static bstr decompress_alpha(const bstr &input, const size_t size_hint)
 
 bool AbmImageDecoder::is_recognized_impl(File &file) const
 {
-    return file.has_extension("abm") && file.io.read(magic.size()) == magic;
+    return file.has_extension("abm") && file.stream.read(magic.size()) == magic;
 }
 
 pix::Grid AbmImageDecoder::decode_impl(File &file) const
 {
-    file.io.seek(18);
-    const auto width = file.io.read_u32_le();
-    const auto height = file.io.read_u32_le();
-    file.io.skip(2);
-    const s16 depth = file.io.read_u16_le();
+    file.stream.seek(18);
+    const auto width = file.stream.read_u32_le();
+    const auto height = file.stream.read_u32_le();
+    file.stream.skip(2);
+    const s16 depth = file.stream.read_u16_le();
 
     if (depth == -8)
     {
         const auto size = width * height * 4;
-        file.io.seek(54);
-        pix::Palette palette(256, file.io, pix::Format::BGR888X);
-        const auto pixel_data = decompress_opaque(file.io.read_to_eof(), size);
-        return pix::Grid(width, height, pixel_data, palette);
+        file.stream.seek(54);
+        pix::Palette palette(256, file.stream, pix::Format::BGR888X);
+        const auto data = decompress_opaque(file.stream.read_to_eof(), size);
+        return pix::Grid(width, height, data, palette);
     }
     else if (depth == 32)
     {
         const auto size = width * height * 4;
-        file.io.seek(54);
-        const auto pixel_data = decompress_alpha(file.io.read_to_eof(), size);
-        return pix::Grid(width, height, pixel_data, pix::Format::BGRA8888);
+        file.stream.seek(54);
+        const auto data = decompress_alpha(file.stream.read_to_eof(), size);
+        return pix::Grid(width, height, data, pix::Format::BGRA8888);
     }
     else
         throw err::UnsupportedBitDepthError(depth);

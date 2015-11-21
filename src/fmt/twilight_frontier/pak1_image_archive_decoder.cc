@@ -1,6 +1,6 @@
 #include "fmt/twilight_frontier/pak1_image_archive_decoder.h"
 #include "err.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/file_from_grid.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -28,41 +28,41 @@ bool Pak1ImageArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
     if (!arc_file.has_extension("dat"))
         return false;
-    auto palette_count = arc_file.io.read_u8();
-    arc_file.io.skip(palette_count * 512);
-    while (!arc_file.io.eof())
+    auto palette_count = arc_file.stream.read_u8();
+    arc_file.stream.skip(palette_count * 512);
+    while (!arc_file.stream.eof())
     {
-        arc_file.io.skip(4 * 3);
-        arc_file.io.skip(1);
-        arc_file.io.skip(arc_file.io.read_u32_le());
+        arc_file.stream.skip(4 * 3);
+        arc_file.stream.skip(1);
+        arc_file.stream.skip(arc_file.stream.read_u32_le());
     }
-    return arc_file.io.eof();
+    return arc_file.stream.eof();
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     Pak1ImageArchiveDecoder::read_meta_impl(File &arc_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    auto palette_count = arc_file.io.read_u8();
+    auto palette_count = arc_file.stream.read_u8();
     for (auto i : util::range(palette_count))
     {
-        meta->palettes.push_back(
-            pix::Palette(256, arc_file.io.read(512), pix::Format::BGRA5551));
+        meta->palettes.push_back(pix::Palette(
+            256, arc_file.stream.read(512), pix::Format::BGRA5551));
     }
     meta->palettes.push_back(pix::Palette(256));
 
     size_t i = 0;
-    while (arc_file.io.tell() < arc_file.io.size())
+    while (arc_file.stream.tell() < arc_file.stream.size())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->width = arc_file.io.read_u32_le();
-        entry->height = arc_file.io.read_u32_le();
-        arc_file.io.skip(4);
-        entry->depth = arc_file.io.read_u8();
-        entry->size = arc_file.io.read_u32_le();
+        entry->width = arc_file.stream.read_u32_le();
+        entry->height = arc_file.stream.read_u32_le();
+        arc_file.stream.skip(4);
+        entry->depth = arc_file.stream.read_u8();
+        entry->size = arc_file.stream.read_u32_le();
         entry->name = util::format("%04d", i++);
-        entry->offset = arc_file.io.tell();
-        arc_file.io.skip(entry->size);
+        entry->offset = arc_file.stream.tell();
+        arc_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));
     }
     return std::move(meta);
@@ -87,22 +87,22 @@ std::unique_ptr<File> Pak1ImageArchiveDecoder::read_file_impl(
     bstr output(entry->width * entry->height * chunk_size);
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<u8>();
-    arc_file.io.seek(entry->offset);
-    io::BufferedIO input_io(arc_file.io, entry->size);
+    arc_file.stream.seek(entry->offset);
+    io::MemoryStream input(arc_file.stream, entry->size);
 
-    while (output_ptr < output_end && input_io.tell() < input_io.size())
+    while (output_ptr < output_end && input.tell() < input.size())
     {
         size_t repeat;
         if (entry->depth == 32 || entry->depth == 24)
-            repeat = input_io.read_u32_le();
+            repeat = input.read_u32_le();
         else if (entry->depth == 16)
-            repeat = input_io.read_u16_le();
+            repeat = input.read_u16_le();
         else if (entry->depth == 8)
-            repeat = input_io.read_u8();
+            repeat = input.read_u8();
         else
             throw err::UnsupportedBitDepthError(entry->depth);
 
-        auto chunk = input_io.read(chunk_size);
+        auto chunk = input.read(chunk_size);
         while (repeat--)
             for (auto &c : chunk)
                 *output_ptr++ = c;

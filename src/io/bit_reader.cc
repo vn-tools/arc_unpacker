@@ -70,10 +70,10 @@ namespace
         const u8 *ptr, *end;
     };
 
-    class IoBasedReader final : public IReader
+    class StreamBasedReader final : public IReader
     {
     public:
-        IoBasedReader(IO &io);
+        StreamBasedReader(Stream &stream);
         inline bool eof() const override;
         inline size_t size() const override;
         inline u8 fetch_byte() override;
@@ -81,7 +81,7 @@ namespace
         inline void seek(size_t pos) override;
 
     private:
-        IO &io;
+        Stream &stream;
     };
 }
 
@@ -119,35 +119,35 @@ inline bstr BufferBasedReader::fetch_buffer()
     return buffer;
 }
 
-IoBasedReader::IoBasedReader(IO &io) : io(io)
+StreamBasedReader::StreamBasedReader(Stream &stream) : stream(stream)
 {
 }
 
-inline bool IoBasedReader::eof() const
+inline bool StreamBasedReader::eof() const
 {
-    return io.tell() >= io.size();
+    return stream.tell() >= stream.size();
 }
 
-inline size_t IoBasedReader::size() const
+inline size_t StreamBasedReader::size() const
 {
-    return io.size();
+    return stream.size();
 }
 
-inline void IoBasedReader::seek(size_t pos)
+inline void StreamBasedReader::seek(size_t pos)
 {
-    io.seek(pos);
+    stream.seek(pos);
 }
 
-inline u8 IoBasedReader::fetch_byte()
+inline u8 StreamBasedReader::fetch_byte()
 {
-    return io.read_u8();
+    return stream.read_u8();
 }
 
-inline bstr IoBasedReader::fetch_buffer()
+inline bstr StreamBasedReader::fetch_buffer()
 {
-    // the eventual position within the user-supplied IO might be important to
-    // the caller, so we can't buffer anything more than one byte.
-    return io.read(1);
+    // the eventual position within the user-supplied Stream might be important
+    // to the caller, so we can't buffer anything more than one byte.
+    return stream.read(1);
 }
 
 struct BitReader::Priv final
@@ -223,7 +223,8 @@ size_t BitReader::Priv::size() const
     return reader->size() * 8;
 }
 
-BitReader::BitReader(IO &io) : p(new Priv(std::make_unique<IoBasedReader>(io)))
+BitReader::BitReader(Stream &stream)
+    : p(new Priv(std::make_unique<StreamBasedReader>(stream)))
 {
 }
 

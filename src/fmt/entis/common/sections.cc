@@ -6,28 +6,28 @@ using namespace au::fmt::entis::common;
 
 struct SectionReader::Priv final
 {
-    Priv(io::IO &io) : io(io)
+    Priv(io::Stream &stream) : stream(stream)
     {
     }
 
     std::vector<Section> sections;
-    io::IO &io;
+    io::Stream &stream;
 };
 
-SectionReader::SectionReader(io::IO &io) : p(new Priv(io))
+SectionReader::SectionReader(io::Stream &stream) : p(new Priv(stream))
 {
-    while (!io.eof())
+    while (!stream.eof())
     {
         Section section;
-        section.name = io.read(8).str();
-        section.size = io.read_u64_le();
-        section.offset = io.tell();
+        section.name = stream.read(8).str();
+        section.size = stream.read_u64_le();
+        section.offset = stream.tell();
 
         auto space_index = section.name.find_first_of('\x20');
         if (space_index != section.name.npos)
             section.name = section.name.substr(0, space_index);
 
-        io.skip(section.size);
+        stream.skip(section.size);
         p->sections.push_back(section);
     }
 }

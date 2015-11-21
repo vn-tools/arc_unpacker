@@ -1,7 +1,7 @@
 #include "fmt/qlie/pack_archive_decoder.h"
 #include "err.h"
 #include "fmt/qlie/mt.h"
-#include "io/buffered_io.h"
+#include "io/memory_stream.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -61,9 +61,9 @@ static u64 padd(u64 a, u64 b)
         ^ ((a ^ b) & 0x8000000080000000);
 }
 
-static size_t get_magic_start(const io::IO &arc_io)
+static size_t get_magic_start(const io::Stream &arc_stream)
 {
-    return arc_io.size() - magic.size() - 8 - 4;
+    return arc_stream.size() - magic.size() - 8 - 4;
 }
 
 static u32 derive_seed(const bstr &input)
@@ -189,31 +189,31 @@ static bstr decompress(const bstr &input, size_t output_size)
     char *output_ptr = output.get<char>();
     const char *output_end = output_ptr + output_size;
 
-    io::BufferedIO input_io(input);
+    io::MemoryStream input_stream(input);
 
-    if (input_io.read(compression_magic.size()) != compression_magic)
+    if (input_stream.read(compression_magic.size()) != compression_magic)
     {
         throw err::CorruptDataError(
             "Unexpected magic in compressed file. "
             "Try with --fkey or --gameexe?");
     }
 
-    bool use_short_size = input_io.read_u32_le() > 0;
-    u32 file_size = input_io.read_u32_le();
+    bool use_short_size = input_stream.read_u32_le() > 0;
+    u32 file_size = input_stream.read_u32_le();
     if (file_size != output_size)
         throw err::BadDataSizeError();
 
     u8 dict1[256];
     u8 dict2[256];
     u8 dict3[256];
-    while (!input_io.eof())
+    while (!input_stream.eof())
     {
         for (auto i : util::range(256))
             dict1[i] = i;
 
         for (size_t d = 0; d < 256; )
         {
-            u8 c = input_io.read_u8();
+            u8 c = input_stream.read_u8();
             if (c > 0x7F)
             {
                 d += c - 0x7F;
@@ -224,16 +224,16 @@ static bstr decompress(const bstr &input, size_t output_size)
 
             for (auto i : util::range(c + 1))
             {
-                dict1[d] = input_io.read_u8();
+                dict1[d] = input_stream.read_u8();
                 if (dict1[d] != d)
-                    dict2[d] = input_io.read_u8();
+                    dict2[d] = input_stream.read_u8();
                 d++;
             }
         }
 
         int bytes_left = use_short_size
-            ? input_io.read_u16_le()
-            : input_io.read_u32_le();
+            ? input_stream.read_u16_le()
+            : input_stream.read_u32_le();
 
         u8 n = 0;
         while (true)
@@ -248,7 +248,7 @@ static bstr decompress(const bstr &input, size_t output_size)
                 if (bytes_left == 0)
                     break;
                 bytes_left--;
-                d = input_io.read_u8();
+                d = input_stream.read_u8();
             }
 
             if (dict1[d] == d)
@@ -311,8 +311,8 @@ void PackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 
 bool PackArchiveDecoder::is_recognized_impl(File &arc_file) const
 {
-    arc_file.io.seek(get_magic_start(arc_file.io));
-    return arc_file.io.read(magic.size()) == magic;
+    arc_file.stream.seek(get_magic_start(arc_file.stream));
+    return arc_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
@@ -325,7 +325,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         meta->enc_type = EncryptionType::WithFKey;
         File file(p->fkey_path, io::FileMode::Read);
-        meta->key1 = file.io.read_to_eof();
+        meta->key1 = file.stream.read_to_eof();
     }
 
     if (!p->game_exe_path.empty())
@@ -333,10 +333,10 @@ std::unique_ptr<fmt::ArchiveMeta>
         static const int key2_size = 256;
 
         File file(p->game_exe_path, io::FileMode::Read);
-        auto exe_data = file.io.read_to_eof();
+        auto exe_data = file.stream.read_to_eof();
 
         bool found = false;
-        auto start = file.io.size() - exe_key_magic.size() - key2_size;
+        auto start = file.stream.size() - exe_key_magic.size() - key2_size;
         for (auto i : util::range(start, 0, -1))
         {
             if (!std::memcmp(&exe_data[i],
@@ -354,43 +354,43 @@ std::unique_ptr<fmt::ArchiveMeta>
             throw err::RecognitionError("Cannot find the key in the .exe file");
     }
 
-    arc_file.io.seek(get_magic_start(arc_file.io) + magic.size());
-    auto file_count = arc_file.io.read_u32_le();
-    auto table_offset = arc_file.io.read_u64_le();
-    auto table_size = get_magic_start(arc_file.io) - table_offset;
-    arc_file.io.seek(table_offset);
-    io::BufferedIO table_io(arc_file.io, table_size);
+    arc_file.stream.seek(get_magic_start(arc_file.stream) + magic.size());
+    auto file_count = arc_file.stream.read_u32_le();
+    auto table_offset = arc_file.stream.read_u64_le();
+    auto table_size = get_magic_start(arc_file.stream) - table_offset;
+    arc_file.stream.seek(table_offset);
+    io::MemoryStream table_stream(arc_file.stream, table_size);
 
     u32 seed = 0;
-    table_io.seek(0);
+    table_stream.seek(0);
     for (auto i : util::range(file_count))
     {
-        size_t file_name_size = table_io.read_u16_le();
-        table_io.skip(file_name_size + 28);
+        size_t file_name_size = table_stream.read_u16_le();
+        table_stream.skip(file_name_size + 28);
     }
-    table_io.skip(28);
-    table_io.skip(table_io.read_u32_le());
-    table_io.skip(36);
-    seed = derive_seed(table_io.read(256)) & 0x0FFFFFFF;
+    table_stream.skip(28);
+    table_stream.skip(table_stream.read_u32_le());
+    table_stream.skip(36);
+    seed = derive_seed(table_stream.read(256)) & 0x0FFFFFFF;
 
-    table_io.seek(0);
+    table_stream.seek(0);
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
-        size_t name_size = table_io.read_u16_le();
-        entry->name_orig = table_io.read(name_size);
+        size_t name_size = table_stream.read_u16_le();
+        entry->name_orig = table_stream.read(name_size);
         decrypt_file_name(entry->name_orig, seed);
         entry->name = util::sjis_to_utf8(entry->name_orig).str();
 
-        entry->offset = table_io.read_u64_le();
-        entry->size_compressed = table_io.read_u32_le();
-        entry->size_original = table_io.read_u32_le();
-        entry->compressed = table_io.read_u32_le() > 0;
-        entry->encrypted = table_io.read_u32_le() > 0;
+        entry->offset = table_stream.read_u64_le();
+        entry->size_compressed = table_stream.read_u32_le();
+        entry->size_original = table_stream.read_u32_le();
+        entry->compressed = table_stream.read_u32_le() > 0;
+        entry->encrypted = table_stream.read_u32_le() > 0;
 
         entry->seed = seed;
-        table_io.skip(4);
+        table_stream.skip(4);
 
         meta->entries.push_back(std::move(entry));
     }
@@ -400,8 +400,8 @@ std::unique_ptr<fmt::ArchiveMeta>
         if (entry->name.find("pack_keyfile") != std::string::npos)
         {
             auto file = read_file(arc_file, *meta, *entry);
-            file->io.seek(0);
-            meta->key1 = file->io.read_to_eof();
+            file->stream.seek(0);
+            meta->key1 = file->stream.read_to_eof();
         }
     }
 
@@ -413,8 +413,8 @@ std::unique_ptr<File> PackArchiveDecoder::read_file_impl(
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    arc_file.io.seek(entry->offset);
-    auto data = arc_file.io.read(entry->size_compressed);
+    arc_file.stream.seek(entry->offset);
+    auto data = arc_file.stream.read(entry->size_compressed);
 
     if (entry->encrypted)
         decrypt_file_data(data, entry->seed, entry->name_orig, *meta);

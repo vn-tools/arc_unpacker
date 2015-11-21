@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include "err.h"
-#include "io/file_io.h"
+#include "io/file_stream.h"
 #include "util/range.h"
 
 using namespace au;
@@ -458,8 +458,8 @@ static bstr find_control_block(const std::string &path)
         if (fn.find(".tpm") != fn.size() - 4)
             continue;
 
-        io::FileIO tmp_io(it->path(), io::FileMode::Read);
-        bstr content = tmp_io.read_to_eof();
+        io::FileStream tmp_stream(it->path(), io::FileMode::Read);
+        bstr content = tmp_stream.read_to_eof();
         auto pos = content.find(control_block_magic);
         if (pos == bstr::npos)
         {

@@ -2,7 +2,7 @@
 
 #include <boost/filesystem/path.hpp>
 #include <string>
-#include "io/file_io.h"
+#include "io/file_stream.h"
 
 namespace au {
 
@@ -18,7 +18,7 @@ namespace au {
         void change_extension(const std::string &new_extension);
         void guess_extension();
 
-        io::IO &io;
+        io::Stream &stream;
         std::string name;
     };
 
