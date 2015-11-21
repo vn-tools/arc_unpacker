@@ -1,21 +1,36 @@
 #include "io/file_stream.h"
 #include <cstdio>
 #include "err.h"
-#include "compat/fopen.h"
+#include "util/encoding.h"
 
+using namespace au;
 using namespace au::io;
+
+static FILE *utf8_fopen(const path &path, const char *mode)
+{
+    #ifdef _WIN32
+        auto cmode = util::convert_encoding(
+            std::string(mode), "utf-8", "utf-16le").str();
+        std::wstring widemode(
+            reinterpret_cast<const wchar_t*>(cmode.c_str()),
+            cmode.size() / 2);
+        return _wfopen(path.wstr().c_str(), widemode.c_str());
+    #else
+        return std::fopen(path.str().c_str(), mode);
+    #endif
+}
 
 struct FileStream::Priv final
 {
     FILE *file;
 };
 
-FileStream::FileStream(const boost::filesystem::path &path, const FileMode mode)
+FileStream::FileStream(const path &path, const FileMode mode)
     : p(new Priv())
 {
-    p->file = fopen(path, mode == FileMode::Write ? "w+b" : "r+b");
+    p->file = utf8_fopen(path, mode == FileMode::Write ? "w+b" : "r+b");
     if (!p->file)
-        throw err::FileNotFoundError("Could not open " + path.string());
+        throw err::FileNotFoundError("Could not open " + path.str());
 }
 
 FileStream::~FileStream()

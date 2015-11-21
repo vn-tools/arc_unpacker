@@ -1,8 +1,8 @@
 #pragma once
 
-#include <boost/filesystem/path.hpp>
 #include <memory>
 #include <string>
+#include "io/path.h"
 #include "io/stream.h"
 
 namespace au {
@@ -17,7 +17,7 @@ namespace io {
     class FileStream final : public Stream
     {
     public:
-        FileStream(const boost::filesystem::path &path, const FileMode mode);
+        FileStream(const path &path, const FileMode mode);
         ~FileStream();
 
         size_t size() const override;

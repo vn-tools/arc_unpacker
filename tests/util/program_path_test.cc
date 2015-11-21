@@ -5,10 +5,10 @@ using namespace au::util;
 
 TEST_CASE("Getting program path", "[util]")
 {
-    REQUIRE(get_program_path().string().find("run_tests") != std::string::npos);
+    REQUIRE(get_program_path().str().find("run_tests") != std::string::npos);
 }
 
 TEST_CASE("Getting 'extra/' directory path", "[util]")
 {
-    REQUIRE(get_extra_dir_path().string().find("extra") != std::string::npos);
+    REQUIRE(get_extra_dir_path().str().find("extra") != std::string::npos);
 }

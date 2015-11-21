@@ -1,8 +1,8 @@
 #include "fmt/kirikiri/cxdec.h"
 #include <algorithm>
-#include <boost/filesystem.hpp>
 #include "err.h"
 #include "io/file_stream.h"
+#include "io/filesystem.h"
 #include "util/range.h"
 
 using namespace au;
@@ -446,19 +446,17 @@ static void decrypt_chunk(
 
 static bstr find_control_block(const std::string &path)
 {
-    auto dir = boost::filesystem::path(path).parent_path();
-    for (boost::filesystem::recursive_directory_iterator it(dir);
-        it != boost::filesystem::recursive_directory_iterator();
-        it++)
+    auto dir = io::path(path).parent();
+    for (const auto &path : io::recursive_directory_range(dir))
     {
-        if (!boost::filesystem::is_regular_file(it->path()))
+        if (!io::is_regular_file(path))
             continue;
 
-        auto fn = it->path().string();
+        auto fn = path.str();
         if (fn.find(".tpm") != fn.size() - 4)
             continue;
 
-        io::FileStream tmp_stream(it->path(), io::FileMode::Read);
+        io::FileStream tmp_stream(path, io::FileMode::Read);
         bstr content = tmp_stream.read_to_eof();
         auto pos = content.find(control_block_magic);
         if (pos == bstr::npos)

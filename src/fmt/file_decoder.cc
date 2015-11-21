@@ -39,8 +39,8 @@ void FileDecoder::unpack(
     io::File &input_file, const FileSaver &file_saver) const
 {
     auto output_file = decode(input_file);
-    output_file->name
-        = boost::filesystem::path(output_file->name).filename().string();
+    // discard any directory information
+    output_file->name = io::path(output_file->name).name();
     file_saver.save(std::move(output_file));
 }
 

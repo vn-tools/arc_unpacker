@@ -1,12 +1,12 @@
 #include "arc_unpacker.h"
 #include <algorithm>
-#include <boost/filesystem.hpp>
 #include <map>
 #include "arg_parser.h"
 #include "fmt/decoder_util.h"
 #include "fmt/idecoder.h"
 #include "fmt/naming_strategies.h"
 #include "fmt/registry.h"
+#include "io/filesystem.h"
 #include "log.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -18,8 +18,8 @@ namespace
     struct Options final
     {
         std::string format;
-        boost::filesystem::path output_dir;
-        std::vector<std::string> input_paths;
+        io::path output_dir;
+        std::vector<io::path> input_paths;
         bool overwrite;
         bool enable_nested_decoding;
         bool should_show_help;
@@ -210,15 +210,11 @@ void ArcUnpacker::Priv::parse_cli_options()
 
     for (const auto &stray : arg_parser.get_stray())
     {
-        if (boost::filesystem::is_directory(stray))
+        if (io::is_directory(stray))
         {
-            for (boost::filesystem::recursive_directory_iterator it(stray);
-                it != boost::filesystem::recursive_directory_iterator();
-                it++)
-            {
-                if (!boost::filesystem::is_directory(*it))
-                    options.input_paths.push_back(it->path().string());
-            }
+            for (const auto &path : io::recursive_directory_range(stray))
+                if (!io::is_directory(path))
+                    options.input_paths.push_back(path);
         }
         else
         {
@@ -250,7 +246,7 @@ int ArcUnpacker::Priv::run() const
 
     bool result = 0;
     size_t processed = 0;
-    for (auto &input_path : options.input_paths)
+    for (const auto &input_path : options.input_paths)
     {
         io::File file(input_path, io::FileMode::Read);
         result |= !guess_decoder_and_unpack(file);
@@ -266,9 +262,8 @@ int ArcUnpacker::Priv::run() const
 
 void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, io::File &file) const
 {
-    const auto path = boost::filesystem::path(file.name);
-    const auto base_name
-        = path.stem().string() + "~" + path.extension().string();
+    const auto path = io::path(file.name);
+    const auto base_name = path.stem() + "~" + path.extension();
     const FileSaverHdd saver(options.output_dir, options.overwrite);
     const FileSaverCallback saver_proxy(
         [&](std::shared_ptr<io::File> saved_file)

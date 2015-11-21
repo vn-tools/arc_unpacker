@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/filesystem/path.hpp>
 #include <memory>
 #include "io/file.h"
 
@@ -11,10 +10,10 @@ namespace tests {
         const std::string &name, const bstr &data);
 
     std::shared_ptr<io::File> file_from_path(
-        const boost::filesystem::path &path, const std::string &cust_name = "");
+        const io::path &path, const std::string &cust_name = "");
 
     std::shared_ptr<io::File> zlib_file_from_path(
-        const boost::filesystem::path &path, const std::string &cust_name = "");
+        const io::path &path, const std::string &cust_name = "");
 
     void compare_files(
         const std::vector<std::shared_ptr<io::File>> &expected_files,

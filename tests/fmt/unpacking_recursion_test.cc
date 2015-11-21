@@ -1,4 +1,3 @@
-#include <boost/filesystem.hpp>
 #include "fmt/archive_decoder.h"
 #include "fmt/file_decoder.h"
 #include "fmt/decoder_util.h"
@@ -10,8 +9,6 @@ using namespace au::fmt;
 
 namespace
 {
-    using path = boost::filesystem::path;
-
     class TestFileDecoder final : public FileDecoder
     {
     public:
@@ -140,7 +137,7 @@ TEST_CASE("Recursive unpacking with nested files", "[fmt_core]")
     });
     fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
     REQUIRE(saved_files.size() == 1);
-    REQUIRE(path(saved_files[0]->name) == path("image.png"));
+    REQUIRE(io::path(saved_files[0]->name) == io::path("image.png"));
     REQUIRE(saved_files[0]->stream.read_to_eof() == "image"_b);
 }
 
@@ -167,8 +164,10 @@ TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
     fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
 
     REQUIRE(saved_files.size() == 2);
-    REQUIRE(path(saved_files[0]->name) == path("archive.arc/nested/text.txt"));
-    REQUIRE(path(saved_files[1]->name) == path("archive.arc/nested/image.png"));
+    REQUIRE(io::path(saved_files[0]->name)
+        == io::path("archive.arc/nested/text.txt"));
+    REQUIRE(io::path(saved_files[1]->name)
+        == io::path("archive.arc/nested/image.png"));
     REQUIRE(saved_files[0]->stream.read_to_eof() == "text"_b);
     REQUIRE(saved_files[1]->stream.read_to_eof() == "image"_b);
 }
@@ -197,14 +196,14 @@ TEST_CASE(
     fmt::unpack_non_recursive({}, archive_decoder, dummy_file, saver);
 
     REQUIRE(saved_files.size() == 1);
-    REQUIRE(path(saved_files[0]->name) == path("archive.arc"));
+    REQUIRE(io::path(saved_files[0]->name) == io::path("archive.arc"));
     REQUIRE(saved_files[0]->stream.read_to_eof() == nested_arc_content);
 }
 
 TEST_CASE(
     "Recursive unpacking passes correct paths to child decoders", "[fmt_core]")
 {
-    std::vector<path> names_for_recognition, names_for_conversion;
+    std::vector<io::path> names_for_recognition, names_for_conversion;
     auto registry = Registry::create_mock();
     registry->add_decoder(
         "test/test-archive",
@@ -215,9 +214,9 @@ TEST_CASE(
         {
             auto decoder = std::make_unique<TestFileDecoder>();
             decoder->recognition_callback = [&](io::File &f)
-                { names_for_recognition.push_back(path(f.name)); };
+                { names_for_recognition.push_back(io::path(f.name)); };
             decoder->conversion_callback = [&](io::File &f)
-                { names_for_conversion.push_back(path(f.name)); };
+                { names_for_conversion.push_back(io::path(f.name)); };
             return decoder;
         });
 
@@ -234,9 +233,12 @@ TEST_CASE(
     fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
 
     REQUIRE(names_for_recognition.size() == 3);
-    REQUIRE(names_for_recognition[0] == path("archive.arc"));
-    REQUIRE(names_for_recognition[1] == path("archive.arc/nested/test.image"));
-    REQUIRE(names_for_recognition[2] == path("archive.arc/nested/test.png"));
+    REQUIRE(names_for_recognition[0] == io::path("archive.arc"));
+    REQUIRE(names_for_recognition[1]
+        == io::path("archive.arc/nested/test.image"));
+    REQUIRE(names_for_recognition[2]
+        == io::path("archive.arc/nested/test.png"));
     REQUIRE(names_for_conversion.size() == 1);
-    REQUIRE(names_for_conversion[0] == path("archive.arc/nested/test.image"));
+    REQUIRE(names_for_conversion[0]
+        == io::path("archive.arc/nested/test.image"));
 }

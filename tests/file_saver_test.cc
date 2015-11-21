@@ -1,26 +1,26 @@
-#include <boost/filesystem.hpp>
-#include "log.h"
 #include "file_saver.h"
+#include "io/filesystem.h"
+#include "log.h"
 #include "test_support/catch.hh"
 
 using namespace au;
 
-static void do_test(const boost::filesystem::path &path)
+static void do_test(const io::path &path)
 {
     const FileSaverHdd file_saver(".", true);
-    const auto file = std::make_shared<io::File>(path.string(), "test"_b);
+    const auto file = std::make_shared<io::File>(path.str(), "test"_b);
 
     Log.mute();
     file_saver.save(file);
     Log.unmute();
 
-    REQUIRE(boost::filesystem::exists(path));
+    REQUIRE(io::exists(path));
     {
         io::FileStream file_stream(path, io::FileMode::Read);
         REQUIRE(file_stream.size() == 4);
         REQUIRE(file_stream.read_to_eof() == "test"_b);
     }
-    boost::filesystem::remove(path);
+    io::remove(path);
 }
 
 static void do_test_overwriting(
@@ -28,27 +28,27 @@ static void do_test_overwriting(
     const FileSaver &file_saver2,
     const bool renamed_file_exists)
 {
-    boost::filesystem::path path = "test.txt";
-    boost::filesystem::path path2 = "test(1).txt";
-    const auto file = std::make_shared<io::File>(path.string(), ""_b);
+    io::path path = "test.txt";
+    io::path path2 = "test(1).txt";
+    const auto file = std::make_shared<io::File>(path.str(), ""_b);
 
     try
     {
-        REQUIRE(!boost::filesystem::exists(path));
-        REQUIRE(!boost::filesystem::exists(path2));
+        REQUIRE(!io::exists(path));
+        REQUIRE(!io::exists(path2));
         Log.mute();
         file_saver1.save(file);
         file_saver2.save(file);
         Log.unmute();
-        REQUIRE(boost::filesystem::exists(path));
-        REQUIRE(boost::filesystem::exists(path2) == renamed_file_exists);
-        if (boost::filesystem::exists(path)) boost::filesystem::remove(path);
-        if (boost::filesystem::exists(path2)) boost::filesystem::remove(path2);
+        REQUIRE(io::exists(path));
+        REQUIRE(io::exists(path2) == renamed_file_exists);
+        if (io::exists(path)) io::remove(path);
+        if (io::exists(path2)) io::remove(path2);
     }
     catch(...)
     {
-        if (boost::filesystem::exists(path)) boost::filesystem::remove(path);
-        if (boost::filesystem::exists(path2)) boost::filesystem::remove(path2);
+        if (io::exists(path)) io::remove(path);
+        if (io::exists(path2)) io::remove(path2);
         throw;
     }
 }

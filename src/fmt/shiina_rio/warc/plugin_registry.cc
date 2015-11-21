@@ -11,8 +11,7 @@ using namespace au::fmt::shiina_rio::warc;
 
 static bstr read_file(const std::string &name)
 {
-    const boost::filesystem::path path
-        = util::get_extra_dir_path() / "shiina_rio" / name;
+    const io::path path = util::get_extra_dir_path() / "shiina_rio" / name;
     io::File file(path, io::FileMode::Read);
     return file.stream.read_to_eof();
 }

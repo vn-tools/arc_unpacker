@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/filesystem/path.hpp>
 #include <vector>
 #include "fmt/archive_decoder.h"
 #include "fmt/file_decoder.h"

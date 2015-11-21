@@ -1,5 +1,5 @@
-#include <boost/filesystem.hpp>
 #include "arc_unpacker.h"
+#include "io/filesystem.h"
 #include "log.h"
 #include "test_support/catch.hh"
 
@@ -18,8 +18,8 @@ TEST_CASE("Converting single files with CLI facade", "[core][frontend]")
     arc_unpacker.run();
     Log.unmute();
 
-    REQUIRE(boost::filesystem::is_regular_file("./AYU_03.png"));
-    boost::filesystem::remove("./AYU_03.png");
+    REQUIRE(io::is_regular_file("./AYU_03.png"));
+    io::remove("./AYU_03.png");
 }
 
 TEST_CASE("Unpacking archives with CLI facade", "[core][frontend]")
@@ -36,10 +36,10 @@ TEST_CASE("Unpacking archives with CLI facade", "[core][frontend]")
     arc_unpacker.run();
     Log.unmute();
 
-    REQUIRE(boost::filesystem::is_directory("./xp3-v2~.xp3"));
-    REQUIRE(boost::filesystem::is_regular_file("./xp3-v2~.xp3/abc.txt"));
-    REQUIRE(boost::filesystem::is_regular_file("./xp3-v2~.xp3/abc2.txt"));
-    boost::filesystem::remove("./xp3-v2~.xp3/abc2.txt");
-    boost::filesystem::remove("./xp3-v2~.xp3/abc.txt");
-    boost::filesystem::remove("./xp3-v2~.xp3");
+    REQUIRE(io::is_directory("./xp3-v2~.xp3"));
+    REQUIRE(io::is_regular_file("./xp3-v2~.xp3/abc.txt"));
+    REQUIRE(io::is_regular_file("./xp3-v2~.xp3/abc2.txt"));
+    io::remove("./xp3-v2~.xp3/abc2.txt");
+    io::remove("./xp3-v2~.xp3/abc.txt");
+    io::remove("./xp3-v2~.xp3");
 }

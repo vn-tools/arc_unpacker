@@ -1,6 +1,5 @@
 #include "fmt/leaf/ar10_group/cz10_image_archive_decoder.h"
 #include <array>
-#include <boost/filesystem/path.hpp>
 #include "err.h"
 #include "fmt/naming_strategies.h"
 #include "io/memory_stream.h"
@@ -11,7 +10,6 @@
 
 using namespace au;
 using namespace au::fmt::leaf;
-namespace fs = boost::filesystem;
 
 static const bstr magic = "cz10"_b;
 
@@ -104,7 +102,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         meta->entries.push_back(std::move(entry));
     }
 
-    const auto base_name = fs::path(input_file.name).stem().string();
+    const auto base_name = io::path(input_file.name).stem();
     for (const auto i : util::range(meta->entries.size()))
         meta->entries[i]->name = meta->entries.size() > 1
             ? util::format("%s_%03d", base_name.c_str(), i)

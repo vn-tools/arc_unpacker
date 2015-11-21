@@ -1,5 +1,5 @@
-#include <boost/filesystem.hpp>
 #include "io/file_stream.h"
+#include "io/filesystem.h"
 #include "io/memory_stream.h"
 #include "test_support/catch.hh"
 
@@ -23,7 +23,7 @@ TEST_CASE("Writing to real files", "[io][io_cls]")
         REQUIRE(stream.read_u32_le() == 1);
         REQUIRE(stream.size() == 4);
     }
-    boost::filesystem::remove("tests/trash.out");
+    io::remove("tests/trash.out");
 }
 
 TEST_CASE("Proper file position after initialization", "[io][io_cls]")

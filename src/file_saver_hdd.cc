@@ -1,8 +1,8 @@
 #include "file_saver.h"
 #include <boost/algorithm/string/replace.hpp>
-#include <boost/filesystem/operations.hpp>
 #include <set>
 #include "io/file_stream.h"
+#include "io/filesystem.h"
 #include "log.h"
 #include "util/format.h"
 
@@ -10,40 +10,35 @@ using namespace au;
 
 struct FileSaverHdd::Priv final
 {
-    Priv(const boost::filesystem::path &output_dir, bool overwrite);
-    boost::filesystem::path make_path_unique(
-        const boost::filesystem::path &path);
+    Priv(const io::path &output_dir, bool overwrite);
+    io::path make_path_unique(const io::path &path);
 
-    boost::filesystem::path output_dir;
-    std::set<boost::filesystem::path> paths;
+    io::path output_dir;
+    std::set<io::path> paths;
     bool overwrite;
 };
 
-FileSaverHdd::Priv::Priv(
-    const boost::filesystem::path &output_dir, bool overwrite)
+FileSaverHdd::Priv::Priv(const io::path &output_dir, bool overwrite)
         : output_dir(output_dir), overwrite(overwrite)
 {
 }
 
-boost::filesystem::path FileSaverHdd::Priv::make_path_unique(
-    const boost::filesystem::path &path)
+io::path FileSaverHdd::Priv::make_path_unique(const io::path &path)
 {
-    boost::filesystem::path new_path = path;
+    io::path new_path = path;
     int i = 1;
     while (paths.find(new_path) != paths.end()
-        || (!overwrite && boost::filesystem::exists(new_path)))
+        || (!overwrite && io::exists(new_path)))
     {
         const auto suffix = util::format("(%d)", i++);
-        new_path = path.parent_path();
-        new_path /= boost::filesystem::path(
-            path.stem().string() + suffix + path.extension().string());
+        new_path = path.parent();
+        new_path /= io::path(path.stem() + suffix + path.extension());
     }
     paths.insert(new_path);
     return new_path;
 }
 
-FileSaverHdd::FileSaverHdd(
-    const boost::filesystem::path &output_dir, bool overwrite)
+FileSaverHdd::FileSaverHdd(const io::path &output_dir, bool overwrite)
     : p(new Priv(output_dir, overwrite))
 {
 }
@@ -64,16 +59,13 @@ void FileSaverHdd::save(std::shared_ptr<io::File> file) const
             pos++;
         }
 
-        boost::filesystem::path full_path(p->output_dir);
-        full_path /= boost::filesystem::path(name_part);
+        io::path full_path(p->output_dir);
+        full_path /= io::path(name_part);
         full_path = p->make_path_unique(full_path);
 
-        Log.info("Saving to " + full_path.generic_string() + "... ");
-
-        if (!full_path.parent_path().empty())
-            boost::filesystem::create_directories(full_path.parent_path());
-
-        io::FileStream output_stream(full_path.string(), io::FileMode::Write);
+        Log.info("Saving to " + full_path.str() + "... ");
+        io::create_directories(full_path.parent());
+        io::FileStream output_stream(full_path, io::FileMode::Write);
         file->stream.seek(0);
         output_stream.write(file->stream.read_to_eof());
         Log.success("ok\n");

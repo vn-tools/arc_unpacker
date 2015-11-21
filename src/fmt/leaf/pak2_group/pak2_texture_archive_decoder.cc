@@ -1,5 +1,4 @@
 #include "fmt/leaf/pak2_group/pak2_texture_archive_decoder.h"
-#include <boost/filesystem/path.hpp>
 #include "err.h"
 #include "fmt/naming_strategies.h"
 #include "util/file_from_grid.h"
@@ -8,7 +7,6 @@
 
 using namespace au;
 using namespace au::fmt::leaf;
-namespace fs = boost::filesystem;
 
 static const bstr magic = "\x88\x33\x67\x82"_b;
 static const bstr canvas_magic1 = "\x70\x2B\xCD\xC8"_b;
@@ -80,7 +78,7 @@ std::unique_ptr<fmt::ArchiveMeta>
             meta->entries.push_back(std::move(entry));
     }
 
-    const auto base_name = fs::path(input_file.name).stem().string();
+    const auto base_name = io::path(input_file.name).stem();
     for (auto i : util::range(meta->entries.size()))
         meta->entries[i]->name = meta->entries.size() > 1
             ? util::format("%s_%03d", base_name.c_str(), i)

@@ -12,7 +12,7 @@ static void test_changing_extension(
     File file;
     file.name = name;
     file.change_extension(new_extension);
-    REQUIRE(file.name == expected_name);
+    REQUIRE(io::path(file.name) == io::path(expected_name));
 }
 
 TEST_CASE("Empty file creation", "[core][file]")
@@ -32,6 +32,7 @@ TEST_CASE("Checking File's extension", "[core][file]")
 {
     File extensionless_file;
     extensionless_file.name = "test";
+    INFO(io::path(extensionless_file.name).extension());
     REQUIRE(!extensionless_file.has_extension());
     REQUIRE(!extensionless_file.has_extension("test"));
     REQUIRE(!extensionless_file.has_extension("dat"));

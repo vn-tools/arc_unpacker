@@ -1,6 +1,5 @@
 #include "fmt/will/wipf_image_archive_decoder.h"
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 #include "err.h"
 #include "fmt/naming_strategies.h"
 #include "io/memory_stream.h"
@@ -90,8 +89,7 @@ bool WipfImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     WipfImageArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
-    auto base_name
-        = boost::filesystem::path(input_file.name).filename().string();
+    auto base_name = io::path(input_file.name).name();
     boost::algorithm::replace_all(base_name, ".", "-");
 
     input_file.stream.seek(magic.size());

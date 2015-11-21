@@ -1,4 +1,5 @@
 #include "fmt/qlie/pack_archive_decoder.h"
+#include <cstring>
 #include "err.h"
 #include "fmt/qlie/mt.h"
 #include "io/memory_stream.h"

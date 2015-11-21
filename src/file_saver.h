@@ -1,7 +1,7 @@
 #pragma once
 
-#include <boost/filesystem/path.hpp>
 #include <memory>
+#include "io/path.h"
 #include "io/file.h"
 
 namespace au {
@@ -16,7 +16,7 @@ namespace au {
     class FileSaverHdd final : public FileSaver
     {
     public:
-        FileSaverHdd(const boost::filesystem::path &output_dir, bool overwrite);
+        FileSaverHdd(const io::path &output_dir, bool overwrite);
         ~FileSaverHdd();
 
         void save(std::shared_ptr<io::File> file) const override;

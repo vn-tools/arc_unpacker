@@ -1,7 +1,7 @@
 #include "fmt/twilight_frontier/pak2_archive_decoder.h"
-#include <boost/filesystem.hpp>
 #include "err.h"
 #include "fmt/twilight_frontier/pak2_image_decoder.h"
+#include "io/filesystem.h"
 #include "io/memory_stream.h"
 #include "util/encoding.h"
 #include "util/file_from_grid.h"
@@ -99,17 +99,15 @@ void Pak2ArchiveDecoder::preprocess(
     Pak2ImageDecoder image_decoder;
 
     image_decoder.clear_palettes();
-    auto dir = boost::filesystem::path(input_file.name).parent_path();
-    for (boost::filesystem::directory_iterator it(dir);
-        it != boost::filesystem::directory_iterator();
-        it++)
+    auto dir = io::path(input_file.name).parent();
+    for (const auto &path : io::directory_range(dir))
     {
-        if (!boost::filesystem::is_regular_file(it->path()))
+        if (!io::is_regular_file(path))
             continue;
-        if (it->path().string().find(".dat") == std::string::npos)
+        if (path.str().find(".dat") == std::string::npos)
             continue;
 
-        io::File other_input_file(it->path().string(), io::FileMode::Read);
+        io::File other_input_file(path, io::FileMode::Read);
         if (!is_recognized(other_input_file))
             continue;
 

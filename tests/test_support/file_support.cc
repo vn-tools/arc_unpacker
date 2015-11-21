@@ -13,7 +13,7 @@ std::shared_ptr<io::File> tests::stub_file(
 }
 
 std::shared_ptr<io::File> tests::file_from_path(
-    const boost::filesystem::path &path, const std::string &cust_name)
+    const io::path &path, const std::string &cust_name)
 {
     auto ret = std::make_shared<io::File>(path, io::FileMode::Read);
     if (!cust_name.empty())
@@ -22,7 +22,7 @@ std::shared_ptr<io::File> tests::file_from_path(
 }
 
 std::shared_ptr<io::File> tests::zlib_file_from_path(
-    const boost::filesystem::path &path, const std::string &cust_name)
+    const io::path &path, const std::string &cust_name)
 {
     io::File compressed_file(path, io::FileMode::Read);
     const auto compressed_data = compressed_file.stream.read_to_eof();

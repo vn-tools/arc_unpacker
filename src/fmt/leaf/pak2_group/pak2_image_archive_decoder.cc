@@ -1,5 +1,4 @@
 #include "fmt/leaf/pak2_group/pak2_image_archive_decoder.h"
-#include <boost/filesystem/path.hpp>
 #include "err.h"
 #include "fmt/naming_strategies.h"
 #include "util/file_from_grid.h"
@@ -8,7 +7,6 @@
 
 using namespace au;
 using namespace au::fmt::leaf;
-namespace fs = boost::filesystem;
 
 static const bstr magic = "\x5F\xF8\x6D\x75"_b;
 static const bstr mask_magic = "\x03\xC5\x0D\xA6"_b;
@@ -74,7 +72,7 @@ std::unique_ptr<fmt::ArchiveMeta>
             throw err::CorruptDataError("Unexpected magic");
     }
 
-    const auto base_name = fs::path(input_file.name).stem().string();
+    const auto base_name = io::path(input_file.name).stem();
     for (auto i : util::range(meta->entries.size()))
         meta->entries[i]->name = meta->entries.size() > 1
             ? util::format("%s_%03d", base_name.c_str(), i)

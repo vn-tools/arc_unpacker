@@ -11,7 +11,7 @@ using namespace au::fmt::twilight_frontier;
 
 namespace
 {
-    using PaletteMap = std::map<std::string, std::shared_ptr<pix::Palette>>;
+    using PaletteMap = std::map<io::path, std::shared_ptr<pix::Palette>>;
 }
 
 struct Pak2ImageDecoder::Priv final
@@ -58,11 +58,10 @@ pix::Grid Pak2ImageDecoder::decode_impl(io::File &input_file) const
     std::shared_ptr<pix::Palette> palette;
     if (bit_depth == 8)
     {
-        auto path = boost::filesystem::path(input_file.name);
-        path.remove_filename();
+        auto path = io::path(input_file.name).parent();
         path /= util::format("palette%03d.pal", palette_number);
 
-        auto it = p->palette_map.find(path.generic_string());
+        auto it = p->palette_map.find(path);
         palette = it != p->palette_map.end()
             ? it->second
             : std::make_shared<pix::Palette>(256);

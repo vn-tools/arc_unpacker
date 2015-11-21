@@ -14,7 +14,7 @@ static const bstr magic = "TFBM\x00"_b;
 
 namespace
 {
-    using PaletteMap = std::map<std::string, std::shared_ptr<pix::Palette>>;
+    using PaletteMap = std::map<io::path, std::shared_ptr<pix::Palette>>;
 }
 
 struct TfbmImageDecoder::Priv final
@@ -71,11 +71,10 @@ pix::Grid TfbmImageDecoder::decode_impl(io::File &input_file) const
     if (bit_depth == 8)
     {
         u32 palette_number = 0;
-        auto path = boost::filesystem::path(input_file.name);
-        path.remove_filename();
+        auto path = io::path(input_file.name).parent();
         path /= util::format("palette%03d.bmp", palette_number);
 
-        auto it = p->palette_map.find(path.generic_string());
+        auto it = p->palette_map.find(path.str());
         palette = it != p->palette_map.end()
             ? it->second
             : std::make_shared<pix::Palette>(256);

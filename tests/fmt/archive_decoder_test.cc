@@ -1,4 +1,3 @@
-#include <boost/filesystem.hpp>
 #include "fmt/archive_decoder.h"
 #include "fmt/file_decoder.h"
 #include "test_support/catch.hh"
@@ -8,8 +7,6 @@ using namespace au::fmt;
 
 namespace
 {
-    using path = boost::filesystem::path;
-
     struct ArchiveEntryImpl final : ArchiveEntry
     {
         size_t offset;
@@ -80,6 +77,7 @@ TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
     test_archive_decoder.unpack(dummy_file, file_saver);
 
     REQUIRE(saved_files.size() == 1);
-    REQUIRE(path(saved_files[0]->name) == path("deeply/nested/file.txt"));
+    REQUIRE(io::path(saved_files[0]->name)
+        == io::path("deeply/nested/file.txt"));
     REQUIRE(saved_files[0]->stream.read_to_eof() == "abc"_b);
 }

@@ -1,8 +1,8 @@
 #include "fmt/eagls/pak_archive_decoder.h"
 #include <algorithm>
-#include <boost/filesystem.hpp>
-#include "io/memory_stream.h"
 #include "io/file_stream.h"
+#include "io/filesystem.h"
+#include "io/memory_stream.h"
 #include "util/crypt/lcg.h"
 #include "util/encoding.h"
 #include "util/range.h"
@@ -23,14 +23,14 @@ namespace
 
 static std::string get_path_to_index(const std::string &path_to_data)
 {
-    boost::filesystem::path index_path(path_to_data);
-    index_path.replace_extension("idx");
-    return index_path.string();
+    io::path index_path(path_to_data);
+    index_path.change_extension("idx");
+    return index_path.str();
 }
 
 bool PakArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return boost::filesystem::exists(get_path_to_index(input_file.name))
+    return io::exists(get_path_to_index(input_file.name))
         && input_file.has_extension("pak");
 }
 

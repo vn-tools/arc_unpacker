@@ -1,9 +1,9 @@
 #include "fmt/twilight_frontier/tfpk_archive_decoder.h"
-#include <boost/filesystem.hpp>
 #include <map>
 #include <set>
 #include "err.h"
 #include "fmt/twilight_frontier/tfbm_image_decoder.h"
+#include "io/filesystem.h"
 #include "io/memory_stream.h"
 #include "util/crypt/rsa.h"
 #include "util/encoding.h"
@@ -455,17 +455,15 @@ void TfpkArchiveDecoder::preprocess(
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
 
     TfbmImageDecoder tfbm_image_decoder;
-    auto dir = boost::filesystem::path(input_file.name).parent_path();
-    for (boost::filesystem::directory_iterator it(dir);
-        it != boost::filesystem::directory_iterator();
-        it++)
+    auto dir = io::path(input_file.name).parent();
+    for (const auto &path : io::directory_range(dir))
     {
-        if (!boost::filesystem::is_regular_file(it->path()))
+        if (!io::is_regular_file(path))
             continue;
-        if (it->path().string().find(".pak") == std::string::npos)
+        if (path.str().find(".pak") == std::string::npos)
             continue;
 
-        io::File other_input_file(it->path(), io::FileMode::Read);
+        io::File other_input_file(path, io::FileMode::Read);
         if (!is_recognized(other_input_file))
             continue;
 

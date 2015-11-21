@@ -1,5 +1,4 @@
 #include "fmt/cronus/grp_image_decoder.h"
-#include <boost/filesystem/path.hpp>
 #include "err.h"
 #include "fmt/cronus/common.h"
 #include "util/pack/lzss.h"
@@ -145,9 +144,9 @@ pix::Grid GrpImageDecoder::decode_impl(io::File &input_file) const
     input_file.stream.seek(p->header.input_offset);
     auto data = input_file.stream.read_to_eof();
 
-    boost::filesystem::path path(input_file.name);
+    io::path path(input_file.name);
     if (p->header.encryption_type == EncType::Delta)
-        delta_decrypt(data, get_delta_key(path.filename().string()));
+        delta_decrypt(data, get_delta_key(path.name()));
     else if (p->header.encryption_type == EncType::SwapBytes)
         swap_decrypt(data, p->header.output_size);
     data = util::pack::lzss_decompress_bytewise(data, p->header.output_size);

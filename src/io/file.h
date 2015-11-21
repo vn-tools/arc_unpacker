@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/filesystem/path.hpp>
 #include <string>
 #include "io/file_stream.h"
 
@@ -10,7 +9,7 @@ namespace io {
     class File final
     {
     public:
-        File(const boost::filesystem::path &path, const io::FileMode mode);
+        File(const io::path &path, const io::FileMode mode);
         File(const std::string &name, const bstr &data);
         File();
         ~File();

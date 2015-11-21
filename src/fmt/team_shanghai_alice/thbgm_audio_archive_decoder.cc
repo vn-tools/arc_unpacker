@@ -1,10 +1,10 @@
 #include "fmt/team_shanghai_alice/thbgm_audio_archive_decoder.h"
-#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include "err.h"
 #include "fmt/team_shanghai_alice/pbg4_archive_decoder.h"
 #include "fmt/team_shanghai_alice/pbgz_archive_decoder.h"
 #include "fmt/team_shanghai_alice/tha1_archive_decoder.h"
+#include "io/filesystem.h"
 #include "util/file_from_samples.h"
 #include "util/range.h"
 
@@ -29,22 +29,19 @@ namespace
     };
 }
 
-static std::unique_ptr<io::File> grab_definitions_file(
-    const boost::filesystem::path &dir)
+static std::unique_ptr<io::File> grab_definitions_file(const io::path &dir)
 {
     std::vector<std::unique_ptr<fmt::ArchiveDecoder>> decoders;
     decoders.push_back(std::make_unique<Pbg4ArchiveDecoder>());
     decoders.push_back(std::make_unique<PbgzArchiveDecoder>());
     decoders.push_back(std::make_unique<Tha1ArchiveDecoder>());
 
-    for (boost::filesystem::directory_iterator it(dir);
-        it != boost::filesystem::directory_iterator();
-        it++)
+    for (const auto &path : io::directory_range(dir))
     {
-        if (!boost::filesystem::is_regular_file(it->path()))
+        if (!io::is_regular_file(path))
             continue;
 
-        io::File other_file(it->path(), io::FileMode::Read);
+        io::File other_file(path, io::FileMode::Read);
         for (auto &decoder : decoders)
         {
             if (!decoder->is_recognized(other_file))
@@ -110,7 +107,7 @@ bool ThbgmAudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     ThbgmAudioArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
-    auto dir = boost::filesystem::path(input_file.name).parent_path();
+    auto dir = io::path(input_file.name).parent();
     auto definitions_file = grab_definitions_file(dir);
 
     if (!definitions_file)

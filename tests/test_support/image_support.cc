@@ -41,8 +41,7 @@ std::shared_ptr<pix::Grid> tests::image_from_file(io::File &file)
     throw std::logic_error("Only JPEG and PNG files are supported");
 }
 
-std::shared_ptr<pix::Grid> tests::image_from_path(
-    const boost::filesystem::path &path)
+std::shared_ptr<pix::Grid> tests::image_from_path(const io::path &path)
 {
     return tests::image_from_file(*tests::file_from_path(path));
 }

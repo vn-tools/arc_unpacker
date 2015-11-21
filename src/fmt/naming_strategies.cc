@@ -1,5 +1,5 @@
 #include "fmt/naming_strategies.h"
-#include <boost/filesystem/path.hpp>
+#include "io/path.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -17,10 +17,10 @@ std::string SiblingNamingStrategy::decorate(
 {
     if (parent_name == "")
         return current_name;
-    auto path = boost::filesystem::path(parent_name);
-    path = path.parent_path();
+    auto path = io::path(parent_name);
+    path = path.parent();
     path /= current_name;
-    return path.string();
+    return path.str();
 }
 
 std::string ChildNamingStrategy::decorate(
@@ -29,7 +29,7 @@ std::string ChildNamingStrategy::decorate(
 {
     if (parent_name == "")
         return current_name;
-    auto path = boost::filesystem::path(parent_name);
+    auto path = io::path(parent_name);
     path /= current_name;
-    return path.string();
+    return path.str();
 }
