@@ -8,17 +8,17 @@ using namespace au::fmt::kiss;
 
 static const bstr magic = "\x89PNG"_b;
 
-bool CustomPngImageDecoder::is_recognized_impl(File &file) const
+bool CustomPngImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid CustomPngImageDecoder::decode_impl(File &file) const
+pix::Grid CustomPngImageDecoder::decode_impl(File &input_file) const
 {
     fmt::png::PngImageDecoder decoder;
     std::map<std::string, bstr> chunks;
     auto image = decoder.decode(
-        file, [&](const std::string &name, const bstr &data)
+        input_file, [&](const std::string &name, const bstr &data)
         {
             chunks[name] = data;
         });

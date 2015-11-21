@@ -138,9 +138,9 @@ static pix::Grid read_plain(File &input_file, const ArchiveEntryImpl &entry)
     return pix::Grid(entry.width, entry.height, data, pix::Format::BGRA8888);
 }
 
-bool S25ImageArchiveDecoder::is_recognized_impl(File &file) const
+bool S25ImageArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>

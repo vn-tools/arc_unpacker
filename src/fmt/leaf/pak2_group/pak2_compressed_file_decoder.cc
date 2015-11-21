@@ -56,16 +56,17 @@ static bstr decompress(const bstr &src, const size_t size_orig)
     return output;
 }
 
-bool Pak2CompressedFileDecoder::is_recognized_impl(File &file) const
+bool Pak2CompressedFileDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.seek(4).read(magic.size()) == magic;
+    return input_file.stream.seek(4).read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> Pak2CompressedFileDecoder::decode_impl(File &file) const
+std::unique_ptr<File> Pak2CompressedFileDecoder::decode_impl(
+    File &input_file) const
 {
-    const auto size_orig = file.stream.seek(24).read_u32_le();
-    const auto data = file.stream.seek(36).read_to_eof();
-    return std::make_unique<File>(file.name, decompress(data, size_orig));
+    const auto size_orig = input_file.stream.seek(24).read_u32_le();
+    const auto data = input_file.stream.seek(36).read_to_eof();
+    return std::make_unique<File>(input_file.name, decompress(data, size_orig));
 }
 
 static auto dummy

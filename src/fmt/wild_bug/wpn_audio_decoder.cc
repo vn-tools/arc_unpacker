@@ -16,23 +16,23 @@ namespace
     };
 }
 
-bool WpnAudioDecoder::is_recognized_impl(File &file) const
+bool WpnAudioDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> WpnAudioDecoder::decode_impl(File &file) const
+std::unique_ptr<File> WpnAudioDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(magic.size());
-    auto chunk_count = file.stream.read_u32_le();
+    input_file.stream.seek(magic.size());
+    auto chunk_count = input_file.stream.read_u32_le();
 
     std::vector<Chunk> chunks;
     for (auto i : util::range(chunk_count))
     {
         Chunk chunk;
-        chunk.prefix = file.stream.read(4);
-        chunk.offset = file.stream.read_u32_le();
-        chunk.size = file.stream.read_u32_le();
+        chunk.prefix = input_file.stream.read(4);
+        chunk.offset = input_file.stream.read_u32_le();
+        chunk.size = input_file.stream.read_u32_le();
         chunks.push_back(chunk);
     }
 
@@ -45,13 +45,13 @@ std::unique_ptr<File> WpnAudioDecoder::decode_impl(File &file) const
     {
         output_file->stream.write(chunk.prefix);
         output_file->stream.write_u32_le(chunk.size);
-        file.stream.seek(chunk.offset);
-        output_file->stream.write(file.stream.read(chunk.size));
+        input_file.stream.seek(chunk.offset);
+        output_file->stream.write(input_file.stream.read(chunk.size));
     }
 
     output_file->stream.seek(4);
     output_file->stream.write_u32_le(output_file->stream.size() - 8);
-    output_file->name = file.name;
+    output_file->name = input_file.name;
     output_file->change_extension("wav");
     return output_file;
 }

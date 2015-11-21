@@ -39,7 +39,7 @@ static pix::Palette read_palette(io::Stream &stream, size_t size, size_t depth)
     throw err::UnsupportedBitDepthError(depth);
 }
 
-static bstr read_compressed_pixel_data(
+static bstr read_compressed_data(
     io::Stream &stream,
     const size_t width,
     const size_t height,
@@ -68,7 +68,7 @@ static bstr read_compressed_pixel_data(
     return output;
 }
 
-static bstr read_uncompressed_pixel_data(
+static bstr read_uncompressed_data(
     io::Stream &stream,
     const size_t width,
     const size_t height,
@@ -112,31 +112,31 @@ static pix::Grid get_pixels_without_palette(
     return pix::Grid(width, height, input, format);
 }
 
-bool TgaImageDecoder::is_recognized_impl(File &file) const
+bool TgaImageDecoder::is_recognized_impl(File &input_file) const
 {
     // there's no magic in the header. there is *optional* footer that *might*
     // contain the magic, but checking for this causes conflicts with certain
     // archives that contain TGA files at the end (they understandably get
     // mistaken for TGA footer).
-    return file.has_extension("tga");
+    return input_file.has_extension("tga");
 }
 
-pix::Grid TgaImageDecoder::decode_impl(File &file) const
+pix::Grid TgaImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(0);
-    const auto id_size = file.stream.read_u8();
-    const bool use_palette = file.stream.read_u8() == 1;
-    const auto data_type = file.stream.read_u8();
-    const auto palette_start = file.stream.read_u16_le();
-    const auto palette_size = file.stream.read_u16_le() - palette_start;
-    const auto palette_depth = file.stream.read_u8();
-    file.stream.skip(4); // x and y
-    const auto width = file.stream.read_u16_le();
-    const auto height = file.stream.read_u16_le();
-    auto depth = file.stream.read_u8();
+    input_file.stream.seek(0);
+    const auto id_size = input_file.stream.read_u8();
+    const bool use_palette = input_file.stream.read_u8() == 1;
+    const auto data_type = input_file.stream.read_u8();
+    const auto palette_start = input_file.stream.read_u16_le();
+    const auto palette_size = input_file.stream.read_u16_le() - palette_start;
+    const auto palette_depth = input_file.stream.read_u8();
+    input_file.stream.skip(4); // x and y
+    const auto width = input_file.stream.read_u16_le();
+    const auto height = input_file.stream.read_u16_le();
+    auto depth = input_file.stream.read_u8();
     if (!depth)
         depth = 32;
-    const auto flags = file.stream.read_u8();
+    const auto flags = input_file.stream.read_u8();
 
     const auto channels = depth / 8;
     const bool flip_horizontally = flags & Flags::RightToLeft;
@@ -146,18 +146,18 @@ pix::Grid TgaImageDecoder::decode_impl(File &file) const
         = flags & Flags::Interleave2 ? 2
         : flags & Flags::Interleave4 ? 4 : 1;
 
-    file.stream.skip(id_size);
+    input_file.stream.skip(id_size);
 
     std::unique_ptr<pix::Palette> palette;
     if (use_palette)
     {
         palette = std::make_unique<pix::Palette>(
-            read_palette(file.stream, palette_size, palette_depth));
+            read_palette(input_file.stream, palette_size, palette_depth));
     }
 
     const auto data = compressed
-        ? read_compressed_pixel_data(file.stream, width, height, channels)
-        : read_uncompressed_pixel_data(file.stream, width, height, channels);
+        ? read_compressed_data(input_file.stream, width, height, channels)
+        : read_uncompressed_data(input_file.stream, width, height, channels);
 
     pix::Grid pixels = use_palette
         ? get_pixels_from_palette(data, width, height, depth, *palette)

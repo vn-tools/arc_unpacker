@@ -4,58 +4,60 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
-static int detect_version(File &file)
+static int detect_version(File &input_file)
 {
     int version = 1;
-    file.stream.seek(0);
-    size_t width = file.stream.read_u16_le();
-    size_t height = file.stream.read_u16_le();
+    input_file.stream.seek(0);
+    size_t width = input_file.stream.read_u16_le();
+    size_t height = input_file.stream.read_u16_le();
     if (!width && !height)
     {
-        width = file.stream.read_u16_le();
-        height = file.stream.read_u16_le();
+        width = input_file.stream.read_u16_le();
+        height = input_file.stream.read_u16_le();
         version = 2;
     }
-    return width * height + version * 4 == file.stream.size() ? version : -1;
+    if (width * height + version * 4 == input_file.stream.size())
+        return version;
+    return -1;
 }
 
-static pix::Grid decode_pixels(File &file)
+static pix::Grid decode_pixels(File &input_file)
 {
-    const auto version = detect_version(file);
-    file.stream.seek(version == 1 ? 0 : 4);
-    const auto width = file.stream.read_u16_le();
-    const auto height = file.stream.read_u16_le();
-    const auto data = file.stream.read(width * height);
+    const auto version = detect_version(input_file);
+    input_file.stream.seek(version == 1 ? 0 : 4);
+    const auto width = input_file.stream.read_u16_le();
+    const auto height = input_file.stream.read_u16_le();
+    const auto data = input_file.stream.read(width * height);
     return pix::Grid(width, height, data, pix::Format::Gray8);
 }
 
-static pix::Palette decode_palette(File &file)
+static pix::Palette decode_palette(File &input_file)
 {
-    file.stream.seek(0);
-    const auto count = file.stream.read_u16_le();
+    input_file.stream.seek(0);
+    const auto count = input_file.stream.read_u16_le();
     auto palette = pix::Palette(256);
     for (auto i : util::range(count))
     {
-        auto index = file.stream.read_u8();
+        auto index = input_file.stream.read_u8();
         palette[index].a = 0xFF;
-        palette[index].b = file.stream.read_u8();
-        palette[index].g = file.stream.read_u8();
-        palette[index].r = file.stream.read_u8();
+        palette[index].b = input_file.stream.read_u8();
+        palette[index].g = input_file.stream.read_u8();
+        palette[index].r = input_file.stream.read_u8();
     }
     return palette;
 }
 
-bool GrpImageDecoder::is_recognized_impl(File &file) const
+bool GrpImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return detect_version(file) > 0;
+    return detect_version(input_file) > 0;
 }
 
 pix::Grid GrpImageDecoder::decode(
-    File &file,
+    File &input_file,
     std::shared_ptr<File> palette_file,
     std::shared_ptr<File> mask_file) const
 {
-    auto image = decode_pixels(file);
+    auto image = decode_pixels(input_file);
     if (palette_file)
     {
         const auto palette = decode_palette(*palette_file);
@@ -73,9 +75,9 @@ pix::Grid GrpImageDecoder::decode(
     return image;
 }
 
-pix::Grid GrpImageDecoder::decode_impl(File &file) const
+pix::Grid GrpImageDecoder::decode_impl(File &input_file) const
 {
-    return decode_pixels(file);
+    return decode_pixels(input_file);
 }
 
 static auto dummy = fmt::register_fmt<GrpImageDecoder>("leaf/grp");

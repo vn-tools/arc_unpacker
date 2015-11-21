@@ -7,19 +7,19 @@ using namespace au::fmt::wild_bug;
 
 static const bstr magic = "WPX\x1A""EX2\x00"_b;
 
-bool WbiFileDecoder::is_recognized_impl(File &file) const
+bool WbiFileDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> WbiFileDecoder::decode_impl(File &file) const
+std::unique_ptr<File> WbiFileDecoder::decode_impl(File &input_file) const
 {
-    wpx::Decoder decoder(file.stream);
+    wpx::Decoder decoder(input_file.stream);
     auto data = decoder.read_compressed_section(0x02);
 
     auto output_file = std::make_unique<File>();
     output_file->stream.write(data);
-    output_file->name = file.name;
+    output_file->name = input_file.name;
     output_file->change_extension("dat");
     return output_file;
 }

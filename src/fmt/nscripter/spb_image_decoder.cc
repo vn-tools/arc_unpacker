@@ -84,12 +84,12 @@ static pix::Grid decode_pixels(
     return output;
 }
 
-bool SpbImageDecoder::is_recognized_impl(File &file) const
+bool SpbImageDecoder::is_recognized_impl(File &input_file) const
 {
-    if (!file.has_extension("bmp"))
+    if (!input_file.has_extension("bmp"))
         return false;
-    u16 width = file.stream.read_u16_be();
-    u16 height = file.stream.read_u16_be();
+    const auto width = input_file.stream.read_u16_be();
+    const auto height = input_file.stream.read_u16_be();
     if (height == 0 || width == 0)
         return false;
     if (width > 5000 || height > 5000)
@@ -97,12 +97,11 @@ bool SpbImageDecoder::is_recognized_impl(File &file) const
     return true;
 }
 
-pix::Grid SpbImageDecoder::decode_impl(File &file) const
+pix::Grid SpbImageDecoder::decode_impl(File &input_file) const
 {
-    u16 width = file.stream.read_u16_be();
-    u16 height = file.stream.read_u16_be();
-
-    io::BitReader bit_reader(file.stream.read_to_eof());
+    const auto width = input_file.stream.read_u16_be();
+    const auto height = input_file.stream.read_u16_be();
+    io::BitReader bit_reader(input_file.stream.read_to_eof());
     return decode_pixels(width, height, bit_reader);
 }
 

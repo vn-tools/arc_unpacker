@@ -6,21 +6,21 @@ using namespace au::fmt::leaf;
 
 static const bstr magic = "\x03\x95\xAD\x4B"_b;
 
-bool Pak2AudioDecoder::is_recognized_impl(File &file) const
+bool Pak2AudioDecoder::is_recognized_impl(File &input_file) const
 {
-    file.stream.seek(4);
-    return file.stream.read(4) == magic;
+    input_file.stream.seek(4);
+    return input_file.stream.read(4) == magic;
 }
 
-std::unique_ptr<File> Pak2AudioDecoder::decode_impl(File &file) const
+std::unique_ptr<File> Pak2AudioDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(12);
-    const auto size_comp = file.stream.read_u32_le();
-    file.stream.skip(4);
-    const auto data = file.stream.read(size_comp);
-    if (!file.stream.eof())
+    input_file.stream.seek(12);
+    const auto size_comp = input_file.stream.read_u32_le();
+    input_file.stream.skip(4);
+    const auto data = input_file.stream.read(size_comp);
+    if (!input_file.stream.eof())
         Log.warn("Extra data after EOF.\n");
-    auto output_file = std::make_unique<File>(file.name, data);
+    auto output_file = std::make_unique<File>(input_file.name, data);
     output_file->guess_extension();
     return output_file;
 }

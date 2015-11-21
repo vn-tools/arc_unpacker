@@ -7,25 +7,25 @@ using namespace au::fmt::glib;
 
 static const bstr magic = "PGX\x00"_b;
 
-bool PgxImageDecoder::is_recognized_impl(File &file) const
+bool PgxImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PgxImageDecoder::decode_impl(File &file) const
+pix::Grid PgxImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
+    input_file.stream.skip(magic.size());
 
-    file.stream.skip(4);
-    size_t width = file.stream.read_u32_le();
-    size_t height = file.stream.read_u32_le();
-    bool transparent = file.stream.read_u16_le();
-    file.stream.skip(2);
-    size_t source_size = file.stream.read_u32_le();
+    input_file.stream.skip(4);
+    size_t width = input_file.stream.read_u32_le();
+    size_t height = input_file.stream.read_u32_le();
+    bool transparent = input_file.stream.read_u16_le();
+    input_file.stream.skip(2);
+    size_t source_size = input_file.stream.read_u32_le();
     size_t target_size = width * height * 4;
 
-    file.stream.seek(file.stream.size() - source_size);
-    auto source = file.stream.read(source_size);
+    input_file.stream.seek(input_file.stream.size() - source_size);
+    auto source = input_file.stream.read(source_size);
 
     auto target = custom_lzss_decompress(source, target_size);
 

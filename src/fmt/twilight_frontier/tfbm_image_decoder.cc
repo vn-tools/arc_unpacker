@@ -51,27 +51,27 @@ void TfbmImageDecoder::add_palette(
         256, colors_stream, pix::Format::BGRA5551);
 }
 
-bool TfbmImageDecoder::is_recognized_impl(File &file) const
+bool TfbmImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid TfbmImageDecoder::decode_impl(File &file) const
+pix::Grid TfbmImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
-    auto bit_depth = file.stream.read_u8();
-    auto width = file.stream.read_u32_le();
-    auto height = file.stream.read_u32_le();
-    auto stride = file.stream.read_u32_le();
-    auto source_size = file.stream.read_u32_le();
+    input_file.stream.skip(magic.size());
+    auto bit_depth = input_file.stream.read_u8();
+    auto width = input_file.stream.read_u32_le();
+    auto height = input_file.stream.read_u32_le();
+    auto stride = input_file.stream.read_u32_le();
+    auto source_size = input_file.stream.read_u32_le();
     io::MemoryStream source_stream(
-        util::pack::zlib_inflate(file.stream.read_to_eof()));
+        util::pack::zlib_inflate(input_file.stream.read_to_eof()));
 
     std::shared_ptr<pix::Palette> palette;
     if (bit_depth == 8)
     {
         u32 palette_number = 0;
-        auto path = boost::filesystem::path(file.name);
+        auto path = boost::filesystem::path(input_file.name);
         path.remove_filename();
         path /= util::format("palette%03d.bmp", palette_number);
 

@@ -8,19 +8,19 @@ using namespace au::fmt::rpgmaker;
 
 static const bstr magic = "XYZ1"_b;
 
-bool XyzImageDecoder::is_recognized_impl(File &file) const
+bool XyzImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid XyzImageDecoder::decode_impl(File &file) const
+pix::Grid XyzImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
+    input_file.stream.skip(magic.size());
 
-    u16 width = file.stream.read_u16_le();
-    u16 height = file.stream.read_u16_le();
+    u16 width = input_file.stream.read_u16_le();
+    u16 height = input_file.stream.read_u16_le();
 
-    bstr data = util::pack::zlib_inflate(file.stream.read_to_eof());
+    bstr data = util::pack::zlib_inflate(input_file.stream.read_to_eof());
 
     io::MemoryStream data_stream(data);
     auto pal_data = data_stream.read(256 * 3);

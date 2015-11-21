@@ -67,9 +67,9 @@ void McaArchiveDecoder::set_key(u8 key)
     p->key_set = true;
 }
 
-bool McaArchiveDecoder::is_recognized_impl(File &file) const
+bool McaArchiveDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>

@@ -274,18 +274,18 @@ static std::unique_ptr<pix::Grid> decode_dxt5(
     return pixels;
 }
 
-bool DdsImageDecoder::is_recognized_impl(File &file) const
+bool DdsImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid DdsImageDecoder::decode_impl(File &file) const
+pix::Grid DdsImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
+    input_file.stream.skip(magic.size());
 
-    auto header = read_header(file.stream);
+    auto header = read_header(input_file.stream);
     if (header->pixel_format.four_cc == magic_dx10)
-        read_header_dx10(file.stream);
+        read_header_dx10(input_file.stream);
 
     auto width = header->width;
     auto height = header->height;
@@ -294,11 +294,11 @@ pix::Grid DdsImageDecoder::decode_impl(File &file) const
     if (header->pixel_format.flags & DDPF_FOURCC)
     {
         if (header->pixel_format.four_cc == magic_dxt1)
-            pixels = decode_dxt1(file.stream, width, height);
+            pixels = decode_dxt1(input_file.stream, width, height);
         else if (header->pixel_format.four_cc == magic_dxt3)
-            pixels = decode_dxt3(file.stream, width, height);
+            pixels = decode_dxt3(input_file.stream, width, height);
         else if (header->pixel_format.four_cc == magic_dxt5)
-            pixels = decode_dxt5(file.stream, width, height);
+            pixels = decode_dxt5(input_file.stream, width, height);
         else
         {
             throw err::NotSupportedError(util::format(
@@ -311,7 +311,7 @@ pix::Grid DdsImageDecoder::decode_impl(File &file) const
         if (header->pixel_format.rgb_bit_count == 32)
         {
             pixels.reset(new pix::Grid(
-                width, height, file.stream, pix::Format::BGRA8888));
+                width, height, input_file.stream, pix::Format::BGRA8888));
         }
     }
 

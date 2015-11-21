@@ -9,26 +9,26 @@ using namespace au::fmt::liar_soft;
 
 static const bstr magic = "LM"_b;
 
-bool LimImageDecoder::is_recognized_impl(File &file) const
+bool LimImageDecoder::is_recognized_impl(File &input_file) const
 {
-    if (file.stream.read(magic.size()) != magic)
+    if (input_file.stream.read(magic.size()) != magic)
         return false;
-    if (!(file.stream.read_u16_le() & 0x10))
+    if (!(input_file.stream.read_u16_le() & 0x10))
         return false;
     return true;
 }
 
-pix::Grid LimImageDecoder::decode_impl(File &file) const
+pix::Grid LimImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(magic.size());
-    const auto version = file.stream.read_u16_le();
-    const auto depth = file.stream.read_u16_le();
-    const auto bits_per_channel = file.stream.read_u16_le();
+    input_file.stream.seek(magic.size());
+    const auto version = input_file.stream.read_u16_le();
+    const auto depth = input_file.stream.read_u16_le();
+    const auto bits_per_channel = input_file.stream.read_u16_le();
     if (bits_per_channel != 8)
         throw err::UnsupportedBitDepthError(bits_per_channel);
 
-    const auto width = file.stream.read_u32_le();
-    const auto height = file.stream.read_u32_le();
+    const auto width = input_file.stream.read_u32_le();
+    const auto height = input_file.stream.read_u32_le();
     const auto canvas_size = width * height;
 
     if (!(version & 0xF))
@@ -37,13 +37,13 @@ pix::Grid LimImageDecoder::decode_impl(File &file) const
         throw err::UnsupportedBitDepthError(depth);
 
     bstr output(canvas_size * 2);
-    cg_decompress(output, 0, 2, file.stream, 2);
+    cg_decompress(output, 0, 2, input_file.stream, 2);
     pix::Grid pixels(width, height, output, pix::Format::BGR565);
 
-    if (!file.stream.eof())
+    if (!input_file.stream.eof())
     {
         output.resize(canvas_size);
-        cg_decompress(output, 0, 1, file.stream, 1);
+        cg_decompress(output, 0, 1, input_file.stream, 1);
         for (auto &c : output)
             c ^= 0xFF;
         pix::Grid mask(width, height, output, pix::Format::Gray8);

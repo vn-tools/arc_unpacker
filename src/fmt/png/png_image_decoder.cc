@@ -98,23 +98,23 @@ static pix::Grid decode(File &file, PngImageDecoder::ChunkHandler handler)
     return pix::Grid(width, height, data, format);
 }
 
-bool PngImageDecoder::is_recognized_impl(File &file) const
+bool PngImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PngImageDecoder::decode_impl(File &file) const
+pix::Grid PngImageDecoder::decode_impl(File &input_file) const
 {
-    return ::decode(file, [](const std::string &name, const bstr &data)
+    return ::decode(input_file, [](const std::string &name, const bstr &data)
     {
         Log.warn("Ignoring unknown PNG chunk: %s\n", name.c_str());
     });
 }
 
 pix::Grid PngImageDecoder::decode(
-    File &file, PngImageDecoder::ChunkHandler chunk_handler) const
+    File &input_file, PngImageDecoder::ChunkHandler chunk_handler) const
 {
-    return ::decode(file, chunk_handler);
+    return ::decode(input_file, chunk_handler);
 }
 
 static auto dummy = fmt::register_fmt<PngImageDecoder>("png/png");

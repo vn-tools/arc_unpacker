@@ -6,18 +6,19 @@ using namespace au::fmt::lilim;
 
 static const bstr magic = "DW"_b;
 
-bool DwvAudioDecoder::is_recognized_impl(File &file) const
+bool DwvAudioDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.has_extension("dwv") && file.stream.read(magic.size()) == magic;
+    return input_file.has_extension("dwv")
+        && input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> DwvAudioDecoder::decode_impl(File &file) const
+std::unique_ptr<File> DwvAudioDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(magic.size() + 2);
-    const auto header_size = file.stream.read_u32_le();
-    const auto samples_size = file.stream.read_u32_le();
-    const auto header = file.stream.read(header_size);
-    const auto samples = file.stream.read(samples_size);
+    input_file.stream.seek(magic.size() + 2);
+    const auto header_size = input_file.stream.read_u32_le();
+    const auto samples_size = input_file.stream.read_u32_le();
+    const auto header = input_file.stream.read(header_size);
+    const auto samples = input_file.stream.read(samples_size);
 
     auto output_file = std::make_unique<File>();
     output_file->stream.write("RIFF"_b);
@@ -32,7 +33,7 @@ std::unique_ptr<File> DwvAudioDecoder::decode_impl(File &file) const
     output_file->stream.seek(4);
     output_file->stream.write_u32_le(output_file->stream.size() - 8);
 
-    output_file->name = file.name;
+    output_file->name = input_file.name;
     output_file->change_extension("wav");
     return output_file;
 }

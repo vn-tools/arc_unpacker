@@ -10,35 +10,35 @@ using namespace au::fmt::liar_soft;
 
 static const bstr magic = "WG"_b;
 
-bool WcgImageDecoder::is_recognized_impl(File &file) const
+bool WcgImageDecoder::is_recognized_impl(File &input_file) const
 {
-    if (file.stream.read(magic.size()) != magic)
+    if (input_file.stream.read(magic.size()) != magic)
         return false;
 
-    const int version = file.stream.read_u16_le();
+    const int version = input_file.stream.read_u16_le();
     if (((version & 0xF) != 1) || ((version & 0x1C0) != 64))
         return false;
 
     return true;
 }
 
-pix::Grid WcgImageDecoder::decode_impl(File &file) const
+pix::Grid WcgImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(magic.size());
+    input_file.stream.seek(magic.size());
 
-    file.stream.skip(2);
-    const auto depth = file.stream.read_u16_le();
+    input_file.stream.skip(2);
+    const auto depth = input_file.stream.read_u16_le();
     if (depth != 32)
         throw err::UnsupportedBitDepthError(depth);
-    file.stream.skip(2);
+    input_file.stream.skip(2);
 
-    const auto width = file.stream.read_u32_le();
-    const auto height = file.stream.read_u32_le();
+    const auto width = input_file.stream.read_u32_le();
+    const auto height = input_file.stream.read_u32_le();
     const auto canvas_size = width * height;
 
     bstr output(canvas_size * 4);
-    cg_decompress(output, 2, 4, file.stream, 2);
-    cg_decompress(output, 0, 4, file.stream, 2);
+    cg_decompress(output, 2, 4, input_file.stream, 2);
+    cg_decompress(output, 0, 4, input_file.stream, 2);
 
     for (auto i : util::range(0, output.size(), 4))
         output[i + 3] ^= 0xFF;

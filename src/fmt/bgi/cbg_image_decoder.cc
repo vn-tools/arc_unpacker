@@ -29,25 +29,25 @@ static Version get_version(io::Stream &stream)
     return ret;
 }
 
-bool CbgImageDecoder::is_recognized_impl(File &file) const
+bool CbgImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid CbgImageDecoder::decode_impl(File &file) const
+pix::Grid CbgImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
+    input_file.stream.skip(magic.size());
 
-    auto version = get_version(file.stream);
+    auto version = get_version(input_file.stream);
     if (version == Version::Version1)
     {
         cbg::Cbg1Decoder decoder;
-        return *decoder.decode(file.stream);
+        return *decoder.decode(input_file.stream);
     }
     else if (version == Version::Version2)
     {
         cbg::Cbg2Decoder decoder;
-        return *decoder.decode(file.stream);
+        return *decoder.decode(input_file.stream);
     }
 
     throw err::UnsupportedVersionError(static_cast<int>(version));

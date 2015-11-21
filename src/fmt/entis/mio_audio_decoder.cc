@@ -61,20 +61,20 @@ static std::vector<audio::MioChunk> read_chunks(
     return chunks;
 }
 
-bool MioAudioDecoder::is_recognized_impl(File &file) const
+bool MioAudioDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic1.size()) == magic1
-        && file.stream.read(magic2.size()) == magic2
-        && file.stream.read(magic3.size()) == magic3;
+    return input_file.stream.read(magic1.size()) == magic1
+        && input_file.stream.read(magic2.size()) == magic2
+        && input_file.stream.read(magic3.size()) == magic3;
 }
 
-std::unique_ptr<File> MioAudioDecoder::decode_impl(File &file) const
+std::unique_ptr<File> MioAudioDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(0x40);
+    input_file.stream.seek(0x40);
 
-    common::SectionReader section_reader(file.stream);
-    auto header = read_header(file.stream, section_reader);
-    auto chunks = read_chunks(file.stream, section_reader);
+    common::SectionReader section_reader(input_file.stream);
+    auto header = read_header(input_file.stream, section_reader);
+    auto chunks = read_chunks(input_file.stream, section_reader);
 
     std::unique_ptr<audio::AudioDecoderImpl> impl;
     if (header.transformation == common::Transformation::Lossless)
@@ -98,7 +98,7 @@ std::unique_ptr<File> MioAudioDecoder::decode_impl(File &file) const
         header.bits_per_sample,
         header.sample_rate,
         samples,
-        file.name);
+        input_file.name);
 }
 
 static auto dummy = fmt::register_fmt<MioAudioDecoder>("entis/mio");

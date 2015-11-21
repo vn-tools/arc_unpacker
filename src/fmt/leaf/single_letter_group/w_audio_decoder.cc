@@ -7,24 +7,25 @@ using namespace au::fmt::leaf;
 
 static const bstr magic = "bw\x20\x20"_b;
 
-bool WAudioDecoder::is_recognized_impl(File &file) const
+bool WAudioDecoder::is_recognized_impl(File &input_file) const
 {
-    if (!file.has_extension("w"))
+    if (!input_file.has_extension("w"))
         return false;
-    return file.stream.seek(10).read_u32_le() + 18 == file.stream.size();
+    const auto data_size = input_file.stream.seek(10).read_u32_le();
+    return data_size + 18 == input_file.stream.size();
 }
 
-std::unique_ptr<File> WAudioDecoder::decode_impl(File &file) const
+std::unique_ptr<File> WAudioDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(0);
+    input_file.stream.seek(0);
     sfx::Wave wave;
-    wave.fmt.channel_count = file.stream.read_u8();
-    const auto block_align = file.stream.read_u8();
-    wave.fmt.sample_rate = file.stream.read_u16_le();
-    wave.fmt.bits_per_sample = file.stream.read_u16_le();
-    const auto byte_rate = file.stream.read_u32_le();
-    const auto samples_size = file.stream.read_u32_le();
-    const auto loop_pos = file.stream.read_u32_le();
+    wave.fmt.channel_count = input_file.stream.read_u8();
+    const auto block_align = input_file.stream.read_u8();
+    wave.fmt.sample_rate = input_file.stream.read_u16_le();
+    wave.fmt.bits_per_sample = input_file.stream.read_u16_le();
+    const auto byte_rate = input_file.stream.read_u32_le();
+    const auto samples_size = input_file.stream.read_u32_le();
+    const auto loop_pos = input_file.stream.read_u32_le();
     if (loop_pos)
     {
         wave.smpl = std::make_unique<sfx::WaveSamplerChunk>();
@@ -37,7 +38,7 @@ std::unique_ptr<File> WAudioDecoder::decode_impl(File &file) const
             0,
         });
     }
-    const auto samples = file.stream.read(samples_size);
+    const auto samples = input_file.stream.read(samples_size);
 
     if (block_align != wave.fmt.channel_count * wave.fmt.bits_per_sample / 8)
         throw err::CorruptDataError("Block align mismatch");
@@ -45,7 +46,7 @@ std::unique_ptr<File> WAudioDecoder::decode_impl(File &file) const
         throw err::CorruptDataError("Byte rate mismatch");
 
     wave.data.samples = samples;
-    return util::file_from_wave(wave, file.name);
+    return util::file_from_wave(wave, input_file.name);
 }
 
 static auto dummy = fmt::register_fmt<WAudioDecoder>("leaf/w");

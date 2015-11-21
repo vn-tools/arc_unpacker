@@ -7,23 +7,22 @@ using namespace au::fmt::yumemiru;
 
 static const bstr magic = "yga\x00"_b;
 
-bool EpfImageDecoder::is_recognized_impl(File &file) const
+bool EpfImageDecoder::is_recognized_impl(File &input_file) const
 {
-    file.stream.seek(0);
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
-pix::Grid EpfImageDecoder::decode_impl(File &file) const
+pix::Grid EpfImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(magic.size());
-    const auto width = file.stream.read_u32_le();
-    const auto height = file.stream.read_u32_le();
-    if (file.stream.read_u32_le() != 1)
+    input_file.stream.seek(magic.size());
+    const auto width = input_file.stream.read_u32_le();
+    const auto height = input_file.stream.read_u32_le();
+    if (input_file.stream.read_u32_le() != 1)
         throw err::CorruptDataError("Expected '1'");
-    const auto size_orig = file.stream.read_u32_le();
-    const auto size_comp = file.stream.read_u32_le();
+    const auto size_orig = input_file.stream.read_u32_le();
+    const auto size_comp = input_file.stream.read_u32_le();
     const auto data = util::pack::lzss_decompress_bytewise(
-        file.stream.read(size_comp), size_orig);
+        input_file.stream.read(size_comp), size_orig);
     return pix::Grid(width, height, data, pix::Format::BGRA8888);
 }
 

@@ -154,23 +154,23 @@ static bstr apply_delta_filter(
     return output;
 }
 
-bool PgdGeImageDecoder::is_recognized_impl(File &file) const
+bool PgdGeImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PgdGeImageDecoder::decode_impl(File &file) const
+pix::Grid PgdGeImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(magic.size());
-    file.stream.skip(8);
-    auto width = file.stream.read_u32_le();
-    auto height = file.stream.read_u32_le();
-    file.stream.skip(8);
-    auto filter_type = file.stream.read_u16_le();
-    file.stream.skip(2);
-    auto size_orig = file.stream.read_u32_le();
-    auto size_comp = file.stream.read_u32_le();
-    auto data = file.stream.read(size_comp);
+    input_file.stream.seek(magic.size());
+    input_file.stream.skip(8);
+    auto width = input_file.stream.read_u32_le();
+    auto height = input_file.stream.read_u32_le();
+    input_file.stream.skip(8);
+    auto filter_type = input_file.stream.read_u16_le();
+    input_file.stream.skip(2);
+    auto size_orig = input_file.stream.read_u32_le();
+    auto size_comp = input_file.stream.read_u32_le();
+    auto data = input_file.stream.read(size_comp);
     data = decompress(data, size_orig);
 
     if (filter_type == 2)

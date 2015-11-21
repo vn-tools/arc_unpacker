@@ -15,26 +15,26 @@ static inline u8 clamp(const u8 input, const u8 min, const u8 max)
     return std::max<u8>(std::min<u8>(input, max), min);
 }
 
-bool EdtImageDecoder::is_recognized_impl(File &file) const
+bool EdtImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid EdtImageDecoder::decode_impl(File &file) const
+pix::Grid EdtImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(magic.size() + 4);
-    const auto width = file.stream.read_u16_le();
-    const auto height = file.stream.read_u16_le();
-    file.stream.skip(4);
-    const auto meta_size = file.stream.read_u32_le();
-    const auto data_size = file.stream.read_u32_le();
-    const auto raw_size = file.stream.read_u32_le();
+    input_file.stream.seek(magic.size() + 4);
+    const auto width = input_file.stream.read_u16_le();
+    const auto height = input_file.stream.read_u16_le();
+    input_file.stream.skip(4);
+    const auto meta_size = input_file.stream.read_u32_le();
+    const auto data_size = input_file.stream.read_u32_le();
+    const auto raw_size = input_file.stream.read_u32_le();
 
     pix::Pixel transparent_color = {0, 0, 0, 0xFF};
     std::string base_file_name;
     if (meta_size)
     {
-        io::MemoryStream meta_stream(file.stream.read(meta_size));
+        io::MemoryStream meta_stream(input_file.stream.read(meta_size));
         if (meta_stream.read(diff_magic.size()) == diff_magic)
         {
             transparent_color = pix::read<pix::Format::BGR888>(meta_stream);
@@ -62,8 +62,8 @@ pix::Grid EdtImageDecoder::decode_impl(File &file) const
     bstr output;
     output.reserve(target_size);
 
-    CustomBitReader bit_reader(file.stream.read(data_size));
-    io::MemoryStream raw_stream(file.stream.read(raw_size));
+    CustomBitReader bit_reader(input_file.stream.read(data_size));
+    io::MemoryStream raw_stream(input_file.stream.read(raw_size));
     output += raw_stream.read(channels);
     while (output.size() < target_size)
     {

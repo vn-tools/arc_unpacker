@@ -6,29 +6,29 @@ using namespace au::fmt::leaf;
 
 static const bstr magic = "LEAFC64\x00"_b;
 
-bool Lc3ImageDecoder::is_recognized_impl(File &file) const
+bool Lc3ImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid Lc3ImageDecoder::decode_impl(File &file) const
+pix::Grid Lc3ImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(magic.size());
-    file.stream.skip(4);
-    const auto width = file.stream.read_u16_le();
-    const auto height = file.stream.read_u16_le();
+    input_file.stream.seek(magic.size());
+    input_file.stream.skip(4);
+    const auto width = input_file.stream.read_u16_le();
+    const auto height = input_file.stream.read_u16_le();
 
-    const auto alpha_pos = file.stream.read_u32_le();
-    const auto color_pos = file.stream.read_u32_le();
+    const auto alpha_pos = input_file.stream.read_u32_le();
+    const auto color_pos = input_file.stream.read_u32_le();
 
-    file.stream.seek(color_pos);
+    input_file.stream.seek(color_pos);
     const auto color_data = common::custom_lzss_decompress(
-        file.stream.read_to_eof(), width * height * 2);
+        input_file.stream.read_to_eof(), width * height * 2);
     pix::Grid image(width, height, color_data, pix::Format::BGR555X);
 
-    file.stream.seek(alpha_pos);
+    input_file.stream.seek(alpha_pos);
     auto mask_data = common::custom_lzss_decompress(
-        file.stream.read(color_pos - alpha_pos), width * height);
+        input_file.stream.read(color_pos - alpha_pos), width * height);
     for (auto &c : mask_data)
         c <<= 3;
     pix::Grid mask(width, height, mask_data, pix::Format::Gray8);

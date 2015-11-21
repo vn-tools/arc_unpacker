@@ -59,21 +59,21 @@ static bstr decompress(
     return output;
 }
 
-static pix::Grid decode_v0(File &file, size_t width, size_t height)
+static pix::Grid decode_v0(File &input_file, size_t width, size_t height)
 {
-    const auto size_comp = file.stream.read_u32_le() - 8;
-    const auto size_orig = file.stream.read_u32_le();
+    const auto size_comp = input_file.stream.read_u32_le() - 8;
+    const auto size_orig = input_file.stream.read_u32_le();
     const auto data = decompress(
-        file.stream.read(size_comp), size_orig, 3, 1);
+        input_file.stream.read(size_comp), size_orig, 3, 1);
     return pix::Grid(width, height, data, pix::Format::BGR888);
 }
 
-static pix::Grid decode_v1(File &file, size_t width, size_t height)
+static pix::Grid decode_v1(File &input_file, size_t width, size_t height)
 {
-    const auto size_comp = file.stream.read_u32_le() - 8;
-    const auto size_orig = file.stream.read_u32_le();
+    const auto size_comp = input_file.stream.read_u32_le() - 8;
+    const auto size_orig = input_file.stream.read_u32_le();
     io::MemoryStream tmp_stream(
-        decompress(file.stream.read(size_comp), size_orig, 1, 2));
+        decompress(input_file.stream.read(size_comp), size_orig, 1, 2));
     const size_t colors = tmp_stream.read_u16_le();
     const auto pal_data = tmp_stream.read(4 * colors);
     const auto pix_data = tmp_stream.read_to_eof();
@@ -81,26 +81,27 @@ static pix::Grid decode_v1(File &file, size_t width, size_t height)
     return pix::Grid(width, height, pix_data, palette);
 }
 
-static pix::Grid decode_v2(File &file, size_t width, size_t height)
+static pix::Grid decode_v2(File &input_file, size_t width, size_t height)
 {
-    std::vector<std::unique_ptr<Region>> regions(file.stream.read_u32_le());
-    for (const auto i : util::range(regions.size()))
+    std::vector<std::unique_ptr<Region>> regions;
+    const auto region_count = input_file.stream.read_u32_le();
+    for (const auto i : util::range(region_count))
     {
         auto region = std::make_unique<Region>();
-        region->x1 = file.stream.read_u32_le();
-        region->y1 = file.stream.read_u32_le();
-        region->x2 = file.stream.read_u32_le();
-        region->y2 = file.stream.read_u32_le();
-        region->ox = file.stream.read_u32_le();
-        region->oy = file.stream.read_u32_le();
-        regions[i] = std::move(region);
+        region->x1 = input_file.stream.read_u32_le();
+        region->y1 = input_file.stream.read_u32_le();
+        region->x2 = input_file.stream.read_u32_le();
+        region->y2 = input_file.stream.read_u32_le();
+        region->ox = input_file.stream.read_u32_le();
+        region->oy = input_file.stream.read_u32_le();
+        regions.push_back(std::move(region));
     }
 
-    const auto size_comp = file.stream.read_u32_le() - 8;
-    const auto size_orig = file.stream.read_u32_le();
+    const auto size_comp = input_file.stream.read_u32_le() - 8;
+    const auto size_orig = input_file.stream.read_u32_le();
 
     io::MemoryStream input(
-        decompress(file.stream.read(size_comp), size_orig, 1, 2));
+        decompress(input_file.stream.read(size_comp), size_orig, 1, 2));
     if (input.read_u32_le() != regions.size())
         throw err::CorruptDataError("Region count mismatch");
 
@@ -156,27 +157,27 @@ static pix::Grid decode_v2(File &file, size_t width, size_t height)
     return image;
 }
 
-bool G00ImageDecoder::is_recognized_impl(File &file) const
+bool G00ImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.has_extension("g00");
+    return input_file.has_extension("g00");
 }
 
-pix::Grid G00ImageDecoder::decode_impl(File &file) const
+pix::Grid G00ImageDecoder::decode_impl(File &input_file) const
 {
-    u8 version = file.stream.read_u8();
-    u16 width = file.stream.read_u16_le();
-    u16 height = file.stream.read_u16_le();
+    u8 version = input_file.stream.read_u8();
+    u16 width = input_file.stream.read_u16_le();
+    u16 height = input_file.stream.read_u16_le();
 
     switch (version)
     {
         case 0:
-            return decode_v0(file, width, height);
+            return decode_v0(input_file, width, height);
 
         case 1:
-            return decode_v1(file, width, height);
+            return decode_v1(input_file, width, height);
 
         case 2:
-            return decode_v2(file, width, height);
+            return decode_v2(input_file, width, height);
     }
 
     throw err::UnsupportedVersionError(version);

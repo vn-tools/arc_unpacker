@@ -94,33 +94,39 @@ static bstr decompress_alpha(const bstr &input, const size_t size_hint)
     return output;
 }
 
-bool AbmImageDecoder::is_recognized_impl(File &file) const
+bool AbmImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.has_extension("abm") && file.stream.read(magic.size()) == magic;
+    return input_file.has_extension("abm")
+        && input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid AbmImageDecoder::decode_impl(File &file) const
+pix::Grid AbmImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(18);
-    const auto width = file.stream.read_u32_le();
-    const auto height = file.stream.read_u32_le();
-    file.stream.skip(2);
-    const s16 depth = file.stream.read_u16_le();
+    input_file.stream.seek(18);
+    const auto width = input_file.stream.read_u32_le();
+    const auto height = input_file.stream.read_u32_le();
+    input_file.stream.skip(2);
+    const s16 depth = input_file.stream.read_u16_le();
 
+    const auto size = width * height * 4;
+    input_file.stream.seek(54);
     if (depth == -8)
     {
-        const auto size = width * height * 4;
-        file.stream.seek(54);
-        pix::Palette palette(256, file.stream, pix::Format::BGR888X);
-        const auto data = decompress_opaque(file.stream.read_to_eof(), size);
-        return pix::Grid(width, height, data, palette);
+        pix::Palette palette(
+            256, input_file.stream.read(256 * 4), pix::Format::BGR888X);
+        return pix::Grid(
+            width,
+            height,
+            decompress_opaque(input_file.stream.read_to_eof(), size),
+            palette);
     }
     else if (depth == 32)
     {
-        const auto size = width * height * 4;
-        file.stream.seek(54);
-        const auto data = decompress_alpha(file.stream.read_to_eof(), size);
-        return pix::Grid(width, height, data, pix::Format::BGRA8888);
+        return pix::Grid(
+            width,
+            height,
+            decompress_alpha(input_file.stream.read_to_eof(), size),
+            pix::Format::BGRA8888);
     }
     else
         throw err::UnsupportedBitDepthError(depth);

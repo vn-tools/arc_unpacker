@@ -7,14 +7,14 @@ using namespace au::fmt::wild_bug;
 
 static const bstr magic = "WPX\x1AWAV\x00"_b;
 
-bool WwaAudioDecoder::is_recognized_impl(File &file) const
+bool WwaAudioDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> WwaAudioDecoder::decode_impl(File &file) const
+std::unique_ptr<File> WwaAudioDecoder::decode_impl(File &input_file) const
 {
-    wpx::Decoder decoder(file.stream);
+    wpx::Decoder decoder(input_file.stream);
     io::MemoryStream metadata_stream(decoder.read_plain_section(0x20));
 
     auto format_type = metadata_stream.read_u16_le();
@@ -47,7 +47,7 @@ std::unique_ptr<File> WwaAudioDecoder::decode_impl(File &file) const
     output_file->stream.seek(4);
     output_file->stream.write_u32_le(output_file->stream.size() - 8);
 
-    output_file->name = file.name;
+    output_file->name = input_file.name;
     output_file->change_extension("wav");
     return output_file;
 }

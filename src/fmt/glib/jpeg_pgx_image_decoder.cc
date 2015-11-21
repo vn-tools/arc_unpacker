@@ -24,29 +24,29 @@ static bstr extract_pgx_stream(const bstr &jpeg_data)
     return output;
 }
 
-bool JpegPgxImageDecoder::is_recognized_impl(File &file) const
+bool JpegPgxImageDecoder::is_recognized_impl(File &input_file) const
 {
-    u16 marker = file.stream.read_u16_be();
+    u16 marker = input_file.stream.read_u16_be();
     // soi
     if (marker != 0xFFD8)
         return false;
-    marker = file.stream.read_u16_be();
+    marker = input_file.stream.read_u16_be();
     // header chunk
     if (marker != 0xFFE0)
         return false;
-    file.stream.skip(file.stream.read_u16_be() - 2);
+    input_file.stream.skip(input_file.stream.read_u16_be() - 2);
     // PGX start
-    marker = file.stream.read_u16_be();
+    marker = input_file.stream.read_u16_be();
     if (marker != 0xFFE3)
         return false;
-    if (file.stream.read_u16_be() < magic.size())
+    if (input_file.stream.read_u16_be() < magic.size())
         return false;
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid JpegPgxImageDecoder::decode_impl(File &file) const
+pix::Grid JpegPgxImageDecoder::decode_impl(File &input_file) const
 {
-    auto pgx_data = extract_pgx_stream(file.stream.read_to_eof());
+    auto pgx_data = extract_pgx_stream(input_file.stream.read_to_eof());
     io::MemoryStream pgx_stream(pgx_data);
 
     pgx_stream.skip(magic.size());

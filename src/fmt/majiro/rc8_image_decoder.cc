@@ -60,28 +60,28 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
     return output;
 }
 
-bool Rc8ImageDecoder::is_recognized_impl(File &file) const
+bool Rc8ImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid Rc8ImageDecoder::decode_impl(File &file) const
+pix::Grid Rc8ImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
+    input_file.stream.skip(magic.size());
 
-    if (file.stream.read_u8() != '_')
+    if (input_file.stream.read_u8() != '_')
         throw err::NotSupportedError("Unexpected encryption flag");
 
-    int version = boost::lexical_cast<int>(file.stream.read(2).str());
+    int version = boost::lexical_cast<int>(input_file.stream.read(2).str());
     if (version != 0)
         throw err::UnsupportedVersionError(version);
 
-    auto width = file.stream.read_u32_le();
-    auto height = file.stream.read_u32_le();
-    file.stream.skip(4);
+    auto width = input_file.stream.read_u32_le();
+    auto height = input_file.stream.read_u32_le();
+    input_file.stream.skip(4);
 
-    pix::Palette palette(256, file.stream, pix::Format::BGR888);
-    auto data_comp = file.stream.read_to_eof();
+    pix::Palette palette(256, input_file.stream, pix::Format::BGR888);
+    auto data_comp = input_file.stream.read_to_eof();
     auto data_orig = uncompress(data_comp, width, height);
     return pix::Grid(width, height, data_orig, palette);
 }

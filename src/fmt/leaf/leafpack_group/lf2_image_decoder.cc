@@ -6,25 +6,25 @@ using namespace au::fmt::leaf;
 
 static const bstr magic = "LEAF256\x00"_b;
 
-bool Lf2ImageDecoder::is_recognized_impl(File &file) const
+bool Lf2ImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid Lf2ImageDecoder::decode_impl(File &file) const
+pix::Grid Lf2ImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(magic.size());
-    file.stream.skip(4);
-    auto width = file.stream.read_u16_le();
-    auto height = file.stream.read_u16_le();
+    input_file.stream.seek(magic.size());
+    input_file.stream.skip(4);
+    auto width = input_file.stream.read_u16_le();
+    auto height = input_file.stream.read_u16_le();
     auto size_orig = width * height;
 
-    file.stream.seek(0x16);
-    auto color_count = file.stream.read_u16_le();
-    pix::Palette palette(color_count, file.stream, pix::Format::BGR888);
+    input_file.stream.seek(0x16);
+    auto color_count = input_file.stream.read_u16_le();
+    pix::Palette palette(color_count, input_file.stream, pix::Format::BGR888);
 
     const auto data = common::custom_lzss_decompress(
-        file.stream.read_to_eof(), width * height);
+        input_file.stream.read_to_eof(), width * height);
     pix::Grid image(width, height, data, palette);
     image.flip_vertically();
     return image;

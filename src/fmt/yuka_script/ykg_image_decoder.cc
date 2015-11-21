@@ -66,10 +66,10 @@ static std::vector<std::unique_ptr<Region>> read_regions(
     return regions;
 }
 
-static std::unique_ptr<File> decode_png(File &file, Header &header)
+static std::unique_ptr<File> decode_png(File &input_file, Header &header)
 {
-    file.stream.seek(header.data_offset);
-    bstr data = file.stream.read(header.data_size);
+    input_file.stream.seek(header.data_offset);
+    bstr data = input_file.stream.read(header.data_size);
     if (data.empty())
         throw std::logic_error("File doesn't contain any data");
     if (data.substr(1, 3) != "GNP"_b)
@@ -83,29 +83,29 @@ static std::unique_ptr<File> decode_png(File &file, Header &header)
 
     auto output_file = std::make_unique<File>();
     output_file->stream.write(data);
-    output_file->name = file.name;
+    output_file->name = input_file.name;
     output_file->change_extension("png");
     return output_file;
 }
 
-bool YkgImageDecoder::is_recognized_impl(File &file) const
+bool YkgImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> YkgImageDecoder::decode_impl(File &file) const
+std::unique_ptr<File> YkgImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
+    input_file.stream.skip(magic.size());
 
-    auto header = read_header(file.stream);
+    auto header = read_header(input_file.stream);
     if (header->encrypted)
     {
         throw err::NotSupportedError(
             "Decoding encrypted YKG images is not supported");
     }
 
-    read_regions(file.stream, *header);
-    return decode_png(file, *header);
+    read_regions(input_file.stream, *header);
+    return decode_png(input_file, *header);
 }
 
 static auto dummy = fmt::register_fmt<YkgImageDecoder>("yuka-script/ykg");

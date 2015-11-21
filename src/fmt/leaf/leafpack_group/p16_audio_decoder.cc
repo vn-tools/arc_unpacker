@@ -4,18 +4,18 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
-bool P16AudioDecoder::is_recognized_impl(File &file) const
+bool P16AudioDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.has_extension("P16");
+    return input_file.has_extension("P16");
 }
 
-std::unique_ptr<File> P16AudioDecoder::decode_impl(File &file) const
+std::unique_ptr<File> P16AudioDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(0);
-    const auto samples = file.stream.read_to_eof();
+    input_file.stream.seek(0);
+    const auto samples = input_file.stream.read_to_eof();
     sfx::Wave wave;
     wave.data.samples = samples;
-    return util::file_from_wave(wave, file.name);
+    return util::file_from_wave(wave, input_file.name);
 }
 
 static auto dummy = fmt::register_fmt<P16AudioDecoder>("leaf/p16");

@@ -50,11 +50,11 @@ static image::EriHeader read_header(
     return header;
 }
 
-bool EriImageDecoder::is_recognized_impl(File &file) const
+bool EriImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic1.size()) == magic1
-        && file.stream.read(magic2.size()) == magic2
-        && file.stream.read(magic3.size()) == magic3;
+    return input_file.stream.read(magic1.size()) == magic1
+        && input_file.stream.read(magic2.size()) == magic2
+        && input_file.stream.read(magic3.size()) == magic3;
 }
 
 static bstr decode_pixel_data(
@@ -83,31 +83,31 @@ static bstr decode_pixel_data(
     return decode_lossless_pixel_data(header, *decoder);
 }
 
-pix::Grid EriImageDecoder::decode_impl(File &file) const
+pix::Grid EriImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(0x40);
+    input_file.stream.seek(0x40);
 
-    common::SectionReader section_reader(file.stream);
-    auto header = read_header(file.stream, section_reader);
+    common::SectionReader section_reader(input_file.stream);
+    auto header = read_header(input_file.stream, section_reader);
     if (header.version != 0x00020100 && header.version != 0x00020200)
         throw err::UnsupportedVersionError(header.version);
 
     auto stream_section = section_reader.get_section("Stream");
-    file.stream.seek(stream_section.offset);
-    common::SectionReader stream_section_reader(file.stream);
+    input_file.stream.seek(stream_section.offset);
+    common::SectionReader stream_section_reader(input_file.stream);
 
     auto pixel_data_sections = stream_section_reader.get_sections("ImageFrm");
     if (!pixel_data_sections.size())
         throw err::CorruptDataError("No pixel data found");
 
-    pix::Grid pixels(header.width, header.height * pixel_data_sections.size());
+    pix::Grid image(header.width, header.height * pixel_data_sections.size());
 
-    for (auto i : util::range(pixel_data_sections.size()))
+    for (const auto i : util::range(pixel_data_sections.size()))
     {
-        auto &pixel_data_section = pixel_data_sections[i];
-        file.stream.seek(pixel_data_section.offset);
-        auto encoded_pixel_data = file.stream.read(pixel_data_section.size);
-        auto decoded_pixel_data = decode_pixel_data(header, encoded_pixel_data);
+        const auto &pixel_data_section = pixel_data_sections[i];
+        input_file.stream.seek(pixel_data_section.offset);
+        const auto pixel_data = decode_pixel_data(
+            header, input_file.stream.read(pixel_data_section.size));
 
         pix::Format fmt;
         if (header.bit_depth == 32)
@@ -119,16 +119,14 @@ pix::Grid EriImageDecoder::decode_impl(File &file) const
         else
             throw err::UnsupportedBitDepthError(header.bit_depth);
 
-        pix::Grid subimage_pixels(
-            header.width, header.height, decoded_pixel_data, fmt);
+        pix::Grid subimage(
+            header.width, header.height, pixel_data, fmt);
         if (header.flip)
-            subimage_pixels.flip_vertically();
-        for (auto y : util::range(header.height))
-            for (auto x : util::range(header.width))
-                pixels.at(x, y + i * header.height) = subimage_pixels.at(x, y);
+            subimage.flip_vertically();
+        image.paste(subimage, 0, i * header.height);
     }
 
-    return pixels;
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<EriImageDecoder>("entis/eri");

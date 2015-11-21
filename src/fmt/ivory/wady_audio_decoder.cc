@@ -174,48 +174,55 @@ static bstr decode_v2(
     return samples;
 }
 
-bool WadyAudioDecoder::is_recognized_impl(File &file) const
+bool WadyAudioDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> WadyAudioDecoder::decode_impl(File &file) const
+std::unique_ptr<File> WadyAudioDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
-    file.stream.skip(2);
+    input_file.stream.skip(magic.size());
+    input_file.stream.skip(2);
 
-    auto version = detect_version(file.stream);
+    auto version = detect_version(input_file.stream);
 
-    auto channels = file.stream.read_u16_le();
-    auto sample_rate = file.stream.read_u32_le();
+    auto channels = input_file.stream.read_u16_le();
+    auto sample_rate = input_file.stream.read_u32_le();
 
-    auto sample_count = file.stream.read_u32_le();
-    auto channel_sample_count = file.stream.read_u32_le();
-    auto size_uncompressed = file.stream.read_u32_le();
+    auto sample_count = input_file.stream.read_u32_le();
+    auto channel_sample_count = input_file.stream.read_u32_le();
+    auto size_uncompressed = input_file.stream.read_u32_le();
     if (channel_sample_count * channels != sample_count)
         throw err::CorruptDataError("Sample count mismatch");
     if (sample_count * 2 != size_uncompressed)
         throw err::CorruptDataError("Data size mismatch");
-    file.stream.skip(4 * 2 + 2);
-    if (file.stream.read_u16_le() != channels)
+    input_file.stream.skip(4 * 2 + 2);
+    if (input_file.stream.read_u16_le() != channels)
         throw err::CorruptDataError("Channel count mismatch");
-    if (file.stream.read_u32_le() != sample_rate)
+    if (input_file.stream.read_u32_le() != sample_rate)
         throw err::CorruptDataError("Sample rate mismatch");
-    auto byte_rate = file.stream.read_u32_le();
-    auto block_align = file.stream.read_u16_le();
-    auto bits_per_sample = file.stream.read_u16_le();
+    auto byte_rate = input_file.stream.read_u32_le();
+    auto block_align = input_file.stream.read_u16_le();
+    auto bits_per_sample = input_file.stream.read_u16_le();
 
-    file.stream.seek(0x30);
+    input_file.stream.seek(0x30);
     bstr samples;
     if (version == Version::Version1)
-        samples = decode_v1(file.stream, sample_count, channels, block_align);
+    {
+        samples = decode_v1(
+            input_file.stream, sample_count, channels, block_align);
+    }
     else if (version == Version::Version2)
-        samples = decode_v2(file.stream, sample_count, channels);
+    {
+        samples = decode_v2(input_file.stream, sample_count, channels);
+    }
     else
+    {
         throw err::UnsupportedVersionError(version);
+    }
 
     return util::file_from_samples(
-        channels, bits_per_sample, sample_rate, samples, file.name);
+        channels, bits_per_sample, sample_rate, samples, input_file.name);
 }
 
 static auto dummy = fmt::register_fmt<WadyAudioDecoder>("ivory/wady");

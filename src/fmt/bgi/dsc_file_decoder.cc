@@ -139,20 +139,20 @@ static bstr decompress(
     return output;
 }
 
-bool DscFileDecoder::is_recognized_impl(File &file) const
+bool DscFileDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> DscFileDecoder::decode_impl(File &file) const
+std::unique_ptr<File> DscFileDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
-    auto key = file.stream.read_u32_le();
-    auto output_size = file.stream.read_u32_le();
-    file.stream.skip(8);
+    input_file.stream.skip(magic.size());
+    auto key = input_file.stream.read_u32_le();
+    auto output_size = input_file.stream.read_u32_le();
+    input_file.stream.skip(8);
 
-    auto nodes = get_nodes(file.stream, key);
-    auto data = decompress(file.stream, std::move(nodes), output_size);
+    auto nodes = get_nodes(input_file.stream, key);
+    auto data = decompress(input_file.stream, std::move(nodes), output_size);
 
     if (is_image(data))
     {
@@ -178,12 +178,12 @@ std::unique_ptr<File> DscFileDecoder::decode_impl(File &file) const
                 throw err::UnsupportedBitDepthError(bpp);
         }
         pix::Grid pixels(width, height, data_stream.read_to_eof(), fmt);
-        return util::file_from_grid(pixels, file.name);
+        return util::file_from_grid(pixels, input_file.name);
     }
 
     auto output_file = std::make_unique<File>();
     output_file->stream.write(data);
-    output_file->name = file.name;
+    output_file->name = input_file.name;
     if (!output_file->has_extension())
         output_file->change_extension("dat");
     output_file->guess_extension();

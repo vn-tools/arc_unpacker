@@ -8,25 +8,25 @@ using namespace au::fmt::lilim;
 
 static const bstr magic = "DM"_b;
 
-bool DbmImageDecoder::is_recognized_impl(File &file) const
+bool DbmImageDecoder::is_recognized_impl(File &input_file) const
 {
-    file.stream.seek(0);
-    if (file.stream.read(magic.size()) != magic)
+    input_file.stream.seek(0);
+    if (input_file.stream.read(magic.size()) != magic)
         return false;
-    file.stream.skip(2);
-    return file.stream.read_u32_le() == file.stream.size();
+    input_file.stream.skip(2);
+    return input_file.stream.read_u32_le() == input_file.stream.size();
 }
 
-pix::Grid DbmImageDecoder::decode_impl(File &file) const
+pix::Grid DbmImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(magic.size() + 8);
-    const auto width = file.stream.read_u16_le();
-    const auto height = file.stream.read_u16_le();
-    const auto format = file.stream.read_u32_le();
-    if (file.stream.read_u16_le() != 1)
+    input_file.stream.seek(magic.size() + 8);
+    const auto width = input_file.stream.read_u16_le();
+    const auto height = input_file.stream.read_u16_le();
+    const auto format = input_file.stream.read_u32_le();
+    if (input_file.stream.read_u16_le() != 1)
         throw err::CorruptDataError("Expected '1'");
-    const auto size_comp = file.stream.read_u32_le();
-    const auto data = sysd_decompress(file.stream.read(size_comp));
+    const auto size_comp = input_file.stream.read_u32_le();
+    const auto data = sysd_decompress(input_file.stream.read(size_comp));
 
     if (format == 1 || format == 2 || format == 3)
     {

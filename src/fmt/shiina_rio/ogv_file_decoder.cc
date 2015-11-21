@@ -7,26 +7,26 @@ using namespace au::fmt::shiina_rio;
 
 static const bstr magic = "OGV\x00"_b;
 
-bool OgvFileDecoder::is_recognized_impl(File &file) const
+bool OgvFileDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> OgvFileDecoder::decode_impl(File &file) const
+std::unique_ptr<File> OgvFileDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(magic.size());
-    file.stream.skip(4);
-    file.stream.skip(4); // sort of file size
-    if (file.stream.read(4) != "fmt\x20"_b)
+    input_file.stream.seek(magic.size());
+    input_file.stream.skip(4);
+    input_file.stream.skip(4); // sort of file size
+    if (input_file.stream.read(4) != "fmt\x20"_b)
         throw err::CorruptDataError("Expected fmt chunk");
-    file.stream.skip(file.stream.read_u32_le());
+    input_file.stream.skip(input_file.stream.read_u32_le());
 
-    if (file.stream.read(4) != "data"_b)
+    if (input_file.stream.read(4) != "data"_b)
         throw err::CorruptDataError("Expected data chunk");
-    file.stream.skip(4);
-    const auto data = file.stream.read_to_eof();
+    input_file.stream.skip(4);
+    const auto data = input_file.stream.read_to_eof();
 
-    auto output_file = std::make_unique<File>(file.name, data);
+    auto output_file = std::make_unique<File>(input_file.name, data);
     output_file->guess_extension();
     return output_file;
 }

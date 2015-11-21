@@ -177,49 +177,49 @@ bstr PmsImageDecoder::decompress_16bit(
     return output;
 }
 
-bool PmsImageDecoder::is_recognized_impl(File &file) const
+bool PmsImageDecoder::is_recognized_impl(File &input_file) const
 {
-    if (file.stream.read(magic1.size()) == magic1)
+    if (input_file.stream.read(magic1.size()) == magic1)
         return true;
-    file.stream.seek(0);
-    return file.stream.read(magic2.size()) == magic2;
+    input_file.stream.seek(0);
+    return input_file.stream.read(magic2.size()) == magic2;
 }
 
-pix::Grid PmsImageDecoder::decode_impl(File &file) const
+pix::Grid PmsImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(2);
-    auto version = file.stream.read_u16_le();
-    file.stream.skip(2);
-    auto depth = file.stream.read_u16_le();
-    file.stream.skip(4 * 4);
-    auto width = file.stream.read_u32_le();
-    auto height = file.stream.read_u32_le();
-    auto data_offset = file.stream.read_u32_le();
-    auto palette_offset = file.stream.read_u32_le();
+    input_file.stream.skip(2);
+    auto version = input_file.stream.read_u16_le();
+    input_file.stream.skip(2);
+    auto depth = input_file.stream.read_u16_le();
+    input_file.stream.skip(4 * 4);
+    auto width = input_file.stream.read_u32_le();
+    auto height = input_file.stream.read_u32_le();
+    auto data_offset = input_file.stream.read_u32_le();
+    auto palette_offset = input_file.stream.read_u32_le();
 
     std::unique_ptr<pix::Grid> pixels;
 
     if (depth == 8)
     {
-        file.stream.seek(data_offset);
-        auto pixel_data = decompress_8bit(file.stream, width, height);
-        file.stream.seek(palette_offset);
+        input_file.stream.seek(data_offset);
+        auto pixel_data = decompress_8bit(input_file.stream, width, height);
+        input_file.stream.seek(palette_offset);
         pix::Palette palette(
             256,
-            file.stream,
+            input_file.stream,
             version == 1 ? pix::Format::RGB888 : pix::Format::BGR888);
         pixels.reset(new pix::Grid(width, height, pixel_data, palette));
     }
     else if (depth == 16)
     {
-        file.stream.seek(data_offset);
-        auto pixel_data = decompress_16bit(file.stream, width, height);
+        input_file.stream.seek(data_offset);
+        auto pixel_data = decompress_16bit(input_file.stream, width, height);
         pixels.reset(new pix::Grid(
             width, height, pixel_data, pix::Format::BGR565));
         if (palette_offset)
         {
-            file.stream.seek(palette_offset);
-            auto alpha = decompress_8bit(file.stream, width, height);
+            input_file.stream.seek(palette_offset);
+            auto alpha = decompress_8bit(input_file.stream, width, height);
             pix::Grid alpha_channel(width, height, alpha, pix::Format::Gray8);
             for (auto y : util::range(height))
             for (auto x : util::range(width))

@@ -16,28 +16,28 @@ static void decrypt(bstr &input)
         input[i] ^= key[i];
 }
 
-bool AjpImageDecoder::is_recognized_impl(File &file) const
+bool AjpImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid AjpImageDecoder::decode_impl(File &file) const
+pix::Grid AjpImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
-    file.stream.skip(4 * 2);
-    auto width = file.stream.read_u32_le();
-    auto height = file.stream.read_u32_le();
-    auto jpeg_offset = file.stream.read_u32_le();
-    auto jpeg_size = file.stream.read_u32_le();
-    auto mask_offset = file.stream.read_u32_le();
-    auto mask_size = file.stream.read_u32_le();
+    input_file.stream.skip(magic.size());
+    input_file.stream.skip(4 * 2);
+    auto width = input_file.stream.read_u32_le();
+    auto height = input_file.stream.read_u32_le();
+    auto jpeg_offset = input_file.stream.read_u32_le();
+    auto jpeg_size = input_file.stream.read_u32_le();
+    auto mask_offset = input_file.stream.read_u32_le();
+    auto mask_size = input_file.stream.read_u32_le();
 
-    file.stream.seek(jpeg_offset);
-    auto jpeg_data = file.stream.read(jpeg_size);
+    input_file.stream.seek(jpeg_offset);
+    auto jpeg_data = input_file.stream.read(jpeg_size);
     decrypt(jpeg_data);
 
-    file.stream.seek(mask_offset);
-    auto mask_data = file.stream.read(mask_size);
+    input_file.stream.seek(mask_offset);
+    auto mask_data = input_file.stream.read(mask_size);
     decrypt(mask_data);
 
     fmt::jpeg::JpegImageDecoder jpeg_image_decoder;

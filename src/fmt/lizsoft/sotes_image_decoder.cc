@@ -5,52 +5,50 @@
 using namespace au;
 using namespace au::fmt::lizsoft;
 
-bool SotesImageDecoder::is_recognized_impl(File &file) const
+bool SotesImageDecoder::is_recognized_impl(File &input_file) const
 {
-    file.stream.seek(0x438);
-    auto a = file.stream.read_u32_le();
-    file.stream.seek(0x448);
-    auto b = file.stream.read_u32_le();
-    file.stream.seek(0x450);
-    auto c = file.stream.read_u32_le();
+    const auto a = input_file.stream.seek(0x438).read_u32_le();
+    const auto b = input_file.stream.seek(0x448).read_u32_le();
+    const auto c = input_file.stream.seek(0x450).read_u32_le();
     return a - b == 0x2711 && c - b <= 0x80;
 }
 
-pix::Grid SotesImageDecoder::decode_impl(File &file) const
+pix::Grid SotesImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(0x448);
-    auto base = file.stream.read_u32_le();
+    const auto base = input_file.stream.seek(0x448).read_u32_le();
+    const auto pixel_data_offset
+        = 0x458 + input_file.stream.seek(0x450).read_u32_le() - base;
 
-    file.stream.seek(0x450);
-    auto pixel_data_offset = 0x458 + file.stream.read_u32_le() - base;
+    const auto depth = input_file.stream.seek(0x430).read_u16_le() - base;
+    auto tmp1 = input_file.stream.seek(0x440).read_u32_le() - base;
+    const auto width
+        = input_file.stream.seek(4 + 4 * tmp1).read_u32_le() - base;
 
-    file.stream.seek(0x430);
-    auto depth = file.stream.read_u16_le() - base;
+    const auto tmp2 = input_file.stream.seek(0x18).read_u32_le() - base;
+    const auto height
+        = input_file.stream.seek(0x420 + 4 * tmp2).read_u32_le() - base;
 
-    file.stream.seek(0x440);
-    file.stream.seek(4 + 4 * (file.stream.read_u32_le() - base));
-    auto width = file.stream.read_u32_le() - base;
+    pix::Palette palette(
+        256,
+        input_file.stream
+            .seek(0x20)
+            .read(256 * 4),
+        pix::Format::BGR888X);
 
-    file.stream.seek(0x18);
-    file.stream.seek(0x420 + 4 * (file.stream.read_u32_le() - base));
-    auto height = file.stream.read_u32_le() - base;
+    const auto data = input_file.stream
+        .seek(pixel_data_offset)
+        .read(width * height * (depth >> 3));
 
-    file.stream.seek(0x20);
-    pix::Palette palette(256, file.stream, pix::Format::BGR888X);
-
-    file.stream.seek(pixel_data_offset);
-    auto data = file.stream.read(width * height * (depth >> 3));
-
-    std::unique_ptr<pix::Grid> pixels;
+    std::unique_ptr<pix::Grid> image;
     if (depth == 8)
-        pixels.reset(new pix::Grid(width, height, data, palette));
+        image.reset(new pix::Grid(width, height, data, palette));
     else if (depth == 24)
-        pixels.reset(new pix::Grid(width, height, data, pix::Format::BGR888));
+        image.reset(new pix::Grid(width, height, data, pix::Format::BGR888));
     else
         throw err::UnsupportedBitDepthError(depth);
 
-    pixels->flip_vertically();
-    return *pixels;
+    image->flip_vertically();
+    return *image;
 }
 
 static auto dummy = fmt::register_fmt<SotesImageDecoder>("lizsoft/sotes");

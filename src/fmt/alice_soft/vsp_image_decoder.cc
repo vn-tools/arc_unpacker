@@ -5,9 +5,9 @@
 using namespace au;
 using namespace au::fmt::alice_soft;
 
-bool VspImageDecoder::is_recognized_impl(File &file) const
+bool VspImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.has_extension("vsp");
+    return input_file.has_extension("vsp");
 }
 
 static bstr decompress_vsp(io::Stream &input, size_t width, size_t height)
@@ -142,13 +142,13 @@ static bstr decompress_vsp(io::Stream &input, size_t width, size_t height)
     return output;
 }
 
-pix::Grid VspImageDecoder::decode_impl(File &file) const
+pix::Grid VspImageDecoder::decode_impl(File &input_file) const
 {
-    auto x = file.stream.read_u16_le();
-    auto y = file.stream.read_u16_le();
-    auto width = file.stream.read_u16_le() - x;
-    auto height = file.stream.read_u16_le() - y;
-    auto use_pms = file.stream.read_u8() > 0;
+    auto x = input_file.stream.read_u16_le();
+    auto y = input_file.stream.read_u16_le();
+    auto width = input_file.stream.read_u16_le() - x;
+    auto height = input_file.stream.read_u16_le() - y;
+    auto use_pms = input_file.stream.read_u8() > 0;
 
     std::unique_ptr<pix::Grid> pixels;
 
@@ -156,29 +156,29 @@ pix::Grid VspImageDecoder::decode_impl(File &file) const
     {
         width = ((width + 7) / 8) * 8;
 
-        file.stream.seek(0x20);
-        pix::Palette palette(256, file.stream, pix::Format::RGB888);
+        input_file.stream.seek(0x20);
+        pix::Palette palette(256, input_file.stream, pix::Format::RGB888);
 
-        file.stream.seek(0x320);
-        auto pixel_data
-            = PmsImageDecoder::decompress_8bit(file.stream, width, height);
+        input_file.stream.seek(0x320);
+        auto pixel_data = PmsImageDecoder::decompress_8bit(
+            input_file.stream, width, height);
         pixels.reset(new pix::Grid(width, height, pixel_data, palette));
     }
     else
     {
         width *= 8;
 
-        file.stream.seek(0x0A);
+        input_file.stream.seek(0x0A);
         pix::Palette palette(16);
         for (auto &c : palette)
         {
-            c.b = (file.stream.read_u8() & 0x0F) * 0x11;
-            c.r = (file.stream.read_u8() & 0x0F) * 0x11;
-            c.g = (file.stream.read_u8() & 0x0F) * 0x11;
+            c.b = (input_file.stream.read_u8() & 0x0F) * 0x11;
+            c.r = (input_file.stream.read_u8() & 0x0F) * 0x11;
+            c.g = (input_file.stream.read_u8() & 0x0F) * 0x11;
         }
 
-        file.stream.seek(0x3A);
-        auto pixel_data = decompress_vsp(file.stream, width, height);
+        input_file.stream.seek(0x3A);
+        auto pixel_data = decompress_vsp(input_file.stream, width, height);
         pixels.reset(new pix::Grid(width, height, pixel_data, palette));
     }
 

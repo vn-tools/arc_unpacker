@@ -41,24 +41,24 @@ void Pak2ImageDecoder::add_palette(
         256, palette_stream, pix::Format::BGRA5551);
 }
 
-bool Pak2ImageDecoder::is_recognized_impl(File &file) const
+bool Pak2ImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.has_extension("cv2");
+    return input_file.has_extension("cv2");
 }
 
-pix::Grid Pak2ImageDecoder::decode_impl(File &file) const
+pix::Grid Pak2ImageDecoder::decode_impl(File &input_file) const
 {
-    auto bit_depth = file.stream.read_u8();
-    auto width = file.stream.read_u32_le();
-    auto height = file.stream.read_u32_le();
-    auto stride = file.stream.read_u32_le();
-    auto palette_number = file.stream.read_u32_le();
-    io::MemoryStream source_stream(file.stream);
+    auto bit_depth = input_file.stream.read_u8();
+    auto width = input_file.stream.read_u32_le();
+    auto height = input_file.stream.read_u32_le();
+    auto stride = input_file.stream.read_u32_le();
+    auto palette_number = input_file.stream.read_u32_le();
+    io::MemoryStream source_stream(input_file.stream);
 
     std::shared_ptr<pix::Palette> palette;
     if (bit_depth == 8)
     {
-        auto path = boost::filesystem::path(file.name);
+        auto path = boost::filesystem::path(input_file.name);
         path.remove_filename();
         path /= util::format("palette%03d.pal", palette_number);
 

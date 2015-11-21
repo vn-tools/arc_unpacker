@@ -8,14 +8,14 @@ using namespace au::fmt::jpeg;
 
 static const bstr magic = "\xFF\xD8\xFF"_b;
 
-bool JpegImageDecoder::is_recognized_impl(File &file) const
+bool JpegImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid JpegImageDecoder::decode_impl(File &file) const
+pix::Grid JpegImageDecoder::decode_impl(File &input_file) const
 {
-    bstr source = file.stream.read_to_eof();
+    bstr source = input_file.stream.read_to_eof();
 
     jpeg_decompress_struct info;
     jpeg_error_mgr err;

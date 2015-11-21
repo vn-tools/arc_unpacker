@@ -211,37 +211,37 @@ static pix::Grid read_pixels(
     throw err::NotSupportedError("Unsupported compression type");
 }
 
-bool MgdImageDecoder::is_recognized_impl(File &file) const
+bool MgdImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid MgdImageDecoder::decode_impl(File &file) const
+pix::Grid MgdImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
+    input_file.stream.skip(magic.size());
 
-    u16 data_offset = file.stream.read_u16_le();
-    u16 format = file.stream.read_u16_le();
-    file.stream.skip(4);
-    u16 width = file.stream.read_u16_le();
-    u16 height = file.stream.read_u16_le();
-    u32 size_original = file.stream.read_u32_le();
-    u32 size_compressed_total = file.stream.read_u32_le();
+    u16 data_offset = input_file.stream.read_u16_le();
+    u16 format = input_file.stream.read_u16_le();
+    input_file.stream.skip(4);
+    u16 width = input_file.stream.read_u16_le();
+    u16 height = input_file.stream.read_u16_le();
+    u32 size_original = input_file.stream.read_u32_le();
+    u32 size_compressed_total = input_file.stream.read_u32_le();
     const auto compression_type
-        = static_cast<const CompressionType>(file.stream.read_u32_le());
-    file.stream.skip(64);
+        = static_cast<const CompressionType>(input_file.stream.read_u32_le());
+    input_file.stream.skip(64);
 
-    const size_t size_compressed = file.stream.read_u32_le();
+    const size_t size_compressed = input_file.stream.read_u32_le();
     if (size_compressed_total != size_compressed + 4)
         throw err::CorruptDataError("Compressed data size mismatch");
 
     auto image = read_pixels(
-        file.stream.read(size_compressed),
+        input_file.stream.read(size_compressed),
         compression_type,
         size_original,
         width,
         height);
-    read_region_data(file.stream);
+    read_region_data(input_file.stream);
     return image;
 }
 

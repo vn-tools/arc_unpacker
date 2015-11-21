@@ -93,9 +93,9 @@ void McgImageDecoder::parse_cli_options(const ArgParser &arg_parser)
     ImageDecoder::parse_cli_options(arg_parser);
 }
 
-bool McgImageDecoder::is_recognized_impl(File &file) const
+bool McgImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
 void McgImageDecoder::set_key(u8 key)
@@ -104,31 +104,31 @@ void McgImageDecoder::set_key(u8 key)
     p->key_set = true;
 }
 
-pix::Grid McgImageDecoder::decode_impl(File &file) const
+pix::Grid McgImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
-    const auto versionf = boost::lexical_cast<float>(file.stream.read(4).str());
-    const auto version = static_cast<int>(100 * versionf + 0.5);
+    input_file.stream.skip(magic.size());
+    const auto version = static_cast<int>(0.5
+        + 100 * boost::lexical_cast<float>(input_file.stream.read(4).str()));
 
-    file.stream.seek(16);
-    const auto header_size = file.stream.read_u32_le();
+    input_file.stream.seek(16);
+    const auto header_size = input_file.stream.read_u32_le();
     if (header_size != 64)
     {
         throw err::NotSupportedError(
             util::format("Unknown header size: %d", header_size));
     }
-    const auto x = file.stream.read_u32_le();
-    const auto y = file.stream.read_u32_le();
-    const auto width = file.stream.read_u32_le();
-    const auto height = file.stream.read_u32_le();
-    const auto depth = file.stream.read_u32_le();
-    const auto size_orig = file.stream.read_u32_le();
+    const auto x = input_file.stream.read_u32_le();
+    const auto y = input_file.stream.read_u32_le();
+    const auto width = input_file.stream.read_u32_le();
+    const auto height = input_file.stream.read_u32_le();
+    const auto depth = input_file.stream.read_u32_le();
+    const auto size_orig = input_file.stream.read_u32_le();
 
     if (!p->key_set)
         throw err::UsageError("MCG decryption key not set");
 
-    file.stream.seek(header_size);
-    bstr data = file.stream.read_to_eof();
+    input_file.stream.seek(header_size);
+    bstr data = input_file.stream.read_to_eof();
     if (version == 101)
         data = decrypt_v101(data, size_orig, p->key);
     else if (version == 200)

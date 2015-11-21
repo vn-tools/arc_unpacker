@@ -219,15 +219,15 @@ static bstr nwa_read_uncompressed(io::Stream &stream, const NwaHeader &header)
     return stream.read(header.uncompressed_size);
 }
 
-bool NwaAudioDecoder::is_recognized_impl(File &file) const
+bool NwaAudioDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.has_extension("nwa");
+    return input_file.has_extension("nwa");
 }
 
-std::unique_ptr<File> NwaAudioDecoder::decode_impl(File &file) const
+std::unique_ptr<File> NwaAudioDecoder::decode_impl(File &input_file) const
 {
     // buffer the file in memory for performance
-    io::MemoryStream stream(file.stream.read_to_eof());
+    io::MemoryStream stream(input_file.stream.read_to_eof());
 
     NwaHeader header;
     header.channel_count = stream.read_u16_le();
@@ -251,7 +251,7 @@ std::unique_ptr<File> NwaAudioDecoder::decode_impl(File &file) const
         header.bits_per_sample,
         header.sample_rate,
         samples,
-        file.name);
+        input_file.name);
 }
 
 static auto dummy = fmt::register_fmt<NwaAudioDecoder>("real-live/nwa");

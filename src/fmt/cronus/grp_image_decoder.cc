@@ -119,17 +119,17 @@ GrpImageDecoder::~GrpImageDecoder()
 {
 }
 
-bool GrpImageDecoder::is_recognized_impl(File &file) const
+bool GrpImageDecoder::is_recognized_impl(File &input_file) const
 {
     for (auto header_func : p->plugin_mgr.get_all())
     {
-        file.stream.seek(0);
+        input_file.stream.seek(0);
         try
         {
-            p->header = header_func(file.stream);
+            p->header = header_func(input_file.stream);
             if (!validate_header(p->header))
                 continue;
-            p->header.input_offset = file.stream.tell();
+            p->header.input_offset = input_file.stream.tell();
             return true;
         }
         catch (...)
@@ -140,12 +140,12 @@ bool GrpImageDecoder::is_recognized_impl(File &file) const
     return false;
 }
 
-pix::Grid GrpImageDecoder::decode_impl(File &file) const
+pix::Grid GrpImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(p->header.input_offset);
-    auto data = file.stream.read_to_eof();
+    input_file.stream.seek(p->header.input_offset);
+    auto data = input_file.stream.read_to_eof();
 
-    boost::filesystem::path path(file.name);
+    boost::filesystem::path path(input_file.name);
     if (p->header.encryption_type == EncType::Delta)
         delta_decrypt(data, get_delta_key(path.filename().string()));
     else if (p->header.encryption_type == EncType::SwapBytes)

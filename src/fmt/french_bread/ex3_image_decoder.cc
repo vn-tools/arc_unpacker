@@ -7,22 +7,22 @@ using namespace au::fmt::french_bread;
 
 static const bstr magic = "LLIF"_b;
 
-bool Ex3ImageDecoder::is_recognized_impl(File &file) const
+bool Ex3ImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> Ex3ImageDecoder::decode_impl(File &file) const
+std::unique_ptr<File> Ex3ImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
+    input_file.stream.skip(magic.size());
 
     bstr output;
-    bstr table0 = file.stream.read(0x40);
+    bstr table0 = input_file.stream.read(0x40);
     bstr table1(256);
     bstr table2(256);
 
-    u8 b = file.stream.read_u8();
-    while (file.stream.tell() < file.stream.size())
+    u8 b = input_file.stream.read_u8();
+    while (input_file.stream.tell() < input_file.stream.size())
     {
         for (auto j : util::range(256))
             table1[j] = j;
@@ -41,17 +41,17 @@ std::unique_ptr<File> Ex3ImageDecoder::decode_impl(File &file) const
             {
                 if (offset >= 256)
                     throw err::BadDataOffsetError();
-                table1[offset] = file.stream.read_u8();
+                table1[offset] = input_file.stream.read_u8();
                 if (offset != table1[offset])
-                    table2[offset] = file.stream.read_u8();
+                    table2[offset] = input_file.stream.read_u8();
                 ++offset;
             }
             if (offset == 256)
                 break;
-            b = file.stream.read_u8();
+            b = input_file.stream.read_u8();
         }
 
-        int left = file.stream.read_u16_be();
+        int left = input_file.stream.read_u16_be();
         offset = 0;
         while (true)
         {
@@ -67,7 +67,7 @@ std::unique_ptr<File> Ex3ImageDecoder::decode_impl(File &file) const
                 if (!left)
                     break;
                 --left;
-                b = file.stream.read_u8();
+                b = input_file.stream.read_u8();
             }
 
             if (b == table1[b])
@@ -82,13 +82,13 @@ std::unique_ptr<File> Ex3ImageDecoder::decode_impl(File &file) const
                 table0[offset++] = table1[b];
             }
         }
-        if (file.stream.tell() < file.stream.size())
-            b = file.stream.read_u8();
+        if (input_file.stream.tell() < input_file.stream.size())
+            b = input_file.stream.read_u8();
     }
 
     auto output_file = std::make_unique<File>();
     output_file->stream.write(output);
-    output_file->name = file.name;
+    output_file->name = input_file.name;
     output_file->change_extension(".bmp");
     return output_file;
 }

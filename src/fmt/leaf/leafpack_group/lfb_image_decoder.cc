@@ -5,18 +5,18 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
-bool LfbImageDecoder::is_recognized_impl(File &file) const
+bool LfbImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.has_extension("lfb");
+    return input_file.has_extension("lfb");
 }
 
-pix::Grid LfbImageDecoder::decode_impl(File &file) const
+pix::Grid LfbImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(0);
-    const auto size_orig = file.stream.read_u32_le();
-    const auto data
-        = common::custom_lzss_decompress(file.stream.read_to_eof(), size_orig);
-    const auto pseudo_file = std::make_unique<File>(file.name, data);
+    input_file.stream.seek(0);
+    const auto size_orig = input_file.stream.read_u32_le();
+    const auto data = common::custom_lzss_decompress(
+        input_file.stream.read_to_eof(), size_orig);
+    const auto pseudo_file = std::make_unique<File>(input_file.name, data);
     return fmt::microsoft::BmpImageDecoder().decode(*pseudo_file);
 }
 

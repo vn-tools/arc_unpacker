@@ -25,17 +25,17 @@ static size_t guess_output_size(const bstr &data)
     return pixels_start + stride * height * (bpp >> 3);
 }
 
-bool GrImageDecoder::is_recognized_impl(File &file) const
+bool GrImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.has_extension("gr");
+    return input_file.has_extension("gr");
 }
 
-std::unique_ptr<File> GrImageDecoder::decode_impl(File &file) const
+std::unique_ptr<File> GrImageDecoder::decode_impl(File &input_file) const
 {
     // According to Crass the offset, key and LCG kind vary for other games.
 
-    auto data = file.stream.read(file.stream.size() - 1);
-    auto seed = file.stream.read_u8() ^ xor_value;
+    auto data = input_file.stream.read(input_file.stream.size() - 1);
+    auto seed = input_file.stream.read_u8() ^ xor_value;
 
     util::crypt::Lcg lcg(util::crypt::LcgKind::ParkMillerRevised, seed);
     for (auto i : util::range(0, std::min<size_t>(0x174B, data.size())))
@@ -44,10 +44,8 @@ std::unique_ptr<File> GrImageDecoder::decode_impl(File &file) const
     auto output_size = guess_output_size(data);
     data = util::pack::lzss_decompress_bytewise(data, output_size);
 
-    auto output_file = std::make_unique<File>();
-    output_file->name = file.name;
+    auto output_file = std::make_unique<File>(input_file.name, data);
     output_file->change_extension("bmp");
-    output_file->stream.write(data);
     return output_file;
 }
 

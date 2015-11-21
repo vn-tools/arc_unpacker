@@ -57,14 +57,14 @@ static void write_ogg_page(io::Stream &output, const OggPage &page)
         output.write(page_segment);
 }
 
-bool PackedOggAudioDecoder::is_recognized_impl(File &file) const
+bool PackedOggAudioDecoder::is_recognized_impl(File &input_file) const
 {
-    if (!file.has_extension("wav"))
+    if (!input_file.has_extension("wav"))
         return false;
-    file.stream.seek(16);
-    file.stream.skip(file.stream.read_u32_le());
-    file.stream.skip(20);
-    return file.stream.read(4) == ogg_magic;
+    input_file.stream.seek(16);
+    input_file.stream.skip(input_file.stream.read_u32_le());
+    input_file.stream.skip(20);
+    return input_file.stream.read(4) == ogg_magic;
 }
 
 static void rewrite_ogg_stream(io::Stream &input, io::Stream &output)
@@ -108,29 +108,29 @@ static void rewrite_ogg_stream(io::Stream &input, io::Stream &output)
     }
 }
 
-std::unique_ptr<File> PackedOggAudioDecoder::decode_impl(File &file) const
+std::unique_ptr<File> PackedOggAudioDecoder::decode_impl(File &input_file) const
 {
-    if (file.stream.read(4) != "RIFF"_b)
+    if (input_file.stream.read(4) != "RIFF"_b)
         throw err::CorruptDataError("Expected RIFF signature");
-    file.stream.skip(4); // file size without RIFF header - usually corrupted
-    if (file.stream.read(8) != "WAVEfmt\x20"_b)
+    input_file.stream.skip(4); // file size w/o RIFF header, usually corrupted
+    if (input_file.stream.read(8) != "WAVEfmt\x20"_b)
         throw err::CorruptDataError("Expected WAVE header");
-    file.stream.skip(file.stream.read_u32_le());
+    input_file.stream.skip(input_file.stream.read_u32_le());
 
-    if (file.stream.read(4) != "fact"_b)
+    if (input_file.stream.read(4) != "fact"_b)
         throw err::CorruptDataError("Expected fact chunk");
-    if (file.stream.read_u32_le() != 4)
+    if (input_file.stream.read_u32_le() != 4)
         throw err::CorruptDataError("Corrupt fact chunk");
-    file.stream.skip(4);
+    input_file.stream.skip(4);
 
-    if (file.stream.read(4) != "data"_b)
+    if (input_file.stream.read(4) != "data"_b)
         throw err::CorruptDataError("Expected data chunk");
-    auto data_size = file.stream.read_u32_le();
-    io::MemoryStream input(file.stream, data_size);
+    auto data_size = input_file.stream.read_u32_le();
+    io::MemoryStream input(input_file.stream, data_size);
 
     auto output_file = std::make_unique<File>();
     rewrite_ogg_stream(input, output_file->stream);
-    output_file->name = file.name;
+    output_file->name = input_file.name;
     output_file->guess_extension();
     return output_file;
 }

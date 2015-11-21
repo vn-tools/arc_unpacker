@@ -8,17 +8,17 @@ using namespace au::fmt::leaf;
 
 static const bstr magic = "BM"_b;
 
-bool BjrImageDecoder::is_recognized_impl(File &file) const
+bool BjrImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.has_extension("bjr");
+    return input_file.has_extension("bjr");
 }
 
-pix::Grid BjrImageDecoder::decode_impl(File &file) const
+pix::Grid BjrImageDecoder::decode_impl(File &input_file) const
 {
     fmt::microsoft::BmpImageDecoder bmp_image_decoder;
-    const auto input = bmp_image_decoder.decode(file);
+    const auto input = bmp_image_decoder.decode(input_file);
 
-    const boost::filesystem::path path(file.name);
+    const boost::filesystem::path path(input_file.name);
     const auto name = path.filename().string();
     u32 key1 = 0x10000;
     u32 key2 = 0;

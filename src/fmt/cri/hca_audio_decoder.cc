@@ -173,22 +173,22 @@ static void decode_block(
     }
 }
 
-bool HcaAudioDecoder::is_recognized_impl(File &file) const
+bool HcaAudioDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &file) const
+std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &input_file) const
 {
     // TODO when testable: this should be customizable.
     const u32 ciph_key1 = 0x30DBE1AB;
     const u32 ciph_key2 = 0xCC554639;
 
-    file.stream.seek(6);
-    static const u16 meta_size = file.stream.read_u16_be();
+    input_file.stream.seek(6);
+    static const u16 meta_size = input_file.stream.read_u16_be();
 
-    file.stream.seek(0);
-    auto meta = read_meta(file.stream.read(meta_size));
+    input_file.stream.seek(0);
+    auto meta = read_meta(input_file.stream.read(meta_size));
 
     if (!meta.hca) throw err::CorruptDataError("Missing 'hca' chunk");
     if (!meta.fmt) throw err::CorruptDataError("Missing 'fmt' chunk");
@@ -227,7 +227,7 @@ std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &file) const
         channel_decoders.push_back(channel_decoder);
     }
 
-    file.stream.seek(meta.hca->data_offset);
+    input_file.stream.seek(meta.hca->data_offset);
     std::vector<s16> samples;
     samples.reserve(0x80 * 8 * channel_count * block_count);
     for (const auto b : util::range(block_count))
@@ -237,7 +237,7 @@ std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &file) const
             ath_table,
             channel_decoders,
             params,
-            permutator.permute(file.stream.read(block_size)));
+            permutator.permute(input_file.stream.read(block_size)));
 
         for (const auto i : util::range(8))
         for (const auto j : util::range(0x80))
@@ -267,7 +267,7 @@ std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &file) const
             meta.loop->repetitions == 0x80 ? 0 : meta.loop->repetitions,
         });
     }
-    return util::file_from_wave(wave, file.name);
+    return util::file_from_wave(wave, input_file.name);
 }
 
 static auto dummy = fmt::register_fmt<HcaAudioDecoder>("cri/hca");

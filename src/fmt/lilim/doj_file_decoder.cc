@@ -8,27 +8,27 @@ using namespace au::fmt::lilim;
 static const bstr magic1 = "CC"_b;
 static const bstr magic2 = "DD"_b;
 
-bool DojFileDecoder::is_recognized_impl(File &file) const
+bool DojFileDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.has_extension("doj")
-        && file.stream.read(magic1.size()) == magic1;
+    return input_file.has_extension("doj")
+        && input_file.stream.read(magic1.size()) == magic1;
 }
 
-std::unique_ptr<File> DojFileDecoder::decode_impl(File &file) const
+std::unique_ptr<File> DojFileDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(magic1.size());
-    const auto meta_size = file.stream.read_u16_le() * 6;
-    file.stream.skip(meta_size);
-    if (file.stream.read(magic2.size()) != magic2)
+    input_file.stream.seek(magic1.size());
+    const auto meta_size = input_file.stream.read_u16_le() * 6;
+    input_file.stream.skip(meta_size);
+    if (input_file.stream.read(magic2.size()) != magic2)
         throw err::CorruptDataError("Corrupt metadata");
 
-    file.stream.skip(2);
-    const auto size_comp = file.stream.read_u32_le();
-    const auto size_orig = file.stream.read_u32_le();
-    const auto data = sysd_decompress(file.stream.read(size_comp));
+    input_file.stream.skip(2);
+    const auto size_comp = input_file.stream.read_u32_le();
+    const auto size_orig = input_file.stream.read_u32_le();
+    const auto data = sysd_decompress(input_file.stream.read(size_comp));
     if (data.size() != size_orig)
         throw err::BadDataSizeError();
-    return std::make_unique<File>(file.name, data);
+    return std::make_unique<File>(input_file.name, data);
 }
 
 static auto dummy = fmt::register_fmt<DojFileDecoder>("lilim/doj");

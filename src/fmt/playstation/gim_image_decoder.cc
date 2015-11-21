@@ -139,34 +139,34 @@ static std::unique_ptr<pix::Grid> read_image(
     return image;
 }
 
-bool GimImageDecoder::is_recognized_impl(File &file) const
+bool GimImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid GimImageDecoder::decode_impl(File &file) const
+pix::Grid GimImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(0x30);
+    input_file.stream.seek(0x30);
     std::map<int, Chunk> chunks;
-    while (!file.stream.eof())
+    while (!input_file.stream.eof())
     {
         Chunk chunk;
-        chunk.offset = file.stream.tell();
-        chunk.type = file.stream.read_u32_le();
-        chunk.size = file.stream.read_u32_le();
-        if (file.stream.read_u32_le() != chunk.size)
+        chunk.offset = input_file.stream.tell();
+        chunk.type = input_file.stream.read_u32_le();
+        chunk.size = input_file.stream.read_u32_le();
+        if (input_file.stream.read_u32_le() != chunk.size)
             throw err::NotSupportedError("Data is most probably compressed");
-        file.stream.seek(chunk.offset + chunk.size);
+        input_file.stream.seek(chunk.offset + chunk.size);
         chunks[chunk.type] = chunk;
     }
 
     std::unique_ptr<pix::Palette> palette;
     if (chunks.find(0x05) != chunks.end())
-        palette = read_palette(file.stream, chunks[0x05]);
+        palette = read_palette(input_file.stream, chunks[0x05]);
 
     if (chunks.find(0x04) == chunks.end())
         throw err::CorruptDataError("Missing bitmap");
-    return *read_image(file.stream, chunks[0x04], std::move(palette));
+    return *read_image(input_file.stream, chunks[0x04], std::move(palette));
 }
 
 static auto dummy = fmt::register_fmt<GimImageDecoder>("playstation/gim");

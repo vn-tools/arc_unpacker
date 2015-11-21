@@ -12,7 +12,7 @@ static const bstr magic_tlg_5 = "TLG5.0\x00raw\x1A"_b;
 static const bstr magic_tlg_6 = "TLG6.0\x00raw\x1A"_b;
 
 static int guess_version(io::Stream &stream);
-static pix::Grid decode_proxy(int version, File &file);
+static pix::Grid decode_proxy(int version, File &input_file);
 
 static std::string extract_string(std::string &container)
 {
@@ -29,19 +29,19 @@ static std::string extract_string(std::string &container)
     return str;
 }
 
-static pix::Grid decode_tlg_0(File &file)
+static pix::Grid decode_tlg_0(File &input_file)
 {
-    size_t raw_data_size = file.stream.read_u32_le();
-    size_t raw_data_offset = file.stream.tell();
+    size_t raw_data_size = input_file.stream.read_u32_le();
+    size_t raw_data_offset = input_file.stream.tell();
 
     std::vector<std::pair<std::string, std::string>> tags;
 
-    file.stream.skip(raw_data_size);
-    while (file.stream.tell() < file.stream.size())
+    input_file.stream.skip(raw_data_size);
+    while (input_file.stream.tell() < input_file.stream.size())
     {
-        std::string chunk_name = file.stream.read(4).str();
-        size_t chunk_size = file.stream.read_u32_le();
-        std::string chunk_data = file.stream.read(chunk_size).str();
+        std::string chunk_name = input_file.stream.read(4).str();
+        size_t chunk_size = input_file.stream.read_u32_le();
+        std::string chunk_data = input_file.stream.read(chunk_size).str();
 
         if (chunk_name == "tags")
         {
@@ -56,67 +56,67 @@ static pix::Grid decode_tlg_0(File &file)
             throw err::NotSupportedError("Unknown chunk: " + chunk_name);
     }
 
-    file.stream.seek(raw_data_offset);
-    int version = guess_version(file.stream);
+    input_file.stream.seek(raw_data_offset);
+    int version = guess_version(input_file.stream);
     if (version == -1)
         throw err::UnsupportedVersionError();
-    return decode_proxy(version, file);
+    return decode_proxy(version, input_file);
 }
 
-static pix::Grid decode_tlg_5(File &file)
+static pix::Grid decode_tlg_5(File &input_file)
 {
     Tlg5Decoder decoder;
-    return decoder.decode(file);
+    return decoder.decode(input_file);
 }
 
-static pix::Grid decode_tlg_6(File &file)
+static pix::Grid decode_tlg_6(File &input_file)
 {
     Tlg6Decoder decoder;
-    return decoder.decode(file);
+    return decoder.decode(input_file);
 }
 
-static int guess_version(io::Stream &stream)
+static int guess_version(io::Stream &input_stream)
 {
-    size_t pos = stream.tell();
-    if (stream.read(magic_tlg_0.size()) == magic_tlg_0)
+    size_t pos = input_stream.tell();
+    if (input_stream.read(magic_tlg_0.size()) == magic_tlg_0)
         return 0;
 
-    stream.seek(pos);
-    if (stream.read(magic_tlg_5.size()) == magic_tlg_5)
+    input_stream.seek(pos);
+    if (input_stream.read(magic_tlg_5.size()) == magic_tlg_5)
         return 5;
 
-    stream.seek(pos);
-    if (stream.read(magic_tlg_6.size()) == magic_tlg_6)
+    input_stream.seek(pos);
+    if (input_stream.read(magic_tlg_6.size()) == magic_tlg_6)
         return 6;
 
     return -1;
 }
 
-static pix::Grid decode_proxy(int version, File &file)
+static pix::Grid decode_proxy(int version, File &input_file)
 {
     switch (version)
     {
         case 0:
-            return decode_tlg_0(file);
+            return decode_tlg_0(input_file);
 
         case 5:
-            return decode_tlg_5(file);
+            return decode_tlg_5(input_file);
 
         case 6:
-            return decode_tlg_6(file);
+            return decode_tlg_6(input_file);
     }
     throw std::logic_error("Unknown TLG version");
 }
 
-bool TlgImageDecoder::is_recognized_impl(File &file) const
+bool TlgImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return guess_version(file.stream) >= 0;
+    return guess_version(input_file.stream) >= 0;
 }
 
-pix::Grid TlgImageDecoder::decode_impl(File &file) const
+pix::Grid TlgImageDecoder::decode_impl(File &input_file) const
 {
-    int version = guess_version(file.stream);
-    return decode_proxy(version, file);
+    int version = guess_version(input_file.stream);
+    return decode_proxy(version, input_file);
 }
 
 static auto dummy = fmt::register_fmt<TlgImageDecoder>("kirikiri/tlg");

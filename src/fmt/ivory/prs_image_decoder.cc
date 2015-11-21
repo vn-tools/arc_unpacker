@@ -96,27 +96,27 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
     return target;
 }
 
-bool PrsImageDecoder::is_recognized_impl(File &file) const
+bool PrsImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PrsImageDecoder::decode_impl(File &file) const
+pix::Grid PrsImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
+    input_file.stream.skip(magic.size());
 
-    bool using_differences = file.stream.read_u8() > 0;
-    auto version = file.stream.read_u8();
+    bool using_differences = input_file.stream.read_u8() > 0;
+    auto version = input_file.stream.read_u8();
     if (version != 3)
         throw err::UnsupportedVersionError(version);
 
-    u32 source_size = file.stream.read_u32_le();
-    file.stream.skip(4);
-    u16 width = file.stream.read_u16_le();
-    u16 height = file.stream.read_u16_le();
+    u32 source_size = input_file.stream.read_u32_le();
+    input_file.stream.skip(4);
+    u16 width = input_file.stream.read_u16_le();
+    u16 height = input_file.stream.read_u16_le();
 
-    auto target = decode_pixels(file.stream.read(source_size), width, height);
-
+    auto target = input_file.stream.read(source_size);
+    target = decode_pixels(target, width, height);
     if (using_differences)
         for (auto i : util::range(3, target.size()))
             target[i] += target[i - 3];

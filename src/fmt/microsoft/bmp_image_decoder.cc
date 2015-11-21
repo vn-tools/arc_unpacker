@@ -258,26 +258,26 @@ static pix::Grid get_pixels_without_palette(
     return *pixels;
 }
 
-bool BmpImageDecoder::is_recognized_impl(File &file) const
+bool BmpImageDecoder::is_recognized_impl(File &input_file) const
 {
-    if (file.stream.read(magic.size()) != magic)
+    if (input_file.stream.read(magic.size()) != magic)
         return false;
-    file.stream.skip(4); // file size, some encoders corrupt this value
-    return file.stream.read_u32_le() == 0; // but these should be always zero
+    input_file.stream.skip(4); // file size, some encoders corrupt this value
+    return input_file.stream.read_u32_le() == 0; // but this should be reliable
 }
 
-pix::Grid BmpImageDecoder::decode_impl(File &file) const
+pix::Grid BmpImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(10);
-    auto header = read_header(file.stream);
+    input_file.stream.seek(10);
+    auto header = read_header(input_file.stream);
     pix::Palette palette(header.palette_size);
     for (auto i : util::range(palette.size()))
     {
-        palette[i].b = file.stream.read_u8();
-        palette[i].g = file.stream.read_u8();
-        palette[i].r = file.stream.read_u8();
+        palette[i].b = input_file.stream.read_u8();
+        palette[i].g = input_file.stream.read_u8();
+        palette[i].r = input_file.stream.read_u8();
         palette[i].a = 0xFF;
-        file.stream.skip(1);
+        input_file.stream.skip(1);
     }
 
     if (header.planes != 1)
@@ -287,8 +287,8 @@ pix::Grid BmpImageDecoder::decode_impl(File &file) const
         throw err::NotSupportedError("Compressed BMPs are not supported");
 
     pix::Grid pixels = palette.size() > 0
-        ? get_pixels_from_palette(file.stream, header, palette)
-        : get_pixels_without_palette(file.stream, header);
+        ? get_pixels_from_palette(input_file.stream, header, palette)
+        : get_pixels_without_palette(input_file.stream, header);
 
     if (header.flip)
         pixels.flip_vertically();

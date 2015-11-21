@@ -112,33 +112,33 @@ static void apply_alpha(pix::Grid &pixels, const bstr &input)
     }
 }
 
-bool QntImageDecoder::is_recognized_impl(File &file) const
+bool QntImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid QntImageDecoder::decode_impl(File &file) const
+pix::Grid QntImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
-    Version version = static_cast<Version>(file.stream.read_u32_le());
+    input_file.stream.skip(magic.size());
+    Version version = static_cast<Version>(input_file.stream.read_u32_le());
 
     if (version != Version2)
         throw err::UnsupportedVersionError(version);
 
-    file.stream.skip(4 * 3);
-    auto width = file.stream.read_u32_le();
-    auto height = file.stream.read_u32_le();
-    auto depth = file.stream.read_u32_le();
-    file.stream.skip(4);
-    auto pixel_size = file.stream.read_u32_le();
-    auto alpha_size = file.stream.read_u32_le();
-    file.stream.skip(24);
+    input_file.stream.skip(4 * 3);
+    auto width = input_file.stream.read_u32_le();
+    auto height = input_file.stream.read_u32_le();
+    auto depth = input_file.stream.read_u32_le();
+    input_file.stream.skip(4);
+    auto pixel_size = input_file.stream.read_u32_le();
+    auto alpha_size = input_file.stream.read_u32_le();
+    input_file.stream.skip(24);
 
     bstr color_data = pixel_size
-        ? util::pack::zlib_inflate(file.stream.read(pixel_size))
+        ? util::pack::zlib_inflate(input_file.stream.read(pixel_size))
         : ""_b;
     bstr alpha_data = alpha_size
-        ? util::pack::zlib_inflate(file.stream.read(alpha_size))
+        ? util::pack::zlib_inflate(input_file.stream.read(alpha_size))
         : ""_b;
 
     pix::Grid pixels(width, height);

@@ -47,22 +47,22 @@ static bstr do_decode(const bstr &input, size_t canvas_size)
     return output;
 }
 
-bool AcdImageDecoder::is_recognized_impl(File &file) const
+bool AcdImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid AcdImageDecoder::decode_impl(File &file) const
+pix::Grid AcdImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
-    auto data_offset = file.stream.read_u32_le();
-    auto size_comp = file.stream.read_u32_le();
-    auto size_orig = file.stream.read_u32_le();
-    auto width = file.stream.read_u32_le();
-    auto height = file.stream.read_u32_le();
+    input_file.stream.skip(magic.size());
+    auto data_offset = input_file.stream.read_u32_le();
+    auto size_comp = input_file.stream.read_u32_le();
+    auto size_orig = input_file.stream.read_u32_le();
+    auto width = input_file.stream.read_u32_le();
+    auto height = input_file.stream.read_u32_le();
 
-    file.stream.seek(data_offset);
-    auto pixel_data = file.stream.read(size_comp);
+    input_file.stream.seek(data_offset);
+    auto pixel_data = input_file.stream.read(size_comp);
     pixel_data = common::custom_lzss_decompress(pixel_data, size_orig);
     pixel_data = do_decode(pixel_data, width * height);
 

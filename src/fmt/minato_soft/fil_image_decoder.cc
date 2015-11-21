@@ -3,18 +3,20 @@
 using namespace au;
 using namespace au::fmt::minato_soft;
 
-bool FilImageDecoder::is_recognized_impl(File &file) const
+bool FilImageDecoder::is_recognized_impl(File &input_file) const
 {
-    const auto width = file.stream.read_u32_le();
-    const auto height = file.stream.read_u32_le();
-    return file.stream.tell() + width * height == file.stream.size();
+    input_file.stream.seek(0);
+    const auto width = input_file.stream.read_u32_le();
+    const auto height = input_file.stream.read_u32_le();
+    return 8 + width * height == input_file.stream.size();
 }
 
-pix::Grid FilImageDecoder::decode_impl(File &file) const
+pix::Grid FilImageDecoder::decode_impl(File &input_file) const
 {
-    const auto width = file.stream.read_u32_le();
-    const auto height = file.stream.read_u32_le();
-    const auto data =  file.stream.read(width * height);
+    input_file.stream.seek(0);
+    const auto width = input_file.stream.read_u32_le();
+    const auto height = input_file.stream.read_u32_le();
+    const auto data = input_file.stream.read(width * height);
     return pix::Grid(width, height, data, pix::Format::Gray8);
 }
 

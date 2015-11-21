@@ -59,25 +59,25 @@ static void move_output_ptr(
     }
 }
 
-bool LfgImageDecoder::is_recognized_impl(File &file) const
+bool LfgImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid LfgImageDecoder::decode_impl(File &file) const
+pix::Grid LfgImageDecoder::decode_impl(File &input_file) const
 {
     const auto width
-        = (file.stream.seek(36).read_u16_le()
-        - file.stream.seek(32).read_u16_le() + 1) * 8;
+        = (input_file.stream.seek(36).read_u16_le()
+        - input_file.stream.seek(32).read_u16_le() + 1) * 8;
 
     const auto height
-        = file.stream.seek(38).read_u16_le()
-        - file.stream.seek(34).read_u16_le() + 1;
+        = input_file.stream.seek(38).read_u16_le()
+        - input_file.stream.seek(34).read_u16_le() + 1;
 
-    const bool horizontal = file.stream.seek(40).read_u8() > 0;
-    const auto base_color = file.stream.seek(41).read_u8();
-    const auto size_orig = file.stream.seek(44).read_u32_le();
-    const auto input = file.stream.seek(48).read_to_eof();
+    const bool horizontal = input_file.stream.seek(40).read_u8() > 0;
+    const auto base_color = input_file.stream.seek(41).read_u8();
+    const auto size_orig = input_file.stream.seek(44).read_u32_le();
+    const auto input = input_file.stream.seek(48).read_to_eof();
 
     bstr data(size_orig * 2, base_color);
     auto output_ptr = data.get<u8>() + width * (height - 1);
@@ -129,11 +129,11 @@ pix::Grid LfgImageDecoder::decode_impl(File &file) const
         }
     }
 
-    file.stream.seek(magic.size());
+    input_file.stream.seek(magic.size());
     bstr palette_data;
     for (const auto i : util::range(24))
     {
-        const auto tmp = file.stream.read_u8();
+        const auto tmp = input_file.stream.read_u8();
         palette_data += static_cast<u8>(tmp & 0xF0);
         palette_data += static_cast<u8>(tmp << 4);
     }

@@ -9,11 +9,6 @@ using namespace au::fmt::wild_bug;
 
 static const bstr magic = "WPX\x1A""BMP\x00"_b;
 
-bool WbmImageDecoder::is_recognized_impl(File &file) const
-{
-    return file.stream.read(magic.size()) == magic;
-}
-
 static size_t get_stride(size_t width, size_t channels)
 {
     return (width * channels + 3) & (~3);
@@ -68,9 +63,14 @@ static pix::Grid get_pixels(
         throw err::UnsupportedChannelCountError(channels);
 }
 
-pix::Grid WbmImageDecoder::decode_impl(File &file) const
+bool WbmImageDecoder::is_recognized_impl(File &input_file) const
 {
-    wpx::Decoder decoder(file.stream);
+    return input_file.stream.read(magic.size()) == magic;
+}
+
+pix::Grid WbmImageDecoder::decode_impl(File &input_file) const
+{
+    wpx::Decoder decoder(input_file.stream);
 
     io::MemoryStream metadata_stream(decoder.read_plain_section(0x10));
     metadata_stream.skip(4);

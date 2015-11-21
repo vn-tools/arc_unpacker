@@ -132,17 +132,17 @@ void RctImageDecoder::set_key(const bstr &key)
     p->key = key;
 }
 
-bool RctImageDecoder::is_recognized_impl(File &file) const
+bool RctImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.stream.read(magic.size()) == magic;
+    return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid RctImageDecoder::decode_impl(File &file) const
+pix::Grid RctImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.skip(magic.size());
+    input_file.stream.skip(magic.size());
 
     bool encrypted;
-    auto tmp = file.stream.read_u8();
+    auto tmp = input_file.stream.read_u8();
     if (tmp == 'S')
         encrypted = true;
     else if (tmp == 'C')
@@ -150,19 +150,22 @@ pix::Grid RctImageDecoder::decode_impl(File &file) const
     else
         throw err::NotSupportedError("Unexpected encryption flag");
 
-    int version = boost::lexical_cast<int>(file.stream.read(2).str());
+    int version = boost::lexical_cast<int>(input_file.stream.read(2).str());
     if (version < 0 || version > 1)
         throw err::UnsupportedVersionError(version);
 
-    auto width = file.stream.read_u32_le();
-    auto height = file.stream.read_u32_le();
-    auto data_size = file.stream.read_u32_le();
+    auto width = input_file.stream.read_u32_le();
+    auto height = input_file.stream.read_u32_le();
+    auto data_size = input_file.stream.read_u32_le();
 
     std::string base_file;
     if (version == 1)
-        base_file = file.stream.read(file.stream.read_u16_le()).str();
+    {
+        const auto name_size = input_file.stream.read_u16_le();
+        base_file = input_file.stream.read(name_size).str();
+    }
 
-    auto data = file.stream.read(data_size);
+    auto data = input_file.stream.read(data_size);
     if (encrypted)
     {
         if (p->key.empty())

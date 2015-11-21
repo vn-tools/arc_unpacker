@@ -5,28 +5,28 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
-bool BbmImageDecoder::is_recognized_impl(File &file) const
+bool BbmImageDecoder::is_recognized_impl(File &input_file) const
 {
-    return file.has_extension("bbm");
+    return input_file.has_extension("bbm");
 }
 
-pix::Grid BbmImageDecoder::decode_impl(File &file) const
+pix::Grid BbmImageDecoder::decode_impl(File &input_file) const
 {
-    file.stream.seek(0);
-    const auto total_width = file.stream.read_u16_le();
-    const auto total_height = file.stream.read_u16_le();
+    input_file.stream.seek(0);
+    const auto total_width = input_file.stream.read_u16_le();
+    const auto total_height = input_file.stream.read_u16_le();
 
-    const auto chunk_width = file.stream.read_u16_le();
-    const auto chunk_height = file.stream.read_u16_le();
-    const auto chunk_count_x = file.stream.read_u16_le();
-    const auto chunk_count_y = file.stream.read_u16_le();
-    const auto chunk_size = file.stream.read_u32_le();
+    const auto chunk_width = input_file.stream.read_u16_le();
+    const auto chunk_height = input_file.stream.read_u16_le();
+    const auto chunk_count_x = input_file.stream.read_u16_le();
+    const auto chunk_count_y = input_file.stream.read_u16_le();
+    const auto chunk_size = input_file.stream.read_u32_le();
 
     pix::Grid image(total_width, total_height);
     for (auto chunk_y : util::range(chunk_count_y))
     for (auto chunk_x : util::range(chunk_count_x))
     {
-        io::MemoryStream chunk_stream(file.stream.read(chunk_size));
+        io::MemoryStream chunk_stream(input_file.stream.read(chunk_size));
         chunk_stream.skip(5);
         auto color_num = chunk_stream.read_u16_le();
         chunk_stream.skip(11);
