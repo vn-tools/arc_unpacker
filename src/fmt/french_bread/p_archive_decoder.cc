@@ -14,7 +14,7 @@ namespace
     };
 }
 
-bool PArchiveDecoder::is_recognized_impl(File &input_file) const
+bool PArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     auto meta = read_meta(input_file);
     if (!meta->entries.size())
@@ -25,7 +25,7 @@ bool PArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PArchiveDecoder::read_meta_impl(File &input_file) const
+    PArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     static const u32 encryption_key = 0xE3DF59AC;
     input_file.stream.seek(0);
@@ -48,8 +48,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> PArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> PArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
@@ -57,7 +57,7 @@ std::unique_ptr<File> PArchiveDecoder::read_file_impl(
     static const size_t encrypted_block_size = 0x2173;
     for (auto i : util::range(std::min(encrypted_block_size, entry->size)))
         data[i] ^= entry->name[i % entry->name.size()] + i + 3;
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> PArchiveDecoder::get_linked_formats() const

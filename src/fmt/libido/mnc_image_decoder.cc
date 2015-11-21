@@ -6,12 +6,12 @@ using namespace au::fmt::libido;
 
 static const bstr magic = "\x48\x48\x36\x10\x0E\x00\x00\x00\x00\x00"_b;
 
-bool MncImageDecoder::is_recognized_impl(File &input_file) const
+bool MncImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid MncImageDecoder::decode_impl(File &input_file) const
+pix::Grid MncImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto offset_to_pixels = input_file.stream.read_u32_le();

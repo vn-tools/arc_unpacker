@@ -44,7 +44,7 @@ static int guess_version(io::Stream &arc_stream)
     return -1;
 }
 
-static void read_data_entry(File &input_file, fmt::ArchiveMeta &meta)
+static void read_data_entry(io::File &input_file, fmt::ArchiveMeta &meta)
 {
     auto entry = std::make_unique<ArchiveEntryImpl>();
     entry->name = "unknown.dat";
@@ -54,7 +54,7 @@ static void read_data_entry(File &input_file, fmt::ArchiveMeta &meta)
     meta.entries.push_back(std::move(entry));
 }
 
-static void read_resource_entry(File &input_file, fmt::ArchiveMeta &meta)
+static void read_resource_entry(io::File &input_file, fmt::ArchiveMeta &meta)
 {
     bstr magic = input_file.stream.read(16);
 
@@ -91,13 +91,13 @@ static void read_resource_entry(File &input_file, fmt::ArchiveMeta &meta)
         meta.entries.push_back(std::move(entry));
 }
 
-bool Abmp10ArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Abmp10ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return guess_version(input_file.stream) >= 0;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Abmp10ArchiveDecoder::read_meta_impl(File &input_file) const
+    Abmp10ArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(16);
     auto meta = std::make_unique<ArchiveMeta>();
@@ -126,13 +126,13 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Abmp10ArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Abmp10ArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
 }

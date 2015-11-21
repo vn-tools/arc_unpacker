@@ -309,14 +309,14 @@ void PackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
-bool PackArchiveDecoder::is_recognized_impl(File &input_file) const
+bool PackArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(get_magic_start(input_file.stream));
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PackArchiveDecoder::read_meta_impl(File &input_file) const
+    PackArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->enc_type = EncryptionType::Basic;
@@ -324,7 +324,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     if (!p->fkey_path.empty())
     {
         meta->enc_type = EncryptionType::WithFKey;
-        File file(p->fkey_path, io::FileMode::Read);
+        io::File file(p->fkey_path, io::FileMode::Read);
         meta->key1 = file.stream.read_to_eof();
     }
 
@@ -332,7 +332,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         static const int key2_size = 256;
 
-        File file(p->game_exe_path, io::FileMode::Read);
+        io::File file(p->game_exe_path, io::FileMode::Read);
         auto exe_data = file.stream.read_to_eof();
 
         bool found = false;
@@ -408,8 +408,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> PackArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> PackArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -422,7 +422,7 @@ std::unique_ptr<File> PackArchiveDecoder::read_file_impl(
     if (entry->compressed)
         data = decompress(data, entry->size_original);
 
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> PackArchiveDecoder::get_linked_formats() const

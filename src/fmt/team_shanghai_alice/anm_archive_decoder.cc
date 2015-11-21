@@ -174,13 +174,13 @@ std::unique_ptr<INamingStrategy> AnmArchiveDecoder::naming_strategy() const
     return std::make_unique<RootNamingStrategy>();
 }
 
-bool AnmArchiveDecoder::is_recognized_impl(File &input_file) const
+bool AnmArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.has_extension("anm");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    AnmArchiveDecoder::read_meta_impl(File &input_file) const
+    AnmArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto texture_info_list = read_texture_info_list(input_file.stream);
 
@@ -199,8 +199,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> AnmArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> AnmArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     size_t width = 0;

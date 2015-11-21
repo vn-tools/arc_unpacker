@@ -44,20 +44,20 @@ static bstr decompress(const bstr &input, const size_t size_orig)
     return output;
 }
 
-bool PgdC00ImageDecoder::is_recognized_impl(File &input_file) const
+bool PgdC00ImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(24);
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PgdC00ImageDecoder::decode_impl(File &input_file) const
+pix::Grid PgdC00ImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(24 + magic.size());
     const auto size_orig = input_file.stream.read_u32_le();
     const auto size_comp = input_file.stream.read_u32_le();
     auto data = input_file.stream.read(size_comp - 12);
     data = decompress(data, size_orig);
-    File tmp_file("test.tga", data);
+    io::File tmp_file("test.tga", data);
     fmt::truevision::TgaImageDecoder tga_image_decoder;
     return tga_image_decoder.decode(tmp_file);
 }

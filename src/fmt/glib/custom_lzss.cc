@@ -7,13 +7,14 @@
 using namespace au;
 using namespace au::fmt;
 
-bstr glib::custom_lzss_decompress(const bstr &input, size_t output_size)
+bstr glib::custom_lzss_decompress(const bstr &input, const size_t output_size)
 {
-    io::MemoryStream stream(input);
-    return glib::custom_lzss_decompress(stream, output_size);
+    io::MemoryStream output_stream(input);
+    return glib::custom_lzss_decompress(output_stream, output_size);
 }
 
-bstr glib::custom_lzss_decompress(io::Stream &input_stream, size_t output_size)
+bstr glib::custom_lzss_decompress(
+    io::Stream &input_stream, const size_t output_size)
 {
     const size_t dict_size = 0x1000;
     size_t dict_pos = 0xFEE;

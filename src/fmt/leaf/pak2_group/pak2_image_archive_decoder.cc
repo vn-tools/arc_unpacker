@@ -23,13 +23,13 @@ namespace
     };
 }
 
-bool Pak2ImageArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Pak2ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.seek(4).read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak2ImageArchiveDecoder::read_meta_impl(File &input_file) const
+    Pak2ImageArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
 
@@ -83,8 +83,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Pak2ImageArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Pak2ImageArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     pix::Format format;

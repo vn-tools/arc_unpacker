@@ -10,7 +10,7 @@ static const std::string dir = "tests/fmt/glib/files/glib2/";
 
 static void do_test(
     const std::string &input_path,
-    const std::vector<std::shared_ptr<File>> &expected_files,
+    const std::vector<std::shared_ptr<io::File>> &expected_files,
     const bool input_file_is_compressed = false)
 {
     const Glib2ArchiveDecoder decoder;

@@ -9,15 +9,17 @@ namespace png {
     class PngImageDecoder final : public ImageDecoder
     {
     public:
-        using ChunkHandler
-            = std::function<void(const std::string &, const bstr &)>;
+        using ChunkHandler = std::function<void(
+            const std::string &chunk_name, const bstr &chunk_data)>;
 
         using ImageDecoder::decode;
-        pix::Grid decode(File &, ChunkHandler chunk_handler) const;
+        pix::Grid decode(
+            io::File &input_file,
+            ChunkHandler chunk_handler) const;
 
     protected:
-        bool is_recognized_impl(File &) const override;
-        pix::Grid decode_impl(File &) const override;
+        bool is_recognized_impl(io::File &input_file) const override;
+        pix::Grid decode_impl(io::File &input_file) const override;
     };
 
 } } }

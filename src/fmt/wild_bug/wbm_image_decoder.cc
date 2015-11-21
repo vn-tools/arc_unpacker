@@ -63,12 +63,12 @@ static pix::Grid get_pixels(
         throw err::UnsupportedChannelCountError(channels);
 }
 
-bool WbmImageDecoder::is_recognized_impl(File &input_file) const
+bool WbmImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid WbmImageDecoder::decode_impl(File &input_file) const
+pix::Grid WbmImageDecoder::decode_impl(io::File &input_file) const
 {
     wpx::Decoder decoder(input_file.stream);
 

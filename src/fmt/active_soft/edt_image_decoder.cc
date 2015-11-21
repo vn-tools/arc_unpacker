@@ -15,12 +15,12 @@ static inline u8 clamp(const u8 input, const u8 min, const u8 max)
     return std::max<u8>(std::min<u8>(input, max), min);
 }
 
-bool EdtImageDecoder::is_recognized_impl(File &input_file) const
+bool EdtImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid EdtImageDecoder::decode_impl(File &input_file) const
+pix::Grid EdtImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
     const auto width = input_file.stream.read_u16_le();

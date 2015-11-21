@@ -56,13 +56,13 @@ static Version read_version(io::Stream &stream)
     return Version::Unknown;
 }
 
-bool TacArchiveDecoder::is_recognized_impl(File &input_file) const
+bool TacArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return read_version(input_file.stream) != Version::Unknown;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    TacArchiveDecoder::read_meta_impl(File &input_file) const
+    TacArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto version = read_version(input_file.stream);
     input_file.stream.skip(8);
@@ -117,8 +117,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> TacArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> TacArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
@@ -145,7 +145,7 @@ std::unique_ptr<File> TacArchiveDecoder::read_file_impl(
         data = decrypt(data, bytes_to_decrypt, key);
     }
 
-    auto output_file = std::make_unique<File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
 }

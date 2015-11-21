@@ -9,7 +9,7 @@ using namespace au::fmt::fvp;
 static const bstr hzc1_magic = "hzc1"_b;
 static const bstr nvsg_magic = "NVSG"_b;
 
-bool NvsgImageDecoder::is_recognized_impl(File &input_file) const
+bool NvsgImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.read(hzc1_magic.size()) != hzc1_magic)
         return false;
@@ -17,7 +17,7 @@ bool NvsgImageDecoder::is_recognized_impl(File &input_file) const
     return input_file.stream.read(nvsg_magic.size()) == nvsg_magic;
 }
 
-pix::Grid NvsgImageDecoder::decode_impl(File &input_file) const
+pix::Grid NvsgImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(hzc1_magic.size());
     size_t uncompressed_size = input_file.stream.read_u32_le();

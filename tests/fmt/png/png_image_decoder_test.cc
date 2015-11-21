@@ -13,7 +13,7 @@ static const std::string dir = "tests/fmt/png/files/";
 
 TEST_CASE("PNG images", "[util]")
 {
-    File file(dir + "usagi_opaque.png", io::FileMode::Read);
+    io::File file(dir + "usagi_opaque.png", io::FileMode::Read);
 
     const PngImageDecoder decoder;
     const auto pixels = tests::decode(decoder, file);
@@ -29,7 +29,7 @@ TEST_CASE("PNG images", "[util]")
 
 TEST_CASE("PNG images with transparency", "[fmt]")
 {
-    File file(dir + "reimu_transparent.png", io::FileMode::Read);
+    io::File file(dir + "reimu_transparent.png", io::FileMode::Read);
 
     const PngImageDecoder decoder;
     const auto pixels = tests::decode(decoder, file);

@@ -10,7 +10,7 @@ static const std::string dir = "tests/fmt/ivory/files/mbl/";
 
 static void do_test(
     const std::string &input_path,
-    const std::vector<std::shared_ptr<File>> &expected_files,
+    const std::vector<std::shared_ptr<io::File>> &expected_files,
     const std::string &plugin_name = "")
 {
     MblArchiveDecoder decoder;

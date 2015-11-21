@@ -8,12 +8,12 @@ using namespace au::fmt::rpgmaker;
 
 static const bstr magic = "XYZ1"_b;
 
-bool XyzImageDecoder::is_recognized_impl(File &input_file) const
+bool XyzImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid XyzImageDecoder::decode_impl(File &input_file) const
+pix::Grid XyzImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

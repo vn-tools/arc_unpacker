@@ -9,7 +9,7 @@ using namespace au::fmt::liar_soft;
 
 static const bstr magic = "LM"_b;
 
-bool LimImageDecoder::is_recognized_impl(File &input_file) const
+bool LimImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.read(magic.size()) != magic)
         return false;
@@ -18,7 +18,7 @@ bool LimImageDecoder::is_recognized_impl(File &input_file) const
     return true;
 }
 
-pix::Grid LimImageDecoder::decode_impl(File &input_file) const
+pix::Grid LimImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     const auto version = input_file.stream.read_u16_le();

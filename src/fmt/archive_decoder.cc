@@ -28,7 +28,7 @@ void ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
 }
 
-bool ArchiveDecoder::is_recognized(File &input_file) const
+bool ArchiveDecoder::is_recognized(io::File &input_file) const
 {
     try
     {
@@ -41,7 +41,8 @@ bool ArchiveDecoder::is_recognized(File &input_file) const
     }
 }
 
-void ArchiveDecoder::unpack(File &input_file, const FileSaver &saver) const
+void ArchiveDecoder::unpack(
+    io::File &input_file, const FileSaver &file_saver) const
 {
     if (!is_recognized(input_file))
         throw err::RecognitionError();
@@ -49,14 +50,14 @@ void ArchiveDecoder::unpack(File &input_file, const FileSaver &saver) const
     size_t error_count = 0;
     auto meta = read_meta(input_file);
     if (!preprocessing_disabled)
-        preprocess(input_file, *meta, saver);
+        preprocess(input_file, *meta, file_saver);
     for (auto &entry : meta->entries)
     {
         try
         {
             auto output_file = read_file(input_file, *meta, *entry);
             if (output_file)
-                saver.save(std::move(output_file));
+                file_saver.save(std::move(output_file));
         }
         catch (std::exception &e)
         {
@@ -74,20 +75,22 @@ void ArchiveDecoder::unpack(File &input_file, const FileSaver &saver) const
     }
 }
 
-std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(File &input_file) const
+std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(
+    io::File &input_file) const
 {
     input_file.stream.seek(0);
     return read_meta_impl(input_file);
 }
 
-std::unique_ptr<File> ArchiveDecoder::read_file(
-    File &input_file, const ArchiveMeta &e, const ArchiveEntry &m) const
+std::unique_ptr<io::File> ArchiveDecoder::read_file(
+    io::File &input_file, const ArchiveMeta &e, const ArchiveEntry &m) const
 {
     // wrapper reserved for future usage
     return read_file_impl(input_file, e, m);
 }
 
-void ArchiveDecoder::preprocess(File &, ArchiveMeta &, const FileSaver &) const
+void ArchiveDecoder::preprocess(
+    io::File &, ArchiveMeta &, const FileSaver &) const
 {
 }
 

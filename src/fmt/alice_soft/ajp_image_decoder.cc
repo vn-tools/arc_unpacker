@@ -16,12 +16,12 @@ static void decrypt(bstr &input)
         input[i] ^= key[i];
 }
 
-bool AjpImageDecoder::is_recognized_impl(File &input_file) const
+bool AjpImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid AjpImageDecoder::decode_impl(File &input_file) const
+pix::Grid AjpImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     input_file.stream.skip(4 * 2);
@@ -41,25 +41,20 @@ pix::Grid AjpImageDecoder::decode_impl(File &input_file) const
     decrypt(mask_data);
 
     fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
-    File jpeg_file;
+    io::File jpeg_file;
     jpeg_file.stream.write(jpeg_data);
-    auto jpeg_pixels = jpeg_image_decoder.decode(jpeg_file);
+    auto image = jpeg_image_decoder.decode(jpeg_file);
 
     if (mask_size)
     {
         PmsImageDecoder pms_image_decoder;
-        File mask_file;
+        io::File mask_file;
         mask_file.stream.write(mask_data);
-        auto mask_pixels = pms_image_decoder.decode(mask_file);
-
-        for (auto y : util::range(height))
-        for (auto x : util::range(width))
-        {
-            jpeg_pixels.at(x, y).a = mask_pixels.at(x, y).r;
-        }
+        const auto mask_image = pms_image_decoder.decode(mask_file);
+        image.apply_mask(mask_image);
     }
 
-    return jpeg_pixels;
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<AjpImageDecoder>("alice-soft/ajp");

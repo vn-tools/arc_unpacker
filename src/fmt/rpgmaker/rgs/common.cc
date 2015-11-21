@@ -10,10 +10,10 @@ u32 rgs::advance_key(const u32 key)
     return key * 7 + 3;
 }
 
-std::unique_ptr<File> rgs::read_file_impl(
-    File &arc_file, const ArchiveEntryImpl &entry)
+std::unique_ptr<io::File> rgs::read_file_impl(
+    io::File &arc_file, const ArchiveEntryImpl &entry)
 {
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->name = entry.name;
     arc_file.stream.seek(entry.offset);
 

@@ -8,7 +8,7 @@ using namespace au;
 static void do_test(const boost::filesystem::path &path)
 {
     const FileSaverHdd file_saver(".", true);
-    const auto file = std::make_shared<File>(path.string(), "test"_b);
+    const auto file = std::make_shared<io::File>(path.string(), "test"_b);
 
     Log.mute();
     file_saver.save(file);
@@ -30,7 +30,7 @@ static void do_test_overwriting(
 {
     boost::filesystem::path path = "test.txt";
     boost::filesystem::path path2 = "test(1).txt";
-    const auto file = std::make_shared<File>(path.string(), ""_b);
+    const auto file = std::make_shared<io::File>(path.string(), ""_b);
 
     try
     {

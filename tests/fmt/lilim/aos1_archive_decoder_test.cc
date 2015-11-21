@@ -12,7 +12,7 @@ static const std::string dir = "tests/fmt/lilim/files/aos1/";
 
 static void do_test(const std::string &input_path)
 {
-    std::vector<std::shared_ptr<File>> expected_files
+    std::vector<std::shared_ptr<io::File>> expected_files
     {
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),

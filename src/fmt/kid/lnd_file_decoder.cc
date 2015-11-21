@@ -82,12 +82,13 @@ bstr LndFileDecoder::decompress_raw_data(const bstr &input, size_t size_orig)
     return output;
 }
 
-bool LndFileDecoder::is_recognized_impl(File &input_file) const
+bool LndFileDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> LndFileDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> LndFileDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(4);
@@ -95,7 +96,7 @@ std::unique_ptr<File> LndFileDecoder::decode_impl(File &input_file) const
     input_file.stream.skip(4);
     auto data = input_file.stream.read_to_eof();
     data = decompress_raw_data(data, size_orig);
-    return std::make_unique<File>(input_file.name, data);
+    return std::make_unique<io::File>(input_file.name, data);
 }
 
 static auto dummy = fmt::register_fmt<LndFileDecoder>("kid/lnd");

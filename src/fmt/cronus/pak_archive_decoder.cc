@@ -28,7 +28,7 @@ namespace
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta(
-    File &input_file, const Plugin &plugin, bool encrypted)
+    io::File &input_file, const Plugin &plugin, bool encrypted)
 {
     auto file_count = input_file.stream.read_u32_le() ^ plugin.key1;
     auto file_data_start = input_file.stream.read_u32_le() ^ plugin.key2;
@@ -74,7 +74,7 @@ PakArchiveDecoder::~PakArchiveDecoder()
 {
 }
 
-bool PakArchiveDecoder::is_recognized_impl(File &input_file) const
+bool PakArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.read(magic2.size()) == magic2)
         return true;
@@ -83,7 +83,7 @@ bool PakArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PakArchiveDecoder::read_meta_impl(File &input_file) const
+    PakArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     if (input_file.stream.read(magic2.size()) != magic2)
         input_file.stream.seek(magic3.size());
@@ -106,13 +106,13 @@ std::unique_ptr<fmt::ArchiveMeta>
     throw err::RecognitionError("Unknown encryption scheme");
 }
 
-std::unique_ptr<File> PakArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> PakArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
 }

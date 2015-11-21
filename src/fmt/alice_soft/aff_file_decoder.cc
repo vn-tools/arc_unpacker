@@ -10,12 +10,13 @@ static const bstr magic = "AFF\x00"_b;
 static const bstr key =
     "\xC8\xBB\x8F\xB7\xED\x43\x99\x4A\xA2\x7E\x5B\xB0\x68\x18\xF8\x88"_b;
 
-bool AffFileDecoder::is_recognized_impl(File &input_file) const
+bool AffFileDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> AffFileDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> AffFileDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
     const auto size = input_file.stream.read_u32_le();
@@ -24,7 +25,7 @@ std::unique_ptr<File> AffFileDecoder::decode_impl(File &input_file) const
     auto data = input_file.stream.read_to_eof();
     for (const auto i : util::range(std::min<size_t>(data.size(), 64)))
         data[i] ^= key[i % key.size()];
-    auto output_file = std::make_unique<File>(input_file.name, data);
+    auto output_file = std::make_unique<io::File>(input_file.name, data);
     output_file->guess_extension();
     return output_file;
 }

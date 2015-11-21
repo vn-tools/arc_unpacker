@@ -59,7 +59,7 @@ static bstr decompress(
     return output;
 }
 
-static pix::Grid decode_v0(File &input_file, size_t width, size_t height)
+static pix::Grid decode_v0(io::File &input_file, size_t width, size_t height)
 {
     const auto size_comp = input_file.stream.read_u32_le() - 8;
     const auto size_orig = input_file.stream.read_u32_le();
@@ -68,7 +68,7 @@ static pix::Grid decode_v0(File &input_file, size_t width, size_t height)
     return pix::Grid(width, height, data, pix::Format::BGR888);
 }
 
-static pix::Grid decode_v1(File &input_file, size_t width, size_t height)
+static pix::Grid decode_v1(io::File &input_file, size_t width, size_t height)
 {
     const auto size_comp = input_file.stream.read_u32_le() - 8;
     const auto size_orig = input_file.stream.read_u32_le();
@@ -81,7 +81,7 @@ static pix::Grid decode_v1(File &input_file, size_t width, size_t height)
     return pix::Grid(width, height, pix_data, palette);
 }
 
-static pix::Grid decode_v2(File &input_file, size_t width, size_t height)
+static pix::Grid decode_v2(io::File &input_file, size_t width, size_t height)
 {
     std::vector<std::unique_ptr<Region>> regions;
     const auto region_count = input_file.stream.read_u32_le();
@@ -157,12 +157,12 @@ static pix::Grid decode_v2(File &input_file, size_t width, size_t height)
     return image;
 }
 
-bool G00ImageDecoder::is_recognized_impl(File &input_file) const
+bool G00ImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.has_extension("g00");
 }
 
-pix::Grid G00ImageDecoder::decode_impl(File &input_file) const
+pix::Grid G00ImageDecoder::decode_impl(io::File &input_file) const
 {
     u8 version = input_file.stream.read_u8();
     u16 width = input_file.stream.read_u16_le();

@@ -51,12 +51,12 @@ void TfbmImageDecoder::add_palette(
         256, colors_stream, pix::Format::BGRA5551);
 }
 
-bool TfbmImageDecoder::is_recognized_impl(File &input_file) const
+bool TfbmImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid TfbmImageDecoder::decode_impl(File &input_file) const
+pix::Grid TfbmImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto bit_depth = input_file.stream.read_u8();

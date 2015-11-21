@@ -4,12 +4,13 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
-bool P16AudioDecoder::is_recognized_impl(File &input_file) const
+bool P16AudioDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.has_extension("P16");
 }
 
-std::unique_ptr<File> P16AudioDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> P16AudioDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto samples = input_file.stream.read_to_eof();

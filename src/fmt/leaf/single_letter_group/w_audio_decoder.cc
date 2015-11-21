@@ -7,7 +7,7 @@ using namespace au::fmt::leaf;
 
 static const bstr magic = "bw\x20\x20"_b;
 
-bool WAudioDecoder::is_recognized_impl(File &input_file) const
+bool WAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.has_extension("w"))
         return false;
@@ -15,7 +15,7 @@ bool WAudioDecoder::is_recognized_impl(File &input_file) const
     return data_size + 18 == input_file.stream.size();
 }
 
-std::unique_ptr<File> WAudioDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> WAudioDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     sfx::Wave wave;

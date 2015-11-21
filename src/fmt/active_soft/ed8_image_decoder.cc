@@ -8,12 +8,12 @@ using namespace au::fmt::active_soft;
 
 static const bstr magic = ".8Bit\x8D\x5D\x8C\xCB\x00"_b;
 
-bool Ed8ImageDecoder::is_recognized_impl(File &input_file) const
+bool Ed8ImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid Ed8ImageDecoder::decode_impl(File &input_file) const
+pix::Grid Ed8ImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
     const auto width = input_file.stream.read_u16_le();

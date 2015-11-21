@@ -10,7 +10,7 @@ static const std::string dir = "tests/fmt/riddle_soft/files/pac/";
 
 static void do_test(const std::string &input_path)
 {
-    const std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<io::File>> expected_files
     {
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.txt", "abcdefghijklmnopqrstuvwxyz"_b),

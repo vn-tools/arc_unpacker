@@ -16,13 +16,13 @@ namespace
     };
 }
 
-bool WbpArchiveDecoder::is_recognized_impl(File &input_file) const
+bool WbpArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    WbpArchiveDecoder::read_meta_impl(File &input_file) const
+    WbpArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(0x10);
     auto file_count = input_file.stream.read_u32_le();
@@ -87,13 +87,13 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> WbpArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> WbpArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> WbpArchiveDecoder::get_linked_formats() const

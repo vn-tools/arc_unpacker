@@ -112,7 +112,7 @@ static pix::Grid get_pixels_without_palette(
     return pix::Grid(width, height, input, format);
 }
 
-bool TgaImageDecoder::is_recognized_impl(File &input_file) const
+bool TgaImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     // there's no magic in the header. there is *optional* footer that *might*
     // contain the magic, but checking for this causes conflicts with certain
@@ -121,7 +121,7 @@ bool TgaImageDecoder::is_recognized_impl(File &input_file) const
     return input_file.has_extension("tga");
 }
 
-pix::Grid TgaImageDecoder::decode_impl(File &input_file) const
+pix::Grid TgaImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto id_size = input_file.stream.read_u8();

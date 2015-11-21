@@ -10,7 +10,7 @@ static const std::string dir = "tests/fmt/team_shanghai_alice/files/pbg3/";
 
 static void do_test(const std::string &input_path)
 {
-    const std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<io::File>> expected_files
     {
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("another.txt", "abcdefghijaaabcd"_b),

@@ -203,7 +203,7 @@ static pix::Grid read_pixels(
     if (compression_type == CompressionType::Png)
     {
         fmt::png::PngImageDecoder png_decoder;
-        File tmp_file;
+        io::File tmp_file;
         tmp_file.stream.write(input);
         return png_decoder.decode(tmp_file);
     }
@@ -211,12 +211,12 @@ static pix::Grid read_pixels(
     throw err::NotSupportedError("Unsupported compression type");
 }
 
-bool MgdImageDecoder::is_recognized_impl(File &input_file) const
+bool MgdImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid MgdImageDecoder::decode_impl(File &input_file) const
+pix::Grid MgdImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

@@ -228,13 +228,13 @@ static bstr read_raw_table(io::Stream &arc_stream)
     return util::pack::zlib_inflate(arc_stream.read(compressed_size));
 }
 
-bool RpaArchiveDecoder::is_recognized_impl(File &input_file) const
+bool RpaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return guess_version(input_file.stream) >= 0;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    RpaArchiveDecoder::read_meta_impl(File &input_file) const
+    RpaArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     int version = guess_version(input_file.stream);
     size_t table_offset = read_hex_number(input_file.stream, 16);
@@ -284,12 +284,12 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> RpaArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> RpaArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    return std::make_unique<File>(entry->name, entry->prefix + data);
+    return std::make_unique<io::File>(entry->name, entry->prefix + data);
 }
 
 static auto dummy = fmt::register_fmt<RpaArchiveDecoder>("renpy/rpa");

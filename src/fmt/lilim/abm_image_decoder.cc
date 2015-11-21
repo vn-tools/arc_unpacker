@@ -94,13 +94,13 @@ static bstr decompress_alpha(const bstr &input, const size_t size_hint)
     return output;
 }
 
-bool AbmImageDecoder::is_recognized_impl(File &input_file) const
+bool AbmImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.has_extension("abm")
         && input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid AbmImageDecoder::decode_impl(File &input_file) const
+pix::Grid AbmImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(18);
     const auto width = input_file.stream.read_u32_le();

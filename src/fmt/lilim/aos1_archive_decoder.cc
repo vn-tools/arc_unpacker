@@ -14,7 +14,7 @@ namespace
     };
 }
 
-bool Aos1ArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Aos1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     return input_file.has_extension("aos")
@@ -22,7 +22,7 @@ bool Aos1ArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Aos1ArchiveDecoder::read_meta_impl(File &input_file) const
+    Aos1ArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
@@ -49,12 +49,12 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Aos1ArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Aos1ArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> Aos1ArchiveDecoder::get_linked_formats() const

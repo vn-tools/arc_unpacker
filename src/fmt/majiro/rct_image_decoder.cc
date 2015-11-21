@@ -132,12 +132,12 @@ void RctImageDecoder::set_key(const bstr &key)
     p->key = key;
 }
 
-bool RctImageDecoder::is_recognized_impl(File &input_file) const
+bool RctImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid RctImageDecoder::decode_impl(File &input_file) const
+pix::Grid RctImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

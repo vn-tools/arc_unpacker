@@ -7,7 +7,7 @@ using namespace au::util;
 
 struct VersionRecognizer::Priv final
 {
-    std::map<int, std::function<bool(File &)>> funcs;
+    std::map<int, std::function<bool(io::File &)>> funcs;
 };
 
 VersionRecognizer::VersionRecognizer() : p(new Priv())
@@ -19,12 +19,12 @@ VersionRecognizer::~VersionRecognizer()
 }
 
 void VersionRecognizer::add_recognizer(
-    const int version, std::function<bool(File &)> func)
+    const int version, std::function<bool(io::File &)> func)
 {
     p->funcs[version] = func;
 }
 
-int VersionRecognizer::tell_version(File &file) const
+int VersionRecognizer::tell_version(io::File &file) const
 {
     const auto old_pos = file.stream.tell();
     for (const auto it : p->funcs)

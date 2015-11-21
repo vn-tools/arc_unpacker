@@ -225,7 +225,7 @@ void DatArchiveDecoder::add_file_name(const std::string &file_name)
     p->file_names_map[crc64(file_name_sjis)] = file_name_sjis;
 }
 
-bool DatArchiveDecoder::is_recognized_impl(File &input_file) const
+bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.has_extension("dat"))
         return false;
@@ -234,7 +234,7 @@ bool DatArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    DatArchiveDecoder::read_meta_impl(File &input_file) const
+    DatArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->game_title = p->game_title;
@@ -290,15 +290,15 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (!entry->valid)
     {
         Log.err(util::format(
-            "Unknown hash: %016llx. File cannot be unpacked.\n",
+            "Unknown hash: %016llx. io::File cannot be unpacked.\n",
             entry->hash));
         return nullptr;
     }
@@ -317,7 +317,7 @@ std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
             transform_regular_content(data, entry->name_orig);
     }
 
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> DatArchiveDecoder::get_linked_formats() const

@@ -33,7 +33,7 @@ static void decrypt(bstr &buffer, u32 mt_seed, u8 a, u8 b, u8 delta)
     }
 }
 
-bool Pak2ArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Pak2ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     try
     {
@@ -47,7 +47,7 @@ bool Pak2ArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak2ArchiveDecoder::read_meta_impl(File &input_file) const
+    Pak2ArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     u16 file_count = input_file.stream.read_u16_le();
@@ -79,8 +79,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Pak2ArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->already_unpacked)
@@ -90,11 +90,11 @@ std::unique_ptr<File> Pak2ArchiveDecoder::read_file_impl(
     u8 key = (entry->offset >> 1) | 0x23;
     for (auto i : util::range(entry->size))
         data[i] ^= key;
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 void Pak2ArchiveDecoder::preprocess(
-    File &input_file, ArchiveMeta &m, const FileSaver &saver) const
+    io::File &input_file, ArchiveMeta &m, const FileSaver &saver) const
 {
     Pak2ImageDecoder image_decoder;
 
@@ -109,7 +109,7 @@ void Pak2ArchiveDecoder::preprocess(
         if (it->path().string().find(".dat") == std::string::npos)
             continue;
 
-        File other_input_file(it->path().string(), io::FileMode::Read);
+        io::File other_input_file(it->path().string(), io::FileMode::Read);
         if (!is_recognized(other_input_file))
             continue;
 

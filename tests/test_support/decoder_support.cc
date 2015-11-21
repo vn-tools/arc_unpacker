@@ -1,5 +1,4 @@
 #include "test_support/decoder_support.h"
-#include "file.h"
 #include "test_support/catch.hh"
 
 using namespace au;
@@ -12,21 +11,21 @@ static void navigate_to_random_place(io::Stream &stream)
         stream.seek(rand() % stream.size());
 }
 
-std::vector<std::shared_ptr<File>> tests::unpack(
-    const fmt::ArchiveDecoder &decoder, File &input_file)
+std::vector<std::shared_ptr<io::File>> tests::unpack(
+    const fmt::ArchiveDecoder &decoder, io::File &input_file)
 {
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));
     navigate_to_random_place(input_file.stream);
     const auto meta = decoder.read_meta(input_file);
-    std::vector<std::shared_ptr<File>> files;
+    std::vector<std::shared_ptr<io::File>> files;
     for (const auto &entry : meta->entries)
         files.push_back(decoder.read_file(input_file, *meta, *entry));
     return files;
 }
 
-std::unique_ptr<File> tests::decode(
-    const fmt::FileDecoder &decoder, File &input_file)
+std::unique_ptr<io::File> tests::decode(
+    const fmt::FileDecoder &decoder, io::File &input_file)
 {
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));
@@ -34,7 +33,7 @@ std::unique_ptr<File> tests::decode(
     return decoder.decode(input_file);
 }
 
-pix::Grid tests::decode(const fmt::ImageDecoder &decoder, File &input_file)
+pix::Grid tests::decode(const fmt::ImageDecoder &decoder, io::File &input_file)
 {
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));

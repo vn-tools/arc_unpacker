@@ -9,8 +9,10 @@ namespace real_live {
     class NwaAudioDecoder final : public FileDecoder
     {
     protected:
-        bool is_recognized_impl(File &) const override;
-        std::unique_ptr<File> decode_impl(File &) const override;
+        bool is_recognized_impl(io::File &input_file) const override;
+
+        std::unique_ptr<io::File> decode_impl(
+            io::File &input_file) const override;
     };
 
 } } }

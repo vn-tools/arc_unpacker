@@ -84,7 +84,7 @@ static pix::Grid decode_pixels(
     return output;
 }
 
-bool SpbImageDecoder::is_recognized_impl(File &input_file) const
+bool SpbImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.has_extension("bmp"))
         return false;
@@ -97,7 +97,7 @@ bool SpbImageDecoder::is_recognized_impl(File &input_file) const
     return true;
 }
 
-pix::Grid SpbImageDecoder::decode_impl(File &input_file) const
+pix::Grid SpbImageDecoder::decode_impl(io::File &input_file) const
 {
     const auto width = input_file.stream.read_u16_be();
     const auto height = input_file.stream.read_u16_be();

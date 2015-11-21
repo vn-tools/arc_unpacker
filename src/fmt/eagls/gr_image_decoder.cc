@@ -25,12 +25,13 @@ static size_t guess_output_size(const bstr &data)
     return pixels_start + stride * height * (bpp >> 3);
 }
 
-bool GrImageDecoder::is_recognized_impl(File &input_file) const
+bool GrImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.has_extension("gr");
 }
 
-std::unique_ptr<File> GrImageDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> GrImageDecoder::decode_impl(
+    io::File &input_file) const
 {
     // According to Crass the offset, key and LCG kind vary for other games.
 
@@ -44,7 +45,7 @@ std::unique_ptr<File> GrImageDecoder::decode_impl(File &input_file) const
     auto output_size = guess_output_size(data);
     data = util::pack::lzss_decompress_bytewise(data, output_size);
 
-    auto output_file = std::make_unique<File>(input_file.name, data);
+    auto output_file = std::make_unique<io::File>(input_file.name, data);
     output_file->change_extension("bmp");
     return output_file;
 }

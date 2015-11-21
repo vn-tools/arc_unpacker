@@ -119,7 +119,7 @@ GrpImageDecoder::~GrpImageDecoder()
 {
 }
 
-bool GrpImageDecoder::is_recognized_impl(File &input_file) const
+bool GrpImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     for (auto header_func : p->plugin_mgr.get_all())
     {
@@ -140,7 +140,7 @@ bool GrpImageDecoder::is_recognized_impl(File &input_file) const
     return false;
 }
 
-pix::Grid GrpImageDecoder::decode_impl(File &input_file) const
+pix::Grid GrpImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(p->header.input_offset);
     auto data = input_file.stream.read_to_eof();

@@ -9,10 +9,15 @@ namespace renpy {
     class RpaArchiveDecoder final : public ArchiveDecoder
     {
     protected:
-        bool is_recognized_impl(File &) const override;
-        std::unique_ptr<ArchiveMeta> read_meta_impl(File &) const override;
-        std::unique_ptr<File> read_file_impl(
-            File &, const ArchiveMeta &, const ArchiveEntry &) const override;
+        bool is_recognized_impl(io::File &input_file) const override;
+
+        std::unique_ptr<ArchiveMeta> read_meta_impl(
+            io::File &input_file) const override;
+
+        std::unique_ptr<io::File> read_file_impl(
+            io::File &input_file,
+            const ArchiveMeta &m,
+            const ArchiveEntry &e) const override;
     };
 
 } } }

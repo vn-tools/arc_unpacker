@@ -31,7 +31,7 @@ static void xor_data(bstr &data)
         c ^= 0xFF;
 }
 
-bool ArcArchiveDecoder::is_recognized_impl(File &input_file) const
+bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     if (input_file.stream.read(magic1.size()) == magic1)
@@ -41,7 +41,7 @@ bool ArcArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    ArcArchiveDecoder::read_meta_impl(File &input_file) const
+    ArcArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
 
@@ -71,15 +71,15 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->name = entry->name;
 
     if (meta->version == 2)

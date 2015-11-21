@@ -20,6 +20,7 @@ namespace crypt {
         Lcg(LcgKind kind, u32 seed);
         ~Lcg();
         u32 next();
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

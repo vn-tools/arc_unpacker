@@ -37,7 +37,7 @@ LeafpackArchiveDecoder::~LeafpackArchiveDecoder()
 {
 }
 
-bool LeafpackArchiveDecoder::is_recognized_impl(File &input_file) const
+bool LeafpackArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
@@ -68,7 +68,7 @@ void LeafpackArchiveDecoder::set_key(const bstr &key)
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    LeafpackArchiveDecoder::read_meta_impl(File &input_file) const
+    LeafpackArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     if (p->key.empty())
     {
@@ -105,14 +105,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> LeafpackArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> LeafpackArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
     decrypt(data, p->key);
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> LeafpackArchiveDecoder::get_linked_formats() const

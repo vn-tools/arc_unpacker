@@ -87,7 +87,7 @@ static bstr decompress(const bstr &input, size_t size_orig)
     return util::pack::lzss_decompress_bitwise(input, size_orig, settings);
 }
 
-static int detect_encryption_version(File &input_file)
+static int detect_encryption_version(io::File &input_file)
 {
     if (input_file.name.find("th095.") != std::string::npos) return 0;
     if (input_file.name.find("th10.") != std::string::npos) return 0;
@@ -103,7 +103,7 @@ static int detect_encryption_version(File &input_file)
     return -1;
 }
 
-bool Tha1ArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Tha1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.has_extension("dat"))
         return false;
@@ -118,7 +118,7 @@ bool Tha1ArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Tha1ArchiveDecoder::read_meta_impl(File &input_file) const
+    Tha1ArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto header_data = input_file.stream.read(16);
     header_data = decrypt(header_data, {0x1B, 0x37, 0x10, 0x400});
@@ -166,8 +166,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> Tha1ArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Tha1ArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -179,7 +179,7 @@ std::unique_ptr<File> Tha1ArchiveDecoder::read_file_impl(
     if (entry->size_comp != entry->size_orig)
         data = decompress(data, entry->size_orig);
 
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> Tha1ArchiveDecoder::get_linked_formats() const

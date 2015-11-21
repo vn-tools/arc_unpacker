@@ -16,7 +16,7 @@ namespace
     };
 }
 
-bool DatArchiveDecoder::is_recognized_impl(File &input_file) const
+bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     try
     {
@@ -30,7 +30,7 @@ bool DatArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    DatArchiveDecoder::read_meta_impl(File &input_file) const
+    DatArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto arc_name = input_file.name;
     boost::algorithm::to_lower(arc_name);
@@ -87,13 +87,13 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
 }

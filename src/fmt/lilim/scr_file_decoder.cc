@@ -35,18 +35,19 @@ static bstr decode_huffman(const bstr &input, const size_t target_size)
     return output;
 }
 
-bool ScrFileDecoder::is_recognized_impl(File &input_file) const
+bool ScrFileDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.has_extension("scr");
 }
 
-std::unique_ptr<File> ScrFileDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> ScrFileDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto size_orig = input_file.stream.read_u32_le();
     auto data = input_file.stream.read_to_eof();
     data = decode_huffman(data, size_orig);
-    auto output_file = std::make_unique<File>(input_file.name, data);
+    auto output_file = std::make_unique<io::File>(input_file.name, data);
     output_file->change_extension("txt");
     return output_file;
 }

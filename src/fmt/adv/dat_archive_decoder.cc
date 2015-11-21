@@ -26,7 +26,7 @@ namespace
     };
 }
 
-static std::unique_ptr<ArchiveMetaImpl> prepare_meta(File &input_file)
+static std::unique_ptr<ArchiveMetaImpl> prepare_meta(io::File &input_file)
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     input_file.stream.seek(53); // suspicious: varies for other games?
@@ -52,7 +52,7 @@ static std::unique_ptr<ArchiveMetaImpl> prepare_meta(File &input_file)
     return meta;
 }
 
-bool DatArchiveDecoder::is_recognized_impl(File &input_file) const
+bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     const auto meta = prepare_meta(input_file);
     return meta->header_offset + meta->table_offset + 0x114 * meta->file_count
@@ -60,7 +60,7 @@ bool DatArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    DatArchiveDecoder::read_meta_impl(File &input_file) const
+    DatArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = prepare_meta(input_file);
 
@@ -85,8 +85,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -95,7 +95,7 @@ std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
     auto key_idx = entry->offset - meta->header_offset;
     for (const auto i : util::range(data.size()))
         data[i] ^= meta->arc_key[key_idx++ % meta->arc_key.size()];
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 static auto dummy = fmt::register_fmt<DatArchiveDecoder>("adv/dat");

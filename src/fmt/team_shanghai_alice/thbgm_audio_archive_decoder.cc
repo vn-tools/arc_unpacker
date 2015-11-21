@@ -29,7 +29,7 @@ namespace
     };
 }
 
-static std::unique_ptr<File> grab_definitions_file(
+static std::unique_ptr<io::File> grab_definitions_file(
     const boost::filesystem::path &dir)
 {
     std::vector<std::unique_ptr<fmt::ArchiveDecoder>> decoders;
@@ -44,7 +44,7 @@ static std::unique_ptr<File> grab_definitions_file(
         if (!boost::filesystem::is_regular_file(it->path()))
             continue;
 
-        File other_file(it->path(), io::FileMode::Read);
+        io::File other_file(it->path(), io::FileMode::Read);
         for (auto &decoder : decoders)
         {
             if (!decoder->is_recognized(other_file))
@@ -97,18 +97,18 @@ void ThbgmAudioArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
-void ThbgmAudioArchiveDecoder::set_loop_count(size_t loop_count)
+void ThbgmAudioArchiveDecoder::set_loop_count(const size_t loop_count)
 {
     p->loop_count = loop_count;
 }
 
-bool ThbgmAudioArchiveDecoder::is_recognized_impl(File &input_file) const
+bool ThbgmAudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    ThbgmAudioArchiveDecoder::read_meta_impl(File &input_file) const
+    ThbgmAudioArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto dir = boost::filesystem::path(input_file.name).parent_path();
     auto definitions_file = grab_definitions_file(dir);
@@ -139,8 +139,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> ThbgmAudioArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> ThbgmAudioArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);

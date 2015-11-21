@@ -10,7 +10,7 @@ static const std::string dir = "tests/fmt/kid/files/lnk/";
 
 static void do_test(
     const std::string &input_path,
-    const std::vector<std::shared_ptr<File>> expected_files,
+    const std::vector<std::shared_ptr<io::File>> expected_files,
     const bool input_file_is_compressed = false)
 {
     const LnkArchiveDecoder decoder;

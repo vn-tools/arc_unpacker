@@ -5,6 +5,7 @@
 #include "io/file_stream.h"
 
 using namespace au;
+using namespace au::io;
 
 static const std::vector<std::pair<std::string, bstr>> magic_definitions
 {

@@ -10,7 +10,7 @@ static const std::string dir = "tests/fmt/real_live/files/ovk/";
 
 static void do_test(
     const std::string &input_path,
-    const std::vector<std::shared_ptr<File>> &expected_files)
+    const std::vector<std::shared_ptr<io::File>> &expected_files)
 {
     const OvkArchiveDecoder decoder;
     const auto input_file = tests::file_from_path(dir + input_path);

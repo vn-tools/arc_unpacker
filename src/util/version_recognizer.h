@@ -1,6 +1,6 @@
 #pragma once
 
-#include "file.h"
+#include "io/file.h"
 
 namespace au {
 namespace util {
@@ -10,9 +10,13 @@ namespace util {
     public:
         VersionRecognizer();
         ~VersionRecognizer();
+
         void add_recognizer(
-            const int version, std::function<bool(File &)> func);
-        int tell_version(File &) const;
+            const int version,
+            std::function<bool(io::File &input_file)> func);
+
+        int tell_version(io::File &input_file) const;
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

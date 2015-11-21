@@ -6,35 +6,35 @@
 
 using namespace au;
 
-std::shared_ptr<File> tests::stub_file(
+std::shared_ptr<io::File> tests::stub_file(
     const std::string &name, const bstr &data)
 {
-    return std::make_shared<File>(name, data);
+    return std::make_shared<io::File>(name, data);
 }
 
-std::shared_ptr<File> tests::file_from_path(
+std::shared_ptr<io::File> tests::file_from_path(
     const boost::filesystem::path &path, const std::string &cust_name)
 {
-    auto ret = std::make_shared<File>(path, io::FileMode::Read);
+    auto ret = std::make_shared<io::File>(path, io::FileMode::Read);
     if (!cust_name.empty())
         ret->name = cust_name;
     return ret;
 }
 
-std::shared_ptr<File> tests::zlib_file_from_path(
+std::shared_ptr<io::File> tests::zlib_file_from_path(
     const boost::filesystem::path &path, const std::string &cust_name)
 {
-    File compressed_file(path, io::FileMode::Read);
+    io::File compressed_file(path, io::FileMode::Read);
     const auto compressed_data = compressed_file.stream.read_to_eof();
     const auto decompressed_data = util::pack::zlib_inflate(compressed_data);
-    return std::make_shared<File>(
+    return std::make_shared<io::File>(
         cust_name.empty() ? compressed_file.name : cust_name,
         decompressed_data);
 }
 
 void tests::compare_files(
-    const std::vector<std::shared_ptr<File>> &expected_files,
-    const std::vector<std::shared_ptr<File>> &actual_files,
+    const std::vector<std::shared_ptr<io::File>> &expected_files,
+    const std::vector<std::shared_ptr<io::File>> &actual_files,
     const bool compare_file_names)
 {
     REQUIRE(actual_files.size() == expected_files.size());
@@ -48,8 +48,8 @@ void tests::compare_files(
 }
 
 void tests::compare_files(
-    const File &expected_file,
-    const File &actual_file,
+    const io::File &expected_file,
+    const io::File &actual_file,
     const bool compare_file_names)
 {
     if (compare_file_names)

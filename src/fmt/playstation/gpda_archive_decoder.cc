@@ -16,7 +16,7 @@ namespace
     };
 }
 
-bool GpdaArchiveDecoder::is_recognized_impl(File &input_file) const
+bool GpdaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     return input_file.stream.read(magic.size()) == magic
@@ -24,7 +24,7 @@ bool GpdaArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    GpdaArchiveDecoder::read_meta_impl(File &input_file) const
+    GpdaArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(12);
     const auto file_count = input_file.stream.read_u32_le();
@@ -55,12 +55,12 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> GpdaArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> GpdaArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> GpdaArchiveDecoder::get_linked_formats() const

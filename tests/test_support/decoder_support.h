@@ -9,12 +9,12 @@
 namespace au {
 namespace tests {
 
-    std::vector<std::shared_ptr<File>> unpack(
-        const fmt::ArchiveDecoder &decoder, File &input_file);
+    std::vector<std::shared_ptr<io::File>> unpack(
+        const fmt::ArchiveDecoder &decoder, io::File &input_file);
 
-    std::unique_ptr<File> decode(
-        const fmt::FileDecoder &decoder, File &input_file);
+    std::unique_ptr<io::File> decode(
+        const fmt::FileDecoder &decoder, io::File &input_file);
 
-    pix::Grid decode(const fmt::ImageDecoder &decoder, File &input_file);
+    pix::Grid decode(const fmt::ImageDecoder &decoder, io::File &input_file);
 
 } }

@@ -173,12 +173,13 @@ static void decode_block(
     }
 }
 
-bool HcaAudioDecoder::is_recognized_impl(File &input_file) const
+bool HcaAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> HcaAudioDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> HcaAudioDecoder::decode_impl(
+    io::File &input_file) const
 {
     // TODO when testable: this should be customizable.
     const u32 ciph_key1 = 0x30DBE1AB;

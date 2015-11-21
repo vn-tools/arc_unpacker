@@ -61,14 +61,15 @@ static std::vector<audio::MioChunk> read_chunks(
     return chunks;
 }
 
-bool MioAudioDecoder::is_recognized_impl(File &input_file) const
+bool MioAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic1.size()) == magic1
         && input_file.stream.read(magic2.size()) == magic2
         && input_file.stream.read(magic3.size()) == magic3;
 }
 
-std::unique_ptr<File> MioAudioDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> MioAudioDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.seek(0x40);
 

@@ -24,7 +24,7 @@ static void decrypt(bstr &data)
         data[i] ^= key[i % key.size()];
 }
 
-bool NpaSgArchiveDecoder::is_recognized_impl(File &input_file) const
+bool NpaSgArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.has_extension("npa"))
         return false;
@@ -33,7 +33,7 @@ bool NpaSgArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    NpaSgArchiveDecoder::read_meta_impl(File &input_file) const
+    NpaSgArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     size_t table_size = input_file.stream.read_u32_le();
     auto table_data = input_file.stream.read(table_size);
@@ -58,14 +58,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> NpaSgArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> NpaSgArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
     decrypt(data);
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 static auto dummy = fmt::register_fmt<NpaSgArchiveDecoder>("nitroplus/npa-sg");

@@ -219,12 +219,13 @@ static bstr nwa_read_uncompressed(io::Stream &stream, const NwaHeader &header)
     return stream.read(header.uncompressed_size);
 }
 
-bool NwaAudioDecoder::is_recognized_impl(File &input_file) const
+bool NwaAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.has_extension("nwa");
 }
 
-std::unique_ptr<File> NwaAudioDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> NwaAudioDecoder::decode_impl(
+    io::File &input_file) const
 {
     // buffer the file in memory for performance
     io::MemoryStream stream(input_file.stream.read_to_eof());

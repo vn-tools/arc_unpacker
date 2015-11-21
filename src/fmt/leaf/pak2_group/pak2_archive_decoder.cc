@@ -13,7 +13,7 @@ namespace
     };
 }
 
-bool Pak2ArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Pak2ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.has_extension("pak"))
         return false;
@@ -33,7 +33,7 @@ bool Pak2ArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak2ArchiveDecoder::read_meta_impl(File &input_file) const
+    Pak2ArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
     const auto file_count = input_file.stream.seek(0x1C).read_u16_le();
@@ -59,12 +59,12 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Pak2ArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    return std::make_unique<File>(e.name, data);
+    return std::make_unique<io::File>(e.name, data);
 }
 
 std::vector<std::string> Pak2ArchiveDecoder::get_linked_formats() const

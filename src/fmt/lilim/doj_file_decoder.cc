@@ -8,13 +8,14 @@ using namespace au::fmt::lilim;
 static const bstr magic1 = "CC"_b;
 static const bstr magic2 = "DD"_b;
 
-bool DojFileDecoder::is_recognized_impl(File &input_file) const
+bool DojFileDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.has_extension("doj")
         && input_file.stream.read(magic1.size()) == magic1;
 }
 
-std::unique_ptr<File> DojFileDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> DojFileDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.seek(magic1.size());
     const auto meta_size = input_file.stream.read_u16_le() * 6;
@@ -28,7 +29,7 @@ std::unique_ptr<File> DojFileDecoder::decode_impl(File &input_file) const
     const auto data = sysd_decompress(input_file.stream.read(size_comp));
     if (data.size() != size_orig)
         throw err::BadDataSizeError();
-    return std::make_unique<File>(input_file.name, data);
+    return std::make_unique<io::File>(input_file.name, data);
 }
 
 static auto dummy = fmt::register_fmt<DojFileDecoder>("lilim/doj");

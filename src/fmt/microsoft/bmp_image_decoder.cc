@@ -258,7 +258,7 @@ static pix::Grid get_pixels_without_palette(
     return *pixels;
 }
 
-bool BmpImageDecoder::is_recognized_impl(File &input_file) const
+bool BmpImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.read(magic.size()) != magic)
         return false;
@@ -266,7 +266,7 @@ bool BmpImageDecoder::is_recognized_impl(File &input_file) const
     return input_file.stream.read_u32_le() == 0; // but this should be reliable
 }
 
-pix::Grid BmpImageDecoder::decode_impl(File &input_file) const
+pix::Grid BmpImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(10);
     auto header = read_header(input_file.stream);

@@ -10,12 +10,11 @@ TEST_CASE("Archives reference only valid decoders", "[fmt_core]")
     for (const auto &format_name : registry.get_decoder_names())
     {
         const auto decoder = registry.create_decoder(format_name);
-        const auto archive_decoder
+        const auto arc_decoder
             = dynamic_cast<const ArchiveDecoder*>(decoder.get());
-        if (!archive_decoder)
+        if (!arc_decoder)
             continue;
-        for (const auto &linked_format_name
-            : archive_decoder->get_linked_formats())
+        for (const auto &linked_format_name : arc_decoder->get_linked_formats())
         {
             INFO(format_name
                 << " links to invalid format "

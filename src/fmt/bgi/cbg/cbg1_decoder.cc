@@ -110,16 +110,16 @@ static pix::Format bpp_to_pixel_format(int bpp)
     throw err::UnsupportedBitDepthError(bpp);
 }
 
-std::unique_ptr<pix::Grid> Cbg1Decoder::decode(io::Stream &stream) const
+std::unique_ptr<pix::Grid> Cbg1Decoder::decode(io::Stream &input_stream) const
 {
-    auto width = stream.read_u16_le();
-    auto height = stream.read_u16_le();
-    auto bpp = stream.read_u32_le();
-    stream.skip(8);
+    auto width = input_stream.read_u16_le();
+    auto height = input_stream.read_u16_le();
+    auto bpp = input_stream.read_u32_le();
+    input_stream.skip(8);
 
-    auto huffman_size = stream.read_u32_le();
-    io::MemoryStream decrypted_stream(read_decrypted_data(stream));
-    auto raw_data = stream.read_to_eof();
+    auto huffman_size = input_stream.read_u32_le();
+    io::MemoryStream decrypted_stream(read_decrypted_data(input_stream));
+    auto raw_data = input_stream.read_to_eof();
 
     auto freq_table = read_freq_table(decrypted_stream, 256);
     auto tree = build_tree(freq_table, false);

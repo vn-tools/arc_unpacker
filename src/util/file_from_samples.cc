@@ -3,7 +3,7 @@
 using namespace au;
 using namespace au::util;
 
-std::unique_ptr<File> util::file_from_samples(
+std::unique_ptr<io::File> util::file_from_samples(
     size_t channel_count,
     size_t bits_per_sample,
     size_t sample_rate,
@@ -14,7 +14,7 @@ std::unique_ptr<File> util::file_from_samples(
     size_t byte_rate = block_align * sample_rate;
     size_t data_chunk_size = samples.size();
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
 
     output_file->stream.write("RIFF"_b);
     output_file->stream.write("\x00\x00\x00\x00"_b);

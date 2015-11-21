@@ -10,7 +10,7 @@ using namespace au::fmt::liar_soft;
 
 static const bstr magic = "WG"_b;
 
-bool WcgImageDecoder::is_recognized_impl(File &input_file) const
+bool WcgImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.read(magic.size()) != magic)
         return false;
@@ -22,7 +22,7 @@ bool WcgImageDecoder::is_recognized_impl(File &input_file) const
     return true;
 }
 
-pix::Grid WcgImageDecoder::decode_impl(File &input_file) const
+pix::Grid WcgImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
 

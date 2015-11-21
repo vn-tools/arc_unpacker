@@ -21,7 +21,7 @@ namespace
     };
 }
 
-static std::unique_ptr<fmt::ArchiveMeta> read_meta_v0(File &input_file)
+static std::unique_ptr<fmt::ArchiveMeta> read_meta_v0(io::File &input_file)
 {
     auto size_comp = input_file.stream.read_u32_le();
     auto size_orig = input_file.stream.read_u32_le();
@@ -56,7 +56,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v0(File &input_file)
     return meta;
 }
 
-static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(File &input_file)
+static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(io::File &input_file)
 {
     static const bstr key = "mlnebzqm"_b; // found in .exe
     auto meta = std::make_unique<fmt::ArchiveMeta>();
@@ -79,15 +79,15 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(File &input_file)
     return meta;
 }
 
-bool ArcArchiveDecoder::is_recognized_impl(File &input_file) const
+bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    ArcArchiveDecoder::read_meta_impl(File &input_file) const
+    ArcArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
-    std::vector<std::function<std::unique_ptr<fmt::ArchiveMeta>(File &)>>
+    std::vector<std::function<std::unique_ptr<fmt::ArchiveMeta>(io::File &)>>
         meta_readers
         {
             read_meta_v0,
@@ -110,8 +110,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     throw err::NotSupportedError("Archive is encrypted in unknown way.");
 }
 
-std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
@@ -121,7 +121,7 @@ std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
             data[i] ^= entry->key[i % entry->key.size()];
     if (entry->size_orig)
         data = util::pack::lzss_decompress_bytewise(data, entry->size_orig);
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> ArcArchiveDecoder::get_linked_formats() const

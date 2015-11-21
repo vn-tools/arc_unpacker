@@ -10,7 +10,7 @@ static const std::string dir = "tests/fmt/ast/files/arc/";
 
 static void do_test(const std::string &input_path)
 {
-    const std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<io::File>> expected_files
     {
         tests::stub_file("123.txt", "RIFF123123123 123123123 321"_b),
         tests::stub_file("abc.xyz", "RIFFabcdefghijklmnopqrstuvwxyz"_b),

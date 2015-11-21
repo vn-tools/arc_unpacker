@@ -155,7 +155,7 @@ std::unique_ptr<io::MemoryStream> RsaReader::read_block()
 }
 
 static bstr read_file_content(
-    File &input_file,
+    io::File &input_file,
     const ArchiveMetaImpl &meta,
     const ArchiveEntryImpl &entry,
     size_t max_size)
@@ -352,7 +352,7 @@ TfpkArchiveDecoder::~TfpkArchiveDecoder()
 {
 }
 
-bool TfpkArchiveDecoder::is_recognized_impl(File &input_file) const
+bool TfpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.read(magic.size()) != magic)
         return false;
@@ -361,7 +361,7 @@ bool TfpkArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    TfpkArchiveDecoder::read_meta_impl(File &input_file) const
+    TfpkArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
 
@@ -436,21 +436,21 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> TfpkArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> TfpkArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->already_unpacked)
         return nullptr;
     auto data = read_file_content(input_file, *meta, *entry, entry->size);
-    auto output_file = std::make_unique<File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
 }
 
 void TfpkArchiveDecoder::preprocess(
-    File &input_file, ArchiveMeta &m, const FileSaver &saver) const
+    io::File &input_file, ArchiveMeta &m, const FileSaver &saver) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
 
@@ -465,7 +465,7 @@ void TfpkArchiveDecoder::preprocess(
         if (it->path().string().find(".pak") == std::string::npos)
             continue;
 
-        File other_input_file(it->path(), io::FileMode::Read);
+        io::File other_input_file(it->path(), io::FileMode::Read);
         if (!is_recognized(other_input_file))
             continue;
 
@@ -490,7 +490,7 @@ void TfpkArchiveDecoder::preprocess(
         if (chunk != tfbm_magic)
             continue;
 
-        File full_file(entry->name, read_file_content(
+        io::File full_file(entry->name, read_file_content(
             input_file, *meta, *entry, entry->size));
         try
         {

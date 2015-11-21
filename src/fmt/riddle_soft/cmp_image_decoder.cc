@@ -7,12 +7,13 @@ using namespace au::fmt::riddle_soft;
 
 static const bstr magic = "CMP1"_b;
 
-bool CmpImageDecoder::is_recognized_impl(File &input_file) const
+bool CmpImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> CmpImageDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> CmpImageDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto size_original = input_file.stream.read_u32_le();
@@ -26,7 +27,7 @@ std::unique_ptr<File> CmpImageDecoder::decode_impl(File &input_file) const
     settings.initial_dictionary_pos = 2031;
     data = util::pack::lzss_decompress_bitwise(data, size_original, settings);
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->stream.write(data);
     output_file->name = input_file.name;
     output_file->guess_extension();

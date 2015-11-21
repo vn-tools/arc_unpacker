@@ -7,21 +7,21 @@ using namespace au;
 using namespace au::fmt::bgi;
 using namespace au::fmt::bgi::cbg;
 
-bstr cbg::read_decrypted_data(io::Stream &stream)
+bstr cbg::read_decrypted_data(io::Stream &input_stream)
 {
-    u32 key = stream.read_u32_le();
-    u32 data_size = stream.read_u32_le();
+    u32 key = input_stream.read_u32_le();
+    const u32 data_size = input_stream.read_u32_le();
 
-    u8 expected_sum = stream.read_u8();
-    u8 expected_xor = stream.read_u8();
-    stream.skip(2);
+    u8 expected_sum = input_stream.read_u8();
+    u8 expected_xor = input_stream.read_u8();
+    input_stream.skip(2);
 
-    bstr data = stream.read(data_size);
-    u8 *data_ptr = data.get<u8>();
+    auto data = input_stream.read(data_size);
+    auto data_ptr = data.get<u8>();
 
     u8 actual_sum = 0;
     u8 actual_xor = 0;
-    for (auto i : util::range(data.size()))
+    for (const auto i : util::range(data.size()))
     {
         *data_ptr -= get_and_update_key(key);
         actual_sum += *data_ptr;

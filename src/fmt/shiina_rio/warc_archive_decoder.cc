@@ -64,13 +64,13 @@ void WarcArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
-bool WarcArchiveDecoder::is_recognized_impl(File &input_file) const
+bool WarcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    WarcArchiveDecoder::read_meta_impl(File &input_file) const
+    WarcArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     const auto plugin = p->plugin_registry.get_plugin();
     if (!plugin)
@@ -117,8 +117,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> WarcArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -165,7 +165,7 @@ std::unique_ptr<File> WarcArchiveDecoder::read_file_impl(
             entry->name.c_str());
     }
 
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> WarcArchiveDecoder::get_linked_formats() const

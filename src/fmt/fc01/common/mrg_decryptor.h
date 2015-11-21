@@ -16,6 +16,7 @@ namespace common {
         ~MrgDecryptor();
         bstr decrypt_without_key();
         bstr decrypt_with_key(const u8 key);
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

@@ -22,13 +22,13 @@ namespace
     };
 }
 
-bool Nekopack4ArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Nekopack4ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Nekopack4ArchiveDecoder::read_meta_impl(File &input_file) const
+    Nekopack4ArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     auto table_size = input_file.stream.read_u32_le();
@@ -52,8 +52,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Nekopack4ArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Nekopack4ArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->already_unpacked)
@@ -73,11 +73,13 @@ std::unique_ptr<File> Nekopack4ArchiveDecoder::read_file_impl(
     }
     data = util::pack::zlib_inflate(data);
 
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 void Nekopack4ArchiveDecoder::preprocess(
-    File &input_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
+    io::File &input_file,
+    fmt::ArchiveMeta &meta,
+    const FileSaver &file_saver) const
 {
     // apply image masks to original sprites
     std::map<std::string, ArchiveEntryImpl*> mask_entries, sprite_entries;
@@ -109,7 +111,7 @@ void Nekopack4ArchiveDecoder::preprocess(
             sprite.apply_mask(mask);
             sprite_entry->already_unpacked = true;
             mask_entry->already_unpacked = true;
-            saver.save(util::file_from_grid(sprite, sprite_entry->name));
+            file_saver.save(util::file_from_grid(sprite, sprite_entry->name));
         }
         catch (...)
         {

@@ -101,7 +101,7 @@ static void read_pixels(io::Stream &stream, pix::Grid &pixels, Header &header)
     }
 }
 
-pix::Grid Tlg5Decoder::decode(File &file)
+pix::Grid Tlg5Decoder::decode(io::File &file)
 {
     Header header;
     header.channel_count = file.stream.read_u8();

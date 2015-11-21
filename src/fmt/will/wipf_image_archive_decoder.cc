@@ -82,13 +82,13 @@ std::unique_ptr<fmt::INamingStrategy>
     return std::make_unique<SiblingNamingStrategy>();
 }
 
-bool WipfImageArchiveDecoder::is_recognized_impl(File &input_file) const
+bool WipfImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    WipfImageArchiveDecoder::read_meta_impl(File &input_file) const
+    WipfImageArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto base_name
         = boost::filesystem::path(input_file.name).filename().string();
@@ -114,7 +114,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<pix::Grid> WipfImageArchiveDecoder::read_image(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     std::unique_ptr<pix::Palette> palette;
@@ -155,14 +155,14 @@ std::unique_ptr<pix::Grid> WipfImageArchiveDecoder::read_image(
     return pixels;
 }
 
-std::unique_ptr<File> WipfImageArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> WipfImageArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     return util::file_from_grid(*read_image(input_file, m, e), e.name);
 }
 
 std::vector<std::shared_ptr<pix::Grid>>
-    WipfImageArchiveDecoder::unpack_to_images(File &input_file) const
+    WipfImageArchiveDecoder::unpack_to_images(io::File &input_file) const
 {
     auto meta = read_meta(input_file);
     std::vector<std::shared_ptr<pix::Grid>> output;

@@ -60,12 +60,12 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
     return output;
 }
 
-bool Rc8ImageDecoder::is_recognized_impl(File &input_file) const
+bool Rc8ImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid Rc8ImageDecoder::decode_impl(File &input_file) const
+pix::Grid Rc8ImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

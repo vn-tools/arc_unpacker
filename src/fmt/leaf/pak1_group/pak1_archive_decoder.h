@@ -11,17 +11,27 @@ namespace leaf {
     public:
         Pak1ArchiveDecoder();
         ~Pak1ArchiveDecoder();
-        void register_cli_options(ArgParser &) const;
-        void parse_cli_options(const ArgParser &);
-        void set_version(const int);
+        void register_cli_options(ArgParser &arg_parser) const;
+        void parse_cli_options(const ArgParser &arg_parser);
+        void set_version(const int version);
         std::vector<std::string> get_linked_formats() const override;
+
     protected:
-        bool is_recognized_impl(File &) const override;
-        std::unique_ptr<ArchiveMeta> read_meta_impl(File &) const override;
-        std::unique_ptr<File> read_file_impl(
-            File &, const ArchiveMeta &, const ArchiveEntry &) const override;
+        bool is_recognized_impl(io::File &input_file) const override;
+
+        std::unique_ptr<ArchiveMeta> read_meta_impl(
+            io::File &input_file) const override;
+
+        std::unique_ptr<io::File> read_file_impl(
+            io::File &input_file,
+            const ArchiveMeta &m,
+            const ArchiveEntry &e) const override;
+
         void preprocess(
-            File &, ArchiveMeta &, const FileSaver &) const override;
+            io::File &input_file,
+            ArchiveMeta &m,
+            const FileSaver &file_saver) const override;
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

@@ -542,7 +542,7 @@ static void read_pixels(io::Stream &stream, pix::Grid &pixels, Header &header)
     }
 }
 
-pix::Grid Tlg6Decoder::decode(File &file)
+pix::Grid Tlg6Decoder::decode(io::File &file)
 {
     init_table();
 

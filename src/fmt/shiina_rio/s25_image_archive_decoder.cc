@@ -111,7 +111,7 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
     return output;
 }
 
-static pix::Grid read_plain(File &input_file, const ArchiveEntryImpl &entry)
+static pix::Grid read_plain(io::File &input_file, const ArchiveEntryImpl &entry)
 {
     bstr data;
     data.reserve(entry.width * entry.height * 4);
@@ -138,13 +138,13 @@ static pix::Grid read_plain(File &input_file, const ArchiveEntryImpl &entry)
     return pix::Grid(entry.width, entry.height, data, pix::Format::BGRA8888);
 }
 
-bool S25ImageArchiveDecoder::is_recognized_impl(File &input_file) const
+bool S25ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    S25ImageArchiveDecoder::read_meta_impl(File &input_file) const
+    S25ImageArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     const auto base_name = fs::path(input_file.name).stem().string();
 
@@ -178,8 +178,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> S25ImageArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> S25ImageArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->flags & 0x80000000)

@@ -7,12 +7,13 @@ using namespace au::fmt::wild_bug;
 
 static const bstr magic = "WPX\x1AWAV\x00"_b;
 
-bool WwaAudioDecoder::is_recognized_impl(File &input_file) const
+bool WwaAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> WwaAudioDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> WwaAudioDecoder::decode_impl(
+    io::File &input_file) const
 {
     wpx::Decoder decoder(input_file.stream);
     io::MemoryStream metadata_stream(decoder.read_plain_section(0x20));
@@ -29,7 +30,7 @@ std::unique_ptr<File> WwaAudioDecoder::decode_impl(File &input_file) const
     auto bytes_per_sample = bits_per_sample >> 3;
     auto data_chunk_size = samples.size();
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->stream.write("RIFF"_b);
     output_file->stream.write("\x00\x00\x00\x00"_b);
     output_file->stream.write("WAVE"_b);

@@ -5,6 +5,7 @@
 #include "io/file_stream.h"
 
 namespace au {
+namespace io {
 
     class File final
     {
@@ -22,4 +23,4 @@ namespace au {
         std::string name;
     };
 
-}
+} }

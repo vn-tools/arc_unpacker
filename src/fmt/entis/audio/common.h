@@ -34,7 +34,7 @@ namespace audio {
     {
     public:
         virtual ~AudioDecoderImpl();
-        virtual bstr process_chunk(const MioChunk &) = 0;
+        virtual bstr process_chunk(const MioChunk &chunk) = 0;
     };
 
 } } } }

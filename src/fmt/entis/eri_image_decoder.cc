@@ -50,7 +50,7 @@ static image::EriHeader read_header(
     return header;
 }
 
-bool EriImageDecoder::is_recognized_impl(File &input_file) const
+bool EriImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic1.size()) == magic1
         && input_file.stream.read(magic2.size()) == magic2
@@ -83,7 +83,7 @@ static bstr decode_pixel_data(
     return decode_lossless_pixel_data(header, *decoder);
 }
 
-pix::Grid EriImageDecoder::decode_impl(File &input_file) const
+pix::Grid EriImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0x40);
 

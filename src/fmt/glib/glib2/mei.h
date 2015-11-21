@@ -11,6 +11,7 @@ namespace glib2  {
     {
     public:
         std::unique_ptr<Decoder> create_header_decoder() const override;
+
         std::unique_ptr<Decoder> create_decoder(
             const std::array<u32, 4> &keys) const override;
     };

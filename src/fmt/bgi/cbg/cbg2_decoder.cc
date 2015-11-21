@@ -364,17 +364,17 @@ static void process_alpha(bstr &output, io::Stream &input_stream, int width)
     }
 }
 
-std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::Stream &stream) const
+std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::Stream &input_stream) const
 {
-    size_t width = stream.read_u16_le();
-    size_t height = stream.read_u16_le();
-    size_t depth = stream.read_u32_le();
+    size_t width = input_stream.read_u16_le();
+    size_t height = input_stream.read_u16_le();
+    size_t depth = input_stream.read_u32_le();
     size_t channels = depth >> 3;
-    stream.skip(12);
+    input_stream.skip(12);
 
-    auto decrypted_data = read_decrypted_data(stream);
+    auto decrypted_data = read_decrypted_data(input_stream);
     auto ac_mul_pair = read_ac_mul_pair(decrypted_data);
-    io::MemoryStream raw_stream(stream);
+    io::MemoryStream raw_stream(input_stream);
 
     auto pad_width = width + ((block_dim - (width % block_dim)) % block_dim);
     auto pad_height = height + ((block_dim - (height % block_dim)) % block_dim);

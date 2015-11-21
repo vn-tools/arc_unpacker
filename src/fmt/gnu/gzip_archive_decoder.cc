@@ -49,14 +49,14 @@ namespace
     };
 }
 
-bool GzipArchiveDecoder::is_recognized_impl(File &input_file) const
+bool GzipArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    GzipArchiveDecoder::read_meta_impl(File &input_file) const
+    GzipArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
@@ -102,12 +102,12 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> GzipArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> GzipArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
-    return std::make_unique<File>(
+    return std::make_unique<io::File>(
         entry->name,
         util::pack::zlib_inflate(
             input_file.stream.read(entry->size),

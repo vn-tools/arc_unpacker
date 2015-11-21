@@ -5,12 +5,13 @@ using namespace au::fmt::amuse_craft;
 
 static const bstr magic = "BGM\x20"_b;
 
-bool BgmFileDecoder::is_recognized_impl(File &input_file) const
+bool BgmFileDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> BgmFileDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> BgmFileDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
 
@@ -18,7 +19,7 @@ std::unique_ptr<File> BgmFileDecoder::decode_impl(File &input_file) const
     // In any case, these don't seem too important.
     input_file.stream.skip(8);
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->stream.write(input_file.stream.read_to_eof());
     output_file->name = input_file.name;
     output_file->guess_extension();

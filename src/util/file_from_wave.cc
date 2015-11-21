@@ -4,14 +4,14 @@
 using namespace au;
 using namespace au::util;
 
-std::unique_ptr<File> util::file_from_wave(
+std::unique_ptr<io::File> util::file_from_wave(
     const sfx::Wave &audio, const std::string &name)
 {
     const auto block_align
         = audio.fmt.channel_count * audio.fmt.bits_per_sample / 8;
     const auto byte_rate = audio.fmt.sample_rate * block_align;
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->stream.write("RIFF"_b);
     output_file->stream.write("\x00\x00\x00\x00"_b);
     output_file->stream.write("WAVE"_b);

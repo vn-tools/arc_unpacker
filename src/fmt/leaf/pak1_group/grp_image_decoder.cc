@@ -4,7 +4,7 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
-static int detect_version(File &input_file)
+static int detect_version(io::File &input_file)
 {
     int version = 1;
     input_file.stream.seek(0);
@@ -21,7 +21,7 @@ static int detect_version(File &input_file)
     return -1;
 }
 
-static pix::Grid decode_pixels(File &input_file)
+static pix::Grid decode_pixels(io::File &input_file)
 {
     const auto version = detect_version(input_file);
     input_file.stream.seek(version == 1 ? 0 : 4);
@@ -31,7 +31,7 @@ static pix::Grid decode_pixels(File &input_file)
     return pix::Grid(width, height, data, pix::Format::Gray8);
 }
 
-static pix::Palette decode_palette(File &input_file)
+static pix::Palette decode_palette(io::File &input_file)
 {
     input_file.stream.seek(0);
     const auto count = input_file.stream.read_u16_le();
@@ -47,15 +47,15 @@ static pix::Palette decode_palette(File &input_file)
     return palette;
 }
 
-bool GrpImageDecoder::is_recognized_impl(File &input_file) const
+bool GrpImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return detect_version(input_file) > 0;
 }
 
 pix::Grid GrpImageDecoder::decode(
-    File &input_file,
-    std::shared_ptr<File> palette_file,
-    std::shared_ptr<File> mask_file) const
+    io::File &input_file,
+    std::shared_ptr<io::File> palette_file,
+    std::shared_ptr<io::File> mask_file) const
 {
     auto image = decode_pixels(input_file);
     if (palette_file)
@@ -75,7 +75,7 @@ pix::Grid GrpImageDecoder::decode(
     return image;
 }
 
-pix::Grid GrpImageDecoder::decode_impl(File &input_file) const
+pix::Grid GrpImageDecoder::decode_impl(io::File &input_file) const
 {
     return decode_pixels(input_file);
 }

@@ -101,13 +101,13 @@ void NpaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
-bool NpaArchiveDecoder::is_recognized_impl(File &input_file) const
+bool NpaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    NpaArchiveDecoder::read_meta_impl(File &input_file) const
+    NpaArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->filter = p->filter_registry.get_filter();
@@ -151,8 +151,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> NpaArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> NpaArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -164,7 +164,7 @@ std::unique_ptr<File> NpaArchiveDecoder::read_file_impl(
     if (meta->files_are_compressed)
         data = util::pack::zlib_inflate(data);
 
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 static auto dummy = fmt::register_fmt<NpaArchiveDecoder>("nitroplus/npa");

@@ -16,13 +16,13 @@ namespace
     };
 }
 
-bool AlkArchiveDecoder::is_recognized_impl(File &input_file) const
+bool AlkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    AlkArchiveDecoder::read_meta_impl(File &input_file) const
+    AlkArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     auto file_count = input_file.stream.read_u32_le();
@@ -41,13 +41,13 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> AlkArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> AlkArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
 }

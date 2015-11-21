@@ -21,12 +21,13 @@ static void write_cell(io::Stream &output_stream, std::string cell)
     output_stream.write(util::sjis_to_utf8(cell));
 }
 
-bool TfcsFileDecoder::is_recognized_impl(File &input_file) const
+bool TfcsFileDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> TfcsFileDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> TfcsFileDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     size_t compressed_size = input_file.stream.read_u32_le();
@@ -34,7 +35,7 @@ std::unique_ptr<File> TfcsFileDecoder::decode_impl(File &input_file) const
     io::MemoryStream uncompressed_stream(
         util::pack::zlib_inflate(input_file.stream.read_to_eof()));
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->name = input_file.name;
     output_file->change_extension("csv");
 

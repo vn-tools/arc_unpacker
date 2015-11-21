@@ -46,7 +46,7 @@ MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)
 {
     p->recognizer.add_recognizer(
         1,
-        [&](File &input_file)
+        [&](io::File &input_file)
         {
             input_file.stream.seek(0);
             const auto file_count = input_file.stream.read_u32_le();
@@ -55,7 +55,7 @@ MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)
 
     p->recognizer.add_recognizer(
         2,
-        [&](File &input_file)
+        [&](io::File &input_file)
         {
             input_file.stream.seek(0);
             const auto file_count = input_file.stream.read_u32_le();
@@ -104,13 +104,13 @@ void MblArchiveDecoder::set_plugin(const std::string &plugin_name)
     p->plugin_mgr.set(plugin_name);
 }
 
-bool MblArchiveDecoder::is_recognized_impl(File &input_file) const
+bool MblArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return p->recognizer.tell_version(input_file) > 0;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    MblArchiveDecoder::read_meta_impl(File &input_file) const
+    MblArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     const auto version = p->recognizer.tell_version(input_file);
@@ -134,8 +134,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> MblArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> MblArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -153,7 +153,7 @@ std::unique_ptr<File> MblArchiveDecoder::read_file_impl(
         meta->decrypt(data);
     }
 
-    auto output_file = std::make_unique<File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
 }

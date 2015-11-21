@@ -5,14 +5,15 @@ using namespace au::fmt::kid;
 
 static const bstr magic = "WAF\x00\x00\x00"_b;
 
-bool WafAudioDecoder::is_recognized_impl(File &input_file) const
+bool WafAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> WafAudioDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> WafAudioDecoder::decode_impl(
+    io::File &input_file) const
 {
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
 
     input_file.stream.skip(6);
 

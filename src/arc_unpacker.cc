@@ -39,8 +39,8 @@ private:
     void print_cli_help() const;
     void parse_cli_options();
 
-    bool guess_decoder_and_unpack(File &file) const;
-    void unpack(fmt::IDecoder &decoder, File &file) const;
+    bool guess_decoder_and_unpack(io::File &file) const;
+    void unpack(fmt::IDecoder &decoder, io::File &file) const;
 
     const fmt::Registry &registry;
     const std::vector<std::string> arguments;
@@ -51,7 +51,7 @@ private:
 };
 
 static std::unique_ptr<fmt::IDecoder> guess_decoder(
-    File &file, const fmt::Registry &registry)
+    io::File &file, const fmt::Registry &registry)
 {
     std::map<std::string, std::unique_ptr<fmt::IDecoder>> decoders;
     for (auto &name : registry.get_decoder_names())
@@ -252,7 +252,7 @@ int ArcUnpacker::Priv::run() const
     size_t processed = 0;
     for (auto &input_path : options.input_paths)
     {
-        File file(input_path, io::FileMode::Read);
+        io::File file(input_path, io::FileMode::Read);
         result |= !guess_decoder_and_unpack(file);
 
         // keep one blank line between logs from each processed file
@@ -264,14 +264,14 @@ int ArcUnpacker::Priv::run() const
     return result;
 }
 
-void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, File &file) const
+void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, io::File &file) const
 {
     const auto path = boost::filesystem::path(file.name);
     const auto base_name
         = path.stem().string() + "~" + path.extension().string();
     const FileSaverHdd saver(options.output_dir, options.overwrite);
     const FileSaverCallback saver_proxy(
-        [&](std::shared_ptr<File> saved_file)
+        [&](std::shared_ptr<io::File> saved_file)
         {
             saved_file->name = decoder.naming_strategy()->decorate(
                 base_name, saved_file->name);
@@ -283,7 +283,7 @@ void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, File &file) const
         : fmt::unpack_non_recursive(arguments, decoder, file, saver_proxy);
 }
 
-bool ArcUnpacker::Priv::guess_decoder_and_unpack(File &file) const
+bool ArcUnpacker::Priv::guess_decoder_and_unpack(io::File &file) const
 {
     Log.info(util::format("Unpacking %s...\n", file.name.c_str()));
     const auto decoder = options.format.empty()

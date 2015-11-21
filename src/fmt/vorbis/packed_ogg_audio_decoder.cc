@@ -57,7 +57,7 @@ static void write_ogg_page(io::Stream &output, const OggPage &page)
         output.write(page_segment);
 }
 
-bool PackedOggAudioDecoder::is_recognized_impl(File &input_file) const
+bool PackedOggAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.has_extension("wav"))
         return false;
@@ -108,7 +108,8 @@ static void rewrite_ogg_stream(io::Stream &input, io::Stream &output)
     }
 }
 
-std::unique_ptr<File> PackedOggAudioDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> PackedOggAudioDecoder::decode_impl(
+    io::File &input_file) const
 {
     if (input_file.stream.read(4) != "RIFF"_b)
         throw err::CorruptDataError("Expected RIFF signature");
@@ -128,7 +129,7 @@ std::unique_ptr<File> PackedOggAudioDecoder::decode_impl(File &input_file) const
     auto data_size = input_file.stream.read_u32_le();
     io::MemoryStream input(input_file.stream, data_size);
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     rewrite_ogg_stream(input, output_file->stream);
     output_file->name = input_file.name;
     output_file->guess_extension();

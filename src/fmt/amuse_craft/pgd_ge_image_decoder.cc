@@ -154,12 +154,12 @@ static bstr apply_delta_filter(
     return output;
 }
 
-bool PgdGeImageDecoder::is_recognized_impl(File &input_file) const
+bool PgdGeImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PgdGeImageDecoder::decode_impl(File &input_file) const
+pix::Grid PgdGeImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(8);

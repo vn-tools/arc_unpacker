@@ -23,13 +23,13 @@ namespace
     };
 }
 
-bool GmlArchiveDecoder::is_recognized_impl(File &input_file) const
+bool GmlArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    GmlArchiveDecoder::read_meta_impl(File &input_file) const
+    GmlArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     auto file_data_start = input_file.stream.read_u32_le();
@@ -57,8 +57,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> GmlArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> GmlArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -69,7 +69,7 @@ std::unique_ptr<File> GmlArchiveDecoder::read_file_impl(
     for (auto i : util::range(suffix.size()))
         suffix[i] = meta->permutation[suffix.get<u8>()[i]];
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->name = entry->name;
     output_file->stream.write(entry->prefix);
     output_file->stream.write(suffix);

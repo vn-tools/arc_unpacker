@@ -66,7 +66,8 @@ static std::vector<std::unique_ptr<Region>> read_regions(
     return regions;
 }
 
-static std::unique_ptr<File> decode_png(File &input_file, Header &header)
+static std::unique_ptr<io::File> decode_png(
+    io::File &input_file, Header &header)
 {
     input_file.stream.seek(header.data_offset);
     bstr data = input_file.stream.read(header.data_size);
@@ -81,19 +82,20 @@ static std::unique_ptr<File> decode_png(File &input_file, Header &header)
     data[2] = 'N';
     data[3] = 'G';
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->stream.write(data);
     output_file->name = input_file.name;
     output_file->change_extension("png");
     return output_file;
 }
 
-bool YkgImageDecoder::is_recognized_impl(File &input_file) const
+bool YkgImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> YkgImageDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> YkgImageDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

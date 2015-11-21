@@ -2,13 +2,13 @@
 
 #include <boost/filesystem/path.hpp>
 #include <memory>
-#include "file.h"
+#include "io/file.h"
 #include "pix/grid.h"
 
 namespace au {
 namespace tests {
 
-    std::shared_ptr<pix::Grid> image_from_file(File &file);
+    std::shared_ptr<pix::Grid> image_from_file(io::File &file);
 
     std::shared_ptr<pix::Grid> image_from_path(
         const boost::filesystem::path &path);
@@ -22,6 +22,6 @@ namespace tests {
 
     void compare_images(
         const std::vector<std::shared_ptr<pix::Grid>> &expected_images,
-        const std::vector<std::shared_ptr<File>> &actual_files);
+        const std::vector<std::shared_ptr<io::File>> &actual_files);
 
 } }

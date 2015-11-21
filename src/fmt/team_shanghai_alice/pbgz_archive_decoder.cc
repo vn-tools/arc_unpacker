@@ -62,8 +62,8 @@ static bstr decompress(const bstr &input, size_t size_orig)
     return util::pack::lzss_decompress_bitwise(input, size_orig, settings);
 }
 
-static std::unique_ptr<File> read_file(
-    File &input_file, const fmt::ArchiveEntry &e, u8 encryption_version)
+static std::unique_ptr<io::File> read_file(
+    io::File &input_file, const fmt::ArchiveEntry &e, u8 encryption_version)
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
@@ -80,11 +80,11 @@ static std::unique_ptr<File> read_file(
         uncompressed_stream.read_to_eof(),
         decryptors[encryption_version][uncompressed_stream.read_u8()]);
 
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 static size_t detect_encryption_version(
-    File &input_file, const fmt::ArchiveMeta &meta)
+    io::File &input_file, const fmt::ArchiveMeta &meta)
 {
     for (auto &entry : meta.entries)
     {
@@ -101,13 +101,13 @@ static size_t detect_encryption_version(
     throw err::NotSupportedError("No means to detect the encryption version");
 }
 
-bool PbgzArchiveDecoder::is_recognized_impl(File &input_file) const
+bool PbgzArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PbgzArchiveDecoder::read_meta_impl(File &input_file) const
+    PbgzArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
 
@@ -145,8 +145,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> PbgzArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> PbgzArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     return ::read_file(input_file, e, meta->encryption_version);

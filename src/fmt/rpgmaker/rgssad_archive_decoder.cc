@@ -8,13 +8,13 @@ using namespace au::fmt::rpgmaker;
 static const bstr magic = "RGSSAD\x00\x01"_b;
 static const u32 initial_key = 0xDEADCAFE;
 
-bool RgssadArchiveDecoder::is_recognized_impl(File &input_file) const
+bool RgssadArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    RgssadArchiveDecoder::read_meta_impl(File &input_file) const
+    RgssadArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     auto key = initial_key;
@@ -44,8 +44,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> RgssadArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> RgssadArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     return rgs::read_file_impl(
         input_file, *static_cast<const rgs::ArchiveEntryImpl*>(&e));

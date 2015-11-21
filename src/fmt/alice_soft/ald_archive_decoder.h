@@ -10,11 +10,17 @@ namespace alice_soft {
     {
     public:
         std::vector<std::string> get_linked_formats() const override;
+
     protected:
-        bool is_recognized_impl(File &) const override;
-        std::unique_ptr<fmt::ArchiveMeta> read_meta_impl(File &arc_file) const;
-        std::unique_ptr<File> read_file_impl(
-            File &arc_file, const ArchiveMeta &m, const ArchiveEntry &e) const;
+        bool is_recognized_impl(io::File &input_file) const override;
+
+        std::unique_ptr<fmt::ArchiveMeta> read_meta_impl(
+            io::File &arc_file) const;
+
+        std::unique_ptr<io::File> read_file_impl(
+            io::File &arc_file,
+            const ArchiveMeta &m,
+            const ArchiveEntry &e) const;
     };
 
 } } }

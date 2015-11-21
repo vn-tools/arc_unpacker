@@ -7,12 +7,12 @@ using namespace au::fmt::glib;
 
 static const bstr magic = "PGX\x00"_b;
 
-bool PgxImageDecoder::is_recognized_impl(File &input_file) const
+bool PgxImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PgxImageDecoder::decode_impl(File &input_file) const
+pix::Grid PgxImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

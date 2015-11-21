@@ -15,11 +15,14 @@ namespace
     class TestFileDecoder final : public FileDecoder
     {
     public:
-        std::function<void(File&)> recognition_callback;
-        std::function<void(File&)> conversion_callback;
+        std::function<void(io::File &)> recognition_callback;
+        std::function<void(io::File &)> conversion_callback;
+
     protected:
-        bool is_recognized_impl(File &file) const override;
-        std::unique_ptr<File> decode_impl(File &file) const override;
+        bool is_recognized_impl(io::File &input_file) const override;
+
+        std::unique_ptr<io::File> decode_impl(
+            io::File &input_file) const override;
     };
 
     struct ArchiveEntryImpl final : ArchiveEntry
@@ -32,11 +35,17 @@ namespace
     {
     public:
         std::vector<std::string> get_linked_formats() const override;
+
     protected:
-        bool is_recognized_impl(File &arc_file) const override;
-        std::unique_ptr<ArchiveMeta> read_meta_impl(File &) const override;
-        std::unique_ptr<File> read_file_impl(
-            File &, const ArchiveMeta &, const ArchiveEntry &) const override;
+        bool is_recognized_impl(io::File &input_file) const override;
+
+        std::unique_ptr<ArchiveMeta> read_meta_impl(
+            io::File &input_file) const override;
+
+        std::unique_ptr<io::File> read_file_impl(
+            io::File &input_file,
+            const ArchiveMeta &m,
+            const ArchiveEntry &e) const override;
     };
 }
 
@@ -68,62 +77,63 @@ std::vector<std::string> TestArchiveDecoder::get_linked_formats() const
     return {"test/test-file", "test/test-archive"};
 }
 
-bool TestFileDecoder::is_recognized_impl(File &file) const
+bool TestFileDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (recognition_callback)
-        recognition_callback(file);
-    return file.name.find("image") != std::string::npos;
+        recognition_callback(input_file);
+    return input_file.name.find("image") != std::string::npos;
 }
 
-std::unique_ptr<File> TestFileDecoder::decode_impl(File &file) const
+std::unique_ptr<io::File> TestFileDecoder::decode_impl(
+    io::File &input_file) const
 {
     if (conversion_callback)
-        conversion_callback(file);
-    auto output_file = std::make_unique<File>();
+        conversion_callback(input_file);
+    auto output_file = std::make_unique<io::File>();
     output_file->stream.write("image"_b);
-    output_file->name = file.name;
+    output_file->name = input_file.name;
     output_file->change_extension("png");
     return output_file;
 }
 
-bool TestArchiveDecoder::is_recognized_impl(File &arc_file) const
+bool TestArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return arc_file.name.find("archive") != std::string::npos;
+    return input_file.name.find("archive") != std::string::npos;
 }
 
 std::unique_ptr<ArchiveMeta>
-    TestArchiveDecoder::read_meta_impl(File &arc_file) const
+    TestArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
-    arc_file.stream.seek(0);
+    input_file.stream.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
-    while (!arc_file.stream.eof())
+    while (!input_file.stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = arc_file.stream.read_to_zero().str();
-        entry->size = arc_file.stream.read_u32_le();
-        entry->offset = arc_file.stream.tell();
-        arc_file.stream.skip(entry->size);
+        entry->name = input_file.stream.read_to_zero().str();
+        entry->size = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.tell();
+        input_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));
     }
     return meta;
 }
 
-std::unique_ptr<File> TestArchiveDecoder::read_file_impl(
-    File &arc_file, const ArchiveMeta &, const ArchiveEntry &e) const
+std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    const auto data = arc_file.stream.seek(entry->offset).read(entry->size);
-    return std::make_unique<File>(entry->name, data);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 TEST_CASE("Recursive unpacking with nested files", "[fmt_core]")
 {
     const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;
-    File dummy_file("archive.arc", serialize_file("image.rgb", ""_b));
+    io::File dummy_file("archive.arc", serialize_file("image.rgb", ""_b));
 
-    std::vector<std::shared_ptr<File>> saved_files;
-    const FileSaverCallback saver([&](std::shared_ptr<File> saved_file)
+    std::vector<std::shared_ptr<io::File>> saved_files;
+    const FileSaverCallback saver([&](std::shared_ptr<io::File> saved_file)
     {
         saved_file->stream.seek(0);
         saved_files.push_back(saved_file);
@@ -145,11 +155,11 @@ TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
     nested_arc_stream.seek(0);
     const auto nested_arc_content = nested_arc_stream.read_to_eof();
 
-    File dummy_file(
+    io::File dummy_file(
         "archive.arc", serialize_file("archive.arc", nested_arc_content));
 
-    std::vector<std::shared_ptr<File>> saved_files;
-    const FileSaverCallback saver([&](std::shared_ptr<File> saved_file)
+    std::vector<std::shared_ptr<io::File>> saved_files;
+    const FileSaverCallback saver([&](std::shared_ptr<io::File> saved_file)
     {
         saved_file->stream.seek(0);
         saved_files.push_back(saved_file);
@@ -175,11 +185,11 @@ TEST_CASE(
     nested_arc_stream.seek(0);
     const auto nested_arc_content = nested_arc_stream.read_to_eof();
 
-    File dummy_file(
+    io::File dummy_file(
         "archive.arc", serialize_file("archive.arc", nested_arc_content));
 
-    std::vector<std::shared_ptr<File>> saved_files;
-    const FileSaverCallback saver([&](std::shared_ptr<File> saved_file)
+    std::vector<std::shared_ptr<io::File>> saved_files;
+    const FileSaverCallback saver([&](std::shared_ptr<io::File> saved_file)
     {
         saved_file->stream.seek(0);
         saved_files.push_back(saved_file);
@@ -204,9 +214,9 @@ TEST_CASE(
         [&]()
         {
             auto decoder = std::make_unique<TestFileDecoder>();
-            decoder->recognition_callback = [&](File &f)
+            decoder->recognition_callback = [&](io::File &f)
                 { names_for_recognition.push_back(path(f.name)); };
-            decoder->conversion_callback = [&](File &f)
+            decoder->conversion_callback = [&](io::File &f)
                 { names_for_conversion.push_back(path(f.name)); };
             return decoder;
         });
@@ -217,10 +227,10 @@ TEST_CASE(
     nested_arc_stream.seek(0);
     const auto nested_arc_content = nested_arc_stream.read_to_eof();
 
-    File dummy_file(
+    io::File dummy_file(
         "fs/archive", serialize_file("archive.arc", nested_arc_content));
 
-    const FileSaverCallback saver([](std::shared_ptr<File>) { });
+    const FileSaverCallback saver([](std::shared_ptr<io::File>) { });
     fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
 
     REQUIRE(names_for_recognition.size() == 3);

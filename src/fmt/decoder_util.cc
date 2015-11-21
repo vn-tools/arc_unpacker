@@ -39,14 +39,14 @@ static std::vector<std::shared_ptr<IDecoder>> collect_linked_decoders(
 
 static bool pass_through_decoders(
     const FileSaverCallback &recognition_proxy,
-    const std::shared_ptr<File> original_file,
+    const std::shared_ptr<io::File> original_file,
     const std::vector<std::shared_ptr<fmt::IDecoder>> &decoders)
 {
     for (const auto &decoder : decoders)
     {
         FileSaverCallback decoder_proxy(
             [original_file, &recognition_proxy, &decoder]
-            (const std::shared_ptr<File> converted_file)
+            (const std::shared_ptr<io::File> converted_file)
         {
             converted_file->name = decoder->naming_strategy()->decorate(
                 original_file->name, converted_file->name);
@@ -69,8 +69,8 @@ static bool pass_through_decoders(
 void fmt::unpack_recursive(
     const std::vector<std::string> &arguments,
     IDecoder &decoder,
-    File &file,
-    const FileSaver &saver,
+    io::File &file,
+    const FileSaver &file_saver,
     const Registry &registry)
 {
     ArgParser decoder_arg_parser;
@@ -87,7 +87,7 @@ void fmt::unpack_recursive(
     // every file should be passed through registered decoders
     static const int max_depth = 10;
     FileSaverCallback recognition_proxy;
-    recognition_proxy.set_callback([&](std::shared_ptr<File> original_file)
+    recognition_proxy.set_callback([&](std::shared_ptr<io::File> original_file)
     {
         util::CallStackKeeper keeper;
 
@@ -99,7 +99,7 @@ void fmt::unpack_recursive(
         }
 
         if (!bypass_normal_saving)
-            saver.save(original_file);
+            file_saver.save(original_file);
     });
 
     decoder.unpack(file, recognition_proxy);
@@ -108,8 +108,8 @@ void fmt::unpack_recursive(
 void fmt::unpack_non_recursive(
     const std::vector<std::string> &arguments,
     IDecoder &decoder,
-    File &file,
-    const FileSaver &saver)
+    io::File &file,
+    const FileSaver &file_saver)
 {
     ArgParser decoder_arg_parser;
     decoder.register_cli_options(decoder_arg_parser);
@@ -119,5 +119,5 @@ void fmt::unpack_non_recursive(
     auto archive_decoder = dynamic_cast<ArchiveDecoder*>(&decoder);
     if (archive_decoder)
         archive_decoder->disable_preprocessing();
-    decoder.unpack(file, saver);
+    decoder.unpack(file, file_saver);
 }

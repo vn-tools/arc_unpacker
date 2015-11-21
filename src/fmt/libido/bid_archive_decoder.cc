@@ -13,7 +13,7 @@ namespace
     };
 }
 
-bool BidArchiveDecoder::is_recognized_impl(File &input_file) const
+bool BidArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     auto data_start = input_file.stream.read_u32_le();
     input_file.stream.seek(data_start - 8);
@@ -23,7 +23,7 @@ bool BidArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    BidArchiveDecoder::read_meta_impl(File &input_file) const
+    BidArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
     u32 data_start = input_file.stream.read_u32_le();
@@ -39,13 +39,13 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> BidArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> BidArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> BidArchiveDecoder::get_linked_formats() const

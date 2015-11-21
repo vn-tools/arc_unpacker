@@ -11,7 +11,7 @@ static const std::string dir = "tests/fmt/nscripter/files/nsa/";
 
 static void do_test(
     const std::string &path,
-    const std::vector<std::shared_ptr<File>> &expected_files)
+    const std::vector<std::shared_ptr<io::File>> &expected_files)
 {
     const NsaArchiveDecoder decoder;
     const auto input_file = tests::file_from_path(dir + path);

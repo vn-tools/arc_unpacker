@@ -27,7 +27,7 @@ namespace
     };
 }
 
-static size_t detect_version(File &input_file, const size_t file_count)
+static size_t detect_version(io::File &input_file, const size_t file_count)
 {
     size_t version = 0;
     input_file.stream.peek(input_file.stream.tell(), [&]()
@@ -52,7 +52,7 @@ static size_t detect_version(File &input_file, const size_t file_count)
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(
-    File &input_file, const size_t file_count)
+    io::File &input_file, const size_t file_count)
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
     for (auto i : util::range(file_count))
@@ -69,7 +69,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta_v2(
-    File &input_file, const size_t file_count)
+    io::File &input_file, const size_t file_count)
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
     for (auto i : util::range(file_count))
@@ -96,13 +96,13 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v2(
     return meta;
 }
 
-bool KcapArchiveDecoder::is_recognized_impl(File &input_file) const
+bool KcapArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    KcapArchiveDecoder::read_meta_impl(File &input_file) const
+    KcapArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     const auto file_count = input_file.stream.read_u32_le();
@@ -115,8 +115,8 @@ std::unique_ptr<fmt::ArchiveMeta>
         throw err::UnsupportedVersionError(version);
 }
 
-std::unique_ptr<File> KcapArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> KcapArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
@@ -130,7 +130,7 @@ std::unique_ptr<File> KcapArchiveDecoder::read_file_impl(
     }
     else
         data = input_file.stream.read(entry->size);
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> KcapArchiveDecoder::get_linked_formats() const

@@ -10,7 +10,8 @@ using namespace au::fmt::leaf;
 static const std::string dir = "tests/fmt/leaf/files/bjr/";
 
 static void do_test(
-    const std::shared_ptr<File> input_file, const std::string &expected_path)
+    const std::shared_ptr<io::File> input_file,
+    const std::string &expected_path)
 {
     const auto expected_file = tests::image_from_path(dir + expected_path);
     const BjrImageDecoder decoder;

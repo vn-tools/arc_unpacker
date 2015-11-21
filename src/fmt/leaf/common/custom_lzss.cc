@@ -8,7 +8,7 @@ using namespace au::fmt::leaf;
 // Modified LZSS routine
 // - the bit shifts proceed in opposite direction
 // - input is negated
-bstr common::custom_lzss_decompress(const bstr &input, size_t output_size)
+bstr common::custom_lzss_decompress(const bstr &input, const size_t output_size)
 {
     bstr output(output_size);
     util::CyclicBuffer<0x1000> dict(0xFEE);

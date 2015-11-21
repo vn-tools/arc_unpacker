@@ -13,13 +13,13 @@ namespace
     };
 }
 
-bool SarArchiveDecoder::is_recognized_impl(File &input_file) const
+bool SarArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.has_extension("sar");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    SarArchiveDecoder::read_meta_impl(File &input_file) const
+    SarArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     u16 file_count = input_file.stream.read_u16_be();
     u32 offset_to_data = input_file.stream.read_u32_be();
@@ -35,13 +35,13 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> SarArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> SarArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 static auto dummy = fmt::register_fmt<SarArchiveDecoder>("nscripter/sar");

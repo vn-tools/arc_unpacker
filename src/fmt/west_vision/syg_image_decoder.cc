@@ -5,12 +5,12 @@ using namespace au::fmt::west_vision;
 
 static const bstr magic = "$SYG"_b;
 
-bool SygImageDecoder::is_recognized_impl(File &input_file) const
+bool SygImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid SygImageDecoder::decode_impl(File &input_file) const
+pix::Grid SygImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0x10);
     auto width = input_file.stream.read_u32_le();

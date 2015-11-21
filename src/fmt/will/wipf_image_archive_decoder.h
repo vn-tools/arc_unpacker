@@ -10,14 +10,25 @@ namespace will {
     class WipfImageArchiveDecoder final : public ArchiveDecoder
     {
     public:
-        std::vector<std::shared_ptr<pix::Grid>> unpack_to_images(File &) const;
+        std::vector<std::shared_ptr<pix::Grid>> unpack_to_images(
+            io::File &input_file) const;
+
         std::unique_ptr<pix::Grid> read_image(
-            File &, const ArchiveMeta &, const ArchiveEntry &) const;
+            io::File &input_file,
+            const ArchiveMeta &m,
+            const ArchiveEntry &e) const;
+
     protected:
-        bool is_recognized_impl(File &) const override;
-        std::unique_ptr<ArchiveMeta> read_meta_impl(File &) const override;
-        std::unique_ptr<File> read_file_impl(
-            File &, const ArchiveMeta &, const ArchiveEntry &) const override;
+        bool is_recognized_impl(io::File &input_file) const override;
+
+        std::unique_ptr<ArchiveMeta> read_meta_impl(
+            io::File &input_file) const override;
+
+        std::unique_ptr<io::File> read_file_impl(
+            io::File &input_file,
+            const ArchiveMeta &m,
+            const ArchiveEntry &e) const override;
+
         std::unique_ptr<INamingStrategy> naming_strategy() const override;
     };
 

@@ -47,12 +47,12 @@ static bstr do_decode(const bstr &input, size_t canvas_size)
     return output;
 }
 
-bool AcdImageDecoder::is_recognized_impl(File &input_file) const
+bool AcdImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid AcdImageDecoder::decode_impl(File &input_file) const
+pix::Grid AcdImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto data_offset = input_file.stream.read_u32_le();

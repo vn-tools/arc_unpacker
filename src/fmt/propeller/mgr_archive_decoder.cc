@@ -52,13 +52,13 @@ static bstr decompress(const bstr &input, size_t size_original)
     return output;
 }
 
-bool MgrArchiveDecoder::is_recognized_impl(File &input_file) const
+bool MgrArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.has_extension("mgr");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    MgrArchiveDecoder::read_meta_impl(File &input_file) const
+    MgrArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto entry_count = input_file.stream.read_u16_le();
     auto meta = std::make_unique<ArchiveMeta>();
@@ -74,8 +74,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> MgrArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> MgrArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
@@ -84,7 +84,7 @@ std::unique_ptr<File> MgrArchiveDecoder::read_file_impl(
 
     auto data = input_file.stream.read(size_comp);
     data = decompress(data, size_orig);
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 static auto dummy = fmt::register_fmt<MgrArchiveDecoder>("propeller/mgr");

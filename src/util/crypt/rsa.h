@@ -20,6 +20,7 @@ namespace crypt {
         Rsa(const RsaKey &key);
         ~Rsa();
         bstr decrypt(const bstr &input) const;
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

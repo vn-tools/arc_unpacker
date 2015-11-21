@@ -5,12 +5,12 @@
 using namespace au;
 using namespace au::fmt::leaf;
 
-bool BbmImageDecoder::is_recognized_impl(File &input_file) const
+bool BbmImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.has_extension("bbm");
 }
 
-pix::Grid BbmImageDecoder::decode_impl(File &input_file) const
+pix::Grid BbmImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto total_width = input_file.stream.read_u16_le();

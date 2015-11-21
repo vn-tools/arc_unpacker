@@ -16,7 +16,7 @@ namespace
     };
 }
 
-bool ArcArchiveDecoder::is_recognized_impl(File &input_file) const
+bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     auto file_count = input_file.stream.read_u32_le();
     if (file_count)
@@ -32,7 +32,7 @@ bool ArcArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    ArcArchiveDecoder::read_meta_impl(File &input_file) const
+    ArcArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
     u32 file_count = input_file.stream.read_u32_le();
@@ -51,14 +51,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
     data = util::pack::lzss_decompress_bytewise(data, entry->size_orig);
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("libido/arc");

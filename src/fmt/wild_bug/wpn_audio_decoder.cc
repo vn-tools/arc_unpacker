@@ -16,12 +16,13 @@ namespace
     };
 }
 
-bool WpnAudioDecoder::is_recognized_impl(File &input_file) const
+bool WpnAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> WpnAudioDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> WpnAudioDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     auto chunk_count = input_file.stream.read_u32_le();
@@ -36,7 +37,7 @@ std::unique_ptr<File> WpnAudioDecoder::decode_impl(File &input_file) const
         chunks.push_back(chunk);
     }
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->stream.write("RIFF"_b);
     output_file->stream.write_u32_le(0);
     output_file->stream.write("WAVE"_b);

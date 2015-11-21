@@ -487,14 +487,14 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
     return util::format("%d", entry.id);
 }
 
-bool ExeArchiveDecoder::is_recognized_impl(File &input_file) const
+bool ExeArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     DosHeader dos_header(input_file.stream);
     return dos_header.magic == "MZ"_b;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    ExeArchiveDecoder::read_meta_impl(File &input_file) const
+    ExeArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     DosHeader dos_header(input_file.stream);
     input_file.stream.seek(dos_header.e_lfanew);
@@ -523,13 +523,13 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> ExeArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> ExeArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
 }

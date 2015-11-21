@@ -139,12 +139,13 @@ static bstr decompress(
     return output;
 }
 
-bool DscFileDecoder::is_recognized_impl(File &input_file) const
+bool DscFileDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> DscFileDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> DscFileDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto key = input_file.stream.read_u32_le();
@@ -181,7 +182,7 @@ std::unique_ptr<File> DscFileDecoder::decode_impl(File &input_file) const
         return util::file_from_grid(pixels, input_file.name);
     }
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->stream.write(data);
     output_file->name = input_file.name;
     if (!output_file->has_extension())

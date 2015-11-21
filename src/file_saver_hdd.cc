@@ -52,7 +52,7 @@ FileSaverHdd::~FileSaverHdd()
 {
 }
 
-void FileSaverHdd::save(std::shared_ptr<File> file) const
+void FileSaverHdd::save(std::shared_ptr<io::File> file) const
 {
     try
     {

@@ -7,12 +7,12 @@ using namespace au::fmt::gs;
 
 static const bstr magic = "\x00\x00\x04\x00"_b;
 
-bool GsImageDecoder::is_recognized_impl(File &input_file) const
+bool GsImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid GsImageDecoder::decode_impl(File &input_file) const
+pix::Grid GsImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto size_comp = input_file.stream.read_u32_le();

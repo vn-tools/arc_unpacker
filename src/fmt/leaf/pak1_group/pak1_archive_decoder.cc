@@ -123,7 +123,7 @@ void Pak1ArchiveDecoder::set_version(const int version)
     p->version = version;
 }
 
-bool Pak1ArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Pak1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     auto meta = read_meta(input_file);
     if (!meta->entries.size())
@@ -134,7 +134,7 @@ bool Pak1ArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak1ArchiveDecoder::read_meta_impl(File &input_file) const
+    Pak1ArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
@@ -153,8 +153,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     if (!p->version)
     {
@@ -181,11 +181,11 @@ std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
         data = input_file.stream.read(entry->size);
     }
 
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 void Pak1ArchiveDecoder::preprocess(
-    File &input_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
+    io::File &input_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
 {
     std::map<std::string, ArchiveEntryImpl*>
         palette_entries, sprite_entries, mask_entries;
@@ -208,8 +208,8 @@ void Pak1ArchiveDecoder::preprocess(
             ArchiveEntryImpl *sprite_entry = it.second;
             ArchiveEntryImpl *palette_entry = nullptr;
             ArchiveEntryImpl *mask_entry = nullptr;
-            std::shared_ptr<File> palette_file;
-            std::shared_ptr<File> mask_file;
+            std::shared_ptr<io::File> palette_file;
+            std::shared_ptr<io::File> mask_file;
 
             auto sprite_file = read_file(input_file, meta, *sprite_entry);
             if (palette_entries.find(it.first) != palette_entries.end())

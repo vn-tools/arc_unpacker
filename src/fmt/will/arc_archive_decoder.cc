@@ -26,7 +26,7 @@ namespace
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta(
-    File &input_file, const std::vector<Directory> &dirs, size_t name_size)
+    io::File &input_file, const std::vector<Directory> &dirs, size_t name_size)
 {
     auto min_offset = 4 + dirs.size() * 12;
     for (auto &dir : dirs)
@@ -58,13 +58,13 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
     return meta;
 }
 
-bool ArcArchiveDecoder::is_recognized_impl(File &input_file) const
+bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return read_meta(input_file)->entries.size() > 0;
 }
 
 void ArcArchiveDecoder::preprocess(
-    File &input_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
+    io::File &input_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
 {
     // apply image masks to original sprites
     std::map<std::string, ArchiveEntryImpl*> mask_entries, sprite_entries;
@@ -106,7 +106,7 @@ void ArcArchiveDecoder::preprocess(
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    ArcArchiveDecoder::read_meta_impl(File &input_file) const
+    ArcArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto dir_count = input_file.stream.read_u32_le();
     if (dir_count > 100)
@@ -134,14 +134,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     throw err::CorruptDataError("Failed to read file table");
 }
 
-std::unique_ptr<File> ArcArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->name = entry->name;
 
     if (output_file->has_extension("wsc") || output_file->has_extension("scr"))

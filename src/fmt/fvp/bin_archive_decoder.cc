@@ -14,13 +14,13 @@ namespace
     };
 }
 
-bool BinArchiveDecoder::is_recognized_impl(File &input_file) const
+bool BinArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.has_extension("bin");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    BinArchiveDecoder::read_meta_impl(File &input_file) const
+    BinArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     size_t file_count = input_file.stream.read_u32_le();
     input_file.stream.skip(4);
@@ -43,13 +43,13 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> BinArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> BinArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
 }

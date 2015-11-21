@@ -6,12 +6,12 @@ using namespace au::fmt::leaf;
 
 static const bstr magic = "LEAFC64\x00"_b;
 
-bool Lc3ImageDecoder::is_recognized_impl(File &input_file) const
+bool Lc3ImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid Lc3ImageDecoder::decode_impl(File &input_file) const
+pix::Grid Lc3ImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(4);

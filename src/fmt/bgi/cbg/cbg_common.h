@@ -10,7 +10,7 @@ namespace fmt {
 namespace bgi {
 namespace cbg {
 
-    bstr read_decrypted_data(io::Stream &stream);
+    bstr read_decrypted_data(io::Stream &input_stream);
 
     using FreqTable = std::vector<u32>;
 

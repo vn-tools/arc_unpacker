@@ -19,13 +19,13 @@ namespace
     };
 }
 
-bool DatArchiveDecoder::is_recognized_impl(File &input_file) const
+bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    DatArchiveDecoder::read_meta_impl(File &input_file) const
+    DatArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(0xA8);
     auto file_count = input_file.stream.read_u32_le();
@@ -58,14 +58,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> DatArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
     data = util::pack::lzss_decompress_bytewise(data, entry->size_orig);
-    auto output_file = std::make_unique<File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->name, data);
     output_file->guess_extension();
     return output_file;
 }

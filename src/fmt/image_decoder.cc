@@ -23,7 +23,7 @@ void ImageDecoder::parse_cli_options(const ArgParser &)
 {
 }
 
-bool ImageDecoder::is_recognized(File &file) const
+bool ImageDecoder::is_recognized(io::File &file) const
 {
     try
     {
@@ -36,7 +36,8 @@ bool ImageDecoder::is_recognized(File &file) const
     }
 }
 
-void ImageDecoder::unpack(File &input_file, const FileSaver &file_saver) const
+void ImageDecoder::unpack(
+    io::File &input_file, const FileSaver &file_saver) const
 {
     auto output_grid = decode(input_file);
     auto output_file = util::file_from_grid(output_grid, input_file.name);
@@ -45,7 +46,7 @@ void ImageDecoder::unpack(File &input_file, const FileSaver &file_saver) const
     file_saver.save(std::move(output_file));
 }
 
-pix::Grid ImageDecoder::decode(File &file) const
+pix::Grid ImageDecoder::decode(io::File &file) const
 {
     if (!is_recognized(file))
         throw err::RecognitionError();

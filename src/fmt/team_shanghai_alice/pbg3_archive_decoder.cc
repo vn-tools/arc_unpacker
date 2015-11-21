@@ -25,13 +25,13 @@ static unsigned int read_integer(io::BitReader &bit_reader)
     return bit_reader.get(integer_size << 3);
 }
 
-bool Pbg3ArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Pbg3ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pbg3ArchiveDecoder::read_meta_impl(File &input_file) const
+    Pbg3ArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
 
@@ -69,8 +69,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Pbg3ArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Pbg3ArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
@@ -84,7 +84,7 @@ std::unique_ptr<File> Pbg3ArchiveDecoder::read_file_impl(
     auto data = util::pack::lzss_decompress_bitwise(
         bit_reader, entry->size_orig, settings);
 
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> Pbg3ArchiveDecoder::get_linked_formats() const

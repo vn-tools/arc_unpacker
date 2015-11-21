@@ -6,12 +6,13 @@ using namespace au::fmt::twilight_frontier;
 
 static const bstr magic = "TFWA\x00"_b;
 
-bool TfwaAudioDecoder::is_recognized_impl(File &input_file) const
+bool TfwaAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> TfwaAudioDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> TfwaAudioDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

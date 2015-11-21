@@ -112,12 +112,12 @@ static void apply_alpha(pix::Grid &pixels, const bstr &input)
     }
 }
 
-bool QntImageDecoder::is_recognized_impl(File &input_file) const
+bool QntImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid QntImageDecoder::decode_impl(File &input_file) const
+pix::Grid QntImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     Version version = static_cast<Version>(input_file.stream.read_u32_le());

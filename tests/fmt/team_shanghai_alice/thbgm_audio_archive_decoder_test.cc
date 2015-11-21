@@ -11,7 +11,7 @@ static const std::string dir = "tests/fmt/team_shanghai_alice/files/thbgm/";
 static void do_test(
     const ThbgmAudioArchiveDecoder &decoder,
     const std::string &input_path,
-    const std::vector<std::shared_ptr<File>> &expected_files)
+    const std::vector<std::shared_ptr<io::File>> &expected_files)
 {
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);

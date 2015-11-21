@@ -139,12 +139,12 @@ static std::unique_ptr<pix::Grid> read_image(
     return image;
 }
 
-bool GimImageDecoder::is_recognized_impl(File &input_file) const
+bool GimImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid GimImageDecoder::decode_impl(File &input_file) const
+pix::Grid GimImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0x30);
     std::map<int, Chunk> chunks;

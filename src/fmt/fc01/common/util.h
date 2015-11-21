@@ -7,9 +7,12 @@ namespace fmt {
 namespace fc01 {
 namespace common {
 
-    u8 rol8(u8 x, size_t n);
+    u8 rol8(const u8 x, const size_t n);
 
     bstr fix_stride(
-        const bstr &input, size_t width, size_t height, size_t depth);
+        const bstr &input,
+        const size_t width,
+        const size_t height,
+        const size_t depth);
 
 } } } }

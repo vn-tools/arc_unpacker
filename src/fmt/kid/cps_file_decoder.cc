@@ -36,12 +36,13 @@ static bstr decrypt(const bstr &input, size_t size_compressed, size_t offset)
     return output_stream.read_to_eof();
 }
 
-bool CpsFileDecoder::is_recognized_impl(File &input_file) const
+bool CpsFileDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<File> CpsFileDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> CpsFileDecoder::decode_impl(
+    io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -59,7 +60,7 @@ std::unique_ptr<File> CpsFileDecoder::decode_impl(File &input_file) const
     if (compression_type & 1)
         data = LndFileDecoder::decompress_raw_data(data, size_original);
 
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->stream.write(data);
     output_file->name = input_file.name;
     output_file->change_extension("prt");

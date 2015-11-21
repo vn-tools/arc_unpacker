@@ -5,7 +5,7 @@
 using namespace au;
 using namespace au::fmt::lizsoft;
 
-bool SotesImageDecoder::is_recognized_impl(File &input_file) const
+bool SotesImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     const auto a = input_file.stream.seek(0x438).read_u32_le();
     const auto b = input_file.stream.seek(0x448).read_u32_le();
@@ -13,7 +13,7 @@ bool SotesImageDecoder::is_recognized_impl(File &input_file) const
     return a - b == 0x2711 && c - b <= 0x80;
 }
 
-pix::Grid SotesImageDecoder::decode_impl(File &input_file) const
+pix::Grid SotesImageDecoder::decode_impl(io::File &input_file) const
 {
     const auto base = input_file.stream.seek(0x448).read_u32_le();
     const auto pixel_data_offset

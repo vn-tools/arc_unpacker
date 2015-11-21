@@ -59,12 +59,12 @@ static void move_output_ptr(
     }
 }
 
-bool LfgImageDecoder::is_recognized_impl(File &input_file) const
+bool LfgImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid LfgImageDecoder::decode_impl(File &input_file) const
+pix::Grid LfgImageDecoder::decode_impl(io::File &input_file) const
 {
     const auto width
         = (input_file.stream.seek(36).read_u16_le()

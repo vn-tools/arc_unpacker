@@ -38,7 +38,7 @@ static std::unique_ptr<io::MemoryStream> read_raw_table(
     return std::make_unique<io::MemoryStream>(buffer);
 }
 
-bool Pak1ArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Pak1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     try
     {
@@ -52,7 +52,7 @@ bool Pak1ArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak1ArchiveDecoder::read_meta_impl(File &input_file) const
+    Pak1ArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     u16 file_count = input_file.stream.read_u16_le();
     if (file_count == 0 && input_file.stream.size() != 6)
@@ -72,11 +72,11 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Pak1ArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->name = entry->name;
 
     input_file.stream.seek(entry->offset);

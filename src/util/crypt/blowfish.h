@@ -15,6 +15,7 @@ namespace crypt {
         static size_t block_size();
         bstr decrypt(const bstr &input) const;
         bstr encrypt(const bstr &input) const;
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

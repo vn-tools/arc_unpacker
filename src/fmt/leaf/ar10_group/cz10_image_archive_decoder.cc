@@ -78,13 +78,13 @@ static bstr decompress(
     return output;
 }
 
-bool Cz10ImageArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Cz10ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Cz10ImageArchiveDecoder::read_meta_impl(File &input_file) const
+    Cz10ImageArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
 
@@ -113,8 +113,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Cz10ImageArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Cz10ImageArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = decompress(

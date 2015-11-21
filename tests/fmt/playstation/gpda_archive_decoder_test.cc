@@ -10,7 +10,7 @@ static const std::string dir = "tests/fmt/playstation/files/gpda/";
 
 static void do_test(
     const std::string &input_path,
-    const std::initializer_list<std::shared_ptr<File>> &expected_files)
+    const std::initializer_list<std::shared_ptr<io::File>> &expected_files)
 {
     const GpdaArchiveDecoder decoder;
     const auto input_file = tests::file_from_path(dir + input_path);

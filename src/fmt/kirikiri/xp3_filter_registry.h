@@ -17,6 +17,7 @@ namespace kirikiri {
         void register_cli_options(ArgParser &arg_parser) const;
         void parse_cli_options(const ArgParser &arg_parser);
         void set_decoder(Xp3Filter &filter) const;
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

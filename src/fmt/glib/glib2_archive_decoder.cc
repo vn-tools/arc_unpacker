@@ -149,13 +149,13 @@ static std::shared_ptr<glib2::Plugin> guess_plugin(io::Stream &arc_stream)
     return nullptr;
 }
 
-bool Glib2ArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Glib2ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return guess_plugin(input_file.stream) != nullptr;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Glib2ArchiveDecoder::read_meta_impl(File &input_file) const
+    Glib2ArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto plugin = guess_plugin(input_file.stream);
     auto header = read_header(input_file.stream, *plugin);
@@ -187,12 +187,12 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> Glib2ArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Glib2ArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    auto output_file = std::make_unique<File>();
+    auto output_file = std::make_unique<io::File>();
     output_file->name = entry->name;
 
     input_file.stream.seek(entry->offset);

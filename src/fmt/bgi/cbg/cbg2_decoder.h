@@ -11,7 +11,7 @@ namespace cbg {
     class Cbg2Decoder final
     {
     public:
-        std::unique_ptr<pix::Grid> decode(io::Stream &stream) const;
+        std::unique_ptr<pix::Grid> decode(io::Stream &input_stream) const;
     };
 
 } } } }

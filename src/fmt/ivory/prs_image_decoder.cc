@@ -96,12 +96,12 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
     return target;
 }
 
-bool PrsImageDecoder::is_recognized_impl(File &input_file) const
+bool PrsImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PrsImageDecoder::decode_impl(File &input_file) const
+pix::Grid PrsImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

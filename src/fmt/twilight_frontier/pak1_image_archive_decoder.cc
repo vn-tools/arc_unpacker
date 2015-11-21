@@ -24,7 +24,7 @@ namespace
     };
 }
 
-bool Pak1ImageArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Pak1ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.has_extension("dat"))
         return false;
@@ -40,7 +40,7 @@ bool Pak1ImageArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak1ImageArchiveDecoder::read_meta_impl(File &input_file) const
+    Pak1ImageArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     auto palette_count = input_file.stream.read_u8();
@@ -68,8 +68,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return std::move(meta);
 }
 
-std::unique_ptr<File> Pak1ImageArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Pak1ImageArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);

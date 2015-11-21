@@ -72,6 +72,7 @@ namespace util {
                 return __builtin_bswap64(val);
             }
         };
+
     }
 
     template<typename T> constexpr T from_little_endian(T value)
@@ -101,4 +102,5 @@ namespace util {
     {
         return from_big_endian(value);
     }
+
 } }

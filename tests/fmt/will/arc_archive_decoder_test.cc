@@ -10,7 +10,7 @@ static const std::string dir = "tests/fmt/will/files/arc/";
 
 static void do_test(
     const std::string &input_path,
-    const std::vector<std::shared_ptr<File>> &expected_files)
+    const std::vector<std::shared_ptr<io::File>> &expected_files)
 {
     const ArcArchiveDecoder decoder;
     const auto input_file = tests::file_from_path(dir + input_path);

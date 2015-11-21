@@ -10,7 +10,7 @@ static const std::string dir = "tests/fmt/renpy/files/rpa/";
 
 static void test(const std::string &path)
 {
-    const std::vector<std::shared_ptr<File>> expected_files
+    const std::vector<std::shared_ptr<io::File>> expected_files
     {
         tests::stub_file("another.txt", "abcdefghij"_b),
         tests::stub_file("abc.txt", "123"_b),

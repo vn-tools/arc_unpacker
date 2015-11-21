@@ -8,12 +8,12 @@ using namespace au::fmt::qlie;
 
 static const bstr magic = "DPNG"_b;
 
-bool DpngImageDecoder::is_recognized_impl(File &input_file) const
+bool DpngImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid DpngImageDecoder::decode_impl(File &input_file) const
+pix::Grid DpngImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -37,7 +37,7 @@ pix::Grid DpngImageDecoder::decode_impl(File &input_file) const
         if (!subimage_data_size)
             continue;
 
-        File tmp_file;
+        io::File tmp_file;
         tmp_file.stream.write(input_file.stream.read(subimage_data_size));
         const auto subimage = png_image_decoder.decode(tmp_file);
         image.paste(subimage, subimage_x, subimage_y);

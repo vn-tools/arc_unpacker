@@ -30,7 +30,7 @@ static inline void compare_pixels(
     REQUIRE(expected.a == actual.a);
 }
 
-std::shared_ptr<pix::Grid> tests::image_from_file(File &file)
+std::shared_ptr<pix::Grid> tests::image_from_file(io::File &file)
 {
     const fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
     const fmt::png::PngImageDecoder png_image_decoder;
@@ -77,7 +77,7 @@ void tests::compare_images(
 
 void tests::compare_images(
     const std::vector<std::shared_ptr<pix::Grid>> &expected_images,
-    const std::vector<std::shared_ptr<File>> &actual_files)
+    const std::vector<std::shared_ptr<io::File>> &actual_files)
 {
     std::vector<std::shared_ptr<pix::Grid>> actual_images;
     for (const auto i : util::range(actual_files.size()))

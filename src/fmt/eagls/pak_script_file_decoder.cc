@@ -7,7 +7,7 @@ using namespace au::fmt::eagls;
 
 static const bstr key = "EAGLS_SYSTEM"_b;
 
-bool PakScriptFileDecoder::is_recognized_impl(File &input_file) const
+bool PakScriptFileDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.has_extension("dat") || input_file.stream.size() < 3600)
         return false;
@@ -28,7 +28,8 @@ bool PakScriptFileDecoder::is_recognized_impl(File &input_file) const
     return true;
 }
 
-std::unique_ptr<File> PakScriptFileDecoder::decode_impl(File &input_file) const
+std::unique_ptr<io::File> PakScriptFileDecoder::decode_impl(
+    io::File &input_file) const
 {
     // According to Crass the offset, key and even the presence of LCG
     // vary for other games.
@@ -41,7 +42,7 @@ std::unique_ptr<File> PakScriptFileDecoder::decode_impl(File &input_file) const
     for (auto i : util::range(0, data.size(), 2))
         data[i] ^= key[lcg.next() % key.size()];
 
-    auto output_file = std::make_unique<File>(input_file.name, data);
+    auto output_file = std::make_unique<io::File>(input_file.name, data);
     output_file->change_extension("txt");
     return output_file;
 }

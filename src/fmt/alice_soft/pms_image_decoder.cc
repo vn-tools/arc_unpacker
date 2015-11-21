@@ -9,7 +9,7 @@ static const bstr magic1 = "PM\x01\x00"_b;
 static const bstr magic2 = "PM\x02\x00"_b;
 
 bstr PmsImageDecoder::decompress_8bit(
-    io::Stream &input_stream, size_t width, size_t height)
+    io::Stream &input_stream, const size_t width, const size_t height)
 {
     bstr output(width * height);
     auto output_ptr = output.get<u8>();
@@ -177,7 +177,7 @@ bstr PmsImageDecoder::decompress_16bit(
     return output;
 }
 
-bool PmsImageDecoder::is_recognized_impl(File &input_file) const
+bool PmsImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.read(magic1.size()) == magic1)
         return true;
@@ -185,7 +185,7 @@ bool PmsImageDecoder::is_recognized_impl(File &input_file) const
     return input_file.stream.read(magic2.size()) == magic2;
 }
 
-pix::Grid PmsImageDecoder::decode_impl(File &input_file) const
+pix::Grid PmsImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(2);
     auto version = input_file.stream.read_u16_le();

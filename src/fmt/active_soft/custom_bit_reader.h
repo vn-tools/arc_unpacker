@@ -10,10 +10,11 @@ namespace active_soft {
     class CustomBitReader final
     {
     public:
-        CustomBitReader(const bstr &str);
+        CustomBitReader(const bstr &input);
         ~CustomBitReader();
         u32 get(const size_t bits);
         u32 get_variable_integer();
+
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

@@ -50,7 +50,7 @@ static int detect_version(io::Stream &stream)
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta(
-    File &input_file, const size_t file_count, const size_t name_size)
+    io::File &input_file, const size_t file_count, const size_t name_size)
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
     for (const auto i : util::range(file_count))
@@ -65,13 +65,13 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
     return meta;
 }
 
-bool PacArchiveDecoder::is_recognized_impl(File &input_file) const
+bool PacArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return detect_version(input_file.stream) > 0;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    PacArchiveDecoder::read_meta_impl(File &input_file) const
+    PacArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     const auto version = detect_version(input_file.stream);
     if (version == 1)
@@ -92,13 +92,13 @@ std::unique_ptr<fmt::ArchiveMeta>
         throw err::UnsupportedVersionError(version);
 }
 
-std::unique_ptr<File> PacArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> PacArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     const auto data = input_file.stream.read(entry->size);
-    return std::make_unique<File>(entry->name, data);
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 std::vector<std::string> PacArchiveDecoder::get_linked_formats() const

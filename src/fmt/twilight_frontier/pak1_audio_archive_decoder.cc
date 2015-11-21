@@ -21,7 +21,7 @@ namespace
     };
 }
 
-bool Pak1AudioArchiveDecoder::is_recognized_impl(File &input_file) const
+bool Pak1AudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.has_extension("dat"))
         return false;
@@ -38,7 +38,7 @@ bool Pak1AudioArchiveDecoder::is_recognized_impl(File &input_file) const
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
-    Pak1AudioArchiveDecoder::read_meta_impl(File &input_file) const
+    Pak1AudioArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
@@ -65,8 +65,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<File> Pak1AudioArchiveDecoder::read_file_impl(
-    File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+std::unique_ptr<io::File> Pak1AudioArchiveDecoder::read_file_impl(
+    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);

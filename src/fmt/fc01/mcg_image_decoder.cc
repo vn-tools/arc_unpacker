@@ -93,7 +93,7 @@ void McgImageDecoder::parse_cli_options(const ArgParser &arg_parser)
     ImageDecoder::parse_cli_options(arg_parser);
 }
 
-bool McgImageDecoder::is_recognized_impl(File &input_file) const
+bool McgImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
@@ -104,7 +104,7 @@ void McgImageDecoder::set_key(u8 key)
     p->key_set = true;
 }
 
-pix::Grid McgImageDecoder::decode_impl(File &input_file) const
+pix::Grid McgImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     const auto version = static_cast<int>(0.5

@@ -274,12 +274,12 @@ static std::unique_ptr<pix::Grid> decode_dxt5(
     return pixels;
 }
 
-bool DdsImageDecoder::is_recognized_impl(File &input_file) const
+bool DdsImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid DdsImageDecoder::decode_impl(File &input_file) const
+pix::Grid DdsImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

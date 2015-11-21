@@ -29,12 +29,12 @@ static Version get_version(io::Stream &stream)
     return ret;
 }
 
-bool CbgImageDecoder::is_recognized_impl(File &input_file) const
+bool CbgImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid CbgImageDecoder::decode_impl(File &input_file) const
+pix::Grid CbgImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

@@ -1,7 +1,7 @@
 #include "fmt/shiina_rio/warc/plugin_registry.h"
-#include "file.h"
 #include "fmt/png/png_image_decoder.h"
 #include "fmt/shiina_rio/warc/decrypt.h"
+#include "io/file.h"
 #include "util/encoding.h"
 #include "util/plugin_mgr.hh"
 #include "util/program_path.h"
@@ -13,7 +13,7 @@ static bstr read_file(const std::string &name)
 {
     const boost::filesystem::path path
         = util::get_extra_dir_path() / "shiina_rio" / name;
-    File file(path, io::FileMode::Read);
+    io::File file(path, io::FileMode::Read);
     return file.stream.read_to_eof();
 }
 
@@ -21,7 +21,7 @@ static std::shared_ptr<pix::Grid> read_image(const std::string &name)
 {
     fmt::png::PngImageDecoder png_decoder;
     const auto content = read_file(name);
-    File tmp_file("tmp.png", content);
+    io::File tmp_file("tmp.png", content);
     return std::make_shared<pix::Grid>(png_decoder.decode(tmp_file));
 }
 

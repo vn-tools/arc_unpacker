@@ -1,6 +1,6 @@
 #pragma once
 
-#include "file.h"
+#include "io/file.h"
 #include "pix/grid.h"
 
 namespace au {
@@ -11,7 +11,7 @@ namespace tlg {
     class Tlg6Decoder final
     {
     public:
-        pix::Grid decode(File &file);
+        pix::Grid decode(io::File &file);
     };
 
 } } } }
