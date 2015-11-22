@@ -134,6 +134,7 @@ void Pak2ArchiveDecoder::preprocess(
         {
             auto pixels = image_decoder.decode(*full_file);
             saver.save(util::file_from_grid(pixels, entry->name));
+            entry->already_unpacked = true;
         }
         catch (...)
         {

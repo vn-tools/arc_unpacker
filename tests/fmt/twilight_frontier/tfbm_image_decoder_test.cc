@@ -49,7 +49,7 @@ TEST_CASE("Twilight Frontier TFBM images", "[fmt]")
     {
         const auto palette_path = dir + "palette000.bmp";
         const auto palette_data
-            = tests::file_from_path(palette_path)->stream.read_to_eof();
+            = tests::file_from_path(palette_path)->stream.seek(0).read_to_eof();
 
         TfbmImageDecoder decoder;
         decoder.add_palette(palette_path, palette_data);
