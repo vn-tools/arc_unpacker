@@ -24,9 +24,9 @@ path io::current_working_directory()
     return boost::filesystem::current_path().string();
 }
 
-path io::complete(const path &p)
+path io::absolute(const path &p)
 {
-    return boost::filesystem::complete(p.str()).string();
+    return boost::filesystem::absolute(p.str()).string();
 }
 
 void io::create_directories(const path &p)

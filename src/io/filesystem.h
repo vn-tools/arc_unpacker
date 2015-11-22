@@ -10,7 +10,7 @@ namespace io {
     bool exists(const path &p);
     bool is_directory(const path &p);
     bool is_regular_file(const path &p);
-    path complete(const path &p);
+    path absolute(const path &p);
 
     void create_directories(const path &p);
     void remove(const path &p);

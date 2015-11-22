@@ -11,8 +11,7 @@ namespace
 
 void util::set_program_path_from_arg(const std::string &arg)
 {
-    io::path full_path(io::current_working_directory());
-    program_path = io::complete(io::path(arg)).str();
+    program_path = io::absolute(io::path(arg)).str();
 }
 
 io::path util::get_program_path()

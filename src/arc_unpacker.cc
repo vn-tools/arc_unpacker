@@ -248,7 +248,7 @@ int ArcUnpacker::Priv::run() const
     size_t processed = 0;
     for (const auto &input_path : options.input_paths)
     {
-        io::File file(input_path, io::FileMode::Read);
+        io::File file(io::absolute(input_path), io::FileMode::Read);
         result |= !guess_decoder_and_unpack(file);
 
         // keep one blank line between logs from each processed file
