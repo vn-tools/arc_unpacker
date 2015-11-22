@@ -8,6 +8,6 @@ namespace au {
 namespace util {
 
     std::unique_ptr<io::File> file_from_wave(
-        const sfx::Wave &wave, const std::string &name);
+        const sfx::Wave &wave, const io::path &name);
 
 } }

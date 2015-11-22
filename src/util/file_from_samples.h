@@ -11,6 +11,6 @@ namespace util {
         size_t bytes_per_sample,
         size_t sample_rate,
         const bstr &samples,
-        const std::string &name);
+        const io::path &name);
 
 } }

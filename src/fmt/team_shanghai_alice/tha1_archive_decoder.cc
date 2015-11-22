@@ -89,17 +89,18 @@ static bstr decompress(const bstr &input, size_t size_orig)
 
 static int detect_encryption_version(io::File &input_file)
 {
-    if (input_file.name.find("th095.") != std::string::npos) return 0;
-    if (input_file.name.find("th10.") != std::string::npos) return 0;
-    if (input_file.name.find("th11.") != std::string::npos) return 0;
-    if (input_file.name.find("th12.") != std::string::npos) return 1;
-    if (input_file.name.find("th125.") != std::string::npos) return 1;
-    if (input_file.name.find("th128.") != std::string::npos) return 1;
-    if (input_file.name.find("th13.") != std::string::npos) return 2;
-    if (input_file.name.find("th14.") != std::string::npos) return 3;
-    if (input_file.name.find("th143.") != std::string::npos) return 3;
-    if (input_file.name.find("th15tr.") != std::string::npos) return 3;
-    if (input_file.name.find("th15.") != std::string::npos) return 3;
+    const auto name = input_file.name.str();
+    if (name.find("th095.") != std::string::npos) return 0;
+    if (name.find("th10.") != std::string::npos) return 0;
+    if (name.find("th11.") != std::string::npos) return 0;
+    if (name.find("th12.") != std::string::npos) return 1;
+    if (name.find("th125.") != std::string::npos) return 1;
+    if (name.find("th128.") != std::string::npos) return 1;
+    if (name.find("th13.") != std::string::npos) return 2;
+    if (name.find("th14.") != std::string::npos) return 3;
+    if (name.find("th143.") != std::string::npos) return 3;
+    if (name.find("th15tr.") != std::string::npos) return 3;
+    if (name.find("th15.") != std::string::npos) return 3;
     return -1;
 }
 

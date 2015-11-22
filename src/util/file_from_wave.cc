@@ -5,7 +5,7 @@ using namespace au;
 using namespace au::util;
 
 std::unique_ptr<io::File> util::file_from_wave(
-    const sfx::Wave &audio, const std::string &name)
+    const sfx::Wave &audio, const io::path &name)
 {
     const auto block_align
         = audio.fmt.channel_count * audio.fmt.bits_per_sample / 8;

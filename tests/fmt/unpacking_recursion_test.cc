@@ -78,7 +78,7 @@ bool TestFileDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (recognition_callback)
         recognition_callback(input_file);
-    return input_file.name.find("image") != std::string::npos;
+    return input_file.name.str().find("image") != std::string::npos;
 }
 
 std::unique_ptr<io::File> TestFileDecoder::decode_impl(
@@ -95,7 +95,7 @@ std::unique_ptr<io::File> TestFileDecoder::decode_impl(
 
 bool TestArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.find("archive") != std::string::npos;
+    return input_file.name.str().find("archive") != std::string::npos;
 }
 
 std::unique_ptr<ArchiveMeta>

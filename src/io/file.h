@@ -9,8 +9,8 @@ namespace io {
     class File final
     {
     public:
-        File(const io::path &path, const io::FileMode mode);
-        File(const std::string &name, const bstr &data);
+        File(const io::path &name, const io::FileMode mode);
+        File(const io::path &name, const bstr &data);
         File();
         ~File();
         bool has_extension();
@@ -19,7 +19,7 @@ namespace io {
         void guess_extension();
 
         io::Stream &stream;
-        std::string name;
+        io::path name;
     };
 
 } }

@@ -444,9 +444,9 @@ static void decrypt_chunk(
         data_ptr[i] ^= xor2;
 }
 
-static bstr find_control_block(const std::string &path)
+static bstr find_control_block(const io::path &path)
 {
-    auto dir = io::path(path).parent();
+    auto dir = path.parent();
     for (const auto &path : io::recursive_directory_range(dir))
     {
         if (!io::is_regular_file(path))
@@ -475,7 +475,7 @@ static bstr find_control_block(const std::string &path)
 }
 
 Xp3FilterFunc au::fmt::kirikiri::create_cxdec_filter(
-    const std::string &arc_path,
+    const io::path &arc_path,
     u16 key1,
     u16 key2,
     const std::array<size_t, 3> key_derivation_order1,

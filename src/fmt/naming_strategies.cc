@@ -1,35 +1,29 @@
 #include "fmt/naming_strategies.h"
-#include "io/path.h"
 
 using namespace au;
 using namespace au::fmt;
 
-std::string RootNamingStrategy::decorate(
-    const std::string &parent_name,
-    const std::string &current_name) const
+io::path RootNamingStrategy::decorate(
+    const io::path &parent_name,
+    const io::path &current_name) const
 {
     return current_name;
 }
 
-std::string SiblingNamingStrategy::decorate(
-    const std::string &parent_name,
-    const std::string &current_name) const
+io::path SiblingNamingStrategy::decorate(
+    const io::path &parent_name,
+    const io::path &current_name) const
 {
-    if (parent_name == "")
+    if (parent_name.str() == "")
         return current_name;
-    auto path = io::path(parent_name);
-    path = path.parent();
-    path /= current_name;
-    return path.str();
+    return parent_name.parent() / current_name;
 }
 
-std::string ChildNamingStrategy::decorate(
-    const std::string &parent_name,
-    const std::string &current_name) const
+io::path ChildNamingStrategy::decorate(
+    const io::path &parent_name,
+    const io::path &current_name) const
 {
-    if (parent_name == "")
+    if (parent_name.str() == "")
         return current_name;
-    auto path = io::path(parent_name);
-    path /= current_name;
-    return path.str();
+    return parent_name / current_name;
 }

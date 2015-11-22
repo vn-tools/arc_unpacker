@@ -19,7 +19,7 @@ static void flush_handler(png_structp)
 }
 
 std::unique_ptr<io::File> util::file_from_grid(
-    const pix::Grid &pixels, const std::string &name)
+    const pix::Grid &pixels, const io::path &name)
 {
     auto output_file = std::make_unique<io::File>();
     output_file->name = name;

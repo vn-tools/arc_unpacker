@@ -21,11 +21,11 @@ namespace
     };
 }
 
-static std::string get_path_to_index(const std::string &path_to_data)
+static io::path get_path_to_index(const io::path &path_to_data)
 {
     io::path index_path(path_to_data);
     index_path.change_extension("idx");
-    return index_path.str();
+    return index_path;
 }
 
 bool PakArchiveDecoder::is_recognized_impl(io::File &input_file) const

@@ -8,7 +8,7 @@ std::unique_ptr<io::File> util::file_from_samples(
     size_t bits_per_sample,
     size_t sample_rate,
     const bstr &samples,
-    const std::string &name)
+    const io::path &name)
 {
     size_t block_align = ((channel_count * bits_per_sample) + 7) / 8;
     size_t byte_rate = block_align * sample_rate;

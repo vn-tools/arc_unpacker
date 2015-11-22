@@ -51,17 +51,7 @@ void FileSaverHdd::save(std::shared_ptr<io::File> file) const
 {
     try
     {
-        auto name_part = file->name;
-        size_t pos = 0;
-        while ((pos = name_part.find("\\", pos)) != std::string::npos)
-        {
-            name_part.replace(pos, 1, "/");
-            pos++;
-        }
-
-        io::path full_path(p->output_dir);
-        full_path /= io::path(name_part);
-        full_path = p->make_path_unique(full_path);
+        io::path full_path = p->make_path_unique(p->output_dir / file->name);
 
         Log.info("Saving to " + full_path.str() + "... ");
         io::create_directories(full_path.parent());

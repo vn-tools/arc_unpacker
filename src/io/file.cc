@@ -17,12 +17,12 @@ static const std::vector<std::pair<std::string, bstr>> magic_definitions
     {"jpeg",   "\xFF\xD8\xFF"_b},
 };
 
-File::File(const io::path &path, const io::FileMode mode)
-    : stream(*new io::FileStream(path, mode)), name(path.str())
+File::File(const io::path &name, const io::FileMode mode)
+    : stream(*new io::FileStream(name, mode)), name(name)
 {
 }
 
-File::File(const std::string &name, const bstr &data)
+File::File(const io::path &name, const bstr &data)
     : stream(*new io::MemoryStream(data)), name(name)
 {
 }

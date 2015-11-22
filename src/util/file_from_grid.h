@@ -8,6 +8,6 @@ namespace au {
 namespace util {
 
     std::unique_ptr<io::File> file_from_grid(
-        const pix::Grid &pixels, const std::string &name);
+        const pix::Grid &pixels, const io::path &name);
 
 } }

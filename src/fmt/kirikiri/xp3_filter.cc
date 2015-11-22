@@ -2,6 +2,6 @@
 
 using namespace au::fmt::kirikiri;
 
-Xp3Filter::Xp3Filter(const std::string &arc_path) : arc_path(arc_path)
+Xp3Filter::Xp3Filter(const io::path &arc_path) : arc_path(arc_path)
 {
 }
