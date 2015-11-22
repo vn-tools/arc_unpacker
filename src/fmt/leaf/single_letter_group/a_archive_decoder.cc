@@ -1,4 +1,6 @@
 #include "fmt/leaf/single_letter_group/a_archive_decoder.h"
+#include "err.h"
+#include "io/memory_stream.h"
 #include "util/pack/lzss.h"
 #include "util/encoding.h"
 #include "util/range.h"
@@ -14,8 +16,52 @@ namespace
     {
         size_t offset;
         size_t size;
-        bool compressed;
+        u8 flags;
     };
+}
+
+static bstr decrypt_1(const bstr &input)
+{
+    throw err::NotSupportedError("Type 1 encryption is not supported");
+}
+
+static bstr decrypt_2(const bstr &input)
+{
+    throw err::NotSupportedError("Type 2 encryption is not supported");
+}
+
+static bstr decrypt_3(const bstr &input, const u8 key)
+{
+    if (input.size() < 0x20)
+        return input;
+
+    bstr output(input);
+
+    io::MemoryStream input_stream(input);
+    input_stream.seek(0);
+    const auto width = input_stream.read_u32_le();
+    const auto height = input_stream.read_u32_le();
+    const auto size = width * height;
+    if (32 + size * 4 > input_stream.size())
+        return input;
+
+    s8 acc[3] = {0, 0, 0};
+    size_t output_pos = 32;
+    for (const auto i : util::range(size))
+    {
+        s8 *output_ptr = output.get<s8>() + output_pos;
+        const auto tmp = output_ptr[3];
+        acc[0] += tmp + output_ptr[0] - key;
+        acc[1] += tmp + output_ptr[1] - key;
+        acc[2] += tmp + output_ptr[2] - key;
+        output_ptr[0] = acc[0];
+        output_ptr[1] = acc[1];
+        output_ptr[2] = acc[2];
+        output_ptr[3] = 0;
+        output_pos += 4;
+    }
+
+    return output;
 }
 
 bool AArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -34,8 +80,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->name = input_file.stream.read_to_zero(23).str();
-        const auto tmp = input_file.stream.read_u8();
-        entry->compressed = tmp > 0;
+        entry->flags = input_file.stream.read_u8();
         entry->size = input_file.stream.read_u32_le();
         entry->offset = input_file.stream.read_u32_le() + offset_to_data;
         meta->entries.push_back(std::move(entry));
@@ -50,14 +95,24 @@ std::unique_ptr<io::File> AArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
 
     bstr data;
-    if (entry->compressed)
+    if (entry->flags)
     {
         const auto size_orig = input_file.stream.read_u32_le();
         data = input_file.stream.read(entry->size-4);
         data = util::pack::lzss_decompress_bytewise(data, size_orig);
+
+        // this "encryption" apparently concerns only gfx
+        if (entry->flags == 3)
+            data = decrypt_1(data);
+        else if (entry->flags == 5)
+            data = decrypt_2(data);
+        else if (entry->flags >= 0x7F && entry->flags <= 0x89)
+            data = decrypt_3(data, entry->flags & 0x0F);
     }
     else
+    {
         data = input_file.stream.read(entry->size);
+    }
     auto output_file = std::make_unique<io::File>(entry->name, data);
     output_file->guess_extension();
     return output_file;

@@ -8,13 +8,10 @@ using namespace au::fmt::leaf;
 
 static const std::string dir = "tests/fmt/leaf/files/a/";
 
-static void do_test(const std::string &input_path)
+static void do_test(
+    const std::string &input_path,
+    const std::vector<std::shared_ptr<io::File>> expected_files)
 {
-    const std::vector<std::shared_ptr<io::File>> expected_files
-    {
-        tests::stub_file("123.txt", "1234567890"_b),
-        tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
-    };
     const AArchiveDecoder decoder;
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
@@ -25,11 +22,48 @@ TEST_CASE("Leaf A archives", "[fmt]")
 {
     SECTION("Plain")
     {
-        do_test("plain.a");
+        do_test(
+            "plain.a",
+            {
+                tests::stub_file("123.txt", "1234567890"_b),
+                tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
+            });
     }
 
     SECTION("Compressed")
     {
-        do_test("compressed.a");
+        do_test(
+            "compressed.a",
+            {
+                tests::stub_file("123.txt", "1234567890"_b),
+                tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
+            });
+    }
+
+    SECTION("Encrypted (v3)")
+    {
+        do_test(
+            "encrypted-v3.a",
+            {
+                tests::stub_file(
+                    "whatever",
+                    "\x03\x00\x00\x00\x01\x00\x00\x00"
+                    "\x4A\x55\x4E\x4B\x4A\x55\x4E\x4B"
+                    "\x4A\x55\x4E\x4B\x4A\x55\x4E\x4B"
+                    "\x4A\x55\x4E\x4B\x4A\x55\x4E\x4B"
+                    "\x5F\x60\x61\x00\xC6\xC8\xCA\x00"
+                    "\x32\x2B\x36\x00"_b),
+
+                tests::stub_file(
+                    "data",
+                    "\x07\x00\x00\x00\x01\x00\x00\x00"
+                    "\x4A\x55\x4E\x4B\x4A\x55\x4E\x4B"
+                    "\x4A\x55\x4E\x4B\x4A\x55\x4E\x4B"
+                    "\x4A\x55\x4E\x4B\x4A\x55\x4E\x4B"
+                    "\xB6\xB7\xB8\x00\x74\x76\x78\x00"
+                    "\x3A\x3D\x40\x00\x08\x0C\x10\x00"
+                    "\xDE\xE3\xE8\x00\xBC\xC2\xC8\x00"
+                    "\x5F\x66\x2B\x00"_b),
+            });
     }
 }
