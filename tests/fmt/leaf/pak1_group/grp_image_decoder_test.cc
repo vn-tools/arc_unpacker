@@ -9,6 +9,7 @@ using namespace au::fmt::leaf;
 
 static const std::string pak1_dir = "tests/fmt/leaf/files/pak1/";
 static const std::string grp_dir = "tests/fmt/leaf/files/grp/";
+
 TEST_CASE("Leaf GRP images", "[fmt]")
 {
     const GrpImageDecoder decoder;
