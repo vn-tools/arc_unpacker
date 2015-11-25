@@ -23,6 +23,11 @@ static void do_test(const std::string &input_path)
 
 TEST_CASE("Majiro ARC archives", "[fmt]")
 {
+    SECTION("Version 2")
+    {
+        do_test("v2.arc");
+    }
+
     SECTION("Version 3")
     {
         do_test("v3.arc");

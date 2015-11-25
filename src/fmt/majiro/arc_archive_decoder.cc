@@ -1,4 +1,6 @@
 #include "fmt/majiro/arc_archive_decoder.h"
+#include <boost/lexical_cast.hpp>
+#include "err.h"
 #include "io/memory_stream.h"
 #include "util/encoding.h"
 #include "util/range.h"
@@ -6,7 +8,7 @@
 using namespace au;
 using namespace au::fmt::majiro;
 
-static const bstr magic = "MajiroArcV3.000\x00"_b;
+static const bstr magic = "MajiroArcV"_b;
 
 namespace
 {
@@ -27,15 +29,22 @@ std::unique_ptr<fmt::ArchiveMeta>
     ArcArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto file_count = input_file.stream.read_u32_le();
-	auto names_offset = input_file.stream.read_u32_le();
-    auto data_offset = input_file.stream.read_u32_le();
+    const auto version
+        = boost::lexical_cast<float>(input_file.stream.read_to_zero().str());
+    const auto file_count = input_file.stream.read_u32_le();
+    const auto names_offset = input_file.stream.read_u32_le();
+    const auto data_offset = input_file.stream.read_u32_le();
+
+    if (version != 2 && version != 3)
+        throw err::UnsupportedVersionError(version);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (const auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->hash = input_file.stream.read_u64_le();
+        entry->hash = version == 3
+            ? input_file.stream.read_u64_le()
+            : input_file.stream.read_u32_le();
         entry->offset = input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
@@ -54,9 +63,8 @@ std::unique_ptr<fmt::ArchiveMeta>
 std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->name, data);
 }
 
