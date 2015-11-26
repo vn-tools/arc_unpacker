@@ -15,8 +15,8 @@ static void do_test(
     const WadyAudioDecoder decoder;
     const auto input_file = tests::zlib_file_from_path(dir + input_path);
     const auto expected_file = tests::zlib_file_from_path(dir + expected_path);
-    const auto actual_file = tests::decode(decoder, *input_file);
-    tests::compare_audio(*expected_file, *actual_file, false);
+    const auto actual_audio = tests::decode(decoder, *input_file);
+    tests::compare_audio(*expected_file, actual_audio);
 }
 
 TEST_CASE("Ivory WADY audio", "[fmt]")

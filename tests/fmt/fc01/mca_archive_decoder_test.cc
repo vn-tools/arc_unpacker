@@ -11,14 +11,14 @@ static const std::string dir = "tests/fmt/fc01/files/mca/";
 
 static void do_test(
     const std::string &input_path,
-    const std::vector<std::shared_ptr<pix::Grid>> &expected_images,
+    const std::vector<std::shared_ptr<io::File>> &expected_files,
     const u8 key)
 {
     McaArchiveDecoder decoder;
     decoder.set_key(key);
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
-    tests::compare_images(expected_images, actual_files);
+    tests::compare_images(expected_files, actual_files, false);
 }
 
 TEST_CASE("FC01 MCA image archives", "[fmt]")
@@ -28,11 +28,11 @@ TEST_CASE("FC01 MCA image archives", "[fmt]")
         do_test(
             "BLIN3.MCA",
             {
-                tests::image_from_path(dir + "blin3-out-000.png"),
-                tests::image_from_path(dir + "blin3-out-001.png"),
-                tests::image_from_path(dir + "blin3-out-002.png"),
-                tests::image_from_path(dir + "blin3-out-003.png"),
-                tests::image_from_path(dir + "blin3-out-004.png"),
+                tests::file_from_path(dir + "blin3-out-000.png"),
+                tests::file_from_path(dir + "blin3-out-001.png"),
+                tests::file_from_path(dir + "blin3-out-002.png"),
+                tests::file_from_path(dir + "blin3-out-003.png"),
+                tests::file_from_path(dir + "blin3-out-004.png"),
             },
             209);
     }
@@ -42,10 +42,10 @@ TEST_CASE("FC01 MCA image archives", "[fmt]")
         do_test(
             "OK.MCA",
             {
-                tests::image_from_path(dir + "ok-out-000.png"),
-                tests::image_from_path(dir + "ok-out-001.png"),
-                tests::image_from_path(dir + "ok-out-002.png"),
-                tests::image_from_path(dir + "ok-out-003.png"),
+                tests::file_from_path(dir + "ok-out-000.png"),
+                tests::file_from_path(dir + "ok-out-001.png"),
+                tests::file_from_path(dir + "ok-out-002.png"),
+                tests::file_from_path(dir + "ok-out-003.png"),
             },
             209);
     }

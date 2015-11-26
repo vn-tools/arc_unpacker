@@ -14,9 +14,9 @@ static void do_test(
 {
     const PgdC00ImageDecoder decoder;
     const auto input_file = tests::zlib_file_from_path(dir + input_path);
-    const auto expected_image = tests::image_from_path(dir + expected_path);
+    const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);
-    tests::compare_images(*expected_image, actual_image);
+    tests::compare_images(*expected_file, actual_image);
 }
 
 TEST_CASE("Amuse Craft PGD images (C00 / TGA)", "[fmt]")

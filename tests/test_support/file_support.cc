@@ -49,7 +49,7 @@ void tests::compare_files(
     const bool compare_file_names)
 {
     REQUIRE(actual_files.size() == expected_files.size());
-    for (auto i : util::range(expected_files.size()))
+    for (const auto i : util::range(expected_files.size()))
     {
         const auto &expected_file = expected_files[i];
         const auto &actual_file = actual_files[i];

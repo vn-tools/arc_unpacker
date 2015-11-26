@@ -30,26 +30,21 @@ static inline void compare_pixels(
     REQUIRE(expected.a == actual.a);
 }
 
-std::shared_ptr<pix::Grid> tests::image_from_file(io::File &file)
+static pix::Grid image_from_file(io::File &file)
 {
     static const fmt::png::PngImageDecoder png_image_decoder;
     if (png_image_decoder.is_recognized(file))
-        return std::make_shared<pix::Grid>(png_image_decoder.decode(file));
+        return png_image_decoder.decode(file);
 
     static const fmt::microsoft::BmpImageDecoder bmp_image_decoder;
     if (bmp_image_decoder.is_recognized(file))
-        return std::make_shared<pix::Grid>(bmp_image_decoder.decode(file));
+        return bmp_image_decoder.decode(file);
 
     static const fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
     if (jpeg_image_decoder.is_recognized(file))
-        return std::make_shared<pix::Grid>(jpeg_image_decoder.decode(file));
+        return jpeg_image_decoder.decode(file);
 
     throw std::logic_error("Only PNG, BMP and JPEG files are supported");
-}
-
-std::shared_ptr<pix::Grid> tests::image_from_path(const io::path &path)
-{
-    return tests::image_from_file(*tests::file_from_path(path));
 }
 
 void tests::compare_images(
@@ -69,23 +64,33 @@ void tests::compare_images(
 }
 
 void tests::compare_images(
-    const std::vector<std::shared_ptr<pix::Grid>> &expected_images,
-    const std::vector<std::shared_ptr<pix::Grid>> &actual_images)
+    io::File &expected_file, const pix::Grid &actual_image)
+{
+    tests::compare_images(image_from_file(expected_file), actual_image);
+}
+
+void tests::compare_images(
+    io::File &expected_file,
+    io::File &actual_file,
+    const bool compare_file_names)
+{
+    auto expected_image = image_from_file(expected_file);
+    auto actual_image = image_from_file(actual_file);
+    if (compare_file_names)
+        tests::compare_file_names(expected_file.name, actual_file.name);
+    tests::compare_images(expected_image, actual_image);
+}
+
+void tests::compare_images(
+    const std::vector<std::shared_ptr<io::File>> &expected_images,
+    const std::vector<std::shared_ptr<io::File>> &actual_images,
+    const bool compare_file_names)
 {
     REQUIRE(expected_images.size() == actual_images.size());
     for (const auto i : util::range(expected_images.size()))
     {
         INFO(util::format("Images at index %d differ", i));
-        tests::compare_images(*expected_images[i], *actual_images[i]);
+        tests::compare_images(
+            *expected_images[i], *actual_images[i], compare_file_names);
     }
-}
-
-void tests::compare_images(
-    const std::vector<std::shared_ptr<pix::Grid>> &expected_images,
-    const std::vector<std::shared_ptr<io::File>> &actual_files)
-{
-    std::vector<std::shared_ptr<pix::Grid>> actual_images;
-    for (const auto i : util::range(actual_files.size()))
-        actual_images.push_back(tests::image_from_file(*actual_files[i]));
-    tests::compare_images(expected_images, actual_images);
 }

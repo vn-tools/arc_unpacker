@@ -15,9 +15,8 @@ static void do_test(
     const CmpImageDecoder decoder;
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::zlib_file_from_path(dir + expected_path);
-    const auto expected_image = tests::image_from_file(*expected_file);
     const auto actual_image = tests::decode(decoder, *input_file);
-    tests::compare_images(*expected_image, actual_image);
+    tests::compare_images(*expected_file, actual_image);
 }
 
 TEST_CASE("RiddleSoft CMP files", "[fmt]")

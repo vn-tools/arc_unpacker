@@ -16,7 +16,7 @@ TEST_CASE("PNG images", "[util]")
     io::File file(dir + "usagi_opaque.png", io::FileMode::Read);
 
     const PngImageDecoder decoder;
-    const auto pixels = tests::decode(decoder, file);
+    const auto pixels = decoder.decode(file);
     REQUIRE(pixels.width() == 640);
     REQUIRE(pixels.height() == 480);
 
@@ -32,7 +32,7 @@ TEST_CASE("PNG images with transparency", "[fmt]")
     io::File file(dir + "reimu_transparent.png", io::FileMode::Read);
 
     const PngImageDecoder decoder;
-    const auto pixels = tests::decode(decoder, file);
+    const auto pixels = decoder.decode(file);
     REQUIRE(pixels.width() == 641);
     REQUIRE(pixels.height() == 720);
 
@@ -52,7 +52,7 @@ TEST_CASE("PNG images with extra chunks", "[util]")
     {
         REQUIRE_NOTHROW({
             Log.mute();
-            auto actual_image = tests::decode(decoder, *input_file);
+            decoder.decode(*input_file);
             Log.unmute();
         });
     }

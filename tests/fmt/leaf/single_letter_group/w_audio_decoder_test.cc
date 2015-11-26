@@ -1,4 +1,5 @@
 #include "fmt/leaf/single_letter_group/w_audio_decoder.h"
+#include "test_support/audio_support.h"
 #include "test_support/catch.hh"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -14,8 +15,8 @@ static void do_test(
     const WAudioDecoder decoder;
     const auto input_file = tests::zlib_file_from_path(dir + input_path);
     const auto expected_file = tests::zlib_file_from_path(dir + expected_path);
-    const auto actual_file = tests::decode(decoder, *input_file);
-    tests::compare_files(*expected_file, *actual_file, false);
+    const auto actual_audio = tests::decode(decoder, *input_file);
+    tests::compare_audio(*expected_file, actual_audio);
 }
 
 TEST_CASE("Leaf W audio", "[fmt]")

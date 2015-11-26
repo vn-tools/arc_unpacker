@@ -14,10 +14,9 @@ static void do_test_image(
 {
     const DscFileDecoder decoder;
     const auto input_file = tests::file_from_path(dir + input_path);
-    const auto expected_image = tests::image_from_path(dir + expected_path);
+    const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
-    const auto actual_image = tests::image_from_file(*actual_file);
-    tests::compare_images(*expected_image, *actual_image);
+    tests::compare_images(*expected_file, *actual_file, false);
 }
 
 static void do_test_file(

@@ -18,10 +18,10 @@ static void do_test(
     const Pak1ImageArchiveDecoder decoder;
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
-    std::vector<std::shared_ptr<pix::Grid>> expected_images;
-    for (auto &path : expected_paths)
-        expected_images.push_back(tests::image_from_path(dir + path));
-    tests::compare_images(expected_images, actual_files);
+    std::vector<std::shared_ptr<io::File>> expected_files;
+    for (const auto &path : expected_paths)
+        expected_files.push_back(tests::file_from_path(dir + path));
+    tests::compare_images(expected_files, actual_files, false);
 }
 
 TEST_CASE("Twilight Frontier PAK1 images", "[fmt]")

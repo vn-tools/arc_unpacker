@@ -7,18 +7,22 @@
 namespace au {
 namespace tests {
 
-    std::shared_ptr<pix::Grid> image_from_file(io::File &file);
-    std::shared_ptr<pix::Grid> image_from_path(const io::path &path);
+    void compare_images(
+        const pix::Grid &expected_image,
+        const pix::Grid &actual_image);
 
     void compare_images(
-        const pix::Grid &expected_image, const pix::Grid &actual_image);
+        io::File &expected_file,
+        const pix::Grid &actual_image);
 
     void compare_images(
-        const std::vector<std::shared_ptr<pix::Grid>> &expected_images,
-        const std::vector<std::shared_ptr<pix::Grid>> &actual_images);
+        io::File &expected_file,
+        io::File &actual_file,
+        const bool compare_file_names);
 
     void compare_images(
-        const std::vector<std::shared_ptr<pix::Grid>> &expected_images,
-        const std::vector<std::shared_ptr<io::File>> &actual_files);
+        const std::vector<std::shared_ptr<io::File>> &expected_images,
+        const std::vector<std::shared_ptr<io::File>> &actual_images,
+        const bool compare_file_names);
 
 } }

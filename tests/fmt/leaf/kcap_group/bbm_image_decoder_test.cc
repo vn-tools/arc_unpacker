@@ -12,11 +12,11 @@ static const std::string dir = "tests/fmt/leaf/files/bbm/";
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    const auto input_file = tests::zlib_file_from_path(dir + input_path);
-    const auto expected_file = tests::image_from_path(dir + expected_path);
     const BbmImageDecoder decoder;
-    const auto actual_file = tests::decode(decoder, *input_file);
-    tests::compare_images(*expected_file, actual_file);
+    const auto input_file = tests::zlib_file_from_path(dir + input_path);
+    const auto expected_file = tests::file_from_path(dir + expected_path);
+    const auto actual_image = tests::decode(decoder, *input_file);
+    tests::compare_images(*expected_file, actual_image);
 }
 
 TEST_CASE("Leaf BBM images", "[fmt]")

@@ -8,10 +8,10 @@
 
 using namespace au;
 
-static std::shared_ptr<sfx::Wave> audio_from_file(io::File &file)
+static sfx::Wave audio_from_file(io::File &file)
 {
     const fmt::microsoft::WavAudioDecoder wav_audio_decoder;
-    return std::make_shared<sfx::Wave>(wav_audio_decoder.decode(file));
+    return wav_audio_decoder.decode(file);
 }
 
 void tests::compare_audio(
@@ -53,6 +53,12 @@ void tests::compare_audio(
 }
 
 void tests::compare_audio(
+    io::File &expected_file, const sfx::Wave &actual_audio)
+{
+    tests::compare_audio(audio_from_file(expected_file), actual_audio);
+}
+
+void tests::compare_audio(
     io::File &expected_file,
     io::File &actual_file,
     const bool compare_file_names)
@@ -61,7 +67,7 @@ void tests::compare_audio(
     auto actual_audio = audio_from_file(actual_file);
     if (compare_file_names)
         tests::compare_file_names(expected_file.name, actual_file.name);
-    tests::compare_audio(*expected_audio, *actual_audio);
+    tests::compare_audio(expected_audio, actual_audio);
 }
 
 void tests::compare_audio(
@@ -72,6 +78,7 @@ void tests::compare_audio(
     REQUIRE(expected_files.size() == actual_files.size());
     for (const auto i : util::range(actual_files.size()))
     {
+        INFO(util::format("Audio at index %d differs", i));
         tests::compare_audio(
             *expected_files[i], *actual_files[i], compare_file_names);
     }

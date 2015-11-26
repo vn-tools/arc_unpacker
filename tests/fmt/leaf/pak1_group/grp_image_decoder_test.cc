@@ -3,6 +3,7 @@
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
+#include "util/file_from_grid.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -10,48 +11,54 @@ using namespace au::fmt::leaf;
 static const std::string pak1_dir = "tests/fmt/leaf/files/pak1/";
 static const std::string grp_dir = "tests/fmt/leaf/files/grp/";
 
-TEST_CASE("Leaf GRP images", "[fmt]")
+static void do_test(
+    const std::string &input_path,
+    const std::string &palette_path,
+    const std::string &mask_path,
+    const std::string &expected_path)
 {
     const GrpImageDecoder decoder;
+    const auto input_file = tests::file_from_path(input_path);
+    const auto input_palette_file = palette_path.empty()
+        ? nullptr
+        : tests::file_from_path(palette_path);
+    const auto input_mask_file = mask_path.empty()
+        ? nullptr
+        : tests::file_from_path(mask_path);
+    const auto expected_file = tests::file_from_path(expected_path);
 
+    const auto actual_image = decoder.decode(
+        *input_file, input_palette_file, input_mask_file);
+    const auto actual_file = util::file_from_grid(actual_image, "");
+    tests::compare_images(*expected_file, *actual_file, false);
+}
+
+TEST_CASE("Leaf GRP images", "[fmt]")
+{
     SECTION("Palettes")
     {
-        const auto palette_file
-            = tests::file_from_path(pak1_dir + "leaflogo-out.c16");
-        const auto input_file
-            = tests::file_from_path(pak1_dir + "leaflogo-out.grp");
-        const auto expected_file
-            = tests::image_from_path(grp_dir + "leaflogo-out.png");
-
-        const auto actual_file
-            = decoder.decode(*input_file, palette_file, nullptr);
-        tests::compare_images(*expected_file, actual_file);
-    }
+        do_test(
+            pak1_dir + "leaflogo-out.grp",
+            pak1_dir + "leaflogo-out.c16",
+            "",
+            grp_dir + "leaflogo-out.png");
+}
 
     SECTION("Palettes, variant with extra 0 bytes at beginning")
     {
-        const auto palette_file
-            = tests::file_from_path(pak1_dir + "leaf-out.c16");
-        const auto input_file
-            = tests::file_from_path(pak1_dir + "leaf-out.grp");
-        const auto expected_file
-            = tests::image_from_path(grp_dir + "leaf-out.png");
-
-        const auto actual_file
-            = decoder.decode(*input_file, palette_file, nullptr);
-        tests::compare_images(*expected_file, actual_file);
+        do_test(
+            pak1_dir + "leaf-out.grp",
+            pak1_dir + "leaf-out.c16",
+            "",
+            grp_dir + "leaf-out.png");
     }
 
     SECTION("Palettes and masks")
     {
-        const auto palette_file = tests::file_from_path(grp_dir + "ase200.c16");
-        const auto mask_file = tests::file_from_path(grp_dir + "ase200.msk");
-        const auto input_file = tests::file_from_path(grp_dir + "ase200.grp");
-        const auto expected_file
-            = tests::image_from_path(grp_dir + "ase200-out.png");
-
-        const auto actual_file
-            = decoder.decode(*input_file, palette_file, mask_file);
-        tests::compare_images(*expected_file, actual_file);
+        do_test(
+            grp_dir + "ase200.grp",
+            grp_dir + "ase200.c16",
+            grp_dir + "ase200.msk",
+            grp_dir + "ase200-out.png");
     }
 }

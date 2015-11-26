@@ -12,12 +12,12 @@ static const std::string dir = "tests/fmt/libido/files/egr/";
 
 static void do_test(
     const std::string &input_path,
-    const std::vector<std::shared_ptr<pix::Grid>> &expected_images)
+    const std::vector<std::shared_ptr<io::File>> &expected_files)
 {
     const EgrArchiveDecoder decoder;
     const auto input_file = tests::zlib_file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
-    tests::compare_images(expected_images, actual_files);
+    tests::compare_images(expected_files, actual_files, false);
 }
 
 TEST_CASE("Libido EGR image archives", "[fmt]")
@@ -27,8 +27,8 @@ TEST_CASE("Libido EGR image archives", "[fmt]")
         do_test(
             "test-zlib.EGR",
             {
-                tests::image_from_path(dir + "Image000-out.png"),
-                tests::image_from_path(dir + "Image001-out.png"),
+                tests::file_from_path(dir + "Image000-out.png"),
+                tests::file_from_path(dir + "Image001-out.png"),
             });
     }
 }

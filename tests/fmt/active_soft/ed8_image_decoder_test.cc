@@ -14,9 +14,9 @@ static void do_test(
 {
     const Ed8ImageDecoder decoder;
     const auto input_file = tests::file_from_path(dir + input_path);
-    const auto expected_file = tests::image_from_path(dir + expected_path);
-    const auto actual_file = tests::decode(decoder, *input_file);
-    tests::compare_images(*expected_file, actual_file);
+    const auto expected_file = tests::file_from_path(dir + expected_path);
+    const auto actual_image = tests::decode(decoder, *input_file);
+    tests::compare_images(*expected_file, actual_image);
 }
 
 TEST_CASE("ActiveSoft ED8 images", "[fmt]")

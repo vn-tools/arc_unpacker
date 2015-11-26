@@ -1,5 +1,4 @@
 #include "test_support/decoder_support.h"
-#include "util/file_from_wave.h"
 #include "test_support/catch.hh"
 
 using namespace au;
@@ -34,7 +33,8 @@ std::unique_ptr<io::File> tests::decode(
     return decoder.decode(input_file);
 }
 
-pix::Grid tests::decode(const fmt::ImageDecoder &decoder, io::File &input_file)
+pix::Grid tests::decode(
+    const fmt::ImageDecoder &decoder, io::File &input_file)
 {
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));
@@ -42,11 +42,11 @@ pix::Grid tests::decode(const fmt::ImageDecoder &decoder, io::File &input_file)
     return decoder.decode(input_file);
 }
 
-std::unique_ptr<io::File> tests::decode(
+sfx::Wave tests::decode(
     const fmt::AudioDecoder &decoder, io::File &input_file)
 {
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));
     navigate_to_random_place(input_file.stream);
-    return util::file_from_wave(decoder.decode(input_file), input_file.name);
+    return decoder.decode(input_file);
 }
