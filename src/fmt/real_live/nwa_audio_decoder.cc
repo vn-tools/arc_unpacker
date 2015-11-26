@@ -1,7 +1,6 @@
 #include "fmt/real_live/nwa_audio_decoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/file_from_wave.h"
 #include "util/range.h"
 
 using namespace au;
@@ -224,8 +223,7 @@ bool NwaAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("nwa");
 }
 
-std::unique_ptr<io::File> NwaAudioDecoder::decode_impl(
-    io::File &input_file) const
+sfx::Wave NwaAudioDecoder::decode_impl(io::File &input_file) const
 {
     // buffer the file in memory for performance
     io::MemoryStream stream(input_file.stream.read_to_eof());
@@ -252,7 +250,7 @@ std::unique_ptr<io::File> NwaAudioDecoder::decode_impl(
     audio.fmt.bits_per_sample = header.bits_per_sample;
     audio.fmt.sample_rate = header.sample_rate;
     audio.data.samples = samples;
-    return util::file_from_wave(audio, input_file.name);
+    return audio;
 }
 
 static auto dummy = fmt::register_fmt<NwaAudioDecoder>("real-live/nwa");

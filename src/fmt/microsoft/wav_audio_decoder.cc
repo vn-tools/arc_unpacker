@@ -1,6 +1,5 @@
 #include "fmt/microsoft/wav_audio_decoder.h"
 #include "log.h"
-#include "util/file_from_wave.h"
 
 using namespace au;
 using namespace au::fmt::microsoft;
@@ -14,7 +13,7 @@ bool WavAudioDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.seek(8).read(wave_magic.size()) == wave_magic;
 }
 
-sfx::Wave WavAudioDecoder::decode_to_wave(io::File &input_file) const
+sfx::Wave WavAudioDecoder::decode_impl(io::File &input_file) const
 {
     sfx::Wave audio;
     input_file.stream.seek(12);
@@ -50,13 +49,6 @@ sfx::Wave WavAudioDecoder::decode_to_wave(io::File &input_file) const
         }
     }
     return audio;
-}
-
-std::unique_ptr<io::File> WavAudioDecoder::decode_impl(
-    io::File &input_file) const
-{
-    const auto wave = decode_to_wave(input_file);
-    return util::file_from_wave(wave, input_file.name);
 }
 
 static auto dummy = fmt::register_fmt<WavAudioDecoder>("microsoft/wav");

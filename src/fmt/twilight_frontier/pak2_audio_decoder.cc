@@ -1,5 +1,4 @@
 #include "fmt/twilight_frontier/pak2_audio_decoder.h"
-#include "util/file_from_wave.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;
@@ -9,8 +8,7 @@ bool Pak2AudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("cv3");
 }
 
-std::unique_ptr<io::File> Pak2AudioDecoder::decode_impl(
-    io::File &input_file) const
+sfx::Wave Pak2AudioDecoder::decode_impl(io::File &input_file) const
 {
     const auto format = input_file.stream.read_u16_le();
     const auto channel_count = input_file.stream.read_u16_le();
@@ -27,7 +25,7 @@ std::unique_ptr<io::File> Pak2AudioDecoder::decode_impl(
     audio.fmt.bits_per_sample = bits_per_sample;
     audio.fmt.sample_rate = sample_rate;
     audio.data.samples = samples;
-    return util::file_from_wave(audio, input_file.name);
+    return audio;
 }
 
 static auto dummy

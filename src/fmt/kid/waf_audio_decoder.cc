@@ -1,5 +1,4 @@
 #include "fmt/kid/waf_audio_decoder.h"
-#include "util/file_from_wave.h"
 
 using namespace au;
 using namespace au::fmt::kid;
@@ -11,8 +10,7 @@ bool WafAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<io::File> WafAudioDecoder::decode_impl(
-    io::File &input_file) const
+sfx::Wave WafAudioDecoder::decode_impl(io::File &input_file) const
 {
     auto output_file = std::make_unique<io::File>();
 
@@ -28,7 +26,7 @@ std::unique_ptr<io::File> WafAudioDecoder::decode_impl(
     audio.fmt.extra_data = input_file.stream.read(32);
     const auto samples_size = input_file.stream.read_u32_le();
     audio.data.samples = input_file.stream.read(samples_size);
-    return util::file_from_wave(audio, input_file.name);
+    return audio;
 }
 
 static auto dummy = fmt::register_fmt<WafAudioDecoder>("kid/waf");

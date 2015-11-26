@@ -11,7 +11,7 @@ using namespace au;
 static std::shared_ptr<sfx::Wave> audio_from_file(io::File &file)
 {
     const fmt::microsoft::WavAudioDecoder wav_audio_decoder;
-    return std::make_shared<sfx::Wave>(wav_audio_decoder.decode_to_wave(file));
+    return std::make_shared<sfx::Wave>(wav_audio_decoder.decode(file));
 }
 
 void tests::compare_audio(

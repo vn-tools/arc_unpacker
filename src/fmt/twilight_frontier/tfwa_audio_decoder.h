@@ -1,18 +1,16 @@
 #pragma once
 
-#include "fmt/file_decoder.h"
+#include "fmt/audio_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace twilight_frontier {
 
-    class TfwaAudioDecoder final : public FileDecoder
+    class TfwaAudioDecoder final : public AudioDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
-
-        std::unique_ptr<io::File> decode_impl(
-            io::File &input_file) const override;
+        sfx::Wave decode_impl(io::File &input_file) const override;
     };
 
 } } }

@@ -1,7 +1,6 @@
 #include "fmt/wild_bug/wpn_audio_decoder.h"
 #include <map>
 #include "util/range.h"
-#include "util/file_from_wave.h"
 
 using namespace au;
 using namespace au::fmt::wild_bug;
@@ -24,8 +23,7 @@ bool WpnAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<io::File> WpnAudioDecoder::decode_impl(
-    io::File &input_file) const
+sfx::Wave WpnAudioDecoder::decode_impl(io::File &input_file) const
 {
     const auto chunk_count = input_file.stream.seek(magic.size()).read_u32_le();
     std::map<bstr, Chunk> chunks;
@@ -58,7 +56,7 @@ std::unique_ptr<io::File> WpnAudioDecoder::decode_impl(
     input_file.stream.seek(data_chunk.offset);
     audio.data.samples = input_file.stream.read(data_chunk.size);
 
-    return util::file_from_wave(audio, input_file.name);
+    return audio;
 }
 
 static auto dummy = fmt::register_fmt<WpnAudioDecoder>("wild-bug/wpn");

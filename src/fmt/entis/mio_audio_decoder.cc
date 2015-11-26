@@ -4,7 +4,6 @@
 #include "fmt/entis/audio/lossy.h"
 #include "fmt/entis/common/enums.h"
 #include "fmt/entis/common/sections.h"
-#include "util/file_from_wave.h"
 #include "util/format.h"
 
 using namespace au;
@@ -68,8 +67,7 @@ bool MioAudioDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.read(magic3.size()) == magic3;
 }
 
-std::unique_ptr<io::File> MioAudioDecoder::decode_impl(
-    io::File &input_file) const
+sfx::Wave MioAudioDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0x40);
 
@@ -99,7 +97,7 @@ std::unique_ptr<io::File> MioAudioDecoder::decode_impl(
     audio.fmt.bits_per_sample = header.bits_per_sample;
     audio.fmt.sample_rate = header.sample_rate;
     audio.data.samples = samples;
-    return util::file_from_wave(audio, input_file.name);
+    return audio;
 }
 
 static auto dummy = fmt::register_fmt<MioAudioDecoder>("entis/mio");

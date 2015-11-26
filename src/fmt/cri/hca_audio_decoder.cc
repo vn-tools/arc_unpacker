@@ -6,7 +6,6 @@
 #include "fmt/cri/hca/meta.h"
 #include "fmt/cri/hca/permutator.h"
 #include "io/bit_reader.h"
-#include "util/file_from_wave.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -178,8 +177,7 @@ bool HcaAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<io::File> HcaAudioDecoder::decode_impl(
-    io::File &input_file) const
+sfx::Wave HcaAudioDecoder::decode_impl(io::File &input_file) const
 {
     // TODO when testable: this should be customizable.
     const u32 ciph_key1 = 0x30DBE1AB;
@@ -268,7 +266,7 @@ std::unique_ptr<io::File> HcaAudioDecoder::decode_impl(
             meta.loop->repetitions == 0x80 ? 0 : meta.loop->repetitions,
         });
     }
-    return util::file_from_wave(wave, input_file.name);
+    return wave;
 }
 
 static auto dummy = fmt::register_fmt<HcaAudioDecoder>("cri/hca");

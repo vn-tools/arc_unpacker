@@ -1,7 +1,6 @@
 #include "fmt/ivory/wady_audio_decoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/file_from_wave.h"
 #include "util/range.h"
 
 using namespace au;
@@ -179,8 +178,7 @@ bool WadyAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<io::File> WadyAudioDecoder::decode_impl(
-    io::File &input_file) const
+sfx::Wave WadyAudioDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     input_file.stream.skip(2);
@@ -227,7 +225,7 @@ std::unique_ptr<io::File> WadyAudioDecoder::decode_impl(
     audio.fmt.bits_per_sample = bits_per_sample;
     audio.fmt.sample_rate = sample_rate;
     audio.data.samples = samples;
-    return util::file_from_wave(audio, input_file.name);
+    return audio;
 }
 
 static auto dummy = fmt::register_fmt<WadyAudioDecoder>("ivory/wady");

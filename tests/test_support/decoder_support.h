@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include "fmt/archive_decoder.h"
+#include "fmt/audio_decoder.h"
 #include "fmt/file_decoder.h"
 #include "fmt/image_decoder.h"
 
@@ -15,5 +15,8 @@ namespace tests {
         const fmt::FileDecoder &decoder, io::File &input_file);
 
     pix::Grid decode(const fmt::ImageDecoder &decoder, io::File &input_file);
+
+    std::unique_ptr<io::File> decode(
+        const fmt::AudioDecoder &decoder, io::File &input_file);
 
 } }

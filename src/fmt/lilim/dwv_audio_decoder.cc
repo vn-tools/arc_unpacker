@@ -1,6 +1,5 @@
 #include "fmt/lilim/dwv_audio_decoder.h"
 #include "io/memory_stream.h"
-#include "util/file_from_wave.h"
 
 using namespace au;
 using namespace au::fmt::lilim;
@@ -13,8 +12,7 @@ bool DwvAudioDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
-std::unique_ptr<io::File> DwvAudioDecoder::decode_impl(
-    io::File &input_file) const
+sfx::Wave DwvAudioDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 2);
     const auto header_size = input_file.stream.read_u32_le();
@@ -38,7 +36,7 @@ std::unique_ptr<io::File> DwvAudioDecoder::decode_impl(
         audio.fmt.extra_data = header_stream.read(extra_data_size);
     }
 
-    return util::file_from_wave(audio, input_file.name);
+    return audio;
 }
 
 static auto dummy = fmt::register_fmt<DwvAudioDecoder>("lilim/dwv");

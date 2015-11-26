@@ -1,5 +1,4 @@
 #include "fmt/twilight_frontier/tfwa_audio_decoder.h"
-#include "util/file_from_wave.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;
@@ -11,8 +10,7 @@ bool TfwaAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<io::File> TfwaAudioDecoder::decode_impl(
-    io::File &input_file) const
+sfx::Wave TfwaAudioDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -30,7 +28,7 @@ std::unique_ptr<io::File> TfwaAudioDecoder::decode_impl(
     audio.fmt.bits_per_sample = bits_per_sample;
     audio.fmt.sample_rate = sample_rate;
     audio.data.samples = input_file.stream.read(size);
-    return util::file_from_wave(audio, input_file.name);
+    return audio;
 }
 
 static auto dummy
