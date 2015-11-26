@@ -78,7 +78,28 @@ std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(
     io::File &input_file) const
 {
     input_file.stream.seek(0);
-    return read_meta_impl(input_file);
+    auto meta = read_meta_impl(input_file);
+
+    std::string prefix;
+    if (naming_strategy() == IDecoder::NamingStrategy::Sibling)
+        prefix = input_file.name.stem();
+    else if (naming_strategy() == IDecoder::NamingStrategy::Root)
+        prefix = input_file.name.str();
+
+    if (prefix.empty())
+        prefix = "unk";
+
+    int number = 0;
+    for (const auto &entry : meta->entries)
+    {
+        if (!entry->name.empty())
+            continue;
+        entry->name = meta->entries.size() > 1
+            ? util::format("%s_%03d", prefix.c_str(), number++)
+            : prefix;
+    }
+
+    return meta;
 }
 
 std::unique_ptr<io::File> ArchiveDecoder::read_file(

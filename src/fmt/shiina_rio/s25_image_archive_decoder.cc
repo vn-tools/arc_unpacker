@@ -143,8 +143,6 @@ bool S25ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     S25ImageArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
-    const auto base_name = io::path(input_file.name).stem();
-
     input_file.stream.seek(magic.size());
     const auto file_count = input_file.stream.read_u32_le();
     std::vector<size_t> offsets;
@@ -165,9 +163,6 @@ std::unique_ptr<fmt::ArchiveMeta>
         input_file.stream.skip(8);
         entry->flags = input_file.stream.read_u32_le();
         entry->offset = input_file.stream.tell();
-        entry->name = offsets.size() > 1
-            ? util::format("%s_%03d", base_name.c_str(), meta->entries.size())
-            : base_name;
         if (!entry->width || !entry->height)
             continue;
         meta->entries.push_back(std::move(entry));

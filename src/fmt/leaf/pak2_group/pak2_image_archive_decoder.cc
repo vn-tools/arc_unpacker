@@ -71,12 +71,6 @@ std::unique_ptr<fmt::ArchiveMeta>
             throw err::CorruptDataError("Unexpected magic");
     }
 
-    const auto base_name = io::path(input_file.name).stem();
-    for (auto i : util::range(meta->entries.size()))
-        meta->entries[i]->name = meta->entries.size() > 1
-            ? util::format("%s_%03d", base_name.c_str(), i)
-            : base_name;
-
     return meta;
 }
 

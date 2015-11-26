@@ -1,5 +1,4 @@
 #include "fmt/will/wipf_image_archive_decoder.h"
-#include <boost/algorithm/string.hpp>
 #include "err.h"
 #include "io/memory_stream.h"
 #include "util/file_from_grid.h"
@@ -87,9 +86,6 @@ bool WipfImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     WipfImageArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
-    auto base_name = io::path(input_file.name).name();
-    boost::algorithm::replace_all(base_name, ".", "-");
-
     input_file.stream.seek(magic.size());
     auto meta = std::make_unique<ArchiveMeta>();
     auto file_count = input_file.stream.read_u16_le();
@@ -97,7 +93,6 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = base_name;
         entry->width = input_file.stream.read_u32_le();
         entry->height = input_file.stream.read_u32_le();
         input_file.stream.skip(12);
