@@ -1,6 +1,6 @@
 #include "test_support/image_support.h"
-#include <algorithm>
 #include "fmt/jpeg/jpeg_image_decoder.h"
+#include "fmt/microsoft/bmp_image_decoder.h"
 #include "fmt/png/png_image_decoder.h"
 #include "test_support/catch.hh"
 #include "test_support/file_support.h"
@@ -32,13 +32,19 @@ static inline void compare_pixels(
 
 std::shared_ptr<pix::Grid> tests::image_from_file(io::File &file)
 {
-    const fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
-    const fmt::png::PngImageDecoder png_image_decoder;
-    if (jpeg_image_decoder.is_recognized(file))
-        return std::make_shared<pix::Grid>(jpeg_image_decoder.decode(file));
+    static const fmt::png::PngImageDecoder png_image_decoder;
     if (png_image_decoder.is_recognized(file))
         return std::make_shared<pix::Grid>(png_image_decoder.decode(file));
-    throw std::logic_error("Only JPEG and PNG files are supported");
+
+    static const fmt::microsoft::BmpImageDecoder bmp_image_decoder;
+    if (bmp_image_decoder.is_recognized(file))
+        return std::make_shared<pix::Grid>(bmp_image_decoder.decode(file));
+
+    static const fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
+    if (jpeg_image_decoder.is_recognized(file))
+        return std::make_shared<pix::Grid>(jpeg_image_decoder.decode(file));
+
+    throw std::logic_error("Only PNG, BMP and JPEG files are supported");
 }
 
 std::shared_ptr<pix::Grid> tests::image_from_path(const io::path &path)

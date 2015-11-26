@@ -1,9 +1,8 @@
 #include "fmt/french_bread/ex3_image_decoder.h"
-#include "io/file_stream.h"
+#include "test_support/image_support.h"
 #include "test_support/catch.hh"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
-#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::french_bread;
@@ -16,8 +15,9 @@ static void do_test(
     const Ex3ImageDecoder decoder;
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::zlib_file_from_path(dir + expected_path);
+    const auto expected_image = tests::image_from_file(*expected_file);
     const auto actual_file = tests::decode(decoder, *input_file);
-    tests::compare_files(*expected_file, *actual_file, false);
+    tests::compare_images(*expected_image, actual_file);
 }
 
 TEST_CASE("FrenchBread EX3 images", "[fmt]")

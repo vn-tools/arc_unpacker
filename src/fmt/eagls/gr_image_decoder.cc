@@ -1,5 +1,5 @@
 #include "fmt/eagls/gr_image_decoder.h"
-#include <algorithm>
+#include "fmt/microsoft/bmp_image_decoder.h"
 #include "io/memory_stream.h"
 #include "util/crypt/lcg.h"
 #include "util/pack/lzss.h"
@@ -30,8 +30,7 @@ bool GrImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("gr");
 }
 
-std::unique_ptr<io::File> GrImageDecoder::decode_impl(
-    io::File &input_file) const
+pix::Grid GrImageDecoder::decode_impl(io::File &input_file) const
 {
     // According to Crass the offset, key and LCG kind vary for other games.
 
@@ -45,9 +44,9 @@ std::unique_ptr<io::File> GrImageDecoder::decode_impl(
     auto output_size = guess_output_size(data);
     data = util::pack::lzss_decompress_bytewise(data, output_size);
 
-    auto output_file = std::make_unique<io::File>(input_file.name, data);
-    output_file->change_extension("bmp");
-    return output_file;
+    io::File bmp_file(input_file.name, data);
+    const fmt::microsoft::BmpImageDecoder bmp_file_decoder;
+    return bmp_file_decoder.decode(bmp_file);
 }
 
 static auto dummy = fmt::register_fmt<GrImageDecoder>("eagls/gr");

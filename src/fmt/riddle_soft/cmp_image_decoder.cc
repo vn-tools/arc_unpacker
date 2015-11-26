@@ -1,5 +1,5 @@
 #include "fmt/riddle_soft/cmp_image_decoder.h"
-#include "io/memory_stream.h"
+#include "fmt/microsoft/bmp_image_decoder.h"
 #include "util/pack/lzss.h"
 
 using namespace au;
@@ -12,8 +12,7 @@ bool CmpImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<io::File> CmpImageDecoder::decode_impl(
-    io::File &input_file) const
+pix::Grid CmpImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto size_original = input_file.stream.read_u32_le();
@@ -27,11 +26,9 @@ std::unique_ptr<io::File> CmpImageDecoder::decode_impl(
     settings.initial_dictionary_pos = 2031;
     data = util::pack::lzss_decompress_bitwise(data, size_original, settings);
 
-    auto output_file = std::make_unique<io::File>();
-    output_file->stream.write(data);
-    output_file->name = input_file.name;
-    output_file->guess_extension();
-    return output_file;
+    io::File bmp_file(input_file.name, data);
+    const fmt::microsoft::BmpImageDecoder bmp_image_decoder;
+    return bmp_image_decoder.decode(bmp_file);
 }
 
 static auto dummy = fmt::register_fmt<CmpImageDecoder>("riddle-soft/cmp");

@@ -1,18 +1,16 @@
 #pragma once
 
-#include "fmt/file_decoder.h"
+#include "fmt/image_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace yuka_script {
 
-    class YkgImageDecoder final : public FileDecoder
+    class YkgImageDecoder final : public ImageDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
-
-        std::unique_ptr<io::File> decode_impl(
-            io::File &input_file) const override;
+        pix::Grid decode_impl(io::File &input_file) const override;
     };
 
 } } }

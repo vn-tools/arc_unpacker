@@ -1,4 +1,5 @@
 #include "fmt/french_bread/ex3_image_decoder.h"
+#include "fmt/microsoft/bmp_image_decoder.h"
 #include "err.h"
 #include "util/range.h"
 
@@ -12,12 +13,11 @@ bool Ex3ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<io::File> Ex3ImageDecoder::decode_impl(
-    io::File &input_file) const
+pix::Grid Ex3ImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
-    bstr output;
+    bstr data;
     bstr table0 = input_file.stream.read(0x40);
     bstr table1(256);
     bstr table2(256);
@@ -73,7 +73,7 @@ std::unique_ptr<io::File> Ex3ImageDecoder::decode_impl(
 
             if (b == table1[b])
             {
-                output += b;
+                data += b;
             }
             else
             {
@@ -87,11 +87,9 @@ std::unique_ptr<io::File> Ex3ImageDecoder::decode_impl(
             b = input_file.stream.read_u8();
     }
 
-    auto output_file = std::make_unique<io::File>();
-    output_file->stream.write(output);
-    output_file->name = input_file.name;
-    output_file->change_extension(".bmp");
-    return output_file;
+    io::File bmp_file(input_file.name, data);
+    const fmt::microsoft::BmpImageDecoder bmp_file_decoder;
+    return bmp_file_decoder.decode(bmp_file);
 }
 
 static auto dummy = fmt::register_fmt<Ex3ImageDecoder>("french-bread/ex3");
