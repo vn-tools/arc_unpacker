@@ -1,16 +1,19 @@
 #include "fmt/wild_bug/wpn_audio_decoder.h"
+#include <map>
 #include "util/range.h"
+#include "util/file_from_wave.h"
 
 using namespace au;
 using namespace au::fmt::wild_bug;
 
 static const bstr magic = "WBD\x1AWAV\x00"_b;
+static const bstr fmt_magic = "fmt\x20"_b;
+static const bstr data_magic = "data"_b;
 
 namespace
 {
     struct Chunk final
     {
-        bstr prefix;
         size_t offset;
         size_t size;
     };
@@ -24,37 +27,38 @@ bool WpnAudioDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<io::File> WpnAudioDecoder::decode_impl(
     io::File &input_file) const
 {
-    input_file.stream.seek(magic.size());
-    auto chunk_count = input_file.stream.read_u32_le();
-
-    std::vector<Chunk> chunks;
-    for (auto i : util::range(chunk_count))
+    const auto chunk_count = input_file.stream.seek(magic.size()).read_u32_le();
+    std::map<bstr, Chunk> chunks;
+    for (const auto i : util::range(chunk_count))
     {
+        const auto chunk_name = input_file.stream.read(4);
         Chunk chunk;
-        chunk.prefix = input_file.stream.read(4);
         chunk.offset = input_file.stream.read_u32_le();
         chunk.size = input_file.stream.read_u32_le();
-        chunks.push_back(chunk);
+        chunks[chunk_name] = chunk;
     }
 
-    auto output_file = std::make_unique<io::File>();
-    output_file->stream.write("RIFF"_b);
-    output_file->stream.write_u32_le(0);
-    output_file->stream.write("WAVE"_b);
+    sfx::Wave audio;
 
-    for (auto &chunk : chunks)
+    const auto &fmt_chunk = chunks.at(fmt_magic);
+    input_file.stream.seek(fmt_chunk.offset);
+    audio.fmt.pcm_type = input_file.stream.read_u16_le();
+    audio.fmt.channel_count = input_file.stream.read_u16_le();
+    audio.fmt.sample_rate = input_file.stream.read_u32_le();
+    const auto byte_rate = input_file.stream.read_u32_le();
+    const auto block_align = input_file.stream.read_u16_le();
+    audio.fmt.bits_per_sample = input_file.stream.read_u16_le();
+    if (input_file.stream.tell() - fmt_chunk.offset < fmt_chunk.size)
     {
-        output_file->stream.write(chunk.prefix);
-        output_file->stream.write_u32_le(chunk.size);
-        input_file.stream.seek(chunk.offset);
-        output_file->stream.write(input_file.stream.read(chunk.size));
+        const auto extra_data_size = input_file.stream.read_u16_le();
+        audio.fmt.extra_data = input_file.stream.read(extra_data_size);
     }
 
-    output_file->stream.seek(4);
-    output_file->stream.write_u32_le(output_file->stream.size() - 8);
-    output_file->name = input_file.name;
-    output_file->change_extension("wav");
-    return output_file;
+    const auto &data_chunk = chunks.at(data_magic);
+    input_file.stream.seek(data_chunk.offset);
+    audio.data.samples = input_file.stream.read(data_chunk.size);
+
+    return util::file_from_wave(audio, input_file.name);
 }
 
 static auto dummy = fmt::register_fmt<WpnAudioDecoder>("wild-bug/wpn");

@@ -1,5 +1,5 @@
 #include "fmt/twilight_frontier/tfwa_audio_decoder.h"
-#include "util/file_from_samples.h"
+#include "util/file_from_wave.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;
@@ -25,12 +25,12 @@ std::unique_ptr<io::File> TfwaAudioDecoder::decode_impl(
     input_file.stream.skip(2);
     size_t size = input_file.stream.read_u32_le();
 
-    return util::file_from_samples(
-        channel_count,
-        bits_per_sample,
-        sample_rate,
-        input_file.stream.read(size),
-        input_file.name);
+    sfx::Wave audio;
+    audio.fmt.channel_count = channel_count;
+    audio.fmt.bits_per_sample = bits_per_sample;
+    audio.fmt.sample_rate = sample_rate;
+    audio.data.samples = input_file.stream.read(size);
+    return util::file_from_wave(audio, input_file.name);
 }
 
 static auto dummy

@@ -16,7 +16,7 @@ bool WavAudioDecoder::is_recognized_impl(io::File &input_file) const
 
 sfx::Wave WavAudioDecoder::decode_to_wave(io::File &input_file) const
 {
-    sfx::Wave wave;
+    sfx::Wave audio;
     input_file.stream.seek(12);
     while (!input_file.stream.eof())
     {
@@ -25,23 +25,23 @@ sfx::Wave WavAudioDecoder::decode_to_wave(io::File &input_file) const
         const auto chunk_start = input_file.stream.tell();
         if (chunk_name == "fmt\x20"_b)
         {
-            wave.fmt.pcm_type = input_file.stream.read_u16_le();
-            wave.fmt.channel_count = input_file.stream.read_u16_le();
-            wave.fmt.sample_rate = input_file.stream.read_u32_le();
+            audio.fmt.pcm_type = input_file.stream.read_u16_le();
+            audio.fmt.channel_count = input_file.stream.read_u16_le();
+            audio.fmt.sample_rate = input_file.stream.read_u32_le();
             const auto byte_rate = input_file.stream.read_u32_le();
             const auto block_align = input_file.stream.read_u16_le();
-            wave.fmt.bits_per_sample = input_file.stream.read_u16_le();
+            audio.fmt.bits_per_sample = input_file.stream.read_u16_le();
             const auto chunk_pos = input_file.stream.tell() - chunk_start;
             if (chunk_pos < chunk_size)
             {
                 const auto extra_data_size = input_file.stream.read_u16_le();
-                wave.fmt.extra_data = input_file.stream.read(extra_data_size);
+                audio.fmt.extra_data = input_file.stream.read(extra_data_size);
             }
             input_file.stream.seek(chunk_start + chunk_size);
         }
         else if (chunk_name == "data"_b)
         {
-            wave.data.samples = input_file.stream.read(chunk_size);
+            audio.data.samples = input_file.stream.read(chunk_size);
         }
         else
         {
@@ -49,7 +49,7 @@ sfx::Wave WavAudioDecoder::decode_to_wave(io::File &input_file) const
             input_file.stream.skip(chunk_size);
         }
     }
-    return wave;
+    return audio;
 }
 
 std::unique_ptr<io::File> WavAudioDecoder::decode_impl(

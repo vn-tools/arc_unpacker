@@ -1,4 +1,5 @@
 #include "fmt/kid/waf_audio_decoder.h"
+#include "util/file_from_wave.h"
 
 using namespace au;
 using namespace au::fmt::kid;
@@ -15,32 +16,19 @@ std::unique_ptr<io::File> WafAudioDecoder::decode_impl(
 {
     auto output_file = std::make_unique<io::File>();
 
-    input_file.stream.skip(6);
+    input_file.stream.seek(6);
 
-    output_file->stream.write("RIFF"_b);
-    output_file->stream.write("\x00\x00\x00\x00"_b);
-    output_file->stream.write("WAVE"_b);
-    output_file->stream.write("fmt\x20"_b);
-    output_file->stream.write_u32_le(50); // fmt header size
-    output_file->stream.write_u16_le(2); // compression type - ADPCM
-    output_file->stream.write_u16_le(input_file.stream.read_u16_le());
-    output_file->stream.write_u32_le(input_file.stream.read_u32_le());
-    output_file->stream.write_u32_le(input_file.stream.read_u32_le());
-    output_file->stream.write_u16_le(input_file.stream.read_u16_le());
-    output_file->stream.write_u16_le(input_file.stream.read_u16_le());
-
-    output_file->stream.write_u16_le(32); // size of additional header
-    output_file->stream.write(input_file.stream.read(32)); // aditional header
-
-    output_file->stream.write("data"_b);
-    output_file->stream.write(input_file.stream.read_to_eof());
-
-    output_file->stream.seek(4);
-    output_file->stream.write_u32_le(input_file.stream.size());
-
-    output_file->name = input_file.name;
-    output_file->change_extension("wav");
-    return output_file;
+    sfx::Wave audio;
+    audio.fmt.pcm_type = 2;
+    audio.fmt.channel_count = input_file.stream.read_u16_le();
+    audio.fmt.sample_rate = input_file.stream.read_u32_le();
+    const auto byte_rate = input_file.stream.read_u32_le();
+    const auto block_align = input_file.stream.read_u16_le();
+    audio.fmt.bits_per_sample = input_file.stream.read_u16_le();
+    audio.fmt.extra_data = input_file.stream.read(32);
+    const auto samples_size = input_file.stream.read_u32_le();
+    audio.data.samples = input_file.stream.read(samples_size);
+    return util::file_from_wave(audio, input_file.name);
 }
 
 static auto dummy = fmt::register_fmt<WafAudioDecoder>("kid/waf");

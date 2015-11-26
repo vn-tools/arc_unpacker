@@ -5,7 +5,7 @@
 #include "fmt/team_shanghai_alice/pbgz_archive_decoder.h"
 #include "fmt/team_shanghai_alice/tha1_archive_decoder.h"
 #include "io/filesystem.h"
-#include "util/file_from_samples.h"
+#include "util/file_from_wave.h"
 #include "util/range.h"
 
 using namespace au;
@@ -147,12 +147,13 @@ std::unique_ptr<io::File> ThbgmAudioArchiveDecoder::read_file_impl(
         input_file.stream.seek(entry->offset + entry->intro_size);
         samples += input_file.stream.read(entry->size - entry->intro_size);
     }
-    return util::file_from_samples(
-        entry->channel_count,
-        entry->bits_per_sample,
-        entry->sample_rate,
-        samples,
-        entry->name);
+
+    sfx::Wave audio;
+    audio.fmt.channel_count = entry->channel_count;
+    audio.fmt.bits_per_sample = entry->bits_per_sample;
+    audio.fmt.sample_rate = entry->sample_rate;
+    audio.data.samples = samples;
+    return util::file_from_wave(audio, entry->name);
 }
 
 static auto dummy

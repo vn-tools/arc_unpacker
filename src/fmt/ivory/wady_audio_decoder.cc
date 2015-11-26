@@ -1,7 +1,7 @@
 #include "fmt/ivory/wady_audio_decoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/file_from_samples.h"
+#include "util/file_from_wave.h"
 #include "util/range.h"
 
 using namespace au;
@@ -222,8 +222,12 @@ std::unique_ptr<io::File> WadyAudioDecoder::decode_impl(
         throw err::UnsupportedVersionError(version);
     }
 
-    return util::file_from_samples(
-        channels, bits_per_sample, sample_rate, samples, input_file.name);
+    sfx::Wave audio;
+    audio.fmt.channel_count = channels;
+    audio.fmt.bits_per_sample = bits_per_sample;
+    audio.fmt.sample_rate = sample_rate;
+    audio.data.samples = samples;
+    return util::file_from_wave(audio, input_file.name);
 }
 
 static auto dummy = fmt::register_fmt<WadyAudioDecoder>("ivory/wady");

@@ -1,5 +1,6 @@
 #include "fmt/lilim/dwv_audio_decoder.h"
-#include "util/file_from_samples.h"
+#include "io/memory_stream.h"
+#include "util/file_from_wave.h"
 
 using namespace au;
 using namespace au::fmt::lilim;
@@ -21,22 +22,23 @@ std::unique_ptr<io::File> DwvAudioDecoder::decode_impl(
     const auto header = input_file.stream.read(header_size);
     const auto samples = input_file.stream.read(samples_size);
 
-    auto output_file = std::make_unique<io::File>();
-    output_file->stream.write("RIFF"_b);
-    output_file->stream.write("\x00\x00\x00\x00"_b);
-    output_file->stream.write("WAVE"_b);
-    output_file->stream.write("fmt "_b);
-    output_file->stream.write_u32_le(header.size());
-    output_file->stream.write(header);
-    output_file->stream.write("data"_b);
-    output_file->stream.write_u32_le(samples.size());
-    output_file->stream.write(samples);
-    output_file->stream.seek(4);
-    output_file->stream.write_u32_le(output_file->stream.size() - 8);
+    sfx::Wave audio;
+    audio.data.samples = samples;
 
-    output_file->name = input_file.name;
-    output_file->change_extension("wav");
-    return output_file;
+    io::MemoryStream header_stream(header);
+    audio.fmt.pcm_type = header_stream.read_u16_le();
+    audio.fmt.channel_count = header_stream.read_u16_le();
+    audio.fmt.sample_rate = header_stream.read_u32_le();
+    const auto byte_rate = header_stream.read_u32_le();
+    const auto block_align = header_stream.read_u16_le();
+    audio.fmt.bits_per_sample = header_stream.read_u16_le();
+    if (header_stream.tell() < header_stream.size())
+    {
+        const auto extra_data_size = header_stream.read_u16_le();
+        audio.fmt.extra_data = header_stream.read(extra_data_size);
+    }
+
+    return util::file_from_wave(audio, input_file.name);
 }
 
 static auto dummy = fmt::register_fmt<DwvAudioDecoder>("lilim/dwv");

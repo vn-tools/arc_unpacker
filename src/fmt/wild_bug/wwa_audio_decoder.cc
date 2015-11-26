@@ -1,6 +1,7 @@
 #include "fmt/wild_bug/wwa_audio_decoder.h"
 #include "fmt/wild_bug/wpx/decoder.h"
 #include "io/memory_stream.h"
+#include "util/file_from_wave.h"
 
 using namespace au;
 using namespace au::fmt::wild_bug;
@@ -18,39 +19,22 @@ std::unique_ptr<io::File> WwaAudioDecoder::decode_impl(
     wpx::Decoder decoder(input_file.stream);
     io::MemoryStream metadata_stream(decoder.read_plain_section(0x20));
 
-    auto format_type = metadata_stream.read_u16_le();
-    auto channel_count = metadata_stream.read_u16_le();
-    auto sample_rate = metadata_stream.read_u32_le();
-    auto byte_rate = metadata_stream.read_u32_le();
-    auto block_align = metadata_stream.read_u16_le();
-    auto bits_per_sample = metadata_stream.read_u16_le();
+    const auto format_type = metadata_stream.read_u16_le();
+    const auto channel_count = metadata_stream.read_u16_le();
+    const auto sample_rate = metadata_stream.read_u32_le();
+    const auto byte_rate = metadata_stream.read_u32_le();
+    const auto block_align = metadata_stream.read_u16_le();
+    const auto bits_per_sample = metadata_stream.read_u16_le();
 
-    auto samples = decoder.read_compressed_section(0x21);
+    const auto samples = decoder.read_compressed_section(0x21);
 
-    auto bytes_per_sample = bits_per_sample >> 3;
-    auto data_chunk_size = samples.size();
-
-    auto output_file = std::make_unique<io::File>();
-    output_file->stream.write("RIFF"_b);
-    output_file->stream.write("\x00\x00\x00\x00"_b);
-    output_file->stream.write("WAVE"_b);
-    output_file->stream.write("fmt "_b);
-    output_file->stream.write_u32_le(16);
-    output_file->stream.write_u16_le(format_type);
-    output_file->stream.write_u16_le(channel_count);
-    output_file->stream.write_u32_le(sample_rate);
-    output_file->stream.write_u32_le(byte_rate);
-    output_file->stream.write_u16_le(block_align);
-    output_file->stream.write_u16_le(bits_per_sample);
-    output_file->stream.write("data"_b);
-    output_file->stream.write_u32_le(data_chunk_size);
-    output_file->stream.write(samples);
-    output_file->stream.seek(4);
-    output_file->stream.write_u32_le(output_file->stream.size() - 8);
-
-    output_file->name = input_file.name;
-    output_file->change_extension("wav");
-    return output_file;
+    sfx::Wave audio;
+    audio.fmt.pcm_type = format_type;
+    audio.fmt.channel_count = channel_count;
+    audio.fmt.sample_rate = sample_rate;
+    audio.fmt.bits_per_sample = bits_per_sample;
+    audio.data.samples = samples;
+    return util::file_from_wave(audio, input_file.name);
 }
 
 static auto dummy = fmt::register_fmt<WwaAudioDecoder>("wild-bug/wwa");
