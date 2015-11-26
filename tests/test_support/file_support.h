@@ -10,19 +10,22 @@ namespace tests {
         const std::string &name, const bstr &data);
 
     std::shared_ptr<io::File> file_from_path(
-        const io::path &path, const std::string &cust_name = "");
+        const io::path &path, const std::string &custom_name = "");
 
     std::shared_ptr<io::File> zlib_file_from_path(
-        const io::path &path, const std::string &cust_name = "");
+        const io::path &path, const std::string &custom_name = "");
 
-    void compare_files(
-        const std::vector<std::shared_ptr<io::File>> &expected_files,
-        const std::vector<std::shared_ptr<io::File>> &actual_files,
-        const bool compare_file_names);
+    void compare_file_names(
+        const io::path &expected_name, const io::path &actual_name);
 
     void compare_files(
         const io::File &expected_file,
         const io::File &actual_file,
+        const bool compare_file_names);
+
+    void compare_files(
+        const std::vector<std::shared_ptr<io::File>> &expected_files,
+        const std::vector<std::shared_ptr<io::File>> &actual_files,
         const bool compare_file_names);
 
 } }

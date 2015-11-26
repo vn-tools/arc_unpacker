@@ -1,4 +1,5 @@
 #include "fmt/team_shanghai_alice/thbgm_audio_archive_decoder.h"
+#include "test_support/audio_support.h"
 #include "test_support/catch.hh"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -15,7 +16,7 @@ static void do_test(
 {
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
-    tests::compare_files(expected_files, actual_files, true);
+    tests::compare_audio(expected_files, actual_files, true);
 }
 
 TEST_CASE("Team Shanghai Alice THBGM audio", "[fmt]")

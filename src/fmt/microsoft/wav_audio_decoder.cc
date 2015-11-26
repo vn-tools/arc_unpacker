@@ -14,7 +14,7 @@ bool WavAudioDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.seek(8).read(wave_magic.size()) == wave_magic;
 }
 
-std::unique_ptr<io::File> WavAudioDecoder::decode_impl(io::File &input_file) const
+sfx::Wave WavAudioDecoder::decode_to_wave(io::File &input_file) const
 {
     sfx::Wave wave;
     input_file.stream.seek(12);
@@ -49,6 +49,13 @@ std::unique_ptr<io::File> WavAudioDecoder::decode_impl(io::File &input_file) con
             input_file.stream.skip(chunk_size);
         }
     }
+    return wave;
+}
+
+std::unique_ptr<io::File> WavAudioDecoder::decode_impl(
+    io::File &input_file) const
+{
+    const auto wave = decode_to_wave(input_file);
     return util::file_from_wave(wave, input_file.name);
 }
 

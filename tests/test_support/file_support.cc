@@ -13,23 +13,34 @@ std::shared_ptr<io::File> tests::stub_file(
 }
 
 std::shared_ptr<io::File> tests::file_from_path(
-    const io::path &path, const std::string &cust_name)
+    const io::path &path, const std::string &custom_name)
 {
     auto ret = std::make_shared<io::File>(path, io::FileMode::Read);
-    if (!cust_name.empty())
-        ret->name = cust_name;
+    if (!custom_name.empty())
+        ret->name = custom_name;
     return ret;
 }
 
 std::shared_ptr<io::File> tests::zlib_file_from_path(
-    const io::path &path, const std::string &cust_name)
+    const io::path &path, const std::string &custom_name)
 {
     io::File compressed_file(path, io::FileMode::Read);
     const auto compressed_data = compressed_file.stream.read_to_eof();
     const auto decompressed_data = util::pack::zlib_inflate(compressed_data);
     return std::make_shared<io::File>(
-        cust_name.empty() ? compressed_file.name : cust_name,
+        custom_name.empty() ? compressed_file.name : custom_name,
         decompressed_data);
+}
+
+void tests::compare_file_names(
+    const io::path &expected_file_name,
+    const io::path &actual_file_name)
+{
+    INFO(util::format(
+        "Expected file name: %s, actual: %s\n",
+        expected_file_name.str().c_str(),
+        actual_file_name.str().c_str()));
+    REQUIRE(expected_file_name == actual_file_name);
 }
 
 void tests::compare_files(
@@ -53,7 +64,7 @@ void tests::compare_files(
     const bool compare_file_names)
 {
     if (compare_file_names)
-        REQUIRE(expected_file.name == actual_file.name);
+        tests::compare_file_names(expected_file.name, actual_file.name);
     REQUIRE(expected_file.stream.size() == actual_file.stream.size());
     expected_file.stream.seek(0);
     actual_file.stream.seek(0);
