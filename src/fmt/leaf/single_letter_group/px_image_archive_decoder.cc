@@ -1,7 +1,6 @@
 #include "fmt/leaf/single_letter_group/px_image_archive_decoder.h"
 #include <array>
 #include "err.h"
-#include "fmt/naming_strategies.h"
 #include "util/call_stack_keeper.h"
 #include "util/file_from_grid.h"
 #include "util/format.h"
@@ -387,10 +386,9 @@ std::unique_ptr<io::File> PxImageArchiveDecoder::read_file_impl(
     return util::file_from_grid(image, entry->name);
 }
 
-std::unique_ptr<fmt::INamingStrategy>
-    PxImageArchiveDecoder::naming_strategy() const
+fmt::IDecoder::NamingStrategy PxImageArchiveDecoder::naming_strategy() const
 {
-    return std::make_unique<SiblingNamingStrategy>();
+    return NamingStrategy::Sibling;
 }
 
 static auto dummy = fmt::register_fmt<PxImageArchiveDecoder>("leaf/px");

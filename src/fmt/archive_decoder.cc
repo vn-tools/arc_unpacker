@@ -1,6 +1,5 @@
 #include "fmt/archive_decoder.h"
 #include "err.h"
-#include "fmt/naming_strategies.h"
 #include "log.h"
 #include "util/format.h"
 
@@ -15,9 +14,9 @@ ArchiveDecoder::~ArchiveDecoder()
 {
 }
 
-std::unique_ptr<INamingStrategy> ArchiveDecoder::naming_strategy() const
+IDecoder::NamingStrategy ArchiveDecoder::naming_strategy() const
 {
-    return std::make_unique<ChildNamingStrategy>();
+    return NamingStrategy::Child;
 }
 
 void ArchiveDecoder::register_cli_options(ArgParser &arg_parser) const

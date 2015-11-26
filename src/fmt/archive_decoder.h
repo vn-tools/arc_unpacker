@@ -31,8 +31,7 @@ namespace fmt {
             io::File &input_file,
             const FileSaver &file_saver) const override;
 
-        virtual std::unique_ptr<INamingStrategy> naming_strategy()
-            const override;
+        virtual NamingStrategy naming_strategy() const override;
 
         void disable_preprocessing();
 

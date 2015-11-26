@@ -1,6 +1,5 @@
 #include "fmt/audio_decoder.h"
 #include "err.h"
-#include "fmt/naming_strategies.h"
 #include "util/file_from_wave.h"
 
 using namespace au;
@@ -10,9 +9,9 @@ AudioDecoder::~AudioDecoder()
 {
 }
 
-std::unique_ptr<INamingStrategy> AudioDecoder::naming_strategy() const
+IDecoder::NamingStrategy AudioDecoder::naming_strategy() const
 {
-    return std::make_unique<SiblingNamingStrategy>();
+    return NamingStrategy::Sibling;
 }
 
 void AudioDecoder::register_cli_options(ArgParser &) const

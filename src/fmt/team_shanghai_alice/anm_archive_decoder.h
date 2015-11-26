@@ -19,7 +19,7 @@ namespace team_shanghai_alice {
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
 
-        std::unique_ptr<INamingStrategy> naming_strategy() const override;
+        NamingStrategy naming_strategy() const override;
     };
 
 } } }

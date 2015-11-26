@@ -1,7 +1,6 @@
 #include "fmt/leaf/ar10_group/cz10_image_archive_decoder.h"
 #include <array>
 #include "err.h"
-#include "fmt/naming_strategies.h"
 #include "io/memory_stream.h"
 #include "util/file_from_grid.h"
 #include "util/format.h"
@@ -135,10 +134,9 @@ std::unique_ptr<io::File> Cz10ImageArchiveDecoder::read_file_impl(
     return util::file_from_grid(image, entry->name);
 }
 
-std::unique_ptr<fmt::INamingStrategy>
-    Cz10ImageArchiveDecoder::naming_strategy() const
+fmt::IDecoder::NamingStrategy Cz10ImageArchiveDecoder::naming_strategy() const
 {
-    return std::make_unique<SiblingNamingStrategy>();
+    return NamingStrategy::Sibling;
 }
 
 static auto dummy = fmt::register_fmt<Cz10ImageArchiveDecoder>("leaf/cz10");

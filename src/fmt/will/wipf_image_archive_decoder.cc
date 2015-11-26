@@ -1,7 +1,6 @@
 #include "fmt/will/wipf_image_archive_decoder.h"
 #include <boost/algorithm/string.hpp>
 #include "err.h"
-#include "fmt/naming_strategies.h"
 #include "io/memory_stream.h"
 #include "util/file_from_grid.h"
 #include "util/range.h"
@@ -75,10 +74,9 @@ static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
     return custom_lzss_decompress(stream, output_size);
 }
 
-std::unique_ptr<fmt::INamingStrategy>
-    WipfImageArchiveDecoder::naming_strategy() const
+fmt::IDecoder::NamingStrategy WipfImageArchiveDecoder::naming_strategy() const
 {
-    return std::make_unique<SiblingNamingStrategy>();
+    return NamingStrategy::Sibling;
 }
 
 bool WipfImageArchiveDecoder::is_recognized_impl(io::File &input_file) const

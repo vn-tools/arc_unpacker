@@ -20,7 +20,7 @@ namespace fmt {
             io::File &input_file,
             const FileSaver &file_saver) const override;
 
-        std::unique_ptr<INamingStrategy> naming_strategy() const override;
+        NamingStrategy naming_strategy() const override;
 
         pix::Grid decode(io::File &input_file) const;
 

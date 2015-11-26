@@ -1,6 +1,5 @@
 #include "fmt/shiina_rio/s25_image_archive_decoder.h"
 #include "err.h"
-#include "fmt/naming_strategies.h"
 #include "io/memory_stream.h"
 #include "util/file_from_grid.h"
 #include "util/format.h"
@@ -186,10 +185,9 @@ std::unique_ptr<io::File> S25ImageArchiveDecoder::read_file_impl(
     return util::file_from_grid(image, e.name);
 }
 
-std::unique_ptr<fmt::INamingStrategy>
-    S25ImageArchiveDecoder::naming_strategy() const
+fmt::IDecoder::NamingStrategy S25ImageArchiveDecoder::naming_strategy() const
 {
-    return std::make_unique<SiblingNamingStrategy>();
+    return NamingStrategy::Sibling;
 }
 
 static auto dummy = fmt::register_fmt<S25ImageArchiveDecoder>("shiina-rio/s25");

@@ -12,11 +12,16 @@
 namespace au {
 namespace fmt {
 
-    class INamingStrategy;
-
     class IDecoder
     {
     public:
+        enum class NamingStrategy : u8
+        {
+            Child = 0,
+            Root = 1,
+            Sibling = 2,
+        };
+
         virtual ~IDecoder() { }
 
         virtual void register_cli_options(ArgParser &arg_parser) const = 0;
@@ -28,7 +33,7 @@ namespace fmt {
             io::File &input_file,
             const FileSaver &file_saver) const = 0;
 
-        virtual std::unique_ptr<INamingStrategy> naming_strategy() const = 0;
+        virtual NamingStrategy naming_strategy() const = 0;
     };
 
 } }

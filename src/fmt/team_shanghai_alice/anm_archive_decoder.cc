@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <map>
 #include "err.h"
-#include "fmt/naming_strategies.h"
 #include "util/file_from_grid.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -169,9 +168,9 @@ static std::vector<TextureInfo> read_texture_info_list(io::Stream &input)
     return texture_info_list;
 }
 
-std::unique_ptr<INamingStrategy> AnmArchiveDecoder::naming_strategy() const
+IDecoder::NamingStrategy AnmArchiveDecoder::naming_strategy() const
 {
-    return std::make_unique<RootNamingStrategy>();
+    return NamingStrategy::Root;
 }
 
 bool AnmArchiveDecoder::is_recognized_impl(io::File &input_file) const

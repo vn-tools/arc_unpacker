@@ -4,7 +4,6 @@
 #include "arg_parser.h"
 #include "fmt/decoder_util.h"
 #include "fmt/idecoder.h"
-#include "fmt/naming_strategies.h"
 #include "fmt/registry.h"
 #include "io/filesystem.h"
 #include "log.h"
@@ -268,8 +267,8 @@ void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, io::File &file) const
     const FileSaverCallback saver_proxy(
         [&](std::shared_ptr<io::File> saved_file)
         {
-            saved_file->name = decoder.naming_strategy()->decorate(
-                base_name, saved_file->name);
+            saved_file->name = fmt::decorate_path(
+                decoder.naming_strategy(), base_name, saved_file->name);
             saver.save(saved_file);
         });
 

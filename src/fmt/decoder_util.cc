@@ -2,7 +2,6 @@
 #include <set>
 #include <stack>
 #include "arg_parser.h"
-#include "fmt/naming_strategies.h"
 #include "fmt/archive_decoder.h"
 #include "util/call_stack_keeper.h"
 
@@ -48,8 +47,10 @@ static bool pass_through_decoders(
             [original_file, &recognition_proxy, &decoder]
             (const std::shared_ptr<io::File> converted_file)
         {
-            converted_file->name = decoder->naming_strategy()->decorate(
-                original_file->name, converted_file->name);
+            converted_file->name = decorate_path(
+                decoder->naming_strategy(),
+                original_file->name,
+                converted_file->name);
             recognition_proxy.save(converted_file);
         });
 
@@ -64,6 +65,31 @@ static bool pass_through_decoders(
     }
 
     return false;
+}
+
+io::path fmt::decorate_path(
+    const IDecoder::NamingStrategy strategy,
+    const io::path &parent_name,
+    const io::path &current_name)
+{
+    if (strategy == IDecoder::NamingStrategy::Root)
+        return current_name;
+
+    if (strategy == IDecoder::NamingStrategy::Child)
+    {
+        if (parent_name.str() == "")
+            return current_name;
+        return parent_name / current_name;
+    }
+
+    if (strategy == IDecoder::NamingStrategy::Sibling)
+    {
+        if (parent_name.str() == "")
+            return current_name;
+        return parent_name.parent() / current_name;
+    }
+
+    throw std::logic_error("Invalid naming strategy");
 }
 
 void fmt::unpack_recursive(

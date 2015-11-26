@@ -1,6 +1,5 @@
 #include "fmt/file_decoder.h"
 #include "err.h"
-#include "fmt/naming_strategies.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -9,9 +8,9 @@ FileDecoder::~FileDecoder()
 {
 }
 
-std::unique_ptr<INamingStrategy> FileDecoder::naming_strategy() const
+IDecoder::NamingStrategy FileDecoder::naming_strategy() const
 {
-    return std::make_unique<SiblingNamingStrategy>();
+    return NamingStrategy::Sibling;
 }
 
 void FileDecoder::register_cli_options(ArgParser &) const

@@ -1,6 +1,5 @@
 #include "fmt/leaf/pak2_group/pak2_image_archive_decoder.h"
 #include "err.h"
-#include "fmt/naming_strategies.h"
 #include "util/file_from_grid.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -110,10 +109,9 @@ std::unique_ptr<io::File> Pak2ImageArchiveDecoder::read_file_impl(
     return util::file_from_grid(image, entry->name);
 }
 
-std::unique_ptr<fmt::INamingStrategy>
-    Pak2ImageArchiveDecoder::naming_strategy() const
+fmt::IDecoder::NamingStrategy Pak2ImageArchiveDecoder::naming_strategy() const
 {
-    return std::make_unique<SiblingNamingStrategy>();
+    return NamingStrategy::Sibling;
 }
 
 static auto dummy

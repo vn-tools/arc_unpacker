@@ -1,6 +1,5 @@
 #include "fmt/image_decoder.h"
 #include "err.h"
-#include "fmt/naming_strategies.h"
 #include "util/file_from_grid.h"
 
 using namespace au;
@@ -10,9 +9,9 @@ ImageDecoder::~ImageDecoder()
 {
 }
 
-std::unique_ptr<INamingStrategy> ImageDecoder::naming_strategy() const
+IDecoder::NamingStrategy ImageDecoder::naming_strategy() const
 {
-    return std::make_unique<SiblingNamingStrategy>();
+    return NamingStrategy::Sibling;
 }
 
 void ImageDecoder::register_cli_options(ArgParser &) const

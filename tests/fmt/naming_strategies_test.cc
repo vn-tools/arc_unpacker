@@ -1,41 +1,52 @@
-#include "fmt/naming_strategies.h"
-#include "io/path.h"
+#include "fmt/decoder_util.h"
 #include "test_support/catch.hh"
 
 using namespace au;
 using namespace au::fmt;
 
-static io::path test(
-    const INamingStrategy &strategy,
-    const std::string &parent_path,
-    const std::string &child_path)
+static void do_test(
+    const IDecoder::NamingStrategy strategy,
+    const io::path &parent_path,
+    const io::path &child_path,
+    const io::path &expected_path)
 {
-    return io::path(strategy.decorate(parent_path, child_path));
+    const auto actual_path = fmt::decorate_path(
+        strategy, parent_path, child_path);
+    REQUIRE(actual_path == expected_path);
 }
 
 TEST_CASE("File naming strategies", "[fmt_core]")
 {
-    RootNamingStrategy    root;
-    SiblingNamingStrategy sibling;
-    ChildNamingStrategy   child;
+    SECTION("Root")
+    {
+        const auto s = IDecoder::NamingStrategy::Root;
+        do_test(s, "",           "file", "file");
+        do_test(s, "test",       "file", "file");
+        do_test(s, "test/",      "file", "file");
+        do_test(s, "test/nest",  "file", "file");
+        do_test(s, "test/nest/", "file", "file");
+        do_test(s, "test/nest",  "a/b", "a/b");
+    }
 
-    REQUIRE(test(root,    "",           "file") == io::path("file"));
-    REQUIRE(test(root,    "test",       "file") == io::path("file"));
-    REQUIRE(test(root,    "test/",      "file") == io::path("file"));
-    REQUIRE(test(root,    "test/nest",  "file") == io::path("file"));
-    REQUIRE(test(root,    "test/nest/", "file") == io::path("file"));
-    REQUIRE(test(sibling, "",           "file") == io::path("file"));
-    REQUIRE(test(sibling, "test",       "file") == io::path("file"));
-    REQUIRE(test(sibling, "test/",      "file") == io::path("test/file"));
-    REQUIRE(test(sibling, "test/nest",  "file") == io::path("test/file"));
-    REQUIRE(test(sibling, "test/nest/", "file") == io::path("test/nest/file"));
-    REQUIRE(test(child,   "",           "file") == io::path("file"));
-    REQUIRE(test(child,   "test",       "file") == io::path("test/file"));
-    REQUIRE(test(child,   "test/",      "file") == io::path("test/file"));
-    REQUIRE(test(child,   "test/nest",  "file") == io::path("test/nest/file"));
-    REQUIRE(test(child,   "test/nest/", "file") == io::path("test/nest/file"));
+    SECTION("Sibling")
+    {
+        const auto s = IDecoder::NamingStrategy::Sibling;
+        do_test(s, "",           "file", "file");
+        do_test(s, "test",       "file", "file");
+        do_test(s, "test/",      "file", "test/file");
+        do_test(s, "test/nest",  "file", "test/file");
+        do_test(s, "test/nest/", "file", "test/nest/file");
+        do_test(s, "test/nest",  "a/b", "test/a/b");
+    }
 
-    REQUIRE(test(root,    "test/nest",  "a/b") == io::path("a/b"));
-    REQUIRE(test(sibling, "test/nest",  "a/b") == io::path("test/a/b"));
-    REQUIRE(test(child,   "test/nest",  "a/b") == io::path("test/nest/a/b"));
+    SECTION("Child")
+    {
+        const auto s = IDecoder::NamingStrategy::Child;
+        do_test(s, "",           "file", "file");
+        do_test(s, "test",       "file", "test/file");
+        do_test(s, "test/",      "file", "test/file");
+        do_test(s, "test/nest",  "file", "test/nest/file");
+        do_test(s, "test/nest/", "file", "test/nest/file");
+        do_test(s, "test/nest",  "a/b", "test/nest/a/b");
+    }
 }
