@@ -81,8 +81,12 @@ namespace au {
         void operator +=(const bstr &other);
         void operator +=(const char c);
         void operator +=(const u8 c);
-        bool operator !=(const bstr &other) const;
         bool operator ==(const bstr &other) const;
+        bool operator !=(const bstr &other) const;
+        bool operator <=(const bstr &other) const;
+        bool operator >=(const bstr &other) const;
+        bool operator <(const bstr &other) const;
+        bool operator >(const bstr &other) const;
         u8 &operator [](const size_t pos);
         const u8 &operator [](const size_t pos) const;
         u8 &at(const size_t pos);

@@ -115,6 +115,26 @@ bool bstr::operator !=(const bstr &other) const
     return v != other.v;
 }
 
+bool bstr::operator <=(const bstr &other) const
+{
+    return v <= other.v;
+}
+
+bool bstr::operator >=(const bstr &other) const
+{
+    return v >= other.v;
+}
+
+bool bstr::operator <(const bstr &other) const
+{
+    return v < other.v;
+}
+
+bool bstr::operator >(const bstr &other) const
+{
+    return v > other.v;
+}
+
 u8 &bstr::operator [](const size_t pos)
 {
     return v[pos];
