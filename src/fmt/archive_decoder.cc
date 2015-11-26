@@ -19,27 +19,6 @@ IDecoder::NamingStrategy ArchiveDecoder::naming_strategy() const
     return NamingStrategy::Child;
 }
 
-void ArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-}
-
-void ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-}
-
-bool ArchiveDecoder::is_recognized(io::File &input_file) const
-{
-    try
-    {
-        input_file.stream.seek(0);
-        return is_recognized_impl(input_file);
-    }
-    catch (...)
-    {
-        return false;
-    }
-}
-
 void ArchiveDecoder::unpack(
     io::File &input_file, const FileSaver &file_saver) const
 {

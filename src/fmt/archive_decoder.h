@@ -17,15 +17,11 @@ namespace fmt {
         std::vector<std::unique_ptr<ArchiveEntry>> entries;
     };
 
-    class ArchiveDecoder : public IDecoder
+    class ArchiveDecoder : public BaseDecoder
     {
     public:
         ArchiveDecoder();
         virtual ~ArchiveDecoder();
-
-        virtual void register_cli_options(ArgParser &arg_parser) const override;
-        virtual void parse_cli_options(const ArgParser &arg_parser) override;
-        bool is_recognized(io::File &input_file) const override;
 
         void unpack(
             io::File &input_file,
@@ -45,8 +41,6 @@ namespace fmt {
             const ArchiveEntry &e) const;
 
     protected:
-        virtual bool is_recognized_impl(io::File &input_file) const = 0;
-
         virtual std::unique_ptr<ArchiveMeta> read_meta_impl(
             io::File &input_file) const = 0;
 

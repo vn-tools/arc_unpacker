@@ -38,7 +38,7 @@ grep 'struct \|class ' **/*.{cc,h} \
     | grep -v 'err.*struct .*Error' \
     | grep -v 'arg_parser.*Option' \
     | grep -v 'bit_reader.*class Reader' \
-    | grep -v 'class \(Archive\|File\|Image\|Audio\)Decoder' \
+    | grep -v 'class \(Base\|Archive\|File\|Image\|Audio\)Decoder' \
     | grep -v 'struct Archive\(Entry\|Meta\)$' \
     | grep -v 'fmt/entis.*class \(AudioDecoderImpl\|Decoder\)' \
     | grep -v 'fmt/glib.*class Plugin' \

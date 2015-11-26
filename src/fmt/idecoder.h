@@ -36,4 +36,14 @@ namespace fmt {
         virtual NamingStrategy naming_strategy() const = 0;
     };
 
+    class BaseDecoder : public IDecoder
+    {
+    public:
+        virtual void register_cli_options(ArgParser &arg_parser) const override;
+        virtual void parse_cli_options(const ArgParser &arg_parser) override;
+        virtual bool is_recognized(io::File &input_file) const override;
+
+    protected:
+        virtual bool is_recognized_impl(io::File &input_file) const = 0;
+    };
 } }

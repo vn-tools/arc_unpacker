@@ -14,27 +14,6 @@ IDecoder::NamingStrategy ImageDecoder::naming_strategy() const
     return NamingStrategy::Sibling;
 }
 
-void ImageDecoder::register_cli_options(ArgParser &) const
-{
-}
-
-void ImageDecoder::parse_cli_options(const ArgParser &)
-{
-}
-
-bool ImageDecoder::is_recognized(io::File &file) const
-{
-    try
-    {
-        file.stream.seek(0);
-        return is_recognized_impl(file);
-    }
-    catch (...)
-    {
-        return false;
-    }
-}
-
 void ImageDecoder::unpack(
     io::File &input_file, const FileSaver &file_saver) const
 {

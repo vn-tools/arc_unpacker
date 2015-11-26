@@ -6,15 +6,10 @@
 namespace au {
 namespace fmt {
 
-    class AudioDecoder : public IDecoder
+    class AudioDecoder : public BaseDecoder
     {
     public:
         virtual ~AudioDecoder();
-
-        virtual void register_cli_options(ArgParser &arg_parser) const override;
-        virtual void parse_cli_options(const ArgParser &arg_parser) override;
-
-        bool is_recognized(io::File &input_file) const override;
 
         void unpack(
             io::File &input_file,
@@ -25,7 +20,6 @@ namespace fmt {
         sfx::Wave decode(io::File &input_file) const;
 
     protected:
-        virtual bool is_recognized_impl(io::File &input_file) const = 0;
         virtual sfx::Wave decode_impl(io::File &input_file) const = 0;
     };
 
