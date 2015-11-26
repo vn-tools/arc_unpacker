@@ -8,12 +8,12 @@ bool P16AudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("P16");
 }
 
-sfx::Wave P16AudioDecoder::decode_impl(io::File &input_file) const
+sfx::Audio P16AudioDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto samples = input_file.stream.read_to_eof();
-    sfx::Wave audio;
-    audio.data.samples = samples;
+    sfx::Audio audio;
+    audio.samples = samples;
     return audio;
 }
 

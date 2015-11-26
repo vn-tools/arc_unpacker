@@ -15,6 +15,6 @@ namespace tests {
         const fmt::FileDecoder &decoder, io::File &input_file);
 
     pix::Grid decode(const fmt::ImageDecoder &decoder, io::File &input_file);
-    sfx::Wave decode(const fmt::AudioDecoder &decoder, io::File &input_file);
+    sfx::Audio decode(const fmt::AudioDecoder &decoder, io::File &input_file);
 
 } }

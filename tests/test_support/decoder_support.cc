@@ -42,7 +42,7 @@ pix::Grid tests::decode(
     return decoder.decode(input_file);
 }
 
-sfx::Wave tests::decode(
+sfx::Audio tests::decode(
     const fmt::AudioDecoder &decoder, io::File &input_file)
 {
     navigate_to_random_place(input_file.stream);

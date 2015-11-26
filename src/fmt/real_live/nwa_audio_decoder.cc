@@ -223,7 +223,7 @@ bool NwaAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("nwa");
 }
 
-sfx::Wave NwaAudioDecoder::decode_impl(io::File &input_file) const
+sfx::Audio NwaAudioDecoder::decode_impl(io::File &input_file) const
 {
     // buffer the file in memory for performance
     io::MemoryStream stream(input_file.stream.read_to_eof());
@@ -245,11 +245,11 @@ sfx::Wave NwaAudioDecoder::decode_impl(io::File &input_file) const
         ? nwa_read_uncompressed(stream, header)
         : nwa_read_compressed(stream, header);
 
-    sfx::Wave audio;
-    audio.fmt.channel_count = header.channel_count;
-    audio.fmt.bits_per_sample = header.bits_per_sample;
-    audio.fmt.sample_rate = header.sample_rate;
-    audio.data.samples = samples;
+    sfx::Audio audio;
+    audio.channel_count = header.channel_count;
+    audio.bits_per_sample = header.bits_per_sample;
+    audio.sample_rate = header.sample_rate;
+    audio.samples = samples;
     return audio;
 }
 

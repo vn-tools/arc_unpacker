@@ -23,7 +23,7 @@ bool WpnAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-sfx::Wave WpnAudioDecoder::decode_impl(io::File &input_file) const
+sfx::Audio WpnAudioDecoder::decode_impl(io::File &input_file) const
 {
     const auto chunk_count = input_file.stream.seek(magic.size()).read_u32_le();
     std::map<bstr, Chunk> chunks;
@@ -36,25 +36,25 @@ sfx::Wave WpnAudioDecoder::decode_impl(io::File &input_file) const
         chunks[chunk_name] = chunk;
     }
 
-    sfx::Wave audio;
+    sfx::Audio audio;
 
     const auto &fmt_chunk = chunks.at(fmt_magic);
     input_file.stream.seek(fmt_chunk.offset);
-    audio.fmt.pcm_type = input_file.stream.read_u16_le();
-    audio.fmt.channel_count = input_file.stream.read_u16_le();
-    audio.fmt.sample_rate = input_file.stream.read_u32_le();
+    audio.codec = input_file.stream.read_u16_le();
+    audio.channel_count = input_file.stream.read_u16_le();
+    audio.sample_rate = input_file.stream.read_u32_le();
     const auto byte_rate = input_file.stream.read_u32_le();
     const auto block_align = input_file.stream.read_u16_le();
-    audio.fmt.bits_per_sample = input_file.stream.read_u16_le();
+    audio.bits_per_sample = input_file.stream.read_u16_le();
     if (input_file.stream.tell() - fmt_chunk.offset < fmt_chunk.size)
     {
         const auto extra_data_size = input_file.stream.read_u16_le();
-        audio.fmt.extra_data = input_file.stream.read(extra_data_size);
+        audio.extra_codec_headers = input_file.stream.read(extra_data_size);
     }
 
     const auto &data_chunk = chunks.at(data_magic);
     input_file.stream.seek(data_chunk.offset);
-    audio.data.samples = input_file.stream.read(data_chunk.size);
+    audio.samples = input_file.stream.read(data_chunk.size);
 
     return audio;
 }

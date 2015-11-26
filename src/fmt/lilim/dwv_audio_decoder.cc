@@ -12,7 +12,7 @@ bool DwvAudioDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
-sfx::Wave DwvAudioDecoder::decode_impl(io::File &input_file) const
+sfx::Audio DwvAudioDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 2);
     const auto header_size = input_file.stream.read_u32_le();
@@ -20,20 +20,20 @@ sfx::Wave DwvAudioDecoder::decode_impl(io::File &input_file) const
     const auto header = input_file.stream.read(header_size);
     const auto samples = input_file.stream.read(samples_size);
 
-    sfx::Wave audio;
-    audio.data.samples = samples;
+    sfx::Audio audio;
+    audio.samples = samples;
 
     io::MemoryStream header_stream(header);
-    audio.fmt.pcm_type = header_stream.read_u16_le();
-    audio.fmt.channel_count = header_stream.read_u16_le();
-    audio.fmt.sample_rate = header_stream.read_u32_le();
+    audio.codec = header_stream.read_u16_le();
+    audio.channel_count = header_stream.read_u16_le();
+    audio.sample_rate = header_stream.read_u32_le();
     const auto byte_rate = header_stream.read_u32_le();
     const auto block_align = header_stream.read_u16_le();
-    audio.fmt.bits_per_sample = header_stream.read_u16_le();
+    audio.bits_per_sample = header_stream.read_u16_le();
     if (header_stream.tell() < header_stream.size())
     {
         const auto extra_data_size = header_stream.read_u16_le();
-        audio.fmt.extra_data = header_stream.read(extra_data_size);
+        audio.extra_codec_headers = header_stream.read(extra_data_size);
     }
 
     return audio;

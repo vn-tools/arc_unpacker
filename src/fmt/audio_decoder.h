@@ -1,7 +1,7 @@
 #pragma once
 
 #include "idecoder.h"
-#include "sfx/wave.h"
+#include "sfx/audio.h"
 
 namespace au {
 namespace fmt {
@@ -17,10 +17,10 @@ namespace fmt {
 
         NamingStrategy naming_strategy() const override;
 
-        sfx::Wave decode(io::File &input_file) const;
+        sfx::Audio decode(io::File &input_file) const;
 
     protected:
-        virtual sfx::Wave decode_impl(io::File &input_file) const = 0;
+        virtual sfx::Audio decode_impl(io::File &input_file) const = 0;
     };
 
 } }

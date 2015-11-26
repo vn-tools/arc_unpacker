@@ -178,7 +178,7 @@ bool WadyAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-sfx::Wave WadyAudioDecoder::decode_impl(io::File &input_file) const
+sfx::Audio WadyAudioDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     input_file.stream.skip(2);
@@ -220,11 +220,11 @@ sfx::Wave WadyAudioDecoder::decode_impl(io::File &input_file) const
         throw err::UnsupportedVersionError(version);
     }
 
-    sfx::Wave audio;
-    audio.fmt.channel_count = channels;
-    audio.fmt.bits_per_sample = bits_per_sample;
-    audio.fmt.sample_rate = sample_rate;
-    audio.data.samples = samples;
+    sfx::Audio audio;
+    audio.channel_count = channels;
+    audio.bits_per_sample = bits_per_sample;
+    audio.sample_rate = sample_rate;
+    audio.samples = samples;
     return audio;
 }
 

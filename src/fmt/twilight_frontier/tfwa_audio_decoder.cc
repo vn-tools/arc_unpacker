@@ -10,7 +10,7 @@ bool TfwaAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-sfx::Wave TfwaAudioDecoder::decode_impl(io::File &input_file) const
+sfx::Audio TfwaAudioDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -23,11 +23,11 @@ sfx::Wave TfwaAudioDecoder::decode_impl(io::File &input_file) const
     input_file.stream.skip(2);
     size_t size = input_file.stream.read_u32_le();
 
-    sfx::Wave audio;
-    audio.fmt.channel_count = channel_count;
-    audio.fmt.bits_per_sample = bits_per_sample;
-    audio.fmt.sample_rate = sample_rate;
-    audio.data.samples = input_file.stream.read(size);
+    sfx::Audio audio;
+    audio.channel_count = channel_count;
+    audio.bits_per_sample = bits_per_sample;
+    audio.sample_rate = sample_rate;
+    audio.samples = input_file.stream.read(size);
     return audio;
 }
 

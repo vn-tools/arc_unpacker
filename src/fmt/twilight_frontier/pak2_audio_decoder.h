@@ -10,7 +10,7 @@ namespace twilight_frontier {
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
-        sfx::Wave decode_impl(io::File &input_file) const override;
+        sfx::Audio decode_impl(io::File &input_file) const override;
     };
 
 } } }

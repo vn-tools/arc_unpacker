@@ -13,9 +13,9 @@ bool WavAudioDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.seek(8).read(wave_magic.size()) == wave_magic;
 }
 
-sfx::Wave WavAudioDecoder::decode_impl(io::File &input_file) const
+sfx::Audio WavAudioDecoder::decode_impl(io::File &input_file) const
 {
-    sfx::Wave audio;
+    sfx::Audio audio;
     input_file.stream.seek(12);
     while (!input_file.stream.eof())
     {
@@ -24,23 +24,24 @@ sfx::Wave WavAudioDecoder::decode_impl(io::File &input_file) const
         const auto chunk_start = input_file.stream.tell();
         if (chunk_name == "fmt\x20"_b)
         {
-            audio.fmt.pcm_type = input_file.stream.read_u16_le();
-            audio.fmt.channel_count = input_file.stream.read_u16_le();
-            audio.fmt.sample_rate = input_file.stream.read_u32_le();
+            audio.codec = input_file.stream.read_u16_le();
+            audio.channel_count = input_file.stream.read_u16_le();
+            audio.sample_rate = input_file.stream.read_u32_le();
             const auto byte_rate = input_file.stream.read_u32_le();
             const auto block_align = input_file.stream.read_u16_le();
-            audio.fmt.bits_per_sample = input_file.stream.read_u16_le();
+            audio.bits_per_sample = input_file.stream.read_u16_le();
             const auto chunk_pos = input_file.stream.tell() - chunk_start;
             if (chunk_pos < chunk_size)
             {
                 const auto extra_data_size = input_file.stream.read_u16_le();
-                audio.fmt.extra_data = input_file.stream.read(extra_data_size);
+                audio.extra_codec_headers
+                    = input_file.stream.read(extra_data_size);
             }
             input_file.stream.seek(chunk_start + chunk_size);
         }
         else if (chunk_name == "data"_b)
         {
-            audio.data.samples = input_file.stream.read(chunk_size);
+            audio.samples = input_file.stream.read(chunk_size);
         }
         else
         {

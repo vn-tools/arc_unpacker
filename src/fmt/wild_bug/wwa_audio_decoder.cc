@@ -12,12 +12,12 @@ bool WwaAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-sfx::Wave WwaAudioDecoder::decode_impl(io::File &input_file) const
+sfx::Audio WwaAudioDecoder::decode_impl(io::File &input_file) const
 {
     wpx::Decoder decoder(input_file.stream);
     io::MemoryStream metadata_stream(decoder.read_plain_section(0x20));
 
-    const auto format_type = metadata_stream.read_u16_le();
+    const auto pcm_type = metadata_stream.read_u16_le();
     const auto channel_count = metadata_stream.read_u16_le();
     const auto sample_rate = metadata_stream.read_u32_le();
     const auto byte_rate = metadata_stream.read_u32_le();
@@ -26,12 +26,12 @@ sfx::Wave WwaAudioDecoder::decode_impl(io::File &input_file) const
 
     const auto samples = decoder.read_compressed_section(0x21);
 
-    sfx::Wave audio;
-    audio.fmt.pcm_type = format_type;
-    audio.fmt.channel_count = channel_count;
-    audio.fmt.sample_rate = sample_rate;
-    audio.fmt.bits_per_sample = bits_per_sample;
-    audio.data.samples = samples;
+    sfx::Audio audio;
+    audio.codec = pcm_type;
+    audio.channel_count = channel_count;
+    audio.sample_rate = sample_rate;
+    audio.bits_per_sample = bits_per_sample;
+    audio.samples = samples;
     return audio;
 }
 

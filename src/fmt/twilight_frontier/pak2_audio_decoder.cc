@@ -8,7 +8,7 @@ bool Pak2AudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("cv3");
 }
 
-sfx::Wave Pak2AudioDecoder::decode_impl(io::File &input_file) const
+sfx::Audio Pak2AudioDecoder::decode_impl(io::File &input_file) const
 {
     const auto format = input_file.stream.read_u16_le();
     const auto channel_count = input_file.stream.read_u16_le();
@@ -20,11 +20,11 @@ sfx::Wave Pak2AudioDecoder::decode_impl(io::File &input_file) const
     const auto size = input_file.stream.read_u32_le();
     const auto samples = input_file.stream.read(size);
 
-    sfx::Wave audio;
-    audio.fmt.channel_count = channel_count;
-    audio.fmt.bits_per_sample = bits_per_sample;
-    audio.fmt.sample_rate = sample_rate;
-    audio.data.samples = samples;
+    sfx::Audio audio;
+    audio.channel_count = channel_count;
+    audio.bits_per_sample = bits_per_sample;
+    audio.sample_rate = sample_rate;
+    audio.samples = samples;
     return audio;
 }
 
