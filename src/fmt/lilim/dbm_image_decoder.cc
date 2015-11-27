@@ -17,7 +17,7 @@ bool DbmImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read_u32_le() == input_file.stream.size();
 }
 
-pix::Grid DbmImageDecoder::decode_impl(io::File &input_file) const
+pix::Image DbmImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 8);
     const auto width = input_file.stream.read_u16_le();
@@ -30,14 +30,14 @@ pix::Grid DbmImageDecoder::decode_impl(io::File &input_file) const
 
     if (format == 1 || format == 2 || format == 3)
     {
-        auto image = pix::Grid(width, height, data, pix::Format::BGR888);
+        auto image = pix::Image(width, height, data, pix::Format::BGR888);
         image.flip_vertically();
         return image;
     }
     else if (format == 4)
     {
-        auto mask = pix::Grid(width, height / 2, data, pix::Format::BGR888);
-        auto image = pix::Grid(
+        auto mask = pix::Image(width, height / 2, data, pix::Format::BGR888);
+        auto image = pix::Image(
             width,
             height / 2,
             data.substr(3 * width * height / 2),

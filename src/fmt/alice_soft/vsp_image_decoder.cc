@@ -142,7 +142,7 @@ static bstr decompress_vsp(io::Stream &input, size_t width, size_t height)
     return output;
 }
 
-pix::Grid VspImageDecoder::decode_impl(io::File &input_file) const
+pix::Image VspImageDecoder::decode_impl(io::File &input_file) const
 {
     auto x = input_file.stream.read_u16_le();
     auto y = input_file.stream.read_u16_le();
@@ -150,7 +150,7 @@ pix::Grid VspImageDecoder::decode_impl(io::File &input_file) const
     auto height = input_file.stream.read_u16_le() - y;
     auto use_pms = input_file.stream.read_u8() > 0;
 
-    std::unique_ptr<pix::Grid> pixels;
+    std::unique_ptr<pix::Image> image;
 
     if (use_pms)
     {
@@ -162,7 +162,7 @@ pix::Grid VspImageDecoder::decode_impl(io::File &input_file) const
         input_file.stream.seek(0x320);
         auto pixel_data = PmsImageDecoder::decompress_8bit(
             input_file.stream, width, height);
-        pixels.reset(new pix::Grid(width, height, pixel_data, palette));
+        image.reset(new pix::Image(width, height, pixel_data, palette));
     }
     else
     {
@@ -179,10 +179,10 @@ pix::Grid VspImageDecoder::decode_impl(io::File &input_file) const
 
         input_file.stream.seek(0x3A);
         auto pixel_data = decompress_vsp(input_file.stream, width, height);
-        pixels.reset(new pix::Grid(width, height, pixel_data, palette));
+        image.reset(new pix::Image(width, height, pixel_data, palette));
     }
 
-    return *pixels;
+    return *image;
 }
 
 static auto dummy = fmt::register_fmt<VspImageDecoder>("alice-soft/vsp");

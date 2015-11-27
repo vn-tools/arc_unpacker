@@ -1,7 +1,7 @@
 #include "fmt/will/wipf_image_archive_decoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -104,7 +104,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<pix::Grid> WipfImageArchiveDecoder::read_image(
+std::unique_ptr<pix::Image> WipfImageArchiveDecoder::read_image(
     io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -123,40 +123,40 @@ std::unique_ptr<pix::Grid> WipfImageArchiveDecoder::read_image(
     auto w = entry->width;
     auto h = entry->height;
 
-    std::unique_ptr<pix::Grid> pixels;
+    std::unique_ptr<pix::Image> image;
     if (entry->depth == 8)
     {
-        pixels.reset(new pix::Grid(w, h, data, *palette));
+        image = std::make_unique<pix::Image>(w, h, data, *palette);
     }
     else if (entry->depth == 24)
     {
-        pixels.reset(new pix::Grid(w, h));
+        image = std::make_unique<pix::Image>(w, h);
         for (auto y : util::range(h))
         for (auto x : util::range(w))
         {
-            pixels->at(x, y).b = data[w * h * 0 + y * w + x];
-            pixels->at(x, y).g = data[w * h * 1 + y * w + x];
-            pixels->at(x, y).r = data[w * h * 2 + y * w + x];
-            pixels->at(x, y).a = 0xFF;
+            image->at(x, y).b = data[w * h * 0 + y * w + x];
+            image->at(x, y).g = data[w * h * 1 + y * w + x];
+            image->at(x, y).r = data[w * h * 2 + y * w + x];
+            image->at(x, y).a = 0xFF;
         }
     }
     else
         throw err::UnsupportedBitDepthError(entry->depth);
 
-    return pixels;
+    return image;
 }
 
 std::unique_ptr<io::File> WipfImageArchiveDecoder::read_file_impl(
     io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
-    return util::file_from_grid(*read_image(input_file, m, e), e.name);
+    return util::file_from_image(*read_image(input_file, m, e), e.name);
 }
 
-std::vector<std::shared_ptr<pix::Grid>>
+std::vector<std::shared_ptr<pix::Image>>
     WipfImageArchiveDecoder::unpack_to_images(io::File &input_file) const
 {
     auto meta = read_meta(input_file);
-    std::vector<std::shared_ptr<pix::Grid>> output;
+    std::vector<std::shared_ptr<pix::Image>> output;
     for (auto &entry : meta->entries)
         output.push_back(read_image(input_file, *meta, *entry));
     return output;

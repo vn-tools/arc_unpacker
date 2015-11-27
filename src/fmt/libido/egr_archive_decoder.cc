@@ -1,6 +1,6 @@
 #include "fmt/libido/egr_archive_decoder.h"
 #include "err.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -57,13 +57,13 @@ std::unique_ptr<io::File> EgrArchiveDecoder::read_file_impl(
     }
 
     input_file.stream.skip(0x174);
-    pix::Grid pixels(
+    pix::Image image(
         entry->width,
         entry->height,
         input_file.stream.read(entry->width * entry->height),
         palette);
 
-    return util::file_from_grid(pixels, entry->name);
+    return util::file_from_image(image, entry->name);
 }
 
 static auto dummy = fmt::register_fmt<EgrArchiveDecoder>("libido/egr");

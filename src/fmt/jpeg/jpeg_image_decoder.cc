@@ -13,7 +13,7 @@ bool JpegImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid JpegImageDecoder::decode_impl(io::File &input_file) const
+pix::Image JpegImageDecoder::decode_impl(io::File &input_file) const
 {
     bstr source = input_file.stream.read_to_eof();
 
@@ -47,7 +47,7 @@ pix::Grid JpegImageDecoder::decode_impl(io::File &input_file) const
     }
     jpeg_finish_decompress(&info);
 
-    return pix::Grid(width, height, raw_data, format);
+    return pix::Image(width, height, raw_data, format);
 }
 
 static auto dummy = fmt::register_fmt<JpegImageDecoder>("jpeg/jpeg");

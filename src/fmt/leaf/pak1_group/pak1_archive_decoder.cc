@@ -5,7 +5,7 @@
 #include "err.h"
 #include "fmt/leaf/pak1_group/grp_image_decoder.h"
 #include "util/encoding.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -225,7 +225,7 @@ void Pak1ArchiveDecoder::preprocess(
 
             auto sprite = grp_image_decoder.decode(
                 *sprite_file, palette_file, mask_file);
-            saver.save(util::file_from_grid(sprite, sprite_entry->name));
+            saver.save(util::file_from_image(sprite, sprite_entry->name));
 
             sprite_entry->already_unpacked = true;
             if (mask_entry)

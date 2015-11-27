@@ -83,7 +83,7 @@ static bstr decode_pixel_data(
     return decode_lossless_pixel_data(header, *decoder);
 }
 
-pix::Grid EriImageDecoder::decode_impl(io::File &input_file) const
+pix::Image EriImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0x40);
 
@@ -100,7 +100,7 @@ pix::Grid EriImageDecoder::decode_impl(io::File &input_file) const
     if (!pixel_data_sections.size())
         throw err::CorruptDataError("No pixel data found");
 
-    pix::Grid image(header.width, header.height * pixel_data_sections.size());
+    pix::Image image(header.width, header.height * pixel_data_sections.size());
 
     for (const auto i : util::range(pixel_data_sections.size()))
     {
@@ -119,7 +119,7 @@ pix::Grid EriImageDecoder::decode_impl(io::File &input_file) const
         else
             throw err::UnsupportedBitDepthError(header.bit_depth);
 
-        pix::Grid subimage(
+        pix::Image subimage(
             header.width, header.height, pixel_data, fmt);
         if (header.flip)
             subimage.flip_vertically();

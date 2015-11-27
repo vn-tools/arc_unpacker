@@ -126,10 +126,10 @@ static std::unique_ptr<DdsHeaderDx10> read_header_dx10(io::Stream &stream)
     return header;
 }
 
-static std::unique_ptr<pix::Grid> create_pixels(
+static std::unique_ptr<pix::Image> create_image(
     size_t width, size_t height)
 {
-    return std::make_unique<pix::Grid>(
+    return std::make_unique<pix::Image>(
         ((width + 3) / 4) * 4, ((height + 3) / 4) * 4);
 }
 
@@ -206,10 +206,10 @@ static void decode_dxt5_block(io::Stream &stream, u8 output_alpha[4][4])
     }
 }
 
-static std::unique_ptr<pix::Grid> decode_dxt1(
+static std::unique_ptr<pix::Image> decode_dxt1(
     io::Stream &stream, size_t width, size_t height)
 {
-    auto pixels = create_pixels(width, height);
+    auto image = create_image(width, height);
     for (auto block_y : util::range(0, height, 4))
     for (auto block_x : util::range(0, width, 4))
     {
@@ -217,15 +217,15 @@ static std::unique_ptr<pix::Grid> decode_dxt1(
         decode_dxt1_block(stream, colors);
         for (auto y : util::range(4))
         for (auto x : util::range(4))
-            pixels->at(block_x + x, block_y + y) = colors[y][x];
+            image->at(block_x + x, block_y + y) = colors[y][x];
     }
-    return pixels;
+    return image;
 }
 
-static std::unique_ptr<pix::Grid> decode_dxt3(
+static std::unique_ptr<pix::Image> decode_dxt3(
     io::Stream &stream, size_t width, size_t height)
 {
-    auto pixels = create_pixels(width, height);
+    auto image = create_image(width, height);
     for (auto block_y : util::range(0, height, 4))
     for (auto block_x : util::range(0, width, 4))
     {
@@ -246,16 +246,16 @@ static std::unique_ptr<pix::Grid> decode_dxt3(
         for (auto x : util::range(4))
         {
             colors[y][x].a = alpha[y][x];
-            pixels->at(block_x + x, block_y + y) = colors[y][x];
+            image->at(block_x + x, block_y + y) = colors[y][x];
         }
     }
-    return pixels;
+    return image;
 }
 
-static std::unique_ptr<pix::Grid> decode_dxt5(
+static std::unique_ptr<pix::Image> decode_dxt5(
     io::Stream &stream, size_t width, size_t height)
 {
-    auto pixels = create_pixels(width, height);
+    auto image = create_image(width, height);
     for (auto block_y : util::range(0, height, 4))
     for (auto block_x : util::range(0, width, 4))
     {
@@ -268,10 +268,10 @@ static std::unique_ptr<pix::Grid> decode_dxt5(
         for (auto x : util::range(4))
         {
             colors[y][x].a = alpha[y][x];
-            pixels->at(block_x + x, block_y + y) = colors[y][x];
+            image->at(block_x + x, block_y + y) = colors[y][x];
         }
     }
-    return pixels;
+    return image;
 }
 
 bool DdsImageDecoder::is_recognized_impl(io::File &input_file) const
@@ -279,7 +279,7 @@ bool DdsImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid DdsImageDecoder::decode_impl(io::File &input_file) const
+pix::Image DdsImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -290,15 +290,15 @@ pix::Grid DdsImageDecoder::decode_impl(io::File &input_file) const
     auto width = header->width;
     auto height = header->height;
 
-    std::unique_ptr<pix::Grid> pixels(nullptr);
+    std::unique_ptr<pix::Image> image(nullptr);
     if (header->pixel_format.flags & DDPF_FOURCC)
     {
         if (header->pixel_format.four_cc == magic_dxt1)
-            pixels = decode_dxt1(input_file.stream, width, height);
+            image = decode_dxt1(input_file.stream, width, height);
         else if (header->pixel_format.four_cc == magic_dxt3)
-            pixels = decode_dxt3(input_file.stream, width, height);
+            image = decode_dxt3(input_file.stream, width, height);
         else if (header->pixel_format.four_cc == magic_dxt5)
-            pixels = decode_dxt5(input_file.stream, width, height);
+            image = decode_dxt5(input_file.stream, width, height);
         else
         {
             throw err::NotSupportedError(util::format(
@@ -310,15 +310,15 @@ pix::Grid DdsImageDecoder::decode_impl(io::File &input_file) const
     {
         if (header->pixel_format.rgb_bit_count == 32)
         {
-            pixels.reset(new pix::Grid(
+            image.reset(new pix::Image(
                 width, height, input_file.stream, pix::Format::BGRA8888));
         }
     }
 
-    if (pixels == nullptr)
+    if (image == nullptr)
         throw err::NotSupportedError("Unsupported pixel format");
 
-    return *pixels;
+    return *image;
 }
 
 static auto dummy = fmt::register_fmt<DdsImageDecoder>("microsoft/dds");

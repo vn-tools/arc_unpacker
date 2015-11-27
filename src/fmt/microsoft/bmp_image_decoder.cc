@@ -146,12 +146,12 @@ static Header read_header(io::Stream &stream)
     return h;
 }
 
-static pix::Grid get_pixels_from_palette(
+static pix::Image get_image_from_palette(
     io::Stream &stream,
     const Header &header,
     const pix::Palette &palette)
 {
-    pix::Grid pixels(header.width, header.height);
+    pix::Image image(header.width, header.height);
     for (auto y : util::range(header.height))
     {
         stream.seek(header.data_offset + header.stride * y);
@@ -160,44 +160,44 @@ static pix::Grid get_pixels_from_palette(
         {
             auto c = bit_reader.get(header.depth);
             if (c < palette.size())
-                pixels.at(x, y) = palette[c];
+                image.at(x, y) = palette[c];
         }
     }
-    return pixels;
+    return image;
 }
 
-static std::unique_ptr<pix::Grid> get_pixels_without_palette_fast24(
+static std::unique_ptr<pix::Image> get_image_without_palette_fast24(
     io::Stream &stream, const Header &header)
 {
-    auto pixels = std::make_unique<pix::Grid>(header.width, header.height);
+    auto image = std::make_unique<pix::Image>(header.width, header.height);
     for (auto y : util::range(header.height))
     {
         stream.seek(header.data_offset + header.stride * y);
-        pix::Grid row(header.width, 1, stream, pix::Format::BGR888);
+        pix::Image row(header.width, 1, stream, pix::Format::BGR888);
         for (auto x : util::range(header.width))
-            pixels->at(x, y) = row.at(x, 0);
+            image->at(x, y) = row.at(x, 0);
     }
-    return pixels;
+    return image;
 }
 
-static std::unique_ptr<pix::Grid> get_pixels_without_palette_fast32(
+static std::unique_ptr<pix::Image> get_image_without_palette_fast32(
     io::Stream &stream, const Header &header)
 {
-    auto pixels = std::make_unique<pix::Grid>(header.width, header.height);
+    auto image = std::make_unique<pix::Image>(header.width, header.height);
     for (auto y : util::range(header.height))
     {
         stream.seek(header.data_offset + header.stride * y);
-        pix::Grid row(header.width, 1, stream, pix::Format::BGRA8888);
+        pix::Image row(header.width, 1, stream, pix::Format::BGRA8888);
         for (auto x : util::range(header.width))
-            pixels->at(x, y) = row.at(x, 0);
+            image->at(x, y) = row.at(x, 0);
     }
-    return pixels;
+    return image;
 }
 
-static std::unique_ptr<pix::Grid> get_pixels_without_palette_generic(
+static std::unique_ptr<pix::Image> get_image_without_palette_generic(
     io::Stream &stream, const Header &header)
 {
-    auto pixels = std::make_unique<pix::Grid>(header.width, header.height);
+    auto image = std::make_unique<pix::Image>(header.width, header.height);
     double multipliers[4];
     for (auto i : util::range(4))
         multipliers[i] = 255.0 / std::max<size_t>(1, header.masks[i]);
@@ -213,20 +213,20 @@ static std::unique_ptr<pix::Grid> get_pixels_without_palette_generic(
                 c = rotl(c, header.depth, -header.rotation);
             else if (header.rotation > 0)
                 c = rotr(c, header.depth, header.rotation);
-            auto &p = pixels->at(x, y);
+            auto &p = image->at(x, y);
             p.b = (c & header.masks[0]) * multipliers[0];
             p.g = (c & header.masks[1]) * multipliers[1];
             p.r = (c & header.masks[2]) * multipliers[2];
             p.a = (c & header.masks[3]) * multipliers[3];
         }
     }
-    return pixels;
+    return image;
 }
 
-static pix::Grid get_pixels_without_palette(
+static pix::Image get_image_without_palette(
     io::Stream &stream, const Header &header)
 {
-    std::unique_ptr<pix::Grid> pixels;
+    std::unique_ptr<pix::Image> image;
 
     if (header.depth == 24
         && header.masks[0] == 0xFF0000
@@ -234,7 +234,7 @@ static pix::Grid get_pixels_without_palette(
         && header.masks[2] == 0xFF
         && header.masks[3] == 0)
     {
-        pixels = get_pixels_without_palette_fast24(stream, header);
+        image = get_image_without_palette_fast24(stream, header);
     }
 
     else if (header.depth == 32
@@ -243,19 +243,19 @@ static pix::Grid get_pixels_without_palette(
         && header.masks[2] == 0xFF00
         && (header.masks[3] == 0 || header.masks[3] == 0xFF))
     {
-        pixels = get_pixels_without_palette_fast32(stream, header);
+        image = get_image_without_palette_fast32(stream, header);
     }
 
     else
     {
-        pixels = get_pixels_without_palette_generic(stream, header);
+        image = get_image_without_palette_generic(stream, header);
     }
 
     if (!header.masks[3])
-        for (auto &c : *pixels)
+        for (auto &c : *image)
             c.a = 0xFF;
 
-    return *pixels;
+    return *image;
 }
 
 bool BmpImageDecoder::is_recognized_impl(io::File &input_file) const
@@ -266,7 +266,7 @@ bool BmpImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read_u32_le() == 0; // but this should be reliable
 }
 
-pix::Grid BmpImageDecoder::decode_impl(io::File &input_file) const
+pix::Image BmpImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(10);
     auto header = read_header(input_file.stream);
@@ -286,13 +286,13 @@ pix::Grid BmpImageDecoder::decode_impl(io::File &input_file) const
     if (header.compression != 0 && header.compression != 3)
         throw err::NotSupportedError("Compressed BMPs are not supported");
 
-    pix::Grid pixels = palette.size() > 0
-        ? get_pixels_from_palette(input_file.stream, header, palette)
-        : get_pixels_without_palette(input_file.stream, header);
+    pix::Image image = palette.size() > 0
+        ? get_image_from_palette(input_file.stream, header, palette)
+        : get_image_without_palette(input_file.stream, header);
 
     if (header.flip)
-        pixels.flip_vertically();
-    return pixels;
+        image.flip_vertically();
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<BmpImageDecoder>("microsoft/bmp");

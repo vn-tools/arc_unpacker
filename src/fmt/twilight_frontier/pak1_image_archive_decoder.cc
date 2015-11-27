@@ -1,7 +1,7 @@
 #include "fmt/twilight_frontier/pak1_image_archive_decoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -108,31 +108,31 @@ std::unique_ptr<io::File> Pak1ImageArchiveDecoder::read_file_impl(
                 *output_ptr++ = c;
     }
 
-    std::unique_ptr<pix::Grid> pixels;
+    std::unique_ptr<pix::Image> image;
     if (entry->depth == 32)
     {
-        pixels = std::make_unique<pix::Grid>(
+        image = std::make_unique<pix::Image>(
             entry->width, entry->height, output, pix::Format::BGRA8888);
     }
     else if (entry->depth == 24)
     {
-        pixels = std::make_unique<pix::Grid>(
+        image = std::make_unique<pix::Image>(
             entry->width, entry->height, output, pix::Format::BGR888X);
     }
     else if (entry->depth == 16)
     {
-        pixels = std::make_unique<pix::Grid>(
+        image = std::make_unique<pix::Image>(
             entry->width, entry->height, output, pix::Format::BGRA5551);
     }
     else if (entry->depth == 8)
     {
-        pixels = std::make_unique<pix::Grid>(
+        image = std::make_unique<pix::Image>(
             entry->width, entry->height, output, meta->palettes[0]);
     }
     else
         throw err::UnsupportedBitDepthError(entry->depth);
 
-    return util::file_from_grid(*pixels, entry->name);
+    return util::file_from_image(*image, entry->name);
 }
 
 static auto dummy

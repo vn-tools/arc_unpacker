@@ -2,18 +2,18 @@
 
 #include <memory>
 #include "io/file.h"
-#include "pix/grid.h"
+#include "pix/image.h"
 
 namespace au {
 namespace tests {
 
     void compare_images(
-        const pix::Grid &expected_image,
-        const pix::Grid &actual_image);
+        const pix::Image &expected_image,
+        const pix::Image &actual_image);
 
     void compare_images(
         io::File &expected_file,
-        const pix::Grid &actual_image);
+        const pix::Image &actual_image);
 
     void compare_images(
         io::File &expected_file,

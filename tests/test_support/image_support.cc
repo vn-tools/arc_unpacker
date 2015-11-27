@@ -30,7 +30,7 @@ static inline void compare_pixels(
     REQUIRE(expected.a == actual.a);
 }
 
-static pix::Grid image_from_file(io::File &file)
+static pix::Image image_from_file(io::File &file)
 {
     static const fmt::png::PngImageDecoder png_image_decoder;
     if (png_image_decoder.is_recognized(file))
@@ -48,7 +48,7 @@ static pix::Grid image_from_file(io::File &file)
 }
 
 void tests::compare_images(
-    const pix::Grid &expected_image, const pix::Grid &actual_image)
+    const pix::Image &expected_image, const pix::Image &actual_image)
 {
     REQUIRE(expected_image.width() == actual_image.width());
     REQUIRE(expected_image.height() == actual_image.height());
@@ -64,7 +64,7 @@ void tests::compare_images(
 }
 
 void tests::compare_images(
-    io::File &expected_file, const pix::Grid &actual_image)
+    io::File &expected_file, const pix::Image &actual_image)
 {
     tests::compare_images(image_from_file(expected_file), actual_image);
 }

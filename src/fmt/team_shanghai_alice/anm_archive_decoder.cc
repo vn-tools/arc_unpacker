@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <map>
 #include "err.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -89,10 +89,10 @@ static size_t read_new_texture_info(
     return base_offset + input.read_u32_le();
 }
 
-static void write_pixels(
+static void write_image(
     io::Stream &input,
     const TextureInfo &texture_info,
-    pix::Grid &pixels,
+    pix::Image &image,
     size_t stride)
 {
     if (!texture_info.has_data)
@@ -136,7 +136,7 @@ static void write_pixels(
                     "Unknown color format: %d", format));
         }
 
-        pixels.at(x + texture_info.x, y + texture_info.y) = color;
+        image.at(x + texture_info.x, y + texture_info.y) = color;
     }
 }
 
@@ -218,11 +218,11 @@ std::unique_ptr<io::File> AnmArchiveDecoder::read_file_impl(
         });
     }
 
-    pix::Grid pixels(width, height);
+    pix::Image image(width, height);
     for (auto &texture_info : entry->texture_info_list)
-        write_pixels(input_file.stream, texture_info, pixels, width);
+        write_image(input_file.stream, texture_info, image, width);
 
-    return util::file_from_grid(pixels, entry->name);
+    return util::file_from_image(image, entry->name);
 }
 
 static auto dummy

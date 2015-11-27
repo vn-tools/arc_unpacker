@@ -2,7 +2,7 @@
 #include <array>
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
@@ -117,7 +117,7 @@ std::unique_ptr<io::File> Cz10ImageArchiveDecoder::read_file_impl(
     if (entry->channels != 4)
         throw err::UnsupportedChannelCountError(entry->channels);
 
-    pix::Grid image(entry->width, entry->height);
+    pix::Image image(entry->width, entry->height);
     const auto *data_ptr = data.get<const u8>();
     for (const auto y : util::range(entry->height))
     for (const auto c : util::range(entry->channels))
@@ -125,7 +125,7 @@ std::unique_ptr<io::File> Cz10ImageArchiveDecoder::read_file_impl(
     {
         image.at(x, y)[c] = *data_ptr++;
     }
-    return util::file_from_grid(image, entry->name);
+    return util::file_from_image(image, entry->name);
 }
 
 fmt::IDecoder::NamingStrategy Cz10ImageArchiveDecoder::naming_strategy() const

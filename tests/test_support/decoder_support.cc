@@ -33,8 +33,7 @@ std::unique_ptr<io::File> tests::decode(
     return decoder.decode(input_file);
 }
 
-pix::Grid tests::decode(
-    const fmt::ImageDecoder &decoder, io::File &input_file)
+pix::Image tests::decode(const fmt::ImageDecoder &decoder, io::File &input_file)
 {
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));

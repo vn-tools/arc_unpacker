@@ -3,7 +3,7 @@
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -29,8 +29,7 @@ static void do_test(
 
     const auto actual_image = decoder.decode(
         *input_file, input_palette_file, input_mask_file);
-    const auto actual_file = util::file_from_grid(actual_image, "");
-    tests::compare_images(*expected_file, *actual_file, false);
+    tests::compare_images(*expected_file, actual_image);
 }
 
 TEST_CASE("Leaf GRP images", "[fmt]")

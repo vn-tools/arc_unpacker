@@ -137,7 +137,7 @@ bool RctImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid RctImageDecoder::decode_impl(io::File &input_file) const
+pix::Image RctImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -177,20 +177,20 @@ pix::Grid RctImageDecoder::decode_impl(io::File &input_file) const
         data = decrypt(data, p->key);
     }
     data = uncompress(data, width, height);
-    pix::Grid pixels(width, height, data, pix::Format::BGR888);
+    pix::Image image(width, height, data, pix::Format::BGR888);
 
     if (version == 1)
     {
         for (auto y : util::range(height))
         for (auto x : util::range(width))
         {
-            auto &p = pixels.at(x, y);
+            auto &p = image.at(x, y);
             if (p.r == 0xFF && p.g == 0 && p.g == 0)
                 p.a = p.r = 0;
         }
     }
 
-    return pixels;
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<RctImageDecoder>("majiro/rct");

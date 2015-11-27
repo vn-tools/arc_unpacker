@@ -64,7 +64,7 @@ bool LfgImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid LfgImageDecoder::decode_impl(io::File &input_file) const
+pix::Image LfgImageDecoder::decode_impl(io::File &input_file) const
 {
     const auto width
         = (input_file.stream.seek(36).read_u16_le()
@@ -138,7 +138,7 @@ pix::Grid LfgImageDecoder::decode_impl(io::File &input_file) const
         palette_data += static_cast<u8>(tmp << 4);
     }
     pix::Palette palette(16, palette_data, pix::Format::RGB888);
-    pix::Grid image(width, height, data, palette);
+    pix::Image image(width, height, data, palette);
     image.flip_vertically();
     return image;
 }

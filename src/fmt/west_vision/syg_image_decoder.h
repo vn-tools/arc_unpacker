@@ -10,7 +10,7 @@ namespace west_vision {
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
-        pix::Grid decode_impl(io::File &input_file) const override;
+        pix::Image decode_impl(io::File &input_file) const override;
     };
 
 } } }

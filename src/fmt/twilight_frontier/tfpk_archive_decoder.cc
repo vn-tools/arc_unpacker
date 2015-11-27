@@ -7,7 +7,7 @@
 #include "io/memory_stream.h"
 #include "util/crypt/rsa.h"
 #include "util/encoding.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/format.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
@@ -492,8 +492,8 @@ void TfpkArchiveDecoder::preprocess(
             input_file, *meta, *entry, entry->size));
         try
         {
-            auto pixels = tfbm_image_decoder.decode(full_file);
-            saver.save(util::file_from_grid(pixels, entry->name));
+            auto image = tfbm_image_decoder.decode(full_file);
+            saver.save(util::file_from_image(image, entry->name));
             entry->already_unpacked = true;
         }
         catch (...)

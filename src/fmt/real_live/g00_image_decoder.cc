@@ -59,16 +59,16 @@ static bstr decompress(
     return output;
 }
 
-static pix::Grid decode_v0(io::File &input_file, size_t width, size_t height)
+static pix::Image decode_v0(io::File &input_file, size_t width, size_t height)
 {
     const auto size_comp = input_file.stream.read_u32_le() - 8;
     const auto size_orig = input_file.stream.read_u32_le();
     const auto data = decompress(
         input_file.stream.read(size_comp), size_orig, 3, 1);
-    return pix::Grid(width, height, data, pix::Format::BGR888);
+    return pix::Image(width, height, data, pix::Format::BGR888);
 }
 
-static pix::Grid decode_v1(io::File &input_file, size_t width, size_t height)
+static pix::Image decode_v1(io::File &input_file, size_t width, size_t height)
 {
     const auto size_comp = input_file.stream.read_u32_le() - 8;
     const auto size_orig = input_file.stream.read_u32_le();
@@ -78,10 +78,10 @@ static pix::Grid decode_v1(io::File &input_file, size_t width, size_t height)
     const auto pal_data = tmp_stream.read(4 * colors);
     const auto pix_data = tmp_stream.read_to_eof();
     pix::Palette palette(colors, pal_data, pix::Format::BGRA8888);
-    return pix::Grid(width, height, pix_data, palette);
+    return pix::Image(width, height, pix_data, palette);
 }
 
-static pix::Grid decode_v2(io::File &input_file, size_t width, size_t height)
+static pix::Image decode_v2(io::File &input_file, size_t width, size_t height)
 {
     std::vector<std::unique_ptr<Region>> regions;
     const auto region_count = input_file.stream.read_u32_le();
@@ -105,7 +105,7 @@ static pix::Grid decode_v2(io::File &input_file, size_t width, size_t height)
     if (input.read_u32_le() != regions.size())
         throw err::CorruptDataError("Region count mismatch");
 
-    pix::Grid image(width, height);
+    pix::Image image(width, height);
     for (const auto &region : regions)
     {
         region->block_offset = input.read_u32_le();
@@ -133,7 +133,7 @@ static pix::Grid decode_v2(io::File &input_file, size_t width, size_t height)
             u16 part_height = input.read_u16_le();
             input.skip(0x52);
 
-            pix::Grid part(
+            pix::Image part(
                 part_width,
                 part_height,
                 input,
@@ -162,7 +162,7 @@ bool G00ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("g00");
 }
 
-pix::Grid G00ImageDecoder::decode_impl(io::File &input_file) const
+pix::Image G00ImageDecoder::decode_impl(io::File &input_file) const
 {
     u8 version = input_file.stream.read_u8();
     u16 width = input_file.stream.read_u16_le();

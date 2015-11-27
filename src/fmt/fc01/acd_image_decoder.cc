@@ -52,7 +52,7 @@ bool AcdImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid AcdImageDecoder::decode_impl(io::File &input_file) const
+pix::Image AcdImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto data_offset = input_file.stream.read_u32_le();
@@ -66,7 +66,7 @@ pix::Grid AcdImageDecoder::decode_impl(io::File &input_file) const
     pixel_data = common::custom_lzss_decompress(pixel_data, size_orig);
     pixel_data = do_decode(pixel_data, width * height);
 
-    return pix::Grid(width, height, pixel_data, pix::Format::Gray8);
+    return pix::Image(width, height, pixel_data, pix::Format::Gray8);
 }
 
 static auto dummy = fmt::register_fmt<AcdImageDecoder>("fc01/acd");

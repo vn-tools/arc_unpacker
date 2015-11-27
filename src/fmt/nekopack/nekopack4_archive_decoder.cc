@@ -3,7 +3,7 @@
 #include "err.h"
 #include "fmt/microsoft/bmp_image_decoder.h"
 #include "io/memory_stream.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
 
@@ -103,7 +103,7 @@ void Nekopack4ArchiveDecoder::preprocess(
             auto mask_file = read_file(input_file, meta, *mask_entry);
             mask_file->stream.seek(0);
             auto sprite = bmp_image_decoder.decode(*sprite_file);
-            pix::Grid mask(
+            pix::Image mask(
                 sprite.width(),
                 sprite.height(),
                 mask_file->stream,
@@ -111,7 +111,7 @@ void Nekopack4ArchiveDecoder::preprocess(
             sprite.apply_mask(mask);
             sprite_entry->already_unpacked = true;
             mask_entry->already_unpacked = true;
-            file_saver.save(util::file_from_grid(sprite, sprite_entry->name));
+            file_saver.save(util::file_from_image(sprite, sprite_entry->name));
         }
         catch (...)
         {

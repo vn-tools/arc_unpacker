@@ -17,7 +17,7 @@ bool NvsgImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(nvsg_magic.size()) == nvsg_magic;
 }
 
-pix::Grid NvsgImageDecoder::decode_impl(io::File &input_file) const
+pix::Image NvsgImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(hzc1_magic.size());
     size_t uncompressed_size = input_file.stream.read_u32_le();
@@ -64,7 +64,7 @@ pix::Grid NvsgImageDecoder::decode_impl(io::File &input_file) const
             throw err::NotSupportedError("Unexpected pixel format");
     }
 
-    return pix::Grid(width, height, data, pixel_format);
+    return pix::Image(width, height, data, pixel_format);
 }
 
 static auto dummy = fmt::register_fmt<NvsgImageDecoder>("fvp/nvsg");

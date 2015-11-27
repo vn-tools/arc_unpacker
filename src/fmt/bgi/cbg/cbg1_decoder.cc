@@ -110,7 +110,7 @@ static pix::Format bpp_to_pixel_format(int bpp)
     throw err::UnsupportedBitDepthError(bpp);
 }
 
-std::unique_ptr<pix::Grid> Cbg1Decoder::decode(io::Stream &input_stream) const
+std::unique_ptr<pix::Image> Cbg1Decoder::decode(io::Stream &input_stream) const
 {
     auto width = input_stream.read_u16_le();
     auto height = input_stream.read_u16_le();
@@ -130,5 +130,5 @@ std::unique_ptr<pix::Grid> Cbg1Decoder::decode(io::Stream &input_stream) const
     transform_colors(pixel_data, width, height, bpp);
 
     auto format = bpp_to_pixel_format(bpp);
-    return std::make_unique<pix::Grid>(width, height, pixel_data, format);
+    return std::make_unique<pix::Image>(width, height, pixel_data, format);
 }

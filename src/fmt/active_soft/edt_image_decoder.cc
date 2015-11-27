@@ -20,7 +20,7 @@ bool EdtImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid EdtImageDecoder::decode_impl(io::File &input_file) const
+pix::Image EdtImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
     const auto width = input_file.stream.read_u16_le();
@@ -105,12 +105,12 @@ pix::Grid EdtImageDecoder::decode_impl(io::File &input_file) const
         }
     }
 
-    auto ret = pix::Grid(width, height, output, pix::Format::BGR888);
+    auto image = pix::Image(width, height, output, pix::Format::BGR888);
     if (!base_file_name.empty())
-        for (auto &c : ret)
+        for (auto &c : image)
             if (c == transparent_color)
                 c.a = 0;
-    return ret;
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<EdtImageDecoder>("active-soft/edt");

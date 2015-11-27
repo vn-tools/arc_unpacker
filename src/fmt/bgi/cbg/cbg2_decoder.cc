@@ -364,7 +364,7 @@ static void process_alpha(bstr &output, io::Stream &input_stream, int width)
     }
 }
 
-std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::Stream &input_stream) const
+std::unique_ptr<pix::Image> Cbg2Decoder::decode(io::Stream &input_stream) const
 {
     size_t width = input_stream.read_u16_le();
     size_t height = input_stream.read_u16_le();
@@ -434,8 +434,8 @@ std::unique_ptr<pix::Grid> Cbg2Decoder::decode(io::Stream &input_stream) const
             process_alpha(bmp_data, raw_stream, pad_width);
     }
 
-    auto grid = std::make_unique<pix::Grid>(
+    auto image = std::make_unique<pix::Image>(
         pad_width, pad_height, bmp_data, pix::Format::BGRA8888);
-    grid->crop(width, height);
-    return grid;
+    image->crop(width, height);
+    return image;
 }

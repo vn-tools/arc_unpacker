@@ -452,7 +452,7 @@ static void decode_line(
     }
 }
 
-static void read_pixels(io::Stream &stream, pix::Grid &pixels, Header &header)
+static void read_image(io::Stream &stream, pix::Image &image, Header &header)
 {
     FilterTypes filter_types(stream);
     filter_types.decompress(header);
@@ -493,7 +493,7 @@ static void read_pixels(io::Stream &stream, pix::Grid &pixels, Header &header)
 
         for (auto yy : util::range(y, ylim))
         {
-            auto *current_line = &pixels.at(0, yy);
+            auto *current_line = &image.at(0, yy);
 
             int dir = (yy & 1) ^ 1;
             int odd_skip = ((ylim - yy -1) - (yy - y));
@@ -542,7 +542,7 @@ static void read_pixels(io::Stream &stream, pix::Grid &pixels, Header &header)
     }
 }
 
-pix::Grid Tlg6Decoder::decode(io::File &file)
+pix::Image Tlg6Decoder::decode(io::File &file)
 {
     init_table();
 
@@ -560,7 +560,7 @@ pix::Grid Tlg6Decoder::decode(io::File &file)
     if (header.channel_count != 3 && header.channel_count != 4)
         throw err::UnsupportedChannelCountError(header.channel_count);
 
-    pix::Grid pixels(header.image_width, header.image_height);
-    read_pixels(file.stream, pixels, header);
-    return pixels;
+    pix::Image image(header.image_width, header.image_height);
+    read_image(file.stream, image, header);
+    return image;
 }

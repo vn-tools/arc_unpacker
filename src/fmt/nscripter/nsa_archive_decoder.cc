@@ -1,7 +1,7 @@
 #include "fmt/nscripter/nsa_archive_decoder.h"
 #include "fmt/nscripter/spb_image_decoder.h"
 #include "io/memory_stream.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/pack/lzss.h"
 #include "util/range.h"
 
@@ -97,7 +97,7 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
         {
             SpbImageDecoder spb_image_decoder;
             output_file->stream.write(data);
-            output_file = util::file_from_grid(
+            output_file = util::file_from_image(
                 spb_image_decoder.decode(*output_file), output_file->name);
             break;
         }

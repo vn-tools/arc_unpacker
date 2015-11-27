@@ -37,7 +37,7 @@ static int custom_chunk_handler(png_structp png_ptr, png_unknown_chunkp chunk)
     return 1; // == handled
 }
 
-static pix::Grid decode(io::File &file, PngImageDecoder::ChunkHandler handler)
+static pix::Image decode(io::File &file, PngImageDecoder::ChunkHandler handler)
 {
     png_structp png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
@@ -95,7 +95,7 @@ static pix::Grid decode(io::File &file, PngImageDecoder::ChunkHandler handler)
         data += bstr(row_pointers[y], width * format_to_bpp(format));
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
-    return pix::Grid(width, height, data, format);
+    return pix::Image(width, height, data, format);
 }
 
 bool PngImageDecoder::is_recognized_impl(io::File &input_file) const
@@ -103,7 +103,7 @@ bool PngImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PngImageDecoder::decode_impl(io::File &input_file) const
+pix::Image PngImageDecoder::decode_impl(io::File &input_file) const
 {
     return ::decode(input_file, [](const std::string &name, const bstr &data)
     {
@@ -111,7 +111,7 @@ pix::Grid PngImageDecoder::decode_impl(io::File &input_file) const
     });
 }
 
-pix::Grid PngImageDecoder::decode(
+pix::Image PngImageDecoder::decode(
     io::File &input_file, PngImageDecoder::ChunkHandler chunk_handler) const
 {
     return ::decode(input_file, chunk_handler);

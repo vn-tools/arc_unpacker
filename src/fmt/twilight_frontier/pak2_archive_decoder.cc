@@ -4,7 +4,7 @@
 #include "io/filesystem.h"
 #include "io/memory_stream.h"
 #include "util/encoding.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/mt.h"
 #include "util/range.h"
 
@@ -132,8 +132,8 @@ void Pak2ArchiveDecoder::preprocess(
         auto full_file = read_file(input_file, m, *entry);
         try
         {
-            auto pixels = image_decoder.decode(*full_file);
-            saver.save(util::file_from_grid(pixels, entry->name));
+            auto image = image_decoder.decode(*full_file);
+            saver.save(util::file_from_image(image, entry->name));
             entry->already_unpacked = true;
         }
         catch (...)

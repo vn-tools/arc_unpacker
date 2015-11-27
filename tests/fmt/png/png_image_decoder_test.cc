@@ -16,11 +16,11 @@ TEST_CASE("PNG images", "[util]")
     io::File file(dir + "usagi_opaque.png", io::FileMode::Read);
 
     const PngImageDecoder decoder;
-    const auto pixels = decoder.decode(file);
-    REQUIRE(pixels.width() == 640);
-    REQUIRE(pixels.height() == 480);
+    const auto image = decoder.decode(file);
+    REQUIRE(image.width() == 640);
+    REQUIRE(image.height() == 480);
 
-    const auto color = pixels.at(200, 100);
+    const auto color = image.at(200, 100);
     REQUIRE(static_cast<int>(color.r) == 0x7C);
     REQUIRE(static_cast<int>(color.g) == 0x6A);
     REQUIRE(static_cast<int>(color.b) == 0x34);
@@ -32,11 +32,11 @@ TEST_CASE("PNG images with transparency", "[fmt]")
     io::File file(dir + "reimu_transparent.png", io::FileMode::Read);
 
     const PngImageDecoder decoder;
-    const auto pixels = decoder.decode(file);
-    REQUIRE(pixels.width() == 641);
-    REQUIRE(pixels.height() == 720);
+    const auto image = decoder.decode(file);
+    REQUIRE(image.width() == 641);
+    REQUIRE(image.height() == 720);
 
-    const auto color = pixels.at(200, 100);
+    const auto color = image.at(200, 100);
     REQUIRE(static_cast<int>(color.r) == 0xFE);
     REQUIRE(static_cast<int>(color.g) == 0x0A);
     REQUIRE(static_cast<int>(color.b) == 0x17);

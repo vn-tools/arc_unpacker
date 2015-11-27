@@ -16,12 +16,12 @@ static bstr read_file(const std::string &name)
     return file.stream.read_to_eof();
 }
 
-static std::shared_ptr<pix::Grid> read_image(const std::string &name)
+static std::shared_ptr<pix::Image> read_image(const std::string &name)
 {
     fmt::png::PngImageDecoder png_decoder;
     const auto content = read_file(name);
     io::File tmp_file("tmp.png", content);
-    return std::make_shared<pix::Grid>(png_decoder.decode(tmp_file));
+    return std::make_shared<pix::Image>(png_decoder.decode(tmp_file));
 }
 
 static std::shared_ptr<Plugin> create_plugin(

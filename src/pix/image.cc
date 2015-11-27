@@ -1,4 +1,4 @@
-#include "pix/grid.h"
+#include "pix/image.h"
 #include <algorithm>
 #include "err.h"
 #include "util/format.h"
@@ -7,7 +7,7 @@
 using namespace au;
 using namespace au::pix;
 
-struct Grid::Priv final
+struct Image::Priv final
 {
     void load(const bstr &input, Format fmt);
 
@@ -16,81 +16,91 @@ struct Grid::Priv final
     size_t height;
 };
 
-void Grid::Priv::load(const bstr &input, Format fmt)
+void Image::Priv::load(const bstr &input, Format fmt)
 {
     if (input.size() < format_to_bpp(fmt) * width * height)
         throw err::BadDataSizeError();
     read_many(input.get<const u8>(), pixels, fmt);
 }
 
-Grid::Grid(const Grid &other) : Grid(other.width(), other.height())
+Image::Image(const Image &other) : Image(other.width(), other.height())
 {
     for (auto y : util::range(p->height))
     for (auto x : util::range(p->width))
         at(x, y) = other.at(x, y);
 }
 
-Grid::Grid(size_t width, size_t height) : p(new Priv)
+Image::Image(const size_t width, const size_t height) : p(new Priv)
 {
     p->width = width;
     p->height = height;
     p->pixels.resize(width * height);
 }
 
-Grid::Grid(size_t width, size_t height, const bstr &input, Format fmt)
-    : Grid(width, height)
+Image::Image(
+    const size_t width,
+    const size_t height,
+    const bstr &input,
+    Format fmt) : Image(width, height)
 {
     p->load(input, fmt);
 }
 
-Grid::Grid(size_t width, size_t height, io::Stream &input, Format fmt)
-    : Grid(width, height)
+Image::Image(
+    const size_t width,
+    const size_t height,
+    io::Stream &input,
+    Format fmt) : Image(width, height)
 {
     auto bpp = format_to_bpp(fmt);
     p->load(input.read(width * height * bpp), fmt);
 }
 
-Grid::Grid(
-    size_t width, size_t height, const bstr &input, const Palette &palette)
-    : Grid(width, height)
+Image::Image(
+    const size_t width,
+    const size_t height,
+    const bstr &input,
+    const Palette &palette) : Image(width, height)
 {
     p->load(input, pix::Format::Gray8);
     apply_palette(palette);
 }
 
-Grid::Grid(
-    size_t width, size_t height, io::Stream &stream, const Palette &palette)
-    : Grid(width, height)
+Image::Image(
+    const size_t width,
+    const size_t height,
+    io::Stream &stream,
+    const Palette &palette) : Image(width, height)
 {
     p->load(stream.read(width * height), pix::Format::Gray8);
     apply_palette(palette);
 }
 
-Grid::~Grid()
+Image::~Image()
 {
 }
 
-size_t Grid::width() const
+size_t Image::width() const
 {
     return p->width;
 }
 
-size_t Grid::height() const
+size_t Image::height() const
 {
     return p->height;
 }
 
-Pixel &Grid::at(size_t x, size_t y)
+Pixel &Image::at(const size_t x, const size_t y)
 {
     return p->pixels[x + y * p->width];
 }
 
-const Pixel &Grid::at(size_t x, size_t y) const
+const Pixel &Image::at(const size_t x, const size_t y) const
 {
     return p->pixels[x + y * p->width];
 }
 
-void Grid::flip_vertically()
+void Image::flip_vertically()
 {
     for (auto y : util::range(p->height >> 1))
     for (auto x : util::range(p->width))
@@ -101,7 +111,7 @@ void Grid::flip_vertically()
     }
 }
 
-void Grid::flip_horizontally()
+void Image::flip_horizontally()
 {
     for (auto y : util::range(p->height))
     for (auto x : util::range(p->width >> 1))
@@ -112,7 +122,7 @@ void Grid::flip_horizontally()
     }
 }
 
-void Grid::crop(size_t new_width, size_t new_height)
+void Image::crop(const size_t new_width, const size_t new_height)
 {
     std::vector<Pixel> old_pixels(p->pixels.begin(), p->pixels.end());
     auto old_width = p->width;
@@ -127,7 +137,7 @@ void Grid::crop(size_t new_width, size_t new_height)
     }
 }
 
-void Grid::apply_mask(const Grid &other)
+void Image::apply_mask(const Image &other)
 {
     if (other.width() != p->width || other.height() != p->height)
         throw std::logic_error("Mask image size is different from image size");
@@ -136,7 +146,7 @@ void Grid::apply_mask(const Grid &other)
         at(x, y).a = other.at(x, y).r;
 }
 
-void Grid::apply_palette(const Palette &palette)
+void Image::apply_palette(const Palette &palette)
 {
     auto palette_size = palette.size();
     for (auto &c : p->pixels)
@@ -148,7 +158,7 @@ void Grid::apply_palette(const Palette &palette)
     }
 }
 
-void Grid::paste(const Grid &other, const int target_x, const int target_y)
+void Image::paste(const Image &other, const int target_x, const int target_y)
 {
     const size_t x1 = std::max<size_t>(0, target_x);
     const size_t x2 = std::min<size_t>(width(), target_x + other.width());
@@ -161,22 +171,22 @@ void Grid::paste(const Grid &other, const int target_x, const int target_y)
         at(x, y) = other.at(source_x + x, source_y + y);
 }
 
-Pixel *Grid::begin()
+Pixel *Image::begin()
 {
     return &p->pixels[0];
 }
 
-Pixel *Grid::end()
+Pixel *Image::end()
 {
     return &p->pixels[p->width * p->height];
 }
 
-const Pixel *Grid::begin() const
+const Pixel *Image::begin() const
 {
     return &p->pixels[0];
 }
 
-const Pixel *Grid::end() const
+const Pixel *Image::end() const
 {
     return &p->pixels[p->width * p->height];
 }

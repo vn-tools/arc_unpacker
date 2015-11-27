@@ -66,7 +66,7 @@ static bstr read_data(
     return data;
 }
 
-static std::unique_ptr<pix::Grid> read_image(
+static std::unique_ptr<pix::Image> read_image(
     io::Stream &stream,
     const Chunk &chunk,
     std::unique_ptr<pix::Palette> palette)
@@ -80,7 +80,7 @@ static std::unique_ptr<pix::Grid> read_image(
     stream.seek(chunk.offset + 0x2C);
     const auto data_offset = stream.read_u32_le();
     stream.seek(chunk.offset + 0x10 + data_offset);
-    std::unique_ptr<pix::Grid> image;
+    std::unique_ptr<pix::Image> image;
     if (format_id < 4)
     {
         pix::Format format;
@@ -92,7 +92,7 @@ static std::unique_ptr<pix::Grid> read_image(
 
         const auto data = read_data(
             stream, width, height, pix::format_to_bpp(format) * 8, swizzled);
-        image = std::make_unique<pix::Grid>(width, height, data, format);
+        image = std::make_unique<pix::Image>(width, height, data, format);
     }
     else
     {
@@ -106,11 +106,11 @@ static std::unique_ptr<pix::Grid> read_image(
         const auto data = read_data(
             stream, width, height, palette_bits, swizzled);
         if (palette_bits == 8)
-            image = std::make_unique<pix::Grid>(width, height, data, *palette);
+            image = std::make_unique<pix::Image>(width, height, data, *palette);
         else if (palette_bits == 4)
         {
             io::MemoryStream data_stream(data);
-            image = std::make_unique<pix::Grid>(width, height);
+            image = std::make_unique<pix::Image>(width, height);
             if (palette_bits == 4)
             {
                 for (const auto y : util::range(height))
@@ -144,7 +144,7 @@ bool GimImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid GimImageDecoder::decode_impl(io::File &input_file) const
+pix::Image GimImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0x30);
     std::map<int, Chunk> chunks;

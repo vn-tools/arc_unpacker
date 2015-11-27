@@ -65,7 +65,7 @@ bool Rc8ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid Rc8ImageDecoder::decode_impl(io::File &input_file) const
+pix::Image Rc8ImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -83,7 +83,7 @@ pix::Grid Rc8ImageDecoder::decode_impl(io::File &input_file) const
     pix::Palette palette(256, input_file.stream, pix::Format::BGR888);
     auto data_comp = input_file.stream.read_to_eof();
     auto data_orig = uncompress(data_comp, width, height);
-    return pix::Grid(width, height, data_orig, palette);
+    return pix::Image(width, height, data_orig, palette);
 }
 
 static auto dummy = fmt::register_fmt<Rc8ImageDecoder>("majiro/rc8");

@@ -21,7 +21,7 @@ bool AjpImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid AjpImageDecoder::decode_impl(io::File &input_file) const
+pix::Image AjpImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     input_file.stream.skip(4 * 2);

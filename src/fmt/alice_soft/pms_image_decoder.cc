@@ -185,7 +185,7 @@ bool PmsImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic2.size()) == magic2;
 }
 
-pix::Grid PmsImageDecoder::decode_impl(io::File &input_file) const
+pix::Image PmsImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(2);
     auto version = input_file.stream.read_u16_le();
@@ -197,7 +197,7 @@ pix::Grid PmsImageDecoder::decode_impl(io::File &input_file) const
     auto data_offset = input_file.stream.read_u32_le();
     auto palette_offset = input_file.stream.read_u32_le();
 
-    std::unique_ptr<pix::Grid> pixels;
+    std::unique_ptr<pix::Image> image;
 
     if (depth == 8)
     {
@@ -208,22 +208,22 @@ pix::Grid PmsImageDecoder::decode_impl(io::File &input_file) const
             256,
             input_file.stream,
             version == 1 ? pix::Format::RGB888 : pix::Format::BGR888);
-        pixels.reset(new pix::Grid(width, height, pixel_data, palette));
+        image.reset(new pix::Image(width, height, pixel_data, palette));
     }
     else if (depth == 16)
     {
         input_file.stream.seek(data_offset);
         auto pixel_data = decompress_16bit(input_file.stream, width, height);
-        pixels.reset(new pix::Grid(
+        image.reset(new pix::Image(
             width, height, pixel_data, pix::Format::BGR565));
         if (palette_offset)
         {
             input_file.stream.seek(palette_offset);
             auto alpha = decompress_8bit(input_file.stream, width, height);
-            pix::Grid alpha_channel(width, height, alpha, pix::Format::Gray8);
+            pix::Image alpha_channel(width, height, alpha, pix::Format::Gray8);
             for (auto y : util::range(height))
             for (auto x : util::range(width))
-                pixels->at(x, y).a = alpha_channel.at(x, y).r;
+                image->at(x, y).a = alpha_channel.at(x, y).r;
         }
     }
     else
@@ -231,7 +231,7 @@ pix::Grid PmsImageDecoder::decode_impl(io::File &input_file) const
         throw err::UnsupportedBitDepthError(depth);
     }
 
-    return *pixels;
+    return *image;
 }
 
 static auto dummy = fmt::register_fmt<PmsImageDecoder>("alice-soft/pms");

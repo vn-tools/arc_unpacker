@@ -2,7 +2,7 @@
 #include <array>
 #include "err.h"
 #include "util/call_stack_keeper.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -375,8 +375,8 @@ std::unique_ptr<io::File> PxImageArchiveDecoder::read_file_impl(
     const auto data = read_blocks(
         context, input_file.stream, entry->block_offsets);
 
-    pix::Grid image(entry->width, entry->height, data, pix::Format::BGRA8888);
-    return util::file_from_grid(image, entry->name);
+    pix::Image image(entry->width, entry->height, data, pix::Format::BGRA8888);
+    return util::file_from_image(image, entry->name);
 }
 
 fmt::IDecoder::NamingStrategy PxImageArchiveDecoder::naming_strategy() const

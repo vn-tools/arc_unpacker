@@ -13,7 +13,7 @@ bool SotesImageDecoder::is_recognized_impl(io::File &input_file) const
     return a - b == 0x2711 && c - b <= 0x80;
 }
 
-pix::Grid SotesImageDecoder::decode_impl(io::File &input_file) const
+pix::Image SotesImageDecoder::decode_impl(io::File &input_file) const
 {
     const auto base = input_file.stream.seek(0x448).read_u32_le();
     const auto pixel_data_offset
@@ -39,13 +39,20 @@ pix::Grid SotesImageDecoder::decode_impl(io::File &input_file) const
         .seek(pixel_data_offset)
         .read(width * height * (depth >> 3));
 
-    std::unique_ptr<pix::Grid> image;
+    std::unique_ptr<pix::Image> image;
     if (depth == 8)
-        image.reset(new pix::Grid(width, height, data, palette));
+    {
+        image = std::make_unique<pix::Image>(width, height, data, palette);
+    }
     else if (depth == 24)
-        image.reset(new pix::Grid(width, height, data, pix::Format::BGR888));
+    {
+        image = std::make_unique<pix::Image>(
+            width, height, data, pix::Format::BGR888);
+    }
     else
+    {
         throw err::UnsupportedBitDepthError(depth);
+    }
 
     image->flip_vertically();
     return *image;

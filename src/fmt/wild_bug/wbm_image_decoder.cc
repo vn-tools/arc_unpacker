@@ -42,7 +42,7 @@ static void remove_pad(
     }
 }
 
-static pix::Grid get_pixels(
+static pix::Image get_image(
     wpx::Decoder &decoder,
     u8 section_id,
     size_t width,
@@ -54,11 +54,11 @@ static pix::Grid get_pixels(
     auto data = decoder.read_compressed_section(section_id, channels, offsets);
     remove_pad(data, height, width * channels, stride);
     if (channels == 1)
-        return pix::Grid(width, height, data, pix::Format::Gray8);
+        return pix::Image(width, height, data, pix::Format::Gray8);
     else if (channels == 3)
-        return pix::Grid(width, height, data, pix::Format::BGR888);
+        return pix::Image(width, height, data, pix::Format::BGR888);
     else if (channels == 4)
-        return pix::Grid(width, height, data, pix::Format::BGRA8888);
+        return pix::Image(width, height, data, pix::Format::BGRA8888);
     else
         throw err::UnsupportedChannelCountError(channels);
 }
@@ -68,7 +68,7 @@ bool WbmImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid WbmImageDecoder::decode_impl(io::File &input_file) const
+pix::Image WbmImageDecoder::decode_impl(io::File &input_file) const
 {
     wpx::Decoder decoder(input_file.stream);
 
@@ -82,14 +82,14 @@ pix::Grid WbmImageDecoder::decode_impl(io::File &input_file) const
     if (depth != 32 && depth != 24 && depth != 8)
         throw err::UnsupportedBitDepthError(depth);
 
-    auto pixels = get_pixels(decoder, 0x11, width, height, depth >> 3);
+    auto image = get_image(decoder, 0x11, width, height, depth >> 3);
     if (decoder.has_section(0x13))
     {
-        auto mask = get_pixels(decoder, 0x13, width, height, 1);
-        pixels.apply_mask(mask);
+        auto mask = get_image(decoder, 0x13, width, height, 1);
+        image.apply_mask(mask);
     }
 
-    return pixels;
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<WbmImageDecoder>("wild-bug/wbm");

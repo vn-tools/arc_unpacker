@@ -5,10 +5,10 @@
 using namespace au;
 using namespace au::fmt::nscripter;
 
-static pix::Grid decode_pixels(
+static pix::Image decode_image(
     size_t width, size_t height, io::BitReader &bit_reader)
 {
-    pix::Grid output(width, height);
+    pix::Image output(width, height);
     for (auto &c : output)
         c.a = 0xFF;
 
@@ -97,12 +97,12 @@ bool SpbImageDecoder::is_recognized_impl(io::File &input_file) const
     return true;
 }
 
-pix::Grid SpbImageDecoder::decode_impl(io::File &input_file) const
+pix::Image SpbImageDecoder::decode_impl(io::File &input_file) const
 {
     const auto width = input_file.stream.read_u16_be();
     const auto height = input_file.stream.read_u16_be();
     io::BitReader bit_reader(input_file.stream.read_to_eof());
-    return decode_pixels(width, height, bit_reader);
+    return decode_image(width, height, bit_reader);
 }
 
 static auto dummy = fmt::register_fmt<SpbImageDecoder>("nscripter/spb");

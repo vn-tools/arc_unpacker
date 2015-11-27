@@ -3,7 +3,7 @@
 #include "err.h"
 #include "fmt/fc01/common/custom_lzss.h"
 #include "fmt/fc01/common/util.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -125,8 +125,8 @@ std::unique_ptr<io::File> McaArchiveDecoder::read_file_impl(
     }
 
     data = common::fix_stride(data, width, height, 24);
-    pix::Grid pixels(width, height, data, pix::Format::BGR888);
-    return util::file_from_grid(pixels, entry->name);
+    pix::Image image(width, height, data, pix::Format::BGR888);
+    return util::file_from_image(image, entry->name);
 }
 
 static auto dummy = fmt::register_fmt<McaArchiveDecoder>("fc01/mca");

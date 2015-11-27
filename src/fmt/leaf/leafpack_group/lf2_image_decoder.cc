@@ -11,7 +11,7 @@ bool Lf2ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid Lf2ImageDecoder::decode_impl(io::File &input_file) const
+pix::Image Lf2ImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(4);
@@ -25,7 +25,7 @@ pix::Grid Lf2ImageDecoder::decode_impl(io::File &input_file) const
 
     const auto data = common::custom_lzss_decompress(
         input_file.stream.read_to_eof(), width * height);
-    pix::Grid image(width, height, data, palette);
+    pix::Image image(width, height, data, palette);
     image.flip_vertically();
     return image;
 }

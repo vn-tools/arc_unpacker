@@ -101,7 +101,7 @@ bool PrsImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PrsImageDecoder::decode_impl(io::File &input_file) const
+pix::Image PrsImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -121,7 +121,7 @@ pix::Grid PrsImageDecoder::decode_impl(io::File &input_file) const
         for (auto i : util::range(3, target.size()))
             target[i] += target[i - 3];
 
-    return pix::Grid(width, height, target, pix::Format::BGR888);
+    return pix::Image(width, height, target, pix::Format::BGR888);
 }
 
 static auto dummy = fmt::register_fmt<PrsImageDecoder>("ivory/prs");

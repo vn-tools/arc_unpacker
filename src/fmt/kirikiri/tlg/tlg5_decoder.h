@@ -1,7 +1,7 @@
 #pragma once
 
 #include "io/file.h"
-#include "pix/grid.h"
+#include "pix/image.h"
 
 namespace au {
 namespace fmt {
@@ -11,7 +11,7 @@ namespace tlg {
     class Tlg5Decoder final
     {
     public:
-        pix::Grid decode(io::File &file);
+        pix::Image decode(io::File &file);
     };
 
 } } } }

@@ -77,7 +77,7 @@ static bstr read_uncompressed_data(
     return stream.read(width * height * channels);
 }
 
-static pix::Grid get_pixels_from_palette(
+static pix::Image get_image_from_palette(
     const bstr &input,
     const size_t width,
     const size_t height,
@@ -85,14 +85,14 @@ static pix::Grid get_pixels_from_palette(
     const pix::Palette &palette)
 {
     io::BitReader bit_reader(input);
-    pix::Grid output(width, height);
+    pix::Image output(width, height);
     for (auto y : util::range(height))
     for (auto x : util::range(width))
         output.at(x, y) = palette[bit_reader.get(depth)];
     return output;
 }
 
-static pix::Grid get_pixels_without_palette(
+static pix::Image get_image_without_palette(
     const bstr &input,
     const size_t width,
     const size_t height,
@@ -109,7 +109,7 @@ static pix::Grid get_pixels_without_palette(
         format = pix::Format::BGRA8888;
     else
         throw err::UnsupportedBitDepthError(depth);
-    return pix::Grid(width, height, input, format);
+    return pix::Image(width, height, input, format);
 }
 
 bool TgaImageDecoder::is_recognized_impl(io::File &input_file) const
@@ -121,7 +121,7 @@ bool TgaImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("tga");
 }
 
-pix::Grid TgaImageDecoder::decode_impl(io::File &input_file) const
+pix::Image TgaImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto id_size = input_file.stream.read_u8();
@@ -159,15 +159,15 @@ pix::Grid TgaImageDecoder::decode_impl(io::File &input_file) const
         ? read_compressed_data(input_file.stream, width, height, channels)
         : read_uncompressed_data(input_file.stream, width, height, channels);
 
-    pix::Grid pixels = use_palette
-        ? get_pixels_from_palette(data, width, height, depth, *palette)
-        : get_pixels_without_palette(data, width, height, depth);
+    pix::Image image = use_palette
+        ? get_image_from_palette(data, width, height, depth, *palette)
+        : get_image_without_palette(data, width, height, depth);
 
     if (flip_vertically)
-        pixels.flip_vertically();
+        image.flip_vertically();
     if (flip_horizontally)
-        pixels.flip_horizontally();
-    return pixels;
+        image.flip_horizontally();
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<TgaImageDecoder>("truevision/tga");

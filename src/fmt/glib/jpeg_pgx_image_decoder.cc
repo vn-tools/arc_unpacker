@@ -44,7 +44,7 @@ bool JpegPgxImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid JpegPgxImageDecoder::decode_impl(io::File &input_file) const
+pix::Image JpegPgxImageDecoder::decode_impl(io::File &input_file) const
 {
     auto pgx_data = extract_pgx_stream(input_file.stream.read_to_eof());
     io::MemoryStream pgx_stream(pgx_data);
@@ -71,12 +71,12 @@ pix::Grid JpegPgxImageDecoder::decode_impl(io::File &input_file) const
 
     auto target = custom_lzss_decompress(pgx_stream.read_to_eof(), target_size);
 
-    pix::Grid pixels(width, height, target, pix::Format::BGRA8888);
+    pix::Image image(width, height, target, pix::Format::BGRA8888);
     if (!transparent)
-        for (auto &c : pixels)
+        for (auto &c : image)
             c.a = 0xFF;
 
-    return pixels;
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<JpegPgxImageDecoder>("glib/jpeg-pgx");

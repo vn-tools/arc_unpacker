@@ -103,10 +103,10 @@ static u32 calculate_crc32(const bstr &data)
     return checksum;
 }
 
-static pix::Grid transform_region_image(
-    const pix::Grid &input_image, const u32 flags, const u32 base_color)
+static pix::Image transform_region_image(
+    const pix::Image &input_image, const u32 flags, const u32 base_color)
 {
-    pix::Grid output_image(input_image.width(), input_image.height());
+    pix::Image output_image(input_image.width(), input_image.height());
     pix::Pixel base_pixel;
     base_pixel.b = base_color;
     base_pixel.g = base_color >> 8;
@@ -134,7 +134,7 @@ static pix::Grid transform_region_image(
     return output_image;
 }
 
-static bstr get_rgb_data(const pix::Grid &input_image)
+static bstr get_rgb_data(const pix::Image &input_image)
 {
     bstr output(input_image.width() * input_image.height() * 3);
     auto output_ptr = output.get<u8>();

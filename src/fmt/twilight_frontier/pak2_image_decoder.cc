@@ -46,7 +46,7 @@ bool Pak2ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("cv2");
 }
 
-pix::Grid Pak2ImageDecoder::decode_impl(io::File &input_file) const
+pix::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
 {
     auto bit_depth = input_file.stream.read_u8();
     auto width = input_file.stream.read_u32_le();
@@ -67,7 +67,7 @@ pix::Grid Pak2ImageDecoder::decode_impl(io::File &input_file) const
             : std::make_shared<pix::Palette>(256);
     }
 
-    pix::Grid pixels(width, height);
+    pix::Image image(width, height);
     for (size_t y : util::range(height))
     for (size_t x : util::range(stride))
     {
@@ -89,10 +89,10 @@ pix::Grid Pak2ImageDecoder::decode_impl(io::File &input_file) const
         }
 
         if (x < width)
-            pixels.at(x, y) = pixel;
+            image.at(x, y) = pixel;
     }
 
-    return pixels;
+    return image;
 }
 
 static auto dummy

@@ -1,7 +1,7 @@
 #include "fmt/shiina_rio/s25_image_archive_decoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -108,7 +108,8 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
     return output;
 }
 
-static pix::Grid read_plain(io::File &input_file, const ArchiveEntryImpl &entry)
+static pix::Image read_plain(
+    io::File &input_file, const ArchiveEntryImpl &entry)
 {
     bstr data;
     data.reserve(entry.width * entry.height * 4);
@@ -132,7 +133,7 @@ static pix::Grid read_plain(io::File &input_file, const ArchiveEntryImpl &entry)
         data += output_row;
     }
 
-    return pix::Grid(entry.width, entry.height, data, pix::Format::BGRA8888);
+    return pix::Image(entry.width, entry.height, data, pix::Format::BGRA8888);
 }
 
 bool S25ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -177,7 +178,7 @@ std::unique_ptr<io::File> S25ImageArchiveDecoder::read_file_impl(
     if (entry->flags & 0x80000000)
         throw err::NotSupportedError("Flagged S25 images are supported");
     const auto image = read_plain(input_file, *entry);
-    return util::file_from_grid(image, e.name);
+    return util::file_from_image(image, e.name);
 }
 
 fmt::IDecoder::NamingStrategy S25ImageArchiveDecoder::naming_strategy() const

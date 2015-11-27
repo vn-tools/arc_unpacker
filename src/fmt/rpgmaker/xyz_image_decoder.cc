@@ -13,7 +13,7 @@ bool XyzImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid XyzImageDecoder::decode_impl(io::File &input_file) const
+pix::Image XyzImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -27,7 +27,7 @@ pix::Grid XyzImageDecoder::decode_impl(io::File &input_file) const
     auto pix_data = data_stream.read_to_eof();
 
     pix::Palette palette(256, pal_data, pix::Format::RGB888);
-    return pix::Grid(width, height, pix_data, palette);
+    return pix::Image(width, height, pix_data, palette);
 }
 
 static auto dummy = fmt::register_fmt<XyzImageDecoder>("rpgmaker/xyz");

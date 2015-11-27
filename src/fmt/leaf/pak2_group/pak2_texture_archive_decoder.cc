@@ -1,6 +1,6 @@
 #include "fmt/leaf/pak2_group/pak2_texture_archive_decoder.h"
 #include "err.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -94,7 +94,7 @@ std::unique_ptr<io::File> Pak2TextureArchiveDecoder::read_file_impl(
     }
     const auto width = max_x - min_x;
     const auto height = max_y - min_y;
-    pix::Grid image(width, height);
+    pix::Image image(width, height);
     for (auto &c : image)
     {
         c.r = c.g = c.b = 0;
@@ -103,7 +103,7 @@ std::unique_ptr<io::File> Pak2TextureArchiveDecoder::read_file_impl(
     for (const auto &chunk : entry->chunks)
     {
         input_file.stream.seek(chunk.offset);
-        auto chunk_image = pix::Grid(
+        auto chunk_image = pix::Image(
             chunk.width,
             chunk.height,
             input_file.stream.read(chunk.width * chunk.height * 2),
@@ -111,7 +111,7 @@ std::unique_ptr<io::File> Pak2TextureArchiveDecoder::read_file_impl(
         chunk_image.flip_vertically();
         image.paste(chunk_image, chunk.x, chunk.y);
     }
-    return util::file_from_grid(image, entry->name);
+    return util::file_from_image(image, entry->name);
 }
 
 fmt::IDecoder::NamingStrategy Pak2TextureArchiveDecoder::naming_strategy() const

@@ -1,6 +1,6 @@
 #include "fmt/leaf/pak2_group/pak2_image_archive_decoder.h"
 #include "err.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -89,7 +89,7 @@ std::unique_ptr<io::File> Pak2ImageArchiveDecoder::read_file_impl(
     const auto data = input_file.stream
         .seek(entry->color_offset)
         .read(entry->size);
-    auto image = pix::Grid(entry->width, entry->height, data, format);
+    auto image = pix::Image(entry->width, entry->height, data, format);
     image.flip_vertically();
     if (entry->mask_offset)
     {
@@ -97,10 +97,10 @@ std::unique_ptr<io::File> Pak2ImageArchiveDecoder::read_file_impl(
             .stream.seek(entry->mask_offset)
             .read(entry->width * entry->height);
         const auto mask_image
-            = pix::Grid(entry->width, entry->height, mask, pix::Format::Gray8);
+            = pix::Image(entry->width, entry->height, mask, pix::Format::Gray8);
         image.apply_mask(mask_image);
     }
-    return util::file_from_grid(image, entry->name);
+    return util::file_from_image(image, entry->name);
 }
 
 fmt::IDecoder::NamingStrategy Pak2ImageArchiveDecoder::naming_strategy() const

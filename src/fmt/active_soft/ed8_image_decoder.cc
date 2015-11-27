@@ -13,7 +13,7 @@ bool Ed8ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid Ed8ImageDecoder::decode_impl(io::File &input_file) const
+pix::Image Ed8ImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
     const auto width = input_file.stream.read_u16_le();
@@ -82,7 +82,7 @@ pix::Grid Ed8ImageDecoder::decode_impl(io::File &input_file) const
         }
     }
 
-    return pix::Grid(width, height, output, palette);
+    return pix::Image(width, height, output, palette);
 }
 
 static auto dummy = fmt::register_fmt<Ed8ImageDecoder>("active-soft/ed8");

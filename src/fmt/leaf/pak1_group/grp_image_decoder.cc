@@ -21,14 +21,14 @@ static int detect_version(io::File &input_file)
     return -1;
 }
 
-static pix::Grid decode_pixels(io::File &input_file)
+static pix::Image decode_image(io::File &input_file)
 {
     const auto version = detect_version(input_file);
     input_file.stream.seek(version == 1 ? 0 : 4);
     const auto width = input_file.stream.read_u16_le();
     const auto height = input_file.stream.read_u16_le();
     const auto data = input_file.stream.read(width * height);
-    return pix::Grid(width, height, data, pix::Format::Gray8);
+    return pix::Image(width, height, data, pix::Format::Gray8);
 }
 
 static pix::Palette decode_palette(io::File &input_file)
@@ -52,12 +52,12 @@ bool GrpImageDecoder::is_recognized_impl(io::File &input_file) const
     return detect_version(input_file) > 0;
 }
 
-pix::Grid GrpImageDecoder::decode(
+pix::Image GrpImageDecoder::decode(
     io::File &input_file,
     std::shared_ptr<io::File> palette_file,
     std::shared_ptr<io::File> mask_file) const
 {
-    auto image = decode_pixels(input_file);
+    auto image = decode_image(input_file);
     if (palette_file)
     {
         const auto palette = decode_palette(*palette_file);
@@ -69,15 +69,15 @@ pix::Grid GrpImageDecoder::decode(
         auto mask_data = mask_file->stream.read_to_eof();
         for (auto &c : mask_data)
             c ^= 0xFF;
-        image.apply_mask(pix::Grid(
+        image.apply_mask(pix::Image(
             image.width(), image.height(), mask_data, pix::Format::Gray8));
     }
     return image;
 }
 
-pix::Grid GrpImageDecoder::decode_impl(io::File &input_file) const
+pix::Image GrpImageDecoder::decode_impl(io::File &input_file) const
 {
-    return decode_pixels(input_file);
+    return decode_image(input_file);
 }
 
 static auto dummy = fmt::register_fmt<GrpImageDecoder>("leaf/grp");

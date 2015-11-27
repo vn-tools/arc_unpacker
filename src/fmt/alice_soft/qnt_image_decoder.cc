@@ -19,95 +19,95 @@ namespace
     };
 }
 
-static void deinterleave(pix::Grid &pixels, const bstr &input)
+static void deinterleave(pix::Image &image, const bstr &input)
 {
     io::MemoryStream input_stream(input);
 
     size_t x, y;
     for (auto i : util::range(3))
     {
-        for (y = 0; y < pixels.height() - 1; y += 2)
+        for (y = 0; y < image.height() - 1; y += 2)
         {
-            for (x = 0; x < pixels.width() - 1; x += 2)
+            for (x = 0; x < image.width() - 1; x += 2)
             {
-                pixels.at(x, y)[i] = input_stream.read_u8();
-                pixels.at(x, y + 1)[i] = input_stream.read_u8();
-                pixels.at(x + 1, y)[i] = input_stream.read_u8();
-                pixels.at(x + 1, y + 1)[i] = input_stream.read_u8();
+                image.at(x, y)[i] = input_stream.read_u8();
+                image.at(x, y + 1)[i] = input_stream.read_u8();
+                image.at(x + 1, y)[i] = input_stream.read_u8();
+                image.at(x + 1, y + 1)[i] = input_stream.read_u8();
             }
-            if (x != pixels.width())
+            if (x != image.width())
             {
-                pixels.at(x, y)[i] = input_stream.read_u8();
-                pixels.at(x, y + 1)[i] = input_stream.read_u8();
+                image.at(x, y)[i] = input_stream.read_u8();
+                image.at(x, y + 1)[i] = input_stream.read_u8();
                 input_stream.skip(2);
             }
         }
-        if (y != pixels.height())
+        if (y != image.height())
         {
-            for (x = 0; x < pixels.width() - 1; x += 2)
+            for (x = 0; x < image.width() - 1; x += 2)
             {
-                pixels.at(x, y)[i] = input_stream.read_u8();
+                image.at(x, y)[i] = input_stream.read_u8();
                 input_stream.skip(1);
-                pixels.at(x + 1, y)[i] = input_stream.read_u8();
+                image.at(x + 1, y)[i] = input_stream.read_u8();
                 input_stream.skip(1);
             }
-            if (x != pixels.width())
+            if (x != image.width())
             {
-                pixels.at(x, y)[i] = input_stream.read_u8();
+                image.at(x, y)[i] = input_stream.read_u8();
                 input_stream.skip(3);
             }
         }
     }
 }
 
-static void apply_differences(pix::Grid &pixels)
+static void apply_differences(pix::Image &image)
 {
-    for (auto x : util::range(1, pixels.width()))
+    for (auto x : util::range(1, image.width()))
     for (auto c : util::range(3))
-        pixels.at(x, 0)[c] = pixels.at(x - 1, 0)[c] - pixels.at(x, 0)[c];
+        image.at(x, 0)[c] = image.at(x - 1, 0)[c] - image.at(x, 0)[c];
 
-    for (auto y : util::range(1, pixels.height()))
+    for (auto y : util::range(1, image.height()))
     for (auto c : util::range(3))
-        pixels.at(0, y)[c] = pixels.at(0, y - 1)[c] - pixels.at(0, y)[c];
+        image.at(0, y)[c] = image.at(0, y - 1)[c] - image.at(0, y)[c];
 
-    for (auto y : util::range(1, pixels.height()))
-    for (auto x : util::range(1, pixels.width()))
+    for (auto y : util::range(1, image.height()))
+    for (auto x : util::range(1, image.width()))
     for (auto c : util::range(3))
     {
-        u8 ax = pixels.at(x - 1, y)[c];
-        u8 ay = pixels.at(x, y - 1)[c];
-        pixels.at(x, y)[c] = (ax + ay) / 2 - pixels.at(x, y)[c];
+        u8 ax = image.at(x - 1, y)[c];
+        u8 ay = image.at(x, y - 1)[c];
+        image.at(x, y)[c] = (ax + ay) / 2 - image.at(x, y)[c];
     }
 }
 
-static void apply_alpha(pix::Grid &pixels, const bstr &input)
+static void apply_alpha(pix::Image &image, const bstr &input)
 {
     if (!input.size())
     {
-        for (auto y : util::range(pixels.height()))
-        for (auto x : util::range(pixels.width()))
-            pixels.at(x, y).a = 0xFF;
+        for (auto y : util::range(image.height()))
+        for (auto x : util::range(image.width()))
+            image.at(x, y).a = 0xFF;
         return;
     }
 
     io::MemoryStream input_stream(input);
 
-    pixels.at(0, 0).a = input_stream.read_u8();
-    for (auto x : util::range(1, pixels.width()))
-        pixels.at(x, 0).a = pixels.at(x - 1, 0).a - input_stream.read_u8();
-    if (pixels.width() & 1)
+    image.at(0, 0).a = input_stream.read_u8();
+    for (auto x : util::range(1, image.width()))
+        image.at(x, 0).a = image.at(x - 1, 0).a - input_stream.read_u8();
+    if (image.width() & 1)
         input_stream.skip(1);
 
-    for (auto y : util::range(1, pixels.height()))
+    for (auto y : util::range(1, image.height()))
     {
-        pixels.at(0, y).a = pixels.at(0, y - 1).a - input_stream.read_u8();
-        for (auto x : util::range(1, pixels.width()))
+        image.at(0, y).a = image.at(0, y - 1).a - input_stream.read_u8();
+        for (auto x : util::range(1, image.width()))
         {
-            u8 ax = pixels.at(x - 1, y).a;
-            u8 ay = pixels.at(x, y - 1).a;
-            pixels.at(x, y).a = (ax + ay) / 2 - input_stream.read_u8();
+            u8 ax = image.at(x - 1, y).a;
+            u8 ay = image.at(x, y - 1).a;
+            image.at(x, y).a = (ax + ay) / 2 - input_stream.read_u8();
         }
-        if (pixels.width() & 1)
+        if (image.width() & 1)
             input_stream.skip(1);
     }
 }
@@ -117,7 +117,7 @@ bool QntImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid QntImageDecoder::decode_impl(io::File &input_file) const
+pix::Image QntImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     Version version = static_cast<Version>(input_file.stream.read_u32_le());
@@ -141,13 +141,12 @@ pix::Grid QntImageDecoder::decode_impl(io::File &input_file) const
         ? util::pack::zlib_inflate(input_file.stream.read(alpha_size))
         : ""_b;
 
-    pix::Grid pixels(width, height);
+    pix::Image image(width, height);
     if (color_data.size())
-        deinterleave(pixels, color_data);
-    apply_differences(pixels);
-    apply_alpha(pixels, alpha_data);
-
-    return pixels;
+        deinterleave(image, color_data);
+    apply_differences(image);
+    apply_alpha(image, alpha_data);
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<QntImageDecoder>("alice-soft/qnt");

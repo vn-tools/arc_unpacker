@@ -13,7 +13,7 @@ bool PrtImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PrtImageDecoder::decode_impl(io::File &input_file) const
+pix::Image PrtImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto version = input_file.stream.read_u16_le();
@@ -45,7 +45,7 @@ pix::Grid PrtImageDecoder::decode_impl(io::File &input_file) const
     pix::Palette palette(
         bit_depth == 8 ? 256 : 0, input_file.stream, pix::Format::BGR888X);
 
-    pix::Grid pixels(width, height);
+    pix::Image image(width, height);
     for (auto y : util::range(height))
     {
         input_file.stream.seek(data_offset + y * stride);
@@ -54,26 +54,26 @@ pix::Grid PrtImageDecoder::decode_impl(io::File &input_file) const
         for (auto x : util::range(width))
         {
             if (bit_depth == 8)
-                pixels.at(x, y) = palette[*row_ptr++];
+                image.at(x, y) = palette[*row_ptr++];
             else if (bit_depth == 24)
-                pixels.at(x, y) = pix::read<pix::Format::BGR888>(row_ptr);
+                image.at(x, y) = pix::read<pix::Format::BGR888>(row_ptr);
             else if (bit_depth == 32)
-                pixels.at(x, y) = pix::read<pix::Format::BGRA8888>(row_ptr);
+                image.at(x, y) = pix::read<pix::Format::BGRA8888>(row_ptr);
             else
                 throw err::UnsupportedBitDepthError(bit_depth);
         }
     }
 
-    pixels.flip_vertically();
+    image.flip_vertically();
 
     if (has_alpha)
     {
         for (auto y : util::range(height))
         for (auto x : util::range(width))
-            pixels.at(x, y).a = input_file.stream.read_u8();
+            image.at(x, y).a = input_file.stream.read_u8();
     }
 
-    return pixels;
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<PrtImageDecoder>("kid/prt");

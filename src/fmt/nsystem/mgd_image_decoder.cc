@@ -184,7 +184,7 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::Stream &stream)
     return regions;
 }
 
-static pix::Grid read_pixels(
+static pix::Image read_image(
     const bstr &input,
     CompressionType compression_type,
     size_t size_original,
@@ -192,12 +192,12 @@ static pix::Grid read_pixels(
     size_t height)
 {
     if (compression_type == CompressionType::None)
-        return pix::Grid(width, height, input, pix::Format::BGRA8888);
+        return pix::Image(width, height, input, pix::Format::BGRA8888);
 
     if (compression_type == CompressionType::Sgd)
     {
         auto decompressed = decompress_sgd(input, size_original);
-        return pix::Grid(width, height, decompressed, pix::Format::BGRA8888);
+        return pix::Image(width, height, decompressed, pix::Format::BGRA8888);
     }
 
     if (compression_type == CompressionType::Png)
@@ -216,7 +216,7 @@ bool MgdImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid MgdImageDecoder::decode_impl(io::File &input_file) const
+pix::Image MgdImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -235,7 +235,7 @@ pix::Grid MgdImageDecoder::decode_impl(io::File &input_file) const
     if (size_compressed_total != size_compressed + 4)
         throw err::CorruptDataError("Compressed data size mismatch");
 
-    auto image = read_pixels(
+    auto image = read_image(
         input_file.stream.read(size_compressed),
         compression_type,
         size_original,

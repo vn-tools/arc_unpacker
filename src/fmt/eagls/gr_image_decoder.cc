@@ -30,7 +30,7 @@ bool GrImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("gr");
 }
 
-pix::Grid GrImageDecoder::decode_impl(io::File &input_file) const
+pix::Image GrImageDecoder::decode_impl(io::File &input_file) const
 {
     // According to Crass the offset, key and LCG kind vary for other games.
 

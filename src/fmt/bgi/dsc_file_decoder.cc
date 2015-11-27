@@ -3,7 +3,7 @@
 #include "fmt/bgi/common.h"
 #include "io/bit_reader.h"
 #include "io/memory_stream.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -178,8 +178,8 @@ std::unique_ptr<io::File> DscFileDecoder::decode_impl(
             default:
                 throw err::UnsupportedBitDepthError(bpp);
         }
-        pix::Grid pixels(width, height, data_stream.read_to_eof(), fmt);
-        return util::file_from_grid(pixels, input_file.name);
+        pix::Image image(width, height, data_stream.read_to_eof(), fmt);
+        return util::file_from_image(image, input_file.name);
     }
 
     auto output_file = std::make_unique<io::File>();

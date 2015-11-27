@@ -1,4 +1,4 @@
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include <png.h>
 #include "err.h"
 #include "io/memory_stream.h"
@@ -18,8 +18,8 @@ static void flush_handler(png_structp)
 {
 }
 
-std::unique_ptr<io::File> util::file_from_grid(
-    const pix::Grid &pixels, const io::path &name)
+std::unique_ptr<io::File> util::file_from_image(
+    const pix::Image &image, const io::path &name)
 {
     auto output_file = std::make_unique<io::File>();
     output_file->name = name;
@@ -34,8 +34,8 @@ std::unique_ptr<io::File> util::file_from_grid(
     if (!info_ptr)
         throw std::logic_error("Failed to create PNG info structure");
 
-    auto width = pixels.width();
-    auto height = pixels.height();
+    auto width = image.width();
+    auto height = image.height();
     if (!width || !height)
         throw err::BadDataSizeError();
     const auto bpp = 4;
@@ -59,7 +59,7 @@ std::unique_ptr<io::File> util::file_from_grid(
 
     auto rows = std::make_unique<const u8*[]>(height);
     for (auto y : range(height))
-        rows.get()[y] = reinterpret_cast<const u8*>(&pixels.at(0, y));
+        rows.get()[y] = reinterpret_cast<const u8*>(&image.at(0, y));
     png_set_rows(png_ptr, info_ptr, const_cast<u8**>(rows.get()));
     png_write_png(png_ptr, info_ptr, transformations, nullptr);
     png_destroy_write_struct(&png_ptr, &info_ptr);

@@ -41,7 +41,7 @@ void BlockInfo::decompress(LzssDecompressor &decompressor, Header &header)
 }
 
 static void load_pixel_block_row(
-    pix::Grid &pixels,
+    pix::Image &image,
     std::vector<std::unique_ptr<BlockInfo>> channel_data,
     Header &header,
     int block_y)
@@ -68,16 +68,16 @@ static void load_pixel_block_row(
             for (auto c : util::range(header.channel_count))
             {
                 prev_pixel[c] += pixel[c];
-                pixels.at(x, y)[c] = prev_pixel[c];
-                pixels.at(x, y)[c] += y > 0 ? pixels.at(x, y - 1)[c] : 0;
+                image.at(x, y)[c] = prev_pixel[c];
+                image.at(x, y)[c] += y > 0 ? image.at(x, y - 1)[c] : 0;
             }
             if (!use_alpha)
-                pixels.at(x, y).a = 0xFF;
+                image.at(x, y).a = 0xFF;
         }
     }
 }
 
-static void read_pixels(io::Stream &stream, pix::Grid &pixels, Header &header)
+static void read_image(io::Stream &stream, pix::Image &image, Header &header)
 {
     // ignore block sizes
     size_t block_count = (header.image_height - 1) / header.block_height + 1;
@@ -97,11 +97,11 @@ static void read_pixels(io::Stream &stream, pix::Grid &pixels, Header &header)
             channel_data.push_back(std::move(block_info));
         }
 
-        load_pixel_block_row(pixels, std::move(channel_data), header, y);
+        load_pixel_block_row(image, std::move(channel_data), header, y);
     }
 }
 
-pix::Grid Tlg5Decoder::decode(io::File &file)
+pix::Image Tlg5Decoder::decode(io::File &file)
 {
     Header header;
     header.channel_count = file.stream.read_u8();
@@ -111,7 +111,7 @@ pix::Grid Tlg5Decoder::decode(io::File &file)
     if (header.channel_count != 3 && header.channel_count != 4)
         throw err::UnsupportedChannelCountError(header.channel_count);
 
-    pix::Grid pixels(header.image_width, header.image_height);
-    read_pixels(file.stream, pixels, header);
-    return pixels;
+    pix::Image image(header.image_width, header.image_height);
+    read_image(file.stream, image, header);
+    return image;
 }

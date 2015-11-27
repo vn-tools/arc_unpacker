@@ -12,7 +12,7 @@ bool PgxImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PgxImageDecoder::decode_impl(io::File &input_file) const
+pix::Image PgxImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -29,12 +29,12 @@ pix::Grid PgxImageDecoder::decode_impl(io::File &input_file) const
 
     auto target = custom_lzss_decompress(source, target_size);
 
-    pix::Grid pixels(width, height, target, pix::Format::BGRA8888);
+    pix::Image image(width, height, target, pix::Format::BGRA8888);
     if (!transparent)
-        for (auto &c : pixels)
+        for (auto &c : image)
             c.a = 0xFF;
 
-    return pixels;
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<PgxImageDecoder>("glib/pgx");

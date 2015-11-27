@@ -12,7 +12,7 @@ bool GsImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid GsImageDecoder::decode_impl(io::File &input_file) const
+pix::Image GsImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto size_comp = input_file.stream.read_u32_le();
@@ -33,16 +33,16 @@ pix::Grid GsImageDecoder::decode_impl(io::File &input_file) const
         pix::Palette palette(256, data, pix::Format::BGRA8888);
         for (auto &c : palette)
             c.a = 0xFF;
-        return pix::Grid(width, height, data.substr(256 * 4), palette);
+        return pix::Image(width, height, data.substr(256 * 4), palette);
     }
 
     if (depth == 32)
     {
-        auto pixels = pix::Grid(width, height, data, pix::Format::BGRA8888);
+        auto image = pix::Image(width, height, data, pix::Format::BGRA8888);
         if (!use_transparency)
-            for (auto &c : pixels)
+            for (auto &c : image)
                 c.a = 0xFF;
-        return pixels;
+        return image;
     }
 
     throw err::UnsupportedBitDepthError(depth);

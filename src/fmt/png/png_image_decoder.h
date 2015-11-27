@@ -13,13 +13,12 @@ namespace png {
             const std::string &chunk_name, const bstr &chunk_data)>;
 
         using ImageDecoder::decode;
-        pix::Grid decode(
-            io::File &input_file,
-            ChunkHandler chunk_handler) const;
+        pix::Image decode(
+            io::File &input_file, ChunkHandler chunk_handler) const;
 
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
-        pix::Grid decode_impl(io::File &input_file) const override;
+        pix::Image decode_impl(io::File &input_file) const override;
     };
 
 } } }

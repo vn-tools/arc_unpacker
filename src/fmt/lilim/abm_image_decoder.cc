@@ -100,7 +100,7 @@ bool AbmImageDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid AbmImageDecoder::decode_impl(io::File &input_file) const
+pix::Image AbmImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(18);
     const auto width = input_file.stream.read_u32_le();
@@ -114,7 +114,7 @@ pix::Grid AbmImageDecoder::decode_impl(io::File &input_file) const
     {
         pix::Palette palette(
             256, input_file.stream.read(256 * 4), pix::Format::BGR888X);
-        return pix::Grid(
+        return pix::Image(
             width,
             height,
             decompress_opaque(input_file.stream.read_to_eof(), size),
@@ -122,7 +122,7 @@ pix::Grid AbmImageDecoder::decode_impl(io::File &input_file) const
     }
     else if (depth == 32)
     {
-        return pix::Grid(
+        return pix::Image(
             width,
             height,
             decompress_alpha(input_file.stream.read_to_eof(), size),

@@ -11,7 +11,7 @@ bool PgaImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid PgaImageDecoder::decode_impl(io::File &input_file) const
+pix::Image PgaImageDecoder::decode_impl(io::File &input_file) const
 {
     const auto png_data = input_file.stream
         .seek(magic.size())

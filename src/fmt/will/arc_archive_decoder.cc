@@ -2,7 +2,7 @@
 #include <map>
 #include "err.h"
 #include "fmt/will/wipf_image_archive_decoder.h"
-#include "util/file_from_grid.h"
+#include "util/file_from_image.h"
 #include "util/range.h"
 
 using namespace au;
@@ -94,7 +94,7 @@ void ArcArchiveDecoder::preprocess(
             mask_entry->already_unpacked = true;
             for (auto &sprite : sprites)
             {
-                saver.save(util::file_from_grid(
+                saver.save(util::file_from_image(
                     *sprite, sprite_entry->name));
             }
         }

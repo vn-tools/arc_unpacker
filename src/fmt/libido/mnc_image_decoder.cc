@@ -11,7 +11,7 @@ bool MncImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid MncImageDecoder::decode_impl(io::File &input_file) const
+pix::Image MncImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto offset_to_pixels = input_file.stream.read_u32_le();
@@ -28,9 +28,9 @@ pix::Grid MncImageDecoder::decode_impl(io::File &input_file) const
     if (bit_depth != 24)
         throw err::UnsupportedBitDepthError(bit_depth);
 
-    pix::Grid pixels(width, height, data, pix::Format::BGR888);
-    pixels.flip_vertically();
-    return pixels;
+    pix::Image image(width, height, data, pix::Format::BGR888);
+    image.flip_vertically();
+    return image;
 }
 
 static auto dummy = fmt::register_fmt<MncImageDecoder>("libido/mnc");

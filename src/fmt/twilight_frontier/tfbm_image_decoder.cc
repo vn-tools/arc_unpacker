@@ -56,7 +56,7 @@ bool TfbmImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Grid TfbmImageDecoder::decode_impl(io::File &input_file) const
+pix::Image TfbmImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto bit_depth = input_file.stream.read_u8();
@@ -80,8 +80,8 @@ pix::Grid TfbmImageDecoder::decode_impl(io::File &input_file) const
             : std::make_shared<pix::Palette>(256);
     }
 
-    pix::Grid pixels(width, height);
-    auto *pixels_ptr = &pixels.at(0, 0);
+    pix::Image image(width, height);
+    auto *pixels_ptr = &image.at(0, 0);
     for (size_t y : util::range(height))
     for (size_t x : util::range(stride))
     {
@@ -109,7 +109,7 @@ pix::Grid TfbmImageDecoder::decode_impl(io::File &input_file) const
             *pixels_ptr++ = pixel;
     }
 
-    return pixels;
+    return image;
 }
 
 static auto dummy

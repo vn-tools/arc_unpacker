@@ -12,7 +12,7 @@ bool EpfImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
-pix::Grid EpfImageDecoder::decode_impl(io::File &input_file) const
+pix::Image EpfImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     const auto width = input_file.stream.read_u32_le();
@@ -23,7 +23,7 @@ pix::Grid EpfImageDecoder::decode_impl(io::File &input_file) const
     const auto size_comp = input_file.stream.read_u32_le();
     const auto data = util::pack::lzss_decompress_bytewise(
         input_file.stream.read(size_comp), size_orig);
-    return pix::Grid(width, height, data, pix::Format::BGRA8888);
+    return pix::Image(width, height, data, pix::Format::BGRA8888);
 }
 
 static auto dummy = fmt::register_fmt<EpfImageDecoder>("yumemiru/epf");
