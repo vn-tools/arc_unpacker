@@ -48,7 +48,7 @@ echo 'Checking for nonstatic constructs...'
 grep '^[A-Z0-9a-z:<>_]\{1,\} [^:]*[(;]' **/*.cc \
     | grep -v 'using namespace' \
     | grep -v 'int main' \
-    | grep -v 'compat/' \
+    | grep -v 'entry_point' \
     | grep -v static
 
 echo 'Checking for .cc #including their .h not in the top entry...'

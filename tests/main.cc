@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_RUNNER
-#include "compat/entry_point.h"
+#include "entry_point.h"
 #include "test_support/catch.hh"
 #include "util/program_path.h"
 

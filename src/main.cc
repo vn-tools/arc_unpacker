@@ -1,5 +1,5 @@
-#include "compat/entry_point.h"
 #include "arc_unpacker.h"
+#include "entry_point.h"
 #include "log.h"
 #include "util/program_path.h"
 

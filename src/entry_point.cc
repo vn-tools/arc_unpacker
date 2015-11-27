@@ -1,4 +1,4 @@
-#include "compat/entry_point.h"
+#include "entry_point.h"
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 #include <boost/locale.hpp>
@@ -9,7 +9,6 @@ using namespace au;
 std::vector<std::string> get_arguments(int argc, const char **argv)
 {
     std::vector<std::string> arguments;
-    arguments.reserve(argc);
     for (int i = 0; i < argc; i++)
         arguments.push_back(std::string(argv[i]));
     return arguments;
@@ -18,12 +17,12 @@ std::vector<std::string> get_arguments(int argc, const char **argv)
 std::vector<std::string> get_arguments(int argc, const wchar_t **argv)
 {
     std::vector<std::string> arguments;
-    arguments.reserve(argc);
     for (int i = 0; i < argc; i++)
     {
-        auto str = bstr(
-            reinterpret_cast<const char*>(argv[i]), wcslen(argv[i]) * 2);
-        auto arg = util::convert_encoding(str, "utf-16le", "utf-8");
+        const auto arg = util::convert_encoding(
+            bstr(reinterpret_cast<const char*>(argv[i]), wcslen(argv[i]) * 2),
+            "utf-16le",
+            "utf-8");
         arguments.push_back(arg.str());
     }
     return arguments;
