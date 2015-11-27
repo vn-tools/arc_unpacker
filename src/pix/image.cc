@@ -9,18 +9,18 @@ using namespace au::pix;
 
 struct Image::Priv final
 {
-    void load(const bstr &input, Format fmt);
+    void load(const bstr &input, const PixelFormat fmt);
 
     std::vector<Pixel> pixels;
     size_t width;
     size_t height;
 };
 
-void Image::Priv::load(const bstr &input, Format fmt)
+void Image::Priv::load(const bstr &input, const PixelFormat fmt)
 {
-    if (input.size() < format_to_bpp(fmt) * width * height)
+    if (input.size() < pixel_format_to_bpp(fmt) * width * height)
         throw err::BadDataSizeError();
-    read_many(input.get<const u8>(), pixels, fmt);
+    read_pixels(input.get<const u8>(), pixels, fmt);
 }
 
 Image::Image(const Image &other) : Image(other.width(), other.height())
@@ -41,7 +41,7 @@ Image::Image(
     const size_t width,
     const size_t height,
     const bstr &input,
-    Format fmt) : Image(width, height)
+    const PixelFormat fmt) : Image(width, height)
 {
     p->load(input, fmt);
 }
@@ -50,9 +50,9 @@ Image::Image(
     const size_t width,
     const size_t height,
     io::Stream &input,
-    Format fmt) : Image(width, height)
+    const PixelFormat fmt) : Image(width, height)
 {
-    auto bpp = format_to_bpp(fmt);
+    auto bpp = pixel_format_to_bpp(fmt);
     p->load(input.read(width * height * bpp), fmt);
 }
 
@@ -62,7 +62,7 @@ Image::Image(
     const bstr &input,
     const Palette &palette) : Image(width, height)
 {
-    p->load(input, pix::Format::Gray8);
+    p->load(input, pix::PixelFormat::Gray8);
     apply_palette(palette);
 }
 
@@ -72,7 +72,7 @@ Image::Image(
     io::Stream &stream,
     const Palette &palette) : Image(width, height)
 {
-    p->load(stream.read(width * height), pix::Format::Gray8);
+    p->load(stream.read(width * height), pix::PixelFormat::Gray8);
     apply_palette(palette);
 }
 

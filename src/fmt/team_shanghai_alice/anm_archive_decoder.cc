@@ -116,19 +116,19 @@ static void write_image(
         switch (format)
         {
             case 1:
-                color = pix::read<pix::Format::BGRA8888>(data_ptr);
+                color = pix::read_pixel<pix::PixelFormat::BGRA8888>(data_ptr);
                 break;
 
             case 3:
-                color = pix::read<pix::Format::BGR565>(data_ptr);
+                color = pix::read_pixel<pix::PixelFormat::BGR565>(data_ptr);
                 break;
 
             case 5:
-                color = pix::read<pix::Format::BGRA4444>(data_ptr);
+                color = pix::read_pixel<pix::PixelFormat::BGRA4444>(data_ptr);
                 break;
 
             case 7:
-                color = pix::read<pix::Format::Gray8>(data_ptr);
+                color = pix::read_pixel<pix::PixelFormat::Gray8>(data_ptr);
                 break;
 
             default:

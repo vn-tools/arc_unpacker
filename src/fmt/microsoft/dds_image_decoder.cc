@@ -139,8 +139,8 @@ static void decode_dxt1_block(
     pix::Pixel colors[4];
     bstr tmp = stream.read(4);
     const u8 *tmp_ptr = tmp.get<u8>();
-    colors[0] = pix::read<pix::Format::BGR565>(tmp_ptr);
-    colors[1] = pix::read<pix::Format::BGR565>(tmp_ptr);
+    colors[0] = pix::read_pixel<pix::PixelFormat::BGR565>(tmp_ptr);
+    colors[1] = pix::read_pixel<pix::PixelFormat::BGR565>(tmp_ptr);
     bool transparent
         = colors[0].b <= colors[1].b
         && colors[0].g <= colors[1].g
@@ -311,7 +311,7 @@ pix::Image DdsImageDecoder::decode_impl(io::File &input_file) const
         if (header->pixel_format.rgb_bit_count == 32)
         {
             image.reset(new pix::Image(
-                width, height, input_file.stream, pix::Format::BGRA8888));
+                width, height, input_file.stream, pix::PixelFormat::BGRA8888));
         }
     }
 

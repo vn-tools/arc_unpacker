@@ -31,7 +31,7 @@ pix::Image BbmImageDecoder::decode_impl(io::File &input_file) const
         auto color_num = chunk_stream.read_u16_le();
         chunk_stream.skip(11);
         const pix::Palette palette(
-            color_num, chunk_stream, pix::Format::BGRA8888);
+            color_num, chunk_stream, pix::PixelFormat::BGRA8888);
         const pix::Image sub_image(
             chunk_width, chunk_height, chunk_stream, palette);
         const auto base_x = chunk_x * chunk_width;

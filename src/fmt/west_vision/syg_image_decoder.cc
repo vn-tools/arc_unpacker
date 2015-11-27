@@ -13,10 +13,10 @@ bool SygImageDecoder::is_recognized_impl(io::File &input_file) const
 pix::Image SygImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0x10);
-    auto width = input_file.stream.read_u32_le();
-    auto height = input_file.stream.read_u32_le();
-    input_file.stream.seek(0x20);
-    return pix::Image(width, height, input_file.stream, pix::Format::BGR888);
+    const auto width = input_file.stream.read_u32_le();
+    const auto height = input_file.stream.read_u32_le();
+    const auto data = input_file.stream.seek(0x20).read(width * height * 3);
+    return pix::Image(width, height, data, pix::PixelFormat::BGR888);
 }
 
 static auto dummy = fmt::register_fmt<SygImageDecoder>("west-vision/syg");

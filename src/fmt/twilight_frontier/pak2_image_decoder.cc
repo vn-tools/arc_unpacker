@@ -38,7 +38,7 @@ void Pak2ImageDecoder::add_palette(
     io::MemoryStream palette_stream(palette_data);
     palette_stream.skip(1);
     p->palette_map[name] = std::make_shared<pix::Palette>(
-        256, palette_stream, pix::Format::BGRA5551);
+        256, palette_stream, pix::PixelFormat::BGRA5551);
 }
 
 bool Pak2ImageDecoder::is_recognized_impl(io::File &input_file) const
@@ -48,18 +48,18 @@ bool Pak2ImageDecoder::is_recognized_impl(io::File &input_file) const
 
 pix::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
 {
-    auto bit_depth = input_file.stream.read_u8();
-    auto width = input_file.stream.read_u32_le();
-    auto height = input_file.stream.read_u32_le();
-    auto stride = input_file.stream.read_u32_le();
-    auto palette_number = input_file.stream.read_u32_le();
+    const auto bit_depth = input_file.stream.read_u8();
+    const auto width = input_file.stream.read_u32_le();
+    const auto height = input_file.stream.read_u32_le();
+    const auto stride = input_file.stream.read_u32_le();
+    const auto palette_number = input_file.stream.read_u32_le();
     io::MemoryStream source_stream(input_file.stream);
 
     std::shared_ptr<pix::Palette> palette;
     if (bit_depth == 8)
     {
-        auto path = io::path(input_file.name).parent();
-        path /= util::format("palette%03d.pal", palette_number);
+        const auto path = input_file.name.parent()
+            / util::format("palette%03d.pal", palette_number);
 
         auto it = p->palette_map.find(path);
         palette = it != p->palette_map.end()
@@ -68,8 +68,8 @@ pix::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
     }
 
     pix::Image image(width, height);
-    for (size_t y : util::range(height))
-    for (size_t x : util::range(stride))
+    for (const size_t y : util::range(height))
+    for (const size_t x : util::range(stride))
     {
         pix::Pixel pixel;
 
@@ -77,7 +77,8 @@ pix::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
         {
             case 32:
             case 24:
-                pixel = pix::read<pix::Format::BGRA8888>(source_stream);
+                pixel = pix::read_pixel<pix::PixelFormat::BGRA8888>(
+                    source_stream);
                 break;
 
             case 8:

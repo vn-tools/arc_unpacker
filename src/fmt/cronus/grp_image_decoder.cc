@@ -155,22 +155,27 @@ pix::Image GrpImageDecoder::decode_impl(io::File &input_file) const
 
     if (p->header.bpp == 8)
     {
-        pix::Palette palette(256, data, pix::Format::BGRA8888);
+        pix::Palette palette(256, data, pix::PixelFormat::BGRA8888);
         image = std::make_unique<pix::Image>(
             p->header.width, p->header.height, data.substr(1024), palette);
     }
     else if (p->header.bpp == 24)
     {
         image = std::make_unique<pix::Image>(
-            p->header.width, p->header.height, data, pix::Format::BGR888);
+            p->header.width, p->header.height, data, pix::PixelFormat::BGR888);
     }
     else if (p->header.bpp == 32)
     {
         image = std::make_unique<pix::Image>(
-            p->header.width, p->header.height, data, pix::Format::BGRA8888);
+            p->header.width,
+            p->header.height,
+            data,
+            pix::PixelFormat::BGRA8888);
     }
     else
+    {
         throw err::UnsupportedBitDepthError(p->header.bpp);
+    }
 
     if (!p->header.use_transparency)
     {

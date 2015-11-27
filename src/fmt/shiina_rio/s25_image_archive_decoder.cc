@@ -133,7 +133,8 @@ static pix::Image read_plain(
         data += output_row;
     }
 
-    return pix::Image(entry.width, entry.height, data, pix::Format::BGRA8888);
+    return pix::Image(
+        entry.width, entry.height, data, pix::PixelFormat::BGRA8888);
 }
 
 bool S25ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const

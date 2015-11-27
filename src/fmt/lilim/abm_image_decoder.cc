@@ -113,7 +113,7 @@ pix::Image AbmImageDecoder::decode_impl(io::File &input_file) const
     if (depth == -8)
     {
         pix::Palette palette(
-            256, input_file.stream.read(256 * 4), pix::Format::BGR888X);
+            256, input_file.stream.read(256 * 4), pix::PixelFormat::BGR888X);
         return pix::Image(
             width,
             height,
@@ -126,7 +126,7 @@ pix::Image AbmImageDecoder::decode_impl(io::File &input_file) const
             width,
             height,
             decompress_alpha(input_file.stream.read_to_eof(), size),
-            pix::Format::BGRA8888);
+            pix::PixelFormat::BGRA8888);
     }
     else
         throw err::UnsupportedBitDepthError(depth);

@@ -26,11 +26,11 @@ static std::unique_ptr<pix::Palette> read_palette(
     stream.skip(2);
     const auto color_count = stream.read_u16_le();
 
-    pix::Format format;
-    if      (format_id == 0) format = pix::Format::RGB565;
-    else if (format_id == 1) format = pix::Format::RGBA5551;
-    else if (format_id == 2) format = pix::Format::RGBA4444;
-    else if (format_id == 3) format = pix::Format::RGBA8888;
+    pix::PixelFormat format;
+    if      (format_id == 0) format = pix::PixelFormat::RGB565;
+    else if (format_id == 1) format = pix::PixelFormat::RGBA5551;
+    else if (format_id == 2) format = pix::PixelFormat::RGBA4444;
+    else if (format_id == 3) format = pix::PixelFormat::RGBA8888;
     else throw err::NotSupportedError("Unknown palette format");
 
     stream.seek(chunk.offset + 0x50);
@@ -83,15 +83,19 @@ static std::unique_ptr<pix::Image> read_image(
     std::unique_ptr<pix::Image> image;
     if (format_id < 4)
     {
-        pix::Format format;
+        pix::PixelFormat format;
 
-        if      (format_id == 0) format = pix::Format::RGB565;
-        else if (format_id == 1) format = pix::Format::RGBA5551;
-        else if (format_id == 2) format = pix::Format::RGBA4444;
-        else if (format_id == 3) format = pix::Format::RGBA8888;
+        if      (format_id == 0) format = pix::PixelFormat::RGB565;
+        else if (format_id == 1) format = pix::PixelFormat::RGBA5551;
+        else if (format_id == 2) format = pix::PixelFormat::RGBA4444;
+        else if (format_id == 3) format = pix::PixelFormat::RGBA8888;
 
         const auto data = read_data(
-            stream, width, height, pix::format_to_bpp(format) * 8, swizzled);
+            stream,
+            width,
+            height,
+            pix::pixel_format_to_bpp(format) * 8,
+            swizzled);
         image = std::make_unique<pix::Image>(width, height, data, format);
     }
     else

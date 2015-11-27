@@ -28,7 +28,7 @@ static pix::Image decode_image(io::File &input_file)
     const auto width = input_file.stream.read_u16_le();
     const auto height = input_file.stream.read_u16_le();
     const auto data = input_file.stream.read(width * height);
-    return pix::Image(width, height, data, pix::Format::Gray8);
+    return pix::Image(width, height, data, pix::PixelFormat::Gray8);
 }
 
 static pix::Palette decode_palette(io::File &input_file)
@@ -70,7 +70,7 @@ pix::Image GrpImageDecoder::decode(
         for (auto &c : mask_data)
             c ^= 0xFF;
         image.apply_mask(pix::Image(
-            image.width(), image.height(), mask_data, pix::Format::Gray8));
+            image.width(), image.height(), mask_data, pix::PixelFormat::Gray8));
     }
     return image;
 }

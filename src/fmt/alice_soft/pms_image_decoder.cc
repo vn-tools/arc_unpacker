@@ -195,7 +195,7 @@ pix::Image PmsImageDecoder::decode_impl(io::File &input_file) const
     auto width = input_file.stream.read_u32_le();
     auto height = input_file.stream.read_u32_le();
     auto data_offset = input_file.stream.read_u32_le();
-    auto palette_offset = input_file.stream.read_u32_le();
+    auto extra_data_offset = input_file.stream.read_u32_le();
 
     std::unique_ptr<pix::Image> image;
 
@@ -203,11 +203,11 @@ pix::Image PmsImageDecoder::decode_impl(io::File &input_file) const
     {
         input_file.stream.seek(data_offset);
         auto pixel_data = decompress_8bit(input_file.stream, width, height);
-        input_file.stream.seek(palette_offset);
+        input_file.stream.seek(extra_data_offset);
         pix::Palette palette(
             256,
             input_file.stream,
-            version == 1 ? pix::Format::RGB888 : pix::Format::BGR888);
+            version == 1 ? pix::PixelFormat::RGB888 : pix::PixelFormat::BGR888);
         image.reset(new pix::Image(width, height, pixel_data, palette));
     }
     else if (depth == 16)
@@ -215,15 +215,13 @@ pix::Image PmsImageDecoder::decode_impl(io::File &input_file) const
         input_file.stream.seek(data_offset);
         auto pixel_data = decompress_16bit(input_file.stream, width, height);
         image.reset(new pix::Image(
-            width, height, pixel_data, pix::Format::BGR565));
-        if (palette_offset)
+            width, height, pixel_data, pix::PixelFormat::BGR565));
+        if (extra_data_offset)
         {
-            input_file.stream.seek(palette_offset);
-            auto alpha = decompress_8bit(input_file.stream, width, height);
-            pix::Image alpha_channel(width, height, alpha, pix::Format::Gray8);
-            for (auto y : util::range(height))
-            for (auto x : util::range(width))
-                image->at(x, y).a = alpha_channel.at(x, y).r;
+            input_file.stream.seek(extra_data_offset);
+            auto mask_data = decompress_8bit(input_file.stream, width, height);
+            pix::Image mask(width, height, mask_data, pix::PixelFormat::Gray8);
+            image->apply_mask(mask);
         }
     }
     else

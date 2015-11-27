@@ -96,16 +96,16 @@ static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
     }
 }
 
-static pix::Format bpp_to_pixel_format(int bpp)
+static pix::PixelFormat bpp_to_pixel_format(int bpp)
 {
     switch (bpp)
     {
         case 8:
-            return pix::Format::Gray8;
+            return pix::PixelFormat::Gray8;
         case 24:
-            return pix::Format::BGR888;
+            return pix::PixelFormat::BGR888;
         case 32:
-            return pix::Format::BGRA8888;
+            return pix::PixelFormat::BGRA8888;
     }
     throw err::UnsupportedBitDepthError(bpp);
 }

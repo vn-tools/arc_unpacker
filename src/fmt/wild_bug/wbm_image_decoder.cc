@@ -54,11 +54,11 @@ static pix::Image get_image(
     auto data = decoder.read_compressed_section(section_id, channels, offsets);
     remove_pad(data, height, width * channels, stride);
     if (channels == 1)
-        return pix::Image(width, height, data, pix::Format::Gray8);
+        return pix::Image(width, height, data, pix::PixelFormat::Gray8);
     else if (channels == 3)
-        return pix::Image(width, height, data, pix::Format::BGR888);
+        return pix::Image(width, height, data, pix::PixelFormat::BGR888);
     else if (channels == 4)
-        return pix::Image(width, height, data, pix::Format::BGRA8888);
+        return pix::Image(width, height, data, pix::PixelFormat::BGRA8888);
     else
         throw err::UnsupportedChannelCountError(channels);
 }

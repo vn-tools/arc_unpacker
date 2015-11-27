@@ -30,18 +30,18 @@ pix::Image DbmImageDecoder::decode_impl(io::File &input_file) const
 
     if (format == 1 || format == 2 || format == 3)
     {
-        auto image = pix::Image(width, height, data, pix::Format::BGR888);
+        auto image = pix::Image(width, height, data, pix::PixelFormat::BGR888);
         image.flip_vertically();
         return image;
     }
     else if (format == 4)
     {
-        auto mask = pix::Image(width, height / 2, data, pix::Format::BGR888);
-        auto image = pix::Image(
+        pix::Image mask(width, height / 2, data, pix::PixelFormat::BGR888);
+        pix::Image image(
             width,
             height / 2,
             data.substr(3 * width * height / 2),
-            pix::Format::BGR888);
+            pix::PixelFormat::BGR888);
         image.apply_mask(mask);
         image.flip_vertically();
         return image;

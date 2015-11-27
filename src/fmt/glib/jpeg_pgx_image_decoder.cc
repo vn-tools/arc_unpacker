@@ -71,7 +71,7 @@ pix::Image JpegPgxImageDecoder::decode_impl(io::File &input_file) const
 
     auto target = custom_lzss_decompress(pgx_stream.read_to_eof(), target_size);
 
-    pix::Image image(width, height, target, pix::Format::BGRA8888);
+    pix::Image image(width, height, target, pix::PixelFormat::BGRA8888);
     if (!transparent)
         for (auto &c : image)
             c.a = 0xFF;

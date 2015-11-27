@@ -23,7 +23,7 @@ pix::Image EpfImageDecoder::decode_impl(io::File &input_file) const
     const auto size_comp = input_file.stream.read_u32_le();
     const auto data = util::pack::lzss_decompress_bytewise(
         input_file.stream.read(size_comp), size_orig);
-    return pix::Image(width, height, data, pix::Format::BGRA8888);
+    return pix::Image(width, height, data, pix::PixelFormat::BGRA8888);
 }
 
 static auto dummy = fmt::register_fmt<EpfImageDecoder>("yumemiru/epf");

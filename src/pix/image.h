@@ -2,7 +2,7 @@
 
 #include <memory>
 #include "io/stream.h"
-#include "pix/format.h"
+#include "pix/pixel_format.h"
 #include "pix/palette.h"
 #include "pix/pixel.h"
 
@@ -20,13 +20,13 @@ namespace pix {
             const size_t width,
             const size_t height,
             const bstr &input,
-            Format fmt);
+            const PixelFormat fmt);
 
         Image(
             const size_t width,
             const size_t height,
             io::Stream &input_stream,
-            Format fmt);
+            const PixelFormat fmt);
 
         Image(
             const size_t width,

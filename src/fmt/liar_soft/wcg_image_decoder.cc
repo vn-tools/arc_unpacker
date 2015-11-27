@@ -43,7 +43,7 @@ pix::Image WcgImageDecoder::decode_impl(io::File &input_file) const
     for (auto i : util::range(0, output.size(), 4))
         output[i + 3] ^= 0xFF;
 
-    return pix::Image(width, height, output, pix::Format::BGRA8888);
+    return pix::Image(width, height, output, pix::PixelFormat::BGRA8888);
 }
 
 static auto dummy = fmt::register_fmt<WcgImageDecoder>("liar-soft/wcg");

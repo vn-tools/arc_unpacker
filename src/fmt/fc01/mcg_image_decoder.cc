@@ -146,7 +146,7 @@ pix::Image McgImageDecoder::decode_impl(io::File &input_file) const
     if (depth != 24)
         throw err::UnsupportedBitDepthError(depth);
 
-    return pix::Image(width, height, data, pix::Format::BGR888);
+    return pix::Image(width, height, data, pix::PixelFormat::BGR888);
 }
 
 static auto dummy = fmt::register_fmt<McgImageDecoder>("fc01/mcg");

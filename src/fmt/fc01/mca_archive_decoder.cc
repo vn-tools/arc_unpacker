@@ -125,7 +125,7 @@ std::unique_ptr<io::File> McaArchiveDecoder::read_file_impl(
     }
 
     data = common::fix_stride(data, width, height, 24);
-    pix::Image image(width, height, data, pix::Format::BGR888);
+    pix::Image image(width, height, data, pix::PixelFormat::BGR888);
     return util::file_from_image(image, entry->name);
 }
 

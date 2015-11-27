@@ -107,7 +107,7 @@ std::unique_ptr<io::File> Pak2TextureArchiveDecoder::read_file_impl(
             chunk.width,
             chunk.height,
             input_file.stream.read(chunk.width * chunk.height * 2),
-            pix::Format::BGRnA5551);
+            pix::PixelFormat::BGRnA5551);
         chunk_image.flip_vertically();
         image.paste(chunk_image, chunk.x, chunk.y);
     }

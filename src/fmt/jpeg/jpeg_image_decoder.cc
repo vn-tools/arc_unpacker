@@ -29,13 +29,13 @@ pix::Image JpegImageDecoder::decode_impl(io::File &input_file) const
     auto height = info.output_height;
     auto channels = info.num_components;
 
-    pix::Format format;
+    pix::PixelFormat format;
     if (channels == 3)
-        format = pix::Format::RGB888;
+        format = pix::PixelFormat::RGB888;
     else if (channels == 4)
-        format = pix::Format::RGBA8888;
+        format = pix::PixelFormat::RGBA8888;
     else if (channels == 1)
-        format = pix::Format::Gray8;
+        format = pix::PixelFormat::Gray8;
     else
         throw err::UnsupportedChannelCountError(channels);
 

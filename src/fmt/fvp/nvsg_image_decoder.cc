@@ -33,31 +33,31 @@ pix::Image NvsgImageDecoder::decode_impl(io::File &input_file) const
 
     bstr data = util::pack::zlib_inflate(input_file.stream.read_to_eof());
 
-    pix::Format pixel_format;
+    pix::PixelFormat pixel_format;
     switch (format)
     {
         case 0:
-            pixel_format = pix::Format::BGR888;
+            pixel_format = pix::PixelFormat::BGR888;
             break;
 
         case 1:
-            pixel_format = pix::Format::BGRA8888;
+            pixel_format = pix::PixelFormat::BGRA8888;
             break;
 
         case 2:
             height *= image_count;
-            pixel_format = pix::Format::BGRA8888;
+            pixel_format = pix::PixelFormat::BGRA8888;
             break;
 
         case 3:
-            pixel_format = pix::Format::Gray8;
+            pixel_format = pix::PixelFormat::Gray8;
             break;
 
         case 4:
             for (auto i : util::range(data.size()))
                 if (data.get<u8>()[i])
                     data.get<u8>()[i] = 255;
-            pixel_format = pix::Format::Gray8;
+            pixel_format = pix::PixelFormat::Gray8;
             break;
 
         default:

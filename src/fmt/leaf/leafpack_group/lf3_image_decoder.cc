@@ -23,7 +23,7 @@ pix::Image Lf3ImageDecoder::decode_impl(io::File &input_file) const
     input_file.stream.seek(data_pos);
     const auto data = common::custom_lzss_decompress(
         input_file.stream.read_to_eof(), width * height * 2);
-    pix::Image image(width, height, data, pix::Format::BGR555X);
+    pix::Image image(width, height, data, pix::PixelFormat::BGR555X);
     image.flip_vertically();
     return image;
 }

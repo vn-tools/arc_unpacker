@@ -192,20 +192,20 @@ static pix::Image read_image(
     size_t height)
 {
     if (compression_type == CompressionType::None)
-        return pix::Image(width, height, input, pix::Format::BGRA8888);
+        return pix::Image(width, height, input, pix::PixelFormat::BGRA8888);
 
     if (compression_type == CompressionType::Sgd)
     {
-        auto decompressed = decompress_sgd(input, size_original);
-        return pix::Image(width, height, decompressed, pix::Format::BGRA8888);
+        const auto data = decompress_sgd(input, size_original);
+        return pix::Image(width, height, data, pix::PixelFormat::BGRA8888);
     }
 
     if (compression_type == CompressionType::Png)
     {
-        fmt::png::PngImageDecoder png_decoder;
-        io::File tmp_file;
-        tmp_file.stream.write(input);
-        return png_decoder.decode(tmp_file);
+        io::File png_file;
+        png_file.stream.write(input);
+        const fmt::png::PngImageDecoder png_decoder;
+        return png_decoder.decode(png_file);
     }
 
     throw err::NotSupportedError("Unsupported compression type");

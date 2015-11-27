@@ -17,7 +17,7 @@ pix::Image FilImageDecoder::decode_impl(io::File &input_file) const
     const auto width = input_file.stream.read_u32_le();
     const auto height = input_file.stream.read_u32_le();
     const auto data = input_file.stream.read(width * height);
-    return pix::Image(width, height, data, pix::Format::Gray8);
+    return pix::Image(width, height, data, pix::PixelFormat::Gray8);
 }
 
 static auto dummy = fmt::register_fmt<FilImageDecoder>("minato-soft/fil");

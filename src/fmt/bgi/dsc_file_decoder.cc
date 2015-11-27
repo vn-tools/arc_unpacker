@@ -163,17 +163,17 @@ std::unique_ptr<io::File> DscFileDecoder::decode_impl(
         auto bpp = data_stream.read_u8();
         data_stream.skip(11);
 
-        pix::Format fmt;
+        pix::PixelFormat fmt;
         switch (bpp)
         {
             case 8:
-                fmt = pix::Format::Gray8;
+                fmt = pix::PixelFormat::Gray8;
                 break;
             case 24:
-                fmt = pix::Format::BGR888;
+                fmt = pix::PixelFormat::BGR888;
                 break;
             case 32:
-                fmt = pix::Format::BGRA8888;
+                fmt = pix::PixelFormat::BGRA8888;
                 break;
             default:
                 throw err::UnsupportedBitDepthError(bpp);

@@ -107,7 +107,7 @@ void Nekopack4ArchiveDecoder::preprocess(
                 sprite.width(),
                 sprite.height(),
                 mask_file->stream,
-                pix::Format::Gray8);
+                pix::PixelFormat::Gray8);
             sprite.apply_mask(mask);
             sprite_entry->already_unpacked = true;
             mask_entry->already_unpacked = true;

@@ -21,7 +21,7 @@ pix::Image Ed8ImageDecoder::decode_impl(io::File &input_file) const
     const auto palette_size = input_file.stream.read_u32_le();
     const auto data_size = input_file.stream.read_u32_le();
     const pix::Palette palette(
-        palette_size, input_file.stream, pix::Format::BGR888);
+        palette_size, input_file.stream, pix::PixelFormat::BGR888);
 
     static const std::vector<std::pair<s8, s8>> shift_table
         {

@@ -80,7 +80,7 @@ pix::Image Rc8ImageDecoder::decode_impl(io::File &input_file) const
     auto height = input_file.stream.read_u32_le();
     input_file.stream.skip(4);
 
-    pix::Palette palette(256, input_file.stream, pix::Format::BGR888);
+    pix::Palette palette(256, input_file.stream, pix::PixelFormat::BGR888);
     auto data_comp = input_file.stream.read_to_eof();
     auto data_orig = uncompress(data_comp, width, height);
     return pix::Image(width, height, data_orig, palette);

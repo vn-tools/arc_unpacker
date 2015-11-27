@@ -1,4 +1,4 @@
-#include "pix/format.h"
+#include "pix/pixel_format.h"
 #include <cstring>
 #include "util/format.h"
 #include "util/range.h"
@@ -6,7 +6,7 @@
 namespace au {
 namespace pix {
 
-    template<> Pixel read<Format::Gray8>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::Gray8>(const u8 *&ptr)
     {
         Pixel c;
         c.b = c.g = c.r = *ptr++;
@@ -14,7 +14,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::BGR555X>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::BGR555X>(const u8 *&ptr)
     {
         Pixel c;
         u16 tmp = reinterpret_cast<const u16&>(*ptr);
@@ -26,7 +26,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::BGR565>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::BGR565>(const u8 *&ptr)
     {
         Pixel c;
         u16 tmp = reinterpret_cast<const u16&>(*ptr);
@@ -38,7 +38,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::BGR888>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::BGR888>(const u8 *&ptr)
     {
         Pixel c;
         c.b = *ptr++;
@@ -48,7 +48,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::BGR888X>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::BGR888X>(const u8 *&ptr)
     {
         Pixel c;
         c.b = *ptr++;
@@ -58,7 +58,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::BGRA4444>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::BGRA4444>(const u8 *&ptr)
     {
         Pixel c;
         u16 tmp = reinterpret_cast<const u16&>(*ptr);
@@ -70,7 +70,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::BGRA5551>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::BGRA5551>(const u8 *&ptr)
     {
         Pixel c;
         u16 tmp = reinterpret_cast<const u16&>(*ptr);
@@ -82,7 +82,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::BGRA8888>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::BGRA8888>(const u8 *&ptr)
     {
         Pixel c;
         c.b = *ptr++;
@@ -92,7 +92,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::BGRnA4444>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::BGRnA4444>(const u8 *&ptr)
     {
         Pixel c;
         u16 tmp = reinterpret_cast<const u16&>(*ptr);
@@ -104,7 +104,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::BGRnA5551>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::BGRnA5551>(const u8 *&ptr)
     {
         Pixel c;
         u16 tmp = reinterpret_cast<const u16&>(*ptr);
@@ -116,7 +116,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::BGRnA8888>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::BGRnA8888>(const u8 *&ptr)
     {
         Pixel c;
         c.b = *ptr++;
@@ -126,7 +126,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::RGB555X>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::RGB555X>(const u8 *&ptr)
     {
         Pixel c;
         u16 tmp = reinterpret_cast<const u16&>(*ptr);
@@ -138,7 +138,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::RGB565>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::RGB565>(const u8 *&ptr)
     {
         Pixel c;
         u16 tmp = reinterpret_cast<const u16&>(*ptr);
@@ -150,7 +150,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::RGB888>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::RGB888>(const u8 *&ptr)
     {
         Pixel c;
         c.r = *ptr++;
@@ -160,7 +160,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::RGB888X>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::RGB888X>(const u8 *&ptr)
     {
         Pixel c;
         c.r = *ptr++;
@@ -170,7 +170,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::RGBA4444>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::RGBA4444>(const u8 *&ptr)
     {
         Pixel c;
         u16 tmp = reinterpret_cast<const u16&>(*ptr);
@@ -182,7 +182,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::RGBA5551>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::RGBA5551>(const u8 *&ptr)
     {
         Pixel c;
         u16 tmp = reinterpret_cast<const u16&>(*ptr);
@@ -194,7 +194,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::RGBA8888>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::RGBA8888>(const u8 *&ptr)
     {
         Pixel c;
         c.r = *ptr++;
@@ -204,7 +204,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::RGBnA4444>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::RGBnA4444>(const u8 *&ptr)
     {
         Pixel c;
         u16 tmp = reinterpret_cast<const u16&>(*ptr);
@@ -216,7 +216,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::RGBnA5551>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::RGBnA5551>(const u8 *&ptr)
     {
         Pixel c;
         u16 tmp = reinterpret_cast<const u16&>(*ptr);
@@ -228,7 +228,7 @@ namespace pix {
         return c;
     }
 
-    template<> Pixel read<Format::RGBnA8888>(const u8 *&ptr)
+    template<> Pixel read_pixel<PixelFormat::RGBnA8888>(const u8 *&ptr)
     {
         Pixel c;
         c.r = *ptr++;
@@ -238,40 +238,42 @@ namespace pix {
         return c;
     }
 
-    void read_many(const u8 *input_ptr, std::vector<Pixel> &output, Format fmt)
+    void read_pixels(
+        const u8 *input_ptr, std::vector<Pixel> &output, const PixelFormat fmt)
     {
         // save those precious CPU cycles
-        if (fmt == Format::BGRA8888)
+        if (fmt == PixelFormat::BGRA8888)
         {
             std::memcpy(&output[0], input_ptr, output.size() * 4);
             return;
         }
 
         // I don't think there is a better alternative to this
+        using PF = PixelFormat;
         std::function<void(const u8 *, std::vector<Pixel> &)> impl;
         switch (fmt)
         {
-            case Format::Gray8:     impl = read_many<Format::Gray8>; break;
-            case Format::BGR555X:   impl = read_many<Format::BGR555X>; break;
-            case Format::BGR565:    impl = read_many<Format::BGR565>; break;
-            case Format::BGR888:    impl = read_many<Format::BGR888>; break;
-            case Format::BGR888X:   impl = read_many<Format::BGR888X>; break;
-            case Format::BGRA4444:  impl = read_many<Format::BGRA4444>; break;
-            case Format::BGRA5551:  impl = read_many<Format::BGRA5551>; break;
-            case Format::BGRA8888:  impl = read_many<Format::BGRA8888>; break;
-            case Format::BGRnA4444: impl = read_many<Format::BGRnA4444>; break;
-            case Format::BGRnA5551: impl = read_many<Format::BGRnA5551>; break;
-            case Format::BGRnA8888: impl = read_many<Format::BGRnA8888>; break;
-            case Format::RGB555X:   impl = read_many<Format::RGB555X>; break;
-            case Format::RGB565:    impl = read_many<Format::RGB565>; break;
-            case Format::RGB888:    impl = read_many<Format::RGB888>; break;
-            case Format::RGB888X:   impl = read_many<Format::RGB888X>; break;
-            case Format::RGBA4444:  impl = read_many<Format::RGBA4444>; break;
-            case Format::RGBA5551:  impl = read_many<Format::RGBA5551>; break;
-            case Format::RGBA8888:  impl = read_many<Format::RGBA8888>; break;
-            case Format::RGBnA4444: impl = read_many<Format::RGBnA4444>; break;
-            case Format::RGBnA5551: impl = read_many<Format::RGBnA5551>; break;
-            case Format::RGBnA8888: impl = read_many<Format::RGBnA8888>; break;
+            case PF::Gray8:     impl = read_pixels<PF::Gray8>; break;
+            case PF::BGR555X:   impl = read_pixels<PF::BGR555X>; break;
+            case PF::BGR565:    impl = read_pixels<PF::BGR565>; break;
+            case PF::BGR888:    impl = read_pixels<PF::BGR888>; break;
+            case PF::BGR888X:   impl = read_pixels<PF::BGR888X>; break;
+            case PF::BGRA4444:  impl = read_pixels<PF::BGRA4444>; break;
+            case PF::BGRA5551:  impl = read_pixels<PF::BGRA5551>; break;
+            case PF::BGRA8888:  impl = read_pixels<PF::BGRA8888>; break;
+            case PF::BGRnA4444: impl = read_pixels<PF::BGRnA4444>; break;
+            case PF::BGRnA5551: impl = read_pixels<PF::BGRnA5551>; break;
+            case PF::BGRnA8888: impl = read_pixels<PF::BGRnA8888>; break;
+            case PF::RGB555X:   impl = read_pixels<PF::RGB555X>; break;
+            case PF::RGB565:    impl = read_pixels<PF::RGB565>; break;
+            case PF::RGB888:    impl = read_pixels<PF::RGB888>; break;
+            case PF::RGB888X:   impl = read_pixels<PF::RGB888X>; break;
+            case PF::RGBA4444:  impl = read_pixels<PF::RGBA4444>; break;
+            case PF::RGBA5551:  impl = read_pixels<PF::RGBA5551>; break;
+            case PF::RGBA8888:  impl = read_pixels<PF::RGBA8888>; break;
+            case PF::RGBnA4444: impl = read_pixels<PF::RGBnA4444>; break;
+            case PF::RGBnA5551: impl = read_pixels<PF::RGBnA5551>; break;
+            case PF::RGBnA8888: impl = read_pixels<PF::RGBnA8888>; break;
             default:
                 throw std::logic_error(
                     util::format("Unsupported pixel format: %d", fmt));

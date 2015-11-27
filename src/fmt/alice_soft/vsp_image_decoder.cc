@@ -157,7 +157,7 @@ pix::Image VspImageDecoder::decode_impl(io::File &input_file) const
         width = ((width + 7) / 8) * 8;
 
         input_file.stream.seek(0x20);
-        pix::Palette palette(256, input_file.stream, pix::Format::RGB888);
+        pix::Palette palette(256, input_file.stream, pix::PixelFormat::RGB888);
 
         input_file.stream.seek(0x320);
         auto pixel_data = PmsImageDecoder::decompress_8bit(

@@ -47,7 +47,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(palette_count))
     {
         meta->palettes.push_back(pix::Palette(
-            256, input_file.stream.read(512), pix::Format::BGRA5551));
+            256, input_file.stream.read(512), pix::PixelFormat::BGRA5551));
     }
     meta->palettes.push_back(pix::Palette(256));
 
@@ -112,17 +112,17 @@ std::unique_ptr<io::File> Pak1ImageArchiveDecoder::read_file_impl(
     if (entry->depth == 32)
     {
         image = std::make_unique<pix::Image>(
-            entry->width, entry->height, output, pix::Format::BGRA8888);
+            entry->width, entry->height, output, pix::PixelFormat::BGRA8888);
     }
     else if (entry->depth == 24)
     {
         image = std::make_unique<pix::Image>(
-            entry->width, entry->height, output, pix::Format::BGR888X);
+            entry->width, entry->height, output, pix::PixelFormat::BGR888X);
     }
     else if (entry->depth == 16)
     {
         image = std::make_unique<pix::Image>(
-            entry->width, entry->height, output, pix::Format::BGRA5551);
+            entry->width, entry->height, output, pix::PixelFormat::BGRA5551);
     }
     else if (entry->depth == 8)
     {

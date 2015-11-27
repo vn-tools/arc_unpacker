@@ -21,7 +21,8 @@ pix::Image Lf2ImageDecoder::decode_impl(io::File &input_file) const
 
     input_file.stream.seek(0x16);
     auto color_count = input_file.stream.read_u16_le();
-    pix::Palette palette(color_count, input_file.stream, pix::Format::BGR888);
+    pix::Palette palette(
+        color_count, input_file.stream, pix::PixelFormat::BGR888);
 
     const auto data = common::custom_lzss_decompress(
         input_file.stream.read_to_eof(), width * height);

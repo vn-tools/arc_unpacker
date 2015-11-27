@@ -24,7 +24,7 @@ pix::Image CustomPngImageDecoder::decode_impl(io::File &input_file) const
         });
     if (chunks.find("xPAL") != chunks.end())
     {
-        pix::Palette palette(256, chunks["xPAL"], pix::Format::BGR888X);
+        pix::Palette palette(256, chunks["xPAL"], pix::PixelFormat::BGR888X);
         for (const auto y : util::range(image.height()))
         for (const auto x : util::range(image.width()))
         {

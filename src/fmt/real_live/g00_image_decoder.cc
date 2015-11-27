@@ -65,7 +65,7 @@ static pix::Image decode_v0(io::File &input_file, size_t width, size_t height)
     const auto size_orig = input_file.stream.read_u32_le();
     const auto data = decompress(
         input_file.stream.read(size_comp), size_orig, 3, 1);
-    return pix::Image(width, height, data, pix::Format::BGR888);
+    return pix::Image(width, height, data, pix::PixelFormat::BGR888);
 }
 
 static pix::Image decode_v1(io::File &input_file, size_t width, size_t height)
@@ -77,7 +77,7 @@ static pix::Image decode_v1(io::File &input_file, size_t width, size_t height)
     const size_t colors = tmp_stream.read_u16_le();
     const auto pal_data = tmp_stream.read(4 * colors);
     const auto pix_data = tmp_stream.read_to_eof();
-    pix::Palette palette(colors, pal_data, pix::Format::BGRA8888);
+    pix::Palette palette(colors, pal_data, pix::PixelFormat::BGRA8888);
     return pix::Image(width, height, pix_data, palette);
 }
 
@@ -137,7 +137,7 @@ static pix::Image decode_v2(io::File &input_file, size_t width, size_t height)
                 part_width,
                 part_height,
                 input,
-                pix::Format::BGRA8888);
+                pix::PixelFormat::BGRA8888);
 
             const size_t target_x = region->x1 + part_x;
             const size_t target_y = region->y1 + part_y;

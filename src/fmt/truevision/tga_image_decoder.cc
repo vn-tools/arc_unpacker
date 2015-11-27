@@ -19,24 +19,17 @@ namespace
 
 static pix::Palette read_palette(io::Stream &stream, size_t size, size_t depth)
 {
+    pix::PixelFormat format;
     if (depth == 32)
-        return pix::Palette(size, stream.read(size * 4), pix::Format::BGRA8888);
+        format = pix::PixelFormat::BGRA8888;
+    else if (depth == 24)
+        format = pix::PixelFormat::BGR888;
+    else if (depth == 16 || depth == 15)
+        format = pix::PixelFormat::BGR555X;
+    else
+        throw err::UnsupportedBitDepthError(depth);
 
-    if (depth == 24)
-        return pix::Palette(size, stream.read(size * 3), pix::Format::BGR888);
-
-    if (depth == 16 || depth == 15)
-    {
-        pix::Palette palette(size);
-        for (auto i : util::range(size))
-        {
-            palette[i] = pix::read<pix::Format::BGR555X>(stream);
-            palette[i].a = 0xFF;
-        }
-        return palette;
-    }
-
-    throw err::UnsupportedBitDepthError(depth);
+    return pix::Palette(size, stream, format);
 }
 
 static bstr read_compressed_data(
@@ -98,15 +91,15 @@ static pix::Image get_image_without_palette(
     const size_t height,
     const size_t depth)
 {
-    pix::Format format;
+    pix::PixelFormat format;
     if (depth == 8)
-        format = pix::Format::Gray8;
+        format = pix::PixelFormat::Gray8;
     else if (depth == 16)
-        format = pix::Format::BGRA5551;
+        format = pix::PixelFormat::BGRA5551;
     else if (depth == 24)
-        format = pix::Format::BGR888;
+        format = pix::PixelFormat::BGR888;
     else if (depth == 32)
-        format = pix::Format::BGRA8888;
+        format = pix::PixelFormat::BGRA8888;
     else
         throw err::UnsupportedBitDepthError(depth);
     return pix::Image(width, height, input, format);

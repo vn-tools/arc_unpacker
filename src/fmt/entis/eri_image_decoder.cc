@@ -109,13 +109,13 @@ pix::Image EriImageDecoder::decode_impl(io::File &input_file) const
         const auto pixel_data = decode_pixel_data(
             header, input_file.stream.read(pixel_data_section.size));
 
-        pix::Format fmt;
+        pix::PixelFormat fmt;
         if (header.bit_depth == 32)
-            fmt = pix::Format::BGRA8888;
+            fmt = pix::PixelFormat::BGRA8888;
         else if (header.bit_depth == 24)
-            fmt = pix::Format::BGR888;
+            fmt = pix::PixelFormat::BGR888;
         else if (header.bit_depth == 8)
-            fmt = pix::Format::Gray8;
+            fmt = pix::PixelFormat::Gray8;
         else
             throw err::UnsupportedBitDepthError(header.bit_depth);
 

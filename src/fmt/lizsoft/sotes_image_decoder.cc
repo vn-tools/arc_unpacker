@@ -33,7 +33,7 @@ pix::Image SotesImageDecoder::decode_impl(io::File &input_file) const
         input_file.stream
             .seek(0x20)
             .read(256 * 4),
-        pix::Format::BGR888X);
+        pix::PixelFormat::BGR888X);
 
     const auto data = input_file.stream
         .seek(pixel_data_offset)
@@ -47,7 +47,7 @@ pix::Image SotesImageDecoder::decode_impl(io::File &input_file) const
     else if (depth == 24)
     {
         image = std::make_unique<pix::Image>(
-            width, height, data, pix::Format::BGR888);
+            width, height, data, pix::PixelFormat::BGR888);
     }
     else
     {

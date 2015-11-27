@@ -137,7 +137,7 @@ pix::Image LfgImageDecoder::decode_impl(io::File &input_file) const
         palette_data += static_cast<u8>(tmp & 0xF0);
         palette_data += static_cast<u8>(tmp << 4);
     }
-    pix::Palette palette(16, palette_data, pix::Format::RGB888);
+    pix::Palette palette(16, palette_data, pix::PixelFormat::RGB888);
     pix::Image image(width, height, data, palette);
     image.flip_vertically();
     return image;

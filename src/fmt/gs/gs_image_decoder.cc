@@ -30,7 +30,7 @@ pix::Image GsImageDecoder::decode_impl(io::File &input_file) const
 
     if (depth == 8)
     {
-        pix::Palette palette(256, data, pix::Format::BGRA8888);
+        pix::Palette palette(256, data, pix::PixelFormat::BGRA8888);
         for (auto &c : palette)
             c.a = 0xFF;
         return pix::Image(width, height, data.substr(256 * 4), palette);
@@ -38,7 +38,7 @@ pix::Image GsImageDecoder::decode_impl(io::File &input_file) const
 
     if (depth == 32)
     {
-        auto image = pix::Image(width, height, data, pix::Format::BGRA8888);
+        pix::Image image(width, height, data, pix::PixelFormat::BGRA8888);
         if (!use_transparency)
             for (auto &c : image)
                 c.a = 0xFF;

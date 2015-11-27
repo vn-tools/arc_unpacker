@@ -79,20 +79,20 @@ static pix::Image decode(io::File &file, PngImageDecoder::ChunkHandler handler)
 
     png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
 
-    pix::Format format;
+    pix::PixelFormat format;
     if (color_type == PNG_COLOR_TYPE_RGB)
-        format = pix::Format::BGR888;
+        format = pix::PixelFormat::BGR888;
     else if (color_type == PNG_COLOR_TYPE_RGBA)
-        format = pix::Format::BGRA8888;
+        format = pix::PixelFormat::BGRA8888;
     else if (color_type == PNG_COLOR_TYPE_GRAY)
-        format = pix::Format::Gray8;
+        format = pix::PixelFormat::Gray8;
     else
         throw err::NotSupportedError("Bad pixel format");
 
     bstr data;
-    data.reserve(width * height * format_to_bpp(format));
+    data.reserve(width * height * pixel_format_to_bpp(format));
     for (auto y : util::range(height))
-        data += bstr(row_pointers[y], width * format_to_bpp(format));
+        data += bstr(row_pointers[y], width * pixel_format_to_bpp(format));
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
     return pix::Image(width, height, data, format);

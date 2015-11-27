@@ -435,7 +435,7 @@ std::unique_ptr<pix::Image> Cbg2Decoder::decode(io::Stream &input_stream) const
     }
 
     auto image = std::make_unique<pix::Image>(
-        pad_width, pad_height, bmp_data, pix::Format::BGRA8888);
+        pad_width, pad_height, bmp_data, pix::PixelFormat::BGRA8888);
     image->crop(width, height);
     return image;
 }

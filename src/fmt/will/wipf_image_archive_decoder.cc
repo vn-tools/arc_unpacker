@@ -112,7 +112,7 @@ std::unique_ptr<pix::Image> WipfImageArchiveDecoder::read_image(
     if (entry->depth == 8)
     {
         palette.reset(new pix::Palette(
-            256, input_file.stream, pix::Format::BGRA8888));
+            256, input_file.stream, pix::PixelFormat::BGRA8888));
         for (auto &c : *palette)
             c.a ^= 0xFF;
     }

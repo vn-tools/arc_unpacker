@@ -38,7 +38,7 @@ pix::Image LimImageDecoder::decode_impl(io::File &input_file) const
 
     bstr output(canvas_size * 2);
     cg_decompress(output, 0, 2, input_file.stream, 2);
-    pix::Image image(width, height, output, pix::Format::BGR565);
+    pix::Image image(width, height, output, pix::PixelFormat::BGR565);
 
     if (!input_file.stream.eof())
     {
@@ -46,7 +46,7 @@ pix::Image LimImageDecoder::decode_impl(io::File &input_file) const
         cg_decompress(output, 0, 1, input_file.stream, 1);
         for (auto &c : output)
             c ^= 0xFF;
-        pix::Image mask(width, height, output, pix::Format::Gray8);
+        pix::Image mask(width, height, output, pix::PixelFormat::Gray8);
         image.apply_mask(mask);
     }
 

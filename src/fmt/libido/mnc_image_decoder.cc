@@ -28,7 +28,7 @@ pix::Image MncImageDecoder::decode_impl(io::File &input_file) const
     if (bit_depth != 24)
         throw err::UnsupportedBitDepthError(bit_depth);
 
-    pix::Image image(width, height, data, pix::Format::BGR888);
+    pix::Image image(width, height, data, pix::PixelFormat::BGR888);
     image.flip_vertically();
     return image;
 }

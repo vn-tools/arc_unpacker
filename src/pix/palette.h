@@ -2,7 +2,7 @@
 
 #include <memory>
 #include "io/stream.h"
-#include "pix/format.h"
+#include "pix/pixel_format.h"
 #include "pix/pixel.h"
 
 namespace au {
@@ -12,16 +12,26 @@ namespace pix {
     {
     public:
         Palette(const Palette &other);
-        Palette(size_t color_count);
-        Palette(size_t color_count, const bstr &input, Format format);
-        Palette(size_t color_count, io::Stream &input_stream, Format format);
+
+        Palette(const size_t color_count);
+
+        Palette(
+            const size_t color_count,
+            const bstr &input,
+            const PixelFormat format);
+
+        Palette(
+            const size_t color_count,
+            io::Stream &input_stream,
+            const PixelFormat format);
+
         ~Palette();
 
         size_t size() const;
-        Pixel &at(size_t i);
-        const Pixel &at(size_t i) const;
-        Pixel &operator [](size_t i);
-        const Pixel &operator [](size_t i) const;
+        Pixel &at(const size_t i);
+        const Pixel &at(const size_t i) const;
+        Pixel &operator [](const size_t i);
+        const Pixel &operator [](const size_t i) const;
 
         Pixel *begin();
         Pixel *end();

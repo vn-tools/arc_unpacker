@@ -173,7 +173,7 @@ static std::unique_ptr<pix::Image> get_image_without_palette_fast24(
     for (auto y : util::range(header.height))
     {
         stream.seek(header.data_offset + header.stride * y);
-        pix::Image row(header.width, 1, stream, pix::Format::BGR888);
+        pix::Image row(header.width, 1, stream, pix::PixelFormat::BGR888);
         for (auto x : util::range(header.width))
             image->at(x, y) = row.at(x, 0);
     }
@@ -187,7 +187,7 @@ static std::unique_ptr<pix::Image> get_image_without_palette_fast32(
     for (auto y : util::range(header.height))
     {
         stream.seek(header.data_offset + header.stride * y);
-        pix::Image row(header.width, 1, stream, pix::Format::BGRA8888);
+        pix::Image row(header.width, 1, stream, pix::PixelFormat::BGRA8888);
         for (auto x : util::range(header.width))
             image->at(x, y) = row.at(x, 0);
     }

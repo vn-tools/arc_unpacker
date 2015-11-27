@@ -37,7 +37,8 @@ pix::Image EdtImageDecoder::decode_impl(io::File &input_file) const
         io::MemoryStream meta_stream(input_file.stream.read(meta_size));
         if (meta_stream.read(diff_magic.size()) == diff_magic)
         {
-            transparent_color = pix::read<pix::Format::BGR888>(meta_stream);
+            transparent_color
+                = pix::read_pixel<pix::PixelFormat::BGR888>(meta_stream);
             meta_stream.skip(1);
             base_file_name = meta_stream.read_to_eof().str();
         }
@@ -105,7 +106,7 @@ pix::Image EdtImageDecoder::decode_impl(io::File &input_file) const
         }
     }
 
-    auto image = pix::Image(width, height, output, pix::Format::BGR888);
+    auto image = pix::Image(width, height, output, pix::PixelFormat::BGR888);
     if (!base_file_name.empty())
         for (auto &c : image)
             if (c == transparent_color)

@@ -177,7 +177,7 @@ pix::Image RctImageDecoder::decode_impl(io::File &input_file) const
         data = decrypt(data, p->key);
     }
     data = uncompress(data, width, height);
-    pix::Image image(width, height, data, pix::Format::BGR888);
+    pix::Image image(width, height, data, pix::PixelFormat::BGR888);
 
     if (version == 1)
     {

@@ -121,7 +121,7 @@ pix::Image PrsImageDecoder::decode_impl(io::File &input_file) const
         for (auto i : util::range(3, target.size()))
             target[i] += target[i - 3];
 
-    return pix::Image(width, height, target, pix::Format::BGR888);
+    return pix::Image(width, height, target, pix::PixelFormat::BGR888);
 }
 
 static auto dummy = fmt::register_fmt<PrsImageDecoder>("ivory/prs");
