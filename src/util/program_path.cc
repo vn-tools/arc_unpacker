@@ -19,14 +19,14 @@ io::path util::get_program_path()
     return program_path;
 }
 
-io::path util::get_extra_dir_path()
+io::path util::get_etc_dir_path()
 {
     const io::path path(program_path.parent());
-    const io::path path1 = path / "extra";
+    const io::path path1 = path / "etc";
     if (io::is_directory(path1))
         return path1.str();
-    const io::path path2 = path.parent() / "extra";
+    const io::path path2 = path.parent() / "etc";
     if (io::is_directory(path2))
         return path2;
-    throw err::FileNotFoundError("Can't locate 'extra/' directory!");
+    throw err::FileNotFoundError("Can't locate 'etc/' directory!");
 }

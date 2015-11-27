@@ -232,7 +232,7 @@ def distbin(ctx):
             print('Adding', target_name)
             zip.write(p.abspath(), target_name, ZIP_DEFLATED)
 
-    for p in ctx.path.ant_glob('extra/**/*'):
+    for p in ctx.path.ant_glob('etc/**/*'):
         target_name = os.path.relpath(p.abspath(), ctx.cur_script.parent.abspath())
         print('Adding', target_name)
         zip.write(p.abspath(), target_name, ZIP_DEFLATED)
