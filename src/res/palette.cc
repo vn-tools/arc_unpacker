@@ -1,9 +1,9 @@
-#include "pix/palette.h"
+#include "res/palette.h"
 #include "err.h"
 #include "util/range.h"
 
 using namespace au;
-using namespace au::pix;
+using namespace au::res;
 
 struct Palette::Priv final
 {

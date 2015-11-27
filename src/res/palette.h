@@ -2,11 +2,11 @@
 
 #include <memory>
 #include "io/stream.h"
-#include "pix/pixel_format.h"
-#include "pix/pixel.h"
+#include "res/pixel.h"
+#include "res/pixel_format.h"
 
 namespace au {
-namespace pix {
+namespace res {
 
     class Palette final
     {

@@ -184,7 +184,7 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::Stream &stream)
     return regions;
 }
 
-static pix::Image read_image(
+static res::Image read_image(
     const bstr &input,
     CompressionType compression_type,
     size_t size_original,
@@ -192,12 +192,12 @@ static pix::Image read_image(
     size_t height)
 {
     if (compression_type == CompressionType::None)
-        return pix::Image(width, height, input, pix::PixelFormat::BGRA8888);
+        return res::Image(width, height, input, res::PixelFormat::BGRA8888);
 
     if (compression_type == CompressionType::Sgd)
     {
         const auto data = decompress_sgd(input, size_original);
-        return pix::Image(width, height, data, pix::PixelFormat::BGRA8888);
+        return res::Image(width, height, data, res::PixelFormat::BGRA8888);
     }
 
     if (compression_type == CompressionType::Png)
@@ -216,7 +216,7 @@ bool MgdImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image MgdImageDecoder::decode_impl(io::File &input_file) const
+res::Image MgdImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

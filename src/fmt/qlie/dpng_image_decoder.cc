@@ -13,7 +13,7 @@ bool DpngImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image DpngImageDecoder::decode_impl(io::File &input_file) const
+res::Image DpngImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -24,7 +24,7 @@ pix::Image DpngImageDecoder::decode_impl(io::File &input_file) const
 
     fmt::png::PngImageDecoder png_image_decoder;
 
-    pix::Image image(width, height);
+    res::Image image(width, height);
     for (auto i : util::range(file_count))
     {
         size_t subimage_x = input_file.stream.read_u32_le();

@@ -5,10 +5,10 @@
 using namespace au;
 using namespace au::fmt::nscripter;
 
-static pix::Image decode_image(
+static res::Image decode_image(
     size_t width, size_t height, io::BitReader &bit_reader)
 {
-    pix::Image output(width, height);
+    res::Image output(width, height);
     for (auto &c : output)
         c.a = 0xFF;
 
@@ -97,7 +97,7 @@ bool SpbImageDecoder::is_recognized_impl(io::File &input_file) const
     return true;
 }
 
-pix::Image SpbImageDecoder::decode_impl(io::File &input_file) const
+res::Image SpbImageDecoder::decode_impl(io::File &input_file) const
 {
     const auto width = input_file.stream.read_u16_be();
     const auto height = input_file.stream.read_u16_be();

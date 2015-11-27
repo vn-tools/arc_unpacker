@@ -18,7 +18,7 @@ namespace
     };
 }
 
-static std::unique_ptr<pix::Palette> read_palette(
+static std::unique_ptr<res::Palette> read_palette(
     io::Stream &stream, const Chunk &chunk)
 {
     stream.seek(chunk.offset + 0x14);
@@ -26,15 +26,15 @@ static std::unique_ptr<pix::Palette> read_palette(
     stream.skip(2);
     const auto color_count = stream.read_u16_le();
 
-    pix::PixelFormat format;
-    if      (format_id == 0) format = pix::PixelFormat::RGB565;
-    else if (format_id == 1) format = pix::PixelFormat::RGBA5551;
-    else if (format_id == 2) format = pix::PixelFormat::RGBA4444;
-    else if (format_id == 3) format = pix::PixelFormat::RGBA8888;
+    res::PixelFormat format;
+    if      (format_id == 0) format = res::PixelFormat::RGB565;
+    else if (format_id == 1) format = res::PixelFormat::RGBA5551;
+    else if (format_id == 2) format = res::PixelFormat::RGBA4444;
+    else if (format_id == 3) format = res::PixelFormat::RGBA8888;
     else throw err::NotSupportedError("Unknown palette format");
 
     stream.seek(chunk.offset + 0x50);
-    return std::make_unique<pix::Palette>(color_count, stream, format);
+    return std::make_unique<res::Palette>(color_count, stream, format);
 }
 
 static bstr read_data(
@@ -66,10 +66,10 @@ static bstr read_data(
     return data;
 }
 
-static std::unique_ptr<pix::Image> read_image(
+static std::unique_ptr<res::Image> read_image(
     io::Stream &stream,
     const Chunk &chunk,
-    std::unique_ptr<pix::Palette> palette)
+    std::unique_ptr<res::Palette> palette)
 {
     stream.seek(chunk.offset + 0x14);
     const auto format_id = stream.read_u16_le();
@@ -80,23 +80,23 @@ static std::unique_ptr<pix::Image> read_image(
     stream.seek(chunk.offset + 0x2C);
     const auto data_offset = stream.read_u32_le();
     stream.seek(chunk.offset + 0x10 + data_offset);
-    std::unique_ptr<pix::Image> image;
+    std::unique_ptr<res::Image> image;
     if (format_id < 4)
     {
-        pix::PixelFormat format;
+        res::PixelFormat format;
 
-        if      (format_id == 0) format = pix::PixelFormat::RGB565;
-        else if (format_id == 1) format = pix::PixelFormat::RGBA5551;
-        else if (format_id == 2) format = pix::PixelFormat::RGBA4444;
-        else if (format_id == 3) format = pix::PixelFormat::RGBA8888;
+        if      (format_id == 0) format = res::PixelFormat::RGB565;
+        else if (format_id == 1) format = res::PixelFormat::RGBA5551;
+        else if (format_id == 2) format = res::PixelFormat::RGBA4444;
+        else if (format_id == 3) format = res::PixelFormat::RGBA8888;
 
         const auto data = read_data(
             stream,
             width,
             height,
-            pix::pixel_format_to_bpp(format) * 8,
+            res::pixel_format_to_bpp(format) * 8,
             swizzled);
-        image = std::make_unique<pix::Image>(width, height, data, format);
+        image = std::make_unique<res::Image>(width, height, data, format);
     }
     else
     {
@@ -110,11 +110,11 @@ static std::unique_ptr<pix::Image> read_image(
         const auto data = read_data(
             stream, width, height, palette_bits, swizzled);
         if (palette_bits == 8)
-            image = std::make_unique<pix::Image>(width, height, data, *palette);
+            image = std::make_unique<res::Image>(width, height, data, *palette);
         else if (palette_bits == 4)
         {
             io::MemoryStream data_stream(data);
-            image = std::make_unique<pix::Image>(width, height);
+            image = std::make_unique<res::Image>(width, height);
             if (palette_bits == 4)
             {
                 for (const auto y : util::range(height))
@@ -148,7 +148,7 @@ bool GimImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image GimImageDecoder::decode_impl(io::File &input_file) const
+res::Image GimImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0x30);
     std::map<int, Chunk> chunks;
@@ -164,7 +164,7 @@ pix::Image GimImageDecoder::decode_impl(io::File &input_file) const
         chunks[chunk.type] = chunk;
     }
 
-    std::unique_ptr<pix::Palette> palette;
+    std::unique_ptr<res::Palette> palette;
     if (chunks.find(0x05) != chunks.end())
         palette = read_palette(input_file.stream, chunks[0x05]);
 

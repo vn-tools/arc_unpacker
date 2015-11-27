@@ -12,7 +12,7 @@ bool CmpImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image CmpImageDecoder::decode_impl(io::File &input_file) const
+res::Image CmpImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto size_original = input_file.stream.read_u32_le();

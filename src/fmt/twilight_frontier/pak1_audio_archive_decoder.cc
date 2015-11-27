@@ -69,7 +69,7 @@ std::unique_ptr<io::File> Pak1AudioArchiveDecoder::read_file_impl(
     io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    sfx::Audio audio;
+    res::Audio audio;
     audio.channel_count = entry->channel_count;
     audio.bits_per_sample = entry->bits_per_sample;
     audio.sample_rate = entry->sample_rate;

@@ -92,7 +92,7 @@ static size_t read_new_texture_info(
 static void write_image(
     io::Stream &input,
     const TextureInfo &texture_info,
-    pix::Image &image,
+    res::Image &image,
     size_t stride)
 {
     if (!texture_info.has_data)
@@ -112,23 +112,23 @@ static void write_image(
     for (auto y : util::range(height))
     for (auto x : util::range(width))
     {
-        pix::Pixel color;
+        res::Pixel color;
         switch (format)
         {
             case 1:
-                color = pix::read_pixel<pix::PixelFormat::BGRA8888>(data_ptr);
+                color = res::read_pixel<res::PixelFormat::BGRA8888>(data_ptr);
                 break;
 
             case 3:
-                color = pix::read_pixel<pix::PixelFormat::BGR565>(data_ptr);
+                color = res::read_pixel<res::PixelFormat::BGR565>(data_ptr);
                 break;
 
             case 5:
-                color = pix::read_pixel<pix::PixelFormat::BGRA4444>(data_ptr);
+                color = res::read_pixel<res::PixelFormat::BGRA4444>(data_ptr);
                 break;
 
             case 7:
-                color = pix::read_pixel<pix::PixelFormat::Gray8>(data_ptr);
+                color = res::read_pixel<res::PixelFormat::Gray8>(data_ptr);
                 break;
 
             default:
@@ -218,7 +218,7 @@ std::unique_ptr<io::File> AnmArchiveDecoder::read_file_impl(
         });
     }
 
-    pix::Image image(width, height);
+    res::Image image(width, height);
     for (auto &texture_info : entry->texture_info_list)
         write_image(input_file.stream, texture_info, image, width);
 

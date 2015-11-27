@@ -94,7 +94,7 @@ std::unique_ptr<io::File> Pak2TextureArchiveDecoder::read_file_impl(
     }
     const auto width = max_x - min_x;
     const auto height = max_y - min_y;
-    pix::Image image(width, height);
+    res::Image image(width, height);
     for (auto &c : image)
     {
         c.r = c.g = c.b = 0;
@@ -103,11 +103,11 @@ std::unique_ptr<io::File> Pak2TextureArchiveDecoder::read_file_impl(
     for (const auto &chunk : entry->chunks)
     {
         input_file.stream.seek(chunk.offset);
-        auto chunk_image = pix::Image(
+        auto chunk_image = res::Image(
             chunk.width,
             chunk.height,
             input_file.stream.read(chunk.width * chunk.height * 2),
-            pix::PixelFormat::BGRnA5551);
+            res::PixelFormat::BGRnA5551);
         chunk_image.flip_vertically();
         image.paste(chunk_image, chunk.x, chunk.y);
     }

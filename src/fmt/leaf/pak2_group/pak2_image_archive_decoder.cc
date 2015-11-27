@@ -78,26 +78,26 @@ std::unique_ptr<io::File> Pak2ImageArchiveDecoder::read_file_impl(
     io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    pix::PixelFormat format;
+    res::PixelFormat format;
     if (entry->bpp == 8)
-        format = pix::PixelFormat::Gray8;
+        format = res::PixelFormat::Gray8;
     else if (entry->bpp == 16)
-        format = pix::PixelFormat::BGRnA5551;
+        format = res::PixelFormat::BGRnA5551;
     else
         throw err::UnsupportedBitDepthError(entry->bpp);
 
     const auto data = input_file.stream
         .seek(entry->color_offset)
         .read(entry->size);
-    auto image = pix::Image(entry->width, entry->height, data, format);
+    auto image = res::Image(entry->width, entry->height, data, format);
     image.flip_vertically();
     if (entry->mask_offset)
     {
         const auto mask_data = input_file
             .stream.seek(entry->mask_offset)
             .read(entry->width * entry->height);
-        const auto mask = pix::Image(
-            entry->width, entry->height, mask_data, pix::PixelFormat::Gray8);
+        const auto mask = res::Image(
+            entry->width, entry->height, mask_data, res::PixelFormat::Gray8);
         image.apply_mask(mask);
     }
     return util::file_from_image(image, entry->name);

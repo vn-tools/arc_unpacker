@@ -67,7 +67,7 @@ static std::vector<std::unique_ptr<Region>> read_regions(
     return regions;
 }
 
-static pix::Image decode_png(io::File &input_file, Header &header)
+static res::Image decode_png(io::File &input_file, Header &header)
 {
     input_file.stream.seek(header.data_offset);
     bstr data = input_file.stream.read(header.data_size);
@@ -92,7 +92,7 @@ bool YkgImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image YkgImageDecoder::decode_impl(io::File &input_file) const
+res::Image YkgImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

@@ -146,12 +146,12 @@ static Header read_header(io::Stream &stream)
     return h;
 }
 
-static pix::Image get_image_from_palette(
+static res::Image get_image_from_palette(
     io::Stream &stream,
     const Header &header,
-    const pix::Palette &palette)
+    const res::Palette &palette)
 {
-    pix::Image image(header.width, header.height);
+    res::Image image(header.width, header.height);
     for (auto y : util::range(header.height))
     {
         stream.seek(header.data_offset + header.stride * y);
@@ -166,38 +166,38 @@ static pix::Image get_image_from_palette(
     return image;
 }
 
-static std::unique_ptr<pix::Image> get_image_without_palette_fast24(
+static std::unique_ptr<res::Image> get_image_without_palette_fast24(
     io::Stream &stream, const Header &header)
 {
-    auto image = std::make_unique<pix::Image>(header.width, header.height);
+    auto image = std::make_unique<res::Image>(header.width, header.height);
     for (auto y : util::range(header.height))
     {
         stream.seek(header.data_offset + header.stride * y);
-        pix::Image row(header.width, 1, stream, pix::PixelFormat::BGR888);
+        res::Image row(header.width, 1, stream, res::PixelFormat::BGR888);
         for (auto x : util::range(header.width))
             image->at(x, y) = row.at(x, 0);
     }
     return image;
 }
 
-static std::unique_ptr<pix::Image> get_image_without_palette_fast32(
+static std::unique_ptr<res::Image> get_image_without_palette_fast32(
     io::Stream &stream, const Header &header)
 {
-    auto image = std::make_unique<pix::Image>(header.width, header.height);
+    auto image = std::make_unique<res::Image>(header.width, header.height);
     for (auto y : util::range(header.height))
     {
         stream.seek(header.data_offset + header.stride * y);
-        pix::Image row(header.width, 1, stream, pix::PixelFormat::BGRA8888);
+        res::Image row(header.width, 1, stream, res::PixelFormat::BGRA8888);
         for (auto x : util::range(header.width))
             image->at(x, y) = row.at(x, 0);
     }
     return image;
 }
 
-static std::unique_ptr<pix::Image> get_image_without_palette_generic(
+static std::unique_ptr<res::Image> get_image_without_palette_generic(
     io::Stream &stream, const Header &header)
 {
-    auto image = std::make_unique<pix::Image>(header.width, header.height);
+    auto image = std::make_unique<res::Image>(header.width, header.height);
     double multipliers[4];
     for (auto i : util::range(4))
         multipliers[i] = 255.0 / std::max<size_t>(1, header.masks[i]);
@@ -223,10 +223,10 @@ static std::unique_ptr<pix::Image> get_image_without_palette_generic(
     return image;
 }
 
-static pix::Image get_image_without_palette(
+static res::Image get_image_without_palette(
     io::Stream &stream, const Header &header)
 {
-    std::unique_ptr<pix::Image> image;
+    std::unique_ptr<res::Image> image;
 
     if (header.depth == 24
         && header.masks[0] == 0xFF0000
@@ -266,11 +266,11 @@ bool BmpImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read_u32_le() == 0; // but this should be reliable
 }
 
-pix::Image BmpImageDecoder::decode_impl(io::File &input_file) const
+res::Image BmpImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(10);
     auto header = read_header(input_file.stream);
-    pix::Palette palette(header.palette_size);
+    res::Palette palette(header.palette_size);
     for (auto i : util::range(palette.size()))
     {
         palette[i].b = input_file.stream.read_u8();
@@ -286,7 +286,7 @@ pix::Image BmpImageDecoder::decode_impl(io::File &input_file) const
     if (header.compression != 0 && header.compression != 3)
         throw err::NotSupportedError("Compressed BMPs are not supported");
 
-    pix::Image image = palette.size() > 0
+    res::Image image = palette.size() > 0
         ? get_image_from_palette(input_file.stream, header, palette)
         : get_image_without_palette(input_file.stream, header);
 

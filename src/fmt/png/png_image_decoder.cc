@@ -37,7 +37,7 @@ static int custom_chunk_handler(png_structp png_ptr, png_unknown_chunkp chunk)
     return 1; // == handled
 }
 
-static pix::Image decode(io::File &file, PngImageDecoder::ChunkHandler handler)
+static res::Image decode(io::File &file, PngImageDecoder::ChunkHandler handler)
 {
     png_structp png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
@@ -79,13 +79,13 @@ static pix::Image decode(io::File &file, PngImageDecoder::ChunkHandler handler)
 
     png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
 
-    pix::PixelFormat format;
+    res::PixelFormat format;
     if (color_type == PNG_COLOR_TYPE_RGB)
-        format = pix::PixelFormat::BGR888;
+        format = res::PixelFormat::BGR888;
     else if (color_type == PNG_COLOR_TYPE_RGBA)
-        format = pix::PixelFormat::BGRA8888;
+        format = res::PixelFormat::BGRA8888;
     else if (color_type == PNG_COLOR_TYPE_GRAY)
-        format = pix::PixelFormat::Gray8;
+        format = res::PixelFormat::Gray8;
     else
         throw err::NotSupportedError("Bad pixel format");
 
@@ -95,7 +95,7 @@ static pix::Image decode(io::File &file, PngImageDecoder::ChunkHandler handler)
         data += bstr(row_pointers[y], width * pixel_format_to_bpp(format));
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
-    return pix::Image(width, height, data, format);
+    return res::Image(width, height, data, format);
 }
 
 bool PngImageDecoder::is_recognized_impl(io::File &input_file) const
@@ -103,7 +103,7 @@ bool PngImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image PngImageDecoder::decode_impl(io::File &input_file) const
+res::Image PngImageDecoder::decode_impl(io::File &input_file) const
 {
     return ::decode(input_file, [](const std::string &name, const bstr &data)
     {
@@ -111,7 +111,7 @@ pix::Image PngImageDecoder::decode_impl(io::File &input_file) const
     });
 }
 
-pix::Image PngImageDecoder::decode(
+res::Image PngImageDecoder::decode(
     io::File &input_file, PngImageDecoder::ChunkHandler chunk_handler) const
 {
     return ::decode(input_file, chunk_handler);

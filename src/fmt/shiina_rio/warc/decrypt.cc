@@ -103,11 +103,11 @@ static u32 calculate_crc32(const bstr &data)
     return checksum;
 }
 
-static pix::Image transform_region_image(
-    const pix::Image &input_image, const u32 flags, const u32 base_color)
+static res::Image transform_region_image(
+    const res::Image &input_image, const u32 flags, const u32 base_color)
 {
-    pix::Image output_image(input_image.width(), input_image.height());
-    pix::Pixel base_pixel;
+    res::Image output_image(input_image.width(), input_image.height());
+    res::Pixel base_pixel;
     base_pixel.b = base_color;
     base_pixel.g = base_color >> 8;
     base_pixel.r = base_color >> 16;
@@ -134,7 +134,7 @@ static pix::Image transform_region_image(
     return output_image;
 }
 
-static bstr get_rgb_data(const pix::Image &input_image)
+static bstr get_rgb_data(const res::Image &input_image)
 {
     bstr output(input_image.width() * input_image.height() * 3);
     auto output_ptr = output.get<u8>();

@@ -50,7 +50,7 @@ bool PgdC00ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image PgdC00ImageDecoder::decode_impl(io::File &input_file) const
+res::Image PgdC00ImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(24 + magic.size());
     const auto size_orig = input_file.stream.read_u32_le();

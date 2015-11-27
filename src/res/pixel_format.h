@@ -1,10 +1,10 @@
 #pragma once
 
 #include "io/stream.h"
-#include "pix/pixel.h"
+#include "res/pixel.h"
 
 namespace au {
-namespace pix {
+namespace res {
 
     enum class PixelFormat : u8
     {

@@ -23,7 +23,7 @@ bool WpnAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-sfx::Audio WpnAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio WpnAudioDecoder::decode_impl(io::File &input_file) const
 {
     const auto chunk_count = input_file.stream.seek(magic.size()).read_u32_le();
     std::map<bstr, Chunk> chunks;
@@ -36,7 +36,7 @@ sfx::Audio WpnAudioDecoder::decode_impl(io::File &input_file) const
         chunks[chunk_name] = chunk;
     }
 
-    sfx::Audio audio;
+    res::Audio audio;
 
     const auto &fmt_chunk = chunks.at(fmt_magic);
     input_file.stream.seek(fmt_chunk.offset);

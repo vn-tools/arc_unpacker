@@ -96,21 +96,21 @@ static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
     }
 }
 
-static pix::PixelFormat bpp_to_pixel_format(int bpp)
+static res::PixelFormat bpp_to_pixel_format(int bpp)
 {
     switch (bpp)
     {
         case 8:
-            return pix::PixelFormat::Gray8;
+            return res::PixelFormat::Gray8;
         case 24:
-            return pix::PixelFormat::BGR888;
+            return res::PixelFormat::BGR888;
         case 32:
-            return pix::PixelFormat::BGRA8888;
+            return res::PixelFormat::BGRA8888;
     }
     throw err::UnsupportedBitDepthError(bpp);
 }
 
-std::unique_ptr<pix::Image> Cbg1Decoder::decode(io::Stream &input_stream) const
+std::unique_ptr<res::Image> Cbg1Decoder::decode(io::Stream &input_stream) const
 {
     auto width = input_stream.read_u16_le();
     auto height = input_stream.read_u16_le();
@@ -130,5 +130,5 @@ std::unique_ptr<pix::Image> Cbg1Decoder::decode(io::Stream &input_stream) const
     transform_colors(pixel_data, width, height, bpp);
 
     auto format = bpp_to_pixel_format(bpp);
-    return std::make_unique<pix::Image>(width, height, pixel_data, format);
+    return std::make_unique<res::Image>(width, height, pixel_data, format);
 }

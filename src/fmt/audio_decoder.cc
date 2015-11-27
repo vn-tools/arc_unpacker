@@ -24,7 +24,7 @@ void AudioDecoder::unpack(
     file_saver.save(std::move(output_file));
 }
 
-sfx::Audio AudioDecoder::decode(io::File &file) const
+res::Audio AudioDecoder::decode(io::File &file) const
 {
     if (!is_recognized(file))
         throw err::RecognitionError();

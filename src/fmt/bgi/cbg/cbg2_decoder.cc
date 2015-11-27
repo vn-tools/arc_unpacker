@@ -364,7 +364,7 @@ static void process_alpha(bstr &output, io::Stream &input_stream, int width)
     }
 }
 
-std::unique_ptr<pix::Image> Cbg2Decoder::decode(io::Stream &input_stream) const
+std::unique_ptr<res::Image> Cbg2Decoder::decode(io::Stream &input_stream) const
 {
     size_t width = input_stream.read_u16_le();
     size_t height = input_stream.read_u16_le();
@@ -434,8 +434,8 @@ std::unique_ptr<pix::Image> Cbg2Decoder::decode(io::Stream &input_stream) const
             process_alpha(bmp_data, raw_stream, pad_width);
     }
 
-    auto image = std::make_unique<pix::Image>(
-        pad_width, pad_height, bmp_data, pix::PixelFormat::BGRA8888);
+    auto image = std::make_unique<res::Image>(
+        pad_width, pad_height, bmp_data, res::PixelFormat::BGRA8888);
     image->crop(width, height);
     return image;
 }

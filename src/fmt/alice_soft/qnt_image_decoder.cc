@@ -19,7 +19,7 @@ namespace
     };
 }
 
-static void deinterleave(pix::Image &image, const bstr &input)
+static void deinterleave(res::Image &image, const bstr &input)
 {
     io::MemoryStream input_stream(input);
 
@@ -60,7 +60,7 @@ static void deinterleave(pix::Image &image, const bstr &input)
     }
 }
 
-static void apply_differences(pix::Image &image)
+static void apply_differences(res::Image &image)
 {
     for (auto x : util::range(1, image.width()))
     for (auto c : util::range(3))
@@ -80,7 +80,7 @@ static void apply_differences(pix::Image &image)
     }
 }
 
-static void apply_alpha(pix::Image &image, const bstr &input)
+static void apply_alpha(res::Image &image, const bstr &input)
 {
     if (!input.size())
     {
@@ -117,7 +117,7 @@ bool QntImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image QntImageDecoder::decode_impl(io::File &input_file) const
+res::Image QntImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     Version version = static_cast<Version>(input_file.stream.read_u32_le());
@@ -141,7 +141,7 @@ pix::Image QntImageDecoder::decode_impl(io::File &input_file) const
         ? util::pack::zlib_inflate(input_file.stream.read(alpha_size))
         : ""_b;
 
-    pix::Image image(width, height);
+    res::Image image(width, height);
     if (color_data.size())
         deinterleave(image, color_data);
     apply_differences(image);

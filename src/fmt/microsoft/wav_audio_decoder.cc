@@ -13,9 +13,9 @@ bool WavAudioDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.seek(8).read(wave_magic.size()) == wave_magic;
 }
 
-sfx::Audio WavAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio WavAudioDecoder::decode_impl(io::File &input_file) const
 {
-    sfx::Audio audio;
+    res::Audio audio;
     input_file.stream.seek(12);
     while (!input_file.stream.eof())
     {

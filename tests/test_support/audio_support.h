@@ -2,18 +2,18 @@
 
 #include <memory>
 #include "io/file.h"
-#include "sfx/audio.h"
+#include "res/audio.h"
 
 namespace au {
 namespace tests {
 
     void compare_audio(
-        const sfx::Audio &expected_audio,
-        const sfx::Audio &actual_audio);
+        const res::Audio &expected_audio,
+        const res::Audio &actual_audio);
 
     void compare_audio(
         io::File &expected_file,
-        const sfx::Audio &actual_audio);
+        const res::Audio &actual_audio);
 
     void compare_audio(
         io::File &expected_file,

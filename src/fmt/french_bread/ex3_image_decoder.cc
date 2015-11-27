@@ -13,7 +13,7 @@ bool Ex3ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image Ex3ImageDecoder::decode_impl(io::File &input_file) const
+res::Image Ex3ImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

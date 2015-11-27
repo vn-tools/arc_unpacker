@@ -104,15 +104,15 @@ std::unique_ptr<fmt::ArchiveMeta>
     return meta;
 }
 
-std::unique_ptr<pix::Image> WipfImageArchiveDecoder::read_image(
+std::unique_ptr<res::Image> WipfImageArchiveDecoder::read_image(
     io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    std::unique_ptr<pix::Palette> palette;
+    std::unique_ptr<res::Palette> palette;
     if (entry->depth == 8)
     {
-        palette.reset(new pix::Palette(
-            256, input_file.stream, pix::PixelFormat::BGRA8888));
+        palette.reset(new res::Palette(
+            256, input_file.stream, res::PixelFormat::BGRA8888));
         for (auto &c : *palette)
             c.a ^= 0xFF;
     }
@@ -123,14 +123,14 @@ std::unique_ptr<pix::Image> WipfImageArchiveDecoder::read_image(
     auto w = entry->width;
     auto h = entry->height;
 
-    std::unique_ptr<pix::Image> image;
+    std::unique_ptr<res::Image> image;
     if (entry->depth == 8)
     {
-        image = std::make_unique<pix::Image>(w, h, data, *palette);
+        image = std::make_unique<res::Image>(w, h, data, *palette);
     }
     else if (entry->depth == 24)
     {
-        image = std::make_unique<pix::Image>(w, h);
+        image = std::make_unique<res::Image>(w, h);
         for (auto y : util::range(h))
         for (auto x : util::range(w))
         {
@@ -152,11 +152,11 @@ std::unique_ptr<io::File> WipfImageArchiveDecoder::read_file_impl(
     return util::file_from_image(*read_image(input_file, m, e), e.name);
 }
 
-std::vector<std::shared_ptr<pix::Image>>
+std::vector<std::shared_ptr<res::Image>>
     WipfImageArchiveDecoder::unpack_to_images(io::File &input_file) const
 {
     auto meta = read_meta(input_file);
-    std::vector<std::shared_ptr<pix::Image>> output;
+    std::vector<std::shared_ptr<res::Image>> output;
     for (auto &entry : meta->entries)
         output.push_back(read_image(input_file, *meta, *entry));
     return output;

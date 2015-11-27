@@ -103,11 +103,11 @@ void Nekopack4ArchiveDecoder::preprocess(
             auto mask_file = read_file(input_file, meta, *mask_entry);
             mask_file->stream.seek(0);
             auto sprite = bmp_image_decoder.decode(*sprite_file);
-            pix::Image mask(
+            res::Image mask(
                 sprite.width(),
                 sprite.height(),
                 mask_file->stream,
-                pix::PixelFormat::Gray8);
+                res::PixelFormat::Gray8);
             sprite.apply_mask(mask);
             sprite_entry->already_unpacked = true;
             mask_entry->already_unpacked = true;

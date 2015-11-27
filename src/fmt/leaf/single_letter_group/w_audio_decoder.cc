@@ -14,10 +14,10 @@ bool WAudioDecoder::is_recognized_impl(io::File &input_file) const
     return data_size + 18 == input_file.stream.size();
 }
 
-sfx::Audio WAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio WAudioDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
-    sfx::Audio audio;
+    res::Audio audio;
     audio.channel_count = input_file.stream.read_u8();
     const auto block_align = input_file.stream.read_u8();
     audio.sample_rate = input_file.stream.read_u16_le();
@@ -26,7 +26,7 @@ sfx::Audio WAudioDecoder::decode_impl(io::File &input_file) const
     const auto samples_size = input_file.stream.read_u32_le();
     const auto loop_pos = input_file.stream.read_u32_le();
     if (loop_pos)
-        audio.loops.push_back(sfx::LoopInfo {loop_pos, samples_size, 0});
+        audio.loops.push_back(res::AudioLoopInfo {loop_pos, samples_size, 0});
     audio.samples = input_file.stream.read(samples_size);
     return audio;
 }

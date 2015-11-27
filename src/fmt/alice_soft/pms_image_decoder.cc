@@ -185,7 +185,7 @@ bool PmsImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic2.size()) == magic2;
 }
 
-pix::Image PmsImageDecoder::decode_impl(io::File &input_file) const
+res::Image PmsImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(2);
     auto version = input_file.stream.read_u16_le();
@@ -197,30 +197,30 @@ pix::Image PmsImageDecoder::decode_impl(io::File &input_file) const
     auto data_offset = input_file.stream.read_u32_le();
     auto extra_data_offset = input_file.stream.read_u32_le();
 
-    std::unique_ptr<pix::Image> image;
+    std::unique_ptr<res::Image> image;
 
     if (depth == 8)
     {
         input_file.stream.seek(data_offset);
         auto pixel_data = decompress_8bit(input_file.stream, width, height);
         input_file.stream.seek(extra_data_offset);
-        pix::Palette palette(
+        res::Palette palette(
             256,
             input_file.stream,
-            version == 1 ? pix::PixelFormat::RGB888 : pix::PixelFormat::BGR888);
-        image.reset(new pix::Image(width, height, pixel_data, palette));
+            version == 1 ? res::PixelFormat::RGB888 : res::PixelFormat::BGR888);
+        image.reset(new res::Image(width, height, pixel_data, palette));
     }
     else if (depth == 16)
     {
         input_file.stream.seek(data_offset);
         auto pixel_data = decompress_16bit(input_file.stream, width, height);
-        image.reset(new pix::Image(
-            width, height, pixel_data, pix::PixelFormat::BGR565));
+        image.reset(new res::Image(
+            width, height, pixel_data, res::PixelFormat::BGR565));
         if (extra_data_offset)
         {
             input_file.stream.seek(extra_data_offset);
             auto mask_data = decompress_8bit(input_file.stream, width, height);
-            pix::Image mask(width, height, mask_data, pix::PixelFormat::Gray8);
+            res::Image mask(width, height, mask_data, res::PixelFormat::Gray8);
             image->apply_mask(mask);
         }
     }

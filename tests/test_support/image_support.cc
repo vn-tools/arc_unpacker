@@ -10,8 +10,8 @@
 using namespace au;
 
 static inline void compare_pixels(
-    const pix::Pixel expected,
-    const pix::Pixel actual,
+    const res::Pixel expected,
+    const res::Pixel actual,
     const size_t x,
     const size_t y,
     const size_t c)
@@ -30,7 +30,7 @@ static inline void compare_pixels(
     REQUIRE(expected.a == actual.a);
 }
 
-static pix::Image image_from_file(io::File &file)
+static res::Image image_from_file(io::File &file)
 {
     static const fmt::png::PngImageDecoder png_image_decoder;
     if (png_image_decoder.is_recognized(file))
@@ -48,7 +48,7 @@ static pix::Image image_from_file(io::File &file)
 }
 
 void tests::compare_images(
-    const pix::Image &expected_image, const pix::Image &actual_image)
+    const res::Image &expected_image, const res::Image &actual_image)
 {
     REQUIRE(expected_image.width() == actual_image.width());
     REQUIRE(expected_image.height() == actual_image.height());
@@ -64,7 +64,7 @@ void tests::compare_images(
 }
 
 void tests::compare_images(
-    io::File &expected_file, const pix::Image &actual_image)
+    io::File &expected_file, const res::Image &actual_image)
 {
     tests::compare_images(image_from_file(expected_file), actual_image);
 }

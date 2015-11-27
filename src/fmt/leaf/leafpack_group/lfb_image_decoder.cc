@@ -10,7 +10,7 @@ bool LfbImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("lfb");
 }
 
-pix::Image LfbImageDecoder::decode_impl(io::File &input_file) const
+res::Image LfbImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto size_orig = input_file.stream.read_u32_le();

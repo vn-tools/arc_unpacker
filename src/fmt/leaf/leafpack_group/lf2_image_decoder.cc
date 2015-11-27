@@ -11,7 +11,7 @@ bool Lf2ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image Lf2ImageDecoder::decode_impl(io::File &input_file) const
+res::Image Lf2ImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(4);
@@ -21,12 +21,12 @@ pix::Image Lf2ImageDecoder::decode_impl(io::File &input_file) const
 
     input_file.stream.seek(0x16);
     auto color_count = input_file.stream.read_u16_le();
-    pix::Palette palette(
-        color_count, input_file.stream, pix::PixelFormat::BGR888);
+    res::Palette palette(
+        color_count, input_file.stream, res::PixelFormat::BGR888);
 
     const auto data = common::custom_lzss_decompress(
         input_file.stream.read_to_eof(), width * height);
-    pix::Image image(width, height, data, palette);
+    res::Image image(width, height, data, palette);
     image.flip_vertically();
     return image;
 }

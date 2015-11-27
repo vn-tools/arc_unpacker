@@ -13,7 +13,7 @@ bool JpegImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image JpegImageDecoder::decode_impl(io::File &input_file) const
+res::Image JpegImageDecoder::decode_impl(io::File &input_file) const
 {
     bstr source = input_file.stream.read_to_eof();
 
@@ -29,13 +29,13 @@ pix::Image JpegImageDecoder::decode_impl(io::File &input_file) const
     auto height = info.output_height;
     auto channels = info.num_components;
 
-    pix::PixelFormat format;
+    res::PixelFormat format;
     if (channels == 3)
-        format = pix::PixelFormat::RGB888;
+        format = res::PixelFormat::RGB888;
     else if (channels == 4)
-        format = pix::PixelFormat::RGBA8888;
+        format = res::PixelFormat::RGBA8888;
     else if (channels == 1)
-        format = pix::PixelFormat::Gray8;
+        format = res::PixelFormat::Gray8;
     else
         throw err::UnsupportedChannelCountError(channels);
 
@@ -47,7 +47,7 @@ pix::Image JpegImageDecoder::decode_impl(io::File &input_file) const
     }
     jpeg_finish_decompress(&info);
 
-    return pix::Image(width, height, raw_data, format);
+    return res::Image(width, height, raw_data, format);
 }
 
 static auto dummy = fmt::register_fmt<JpegImageDecoder>("jpeg/jpeg");

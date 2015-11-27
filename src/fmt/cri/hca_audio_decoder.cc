@@ -177,7 +177,7 @@ bool HcaAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-sfx::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
 {
     // TODO when testable: this should be customizable.
     const u32 ciph_key1 = 0x30DBE1AB;
@@ -247,7 +247,7 @@ sfx::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
         }
     }
 
-    sfx::Audio audio;
+    res::Audio audio;
     audio.codec = 1;
     audio.channel_count = channel_count;
     audio.sample_rate = sample_rate;
@@ -256,7 +256,7 @@ sfx::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
         = bstr(reinterpret_cast<const u8*>(&samples[0]), samples.size() * 2);
     if (meta.loop->enabled)
     {
-        audio.loops.push_back(sfx::LoopInfo
+        audio.loops.push_back(res::AudioLoopInfo
         {
             meta.loop->start * 8 * 0x80 * sample_rate,
             meta.loop->end * 8 * 0x80 * sample_rate,

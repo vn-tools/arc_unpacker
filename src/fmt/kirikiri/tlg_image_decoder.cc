@@ -12,7 +12,7 @@ static const bstr magic_tlg_5 = "TLG5.0\x00raw\x1A"_b;
 static const bstr magic_tlg_6 = "TLG6.0\x00raw\x1A"_b;
 
 static int guess_version(io::Stream &stream);
-static pix::Image decode_proxy(int version, io::File &input_file);
+static res::Image decode_proxy(int version, io::File &input_file);
 
 static std::string extract_string(std::string &container)
 {
@@ -29,7 +29,7 @@ static std::string extract_string(std::string &container)
     return str;
 }
 
-static pix::Image decode_tlg_0(io::File &input_file)
+static res::Image decode_tlg_0(io::File &input_file)
 {
     size_t raw_data_size = input_file.stream.read_u32_le();
     size_t raw_data_offset = input_file.stream.tell();
@@ -63,13 +63,13 @@ static pix::Image decode_tlg_0(io::File &input_file)
     return decode_proxy(version, input_file);
 }
 
-static pix::Image decode_tlg_5(io::File &input_file)
+static res::Image decode_tlg_5(io::File &input_file)
 {
     Tlg5Decoder decoder;
     return decoder.decode(input_file);
 }
 
-static pix::Image decode_tlg_6(io::File &input_file)
+static res::Image decode_tlg_6(io::File &input_file)
 {
     Tlg6Decoder decoder;
     return decoder.decode(input_file);
@@ -92,7 +92,7 @@ static int guess_version(io::Stream &input_stream)
     return -1;
 }
 
-static pix::Image decode_proxy(int version, io::File &input_file)
+static res::Image decode_proxy(int version, io::File &input_file)
 {
     switch (version)
     {
@@ -113,7 +113,7 @@ bool TlgImageDecoder::is_recognized_impl(io::File &input_file) const
     return guess_version(input_file.stream) >= 0;
 }
 
-pix::Image TlgImageDecoder::decode_impl(io::File &input_file) const
+res::Image TlgImageDecoder::decode_impl(io::File &input_file) const
 {
     int version = guess_version(input_file.stream);
     return decode_proxy(version, input_file);

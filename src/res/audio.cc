@@ -1,7 +1,7 @@
-#include "sfx/audio.h"
+#include "res/audio.h"
 
 using namespace au;
-using namespace au::sfx;
+using namespace au::res;
 
 Audio::Audio() :
     codec(1),

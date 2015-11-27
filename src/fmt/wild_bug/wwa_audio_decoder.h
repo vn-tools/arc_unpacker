@@ -10,7 +10,7 @@ namespace wild_bug {
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
-        sfx::Audio decode_impl(io::File &input_file) const override;
+        res::Audio decode_impl(io::File &input_file) const override;
     };
 
 } } }

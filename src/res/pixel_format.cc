@@ -1,10 +1,10 @@
-#include "pix/pixel_format.h"
+#include "res/pixel_format.h"
 #include <cstring>
 #include "util/format.h"
 #include "util/range.h"
 
 namespace au {
-namespace pix {
+namespace res {
 
     template<> Pixel read_pixel<PixelFormat::Gray8>(const u8 *&ptr)
     {

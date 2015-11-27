@@ -42,7 +42,7 @@ static void remove_pad(
     }
 }
 
-static pix::Image get_image(
+static res::Image get_image(
     wpx::Decoder &decoder,
     u8 section_id,
     size_t width,
@@ -54,11 +54,11 @@ static pix::Image get_image(
     auto data = decoder.read_compressed_section(section_id, channels, offsets);
     remove_pad(data, height, width * channels, stride);
     if (channels == 1)
-        return pix::Image(width, height, data, pix::PixelFormat::Gray8);
+        return res::Image(width, height, data, res::PixelFormat::Gray8);
     else if (channels == 3)
-        return pix::Image(width, height, data, pix::PixelFormat::BGR888);
+        return res::Image(width, height, data, res::PixelFormat::BGR888);
     else if (channels == 4)
-        return pix::Image(width, height, data, pix::PixelFormat::BGRA8888);
+        return res::Image(width, height, data, res::PixelFormat::BGRA8888);
     else
         throw err::UnsupportedChannelCountError(channels);
 }
@@ -68,7 +68,7 @@ bool WbmImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image WbmImageDecoder::decode_impl(io::File &input_file) const
+res::Image WbmImageDecoder::decode_impl(io::File &input_file) const
 {
     wpx::Decoder decoder(input_file.stream);
 

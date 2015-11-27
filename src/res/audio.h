@@ -4,9 +4,9 @@
 #include "types.h"
 
 namespace au {
-namespace sfx {
+namespace res {
 
-    struct LoopInfo final
+    struct AudioLoopInfo final
     {
         size_t start;
         size_t end;
@@ -23,7 +23,7 @@ namespace sfx {
         size_t channel_count;
         size_t bits_per_sample;
         size_t sample_rate;
-        std::vector<LoopInfo> loops;
+        std::vector<AudioLoopInfo> loops;
 
         bstr samples;
     };

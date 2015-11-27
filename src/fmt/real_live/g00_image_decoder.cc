@@ -59,16 +59,16 @@ static bstr decompress(
     return output;
 }
 
-static pix::Image decode_v0(io::File &input_file, size_t width, size_t height)
+static res::Image decode_v0(io::File &input_file, size_t width, size_t height)
 {
     const auto size_comp = input_file.stream.read_u32_le() - 8;
     const auto size_orig = input_file.stream.read_u32_le();
     const auto data = decompress(
         input_file.stream.read(size_comp), size_orig, 3, 1);
-    return pix::Image(width, height, data, pix::PixelFormat::BGR888);
+    return res::Image(width, height, data, res::PixelFormat::BGR888);
 }
 
-static pix::Image decode_v1(io::File &input_file, size_t width, size_t height)
+static res::Image decode_v1(io::File &input_file, size_t width, size_t height)
 {
     const auto size_comp = input_file.stream.read_u32_le() - 8;
     const auto size_orig = input_file.stream.read_u32_le();
@@ -77,11 +77,11 @@ static pix::Image decode_v1(io::File &input_file, size_t width, size_t height)
     const size_t colors = tmp_stream.read_u16_le();
     const auto pal_data = tmp_stream.read(4 * colors);
     const auto pix_data = tmp_stream.read_to_eof();
-    pix::Palette palette(colors, pal_data, pix::PixelFormat::BGRA8888);
-    return pix::Image(width, height, pix_data, palette);
+    res::Palette palette(colors, pal_data, res::PixelFormat::BGRA8888);
+    return res::Image(width, height, pix_data, palette);
 }
 
-static pix::Image decode_v2(io::File &input_file, size_t width, size_t height)
+static res::Image decode_v2(io::File &input_file, size_t width, size_t height)
 {
     std::vector<std::unique_ptr<Region>> regions;
     const auto region_count = input_file.stream.read_u32_le();
@@ -105,7 +105,7 @@ static pix::Image decode_v2(io::File &input_file, size_t width, size_t height)
     if (input.read_u32_le() != regions.size())
         throw err::CorruptDataError("Region count mismatch");
 
-    pix::Image image(width, height);
+    res::Image image(width, height);
     for (const auto &region : regions)
     {
         region->block_offset = input.read_u32_le();
@@ -133,11 +133,11 @@ static pix::Image decode_v2(io::File &input_file, size_t width, size_t height)
             u16 part_height = input.read_u16_le();
             input.skip(0x52);
 
-            pix::Image part(
+            res::Image part(
                 part_width,
                 part_height,
                 input,
-                pix::PixelFormat::BGRA8888);
+                res::PixelFormat::BGRA8888);
 
             const size_t target_x = region->x1 + part_x;
             const size_t target_y = region->y1 + part_y;
@@ -162,7 +162,7 @@ bool G00ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("g00");
 }
 
-pix::Image G00ImageDecoder::decode_impl(io::File &input_file) const
+res::Image G00ImageDecoder::decode_impl(io::File &input_file) const
 {
     u8 version = input_file.stream.read_u8();
     u16 width = input_file.stream.read_u16_le();

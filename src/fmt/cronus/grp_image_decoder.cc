@@ -139,7 +139,7 @@ bool GrpImageDecoder::is_recognized_impl(io::File &input_file) const
     return false;
 }
 
-pix::Image GrpImageDecoder::decode_impl(io::File &input_file) const
+res::Image GrpImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(p->header.input_offset);
     auto data = input_file.stream.read_to_eof();
@@ -151,26 +151,26 @@ pix::Image GrpImageDecoder::decode_impl(io::File &input_file) const
         swap_decrypt(data, p->header.output_size);
     data = util::pack::lzss_decompress_bytewise(data, p->header.output_size);
 
-    std::unique_ptr<pix::Image> image;
+    std::unique_ptr<res::Image> image;
 
     if (p->header.bpp == 8)
     {
-        pix::Palette palette(256, data, pix::PixelFormat::BGRA8888);
-        image = std::make_unique<pix::Image>(
+        res::Palette palette(256, data, res::PixelFormat::BGRA8888);
+        image = std::make_unique<res::Image>(
             p->header.width, p->header.height, data.substr(1024), palette);
     }
     else if (p->header.bpp == 24)
     {
-        image = std::make_unique<pix::Image>(
-            p->header.width, p->header.height, data, pix::PixelFormat::BGR888);
+        image = std::make_unique<res::Image>(
+            p->header.width, p->header.height, data, res::PixelFormat::BGR888);
     }
     else if (p->header.bpp == 32)
     {
-        image = std::make_unique<pix::Image>(
+        image = std::make_unique<res::Image>(
             p->header.width,
             p->header.height,
             data,
-            pix::PixelFormat::BGRA8888);
+            res::PixelFormat::BGRA8888);
     }
     else
     {

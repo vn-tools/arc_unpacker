@@ -1,7 +1,7 @@
 #pragma once
 
 #include "io/stream.h"
-#include "pix/image.h"
+#include "res/image.h"
 
 namespace au {
 namespace fmt {
@@ -11,7 +11,7 @@ namespace cbg {
     class Cbg1Decoder final
     {
     public:
-        std::unique_ptr<pix::Image> decode(io::Stream &input_stream) const;
+        std::unique_ptr<res::Image> decode(io::Stream &input_stream) const;
     };
 
 } } } }

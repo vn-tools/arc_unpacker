@@ -148,7 +148,7 @@ std::unique_ptr<io::File> ThbgmAudioArchiveDecoder::read_file_impl(
         samples += input_file.stream.read(entry->size - entry->intro_size);
     }
 
-    sfx::Audio audio;
+    res::Audio audio;
     audio.channel_count = entry->channel_count;
     audio.bits_per_sample = entry->bits_per_sample;
     audio.sample_rate = entry->sample_rate;

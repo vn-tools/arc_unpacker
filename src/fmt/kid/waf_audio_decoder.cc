@@ -10,13 +10,13 @@ bool WafAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-sfx::Audio WafAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio WafAudioDecoder::decode_impl(io::File &input_file) const
 {
     auto output_file = std::make_unique<io::File>();
 
     input_file.stream.seek(6);
 
-    sfx::Audio audio;
+    res::Audio audio;
     audio.codec = 2;
     audio.channel_count = input_file.stream.read_u16_le();
     audio.sample_rate = input_file.stream.read_u32_le();

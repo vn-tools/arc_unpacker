@@ -5,7 +5,7 @@ using namespace au;
 using namespace au::util;
 
 std::unique_ptr<io::File> util::file_from_audio(
-    const sfx::Audio &audio, const io::path &name)
+    const res::Audio &audio, const io::path &name)
 {
     const auto block_align = audio.channel_count * audio.bits_per_sample / 8;
     const auto byte_rate = audio.sample_rate * block_align;

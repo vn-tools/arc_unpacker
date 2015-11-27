@@ -5,7 +5,7 @@
 #include "types.h"
 
 namespace au {
-namespace pix {
+namespace res {
 
     struct Pixel final
     {

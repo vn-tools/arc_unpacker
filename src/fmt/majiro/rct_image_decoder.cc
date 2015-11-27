@@ -137,7 +137,7 @@ bool RctImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image RctImageDecoder::decode_impl(io::File &input_file) const
+res::Image RctImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -177,7 +177,7 @@ pix::Image RctImageDecoder::decode_impl(io::File &input_file) const
         data = decrypt(data, p->key);
     }
     data = uncompress(data, width, height);
-    pix::Image image(width, height, data, pix::PixelFormat::BGR888);
+    res::Image image(width, height, data, res::PixelFormat::BGR888);
 
     if (version == 1)
     {

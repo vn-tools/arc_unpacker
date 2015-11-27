@@ -10,7 +10,7 @@ bool BbmImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("bbm");
 }
 
-pix::Image BbmImageDecoder::decode_impl(io::File &input_file) const
+res::Image BbmImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto total_width = input_file.stream.read_u16_le();
@@ -22,7 +22,7 @@ pix::Image BbmImageDecoder::decode_impl(io::File &input_file) const
     const auto chunk_count_y = input_file.stream.read_u16_le();
     const auto chunk_size = input_file.stream.read_u32_le();
 
-    pix::Image image(total_width, total_height);
+    res::Image image(total_width, total_height);
     for (auto chunk_y : util::range(chunk_count_y))
     for (auto chunk_x : util::range(chunk_count_x))
     {
@@ -30,9 +30,9 @@ pix::Image BbmImageDecoder::decode_impl(io::File &input_file) const
         chunk_stream.skip(5);
         auto color_num = chunk_stream.read_u16_le();
         chunk_stream.skip(11);
-        const pix::Palette palette(
-            color_num, chunk_stream, pix::PixelFormat::BGRA8888);
-        const pix::Image sub_image(
+        const res::Palette palette(
+            color_num, chunk_stream, res::PixelFormat::BGRA8888);
+        const res::Image sub_image(
             chunk_width, chunk_height, chunk_stream, palette);
         const auto base_x = chunk_x * chunk_width;
         const auto base_y = chunk_y * chunk_height;

@@ -46,7 +46,7 @@ std::unique_ptr<io::File> EgrArchiveDecoder::read_file_impl(
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
-    pix::Palette palette(256);
+    res::Palette palette(256);
     for (auto i : util::range(palette.size()))
     {
         input_file.stream.skip(1);
@@ -57,7 +57,7 @@ std::unique_ptr<io::File> EgrArchiveDecoder::read_file_impl(
     }
 
     input_file.stream.skip(0x174);
-    pix::Image image(
+    res::Image image(
         entry->width,
         entry->height,
         input_file.stream.read(entry->width * entry->height),

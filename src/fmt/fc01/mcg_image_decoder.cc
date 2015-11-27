@@ -104,7 +104,7 @@ void McgImageDecoder::set_key(u8 key)
     p->key_set = true;
 }
 
-pix::Image McgImageDecoder::decode_impl(io::File &input_file) const
+res::Image McgImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     const auto version = static_cast<int>(0.5
@@ -146,7 +146,7 @@ pix::Image McgImageDecoder::decode_impl(io::File &input_file) const
     if (depth != 24)
         throw err::UnsupportedBitDepthError(depth);
 
-    return pix::Image(width, height, data, pix::PixelFormat::BGR888);
+    return res::Image(width, height, data, res::PixelFormat::BGR888);
 }
 
 static auto dummy = fmt::register_fmt<McgImageDecoder>("fc01/mcg");

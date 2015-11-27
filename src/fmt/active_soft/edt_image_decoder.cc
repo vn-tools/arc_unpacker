@@ -20,7 +20,7 @@ bool EdtImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image EdtImageDecoder::decode_impl(io::File &input_file) const
+res::Image EdtImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
     const auto width = input_file.stream.read_u16_le();
@@ -30,7 +30,7 @@ pix::Image EdtImageDecoder::decode_impl(io::File &input_file) const
     const auto data_size = input_file.stream.read_u32_le();
     const auto raw_size = input_file.stream.read_u32_le();
 
-    pix::Pixel transparent_color = {0, 0, 0, 0xFF};
+    res::Pixel transparent_color = {0, 0, 0, 0xFF};
     std::string base_file_name;
     if (meta_size)
     {
@@ -38,7 +38,7 @@ pix::Image EdtImageDecoder::decode_impl(io::File &input_file) const
         if (meta_stream.read(diff_magic.size()) == diff_magic)
         {
             transparent_color
-                = pix::read_pixel<pix::PixelFormat::BGR888>(meta_stream);
+                = res::read_pixel<res::PixelFormat::BGR888>(meta_stream);
             meta_stream.skip(1);
             base_file_name = meta_stream.read_to_eof().str();
         }
@@ -106,7 +106,7 @@ pix::Image EdtImageDecoder::decode_impl(io::File &input_file) const
         }
     }
 
-    auto image = pix::Image(width, height, output, pix::PixelFormat::BGR888);
+    auto image = res::Image(width, height, output, res::PixelFormat::BGR888);
     if (!base_file_name.empty())
         for (auto &c : image)
             if (c == transparent_color)

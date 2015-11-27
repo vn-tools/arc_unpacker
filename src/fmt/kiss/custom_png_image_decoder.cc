@@ -13,7 +13,7 @@ bool CustomPngImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image CustomPngImageDecoder::decode_impl(io::File &input_file) const
+res::Image CustomPngImageDecoder::decode_impl(io::File &input_file) const
 {
     fmt::png::PngImageDecoder decoder;
     std::map<std::string, bstr> chunks;
@@ -24,7 +24,7 @@ pix::Image CustomPngImageDecoder::decode_impl(io::File &input_file) const
         });
     if (chunks.find("xPAL") != chunks.end())
     {
-        pix::Palette palette(256, chunks["xPAL"], pix::PixelFormat::BGR888X);
+        res::Palette palette(256, chunks["xPAL"], res::PixelFormat::BGR888X);
         for (const auto y : util::range(image.height()))
         for (const auto x : util::range(image.width()))
         {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "idecoder.h"
-#include "pix/image.h"
+#include "res/image.h"
 
 namespace au {
 namespace fmt {
@@ -17,10 +17,10 @@ namespace fmt {
 
         NamingStrategy naming_strategy() const override;
 
-        pix::Image decode(io::File &input_file) const;
+        res::Image decode(io::File &input_file) const;
 
     protected:
-        virtual pix::Image decode_impl(io::File &input_file) const = 0;
+        virtual res::Image decode_impl(io::File &input_file) const = 0;
     };
 
 } }

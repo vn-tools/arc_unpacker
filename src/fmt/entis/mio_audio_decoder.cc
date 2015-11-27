@@ -67,7 +67,7 @@ bool MioAudioDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.read(magic3.size()) == magic3;
 }
 
-sfx::Audio MioAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio MioAudioDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0x40);
 
@@ -92,7 +92,7 @@ sfx::Audio MioAudioDecoder::decode_impl(io::File &input_file) const
     for (auto chunk : chunks)
         samples += impl->process_chunk(chunk);
 
-    sfx::Audio audio;
+    res::Audio audio;
     audio.channel_count = header.channel_count;
     audio.bits_per_sample = header.bits_per_sample;
     audio.sample_rate = header.sample_rate;

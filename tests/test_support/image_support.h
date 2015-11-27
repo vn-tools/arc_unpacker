@@ -2,18 +2,18 @@
 
 #include <memory>
 #include "io/file.h"
-#include "pix/image.h"
+#include "res/image.h"
 
 namespace au {
 namespace tests {
 
     void compare_images(
-        const pix::Image &expected_image,
-        const pix::Image &actual_image);
+        const res::Image &expected_image,
+        const res::Image &actual_image);
 
     void compare_images(
         io::File &expected_file,
-        const pix::Image &actual_image);
+        const res::Image &actual_image);
 
     void compare_images(
         io::File &expected_file,

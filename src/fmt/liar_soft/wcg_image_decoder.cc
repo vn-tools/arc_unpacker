@@ -22,7 +22,7 @@ bool WcgImageDecoder::is_recognized_impl(io::File &input_file) const
     return true;
 }
 
-pix::Image WcgImageDecoder::decode_impl(io::File &input_file) const
+res::Image WcgImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
 
@@ -43,7 +43,7 @@ pix::Image WcgImageDecoder::decode_impl(io::File &input_file) const
     for (auto i : util::range(0, output.size(), 4))
         output[i + 3] ^= 0xFF;
 
-    return pix::Image(width, height, output, pix::PixelFormat::BGRA8888);
+    return res::Image(width, height, output, res::PixelFormat::BGRA8888);
 }
 
 static auto dummy = fmt::register_fmt<WcgImageDecoder>("liar-soft/wcg");

@@ -21,21 +21,21 @@ static int detect_version(io::File &input_file)
     return -1;
 }
 
-static pix::Image decode_image(io::File &input_file)
+static res::Image decode_image(io::File &input_file)
 {
     const auto version = detect_version(input_file);
     input_file.stream.seek(version == 1 ? 0 : 4);
     const auto width = input_file.stream.read_u16_le();
     const auto height = input_file.stream.read_u16_le();
     const auto data = input_file.stream.read(width * height);
-    return pix::Image(width, height, data, pix::PixelFormat::Gray8);
+    return res::Image(width, height, data, res::PixelFormat::Gray8);
 }
 
-static pix::Palette decode_palette(io::File &input_file)
+static res::Palette decode_palette(io::File &input_file)
 {
     input_file.stream.seek(0);
     const auto count = input_file.stream.read_u16_le();
-    auto palette = pix::Palette(256);
+    auto palette = res::Palette(256);
     for (auto i : util::range(count))
     {
         auto index = input_file.stream.read_u8();
@@ -52,7 +52,7 @@ bool GrpImageDecoder::is_recognized_impl(io::File &input_file) const
     return detect_version(input_file) > 0;
 }
 
-pix::Image GrpImageDecoder::decode(
+res::Image GrpImageDecoder::decode(
     io::File &input_file,
     std::shared_ptr<io::File> palette_file,
     std::shared_ptr<io::File> mask_file) const
@@ -69,13 +69,13 @@ pix::Image GrpImageDecoder::decode(
         auto mask_data = mask_file->stream.read_to_eof();
         for (auto &c : mask_data)
             c ^= 0xFF;
-        image.apply_mask(pix::Image(
-            image.width(), image.height(), mask_data, pix::PixelFormat::Gray8));
+        image.apply_mask(res::Image(
+            image.width(), image.height(), mask_data, res::PixelFormat::Gray8));
     }
     return image;
 }
 
-pix::Image GrpImageDecoder::decode_impl(io::File &input_file) const
+res::Image GrpImageDecoder::decode_impl(io::File &input_file) const
 {
     return decode_image(input_file);
 }

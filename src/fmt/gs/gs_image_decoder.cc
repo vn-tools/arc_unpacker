@@ -12,7 +12,7 @@ bool GsImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image GsImageDecoder::decode_impl(io::File &input_file) const
+res::Image GsImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto size_comp = input_file.stream.read_u32_le();
@@ -30,15 +30,15 @@ pix::Image GsImageDecoder::decode_impl(io::File &input_file) const
 
     if (depth == 8)
     {
-        pix::Palette palette(256, data, pix::PixelFormat::BGRA8888);
+        res::Palette palette(256, data, res::PixelFormat::BGRA8888);
         for (auto &c : palette)
             c.a = 0xFF;
-        return pix::Image(width, height, data.substr(256 * 4), palette);
+        return res::Image(width, height, data.substr(256 * 4), palette);
     }
 
     if (depth == 32)
     {
-        pix::Image image(width, height, data, pix::PixelFormat::BGRA8888);
+        res::Image image(width, height, data, res::PixelFormat::BGRA8888);
         if (!use_transparency)
             for (auto &c : image)
                 c.a = 0xFF;

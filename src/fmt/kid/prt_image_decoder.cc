@@ -13,7 +13,7 @@ bool PrtImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image PrtImageDecoder::decode_impl(io::File &input_file) const
+res::Image PrtImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     const auto version = input_file.stream.read_u16_le();
@@ -42,10 +42,10 @@ pix::Image PrtImageDecoder::decode_impl(io::File &input_file) const
     auto stride = (((width * bit_depth / 8) + 3) / 4) * 4;
 
     input_file.stream.seek(palette_offset);
-    pix::Palette palette(
-        bit_depth == 8 ? 256 : 0, input_file.stream, pix::PixelFormat::BGR888X);
+    res::Palette palette(
+        bit_depth == 8 ? 256 : 0, input_file.stream, res::PixelFormat::BGR888X);
 
-    pix::Image image(width, height);
+    res::Image image(width, height);
     for (const auto y : util::range(height))
     {
         input_file.stream.seek(data_offset + y * stride);
@@ -60,12 +60,12 @@ pix::Image PrtImageDecoder::decode_impl(io::File &input_file) const
             else if (bit_depth == 24)
             {
                 image.at(x, y)
-                    = pix::read_pixel<pix::PixelFormat::BGR888>(row_ptr);
+                    = res::read_pixel<res::PixelFormat::BGR888>(row_ptr);
             }
             else if (bit_depth == 32)
             {
                 image.at(x, y)
-                    = pix::read_pixel<pix::PixelFormat::BGRA8888>(row_ptr);
+                    = res::read_pixel<res::PixelFormat::BGRA8888>(row_ptr);
             }
             else
             {

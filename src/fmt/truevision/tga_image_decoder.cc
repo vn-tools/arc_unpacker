@@ -17,19 +17,19 @@ namespace
     };
 }
 
-static pix::Palette read_palette(io::Stream &stream, size_t size, size_t depth)
+static res::Palette read_palette(io::Stream &stream, size_t size, size_t depth)
 {
-    pix::PixelFormat format;
+    res::PixelFormat format;
     if (depth == 32)
-        format = pix::PixelFormat::BGRA8888;
+        format = res::PixelFormat::BGRA8888;
     else if (depth == 24)
-        format = pix::PixelFormat::BGR888;
+        format = res::PixelFormat::BGR888;
     else if (depth == 16 || depth == 15)
-        format = pix::PixelFormat::BGR555X;
+        format = res::PixelFormat::BGR555X;
     else
         throw err::UnsupportedBitDepthError(depth);
 
-    return pix::Palette(size, stream, format);
+    return res::Palette(size, stream, format);
 }
 
 static bstr read_compressed_data(
@@ -70,39 +70,39 @@ static bstr read_uncompressed_data(
     return stream.read(width * height * channels);
 }
 
-static pix::Image get_image_from_palette(
+static res::Image get_image_from_palette(
     const bstr &input,
     const size_t width,
     const size_t height,
     const size_t depth,
-    const pix::Palette &palette)
+    const res::Palette &palette)
 {
     io::BitReader bit_reader(input);
-    pix::Image output(width, height);
+    res::Image output(width, height);
     for (auto y : util::range(height))
     for (auto x : util::range(width))
         output.at(x, y) = palette[bit_reader.get(depth)];
     return output;
 }
 
-static pix::Image get_image_without_palette(
+static res::Image get_image_without_palette(
     const bstr &input,
     const size_t width,
     const size_t height,
     const size_t depth)
 {
-    pix::PixelFormat format;
+    res::PixelFormat format;
     if (depth == 8)
-        format = pix::PixelFormat::Gray8;
+        format = res::PixelFormat::Gray8;
     else if (depth == 16)
-        format = pix::PixelFormat::BGRA5551;
+        format = res::PixelFormat::BGRA5551;
     else if (depth == 24)
-        format = pix::PixelFormat::BGR888;
+        format = res::PixelFormat::BGR888;
     else if (depth == 32)
-        format = pix::PixelFormat::BGRA8888;
+        format = res::PixelFormat::BGRA8888;
     else
         throw err::UnsupportedBitDepthError(depth);
-    return pix::Image(width, height, input, format);
+    return res::Image(width, height, input, format);
 }
 
 bool TgaImageDecoder::is_recognized_impl(io::File &input_file) const
@@ -114,7 +114,7 @@ bool TgaImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("tga");
 }
 
-pix::Image TgaImageDecoder::decode_impl(io::File &input_file) const
+res::Image TgaImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto id_size = input_file.stream.read_u8();
@@ -141,10 +141,10 @@ pix::Image TgaImageDecoder::decode_impl(io::File &input_file) const
 
     input_file.stream.skip(id_size);
 
-    std::unique_ptr<pix::Palette> palette;
+    std::unique_ptr<res::Palette> palette;
     if (use_palette)
     {
-        palette = std::make_unique<pix::Palette>(
+        palette = std::make_unique<res::Palette>(
             read_palette(input_file.stream, palette_size, palette_depth));
     }
 
@@ -152,7 +152,7 @@ pix::Image TgaImageDecoder::decode_impl(io::File &input_file) const
         ? read_compressed_data(input_file.stream, width, height, channels)
         : read_uncompressed_data(input_file.stream, width, height, channels);
 
-    pix::Image image = use_palette
+    res::Image image = use_palette
         ? get_image_from_palette(data, width, height, depth, *palette)
         : get_image_without_palette(data, width, height, depth);
 

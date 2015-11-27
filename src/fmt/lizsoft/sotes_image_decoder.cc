@@ -13,7 +13,7 @@ bool SotesImageDecoder::is_recognized_impl(io::File &input_file) const
     return a - b == 0x2711 && c - b <= 0x80;
 }
 
-pix::Image SotesImageDecoder::decode_impl(io::File &input_file) const
+res::Image SotesImageDecoder::decode_impl(io::File &input_file) const
 {
     const auto base = input_file.stream.seek(0x448).read_u32_le();
     const auto pixel_data_offset
@@ -28,26 +28,26 @@ pix::Image SotesImageDecoder::decode_impl(io::File &input_file) const
     const auto height
         = input_file.stream.seek(0x420 + 4 * tmp2).read_u32_le() - base;
 
-    pix::Palette palette(
+    res::Palette palette(
         256,
         input_file.stream
             .seek(0x20)
             .read(256 * 4),
-        pix::PixelFormat::BGR888X);
+        res::PixelFormat::BGR888X);
 
     const auto data = input_file.stream
         .seek(pixel_data_offset)
         .read(width * height * (depth >> 3));
 
-    std::unique_ptr<pix::Image> image;
+    std::unique_ptr<res::Image> image;
     if (depth == 8)
     {
-        image = std::make_unique<pix::Image>(width, height, data, palette);
+        image = std::make_unique<res::Image>(width, height, data, palette);
     }
     else if (depth == 24)
     {
-        image = std::make_unique<pix::Image>(
-            width, height, data, pix::PixelFormat::BGR888);
+        image = std::make_unique<res::Image>(
+            width, height, data, res::PixelFormat::BGR888);
     }
     else
     {

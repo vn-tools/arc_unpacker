@@ -8,14 +8,14 @@
 
 using namespace au;
 
-static sfx::Audio audio_from_file(io::File &file)
+static res::Audio audio_from_file(io::File &file)
 {
     const fmt::microsoft::WavAudioDecoder wav_audio_decoder;
     return wav_audio_decoder.decode(file);
 }
 
 void tests::compare_audio(
-    const sfx::Audio &expected, const sfx::Audio &actual)
+    const res::Audio &expected, const res::Audio &actual)
 {
     REQUIRE(expected.codec == actual.codec);
     REQUIRE(expected.channel_count == actual.channel_count);
@@ -37,7 +37,7 @@ void tests::compare_audio(
 }
 
 void tests::compare_audio(
-    io::File &expected_file, const sfx::Audio &actual_audio)
+    io::File &expected_file, const res::Audio &actual_audio)
 {
     tests::compare_audio(audio_from_file(expected_file), actual_audio);
 }

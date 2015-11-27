@@ -14,7 +14,7 @@ namespace tests {
     std::unique_ptr<io::File> decode(
         const fmt::FileDecoder &decoder, io::File &input_file);
 
-    pix::Image decode(const fmt::ImageDecoder &decoder, io::File &input_file);
-    sfx::Audio decode(const fmt::AudioDecoder &decoder, io::File &input_file);
+    res::Image decode(const fmt::ImageDecoder &decoder, io::File &input_file);
+    res::Audio decode(const fmt::AudioDecoder &decoder, io::File &input_file);
 
 } }

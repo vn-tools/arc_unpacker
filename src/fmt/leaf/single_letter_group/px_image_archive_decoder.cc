@@ -375,8 +375,8 @@ std::unique_ptr<io::File> PxImageArchiveDecoder::read_file_impl(
     const auto data = read_blocks(
         context, input_file.stream, entry->block_offsets);
 
-    pix::Image image(
-        entry->width, entry->height, data, pix::PixelFormat::BGRA8888);
+    res::Image image(
+        entry->width, entry->height, data, res::PixelFormat::BGRA8888);
     return util::file_from_image(image, entry->name);
 }
 

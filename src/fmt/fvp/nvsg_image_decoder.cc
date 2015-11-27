@@ -17,7 +17,7 @@ bool NvsgImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(nvsg_magic.size()) == nvsg_magic;
 }
 
-pix::Image NvsgImageDecoder::decode_impl(io::File &input_file) const
+res::Image NvsgImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(hzc1_magic.size());
     size_t uncompressed_size = input_file.stream.read_u32_le();
@@ -33,38 +33,38 @@ pix::Image NvsgImageDecoder::decode_impl(io::File &input_file) const
 
     bstr data = util::pack::zlib_inflate(input_file.stream.read_to_eof());
 
-    pix::PixelFormat pixel_format;
+    res::PixelFormat pixel_format;
     switch (format)
     {
         case 0:
-            pixel_format = pix::PixelFormat::BGR888;
+            pixel_format = res::PixelFormat::BGR888;
             break;
 
         case 1:
-            pixel_format = pix::PixelFormat::BGRA8888;
+            pixel_format = res::PixelFormat::BGRA8888;
             break;
 
         case 2:
             height *= image_count;
-            pixel_format = pix::PixelFormat::BGRA8888;
+            pixel_format = res::PixelFormat::BGRA8888;
             break;
 
         case 3:
-            pixel_format = pix::PixelFormat::Gray8;
+            pixel_format = res::PixelFormat::Gray8;
             break;
 
         case 4:
             for (auto i : util::range(data.size()))
                 if (data.get<u8>()[i])
                     data.get<u8>()[i] = 255;
-            pixel_format = pix::PixelFormat::Gray8;
+            pixel_format = res::PixelFormat::Gray8;
             break;
 
         default:
             throw err::NotSupportedError("Unexpected pixel format");
     }
 
-    return pix::Image(width, height, data, pixel_format);
+    return res::Image(width, height, data, pixel_format);
 }
 
 static auto dummy = fmt::register_fmt<NvsgImageDecoder>("fvp/nvsg");

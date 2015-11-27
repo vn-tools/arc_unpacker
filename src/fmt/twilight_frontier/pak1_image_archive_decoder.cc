@@ -12,7 +12,7 @@ namespace
 {
     struct ArchiveMetaImpl final : fmt::ArchiveMeta
     {
-        std::vector<pix::Palette> palettes;
+        std::vector<res::Palette> palettes;
     };
 
     struct ArchiveEntryImpl final : fmt::ArchiveEntry
@@ -46,10 +46,10 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto palette_count = input_file.stream.read_u8();
     for (auto i : util::range(palette_count))
     {
-        meta->palettes.push_back(pix::Palette(
-            256, input_file.stream.read(512), pix::PixelFormat::BGRA5551));
+        meta->palettes.push_back(res::Palette(
+            256, input_file.stream.read(512), res::PixelFormat::BGRA5551));
     }
-    meta->palettes.push_back(pix::Palette(256));
+    meta->palettes.push_back(res::Palette(256));
 
     size_t i = 0;
     while (input_file.stream.tell() < input_file.stream.size())
@@ -108,25 +108,25 @@ std::unique_ptr<io::File> Pak1ImageArchiveDecoder::read_file_impl(
                 *output_ptr++ = c;
     }
 
-    std::unique_ptr<pix::Image> image;
+    std::unique_ptr<res::Image> image;
     if (entry->depth == 32)
     {
-        image = std::make_unique<pix::Image>(
-            entry->width, entry->height, output, pix::PixelFormat::BGRA8888);
+        image = std::make_unique<res::Image>(
+            entry->width, entry->height, output, res::PixelFormat::BGRA8888);
     }
     else if (entry->depth == 24)
     {
-        image = std::make_unique<pix::Image>(
-            entry->width, entry->height, output, pix::PixelFormat::BGR888X);
+        image = std::make_unique<res::Image>(
+            entry->width, entry->height, output, res::PixelFormat::BGR888X);
     }
     else if (entry->depth == 16)
     {
-        image = std::make_unique<pix::Image>(
-            entry->width, entry->height, output, pix::PixelFormat::BGRA5551);
+        image = std::make_unique<res::Image>(
+            entry->width, entry->height, output, res::PixelFormat::BGRA5551);
     }
     else if (entry->depth == 8)
     {
-        image = std::make_unique<pix::Image>(
+        image = std::make_unique<res::Image>(
             entry->width, entry->height, output, meta->palettes[0]);
     }
     else

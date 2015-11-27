@@ -13,15 +13,15 @@ bool Ed8ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image Ed8ImageDecoder::decode_impl(io::File &input_file) const
+res::Image Ed8ImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
     const auto width = input_file.stream.read_u16_le();
     const auto height = input_file.stream.read_u16_le();
     const auto palette_size = input_file.stream.read_u32_le();
     const auto data_size = input_file.stream.read_u32_le();
-    const pix::Palette palette(
-        palette_size, input_file.stream, pix::PixelFormat::BGR888);
+    const res::Palette palette(
+        palette_size, input_file.stream, res::PixelFormat::BGR888);
 
     static const std::vector<std::pair<s8, s8>> shift_table
         {
@@ -82,7 +82,7 @@ pix::Image Ed8ImageDecoder::decode_impl(io::File &input_file) const
         }
     }
 
-    return pix::Image(width, height, output, palette);
+    return res::Image(width, height, output, palette);
 }
 
 static auto dummy = fmt::register_fmt<Ed8ImageDecoder>("active-soft/ed8");

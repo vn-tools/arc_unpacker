@@ -142,7 +142,7 @@ static bstr decompress_vsp(io::Stream &input, size_t width, size_t height)
     return output;
 }
 
-pix::Image VspImageDecoder::decode_impl(io::File &input_file) const
+res::Image VspImageDecoder::decode_impl(io::File &input_file) const
 {
     auto x = input_file.stream.read_u16_le();
     auto y = input_file.stream.read_u16_le();
@@ -150,26 +150,26 @@ pix::Image VspImageDecoder::decode_impl(io::File &input_file) const
     auto height = input_file.stream.read_u16_le() - y;
     auto use_pms = input_file.stream.read_u8() > 0;
 
-    std::unique_ptr<pix::Image> image;
+    std::unique_ptr<res::Image> image;
 
     if (use_pms)
     {
         width = ((width + 7) / 8) * 8;
 
         input_file.stream.seek(0x20);
-        pix::Palette palette(256, input_file.stream, pix::PixelFormat::RGB888);
+        res::Palette palette(256, input_file.stream, res::PixelFormat::RGB888);
 
         input_file.stream.seek(0x320);
         auto pixel_data = PmsImageDecoder::decompress_8bit(
             input_file.stream, width, height);
-        image.reset(new pix::Image(width, height, pixel_data, palette));
+        image.reset(new res::Image(width, height, pixel_data, palette));
     }
     else
     {
         width *= 8;
 
         input_file.stream.seek(0x0A);
-        pix::Palette palette(16);
+        res::Palette palette(16);
         for (auto &c : palette)
         {
             c.b = (input_file.stream.read_u8() & 0x0F) * 0x11;
@@ -179,7 +179,7 @@ pix::Image VspImageDecoder::decode_impl(io::File &input_file) const
 
         input_file.stream.seek(0x3A);
         auto pixel_data = decompress_vsp(input_file.stream, width, height);
-        image.reset(new pix::Image(width, height, pixel_data, palette));
+        image.reset(new res::Image(width, height, pixel_data, palette));
     }
 
     return *image;

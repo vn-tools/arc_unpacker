@@ -159,7 +159,7 @@ bool PgdGeImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image PgdGeImageDecoder::decode_impl(io::File &input_file) const
+res::Image PgdGeImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(8);
@@ -176,7 +176,7 @@ pix::Image PgdGeImageDecoder::decode_impl(io::File &input_file) const
     if (filter_type == 2)
     {
         data = apply_filter_2(data, width, height);
-        return pix::Image(width, height, data, pix::PixelFormat::BGR888);
+        return res::Image(width, height, data, res::PixelFormat::BGR888);
     }
 
     if (filter_type == 3)
@@ -194,9 +194,9 @@ pix::Image PgdGeImageDecoder::decode_impl(io::File &input_file) const
         data = apply_delta_filter(delta_spec, data, width, height, channels);
 
         if (channels == 4)
-            return pix::Image(width, height, data, pix::PixelFormat::BGRA8888);
+            return res::Image(width, height, data, res::PixelFormat::BGRA8888);
         if (channels == 3)
-            return pix::Image(width, height, data, pix::PixelFormat::BGR888);
+            return res::Image(width, height, data, res::PixelFormat::BGR888);
         throw err::UnsupportedBitDepthError(depth);
     }
 

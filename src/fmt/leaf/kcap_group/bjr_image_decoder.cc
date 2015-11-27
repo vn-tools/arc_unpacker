@@ -12,7 +12,7 @@ bool BjrImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("bjr");
 }
 
-pix::Image BjrImageDecoder::decode_impl(io::File &input_file) const
+res::Image BjrImageDecoder::decode_impl(io::File &input_file) const
 {
     fmt::microsoft::BmpImageDecoder bmp_image_decoder;
     const auto input = bmp_image_decoder.decode(input_file);
@@ -28,7 +28,7 @@ pix::Image BjrImageDecoder::decode_impl(io::File &input_file) const
         key3 ^= name[i];
     }
 
-    pix::Image output(input.width(), input.height());
+    res::Image output(input.width(), input.height());
     for (auto y : util::range(output.height()))
     {
         key3 += 7;

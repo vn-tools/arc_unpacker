@@ -24,7 +24,7 @@ void ImageDecoder::unpack(
     file_saver.save(std::move(output_file));
 }
 
-pix::Image ImageDecoder::decode(io::File &file) const
+res::Image ImageDecoder::decode(io::File &file) const
 {
     if (!is_recognized(file))
         throw err::RecognitionError();

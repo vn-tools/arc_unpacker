@@ -11,7 +11,7 @@ using namespace au::fmt::twilight_frontier;
 
 namespace
 {
-    using PaletteMap = std::map<io::path, std::shared_ptr<pix::Palette>>;
+    using PaletteMap = std::map<io::path, std::shared_ptr<res::Palette>>;
 }
 
 struct Pak2ImageDecoder::Priv final
@@ -37,8 +37,8 @@ void Pak2ImageDecoder::add_palette(
 {
     io::MemoryStream palette_stream(palette_data);
     palette_stream.skip(1);
-    p->palette_map[name] = std::make_shared<pix::Palette>(
-        256, palette_stream, pix::PixelFormat::BGRA5551);
+    p->palette_map[name] = std::make_shared<res::Palette>(
+        256, palette_stream, res::PixelFormat::BGRA5551);
 }
 
 bool Pak2ImageDecoder::is_recognized_impl(io::File &input_file) const
@@ -46,7 +46,7 @@ bool Pak2ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.has_extension("cv2");
 }
 
-pix::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
+res::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
 {
     const auto bit_depth = input_file.stream.read_u8();
     const auto width = input_file.stream.read_u32_le();
@@ -55,7 +55,7 @@ pix::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
     const auto palette_number = input_file.stream.read_u32_le();
     io::MemoryStream source_stream(input_file.stream);
 
-    std::shared_ptr<pix::Palette> palette;
+    std::shared_ptr<res::Palette> palette;
     if (bit_depth == 8)
     {
         const auto path = input_file.name.parent()
@@ -64,20 +64,20 @@ pix::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
         auto it = p->palette_map.find(path);
         palette = it != p->palette_map.end()
             ? it->second
-            : std::make_shared<pix::Palette>(256);
+            : std::make_shared<res::Palette>(256);
     }
 
-    pix::Image image(width, height);
+    res::Image image(width, height);
     for (const size_t y : util::range(height))
     for (const size_t x : util::range(stride))
     {
-        pix::Pixel pixel;
+        res::Pixel pixel;
 
         switch (bit_depth)
         {
             case 32:
             case 24:
-                pixel = pix::read_pixel<pix::PixelFormat::BGRA8888>(
+                pixel = res::read_pixel<res::PixelFormat::BGRA8888>(
                     source_stream);
                 break;
 

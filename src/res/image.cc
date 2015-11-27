@@ -1,11 +1,11 @@
-#include "pix/image.h"
+#include "res/image.h"
 #include <algorithm>
 #include "err.h"
 #include "util/format.h"
 #include "util/range.h"
 
 using namespace au;
-using namespace au::pix;
+using namespace au::res;
 
 struct Image::Priv final
 {
@@ -62,7 +62,7 @@ Image::Image(
     const bstr &input,
     const Palette &palette) : Image(width, height)
 {
-    p->load(input, pix::PixelFormat::Gray8);
+    p->load(input, PixelFormat::Gray8);
     apply_palette(palette);
 }
 
@@ -72,7 +72,7 @@ Image::Image(
     io::Stream &stream,
     const Palette &palette) : Image(width, height)
 {
-    p->load(stream.read(width * height), pix::PixelFormat::Gray8);
+    p->load(stream.read(width * height), PixelFormat::Gray8);
     apply_palette(palette);
 }
 

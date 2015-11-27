@@ -1,7 +1,7 @@
 #pragma once
 
 #include <array>
-#include "pix/image.h"
+#include "res/image.h"
 
 namespace au {
 namespace fmt {
@@ -17,7 +17,7 @@ namespace warc {
         std::array<u32, 5> initial_crypt_base_keys;
 
         bstr logo_data;
-        std::shared_ptr<pix::Image> region_image;
+        std::shared_ptr<res::Image> region_image;
 
         struct
         {

@@ -44,7 +44,7 @@ bool JpegPgxImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-pix::Image JpegPgxImageDecoder::decode_impl(io::File &input_file) const
+res::Image JpegPgxImageDecoder::decode_impl(io::File &input_file) const
 {
     auto pgx_data = extract_pgx_stream(input_file.stream.read_to_eof());
     io::MemoryStream pgx_stream(pgx_data);
@@ -71,7 +71,7 @@ pix::Image JpegPgxImageDecoder::decode_impl(io::File &input_file) const
 
     auto target = custom_lzss_decompress(pgx_stream.read_to_eof(), target_size);
 
-    pix::Image image(width, height, target, pix::PixelFormat::BGRA8888);
+    res::Image image(width, height, target, res::PixelFormat::BGRA8888);
     if (!transparent)
         for (auto &c : image)
             c.a = 0xFF;

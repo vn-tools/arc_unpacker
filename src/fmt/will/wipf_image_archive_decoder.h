@@ -1,7 +1,7 @@
 #pragma once
 
 #include "fmt/archive_decoder.h"
-#include "pix/image.h"
+#include "res/image.h"
 
 namespace au {
 namespace fmt {
@@ -10,10 +10,10 @@ namespace will {
     class WipfImageArchiveDecoder final : public ArchiveDecoder
     {
     public:
-        std::vector<std::shared_ptr<pix::Image>> unpack_to_images(
+        std::vector<std::shared_ptr<res::Image>> unpack_to_images(
             io::File &input_file) const;
 
-        std::unique_ptr<pix::Image> read_image(
+        std::unique_ptr<res::Image> read_image(
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const;

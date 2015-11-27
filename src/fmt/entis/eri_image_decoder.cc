@@ -83,7 +83,7 @@ static bstr decode_pixel_data(
     return decode_lossless_pixel_data(header, *decoder);
 }
 
-pix::Image EriImageDecoder::decode_impl(io::File &input_file) const
+res::Image EriImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(0x40);
 
@@ -100,7 +100,7 @@ pix::Image EriImageDecoder::decode_impl(io::File &input_file) const
     if (!pixel_data_sections.size())
         throw err::CorruptDataError("No pixel data found");
 
-    pix::Image image(header.width, header.height * pixel_data_sections.size());
+    res::Image image(header.width, header.height * pixel_data_sections.size());
 
     for (const auto i : util::range(pixel_data_sections.size()))
     {
@@ -109,17 +109,17 @@ pix::Image EriImageDecoder::decode_impl(io::File &input_file) const
         const auto pixel_data = decode_pixel_data(
             header, input_file.stream.read(pixel_data_section.size));
 
-        pix::PixelFormat fmt;
+        res::PixelFormat fmt;
         if (header.bit_depth == 32)
-            fmt = pix::PixelFormat::BGRA8888;
+            fmt = res::PixelFormat::BGRA8888;
         else if (header.bit_depth == 24)
-            fmt = pix::PixelFormat::BGR888;
+            fmt = res::PixelFormat::BGR888;
         else if (header.bit_depth == 8)
-            fmt = pix::PixelFormat::Gray8;
+            fmt = res::PixelFormat::Gray8;
         else
             throw err::UnsupportedBitDepthError(header.bit_depth);
 
-        pix::Image subimage(
+        res::Image subimage(
             header.width, header.height, pixel_data, fmt);
         if (header.flip)
             subimage.flip_vertically();

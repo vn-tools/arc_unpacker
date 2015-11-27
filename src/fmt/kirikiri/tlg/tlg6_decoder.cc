@@ -66,107 +66,107 @@ void FilterTypes::decompress(Header &header)
     data = decompressor.decompress(data, output_size);
 }
 
-static inline u32 to_bgra(pix::Pixel p)
+static inline u32 to_bgra(res::Pixel p)
 {
     return p.b | (p.g << 8) | (p.r << 16) | (p.a << 24);
 }
 
-static void transformer0(pix::Pixel &)
+static void transformer0(res::Pixel &)
 {
 }
 
-static void transformer1(pix::Pixel &p)
+static void transformer1(res::Pixel &p)
 {
     p.r += p.g;
     p.b += p.g;
 }
 
-static void transformer2(pix::Pixel &p)
+static void transformer2(res::Pixel &p)
 {
     p.g += p.b;
     p.r += p.g;
 }
 
-static void transformer3(pix::Pixel &p)
+static void transformer3(res::Pixel &p)
 {
     p.g += p.r;
     p.b += p.g;
 }
 
-static void transformer4(pix::Pixel &p)
+static void transformer4(res::Pixel &p)
 {
     p.b += p.r;
     p.g += p.b;
     p.r += p.g;
 }
 
-static void transformer5(pix::Pixel &p)
+static void transformer5(res::Pixel &p)
 {
     p.b += p.r;
     p.g += p.b;
 }
 
-static void transformer6(pix::Pixel &p)
+static void transformer6(res::Pixel &p)
 {
     p.b += p.g;
 }
 
-static void transformer7(pix::Pixel &p)
+static void transformer7(res::Pixel &p)
 {
     p.g += p.b;
 }
 
-static void transformer8(pix::Pixel &p)
+static void transformer8(res::Pixel &p)
 {
     p.r += p.g;
 }
 
-static void transformer9(pix::Pixel &p)
+static void transformer9(res::Pixel &p)
 {
     p.r += p.b;
     p.g += p.r;
     p.b += p.g;
 }
 
-static void transformerA(pix::Pixel &p)
+static void transformerA(res::Pixel &p)
 {
     p.b += p.r;
     p.g += p.r;
 }
 
-static void transformerB(pix::Pixel &p)
+static void transformerB(res::Pixel &p)
 {
     p.r += p.b;
     p.g += p.b;
 }
 
-static void transformerC(pix::Pixel &p)
+static void transformerC(res::Pixel &p)
 {
     p.r += p.b;
     p.g += p.r;
 }
 
-static void transformerD(pix::Pixel &p)
+static void transformerD(res::Pixel &p)
 {
     p.b += p.g;
     p.r += p.b;
     p.g += p.r;
 }
 
-static void transformerE(pix::Pixel &p)
+static void transformerE(res::Pixel &p)
 {
     p.g += p.r;
     p.b += p.g;
     p.r += p.b;
 }
 
-static void transformerF(pix::Pixel &p)
+static void transformerF(res::Pixel &p)
 {
     p.g += (p.b << 1);
     p.r += (p.b << 1);
 }
 
-static void (*transformers[16])(pix::Pixel &p) =
+static void (*transformers[16])(res::Pixel &p) =
 {
     &transformer0, &transformer1, &transformer2, &transformer3,
     &transformer4, &transformer5, &transformer6, &transformer7,
@@ -369,8 +369,8 @@ static void decode_golomb_values(u8 *pixel_buf, int pixel_count, u8 *bit_pool)
 }
 
 static void decode_line(
-    pix::Pixel *prev_line,
-    pix::Pixel *current_line,
+    res::Pixel *prev_line,
+    res::Pixel *current_line,
     int start_block,
     int block_limit,
     u8 *filter_types,
@@ -380,7 +380,7 @@ static void decode_line(
     int dir,
     Header &header)
 {
-    pix::Pixel left, top_left;
+    res::Pixel left, top_left;
     int step;
 
     if (start_block)
@@ -418,14 +418,14 @@ static void decode_line(
 
         do
         {
-            pix::Pixel inn;
+            res::Pixel inn;
             inn.a = *in >> 24;
             inn.r = *in >> 16;
             inn.g = *in >> 8;
             inn.b = *in;
             transformer(inn);
 
-            pix::Pixel top = *prev_line;
+            res::Pixel top = *prev_line;
             auto result = filter(
                 to_bgra(left),
                 to_bgra(top),
@@ -452,14 +452,14 @@ static void decode_line(
     }
 }
 
-static void read_image(io::Stream &stream, pix::Image &image, Header &header)
+static void read_image(io::Stream &stream, res::Image &image, Header &header)
 {
     FilterTypes filter_types(stream);
     filter_types.decompress(header);
 
     bstr pixel_buf(4 * header.image_width * h_block_size);
-    auto zero_line = std::make_unique<pix::Pixel[]>(header.image_width);
-    pix::Pixel *prev_line = zero_line.get();
+    auto zero_line = std::make_unique<res::Pixel[]>(header.image_width);
+    res::Pixel *prev_line = zero_line.get();
 
     u32 main_count = header.image_width / w_block_size;
     for (auto y : util::range(0, header.image_height, h_block_size))
@@ -542,7 +542,7 @@ static void read_image(io::Stream &stream, pix::Image &image, Header &header)
     }
 }
 
-pix::Image Tlg6Decoder::decode(io::File &file)
+res::Image Tlg6Decoder::decode(io::File &file)
 {
     init_table();
 
@@ -560,7 +560,7 @@ pix::Image Tlg6Decoder::decode(io::File &file)
     if (header.channel_count != 3 && header.channel_count != 4)
         throw err::UnsupportedChannelCountError(header.channel_count);
 
-    pix::Image image(header.image_width, header.image_height);
+    res::Image image(header.image_width, header.image_height);
     read_image(file.stream, image, header);
     return image;
 }

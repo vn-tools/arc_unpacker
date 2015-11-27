@@ -12,7 +12,7 @@ bool DwvAudioDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
-sfx::Audio DwvAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio DwvAudioDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 2);
     const auto header_size = input_file.stream.read_u32_le();
@@ -20,7 +20,7 @@ sfx::Audio DwvAudioDecoder::decode_impl(io::File &input_file) const
     const auto header = input_file.stream.read(header_size);
     const auto samples = input_file.stream.read(samples_size);
 
-    sfx::Audio audio;
+    res::Audio audio;
     audio.samples = samples;
 
     io::MemoryStream header_stream(header);
