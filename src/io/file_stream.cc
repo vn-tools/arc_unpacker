@@ -41,7 +41,7 @@ FileStream::~FileStream()
 
 Stream &FileStream::seek(size_t offset)
 {
-    if (fseek(p->file, offset, SEEK_SET) != 0)
+    if (offset > size() || fseek(p->file, offset, SEEK_SET) != 0)
         throw err::EofError();
     return *this;
 }
