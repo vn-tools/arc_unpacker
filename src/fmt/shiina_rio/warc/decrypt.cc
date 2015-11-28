@@ -21,6 +21,10 @@ static const unsigned int year_day_acc[2][13] =
 };
 static const double pi = 3.14159265358979323846;
 
+static const bstr essential_crypt_key =
+    "Crypt Type 20011002 - Copyright(C) 2000 Y.Yamada/STUDIO "
+    "\x82\xE6\x82\xB5\x82\xAD\x82\xF1"_b; // SJIS よしくん
+
 namespace
 {
     class CustomLcg final
@@ -503,7 +507,7 @@ void warc::decrypt_essential(
     const u64 key_pos_addend2 = get_essential_key_pos_addend2(token, lcg);
     auto key_pos1 = key_pos_addend1 + key_pos_addend2;
     auto key_pos2 = 0;
-    key_pos1 %= plugin.essential_crypt_key.size();
+    key_pos1 %= essential_crypt_key.size();
 
     for (const auto i : util::range(
         essential_crypt_start + 2, essential_crypt_end))
@@ -514,11 +518,11 @@ void warc::decrypt_essential(
         else
             throw err::NotSupportedError("WARC <=1.2 is not implemented");
         d = (d >> 1) | (d << 7);
-        d ^= plugin.essential_crypt_key[key_pos1];
-        d ^= plugin.essential_crypt_key[key_pos2];
+        d ^= essential_crypt_key[key_pos1];
+        d ^= essential_crypt_key[key_pos2];
         data[i] = d;
-        key_pos1 = d % plugin.essential_crypt_key.size();
-        key_pos2 = (key_pos2 + 1) % plugin.essential_crypt_key.size();
+        key_pos1 = d % essential_crypt_key.size();
+        key_pos2 = (key_pos2 + 1) % essential_crypt_key.size();
     }
 }
 
@@ -547,9 +551,9 @@ void warc::decrypt_table_data(
         throw err::NotSupportedError("WARC <=1.7 is not implemented");
 }
 
-warc::FlagCryptFunc warc::decrypt_with_flags1(const u32 key)
+warc::FlagCryptFunc warc::get_flag_crypt1(const bstr &table, const u32 key)
 {
-    return [=](const Plugin &plugin, bstr &data, const u32 flags)
+    return [=](bstr &data, const u32 flags)
     {
         if (data.size() < 0x400)
             return;
@@ -566,8 +570,8 @@ warc::FlagCryptFunc warc::decrypt_with_flags1(const u32 key)
                 k[2] = k[1];
                 k[1] = k[0];
                 k[0] = j;
-                const auto idx = j % plugin.flag_crypt.table.size();
-                data[i] ^= plugin.flag_crypt.table[idx];
+                const auto idx = j % table.size();
+                data[i] ^= table[idx];
             }
         }
         if ((flags & 0x204) == 0x204)
@@ -575,9 +579,9 @@ warc::FlagCryptFunc warc::decrypt_with_flags1(const u32 key)
     };
 }
 
-warc::FlagCryptFunc warc::decrypt_with_flags2()
+warc::FlagCryptFunc warc::get_flag_crypt2()
 {
-    return [](const Plugin &plugin, bstr &data, const u32 flags)
+    return [](bstr &data, const u32 flags)
     {
         if (data.size() < 0x200)
             return;
@@ -596,9 +600,9 @@ warc::FlagCryptFunc warc::decrypt_with_flags2()
     };
 }
 
-warc::FlagCryptFunc warc::decrypt_with_flags3()
+warc::FlagCryptFunc warc::get_flag_crypt3()
 {
-    return [](const Plugin &plugin, bstr &data, const u32 flags)
+    return [](bstr &data, const u32 flags)
     {
         if (data.size() < 0x400)
             return;
@@ -662,24 +666,26 @@ warc::FlagCryptFunc warc::decrypt_with_flags3()
     };
 }
 
-void warc::decrypt_with_crc(const Plugin &plugin, bstr &data)
+warc::CrcCryptFunc warc::get_crc_crypt(const bstr &table)
 {
-    if (data.size() < 0x400 || !plugin.crc_crypt.table.size())
-        return;
+    return [=](bstr &data)
+    {
+        if (data.size() < 0x400 || !table.size())
+            return;
 
-    u32 crc = 0xFFFFFFFF;
-    for (const auto i : util::range(0x100))
-    {
-        crc ^= data[i] << 24;
-        for (const auto j : util::range(8))
-            crc = (crc << 1) ^ (crc & 0x80000000 ? 0x04C11DB7 : 0);
-    }
-    for (const auto i : util::range(0x40))
-    {
-        const auto idx = data.get<u32>()[0x40 + i]
-            % plugin.crc_crypt.table.size();
-        const u32 src = plugin.crc_crypt.table.get<u32>()[idx / 4];
-        const u32 key = src ^ crc;
-        data.get<u32>()[0x80 + i] ^= key;
-    }
+        u32 crc = 0xFFFFFFFF;
+        for (const auto i : util::range(0x100))
+        {
+            crc ^= data[i] << 24;
+            for (const auto j : util::range(8))
+                crc = (crc << 1) ^ (crc & 0x80000000 ? 0x04C11DB7 : 0);
+        }
+        for (const auto i : util::range(0x40))
+        {
+            const auto idx = data.get<u32>()[0x40 + i] % table.size();
+            const u32 src = table.get<u32>()[idx / 4];
+            const u32 key = src ^ crc;
+            data.get<u32>()[0x80 + i] ^= key;
+        }
+    };
 }

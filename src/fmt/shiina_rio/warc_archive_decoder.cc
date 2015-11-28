@@ -136,10 +136,14 @@ std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
     auto data = input_file.stream.read(entry->size_comp - 8);
     if (entry->flags & 0x80000000)
         warc::decrypt_essential(meta->plugin, meta->warc_version, data);
-    if (meta->plugin.flag_crypt.pre)
-        meta->plugin.flag_crypt.pre(meta->plugin, data, 0x202);
+    if (meta->plugin.flag_pre_crypt)
+        meta->plugin.flag_pre_crypt(data, 0x202);
     if (entry->flags & 0x20000000)
-        warc::decrypt_with_crc(meta->plugin, data);
+    {
+        if (!meta->plugin.crc_crypt)
+            throw err::NotSupportedError("CRC crypt is not implemented");
+        meta->plugin.crc_crypt(data);
+    }
 
     std::function<bstr(const bstr &, const size_t, const bool)> decompressor;
     if (file_magic == "YH1"_b)
@@ -153,9 +157,13 @@ std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
     {
         data = decompressor(data, size_orig, compress_crypt);
         if (entry->flags & 0x40000000)
-            warc::decrypt_with_crc(meta->plugin, data);
-        if (meta->plugin.flag_crypt.post)
-            meta->plugin.flag_crypt.post(meta->plugin, data, 0x204);
+        {
+            if (!meta->plugin.crc_crypt)
+                throw err::NotSupportedError("CRC crypt is not implemented");
+            meta->plugin.crc_crypt(data);
+        }
+        if (meta->plugin.flag_post_crypt)
+            meta->plugin.flag_post_crypt(data, 0x204);
     }
 
     if (entry->suspicious)

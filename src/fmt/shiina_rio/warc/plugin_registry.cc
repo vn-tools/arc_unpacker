@@ -2,7 +2,6 @@
 #include "fmt/png/png_image_decoder.h"
 #include "fmt/shiina_rio/warc/decrypt.h"
 #include "io/file.h"
-#include "util/encoding.h"
 #include "util/plugin_mgr.hh"
 #include "util/program_path.h"
 
@@ -11,41 +10,16 @@ using namespace au::fmt::shiina_rio::warc;
 
 static bstr read_file(const std::string &name)
 {
-    const io::path path = util::get_etc_dir_path() / "shiina_rio" / name;
+    const auto path = util::get_etc_dir_path() / "shiina_rio" / name;
     io::File file(path, io::FileMode::Read);
-    return file.stream.read_to_eof();
+    return file.stream.seek(0).read_to_eof();
 }
 
 static std::shared_ptr<res::Image> read_image(const std::string &name)
 {
-    fmt::png::PngImageDecoder png_decoder;
-    const auto content = read_file(name);
-    io::File tmp_file("tmp.png", content);
+    io::File tmp_file("tmp.png", read_file(name));
+    const fmt::png::PngImageDecoder png_decoder;
     return std::make_shared<res::Image>(png_decoder.decode(tmp_file));
-}
-
-static std::shared_ptr<Plugin> create_plugin(
-    int version, const std::array<u32, 5> &initial_crypt_base_keys)
-{
-    auto plugin = std::make_shared<Plugin>();
-    plugin->version = version;
-    plugin->entry_name_size = version <= 2390 ? 0x10 : 0x20;
-    plugin->initial_crypt_base_keys = initial_crypt_base_keys;
-    plugin->essential_crypt_key = util::utf8_to_sjis(
-        "Crypt Type 20011002 - Copyright(C) 2000 Y.Yamada/STUDIO よしくん"_b);
-    plugin->region_image = read_image("region.png");
-
-    plugin->crc_crypt.table
-        = version < 2410 ? read_file("table1.bin")
-        : version < 2490 ? read_file("table2.bin")
-        : version < 2450 ? read_file("table3.bin")
-        : read_file("table4.bin");
-    plugin->logo_data
-        = version < 2390 ? read_file("logo1.png")
-        : version < 2490 ? read_file("logo2.jpg")
-        : read_file("logo3.jpg");
-    plugin->flag_crypt.table = read_file("flag.png");
-    return plugin;
 }
 
 struct PluginRegistry::Priv final
@@ -61,21 +35,32 @@ PluginRegistry::PluginRegistry() : p(new Priv)
         "237",
         "Generic ShiinaRio v2.37", []()
         {
-            auto plugin = create_plugin(
-                2370,
-                {0xF182C682, 0xE882AA82, 0x718E5896, 0x8183CC82, 0xDAC98283});
-            return plugin;
+            auto p = std::make_shared<Plugin>();
+            p->version = 2370;
+            p->entry_name_size = 0x10;
+            p->region_image = read_image("region.png");
+            p->logo_data = read_file("logo1.png");
+            p->initial_crypt_base_keys
+                = {0xF182C682, 0xE882AA82, 0x718E5896, 0x8183CC82, 0xDAC98283};
+            p->crc_crypt = get_crc_crypt(read_file("table1.bin"));
+            return p;
         });
 
     p->plugin_mgr.add(
         "shojo-mama",
         "Shojo Mama", []()
         {
-            auto plugin = create_plugin(
-                2490, {0x4B535453, 0xA15FA15F, 0, 0, 0});
-            plugin->flag_crypt.pre = warc::decrypt_with_flags1(0xECB2F5B2);
-            plugin->flag_crypt.post = warc::decrypt_with_flags1(0xECB2F5B2);
-            return plugin;
+            auto p = std::make_shared<Plugin>();
+            p->version = 2490;
+            p->entry_name_size = 0x20;
+            p->region_image = read_image("region.png");
+            p->logo_data = read_file("logo3.jpg");
+            p->crc_crypt = get_crc_crypt(read_file("table4.bin"));
+            p->initial_crypt_base_keys = {0x4B535453, 0xA15FA15F, 0, 0, 0};
+            p->flag_pre_crypt
+                = p->flag_post_crypt
+                = warc::get_flag_crypt1(read_file("flag.png"), 0xECB2F5B2);
+            return p;
         });
 
     p->plugin_mgr.add(
@@ -84,36 +69,49 @@ PluginRegistry::PluginRegistry() : p(new Priv)
         "mo Komete Kanraku Shite Iku Hanashi (sic)",
         []()
         {
-            auto plugin = create_plugin(
-                2490, {0xF1AD65AB, 0x55B7E1AD, 0x62B875B8, 0, 0});
-            plugin->logo_data = read_file("logo4.jpg").substr(0, 0xBFAE);
-            plugin->flag_crypt.pre = nullptr;
-            plugin->flag_crypt.pre = warc::decrypt_with_flags2();
-            return plugin;
+            auto p = std::make_shared<Plugin>();
+            p->version = 2490;
+            p->entry_name_size = 0x20;
+            p->region_image = read_image("region.png");
+            p->logo_data = read_file("logo4.jpg");
+            p->initial_crypt_base_keys
+                = {0xF1AD65AB, 0x55B7E1AD, 0x62B875B8, 0, 0};
+            p->flag_pre_crypt = warc::get_flag_crypt2();
+            p->crc_crypt = get_crc_crypt(read_file("table4.bin"));
+            return p;
         });
 
     p->plugin_mgr.add(
         "sorcery-jokers",
         "Sorcery Jokers", []()
         {
-            auto plugin = create_plugin(
-                2500, {0x6C877787, 0x00007787, 0, 0, 0});
-            plugin->logo_data = read_file("logo5.jpg");
-            plugin->flag_crypt.pre = nullptr;
-            plugin->flag_crypt.post = warc::decrypt_with_flags3();
-            return plugin;
+            auto p = std::make_shared<Plugin>();
+            p->version = 2500;
+            p->entry_name_size = 0x20;
+            p->region_image = read_image("region.png");
+            p->logo_data = read_file("logo5.jpg");
+            p->initial_crypt_base_keys = {0x6C877787, 0x00007787, 0, 0, 0};
+            p->flag_post_crypt = warc::get_flag_crypt3();
+            p->crc_crypt = get_crc_crypt(read_file("table4.bin"));
+            return p;
         });
 
     p->plugin_mgr.add(
         "gh-nurse",
         "Gohoushi Nurse", []()
         {
-            auto plugin = create_plugin(
-                2500, {0xEFED26E8, 0x8CF5A1EE, 0x13E9D4EC, 0, 0});
-            plugin->flag_crypt.pre = warc::decrypt_with_flags1(0x90CC9DC2);
-            plugin->flag_crypt.post = warc::decrypt_with_flags1(0x90CC9DC2);
-            plugin->logo_data = read_file("logo6.jpg");
-            return plugin;
+            auto p = std::make_shared<Plugin>();
+            p->version = 2500;
+            p->entry_name_size = 0x20;
+            p->region_image = read_image("region.png");
+            p->logo_data = read_file("logo6.jpg");
+            p->initial_crypt_base_keys
+                = {0xEFED26E8, 0x8CF5A1EE, 0x13E9D4EC, 0, 0};
+            p->flag_pre_crypt
+                = p->flag_post_crypt
+                = warc::get_flag_crypt1(read_file("flag.png"), 0x90CC9DC2);
+            p->crc_crypt = get_crc_crypt(read_file("table4.bin"));
+            return p;
         });
 }
 
