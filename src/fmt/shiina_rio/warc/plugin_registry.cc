@@ -32,7 +32,7 @@ static std::shared_ptr<Plugin> create_plugin(
     plugin->entry_name_size = version <= 2390 ? 0x10 : 0x20;
     plugin->initial_crypt_base_keys = initial_crypt_base_keys;
     plugin->essential_crypt_key = util::utf8_to_sjis(
-        "Crypt Type 20011002 - Copyright(C) 2000 Y.Yamada/STUDStream よしくん"_b);
+        "Crypt Type 20011002 - Copyright(C) 2000 Y.Yamada/STUDIO よしくん"_b);
     plugin->region_image = read_image("region.png");
 
     plugin->crc_crypt.table

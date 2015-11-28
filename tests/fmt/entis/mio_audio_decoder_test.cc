@@ -19,7 +19,7 @@ static void do_test(
     tests::compare_audio(*expected_file, actual_audio);
 }
 
-TEST_CASE("Entis MStream lossy audio", "[fmt]")
+TEST_CASE("Entis MIO lossy audio", "[fmt]")
 {
     SECTION("LOT/DCT")
     {

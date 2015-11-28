@@ -474,7 +474,7 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
         case 9: return "ACCELERATOR";
         case 10: return "RC_DATA";
         case 11: return "MESSAGE_TABLE";
-        case 16: return "VERSStreamN";
+        case 16: return "VERSION";
         case 17: return "DLG_INCLUDE";
         case 19: return "PLUG_AND_PLAY";
         case 20: return "VXD";
