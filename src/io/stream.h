@@ -15,8 +15,8 @@ namespace io {
         virtual size_t tell() const = 0;
         virtual Stream &seek(size_t offset) = 0;
         virtual Stream &skip(int offset) = 0;
-        virtual void truncate(size_t new_size) = 0;
-        void peek(size_t offset, std::function<void()> func);
+        virtual Stream &truncate(size_t new_size) = 0;
+        Stream &peek(size_t offset, std::function<void()> func);
         bool eof() const;
 
         bstr read(size_t bytes);
@@ -32,14 +32,14 @@ namespace io {
         virtual u64 read_u64_le();
         virtual u64 read_u64_be();
 
-        virtual void write(const bstr &bytes);
-        virtual void write_u8(u8);
-        virtual void write_u16_le(u16);
-        virtual void write_u16_be(u16);
-        virtual void write_u32_le(u32);
-        virtual void write_u32_be(u32);
-        virtual void write_u64_le(u64);
-        virtual void write_u64_be(u64);
+        virtual Stream &write(const bstr &bytes);
+        virtual Stream &write_u8(u8);
+        virtual Stream &write_u16_le(u16);
+        virtual Stream &write_u16_be(u16);
+        virtual Stream &write_u32_le(u32);
+        virtual Stream &write_u32_be(u32);
+        virtual Stream &write_u64_le(u64);
+        virtual Stream &write_u64_be(u64);
 
     protected:
         virtual void read_impl(void *input, size_t size) = 0;

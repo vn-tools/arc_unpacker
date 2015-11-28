@@ -10,7 +10,7 @@ Stream::~Stream()
 {
 }
 
-void Stream::peek(size_t offset, std::function<void()> func)
+Stream &Stream::peek(size_t offset, std::function<void()> func)
 {
     size_t old_pos = tell();
     seek(offset);
@@ -18,6 +18,7 @@ void Stream::peek(size_t offset, std::function<void()> func)
     {
         func();
         seek(old_pos);
+        return *this;
     }
     catch (...)
     {
@@ -127,50 +128,58 @@ u64 Stream::read_u64_be()
     return util::from_big_endian<u64>(ret);
 }
 
-void Stream::write(const bstr &bytes)
+Stream &Stream::write(const bstr &bytes)
 {
     if (!bytes.size())
-        return;
+        return *this;
     write_impl(bytes.get<char>(), bytes.size());
+    return *this;
 }
 
-void Stream::write_u8(u8 value)
+Stream &Stream::write_u8(u8 value)
 {
     write_impl(&value, 1);
+    return *this;
 }
 
-void Stream::write_u16_le(u16 value)
+Stream &Stream::write_u16_le(u16 value)
 {
     value = util::to_little_endian<u16>(value);
     write_impl(&value, 2);
+    return *this;
 }
 
-void Stream::write_u32_le(u32 value)
+Stream &Stream::write_u32_le(u32 value)
 {
     value = util::to_little_endian<u32>(value);
     write_impl(&value, 4);
+    return *this;
 }
 
-void Stream::write_u64_le(u64 value)
+Stream &Stream::write_u64_le(u64 value)
 {
     value = util::to_little_endian<u64>(value);
     write_impl(&value, 8);
+    return *this;
 }
 
-void Stream::write_u16_be(u16 value)
+Stream &Stream::write_u16_be(u16 value)
 {
     value = util::to_big_endian<u16>(value);
     write_impl(&value, 2);
+    return *this;
 }
 
-void Stream::write_u32_be(u32 value)
+Stream &Stream::write_u32_be(u32 value)
 {
     value = util::to_big_endian<u32>(value);
     write_impl(&value, 4);
+    return *this;
 }
 
-void Stream::write_u64_be(u64 value)
+Stream &Stream::write_u64_be(u64 value)
 {
     value = util::to_big_endian<u64>(value);
     write_impl(&value, 8);
+    return *this;
 }

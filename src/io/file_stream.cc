@@ -81,9 +81,9 @@ size_t FileStream::size() const
     return size;
 }
 
-void FileStream::truncate(size_t new_size)
+Stream &FileStream::truncate(size_t new_size)
 {
     if (new_size == size())
-        return;
+        return *this;
     throw err::NotSupportedError("Truncating real files is not implemented");
 }

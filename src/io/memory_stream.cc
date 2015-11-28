@@ -54,10 +54,11 @@ MemoryStream::~MemoryStream()
 {
 }
 
-void MemoryStream::reserve(size_t size)
+Stream &MemoryStream::reserve(size_t size)
 {
     if (p->buffer.size() < size)
         p->buffer.resize(size);
+    return *this;
 }
 
 Stream &MemoryStream::seek(size_t offset)
@@ -123,9 +124,10 @@ size_t MemoryStream::size() const
     return p->buffer.size();
 }
 
-void MemoryStream::truncate(size_t new_size)
+Stream &MemoryStream::truncate(size_t new_size)
 {
     p->buffer.resize(new_size);
     if (p->buffer_pos > new_size)
         p->buffer_pos = new_size;
+    return *this;
 }

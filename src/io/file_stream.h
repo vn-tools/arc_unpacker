@@ -24,7 +24,7 @@ namespace io {
         size_t tell() const override;
         Stream &seek(size_t offset) override;
         Stream &skip(int offset) override;
-        void truncate(size_t new_size) override;
+        Stream &truncate(size_t new_size) override;
 
     protected:
         void read_impl(void *destination, size_t size) override;
