@@ -15,6 +15,9 @@ namespace au {
     using s32 = int32_t;
     using s64 = int64_t;
 
+    using f32 = float;
+    using f64 = double;
+
     struct bstr final
     {
         static const size_t npos;

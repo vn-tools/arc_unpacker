@@ -1,7 +1,16 @@
 #include "test_support/catch.hh"
+#include <limits>
 #include "types.h"
 
 using namespace au;
+
+TEST_CASE("Type properties", "[core][types]")
+{
+    REQUIRE(std::numeric_limits<f32>::is_iec559);
+    REQUIRE(std::numeric_limits<f64>::is_iec559);
+    REQUIRE(std::numeric_limits<f32>::digits == 24);
+    REQUIRE(std::numeric_limits<f64>::digits == 53);
+}
 
 TEST_CASE("bstr()", "[core][types]")
 {
