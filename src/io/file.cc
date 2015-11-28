@@ -38,17 +38,17 @@ File::~File()
 
 bool File::has_extension()
 {
-    return io::path(name).has_extension();
+    return name.has_extension();
 }
 
 bool File::has_extension(const std::string &extension)
 {
-    return io::path(name).has_extension(extension);
+    return name.has_extension(extension);
 }
 
 void File::change_extension(const std::string &new_extension)
 {
-    auto path = io::path(name);
+    auto path = name;
     path.change_extension(new_extension);
     name = path.str();
 }

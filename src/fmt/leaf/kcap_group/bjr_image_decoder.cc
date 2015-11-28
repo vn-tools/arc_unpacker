@@ -17,7 +17,7 @@ res::Image BjrImageDecoder::decode_impl(io::File &input_file) const
     fmt::microsoft::BmpImageDecoder bmp_image_decoder;
     const auto input = bmp_image_decoder.decode(input_file);
 
-    const auto name = io::path(input_file.name).name();
+    const auto name = input_file.name.name();
     u32 key1 = 0x10000;
     u32 key2 = 0;
     u32 key3 = 0;

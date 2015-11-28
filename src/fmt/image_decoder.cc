@@ -20,7 +20,7 @@ void ImageDecoder::unpack(
     auto output_image = decode(input_file);
     auto output_file = util::file_from_image(output_image, input_file.name);
     // discard any directory information
-    output_file->name = io::path(output_file->name).name();
+    output_file->name = output_file->name.name();
     file_saver.save(std::move(output_file));
 }
 

@@ -20,7 +20,7 @@ void AudioDecoder::unpack(
     auto output_audio = decode(input_file);
     auto output_file = util::file_from_audio(output_audio, input_file.name);
     // discard any directory information
-    output_file->name = io::path(output_file->name).name();
+    output_file->name = output_file->name.name();
     file_saver.save(std::move(output_file));
 }
 

@@ -71,6 +71,6 @@ TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
         {}, test_archive_decoder, dummy_file, file_saver, *registry);
 
     REQUIRE(saved_files.size() == 1);
-    REQUIRE(io::path(saved_files[0]->name).name() == "infinity");
+    REQUIRE(saved_files[0]->name.name() == "infinity");
     REQUIRE(saved_files[0]->stream.read_to_eof() == "whatever"_b);
 }

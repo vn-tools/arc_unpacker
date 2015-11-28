@@ -137,7 +137,7 @@ TEST_CASE("Recursive unpacking with nested files", "[fmt_core]")
     });
     fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
     REQUIRE(saved_files.size() == 1);
-    REQUIRE(io::path(saved_files[0]->name) == io::path("image.png"));
+    REQUIRE(saved_files[0]->name == io::path("image.png"));
     REQUIRE(saved_files[0]->stream.read_to_eof() == "image"_b);
 }
 
@@ -164,10 +164,8 @@ TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
     fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
 
     REQUIRE(saved_files.size() == 2);
-    REQUIRE(io::path(saved_files[0]->name)
-        == io::path("archive.arc/nested/text.txt"));
-    REQUIRE(io::path(saved_files[1]->name)
-        == io::path("archive.arc/nested/image.png"));
+    REQUIRE(saved_files[0]->name == io::path("archive.arc/nested/text.txt"));
+    REQUIRE(saved_files[1]->name == io::path("archive.arc/nested/image.png"));
     REQUIRE(saved_files[0]->stream.read_to_eof() == "text"_b);
     REQUIRE(saved_files[1]->stream.read_to_eof() == "image"_b);
 }
@@ -196,7 +194,7 @@ TEST_CASE(
     fmt::unpack_non_recursive({}, archive_decoder, dummy_file, saver);
 
     REQUIRE(saved_files.size() == 1);
-    REQUIRE(io::path(saved_files[0]->name) == io::path("archive.arc"));
+    REQUIRE(saved_files[0]->name == io::path("archive.arc"));
     REQUIRE(saved_files[0]->stream.read_to_eof() == nested_arc_content);
 }
 
@@ -214,9 +212,9 @@ TEST_CASE(
         {
             auto decoder = std::make_unique<TestFileDecoder>();
             decoder->recognition_callback = [&](io::File &f)
-                { names_for_recognition.push_back(io::path(f.name)); };
+                { names_for_recognition.push_back(f.name); };
             decoder->conversion_callback = [&](io::File &f)
-                { names_for_conversion.push_back(io::path(f.name)); };
+                { names_for_conversion.push_back(f.name); };
             return decoder;
         });
 

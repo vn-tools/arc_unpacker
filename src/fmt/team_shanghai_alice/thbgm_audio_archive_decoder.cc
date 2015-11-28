@@ -107,7 +107,7 @@ bool ThbgmAudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     ThbgmAudioArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
-    auto dir = io::path(input_file.name).parent();
+    auto dir = input_file.name.parent();
     auto definitions_file = grab_definitions_file(dir);
 
     if (!definitions_file)

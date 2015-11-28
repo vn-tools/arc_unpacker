@@ -455,7 +455,7 @@ void TfpkArchiveDecoder::preprocess(
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
 
     TfbmImageDecoder tfbm_image_decoder;
-    auto dir = io::path(input_file.name).parent();
+    auto dir = input_file.name.parent();
     for (const auto &path : io::directory_range(dir))
     {
         if (!io::is_regular_file(path))

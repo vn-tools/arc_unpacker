@@ -18,7 +18,7 @@ void FileDecoder::unpack(
 {
     auto output_file = decode(input_file);
     // discard any directory information
-    output_file->name = io::path(output_file->name).name();
+    output_file->name = output_file->name.name();
     file_saver.save(std::move(output_file));
 }
 

@@ -97,8 +97,7 @@ TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
     test_archive_decoder.unpack(dummy_file, file_saver);
 
     REQUIRE(saved_files.size() == 1);
-    REQUIRE(io::path(saved_files[0]->name)
-        == io::path("deeply/nested/file.txt"));
+    REQUIRE(saved_files[0]->name == io::path("deeply/nested/file.txt"));
     REQUIRE(saved_files[0]->stream.read_to_eof() == "abc"_b);
 }
 
