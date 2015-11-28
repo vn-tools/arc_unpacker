@@ -547,114 +547,119 @@ void warc::decrypt_table_data(
         throw err::NotSupportedError("WARC <=1.7 is not implemented");
 }
 
-void warc::decrypt_with_flags1(
-    const Plugin &plugin, bstr &data, const u32 flags)
+warc::FlagCryptFunc warc::decrypt_with_flags1(const u32 key)
 {
-    if (data.size() < 0x400)
-        return;
-    const u32 key = 0xECB2F5B2;
-    u32 k[4] = {key + 1, key + 4, key + 2, key + 3};
-    if ((flags & 0x202) == 0x202)
+    return [=](const Plugin &plugin, bstr &data, const u32 flags)
     {
-        for (const auto i : util::range(0xFF))
+        if (data.size() < 0x400)
+            return;
+        u32 k[4] = {key + 1, key + 4, key + 2, key + 3};
+        if ((flags & 0x202) == 0x202)
         {
-            const u32 j = k[3]
-                ^ (k[3] << 11)
-                ^ k[0]
-                ^ ((k[3] ^ (k[3] << 11) ^ (k[0] >> 11)) >> 8);
-            k[3] = k[2];
-            k[2] = k[1];
-            k[1] = k[0];
-            k[0] = j;
-            const auto idx = j % plugin.flag_crypt.table.size();
-            data[i] ^= plugin.flag_crypt.table[idx];
-        }
-    }
-    if ((flags & 0x204) == 0x204)
-        data.get<u32>()[0x80] ^= key;
-}
-
-void warc::decrypt_with_flags2(
-    const Plugin &plugin, bstr &data, const u32 flags)
-{
-    if (data.size() < 0x200)
-        return;
-    u16 acc = 0;
-    u16 revolve = 0;
-    u16 work;
-    for (const auto i : util::range(0x100))
-    {
-        work = data[i];
-        acc += work >> 1;
-        data[i] = (work >> 1) | revolve;
-        revolve = (work & 1) << 7;
-    }
-    data[0] |= (work & 1) << 7;
-    data.get<u32>()[0x41] ^= acc;
-}
-
-void warc::decrypt_with_flags3(
-    const Plugin &plugin, bstr &data, const u32 flags)
-{
-    if (data.size() < 0x400)
-        return;
-
-    if ((flags & 0x204) == 0x204)
-    {
-        if (data.get<u32>()[0] == 0x718E958D)
-        {
-            io::MemoryStream data_stream(data);
-            data_stream.skip(8);
-
-            const auto size = data_stream.read_u32_le();
-            int base_table[256];
-            int diff_table_buf[257];
-            int *diff_table = &diff_table_buf[1]; // allow accessing index -1
-
-            diff_table[-1] = 0;
-            for (const auto i : util::range(256))
+            for (const auto i : util::range(0xFF))
             {
-                base_table[i] = data_stream.read_u8();
-                diff_table[i] = base_table[i] + diff_table[i - 1];
-            }
-
-            bstr buffer(diff_table[0xFF]);
-            for (const auto i : util::range(256))
-            {
-                const auto offset1 = diff_table[i - 1];
-                const auto offset2 = diff_table[i];
-                for (const auto j : util::range(offset2 - offset1))
-                    buffer[offset1 + j] = i;
-            }
-
-            u32 unk0 = 0;
-            u32 unk1 = 0xFFFFFFFF;
-            u32 unk2 = data_stream.read_u32_be();
-
-            for (const auto i : util::range(size))
-            {
-                const u32 scale = unk1 / buffer.size();
-                const size_t idx = buffer.at((unk2 - unk0) / scale);
-                data[i] = idx;
-                unk0 += diff_table[idx - 1] * scale;
-                unk1 = base_table[idx] * scale;
-                while (!((unk0 ^ (unk1 + unk0)) & 0xFF000000))
-                {
-                    unk0 <<= 8;
-                    unk1 <<= 8;
-                    unk2 = (unk2 << 8) | data_stream.read_u8();
-                }
-                while (unk1 < 0x10000)
-                {
-                    unk0 <<= 8;
-                    unk1 = 0x1000000 - (unk0 & 0xFFFFFF);
-                    unk2 = (unk2 << 8) | data_stream.read_u8();
-                }
+                const u32 j = k[3]
+                    ^ (k[3] << 11)
+                    ^ k[0]
+                    ^ ((k[3] ^ (k[3] << 11) ^ (k[0] >> 11)) >> 8);
+                k[3] = k[2];
+                k[2] = k[1];
+                k[1] = k[0];
+                k[0] = j;
+                const auto idx = j % plugin.flag_crypt.table.size();
+                data[i] ^= plugin.flag_crypt.table[idx];
             }
         }
+        if ((flags & 0x204) == 0x204)
+            data.get<u32>()[0x80] ^= key;
+    };
+}
 
-        data.get<u32>()[0x80] ^= data.size();
-    }
+warc::FlagCryptFunc warc::decrypt_with_flags2()
+{
+    return [](const Plugin &plugin, bstr &data, const u32 flags)
+    {
+        if (data.size() < 0x200)
+            return;
+        u16 acc = 0;
+        u16 revolve = 0;
+        u16 work;
+        for (const auto i : util::range(0x100))
+        {
+            work = data[i];
+            acc += work >> 1;
+            data[i] = (work >> 1) | revolve;
+            revolve = (work & 1) << 7;
+        }
+        data[0] |= (work & 1) << 7;
+        data.get<u32>()[0x41] ^= acc;
+    };
+}
+
+warc::FlagCryptFunc warc::decrypt_with_flags3()
+{
+    return [](const Plugin &plugin, bstr &data, const u32 flags)
+    {
+        if (data.size() < 0x400)
+            return;
+
+        if ((flags & 0x204) == 0x204)
+        {
+            if (data.get<u32>()[0] == 0x718E958D)
+            {
+                io::MemoryStream data_stream(data);
+                data_stream.skip(8);
+
+                const auto size = data_stream.read_u32_le();
+                int base_table[256];
+                int diff_table_buf[257];
+                int *diff_table = &diff_table_buf[1]; // permit access via x[-1]
+
+                diff_table[-1] = 0;
+                for (const auto i : util::range(256))
+                {
+                    base_table[i] = data_stream.read_u8();
+                    diff_table[i] = base_table[i] + diff_table[i - 1];
+                }
+
+                bstr buffer(diff_table[0xFF]);
+                for (const auto i : util::range(256))
+                {
+                    const auto offset1 = diff_table[i - 1];
+                    const auto offset2 = diff_table[i];
+                    for (const auto j : util::range(offset2 - offset1))
+                        buffer[offset1 + j] = i;
+                }
+
+                u32 unk0 = 0;
+                u32 unk1 = 0xFFFFFFFF;
+                u32 unk2 = data_stream.read_u32_be();
+
+                for (const auto i : util::range(size))
+                {
+                    const u32 scale = unk1 / buffer.size();
+                    const size_t idx = buffer.at((unk2 - unk0) / scale);
+                    data[i] = idx;
+                    unk0 += diff_table[idx - 1] * scale;
+                    unk1 = base_table[idx] * scale;
+                    while (!((unk0 ^ (unk1 + unk0)) & 0xFF000000))
+                    {
+                        unk0 <<= 8;
+                        unk1 <<= 8;
+                        unk2 = (unk2 << 8) | data_stream.read_u8();
+                    }
+                    while (unk1 < 0x10000)
+                    {
+                        unk0 <<= 8;
+                        unk1 = 0x1000000 - (unk0 & 0xFFFFFF);
+                        unk2 = (unk2 << 8) | data_stream.read_u8();
+                    }
+                }
+            }
+
+            data.get<u32>()[0x80] ^= data.size();
+        }
+    };
 }
 
 void warc::decrypt_with_crc(const Plugin &plugin, bstr &data)

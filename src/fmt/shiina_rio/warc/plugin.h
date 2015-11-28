@@ -8,6 +8,11 @@ namespace fmt {
 namespace shiina_rio {
 namespace warc {
 
+    struct Plugin;
+
+    using FlagCryptFunc = std::function<void(
+        const Plugin &plugin, bstr &data, const u32 flags)>;
+
     struct Plugin final
     {
         int version;
@@ -27,8 +32,8 @@ namespace warc {
         struct
         {
             bstr table;
-            std::function<void(const Plugin &, bstr &, const u32)> pre;
-            std::function<void(const Plugin &, bstr &, const u32)> post;
+            FlagCryptFunc pre;
+            FlagCryptFunc post;
         } flag_crypt;
     };
 

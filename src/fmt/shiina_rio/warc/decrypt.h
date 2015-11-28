@@ -9,9 +9,11 @@ namespace warc {
 
     void decrypt_essential(
         const Plugin &plugin, const int warc_version, bstr &data);
-    void decrypt_with_flags1(const Plugin &plugin, bstr &data, const u32 flags);
-    void decrypt_with_flags2(const Plugin &plugin, bstr &data, const u32 flags);
-    void decrypt_with_flags3(const Plugin &plugin, bstr &data, const u32 flags);
+
+    FlagCryptFunc decrypt_with_flags1(const u32 key);
+    FlagCryptFunc decrypt_with_flags2();
+    FlagCryptFunc decrypt_with_flags3();
+
     void decrypt_with_crc(const Plugin &plugin, bstr &data);
 
     void decrypt_table_data(

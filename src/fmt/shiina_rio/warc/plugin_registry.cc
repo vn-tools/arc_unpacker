@@ -73,8 +73,8 @@ PluginRegistry::PluginRegistry() : p(new Priv)
         {
             auto plugin = create_plugin(
                 2490, {0x4B535453, 0xA15FA15F, 0, 0, 0});
-            plugin->flag_crypt.pre = warc::decrypt_with_flags1;
-            plugin->flag_crypt.post = warc::decrypt_with_flags1;
+            plugin->flag_crypt.pre = warc::decrypt_with_flags1(0xECB2F5B2);
+            plugin->flag_crypt.post = warc::decrypt_with_flags1(0xECB2F5B2);
             return plugin;
         });
 
@@ -88,7 +88,7 @@ PluginRegistry::PluginRegistry() : p(new Priv)
                 2490, {0xF1AD65AB, 0x55B7E1AD, 0x62B875B8, 0, 0});
             plugin->logo_data = read_file("logo4.jpg").substr(0, 0xBFAE);
             plugin->flag_crypt.pre = nullptr;
-            plugin->flag_crypt.pre = warc::decrypt_with_flags2;
+            plugin->flag_crypt.pre = warc::decrypt_with_flags2();
             return plugin;
         });
 
@@ -100,7 +100,19 @@ PluginRegistry::PluginRegistry() : p(new Priv)
                 2500, {0x6C877787, 0x00007787, 0, 0, 0});
             plugin->logo_data = read_file("logo5.jpg");
             plugin->flag_crypt.pre = nullptr;
-            plugin->flag_crypt.post = warc::decrypt_with_flags3;
+            plugin->flag_crypt.post = warc::decrypt_with_flags3();
+            return plugin;
+        });
+
+    p->plugin_mgr.add(
+        "gh-nurse",
+        "Gohoushi Nurse", []()
+        {
+            auto plugin = create_plugin(
+                2500, {0xEFED26E8, 0x8CF5A1EE, 0x13E9D4EC, 0, 0});
+            plugin->flag_crypt.pre = warc::decrypt_with_flags1(0x90CC9DC2);
+            plugin->flag_crypt.post = warc::decrypt_with_flags1(0x90CC9DC2);
+            plugin->logo_data = read_file("logo6.jpg");
             return plugin;
         });
 }
