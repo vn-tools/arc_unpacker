@@ -48,11 +48,6 @@ namespace au {
             return reinterpret_cast<const T*>(&v[0]);
         }
 
-        template<typename T> T *end()
-        {
-            return get<T>() + v.size() / sizeof(T);
-        }
-
         template<typename T> const T *end() const
         {
             return get<T>() + v.size() / sizeof(T);
@@ -65,7 +60,7 @@ namespace au {
 
         u8 *end()
         {
-            return end<u8>();
+            return get<u8>() + v.size();
         }
 
         const u8 *begin() const
