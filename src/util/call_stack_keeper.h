@@ -1,13 +1,21 @@
 #pragma once
 
+#include <memory>
+
 namespace au {
 namespace util {
 
-    struct CallStackKeeper final
+    class CallStackKeeper final
     {
-        CallStackKeeper();
+    public:
+        CallStackKeeper(const size_t limit = 10);
         ~CallStackKeeper();
-        int current_call_depth() const;
+        void recurse(const std::function<void()> action);
+        bool recursion_limit_reached() const;
+
+    private:
+        struct Priv;
+        std::unique_ptr<Priv> p;
     };
 
 } }

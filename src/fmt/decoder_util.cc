@@ -111,17 +111,18 @@ void fmt::unpack_recursive(
     decoder.parse_cli_options(decoder_arg_parser);
 
     // every file should be passed through registered decoders
-    static const int max_depth = 10;
+    util::CallStackKeeper keeper;
     FileSaverCallback recognition_proxy;
     recognition_proxy.set_callback([&](std::shared_ptr<io::File> original_file)
     {
-        util::CallStackKeeper keeper;
-
         bool bypass_normal_saving = false;
-        if (keeper.current_call_depth() <= max_depth)
+        if (!keeper.recursion_limit_reached())
         {
-            bypass_normal_saving = pass_through_decoders(
-                recognition_proxy, original_file, decoders);
+            keeper.recurse([&]()
+                {
+                    bypass_normal_saving = pass_through_decoders(
+                        recognition_proxy, original_file, decoders);
+                });
         }
 
         if (!bypass_normal_saving)

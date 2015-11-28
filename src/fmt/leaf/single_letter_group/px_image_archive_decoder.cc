@@ -296,12 +296,11 @@ static bstr read_blocks(
     return data;
 }
 
-static void read_meta(io::Stream &input_stream, fmt::ArchiveMeta &meta)
+static void read_meta(
+    util::CallStackKeeper &keeper,
+    io::Stream &input_stream,
+    fmt::ArchiveMeta &meta)
 {
-    util::CallStackKeeper keeper;
-    if (keeper.current_call_depth() > 10)
-        return;
-
     const auto base_offset = input_stream.tell();
     const auto table_offset = input_stream.tell() + 32;
     const auto control = input_stream.seek(base_offset + 16).read_u16_le();
@@ -314,7 +313,10 @@ static void read_meta(io::Stream &input_stream, fmt::ArchiveMeta &meta)
         {
             input_stream.seek(data_offset
                 + input_stream.seek(table_offset + i * 4).read_u32_le());
-            read_meta(input_stream, meta);
+            keeper.recurse([&]()
+                {
+                    read_meta(keeper, input_stream, meta);
+                });
         }
         return;
     }
@@ -359,7 +361,8 @@ std::unique_ptr<fmt::ArchiveMeta>
 {
     input_file.stream.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
-    ::read_meta(input_file.stream, *meta);
+    util::CallStackKeeper keeper;
+    ::read_meta(keeper, input_file.stream, *meta);
     return std::move(meta);
 }
 
