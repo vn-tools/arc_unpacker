@@ -90,17 +90,16 @@ static bstr decompress(const bstr &input, size_t size_orig)
 static int detect_encryption_version(io::File &input_file)
 {
     const auto name = input_file.path.stem();
-    if (name == "th095") return 0;
-    if (name == "th10") return 0;
-    if (name == "th11") return 0;
-    if (name == "th12") return 1;
-    if (name == "th125") return 1;
-    if (name == "th128") return 1;
-    if (name == "th13") return 2;
-    if (name == "th14") return 3;
-    if (name == "th143") return 3;
-    if (name == "th15tr") return 3;
-    if (name == "th15") return 3;
+    if (name == "th095" || name == "th095e") return 0;
+    if (name == "th10"  || name == "th10e")  return 0;
+    if (name == "th11"  || name == "th11e")  return 0;
+    if (name == "th12"  || name == "th12e")  return 1;
+    if (name == "th125" || name == "th125e") return 1;
+    if (name == "th128" || name == "th128e") return 1;
+    if (name == "th13"  || name == "th13e")  return 2;
+    if (name == "th14"  || name == "th14e")  return 3;
+    if (name == "th143" || name == "th143e") return 3;
+    if (name == "th15"  || name == "th15e" || name == "th15tr") return 3;
     return -1;
 }
 
