@@ -75,8 +75,7 @@ bool path::operator ==(const path &other) const
 
 bool path::operator <(const path &other) const
 {
-    // return boost::filesystem::path(p) < boost::filesystem::path(other.p);
-    return p < other.p;
+    return boost::filesystem::path(p) < boost::filesystem::path(other.p);
 }
 
 path path::operator /(const path &other) const
