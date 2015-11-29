@@ -26,7 +26,7 @@ namespace
 
 bool Pak1ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (!input_file.has_extension("dat"))
+    if (!input_file.name.has_extension("dat"))
         return false;
     auto palette_count = input_file.stream.read_u8();
     input_file.stream.skip(palette_count * 512);

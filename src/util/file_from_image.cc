@@ -23,7 +23,7 @@ std::unique_ptr<io::File> util::file_from_image(
 {
     auto output_file = std::make_unique<io::File>();
     output_file->name = name;
-    output_file->change_extension("png");
+    output_file->name.change_extension("png");
 
     png_structp png_ptr = png_create_write_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);

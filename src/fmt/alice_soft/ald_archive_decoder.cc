@@ -23,7 +23,7 @@ static u32 read_24_le(io::Stream &input_stream)
 
 bool AldArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("ald");
+    return input_file.name.has_extension("ald");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>

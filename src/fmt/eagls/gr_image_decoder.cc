@@ -27,7 +27,7 @@ static size_t guess_output_size(const bstr &data)
 
 bool GrImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("gr");
+    return input_file.name.has_extension("gr");
 }
 
 res::Image GrImageDecoder::decode_impl(io::File &input_file) const

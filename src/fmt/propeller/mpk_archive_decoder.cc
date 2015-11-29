@@ -16,7 +16,7 @@ namespace
 
 bool MpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("mpk");
+    return input_file.name.has_extension("mpk");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>

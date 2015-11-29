@@ -9,7 +9,7 @@ static const bstr magic = "BM"_b;
 
 bool BjrImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("bjr");
+    return input_file.name.has_extension("bjr");
 }
 
 res::Image BjrImageDecoder::decode_impl(io::File &input_file) const

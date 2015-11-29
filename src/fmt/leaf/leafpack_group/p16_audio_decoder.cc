@@ -5,7 +5,7 @@ using namespace au::fmt::leaf;
 
 bool P16AudioDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("P16");
+    return input_file.name.has_extension("P16");
 }
 
 res::Audio P16AudioDecoder::decode_impl(io::File &input_file) const

@@ -43,7 +43,7 @@ void Pak2ImageDecoder::add_palette(
 
 bool Pak2ImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("cv2");
+    return input_file.name.has_extension("cv2");
 }
 
 res::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const

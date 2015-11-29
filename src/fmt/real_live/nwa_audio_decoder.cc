@@ -220,7 +220,7 @@ static bstr nwa_read_uncompressed(io::Stream &stream, const NwaHeader &header)
 
 bool NwaAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("nwa");
+    return input_file.name.has_extension("nwa");
 }
 
 res::Audio NwaAudioDecoder::decode_impl(io::File &input_file) const

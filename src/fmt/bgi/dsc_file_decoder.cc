@@ -185,8 +185,8 @@ std::unique_ptr<io::File> DscFileDecoder::decode_impl(
     auto output_file = std::make_unique<io::File>();
     output_file->stream.write(data);
     output_file->name = input_file.name;
-    if (!output_file->has_extension())
-        output_file->change_extension("dat");
+    if (!output_file->name.has_extension())
+        output_file->name.change_extension("dat");
     output_file->guess_extension();
     return output_file;
 }

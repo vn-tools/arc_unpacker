@@ -227,7 +227,7 @@ void DatArchiveDecoder::add_file_name(const std::string &file_name)
 
 bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (!input_file.has_extension("dat"))
+    if (!input_file.name.has_extension("dat"))
         return false;
     auto file_count = read_file_count(input_file.stream);
     return file_count * (8 + 1 + 4 + 4 + 4) < input_file.stream.size();

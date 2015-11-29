@@ -37,6 +37,6 @@ std::unique_ptr<io::File> util::file_from_audio(
     output_file->stream.write_u32_le(output_file->stream.size() - 8);
 
     output_file->name = name;
-    output_file->change_extension("wav");
+    output_file->name.change_extension("wav");
     return output_file;
 }

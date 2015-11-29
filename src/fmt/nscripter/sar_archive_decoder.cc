@@ -15,7 +15,7 @@ namespace
 
 bool SarArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("sar");
+    return input_file.name.has_extension("sar");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>

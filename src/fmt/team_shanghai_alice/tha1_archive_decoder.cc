@@ -106,7 +106,7 @@ static int detect_encryption_version(io::File &input_file)
 
 bool Tha1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (!input_file.has_extension("dat"))
+    if (!input_file.name.has_extension("dat"))
         return false;
     auto encryption_version = detect_encryption_version(input_file);
     if (encryption_version < 0)

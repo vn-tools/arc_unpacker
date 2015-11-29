@@ -8,7 +8,7 @@ static const bstr magic = "DW"_b;
 
 bool DwvAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("dwv")
+    return input_file.name.has_extension("dwv")
         && input_file.stream.seek(0).read(magic.size()) == magic;
 }
 

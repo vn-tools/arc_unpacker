@@ -49,7 +49,7 @@ IDecoder::NamingStrategy TestArchiveDecoder::naming_strategy() const
 
 bool TestArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("archive");
+    return input_file.name.has_extension("archive");
 }
 
 std::unique_ptr<ArchiveMeta>

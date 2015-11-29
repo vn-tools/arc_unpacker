@@ -7,7 +7,7 @@ using namespace au::fmt::leaf;
 
 bool LfbImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("lfb");
+    return input_file.name.has_extension("lfb");
 }
 
 res::Image LfbImageDecoder::decode_impl(io::File &input_file) const

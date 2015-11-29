@@ -96,7 +96,7 @@ static bstr decompress_alpha(const bstr &input, const size_t size_hint)
 
 bool AbmImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("abm")
+    return input_file.name.has_extension("abm")
         && input_file.stream.read(magic.size()) == magic;
 }
 

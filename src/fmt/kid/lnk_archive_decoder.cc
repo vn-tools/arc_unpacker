@@ -56,11 +56,11 @@ std::unique_ptr<io::File> LnkArchiveDecoder::read_file_impl(
     auto data = input_file.stream.read(entry->size);
 
     int key_pos = -1;
-    if (output_file->has_extension(".wav"))
+    if (output_file->name.has_extension(".wav"))
         key_pos = 0;
-    else if (output_file->has_extension(".jpg"))
+    else if (output_file->name.has_extension(".jpg"))
         key_pos = 0x1100;
-    else if (output_file->has_extension(".scr"))
+    else if (output_file->name.has_extension(".scr"))
         key_pos = 0x1000;
 
     if (key_pos >= 0 && key_pos < static_cast<int>(entry->size))

@@ -15,7 +15,7 @@ namespace
 
 bool Pak2ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (!input_file.has_extension("pak"))
+    if (!input_file.name.has_extension("pak"))
         return false;
     const auto file_count = input_file.stream.seek(0x1C).read_u16_le();
     if (file_count < 2)

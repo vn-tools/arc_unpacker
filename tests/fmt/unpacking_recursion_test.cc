@@ -89,7 +89,7 @@ std::unique_ptr<io::File> TestFileDecoder::decode_impl(
     auto output_file = std::make_unique<io::File>();
     output_file->stream.write("image"_b);
     output_file->name = input_file.name;
-    output_file->change_extension("png");
+    output_file->name.change_extension("png");
     return output_file;
 }
 

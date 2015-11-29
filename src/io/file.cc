@@ -36,23 +36,6 @@ File::~File()
     delete &stream;
 }
 
-bool File::has_extension()
-{
-    return name.has_extension();
-}
-
-bool File::has_extension(const std::string &extension)
-{
-    return name.has_extension(extension);
-}
-
-void File::change_extension(const std::string &new_extension)
-{
-    auto path = name;
-    path.change_extension(new_extension);
-    name = path.str();
-}
-
 void File::guess_extension()
 {
     const size_t old_pos = stream.tell();
@@ -65,7 +48,7 @@ void File::guess_extension()
             continue;
         if (stream.read(magic.size()) != magic)
             continue;
-        change_extension(ext);
+        name.change_extension(ext);
         stream.seek(old_pos);
         return;
     }

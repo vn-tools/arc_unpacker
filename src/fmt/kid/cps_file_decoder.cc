@@ -63,7 +63,7 @@ std::unique_ptr<io::File> CpsFileDecoder::decode_impl(
     auto output_file = std::make_unique<io::File>();
     output_file->stream.write(data);
     output_file->name = input_file.name;
-    output_file->change_extension("prt");
+    output_file->name.change_extension("prt");
     return output_file;
 }
 

@@ -17,7 +17,7 @@ namespace
 
 bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (!input_file.has_extension("arc"))
+    if (!input_file.name.has_extension("arc"))
         return false;
     const auto meta = read_meta_impl(input_file);
     if (meta->entries.empty())

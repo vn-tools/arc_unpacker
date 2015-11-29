@@ -31,7 +31,7 @@ static io::path get_path_to_index(const io::path &path_to_data)
 bool PakArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return io::exists(get_path_to_index(input_file.name))
-        && input_file.has_extension("pak");
+        && input_file.name.has_extension("pak");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>

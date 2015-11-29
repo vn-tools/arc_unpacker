@@ -22,7 +22,7 @@ std::unique_ptr<io::File> BgiAudioDecoder::decode_impl(
     const auto data = input_file.stream.read(input_file_size);
 
     auto output_file = std::make_unique<io::File>(input_file.name, data);
-    output_file->change_extension("ogg");
+    output_file->name.change_extension("ogg");
     return output_file;
 }
 

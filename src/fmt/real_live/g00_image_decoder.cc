@@ -159,7 +159,7 @@ static res::Image decode_v2(io::File &input_file, size_t width, size_t height)
 
 bool G00ImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("g00");
+    return input_file.name.has_extension("g00");
 }
 
 res::Image G00ImageDecoder::decode_impl(io::File &input_file) const

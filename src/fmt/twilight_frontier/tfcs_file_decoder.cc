@@ -37,7 +37,7 @@ std::unique_ptr<io::File> TfcsFileDecoder::decode_impl(
 
     auto output_file = std::make_unique<io::File>();
     output_file->name = input_file.name;
-    output_file->change_extension("csv");
+    output_file->name.change_extension("csv");
 
     size_t row_count = uncompressed_stream.read_u32_le();
     for (size_t i : util::range(row_count))

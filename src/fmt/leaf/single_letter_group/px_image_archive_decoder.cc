@@ -353,7 +353,7 @@ static void read_meta(
 
 bool PxImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("px");
+    return input_file.name.has_extension("px");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>

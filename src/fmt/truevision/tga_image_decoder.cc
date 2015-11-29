@@ -111,7 +111,7 @@ bool TgaImageDecoder::is_recognized_impl(io::File &input_file) const
     // contain the magic, but checking for this causes conflicts with certain
     // archives that contain TGA files at the end (they understandably get
     // mistaken for TGA footer).
-    return input_file.has_extension("tga");
+    return input_file.name.has_extension("tga");
 }
 
 res::Image TgaImageDecoder::decode_impl(io::File &input_file) const

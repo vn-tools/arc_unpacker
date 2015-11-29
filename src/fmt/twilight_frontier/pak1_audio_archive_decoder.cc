@@ -23,7 +23,7 @@ namespace
 
 bool Pak1AudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (!input_file.has_extension("dat"))
+    if (!input_file.name.has_extension("dat"))
         return false;
     size_t file_count = input_file.stream.read_u32_le();
     for (auto i : util::range(file_count))

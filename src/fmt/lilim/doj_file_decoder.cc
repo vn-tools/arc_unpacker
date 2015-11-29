@@ -10,7 +10,7 @@ static const bstr magic2 = "DD"_b;
 
 bool DojFileDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.has_extension("doj")
+    return input_file.name.has_extension("doj")
         && input_file.stream.read(magic1.size()) == magic1;
 }
 
