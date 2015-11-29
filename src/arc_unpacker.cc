@@ -261,8 +261,10 @@ int ArcUnpacker::Priv::run() const
 
 void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, io::File &file) const
 {
-    const auto path = file.path;
-    const auto base_name = path.stem() + "~" + path.extension();
+    auto tmp_path = file.path;
+    tmp_path.change_stem(tmp_path.stem() + "~");
+    const auto base_name = tmp_path.name();
+
     const FileSaverHdd saver(options.output_dir, options.overwrite);
     const FileSaverCallback saver_proxy(
         [&](std::shared_ptr<io::File> saved_file)

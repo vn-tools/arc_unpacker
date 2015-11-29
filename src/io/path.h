@@ -24,6 +24,7 @@ namespace io {
         bool has_extension() const;
         bool has_extension(const std::string &extension) const;
         void change_extension(const std::string &new_extension);
+        void change_stem(const std::string &new_extension);
 
         bool operator ==(const path &other) const;
         bool operator <(const path &other) const;

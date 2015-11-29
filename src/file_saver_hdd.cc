@@ -30,9 +30,7 @@ io::path FileSaverHdd::Priv::make_path_unique(const io::path &path)
     while (paths.find(new_path) != paths.end()
         || (!overwrite && io::exists(new_path)))
     {
-        const auto suffix = util::format("(%d)", i++);
-        new_path = path.parent();
-        new_path /= io::path(path.stem() + suffix + path.extension());
+        new_path.change_stem(path.stem() + util::format("(%d)", i++));
     }
     paths.insert(new_path);
     return new_path;

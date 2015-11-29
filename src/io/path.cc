@@ -95,6 +95,11 @@ bool path::has_extension(const std::string &target_extension) const
     return boost::iequals(extension(), normalize_extension(target_extension));
 }
 
+void path::change_stem(const std::string &new_stem)
+{
+    p = (parent() / (new_stem + extension())).str();
+}
+
 void path::change_extension(const std::string &new_extension)
 {
     if (name().empty() || stem().empty() || name() == "." || name() == "..")
