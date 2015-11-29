@@ -67,7 +67,7 @@ std::unique_ptr<io::File> Pak2CompressedFileDecoder::decode_impl(
     const auto size_orig = input_file.stream.seek(24).read_u32_le();
     const auto data = input_file.stream.seek(36).read_to_eof();
     return std::make_unique<io::File>(
-        input_file.name, decompress(data, size_orig));
+        input_file.path, decompress(data, size_orig));
 }
 
 static auto dummy

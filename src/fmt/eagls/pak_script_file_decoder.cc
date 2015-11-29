@@ -9,7 +9,7 @@ static const bstr key = "EAGLS_SYSTEM"_b;
 
 bool PakScriptFileDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (!input_file.name.has_extension("dat")
+    if (!input_file.path.has_extension("dat")
         || input_file.stream.size() < 3600)
     {
         return false;
@@ -47,8 +47,8 @@ std::unique_ptr<io::File> PakScriptFileDecoder::decode_impl(
     for (auto i : util::range(0, data.size(), 2))
         data[i] ^= key[lcg.next() % key.size()];
 
-    auto output_file = std::make_unique<io::File>(input_file.name, data);
-    output_file->name.change_extension("txt");
+    auto output_file = std::make_unique<io::File>(input_file.path, data);
+    output_file->path.change_extension("txt");
     return output_file;
 }
 

@@ -89,24 +89,24 @@ static bstr decompress(const bstr &input, size_t size_orig)
 
 static int detect_encryption_version(io::File &input_file)
 {
-    const auto name = input_file.name.str();
-    if (name.find("th095.") != std::string::npos) return 0;
-    if (name.find("th10.") != std::string::npos) return 0;
-    if (name.find("th11.") != std::string::npos) return 0;
-    if (name.find("th12.") != std::string::npos) return 1;
-    if (name.find("th125.") != std::string::npos) return 1;
-    if (name.find("th128.") != std::string::npos) return 1;
-    if (name.find("th13.") != std::string::npos) return 2;
-    if (name.find("th14.") != std::string::npos) return 3;
-    if (name.find("th143.") != std::string::npos) return 3;
-    if (name.find("th15tr.") != std::string::npos) return 3;
-    if (name.find("th15.") != std::string::npos) return 3;
+    const auto name = input_file.path.stem();
+    if (name == "th095") return 0;
+    if (name == "th10") return 0;
+    if (name == "th11") return 0;
+    if (name == "th12") return 1;
+    if (name == "th125") return 1;
+    if (name == "th128") return 1;
+    if (name == "th13") return 2;
+    if (name == "th14") return 3;
+    if (name == "th143") return 3;
+    if (name == "th15tr") return 3;
+    if (name == "th15") return 3;
     return -1;
 }
 
 bool Tha1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (!input_file.name.has_extension("dat"))
+    if (!input_file.path.has_extension("dat"))
         return false;
     auto encryption_version = detect_encryption_version(input_file);
     if (encryption_version < 0)

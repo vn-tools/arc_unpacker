@@ -50,17 +50,17 @@ std::unique_ptr<io::File> LnkArchiveDecoder::read_file_impl(
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto output_file = std::make_unique<io::File>();
-    output_file->name = entry->name;
+    output_file->path = entry->name;
 
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
 
     int key_pos = -1;
-    if (output_file->name.has_extension(".wav"))
+    if (output_file->path.has_extension(".wav"))
         key_pos = 0;
-    else if (output_file->name.has_extension(".jpg"))
+    else if (output_file->path.has_extension(".jpg"))
         key_pos = 0x1100;
-    else if (output_file->name.has_extension(".scr"))
+    else if (output_file->path.has_extension(".scr"))
         key_pos = 0x1000;
 
     if (key_pos >= 0 && key_pos < static_cast<int>(entry->size))

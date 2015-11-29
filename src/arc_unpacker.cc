@@ -261,14 +261,14 @@ int ArcUnpacker::Priv::run() const
 
 void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, io::File &file) const
 {
-    const auto path = file.name;
+    const auto path = file.path;
     const auto base_name = path.stem() + "~" + path.extension();
     const FileSaverHdd saver(options.output_dir, options.overwrite);
     const FileSaverCallback saver_proxy(
         [&](std::shared_ptr<io::File> saved_file)
         {
-            saved_file->name = fmt::decorate_path(
-                decoder.naming_strategy(), base_name, saved_file->name);
+            saved_file->path = fmt::decorate_path(
+                decoder.naming_strategy(), base_name, saved_file->path);
             saver.save(saved_file);
         });
 
@@ -279,7 +279,7 @@ void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, io::File &file) const
 
 bool ArcUnpacker::Priv::guess_decoder_and_unpack(io::File &file) const
 {
-    Log.info(util::format("Unpacking %s...\n", file.name.str().c_str()));
+    Log.info(util::format("Unpacking %s...\n", file.path.str().c_str()));
     const auto decoder = options.format.empty()
         ? guess_decoder(file, registry)
         : registry.create_decoder(options.format);

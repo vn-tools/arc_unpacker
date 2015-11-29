@@ -54,7 +54,7 @@ static bstr decompress(const bstr &input, size_t size_original)
 
 bool MgrArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.has_extension("mgr");
+    return input_file.path.has_extension("mgr");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>

@@ -142,10 +142,10 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     auto data = input_file.stream.read(entry->size);
 
     auto output_file = std::make_unique<io::File>();
-    output_file->name = entry->name;
+    output_file->path = entry->name;
 
-    if (output_file->name.has_extension("wsc")
-        || output_file->name.has_extension("scr"))
+    if (output_file->path.has_extension("wsc")
+        || output_file->path.has_extension("scr"))
     {
         for (auto &c : data)
             c = (c >> 2) | (c << 6);

@@ -82,7 +82,7 @@ static res::Image decode_png(io::File &input_file, Header &header)
     data[2] = 'N';
     data[3] = 'G';
 
-    io::File png_file(input_file.name, data);
+    io::File png_file(input_file.path, data);
     const fmt::png::PngImageDecoder png_image_decoder;
     return png_image_decoder.decode(png_file);
 }

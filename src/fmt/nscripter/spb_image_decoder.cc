@@ -86,7 +86,7 @@ static res::Image decode_image(
 
 bool SpbImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (!input_file.name.has_extension("bmp"))
+    if (!input_file.path.has_extension("bmp"))
         return false;
     const auto width = input_file.stream.read_u16_be();
     const auto height = input_file.stream.read_u16_be();

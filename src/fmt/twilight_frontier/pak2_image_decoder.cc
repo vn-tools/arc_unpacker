@@ -43,7 +43,7 @@ void Pak2ImageDecoder::add_palette(
 
 bool Pak2ImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.has_extension("cv2");
+    return input_file.path.has_extension("cv2");
 }
 
 res::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
@@ -58,7 +58,7 @@ res::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
     std::shared_ptr<res::Palette> palette;
     if (bit_depth == 8)
     {
-        const auto path = input_file.name.parent()
+        const auto path = input_file.path.parent()
             / util::format("palette%03d.pal", palette_number);
 
         auto it = p->palette_map.find(path);

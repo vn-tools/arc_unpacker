@@ -10,7 +10,7 @@ static const bstr magic2 = "DD"_b;
 
 bool DojFileDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.has_extension("doj")
+    return input_file.path.has_extension("doj")
         && input_file.stream.read(magic1.size()) == magic1;
 }
 
@@ -29,7 +29,7 @@ std::unique_ptr<io::File> DojFileDecoder::decode_impl(
     const auto data = sysd_decompress(input_file.stream.read(size_comp));
     if (data.size() != size_orig)
         throw err::BadDataSizeError();
-    return std::make_unique<io::File>(input_file.name, data);
+    return std::make_unique<io::File>(input_file.path, data);
 }
 
 static auto dummy = fmt::register_fmt<DojFileDecoder>("lilim/doj");

@@ -16,7 +16,7 @@ namespace
 
 bool BinArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.has_extension("bin");
+    return input_file.path.has_extension("bin");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>

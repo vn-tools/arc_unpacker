@@ -8,7 +8,7 @@ static const bstr magic = "bw\x20\x20"_b;
 
 bool WAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (!input_file.name.has_extension("w"))
+    if (!input_file.path.has_extension("w"))
         return false;
     const auto data_size = input_file.stream.seek(10).read_u32_le();
     return data_size + 18 == input_file.stream.size();

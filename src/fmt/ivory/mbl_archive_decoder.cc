@@ -115,7 +115,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto meta = std::make_unique<ArchiveMetaImpl>();
     const auto version = p->recognizer.tell_version(input_file);
     meta->encrypted
-        = input_file.name.name().find("mg_data") != std::string::npos;
+        = input_file.path.name().find("mg_data") != std::string::npos;
     meta->decrypt = p->plugin_mgr.is_set() ? p->plugin_mgr.get() : nullptr;
     input_file.stream.seek(0);
 

@@ -18,11 +18,11 @@ namespace tests {
     void compare_images(
         io::File &expected_file,
         io::File &actual_file,
-        const bool compare_file_names);
+        const bool compare_file_paths);
 
     void compare_images(
         const std::vector<std::shared_ptr<io::File>> &expected_images,
         const std::vector<std::shared_ptr<io::File>> &actual_images,
-        const bool compare_file_names);
+        const bool compare_file_paths);
 
 } }

@@ -25,7 +25,7 @@ std::unique_ptr<io::File> AffFileDecoder::decode_impl(
     auto data = input_file.stream.read_to_eof();
     for (const auto i : util::range(std::min<size_t>(data.size(), 64)))
         data[i] ^= key[i % key.size()];
-    auto output_file = std::make_unique<io::File>(input_file.name, data);
+    auto output_file = std::make_unique<io::File>(input_file.path, data);
     output_file->guess_extension();
     return output_file;
 }

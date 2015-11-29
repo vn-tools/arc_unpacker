@@ -51,7 +51,7 @@ void FileSaverHdd::save(std::shared_ptr<io::File> file) const
 {
     try
     {
-        io::path full_path = p->make_path_unique(p->output_dir / file->name);
+        io::path full_path = p->make_path_unique(p->output_dir / file->path);
 
         Log.info("Saving to " + full_path.str() + "... ");
         io::create_directories(full_path.parent());

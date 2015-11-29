@@ -5,7 +5,7 @@ using namespace au;
 using namespace au::util;
 
 std::unique_ptr<io::File> util::file_from_audio(
-    const res::Audio &audio, const io::path &name)
+    const res::Audio &audio, const io::path &path)
 {
     const auto block_align = audio.channel_count * audio.bits_per_sample / 8;
     const auto byte_rate = audio.sample_rate * block_align;
@@ -36,7 +36,7 @@ std::unique_ptr<io::File> util::file_from_audio(
     output_file->stream.seek(4);
     output_file->stream.write_u32_le(output_file->stream.size() - 8);
 
-    output_file->name = name;
-    output_file->name.change_extension("wav");
+    output_file->path = path;
+    output_file->path.change_extension("wav");
     return output_file;
 }

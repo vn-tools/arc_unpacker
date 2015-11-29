@@ -61,9 +61,9 @@ std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(
 
     std::string prefix;
     if (naming_strategy() == IDecoder::NamingStrategy::Sibling)
-        prefix = input_file.name.stem();
+        prefix = input_file.path.stem();
     else if (naming_strategy() == IDecoder::NamingStrategy::Root)
-        prefix = input_file.name.str();
+        prefix = input_file.path.str();
 
     if (prefix.empty())
         prefix = "unk";

@@ -5,7 +5,7 @@ using namespace au::fmt::twilight_frontier;
 
 bool Pak2AudioDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.has_extension("cv3");
+    return input_file.path.has_extension("cv3");
 }
 
 res::Audio Pak2AudioDecoder::decode_impl(io::File &input_file) const

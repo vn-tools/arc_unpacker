@@ -96,7 +96,7 @@ std::unique_ptr<io::File> LndFileDecoder::decode_impl(
     input_file.stream.skip(4);
     auto data = input_file.stream.read_to_eof();
     data = decompress_raw_data(data, size_orig);
-    return std::make_unique<io::File>(input_file.name, data);
+    return std::make_unique<io::File>(input_file.path, data);
 }
 
 static auto dummy = fmt::register_fmt<LndFileDecoder>("kid/lnd");

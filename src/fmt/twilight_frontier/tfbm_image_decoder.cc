@@ -71,7 +71,7 @@ res::Image TfbmImageDecoder::decode_impl(io::File &input_file) const
     if (bit_depth == 8)
     {
         u32 palette_number = 0;
-        const auto path = input_file.name.parent()
+        const auto path = input_file.path.parent()
             / util::format("palette%03d.bmp", palette_number);
 
         auto it = p->palette_map.find(path.str());

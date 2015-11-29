@@ -49,7 +49,7 @@ IDecoder::NamingStrategy TestArchiveDecoder::naming_strategy() const
 
 bool TestArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.has_extension("archive");
+    return input_file.path.has_extension("archive");
 }
 
 std::unique_ptr<ArchiveMeta>
@@ -82,7 +82,7 @@ TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
     const TestArchiveDecoder test_archive_decoder(
         IDecoder::NamingStrategy::Child);
     io::File dummy_file;
-    dummy_file.name = "test.archive";
+    dummy_file.path = "test.archive";
     dummy_file.stream.write("deeply/nested/file.txt"_b);
     dummy_file.stream.write_u8(0);
     dummy_file.stream.write_u32_le(3);
@@ -97,7 +97,7 @@ TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
     test_archive_decoder.unpack(dummy_file, file_saver);
 
     REQUIRE(saved_files.size() == 1);
-    REQUIRE(saved_files[0]->name == io::path("deeply/nested/file.txt"));
+    REQUIRE(saved_files[0]->path == io::path("deeply/nested/file.txt"));
     REQUIRE(saved_files[0]->stream.read_to_eof() == "abc"_b);
 }
 
@@ -111,19 +111,19 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
         SECTION("Just one file")
         {
             io::File dummy_file;
-            dummy_file.name = "path/test.archive";
+            dummy_file.path = "path/test.archive";
             dummy_file.stream.write_u8(0);
             dummy_file.stream.write_u32_le(0);
 
             auto saved_files = tests::unpack(test_archive_decoder, dummy_file);
             REQUIRE(saved_files.size() == 1);
-            REQUIRE(saved_files[0]->name.name() == "unk");
+            REQUIRE(saved_files[0]->path.name() == "unk");
         }
 
         SECTION("Multiple files")
         {
             io::File dummy_file;
-            dummy_file.name = "path/test.archive";
+            dummy_file.path = "path/test.archive";
             dummy_file.stream.write_u8(0);
             dummy_file.stream.write_u32_le(0);
             dummy_file.stream.write_u8(0);
@@ -131,14 +131,14 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
 
             auto saved_files = tests::unpack(test_archive_decoder, dummy_file);
             REQUIRE(saved_files.size() == 2);
-            REQUIRE(saved_files[0]->name.str() == "unk_000");
-            REQUIRE(saved_files[1]->name.str() == "unk_001");
+            REQUIRE(saved_files[0]->path.str() == "unk_000");
+            REQUIRE(saved_files[1]->path.str() == "unk_001");
         }
 
         SECTION("Mixed nameless and named files")
         {
             io::File dummy_file;
-            dummy_file.name = "path/test.archive";
+            dummy_file.path = "path/test.archive";
             dummy_file.stream.write_u8(0);
             dummy_file.stream.write_u32_le(0);
             dummy_file.stream.write("named"_b);
@@ -149,9 +149,9 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
 
             auto saved_files = tests::unpack(test_archive_decoder, dummy_file);
             REQUIRE(saved_files.size() == 3);
-            REQUIRE(saved_files[0]->name.str() == "unk_000");
-            REQUIRE(saved_files[1]->name.str() == "named");
-            REQUIRE(saved_files[2]->name.str() == "unk_001");
+            REQUIRE(saved_files[0]->path.str() == "unk_000");
+            REQUIRE(saved_files[1]->path.str() == "named");
+            REQUIRE(saved_files[2]->path.str() == "unk_001");
         }
     }
 
@@ -163,19 +163,19 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
         SECTION("Just one file")
         {
             io::File dummy_file;
-            dummy_file.name = "path/test.archive";
+            dummy_file.path = "path/test.archive";
             dummy_file.stream.write_u8(0);
             dummy_file.stream.write_u32_le(0);
 
             auto saved_files = tests::unpack(test_archive_decoder, dummy_file);
             REQUIRE(saved_files.size() == 1);
-            REQUIRE(saved_files[0]->name.name() == "test.archive");
+            REQUIRE(saved_files[0]->path.name() == "test.archive");
         }
 
         SECTION("Multiple files")
         {
             io::File dummy_file;
-            dummy_file.name = "path/test.archive";
+            dummy_file.path = "path/test.archive";
             dummy_file.stream.write_u8(0);
             dummy_file.stream.write_u32_le(0);
             dummy_file.stream.write_u8(0);
@@ -183,14 +183,14 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
 
             auto saved_files = tests::unpack(test_archive_decoder, dummy_file);
             REQUIRE(saved_files.size() == 2);
-            REQUIRE(saved_files[0]->name.str() == "path/test.archive_000");
-            REQUIRE(saved_files[1]->name.str() == "path/test.archive_001");
+            REQUIRE(saved_files[0]->path.str() == "path/test.archive_000");
+            REQUIRE(saved_files[1]->path.str() == "path/test.archive_001");
         }
 
         SECTION("Mixed nameless and named files")
         {
             io::File dummy_file;
-            dummy_file.name = "path/test.archive";
+            dummy_file.path = "path/test.archive";
             dummy_file.stream.write_u8(0);
             dummy_file.stream.write_u32_le(0);
             dummy_file.stream.write("named"_b);
@@ -201,9 +201,9 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
 
             auto saved_files = tests::unpack(test_archive_decoder, dummy_file);
             REQUIRE(saved_files.size() == 3);
-            REQUIRE(saved_files[0]->name.str() == "path/test.archive_000");
-            REQUIRE(saved_files[1]->name.str() == "named");
-            REQUIRE(saved_files[2]->name.str() == "path/test.archive_001");
+            REQUIRE(saved_files[0]->path.str() == "path/test.archive_000");
+            REQUIRE(saved_files[1]->path.str() == "named");
+            REQUIRE(saved_files[2]->path.str() == "path/test.archive_001");
         }
     }
 
@@ -215,19 +215,19 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
         SECTION("Just one file")
         {
             io::File dummy_file;
-            dummy_file.name = "path/test.archive";
+            dummy_file.path = "path/test.archive";
             dummy_file.stream.write_u8(0);
             dummy_file.stream.write_u32_le(0);
 
             auto saved_files = tests::unpack(test_archive_decoder, dummy_file);
             REQUIRE(saved_files.size() == 1);
-            REQUIRE(saved_files[0]->name.name() == "test");
+            REQUIRE(saved_files[0]->path.name() == "test");
         }
 
         SECTION("Multiple files")
         {
             io::File dummy_file;
-            dummy_file.name = "path/test.archive";
+            dummy_file.path = "path/test.archive";
             dummy_file.stream.write_u8(0);
             dummy_file.stream.write_u32_le(0);
             dummy_file.stream.write_u8(0);
@@ -235,14 +235,14 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
 
             auto saved_files = tests::unpack(test_archive_decoder, dummy_file);
             REQUIRE(saved_files.size() == 2);
-            REQUIRE(saved_files[0]->name.str() == "test_000");
-            REQUIRE(saved_files[1]->name.str() == "test_001");
+            REQUIRE(saved_files[0]->path.str() == "test_000");
+            REQUIRE(saved_files[1]->path.str() == "test_001");
         }
 
         SECTION("Mixed nameless and named files")
         {
             io::File dummy_file;
-            dummy_file.name = "path/test.archive";
+            dummy_file.path = "path/test.archive";
             dummy_file.stream.write_u8(0);
             dummy_file.stream.write_u32_le(0);
             dummy_file.stream.write("named"_b);
@@ -253,9 +253,9 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
 
             auto saved_files = tests::unpack(test_archive_decoder, dummy_file);
             REQUIRE(saved_files.size() == 3);
-            REQUIRE(saved_files[0]->name.str() == "test_000");
-            REQUIRE(saved_files[1]->name.str() == "named");
-            REQUIRE(saved_files[2]->name.str() == "test_001");
+            REQUIRE(saved_files[0]->path.str() == "test_000");
+            REQUIRE(saved_files[1]->path.str() == "named");
+            REQUIRE(saved_files[2]->path.str() == "test_001");
         }
     }
 }

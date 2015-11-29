@@ -26,7 +26,7 @@ static void decrypt(bstr &data)
 
 bool NpaSgArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (!input_file.name.has_extension("npa"))
+    if (!input_file.path.has_extension("npa"))
         return false;
     size_t table_size = input_file.stream.read_u32_le();
     return table_size < input_file.stream.size();

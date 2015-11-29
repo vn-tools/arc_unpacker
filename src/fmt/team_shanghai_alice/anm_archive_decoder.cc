@@ -175,7 +175,7 @@ IDecoder::NamingStrategy AnmArchiveDecoder::naming_strategy() const
 
 bool AnmArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.has_extension("anm");
+    return input_file.path.has_extension("anm");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>

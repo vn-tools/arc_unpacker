@@ -21,7 +21,7 @@ std::unique_ptr<io::File> BgmFileDecoder::decode_impl(
 
     auto output_file = std::make_unique<io::File>();
     output_file->stream.write(input_file.stream.read_to_eof());
-    output_file->name = input_file.name;
+    output_file->path = input_file.path;
     output_file->guess_extension();
     return output_file;
 }

@@ -179,7 +179,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    meta->filter.reset(new Xp3Filter(input_file.name));
+    meta->filter.reset(new Xp3Filter(input_file.path));
     p->filter_registry.set_decoder(*meta->filter);
 
     while (table_stream.tell() < table_stream.size())

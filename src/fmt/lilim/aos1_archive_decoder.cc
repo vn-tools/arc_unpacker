@@ -17,7 +17,7 @@ namespace
 bool Aos1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
-    return input_file.name.has_extension("aos")
+    return input_file.path.has_extension("aos")
         && input_file.stream.read_u32_le() > 0;
 }
 

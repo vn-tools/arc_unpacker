@@ -19,11 +19,11 @@ static void flush_handler(png_structp)
 }
 
 std::unique_ptr<io::File> util::file_from_image(
-    const res::Image &image, const io::path &name)
+    const res::Image &image, const io::path &path)
 {
     auto output_file = std::make_unique<io::File>();
-    output_file->name = name;
-    output_file->name.change_extension("png");
+    output_file->path = path;
+    output_file->path.change_extension("png");
 
     png_structp png_ptr = png_create_write_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);

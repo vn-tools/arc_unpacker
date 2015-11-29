@@ -21,8 +21,8 @@ std::unique_ptr<io::File> BgiAudioDecoder::decode_impl(
     input_file.stream.seek(header_size);
     const auto data = input_file.stream.read(input_file_size);
 
-    auto output_file = std::make_unique<io::File>(input_file.name, data);
-    output_file->name.change_extension("ogg");
+    auto output_file = std::make_unique<io::File>(input_file.path, data);
+    output_file->path.change_extension("ogg");
     return output_file;
 }
 

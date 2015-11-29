@@ -59,7 +59,7 @@ static void write_ogg_page(io::Stream &output, const OggPage &page)
 
 bool PackedOggAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (!input_file.name.has_extension("wav"))
+    if (!input_file.path.has_extension("wav"))
         return false;
     input_file.stream.seek(16);
     input_file.stream.skip(input_file.stream.read_u32_le());
@@ -131,7 +131,7 @@ std::unique_ptr<io::File> PackedOggAudioDecoder::decode_impl(
 
     auto output_file = std::make_unique<io::File>();
     rewrite_ogg_stream(input, output_file->stream);
-    output_file->name = input_file.name;
+    output_file->path = input_file.path;
     output_file->guess_extension();
     return output_file;
 }

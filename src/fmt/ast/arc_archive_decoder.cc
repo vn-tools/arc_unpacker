@@ -79,9 +79,6 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
 
-    auto output_file = std::make_unique<io::File>();
-    output_file->name = entry->name;
-
     if (meta->version == 2)
     {
         if (entry->size_comp != entry->size_orig)
@@ -96,8 +93,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
             xor_data(data);
     }
 
-    output_file->stream.write(data);
-    return output_file;
+    return std::make_unique<io::File>(entry->name, data);
 }
 
 static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("ast/arc");

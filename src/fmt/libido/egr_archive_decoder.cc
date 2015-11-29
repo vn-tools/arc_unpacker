@@ -18,7 +18,7 @@ namespace
 
 bool EgrArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.has_extension("egr");
+    return input_file.path.has_extension("egr");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>

@@ -77,26 +77,25 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto output_file = std::make_unique<io::File>();
-    output_file->name = entry->name;
+    output_file->path = entry->name;
 
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
 
-    const auto name = output_file->name.str();
-    if (name.find("musicroom.dat") != std::string::npos)
+    if (output_file->path.name() == "musicroom.dat")
     {
         decrypt(data, 0x5C, 0x5A, 0x3D);
-        output_file->name.change_extension(".txt");
+        output_file->path.change_extension(".txt");
     }
-    else if (name.find(".sce") != std::string::npos)
+    else if (output_file->path.has_extension("sce"))
     {
         decrypt(data, 0x63, 0x62, 0x42);
-        output_file->name.change_extension(".txt");
+        output_file->path.change_extension(".txt");
     }
-    else if (name.find("cardlist.dat") != std::string::npos)
+    else if (output_file->path.name() == "cardlist.dat")
     {
         decrypt(data, 0x60, 0x61, 0x41);
-        output_file->name.change_extension(".txt");
+        output_file->path.change_extension(".txt");
     }
 
     output_file->stream.write(data);

@@ -17,13 +17,13 @@ static const std::vector<std::pair<std::string, bstr>> magic_definitions
     {"jpeg",   "\xFF\xD8\xFF"_b},
 };
 
-File::File(const io::path &name, const io::FileMode mode)
-    : stream(*new io::FileStream(name, mode)), name(name)
+File::File(const io::path &path, const io::FileMode mode)
+    : stream(*new io::FileStream(path, mode)), path(path)
 {
 }
 
-File::File(const io::path &name, const bstr &data)
-    : stream(*new io::MemoryStream(data)), name(name)
+File::File(const io::path &path, const bstr &data)
+    : stream(*new io::MemoryStream(data)), path(path)
 {
 }
 
@@ -48,7 +48,7 @@ void File::guess_extension()
             continue;
         if (stream.read(magic.size()) != magic)
             continue;
-        name.change_extension(ext);
+        path.change_extension(ext);
         stream.seek(old_pos);
         return;
     }

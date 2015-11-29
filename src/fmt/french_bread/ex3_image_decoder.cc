@@ -87,7 +87,7 @@ res::Image Ex3ImageDecoder::decode_impl(io::File &input_file) const
             b = input_file.stream.read_u8();
     }
 
-    io::File bmp_file(input_file.name, data);
+    io::File bmp_file(input_file.path, data);
     const fmt::microsoft::BmpImageDecoder bmp_file_decoder;
     return bmp_file_decoder.decode(bmp_file);
 }

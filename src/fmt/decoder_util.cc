@@ -47,10 +47,10 @@ static bool pass_through_decoders(
             [original_file, &recognition_proxy, &decoder]
             (const std::shared_ptr<io::File> converted_file)
         {
-            converted_file->name = decorate_path(
+            converted_file->path = decorate_path(
                 decoder->naming_strategy(),
-                original_file->name,
-                converted_file->name);
+                original_file->path,
+                converted_file->path);
             recognition_proxy.save(converted_file);
         });
 
@@ -69,24 +69,24 @@ static bool pass_through_decoders(
 
 io::path fmt::decorate_path(
     const IDecoder::NamingStrategy strategy,
-    const io::path &parent_name,
-    const io::path &current_name)
+    const io::path &parent_path,
+    const io::path &current_path)
 {
     if (strategy == IDecoder::NamingStrategy::Root)
-        return current_name;
+        return current_path;
 
     if (strategy == IDecoder::NamingStrategy::Child)
     {
-        if (parent_name.str() == "")
-            return current_name;
-        return parent_name / current_name;
+        if (parent_path.str() == "")
+            return current_path;
+        return parent_path / current_path;
     }
 
     if (strategy == IDecoder::NamingStrategy::Sibling)
     {
-        if (parent_name.str() == "")
-            return current_name;
-        return parent_name.parent() / current_name;
+        if (parent_path.str() == "")
+            return current_path;
+        return parent_path.parent() / current_path;
     }
 
     throw std::logic_error("Invalid naming strategy");

@@ -72,25 +72,25 @@ void tests::compare_images(
 void tests::compare_images(
     io::File &expected_file,
     io::File &actual_file,
-    const bool compare_file_names)
+    const bool compare_file_paths)
 {
     auto expected_image = image_from_file(expected_file);
     auto actual_image = image_from_file(actual_file);
-    if (compare_file_names)
-        tests::compare_file_names(expected_file.name, actual_file.name);
+    if (compare_file_paths)
+        tests::compare_file_paths(expected_file.path, actual_file.path);
     tests::compare_images(expected_image, actual_image);
 }
 
 void tests::compare_images(
     const std::vector<std::shared_ptr<io::File>> &expected_images,
     const std::vector<std::shared_ptr<io::File>> &actual_images,
-    const bool compare_file_names)
+    const bool compare_file_paths)
 {
     REQUIRE(expected_images.size() == actual_images.size());
     for (const auto i : util::range(expected_images.size()))
     {
         INFO(util::format("Images at index %d differ", i));
         tests::compare_images(
-            *expected_images[i], *actual_images[i], compare_file_names);
+            *expected_images[i], *actual_images[i], compare_file_paths);
     }
 }

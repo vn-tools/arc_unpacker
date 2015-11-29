@@ -99,7 +99,7 @@ void Pak2ArchiveDecoder::preprocess(
     Pak2ImageDecoder image_decoder;
 
     image_decoder.clear_palettes();
-    auto dir = input_file.name.parent();
+    auto dir = input_file.path.parent();
     for (const auto &path : io::directory_range(dir))
     {
         if (!io::is_regular_file(path))

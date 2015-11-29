@@ -71,7 +71,7 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto output_file = std::make_unique<io::File>();
 
-    output_file->name = entry->name;
+    output_file->path = entry->name;
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
 
@@ -98,7 +98,7 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
             SpbImageDecoder spb_image_decoder;
             output_file->stream.write(data);
             output_file = util::file_from_image(
-                spb_image_decoder.decode(*output_file), output_file->name);
+                spb_image_decoder.decode(*output_file), output_file->path);
             break;
         }
     }

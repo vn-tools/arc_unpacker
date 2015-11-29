@@ -27,7 +27,7 @@ std::unique_ptr<io::File> OgvFileDecoder::decode_impl(
     input_file.stream.skip(4);
     const auto data = input_file.stream.read_to_eof();
 
-    auto output_file = std::make_unique<io::File>(input_file.name, data);
+    auto output_file = std::make_unique<io::File>(input_file.path, data);
     output_file->guess_extension();
     return output_file;
 }

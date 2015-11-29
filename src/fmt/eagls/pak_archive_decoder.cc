@@ -30,15 +30,15 @@ static io::path get_path_to_index(const io::path &path_to_data)
 
 bool PakArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return io::exists(get_path_to_index(input_file.name))
-        && input_file.name.has_extension("pak");
+    return io::exists(get_path_to_index(input_file.path))
+        && input_file.path.has_extension("pak");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     PakArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     io::FileStream index_stream(
-        get_path_to_index(input_file.name), io::FileMode::Read);
+        get_path_to_index(input_file.path), io::FileMode::Read);
 
     auto data = index_stream.read(index_stream.size() - 4);
     auto seed = index_stream.read_u32_le();

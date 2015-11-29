@@ -7,7 +7,7 @@ using namespace au::fmt::alice_soft;
 
 bool VspImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.has_extension("vsp");
+    return input_file.path.has_extension("vsp");
 }
 
 static bstr decompress_vsp(io::Stream &input, size_t width, size_t height)

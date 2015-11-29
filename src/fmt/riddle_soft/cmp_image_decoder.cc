@@ -26,7 +26,7 @@ res::Image CmpImageDecoder::decode_impl(io::File &input_file) const
     settings.initial_dictionary_pos = 2031;
     data = util::pack::lzss_decompress_bitwise(data, size_original, settings);
 
-    io::File bmp_file(input_file.name, data);
+    io::File bmp_file(input_file.path, data);
     const fmt::microsoft::BmpImageDecoder bmp_image_decoder;
     return bmp_image_decoder.decode(bmp_file);
 }

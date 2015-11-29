@@ -7,7 +7,7 @@ using namespace au::fmt::leaf;
 
 bool BbmImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.has_extension("bbm");
+    return input_file.path.has_extension("bbm");
 }
 
 res::Image BbmImageDecoder::decode_impl(io::File &input_file) const

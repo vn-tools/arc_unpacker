@@ -16,7 +16,7 @@ namespace
 
 bool OvkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.has_extension("ovk");
+    return input_file.path.has_extension("ovk");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>

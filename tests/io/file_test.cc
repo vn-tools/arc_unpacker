@@ -7,12 +7,12 @@ using namespace au::io;
 TEST_CASE("Empty file creation", "[core][file]")
 {
     File file;
-    REQUIRE(file.name == "");
+    REQUIRE(file.path == "");
 }
 
 TEST_CASE("Setting File's name", "[core][file]")
 {
     File file;
-    file.name = "abc";
-    REQUIRE(file.name == "abc");
+    file.path = "abc";
+    REQUIRE(file.path == "abc");
 }

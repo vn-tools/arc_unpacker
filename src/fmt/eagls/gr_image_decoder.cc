@@ -27,7 +27,7 @@ static size_t guess_output_size(const bstr &data)
 
 bool GrImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.name.has_extension("gr");
+    return input_file.path.has_extension("gr");
 }
 
 res::Image GrImageDecoder::decode_impl(io::File &input_file) const
@@ -44,7 +44,7 @@ res::Image GrImageDecoder::decode_impl(io::File &input_file) const
     auto output_size = guess_output_size(data);
     data = util::pack::lzss_decompress_bytewise(data, output_size);
 
-    io::File bmp_file(input_file.name, data);
+    io::File bmp_file(input_file.path, data);
     const fmt::microsoft::BmpImageDecoder bmp_file_decoder;
     return bmp_file_decoder.decode(bmp_file);
 }

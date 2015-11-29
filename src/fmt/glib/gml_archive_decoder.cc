@@ -70,7 +70,7 @@ std::unique_ptr<io::File> GmlArchiveDecoder::read_file_impl(
         suffix[i] = meta->permutation[suffix.get<u8>()[i]];
 
     auto output_file = std::make_unique<io::File>();
-    output_file->name = entry->name;
+    output_file->path = entry->name;
     output_file->stream.write(entry->prefix);
     output_file->stream.write(suffix);
     return output_file;
