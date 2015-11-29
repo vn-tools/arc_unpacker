@@ -98,7 +98,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->size_original = table_stream.read_u32_le();
         entry->offset = table_stream.read_u32_le() + file_data_start;
         entry->size_compressed = table_stream.read_u32_le();
-        entry->name = util::format("%05d.dat", i);
+        entry->path = util::format("%05d.dat", i);
         meta->entries.push_back(std::move(entry));
     }
 
@@ -145,7 +145,7 @@ std::unique_ptr<io::File> TacArchiveDecoder::read_file_impl(
         data = decrypt(data, bytes_to_decrypt, key);
     }
 
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

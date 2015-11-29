@@ -42,7 +42,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->offset = file_data_start + input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();
         auto name_size = input_file.stream.read_u8();
-        entry->name = util::sjis_to_utf8(
+        entry->path = util::sjis_to_utf8(
             input_file.stream.read(name_size)).str();
         meta->entries.push_back(std::move(entry));
     }
@@ -55,7 +55,7 @@ std::unique_ptr<io::File> LwgArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> LwgArchiveDecoder::get_linked_formats() const

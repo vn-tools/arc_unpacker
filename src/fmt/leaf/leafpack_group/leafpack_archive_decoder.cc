@@ -90,13 +90,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = table_stream.read_to_zero(12).str();
-        const auto space_pos = entry->name.find_first_of(' ');
+        auto name = table_stream.read_to_zero(12).str();
+        const auto space_pos = name.find_first_of(' ');
         if (space_pos != std::string::npos)
-            while (entry->name[space_pos] == ' ')
-                entry->name.erase(space_pos, 1);
-        if (entry->name.size() > 3)
-            entry->name.insert(entry->name.size() - 3, ".");
+            while (name[space_pos] == ' ')
+                name.erase(space_pos, 1);
+        if (name.size() > 3)
+            name.insert(name.size() - 3, ".");
+        entry->path = name;
         entry->offset = table_stream.read_u32_le();
         entry->size = table_stream.read_u32_le();
         table_stream.skip(4);
@@ -112,7 +113,7 @@ std::unique_ptr<io::File> LeafpackArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
     decrypt(data, p->key);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> LeafpackArchiveDecoder::get_linked_formats() const

@@ -125,7 +125,7 @@ std::unique_ptr<io::File> Cz10ImageArchiveDecoder::read_file_impl(
     {
         image.at(x, y)[c] = *data_ptr++;
     }
-    return util::file_from_image(image, entry->name);
+    return util::file_from_image(image, entry->path);
 }
 
 fmt::IDecoder::NamingStrategy Cz10ImageArchiveDecoder::naming_strategy() const

@@ -50,7 +50,7 @@ static std::unique_ptr<io::File> grab_definitions_file(const io::path &dir)
             auto meta = decoder->read_meta(other_file);
             for (auto &entry : meta->entries)
             {
-                if (entry->name.find("thbgm.fmt") == std::string::npos)
+                if (entry->path.name() != "thbgm.fmt")
                     continue;
                 auto output_file = decoder->read_file(
                     other_file, *meta, *entry);
@@ -117,8 +117,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     while (!definitions_file->stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = definitions_file->stream.read_to_zero(16).str();
-        if (entry->name.empty())
+        entry->path = definitions_file->stream.read_to_zero(16).str();
+        if (entry->path.str().empty())
             break;
         entry->offset = definitions_file->stream.read_u32_le();
         definitions_file->stream.skip(4);
@@ -153,7 +153,7 @@ std::unique_ptr<io::File> ThbgmAudioArchiveDecoder::read_file_impl(
     audio.bits_per_sample = entry->bits_per_sample;
     audio.sample_rate = entry->sample_rate;
     audio.samples = samples;
-    return util::file_from_audio(audio, entry->name);
+    return util::file_from_audio(audio, entry->path);
 }
 
 static auto dummy

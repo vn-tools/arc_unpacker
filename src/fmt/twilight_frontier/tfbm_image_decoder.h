@@ -12,7 +12,7 @@ namespace twilight_frontier {
         TfbmImageDecoder();
         ~TfbmImageDecoder();
         void clear_palettes();
-        void add_palette(const std::string &name, const bstr &palette_data);
+        void add_palette(const io::path &path, const bstr &palette_data);
 
     protected:
         bool is_recognized_impl(io::File &input_file) const override;

@@ -35,7 +35,7 @@ std::unique_ptr<fmt::ArchiveMeta>
             throw err::BadDataSizeError();
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(0x574 + entry->width * entry->height);
-        entry->name = util::format("Image%03d.png", i++);
+        entry->path = util::format("Image%03d.png", i++);
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -63,7 +63,7 @@ std::unique_ptr<io::File> EgrArchiveDecoder::read_file_impl(
         input_file.stream.read(entry->width * entry->height),
         palette);
 
-    return util::file_from_image(image, entry->name);
+    return util::file_from_image(image, entry->path);
 }
 
 static auto dummy = fmt::register_fmt<EgrArchiveDecoder>("libido/egr");

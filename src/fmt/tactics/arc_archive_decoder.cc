@@ -50,7 +50,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v0(io::File &input_file)
         auto name_size = table_stream.read_u32_le();
 
         table_stream.skip(8);
-        entry->name = util::sjis_to_utf8(table_stream.read(name_size)).str();
+        entry->path = util::sjis_to_utf8(table_stream.read(name_size)).str();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -69,7 +69,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(io::File &input_file)
         entry->size_orig = input_file.stream.read_u32_le();
         auto name_size = input_file.stream.read_u32_le();
         input_file.stream.skip(8);
-        entry->name = util::sjis_to_utf8(
+        entry->path = util::sjis_to_utf8(
             input_file.stream.read(name_size)).str();
         entry->offset = input_file.stream.tell();
         entry->key = key;
@@ -121,7 +121,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
             data[i] ^= entry->key[i % entry->key.size()];
     if (entry->size_orig)
         data = util::pack::lzss_decompress_bytewise(data, entry->size_orig);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> ArcArchiveDecoder::get_linked_formats() const

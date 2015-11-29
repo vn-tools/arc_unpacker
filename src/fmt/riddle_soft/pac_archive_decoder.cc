@@ -32,7 +32,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = input_file.stream.read_to_zero(16).str();
+        entry->path = input_file.stream.read_to_zero(16).str();
         entry->size = input_file.stream.read_u32_le();
         auto prefix = input_file.stream.read(4);
         auto unk1 = input_file.stream.read_u32_le();
@@ -52,7 +52,7 @@ std::unique_ptr<io::File> PacArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> PacArchiveDecoder::get_linked_formats() const

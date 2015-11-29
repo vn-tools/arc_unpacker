@@ -14,7 +14,7 @@ std::unique_ptr<io::File> rgs::read_file_impl(
     io::File &arc_file, const ArchiveEntryImpl &entry)
 {
     auto output_file = std::make_unique<io::File>();
-    output_file->path = entry.name;
+    output_file->path = entry.path;
     arc_file.stream.seek(entry.offset);
 
     io::MemoryStream tmp_stream;

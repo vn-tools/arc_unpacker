@@ -143,12 +143,12 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
-        entry->name = table_stream.read_to_zero().str();
-        table_stream.skip(3 - entry->name.size() % 4);
+        entry->path = table_stream.read_to_zero().str();
+        table_stream.skip(3 - entry->path.str().size() % 4);
 
         entry->decryptor_id = 0;
-        for (auto j : util::range(entry->name.size()))
-            entry->decryptor_id += entry->name[j];
+        for (const auto &c : entry->path.str())
+            entry->decryptor_id += c;
         entry->decryptor_id %= 8;
 
         entry->offset = table_stream.read_u32_le();
@@ -180,7 +180,7 @@ std::unique_ptr<io::File> Tha1ArchiveDecoder::read_file_impl(
     if (entry->size_comp != entry->size_orig)
         data = decompress(data, entry->size_orig);
 
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> Tha1ArchiveDecoder::get_linked_formats() const

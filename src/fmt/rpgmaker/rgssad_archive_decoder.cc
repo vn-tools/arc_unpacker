@@ -25,12 +25,13 @@ std::unique_ptr<fmt::ArchiveMeta>
 
         size_t name_size = input_file.stream.read_u32_le() ^ key;
         key = rgs::advance_key(key);
-        entry->name = input_file.stream.read(name_size).str();
+        auto name = input_file.stream.read(name_size).str();
         for (auto i : util::range(name_size))
         {
-            entry->name[i] ^= key;
+            name[i] ^= key;
             key = rgs::advance_key(key);
         }
+        entry->path = name;
 
         entry->size = input_file.stream.read_u32_le() ^ key;
         key = rgs::advance_key(key);

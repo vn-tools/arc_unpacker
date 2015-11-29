@@ -31,7 +31,7 @@ namespace
 
     struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        bstr name_orig;
+        bstr path_orig;
         size_t size_compressed;
         size_t size_original;
         size_t offset;
@@ -380,9 +380,9 @@ std::unique_ptr<fmt::ArchiveMeta>
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
         size_t name_size = table_stream.read_u16_le();
-        entry->name_orig = table_stream.read(name_size);
-        decrypt_file_name(entry->name_orig, seed);
-        entry->name = util::sjis_to_utf8(entry->name_orig).str();
+        entry->path_orig = table_stream.read(name_size);
+        decrypt_file_name(entry->path_orig, seed);
+        entry->path = util::sjis_to_utf8(entry->path_orig).str();
 
         entry->offset = table_stream.read_u64_le();
         entry->size_compressed = table_stream.read_u32_le();
@@ -398,7 +398,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     for (auto &entry : meta->entries)
     {
-        if (entry->name.find("pack_keyfile") != std::string::npos)
+        if (entry->path.name().find("pack_keyfile") != std::string::npos)
         {
             auto file = read_file(input_file, *meta, *entry);
             file->stream.seek(0);
@@ -418,12 +418,12 @@ std::unique_ptr<io::File> PackArchiveDecoder::read_file_impl(
     auto data = input_file.stream.read(entry->size_compressed);
 
     if (entry->encrypted)
-        decrypt_file_data(data, entry->seed, entry->name_orig, *meta);
+        decrypt_file_data(data, entry->seed, entry->path_orig, *meta);
 
     if (entry->compressed)
         data = decompress(data, entry->size_original);
 
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> PackArchiveDecoder::get_linked_formats() const

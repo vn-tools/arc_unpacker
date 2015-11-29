@@ -59,7 +59,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->compressed = true;
-        entry->name = util::sjis_to_utf8(
+        entry->path = util::sjis_to_utf8(
             input_file.stream.read_to_zero(24)).str();
         entry->offset = input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();
@@ -77,7 +77,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v2(
         auto entry = std::make_unique<ArchiveEntryImpl>();
         const auto type = static_cast<EntryType>(
             input_file.stream.read_u32_le());
-        entry->name = util::sjis_to_utf8(
+        entry->path = util::sjis_to_utf8(
             input_file.stream.read_to_zero(24)).str();
         entry->offset = input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();
@@ -130,7 +130,7 @@ std::unique_ptr<io::File> KcapArchiveDecoder::read_file_impl(
     }
     else
         data = input_file.stream.read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> KcapArchiveDecoder::get_linked_formats() const

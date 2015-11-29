@@ -38,7 +38,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (const auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = util::sjis_to_utf8(
+        entry->path = util::sjis_to_utf8(
             input_file.stream.read_to_zero()).str();
         entry->offset = input_file.stream.read_u32_le() + offset_to_data;
         if (last_entry)
@@ -66,7 +66,7 @@ std::unique_ptr<io::File> Ar10ArchiveDecoder::read_file_impl(
     for (const auto i : util::range(data.size()))
         data[i] ^= key[i % key.size()];
 
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

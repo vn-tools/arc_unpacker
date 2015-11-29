@@ -48,7 +48,7 @@ std::unique_ptr<fmt::ArchiveMeta>
             entry->size = input_file.stream.read_u32_le();
             input_file.stream.skip(8);
             const auto name = input_file.stream.read_to_zero(header_size - 16);
-            entry->name = util::sjis_to_utf8(name).str();
+            entry->path = util::sjis_to_utf8(name).str();
             entry->offset = input_file.stream.tell();
             meta->entries.push_back(std::move(entry));
         }
@@ -61,7 +61,7 @@ std::unique_ptr<io::File> AldArchiveDecoder::read_file_impl(
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

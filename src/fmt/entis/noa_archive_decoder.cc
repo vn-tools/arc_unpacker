@@ -23,7 +23,7 @@ namespace
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta(
-    io::Stream &stream, std::string root = "")
+    io::Stream &stream, const io::path root = "")
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
     common::SectionReader section_reader(stream);
@@ -44,13 +44,13 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
             if (flags & 0x70)
                 entry->extra = stream.read(extra_size);
 
-            entry->name = stream.read_to_zero(stream.read_u32_le()).str();
-            if (root != "")
-                entry->name = root + "/" + entry->name;
+            entry->path = stream.read_to_zero(stream.read_u32_le()).str();
+            if (!root.str().empty())
+                entry->path = root / entry->path;
 
             if (flags == 0x10)
             {
-                const auto sub_meta = read_meta(stream, entry->name);
+                const auto sub_meta = read_meta(stream, entry->path);
                 stream.peek(entry->offset, [&]()
                 {
                     for (auto &sub_entry : sub_meta->entries)
@@ -91,11 +91,11 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
     {
         Log.warn(util::format(
             "%s is encrypted, but encrypted files are not supported\n",
-            entry->name.c_str()));
+            entry->path.str().c_str()));
     }
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

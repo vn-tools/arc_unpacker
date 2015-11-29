@@ -41,10 +41,10 @@ std::unique_ptr<fmt::ArchiveMeta>
 
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->already_unpacked = false;
-        entry->name = input_file.stream.read_to_zero(name_size).str();
+        entry->path = input_file.stream.read_to_zero(name_size).str();
         u32 key = 0;
-        for (auto &c : entry->name)
-            key += static_cast<u8>(c);
+        for (const u8 &c : entry->path.str())
+            key += c;
         entry->offset = input_file.stream.read_u32_le() ^ key;
         entry->size_comp = input_file.stream.read_u32_le() ^ key;
         meta->entries.push_back(std::move(entry));
@@ -73,7 +73,7 @@ std::unique_ptr<io::File> Nekopack4ArchiveDecoder::read_file_impl(
     }
     data = util::pack::zlib_inflate(data);
 
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 void Nekopack4ArchiveDecoder::preprocess(
@@ -85,10 +85,10 @@ void Nekopack4ArchiveDecoder::preprocess(
     std::map<std::string, ArchiveEntryImpl*> mask_entries, sprite_entries;
     for (auto &entry : meta.entries)
     {
-        auto fn = entry->name.substr(0, entry->name.find_first_of('.'));
-        if (entry->name.find("alp") != std::string::npos)
+        auto fn = entry->path.stem();
+        if (entry->path.has_extension("alp"))
             mask_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
-        else if (entry->name.find("bmp") != std::string::npos)
+        else if (entry->path.has_extension("bmp"))
             sprite_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
     }
 
@@ -111,7 +111,7 @@ void Nekopack4ArchiveDecoder::preprocess(
             sprite.apply_mask(mask);
             sprite_entry->already_unpacked = true;
             mask_entry->already_unpacked = true;
-            file_saver.save(util::file_from_image(sprite, sprite_entry->name));
+            file_saver.save(util::file_from_image(sprite, sprite_entry->path));
         }
         catch (...)
         {

@@ -79,10 +79,10 @@ std::unique_ptr<fmt::ArchiveMeta>
         }
 
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = "";
+        entry->path = "";
 
         if (flags & Flags::FileName)
-            entry->name = input_file.stream.read_to_zero().str();
+            entry->path = input_file.stream.read_to_zero().str();
 
         if (flags & Flags::Comment)
             input_file.stream.read_to_zero();
@@ -108,7 +108,7 @@ std::unique_ptr<io::File> GzipArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     return std::make_unique<io::File>(
-        entry->name,
+        entry->path,
         util::pack::zlib_inflate(
             input_file.stream.read(entry->size),
             util::pack::ZlibKind::RawDeflate));

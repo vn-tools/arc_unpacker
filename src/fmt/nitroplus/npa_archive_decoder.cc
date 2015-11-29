@@ -28,7 +28,7 @@ namespace
 
     struct ArchiveEntryImpl final : fmt::ArchiveEntry
     {
-        bstr name_orig;
+        bstr path_orig;
         size_t offset;
         size_t size_comp;
         size_t size_orig;
@@ -63,15 +63,15 @@ static void decrypt_file_data(
     const ArchiveMetaImpl &meta, const ArchiveEntryImpl &entry, bstr &data)
 {
     u32 key = meta.filter->data_key;
-    for (auto i : util::range(entry.name_orig.size()))
-        key -= entry.name_orig[i];
-    key *= entry.name_orig.size();
+    for (auto i : util::range(entry.path_orig.size()))
+        key -= entry.path_orig[i];
+    key *= entry.path_orig.size();
     key += meta.key1 * meta.key2;
     key *= entry.size_orig;
     key &= 0xFF;
 
     u8 *data_ptr = data.get<u8>();
-    size_t size = 0x1000 + entry.name_orig.size();
+    size_t size = 0x1000 + entry.path_orig.size();
     for (auto i : util::range(std::min(size, data.size())))
         data_ptr[i] = meta.filter->permutation[data_ptr[i]] - key - i;
 }
@@ -131,9 +131,9 @@ std::unique_ptr<fmt::ArchiveMeta>
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
         const auto name_size = input_file.stream.read_u32_le();
-        entry->name_orig = input_file.stream.read(name_size);
-        decrypt_file_name(*meta, entry->name_orig, i);
-        entry->name = util::sjis_to_utf8(entry->name_orig).str();
+        entry->path_orig = input_file.stream.read(name_size);
+        decrypt_file_name(*meta, entry->path_orig, i);
+        entry->path = util::sjis_to_utf8(entry->path_orig).str();
 
         FileType file_type = static_cast<FileType>(input_file.stream.read_u8());
         input_file.stream.skip(4);
@@ -164,7 +164,7 @@ std::unique_ptr<io::File> NpaArchiveDecoder::read_file_impl(
     if (meta->files_are_compressed)
         data = util::pack::zlib_inflate(data);
 
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 static auto dummy = fmt::register_fmt<NpaArchiveDecoder>("nitroplus/npa");

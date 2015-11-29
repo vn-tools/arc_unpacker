@@ -126,7 +126,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = util::sjis_to_utf8(
+        entry->path = util::sjis_to_utf8(
             input_file.stream.read_to_zero(name_size)).str();
         entry->offset = input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();
@@ -154,7 +154,7 @@ std::unique_ptr<io::File> MblArchiveDecoder::read_file_impl(
         meta->decrypt(data);
     }
 
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

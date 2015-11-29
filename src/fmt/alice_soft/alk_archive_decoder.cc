@@ -34,7 +34,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->size = input_file.stream.read_u32_le();
         if (entry->size)
         {
-            entry->name = util::format("%03d.dat", meta->entries.size());
+            entry->path = util::format("%03d.dat", meta->entries.size());
             meta->entries.push_back(std::move(entry));
         }
     }
@@ -47,7 +47,7 @@ std::unique_ptr<io::File> AlkArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

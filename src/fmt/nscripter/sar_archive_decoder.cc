@@ -27,7 +27,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = input_file.stream.read_to_zero().str();
+        entry->path = input_file.stream.read_to_zero().str();
         entry->offset = input_file.stream.read_u32_be() + offset_to_data;
         entry->size = input_file.stream.read_u32_be();
         meta->entries.push_back(std::move(entry));
@@ -41,7 +41,7 @@ std::unique_ptr<io::File> SarArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 static auto dummy = fmt::register_fmt<SarArchiveDecoder>("nscripter/sar");

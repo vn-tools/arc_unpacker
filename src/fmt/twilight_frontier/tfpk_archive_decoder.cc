@@ -400,7 +400,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
             auto fn_hash = b2->read_u32_le();
             auto it = fn_map.find(fn_hash);
-            entry->name = it == fn_map.end()
+            entry->path = it == fn_map.end()
                 ? get_unknown_name(i, fn_hash)
                 : it->second;
 
@@ -414,7 +414,7 @@ std::unique_ptr<fmt::ArchiveMeta>
             u32 fn_hash = b2->read_u32_le() ^ b3->read_u32_le();
             u32 unk = b2->read_u32_le() ^ b3->read_u32_le();
             auto it = fn_map.find(fn_hash);
-            entry->name = it == fn_map.end()
+            entry->path = it == fn_map.end()
                 ? get_unknown_name(i, fn_hash)
                 : it->second;
 
@@ -444,7 +444,7 @@ std::unique_ptr<io::File> TfpkArchiveDecoder::read_file_impl(
     if (entry->already_unpacked)
         return nullptr;
     auto data = read_file_content(input_file, *meta, *entry, entry->size);
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }
@@ -460,7 +460,7 @@ void TfpkArchiveDecoder::preprocess(
     {
         if (!io::is_regular_file(path))
             continue;
-        if (path.str().find(".pak") == std::string::npos)
+        if (!path.has_extension("pak"))
             continue;
 
         io::File other_input_file(path, io::FileMode::Read);
@@ -470,12 +470,11 @@ void TfpkArchiveDecoder::preprocess(
         auto meta = read_meta(other_input_file);
         for (auto &entry : meta->entries)
         {
-            if (entry->name.find("palette") == std::string::npos)
+            if (entry->path.stem().find("palette") == std::string::npos)
                 continue;
             auto pal_file = read_file(other_input_file, *meta, *entry);
-            pal_file->stream.seek(0);
             tfbm_image_decoder.add_palette(
-                entry->name, pal_file->stream.read_to_eof());
+                entry->path, pal_file->stream.seek(0).read_to_eof());
         }
     }
 
@@ -488,12 +487,12 @@ void TfpkArchiveDecoder::preprocess(
         if (chunk != tfbm_magic)
             continue;
 
-        io::File full_file(entry->name, read_file_content(
+        io::File full_file(entry->path, read_file_content(
             input_file, *meta, *entry, entry->size));
         try
         {
             auto image = tfbm_image_decoder.decode(full_file);
-            saver.save(util::file_from_image(image, entry->name));
+            saver.save(util::file_from_image(image, entry->path));
             entry->already_unpacked = true;
         }
         catch (...)

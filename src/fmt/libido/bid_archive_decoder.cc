@@ -31,7 +31,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     while (input_file.stream.tell() < data_start)
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = input_file.stream.read_to_zero(16).str();
+        entry->path = input_file.stream.read_to_zero(16).str();
         entry->offset = input_file.stream.read_u32_le() + data_start;
         entry->size = input_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
@@ -45,7 +45,7 @@ std::unique_ptr<io::File> BidArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> BidArchiveDecoder::get_linked_formats() const

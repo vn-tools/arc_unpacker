@@ -32,7 +32,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = util::sjis_to_utf8(
+        entry->path = util::sjis_to_utf8(
             input_file.stream.read_to_zero(0x20)).str();
         entry->offset = file_start + input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();
@@ -47,7 +47,7 @@ std::unique_ptr<io::File> XflArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

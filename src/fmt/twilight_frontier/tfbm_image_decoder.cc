@@ -36,7 +36,7 @@ void TfbmImageDecoder::clear_palettes()
 }
 
 void TfbmImageDecoder::add_palette(
-    const std::string &name, const bstr &palette_data)
+    const io::path &path, const bstr &palette_data)
 {
     io::MemoryStream palette_stream(palette_data);
     if (palette_stream.read(pal_magic.size()) != pal_magic)
@@ -47,7 +47,7 @@ void TfbmImageDecoder::add_palette(
             palette_stream.read(
                 palette_stream.read_u32_le())));
 
-    p->palette_map[name] = std::make_shared<res::Palette>(
+    p->palette_map[path] = std::make_shared<res::Palette>(
         256, colors_stream, res::PixelFormat::BGRA5551);
 }
 
@@ -74,7 +74,7 @@ res::Image TfbmImageDecoder::decode_impl(io::File &input_file) const
         const auto path = input_file.path.parent()
             / util::format("palette%03d.bmp", palette_number);
 
-        auto it = p->palette_map.find(path.str());
+        auto it = p->palette_map.find(path);
         palette = it != p->palette_map.end()
             ? it->second
             : std::make_shared<res::Palette>(256);

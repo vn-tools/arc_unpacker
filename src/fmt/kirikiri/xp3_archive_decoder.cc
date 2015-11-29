@@ -198,7 +198,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         if (table_stream.tell() - file_chunk_start_offset != file_chunk_size)
             throw err::CorruptDataError("Unexpected file data size");
 
-        entry->name = info_chunk.name;
+        entry->path = info_chunk.name;
         meta->entries.push_back(std::move(entry));
     }
     return std::move(meta);
@@ -224,7 +224,7 @@ std::unique_ptr<io::File> Xp3ArchiveDecoder::read_file_impl(
     if (meta->filter && meta->filter->decoder)
         meta->filter->decoder(data, entry->adlr_chunk.key);
 
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 void Xp3ArchiveDecoder::set_plugin(const std::string &plugin_name)

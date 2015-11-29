@@ -39,7 +39,7 @@ std::unique_ptr<fmt::ArchiveMeta>
             input_file.stream.skip(offset);
             continue;
         }
-        entry->name = name.str();
+        entry->path = name.str();
         entry->offset = input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();
         input_file.stream.skip(8);
@@ -54,7 +54,7 @@ std::unique_ptr<io::File> Aos1ArchiveDecoder::read_file_impl(
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> Aos1ArchiveDecoder::get_linked_formats() const

@@ -179,7 +179,7 @@ std::unique_ptr<io::File> S25ImageArchiveDecoder::read_file_impl(
     if (entry->flags & 0x80000000)
         throw err::NotSupportedError("Flagged S25 images are supported");
     const auto image = read_plain(input_file, *entry);
-    return util::file_from_image(image, e.name);
+    return util::file_from_image(image, entry->path);
 }
 
 fmt::IDecoder::NamingStrategy S25ImageArchiveDecoder::naming_strategy() const

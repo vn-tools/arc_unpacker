@@ -8,7 +8,7 @@ namespace fmt {
     struct ArchiveEntry
     {
         virtual ~ArchiveEntry() { }
-        std::string name;
+        io::path path;
     };
 
     struct ArchiveMeta

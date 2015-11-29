@@ -58,7 +58,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         auto name = input_file.stream.read(input_file.stream.read_u8());
         if (meta->version == 2)
             xor_data(name);
-        entry->name = util::sjis_to_utf8(name).str();
+        entry->path = util::sjis_to_utf8(name).str();
         if (last_entry)
             last_entry->size_comp = entry->offset - last_entry->offset;
         last_entry = entry.get();
@@ -93,7 +93,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
             xor_data(data);
     }
 
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("ast/arc");

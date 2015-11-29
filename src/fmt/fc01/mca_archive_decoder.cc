@@ -85,7 +85,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = util::format("%03d.png", i);
+        entry->path = util::format("%03d.png", i);
         entry->offset = input_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
     }
@@ -126,7 +126,7 @@ std::unique_ptr<io::File> McaArchiveDecoder::read_file_impl(
 
     data = common::fix_stride(data, width, height, 24);
     res::Image image(width, height, data, res::PixelFormat::BGR888);
-    return util::file_from_image(image, entry->name);
+    return util::file_from_image(image, entry->path);
 }
 
 static auto dummy = fmt::register_fmt<McaArchiveDecoder>("fc01/mca");

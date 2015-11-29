@@ -51,7 +51,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = table_stream.read_to_zero().str();
+        entry->path = table_stream.read_to_zero().str();
         entry->offset = table_stream.read_u32_le();
         entry->size_orig = table_stream.read_u32_le();
         table_stream.skip(4);
@@ -72,7 +72,7 @@ std::unique_ptr<io::File> Pbg4ArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
     data = decompress(data, entry->size_orig);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> Pbg4ArchiveDecoder::get_linked_formats() const

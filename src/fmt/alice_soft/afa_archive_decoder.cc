@@ -52,7 +52,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
         table_stream.skip(4);
         auto name_size = table_stream.read_u32_le();
-        entry->name = util::sjis_to_utf8(
+        entry->path = util::sjis_to_utf8(
             table_stream.read_to_zero(name_size)).str();
 
         table_stream.skip(4 * 3); // for some games, apparently this is 4 * 2
@@ -69,7 +69,7 @@ std::unique_ptr<io::File> AfaArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

@@ -48,7 +48,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = table_stream.read(table_stream.read_u32_le()).str();
+        entry->path = table_stream.read(table_stream.read_u32_le()).str();
         entry->offset = table_stream.read_u32_le() + file_data_start;
         entry->size = table_stream.read_u32_le();
         entry->prefix = table_stream.read(4);
@@ -70,7 +70,7 @@ std::unique_ptr<io::File> GmlArchiveDecoder::read_file_impl(
         suffix[i] = meta->permutation[suffix.get<u8>()[i]];
 
     auto output_file = std::make_unique<io::File>();
-    output_file->path = entry->name;
+    output_file->path = entry->path;
     output_file->stream.write(entry->prefix);
     output_file->stream.write(suffix);
     return output_file;

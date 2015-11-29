@@ -380,7 +380,7 @@ std::unique_ptr<io::File> PxImageArchiveDecoder::read_file_impl(
 
     res::Image image(
         entry->width, entry->height, data, res::PixelFormat::BGRA8888);
-    return util::file_from_image(image, entry->name);
+    return util::file_from_image(image, entry->path);
 }
 
 fmt::IDecoder::NamingStrategy PxImageArchiveDecoder::naming_strategy() const

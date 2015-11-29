@@ -71,7 +71,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->offset = table_stream.read_u32_le();
         entry->size = table_stream.read_u32_le();
         auto name_size = table_stream.read_u8();
-        entry->name = util::sjis_to_utf8(table_stream.read(name_size)).str();
+        entry->path = util::sjis_to_utf8(table_stream.read(name_size)).str();
         if (entry->offset + entry->size > input_file.stream.size())
             throw err::BadDataOffsetError();
         meta->entries.push_back(std::move(entry));
@@ -90,7 +90,7 @@ std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
     u8 key = (entry->offset >> 1) | 0x23;
     for (auto i : util::range(entry->size))
         data[i] ^= key;
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 void Pak2ArchiveDecoder::preprocess(
@@ -104,7 +104,7 @@ void Pak2ArchiveDecoder::preprocess(
     {
         if (!io::is_regular_file(path))
             continue;
-        if (path.str().find(".dat") == std::string::npos)
+        if (!path.has_extension("dat"))
             continue;
 
         io::File other_input_file(path, io::FileMode::Read);
@@ -114,26 +114,25 @@ void Pak2ArchiveDecoder::preprocess(
         auto meta = read_meta(other_input_file);
         for (auto &entry : meta->entries)
         {
-            if (entry->name.find(".pal") == std::string::npos)
+            if (!entry->path.has_extension("pal"))
                 continue;
 
             auto pal_file = read_file(other_input_file, *meta, *entry);
-            pal_file->stream.seek(0);
             image_decoder.add_palette(
-                entry->name, pal_file->stream.read_to_eof());
+                entry->path, pal_file->stream.seek(0).read_to_eof());
         }
     }
 
     for (auto &e : m.entries)
     {
         auto entry = static_cast<ArchiveEntryImpl*>(e.get());
-        if (entry->name.find(".cv2") == std::string::npos)
+        if (!entry->path.has_extension("cv2"))
             continue;
         auto full_file = read_file(input_file, m, *entry);
         try
         {
             auto image = image_decoder.decode(*full_file);
-            saver.save(util::file_from_image(image, entry->name));
+            saver.save(util::file_from_image(image, entry->path));
             entry->already_unpacked = true;
         }
         catch (...)

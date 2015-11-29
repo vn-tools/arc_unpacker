@@ -32,7 +32,7 @@ namespace
         size_t offset;
         size_t size_orig;
         size_t size_comp;
-        bstr name_orig;
+        bstr path_orig;
     };
 }
 
@@ -160,7 +160,7 @@ static void dump(const ArchiveMetaImpl &meta, const std::string &dump_path)
     {
         auto entry = dynamic_cast<ArchiveEntryImpl*>(e.get());
         if (entry->valid)
-            stream.write(entry->name + "\n");
+            stream.write(entry->path.str() + "\n");
         else
             stream.write(util::format("unk:%016llx\n", entry->hash));
     }
@@ -260,14 +260,14 @@ std::unique_ptr<fmt::ArchiveMeta>
 
         if (entry->type == TableEntryType::Compressed)
         {
-            entry->name_orig = name_found ? name : util::format("%04d.txt", i);
+            entry->path_orig = name_found ? name : util::format("%04d.txt", i);
             entry->valid = true;
         }
         else
         {
             if (name_found)
             {
-                entry->name_orig = name;
+                entry->path_orig = name;
                 entry->offset ^= name[name.size() >> 1] & 0xFF;
                 entry->size_comp ^= name[name.size() >> 2] & 0xFF;
                 entry->size_orig ^= name[name.size() >> 3] & 0xFF;
@@ -277,7 +277,7 @@ std::unique_ptr<fmt::ArchiveMeta>
                 entry->valid = false;
         }
 
-        entry->name = util::sjis_to_utf8(entry->name_orig).str();
+        entry->path = util::sjis_to_utf8(entry->path_orig).str();
         meta->entries.push_back(std::move(entry));
     }
 
@@ -314,10 +314,10 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     else
     {
         if (entry->type == TableEntryType::Obfuscated)
-            transform_regular_content(data, entry->name_orig);
+            transform_regular_content(data, entry->path_orig);
     }
 
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> DatArchiveDecoder::get_linked_formats() const

@@ -58,10 +58,10 @@ static std::unique_ptr<Registry> create_registry()
     return registry;
 }
 
-static bstr serialize_file(const std::string &name, const bstr &content)
+static bstr serialize_file(const std::string &path, const bstr &content)
 {
     io::MemoryStream stream;
-    stream.write(name);
+    stream.write(path);
     stream.write_u8(0);
     stream.write_u32_le(content.size());
     stream.write(content);
@@ -106,7 +106,7 @@ std::unique_ptr<ArchiveMeta>
     while (!input_file.stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = input_file.stream.read_to_zero().str();
+        entry->path = input_file.stream.read_to_zero().str();
         entry->size = input_file.stream.read_u32_le();
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(entry->size);
@@ -120,7 +120,7 @@ std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 TEST_CASE("Recursive unpacking with nested files", "[fmt_core]")

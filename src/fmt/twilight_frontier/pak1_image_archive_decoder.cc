@@ -60,7 +60,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         input_file.stream.skip(4);
         entry->depth = input_file.stream.read_u8();
         entry->size = input_file.stream.read_u32_le();
-        entry->name = util::format("%04d", i++);
+        entry->path = util::format("%04d", i++);
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));
@@ -132,7 +132,7 @@ std::unique_ptr<io::File> Pak1ImageArchiveDecoder::read_file_impl(
     else
         throw err::UnsupportedBitDepthError(entry->depth);
 
-    return util::file_from_image(*image, entry->name);
+    return util::file_from_image(*image, entry->path);
 }
 
 static auto dummy

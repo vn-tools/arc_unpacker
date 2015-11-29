@@ -149,7 +149,7 @@ std::unique_ptr<res::Image> WipfImageArchiveDecoder::read_image(
 std::unique_ptr<io::File> WipfImageArchiveDecoder::read_file_impl(
     io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
-    return util::file_from_image(*read_image(input_file, m, e), e.name);
+    return util::file_from_image(*read_image(input_file, m, e), e.path);
 }
 
 std::vector<std::shared_ptr<res::Image>>

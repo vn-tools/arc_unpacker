@@ -46,7 +46,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         size_t file_name_size = table_stream.read_u32_le();
-        entry->name = util::sjis_to_utf8(
+        entry->path = util::sjis_to_utf8(
             table_stream.read(file_name_size)).str();
         entry->offset = table_stream.read_u32_le() + file_data_offset;
         entry->size_orig = table_stream.read_u32_le();
@@ -66,7 +66,7 @@ std::unique_ptr<io::File> PakArchiveDecoder::read_file_impl(
     auto data = entry->compressed
         ? util::pack::zlib_inflate(input_file.stream.read(entry->size_comp))
         : input_file.stream.read(entry->size_orig);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 static auto dummy = fmt::register_fmt<PakArchiveDecoder>("nitroplus/pak");

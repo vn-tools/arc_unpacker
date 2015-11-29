@@ -67,7 +67,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = table_stream.read_to_zero(0x0E).str();
+        entry->path = table_stream.read_to_zero(0x0E).str();
         entry->size_orig = table_stream.read_u32_le();
         entry->filter = table_stream.read_u8();
         table_stream.skip(9);
@@ -103,7 +103,7 @@ std::unique_ptr<io::File> MrgArchiveDecoder::read_file_impl(
         if (entry->filter < 3)
             data = common::custom_lzss_decompress(data, entry->size_orig);
     }
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> MrgArchiveDecoder::get_linked_formats() const

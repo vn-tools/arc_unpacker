@@ -81,8 +81,10 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         input_file.stream.seek(names_start + spec->name_offset);
-        for (auto i : util::range(spec->name_size))
-            entry->name += read_integer(input_file.stream);
+        std::string name;
+        for (const auto i : util::range(spec->name_size))
+            name += read_integer(input_file.stream);
+        entry->path = name;
         entry->offset = data_offset + spec->data_offset;
         entry->size = spec->data_size;
         meta->entries.push_back(std::move(entry));
@@ -98,7 +100,7 @@ std::unique_ptr<io::File> IgaArchiveDecoder::read_file_impl(
     auto data = input_file.stream.read(entry->size);
     for (auto i : util::range(data.size()))
         data[i] ^= (i + 2) & 0xFF;
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 static auto dummy = fmt::register_fmt<IgaArchiveDecoder>("innocent-grey/iga");

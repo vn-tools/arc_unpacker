@@ -52,13 +52,15 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->checksum = read_integer(table_bit_reader);
         entry->offset = read_integer(table_bit_reader);
         entry->size_orig = read_integer(table_bit_reader);
+        std::string name;
         for (auto j : util::range(256))
         {
             char c = table_bit_reader.get(8);
             if (c == 0)
                 break;
-            entry->name.push_back(c);
+            name += c;
         }
+        entry->path = name;
         if (last_entry)
             last_entry->size_comp = entry->offset - last_entry->offset;
         last_entry = entry.get();
@@ -84,7 +86,7 @@ std::unique_ptr<io::File> Pbg3ArchiveDecoder::read_file_impl(
     auto data = util::pack::lzss_decompress_bitwise(
         bit_reader, entry->size_orig, settings);
 
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> Pbg3ArchiveDecoder::get_linked_formats() const

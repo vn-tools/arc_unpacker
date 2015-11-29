@@ -275,7 +275,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = context.strings[i * 2 ].str();
+        entry->path = context.strings[i * 2 ].str();
         entry->prefix = context.strings[i * 2 + 1];
         entry->offset = context.numbers[i * 2] ^ key;
         entry->size = context.numbers[i * 2 + 1] ^ key;
@@ -289,7 +289,7 @@ std::unique_ptr<io::File> RpaArchiveDecoder::read_file_impl(
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    return std::make_unique<io::File>(entry->name, entry->prefix + data);
+    return std::make_unique<io::File>(entry->path, entry->prefix + data);
 }
 
 static auto dummy = fmt::register_fmt<RpaArchiveDecoder>("renpy/rpa");

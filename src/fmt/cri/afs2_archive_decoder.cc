@@ -35,7 +35,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (const auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = util::format("%d.dat", i);
+        entry->path = util::format("%d.dat", i);
         entry->offset = input_file.stream.read_u32_le();
         if (last_entry)
             last_entry->size = entry->offset - last_entry->offset;
@@ -53,7 +53,7 @@ std::unique_ptr<io::File> Afs2ArchiveDecoder::read_file_impl(
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> Afs2ArchiveDecoder::get_linked_formats() const

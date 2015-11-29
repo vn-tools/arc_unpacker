@@ -116,8 +116,8 @@ static std::unique_ptr<ArchiveEntryImpl> read_table_entry(
         [&]()
         {
             std::string name = table_stream.read_to_zero().str();
-            entry->name = parent_dir != -1
-                ? entries.at(parent_dir)->name + "/" + name
+            entry->path = parent_dir != -1
+                ? entries.at(parent_dir)->path / name
                 : name;
         });
 
@@ -193,7 +193,7 @@ std::unique_ptr<io::File> Glib2ArchiveDecoder::read_file_impl(
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto output_file = std::make_unique<io::File>();
-    output_file->path = entry->name;
+    output_file->path = entry->path;
 
     input_file.stream.seek(entry->offset);
 

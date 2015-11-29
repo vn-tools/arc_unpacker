@@ -444,7 +444,7 @@ void ResourceCrawler::process_entry(size_t offset, const std::string &path)
     ImageResourceDataEntry resource_entry(args.stream);
 
     auto entry = std::make_unique<ArchiveEntryImpl>();
-    entry->name = path;
+    entry->path = path;
     entry->offset = args.rva_helper.rva_to_offset(
         resource_entry.offset_to_data);
     entry->size = resource_entry.size;
@@ -529,7 +529,7 @@ std::unique_ptr<io::File> ExeArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

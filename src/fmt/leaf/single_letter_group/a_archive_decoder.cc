@@ -79,7 +79,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (const auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = input_file.stream.read_to_zero(23).str();
+        entry->path = input_file.stream.read_to_zero(23).str();
         entry->flags = input_file.stream.read_u8();
         entry->size = input_file.stream.read_u32_le();
         entry->offset = input_file.stream.read_u32_le() + offset_to_data;
@@ -113,7 +113,7 @@ std::unique_ptr<io::File> AArchiveDecoder::read_file_impl(
     {
         data = input_file.stream.read(entry->size);
     }
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

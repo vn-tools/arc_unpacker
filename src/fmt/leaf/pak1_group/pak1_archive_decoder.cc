@@ -142,7 +142,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->already_unpacked = false;
-        entry->name = util::sjis_to_utf8(
+        entry->path = util::sjis_to_utf8(
             input_file.stream.read_to_zero(16)).str();
         entry->size = input_file.stream.read_u32_le();
         entry->compressed = input_file.stream.read_u32_le() > 0;
@@ -181,7 +181,7 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
         data = input_file.stream.read(entry->size);
     }
 
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 void Pak1ArchiveDecoder::preprocess(
@@ -191,12 +191,12 @@ void Pak1ArchiveDecoder::preprocess(
         palette_entries, sprite_entries, mask_entries;
     for (auto &entry : meta.entries)
     {
-        auto fn = entry->name.substr(0, entry->name.find_first_of('.'));
-        if (entry->name.find("c16") != std::string::npos)
+        const auto fn = entry->path.stem();
+        if (entry->path.has_extension("c16"))
             palette_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
-        else if (entry->name.find("grp") != std::string::npos)
+        else if (entry->path.has_extension("grp"))
             sprite_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
-        else if (entry->name.find("msk") != std::string::npos)
+        else if (entry->path.has_extension("msk"))
             mask_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
     }
 
@@ -225,7 +225,7 @@ void Pak1ArchiveDecoder::preprocess(
 
             auto sprite = grp_image_decoder.decode(
                 *sprite_file, palette_file, mask_file);
-            saver.save(util::file_from_image(sprite, sprite_entry->name));
+            saver.save(util::file_from_image(sprite, sprite_entry->path));
 
             sprite_entry->already_unpacked = true;
             if (mask_entry)

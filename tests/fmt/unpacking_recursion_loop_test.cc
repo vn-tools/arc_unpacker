@@ -40,7 +40,7 @@ std::unique_ptr<ArchiveMeta>
 {
     auto meta = std::make_unique<ArchiveMeta>();
     auto entry = std::make_unique<ArchiveEntry>();
-    entry->name = "infinity";
+    entry->path = "infinity";
     meta->entries.push_back(std::move(entry));
     return meta;
 }
@@ -49,7 +49,7 @@ std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
     io::File &input_file, const ArchiveMeta &, const ArchiveEntry &e) const
 {
     input_file.stream.seek(0);
-    return std::make_unique<io::File>(e.name, input_file.stream.read_to_eof());
+    return std::make_unique<io::File>(e.path, input_file.stream.read_to_eof());
 }
 
 TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")

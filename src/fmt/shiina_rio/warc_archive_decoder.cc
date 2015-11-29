@@ -90,28 +90,29 @@ std::unique_ptr<fmt::ArchiveMeta>
     warc::decrypt_table_data(*plugin, warc_version, table_offset, table_data);
     io::MemoryStream table_stream(table_data);
 
-    std::set<std::string> known_names;
+    std::set<io::path> known_names;
     auto meta = std::make_unique<ArchiveMetaImpl>(*plugin, warc_version);
     while (!table_stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = table_stream.read_to_zero(plugin->entry_name_size).str();
-        for (auto &c : entry->name)
+        auto name = table_stream.read_to_zero(plugin->entry_name_size).str();
+        for (auto &c : name)
         {
-            if (static_cast<u8>(c) >= 0x80)
+            if (static_cast<const u8>(c) >= 0x80)
             {
                 c = '_';
                 entry->suspicious = true;
             }
         }
-        entry->suspicious |= known_names.find(entry->name) != known_names.end();
-        known_names.insert(entry->name);
+        entry->path = name;
+        entry->suspicious |= known_names.find(entry->path) != known_names.end();
+        known_names.insert(entry->path);
         entry->offset = table_stream.read_u32_le();
         entry->size_comp = table_stream.read_u32_le();
         entry->size_orig = table_stream.read_u32_le();
         entry->time = table_stream.read_u64_le();
         entry->flags = table_stream.read_u32_le();
-        if (entry->name.size())
+        if (!entry->path.str().empty())
             meta->entries.push_back(std::move(entry));
     }
     return std::move(meta);
@@ -170,10 +171,10 @@ std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
     {
         Log.warn(
             "Suspicious entry: %s (anti-extract decoy?)\n",
-            entry->name.c_str());
+            entry->path.str().c_str());
     }
 
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> WarcArchiveDecoder::get_linked_formats() const

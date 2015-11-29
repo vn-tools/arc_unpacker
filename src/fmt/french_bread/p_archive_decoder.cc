@@ -40,7 +40,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         auto name = input_file.stream.read(60).str();
         for (auto j : util::range(name.size()))
             name[j] ^= i * j * 3 + 0x3D;
-        entry->name = name.substr(0, name.find('\0'));
+        entry->path = name.substr(0, name.find('\0'));
         entry->offset = input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le() ^ encryption_key;
         meta->entries.push_back(std::move(entry));
@@ -51,13 +51,13 @@ std::unique_ptr<fmt::ArchiveMeta>
 std::unique_ptr<io::File> PArchiveDecoder::read_file_impl(
     io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto key = entry->path.str();
+    auto data = input_file.stream.seek(entry->offset).read(entry->size);
     static const size_t encrypted_block_size = 0x2173;
     for (auto i : util::range(std::min(encrypted_block_size, entry->size)))
-        data[i] ^= entry->name[i % entry->name.size()] + i + 3;
-    return std::make_unique<io::File>(entry->name, data);
+        data[i] ^= key[i % key.size()] + i + 3;
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> PArchiveDecoder::get_linked_formats() const

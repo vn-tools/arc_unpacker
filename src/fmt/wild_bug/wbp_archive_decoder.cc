@@ -74,7 +74,7 @@ std::unique_ptr<fmt::ArchiveMeta>
             entry->offset = input_file.stream.read_u32_le();
             entry->size = input_file.stream.read_u32_le();
             input_file.stream.skip(8);
-            entry->name = dir_names.at(dir_id)
+            entry->path = dir_names.at(dir_id)
                 + input_file.stream.read_to_zero(name_size).str();
 
             meta->entries.push_back(std::move(entry));
@@ -93,7 +93,7 @@ std::unique_ptr<io::File> WbpArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> WbpArchiveDecoder::get_linked_formats() const

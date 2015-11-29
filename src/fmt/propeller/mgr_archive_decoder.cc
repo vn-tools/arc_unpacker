@@ -68,7 +68,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->offset = entry_count == 1
             ? input_file.stream.tell()
             : input_file.stream.read_u32_le();
-        entry->name = util::format("%d.bmp", i);
+        entry->path = util::format("%d.bmp", i);
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -84,7 +84,7 @@ std::unique_ptr<io::File> MgrArchiveDecoder::read_file_impl(
 
     auto data = input_file.stream.read(size_comp);
     data = decompress(data, size_orig);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 static auto dummy = fmt::register_fmt<MgrArchiveDecoder>("propeller/mgr");

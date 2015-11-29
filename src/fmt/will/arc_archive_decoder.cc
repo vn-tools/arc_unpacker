@@ -41,11 +41,11 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
             auto entry = std::make_unique<ArchiveEntryImpl>();
             auto name = input_file.stream.read_to_zero(name_size).str();
             entry->already_unpacked = false;
-            entry->name = name + "." + dir.extension;
+            entry->path = name + "." + dir.extension;
             entry->size = input_file.stream.read_u32_le();
             entry->offset = input_file.stream.read_u32_le();
 
-            if (!entry->name.size())
+            if (entry->path.str().empty())
                 throw err::CorruptDataError("Empty file name");
             if (entry->offset < min_offset)
                 throw err::BadDataOffsetError();
@@ -70,10 +70,10 @@ void ArcArchiveDecoder::preprocess(
     std::map<std::string, ArchiveEntryImpl*> mask_entries, sprite_entries;
     for (auto &entry : meta.entries)
     {
-        auto fn = entry->name.substr(0, entry->name.find_first_of('.'));
-        if (entry->name.find("MSK") != std::string::npos)
+        auto fn = entry->path.stem();
+        if (entry->path.has_extension("MSK"))
             mask_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
-        else if (entry->name.find("WIP") != std::string::npos)
+        else if (entry->path.has_extension("WIP"))
             sprite_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
     }
 
@@ -95,7 +95,7 @@ void ArcArchiveDecoder::preprocess(
             for (auto &sprite : sprites)
             {
                 saver.save(util::file_from_image(
-                    *sprite, sprite_entry->name));
+                    *sprite, sprite_entry->path));
             }
         }
         catch (...)
@@ -142,7 +142,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     auto data = input_file.stream.read(entry->size);
 
     auto output_file = std::make_unique<io::File>();
-    output_file->path = entry->name;
+    output_file->path = entry->path;
 
     if (output_file->path.has_extension("wsc")
         || output_file->path.has_extension("scr"))

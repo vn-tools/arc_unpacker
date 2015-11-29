@@ -62,7 +62,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = table_stream->read_to_zero(0x64).str();
+        entry->path = table_stream->read_to_zero(0x64).str();
         entry->size = table_stream->read_u32_le();
         entry->offset = table_stream->read_u32_le();
         if (entry->offset + entry->size > input_file.stream.size())
@@ -77,7 +77,7 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto output_file = std::make_unique<io::File>();
-    output_file->path = entry->name;
+    output_file->path = entry->path;
 
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);

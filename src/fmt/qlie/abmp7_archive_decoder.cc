@@ -29,7 +29,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto meta = std::make_unique<ArchiveMeta>();
 
     auto first_entry = std::make_unique<ArchiveEntryImpl>();
-    first_entry->name = "base.dat";
+    first_entry->path = "base.dat";
     first_entry->size = input_file.stream.read_u32_le();
     first_entry->offset = input_file.stream.tell();
     input_file.stream.skip(first_entry->size);
@@ -40,10 +40,10 @@ std::unique_ptr<fmt::ArchiveMeta>
         auto entry = std::make_unique<ArchiveEntryImpl>();
         auto encoded_name = input_file.stream.read(input_file.stream.read_u8());
         input_file.stream.skip(31 - encoded_name.size());
-        entry->name = util::sjis_to_utf8(encoded_name).str();
-        if (entry->name.empty())
-            entry->name = "unknown";
-        entry->name += ".dat";
+        entry->path = util::sjis_to_utf8(encoded_name).str();
+        if (entry->path.str().empty())
+            entry->path = "unknown";
+        entry->path.change_extension("dat");
         entry->size = input_file.stream.read_u32_le();
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(entry->size);
@@ -58,7 +58,7 @@ std::unique_ptr<io::File> Abmp7ArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

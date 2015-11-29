@@ -54,7 +54,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = input_file.stream.read_to_zero().str();
+        entry->path = input_file.stream.read_to_zero().str();
         entry->compression_type =
             static_cast<CompressionType>(input_file.stream.read_u8());
         entry->offset = input_file.stream.read_u32_be() + offset_to_data;
@@ -71,7 +71,7 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto output_file = std::make_unique<io::File>();
 
-    output_file->path = entry->name;
+    output_file->path = entry->path;
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
 

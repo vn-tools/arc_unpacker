@@ -52,8 +52,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     while (true)
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = util::sjis_to_utf8(data_stream.read_to_zero(20)).str();
-        if (!entry->name.size())
+        entry->path = util::sjis_to_utf8(data_stream.read_to_zero(20)).str();
+        if (entry->path.str().empty())
             break;
         entry->offset = data_stream.read_u32_le();
         entry->size = data_stream.read_u32_le();
@@ -74,7 +74,7 @@ std::unique_ptr<io::File> PakArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

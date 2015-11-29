@@ -80,17 +80,17 @@ static std::unique_ptr<io::File> read_file(
         uncompressed_stream.read_to_eof(),
         decryptors[encryption_version][uncompressed_stream.read_u8()]);
 
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 static size_t detect_encryption_version(
     io::File &input_file, const fmt::ArchiveMeta &meta)
 {
-    for (auto &entry : meta.entries)
+    for (const auto &entry : meta.entries)
     {
-        if (entry->name.find(".jpg") == std::string::npos)
+        if (!entry->path.has_extension("jpg"))
             continue;
-        for (auto version : util::range(decryptors.size()))
+        for (const auto version : util::range(decryptors.size()))
         {
             auto file = read_file(input_file, *entry, version);
             file->stream.seek(0);
@@ -128,7 +128,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = table_stream.read_to_zero().str();
+        entry->path = table_stream.read_to_zero().str();
         entry->offset = table_stream.read_u32_le();
         entry->size_orig = table_stream.read_u32_le();
         table_stream.skip(4);

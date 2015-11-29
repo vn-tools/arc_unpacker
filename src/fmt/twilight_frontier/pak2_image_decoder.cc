@@ -33,11 +33,11 @@ void Pak2ImageDecoder::clear_palettes()
 }
 
 void Pak2ImageDecoder::add_palette(
-    const std::string &name, const bstr &palette_data)
+    const io::path &path, const bstr &palette_data)
 {
     io::MemoryStream palette_stream(palette_data);
     palette_stream.skip(1);
-    p->palette_map[name] = std::make_shared<res::Palette>(
+    p->palette_map[path] = std::make_shared<res::Palette>(
         256, palette_stream, res::PixelFormat::BGRA5551);
 }
 

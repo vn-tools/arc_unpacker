@@ -76,7 +76,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         table_stream.seek(0x114 * i);
         table_stream.skip(1);
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = util::sjis_to_utf8(table_stream.read_to_zero()).str();
+        entry->path = util::sjis_to_utf8(table_stream.read_to_zero()).str();
         table_stream.seek(0x114 * i + 0x108);
         entry->offset = table_stream.read_u32_le() + meta->header_offset;
         entry->size = table_stream.read_u32_le();
@@ -95,7 +95,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     auto key_idx = entry->offset - meta->header_offset;
     for (const auto i : util::range(data.size()))
         data[i] ^= meta->arc_key[key_idx++ % meta->arc_key.size()];
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 static auto dummy = fmt::register_fmt<DatArchiveDecoder>("adv/dat");

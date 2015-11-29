@@ -42,7 +42,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         auto tmp = input_file.stream.read(20);
         for (auto i : util::range(tmp.size()))
             tmp[i] ^= tmp[tmp.size() - 1];
-        entry->name = tmp.str(true);
+        entry->path = tmp.str(true);
         entry->size_orig = input_file.stream.read_u32_le();
         entry->size_comp = input_file.stream.read_u32_le();
         entry->offset = input_file.stream.read_u32_le();
@@ -58,7 +58,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
     data = util::pack::lzss_decompress_bytewise(data, entry->size_orig);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 static auto dummy = fmt::register_fmt<ArcArchiveDecoder>("libido/arc");

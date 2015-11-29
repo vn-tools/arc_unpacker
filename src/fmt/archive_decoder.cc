@@ -42,7 +42,7 @@ void ArchiveDecoder::unpack(
             ++error_count;
             Log.err(
                 "Can't unpack %s: %s\n",
-                entry->name.c_str(),
+                entry->path.str().c_str(),
                 e.what());
         }
     }
@@ -71,9 +71,9 @@ std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(
     int number = 0;
     for (const auto &entry : meta->entries)
     {
-        if (!entry->name.empty())
+        if (!entry->path.str().empty())
             continue;
-        entry->name = meta->entries.size() > 1
+        entry->path = meta->entries.size() > 1
             ? util::format("%s_%03d", prefix.c_str(), number++)
             : prefix;
     }

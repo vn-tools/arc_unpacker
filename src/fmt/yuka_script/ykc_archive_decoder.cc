@@ -42,7 +42,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         input_file.stream.skip(4);
 
         input_file.stream.seek(name_origin);
-        entry->name = util::sjis_to_utf8(
+        entry->path = util::sjis_to_utf8(
             input_file.stream.read_to_zero(name_size)).str();
         meta->entries.push_back(std::move(entry));
     }
@@ -55,7 +55,7 @@ std::unique_ptr<io::File> YkcArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> YkcArchiveDecoder::get_linked_formats() const

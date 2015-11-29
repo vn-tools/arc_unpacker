@@ -191,7 +191,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto &kv : map)
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = kv.first;
+        entry->path = kv.first;
         entry->texture_info_list = kv.second;
         meta->entries.push_back(std::move(entry));
     }
@@ -222,7 +222,7 @@ std::unique_ptr<io::File> AnmArchiveDecoder::read_file_impl(
     for (auto &texture_info : entry->texture_info_list)
         write_image(input_file.stream, texture_info, image, width);
 
-    return util::file_from_image(image, entry->name);
+    return util::file_from_image(image, entry->path);
 }
 
 static auto dummy

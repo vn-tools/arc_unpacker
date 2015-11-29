@@ -36,7 +36,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (const auto i : util::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = input_file.stream.read_to_zero(0x10).str();
+        entry->path = input_file.stream.read_to_zero(0x10).str();
         entry->size = input_file.stream.read_u32_le();
         entry->offset = current_offset;
         current_offset += entry->size;
@@ -50,7 +50,7 @@ std::unique_ptr<io::File> DpkArchiveDecoder::read_file_impl(
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> DpkArchiveDecoder::get_linked_formats() const

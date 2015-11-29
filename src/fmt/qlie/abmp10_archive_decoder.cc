@@ -47,7 +47,7 @@ static int guess_version(io::Stream &arc_stream)
 static void read_data_entry(io::File &input_file, fmt::ArchiveMeta &meta)
 {
     auto entry = std::make_unique<ArchiveEntryImpl>();
-    entry->name = "unknown.dat";
+    entry->path = "unknown.dat";
     entry->size = input_file.stream.read_u32_le();
     entry->offset = input_file.stream.tell();
     input_file.stream.skip(entry->size);
@@ -60,10 +60,10 @@ static void read_resource_entry(io::File &input_file, fmt::ArchiveMeta &meta)
 
     auto entry = std::make_unique<ArchiveEntryImpl>();
     auto name_size = input_file.stream.read_u16_le();
-    entry->name = util::sjis_to_utf8(input_file.stream.read(name_size)).str();
-    if (entry->name.empty())
-        entry->name = "unknown";
-    entry->name += ".dat";
+    entry->path = util::sjis_to_utf8(input_file.stream.read(name_size)).str();
+    if (entry->path.str().empty())
+        entry->path = "unknown";
+    entry->path.change_extension("dat");
 
     if (magic == magic_snddat11
         || magic == magic_imgdat11
@@ -132,7 +132,7 @@ std::unique_ptr<io::File> Abmp10ArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

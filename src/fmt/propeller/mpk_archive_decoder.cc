@@ -31,17 +31,17 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
-        auto name = input_file.stream.read(32);
-        u8 key8 = name[31];
-        u32 key32 = (key8 << 24) | (key8 << 16) | (key8 << 8) | key8;
+        auto name_bin = input_file.stream.read(32);
+        const u8 key8 = name_bin[31];
+        const u32 key32 = (key8 << 24) | (key8 << 16) | (key8 << 8) | key8;
 
-        for (auto i : util::range(32))
-            name[i] ^= key8;
+        for (auto &c : name_bin)
+            c ^= key8;
 
-        entry->name = util::sjis_to_utf8(name).str();
-        if (entry->name[0] == '\\')
-            entry->name = entry->name.substr(1);
-        entry->name.erase(entry->name.find('\x00'));
+        auto name = util::sjis_to_utf8(name_bin).str(true);
+        if (name[0] == '\\')
+            name = name.substr(1);
+        entry->path = name;
 
         entry->offset = input_file.stream.read_u32_le() ^ key32;
         entry->size = input_file.stream.read_u32_le() ^ key32;
@@ -57,7 +57,7 @@ std::unique_ptr<io::File> MpkArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> MpkArchiveDecoder::get_linked_formats() const

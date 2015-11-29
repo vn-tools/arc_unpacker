@@ -49,7 +49,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         table_stream.seek(i * 0x18);
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->name = util::format("%05d.dat", i);
+        entry->path = util::format("%05d.dat", i);
         entry->offset = table_stream.read_u32_le() + data_offset;
         entry->size_comp = table_stream.read_u32_le();
         entry->size_orig = table_stream.read_u32_le();
@@ -65,7 +65,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
     data = util::pack::lzss_decompress_bytewise(data, entry->size_orig);
-    auto output_file = std::make_unique<io::File>(entry->name, data);
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }

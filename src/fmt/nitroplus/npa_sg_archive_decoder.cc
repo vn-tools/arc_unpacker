@@ -46,7 +46,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         const auto name_size = table_stream.read_u32_le();
-        entry->name = util::convert_encoding(
+        entry->path = util::convert_encoding(
             table_stream.read(name_size), "utf-16le", "utf-8").str();
         entry->size = table_stream.read_u32_le();
         entry->offset = table_stream.read_u32_le();
@@ -65,7 +65,7 @@ std::unique_ptr<io::File> NpaSgArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
     decrypt(data);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 static auto dummy = fmt::register_fmt<NpaSgArchiveDecoder>("nitroplus/npa-sg");

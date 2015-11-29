@@ -40,12 +40,12 @@ std::unique_ptr<fmt::ArchiveMeta>
 
         const auto name_offset = input_file.stream.read_u32_le();
         if (!name_offset)
-            entry->name = "";
+            entry->path = "";
         else
             input_file.stream.peek(name_offset, [&]()
                 {
                     const auto name_size = input_file.stream.read_u32_le();
-                    entry->name = input_file.stream.read(name_size).str();
+                    entry->path = input_file.stream.read(name_size).str();
                 });
 
         if (!entry->size)
@@ -60,7 +60,7 @@ std::unique_ptr<io::File> GpdaArchiveDecoder::read_file_impl(
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
-    return std::make_unique<io::File>(entry->name, data);
+    return std::make_unique<io::File>(entry->path, data);
 }
 
 std::vector<std::string> GpdaArchiveDecoder::get_linked_formats() const

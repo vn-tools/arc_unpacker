@@ -39,7 +39,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         u32 tmp = input_file.stream.read_u32_le();
         entry->compressed = tmp & 1;
         entry->size = tmp >> 1;
-        entry->name = input_file.stream.read_to_zero(24).str();
+        entry->path = input_file.stream.read_to_zero(24).str();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -50,7 +50,7 @@ std::unique_ptr<io::File> LnkArchiveDecoder::read_file_impl(
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto output_file = std::make_unique<io::File>();
-    output_file->path = entry->name;
+    output_file->path = entry->path;
 
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
@@ -66,7 +66,7 @@ std::unique_ptr<io::File> LnkArchiveDecoder::read_file_impl(
     if (key_pos >= 0 && key_pos < static_cast<int>(entry->size))
     {
         u8 key = 0;
-        for (u8 c : entry->name)
+        for (const u8 c : entry->path.str())
             key += c;
 
         for (size_t i = 0; i < 0x100 && key_pos + i < entry->size; i++)

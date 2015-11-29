@@ -100,7 +100,7 @@ std::unique_ptr<io::File> Pak2ImageArchiveDecoder::read_file_impl(
             entry->width, entry->height, mask_data, res::PixelFormat::Gray8);
         image.apply_mask(mask);
     }
-    return util::file_from_image(image, entry->name);
+    return util::file_from_image(image, entry->path);
 }
 
 fmt::IDecoder::NamingStrategy Pak2ImageArchiveDecoder::naming_strategy() const

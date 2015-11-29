@@ -59,7 +59,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(entry->size);
-        entry->name = util::format("%04d", i);
+        entry->path = util::format("%04d", i);
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -74,7 +74,7 @@ std::unique_ptr<io::File> Pak1AudioArchiveDecoder::read_file_impl(
     audio.bits_per_sample = entry->bits_per_sample;
     audio.sample_rate = entry->sample_rate;
     audio.samples = input_file.stream.seek(entry->offset).read(entry->size);
-    return util::file_from_audio(audio, entry->name);
+    return util::file_from_audio(audio, entry->path);
 }
 
 static auto dummy

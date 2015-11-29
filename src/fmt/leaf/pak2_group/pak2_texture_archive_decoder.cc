@@ -111,7 +111,7 @@ std::unique_ptr<io::File> Pak2TextureArchiveDecoder::read_file_impl(
         chunk_image.flip_vertically();
         image.paste(chunk_image, chunk.x, chunk.y);
     }
-    return util::file_from_image(image, entry->name);
+    return util::file_from_image(image, entry->path);
 }
 
 fmt::IDecoder::NamingStrategy Pak2TextureArchiveDecoder::naming_strategy() const
