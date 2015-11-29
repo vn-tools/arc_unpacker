@@ -49,12 +49,18 @@ path path::parent() const
 
 std::string path::name() const
 {
-    return boost::filesystem::path(p).filename().string();
+    const auto ret = boost::filesystem::path(p).filename().string();
+    if (ret == "." || ret == ".." || ret == "/")
+        return "";
+    return ret;
 }
 
 std::string path::stem() const
 {
-    return boost::filesystem::path(p).stem().string();
+    const auto ret = boost::filesystem::path(p).stem().string();
+    if (ret == "." || ret == ".." || ret == "/")
+        return "";
+    return ret;
 }
 
 std::string path::extension() const
@@ -102,7 +108,7 @@ void path::change_stem(const std::string &new_stem)
 
 void path::change_extension(const std::string &new_extension)
 {
-    if (name().empty() || stem().empty() || name() == "." || name() == "..")
+    if (name().empty() || stem().empty())
         return;
 
     const auto last_dot_pos = name().find_last_of('.');
