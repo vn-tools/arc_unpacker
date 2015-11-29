@@ -171,7 +171,7 @@ std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
     {
         Log.warn(
             "Suspicious entry: %s (anti-extract decoy?)\n",
-            entry->path.str().c_str());
+            entry->path.c_str());
     }
 
     return std::make_unique<io::File>(entry->path, data);

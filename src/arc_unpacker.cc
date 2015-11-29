@@ -279,7 +279,7 @@ void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, io::File &file) const
 
 bool ArcUnpacker::Priv::guess_decoder_and_unpack(io::File &file) const
 {
-    Log.info(util::format("Unpacking %s...\n", file.path.str().c_str()));
+    Log.info(util::format("Unpacking %s...\n", file.path.c_str()));
     const auto decoder = options.format.empty()
         ? guess_decoder(file, registry)
         : registry.create_decoder(options.format);

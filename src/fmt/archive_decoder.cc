@@ -40,10 +40,7 @@ void ArchiveDecoder::unpack(
         catch (std::exception &e)
         {
             ++error_count;
-            Log.err(
-                "Can't unpack %s: %s\n",
-                entry->path.str().c_str(),
-                e.what());
+            Log.err("Can't unpack %s: %s\n", entry->path.c_str(), e.what());
         }
     }
     if (error_count)

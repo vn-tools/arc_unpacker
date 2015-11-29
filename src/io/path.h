@@ -12,6 +12,7 @@ namespace io {
         path(const char *s);
         path(const std::string &s);
 
+        const char *c_str() const;
         std::string str() const;
         std::wstring wstr() const;
 

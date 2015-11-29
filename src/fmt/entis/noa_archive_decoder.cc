@@ -91,7 +91,7 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
     {
         Log.warn(util::format(
             "%s is encrypted, but encrypted files are not supported\n",
-            entry->path.str().c_str()));
+            entry->path.c_str()));
     }
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);

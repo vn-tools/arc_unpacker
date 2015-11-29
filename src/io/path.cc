@@ -27,6 +27,11 @@ path::path(const std::string &s) : p(s)
 {
 }
 
+const char *path::c_str() const
+{
+    return p.c_str();
+}
+
 std::string path::str() const
 {
     return boost::filesystem::path(p).string();

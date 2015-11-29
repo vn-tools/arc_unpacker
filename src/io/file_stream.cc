@@ -16,7 +16,7 @@ static FILE *utf8_fopen(const path &path, const char *mode)
             cmode.size() / 2);
         return _wfopen(path.wstr().c_str(), widemode.c_str());
     #else
-        return std::fopen(path.str().c_str(), mode);
+        return std::fopen(path.c_str(), mode);
     #endif
 }
 

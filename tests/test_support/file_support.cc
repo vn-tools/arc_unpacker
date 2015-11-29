@@ -38,8 +38,8 @@ void tests::compare_file_paths(
 {
     INFO(util::format(
         "Expected file path: %s, actual: %s\n",
-        expected_file_path.str().c_str(),
-        actual_file_path.str().c_str()));
+        expected_file_path.c_str(),
+        actual_file_path.c_str()));
     REQUIRE(expected_file_path == actual_file_path);
 }
 
