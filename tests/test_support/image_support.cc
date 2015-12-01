@@ -13,21 +13,16 @@ static inline void compare_pixels(
     const res::Pixel expected,
     const res::Pixel actual,
     const size_t x,
-    const size_t y,
-    const size_t c)
+    const size_t y)
 {
-    if (expected[c] == actual[c])
-        return;
-
-    INFO(util::format(
-        "Pixels differ at %d, %d: %02x%02x%02x%02x != %02x%02x%02x%02x",
-        x, y,
-        expected.b, expected.g, expected.r, expected.a,
-        actual.b, actual.g, actual.r, actual.a));
-    REQUIRE(expected.r == actual.r);
-    REQUIRE(expected.g == actual.g);
-    REQUIRE(expected.b == actual.b);
-    REQUIRE(expected.a == actual.a);
+    if (expected != actual)
+    {
+        FAIL(util::format(
+            "Pixels differ at %d, %d: %02x%02x%02x%02x != %02x%02x%02x%02x",
+            x, y,
+            expected.b, expected.g, expected.r, expected.a,
+            actual.b, actual.g, actual.r, actual.a));
+    }
 }
 
 static res::Image image_from_file(io::File &file)
@@ -56,10 +51,9 @@ void tests::compare_images(
     for (const auto y : util::range(expected_image.height()))
     for (const auto x : util::range(expected_image.width()))
     {
-        const auto expected_pix = expected_image.at(x, y);
-        const auto actual_pix = actual_image.at(x, y);
-        for (const auto c : util::range(4))
-            compare_pixels(expected_pix, actual_pix, x, y, c);
+        const auto expected_pixel = expected_image.at(x, y);
+        const auto actual_pixel = actual_image.at(x, y);
+        compare_pixels(expected_pixel, actual_pixel, x, y);
     }
 }
 
