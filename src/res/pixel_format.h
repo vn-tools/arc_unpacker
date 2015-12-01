@@ -31,6 +31,8 @@ namespace res {
         RGBnA4444,
         RGBnA5551,
         RGBnA8888,
+
+        Count
     };
 
     // TODO: constexpr once cygwin adapts mingw-w64 for its g++
