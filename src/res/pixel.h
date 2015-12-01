@@ -11,12 +11,12 @@ namespace res {
     {
         u8 b, g, r, a;
 
-        constexpr bool operator ==(const Pixel &other)
+        constexpr bool operator ==(const Pixel &other) const
         {
             return r == other.r && g == other.g && b == other.b && a == other.a;
         }
 
-        constexpr bool operator !=(const Pixel &other)
+        constexpr bool operator !=(const Pixel &other) const
         {
             return !(operator ==(other));
         }
