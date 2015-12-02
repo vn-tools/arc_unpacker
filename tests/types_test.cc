@@ -1,5 +1,5 @@
-#include "test_support/catch.hh"
 #include <limits>
+#include "test_support/catch.hh"
 #include "types.h"
 
 using namespace au;

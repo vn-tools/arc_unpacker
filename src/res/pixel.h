@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <type_traits>
 #include "types.h"
 
 namespace au {
@@ -18,7 +16,7 @@ namespace res {
 
         constexpr bool operator !=(const Pixel &other) const
         {
-            return !(operator ==(other));
+            return r != other.r || g != other.g || b != other.b || a != other.a;
         }
 
         constexpr const u8 &operator[](size_t x) const
@@ -31,8 +29,5 @@ namespace res {
             return reinterpret_cast<u8*>(this)[x];
         }
     };
-
-    static_assert(sizeof(Pixel) == 4, "!");
-    static_assert(std::is_pod<Pixel>::value, "!");
 
 } }
