@@ -5,6 +5,11 @@
 using namespace au;
 using namespace au::io;
 
+static std::string fix_slashes(const std::string &input)
+{
+    return boost::algorithm::replace_all_copy(input, "\\", "/");
+}
+
 static std::string normalize_extension(const std::string &extension)
 {
     std::string output(extension);
@@ -19,11 +24,11 @@ path::path() : p("")
 {
 }
 
-path::path(const char *s) : p(s)
+path::path(const char *s) : p(fix_slashes(s))
 {
 }
 
-path::path(const std::string &s) : p(s)
+path::path(const std::string &s) : p(fix_slashes(s))
 {
 }
 
