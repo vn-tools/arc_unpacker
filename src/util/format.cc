@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <memory>
 
-std::string au::util::format(const std::string &fmt, ...)
+std::string au::util::format(const std::string fmt, ...)
 {
     std::va_list args;
     va_start(args, fmt);
@@ -11,7 +11,7 @@ std::string au::util::format(const std::string &fmt, ...)
     return ret;
 }
 
-std::string au::util::format(const std::string &fmt, std::va_list args)
+std::string au::util::format(const std::string fmt, std::va_list args)
 {
     size_t size;
     std::va_list args_copy;
