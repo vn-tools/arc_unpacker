@@ -35,8 +35,8 @@ namespace au {
         void reserve(const size_t how_much);
 
         size_t find(const bstr &other) const;
-        bstr substr(const size_t start) const;
-        bstr substr(const size_t start, const size_t size) const;
+        bstr substr(const int start) const;
+        bstr substr(const int start, const int size) const;
 
         template<typename T> T *get()
         {

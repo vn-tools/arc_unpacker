@@ -116,19 +116,17 @@ TEST_CASE("bstr", "[core][types]")
             REQUIRE(x.substr(0, 7) == "test\x00\x01"_b);
             REQUIRE(x.substr(1, 7) == "est\x00\x01"_b);
         }
-        SECTION("Pseudo negative offsets")
+        SECTION("Negative offsets")
         {
+            REQUIRE(x.substr(-1) == "\x01"_b);
             REQUIRE(x.substr(-1, 0) == ""_b);
-            REQUIRE(x.substr(-1, 1) == ""_b);
-            REQUIRE(x.substr(-1, 2) == ""_b); // note: not "t"_b...
-            REQUIRE(x.substr(-1) == x.substr(0xFFFFFFFFull)); // because of this
-            REQUIRE(x.substr(0xFFFFFFFFull) == x.substr(7)); // and this
+            REQUIRE(x.substr(-1, 1) == "\x01"_b);
+            REQUIRE(x.substr(-2, 1) == "\x00"_b);
+            REQUIRE(x.substr(-2, 2) == "\x00\x01"_b);
         }
-        SECTION("Pseudo negative sizes")
+        SECTION("Negative sizes")
         {
-            REQUIRE(x.substr(1, -1) == "est\x00\x01"_b); // similarly, not ""_b
-            REQUIRE(x.substr(1, -1) == x.substr(1, 0xFFFFFFFFull));
-            REQUIRE(x.substr(1, 0xFFFFFFFFull) == x.substr(1, 7));
+            REQUIRE(x.substr(1, -1) == "est\x00\x01"_b);
         }
     }
 

@@ -57,19 +57,28 @@ size_t bstr::find(const bstr &other) const
     return pos - v.begin();
 }
 
-bstr bstr::substr(const size_t start) const
+bstr bstr::substr(int start) const
 {
-    if (start > size())
+    if (start > static_cast<int>(size()))
         return ""_b;
+    while (start < 0)
+        start += v.size();
     return bstr(get<const u8>() + start, size() - start);
 }
 
-bstr bstr::substr(const size_t start, const size_t size) const
+bstr bstr::substr(int start, int size) const
 {
-    if (start > v.size())
+    if (start > static_cast<int>(v.size()))
         return ""_b;
-    if (size > v.size() || start + size > v.size())
+    while (size < 0)
+        size += v.size();
+    while (start < 0)
+        start += v.size();
+    if (size > static_cast<int>(v.size())
+    || start + size > static_cast<int>(v.size()))
+    {
         return substr(start, v.size() - start);
+    }
     return bstr(get<const u8>() + start, size);
 }
 
