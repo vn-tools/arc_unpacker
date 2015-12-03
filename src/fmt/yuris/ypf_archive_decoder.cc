@@ -1,4 +1,5 @@
 #include "fmt/yuris/ypf_archive_decoder.h"
+#include <set>
 #include "err.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
@@ -46,6 +47,32 @@ static u8 read_file_name_size(io::Stream &input_stream, const u32 version)
     return table[pos + ((pos & 1) ? -1 : 1)];
 }
 
+static bstr unxor(const bstr &input, const u8 key)
+{
+    bstr output(input);
+    for (auto &c : output)
+        c ^= key;
+    return output;
+}
+
+static u8 guess_key(const std::vector<bstr> &names)
+{
+    static const std::set<std::string> good_extensions
+        = {"bmp", "png", "ogg", "txt", "ybn"};
+
+    for (const auto &name : names)
+    {
+        if (name.size() < 4)
+            continue;
+        const auto key = name.at(name.size() - 4) ^ '.';
+        const auto decoded_name = unxor(name, key);
+        const auto possible_extension = decoded_name.substr(-3).str();
+        if (good_extensions.find(possible_extension) != good_extensions.end())
+            return key;
+    }
+    throw err::NotSupportedError("Failed to guess the key");
+}
+
 bool YpfArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.seek(0).read(magic.size()) == magic;
@@ -59,6 +86,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     const auto file_count = input_file.stream.read_u32_le();
     const auto table_size = input_file.stream.read_u32_le();
 
+    std::vector<bstr> names;
+
     auto meta = std::make_unique<ArchiveMeta>();
     input_file.stream.seek(0x20);
     for (const auto i : util::range(file_count))
@@ -66,15 +95,9 @@ std::unique_ptr<fmt::ArchiveMeta>
         input_file.stream.skip(4);
 
         const auto name_size = read_file_name_size(input_file.stream, version);
-        auto name = input_file.stream.read(name_size);
-
-        // assume that file has 3 character long extension
-        const auto key = name.at(name.size() - 4) ^ '.';
-        for (auto &c : name)
-            c ^= key;
-
+        const auto name = input_file.stream.read(name_size);
+        names.push_back(name);
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->path = util::sjis_to_utf8(name).str();
         entry->type = input_file.stream.read_u8();
         entry->compressed = input_file.stream.read_u8() == 1;
         entry->size_orig = input_file.stream.read_u32_le();
@@ -83,6 +106,10 @@ std::unique_ptr<fmt::ArchiveMeta>
         input_file.stream.skip(version == 0xDE ? 12 : 4);
         meta->entries.push_back(std::move(entry));
     }
+
+    const auto key = guess_key(names);
+    for (const auto i : util::range(file_count))
+        meta->entries[i]->path = util::sjis_to_utf8(unxor(names[i], key)).str();
     return meta;
 }
 
