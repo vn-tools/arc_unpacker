@@ -58,7 +58,7 @@ static bstr unxor(const bstr &input, const u8 key)
 static u8 guess_key(const std::vector<bstr> &names)
 {
     static const std::set<std::string> good_extensions
-        = {"bmp", "png", "ogg", "txt", "ybn"};
+        = {"bmp", "png", "ogg", "wav", "txt", "ybn"};
 
     for (const auto &name : names)
     {
