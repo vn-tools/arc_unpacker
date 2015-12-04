@@ -3,25 +3,24 @@
 #include "util/range.h"
 
 using namespace au;
-using namespace au::util;
 
 TEST_CASE("Empty cyclic buffer content", "[util]")
 {
-    const CyclicBuffer<5> buffer(1);
+    const util::CyclicBuffer<5> buffer(1);
     for (auto i : util::range(5))
         REQUIRE(!buffer[i]);
 }
 
 TEST_CASE("Cyclic buffer size", "[util]")
 {
-    const CyclicBuffer<5> buffer(1);
+    const util::CyclicBuffer<5> buffer(1);
     REQUIRE(buffer.size() == 5);
     REQUIRE(buffer.pos() == 1);
 }
 
 TEST_CASE("Cyclic buffer byte pushing", "[util]")
 {
-    CyclicBuffer<5> buffer(1);
+    util::CyclicBuffer<5> buffer(1);
     SECTION("Small strings")
     {
         buffer << '1';
@@ -69,7 +68,7 @@ TEST_CASE("Cyclic buffer byte pushing", "[util]")
 
 TEST_CASE("Cyclic buffer string pushing", "[util]")
 {
-    CyclicBuffer<5> buffer(1);
+    util::CyclicBuffer<5> buffer(1);
     SECTION("Small strings")
     {
         buffer << "123"_b;
@@ -104,7 +103,7 @@ TEST_CASE("Cyclic buffer start position", "[util]")
 {
     SECTION("Zero start position, strings")
     {
-        CyclicBuffer<5> buffer(0);
+        util::CyclicBuffer<5> buffer(0);
         REQUIRE(buffer.start() == 0);
         buffer << "123"_b; REQUIRE(buffer.start() == 0);
         buffer << "45"_b; REQUIRE(buffer.start() == 0);
@@ -115,7 +114,7 @@ TEST_CASE("Cyclic buffer start position", "[util]")
     }
     SECTION("Custom start position, strings")
     {
-        CyclicBuffer<5> buffer(1);
+        util::CyclicBuffer<5> buffer(1);
         REQUIRE(buffer.start() == 1);
         buffer << "123"_b; REQUIRE(buffer.start() == 1);
         buffer << "45"_b; REQUIRE(buffer.start() == 1);
@@ -126,7 +125,7 @@ TEST_CASE("Cyclic buffer start position", "[util]")
     }
     SECTION("Zero start position bytes")
     {
-        CyclicBuffer<5> buffer(0);
+        util::CyclicBuffer<5> buffer(0);
         REQUIRE(buffer.start() == 0);
         buffer << '1'; REQUIRE(buffer.start() == 0);
         buffer << '2'; REQUIRE(buffer.start() == 0);
@@ -141,7 +140,7 @@ TEST_CASE("Cyclic buffer start position", "[util]")
     }
     SECTION("Custom start position bytes")
     {
-        CyclicBuffer<5> buffer(1);
+        util::CyclicBuffer<5> buffer(1);
         REQUIRE(buffer.start() == 1);
         buffer << '1'; REQUIRE(buffer.start() == 1);
         buffer << '2'; REQUIRE(buffer.start() == 1);
@@ -158,7 +157,7 @@ TEST_CASE("Cyclic buffer start position", "[util]")
 
 TEST_CASE("Cyclic buffer manual overwriting", "[util]")
 {
-    CyclicBuffer<2> buffer(0);
+    util::CyclicBuffer<2> buffer(0);
     buffer << "1"_b;
     buffer[0] = '2';
     REQUIRE(buffer[0] == '2');
@@ -167,7 +166,7 @@ TEST_CASE("Cyclic buffer manual overwriting", "[util]")
 
 TEST_CASE("Cyclic buffer access out of bounds", "[util]")
 {
-    CyclicBuffer<2> buffer(0);
+    util::CyclicBuffer<2> buffer(0);
     buffer[0] = '0';
     buffer[1] = '1';
     REQUIRE(buffer[2] == '0');

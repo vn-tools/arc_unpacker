@@ -3,7 +3,6 @@
 #include "types.h"
 
 using namespace au;
-using namespace au::util;
 
 // sjis "あいうえおかきくけこさしすせそたちつてと"
 static const bstr sjis =
@@ -25,10 +24,10 @@ static const bstr utf8 =
 
 TEST_CASE("Converting SJIS to UTF8", "[util]")
 {
-    REQUIRE(convert_encoding(sjis, "sjis", "utf-8") == utf8);
+    REQUIRE(util::convert_encoding(sjis, "sjis", "utf-8") == utf8);
 }
 
 TEST_CASE("Converting UTF8 to SJIS", "[util]")
 {
-    REQUIRE(convert_encoding(utf8, "utf-8", "sjis") == sjis);
+    REQUIRE(util::convert_encoding(utf8, "utf-8", "sjis") == sjis);
 }

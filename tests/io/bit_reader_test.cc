@@ -4,7 +4,6 @@
 #include "test_support/catch.hh"
 
 using namespace au;
-using namespace au::io;
 
 static bstr from_bits(std::initializer_list<u8> s)
 {
@@ -16,7 +15,7 @@ static bstr from_bits(std::initializer_list<u8> s)
 
 TEST_CASE("Reading missing bits throws exceptions", "[io][bit_reader]")
 {
-    BitReader reader(""_b);
+    io::BitReader reader(""_b);
     try
     {
         reader.get(1);
@@ -29,7 +28,7 @@ TEST_CASE("Reading missing bits throws exceptions", "[io][bit_reader]")
 
 TEST_CASE("Reading single bits", "[io][bit_reader]")
 {
-    BitReader reader("\x8F"_b); // 10001111
+    io::BitReader reader("\x8F"_b); // 10001111
     REQUIRE(reader.get(1));
     REQUIRE(!reader.get(1));
     REQUIRE(!reader.get(1));
@@ -42,7 +41,7 @@ TEST_CASE("Reading single bits", "[io][bit_reader]")
 
 TEST_CASE("Reading multiple bits", "[io][bit_reader]")
 {
-    BitReader reader(from_bits({0b10001111}));
+    io::BitReader reader(from_bits({0b10001111}));
     REQUIRE(reader.get(7) == 0b1000111);
     REQUIRE(reader.get(1));
 }
@@ -51,7 +50,7 @@ TEST_CASE("Reading multiple bytes", "[io][bit_reader]")
 {
     SECTION("Smaller test")
     {
-        BitReader reader("\x8F\x8F"_b); // 10001111
+        io::BitReader reader("\x8F\x8F"_b); // 10001111
         REQUIRE(reader.get(7) == (0x8F >> 1));
         REQUIRE(reader.get(1));
 
@@ -71,21 +70,21 @@ TEST_CASE("Reading multiple bytes", "[io][bit_reader]")
 
     SECTION("Bigger test")
     {
-        BitReader reader(from_bits({0b10101010, 0b11110000, 0b00110011}));
+        io::BitReader reader(from_bits({0b10101010, 0b11110000, 0b00110011}));
         REQUIRE(reader.get(1) == 1);
         REQUIRE(reader.get(23) == 0b01010101111000000110011);
     }
 
     SECTION("Max bit reader capacity test (unaligned)")
     {
-        BitReader reader(from_bits({
+        io::BitReader reader(from_bits({
             0b11001100, 0b10101010, 0b11110000, 0b00110011}));
         REQUIRE(reader.get(32) == 0b11001100'10101010'11110000'00110011);
     }
 
     SECTION("Max bit reader capacity test (aligned)")
     {
-        BitReader reader(from_bits({
+        io::BitReader reader(from_bits({
             0b11001100, 0b10101010, 0b11110000, 0b00110011, 0b01010101}));
         reader.get(1);
         REQUIRE(reader.get(32) == 0b1001100'10101010'11110000'00110011'0);
@@ -94,7 +93,7 @@ TEST_CASE("Reading multiple bytes", "[io][bit_reader]")
 
 TEST_CASE("Checking for EO", "[io][bit_reader]")
 {
-    BitReader reader("\x00\x00"_b);
+    io::BitReader reader("\x00\x00"_b);
     reader.get(7);
     REQUIRE(!reader.eof());
     reader.get(7);
@@ -107,11 +106,11 @@ TEST_CASE("Checking for EO", "[io][bit_reader]")
 
 TEST_CASE("Checking size", "[io][bit_reader]")
 {
-    BitReader reader1("\x00\x00"_b);
+    io::BitReader reader1("\x00\x00"_b);
     REQUIRE(reader1.size() == 16);
-    BitReader reader2("\x00"_b);
+    io::BitReader reader2("\x00"_b);
     REQUIRE(reader2.size() == 8);
-    BitReader reader3(""_b);
+    io::BitReader reader3(""_b);
     REQUIRE(reader3.size() == 0);
 }
 
@@ -119,7 +118,7 @@ TEST_CASE("Seeking", "[io][bit_reader]")
 {
     SECTION("Integer aligned")
     {
-        BitReader reader(from_bits({
+        io::BitReader reader(from_bits({
             0b00000000, 0b00000000, 0b00000000, 0b00000000,
             0b11111111, 0b11111111, 0b11111111, 0b11111111,
             0b11001100, 0b10101010, 0b11110000, 0b00110011}));
@@ -133,7 +132,7 @@ TEST_CASE("Seeking", "[io][bit_reader]")
 
     SECTION("Byte aligned")
     {
-        BitReader reader(from_bits({
+        io::BitReader reader(from_bits({
             0b11001100, 0b10101010, 0b11110000, 0b00110011}));
         reader.seek(0);  REQUIRE(reader.get(8) == 0b11001100);
         reader.seek(8);  REQUIRE(reader.get(8) == 0b10101010);
@@ -143,7 +142,7 @@ TEST_CASE("Seeking", "[io][bit_reader]")
 
     SECTION("Unaligned")
     {
-        BitReader reader(from_bits({
+        io::BitReader reader(from_bits({
             0b11001100, 0b10101010, 0b11110000, 0b00110011}));
         reader.seek(0);  REQUIRE(reader.get(8) == 0b11001100);
         reader.seek(1);  REQUIRE(reader.get(8) == 0b10011001);
@@ -174,7 +173,7 @@ TEST_CASE("Seeking", "[io][bit_reader]")
 
     SECTION("Unaligned (automatic)")
     {
-        BitReader reader(from_bits({
+        io::BitReader reader(from_bits({
             0b11001100, 0b10101010, 0b11110000, 0b00110011}));
         for (auto i : util::range(32))
         {
@@ -188,7 +187,7 @@ TEST_CASE("Seeking", "[io][bit_reader]")
 
     SECTION("Seeking beyond EOF throws errors")
     {
-        BitReader reader(from_bits({
+        io::BitReader reader(from_bits({
             0b11001100, 0b10101010, 0b11110000, 0b00110011}));
         for (auto i : util::range(32))
         {
@@ -203,7 +202,7 @@ TEST_CASE("Seeking", "[io][bit_reader]")
 
 TEST_CASE("Skipping", "[io][bit_reader]")
 {
-    BitReader reader(from_bits({
+    io::BitReader reader(from_bits({
         0b11001100, 0b10101010, 0b11110000, 0b00110011}));
     reader.seek(0);
     REQUIRE(reader.get(8) == 0b11001100);
@@ -216,7 +215,7 @@ TEST_CASE("Stream-based buffering", "[io][bit_reader]")
     SECTION("Aligned")
     {
         io::MemoryStream stream("\xFF\x01"_b);
-        BitReader reader(stream);
+        io::BitReader reader(stream);
         REQUIRE(reader.get(8) == 0xFF);
         REQUIRE(stream.read_u8() == 1);
     }
@@ -224,7 +223,7 @@ TEST_CASE("Stream-based buffering", "[io][bit_reader]")
     SECTION("Unaligned")
     {
         io::MemoryStream stream("\xFF\x80\x02"_b);
-        BitReader reader(stream);
+        io::BitReader reader(stream);
         REQUIRE(reader.get(8) == 0xFF);
         REQUIRE(reader.get(1) == 0x01);
         REQUIRE(stream.read_u8() == 2);
@@ -233,7 +232,7 @@ TEST_CASE("Stream-based buffering", "[io][bit_reader]")
     SECTION("Interleaving")
     {
         io::MemoryStream stream("\xFF\xC0\x02\x01\xFF"_b);
-        BitReader reader(stream);
+        io::BitReader reader(stream);
         REQUIRE(reader.get(8) == 0xFF);
         REQUIRE(reader.get(1) == 0x01);
         REQUIRE(stream.read_u8() == 2);
@@ -245,7 +244,7 @@ TEST_CASE("Stream-based buffering", "[io][bit_reader]")
     SECTION("Interleaving with seeking")
     {
         io::MemoryStream stream("\xFF\xC0\x02\x01\xFF"_b);
-        BitReader reader(stream);
+        io::BitReader reader(stream);
         REQUIRE(reader.get(8) == 0xFF);
         REQUIRE(reader.get(1) == 0x01);
         REQUIRE(stream.read_u8() == 2);
@@ -259,7 +258,7 @@ TEST_CASE("Reading beyond EOF retracts to prior offset", "[io][bit_reader]")
 {
     SECTION("Byte-aligned without byte retrieval")
     {
-        BitReader reader("\x00"_b);
+        io::BitReader reader("\x00"_b);
         reader.get(7);
         reader.get(1);
         REQUIRE(reader.eof());
@@ -270,7 +269,7 @@ TEST_CASE("Reading beyond EOF retracts to prior offset", "[io][bit_reader]")
 
     SECTION("Byte-aligned with byte retrieval")
     {
-        BitReader reader("\x00\xFF"_b);
+        io::BitReader reader("\x00\xFF"_b);
         reader.get(7);
         reader.get(1);
         REQUIRE_THROWS(reader.get(16));
@@ -281,7 +280,7 @@ TEST_CASE("Reading beyond EOF retracts to prior offset", "[io][bit_reader]")
 
     SECTION("Byte-unaligned without byte retrieval")
     {
-        BitReader reader("\x01"_b);
+        io::BitReader reader("\x01"_b);
         reader.get(7);
         REQUIRE_THROWS(reader.get(2));
         REQUIRE(!reader.eof());
@@ -291,7 +290,7 @@ TEST_CASE("Reading beyond EOF retracts to prior offset", "[io][bit_reader]")
 
     SECTION("Byte-unaligned with byte retrieval")
     {
-        BitReader reader("\x01\x00"_b);
+        io::BitReader reader("\x01\x00"_b);
         reader.get(7);
         REQUIRE_THROWS(reader.get(10));
         REQUIRE(!reader.eof());

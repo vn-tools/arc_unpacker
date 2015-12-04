@@ -4,15 +4,14 @@
 #include "test_support/stream_test.h"
 
 using namespace au;
-using namespace au::io;
 
 TEST_CASE("FileStream", "[io][stream]")
 {
     SECTION("Reading from existing files")
     {
         static const bstr png_magic = "\x89PNG"_b;
-        FileStream stream(
-            "tests/fmt/png/files/reimu_transparent.png", FileMode::Read);
+        io::FileStream stream(
+            "tests/fmt/png/files/reimu_transparent.png", io::FileMode::Read);
         REQUIRE(stream.read(png_magic.size()) == png_magic);
     }
 
@@ -21,12 +20,12 @@ TEST_CASE("FileStream", "[io][stream]")
         REQUIRE(!io::exists("tests/trash.out"));
 
         {
-            FileStream stream("tests/trash.out", FileMode::Write);
+            io::FileStream stream("tests/trash.out", io::FileMode::Write);
             REQUIRE_NOTHROW(stream.write_u32_le(1));
         }
 
         {
-            FileStream stream("tests/trash.out", FileMode::Read);
+            io::FileStream stream("tests/trash.out", io::FileMode::Read);
             REQUIRE(stream.read_u32_le() == 1);
             REQUIRE(stream.size() == 4);
         }
@@ -37,8 +36,8 @@ TEST_CASE("FileStream", "[io][stream]")
     tests::stream_test(
         []()
         {
-            return std::make_unique<FileStream>(
-                "tests/trash.out", FileMode::Write);
+            return std::make_unique<io::FileStream>(
+                "tests/trash.out", io::FileMode::Write);
         },
         []()
         {
