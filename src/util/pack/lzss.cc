@@ -5,14 +5,18 @@
 using namespace au;
 
 bstr util::pack::lzss_decompress_bitwise(
-    const bstr &input, size_t output_size, const LzssSettings &settings)
+    const bstr &input,
+    const size_t output_size,
+    const LzssSettings &settings)
 {
     io::BitReader bit_reader(input);
     return lzss_decompress_bitwise(bit_reader, output_size, settings);
 }
 
 bstr util::pack::lzss_decompress_bitwise(
-    io::BitReader &bit_reader, size_t output_size, const LzssSettings &settings)
+    io::BitReader &bit_reader,
+    const size_t output_size,
+    const LzssSettings &settings)
 {
     bstr output;
     output.reserve(output_size);
@@ -55,7 +59,8 @@ bstr util::pack::lzss_decompress_bitwise(
     return output;
 }
 
-bstr util::pack::lzss_decompress_bytewise(const bstr &input, size_t output_size)
+bstr util::pack::lzss_decompress_bytewise(
+    const bstr &input, const size_t output_size)
 {
     bstr output(output_size);
     util::CyclicBuffer<0x1000> dict(0xFEE);

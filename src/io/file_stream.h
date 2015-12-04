@@ -22,13 +22,13 @@ namespace io {
 
         size_t size() const override;
         size_t tell() const override;
-        Stream &seek(size_t offset) override;
-        Stream &skip(int offset) override;
-        Stream &truncate(size_t new_size) override;
+        Stream &seek(const size_t offset) override;
+        Stream &skip(const int offset) override;
+        Stream &truncate(const size_t new_size) override;
 
     protected:
-        void read_impl(void *destination, size_t size) override;
-        void write_impl(const void *source, size_t size) override;
+        void read_impl(void *destination, const size_t size) override;
+        void write_impl(const void *source, const size_t size) override;
 
     private:
         struct Priv;

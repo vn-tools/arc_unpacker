@@ -3,7 +3,7 @@
 
 using namespace au::util;
 
-static WORD get_win_color(Logger::Color c)
+static WORD get_win_color(const Logger::Color c)
 {
     if (c == Logger::Color::Black)
             return 0;
@@ -56,7 +56,7 @@ static WORD get_win_color(Logger::Color c)
     throw std::logic_error("Unknown color");
 }
 
-void Logger::set_color(Logger::Color c)
+void Logger::set_color(const Logger::Color c)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, get_win_color(c));

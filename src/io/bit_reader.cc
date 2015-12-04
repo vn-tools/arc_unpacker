@@ -52,7 +52,7 @@ namespace
         virtual size_t size() const = 0;
         virtual u8 fetch_byte() = 0;
         virtual bstr fetch_buffer() = 0;
-        virtual void seek(size_t) = 0;
+        virtual void seek(const size_t pos) = 0;
     };
 
     class BufferBasedReader final : public IReader
@@ -63,7 +63,7 @@ namespace
         inline size_t size() const override;
         inline u8 fetch_byte() override;
         inline bstr fetch_buffer() override;
-        inline void seek(size_t pos) override;
+        inline void seek(const size_t pos) override;
 
     private:
         bstr source;
@@ -78,7 +78,7 @@ namespace
         inline size_t size() const override;
         inline u8 fetch_byte() override;
         inline bstr fetch_buffer() override;
-        inline void seek(size_t pos) override;
+        inline void seek(const size_t pos) override;
 
     private:
         Stream &stream;
@@ -101,7 +101,7 @@ inline size_t BufferBasedReader::size() const
     return source.size();
 }
 
-inline void BufferBasedReader::seek(size_t pos)
+inline void BufferBasedReader::seek(const size_t pos)
 {
     ptr = &source.get<const u8>()[pos];
 }
@@ -133,7 +133,7 @@ inline size_t StreamBasedReader::size() const
     return stream.size();
 }
 
-inline void StreamBasedReader::seek(size_t pos)
+inline void StreamBasedReader::seek(const size_t pos)
 {
     stream.seek(pos);
 }
@@ -154,8 +154,8 @@ struct BitReader::Priv final
 {
     Priv(std::unique_ptr<IReader> reader);
     ~Priv();
-    unsigned int get(size_t n);
-    void seek(size_t new_pos);
+    unsigned int get(const size_t n);
+    void seek(const size_t new_pos);
     size_t size() const;
 
     std::unique_ptr<IReader> reader;
@@ -177,7 +177,7 @@ BitReader::Priv::~Priv()
 {
 }
 
-unsigned int BitReader::Priv::get(size_t n)
+unsigned int BitReader::Priv::get(const size_t n)
 {
     if (n > 32)
         throw err::NotSupportedError("Too many bits");
@@ -205,7 +205,7 @@ unsigned int BitReader::Priv::get(size_t n)
     return (value >> (8 - shift)) & masks[n];
 }
 
-void BitReader::Priv::seek(size_t new_pos)
+void BitReader::Priv::seek(const size_t new_pos)
 {
     if (new_pos > size())
         throw err::EofError();
@@ -242,7 +242,7 @@ BitReader::~BitReader()
 {
 }
 
-unsigned int BitReader::get(size_t n)
+unsigned int BitReader::get(const size_t n)
 {
     return p->get(n);
 }
@@ -262,7 +262,7 @@ size_t BitReader::tell() const
     return p->pos;
 }
 
-void BitReader::seek(size_t new_pos)
+void BitReader::seek(const size_t new_pos)
 {
     p->seek(new_pos);
 }

@@ -4,7 +4,7 @@
 
 using namespace au::util;
 
-static void do_test(au::util::RangeImpl r, const std::vector<int> expected)
+static void do_test(au::util::Range r, const std::vector<int> expected)
 {
     std::vector<int> visited;
     for (const auto i : r)

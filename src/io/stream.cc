@@ -10,7 +10,7 @@ Stream::~Stream()
 {
 }
 
-Stream &Stream::peek(size_t offset, std::function<void()> func)
+Stream &Stream::peek(const size_t offset, std::function<void()> func)
 {
     size_t old_pos = tell();
     seek(offset);
@@ -32,7 +32,7 @@ bool Stream::eof() const
     return tell() == size();
 }
 
-bstr Stream::read(size_t bytes)
+bstr Stream::read(const size_t bytes)
 {
     if (!bytes)
         return ""_b;
@@ -50,7 +50,7 @@ bstr Stream::read_to_zero()
     return output;
 }
 
-bstr Stream::read_to_zero(size_t bytes)
+bstr Stream::read_to_zero(const size_t bytes)
 {
     bstr output = read(bytes);
     for (auto i : util::range(output.size()))

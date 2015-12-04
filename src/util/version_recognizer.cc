@@ -19,7 +19,7 @@ VersionRecognizer::~VersionRecognizer()
 }
 
 void VersionRecognizer::add_recognizer(
-    const int version, std::function<bool(io::File &)> func)
+    const int version, const std::function<bool(io::File &)> func)
 {
     p->funcs[version] = func;
 }

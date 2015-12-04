@@ -39,28 +39,28 @@ FileStream::~FileStream()
         fclose(p->file);
 }
 
-Stream &FileStream::seek(size_t offset)
+Stream &FileStream::seek(const size_t offset)
 {
     if (offset > size() || fseek(p->file, offset, SEEK_SET) != 0)
         throw err::EofError();
     return *this;
 }
 
-Stream &FileStream::skip(int offset)
+Stream &FileStream::skip(const int offset)
 {
     if (tell() + offset > size() || fseek(p->file, offset, SEEK_CUR) != 0)
         throw err::EofError();
     return *this;
 }
 
-void FileStream::read_impl(void *destination, size_t size)
+void FileStream::read_impl(void *destination, const size_t size)
 {
     // destination MUST exist and size MUST be at least 1
     if (fread(destination, 1, size, p->file) != size)
         throw err::EofError();
 }
 
-void FileStream::write_impl(const void *source, size_t size)
+void FileStream::write_impl(const void *source, const size_t size)
 {
     // source MUST exist and size MUST be at least 1
     if (fwrite(source, 1, size, p->file) != size)
@@ -81,7 +81,7 @@ size_t FileStream::size() const
     return size;
 }
 
-Stream &FileStream::truncate(size_t new_size)
+Stream &FileStream::truncate(const size_t new_size)
 {
     if (new_size == size())
         return *this;

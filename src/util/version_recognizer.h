@@ -13,7 +13,7 @@ namespace util {
 
         void add_recognizer(
             const int version,
-            std::function<bool(io::File &input_file)> func);
+            const std::function<bool(io::File &input_file)> func);
 
         int tell_version(io::File &input_file) const;
 

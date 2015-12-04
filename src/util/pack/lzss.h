@@ -17,14 +17,16 @@ namespace pack {
 
     bstr lzss_decompress_bitwise(
         const bstr &input,
-        size_t output_size,
+        const size_t output_size,
         const LzssSettings &settings);
 
     bstr lzss_decompress_bitwise(
         io::BitReader &bit_reader,
-        size_t output_size,
+        const size_t output_size,
         const LzssSettings &settings);
 
-    bstr lzss_decompress_bytewise(const bstr &input, size_t output_size);
+    bstr lzss_decompress_bytewise(
+        const bstr &input,
+        const size_t output_size);
 
 } } }

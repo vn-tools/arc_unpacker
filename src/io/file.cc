@@ -38,15 +38,14 @@ File::~File()
 
 void File::guess_extension()
 {
-    const size_t old_pos = stream.tell();
-    for (auto &def : magic_definitions)
+    const auto old_pos = stream.tell();
+    for (const auto &def : magic_definitions)
     {
-        const std::string ext = def.first;
-        const bstr magic = def.second;
-        stream.seek(0);
+        const auto ext = def.first;
+        const auto magic = def.second;
         if (stream.size() < magic.size())
             continue;
-        if (stream.read(magic.size()) != magic)
+        if (stream.seek(0).read(magic.size()) != magic)
             continue;
         path.change_extension(ext);
         stream.seek(old_pos);

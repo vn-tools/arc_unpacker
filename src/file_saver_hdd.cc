@@ -10,7 +10,7 @@ using namespace au;
 
 struct FileSaverHdd::Priv final
 {
-    Priv(const io::path &output_dir, bool overwrite);
+    Priv(const io::path &output_dir, const bool overwrite);
     io::path make_path_unique(const io::path &path);
 
     io::path output_dir;
@@ -18,8 +18,8 @@ struct FileSaverHdd::Priv final
     bool overwrite;
 };
 
-FileSaverHdd::Priv::Priv(const io::path &output_dir, bool overwrite)
-        : output_dir(output_dir), overwrite(overwrite)
+FileSaverHdd::Priv::Priv(const io::path &output_dir, const bool overwrite)
+    : output_dir(output_dir), overwrite(overwrite)
 {
 }
 
@@ -36,7 +36,7 @@ io::path FileSaverHdd::Priv::make_path_unique(const io::path &path)
     return new_path;
 }
 
-FileSaverHdd::FileSaverHdd(const io::path &output_dir, bool overwrite)
+FileSaverHdd::FileSaverHdd(const io::path &output_dir, const bool overwrite)
     : p(new Priv(output_dir, overwrite))
 {
 }
@@ -49,13 +49,12 @@ void FileSaverHdd::save(std::shared_ptr<io::File> file) const
 {
     try
     {
-        io::path full_path = p->make_path_unique(p->output_dir / file->path);
+        const auto full_path = p->make_path_unique(p->output_dir / file->path);
 
         Log.info("Saving to " + full_path.str() + "... ");
         io::create_directories(full_path.parent());
         io::FileStream output_stream(full_path, io::FileMode::Write);
-        file->stream.seek(0);
-        output_stream.write(file->stream.read_to_eof());
+        output_stream.write(file->stream.seek(0).read_to_eof());
         Log.success("ok\n");
     }
     catch (std::runtime_error &e)

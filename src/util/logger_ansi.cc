@@ -5,7 +5,7 @@
 
 using namespace au::util;
 
-static std::string get_ansi_color(Logger::Color c)
+static std::string get_ansi_color(const Logger::Color c)
 {
     // switch with strongly typed enums crashes MinGW -O3 builds
     if (c == Logger::Color::Black)    return "\033[22;30m";
@@ -28,7 +28,7 @@ static std::string get_ansi_color(Logger::Color c)
     return "";
 }
 
-void Logger::set_color(Logger::Color c)
+void Logger::set_color(const Logger::Color c)
 {
     if (isatty(STDIN_FILENO))
         std::cout << get_ansi_color(c);

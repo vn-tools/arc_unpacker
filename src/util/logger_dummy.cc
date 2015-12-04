@@ -2,6 +2,6 @@
 
 using namespace au::util;
 
-void Logger::set_color(Color c)
+void Logger::set_color(const Color c)
 {
 }

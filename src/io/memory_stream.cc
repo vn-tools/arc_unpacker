@@ -35,12 +35,12 @@ MemoryStream::MemoryStream(const bstr &buffer) : p(new Priv(buffer))
 {
 }
 
-MemoryStream::MemoryStream(const char *buffer, size_t buffer_size)
+MemoryStream::MemoryStream(const char *buffer, const size_t buffer_size)
     : p(new Priv(bstr(buffer, buffer_size)))
 {
 }
 
-MemoryStream::MemoryStream(Stream &other, size_t size)
+MemoryStream::MemoryStream(Stream &other, const size_t size)
     : p(new Priv(other.read(size)))
 {
 }
@@ -54,14 +54,14 @@ MemoryStream::~MemoryStream()
 {
 }
 
-Stream &MemoryStream::reserve(size_t size)
+Stream &MemoryStream::reserve(const size_t size)
 {
     if (p->buffer.size() < size)
         p->buffer.resize(size);
     return *this;
 }
 
-Stream &MemoryStream::seek(size_t offset)
+Stream &MemoryStream::seek(const size_t offset)
 {
     if (offset > p->buffer.size())
         throw err::EofError();
@@ -69,7 +69,7 @@ Stream &MemoryStream::seek(size_t offset)
     return *this;
 }
 
-Stream &MemoryStream::skip(int offset)
+Stream &MemoryStream::skip(const int offset)
 {
     if (p->buffer_pos + offset > p->buffer.size())
         throw err::EofError();
@@ -92,12 +92,12 @@ u32 MemoryStream::read_u32_le()
     return p->read_primitive<u32>();
 }
 
-void MemoryStream::read_impl(void *destination, size_t size)
+void MemoryStream::read_impl(void *destination, const size_t size)
 {
     // destination MUST exist and size MUST be at least 1
     if (p->buffer_pos + size > p->buffer.size())
         throw err::EofError();
-    auto source_ptr = p->buffer.get<u8>() + p->buffer_pos;
+    auto source_ptr = p->buffer.get<const u8>() + p->buffer_pos;
     auto destination_ptr = reinterpret_cast<u8*>(destination);
     p->buffer_pos += size;
     std::memcpy(destination_ptr, source_ptr, size);
@@ -124,7 +124,7 @@ size_t MemoryStream::size() const
     return p->buffer.size();
 }
 
-Stream &MemoryStream::truncate(size_t new_size)
+Stream &MemoryStream::truncate(const size_t new_size)
 {
     p->buffer.resize(new_size);
     if (p->buffer_pos > new_size)

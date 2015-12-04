@@ -26,6 +26,7 @@ namespace util {
         {
             start = clock();
         }
+
     private:
         clock_t start;
     };

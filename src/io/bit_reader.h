@@ -11,15 +11,15 @@ namespace io {
     public:
         BitReader(Stream &stream);
         BitReader(const bstr &buffer);
-        BitReader(const char *buffer, size_t buffer_size);
+        BitReader(const char *buffer, const size_t buffer_size);
         ~BitReader();
 
-        void seek(size_t pos);
-        void skip(int offset);
+        void seek(const size_t pos);
+        void skip(const int offset);
         bool eof() const;
         size_t tell() const;
         size_t size() const;
-        unsigned int get(size_t n);
+        unsigned int get(const size_t n);
 
     private:
         struct Priv;

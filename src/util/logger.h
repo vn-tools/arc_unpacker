@@ -43,18 +43,18 @@ namespace util {
         Logger();
         ~Logger();
 
-        void set_color(Color c);
-        void info(std::string str, ...);
-        void success(std::string str, ...);
-        void warn(std::string str, ...);
-        void err(std::string str, ...);
-        void debug(std::string str, ...);
+        void set_color(const Color c);
+        void info(const std::string str, ...);
+        void success(const std::string str, ...);
+        void warn(const std::string str, ...);
+        void err(const std::string str, ...);
+        void debug(const std::string str, ...);
         void flush();
 
         void mute();
         void unmute();
-        void mute(MessageType type);
-        void unmute(MessageType type);
+        void mute(const MessageType type);
+        void unmute(const MessageType type);
 
         bool colors_enabled() const;
         void disable_colors();

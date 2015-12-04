@@ -35,15 +35,15 @@ namespace util {
 
         template<typename T, size_t sz> struct swap_bytes final
         {
-            T operator()(T val)
+            T operator()(const T val)
             {
-                throw std::out_of_range("unsupported data size");
+                throw std::out_of_range("Unsupported data size");
             }
         };
 
         template<typename T> struct swap_bytes<T, 1> final
         {
-            constexpr T operator()(T val)
+            constexpr T operator()(const T val)
             {
                 return val;
             }
@@ -51,7 +51,7 @@ namespace util {
 
         template<typename T> struct swap_bytes<T, 2> final
         {
-            constexpr T operator()(T val)
+            constexpr T operator()(const T val)
             {
                 return __builtin_bswap16(val);
             }
@@ -59,7 +59,7 @@ namespace util {
 
         template<typename T> struct swap_bytes<T, 4> final
         {
-            constexpr T operator()(T val)
+            constexpr T operator()(const T val)
             {
                 return __builtin_bswap32(val);
             }
@@ -67,7 +67,7 @@ namespace util {
 
         template<typename T> struct swap_bytes<T, 8> final
         {
-            constexpr T operator()(T val)
+            constexpr T operator()(const T val)
             {
                 return __builtin_bswap64(val);
             }
@@ -75,7 +75,7 @@ namespace util {
 
     }
 
-    template<typename T> constexpr T from_little_endian(T value)
+    template<typename T> constexpr T from_little_endian(const T value)
     {
         #if defined(AU_UTIL_ENDIAN_LITTLE_ENDIAN)
             return value;
@@ -84,7 +84,7 @@ namespace util {
         #endif
     }
 
-    template<typename T> constexpr T from_big_endian(T value)
+    template<typename T> constexpr T from_big_endian(const T value)
     {
         #if defined(AU_UTIL_ENDIAN_BIG_ENDIAN)
             return value;
@@ -93,12 +93,12 @@ namespace util {
         #endif
     }
 
-    template<typename T> constexpr T to_little_endian(T value)
+    template<typename T> constexpr T to_little_endian(const T value)
     {
         return from_little_endian(value);
     }
 
-    template<typename T> constexpr T to_big_endian(T value)
+    template<typename T> constexpr T to_big_endian(const T value)
     {
         return from_big_endian(value);
     }
