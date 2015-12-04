@@ -5,7 +5,7 @@
 namespace au {
 namespace util {
 
-    struct RangeImpl final
+    struct Range final
     {
         struct Iterator final
             : std::iterator<std::random_access_iterator_tag, int, int>
@@ -25,7 +25,7 @@ namespace util {
                 return i;
             }
 
-            Iterator operator ++()
+            inline Iterator operator ++()
             {
                 i += stride;
                 return *this;
@@ -37,10 +37,7 @@ namespace util {
             }
         };
 
-        int stride;
-        Iterator b, e;
-
-        constexpr RangeImpl(int b, int e, int stride = 1)
+        constexpr Range(int b, int e, int stride = 1)
             : stride(stride), b(b, stride), e(e, stride)
         {
         }
@@ -54,16 +51,19 @@ namespace util {
         {
             return e;
         }
+
+        int stride;
+        Iterator b, e;
     };
 
-    constexpr RangeImpl range(int b, int e, int stride=1)
+    constexpr Range range(int b, int e, int stride=1)
     {
-        return RangeImpl(b, e, stride);
+        return Range(b, e, stride);
     }
 
-    constexpr RangeImpl range(int e)
+    constexpr Range range(int e)
     {
-        return RangeImpl(0, e);
+        return Range(0, e);
     }
 
 } }

@@ -15,49 +15,48 @@ namespace io {
     void create_directories(const path &p);
     void remove(const path &p);
 
-    class directory_range final
+    template<typename T> class AbstractDirectoryRange final
     {
     public:
         struct Iterator final
             : std::iterator<std::random_access_iterator_tag, path, path>
         {
-            boost::filesystem::directory_iterator it;
+            T it;
 
-            Iterator(
-                boost::filesystem::directory_iterator it) : it(it)
+            inline Iterator(const T it) : it(it)
             {
             }
 
-            path operator *()
+            inline path operator *()
             {
                 return path(it->path().string());
             }
 
-            Iterator operator ++()
+            inline Iterator operator ++()
             {
                 it++;
                 return *this;
             }
 
-            bool operator !=(Iterator other)
+            inline bool operator !=(Iterator other)
             {
                 return it != other.it;
             }
         };
 
-        directory_range(const path &path) :
+        inline AbstractDirectoryRange(const path &path) :
             path_copy(path),
-            b(Iterator(boost::filesystem::directory_iterator(path_copy.str()))),
-            e(Iterator(boost::filesystem::directory_iterator()))
+            b(Iterator(T(path_copy.str()))),
+            e(Iterator(T()))
         {
         }
 
-        Iterator begin()
+        inline Iterator begin()
         {
             return b;
         }
 
-        Iterator end()
+        inline Iterator end()
         {
             return e;
         }
@@ -67,57 +66,20 @@ namespace io {
         Iterator b, e;
     };
 
-    class recursive_directory_range final
+    using DirectoryRange = AbstractDirectoryRange
+        <boost::filesystem::directory_iterator>;
+
+    using RecursiveDirectoryRange = AbstractDirectoryRange
+        <boost::filesystem::recursive_directory_iterator>;
+
+    inline DirectoryRange directory_range(const path &path)
     {
-    public:
-        struct Iterator final
-            : std::iterator<std::random_access_iterator_tag, path, path>
-        {
-            boost::filesystem::recursive_directory_iterator it;
+        return DirectoryRange(path);
+    }
 
-            Iterator(
-                boost::filesystem::recursive_directory_iterator it) : it(it)
-            {
-            }
-
-            path operator *()
-            {
-                return path(it->path().string());
-            }
-
-            Iterator operator ++()
-            {
-                it++;
-                return *this;
-            }
-
-            bool operator !=(Iterator other)
-            {
-                return it != other.it;
-            }
-        };
-
-        recursive_directory_range(const path &path) :
-            path_copy(path),
-            b(Iterator(boost::filesystem::recursive_directory_iterator(
-                path_copy.str()))),
-            e(Iterator(boost::filesystem::recursive_directory_iterator()))
-        {
-        }
-
-        Iterator begin()
-        {
-            return b;
-        }
-
-        Iterator end()
-        {
-            return e;
-        }
-
-    private:
-        path path_copy;
-        Iterator b, e;
-    };
+    inline RecursiveDirectoryRange recursive_directory_range(const path &path)
+    {
+        return RecursiveDirectoryRange(path);
+    }
 
 } }
