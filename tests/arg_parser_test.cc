@@ -3,218 +3,215 @@
 
 using namespace au;
 
-TEST_CASE("Set short switches retrieval and querying", "[core][arg_parser]")
+TEST_CASE("ArgParser", "[core]")
 {
-    ArgParser ap;
-    ap.register_switch({"-s"});
-    ap.parse(std::vector<std::string>{"-s=short"});
-    REQUIRE(ap.get_switch("s") == "short");
-    REQUIRE(ap.has_switch("s"));
-}
-
-TEST_CASE("Set long switches retrival and querying", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_switch({"--long"});
-    ap.parse(std::vector<std::string>{"--long=long"});
-    REQUIRE(ap.get_switch("long") == "long");
-    REQUIRE(ap.has_switch("long"));
-}
-
-TEST_CASE("Unset short switches retrival and querying", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_switch({"-s"});
-    ap.parse(std::vector<std::string>{});
-    REQUIRE(ap.get_switch("s") == "");
-    REQUIRE(!ap.has_switch("s"));
-}
-
-TEST_CASE("Unset long switches retrival and querying", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_switch({"--long"});
-    ap.parse(std::vector<std::string>{});
-    REQUIRE(ap.get_switch("long") == "");
-    REQUIRE(!ap.has_switch("long"));
-}
-
-TEST_CASE("Querying undefined switches throws exceptions", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.parse(std::vector<std::string>{});
-    REQUIRE_THROWS(ap.get_switch("long"));
-    REQUIRE_THROWS(ap.has_switch("long"));
-}
-
-TEST_CASE(
-    "Switch retrieval using arbitrary number of hyphens", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_switch({"--switch"});
-    ap.parse(std::vector<std::string>{"--switch=long switch"});
-    REQUIRE(ap.get_switch("--switch") == "long switch");
-    REQUIRE(ap.get_switch("-switch") == "long switch");
-    REQUIRE(ap.get_switch("switch") == "long switch");
-    REQUIRE(ap.has_switch("--switch"));
-    REQUIRE(ap.has_switch("-switch"));
-    REQUIRE(ap.has_switch("switch"));
-}
-
-TEST_CASE("Switches are not confused with flags", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_flag({"-f"});
-    ap.parse(std::vector<std::string>{"-f"});
-    REQUIRE_THROWS(ap.get_switch("-f"));
-    REQUIRE_THROWS(ap.has_switch("-f"));
-}
-
-TEST_CASE(
-    "Short switches are overriden with later values", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_switch({"-s"});
-    ap.parse(std::vector<std::string>{"-s=short1", "-s=short2"});
-    REQUIRE(ap.get_switch("-s") == "short2");
-}
-
-TEST_CASE("Long switches are overriden with later values", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_switch({"--long"});
-    ap.parse(std::vector<std::string>{"--long=long1", "--long=long2"});
-    REQUIRE(ap.get_switch("--long") == "long2");
-}
-
-TEST_CASE("Switches with values containing spaces", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_switch({"--switch"});
-    ap.parse(std::vector<std::string>{"--switch=long switch"});
-    REQUIRE(ap.get_switch("--switch") == "long switch");
-}
-
-TEST_CASE("Switches with empty values", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_switch({"--switch"});
-    ap.parse(std::vector<std::string>{"--switch="});
-    REQUIRE(ap.get_switch("--switch") == "");
-}
-
-TEST_CASE("Set flags", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_flag({"--flag"});
-    ap.parse(std::vector<std::string>{"--flag"});
-    REQUIRE(ap.has_flag("flag"));
-}
-
-TEST_CASE("Unset flags", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_flag({"--flag"});
-    ap.parse(std::vector<std::string>{});
-    REQUIRE(!ap.has_flag("flag"));
-}
-
-TEST_CASE("Querying undefined flags throws exceptions", "[core][arg_parser]")
-{
-    ArgParser ap;
-    REQUIRE_THROWS(!ap.has_flag("nope"));
-}
-
-TEST_CASE(
-    "Flag retrieval using arbitrary number of hyphens", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_flag({"--flag"});
-    ap.parse(std::vector<std::string>{"--flag"});
-    REQUIRE(ap.has_flag("--flag"));
-    REQUIRE(ap.has_flag("-flag"));
-    REQUIRE(ap.has_flag("flag"));
-}
-
-TEST_CASE(
-    "Flags mixed with stray arguments are not confused", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_flag({"--flag"});
-    ap.parse(std::vector<std::string>{"--flag", "stray"});
-    REQUIRE(ap.has_flag("flag"));
-    REQUIRE_THROWS(ap.has_switch("flag"));
-    REQUIRE_THROWS(ap.get_switch("flag"));
-    const auto stray = ap.get_stray();
-    REQUIRE(stray.size() == 1);
-    REQUIRE(stray[0] == "stray");
-}
-
-TEST_CASE(
-    "Defining the same flag or switch twice throws exception",
-    "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_flag({"-s1", "--long1"});
-    ap.register_switch({"-s2", "--long2"});
-    REQUIRE_THROWS(ap.register_flag({"-s1"}));
-    REQUIRE_THROWS(ap.register_flag({"--long1"}));
-    REQUIRE_THROWS(ap.register_flag({"-s2"}));
-    REQUIRE_THROWS(ap.register_flag({"--long2"}));
-    REQUIRE_THROWS(ap.register_switch({"-s1"}));
-    REQUIRE_THROWS(ap.register_switch({"--long1"}));
-    REQUIRE_THROWS(ap.register_switch({"-s2"}));
-    REQUIRE_THROWS(ap.register_switch({"--long2"}));
-}
-
-TEST_CASE("Basic stray arguments", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.parse(std::vector<std::string>{"stray1", "stray2"});
-    const auto stray = ap.get_stray();
-    REQUIRE(stray.size() == 2);
-    REQUIRE(stray[0] == "stray1");
-    REQUIRE(stray[1] == "stray2");
-}
-
-TEST_CASE("Stray arguments with spaces", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.parse(std::vector<std::string>{"long stray"});
-    const auto stray = ap.get_stray();
-    REQUIRE(stray.size() == 1);
-    REQUIRE(stray[0] == "long stray");
-}
-
-TEST_CASE("Empty stray arguments", "[core][arg_parser]")
-{
-    ArgParser ap;
-    const auto stray = ap.get_stray();
-    REQUIRE(stray.size() == 0);
-}
-
-TEST_CASE("Mixed types of arguments", "[core][arg_parser]")
-{
-    ArgParser ap;
-    ap.register_switch({"--switch"});
-    ap.register_flag({"--flag1"});
-    ap.register_flag({"--flag2"});
-    const std::vector<std::string> args
+    SECTION("Set short switches retrieval and querying")
     {
-        "stray1",
-        "--switch=s",
-        "--flag1",
-        "stray2",
-        "--flag2"
-    };
-    ap.parse(args);
+        ArgParser ap;
+        ap.register_switch({"-s"});
+        ap.parse(std::vector<std::string>{"-s=short"});
+        REQUIRE(ap.get_switch("s") == "short");
+        REQUIRE(ap.has_switch("s"));
+    }
 
-    REQUIRE(ap.get_switch("--switch") == "s");
-    REQUIRE(ap.has_flag("flag1"));
-    REQUIRE(ap.has_flag("flag2"));
+    SECTION("Set long switches retrival and querying")
+    {
+        ArgParser ap;
+        ap.register_switch({"--long"});
+        ap.parse(std::vector<std::string>{"--long=long"});
+        REQUIRE(ap.get_switch("long") == "long");
+        REQUIRE(ap.has_switch("long"));
+    }
 
-    const auto stray = ap.get_stray();
-    REQUIRE(stray.size() == 2);
-    REQUIRE(stray[0] == "stray1");
-    REQUIRE(stray[1] == "stray2");
+    SECTION("Unset short switches retrival and querying")
+    {
+        ArgParser ap;
+        ap.register_switch({"-s"});
+        ap.parse(std::vector<std::string>{});
+        REQUIRE(ap.get_switch("s") == "");
+        REQUIRE(!ap.has_switch("s"));
+    }
+
+    SECTION("Unset long switches retrival and querying")
+    {
+        ArgParser ap;
+        ap.register_switch({"--long"});
+        ap.parse(std::vector<std::string>{});
+        REQUIRE(ap.get_switch("long") == "");
+        REQUIRE(!ap.has_switch("long"));
+    }
+
+    SECTION("Querying undefined switches throws exceptions")
+    {
+        ArgParser ap;
+        ap.parse(std::vector<std::string>{});
+        REQUIRE_THROWS(ap.get_switch("long"));
+        REQUIRE_THROWS(ap.has_switch("long"));
+    }
+
+    SECTION("Switch retrieval using arbitrary number of hyphens")
+    {
+        ArgParser ap;
+        ap.register_switch({"--switch"});
+        ap.parse(std::vector<std::string>{"--switch=long switch"});
+        REQUIRE(ap.get_switch("--switch") == "long switch");
+        REQUIRE(ap.get_switch("-switch") == "long switch");
+        REQUIRE(ap.get_switch("switch") == "long switch");
+        REQUIRE(ap.has_switch("--switch"));
+        REQUIRE(ap.has_switch("-switch"));
+        REQUIRE(ap.has_switch("switch"));
+    }
+
+    SECTION("Switches are not confused with flags")
+    {
+        ArgParser ap;
+        ap.register_flag({"-f"});
+        ap.parse(std::vector<std::string>{"-f"});
+        REQUIRE_THROWS(ap.get_switch("-f"));
+        REQUIRE_THROWS(ap.has_switch("-f"));
+    }
+
+    SECTION("Short switches are overriden with later values")
+    {
+        ArgParser ap;
+        ap.register_switch({"-s"});
+        ap.parse(std::vector<std::string>{"-s=short1", "-s=short2"});
+        REQUIRE(ap.get_switch("-s") == "short2");
+    }
+
+    SECTION("Long switches are overriden with later values")
+    {
+        ArgParser ap;
+        ap.register_switch({"--long"});
+        ap.parse(std::vector<std::string>{"--long=long1", "--long=long2"});
+        REQUIRE(ap.get_switch("--long") == "long2");
+    }
+
+    SECTION("Switches with values containing spaces")
+    {
+        ArgParser ap;
+        ap.register_switch({"--switch"});
+        ap.parse(std::vector<std::string>{"--switch=long switch"});
+        REQUIRE(ap.get_switch("--switch") == "long switch");
+    }
+
+    SECTION("Switches with empty values")
+    {
+        ArgParser ap;
+        ap.register_switch({"--switch"});
+        ap.parse(std::vector<std::string>{"--switch="});
+        REQUIRE(ap.get_switch("--switch") == "");
+    }
+
+    SECTION("Set flags")
+    {
+        ArgParser ap;
+        ap.register_flag({"--flag"});
+        ap.parse(std::vector<std::string>{"--flag"});
+        REQUIRE(ap.has_flag("flag"));
+    }
+
+    SECTION("Unset flags")
+    {
+        ArgParser ap;
+        ap.register_flag({"--flag"});
+        ap.parse(std::vector<std::string>{});
+        REQUIRE(!ap.has_flag("flag"));
+    }
+
+    SECTION("Querying undefined flags throws exceptions")
+    {
+        ArgParser ap;
+        REQUIRE_THROWS(!ap.has_flag("nope"));
+    }
+
+    SECTION("Flag retrieval using arbitrary number of hyphens")
+    {
+        ArgParser ap;
+        ap.register_flag({"--flag"});
+        ap.parse(std::vector<std::string>{"--flag"});
+        REQUIRE(ap.has_flag("--flag"));
+        REQUIRE(ap.has_flag("-flag"));
+        REQUIRE(ap.has_flag("flag"));
+    }
+
+    SECTION("Flags mixed with stray arguments are not confused")
+    {
+        ArgParser ap;
+        ap.register_flag({"--flag"});
+        ap.parse(std::vector<std::string>{"--flag", "stray"});
+        REQUIRE(ap.has_flag("flag"));
+        REQUIRE_THROWS(ap.has_switch("flag"));
+        REQUIRE_THROWS(ap.get_switch("flag"));
+        const auto stray = ap.get_stray();
+        REQUIRE(stray.size() == 1);
+        REQUIRE(stray[0] == "stray");
+    }
+
+    SECTION("Defining the same flag or switch twice throws exception")
+    {
+        ArgParser ap;
+        ap.register_flag({"-s1", "--long1"});
+        ap.register_switch({"-s2", "--long2"});
+        REQUIRE_THROWS(ap.register_flag({"-s1"}));
+        REQUIRE_THROWS(ap.register_flag({"--long1"}));
+        REQUIRE_THROWS(ap.register_flag({"-s2"}));
+        REQUIRE_THROWS(ap.register_flag({"--long2"}));
+        REQUIRE_THROWS(ap.register_switch({"-s1"}));
+        REQUIRE_THROWS(ap.register_switch({"--long1"}));
+        REQUIRE_THROWS(ap.register_switch({"-s2"}));
+        REQUIRE_THROWS(ap.register_switch({"--long2"}));
+    }
+
+    SECTION("Basic stray arguments")
+    {
+        ArgParser ap;
+        ap.parse(std::vector<std::string>{"stray1", "stray2"});
+        const auto stray = ap.get_stray();
+        REQUIRE(stray.size() == 2);
+        REQUIRE(stray[0] == "stray1");
+        REQUIRE(stray[1] == "stray2");
+    }
+
+    SECTION("Stray arguments with spaces")
+    {
+        ArgParser ap;
+        ap.parse(std::vector<std::string>{"long stray"});
+        const auto stray = ap.get_stray();
+        REQUIRE(stray.size() == 1);
+        REQUIRE(stray[0] == "long stray");
+    }
+
+    SECTION("Empty stray arguments")
+    {
+        ArgParser ap;
+        const auto stray = ap.get_stray();
+        REQUIRE(stray.size() == 0);
+    }
+
+    SECTION("Mixed types of arguments")
+    {
+        ArgParser ap;
+        ap.register_switch({"--switch"});
+        ap.register_flag({"--flag1"});
+        ap.register_flag({"--flag2"});
+        const std::vector<std::string> args
+        {
+            "stray1",
+            "--switch=s",
+            "--flag1",
+            "stray2",
+            "--flag2"
+        };
+        ap.parse(args);
+
+        REQUIRE(ap.get_switch("--switch") == "s");
+        REQUIRE(ap.has_flag("flag1"));
+        REQUIRE(ap.has_flag("flag2"));
+
+        const auto stray = ap.get_stray();
+        REQUIRE(stray.size() == 2);
+        REQUIRE(stray[0] == "stray1");
+        REQUIRE(stray[1] == "stray2");
+    }
 }

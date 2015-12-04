@@ -40,62 +40,62 @@ static std::string read_gamelist_file()
     return gamelist_file.read_to_eof().str();
 }
 
-TEST_CASE(
-    "--fmt switches contain hyphens rather than underscores",
-    "[core][fmt_core][docs]")
+TEST_CASE("Documentation", "[core]")
 {
-    const auto &registry = fmt::Registry::instance();
-    for (const auto &name : registry.get_decoder_names())
+    SECTION("--fmt switches contain hyphens rather than underscores")
     {
-        INFO("Format contains underscore: " << name);
-        REQUIRE(name.find_first_of("_") == name.npos);
-    }
-}
-
-TEST_CASE("GAMELIST refers to valid --fmt switches", "[core][fmt_core][docs]")
-{
-    const auto content = read_gamelist_file();
-    const auto &registry = fmt::Registry::instance();
-
-    const std::regex fmt_regex(
-        "--fmt=([^< ]*)",
-        std::regex_constants::ECMAScript | std::regex_constants::icase);
-
-    for (const auto fmt : regex_range(fmt_regex, content, 1))
-    {
-        INFO("Format not present in the registry: " << fmt);
-        REQUIRE(registry.has_decoder(fmt));
-    }
-}
-
-TEST_CASE(
-    "GAMELIST is sorted alphabetically", "[core][fmt_core][docs]")
-{
-    const auto content = read_gamelist_file();
-    const std::regex row_regex(
-        "<tr>(([\r\n]|.)*?)</tr>", std::regex_constants::ECMAScript);
-    const std::regex cell_regex(
-        "<td>(.*)</td>", std::regex_constants::ECMAScript);
-
-    size_t comparisons = 0;
-    std::string last_sort_key;
-    for (const auto row : regex_range(row_regex, content, 1))
-    {
-        std::vector<std::string> cells;
-        for (const auto cell : regex_range(cell_regex, row, 1))
-            cells.push_back(cell);
-        if (cells.size() != 7)
-            continue;
-        const auto company = cells[3];
-        const auto release_date = cells[4];
-        const auto game_title = cells[5];
-        auto sort_key = "[" + company + "][" + release_date + "]" + game_title;
-        boost::algorithm::to_lower(sort_key);
-        REQUIRE(sort_key > last_sort_key);
-        last_sort_key = sort_key;
-        comparisons++;
+        const auto &registry = fmt::Registry::instance();
+        for (const auto &name : registry.get_decoder_names())
+        {
+            INFO("Format contains underscore: " << name);
+            REQUIRE(name.find_first_of("_") == name.npos);
+        }
     }
 
-    // sanity check that regexes actually work
-    REQUIRE(comparisons > 10);
+    SECTION("GAMELIST refers to valid --fmt switches")
+    {
+        const auto content = read_gamelist_file();
+        const auto &registry = fmt::Registry::instance();
+
+        const std::regex fmt_regex(
+            "--fmt=([^< ]*)",
+            std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+        for (const auto fmt : regex_range(fmt_regex, content, 1))
+        {
+            INFO("Format not present in the registry: " << fmt);
+            REQUIRE(registry.has_decoder(fmt));
+        }
+    }
+
+    SECTION("GAMELIST is sorted alphabetically")
+    {
+        const auto content = read_gamelist_file();
+        const std::regex row_regex(
+            "<tr>(([\r\n]|.)*?)</tr>", std::regex_constants::ECMAScript);
+        const std::regex cell_regex(
+            "<td>(.*)</td>", std::regex_constants::ECMAScript);
+
+        size_t comparisons = 0;
+        std::string last_sort_key;
+        for (const auto row : regex_range(row_regex, content, 1))
+        {
+            std::vector<std::string> cells;
+            for (const auto cell : regex_range(cell_regex, row, 1))
+                cells.push_back(cell);
+            if (cells.size() != 7)
+                continue;
+            const auto company = cells[3];
+            const auto release_date = cells[4];
+            const auto game_title = cells[5];
+            const auto sort_key = boost::algorithm::to_lower_copy(
+                "[" + company + "][" + release_date + "]" + game_title);
+            REQUIRE(sort_key > last_sort_key);
+            last_sort_key = sort_key;
+            comparisons++;
+        }
+
+        // sanity check to see if regexes actually work and match stuff
+        REQUIRE(comparisons > 10);
+    }
 }

@@ -26,7 +26,7 @@ TEST_CASE("Alice Soft PMS images", "[fmt]")
         do_test("CG40000.pm", "CG40000-out.png");
     }
 
-    SECTION("8-bit, inverted channels", "[fmt]")
+    SECTION("8-bit, inverted channels")
     {
         do_test("ALCG0016.PMS", "ALCG0016-out.png");
     }

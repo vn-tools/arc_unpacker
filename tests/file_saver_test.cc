@@ -53,31 +53,34 @@ static void do_test_overwriting(
     }
 }
 
-TEST_CASE("Unicode file names", "[core][file_saver]")
+TEST_CASE("FileSaver", "[core]")
 {
-    do_test("test.out");
-    do_test("ąćę.out");
-    do_test("不用意な変換.out");
-}
+    SECTION("Unicode file names")
+    {
+        do_test("test.out");
+        do_test("ąćę.out");
+        do_test("不用意な変換.out");
+    }
 
-TEST_CASE("Two file savers overwrite the same file", "[core][file_saver]")
-{
-    const FileSaverHdd file_saver1(".", true);
-    const FileSaverHdd file_saver2(".", true);
-    do_test_overwriting(file_saver1, file_saver2, false);
-}
+    SECTION("Two file savers overwrite the same file")
+    {
+        const FileSaverHdd file_saver1(".", true);
+        const FileSaverHdd file_saver2(".", true);
+        do_test_overwriting(file_saver1, file_saver2, false);
+    }
 
-TEST_CASE("Two file savers don't overwrite the same file", "[core][file_saver]")
-{
-    const FileSaverHdd file_saver1(".", false);
-    const FileSaverHdd file_saver2(".", false);
-    do_test_overwriting(file_saver1, file_saver2, true);
-}
+    SECTION("Two file savers don't overwrite the same file")
+    {
+        const FileSaverHdd file_saver1(".", false);
+        const FileSaverHdd file_saver2(".", false);
+        do_test_overwriting(file_saver1, file_saver2, true);
+    }
 
-TEST_CASE("One file saver never overwrites the same file", "[core][file_saver]")
-{
-    // even if we pass overwrite=true, files within the same archive with the
-    // same name are too valuable to be ovewritten silently
-    const FileSaverHdd file_saver(".", true);
-    do_test_overwriting(file_saver, file_saver, true);
+    SECTION("One file saver never overwrites the same file")
+    {
+        // even if we pass overwrite=true, files within the same archive with
+        // the same name are too valuable to be ovewritten silently
+        const FileSaverHdd file_saver(".", true);
+        do_test_overwriting(file_saver, file_saver, true);
+    }
 }

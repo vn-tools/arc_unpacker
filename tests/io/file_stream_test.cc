@@ -33,14 +33,14 @@ TEST_CASE("FileStream", "[io][stream]")
         io::remove("tests/trash.out");
     }
 
-    tests::stream_test(
-        []()
-        {
-            return std::make_unique<io::FileStream>(
-                "tests/trash.out", io::FileMode::Write);
-        },
-        []()
-        {
-            io::remove("tests/trash.out");
-        });
+    SECTION("Full test suite")
+    {
+        tests::stream_test(
+            []()
+            {
+                return std::make_unique<io::FileStream>(
+                    "tests/trash.out", io::FileMode::Write);
+            },
+            []() { io::remove("tests/trash.out"); });
+    }
 }

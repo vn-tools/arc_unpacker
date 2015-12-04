@@ -6,12 +6,10 @@ using namespace au;
 
 TEST_CASE("MemoryStream", "[io][stream]")
 {
-    tests::stream_test(
-        []()
-        {
-            return std::make_unique<io::MemoryStream>();
-        },
-        []()
-        {
-        });
+    SECTION("Full test suite")
+    {
+        tests::stream_test(
+            []() { return std::make_unique<io::MemoryStream>(); },
+            []() { });
+    }
 }
