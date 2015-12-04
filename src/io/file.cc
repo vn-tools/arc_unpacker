@@ -6,15 +6,15 @@
 using namespace au;
 using namespace au::io;
 
-static const std::vector<std::pair<std::string, bstr>> magic_definitions
+static const std::vector<std::pair<bstr, std::string>> magic_definitions
 {
-    {"b",      "abmp"_b},   // QLiE
-    {"imoavi", "IMOAVI"_b}, // QLiE
-    {"png",    "\x89PNG"_b},
-    {"bmp",    "BM"_b},
-    {"wav",    "RIFF"_b},
-    {"ogg",    "OggS"_b},
-    {"jpeg",   "\xFF\xD8\xFF"_b},
+    {"abmp"_b,         "b"},      // QLiE
+    {"IMOAVI"_b,       "imoavi"}, // QLiE
+    {"\x89PNG"_b,      "png"},
+    {"BM"_b,           "bmp"},
+    {"RIFF"_b,         "wav"},
+    {"OggS"_b,         "ogg"},
+    {"\xFF\xD8\xFF"_b, "jpeg"},
 };
 
 File::File(const io::path &path, const io::FileMode mode)
@@ -41,8 +41,8 @@ void File::guess_extension()
     const auto old_pos = stream.tell();
     for (const auto &def : magic_definitions)
     {
-        const auto ext = def.first;
-        const auto magic = def.second;
+        const auto magic = def.first;
+        const auto ext = def.second;
         if (stream.size() < magic.size())
             continue;
         if (stream.seek(0).read(magic.size()) != magic)
