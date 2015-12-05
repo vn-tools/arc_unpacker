@@ -32,6 +32,11 @@ namespace
         u32 key;
     };
 
+    struct TimeChunk final
+    {
+        u64 timestamp;
+    };
+
     struct ArchiveMetaImpl final : fmt::ArchiveMeta
     {
         std::unique_ptr<Xp3Filter> filter;
@@ -42,6 +47,7 @@ namespace
         std::unique_ptr<InfoChunk> info_chunk;
         std::vector<std::unique_ptr<SegmChunk>> segm_chunks;
         std::unique_ptr<AdlrChunk> adlr_chunk;
+        std::unique_ptr<TimeChunk> time_chunk;
     };
 }
 
@@ -50,6 +56,7 @@ static const bstr file_entry_magic = "File"_b;
 static const bstr info_chunk_magic = "info"_b;
 static const bstr segm_chunk_magic = "segm"_b;
 static const bstr adlr_chunk_magic = "adlr"_b;
+static const bstr time_chunk_magic = "time"_b;
 
 static int detect_version(io::Stream &input_stream)
 {
@@ -111,6 +118,13 @@ static std::unique_ptr<AdlrChunk> read_adlr_chunk(io::Stream &chunk_stream)
     return adlr_chunk;
 }
 
+static std::unique_ptr<TimeChunk> read_time_chunk(io::Stream &chunk_stream)
+{
+    auto time_chunk = std::make_unique<TimeChunk>();
+    time_chunk->timestamp = chunk_stream.read_u64_le();
+    return time_chunk;
+}
+
 static std::unique_ptr<ArchiveEntryImpl> read_entry(io::Stream &input_stream)
 {
     if (input_stream.read(file_entry_magic.size()) != file_entry_magic)
@@ -132,6 +146,8 @@ static std::unique_ptr<ArchiveEntryImpl> read_entry(io::Stream &input_stream)
             entry->segm_chunks = read_segm_chunks(chunk_stream);
         else if (chunk_magic == adlr_chunk_magic)
             entry->adlr_chunk = read_adlr_chunk(chunk_stream);
+        else if (chunk_magic == time_chunk_magic)
+            entry->time_chunk = read_time_chunk(chunk_stream);
         else
             throw err::NotSupportedError("Unknown chunk " + chunk_magic.str());
 
