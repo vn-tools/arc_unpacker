@@ -2,6 +2,7 @@
 #include "err.h"
 #include "fmt/kirikiri/xp3_filter_registry.h"
 #include "io/memory_stream.h"
+#include "log.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
@@ -149,12 +150,16 @@ static std::unique_ptr<ArchiveEntryImpl> read_entry(io::Stream &input_stream)
         else if (chunk_magic == time_chunk_magic)
             entry->time_chunk = read_time_chunk(chunk_stream);
         else
-            throw err::NotSupportedError("Unknown chunk " + chunk_magic.str());
+        {
+            Log.warn("Unknown chunk '%s'", chunk_magic.get<char>());
+            continue;
+        }
 
         if (!chunk_stream.eof())
         {
-            throw err::CorruptDataError(
-                "Chunk " + chunk_magic.str() + " contains data beyond EOF");
+            Log.warn(
+                "'%s' chunk contains data beyond EOF\n",
+                chunk_magic.get<char>());
         }
     }
     if (!entry_stream.eof())
