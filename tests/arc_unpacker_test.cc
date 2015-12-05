@@ -39,10 +39,10 @@ TEST_CASE("CLI frontend", "[core]")
         Log.unmute();
 
         REQUIRE(io::is_directory("./xp3-v2~.xp3"));
-        REQUIRE(io::is_regular_file("./xp3-v2~.xp3/abc.txt"));
-        REQUIRE(io::is_regular_file("./xp3-v2~.xp3/abc2.txt"));
-        io::remove("./xp3-v2~.xp3/abc2.txt");
-        io::remove("./xp3-v2~.xp3/abc.txt");
+        REQUIRE(io::is_regular_file("./xp3-v2~.xp3/123.txt"));
+        REQUIRE(io::is_regular_file("./xp3-v2~.xp3/abc.xyz"));
+        io::remove("./xp3-v2~.xp3/abc.xyz");
+        io::remove("./xp3-v2~.xp3/123.txt");
         io::remove("./xp3-v2~.xp3");
     }
 }

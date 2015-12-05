@@ -12,8 +12,8 @@ static void do_test(const std::string &input_path)
 {
     const std::vector<std::shared_ptr<io::File>> expected_files
     {
-        tests::stub_file("abc.txt", "123"_b),
-        tests::stub_file("abc2.txt", "AAAAAAAAAA"_b),
+        tests::stub_file("123.txt", "1234567890"_b),
+        tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };
     Xp3ArchiveDecoder decoder;
     decoder.set_plugin("noop");
