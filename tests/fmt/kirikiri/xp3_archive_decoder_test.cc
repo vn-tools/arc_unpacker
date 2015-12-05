@@ -48,4 +48,9 @@ TEST_CASE("KiriKiri XP3 archives", "[fmt]")
     {
         do_test("xp3-multiple-segm.xp3");
     }
+
+    SECTION("Shuffled chunks")
+    {
+        do_test("xp3-shuffled.xp3");
+    }
 }
