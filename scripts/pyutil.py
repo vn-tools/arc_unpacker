@@ -26,10 +26,12 @@ class io_ext(object):
         return self.file.tell()
 
     def seek(self, *args):
-        return self.file.seek(*args)
+        self.file.seek(*args)
+        return self
 
     def skip(self, bytes):
         self.file.seek(bytes, io.SEEK_CUR)
+        return self
 
     def peek(self, *args):
         return self.PeekObject(self.file, *args)
@@ -71,31 +73,40 @@ class io_ext(object):
 
     def write(self, *args):
         self.file.write(*args)
+        return self
 
     def write_u8(self, x):
         self.file.write(struct.pack('B', x))
+        return self
 
     def write_u16_le(self, x):
         self.file.write(struct.pack('<H', x))
+        return self
 
     def write_u32_le(self, x):
         self.file.write(struct.pack('<I', x))
+        return self
 
     def write_u64_le(self, x):
         self.file.write(struct.pack('<Q', x))
+        return self
 
     def write_u16_be(self, x):
         self.file.write(struct.pack('>H', x))
+        return self
 
     def write_u32_be(self, x):
         self.file.write(struct.pack('>I', x))
+        return self
 
     def write_u64_be(self, x):
         self.file.write(struct.pack('>Q', x))
+        return self
 
     def write_zero_padded(self, x, size):
         self.file.write(x)
         self.file.write(b'\x00' * (size - len(x)))
+        return self
 
     class PeekObject(object):
         def __init__(self, file, *seek_args):
