@@ -10,7 +10,7 @@ namespace err {
         GeneralError(const std::string &description);
     };
 
-    struct UsageError : public GeneralError
+    struct UsageError final : public GeneralError
     {
         UsageError(const std::string &description);
     };
@@ -21,23 +21,23 @@ namespace err {
         DataError(const std::string &description);
     };
 
-    struct RecognitionError : public DataError
+    struct RecognitionError final : public DataError
     {
         RecognitionError();
         RecognitionError(const std::string &description);
     };
 
-    struct CorruptDataError : public DataError
+    struct CorruptDataError final : public DataError
     {
         CorruptDataError(const std::string &description);
     };
 
-    struct BadDataSizeError : public DataError
+    struct BadDataSizeError final : public DataError
     {
         BadDataSizeError();
     };
 
-    struct BadDataOffsetError : public DataError
+    struct BadDataOffsetError final : public DataError
     {
         BadDataOffsetError();
     };
@@ -47,12 +47,12 @@ namespace err {
         IoError(const std::string &description);
     };
 
-    struct EofError : public IoError
+    struct EofError final : public IoError
     {
         EofError();
     };
 
-    struct FileNotFoundError : public IoError
+    struct FileNotFoundError final : public IoError
     {
         FileNotFoundError(const std::string &description);
     };
@@ -62,17 +62,17 @@ namespace err {
         NotSupportedError(const std::string &description);
     };
 
-    struct UnsupportedBitDepthError : public NotSupportedError
+    struct UnsupportedBitDepthError final : public NotSupportedError
     {
         UnsupportedBitDepthError(size_t bit_depth);
     };
 
-    struct UnsupportedChannelCountError : public NotSupportedError
+    struct UnsupportedChannelCountError final : public NotSupportedError
     {
         UnsupportedChannelCountError(size_t channel_count);
     };
 
-    struct UnsupportedVersionError : public NotSupportedError
+    struct UnsupportedVersionError final : public NotSupportedError
     {
         UnsupportedVersionError();
         UnsupportedVersionError(int version);
