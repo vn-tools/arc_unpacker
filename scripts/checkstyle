@@ -1,70 +1,209 @@
-#!/bin/bash
-shopt -s globstar
+#!/bin/python3
+import os, glob, re
 
-echo 'Checking for whitespace errors...'
-grep '\s$' **/*.{cc,h}
-pcregrep -M '\n\n\Z' **/*.{cc,h}
+class Problem(object):
+    def __init__(self, file, text, line_number=None, line_text=None):
+        self.file = file
+        self.text = text
+        self.line_number = line_number #0 indexed!
+        self.line_text = line_text
 
-echo 'Checking for too long lines...'
-grep -n '^.\{81,\}$' **/*.{cc,h}
+    def __str__(self):
+        if self.line_number:
+            fmt = '{file_name}:{line_number}: {line_text} - {problem_text}'
+        else:
+            fmt = '{file_name}: {problem_text}'
+        return fmt.format(
+            file_name=self.file.name,
+            line_number=self.line_number+1 if self.line_number else None,
+            line_text=self.line_text,
+            problem_text=self.text)
 
-echo 'Checking for lowercase hex literals...'
-grep '[0\\]x[0-9]*[a-f][0-9]*' **/*.{cc,h}
+class File(object):
+    def __init__(self, dir, name, lines):
+        self.dir = dir
+        self.name = name
+        self.lines = lines
 
-echo 'Checking for typedef...'
-grep 'typedef' **/*.{cc,h}
+class Check(object):
+    def scan(self, file):
+        raise RuntimeError('Not implemented')
 
-echo 'Checking for "length"...'
-grep 'length' **/*.{cc,h} | grep -v run_length && echo 'Use "size" instead.'
+class WhitespaceCheck(Check):
+    def scan(self, file):
+        if file.lines and file.lines[-1] == '':
+            yield Problem(file, 'Extra blank line at EOF')
+        for i, line in enumerate(file.lines):
+            if line.endswith(' ') or line.endswith('\t'):
+                yield Problem(file, 'Extra whitespace near EOL', i, line)
 
-echo 'Checking for iostream outside logger...'
-grep 'iostream' **/*.{cc,h} | grep -v logger
+class LongLinesCheck(Check):
+    def scan(self, file):
+        for i, line in enumerate(file.lines):
+            if len(line) > 80:
+                yield Problem(file, 'Line too long', i, line)
 
-echo 'Checking for whitespace around braces...'
-grep '[({] [0-9"]\|[0-9"] [})]\|[]=] *{  *}' **/*.{cc,h}
+class LowercaseHexLiteralsCheck(Check):
+    def __init__(self):
+        self.regex = re.compile(r'([0\\]x[0-9A-F]*[a-f][0-9A-Fa-f]*)')
 
-echo 'Checking for sloppy exceptions...'
-grep 'throw std' **/*.cc | grep -v logic_error
+    def scan(self, file):
+        for i, line in enumerate(file.lines):
+            match = self.regex.search(line)
+            if match is not None:
+                yield Problem(
+                    file,
+                    'Hex literals must be uppercase ({0})'.format(match.group()),
+                    line_number=i,
+                    line_text=line)
 
-echo 'Checking for nonfinal struct/classes...'
-grep 'struct \|class ' **/*.{cc,h} \
-    | grep -v '_struct' \
-    | grep -v 'pngstruct' \
-    | grep -v 'enum class' \
-    | grep -v '\(class\|struct\) I[A-Z]' \
-    | grep -v ';$' \
-    | grep -v 'file_saver.*class FileSaver' \
-    | grep -v 'io.*class Stream' \
-    | grep -v 'err.*struct .*Error' \
-    | grep -v 'arg_parser.*Option' \
-    | grep -v 'bit_reader.*class Reader' \
-    | grep -v 'class \(Base\|Archive\|File\|Image\|Audio\)Decoder' \
-    | grep -v 'struct Archive\(Entry\|Meta\)$' \
-    | grep -v 'fmt/entis.*class \(AudioDecoderImpl\|Decoder\)' \
-    | grep -v 'fmt/glib.*class Plugin' \
-    | grep -v ' final'
+class TypedefCheck(Check):
+    def scan(self, file):
+        for i, line in enumerate(file.lines):
+            if 'typedef' in line:
+                yield Problem(file, 'typedef must not be used', i, line)
 
-echo 'Checking for nonstatic constructs...'
-grep '^[A-Z0-9a-z:<>_]\{1,\} [^:]*[(;]' **/*.cc \
-    | grep -v 'using namespace' \
-    | grep -v 'int main' \
-    | grep -v 'entry_point' \
-    | grep -v static
+class LengthCheck(Check):
+    def scan(self, file):
+        for i, line in enumerate(file.lines):
+            if 'length' in line and 'run_length' not in line:
+                yield Problem(file, 'use "size" instead of "length"', i, line)
 
-echo 'Checking for .cc #including their .h not in the top entry...'
-for path in **/*.cc; do
-    name="${path/*\//}"
-    header="${name/.cc/.h}"
-    grep '#include' "$path" \
-        | grep -n -m 1 "$header" \
-        | grep -v '1:' >/dev/null \
-        && echo "$path"
-done
+class IostreamCheck(Check):
+    def scan(self, file):
+        if 'logger' in file.name:
+            return
+        for i, line in enumerate(file.lines):
+            if 'iostream' in line:
+                yield Problem(file, 'Don\'t use iostream', i, line)
 
-echo 'Checking for Log.debug()...'
-grep 'Log\.debug(' **/*.cc && echo "Don't use Log.debug() in production code."
+class WhitespaceAroundBracesCheck(Check):
+    def __init__(self):
+        self.initializer_list_regex1 = re.compile(r'[({] [0-9"]') # start
+        self.initializer_list_regex2 = re.compile(r'[0-9"] [})]') # end
+        self.initializer_list_regex3 = re.compile('[]=] *{  *}') # empty
 
-echo 'Checking for comments without spaces...'
-grep '//[^ ]' **/*.{cc,h} | grep -v '//$' | grep -v 'https\?://'
+    def scan(self, file):
+        for i, line in enumerate(file.lines):
+            if self.initializer_list_regex1.search(line) is not None \
+            or self.initializer_list_regex2.search(line) is not None \
+            or self.initializer_list_regex3.search(line) is not None:
+                yield Problem(file, 'Extra spaces in initializer list', i, line)
 
-exit 0
+class SloppyExceptionsCheck(Check):
+    def scan(self, file):
+        for i, line in enumerate(file.lines):
+            if 'throw std::' in line and 'logic_error' not in line:
+                yield Problem(file, 'Use better exceptions', i, line)
+
+class NonFinalObjectsCheck(Check):
+    def scan(self, file):
+        for i, line in enumerate(file.lines):
+            if 'struct ' not in line and 'class ' not in line: continue
+            if 'final' in line: continue
+
+            # generic exceptions
+            if (line.endswith(';') # forward declarations
+            or '_struct' in line # false positives I
+            or 'pngstruct' in line # false positives II
+            or 'enum class' in line # false positives III
+            or re.search('(class|struct) (Abstract|I)[A-Z]', line)): continue
+
+            # exceptions for core classes
+            if (re.search('(class|struct) (General|Data|Io|NotSupported)Error', line)
+            or re.search('(class|struct) FileSaver', line) and 'file_saver.h' in file.name
+            or re.search('(class|struct) (Switch|Flag|Option)', line) and 'arg_parser.' in file.name
+            or re.search('(class|struct) Archive(Entry|Meta)', line) and 'archive_decoder.h' in file.name
+            or re.search('(class|struct) (Base|Archive|File|Image|Audio)Decoder', line)
+            or re.search('(class|struct) Stream', line) and 'stream.h' in file.name): continue
+
+            yield Problem(file, 'Use "final" where possible', i, line)
+
+class NonStaticObjectsCheck(Check):
+    def __init__(self):
+        self.regex = re.compile(r'^[A-Z0-9a-z:<>_]{1,} [^:]*[(;]')
+
+    def scan(self, file):
+        if 'entry_point' in file.name:
+            return
+        for i, line in enumerate(file.lines):
+            if self.regex.search(line):
+                if 'static' in line: continue
+                if 'using namespace' in line: continue
+                if 'int main' in line: continue
+                yield Problem(file, 'Use "static" where possible', i, line)
+
+class IncludesCheck(Check):
+    def __init__(self):
+        self.regex = re.compile(r'(["<].*[>"])')
+
+    def scan(self, file):
+        includes = [self.regex.findall(line)[0]
+                    for line in file.lines
+                    if line.startswith('#include')]
+
+        if '.cc' in file.name:
+            base = re.sub('(_test)?\.cc', '', file.name)
+            base1 = os.path.relpath(base, file.dir)
+            base2 = base1[0:base1.rfind('_')] if '_' in base1 else base1
+            candidates = ['"%s.h"' % x for x in [base1, base2]]
+            filtered = [x for x in candidates if x in includes]
+            main_header = filtered[0] if filtered else None
+        else:
+            main_header = None
+
+        if main_header in includes and includes[0] != main_header:
+            yield Problem(file, 'Primary header must be #included as first')
+            return
+
+        system_includes = [x for x in includes if x.startswith('<')]
+        program_includes = [x for x in includes if x.startswith('"')]
+
+        includes_good = (
+            ([main_header] if main_header in includes else []) +
+            sorted(system_includes) +
+            sorted([x for x in program_includes if x != main_header]))
+
+        if includes != includes_good:
+            yield Problem(file, 'Unsorted includes')
+
+class DebugLogCheck(Check):
+    def scan(self, file):
+        if 'benchmark' in file.name:
+            return
+        for i, line in enumerate(file.lines):
+            if 'Log.debug(' in line:
+                yield Problem(
+                    file, 'Don\'t use Log.debug() in production code', i, line)
+
+class CommentWhitespaceCheck(Check):
+    def __init__(self):
+        self.regex = re.compile('(?<!http:)(?<!https:)\/\/[^ ]')
+
+    def scan(self, file):
+        for i, line in enumerate(file.lines):
+            if self.regex.search(line):
+                yield Problem(file, 'Use spaces after //', i, line)
+
+def main():
+    checks = [cls() for cls in Check.__subclasses__()]
+
+    dirs = ['src/', 'tests/']
+    all_files = []
+    for dir in dirs:
+        sources = sorted(glob.iglob(dir + '/**/*.cc', recursive=True))
+        headers = sorted(glob.iglob(dir + '/**/*.h', recursive=True))
+
+        for name in sorted(sources + headers):
+            with open(name, 'rb') as f:
+                lines = [l.decode('utf-8').rstrip('\n') for l in f.readlines()]
+            file = File(dir, name, lines)
+            all_files.append(file)
+
+    for check in checks:
+        for file in all_files:
+            for problem in check.scan(file):
+                print(problem)
+
+if __name__ == '__main__':
+    main()
