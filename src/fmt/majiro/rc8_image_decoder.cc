@@ -1,7 +1,7 @@
 #include "fmt/majiro/rc8_image_decoder.h"
-#include <boost/lexical_cast.hpp>
 #include "err.h"
 #include "io/memory_stream.h"
+#include "util/algo/str.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -72,17 +72,18 @@ res::Image Rc8ImageDecoder::decode_impl(io::File &input_file) const
     if (input_file.stream.read_u8() != '_')
         throw err::NotSupportedError("Unexpected encryption flag");
 
-    int version = boost::lexical_cast<int>(input_file.stream.read(2).str());
+    const auto version = util::algo::from_string<int>(
+        input_file.stream.read(2).str());
     if (version != 0)
         throw err::UnsupportedVersionError(version);
 
-    auto width = input_file.stream.read_u32_le();
-    auto height = input_file.stream.read_u32_le();
+    const auto width = input_file.stream.read_u32_le();
+    const auto height = input_file.stream.read_u32_le();
     input_file.stream.skip(4);
 
     res::Palette palette(256, input_file.stream, res::PixelFormat::BGR888);
-    auto data_comp = input_file.stream.read_to_eof();
-    auto data_orig = uncompress(data_comp, width, height);
+    const auto data_comp = input_file.stream.read_to_eof();
+    const auto data_orig = uncompress(data_comp, width, height);
     return res::Image(width, height, data_orig, palette);
 }
 

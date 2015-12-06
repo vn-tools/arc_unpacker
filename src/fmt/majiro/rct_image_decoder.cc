@@ -1,8 +1,7 @@
 #include "fmt/majiro/rct_image_decoder.h"
-#include <boost/algorithm/hex.hpp>
-#include <boost/lexical_cast.hpp>
 #include "err.h"
 #include "io/memory_stream.h"
+#include "util/algo/str.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -118,12 +117,8 @@ void RctImageDecoder::register_cli_options(ArgParser &arg_parser) const
 void RctImageDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("rct-key"))
-    {
-        std::string key;
-        boost::algorithm::unhex(
-            arg_parser.get_switch("rct-key"), std::back_inserter(key));
-        set_key(key);
-    }
+        set_key(util::algo::unhex(arg_parser.get_switch("rct-key")));
+
     ImageDecoder::parse_cli_options(arg_parser);
 }
 
@@ -150,13 +145,14 @@ res::Image RctImageDecoder::decode_impl(io::File &input_file) const
     else
         throw err::NotSupportedError("Unexpected encryption flag");
 
-    int version = boost::lexical_cast<int>(input_file.stream.read(2).str());
+    const auto version = util::algo::from_string<int>(
+        input_file.stream.read(2).str());
     if (version < 0 || version > 1)
         throw err::UnsupportedVersionError(version);
 
-    auto width = input_file.stream.read_u32_le();
-    auto height = input_file.stream.read_u32_le();
-    auto data_size = input_file.stream.read_u32_le();
+    const auto width = input_file.stream.read_u32_le();
+    const auto height = input_file.stream.read_u32_le();
+    const auto data_size = input_file.stream.read_u32_le();
 
     std::string base_file;
     if (version == 1)

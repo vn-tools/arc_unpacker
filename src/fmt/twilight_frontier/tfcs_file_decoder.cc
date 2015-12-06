@@ -1,10 +1,10 @@
 #include "fmt/twilight_frontier/tfcs_file_decoder.h"
-#include <boost/algorithm/string.hpp>
 #include "err.h"
 #include "io/memory_stream.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
+#include "util/algo/str.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;
@@ -14,10 +14,7 @@ static const bstr magic = "TFCS\x00"_b;
 static void write_cell(io::Stream &output_stream, std::string cell)
 {
     if (cell.find(",") != std::string::npos)
-    {
-        boost::replace_all(cell, "\"", "\"\"");
-        cell = "\"" + cell + "\"";
-    }
+        cell = "\"" + util::algo::replace_all(cell, "\"", "\"\"") + "\"";
     output_stream.write(util::sjis_to_utf8(cell));
 }
 

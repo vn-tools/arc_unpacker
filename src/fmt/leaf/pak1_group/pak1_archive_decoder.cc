@@ -1,9 +1,9 @@
 #include "fmt/leaf/pak1_group/pak1_archive_decoder.h"
-#include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <map>
 #include "err.h"
 #include "fmt/leaf/pak1_group/grp_image_decoder.h"
+#include "util/algo/str.h"
 #include "util/encoding.h"
 #include "util/file_from_image.h"
 #include "util/range.h"
@@ -110,7 +110,7 @@ void Pak1ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("pak-version"))
     {
-        set_version(boost::lexical_cast<int>(
+        set_version(util::algo::from_string<int>(
             arg_parser.get_switch("pak-version")));
     }
     ArchiveDecoder::parse_cli_options(arg_parser);

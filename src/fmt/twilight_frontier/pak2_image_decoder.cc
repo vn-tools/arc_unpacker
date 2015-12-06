@@ -1,5 +1,4 @@
 #include "fmt/twilight_frontier/pak2_image_decoder.h"
-#include <boost/filesystem.hpp>
 #include <map>
 #include "err.h"
 #include "io/memory_stream.h"

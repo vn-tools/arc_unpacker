@@ -1,9 +1,9 @@
 #include "fmt/fc01/mcg_image_decoder.h"
-#include <boost/lexical_cast.hpp>
 #include "err.h"
 #include "fmt/fc01/common/custom_lzss.h"
 #include "fmt/fc01/common/util.h"
 #include "fmt/fc01/common/mrg_decryptor.h"
+#include "util/algo/str.h"
 #include "util/format.h"
 #include "util/range.h"
 
@@ -89,7 +89,7 @@ void McgImageDecoder::register_cli_options(ArgParser &arg_parser) const
 void McgImageDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("mcg-key"))
-        set_key(boost::lexical_cast<int>(arg_parser.get_switch("mcg-key")));
+        set_key(util::algo::from_string<int>(arg_parser.get_switch("mcg-key")));
     ImageDecoder::parse_cli_options(arg_parser);
 }
 
@@ -107,8 +107,8 @@ void McgImageDecoder::set_key(u8 key)
 res::Image McgImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    const auto version = static_cast<int>(0.5
-        + 100 * boost::lexical_cast<float>(input_file.stream.read(4).str()));
+    const auto version = static_cast<int>(0.5 + 100
+        * util::algo::from_string<float>(input_file.stream.read(4).str()));
 
     input_file.stream.seek(16);
     const auto header_size = input_file.stream.read_u32_le();

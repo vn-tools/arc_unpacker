@@ -1,10 +1,10 @@
 #include "fmt/team_shanghai_alice/thbgm_audio_archive_decoder.h"
-#include <boost/lexical_cast.hpp>
 #include "err.h"
 #include "fmt/team_shanghai_alice/pbg4_archive_decoder.h"
 #include "fmt/team_shanghai_alice/pbgz_archive_decoder.h"
 #include "fmt/team_shanghai_alice/tha1_archive_decoder.h"
 #include "io/filesystem.h"
+#include "util/algo/str.h"
 #include "util/file_from_audio.h"
 #include "util/range.h"
 
@@ -89,7 +89,7 @@ void ThbgmAudioArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     if (arg_parser.has_switch("loops"))
     {
         set_loop_count(
-            boost::lexical_cast<int>(arg_parser.get_switch("loops")));
+            util::algo::from_string<int>(arg_parser.get_switch("loops")));
     }
     ArchiveDecoder::parse_cli_options(arg_parser);
 }

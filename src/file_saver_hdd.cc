@@ -1,5 +1,4 @@
 #include "file_saver.h"
-#include <boost/algorithm/string/replace.hpp>
 #include <set>
 #include "io/file_stream.h"
 #include "io/filesystem.h"

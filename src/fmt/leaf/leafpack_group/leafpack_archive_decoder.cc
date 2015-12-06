@@ -1,7 +1,7 @@
 #include "fmt/leaf/leafpack_group/leafpack_archive_decoder.h"
-#include <boost/algorithm/hex.hpp>
 #include "err.h"
 #include "io/memory_stream.h"
+#include "util/algo/str.h"
 #include "util/range.h"
 
 using namespace au;
@@ -53,12 +53,8 @@ void LeafpackArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 void LeafpackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("leafpack-key"))
-    {
-        std::string key;
-        boost::algorithm::unhex(
-            arg_parser.get_switch("leafpack-key"), std::back_inserter(key));
-        set_key(key);
-    }
+        set_key(util::algo::unhex(arg_parser.get_switch("leafpack-key")));
+
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 

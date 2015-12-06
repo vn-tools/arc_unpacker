@@ -1,5 +1,4 @@
 #include "fmt/shiina_rio/warc_archive_decoder.h"
-#include <boost/lexical_cast.hpp>
 #include <set>
 #include "err.h"
 #include "fmt/shiina_rio/warc/decompress.h"
@@ -7,6 +6,7 @@
 #include "fmt/shiina_rio/warc/plugin_registry.h"
 #include "io/memory_stream.h"
 #include "log.h"
+#include "util/algo/str.h"
 
 using namespace au;
 using namespace au::fmt::shiina_rio;
@@ -77,8 +77,8 @@ std::unique_ptr<fmt::ArchiveMeta>
         throw err::UsageError("Plugin not specified");
 
     input_file.stream.seek(magic.size());
-    const int warc_version
-        = 100 * boost::lexical_cast<float>(input_file.stream.read(3).str());
+    const int warc_version = 100
+        * util::algo::from_string<float>(input_file.stream.read(3).str());
     if (warc_version != 170)
         throw err::UnsupportedVersionError(warc_version);
 

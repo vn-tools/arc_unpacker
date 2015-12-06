@@ -1,8 +1,8 @@
 #include "fmt/fc01/mca_archive_decoder.h"
-#include <boost/lexical_cast.hpp>
 #include "err.h"
 #include "fmt/fc01/common/custom_lzss.h"
 #include "fmt/fc01/common/util.h"
+#include "util/algo/str.h"
 #include "util/file_from_image.h"
 #include "util/format.h"
 #include "util/range.h"
@@ -57,7 +57,7 @@ void McaArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 void McaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("mca-key"))
-        set_key(boost::lexical_cast<int>(arg_parser.get_switch("mca-key")));
+        set_key(util::algo::from_string<int>(arg_parser.get_switch("mca-key")));
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 

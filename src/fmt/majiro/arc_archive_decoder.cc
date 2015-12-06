@@ -1,7 +1,7 @@
 #include "fmt/majiro/arc_archive_decoder.h"
-#include <boost/lexical_cast.hpp>
 #include "err.h"
 #include "io/memory_stream.h"
+#include "util/algo/str.h"
 #include "util/encoding.h"
 #include "util/range.h"
 
@@ -29,8 +29,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     ArcArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto version
-        = boost::lexical_cast<float>(input_file.stream.read_to_zero().str());
+    const auto version = util::algo::from_string<float>(
+        input_file.stream.read_to_zero().str());
     const auto file_count = input_file.stream.read_u32_le();
     const auto names_offset = input_file.stream.read_u32_le();
     const auto data_offset = input_file.stream.read_u32_le();
