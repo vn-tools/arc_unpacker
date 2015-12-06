@@ -19,7 +19,7 @@ io::path io::get_program_path()
     return program_path;
 }
 
-io::path io::get_etc_dir_path()
+io::path io::get_assets_dir_path()
 {
     const io::path path(program_path.parent());
     const io::path path1 = path / "etc";
@@ -28,5 +28,5 @@ io::path io::get_etc_dir_path()
     const io::path path2 = path.parent() / "etc";
     if (io::is_directory(path2))
         return path2;
-    throw err::FileNotFoundError("Can't locate 'etc/' directory!");
+    throw err::FileNotFoundError("Can't locate 'etc/' assets directory!");
 }

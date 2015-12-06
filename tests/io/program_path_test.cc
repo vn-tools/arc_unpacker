@@ -9,8 +9,8 @@ TEST_CASE("Getting program path", "[io]")
     REQUIRE(program_path.str().find("run_tests") != std::string::npos);
 }
 
-TEST_CASE("Getting 'etc/' directory path", "[io]")
+TEST_CASE("Getting assets directory path", "[io]")
 {
-    const auto etc_path = io::get_etc_dir_path();
-    REQUIRE(etc_path.str().find("etc") != std::string::npos);
+    const auto assets_dir_path = io::get_assets_dir_path();
+    REQUIRE(assets_dir_path.str().find("etc") != std::string::npos);
 }

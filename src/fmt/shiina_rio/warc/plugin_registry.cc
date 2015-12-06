@@ -10,7 +10,7 @@ using namespace au::fmt::shiina_rio::warc;
 
 static bstr read_file(const std::string &name)
 {
-    const auto path = io::get_etc_dir_path() / "shiina_rio" / name;
+    const auto path = io::get_assets_dir_path() / "shiina_rio" / name;
     io::File file(path, io::FileMode::Read);
     return file.stream.seek(0).read_to_eof();
 }

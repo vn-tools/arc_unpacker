@@ -1,7 +1,7 @@
 #include "arc_unpacker.h"
 #include "entry_point.h"
-#include "log.h"
 #include "io/program_path.h"
+#include "log.h"
 
 using namespace au;
 
