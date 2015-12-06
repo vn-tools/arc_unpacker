@@ -38,7 +38,7 @@ namespace algo {
         {
             T operator()(const T val)
             {
-                throw std::out_of_range("Unsupported data size");
+                throw std::logic_error("Unsupported data size");
             }
         };
 
