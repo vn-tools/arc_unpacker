@@ -1,6 +1,6 @@
 #include "fmt/lilim/dpk_archive_decoder.h"
+#include "algo/range.h"
 #include "io/bit_reader.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::lilim;
@@ -33,7 +33,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     input_file.stream.skip(4);
     auto meta = std::make_unique<ArchiveMeta>();
     size_t current_offset = magic.size() + 2 + 4 + file_count * 0x14;
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(0x10).str();

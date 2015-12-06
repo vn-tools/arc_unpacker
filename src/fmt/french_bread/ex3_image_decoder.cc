@@ -1,7 +1,7 @@
 #include "fmt/french_bread/ex3_image_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/microsoft/bmp_image_decoder.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::french_bread;
@@ -25,7 +25,7 @@ res::Image Ex3ImageDecoder::decode_impl(io::File &input_file) const
     u8 b = input_file.stream.read_u8();
     while (input_file.stream.tell() < input_file.stream.size())
     {
-        for (auto j : util::range(256))
+        for (auto j : algo::range(256))
             table1[j] = j;
 
         size_t offset = 0;
@@ -38,7 +38,7 @@ res::Image Ex3ImageDecoder::decode_impl(io::File &input_file) const
             }
             if (offset == 256)
                 break;
-            for (u8 j : util::range(b + 1))
+            for (u8 j : algo::range(b + 1))
             {
                 if (offset >= 256)
                     throw err::BadDataOffsetError();

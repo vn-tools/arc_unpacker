@@ -1,7 +1,7 @@
 #include "fmt/glib/gml_archive_decoder.h"
+#include "algo/range.h"
 #include "fmt/glib/custom_lzss.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::glib;
@@ -36,7 +36,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto table_size_orig = input_file.stream.read_u32_le();
     auto table_size_comp = input_file.stream.read_u32_le();
     auto table_data = input_file.stream.read(table_size_comp);
-    for (auto i : util::range(table_data.size()))
+    for (auto i : algo::range(table_data.size()))
         table_data[i] ^= 0xFF;
     table_data = custom_lzss_decompress(table_data, table_size_orig);
     io::MemoryStream table_stream(table_data);
@@ -45,7 +45,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     meta->permutation = table_stream.read(0x100);
 
     auto file_count = table_stream.read_u32_le();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream.read(table_stream.read_u32_le()).str();
@@ -66,7 +66,7 @@ std::unique_ptr<io::File> GmlArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     input_file.stream.skip(entry->prefix.size());
     auto suffix = input_file.stream.read(entry->size - entry->prefix.size());
-    for (auto i : util::range(suffix.size()))
+    for (auto i : algo::range(suffix.size()))
         suffix[i] = meta->permutation[suffix.get<u8>()[i]];
 
     auto output_file = std::make_unique<io::File>();

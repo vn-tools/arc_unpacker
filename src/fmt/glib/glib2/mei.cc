@@ -1,7 +1,7 @@
 #include "fmt/glib/glib2/mei.h"
 #include <map>
+#include "algo/format.h"
 #include "err.h"
-#include "util/format.h"
 
 using namespace au;
 using namespace au::fmt::glib::glib2;
@@ -939,7 +939,7 @@ std::unique_ptr<Decoder> MeiPlugin::create_decoder(
     if (mappings.find(keys[0]) == mappings.end())
     {
         throw err::NotSupportedError(
-            util::format("Unsupported key: %08x", keys[0]));
+            algo::format("Unsupported key: %08x", keys[0]));
     }
 
     auto mapping = mappings.at(keys[0]);

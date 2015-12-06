@@ -1,6 +1,6 @@
 #include "fmt/leaf/ar10_group/ar10_archive_decoder.h"
-#include "util/encoding.h"
-#include "util/range.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -35,10 +35,10 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->archive_key = input_file.stream.read_u8();
     ArchiveEntryImpl *last_entry = nullptr;
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->path = util::sjis_to_utf8(
+        entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero()).str();
         entry->offset = input_file.stream.read_u32_le() + offset_to_data;
         if (last_entry)
@@ -63,7 +63,7 @@ std::unique_ptr<io::File> Ar10ArchiveDecoder::read_file_impl(
     const auto key = input_file.stream.read(key_size);
     auto data = input_file.stream.read(data_size);
 
-    for (const auto i : util::range(data.size()))
+    for (const auto i : algo::range(data.size()))
         data[i] ^= key[i % key.size()];
 
     auto output_file = std::make_unique<io::File>(entry->path, data);

@@ -1,5 +1,5 @@
 #include "err.h"
-#include "util/format.h"
+#include "algo/format.h"
 
 using namespace au;
 using namespace au::err;
@@ -54,18 +54,18 @@ NotSupportedError::NotSupportedError(const std::string &desc)
 }
 
 UnsupportedBitDepthError::UnsupportedBitDepthError(size_t bit_depth)
-    : NotSupportedError(util::format("Unsupported bit depth: %d", bit_depth))
+    : NotSupportedError(algo::format("Unsupported bit depth: %d", bit_depth))
 {
 }
 
 UnsupportedChannelCountError::UnsupportedChannelCountError(size_t channel_count)
-    : NotSupportedError(util::format(
+    : NotSupportedError(algo::format(
         "Unsupported channel count: %d", channel_count))
 {
 }
 
 UnsupportedVersionError::UnsupportedVersionError(int version)
-    : NotSupportedError(util::format("Unsupported version: %d", version))
+    : NotSupportedError(algo::format("Unsupported version: %d", version))
 {
 }
 

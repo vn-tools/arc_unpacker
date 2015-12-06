@@ -1,8 +1,8 @@
 #include "arg_parser.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "log.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 
@@ -186,9 +186,9 @@ static std::string format_dictionary_as_table(
     key_size += 2; // keep two spaces around value names
     const auto columns = (line_size - key_size) / key_size;
     const auto rows = (dict.size() + columns - 1) / columns;
-    for (const auto y : util::range(rows))
+    for (const auto y : algo::range(rows))
     {
-        for (const auto x : util::range(columns))
+        for (const auto x : algo::range(columns))
         {
             const auto i = x * rows + y;
             if (i >= dict.size())
@@ -228,7 +228,7 @@ static std::string format_switch_help(const SwitchImpl &sw, bool force)
     if (!values.size() || (sw.possible_values_hidden && !force))
         return "";
     auto out
-        = util::format("\nAvailable %s values:\n\n", sw.value_name.c_str());
+        = algo::format("\nAvailable %s values:\n\n", sw.value_name.c_str());
     const bool use_descriptions = std::all_of(
         values.begin(), values.end(),
         [](const auto &it) { return !it.second.empty(); });
@@ -274,7 +274,7 @@ void ArgParser::Priv::check_names(const std::vector<std::string> &names)
     {
         if (option->has_name(name))
         {
-            throw std::logic_error(util::format(
+            throw std::logic_error(algo::format(
                 "An option with name \"%s\" was already registered.",
                 name.c_str()));
         }

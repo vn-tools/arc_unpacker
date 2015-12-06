@@ -1,7 +1,7 @@
 #include "fmt/twilight_frontier/pak1_audio_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "util/file_from_audio.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;
@@ -26,7 +26,7 @@ bool Pak1AudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
     if (!input_file.path.has_extension("dat"))
         return false;
     size_t file_count = input_file.stream.read_u32_le();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         if (!input_file.stream.read_u8())
             continue;
@@ -42,7 +42,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 {
     auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         if (!input_file.stream.read_u8())
@@ -59,7 +59,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(entry->size);
-        entry->path = util::format("%04d", i);
+        entry->path = algo::format("%04d", i);
         meta->entries.push_back(std::move(entry));
     }
     return meta;

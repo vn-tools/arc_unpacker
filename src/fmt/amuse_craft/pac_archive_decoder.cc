@@ -1,6 +1,6 @@
 #include "fmt/amuse_craft/pac_archive_decoder.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::amuse_craft;
@@ -53,7 +53,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
     io::File &input_file, const size_t file_count, const size_t name_size)
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         auto path = input_file.stream.read_to_zero(name_size).str();

@@ -1,8 +1,8 @@
 #include "fmt/libido/egr_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "util/file_from_image.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::libido;
@@ -35,7 +35,7 @@ std::unique_ptr<fmt::ArchiveMeta>
             throw err::BadDataSizeError();
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(0x574 + entry->width * entry->height);
-        entry->path = util::format("Image%03d.png", i++);
+        entry->path = algo::format("Image%03d.png", i++);
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -47,7 +47,7 @@ std::unique_ptr<io::File> EgrArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     res::Palette palette(256);
-    for (auto i : util::range(palette.size()))
+    for (auto i : algo::range(palette.size()))
     {
         input_file.stream.skip(1);
         palette[i].a = 0xFF;

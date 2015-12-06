@@ -1,9 +1,9 @@
 #include "file_saver.h"
 #include <set>
+#include "algo/format.h"
 #include "io/file_stream.h"
-#include "io/filesystem.h"
+#include "io/file_system.h"
 #include "log.h"
-#include "util/format.h"
 
 using namespace au;
 
@@ -29,7 +29,7 @@ io::path FileSaverHdd::Priv::make_path_unique(const io::path &path)
     while (paths.find(new_path) != paths.end()
         || (!overwrite && io::exists(new_path)))
     {
-        new_path.change_stem(path.stem() + util::format("(%d)", i++));
+        new_path.change_stem(path.stem() + algo::format("(%d)", i++));
     }
     paths.insert(new_path);
     return new_path;

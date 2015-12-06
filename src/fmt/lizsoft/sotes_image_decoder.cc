@@ -1,6 +1,6 @@
 #include "fmt/lizsoft/sotes_image_decoder.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::lizsoft;

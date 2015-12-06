@@ -1,8 +1,8 @@
 #include "fmt/shiina_rio/warc/decompress.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::shiina_rio;
@@ -105,7 +105,7 @@ bstr warc::decompress_yh1(
     {
         const u32 key32 = 0x6393528E;
         const u16 key16 = 0x4B4D;
-        for (auto i : util::range(transient.size() / 4))
+        for (auto i : algo::range(transient.size() / 4))
             transient.get<u32>()[i] ^= key32 ^ key16;
     }
     return decode_huffman(transient, size_orig);
@@ -126,7 +126,7 @@ bstr warc::decompress_ypk(
         while (i < transient.size())
             transient[i++] ^= key32;
     }
-    return util::pack::zlib_inflate(transient);
+    return algo::pack::zlib_inflate(transient);
 }
 
 bstr warc::decompress_ylz(

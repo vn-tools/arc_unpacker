@@ -1,6 +1,6 @@
 #include "fmt/alice_soft/vsp_image_decoder.h"
+#include "algo/range.h"
 #include "fmt/alice_soft/pms_image_decoder.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::alice_soft;
@@ -24,9 +24,9 @@ static bstr decompress_vsp(io::Stream &input, size_t width, size_t height)
     auto bc = buf2.get();
     auto mask = 0;
 
-    for (auto x : util::range(width / 8))
+    for (auto x : algo::range(width / 8))
     {
-        for (auto plane : util::range(4))
+        for (auto plane : algo::range(4))
         {
             size_t y = 0;
             while (y < height)
@@ -119,16 +119,16 @@ static bstr decompress_vsp(io::Stream &input, size_t width, size_t height)
             }
         }
 
-        for (auto y : util::range(height))
+        for (auto y : algo::range(height))
         {
             int component[4];
-            for (auto i : util::range(4))
+            for (auto i : algo::range(4))
                 component[i] = (bc[y][i] << i) | (bc[y][i] >> (8 - i));
 
             auto output_ptr = &output[(y * (width / 8) + x) * 8];
-            for (auto j : util::range(8))
+            for (auto j : algo::range(8))
             {
-                for (auto i : util::range(4))
+                for (auto i : algo::range(4))
                     *output_ptr |= (component[i] >> (7 - j)) & (1 << i);
                 output_ptr++;
             }

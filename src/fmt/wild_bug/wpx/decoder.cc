@@ -1,9 +1,9 @@
 #include "fmt/wild_bug/wpx/decoder.h"
 #include <map>
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/wild_bug/wpx/retrieval.h"
 #include "fmt/wild_bug/wpx/transcription.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::wild_bug::wpx;
@@ -50,7 +50,7 @@ Decoder::Decoder(io::Stream &stream) : p(new Priv(stream))
     auto section_count = stream.read_u8();
     auto dir_size = stream.read_u8();
 
-    for (auto i : util::range(section_count))
+    for (auto i : algo::range(section_count))
     {
         auto id = stream.read_u8();
         Section section;
@@ -123,7 +123,7 @@ bstr Decoder::read_compressed_section(
         use_plain_transcriptors = true;
     }
 
-    for (auto i : util::range(quant_size))
+    for (auto i : algo::range(quant_size))
         *output_ptr++ = section_stream.read_u8();
     int remaining = section.size_orig - quant_size;
     section_stream.seek((-quant_size & 3) + quant_size);

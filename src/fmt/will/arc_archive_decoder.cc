@@ -1,9 +1,9 @@
 #include "fmt/will/arc_archive_decoder.h"
 #include <map>
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/will/wipf_image_archive_decoder.h"
 #include "util/file_from_image.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::will;
@@ -36,7 +36,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
     for (const auto &dir : dirs)
     {
         input_file.stream.seek(dir.offset);
-        for (const auto i : util::range(dir.file_count))
+        for (const auto i : algo::range(dir.file_count))
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
             const auto name = input_file.stream.read_to_zero(name_size).str();
@@ -88,7 +88,7 @@ void ArcArchiveDecoder::preprocess(
                 *read_file(input_file, meta, *sprite_entry));
             const auto masks = wipf_archive_decoder.unpack_to_images(
                 *read_file(input_file, meta, *mask_entry));
-            for (const auto i : util::range(sprites.size()))
+            for (const auto i : algo::range(sprites.size()))
                 sprites[i]->apply_mask(*masks.at(i));
             sprite_entry->already_unpacked = true;
             mask_entry->already_unpacked = true;
@@ -112,7 +112,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     if (dir_count > 100)
         throw err::BadDataSizeError();
     std::vector<Directory> dirs(dir_count);
-    for (const auto i : util::range(dirs.size()))
+    for (const auto i : algo::range(dirs.size()))
     {
         dirs[i].extension = input_file.stream.read_to_zero(4).str();
         dirs[i].file_count = input_file.stream.read_u32_le();

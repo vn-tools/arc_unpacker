@@ -1,6 +1,6 @@
 #include "fmt/propeller/mpk_archive_decoder.h"
-#include "util/encoding.h"
-#include "util/range.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::propeller;
@@ -27,7 +27,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     input_file.stream.seek(table_offset);
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
@@ -38,7 +38,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         for (auto &c : name_bin)
             c ^= key8;
 
-        auto name = util::sjis_to_utf8(name_bin).str(true);
+        auto name = algo::sjis_to_utf8(name_bin).str(true);
         if (name[0] == '\\')
             name = name.substr(1);
         entry->path = name;

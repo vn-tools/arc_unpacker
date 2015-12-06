@@ -1,8 +1,8 @@
 #include "fmt/nsystem/mgd_image_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/png/png_image_decoder.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nsystem;
@@ -37,7 +37,7 @@ static void decompress_sgd_alpha(const bstr &input, io::Stream &output_stream)
         {
             size_t size = (flag & 0x7FFF) + 1;
             u8 alpha = input_stream.read_u8();
-            for (auto i : util::range(size))
+            for (auto i : algo::range(size))
             {
                 output_stream.skip(3);
                 output_stream.write_u8(alpha ^ 0xFF);
@@ -65,7 +65,7 @@ static void decompress_sgd_bgr_strategy_1(
     u8 g = output_stream.read_u8();
     u8 r = output_stream.read_u8();
     output_stream.skip(1);
-    for (auto i : util::range(size))
+    for (auto i : algo::range(size))
     {
         u16 delta = input_stream.read_u16_le();
         if (delta & 0x8000)
@@ -95,7 +95,7 @@ static void decompress_sgd_bgr_strategy_2(
     u8 b = input_stream.read_u8();
     u8 g = input_stream.read_u8();
     u8 r = input_stream.read_u8();
-    for (auto i : util::range(size))
+    for (auto i : algo::range(size))
     {
         output_stream.write_u8(b);
         output_stream.write_u8(g);
@@ -108,7 +108,7 @@ static void decompress_sgd_bgr_strategy_3(
     io::Stream &input_stream, io::Stream &output_stream, u8 flag)
 {
     auto size = flag;
-    for (auto i : util::range(size))
+    for (auto i : algo::range(size))
     {
         output_stream.write(input_stream.read(3));
         output_stream.skip(1);
@@ -167,7 +167,7 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::Stream &stream)
         if (regions_size != bytes_left)
             throw err::CorruptDataError("Region size mismatch");
 
-        for (auto i : util::range(region_count))
+        for (auto i : algo::range(region_count))
         {
             auto region = std::make_unique<Region>();
             region->x = stream.read_u16_le();

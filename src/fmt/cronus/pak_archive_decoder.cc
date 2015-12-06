@@ -1,10 +1,10 @@
 #include "fmt/cronus/pak_archive_decoder.h"
+#include "algo/pack/lzss.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/cronus/common.h"
 #include "io/memory_stream.h"
-#include "util/pack/lzss.h"
 #include "util/plugin_mgr.hh"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::cronus;
@@ -42,13 +42,13 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
     {
         auto key = get_delta_key("CHERRYSOFT"_b);
         delta_decrypt(table_data, key);
-        table_data = util::pack::lzss_decompress_bytewise(
+        table_data = algo::pack::lzss_decompress_bytewise(
             table_data, table_size_orig);
     }
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<fmt::ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream.read_to_zero(16).str();

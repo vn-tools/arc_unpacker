@@ -1,5 +1,5 @@
 #include "fmt/bgi/arc_archive_decoder.h"
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::bgi;
@@ -27,7 +27,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto file_count = input_file.stream.read_u32_le();
     auto file_data_start = input_file.stream.tell() + file_count * 32;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(16).str();

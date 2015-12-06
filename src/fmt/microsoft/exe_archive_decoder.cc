@@ -1,9 +1,9 @@
 #include "fmt/microsoft/exe_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 #include "err.h"
 #include "log.h"
-#include "util/encoding.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::microsoft;
@@ -410,7 +410,7 @@ void ResourceCrawler::process_dir(size_t offset, const std::string path)
     args.stream.seek(args.base_offset + offset);
     ImageResourceDir dir(args.stream);
     size_t entry_count = dir.number_of_named_entries + dir.number_of_id_entries;
-    for (auto i : util::range(entry_count))
+    for (auto i : algo::range(entry_count))
     {
         ImageResourceDirEntry entry(args.stream);
 
@@ -430,7 +430,7 @@ void ResourceCrawler::process_dir(size_t offset, const std::string path)
         }
         catch (std::exception &e)
         {
-            Log.err(util::format(
+            Log.err(algo::format(
                 "Can't read resource entry located at 0x%08x (%s)\n",
                 args.base_offset + entry.offset_to_data,
                 e.what()));
@@ -458,7 +458,7 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
         args.stream.seek(args.base_offset + entry.name_offset);
         size_t max_size = args.stream.read_u16_le();
         bstr name_utf16 = args.stream.read(max_size * 2);
-        return util::convert_encoding(name_utf16, "utf-16le", "utf-8").str();
+        return algo::convert_locale(name_utf16, "utf-16le", "utf-8").str();
     }
 
     switch (entry.id)
@@ -484,7 +484,7 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
         case 24: return "MANIFEST";
     }
 
-    return util::format("%d", entry.id);
+    return algo::format("%d", entry.id);
 }
 
 bool ExeArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -503,11 +503,11 @@ std::unique_ptr<fmt::ArchiveMeta>
     size_t data_dir_count = nt_header.optional_header.number_of_rva_and_sizes;
     std::vector<ImageDataDir> data_dirs;
     data_dirs.reserve(data_dir_count);
-    for (auto i : util::range(data_dir_count))
+    for (auto i : algo::range(data_dir_count))
         data_dirs.push_back(ImageDataDir(input_file.stream));
 
     std::vector<ImageSectionHeader> sections;
-    for (auto i : util::range(nt_header.file_header.number_of_sections))
+    for (auto i : algo::range(nt_header.file_header.number_of_sections))
         sections.push_back(ImageSectionHeader(input_file.stream));
 
     RvaHelper rva_helper(

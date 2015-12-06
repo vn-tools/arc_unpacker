@@ -1,8 +1,8 @@
 #include "fmt/bgi/cbg/cbg1_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/bgi/cbg/cbg_common.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::bgi::cbg;
@@ -11,7 +11,7 @@ static bstr decompress_huffman(
     io::BitReader &bit_reader, const Tree &tree, size_t output_size)
 {
     bstr output(output_size);
-    for (auto i : util::range(output.size()))
+    for (auto i : algo::range(output.size()))
         output[i] = tree.get_leaf(bit_reader);
     return output;
 }
@@ -33,12 +33,12 @@ static bstr decompress_rle(bstr &input, size_t output_size)
 
         if (zero_flag)
         {
-            for (auto i : util::range(size))
+            for (auto i : algo::range(size))
                 *output_ptr++ = 0;
         }
         else
         {
-            for (auto i : util::range(size))
+            for (auto i : algo::range(size))
                 *output_ptr++ = input_stream.read_u8();
         }
         zero_flag = !zero_flag;
@@ -61,9 +61,9 @@ static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
     left += channels;
 
     // add left to first row
-    for (auto x : util::range(1, width))
+    for (auto x : algo::range(1, width))
     {
-        for (auto i : util::range(channels))
+        for (auto i : algo::range(channels))
         {
             *input_ptr += input_ptr[-channels];
             input_ptr++;
@@ -73,9 +73,9 @@ static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
     }
 
     // add left and top to all other pixels
-    for (auto y : util::range(1, height))
+    for (auto y : algo::range(1, height))
     {
-        for (auto i : util::range(channels))
+        for (auto i : algo::range(channels))
         {
             *input_ptr += *above;
             input_ptr++;
@@ -83,9 +83,9 @@ static void transform_colors(bstr &input, u16 width, u16 height, u16 bpp)
             left++;
         }
 
-        for (auto x : util::range(1, width))
+        for (auto x : algo::range(1, width))
         {
-            for (auto i : util::range(channels))
+            for (auto i : algo::range(channels))
             {
                 *input_ptr += (*left + *above) >> 1;
                 input_ptr++;

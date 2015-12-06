@@ -1,9 +1,9 @@
 #include "fmt/eagls/gr_image_decoder.h"
+#include "algo/crypt/lcg.h"
+#include "algo/pack/lzss.h"
+#include "algo/range.h"
 #include "fmt/microsoft/bmp_image_decoder.h"
 #include "io/memory_stream.h"
-#include "util/crypt/lcg.h"
-#include "util/pack/lzss.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::eagls;
@@ -13,7 +13,7 @@ static const u32 xor_value = 0x75BD924;
 
 static size_t guess_output_size(const bstr &data)
 {
-    io::MemoryStream tmp_stream(util::pack::lzss_decompress_bytewise(data, 30));
+    io::MemoryStream tmp_stream(algo::pack::lzss_decompress_bytewise(data, 30));
     tmp_stream.skip(10);
     auto pixels_start = tmp_stream.read_u32_le();
     tmp_stream.skip(4);
@@ -37,12 +37,12 @@ res::Image GrImageDecoder::decode_impl(io::File &input_file) const
     auto data = input_file.stream.read(input_file.stream.size() - 1);
     auto seed = input_file.stream.read_u8() ^ xor_value;
 
-    util::crypt::Lcg lcg(util::crypt::LcgKind::ParkMillerRevised, seed);
-    for (auto i : util::range(0, std::min<size_t>(0x174B, data.size())))
+    algo::crypt::Lcg lcg(algo::crypt::LcgKind::ParkMillerRevised, seed);
+    for (auto i : algo::range(0, std::min<size_t>(0x174B, data.size())))
         data[i] ^= key[lcg.next() % key.size()];
 
     auto output_size = guess_output_size(data);
-    data = util::pack::lzss_decompress_bytewise(data, output_size);
+    data = algo::pack::lzss_decompress_bytewise(data, output_size);
 
     io::File bmp_file(input_file.path, data);
     const fmt::microsoft::BmpImageDecoder bmp_file_decoder;

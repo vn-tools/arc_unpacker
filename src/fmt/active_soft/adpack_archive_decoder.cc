@@ -1,5 +1,5 @@
 #include "fmt/active_soft/adpack_archive_decoder.h"
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::active_soft;
@@ -28,7 +28,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     input_file.stream.seek(0x10);
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(0x18).str();

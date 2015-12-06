@@ -1,9 +1,9 @@
 #include "fmt/lilim/aos1_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "test_support/catch.hh"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::lilim;
@@ -17,10 +17,10 @@ static void do_test(const std::string &input_path)
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-    for (const auto i : util::range(50))
+    for (const auto i : algo::range(50))
         expected_files.push_back(tests::stub_file(
-            util::format("extra%d.txt", i),
-            bstr(util::format("content%d", i))));
+            algo::format("extra%d.txt", i),
+            bstr(algo::format("content%d", i))));
 
     const Aos1ArchiveDecoder decoder;
     const auto input_file = tests::file_from_path(dir + input_path);

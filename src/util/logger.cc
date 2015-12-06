@@ -1,7 +1,7 @@
 #include "util/logger.h"
 #include <cstdarg>
 #include <iostream>
-#include "util/format.h"
+#include "algo/format.h"
 
 using namespace au::util;
 
@@ -35,7 +35,7 @@ void Logger::Priv::log(
         out = &std::cerr;
     if (colors_enabled && colors[type] != Color::Original)
         logger.set_color(colors[type]);
-    (*out) << format(fmt, args);
+    (*out) << algo::format(fmt, args);
     if (colors_enabled && colors[type] != Color::Original)
         logger.set_color(Color::Original);
 }

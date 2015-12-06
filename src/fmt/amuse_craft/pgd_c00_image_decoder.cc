@@ -1,8 +1,8 @@
 #include "fmt/amuse_craft/pgd_c00_image_decoder.h"
+#include "algo/range.h"
 #include "fmt/truevision/tga_image_decoder.h"
 #include "io/memory_stream.h"
 #include "util/cyclic_buffer.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::amuse_craft;
@@ -26,7 +26,7 @@ static bstr decompress(const bstr &input, const size_t size_orig)
             const auto look_behind_pos = input_stream.read_u16_le();
             const auto repetitions = input_stream.read_u8();
             const auto dict_start = dict.start();
-            for (const auto i : util::range(repetitions))
+            for (const auto i : algo::range(repetitions))
             {
                 const u8 c = dict[dict_start + look_behind_pos + i];
                 output += c;

@@ -1,7 +1,7 @@
 #include "fmt/team_shanghai_alice/pbg3_archive_decoder.h"
+#include "algo/pack/lzss.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
-#include "util/pack/lzss.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::team_shanghai_alice;
@@ -44,7 +44,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         read_integer(table_bit_reader);
@@ -53,7 +53,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->offset = read_integer(table_bit_reader);
         entry->size_orig = read_integer(table_bit_reader);
         std::string name;
-        for (auto j : util::range(256))
+        for (auto j : algo::range(256))
         {
             char c = table_bit_reader.get(8);
             if (c == 0)
@@ -78,12 +78,12 @@ std::unique_ptr<io::File> Pbg3ArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     io::BitReader bit_reader(input_file.stream.read(entry->size_comp));
 
-    util::pack::LzssSettings settings;
+    algo::pack::LzssSettings settings;
     settings.position_bits = 13;
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-    auto data = util::pack::lzss_decompress_bitwise(
+    auto data = algo::pack::lzss_decompress_bitwise(
         bit_reader, entry->size_orig, settings);
 
     return std::make_unique<io::File>(entry->path, data);

@@ -2,7 +2,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 #include <boost/locale.hpp>
-#include "util/encoding.h"
+#include "algo/locale.h"
 
 using namespace au;
 
@@ -19,7 +19,7 @@ std::vector<std::string> get_arguments(int argc, const wchar_t **argv)
     std::vector<std::string> arguments;
     for (int i = 0; i < argc; i++)
     {
-        const auto arg = util::convert_encoding(
+        const auto arg = algo::convert_locale(
             bstr(reinterpret_cast<const char*>(argv[i]), wcslen(argv[i]) * 2),
             "utf-16le",
             "utf-8");

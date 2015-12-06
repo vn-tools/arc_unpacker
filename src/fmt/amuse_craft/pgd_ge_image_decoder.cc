@@ -1,8 +1,8 @@
 #include "fmt/amuse_craft/pgd_ge_image_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::amuse_craft;
@@ -82,9 +82,9 @@ static bstr apply_filter_2(
     auto output_ptr = output.get<u8>();
 
     const std::initializer_list<size_t> indices = {0, 1, width, width + 1};
-    for (auto y : util::range(height / 2))
+    for (auto y : algo::range(height / 2))
     {
-        for (auto x : util::range(width / 2))
+        for (auto x : algo::range(width / 2))
         {
             long value_b = 226 * plane1[0];
             long value_g = -43 * plane1[0] - 89 * plane2[0];
@@ -125,24 +125,24 @@ static bstr apply_delta_filter(
         throw err::BadDataSizeError();
 
     bstr output(input);
-    for (auto y : util::range(height))
+    for (auto y : algo::range(height))
     {
         const auto prev_line = output.get<u8>() + (y - 1) * stride;
         const auto dst_line = output.get<u8>() + y * stride;
 
         if (delta_spec[y] == 1)
         {
-            for (auto x : util::range(channels, stride))
+            for (auto x : algo::range(channels, stride))
                 dst_line[x] = dst_line[x - channels] - dst_line[x];
         }
         else if (delta_spec[y] == 2)
         {
-            for (auto x : util::range(stride))
+            for (auto x : algo::range(stride))
                 dst_line[x] = prev_line[x] - dst_line[x];
         }
         else if (delta_spec[y] == 4)
         {
-            for (auto x : util::range(channels, stride))
+            for (auto x : algo::range(channels, stride))
             {
                 const auto mean = (prev_line[x] + dst_line[x - channels]) / 2;
                 dst_line[x] = mean - dst_line[x];
@@ -201,7 +201,7 @@ res::Image PgdGeImageDecoder::decode_impl(io::File &input_file) const
     }
 
     throw err::NotSupportedError(
-        util::format("Unknown filter: %d", filter_type));
+        algo::format("Unknown filter: %d", filter_type));
 }
 
 static auto dummy = fmt::register_fmt<PgdGeImageDecoder>("amuse-craft/pgd-ge");

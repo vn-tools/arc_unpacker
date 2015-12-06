@@ -1,9 +1,9 @@
 #include "fmt/majiro/arc_archive_decoder.h"
+#include "algo/locale.h"
+#include "algo/range.h"
+#include "algo/str.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/algo/str.h"
-#include "util/encoding.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::majiro;
@@ -29,7 +29,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     ArcArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto version = util::algo::from_string<float>(
+    const auto version = algo::from_string<float>(
         input_file.stream.read_to_zero().str());
     const auto file_count = input_file.stream.read_u32_le();
     const auto names_offset = input_file.stream.read_u32_le();
@@ -39,7 +39,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         throw err::UnsupportedVersionError(version);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->hash = version == 3
@@ -54,7 +54,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (auto &entry : meta->entries)
     {
         static_cast<ArchiveEntryImpl*>(entry.get())->path
-            = util::sjis_to_utf8(input_file.stream.read_to_zero()).str();
+            = algo::sjis_to_utf8(input_file.stream.read_to_zero()).str();
     }
 
     return meta;

@@ -1,6 +1,6 @@
 #include "fmt/gnu/gzip_archive_decoder.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::gnu;
@@ -91,8 +91,8 @@ std::unique_ptr<fmt::ArchiveMeta>
             input_file.stream.skip(2);
 
         entry->offset = input_file.stream.tell();
-        const auto data = util::pack::zlib_inflate(
-            input_file.stream, util::pack::ZlibKind::RawDeflate);
+        const auto data = algo::pack::zlib_inflate(
+            input_file.stream, algo::pack::ZlibKind::RawDeflate);
         entry->size = input_file.stream.tell() - entry->offset;
         input_file.stream.skip(8);
 
@@ -109,9 +109,9 @@ std::unique_ptr<io::File> GzipArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     return std::make_unique<io::File>(
         entry->path,
-        util::pack::zlib_inflate(
+        algo::pack::zlib_inflate(
             input_file.stream.read(entry->size),
-            util::pack::ZlibKind::RawDeflate));
+            algo::pack::ZlibKind::RawDeflate));
 }
 
 static auto dummy = fmt::register_fmt<GzipArchiveDecoder>("gnu/gzip");

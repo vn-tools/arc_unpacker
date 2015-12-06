@@ -1,7 +1,7 @@
 #include "fmt/kiss/arc_archive_decoder.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/encoding.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kiss;
@@ -34,10 +34,10 @@ std::unique_ptr<fmt::ArchiveMeta>
     const auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
     ArchiveEntryImpl *last_entry = nullptr;
-    for (const size_t i : util::range(file_count))
+    for (const size_t i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->path = util::sjis_to_utf8(
+        entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero()).str();
         entry->offset = input_file.stream.read_u32_le();
         if (input_file.stream.read_u32_le() != 0)

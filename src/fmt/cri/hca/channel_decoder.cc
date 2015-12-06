@@ -1,21 +1,21 @@
 #include "fmt/cri/hca/channel_decoder.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::cri::hca;
 
 static void decode5_copy1(float *s, float *d)
 {
-    for (const auto i : util::range(7))
+    for (const auto i : algo::range(7))
     {
         const auto count1 = 1 << i;
         const auto count2 = 0x40 >> i;
         auto d1 = d;
         auto d2 = &d[count2];
-        for (const auto j : util::range(count1))
+        for (const auto j : algo::range(count1))
         {
-            for (const auto k : util::range(count2))
+            for (const auto k : algo::range(count2))
             {
                 const auto a = *s++;
                 const auto b = *s++;
@@ -293,7 +293,7 @@ static float *decode5_copy2(float *&s, float *d)
         }
     };
 
-    for (const auto i : util::range(7))
+    for (const auto i : algo::range(7))
     {
         const auto count1 = 0x40 >> i;
         const auto count2 = 1 << i;
@@ -303,9 +303,9 @@ static float *decode5_copy2(float *&s, float *d)
         auto s2 = &s1[count2];
         auto d1 = d;
         auto d2 = &d1[count2 * 2 - 1];
-        for (const auto j : util::range(count1))
+        for (const auto j : algo::range(count1))
         {
-            for (const auto k : util::range(count2))
+            for (const auto k : algo::range(count2))
             {
                 const auto a = *s1++;
                 const auto b = *s2++;
@@ -328,21 +328,21 @@ static float *decode5_copy2(float *&s, float *d)
 
 static void decode5_copy3(float *&s, float *d)
 {
-    for (const auto i : util::range(0x80))
+    for (const auto i : algo::range(0x80))
         *d++ = *s++;
 }
 
 ChannelDecoder::ChannelDecoder(int type, int idx, int count)
     : type(type), count(count), value3(&value[idx])
 {
-    for (const auto i : util::range(0x80))
+    for (const auto i : algo::range(0x80))
     {
         block[i] = base[i] = value[i] = scale[i] = 0;
         wav1[i] = wav2[i] = wav3[i] = 0;
     }
-    for (const auto i : util::range(8))
+    for (const auto i : algo::range(8))
     {
-        for (const auto j : util::range(8))
+        for (const auto j : algo::range(8))
             wave[i][j] = 0;
         value2[i] = 0;
     }
@@ -413,7 +413,7 @@ void ChannelDecoder::decode1(
     int v = bit_reader.get(3);
     if (v >= 6)
     {
-        for (const auto i : util::range(count))
+        for (const auto i : algo::range(count))
             value[i] = bit_reader.get(6);
     }
     else if (v)
@@ -422,7 +422,7 @@ void ChannelDecoder::decode1(
             mask = (1 << v) - 1,
             half_mask = mask >> 1;
         value[0] = acc;
-        for (const auto i : util::range(1, count))
+        for (const auto i : algo::range(1, count))
         {
             int tmp = bit_reader.get(v);
             acc = tmp != mask
@@ -433,7 +433,7 @@ void ChannelDecoder::decode1(
     }
     else
     {
-        for (const auto i : util::range(0x80))
+        for (const auto i : algo::range(0x80))
             value[i] = 0;
     }
 
@@ -443,17 +443,17 @@ void ChannelDecoder::decode1(
         value2[0] = v;
         if (v < 15)
         {
-            for (const auto i : util::range(8))
+            for (const auto i : algo::range(8))
                 value2[i] = bit_reader.get(4);
         }
     }
     else
     {
-        for (const auto i : util::range(a))
+        for (const auto i : algo::range(a))
             value3[i] = bit_reader.get(6);
     }
 
-    for (const auto i : util::range(count))
+    for (const auto i : algo::range(count))
     {
         v = value[i];
         if (v)
@@ -468,9 +468,9 @@ void ChannelDecoder::decode1(
         }
         scale[i] = v;
     }
-    for (const auto i : util::range(0x80 - count))
+    for (const auto i : algo::range(0x80 - count))
         scale[count + i] = 0;
-    for (const auto i : util::range(count))
+    for (const auto i : algo::range(count))
         base[i] = value_float[value[i]] * scale_float[scale[i]];
 }
 
@@ -505,7 +505,7 @@ void ChannelDecoder::decode2(CustomBitReader &bit_reader)
         +0, +0, +1, -1, +2, -2, +3, -3, +4, -4, +5, -5, +6, -6, +7, -7,
     };
 
-    for (const auto i : util::range(count))
+    for (const auto i : algo::range(count))
     {
         int s = scale[i];
         int bit_count = list1[s];
@@ -527,7 +527,7 @@ void ChannelDecoder::decode2(CustomBitReader &bit_reader)
         block[i] = base[i] * f;
     }
 
-    for (const auto i : util::range(0x80 - count))
+    for (const auto i : algo::range(0x80 - count))
         block[count + i] = 0;
 }
 
@@ -609,10 +609,10 @@ void ChannelDecoder::decode5(int index)
     float *s1, *s2;
     s1 = &wav2[0x40];
     s2 = wav3;
-    for (const auto i : util::range(0x40)) *d++ = *s1++ * *s++ + *s2++;
-    for (const auto i : util::range(0x40)) *d++ = *s++ * *--s1 - *s2++;
+    for (const auto i : algo::range(0x40)) *d++ = *s1++ * *s++ + *s2++;
+    for (const auto i : algo::range(0x40)) *d++ = *s++ * *--s1 - *s2++;
     s1 = &wav2[0x40-1];
     s2 = wav3;
-    for (const auto i : util::range(0x40)) *s2++ = *s1-- * *--s;
-    for (const auto i : util::range(0x40)) *s2++ = *--s * *++s1;
+    for (const auto i : algo::range(0x40)) *s2++ = *s1-- * *--s;
+    for (const auto i : algo::range(0x40)) *s2++ = *--s * *++s1;
 }

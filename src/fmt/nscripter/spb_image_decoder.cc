@@ -1,6 +1,6 @@
 #include "fmt/nscripter/spb_image_decoder.h"
+#include "algo/range.h"
 #include "io/bit_reader.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nscripter;
@@ -45,7 +45,7 @@ static res::Image decode_image(
 
             size_t mask = t == 7 ? bit_reader.get(1) + 1 : t + 2;
 
-            for (auto i : util::range(4))
+            for (auto i : algo::range(4))
             {
                 if (mask == 8)
                 {
@@ -66,16 +66,16 @@ static res::Image decode_image(
         }
 
         const u8 *p = channel_data.get<const u8>();
-        for (auto y : util::range(0, height))
+        for (auto y : algo::range(0, height))
         {
             if (y & 1)
             {
-                for (auto x : util::range(width))
+                for (auto x : algo::range(width))
                     output.at(width - 1 - x, y)[2 - rgb] = *p++;
             }
             else
             {
-                for (auto x : util::range(width))
+                for (auto x : algo::range(width))
                     output.at(x, y)[2 - rgb] = *p++;
             }
         }

@@ -1,6 +1,6 @@
 #include "fmt/alice_soft/alk_archive_decoder.h"
-#include "util/format.h"
-#include "util/range.h"
+#include "algo/format.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::alice_soft;
@@ -27,14 +27,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     input_file.stream.seek(magic.size());
     auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();
         if (entry->size)
         {
-            entry->path = util::format("%03d.dat", meta->entries.size());
+            entry->path = algo::format("%03d.dat", meta->entries.size());
             meta->entries.push_back(std::move(entry));
         }
     }

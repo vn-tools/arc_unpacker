@@ -1,7 +1,7 @@
 #include "fmt/bgi/cbg/cbg_common.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/bgi/common.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::bgi;
@@ -21,7 +21,7 @@ bstr cbg::read_decrypted_data(io::Stream &input_stream)
 
     u8 actual_sum = 0;
     u8 actual_xor = 0;
-    for (const auto i : util::range(data.size()))
+    for (const auto i : algo::range(data.size()))
     {
         *data_ptr -= get_and_update_key(key);
         actual_sum += *data_ptr;
@@ -51,7 +51,7 @@ u32 cbg::read_variable_data(io::Stream &input_stream)
 FreqTable cbg::read_freq_table(io::Stream &input_stream, size_t tree_size)
 {
     FreqTable freq_table(tree_size);
-    for (auto i : util::range(tree_size))
+    for (auto i : algo::range(tree_size))
         freq_table[i] = cbg::read_variable_data(input_stream);
     return freq_table;
 }
@@ -74,7 +74,7 @@ Tree cbg::build_tree(const FreqTable &freq_table, bool greedy)
     Tree tree;
     tree.size = freq_table.size();
     u32 freq_sum = 0;
-    for (auto i : util::range(tree.size))
+    for (auto i : algo::range(tree.size))
     {
         auto node = std::make_shared<NodeInfo>();
         node->frequency = freq_table[i];
@@ -85,11 +85,11 @@ Tree cbg::build_tree(const FreqTable &freq_table, bool greedy)
         tree.nodes.push_back(std::move(node));
     }
 
-    for (auto level : util::range(tree.size))
+    for (auto level : algo::range(tree.size))
     {
         u32 freq = 0;
         u32 children[2];
-        for (auto j : util::range(2))
+        for (auto j : algo::range(2))
         {
             u32 min = 0xFFFFFFFF;
             children[j] = 0xFFFFFFFF;
@@ -106,7 +106,7 @@ Tree cbg::build_tree(const FreqTable &freq_table, bool greedy)
                 }
             }
 
-            for (auto k : util::range(greedy ? j + 1 : 0, tree.nodes.size()))
+            for (auto k : algo::range(greedy ? j + 1 : 0, tree.nodes.size()))
             {
                 if (tree[k].valid && tree[k].frequency < min)
                 {

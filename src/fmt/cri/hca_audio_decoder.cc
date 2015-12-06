@@ -1,4 +1,6 @@
 #include "fmt/cri/hca_audio_decoder.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/cri/hca/ath_table.h"
 #include "fmt/cri/hca/channel_decoder.h"
@@ -6,8 +8,6 @@
 #include "fmt/cri/hca/meta.h"
 #include "fmt/cri/hca/permutator.h"
 #include "io/bit_reader.h"
-#include "util/encoding.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::cri;
@@ -91,7 +91,7 @@ static std::vector<u8> get_types(
     throw err::NotSupportedError("Advanced type decoding is not supported");
 
     int idx = 0;
-    for (const auto i : util::range(params[2]))
+    for (const auto i : algo::range(params[2]))
     {
         types.at(idx + 0) = 1;
         types.at(idx + 1) = 2;
@@ -143,30 +143,30 @@ static void decode_block(
     if (magic == 0xFFFF)
     {
         int tmp = (bit_reader.get(9) << 8) - bit_reader.get(7);
-        for (const auto i : util::range(meta.fmt->channel_count))
+        for (const auto i : algo::range(meta.fmt->channel_count))
         {
             channel_decoders[i]->decode1(
                 bit_reader, params[8], tmp, ath_table);
         }
 
-        for (const auto i : util::range(8))
+        for (const auto i : algo::range(8))
         {
-            for (const auto j : util::range(meta.fmt->channel_count))
+            for (const auto j : algo::range(meta.fmt->channel_count))
                 channel_decoders[j]->decode2(bit_reader);
 
-            for (const auto j : util::range(meta.fmt->channel_count))
+            for (const auto j : algo::range(meta.fmt->channel_count))
             {
                 channel_decoders[j]->decode3(
                     params[8], params[7], params[6] + params[5], params[4]);
             }
 
-            for (const auto j : util::range(meta.fmt->channel_count))
+            for (const auto j : algo::range(meta.fmt->channel_count))
             {
                 channel_decoders[j]->decode4(
                     i, params[4] - params[5], params[5], params[6]);
             }
 
-            for (const auto j : util::range(meta.fmt->channel_count))
+            for (const auto j : algo::range(meta.fmt->channel_count))
                 channel_decoders[j]->decode5(i);
         }
     }
@@ -209,7 +209,7 @@ res::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
     Permutator permutator(meta.ciph->type, ciph_key1, ciph_key2);
 
     std::array<u8, 9> params;
-    for (const auto i : util::range(8))
+    for (const auto i : algo::range(8))
         params[i] = meta.comp->unk[i];
     if (params[0] != 1 || params[1] != 15)
         throw err::CorruptDataError("Unsupported decoder params");
@@ -217,7 +217,7 @@ res::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
 
     const auto types = get_types(meta, params);
     std::vector<std::shared_ptr<ChannelDecoder>> channel_decoders;
-    for (const auto i : util::range(channel_count))
+    for (const auto i : algo::range(channel_count))
     {
         auto channel_decoder = std::make_shared<ChannelDecoder>(
             types[i],
@@ -229,7 +229,7 @@ res::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
     input_file.stream.seek(meta.hca->data_offset);
     std::vector<s16> samples;
     samples.reserve(0x80 * 8 * channel_count * block_count);
-    for (const auto b : util::range(block_count))
+    for (const auto b : algo::range(block_count))
     {
         decode_block(
             meta,
@@ -238,9 +238,9 @@ res::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
             params,
             permutator.permute(input_file.stream.read(block_size)));
 
-        for (const auto i : util::range(8))
-        for (const auto j : util::range(0x80))
-        for (const auto k : util::range(channel_count))
+        for (const auto i : algo::range(8))
+        for (const auto j : algo::range(0x80))
+        for (const auto k : algo::range(channel_count))
         {
             const auto value = clamp(channel_decoders[k]->wave[i][j]);
             samples.push_back(static_cast<s16>(value * 0x7FFF));

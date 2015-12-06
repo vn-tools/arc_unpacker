@@ -1,10 +1,10 @@
 #include "fmt/entis/mio_audio_decoder.h"
+#include "algo/format.h"
 #include "err.h"
 #include "fmt/entis/audio/lossless.h"
 #include "fmt/entis/audio/lossy.h"
 #include "fmt/entis/common/enums.h"
 #include "fmt/entis/common/sections.h"
-#include "util/format.h"
 
 using namespace au;
 using namespace au::fmt::entis;
@@ -84,7 +84,7 @@ res::Audio MioAudioDecoder::decode_impl(io::File &input_file) const
         impl.reset(new audio::LossyAudioDecoder(header));
     else
     {
-        throw err::NotSupportedError(util::format(
+        throw err::NotSupportedError(algo::format(
             "Transformation type %d not supported", header.transformation));
     }
 

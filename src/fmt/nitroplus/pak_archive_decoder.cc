@@ -1,8 +1,8 @@
 #include "fmt/nitroplus/pak_archive_decoder.h"
+#include "algo/locale.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
-#include "util/encoding.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nitroplus;
@@ -37,16 +37,16 @@ std::unique_ptr<fmt::ArchiveMeta>
     input_file.stream.skip(0x104);
 
     io::MemoryStream table_stream(
-        util::pack::zlib_inflate(
+        algo::pack::zlib_inflate(
             input_file.stream.read(table_size_comp)));
 
     auto meta = std::make_unique<ArchiveMeta>();
     auto file_data_offset = input_file.stream.tell();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         size_t file_name_size = table_stream.read_u32_le();
-        entry->path = util::sjis_to_utf8(
+        entry->path = algo::sjis_to_utf8(
             table_stream.read(file_name_size)).str();
         entry->offset = table_stream.read_u32_le() + file_data_offset;
         entry->size_orig = table_stream.read_u32_le();
@@ -64,7 +64,7 @@ std::unique_ptr<io::File> PakArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = entry->compressed
-        ? util::pack::zlib_inflate(input_file.stream.read(entry->size_comp))
+        ? algo::pack::zlib_inflate(input_file.stream.read(entry->size_comp))
         : input_file.stream.read(entry->size_orig);
     return std::make_unique<io::File>(entry->path, data);
 }

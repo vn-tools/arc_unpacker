@@ -1,6 +1,6 @@
 #include "fmt/yumemiru/dat_archive_decoder.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::yumemiru;
@@ -33,7 +33,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     input_file.stream.seek(8);
     const auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(0x100).str();

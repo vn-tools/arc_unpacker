@@ -1,10 +1,10 @@
 #include "fmt/fc01/mrg_archive_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/fc01/common/custom_lzss.h"
 #include "fmt/fc01/common/mrg_decryptor.h"
 #include "fmt/fc01/common/util.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::fc01;
@@ -55,7 +55,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     auto table_data = input_file.stream.read(table_size);
     auto key = guess_key(table_data, input_file.stream.size());
-    for (auto i : util::range(table_data.size()))
+    for (auto i : algo::range(table_data.size()))
     {
         table_data[i] = common::rol8(table_data[i], 1) ^ key;
         key += table_data.size() - i;
@@ -64,7 +64,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     io::MemoryStream table_stream(table_data);
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream.read_to_zero(0x0E).str();

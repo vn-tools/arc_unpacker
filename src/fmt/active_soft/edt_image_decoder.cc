@@ -1,8 +1,8 @@
 #include "fmt/active_soft/edt_image_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/active_soft/custom_bit_reader.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::active_soft;
@@ -84,7 +84,7 @@ res::Image EdtImageDecoder::decode_impl(io::File &input_file) const
             }
             if (look_behind > output.size())
                 throw err::BadDataOffsetError();
-            for (const auto i : util::range(channels))
+            for (const auto i : algo::range(channels))
             {
                 u8 b = clamp(output[output.size() - look_behind], 0x02, 0xFD);
                 if (bit_reader.get(1))

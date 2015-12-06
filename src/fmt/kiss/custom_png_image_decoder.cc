@@ -1,7 +1,7 @@
 #include "fmt/kiss/custom_png_image_decoder.h"
 #include <map>
+#include "algo/range.h"
 #include "fmt/png/png_image_decoder.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kiss;
@@ -25,8 +25,8 @@ res::Image CustomPngImageDecoder::decode_impl(io::File &input_file) const
     if (chunks.find("xPAL") != chunks.end())
     {
         res::Palette palette(256, chunks["xPAL"], res::PixelFormat::BGR888X);
-        for (const auto y : util::range(image.height()))
-        for (const auto x : util::range(image.width()))
+        for (const auto y : algo::range(image.height()))
+        for (const auto x : algo::range(image.width()))
         {
             const auto pal_color = palette.at(image.at(x, y).r);
             image.at(x, y).r = pal_color.r;

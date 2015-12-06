@@ -1,12 +1,12 @@
 #include "fmt/team_shanghai_alice/thbgm_audio_archive_decoder.h"
+#include "algo/range.h"
+#include "algo/str.h"
 #include "err.h"
 #include "fmt/team_shanghai_alice/pbg4_archive_decoder.h"
 #include "fmt/team_shanghai_alice/pbgz_archive_decoder.h"
 #include "fmt/team_shanghai_alice/tha1_archive_decoder.h"
-#include "io/filesystem.h"
-#include "util/algo/str.h"
+#include "io/file_system.h"
 #include "util/file_from_audio.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::team_shanghai_alice;
@@ -89,7 +89,7 @@ void ThbgmAudioArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
     if (arg_parser.has_switch("loops"))
     {
         set_loop_count(
-            util::algo::from_string<int>(arg_parser.get_switch("loops")));
+            algo::from_string<int>(arg_parser.get_switch("loops")));
     }
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
@@ -142,7 +142,7 @@ std::unique_ptr<io::File> ThbgmAudioArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto samples = input_file.stream.read(entry->intro_size);
-    for (auto i : util::range(p->loop_count))
+    for (auto i : algo::range(p->loop_count))
     {
         input_file.stream.seek(entry->offset + entry->intro_size);
         samples += input_file.stream.read(entry->size - entry->intro_size);

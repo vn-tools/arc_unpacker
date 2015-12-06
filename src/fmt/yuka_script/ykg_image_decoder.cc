@@ -1,7 +1,7 @@
 #include "fmt/yuka_script/ykg_image_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/png/png_image_decoder.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::yuka_script;
@@ -54,7 +54,7 @@ static std::vector<std::unique_ptr<Region>> read_regions(
 
     input.seek(header.regions_offset);
     size_t region_count = header.regions_size / 64;
-    for (auto i : util::range(region_count))
+    for (auto i : algo::range(region_count))
     {
         auto region = std::make_unique<Region>();
         region->x = input.read_u32_le();

@@ -1,6 +1,6 @@
 #include "fmt/cri/hca/ath_table.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::cri::hca;
@@ -8,7 +8,7 @@ using namespace au::fmt::cri::hca;
 static std::array<u8, 0x80> create_v0_table()
 {
     std::array<u8, 0x80> table;
-    for (const auto i : util::range(table.size()))
+    for (const auto i : algo::range(table.size()))
         table[i] = 0;
     return table;
 }
@@ -59,10 +59,10 @@ static std::array<u8, 0x80> create_v1_table(const u32 key)
         "\xEF\xF0\xF1\xF2\xF3\xF4\xF5\xF7\xF8\xF9\xFA\xFB\xFC\xFD"_b;
 
     std::array<u8, 0x80> table;
-    for (const auto i : util::range(table.size()))
+    for (const auto i : algo::range(table.size()))
         table[i] = 0xFF;
 
-    for (const auto i : util::range(0x80))
+    for (const auto i : algo::range(0x80))
     {
         const auto idx = (key * i) >> 13;
         if (idx >= v.size())

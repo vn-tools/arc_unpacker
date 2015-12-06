@@ -1,8 +1,8 @@
 #include "fmt/liar_soft/cg_decompress.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/bit_reader.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::liar_soft;
@@ -71,9 +71,9 @@ void fmt::liar_soft::cg_decompress(
 
             const auto input_chunk = table.substr(
                 table_offset * input_shift, input_shift);
-            for (auto i : util::range(sequence_size))
+            for (auto i : algo::range(sequence_size))
             {
-                for (auto j : util::range(input_shift))
+                for (auto j : algo::range(input_shift))
                 {
                     if (output_ptr >= output_end)
                         break;

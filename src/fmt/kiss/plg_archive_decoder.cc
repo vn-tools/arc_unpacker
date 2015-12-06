@@ -1,6 +1,6 @@
 #include "fmt/kiss/plg_archive_decoder.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kiss;
@@ -29,7 +29,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     const auto file_count = input_file.stream.read_u32_le();
     input_file.stream.skip(4);
     auto meta = std::make_unique<ArchiveMeta>();
-    for (const size_t i : util::range(file_count))
+    for (const size_t i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(0x20).str();

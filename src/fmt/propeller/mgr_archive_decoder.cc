@@ -1,7 +1,7 @@
 #include "fmt/propeller/mgr_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::propeller;
@@ -62,13 +62,13 @@ std::unique_ptr<fmt::ArchiveMeta>
 {
     auto entry_count = input_file.stream.read_u16_le();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(entry_count))
+    for (auto i : algo::range(entry_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = entry_count == 1
             ? input_file.stream.tell()
             : input_file.stream.read_u32_le();
-        entry->path = util::format("%d.bmp", i);
+        entry->path = algo::format("%d.bmp", i);
         meta->entries.push_back(std::move(entry));
     }
     return meta;

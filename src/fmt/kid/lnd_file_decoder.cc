@@ -1,6 +1,6 @@
 #include "fmt/kid/lnd_file_decoder.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kid;
@@ -26,7 +26,7 @@ bstr LndFileDecoder::decompress_raw_data(const bstr &input, size_t size_orig)
                 int repetitions = (byte & 0x1F) + 2;
                 if (byte & 0x20)
                     repetitions += *input_ptr++ << 5;
-                for (auto i : util::range(repetitions))
+                for (auto i : algo::range(repetitions))
                 {
                     if (output_ptr >= output_end)
                         break;
@@ -40,7 +40,7 @@ bstr LndFileDecoder::decompress_raw_data(const bstr &input, size_t size_orig)
                 int look_behind = ((byte & 3) << 8) + *input_ptr++ + 1;
                 if (look_behind < 0)
                     look_behind = 0;
-                for (auto i : util::range(size))
+                for (auto i : algo::range(size))
                 {
                     u8 tmp = output_ptr[-look_behind];
                     if (output_ptr >= output_end)
@@ -55,8 +55,8 @@ bstr LndFileDecoder::decompress_raw_data(const bstr &input, size_t size_orig)
             {
                 int repetitions = *input_ptr++ + 1;
                 int size = (byte & 0x3F) + 2;
-                for (auto i : util::range(repetitions))
-                    for (auto i : util::range(size))
+                for (auto i : algo::range(repetitions))
+                    for (auto i : algo::range(size))
                     {
                         if (output_ptr >= output_end)
                             break;
@@ -69,7 +69,7 @@ bstr LndFileDecoder::decompress_raw_data(const bstr &input, size_t size_orig)
                 int size = (byte & 0x1F) + 1;
                 if (byte & 0x20)
                     size += *input_ptr++ << 5;
-                for (auto i : util::range(size))
+                for (auto i : algo::range(size))
                 {
                     if (output_ptr >= output_end)
                         break;

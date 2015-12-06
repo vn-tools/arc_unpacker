@@ -1,7 +1,7 @@
 #include "fmt/lilim/dbm_image_decoder.h"
+#include "algo/format.h"
 #include "err.h"
 #include "fmt/lilim/common.h"
-#include "util/format.h"
 
 using namespace au;
 using namespace au::fmt::lilim;
@@ -48,7 +48,7 @@ res::Image DbmImageDecoder::decode_impl(io::File &input_file) const
     }
 
     throw err::NotSupportedError(
-        util::format("Pixel format %d is not supported", format));
+        algo::format("Pixel format %d is not supported", format));
 }
 
 static auto dummy = fmt::register_fmt<DbmImageDecoder>("lilim/dbm");

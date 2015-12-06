@@ -1,5 +1,5 @@
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri::tlg;
@@ -15,7 +15,7 @@ struct LzssDecompressor::Priv final
 LzssDecompressor::Priv::Priv()
 {
     offset = 0;
-    for (auto i : util::range(4096))
+    for (auto i : algo::range(4096))
         dictionary[i] = 0;
 }
 
@@ -29,7 +29,7 @@ LzssDecompressor::~LzssDecompressor()
 
 void LzssDecompressor::init_dictionary(u8 dictionary[4096])
 {
-    for (auto i : util::range(4096))
+    for (auto i : algo::range(4096))
         p->dictionary[i] = dictionary[i];
 }
 
@@ -69,7 +69,7 @@ bstr LzssDecompressor::decompress(const bstr &input, size_t output_size)
                 size += *input_ptr++;
             }
 
-            for (auto j : util::range(size))
+            for (auto j : algo::range(size))
             {
                 u8 c = p->dictionary[position];
                 if (output_ptr >= output_end)

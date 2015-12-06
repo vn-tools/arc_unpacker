@@ -1,7 +1,7 @@
 #include "fmt/fc01/common/mrg_decryptor.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::fc01;
@@ -74,7 +74,7 @@ bstr MrgDecryptor::decrypt_with_key(const u8 initial_key)
     std::vector<u8> arr3;
 
     auto key = initial_key;
-    for (auto i : util::range(0x100))
+    for (auto i : algo::range(0x100))
     {
         auto byte = p->input_stream.read_u8();
         if (initial_key)
@@ -85,7 +85,7 @@ bstr MrgDecryptor::decrypt_with_key(const u8 initial_key)
 
         arr2[i] = byte;
         arr1[i + 1] = arr2[i] + arr1[i];
-        for (auto j : util::range(arr2[i]))
+        for (auto j : algo::range(arr2[i]))
             arr3.push_back(i);
     }
 

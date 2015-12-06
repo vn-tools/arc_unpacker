@@ -1,7 +1,7 @@
 #include "res/pixel_format.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "test_support/catch.hh"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 
@@ -10,7 +10,7 @@ static inline void compare_pixels(
 {
     if (expected != actual)
     {
-        FAIL(util::format(
+        FAIL(algo::format(
             "Pixels differ: %02x%02x%02x%02x != %02x%02x%02x%02x",
             expected.b, expected.g, expected.r, expected.a,
             actual.b, actual.g, actual.r, actual.a));
@@ -24,7 +24,7 @@ static void test_read(
 {
     const auto bpp = res::pixel_format_to_bpp(fmt);
     bstr input_string(bpp);
-    for (const auto i : util::range(bpp))
+    for (const auto i : algo::range(bpp))
         input_string[i] = input_dword >> (i << 3);
     std::vector<res::Pixel> actual_pixels(1);
     res::read_pixels(input_string.get<u8>(), actual_pixels, fmt);

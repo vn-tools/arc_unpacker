@@ -1,7 +1,7 @@
 #include "fmt/adv/dat_archive_decoder.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
-#include "util/encoding.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::adv;
@@ -38,13 +38,13 @@ static std::unique_ptr<ArchiveMetaImpl> prepare_meta(io::File &input_file)
 
     // recover game key
     meta->game_key.resize(8);
-    for (const auto i : util::range(8))
+    for (const auto i : algo::range(8))
         meta->game_key[i] = meta->arc_key[i] ^ header_data[i] ^ magic[i];
 
-    for (const auto i : util::range(8))
+    for (const auto i : algo::range(8))
         meta->arc_key[i] ^= meta->game_key[i];
 
-    for (const auto i : util::range(0x24))
+    for (const auto i : algo::range(0x24))
         header_data[i] ^= meta->arc_key[i % 8];
 
     meta->table_offset = header_data.get<const u32>()[4];
@@ -67,16 +67,16 @@ std::unique_ptr<fmt::ArchiveMeta>
     input_file.stream.seek(meta->header_offset + meta->table_offset);
     auto table_data = input_file.stream.read(0x114 * meta->file_count);
     auto key_idx = meta->table_offset;
-    for (const auto i : util::range(table_data.size()))
+    for (const auto i : algo::range(table_data.size()))
         table_data[i] ^= meta->arc_key[(key_idx++) % meta->arc_key.size()];
     io::MemoryStream table_stream(table_data);
 
-    for (const auto i : util::range(meta->file_count))
+    for (const auto i : algo::range(meta->file_count))
     {
         table_stream.seek(0x114 * i);
         table_stream.skip(1);
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->path = util::sjis_to_utf8(table_stream.read_to_zero()).str();
+        entry->path = algo::sjis_to_utf8(table_stream.read_to_zero()).str();
         table_stream.seek(0x114 * i + 0x108);
         entry->offset = table_stream.read_u32_le() + meta->header_offset;
         entry->size = table_stream.read_u32_le();
@@ -93,7 +93,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
     auto key_idx = entry->offset - meta->header_offset;
-    for (const auto i : util::range(data.size()))
+    for (const auto i : algo::range(data.size()))
         data[i] ^= meta->arc_key[key_idx++ % meta->arc_key.size()];
     return std::make_unique<io::File>(entry->path, data);
 }

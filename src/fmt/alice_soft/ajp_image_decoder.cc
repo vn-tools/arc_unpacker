@@ -1,7 +1,7 @@
 #include "fmt/alice_soft/ajp_image_decoder.h"
+#include "algo/range.h"
 #include "fmt/alice_soft/pms_image_decoder.h"
 #include "fmt/jpeg/jpeg_image_decoder.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::alice_soft;
@@ -12,7 +12,7 @@ static const bstr key =
 
 static void decrypt(bstr &input)
 {
-    for (auto i : util::range(std::min(input.size(), key.size())))
+    for (auto i : algo::range(std::min(input.size(), key.size())))
         input[i] ^= key[i];
 }
 

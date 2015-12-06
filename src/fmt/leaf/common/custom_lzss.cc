@@ -1,6 +1,6 @@
 #include "fmt/leaf/common/custom_lzss.h"
+#include "algo/range.h"
 #include "util/cyclic_buffer.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;

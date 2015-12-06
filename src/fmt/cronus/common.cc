@@ -1,5 +1,5 @@
 #include "fmt/cronus/common.h"
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 
@@ -15,7 +15,7 @@ void fmt::cronus::delta_decrypt(bstr &input, u32 initial_key)
 {
     auto current_key = initial_key;
     const auto key_delta = initial_key % 32;
-    for (const auto i : util::range(input.size()))
+    for (const auto i : algo::range(input.size()))
     {
         input[i] ^= current_key;
         current_key += key_delta;

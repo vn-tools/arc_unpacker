@@ -1,14 +1,14 @@
 #include "arc_unpacker.h"
 #include <algorithm>
 #include <map>
+#include "algo/format.h"
+#include "algo/range.h"
 #include "arg_parser.h"
 #include "fmt/decoder_util.h"
 #include "fmt/idecoder.h"
 #include "fmt/registry.h"
-#include "io/filesystem.h"
+#include "io/file_system.h"
 #include "log.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 
@@ -99,7 +99,7 @@ void ArcUnpacker::Priv::print_fmt_list() const
 
 void ArcUnpacker::Priv::print_cli_help() const
 {
-    Log.info(util::format(
+    Log.info(algo::format(
 R"(  __ _ _   _
  / _` | |_| |  arc_unpacker v%s
  \__,_|\__,_|  Extracts images and sounds from various visual novels.
@@ -281,7 +281,7 @@ void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, io::File &file) const
 
 bool ArcUnpacker::Priv::guess_decoder_and_unpack(io::File &file) const
 {
-    Log.info(util::format("Unpacking %s...\n", file.path.c_str()));
+    Log.info(algo::format("Unpacking %s...\n", file.path.c_str()));
     const auto decoder = options.format.empty()
         ? guess_decoder(file, registry)
         : registry.create_decoder(options.format);

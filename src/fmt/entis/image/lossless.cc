@@ -1,9 +1,9 @@
 #include "fmt/entis/image/lossless.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/entis/common/gamma_decoder.h"
 #include "fmt/entis/common/huffman_decoder.h"
 #include "fmt/entis/common/nemesis_decoder.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::entis;
@@ -38,24 +38,24 @@ static Permutation init_permutation(const DecodeContext &ctx)
     Permutation permutation(ctx.block_samples * 4);
 
     auto permutation_ptr = &permutation[0];
-    for (auto c : util::range(ctx.channel_count))
-    for (auto y : util::range(ctx.block_size))
-    for (auto x : util::range(ctx.block_size))
+    for (auto c : algo::range(ctx.channel_count))
+    for (auto y : algo::range(ctx.block_size))
+    for (auto x : algo::range(ctx.block_size))
         *permutation_ptr++ = c * ctx.block_area + y * ctx.block_size + x;
 
-    for (auto c : util::range(ctx.channel_count))
-    for (auto y : util::range(ctx.block_size))
-    for (auto x : util::range(ctx.block_size))
+    for (auto c : algo::range(ctx.channel_count))
+    for (auto y : algo::range(ctx.block_size))
+    for (auto x : algo::range(ctx.block_size))
         *permutation_ptr++ = c * ctx.block_area + y + x * ctx.block_size;
 
-    for (auto y : util::range(ctx.block_size))
-    for (auto x : util::range(ctx.block_size))
-    for (auto c : util::range(ctx.channel_count))
+    for (auto y : algo::range(ctx.block_size))
+    for (auto x : algo::range(ctx.block_size))
+    for (auto c : algo::range(ctx.channel_count))
         *permutation_ptr++ = c * ctx.block_area + y * ctx.block_size + x;
 
-    for (auto y : util::range(ctx.block_size))
-    for (auto x : util::range(ctx.block_size))
-    for (auto c : util::range(ctx.channel_count))
+    for (auto y : algo::range(ctx.block_size))
+    for (auto x : algo::range(ctx.block_size))
+    for (auto c : algo::range(ctx.channel_count))
         *permutation_ptr++ = c * ctx.block_area + y + x * ctx.block_size;
 
     return permutation;
@@ -229,7 +229,7 @@ static void transform(
     auto perm_offset = (transformer_code & 0b00'11'0000) >> 4;
     auto color_op    = (transformer_code & 0b00'00'1111);
 
-    for (auto i : util::range(ctx.block_samples))
+    for (auto i : algo::range(ctx.block_samples))
     {
         block_out[permutation[perm_offset * ctx.block_samples + i]]
             = arrange_buf[i];
@@ -243,10 +243,10 @@ static void transform(
     {
         auto block_out_ptr = block_out.get<u8>();
         auto next_block_col_ptr = prev_block_col;
-        for (auto i : util::range(ctx.block_stride))
+        for (auto i : algo::range(ctx.block_stride))
         {
             u8 last_value = *next_block_col_ptr;
-            for (auto j : util::range(ctx.block_size))
+            for (auto j : algo::range(ctx.block_size))
             {
                 last_value += *block_out_ptr;
                 *block_out_ptr++ = last_value;
@@ -258,7 +258,7 @@ static void transform(
     {
         auto block_out_ptr = block_out.get<u8>();
         auto next_block_col_ptr = prev_block_col;
-        for (auto i : util::range(ctx.block_stride))
+        for (auto i : algo::range(ctx.block_stride))
         {
             *next_block_col_ptr++ = block_out_ptr[ctx.block_size - 1];
             block_out_ptr += ctx.block_size;
@@ -268,17 +268,17 @@ static void transform(
     {
         auto prev_block_row_base = prev_block_row;
         auto block_out_ptr = block_out.get<u8>();
-        for (auto k : util::range(ctx.channel_count))
+        for (auto k : algo::range(ctx.channel_count))
         {
             auto prev_block_row_ptr = prev_block_row_base;
-            for (auto i : util::range(ctx.block_size))
+            for (auto i : algo::range(ctx.block_size))
             {
                 auto ptrCurrentLine = block_out_ptr;
-                for (auto j : util::range(ctx.block_size))
+                for (auto j : algo::range(ctx.block_size))
                     *block_out_ptr++ += *prev_block_row_ptr++;
                 prev_block_row_ptr = ptrCurrentLine;
             }
-            for (auto j : util::range(ctx.block_size))
+            for (auto j : algo::range(ctx.block_size))
                 *prev_block_row_base++ = *prev_block_row_ptr++;
         }
     }
@@ -336,7 +336,7 @@ static std::vector<u8> prefetch_transformer_codes(
     std::vector<u8> transformer_codes;
     if (!(ctx.encode_type & 0x01) || (ctx.channel_count < 3))
         return transformer_codes;
-    for (auto i : util::range(ctx.width_blocks * ctx.height_blocks))
+    for (auto i : algo::range(ctx.width_blocks * ctx.height_blocks))
     {
         u8 op_code;
         if (header.architecture == common::Architecture::RunLengthGamma)
@@ -387,13 +387,13 @@ static bstr crop(
     const EriHeader &header)
 {
     bstr output(header.width * header.height * ctx.channel_count);
-    for (auto y : util::range(header.height))
+    for (auto y : algo::range(header.height))
     {
         auto output_ptr = output.get<u8>();
         auto input_ptr = input.get<u8>();
         output_ptr += y * header.width * ctx.channel_count;
         input_ptr += y * ctx.width_blocks * ctx.block_stride;
-        for (auto x : util::range(header.width * ctx.channel_count))
+        for (auto x : algo::range(header.width * ctx.channel_count))
             *output_ptr++ = *input_ptr++;
     }
     return output;
@@ -451,9 +451,9 @@ bstr image::decode_lossless_pixel_data(
     bstr prev_row(ctx.width_blocks * ctx.block_stride);
 
     auto transformer_codes_ptr = &transformer_codes[0];
-    for (auto y : util::range(ctx.height_blocks))
+    for (auto y : algo::range(ctx.height_blocks))
     {
-        for (auto x : util::range(ctx.width_blocks))
+        for (auto x : algo::range(ctx.width_blocks))
         {
             u8 transformer_code = get_transformer_code(
                 header,
@@ -475,9 +475,9 @@ bstr image::decode_lossless_pixel_data(
                 block_out);
 
             auto *block_out_ptr = block_out.get<u8>();
-            for (auto c : util::range(ctx.channel_count))
-            for (auto yy : util::range(ctx.block_size))
-            for (auto xx : util::range(ctx.block_size))
+            for (auto c : algo::range(ctx.channel_count))
+            for (auto yy : algo::range(ctx.block_size))
+            for (auto xx : algo::range(ctx.block_size))
             {
                 auto sum_y = y * ctx.block_size + yy;
                 auto sum_x = x * ctx.block_size + xx;

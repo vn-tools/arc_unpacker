@@ -1,7 +1,7 @@
 #include "fmt/team_shanghai_alice/pbg4_archive_decoder.h"
+#include "algo/pack/lzss.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
-#include "util/pack/lzss.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::team_shanghai_alice;
@@ -20,12 +20,12 @@ static const bstr magic = "PBG4"_b;
 
 static bstr decompress(const bstr &data, size_t size_orig)
 {
-    util::pack::LzssSettings settings;
+    algo::pack::LzssSettings settings;
     settings.position_bits = 13;
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-    return util::pack::lzss_decompress_bitwise(data, size_orig, settings);
+    return algo::pack::lzss_decompress_bitwise(data, size_orig, settings);
 }
 
 bool Pbg4ArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -48,7 +48,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream.read_to_zero().str();

@@ -1,7 +1,7 @@
 #include "fmt/real_live/nwa_audio_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::real_live;
@@ -78,7 +78,7 @@ static bstr decode_block(
 
     input_stream.seek(offsets.at(current_block));
     s16 d[2];
-    for (const auto i : util::range(header.channel_count))
+    for (const auto i : algo::range(header.channel_count))
     {
         if (header.bits_per_sample == 8)
             d[i] = input_stream.read_u8();
@@ -92,7 +92,7 @@ static bstr decode_block(
 
     auto current_channel = 0;
     auto run_length = 0;
-    for (const auto i : util::range(output_size))
+    for (const auto i : algo::range(output_size))
     {
         if (run_length)
         {
@@ -201,11 +201,11 @@ static bstr read_compressed_samples(
 
     input_stream.skip(4);
     std::vector<u32> offsets;
-    for (const auto i : util::range(header.block_count))
+    for (const auto i : algo::range(header.block_count))
         offsets.push_back(input_stream.read_u32_le());
 
     bstr output;
-    for (const auto i : util::range(header.block_count))
+    for (const auto i : algo::range(header.block_count))
         output += decode_block(header, i, input_stream, offsets);
     return output;
 }

@@ -1,7 +1,7 @@
 #include "fmt/liar_soft/lwg_archive_decoder.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 #include "fmt/liar_soft/wcg_image_decoder.h"
-#include "util/encoding.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::liar_soft;
@@ -35,14 +35,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     size_t file_data_start = input_file.stream.tell() + table_size + 4;
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         input_file.stream.skip(9);
         entry->offset = file_data_start + input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();
         auto name_size = input_file.stream.read_u8();
-        entry->path = util::sjis_to_utf8(
+        entry->path = algo::sjis_to_utf8(
             input_file.stream.read(name_size)).str();
         meta->entries.push_back(std::move(entry));
     }

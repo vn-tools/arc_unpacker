@@ -1,7 +1,7 @@
 #include "fmt/kid/prt_image_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kid;
@@ -46,12 +46,12 @@ res::Image PrtImageDecoder::decode_impl(io::File &input_file) const
         bit_depth == 8 ? 256 : 0, input_file.stream, res::PixelFormat::BGR888X);
 
     res::Image image(width, height);
-    for (const auto y : util::range(height))
+    for (const auto y : algo::range(height))
     {
         input_file.stream.seek(data_offset + y * stride);
         auto row = input_file.stream.read(stride);
         auto row_ptr = row.get<const u8>();
-        for (const auto x : util::range(width))
+        for (const auto x : algo::range(width))
         {
             if (bit_depth == 8)
             {
@@ -78,8 +78,8 @@ res::Image PrtImageDecoder::decode_impl(io::File &input_file) const
 
     if (has_alpha)
     {
-        for (const auto y : util::range(height))
-        for (const auto x : util::range(width))
+        for (const auto y : algo::range(height))
+        for (const auto x : algo::range(width))
             image.at(x, y).a = input_file.stream.read_u8();
     }
 

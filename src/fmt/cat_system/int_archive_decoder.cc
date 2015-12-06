@@ -1,11 +1,11 @@
 #include "fmt/cat_system/int_archive_decoder.h"
+#include "algo/crypt/blowfish.h"
+#include "algo/crypt/mt.h"
+#include "algo/range.h"
+#include "algo/str.h"
 #include "err.h"
 #include "fmt/microsoft/exe_archive_decoder.h"
-#include "io/filesystem.h"
-#include "util/algo/str.h"
-#include "util/crypt/blowfish.h"
-#include "util/crypt/mt.h"
-#include "util/range.h"
+#include "io/file_system.h"
 
 using namespace au;
 using namespace au::fmt::cat_system;
@@ -38,8 +38,8 @@ static bstr decrypt_name(const bstr &input, const u32 seed)
     static const std::string fwd =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz";
-    static const auto rev = util::algo::reverse(fwd);
-    u32 key = util::crypt::MersenneTwister::Classic(seed)->next_u32();
+    static const auto rev = algo::reverse(fwd);
+    u32 key = algo::crypt::MersenneTwister::Classic(seed)->next_u32();
     u32 shift = static_cast<u8>((key >> 24) + (key >> 16) + (key >> 8) + key);
     bstr output(input);
 
@@ -85,7 +85,7 @@ static u32 get_table_seed(const bstr &input)
     for (const auto p : input)
     {
         seed ^= p << 24;
-        for (const auto i : util::range(8))
+        for (const auto i : algo::range(8))
         {
             const bool bit = seed & 0x80000000;
             seed <<= 1;
@@ -122,7 +122,7 @@ static ResourceKeys get_resource_keys(
         {
             const auto res_file = exe_decoder.read_file(file, *meta, *entry);
             const auto res_content = res_file->stream.seek(0).read_to_eof();
-            const auto res_name = util::algo::lower(entry->path.name());
+            const auto res_name = algo::lower(entry->path.name());
             if (res_name.find("v_code2") != std::string::npos)
                 res_keys.v_code2 = res_content;
             else if (res_name.find("v_code") != std::string::npos)
@@ -140,8 +140,8 @@ static bstr get_game_id(const ResourceKeys &res_keys)
     for (auto &c : key)
         c ^= 0xCD;
 
-    util::crypt::Blowfish bf(key);
-    return util::algo::trim_to_zero(bf.decrypt(res_keys.v_code2));
+    algo::crypt::Blowfish bf(key);
+    return algo::trim_to_zero(bf.decrypt(res_keys.v_code2));
 }
 
 bool IntArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -164,14 +164,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     const auto table_seed = get_table_seed(game_id);
 
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         const io::path entry_path = input_file.stream.read(name_size).str();
         const auto entry_offset = input_file.stream.read_u32_le();
         const auto entry_size = input_file.stream.read_u32_le();
         if (entry_path.name() == "__key__.dat")
         {
-            auto mt = util::crypt::MersenneTwister::Classic(entry_size);
+            auto mt = algo::crypt::MersenneTwister::Classic(entry_size);
             const auto tmp = mt->next_u32();
             meta->file_key = bstr(reinterpret_cast<const char*>(&tmp), 4);
             encrypted = true;
@@ -179,7 +179,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     }
 
     input_file.stream.seek(8);
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
@@ -192,10 +192,10 @@ std::unique_ptr<fmt::ArchiveMeta>
 
         if (encrypted)
         {
-            entry->path = util::algo::trim_to_zero(
+            entry->path = algo::trim_to_zero(
                 decrypt_name(name, table_seed + i).str());
 
-            util::crypt::Blowfish bf(meta->file_key);
+            algo::crypt::Blowfish bf(meta->file_key);
             bstr offset_and_size = input_file.stream.read(8);
             offset_and_size.get<u32>()[0] += i;
             offset_and_size = bf.decrypt(offset_and_size);
@@ -222,7 +222,7 @@ std::unique_ptr<io::File> IntArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
 
-    util::crypt::Blowfish bf(meta->file_key);
+    algo::crypt::Blowfish bf(meta->file_key);
     const auto crypt_size = (entry->size / bf.block_size()) * bf.block_size();
     data = bf.decrypt(data.substr(0, crypt_size)) + data.substr(crypt_size);
     return std::make_unique<io::File>(entry->path, data);

@@ -1,9 +1,9 @@
 #include "fmt/minato_soft/pac_archive_decoder.h"
+#include "algo/locale.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "io/bit_reader.h"
 #include "io/memory_stream.h"
-#include "util/encoding.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::minato_soft;
@@ -75,7 +75,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     input_file.stream.seek(input_file.stream.size() - 4 - compressed_size);
     bstr compressed = input_file.stream.read(compressed_size);
-    for (auto i : util::range(compressed.size()))
+    for (auto i : algo::range(compressed.size()))
         compressed.get<u8>()[i] ^= 0xFF;
 
     io::MemoryStream table_stream(
@@ -83,10 +83,10 @@ std::unique_ptr<fmt::ArchiveMeta>
     table_stream.seek(0);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->path = util::sjis_to_utf8(table_stream.read_to_zero(0x40)).str();
+        entry->path = algo::sjis_to_utf8(table_stream.read_to_zero(0x40)).str();
         entry->offset = table_stream.read_u32_le();
         entry->size_orig = table_stream.read_u32_le();
         entry->size_comp = table_stream.read_u32_le();
@@ -102,7 +102,7 @@ std::unique_ptr<io::File> PacArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
     if (entry->size_orig != entry->size_comp)
-        data = util::pack::zlib_inflate(data);
+        data = algo::pack::zlib_inflate(data);
     return std::make_unique<io::File>(entry->path, data);
 }
 

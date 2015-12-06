@@ -1,6 +1,6 @@
 #include "fmt/eagls/pak_script_file_decoder.h"
-#include "util/crypt/lcg.h"
-#include "util/range.h"
+#include "algo/crypt/lcg.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::eagls;
@@ -15,7 +15,7 @@ bool PakScriptFileDecoder::is_recognized_impl(io::File &input_file) const
         return false;
     }
 
-    for (auto i : util::range(100))
+    for (auto i : algo::range(100))
     {
         auto name = input_file.stream.read(32).str();
         input_file.stream.skip(4);
@@ -25,7 +25,7 @@ bool PakScriptFileDecoder::is_recognized_impl(io::File &input_file) const
         auto zero_index = name.find_first_of('\x00');
         if (zero_index == std::string::npos)
             return false;
-        for (auto i : util::range(zero_index, name.size()))
+        for (auto i : algo::range(zero_index, name.size()))
             if (name[i] != '\x00')
                 return false;
     }
@@ -43,8 +43,8 @@ std::unique_ptr<io::File> PakScriptFileDecoder::decode_impl(
     input_file.stream.seek(offset);
     auto data = input_file.stream.read(input_file.stream.size() - offset - 1);
     s8 seed = input_file.stream.read_u8();
-    util::crypt::Lcg lcg(util::crypt::LcgKind::MicrosoftVisualC, seed);
-    for (auto i : util::range(0, data.size(), 2))
+    algo::crypt::Lcg lcg(algo::crypt::LcgKind::MicrosoftVisualC, seed);
+    for (auto i : algo::range(0, data.size(), 2))
         data[i] ^= key[lcg.next() % key.size()];
 
     auto output_file = std::make_unique<io::File>(input_file.path, data);

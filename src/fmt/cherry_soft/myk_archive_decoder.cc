@@ -1,5 +1,5 @@
 #include "fmt/cherry_soft/myk_archive_decoder.h"
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::cherry_soft;
@@ -30,7 +30,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     auto meta = std::make_unique<ArchiveMeta>();
     auto current_offset = 16;
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(12).str();

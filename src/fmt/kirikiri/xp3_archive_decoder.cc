@@ -1,11 +1,11 @@
 #include "fmt/kirikiri/xp3_archive_decoder.h"
+#include "algo/locale.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/kirikiri/xp3_filter_registry.h"
 #include "io/memory_stream.h"
 #include "log.h"
-#include "util/encoding.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri;
@@ -92,7 +92,7 @@ static std::unique_ptr<InfoChunk> read_info_chunk(io::Stream &chunk_stream)
 
     const auto file_name_size = chunk_stream.read_u16_le();
     const auto name = chunk_stream.read(file_name_size * 2);
-    info_chunk->name = util::convert_encoding(name, "utf-16le", "utf-8").str();
+    info_chunk->name = algo::convert_locale(name, "utf-16le", "utf-8").str();
     return info_chunk;
 }
 
@@ -221,7 +221,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     auto table_data = input_file.stream.read(table_size_comp);
     if (table_is_compressed)
-        table_data = util::pack::zlib_inflate(table_data);
+        table_data = algo::pack::zlib_inflate(table_data);
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMetaImpl>();
@@ -245,7 +245,7 @@ std::unique_ptr<io::File> Xp3ArchiveDecoder::read_file_impl(
         const auto data_is_compressed = segm_chunk->flags & 7;
         input_file.stream.seek(segm_chunk->offset);
         data += data_is_compressed
-            ? util::pack::zlib_inflate(
+            ? algo::pack::zlib_inflate(
                 input_file.stream.read(segm_chunk->size_comp))
             : input_file.stream.read(segm_chunk->size_orig);
     }

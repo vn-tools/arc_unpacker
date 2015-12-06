@@ -1,9 +1,9 @@
 #include "fmt/renpy/rpa_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/format.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::renpy;
@@ -146,7 +146,7 @@ static void unpickle(io::Stream &table_stream, UnpickleContext *context)
                 size_t size = table_stream.read_u8();
                 u32 number = 0;
                 size_t pos = table_stream.tell();
-                for (auto i : util::range(size))
+                for (auto i : algo::range(size))
                 {
                     table_stream.seek(pos + size - 1 - i);
                     number *= 256;
@@ -184,7 +184,7 @@ static void unpickle(io::Stream &table_stream, UnpickleContext *context)
 
             default:
             {
-                throw err::NotSupportedError(util::format(
+                throw err::NotSupportedError(algo::format(
                     "Unsupported pickle operator %c", static_cast<char>(c)));
             }
         }
@@ -206,7 +206,7 @@ static int guess_version(io::Stream &arc_stream)
 static u32 read_hex_number(io::Stream &arc_stream, size_t size)
 {
     u32 result = 0;
-    for (auto i : util::range(size))
+    for (auto i : algo::range(size))
     {
         char c = arc_stream.read_u8();
         result *= 16;
@@ -225,7 +225,7 @@ static u32 read_hex_number(io::Stream &arc_stream, size_t size)
 static bstr read_raw_table(io::Stream &arc_stream)
 {
     size_t compressed_size = arc_stream.size() - arc_stream.tell();
-    return util::pack::zlib_inflate(arc_stream.read(compressed_size));
+    return algo::pack::zlib_inflate(arc_stream.read(compressed_size));
 }
 
 bool RpaArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -272,7 +272,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     size_t file_count = context.strings.size() / 2;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = context.strings[i * 2 ].str();

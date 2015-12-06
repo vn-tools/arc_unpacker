@@ -1,7 +1,7 @@
 #include "fmt/twilight_frontier/pak1_archive_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;
@@ -17,7 +17,7 @@ namespace
 
 static void decrypt(bstr &buffer, u8 a, u8 b, u8 delta)
 {
-    for (auto i : util::range(buffer.size()))
+    for (auto i : algo::range(buffer.size()))
     {
         buffer[i] ^= a;
         a += b;
@@ -59,7 +59,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         throw err::RecognitionError();
     auto table_stream = read_raw_table(input_file.stream, file_count);
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream->read_to_zero(0x64).str();

@@ -1,5 +1,5 @@
 #include "fmt/nscripter/sar_archive_decoder.h"
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::nscripter;
@@ -24,7 +24,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     u16 file_count = input_file.stream.read_u16_be();
     u32 offset_to_data = input_file.stream.read_u32_be();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero().str();

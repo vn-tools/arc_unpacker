@@ -1,11 +1,11 @@
 #include "fmt/whale/dat_archive_decoder.h"
 #include <map>
+#include "algo/format.h"
+#include "algo/locale.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
 #include "log.h"
-#include "util/encoding.h"
-#include "util/format.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::whale;
@@ -109,7 +109,7 @@ static u64 CRC_TABLE[0x100] =
 static u64 crc64(const bstr &buffer)
 {
     u64 crc = 0xFFFFFFFFFFFFFFFF;
-    for (auto i : util::range(buffer.size()))
+    for (auto i : algo::range(buffer.size()))
     {
         u8 c = static_cast<u8>(buffer[i]);
         int tab_index = ((crc >> 56) ^ c) & 0xFF;
@@ -125,9 +125,9 @@ static void transform_regular_content(
         floor(buffer.size() / static_cast<float>(file_name.size())));
     u8 *buffer_ptr = buffer.get<u8>();
     u8 *buffer_end = buffer_ptr + buffer.size();
-    for (auto j : util::range(file_name.size() - 1))
+    for (auto j : algo::range(file_name.size() - 1))
     {
-        for (auto k : util::range(block_size))
+        for (auto k : algo::range(block_size))
         {
             if (buffer_ptr >= buffer_end)
                 return;
@@ -141,7 +141,7 @@ static void transform_script_content(
 {
     u32 xor_value = (hash ^ crc64(game_title)) & 0xFFFFFFFF;
     u32 *buffer_ptr = buffer.get<u32>();
-    for (auto i : util::range(buffer.size() / 4))
+    for (auto i : algo::range(buffer.size() / 4))
         *buffer_ptr++ ^= xor_value;
 }
 
@@ -162,7 +162,7 @@ static void dump(const ArchiveMetaImpl &meta, const std::string &dump_path)
         if (entry->valid)
             stream.write(entry->path.str() + "\n");
         else
-            stream.write(util::format("unk:%016llx\n", entry->hash));
+            stream.write(algo::format("unk:%016llx\n", entry->hash));
     }
 }
 
@@ -216,12 +216,12 @@ void DatArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 
 void DatArchiveDecoder::set_game_title(const std::string &game_title)
 {
-    p->game_title = util::utf8_to_sjis(game_title);
+    p->game_title = algo::utf8_to_sjis(game_title);
 }
 
 void DatArchiveDecoder::add_file_name(const std::string &file_name)
 {
-    auto file_name_sjis = util::utf8_to_sjis(file_name);
+    auto file_name_sjis = algo::utf8_to_sjis(file_name);
     p->file_names_map[crc64(file_name_sjis)] = file_name_sjis;
 }
 
@@ -240,7 +240,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     meta->game_title = p->game_title;
 
     auto file_count = read_file_count(input_file.stream);
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto hash64 = input_file.stream.read_u64_le();
         auto hash32 = hash64 & 0xFFFFFFFF;
@@ -260,7 +260,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
         if (entry->type == TableEntryType::Compressed)
         {
-            entry->path_orig = name_found ? name : util::format("%04d.txt", i);
+            entry->path_orig = name_found ? name : algo::format("%04d.txt", i);
             entry->valid = true;
         }
         else
@@ -277,7 +277,7 @@ std::unique_ptr<fmt::ArchiveMeta>
                 entry->valid = false;
         }
 
-        entry->path = util::sjis_to_utf8(entry->path_orig).str();
+        entry->path = algo::sjis_to_utf8(entry->path_orig).str();
         meta->entries.push_back(std::move(entry));
     }
 
@@ -297,7 +297,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (!entry->valid)
     {
-        Log.err(util::format(
+        Log.err(algo::format(
             "Unknown hash: %016llx. io::File cannot be unpacked.\n",
             entry->hash));
         return nullptr;
@@ -309,7 +309,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     if (entry->type == TableEntryType::Compressed)
     {
         transform_script_content(data, entry->hash, meta->game_title);
-        data = util::pack::zlib_inflate(data);
+        data = algo::pack::zlib_inflate(data);
     }
     else
     {

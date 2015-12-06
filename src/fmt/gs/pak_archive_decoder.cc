@@ -1,7 +1,7 @@
 #include "fmt/gs/pak_archive_decoder.h"
+#include "algo/pack/lzss.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
-#include "util/pack/lzss.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::gs;
@@ -39,14 +39,14 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     input_file.stream.seek(table_offset);
     auto table_data = input_file.stream.read(table_size_comp);
-    for (auto i : util::range(table_data.size()))
+    for (auto i : algo::range(table_data.size()))
         table_data[i] ^= i & key;
-    table_data = util::pack::lzss_decompress_bytewise(
+    table_data = algo::pack::lzss_decompress_bytewise(
         table_data, table_size_orig);
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         table_stream.seek(entry_size * i);

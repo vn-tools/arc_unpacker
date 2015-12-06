@@ -1,6 +1,6 @@
 #include "fmt/wild_bug/wpn_audio_decoder.h"
 #include <map>
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::wild_bug;
@@ -27,7 +27,7 @@ res::Audio WpnAudioDecoder::decode_impl(io::File &input_file) const
 {
     const auto chunk_count = input_file.stream.seek(magic.size()).read_u32_le();
     std::map<bstr, Chunk> chunks;
-    for (const auto i : util::range(chunk_count))
+    for (const auto i : algo::range(chunk_count))
     {
         const auto chunk_name = input_file.stream.read(4);
         Chunk chunk;

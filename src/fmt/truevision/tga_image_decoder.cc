@@ -1,7 +1,7 @@
 #include "fmt/truevision/tga_image_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/bit_reader.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::truevision;
@@ -49,12 +49,12 @@ static bstr read_compressed_data(
         if (use_rle)
         {
             const auto chunk = stream.read(channels);
-            for (auto i : util::range(repetitions))
+            for (auto i : algo::range(repetitions))
                 output += chunk;
         }
         else
         {
-            for (auto i : util::range(repetitions))
+            for (auto i : algo::range(repetitions))
                 output += stream.read(channels);
         }
     }
@@ -79,8 +79,8 @@ static res::Image get_image_from_palette(
 {
     io::BitReader bit_reader(input);
     res::Image output(width, height);
-    for (auto y : util::range(height))
-    for (auto x : util::range(width))
+    for (auto y : algo::range(height))
+    for (auto x : algo::range(width))
         output.at(x, y) = palette[bit_reader.get(depth)];
     return output;
 }

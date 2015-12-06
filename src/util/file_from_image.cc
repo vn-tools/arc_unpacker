@@ -1,8 +1,8 @@
 #include "util/file_from_image.h"
 #include <png.h>
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::util;
@@ -34,8 +34,8 @@ std::unique_ptr<io::File> util::file_from_image(
     if (!info_ptr)
         throw std::logic_error("Failed to create PNG info structure");
 
-    auto width = image.width();
-    auto height = image.height();
+    const auto width = image.width();
+    const auto height = image.height();
     if (!width || !height)
         throw err::BadDataSizeError();
     const auto bpp = 4;
@@ -58,7 +58,7 @@ std::unique_ptr<io::File> util::file_from_image(
     png_write_info(png_ptr, info_ptr);
 
     auto rows = std::make_unique<const u8*[]>(height);
-    for (auto y : range(height))
+    for (const auto y : algo::range(height))
         rows.get()[y] = reinterpret_cast<const u8*>(&image.at(0, y));
     png_set_rows(png_ptr, info_ptr, const_cast<u8**>(rows.get()));
     png_write_png(png_ptr, info_ptr, transformations, nullptr);

@@ -1,8 +1,8 @@
 #include "fmt/liar_soft/lim_image_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/liar_soft/cg_decompress.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::liar_soft;

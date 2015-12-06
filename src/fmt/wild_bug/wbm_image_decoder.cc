@@ -1,8 +1,8 @@
 #include "fmt/wild_bug/wbm_image_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/wild_bug/wpx/decoder.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::wild_bug;
@@ -32,7 +32,7 @@ static std::array<size_t, 8> get_offsets(size_t channels, size_t stride)
 static void remove_pad(
     bstr &data, size_t height, size_t out_stride, size_t in_stride)
 {
-    for (auto y : util::range(height))
+    for (auto y : algo::range(height))
     {
         auto output = data.get<u8>() + y * out_stride;
         auto input = data.get<u8>() + y * in_stride;

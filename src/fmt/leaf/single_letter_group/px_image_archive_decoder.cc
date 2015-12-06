@@ -1,10 +1,10 @@
 #include "fmt/leaf/single_letter_group/px_image_archive_decoder.h"
 #include <array>
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "util/call_stack_keeper.h"
 #include "util/file_from_image.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -63,8 +63,8 @@ static void decode_1_8(
 {
     auto output_ptr = output.get<u32>();
     const auto output_end = output.end<const u32>();
-    for (const auto y : util::range(context.block_height))
-    for (const auto x : util::range(context.block_width))
+    for (const auto y : algo::range(context.block_height))
+    for (const auto x : algo::range(context.block_width))
     {
         if (output_ptr >= output_end)
             break;
@@ -78,8 +78,8 @@ static void decode_1_32(
 {
     auto output_ptr = output.get<u32>();
     const auto output_end = output.end<const u32>();
-    for (const auto y : util::range(context.block_height))
-    for (const auto x : util::range(context.block_width))
+    for (const auto y : algo::range(context.block_height))
+    for (const auto x : algo::range(context.block_width))
     {
         if (output_ptr >= output_end)
             break;
@@ -119,7 +119,7 @@ static void decode_4_9(
                 continue;
             }
             auto output_ptr = output.get<u32>() + result.position;
-            for (const auto i : util::range(result.block_size))
+            for (const auto i : algo::range(result.block_size))
             {
                 const auto alpha = use_alpha
                     ? (input_stream.read_u8() << 25) - 0x1000000
@@ -153,7 +153,7 @@ static void decode_4_32(
                 continue;
             }
             auto output_ptr = output.get<u32>() + result.position;
-            for (const auto i : util::range(result.block_size))
+            for (const auto i : algo::range(result.block_size))
             {
                 const auto tmp = input_stream.read_u32_le();
                 if (tmp & 0xFF000000)
@@ -192,7 +192,7 @@ static void decode_4_48(
                 continue;
             }
             auto output_ptr = output.get<u32>() + result.position;
-            for (const auto i : util::range(result.block_size))
+            for (const auto i : algo::range(result.block_size))
             {
                 const auto tmp = input_stream.read_u32_le();
                 input_stream.skip(1);
@@ -217,10 +217,10 @@ static void decode_7(
     auto output_ptr = output.get<u32>();
     const auto output_end = output.end<const u32>();
     std::array<u32, 256> palette;
-    for (const auto i : util::range(256))
+    for (const auto i : algo::range(256))
         palette[i] = input_stream.read_u32_le();
-    for (const auto y : util::range(context.block_height))
-    for (const auto x : util::range(context.block_width))
+    for (const auto y : algo::range(context.block_height))
+    for (const auto x : algo::range(context.block_width))
     {
         if (output_ptr >= output_end)
             break;
@@ -259,7 +259,7 @@ static bstr read_blocks(
 
         if (block_type == 0)
         {
-            for (const auto i : util::range(256))
+            for (const auto i : algo::range(256))
                 context.palette[i] = input_stream.read_u32_le();
         }
         else
@@ -286,7 +286,7 @@ static bstr read_blocks(
 
             if (!decoder)
             {
-                throw err::NotSupportedError(util::format(
+                throw err::NotSupportedError(algo::format(
                     "Unknown block type: %d.%x", block_type, block_subtype));
             }
             decoder(context, input_stream, data);
@@ -309,7 +309,7 @@ static void read_meta(
     {
         const auto file_count = input_stream.seek(base_offset).read_u32_le();
         const auto data_offset = table_offset + file_count * 4;
-        for (const auto i : util::range(file_count))
+        for (const auto i : algo::range(file_count))
         {
             input_stream.seek(data_offset
                 + input_stream.seek(table_offset + i * 4).read_u32_le());
@@ -326,7 +326,7 @@ static void read_meta(
         const auto block_count = input_stream.seek(base_offset).read_u32_le();
         const auto data_offset = table_offset + block_count * 4;
         std::vector<size_t> offsets;
-        for (const auto i : util::range(block_count))
+        for (const auto i : algo::range(block_count))
         {
             offsets.push_back(data_offset
                 + input_stream.seek(table_offset + i * 4).read_u32_le());

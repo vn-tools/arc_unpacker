@@ -1,7 +1,7 @@
 #include "fmt/entis/audio/lossless.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/entis/common/huffman_decoder.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::entis;
@@ -28,13 +28,13 @@ static bstr decode_chunk_pcm16(
     decoder.decode(decoded.get<u8>(), decoded.size());
 
     bstr mixed(total_sample_count * sizeof(s16));
-    for (auto i : util::range(channel_count))
+    for (auto i : algo::range(channel_count))
     {
         auto offset = i * sample_count * sizeof(s16);
         u8 *source1_ptr = decoded.get<u8>() + offset;
         u8 *source2_ptr = source1_ptr + sample_count;
         u8 *target_ptr = mixed.get<u8>() + offset;
-        for (auto j : util::range(sample_count))
+        for (auto j : algo::range(sample_count))
         {
             s8 bytLow = source2_ptr[j];
             s8 bytHigh = source1_ptr[j];
@@ -46,12 +46,12 @@ static bstr decode_chunk_pcm16(
     bstr output(total_sample_count * sizeof(s16));
     auto source_ptr = mixed.get<s16>();
     auto step = channel_count;
-    for (auto i : util::range(channel_count))
+    for (auto i : algo::range(channel_count))
     {
         auto target_ptr = output.get<s16>() + i;
         s16 value = 0;
         s16 delta = 0;
-        for (auto j : util::range(sample_count))
+        for (auto j : algo::range(sample_count))
         {
             delta += *source_ptr++;
             value += delta;

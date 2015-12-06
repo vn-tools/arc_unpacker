@@ -1,6 +1,6 @@
 #include "fmt/playstation/gpda_archive_decoder.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::playstation;
@@ -29,7 +29,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     input_file.stream.seek(12);
     const auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 

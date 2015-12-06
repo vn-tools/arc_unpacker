@@ -1,9 +1,9 @@
 #include "fmt/nscripter/nsa_archive_decoder.h"
+#include "algo/pack/lzss.h"
+#include "algo/range.h"
 #include "fmt/nscripter/spb_image_decoder.h"
 #include "io/memory_stream.h"
 #include "util/file_from_image.h"
-#include "util/pack/lzss.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nscripter;
@@ -32,7 +32,7 @@ bool NsaArchiveDecoder::is_recognized_impl(io::File &input_file) const
     size_t offset_to_files = input_file.stream.read_u32_be();
     if (file_count == 0)
         return false;
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         input_file.stream.read_to_zero();
         input_file.stream.read_u8();
@@ -51,7 +51,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto meta = std::make_unique<ArchiveMeta>();
     size_t file_count = input_file.stream.read_u16_be();
     size_t offset_to_data = input_file.stream.read_u32_be();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero().str();
@@ -83,12 +83,12 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
 
         case COMPRESSStreamN_LZSS:
         {
-            util::pack::LzssSettings settings;
+            algo::pack::LzssSettings settings;
             settings.position_bits = 8;
             settings.size_bits = 4;
             settings.min_match_size = 2;
             settings.initial_dictionary_pos = 239;
-            output_file->stream.write(util::pack::lzss_decompress_bitwise(
+            output_file->stream.write(algo::pack::lzss_decompress_bitwise(
                 data, entry->size_orig, settings));
             break;
         }

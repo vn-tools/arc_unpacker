@@ -1,6 +1,6 @@
 #include "fmt/shiina_rio/ogv_file_decoder.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::shiina_rio;

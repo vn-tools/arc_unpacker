@@ -1,9 +1,9 @@
 #include "fmt/twilight_frontier/pak2_image_decoder.h"
 #include <map>
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;
@@ -58,7 +58,7 @@ res::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
     if (bit_depth == 8)
     {
         const auto path = input_file.path.parent()
-            / util::format("palette%03d.pal", palette_number);
+            / algo::format("palette%03d.pal", palette_number);
 
         auto it = p->palette_map.find(path);
         palette = it != p->palette_map.end()
@@ -67,8 +67,8 @@ res::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
     }
 
     res::Image image(width, height);
-    for (const size_t y : util::range(height))
-    for (const size_t x : util::range(stride))
+    for (const size_t y : algo::range(height))
+    for (const size_t x : algo::range(stride))
     {
         res::Pixel pixel;
 

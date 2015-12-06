@@ -1,7 +1,7 @@
 #include "io/bit_reader.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
 #include "test_support/catch.hh"
-#include "util/range.h"
 
 using namespace au;
 
@@ -178,7 +178,7 @@ TEST_CASE("BitReader", "[io]")
         {
             io::BitReader reader(from_bits(
                 {0b11001100, 0b10101010, 0b11110000, 0b00110011}));
-            for (auto i : util::range(32))
+            for (auto i : algo::range(32))
             {
                 reader.seek(i);
                 INFO("Position: " << reader.tell());
@@ -192,13 +192,13 @@ TEST_CASE("BitReader", "[io]")
         {
             io::BitReader reader(from_bits(
                 {0b11001100, 0b10101010, 0b11110000, 0b00110011}));
-            for (auto i : util::range(32))
+            for (auto i : algo::range(32))
             {
                 reader.seek(31);
                 REQUIRE_THROWS(reader.skip(2 + i));
                 REQUIRE(reader.tell() == 31);
             }
-            for (auto i : util::range(32))
+            for (auto i : algo::range(32))
                 REQUIRE_THROWS(reader.seek(33 + i));
         }
     }

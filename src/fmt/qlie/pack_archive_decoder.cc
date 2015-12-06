@@ -1,10 +1,10 @@
 #include "fmt/qlie/pack_archive_decoder.h"
 #include <cstring>
+#include "algo/locale.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/qlie/mt.h"
 #include "io/memory_stream.h"
-#include "util/encoding.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::qlie;
@@ -71,7 +71,7 @@ static u32 derive_seed(const bstr &input)
 {
     u64 key = 0;
     u64 result = 0;
-    for (auto i : util::range(input.size() >> 3))
+    for (auto i : algo::range(input.size() >> 3))
     {
         key = padw(key, 0x0307030703070307);
         result = padw(result, input.get<u64>()[i] ^ key);
@@ -83,7 +83,7 @@ static u32 derive_seed(const bstr &input)
 static void decrypt_file_name(bstr &file_name, u32 key)
 {
     u8 x = ((key ^ 0x3E) + file_name.size()) & 0xFF;
-    for (auto i : util::range(1, file_name.size() + 1))
+    for (auto i : algo::range(1, file_name.size() + 1))
         file_name.get<u8>()[i - 1] ^= ((i ^ x) & 0xFF) + i;
 }
 
@@ -109,7 +109,7 @@ static void decrypt_file_data_with_external_keys(
     u32 mt_mutator = 0x85F532;
     u32 mt_seed = 0x33F641;
 
-    for (auto i : util::range(file_name.size()))
+    for (auto i : algo::range(file_name.size()))
     {
         mt_mutator += file_name.get<const u8>()[i] * static_cast<u8>(i);
         mt_seed ^= mt_mutator;
@@ -129,13 +129,13 @@ static void decrypt_file_data_with_external_keys(
     mt.xor_state(meta.key2);
 
     std::vector<u64> table(16);
-    for (auto i : util::range(table.size()))
+    for (auto i : algo::range(table.size()))
     {
         table[i]
             = mt.get_next_integer()
             | (static_cast<u64>(mt.get_next_integer()) << 32);
     }
-    for (auto i : util::range(9))
+    for (auto i : algo::range(9))
          mt.get_next_integer();
 
     u64 mutator
@@ -209,7 +209,7 @@ static bstr decompress(const bstr &input, size_t output_size)
     u8 dict3[256];
     while (!input_stream.eof())
     {
-        for (auto i : util::range(256))
+        for (auto i : algo::range(256))
             dict1[i] = i;
 
         for (size_t d = 0; d < 256; )
@@ -223,7 +223,7 @@ static bstr decompress(const bstr &input, size_t output_size)
                     break;
             }
 
-            for (auto i : util::range(c + 1))
+            for (auto i : algo::range(c + 1))
             {
                 dict1[d] = input_stream.read_u8();
                 if (dict1[d] != d)
@@ -338,7 +338,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
         bool found = false;
         auto start = file.stream.size() - exe_key_magic.size() - key2_size;
-        for (auto i : util::range(start, 0, -1))
+        for (auto i : algo::range(start, 0, -1))
         {
             if (!std::memcmp(&exe_data[i],
                 exe_key_magic.get<char>(),
@@ -364,7 +364,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     u32 seed = 0;
     table_stream.seek(0);
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         size_t file_name_size = table_stream.read_u16_le();
         table_stream.skip(file_name_size + 28);
@@ -375,14 +375,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     seed = derive_seed(table_stream.read(256)) & 0x0FFFFFFF;
 
     table_stream.seek(0);
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
         size_t name_size = table_stream.read_u16_le();
         entry->path_orig = table_stream.read(name_size);
         decrypt_file_name(entry->path_orig, seed);
-        entry->path = util::sjis_to_utf8(entry->path_orig).str();
+        entry->path = algo::sjis_to_utf8(entry->path_orig).str();
 
         entry->offset = table_stream.read_u64_le();
         entry->size_compressed = table_stream.read_u32_le();

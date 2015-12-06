@@ -1,6 +1,6 @@
 #include "fmt/glib/custom_lzss.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 // Modified LZSS routines (repetition count is negated)
 

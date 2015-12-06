@@ -1,12 +1,12 @@
 #include "fmt/twilight_frontier/pak2_archive_decoder.h"
+#include "algo/crypt/mt.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/twilight_frontier/pak2_image_decoder.h"
-#include "io/filesystem.h"
+#include "io/file_system.h"
 #include "io/memory_stream.h"
-#include "util/crypt/mt.h"
-#include "util/encoding.h"
 #include "util/file_from_image.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;
@@ -23,8 +23,8 @@ namespace
 
 static void decrypt(bstr &buffer, u32 mt_seed, u8 a, u8 b, u8 delta)
 {
-    auto mt = util::crypt::MersenneTwister::Improved(mt_seed);
-    for (auto i : util::range(buffer.size()))
+    auto mt = algo::crypt::MersenneTwister::Improved(mt_seed);
+    for (auto i : algo::range(buffer.size()))
     {
         buffer[i] ^= mt->next_u32();
         buffer[i] ^= a;
@@ -64,14 +64,14 @@ std::unique_ptr<fmt::ArchiveMeta>
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->already_unpacked = false;
         entry->offset = table_stream.read_u32_le();
         entry->size = table_stream.read_u32_le();
         auto name_size = table_stream.read_u8();
-        entry->path = util::sjis_to_utf8(table_stream.read(name_size)).str();
+        entry->path = algo::sjis_to_utf8(table_stream.read(name_size)).str();
         if (entry->offset + entry->size > input_file.stream.size())
             throw err::BadDataOffsetError();
         meta->entries.push_back(std::move(entry));
@@ -88,7 +88,7 @@ std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
     u8 key = (entry->offset >> 1) | 0x23;
-    for (auto i : util::range(entry->size))
+    for (auto i : algo::range(entry->size))
         data[i] ^= key;
     return std::make_unique<io::File>(entry->path, data);
 }

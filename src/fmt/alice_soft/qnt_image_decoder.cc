@@ -1,8 +1,8 @@
 #include "fmt/alice_soft/qnt_image_decoder.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::alice_soft;
@@ -24,7 +24,7 @@ static void deinterleave(res::Image &image, const bstr &input)
     io::MemoryStream input_stream(input);
 
     size_t x, y;
-    for (auto i : util::range(3))
+    for (auto i : algo::range(3))
     {
         for (y = 0; y < image.height() - 1; y += 2)
         {
@@ -62,17 +62,17 @@ static void deinterleave(res::Image &image, const bstr &input)
 
 static void apply_differences(res::Image &image)
 {
-    for (auto x : util::range(1, image.width()))
-    for (auto c : util::range(3))
+    for (auto x : algo::range(1, image.width()))
+    for (auto c : algo::range(3))
         image.at(x, 0)[c] = image.at(x - 1, 0)[c] - image.at(x, 0)[c];
 
-    for (auto y : util::range(1, image.height()))
-    for (auto c : util::range(3))
+    for (auto y : algo::range(1, image.height()))
+    for (auto c : algo::range(3))
         image.at(0, y)[c] = image.at(0, y - 1)[c] - image.at(0, y)[c];
 
-    for (auto y : util::range(1, image.height()))
-    for (auto x : util::range(1, image.width()))
-    for (auto c : util::range(3))
+    for (auto y : algo::range(1, image.height()))
+    for (auto x : algo::range(1, image.width()))
+    for (auto c : algo::range(3))
     {
         u8 ax = image.at(x - 1, y)[c];
         u8 ay = image.at(x, y - 1)[c];
@@ -84,8 +84,8 @@ static void apply_alpha(res::Image &image, const bstr &input)
 {
     if (!input.size())
     {
-        for (auto y : util::range(image.height()))
-        for (auto x : util::range(image.width()))
+        for (auto y : algo::range(image.height()))
+        for (auto x : algo::range(image.width()))
             image.at(x, y).a = 0xFF;
         return;
     }
@@ -93,15 +93,15 @@ static void apply_alpha(res::Image &image, const bstr &input)
     io::MemoryStream input_stream(input);
 
     image.at(0, 0).a = input_stream.read_u8();
-    for (auto x : util::range(1, image.width()))
+    for (auto x : algo::range(1, image.width()))
         image.at(x, 0).a = image.at(x - 1, 0).a - input_stream.read_u8();
     if (image.width() & 1)
         input_stream.skip(1);
 
-    for (auto y : util::range(1, image.height()))
+    for (auto y : algo::range(1, image.height()))
     {
         image.at(0, y).a = image.at(0, y - 1).a - input_stream.read_u8();
-        for (auto x : util::range(1, image.width()))
+        for (auto x : algo::range(1, image.width()))
         {
             u8 ax = image.at(x - 1, y).a;
             u8 ay = image.at(x, y - 1).a;
@@ -135,10 +135,10 @@ res::Image QntImageDecoder::decode_impl(io::File &input_file) const
     input_file.stream.skip(24);
 
     bstr color_data = pixel_size
-        ? util::pack::zlib_inflate(input_file.stream.read(pixel_size))
+        ? algo::pack::zlib_inflate(input_file.stream.read(pixel_size))
         : ""_b;
     bstr alpha_data = alpha_size
-        ? util::pack::zlib_inflate(input_file.stream.read(alpha_size))
+        ? algo::pack::zlib_inflate(input_file.stream.read(alpha_size))
         : ""_b;
 
     res::Image image(width, height);

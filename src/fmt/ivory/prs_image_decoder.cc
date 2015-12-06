@@ -1,6 +1,6 @@
 #include "fmt/ivory/prs_image_decoder.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::ivory;
@@ -17,7 +17,7 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
 
     int flag = 0;
     int size_lookup[256];
-    for (auto i : util::range(256))
+    for (auto i : algo::range(256))
         size_lookup[i] = i + 3;
     size_lookup[0xFF] = 0x1000;
     size_lookup[0xFE] = 0x400;
@@ -66,7 +66,7 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
                 if (tmp == 3)
                 {
                     size += 9;
-                    for (auto i : util::range(size))
+                    for (auto i : algo::range(size))
                     {
                         if (source_ptr >= source_end
                             || target_ptr >= target_end)
@@ -82,7 +82,7 @@ static bstr decode_pixels(const bstr &source, size_t width, size_t height)
             }
 
             shift += 1;
-            for (auto i : util::range(size))
+            for (auto i : algo::range(size))
             {
                 if (target_ptr >= target_end)
                     break;
@@ -118,7 +118,7 @@ res::Image PrsImageDecoder::decode_impl(io::File &input_file) const
     auto target = input_file.stream.read(source_size);
     target = decode_pixels(target, width, height);
     if (using_differences)
-        for (auto i : util::range(3, target.size()))
+        for (auto i : algo::range(3, target.size()))
             target[i] += target[i - 3];
 
     return res::Image(width, height, target, res::PixelFormat::BGR888);

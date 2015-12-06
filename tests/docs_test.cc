@@ -1,9 +1,9 @@
 #include <regex>
+#include "algo/str.h"
 #include "fmt/registry.h"
 #include "io/file_stream.h"
 #include "log.h"
 #include "test_support/catch.hh"
-#include "util/algo/str.h"
 
 using namespace au;
 
@@ -88,7 +88,7 @@ TEST_CASE("Documentation", "[core]")
             const auto company = cells[3];
             const auto release_date = cells[4];
             const auto game_title = cells[5];
-            const auto sort_key = util::algo::lower(
+            const auto sort_key = algo::lower(
                 "[" + company + "][" + release_date + "]" + game_title);
             REQUIRE(sort_key > last_sort_key);
             last_sort_key = sort_key;

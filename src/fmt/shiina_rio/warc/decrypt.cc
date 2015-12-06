@@ -1,9 +1,9 @@
 #include "fmt/shiina_rio/warc/decrypt.h"
+#include "algo/endian.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/endian.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::shiina_rio;
@@ -88,10 +88,10 @@ static u32 calculate_crc32(const bstr &data)
 {
     const u32 xor_value = 0x6DB88320;
     u32 table[0x100];
-    for (const auto i : util::range(0x100))
+    for (const auto i : algo::range(0x100))
     {
         u32 poly = i;
-        for (const auto j : util::range(8))
+        for (const auto j : algo::range(8))
         {
             const bool bit = poly & 1;
             poly = (poly >> 1) | (poly << 31);
@@ -119,15 +119,15 @@ static res::Image transform_region_image(
     const int dst_alpha = (flags & 0x10000000) ? ((flags >> 12) & 0x1FF) : 0;
     const bool flip_vertically = flags & 0x20000000;
     const bool flip_horizontally = flags & 0x40000000;
-    for (const auto y : util::range(input_image.height()))
-    for (const auto x : util::range(input_image.width()))
+    for (const auto y : algo::range(input_image.height()))
+    for (const auto x : algo::range(input_image.width()))
     {
         const auto src_y = flip_vertically ? input_image.height() - 1 - y : y;
         const auto src_x = flip_horizontally ? input_image.width() - 1 - x : x;
         auto &output_pixel = output_image.at(x, y);
         const auto &input_pixel = input_image.at(src_x, src_y);
         const auto alpha = mix_colors(0, input_pixel.a, src_alpha);
-        for (const auto i : util::range(3))
+        for (const auto i : algo::range(3))
         {
             output_pixel[i] = mix_colors(
                 output_pixel[i],
@@ -227,13 +227,13 @@ static u64 get_essential_key_pos_addend1(const u64 key_pos)
     bstr input(4);
     *input.get<u32>() = key_pos;
     bstr s[4];
-    for (const auto i : util::range(4))
+    for (const auto i : algo::range(4))
     {
         s[i].resize(4);
         *s[i].get<float>() = 1.5 * input[i] + 0.1;
     }
     u32 d[4];
-    d[0] = util::from_big_endian(*s[0].get<const u32>());
+    d[0] = algo::from_big_endian(*s[0].get<const u32>());
     d[1] = *s[1].get<const float>();
     d[2] = -*s[2].get<const s32>();
     d[3] = ~*s[3].get<const u32>();
@@ -333,7 +333,7 @@ static std::array<u32, 5> get_initial_crypt_key_addends(
         };
 
     std::array<u32, 5> addends(plugin.initial_crypt_base_keys);
-    for (const auto i : util::range(0x50))
+    for (const auto i : algo::range(0x50))
     {
         const u32 tmp1
             = buf[i]
@@ -357,9 +357,9 @@ std::array<u32, 10> get_initial_crypt_keys(
     io::MemoryStream data_stream(data);
     std::array<u32, 0x50> buf;
     data_stream.seek(44);
-    for (const auto i : util::range(0x10))
+    for (const auto i : algo::range(0x10))
         buf[i] = data_stream.read_u32_be();
-    for (const auto i : util::range(0x10, 0x50))
+    for (const auto i : algo::range(0x10, 0x50))
     {
         buf[i]
             = buf[i - 0x10]
@@ -371,7 +371,7 @@ std::array<u32, 10> get_initial_crypt_keys(
 
     const auto addends = get_initial_crypt_key_addends(plugin, buf);
     std::array<u32, 10> keys;
-    for (const auto i : util::range(5))
+    for (const auto i : algo::range(5))
         keys[i] = plugin.initial_crypt_base_keys[i] + addends[i];
 
     {
@@ -383,7 +383,7 @@ std::array<u32, 10> get_initial_crypt_keys(
     }
 
     {
-        u32 flags = util::from_big_endian(buf[0]) | 0x80000000;
+        u32 flags = algo::from_big_endian(buf[0]) | 0x80000000;
         if (!(flags & 0x78000000))
             flags |= 0x98000000;
         const u32 base_color = buf[1] >> 8;
@@ -449,7 +449,7 @@ std::array<u32, 10> get_initial_crypt_keys(
 static void decrypt_initial_160plus(const Plugin &plugin, bstr &data)
 {
     const auto keys = get_initial_crypt_keys(plugin, data);
-    for (const auto i : util::range(keys.size()))
+    for (const auto i : algo::range(keys.size()))
         data.get<u32>()[1 + i] ^= keys[i];
 }
 
@@ -509,7 +509,7 @@ void warc::decrypt_essential(
     auto key_pos2 = 0;
     key_pos1 %= essential_crypt_key.size();
 
-    for (const auto i : util::range(
+    for (const auto i : algo::range(
         essential_crypt_start + 2, essential_crypt_end))
     {
         u8 d = data[i];
@@ -543,9 +543,9 @@ void warc::decrypt_table_data(
     if (warc_version >= 170)
     {
         const u8 key = warc_version ^ 0xFF;
-        for (const auto i : util::range(8, table_data.size()))
+        for (const auto i : algo::range(8, table_data.size()))
             table_data[i] ^= key;
-        table_data = util::pack::zlib_inflate(table_data.substr(8));
+        table_data = algo::pack::zlib_inflate(table_data.substr(8));
     }
     else
         throw err::NotSupportedError("WARC <=1.7 is not implemented");
@@ -560,7 +560,7 @@ warc::FlagCryptFunc warc::get_flag_crypt1(const bstr &table, const u32 key)
         u32 k[4] = {key + 1, key + 4, key + 2, key + 3};
         if ((flags & 0x202) == 0x202)
         {
-            for (const auto i : util::range(0xFF))
+            for (const auto i : algo::range(0xFF))
             {
                 const u32 j = k[3]
                     ^ (k[3] << 11)
@@ -588,7 +588,7 @@ warc::FlagCryptFunc warc::get_flag_crypt2()
         u16 acc = 0;
         u16 revolve = 0;
         u16 work;
-        for (const auto i : util::range(0x100))
+        for (const auto i : algo::range(0x100))
         {
             work = data[i];
             acc += work >> 1;
@@ -620,18 +620,18 @@ warc::FlagCryptFunc warc::get_flag_crypt3()
                 int *diff_table = &diff_table_buf[1]; // permit access via x[-1]
 
                 diff_table[-1] = 0;
-                for (const auto i : util::range(256))
+                for (const auto i : algo::range(256))
                 {
                     base_table[i] = data_stream.read_u8();
                     diff_table[i] = base_table[i] + diff_table[i - 1];
                 }
 
                 bstr buffer(diff_table[0xFF]);
-                for (const auto i : util::range(256))
+                for (const auto i : algo::range(256))
                 {
                     const auto offset1 = diff_table[i - 1];
                     const auto offset2 = diff_table[i];
-                    for (const auto j : util::range(offset2 - offset1))
+                    for (const auto j : algo::range(offset2 - offset1))
                         buffer[offset1 + j] = i;
                 }
 
@@ -639,7 +639,7 @@ warc::FlagCryptFunc warc::get_flag_crypt3()
                 u32 unk1 = 0xFFFFFFFF;
                 u32 unk2 = data_stream.read_u32_be();
 
-                for (const auto i : util::range(size))
+                for (const auto i : algo::range(size))
                 {
                     const u32 scale = unk1 / buffer.size();
                     const size_t idx = buffer.at((unk2 - unk0) / scale);
@@ -674,13 +674,13 @@ warc::CrcCryptFunc warc::get_crc_crypt(const bstr &table)
             return;
 
         u32 crc = 0xFFFFFFFF;
-        for (const auto i : util::range(0x100))
+        for (const auto i : algo::range(0x100))
         {
             crc ^= data[i] << 24;
-            for (const auto j : util::range(8))
+            for (const auto j : algo::range(8))
                 crc = (crc << 1) ^ (crc & 0x80000000 ? 0x04C11DB7 : 0);
         }
-        for (const auto i : util::range(0x40))
+        for (const auto i : algo::range(0x40))
         {
             const auto idx = data.get<u32>()[0x40 + i] % table.size();
             const u32 src = table.get<u32>()[idx / 4];

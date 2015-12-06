@@ -1,7 +1,7 @@
 #include "fmt/jpeg/jpeg_image_decoder.h"
 #include <jpeglib.h>
+#include "algo/range.h"
 #include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::jpeg;
@@ -40,7 +40,7 @@ res::Image JpegImageDecoder::decode_impl(io::File &input_file) const
         throw err::UnsupportedChannelCountError(channels);
 
     bstr raw_data(width * height * channels);
-    for (auto y : util::range(height))
+    for (auto y : algo::range(height))
     {
         auto ptr = raw_data.get<u8>() + y * width * channels;
         jpeg_read_scanlines(&info, &ptr, 1);

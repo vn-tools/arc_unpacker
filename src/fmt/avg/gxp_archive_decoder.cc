@@ -1,7 +1,7 @@
 #include "fmt/avg/gxp_archive_decoder.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
-#include "util/encoding.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::avg;
@@ -25,7 +25,7 @@ static bstr decrypt(const bstr &input)
         "\x3E\x65\x24\x20\x46\x6E\x74"_b;
 
     bstr output(input);
-    for (const auto i : util::range(output.size()))
+    for (const auto i : algo::range(output.size()))
         output[i] ^= key[i % key.size()] ^ i;
     return output;
 }
@@ -46,7 +46,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     io::MemoryStream table_stream(input_file.stream.read(table_size));
 
     auto meta = std::make_unique<fmt::ArchiveMeta>();
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry_stream = std::make_unique<io::MemoryStream>(
             decrypt(table_stream.read(4)));
@@ -61,7 +61,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         const auto name_size = entry_stream->read_u32_le();
         entry_stream->skip(8);
         entry->offset = data_offset + entry_stream->read_u64_le();
-        entry->path = util::convert_encoding(
+        entry->path = algo::convert_locale(
             entry_stream->read(name_size * 2), "ucs-2", "utf8").str();
         meta->entries.push_back(std::move(entry));
     }

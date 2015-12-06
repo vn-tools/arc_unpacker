@@ -1,7 +1,7 @@
 #include "fmt/fvp/nvsg_image_decoder.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::fvp;
@@ -31,7 +31,7 @@ res::Image NvsgImageDecoder::decode_impl(io::File &input_file) const
     size_t image_count = input_file.stream.read_u32_le();
     input_file.stream.skip(8);
 
-    bstr data = util::pack::zlib_inflate(input_file.stream.read_to_eof());
+    bstr data = algo::pack::zlib_inflate(input_file.stream.read_to_eof());
 
     res::PixelFormat pixel_format;
     switch (format)
@@ -54,7 +54,7 @@ res::Image NvsgImageDecoder::decode_impl(io::File &input_file) const
             break;
 
         case 4:
-            for (auto i : util::range(data.size()))
+            for (auto i : algo::range(data.size()))
                 if (data.get<u8>()[i])
                     data.get<u8>()[i] = 255;
             pixel_format = res::PixelFormat::Gray8;

@@ -1,6 +1,6 @@
 #include "fmt/fvp/bin_archive_decoder.h"
-#include "util/encoding.h"
-#include "util/range.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::fvp;
@@ -27,13 +27,13 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     auto names_start = file_count * 12 + 8;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         auto name_offset = input_file.stream.read_u32_le();
         input_file.stream.peek(names_start + name_offset, [&]()
         {
-            entry->path = util::sjis_to_utf8(
+            entry->path = algo::sjis_to_utf8(
                 input_file.stream.read_to_zero()).str();
         });
         entry->offset = input_file.stream.read_u32_le();

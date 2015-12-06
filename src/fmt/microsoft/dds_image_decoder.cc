@@ -1,9 +1,9 @@
 #include "fmt/microsoft/dds_image_decoder.h"
+#include "algo/endian.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/endian.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::microsoft;
@@ -108,7 +108,7 @@ static std::unique_ptr<DdsHeader> read_header(io::Stream &stream)
     header->mip_map_count = stream.read_u32_le();
     stream.skip(4 * 11);
     fill_pixel_format(stream, header->pixel_format);
-    for (auto i : util::range(4))
+    for (auto i : algo::range(4))
         header->caps[i] = stream.read_u32_le();
     stream.skip(4);
     return header;
@@ -147,7 +147,7 @@ static void decode_dxt1_block(
         && colors[0].r <= colors[1].r
         && colors[0].a <= colors[1].a;
 
-    for (auto i : util::range(4))
+    for (auto i : algo::range(4))
     {
         if (!transparent)
         {
@@ -162,8 +162,8 @@ static void decode_dxt1_block(
     }
 
     auto lookup = stream.read_u32_le();
-    for (auto y : util::range(4))
-    for (auto x : util::range(4))
+    for (auto y : algo::range(4))
+    for (auto x : algo::range(4))
     {
         size_t index = lookup & 3;
         output_colors[y][x] = colors[index];
@@ -179,22 +179,22 @@ static void decode_dxt5_block(io::Stream &stream, u8 output_alpha[4][4])
 
     if (alpha[0] > alpha[1])
     {
-        for (auto i : util::range(2, 8))
+        for (auto i : algo::range(2, 8))
             alpha[i] = ((8. - i) * alpha[0] + ((i - 1.) * alpha[1])) / 7.;
     }
     else
     {
-        for (auto i : util::range(2, 6))
+        for (auto i : algo::range(2, 6))
             alpha[i] = ((6. - i) * alpha[0] + ((i - 1.) * alpha[1])) / 5.;
         alpha[6] = 0;
         alpha[7] = 255;
     }
 
-    for (auto i : util::range(2))
+    for (auto i : algo::range(2))
     {
-        u32 lookup = util::from_big_endian<u32>(
+        u32 lookup = algo::from_big_endian<u32>(
             (stream.read_u16_be() << 16) | (stream.read_u8() << 8));
-        for (auto j : util::range(8))
+        for (auto j : algo::range(8))
         {
             u8 index = lookup & 7;
             size_t pos = i * 8 + j;
@@ -210,13 +210,13 @@ static std::unique_ptr<res::Image> decode_dxt1(
     io::Stream &stream, size_t width, size_t height)
 {
     auto image = create_image(width, height);
-    for (auto block_y : util::range(0, height, 4))
-    for (auto block_x : util::range(0, width, 4))
+    for (auto block_y : algo::range(0, height, 4))
+    for (auto block_x : algo::range(0, width, 4))
     {
         res::Pixel colors[4][4];
         decode_dxt1_block(stream, colors);
-        for (auto y : util::range(4))
-        for (auto x : util::range(4))
+        for (auto y : algo::range(4))
+        for (auto x : algo::range(4))
             image->at(block_x + x, block_y + y) = colors[y][x];
     }
     return image;
@@ -226,13 +226,13 @@ static std::unique_ptr<res::Image> decode_dxt3(
     io::Stream &stream, size_t width, size_t height)
 {
     auto image = create_image(width, height);
-    for (auto block_y : util::range(0, height, 4))
-    for (auto block_x : util::range(0, width, 4))
+    for (auto block_y : algo::range(0, height, 4))
+    for (auto block_x : algo::range(0, width, 4))
     {
         u8 alpha[4][4];
-        for (auto y : util::range(4))
+        for (auto y : algo::range(4))
         {
-            for (auto x : util::range(0, 4, 2))
+            for (auto x : algo::range(0, 4, 2))
             {
                 u8 b = stream.read_u8();
                 alpha[y][x + 0] = b & 0xF0;
@@ -242,8 +242,8 @@ static std::unique_ptr<res::Image> decode_dxt3(
 
         res::Pixel colors[4][4];
         decode_dxt1_block(stream, colors);
-        for (auto y : util::range(4))
-        for (auto x : util::range(4))
+        for (auto y : algo::range(4))
+        for (auto x : algo::range(4))
         {
             colors[y][x].a = alpha[y][x];
             image->at(block_x + x, block_y + y) = colors[y][x];
@@ -256,16 +256,16 @@ static std::unique_ptr<res::Image> decode_dxt5(
     io::Stream &stream, size_t width, size_t height)
 {
     auto image = create_image(width, height);
-    for (auto block_y : util::range(0, height, 4))
-    for (auto block_x : util::range(0, width, 4))
+    for (auto block_y : algo::range(0, height, 4))
+    for (auto block_x : algo::range(0, width, 4))
     {
         u8 alpha[4][4];
         decode_dxt5_block(stream, alpha);
 
         res::Pixel colors[4][4];
         decode_dxt1_block(stream, colors);
-        for (auto y : util::range(4))
-        for (auto x : util::range(4))
+        for (auto y : algo::range(4))
+        for (auto x : algo::range(4))
         {
             colors[y][x].a = alpha[y][x];
             image->at(block_x + x, block_y + y) = colors[y][x];
@@ -301,7 +301,7 @@ res::Image DdsImageDecoder::decode_impl(io::File &input_file) const
             image = decode_dxt5(input_file.stream, width, height);
         else
         {
-            throw err::NotSupportedError(util::format(
+            throw err::NotSupportedError(algo::format(
                 "%s textures are not supported",
                 header->pixel_format.four_cc.get<char>()));
         }

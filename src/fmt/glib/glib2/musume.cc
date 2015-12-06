@@ -1,7 +1,7 @@
 #include "fmt/glib/glib2/musume.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::glib::glib2;
@@ -128,13 +128,13 @@ std::unique_ptr<Decoder> MusumePlugin::create_decoder(
 {
     u32 target = ((keys[0] * 95) >> 13) & 0xFFFF;
     int index = -1;
-    for (auto i : util::range(decoder_table.size()))
+    for (auto i : algo::range(decoder_table.size()))
         if (decoder_table[i] == target)
             index = i;
     if (index == -1)
     {
         throw err::NotSupportedError(
-            util::format("Unsupported key: %08x", keys[0]));
+            algo::format("Unsupported key: %08x", keys[0]));
     }
 
     auto tmp1 = index / 150;

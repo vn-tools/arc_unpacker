@@ -1,9 +1,9 @@
 #include "fmt/twilight_frontier/pak1_image_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
 #include "util/file_from_image.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;
@@ -44,7 +44,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     auto palette_count = input_file.stream.read_u8();
-    for (auto i : util::range(palette_count))
+    for (auto i : algo::range(palette_count))
     {
         meta->palettes.push_back(res::Palette(
             256, input_file.stream.read(512), res::PixelFormat::BGRA5551));
@@ -60,7 +60,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         input_file.stream.skip(4);
         entry->depth = input_file.stream.read_u8();
         entry->size = input_file.stream.read_u32_le();
-        entry->path = util::format("%04d", i++);
+        entry->path = algo::format("%04d", i++);
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));

@@ -1,9 +1,9 @@
 #include "fmt/tactics/arc_archive_decoder.h"
+#include "algo/locale.h"
+#include "algo/pack/lzss.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/encoding.h"
-#include "util/pack/lzss.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::tactics;
@@ -36,11 +36,11 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v0(io::File &input_file)
     for (auto &c : table_buf)
         c ^= 0xFF;
     io::MemoryStream table_stream(
-        util::pack::lzss_decompress_bytewise(table_buf, size_orig));
+        algo::pack::lzss_decompress_bytewise(table_buf, size_orig));
 
     auto key = table_stream.read_to_zero();
     auto meta = std::make_unique<fmt::ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = table_stream.read_u32_le() + data_start;
@@ -50,7 +50,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v0(io::File &input_file)
         auto name_size = table_stream.read_u32_le();
 
         table_stream.skip(8);
-        entry->path = util::sjis_to_utf8(table_stream.read(name_size)).str();
+        entry->path = algo::sjis_to_utf8(table_stream.read(name_size)).str();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -69,7 +69,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(io::File &input_file)
         entry->size_orig = input_file.stream.read_u32_le();
         auto name_size = input_file.stream.read_u32_le();
         input_file.stream.skip(8);
-        entry->path = util::sjis_to_utf8(
+        entry->path = algo::sjis_to_utf8(
             input_file.stream.read(name_size)).str();
         entry->offset = input_file.stream.tell();
         entry->key = key;
@@ -117,10 +117,10 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
     if (entry->key.size())
-        for (auto i : util::range(data.size()))
+        for (auto i : algo::range(data.size()))
             data[i] ^= entry->key[i % entry->key.size()];
     if (entry->size_orig)
-        data = util::pack::lzss_decompress_bytewise(data, entry->size_orig);
+        data = algo::pack::lzss_decompress_bytewise(data, entry->size_orig);
     return std::make_unique<io::File>(entry->path, data);
 }
 

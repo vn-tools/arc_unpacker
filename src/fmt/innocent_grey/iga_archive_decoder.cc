@@ -1,6 +1,6 @@
 #include "fmt/innocent_grey/iga_archive_decoder.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::innocent_grey;
@@ -82,7 +82,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         auto entry = std::make_unique<ArchiveEntryImpl>();
         input_file.stream.seek(names_start + spec->name_offset);
         std::string name;
-        for (const auto i : util::range(spec->name_size))
+        for (const auto i : algo::range(spec->name_size))
             name += read_integer(input_file.stream);
         entry->path = name;
         entry->offset = data_offset + spec->data_offset;
@@ -98,7 +98,7 @@ std::unique_ptr<io::File> IgaArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    for (auto i : util::range(data.size()))
+    for (auto i : algo::range(data.size()))
         data[i] ^= (i + 2) & 0xFF;
     return std::make_unique<io::File>(entry->path, data);
 }

@@ -1,9 +1,9 @@
 #include "fmt/png/png_image_decoder.h"
 #include <cstring>
 #include <png.h>
+#include "algo/range.h"
 #include "err.h"
 #include "log.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::png;
@@ -91,7 +91,7 @@ static res::Image decode(io::File &file, PngImageDecoder::ChunkHandler handler)
 
     bstr data;
     data.reserve(width * height * pixel_format_to_bpp(format));
-    for (auto y : util::range(height))
+    for (auto y : algo::range(height))
         data += bstr(row_pointers[y], width * pixel_format_to_bpp(format));
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 

@@ -1,9 +1,9 @@
 #include "fmt/cronus/grp_image_decoder.h"
+#include "algo/pack/lzss.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/cronus/common.h"
-#include "util/pack/lzss.h"
 #include "util/plugin_mgr.hh"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::cronus;
@@ -148,7 +148,7 @@ res::Image GrpImageDecoder::decode_impl(io::File &input_file) const
         delta_decrypt(data, get_delta_key(input_file.path.name()));
     else if (p->header.encryption_type == EncType::SwapBytes)
         swap_decrypt(data, p->header.output_size);
-    data = util::pack::lzss_decompress_bytewise(data, p->header.output_size);
+    data = algo::pack::lzss_decompress_bytewise(data, p->header.output_size);
 
     std::unique_ptr<res::Image> image;
 
@@ -178,8 +178,8 @@ res::Image GrpImageDecoder::decode_impl(io::File &input_file) const
 
     if (!p->header.use_transparency)
     {
-        for (auto x : util::range(p->header.width))
-        for (auto y : util::range(p->header.height))
+        for (auto x : algo::range(p->header.width))
+        for (auto y : algo::range(p->header.height))
             image->at(x, y).a = 0xFF;
     }
     if (p->header.flip)

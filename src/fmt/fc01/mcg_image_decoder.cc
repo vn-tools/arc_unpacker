@@ -1,11 +1,11 @@
 #include "fmt/fc01/mcg_image_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
+#include "algo/str.h"
 #include "err.h"
 #include "fmt/fc01/common/custom_lzss.h"
 #include "fmt/fc01/common/mrg_decryptor.h"
 #include "fmt/fc01/common/util.h"
-#include "util/algo/str.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::fc01;
@@ -16,7 +16,7 @@ static bstr decrypt_v101(const bstr &input, size_t output_size, u8 initial_key)
 {
     auto data = input;
     auto key = initial_key;
-    for (auto i : util::range(data.size()))
+    for (auto i : algo::range(data.size()))
     {
         data[i] = common::rol8(data[i], 1) ^ key;
         key += data.size() - 1 - i;
@@ -27,9 +27,9 @@ static bstr decrypt_v101(const bstr &input, size_t output_size, u8 initial_key)
 static bstr transform_v200(
     bstr planes[3], const size_t width, const size_t height)
 {
-    for (const auto y : util::range(height - 1))
-    for (const auto x : util::range(width - 1))
-    for (const auto i : util::range(3))
+    for (const auto y : algo::range(height - 1))
+    for (const auto x : algo::range(width - 1))
+    for (const auto i : algo::range(3))
     {
         const auto pos = y * width + x;
         int p00 = planes[i][pos];
@@ -50,8 +50,8 @@ static bstr transform_v200(
 
     bstr output(width * height * 3);
     auto output_ptr = output.get<u8>();
-    for (const auto y : util::range(height))
-    for (const auto x : util::range(width))
+    for (const auto y : algo::range(height))
+    for (const auto x : algo::range(width))
     {
         const auto pos = y * width + x;
         s8 b = -128 + static_cast<s8>(planes[2][pos]);
@@ -89,7 +89,7 @@ void McgImageDecoder::register_cli_options(ArgParser &arg_parser) const
 void McgImageDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("mcg-key"))
-        set_key(util::algo::from_string<int>(arg_parser.get_switch("mcg-key")));
+        set_key(algo::from_string<int>(arg_parser.get_switch("mcg-key")));
     ImageDecoder::parse_cli_options(arg_parser);
 }
 
@@ -108,14 +108,14 @@ res::Image McgImageDecoder::decode_impl(io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     const auto version = static_cast<int>(0.5 + 100
-        * util::algo::from_string<float>(input_file.stream.read(4).str()));
+        * algo::from_string<float>(input_file.stream.read(4).str()));
 
     input_file.stream.seek(16);
     const auto header_size = input_file.stream.read_u32_le();
     if (header_size != 64)
     {
         throw err::NotSupportedError(
-            util::format("Unknown header size: %d", header_size));
+            algo::format("Unknown header size: %d", header_size));
     }
     const auto x = input_file.stream.read_u32_le();
     const auto y = input_file.stream.read_u32_le();
@@ -135,7 +135,7 @@ res::Image McgImageDecoder::decode_impl(io::File &input_file) const
     {
         common::MrgDecryptor decryptor(data, width * height);
         bstr planes[3];
-        for (const auto i : util::range(3))
+        for (const auto i : algo::range(3))
             planes[i] = decryptor.decrypt_with_key(p->key);
         data = transform_v200(planes, width, height);
     }

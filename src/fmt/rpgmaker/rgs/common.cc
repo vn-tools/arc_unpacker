@@ -1,6 +1,6 @@
 #include "fmt/rpgmaker/rgs/common.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::rpgmaker;
@@ -23,7 +23,7 @@ std::unique_ptr<io::File> rgs::read_file_impl(
     tmp_stream.seek(0);
 
     u32 key = entry.key;
-    for (auto i : util::range(0, entry.size, 4))
+    for (auto i : algo::range(0, entry.size, 4))
     {
         u32 chunk = tmp_stream.read_u32_le();
         chunk ^= key;

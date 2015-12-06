@@ -1,7 +1,7 @@
 #include "fmt/archive_decoder.h"
+#include "algo/format.h"
 #include "err.h"
 #include "log.h"
-#include "util/format.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -46,7 +46,7 @@ void ArchiveDecoder::unpack(
     if (error_count)
     {
         throw err::GeneralError(
-            util::format("%d files couldn't be unpacked.", error_count));
+            algo::format("%d files couldn't be unpacked.", error_count));
     }
 }
 
@@ -71,7 +71,7 @@ std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(
         if (!entry->path.str().empty())
             continue;
         entry->path = meta->entries.size() > 1
-            ? util::format("%s_%03d", prefix.c_str(), number++)
+            ? algo::format("%s_%03d", prefix.c_str(), number++)
             : prefix;
     }
 

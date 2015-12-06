@@ -1,5 +1,5 @@
 #include "fmt/qlie/abmp7_archive_decoder.h"
-#include "util/encoding.h"
+#include "algo/locale.h"
 
 using namespace au;
 using namespace au::fmt::qlie;
@@ -40,7 +40,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         auto entry = std::make_unique<ArchiveEntryImpl>();
         auto encoded_name = input_file.stream.read(input_file.stream.read_u8());
         input_file.stream.skip(31 - encoded_name.size());
-        entry->path = util::sjis_to_utf8(encoded_name).str();
+        entry->path = algo::sjis_to_utf8(encoded_name).str();
         if (entry->path.str().empty())
             entry->path = "unknown";
         entry->path.change_extension("dat");

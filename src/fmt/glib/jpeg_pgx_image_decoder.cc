@@ -1,8 +1,8 @@
 #include "fmt/glib/jpeg_pgx_image_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "fmt/glib/custom_lzss.h"
 #include "io/memory_stream.h"
-#include "util/format.h"
-#include "util/range.h"
 
 // This is a bit different from plain PGX - namely, it involves two LZSS passes.
 

@@ -1,11 +1,11 @@
 #include "test_support/image_support.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "fmt/jpeg/jpeg_image_decoder.h"
 #include "fmt/microsoft/bmp_image_decoder.h"
 #include "fmt/png/png_image_decoder.h"
 #include "test_support/catch.hh"
 #include "test_support/file_support.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 
@@ -17,7 +17,7 @@ static inline void compare_pixels(
 {
     if (expected != actual)
     {
-        FAIL(util::format(
+        FAIL(algo::format(
             "Pixels differ at %d, %d: %02x%02x%02x%02x != %02x%02x%02x%02x",
             x, y,
             expected.b, expected.g, expected.r, expected.a,
@@ -48,8 +48,8 @@ void tests::compare_images(
     REQUIRE(expected_image.width() == actual_image.width());
     REQUIRE(expected_image.height() == actual_image.height());
 
-    for (const auto y : util::range(expected_image.height()))
-    for (const auto x : util::range(expected_image.width()))
+    for (const auto y : algo::range(expected_image.height()))
+    for (const auto x : algo::range(expected_image.width()))
     {
         const auto expected_pixel = expected_image.at(x, y);
         const auto actual_pixel = actual_image.at(x, y);
@@ -81,9 +81,9 @@ void tests::compare_images(
     const bool compare_file_paths)
 {
     REQUIRE(expected_images.size() == actual_images.size());
-    for (const auto i : util::range(expected_images.size()))
+    for (const auto i : algo::range(expected_images.size()))
     {
-        INFO(util::format("Images at index %d differ", i));
+        INFO(algo::format("Images at index %d differ", i));
         tests::compare_images(
             *expected_images[i], *actual_images[i], compare_file_paths);
     }

@@ -1,8 +1,8 @@
 #include "res/image.h"
 #include <algorithm>
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::res;
@@ -25,8 +25,8 @@ void Image::Priv::load(const bstr &input, const PixelFormat fmt)
 
 Image::Image(const Image &other) : Image(other.width(), other.height())
 {
-    for (auto y : util::range(p->height))
-    for (auto x : util::range(p->width))
+    for (auto y : algo::range(p->height))
+    for (auto x : algo::range(p->width))
         at(x, y) = other.at(x, y);
 }
 
@@ -102,8 +102,8 @@ const Pixel &Image::at(const size_t x, const size_t y) const
 
 void Image::flip_vertically()
 {
-    for (auto y : util::range(p->height >> 1))
-    for (auto x : util::range(p->width))
+    for (auto y : algo::range(p->height >> 1))
+    for (auto x : algo::range(p->width))
     {
         auto t = at(x, p->height - 1 - y);
         at(x, p->height - 1 - y) = at(x, y);
@@ -113,8 +113,8 @@ void Image::flip_vertically()
 
 void Image::flip_horizontally()
 {
-    for (auto y : util::range(p->height))
-    for (auto x : util::range(p->width >> 1))
+    for (auto y : algo::range(p->height))
+    for (auto x : algo::range(p->width >> 1))
     {
         auto t = at(p->width - 1 - x, y);
         at(p->width - 1 - x, y) = at(x, y);
@@ -130,8 +130,8 @@ void Image::crop(const size_t new_width, const size_t new_height)
     p->width = new_width;
     p->height = new_height;
     p->pixels.resize(new_width * new_height);
-    for (auto y : util::range(std::min(old_height, new_height)))
-    for (auto x : util::range(std::min(old_width, new_width)))
+    for (auto y : algo::range(std::min(old_height, new_height)))
+    for (auto x : algo::range(std::min(old_width, new_width)))
     {
         p->pixels[y * new_width + x] = old_pixels[y * old_width + x];
     }
@@ -141,8 +141,8 @@ void Image::apply_mask(const Image &other)
 {
     if (other.width() != p->width || other.height() != p->height)
         throw std::logic_error("Mask image size is different from image size");
-    for (auto y : util::range(p->height))
-    for (auto x : util::range(p->width))
+    for (auto y : algo::range(p->height))
+    for (auto x : algo::range(p->width))
         at(x, y).a = other.at(x, y).r;
 }
 
@@ -166,8 +166,8 @@ void Image::paste(const Image &other, const int target_x, const int target_y)
     const size_t y2 = std::min<size_t>(height(), target_y + other.height());
     const size_t source_x = std::max<size_t>(0, -target_x);
     const size_t source_y = std::max<size_t>(0, -target_y);
-    for (const auto y : util::range(y1, y2, 1))
-    for (const auto x : util::range(x1, x2, 1))
+    for (const auto y : algo::range(y1, y2, 1))
+    for (const auto x : algo::range(x1, x2, 1))
         at(x, y) = other.at(source_x + x, source_y + y);
 }
 

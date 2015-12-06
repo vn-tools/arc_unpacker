@@ -1,6 +1,6 @@
 #include "fmt/lilim/common.h"
+#include "algo/pack/lzss.h"
 #include "io/memory_stream.h"
-#include "util/pack/lzss.h"
 
 using namespace au;
 
@@ -12,6 +12,6 @@ bstr fmt::lilim::sysd_decompress(const bstr &input)
     const auto size_orig = input_stream.read_u32_le();
     auto data = input_stream.read(size_comp - 9);
     if (compressed)
-        data = util::pack::lzss_decompress_bytewise(data, size_orig);
+        data = algo::pack::lzss_decompress_bytewise(data, size_orig);
     return data;
 }

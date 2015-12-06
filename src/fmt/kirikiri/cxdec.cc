@@ -1,9 +1,8 @@
 #include "fmt/kirikiri/cxdec.h"
-#include <algorithm>
+#include "algo/range.h"
 #include "err.h"
 #include "io/file_stream.h"
-#include "io/filesystem.h"
-#include "util/range.h"
+#include "io/file_system.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri;
@@ -440,7 +439,7 @@ static void decrypt_chunk(
     if (offset1 >= base_offset && offset1 < base_offset + size)
         data_ptr[offset1 - base_offset] ^= xor1;
 
-    for (auto i : util::range(size))
+    for (auto i : algo::range(size))
         data_ptr[i] ^= xor2;
 }
 

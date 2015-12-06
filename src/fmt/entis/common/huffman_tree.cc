@@ -1,5 +1,5 @@
 #include "fmt/entis/common/huffman_tree.h"
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::entis::common;
@@ -13,7 +13,7 @@ HuffmanNode::HuffmanNode()
 
 HuffmanTree::HuffmanTree()
 {
-    for (auto i : util::range(0x100))
+    for (auto i : algo::range(0x100))
         sym_lookup[i] = HuffmanNodes::Null;
     escape = HuffmanNodes::Null;
     tree_pointer = HuffmanNodes::Root;

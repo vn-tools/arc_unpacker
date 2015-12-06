@@ -1,12 +1,12 @@
 #include "fmt/shiina_rio/warc_archive_decoder.h"
 #include <set>
+#include "algo/str.h"
 #include "err.h"
 #include "fmt/shiina_rio/warc/decompress.h"
 #include "fmt/shiina_rio/warc/decrypt.h"
 #include "fmt/shiina_rio/warc/plugin_registry.h"
 #include "io/memory_stream.h"
 #include "log.h"
-#include "util/algo/str.h"
 
 using namespace au;
 using namespace au::fmt::shiina_rio;
@@ -78,7 +78,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     input_file.stream.seek(magic.size());
     const int warc_version = 100
-        * util::algo::from_string<float>(input_file.stream.read(3).str());
+        * algo::from_string<float>(input_file.stream.read(3).str());
     if (warc_version != 170)
         throw err::UnsupportedVersionError(warc_version);
 

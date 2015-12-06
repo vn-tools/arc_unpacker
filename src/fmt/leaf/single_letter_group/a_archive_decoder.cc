@@ -1,9 +1,9 @@
 #include "fmt/leaf/single_letter_group/a_archive_decoder.h"
+#include "algo/locale.h"
+#include "algo/pack/lzss.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/encoding.h"
-#include "util/pack/lzss.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -47,7 +47,7 @@ static bstr decrypt_3(const bstr &input, const u8 key)
 
     s8 acc[3] = {0, 0, 0};
     size_t output_pos = 32;
-    for (const auto i : util::range(size))
+    for (const auto i : algo::range(size))
     {
         s8 *output_ptr = output.get<s8>() + output_pos;
         const auto tmp = output_ptr[3];
@@ -76,7 +76,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     const auto file_count = input_file.stream.read_u16_le();
     const auto offset_to_data = input_file.stream.tell() + 32 * file_count;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(23).str();
@@ -99,7 +99,7 @@ std::unique_ptr<io::File> AArchiveDecoder::read_file_impl(
     {
         const auto size_orig = input_file.stream.read_u32_le();
         data = input_file.stream.read(entry->size-4);
-        data = util::pack::lzss_decompress_bytewise(data, size_orig);
+        data = algo::pack::lzss_decompress_bytewise(data, size_orig);
 
         // this "encryption" apparently concerns only gfx
         if (entry->flags == 3)

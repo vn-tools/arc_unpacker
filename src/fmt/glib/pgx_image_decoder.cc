@@ -1,6 +1,6 @@
 #include "fmt/glib/pgx_image_decoder.h"
+#include "algo/range.h"
 #include "fmt/glib/custom_lzss.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::glib;

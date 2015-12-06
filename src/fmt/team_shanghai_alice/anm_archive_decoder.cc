@@ -1,10 +1,9 @@
 #include "fmt/team_shanghai_alice/anm_archive_decoder.h"
-#include <algorithm>
 #include <map>
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "util/file_from_image.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -109,8 +108,8 @@ static void write_image(
     auto data = input.read(data_size);
     auto data_ptr = data.get<const u8>();
 
-    for (auto y : util::range(height))
-    for (auto x : util::range(width))
+    for (auto y : algo::range(height))
+    for (auto x : algo::range(width))
     {
         res::Pixel color;
         switch (format)
@@ -132,7 +131,7 @@ static void write_image(
                 break;
 
             default:
-                throw err::NotSupportedError(util::format(
+                throw err::NotSupportedError(algo::format(
                     "Unknown color format: %d", format));
         }
 

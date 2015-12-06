@@ -1,6 +1,6 @@
 #include "fmt/yuka_script/ykc_archive_decoder.h"
-#include "util/encoding.h"
-#include "util/range.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::yuka_script;
@@ -30,7 +30,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     size_t file_count = table_size / 20;
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
@@ -42,7 +42,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         input_file.stream.skip(4);
 
         input_file.stream.seek(name_origin);
-        entry->path = util::sjis_to_utf8(
+        entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(name_size)).str();
         meta->entries.push_back(std::move(entry));
     }

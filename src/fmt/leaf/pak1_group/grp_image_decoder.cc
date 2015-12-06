@@ -1,5 +1,5 @@
 #include "fmt/leaf/pak1_group/grp_image_decoder.h"
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -36,7 +36,7 @@ static res::Palette decode_palette(io::File &input_file)
     input_file.stream.seek(0);
     const auto count = input_file.stream.read_u16_le();
     auto palette = res::Palette(256);
-    for (auto i : util::range(count))
+    for (auto i : algo::range(count))
     {
         auto index = input_file.stream.read_u8();
         palette[index].a = 0xFF;

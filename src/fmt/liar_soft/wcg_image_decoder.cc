@@ -1,9 +1,9 @@
 #include "fmt/liar_soft/wcg_image_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/liar_soft/cg_decompress.h"
 #include "io/memory_stream.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::liar_soft;
@@ -40,7 +40,7 @@ res::Image WcgImageDecoder::decode_impl(io::File &input_file) const
     cg_decompress(output, 2, 4, input_file.stream, 2);
     cg_decompress(output, 0, 4, input_file.stream, 2);
 
-    for (auto i : util::range(0, output.size(), 4))
+    for (auto i : algo::range(0, output.size(), 4))
         output[i + 3] ^= 0xFF;
 
     return res::Image(width, height, output, res::PixelFormat::BGRA8888);

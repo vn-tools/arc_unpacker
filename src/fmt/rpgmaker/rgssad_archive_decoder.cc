@@ -1,6 +1,6 @@
 #include "fmt/rpgmaker/rgssad_archive_decoder.h"
+#include "algo/range.h"
 #include "fmt/rpgmaker/rgs/common.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::rpgmaker;
@@ -26,7 +26,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         size_t name_size = input_file.stream.read_u32_le() ^ key;
         key = rgs::advance_key(key);
         auto name = input_file.stream.read(name_size).str();
-        for (auto i : util::range(name_size))
+        for (auto i : algo::range(name_size))
         {
             name[i] ^= key;
             key = rgs::advance_key(key);

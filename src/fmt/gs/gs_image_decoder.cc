@@ -1,6 +1,6 @@
 #include "fmt/gs/gs_image_decoder.h"
+#include "algo/pack/lzss.h"
 #include "err.h"
-#include "util/pack/lzss.h"
 
 using namespace au;
 using namespace au::fmt::gs;
@@ -26,7 +26,7 @@ res::Image GsImageDecoder::decode_impl(io::File &input_file) const
 
     input_file.stream.seek(header_size);
     auto data =  input_file.stream.read(size_comp);
-    data = util::pack::lzss_decompress_bytewise(data, size_orig);
+    data = algo::pack::lzss_decompress_bytewise(data, size_orig);
 
     if (depth == 8)
     {

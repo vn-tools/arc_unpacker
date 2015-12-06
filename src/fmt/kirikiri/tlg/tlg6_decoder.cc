@@ -1,7 +1,7 @@
 #include "fmt/kirikiri/tlg/tlg6_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/kirikiri/tlg/lzss_decompressor.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri::tlg;
@@ -49,14 +49,14 @@ void FilterTypes::decompress(Header &header)
     LzssDecompressor decompressor;
     u8 dictionary[4096];
     u8 *ptr = dictionary;
-    for (auto i : util::range(32))
+    for (auto i : algo::range(32))
     {
-        for (auto j : util::range(16))
+        for (auto j : algo::range(16))
         {
-            for (auto k : util::range(4))
+            for (auto k : algo::range(4))
                 *ptr++ = i;
 
-            for (auto k : util::range(4))
+            for (auto k : algo::range(4))
                 *ptr++ = j;
         }
     }
@@ -221,7 +221,7 @@ static void init_table()
         {2, 3, 9, 18, 33, 61, 129, 258, 511},
     };
 
-    for (auto i : util::range(leading_zero_table_size))
+    for (auto i : algo::range(leading_zero_table_size))
     {
         int cnt = 0;
         int j = 1;
@@ -240,12 +240,12 @@ static void init_table()
         leading_zero_table[i] = cnt;
     }
 
-    for (auto n : util::range(golomb_n_count))
+    for (auto n : algo::range(golomb_n_count))
     {
         int a = 0;
-        for (auto i : util::range(9))
+        for (auto i : algo::range(9))
         {
-            for (auto j : util::range(golomb_compression_table[n][i]))
+            for (auto j : algo::range(golomb_compression_table[n][i]))
                 golomb_bit_size_table[a++][n] = i;
         }
     }
@@ -400,7 +400,7 @@ static void decode_line(
     in += skip_block_bytes * start_block;
     step = (dir & 1) ? 1 : -1;
 
-    for (auto i : util::range(start_block, block_limit))
+    for (auto i : algo::range(start_block, block_limit))
     {
         int w = header.image_width - i * w_block_size;
         if (w > w_block_size)
@@ -462,14 +462,14 @@ static void read_image(io::Stream &stream, res::Image &image, Header &header)
     res::Pixel *prev_line = zero_line.get();
 
     u32 main_count = header.image_width / w_block_size;
-    for (auto y : util::range(0, header.image_height, h_block_size))
+    for (auto y : algo::range(0, header.image_height, h_block_size))
     {
         u32 ylim = y + h_block_size;
         if (ylim >= header.image_height)
             ylim = header.image_height;
 
         int pixel_count = (ylim - y) * header.image_width;
-        for (auto c : util::range(header.channel_count))
+        for (auto c : algo::range(header.channel_count))
         {
             u32 bit_size = stream.read_u32_le();
 
@@ -491,7 +491,7 @@ static void read_image(io::Stream &stream, res::Image &image, Header &header)
             + (y / h_block_size) * header.x_block_count;
         int skip_bytes = (ylim - y) * w_block_size;
 
-        for (auto yy : util::range(y, ylim))
+        for (auto yy : algo::range(y, ylim))
         {
             auto *current_line = &image.at(0, yy);
 

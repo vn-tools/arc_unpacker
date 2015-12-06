@@ -1,14 +1,14 @@
 #include "fmt/majiro/rc8_image_decoder.h"
+#include "algo/locale.h"
+#include "algo/range.h"
+#include "algo/str.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/algo/str.h"
-#include "util/encoding.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::majiro;
 
-static const bstr magic = util::utf8_to_sjis("六丁8"_b);
+static const bstr magic = algo::utf8_to_sjis("六丁8"_b);
 
 static bstr uncompress(const bstr &input, size_t width, size_t height)
 {
@@ -20,11 +20,11 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
     auto output_end = output.end<const u8>();
 
     std::vector<int> shift_table;
-    for (auto i : util::range(4))
+    for (auto i : algo::range(4))
         shift_table.push_back(-1 - i);
-    for (auto i : util::range(7))
+    for (auto i : algo::range(7))
         shift_table.push_back(3 - i - width);
-    for (auto i : util::range(5))
+    for (auto i : algo::range(5))
         shift_table.push_back(2 - i - width * 2);
 
     if (output.size() < 1)
@@ -72,7 +72,7 @@ res::Image Rc8ImageDecoder::decode_impl(io::File &input_file) const
     if (input_file.stream.read_u8() != '_')
         throw err::NotSupportedError("Unexpected encryption flag");
 
-    const auto version = util::algo::from_string<int>(
+    const auto version = algo::from_string<int>(
         input_file.stream.read(2).str());
     if (version != 0)
         throw err::UnsupportedVersionError(version);

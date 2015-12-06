@@ -1,8 +1,8 @@
 #include "fmt/nitroplus/npa_sg_archive_decoder.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/encoding.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nitroplus;
@@ -20,7 +20,7 @@ namespace
 
 static void decrypt(bstr &data)
 {
-    for (auto i : util::range(data.size()))
+    for (auto i : algo::range(data.size()))
         data[i] ^= key[i % key.size()];
 }
 
@@ -42,11 +42,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     auto meta = std::make_unique<ArchiveMeta>();
     size_t file_count = table_stream.read_u32_le();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         const auto name_size = table_stream.read_u32_le();
-        entry->path = util::convert_encoding(
+        entry->path = algo::convert_locale(
             table_stream.read(name_size), "utf-16le", "utf-8").str();
         entry->size = table_stream.read_u32_le();
         entry->offset = table_stream.read_u32_le();

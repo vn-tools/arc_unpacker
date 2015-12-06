@@ -1,16 +1,16 @@
 #include "fmt/twilight_frontier/tfpk_archive_decoder.h"
 #include <map>
 #include <set>
+#include "algo/crypt/rsa.h"
+#include "algo/format.h"
+#include "algo/locale.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/twilight_frontier/tfbm_image_decoder.h"
-#include "io/filesystem.h"
+#include "io/file_system.h"
 #include "io/memory_stream.h"
-#include "util/crypt/rsa.h"
-#include "util/encoding.h"
 #include "util/file_from_image.h"
-#include "util/format.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;
@@ -58,11 +58,11 @@ namespace
         std::unique_ptr<io::MemoryStream> decrypt(std::basic_string<u8> input);
 
         io::Stream &stream;
-        std::unique_ptr<util::crypt::Rsa> rsa;
+        std::unique_ptr<algo::crypt::Rsa> rsa;
     };
 }
 
-static const std::vector<util::crypt::RsaKey> rsa_keys({
+static const std::vector<algo::crypt::RsaKey> rsa_keys({
     // TH13.5 Japanese version
     {
         {
@@ -117,11 +117,11 @@ RsaReader::RsaReader(io::Stream &stream) : stream(stream)
 
     for (auto &rsa_key : rsa_keys)
     {
-        util::crypt::Rsa tester(rsa_key);
+        algo::crypt::Rsa tester(rsa_key);
         try
         {
             tester.decrypt(test_chunk);
-            rsa = std::make_unique<util::crypt::Rsa>(rsa_key);
+            rsa = std::make_unique<algo::crypt::Rsa>(rsa_key);
             return;
         }
         catch (...)
@@ -165,7 +165,7 @@ static bstr read_file_content(
     size_t key_size = entry.key.size();
     if (meta.version == TfpkVersion::Th135)
     {
-        for (auto i : util::range(data.size()))
+        for (auto i : algo::range(data.size()))
             data[i] ^= entry.key[i % key_size];
     }
     else
@@ -173,9 +173,9 @@ static bstr read_file_content(
         auto *key = entry.key.get<const u8>();
         auto *buf = data.get<u8>();
         u8 aux[4];
-        for (auto i : util::range(4))
+        for (auto i : algo::range(4))
             aux[i] = key[i];
-        for (auto i : util::range(data.size()))
+        for (auto i : algo::range(data.size()))
         {
             u8 tmp = buf[i];
             buf[i] = tmp ^ key[i % key_size] ^ aux[i & 3];
@@ -194,7 +194,7 @@ static std::string lower_ascii_only(std::string name_utf8)
 {
     // while SJIS can use ASCII for encoding multibyte characters,
     // UTF-8 uses the codes 0–127 only for the ASCII characters.
-    for (auto i : util::range(name_utf8.size()))
+    for (auto i : algo::range(name_utf8.size()))
         if (name_utf8[i] >= 'A' && name_utf8[i] <= 'Z')
             name_utf8[i] += 'a' - 'A';
     return name_utf8;
@@ -212,13 +212,13 @@ static u32 get_file_name_hash(
     TfpkVersion version,
     u32 initial_hash = 0x811C9DC5)
 {
-    std::string name_processed = util::utf8_to_sjis(
+    std::string name_processed = algo::utf8_to_sjis(
         replace_slash_with_backslash(lower_ascii_only(name))).str();
 
     if (version == TfpkVersion::Th135)
     {
         u32 result = initial_hash;
-        for (auto i : util::range(name_processed.size()))
+        for (auto i : algo::range(name_processed.size()))
         {
             result *= 0x1000193;
             result ^= name_processed[i];
@@ -228,7 +228,7 @@ static u32 get_file_name_hash(
     else
     {
         u32 result = initial_hash;
-        for (auto i : util::range(name_processed.size()))
+        for (auto i : algo::range(name_processed.size()))
         {
             result ^= name_processed[i];
             result *= 0x1000193;
@@ -241,8 +241,8 @@ static std::string get_unknown_name(
     int index, u32 hash, const std::string &ext = ".dat")
 {
     if (index)
-        return util::format("unk-%05d-%08x%s", index, hash, ext.c_str());
-    return util::format("unk-%08x%s", hash, ext.c_str());
+        return algo::format("unk-%05d-%08x%s", index, hash, ext.c_str());
+    return algo::format("unk-%08x%s", hash, ext.c_str());
 }
 
 static std::string get_dir_name(
@@ -258,7 +258,7 @@ static std::vector<DirEntry> read_dir_entries(RsaReader &reader)
 {
     std::vector<DirEntry> dirs;
     auto dir_count = reader.read_block()->read_u32_le();
-    for (auto i : util::range(dir_count))
+    for (auto i : algo::range(dir_count))
     {
         auto tmp_stream = reader.read_block();
         DirEntry entry;
@@ -283,12 +283,12 @@ static HashLookupMap read_fn_map(
     size_t block_count = tmp_stream->read_u32_le();
 
     tmp_stream = std::make_unique<io::MemoryStream>();
-    for (auto i : util::range(block_count))
+    for (auto i : algo::range(block_count))
         tmp_stream->write(reader.read_block()->read_to_eof());
 
     tmp_stream->seek(0);
     tmp_stream = std::make_unique<io::MemoryStream>(
-        util::pack::zlib_inflate(tmp_stream->read(table_size_compressed)));
+        algo::pack::zlib_inflate(tmp_stream->read(table_size_compressed)));
 
     for (auto &dir_entry : dir_entries)
     {
@@ -296,12 +296,12 @@ static HashLookupMap read_fn_map(
         if (dn.size() > 0 && dn[dn.size() - 1] != '/')
             dn += "/";
 
-        for (auto j : util::range(dir_entry.file_count))
+        for (auto j : algo::range(dir_entry.file_count))
         {
             // TH145 English patch contains invalid directory names
             try
             {
-                auto fn = util::sjis_to_utf8(tmp_stream->read_to_zero()).str();
+                auto fn = algo::sjis_to_utf8(tmp_stream->read_to_zero()).str();
                 auto hash = get_file_name_hash(
                     fn, version, dir_entry.initial_hash);
                 fn_map[hash] = dn + fn;
@@ -386,7 +386,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         fn_map[it.first] = it.second;
 
     size_t file_count = reader.read_block()->read_u32_le();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->already_unpacked = false;
@@ -420,7 +420,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
             b3->seek(0);
             io::MemoryStream key_stream;
-            for (auto j : util::range(4))
+            for (auto j : algo::range(4))
                 key_stream.write_u32_le(neg32(b3->read_u32_le()));
 
             key_stream.seek(0);

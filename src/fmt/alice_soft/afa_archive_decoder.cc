@@ -1,9 +1,9 @@
 #include "fmt/alice_soft/afa_archive_decoder.h"
+#include "algo/locale.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/encoding.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::alice_soft;
@@ -42,17 +42,17 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto file_count = input_file.stream.read_u32_le();
 
     io::MemoryStream table_stream(
-        util::pack::zlib_inflate(
+        algo::pack::zlib_inflate(
             input_file.stream.read(table_size_compressed)));
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
         table_stream.skip(4);
         auto name_size = table_stream.read_u32_le();
-        entry->path = util::sjis_to_utf8(
+        entry->path = algo::sjis_to_utf8(
             table_stream.read_to_zero(name_size)).str();
 
         table_stream.skip(4 * 3); // for some games, apparently this is 4 * 2

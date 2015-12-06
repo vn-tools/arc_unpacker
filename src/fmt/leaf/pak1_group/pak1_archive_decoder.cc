@@ -1,12 +1,12 @@
 #include "fmt/leaf/pak1_group/pak1_archive_decoder.h"
 #include <boost/optional.hpp>
 #include <map>
+#include "algo/locale.h"
+#include "algo/range.h"
+#include "algo/str.h"
 #include "err.h"
 #include "fmt/leaf/pak1_group/grp_image_decoder.h"
-#include "util/algo/str.h"
-#include "util/encoding.h"
 #include "util/file_from_image.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -110,7 +110,7 @@ void Pak1ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("pak-version"))
     {
-        set_version(util::algo::from_string<int>(
+        set_version(algo::from_string<int>(
             arg_parser.get_switch("pak-version")));
     }
     ArchiveDecoder::parse_cli_options(arg_parser);
@@ -138,11 +138,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 {
     auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->already_unpacked = false;
-        entry->path = util::sjis_to_utf8(
+        entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(16)).str();
         entry->size = input_file.stream.read_u32_le();
         entry->compressed = input_file.stream.read_u32_le() > 0;

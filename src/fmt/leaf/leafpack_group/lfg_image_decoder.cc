@@ -1,8 +1,8 @@
 #include "fmt/leaf/leafpack_group/lfg_image_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/leaf/common/custom_lzss.h"
 #include "util/cyclic_buffer.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -131,7 +131,7 @@ res::Image LfgImageDecoder::decode_impl(io::File &input_file) const
 
     input_file.stream.seek(magic.size());
     bstr palette_data;
-    for (const auto i : util::range(24))
+    for (const auto i : algo::range(24))
     {
         const auto tmp = input_file.stream.read_u8();
         palette_data += static_cast<u8>(tmp & 0xF0);

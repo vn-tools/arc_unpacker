@@ -1,6 +1,6 @@
 #include "fmt/alice_soft/ald_archive_decoder.h"
-#include "util/encoding.h"
-#include "util/range.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::alice_soft;
@@ -32,7 +32,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     const auto file_count = read_24_le(input_file.stream) / 3;
 
     std::vector<size_t> offsets(file_count);
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
         offsets[i] = read_24_le(input_file.stream);
 
     auto meta = std::make_unique<ArchiveMeta>();
@@ -48,7 +48,7 @@ std::unique_ptr<fmt::ArchiveMeta>
             entry->size = input_file.stream.read_u32_le();
             input_file.stream.skip(8);
             const auto name = input_file.stream.read_to_zero(header_size - 16);
-            entry->path = util::sjis_to_utf8(name).str();
+            entry->path = algo::sjis_to_utf8(name).str();
             entry->offset = input_file.stream.tell();
             meta->entries.push_back(std::move(entry));
         }

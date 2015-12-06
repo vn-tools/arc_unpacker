@@ -1,10 +1,10 @@
 #include "fmt/bgi/dsc_file_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/bgi/common.h"
 #include "io/bit_reader.h"
 #include "io/memory_stream.h"
 #include "util/file_from_image.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::bgi;
@@ -31,7 +31,7 @@ static int is_image(const bstr &input)
     auto height = input_stream.read_u16_le();
     auto bpp = input_stream.read_u8();
     auto zeros = input_stream.read(11);
-    for (auto i : util::range(zeros.size()))
+    for (auto i : algo::range(zeros.size()))
         if (zeros[i])
             return false;
     return width && height && (bpp == 8 || bpp == 24 || bpp == 32);
@@ -40,7 +40,7 @@ static int is_image(const bstr &input)
 static NodeList get_nodes(io::Stream &stream, u32 key)
 {
     NodeList nodes;
-    for (auto i : util::range(1024))
+    for (auto i : algo::range(1024))
     {
         auto node_info = std::make_unique<NodeInfo>();
         node_info->has_children = false;
@@ -49,7 +49,7 @@ static NodeList get_nodes(io::Stream &stream, u32 key)
     }
 
     std::vector<u32> arr0;
-    for (auto n : util::range(512))
+    for (auto n : algo::range(512))
     {
         u8 tmp = stream.read_u8() - get_and_update_key(key);
         if (tmp)
@@ -85,10 +85,10 @@ static NodeList get_nodes(io::Stream &stream, u32 key)
         if (group_count < unk1)
         {
             unk1 = unk1 - group_count;
-            for (auto i : util::range(unk1))
+            for (auto i : algo::range(unk1))
             {
                 nodes[*node_ptr]->has_children = true;
-                for (auto j : util::range(2))
+                for (auto j : algo::range(2))
                     *arr1_ptr++ = nodes[*node_ptr]->children[j] = node_index++;
                 node_ptr++;
             }

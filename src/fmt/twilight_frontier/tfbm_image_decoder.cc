@@ -1,10 +1,10 @@
 #include "fmt/twilight_frontier/tfbm_image_decoder.h"
 #include <map>
+#include "algo/format.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/format.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;
@@ -43,7 +43,7 @@ void TfbmImageDecoder::add_palette(
         throw err::RecognitionError();
 
     io::MemoryStream colors_stream(
-        util::pack::zlib_inflate(
+        algo::pack::zlib_inflate(
             palette_stream.read(
                 palette_stream.read_u32_le())));
 
@@ -65,14 +65,14 @@ res::Image TfbmImageDecoder::decode_impl(io::File &input_file) const
     const auto stride = input_file.stream.read_u32_le();
     const auto source_size = input_file.stream.read_u32_le();
     io::MemoryStream source_stream(
-        util::pack::zlib_inflate(input_file.stream.read_to_eof()));
+        algo::pack::zlib_inflate(input_file.stream.read_to_eof()));
 
     std::shared_ptr<res::Palette> palette;
     if (bit_depth == 8)
     {
         u32 palette_number = 0;
         const auto path = input_file.path.parent()
-            / util::format("palette%03d.bmp", palette_number);
+            / algo::format("palette%03d.bmp", palette_number);
 
         auto it = p->palette_map.find(path);
         palette = it != p->palette_map.end()
@@ -82,8 +82,8 @@ res::Image TfbmImageDecoder::decode_impl(io::File &input_file) const
 
     res::Image image(width, height);
     auto *pixels_ptr = &image.at(0, 0);
-    for (const size_t y : util::range(height))
-    for (const size_t x : util::range(stride))
+    for (const size_t y : algo::range(height))
+    for (const size_t x : algo::range(stride))
     {
         res::Pixel pixel;
 

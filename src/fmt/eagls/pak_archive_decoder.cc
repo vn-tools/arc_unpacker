@@ -1,11 +1,10 @@
 #include "fmt/eagls/pak_archive_decoder.h"
-#include <algorithm>
+#include "algo/crypt/lcg.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 #include "io/file_stream.h"
-#include "io/filesystem.h"
+#include "io/file_system.h"
 #include "io/memory_stream.h"
-#include "util/crypt/lcg.h"
-#include "util/encoding.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::eagls;
@@ -42,8 +41,8 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     auto data = index_stream.read(index_stream.size() - 4);
     auto seed = index_stream.read_u32_le();
-    util::crypt::Lcg lcg(util::crypt::LcgKind::MicrosoftVisualC, seed);
-    for (auto i : util::range(data.size()))
+    algo::crypt::Lcg lcg(algo::crypt::LcgKind::MicrosoftVisualC, seed);
+    for (auto i : algo::range(data.size()))
         data[i] ^= key[lcg.next() % key.size()];
 
     io::MemoryStream data_stream(data);
@@ -52,7 +51,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     while (true)
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->path = util::sjis_to_utf8(data_stream.read_to_zero(20)).str();
+        entry->path = algo::sjis_to_utf8(data_stream.read_to_zero(20)).str();
         if (entry->path.str().empty())
             break;
         entry->offset = data_stream.read_u32_le();

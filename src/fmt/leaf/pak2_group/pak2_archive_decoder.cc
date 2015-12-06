@@ -1,5 +1,5 @@
 #include "fmt/leaf/pak2_group/pak2_archive_decoder.h"
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -22,7 +22,7 @@ bool Pak2ArchiveDecoder::is_recognized_impl(io::File &input_file) const
         return false;
     const auto value1 = input_file.stream.seek(0x34).read_u32_le();
     const auto value2 = input_file.stream.seek(0x3C).read_u32_le();
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         if (input_file.stream.seek(0x34 + i * 0x20).read_u32_le() != value1)
             return false;
@@ -39,7 +39,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     const auto file_count = input_file.stream.seek(0x1C).read_u16_le();
     const auto data_offset = 0x20 + 0x20 * file_count;
     input_file.stream.seek(0x20);
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         input_file.stream.skip(2);

@@ -1,5 +1,5 @@
 #include "fmt/leaf/lac_group/lac_archive_decoder.h"
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -27,7 +27,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     const auto file_count = input_file.stream.read_u32_le();
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         auto name = input_file.stream.read_to_zero(32).str();

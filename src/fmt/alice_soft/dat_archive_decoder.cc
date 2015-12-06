@@ -1,8 +1,8 @@
 #include "fmt/alice_soft/dat_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
+#include "algo/str.h"
 #include "err.h"
-#include "util/algo/str.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::alice_soft;
@@ -32,13 +32,13 @@ bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<fmt::ArchiveMeta>
     DatArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
-    const auto arc_name = util::algo::lower(input_file.path.stem());
+    const auto arc_name = algo::lower(input_file.path.stem());
     const auto header_size = (input_file.stream.read_u16_le() - 1) * 256;
     auto meta = std::make_unique<ArchiveMeta>();
 
     ArchiveEntryImpl *last_entry = nullptr;
     bool finished = false;
-    for (auto i : util::range((header_size / 2) - 1))
+    for (auto i : algo::range((header_size / 2) - 1))
     {
         size_t offset = input_file.stream.read_u16_le();
         if (offset == 0)
@@ -70,7 +70,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = offset;
-        entry->path = util::format("%03d.%s", i, ext.c_str());
+        entry->path = algo::format("%03d.%s", i, ext.c_str());
         if (last_entry)
             last_entry->size = entry->offset - last_entry->offset;
         last_entry = entry.get();

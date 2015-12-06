@@ -1,4 +1,6 @@
 #include "fmt/entis/eri_image_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/entis/common/enums.h"
 #include "fmt/entis/common/gamma_decoder.h"
@@ -6,8 +8,6 @@
 #include "fmt/entis/common/nemesis_decoder.h"
 #include "fmt/entis/common/sections.h"
 #include "fmt/entis/image/lossless.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::entis;
@@ -69,13 +69,13 @@ static bstr decode_pixel_data(
         decoder.reset(new common::NemesisDecoder());
     else
     {
-        throw err::NotSupportedError(util::format(
+        throw err::NotSupportedError(algo::format(
             "Architecture type %d not supported", header.architecture));
     }
 
     if (header.transformation != common::Transformation::Lossless)
     {
-        throw err::NotSupportedError(util::format(
+        throw err::NotSupportedError(algo::format(
             "Transformation type %d not supported", header.transformation));
     }
 
@@ -102,7 +102,7 @@ res::Image EriImageDecoder::decode_impl(io::File &input_file) const
 
     res::Image image(header.width, header.height * pixel_data_sections.size());
 
-    for (const auto i : util::range(pixel_data_sections.size()))
+    for (const auto i : algo::range(pixel_data_sections.size()))
     {
         const auto &pixel_data_section = pixel_data_sections[i];
         input_file.stream.seek(pixel_data_section.offset);

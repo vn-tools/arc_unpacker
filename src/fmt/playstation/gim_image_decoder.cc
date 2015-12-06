@@ -1,8 +1,8 @@
 #include "fmt/playstation/gim_image_decoder.h"
 #include <map>
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::playstation;
@@ -50,8 +50,8 @@ static bstr read_data(
     if (swizzled)
     {
         const bstr source = data;
-        for (const auto y : util::range(height))
-        for (const auto x : util::range(stride))
+        for (const auto y : algo::range(height))
+        for (const auto x : algo::range(stride))
         {
             const auto block_x = x / 16;
             const auto block_y = y / 8;
@@ -117,8 +117,8 @@ static std::unique_ptr<res::Image> read_image(
             image = std::make_unique<res::Image>(width, height);
             if (palette_bits == 4)
             {
-                for (const auto y : util::range(height))
-                for (const auto x : util::range(0, width, 2))
+                for (const auto y : algo::range(height))
+                for (const auto x : algo::range(0, width, 2))
                 {
                     const auto tmp = data_stream.read_u8();
                     image->at(x + 0, y) = palette->at(tmp & 0xF);
@@ -127,14 +127,14 @@ static std::unique_ptr<res::Image> read_image(
             }
             else if (palette_bits == 16)
             {
-                for (const auto y : util::range(height))
-                for (const auto x : util::range(width))
+                for (const auto y : algo::range(height))
+                for (const auto x : algo::range(width))
                     image->at(x, y) = palette->at(data_stream.read_u16_le());
             }
             else if (palette_bits == 32)
             {
-                for (const auto y : util::range(height))
-                for (const auto x : util::range(width))
+                for (const auto y : algo::range(height))
+                for (const auto x : algo::range(width))
                     image->at(x, y) = palette->at(data_stream.read_u32_le());
             }
         }

@@ -1,7 +1,7 @@
 #include "res/pixel_format.h"
 #include <cstring>
-#include "util/format.h"
-#include "util/range.h"
+#include "algo/format.h"
+#include "algo/range.h"
 
 namespace au {
 namespace res {
@@ -276,7 +276,7 @@ namespace res {
             case PF::RGBnA8888: impl = read_pixels<PF::RGBnA8888>; break;
             default:
                 throw std::logic_error(
-                    util::format("Unsupported pixel format: %d", fmt));
+                    algo::format("Unsupported pixel format: %d", fmt));
         }
         impl(input_ptr, output);
     }

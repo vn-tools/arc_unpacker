@@ -1,9 +1,9 @@
 #include "fmt/team_shanghai_alice/tha1_archive_decoder.h"
+#include "algo/pack/lzss.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/team_shanghai_alice/crypt.h"
 #include "io/memory_stream.h"
-#include "util/pack/lzss.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::team_shanghai_alice;
@@ -79,12 +79,12 @@ static std::vector<std::vector<DecryptorContext>> decryptors
 
 static bstr decompress(const bstr &input, size_t size_orig)
 {
-    util::pack::LzssSettings settings;
+    algo::pack::LzssSettings settings;
     settings.position_bits = 13;
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-    return util::pack::lzss_decompress_bitwise(input, size_orig, settings);
+    return algo::pack::lzss_decompress_bitwise(input, size_orig, settings);
 }
 
 static int detect_encryption_version(io::File &input_file)
@@ -138,7 +138,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 

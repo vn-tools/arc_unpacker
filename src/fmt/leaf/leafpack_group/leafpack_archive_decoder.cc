@@ -1,8 +1,8 @@
 #include "fmt/leaf/leafpack_group/leafpack_archive_decoder.h"
+#include "algo/range.h"
+#include "algo/str.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/algo/str.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -20,7 +20,7 @@ namespace
 
 static void decrypt(bstr &data, const bstr &key)
 {
-    for (auto i : util::range(data.size()))
+    for (auto i : algo::range(data.size()))
         data[i] -= key[i % key.size()];
 }
 
@@ -53,7 +53,7 @@ void LeafpackArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 void LeafpackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("leafpack-key"))
-        set_key(util::algo::unhex(arg_parser.get_switch("leafpack-key")));
+        set_key(algo::unhex(arg_parser.get_switch("leafpack-key")));
 
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
@@ -83,7 +83,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     io::MemoryStream table_stream(table_data);
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         auto name = table_stream.read_to_zero(12).str();

@@ -1,7 +1,7 @@
 #include "fmt/cri/afs2_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::cri;
@@ -32,10 +32,10 @@ std::unique_ptr<fmt::ArchiveMeta>
     input_file.stream.skip((file_count + 1) * 2);
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->path = util::format("%d.dat", i);
+        entry->path = algo::format("%d.dat", i);
         entry->offset = input_file.stream.read_u32_le();
         if (last_entry)
             last_entry->size = entry->offset - last_entry->offset;

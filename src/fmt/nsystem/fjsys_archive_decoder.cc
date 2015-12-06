@@ -1,5 +1,5 @@
 #include "fmt/nsystem/fjsys_archive_decoder.h"
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::nsystem;
@@ -31,7 +31,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     input_file.stream.skip(64);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         size_t file_name_offset = input_file.stream.read_u32_le();

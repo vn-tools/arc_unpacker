@@ -1,7 +1,7 @@
 #include "fmt/ivory/wady_audio_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::ivory;
@@ -28,7 +28,7 @@ static Version detect_version(io::Stream &stream)
             stream.seek(0x30);
             if (channels == 2)
             {
-                for (auto i : util::range(2))
+                for (auto i : algo::range(2))
                 {
                     auto compressed_size = stream.read_u32_le();
                     stream.skip(compressed_size);
@@ -81,7 +81,7 @@ static bstr decode_v1(
     io::MemoryStream tmp_stream(stream);
     while (!tmp_stream.eof() && samples_ptr < samples_end)
     {
-        for (auto i : util::range(channels))
+        for (auto i : algo::range(channels))
         {
             u16 b = tmp_stream.read_u8();
             if (b & 0x80)
@@ -116,7 +116,7 @@ static bstr decode_v2(
 
     bstr samples(sample_count * 2 * channels);
 
-    for (auto i : util::range(channels))
+    for (auto i : algo::range(channels))
     {
         auto compressed_size = channels == 1
             ? stream.size() - stream.tell()

@@ -1,11 +1,11 @@
 #include "fmt/nekopack/nekopack4_archive_decoder.h"
 #include <map>
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/microsoft/bmp_image_decoder.h"
 #include "io/memory_stream.h"
 #include "util/file_from_image.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nekopack;
@@ -71,7 +71,7 @@ std::unique_ptr<io::File> Nekopack4ArchiveDecoder::read_file_impl(
         *output_ptr++ ^= key;
         key <<= 3;
     }
-    data = util::pack::zlib_inflate(data);
+    data = algo::pack::zlib_inflate(data);
 
     return std::make_unique<io::File>(entry->path, data);
 }

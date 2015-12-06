@@ -1,10 +1,9 @@
 #include "test_support/audio_support.h"
-#include <algorithm>
+#include "algo/format.h"
+#include "algo/range.h"
 #include "fmt/microsoft/wav_audio_decoder.h"
 #include "test_support/catch.hh"
 #include "test_support/file_support.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 
@@ -26,7 +25,7 @@ void tests::compare_audio(
     REQUIRE(expected.samples == actual.samples);
 
     REQUIRE(expected.loops.size() == actual.loops.size());
-    for (const auto i : util::range(expected.loops.size()))
+    for (const auto i : algo::range(expected.loops.size()))
     {
         const auto &expected_loop = expected.loops[i];
         const auto &actual_loop = actual.loops[i];
@@ -60,9 +59,9 @@ void tests::compare_audio(
     const bool compare_file_paths)
 {
     REQUIRE(expected_files.size() == actual_files.size());
-    for (const auto i : util::range(actual_files.size()))
+    for (const auto i : algo::range(actual_files.size()))
     {
-        INFO(util::format("Audio at index %d differs", i));
+        INFO(algo::format("Audio at index %d differs", i));
         tests::compare_audio(
             *expected_files[i], *actual_files[i], compare_file_paths);
     }

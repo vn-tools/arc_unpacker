@@ -1,6 +1,6 @@
 #include "fmt/nitroplus/npa_filter_registry.h"
+#include "algo/range.h"
 #include "util/plugin_mgr.hh"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::nitroplus;

@@ -1,10 +1,10 @@
 #include "fmt/ivory/mbl_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 #include "fmt/ivory/prs_image_decoder.h"
 #include "fmt/ivory/wady_audio_decoder.h"
-#include "util/encoding.h"
-#include "util/format.h"
 #include "util/plugin_mgr.hh"
-#include "util/range.h"
 #include "util/version_recognizer.h"
 
 using namespace au;
@@ -68,7 +68,7 @@ MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)
     p->plugin_mgr.add("candy", "Candy Toys",
         [](bstr &data)
         {
-            for (auto i : util::range(data.size()))
+            for (auto i : algo::range(data.size()))
                 data[i] = -data[i];
         });
 
@@ -77,7 +77,7 @@ MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)
         {
             static const bstr key =
                 "\x82\xED\x82\xF1\x82\xB1\x88\xC3\x8D\x86\x89\xBB"_b;
-            for (auto i : util::range(data.size()))
+            for (auto i : algo::range(data.size()))
                 data[i] ^= key[i % key.size()];
         });
 }
@@ -123,10 +123,10 @@ std::unique_ptr<fmt::ArchiveMeta>
     const auto name_size = version == 2
         ? input_file.stream.read_u32_le()
         : 16;
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->path = util::sjis_to_utf8(
+        entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(name_size)).str();
         entry->offset = input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();

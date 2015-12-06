@@ -1,8 +1,8 @@
 #include "fmt/will/wipf_image_archive_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
 #include "util/file_from_image.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::will;
@@ -90,7 +90,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto meta = std::make_unique<ArchiveMeta>();
     auto file_count = input_file.stream.read_u16_le();
     auto depth = input_file.stream.read_u16_le();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->width = input_file.stream.read_u32_le();
@@ -131,8 +131,8 @@ std::unique_ptr<res::Image> WipfImageArchiveDecoder::read_image(
     else if (entry->depth == 24)
     {
         image = std::make_unique<res::Image>(w, h);
-        for (auto y : util::range(h))
-        for (auto x : util::range(w))
+        for (auto y : algo::range(h))
+        for (auto x : algo::range(w))
         {
             image->at(x, y).b = data[w * h * 0 + y * w + x];
             image->at(x, y).g = data[w * h * 1 + y * w + x];

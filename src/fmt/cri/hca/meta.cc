@@ -1,7 +1,7 @@
 #include "fmt/cri/hca/meta.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::cri::hca;
@@ -94,7 +94,7 @@ Meta fmt::cri::hca::read_meta(const bstr &input)
         {
             out.comp = std::make_unique<CompChunk>();
             out.comp->block_size = stream.read_u16_be();
-            for (const auto i : util::range(8))
+            for (const auto i : algo::range(8))
                 out.comp->unk[i] = stream.read_u8();
             stream.skip(2);
         }

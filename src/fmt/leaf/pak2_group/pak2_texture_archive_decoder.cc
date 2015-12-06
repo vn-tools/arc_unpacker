@@ -1,8 +1,8 @@
 #include "fmt/leaf/pak2_group/pak2_texture_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "util/file_from_image.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -48,7 +48,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         + 36;
 
     std::vector<size_t> image_chunk_counts;
-    for (const auto i : util::range(image_count))
+    for (const auto i : algo::range(image_count))
     {
         const auto chunk_offset = input_file.stream.read_u16_le();
         image_chunk_counts.push_back(chunk_offset - last_chunk_offset);
@@ -59,7 +59,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     for (const auto image_chunk_count : image_chunk_counts)
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        for (const auto j : util::range(image_chunk_count))
+        for (const auto j : algo::range(image_chunk_count))
         {
             Chunk chunk;
             input_file.stream.skip(8);

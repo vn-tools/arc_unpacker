@@ -1,11 +1,11 @@
 #include "fmt/tanuki_soft/tac_archive_decoder.h"
+#include "algo/crypt/blowfish.h"
+#include "algo/format.h"
+#include "algo/locale.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/crypt/blowfish.h"
-#include "util/encoding.h"
-#include "util/format.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::tanuki_soft;
@@ -41,7 +41,7 @@ static const bstr magic_110 = "TArc1.10\x00\x00\x00\x00"_b;
 
 static bstr decrypt(const bstr &input, size_t size, const bstr &key)
 {
-    util::crypt::Blowfish bf(key);
+    algo::crypt::Blowfish bf(key);
     size_t left = (size / bf.block_size()) * bf.block_size();
     return bf.decrypt(input.substr(0, left)) + input.substr(left);
 }
@@ -76,11 +76,11 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     auto table_data = input_file.stream.read(table_size);
     table_data = decrypt(table_data, table_size, "TLibArchiveData"_b);
-    table_data = util::pack::zlib_inflate(table_data);
+    table_data = algo::pack::zlib_inflate(table_data);
     io::MemoryStream table_stream(table_data);
 
     std::vector<std::unique_ptr<Directory>> dirs;
-    for (auto i : util::range(dir_count))
+    for (auto i : algo::range(dir_count))
     {
         auto dir = std::make_unique<Directory>();
         dir->hash = table_stream.read_u16_le();
@@ -90,7 +90,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     }
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(entry_count))
+    for (auto i : algo::range(entry_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->hash = table_stream.read_u64_le();
@@ -98,13 +98,13 @@ std::unique_ptr<fmt::ArchiveMeta>
         entry->size_original = table_stream.read_u32_le();
         entry->offset = table_stream.read_u32_le() + file_data_start;
         entry->size_compressed = table_stream.read_u32_le();
-        entry->path = util::format("%05d.dat", i);
+        entry->path = algo::format("%05d.dat", i);
         meta->entries.push_back(std::move(entry));
     }
 
     for (auto &dir : dirs)
     {
-        for (auto i : util::range(dir->entry_count))
+        for (auto i : algo::range(dir->entry_count))
         {
             if (i + dir->start_index >= meta->entries.size())
                 throw err::CorruptDataError("Corrupt file table");
@@ -124,19 +124,19 @@ std::unique_ptr<io::File> TacArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_compressed);
     if (entry->compressed)
-        data = util::pack::zlib_inflate(data);
+        data = algo::pack::zlib_inflate(data);
 
     if (!entry->compressed)
     {
-        bstr key = util::format("%llu_tlib_secure_", entry->hash);
+        bstr key = algo::format("%llu_tlib_secure_", entry->hash);
         size_t bytes_to_decrypt = 10240;
         if (data.size() < bytes_to_decrypt)
             bytes_to_decrypt = data.size();
 
         {
             auto header = decrypt(
-                data.substr(0, util::crypt::Blowfish::block_size()),
-                util::crypt::Blowfish::block_size(),
+                data.substr(0, algo::crypt::Blowfish::block_size()),
+                algo::crypt::Blowfish::block_size(),
                 key).substr(0, 4);
             if (header == "RIFF"_b || header == "TArc"_b)
                 bytes_to_decrypt = data.size();

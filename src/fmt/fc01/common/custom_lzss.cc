@@ -1,7 +1,7 @@
 #include "fmt/fc01/common/custom_lzss.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 // Modified LZSS routine
 // - repetition count and look behind pos differs

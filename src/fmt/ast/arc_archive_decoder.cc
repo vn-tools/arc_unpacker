@@ -1,7 +1,7 @@
 #include "fmt/ast/arc_archive_decoder.h"
-#include "util/encoding.h"
-#include "util/pack/lzss.h"
-#include "util/range.h"
+#include "algo/locale.h"
+#include "algo/pack/lzss.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::ast;
@@ -49,7 +49,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     ArchiveEntryImpl *last_entry = nullptr;
     const auto file_count = input_file.stream.read_u32_le();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = input_file.stream.read_u32_le();
@@ -57,7 +57,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         auto name = input_file.stream.read(input_file.stream.read_u8());
         if (meta->version == 2)
             xor_data(name);
-        entry->path = util::sjis_to_utf8(name).str();
+        entry->path = algo::sjis_to_utf8(name).str();
         if (last_entry)
             last_entry->size_comp = entry->offset - last_entry->offset;
         last_entry = entry.get();
@@ -81,7 +81,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     if (meta->version == 2)
     {
         if (entry->size_comp != entry->size_orig)
-            data = util::pack::lzss_decompress_bytewise(data, entry->size_orig);
+            data = algo::pack::lzss_decompress_bytewise(data, entry->size_orig);
 
         const auto header = data.substr(0, 4);
         bool known = false;

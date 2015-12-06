@@ -1,7 +1,7 @@
 #include "fmt/kirikiri/xp3_filter_registry.h"
+#include "algo/range.h"
 #include "fmt/kirikiri/cxdec.h"
 #include "util/plugin_mgr.hh"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri;
@@ -38,7 +38,7 @@ Xp3FilterRegistry::Xp3FilterRegistry() : p(new Priv)
         {
             filter.decoder = [](bstr &data, u32 key)
             {
-                for (const auto i : util::range(data.size()))
+                for (const auto i : algo::range(data.size()))
                     data[i] ^= key;
             };
         });
@@ -49,7 +49,7 @@ Xp3FilterRegistry::Xp3FilterRegistry() : p(new Priv)
         {
             filter.decoder = [](bstr &data, u32)
             {
-                for (auto i : util::range(data.size()))
+                for (auto i : algo::range(data.size()))
                     data[i] ^= 0x36;
                 if (data.size() > 0x2EA29)
                     data[0x2EA29] ^= 3;
@@ -76,9 +76,9 @@ Xp3FilterRegistry::Xp3FilterRegistry() : p(new Priv)
         {
             filter.decoder = [](bstr &data, u32 key)
             {
-                for (auto i : util::range(0, data.size(), 2))
+                for (auto i : algo::range(0, data.size(), 2))
                     data[i] ^= key;
-                for (auto i : util::range(1, data.size(), 2))
+                for (auto i : algo::range(1, data.size(), 2))
                     data[i] ^= i;
             };
         });

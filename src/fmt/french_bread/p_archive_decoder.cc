@@ -1,6 +1,6 @@
 #include "fmt/french_bread/p_archive_decoder.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::french_bread;
@@ -34,11 +34,11 @@ std::unique_ptr<fmt::ArchiveMeta>
     if (magic != 0 && magic != 1)
         throw err::RecognitionError();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         auto name = input_file.stream.read(60).str();
-        for (auto j : util::range(name.size()))
+        for (auto j : algo::range(name.size()))
             name[j] ^= i * j * 3 + 0x3D;
         entry->path = name.substr(0, name.find('\0'));
         entry->offset = input_file.stream.read_u32_le();
@@ -55,7 +55,7 @@ std::unique_ptr<io::File> PArchiveDecoder::read_file_impl(
     const auto key = entry->path.str();
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
     static const size_t encrypted_block_size = 0x2173;
-    for (auto i : util::range(std::min(encrypted_block_size, entry->size)))
+    for (auto i : algo::range(std::min(encrypted_block_size, entry->size)))
         data[i] ^= key[i % key.size()] + i + 3;
     return std::make_unique<io::File>(entry->path, data);
 }

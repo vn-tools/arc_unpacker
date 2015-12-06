@@ -1,9 +1,9 @@
 #include "fmt/shiina_rio/s25_image_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
 #include "util/file_from_image.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::shiina_rio;
@@ -52,7 +52,7 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
                 count = (input_stream.size() - input_stream.tell()) / 3;
             const auto chunk = input_stream.read(3 * count);
             auto chunk_ptr = chunk.get<const u8>();
-            for (const auto i : util::range(count))
+            for (const auto i : algo::range(count))
             {
                 *output_ptr++ = *chunk_ptr++;
                 *output_ptr++ = *chunk_ptr++;
@@ -64,7 +64,7 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
         else if (method == 3)
         {
             const auto chunk = input_stream.read(3);
-            for (const auto i : util::range(count))
+            for (const auto i : algo::range(count))
             {
                 *output_ptr++ += chunk[0];
                 *output_ptr++ += chunk[1];
@@ -79,7 +79,7 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
                 count = (input_stream.size() - input_stream.tell()) / 4;
             const auto chunk = input_stream.read(4 * count);
             auto chunk_ptr = chunk.get<const u8>();
-            for (const auto i : util::range(count))
+            for (const auto i : algo::range(count))
             {
                 *output_ptr++ = chunk_ptr[1];
                 *output_ptr++ = chunk_ptr[2];
@@ -92,7 +92,7 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
         else if (method == 5)
         {
             const auto chunk = input_stream.read(4);
-            for (const auto i : util::range(count))
+            for (const auto i : algo::range(count))
             {
                 *output_ptr++ += chunk[1];
                 *output_ptr++ += chunk[2];
@@ -118,7 +118,7 @@ static res::Image read_plain(
     std::vector<u32> row_offsets(entry.height);
     for (auto &offset : row_offsets)
         offset = input_file.stream.read_u32_le();
-    for (const auto y : util::range(entry.height))
+    for (const auto y : algo::range(entry.height))
     {
         const auto row_offset = row_offsets[y];
         input_file.stream.seek(row_offset);
@@ -148,7 +148,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     input_file.stream.seek(magic.size());
     const auto file_count = input_file.stream.read_u32_le();
     std::vector<size_t> offsets;
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         const auto offset = input_file.stream.read_u32_le();
         if (offset)

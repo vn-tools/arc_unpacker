@@ -1,8 +1,8 @@
 #include "fmt/nscripter/nsa_archive_decoder.h"
+#include "algo/pack/zlib.h"
 #include "test_support/catch.hh"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
-#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::fmt::nscripter;
@@ -38,7 +38,7 @@ TEST_CASE("NScripter NSA archives", "[fmt]")
             {
                 tests::stub_file(
                     "test.bmp",
-                    util::pack::zlib_inflate(
+                    algo::pack::zlib_inflate(
                         "\x78\xDA\x8D\xD3\x3D\x6E\x13\x40\x10\x86\xE1\xB5"
                         "\x44\x81\x70\x9C\x38\xF1\x25\xA8\x53\x50\x20\x2A"
                         "\x8A\xE9\xB8\xD4\x9C\x69\x6E\x40\x9D\x1B\xCC\x11"

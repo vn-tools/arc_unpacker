@@ -1,8 +1,8 @@
 #include "fmt/qlie/abmp10_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 #include "err.h"
-#include "util/encoding.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::qlie;
@@ -60,7 +60,7 @@ static void read_resource_entry(io::File &input_file, fmt::ArchiveMeta &meta)
 
     auto entry = std::make_unique<ArchiveEntryImpl>();
     auto name_size = input_file.stream.read_u16_le();
-    entry->path = util::sjis_to_utf8(input_file.stream.read(name_size)).str();
+    entry->path = algo::sjis_to_utf8(input_file.stream.read(name_size)).str();
     if (entry->path.str().empty())
         entry->path = "unknown";
     entry->path.change_extension("dat");
@@ -74,7 +74,7 @@ static void read_resource_entry(io::File &input_file, fmt::ArchiveMeta &meta)
     }
     else if (magic != magic_imgdat10 && magic != magic_snddat10)
     {
-        throw err::NotSupportedError(util::format(
+        throw err::NotSupportedError(algo::format(
             "Unknown image magic: %s", magic.get<char>()));
     }
 
@@ -114,12 +114,12 @@ std::unique_ptr<fmt::ArchiveMeta>
         else if (magic == magic_image10 || magic == magic_sound10)
         {
             size_t file_count = input_file.stream.read_u8();
-            for (auto i : util::range(file_count))
+            for (auto i : algo::range(file_count))
                 read_resource_entry(input_file, *meta);
         }
         else
         {
-            throw err::NotSupportedError(util::format(
+            throw err::NotSupportedError(algo::format(
                 "Unknown section: %s", magic.get<char>()));
         }
     }

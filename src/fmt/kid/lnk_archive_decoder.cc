@@ -1,8 +1,8 @@
 #include "fmt/kid/lnk_archive_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/kid/lnd_file_decoder.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kid;
@@ -32,7 +32,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto file_count = input_file.stream.read_u32_le();
     input_file.stream.skip(8);
     auto file_data_start = input_file.stream.tell() + (file_count << 5);
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = input_file.stream.read_u32_le() + file_data_start;

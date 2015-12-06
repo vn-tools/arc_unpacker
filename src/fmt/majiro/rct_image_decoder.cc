@@ -1,22 +1,22 @@
 #include "fmt/majiro/rct_image_decoder.h"
+#include "algo/locale.h"
+#include "algo/range.h"
+#include "algo/str.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/algo/str.h"
-#include "util/encoding.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::majiro;
 
-static const bstr magic = util::utf8_to_sjis("六丁T"_b);
+static const bstr magic = algo::utf8_to_sjis("六丁T"_b);
 
 static bstr decrypt(const bstr &input, const bstr &key)
 {
     u32 crc_table[0x100];
-    for (const auto i : util::range(0x100))
+    for (const auto i : algo::range(0x100))
     {
         u32 poly = i;
-        for (const auto j : util::range(8))
+        for (const auto j : algo::range(8))
             poly = (poly >> 1) ^ ((poly & 1) ? 0xEDB88320 : 0);
         crc_table[i] = poly;
     }
@@ -27,11 +27,11 @@ static bstr decrypt(const bstr &input, const bstr &key)
     checksum ^= 0xFFFFFFFF;
 
     bstr derived_key(0x400);
-    for (const auto i : util::range(0x100))
+    for (const auto i : algo::range(0x100))
         derived_key.get<u32>()[i] = checksum ^ crc_table[(i + checksum) & 0xFF];
 
     bstr output(input);
-    for (const auto i : util::range(output.size()))
+    for (const auto i : algo::range(output.size()))
         output[i] ^= derived_key[i % derived_key.size()];
     return output;
 }
@@ -47,15 +47,15 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
     auto output_end = output.end<const u8>();
 
     std::vector<int> shift_table;
-    for (auto i : util::range(6))
+    for (auto i : algo::range(6))
         shift_table.push_back((-1 - i) * 3);
-    for (auto i : util::range(7))
+    for (auto i : algo::range(7))
         shift_table.push_back((3 - i - width) * 3);
-    for (auto i : util::range(7))
+    for (auto i : algo::range(7))
         shift_table.push_back((3 - i - width * 2) * 3);
-    for (auto i : util::range(7))
+    for (auto i : algo::range(7))
         shift_table.push_back((3 - i - width * 3) * 3);
-    for (auto i : util::range(5))
+    for (auto i : algo::range(5))
         shift_table.push_back((2 - i - width * 4) * 3);
 
     if (output.size() < 3)
@@ -117,7 +117,7 @@ void RctImageDecoder::register_cli_options(ArgParser &arg_parser) const
 void RctImageDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("rct-key"))
-        set_key(util::algo::unhex(arg_parser.get_switch("rct-key")));
+        set_key(algo::unhex(arg_parser.get_switch("rct-key")));
 
     ImageDecoder::parse_cli_options(arg_parser);
 }
@@ -145,7 +145,7 @@ res::Image RctImageDecoder::decode_impl(io::File &input_file) const
     else
         throw err::NotSupportedError("Unexpected encryption flag");
 
-    const auto version = util::algo::from_string<int>(
+    const auto version = algo::from_string<int>(
         input_file.stream.read(2).str());
     if (version < 0 || version > 1)
         throw err::UnsupportedVersionError(version);
@@ -177,8 +177,8 @@ res::Image RctImageDecoder::decode_impl(io::File &input_file) const
 
     if (version == 1)
     {
-        for (auto y : util::range(height))
-        for (auto x : util::range(width))
+        for (auto y : algo::range(height))
+        for (auto x : algo::range(width))
         {
             auto &p = image.at(x, y);
             if (p.r == 0xFF && p.g == 0 && p.g == 0)

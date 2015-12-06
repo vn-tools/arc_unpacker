@@ -1,6 +1,6 @@
 #include "fmt/liar_soft/xfl_archive_decoder.h"
-#include "util/encoding.h"
-#include "util/range.h"
+#include "algo/locale.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::liar_soft;
@@ -29,10 +29,10 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto file_count = input_file.stream.read_u32_le();
     auto file_start = input_file.stream.tell() + table_size;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->path = util::sjis_to_utf8(
+        entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(0x20)).str();
         entry->offset = file_start + input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();

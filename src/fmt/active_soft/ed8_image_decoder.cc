@@ -1,7 +1,7 @@
 #include "fmt/active_soft/ed8_image_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/active_soft/custom_bit_reader.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::active_soft;

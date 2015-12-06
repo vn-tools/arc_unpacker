@@ -1,11 +1,11 @@
 #include "fmt/fc01/mca_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
+#include "algo/str.h"
 #include "err.h"
 #include "fmt/fc01/common/custom_lzss.h"
 #include "fmt/fc01/common/util.h"
-#include "util/algo/str.h"
 #include "util/file_from_image.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::fc01;
@@ -24,7 +24,7 @@ static bstr decrypt(const bstr &input, size_t output_size, u8 initial_key)
 {
     bstr output(input.size());
     auto key = initial_key;
-    for (auto i : util::range(input.size()))
+    for (auto i : algo::range(input.size()))
     {
         output[i] = common::rol8(input[i], 1) ^ key;
         key += input.size() - i;
@@ -57,7 +57,7 @@ void McaArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 void McaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("mca-key"))
-        set_key(util::algo::from_string<int>(arg_parser.get_switch("mca-key")));
+        set_key(algo::from_string<int>(arg_parser.get_switch("mca-key")));
     ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
@@ -82,10 +82,10 @@ std::unique_ptr<fmt::ArchiveMeta>
     input_file.stream.seek(header_size);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->path = util::format("%03d.png", i);
+        entry->path = algo::format("%03d.png", i);
         entry->offset = input_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
     }
@@ -120,7 +120,7 @@ std::unique_ptr<io::File> McaArchiveDecoder::read_file_impl(
     }
     else
     {
-        throw err::NotSupportedError(util::format(
+        throw err::NotSupportedError(algo::format(
             "Unknown encryption type: %d", encryption_type));
     }
 

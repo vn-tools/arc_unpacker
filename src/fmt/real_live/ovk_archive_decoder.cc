@@ -1,6 +1,6 @@
 #include "fmt/real_live/ovk_archive_decoder.h"
-#include "util/format.h"
-#include "util/range.h"
+#include "algo/format.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::real_live;
@@ -24,13 +24,13 @@ std::unique_ptr<fmt::ArchiveMeta>
 {
     auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->size = input_file.stream.read_u32_le();
         entry->offset = input_file.stream.read_u32_le();
         const auto file_id = input_file.stream.read_u32_le();
-        entry->path = util::format("sample%05d", file_id);
+        entry->path = algo::format("sample%05d", file_id);
         input_file.stream.skip(4);
         meta->entries.push_back(std::move(entry));
     }

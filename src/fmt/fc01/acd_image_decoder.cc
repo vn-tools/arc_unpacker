@@ -1,8 +1,8 @@
 #include "fmt/fc01/acd_image_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/fc01/common/custom_lzss.h"
 #include "io/bit_reader.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::fc01;

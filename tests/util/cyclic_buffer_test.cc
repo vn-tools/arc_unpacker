@@ -1,6 +1,6 @@
 #include "util/cyclic_buffer.h"
+#include "algo/range.h"
 #include "test_support/catch.hh"
-#include "util/range.h"
 
 using namespace au;
 
@@ -9,7 +9,7 @@ TEST_CASE("CyclicBuffer", "[util]")
     SECTION("Empty buffer content")
     {
         const util::CyclicBuffer<5> buffer(1);
-        for (auto i : util::range(5))
+        for (auto i : algo::range(5))
             REQUIRE(!buffer[i]);
     }
 

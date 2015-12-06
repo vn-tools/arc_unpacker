@@ -1,8 +1,8 @@
 #include "test_support/file_support.h"
+#include "algo/format.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "test_support/catch.hh"
-#include "util/format.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 
@@ -26,7 +26,7 @@ std::shared_ptr<io::File> tests::zlib_file_from_path(
 {
     io::File compressed_file(path, io::FileMode::Read);
     const auto compressed_data = compressed_file.stream.read_to_eof();
-    const auto decompressed_data = util::pack::zlib_inflate(compressed_data);
+    const auto decompressed_data = algo::pack::zlib_inflate(compressed_data);
     return std::make_shared<io::File>(
         custom_path.empty() ? compressed_file.path : custom_path,
         decompressed_data);
@@ -36,7 +36,7 @@ void tests::compare_file_paths(
     const io::path &expected_file_path,
     const io::path &actual_file_path)
 {
-    INFO(util::format(
+    INFO(algo::format(
         "Expected file path: %s, actual: %s\n",
         expected_file_path.c_str(),
         actual_file_path.c_str()));
@@ -49,11 +49,11 @@ void tests::compare_files(
     const bool compare_file_paths)
 {
     REQUIRE(actual_files.size() == expected_files.size());
-    for (const auto i : util::range(expected_files.size()))
+    for (const auto i : algo::range(expected_files.size()))
     {
         const auto &expected_file = expected_files[i];
         const auto &actual_file = actual_files[i];
-        INFO(util::format("Files at index %d differ", i));
+        INFO(algo::format("Files at index %d differ", i));
         tests::compare_files(*expected_file, *actual_file, compare_file_paths);
     }
 }

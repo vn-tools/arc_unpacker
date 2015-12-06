@@ -1,7 +1,7 @@
 #include "fmt/real_live/g00_image_decoder.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::real_live;
@@ -85,7 +85,7 @@ static res::Image decode_v2(io::File &input_file, size_t width, size_t height)
 {
     std::vector<std::unique_ptr<Region>> regions;
     const auto region_count = input_file.stream.read_u32_le();
-    for (const auto i : util::range(region_count))
+    for (const auto i : algo::range(region_count))
     {
         auto region = std::make_unique<Region>();
         region->x1 = input_file.stream.read_u32_le();
@@ -124,7 +124,7 @@ static res::Image decode_v2(io::File &input_file, size_t width, size_t height)
             throw err::NotSupportedError("Unexpected block type");
 
         input.skip(0x70);
-        for (const auto j : util::range(part_count))
+        for (const auto j : algo::range(part_count))
         {
             u16 part_x = input.read_u16_le();
             u16 part_y = input.read_u16_le();
@@ -146,8 +146,8 @@ static res::Image decode_v2(io::File &input_file, size_t width, size_t height)
             {
                 throw err::CorruptDataError("Region out of bounds");
             }
-            for (const auto y : util::range(part_height))
-            for (const auto x : util::range(part_width))
+            for (const auto y : algo::range(part_height))
+            for (const auto x : algo::range(part_width))
             {
                 image.at(target_x + x, target_y + y) = part.at(x, y);
             }

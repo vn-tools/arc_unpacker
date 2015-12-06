@@ -1,6 +1,6 @@
 #include "fmt/leaf/pak2_group/pak2_compressed_file_decoder.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -49,7 +49,7 @@ static bstr decompress(const bstr &src, const size_t size_orig)
             const auto look_behind
                 = (input_stream.read_u8() + (control << 8)) % 0x400;
             const auto repeat = (control >> 2) + 2;
-            for (const auto i : util::range(repeat))
+            for (const auto i : algo::range(repeat))
                 output += output[output.size() - look_behind];
         }
     }

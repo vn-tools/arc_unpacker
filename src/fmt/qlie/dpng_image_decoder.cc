@@ -1,7 +1,7 @@
 #include "fmt/qlie/dpng_image_decoder.h"
+#include "algo/range.h"
 #include "fmt/png/png_image_decoder.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::qlie;
@@ -25,7 +25,7 @@ res::Image DpngImageDecoder::decode_impl(io::File &input_file) const
     fmt::png::PngImageDecoder png_image_decoder;
 
     res::Image image(width, height);
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         size_t subimage_x = input_file.stream.read_u32_le();
         size_t subimage_y = input_file.stream.read_u32_le();

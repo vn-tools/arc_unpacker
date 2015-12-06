@@ -1,10 +1,10 @@
 #include "fmt/leaf/kcap_group/kcap_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/locale.h"
+#include "algo/pack/lzss.h"
+#include "algo/range.h"
 #include "err.h"
 #include "log.h"
-#include "util/encoding.h"
-#include "util/format.h"
-#include "util/pack/lzss.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -55,11 +55,11 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(
     io::File &input_file, const size_t file_count)
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->compressed = true;
-        entry->path = util::sjis_to_utf8(
+        entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(24)).str();
         entry->offset = input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();
@@ -72,12 +72,12 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v2(
     io::File &input_file, const size_t file_count)
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
-    for (auto i : util::range(file_count))
+    for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         const auto type = static_cast<EntryType>(
             input_file.stream.read_u32_le());
-        entry->path = util::sjis_to_utf8(
+        entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(24)).str();
         entry->offset = input_file.stream.read_u32_le();
         entry->size = input_file.stream.read_u32_le();
@@ -126,7 +126,7 @@ std::unique_ptr<io::File> KcapArchiveDecoder::read_file_impl(
         auto size_comp = input_file.stream.read_u32_le();
         auto size_orig = input_file.stream.read_u32_le();
         data = input_file.stream.read(size_comp - 8);
-        data = util::pack::lzss_decompress_bytewise(data, size_orig);
+        data = algo::pack::lzss_decompress_bytewise(data, size_orig);
     }
     else
         data = input_file.stream.read(entry->size);

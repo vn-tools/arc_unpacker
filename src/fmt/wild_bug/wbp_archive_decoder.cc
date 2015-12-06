@@ -1,6 +1,6 @@
 #include "fmt/wild_bug/wbp_archive_decoder.h"
 #include <map>
-#include "util/range.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::wild_bug;
@@ -31,7 +31,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     input_file.stream.skip(8);
 
     std::vector<size_t> dir_offsets;
-    for (auto i : util::range(0x100))
+    for (auto i : algo::range(0x100))
     {
         auto offset = input_file.stream.read_u32_le();
         if (offset)
@@ -39,7 +39,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     }
 
     std::vector<size_t> file_offsets;
-    for (auto i : util::range(0x100))
+    for (auto i : algo::range(0x100))
     {
         auto offset = input_file.stream.read_u32_le();
         if (offset)
@@ -57,7 +57,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     }
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (size_t i : util::range(file_offsets.size()))
+    for (size_t i : algo::range(file_offsets.size()))
     {
         // one file offset may contain multiple entries
         input_file.stream.seek(file_offsets[i]);

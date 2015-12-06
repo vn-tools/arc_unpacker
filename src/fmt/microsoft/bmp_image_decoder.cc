@@ -1,9 +1,9 @@
 #include "fmt/microsoft/bmp_image_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/bit_reader.h"
 #include "io/memory_stream.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::microsoft;
@@ -123,7 +123,7 @@ static Header read_header(io::Stream &stream)
             else
             {
                 throw err::NotSupportedError(
-                    util::format("Unknown header size: %d", header_size));
+                    algo::format("Unknown header size: %d", header_size));
             }
         }
     }
@@ -131,12 +131,12 @@ static Header read_header(io::Stream &stream)
     // Make the 16BPP masks sane (they're randomly rotated because why not)
     if (h.depth == 16)
     {
-        for (auto i : util::range(4))
+        for (auto i : algo::range(4))
             h.masks[i] >>= 16;
         // detect rotation assuming red component doesn't wrap
         while (!(h.masks[2] & 0x8000))
         {
-            for (auto i : util::range(4))
+            for (auto i : algo::range(4))
                 h.masks[i] = rotl(h.masks[i], 16, 1);
             h.rotation--;
         }
@@ -152,11 +152,11 @@ static res::Image get_image_from_palette(
     const res::Palette &palette)
 {
     res::Image image(header.width, header.height);
-    for (auto y : util::range(header.height))
+    for (auto y : algo::range(header.height))
     {
         stream.seek(header.data_offset + header.stride * y);
         io::BitReader bit_reader(stream);
-        for (auto x : util::range(header.width))
+        for (auto x : algo::range(header.width))
         {
             auto c = bit_reader.get(header.depth);
             if (c < palette.size())
@@ -170,11 +170,11 @@ static std::unique_ptr<res::Image> get_image_without_palette_fast24(
     io::Stream &stream, const Header &header)
 {
     auto image = std::make_unique<res::Image>(header.width, header.height);
-    for (auto y : util::range(header.height))
+    for (auto y : algo::range(header.height))
     {
         stream.seek(header.data_offset + header.stride * y);
         res::Image row(header.width, 1, stream, res::PixelFormat::BGR888);
-        for (auto x : util::range(header.width))
+        for (auto x : algo::range(header.width))
             image->at(x, y) = row.at(x, 0);
     }
     return image;
@@ -184,11 +184,11 @@ static std::unique_ptr<res::Image> get_image_without_palette_fast32(
     io::Stream &stream, const Header &header)
 {
     auto image = std::make_unique<res::Image>(header.width, header.height);
-    for (auto y : util::range(header.height))
+    for (auto y : algo::range(header.height))
     {
         stream.seek(header.data_offset + header.stride * y);
         res::Image row(header.width, 1, stream, res::PixelFormat::BGRA8888);
-        for (auto x : util::range(header.width))
+        for (auto x : algo::range(header.width))
             image->at(x, y) = row.at(x, 0);
     }
     return image;
@@ -199,14 +199,14 @@ static std::unique_ptr<res::Image> get_image_without_palette_generic(
 {
     auto image = std::make_unique<res::Image>(header.width, header.height);
     double multipliers[4];
-    for (auto i : util::range(4))
+    for (auto i : algo::range(4))
         multipliers[i] = 255.0 / std::max<size_t>(1, header.masks[i]);
 
-    for (auto y : util::range(header.height))
+    for (auto y : algo::range(header.height))
     {
         stream.seek(header.data_offset + header.stride * y);
         io::BitReader bit_reader(stream);
-        for (auto x : util::range(header.width))
+        for (auto x : algo::range(header.width))
         {
             u64 c = bit_reader.get(header.depth);
             if (header.rotation < 0)
@@ -271,7 +271,7 @@ res::Image BmpImageDecoder::decode_impl(io::File &input_file) const
     input_file.stream.seek(10);
     auto header = read_header(input_file.stream);
     res::Palette palette(header.palette_size);
-    for (auto i : util::range(palette.size()))
+    for (auto i : algo::range(palette.size()))
     {
         palette[i].b = input_file.stream.read_u8();
         palette[i].g = input_file.stream.read_u8();

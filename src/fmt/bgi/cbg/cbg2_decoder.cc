@@ -1,10 +1,9 @@
 #include "fmt/bgi/cbg/cbg2_decoder.h"
-#include <algorithm>
 #include <array>
+#include "algo/range.h"
 #include "err.h"
 #include "fmt/bgi/cbg/cbg_common.h"
 #include "io/memory_stream.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::bgi::cbg;
@@ -57,8 +56,8 @@ static FloatTablePair read_ac_mul_pair(const bstr &input)
 
     FloatTablePair ac_mul_pair;
     io::MemoryStream input_stream(input);
-    for (auto i : util::range(ac_mul_pair.size()))
-        for (auto j : util::range(dc_table.size()))
+    for (auto i : algo::range(ac_mul_pair.size()))
+        for (auto j : algo::range(dc_table.size()))
             ac_mul_pair[i][j] = input_stream.read_u8() * dc_table[j];
     return ac_mul_pair;
 }
@@ -85,13 +84,13 @@ static void jpeg_dct_float(
     float tmp10, tmp11, tmp12, tmp13;
     float z5, z10, z11, z12, z13;
 
-    for (auto i : util::range(block_dim2))
+    for (auto i : algo::range(block_dim2))
     {
         inptr[i] = ac[i];
         dv[i] = ac_mul[i];
     }
 
-    for (auto i : util::range(block_dim))
+    for (auto i : algo::range(block_dim))
     {
         if (!inptr[8 + i] && !inptr[16 + i]
             && !inptr[24 + i] && !inptr[32 + i]
@@ -151,7 +150,7 @@ static void jpeg_dct_float(
         tp[24 + i] = tmp3 - tmp4;
     }
 
-    for (auto i : util::range(block_dim))
+    for (auto i : algo::range(block_dim))
     {
         z5 = tp[i * block_dim];
         tmp10 = z5 + tp[block_dim * i + 4];
@@ -208,7 +207,7 @@ static std::vector<u16> decompress_block(
     io::BitReader bit_reader(input);
 
     int init_value = 0;
-    for (auto i : util::range(0, output_size, block_dim2))
+    for (auto i : algo::range(0, output_size, block_dim2))
     {
         size_t size = tree1.get_leaf(bit_reader);
         if (size)
@@ -224,7 +223,7 @@ static std::vector<u16> decompress_block(
     // align to regular byte
     bit_reader.get((8 - (bit_reader.tell() & 7)) & 7);
 
-    for (auto i : util::range(0, output_size, block_dim2))
+    for (auto i : algo::range(0, output_size, block_dim2))
     {
         size_t index = 1;
         while (index < block_dim2)
@@ -264,9 +263,9 @@ static void process_24bit_block(
     u8 *rgb_out)
 {
     FloatTableTriplet yuv_in;
-    for (auto i : util::range(width / block_dim))
+    for (auto i : algo::range(width / block_dim))
     {
-        for (auto channel : util::range(3))
+        for (auto channel : algo::range(3))
         {
             jpeg_dct_float(
                 yuv_in[channel],
@@ -274,8 +273,8 @@ static void process_24bit_block(
                 ac_mul_pair[channel > 0]);
         }
 
-        for (auto y : util::range(block_dim))
-        for (auto x : util::range(block_dim))
+        for (auto y : algo::range(block_dim))
+        for (auto x : algo::range(block_dim))
         {
             auto offset = y * block_dim + x;
             auto cy = yuv_in[0][offset];
@@ -301,12 +300,12 @@ static void process_8bit_block(
     size_t width,
     u8 *rgb_out)
 {
-    for (auto i : util::range(width / block_dim))
+    for (auto i : algo::range(width / block_dim))
     {
         FloatTable color_data;
         jpeg_dct_float(color_data, &color_info[i * block_dim2], ac_mul_pair[0]);
-        for (auto y : util::range(block_dim))
-        for (auto x : util::range(block_dim))
+        for (auto y : algo::range(block_dim))
+        for (auto x : algo::range(block_dim))
         {
             u8 *rgb_ptr = &rgb_out[(i * block_dim + (y * width + x)) * 4];
             rgb_ptr[0] = color_data[y * block_dim + x];
@@ -349,7 +348,7 @@ static void process_alpha(bstr &output, io::Stream &input_stream, int width)
             if (look_behind < output_start || look_behind >= output_end)
                 return;
 
-            for (auto i : util::range(count))
+            for (auto i : algo::range(count))
             {
                 *output_ptr = *look_behind;
                 look_behind += 4;
@@ -384,14 +383,14 @@ std::unique_ptr<res::Image> Cbg2Decoder::decode(io::Stream &input_stream) const
     auto tree2 = build_tree(read_freq_table(raw_stream, tree2_size), true);
 
     auto block_offsets = std::make_unique<u32[]>(block_count + 1);
-    for (auto i : util::range(block_count + 1))
+    for (auto i : algo::range(block_count + 1))
         block_offsets[i] = raw_stream.read_u32_le();
 
     bstr bmp_data(pad_width * pad_height * 4);
-    for (auto i : util::range(bmp_data.size()))
+    for (auto i : algo::range(bmp_data.size()))
         bmp_data.get<u8>()[i] = 0xFF;
 
-    for (auto i : util::range(block_count))
+    for (auto i : algo::range(block_count))
     {
         raw_stream.seek(block_offsets[i]);
         raw_stream.skip((pad_width + block_dim2 - 1) / block_dim2);

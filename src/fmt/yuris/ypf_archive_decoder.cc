@@ -1,10 +1,10 @@
 #include "fmt/yuris/ypf_archive_decoder.h"
 #include <set>
+#include "algo/locale.h"
+#include "algo/pack/zlib.h"
+#include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/encoding.h"
-#include "util/pack/zlib.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::yuris;
@@ -58,7 +58,7 @@ static size_t guess_name_crypt_pos(
         table_stream.seek(0);
         try
         {
-            for (const auto i : util::range(file_count))
+            for (const auto i : algo::range(file_count))
             {
                 table_stream.skip(4);
                 const auto name_size = get_name_size(table_stream, initial_pos);
@@ -116,7 +116,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     std::vector<bstr> names;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (const auto i : util::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         table_stream.skip(4);
 
@@ -135,8 +135,8 @@ std::unique_ptr<fmt::ArchiveMeta>
     }
 
     const auto key = guess_key(names);
-    for (const auto i : util::range(file_count))
-        meta->entries[i]->path = util::sjis_to_utf8(unxor(names[i], key)).str();
+    for (const auto i : algo::range(file_count))
+        meta->entries[i]->path = algo::sjis_to_utf8(unxor(names[i], key)).str();
     return meta;
 }
 
@@ -146,7 +146,7 @@ std::unique_ptr<io::File> YpfArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
     if (entry->compressed)
-        data = util::pack::zlib_inflate(data);
+        data = algo::pack::zlib_inflate(data);
     return std::make_unique<io::File>(entry->path, data);
 }
 

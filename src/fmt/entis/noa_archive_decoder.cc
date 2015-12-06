@@ -1,8 +1,8 @@
 #include "fmt/entis/noa_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "fmt/entis/common/sections.h"
 #include "log.h"
-#include "util/format.h"
-#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::entis;
@@ -31,7 +31,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
     {
         stream.seek(section.offset);
         auto entry_count = stream.read_u32_le();
-        for (auto i : util::range(entry_count))
+        for (auto i : algo::range(entry_count))
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
             entry->size = stream.read_u64_le();
@@ -89,7 +89,7 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->encrypted)
     {
-        Log.warn(util::format(
+        Log.warn(algo::format(
             "%s is encrypted, but encrypted files are not supported\n",
             entry->path.c_str()));
     }
