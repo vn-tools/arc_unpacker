@@ -1,4 +1,4 @@
-#include "util/program_path.h"
+#include "io/program_path.h"
 #include "err.h"
 #include "io/file_system.h"
 
@@ -9,17 +9,17 @@ namespace
     static io::path program_path;
 }
 
-void util::set_program_path_from_arg(const std::string &arg)
+void io::set_program_path_from_arg(const std::string &arg)
 {
     program_path = io::absolute(io::path(arg)).str();
 }
 
-io::path util::get_program_path()
+io::path io::get_program_path()
 {
     return program_path;
 }
 
-io::path util::get_etc_dir_path()
+io::path io::get_etc_dir_path()
 {
     const io::path path(program_path.parent());
     const io::path path1 = path / "etc";

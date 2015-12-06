@@ -2,15 +2,15 @@
 #include "fmt/png/png_image_decoder.h"
 #include "fmt/shiina_rio/warc/decrypt.h"
 #include "io/file.h"
+#include "io/program_path.h"
 #include "util/plugin_mgr.hh"
-#include "util/program_path.h"
 
 using namespace au;
 using namespace au::fmt::shiina_rio::warc;
 
 static bstr read_file(const std::string &name)
 {
-    const auto path = util::get_etc_dir_path() / "shiina_rio" / name;
+    const auto path = io::get_etc_dir_path() / "shiina_rio" / name;
     io::File file(path, io::FileMode::Read);
     return file.stream.seek(0).read_to_eof();
 }
