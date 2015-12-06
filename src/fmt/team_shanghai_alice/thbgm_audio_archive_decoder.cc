@@ -63,40 +63,6 @@ static std::unique_ptr<io::File> grab_definitions_file(const io::path &dir)
     return nullptr;
 }
 
-struct ThbgmAudioArchiveDecoder::Priv final
-{
-    size_t loop_count = 5;
-};
-
-ThbgmAudioArchiveDecoder::ThbgmAudioArchiveDecoder() : p(new Priv())
-{
-}
-
-ThbgmAudioArchiveDecoder::~ThbgmAudioArchiveDecoder()
-{
-}
-
-void ThbgmAudioArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    auto sw = arg_parser.register_switch({"--loops"})
-        ->set_value_name("NUM")
-        ->set_description("Number of BGM loops (default: 5)");
-}
-
-void ThbgmAudioArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    if (arg_parser.has_switch("loops"))
-    {
-        set_loop_count(
-            algo::from_string<int>(arg_parser.get_switch("loops")));
-    }
-}
-
-void ThbgmAudioArchiveDecoder::set_loop_count(const size_t loop_count)
-{
-    p->loop_count = loop_count;
-}
-
 bool ThbgmAudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
@@ -137,20 +103,18 @@ std::unique_ptr<fmt::ArchiveMeta>
 std::unique_ptr<io::File> ThbgmAudioArchiveDecoder::read_file_impl(
     io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto samples = input_file.stream.read(entry->intro_size);
-    for (auto i : algo::range(p->loop_count))
-    {
-        input_file.stream.seek(entry->offset + entry->intro_size);
-        samples += input_file.stream.read(entry->size - entry->intro_size);
-    }
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto samples = input_file.stream
+        .seek(entry->offset)
+        .read(entry->size);
 
     res::Audio audio;
     audio.channel_count = entry->channel_count;
     audio.bits_per_sample = entry->bits_per_sample;
     audio.sample_rate = entry->sample_rate;
     audio.samples = samples;
+    audio.loops.push_back(res::AudioLoopInfo
+        {entry->intro_size, entry->size - entry->intro_size, 0});
     return util::file_from_audio(audio, entry->path);
 }
 
