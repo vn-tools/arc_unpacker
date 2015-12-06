@@ -17,10 +17,10 @@ namespace glib2  {
         std::function<u8(u8, size_t)> func2;
     };
 
-    class Plugin
+    class IPlugin
     {
     public:
-        virtual ~Plugin();
+        virtual ~IPlugin() { }
         virtual std::unique_ptr<Decoder> create_header_decoder() const = 0;
         virtual std::unique_ptr<Decoder> create_decoder(
             const std::array<u32, 4> &keys) const = 0;

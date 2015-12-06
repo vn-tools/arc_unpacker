@@ -156,5 +156,5 @@ std::unique_ptr<Decoder> MusumePlugin::create_decoder(
 
 std::unique_ptr<Decoder> MusumePlugin::create_header_decoder() const
 {
-    return create_decoder({0x8465B49B, 0x4D619A7B, 0x7365C6Ad, 0x7CFD70A7});
+    return create_decoder({0x8465B49B, 0x4D619A7B, 0x7365C6AD, 0x7CFD70A7});
 }

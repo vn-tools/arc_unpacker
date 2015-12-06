@@ -7,7 +7,7 @@ namespace fmt {
 namespace glib {
 namespace glib2  {
 
-    class MusumePlugin final : public Plugin
+    class MusumePlugin final : public IPlugin
     {
     public:
         std::unique_ptr<Decoder> create_header_decoder() const override;

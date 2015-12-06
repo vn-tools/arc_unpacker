@@ -21,7 +21,7 @@ namespace
 
     struct ArchiveMetaImpl final : fmt::ArchiveMeta
     {
-        std::shared_ptr<glib2::Plugin> plugin;
+        std::shared_ptr<glib2::IPlugin> plugin;
     };
 
     struct ArchiveEntryImpl final : fmt::ArchiveEntry
@@ -59,7 +59,7 @@ static bstr decode(const bstr &input, const glib2::Decoder &decoder)
     return output;
 }
 
-static Header read_header(io::Stream &arc_stream, glib2::Plugin &plugin)
+static Header read_header(io::Stream &arc_stream, glib2::IPlugin &plugin)
 {
     arc_stream.seek(0);
     auto decoder = plugin.create_header_decoder();
@@ -124,9 +124,9 @@ static std::unique_ptr<ArchiveEntryImpl> read_table_entry(
     return entry;
 }
 
-static std::shared_ptr<glib2::Plugin> guess_plugin(io::Stream &arc_stream)
+static std::shared_ptr<glib2::IPlugin> guess_plugin(io::Stream &arc_stream)
 {
-    std::vector<std::shared_ptr<glib2::Plugin>> plugins;
+    std::vector<std::shared_ptr<glib2::IPlugin>> plugins;
     plugins.push_back(std::make_shared<glib2::MeiPlugin>());
     plugins.push_back(std::make_shared<glib2::MusumePlugin>());
 
