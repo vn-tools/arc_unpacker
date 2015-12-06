@@ -6,18 +6,18 @@
 namespace au {
 namespace util {
 
-    enum MessageType
-    {
-        Info,
-        Success,
-        Warning,
-        Error,
-        Debug,
-    };
-
     class Logger final
     {
     public:
+        enum MessageType
+        {
+            Info,
+            Success,
+            Warning,
+            Error,
+            Debug,
+        };
+
         enum class Color : unsigned char
         {
             Black,

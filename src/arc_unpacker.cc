@@ -190,7 +190,7 @@ void ArcUnpacker::Priv::parse_cli_options()
     if (arg_parser.has_flag("-q") || arg_parser.has_flag("--quiet"))
     {
         Log.mute();
-        Log.unmute(util::MessageType::Debug);
+        Log.unmute(util::Logger::MessageType::Debug);
     }
 
     options.enable_nested_decoding = !arg_parser.has_flag("--no-recurse");
