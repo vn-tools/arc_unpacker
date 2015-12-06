@@ -27,7 +27,7 @@ std::unique_ptr<io::File> util::file_from_audio(
     output_file->stream.write(audio.extra_codec_headers);
 
     if (!audio.loops.empty())
-        Log.warn("Audio loop found, but loops are not supported");
+        Log.warn("Audio loop found, but loops are not supported\n");
 
     output_file->stream.write("data"_b);
     output_file->stream.write_u32_le(audio.samples.size());
