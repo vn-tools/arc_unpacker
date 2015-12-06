@@ -1,7 +1,7 @@
+#include "util/pack/zlib.h"
 #include "io/memory_stream.h"
 #include "test_support/catch.hh"
 #include "types.h"
-#include "util/pack/zlib.h"
 
 using namespace au;
 using namespace au::util::pack;

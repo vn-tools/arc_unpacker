@@ -1,7 +1,7 @@
 #include "fmt/kiss/custom_png_image_decoder.h"
 #include <map>
-#include "util/range.h"
 #include "fmt/png/png_image_decoder.h"
+#include "util/range.h"
 
 using namespace au;
 using namespace au::fmt::kiss;

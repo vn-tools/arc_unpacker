@@ -1,5 +1,5 @@
-#include "test_support/catch.hh"
 #include "util/call_stack_keeper.h"
+#include "test_support/catch.hh"
 
 using namespace au;
 

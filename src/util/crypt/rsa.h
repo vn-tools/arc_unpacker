@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
 #include <array>
+#include <memory>
 #include "types.h"
 
 namespace au {

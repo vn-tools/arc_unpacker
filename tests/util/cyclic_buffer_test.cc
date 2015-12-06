@@ -1,5 +1,5 @@
-#include "test_support/catch.hh"
 #include "util/cyclic_buffer.h"
+#include "test_support/catch.hh"
 #include "util/range.h"
 
 using namespace au;

@@ -1,8 +1,8 @@
 #include "fmt/leaf/single_letter_group/a_archive_decoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/pack/lzss.h"
 #include "util/encoding.h"
+#include "util/pack/lzss.h"
 #include "util/range.h"
 
 using namespace au;

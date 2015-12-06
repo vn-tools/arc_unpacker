@@ -1,6 +1,6 @@
 #include "fmt/archive_decoder.h"
-#include "fmt/file_decoder.h"
 #include "fmt/decoder_util.h"
+#include "fmt/file_decoder.h"
 #include "io/memory_stream.h"
 #include "test_support/catch.hh"
 

@@ -4,10 +4,9 @@
 #include <vector>
 #include "arg_parser.h"
 #include "file_saver.h"
+#include "fmt/registry.h"
 #include "io/file.h"
 #include "types.h"
-
-#include "fmt/registry.h"
 
 namespace au {
 namespace fmt {

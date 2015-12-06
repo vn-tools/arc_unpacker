@@ -1,5 +1,5 @@
-#include "test_support/catch.hh"
 #include "util/format.h"
+#include "test_support/catch.hh"
 
 using namespace au;
 

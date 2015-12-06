@@ -1,6 +1,6 @@
-#include "test_support/catch.hh"
 #include "fmt/archive_decoder.h"
 #include "fmt/registry.h"
+#include "test_support/catch.hh"
 
 using namespace au::fmt;
 

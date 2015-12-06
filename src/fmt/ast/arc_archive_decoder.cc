@@ -1,7 +1,6 @@
 #include "fmt/ast/arc_archive_decoder.h"
-#include <algorithm>
-#include "util/pack/lzss.h"
 #include "util/encoding.h"
+#include "util/pack/lzss.h"
 #include "util/range.h"
 
 using namespace au;

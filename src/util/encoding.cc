@@ -1,7 +1,7 @@
 #include "util/encoding.h"
 #include <cerrno>
-#include <memory>
 #include <iconv.h>
+#include <memory>
 #include "err.h"
 
 using namespace au;

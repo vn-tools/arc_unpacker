@@ -1,7 +1,7 @@
 #include "fmt/leaf/leafpack_group/lfg_image_decoder.h"
+#include "err.h"
 #include "fmt/leaf/common/custom_lzss.h"
 #include "util/cyclic_buffer.h"
-#include "err.h"
 #include "util/range.h"
 
 using namespace au;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <cstdarg>
+#include <string>
 
 namespace au {
 namespace util {

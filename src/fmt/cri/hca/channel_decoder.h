@@ -1,7 +1,7 @@
 #pragma once
 
-#include "fmt/cri/hca/custom_bit_reader.h"
 #include "fmt/cri/hca/ath_table.h"
+#include "fmt/cri/hca/custom_bit_reader.h"
 
 namespace au {
 namespace fmt {

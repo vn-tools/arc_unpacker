@@ -1,5 +1,5 @@
-#include <limits>
 #include "res/pixel.h"
+#include <limits>
 #include "test_support/catch.hh"
 
 using namespace au;

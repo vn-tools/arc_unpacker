@@ -1,7 +1,7 @@
 #include "fmt/microsoft/bmp_image_decoder.h"
+#include "err.h"
 #include "io/bit_reader.h"
 #include "io/memory_stream.h"
-#include "err.h"
 #include "util/format.h"
 #include "util/range.h"
 

@@ -1,6 +1,6 @@
 #include "fmt/french_bread/ex3_image_decoder.h"
-#include "fmt/microsoft/bmp_image_decoder.h"
 #include "err.h"
+#include "fmt/microsoft/bmp_image_decoder.h"
 #include "util/range.h"
 
 using namespace au;

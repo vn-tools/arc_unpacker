@@ -1,5 +1,5 @@
-#include <map>
 #include "fmt/png/png_image_decoder.h"
+#include <map>
 #include "log.h"
 #include "test_support/catch.hh"
 #include "test_support/decoder_support.h"

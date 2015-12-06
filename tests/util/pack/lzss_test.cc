@@ -1,6 +1,6 @@
+#include "util/pack/lzss.h"
 #include "test_support/catch.hh"
 #include "types.h"
-#include "util/pack/lzss.h"
 #include "util/range.h"
 
 using namespace au;

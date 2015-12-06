@@ -1,6 +1,6 @@
 #include "fmt/alice_soft/alk_archive_decoder.h"
-#include "test_support/decoder_support.h"
 #include "test_support/catch.hh"
+#include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 
 using namespace au;

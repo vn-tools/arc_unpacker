@@ -1,7 +1,8 @@
 #pragma once
 
-#include <limits.h>
-#include <stdint.h>
+#include <climits>
+#include <cstdint>
+#include <stdexcept>
 #include "types.h"
 
 #ifndef __BYTE_ORDER__

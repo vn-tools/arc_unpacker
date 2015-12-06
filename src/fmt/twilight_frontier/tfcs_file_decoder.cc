@@ -1,10 +1,10 @@
 #include "fmt/twilight_frontier/tfcs_file_decoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
+#include "util/algo/str.h"
 #include "util/encoding.h"
 #include "util/pack/zlib.h"
 #include "util/range.h"
-#include "util/algo/str.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;

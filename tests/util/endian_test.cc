@@ -1,5 +1,5 @@
-#include "test_support/catch.hh"
 #include "util/endian.h"
+#include "test_support/catch.hh"
 
 using namespace au;
 

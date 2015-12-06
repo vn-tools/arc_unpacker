@@ -1,7 +1,7 @@
 #include "res/pixel_format.h"
 #include "test_support/catch.hh"
-#include "util/range.h"
 #include "util/format.h"
+#include "util/range.h"
 
 using namespace au;
 

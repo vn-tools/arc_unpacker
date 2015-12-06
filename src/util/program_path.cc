@@ -1,6 +1,6 @@
 #include "util/program_path.h"
-#include "io/filesystem.h"
 #include "err.h"
+#include "io/filesystem.h"
 
 using namespace au;
 
