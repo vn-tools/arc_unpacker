@@ -1,7 +1,7 @@
 #pragma once
 
+#include <memory>
 #include "fmt/entis/audio/common.h"
-#include "fmt/entis/common/decoder.h"
 
 namespace au {
 namespace fmt {

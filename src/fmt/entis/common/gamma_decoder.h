@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fmt/entis/common/decoder.h"
+#include "fmt/entis/common/abstract_decoder.h"
 #include "io/bit_reader.h"
 
 namespace au {
@@ -10,7 +10,7 @@ namespace common {
 
     int get_gamma_code(io::BitReader &bit_reader);
 
-    class GammaDecoder final : public Decoder
+    class GammaDecoder final : public AbstractDecoder
     {
     public:
         GammaDecoder();
