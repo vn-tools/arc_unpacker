@@ -2,10 +2,10 @@
 #include "algo/format.h"
 #include "algo/locale.h"
 #include "algo/range.h"
+#include "err.h"
 #include "fmt/ivory/prs_image_decoder.h"
 #include "fmt/ivory/wady_audio_decoder.h"
 #include "util/plugin_mgr.hh"
-#include "util/version_recognizer.h"
 
 using namespace au;
 using namespace au::fmt::ivory;
@@ -27,52 +27,66 @@ namespace
     };
 }
 
-static int check_version(io::Stream &input, size_t file_count, size_t name_size)
+static bool verify_version(
+    io::Stream &input_stream,
+    const size_t file_count,
+    const size_t name_size)
 {
-    input.skip((file_count - 1) * (name_size + 8));
-    input.skip(name_size);
-    const auto last_file_offset = input.read_u32_le();
-    const auto last_file_size = input.read_u32_le();
-    return last_file_offset + last_file_size == input.size();
+    try
+    {
+        input_stream.skip((file_count - 1) * (name_size + 8));
+        input_stream.skip(name_size);
+        const auto last_file_offset = input_stream.read_u32_le();
+        const auto last_file_size = input_stream.read_u32_le();
+        return last_file_offset + last_file_size == input_stream.size();
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+static int detect_version(io::Stream &input_stream)
+{
+    {
+        input_stream.seek(0);
+        const auto file_count = input_stream.read_u32_le();
+        if (verify_version(input_stream, file_count, 16))
+            return 1;
+    }
+
+    {
+        input_stream.seek(0);
+        const auto file_count = input_stream.read_u32_le();
+        const auto name_size = input_stream.read_u32_le();
+        if (verify_version(input_stream, file_count, name_size))
+            return 2;
+    }
+
+    throw err::RecognitionError();
 }
 
 struct MblArchiveDecoder::Priv final
 {
-    util::VersionRecognizer recognizer;
     util::PluginManager<PluginFunc> plugin_mgr;
 };
 
 MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)
 {
-    p->recognizer.add_recognizer(
-        1,
-        [&](io::File &input_file)
-        {
-            input_file.stream.seek(0);
-            const auto file_count = input_file.stream.read_u32_le();
-            return check_version(input_file.stream, file_count, 16);
-        });
-
-    p->recognizer.add_recognizer(
-        2,
-        [&](io::File &input_file)
-        {
-            input_file.stream.seek(0);
-            const auto file_count = input_file.stream.read_u32_le();
-            const auto name_size = input_file.stream.read_u32_le();
-            return check_version(input_file.stream, file_count, name_size);
-        });
-
     p->plugin_mgr.add("noop", "Unencrypted games", [](bstr &) { });
 
-    p->plugin_mgr.add("candy", "Candy Toys",
+    p->plugin_mgr.add(
+        "candy",
+        "Candy Toys",
         [](bstr &data)
         {
             for (auto i : algo::range(data.size()))
                 data[i] = -data[i];
         });
 
-    p->plugin_mgr.add("wanko", "Wanko to Kurasou",
+    p->plugin_mgr.add(
+        "wanko",
+        "Wanko to Kurasou",
         [](bstr &data)
         {
             static const bstr key =
@@ -106,14 +120,14 @@ void MblArchiveDecoder::set_plugin(const std::string &plugin_name)
 
 bool MblArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return p->recognizer.tell_version(input_file) > 0;
+    return detect_version(input_file.stream) > 0;
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
     MblArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    const auto version = p->recognizer.tell_version(input_file);
+    const auto version = detect_version(input_file.stream);
     meta->encrypted
         = input_file.path.name().find("mg_data") != std::string::npos;
     meta->decrypt = p->plugin_mgr.is_set() ? p->plugin_mgr.get() : nullptr;
