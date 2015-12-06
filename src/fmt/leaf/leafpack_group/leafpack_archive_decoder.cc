@@ -47,15 +47,12 @@ void LeafpackArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
     arg_parser.register_switch({"--leafpack-key"})
         ->set_value_name("KEY")
         ->set_description("Decryption key");
-    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void LeafpackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("leafpack-key"))
         set_key(algo::unhex(arg_parser.get_switch("leafpack-key")));
-
-    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 void LeafpackArchiveDecoder::set_key(const bstr &key)

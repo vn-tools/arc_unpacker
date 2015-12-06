@@ -326,8 +326,6 @@ void TfpkArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
         ->set_description(
             "Specifies path to file containing list of game's file names.\n"
             "Used to get proper file names and to find palettes for sprites.");
-
-    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void TfpkArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
@@ -340,8 +338,6 @@ void TfpkArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
         while ((line = stream.read_line().str()) != "")
             p->fn_set.insert(line);
     }
-
-    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 TfpkArchiveDecoder::TfpkArchiveDecoder() : p(new Priv)

@@ -51,14 +51,12 @@ void McaArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
     arg_parser.register_switch({"--mca-key"})
         ->set_value_name("KEY")
         ->set_description("Decryption key (0..255, same for all files)");
-    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void McaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("mca-key"))
         set_key(algo::from_string<int>(arg_parser.get_switch("mca-key")));
-    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 void McaArchiveDecoder::set_key(u8 key)

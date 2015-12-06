@@ -193,8 +193,6 @@ void DatArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
         ->set_description(
             "Rather than unpacking, create dump of the file names.\n"
             "This is useful when adding support for new games.");
-
-    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void DatArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
@@ -210,8 +208,6 @@ void DatArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
         while ((line = stream.read_line()) != ""_b)
             add_file_name(line.str());
     }
-
-    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 void DatArchiveDecoder::set_game_title(const std::string &game_title)

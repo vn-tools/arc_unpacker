@@ -55,13 +55,11 @@ WarcArchiveDecoder::~WarcArchiveDecoder()
 void WarcArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 {
     p->plugin_registry.register_cli_options(arg_parser);
-    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void WarcArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     p->plugin_registry.parse_cli_options(arg_parser);
-    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 bool WarcArchiveDecoder::is_recognized_impl(io::File &input_file) const

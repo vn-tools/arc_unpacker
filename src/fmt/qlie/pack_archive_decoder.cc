@@ -291,8 +291,6 @@ void PackArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
     arg_parser.register_switch({"--gameexe"})
         ->set_value_name("PATH")
         ->set_description("Selects path to game executable");
-
-    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void PackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
@@ -306,8 +304,6 @@ void PackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
             throw err::UsageError("Must specify also --fkey.");
         p->game_exe_path = arg_parser.get_switch("gameexe");
     }
-
-    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 bool PackArchiveDecoder::is_recognized_impl(io::File &input_file) const

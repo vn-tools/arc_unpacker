@@ -81,7 +81,6 @@ void ThbgmAudioArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
     auto sw = arg_parser.register_switch({"--loops"})
         ->set_value_name("NUM")
         ->set_description("Number of BGM loops (default: 5)");
-    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void ThbgmAudioArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
@@ -91,7 +90,6 @@ void ThbgmAudioArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
         set_loop_count(
             algo::from_string<int>(arg_parser.get_switch("loops")));
     }
-    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 void ThbgmAudioArchiveDecoder::set_loop_count(const size_t loop_count)

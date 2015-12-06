@@ -104,13 +104,11 @@ void MblArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 {
     p->plugin_mgr.register_cli_options(
         arg_parser, "Specifies plugin for decoding dialog files.");
-    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void MblArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     p->plugin_mgr.parse_cli_options(arg_parser);
-    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 void MblArchiveDecoder::set_plugin(const std::string &plugin_name)

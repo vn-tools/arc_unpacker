@@ -92,13 +92,11 @@ NpaArchiveDecoder::~NpaArchiveDecoder()
 void NpaArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 {
     p->filter_registry.register_cli_options(arg_parser);
-    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void NpaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     p->filter_registry.parse_cli_options(arg_parser);
-    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 bool NpaArchiveDecoder::is_recognized_impl(io::File &input_file) const

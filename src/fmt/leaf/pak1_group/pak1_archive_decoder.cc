@@ -103,7 +103,6 @@ void Pak1ArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
     arg_parser.register_switch({"--pak-version"})
         ->set_value_name("NUMBER")
         ->set_description("File version (1 or 2)");
-    ArchiveDecoder::register_cli_options(arg_parser);
 }
 
 void Pak1ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
@@ -113,7 +112,6 @@ void Pak1ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
         set_version(algo::from_string<int>(
             arg_parser.get_switch("pak-version")));
     }
-    ArchiveDecoder::parse_cli_options(arg_parser);
 }
 
 void Pak1ArchiveDecoder::set_version(const int version)
