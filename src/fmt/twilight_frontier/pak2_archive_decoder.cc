@@ -3,9 +3,9 @@
 #include "fmt/twilight_frontier/pak2_image_decoder.h"
 #include "io/filesystem.h"
 #include "io/memory_stream.h"
+#include "util/crypt/mt.h"
 #include "util/encoding.h"
 #include "util/file_from_image.h"
-#include "util/mt.h"
 #include "util/range.h"
 
 using namespace au;
@@ -23,10 +23,10 @@ namespace
 
 static void decrypt(bstr &buffer, u32 mt_seed, u8 a, u8 b, u8 delta)
 {
-    util::mt::init_genrand(mt_seed);
+    auto mt = util::crypt::MersenneTwister::Improved(mt_seed);
     for (auto i : util::range(buffer.size()))
     {
-        buffer[i] ^= util::mt::genrand_int32();
+        buffer[i] ^= mt->next_u32();
         buffer[i] ^= a;
         a += b;
         b += delta;
