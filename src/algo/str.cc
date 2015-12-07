@@ -27,6 +27,13 @@ bstr algo::trim_to_zero(const bstr &input)
     return bstr(input.get<const char>());
 }
 
+std::string algo::hex(const std::string &input)
+{
+    std::string output;
+    boost::algorithm::hex(input, std::back_inserter(output));
+    return output;
+}
+
 std::string algo::unhex(const std::string &input)
 {
     std::string output;
