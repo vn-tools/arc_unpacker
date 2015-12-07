@@ -30,7 +30,7 @@ void NemesisDecoder::reset()
     if (!bit_reader)
         throw std::logic_error("Trying to reset with unitialized input");
     p->models.resize(0x100);
-	p->last_model = &p->models[0];
+    p->last_model = &p->models[0];
     p->available_size = 0;
     p->code_register = bit_reader->get(32);
     p->augend_register = 0xFFFF;

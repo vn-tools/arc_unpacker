@@ -55,5 +55,5 @@ int CustomBitReader::get(const size_t n)
 
 void CustomBitReader::skip(const int n)
 {
-	p->pos += n;
+    p->pos += n;
 }

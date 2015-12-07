@@ -34,8 +34,11 @@ class WhitespaceCheck(Check):
         if file.lines and file.lines[-1] == '':
             yield Problem(file, 'Extra blank line at EOF')
         for i, line in enumerate(file.lines):
-            if line.endswith(' ') or line.endswith('\t'):
+            if line.endswith(' '):
                 yield Problem(file, 'Extra whitespace near EOL', i, line)
+        for i, line in enumerate(file.lines):
+            if '\t' in line:
+                yield Problem(file, 'Use spaces rather than tabs', i, line)
 
 class LongLinesCheck(Check):
     def scan(self, file):
