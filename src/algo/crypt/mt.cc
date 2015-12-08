@@ -1,4 +1,4 @@
-/* Copyright (C) 1997 Makoto Matsumoto and Takuji Nishimura. */
+// Copyright (C) 1997 Makoto Matsumoto and Takuji Nishimura.
 
 #include "algo/crypt/mt.h"
 #include <array>

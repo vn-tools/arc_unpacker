@@ -57,8 +57,22 @@ class LowercaseHexLiteralsCheck(Check):
                 yield Problem(
                     file,
                     'Hex literals must be uppercase ({0})'.format(match.group()),
-                    line_number=i,
-                    line_text=line)
+                    i,
+                    line)
+
+class WhitespaceAroundPointersCheck(Check):
+    def __init__(self):
+        self.regex = re.compile(r'[^ ]\* ')
+
+    def scan(self, file):
+        for i, line in enumerate(file.lines):
+            match = self.regex.search(line)
+            if match is not None and '//' not in line:
+                yield Problem(
+                    file,
+                    'Space must precede * in pointers'.format(match.group()),
+                    i,
+                    line)
 
 class TypedefCheck(Check):
     def scan(self, file):
