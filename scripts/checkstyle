@@ -9,7 +9,7 @@ class Problem(object):
         self.line_text = line_text
 
     def __str__(self):
-        if self.line_number:
+        if self.line_number is not None:
             fmt = '{file_name}:{line_number}: {line_text} - {problem_text}'
         else:
             fmt = '{file_name}: {problem_text}'
