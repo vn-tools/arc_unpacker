@@ -5,13 +5,15 @@
 namespace au {
 namespace algo {
 
-    template<typename T> T rotl(const T what, const size_t shift)
+    template<typename T> T rotl(const T what, size_t shift)
     {
+        shift &= (sizeof(T) << 3) - 1;
         return what << shift | (what >> ((sizeof(T) << 3) - shift));
     }
 
-    template<typename T> T rotr(const T what, const size_t shift)
+    template<typename T> T rotr(const T what, size_t shift)
     {
+        shift &= (sizeof(T) << 3) - 1;
         return what >> shift | (what << ((sizeof(T) << 3) - shift));
     }
 
