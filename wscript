@@ -200,7 +200,7 @@ def _filter_deps(sources, bld, deps):
                 groups[group_key] = []
             groups[group_key].append([file, file_infix])
     chosen_files = [_filter_group(group, deps) for group in groups.values()]
-    return default_files + chosen_files
+    return sorted(default_files + chosen_files, key=lambda node: node.name)
 
 def dist(ctx):
     ctx.algo  = 'zip'
