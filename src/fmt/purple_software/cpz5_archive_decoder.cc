@@ -43,46 +43,9 @@ namespace
         size_t file_table_size;
         io::path path;
     };
-
-    class Type1ADecryptor final
-    {
-    public:
-        Type1ADecryptor(const u32 key);
-        void decrypt(u8 *target, const size_t size);
-    private:
-        size_t shift;
-        std::array<u32, 24> table;
-    };
-
-    class Type1BDecryptor final
-    {
-    public:
-        Type1BDecryptor(const u32 key, const std::array<u32, 4> &pseudo_hash);
-        void decrypt(u8 *target, const size_t size);
-    private:
-        std::array<u32, 4> table;
-    };
-
-    class Type1CDecryptor final
-    {
-    public:
-        Type1CDecryptor(const u32 key, const std::array<u32, 4> &pseudo_hash);
-        void decrypt(u8 *target, const size_t size);
-    private:
-        std::array<u32, 4> table;
-    };
-
-    class Type2Decryptor final
-    {
-    public:
-        Type2Decryptor(const u32 key, const u32 seed);
-        void decrypt(u8 *target, const size_t size, const u8 key);
-    private:
-        std::array<u8, 256> table;
-    };
 }
 
-Type1ADecryptor::Type1ADecryptor(const u32 key)
+static void decrypt_strategy_1a(u8 *target, const size_t size, const u32 key)
 {
     static const std::vector<u32> crypt =
     {
@@ -93,33 +56,16 @@ Type1ADecryptor::Type1ADecryptor(const u32 key)
         0xC482C182, 0x968BE082, 0xC482B582, 0xB082A082,
         0xA282C882, 0xBE82F182, 0xE782A982, 0x49819F82,
     };
+
+    std::array<u32, 24> table;
     for (const auto i : algo::range(crypt.size()))
         table[i] = crypt[i] - key;
 
-    shift = key;
+    size_t shift = key;
     for (const auto i : algo::range(3))
         shift = (shift >> 8) ^ key;
     shift = ((shift ^ 0xFB) & 0x0F) + 7;
-}
 
-Type1BDecryptor::Type1BDecryptor(
-    const u32 key, const std::array<u32, 4> &pseudo_hash)
-{
-    std::array<u32, 4> addends = {0x76A3BF29, 0, 0x10000000, 0};
-    for (const auto i : algo::range(4))
-        table[i] = pseudo_hash[i] ^ (key + addends[i]);
-}
-
-Type1CDecryptor::Type1CDecryptor(
-    const u32 key, const std::array<u32, 4> &pseudo_hash)
-{
-    std::array<u32, 4> addends = {0, 0x112233, 0, 0x34258765};
-    for (const auto i : algo::range(4))
-        table[i] = pseudo_hash[i] ^ (key + addends[i]);
-}
-
-void Type1ADecryptor::decrypt(u8 *target, const size_t size)
-{
     size_t table_pos = 5;
 
     auto target_u32 = reinterpret_cast<u32*>(target);
@@ -140,8 +86,18 @@ void Type1ADecryptor::decrypt(u8 *target, const size_t size)
     }
 }
 
-void Type1BDecryptor::decrypt(u8 *target, const size_t size)
+static void decrypt_strategy_1b(
+    u8 *target,
+    const size_t size,
+    const u32 key,
+    const std::array<u32, 4> &pseudo_hash)
 {
+    static const std::array<u32, 4> addends = {0x76A3BF29, 0, 0x10000000, 0};
+
+    std::array<u32, 4> table;
+    for (const auto i : algo::range(4))
+        table[i] = pseudo_hash[i] ^ (key + addends[i]);
+
     size_t table_pos = 0;
 
     auto target_u32 = reinterpret_cast<u32*>(target);
@@ -163,8 +119,18 @@ void Type1BDecryptor::decrypt(u8 *target, const size_t size)
     }
 }
 
-void Type1CDecryptor::decrypt(u8 *target, const size_t size)
+static void decrypt_strategy_1c(
+    u8 *target,
+    const size_t size,
+    const u32 key,
+    const std::array<u32, 4> &pseudo_hash)
 {
+    static const std::array<u32, 4> addends = {0, 0x112233, 0, 0x34258765};
+
+    std::array<u32, 4> table;
+    for (const auto i : algo::range(4))
+        table[i] = pseudo_hash[i] ^ (key + addends[i]);
+
     size_t table_pos = 0;
 
     auto target_u32 = reinterpret_cast<u32*>(target);
@@ -186,7 +152,7 @@ void Type1CDecryptor::decrypt(u8 *target, const size_t size)
     }
 }
 
-static std::array<u8, 256> get_table_for_type2_decryptor(
+static std::array<u8, 256> get_table_for_decrypt_strategy_2_and_3(
     u32 key, const u32 seed)
 {
     std::array<u8, 256> table;
@@ -201,15 +167,66 @@ static std::array<u8, 256> get_table_for_type2_decryptor(
     return table;
 }
 
-Type2Decryptor::Type2Decryptor(const u32 key, const u32 seed)
+static void decrypt_strategy_2(
+    u8 *target,
+    const size_t size,
+    const u32 key,
+    const u32 seed,
+    const u8 permutation_xor)
 {
-    table = get_table_for_type2_decryptor(key, seed);
+    const auto table = get_table_for_decrypt_strategy_2_and_3(key, seed);
+    for (const auto i : algo::range(size))
+        target[i] = table[target[i] ^ permutation_xor];
 }
 
-void Type2Decryptor::decrypt(u8 *target, const size_t size, const u8 key)
+static void decrypt_strategy_3(
+    u8 *target,
+    const size_t size,
+    const u32 key,
+    const u32 seed,
+    const std::array<u32, 4> &pseudo_hash,
+    const u32 entry_key)
 {
-    for (const auto i : algo::range(size))
-        target[i] = table[target[i] ^ key];
+    const auto table = get_table_for_decrypt_strategy_2_and_3(key, seed);
+
+    static const auto crypt =
+        "\x89\xF0\x90\xCD\x82\xB7\x82\xE9\x88\xAB\x82\xA2\x8E\x71\x82\xCD"
+        "\x83\x8A\x83\x52\x82\xAA\x82\xA8\x8E\x64\x92\x75\x82\xAB\x82\xB5"
+        "\x82\xBF\x82\xE1\x82\xA2\x82\xDC\x82\xB7\x81\x42\x83\x81\x83\x62"
+        "\x81\x49\x82\xA9\x82\xED\x82\xA2\x82\xA2\x82\xC6\x82\xA9\x8C\xBE"
+        "\x82\xC1\x82\xC4\x82\xE0\x8B\x96\x82\xB5\x82\xC4\x82\xA0\x82\xB0"
+        "\x82\xC8\x82\xA2\x82\xF1\x82\xBE\x82\xA9\x82\xE7\x82\x9F\x81\x49"_b;
+
+    u32 yet_another_table[24];
+    for (const auto i : algo::range(96))
+    {
+        reinterpret_cast<u8*>(yet_another_table)[i]
+            = table[crypt[i]] ^ (pseudo_hash[1] >> 2);
+    }
+
+    for (const auto i : algo::range(24))
+        yet_another_table[i] ^= entry_key;
+
+    size_t yet_another_table_pos = 9;
+    u32 yet_another_key = 0x2547A39E;
+
+    u32 *target_u32 = reinterpret_cast<u32*>(target);
+    for (const auto i : algo::range(size >> 2))
+    {
+        const auto tmp1 = *target_u32;
+        const auto tmp2 = yet_another_table[yet_another_table_pos & 0x0F] >> 1;
+        const auto tmp3 = yet_another_table[(yet_another_key >> 6) & 0x0F];
+        const auto final_tmp = tmp1 ^ tmp2 ^ tmp3;
+        *target_u32 = pseudo_hash[yet_another_key & 3] ^ (final_tmp - entry_key);
+
+        yet_another_table_pos++;
+        yet_another_key += *target_u32 + entry_key;
+        target_u32++;
+    }
+
+    u8 *target_u8 = reinterpret_cast<u8*>(target_u32);
+    for (const auto i : algo::range(size & 3))
+        target_u8[i] = table[target_u8[i] ^ 0xCB];
 }
 
 static Header read_header(io::Stream &input_stream)
@@ -270,13 +287,24 @@ std::unique_ptr<fmt::ArchiveMeta>
     const auto dir_table_ptr = table_data.get<u8>();
     const auto file_table_ptr = table_data.get<u8>() + header.dir_table_size;
 
-    Type1ADecryptor main_decryptor(header.main_key ^ 0x3795B39A);
-    main_decryptor.decrypt(table_data.get<u8>(), table_size);
+    // whole index
+    decrypt_strategy_1a(
+        table_data.get<u8>(),
+        table_size,
+        header.main_key ^ 0x3795B39A);
 
-    Type2Decryptor dir_table_decryptor1(header.main_key, pseudo_hash[1]);
-    Type1BDecryptor dir_table_decryptor2(header.main_key, pseudo_hash);
-    dir_table_decryptor1.decrypt(dir_table_ptr, header.dir_table_size, 0x3A);
-    dir_table_decryptor2.decrypt(dir_table_ptr, header.dir_table_size);
+    // just directories
+    decrypt_strategy_2(
+        dir_table_ptr,
+        header.dir_table_size,
+        header.main_key,
+        pseudo_hash[1],
+        0x3A);
+    decrypt_strategy_1b(
+        dir_table_ptr,
+        header.dir_table_size,
+        header.main_key,
+        pseudo_hash);
 
     DirectoryInfo *prev_dir = nullptr;
     std::vector<std::unique_ptr<DirectoryInfo>> dirs;
@@ -308,17 +336,23 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->main_key = header.main_key;
     meta->pseudo_hash = pseudo_hash;
-    Type2Decryptor file_table_decryptor1(header.main_key, pseudo_hash[2]);
+
     for (const auto &dir : dirs)
     {
         auto dir_file_table_ptr = file_table_ptr + dir->file_table_offset;
 
-        file_table_decryptor1.decrypt(
-            dir_file_table_ptr, dir->file_table_size, 0x7E);
+        decrypt_strategy_2(
+            dir_file_table_ptr,
+            dir->file_table_size,
+            header.main_key,
+            pseudo_hash[2],
+            0x7E);
 
-        Type1CDecryptor file_table_decryptor2(
-            dir->file_table_main_key, pseudo_hash);
-        file_table_decryptor2.decrypt(dir_file_table_ptr, dir->file_table_size);
+        decrypt_strategy_1c(
+            dir_file_table_ptr,
+            dir->file_table_size,
+            dir->file_table_main_key,
+            pseudo_hash);
 
         io::MemoryStream file_table_stream(
             bstr(dir_file_table_ptr, dir->file_table_size));
@@ -353,50 +387,13 @@ std::unique_ptr<io::File> Cpz5ArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
 
-    const auto table = get_table_for_type2_decryptor(
-        meta->pseudo_hash[3], meta->main_key);
-
-    const auto crypt =
-        "\x89\xF0\x90\xCD\x82\xB7\x82\xE9\x88\xAB\x82\xA2\x8E\x71\x82\xCD"
-        "\x83\x8A\x83\x52\x82\xAA\x82\xA8\x8E\x64\x92\x75\x82\xAB\x82\xB5"
-        "\x82\xBF\x82\xE1\x82\xA2\x82\xDC\x82\xB7\x81\x42\x83\x81\x83\x62"
-        "\x81\x49\x82\xA9\x82\xED\x82\xA2\x82\xA2\x82\xC6\x82\xA9\x8C\xBE"
-        "\x82\xC1\x82\xC4\x82\xE0\x8B\x96\x82\xB5\x82\xC4\x82\xA0\x82\xB0"
-        "\x82\xC8\x82\xA2\x82\xF1\x82\xBE\x82\xA9\x82\xE7\x82\x9F\x81\x49"_b;
-
-    u32 yet_another_table[24];
-    u32 yet_another_key = meta->pseudo_hash[1] >> 2;
-
-    for (const auto i : algo::range(96))
-    {
-        reinterpret_cast<u8*>(yet_another_table)[i]
-            = table[crypt[i]] ^ yet_another_key;
-    }
-
-    for (const auto i : algo::range(24))
-        yet_another_table[i] ^= entry->key;
-
-    size_t yet_another_table_pos = 9;
-    yet_another_key = 0x2547A39E;
-
-    u32 *data_u32 = data.get<u32>();
-    for (const auto i : algo::range(data.size() >> 2))
-    {
-        const auto tmp1 = *data_u32;
-        const auto tmp2 = yet_another_table[yet_another_table_pos & 0x0F] >> 1;
-        const auto tmp3 = yet_another_table[(yet_another_key >> 6) & 0x0F];
-        const auto final_tmp = tmp1 ^ tmp2 ^ tmp3;
-        *data_u32
-            = meta->pseudo_hash[yet_another_key & 3] ^ (final_tmp - entry->key);
-
-        yet_another_table_pos++;
-        yet_another_key += *data_u32 + entry->key;
-        data_u32++;
-    }
-
-    u8 *data_u8 = reinterpret_cast<u8*>(data_u32);
-    for (const auto i : algo::range(data.size() & 3))
-        data_u8[i] = table[data_u8[i] ^ 0xCB];
+    decrypt_strategy_3(
+        data.get<u8>(),
+        data.size(),
+        meta->pseudo_hash[3],
+        meta->main_key,
+        meta->pseudo_hash,
+        entry->key);
 
     return std::make_unique<io::File>(entry->path, data);
 }
