@@ -39,16 +39,23 @@ CustomBitReader::~CustomBitReader()
 
 int CustomBitReader::get(const size_t n)
 {
+    const auto pos = p->pos >> 3;
+    const auto size = p->data.size();
+
     int ret = 0;
-    if (p->pos + n <= p->size)
+    if (pos + 1 <= size)
     {
-        u8 *data = &p->data[p->pos >> 3];
-        ret = data[0];
-        ret = (ret << 8) | data[1];
-        ret = (ret << 8) | data[2];
-        ret &= mask[p->pos & 7];
-        ret >>= 24 - (p->pos & 7) - n;
+        ret = p->data[pos + 0];
+        ret <<= 8;
+        if (pos + 2 <= size)
+            ret |= p->data[pos + 1];
+        ret <<= 8;
+        if (pos + 3 <= size)
+            ret |= p->data[pos + 2];
     }
+
+    ret &= mask[p->pos & 7];
+    ret >>= 24 - (p->pos & 7) - n;
     p->pos += n;
     return ret;
 }
