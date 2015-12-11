@@ -300,13 +300,16 @@ TEST_CASE("bstr", "[core][types]")
         {
             const bstr x = "\x00\x01"_b;
             REQUIRE(x.end<const char>()[-1] == 1);
-            REQUIRE(x.end<const char>() == x.get<const char>() + 2);
-            REQUIRE(x.end<const u16>() == &x.get<const u16>()[1]);
+            REQUIRE(static_cast<bool>(
+                x.end<const char>() == x.get<const char>() + 2));
+            REQUIRE(static_cast<bool>(
+                x.end<const u16>() == &x.get<const u16>()[1]));
             REQUIRE(x.end<const u16>()[-1] == 0x100);
 
             // align the boundary to the sizeof(T)
             const bstr y = "\x00\x01\x02"_b;
-            REQUIRE(y.end<const u16>() == &y.get<const u16>()[1]);
+            REQUIRE(static_cast<bool>(
+                y.end<const u16>() == &y.get<const u16>()[1]));
             REQUIRE(y.end<const u16>()[-1] == 0x100);
         }
     }
