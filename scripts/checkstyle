@@ -68,7 +68,7 @@ class LowercaseHexLiteralsCheck(Check):
 
 class WhitespaceAroundPointersCheck(Check):
     def __init__(self):
-        self.regex = re.compile(r'[^ ]\* ')
+        self.regex = re.compile(r'[^ &][&\*] ')
 
     def scan(self, file):
         for i, line in enumerate(file.lines):
@@ -76,7 +76,7 @@ class WhitespaceAroundPointersCheck(Check):
             if match is not None and '//' not in line:
                 yield Problem(
                     file,
-                    'Space must precede * in pointers'.format(match.group()),
+                    'Put spaces before, not after * and &'.format(match.group()),
                     i,
                     line)
 
