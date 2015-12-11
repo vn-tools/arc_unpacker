@@ -343,8 +343,8 @@ ImageResourceDataEntry::ImageResourceDataEntry(io::Stream &stream)
 RvaHelper::RvaHelper(
     u32 file_alignment,
     u32 section_alignment,
-    const std::vector<ImageSectionHeader> &sections)
-    : file_alignment(file_alignment),
+    const std::vector<ImageSectionHeader> &sections) :
+        file_alignment(file_alignment),
         section_alignment(section_alignment),
         sections(sections)
 {

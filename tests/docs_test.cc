@@ -12,8 +12,8 @@ namespace
     struct regex_range final
     {
         regex_range(
-            const std::regex &r, const std::string &content, const int group)
-            : content_copy(content),
+            const std::regex &r, const std::string &content, const int group) :
+                content_copy(content),
                 it(content_copy.begin(), content_copy.end(), r, group)
         {
         }

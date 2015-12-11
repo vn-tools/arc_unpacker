@@ -9,8 +9,8 @@ namespace util {
     template<const size_t n> class CyclicBuffer final
     {
     public:
-        CyclicBuffer(const size_t start_pos = 0)
-            : start_pos(start_pos),
+        CyclicBuffer(const size_t start_pos = 0) :
+            start_pos(start_pos),
             current_pos(start_pos),
             written((start_pos % n) - n),
             a {0}

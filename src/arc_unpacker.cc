@@ -81,8 +81,8 @@ static std::unique_ptr<fmt::IDecoder> guess_decoder(
 }
 
 ArcUnpacker::Priv::Priv(
-    const std::vector<std::string> &arguments, const std::string &version)
-    : registry(fmt::Registry::instance()),
+    const std::vector<std::string> &arguments, const std::string &version) :
+        registry(fmt::Registry::instance()),
         arguments(arguments),
         version(version)
 {

@@ -166,10 +166,13 @@ struct BitReader::Priv final
     u32 shift;
 };
 
-BitReader::Priv::Priv(std::unique_ptr<IReader> reader)
-    : reader(std::move(reader)),
-        buffer_ptr(nullptr), buffer_end(nullptr),
-        value(0), pos(0), shift(8)
+BitReader::Priv::Priv(std::unique_ptr<IReader> reader) :
+    reader(std::move(reader)),
+    buffer_ptr(nullptr),
+    buffer_end(nullptr),
+    value(0),
+    pos(0),
+    shift(8)
 {
 }
 

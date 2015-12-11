@@ -80,6 +80,20 @@ class WhitespaceAroundPointersCheck(Check):
                     i,
                     line)
 
+class ClassInitializerListStyleCheck(Check):
+    def __init__(self):
+        self.regex = re.compile(r'^ *:.*,$')
+
+    def scan(self, file):
+        for i, line in enumerate(file.lines):
+            match = self.regex.match(line)
+            if match is not None:
+                yield Problem(
+                    file,
+                    'Put : in the previous line'.format(match.group()),
+                    i,
+                    line)
+
 class TypedefCheck(Check):
     def scan(self, file):
         for i, line in enumerate(file.lines):
