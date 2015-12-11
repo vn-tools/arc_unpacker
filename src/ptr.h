@@ -59,10 +59,17 @@ namespace au {
         T *start() { return start_ptr; }
         T *end() { return end_ptr; }
 
+        constexpr bool operator <(const T *p) const { return cur_ptr < p; }
+        constexpr bool operator <=(const T *p) const { return cur_ptr <= p; }
+        constexpr bool operator >(const T *p) const { return cur_ptr > p; }
+        constexpr bool operator >=(const T *p) const { return cur_ptr >= p; }
+        constexpr bool operator ==(const T *p) const { return cur_ptr == p; }
+        constexpr bool operator !=(const T *p) const { return cur_ptr != p; }
+
     private:
-        const T *start_ptr;
+        T *start_ptr;
         T *cur_ptr;
-        const T *end_ptr;
+        T *end_ptr;
     };
 
     template<typename T> inline ptr<T> make_ptr(T *data, const size_t size)
