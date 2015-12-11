@@ -372,5 +372,10 @@ std::unique_ptr<io::File> Cpz5ArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
+std::vector<std::string> Cpz5ArchiveDecoder::get_linked_formats() const
+{
+    return {"purple-software/ps2"};
+}
+
 static auto dummy
     = fmt::register_fmt<Cpz5ArchiveDecoder>("purple-software/cpz5");
