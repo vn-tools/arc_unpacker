@@ -160,6 +160,43 @@ class BitWriter:
         self.accumulator = 0
         self.bcount = 0
 
+def lzss_compress_bitwise(input):
+    WINDOW_BITS = 12
+    LENGTH_BITS  = 4
+    MIN_MATCH = 3
+    WINDOW_SIZE = (1 << WINDOW_BITS)
+    MAX_MATCH = MIN_MATCH + (1 << LENGTH_BITS) - 1
+    read_ptr = 0
+    with io_ext() as out_io:
+        with BitWriter(out_io) as bit_writer:
+            window = bytearray(b'\x00' * WINDOW_SIZE)
+            window_pos = 0xFEE
+            while read_ptr < len(input):
+                best_match_len, best_match_ptr = 0, 0
+                for match_len in range(MAX_MATCH, MIN_MATCH-1, -1):
+                    match = input[read_ptr : read_ptr + match_len + 1]
+                    if match in window + window:
+                        best_match_len = match_len
+                        best_match_ptr = (window + window).index(match)
+                        break
+                if best_match_len >= MIN_MATCH:
+                    bit_writer.write_bit(0)
+                    bit_writer.write_bits(best_match_ptr, WINDOW_BITS)
+                    bit_writer.write_bits(best_match_len - MIN_MATCH, LENGTH_BITS)
+                    for c in match:
+                        window[window_pos] = c
+                        window_pos += 1
+                        window_pos %= WINDOW_SIZE
+                    read_ptr += best_match_len
+                else:
+                    bit_writer.write_bit(1)
+                    bit_writer.write_bits(input[read_ptr], 8)
+                    window[window_pos] = input[read_ptr]
+                    window_pos += 1
+                    window_pos %= WINDOW_SIZE
+                    read_ptr += 1
+        return out_io.seek(0).read()
+
 def lzss_compress_bytewise(input):
     WINDOW_BITS = 12
     LENGTH_BITS  = 4
