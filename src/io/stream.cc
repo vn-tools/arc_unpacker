@@ -44,9 +44,13 @@ bstr Stream::read(const size_t bytes)
 bstr Stream::read_to_zero()
 {
     bstr output;
-    char c;
-    while ((c = read_u8()) != '\0')
+    while (!eof())
+    {
+        char c = read_u8();
+        if (c == '\0')
+            break;
         output += c;
+    }
     return output;
 }
 
