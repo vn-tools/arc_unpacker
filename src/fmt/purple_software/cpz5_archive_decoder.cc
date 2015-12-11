@@ -5,6 +5,7 @@
 #include "algo/locale.h"
 #include "algo/range.h"
 #include "io/memory_stream.h"
+#include "ptr.h"
 
 using namespace au;
 using namespace au::fmt::purple_software;
@@ -45,7 +46,7 @@ namespace
     };
 }
 
-static void decrypt_strategy_1a(u8 *target, const size_t size, const u32 key)
+static void decrypt_strategy_1a(ptr<u8> target, const u32 key)
 {
     static const std::vector<u32> crypt =
     {
@@ -68,8 +69,8 @@ static void decrypt_strategy_1a(u8 *target, const size_t size, const u32 key)
 
     size_t table_pos = 5;
 
-    auto target_u32 = reinterpret_cast<u32*>(target);
-    for (const auto i : algo::range(size >> 2))
+    auto target_u32 = reinterpret_cast<u32*>(&target[0]);
+    for (const auto i : algo::range(target.size() >> 2))
     {
         const auto tmp = (table[table_pos++] ^ *target_u32) + 0x784C5962;
         *target_u32++ = algo::rotr<u32>(tmp, shift) + 0x01010101;
@@ -77,7 +78,7 @@ static void decrypt_strategy_1a(u8 *target, const size_t size, const u32 key)
     }
 
     auto target_u8 = reinterpret_cast<u8*>(target_u32);
-    for (auto i : algo::range(size & 3))
+    for (auto i : algo::range(target.size() & 3))
     {
         *target_u8
             = ((table[table_pos++] >> (4 * (3 - i))) ^ *target_u8) - 0x79;
@@ -87,10 +88,7 @@ static void decrypt_strategy_1a(u8 *target, const size_t size, const u32 key)
 }
 
 static void decrypt_strategy_1b(
-    u8 *target,
-    const size_t size,
-    const u32 key,
-    const std::array<u32, 4> &pseudo_hash)
+    ptr<u8> target, const u32 key, const std::array<u32, 4> &pseudo_hash)
 {
     static const std::array<u32, 4> addends = {0x76A3BF29, 0, 0x10000000, 0};
 
@@ -100,9 +98,9 @@ static void decrypt_strategy_1b(
 
     size_t table_pos = 0;
 
-    auto target_u32 = reinterpret_cast<u32*>(target);
+    auto target_u32 = reinterpret_cast<u32*>(&target[0]);
     u32 seed = 0x76548AEF;
-    for (const auto i : algo::range(size >> 2))
+    for (const auto i : algo::range(target.size() >> 2))
     {
         u32 tmp = (*target_u32 ^ table[table_pos++]) - 0x4A91C262;
         *target_u32++ = algo::rotl<u32>(tmp, 3) - seed;
@@ -111,7 +109,7 @@ static void decrypt_strategy_1b(
     }
 
     auto target_u8 = reinterpret_cast<u8*>(target_u32);
-    for (const auto i : algo::range(size & 3))
+    for (const auto i : algo::range(target.size() & 3))
     {
         *target_u8 = ((table[table_pos++] >> 6) ^ *target_u8) + 0x37;
         target_u8++;
@@ -120,10 +118,7 @@ static void decrypt_strategy_1b(
 }
 
 static void decrypt_strategy_1c(
-    u8 *target,
-    const size_t size,
-    const u32 key,
-    const std::array<u32, 4> &pseudo_hash)
+    ptr<u8> target, const u32 key, const std::array<u32, 4> &pseudo_hash)
 {
     static const std::array<u32, 4> addends = {0, 0x112233, 0, 0x34258765};
 
@@ -133,9 +128,9 @@ static void decrypt_strategy_1c(
 
     size_t table_pos = 0;
 
-    auto target_u32 = reinterpret_cast<u32*>(target);
+    auto target_u32 = reinterpret_cast<u32*>(&target[0]);
     u32 seed = 0x2A65CB4E;
-    for (const auto i : algo::range(size >> 2))
+    for (const auto i : algo::range(target.size() >> 2))
     {
         u32 tmp = (*target_u32 ^ table[table_pos++]) - seed;
         *target_u32++ = algo::rotl<u32>(tmp, 2) + 0x37A19E8B;
@@ -144,7 +139,7 @@ static void decrypt_strategy_1c(
     }
 
     auto target_u8 = reinterpret_cast<u8*>(target_u32);
-    for (const auto i : algo::range(size & 3))
+    for (const auto i : algo::range(target.size() & 3))
     {
         *target_u8 = ((table[table_pos++] >> 4) ^ *target_u8) + 0x05;
         target_u8++;
@@ -168,20 +163,15 @@ static std::array<u8, 256> get_table_for_decrypt_strategy_2_and_3(
 }
 
 static void decrypt_strategy_2(
-    u8 *target,
-    const size_t size,
-    const u32 key,
-    const u32 seed,
-    const u8 permutation_xor)
+    ptr<u8> target, const u32 key, const u32 seed, const u8 permutation_xor)
 {
     const auto table = get_table_for_decrypt_strategy_2_and_3(key, seed);
-    for (const auto i : algo::range(size))
+    for (const auto i : algo::range(target.size()))
         target[i] = table[target[i] ^ permutation_xor];
 }
 
 static void decrypt_strategy_3(
-    u8 *target,
-    const size_t size,
+    ptr<u8> target,
     const u32 key,
     const u32 seed,
     const std::array<u32, 4> &pseudo_hash,
@@ -210,14 +200,15 @@ static void decrypt_strategy_3(
     size_t yet_another_table_pos = 9;
     u32 yet_another_key = 0x2547A39E;
 
-    u32 *target_u32 = reinterpret_cast<u32*>(target);
-    for (const auto i : algo::range(size >> 2))
+    u32 *target_u32 = reinterpret_cast<u32*>(&target[0]);
+    for (const auto i : algo::range(target.size() >> 2))
     {
         const auto tmp1 = *target_u32;
         const auto tmp2 = yet_another_table[yet_another_table_pos & 0x0F] >> 1;
         const auto tmp3 = yet_another_table[(yet_another_key >> 6) & 0x0F];
         const auto final_tmp = tmp1 ^ tmp2 ^ tmp3;
-        *target_u32 = pseudo_hash[yet_another_key & 3] ^ (final_tmp - entry_key);
+        *target_u32
+            = pseudo_hash[yet_another_key & 3] ^ (final_tmp - entry_key);
 
         yet_another_table_pos++;
         yet_another_key += *target_u32 + entry_key;
@@ -225,7 +216,7 @@ static void decrypt_strategy_3(
     }
 
     u8 *target_u8 = reinterpret_cast<u8*>(target_u32);
-    for (const auto i : algo::range(size & 3))
+    for (const auto i : algo::range(target.size() & 3))
         target_u8[i] = table[target_u8[i] ^ 0xCB];
 }
 
@@ -284,27 +275,17 @@ std::unique_ptr<fmt::ArchiveMeta>
     const auto table_size = header.dir_table_size + header.file_table_size;
     const auto data_start = input_file.stream.tell() + table_size;
     auto table_data = input_file.stream.read(table_size);
-    const auto dir_table_ptr = table_data.get<u8>();
-    const auto file_table_ptr = table_data.get<u8>() + header.dir_table_size;
+    auto table_data_ptr = make_ptr(table_data);
+    auto dir_table_ptr = make_ptr(&table_data[0], header.dir_table_size);
+    auto file_table_ptr = make_ptr(
+        &table_data[header.dir_table_size], header.file_table_size);
 
     // whole index
-    decrypt_strategy_1a(
-        table_data.get<u8>(),
-        table_size,
-        header.main_key ^ 0x3795B39A);
+    decrypt_strategy_1a(table_data_ptr, header.main_key ^ 0x3795B39A);
 
     // just directories
-    decrypt_strategy_2(
-        dir_table_ptr,
-        header.dir_table_size,
-        header.main_key,
-        pseudo_hash[1],
-        0x3A);
-    decrypt_strategy_1b(
-        dir_table_ptr,
-        header.dir_table_size,
-        header.main_key,
-        pseudo_hash);
+    decrypt_strategy_2(dir_table_ptr, header.main_key, pseudo_hash[1], 0x3A);
+    decrypt_strategy_1b(dir_table_ptr, header.main_key, pseudo_hash);
 
     DirectoryInfo *prev_dir = nullptr;
     std::vector<std::unique_ptr<DirectoryInfo>> dirs;
@@ -339,23 +320,17 @@ std::unique_ptr<fmt::ArchiveMeta>
 
     for (const auto &dir : dirs)
     {
-        auto dir_file_table_ptr = file_table_ptr + dir->file_table_offset;
+        auto dir_file_table_ptr = make_ptr(
+            file_table_ptr + dir->file_table_offset, dir->file_table_size);
 
         decrypt_strategy_2(
-            dir_file_table_ptr,
-            dir->file_table_size,
-            header.main_key,
-            pseudo_hash[2],
-            0x7E);
+            dir_file_table_ptr, header.main_key, pseudo_hash[2], 0x7E);
 
         decrypt_strategy_1c(
-            dir_file_table_ptr,
-            dir->file_table_size,
-            dir->file_table_main_key,
-            pseudo_hash);
+            dir_file_table_ptr, dir->file_table_main_key, pseudo_hash);
 
         io::MemoryStream file_table_stream(
-            bstr(dir_file_table_ptr, dir->file_table_size));
+            bstr(&dir_file_table_ptr[0], dir_file_table_ptr.size()));
 
         for (const auto i : algo::range(dir->file_count))
         {
@@ -388,8 +363,7 @@ std::unique_ptr<io::File> Cpz5ArchiveDecoder::read_file_impl(
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
 
     decrypt_strategy_3(
-        data.get<u8>(),
-        data.size(),
+        make_ptr(data),
         meta->pseudo_hash[3],
         meta->main_key,
         meta->pseudo_hash,
