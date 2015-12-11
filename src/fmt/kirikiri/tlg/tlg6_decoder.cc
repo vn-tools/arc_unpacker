@@ -478,7 +478,11 @@ static void read_image(io::Stream &stream, res::Image &image, Header &header)
 
             int byte_size = (bit_size + 7) / 8;
             bstr bit_pool = stream.read(byte_size);
-            bit_pool.resize(byte_size + 1);
+
+            // Although decode_golomb_values accesses only valid bits, it uses
+            // reinterpret_cast<u32*>() that might access bits out of bounds.
+            // This is to make sure those calls don't cause access violation.
+            bit_pool.resize(byte_size + 4);
 
             if (method != 0)
                 throw err::NotSupportedError("Unsupported encoding method");
