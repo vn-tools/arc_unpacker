@@ -14,7 +14,7 @@ struct MemoryStream::Priv final
         const auto size = sizeof(T);
         if (buffer_pos + size > buffer.size())
             throw err::EofError();
-        const auto ret = reinterpret_cast<const u32&>(buffer[buffer_pos]);
+        const auto ret = reinterpret_cast<const T&>(buffer[buffer_pos]);
         buffer_pos += size;
         return ret;
     }
