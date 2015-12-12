@@ -5,6 +5,21 @@ using namespace au;
 
 TEST_CASE("Binary utilities", "[algo]")
 {
+    SECTION("Xor with u8 key")
+    {
+        REQUIRE(algo::xor("test"_b, 1) == "udru"_b);
+    }
+
+    SECTION("Xor with bstr key")
+    {
+        REQUIRE(algo::xor("test"_b, "\x01\x02"_b) == "ugrv"_b);
+    }
+
+    SECTION("Xor with empty bstr key")
+    {
+        REQUIRE_THROWS(algo::xor("test"_b, ""_b));
+    }
+
     SECTION("Bit rotation")
     {
         REQUIRE(algo::rotl<u16>(1, 0) == 0b00000000'00000001);

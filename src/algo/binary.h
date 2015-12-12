@@ -17,4 +17,7 @@ namespace algo {
         return what >> shift | (what << ((sizeof(T) << 3) - shift));
     }
 
+    bstr xor(const bstr &input, const u8 key);
+    bstr xor(const bstr &input, const bstr &key);
+
 } }
