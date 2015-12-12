@@ -6,28 +6,28 @@
 
 using namespace au;
 
-std::shared_ptr<io::File> tests::stub_file(
+std::unique_ptr<io::File> tests::stub_file(
     const std::string &path, const bstr &data)
 {
-    return std::make_shared<io::File>(path, data);
+    return std::make_unique<io::File>(path, data);
 }
 
-std::shared_ptr<io::File> tests::file_from_path(
+std::unique_ptr<io::File> tests::file_from_path(
     const io::path &path, const std::string &custom_path)
 {
-    auto ret = std::make_shared<io::File>(path, io::FileMode::Read);
+    auto ret = std::make_unique<io::File>(path, io::FileMode::Read);
     if (!custom_path.empty())
         ret->path = custom_path;
     return ret;
 }
 
-std::shared_ptr<io::File> tests::zlib_file_from_path(
+std::unique_ptr<io::File> tests::zlib_file_from_path(
     const io::path &path, const std::string &custom_path)
 {
     io::File compressed_file(path, io::FileMode::Read);
     const auto compressed_data = compressed_file.stream.read_to_eof();
     const auto decompressed_data = algo::pack::zlib_inflate(compressed_data);
-    return std::make_shared<io::File>(
+    return std::make_unique<io::File>(
         custom_path.empty() ? compressed_file.path : custom_path,
         decompressed_data);
 }

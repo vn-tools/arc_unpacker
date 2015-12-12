@@ -18,17 +18,17 @@ static void do_test(
     const std::string &expected_path)
 {
     const GrpImageDecoder decoder;
-    const auto input_file = tests::file_from_path(input_path);
-    const auto input_palette_file = palette_path.empty()
+    auto input_file = tests::file_from_path(input_path);
+    auto input_palette_file = palette_path.empty()
         ? nullptr
         : tests::file_from_path(palette_path);
-    const auto input_mask_file = mask_path.empty()
+    auto input_mask_file = mask_path.empty()
         ? nullptr
         : tests::file_from_path(mask_path);
-    const auto expected_file = tests::file_from_path(expected_path);
+    auto expected_file = tests::file_from_path(expected_path);
 
     const auto actual_image = decoder.decode(
-        *input_file, input_palette_file, input_mask_file);
+        *input_file, std::move(input_palette_file), std::move(input_mask_file));
     tests::compare_images(*expected_file, actual_image);
 }
 

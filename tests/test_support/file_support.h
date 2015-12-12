@@ -6,13 +6,13 @@
 namespace au {
 namespace tests {
 
-    std::shared_ptr<io::File> stub_file(
+    std::unique_ptr<io::File> stub_file(
         const std::string &path, const bstr &data);
 
-    std::shared_ptr<io::File> file_from_path(
+    std::unique_ptr<io::File> file_from_path(
         const io::path &path, const std::string &custom_path = "");
 
-    std::shared_ptr<io::File> zlib_file_from_path(
+    std::unique_ptr<io::File> zlib_file_from_path(
         const io::path &path, const std::string &custom_path = "");
 
     void compare_file_paths(
