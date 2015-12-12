@@ -40,11 +40,38 @@ namespace au {
             return p;
         }
 
+        constexpr ptr<T> operator +(const size_t n) const
+        {
+            ptr ret(start_ptr, size());
+            ret += n;
+            return ret;
+        }
+
+        constexpr ptr<T> operator -(const size_t n) const
+        {
+            ptr ret(start_ptr, size());
+            ret -= n;
+            return ret;
+        }
+
+        ptr<T> operator +(const size_t n)
+        {
+            ptr ret(start_ptr, size());
+            ret += n;
+            return ret;
+        }
+
+        ptr<T> operator -(const size_t n)
+        {
+            ptr ret(start_ptr, size());
+            ret -= n;
+            return ret;
+        }
+
         constexpr size_t size() const { return end_ptr - start_ptr; }
         constexpr void operator +=(const size_t n) const { cur_ptr += n; }
         constexpr void operator -=(const size_t n) const { cur_ptr -= n; }
-        constexpr T *operator +(const size_t n) const { return cur_ptr + n; }
-        constexpr T *operator -(const size_t n) const { return cur_ptr - n; }
+
         constexpr T &operator *() const { return *cur_ptr; }
         constexpr T &operator[](const size_t n) const { return cur_ptr[n]; }
         constexpr T *start() const { return start_ptr; }
@@ -53,8 +80,6 @@ namespace au {
 
         void operator +=(const size_t n) { cur_ptr += n; }
         void operator -=(const size_t n) { cur_ptr -= n; }
-        T *operator +(const size_t n) { return cur_ptr + n; }
-        T *operator -(const size_t n) { return cur_ptr - n; }
         T &operator *() { return *cur_ptr; }
         T &operator[](const size_t n) { return cur_ptr[n]; }
         T *start() { return start_ptr; }
