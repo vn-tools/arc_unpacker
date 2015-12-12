@@ -374,7 +374,7 @@ std::unique_ptr<io::File> Cpz5ArchiveDecoder::read_file_impl(
 
 std::vector<std::string> Cpz5ArchiveDecoder::get_linked_formats() const
 {
-    return {"purple-software/ps2"};
+    return {"purple-software/ps2", "purple-software/pb3"};
 }
 
 static auto dummy
