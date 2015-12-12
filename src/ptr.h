@@ -48,6 +48,7 @@ namespace au {
         constexpr T &operator *() const { return *cur_ptr; }
         constexpr T &operator[](const size_t n) const { return cur_ptr[n]; }
         constexpr T *start() const { return start_ptr; }
+        constexpr T *current() const { return cur_ptr; }
         constexpr T *end() const { return end_ptr; }
 
         void operator +=(const size_t n) { cur_ptr += n; }
@@ -57,6 +58,7 @@ namespace au {
         T &operator *() { return *cur_ptr; }
         T &operator[](const size_t n) { return cur_ptr[n]; }
         T *start() { return start_ptr; }
+        T *current() { return cur_ptr; }
         T *end() { return end_ptr; }
 
         constexpr bool operator <(const T *p) const { return cur_ptr < p; }
