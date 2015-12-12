@@ -3,6 +3,7 @@
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
+#include "util/virtual_file_system.h"
 
 using namespace au;
 using namespace au::fmt::purple_software;
@@ -29,5 +30,19 @@ TEST_CASE("Purple Software PB3 images", "[fmt]")
     SECTION("Version 5")
     {
         do_test("st-ma_d150.pb3", "st-ma_d150-out.png");
+    }
+
+    SECTION("Version 6")
+    {
+        do_test("fk1-al_a102.pb3", "fk1-al_a102-out2.png");
+    }
+
+    SECTION("Version 6 with base images")
+    {
+        util::VirtualFileSystem::register_file("fk1-al_a101", []()
+            {
+                return tests::file_from_path(dir + "fk1-al_a101.png");
+            });
+        do_test("fk1-al_a102.pb3", "fk1-al_a102-out1.png");
     }
 }

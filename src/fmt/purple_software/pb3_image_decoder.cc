@@ -1,10 +1,14 @@
 #include "fmt/purple_software/pb3_image_decoder.h"
+#include "algo/binary.h"
 #include "algo/format.h"
 #include "algo/range.h"
+#include "algo/str.h"
 #include "err.h"
+#include "fmt/png/png_image_decoder.h"
 #include "io/memory_stream.h"
 #include "ptr.h"
 #include "util/cyclic_buffer.h"
+#include "util/virtual_file_system.h"
 
 using namespace au;
 using namespace au::fmt::purple_software;
@@ -110,13 +114,11 @@ static res::Image unpack_v1(const Header &header, io::Stream &input_stream)
         const auto plane = custom_lzss_decompress(
             control_block2, data_block2, size_orig);
 
-        size_t x_block_count = header.width >> 4;
-        size_t y_block_count = header.height >> 4;
-        if (header.width & 0xF) x_block_count++;
-        if (header.height & 0xF) y_block_count++;
-
-        if (!y_block_count || !x_block_count)
-            continue;
+        const size_t block_size = 16;
+        size_t x_block_count = header.width / block_size;
+        size_t y_block_count = header.height / block_size;
+        if (header.width % block_size) x_block_count++;
+        if (header.height % block_size) y_block_count++;
 
         io::MemoryStream control_block1_stream(control_block1);
         io::MemoryStream data_block1_stream(data_block1);
@@ -125,10 +127,12 @@ static res::Image unpack_v1(const Header &header, io::Stream &input_stream)
         for (const auto block_y : algo::range(y_block_count))
         for (const auto block_x : algo::range(x_block_count))
         {
-            const size_t block_x1 = block_x * 16;
-            const size_t block_y1 = block_y * 16;
-            const size_t block_x2 = std::min(block_x1 + 16, header.width);
-            const size_t block_y2 = std::min(block_y1 + 16, header.height);
+            const size_t block_x1 = block_x * block_size;
+            const size_t block_y1 = block_y * block_size;
+            const size_t block_x2
+                = std::min(block_x1 + block_size, header.width);
+            const size_t block_y2
+                = std::min(block_y1 + block_size, header.height);
 
             if (!bit_mask)
             {
@@ -207,6 +211,97 @@ static res::Image unpack_v5(const Header &header, io::Stream &input_stream)
     return output_image;
 }
 
+static res::Image unpack_v6(const Header &header, io::Stream &input_stream)
+{
+    static const auto name_key =
+        "\xA6\x75\xF3\x9C\xC5\x69\x78\xA3"
+        "\x3E\xA5\x4F\x79\x59\xFE\x3A\xC7"_b;
+
+    auto base_stem = algo::trim_to_zero(
+        algo::xor(input_stream.seek(0x34).read(0x20), name_key)).str();
+
+    res::Image output_image(header.width, header.height);
+
+    const auto base_file = util::VirtualFileSystem::get_by_stem(base_stem);
+    if (base_file)
+    {
+        static const std::vector<std::shared_ptr<fmt::ImageDecoder>> decoders
+            {
+                std::make_shared<Pb3ImageDecoder>(),
+                std::make_shared<fmt::png::PngImageDecoder>()
+            };
+        for (const auto &decoder : decoders)
+        {
+            if (decoder->is_recognized(*base_file))
+            {
+                const auto base_image = decoder->decode(*base_file);
+                output_image.paste(base_image, 0, 0);
+            }
+        }
+    }
+
+    const auto size_orig = input_stream.seek(0x18).read_u32_le();
+
+    const auto control_block_offset
+        = 0x20 + input_stream.seek(0x0C).read_u32_le();
+    const auto data_block_offset
+        = control_block_offset + input_stream.seek(0x2C).read_u32_le();
+    const auto data_block_size = input_stream.seek(0x30).read_u32_le();
+    const auto control_block_size = data_block_offset - control_block_offset;
+
+    const auto control_block1 = input_stream
+        .seek(control_block_offset)
+        .read(control_block_size);
+
+    const auto data_block1 = input_stream
+        .seek(data_block_offset)
+        .read(data_block_size);
+
+    const auto proxy_block = custom_lzss_decompress(
+        control_block1, data_block1, size_orig);
+
+    io::MemoryStream proxy_block_stream(proxy_block);
+    const auto control_block2_size = proxy_block_stream.read_u32_le();
+    const auto data_block2_size = proxy_block_stream.read_u32_le();
+    const auto control_block2 = proxy_block_stream.read(control_block2_size);
+    const auto data_block2 = proxy_block_stream.read(data_block2_size);
+
+    io::MemoryStream control_block2_stream(control_block2);
+    io::MemoryStream data_block2_stream(data_block2);
+
+    const auto block_size = 8;
+    auto x_block_count = header.width / block_size;
+    auto y_block_count = header.height / block_size;
+    if (header.width % block_size) x_block_count++;
+    if (header.height % block_size) y_block_count++;
+
+    int bit_mask = 0, control = 0;
+    for (const auto block_y : algo::range(y_block_count))
+    for (const auto block_x : algo::range(x_block_count))
+    {
+        const size_t block_x1 = block_x * block_size;
+        const size_t block_y1 = block_y * block_size;
+        const size_t block_x2 = std::min(block_x1 + block_size, header.width);
+        const size_t block_y2 = std::min(block_y1 + block_size, header.height);
+        if (!bit_mask)
+        {
+            control = control_block2_stream.read_u8();
+            bit_mask = 0x80;
+        }
+        if (!(control & bit_mask))
+        {
+            for (const auto y : algo::range(block_y1, block_y2))
+            for (const auto x : algo::range(block_x1, block_x2))
+            {
+                output_image.at(x, y) = res::read_pixel
+                    <res::PixelFormat::BGRA8888>(data_block2_stream);
+            }
+        }
+        bit_mask >>= 1;
+    }
+    return output_image;
+}
+
 static std::unique_ptr<io::Stream> decrypt(const bstr &input)
 {
     auto output_stream = std::make_unique<io::MemoryStream>(input);
@@ -254,6 +349,9 @@ res::Image Pb3ImageDecoder::decode_impl(io::File &input_file) const
 
     if (header.main_type == 5)
         return unpack_v5(header, *decrypted_stream);
+
+    if (header.main_type == 6)
+        return unpack_v6(header, *decrypted_stream);
 
     throw err::NotSupportedError(algo::format(
         "Unsupported type: %d.%d", header.main_type, header.sub_type));
