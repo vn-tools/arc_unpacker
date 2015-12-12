@@ -11,6 +11,9 @@ namespace util {
     class VirtualFileSystem final
     {
     public:
+        static void enable();
+        static void disable();
+
         static void register_file(
             const io::path &path,
             const std::function<std::unique_ptr<io::File>()> factory);

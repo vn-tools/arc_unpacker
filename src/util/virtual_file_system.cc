@@ -9,12 +9,24 @@ using namespace au::util;
 
 static std::map<io::path, std::function<std::unique_ptr<io::File>()>> factories;
 static std::set<io::path> directories;
+static bool enabled = true;
+
+void VirtualFileSystem::disable()
+{
+    enabled = false;
+}
+
+void VirtualFileSystem::enable()
+{
+    enabled = true;
+}
 
 void VirtualFileSystem::register_file(
     const io::path &path,
     const std::function<std::unique_ptr<io::File>()> factory)
 {
-    factories[path] = factory;
+    if (enabled)
+        factories[path] = factory;
 }
 
 void VirtualFileSystem::unregister_file(const io::path &path)
@@ -24,7 +36,8 @@ void VirtualFileSystem::unregister_file(const io::path &path)
 
 void VirtualFileSystem::register_directory(const io::path &path)
 {
-    directories.insert(path);
+    if (enabled)
+        directories.insert(path);
 }
 
 void VirtualFileSystem::unregister_directory(const io::path &path)
@@ -35,6 +48,9 @@ void VirtualFileSystem::unregister_directory(const io::path &path)
 std::unique_ptr<io::File> VirtualFileSystem::get_by_stem(
     const std::string &stem)
 {
+    if (!enabled)
+        return nullptr;
+
     for (const auto &kv : factories)
         if (kv.first.stem() == stem)
             return kv.second();
@@ -50,6 +66,9 @@ std::unique_ptr<io::File> VirtualFileSystem::get_by_stem(
 std::unique_ptr<io::File> VirtualFileSystem::get_by_name(
     const std::string &name)
 {
+    if (!enabled)
+        return nullptr;
+
     for (const auto &kv : factories)
         if (kv.first.name() == name)
             return kv.second();
@@ -64,6 +83,9 @@ std::unique_ptr<io::File> VirtualFileSystem::get_by_name(
 
 std::unique_ptr<io::File> VirtualFileSystem::get_by_path(const io::path &path)
 {
+    if (!enabled)
+        return nullptr;
+
     if (factories.find(path) != factories.end())
         return factories[path]();
 

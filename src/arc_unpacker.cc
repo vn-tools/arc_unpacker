@@ -22,6 +22,7 @@ namespace
         std::vector<io::path> input_paths;
         bool overwrite;
         bool enable_nested_decoding;
+        bool enable_virtual_file_system;
         bool should_show_help;
         bool should_list_fmt;
     };
@@ -157,6 +158,9 @@ void ArcUnpacker::Priv::register_cli_options()
     arg_parser.register_flag({"--no-recurse"})
         ->set_description("Disables automatic decoding of nested files.");
 
+    arg_parser.register_flag({"--no-vfs"})
+        ->set_description("Disables virtual file system lookups.");
+
     arg_parser.register_switch({"-o", "--out"})
         ->set_value_name("DIR")
         ->set_description("Specifies where to place the output files. "
@@ -195,6 +199,9 @@ void ArcUnpacker::Priv::parse_cli_options()
     }
 
     options.enable_nested_decoding = !arg_parser.has_flag("--no-recurse");
+
+    if (arg_parser.has_flag("--no-vfs"))
+        util::VirtualFileSystem::disable();
 
     if (arg_parser.has_switch("-o"))
         options.output_dir = arg_parser.get_switch("-o");
