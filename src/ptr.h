@@ -77,6 +77,17 @@ namespace au {
         return ptr<T>(data, size);
     }
 
+    template<typename T> inline ptr<T> make_ptr(const ptr<T> &other)
+    {
+        return ptr<T>(other.current(), other.end() - other.current());
+    }
+
+    template<typename T> inline ptr<T> make_ptr(
+        const ptr<T> &other, const size_t size)
+    {
+        return ptr<T>(other.current(), size);
+    }
+
     inline ptr<u8> make_ptr(bstr &data)
     {
         return ptr<u8>(data.get<u8>(), data.size());
