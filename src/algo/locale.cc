@@ -40,17 +40,20 @@ bstr algo::convert_locale(
         {
             case EINVAL:
             case EILSEQ:
+                iconv_close(conv);
                 throw err::CorruptDataError("Invalid byte sequence");
 
             case E2BIG:
                 // repeat the iteration unless we got nothing at all
                 if (output_bytes_left != buffer.size())
                     continue;
+                iconv_close(conv);
                 throw err::CorruptDataError(
                     "Code point too large to decode (?)");
         }
     }
 
+    iconv_close(conv);
     return output;
 }
 
