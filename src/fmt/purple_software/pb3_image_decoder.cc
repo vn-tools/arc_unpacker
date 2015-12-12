@@ -158,6 +158,55 @@ static res::Image unpack_v1(const Header &header, io::Stream &input_stream)
     return output_image;
 }
 
+static res::Image unpack_v5(const Header &header, io::Stream &input_stream)
+{
+    const auto channel_count = header.depth >> 3;
+    const auto stride = header.width * channel_count;
+    res::Image output_image(header.width, header.height);
+
+    input_stream.seek(0x34);
+    std::vector<size_t> control_offsets;
+    std::vector<size_t> data_offsets;
+    for (const auto i : algo::range(channel_count))
+    {
+        control_offsets.push_back(0x54 + input_stream.read_u32_le());
+        data_offsets.push_back(0x54 + input_stream.read_u32_le());
+    }
+
+    std::vector<size_t> control_sizes;
+    std::vector<size_t> data_sizes;
+    for (const auto i : algo::range(1, channel_count))
+    {
+        control_sizes.push_back(control_offsets[i] - control_offsets[i - 1]);
+        data_sizes.push_back(data_offsets[i] - data_offsets[i - 1]);
+    }
+    control_sizes.push_back(input_stream.size() - control_offsets.back());
+    data_sizes.push_back(input_stream.size() - data_offsets.back());
+
+    for (const auto channel : algo::range(channel_count))
+    {
+        const auto control_block = input_stream
+            .seek(control_offsets[channel])
+            .read(control_sizes[channel]);
+        const auto data_block = input_stream
+            .seek(data_offsets[channel])
+            .read(data_sizes[channel]);
+
+        const auto plane = custom_lzss_decompress(
+            control_block, data_block, header.width * header.height);
+        auto plane_ptr = make_ptr(plane);
+
+        u8 acc = 0;
+        for (const auto y : algo::range(header.height))
+        for (const auto x : algo::range(header.width))
+        {
+            acc += *plane_ptr++;
+            output_image.at(x, y)[channel] = acc;
+        }
+    }
+    return output_image;
+}
+
 static std::unique_ptr<io::Stream> decrypt(const bstr &input)
 {
     auto output_stream = std::make_unique<io::MemoryStream>(input);
@@ -202,6 +251,9 @@ res::Image Pb3ImageDecoder::decode_impl(io::File &input_file) const
 
     if (header.main_type == 1 && header.sub_type == 0x10)
         return unpack_v1(header, *decrypted_stream);
+
+    if (header.main_type == 5)
+        return unpack_v5(header, *decrypted_stream);
 
     throw err::NotSupportedError(algo::format(
         "Unsupported type: %d.%d", header.main_type, header.sub_type));

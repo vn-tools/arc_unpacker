@@ -25,4 +25,9 @@ TEST_CASE("Purple Software PB3 images", "[fmt]")
     {
         do_test("dialog_saki.pb3", "dialog_saki-out.png");
     }
+
+    SECTION("Version 5")
+    {
+        do_test("st-ma_d150.pb3", "st-ma_d150-out.png");
+    }
 }
