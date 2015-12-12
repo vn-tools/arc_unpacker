@@ -37,7 +37,11 @@ res::Image JpegImageDecoder::decode_impl(io::File &input_file) const
     else if (channels == 1)
         format = res::PixelFormat::Gray8;
     else
+    {
+        jpeg_finish_decompress(&info);
+        jpeg_destroy_decompress(&info);
         throw err::UnsupportedChannelCountError(channels);
+    }
 
     bstr raw_data(width * height * channels);
     for (auto y : algo::range(height))
@@ -46,6 +50,7 @@ res::Image JpegImageDecoder::decode_impl(io::File &input_file) const
         jpeg_read_scanlines(&info, &ptr, 1);
     }
     jpeg_finish_decompress(&info);
+    jpeg_destroy_decompress(&info);
 
     return res::Image(width, height, raw_data, format);
 }
