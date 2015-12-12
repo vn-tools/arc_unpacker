@@ -42,10 +42,25 @@ namespace res {
 
         ~Image();
 
-        size_t width() const;
-        size_t height() const;
-        Pixel &at(const size_t x, const size_t y);
-        const Pixel &at(const size_t x, const size_t y) const;
+        size_t width() const
+        {
+            return _width;
+        }
+
+        size_t height() const
+        {
+            return _height;
+        }
+
+        Pixel &at(const size_t x, const size_t y)
+        {
+            return pixels[x + y * _width];
+        }
+
+        const Pixel &at(const size_t x, const size_t y) const
+        {
+            return pixels[x + y * _width];
+        }
 
         void flip_vertically();
         void flip_horizontally();
@@ -60,8 +75,8 @@ namespace res {
         const Pixel *end() const;
 
     private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
+        std::vector<Pixel> pixels;
+        size_t _width, _height;
     };
 
 } }

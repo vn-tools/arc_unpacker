@@ -61,6 +61,8 @@ static void load_pixel_block_row(
             pixel.r = channel_data[2]->data.get<u8>()[block_y_shift + x];
             if (use_alpha)
                 pixel.a = channel_data[3]->data.get<u8>()[block_y_shift + x];
+            else
+                pixel.a = 0xFF;
             pixel.b += pixel.g;
             pixel.r += pixel.g;
 

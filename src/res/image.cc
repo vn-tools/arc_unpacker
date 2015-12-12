@@ -7,72 +7,59 @@
 using namespace au;
 using namespace au::res;
 
-struct Image::Priv final
+Image::Image(const Image &other) : Image(other.width(), other.height())
 {
-    void load(const bstr &input, const PixelFormat fmt);
+    for (auto y : algo::range(_height))
+    for (auto x : algo::range(_width))
+        at(x, y) = other.at(x, y);
+}
 
-    std::vector<Pixel> pixels;
-    size_t width;
-    size_t height;
-};
+Image::Image(const size_t width, const size_t height)
+    : pixels(width * height),  _width(width), _height(height)
+{
+}
 
-void Image::Priv::load(const bstr &input, const PixelFormat fmt)
+Image::Image(
+    const size_t width,
+    const size_t height,
+    const bstr &input,
+    const PixelFormat fmt) : Image(width, height)
 {
     if (input.size() < pixel_format_to_bpp(fmt) * width * height)
         throw err::BadDataSizeError();
     read_pixels(input.get<const u8>(), pixels, fmt);
 }
 
-Image::Image(const Image &other) : Image(other.width(), other.height())
+Image::Image(
+    const size_t width,
+    const size_t height,
+    io::Stream &input_stream,
+    const PixelFormat fmt) :
+        Image(
+            width,
+            height,
+            input_stream.read(width * height * pixel_format_to_bpp(fmt)),
+            fmt)
 {
-    for (auto y : algo::range(p->height))
-    for (auto x : algo::range(p->width))
-        at(x, y) = other.at(x, y);
-}
-
-Image::Image(const size_t width, const size_t height) : p(new Priv)
-{
-    p->width = width;
-    p->height = height;
-    p->pixels.resize(width * height);
 }
 
 Image::Image(
     const size_t width,
     const size_t height,
     const bstr &input,
-    const PixelFormat fmt) : Image(width, height)
+    const Palette &palette)
+        : Image(width, height, input, PixelFormat::Gray8)
 {
-    p->load(input, fmt);
-}
-
-Image::Image(
-    const size_t width,
-    const size_t height,
-    io::Stream &input,
-    const PixelFormat fmt) : Image(width, height)
-{
-    auto bpp = pixel_format_to_bpp(fmt);
-    p->load(input.read(width * height * bpp), fmt);
-}
-
-Image::Image(
-    const size_t width,
-    const size_t height,
-    const bstr &input,
-    const Palette &palette) : Image(width, height)
-{
-    p->load(input, PixelFormat::Gray8);
     apply_palette(palette);
 }
 
 Image::Image(
     const size_t width,
     const size_t height,
-    io::Stream &stream,
-    const Palette &palette) : Image(width, height)
+    io::Stream &input_stream,
+    const Palette &palette)
+        : Image(width, height, input_stream, PixelFormat::Gray8)
 {
-    p->load(stream.read(width * height), PixelFormat::Gray8);
     apply_palette(palette);
 }
 
@@ -80,76 +67,56 @@ Image::~Image()
 {
 }
 
-size_t Image::width() const
-{
-    return p->width;
-}
-
-size_t Image::height() const
-{
-    return p->height;
-}
-
-Pixel &Image::at(const size_t x, const size_t y)
-{
-    return p->pixels[x + y * p->width];
-}
-
-const Pixel &Image::at(const size_t x, const size_t y) const
-{
-    return p->pixels[x + y * p->width];
-}
-
 void Image::flip_vertically()
 {
-    for (auto y : algo::range(p->height >> 1))
-    for (auto x : algo::range(p->width))
+    for (auto y : algo::range(_height >> 1))
+    for (auto x : algo::range(_width))
     {
-        auto t = at(x, p->height - 1 - y);
-        at(x, p->height - 1 - y) = at(x, y);
+        auto t = at(x, _height - 1 - y);
+        at(x, _height - 1 - y) = at(x, y);
         at(x, y) = t;
     }
 }
 
 void Image::flip_horizontally()
 {
-    for (auto y : algo::range(p->height))
-    for (auto x : algo::range(p->width >> 1))
+    for (auto y : algo::range(_height))
+    for (auto x : algo::range(_width >> 1))
     {
-        auto t = at(p->width - 1 - x, y);
-        at(p->width - 1 - x, y) = at(x, y);
+        auto t = at(_width - 1 - x, y);
+        at(_width - 1 - x, y) = at(x, y);
         at(x, y) = t;
     }
 }
 
 void Image::crop(const size_t new_width, const size_t new_height)
 {
-    std::vector<Pixel> old_pixels(p->pixels.begin(), p->pixels.end());
-    auto old_width = p->width;
-    auto old_height = p->height;
-    p->width = new_width;
-    p->height = new_height;
-    p->pixels.resize(new_width * new_height);
+    std::vector<Pixel> old_pixels(pixels.begin(), pixels.end());
+    auto old_width = _width;
+    auto old_height = _height;
+    _width = new_width;
+    _height = new_height;
+    pixels.resize(new_width * new_height);
     for (auto y : algo::range(std::min(old_height, new_height)))
     for (auto x : algo::range(std::min(old_width, new_width)))
     {
-        p->pixels[y * new_width + x] = old_pixels[y * old_width + x];
+        pixels[y * new_width + x] = old_pixels[y * old_width + x];
     }
 }
 
 void Image::apply_mask(const Image &other)
 {
-    if (other.width() != p->width || other.height() != p->height)
+    if (other.width() != _width || other.height() != _height)
         throw std::logic_error("Mask image size is different from image size");
-    for (auto y : algo::range(p->height))
-    for (auto x : algo::range(p->width))
+    for (auto y : algo::range(_height))
+    for (auto x : algo::range(_width))
         at(x, y).a = other.at(x, y).r;
 }
 
 void Image::apply_palette(const Palette &palette)
 {
     auto palette_size = palette.size();
-    for (auto &c : p->pixels)
+    for (auto &c : pixels)
     {
         if (c.r < palette_size)
             c = palette[c.r];
@@ -173,20 +140,20 @@ void Image::paste(const Image &other, const int target_x, const int target_y)
 
 Pixel *Image::begin()
 {
-    return &p->pixels[0];
+    return &pixels[0];
 }
 
 Pixel *Image::end()
 {
-    return &p->pixels[p->width * p->height];
+    return &pixels[_width * _height];
 }
 
 const Pixel *Image::begin() const
 {
-    return &p->pixels[0];
+    return &pixels[0];
 }
 
 const Pixel *Image::end() const
 {
-    return &p->pixels[p->width * p->height];
+    return &pixels[_width * _height];
 }
