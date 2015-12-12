@@ -9,6 +9,7 @@
 #include "fmt/registry.h"
 #include "io/file_system.h"
 #include "log.h"
+#include "util/virtual_file_system.h"
 
 using namespace au;
 
@@ -264,6 +265,7 @@ void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, io::File &file) const
     auto tmp_path = file.path;
     tmp_path.change_stem(tmp_path.stem() + "~");
     const auto base_name = tmp_path.name();
+    util::VirtualFileSystem::register_directory(file.path.parent());
 
     const FileSaverHdd saver(options.output_dir, options.overwrite);
     const FileSaverCallback saver_proxy(
@@ -274,9 +276,11 @@ void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, io::File &file) const
             saver.save(saved_file);
         });
 
-    return options.enable_nested_decoding
+    options.enable_nested_decoding
         ? fmt::unpack_recursive(arguments, decoder, file, saver_proxy, registry)
         : fmt::unpack_non_recursive(arguments, decoder, file, saver_proxy);
+
+    util::VirtualFileSystem::unregister_directory(file.path.parent());
 }
 
 bool ArcUnpacker::Priv::guess_decoder_and_unpack(io::File &file) const

@@ -2,6 +2,7 @@
 #include "algo/format.h"
 #include "err.h"
 #include "log.h"
+#include "util/virtual_file_system.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -27,6 +28,15 @@ void ArchiveDecoder::unpack(
 
     size_t error_count = 0;
     auto meta = read_meta(input_file);
+
+    for (const auto &entry : meta->entries)
+    {
+        util::VirtualFileSystem::register_file(entry->path, [&]()
+            {
+                return read_file(input_file, *meta, *entry);
+            });
+    }
+
     if (!preprocessing_disabled)
         preprocess(input_file, *meta, file_saver);
     for (auto &entry : meta->entries)
@@ -43,6 +53,10 @@ void ArchiveDecoder::unpack(
             Log.err("Can't unpack %s: %s\n", entry->path.c_str(), e.what());
         }
     }
+
+    for (const auto &entry : meta->entries)
+        util::VirtualFileSystem::unregister_file(entry->path);
+
     if (error_count)
     {
         throw err::GeneralError(
