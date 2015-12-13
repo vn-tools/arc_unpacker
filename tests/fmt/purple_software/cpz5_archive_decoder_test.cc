@@ -20,14 +20,29 @@ static void do_test(
 
 TEST_CASE("Purple Software CPZ5 archives", "[fmt]")
 {
-    do_test(
-        "ps.cpz",
-        {
-            tests::file_from_path(
-                dir + "ps~.cpz/transeffect.o2", "transeffect.o2"),
-            tests::file_from_path(
-                dir + "ps~.cpz/maskeffectcut.o2", "maskeffectcut.o2"),
-            tests::file_from_path(
-                dir + "ps~.cpz/maskeffectput.o2", "maskeffectput.o2"),
-        });
+    SECTION("Variant 1")
+    {
+        do_test(
+            "v1_ps.cpz",
+            {
+                tests::file_from_path(
+                    dir + "v1_ps~.cpz/maskeffectcut.o2", "maskeffectcut.o2"),
+                tests::file_from_path(
+                    dir + "v1_ps~.cpz/maskeffectput.o2", "maskeffectput.o2"),
+            });
+    }
+
+    SECTION("Variant 2")
+    {
+        do_test(
+            "v2_ps.cpz",
+            {
+                tests::file_from_path(
+                    dir + "v2_ps~.cpz/transeffect.o2", "transeffect.o2"),
+                tests::file_from_path(
+                    dir + "v2_ps~.cpz/maskeffectcut.o2", "maskeffectcut.o2"),
+                tests::file_from_path(
+                    dir + "v2_ps~.cpz/maskeffectput.o2", "maskeffectput.o2"),
+            });
+    }
 }
