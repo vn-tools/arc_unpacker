@@ -3,7 +3,9 @@
 #include "algo/range.h"
 #include "algo/str.h"
 #include "err.h"
+#include "fmt/majiro/rc8_image_decoder.h"
 #include "io/memory_stream.h"
+#include "util/virtual_file_system.h"
 
 using namespace au;
 using namespace au::fmt::majiro;
@@ -154,11 +156,25 @@ res::Image RctImageDecoder::decode_impl(io::File &input_file) const
     const auto height = input_file.stream.read_u32_le();
     const auto data_size = input_file.stream.read_u32_le();
 
-    std::string base_file;
+    res::Image output_image(width, height);
+
     if (version == 1)
     {
         const auto name_size = input_file.stream.read_u16_le();
-        base_file = input_file.stream.read(name_size).str();
+        const auto base_name
+            = algo::trim_to_zero(input_file.stream.read(name_size).str());
+
+        static const std::vector<std::shared_ptr<fmt::ImageDecoder>> decoders
+            {
+                std::make_shared<RctImageDecoder>(),
+                std::make_shared<Rc8ImageDecoder>()
+            };
+
+        auto base_file = util::VirtualFileSystem::get_by_name(base_name);
+        if (base_file)
+            for (const auto &decoder : decoders)
+                if (decoder->is_recognized(*base_file))
+                    output_image.paste(decoder->decode(*base_file), 0, 0);
     }
 
     auto data = input_file.stream.read(data_size);
@@ -173,20 +189,21 @@ res::Image RctImageDecoder::decode_impl(io::File &input_file) const
         data = decrypt(data, p->key);
     }
     data = uncompress(data, width, height);
-    res::Image image(width, height, data, res::PixelFormat::BGR888);
 
+    res::Image overlay_image(width, height, data, res::PixelFormat::BGR888);
     if (version == 1)
     {
         for (auto y : algo::range(height))
         for (auto x : algo::range(width))
         {
-            auto &p = image.at(x, y);
+            auto &p = overlay_image.at(x, y);
             if (p.r == 0xFF && p.g == 0 && p.g == 0)
                 p.a = p.r = 0;
         }
     }
 
-    return image;
+    output_image.paste(overlay_image, 0, 0);
+    return output_image;
 }
 
 static auto dummy = fmt::register_fmt<RctImageDecoder>("majiro/rct");
