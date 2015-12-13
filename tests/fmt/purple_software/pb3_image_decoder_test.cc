@@ -27,6 +27,11 @@ TEST_CASE("Purple Software PB3 images", "[fmt]")
         do_test("dialog_saki.pb3", "dialog_saki-out.png");
     }
 
+    SECTION("Version 2")
+    {
+        do_test("bg401i1.pb3", "bg401i1-out.png");
+    }
+
     SECTION("Version 3")
     {
         do_test("mask009a.pb3", "mask009a-out.png");

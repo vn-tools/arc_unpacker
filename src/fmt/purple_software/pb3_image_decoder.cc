@@ -163,6 +163,42 @@ static res::Image unpack_v1(const Header &header, io::Stream &input_stream)
     return output_image;
 }
 
+static res::Image unpack_v2(const Header &header, io::Stream &input_stream)
+{
+    input_stream.seek(0x2C);
+
+    const auto mask_data_offset = input_stream.read_u32_le();
+    const auto mask_data_size = input_stream.read_u32_le();
+    const auto jbp1_data_size = mask_data_offset - input_stream.tell();
+    const auto jbp1_data = input_stream.read(jbp1_data_size);
+    const auto mask_data = input_stream
+        .seek(mask_data_offset).read(mask_data_size);
+
+    res::Image output_image(
+        header.width,
+        header.height,
+        jbp1_decompress(jbp1_data),
+        res::PixelFormat::BGR888);
+
+    bstr final_mask_data;
+    final_mask_data.reserve(header.width * header.height);
+    io::MemoryStream mask_stream(mask_data);
+    while (!mask_stream.eof())
+    {
+        const auto control = mask_stream.read_u8();
+        if (control == 0 || control == 0xFF)
+            final_mask_data += bstr(mask_stream.read_u8(), control);
+        else
+            final_mask_data += control;
+    }
+
+    res::Image mask_image(
+        header.width, header.height, final_mask_data, res::PixelFormat::Gray8);
+
+    output_image.apply_mask(mask_image);
+    return output_image;
+}
+
 static res::Image unpack_v3(const Header &header, io::Stream &input_stream)
 {
     const auto jbp1_data = input_stream.seek(0x34).read_to_eof();
@@ -358,14 +394,17 @@ res::Image Pb3ImageDecoder::decode_impl(io::File &input_file) const
     if (header.main_type == 1 && header.sub_type == 0x10)
         return unpack_v1(header, *decrypted_stream);
 
+    if (header.main_type == 2)
+        return unpack_v2(header, *decrypted_stream);
+
+    if (header.main_type == 3)
+        return unpack_v3(header, *decrypted_stream);
+
     if (header.main_type == 5)
         return unpack_v5(header, *decrypted_stream);
 
     if (header.main_type == 6)
         return unpack_v6(header, *decrypted_stream);
-
-    if (header.main_type == 3)
-        return unpack_v3(header, *decrypted_stream);
 
     throw err::NotSupportedError(algo::format(
         "Unsupported type: %d.%d", header.main_type, header.sub_type));
