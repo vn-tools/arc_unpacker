@@ -5,6 +5,7 @@
 #include "algo/str.h"
 #include "err.h"
 #include "fmt/png/png_image_decoder.h"
+#include "fmt/purple_software/jbp1.h"
 #include "io/memory_stream.h"
 #include "ptr.h"
 #include "util/cyclic_buffer.h"
@@ -160,6 +161,16 @@ static res::Image unpack_v1(const Header &header, io::Stream &input_stream)
         for (auto &c : output_image)
             c.a = 0xFF;
     return output_image;
+}
+
+static res::Image unpack_v3(const Header &header, io::Stream &input_stream)
+{
+    const auto jbp1_data = input_stream.seek(0x34).read_to_eof();
+    return res::Image(
+        header.width,
+        header.height,
+        jbp1_decompress(jbp1_data),
+        res::PixelFormat::BGR888);
 }
 
 static res::Image unpack_v5(const Header &header, io::Stream &input_stream)
@@ -352,6 +363,9 @@ res::Image Pb3ImageDecoder::decode_impl(io::File &input_file) const
 
     if (header.main_type == 6)
         return unpack_v6(header, *decrypted_stream);
+
+    if (header.main_type == 3)
+        return unpack_v3(header, *decrypted_stream);
 
     throw err::NotSupportedError(algo::format(
         "Unsupported type: %d.%d", header.main_type, header.sub_type));
