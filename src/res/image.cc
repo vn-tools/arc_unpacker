@@ -135,7 +135,11 @@ void Image::paste(const Image &other, const int target_x, const int target_y)
     const size_t source_y = std::max<size_t>(0, -target_y);
     for (const auto y : algo::range(y1, y2, 1))
     for (const auto x : algo::range(x1, x2, 1))
-        at(x, y) = other.at(source_x + x, source_y + y);
+    {
+        const auto &target_pixel = other.at(source_x + x, source_y + y);
+        if (target_pixel.a)
+            at(x, y) = target_pixel;
+    }
 }
 
 Pixel *Image::begin()

@@ -17,6 +17,8 @@ static inline void compare_pixels(
 {
     if (expected != actual)
     {
+        if (expected.a == 0 && actual.a == 0)
+            return;
         FAIL(algo::format(
             "Pixels differ at %d, %d: %02x%02x%02x%02x != %02x%02x%02x%02x",
             x, y,
