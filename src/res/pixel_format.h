@@ -35,8 +35,7 @@ namespace res {
         Count
     };
 
-    // TODO: constexpr once cygwin adapts mingw-w64 for its g++
-    inline int pixel_format_to_bpp(PixelFormat fmt)
+    inline size_t pixel_format_to_bpp(PixelFormat fmt)
     {
         switch (fmt)
         {
@@ -79,7 +78,6 @@ namespace res {
         std::vector<Pixel> &output,
         const PixelFormat fmt);
 
-    // TODO: constexpr once cygwin adapts mingw-w64 for its g++
     template<PixelFormat fmt> inline Pixel read_pixel(io::Stream &stream)
     {
         auto str = stream.read(pixel_format_to_bpp(fmt));
