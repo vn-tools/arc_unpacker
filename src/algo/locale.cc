@@ -62,7 +62,17 @@ bstr algo::sjis_to_utf8(const bstr &input)
     return convert_locale(input, "cp932", "utf-8");
 }
 
+bstr algo::utf16_to_utf8(const bstr &input)
+{
+    return convert_locale(input, "utf-16le", "utf-8");
+}
+
 bstr algo::utf8_to_sjis(const bstr &input)
 {
     return convert_locale(input, "utf-8", "cp932");
+}
+
+bstr algo::utf8_to_utf16(const bstr &input)
+{
+    return convert_locale(input, "utf-8", "utf-16le");
 }

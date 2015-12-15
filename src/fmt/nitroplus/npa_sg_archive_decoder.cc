@@ -46,8 +46,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         const auto name_size = table_stream.read_u32_le();
-        entry->path = algo::convert_locale(
-            table_stream.read(name_size), "utf-16le", "utf-8").str();
+        entry->path = algo::utf16_to_utf8(table_stream.read(name_size)).str();
         entry->size = table_stream.read_u32_le();
         entry->offset = table_stream.read_u32_le();
         table_stream.skip(4);

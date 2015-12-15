@@ -19,10 +19,8 @@ std::vector<std::string> get_arguments(int argc, const wchar_t **argv)
     std::vector<std::string> arguments;
     for (int i = 0; i < argc; i++)
     {
-        const auto arg = algo::convert_locale(
-            bstr(reinterpret_cast<const char*>(argv[i]), wcslen(argv[i]) * 2),
-            "utf-16le",
-            "utf-8");
+        const auto arg = algo::utf16_to_utf8(
+            bstr(reinterpret_cast<const char*>(argv[i]), wcslen(argv[i]) * 2));
         arguments.push_back(arg.str());
     }
     return arguments;

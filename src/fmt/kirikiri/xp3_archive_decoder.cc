@@ -92,7 +92,7 @@ static std::unique_ptr<InfoChunk> read_info_chunk(io::Stream &chunk_stream)
 
     const auto file_name_size = chunk_stream.read_u16_le();
     const auto name = chunk_stream.read(file_name_size * 2);
-    info_chunk->name = algo::convert_locale(name, "utf-16le", "utf-8").str();
+    info_chunk->name = algo::utf16_to_utf8(name).str();
     return info_chunk;
 }
 

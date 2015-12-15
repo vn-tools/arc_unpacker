@@ -9,8 +9,7 @@ using namespace au::io;
 static FILE *utf8_fopen(const path &path, const char *mode)
 {
     #ifdef _WIN32
-        auto cmode = algo::convert_locale(
-            std::string(mode), "utf-8", "utf-16le").str();
+        auto cmode = algo::utf8_to_utf16(std::string(mode)).str();
         std::wstring widemode(
             reinterpret_cast<const wchar_t*>(cmode.c_str()),
             cmode.size() / 2);

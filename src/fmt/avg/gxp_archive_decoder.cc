@@ -61,8 +61,8 @@ std::unique_ptr<fmt::ArchiveMeta>
         const auto name_size = entry_stream->read_u32_le();
         entry_stream->skip(8);
         entry->offset = data_offset + entry_stream->read_u64_le();
-        entry->path = algo::convert_locale(
-            entry_stream->read(name_size * 2), "ucs-2", "utf8").str();
+        entry->path
+            = algo::utf16_to_utf8(entry_stream->read(name_size * 2)).str();
         meta->entries.push_back(std::move(entry));
     }
     return std::move(meta);

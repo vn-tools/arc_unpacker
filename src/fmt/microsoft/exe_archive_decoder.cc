@@ -458,7 +458,7 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
         args.stream.seek(args.base_offset + entry.name_offset);
         size_t max_size = args.stream.read_u16_le();
         bstr name_utf16 = args.stream.read(max_size * 2);
-        return algo::convert_locale(name_utf16, "utf-16le", "utf-8").str();
+        return algo::utf16_to_utf8(name_utf16).str();
     }
 
     switch (entry.id)
