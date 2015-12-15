@@ -16,27 +16,27 @@ namespace au {
 
         constexpr ptr &operator--()
         {
-            cur_ptr -= sizeof(T);
+            cur_ptr--;
             return *this;
         }
 
         constexpr ptr &operator++()
         {
-            cur_ptr += sizeof(T);
+            cur_ptr++;
             return *this;
         }
 
         constexpr ptr operator--(int)
         {
             auto p = *this;
-            cur_ptr -= sizeof(T);
+            cur_ptr--;
             return p;
         }
 
         constexpr ptr operator++(int)
         {
             auto p = *this;
-            cur_ptr += sizeof(T);
+            cur_ptr++;
             return p;
         }
 
