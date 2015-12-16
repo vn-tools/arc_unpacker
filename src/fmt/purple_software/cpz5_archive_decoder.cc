@@ -249,5 +249,8 @@ std::vector<std::string> Cpz5ArchiveDecoder::get_linked_formats() const
     return {"purple-software/ps2", "purple-software/pb3"};
 }
 
-static auto dummy
+static auto dummy1
     = fmt::register_fmt<Cpz5ArchiveDecoder>("purple-software/cpz5");
+
+static auto dummy2
+    = fmt::register_fmt<Cpz5ArchiveDecoder>("purple-software/cpz6");
