@@ -14,26 +14,26 @@ namespace au {
         {
         }
 
-        /*constexpr */ptr &operator--()
+        ptr &operator--()
         {
             cur_ptr--;
             return *this;
         }
 
-        /*constexpr */ptr &operator++()
+        ptr &operator++()
         {
             cur_ptr++;
             return *this;
         }
 
-        /*constexpr */ptr operator--(int)
+        ptr operator--(int)
         {
             auto p = *this;
             cur_ptr--;
             return p;
         }
 
-        /*constexpr */ptr operator++(int)
+        ptr operator++(int)
         {
             auto p = *this;
             cur_ptr++;
