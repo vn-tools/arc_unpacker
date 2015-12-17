@@ -9,6 +9,9 @@ namespace purple_software {
     class Cpz5ArchiveDecoder final : public ArchiveDecoder
     {
     public:
+        Cpz5ArchiveDecoder(const size_t version);
+        ~Cpz5ArchiveDecoder();
+
         std::vector<std::string> get_linked_formats() const override;
 
     protected:
@@ -21,6 +24,10 @@ namespace purple_software {
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
+
+    private:
+        struct Priv;
+        std::unique_ptr<Priv> p;
     };
 
 } } }

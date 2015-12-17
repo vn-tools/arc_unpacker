@@ -178,10 +178,28 @@ static Header read_header_6(io::Stream &input_stream)
     return header;
 }
 
+struct Cpz5ArchiveDecoder::Priv final
+{
+    size_t version;
+};
+
+Cpz5ArchiveDecoder::Cpz5ArchiveDecoder(const size_t version)
+    : p(new Priv {version})
+{
+}
+
+Cpz5ArchiveDecoder::~Cpz5ArchiveDecoder()
+{
+}
+
 bool Cpz5ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.stream.seek(0).read(magic5.size()) == magic5
-        || input_file.stream.seek(0).read(magic6.size()) == magic6;
+    if (p->version == 5)
+        return input_file.stream.seek(0).read(magic5.size()) == magic5;
+    else if (p->version == 6)
+        return input_file.stream.seek(0).read(magic6.size()) == magic6;
+    else
+        throw std::logic_error("Bad version");
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
@@ -190,13 +208,15 @@ std::unique_ptr<fmt::ArchiveMeta>
     std::vector<std::shared_ptr<cpz5::Plugin>> plugins;
     Header header;
 
-    if (input_file.stream.seek(0).read(magic5.size()) == magic5)
+    if (p->version == 5)
     {
+        input_file.stream.seek(magic5.size());
         header = read_header_5(input_file.stream);
         plugins = cpz5::get_cpz5_plugins();
     }
-    else if (input_file.stream.seek(0).read(magic6.size()) == magic6)
+    else if (p->version == 6)
     {
+        input_file.stream.seek(magic6.size());
         header = read_header_6(input_file.stream);
         plugins = cpz5::get_cpz6_plugins();
     }
@@ -250,7 +270,7 @@ std::vector<std::string> Cpz5ArchiveDecoder::get_linked_formats() const
 }
 
 static auto dummy1
-    = fmt::register_fmt<Cpz5ArchiveDecoder>("purple-software/cpz5");
+    = fmt::register_fmt<Cpz5ArchiveDecoder>("purple-software/cpz5", 5);
 
 static auto dummy2
-    = fmt::register_fmt<Cpz5ArchiveDecoder>("purple-software/cpz6");
+    = fmt::register_fmt<Cpz5ArchiveDecoder>("purple-software/cpz6", 6);
