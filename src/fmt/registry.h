@@ -32,10 +32,15 @@ namespace fmt {
         std::unique_ptr<Priv> p;
     };
 
-    template<typename T> static bool register_fmt(const std::string &name)
+    template <typename T, typename ...Params> bool register_fmt(
+        const std::string &name, Params&&... params)
     {
         Registry::instance().add_decoder(
-            name, []() { return std::unique_ptr<IDecoder>(new T()); });
+            name,
+            [=]()
+            {
+                return std::make_unique<T>(params...);
+            });
         return true;
     }
 
