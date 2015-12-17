@@ -230,6 +230,7 @@ def main():
     for dir in dirs:
         sources = sorted(glob.iglob(dir + '/**/*.cc', recursive=True))
         headers = sorted(glob.iglob(dir + '/**/*.h', recursive=True))
+        headers = [f for f in headers if 'catch.h' not in f]
 
         for name in sorted(sources + headers):
             with open(name, 'rb') as f:
