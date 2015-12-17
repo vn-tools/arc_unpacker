@@ -1,5 +1,5 @@
 #include "test_support/decoder_support.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 
 using namespace au;
 

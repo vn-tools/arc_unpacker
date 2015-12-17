@@ -1,7 +1,7 @@
 #include "fmt/kirikiri/xp3_filter_registry.h"
 #include "algo/range.h"
 #include "fmt/kirikiri/cxdec.h"
-#include "util/plugin_mgr.hh"
+#include "util/plugin_mgr.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri;

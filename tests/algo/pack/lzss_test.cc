@@ -1,6 +1,6 @@
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 
 using namespace au;
 using namespace au::algo::pack;

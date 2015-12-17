@@ -3,7 +3,7 @@
 #include "algo/range.h"
 #include "err.h"
 #include "fmt/cronus/common.h"
-#include "util/plugin_mgr.hh"
+#include "util/plugin_mgr.h"
 
 using namespace au;
 using namespace au::fmt::cronus;

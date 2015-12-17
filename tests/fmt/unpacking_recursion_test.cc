@@ -2,7 +2,7 @@
 #include "fmt/decoder_util.h"
 #include "fmt/file_decoder.h"
 #include "io/memory_stream.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 
 using namespace au;
 using namespace au::fmt;

@@ -4,7 +4,7 @@
 #include "err.h"
 #include "fmt/cronus/common.h"
 #include "io/memory_stream.h"
-#include "util/plugin_mgr.hh"
+#include "util/plugin_mgr.h"
 
 using namespace au;
 using namespace au::fmt::cronus;

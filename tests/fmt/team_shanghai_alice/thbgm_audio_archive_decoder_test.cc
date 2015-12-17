@@ -1,7 +1,7 @@
 #include "fmt/team_shanghai_alice/thbgm_audio_archive_decoder.h"
 #include "log.h"
 #include "test_support/audio_support.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 

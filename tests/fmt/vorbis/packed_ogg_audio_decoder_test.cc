@@ -1,6 +1,6 @@
 #include "fmt/vorbis/packed_ogg_audio_decoder.h"
 #include "log.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 

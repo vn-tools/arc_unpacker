@@ -1,6 +1,6 @@
 #include "io/path.h"
 #include <cstring>
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 
 using namespace au;
 

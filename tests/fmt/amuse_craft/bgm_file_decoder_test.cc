@@ -1,5 +1,5 @@
 #include "fmt/amuse_craft/bgm_file_decoder.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 

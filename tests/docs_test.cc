@@ -3,7 +3,7 @@
 #include "fmt/registry.h"
 #include "io/file_stream.h"
 #include "log.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 
 using namespace au;
 

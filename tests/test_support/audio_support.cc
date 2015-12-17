@@ -2,7 +2,7 @@
 #include "algo/format.h"
 #include "algo/range.h"
 #include "fmt/microsoft/wav_audio_decoder.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 #include "test_support/file_support.h"
 
 using namespace au;

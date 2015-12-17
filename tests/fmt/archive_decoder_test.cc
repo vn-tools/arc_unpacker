@@ -1,6 +1,6 @@
 #include "fmt/archive_decoder.h"
 #include "fmt/file_decoder.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 
 using namespace au;

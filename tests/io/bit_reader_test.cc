@@ -1,7 +1,7 @@
 #include "io/bit_reader.h"
 #include "algo/range.h"
 #include "io/memory_stream.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 
 using namespace au;
 

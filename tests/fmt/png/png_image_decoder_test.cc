@@ -1,7 +1,7 @@
 #include "fmt/png/png_image_decoder.h"
 #include <map>
 #include "log.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"

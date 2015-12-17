@@ -1,4 +1,4 @@
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 #include "test_support/stream_test.h"
 
 using namespace au;

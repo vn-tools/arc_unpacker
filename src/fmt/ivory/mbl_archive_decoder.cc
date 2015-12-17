@@ -5,7 +5,7 @@
 #include "err.h"
 #include "fmt/ivory/prs_image_decoder.h"
 #include "fmt/ivory/wady_audio_decoder.h"
-#include "util/plugin_mgr.hh"
+#include "util/plugin_mgr.h"
 
 using namespace au;
 using namespace au::fmt::ivory;

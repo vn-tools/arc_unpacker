@@ -4,7 +4,7 @@
 #include "fmt/jpeg/jpeg_image_decoder.h"
 #include "fmt/microsoft/bmp_image_decoder.h"
 #include "fmt/png/png_image_decoder.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 #include "test_support/file_support.h"
 
 using namespace au;

@@ -1,5 +1,5 @@
 #include "algo/crypt/blowfish.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 #include "types.h"
 
 using namespace au;

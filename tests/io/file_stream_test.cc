@@ -1,6 +1,6 @@
 #include "io/file_stream.h"
 #include "io/file_system.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 #include "test_support/stream_test.h"
 
 using namespace au;

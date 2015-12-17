@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_RUNNER
 #include "entry_point.h"
 #include "io/program_path.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 
 int main(int argc, char *const argv[])
 {

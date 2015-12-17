@@ -1,6 +1,6 @@
 #include "algo/pack/zlib.h"
 #include "io/memory_stream.h"
-#include "test_support/catch.hh"
+#include "test_support/catch.h"
 
 using namespace au;
 using namespace au::algo::pack;

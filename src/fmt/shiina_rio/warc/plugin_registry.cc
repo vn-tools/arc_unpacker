@@ -3,7 +3,7 @@
 #include "fmt/shiina_rio/warc/decrypt.h"
 #include "io/file.h"
 #include "io/program_path.h"
-#include "util/plugin_mgr.hh"
+#include "util/plugin_mgr.h"
 
 using namespace au;
 using namespace au::fmt::shiina_rio::warc;
