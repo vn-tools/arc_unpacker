@@ -1,4 +1,5 @@
 #include "io/bit_reader.h"
+#include <algorithm>
 #include "err.h"
 
 using namespace au;

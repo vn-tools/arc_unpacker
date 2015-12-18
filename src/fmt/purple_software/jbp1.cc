@@ -1,4 +1,5 @@
 #include "fmt/purple_software/jbp1.h"
+#include <array>
 #include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"

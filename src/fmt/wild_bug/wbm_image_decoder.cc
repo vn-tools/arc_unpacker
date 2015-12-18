@@ -1,4 +1,5 @@
 #include "fmt/wild_bug/wbm_image_decoder.h"
+#include <array>
 #include "algo/range.h"
 #include "err.h"
 #include "fmt/wild_bug/wpx/decoder.h"
