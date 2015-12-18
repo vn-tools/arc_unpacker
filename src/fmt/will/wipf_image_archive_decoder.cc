@@ -105,7 +105,9 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<res::Image> WipfImageArchiveDecoder::read_image(
-    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    io::File &input_file,
+    const fmt::ArchiveMeta &m,
+    const fmt::ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     std::unique_ptr<res::Palette> palette;
@@ -147,7 +149,9 @@ std::unique_ptr<res::Image> WipfImageArchiveDecoder::read_image(
 }
 
 std::unique_ptr<io::File> WipfImageArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    io::File &input_file,
+    const fmt::ArchiveMeta &m,
+    const fmt::ArchiveEntry &e) const
 {
     return util::file_from_image(*read_image(input_file, m, e), e.path);
 }

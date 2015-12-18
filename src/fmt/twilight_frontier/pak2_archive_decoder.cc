@@ -80,7 +80,9 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    io::File &input_file,
+    const fmt::ArchiveMeta &m,
+    const fmt::ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->already_unpacked)
@@ -94,7 +96,7 @@ std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
 }
 
 void Pak2ArchiveDecoder::preprocess(
-    io::File &input_file, ArchiveMeta &m, const FileSaver &saver) const
+    io::File &input_file, fmt::ArchiveMeta &m, const FileSaver &saver) const
 {
     Pak2ImageDecoder image_decoder;
 
