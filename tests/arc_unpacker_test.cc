@@ -13,8 +13,7 @@ TEST_CASE("CLI frontend", "[core]")
             {
                 "./tests/fmt/real_live/files/g00/AYU_03.g00",
                 "--fmt=real-live/g00"
-            },
-            "0.0");
+            });
 
         Log.mute();
         arc_unpacker.run();
@@ -31,8 +30,7 @@ TEST_CASE("CLI frontend", "[core]")
                 "./tests/fmt/kirikiri/files/xp3/xp3-v2.xp3",
                 "--fmt=kirikiri/xp3",
                 "--plugin=noop"
-            },
-            "0.0");
+            });
 
         Log.mute();
         arc_unpacker.run();

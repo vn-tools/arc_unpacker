@@ -4,12 +4,15 @@ import os
 from collections import OrderedDict
 
 APPNAME = 'arc_unpacker'
-try:
-    VERSION = os.popen('git describe --tags').read().strip()
-    VERSION_LONG = os.popen('git describe --always --dirty --long --tags').read().strip()
-except:
-    VERSION = '0.0'
-    VERSION_LONG = '?'
+
+def get_version():
+    try:
+        short = os.popen('git describe --tags').read().strip()
+        long = os.popen('git describe --always --dirty --long --tags').read().strip()
+    except:
+        short = '0.0'
+        long = '?'
+    return {'short': short, 'long': long}
 
 def options(ctx):
     ctx.load('compiler_cxx')
@@ -119,8 +122,15 @@ def configure(ctx):
     configure_packages(ctx)
 
 def build(bld):
-    common_sources = bld.path.ant_glob('src/**/*.cc')
-    common_sources = [f for f in common_sources if f.name != 'main.cc']
+    bld(
+        name='version',
+        features='subst',
+        source='src/version.h.in',
+        target='src/version.h',
+        VERSION_SHORT=get_version()['short'],
+        VERSION_LONG=get_version()['long'])
+
+    common_sources = bld.path.ant_glob('src/**/*.cc', excl='src/main.cc')
 
     deps = OrderedDict()
     deps['_openssl'] = bld.is_defined('HAVE_OPENSSL_RSA_H')
@@ -141,6 +151,7 @@ def build(bld):
         cxxflags = ['-iquote', path_to_src],
         includes = ['src'],
         use = [
+            'version',
             'LIBICONV',
             'LIBPNG',
             'LIBJPEG',
@@ -154,7 +165,6 @@ def build(bld):
         source = program_sources,
         target = 'arc_unpacker',
         cxxflags = ['-iquote', path_to_src],
-        defines = [ 'AU_VERSION="' + VERSION_LONG + '"' ],
         includes = ['src'],
         use = [
             'common',
@@ -211,7 +221,7 @@ def dist(ctx):
 def distbin(ctx):
     from subprocess import call, PIPE
     from zipfile import ZipFile, ZIP_DEFLATED
-    arch_name = 'arc_unpacker-' + VERSION + '-bin.zip'
+    arch_name = 'arc_unpacker-' + get_version()['short'] + '-bin.zip'
 
     zip = ZipFile(arch_name, 'w', compression=ZIP_DEFLATED)
     for p in ctx.path.ant_glob('build/arc_unpacker.exe') + ctx.path.ant_glob('**/*.dll'):

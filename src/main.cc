@@ -10,7 +10,7 @@ ENTRY_POINT(
     {
         io::set_program_path_from_arg(arguments[0]);
         arguments.erase(arguments.begin());
-        ArcUnpacker arc_unpacker(arguments, AU_VERSION);
+        ArcUnpacker arc_unpacker(arguments);
 
         return arc_unpacker.run();
     }

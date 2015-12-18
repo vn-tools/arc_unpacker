@@ -1,0 +1,9 @@
+#pragma once
+
+#include <string>
+
+namespace au {
+
+    static const std::string version = "@VERSION_LONG@";
+
+}

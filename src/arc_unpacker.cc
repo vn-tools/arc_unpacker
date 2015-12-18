@@ -10,6 +10,7 @@
 #include "io/file_system.h"
 #include "log.h"
 #include "util/virtual_file_system.h"
+#include "version.h"
 
 using namespace au;
 
@@ -31,7 +32,7 @@ namespace
 struct ArcUnpacker::Priv final
 {
 public:
-    Priv(const std::vector<std::string> &arguments, const std::string &version);
+    Priv(const std::vector<std::string> &arguments);
     int run() const;
 
 private:
@@ -45,7 +46,6 @@ private:
 
     const fmt::Registry &registry;
     const std::vector<std::string> arguments;
-    const std::string version;
 
     ArgParser arg_parser;
     Options options;
@@ -82,11 +82,8 @@ static std::unique_ptr<fmt::IDecoder> guess_decoder(
     return nullptr;
 }
 
-ArcUnpacker::Priv::Priv(
-    const std::vector<std::string> &arguments, const std::string &version) :
-        registry(fmt::Registry::instance()),
-        arguments(arguments),
-        version(version)
+ArcUnpacker::Priv::Priv(const std::vector<std::string> &arguments)
+    : registry(fmt::Registry::instance()), arguments(arguments)
 {
     register_cli_options();
     arg_parser.parse(arguments);
@@ -110,7 +107,7 @@ Usage: arc_unpacker [options] [fmt_options] input_path [input_path...]
 
 [options] can be:
 
-)", version.c_str()));
+)", au::version.c_str()));
 
     arg_parser.print_help();
 
@@ -314,9 +311,8 @@ bool ArcUnpacker::Priv::guess_decoder_and_unpack(io::File &file) const
     }
 }
 
-ArcUnpacker::ArcUnpacker(
-    const std::vector<std::string> &arguments, const std::string &version)
-    : p(new Priv(arguments, version))
+ArcUnpacker::ArcUnpacker(const std::vector<std::string> &arguments)
+    : p(new Priv(arguments))
 {
 }
 
