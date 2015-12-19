@@ -55,6 +55,8 @@ namespace
 static std::unique_ptr<ArchiveMetaImpl> read_meta(
     const cpz5::Plugin &plugin, const Header &header, const bstr &table_data)
 {
+    if (!header.dir_table_size || !header.file_table_size)
+        throw err::BadDataSizeError();
     const auto hash = cpz5::get_hash(plugin, header.md5_dwords);
     bstr table_data_copy(table_data);
     auto table_data_ptr = make_ptr(table_data_copy);

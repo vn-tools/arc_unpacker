@@ -253,7 +253,7 @@ res::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
     audio.sample_rate = sample_rate;
     audio.bits_per_sample = 16;
     audio.samples
-        = bstr(reinterpret_cast<const u8*>(&samples[0]), samples.size() * 2);
+        = bstr(reinterpret_cast<const u8*>(samples.data()), samples.size() * 2);
     if (meta.loop->enabled)
     {
         audio.loops.push_back(res::AudioLoopInfo

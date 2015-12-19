@@ -9,7 +9,7 @@ TEST_CASE("ptr", "[core]")
     SECTION("Constructor")
     {
         std::vector<u32> data = {1, 2, 3};
-        auto p = ptr<u32>(&data[0], data.size());
+        auto p = ptr<u32>(data.data(), data.size());
         REQUIRE(p.size() == 3);
     }
 

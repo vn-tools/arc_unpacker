@@ -144,7 +144,7 @@ void Image::paste(const Image &other, const int target_x, const int target_y)
 
 Pixel *Image::begin()
 {
-    return pixels.empty() ? nullptr : &pixels[0];
+    return pixels.data();
 }
 
 Pixel *Image::end()
@@ -154,7 +154,7 @@ Pixel *Image::end()
 
 const Pixel *Image::begin() const
 {
-    return pixels.empty() ? nullptr : &pixels[0];
+    return pixels.data();
 }
 
 const Pixel *Image::end() const

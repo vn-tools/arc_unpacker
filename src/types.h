@@ -40,7 +40,7 @@ namespace au {
 
         template<typename T> T *get()
         {
-            return v.empty() ? nullptr : reinterpret_cast<T*>(&v[0]);
+            return reinterpret_cast<T*>(v.data());
         }
 
         template<typename T> T *end()
@@ -50,7 +50,7 @@ namespace au {
 
         template<typename T> const T *get() const
         {
-            return v.empty() ? nullptr : reinterpret_cast<const T*>(&v[0]);
+            return reinterpret_cast<const T*>(v.data());
         }
 
         template<typename T> const T *end() const

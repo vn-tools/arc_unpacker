@@ -1,0 +1,38 @@
+#!/bin/bash
+ROOT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/..
+BUILD_DIR="$ROOT_DIR"/build-nightly
+TARGET_DIR=/srv/www/tmp.sakuya.pl/public_html/au/
+MXE_DIR="$HOME"/src/ext/mxe
+
+cd $("ROOT_DIR)"
+VERSION="$(git describe --tags)"
+ZIP_NAME=arc_unpacker-"$VERSION"-bin.zip
+
+cd $("ROOT_DIR)"
+git checkout master
+git pull
+
+rm -f "$ROOT_DIR"/*.zip
+rm -f "$BUILD_DIR"/arc_unpacker.exe
+#rm -rf "$BUILD_DIR"
+[ ! -d "$BUILD_DIR" ] && mkdir "$BUILD_DIR"
+
+cd "$BUILD_DIR"
+"$MXE_DIR"/usr/bin/i686-w64-mingw32.static-cmake .. -DCMAKE_BUILD_TYPE=release
+make -j8 arc_unpacker
+
+strip --strip-all "$BUILD_DIR"/arc_unpacker.exe
+upx "$BUILD_DIR"/arc_unpacker.exe
+
+cd "$ROOT_DIR"
+7z a "$ZIP_NAME" "$BUILD_DIR"/arc_unpacker.exe
+7z a "$ZIP_NAME" "$ROOT_DIR"/etc
+
+for source_path in *.zip; do
+    target_path="$TARGET_DIR"/"$(basename "$source_path")"
+    if [ -e "$target_path" ]; then
+        rm "$source_path"
+    else
+        mv "$source_path" "$target_path"
+    fi
+done
