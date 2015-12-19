@@ -193,7 +193,7 @@ static u32 neg32(u32 x)
 static std::string lower_ascii_only(std::string name_utf8)
 {
     // while SJIS can use ASCII for encoding multibyte characters,
-    // UTF-8 uses the codes 0–127 only for the ASCII characters.
+    // UTF-8 uses the codes 0..127 only for the ASCII characters.
     for (auto i : algo::range(name_utf8.size()))
         if (name_utf8[i] >= 'A' && name_utf8[i] <= 'Z')
             name_utf8[i] += 'a' - 'A';

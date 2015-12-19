@@ -21,5 +21,5 @@ static void do_test(
 
 TEST_CASE("RpgMaker XYZ images", "[fmt]")
 {
-    do_test("浅瀬部屋a.xyz", "浅瀬部屋a-out.png");
+    do_test("shallows-room-a.xyz", "shallows-room-a-out.png");
 }

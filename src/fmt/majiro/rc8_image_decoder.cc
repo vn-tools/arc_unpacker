@@ -1,5 +1,4 @@
-#include "fmt/majiro/rc8_image_decoder.h"
-#include "algo/locale.h"
+﻿#include "fmt/majiro/rc8_image_decoder.h"
 #include "algo/range.h"
 #include "algo/str.h"
 #include "err.h"
@@ -8,7 +7,7 @@
 using namespace au;
 using namespace au::fmt::majiro;
 
-static const bstr magic = algo::utf8_to_sjis("六丁8"_b);
+static const bstr magic = "\x98\x5A\x92\x9A\x38"_b; // sjis "六丁8"
 
 static bstr uncompress(const bstr &input, size_t width, size_t height)
 {

@@ -20,5 +20,5 @@ static void do_test(
 
 TEST_CASE("Alice Soft AFF files", "[fmt]")
 {
-    do_test("キャラカード_左.aff", "キャラカード_左-out.aff");
+    do_test("test.aff", "test-out.aff");
 }

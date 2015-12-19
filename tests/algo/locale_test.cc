@@ -1,4 +1,4 @@
-#include "algo/locale.h"
+﻿#include "algo/locale.h"
 #include "test_support/catch.h"
 #include "types.h"
 

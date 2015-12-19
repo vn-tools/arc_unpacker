@@ -33,7 +33,7 @@ TEST_CASE("Microsoft DDS textures", "[fmt]")
 
     SECTION("DXT5")
     {
-        do_test("決1.dds", "決1-out.png");
+        do_test("reimu1.dds", "reimu1-out.png");
     }
 
     SECTION("Raw 32-bit")

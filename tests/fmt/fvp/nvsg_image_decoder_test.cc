@@ -33,7 +33,7 @@ TEST_CASE("FVP NVSG images", "[fmt]")
 
     SECTION("Format 2")
     {
-        do_test("CHR_時雨_基_夏私服_表情", "CHR_時雨_基_夏私服_表情-out.png");
+        do_test("CHR_Shigure", "CHR_Shigure-out.png");
     }
 
     SECTION("Format 3")

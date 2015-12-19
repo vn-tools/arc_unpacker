@@ -1,4 +1,4 @@
-#include "fmt/microsoft/exe_archive_decoder.h"
+﻿#include "fmt/microsoft/exe_archive_decoder.h"
 #include "algo/format.h"
 #include "algo/locale.h"
 #include "algo/range.h"
@@ -202,7 +202,7 @@ namespace
 }
 
 // keep flat hierarchy for unpacked files
-static const std::string path_sep = "／";
+static const std::string path_sep = u8"／";
 
 DosHeader::DosHeader(io::Stream &stream)
 {
