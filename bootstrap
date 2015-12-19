@@ -1,4 +1,2 @@
 #!/bin/sh
-wget https://waf.io/waf-1.8.17 -O waf
-chmod +x waf
 wget https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp -O tests/test_support/catch.h
