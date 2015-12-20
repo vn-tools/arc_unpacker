@@ -14,26 +14,21 @@ bool PgxImageDecoder::is_recognized_impl(io::File &input_file) const
 
 res::Image PgxImageDecoder::decode_impl(io::File &input_file) const
 {
-    input_file.stream.skip(magic.size());
-
-    input_file.stream.skip(4);
-    size_t width = input_file.stream.read_u32_le();
-    size_t height = input_file.stream.read_u32_le();
-    bool transparent = input_file.stream.read_u16_le();
+    input_file.stream.skip(magic.size() + 4);
+    const auto width = input_file.stream.read_u32_le();
+    const auto height = input_file.stream.read_u32_le();
+    const auto transparent = input_file.stream.read_u16_le() != 0;
     input_file.stream.skip(2);
-    size_t source_size = input_file.stream.read_u32_le();
-    size_t target_size = width * height * 4;
+    const auto source_size = input_file.stream.read_u32_le();
+    const auto target_size = width * height * 4;
 
     input_file.stream.seek(input_file.stream.size() - source_size);
-    auto source = input_file.stream.read(source_size);
-
-    auto target = custom_lzss_decompress(source, target_size);
-
+    const auto source = input_file.stream.read(source_size);
+    const auto target = custom_lzss_decompress(source, target_size);
     res::Image image(width, height, target, res::PixelFormat::BGRA8888);
     if (!transparent)
         for (auto &c : image)
             c.a = 0xFF;
-
     return image;
 }
 

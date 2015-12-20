@@ -236,11 +236,11 @@ std::unique_ptr<fmt::ArchiveMeta>
             if (meta)
                 return std::move(meta);
         }
-        catch (err::DataError &e)
+        catch (err::DataError)
         {
             continue;
         }
-        catch (err::IoError &e)
+        catch (err::IoError)
         {
             continue;
         }

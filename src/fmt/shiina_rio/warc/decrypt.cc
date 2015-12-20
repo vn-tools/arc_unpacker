@@ -117,8 +117,8 @@ static res::Image transform_region_image(
     base_pixel.r = base_color >> 16;
     const int src_alpha = (flags & 0x08000000) ? (flags & 0x1FF) : 0x100;
     const int dst_alpha = (flags & 0x10000000) ? ((flags >> 12) & 0x1FF) : 0;
-    const bool flip_vertically = flags & 0x20000000;
-    const bool flip_horizontally = flags & 0x40000000;
+    const auto flip_vertically = (flags & 0x20000000) != 0;
+    const auto flip_horizontally = (flags & 0x40000000) != 0;
     for (const auto y : algo::range(input_image.height()))
     for (const auto x : algo::range(input_image.width()))
     {

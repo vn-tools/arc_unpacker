@@ -87,7 +87,7 @@ static u32 get_table_seed(const bstr &input)
         seed ^= p << 24;
         for (const auto i : algo::range(8))
         {
-            const bool bit = seed & 0x80000000;
+            const auto bit = (seed & 0x80000000) != 0;
             seed <<= 1;
             if (bit)
                 seed ^= magic;

@@ -94,7 +94,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->hash = table_stream.read_u64_le();
-        entry->compressed = table_stream.read_u32_le();
+        entry->compressed = table_stream.read_u32_le() != 0;
         entry->size_original = table_stream.read_u32_le();
         entry->offset = table_stream.read_u32_le() + file_data_start;
         entry->size_compressed = table_stream.read_u32_le();

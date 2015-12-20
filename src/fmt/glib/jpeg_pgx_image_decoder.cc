@@ -46,36 +46,36 @@ bool JpegPgxImageDecoder::is_recognized_impl(io::File &input_file) const
 
 res::Image JpegPgxImageDecoder::decode_impl(io::File &input_file) const
 {
-    auto pgx_data = extract_pgx_stream(input_file.stream.read_to_eof());
+    const auto pgx_data = extract_pgx_stream(input_file.stream.read_to_eof());
     io::MemoryStream pgx_stream(pgx_data);
 
     pgx_stream.skip(magic.size());
     pgx_stream.skip(4);
-    size_t width = pgx_stream.read_u32_le();
-    size_t height = pgx_stream.read_u32_le();
-    bool transparent = pgx_stream.read_u16_le();
+    const auto width = pgx_stream.read_u32_le();
+    const auto height = pgx_stream.read_u32_le();
+    const auto transparent = pgx_stream.read_u16_le() != 0;
     pgx_stream.skip(2);
-    size_t source_size = pgx_stream.read_u32_le();
-    size_t target_size = width * height * 4;
+    const auto source_size = pgx_stream.read_u32_le();
+    const auto target_size = width * height * 4;
     pgx_stream.skip(8);
 
     if (!transparent)
     {
         pgx_stream.skip(8);
-        auto tmp1 = pgx_stream.read_u32_le();
-        auto tmp2 = pgx_stream.read_u32_le();
-        auto extra_size = (tmp2 & 0x00FF00FF) | (tmp1 & 0xFF00FF00);
+        const auto tmp1 = pgx_stream.read_u32_le();
+        const auto tmp2 = pgx_stream.read_u32_le();
+        const auto extra_size = (tmp2 & 0x00FF00FF) | (tmp1 & 0xFF00FF00);
         // why?
         custom_lzss_decompress(pgx_stream, extra_size);
     }
 
-    auto target = custom_lzss_decompress(pgx_stream.read_to_eof(), target_size);
+    const auto target = custom_lzss_decompress(
+        pgx_stream.read_to_eof(), target_size);
 
     res::Image image(width, height, target, res::PixelFormat::BGRA8888);
     if (!transparent)
         for (auto &c : image)
             c.a = 0xFF;
-
     return image;
 }
 

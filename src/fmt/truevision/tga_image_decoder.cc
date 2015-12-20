@@ -45,7 +45,7 @@ static bstr read_compressed_data(
     {
         const auto control = stream.read_u8();
         const auto repetitions = (control & 0x7F) + 1;
-        const bool use_rle = control & 0x80;
+        const bool use_rle = (control & 0x80) != 0;
         if (use_rle)
         {
             const auto chunk = stream.read(channels);
@@ -132,9 +132,9 @@ res::Image TgaImageDecoder::decode_impl(io::File &input_file) const
     const auto flags = input_file.stream.read_u8();
 
     const auto channels = depth / 8;
-    const bool flip_horizontally = flags & Flags::RightToLeft;
-    const bool flip_vertically = !(flags & Flags::TopToBottom);
-    const bool compressed = data_type & 8;
+    const auto flip_horizontally = (flags & Flags::RightToLeft) != 0;
+    const auto flip_vertically = (flags & Flags::TopToBottom) == 0;
+    const auto compressed = (data_type & 8) != 0;
     const size_t interleave
         = flags & Flags::Interleave2 ? 2
         : flags & Flags::Interleave4 ? 4 : 1;

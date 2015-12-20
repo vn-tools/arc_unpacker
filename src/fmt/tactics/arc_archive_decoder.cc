@@ -101,7 +101,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         {
             return meta_reader(input_file);
         }
-        catch (std::exception &e)
+        catch (std::exception)
         {
             continue;
         }

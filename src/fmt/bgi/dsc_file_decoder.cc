@@ -74,7 +74,7 @@ static NodeList get_nodes(io::Stream &stream, u32 key)
             if (n != (c >> 16))
                 break;
             nodes[*node_ptr]->has_children = false;
-            nodes[*node_ptr]->look_behind = arr0[arr0_pos] & 0x100;
+            nodes[*node_ptr]->look_behind = (arr0[arr0_pos] & 0x100) != 0;
             nodes[*node_ptr]->value = arr0[arr0_pos] & 0xFF;
             arr0_pos++;
             node_ptr++;

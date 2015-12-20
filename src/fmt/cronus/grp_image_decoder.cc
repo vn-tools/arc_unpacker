@@ -95,7 +95,7 @@ static HeaderFunc reader_v2()
         header.bpp = input.read_u32_le();
         input.skip(8);
         header.flip = false;
-        header.use_transparency = input.read_u32_le();
+        header.use_transparency = input.read_u32_le() != 0;
         header.encryption_type = EncType::None;
         return header;
     };

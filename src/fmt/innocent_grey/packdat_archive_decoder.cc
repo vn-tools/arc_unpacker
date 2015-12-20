@@ -35,7 +35,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(32).str();
         entry->offset = input_file.stream.read_u32_le();
-        entry->encrypted = input_file.stream.read_u32_le() & 0x10000;
+        entry->encrypted = (input_file.stream.read_u32_le() & 0x10000) != 0;
         entry->size_orig = input_file.stream.read_u32_le();
         entry->size_comp = input_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));

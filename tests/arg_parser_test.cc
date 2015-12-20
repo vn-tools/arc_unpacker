@@ -122,7 +122,7 @@ TEST_CASE("ArgParser", "[core]")
     SECTION("Querying undefined flags throws exceptions")
     {
         ArgParser ap;
-        REQUIRE_THROWS(!ap.has_flag("nope"));
+        REQUIRE_THROWS(ap.has_flag("nope"));
     }
 
     SECTION("Flag retrieval using arbitrary number of hyphens")
