@@ -10,7 +10,8 @@ static const auto magic = "SZDD"_b;
 
 bool ZbmImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.stream.seek(0).read(magic.size()) == magic;
+    return input_file.stream.seek(0).read(magic.size()) == magic
+        && input_file.path.has_extension("zbm");
 }
 
 res::Image ZbmImageDecoder::decode_impl(io::File &input_file) const
