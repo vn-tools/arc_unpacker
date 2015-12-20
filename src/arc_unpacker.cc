@@ -25,6 +25,7 @@ namespace
         bool enable_nested_decoding;
         bool enable_virtual_file_system;
         bool should_show_help;
+        bool should_show_version;
         bool should_list_fmt;
     };
 }
@@ -173,12 +174,18 @@ void ArcUnpacker::Priv::register_cli_options()
 
     arg_parser.register_flag({"-l", "--list-fmt"})
         ->set_description("Lists available FORMAT values.");
+
+    arg_parser.register_flag({"-v", "--version"})
+        ->set_description("Shows arc_unpacker version.");
 }
 
 void ArcUnpacker::Priv::parse_cli_options()
 {
     options.should_show_help
         = arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
+
+    options.should_show_version
+        = arg_parser.has_flag("-v") || arg_parser.has_flag("--version");
 
     options.should_list_fmt
         = arg_parser.has_flag("-l") || arg_parser.has_flag("--list-fmt");
@@ -232,6 +239,12 @@ int ArcUnpacker::Priv::run() const
     if (options.should_show_help)
     {
         print_cli_help();
+        return 0;
+    }
+
+    if (options.should_show_version)
+    {
+        Log.info("%s\n", au::version_long.c_str());
         return 0;
     }
 
