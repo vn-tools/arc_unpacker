@@ -1,7 +1,7 @@
 Build instructions
 ------------------
 
-### Dependencies
+## Dependencies
 
 Environment:
 
@@ -20,7 +20,7 @@ Libraries:
 
 
 
-### Compiling for GNU/Linux or Cygwin with g++ or MinGW
+## Compiling for GNU/Linux or Cygwin with g++ or MinGW
 
 1. Download required dependencies (the ones with `-dev` or `-devel` suffix). On
    Cygwin most of them are available on [Cygwin Ports](http://cygwinports.org/).
@@ -37,7 +37,7 @@ Libraries:
 
 
 
-### Cross compiling for Windows with MinGW-w64
+## Cross compiling for Windows with MinGW-w64
 
 In this case, the project requires MinGW-w64. There are several ways to install
 it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
@@ -63,7 +63,7 @@ it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
 
 
 
-### Compiling for Windows with Microsoft Visual Studio 15+
+## Compiling for Windows with Microsoft Visual Studio 15+
 
 1. Install [CMake](https://cmake.org/download/).
 
@@ -82,24 +82,24 @@ it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
 
 3. In the `arc_unpacker`'s directory run following:
 
-    ./bootstrap
-    mkdir build-vs
-    cd build-vs
-    cmake --verbose \
-        -G "Visual Studio 14" \
-        -DBOOST_ROOT="C:/pkg/boost_1_60_0" \
-        -DBOOST_LIBRARYDIR="C:/pkg/boost_1_60_0/bin.v2/libs" \
-        -DZLIB_INCLUDE_DIR="C:/pkg/zlib-1.2.8;C:/pkg/builds/zlib" \
-        -DZLIB_LIBRARY="C:/pkg/builds/zlib/Debug/zlibd.lib" \
-        -DPNG_PNG_INCLUDE_DIR="C:/pkg/libpng-1.6.20" \
-        -DPNG_LIBRARY="C:/pkg/builds/png/Debug/libpng16_staticd.lib" \
-        -DJPEG_LIBRARY="C:/pkg/libjpeg-turbo/lib/jpeg.lib" \
-        -DJPEG_INCLUDE_DIR="C:/pkg/libjpeg-turbo/include" \
-        -DOPENSSL_ROOT_DIR="C:/pkg/OpenSSL-Win32" \
-        -DOPENSSL_INCLUDE_DIR="C:/pkg/OpenSSL-Win32/include" \
-        -DICONV_LIBRARY="C:/pkg/win-iconv/build/Debug/iconv.lib" \
-        -DICONV_INCLUDE_DIR="C:/pkg/win-iconv" \
-        ..
+        ./bootstrap
+        mkdir build-vs
+        cd build-vs
+        cmake --verbose \
+            -G "Visual Studio 14" \
+            -DBOOST_ROOT="C:/pkg/boost_1_60_0" \
+            -DBOOST_LIBRARYDIR="C:/pkg/boost_1_60_0/bin.v2/libs" \
+            -DZLIB_INCLUDE_DIR="C:/pkg/zlib-1.2.8;C:/pkg/builds/zlib" \
+            -DZLIB_LIBRARY="C:/pkg/builds/zlib/Debug/zlibd.lib" \
+            -DPNG_PNG_INCLUDE_DIR="C:/pkg/libpng-1.6.20" \
+            -DPNG_LIBRARY="C:/pkg/builds/png/Debug/libpng16_staticd.lib" \
+            -DJPEG_LIBRARY="C:/pkg/libjpeg-turbo/lib/jpeg.lib" \
+            -DJPEG_INCLUDE_DIR="C:/pkg/libjpeg-turbo/include" \
+            -DOPENSSL_ROOT_DIR="C:/pkg/OpenSSL-Win32" \
+            -DOPENSSL_INCLUDE_DIR="C:/pkg/OpenSSL-Win32/include" \
+            -DICONV_LIBRARY="C:/pkg/win-iconv/build/Debug/iconv.lib" \
+            -DICONV_INCLUDE_DIR="C:/pkg/win-iconv" \
+            ..
 
     The paths in `-D` switches should refer to locations where you installed
     the dependencies.
