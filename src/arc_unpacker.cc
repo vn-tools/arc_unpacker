@@ -107,7 +107,7 @@ Usage: arc_unpacker [options] [fmt_options] input_path [input_path...]
 
 [options] can be:
 
-)", au::version.c_str()));
+)", au::version_long.c_str()));
 
     arg_parser.print_help();
 

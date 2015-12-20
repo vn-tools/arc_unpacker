@@ -4,13 +4,13 @@ project (arc_unpacker)
 # -------
 # Version
 # -------
-execute_process(COMMAND git describe --tags OUTPUT_VARIABLE VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND git describe --tags OUTPUT_VARIABLE VERSION_SHORT OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND git describe --always --dirty --long --tags OUTPUT_VARIABLE VERSION_LONG OUTPUT_STRIP_TRAILING_WHITESPACE)
-if("${VERSION}" STREQUAL "")
-    set(VERSION "0.0")
+if("${VERSION_SHORT}" STREQUAL "")
+    set(VERSION_SHORT "0.0")
     set(VERSION_LONG "?")
 endif()
-MESSAGE("Version: ${VERSION}")
+MESSAGE("Version: ${VERSION_SHORT}")
 MESSAGE("Version long: ${VERSION_LONG}")
 
 # ------------

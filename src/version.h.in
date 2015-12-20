@@ -4,6 +4,7 @@
 
 namespace au {
 
-    static const std::string version = "@VERSION_LONG@";
+    static const std::string version_short = "@VERSION_SHORT@";
+    static const std::string version_long = "@VERSION_LONG@";
 
 }
