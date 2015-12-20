@@ -39,6 +39,8 @@ class WhitespaceCheck(Check):
         for i, line in enumerate(file.lines):
             if '\t' in line:
                 yield Problem(file, 'Use spaces rather than tabs', i, line)
+            if '\r' in line:
+                yield Problem(file, 'Don\'t use CR in EOLs', i, line)
 
 # I'd advise against BOM in a heartbeat, unfortunately MSVC slams door so hard
 # for files without BOM that the sound of it can be heard from the outer space
