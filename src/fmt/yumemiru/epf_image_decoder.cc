@@ -21,7 +21,7 @@ res::Image EpfImageDecoder::decode_impl(io::File &input_file) const
         throw err::CorruptDataError("Expected '1'");
     const auto size_orig = input_file.stream.read_u32_le();
     const auto size_comp = input_file.stream.read_u32_le();
-    const auto data = algo::pack::lzss_decompress_bytewise(
+    const auto data = algo::pack::lzss_decompress(
         input_file.stream.read(size_comp), size_orig);
     return res::Image(width, height, data, res::PixelFormat::BGRA8888);
 }

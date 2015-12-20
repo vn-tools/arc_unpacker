@@ -5,19 +5,24 @@
 
 using namespace au;
 
-bstr algo::pack::lzss_decompress_bitwise(
-    const bstr &input,
-    const size_t output_size,
-    const LzssSettings &settings)
+algo::pack::BytewiseLzssSettings::BytewiseLzssSettings()
+    : initial_dictionary_pos(0xFEE)
 {
-    io::BitReader bit_reader(input);
-    return lzss_decompress_bitwise(bit_reader, output_size, settings);
 }
 
-bstr algo::pack::lzss_decompress_bitwise(
+bstr algo::pack::lzss_decompress(
+    const bstr &input,
+    const size_t output_size,
+    const BitwiseLzssSettings &settings)
+{
+    io::BitReader bit_reader(input);
+    return lzss_decompress(bit_reader, output_size, settings);
+}
+
+bstr algo::pack::lzss_decompress(
     io::BitReader &bit_reader,
     const size_t output_size,
-    const LzssSettings &settings)
+    const BitwiseLzssSettings &settings)
 {
     bstr output(output_size);
     const auto dict_size = 1 << settings.position_bits;
@@ -53,10 +58,12 @@ bstr algo::pack::lzss_decompress_bitwise(
     return output;
 }
 
-bstr algo::pack::lzss_decompress_bytewise(
-    const bstr &input, const size_t output_size)
+bstr algo::pack::lzss_decompress(
+    const bstr &input,
+    const size_t output_size,
+    const BytewiseLzssSettings &settings)
 {
-    util::CyclicBuffer<0x1000> dict(0xFEE);
+    util::CyclicBuffer<0x1000> dict(settings.initial_dictionary_pos);
     bstr output(output_size);
     auto output_ptr = make_ptr(output);
     auto input_ptr = make_ptr(input);

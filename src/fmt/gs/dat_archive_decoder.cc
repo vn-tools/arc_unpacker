@@ -40,8 +40,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto table_data = input_file.stream.read(table_size_comp);
     for (auto i : algo::range(table_data.size()))
         table_data[i] ^= i & key;
-    table_data = algo::pack::lzss_decompress_bytewise(
-        table_data, table_size_orig);
+    table_data = algo::pack::lzss_decompress(table_data, table_size_orig);
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
@@ -66,7 +65,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
-    data = algo::pack::lzss_decompress_bytewise(data, entry->size_orig);
+    data = algo::pack::lzss_decompress(data, entry->size_orig);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;

@@ -19,12 +19,12 @@ res::Image CmpImageDecoder::decode_impl(io::File &input_file) const
     auto size_compressed = input_file.stream.read_u32_le();
 
     auto data = input_file.stream.read(size_compressed);
-    algo::pack::LzssSettings settings;
+    algo::pack::BitwiseLzssSettings settings;
     settings.position_bits = 11;
     settings.size_bits = 4;
     settings.min_match_size = 2;
     settings.initial_dictionary_pos = 2031;
-    data = algo::pack::lzss_decompress_bitwise(data, size_original, settings);
+    data = algo::pack::lzss_decompress(data, size_original, settings);
 
     io::File bmp_file(input_file.path, data);
     const fmt::microsoft::BmpImageDecoder bmp_image_decoder;

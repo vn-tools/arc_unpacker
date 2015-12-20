@@ -101,7 +101,7 @@ std::unique_ptr<io::File> AArchiveDecoder::read_file_impl(
     {
         const auto size_orig = input_file.stream.read_u32_le();
         data = input_file.stream.read(entry->size-4);
-        data = algo::pack::lzss_decompress_bytewise(data, size_orig);
+        data = algo::pack::lzss_decompress(data, size_orig);
 
         // this "encryption" apparently concerns only gfx
         if (entry->flags == 3)

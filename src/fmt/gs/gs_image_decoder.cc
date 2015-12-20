@@ -25,8 +25,8 @@ res::Image GsImageDecoder::decode_impl(io::File &input_file) const
     bool use_transparency = input_file.stream.read_u32_le() > 0;
 
     input_file.stream.seek(header_size);
-    auto data =  input_file.stream.read(size_comp);
-    data = algo::pack::lzss_decompress_bytewise(data, size_orig);
+    auto data = input_file.stream.read(size_comp);
+    data = algo::pack::lzss_decompress(data, size_orig);
 
     if (depth == 8)
     {

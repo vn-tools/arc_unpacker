@@ -7,7 +7,7 @@ namespace au {
 namespace algo {
 namespace pack {
 
-    struct LzssSettings final
+    struct BitwiseLzssSettings final
     {
         size_t position_bits;
         size_t size_bits;
@@ -15,18 +15,26 @@ namespace pack {
         size_t initial_dictionary_pos;
     };
 
-    bstr lzss_decompress_bitwise(
+    struct BytewiseLzssSettings final
+    {
+        BytewiseLzssSettings();
+
+        size_t initial_dictionary_pos;
+    };
+
+    bstr lzss_decompress(
         const bstr &input,
         const size_t output_size,
-        const LzssSettings &settings);
+        const BitwiseLzssSettings &settings);
 
-    bstr lzss_decompress_bitwise(
+    bstr lzss_decompress(
         io::BitReader &bit_reader,
         const size_t output_size,
-        const LzssSettings &settings);
+        const BitwiseLzssSettings &settings);
 
-    bstr lzss_decompress_bytewise(
+    bstr lzss_decompress(
         const bstr &input,
-        const size_t output_size);
+        const size_t output_size,
+        const BytewiseLzssSettings &settings = BytewiseLzssSettings());
 
 } } }

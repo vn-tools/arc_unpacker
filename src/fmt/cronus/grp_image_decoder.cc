@@ -148,7 +148,7 @@ res::Image GrpImageDecoder::decode_impl(io::File &input_file) const
         delta_decrypt(data, get_delta_key(input_file.path.name()));
     else if (p->header.encryption_type == EncType::SwapBytes)
         swap_decrypt(data, p->header.output_size);
-    data = algo::pack::lzss_decompress_bytewise(data, p->header.output_size);
+    data = algo::pack::lzss_decompress(data, p->header.output_size);
 
     std::unique_ptr<res::Image> image;
 

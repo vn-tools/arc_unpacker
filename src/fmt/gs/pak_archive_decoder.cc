@@ -41,8 +41,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto table_data = input_file.stream.read(table_size_comp);
     for (auto i : algo::range(table_data.size()))
         table_data[i] ^= i & key;
-    table_data = algo::pack::lzss_decompress_bytewise(
-        table_data, table_size_orig);
+    table_data = algo::pack::lzss_decompress(table_data, table_size_orig);
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();

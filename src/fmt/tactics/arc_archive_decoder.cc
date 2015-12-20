@@ -36,7 +36,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v0(io::File &input_file)
     for (auto &c : table_buf)
         c ^= 0xFF;
     io::MemoryStream table_stream(
-        algo::pack::lzss_decompress_bytewise(table_buf, size_orig));
+        algo::pack::lzss_decompress(table_buf, size_orig));
 
     auto key = table_stream.read_to_zero();
     auto meta = std::make_unique<fmt::ArchiveMeta>();
@@ -122,7 +122,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
         for (auto i : algo::range(data.size()))
             data[i] ^= entry->key[i % entry->key.size()];
     if (entry->size_orig)
-        data = algo::pack::lzss_decompress_bytewise(data, entry->size_orig);
+        data = algo::pack::lzss_decompress(data, entry->size_orig);
     return std::make_unique<io::File>(entry->path, data);
 }
 

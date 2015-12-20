@@ -85,12 +85,12 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
 
         case COMPRESSStreamN_LZSS:
         {
-            algo::pack::LzssSettings settings;
+            algo::pack::BitwiseLzssSettings settings;
             settings.position_bits = 8;
             settings.size_bits = 4;
             settings.min_match_size = 2;
             settings.initial_dictionary_pos = 239;
-            output_file->stream.write(algo::pack::lzss_decompress_bitwise(
+            output_file->stream.write(algo::pack::lzss_decompress(
                 data, entry->size_orig, settings));
             break;
         }

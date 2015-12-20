@@ -83,7 +83,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     if (meta->version == 2)
     {
         if (entry->size_comp != entry->size_orig)
-            data = algo::pack::lzss_decompress_bytewise(data, entry->size_orig);
+            data = algo::pack::lzss_decompress(data, entry->size_orig);
 
         const auto header = data.substr(0, 4);
         bool known = false;

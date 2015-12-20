@@ -20,12 +20,12 @@ static const bstr magic = "PBG4"_b;
 
 static bstr decompress(const bstr &data, size_t size_orig)
 {
-    algo::pack::LzssSettings settings;
+    algo::pack::BitwiseLzssSettings settings;
     settings.position_bits = 13;
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-    return algo::pack::lzss_decompress_bitwise(data, size_orig, settings);
+    return algo::pack::lzss_decompress(data, size_orig, settings);
 }
 
 bool Pbg4ArchiveDecoder::is_recognized_impl(io::File &input_file) const

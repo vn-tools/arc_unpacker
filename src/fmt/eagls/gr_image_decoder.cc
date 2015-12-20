@@ -13,7 +13,7 @@ static const u32 xor_value = 0x75BD924;
 
 static size_t guess_output_size(const bstr &data)
 {
-    io::MemoryStream tmp_stream(algo::pack::lzss_decompress_bytewise(data, 30));
+    io::MemoryStream tmp_stream(algo::pack::lzss_decompress(data, 30));
     tmp_stream.skip(10);
     auto pixels_start = tmp_stream.read_u32_le();
     tmp_stream.skip(4);
@@ -42,7 +42,7 @@ res::Image GrImageDecoder::decode_impl(io::File &input_file) const
         data[i] ^= key[lcg.next() % key.size()];
 
     auto output_size = guess_output_size(data);
-    data = algo::pack::lzss_decompress_bytewise(data, output_size);
+    data = algo::pack::lzss_decompress(data, output_size);
 
     io::File bmp_file(input_file.path, data);
     const fmt::microsoft::BmpImageDecoder bmp_file_decoder;

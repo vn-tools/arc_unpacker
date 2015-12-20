@@ -7,13 +7,12 @@ using namespace au::algo::pack;
 
 static void test_bits(const bstr &input, const bstr &expected)
 {
-    LzssSettings settings;
+    BitwiseLzssSettings settings;
     settings.position_bits = 12;
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 0xFEE;
-    const auto actual = lzss_decompress_bitwise(
-        input, expected.size(), settings);
+    const auto actual = lzss_decompress(input, expected.size(), settings);
     INFO("Actual: " + actual.str());
     INFO("Expected: " + expected.str());
     REQUIRE(actual == expected);
@@ -21,7 +20,7 @@ static void test_bits(const bstr &input, const bstr &expected)
 
 static void test_bytes(const bstr &input, const bstr &expected)
 {
-    const auto actual = lzss_decompress_bytewise(input, expected.size());
+    const auto actual = lzss_decompress(input, expected.size());
     INFO("Actual: " + actual.str());
     INFO("Expected: " + expected.str());
     REQUIRE(actual == expected);

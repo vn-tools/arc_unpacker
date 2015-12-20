@@ -128,7 +128,7 @@ std::unique_ptr<io::File> KcapArchiveDecoder::read_file_impl(
         auto size_comp = input_file.stream.read_u32_le();
         auto size_orig = input_file.stream.read_u32_le();
         data = input_file.stream.read(size_comp - 8);
-        data = algo::pack::lzss_decompress_bytewise(data, size_orig);
+        data = algo::pack::lzss_decompress(data, size_orig);
     }
     else
         data = input_file.stream.read(entry->size);

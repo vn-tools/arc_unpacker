@@ -58,7 +58,7 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size_comp);
-    data = algo::pack::lzss_decompress_bytewise(data, entry->size_orig);
+    data = algo::pack::lzss_decompress(data, entry->size_orig);
     return std::make_unique<io::File>(entry->path, data);
 }
 

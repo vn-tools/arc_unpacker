@@ -54,12 +54,12 @@ static std::vector<std::map<u8, DecryptorContext>> decryptors
 
 static bstr decompress(const bstr &input, size_t size_orig)
 {
-    algo::pack::LzssSettings settings;
+    algo::pack::BitwiseLzssSettings settings;
     settings.position_bits = 13;
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-    return algo::pack::lzss_decompress_bitwise(input, size_orig, settings);
+    return algo::pack::lzss_decompress(input, size_orig, settings);
 }
 
 static std::unique_ptr<io::File> read_file(

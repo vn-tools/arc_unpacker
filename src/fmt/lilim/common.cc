@@ -12,6 +12,6 @@ bstr fmt::lilim::sysd_decompress(const bstr &input)
     const auto size_orig = input_stream.read_u32_le();
     auto data = input_stream.read(size_comp - 9);
     if (compressed)
-        data = algo::pack::lzss_decompress_bytewise(data, size_orig);
+        data = algo::pack::lzss_decompress(data, size_orig);
     return data;
 }

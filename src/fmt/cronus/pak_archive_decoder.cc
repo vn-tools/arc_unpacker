@@ -42,8 +42,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(
     {
         auto key = get_delta_key("CHERRYSOFT"_b);
         delta_decrypt(table_data, key);
-        table_data = algo::pack::lzss_decompress_bytewise(
-            table_data, table_size_orig);
+        table_data = algo::pack::lzss_decompress(table_data, table_size_orig);
     }
     io::MemoryStream table_stream(table_data);
 

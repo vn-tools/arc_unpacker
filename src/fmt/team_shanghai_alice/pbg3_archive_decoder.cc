@@ -80,12 +80,12 @@ std::unique_ptr<io::File> Pbg3ArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
     io::BitReader bit_reader(input_file.stream.read(entry->size_comp));
 
-    algo::pack::LzssSettings settings;
+    algo::pack::BitwiseLzssSettings settings;
     settings.position_bits = 13;
     settings.size_bits = 4;
     settings.min_match_size = 3;
     settings.initial_dictionary_pos = 1;
-    auto data = algo::pack::lzss_decompress_bitwise(
+    auto data = algo::pack::lzss_decompress(
         bit_reader, entry->size_orig, settings);
 
     return std::make_unique<io::File>(entry->path, data);

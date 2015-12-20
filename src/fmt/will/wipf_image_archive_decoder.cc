@@ -25,9 +25,9 @@ namespace
 // - repetition count and look behind pos differs
 // - non-standard initial dictionary pos
 // - non-standard minimal match size
-
-static bstr custom_lzss_decompress(io::Stream &input, size_t output_size)
+static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
 {
+    io::MemoryStream input_stream(input);
     const size_t dict_size = 0x1000;
     size_t dict_pos = 1;
     u8 dict[dict_size] {};
@@ -35,26 +35,26 @@ static bstr custom_lzss_decompress(io::Stream &input, size_t output_size)
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<const u8>();
     u16 control = 0;
-    while (output_ptr < output_end && !input.eof())
+    while (output_ptr < output_end && !input_stream.eof())
     {
         control >>= 1;
         if (!(control & 0x100))
-            control = input.read_u8() | 0xFF00;
+            control = input_stream.read_u8() | 0xFF00;
         if (control & 1)
         {
-            if (input.eof())
+            if (input_stream.eof())
                 break;
-            auto byte = input.read_u8();
+            auto byte = input_stream.read_u8();
             dict[dict_pos++] = *output_ptr++ = byte;
             dict_pos %= dict_size;
             continue;
         }
-        if (input.eof())
+        if (input_stream.eof())
             break;
-        u8 di = input.read_u8();
-        if (input.eof())
+        u8 di = input_stream.read_u8();
+        if (input_stream.eof())
             break;
-        u8 tmp = input.read_u8();
+        u8 tmp = input_stream.read_u8();
         u32 look_behind_pos = (((di << 8) | tmp) >> 4);
         u16 repetitions = (tmp & 0xF) + 2;
         while (repetitions-- && output_ptr < output_end)
@@ -65,12 +65,6 @@ static bstr custom_lzss_decompress(io::Stream &input, size_t output_size)
         }
     }
     return output;
-}
-
-static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
-{
-    io::MemoryStream stream(input);
-    return custom_lzss_decompress(stream, output_size);
 }
 
 fmt::IDecoder::NamingStrategy WipfImageArchiveDecoder::naming_strategy() const
