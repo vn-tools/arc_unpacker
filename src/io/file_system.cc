@@ -32,7 +32,7 @@ path io::absolute(const path &p)
 void io::create_directories(const path &p)
 {
     const auto bp = boost::filesystem::path(p.str());
-    if (!bp.empty())
+    if (!bp.empty() && !boost::filesystem::exists(bp))
         boost::filesystem::create_directories(bp);
 }
 
