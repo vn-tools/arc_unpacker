@@ -30,27 +30,24 @@ bstr algo::convert_locale(
             &input_bytes_left,
             &output_buffer,
             &output_bytes_left);
+        const auto err = errno;
 
         output += buffer.substr(0, buffer.size() - output_bytes_left);
 
         if (ret != -1 && input_bytes_left == 0)
             break;
 
-        switch (errno)
-        {
-            case EINVAL:
-            case EILSEQ:
-                iconv_close(conv);
-                throw err::CorruptDataError("Invalid byte sequence");
+        // repeat the iteration unless nothing was parsed at all
+        if (err == E2BIG && output_bytes_left != buffer.size())
+            continue;
 
-            case E2BIG:
-                // repeat the iteration unless we got nothing at all
-                if (output_bytes_left != buffer.size())
-                    continue;
-                iconv_close(conv);
-                throw err::CorruptDataError(
-                    "Code point too large to decode (?)");
-        }
+        iconv_close(conv);
+        if (err == E2BIG)
+            throw err::CorruptDataError("Code point too large to decode (?)");
+        else if (err == EINVAL || err == EILSEQ)
+            throw err::CorruptDataError("Invalid byte sequence");
+        else
+            throw err::CorruptDataError("Unknown iconv error");
     }
 
     iconv_close(conv);
