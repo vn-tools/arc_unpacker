@@ -21,6 +21,7 @@ namespace io {
         std::string stem() const;
         std::string extension() const;
 
+        bool is_root() const;
         bool has_extension() const;
         bool has_extension(const std::string &extension) const;
         void change_extension(const std::string &new_extension);
