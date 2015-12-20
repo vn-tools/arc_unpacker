@@ -87,20 +87,20 @@ const Pixel &Palette::operator [](const size_t i) const
 
 Pixel *Palette::begin()
 {
-    return &p->colors[0];
+    return p->colors.empty() ? nullptr : &p->colors[0];
 }
 
 Pixel *Palette::end()
 {
-    return &p->colors[p->colors.size()];
+    return p->colors.empty() ? nullptr : begin() + p->colors.size();
 }
 
 const Pixel *Palette::begin() const
 {
-    return &p->colors[0];
+    return p->colors.empty() ? nullptr : &p->colors[0];
 }
 
 const Pixel *Palette::end() const
 {
-    return &p->colors[p->colors.size()];
+    return p->colors.empty() ? nullptr : begin() + p->colors.size();
 }

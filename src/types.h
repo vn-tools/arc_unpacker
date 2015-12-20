@@ -40,17 +40,22 @@ namespace au {
 
         template<typename T> T *get()
         {
-            return reinterpret_cast<T*>(&v[0]);
+            return v.empty() ? nullptr : reinterpret_cast<T*>(&v[0]);
+        }
+
+        template<typename T> T *end()
+        {
+            return v.empty() ? nullptr : get<T>() + v.size() / sizeof(T);
         }
 
         template<typename T> const T *get() const
         {
-            return reinterpret_cast<const T*>(&v[0]);
+            return v.empty() ? nullptr : reinterpret_cast<const T*>(&v[0]);
         }
 
         template<typename T> const T *end() const
         {
-            return get<T>() + v.size() / sizeof(T);
+            return v.empty() ? nullptr : get<T>() + v.size() / sizeof(T);
         }
 
         u8 *begin()
@@ -60,7 +65,7 @@ namespace au {
 
         u8 *end()
         {
-            return get<u8>() + v.size();
+            return end<u8>();
         }
 
         const u8 *begin() const

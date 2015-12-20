@@ -144,20 +144,20 @@ void Image::paste(const Image &other, const int target_x, const int target_y)
 
 Pixel *Image::begin()
 {
-    return &pixels[0];
+    return pixels.empty() ? nullptr : &pixels[0];
 }
 
 Pixel *Image::end()
 {
-    return &pixels[_width * _height];
+    return pixels.empty() ? nullptr : begin() + _width * _height;
 }
 
 const Pixel *Image::begin() const
 {
-    return &pixels[0];
+    return pixels.empty() ? nullptr : &pixels[0];
 }
 
 const Pixel *Image::end() const
 {
-    return &pixels[_width * _height];
+    return pixels.empty() ? nullptr : begin() + _width * _height;
 }
