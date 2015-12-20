@@ -1,4 +1,4 @@
-#include "fmt/ivory/mbl_archive_decoder.h"
+﻿#include "fmt/ivory/mbl_archive_decoder.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -29,7 +29,7 @@ TEST_CASE("Ivory MBL archives", "[fmt]")
             "mbl-v1.mbl",
             {
                 tests::stub_file("abc.txt", "abc"_b),
-                tests::stub_file("テスト", "AAAAAAAAAAAAAAAA"_b),
+                tests::stub_file(u8"テスト", "AAAAAAAAAAAAAAAA"_b),
             });
     }
 
@@ -39,7 +39,7 @@ TEST_CASE("Ivory MBL archives", "[fmt]")
             "mbl-v2.mbl",
             {
                 tests::stub_file("abc.txt", "abc"_b),
-                tests::stub_file("テスト", "AAAAAAAAAAAAAAAA"_b),
+                tests::stub_file(u8"テスト", "AAAAAAAAAAAAAAAA"_b),
             });
     }
 

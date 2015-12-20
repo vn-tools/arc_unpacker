@@ -35,7 +35,7 @@ std::unique_ptr<fmt::ArchiveMeta>
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(32).str();
         entry->offset = input_file.stream.read_u32_le();
-        entry->encrypted = input_file.stream.read_u32_le() & 0x10000;
+        entry->encrypted = (input_file.stream.read_u32_le() & 0x10000) != 0;
         entry->size_orig = input_file.stream.read_u32_le();
         entry->size_comp = input_file.stream.read_u32_le();
         meta->entries.push_back(std::move(entry));
@@ -44,7 +44,9 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> PackdatArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    io::File &input_file,
+    const fmt::ArchiveMeta &m,
+    const fmt::ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);

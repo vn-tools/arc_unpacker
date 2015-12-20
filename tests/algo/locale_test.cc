@@ -1,4 +1,4 @@
-#include "algo/locale.h"
+﻿#include "algo/locale.h"
 #include "test_support/catch.h"
 #include "types.h"
 
@@ -26,11 +26,11 @@ TEST_CASE("Converting text encoding", "[algo]")
 
     SECTION("Converting SJIS to UTF8")
     {
-        REQUIRE(algo::convert_locale(sjis, "sjis", "utf-8") == utf8);
+        REQUIRE(algo::sjis_to_utf8(sjis) == utf8);
     }
 
     SECTION("Converting UTF8 to SJIS")
     {
-        REQUIRE(algo::convert_locale(utf8, "utf-8", "sjis") == sjis);
+        REQUIRE(algo::utf8_to_sjis(utf8) == sjis);
     }
 }

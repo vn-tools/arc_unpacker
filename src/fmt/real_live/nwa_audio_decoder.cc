@@ -231,7 +231,7 @@ res::Audio NwaAudioDecoder::decode_impl(io::File &input_file) const
     header.bits_per_sample = input_stream.read_u16_le();
     header.sample_rate = input_stream.read_u32_le();
     header.compression_level = static_cast<s32>(input_stream.read_u32_le());
-    header.use_run_length = input_stream.read_u32_le();
+    header.use_run_length = input_stream.read_u32_le() != 0;
     header.block_count = input_stream.read_u32_le();
     header.uncompressed_size = input_stream.read_u32_le();
     header.compressed_size = input_stream.read_u32_le();

@@ -21,16 +21,16 @@ res::Image PrtImageDecoder::decode_impl(io::File &input_file) const
     if (version != 0x66 && version != 0x65)
         throw err::UnsupportedVersionError(version);
 
-    const u16 bit_depth = input_file.stream.read_u16_le();
-    const u16 palette_offset = input_file.stream.read_u16_le();
-    const u16 data_offset = input_file.stream.read_u16_le();
-    u32 width = input_file.stream.read_u16_le();
-    u32 height = input_file.stream.read_u16_le();
+    const auto bit_depth = input_file.stream.read_u16_le();
+    const auto palette_offset = input_file.stream.read_u16_le();
+    const auto data_offset = input_file.stream.read_u16_le();
+    auto width = input_file.stream.read_u16_le();
+    auto height = input_file.stream.read_u16_le();
     bool has_alpha = false;
 
     if (version == 0x66)
     {
-        has_alpha = input_file.stream.read_u32_le();
+        has_alpha = input_file.stream.read_u32_le() != 0;
         const auto x = input_file.stream.read_u32_le();
         const auto y = input_file.stream.read_u32_le();
         const auto width2 = input_file.stream.read_u32_le();
@@ -39,18 +39,19 @@ res::Image PrtImageDecoder::decode_impl(io::File &input_file) const
         if (height2) height = height2;
     }
 
-    auto stride = (((width * bit_depth / 8) + 3) / 4) * 4;
+    const auto stride = (((width * bit_depth / 8) + 3) / 4) * 4;
 
-    input_file.stream.seek(palette_offset);
     res::Palette palette(
-        bit_depth == 8 ? 256 : 0, input_file.stream, res::PixelFormat::BGR888X);
+        bit_depth == 8 ? 256 : 0,
+        input_file.stream.seek(palette_offset),
+        res::PixelFormat::BGR888X);
 
     res::Image image(width, height);
     for (const auto y : algo::range(height))
     {
         input_file.stream.seek(data_offset + y * stride);
-        auto row = input_file.stream.read(stride);
-        auto row_ptr = row.get<const u8>();
+        const auto row = input_file.stream.read(stride);
+        const auto *row_ptr = row.get<const u8>();
         for (const auto x : algo::range(width))
         {
             if (bit_depth == 8)
@@ -78,9 +79,8 @@ res::Image PrtImageDecoder::decode_impl(io::File &input_file) const
 
     if (has_alpha)
     {
-        for (const auto y : algo::range(height))
-        for (const auto x : algo::range(width))
-            image.at(x, y).a = input_file.stream.read_u8();
+        image.apply_mask(res::Image(
+            width, height, input_file.stream, res::PixelFormat::Gray8));
     }
 
     return image;

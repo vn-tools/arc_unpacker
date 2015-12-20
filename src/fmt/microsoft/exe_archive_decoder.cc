@@ -1,4 +1,4 @@
-#include "fmt/microsoft/exe_archive_decoder.h"
+﻿#include "fmt/microsoft/exe_archive_decoder.h"
 #include "algo/format.h"
 #include "algo/locale.h"
 #include "algo/range.h"
@@ -202,7 +202,7 @@ namespace
 }
 
 // keep flat hierarchy for unpacked files
-static const std::string path_sep = "／";
+static const std::string path_sep = u8"／";
 
 DosHeader::DosHeader(io::Stream &stream)
 {
@@ -524,7 +524,9 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> ExeArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    io::File &input_file,
+    const fmt::ArchiveMeta &m,
+    const fmt::ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);

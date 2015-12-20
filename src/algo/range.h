@@ -20,7 +20,7 @@ namespace algo {
             {
             }
 
-            constexpr int operator *()
+            constexpr int operator *() const
             {
                 return i;
             }
@@ -31,7 +31,7 @@ namespace algo {
                 return *this;
             }
 
-            constexpr bool operator !=(Iterator other)
+            constexpr bool operator !=(Iterator other) const
             {
                 return stride < 0 ? i > *other : i < *other;
             }
@@ -42,12 +42,12 @@ namespace algo {
         {
         }
 
-        constexpr Iterator begin()
+        constexpr Iterator begin() const
         {
             return b;
         }
 
-        constexpr Iterator end()
+        constexpr Iterator end() const
         {
             return e;
         }

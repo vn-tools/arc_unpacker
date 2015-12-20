@@ -1,4 +1,5 @@
 #include "fmt/purple_software/jbp1.h"
+#include <array>
 #include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
@@ -151,8 +152,8 @@ static void dct(
     long w, x, y, z;
     long s, t, u, v, n;
 
-    auto lp1 = &dct_table[0];
-    auto lp2 = &quant[0];
+    auto lp1 = dct_table.data();
+    auto lp2 = quant.data();
 
     for (const auto i : algo::range(8))
     {
@@ -225,7 +226,7 @@ static void dct(
         lp2++;
     }
 
-    lp1 = &dct_table[0];
+    lp1 = dct_table.data();
 
     for (const auto i : algo::range(8))
     {

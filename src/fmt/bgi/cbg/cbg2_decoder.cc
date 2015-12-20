@@ -116,7 +116,7 @@ static void jpeg_dct_float(
         tmp10 = tmp0 + tmp2;
         tmp11 = tmp0 - tmp2;
         tmp13 = tmp1 + tmp3;
-        tmp12 = (tmp1 - tmp3) * 1.414213562 - tmp13;
+        tmp12 = (tmp1 - tmp3) * 1.414213562f - tmp13;
         tmp0 = tmp10 + tmp13;
         tmp3 = tmp10 - tmp13;
         tmp1 = tmp11 + tmp12;
@@ -131,10 +131,10 @@ static void jpeg_dct_float(
         z12 = tmp4 - tmp7;
 
         tmp7 = z11 + z13;
-        tmp11 = (z11 - z13) * 1.414213562;
-        z5 = (z10 + z12) * 1.847759065;
-        tmp10 = z12 * 1.082392200 - z5;
-        tmp12 = z10 * (-2.613125930) + z5;
+        tmp11 = (z11 - z13) * 1.414213562f;
+        z5 = (z10 + z12) * 1.847759065f;
+        tmp10 = z12 * 1.082392200f - z5;
+        tmp12 = z10 * (-2.613125930f) + z5;
 
         tmp6 = tmp12 - tmp7;
         tmp5 = tmp11 - tmp6;
@@ -171,11 +171,11 @@ static void jpeg_dct_float(
         z12 = tp[block_dim * i + 1] - tp[block_dim * i + 7];
 
         tmp7 = z11 + z13;
-        tmp11 = (z11 - z13) * 1.414213562;
+        tmp11 = (z11 - z13) * 1.414213562f;
 
-        z5 = (z10 + z12) * 1.847759065;
-        tmp10 = z5 - z12 * 1.082392200;
-        tmp12 = z5 - z10 * 2.613125930;
+        z5 = (z10 + z12) * 1.847759065f;
+        tmp10 = z5 - z12 * 1.082392200f;
+        tmp12 = z5 - z10 * 2.613125930f;
 
         tmp6 = tmp12 - tmp7;
         tmp5 = tmp11 - tmp6;

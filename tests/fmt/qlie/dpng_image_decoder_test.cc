@@ -21,5 +21,5 @@ static void do_test(
 
 TEST_CASE("QLiE DPNG images", "[fmt]")
 {
-    do_test("雷02.png", "雷02-out.png");
+    do_test("electricity02.png", "electricity02-out.png");
 }

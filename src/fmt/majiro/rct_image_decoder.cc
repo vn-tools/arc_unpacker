@@ -1,5 +1,4 @@
-#include "fmt/majiro/rct_image_decoder.h"
-#include "algo/locale.h"
+﻿#include "fmt/majiro/rct_image_decoder.h"
 #include "algo/range.h"
 #include "algo/str.h"
 #include "err.h"
@@ -10,7 +9,7 @@
 using namespace au;
 using namespace au::fmt::majiro;
 
-static const bstr magic = algo::utf8_to_sjis("六丁T"_b);
+static const bstr magic = "\x98\x5A\x92\x9A\x54"_b; // sjis "六丁T"
 
 static bstr decrypt(const bstr &input, const bstr &key)
 {

@@ -94,7 +94,7 @@ void bstr::reserve(const size_t how_much)
 
 bstr bstr::operator +(const bstr &other) const
 {
-    bstr ret(&v[0], size());
+    bstr ret(v.data(), size());
     ret += other;
     return ret;
 }

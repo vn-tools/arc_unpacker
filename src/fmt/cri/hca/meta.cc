@@ -87,7 +87,7 @@ Meta fmt::cri::hca::read_meta(const bstr &input)
             const auto tmp = stream.read_u8();
             out.dec->unk[2] = tmp >> 4;
             out.dec->unk[3] = tmp & 0b1111;
-            out.dec->enable_count2 = stream.read_u8();
+            out.dec->enable_count2 = stream.read_u8() != 0;
         }
 
         else if (magic == "comp"_b)

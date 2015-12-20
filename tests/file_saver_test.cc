@@ -1,4 +1,4 @@
-#include "file_saver.h"
+﻿#include "file_saver.h"
 #include "io/file_system.h"
 #include "log.h"
 #include "test_support/catch.h"
@@ -58,8 +58,8 @@ TEST_CASE("FileSaver", "[core]")
     SECTION("Unicode file names")
     {
         do_test("test.out");
-        do_test("ąćę.out");
-        do_test("不用意な変換.out");
+        do_test(u8"ąćę.out");
+        do_test(u8"不用意な変換.out");
     }
 
     SECTION("Two file savers overwrite the same file")

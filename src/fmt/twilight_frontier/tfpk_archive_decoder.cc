@@ -193,7 +193,7 @@ static u32 neg32(u32 x)
 static std::string lower_ascii_only(std::string name_utf8)
 {
     // while SJIS can use ASCII for encoding multibyte characters,
-    // UTF-8 uses the codes 0–127 only for the ASCII characters.
+    // UTF-8 uses the codes 0..127 only for the ASCII characters.
     for (auto i : algo::range(name_utf8.size()))
         if (name_utf8[i] >= 'A' && name_utf8[i] <= 'Z')
             name_utf8[i] += 'a' - 'A';
@@ -433,7 +433,9 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> TfpkArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    io::File &input_file,
+    const fmt::ArchiveMeta &m,
+    const fmt::ArchiveEntry &e) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
@@ -446,7 +448,7 @@ std::unique_ptr<io::File> TfpkArchiveDecoder::read_file_impl(
 }
 
 void TfpkArchiveDecoder::preprocess(
-    io::File &input_file, ArchiveMeta &m, const FileSaver &saver) const
+    io::File &input_file, fmt::ArchiveMeta &m, const FileSaver &saver) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
 

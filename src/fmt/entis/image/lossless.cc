@@ -37,7 +37,7 @@ static Permutation init_permutation(const DecodeContext &ctx)
 {
     Permutation permutation(ctx.block_samples * 4);
 
-    auto permutation_ptr = &permutation[0];
+    auto permutation_ptr = permutation.data();
     for (auto c : algo::range(ctx.channel_count))
     for (auto y : algo::range(ctx.block_size))
     for (auto x : algo::range(ctx.block_size))
@@ -450,7 +450,7 @@ bstr image::decode_lossless_pixel_data(
     bstr prev_col(ctx.height_blocks * ctx.block_stride);
     bstr prev_row(ctx.width_blocks * ctx.block_stride);
 
-    auto transformer_codes_ptr = &transformer_codes[0];
+    auto transformer_codes_ptr = transformer_codes.data();
     for (auto y : algo::range(ctx.height_blocks))
     {
         for (auto x : algo::range(ctx.width_blocks))

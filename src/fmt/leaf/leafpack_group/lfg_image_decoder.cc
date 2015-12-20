@@ -66,18 +66,19 @@ bool LfgImageDecoder::is_recognized_impl(io::File &input_file) const
 
 res::Image LfgImageDecoder::decode_impl(io::File &input_file) const
 {
-    const auto width
-        = (input_file.stream.seek(36).read_u16_le()
-        - input_file.stream.seek(32).read_u16_le() + 1) * 8;
+    input_file.stream.seek(32);
+    const auto x1 = input_file.stream.read_u16_le();
+    const auto y1 = input_file.stream.read_u16_le();
+    const auto x2 = input_file.stream.read_u16_le();
+    const auto y2 = input_file.stream.read_u16_le();
+    const auto width = (x2 - x1 + 1) * 8;
+    const auto height = y2 - y1 + 1;
 
-    const auto height
-        = input_file.stream.seek(38).read_u16_le()
-        - input_file.stream.seek(34).read_u16_le() + 1;
-
-    const bool horizontal = input_file.stream.seek(40).read_u8() > 0;
-    const auto base_color = input_file.stream.seek(41).read_u8();
-    const auto size_orig = input_file.stream.seek(44).read_u32_le();
-    const auto input = input_file.stream.seek(48).read_to_eof();
+    const bool horizontal = input_file.stream.read_u8() > 0;
+    const auto base_color = input_file.stream.read_u8();
+    input_file.stream.skip(2);
+    const auto size_orig = input_file.stream.read_u32_le();
+    const auto input = input_file.stream.read_to_eof();
 
     bstr data(size_orig * 2, base_color);
     auto output_ptr = data.get<u8>() + width * (height - 1);

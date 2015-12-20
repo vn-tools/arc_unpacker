@@ -1,4 +1,4 @@
-#include "fmt/qlie/abmp7_archive_decoder.h"
+﻿#include "fmt/qlie/abmp7_archive_decoder.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -21,12 +21,14 @@ static void do_test(
 TEST_CASE("QLiE ABMP7 archives", "[fmt]")
 {
     do_test(
-        "ボタン.b",
+        "button.b",
         {
             tests::file_from_path(dir + "out/base.png", "base.png"),
+
             tests::file_from_path(
-                dir + "out/ボタン効果音1.ogg", "ボタン効果音1.ogg"),
+                dir + "out/button-sound-effect-1.ogg", u8"ボタン効果音1.ogg"),
+
             tests::file_from_path(
-                dir + "out/ボタン効果音2.ogg", "ボタン効果音2.ogg"),
+                dir + "out/button-sound-effect-2.ogg", u8"ボタン効果音2.ogg"),
         });
 }

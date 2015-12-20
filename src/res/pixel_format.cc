@@ -244,7 +244,7 @@ namespace res {
         // save those precious CPU cycles
         if (fmt == PixelFormat::BGRA8888)
         {
-            std::memcpy(&output[0], input_ptr, output.size() * 4);
+            std::memcpy(output.data(), input_ptr, output.size() * 4);
             return;
         }
 

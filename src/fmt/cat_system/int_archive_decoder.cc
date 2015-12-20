@@ -87,7 +87,7 @@ static u32 get_table_seed(const bstr &input)
         seed ^= p << 24;
         for (const auto i : algo::range(8))
         {
-            const bool bit = seed & 0x80000000;
+            const auto bit = (seed & 0x80000000) != 0;
             seed <<= 1;
             if (bit)
                 seed ^= magic;
@@ -216,7 +216,9 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> IntArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    io::File &input_file,
+    const fmt::ArchiveMeta &m,
+    const fmt::ArchiveEntry &e) const
 {
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);

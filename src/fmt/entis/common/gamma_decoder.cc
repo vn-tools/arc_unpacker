@@ -1,4 +1,5 @@
 #include "fmt/entis/common/gamma_decoder.h"
+#include <algorithm>
 #include "err.h"
 
 using namespace au;

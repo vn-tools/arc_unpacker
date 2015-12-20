@@ -23,7 +23,7 @@ TEST_CASE("KiriKiri TLG images", "[fmt]")
 {
     SECTION("TLG5")
     {
-        do_test("14凛ペンダント.tlg", "14凛ペンダント-out.png");
+        do_test("14.tlg", "14-out.png");
     }
 
     SECTION("TLG6")

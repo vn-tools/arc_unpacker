@@ -94,7 +94,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->hash = table_stream.read_u64_le();
-        entry->compressed = table_stream.read_u32_le();
+        entry->compressed = table_stream.read_u32_le() != 0;
         entry->size_original = table_stream.read_u32_le();
         entry->offset = table_stream.read_u32_le() + file_data_start;
         entry->size_compressed = table_stream.read_u32_le();
@@ -118,7 +118,9 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> TacArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    io::File &input_file,
+    const fmt::ArchiveMeta &m,
+    const fmt::ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);

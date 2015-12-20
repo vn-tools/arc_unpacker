@@ -1,4 +1,4 @@
-#include "io/path.h"
+﻿#include "io/path.h"
 #include <cstring>
 #include "test_support/catch.h"
 
@@ -84,7 +84,7 @@ TEST_CASE("Paths", "[io]")
 
         SECTION("Wide C++ string")
         {
-            io::path p(std::string("testą"));
+            io::path p(std::string(u8"testą"));
             REQUIRE(p.wstr() == L"testą");
         }
     }

@@ -38,7 +38,6 @@ bstr algo::pack::decode_huffman(
     bstr output;
     output.resize(target_size);
     io::BitReader bit_reader(input);
-    u16 nodes[2][512];
     while (output.size() < target_size && !bit_reader.eof())
     {
         auto byte = huffman_tree.root;

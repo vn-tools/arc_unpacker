@@ -1,4 +1,5 @@
 #include "algo/crypt/lcg.h"
+#include <functional>
 
 using namespace au;
 using namespace au::algo::crypt;

@@ -7,7 +7,7 @@ using namespace au;
 bstr fmt::lilim::sysd_decompress(const bstr &input)
 {
     io::MemoryStream input_stream(input);
-    const bool compressed = input_stream.read_u8();
+    const auto compressed = input_stream.read_u8() != 0;
     const auto size_comp = input_stream.read_u32_le();
     const auto size_orig = input_stream.read_u32_le();
     auto data = input_stream.read(size_comp - 9);

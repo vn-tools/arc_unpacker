@@ -36,7 +36,7 @@ namespace algo {
 
         template<typename T, size_t sz> struct swap_bytes final
         {
-            T operator()(const T val)
+            T operator()(const T val) const
             {
                 throw std::logic_error("Unsupported data size");
             }
@@ -44,7 +44,7 @@ namespace algo {
 
         template<typename T> struct swap_bytes<T, 1> final
         {
-            constexpr T operator()(const T val)
+            constexpr T operator()(const T val) const
             {
                 return val;
             }
@@ -52,25 +52,35 @@ namespace algo {
 
         template<typename T> struct swap_bytes<T, 2> final
         {
-            constexpr T operator()(const T val)
+            constexpr T operator()(const T val) const
             {
-                return __builtin_bswap16(val);
+                return ((val >> 8) & 0xFF) | ((val & 0xFF) << 8);
             }
         };
 
         template<typename T> struct swap_bytes<T, 4> final
         {
-            constexpr T operator()(const T val)
+            constexpr T operator()(const T val) const
             {
-                return __builtin_bswap32(val);
+                return ((val & 0xFF000000) >> 24)
+                    | ((val & 0x00FF0000) >> 8)
+                    | ((val & 0x0000FF00) << 8)
+                    | ((val & 0x000000FF) << 24);
             }
         };
 
         template<typename T> struct swap_bytes<T, 8> final
         {
-            constexpr T operator()(const T val)
+            constexpr T operator()(const T val) const
             {
-                return __builtin_bswap64(val);
+                return ((val & 0xFF00000000000000ull) >> 56)
+                    | ((val & 0x00FF000000000000ull) >> 40)
+                    | ((val & 0x0000FF0000000000ull) >> 24)
+                    | ((val & 0x000000FF00000000ull) >> 8)
+                    | ((val & 0x00000000FF000000ull) << 8)
+                    | ((val & 0x0000000000FF0000ull) << 24)
+                    | ((val & 0x000000000000FF00ull) << 40)
+                    | ((val & 0x00000000000000FFull) << 56);
             }
         };
 

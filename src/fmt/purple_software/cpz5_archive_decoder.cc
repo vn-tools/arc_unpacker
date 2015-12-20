@@ -55,6 +55,8 @@ namespace
 static std::unique_ptr<ArchiveMetaImpl> read_meta(
     const cpz5::Plugin &plugin, const Header &header, const bstr &table_data)
 {
+    if (!header.dir_table_size || !header.file_table_size)
+        throw err::BadDataSizeError();
     const auto hash = cpz5::get_hash(plugin, header.md5_dwords);
     bstr table_data_copy(table_data);
     auto table_data_ptr = make_ptr(table_data_copy);
@@ -234,11 +236,11 @@ std::unique_ptr<fmt::ArchiveMeta>
             if (meta)
                 return std::move(meta);
         }
-        catch (err::DataError &e)
+        catch (err::DataError)
         {
             continue;
         }
-        catch (err::IoError &e)
+        catch (err::IoError)
         {
             continue;
         }
@@ -247,7 +249,9 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Cpz5ArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    io::File &input_file,
+    const fmt::ArchiveMeta &m,
+    const fmt::ArchiveEntry &e) const
 {
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);

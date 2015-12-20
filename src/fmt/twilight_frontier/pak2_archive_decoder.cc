@@ -1,4 +1,5 @@
 #include "fmt/twilight_frontier/pak2_archive_decoder.h"
+#include "algo/binary.h"
 #include "algo/crypt/mt.h"
 #include "algo/locale.h"
 #include "algo/range.h"
@@ -24,7 +25,7 @@ namespace
 static void decrypt(bstr &buffer, u32 mt_seed, u8 a, u8 b, u8 delta)
 {
     auto mt = algo::crypt::MersenneTwister::Improved(mt_seed);
-    for (auto i : algo::range(buffer.size()))
+    for (const auto i : algo::range(buffer.size()))
     {
         buffer[i] ^= mt->next_u32();
         buffer[i] ^= a;
@@ -50,11 +51,11 @@ std::unique_ptr<fmt::ArchiveMeta>
     Pak2ArchiveDecoder::read_meta_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
-    u16 file_count = input_file.stream.read_u16_le();
-    if (file_count == 0 && input_file.stream.size() != 6)
+    const auto file_count = input_file.stream.read_u16_le();
+    if (!file_count && input_file.stream.size() != 6)
         throw err::RecognitionError();
 
-    size_t table_size = input_file.stream.read_u32_le();
+    const auto table_size = input_file.stream.read_u32_le();
     if (table_size > input_file.stream.size() - input_file.stream.tell())
         throw err::RecognitionError();
     if (table_size > file_count * (4 + 4 + 256 + 1))
@@ -64,13 +65,13 @@ std::unique_ptr<fmt::ArchiveMeta>
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->already_unpacked = false;
         entry->offset = table_stream.read_u32_le();
         entry->size = table_stream.read_u32_le();
-        auto name_size = table_stream.read_u8();
+        const auto name_size = table_stream.read_u8();
         entry->path = algo::sjis_to_utf8(table_stream.read(name_size)).str();
         if (entry->offset + entry->size > input_file.stream.size())
             throw err::BadDataOffsetError();
@@ -80,26 +81,26 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &m, const ArchiveEntry &e) const
+    io::File &input_file,
+    const fmt::ArchiveMeta &m,
+    const fmt::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->already_unpacked)
         return nullptr;
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
-    u8 key = (entry->offset >> 1) | 0x23;
-    for (auto i : algo::range(entry->size))
-        data[i] ^= key;
+    const auto data = algo::xor(
+        input_file.stream.seek(entry->offset).read(entry->size),
+        (entry->offset >> 1) | 0x23);
     return std::make_unique<io::File>(entry->path, data);
 }
 
 void Pak2ArchiveDecoder::preprocess(
-    io::File &input_file, ArchiveMeta &m, const FileSaver &saver) const
+    io::File &input_file, fmt::ArchiveMeta &m, const FileSaver &saver) const
 {
     Pak2ImageDecoder image_decoder;
 
     image_decoder.clear_palettes();
-    auto dir = input_file.path.parent();
+    const auto dir = input_file.path.parent();
     for (const auto &path : io::directory_range(dir))
     {
         if (!io::is_regular_file(path))
