@@ -6,7 +6,7 @@
 
 using namespace au;
 
-bstr algo::convert_locale(
+static bstr convert_locale(
     const bstr &input, const std::string &from, const std::string &to)
 {
     iconv_t conv = iconv_open(to.c_str(), from.c_str());
