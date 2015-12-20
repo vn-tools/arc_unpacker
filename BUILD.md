@@ -29,7 +29,7 @@ Libraries:
 
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release .. # for debug build, change to Debug
+        cmake -DCMAKE_BUILD_TYPE=release .. # for debug build, change to debug
         make -j8
 
 3. The executables should appear in `build/` directory.
@@ -54,7 +54,7 @@ it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
 
         mkdir build-mxe
         cd build-mxe
-        ~/path/to/mxe/usr/bin/i686-w64-mingw32.static-cmake
+        ~/path/to/mxe/usr/bin/i686-w64-mingw32.static-cmake ..
         make -j8
 
 4. The executables should appear in `build-mxe/` directory.
