@@ -107,6 +107,17 @@ group_source_files("${CMAKE_SOURCE_DIR}/src" "${au_sources};${au_headers}")
 group_source_files("${CMAKE_SOURCE_DIR}/tests" "${test_sources};${test_headers}")
 
 # -------------------
+# 3rd party libraries
+# -------------------
+
+# Catch
+set(CATCH_PATH "${CMAKE_SOURCE_DIR}/tests/test_support/catch.h")
+if (NOT EXISTS "${CATCH_PATH}")
+    message("Downloading Catch...")
+    file(DOWNLOAD "http://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp" "${CATCH_PATH}")
+endif()
+
+# -------------------
 # Linking definitions
 # -------------------
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)

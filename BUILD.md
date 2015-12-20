@@ -27,7 +27,6 @@ Libraries:
 
 2. Run following:
 
-        ./bootstrap # downloads Catch test framework
         mkdir build
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release .. # for debug build, change to Debug
@@ -53,7 +52,6 @@ it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
 
 3. In the `arc_unpacker`'s directory run following:
 
-        ./bootstrap
         mkdir build-mxe
         cd build-mxe
         ~/path/to/mxe/usr/bin/i686-w64-mingw32.static-cmake
@@ -82,7 +80,6 @@ it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
 
 3. In the `arc_unpacker`'s directory run following:
 
-        ./bootstrap
         mkdir build-vs
         cd build-vs
         cmake --verbose \
