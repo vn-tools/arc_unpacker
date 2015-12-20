@@ -1,4 +1,4 @@
-#include "fmt/shiina_rio/ogv_file_decoder.h"
+#include "fmt/shiina_rio/ogv_audio_decoder.h"
 #include "algo/range.h"
 #include "err.h"
 
@@ -7,12 +7,12 @@ using namespace au::fmt::shiina_rio;
 
 static const bstr magic = "OGV\x00"_b;
 
-bool OgvFileDecoder::is_recognized_impl(io::File &input_file) const
+bool OgvAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<io::File> OgvFileDecoder::decode_impl(
+std::unique_ptr<io::File> OgvAudioDecoder::decode_impl(
     io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
@@ -32,4 +32,4 @@ std::unique_ptr<io::File> OgvFileDecoder::decode_impl(
     return output_file;
 }
 
-static auto dummy = fmt::register_fmt<OgvFileDecoder>("shiina-rio/ogv");
+static auto dummy = fmt::register_fmt<OgvAudioDecoder>("shiina-rio/ogv");

@@ -6,7 +6,7 @@ namespace au {
 namespace fmt {
 namespace shiina_rio {
 
-    class OgvFileDecoder final : public FileDecoder
+    class OgvAudioDecoder final : public FileDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;

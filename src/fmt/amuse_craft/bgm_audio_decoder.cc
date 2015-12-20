@@ -1,16 +1,16 @@
-#include "fmt/amuse_craft/bgm_file_decoder.h"
+#include "fmt/amuse_craft/bgm_audio_decoder.h"
 
 using namespace au;
 using namespace au::fmt::amuse_craft;
 
 static const bstr magic = "BGM\x20"_b;
 
-bool BgmFileDecoder::is_recognized_impl(io::File &input_file) const
+bool BgmAudioDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<io::File> BgmFileDecoder::decode_impl(
+std::unique_ptr<io::File> BgmAudioDecoder::decode_impl(
     io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
@@ -26,4 +26,4 @@ std::unique_ptr<io::File> BgmFileDecoder::decode_impl(
     return output_file;
 }
 
-static auto dummy = fmt::register_fmt<BgmFileDecoder>("amuse-craft/bgm");
+static auto dummy = fmt::register_fmt<BgmAudioDecoder>("amuse-craft/bgm");

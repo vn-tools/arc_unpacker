@@ -6,7 +6,7 @@ namespace au {
 namespace fmt {
 namespace amuse_craft {
 
-    class BgmFileDecoder final : public FileDecoder
+    class BgmAudioDecoder final : public FileDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
