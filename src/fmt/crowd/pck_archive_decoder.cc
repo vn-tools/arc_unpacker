@@ -16,7 +16,13 @@ namespace
 
 bool PckArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.path.has_extension("pck");
+    if (!input_file.path.has_extension("pck"))
+        return false;
+    const auto file_count = input_file.stream.seek(0).read_u32_le();
+    input_file.stream.skip(file_count * 12 - 8);
+    const auto last_file_offset = input_file.stream.read_u32_le();
+    const auto last_file_size = input_file.stream.read_u32_le();
+    return last_file_offset + last_file_size == input_file.stream.size();
 }
 
 std::unique_ptr<fmt::ArchiveMeta>
