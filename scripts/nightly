@@ -1,14 +1,16 @@
 #!/bin/bash
+set -e
+
 ROOT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/..
 BUILD_DIR="$ROOT_DIR"/build-nightly
 TARGET_DIR=/srv/www/tmp.sakuya.pl/public_html/au/
 MXE_DIR="$HOME"/src/ext/mxe
 
-cd $("ROOT_DIR)"
+cd "$ROOT_DIR"
 VERSION="$(git describe --tags)"
 ZIP_NAME=arc_unpacker-"$VERSION"-bin.zip
 
-cd $("ROOT_DIR)"
+cd "$ROOT_DIR"
 git checkout master
 git pull
 
