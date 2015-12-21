@@ -1,5 +1,6 @@
 #!/bin/python3
 import os, glob, re
+from pathlib import Path
 
 class Problem(object):
     def __init__(self, file, text, line_number=None, line_text=None):
@@ -241,8 +242,8 @@ def main():
     dirs = ['src/', 'tests/']
     all_files = []
     for dir in dirs:
-        sources = sorted(glob.iglob(dir + '/**/*.cc', recursive=True))
-        headers = sorted(glob.iglob(dir + '/**/*.h', recursive=True))
+        sources = [str(p) for p in sorted(Path(dir).glob('**/*.cc'))]
+        headers = [str(p) for p in sorted(Path(dir).glob('**/*.h'))]
         headers = [f for f in headers if 'catch.h' not in f]
 
         for name in sorted(sources + headers):
