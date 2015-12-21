@@ -5,7 +5,7 @@ Build instructions
 
 Environment:
 
-1. g++ 4.8+, MinGW-w64, MinGW or Microsoft Visual Studio 15+
+1. g++ 4.8+, MinGW-w64, MinGW or Microsoft Visual Studio 2015+
 2. CMake
 
 Libraries:
@@ -61,7 +61,7 @@ it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
 
 
 
-## Compiling for Windows with Microsoft Visual Studio 15+
+## Compiling for Windows with Microsoft Visual Studio 2015+
 
 1. Install [CMake](https://cmake.org/download/).
 
