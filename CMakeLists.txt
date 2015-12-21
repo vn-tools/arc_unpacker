@@ -83,10 +83,6 @@ else()
     list(REMOVE_ITEM au_sources "${CMAKE_SOURCE_DIR}/src/util/logger_ansi.cc")
 endif()
 
-list(REMOVE_ITEM au_sources "${CMAKE_SOURCE_DIR}/src/algo/crypt/rsa_dummy.cc")
-list(REMOVE_ITEM au_sources "${CMAKE_SOURCE_DIR}/src/algo/crypt/blowfish_dummy.cc")
-list(REMOVE_ITEM au_sources "${CMAKE_SOURCE_DIR}/src/algo/crypt/md5_dummy.cc")
-
 macro(group_source_files PARENT_DIR FILES)
     foreach(FILE ${FILES})
         file(RELATIVE_PATH GROUP "${PARENT_DIR}" "${FILE}")
