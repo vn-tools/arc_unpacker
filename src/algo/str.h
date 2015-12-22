@@ -9,9 +9,9 @@ namespace algo {
 
     std::string reverse(const std::string &input);
 
-    std::string hex(const std::string &input);
+    std::string hex(const bstr &input);
 
-    std::string unhex(const std::string &input);
+    bstr unhex(const std::string &input);
 
     std::string trim_to_zero(const std::string &input);
 
