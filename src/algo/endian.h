@@ -32,6 +32,12 @@
 namespace au {
 namespace algo {
 
+    enum class Endianness : u8
+    {
+        LittleEndian,
+        BigEndian,
+    };
+
     namespace priv {
 
         template<typename T, size_t sz> struct swap_bytes final
@@ -84,6 +90,15 @@ namespace algo {
             }
         };
 
+    }
+
+    inline Endianness get_machine_endianness()
+    {
+        #if defined(AU_UTIL_ENDIAN_LITTLE_ENDIAN)
+            return Endianness::LittleEndian;
+        #elif defined(AU_UTIL_ENDIAN_BIG_ENDIAN)
+            return Endianness::BigEndian;
+        #endif
     }
 
     template<typename T> constexpr T from_little_endian(const T value)
