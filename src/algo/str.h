@@ -11,6 +11,8 @@ namespace algo {
 
     std::string hex(const bstr &input);
 
+    std::string hex_verbose(const bstr &input, const size_t columns = 16);
+
     bstr unhex(const std::string &input);
 
     std::string trim_to_zero(const std::string &input);

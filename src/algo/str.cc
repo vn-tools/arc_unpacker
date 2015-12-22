@@ -2,6 +2,8 @@
 #include <boost/algorithm/hex.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include "algo/format.h"
+#include "algo/range.h"
 
 using namespace au;
 
@@ -32,6 +34,41 @@ std::string algo::hex(const bstr &input)
     std::string output;
     boost::algorithm::hex(
         input.begin(), input.end(), std::back_inserter(output));
+    return output;
+}
+
+std::string algo::hex_verbose(const bstr &input, const size_t columns)
+{
+    if (!columns)
+        return hex(input);
+    std::string output;
+    output.reserve(input.size() * 4.5);
+    for (const auto y : range(input.size() / columns))
+    {
+        output += format("%04x: ", y * columns);
+        for (const auto x : range(columns))
+        {
+            const size_t i = x + y * columns;
+            if (i < input.size())
+                output += format("%02x ", input[i]);
+            else
+                output += "   ";
+            if (i % 8 == 7)
+                output += " ";
+        }
+        for (const auto x : range(columns))
+        {
+            const size_t i = x + y * columns;
+            if (i >= input.size())
+            {
+                output += " ";
+                continue;
+            }
+            output += format(
+                "%c", input[i] >= 0x20 && input[i] < 0x7F ? input[i] : '.');
+        }
+        output += "\n";
+    }
     return output;
 }
 
