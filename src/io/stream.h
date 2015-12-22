@@ -31,6 +31,10 @@ namespace io {
         virtual u32 read_u32_be();
         virtual u64 read_u64_le();
         virtual u64 read_u64_be();
+        virtual f32 read_f32_le();
+        virtual f32 read_f32_be();
+        virtual f64 read_f64_le();
+        virtual f64 read_f64_be();
 
         virtual Stream &write(const bstr &bytes);
         virtual Stream &write_u8(u8);

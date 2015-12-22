@@ -1,10 +1,20 @@
 #include "io/stream.h"
+#include <algorithm>
 #include <memory>
 #include "algo/endian.h"
 #include "algo/range.h"
 
 using namespace au;
 using namespace au::io;
+
+template<typename T, const algo::Endianness endianness> inline T
+    read_any_primitive(Stream &input_stream)
+{
+    bstr tmp = input_stream.read(sizeof(T));
+    if (endianness != algo::get_machine_endianness())
+        std::reverse(tmp.begin(), tmp.end());
+    return *reinterpret_cast<const T*>(tmp.get<const char>());
+}
 
 Stream::~Stream()
 {
@@ -111,6 +121,16 @@ u64 Stream::read_u64_le()
     return algo::from_little_endian<u64>(ret);
 }
 
+f32 Stream::read_f32_le()
+{
+    return read_any_primitive<const f32, algo::Endianness::LittleEndian>(*this);
+}
+
+f64 Stream::read_f64_le()
+{
+    return read_any_primitive<const f64, algo::Endianness::LittleEndian>(*this);
+}
+
 u16 Stream::read_u16_be()
 {
     u16 ret = 0;
@@ -130,6 +150,16 @@ u64 Stream::read_u64_be()
     u64 ret = 0;
     read_impl(&ret, 8);
     return algo::from_big_endian<u64>(ret);
+}
+
+f32 Stream::read_f32_be()
+{
+    return read_any_primitive<const f32, algo::Endianness::BigEndian>(*this);
+}
+
+f64 Stream::read_f64_be()
+{
+    return read_any_primitive<const f64, algo::Endianness::BigEndian>(*this);
 }
 
 Stream &Stream::write(const bstr &bytes)
