@@ -144,7 +144,9 @@ class WhitespaceAroundBracesCheck(Check):
 class SloppyExceptionsCheck(Check):
     def scan(self, file):
         for i, line in enumerate(file.lines):
-            if 'throw std::' in line and 'logic_error' not in line:
+            if ('throw std::' in line
+                and 'logic_error' not in line
+                and 'bad_cast' not in line):
                 yield Problem(file, 'Use better exceptions', i, line)
 
 class NonFinalObjectsCheck(Check):
@@ -158,7 +160,8 @@ class NonFinalObjectsCheck(Check):
             or '_struct' in line # false positives I
             or 'pngstruct' in line # false positives II
             or 'enum class' in line # false positives III
-            or re.search('(class|struct) (Abstract|I)[A-Z]', line)): continue
+            or re.search('(class|struct) (Abstract|I)[A-Z]', line) # templates
+            or re.search('template<(class|struct)', line)): continue
 
             # exceptions for core classes
             if (re.search('(class|struct) (General|Data|Io|NotSupported)Error', line)
