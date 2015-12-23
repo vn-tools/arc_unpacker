@@ -22,7 +22,7 @@ Logger::Priv::Priv(Logger &logger) : logger(logger)
     colors[MessageType::Success] = Color::Lime;
     colors[MessageType::Warning] = Color::Yellow;
     colors[MessageType::Error] = Color::Red;
-    colors[MessageType::Debug] = Color::Magenta;
+    colors[MessageType::Debug] = Color::Cyan;
 }
 
 void Logger::Priv::log(
