@@ -442,6 +442,7 @@ void ChannelDecoder::decode1(
     if (type == 2)
     {
         v = bit_reader.get(4);
+        bit_reader.skip(-4);
         value2[0] = v;
         if (v < 15)
         {
