@@ -35,6 +35,19 @@ Caveats:
    tells what kind of decryption to use. To tell it to use Fate/Stay Night
    decryption, supply `--fmt=krkr/xp3 --plugin=fsn`.
 
+## Q&A
+
+- **What do I do with `.wavloop` files?**  
+  These files are audio loops. You can play them like normal `.wav`,
+  however, most of the players will ignore looping information that is
+  contained in such files. If you're looking for players that do support looped
+  `.wav`s, I recommend either
+  [vgmstream](https://github.com/kode54/vgmstream/),
+  [`foo_input_wave_loop`](http://www.slemanique.com/software/foo_input_wave_loop.html)
+  or [`wavosaur`](http://www.wavosaur.com/).
+  The extension `.wavloop` was chosen so that it stands out from normal `.wav`s
+  and for compatibility with `foo_input_wave_loop`.
+
 ## License
 
 All the code is licensed under

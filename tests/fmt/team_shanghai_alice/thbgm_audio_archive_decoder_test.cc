@@ -26,8 +26,8 @@ TEST_CASE("Team Shanghai Alice THBGM audio", "[fmt]")
     do_test(
         "thbgm-data.dat",
         {
-            tests::file_from_path(dir + "/1-out.wav", "1.wav"),
-            tests::file_from_path(dir + "/2-out.wav", "2.wav"),
+            tests::file_from_path(dir + "/1-out.wav", "1.wavloop"),
+            tests::file_from_path(dir + "/2-out.wav", "2.wavloop"),
         });
     Log.unmute();
 }
