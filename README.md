@@ -48,12 +48,11 @@ Caveats:
   The extension `.wavloop` was chosen so that it stands out from normal `.wav`s
   and for compatibility with `foo_input_wave_loop`.
 
-## License
-
-All the code is licensed under
-[`LICENSE.md`](https://github.com/vn-tools/arc_unpacker/blob/master/LICENSE.md)
-unless otherwise noted. For acknowledgments, see
-[`THANKS.md`](https://github.com/vn-tools/arc_unpacker/blob/master/THANKS.md).
+- **What's the license?**  
+  All the code is licensed under
+  [`LICENSE.md`](https://github.com/vn-tools/arc_unpacker/blob/master/LICENSE.md)
+  unless otherwise noted. For acknowledgments, see
+  [`THANKS.md`](https://github.com/vn-tools/arc_unpacker/blob/master/THANKS.md).
 
 ## Contact
 
