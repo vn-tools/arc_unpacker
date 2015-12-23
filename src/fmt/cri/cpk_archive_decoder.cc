@@ -406,4 +406,9 @@ std::unique_ptr<io::File> CpkArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
+std::vector<std::string> CpkArchiveDecoder::get_linked_formats() const
+{
+    return {"cri/hca"};
+}
+
 static auto dummy = fmt::register_fmt<CpkArchiveDecoder>("cri/cpk");
