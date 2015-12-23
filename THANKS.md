@@ -7,6 +7,7 @@ projects are listed below in alphabetical order.
 - [Brightmoon](http://touhou.wikia.com/wiki/Brightmoon)
 - [chinesize](https://github.com/regomne/chinesize)
 - Crass / CUI
+- [CriPakTools](https://github.com/esperknight/CriPakTools)
 - [ExtractData](https://github.com/lioncash/ExtractData)
 - [GARbro](https://github.com/morkt/GARbro)
 - HCA decoder
