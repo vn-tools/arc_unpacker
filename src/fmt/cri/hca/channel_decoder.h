@@ -31,7 +31,8 @@ namespace hca {
             const int index,
             const unsigned int a,
             const unsigned int b,
-            const unsigned int c);
+            const unsigned int c,
+            ChannelDecoder &next_decoder);
 
         void decode5(const int index);
 

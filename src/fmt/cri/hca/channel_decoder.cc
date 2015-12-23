@@ -543,19 +543,107 @@ void ChannelDecoder::decode3(
     if (type == 2 || !b)
         return;
 
-    throw err::NotSupportedError("Type 3 encoding is not supported");
+    static const u32 list_u32[2][64] =
+    {
+        {
+            0x00000000, 0x00000000, 0x32A0B051, 0x32D61B5E,
+            0x330EA43A, 0x333E0F68, 0x337D3E0C, 0x33A8B6D5,
+            0x33E0CCDF, 0x3415C3FF, 0x34478D75, 0x3484F1F6,
+            0x34B123F6, 0x34EC0719, 0x351D3EDA, 0x355184DF,
+            0x358B95C2, 0x35B9FCD2, 0x35F7D0DF, 0x36251958,
+            0x365BFBB8, 0x36928E72, 0x36C346CD, 0x370218AF,
+            0x372D583F, 0x3766F85B, 0x3799E046, 0x37CD078C,
+            0x3808980F, 0x38360094, 0x38728177, 0x38A18FAF,
+            0x38D744FD, 0x390F6A81, 0x393F179A, 0x397E9E11,
+            0x39A9A15B, 0x39E2055B, 0x3A16942D, 0x3A48A2D8,
+            0x3A85AAC3, 0x3AB21A32, 0x3AED4F30, 0x3B1E196E,
+            0x3B52A81E, 0x3B8C57CA, 0x3BBAFF5B, 0x3BF9295A,
+            0x3C25FED7, 0x3C5D2D82, 0x3C935A2B, 0x3CC4563F,
+            0x3D02CD87, 0x3D2E4934, 0x3D68396A, 0x3D9AB62B,
+            0x3DCE248C, 0x3E0955EE, 0x3E36FD92, 0x3E73D290,
+            0x3EA27043, 0x3ED87039, 0x3F1031DC, 0x3F40213B,
+        },
+        {
+            0x3F800000, 0x3FAA8D26, 0x3FE33F89, 0x4017657D,
+            0x4049B9BE, 0x40866491, 0x40B311C4, 0x40EE9910,
+            0x411EF532, 0x4153CCF1, 0x418D1ADF, 0x41BC034A,
+            0x41FA83B3, 0x4226E595, 0x425E60F5, 0x429426FF,
+            0x42C5672A, 0x43038359, 0x432F3B79, 0x43697C38,
+            0x439B8D3A, 0x43CF4319, 0x440A14D5, 0x4437FBF0,
+            0x4475257D, 0x44A3520F, 0x44D99D16, 0x4510FA4D,
+            0x45412C4D, 0x4580B1ED, 0x45AB7A3A, 0x45E47B6D,
+            0x461837F0, 0x464AD226, 0x46871F62, 0x46B40AAF,
+            0x46EFE4BA, 0x471FD228, 0x4754F35B, 0x478DDF04,
+            0x47BD08A4, 0x47FBDFED, 0x4827CD94, 0x485F9613,
+            0x4894F4F0, 0x48C67991, 0x49043A29, 0x49302F0E,
+            0x496AC0C7, 0x499C6573, 0x49D06334, 0x4A0AD4C6,
+            0x4A38FBAF, 0x4A767A41, 0x4AA43516, 0x4ADACB94,
+            0x4B11C3D3, 0x4B4238D2, 0x4B8164D2, 0x4BAC6897,
+            0x4BE5B907, 0x4C190B88, 0x4C4BEC15, 0x00000000,
+        }
+    };
+
+    static const auto list_f32 = reinterpret_cast<const f32*>(list_u32[1]);
+
+    for (unsigned int i = 0, k = c, l = c - 1; i < a; i++)
+    {
+        for (unsigned int j = 0; j < b && k < d; j++, l--)
+        {
+            block[k++] = list_f32[value3[i] - value[l]] * block[l];
+        }
+    }
+    block[0x7F] = 0;
 }
 
 void ChannelDecoder::decode4(
     const int index,
     const unsigned int a,
     const unsigned int b,
-    const unsigned int c)
+    const unsigned int c,
+    ChannelDecoder &next_decoder)
 {
     if (type != 1 || !c)
         return;
 
-    throw err::NotSupportedError("Type 4 encoding is not supported");
+    static const u32 list_u32[] =
+    {
+        0x40000000, 0x3FEDB6DB, 0x3FDB6DB7, 0x3FC92492,
+        0x3FB6DB6E, 0x3FA49249, 0x3F924925, 0x3F800000,
+        0x3F5B6DB7, 0x3F36DB6E, 0x3F124925, 0x3EDB6DB7,
+        0x3E924925, 0x3E124925, 0x00000000, 0x00000000,
+        0x00000000, 0x32A0B051, 0x32D61B5E, 0x330EA43A,
+        0x333E0F68, 0x337D3E0C, 0x33A8B6D5, 0x33E0CCDF,
+        0x3415C3FF, 0x34478D75, 0x3484F1F6, 0x34B123F6,
+        0x34EC0719, 0x351D3EDA, 0x355184DF, 0x358B95C2,
+        0x35B9FCD2, 0x35F7D0DF, 0x36251958, 0x365BFBB8,
+        0x36928E72, 0x36C346CD, 0x370218AF, 0x372D583F,
+        0x3766F85B, 0x3799E046, 0x37CD078C, 0x3808980F,
+        0x38360094, 0x38728177, 0x38A18FAF, 0x38D744FD,
+        0x390F6A81, 0x393F179A, 0x397E9E11, 0x39A9A15B,
+        0x39E2055B, 0x3A16942D, 0x3A48A2D8, 0x3A85AAC3,
+        0x3AB21A32, 0x3AED4F30, 0x3B1E196E, 0x3B52A81E,
+        0x3B8C57CA, 0x3BBAFF5B, 0x3BF9295A, 0x3C25FED7,
+        0x3C5D2D82, 0x3C935A2B, 0x3CC4563F, 0x3D02CD87,
+        0x3D2E4934, 0x3D68396A, 0x3D9AB62B, 0x3DCE248C,
+        0x3E0955EE, 0x3E36FD92, 0x3E73D290, 0x3EA27043,
+        0x3ED87039, 0x3F1031DC, 0x3F40213B, 0x00000000,
+        0x40000000, 0x3FEDB6DB, 0x3FDB6DB7, 0x3FC92492,
+        0x3FB6DB6E, 0x3FA49249, 0x3F924925, 0x3F800000,
+        0x3F5B6DB7, 0x3F36DB6E, 0x3F124925, 0x3EDB6DB7,
+        0x3E924925, 0x3E124925, 0x00000000, 0x00000000,
+    };
+    const auto list_f32 = reinterpret_cast<const f32*>(list_u32);
+
+    const auto f1 = list_f32[next_decoder.value2[index]];
+    const auto f2 = f1 - 2.0f;
+    auto s = &block[b];
+    auto d = &next_decoder.block[b];
+    for (const auto i : algo::range(a))
+    {
+        *d = *s * f2;
+        *s = *s * f1;
+        d++; s++;
+    }
 }
 
 void ChannelDecoder::decode5(const int index)

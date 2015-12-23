@@ -88,13 +88,15 @@ static std::vector<u8> get_types(
     if (!params[6] || span <= 1)
         return types;
 
-    throw err::NotSupportedError("Advanced type decoding is not supported");
-
-    int idx = 0;
     for (const auto i : algo::range(params[2]))
     {
-        types.at(idx + 0) = 1;
-        types.at(idx + 1) = 2;
+        const auto idx = i * span;
+
+        if (span >= 2)
+        {
+            types.at(idx + 0) = 1;
+            types.at(idx + 1) = 2;
+        }
 
         if (span == 4 && params[3] == 0)
         {
@@ -119,9 +121,8 @@ static std::vector<u8> get_types(
             types.at(idx + 6) = 1;
             types.at(idx + 7) = 2;
         }
-
-        idx += span;
     }
+
     return types;
 }
 
@@ -157,13 +158,20 @@ static void decode_block(
             for (const auto j : algo::range(meta.fmt->channel_count))
             {
                 channel_decoders[j]->decode3(
-                    params[8], params[7], params[6] + params[5], params[4]);
+                    params[8],
+                    params[7],
+                    params[6] + params[5],
+                    params[4]);
             }
 
-            for (const auto j : algo::range(meta.fmt->channel_count))
+            for (const auto j : algo::range(meta.fmt->channel_count - 1))
             {
                 channel_decoders[j]->decode4(
-                    i, params[4] - params[5], params[5], params[6]);
+                    i,
+                    params[4] - params[5],
+                    params[5],
+                    params[6],
+                    *channel_decoders[j + 1]);
             }
 
             for (const auto j : algo::range(meta.fmt->channel_count))
