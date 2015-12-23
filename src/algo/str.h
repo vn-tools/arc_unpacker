@@ -7,6 +7,8 @@ namespace algo {
 
     std::string lower(const std::string &input);
 
+    bstr reverse(const bstr &input);
+
     std::string reverse(const std::string &input);
 
     std::string hex(const bstr &input);

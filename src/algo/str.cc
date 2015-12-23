@@ -12,6 +12,13 @@ std::string algo::lower(const std::string &input)
     return boost::algorithm::to_lower_copy(input);
 }
 
+bstr algo::reverse(const bstr &input)
+{
+    bstr output(input);
+    std::reverse(output.begin(), output.end());
+    return output;
+}
+
 std::string algo::reverse(const std::string &input)
 {
     std::string output(input);
