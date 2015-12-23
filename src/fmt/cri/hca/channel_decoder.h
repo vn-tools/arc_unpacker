@@ -11,44 +11,44 @@ namespace hca {
     class ChannelDecoder final
     {
     public:
-        ChannelDecoder(int type, int idx, int count);
+        ChannelDecoder(const int type, const int idx, const int count);
 
         void decode1(
             CustomBitReader &bit_reader,
-            unsigned int a,
-            int b,
+            const unsigned int a,
+            const int b,
             const AthTable &ath_table);
 
         void decode2(CustomBitReader &bit_reader);
 
         void decode3(
-            unsigned int a,
-            unsigned int b,
-            unsigned int c,
-            unsigned int d);
+            const unsigned int a,
+            const unsigned int b,
+            const unsigned int c,
+            const unsigned int d);
 
         void decode4(
-            int index,
-            unsigned int a,
-            unsigned int b,
-            unsigned int c);
+            const int index,
+            const unsigned int a,
+            const unsigned int b,
+            const unsigned int c);
 
-        void decode5(int index);
+        void decode5(const int index);
 
-        float wave[8][0x80];
+        f32 wave[8][128];
 
     private:
         int type;
         unsigned int count;
-        u8 scale[0x80];
-        u8 value[0x80];
+        u8 scale[128];
+        u8 value[128];
         u8 value2[8];
         u8 *value3;
-        float block[0x80];
-        float base[0x80];
-        float wav1[0x80];
-        float wav2[0x80];
-        float wav3[0x80];
+        f32 block[128];
+        f32 base[128];
+        f32 wav1[128];
+        f32 wav2[128];
+        f32 wav3[128];
     };
 
 } } } }

@@ -5,12 +5,12 @@
 using namespace au;
 using namespace au::fmt::cri::hca;
 
-static void decode5_copy1(float *s, float *d)
+static void decode5_copy1(f32 *s, f32 *d)
 {
     for (const auto i : algo::range(7))
     {
         const auto count1 = 1 << i;
-        const auto count2 = 0x40 >> i;
+        const auto count2 = 64 >> i;
         auto d1 = d;
         auto d2 = &d[count2];
         for (const auto j : algo::range(count1))
@@ -25,15 +25,15 @@ static void decode5_copy1(float *s, float *d)
             d1 += count2;
             d2 += count2;
         }
-        auto w = &s[-0x80];
+        const auto w = &s[-128];
         s = d;
         d = w;
     }
 }
 
-static float *decode5_copy2(float *&s, float *d)
+static f32 *decode5_copy2(f32 *&s, f32 *d)
 {
-    static unsigned int list1_int[7][0x40] =
+    static const u32 list1_u32[7][64] =
     {
         {
             0x3DA73D75, 0x3DA73D75, 0x3DA73D75, 0x3DA73D75,
@@ -163,7 +163,7 @@ static float *decode5_copy2(float *&s, float *d)
         }
     };
 
-    static unsigned int list2_int[7][0x40] =
+    static const u32 list2_u32[7][64] =
     {
         {
             0xBD0A8BD4, 0x3D0A8BD4, 0x3D0A8BD4, 0xBD0A8BD4,
@@ -295,10 +295,10 @@ static float *decode5_copy2(float *&s, float *d)
 
     for (const auto i : algo::range(7))
     {
-        const auto count1 = 0x40 >> i;
+        const auto count1 = 64 >> i;
         const auto count2 = 1 << i;
-        auto list1_float = reinterpret_cast<const float*>(list1_int[i]);
-        auto list2_float = reinterpret_cast<const float*>(list2_int[i]);
+        auto list1_f32 = reinterpret_cast<const f32*>(list1_u32[i]);
+        auto list2_f32 = reinterpret_cast<const f32*>(list2_u32[i]);
         auto s1 = s;
         auto s2 = &s1[count2];
         auto d1 = d;
@@ -309,8 +309,8 @@ static float *decode5_copy2(float *&s, float *d)
             {
                 const auto a = *s1++;
                 const auto b = *s2++;
-                const auto c = *list1_float++;
-                const auto d = *list2_float++;
+                const auto c = *list1_f32++;
+                const auto d = *list2_f32++;
                 *d1++ = a * c - b * d;
                 *d2-- = a * d + b * c;
             }
@@ -326,16 +326,16 @@ static float *decode5_copy2(float *&s, float *d)
     return s;
 }
 
-static void decode5_copy3(float *&s, float *d)
+static void decode5_copy3(f32 *&s, f32 *d)
 {
-    for (const auto i : algo::range(0x80))
+    for (const auto i : algo::range(128))
         *d++ = *s++;
 }
 
-ChannelDecoder::ChannelDecoder(int type, int idx, int count)
+ChannelDecoder::ChannelDecoder(const int type, const int idx, const int count)
     : type(type), count(count), value3(&value[idx])
 {
-    for (const auto i : algo::range(0x80))
+    for (const auto i : algo::range(128))
     {
         block[i] = base[i] = value[i] = scale[i] = 0;
         wav1[i] = wav2[i] = wav3[i] = 0;
@@ -347,39 +347,41 @@ ChannelDecoder::ChannelDecoder(int type, int idx, int count)
         value2[i] = 0;
     }
 
-    if (count > 0x80)
+    if (count > 128)
         throw err::BadDataSizeError();
 }
 
 void ChannelDecoder::decode1(
     CustomBitReader &bit_reader,
-    unsigned int a,
-    int b,
+    const unsigned int a,
+    const int b,
     const AthTable &ath_table)
 {
-    static unsigned char scale_list[] =
+    static const u8 scale_list[2][64] =
     {
-        // v2.0
-        0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0D, 0x0D,
-        0x0D, 0x0D, 0x0D, 0x0D, 0x0C, 0x0C, 0x0C, 0x0C,
-        0x0C, 0x0C, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B,
-        0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x09,
-        0x09, 0x09, 0x09, 0x09, 0x09, 0x08, 0x08, 0x08,
-        0x08, 0x08, 0x08, 0x07, 0x06, 0x06, 0x05, 0x04,
-        0x04, 0x04, 0x03, 0x03, 0x03, 0x02, 0x02, 0x02,
-        0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        // v1.3
-        // 0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0D, 0x0D,
-        // 0x0D, 0x0D, 0x0D, 0x0D, 0x0C, 0x0C, 0x0C, 0x0C,
-        // 0x0C, 0x0C, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B,
-        // 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x09,
-        // 0x09, 0x09, 0x09, 0x09, 0x09, 0x08, 0x08, 0x08,
-        // 0x08, 0x08, 0x08, 0x07, 0x06, 0x06, 0x05, 0x04,
-        // 0x04, 0x04, 0x03, 0x03, 0x03, 0x02, 0x02, 0x02,
-        // 0x02, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+        {
+            0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0D, 0x0D,
+            0x0D, 0x0D, 0x0D, 0x0D, 0x0C, 0x0C, 0x0C, 0x0C,
+            0x0C, 0x0C, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B,
+            0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x09,
+            0x09, 0x09, 0x09, 0x09, 0x09, 0x08, 0x08, 0x08,
+            0x08, 0x08, 0x08, 0x07, 0x06, 0x06, 0x05, 0x04,
+            0x04, 0x04, 0x03, 0x03, 0x03, 0x02, 0x02, 0x02,
+            0x02, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+        },
+        {
+            0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0D, 0x0D,
+            0x0D, 0x0D, 0x0D, 0x0D, 0x0C, 0x0C, 0x0C, 0x0C,
+            0x0C, 0x0C, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B,
+            0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x09,
+            0x09, 0x09, 0x09, 0x09, 0x09, 0x08, 0x08, 0x08,
+            0x08, 0x08, 0x08, 0x07, 0x06, 0x06, 0x05, 0x04,
+            0x04, 0x04, 0x03, 0x03, 0x03, 0x02, 0x02, 0x02,
+            0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        },
     };
 
-    static unsigned int value_int[] =
+    static const u32 value_u32[] =
     {
         0x342A8D26, 0x34633F89, 0x3497657D, 0x34C9B9BE,
         0x35066491, 0x353311C4, 0x356E9910, 0x359EF532,
@@ -399,7 +401,7 @@ void ChannelDecoder::decode1(
         0x40990B88, 0x40CBEC15, 0x4107DB35, 0x413504F3,
     };
 
-    static unsigned int scale_int[] =
+    static const u32 scale_u32[] =
     {
         0x00000000, 0x3F2AAAAB, 0x3ECCCCCD, 0x3E924925,
         0x3E638E39, 0x3E3A2E8C, 0x3E1D89D9, 0x3E088889,
@@ -407,8 +409,8 @@ void ChannelDecoder::decode1(
         0x3B804020, 0x3B002008, 0x3A801002, 0x3A000801,
     };
 
-    static const auto value_float = reinterpret_cast<float*>(value_int);
-    static const auto scale_float = reinterpret_cast<float*>(scale_int);
+    static const auto value_f32 = reinterpret_cast<const f32*>(value_u32);
+    static const auto scale_f32 = reinterpret_cast<const f32*>(scale_u32);
 
     int v = bit_reader.get(3);
     if (v >= 6)
@@ -418,13 +420,13 @@ void ChannelDecoder::decode1(
     }
     else if (v)
     {
-        int acc = bit_reader.get(6),
-            mask = (1 << v) - 1,
-            half_mask = mask >> 1;
+        int acc = bit_reader.get(6);
+        const u32 mask = (1ull << v) - 1;
+        const u32 half_mask = mask >> 1;
         value[0] = acc;
         for (const auto i : algo::range(1, count))
         {
-            int tmp = bit_reader.get(v);
+            const u32 tmp = bit_reader.get(v);
             acc = tmp != mask
                 ? acc + tmp - half_mask
                 : bit_reader.get(6);
@@ -433,7 +435,7 @@ void ChannelDecoder::decode1(
     }
     else
     {
-        for (const auto i : algo::range(0x80))
+        for (const auto i : algo::range(128))
             value[i] = 0;
     }
 
@@ -464,24 +466,24 @@ void ChannelDecoder::decode1(
             else if (v >= 0x39)
                 v = 1;
             else
-                v = scale_list[v];
+                v = scale_list[1][v];
         }
         scale[i] = v;
     }
-    for (const auto i : algo::range(0x80 - count))
+    for (const auto i : algo::range(128 - count))
         scale[count + i] = 0;
     for (const auto i : algo::range(count))
-        base[i] = value_float[value[i]] * scale_float[scale[i]];
+        base[i] = value_f32[value[i]] * scale_f32[scale[i]];
 }
 
 void ChannelDecoder::decode2(CustomBitReader &bit_reader)
 {
-    static char list1[] =
+    static const char list1[] =
     {
         0, 2, 3, 3, 4, 4, 4, 4, 5, 6, 7, 8, 9, 10, 11, 12,
     };
 
-    static char list2[] =
+    static const char list2[] =
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         1, 1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -493,7 +495,7 @@ void ChannelDecoder::decode2(CustomBitReader &bit_reader)
         3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
     };
 
-    static float list3[] =
+    static const f32 list3[] =
     {
         +0, +0, +0, +0, +0, +0, +0, +0, +0, +0, +0, +0, +0, +0, +0, +0,
         +0, +0, +1, -1, +0, +0, +0, +0, +0, +0, +0, +0, +0, +0, +0, +0,
@@ -510,7 +512,7 @@ void ChannelDecoder::decode2(CustomBitReader &bit_reader)
         int s = scale[i];
         int bit_count = list1[s];
         int v = bit_reader.get(bit_count);
-        float f;
+        f32 f;
         if (s < 8)
         {
             v += s << 4;
@@ -527,15 +529,15 @@ void ChannelDecoder::decode2(CustomBitReader &bit_reader)
         block[i] = base[i] * f;
     }
 
-    for (const auto i : algo::range(0x80 - count))
+    for (const auto i : algo::range(128 - count))
         block[count + i] = 0;
 }
 
 void ChannelDecoder::decode3(
-    unsigned int a,
-    unsigned int b,
-    unsigned int c,
-    unsigned int d)
+    const unsigned int a,
+    const unsigned int b,
+    const unsigned int c,
+    const unsigned int d)
 {
     if (type == 2 || !b)
         return;
@@ -544,10 +546,10 @@ void ChannelDecoder::decode3(
 }
 
 void ChannelDecoder::decode4(
-    int index,
-    unsigned int a,
-    unsigned int b,
-    unsigned int c)
+    const int index,
+    const unsigned int a,
+    const unsigned int b,
+    const unsigned int c)
 {
     if (type != 1 || !c)
         return;
@@ -555,16 +557,18 @@ void ChannelDecoder::decode4(
     throw err::NotSupportedError("Type 4 encoding is not supported");
 }
 
-void ChannelDecoder::decode5(int index)
+void ChannelDecoder::decode5(const int index)
 {
     decode5_copy1(block, wav1);
 
-    auto s = wav1;
-    auto d = wav2;
-    decode5_copy2(s, block);
-    decode5_copy3(s, d);
+    {
+        auto s = wav1;
+        auto d = wav2;
+        decode5_copy2(s, block);
+        decode5_copy3(s, d);
+    }
 
-    static unsigned int list3_int[2][0x40] =
+    static const u32 list3_u32[2][64] =
     {
         {
             0x3A3504F0, 0x3B0183B8, 0x3B70C538, 0x3BBB9268,
@@ -604,15 +608,15 @@ void ChannelDecoder::decode5(int index)
         }
     };
 
-    s = reinterpret_cast<float*>(list3_int);
-    d = wave[index];
-    float *s1, *s2;
-    s1 = &wav2[0x40];
+    auto s3 = reinterpret_cast<const f32*>(list3_u32[0]);
+    auto d = wave[index];
+    f32 *s1, *s2;
+    s1 = &wav2[64];
     s2 = wav3;
-    for (const auto i : algo::range(0x40)) *d++ = *s1++ * *s++ + *s2++;
-    for (const auto i : algo::range(0x40)) *d++ = *s++ * *--s1 - *s2++;
-    s1 = &wav2[0x40-1];
+    for (const auto i : algo::range(64)) *d++ = *s1++ * *s3++ + *s2++;
+    for (const auto i : algo::range(64)) *d++ = *s3++ * *--s1 - *s2++;
+    s1 = &wav2[64-1];
     s2 = wav3;
-    for (const auto i : algo::range(0x40)) *s2++ = *s1-- * *--s;
-    for (const auto i : algo::range(0x40)) *s2++ = *--s * *++s1;
+    for (const auto i : algo::range(64)) *s2++ = *s1-- * *--s3;
+    for (const auto i : algo::range(64)) *s2++ = *--s3 * *++s1;
 }

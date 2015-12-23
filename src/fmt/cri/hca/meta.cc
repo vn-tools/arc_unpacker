@@ -8,40 +8,10 @@ using namespace au::fmt::cri::hca;
 
 static void extend_meta(Meta &meta)
 {
-    if (!meta.comp)
-    {
-        if (!meta.dec)
-        {
-            throw err::CorruptDataError(
-                "Neither 'comp' or 'dec' chunk was found");
-        }
-        // translate dec to comp chunk (apparently, they're equivalent)
-        meta.comp = std::make_unique<CompChunk>();
-        meta.comp->block_size = meta.dec->block_size;
-        meta.comp->unk[0] = meta.dec->unk[0];
-        meta.comp->unk[1] = meta.dec->unk[1];
-        meta.comp->unk[2] = meta.dec->unk[2];
-        meta.comp->unk[3] = meta.dec->unk[3];
-        meta.comp->unk[4] = meta.dec->count[0] + 1;
-        meta.comp->unk[5] = meta.dec->count[meta.dec->enable_count2] + 1;
-        meta.comp->unk[6] = meta.comp->unk[5] - meta.comp->unk[5];
-        meta.comp->unk[7] = 0;
-    }
-
     if (!meta.ath)
     {
         meta.ath = std::make_unique<AthChunk>();
         meta.ath->type = meta.hca->version < 0x200 ? 1 : 0;
-    }
-
-    if (!meta.loop)
-    {
-        meta.loop = std::make_unique<LoopChunk>();
-        meta.loop->start = 0;
-        meta.loop->end = 0;
-        meta.loop->repetitions = 0;
-        meta.loop->unk = 0x400;
-        meta.loop->enabled = false;
     }
 
     if (!meta.rva)
@@ -78,16 +48,19 @@ Meta fmt::cri::hca::read_meta(const bstr &input)
 
         else if (magic == "dec\x00"_b)
         {
-            out.dec = std::make_unique<DecChunk>();
-            out.dec->block_size = stream.read_u16_be();
-            out.dec->unk[0] = stream.read_u8();
-            out.dec->unk[1] = stream.read_u8();
-            out.dec->count[0] = stream.read_u8();
-            out.dec->count[1] = stream.read_u8();
-            const auto tmp = stream.read_u8();
-            out.dec->unk[2] = tmp >> 4;
-            out.dec->unk[3] = tmp & 0b1111;
-            out.dec->enable_count2 = stream.read_u8() != 0;
+            out.comp = std::make_unique<CompChunk>();
+            out.comp->block_size = stream.read_u16_be();
+            u8 unk[6];
+            for (const auto i : algo::range(6))
+                unk[i] = stream.read_u8();
+            out.comp->unk[0] = unk[0];
+            out.comp->unk[1] = unk[1];
+            out.comp->unk[2] = unk[4] >> 4;
+            out.comp->unk[3] = unk[4] & 0x0F;
+            out.comp->unk[4] = unk[2] + 1;
+            out.comp->unk[5] = unk[2 + unk[5]] + 1;
+            out.comp->unk[6] = out.comp->unk[4] - out.comp->unk[5];
+            out.comp->unk[7] = 0;
         }
 
         else if (magic == "comp"_b)
@@ -118,8 +91,7 @@ Meta fmt::cri::hca::read_meta(const bstr &input)
             out.loop->start = stream.read_u32_be();
             out.loop->end = stream.read_u32_be();
             out.loop->repetitions = stream.read_u16_be();
-            out.loop->unk = stream.read_u16_be();
-            out.loop->enabled = true;
+            stream.skip(2);
         }
 
         else if (magic == "ciph"_b)

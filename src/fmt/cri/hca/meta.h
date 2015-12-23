@@ -21,14 +21,6 @@ namespace hca {
         size_t block_count;
     };
 
-    struct DecChunk final
-    {
-        size_t block_size;
-        u32 unk[4];
-        u8 count[2];
-        bool enable_count2;
-    };
-
     struct CompChunk final
     {
         size_t block_size;
@@ -51,7 +43,6 @@ namespace hca {
         size_t end;
         size_t repetitions;
         u16 unk;
-        bool enabled;
     };
 
     struct CiphChunk final
@@ -73,7 +64,6 @@ namespace hca {
     {
         std::unique_ptr<HcaChunk> hca;
         std::unique_ptr<FmtChunk> fmt;
-        std::unique_ptr<DecChunk> dec;
         std::unique_ptr<CompChunk> comp;
         std::unique_ptr<VbrChunk> vbr;
         std::unique_ptr<AthChunk> ath;

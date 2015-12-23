@@ -19,7 +19,7 @@ namespace
 {
 }
 
-static inline float clamp(const float input)
+static inline f32 clamp(const f32 input)
 {
     if (input > 1)
         return 1;
@@ -228,7 +228,7 @@ res::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
 
     input_file.stream.seek(meta.hca->data_offset);
     std::vector<s16> samples;
-    samples.reserve(0x80 * 8 * channel_count * block_count);
+    samples.reserve(128 * 8 * channel_count * block_count);
     for (const auto b : algo::range(block_count))
     {
         decode_block(
@@ -239,7 +239,7 @@ res::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
             permutator.permute(input_file.stream.read(block_size)));
 
         for (const auto i : algo::range(8))
-        for (const auto j : algo::range(0x80))
+        for (const auto j : algo::range(128))
         for (const auto k : algo::range(channel_count))
         {
             const auto value = clamp(channel_decoders[k]->wave[i][j]);
@@ -254,13 +254,13 @@ res::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
     audio.bits_per_sample = 16;
     audio.samples
         = bstr(reinterpret_cast<const u8*>(samples.data()), samples.size() * 2);
-    if (meta.loop->enabled)
+    if (meta.loop)
     {
         audio.loops.push_back(res::AudioLoopInfo
         {
-            meta.loop->start * 8 * 0x80 * sample_rate,
-            meta.loop->end * 8 * 0x80 * sample_rate,
-            meta.loop->repetitions == 0x80 ? 0 : meta.loop->repetitions,
+            meta.loop->start * 8 * 128 * sample_rate,
+            meta.loop->end * 8 * 128 * sample_rate,
+            meta.loop->repetitions == 128 ? 0 : meta.loop->repetitions,
         });
     }
     return audio;

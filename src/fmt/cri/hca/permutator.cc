@@ -57,34 +57,19 @@ static std::array<u8, 0x100> create_v56_table(u32 key1, u32 key2)
         key2 >>= 8;
     }
 
-    u8 t2[0x10] =
-    {
-        // gcc persistently complains without these casts
-        static_cast<u8>(t1[1]),
-        static_cast<u8>(t1[1] ^ t1[6]),
-        static_cast<u8>(t1[2] ^ t1[3]),
-        static_cast<u8>(t1[2]),
-        static_cast<u8>(t1[2] ^ t1[1]),
-        static_cast<u8>(t1[3] ^ t1[4]),
-        static_cast<u8>(t1[3]),
-        static_cast<u8>(t1[3] ^ t1[2]),
-        static_cast<u8>(t1[4] ^ t1[5]),
-        static_cast<u8>(t1[4]),
-        static_cast<u8>(t1[4] ^ t1[3]),
-        static_cast<u8>(t1[5] ^ t1[6]),
-        static_cast<u8>(t1[5]),
-        static_cast<u8>(t1[5] ^ t1[4]),
-        static_cast<u8>(t1[6] ^ t1[1]),
-        static_cast<u8>(t1[6]),
-    };
+    const size_t t1a[] = {1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6};
+    const size_t t1b[] = {0, 6, 3, 0, 1, 4, 0, 2, 5, 0, 3, 6, 0, 4, 1, 0};
+    u8 t2[0x10];
+    for (const auto i : algo::range(0x10))
+        t2[i] = t1[t1a[i]] ^ (t1b[i] ? t1[t1b[i]] : 0);
 
     u8 t3[0x100];
-    const auto t31 = create_v56_helper_table(t1[0]);
+    const auto t3t = create_v56_helper_table(t1[0]);
     for (const auto i : algo::range(0x10))
     {
         const auto t32 = create_v56_helper_table(t2[i]);
         for (const auto j : algo::range(0x10))
-            t3[i * 0x10 + j] = (t31[i] << 4) | t32[j];
+            t3[i * 0x10 + j] = (t3t[i] << 4) | t32[j];
     }
 
     std::array<u8, 0x100> table;
