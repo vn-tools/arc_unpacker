@@ -1,9 +1,12 @@
 #include "util/logger.h"
 #include <cstdarg>
 #include <iostream>
+#include <mutex>
 #include "algo/format.h"
 
 using namespace au::util;
+
+static std::mutex mutex;
 
 struct Logger::Priv final
 {
@@ -28,6 +31,7 @@ Logger::Priv::Priv(Logger &logger) : logger(logger)
 void Logger::Priv::log(
     const MessageType type, const std::string fmt, std::va_list args)
 {
+    std::unique_lock<std::mutex> lock(mutex);
     if (muted & (1 << type))
         return;
     auto *out = &std::cout;
