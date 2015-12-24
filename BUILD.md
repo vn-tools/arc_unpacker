@@ -45,10 +45,11 @@ it, but I believe using [`mxe`](http://mxe.cc/) is the most pleasant way.
 
         git clone https://github.com/mxe/mxe.git
 
-2. Build `arc_unpacker`'s dependencies using `mxe`:
+2. Build `arc_unpacker`'s dependencies using `mxe` (note the `MXE_GCC_THREADS`
+variable):
 
         cd mxe
-        make libiconv zlib libpng jpeg boost openssl -j8 JOBS=8
+        make libiconv zlib libpng jpeg boost openssl -j8 JOBS=8 MXE_GCC_THREADS=posix
 
 3. In the `arc_unpacker`'s directory run following:
 
