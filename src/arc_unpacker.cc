@@ -42,8 +42,9 @@ private:
     void print_cli_help() const;
     void parse_cli_options();
 
-    bool guess_decoder_and_unpack(io::File &file) const;
-    void unpack(fmt::IDecoder &decoder, io::File &file) const;
+    std::unique_ptr<fmt::IDecoder> guess_decoder(io::File &file) const;
+    bool unpack(io::File &file) const;
+    void unpack(io::File &file, fmt::IDecoder &decoder) const;
 
     const fmt::Registry &registry;
     const std::vector<std::string> arguments;
@@ -51,37 +52,6 @@ private:
     ArgParser arg_parser;
     Options options;
 };
-
-static std::unique_ptr<fmt::IDecoder> guess_decoder(
-    io::File &file, const fmt::Registry &registry)
-{
-    std::map<std::string, std::unique_ptr<fmt::IDecoder>> decoders;
-    for (auto &name : registry.get_decoder_names())
-    {
-        auto current_decoder = registry.create_decoder(name);
-        if (current_decoder->is_recognized(file))
-            decoders[name] = std::move(current_decoder);
-    }
-
-    if (decoders.size() == 1)
-    {
-        Log.success(
-            "File was recognized as %s.\n", decoders.begin()->first.c_str());
-        return std::move(decoders.begin()->second);
-    }
-
-    if (decoders.empty())
-    {
-        Log.err("File was not recognized by any decoder.\n");
-        return nullptr;
-    }
-
-    Log.warn("File wa recognized by multiple decoders:\n");
-    for (const auto &it : decoders)
-        Log.warn("- " + it.first + "\n");
-    Log.warn("Please provide --fmt and proceed manually.\n");
-    return nullptr;
-}
 
 ArcUnpacker::Priv::Priv(const std::vector<std::string> &arguments)
     : registry(fmt::Registry::instance()), arguments(arguments)
@@ -266,7 +236,7 @@ int ArcUnpacker::Priv::run() const
     for (const auto &input_path : options.input_paths)
     {
         io::File file(io::absolute(input_path), io::FileMode::Read);
-        result |= !guess_decoder_and_unpack(file);
+        result |= !unpack(file);
 
         // keep one blank line between logs from each processed file
         processed++;
@@ -277,7 +247,62 @@ int ArcUnpacker::Priv::run() const
     return result;
 }
 
-void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, io::File &file) const
+std::unique_ptr<fmt::IDecoder>
+    ArcUnpacker::Priv::guess_decoder(io::File &file) const
+{
+    std::map<std::string, std::unique_ptr<fmt::IDecoder>> decoders;
+    for (const auto &name : registry.get_decoder_names())
+    {
+        auto current_decoder = registry.create_decoder(name);
+        if (current_decoder->is_recognized(file))
+            decoders[name] = std::move(current_decoder);
+    }
+
+    if (decoders.size() == 1)
+    {
+        Log.success(
+            "File was recognized as %s.\n", decoders.begin()->first.c_str());
+        return std::move(decoders.begin()->second);
+    }
+
+    if (decoders.empty())
+    {
+        Log.err("File was not recognized by any decoder.\n");
+        return nullptr;
+    }
+
+    Log.warn("File wa recognized by multiple decoders:\n");
+    for (const auto &it : decoders)
+        Log.warn("- " + it.first + "\n");
+    Log.warn("Please provide --fmt and proceed manually.\n");
+    return nullptr;
+}
+
+bool ArcUnpacker::Priv::unpack(io::File &file) const
+{
+    Log.info(algo::format("Unpacking %s...\n", file.path.c_str()));
+    const auto decoder = options.format.empty()
+        ? guess_decoder(file)
+        : registry.create_decoder(options.format);
+
+    if (!decoder)
+        return false;
+
+    try
+    {
+        unpack(file, *decoder);
+        Log.success("Unpacking finished successfully.\n");
+        return true;
+    }
+    catch (std::exception &e)
+    {
+        Log.err("Error: " + std::string(e.what()) + "\n");
+        Log.err("Unpacking finished with errors.\n");
+        return false;
+    }
+}
+
+void ArcUnpacker::Priv::unpack(io::File &file, fmt::IDecoder &decoder) const
 {
     auto tmp_path = file.path;
     tmp_path.change_stem(tmp_path.stem() + "~");
@@ -298,30 +323,6 @@ void ArcUnpacker::Priv::unpack(fmt::IDecoder &decoder, io::File &file) const
         : fmt::unpack_non_recursive(arguments, decoder, file, saver_proxy);
 
     util::VirtualFileSystem::unregister_directory(file.path.parent());
-}
-
-bool ArcUnpacker::Priv::guess_decoder_and_unpack(io::File &file) const
-{
-    Log.info(algo::format("Unpacking %s...\n", file.path.c_str()));
-    const auto decoder = options.format.empty()
-        ? guess_decoder(file, registry)
-        : registry.create_decoder(options.format);
-
-    if (!decoder)
-        return false;
-
-    try
-    {
-        unpack(*decoder, file);
-        Log.success("Unpacking finished successfully.\n");
-        return true;
-    }
-    catch (std::exception &e)
-    {
-        Log.err("Error: " + std::string(e.what()) + "\n");
-        Log.err("Unpacking finished with errors.\n");
-        return false;
-    }
 }
 
 ArcUnpacker::ArcUnpacker(const std::vector<std::string> &arguments)
