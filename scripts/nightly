@@ -21,7 +21,7 @@ rm -f "$BUILD_DIR"/arc_unpacker.exe
 
 cd "$BUILD_DIR"
 "$MXE_DIR"/usr/bin/i686-w64-mingw32.static-cmake .. -DCMAKE_BUILD_TYPE=release
-make -j8 arc_unpacker
+make -j"$(nproc)" arc_unpacker
 
 strip --strip-all "$BUILD_DIR"/arc_unpacker.exe
 upx "$BUILD_DIR"/arc_unpacker.exe
