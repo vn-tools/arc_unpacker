@@ -1,4 +1,5 @@
 #include "file_saver.h"
+#include <mutex>
 #include <set>
 #include "algo/format.h"
 #include "io/file_stream.h"
@@ -6,6 +7,8 @@
 #include "log.h"
 
 using namespace au;
+
+static std::mutex mutex;
 
 struct FileSaverHdd::Priv final
 {
@@ -46,6 +49,7 @@ FileSaverHdd::~FileSaverHdd()
 
 void FileSaverHdd::save(std::shared_ptr<io::File> file) const
 {
+    std::unique_lock<std::mutex> lock(mutex);
     try
     {
         const auto full_path = p->make_path_unique(p->output_dir / file->path);
