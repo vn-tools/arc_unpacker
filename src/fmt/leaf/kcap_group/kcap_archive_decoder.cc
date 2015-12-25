@@ -4,7 +4,6 @@
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
 #include "err.h"
-#include "log.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -69,7 +68,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v1(
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta_v2(
-    io::File &input_file, const size_t file_count)
+    io::File &input_file, const size_t file_count, const Logger &logger)
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
     for (auto i : algo::range(file_count))
@@ -89,7 +88,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta_v2(
         {
             if (!entry->size)
                 continue;
-            Log.warn("Unknown entry type: %08x\n", type);
+            logger.warn("Unknown entry type: %08x\n", type);
         }
         meta->entries.push_back(std::move(entry));
     }
@@ -101,8 +100,8 @@ bool KcapArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    KcapArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> KcapArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     const auto file_count = input_file.stream.read_u32_le();
@@ -110,12 +109,13 @@ std::unique_ptr<fmt::ArchiveMeta>
     if (version == 1)
         return read_meta_v1(input_file, file_count);
     else if (version == 2)
-        return read_meta_v2(input_file, file_count);
+        return read_meta_v2(input_file, file_count, logger);
     else
         throw err::UnsupportedVersionError(version);
 }
 
 std::unique_ptr<io::File> KcapArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

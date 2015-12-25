@@ -4,7 +4,6 @@
 #include <string>
 
 namespace au {
-namespace util {
 
     class Logger final
     {
@@ -44,12 +43,12 @@ namespace util {
         ~Logger();
 
         void set_color(const Color c);
-        void info(const std::string str, ...);
-        void success(const std::string str, ...);
-        void warn(const std::string str, ...);
-        void err(const std::string str, ...);
-        void debug(const std::string str, ...);
-        void flush();
+        void info(const std::string str, ...) const;
+        void success(const std::string str, ...) const;
+        void warn(const std::string str, ...) const;
+        void err(const std::string str, ...) const;
+        void debug(const std::string str, ...) const;
+        void flush() const;
 
         void mute();
         void unmute();
@@ -65,4 +64,4 @@ namespace util {
         std::unique_ptr<Priv> p;
     };
 
-} }
+}

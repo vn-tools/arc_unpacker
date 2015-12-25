@@ -178,7 +178,8 @@ bool WadyAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Audio WadyAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio WadyAudioDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     input_file.stream.skip(2);

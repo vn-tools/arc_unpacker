@@ -1,7 +1,6 @@
 #include "fmt/archive_decoder.h"
 #include "algo/format.h"
 #include "err.h"
-#include "log.h"
 #include "util/virtual_file_system.h"
 
 using namespace au;
@@ -11,46 +10,44 @@ ArchiveDecoder::ArchiveDecoder() : preprocessing_disabled(false)
 {
 }
 
-ArchiveDecoder::~ArchiveDecoder()
-{
-}
-
 IDecoder::NamingStrategy ArchiveDecoder::naming_strategy() const
 {
     return NamingStrategy::Child;
 }
 
 void ArchiveDecoder::unpack(
-    io::File &input_file, const FileSaver &file_saver) const
+    const Logger &logger,
+    io::File &input_file,
+    const FileSaver &file_saver) const
 {
     if (!is_recognized(input_file))
         throw err::RecognitionError();
 
     size_t error_count = 0;
-    auto meta = read_meta(input_file);
+    auto meta = read_meta(logger, input_file);
 
     for (const auto &entry : meta->entries)
     {
         util::VirtualFileSystem::register_file(entry->path, [&]()
             {
-                return read_file(input_file, *meta, *entry);
+                return read_file(logger, input_file, *meta, *entry);
             });
     }
 
     if (!preprocessing_disabled)
-        preprocess(input_file, *meta, file_saver);
+        preprocess(logger, input_file, *meta, file_saver);
     for (auto &entry : meta->entries)
     {
         try
         {
-            auto output_file = read_file(input_file, *meta, *entry);
+            auto output_file = read_file(logger, input_file, *meta, *entry);
             if (output_file)
                 file_saver.save(std::move(output_file));
         }
         catch (std::exception &e)
         {
             ++error_count;
-            Log.err("Can't unpack %s: %s\n", entry->path.c_str(), e.what());
+            logger.err("Can't unpack %s: %s\n", entry->path.c_str(), e.what());
         }
     }
 
@@ -65,10 +62,10 @@ void ArchiveDecoder::unpack(
 }
 
 std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(
-    io::File &input_file) const
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
-    auto meta = read_meta_impl(input_file);
+    auto meta = read_meta_impl(logger, input_file);
 
     std::string prefix;
     if (naming_strategy() == IDecoder::NamingStrategy::Sibling)
@@ -93,14 +90,17 @@ std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(
 }
 
 std::unique_ptr<io::File> ArchiveDecoder::read_file(
-    io::File &input_file, const ArchiveMeta &e, const ArchiveEntry &m) const
+    const Logger &logger,
+    io::File &input_file,
+    const ArchiveMeta &e,
+    const ArchiveEntry &m) const
 {
     // wrapper reserved for future usage
-    return read_file_impl(input_file, e, m);
+    return read_file_impl(logger, input_file, e, m);
 }
 
 void ArchiveDecoder::preprocess(
-    io::File &, ArchiveMeta &, const FileSaver &) const
+    const Logger &logger, io::File &, ArchiveMeta &, const FileSaver &) const
 {
 }
 

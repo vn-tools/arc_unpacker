@@ -114,7 +114,8 @@ bool TgaImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.has_extension("tga");
 }
 
-res::Image TgaImageDecoder::decode_impl(io::File &input_file) const
+res::Image TgaImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto id_size = input_file.stream.read_u8();

@@ -67,7 +67,8 @@ bool MioAudioDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.read(magic3.size()) == magic3;
 }
 
-res::Audio MioAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio MioAudioDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0x40);
 

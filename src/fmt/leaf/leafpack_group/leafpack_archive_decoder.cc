@@ -60,8 +60,8 @@ void LeafpackArchiveDecoder::set_key(const bstr &key)
     p->key = key;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    LeafpackArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> LeafpackArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     if (p->key.empty())
     {
@@ -100,6 +100,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> LeafpackArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

@@ -39,8 +39,8 @@ bool Pak1ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.eof();
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    Pak1ImageArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> Pak1ImageArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     auto palette_count = input_file.stream.read_u8();
@@ -69,6 +69,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Pak1ImageArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

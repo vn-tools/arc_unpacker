@@ -34,7 +34,7 @@ bool PakScriptFileDecoder::is_recognized_impl(io::File &input_file) const
 }
 
 std::unique_ptr<io::File> PakScriptFileDecoder::decode_impl(
-    io::File &input_file) const
+    const Logger &logger, io::File &input_file) const
 {
     // According to Crass the offset, key and even the presence of LCG
     // vary for other games.

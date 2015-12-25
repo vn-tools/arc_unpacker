@@ -29,17 +29,20 @@ static inline void compare_pixels(
 
 static res::Image image_from_file(io::File &file)
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
+
     static const fmt::png::PngImageDecoder png_image_decoder;
     if (png_image_decoder.is_recognized(file))
-        return png_image_decoder.decode(file);
+        return png_image_decoder.decode(dummy_logger, file);
 
     static const fmt::microsoft::BmpImageDecoder bmp_image_decoder;
     if (bmp_image_decoder.is_recognized(file))
-        return bmp_image_decoder.decode(file);
+        return bmp_image_decoder.decode(dummy_logger, file);
 
     static const fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
     if (jpeg_image_decoder.is_recognized(file))
-        return jpeg_image_decoder.decode(file);
+        return jpeg_image_decoder.decode(dummy_logger, file);
 
     throw std::logic_error("Only PNG, BMP and JPEG files are supported");
 }

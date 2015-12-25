@@ -4,7 +4,6 @@
 #include "fmt/glib/glib2/mei.h"
 #include "fmt/glib/glib2/musume.h"
 #include "io/memory_stream.h"
-#include "log.h"
 
 using namespace au;
 using namespace au::fmt::glib;
@@ -154,8 +153,8 @@ bool Glib2ArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return guess_plugin(input_file.stream) != nullptr;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    Glib2ArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> Glib2ArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto plugin = guess_plugin(input_file.stream);
     auto header = read_header(input_file.stream, *plugin);
@@ -188,6 +187,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Glib2ArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -215,7 +215,7 @@ std::unique_ptr<io::File> Glib2ArchiveDecoder::read_file_impl(
         {
             for (auto j : algo::range(i))
                 decoders[i] = nullptr;
-            Log.warn(std::string(e.what()) + "\n");
+            logger.warn("%s\n", e.what());
         }
     }
 

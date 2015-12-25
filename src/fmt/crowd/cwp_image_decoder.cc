@@ -12,7 +12,8 @@ bool CwpImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
-res::Image CwpImageDecoder::decode_impl(io::File &input_file) const
+res::Image CwpImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     const auto ihdr = input_file.stream.read(13);
@@ -38,7 +39,7 @@ res::Image CwpImageDecoder::decode_impl(io::File &input_file) const
     png_file.stream.write("\xAE\x42\x60\x82"_b);
 
     const fmt::png::PngImageDecoder png_decoder;
-    auto image = png_decoder.decode(png_file);
+    auto image = png_decoder.decode(logger, png_file);
     for (auto &c : image)
     {
         std::swap(c.b, c.r);

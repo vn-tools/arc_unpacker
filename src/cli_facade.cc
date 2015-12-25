@@ -8,7 +8,6 @@
 #include "fmt/idecoder.h"
 #include "fmt/registry.h"
 #include "io/file_system.h"
-#include "log.h"
 #include "util/virtual_file_system.h"
 #include "version.h"
 
@@ -33,7 +32,7 @@ namespace
 struct CliFacade::Priv final
 {
 public:
-    Priv(const std::vector<std::string> &arguments);
+    Priv(Logger &logger, const std::vector<std::string> &arguments);
     int run() const;
 
 private:
@@ -46,15 +45,16 @@ private:
     bool unpack(io::File &file) const;
     void unpack(io::File &file, fmt::IDecoder &decoder) const;
 
-    const fmt::Registry &registry;
+    Logger &logger;
     const std::vector<std::string> arguments;
+    const fmt::Registry &registry;
 
     ArgParser arg_parser;
     Options options;
 };
 
-CliFacade::Priv::Priv(const std::vector<std::string> &arguments)
-    : registry(fmt::Registry::instance()), arguments(arguments)
+CliFacade::Priv::Priv(Logger &logger, const std::vector<std::string> &arguments)
+    : logger(logger), arguments(arguments), registry(fmt::Registry::instance())
 {
     register_cli_options();
     arg_parser.parse(arguments);
@@ -64,12 +64,12 @@ CliFacade::Priv::Priv(const std::vector<std::string> &arguments)
 void CliFacade::Priv::print_fmt_list() const
 {
     for (auto &name : registry.get_decoder_names())
-        Log.info("%s\n", name.c_str());
+        logger.info("%s\n", name.c_str());
 }
 
 void CliFacade::Priv::print_cli_help() const
 {
-    Log.info(algo::format(
+    logger.info(algo::format(
 R"(  __ _ _   _
  / _` | |_| |  arc_unpacker v%s
  \__,_|\__,_|  Extracts images and sounds from various visual novels.
@@ -80,26 +80,26 @@ Usage: arc_unpacker [options] [fmt_options] input_path [input_path...]
 
 )", au::version_long.c_str()));
 
-    arg_parser.print_help();
+    arg_parser.print_help(logger);
 
     if (!options.format.empty())
     {
         auto decoder = registry.create_decoder(options.format);
         ArgParser decoder_arg_parser;
         decoder->register_cli_options(decoder_arg_parser);
-        Log.info("[fmt_options] specific to " + options.format + ":\n\n");
-        decoder_arg_parser.print_help();
+        logger.info("[fmt_options] specific to " + options.format + ":\n\n");
+        decoder_arg_parser.print_help(logger);
     }
     else
     {
-        Log.info(
+        logger.info(
 R"([fmt_options] depend on chosen format and are required at runtime.
 See --help --fmt=FORMAT to get detailed help for given decoder.
 
 )");
     }
 
-    Log.info(
+    logger.info(
 R"(Useful places:
 Source code   - https://github.com/vn-tools/arc_unpacker
 Bug reporting - https://github.com/vn-tools/arc_unpacker/issues
@@ -164,12 +164,12 @@ void CliFacade::Priv::parse_cli_options()
         = !arg_parser.has_flag("-r") && !arg_parser.has_flag("--rename");
 
     if (arg_parser.has_flag("--no-color") || arg_parser.has_flag("--no-colors"))
-        Log.disable_colors();
+        logger.disable_colors();
 
     if (arg_parser.has_flag("-q") || arg_parser.has_flag("--quiet"))
     {
-        Log.mute();
-        Log.unmute(util::Logger::MessageType::Debug);
+        logger.mute();
+        logger.unmute(Logger::MessageType::Debug);
     }
 
     options.enable_nested_decoding = !arg_parser.has_flag("--no-recurse");
@@ -214,7 +214,7 @@ int CliFacade::Priv::run() const
 
     if (options.should_show_version)
     {
-        Log.info("%s\n", au::version_long.c_str());
+        logger.info("%s\n", au::version_long.c_str());
         return 0;
     }
 
@@ -226,7 +226,7 @@ int CliFacade::Priv::run() const
 
     if (options.input_paths.size() < 1)
     {
-        Log.err("Error: required more arguments.\n\n");
+        logger.err("Error: required more arguments.\n\n");
         print_cli_help();
         return 1;
     }
@@ -242,7 +242,7 @@ int CliFacade::Priv::run() const
         processed++;
         const bool last = processed == options.input_paths.size();
         if (!last)
-            Log.info("\n");
+            logger.info("\n");
     }
     return result;
 }
@@ -260,27 +260,27 @@ std::unique_ptr<fmt::IDecoder>
 
     if (decoders.size() == 1)
     {
-        Log.success(
+        logger.success(
             "File was recognized as %s.\n", decoders.begin()->first.c_str());
         return std::move(decoders.begin()->second);
     }
 
     if (decoders.empty())
     {
-        Log.err("File was not recognized by any decoder.\n");
+        logger.err("File was not recognized by any decoder.\n");
         return nullptr;
     }
 
-    Log.warn("File wa recognized by multiple decoders:\n");
+    logger.warn("File wa recognized by multiple decoders:\n");
     for (const auto &it : decoders)
-        Log.warn("- " + it.first + "\n");
-    Log.warn("Please provide --fmt and proceed manually.\n");
+        logger.warn("- " + it.first + "\n");
+    logger.warn("Please provide --fmt and proceed manually.\n");
     return nullptr;
 }
 
 bool CliFacade::Priv::unpack(io::File &file) const
 {
-    Log.info(algo::format("Unpacking %s...\n", file.path.c_str()));
+    logger.info(algo::format("Unpacking %s...\n", file.path.c_str()));
     const auto decoder = options.format.empty()
         ? guess_decoder(file)
         : registry.create_decoder(options.format);
@@ -291,13 +291,13 @@ bool CliFacade::Priv::unpack(io::File &file) const
     try
     {
         unpack(file, *decoder);
-        Log.success("Unpacking finished successfully.\n");
+        logger.success("Unpacking finished successfully.\n");
         return true;
     }
     catch (std::exception &e)
     {
-        Log.err("Error: " + std::string(e.what()) + "\n");
-        Log.err("Unpacking finished with errors.\n");
+        logger.err("Error: " + std::string(e.what()) + "\n");
+        logger.err("Unpacking finished with errors.\n");
         return false;
     }
 }
@@ -309,7 +309,7 @@ void CliFacade::Priv::unpack(io::File &file, fmt::IDecoder &decoder) const
     const auto base_name = tmp_path.name();
     util::VirtualFileSystem::register_directory(file.path.parent());
 
-    const FileSaverHdd saver(options.output_dir, options.overwrite);
+    const FileSaverHdd saver(logger, options.output_dir, options.overwrite);
     const FileSaverCallback saver_proxy(
         [&](std::shared_ptr<io::File> saved_file)
         {
@@ -318,15 +318,22 @@ void CliFacade::Priv::unpack(io::File &file, fmt::IDecoder &decoder) const
             saver.save(saved_file);
         });
 
-    options.enable_nested_decoding
-        ? fmt::unpack_recursive(arguments, decoder, file, saver_proxy, registry)
-        : fmt::unpack_non_recursive(arguments, decoder, file, saver_proxy);
+    if (options.enable_nested_decoding)
+    {
+        fmt::unpack_recursive(
+            logger, arguments, decoder, file, saver_proxy, registry);
+    }
+    else
+    {
+        fmt::unpack_non_recursive(
+            logger, arguments, decoder, file, saver_proxy);
+    }
 
     util::VirtualFileSystem::unregister_directory(file.path.parent());
 }
 
-CliFacade::CliFacade(const std::vector<std::string> &arguments)
-    : p(new Priv(arguments))
+CliFacade::CliFacade(Logger &logger, const std::vector<std::string> &arguments)
+    : p(new Priv(logger, arguments))
 {
 }
 

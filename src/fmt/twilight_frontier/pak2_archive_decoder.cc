@@ -36,9 +36,11 @@ static void decrypt(bstr &buffer, u32 mt_seed, u8 a, u8 b, u8 delta)
 
 bool Pak2ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
     try
     {
-        read_meta(input_file);
+        read_meta(dummy_logger, input_file);
         return true;
     }
     catch (...)
@@ -47,8 +49,8 @@ bool Pak2ArchiveDecoder::is_recognized_impl(io::File &input_file) const
     }
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    Pak2ArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> Pak2ArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto file_count = input_file.stream.read_u16_le();
@@ -81,6 +83,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -95,7 +98,10 @@ std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
 }
 
 void Pak2ArchiveDecoder::preprocess(
-    io::File &input_file, fmt::ArchiveMeta &m, const FileSaver &saver) const
+    const Logger &logger,
+    io::File &input_file,
+    fmt::ArchiveMeta &m,
+    const FileSaver &saver) const
 {
     Pak2ImageDecoder image_decoder;
 
@@ -112,13 +118,13 @@ void Pak2ArchiveDecoder::preprocess(
         if (!is_recognized(other_input_file))
             continue;
 
-        auto meta = read_meta(other_input_file);
+        auto meta = read_meta(logger, other_input_file);
         for (auto &entry : meta->entries)
         {
             if (!entry->path.has_extension("pal"))
                 continue;
 
-            auto pal_file = read_file(other_input_file, *meta, *entry);
+            auto pal_file = read_file(logger, other_input_file, *meta, *entry);
             image_decoder.add_palette(
                 entry->path, pal_file->stream.seek(0).read_to_eof());
         }
@@ -129,10 +135,10 @@ void Pak2ArchiveDecoder::preprocess(
         auto entry = static_cast<ArchiveEntryImpl*>(e.get());
         if (!entry->path.has_extension("cv2"))
             continue;
-        auto full_file = read_file(input_file, m, *entry);
+        auto full_file = read_file(logger, input_file, m, *entry);
         try
         {
-            auto image = image_decoder.decode(*full_file);
+            auto image = image_decoder.decode(logger, *full_file);
             saver.save(util::file_from_image(image, entry->path));
             entry->already_unpacked = true;
         }

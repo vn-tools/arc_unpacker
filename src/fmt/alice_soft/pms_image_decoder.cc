@@ -185,7 +185,8 @@ bool PmsImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic2.size()) == magic2;
 }
 
-res::Image PmsImageDecoder::decode_impl(io::File &input_file) const
+res::Image PmsImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(2);
     auto version = input_file.stream.read_u16_le();

@@ -5,7 +5,6 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "io/memory_stream.h"
-#include "log.h"
 
 using namespace au;
 using namespace au::fmt::whale;
@@ -229,8 +228,8 @@ bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return file_count * (8 + 1 + 4 + 4 + 4) < input_file.stream.size();
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    DatArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->game_title = p->game_title;
@@ -287,6 +286,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -295,7 +295,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (!entry->valid)
     {
-        Log.err(algo::format(
+        logger.err(algo::format(
             "Unknown hash: %016llx. io::File cannot be unpacked.\n",
             entry->hash));
         return nullptr;

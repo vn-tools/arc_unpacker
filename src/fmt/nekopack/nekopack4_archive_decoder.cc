@@ -27,8 +27,8 @@ bool Nekopack4ArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    Nekopack4ArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> Nekopack4ArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     auto table_size = input_file.stream.read_u32_le();
@@ -53,6 +53,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Nekopack4ArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -79,6 +80,7 @@ std::unique_ptr<io::File> Nekopack4ArchiveDecoder::read_file_impl(
 }
 
 void Nekopack4ArchiveDecoder::preprocess(
+    const Logger &logger,
     io::File &input_file,
     fmt::ArchiveMeta &meta,
     const FileSaver &file_saver) const
@@ -101,10 +103,11 @@ void Nekopack4ArchiveDecoder::preprocess(
         {
             auto sprite_entry = it.second;
             auto mask_entry = mask_entries.at(it.first);
-            auto sprite_file = read_file(input_file, meta, *sprite_entry);
-            auto mask_file = read_file(input_file, meta, *mask_entry);
+            auto sprite_file
+                = read_file(logger, input_file, meta, *sprite_entry);
+            auto mask_file = read_file(logger, input_file, meta, *mask_entry);
             mask_file->stream.seek(0);
-            auto sprite = bmp_image_decoder.decode(*sprite_file);
+            auto sprite = bmp_image_decoder.decode(logger, *sprite_file);
             res::Image mask(
                 sprite.width(),
                 sprite.height(),

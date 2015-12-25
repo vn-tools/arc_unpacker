@@ -1,6 +1,5 @@
 #include "fmt/png/png_image_decoder.h"
 #include <map>
-#include "log.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -13,10 +12,12 @@ static const std::string dir = "tests/fmt/png/files/";
 
 TEST_CASE("PNG images", "[util]")
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
     io::File file(dir + "usagi_opaque.png", io::FileMode::Read);
 
     const PngImageDecoder decoder;
-    const auto image = decoder.decode(file);
+    const auto image = decoder.decode(dummy_logger, file);
     REQUIRE(image.width() == 640);
     REQUIRE(image.height() == 480);
 
@@ -29,10 +30,12 @@ TEST_CASE("PNG images", "[util]")
 
 TEST_CASE("PNG images with transparency", "[fmt]")
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
     io::File file(dir + "reimu_transparent.png", io::FileMode::Read);
 
     const PngImageDecoder decoder;
-    const auto image = decoder.decode(file);
+    const auto image = decoder.decode(dummy_logger, file);
     REQUIRE(image.width() == 641);
     REQUIRE(image.height() == 720);
 
@@ -50,22 +53,28 @@ TEST_CASE("PNG images with extra chunks", "[util]")
 
     SECTION("Default chunk handler")
     {
-        REQUIRE_NOTHROW({
-            Log.mute();
-            decoder.decode(*input_file);
-            Log.unmute();
-        });
+        REQUIRE_NOTHROW(
+            {
+                Logger dummy_logger;
+                dummy_logger.mute();
+                decoder.decode(dummy_logger, *input_file);
+            });
     }
     SECTION("Custom chunk handler")
     {
         std::map<std::string, bstr> chunks;
-        REQUIRE_NOTHROW({
-            decoder.decode(
-                *input_file, [&](const std::string &name, const bstr &data)
-                {
-                    chunks[name] = data;
-                });
-        });
+        REQUIRE_NOTHROW(
+            {
+                Logger dummy_logger;
+                dummy_logger.mute();
+                decoder.decode(
+                    dummy_logger,
+                    *input_file,
+                    [&](const std::string &name, const bstr &data)
+                        {
+                            chunks[name] = data;
+                        });
+            });
         REQUIRE(chunks.size() == 1);
         REQUIRE(chunks["POSn"] == "\x00\x00\x00\x6C\x00\x00\x00\x60"_b);
     }

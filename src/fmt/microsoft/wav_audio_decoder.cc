@@ -1,5 +1,4 @@
 #include "fmt/microsoft/wav_audio_decoder.h"
-#include "log.h"
 
 using namespace au;
 using namespace au::fmt::microsoft;
@@ -13,7 +12,8 @@ bool WavAudioDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.seek(8).read(wave_magic.size()) == wave_magic;
 }
 
-res::Audio WavAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio WavAudioDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     res::Audio audio;
     input_file.stream.seek(12);
@@ -45,7 +45,7 @@ res::Audio WavAudioDecoder::decode_impl(io::File &input_file) const
         }
         else
         {
-            Log.warn("Unknown chunk: %s\n", chunk_name.get<const char>());
+            logger.warn("Unknown chunk: %s\n", chunk_name.get<const char>());
             input_file.stream.skip(chunk_size);
         }
     }

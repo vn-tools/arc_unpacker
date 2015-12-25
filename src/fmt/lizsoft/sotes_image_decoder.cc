@@ -13,7 +13,8 @@ bool SotesImageDecoder::is_recognized_impl(io::File &input_file) const
     return a - b == 0x2711 && c - b <= 0x80;
 }
 
-res::Image SotesImageDecoder::decode_impl(io::File &input_file) const
+res::Image SotesImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     const auto base = input_file.stream.seek(0x448).read_u32_le();
     const auto pixel_data_offset

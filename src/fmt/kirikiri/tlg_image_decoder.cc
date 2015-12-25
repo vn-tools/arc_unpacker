@@ -113,7 +113,8 @@ bool TlgImageDecoder::is_recognized_impl(io::File &input_file) const
     return guess_version(input_file.stream) >= 0;
 }
 
-res::Image TlgImageDecoder::decode_impl(io::File &input_file) const
+res::Image TlgImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     int version = guess_version(input_file.stream);
     return decode_proxy(version, input_file);

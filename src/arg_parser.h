@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 #include <vector>
+#include "logger.h"
 
 namespace au {
 
@@ -34,7 +35,7 @@ namespace au {
         ArgParser();
         ~ArgParser();
 
-        void print_help() const;
+        void print_help(const Logger &logger) const;
 
         Flag *register_flag(NameList &names);
         Switch *register_switch(NameList &names);

@@ -12,7 +12,8 @@ bool CmpImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image CmpImageDecoder::decode_impl(io::File &input_file) const
+res::Image CmpImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto size_original = input_file.stream.read_u32_le();
@@ -28,7 +29,7 @@ res::Image CmpImageDecoder::decode_impl(io::File &input_file) const
 
     io::File bmp_file(input_file.path, data);
     const fmt::microsoft::BmpImageDecoder bmp_image_decoder;
-    return bmp_image_decoder.decode(bmp_file);
+    return bmp_image_decoder.decode(logger, bmp_file);
 }
 
 static auto dummy = fmt::register_fmt<CmpImageDecoder>("riddle-soft/cmp");

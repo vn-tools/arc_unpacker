@@ -204,8 +204,8 @@ bool Cpz5ArchiveDecoder::is_recognized_impl(io::File &input_file) const
         throw std::logic_error("Bad version");
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    Cpz5ArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> Cpz5ArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     std::vector<std::shared_ptr<cpz5::Plugin>> plugins;
     Header header;
@@ -249,6 +249,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Cpz5ArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

@@ -13,7 +13,7 @@ bool WbiFileDecoder::is_recognized_impl(io::File &input_file) const
 }
 
 std::unique_ptr<io::File> WbiFileDecoder::decode_impl(
-    io::File &input_file) const
+    const Logger &logger, io::File &input_file) const
 {
     wpx::Decoder decoder(input_file.stream);
     auto data = decoder.read_compressed_section(0x02);

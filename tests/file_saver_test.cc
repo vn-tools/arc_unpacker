@@ -1,18 +1,17 @@
 ﻿#include "file_saver.h"
 #include "io/file_system.h"
-#include "log.h"
 #include "test_support/catch.h"
 
 using namespace au;
 
 static void do_test(const io::path &path)
 {
-    const FileSaverHdd file_saver(".", true);
+    Logger dummy_logger;
+    dummy_logger.mute();
+    const FileSaverHdd file_saver(dummy_logger, ".", true);
     const auto file = std::make_shared<io::File>(path.str(), "test"_b);
 
-    Log.mute();
     file_saver.save(file);
-    Log.unmute();
 
     REQUIRE(io::exists(path));
     {
@@ -36,10 +35,8 @@ static void do_test_overwriting(
     {
         REQUIRE(!io::exists(path));
         REQUIRE(!io::exists(path2));
-        Log.mute();
         file_saver1.save(file);
         file_saver2.save(file);
-        Log.unmute();
         REQUIRE(io::exists(path));
         REQUIRE(io::exists(path2) == renamed_file_exists);
         if (io::exists(path)) io::remove(path);
@@ -55,6 +52,9 @@ static void do_test_overwriting(
 
 TEST_CASE("FileSaver", "[core]")
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
+
     SECTION("Unicode file names")
     {
         do_test("test.out");
@@ -64,15 +64,15 @@ TEST_CASE("FileSaver", "[core]")
 
     SECTION("Two file savers overwrite the same file")
     {
-        const FileSaverHdd file_saver1(".", true);
-        const FileSaverHdd file_saver2(".", true);
+        const FileSaverHdd file_saver1(dummy_logger, ".", true);
+        const FileSaverHdd file_saver2(dummy_logger, ".", true);
         do_test_overwriting(file_saver1, file_saver2, false);
     }
 
     SECTION("Two file savers don't overwrite the same file")
     {
-        const FileSaverHdd file_saver1(".", false);
-        const FileSaverHdd file_saver2(".", false);
+        const FileSaverHdd file_saver1(dummy_logger, ".", false);
+        const FileSaverHdd file_saver2(dummy_logger, ".", false);
         do_test_overwriting(file_saver1, file_saver2, true);
     }
 
@@ -80,7 +80,7 @@ TEST_CASE("FileSaver", "[core]")
     {
         // even if we pass overwrite=true, files within the same archive with
         // the same name are too valuable to be ovewritten silently
-        const FileSaverHdd file_saver(".", true);
+        const FileSaverHdd file_saver(dummy_logger, ".", true);
         do_test_overwriting(file_saver, file_saver, true);
     }
 }

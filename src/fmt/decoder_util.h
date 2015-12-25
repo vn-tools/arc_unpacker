@@ -13,6 +13,7 @@ namespace fmt {
         const io::path &current_name);
 
     void unpack_recursive(
+        const Logger &logger,
         const std::vector<std::string> &arguments,
         IDecoder &decoder,
         io::File &file,
@@ -20,6 +21,7 @@ namespace fmt {
         const Registry &registry);
 
     void unpack_non_recursive(
+        const Logger &logger,
         const std::vector<std::string> &arguments,
         IDecoder &decoder,
         io::File &file,

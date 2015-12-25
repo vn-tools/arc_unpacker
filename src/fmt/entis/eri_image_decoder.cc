@@ -83,7 +83,8 @@ static bstr decode_pixel_data(
     return decode_lossless_pixel_data(header, *decoder);
 }
 
-res::Image EriImageDecoder::decode_impl(io::File &input_file) const
+res::Image EriImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0x40);
 

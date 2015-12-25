@@ -17,9 +17,12 @@ static bstr read_file(const std::string &name)
 
 static std::shared_ptr<res::Image> read_image(const std::string &name)
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
     io::File tmp_file("tmp.png", read_file(name));
     const fmt::png::PngImageDecoder png_decoder;
-    return std::make_shared<res::Image>(png_decoder.decode(tmp_file));
+    return std::make_shared<res::Image>(
+        png_decoder.decode(dummy_logger, tmp_file));
 }
 
 struct PluginRegistry::Priv final

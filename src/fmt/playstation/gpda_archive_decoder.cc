@@ -23,8 +23,8 @@ bool GpdaArchiveDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.read_u32_le() == input_file.stream.size();
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    GpdaArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> GpdaArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(12);
     const auto file_count = input_file.stream.read_u32_le();
@@ -56,6 +56,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> GpdaArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

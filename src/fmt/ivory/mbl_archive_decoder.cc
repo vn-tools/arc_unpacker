@@ -121,8 +121,8 @@ bool MblArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return detect_version(input_file.stream) > 0;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    MblArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> MblArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     const auto version = detect_version(input_file.stream);
@@ -148,6 +148,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> MblArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

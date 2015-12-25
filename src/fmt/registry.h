@@ -36,11 +36,7 @@ namespace fmt {
         const std::string &name, Params&&... params)
     {
         Registry::instance().add_decoder(
-            name,
-            [=]()
-            {
-                return std::make_unique<T>(params...);
-            });
+            name, [=]() { return std::make_unique<T>(params...); });
         return true;
     }
 

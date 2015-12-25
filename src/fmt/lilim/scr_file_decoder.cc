@@ -41,7 +41,7 @@ bool ScrFileDecoder::is_recognized_impl(io::File &input_file) const
 }
 
 std::unique_ptr<io::File> ScrFileDecoder::decode_impl(
-    io::File &input_file) const
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto size_orig = input_file.stream.read_u32_le();

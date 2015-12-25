@@ -21,9 +21,10 @@ namespace fmt {
     {
     public:
         ArchiveDecoder();
-        virtual ~ArchiveDecoder();
+        virtual ~ArchiveDecoder() { }
 
         void unpack(
+            const Logger &logger,
             io::File &input_file,
             const FileSaver &file_saver) const override;
 
@@ -33,23 +34,29 @@ namespace fmt {
 
         virtual std::vector<std::string> get_linked_formats() const;
 
-        std::unique_ptr<ArchiveMeta> read_meta(io::File &input_file) const;
+        std::unique_ptr<ArchiveMeta> read_meta(
+            const Logger &logger,
+            io::File &input_file) const;
 
         std::unique_ptr<io::File> read_file(
+            const Logger &logger,
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const;
 
     protected:
         virtual std::unique_ptr<ArchiveMeta> read_meta_impl(
+            const Logger &logger,
             io::File &input_file) const = 0;
 
         virtual std::unique_ptr<io::File> read_file_impl(
+            const Logger &logger,
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const = 0;
 
         virtual void preprocess(
+            const Logger &logger,
             io::File &input_file,
             ArchiveMeta &m,
             const FileSaver &file_saver) const;

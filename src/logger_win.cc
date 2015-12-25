@@ -1,7 +1,7 @@
-#include "util/logger.h"
+#include "logger.h"
 #include <windows.h>
 
-using namespace au::util;
+using namespace au;
 
 static WORD get_win_color(const Logger::Color c)
 {

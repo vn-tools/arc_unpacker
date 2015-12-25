@@ -12,7 +12,8 @@ bool PgxImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image PgxImageDecoder::decode_impl(io::File &input_file) const
+res::Image PgxImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size() + 4);
     const auto width = input_file.stream.read_u32_le();

@@ -11,7 +11,8 @@ bool FilImageDecoder::is_recognized_impl(io::File &input_file) const
     return 8 + width * height == input_file.stream.size();
 }
 
-res::Image FilImageDecoder::decode_impl(io::File &input_file) const
+res::Image FilImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto width = input_file.stream.read_u32_le();

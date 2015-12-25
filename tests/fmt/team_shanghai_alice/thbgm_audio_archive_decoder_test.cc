@@ -1,5 +1,4 @@
 #include "fmt/team_shanghai_alice/thbgm_audio_archive_decoder.h"
-#include "log.h"
 #include "test_support/audio_support.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
@@ -22,12 +21,10 @@ static void do_test(
 
 TEST_CASE("Team Shanghai Alice THBGM audio", "[fmt]")
 {
-    Log.mute(); // TODO: remove once audio loops get supported
     do_test(
         "thbgm-data.dat",
         {
             tests::file_from_path(dir + "/1-out.wav", "1.wavloop"),
             tests::file_from_path(dir + "/2-out.wav", "2.wavloop"),
         });
-    Log.unmute();
 }

@@ -13,7 +13,8 @@ bool JpegImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image JpegImageDecoder::decode_impl(io::File &input_file) const
+res::Image JpegImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     bstr source = input_file.stream.read_to_eof();
 

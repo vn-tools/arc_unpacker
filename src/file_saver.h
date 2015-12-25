@@ -2,7 +2,7 @@
 
 #include <memory>
 #include "io/file.h"
-#include "io/path.h"
+#include "logger.h"
 
 namespace au {
 
@@ -16,7 +16,11 @@ namespace au {
     class FileSaverHdd final : public FileSaver
     {
     public:
-        FileSaverHdd(const io::path &output_dir, const bool overwrite);
+        FileSaverHdd(
+            const Logger &logger,
+            const io::path &output_dir,
+            const bool overwrite);
+
         ~FileSaverHdd();
 
         void save(std::shared_ptr<io::File> file) const override;

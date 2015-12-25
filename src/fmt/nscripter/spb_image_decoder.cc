@@ -97,7 +97,8 @@ bool SpbImageDecoder::is_recognized_impl(io::File &input_file) const
     return true;
 }
 
-res::Image SpbImageDecoder::decode_impl(io::File &input_file) const
+res::Image SpbImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     const auto width = input_file.stream.read_u16_be();
     const auto height = input_file.stream.read_u16_be();

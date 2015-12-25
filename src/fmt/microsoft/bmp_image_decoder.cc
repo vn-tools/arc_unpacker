@@ -266,7 +266,8 @@ bool BmpImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read_u32_le() == 0; // but this should be reliable
 }
 
-res::Image BmpImageDecoder::decode_impl(io::File &input_file) const
+res::Image BmpImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(10);
     auto header = read_header(input_file.stream);

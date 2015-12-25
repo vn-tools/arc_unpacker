@@ -18,7 +18,8 @@ bool LimImageDecoder::is_recognized_impl(io::File &input_file) const
     return true;
 }
 
-res::Image LimImageDecoder::decode_impl(io::File &input_file) const
+res::Image LimImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     const auto version = input_file.stream.read_u16_le();

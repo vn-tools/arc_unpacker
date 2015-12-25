@@ -30,7 +30,8 @@ bool GrImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.has_extension("gr");
 }
 
-res::Image GrImageDecoder::decode_impl(io::File &input_file) const
+res::Image GrImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     // According to Crass the offset, key and LCG kind vary for other games.
 
@@ -46,7 +47,7 @@ res::Image GrImageDecoder::decode_impl(io::File &input_file) const
 
     io::File bmp_file(input_file.path, data);
     const fmt::microsoft::BmpImageDecoder bmp_file_decoder;
-    return bmp_file_decoder.decode(bmp_file);
+    return bmp_file_decoder.decode(logger, bmp_file);
 }
 
 static auto dummy = fmt::register_fmt<GrImageDecoder>("eagls/gr");

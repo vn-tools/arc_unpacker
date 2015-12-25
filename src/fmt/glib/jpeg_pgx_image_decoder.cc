@@ -44,7 +44,8 @@ bool JpegPgxImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image JpegPgxImageDecoder::decode_impl(io::File &input_file) const
+res::Image JpegPgxImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     const auto pgx_data = extract_pgx_stream(input_file.stream.read_to_eof());
     io::MemoryStream pgx_stream(pgx_data);

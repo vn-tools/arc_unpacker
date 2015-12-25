@@ -4,7 +4,6 @@
 #include "algo/format.h"
 #include "io/file_stream.h"
 #include "io/file_system.h"
-#include "log.h"
 
 using namespace au;
 
@@ -12,16 +11,22 @@ static std::mutex mutex;
 
 struct FileSaverHdd::Priv final
 {
-    Priv(const io::path &output_dir, const bool overwrite);
+    Priv(
+        const Logger &logger,
+        const io::path &output_dir,
+        const bool overwrite);
+
     io::path make_path_unique(const io::path &path);
 
+    const Logger &logger;
     io::path output_dir;
     std::set<io::path> paths;
     bool overwrite;
 };
 
-FileSaverHdd::Priv::Priv(const io::path &output_dir, const bool overwrite)
-    : output_dir(output_dir), overwrite(overwrite)
+FileSaverHdd::Priv::Priv(
+    const Logger &logger, const io::path &output_dir, const bool overwrite)
+    : logger(logger), output_dir(output_dir), overwrite(overwrite)
 {
 }
 
@@ -38,8 +43,9 @@ io::path FileSaverHdd::Priv::make_path_unique(const io::path &path)
     return new_path;
 }
 
-FileSaverHdd::FileSaverHdd(const io::path &output_dir, const bool overwrite)
-    : p(new Priv(output_dir, overwrite))
+FileSaverHdd::FileSaverHdd(
+    const Logger &logger, const io::path &output_dir, const bool overwrite)
+    : p(new Priv(logger, output_dir, overwrite))
 {
 }
 
@@ -54,15 +60,15 @@ void FileSaverHdd::save(std::shared_ptr<io::File> file) const
     {
         const auto full_path = p->make_path_unique(p->output_dir / file->path);
 
-        Log.info("Saving to " + full_path.str() + "... ");
+        p->logger.info("Saving to " + full_path.str() + "... ");
         io::create_directories(full_path.parent());
         io::FileStream output_stream(full_path, io::FileMode::Write);
         output_stream.write(file->stream.seek(0).read_to_eof());
-        Log.success("ok\n");
+        p->logger.success("ok\n");
     }
     catch (std::runtime_error &e)
     {
-        Log.err("error (%s)\n", e.what() ? e.what() : "unknown error");
+        p->logger.err("error (%s)\n", e.what() ? e.what() : "unknown error");
     }
-    Log.flush();
+    p->logger.flush();
 }

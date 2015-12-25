@@ -10,7 +10,8 @@ bool WafAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Audio WafAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio WafAudioDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto output_file = std::make_unique<io::File>();
 

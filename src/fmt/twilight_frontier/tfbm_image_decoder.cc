@@ -56,7 +56,8 @@ bool TfbmImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image TfbmImageDecoder::decode_impl(io::File &input_file) const
+res::Image TfbmImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     const auto bit_depth = input_file.stream.read_u8();

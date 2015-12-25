@@ -32,8 +32,8 @@ bool NpaSgArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return table_size < input_file.stream.size();
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    NpaSgArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> NpaSgArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     size_t table_size = input_file.stream.read_u32_le();
     auto table_data = input_file.stream.read(table_size);
@@ -58,6 +58,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> NpaSgArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

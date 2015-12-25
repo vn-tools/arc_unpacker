@@ -45,8 +45,8 @@ bool NsaArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return true;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    NsaArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> NsaArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
     size_t file_count = input_file.stream.read_u16_be();
@@ -66,6 +66,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -100,7 +101,8 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
             SpbImageDecoder spb_image_decoder;
             output_file->stream.write(data);
             output_file = util::file_from_image(
-                spb_image_decoder.decode(*output_file), output_file->path);
+                spb_image_decoder.decode(logger, *output_file),
+                output_file->path);
             break;
         }
     }

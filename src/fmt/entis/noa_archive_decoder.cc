@@ -2,7 +2,6 @@
 #include "algo/format.h"
 #include "algo/range.h"
 #include "fmt/entis/common/sections.h"
-#include "log.h"
 
 using namespace au;
 using namespace au::fmt::entis;
@@ -76,14 +75,15 @@ bool NoaArchiveDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.read(magic3.size()) == magic3;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    NoaArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> NoaArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0x40);
     return ::read_meta(input_file.stream);
 }
 
 std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -91,7 +91,7 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->encrypted)
     {
-        Log.warn(algo::format(
+        logger.warn(algo::format(
             "%s is encrypted, but encrypted files are not supported\n",
             entry->path.c_str()));
     }

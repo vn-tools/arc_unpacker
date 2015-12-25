@@ -16,9 +16,11 @@ namespace
         bool is_recognized_impl(io::File &input_file) const override;
 
         std::unique_ptr<ArchiveMeta> read_meta_impl(
+            const Logger &logger,
             io::File &input_file) const override;
 
         std::unique_ptr<io::File> read_file_impl(
+            const Logger &logger,
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
@@ -35,8 +37,8 @@ bool TestArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return true;
 }
 
-std::unique_ptr<ArchiveMeta>
-    TestArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
     auto entry = std::make_unique<ArchiveEntry>();
@@ -46,7 +48,10 @@ std::unique_ptr<ArchiveMeta>
 }
 
 std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &, const ArchiveEntry &e) const
+    const Logger &logger,
+    io::File &input_file,
+    const ArchiveMeta &,
+    const ArchiveEntry &e) const
 {
     input_file.stream.seek(0);
     return std::make_unique<io::File>(e.path, input_file.stream.read_to_eof());
@@ -67,8 +72,16 @@ TEST_CASE("Infinite recognition loops don't cause stack overflow", "[fmt_core]")
         saved_file->stream.seek(0);
         saved_files.push_back(saved_file);
     });
+
+    Logger dummy_logger;
+    dummy_logger.mute();
     fmt::unpack_recursive(
-        {}, test_archive_decoder, dummy_file, file_saver, *registry);
+        dummy_logger,
+        {},
+        test_archive_decoder,
+        dummy_file,
+        file_saver,
+        *registry);
 
     REQUIRE(saved_files.size() == 1);
     REQUIRE(saved_files[0]->path.name() == "infinity");

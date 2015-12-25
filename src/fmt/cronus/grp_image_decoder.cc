@@ -139,7 +139,8 @@ bool GrpImageDecoder::is_recognized_impl(io::File &input_file) const
     return false;
 }
 
-res::Image GrpImageDecoder::decode_impl(io::File &input_file) const
+res::Image GrpImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(p->header.input_offset);
     auto data = input_file.stream.read_to_eof();

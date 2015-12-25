@@ -107,7 +107,7 @@ static std::vector<io::path> find_executables(const io::path &archive_path)
 }
 
 static ResourceKeys get_resource_keys(
-    const std::vector<io::path> &executable_paths)
+    const Logger &logger, const std::vector<io::path> &executable_paths)
 {
     if (executable_paths.empty())
         throw err::NotSupportedError("No executables found");
@@ -117,10 +117,11 @@ static ResourceKeys get_resource_keys(
     {
         io::File file(path, io::FileMode::Read);
         fmt::microsoft::ExeArchiveDecoder exe_decoder;
-        const auto meta = exe_decoder.read_meta(file);
+        const auto meta = exe_decoder.read_meta(logger, file);
         for (const auto &entry : meta->entries)
         {
-            const auto res_file = exe_decoder.read_file(file, *meta, *entry);
+            const auto res_file = exe_decoder.read_file(
+                logger, file, *meta, *entry);
             const auto res_content = res_file->stream.seek(0).read_to_eof();
             const auto res_name = algo::lower(entry->path.name());
             if (res_name.find("v_code2") != std::string::npos)
@@ -148,16 +149,15 @@ bool IntArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
 }
-
-std::unique_ptr<fmt::ArchiveMeta>
-    IntArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> IntArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     const auto file_count = input_file.stream.read_u32_le();
     const auto name_size = 64;
 
     const auto executable_paths = find_executables(input_file.path);
-    const auto resource_keys = get_resource_keys(executable_paths);
+    const auto resource_keys = get_resource_keys(logger, executable_paths);
     const auto game_id = get_game_id(resource_keys);
 
     bool encrypted = false;
@@ -216,6 +216,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> IntArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

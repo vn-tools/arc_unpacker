@@ -14,7 +14,8 @@ bool WAudioDecoder::is_recognized_impl(io::File &input_file) const
     return data_size + 18 == input_file.stream.size();
 }
 
-res::Audio WAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio WAudioDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
     res::Audio audio;

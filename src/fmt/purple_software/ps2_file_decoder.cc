@@ -63,7 +63,7 @@ bool Ps2FileDecoder::is_recognized_impl(io::File &input_file) const
 }
 
 std::unique_ptr<io::File> Ps2FileDecoder::decode_impl(
-    io::File &input_file) const
+    const Logger &logger, io::File &input_file) const
 {
     const auto tmp = input_file.stream.seek(12).read_u32_le();
     const auto key = (tmp >> 24) + (tmp >> 3);

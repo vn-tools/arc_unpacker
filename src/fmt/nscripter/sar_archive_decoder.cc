@@ -18,8 +18,8 @@ bool SarArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.has_extension("sar");
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    SarArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> SarArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     u16 file_count = input_file.stream.read_u16_be();
     u32 offset_to_data = input_file.stream.read_u32_be();
@@ -36,6 +36,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> SarArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

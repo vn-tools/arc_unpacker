@@ -17,7 +17,8 @@ bool NvsgImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(nvsg_magic.size()) == nvsg_magic;
 }
 
-res::Image NvsgImageDecoder::decode_impl(io::File &input_file) const
+res::Image NvsgImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(hzc1_magic.size());
     size_t uncompressed_size = input_file.stream.read_u32_le();

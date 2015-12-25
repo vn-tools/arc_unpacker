@@ -29,8 +29,8 @@ bool AfaArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic2.size()) == magic2;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    AfaArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> AfaArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic1.size() + 4 + magic2.size() + 4 * 2);
     auto file_data_start = input_file.stream.read_u32_le();
@@ -64,6 +64,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> AfaArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

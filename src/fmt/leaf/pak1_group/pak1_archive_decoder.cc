@@ -123,7 +123,9 @@ void Pak1ArchiveDecoder::set_version(const int version)
 
 bool Pak1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    auto meta = read_meta(input_file);
+    Logger dummy_logger;
+    dummy_logger.mute();
+    auto meta = read_meta(dummy_logger, input_file);
     if (!meta->entries.size())
         return false;
     auto last_entry = static_cast<const ArchiveEntryImpl*>(
@@ -131,8 +133,8 @@ bool Pak1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return last_entry->offset + last_entry->size == input_file.stream.size();
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    Pak1ArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> Pak1ArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
@@ -152,6 +154,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -185,7 +188,10 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
 }
 
 void Pak1ArchiveDecoder::preprocess(
-    io::File &input_file, fmt::ArchiveMeta &meta, const FileSaver &saver) const
+    const Logger &logger,
+    io::File &input_file,
+    fmt::ArchiveMeta &meta,
+    const FileSaver &saver) const
 {
     std::map<std::string, ArchiveEntryImpl*>
         palette_entries, sprite_entries, mask_entries;
@@ -211,16 +217,18 @@ void Pak1ArchiveDecoder::preprocess(
             std::shared_ptr<io::File> palette_file;
             std::shared_ptr<io::File> mask_file;
 
-            auto sprite_file = read_file(input_file, meta, *sprite_entry);
+            auto sprite_file = read_file(
+                logger, input_file, meta, *sprite_entry);
             if (palette_entries.find(it.first) != palette_entries.end())
             {
                 palette_entry = palette_entries[it.first];
-                palette_file = read_file(input_file, meta, *palette_entry);
+                palette_file = read_file(
+                    logger, input_file, meta, *palette_entry);
             }
             if (mask_entries.find(it.first) != mask_entries.end())
             {
                 mask_entry = mask_entries[it.first];
-                mask_file = read_file(input_file, meta, *mask_entry);
+                mask_file = read_file(logger, input_file, meta, *mask_entry);
             }
 
             auto sprite = grp_image_decoder.decode(

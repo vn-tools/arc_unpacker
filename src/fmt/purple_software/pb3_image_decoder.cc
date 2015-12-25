@@ -258,7 +258,8 @@ static res::Image unpack_v5(const Header &header, io::Stream &input_stream)
     return output_image;
 }
 
-static res::Image unpack_v6(const Header &header, io::Stream &input_stream)
+static res::Image unpack_v6(
+    const Logger &logger, const Header &header, io::Stream &input_stream)
 {
     static const auto name_key =
         "\xA6\x75\xF3\x9C\xC5\x69\x78\xA3"
@@ -281,7 +282,7 @@ static res::Image unpack_v6(const Header &header, io::Stream &input_stream)
         {
             if (decoder->is_recognized(*base_file))
             {
-                const auto base_image = decoder->decode(*base_file);
+                const auto base_image = decoder->decode(logger, *base_file);
                 output_image.paste(base_image, 0, 0);
             }
         }
@@ -386,7 +387,8 @@ bool Pb3ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image Pb3ImageDecoder::decode_impl(io::File &input_file) const
+res::Image Pb3ImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto decrypted_stream = decrypt(input_file.stream.seek(0).read_to_eof());
     const auto header = read_header(*decrypted_stream);
@@ -404,7 +406,7 @@ res::Image Pb3ImageDecoder::decode_impl(io::File &input_file) const
         return unpack_v5(header, *decrypted_stream);
 
     if (header.main_type == 6)
-        return unpack_v6(header, *decrypted_stream);
+        return unpack_v6(logger, header, *decrypted_stream);
 
     throw err::NotSupportedError(algo::format(
         "Unsupported type: %d.%d", header.main_type, header.sub_type));

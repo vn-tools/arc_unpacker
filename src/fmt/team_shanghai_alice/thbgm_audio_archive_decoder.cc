@@ -29,7 +29,8 @@ namespace
     };
 }
 
-static std::unique_ptr<io::File> grab_definitions_file(const io::path &dir)
+static std::unique_ptr<io::File> grab_definitions_file(
+    const Logger &logger, const io::path &dir)
 {
     std::vector<std::unique_ptr<fmt::ArchiveDecoder>> decoders;
     decoders.push_back(std::make_unique<Pbg4ArchiveDecoder>());
@@ -47,13 +48,13 @@ static std::unique_ptr<io::File> grab_definitions_file(const io::path &dir)
             if (!decoder->is_recognized(other_file))
                 continue;
 
-            auto meta = decoder->read_meta(other_file);
+            auto meta = decoder->read_meta(logger, other_file);
             for (auto &entry : meta->entries)
             {
                 if (entry->path.name() != "thbgm.fmt")
                     continue;
                 auto output_file = decoder->read_file(
-                    other_file, *meta, *entry);
+                    logger, other_file, *meta, *entry);
                 output_file->stream.seek(0);
                 return output_file;
             }
@@ -68,11 +69,11 @@ bool ThbgmAudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    ThbgmAudioArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> ThbgmAudioArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto dir = input_file.path.parent();
-    auto definitions_file = grab_definitions_file(dir);
+    auto definitions_file = grab_definitions_file(logger, dir);
 
     if (!definitions_file)
         throw err::NotSupportedError("BGM definitions not found");
@@ -101,6 +102,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> ThbgmAudioArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

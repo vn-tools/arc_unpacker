@@ -19,7 +19,7 @@ namespace
         bool is_recognized_impl(io::File &input_file) const override;
 
         std::unique_ptr<io::File> decode_impl(
-            io::File &input_file) const override;
+            const Logger &logger, io::File &input_file) const override;
     };
 
     struct ArchiveEntryImpl final : ArchiveEntry
@@ -37,9 +37,10 @@ namespace
         bool is_recognized_impl(io::File &input_file) const override;
 
         std::unique_ptr<ArchiveMeta> read_meta_impl(
-            io::File &input_file) const override;
+            const Logger &logger, io::File &input_file) const override;
 
         std::unique_ptr<io::File> read_file_impl(
+            const Logger &logger,
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
@@ -82,7 +83,7 @@ bool TestFileDecoder::is_recognized_impl(io::File &input_file) const
 }
 
 std::unique_ptr<io::File> TestFileDecoder::decode_impl(
-    io::File &input_file) const
+    const Logger &logger, io::File &input_file) const
 {
     if (conversion_callback)
         conversion_callback(input_file);
@@ -98,8 +99,8 @@ bool TestArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.str().find("archive") != std::string::npos;
 }
 
-std::unique_ptr<ArchiveMeta>
-    TestArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
@@ -116,7 +117,10 @@ std::unique_ptr<ArchiveMeta>
 }
 
 std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &, const ArchiveEntry &e) const
+    const Logger &logger,
+    io::File &input_file,
+    const ArchiveMeta &,
+    const ArchiveEntry &e) const
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
@@ -125,6 +129,9 @@ std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
 
 TEST_CASE("Recursive unpacking with nested files", "[fmt_core]")
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
+
     const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;
     io::File dummy_file("archive.arc", serialize_file("image.rgb", ""_b));
@@ -135,7 +142,8 @@ TEST_CASE("Recursive unpacking with nested files", "[fmt_core]")
         saved_file->stream.seek(0);
         saved_files.push_back(saved_file);
     });
-    fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
+    fmt::unpack_recursive(
+        dummy_logger, {}, archive_decoder, dummy_file, saver, *registry);
     REQUIRE(saved_files.size() == 1);
     REQUIRE(saved_files[0]->path == io::path("image.png"));
     REQUIRE(saved_files[0]->stream.read_to_eof() == "image"_b);
@@ -143,6 +151,9 @@ TEST_CASE("Recursive unpacking with nested files", "[fmt_core]")
 
 TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
+
     const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;
 
@@ -161,7 +172,8 @@ TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
         saved_file->stream.seek(0);
         saved_files.push_back(saved_file);
     });
-    fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
+    fmt::unpack_recursive(
+        dummy_logger, {}, archive_decoder, dummy_file, saver, *registry);
 
     REQUIRE(saved_files.size() == 2);
     REQUIRE(saved_files[0]->path == io::path("archive.arc/nested/text.txt"));
@@ -173,6 +185,9 @@ TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
 TEST_CASE(
     "Non-recursive unpacking doesn't execute child decoders", "[fmt_core]")
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
+
     const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;
 
@@ -191,7 +206,8 @@ TEST_CASE(
         saved_file->stream.seek(0);
         saved_files.push_back(saved_file);
     });
-    fmt::unpack_non_recursive({}, archive_decoder, dummy_file, saver);
+    fmt::unpack_non_recursive(
+        dummy_logger, {}, archive_decoder, dummy_file, saver);
 
     REQUIRE(saved_files.size() == 1);
     REQUIRE(saved_files[0]->path == io::path("archive.arc"));
@@ -201,6 +217,9 @@ TEST_CASE(
 TEST_CASE(
     "Recursive unpacking passes correct paths to child decoders", "[fmt_core]")
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
+
     std::vector<io::path> paths_for_recognition, paths_for_conversion;
     auto registry = Registry::create_mock();
     registry->add_decoder(
@@ -228,7 +247,8 @@ TEST_CASE(
         "fs/archive", serialize_file("archive.arc", nested_arc_content));
 
     const FileSaverCallback saver([](std::shared_ptr<io::File>) { });
-    fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
+    fmt::unpack_recursive(
+        dummy_logger, {}, archive_decoder, dummy_file, saver, *registry);
 
     REQUIRE(paths_for_recognition.size() == 3);
     REQUIRE(paths_for_recognition[0] == io::path("archive.arc"));

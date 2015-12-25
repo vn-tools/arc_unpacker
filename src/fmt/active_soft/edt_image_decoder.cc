@@ -20,7 +20,8 @@ bool EdtImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image EdtImageDecoder::decode_impl(io::File &input_file) const
+res::Image EdtImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
     const auto width = input_file.stream.read_u16_le();

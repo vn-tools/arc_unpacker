@@ -77,8 +77,8 @@ bool WipfImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    WipfImageArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> WipfImageArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     auto meta = std::make_unique<ArchiveMeta>();
@@ -99,6 +99,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<res::Image> WipfImageArchiveDecoder::read_image(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -143,20 +144,22 @@ std::unique_ptr<res::Image> WipfImageArchiveDecoder::read_image(
 }
 
 std::unique_ptr<io::File> WipfImageArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
 {
-    return util::file_from_image(*read_image(input_file, m, e), e.path);
+    return util::file_from_image(*read_image(logger, input_file, m, e), e.path);
 }
 
 std::vector<std::shared_ptr<res::Image>>
-    WipfImageArchiveDecoder::unpack_to_images(io::File &input_file) const
+    WipfImageArchiveDecoder::unpack_to_images(
+        const Logger &logger, io::File &input_file) const
 {
-    auto meta = read_meta(input_file);
+    auto meta = read_meta(logger, input_file);
     std::vector<std::shared_ptr<res::Image>> output;
     for (auto &entry : meta->entries)
-        output.push_back(read_image(input_file, *meta, *entry));
+        output.push_back(read_image(logger, input_file, *meta, *entry));
     return output;
 }
 

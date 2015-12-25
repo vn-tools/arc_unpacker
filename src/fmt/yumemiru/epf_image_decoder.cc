@@ -12,7 +12,8 @@ bool EpfImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
-res::Image EpfImageDecoder::decode_impl(io::File &input_file) const
+res::Image EpfImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     const auto width = input_file.stream.read_u32_le();

@@ -356,8 +356,8 @@ bool TfpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return version == 0 || version == 1;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    TfpkArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
 
@@ -433,6 +433,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> TfpkArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -448,7 +449,10 @@ std::unique_ptr<io::File> TfpkArchiveDecoder::read_file_impl(
 }
 
 void TfpkArchiveDecoder::preprocess(
-    io::File &input_file, fmt::ArchiveMeta &m, const FileSaver &saver) const
+    const Logger &logger,
+    io::File &input_file,
+    fmt::ArchiveMeta &m,
+    const FileSaver &saver) const
 {
     auto meta = static_cast<const ArchiveMetaImpl*>(&m);
 
@@ -465,12 +469,12 @@ void TfpkArchiveDecoder::preprocess(
         if (!is_recognized(other_input_file))
             continue;
 
-        auto meta = read_meta(other_input_file);
+        auto meta = read_meta(logger, other_input_file);
         for (auto &entry : meta->entries)
         {
             if (entry->path.stem().find("palette") == std::string::npos)
                 continue;
-            auto pal_file = read_file(other_input_file, *meta, *entry);
+            auto pal_file = read_file(logger, other_input_file, *meta, *entry);
             tfbm_image_decoder.add_palette(
                 entry->path, pal_file->stream.seek(0).read_to_eof());
         }
@@ -489,7 +493,7 @@ void TfpkArchiveDecoder::preprocess(
             input_file, *meta, *entry, entry->size));
         try
         {
-            auto image = tfbm_image_decoder.decode(full_file);
+            auto image = tfbm_image_decoder.decode(logger, full_file);
             saver.save(util::file_from_image(image, entry->path));
             entry->already_unpacked = true;
         }

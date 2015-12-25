@@ -22,7 +22,8 @@ bool WcgImageDecoder::is_recognized_impl(io::File &input_file) const
     return true;
 }
 
-res::Image WcgImageDecoder::decode_impl(io::File &input_file) const
+res::Image WcgImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
 

@@ -75,7 +75,8 @@ res::Image GrpImageDecoder::decode(
     return image;
 }
 
-res::Image GrpImageDecoder::decode_impl(io::File &input_file) const
+res::Image GrpImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     return decode_image(input_file);
 }

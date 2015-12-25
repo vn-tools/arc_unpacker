@@ -32,8 +32,8 @@ bool Pak2ArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return true;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    Pak2ArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> Pak2ArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
     const auto file_count = input_file.stream.seek(0x1C).read_u16_le();
@@ -60,6 +60,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

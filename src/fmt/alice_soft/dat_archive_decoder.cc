@@ -18,9 +18,11 @@ namespace
 
 bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
     try
     {
-        read_meta(input_file);
+        read_meta(dummy_logger, input_file);
         return true;
     }
     catch (...)
@@ -29,8 +31,8 @@ bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
     }
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    DatArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     const auto arc_name = algo::lower(input_file.path.stem());
     const auto header_size = (input_file.stream.read_u16_le() - 1) * 256;
@@ -86,6 +88,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

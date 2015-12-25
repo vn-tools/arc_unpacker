@@ -133,7 +133,8 @@ bool RctImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image RctImageDecoder::decode_impl(io::File &input_file) const
+res::Image RctImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -173,7 +174,8 @@ res::Image RctImageDecoder::decode_impl(io::File &input_file) const
         if (base_file)
             for (const auto &decoder : decoders)
                 if (decoder->is_recognized(*base_file))
-                    output_image.paste(decoder->decode(*base_file), 0, 0);
+                    output_image.paste(
+                        decoder->decode(logger, *base_file), 0, 0);
     }
 
     auto data = input_file.stream.read(data_size);

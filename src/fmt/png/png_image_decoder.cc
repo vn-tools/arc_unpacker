@@ -3,22 +3,11 @@
 #include <png.h>
 #include "algo/range.h"
 #include "err.h"
-#include "log.h"
 
 using namespace au;
 using namespace au::fmt::png;
 
 static const bstr magic = "\x89PNG"_b;
-
-static void error_handler(png_structp png_ptr, png_const_charp error_msg)
-{
-    throw err::CorruptDataError(error_msg);
-}
-
-static void warning_handler(png_structp png_ptr, png_const_charp warning_msg)
-{
-    Log.warn("libpng warning: %s\n", warning_msg);
-}
 
 static void read_handler(png_structp png_ptr, png_bytep output, png_size_t size)
 {
@@ -37,7 +26,8 @@ static int custom_chunk_handler(png_structp png_ptr, png_unknown_chunkp chunk)
     return 1; // == handled
 }
 
-static res::Image decode(io::File &file, PngImageDecoder::ChunkHandler handler)
+static res::Image decode(
+    const Logger &logger, io::File &file, PngImageDecoder::ChunkHandler handler)
 {
     png_structp png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
@@ -51,8 +41,16 @@ static res::Image decode(io::File &file, PngImageDecoder::ChunkHandler handler)
     png_set_error_fn(
         png_ptr,
         png_get_error_ptr(png_ptr),
-        error_handler,
-        warning_handler);
+        [](png_structp png_ptr, png_const_charp error_msg)
+        {
+            throw err::CorruptDataError(error_msg);
+        },
+        [](png_structp png_ptr, png_const_charp warning_msg)
+        {
+            // TODO
+            Logger logger;
+            logger.warn("libpng warning: %s\n", warning_msg);
+        });
 
     png_set_read_user_chunk_fn(png_ptr, &handler, custom_chunk_handler);
     png_set_read_fn(png_ptr, &file.stream, &read_handler);
@@ -103,18 +101,22 @@ bool PngImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image PngImageDecoder::decode_impl(io::File &input_file) const
+res::Image PngImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
-    return ::decode(input_file, [](const std::string &name, const bstr &data)
-    {
-        Log.warn("Ignoring unknown PNG chunk: %s\n", name.c_str());
-    });
+    return ::decode(
+        logger, input_file, [&](const std::string &name, const bstr &data)
+        {
+            logger.warn("Ignoring unknown PNG chunk: %s\n", name.c_str());
+        });
 }
 
 res::Image PngImageDecoder::decode(
-    io::File &input_file, PngImageDecoder::ChunkHandler chunk_handler) const
+    const Logger &logger,
+    io::File &input_file,
+    const PngImageDecoder::ChunkHandler chunk_handler) const
 {
-    return ::decode(input_file, chunk_handler);
+    return ::decode(logger, input_file, chunk_handler);
 }
 
 static auto dummy = fmt::register_fmt<PngImageDecoder>("png/png");

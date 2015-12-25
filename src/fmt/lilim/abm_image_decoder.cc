@@ -100,7 +100,8 @@ bool AbmImageDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image AbmImageDecoder::decode_impl(io::File &input_file) const
+res::Image AbmImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(18);
     const auto width = input_file.stream.read_u32_le();

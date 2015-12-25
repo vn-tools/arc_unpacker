@@ -1,17 +1,18 @@
-#include "util/logger.h"
+#include "logger.h"
 #include <cstdarg>
 #include <iostream>
 #include <mutex>
 #include "algo/format.h"
 
-using namespace au::util;
+using namespace au;
 
 static std::mutex mutex;
 
 struct Logger::Priv final
 {
     Priv(Logger &logger);
-    void log(const MessageType type, const std::string fmt, std::va_list args);
+    void log(
+        const MessageType type, const std::string fmt, std::va_list args) const;
 
     Logger &logger;
     Color colors[5];
@@ -29,7 +30,7 @@ Logger::Priv::Priv(Logger &logger) : logger(logger)
 }
 
 void Logger::Priv::log(
-    const MessageType type, const std::string fmt, std::va_list args)
+    const MessageType type, const std::string fmt, std::va_list args) const
 {
     std::unique_lock<std::mutex> lock(mutex);
     if (muted & (1 << type))
@@ -53,7 +54,7 @@ Logger::~Logger()
 {
 }
 
-void Logger::info(const std::string fmt, ...)
+void Logger::info(const std::string fmt, ...) const
 {
     std::va_list args;
     va_start(args, fmt);
@@ -61,7 +62,7 @@ void Logger::info(const std::string fmt, ...)
     va_end(args);
 }
 
-void Logger::success(const std::string fmt, ...)
+void Logger::success(const std::string fmt, ...) const
 {
     std::va_list args;
     va_start(args, fmt);
@@ -69,7 +70,7 @@ void Logger::success(const std::string fmt, ...)
     va_end(args);
 }
 
-void Logger::warn(const std::string fmt, ...)
+void Logger::warn(const std::string fmt, ...) const
 {
     std::va_list args;
     va_start(args, fmt);
@@ -77,7 +78,7 @@ void Logger::warn(const std::string fmt, ...)
     va_end(args);
 }
 
-void Logger::err(const std::string fmt, ...)
+void Logger::err(const std::string fmt, ...) const
 {
     std::va_list args;
     va_start(args, fmt);
@@ -85,7 +86,7 @@ void Logger::err(const std::string fmt, ...)
     va_end(args);
 }
 
-void Logger::debug(const std::string fmt, ...)
+void Logger::debug(const std::string fmt, ...) const
 {
     std::va_list args;
     va_start(args, fmt);
@@ -93,7 +94,7 @@ void Logger::debug(const std::string fmt, ...)
     va_end(args);
 }
 
-void Logger::flush()
+void Logger::flush() const
 {
     std::cout.flush();
     // stderr should be nonbuffered

@@ -312,8 +312,8 @@ bool PackArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    PackArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->enc_type = EncryptionType::Basic;
@@ -396,7 +396,7 @@ std::unique_ptr<fmt::ArchiveMeta>
     {
         if (entry->path.name().find("pack_keyfile") != std::string::npos)
         {
-            auto file = read_file(input_file, *meta, *entry);
+            auto file = read_file(logger, input_file, *meta, *entry);
             file->stream.seek(0);
             meta->key1 = file->stream.read_to_eof();
         }
@@ -406,6 +406,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> PackArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

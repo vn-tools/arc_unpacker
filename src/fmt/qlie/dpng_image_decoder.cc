@@ -13,7 +13,8 @@ bool DpngImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image DpngImageDecoder::decode_impl(io::File &input_file) const
+res::Image DpngImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -39,7 +40,7 @@ res::Image DpngImageDecoder::decode_impl(io::File &input_file) const
 
         io::File tmp_file;
         tmp_file.stream.write(input_file.stream.read(subimage_data_size));
-        const auto subimage = png_image_decoder.decode(tmp_file);
+        const auto subimage = png_image_decoder.decode(logger, tmp_file);
         image.paste(subimage, subimage_x, subimage_y);
     }
 

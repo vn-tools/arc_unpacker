@@ -12,7 +12,8 @@ bool GsImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image GsImageDecoder::decode_impl(io::File &input_file) const
+res::Image GsImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto size_comp = input_file.stream.read_u32_le();

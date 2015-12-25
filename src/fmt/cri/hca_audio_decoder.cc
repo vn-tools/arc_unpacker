@@ -185,7 +185,8 @@ bool HcaAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Audio HcaAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio HcaAudioDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     // TODO when testable: this should be customizable.
     const u32 ciph_key1 = 0x30DBE1AB;

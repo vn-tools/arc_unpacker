@@ -23,9 +23,10 @@ namespace
         bool is_recognized_impl(io::File &input_file) const override;
 
         std::unique_ptr<ArchiveMeta> read_meta_impl(
-            io::File &input_file) const override;
+            const Logger &logger, io::File &input_file) const override;
 
         std::unique_ptr<io::File> read_file_impl(
+            const Logger &logger,
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
@@ -52,8 +53,8 @@ bool TestArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.has_extension("archive");
 }
 
-std::unique_ptr<ArchiveMeta>
-    TestArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
@@ -70,7 +71,10 @@ std::unique_ptr<ArchiveMeta>
 }
 
 std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &, const ArchiveEntry &e) const
+    const Logger &logger,
+    io::File &input_file,
+    const ArchiveMeta &,
+    const ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
@@ -79,6 +83,9 @@ std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
 
 TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
+
     const TestArchiveDecoder test_archive_decoder(
         IDecoder::NamingStrategy::Child);
     io::File dummy_file;
@@ -94,7 +101,7 @@ TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
         saved_file->stream.seek(0);
         saved_files.push_back(saved_file);
     });
-    test_archive_decoder.unpack(dummy_file, file_saver);
+    test_archive_decoder.unpack(dummy_logger, dummy_file, file_saver);
 
     REQUIRE(saved_files.size() == 1);
     REQUIRE(saved_files[0]->path == io::path("deeply/nested/file.txt"));

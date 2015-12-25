@@ -12,7 +12,7 @@ namespace eagls {
         bool is_recognized_impl(io::File &input_file) const override;
 
         std::unique_ptr<io::File> decode_impl(
-            io::File &input_file) const override;
+            const Logger &logger, io::File &input_file) const override;
     };
 
 } } }

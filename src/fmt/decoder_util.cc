@@ -37,6 +37,7 @@ static std::vector<std::shared_ptr<IDecoder>> collect_linked_decoders(
 }
 
 static bool pass_through_decoders(
+    const Logger &logger,
     const FileSaverCallback &recognition_proxy,
     const std::shared_ptr<io::File> original_file,
     const std::vector<std::shared_ptr<fmt::IDecoder>> &decoders)
@@ -56,7 +57,7 @@ static bool pass_through_decoders(
 
         try
         {
-            decoder->unpack(*original_file, decoder_proxy);
+            decoder->unpack(logger, *original_file, decoder_proxy);
             return true;
         }
         catch (...)
@@ -93,6 +94,7 @@ io::path fmt::decorate_path(
 }
 
 void fmt::unpack_recursive(
+    const Logger &logger,
     const std::vector<std::string> &arguments,
     IDecoder &decoder,
     io::File &file,
@@ -121,7 +123,7 @@ void fmt::unpack_recursive(
             keeper.recurse([&]()
                 {
                     bypass_normal_saving = pass_through_decoders(
-                        recognition_proxy, original_file, decoders);
+                        logger, recognition_proxy, original_file, decoders);
                 });
         }
 
@@ -129,10 +131,11 @@ void fmt::unpack_recursive(
             file_saver.save(original_file);
     });
 
-    decoder.unpack(file, recognition_proxy);
+    decoder.unpack(logger, file, recognition_proxy);
 }
 
 void fmt::unpack_non_recursive(
+    const Logger &logger,
     const std::vector<std::string> &arguments,
     IDecoder &decoder,
     io::File &file,
@@ -146,5 +149,5 @@ void fmt::unpack_non_recursive(
     auto archive_decoder = dynamic_cast<ArchiveDecoder*>(&decoder);
     if (archive_decoder)
         archive_decoder->disable_preprocessing();
-    decoder.unpack(file, file_saver);
+    decoder.unpack(logger, file, file_saver);
 }
