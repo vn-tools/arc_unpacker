@@ -17,23 +17,33 @@ static const std::vector<std::pair<bstr, std::string>> magic_definitions
     {"\xFF\xD8\xFF"_b, "jpeg"},
 };
 
-File::File(const io::path &path, const io::FileMode mode)
-    : stream(*new io::FileStream(path, mode)), path(path)
+File::File(File &other_file) :
+    stream_holder(other_file.stream.clone()),
+    stream(*stream_holder),
+    path(other_file.path)
 {
 }
 
-File::File(const io::path &path, const bstr &data)
-    : stream(*new io::MemoryStream(data)), path(path)
+File::File(const io::path &path, const io::FileMode mode) :
+    stream_holder(new io::FileStream(path, mode)),
+    stream(*stream_holder),
+    path(path)
 {
 }
 
-File::File() : stream(*new io::MemoryStream)
+File::File(const io::path &path, const bstr &data) :
+    stream_holder(new io::MemoryStream(data)),
+    stream(*stream_holder),
+    path(path)
+{
+}
+
+File::File() : stream_holder(new io::MemoryStream()), stream(*stream_holder)
 {
 }
 
 File::~File()
 {
-    delete &stream;
 }
 
 void File::guess_extension()

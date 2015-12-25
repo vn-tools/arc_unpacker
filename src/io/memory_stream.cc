@@ -131,3 +131,10 @@ Stream &MemoryStream::truncate(const size_t new_size)
         p->buffer_pos = new_size;
     return *this;
 }
+
+std::unique_ptr<Stream> MemoryStream::clone() const
+{
+    auto ret = std::make_unique<MemoryStream>(p->buffer);
+    ret->seek(tell());
+    return std::move(ret);
+}

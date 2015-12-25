@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include "types.h"
 
 namespace au {
@@ -44,6 +45,8 @@ namespace io {
         virtual Stream &write_u32_be(u32);
         virtual Stream &write_u64_le(u64);
         virtual Stream &write_u64_be(u64);
+
+        virtual std::unique_ptr<Stream> clone() const = 0;
 
     protected:
         virtual void read_impl(void *input, const size_t size) = 0;

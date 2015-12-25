@@ -26,6 +26,8 @@ namespace io {
         Stream &skip(const int offset) override;
         Stream &truncate(const size_t new_size) override;
 
+        std::unique_ptr<Stream> clone() const override;
+
     protected:
         void read_impl(void *destination, const size_t size) override;
         void write_impl(const void *source, const size_t size) override;

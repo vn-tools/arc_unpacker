@@ -22,12 +22,16 @@ static FILE *utf8_fopen(const path &path, const char *mode)
 struct FileStream::Priv final
 {
     FILE *file;
+    io::path path;
+    FileMode mode;
 };
 
 FileStream::FileStream(const path &path, const FileMode mode)
     : p(new Priv())
 {
     p->file = utf8_fopen(path, mode == FileMode::Write ? "w+b" : "r+b");
+    p->path = path;
+    p->mode = mode;
     if (!p->file)
         throw err::FileNotFoundError("Could not open " + path.str());
 }
@@ -85,4 +89,11 @@ Stream &FileStream::truncate(const size_t new_size)
     if (new_size == size())
         return *this;
     throw err::NotSupportedError("Truncating real files is not implemented");
+}
+
+std::unique_ptr<Stream> FileStream::clone() const
+{
+    auto ret = std::make_unique<FileStream>(p->path, p->mode);
+    ret->seek(tell());
+    return std::move(ret);
 }
