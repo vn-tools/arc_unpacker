@@ -1,22 +1,22 @@
-#include "arc_unpacker.h"
+#include "cli_facade.h"
 #include "io/file_system.h"
 #include "log.h"
 #include "test_support/catch.h"
 
 using namespace au;
 
-TEST_CASE("CLI frontend", "[core]")
+TEST_CASE("CLI facade", "[core]")
 {
     SECTION("Converting single files with CLI facade")
     {
-        const ArcUnpacker arc_unpacker(
+        const CliFacade cli_facade(
             {
                 "./tests/fmt/real_live/files/g00/AYU_03.g00",
                 "--fmt=real-live/g00"
             });
 
         Log.mute();
-        arc_unpacker.run();
+        cli_facade.run();
         Log.unmute();
 
         REQUIRE(io::is_regular_file("./AYU_03.png"));
@@ -25,7 +25,7 @@ TEST_CASE("CLI frontend", "[core]")
 
     SECTION("Unpacking archives with CLI facade")
     {
-        const ArcUnpacker arc_unpacker(
+        const CliFacade cli_facade(
             {
                 "./tests/fmt/kirikiri/files/xp3/xp3-v2.xp3",
                 "--fmt=kirikiri/xp3",
@@ -33,7 +33,7 @@ TEST_CASE("CLI frontend", "[core]")
             });
 
         Log.mute();
-        arc_unpacker.run();
+        cli_facade.run();
         Log.unmute();
 
         REQUIRE(io::is_directory("./xp3-v2~.xp3"));

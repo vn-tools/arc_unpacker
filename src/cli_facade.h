@@ -6,11 +6,11 @@
 
 namespace au {
 
-    class ArcUnpacker final
+    class CliFacade final
     {
     public:
-        ArcUnpacker(const std::vector<std::string> &arguments);
-        ~ArcUnpacker();
+        CliFacade(const std::vector<std::string> &arguments);
+        ~CliFacade();
         int run() const;
 
     private:

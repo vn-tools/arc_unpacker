@@ -1,4 +1,4 @@
-#include "arc_unpacker.h"
+#include "cli_facade.h"
 #include <algorithm>
 #include <map>
 #include "algo/format.h"
@@ -30,7 +30,7 @@ namespace
     };
 }
 
-struct ArcUnpacker::Priv final
+struct CliFacade::Priv final
 {
 public:
     Priv(const std::vector<std::string> &arguments);
@@ -53,7 +53,7 @@ private:
     Options options;
 };
 
-ArcUnpacker::Priv::Priv(const std::vector<std::string> &arguments)
+CliFacade::Priv::Priv(const std::vector<std::string> &arguments)
     : registry(fmt::Registry::instance()), arguments(arguments)
 {
     register_cli_options();
@@ -61,13 +61,13 @@ ArcUnpacker::Priv::Priv(const std::vector<std::string> &arguments)
     parse_cli_options();
 }
 
-void ArcUnpacker::Priv::print_fmt_list() const
+void CliFacade::Priv::print_fmt_list() const
 {
     for (auto &name : registry.get_decoder_names())
         Log.info("%s\n", name.c_str());
 }
 
-void ArcUnpacker::Priv::print_cli_help() const
+void CliFacade::Priv::print_cli_help() const
 {
     Log.info(algo::format(
 R"(  __ _ _   _
@@ -107,7 +107,7 @@ Game requests - #arc_unpacker on Rizon
 )");
 }
 
-void ArcUnpacker::Priv::register_cli_options()
+void CliFacade::Priv::register_cli_options()
 {
     arg_parser.register_flag({"-h", "--help"})
         ->set_description("Shows this message.");
@@ -149,7 +149,7 @@ void ArcUnpacker::Priv::register_cli_options()
         ->set_description("Shows arc_unpacker version.");
 }
 
-void ArcUnpacker::Priv::parse_cli_options()
+void CliFacade::Priv::parse_cli_options()
 {
     options.should_show_help
         = arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
@@ -204,7 +204,7 @@ void ArcUnpacker::Priv::parse_cli_options()
     }
 }
 
-int ArcUnpacker::Priv::run() const
+int CliFacade::Priv::run() const
 {
     if (options.should_show_help)
     {
@@ -248,7 +248,7 @@ int ArcUnpacker::Priv::run() const
 }
 
 std::unique_ptr<fmt::IDecoder>
-    ArcUnpacker::Priv::guess_decoder(io::File &file) const
+    CliFacade::Priv::guess_decoder(io::File &file) const
 {
     std::map<std::string, std::unique_ptr<fmt::IDecoder>> decoders;
     for (const auto &name : registry.get_decoder_names())
@@ -278,7 +278,7 @@ std::unique_ptr<fmt::IDecoder>
     return nullptr;
 }
 
-bool ArcUnpacker::Priv::unpack(io::File &file) const
+bool CliFacade::Priv::unpack(io::File &file) const
 {
     Log.info(algo::format("Unpacking %s...\n", file.path.c_str()));
     const auto decoder = options.format.empty()
@@ -302,7 +302,7 @@ bool ArcUnpacker::Priv::unpack(io::File &file) const
     }
 }
 
-void ArcUnpacker::Priv::unpack(io::File &file, fmt::IDecoder &decoder) const
+void CliFacade::Priv::unpack(io::File &file, fmt::IDecoder &decoder) const
 {
     auto tmp_path = file.path;
     tmp_path.change_stem(tmp_path.stem() + "~");
@@ -325,16 +325,16 @@ void ArcUnpacker::Priv::unpack(io::File &file, fmt::IDecoder &decoder) const
     util::VirtualFileSystem::unregister_directory(file.path.parent());
 }
 
-ArcUnpacker::ArcUnpacker(const std::vector<std::string> &arguments)
+CliFacade::CliFacade(const std::vector<std::string> &arguments)
     : p(new Priv(arguments))
 {
 }
 
-ArcUnpacker::~ArcUnpacker()
+CliFacade::~CliFacade()
 {
 }
 
-int ArcUnpacker::run() const
+int CliFacade::run() const
 {
     return p->run();
 }

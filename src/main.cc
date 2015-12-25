@@ -1,4 +1,4 @@
-#include "arc_unpacker.h"
+#include "cli_facade.h"
 #include "entry_point.h"
 #include "io/program_path.h"
 #include "log.h"
@@ -10,9 +10,8 @@ ENTRY_POINT(
     {
         io::set_program_path_from_arg(arguments[0]);
         arguments.erase(arguments.begin());
-        ArcUnpacker arc_unpacker(arguments);
-
-        return arc_unpacker.run();
+        CliFacade cli_facade(arguments);
+        return cli_facade.run();
     }
     catch (std::exception &e)
     {
