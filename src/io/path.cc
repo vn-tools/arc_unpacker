@@ -110,17 +110,19 @@ bool path::has_extension(const std::string &target_extension) const
     return boost::iequals(extension(), normalize_extension(target_extension));
 }
 
-void path::change_stem(const std::string &new_stem)
+path &path::change_stem(const std::string &new_stem)
 {
     p = (parent() / (new_stem + extension())).str();
+    return *this;
 }
 
-void path::change_extension(const std::string &new_extension)
+path &path::change_extension(const std::string &new_extension)
 {
     if (name().empty() || stem().empty())
-        return;
+        return *this;
 
     const auto last_dot_pos = name().find_last_of('.');
     auto extension = normalize_extension(new_extension);
     p = (parent() / (name().substr(0, last_dot_pos) + extension)).str();
+    return *this;
 }
