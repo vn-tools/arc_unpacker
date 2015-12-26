@@ -16,6 +16,7 @@ namespace io {
         std::string str() const;
         std::wstring wstr() const;
 
+        path make_relative(const path &base) const;
         path parent() const;
         std::string name() const;
         std::string stem() const;

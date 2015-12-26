@@ -47,6 +47,37 @@ std::wstring path::wstr() const
     return boost::filesystem::path(p).wstring();
 }
 
+path path::make_relative(const path &other_path) const
+{
+    boost::filesystem::path source = p;
+    boost::filesystem::path target = other_path.p;
+    boost::filesystem::path::const_iterator source_it = source.begin();
+    boost::filesystem::path::const_iterator target_it = target.begin();
+
+    while (source_it != source.end()
+        && target_it != target.end()
+        && *target_it == *source_it)
+    {
+        ++target_it;
+        ++source_it;
+    }
+
+    boost::filesystem::path final_path;
+    while (source_it != source.end())
+    {
+        final_path /= "..";
+        ++source_it;
+    }
+
+    while (target_it != target.end())
+    {
+        final_path /= *target_it;
+        ++target_it;
+    }
+
+    return final_path.string();
+}
+
 path path::parent() const
 {
     return boost::filesystem::path(p).parent_path().string();
