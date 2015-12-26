@@ -95,6 +95,11 @@ void path::operator /=(const path &other)
     p = (*this / other).p;
 }
 
+bool path::is_absolute() const
+{
+    return boost::filesystem::path(p).is_absolute();
+}
+
 bool path::is_root() const
 {
     return boost::filesystem::path(p) == boost::filesystem::path(p).root_path();
