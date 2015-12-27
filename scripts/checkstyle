@@ -54,6 +54,15 @@ class Utf8BomCheck(Check):
                 if fh.read(3) != b'\xEF\xBB\xBF':
                     yield Problem(file, 'Non-ASCII files must have BOM')
 
+class NonConstExceptionsCheck(Check):
+    def scan(self, file):
+        for i, line in enumerate(file.lines):
+            if ('catch' in line
+            and '(' in line
+            and not '...' in line
+            and not 'const' in line):
+                yield Problem(file, 'Make exceptions const in catch (...)', i, line)
+
 class BadCommentsCheck(Check):
     def scan(self, file):
         for i, line in enumerate(file.lines):

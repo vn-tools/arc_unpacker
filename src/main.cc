@@ -14,7 +14,7 @@ ENTRY_POINT(
         flow::CliFacade cli_facade(logger, arguments);
         return cli_facade.run();
     }
-    catch (std::exception &e)
+    catch (const std::exception &e)
     {
         logger.err("Error: " + std::string(e.what()) + "\n");
         return 1;

@@ -86,7 +86,7 @@ u32 KeyDeriver::derive(u32 seed, u32 parameter)
         {
             return derive_for_stage(stage);
         }
-        catch (KeyDerivationError)
+        catch (const KeyDerivationError)
         {
             continue;
         }

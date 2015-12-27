@@ -70,7 +70,7 @@ static bool save(
         task.logger.flush();
         return true;
     }
-    catch (err::IoError &e)
+    catch (const err::IoError &e)
     {
         task.logger.err(
             "%s: error saving (%s)\n",
@@ -231,7 +231,7 @@ bool DecodeInputFileTask::work() const
             return false;
         }
     }
-    catch (std::exception &e)
+    catch (const std::exception &e)
     {
         logger.err("unknown input file: error opening (%s)\n", e.what());
         return false;
@@ -260,7 +260,7 @@ bool DecodeInputFileTask::work() const
         decoder->accept(adapter);
         return true;
     }
-    catch (std::exception &e)
+    catch (const std::exception &e)
     {
         logger.err(
             "%s: recognition finished with errors (%s)\n",
@@ -295,7 +295,7 @@ bool ProcessOutputFileTask::work() const
         if (!output_file)
             return false;
     }
-    catch (std::exception &e)
+    catch (const std::exception &e)
     {
         logger.err("%s: error decoding (%s)\n", base_name.c_str(), e.what());
         return false;
@@ -336,7 +336,7 @@ bool ProcessOutputFileTask::work() const
 
         return true;
     }
-    catch (std::exception &e)
+    catch (const std::exception &e)
     {
         logger.err(
             "%s: error processing %s (%s)\n",

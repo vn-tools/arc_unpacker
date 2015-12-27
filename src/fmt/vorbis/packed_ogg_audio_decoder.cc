@@ -85,7 +85,7 @@ static void rewrite_ogg_stream(
 
             page = read_ogg_page(input_stream);
         }
-        catch (err::IoError)
+        catch (const err::IoError)
         {
             logger.warn(algo::format(
                 "Last OGG page is truncated; recovered %d pages.\n", pages));

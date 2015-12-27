@@ -236,11 +236,11 @@ std::unique_ptr<fmt::ArchiveMeta> Cpz5ArchiveDecoder::read_meta_impl(
             if (meta)
                 return std::move(meta);
         }
-        catch (err::DataError)
+        catch (const err::DataError)
         {
             continue;
         }
-        catch (err::IoError)
+        catch (const err::IoError)
         {
             continue;
         }

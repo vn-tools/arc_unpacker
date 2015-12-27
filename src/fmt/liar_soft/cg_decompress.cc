@@ -82,7 +82,7 @@ void fmt::liar_soft::cg_decompress(
                 output_ptr += output_shift - input_shift;
             }
         }
-        catch (err::EofError)
+        catch (const err::EofError)
         {
             break;
         }

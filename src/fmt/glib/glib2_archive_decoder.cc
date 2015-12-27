@@ -211,7 +211,7 @@ std::unique_ptr<io::File> Glib2ArchiveDecoder::read_file_impl(
             if (offset >= entry->size)
                 break;
         }
-        catch (err::NotSupportedError &e)
+        catch (const err::NotSupportedError &e)
         {
             for (auto j : algo::range(i))
                 decoders[i] = nullptr;

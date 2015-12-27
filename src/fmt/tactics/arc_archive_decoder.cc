@@ -101,7 +101,7 @@ std::unique_ptr<fmt::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
         {
             return meta_reader(input_file);
         }
-        catch (std::exception)
+        catch (const std::exception)
         {
             continue;
         }
