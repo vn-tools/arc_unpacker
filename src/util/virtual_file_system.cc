@@ -107,8 +107,7 @@ std::unique_ptr<io::File> VirtualFileSystem::get_by_path(const io::path &path)
     for (const auto &directory : directories)
     for (const auto &other_path : io::recursive_directory_range(directory))
     {
-        const auto relative_path = directory.make_relative(other_path);
-        if (io::path(algo::lower(relative_path.str())) == check)
+        if (io::path(algo::lower(other_path.str())) == check)
             return std::make_unique<io::File>(other_path, io::FileMode::Read);
     }
 
