@@ -1,10 +1,11 @@
-#include "cli_facade.h"
+#include "flow/cli_facade.h"
 #include <algorithm>
+#include <boost/lexical_cast.hpp>
 #include <map>
 #include "algo/format.h"
 #include "algo/range.h"
 #include "arg_parser.h"
-#include "fmt/decoder_util.h"
+#include "flow/parallel_unpacker.h"
 #include "fmt/idecoder.h"
 #include "fmt/registry.h"
 #include "io/file_system.h"
@@ -12,6 +13,7 @@
 #include "version.h"
 
 using namespace au;
+using namespace au::flow;
 
 namespace
 {
@@ -26,6 +28,7 @@ namespace
         bool should_show_help;
         bool should_show_version;
         bool should_list_fmt;
+        unsigned int thread_count;
     };
 }
 
@@ -40,10 +43,6 @@ private:
     void print_fmt_list() const;
     void print_cli_help() const;
     void parse_cli_options();
-
-    std::unique_ptr<fmt::IDecoder> guess_decoder(io::File &file) const;
-    bool unpack(io::File &file) const;
-    void unpack(io::File &file, fmt::IDecoder &decoder) const;
 
     Logger &logger;
     const std::vector<std::string> arguments;
@@ -142,6 +141,10 @@ void CliFacade::Priv::register_cli_options()
     for (auto &name : registry.get_decoder_names())
         sw->add_possible_value(name);
 
+    arg_parser.register_switch({"-t", "--threads"})
+        ->set_value_name("NUM")
+        ->set_description("Sets worker thread count.");
+
     arg_parser.register_flag({"-l", "--list-fmt"})
         ->set_description("Lists available FORMAT values.");
 
@@ -173,6 +176,15 @@ void CliFacade::Priv::parse_cli_options()
     }
 
     options.enable_nested_decoding = !arg_parser.has_flag("--no-recurse");
+
+    if (arg_parser.has_switch("-t"))
+        options.thread_count = boost::lexical_cast<unsigned int>(
+            arg_parser.get_switch("-t"));
+    else if (arg_parser.has_switch("--threads"))
+        options.thread_count = boost::lexical_cast<unsigned int>(
+            arg_parser.get_switch("--threads"));
+    else
+        options.thread_count = 0;
 
     if (arg_parser.has_flag("--no-vfs"))
         util::VirtualFileSystem::disable();
@@ -231,105 +243,33 @@ int CliFacade::Priv::run() const
         return 1;
     }
 
-    bool result = 0;
-    size_t processed = 0;
+    const auto available_decoders = options.format.empty()
+        ? registry.get_decoder_names()
+        : std::vector<std::string>{options.format};
+
+    FileSaverHdd file_saver(options.output_dir, options.overwrite);
+    ParallelUnpackerContext context(
+        logger,
+        file_saver,
+        registry,
+        options.enable_nested_decoding,
+        arguments,
+        available_decoders);
+
+    ParallelUnpacker unpacker(context);
     for (const auto &input_path : options.input_paths)
     {
-        io::File file(io::absolute(input_path), io::FileMode::Read);
-        result |= !unpack(file);
-
-        // keep one blank line between logs from each processed file
-        processed++;
-        const bool last = processed == options.input_paths.size();
-        if (!last)
-            logger.info("\n");
+        unpacker.add_input_file(
+            io::path(input_path).change_stem(input_path.stem() + "~").name(),
+            [&]()
+            {
+                util::VirtualFileSystem::register_directory(
+                    io::absolute(input_path).parent());
+                return std::make_shared<io::File>(
+                    io::absolute(input_path), io::FileMode::Read);
+            });
     }
-    return result;
-}
-
-std::unique_ptr<fmt::IDecoder>
-    CliFacade::Priv::guess_decoder(io::File &file) const
-{
-    std::map<std::string, std::unique_ptr<fmt::IDecoder>> decoders;
-    for (const auto &name : registry.get_decoder_names())
-    {
-        auto current_decoder = registry.create_decoder(name);
-        if (current_decoder->is_recognized(file))
-            decoders[name] = std::move(current_decoder);
-    }
-
-    if (decoders.size() == 1)
-    {
-        logger.success(
-            "File was recognized as %s.\n", decoders.begin()->first.c_str());
-        return std::move(decoders.begin()->second);
-    }
-
-    if (decoders.empty())
-    {
-        logger.err("File was not recognized by any decoder.\n");
-        return nullptr;
-    }
-
-    logger.warn("File wa recognized by multiple decoders:\n");
-    for (const auto &it : decoders)
-        logger.warn("- " + it.first + "\n");
-    logger.warn("Please provide --fmt and proceed manually.\n");
-    return nullptr;
-}
-
-bool CliFacade::Priv::unpack(io::File &file) const
-{
-    logger.info(algo::format("Unpacking %s...\n", file.path.c_str()));
-    const auto decoder = options.format.empty()
-        ? guess_decoder(file)
-        : registry.create_decoder(options.format);
-
-    if (!decoder)
-        return false;
-
-    try
-    {
-        unpack(file, *decoder);
-        logger.success("Unpacking finished successfully.\n");
-        return true;
-    }
-    catch (std::exception &e)
-    {
-        logger.err("Error: " + std::string(e.what()) + "\n");
-        logger.err("Unpacking finished with errors.\n");
-        return false;
-    }
-}
-
-void CliFacade::Priv::unpack(io::File &file, fmt::IDecoder &decoder) const
-{
-    auto tmp_path = file.path;
-    tmp_path.change_stem(tmp_path.stem() + "~");
-    const auto base_name = tmp_path.name();
-    util::VirtualFileSystem::register_directory(file.path.parent());
-
-    const FileSaverHdd saver(logger, options.output_dir, options.overwrite);
-    const FileSaverCallback saver_proxy(
-        [&](std::shared_ptr<io::File> saved_file)
-        {
-            saved_file->path = fmt::decorate_path(
-                decoder.naming_strategy(), base_name, saved_file->path);
-            saver.save(saved_file);
-        });
-
-    if (options.enable_nested_decoding)
-    {
-        fmt::unpack_recursive(
-            logger, arguments, decoder, file, saver_proxy, registry);
-    }
-    else
-    {
-        fmt::unpack_non_recursive(
-            logger, arguments, decoder, file, saver_proxy);
-    }
-
-    util::VirtualFileSystem::unregister_directory(file.path.parent());
+    return unpacker.run(options.thread_count) ? 0 : 1;
 }
 
 CliFacade::CliFacade(Logger &logger, const std::vector<std::string> &arguments)

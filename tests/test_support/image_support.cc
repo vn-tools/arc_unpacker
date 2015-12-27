@@ -76,7 +76,7 @@ void tests::compare_images(
     auto expected_image = image_from_file(expected_file);
     auto actual_image = image_from_file(actual_file);
     if (compare_file_paths)
-        tests::compare_file_paths(expected_file.path, actual_file.path);
+        tests::compare_paths(actual_file.path, expected_file.path);
     tests::compare_images(expected_image, actual_image);
 }
 

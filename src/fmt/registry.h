@@ -13,7 +13,7 @@ namespace fmt {
     {
     private:
         using DecoderCreator
-            = std::function<std::unique_ptr<IDecoder>()>;
+            = std::function<std::shared_ptr<IDecoder>()>;
 
     public:
         ~Registry();
@@ -23,7 +23,7 @@ namespace fmt {
         const std::vector<std::string> get_decoder_names() const;
         bool has_decoder(const std::string &name) const;
         void add_decoder(const std::string &name, DecoderCreator creator);
-        std::unique_ptr<IDecoder> create_decoder(const std::string &name) const;
+        std::shared_ptr<IDecoder> create_decoder(const std::string &name) const;
 
     private:
         Registry();
@@ -36,7 +36,7 @@ namespace fmt {
         const std::string &name, Params&&... params)
     {
         Registry::instance().add_decoder(
-            name, [=]() { return std::make_unique<T>(params...); });
+            name, [=]() { return std::make_shared<T>(params...); });
         return true;
     }
 

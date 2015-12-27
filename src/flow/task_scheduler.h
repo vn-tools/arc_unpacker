@@ -4,6 +4,7 @@
 #include <mutex>
 
 namespace au {
+namespace flow {
 
     class ITask
     {
@@ -27,4 +28,4 @@ namespace au {
         std::unique_ptr<Priv> p;
     };
 
-}
+} }

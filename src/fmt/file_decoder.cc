@@ -1,23 +1,18 @@
 #include "fmt/file_decoder.h"
 #include "err.h"
+#include "fmt/idecoder_visitor.h"
 
 using namespace au;
 using namespace au::fmt;
 
 IDecoder::NamingStrategy FileDecoder::naming_strategy() const
 {
-    return NamingStrategy::Sibling;
+    return NamingStrategy::FlatSibling;
 }
 
-void FileDecoder::unpack(
-    const Logger &logger,
-    io::File &input_file,
-    const FileSaver &file_saver) const
+void FileDecoder::accept(IDecoderVisitor &visitor) const
 {
-    auto output_file = decode(logger, input_file);
-    // discard any directory information
-    output_file->path = output_file->path.name();
-    file_saver.save(std::move(output_file));
+    visitor.visit(*this);
 }
 
 std::unique_ptr<io::File> FileDecoder::decode(

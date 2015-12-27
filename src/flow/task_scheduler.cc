@@ -1,4 +1,4 @@
-#include "task_scheduler.h"
+#include "flow/task_scheduler.h"
 #include <chrono>
 #include <deque>
 #include <thread>
@@ -6,6 +6,7 @@
 #include "algo/range.h"
 
 using namespace au;
+using namespace au::flow;
 
 struct TaskScheduler::Priv final
 {

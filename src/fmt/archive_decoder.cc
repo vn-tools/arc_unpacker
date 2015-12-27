@@ -1,7 +1,7 @@
 #include "fmt/archive_decoder.h"
 #include "algo/format.h"
 #include "err.h"
-#include "util/virtual_file_system.h"
+#include "fmt/idecoder_visitor.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -11,48 +11,9 @@ IDecoder::NamingStrategy ArchiveDecoder::naming_strategy() const
     return NamingStrategy::Child;
 }
 
-void ArchiveDecoder::unpack(
-    const Logger &logger,
-    io::File &input_file,
-    const FileSaver &file_saver) const
+void ArchiveDecoder::accept(IDecoderVisitor &visitor) const
 {
-    if (!is_recognized(input_file))
-        throw err::RecognitionError();
-
-    size_t error_count = 0;
-    auto meta = read_meta(logger, input_file);
-
-    for (const auto &entry : meta->entries)
-    {
-        util::VirtualFileSystem::register_file(entry->path, [&]()
-            {
-                return read_file(logger, input_file, *meta, *entry);
-            });
-    }
-
-    for (auto &entry : meta->entries)
-    {
-        try
-        {
-            auto output_file = read_file(logger, input_file, *meta, *entry);
-            if (output_file)
-                file_saver.save(std::move(output_file));
-        }
-        catch (std::exception &e)
-        {
-            ++error_count;
-            logger.err("Can't unpack %s: %s\n", entry->path.c_str(), e.what());
-        }
-    }
-
-    for (const auto &entry : meta->entries)
-        util::VirtualFileSystem::unregister_file(entry->path);
-
-    if (error_count)
-    {
-        throw err::GeneralError(
-            algo::format("%d files couldn't be unpacked.", error_count));
-    }
+    visitor.visit(*this);
 }
 
 std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(
@@ -91,9 +52,4 @@ std::unique_ptr<io::File> ArchiveDecoder::read_file(
 {
     // wrapper reserved for future usage
     return read_file_impl(logger, input_file, e, m);
-}
-
-std::vector<std::string> ArchiveDecoder::get_linked_formats() const
-{
-    return {};
 }

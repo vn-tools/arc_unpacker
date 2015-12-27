@@ -32,9 +32,9 @@ std::unique_ptr<io::File> tests::zlib_file_from_path(
         decompressed_data);
 }
 
-void tests::compare_file_paths(
-    const io::path &expected_file_path,
-    const io::path &actual_file_path)
+void tests::compare_paths(
+    const io::path &actual_file_path,
+    const io::path &expected_file_path)
 {
     INFO(algo::format(
         "Expected file path: %s, actual: %s\n",
@@ -64,7 +64,7 @@ void tests::compare_files(
     const bool compare_file_paths)
 {
     if (compare_file_paths)
-        tests::compare_file_paths(expected_file.path, actual_file.path);
+        tests::compare_paths(actual_file.path, expected_file.path);
     REQUIRE(expected_file.stream.size() == actual_file.stream.size());
     expected_file.stream.seek(0);
     actual_file.stream.seek(0);

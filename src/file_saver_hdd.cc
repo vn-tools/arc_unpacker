@@ -12,21 +12,18 @@ static std::mutex mutex;
 struct FileSaverHdd::Priv final
 {
     Priv(
-        const Logger &logger,
         const io::path &output_dir,
         const bool overwrite);
 
     io::path make_path_unique(const io::path &path);
 
-    const Logger &logger;
     io::path output_dir;
     std::set<io::path> paths;
     bool overwrite;
 };
 
-FileSaverHdd::Priv::Priv(
-    const Logger &logger, const io::path &output_dir, const bool overwrite)
-    : logger(logger), output_dir(output_dir), overwrite(overwrite)
+FileSaverHdd::Priv::Priv(const io::path &output_dir, const bool overwrite)
+    : output_dir(output_dir), overwrite(overwrite)
 {
 }
 
@@ -44,8 +41,8 @@ io::path FileSaverHdd::Priv::make_path_unique(const io::path &path)
 }
 
 FileSaverHdd::FileSaverHdd(
-    const Logger &logger, const io::path &output_dir, const bool overwrite)
-    : p(new Priv(logger, output_dir, overwrite))
+    const io::path &output_dir, const bool overwrite)
+    : p(new Priv(output_dir, overwrite))
 {
 }
 
@@ -53,22 +50,12 @@ FileSaverHdd::~FileSaverHdd()
 {
 }
 
-void FileSaverHdd::save(std::shared_ptr<io::File> file) const
+io::path FileSaverHdd::save(std::shared_ptr<io::File> file) const
 {
     std::unique_lock<std::mutex> lock(mutex);
-    try
-    {
-        const auto full_path = p->make_path_unique(p->output_dir / file->path);
-
-        p->logger.info("Saving to " + full_path.str() + "... ");
-        io::create_directories(full_path.parent());
-        io::FileStream output_stream(full_path, io::FileMode::Write);
-        output_stream.write(file->stream.seek(0).read_to_eof());
-        p->logger.success("ok\n");
-    }
-    catch (std::runtime_error &e)
-    {
-        p->logger.err("error (%s)\n", e.what() ? e.what() : "unknown error");
-    }
-    p->logger.flush();
+    const auto full_path = p->make_path_unique(p->output_dir / file->path);
+    io::create_directories(full_path.parent());
+    io::FileStream output_stream(full_path, io::FileMode::Write);
+    output_stream.write(file->stream.seek(0).read_to_eof());
+    return full_path;
 }

@@ -17,7 +17,6 @@ namespace util {
         static void register_file(
             const io::path &path,
             const std::function<std::unique_ptr<io::File>()> factory);
-
         static void unregister_file(const io::path &path);
 
         static void register_directory(const io::path &path);

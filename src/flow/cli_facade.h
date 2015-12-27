@@ -6,6 +6,7 @@
 #include "logger.h"
 
 namespace au {
+namespace flow {
 
     class CliFacade final
     {
@@ -23,4 +24,4 @@ namespace au {
         std::unique_ptr<Priv> p;
     };
 
-}
+} }

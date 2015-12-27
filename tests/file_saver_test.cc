@@ -6,9 +6,7 @@ using namespace au;
 
 static void do_test(const io::path &path)
 {
-    Logger dummy_logger;
-    dummy_logger.mute();
-    const FileSaverHdd file_saver(dummy_logger, ".", true);
+    const FileSaverHdd file_saver(".", true);
     const auto file = std::make_shared<io::File>(path.str(), "test"_b);
 
     file_saver.save(file);
@@ -52,9 +50,6 @@ static void do_test_overwriting(
 
 TEST_CASE("FileSaver", "[core]")
 {
-    Logger dummy_logger;
-    dummy_logger.mute();
-
     SECTION("Unicode file names")
     {
         do_test("test.out");
@@ -64,15 +59,15 @@ TEST_CASE("FileSaver", "[core]")
 
     SECTION("Two file savers overwrite the same file")
     {
-        const FileSaverHdd file_saver1(dummy_logger, ".", true);
-        const FileSaverHdd file_saver2(dummy_logger, ".", true);
+        const FileSaverHdd file_saver1(".", true);
+        const FileSaverHdd file_saver2(".", true);
         do_test_overwriting(file_saver1, file_saver2, false);
     }
 
     SECTION("Two file savers don't overwrite the same file")
     {
-        const FileSaverHdd file_saver1(dummy_logger, ".", false);
-        const FileSaverHdd file_saver2(dummy_logger, ".", false);
+        const FileSaverHdd file_saver1(".", false);
+        const FileSaverHdd file_saver2(".", false);
         do_test_overwriting(file_saver1, file_saver2, true);
     }
 
@@ -80,7 +75,7 @@ TEST_CASE("FileSaver", "[core]")
     {
         // even if we pass overwrite=true, files within the same archive with
         // the same name are too valuable to be ovewritten silently
-        const FileSaverHdd file_saver(dummy_logger, ".", true);
+        const FileSaverHdd file_saver(".", true);
         do_test_overwriting(file_saver, file_saver, true);
     }
 }

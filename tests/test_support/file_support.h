@@ -15,8 +15,8 @@ namespace tests {
     std::unique_ptr<io::File> zlib_file_from_path(
         const io::path &path, const std::string &custom_path = "");
 
-    void compare_file_paths(
-        const io::path &expected_path, const io::path &actual_path);
+    void compare_paths(
+        const io::path &actual_path, const io::path &expected_path);
 
     void compare_files(
         const io::File &expected_file,

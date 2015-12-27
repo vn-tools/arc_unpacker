@@ -10,12 +10,9 @@ namespace fmt {
     public:
         virtual ~FileDecoder() { }
 
-        void unpack(
-            const Logger &logger,
-            io::File &input_file,
-            const FileSaver &file_saver) const override;
-
         NamingStrategy naming_strategy() const override;
+
+        void accept(IDecoderVisitor &visitor) const override;
 
         std::unique_ptr<io::File> decode(
             const Logger &logger, io::File &input_file) const;

@@ -11,12 +11,9 @@ namespace fmt {
     public:
         virtual ~ImageDecoder() { }
 
-        void unpack(
-            const Logger &logger,
-            io::File &input_file,
-            const FileSaver &file_saver) const override;
-
         NamingStrategy naming_strategy() const override;
+
+        void accept(IDecoderVisitor &visitor) const;
 
         res::Image decode(
             const Logger &logger, io::File &input_file) const;

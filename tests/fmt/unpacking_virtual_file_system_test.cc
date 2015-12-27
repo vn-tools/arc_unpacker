@@ -4,6 +4,7 @@
 #include "test_support/catch.h"
 #include "test_support/file_support.h"
 #include "test_support/flow_support.h"
+#include "util/virtual_file_system.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -12,10 +13,6 @@ namespace
 {
     class TestFileDecoder final : public FileDecoder
     {
-    public:
-        std::function<void(io::File &)> recognition_callback;
-        std::function<void(io::File &)> conversion_callback;
-
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
 
@@ -82,18 +79,19 @@ std::vector<std::string> TestArchiveDecoder::get_linked_formats() const
 
 bool TestFileDecoder::is_recognized_impl(io::File &input_file) const
 {
-    if (recognition_callback)
-        recognition_callback(input_file);
     return input_file.path.has_extension("rgb");
 }
 
 std::unique_ptr<io::File> TestFileDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    if (conversion_callback)
-        conversion_callback(input_file);
     auto output_file = std::make_unique<io::File>();
-    output_file->stream.write("decoded_image"_b);
+    auto other_file = util::VirtualFileSystem::get_by_stem("aside");
+    if (other_file)
+    {
+        output_file->stream.write(other_file->stream.seek(0).read_to_eof());
+        output_file->stream.write("_used"_b);
+    }
     output_file->path = input_file.path;
     output_file->path.change_extension("png");
     return output_file;
@@ -132,25 +130,7 @@ std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
-TEST_CASE("Recursive unpacking with nested files", "[fmt_core]")
-{
-    const auto registry = create_registry();
-    TestArchiveDecoder archive_decoder;
-
-    const auto arc_content = make_archive(
-        {
-            tests::stub_file("image.rgb", "discard"_b),
-        });
-
-    io::File dummy_file("archive.arc", arc_content);
-
-    const auto saved_files = tests::flow_unpack(*registry, true, dummy_file);
-    REQUIRE(saved_files.size() == 1);
-    tests::compare_paths(saved_files[0]->path, "archive.arc/image.png");
-    REQUIRE(saved_files[0]->stream.read_to_eof() == "decoded_image"_b);
-}
-
-TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
+TEST_CASE("Recursive unpacking with virtual file system lookups", "[fmt_core]")
 {
     const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;
@@ -158,7 +138,7 @@ TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
     const auto inner_arc_content = make_archive(
         {
             tests::stub_file("nested/image.rgb", "discard"_b),
-            tests::stub_file("nested/text.txt", "text"_b),
+            tests::stub_file("nested/aside.txt", "aside"_b),
         });
 
     const auto outer_arc_content = make_archive(
@@ -171,83 +151,9 @@ TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
     const auto saved_files = tests::flow_unpack(*registry, true, dummy_file);
     REQUIRE(saved_files.size() == 2);
     tests::compare_paths(
-        saved_files[0]->path, "outer.arc/inner.arc/nested/text.txt");
+        saved_files[0]->path, "outer.arc/inner.arc/nested/aside.txt");
     tests::compare_paths(
         saved_files[1]->path, "outer.arc/inner.arc/nested/image.png");
-    REQUIRE(saved_files[0]->stream.read_to_eof() == "text"_b);
-    REQUIRE(saved_files[1]->stream.read_to_eof() == "decoded_image"_b);
-}
-
-TEST_CASE(
-    "Non-recursive unpacking doesn't execute child decoders", "[fmt_core]")
-{
-    const auto registry = create_registry();
-
-    const auto inner_arc_content = make_archive(
-        {
-            tests::stub_file("nested/unknown.txt", "text"_b),
-            tests::stub_file("nested/image.rgb", "keep"_b),
-        });
-
-    const auto outer_arc_content = make_archive(
-        {
-            tests::stub_file("inner.arc", inner_arc_content),
-        });
-
-    io::File dummy_file("outer.arc", outer_arc_content);
-
-    const auto saved_files = tests::flow_unpack(*registry, false, dummy_file);
-
-    REQUIRE(saved_files.size() == 1);
-    tests::compare_paths(saved_files[0]->path, "outer.arc/inner.arc");
-    REQUIRE(saved_files[0]->stream.read_to_eof() == inner_arc_content);
-}
-
-TEST_CASE(
-    "Recursive unpacking passes correct paths to child decoders", "[fmt_core]")
-{
-    std::vector<io::path> paths_for_recognition, paths_for_conversion;
-    auto registry = Registry::create_mock();
-    registry->add_decoder(
-        "test/test-archive",
-        []() { return std::make_shared<TestArchiveDecoder>(); });
-    registry->add_decoder(
-        "test/test-image",
-        [&]()
-        {
-            auto decoder = std::make_shared<TestFileDecoder>();
-            decoder->recognition_callback = [&](io::File &f)
-                { paths_for_recognition.push_back(f.path); };
-            decoder->conversion_callback = [&](io::File &f)
-                { paths_for_conversion.push_back(f.path); };
-            return decoder;
-        });
-
-    const auto inner_arc_content = make_archive(
-        {
-            tests::stub_file("nested/test.rgb", ""_b),
-        });
-
-    const auto outer_arc_content = make_archive(
-        {
-            tests::stub_file("inner.arc", inner_arc_content),
-        });
-
-    io::File dummy_file("outer.arc", outer_arc_content);
-
-    const auto saved_files = tests::flow_unpack(*registry, true, dummy_file);
-    REQUIRE(paths_for_recognition.size() == 4);
-    tests::compare_paths(paths_for_recognition[0], "outer.arc");
-    tests::compare_paths(
-        paths_for_recognition[1], "outer.arc/inner.arc");
-    tests::compare_paths(
-        paths_for_recognition[2], "outer.arc/inner.arc/nested/test.rgb");
-    tests::compare_paths(
-        paths_for_recognition[3], "outer.arc/inner.arc/nested/test.rgb");
-    REQUIRE(paths_for_conversion.size() == 1);
-    tests::compare_paths(
-        paths_for_conversion[0], "outer.arc/inner.arc/nested/test.rgb");
-    REQUIRE(saved_files.size() == 1);
-    tests::compare_paths(
-        saved_files[0]->path, "outer.arc/inner.arc/nested/test.png");
+    REQUIRE(saved_files[0]->stream.read_to_eof().str() == "aside");
+    REQUIRE(saved_files[1]->stream.read_to_eof().str() == "aside_used");
 }

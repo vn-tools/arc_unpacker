@@ -22,18 +22,12 @@ namespace fmt {
     public:
         virtual ~ArchiveDecoder() { }
 
-        void unpack(
-            const Logger &logger,
-            io::File &input_file,
-            const FileSaver &file_saver) const override;
-
         virtual NamingStrategy naming_strategy() const override;
 
-        virtual std::vector<std::string> get_linked_formats() const;
+        void accept(IDecoderVisitor &visitor) const override;
 
         std::unique_ptr<ArchiveMeta> read_meta(
-            const Logger &logger,
-            io::File &input_file) const;
+            const Logger &logger, io::File &input_file) const;
 
         std::unique_ptr<io::File> read_file(
             const Logger &logger,

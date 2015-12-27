@@ -1,4 +1,4 @@
-#include "cli_facade.h"
+#include "flow/cli_facade.h"
 #include "io/file_system.h"
 #include "test_support/catch.h"
 
@@ -11,7 +11,7 @@ TEST_CASE("CLI facade", "[core]")
 
     SECTION("Converting single files with CLI facade")
     {
-        const CliFacade cli_facade(
+        const flow::CliFacade cli_facade(
             logger,
             {
                 "./tests/fmt/real_live/files/g00/AYU_03.g00",
@@ -26,7 +26,7 @@ TEST_CASE("CLI facade", "[core]")
 
     SECTION("Unpacking archives with CLI facade")
     {
-        const CliFacade cli_facade(
+        const flow::CliFacade cli_facade(
             logger,
             {
                 "./tests/fmt/kirikiri/files/xp3/xp3-v2.xp3",
