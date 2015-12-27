@@ -18,17 +18,6 @@ ParallelDecoderAdapter::~ParallelDecoderAdapter()
 {
 }
 
-void ParallelDecoderAdapter::do_save(
-    const fmt::BaseDecoder &decoder,
-    const FileFactoryWithLogger file_factory) const
-{
-    task.unpacker.save_file(
-        file_factory,
-        decoder.shared_from_this(),
-        input_file->path,
-        task);
-}
-
 void ParallelDecoderAdapter::visit(const fmt::BaseArchiveDecoder &decoder)
 {
     auto input_file = this->input_file;
@@ -43,9 +32,10 @@ void ParallelDecoderAdapter::visit(const fmt::BaseArchiveDecoder &decoder)
     Logger dummy_logger(task.logger);
     for (const auto &entry : meta->entries)
     {
+        const auto new_base_name = fmt::decorate_path(
+            decoder.naming_strategy(), task.base_name, entry->path);
         util::VirtualFileSystem::register_file(
-            fmt::decorate_path(
-                decoder.naming_strategy(), task.base_name, entry->path),
+            new_base_name,
             [input_file, meta, &entry, dummy_logger, decoder_copy]()
             {
                 io::File file_copy(*input_file);
@@ -57,50 +47,54 @@ void ParallelDecoderAdapter::visit(const fmt::BaseArchiveDecoder &decoder)
 
     for (const auto &entry : meta->entries)
     {
-        do_save(
-            decoder,
+        task.unpacker.save_file(
             [input_file, meta, &entry, &decoder](const Logger &logger)
             {
                 io::File file_copy(*input_file);
                 return decoder.read_file(logger, file_copy, *meta, *entry);
-            });
+            },
+            decoder,
+            task);
     }
 }
 
 void ParallelDecoderAdapter::visit(const fmt::BaseFileDecoder &decoder)
 {
     auto input_file = this->input_file;
-    do_save(
-        decoder,
+    task.unpacker.save_file(
         [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
             return decoder.decode(logger, file_copy);
-        });
+        },
+        decoder,
+        task);
 }
 
 void ParallelDecoderAdapter::visit(const fmt::BaseImageDecoder &decoder)
 {
     auto input_file = this->input_file;
-    do_save(
-        decoder,
+    task.unpacker.save_file(
         [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
             return util::file_from_image(
                 decoder.decode(logger, file_copy), input_file->path);
-        });
+        },
+        decoder,
+        task);
 }
 
 void ParallelDecoderAdapter::visit(const fmt::BaseAudioDecoder &decoder)
 {
     auto input_file = this->input_file;
-    do_save(
-        decoder,
+    task.unpacker.save_file(
         [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
             return util::file_from_audio(
                 decoder.decode(logger, file_copy), input_file->path);
-        });
+        },
+        decoder,
+        task);
 }

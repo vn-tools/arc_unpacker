@@ -20,11 +20,6 @@ namespace flow {
         void visit(const fmt::BaseAudioDecoder &decoder) override;
 
     private:
-        void do_save(
-            const fmt::BaseDecoder &decoder,
-            const std::function<std::shared_ptr<io::File>(const Logger &logger)>
-                file_factory) const;
-
         const BaseParallelUnpackingTask &task;
         const std::shared_ptr<io::File> input_file;
     };

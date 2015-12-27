@@ -50,14 +50,12 @@ namespace
             const size_t depth,
             const io::path &base_name,
             const FileFactoryWithLogger file_factory,
-            const std::shared_ptr<const fmt::IDecoder> origin_decoder,
-            const io::path &origin_path);
+            const std::shared_ptr<const fmt::IDecoder> origin_decoder);
 
         bool work() const override;
 
         const FileFactoryWithLogger file_factory;
         const std::shared_ptr<const fmt::IDecoder> origin_decoder;
-        const io::path origin_path;
     };
 }
 
@@ -279,13 +277,11 @@ ProcessOutputFileTask::ProcessOutputFileTask(
     const size_t depth,
     const io::path &base_name,
     const FileFactoryWithLogger file_factory,
-    const std::shared_ptr<const fmt::IDecoder> origin_decoder,
-    const io::path &origin_path) :
+    const std::shared_ptr<const fmt::IDecoder> origin_decoder) :
         BaseParallelUnpackingTask(
             unpacker, task_scheduler, unpacker_context, depth, base_name),
         file_factory(file_factory),
-        origin_decoder(origin_decoder),
-        origin_path(origin_path)
+        origin_decoder(origin_decoder)
 {
 }
 
@@ -389,8 +385,7 @@ void ParallelUnpacker::add_input_file(
 
 void ParallelUnpacker::save_file(
     const FileFactoryWithLogger file_factory,
-    const std::shared_ptr<const fmt::IDecoder> origin_decoder,
-    const io::path &origin_path,
+    const fmt::BaseDecoder &origin_decoder,
     const BaseParallelUnpackingTask &origin_task)
 {
     p->task_scheduler.push_front(
@@ -401,8 +396,7 @@ void ParallelUnpacker::save_file(
             origin_task.depth + 1,
             origin_task.base_name,
             file_factory,
-            origin_decoder,
-            origin_path));
+            origin_decoder.shared_from_this()));
 }
 
 bool ParallelUnpacker::run(const size_t thread_count)

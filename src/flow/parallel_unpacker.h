@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include "file_saver.h"
+#include "fmt/base_decoder.h"
 #include "fmt/registry.h"
 #include "logger.h"
 #include "task_scheduler.h"
@@ -62,8 +63,7 @@ namespace flow {
 
         void save_file(
             const FileFactoryWithLogger,
-            const std::shared_ptr<const fmt::IDecoder> origin_decoder,
-            const io::path &origin_path,
+            const fmt::BaseDecoder &origin_decoder,
             const BaseParallelUnpackingTask &origin_task);
 
         bool run(const size_t thread_count = 0);
