@@ -50,7 +50,7 @@ std::string algo::hex_verbose(const bstr &input, const size_t columns)
         return hex(input);
     std::string output;
     output.reserve(input.size() * 4.5);
-    for (const auto y : range(input.size() / columns))
+    for (const auto y : range((input.size() + columns - 1) / columns))
     {
         output += format("%04x: ", y * columns);
         for (const auto x : range(columns))

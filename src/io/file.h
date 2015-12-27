@@ -9,6 +9,7 @@ namespace io {
     class File final
     {
     public:
+        File(File &other_file);
         File(const io::path &path, const io::FileMode mode);
         File(const io::path &path, const bstr &data);
         File();
@@ -16,8 +17,12 @@ namespace io {
 
         void guess_extension();
 
+    private:
+        std::unique_ptr<io::Stream> stream_holder;
+    public:
         io::Stream &stream;
         io::path path; // doesn't need to be physical path
+
     };
 
 } }

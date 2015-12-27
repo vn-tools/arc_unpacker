@@ -47,6 +47,37 @@ std::wstring path::wstr() const
     return boost::filesystem::path(p).wstring();
 }
 
+path path::make_relative(const path &other_path) const
+{
+    boost::filesystem::path source = p;
+    boost::filesystem::path target = other_path.p;
+    boost::filesystem::path::const_iterator source_it = source.begin();
+    boost::filesystem::path::const_iterator target_it = target.begin();
+
+    while (source_it != source.end()
+        && target_it != target.end()
+        && *target_it == *source_it)
+    {
+        ++target_it;
+        ++source_it;
+    }
+
+    boost::filesystem::path final_path;
+    while (source_it != source.end())
+    {
+        final_path /= "..";
+        ++source_it;
+    }
+
+    while (target_it != target.end())
+    {
+        final_path /= *target_it;
+        ++target_it;
+    }
+
+    return final_path.string();
+}
+
 path path::parent() const
 {
     return boost::filesystem::path(p).parent_path().string();
@@ -95,6 +126,11 @@ void path::operator /=(const path &other)
     p = (*this / other).p;
 }
 
+bool path::is_absolute() const
+{
+    return boost::filesystem::path(p).is_absolute();
+}
+
 bool path::is_root() const
 {
     return boost::filesystem::path(p) == boost::filesystem::path(p).root_path();
@@ -110,17 +146,19 @@ bool path::has_extension(const std::string &target_extension) const
     return boost::iequals(extension(), normalize_extension(target_extension));
 }
 
-void path::change_stem(const std::string &new_stem)
+path &path::change_stem(const std::string &new_stem)
 {
     p = (parent() / (new_stem + extension())).str();
+    return *this;
 }
 
-void path::change_extension(const std::string &new_extension)
+path &path::change_extension(const std::string &new_extension)
 {
     if (name().empty() || stem().empty())
-        return;
+        return *this;
 
     const auto last_dot_pos = name().find_last_of('.');
     auto extension = normalize_extension(new_extension);
     p = (parent() / (name().substr(0, last_dot_pos) + extension)).str();
+    return *this;
 }
