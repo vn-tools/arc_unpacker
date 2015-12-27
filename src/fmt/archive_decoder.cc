@@ -6,10 +6,6 @@
 using namespace au;
 using namespace au::fmt;
 
-ArchiveDecoder::ArchiveDecoder() : preprocessing_disabled(false)
-{
-}
-
 IDecoder::NamingStrategy ArchiveDecoder::naming_strategy() const
 {
     return NamingStrategy::Child;
@@ -34,8 +30,6 @@ void ArchiveDecoder::unpack(
             });
     }
 
-    if (!preprocessing_disabled)
-        preprocess(logger, input_file, *meta, file_saver);
     for (auto &entry : meta->entries)
     {
         try
@@ -97,16 +91,6 @@ std::unique_ptr<io::File> ArchiveDecoder::read_file(
 {
     // wrapper reserved for future usage
     return read_file_impl(logger, input_file, e, m);
-}
-
-void ArchiveDecoder::preprocess(
-    const Logger &logger, io::File &, ArchiveMeta &, const FileSaver &) const
-{
-}
-
-void ArchiveDecoder::disable_preprocessing()
-{
-   preprocessing_disabled = true;
 }
 
 std::vector<std::string> ArchiveDecoder::get_linked_formats() const

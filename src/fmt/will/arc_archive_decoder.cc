@@ -65,51 +65,6 @@ bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return read_meta(dummy_logger, input_file)->entries.size() > 0;
 }
 
-void ArcArchiveDecoder::preprocess(
-    const Logger &logger,
-    io::File &input_file,
-    fmt::ArchiveMeta &meta,
-    const FileSaver &saver) const
-{
-    // apply image masks to original sprites
-    std::map<std::string, ArchiveEntryImpl*> mask_entries, sprite_entries;
-    for (const auto &entry : meta.entries)
-    {
-        const auto fn = entry->path.stem();
-        if (entry->path.has_extension("MSK"))
-            mask_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
-        else if (entry->path.has_extension("WIP"))
-            sprite_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
-    }
-
-    WipfImageArchiveDecoder wipf_archive_decoder;
-    for (auto it : sprite_entries)
-    {
-        try
-        {
-            auto sprite_entry = it.second;
-            auto mask_entry = mask_entries.at(it.first);
-            auto sprites = wipf_archive_decoder.unpack_to_images(
-                logger, *read_file(logger, input_file, meta, *sprite_entry));
-            const auto masks = wipf_archive_decoder.unpack_to_images(
-                logger, *read_file(logger, input_file, meta, *mask_entry));
-            for (const auto i : algo::range(sprites.size()))
-                sprites[i]->apply_mask(*masks.at(i));
-            sprite_entry->already_unpacked = true;
-            mask_entry->already_unpacked = true;
-            for (const auto &sprite : sprites)
-            {
-                saver.save(util::file_from_image(
-                    *sprite, sprite_entry->path));
-            }
-        }
-        catch (...)
-        {
-            continue;
-        }
-    }
-}
-
 std::unique_ptr<fmt::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {

@@ -8,6 +8,9 @@ namespace nekopack {
 
     class Nekopack4ArchiveDecoder final : public ArchiveDecoder
     {
+    public:
+        std::vector<std::string> get_linked_formats() const override;
+
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
 
@@ -20,12 +23,6 @@ namespace nekopack {
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
-
-        void preprocess(
-            const Logger &logger,
-            io::File &input_file,
-            ArchiveMeta &m,
-            const FileSaver &file_saver) const override;
     };
 
 } } }

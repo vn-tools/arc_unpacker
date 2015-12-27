@@ -145,9 +145,5 @@ void fmt::unpack_non_recursive(
     decoder.register_cli_options(decoder_arg_parser);
     decoder_arg_parser.parse(arguments);
     decoder.parse_cli_options(decoder_arg_parser);
-
-    auto archive_decoder = dynamic_cast<ArchiveDecoder*>(&decoder);
-    if (archive_decoder)
-        archive_decoder->disable_preprocessing();
     decoder.unpack(logger, file, file_saver);
 }

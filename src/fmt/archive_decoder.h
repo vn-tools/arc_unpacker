@@ -20,7 +20,6 @@ namespace fmt {
     class ArchiveDecoder : public BaseDecoder
     {
     public:
-        ArchiveDecoder();
         virtual ~ArchiveDecoder() { }
 
         void unpack(
@@ -29,8 +28,6 @@ namespace fmt {
             const FileSaver &file_saver) const override;
 
         virtual NamingStrategy naming_strategy() const override;
-
-        void disable_preprocessing();
 
         virtual std::vector<std::string> get_linked_formats() const;
 
@@ -54,15 +51,6 @@ namespace fmt {
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const = 0;
-
-        virtual void preprocess(
-            const Logger &logger,
-            io::File &input_file,
-            ArchiveMeta &m,
-            const FileSaver &file_saver) const;
-
-    private:
-        bool preprocessing_disabled;
     };
 
 } }

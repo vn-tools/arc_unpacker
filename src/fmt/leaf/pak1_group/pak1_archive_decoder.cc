@@ -136,9 +136,9 @@ bool Pak1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<fmt::ArchiveMeta> Pak1ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto file_count = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.seek(0).read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->already_unpacked = false;
@@ -165,7 +165,7 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
             "Please choose PAK version with --pak-version switch.");
     }
 
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->already_unpacked)
         return nullptr;
 
@@ -173,8 +173,8 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
     bstr data;
     if (entry->compressed)
     {
-        auto size_comp = input_file.stream.read_u32_le();
-        auto size_orig = input_file.stream.read_u32_le();
+        const auto size_comp = input_file.stream.read_u32_le();
+        const auto size_orig = input_file.stream.read_u32_le();
         data = input_file.stream.read(size_comp - 8);
         data = custom_lzss_decompress(
             data, size_orig, p->version == 1 ? 0x1000 : 0x800);
@@ -185,67 +185,6 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
     }
 
     return std::make_unique<io::File>(entry->path, data);
-}
-
-void Pak1ArchiveDecoder::preprocess(
-    const Logger &logger,
-    io::File &input_file,
-    fmt::ArchiveMeta &meta,
-    const FileSaver &saver) const
-{
-    std::map<std::string, ArchiveEntryImpl*>
-        palette_entries, sprite_entries, mask_entries;
-    for (auto &entry : meta.entries)
-    {
-        const auto fn = entry->path.stem();
-        if (entry->path.has_extension("c16"))
-            palette_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
-        else if (entry->path.has_extension("grp"))
-            sprite_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
-        else if (entry->path.has_extension("msk"))
-            mask_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
-    }
-
-    GrpImageDecoder grp_image_decoder;
-    for (auto it : sprite_entries)
-    {
-        try
-        {
-            ArchiveEntryImpl *sprite_entry = it.second;
-            ArchiveEntryImpl *palette_entry = nullptr;
-            ArchiveEntryImpl *mask_entry = nullptr;
-            std::shared_ptr<io::File> palette_file;
-            std::shared_ptr<io::File> mask_file;
-
-            auto sprite_file = read_file(
-                logger, input_file, meta, *sprite_entry);
-            if (palette_entries.find(it.first) != palette_entries.end())
-            {
-                palette_entry = palette_entries[it.first];
-                palette_file = read_file(
-                    logger, input_file, meta, *palette_entry);
-            }
-            if (mask_entries.find(it.first) != mask_entries.end())
-            {
-                mask_entry = mask_entries[it.first];
-                mask_file = read_file(logger, input_file, meta, *mask_entry);
-            }
-
-            auto sprite = grp_image_decoder.decode(
-                *sprite_file, palette_file, mask_file);
-            saver.save(util::file_from_image(sprite, sprite_entry->path));
-
-            sprite_entry->already_unpacked = true;
-            if (mask_entry)
-                mask_entry->already_unpacked = true;
-            if (palette_entry)
-                palette_entry->already_unpacked = true;
-        }
-        catch (...)
-        {
-            continue;
-        }
-    }
 }
 
 std::vector<std::string> Pak1ArchiveDecoder::get_linked_formats() const

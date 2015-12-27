@@ -29,12 +29,6 @@ namespace leaf {
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
 
-        void preprocess(
-            const Logger &logger,
-            io::File &input_file,
-            ArchiveMeta &m,
-            const FileSaver &file_saver) const override;
-
     private:
         struct Priv;
         std::unique_ptr<Priv> p;

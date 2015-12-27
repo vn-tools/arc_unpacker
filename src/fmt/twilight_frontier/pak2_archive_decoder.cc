@@ -97,57 +97,6 @@ std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
-void Pak2ArchiveDecoder::preprocess(
-    const Logger &logger,
-    io::File &input_file,
-    fmt::ArchiveMeta &m,
-    const FileSaver &saver) const
-{
-    Pak2ImageDecoder image_decoder;
-
-    image_decoder.clear_palettes();
-    const auto dir = input_file.path.parent();
-    for (const auto &path : io::directory_range(dir))
-    {
-        if (!io::is_regular_file(path))
-            continue;
-        if (!path.has_extension("dat"))
-            continue;
-
-        io::File other_input_file(path, io::FileMode::Read);
-        if (!is_recognized(other_input_file))
-            continue;
-
-        auto meta = read_meta(logger, other_input_file);
-        for (auto &entry : meta->entries)
-        {
-            if (!entry->path.has_extension("pal"))
-                continue;
-
-            auto pal_file = read_file(logger, other_input_file, *meta, *entry);
-            image_decoder.add_palette(
-                entry->path, pal_file->stream.seek(0).read_to_eof());
-        }
-    }
-
-    for (auto &e : m.entries)
-    {
-        auto entry = static_cast<ArchiveEntryImpl*>(e.get());
-        if (!entry->path.has_extension("cv2"))
-            continue;
-        auto full_file = read_file(logger, input_file, m, *entry);
-        try
-        {
-            auto image = image_decoder.decode(logger, *full_file);
-            saver.save(util::file_from_image(image, entry->path));
-            entry->already_unpacked = true;
-        }
-        catch (...)
-        {
-        }
-    }
-}
-
 std::vector<std::string> Pak2ArchiveDecoder::get_linked_formats() const
 {
     return {"twilight-frontier/pak2-sfx", "twilight-frontier/pak2-gfx"};

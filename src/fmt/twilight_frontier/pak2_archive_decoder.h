@@ -23,12 +23,6 @@ namespace twilight_frontier {
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
-
-        void preprocess(
-            const Logger &logger,
-            io::File &input_file,
-            ArchiveMeta &m,
-            const FileSaver &file_saver) const override;
     };
 
 } } }

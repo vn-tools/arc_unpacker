@@ -4,9 +4,9 @@
 
 namespace au {
 namespace fmt {
-namespace leaf {
+namespace nekopack {
 
-    class GrpImageDecoder final : public ImageDecoder
+    class MaskedBmpImageDecoder final : public ImageDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
