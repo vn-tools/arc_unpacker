@@ -22,7 +22,7 @@ namespace flow {
     private:
         void do_save(
             const fmt::BaseDecoder &decoder,
-            const std::function<std::shared_ptr<io::File>()>
+            const std::function<std::shared_ptr<io::File>(const Logger &logger)>
                 file_factory) const;
 
         const BaseParallelUnpackingTask &task;

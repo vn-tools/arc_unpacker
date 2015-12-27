@@ -20,7 +20,7 @@ ParallelDecoderAdapter::~ParallelDecoderAdapter()
 
 void ParallelDecoderAdapter::do_save(
     const fmt::BaseDecoder &decoder,
-    const std::function<std::shared_ptr<io::File>()> file_factory) const
+    const FileFactoryWithLogger file_factory) const
 {
     task.unpacker.save_file(
         file_factory,
@@ -39,18 +39,19 @@ void ParallelDecoderAdapter::visit(const fmt::BaseArchiveDecoder &decoder)
         input_file->path.c_str(),
         meta->entries.size());
     auto decoder_copy = decoder.shared_from_this();
-    auto logger_copy = task.logger;
+
+    Logger dummy_logger(task.logger);
     for (const auto &entry : meta->entries)
     {
         util::VirtualFileSystem::register_file(
             fmt::decorate_path(
                 decoder.naming_strategy(), task.base_name, entry->path),
-            [input_file, meta, &entry, logger_copy, decoder_copy]()
+            [input_file, meta, &entry, dummy_logger, decoder_copy]()
             {
                 io::File file_copy(*input_file);
                 return
                     static_cast<const fmt::BaseArchiveDecoder&>(*decoder_copy)
-                    .read_file(logger_copy, file_copy, *meta, *entry);
+                    .read_file(dummy_logger, file_copy, *meta, *entry);
             });
     }
 
@@ -58,10 +59,10 @@ void ParallelDecoderAdapter::visit(const fmt::BaseArchiveDecoder &decoder)
     {
         do_save(
             decoder,
-            [input_file, meta, &entry, logger_copy, &decoder]()
+            [input_file, meta, &entry, &decoder](const Logger &logger)
             {
                 io::File file_copy(*input_file);
-                return decoder.read_file(logger_copy, file_copy, *meta, *entry);
+                return decoder.read_file(logger, file_copy, *meta, *entry);
             });
     }
 }
@@ -69,40 +70,37 @@ void ParallelDecoderAdapter::visit(const fmt::BaseArchiveDecoder &decoder)
 void ParallelDecoderAdapter::visit(const fmt::BaseFileDecoder &decoder)
 {
     auto input_file = this->input_file;
-    auto logger_copy = task.logger;
     do_save(
         decoder,
-        [input_file, logger_copy, &decoder]()
+        [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
-            return decoder.decode(logger_copy, file_copy);
+            return decoder.decode(logger, file_copy);
         });
 }
 
 void ParallelDecoderAdapter::visit(const fmt::BaseImageDecoder &decoder)
 {
     auto input_file = this->input_file;
-    auto logger_copy = task.logger;
     do_save(
         decoder,
-        [input_file, logger_copy, &decoder]()
+        [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
             return util::file_from_image(
-                decoder.decode(logger_copy, file_copy), input_file->path);
+                decoder.decode(logger, file_copy), input_file->path);
         });
 }
 
 void ParallelDecoderAdapter::visit(const fmt::BaseAudioDecoder &decoder)
 {
     auto input_file = this->input_file;
-    auto logger_copy = task.logger;
     do_save(
         decoder,
-        [input_file, logger_copy, &decoder]()
+        [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
             return util::file_from_audio(
-                decoder.decode(logger_copy, file_copy), input_file->path);
+                decoder.decode(logger, file_copy), input_file->path);
         });
 }

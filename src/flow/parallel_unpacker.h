@@ -12,6 +12,10 @@ namespace flow {
 
     class ParallelUnpacker;
 
+    using FileFactory = std::function<std::shared_ptr<io::File>()>;
+    using FileFactoryWithLogger
+        = std::function<std::shared_ptr<io::File>(const Logger &)>;
+
     struct ParallelUnpackerContext final
     {
         ParallelUnpackerContext(
@@ -54,12 +58,10 @@ namespace flow {
         ParallelUnpacker(const ParallelUnpackerContext &context);
         ~ParallelUnpacker();
 
-        void add_input_file(
-            const io::path &base_name,
-            const std::function<std::shared_ptr<io::File>()> file_factory);
+        void add_input_file(const io::path &base_name, const FileFactory);
 
         void save_file(
-            const std::function<std::shared_ptr<io::File>()> factory,
+            const FileFactoryWithLogger,
             const std::shared_ptr<const fmt::IDecoder> origin_decoder,
             const io::path &origin_path,
             const BaseParallelUnpackingTask &origin_task);

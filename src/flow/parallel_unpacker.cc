@@ -32,13 +32,13 @@ namespace
             const io::path &base_name,
             const SourceType source_type,
             const std::vector<std::string> &available_decoders,
-            const std::function<std::shared_ptr<io::File>()> file_provider);
+            const FileFactory file_factory);
 
         bool work() const override;
 
         const SourceType source_type;
         const std::vector<std::string> available_decoders;
-        const std::function<std::shared_ptr<io::File>()> file_provider;
+        const FileFactory file_factory;
     };
 
     struct ProcessOutputFileTask final : public BaseParallelUnpackingTask
@@ -49,13 +49,13 @@ namespace
             const ParallelUnpackerContext &unpacker_context,
             const size_t depth,
             const io::path &base_name,
-            const std::function<std::shared_ptr<io::File>()> file_factory,
+            const FileFactoryWithLogger file_factory,
             const std::shared_ptr<const fmt::IDecoder> origin_decoder,
             const io::path &origin_path);
 
         bool work() const override;
 
-        const std::function<std::shared_ptr<io::File>()> file_factory;
+        const FileFactoryWithLogger file_factory;
         const std::shared_ptr<const fmt::IDecoder> origin_decoder;
         const io::path origin_path;
     };
@@ -212,12 +212,12 @@ DecodeInputFileTask::DecodeInputFileTask(
     const io::path &base_name,
     const SourceType source_type,
     const std::vector<std::string> &available_decoders,
-    const std::function<std::shared_ptr<io::File>()> file_provider) :
+    const FileFactory file_factory) :
         BaseParallelUnpackingTask(
             unpacker, task_scheduler, unpacker_context, depth, base_name),
         source_type(source_type),
         available_decoders(available_decoders),
-        file_provider(file_provider)
+        file_factory(file_factory)
 {
 }
 
@@ -226,7 +226,7 @@ bool DecodeInputFileTask::work() const
     std::shared_ptr<io::File> input_file;
     try
     {
-        input_file = file_provider();
+        input_file = file_factory();
         if (!input_file)
         {
             logger.err("No input file(?)\n");
@@ -282,7 +282,7 @@ ProcessOutputFileTask::ProcessOutputFileTask(
     const ParallelUnpackerContext &unpacker_context,
     const size_t depth,
     const io::path &base_name,
-    const std::function<std::shared_ptr<io::File>()> file_factory,
+    const FileFactoryWithLogger file_factory,
     const std::shared_ptr<const fmt::IDecoder> origin_decoder,
     const io::path &origin_path) :
         BaseParallelUnpackingTask(
@@ -299,7 +299,7 @@ bool ProcessOutputFileTask::work() const
     std::shared_ptr<io::File> output_file;
     try
     {
-        output_file = file_factory();
+        output_file = file_factory(logger);
         if (!output_file)
             return false;
     }
@@ -374,8 +374,7 @@ ParallelUnpacker::~ParallelUnpacker()
 }
 
 void ParallelUnpacker::add_input_file(
-    const io::path &base_name,
-    const std::function<std::shared_ptr<io::File>()> file_factory)
+    const io::path &base_name, const FileFactory file_factory)
 {
     p->task_scheduler.push_back(
         std::make_unique<DecodeInputFileTask>(
@@ -390,7 +389,7 @@ void ParallelUnpacker::add_input_file(
 }
 
 void ParallelUnpacker::save_file(
-    const std::function<std::shared_ptr<io::File>()> file_factory,
+    const FileFactoryWithLogger file_factory,
     const std::shared_ptr<const fmt::IDecoder> origin_decoder,
     const io::path &origin_path,
     const BaseParallelUnpackingTask &origin_task)
