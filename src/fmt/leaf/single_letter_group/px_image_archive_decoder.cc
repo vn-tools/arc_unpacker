@@ -386,7 +386,7 @@ std::unique_ptr<io::File> PxImageArchiveDecoder::read_file_impl(
     return util::file_from_image(image, entry->path);
 }
 
-fmt::IDecoder::NamingStrategy PxImageArchiveDecoder::naming_strategy() const
+fmt::NamingStrategy PxImageArchiveDecoder::naming_strategy() const
 {
     return NamingStrategy::Sibling;
 }

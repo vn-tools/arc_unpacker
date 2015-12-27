@@ -1,13 +1,13 @@
 #pragma once
 
 #include <string>
-#include "fmt/image_decoder.h"
+#include "fmt/base_image_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace twilight_frontier {
 
-    class Pak2ImageDecoder final : public ImageDecoder
+    class Pak2ImageDecoder final : public BaseImageDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;

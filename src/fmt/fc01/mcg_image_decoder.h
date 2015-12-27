@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/image_decoder.h"
+#include "fmt/base_image_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace fc01 {
 
-    class McgImageDecoder final : public ImageDecoder
+    class McgImageDecoder final : public BaseImageDecoder
     {
     public:
         McgImageDecoder();

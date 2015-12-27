@@ -76,7 +76,7 @@ res::Audio MioAudioDecoder::decode_impl(
     auto header = read_header(input_file.stream, section_reader);
     auto chunks = read_chunks(input_file.stream, section_reader);
 
-    std::unique_ptr<audio::AudioDecoderImpl> impl;
+    std::unique_ptr<audio::BaseAudioDecoder> impl;
     if (header.transformation == common::Transformation::Lossless)
         impl.reset(new audio::LosslessAudioDecoder(header));
     else if (header.transformation == common::Transformation::Lot)

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive_decoder.h"
+#include "fmt/base_archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace nitroplus {
 
-    class NpaArchiveDecoder final : public ArchiveDecoder
+    class NpaArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         NpaArchiveDecoder();

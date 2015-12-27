@@ -136,7 +136,7 @@ static std::unique_ptr<fmt::ArchiveMeta> read_meta(io::File &input_file)
     return meta;
 }
 
-fmt::IDecoder::NamingStrategy WipfImageArchiveDecoder::naming_strategy() const
+fmt::NamingStrategy WipfImageArchiveDecoder::naming_strategy() const
 {
     return NamingStrategy::Sibling;
 }

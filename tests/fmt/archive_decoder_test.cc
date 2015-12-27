@@ -1,5 +1,4 @@
-#include "fmt/archive_decoder.h"
-#include "fmt/file_decoder.h"
+#include "fmt/base_archive_decoder.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -15,7 +14,7 @@ namespace
         size_t size;
     };
 
-    class TestArchiveDecoder final : public ArchiveDecoder
+    class TestArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         TestArchiveDecoder(const NamingStrategy strategy);
@@ -44,7 +43,7 @@ TestArchiveDecoder::TestArchiveDecoder(const NamingStrategy strategy)
 {
 }
 
-IDecoder::NamingStrategy TestArchiveDecoder::naming_strategy() const
+NamingStrategy TestArchiveDecoder::naming_strategy() const
 {
     return strategy;
 }
@@ -84,8 +83,7 @@ std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
 
 TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
 {
-    const TestArchiveDecoder test_archive_decoder(
-        IDecoder::NamingStrategy::Child);
+    const TestArchiveDecoder test_archive_decoder(NamingStrategy::Child);
     io::File dummy_file;
     dummy_file.path = "test.archive";
     dummy_file.stream.write("deeply/nested/file.txt"_b);
@@ -105,8 +103,7 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
 {
     SECTION("Child naming strategy")
     {
-        const TestArchiveDecoder test_archive_decoder(
-            IDecoder::NamingStrategy::Child);
+        const TestArchiveDecoder test_archive_decoder(NamingStrategy::Child);
 
         SECTION("Just one file")
         {
@@ -160,8 +157,7 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
 
     SECTION("Root naming strategy")
     {
-        const TestArchiveDecoder test_archive_decoder(
-            IDecoder::NamingStrategy::Root);
+        const TestArchiveDecoder test_archive_decoder(NamingStrategy::Root);
 
         SECTION("Just one file")
         {
@@ -215,8 +211,7 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
 
     SECTION("Sibling naming strategy")
     {
-        const TestArchiveDecoder test_archive_decoder(
-            IDecoder::NamingStrategy::Sibling);
+        const TestArchiveDecoder test_archive_decoder(NamingStrategy::Sibling);
 
         SECTION("Just one file")
         {

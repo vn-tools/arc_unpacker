@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/audio_decoder.h"
+#include "fmt/base_audio_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace ivory {
 
-    class WadyAudioDecoder final : public AudioDecoder
+    class WadyAudioDecoder final : public BaseAudioDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;

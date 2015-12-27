@@ -1,5 +1,5 @@
-#include "fmt/archive_decoder.h"
-#include "fmt/file_decoder.h"
+#include "fmt/base_archive_decoder.h"
+#include "fmt/base_file_decoder.h"
 #include "io/memory_stream.h"
 #include "test_support/catch.h"
 #include "test_support/file_support.h"
@@ -10,7 +10,7 @@ using namespace au::fmt;
 
 namespace
 {
-    class TestFileDecoder final : public FileDecoder
+    class TestFileDecoder final : public BaseFileDecoder
     {
     public:
         std::function<void(io::File &)> recognition_callback;
@@ -29,7 +29,7 @@ namespace
         size_t size;
     };
 
-    class TestArchiveDecoder final : public ArchiveDecoder
+    class TestArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         std::vector<std::string> get_linked_formats() const override;

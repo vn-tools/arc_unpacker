@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive_decoder.h"
+#include "fmt/base_archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace yuris {
 
-    class YpfArchiveDecoder final : public ArchiveDecoder
+    class YpfArchiveDecoder final : public BaseArchiveDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;

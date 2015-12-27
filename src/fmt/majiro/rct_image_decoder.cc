@@ -112,15 +112,12 @@ void RctImageDecoder::register_cli_options(ArgParser &arg_parser) const
     arg_parser.register_switch({"--rct-key"})
         ->set_value_name("KEY")
         ->set_description("Decryption key (same for all files)");
-    ImageDecoder::register_cli_options(arg_parser);
 }
 
 void RctImageDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("rct-key"))
         set_key(algo::unhex(arg_parser.get_switch("rct-key")));
-
-    ImageDecoder::parse_cli_options(arg_parser);
 }
 
 void RctImageDecoder::set_key(const bstr &key)
@@ -164,18 +161,17 @@ res::Image RctImageDecoder::decode_impl(
         const auto base_name
             = algo::trim_to_zero(input_file.stream.read(name_size).str());
 
-        static const std::vector<std::shared_ptr<fmt::ImageDecoder>> decoders
-            {
-                std::make_shared<RctImageDecoder>(),
-                std::make_shared<Rc8ImageDecoder>()
-            };
-
         auto base_file = util::VirtualFileSystem::get_by_name(base_name);
         if (base_file)
+        {
+            std::vector<std::shared_ptr<fmt::BaseImageDecoder>> decoders;
+            decoders.push_back(std::make_shared<RctImageDecoder>());
+            decoders.push_back(std::make_shared<Rc8ImageDecoder>());
             for (const auto &decoder : decoders)
                 if (decoder->is_recognized(*base_file))
                     output_image.paste(
                         decoder->decode(logger, *base_file), 0, 0);
+        }
     }
 
     auto data = input_file.stream.read(data_size);

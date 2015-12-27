@@ -32,7 +32,7 @@ namespace
 static std::unique_ptr<io::File> grab_definitions_file(
     const Logger &logger, const io::path &dir)
 {
-    std::vector<std::unique_ptr<fmt::ArchiveDecoder>> decoders;
+    std::vector<std::unique_ptr<fmt::BaseArchiveDecoder>> decoders;
     decoders.push_back(std::make_unique<Pbg4ArchiveDecoder>());
     decoders.push_back(std::make_unique<PbgzArchiveDecoder>());
     decoders.push_back(std::make_unique<Tha1ArchiveDecoder>());

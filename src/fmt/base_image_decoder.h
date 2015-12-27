@@ -1,24 +1,25 @@
 #pragma once
 
-#include "idecoder.h"
+#include "base_decoder.h"
+#include "res/image.h"
 
 namespace au {
 namespace fmt {
 
-    class FileDecoder : public BaseDecoder
+    class BaseImageDecoder : public BaseDecoder
     {
     public:
-        virtual ~FileDecoder() { }
+        virtual ~BaseImageDecoder() { }
 
         NamingStrategy naming_strategy() const override;
 
-        void accept(IDecoderVisitor &visitor) const override;
+        void accept(IDecoderVisitor &visitor) const;
 
-        std::unique_ptr<io::File> decode(
+        res::Image decode(
             const Logger &logger, io::File &input_file) const;
 
     protected:
-        virtual std::unique_ptr<io::File> decode_impl(
+        virtual res::Image decode_impl(
             const Logger &logger, io::File &input_file) const = 0;
     };
 

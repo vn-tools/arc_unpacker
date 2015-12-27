@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive_decoder.h"
+#include "fmt/base_archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace shiina_rio {
 
-    class WarcArchiveDecoder final : public ArchiveDecoder
+    class WarcArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         WarcArchiveDecoder();

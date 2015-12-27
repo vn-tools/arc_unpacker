@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive_decoder.h"
+#include "fmt/base_archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace twilight_frontier {
 
-    class TfpkArchiveDecoder final : public ArchiveDecoder
+    class TfpkArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         TfpkArchiveDecoder();

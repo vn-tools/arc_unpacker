@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive_decoder.h"
+#include "fmt/base_archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace nekopack {
 
-    class Nekopack4ArchiveDecoder final : public ArchiveDecoder
+    class Nekopack4ArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         std::vector<std::string> get_linked_formats() const override;

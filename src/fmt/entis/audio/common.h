@@ -30,10 +30,10 @@ namespace audio {
         bstr data;
     };
 
-    class AudioDecoderImpl
+    class BaseAudioDecoder
     {
     public:
-        virtual ~AudioDecoderImpl();
+        virtual ~BaseAudioDecoder() { }
         virtual bstr process_chunk(const MioChunk &chunk) = 0;
     };
 

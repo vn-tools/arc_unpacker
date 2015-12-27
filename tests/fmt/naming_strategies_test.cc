@@ -1,11 +1,11 @@
-#include "fmt/idecoder.h"
+#include "fmt/naming_strategies.h"
 #include "test_support/catch.h"
 
 using namespace au;
 using namespace au::fmt;
 
 static void do_test(
-    const IDecoder::NamingStrategy strategy,
+    const NamingStrategy strategy,
     const io::path &parent_path,
     const io::path &child_path,
     const io::path &expected_path)
@@ -19,7 +19,7 @@ TEST_CASE("File naming strategies", "[fmt_core]")
 {
     SECTION("Root")
     {
-        const auto s = IDecoder::NamingStrategy::Root;
+        const auto s = NamingStrategy::Root;
         do_test(s, "",           "file", "file");
         do_test(s, "test",       "file", "file");
         do_test(s, "test/",      "file", "file");
@@ -30,7 +30,7 @@ TEST_CASE("File naming strategies", "[fmt_core]")
 
     SECTION("Sibling")
     {
-        const auto s = IDecoder::NamingStrategy::Sibling;
+        const auto s = NamingStrategy::Sibling;
         do_test(s, "",           "file", "file");
         do_test(s, "test",       "file", "file");
         do_test(s, "test/",      "file", "test/file");
@@ -41,7 +41,7 @@ TEST_CASE("File naming strategies", "[fmt_core]")
 
     SECTION("Child")
     {
-        const auto s = IDecoder::NamingStrategy::Child;
+        const auto s = NamingStrategy::Child;
         do_test(s, "",           "file", "file");
         do_test(s, "test",       "file", "test/file");
         do_test(s, "test/",      "file", "test/file");

@@ -167,7 +167,7 @@ static std::vector<TextureInfo> read_texture_info_list(io::Stream &input)
     return texture_info_list;
 }
 
-IDecoder::NamingStrategy AnmArchiveDecoder::naming_strategy() const
+NamingStrategy AnmArchiveDecoder::naming_strategy() const
 {
     return NamingStrategy::Root;
 }

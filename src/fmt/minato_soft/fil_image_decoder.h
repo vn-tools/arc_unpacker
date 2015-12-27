@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/image_decoder.h"
+#include "fmt/base_image_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace minato_soft {
 
-    class FilImageDecoder final : public ImageDecoder
+    class FilImageDecoder final : public BaseImageDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;

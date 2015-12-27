@@ -1,21 +1,21 @@
-#include "fmt/image_decoder.h"
+#include "fmt/base_audio_decoder.h"
 #include "err.h"
 #include "fmt/idecoder_visitor.h"
 
 using namespace au;
 using namespace au::fmt;
 
-IDecoder::NamingStrategy ImageDecoder::naming_strategy() const
+NamingStrategy BaseAudioDecoder::naming_strategy() const
 {
     return NamingStrategy::FlatSibling;
 }
 
-void ImageDecoder::accept(IDecoderVisitor &visitor) const
+void BaseAudioDecoder::accept(IDecoderVisitor &visitor) const
 {
     visitor.visit(*this);
 }
 
-res::Image ImageDecoder::decode(const Logger &logger, io::File &file) const
+res::Audio BaseAudioDecoder::decode(const Logger &logger, io::File &file) const
 {
     if (!is_recognized(file))
         throw err::RecognitionError();

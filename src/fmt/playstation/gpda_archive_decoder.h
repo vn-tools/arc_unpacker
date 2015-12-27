@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive_decoder.h"
+#include "fmt/base_archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace playstation {
 
-    class GpdaArchiveDecoder final : public ArchiveDecoder
+    class GpdaArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         std::vector<std::string> get_linked_formats() const override;

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive_decoder.h"
+#include "fmt/base_archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace qlie {
 
-    class PackArchiveDecoder final : public ArchiveDecoder
+    class PackArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         PackArchiveDecoder();

@@ -83,14 +83,12 @@ void McgImageDecoder::register_cli_options(ArgParser &arg_parser) const
     arg_parser.register_switch({"--mcg-key"})
         ->set_value_name("KEY")
         ->set_description("Decryption key (0..255, same for all files)");
-    ImageDecoder::register_cli_options(arg_parser);
 }
 
 void McgImageDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
     if (arg_parser.has_switch("mcg-key"))
         set_key(algo::from_string<int>(arg_parser.get_switch("mcg-key")));
-    ImageDecoder::parse_cli_options(arg_parser);
 }
 
 bool McgImageDecoder::is_recognized_impl(io::File &input_file) const

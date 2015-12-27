@@ -273,7 +273,7 @@ static res::Image unpack_v6(
     const auto base_file = util::VirtualFileSystem::get_by_stem(base_stem);
     if (base_file)
     {
-        static const std::vector<std::shared_ptr<fmt::ImageDecoder>> decoders
+        const std::vector<std::shared_ptr<fmt::BaseImageDecoder>> decoders
             {
                 std::make_shared<Pb3ImageDecoder>(),
                 std::make_shared<fmt::png::PngImageDecoder>()

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/image_decoder.h"
+#include "fmt/base_image_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace bgi {
 
-    class CbgImageDecoder final : public ImageDecoder
+    class CbgImageDecoder final : public BaseImageDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;

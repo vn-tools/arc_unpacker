@@ -131,7 +131,7 @@ std::unique_ptr<io::File> Cz10ImageArchiveDecoder::read_file_impl(
     return util::file_from_image(image, entry->path);
 }
 
-fmt::IDecoder::NamingStrategy Cz10ImageArchiveDecoder::naming_strategy() const
+fmt::NamingStrategy Cz10ImageArchiveDecoder::naming_strategy() const
 {
     return NamingStrategy::Sibling;
 }

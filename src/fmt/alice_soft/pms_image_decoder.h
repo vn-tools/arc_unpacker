@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/image_decoder.h"
+#include "fmt/base_image_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace alice_soft {
 
-    class PmsImageDecoder final : public ImageDecoder
+    class PmsImageDecoder final : public BaseImageDecoder
     {
     public:
         static bstr decompress_8bit(

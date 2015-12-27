@@ -1,15 +1,15 @@
 #pragma once
 
-#include "idecoder.h"
+#include "base_decoder.h"
 #include "res/audio.h"
 
 namespace au {
 namespace fmt {
 
-    class AudioDecoder : public BaseDecoder
+    class BaseAudioDecoder : public BaseDecoder
     {
     public:
-        virtual ~AudioDecoder() { }
+        virtual ~BaseAudioDecoder() { }
 
         NamingStrategy naming_strategy() const override;
 

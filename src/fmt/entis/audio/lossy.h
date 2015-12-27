@@ -8,7 +8,7 @@ namespace fmt {
 namespace entis {
 namespace audio {
 
-    class LossyAudioDecoder final : public AudioDecoderImpl
+    class LossyAudioDecoder final : public BaseAudioDecoder
     {
     public:
         LossyAudioDecoder(const MioHeader &header);

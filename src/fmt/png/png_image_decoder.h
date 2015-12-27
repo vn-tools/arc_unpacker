@@ -1,18 +1,18 @@
 #pragma once
 
-#include "fmt/image_decoder.h"
+#include "fmt/base_image_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace png {
 
-    class PngImageDecoder final : public ImageDecoder
+    class PngImageDecoder final : public BaseImageDecoder
     {
     public:
         using ChunkHandler = std::function<void(
             const std::string &chunk_name, const bstr &chunk_data)>;
 
-        using ImageDecoder::decode;
+        using BaseImageDecoder::decode;
         res::Image decode(
             const Logger &logger,
             io::File &input_file,

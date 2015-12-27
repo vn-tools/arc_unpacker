@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive_decoder.h"
+#include "fmt/base_archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace kirikiri {
 
-    class Xp3ArchiveDecoder final : public ArchiveDecoder
+    class Xp3ArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         Xp3ArchiveDecoder();

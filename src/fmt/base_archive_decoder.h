@@ -1,6 +1,6 @@
 #pragma once
 
-#include "idecoder.h"
+#include "base_decoder.h"
 
 namespace au {
 namespace fmt {
@@ -17,10 +17,10 @@ namespace fmt {
         std::vector<std::unique_ptr<ArchiveEntry>> entries;
     };
 
-    class ArchiveDecoder : public BaseDecoder
+    class BaseArchiveDecoder : public BaseDecoder
     {
     public:
-        virtual ~ArchiveDecoder() { }
+        virtual ~BaseArchiveDecoder() { }
 
         virtual NamingStrategy naming_strategy() const override;
 

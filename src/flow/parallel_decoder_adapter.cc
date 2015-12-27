@@ -29,7 +29,7 @@ void ParallelDecoderAdapter::do_save(
         task);
 }
 
-void ParallelDecoderAdapter::visit(const fmt::ArchiveDecoder &decoder)
+void ParallelDecoderAdapter::visit(const fmt::BaseArchiveDecoder &decoder)
 {
     auto input_file = this->input_file;
     auto meta = std::shared_ptr<fmt::ArchiveMeta>(
@@ -48,7 +48,8 @@ void ParallelDecoderAdapter::visit(const fmt::ArchiveDecoder &decoder)
             [input_file, meta, &entry, logger_copy, decoder_copy]()
             {
                 io::File file_copy(*input_file);
-                return static_cast<const fmt::ArchiveDecoder&>(*decoder_copy)
+                return
+                    static_cast<const fmt::BaseArchiveDecoder&>(*decoder_copy)
                     .read_file(logger_copy, file_copy, *meta, *entry);
             });
     }
@@ -65,7 +66,7 @@ void ParallelDecoderAdapter::visit(const fmt::ArchiveDecoder &decoder)
     }
 }
 
-void ParallelDecoderAdapter::visit(const fmt::FileDecoder &decoder)
+void ParallelDecoderAdapter::visit(const fmt::BaseFileDecoder &decoder)
 {
     auto input_file = this->input_file;
     auto logger_copy = task.logger;
@@ -78,7 +79,7 @@ void ParallelDecoderAdapter::visit(const fmt::FileDecoder &decoder)
         });
 }
 
-void ParallelDecoderAdapter::visit(const fmt::ImageDecoder &decoder)
+void ParallelDecoderAdapter::visit(const fmt::BaseImageDecoder &decoder)
 {
     auto input_file = this->input_file;
     auto logger_copy = task.logger;
@@ -92,7 +93,7 @@ void ParallelDecoderAdapter::visit(const fmt::ImageDecoder &decoder)
         });
 }
 
-void ParallelDecoderAdapter::visit(const fmt::AudioDecoder &decoder)
+void ParallelDecoderAdapter::visit(const fmt::BaseAudioDecoder &decoder)
 {
     auto input_file = this->input_file;
     auto logger_copy = task.logger;

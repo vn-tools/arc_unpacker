@@ -1,4 +1,4 @@
-#include "fmt/archive_decoder.h"
+#include "fmt/base_archive_decoder.h"
 #include "fmt/registry.h"
 #include "test_support/catch.h"
 
@@ -11,7 +11,7 @@ TEST_CASE("Archives reference only valid decoders", "[fmt_core]")
     {
         const auto decoder = registry.create_decoder(format_name);
         const auto arc_decoder
-            = dynamic_cast<const ArchiveDecoder*>(decoder.get());
+            = dynamic_cast<const BaseArchiveDecoder*>(decoder.get());
         if (!arc_decoder)
             continue;
         for (const auto &linked_format_name : arc_decoder->get_linked_formats())

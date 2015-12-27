@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive_decoder.h"
+#include "fmt/base_archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace leaf {
 
-    class Pak1ArchiveDecoder final : public ArchiveDecoder
+    class Pak1ArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         Pak1ArchiveDecoder();

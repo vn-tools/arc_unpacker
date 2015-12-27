@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/archive_decoder.h"
+#include "fmt/base_archive_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace purple_software {
 
-    class Cpz5ArchiveDecoder final : public ArchiveDecoder
+    class Cpz5ArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         Cpz5ArchiveDecoder(const size_t version);

@@ -1,4 +1,4 @@
-#include "fmt/archive_decoder.h"
+#include "fmt/base_archive_decoder.h"
 #include "algo/format.h"
 #include "err.h"
 #include "fmt/idecoder_visitor.h"
@@ -6,26 +6,26 @@
 using namespace au;
 using namespace au::fmt;
 
-IDecoder::NamingStrategy ArchiveDecoder::naming_strategy() const
+NamingStrategy BaseArchiveDecoder::naming_strategy() const
 {
     return NamingStrategy::Child;
 }
 
-void ArchiveDecoder::accept(IDecoderVisitor &visitor) const
+void BaseArchiveDecoder::accept(IDecoderVisitor &visitor) const
 {
     visitor.visit(*this);
 }
 
-std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(
+std::unique_ptr<ArchiveMeta> BaseArchiveDecoder::read_meta(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
     auto meta = read_meta_impl(logger, input_file);
 
     std::string prefix;
-    if (naming_strategy() == IDecoder::NamingStrategy::Sibling)
+    if (naming_strategy() == NamingStrategy::Sibling)
         prefix = input_file.path.stem();
-    else if (naming_strategy() == IDecoder::NamingStrategy::Root)
+    else if (naming_strategy() == NamingStrategy::Root)
         prefix = input_file.path.str();
 
     if (prefix.empty())
@@ -44,7 +44,7 @@ std::unique_ptr<ArchiveMeta> ArchiveDecoder::read_meta(
     return meta;
 }
 
-std::unique_ptr<io::File> ArchiveDecoder::read_file(
+std::unique_ptr<io::File> BaseArchiveDecoder::read_file(
     const Logger &logger,
     io::File &input_file,
     const ArchiveMeta &e,

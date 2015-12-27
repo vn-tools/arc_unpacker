@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/image_decoder.h"
+#include "fmt/base_image_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace majiro {
 
-    class RctImageDecoder final : public ImageDecoder
+    class RctImageDecoder final : public BaseImageDecoder
     {
     public:
         RctImageDecoder();

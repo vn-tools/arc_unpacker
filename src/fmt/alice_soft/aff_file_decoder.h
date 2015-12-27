@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/file_decoder.h"
+#include "fmt/base_file_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace alice_soft {
 
-    class AffFileDecoder final : public FileDecoder
+    class AffFileDecoder final : public BaseFileDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;

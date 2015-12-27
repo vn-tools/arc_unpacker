@@ -1,12 +1,12 @@
 #pragma once
 
-#include "fmt/audio_decoder.h"
+#include "fmt/base_audio_decoder.h"
 
 namespace au {
 namespace fmt {
 namespace leaf {
 
-    class WAudioDecoder final : public AudioDecoder
+    class WAudioDecoder final : public BaseAudioDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;

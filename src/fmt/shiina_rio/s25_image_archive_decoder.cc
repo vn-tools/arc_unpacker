@@ -185,7 +185,7 @@ std::unique_ptr<io::File> S25ImageArchiveDecoder::read_file_impl(
     return util::file_from_image(image, entry->path);
 }
 
-fmt::IDecoder::NamingStrategy S25ImageArchiveDecoder::naming_strategy() const
+fmt::NamingStrategy S25ImageArchiveDecoder::naming_strategy() const
 {
     return NamingStrategy::Sibling;
 }
