@@ -14,7 +14,8 @@ bool ZbmImageDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.path.has_extension("zbm");
 }
 
-res::Image ZbmImageDecoder::decode_impl(io::File &input_file) const
+res::Image ZbmImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(10);
     const auto size_orig = input_file.stream.read_u32_le();
@@ -28,7 +29,7 @@ res::Image ZbmImageDecoder::decode_impl(io::File &input_file) const
 
     const fmt::microsoft::BmpImageDecoder bmp_decoder;
     io::File bmp_file("dummy.bmp", data);
-    return bmp_decoder.decode(bmp_file);
+    return bmp_decoder.decode(logger, bmp_file);
 }
 
 static auto dummy = fmt::register_fmt<ZbmImageDecoder>("crowd/zbm");

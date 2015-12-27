@@ -221,7 +221,8 @@ bool NwaAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.has_extension("nwa");
 }
 
-res::Audio NwaAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio NwaAudioDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     // buffer the file in memory for performance
     io::MemoryStream input_stream(input_file.stream.seek(0).read_to_eof());

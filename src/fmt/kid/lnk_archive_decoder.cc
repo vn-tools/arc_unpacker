@@ -24,8 +24,8 @@ bool LnkArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    LnkArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> LnkArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     auto meta = std::make_unique<ArchiveMeta>();
@@ -46,6 +46,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> LnkArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -82,7 +83,7 @@ std::unique_ptr<io::File> LnkArchiveDecoder::read_file_impl(
     if (entry->compressed)
     {
         LndFileDecoder lnd_file_decoder;
-        return lnd_file_decoder.decode(*output_file);
+        return lnd_file_decoder.decode(logger, *output_file);
     }
     else
         return output_file;

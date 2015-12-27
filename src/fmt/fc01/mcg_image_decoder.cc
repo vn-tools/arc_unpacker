@@ -104,7 +104,8 @@ void McgImageDecoder::set_key(u8 key)
     p->key_set = true;
 }
 
-res::Image McgImageDecoder::decode_impl(io::File &input_file) const
+res::Image McgImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     const auto version = static_cast<int>(0.5 + 100

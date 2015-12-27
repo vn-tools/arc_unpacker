@@ -1,8 +1,9 @@
 #include "fmt/archive_decoder.h"
-#include "fmt/decoder_util.h"
 #include "fmt/file_decoder.h"
 #include "io/memory_stream.h"
 #include "test_support/catch.h"
+#include "test_support/file_support.h"
+#include "test_support/flow_support.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -19,7 +20,7 @@ namespace
         bool is_recognized_impl(io::File &input_file) const override;
 
         std::unique_ptr<io::File> decode_impl(
-            io::File &input_file) const override;
+            const Logger &logger, io::File &input_file) const override;
     };
 
     struct ArchiveEntryImpl final : ArchiveEntry
@@ -37,9 +38,10 @@ namespace
         bool is_recognized_impl(io::File &input_file) const override;
 
         std::unique_ptr<ArchiveMeta> read_meta_impl(
-            io::File &input_file) const override;
+            const Logger &logger, io::File &input_file) const override;
 
         std::unique_ptr<io::File> read_file_impl(
+            const Logger &logger,
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
@@ -51,43 +53,47 @@ static std::unique_ptr<Registry> create_registry()
     auto registry = Registry::create_mock();
     registry->add_decoder(
         "test/test-archive",
-        []() { return std::make_unique<TestArchiveDecoder>(); });
+        []() { return std::make_shared<TestArchiveDecoder>(); });
     registry->add_decoder(
-        "test/test-file",
-        []() { return std::make_unique<TestFileDecoder>(); });
+        "test/test-image",
+        []() { return std::make_shared<TestFileDecoder>(); });
     return registry;
 }
 
-static bstr serialize_file(const std::string &path, const bstr &content)
+static bstr make_archive(
+    std::initializer_list<std::shared_ptr<io::File>> input_files)
 {
-    io::MemoryStream stream;
-    stream.write(path);
-    stream.write_u8(0);
-    stream.write_u32_le(content.size());
-    stream.write(content);
-    stream.seek(0);
-    return stream.read_to_eof();
+    io::MemoryStream tmp_stream;
+    for (auto &input_file : input_files)
+    {
+        const auto content = input_file->stream.seek(0).read_to_eof();
+        tmp_stream.write(input_file->path.str());
+        tmp_stream.write_u8(0);
+        tmp_stream.write_u32_le(content.size());
+        tmp_stream.write(content);
+    }
+    return tmp_stream.seek(0).read_to_eof();
 }
 
 std::vector<std::string> TestArchiveDecoder::get_linked_formats() const
 {
-    return {"test/test-file", "test/test-archive"};
+    return {"test/test-image", "test/test-archive"};
 }
 
 bool TestFileDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (recognition_callback)
         recognition_callback(input_file);
-    return input_file.path.str().find("image") != std::string::npos;
+    return input_file.path.has_extension("rgb");
 }
 
 std::unique_ptr<io::File> TestFileDecoder::decode_impl(
-    io::File &input_file) const
+    const Logger &logger, io::File &input_file) const
 {
     if (conversion_callback)
         conversion_callback(input_file);
     auto output_file = std::make_unique<io::File>();
-    output_file->stream.write("image"_b);
+    output_file->stream.write("decoded_image"_b);
     output_file->path = input_file.path;
     output_file->path.change_extension("png");
     return output_file;
@@ -95,11 +101,11 @@ std::unique_ptr<io::File> TestFileDecoder::decode_impl(
 
 bool TestArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.path.str().find("archive") != std::string::npos;
+    return input_file.path.has_extension("arc");
 }
 
-std::unique_ptr<ArchiveMeta>
-    TestArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
@@ -116,9 +122,12 @@ std::unique_ptr<ArchiveMeta>
 }
 
 std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
-    io::File &input_file, const ArchiveMeta &, const ArchiveEntry &e) const
+    const Logger &logger,
+    io::File &input_file,
+    const ArchiveMeta &,
+    const ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     return std::make_unique<io::File>(entry->path, data);
 }
@@ -127,18 +136,18 @@ TEST_CASE("Recursive unpacking with nested files", "[fmt_core]")
 {
     const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;
-    io::File dummy_file("archive.arc", serialize_file("image.rgb", ""_b));
 
-    std::vector<std::shared_ptr<io::File>> saved_files;
-    const FileSaverCallback saver([&](std::shared_ptr<io::File> saved_file)
-    {
-        saved_file->stream.seek(0);
-        saved_files.push_back(saved_file);
-    });
-    fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
+    const auto arc_content = make_archive(
+        {
+            tests::stub_file("image.rgb", "discard"_b),
+        });
+
+    io::File dummy_file("archive.arc", arc_content);
+
+    const auto saved_files = tests::flow_unpack(*registry, true, dummy_file);
     REQUIRE(saved_files.size() == 1);
-    REQUIRE(saved_files[0]->path == io::path("image.png"));
-    REQUIRE(saved_files[0]->stream.read_to_eof() == "image"_b);
+    tests::compare_paths(saved_files[0]->path, "archive.arc/image.png");
+    REQUIRE(saved_files[0]->stream.read_to_eof() == "decoded_image"_b);
 }
 
 TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
@@ -146,56 +155,52 @@ TEST_CASE("Recursive unpacking with nested archives", "[fmt_core]")
     const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;
 
-    io::MemoryStream nested_arc_stream;
-    nested_arc_stream.write(serialize_file("nested/text.txt", "text"_b));
-    nested_arc_stream.write(serialize_file("nested/image.rgb", "discard"_b));
-    nested_arc_stream.seek(0);
-    const auto nested_arc_content = nested_arc_stream.read_to_eof();
+    const auto inner_arc_content = make_archive(
+        {
+            tests::stub_file("nested/image.rgb", "discard"_b),
+            tests::stub_file("nested/text.txt", "text"_b),
+        });
 
-    io::File dummy_file(
-        "archive.arc", serialize_file("archive.arc", nested_arc_content));
+    const auto outer_arc_content = make_archive(
+        {
+            tests::stub_file("inner.arc", inner_arc_content),
+        });
 
-    std::vector<std::shared_ptr<io::File>> saved_files;
-    const FileSaverCallback saver([&](std::shared_ptr<io::File> saved_file)
-    {
-        saved_file->stream.seek(0);
-        saved_files.push_back(saved_file);
-    });
-    fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
+    io::File dummy_file("outer.arc", outer_arc_content);
 
+    const auto saved_files = tests::flow_unpack(*registry, true, dummy_file);
     REQUIRE(saved_files.size() == 2);
-    REQUIRE(saved_files[0]->path == io::path("archive.arc/nested/text.txt"));
-    REQUIRE(saved_files[1]->path == io::path("archive.arc/nested/image.png"));
+    tests::compare_paths(
+        saved_files[0]->path, "outer.arc/inner.arc/nested/text.txt");
+    tests::compare_paths(
+        saved_files[1]->path, "outer.arc/inner.arc/nested/image.png");
     REQUIRE(saved_files[0]->stream.read_to_eof() == "text"_b);
-    REQUIRE(saved_files[1]->stream.read_to_eof() == "image"_b);
+    REQUIRE(saved_files[1]->stream.read_to_eof() == "decoded_image"_b);
 }
 
 TEST_CASE(
     "Non-recursive unpacking doesn't execute child decoders", "[fmt_core]")
 {
     const auto registry = create_registry();
-    TestArchiveDecoder archive_decoder;
 
-    io::MemoryStream nested_arc_stream;
-    nested_arc_stream.write(serialize_file("nested/text", "text"_b));
-    nested_arc_stream.write(serialize_file("nested/image", "keep"_b));
-    nested_arc_stream.seek(0);
-    const auto nested_arc_content = nested_arc_stream.read_to_eof();
+    const auto inner_arc_content = make_archive(
+        {
+            tests::stub_file("nested/unknown.txt", "text"_b),
+            tests::stub_file("nested/image.rgb", "keep"_b),
+        });
 
-    io::File dummy_file(
-        "archive.arc", serialize_file("archive.arc", nested_arc_content));
+    const auto outer_arc_content = make_archive(
+        {
+            tests::stub_file("inner.arc", inner_arc_content),
+        });
 
-    std::vector<std::shared_ptr<io::File>> saved_files;
-    const FileSaverCallback saver([&](std::shared_ptr<io::File> saved_file)
-    {
-        saved_file->stream.seek(0);
-        saved_files.push_back(saved_file);
-    });
-    fmt::unpack_non_recursive({}, archive_decoder, dummy_file, saver);
+    io::File dummy_file("outer.arc", outer_arc_content);
+
+    const auto saved_files = tests::flow_unpack(*registry, false, dummy_file);
 
     REQUIRE(saved_files.size() == 1);
-    REQUIRE(saved_files[0]->path == io::path("archive.arc"));
-    REQUIRE(saved_files[0]->stream.read_to_eof() == nested_arc_content);
+    tests::compare_paths(saved_files[0]->path, "outer.arc/inner.arc");
+    REQUIRE(saved_files[0]->stream.read_to_eof() == inner_arc_content);
 }
 
 TEST_CASE(
@@ -205,12 +210,12 @@ TEST_CASE(
     auto registry = Registry::create_mock();
     registry->add_decoder(
         "test/test-archive",
-        []() { return std::make_unique<TestArchiveDecoder>(); });
+        []() { return std::make_shared<TestArchiveDecoder>(); });
     registry->add_decoder(
-        "test/test-file",
+        "test/test-image",
         [&]()
         {
-            auto decoder = std::make_unique<TestFileDecoder>();
+            auto decoder = std::make_shared<TestFileDecoder>();
             decoder->recognition_callback = [&](io::File &f)
                 { paths_for_recognition.push_back(f.path); };
             decoder->conversion_callback = [&](io::File &f)
@@ -218,25 +223,31 @@ TEST_CASE(
             return decoder;
         });
 
-    TestArchiveDecoder archive_decoder;
-    io::MemoryStream nested_arc_stream;
-    nested_arc_stream.write(serialize_file("nested/test.image", ""_b));
-    nested_arc_stream.seek(0);
-    const auto nested_arc_content = nested_arc_stream.read_to_eof();
+    const auto inner_arc_content = make_archive(
+        {
+            tests::stub_file("nested/test.rgb", ""_b),
+        });
 
-    io::File dummy_file(
-        "fs/archive", serialize_file("archive.arc", nested_arc_content));
+    const auto outer_arc_content = make_archive(
+        {
+            tests::stub_file("inner.arc", inner_arc_content),
+        });
 
-    const FileSaverCallback saver([](std::shared_ptr<io::File>) { });
-    fmt::unpack_recursive({}, archive_decoder, dummy_file, saver, *registry);
+    io::File dummy_file("outer.arc", outer_arc_content);
 
-    REQUIRE(paths_for_recognition.size() == 3);
-    REQUIRE(paths_for_recognition[0] == io::path("archive.arc"));
-    REQUIRE(paths_for_recognition[1]
-        == io::path("archive.arc/nested/test.image"));
-    REQUIRE(paths_for_recognition[2]
-        == io::path("archive.arc/nested/test.png"));
+    const auto saved_files = tests::flow_unpack(*registry, true, dummy_file);
+    REQUIRE(paths_for_recognition.size() == 4);
+    tests::compare_paths(paths_for_recognition[0], "outer.arc");
+    tests::compare_paths(
+        paths_for_recognition[1], "outer.arc/inner.arc");
+    tests::compare_paths(
+        paths_for_recognition[2], "outer.arc/inner.arc/nested/test.rgb");
+    tests::compare_paths(
+        paths_for_recognition[3], "outer.arc/inner.arc/nested/test.rgb");
     REQUIRE(paths_for_conversion.size() == 1);
-    REQUIRE(paths_for_conversion[0]
-        == io::path("archive.arc/nested/test.image"));
+    tests::compare_paths(
+        paths_for_conversion[0], "outer.arc/inner.arc/nested/test.rgb");
+    REQUIRE(saved_files.size() == 1);
+    tests::compare_paths(
+        saved_files[0]->path, "outer.arc/inner.arc/nested/test.png");
 }

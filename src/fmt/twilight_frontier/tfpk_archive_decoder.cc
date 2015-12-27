@@ -356,8 +356,8 @@ bool TfpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return version == 0 || version == 1;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    TfpkArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
 
@@ -433,6 +433,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> TfpkArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -445,58 +446,6 @@ std::unique_ptr<io::File> TfpkArchiveDecoder::read_file_impl(
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
-}
-
-void TfpkArchiveDecoder::preprocess(
-    io::File &input_file, fmt::ArchiveMeta &m, const FileSaver &saver) const
-{
-    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-
-    TfbmImageDecoder tfbm_image_decoder;
-    auto dir = input_file.path.parent();
-    for (const auto &path : io::directory_range(dir))
-    {
-        if (!io::is_regular_file(path))
-            continue;
-        if (!path.has_extension("pak"))
-            continue;
-
-        io::File other_input_file(path, io::FileMode::Read);
-        if (!is_recognized(other_input_file))
-            continue;
-
-        auto meta = read_meta(other_input_file);
-        for (auto &entry : meta->entries)
-        {
-            if (entry->path.stem().find("palette") == std::string::npos)
-                continue;
-            auto pal_file = read_file(other_input_file, *meta, *entry);
-            tfbm_image_decoder.add_palette(
-                entry->path, pal_file->stream.seek(0).read_to_eof());
-        }
-    }
-
-    static const bstr tfbm_magic = "TFBM"_b;
-    for (auto &e : meta->entries)
-    {
-        auto entry = static_cast<ArchiveEntryImpl*>(e.get());
-        auto chunk = read_file_content(
-            input_file, *meta, *entry, tfbm_magic.size());
-        if (chunk != tfbm_magic)
-            continue;
-
-        io::File full_file(entry->path, read_file_content(
-            input_file, *meta, *entry, entry->size));
-        try
-        {
-            auto image = tfbm_image_decoder.decode(full_file);
-            saver.save(util::file_from_image(image, entry->path));
-            entry->already_unpacked = true;
-        }
-        catch (...)
-        {
-        }
-    }
 }
 
 std::vector<std::string> TfpkArchiveDecoder::get_linked_formats() const

@@ -9,18 +9,17 @@ namespace fmt {
     class AudioDecoder : public BaseDecoder
     {
     public:
-        virtual ~AudioDecoder();
-
-        void unpack(
-            io::File &input_file,
-            const FileSaver &file_saver) const override;
+        virtual ~AudioDecoder() { }
 
         NamingStrategy naming_strategy() const override;
 
-        res::Audio decode(io::File &input_file) const;
+        void accept(IDecoderVisitor &visitor) const override;
+
+        res::Audio decode(const Logger &logger, io::File &input_file) const;
 
     protected:
-        virtual res::Audio decode_impl(io::File &input_file) const = 0;
+        virtual res::Audio decode_impl(
+            const Logger &logger, io::File &input_file) const = 0;
     };
 
 } }

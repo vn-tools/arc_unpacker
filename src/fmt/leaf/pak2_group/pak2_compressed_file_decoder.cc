@@ -62,7 +62,7 @@ bool Pak2CompressedFileDecoder::is_recognized_impl(io::File &input_file) const
 }
 
 std::unique_ptr<io::File> Pak2CompressedFileDecoder::decode_impl(
-    io::File &input_file) const
+    const Logger &logger, io::File &input_file) const
 {
     const auto size_orig = input_file.stream.seek(24).read_u32_le();
     const auto data = input_file.stream.seek(36).read_to_eof();

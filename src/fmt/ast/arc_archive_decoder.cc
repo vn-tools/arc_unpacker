@@ -39,8 +39,8 @@ bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic2.size()) == magic2;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    ArcArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
 
@@ -71,6 +71,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

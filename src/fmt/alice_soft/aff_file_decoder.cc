@@ -16,7 +16,7 @@ bool AffFileDecoder::is_recognized_impl(io::File &input_file) const
 }
 
 std::unique_ptr<io::File> AffFileDecoder::decode_impl(
-    io::File &input_file) const
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
     const auto size = input_file.stream.read_u32_le();

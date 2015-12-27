@@ -1,5 +1,4 @@
 #include "fmt/vorbis/packed_ogg_audio_decoder.h"
-#include "log.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -28,7 +27,6 @@ TEST_CASE("Vorbis packed OGG audio", "[fmt]")
 
     SECTION("Early EOF")
     {
-        Log.mute();
         do_test("90WIF020_001.WAV", "90WIF020_001-out.ogg");
     }
 }

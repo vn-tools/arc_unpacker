@@ -11,7 +11,8 @@ bool MncImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image MncImageDecoder::decode_impl(io::File &input_file) const
+res::Image MncImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto offset_to_pixels = input_file.stream.read_u32_le();

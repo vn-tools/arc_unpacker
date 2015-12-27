@@ -2,7 +2,6 @@
 
 #include <memory>
 #include "io/file.h"
-#include "io/path.h"
 
 namespace au {
 
@@ -10,7 +9,7 @@ namespace au {
     {
     public:
         virtual ~FileSaver() { }
-        virtual void save(std::shared_ptr<io::File> file) const = 0;
+        virtual io::path save(std::shared_ptr<io::File> file) const = 0;
     };
 
     class FileSaverHdd final : public FileSaver
@@ -19,7 +18,7 @@ namespace au {
         FileSaverHdd(const io::path &output_dir, const bool overwrite);
         ~FileSaverHdd();
 
-        void save(std::shared_ptr<io::File> file) const override;
+        io::path save(std::shared_ptr<io::File> file) const override;
 
     private:
         struct Priv;
@@ -36,7 +35,7 @@ namespace au {
         ~FileSaverCallback();
 
         void set_callback(FileSaveCallback callback);
-        void save(std::shared_ptr<io::File> file) const override;
+        io::path save(std::shared_ptr<io::File> file) const override;
 
     private:
         struct Priv;

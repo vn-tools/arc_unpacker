@@ -11,7 +11,8 @@ bool CwdImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
-res::Image CwdImageDecoder::decode_impl(io::File &input_file) const
+res::Image CwdImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     const auto key = input_file.stream.seek(0x34).read_u8() + 0x259A;
     const auto width = input_file.stream.seek(0x2C).read_u32_le() + key;

@@ -6,7 +6,6 @@
 #include "fmt/shiina_rio/warc/decrypt.h"
 #include "fmt/shiina_rio/warc/plugin_registry.h"
 #include "io/memory_stream.h"
-#include "log.h"
 
 using namespace au;
 using namespace au::fmt::shiina_rio;
@@ -67,8 +66,8 @@ bool WarcArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    WarcArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> WarcArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     const auto plugin = p->plugin_registry.get_plugin();
     if (!plugin)
@@ -117,6 +116,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -169,7 +169,7 @@ std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
 
     if (entry->suspicious)
     {
-        Log.warn(
+        logger.warn(
             "Suspicious entry: %s (anti-extract decoy?)\n",
             entry->path.c_str());
     }

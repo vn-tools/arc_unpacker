@@ -61,8 +61,8 @@ bool TacArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return read_version(input_file.stream) != Version::Unknown;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    TacArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto version = read_version(input_file.stream);
     input_file.stream.skip(8);
@@ -118,6 +118,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> TacArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

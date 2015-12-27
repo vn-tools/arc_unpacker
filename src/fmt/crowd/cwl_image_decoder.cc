@@ -14,7 +14,8 @@ bool CwlImageDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.path.has_extension("cwl");
 }
 
-res::Image CwlImageDecoder::decode_impl(io::File &input_file) const
+res::Image CwlImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(10);
     const auto size_orig = input_file.stream.read_u32_le();
@@ -26,7 +27,7 @@ res::Image CwlImageDecoder::decode_impl(io::File &input_file) const
 
     const fmt::crowd::CwdImageDecoder cwd_decoder;
     io::File cwd_file("dummy.cwd", data);
-    return cwd_decoder.decode(cwd_file);
+    return cwd_decoder.decode(logger, cwd_file);
 }
 
 static auto dummy = fmt::register_fmt<CwlImageDecoder>("crowd/cwl");

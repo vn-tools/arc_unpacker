@@ -22,8 +22,8 @@ bool BidArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return last_file_offset + last_file_size == input_file.stream.size();
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    BidArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> BidArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
     u32 data_start = input_file.stream.read_u32_le();
@@ -40,6 +40,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> BidArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

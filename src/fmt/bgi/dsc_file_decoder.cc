@@ -145,7 +145,7 @@ bool DscFileDecoder::is_recognized_impl(io::File &input_file) const
 }
 
 std::unique_ptr<io::File> DscFileDecoder::decode_impl(
-    io::File &input_file) const
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     auto key = input_file.stream.read_u32_le();

@@ -158,7 +158,7 @@ class NonFinalObjectsCheck(Check):
             or '_struct' in line # false positives I
             or 'pngstruct' in line # false positives II
             or 'enum class' in line # false positives III
-            or re.search('(class|struct) (Abstract|I)[A-Z]', line)
+            or re.search('(class|struct) (Abstract|Base|I)[A-Z]', line)
             or re.search('template<(class|struct)', line)): continue
 
             # exceptions for core classes
@@ -166,7 +166,7 @@ class NonFinalObjectsCheck(Check):
             or re.search('(class|struct) FileSaver', line) and 'file_saver.h' in file.name
             or re.search('(class|struct) (Switch|Flag|Option)', line) and 'arg_parser.' in file.name
             or re.search('(class|struct) Archive(Entry|Meta)', line) and 'archive_decoder.h' in file.name
-            or re.search('(class|struct) (Base|Archive|File|Image|Audio)Decoder', line)
+            or re.search('(class|struct) (Archive|File|Image|Audio)Decoder', line)
             or re.search('(class|struct) Stream', line) and 'stream.h' in file.name): continue
 
             yield Problem(file, 'Use "final" where possible', i, line)

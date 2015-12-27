@@ -11,7 +11,8 @@ bool PgaImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image PgaImageDecoder::decode_impl(io::File &input_file) const
+res::Image PgaImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     const auto png_data = input_file.stream
         .seek(magic.size())
@@ -26,7 +27,7 @@ res::Image PgaImageDecoder::decode_impl(io::File &input_file) const
     png_file.stream.write(png_data);
 
     const fmt::png::PngImageDecoder png_decoder;
-    return png_decoder.decode(png_file);
+    return png_decoder.decode(logger, png_file);
 }
 
 static auto dummy = fmt::register_fmt<PgaImageDecoder>("sysadv/pga");

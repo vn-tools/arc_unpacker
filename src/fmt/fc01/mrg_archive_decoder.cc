@@ -46,8 +46,8 @@ bool MrgArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    MrgArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> MrgArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
     const auto table_size = input_file.stream.read_u32_le() - 12 - magic.size();
@@ -88,6 +88,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> MrgArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

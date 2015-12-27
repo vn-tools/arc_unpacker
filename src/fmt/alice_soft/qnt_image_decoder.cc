@@ -117,7 +117,8 @@ bool QntImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image QntImageDecoder::decode_impl(io::File &input_file) const
+res::Image QntImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     Version version = static_cast<Version>(input_file.stream.read_u32_le());

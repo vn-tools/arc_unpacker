@@ -2,7 +2,6 @@
 #include "algo/format.h"
 #include "algo/range.h"
 #include "err.h"
-#include "log.h"
 
 using namespace au;
 
@@ -241,19 +240,21 @@ static std::string format_switch_help(const SwitchImpl &sw, bool force)
     return out;
 }
 
-static void print_switches(const std::vector<SwitchImpl*> &switches)
+static void print_switches(
+    const Logger &logger, const std::vector<SwitchImpl*> &switches)
 {
     for (const auto &sw : switches)
-        Log.info(format_switch_help(*sw, false));
+        logger.info(format_switch_help(*sw, false));
 }
 
 static void print_options(
+    const Logger &logger,
     const std::vector<std::unique_ptr<OptionImpl>> &options)
 {
     std::vector<std::pair<std::string, std::string>> dict;
     for (const auto &opt : options)
         dict.push_back({opt->get_invocation_help(), opt->description});
-    Log.info(format_dictionary_as_list("", dict));
+    logger.info(format_dictionary_as_list("", dict));
 }
 
 struct ArgParser::Priv final
@@ -389,15 +390,15 @@ const std::vector<std::string> ArgParser::get_stray() const
     return p->stray;
 }
 
-void ArgParser::print_help() const
+void ArgParser::print_help(const Logger &logger) const
 {
     if (!p->options.size())
     {
-        Log.info("No additional switches are available.\n");
+        logger.info("No additional switches are available.\n");
         return;
     }
 
-    print_options(p->options);
-    print_switches(p->switches);
-    Log.info("\n");
+    print_options(logger, p->options);
+    print_switches(logger, p->switches);
+    logger.info("\n");
 }

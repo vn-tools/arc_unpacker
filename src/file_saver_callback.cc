@@ -31,7 +31,8 @@ void FileSaverCallback::set_callback(FileSaveCallback callback)
     p->callback = callback;
 }
 
-void FileSaverCallback::save(std::shared_ptr<io::File> file) const
+io::path FileSaverCallback::save(std::shared_ptr<io::File> file) const
 {
     p->callback(file);
+    return file->path;
 }

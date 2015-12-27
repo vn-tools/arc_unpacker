@@ -142,7 +142,8 @@ static bstr decompress_vsp(io::Stream &input, size_t width, size_t height)
     return output;
 }
 
-res::Image VspImageDecoder::decode_impl(io::File &input_file) const
+res::Image VspImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto x = input_file.stream.read_u16_le();
     auto y = input_file.stream.read_u16_le();

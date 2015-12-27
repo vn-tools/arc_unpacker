@@ -117,8 +117,8 @@ bool Tha1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return header_stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    Tha1ArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> Tha1ArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto header_data = input_file.stream.read(16);
     header_data = decrypt(header_data, {0x1B, 0x37, 0x10, 0x400});
@@ -167,6 +167,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Tha1ArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

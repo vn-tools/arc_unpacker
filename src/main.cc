@@ -1,22 +1,22 @@
-#include "arc_unpacker.h"
 #include "entry_point.h"
+#include "flow/cli_facade.h"
 #include "io/program_path.h"
-#include "log.h"
+#include "logger.h"
 
 using namespace au;
 
 ENTRY_POINT(
+    Logger logger;
     try
     {
         io::set_program_path_from_arg(arguments[0]);
         arguments.erase(arguments.begin());
-        ArcUnpacker arc_unpacker(arguments);
-
-        return arc_unpacker.run();
+        flow::CliFacade cli_facade(logger, arguments);
+        return cli_facade.run();
     }
     catch (std::exception &e)
     {
-        Log.err("Error: " + std::string(e.what()) + "\n");
+        logger.err("Error: " + std::string(e.what()) + "\n");
         return 1;
     }
 )

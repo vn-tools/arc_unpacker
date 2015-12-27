@@ -1,15 +1,20 @@
 #include "file_saver.h"
+#include <mutex>
 #include <set>
 #include "algo/format.h"
 #include "io/file_stream.h"
 #include "io/file_system.h"
-#include "log.h"
 
 using namespace au;
 
+static std::mutex mutex;
+
 struct FileSaverHdd::Priv final
 {
-    Priv(const io::path &output_dir, const bool overwrite);
+    Priv(
+        const io::path &output_dir,
+        const bool overwrite);
+
     io::path make_path_unique(const io::path &path);
 
     io::path output_dir;
@@ -35,7 +40,8 @@ io::path FileSaverHdd::Priv::make_path_unique(const io::path &path)
     return new_path;
 }
 
-FileSaverHdd::FileSaverHdd(const io::path &output_dir, const bool overwrite)
+FileSaverHdd::FileSaverHdd(
+    const io::path &output_dir, const bool overwrite)
     : p(new Priv(output_dir, overwrite))
 {
 }
@@ -44,21 +50,12 @@ FileSaverHdd::~FileSaverHdd()
 {
 }
 
-void FileSaverHdd::save(std::shared_ptr<io::File> file) const
+io::path FileSaverHdd::save(std::shared_ptr<io::File> file) const
 {
-    try
-    {
-        const auto full_path = p->make_path_unique(p->output_dir / file->path);
-
-        Log.info("Saving to " + full_path.str() + "... ");
-        io::create_directories(full_path.parent());
-        io::FileStream output_stream(full_path, io::FileMode::Write);
-        output_stream.write(file->stream.seek(0).read_to_eof());
-        Log.success("ok\n");
-    }
-    catch (std::runtime_error &e)
-    {
-        Log.err("error (%s)\n", e.what() ? e.what() : "unknown error");
-    }
-    Log.flush();
+    std::unique_lock<std::mutex> lock(mutex);
+    const auto full_path = p->make_path_unique(p->output_dir / file->path);
+    io::create_directories(full_path.parent());
+    io::FileStream output_stream(full_path, io::FileMode::Write);
+    output_stream.write(file->stream.seek(0).read_to_eof());
+    return full_path;
 }

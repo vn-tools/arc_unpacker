@@ -37,8 +37,8 @@ bool Pak1AudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.eof();
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    Pak1AudioArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> Pak1AudioArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto file_count = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
@@ -66,6 +66,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Pak1AudioArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

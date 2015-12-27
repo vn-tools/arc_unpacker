@@ -27,8 +27,8 @@ bool Nekopack4ArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    Nekopack4ArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> Nekopack4ArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     auto table_size = input_file.stream.read_u32_le();
@@ -53,6 +53,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Nekopack4ArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
@@ -78,48 +79,9 @@ std::unique_ptr<io::File> Nekopack4ArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
-void Nekopack4ArchiveDecoder::preprocess(
-    io::File &input_file,
-    fmt::ArchiveMeta &meta,
-    const FileSaver &file_saver) const
+std::vector<std::string> Nekopack4ArchiveDecoder::get_linked_formats() const
 {
-    // apply image masks to original sprites
-    std::map<std::string, ArchiveEntryImpl*> mask_entries, sprite_entries;
-    for (auto &entry : meta.entries)
-    {
-        auto fn = entry->path.stem();
-        if (entry->path.has_extension("alp"))
-            mask_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
-        else if (entry->path.has_extension("bmp"))
-            sprite_entries[fn] = static_cast<ArchiveEntryImpl*>(entry.get());
-    }
-
-    fmt::microsoft::BmpImageDecoder bmp_image_decoder;
-    for (auto it : sprite_entries)
-    {
-        try
-        {
-            auto sprite_entry = it.second;
-            auto mask_entry = mask_entries.at(it.first);
-            auto sprite_file = read_file(input_file, meta, *sprite_entry);
-            auto mask_file = read_file(input_file, meta, *mask_entry);
-            mask_file->stream.seek(0);
-            auto sprite = bmp_image_decoder.decode(*sprite_file);
-            res::Image mask(
-                sprite.width(),
-                sprite.height(),
-                mask_file->stream,
-                res::PixelFormat::Gray8);
-            sprite.apply_mask(mask);
-            sprite_entry->already_unpacked = true;
-            mask_entry->already_unpacked = true;
-            file_saver.save(util::file_from_image(sprite, sprite_entry->path));
-        }
-        catch (...)
-        {
-            continue;
-        }
-    }
+    return {"nekopack/masked-bmp"};
 }
 
 static auto dummy = fmt::register_fmt<Nekopack4ArchiveDecoder>(

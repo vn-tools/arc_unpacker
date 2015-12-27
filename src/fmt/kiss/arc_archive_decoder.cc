@@ -19,7 +19,9 @@ bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("arc"))
         return false;
-    const auto meta = read_meta_impl(input_file);
+    Logger dummy_logger;
+    dummy_logger.mute();
+    const auto meta = read_meta_impl(dummy_logger, input_file);
     if (meta->entries.empty())
         return false;
     const auto last_entry
@@ -27,8 +29,8 @@ bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return last_entry->size + last_entry->offset == input_file.stream.size();
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    ArcArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto file_count = input_file.stream.read_u32_le();
@@ -53,6 +55,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

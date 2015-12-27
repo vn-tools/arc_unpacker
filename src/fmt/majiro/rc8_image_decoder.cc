@@ -64,7 +64,8 @@ bool Rc8ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image Rc8ImageDecoder::decode_impl(io::File &input_file) const
+res::Image Rc8ImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 

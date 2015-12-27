@@ -10,7 +10,8 @@ bool BbmImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.has_extension("bbm");
 }
 
-res::Image BbmImageDecoder::decode_impl(io::File &input_file) const
+res::Image BbmImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
     const auto total_width = input_file.stream.read_u16_le();

@@ -19,8 +19,8 @@ bool BinArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.has_extension("bin");
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    BinArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> BinArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     size_t file_count = input_file.stream.read_u32_le();
     input_file.stream.skip(4);
@@ -44,6 +44,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> BinArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

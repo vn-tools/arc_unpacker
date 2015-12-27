@@ -69,7 +69,8 @@ bool WbmImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image WbmImageDecoder::decode_impl(io::File &input_file) const
+res::Image WbmImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     wpx::Decoder decoder(input_file.stream);
 

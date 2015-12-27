@@ -67,7 +67,8 @@ static std::vector<std::unique_ptr<Region>> read_regions(
     return regions;
 }
 
-static res::Image decode_png(io::File &input_file, Header &header)
+static res::Image decode_png(
+    const Logger &logger, io::File &input_file, Header &header)
 {
     input_file.stream.seek(header.data_offset);
     bstr data = input_file.stream.read(header.data_size);
@@ -84,7 +85,7 @@ static res::Image decode_png(io::File &input_file, Header &header)
 
     io::File png_file(input_file.path, data);
     const fmt::png::PngImageDecoder png_image_decoder;
-    return png_image_decoder.decode(png_file);
+    return png_image_decoder.decode(logger, png_file);
 }
 
 bool YkgImageDecoder::is_recognized_impl(io::File &input_file) const
@@ -92,7 +93,8 @@ bool YkgImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image YkgImageDecoder::decode_impl(io::File &input_file) const
+res::Image YkgImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -104,7 +106,7 @@ res::Image YkgImageDecoder::decode_impl(io::File &input_file) const
     }
 
     read_regions(input_file.stream, *header);
-    return decode_png(input_file, *header);
+    return decode_png(logger, input_file, *header);
 }
 
 static auto dummy = fmt::register_fmt<YkgImageDecoder>("yuka-script/ykg");

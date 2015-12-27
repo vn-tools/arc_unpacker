@@ -14,11 +14,14 @@ namespace png {
 
         using ImageDecoder::decode;
         res::Image decode(
-            io::File &input_file, ChunkHandler chunk_handler) const;
+            const Logger &logger,
+            io::File &input_file,
+            ChunkHandler chunk_handler) const;
 
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
-        res::Image decode_impl(io::File &input_file) const override;
+        res::Image decode_impl(
+            const Logger &logger, io::File &input_file) const override;
     };
 
 } } }

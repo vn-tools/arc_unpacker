@@ -3,7 +3,6 @@
 #include "algo/locale.h"
 #include "algo/range.h"
 #include "err.h"
-#include "log.h"
 
 using namespace au;
 using namespace au::fmt::microsoft;
@@ -178,12 +177,17 @@ namespace
     struct ResourceCrawlerArgs final
     {
         ResourceCrawlerArgs(
-            io::Stream &, fmt::ArchiveMeta &, const RvaHelper &, size_t);
+            const Logger &logger,
+            const RvaHelper &rva_helper,
+            const size_t base_offset,
+            io::Stream &input_stream,
+            fmt::ArchiveMeta &meta);
 
-        io::Stream &stream;
-        fmt::ArchiveMeta &meta;
+        const Logger &logger;
         const RvaHelper &rva_helper;
-        size_t base_offset;
+        const size_t base_offset;
+        io::Stream &input_stream;
+        fmt::ArchiveMeta &meta;
     };
 
     class ResourceCrawler final
@@ -387,11 +391,16 @@ u32 RvaHelper::adjust_section_alignment(u32 offset) const
 }
 
 ResourceCrawlerArgs::ResourceCrawlerArgs(
-    io::Stream &stream,
-    fmt::ArchiveMeta &meta,
+    const Logger &logger,
     const RvaHelper &helper,
-    size_t base_offset)
-    : stream(stream), meta(meta), rva_helper(helper), base_offset(base_offset)
+    const size_t base_offset,
+    io::Stream &input_stream,
+    fmt::ArchiveMeta &meta) :
+        logger(logger),
+        rva_helper(helper),
+        base_offset(base_offset),
+        input_stream(input_stream),
+        meta(meta)
 {
 }
 
@@ -405,18 +414,18 @@ ResourceCrawler::ResourceCrawler(const ResourceCrawlerArgs &args) : args(args)
 {
 }
 
-void ResourceCrawler::process_dir(size_t offset, const std::string path)
+void ResourceCrawler::process_dir(const size_t offset, const std::string path)
 {
-    args.stream.seek(args.base_offset + offset);
-    ImageResourceDir dir(args.stream);
+    args.input_stream.seek(args.base_offset + offset);
+    ImageResourceDir dir(args.input_stream);
     size_t entry_count = dir.number_of_named_entries + dir.number_of_id_entries;
     for (auto i : algo::range(entry_count))
     {
-        ImageResourceDirEntry entry(args.stream);
+        ImageResourceDirEntry entry(args.input_stream);
 
         try
         {
-            args.stream.peek(args.stream.tell(), [&]()
+            args.input_stream.peek(args.input_stream.tell(), [&]()
             {
                 std::string entry_path = read_entry_name(entry);
                 if (path != "")
@@ -430,7 +439,7 @@ void ResourceCrawler::process_dir(size_t offset, const std::string path)
         }
         catch (std::exception &e)
         {
-            Log.err(algo::format(
+            args.logger.err(algo::format(
                 "Can't read resource entry located at 0x%08x (%s)\n",
                 args.base_offset + entry.offset_to_data,
                 e.what()));
@@ -440,8 +449,8 @@ void ResourceCrawler::process_dir(size_t offset, const std::string path)
 
 void ResourceCrawler::process_entry(size_t offset, const std::string &path)
 {
-    args.stream.seek(args.base_offset + offset);
-    ImageResourceDataEntry resource_entry(args.stream);
+    args.input_stream.seek(args.base_offset + offset);
+    ImageResourceDataEntry resource_entry(args.input_stream);
 
     auto entry = std::make_unique<ArchiveEntryImpl>();
     entry->path = path;
@@ -455,9 +464,9 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
 {
     if (entry.name_is_string)
     {
-        args.stream.seek(args.base_offset + entry.name_offset);
-        size_t max_size = args.stream.read_u16_le();
-        bstr name_utf16 = args.stream.read(max_size * 2);
+        args.input_stream.seek(args.base_offset + entry.name_offset);
+        size_t max_size = args.input_stream.read_u16_le();
+        bstr name_utf16 = args.input_stream.read(max_size * 2);
         return algo::utf16_to_utf8(name_utf16).str();
     }
 
@@ -493,8 +502,8 @@ bool ExeArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return dos_header.magic == "MZ"_b;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    ExeArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> ExeArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     DosHeader dos_header(input_file.stream);
     input_file.stream.seek(dos_header.e_lfanew);
@@ -518,12 +527,13 @@ std::unique_ptr<fmt::ArchiveMeta>
     auto resource_dir = data_dirs[2];
     size_t base_offset = rva_helper.rva_to_offset(resource_dir.virtual_address);
     auto meta = std::make_unique<ArchiveMeta>();
-    ResourceCrawler::crawl(
-        ResourceCrawlerArgs(input_file.stream, *meta, rva_helper, base_offset));
+    ResourceCrawler::crawl(ResourceCrawlerArgs(
+        logger, rva_helper, base_offset, input_file.stream, *meta));
     return meta;
 }
 
 std::unique_ptr<io::File> ExeArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

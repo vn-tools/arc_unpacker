@@ -13,12 +13,15 @@ bool CustomPngImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image CustomPngImageDecoder::decode_impl(io::File &input_file) const
+res::Image CustomPngImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     fmt::png::PngImageDecoder decoder;
     std::map<std::string, bstr> chunks;
     auto image = decoder.decode(
-        input_file, [&](const std::string &name, const bstr &data)
+        logger,
+        input_file,
+        [&](const std::string &name, const bstr &data)
         {
             chunks[name] = data;
         });

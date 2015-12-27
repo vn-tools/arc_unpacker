@@ -11,7 +11,7 @@ bool BgmAudioDecoder::is_recognized_impl(io::File &input_file) const
 }
 
 std::unique_ptr<io::File> BgmAudioDecoder::decode_impl(
-    io::File &input_file) const
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
 

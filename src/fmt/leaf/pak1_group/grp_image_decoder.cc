@@ -1,5 +1,6 @@
 #include "fmt/leaf/pak1_group/grp_image_decoder.h"
 #include "algo/range.h"
+#include "util/virtual_file_system.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -52,12 +53,15 @@ bool GrpImageDecoder::is_recognized_impl(io::File &input_file) const
     return detect_version(input_file) > 0;
 }
 
-res::Image GrpImageDecoder::decode(
-    io::File &input_file,
-    std::shared_ptr<io::File> palette_file,
-    std::shared_ptr<io::File> mask_file) const
+res::Image GrpImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     auto image = decode_image(input_file);
+    const auto mask_file = util::VirtualFileSystem::get_by_name(
+        io::path(input_file.path).change_extension("msk").name());
+    const auto palette_file = util::VirtualFileSystem::get_by_name(
+        io::path(input_file.path).change_extension("c16").name());
+
     if (palette_file)
     {
         const auto palette = decode_palette(*palette_file);
@@ -73,11 +77,6 @@ res::Image GrpImageDecoder::decode(
             image.width(), image.height(), mask_data, res::PixelFormat::Gray8));
     }
     return image;
-}
-
-res::Image GrpImageDecoder::decode_impl(io::File &input_file) const
-{
-    return decode_image(input_file);
 }
 
 static auto dummy = fmt::register_fmt<GrpImageDecoder>("leaf/grp");

@@ -16,7 +16,9 @@ namespace
 
 bool PArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    auto meta = read_meta(input_file);
+    Logger dummy_logger;
+    dummy_logger.mute();
+    auto meta = read_meta(dummy_logger, input_file);
     if (!meta->entries.size())
         return false;
     auto last_entry = static_cast<ArchiveEntryImpl*>(
@@ -24,8 +26,8 @@ bool PArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return last_entry->offset + last_entry->size == input_file.stream.size();
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    PArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> PArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     static const u32 encryption_key = 0xE3DF59AC;
     input_file.stream.seek(0);
@@ -49,6 +51,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> PArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

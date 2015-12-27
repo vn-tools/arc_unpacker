@@ -33,8 +33,8 @@ bool PakArchiveDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.path.has_extension("pak");
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    PakArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     io::FileStream index_stream(
         get_path_to_index(input_file.path), io::FileMode::Read);
@@ -68,6 +68,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> PakArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

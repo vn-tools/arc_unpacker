@@ -4,6 +4,7 @@
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
 #include "util/file_from_image.h"
+#include "util/virtual_file_system.h"
 
 using namespace au;
 using namespace au::fmt::leaf;
@@ -18,17 +19,23 @@ static void do_test(
     const std::string &expected_path)
 {
     const GrpImageDecoder decoder;
-    auto input_file = tests::file_from_path(input_path);
-    auto input_palette_file = palette_path.empty()
-        ? nullptr
-        : tests::file_from_path(palette_path);
-    auto input_mask_file = mask_path.empty()
-        ? nullptr
-        : tests::file_from_path(mask_path);
-    auto expected_file = tests::file_from_path(expected_path);
-
-    const auto actual_image = decoder.decode(
-        *input_file, std::move(input_palette_file), std::move(input_mask_file));
+    const auto input_file = tests::file_from_path(input_path);
+    if (!palette_path.empty())
+    {
+        util::VirtualFileSystem::register_file(palette_path, [&]()
+            {
+                return tests::file_from_path(palette_path);
+            });
+    }
+    if (!mask_path.empty())
+    {
+        util::VirtualFileSystem::register_file(mask_path, [&]()
+            {
+                return tests::file_from_path(mask_path);
+            });
+    }
+    const auto expected_file = tests::file_from_path(expected_path);
+    const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_image);
 }
 

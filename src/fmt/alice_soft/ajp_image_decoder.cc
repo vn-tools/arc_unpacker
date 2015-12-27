@@ -21,7 +21,8 @@ bool AjpImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image AjpImageDecoder::decode_impl(io::File &input_file) const
+res::Image AjpImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
     input_file.stream.skip(4 * 2);
@@ -43,14 +44,14 @@ res::Image AjpImageDecoder::decode_impl(io::File &input_file) const
     fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
     io::File jpeg_file;
     jpeg_file.stream.write(jpeg_data);
-    auto image = jpeg_image_decoder.decode(jpeg_file);
+    auto image = jpeg_image_decoder.decode(logger, jpeg_file);
 
     if (mask_size)
     {
         PmsImageDecoder pms_image_decoder;
         io::File mask_file;
         mask_file.stream.write(mask_data);
-        const auto mask_image = pms_image_decoder.decode(mask_file);
+        const auto mask_image = pms_image_decoder.decode(logger, mask_file);
         image.apply_mask(mask_image);
     }
 

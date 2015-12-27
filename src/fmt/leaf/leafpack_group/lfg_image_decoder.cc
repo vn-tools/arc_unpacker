@@ -64,7 +64,8 @@ bool LfgImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image LfgImageDecoder::decode_impl(io::File &input_file) const
+res::Image LfgImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(32);
     const auto x1 = input_file.stream.read_u16_le();

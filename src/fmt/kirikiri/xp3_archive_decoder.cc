@@ -5,7 +5,6 @@
 #include "err.h"
 #include "fmt/kirikiri/xp3_filter_registry.h"
 #include "io/memory_stream.h"
-#include "log.h"
 
 using namespace au;
 using namespace au::fmt::kirikiri;
@@ -126,7 +125,8 @@ static std::unique_ptr<TimeChunk> read_time_chunk(io::Stream &chunk_stream)
     return time_chunk;
 }
 
-static std::unique_ptr<ArchiveEntryImpl> read_entry(io::Stream &input_stream)
+static std::unique_ptr<ArchiveEntryImpl> read_entry(
+    const Logger &logger, io::Stream &input_stream)
 {
     if (input_stream.read(file_entry_magic.size()) != file_entry_magic)
         throw err::CorruptDataError("Expected FILE entry");
@@ -151,13 +151,13 @@ static std::unique_ptr<ArchiveEntryImpl> read_entry(io::Stream &input_stream)
             entry->time_chunk = read_time_chunk(chunk_stream);
         else
         {
-            Log.warn("Unknown chunk '%s'", chunk_magic.get<char>());
+            logger.warn("Unknown chunk '%s'", chunk_magic.get<char>());
             continue;
         }
 
         if (!chunk_stream.eof())
         {
-            Log.warn(
+            logger.warn(
                 "'%s' chunk contains data beyond EOF\n",
                 chunk_magic.get<char>());
         }
@@ -204,8 +204,8 @@ bool Xp3ArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(xp3_magic.size()) == xp3_magic;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    Xp3ArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> Xp3ArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     const auto version = detect_version(input_file.stream);
     const auto table_offset = get_table_offset(input_file.stream, version);
@@ -227,11 +227,12 @@ std::unique_ptr<fmt::ArchiveMeta>
     p->filter_registry.set_decoder(*meta->filter);
 
     while (table_stream.tell() < table_stream.size())
-        meta->entries.push_back(read_entry(table_stream));
+        meta->entries.push_back(read_entry(logger, table_stream));
     return std::move(meta);
 }
 
 std::unique_ptr<io::File> Xp3ArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

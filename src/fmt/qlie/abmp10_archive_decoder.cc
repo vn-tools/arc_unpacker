@@ -96,8 +96,8 @@ bool Abmp10ArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return guess_version(input_file.stream) >= 0;
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    Abmp10ArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> Abmp10ArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(16);
     auto meta = std::make_unique<ArchiveMeta>();
@@ -127,6 +127,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> Abmp10ArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

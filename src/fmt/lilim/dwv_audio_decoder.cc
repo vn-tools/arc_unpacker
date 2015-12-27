@@ -12,7 +12,8 @@ bool DwvAudioDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
-res::Audio DwvAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio DwvAudioDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 2);
     const auto header_size = input_file.stream.read_u32_le();

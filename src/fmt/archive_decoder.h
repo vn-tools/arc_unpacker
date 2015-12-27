@@ -20,42 +20,31 @@ namespace fmt {
     class ArchiveDecoder : public BaseDecoder
     {
     public:
-        ArchiveDecoder();
-        virtual ~ArchiveDecoder();
-
-        void unpack(
-            io::File &input_file,
-            const FileSaver &file_saver) const override;
+        virtual ~ArchiveDecoder() { }
 
         virtual NamingStrategy naming_strategy() const override;
 
-        void disable_preprocessing();
+        void accept(IDecoderVisitor &visitor) const override;
 
-        virtual std::vector<std::string> get_linked_formats() const;
-
-        std::unique_ptr<ArchiveMeta> read_meta(io::File &input_file) const;
+        std::unique_ptr<ArchiveMeta> read_meta(
+            const Logger &logger, io::File &input_file) const;
 
         std::unique_ptr<io::File> read_file(
+            const Logger &logger,
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const;
 
     protected:
         virtual std::unique_ptr<ArchiveMeta> read_meta_impl(
+            const Logger &logger,
             io::File &input_file) const = 0;
 
         virtual std::unique_ptr<io::File> read_file_impl(
+            const Logger &logger,
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const = 0;
-
-        virtual void preprocess(
-            io::File &input_file,
-            ArchiveMeta &m,
-            const FileSaver &file_saver) const;
-
-    private:
-        bool preprocessing_disabled;
     };
 
 } }

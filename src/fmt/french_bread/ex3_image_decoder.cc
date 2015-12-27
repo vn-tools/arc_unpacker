@@ -13,7 +13,8 @@ bool Ex3ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image Ex3ImageDecoder::decode_impl(io::File &input_file) const
+res::Image Ex3ImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -89,7 +90,7 @@ res::Image Ex3ImageDecoder::decode_impl(io::File &input_file) const
 
     io::File bmp_file(input_file.path, data);
     const fmt::microsoft::BmpImageDecoder bmp_file_decoder;
-    return bmp_file_decoder.decode(bmp_file);
+    return bmp_file_decoder.decode(logger, bmp_file);
 }
 
 static auto dummy = fmt::register_fmt<Ex3ImageDecoder>("french-bread/ex3");

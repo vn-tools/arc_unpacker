@@ -1,6 +1,5 @@
 ﻿#include "file_saver.h"
 #include "io/file_system.h"
-#include "log.h"
 #include "test_support/catch.h"
 
 using namespace au;
@@ -10,9 +9,7 @@ static void do_test(const io::path &path)
     const FileSaverHdd file_saver(".", true);
     const auto file = std::make_shared<io::File>(path.str(), "test"_b);
 
-    Log.mute();
     file_saver.save(file);
-    Log.unmute();
 
     REQUIRE(io::exists(path));
     {
@@ -36,10 +33,8 @@ static void do_test_overwriting(
     {
         REQUIRE(!io::exists(path));
         REQUIRE(!io::exists(path2));
-        Log.mute();
         file_saver1.save(file);
         file_saver2.save(file);
-        Log.unmute();
         REQUIRE(io::exists(path));
         REQUIRE(io::exists(path2) == renamed_file_exists);
         if (io::exists(path)) io::remove(path);

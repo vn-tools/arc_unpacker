@@ -4,48 +4,18 @@
 #include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
+#include "util/virtual_file_system.h"
 
 using namespace au;
 using namespace au::fmt::twilight_frontier;
-
-namespace
-{
-    using PaletteMap = std::map<io::path, std::shared_ptr<res::Palette>>;
-}
-
-struct Pak2ImageDecoder::Priv final
-{
-    PaletteMap palette_map;
-};
-
-Pak2ImageDecoder::Pak2ImageDecoder() : p(new Priv)
-{
-}
-
-Pak2ImageDecoder::~Pak2ImageDecoder()
-{
-}
-
-void Pak2ImageDecoder::clear_palettes()
-{
-    p->palette_map.clear();
-}
-
-void Pak2ImageDecoder::add_palette(
-    const io::path &path, const bstr &palette_data)
-{
-    io::MemoryStream palette_stream(palette_data);
-    palette_stream.skip(1);
-    p->palette_map[path] = std::make_shared<res::Palette>(
-        256, palette_stream, res::PixelFormat::BGRA5551);
-}
 
 bool Pak2ImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.path.has_extension("cv2");
 }
 
-res::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
+res::Image Pak2ImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     const auto bit_depth = input_file.stream.read_u8();
     const auto width = input_file.stream.read_u32_le();
@@ -57,13 +27,22 @@ res::Image Pak2ImageDecoder::decode_impl(io::File &input_file) const
     std::shared_ptr<res::Palette> palette;
     if (bit_depth == 8)
     {
-        const auto path = input_file.path.parent()
+        const auto palette_path = input_file.path.parent()
             / algo::format("palette%03d.pal", palette_number);
+        auto palette_file = util::VirtualFileSystem::get_by_path(palette_path);
 
-        auto it = p->palette_map.find(path);
-        palette = it != p->palette_map.end()
-            ? it->second
-            : std::make_shared<res::Palette>(256);
+        if (!palette_file)
+        {
+            logger.warn("Palette %s not found\n", palette_path.c_str());
+            palette = std::make_shared<res::Palette>(256);
+        }
+        else
+        {
+            palette = std::make_shared<res::Palette>(
+                256,
+                palette_file->stream.seek(1).read_to_eof(),
+                res::PixelFormat::BGRA5551);
+        }
     }
 
     res::Image image(width, height);

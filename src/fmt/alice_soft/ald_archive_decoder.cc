@@ -26,8 +26,8 @@ bool AldArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.has_extension("ald");
 }
 
-std::unique_ptr<fmt::ArchiveMeta>
-    AldArchiveDecoder::read_meta_impl(io::File &input_file) const
+std::unique_ptr<fmt::ArchiveMeta> AldArchiveDecoder::read_meta_impl(
+    const Logger &logger, io::File &input_file) const
 {
     const auto file_count = read_24_le(input_file.stream) / 3;
 
@@ -57,6 +57,7 @@ std::unique_ptr<fmt::ArchiveMeta>
 }
 
 std::unique_ptr<io::File> AldArchiveDecoder::read_file_impl(
+    const Logger &logger,
     io::File &input_file,
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const

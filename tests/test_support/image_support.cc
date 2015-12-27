@@ -29,17 +29,20 @@ static inline void compare_pixels(
 
 static res::Image image_from_file(io::File &file)
 {
+    Logger dummy_logger;
+    dummy_logger.mute();
+
     static const fmt::png::PngImageDecoder png_image_decoder;
     if (png_image_decoder.is_recognized(file))
-        return png_image_decoder.decode(file);
+        return png_image_decoder.decode(dummy_logger, file);
 
     static const fmt::microsoft::BmpImageDecoder bmp_image_decoder;
     if (bmp_image_decoder.is_recognized(file))
-        return bmp_image_decoder.decode(file);
+        return bmp_image_decoder.decode(dummy_logger, file);
 
     static const fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
     if (jpeg_image_decoder.is_recognized(file))
-        return jpeg_image_decoder.decode(file);
+        return jpeg_image_decoder.decode(dummy_logger, file);
 
     throw std::logic_error("Only PNG, BMP and JPEG files are supported");
 }
@@ -73,7 +76,7 @@ void tests::compare_images(
     auto expected_image = image_from_file(expected_file);
     auto actual_image = image_from_file(actual_file);
     if (compare_file_paths)
-        tests::compare_file_paths(expected_file.path, actual_file.path);
+        tests::compare_paths(actual_file.path, expected_file.path);
     tests::compare_images(expected_image, actual_image);
 }
 

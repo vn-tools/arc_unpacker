@@ -3,14 +3,20 @@
 #include <boost/filesystem/path.hpp>
 #include <memory>
 #include <string>
+#include "logger.h"
 
 namespace au {
+namespace flow {
 
-    class ArcUnpacker final
+    class CliFacade final
     {
     public:
-        ArcUnpacker(const std::vector<std::string> &arguments);
-        ~ArcUnpacker();
+        CliFacade(
+            Logger &logger,
+            const std::vector<std::string> &arguments);
+
+        ~CliFacade();
+
         int run() const;
 
     private:
@@ -18,4 +24,4 @@ namespace au {
         std::unique_ptr<Priv> p;
     };
 
-}
+} }

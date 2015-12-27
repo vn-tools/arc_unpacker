@@ -8,7 +8,8 @@ bool Pak2AudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.has_extension("cv3");
 }
 
-res::Audio Pak2AudioDecoder::decode_impl(io::File &input_file) const
+res::Audio Pak2AudioDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     const auto format = input_file.stream.read_u16_le();
     const auto channel_count = input_file.stream.read_u16_le();

@@ -12,10 +12,11 @@ bool BjrImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.has_extension("bjr");
 }
 
-res::Image BjrImageDecoder::decode_impl(io::File &input_file) const
+res::Image BjrImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     fmt::microsoft::BmpImageDecoder bmp_image_decoder;
-    const auto input = bmp_image_decoder.decode(input_file);
+    const auto input = bmp_image_decoder.decode(logger, input_file);
 
     const auto name = input_file.path.name();
     u32 key1 = 0x10000;

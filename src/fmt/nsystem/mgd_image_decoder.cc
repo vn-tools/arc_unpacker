@@ -185,6 +185,7 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::Stream &stream)
 }
 
 static res::Image read_image(
+    const Logger &logger,
     const bstr &input,
     CompressionType compression_type,
     size_t size_original,
@@ -205,7 +206,7 @@ static res::Image read_image(
         io::File png_file;
         png_file.stream.write(input);
         const fmt::png::PngImageDecoder png_decoder;
-        return png_decoder.decode(png_file);
+        return png_decoder.decode(logger, png_file);
     }
 
     throw err::NotSupportedError("Unsupported compression type");
@@ -216,7 +217,8 @@ bool MgdImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image MgdImageDecoder::decode_impl(io::File &input_file) const
+res::Image MgdImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
 
@@ -236,6 +238,7 @@ res::Image MgdImageDecoder::decode_impl(io::File &input_file) const
         throw err::CorruptDataError("Compressed data size mismatch");
 
     auto image = read_image(
+        logger,
         input_file.stream.read(size_compressed),
         compression_type,
         size_original,

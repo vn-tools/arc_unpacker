@@ -33,7 +33,7 @@ bool Registry::has_decoder(const std::string &name) const
     return p->decoder_map.find(name) != p->decoder_map.end();
 }
 
-std::unique_ptr<IDecoder>
+std::shared_ptr<IDecoder>
     Registry::create_decoder(const std::string &name) const
 {
     if (!has_decoder(name))
@@ -44,8 +44,10 @@ std::unique_ptr<IDecoder>
 void Registry::add_decoder(const std::string &name, DecoderCreator creator)
 {
     if (has_decoder(name))
+    {
         throw std::logic_error(
             "Decoder with name " + name + " was already registered.");
+    }
     p->decoder_map[name] = creator;
 }
 

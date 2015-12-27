@@ -162,7 +162,8 @@ bool G00ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.has_extension("g00");
 }
 
-res::Image G00ImageDecoder::decode_impl(io::File &input_file) const
+res::Image G00ImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     u8 version = input_file.stream.read_u8();
     u16 width = input_file.stream.read_u16_le();

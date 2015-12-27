@@ -23,7 +23,8 @@ bool WpnAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Audio WpnAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio WpnAudioDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     const auto chunk_count = input_file.stream.seek(magic.size()).read_u32_le();
     std::map<bstr, Chunk> chunks;

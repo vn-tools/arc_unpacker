@@ -8,19 +8,18 @@ namespace fmt {
     class FileDecoder : public BaseDecoder
     {
     public:
-        virtual ~FileDecoder();
-
-        void unpack(
-            io::File &input_file,
-            const FileSaver &file_saver) const override;
+        virtual ~FileDecoder() { }
 
         NamingStrategy naming_strategy() const override;
 
-        std::unique_ptr<io::File> decode(io::File &input_file) const;
+        void accept(IDecoderVisitor &visitor) const override;
+
+        std::unique_ptr<io::File> decode(
+            const Logger &logger, io::File &input_file) const;
 
     protected:
         virtual std::unique_ptr<io::File> decode_impl(
-            io::File &input_file) const = 0;
+            const Logger &logger, io::File &input_file) const = 0;
     };
 
 } }

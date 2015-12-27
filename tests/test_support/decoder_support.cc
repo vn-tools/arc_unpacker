@@ -17,10 +17,15 @@ std::vector<std::shared_ptr<io::File>> tests::unpack(
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));
     navigate_to_random_place(input_file.stream);
-    const auto meta = decoder.read_meta(input_file);
+    Logger dummy_logger;
+    dummy_logger.mute();
+    const auto meta = decoder.read_meta(dummy_logger, input_file);
     std::vector<std::shared_ptr<io::File>> files;
     for (const auto &entry : meta->entries)
-        files.push_back(decoder.read_file(input_file, *meta, *entry));
+    {
+        files.push_back(decoder.read_file(
+            dummy_logger, input_file, *meta, *entry));
+    }
     return files;
 }
 
@@ -30,7 +35,9 @@ std::unique_ptr<io::File> tests::decode(
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));
     navigate_to_random_place(input_file.stream);
-    return decoder.decode(input_file);
+    Logger dummy_logger;
+    dummy_logger.mute();
+    return decoder.decode(dummy_logger, input_file);
 }
 
 res::Image tests::decode(const fmt::ImageDecoder &decoder, io::File &input_file)
@@ -38,7 +45,9 @@ res::Image tests::decode(const fmt::ImageDecoder &decoder, io::File &input_file)
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));
     navigate_to_random_place(input_file.stream);
-    return decoder.decode(input_file);
+    Logger dummy_logger;
+    dummy_logger.mute();
+    return decoder.decode(dummy_logger, input_file);
 }
 
 res::Audio tests::decode(
@@ -47,5 +56,7 @@ res::Audio tests::decode(
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));
     navigate_to_random_place(input_file.stream);
-    return decoder.decode(input_file);
+    Logger dummy_logger;
+    dummy_logger.mute();
+    return decoder.decode(dummy_logger, input_file);
 }

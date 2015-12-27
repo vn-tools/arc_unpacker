@@ -50,7 +50,8 @@ bool PgdC00ImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Image PgdC00ImageDecoder::decode_impl(io::File &input_file) const
+res::Image PgdC00ImageDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(24 + magic.size());
     const auto size_orig = input_file.stream.read_u32_le();
@@ -59,7 +60,7 @@ res::Image PgdC00ImageDecoder::decode_impl(io::File &input_file) const
     data = decompress(data, size_orig);
     io::File tmp_file("test.tga", data);
     fmt::truevision::TgaImageDecoder tga_image_decoder;
-    return tga_image_decoder.decode(tmp_file);
+    return tga_image_decoder.decode(logger, tmp_file);
 }
 
 static auto dummy

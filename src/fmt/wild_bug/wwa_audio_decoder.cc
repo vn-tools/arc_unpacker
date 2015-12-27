@@ -12,7 +12,8 @@ bool WwaAudioDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-res::Audio WwaAudioDecoder::decode_impl(io::File &input_file) const
+res::Audio WwaAudioDecoder::decode_impl(
+    const Logger &logger, io::File &input_file) const
 {
     wpx::Decoder decoder(input_file.stream);
     io::MemoryStream metadata_stream(decoder.read_plain_section(0x20));

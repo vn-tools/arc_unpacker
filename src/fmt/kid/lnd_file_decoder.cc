@@ -88,7 +88,7 @@ bool LndFileDecoder::is_recognized_impl(io::File &input_file) const
 }
 
 std::unique_ptr<io::File> LndFileDecoder::decode_impl(
-    io::File &input_file) const
+    const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(4);
