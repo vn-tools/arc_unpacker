@@ -9,7 +9,7 @@ namespace pack {
     struct HuffmanTree final
     {
         HuffmanTree(const bstr &data);
-        HuffmanTree(io::BitReader &bit_reader);
+        HuffmanTree(io::IBitReader &bit_reader);
 
         int size;
         u16 root;

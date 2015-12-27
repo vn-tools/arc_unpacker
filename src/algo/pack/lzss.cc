@@ -15,12 +15,12 @@ bstr algo::pack::lzss_decompress(
     const size_t output_size,
     const BitwiseLzssSettings &settings)
 {
-    io::BitReader bit_reader(input);
+    io::MsbBitReader bit_reader(input);
     return lzss_decompress(bit_reader, output_size, settings);
 }
 
 bstr algo::pack::lzss_decompress(
-    io::BitReader &bit_reader,
+    io::IBitReader &bit_reader,
     const size_t output_size,
     const BitwiseLzssSettings &settings)
 {

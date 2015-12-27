@@ -6,24 +6,54 @@
 namespace au {
 namespace io {
 
-    class BitReader final
+    class IBitReader
     {
     public:
-        BitReader(Stream &stream);
-        BitReader(const bstr &buffer);
-        BitReader(const char *buffer, const size_t buffer_size);
-        ~BitReader();
+        virtual ~IBitReader() { }
 
-        void seek(const size_t pos);
-        void skip(const int offset);
-        bool eof() const;
-        size_t tell() const;
-        size_t size() const;
-        unsigned int get(const size_t n);
+        virtual void seek(const size_t pos) = 0;
+        virtual void skip(const int offset) = 0;
+        virtual size_t tell() const = 0;
+        virtual size_t size() const = 0;
+        virtual bool eof() const = 0;
+        virtual u32 get(const size_t n) = 0;
+    };
 
-    private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
+    class BaseBitReader : public IBitReader
+    {
+    public:
+        BaseBitReader(const bstr &input);
+        BaseBitReader(io::Stream &input_stream);
+        virtual ~BaseBitReader() { }
+
+        void seek(const size_t pos) override;
+        void skip(const int offset) override;
+        size_t tell() const override;
+        size_t size() const override;
+        bool eof() const override;
+
+    protected:
+        u64 buffer;
+        size_t bits_available;
+        size_t position;
+        std::unique_ptr<io::Stream> own_stream_holder;
+        io::Stream *input_stream;
+    };
+
+    class LsbBitReader final : public BaseBitReader
+    {
+    public:
+        LsbBitReader(const bstr &input);
+        LsbBitReader(io::Stream &input_stream);
+        u32 get(const size_t n) override;
+    };
+
+    class MsbBitReader final : public BaseBitReader
+    {
+    public:
+        MsbBitReader(const bstr &input);
+        MsbBitReader(io::Stream &input_stream);
+        u32 get(const size_t n) override;
     };
 
 } }

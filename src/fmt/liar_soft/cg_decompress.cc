@@ -33,7 +33,7 @@ void fmt::liar_soft::cg_decompress(
     const size_t unk1 = table_size < 0x1000 ? 6 : 0xE;
     const size_t unk2 = table_size < 0x1000 ? 3 : 4;
 
-    io::BitReader bit_reader(input_stream.read(size_comp));
+    io::MsbBitReader bit_reader(input_stream.read(size_comp));
     while (output_ptr < output_end)
     {
         try

@@ -6,7 +6,7 @@ using namespace au;
 using namespace au::fmt::nscripter;
 
 static res::Image decode_image(
-    size_t width, size_t height, io::BitReader &bit_reader)
+    size_t width, size_t height, io::IBitReader &bit_reader)
 {
     res::Image output(width, height);
     for (auto &c : output)
@@ -102,7 +102,7 @@ res::Image SpbImageDecoder::decode_impl(
 {
     const auto width = input_file.stream.read_u16_be();
     const auto height = input_file.stream.read_u16_be();
-    io::BitReader bit_reader(input_file.stream.read_to_eof());
+    io::MsbBitReader bit_reader(input_file.stream.read_to_eof());
     return decode_image(width, height, bit_reader);
 }
 

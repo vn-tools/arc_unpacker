@@ -8,8 +8,8 @@ namespace fmt {
 namespace entis {
 namespace common {
 
-    int get_huffman_code(io::BitReader &bit_reader, HuffmanTree &tree);
-    int get_huffman_size(io::BitReader &bit_reader, HuffmanTree &tree);
+    int get_huffman_code(io::IBitReader &bit_reader, HuffmanTree &tree);
+    int get_huffman_size(io::IBitReader &bit_reader, HuffmanTree &tree);
 
     class HuffmanDecoder final : public AbstractDecoder
     {

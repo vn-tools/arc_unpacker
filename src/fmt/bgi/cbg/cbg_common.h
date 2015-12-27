@@ -23,7 +23,7 @@ namespace cbg {
 
     struct Tree final
     {
-        u32 get_leaf(io::BitReader &bit_reader) const;
+        u32 get_leaf(io::IBitReader &bit_reader) const;
 
         NodeInfo &operator[](size_t);
 

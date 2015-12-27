@@ -28,7 +28,7 @@ namespace pack {
         const BitwiseLzssSettings &settings);
 
     bstr lzss_decompress(
-        io::BitReader &bit_reader,
+        io::IBitReader &bit_reader,
         const size_t output_size,
         const BitwiseLzssSettings &settings);
 

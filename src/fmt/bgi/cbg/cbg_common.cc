@@ -61,7 +61,7 @@ NodeInfo &Tree::operator[](size_t index)
     return *nodes[index];
 }
 
-u32 Tree::get_leaf(io::BitReader &bit_reader) const
+u32 Tree::get_leaf(io::IBitReader &bit_reader) const
 {
     u32 node = nodes.size() - 1;
     while (node >= size)

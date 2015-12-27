@@ -109,7 +109,7 @@ static bstr decompress(
     u8 *output_ptr = output.get<u8>();
     const u8 *output_start = output_ptr;
     const u8 *output_end = output_ptr + output.size();
-    io::BitReader bit_reader(stream.read_to_eof());
+    io::MsbBitReader bit_reader(stream.read_to_eof());
 
     u32 bits = 0, bit_count = 0;
     while (output_ptr < output_end)

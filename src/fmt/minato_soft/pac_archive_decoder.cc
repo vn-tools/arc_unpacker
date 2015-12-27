@@ -20,7 +20,8 @@ namespace
 
 static const bstr magic = "PAC\x00"_b;
 
-static int init_huffman(io::BitReader &bit_reader, u16 nodes[2][512], int &pos)
+static int init_huffman(
+    io::IBitReader &bit_reader, u16 nodes[2][512], int &pos)
 {
     if (bit_reader.get(1))
     {
@@ -42,7 +43,7 @@ static bstr decompress_table(const bstr &input, size_t output_size)
     bstr output(output_size);
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<const u8>();
-    io::BitReader bit_reader(input);
+    io::MsbBitReader bit_reader(input);
 
     u16 nodes[2][512];
     auto pos = 256;

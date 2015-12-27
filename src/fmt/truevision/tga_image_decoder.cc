@@ -77,7 +77,7 @@ static res::Image get_image_from_palette(
     const size_t depth,
     const res::Palette &palette)
 {
-    io::BitReader bit_reader(input);
+    io::MsbBitReader bit_reader(input);
     res::Image output(width, height);
     for (auto y : algo::range(height))
     for (auto x : algo::range(width))

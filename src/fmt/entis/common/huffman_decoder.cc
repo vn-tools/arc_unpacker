@@ -6,7 +6,7 @@ using namespace au;
 using namespace au::fmt::entis;
 using namespace au::fmt::entis::common;
 
-int common::get_huffman_code(io::BitReader &bit_reader, HuffmanTree &tree)
+int common::get_huffman_code(io::IBitReader &bit_reader, HuffmanTree &tree)
 {
     if (tree.escape != HuffmanNodes::Null)
     {
@@ -32,7 +32,7 @@ int common::get_huffman_code(io::BitReader &bit_reader, HuffmanTree &tree)
     return code;
 }
 
-int common::get_huffman_size(io::BitReader &bit_reader, HuffmanTree &tree)
+int common::get_huffman_size(io::IBitReader &bit_reader, HuffmanTree &tree)
 {
     if (tree.escape != HuffmanNodes::Null)
     {

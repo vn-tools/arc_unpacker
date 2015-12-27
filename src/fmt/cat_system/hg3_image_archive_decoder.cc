@@ -4,6 +4,7 @@
 #include "algo/range.h"
 #include "err.h"
 #include "fmt/jpeg/jpeg_image_decoder.h"
+#include "io/bit_reader.h"
 #include "io/memory_stream.h"
 #include "ptr.h"
 #include "util/file_from_image.h"
@@ -22,40 +23,7 @@ namespace
     };
 }
 
-class CustomBitReader final
-{
-public:
-    CustomBitReader(const bstr &str);
-    u32 get(size_t bits);
-
-private:
-    std::unique_ptr<io::Stream> input_stream;
-    size_t available;
-    u64 buffer;
-};
-
-CustomBitReader::CustomBitReader(const bstr &str)
-    : input_stream(new io::MemoryStream(str)), available(0), buffer(0)
-{
-}
-
-u32 CustomBitReader::get(size_t bits)
-{
-    int ret = 0;
-    while (available < bits)
-    {
-        const auto tmp = input_stream->read_u8();
-        buffer |= tmp << available;
-        available += 8;
-    }
-    const auto mask = (1ull << bits) - 1;
-    const auto value = buffer & mask;
-    buffer >>= bits;
-    available -= bits;
-    return value;
-}
-
-static size_t get_bit_count(CustomBitReader &bit_reader)
+static size_t get_bit_count(io::IBitReader &bit_reader)
 {
     size_t n = 0;
     while (!bit_reader.get(1))
@@ -156,7 +124,7 @@ static std::unique_ptr<res::Image> decode_img0000(
     const auto ctl = algo::pack::zlib_inflate(input_stream.read(ctl_size_comp));
 
     io::MemoryStream data_stream(data);
-    CustomBitReader ctl_bit_reader(ctl);
+    io::LsbBitReader ctl_bit_reader(ctl);
 
     bool copy = ctl_bit_reader.get(1);
     const auto output_size = get_bit_count(ctl_bit_reader);

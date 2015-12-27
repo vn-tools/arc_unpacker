@@ -4,7 +4,7 @@
 using namespace au;
 using namespace au::fmt::wild_bug::wpx;
 
-static u32 read_count(io::BitReader &bit_reader)
+static u32 read_count(io::IBitReader &bit_reader)
 {
     auto n = 0;
     while (!bit_reader.get(1))

@@ -204,7 +204,7 @@ static std::vector<u16> decompress_block(
     const Tree &tree2)
 {
     std::vector<u16> color_info(output_size, 0);
-    io::BitReader bit_reader(input);
+    io::MsbBitReader bit_reader(input);
 
     int init_value = 0;
     for (auto i : algo::range(0, output_size, block_dim2))

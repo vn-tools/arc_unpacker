@@ -13,5 +13,5 @@ AbstractDecoder::~AbstractDecoder()
 
 void AbstractDecoder::set_input(const bstr &data)
 {
-    bit_reader.reset(new io::BitReader(data));
+    bit_reader.reset(new io::MsbBitReader(data));
 }

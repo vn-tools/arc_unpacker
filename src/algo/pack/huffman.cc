@@ -4,7 +4,7 @@ using namespace au;
 using namespace au::algo::pack;
 
 static int init_huffman_impl(
-    io::BitReader &bit_reader, u16 nodes[2][512], int &size)
+    io::IBitReader &bit_reader, u16 nodes[2][512], int &size)
 {
     if (!bit_reader.get(1))
         return bit_reader.get(8);
@@ -17,7 +17,7 @@ static int init_huffman_impl(
     return pos;
 }
 
-HuffmanTree::HuffmanTree(io::BitReader &bit_reader)
+HuffmanTree::HuffmanTree(io::IBitReader &bit_reader)
 {
     size = 256;
     root = init_huffman_impl(bit_reader, nodes, size);
@@ -25,7 +25,7 @@ HuffmanTree::HuffmanTree(io::BitReader &bit_reader)
 
 HuffmanTree::HuffmanTree(const bstr &data)
 {
-    io::BitReader bit_reader(data);
+    io::MsbBitReader bit_reader(data);
     size = 256;
     root = init_huffman_impl(bit_reader, nodes, size);
 }
@@ -37,7 +37,7 @@ bstr algo::pack::decode_huffman(
 {
     bstr output;
     output.resize(target_size);
-    io::BitReader bit_reader(input);
+    io::MsbBitReader bit_reader(input);
     while (output.size() < target_size && !bit_reader.eof())
     {
         auto byte = huffman_tree.root;

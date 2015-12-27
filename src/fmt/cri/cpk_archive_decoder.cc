@@ -97,7 +97,7 @@ static bstr decompress_layla(const bstr &input)
     const auto data_comp = algo::reverse(input_stream.read(size_comp));
     const auto prefix = input_stream.read_to_eof();
 
-    io::BitReader bit_reader(data_comp);
+    io::MsbBitReader bit_reader(data_comp);
     bstr output;
     output.reserve(size_orig);
     while (output.size() < size_orig)

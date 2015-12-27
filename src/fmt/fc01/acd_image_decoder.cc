@@ -11,7 +11,7 @@ static const bstr magic = "ACD 1.00"_b;
 
 static bstr do_decode(const bstr &input, size_t canvas_size)
 {
-    io::BitReader bit_reader(input);
+    io::MsbBitReader bit_reader(input);
     bstr output(canvas_size);
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<const u8>();

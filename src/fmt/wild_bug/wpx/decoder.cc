@@ -127,7 +127,7 @@ bstr Decoder::read_compressed_section(
         *output_ptr++ = section_stream.read_u8();
     int remaining = section.size_orig - quant_size;
     section_stream.seek((-quant_size & 3) + quant_size);
-    io::BitReader bit_reader(section_stream);
+    io::MsbBitReader bit_reader(section_stream);
 
     std::unique_ptr<ITranscriptionStrategy> transcriptor;
     if (use_plain_transcriptors)

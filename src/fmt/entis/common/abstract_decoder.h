@@ -17,7 +17,7 @@ namespace common {
         virtual void reset() = 0;
         virtual void decode(u8 *ouptut, size_t output_size) = 0;
 
-        std::unique_ptr<io::BitReader> bit_reader;
+        std::unique_ptr<io::MsbBitReader> bit_reader;
     };
 
 } } } }

@@ -19,7 +19,7 @@ namespace
     };
 }
 
-static unsigned int read_integer(io::BitReader &bit_reader)
+static unsigned int read_integer(io::IBitReader &bit_reader)
 {
     size_t integer_size = bit_reader.get(2) + 1;
     return bit_reader.get(integer_size << 3);
@@ -35,12 +35,12 @@ std::unique_ptr<fmt::ArchiveMeta> Pbg3ArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(magic.size());
 
-    io::BitReader header_bit_reader(input_file.stream);
+    io::MsbBitReader header_bit_reader(input_file.stream);
     auto file_count = read_integer(header_bit_reader);
     auto table_offset = read_integer(header_bit_reader);
 
     input_file.stream.seek(table_offset);
-    io::BitReader table_bit_reader(input_file.stream);
+    io::MsbBitReader table_bit_reader(input_file.stream);
 
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
@@ -79,7 +79,7 @@ std::unique_ptr<io::File> Pbg3ArchiveDecoder::read_file_impl(
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
-    io::BitReader bit_reader(input_file.stream.read(entry->size_comp));
+    io::MsbBitReader bit_reader(input_file.stream.read(entry->size_comp));
 
     algo::pack::BitwiseLzssSettings settings;
     settings.position_bits = 13;

@@ -4,7 +4,8 @@
 using namespace au;
 using namespace au::fmt::lilim;
 
-static int init_huffman(io::BitReader &bit_reader, u16 nodes[2][512], int &size)
+static int init_huffman(
+    io::IBitReader &bit_reader, u16 nodes[2][512], int &size)
 {
     if (!bit_reader.get(1))
         return bit_reader.get(8);
@@ -21,7 +22,7 @@ static bstr decode_huffman(const bstr &input, const size_t target_size)
 {
     bstr output;
     output.reserve(input.size() * 2);
-    io::BitReader bit_reader(input);
+    io::MsbBitReader bit_reader(input);
     u16 nodes[2][512];
     auto size = 256;
     auto root = init_huffman(bit_reader, nodes, size);

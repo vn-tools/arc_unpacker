@@ -6,7 +6,7 @@ using namespace au;
 using namespace au::fmt::entis;
 using namespace au::fmt::entis::common;
 
-int common::get_gamma_code(io::BitReader &bit_reader)
+int common::get_gamma_code(io::IBitReader &bit_reader)
 {
     if (bit_reader.eof())
         return 0;

@@ -42,13 +42,13 @@ static u64 rotr(u64 value, size_t value_size, size_t how_much)
     return rotl(value, value_size, value_size - how_much);
 }
 
-static Header read_header(io::Stream &stream)
+static Header read_header(io::Stream &input_stream)
 {
     Header h;
-    h.data_offset = stream.read_u32_le();
+    h.data_offset = input_stream.read_u32_le();
 
-    auto header_size = stream.read_u32_le();
-    io::MemoryStream header_stream(stream.read(header_size - 4));
+    auto header_size = input_stream.read_u32_le();
+    io::MemoryStream header_stream(input_stream.read(header_size - 4));
 
     h.width = header_stream.read_u32_le();
     s32 height = header_stream.read_u32_le();
@@ -101,9 +101,9 @@ static Header read_header(io::Stream &stream)
         {
             if (header_size == 40)
             {
-                h.masks[2] = stream.read_u32_be();
-                h.masks[1] = stream.read_u32_be();
-                h.masks[0] = stream.read_u32_be();
+                h.masks[2] = input_stream.read_u32_be();
+                h.masks[1] = input_stream.read_u32_be();
+                h.masks[0] = input_stream.read_u32_be();
                 h.masks[3] = 0;
             }
             else if (header_size == 52)
@@ -131,12 +131,12 @@ static Header read_header(io::Stream &stream)
     // Make the 16BPP masks sane (they're randomly rotated because why not)
     if (h.depth == 16)
     {
-        for (auto i : algo::range(4))
+        for (const auto i : algo::range(4))
             h.masks[i] >>= 16;
         // detect rotation assuming red component doesn't wrap
         while (!(h.masks[2] & 0x8000))
         {
-            for (auto i : algo::range(4))
+            for (const auto i : algo::range(4))
                 h.masks[i] = rotl(h.masks[i], 16, 1);
             h.rotation--;
         }
@@ -147,16 +147,17 @@ static Header read_header(io::Stream &stream)
 }
 
 static res::Image get_image_from_palette(
-    io::Stream &stream,
+    io::Stream &input_stream,
     const Header &header,
     const res::Palette &palette)
 {
     res::Image image(header.width, header.height);
-    for (auto y : algo::range(header.height))
+    for (const auto y : algo::range(header.height))
     {
-        stream.seek(header.data_offset + header.stride * y);
-        io::BitReader bit_reader(stream);
-        for (auto x : algo::range(header.width))
+        io::MsbBitReader bit_reader(input_stream
+            .seek(header.data_offset + header.stride * y)
+            .read((header.width * header.depth + 7) / 8));
+        for (const auto x : algo::range(header.width))
         {
             auto c = bit_reader.get(header.depth);
             if (c < palette.size())
@@ -167,46 +168,48 @@ static res::Image get_image_from_palette(
 }
 
 static std::unique_ptr<res::Image> get_image_without_palette_fast24(
-    io::Stream &stream, const Header &header)
+    io::Stream &input_stream, const Header &header)
 {
     auto image = std::make_unique<res::Image>(header.width, header.height);
-    for (auto y : algo::range(header.height))
+    for (const auto y : algo::range(header.height))
     {
-        stream.seek(header.data_offset + header.stride * y);
-        res::Image row(header.width, 1, stream, res::PixelFormat::BGR888);
-        for (auto x : algo::range(header.width))
+        input_stream.seek(header.data_offset + header.stride * y);
+        res::Image row(header.width, 1, input_stream, res::PixelFormat::BGR888);
+        for (const auto x : algo::range(header.width))
             image->at(x, y) = row.at(x, 0);
     }
     return image;
 }
 
 static std::unique_ptr<res::Image> get_image_without_palette_fast32(
-    io::Stream &stream, const Header &header)
+    io::Stream &input_stream, const Header &header)
 {
     auto image = std::make_unique<res::Image>(header.width, header.height);
-    for (auto y : algo::range(header.height))
+    for (const auto y : algo::range(header.height))
     {
-        stream.seek(header.data_offset + header.stride * y);
-        res::Image row(header.width, 1, stream, res::PixelFormat::BGRA8888);
-        for (auto x : algo::range(header.width))
+        input_stream.seek(header.data_offset + header.stride * y);
+        res::Image row(
+            header.width, 1, input_stream, res::PixelFormat::BGRA8888);
+        for (const auto x : algo::range(header.width))
             image->at(x, y) = row.at(x, 0);
     }
     return image;
 }
 
 static std::unique_ptr<res::Image> get_image_without_palette_generic(
-    io::Stream &stream, const Header &header)
+    io::Stream &input_stream, const Header &header)
 {
     auto image = std::make_unique<res::Image>(header.width, header.height);
     double multipliers[4];
-    for (auto i : algo::range(4))
+    for (const auto i : algo::range(4))
         multipliers[i] = 255.0 / std::max<size_t>(1, header.masks[i]);
 
-    for (auto y : algo::range(header.height))
+    for (const auto y : algo::range(header.height))
     {
-        stream.seek(header.data_offset + header.stride * y);
-        io::BitReader bit_reader(stream);
-        for (auto x : algo::range(header.width))
+        io::MsbBitReader bit_reader(input_stream
+            .seek(header.data_offset + header.stride * y)
+            .read((header.width * header.depth + 7) / 8));
+        for (const auto x : algo::range(header.width))
         {
             u64 c = bit_reader.get(header.depth);
             if (header.rotation < 0)
@@ -224,7 +227,7 @@ static std::unique_ptr<res::Image> get_image_without_palette_generic(
 }
 
 static res::Image get_image_without_palette(
-    io::Stream &stream, const Header &header)
+    io::Stream &input_stream, const Header &header)
 {
     std::unique_ptr<res::Image> image;
 
@@ -234,7 +237,7 @@ static res::Image get_image_without_palette(
         && header.masks[2] == 0xFF
         && header.masks[3] == 0)
     {
-        image = get_image_without_palette_fast24(stream, header);
+        image = get_image_without_palette_fast24(input_stream, header);
     }
 
     else if (header.depth == 32
@@ -243,12 +246,12 @@ static res::Image get_image_without_palette(
         && header.masks[2] == 0xFF00
         && (header.masks[3] == 0 || header.masks[3] == 0xFF))
     {
-        image = get_image_without_palette_fast32(stream, header);
+        image = get_image_without_palette_fast32(input_stream, header);
     }
 
     else
     {
-        image = get_image_without_palette_generic(stream, header);
+        image = get_image_without_palette_generic(input_stream, header);
     }
 
     if (!header.masks[3])
@@ -272,7 +275,7 @@ res::Image BmpImageDecoder::decode_impl(
     input_file.stream.seek(10);
     auto header = read_header(input_file.stream);
     res::Palette palette(header.palette_size);
-    for (auto i : algo::range(palette.size()))
+    for (const auto i : algo::range(palette.size()))
     {
         palette[i].b = input_file.stream.read_u8();
         palette[i].g = input_file.stream.read_u8();

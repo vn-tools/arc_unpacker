@@ -11,7 +11,7 @@ namespace wpx {
     struct DecoderContext final
     {
         io::Stream &stream;
-        io::BitReader &bit_reader;
+        io::IBitReader &bit_reader;
     };
 
 } } } }

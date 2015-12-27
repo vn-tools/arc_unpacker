@@ -8,7 +8,7 @@ namespace fmt {
 namespace entis {
 namespace common {
 
-    int get_gamma_code(io::BitReader &bit_reader);
+    int get_gamma_code(io::IBitReader &bit_reader);
 
     class GammaDecoder final : public AbstractDecoder
     {

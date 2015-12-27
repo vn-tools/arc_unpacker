@@ -8,7 +8,7 @@ using namespace au;
 using namespace au::fmt::bgi::cbg;
 
 static bstr decompress_huffman(
-    io::BitReader &bit_reader, const Tree &tree, size_t output_size)
+    io::IBitReader &bit_reader, const Tree &tree, size_t output_size)
 {
     bstr output(output_size);
     for (auto i : algo::range(output.size()))
@@ -124,7 +124,7 @@ std::unique_ptr<res::Image> Cbg1Decoder::decode(io::Stream &input_stream) const
     auto freq_table = read_freq_table(decrypted_stream, 256);
     auto tree = build_tree(freq_table, false);
 
-    io::BitReader bit_reader(raw_data);
+    io::MsbBitReader bit_reader(raw_data);
     auto output = decompress_huffman(bit_reader, tree, huffman_size);
     auto pixel_data = decompress_rle(output, width * height * (bpp >> 3));
     transform_colors(pixel_data, width, height, bpp);

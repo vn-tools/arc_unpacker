@@ -17,7 +17,7 @@ static std::vector<u8> build_dict()
     return dict;
 }
 
-static std::vector<u8> build_table(io::BitReader &bit_reader)
+static std::vector<u8> build_table(io::IBitReader &bit_reader)
 {
     std::vector<u8> sizes(0x100);
     for (auto n : algo::range(0, 0x100, 2))
@@ -42,7 +42,7 @@ static std::vector<u8> build_table(io::BitReader &bit_reader)
 }
 
 static int find_table_index(
-    const std::vector<u8> &table, io::BitReader &bit_reader)
+    const std::vector<u8> &table, io::IBitReader &bit_reader)
 {
     auto index = 0;
     u8 n = 0;
@@ -60,7 +60,8 @@ static int find_table_index(
     return index;
 }
 
-RetrievalStrategy1::RetrievalStrategy1(io::BitReader &bit_reader, s8 quant_size)
+RetrievalStrategy1::RetrievalStrategy1(
+    io::IBitReader &bit_reader, s8 quant_size)
     : IRetrievalStrategy(bit_reader), quant_size(quant_size)
 {
     dict = build_dict();
@@ -82,7 +83,7 @@ u8 RetrievalStrategy1::fetch_byte(DecoderContext &context, const u8 *output_ptr)
     return value;
 }
 
-RetrievalStrategy2::RetrievalStrategy2(io::BitReader &bit_reader)
+RetrievalStrategy2::RetrievalStrategy2(io::IBitReader &bit_reader)
     : IRetrievalStrategy(bit_reader)
 {
     table = build_table(bit_reader);
@@ -95,7 +96,7 @@ u8 RetrievalStrategy2::fetch_byte(
     return table[2 * index + 1];
 }
 
-RetrievalStrategy3::RetrievalStrategy3(io::BitReader &bit_reader)
+RetrievalStrategy3::RetrievalStrategy3(io::IBitReader &bit_reader)
     : IRetrievalStrategy(bit_reader)
 {
 }
