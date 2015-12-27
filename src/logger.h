@@ -43,6 +43,7 @@ namespace au {
         ~Logger();
 
         void set_color(const Color c);
+        void set_prefix(const std::string &prefix);
         void info(const std::string str, ...) const;
         void success(const std::string str, ...) const;
         void warn(const std::string str, ...) const;

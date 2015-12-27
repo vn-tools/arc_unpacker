@@ -18,6 +18,7 @@ struct Logger::Priv final
     Color colors[5];
     int muted = 0;
     bool colors_enabled = true;
+    std::string prefix;
 };
 
 Logger::Priv::Priv(Logger &logger) : logger(logger)
@@ -38,6 +39,7 @@ void Logger::Priv::log(
     auto *out = &std::cout;
     if (type == MessageType::Warning || type == MessageType::Error)
         out = &std::cerr;
+    (*out) << prefix;
     if (colors_enabled && colors[type] != Color::Original)
         logger.set_color(colors[type]);
     (*out) << algo::format(fmt, args);
@@ -52,6 +54,11 @@ Logger::Logger() : p(new Priv(*this))
 
 Logger::~Logger()
 {
+}
+
+void Logger::set_prefix(const std::string &prefix)
+{
+    p->prefix = prefix;
 }
 
 void Logger::info(const std::string fmt, ...) const
