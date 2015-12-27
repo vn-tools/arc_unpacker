@@ -36,7 +36,7 @@ void ParallelDecoderAdapter::visit(const fmt::BaseArchiveDecoder &decoder)
         decoder.read_meta(task.logger, *input_file));
     task.logger.info(
         "%s: archive contains %d files.\n",
-        input_file->path.c_str(),
+        task.base_name.c_str(),
         meta->entries.size());
     auto decoder_copy = decoder.shared_from_this();
 
