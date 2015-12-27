@@ -47,6 +47,13 @@ void Logger::Priv::log(
         logger.set_color(Color::Original);
 }
 
+Logger::Logger(const Logger &other_logger) : p(new Priv(*this))
+{
+    p->muted = other_logger.p->muted;
+    p->colors_enabled = other_logger.p->colors_enabled;
+    p->prefix = other_logger.p->prefix;
+}
+
 Logger::Logger() : p(new Priv(*this))
 {
     unmute();

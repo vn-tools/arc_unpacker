@@ -40,6 +40,7 @@ namespace au {
         };
 
         Logger();
+        Logger(const Logger &other_logger);
         ~Logger();
 
         void set_color(const Color c);
