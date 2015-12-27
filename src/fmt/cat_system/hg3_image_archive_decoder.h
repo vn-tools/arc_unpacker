@@ -6,11 +6,8 @@ namespace au {
 namespace fmt {
 namespace cat_system {
 
-    class IntArchiveDecoder final : public BaseArchiveDecoder
+    class Hg3ImageArchiveDecoder final : public BaseArchiveDecoder
     {
-    public:
-        std::vector<std::string> get_linked_formats() const override;
-
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
 
@@ -23,6 +20,8 @@ namespace cat_system {
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
+
+        NamingStrategy naming_strategy() const override;
     };
 
 } } }

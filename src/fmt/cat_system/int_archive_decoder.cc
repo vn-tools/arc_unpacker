@@ -231,4 +231,9 @@ std::unique_ptr<io::File> IntArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
+std::vector<std::string> IntArchiveDecoder::get_linked_formats() const
+{
+    return {"cat-system/hg3"};
+}
+
 static auto dummy = fmt::register_fmt<IntArchiveDecoder>("cat-system/int");
