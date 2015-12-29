@@ -7,7 +7,7 @@ using namespace au::io;
 
 struct MemoryStream::Priv final
 {
-    Priv(bstr buffer);
+    Priv(const bstr &buffer);
 
     template<typename T> inline T read_primitive()
     {
@@ -23,7 +23,7 @@ struct MemoryStream::Priv final
     size_t buffer_pos;
 };
 
-MemoryStream::Priv::Priv(bstr buffer) : buffer(buffer), buffer_pos(0)
+MemoryStream::Priv::Priv(const bstr &buffer) : buffer(buffer), buffer_pos(0)
 {
 }
 

@@ -16,10 +16,6 @@ template<typename T, const algo::Endianness endianness> inline T
     return *reinterpret_cast<const T*>(tmp.get<const char>());
 }
 
-Stream::~Stream()
-{
-}
-
 Stream &Stream::peek(const size_t offset, std::function<void()> func)
 {
     size_t old_pos = tell();
