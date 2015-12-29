@@ -3,10 +3,10 @@
 #include <map>
 #include <memory>
 #include "file_saver.h"
+#include "flow/task_scheduler.h"
 #include "fmt/base_decoder.h"
 #include "fmt/registry.h"
 #include "logger.h"
-#include "task_scheduler.h"
 
 namespace au {
 namespace flow {
@@ -42,7 +42,8 @@ namespace flow {
             TaskScheduler &task_scheduler,
             const ParallelUnpackerContext &unpacker_context,
             const size_t depth,
-            const io::path &base_name);
+            const io::path &base_name,
+            const std::shared_ptr<const BaseParallelUnpackingTask> parent_task);
 
         Logger logger;
         ParallelUnpacker &unpacker;
@@ -51,6 +52,7 @@ namespace flow {
         const size_t depth;
         const io::path base_name;
         unsigned int task_id;
+        const std::shared_ptr<const BaseParallelUnpackingTask> parent_task;
     };
 
     class ParallelUnpacker final
@@ -64,7 +66,7 @@ namespace flow {
         void save_file(
             const FileFactoryWithLogger,
             const fmt::BaseDecoder &origin_decoder,
-            const BaseParallelUnpackingTask &origin_task);
+            const std::shared_ptr<const BaseParallelUnpackingTask> parent_task);
 
         bool run(const size_t thread_count = 0);
 

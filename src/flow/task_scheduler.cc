@@ -10,7 +10,7 @@ using namespace au::flow;
 
 struct TaskScheduler::Priv final
 {
-    std::deque<std::unique_ptr<ITask>> tasks;
+    std::deque<std::shared_ptr<ITask>> tasks;
     std::vector<std::unique_ptr<std::thread>> threads;
 };
 
@@ -22,16 +22,16 @@ TaskScheduler::~TaskScheduler()
 {
 }
 
-void TaskScheduler::push_front(std::unique_ptr<ITask> task)
+void TaskScheduler::push_front(std::shared_ptr<ITask> task)
 {
     std::unique_lock<std::mutex> lock(mutex);
-    p->tasks.push_front(std::move(task));
+    p->tasks.push_front(task);
 }
 
-void TaskScheduler::push_back(std::unique_ptr<ITask> task)
+void TaskScheduler::push_back(std::shared_ptr<ITask> task)
 {
     std::unique_lock<std::mutex> lock(mutex);
-    p->tasks.push_back(std::move(task));
+    p->tasks.push_back(task);
 }
 
 bool TaskScheduler::run(size_t number_of_threads)
@@ -50,7 +50,7 @@ bool TaskScheduler::run(size_t number_of_threads)
         {
             while (true)
             {
-                std::unique_ptr<ITask> task;
+                std::shared_ptr<ITask> task;
 
                 {
                     std::unique_lock<std::mutex> lock(mutex);
@@ -65,7 +65,7 @@ bool TaskScheduler::run(size_t number_of_threads)
                         }
                         break;
                     }
-                    task = std::move(p->tasks.front());
+                    task = p->tasks.front();
                     p->tasks.pop_front();
                 }
 

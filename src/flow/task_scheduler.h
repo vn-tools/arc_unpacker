@@ -19,8 +19,8 @@ namespace flow {
         TaskScheduler();
         ~TaskScheduler();
         bool run(const size_t number_of_threads = 0);
-        void push_front(std::unique_ptr<ITask> task);
-        void push_back(std::unique_ptr<ITask> task);
+        void push_front(std::shared_ptr<ITask> task);
+        void push_back(std::shared_ptr<ITask> task);
         void join();
         std::mutex mutex;
     private:

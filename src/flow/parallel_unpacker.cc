@@ -22,7 +22,9 @@ namespace
         NestedDecoding,
     };
 
-    struct DecodeInputFileTask final : public BaseParallelUnpackingTask
+    struct DecodeInputFileTask final :
+        public BaseParallelUnpackingTask,
+        public std::enable_shared_from_this<BaseParallelUnpackingTask>
     {
         DecodeInputFileTask(
             ParallelUnpacker &unpacker,
@@ -30,6 +32,7 @@ namespace
             const ParallelUnpackerContext &unpacker_context,
             const size_t depth,
             const io::path &base_name,
+            const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
             const SourceType source_type,
             const std::vector<std::string> &available_decoders,
             const FileFactory file_factory);
@@ -41,7 +44,9 @@ namespace
         const FileFactory file_factory;
     };
 
-    struct ProcessOutputFileTask final : public BaseParallelUnpackingTask
+    struct ProcessOutputFileTask final :
+        public BaseParallelUnpackingTask,
+        public std::enable_shared_from_this<BaseParallelUnpackingTask>
     {
         ProcessOutputFileTask(
             ParallelUnpacker &unpacker,
@@ -49,6 +54,7 @@ namespace
             const ParallelUnpackerContext &unpacker_context,
             const size_t depth,
             const io::path &base_name,
+            const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
             const FileFactoryWithLogger file_factory,
             const std::shared_ptr<const fmt::IDecoder> origin_decoder);
 
@@ -188,13 +194,15 @@ BaseParallelUnpackingTask::BaseParallelUnpackingTask(
     TaskScheduler &task_scheduler,
     const ParallelUnpackerContext &unpacker_context,
     const size_t depth,
-    const io::path &base_name) :
+    const io::path &base_name,
+    const std::shared_ptr<const BaseParallelUnpackingTask> parent_task) :
         logger(unpacker_context.logger),
         unpacker(unpacker),
         task_scheduler(task_scheduler),
         unpacker_context(unpacker_context),
         depth(depth),
-        base_name(base_name)
+        base_name(base_name),
+        parent_task(parent_task)
 {
     mutex.lock();
     task_id = task_count++;
@@ -208,11 +216,17 @@ DecodeInputFileTask::DecodeInputFileTask(
     const ParallelUnpackerContext &unpacker_context,
     const size_t depth,
     const io::path &base_name,
+    const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
     const SourceType source_type,
     const std::vector<std::string> &available_decoders,
     const FileFactory file_factory) :
         BaseParallelUnpackingTask(
-            unpacker, task_scheduler, unpacker_context, depth, base_name),
+            unpacker,
+            task_scheduler,
+            unpacker_context,
+            depth,
+            base_name,
+            parent_task),
         source_type(source_type),
         available_decoders(available_decoders),
         file_factory(file_factory)
@@ -256,7 +270,7 @@ bool DecodeInputFileTask::work() const
         decoder_arg_parser.parse(unpacker_context.arguments);
         decoder->parse_cli_options(decoder_arg_parser);
 
-        ParallelDecoderAdapter adapter(*this, input_file);
+        ParallelDecoderAdapter adapter(shared_from_this(), input_file);
         decoder->accept(adapter);
         return true;
     }
@@ -276,10 +290,16 @@ ProcessOutputFileTask::ProcessOutputFileTask(
     const ParallelUnpackerContext &unpacker_context,
     const size_t depth,
     const io::path &base_name,
+    const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
     const FileFactoryWithLogger file_factory,
     const std::shared_ptr<const fmt::IDecoder> origin_decoder) :
         BaseParallelUnpackingTask(
-            unpacker, task_scheduler, unpacker_context, depth, base_name),
+            unpacker,
+            task_scheduler,
+            unpacker_context,
+            depth,
+            base_name,
+            parent_task),
         file_factory(file_factory),
         origin_decoder(origin_decoder)
 {
@@ -324,12 +344,13 @@ bool ProcessOutputFileTask::work() const
         }
 
         task_scheduler.push_front(
-            std::make_unique<DecodeInputFileTask>(
+            std::make_shared<DecodeInputFileTask>(
                 unpacker,
                 task_scheduler,
                 unpacker_context,
                 depth + 1,
                 output_file->path,
+                shared_from_this(),
                 SourceType::NestedDecoding,
                 linked_decoders,
                 [=]() { return output_file; }));
@@ -372,12 +393,13 @@ void ParallelUnpacker::add_input_file(
     const io::path &base_name, const FileFactory file_factory)
 {
     p->task_scheduler.push_back(
-        std::make_unique<DecodeInputFileTask>(
+        std::make_shared<DecodeInputFileTask>(
             *this,
             p->task_scheduler,
             p->context,
             0,
             base_name,
+            nullptr,
             SourceType::InitialUserInput,
             p->context.available_decoders,
             file_factory));
@@ -386,15 +408,16 @@ void ParallelUnpacker::add_input_file(
 void ParallelUnpacker::save_file(
     const FileFactoryWithLogger file_factory,
     const fmt::BaseDecoder &origin_decoder,
-    const BaseParallelUnpackingTask &origin_task)
+    const std::shared_ptr<const BaseParallelUnpackingTask> parent_task)
 {
     p->task_scheduler.push_front(
-        std::make_unique<ProcessOutputFileTask>(
+        std::make_shared<ProcessOutputFileTask>(
             *this,
             p->task_scheduler,
             p->context,
-            origin_task.depth + 1,
-            origin_task.base_name,
+            parent_task->depth + 1,
+            parent_task->base_name,
+            parent_task,
             file_factory,
             origin_decoder.shared_from_this()));
 }

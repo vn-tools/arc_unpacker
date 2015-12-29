@@ -1,7 +1,7 @@
 #pragma once
 
+#include "flow/parallel_unpacker.h"
 #include "fmt/idecoder_visitor.h"
-#include "parallel_unpacker.h"
 
 namespace au {
 namespace flow {
@@ -10,7 +10,7 @@ namespace flow {
     {
     public:
         ParallelDecoderAdapter(
-            const BaseParallelUnpackingTask &task,
+            const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
             const std::shared_ptr<io::File> input_file);
         ~ParallelDecoderAdapter();
 
@@ -20,7 +20,7 @@ namespace flow {
         void visit(const fmt::BaseAudioDecoder &decoder) override;
 
     private:
-        const BaseParallelUnpackingTask &task;
+        const std::shared_ptr<const BaseParallelUnpackingTask> parent_task;
         const std::shared_ptr<io::File> input_file;
     };
 
