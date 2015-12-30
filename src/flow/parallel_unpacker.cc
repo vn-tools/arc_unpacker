@@ -280,7 +280,9 @@ bool DecodeInputFileTask::work() const
             "%s: recognition finished with errors (%s)\n",
             base_name.c_str(),
             e.what());
-        return false;
+        return source_type == SourceType::NestedDecoding
+            ? save(*this, input_file)
+            : false;
     }
 }
 
