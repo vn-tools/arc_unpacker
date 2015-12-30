@@ -38,7 +38,7 @@ void VirtualFileSystem::register_file(
 void VirtualFileSystem::unregister_file(const io::path &path)
 {
     std::unique_lock<std::mutex> lock(mutex);
-    factories.erase(path);
+    factories.erase(io::path(algo::lower(path.str())));
 }
 
 void VirtualFileSystem::register_directory(const io::path &path)
