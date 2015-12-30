@@ -62,7 +62,8 @@ bstr algo::pack::zlib_inflate(const bstr &input, const ZlibKind kind)
         written = s->total_out;
     }
     while (ret == Z_OK);
-    finalize_stream(std::move(s), ret, s->next_in - input.get<const Bytef>());
+    const auto pos = s->next_in - input.get<const Bytef>();
+    finalize_stream(std::move(s), ret, pos);
     return output;
 }
 
