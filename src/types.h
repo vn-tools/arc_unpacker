@@ -104,7 +104,7 @@ namespace au {
         return static_cast<u8>(value);
     }
 
-    constexpr const u8 *operator "" _u8(const char *value, const size_t n)
+    inline const u8 *operator "" _u8(const char *value, const size_t n)
     {
         return reinterpret_cast<const u8*>(value);
     }

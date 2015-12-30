@@ -19,7 +19,7 @@ namespace res {
             return r != other.r || g != other.g || b != other.b || a != other.a;
         }
 
-        constexpr const u8 &operator[](size_t x) const
+        inline const u8 &operator[](size_t x) const
         {
             return reinterpret_cast<const u8*>(this)[x];
         }
