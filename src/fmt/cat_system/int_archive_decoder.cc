@@ -223,11 +223,9 @@ std::unique_ptr<io::File> IntArchiveDecoder::read_file_impl(
 {
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const algo::crypt::Blowfish bf(meta->file_key);
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
-
-    algo::crypt::Blowfish bf(meta->file_key);
-    const auto crypt_size = (entry->size / bf.block_size()) * bf.block_size();
-    data = bf.decrypt(data.substr(0, crypt_size)) + data.substr(crypt_size);
+    bf.decrypt_in_place(data);
     return std::make_unique<io::File>(entry->path, data);
 }
 

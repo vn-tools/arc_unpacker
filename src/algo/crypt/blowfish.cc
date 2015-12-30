@@ -42,25 +42,22 @@ size_t Blowfish::block_size()
 
 bstr Blowfish::decrypt(const bstr &input) const
 {
-    if (input.size() % BF_BLOCK != 0)
-        throw err::BadDataSizeError();
+    bstr output(input);
+    decrypt_in_place(output);
+    return output;
+}
 
-    size_t left = input.size();
-    size_t done = 0;
+void Blowfish::decrypt_in_place(bstr &input) const
+{
+    size_t left = input.size() / BF_BLOCK;
+    size_t pos = 0;
 
-    bstr output;
-
-    BF_LONG transit[2];
     while (left)
     {
-        std::memcpy(transit, &input.get<u8>()[done], BF_BLOCK);
-        BF_decrypt(transit, p->key.get());
-        output += bstr(reinterpret_cast<char*>(&transit), BF_BLOCK);
-        left -= BF_BLOCK;
-        done += BF_BLOCK;
+        BF_decrypt(&input.get<BF_LONG>()[pos], p->key.get());
+        left--;
+        pos += BF_BLOCK / sizeof(BF_LONG);
     }
-
-    return output;
 }
 
 bstr Blowfish::encrypt(const bstr &input) const
