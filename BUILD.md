@@ -5,7 +5,14 @@ Build instructions
 
 Environment:
 
-1. g++ 4.8+, MinGW-w64, MinGW or Microsoft Visual Studio 2015+
+1. Any compiler from the list below:
+
+    - g++ 4.8+
+    - MinGW-w64
+    - MinGW
+    - Microsoft Visual Studio 2015+
+    - Clang 3.7+
+
 2. CMake
 
 Libraries:
@@ -20,7 +27,7 @@ Libraries:
 
 
 
-## Compiling for GNU/Linux or Cygwin with g++ or MinGW
+## Compiling for GNU/Linux or Cygwin with g++, MinGW or Clang
 
 1. Download required dependencies (the ones with `-dev` or `-devel` suffix). On
    Cygwin most of them are available on [Cygwin Ports](http://cygwinports.org/).
