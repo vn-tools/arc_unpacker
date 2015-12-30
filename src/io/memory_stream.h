@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include "err.h"
 #include "io/stream.h"
 
 namespace au {
@@ -36,8 +37,20 @@ namespace io {
         void write_impl(const void *source, const size_t size) override;
 
     private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
+        MemoryStream(const std::shared_ptr<bstr> buffer);
+
+        template<typename T> inline T read_primitive()
+        {
+            const auto size = sizeof(T);
+            if (buffer_pos + size > buffer->size())
+                throw err::EofError();
+            const auto ret = reinterpret_cast<const T&>((*buffer)[buffer_pos]);
+            buffer_pos += size;
+            return ret;
+        }
+
+        std::shared_ptr<bstr> buffer;
+        size_t buffer_pos;
     };
 
 } }
