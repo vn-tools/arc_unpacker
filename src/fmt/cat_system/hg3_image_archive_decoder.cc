@@ -123,19 +123,32 @@ static std::unique_ptr<res::Image> decode_img0000(
         input_stream.read(data_size_comp));
     const auto ctl = algo::pack::zlib_inflate(input_stream.read(ctl_size_comp));
 
-    io::MemoryStream data_stream(data);
     io::LsbBitReader ctl_bit_reader(ctl);
-
     bool copy = ctl_bit_reader.get(1);
     const auto output_size = get_bit_count(ctl_bit_reader);
-    bstr output;
-    output.reserve(output_size);
-    while (output.size() < output_size)
+
+    bstr output(output_size);
+    auto input_ptr = make_ptr(data);
+    auto output_ptr = make_ptr(output);
+    while (output_ptr < output_ptr.end())
     {
-        const auto size = get_bit_count(ctl_bit_reader);
-        output += copy ? data_stream.read(size) : bstr(size);
+        auto size = get_bit_count(ctl_bit_reader);
+        if (copy)
+        {
+            while (size--
+                && input_ptr < input_ptr.end()
+                && output_ptr < output_ptr.end())
+            {
+                *output_ptr++ = *input_ptr++;
+            }
+        }
+        else
+        {
+            output_ptr += size;
+        }
         copy = !copy;
     }
+
     output = delta_transform(output, width, height, depth);
     auto image = std::make_unique<res::Image>(
         width, height, output, res::PixelFormat::BGRA8888);
