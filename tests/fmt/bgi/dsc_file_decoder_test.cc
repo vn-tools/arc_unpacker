@@ -12,7 +12,7 @@ static const std::string dir = "tests/fmt/bgi/files/dsc/";
 static void do_test_image(
     const std::string &input_path, const std::string &expected_path)
 {
-    const DscFileDecoder decoder;
+    const auto decoder = DscFileDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
@@ -22,7 +22,7 @@ static void do_test_image(
 static void do_test_file(
     const std::string &input_path, const std::string &expected_path)
 {
-    const DscFileDecoder decoder;
+    const auto decoder = DscFileDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);

@@ -59,7 +59,7 @@ res::Image PgdC00ImageDecoder::decode_impl(
     auto data = input_file.stream.read(size_comp - 12);
     data = decompress(data, size_orig);
     io::File tmp_file("test.tga", data);
-    fmt::truevision::TgaImageDecoder tga_image_decoder;
+    const auto tga_image_decoder = fmt::truevision::TgaImageDecoder();
     return tga_image_decoder.decode(logger, tmp_file);
 }
 

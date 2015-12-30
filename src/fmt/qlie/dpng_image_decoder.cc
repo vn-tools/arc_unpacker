@@ -23,7 +23,7 @@ res::Image DpngImageDecoder::decode_impl(
     size_t width = input_file.stream.read_u32_le();
     size_t height = input_file.stream.read_u32_le();
 
-    fmt::png::PngImageDecoder png_image_decoder;
+    const auto png_image_decoder = fmt::png::PngImageDecoder();
 
     res::Image image(width, height);
     for (auto i : algo::range(file_count))

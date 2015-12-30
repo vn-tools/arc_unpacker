@@ -16,7 +16,7 @@ TEST_CASE("PNG images", "[util]")
     dummy_logger.mute();
     io::File file(dir + "usagi_opaque.png", io::FileMode::Read);
 
-    const PngImageDecoder decoder;
+    const auto decoder = PngImageDecoder();
     const auto image = decoder.decode(dummy_logger, file);
     REQUIRE(image.width() == 640);
     REQUIRE(image.height() == 480);
@@ -34,7 +34,7 @@ TEST_CASE("PNG images with transparency", "[fmt]")
     dummy_logger.mute();
     io::File file(dir + "reimu_transparent.png", io::FileMode::Read);
 
-    const PngImageDecoder decoder;
+    const auto decoder = PngImageDecoder();
     const auto image = decoder.decode(dummy_logger, file);
     REQUIRE(image.width() == 641);
     REQUIRE(image.height() == 720);
@@ -48,7 +48,7 @@ TEST_CASE("PNG images with transparency", "[fmt]")
 
 TEST_CASE("PNG images with extra chunks", "[util]")
 {
-    const PngImageDecoder decoder;
+    const auto decoder = PngImageDecoder();
     const auto input_file = tests::file_from_path(dir + "b09s_hs02l_.png");
 
     SECTION("Default chunk handler")

@@ -14,7 +14,7 @@ static void do_test(
     const std::string &input_path,
     const std::vector<std::shared_ptr<io::File>> &expected_files)
 {
-    const EgrArchiveDecoder decoder;
+    const auto decoder = EgrArchiveDecoder();
     const auto input_file = tests::zlib_file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_images(expected_files, actual_files, false);

@@ -82,7 +82,7 @@ std::unique_ptr<io::File> LnkArchiveDecoder::read_file_impl(
 
     if (entry->compressed)
     {
-        LndFileDecoder lnd_file_decoder;
+        const auto lnd_file_decoder = LndFileDecoder();
         return lnd_file_decoder.decode(logger, *output_file);
     }
     else

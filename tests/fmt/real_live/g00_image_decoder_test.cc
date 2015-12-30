@@ -12,7 +12,7 @@ static const std::string dir = "tests/fmt/real_live/files/g00/";
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    const G00ImageDecoder decoder;
+    const auto decoder = G00ImageDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);

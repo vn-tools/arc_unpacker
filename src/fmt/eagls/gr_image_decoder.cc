@@ -46,7 +46,7 @@ res::Image GrImageDecoder::decode_impl(
     data = algo::pack::lzss_decompress(data, output_size);
 
     io::File bmp_file(input_file.path, data);
-    const fmt::microsoft::BmpImageDecoder bmp_file_decoder;
+    const auto bmp_file_decoder = fmt::microsoft::BmpImageDecoder();
     return bmp_file_decoder.decode(logger, bmp_file);
 }
 

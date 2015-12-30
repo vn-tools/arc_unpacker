@@ -32,15 +32,15 @@ static res::Image image_from_file(io::File &file)
     Logger dummy_logger;
     dummy_logger.mute();
 
-    static const fmt::png::PngImageDecoder png_image_decoder;
+    static const auto png_image_decoder = fmt::png::PngImageDecoder();
     if (png_image_decoder.is_recognized(file))
         return png_image_decoder.decode(dummy_logger, file);
 
-    static const fmt::microsoft::BmpImageDecoder bmp_image_decoder;
+    static const auto bmp_image_decoder = fmt::microsoft::BmpImageDecoder();
     if (bmp_image_decoder.is_recognized(file))
         return bmp_image_decoder.decode(dummy_logger, file);
 
-    static const fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
+    static const auto jpeg_image_decoder = fmt::jpeg::JpegImageDecoder();
     if (jpeg_image_decoder.is_recognized(file))
         return jpeg_image_decoder.decode(dummy_logger, file);
 

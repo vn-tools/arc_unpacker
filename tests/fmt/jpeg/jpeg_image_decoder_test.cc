@@ -14,7 +14,7 @@ TEST_CASE("JPEG 24-bit images", "[util]")
 {
     const auto input_file = tests::file_from_path(dir + "reimu_opaque.jpg");
 
-    const JpegImageDecoder decoder;
+    const auto decoder = JpegImageDecoder();
     const auto image = tests::decode(decoder, *input_file);
     REQUIRE(image.width() == 1024);
     REQUIRE(image.height() == 1024);
@@ -28,7 +28,7 @@ TEST_CASE("JPEG 24-bit images", "[util]")
 
 TEST_CASE("JPEG 8-bit images", "[util]")
 {
-    JpegImageDecoder decoder;
+    const auto decoder = JpegImageDecoder();
     auto input_file = tests::file_from_path(dir + "NoName.jpeg");
     auto expected_file = tests::file_from_path(dir + "NoName-out.png");
     auto actual_image = tests::decode(decoder, *input_file);

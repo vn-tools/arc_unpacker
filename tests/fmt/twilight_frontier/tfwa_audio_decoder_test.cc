@@ -12,7 +12,7 @@ static const std::string dir = "tests/fmt/twilight_frontier/files/tfwa/";
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    const TfwaAudioDecoder decoder;
+    const auto decoder = TfwaAudioDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_audio = tests::decode(decoder, *input_file);

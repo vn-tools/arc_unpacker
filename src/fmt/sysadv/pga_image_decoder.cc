@@ -26,7 +26,7 @@ res::Image PgaImageDecoder::decode_impl(
     png_file.stream.write("IHDR"_b);
     png_file.stream.write(png_data);
 
-    const fmt::png::PngImageDecoder png_decoder;
+    const auto png_decoder = fmt::png::PngImageDecoder();
     return png_decoder.decode(logger, png_file);
 }
 

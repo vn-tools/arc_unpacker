@@ -16,7 +16,7 @@ bool CustomPngImageDecoder::is_recognized_impl(io::File &input_file) const
 res::Image CustomPngImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    fmt::png::PngImageDecoder decoder;
+    const auto decoder = fmt::png::PngImageDecoder();
     std::map<std::string, bstr> chunks;
     auto image = decoder.decode(
         logger,

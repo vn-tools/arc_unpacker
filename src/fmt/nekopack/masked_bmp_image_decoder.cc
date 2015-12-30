@@ -18,7 +18,7 @@ res::Image MaskedBmpImageDecoder::decode_impl(
         io::path(input_file.path).change_extension("bmp").name());
     if (!base_file)
         throw err::CorruptDataError("Missing base file");
-    const fmt::microsoft::BmpImageDecoder bmp_decoder;
+    const auto bmp_decoder = fmt::microsoft::BmpImageDecoder();
     auto base_image = bmp_decoder.decode(logger, *base_file);
     res::Image mask(
         base_image.width(),

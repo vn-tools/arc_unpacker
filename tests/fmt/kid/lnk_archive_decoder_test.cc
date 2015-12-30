@@ -13,7 +13,7 @@ static void do_test(
     const std::vector<std::shared_ptr<io::File>> expected_files,
     const bool input_file_is_compressed = false)
 {
-    const LnkArchiveDecoder decoder;
+    const auto decoder = LnkArchiveDecoder();
     const auto input_file = input_file_is_compressed
         ? tests::zlib_file_from_path(dir + input_path)
         : tests::file_from_path(dir + input_path);

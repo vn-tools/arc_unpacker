@@ -84,7 +84,7 @@ static res::Image decode_png(
     data[3] = 'G';
 
     io::File png_file(input_file.path, data);
-    const fmt::png::PngImageDecoder png_image_decoder;
+    const auto png_image_decoder = fmt::png::PngImageDecoder();
     return png_image_decoder.decode(logger, png_file);
 }
 

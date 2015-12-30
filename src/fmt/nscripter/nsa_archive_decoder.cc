@@ -98,7 +98,7 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
 
         case COMPRESSStreamN_SPB:
         {
-            SpbImageDecoder spb_image_decoder;
+            const auto spb_image_decoder = SpbImageDecoder();
             output_file->stream.write(data);
             output_file = util::file_from_image(
                 spb_image_decoder.decode(logger, *output_file),

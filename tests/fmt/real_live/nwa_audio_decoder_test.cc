@@ -12,7 +12,7 @@ static const std::string dir = "tests/fmt/real_live/files/nwa/";
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    const NwaAudioDecoder decoder;
+    const auto decoder = NwaAudioDecoder();
     const auto input_file = tests::zlib_file_from_path(dir + input_path);
     const auto expected_file = tests::zlib_file_from_path(dir + expected_path);
     const auto actual_audio = tests::decode(decoder, *input_file);

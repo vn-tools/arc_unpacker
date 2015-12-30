@@ -13,7 +13,7 @@ static void do_test(
     const std::string &path,
     const std::vector<std::shared_ptr<io::File>> &expected_files)
 {
-    const NsaArchiveDecoder decoder;
+    const auto decoder = NsaArchiveDecoder();
     const auto input_file = tests::file_from_path(dir + path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);

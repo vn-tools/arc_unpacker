@@ -9,7 +9,7 @@ using namespace au::fmt::kid;
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    const LndFileDecoder decoder;
+    const auto decoder = LndFileDecoder();
     const auto input_file = tests::file_from_path(input_path);
     const auto expected_file = tests::file_from_path(expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);

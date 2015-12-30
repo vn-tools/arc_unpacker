@@ -38,7 +38,7 @@ res::Image CwpImageDecoder::decode_impl(
     png_file.stream.write("IEND"_b);
     png_file.stream.write("\xAE\x42\x60\x82"_b);
 
-    const fmt::png::PngImageDecoder png_decoder;
+    const auto png_decoder = fmt::png::PngImageDecoder();
     auto image = png_decoder.decode(logger, png_file);
     for (auto &c : image)
     {

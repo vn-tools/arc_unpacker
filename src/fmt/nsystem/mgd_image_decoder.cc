@@ -205,7 +205,7 @@ static res::Image read_image(
     {
         io::File png_file;
         png_file.stream.write(input);
-        const fmt::png::PngImageDecoder png_decoder;
+        const auto png_decoder = fmt::png::PngImageDecoder();
         return png_decoder.decode(logger, png_file);
     }
 

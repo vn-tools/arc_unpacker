@@ -13,7 +13,7 @@ static const std::string prt_dir = "tests/fmt/kid/files/prt/";
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    const PrtImageDecoder decoder;
+    const auto decoder = PrtImageDecoder();
     const auto input_file = tests::file_from_path(input_path);
     const auto expected_file = tests::file_from_path(expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);

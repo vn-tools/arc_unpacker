@@ -41,16 +41,9 @@ res::Image CbgImageDecoder::decode_impl(
 
     auto version = get_version(input_file.stream);
     if (version == Version::Version1)
-    {
-        cbg::Cbg1Decoder decoder;
-        return *decoder.decode(input_file.stream);
-    }
-    else if (version == Version::Version2)
-    {
-        cbg::Cbg2Decoder decoder;
-        return *decoder.decode(input_file.stream);
-    }
-
+        return *cbg::Cbg1Decoder().decode(input_file.stream);
+    if (version == Version::Version2)
+        return *cbg::Cbg2Decoder().decode(input_file.stream);
     throw err::UnsupportedVersionError(static_cast<int>(version));
 }
 

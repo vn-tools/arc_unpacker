@@ -11,7 +11,7 @@ static res::Audio audio_from_file(io::File &file)
 {
     Logger dummy_logger;
     dummy_logger.mute();
-    const fmt::microsoft::WavAudioDecoder wav_audio_decoder;
+    const auto wav_audio_decoder = fmt::microsoft::WavAudioDecoder();
     return wav_audio_decoder.decode(dummy_logger, file);
 }
 

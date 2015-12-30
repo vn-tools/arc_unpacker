@@ -15,7 +15,7 @@ static void do_test(const std::string &input_path)
         tests::stub_file("123.txt", "1234567890"_b),
         tests::stub_file("abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
     };
-    const YpfArchiveDecoder decoder;
+    const auto decoder = YpfArchiveDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);

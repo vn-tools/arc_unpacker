@@ -12,7 +12,7 @@ static const std::string dir = "tests/fmt/majiro/files/rc8/";
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    const Rc8ImageDecoder decoder;
+    const auto decoder = Rc8ImageDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);

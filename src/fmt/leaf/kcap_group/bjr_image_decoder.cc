@@ -15,7 +15,7 @@ bool BjrImageDecoder::is_recognized_impl(io::File &input_file) const
 res::Image BjrImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    fmt::microsoft::BmpImageDecoder bmp_image_decoder;
+    const auto bmp_image_decoder = fmt::microsoft::BmpImageDecoder();
     const auto input = bmp_image_decoder.decode(logger, input_file);
 
     const auto name = input_file.path.name();

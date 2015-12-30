@@ -15,7 +15,7 @@ static void do_test(const std::string &input_path)
         tests::stub_file("abc.txt", "123"_b),
         tests::stub_file("another.txt", "abcdefghij"_b),
     };
-    const ArcArchiveDecoder decoder;
+    const auto decoder = ArcArchiveDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);

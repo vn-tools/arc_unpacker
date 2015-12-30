@@ -41,14 +41,14 @@ res::Image AjpImageDecoder::decode_impl(
     auto mask_data = input_file.stream.read(mask_size);
     decrypt(mask_data);
 
-    fmt::jpeg::JpegImageDecoder jpeg_image_decoder;
+    const auto jpeg_image_decoder = fmt::jpeg::JpegImageDecoder();
     io::File jpeg_file;
     jpeg_file.stream.write(jpeg_data);
     auto image = jpeg_image_decoder.decode(logger, jpeg_file);
 
     if (mask_size)
     {
-        PmsImageDecoder pms_image_decoder;
+        const auto pms_image_decoder = PmsImageDecoder();
         io::File mask_file;
         mask_file.stream.write(mask_data);
         const auto mask_image = pms_image_decoder.decode(logger, mask_file);

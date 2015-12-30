@@ -116,7 +116,7 @@ static ResourceKeys get_resource_keys(
     for (const auto &path : executable_paths)
     {
         io::File file(path, io::FileMode::Read);
-        fmt::microsoft::ExeArchiveDecoder exe_decoder;
+        const auto exe_decoder = fmt::microsoft::ExeArchiveDecoder();
         const auto meta = exe_decoder.read_meta(logger, file);
         for (const auto &entry : meta->entries)
         {

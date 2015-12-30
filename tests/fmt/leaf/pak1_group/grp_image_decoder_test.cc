@@ -18,7 +18,7 @@ static void do_test(
     const std::string &mask_path,
     const std::string &expected_path)
 {
-    const GrpImageDecoder decoder;
+    const auto decoder = GrpImageDecoder();
     const auto input_file = tests::file_from_path(input_path);
     if (!palette_path.empty())
     {

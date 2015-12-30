@@ -65,14 +65,12 @@ static res::Image decode_tlg_0(io::File &input_file)
 
 static res::Image decode_tlg_5(io::File &input_file)
 {
-    Tlg5Decoder decoder;
-    return decoder.decode(input_file);
+    return Tlg5Decoder().decode(input_file);
 }
 
 static res::Image decode_tlg_6(io::File &input_file)
 {
-    Tlg6Decoder decoder;
-    return decoder.decode(input_file);
+    return Tlg6Decoder().decode(input_file);
 }
 
 static int guess_version(io::Stream &input_stream)

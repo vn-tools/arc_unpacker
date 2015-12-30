@@ -146,7 +146,7 @@ static std::unique_ptr<res::Image> decode_img0000(
 static std::unique_ptr<res::Image> decode_jpeg(
     const Logger &logger, const bstr &input_data)
 {
-    // const fmt::jpeg::JpegImageDecoder jpeg_decoder;
+    // const auto jpeg_decoder = fmt::jpeg::JpegImageDecoder();
     // auto pseudo_file = std::make_unique<io::File>("dummy.jpg", input_data);
     // return std::make_unique<res::Image>(
     //     jpeg_decoder.decode(logger, *pseudo_file));

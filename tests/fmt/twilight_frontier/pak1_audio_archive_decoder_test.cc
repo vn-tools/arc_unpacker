@@ -13,7 +13,7 @@ static void do_test(
     const std::string &input_path,
     const std::vector<std::shared_ptr<io::File>> &expected_files)
 {
-    const Pak1AudioArchiveDecoder decoder;
+    const auto decoder = Pak1AudioArchiveDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_audio(expected_files, actual_files, true);

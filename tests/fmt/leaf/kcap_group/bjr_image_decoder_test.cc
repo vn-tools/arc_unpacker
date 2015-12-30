@@ -13,7 +13,7 @@ static void do_test(
     const std::shared_ptr<io::File> input_file,
     const std::string &expected_path)
 {
-    const BjrImageDecoder decoder;
+    const auto decoder = BjrImageDecoder();
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);
     tests::compare_images(*expected_file, actual_image);

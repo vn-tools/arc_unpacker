@@ -12,7 +12,7 @@ static const std::string dir = "tests/fmt/fc01/files/acd/";
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    const AcdImageDecoder decoder;
+    const auto decoder = AcdImageDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);

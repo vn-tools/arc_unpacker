@@ -16,7 +16,7 @@ static void do_test(const std::string &input_path)
         tests::stub_file("\\derp\\abc.xyz", "abcdefghijklmnopqrstuvwxyz"_b),
         tests::stub_file("\\derp\\!@#.txt", "!@#$%^&*()_+"_b),
     };
-    const WbpArchiveDecoder decoder;
+    const auto decoder = WbpArchiveDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);

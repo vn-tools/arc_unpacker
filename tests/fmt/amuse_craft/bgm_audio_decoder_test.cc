@@ -9,7 +9,7 @@ using namespace au::fmt::amuse_craft;
 TEST_CASE("Amuse Craft BGM audio files", "[fmt]")
 {
     // Dumb test, but still a test
-    const BgmAudioDecoder decoder;
+    const auto decoder = BgmAudioDecoder();
     io::File input_file("TEST.OGG", "BGM\x20JUNKJUNKOggSwhatever"_b);
     const io::File expected_file("TEST.ogg", "OggSwhatever"_b);
     const auto actual_file = tests::decode(decoder, input_file);

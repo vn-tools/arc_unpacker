@@ -15,7 +15,7 @@ static void test(const std::string &path)
         tests::stub_file("another.txt", "abcdefghij"_b),
         tests::stub_file("abc.txt", "123"_b),
     };
-    const RpaArchiveDecoder decoder;
+    const auto decoder = RpaArchiveDecoder();
     const auto input_file = tests::file_from_path(dir + path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_files(expected_files, actual_files, true);

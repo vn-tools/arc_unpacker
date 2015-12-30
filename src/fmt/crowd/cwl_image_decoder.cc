@@ -25,7 +25,7 @@ res::Image CwlImageDecoder::decode_impl(
     auto data = algo::pack::lzss_decompress(
         input_file.stream.read_to_eof(), size_orig, settings);
 
-    const fmt::crowd::CwdImageDecoder cwd_decoder;
+    const auto cwd_decoder = fmt::crowd::CwdImageDecoder();
     io::File cwd_file("dummy.cwd", data);
     return cwd_decoder.decode(logger, cwd_file);
 }

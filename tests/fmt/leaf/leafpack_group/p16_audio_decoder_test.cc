@@ -12,7 +12,7 @@ static const std::string dir = "tests/fmt/leaf/files/p16/";
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    const P16AudioDecoder decoder;
+    const auto decoder = P16AudioDecoder();
     const auto input_file = tests::zlib_file_from_path(dir + input_path);
     const auto expected_file = tests::zlib_file_from_path(dir + expected_path);
     const auto actual_audio = tests::decode(decoder, *input_file);

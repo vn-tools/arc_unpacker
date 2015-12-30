@@ -27,7 +27,7 @@ res::Image ZbmImageDecoder::decode_impl(
     for (const auto i : algo::range(std::min<size_t>(100, data.size())))
         data[i] ^= 0xFF;
 
-    const fmt::microsoft::BmpImageDecoder bmp_decoder;
+    const auto bmp_decoder =  fmt::microsoft::BmpImageDecoder();
     io::File bmp_file("dummy.bmp", data);
     return bmp_decoder.decode(logger, bmp_file);
 }

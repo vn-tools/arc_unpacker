@@ -28,7 +28,7 @@ res::Image CmpImageDecoder::decode_impl(
     data = algo::pack::lzss_decompress(data, size_original, settings);
 
     io::File bmp_file(input_file.path, data);
-    const fmt::microsoft::BmpImageDecoder bmp_image_decoder;
+    const auto bmp_image_decoder = fmt::microsoft::BmpImageDecoder();
     return bmp_image_decoder.decode(logger, bmp_file);
 }
 

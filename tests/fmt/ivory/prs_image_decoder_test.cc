@@ -12,7 +12,7 @@ static const std::string dir = "tests/fmt/ivory/files/prs/";
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    const PrsImageDecoder decoder;
+    const auto decoder = PrsImageDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);

@@ -11,7 +11,7 @@ static const std::string dir = "tests/fmt/bgi/files/audio/";
 static void do_test(
     const std::string &input_path, const std::string &expected_path)
 {
-    const BgiAudioDecoder decoder;
+    const auto decoder = BgiAudioDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);

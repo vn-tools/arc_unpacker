@@ -13,7 +13,7 @@ static void do_test(
     const std::string input_path,
     const std::vector<std::string> expected_paths)
 {
-    const Hg3ImageArchiveDecoder decoder;
+    const auto decoder = Hg3ImageArchiveDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     std::vector<std::shared_ptr<io::File>> expected_files;
