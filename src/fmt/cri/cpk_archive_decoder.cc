@@ -259,7 +259,8 @@ static void read_toc(
         entry.file_name = row.at("FileName").get<std::string>();
         entry.file_offset = row.at("FileOffset").get<u64>() + data_offset_base;
         entry.file_size = row.at("FileSize").get<u32>();
-        entry.extract_size = row.at("ExtractSize").get<u32>();
+        if (row.at("ExtractSize"))
+            entry.extract_size = row.at("ExtractSize").get<u32>();
         if (row.at("UserString"))
             entry.user_string = row.at("UserString").get<std::string>();
         toc[entry.id] = entry;
