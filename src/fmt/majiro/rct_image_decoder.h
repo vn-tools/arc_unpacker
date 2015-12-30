@@ -11,8 +11,8 @@ namespace majiro {
     public:
         RctImageDecoder();
         ~RctImageDecoder();
-        void register_cli_options(ArgParser &arg_parser) const;
-        void parse_cli_options(const ArgParser &arg_parser);
+        void register_cli_options(ArgParser &arg_parser) const override;
+        void parse_cli_options(const ArgParser &arg_parser) override;
         void set_key(const bstr &key);
 
     protected:

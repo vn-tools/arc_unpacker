@@ -13,7 +13,7 @@ namespace fmt {
 
         NamingStrategy naming_strategy() const override;
 
-        void accept(IDecoderVisitor &visitor) const;
+        void accept(IDecoderVisitor &visitor) const override;
 
         res::Image decode(
             const Logger &logger, io::File &input_file) const;

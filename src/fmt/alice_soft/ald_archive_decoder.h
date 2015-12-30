@@ -16,13 +16,13 @@ namespace alice_soft {
 
         std::unique_ptr<fmt::ArchiveMeta> read_meta_impl(
             const Logger &logger,
-            io::File &arc_file) const;
+            io::File &arc_file) const override;
 
         std::unique_ptr<io::File> read_file_impl(
             const Logger &logger,
             io::File &arc_file,
             const ArchiveMeta &m,
-            const ArchiveEntry &e) const;
+            const ArchiveEntry &e) const override;
     };
 
 } } }

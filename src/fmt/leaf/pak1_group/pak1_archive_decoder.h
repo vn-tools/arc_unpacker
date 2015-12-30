@@ -11,8 +11,8 @@ namespace leaf {
     public:
         Pak1ArchiveDecoder();
         ~Pak1ArchiveDecoder();
-        void register_cli_options(ArgParser &arg_parser) const;
-        void parse_cli_options(const ArgParser &arg_parser);
+        void register_cli_options(ArgParser &arg_parser) const override;
+        void parse_cli_options(const ArgParser &arg_parser) override;
         void set_version(const int version);
         std::vector<std::string> get_linked_formats() const override;
 
