@@ -14,7 +14,7 @@ namespace fmt {
     class IDecoder
     {
     public:
-        virtual ~IDecoder() { }
+        virtual ~IDecoder() {}
 
         virtual void accept(IDecoderVisitor &visitor) const = 0;
 

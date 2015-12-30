@@ -10,8 +10,8 @@ namespace common {
     class AbstractDecoder
     {
     public:
-        AbstractDecoder();
-        virtual ~AbstractDecoder();
+        AbstractDecoder() {}
+        virtual ~AbstractDecoder() {}
 
         virtual void set_input(const bstr &data);
         virtual void reset() = 0;

@@ -21,7 +21,7 @@ namespace glib2  {
     class IPlugin
     {
     public:
-        virtual ~IPlugin() { }
+        virtual ~IPlugin() {}
         virtual std::unique_ptr<Decoder> create_header_decoder() const = 0;
         virtual std::unique_ptr<Decoder> create_decoder(
             const std::array<u32, 4> &keys) const = 0;

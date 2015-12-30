@@ -9,11 +9,13 @@ namespace au {
 
     struct Option
     {
+        virtual ~Option() {}
         virtual Option *set_description(const std::string &desc) = 0;
     };
 
     struct Switch : Option
     {
+        virtual ~Switch() {}
         virtual Switch *set_description(const std::string &desc) = 0;
         virtual Switch *set_value_name(const std::string &name) = 0;
         virtual Switch *add_possible_value(
@@ -23,6 +25,7 @@ namespace au {
 
     struct Flag : Option
     {
+        virtual ~Flag() {}
         virtual Flag *set_description(const std::string &desc) = 0;
     };
 

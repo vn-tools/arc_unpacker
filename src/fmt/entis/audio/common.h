@@ -33,7 +33,7 @@ namespace audio {
     class BaseAudioDecoder
     {
     public:
-        virtual ~BaseAudioDecoder() { }
+        virtual ~BaseAudioDecoder() {}
         virtual bstr process_chunk(const MioChunk &chunk) = 0;
     };
 

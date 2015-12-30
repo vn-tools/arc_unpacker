@@ -9,7 +9,7 @@ namespace io {
     class IBitReader
     {
     public:
-        virtual ~IBitReader() { }
+        virtual ~IBitReader() {}
 
         virtual void seek(const size_t pos) = 0;
         virtual void skip(const int offset) = 0;
@@ -24,7 +24,7 @@ namespace io {
     public:
         BaseBitReader(const bstr &input);
         BaseBitReader(io::Stream &input_stream);
-        virtual ~BaseBitReader() { }
+        virtual ~BaseBitReader() {}
 
         void seek(const size_t pos) override;
         void skip(const int offset) override;

@@ -10,7 +10,7 @@ namespace io {
     class Stream
     {
     public:
-        virtual ~Stream() { }
+        virtual ~Stream() {}
 
         virtual size_t size() const = 0;
         virtual size_t tell() const = 0;

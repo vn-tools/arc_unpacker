@@ -9,7 +9,7 @@ namespace fmt {
     class BaseAudioDecoder : public BaseDecoder
     {
     public:
-        virtual ~BaseAudioDecoder() { }
+        virtual ~BaseAudioDecoder() {}
 
         NamingStrategy naming_strategy() const override;
 

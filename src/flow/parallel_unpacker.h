@@ -45,7 +45,7 @@ namespace flow {
             const io::path &base_name,
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task);
 
-        virtual ~BaseParallelUnpackingTask() { }
+        virtual ~BaseParallelUnpackingTask() {}
 
         Logger logger;
         ParallelUnpacker &unpacker;

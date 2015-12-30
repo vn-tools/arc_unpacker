@@ -7,20 +7,20 @@ namespace fmt {
 
     struct ArchiveEntry
     {
-        virtual ~ArchiveEntry() { }
+        virtual ~ArchiveEntry() {}
         io::path path;
     };
 
     struct ArchiveMeta
     {
-        virtual ~ArchiveMeta() { }
+        virtual ~ArchiveMeta() {}
         std::vector<std::unique_ptr<ArchiveEntry>> entries;
     };
 
     class BaseArchiveDecoder : public BaseDecoder
     {
     public:
-        virtual ~BaseArchiveDecoder() { }
+        virtual ~BaseArchiveDecoder() {}
 
         virtual NamingStrategy naming_strategy() const override;
 

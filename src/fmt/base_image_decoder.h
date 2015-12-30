@@ -9,7 +9,7 @@ namespace fmt {
     class BaseImageDecoder : public BaseDecoder
     {
     public:
-        virtual ~BaseImageDecoder() { }
+        virtual ~BaseImageDecoder() {}
 
         NamingStrategy naming_strategy() const override;
 

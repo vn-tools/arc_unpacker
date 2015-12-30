@@ -9,8 +9,8 @@ namespace wpx {
 
     struct IRetrievalStrategy
     {
-        IRetrievalStrategy(io::IBitReader &bit_reader) { }
-        virtual ~IRetrievalStrategy() { }
+        IRetrievalStrategy(io::IBitReader &bit_reader) {}
+        virtual ~IRetrievalStrategy() {}
         virtual u8 fetch_byte(DecoderContext &, const u8 *) = 0;
     };
 

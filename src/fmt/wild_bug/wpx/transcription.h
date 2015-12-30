@@ -16,7 +16,7 @@ namespace wpx {
 
     struct ITranscriptionStrategy
     {
-        virtual ~ITranscriptionStrategy() { }
+        virtual ~ITranscriptionStrategy() {}
         virtual TranscriptionSpec get_spec(DecoderContext &context) = 0;
     };
 

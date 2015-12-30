@@ -8,7 +8,7 @@ namespace au {
     class FileSaver
     {
     public:
-        virtual ~FileSaver() { }
+        virtual ~FileSaver() {}
         virtual io::path save(std::shared_ptr<io::File> file) const = 0;
     };
 

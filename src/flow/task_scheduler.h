@@ -9,7 +9,7 @@ namespace flow {
     class ITask
     {
     public:
-        virtual ~ITask() { }
+        virtual ~ITask() {}
         virtual bool work() const = 0;
     };
 

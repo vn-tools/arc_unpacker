@@ -11,7 +11,7 @@ namespace fmt {
         : public IDecoder, public std::enable_shared_from_this<IDecoder>
     {
     public:
-        virtual ~BaseDecoder() { }
+        virtual ~BaseDecoder() {}
 
         virtual void register_cli_options(ArgParser &arg_parser) const override;
         virtual void parse_cli_options(const ArgParser &arg_parser) override;

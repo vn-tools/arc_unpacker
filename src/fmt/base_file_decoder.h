@@ -8,7 +8,7 @@ namespace fmt {
     class BaseFileDecoder : public BaseDecoder
     {
     public:
-        virtual ~BaseFileDecoder() { }
+        virtual ~BaseFileDecoder() {}
 
         NamingStrategy naming_strategy() const override;
 

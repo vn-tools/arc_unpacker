@@ -11,6 +11,7 @@ namespace fmt {
     class IDecoderVisitor
     {
     public:
+        virtual ~IDecoderVisitor() {}
         virtual void visit(const BaseArchiveDecoder &decoder) = 0;
         virtual void visit(const BaseFileDecoder &decoder) = 0;
         virtual void visit(const BaseImageDecoder &decoder) = 0;

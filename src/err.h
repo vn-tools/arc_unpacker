@@ -7,6 +7,7 @@ namespace err {
 
     struct GeneralError : public std::runtime_error
     {
+        virtual ~GeneralError() {}
         GeneralError(const std::string &description);
     };
 
@@ -17,6 +18,7 @@ namespace err {
 
     struct DataError : public GeneralError
     {
+        virtual ~DataError() {}
     protected:
         DataError(const std::string &description);
     };
@@ -44,6 +46,7 @@ namespace err {
 
     struct IoError : public GeneralError
     {
+        virtual ~IoError() {}
         IoError(const std::string &description);
     };
 
@@ -59,6 +62,7 @@ namespace err {
 
     struct NotSupportedError : public GeneralError
     {
+        virtual ~NotSupportedError() {}
         NotSupportedError(const std::string &description);
     };
 
