@@ -7,17 +7,17 @@ TEST_CASE("Binary utilities", "[algo]")
 {
     SECTION("Xor with u8 key")
     {
-        REQUIRE(algo::xor("test"_b, 1) == "udru"_b);
+        REQUIRE(algo::unxor("test"_b, 1) == "udru"_b);
     }
 
     SECTION("Xor with bstr key")
     {
-        REQUIRE(algo::xor("test"_b, "\x01\x02"_b) == "ugrv"_b);
+        REQUIRE(algo::unxor("test"_b, "\x01\x02"_b) == "ugrv"_b);
     }
 
     SECTION("Xor with empty bstr key")
     {
-        REQUIRE_THROWS(algo::xor("test"_b, ""_b));
+        REQUIRE_THROWS(algo::unxor("test"_b, ""_b));
     }
 
     SECTION("Bit rotation")

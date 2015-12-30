@@ -266,7 +266,7 @@ static res::Image unpack_v6(
         "\x3E\xA5\x4F\x79\x59\xFE\x3A\xC7"_b;
 
     auto base_stem = algo::trim_to_zero(
-        algo::xor(input_stream.seek(0x34).read(0x20), name_key)).str();
+        algo::unxor(input_stream.seek(0x34).read(0x20), name_key)).str();
 
     res::Image output_image(header.width, header.height);
 

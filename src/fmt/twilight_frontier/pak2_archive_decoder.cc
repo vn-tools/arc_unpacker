@@ -91,7 +91,7 @@ std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->already_unpacked)
         return nullptr;
-    const auto data = algo::xor(
+    const auto data = algo::unxor(
         input_file.stream.seek(entry->offset).read(entry->size),
         (entry->offset >> 1) | 0x23);
     return std::make_unique<io::File>(entry->path, data);

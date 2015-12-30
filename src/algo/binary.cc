@@ -4,7 +4,8 @@
 
 using namespace au;
 
-bstr algo::xor(const bstr &input, const u8 key)
+// the name is because of -fno-operator-names
+bstr algo::unxor(const bstr &input, const u8 key)
 {
     bstr output(input);
     for (const auto i : algo::range(input.size()))
@@ -12,7 +13,7 @@ bstr algo::xor(const bstr &input, const u8 key)
     return output;
 }
 
-bstr algo::xor(const bstr &input, const bstr &key)
+bstr algo::unxor(const bstr &input, const bstr &key)
 {
     if (!key.size())
         throw err::BadDataSizeError();
