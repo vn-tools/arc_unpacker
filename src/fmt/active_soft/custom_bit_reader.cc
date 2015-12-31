@@ -1,54 +1,28 @@
 #include "fmt/active_soft/custom_bit_reader.h"
-#include "io/memory_stream.h"
+#include "algo/range.h"
 
 using namespace au;
 using namespace au::fmt::active_soft;
 
-struct CustomBitReader::Priv final
-{
-    Priv(const bstr &input);
-    io::MemoryStream input_stream;
-    u32 value;
-};
-
-CustomBitReader::Priv::Priv(const bstr &input) : input_stream(input), value(0)
+CustomBitReader::CustomBitReader(const bstr &input) : io::BaseBitReader(input)
 {
 }
 
-CustomBitReader::CustomBitReader(const bstr &input) : p(new Priv(input))
+u32 CustomBitReader::get(const size_t bits)
 {
-}
-
-CustomBitReader::~CustomBitReader()
-{
-}
-
-u32 CustomBitReader::get(size_t bits)
-{
-    u32 ret = 0;
-    u32 value = p->value;
-    while (bits--)
+    u32 value = 0;
+    for (const auto i : algo::range(bits))
     {
-        value >>= 1;
-        if (!(value & 0xF00))
-            value = p->input_stream.read_u8() | 0xFF00;
-        ret <<= 1;
-        ret |= value & 1;
+        buffer >>= 1;
+        if (!bits_available)
+        {
+            buffer = input_stream->read_u8();
+            bits_available = 8;
+        }
+        value <<= 1;
+        value |= buffer & 1;
+        --bits_available;
     }
-    p->value = value;
-    return ret;
-}
-
-u32 CustomBitReader::get_variable_integer()
-{
-    int bit = 1, count = 0;
-    while (count < 32 && bit)
-    {
-        bit = get(1);
-        count++;
-    }
-    --count;
-    if (count)
-        return (1 << count) | get(count);
-    return 1;
+    position += bits;
+    return value;
 }

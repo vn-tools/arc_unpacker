@@ -352,7 +352,7 @@ ChannelDecoder::ChannelDecoder(const int type, const int idx, const int count)
 }
 
 void ChannelDecoder::decode1(
-    CustomBitReader &bit_reader,
+    io::IBitReader &bit_reader,
     const unsigned int a,
     const int b,
     const AthTable &ath_table)
@@ -477,7 +477,7 @@ void ChannelDecoder::decode1(
         base[i] = value_f32[value[i]] * scale_f32[scale[i]];
 }
 
-void ChannelDecoder::decode2(CustomBitReader &bit_reader)
+void ChannelDecoder::decode2(io::IBitReader &bit_reader)
 {
     static const char list1[] =
     {

@@ -2,6 +2,7 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "err.h"
+#include "io/bit_reader.h"
 #include "io/memory_stream.h"
 
 using namespace au;
@@ -10,62 +11,56 @@ using namespace au::fmt::shiina_rio::warc;
 
 namespace
 {
-    class CustomBitReader final
+    class CustomBitReader final : public io::BaseBitReader
     {
     public:
         CustomBitReader(const bstr &input);
-        u32 get(int bits);
-
+        u32 get(const size_t bits) override;
     private:
         void fetch();
-
-        io::MemoryStream input_stream;
-        int available_bits;
-        u32 value;
     };
 }
 
-CustomBitReader::CustomBitReader(const bstr &input)
-    : input_stream(input), available_bits(0), value(0)
+CustomBitReader::CustomBitReader(const bstr &input) : io::BaseBitReader(input)
 {
 }
 
 void CustomBitReader::fetch()
 {
-    if (input_stream.size() - input_stream.tell() >= 4)
+    if (input_stream->size() - input_stream->tell() >= 4)
     {
-        value = input_stream.read_u32_le();
+        buffer = input_stream->read_u32_le();
         return;
     }
-    while (!input_stream.eof())
+    while (!input_stream->eof())
     {
-        value <<= 8;
-        value |= input_stream.read_u8();
+        buffer <<= 8;
+        buffer |= input_stream->read_u8();
     }
 }
 
-u32 CustomBitReader::get(int requested_bits)
+u32 CustomBitReader::get(size_t requested_bits)
 {
-    u32 ret = 0;
-    if (available_bits < requested_bits)
+    u32 value = 0;
+    if (bits_available < requested_bits)
     {
         do
         {
-            requested_bits -= available_bits;
-            const u32 mask = (1ull << available_bits) - 1;
-            ret |= (value & mask) << requested_bits;
+            requested_bits -= bits_available;
+            const u32 mask = (1ull << bits_available) - 1;
+            value |= (buffer & mask) << requested_bits;
             fetch();
-            available_bits = 32;
+            bits_available = 32;
         }
         while (requested_bits > 32);
     }
-    available_bits -= requested_bits;
+    bits_available -= requested_bits;
     const u32 mask = (1ull << requested_bits) - 1;
-    return ret | ((value >> available_bits) & mask);
+    return value | ((buffer >> bits_available) & mask);
 }
 
 static int init_huffman(
-    CustomBitReader &bit_reader, u16 nodes[2][512], int &size)
+    io::IBitReader &bit_reader, u16 nodes[2][512], int &size)
 {
     if (!bit_reader.get(1))
         return bit_reader.get(8);

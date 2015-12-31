@@ -1,23 +1,16 @@
 #pragma once
 
-#include <memory>
-#include "types.h"
+#include "io/bit_reader.h"
 
 namespace au {
 namespace fmt {
 namespace active_soft {
 
-    class CustomBitReader final
+    class CustomBitReader final : public io::BaseBitReader
     {
     public:
         CustomBitReader(const bstr &input);
-        ~CustomBitReader();
-        u32 get(const size_t bits);
-        u32 get_variable_integer();
-
-    private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
+        u32 get(const size_t bits) override;
     };
 
 } } }

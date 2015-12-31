@@ -2,6 +2,7 @@
 #include <array>
 #include "algo/range.h"
 #include "err.h"
+#include "io/bit_reader.h"
 #include "io/memory_stream.h"
 
 using namespace au;
@@ -36,16 +37,11 @@ namespace
         size_t input_size;
     };
 
-    class CustomBitReader final
+    class CustomBitReader final : public io::BaseBitReader
     {
     public:
         CustomBitReader(const bstr &str);
-        u32 get(size_t bits);
-
-    private:
-        io::MemoryStream input_stream;
-        size_t remaining;
-        u32 buffer;
+        u32 get(const size_t bits) override;
     };
 }
 
@@ -53,25 +49,24 @@ Tree::Tree() : base(), neighbour(), other()
 {
 }
 
-CustomBitReader::CustomBitReader(const bstr &str)
-    : input_stream(str), remaining(0), buffer(0)
+CustomBitReader::CustomBitReader(const bstr &input) : io::BaseBitReader(input)
 {
 }
 
-u32 CustomBitReader::get(size_t bits)
+u32 CustomBitReader::get(const size_t bits)
 {
-    int ret = 0;
-    while (bits--)
+    u32 ret = 0;
+    for (const auto i : algo::range(bits))
     {
-        if (!remaining)
+        if (!bits_available)
         {
-            buffer = input_stream.read_u32_le();
-            remaining = 32;
+            buffer = input_stream->read_u8();
+            bits_available = 8;
         }
         ret <<= 1;
         ret |= (buffer & 1);
         buffer >>= 1;
-        remaining--;
+        bits_available--;
     }
     return ret;
 }
@@ -137,7 +132,7 @@ static Tree make_tree(const bstr &input, std::array<u32, 0x80> &freq)
     return ret;
 }
 
-static int read_from_tree(const Tree &tree, CustomBitReader &bit_reader)
+static int read_from_tree(const Tree &tree, io::IBitReader &bit_reader)
 {
     size_t ret = tree.root;
     while (ret >= tree.input_size)
@@ -343,8 +338,8 @@ static void ycc2rgb(u8 *dc, u8 *ac, short *iy, short *cbcr, const size_t stride)
 static bstr decode_blocks(
     const BasicInfo &info,
     const bstr &tree_input,
-    CustomBitReader &bit_reader_1,
-    CustomBitReader &bit_reader_2,
+    io::IBitReader &bit_reader_1,
+    io::IBitReader &bit_reader_2,
     std::array<u32, 0x80> &freq_dc,
     std::array<u32, 0x80> &freq_ac,
     const std::array<s16, 64> &quant_y,

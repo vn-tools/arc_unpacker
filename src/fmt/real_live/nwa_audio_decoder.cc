@@ -1,6 +1,7 @@
 #include "fmt/real_live/nwa_audio_decoder.h"
 #include "algo/range.h"
 #include "err.h"
+#include "io/bit_reader.h"
 #include "io/memory_stream.h"
 
 using namespace au;
@@ -22,41 +23,6 @@ namespace
         size_t block_size;
         size_t rest_size;
     };
-
-    class CustomBitReader final
-    {
-    public:
-        CustomBitReader(const bstr &str);
-        u32 get(size_t bits);
-
-    private:
-        const u8 *str_ptr;
-        const u8 *str_end;
-        size_t shift;
-        size_t offset;
-    };
-}
-
-CustomBitReader::CustomBitReader(const bstr &str) :
-    str_ptr(str.get<const u8>()),
-    str_end(str.end<const u8>()),
-    shift(0),
-    offset(0)
-{
-}
-
-u32 CustomBitReader::get(size_t bits)
-{
-    if (shift > 8)
-    {
-        ++offset;
-        shift -= 8;
-    }
-    if (str_ptr + offset + 2 >= str_end)
-        throw err::IoError("Reading bits beyond EOF");
-    const auto ret = *reinterpret_cast<const u16*>(&str_ptr[offset]) >> shift;
-    shift += bits;
-    return ret & ((1 << bits) - 1);
 }
 
 static bstr decode_block(
@@ -88,7 +54,7 @@ static bstr decode_block(
 
     const auto input = input_stream.read(
         input_size - bytes_per_sample * header.channel_count);
-    CustomBitReader bit_reader(input);
+    io::LsbBitReader bit_reader(input);
 
     auto current_channel = 0;
     auto run_length = 0;

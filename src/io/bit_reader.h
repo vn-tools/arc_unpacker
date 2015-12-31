@@ -10,13 +10,13 @@ namespace io {
     {
     public:
         virtual ~IBitReader() {}
-
         virtual void seek(const size_t pos) = 0;
         virtual void skip(const int offset) = 0;
         virtual size_t tell() const = 0;
         virtual size_t size() const = 0;
         virtual bool eof() const = 0;
         virtual u32 get(const size_t n) = 0;
+        virtual u32 get_gamma(const bool stop_mark) = 0;
     };
 
     class BaseBitReader : public IBitReader
@@ -25,13 +25,12 @@ namespace io {
         BaseBitReader(const bstr &input);
         BaseBitReader(io::Stream &input_stream);
         virtual ~BaseBitReader() {}
-
         void seek(const size_t pos) override;
         void skip(const int offset) override;
         size_t tell() const override;
         size_t size() const override;
         bool eof() const override;
-
+        u32 get_gamma(const bool stop_mark) override;
     protected:
         u64 buffer;
         size_t bits_available;

@@ -23,20 +23,6 @@ namespace
     };
 }
 
-static size_t get_bit_count(io::IBitReader &bit_reader)
-{
-    size_t n = 0;
-    while (!bit_reader.get(1))
-        ++n;
-    size_t value = 1;
-    while (n--)
-    {
-        value <<= 1;
-        value |= bit_reader.get(1);
-    }
-    return value;
-}
-
 static u8 convert_value(u8 value)
 {
     const bool carry = (value & 1) != 0;
@@ -125,14 +111,14 @@ static std::unique_ptr<res::Image> decode_img0000(
 
     io::LsbBitReader ctl_bit_reader(ctl);
     bool copy = ctl_bit_reader.get(1);
-    const auto output_size = get_bit_count(ctl_bit_reader);
+    const auto output_size = ctl_bit_reader.get_gamma(1);
 
     bstr output(output_size);
     auto input_ptr = make_ptr(data);
     auto output_ptr = make_ptr(output);
     while (output_ptr < output_ptr.end())
     {
-        auto size = get_bit_count(ctl_bit_reader);
+        auto size = ctl_bit_reader.get_gamma(1);
         if (copy)
         {
             while (size--

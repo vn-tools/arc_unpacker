@@ -65,7 +65,7 @@ res::Image Ed8ImageDecoder::decode_impl(
                 break;
             last_idx = idx;
 
-            int repetitions = bit_reader.get_variable_integer();
+            int repetitions = bit_reader.get_gamma(0);
             if (idx >= 2)
                 repetitions++;
 

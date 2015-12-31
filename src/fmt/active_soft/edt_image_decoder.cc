@@ -99,7 +99,7 @@ res::Image EdtImageDecoder::decode_impl(
         else
         {
             const auto look_behind = look_behind_table[bit_reader.get(5)];
-            auto repetitions = bit_reader.get_variable_integer() * channels;
+            auto repetitions = bit_reader.get_gamma(0) * channels;
             if (look_behind > output.size())
                 throw err::BadDataOffsetError();
             while (repetitions-- && output.size() < target_size)

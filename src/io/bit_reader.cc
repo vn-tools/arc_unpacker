@@ -54,6 +54,21 @@ size_t BaseBitReader::size() const
     return input_stream->size() * 8;
 }
 
+// Elias Gamma coding
+u32 BaseBitReader::get_gamma(const bool stop_mark)
+{
+    size_t count = 0;
+    while (get(1) != stop_mark)
+        ++count;
+    u32 value = 1;
+    while (count--)
+    {
+        value <<= 1;
+        value |= get(1); // one by one to enforce MSB order
+    }
+    return value;
+}
+
 LsbBitReader::LsbBitReader(const bstr &input) : BaseBitReader(input)
 {
 }

@@ -4,7 +4,6 @@
 #include "err.h"
 #include "fmt/cri/hca/ath_table.h"
 #include "fmt/cri/hca/channel_decoder.h"
-#include "fmt/cri/hca/custom_bit_reader.h"
 #include "fmt/cri/hca/meta.h"
 #include "fmt/cri/hca/permutator.h"
 #include "io/bit_reader.h"
@@ -138,7 +137,7 @@ static void decode_block(
 
     // suspicion: I believe the last 2 bytes are used as a CRC16 manipulator
     // (so that the checksum computes to 0.)
-    CustomBitReader bit_reader(block_data.substr(0, block_data.size() - 2));
+    io::MsbBitReader bit_reader(block_data.substr(0, block_data.size()));
 
     int magic = bit_reader.get(16);
     if (magic == 0xFFFF)
