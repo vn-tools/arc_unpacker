@@ -1,5 +1,4 @@
 #include "fmt/vorbis/packed_ogg_audio_decoder.h"
-#include "algo/format.h"
 #include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
@@ -87,8 +86,8 @@ static void rewrite_ogg_stream(
         }
         catch (const err::IoError)
         {
-            logger.warn(algo::format(
-                "Last OGG page is truncated; recovered %d pages.\n", pages));
+            logger.warn(
+                "Last OGG page is truncated; recovered %d pages.\n", pages);
             break;
         }
 

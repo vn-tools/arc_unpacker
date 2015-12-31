@@ -1,5 +1,4 @@
 #include "fmt/entis/noa_archive_decoder.h"
-#include "algo/format.h"
 #include "algo/range.h"
 #include "fmt/entis/common/sections.h"
 
@@ -91,9 +90,9 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (entry->encrypted)
     {
-        logger.warn(algo::format(
+        logger.warn(
             "%s is encrypted, but encrypted files are not supported\n",
-            entry->path.c_str()));
+            entry->path.c_str());
     }
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);

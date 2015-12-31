@@ -24,9 +24,7 @@ void ParallelDecoderAdapter::visit(const fmt::BaseArchiveDecoder &decoder)
     auto meta = std::shared_ptr<fmt::ArchiveMeta>(
         decoder.read_meta(parent_task->logger, *input_file));
     parent_task->logger.info(
-        "%s: archive contains %d files.\n",
-        parent_task->base_name.c_str(),
-        meta->entries.size());
+        "archive contains %d files.\n", meta->entries.size());
 
     const auto vfs_bridge = std::make_shared<VirtualFileSystemBridge>(
         parent_task->logger,

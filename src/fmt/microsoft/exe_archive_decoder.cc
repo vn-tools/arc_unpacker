@@ -439,10 +439,10 @@ void ResourceCrawler::process_dir(const size_t offset, const std::string path)
         }
         catch (const std::exception &e)
         {
-            args.logger.err(algo::format(
+            args.logger.err(
                 "Can't read resource entry located at 0x%08x (%s)\n",
                 args.base_offset + entry.offset_to_data,
-                e.what()));
+                e.what());
         }
     }
 }

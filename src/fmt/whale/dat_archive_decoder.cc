@@ -295,9 +295,9 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (!entry->valid)
     {
-        logger.err(algo::format(
+        logger.err(
             "Unknown hash: %016llx. io::File cannot be unpacked.\n",
-            entry->hash));
+            entry->hash);
         return nullptr;
     }
 

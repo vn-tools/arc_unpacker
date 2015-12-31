@@ -71,17 +71,14 @@ static bool save(
     try
     {
         const auto full_path = task.unpacker_context.file_saver.save(file);
-        task.logger.success(
-            "%s: saved to %s\n", task.base_name.c_str(), full_path.c_str());
+        task.logger.success("saved to %s\n", full_path.c_str());
         task.logger.flush();
         return true;
     }
     catch (const err::IoError &e)
     {
         task.logger.err(
-            "%s: error saving (%s)\n",
-            task.base_name.c_str(),
-            e.what() ? e.what() : "unknown error");
+            "error saving (%s)\n", e.what() ? e.what() : "unknown error");
         task.logger.flush();
         return false;
     }
@@ -118,9 +115,7 @@ static std::shared_ptr<fmt::IDecoder> guess_decoder(
     const SourceType source_type)
 {
     task.logger.info(
-        "%s: guessing decoder among %d decoders...\n",
-        task.base_name.c_str(),
-        available_decoders.size());
+        "guessing decoder among %d decoders...\n", available_decoders.size());
 
     std::map<std::string, std::shared_ptr<fmt::IDecoder>> matching_decoders;
     for (const auto &name : available_decoders)
@@ -134,9 +129,7 @@ static std::shared_ptr<fmt::IDecoder> guess_decoder(
     if (matching_decoders.size() == 1)
     {
         task.logger.success(
-            "%s: recognized as %s.\n",
-            task.base_name.c_str(),
-            matching_decoders.begin()->first.c_str());
+            "recognized as %s.\n", matching_decoders.begin()->first.c_str());
         return matching_decoders.begin()->second;
     }
 
@@ -144,28 +137,22 @@ static std::shared_ptr<fmt::IDecoder> guess_decoder(
     {
         if (source_type == SourceType::NestedDecoding)
         {
-            task.logger.info(
-                "%s: not recognized by any decoder.\n", task.base_name.c_str());
+            task.logger.info("not recognized by any decoder.\n");
         }
         else
         {
-            task.logger.err(
-                "%s: not recognized by any decoder.\n", task.base_name.c_str());
+            task.logger.err("not recognized by any decoder.\n");
         }
         return nullptr;
     }
 
     if (source_type == SourceType::NestedDecoding)
     {
-        task.logger.warn(
-            "%s: file was recognized by multiple decoders.\n",
-            task.base_name.c_str());
+        task.logger.warn("file was recognized by multiple decoders.\n");
     }
     else
     {
-        task.logger.warn(
-            "%s: file was recognized by multiple decoders.\n",
-            task.base_name.c_str());
+        task.logger.warn("file was recognized by multiple decoders.\n");
         for (const auto &it : matching_decoders)
             task.logger.warn("- " + it.first + "\n");
         task.logger.warn("Please provide --fmt and proceed manually.\n");
@@ -207,7 +194,8 @@ BaseParallelUnpackingTask::BaseParallelUnpackingTask(
     mutex.lock();
     task_id = task_count++;
     mutex.unlock();
-    logger.set_prefix(algo::format("[task %d] ", task_id));
+    logger.set_prefix(
+        algo::format("[task %d] %s: ", task_id, base_name.c_str()));
 }
 
 DecodeInputFileTask::DecodeInputFileTask(
@@ -253,7 +241,7 @@ bool DecodeInputFileTask::work() const
 
     try
     {
-        logger.info("%s: initial recognition...\n", base_name.c_str());
+        logger.info("initial recognition...\n");
 
         const auto decoder = guess_decoder(
             *this, available_decoders, *input_file, source_type);
@@ -276,10 +264,7 @@ bool DecodeInputFileTask::work() const
     }
     catch (const std::exception &e)
     {
-        logger.err(
-            "%s: recognition finished with errors (%s)\n",
-            base_name.c_str(),
-            e.what());
+        logger.err("recognition finished with errors (%s)\n", e.what());
         return source_type == SourceType::NestedDecoding
             ? save(*this, input_file)
             : false;
@@ -309,7 +294,7 @@ ProcessOutputFileTask::ProcessOutputFileTask(
 
 bool ProcessOutputFileTask::work() const
 {
-    logger.info("%s: decoding file...\n", base_name.c_str());
+    logger.info("decoding file...\n");
     std::shared_ptr<io::File> output_file;
     try
     {
@@ -319,10 +304,10 @@ bool ProcessOutputFileTask::work() const
     }
     catch (const std::exception &e)
     {
-        logger.err("%s: error decoding (%s)\n", base_name.c_str(), e.what());
+        logger.err("error decoding (%s)\n", e.what());
         return false;
     }
-    logger.info("%s: decoding finished.\n", base_name.c_str());
+    logger.info("decoding finished.\n");
 
     const auto naming_strategy = origin_decoder->naming_strategy();
     try
@@ -341,7 +326,7 @@ bool ProcessOutputFileTask::work() const
 
         if (depth >= max_depth)
         {
-            logger.warn("%s: cycle detected.\n", base_name.c_str());
+            logger.warn("cycle detected.\n");
             return save(*this, output_file);
         }
 
@@ -362,10 +347,7 @@ bool ProcessOutputFileTask::work() const
     catch (const std::exception &e)
     {
         logger.err(
-            "%s: error processing %s (%s)\n",
-            base_name.c_str(),
-            output_file->path.c_str(),
-            e.what());
+            "error processing %s (%s)\n", output_file->path.c_str(), e.what());
         return false;
     }
 }

@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <boost/lexical_cast.hpp>
 #include <map>
-#include "algo/format.h"
 #include "algo/range.h"
 #include "arg_parser.h"
 #include "flow/parallel_unpacker.h"
@@ -68,7 +67,7 @@ void CliFacade::Priv::print_fmt_list() const
 
 void CliFacade::Priv::print_cli_help() const
 {
-    logger.info(algo::format(
+    logger.info(
 R"(  __ _ _   _
  / _` | |_| |  arc_unpacker v%s
  \__,_|\__,_|  Extracts images and sounds from various visual novels.
@@ -77,7 +76,7 @@ Usage: arc_unpacker [options] [fmt_options] input_path [input_path...]
 
 [options] can be:
 
-)", au::version_long.c_str()));
+)", au::version_long.c_str());
 
     arg_parser.print_help(logger);
 
