@@ -7,7 +7,7 @@
 #include "err.h"
 
 namespace au {
-namespace util {
+namespace algo {
 
     class Any final
     {

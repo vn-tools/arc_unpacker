@@ -1,11 +1,11 @@
 #include "dec/cri/cpk_archive_decoder.h"
 #include <map>
+#include "algo/any.h"
 #include "algo/range.h"
 #include "algo/str.h"
 #include "err.h"
 #include "io/memory_stream.h"
 #include "io/msb_bit_reader.h"
-#include "util/any.h"
 
 using namespace au;
 using namespace au::dec::cri;
@@ -48,7 +48,7 @@ namespace
         u64 mtime;
     };
 
-    using Cell = util::any;
+    using Cell = algo::any;
     using Row = std::map<std::string, Cell>;
     using Toc = std::map<u32, TocEntry>;
 
