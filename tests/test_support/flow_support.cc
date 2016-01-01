@@ -1,5 +1,5 @@
 #include "test_support/flow_support.h"
-#include "file_saver.h"
+#include "flow/file_saver_callback.h"
 #include "flow/parallel_unpacker.h"
 
 using namespace au;
@@ -13,7 +13,7 @@ std::vector<std::shared_ptr<io::File>> tests::flow_unpack(
     dummy_logger.mute();
 
     std::vector<std::shared_ptr<io::File>> saved_files;
-    const FileSaverCallback file_saver(
+    const flow::FileSaverCallback file_saver(
         [&](std::shared_ptr<io::File> saved_file)
         {
             saved_file->stream.seek(0);

@@ -4,6 +4,7 @@
 #include <map>
 #include "algo/range.h"
 #include "arg_parser.h"
+#include "flow/file_saver_hdd.h"
 #include "flow/parallel_unpacker.h"
 #include "fmt/idecoder.h"
 #include "fmt/registry.h"

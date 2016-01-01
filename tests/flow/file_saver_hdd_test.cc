@@ -1,4 +1,4 @@
-﻿#include "file_saver.h"
+﻿#include "flow/file_saver_hdd.h"
 #include "io/file_system.h"
 #include "test_support/catch.h"
 
@@ -6,7 +6,7 @@ using namespace au;
 
 static void do_test(const io::path &path)
 {
-    const FileSaverHdd file_saver(".", true);
+    const flow::FileSaverHdd file_saver(".", true);
     const auto file = std::make_shared<io::File>(path.str(), "test"_b);
 
     file_saver.save(file);
@@ -21,8 +21,8 @@ static void do_test(const io::path &path)
 }
 
 static void do_test_overwriting(
-    const FileSaver &file_saver1,
-    const FileSaver &file_saver2,
+    const flow::IFileSaver &file_saver1,
+    const flow::IFileSaver &file_saver2,
     const bool renamed_file_exists)
 {
     io::path path = "test.txt";
@@ -59,15 +59,15 @@ TEST_CASE("FileSaver", "[core]")
 
     SECTION("Two file savers overwrite the same file")
     {
-        const FileSaverHdd file_saver1(".", true);
-        const FileSaverHdd file_saver2(".", true);
+        const flow::FileSaverHdd file_saver1(".", true);
+        const flow::FileSaverHdd file_saver2(".", true);
         do_test_overwriting(file_saver1, file_saver2, false);
     }
 
     SECTION("Two file savers don't overwrite the same file")
     {
-        const FileSaverHdd file_saver1(".", false);
-        const FileSaverHdd file_saver2(".", false);
+        const flow::FileSaverHdd file_saver1(".", false);
+        const flow::FileSaverHdd file_saver2(".", false);
         do_test_overwriting(file_saver1, file_saver2, true);
     }
 
@@ -75,7 +75,7 @@ TEST_CASE("FileSaver", "[core]")
     {
         // even if we pass overwrite=true, files within the same archive with
         // the same name are too valuable to be ovewritten silently
-        const FileSaverHdd file_saver(".", true);
+        const flow::FileSaverHdd file_saver(".", true);
         do_test_overwriting(file_saver, file_saver, true);
     }
 }

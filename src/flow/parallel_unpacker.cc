@@ -3,7 +3,6 @@
 #include <stack>
 #include "algo/format.h"
 #include "err.h"
-#include "file_saver.h"
 #include "flow/parallel_decoder_adapter.h"
 #include "fmt/idecoder.h"
 
@@ -162,7 +161,7 @@ static std::shared_ptr<fmt::IDecoder> guess_decoder(
 
 ParallelUnpackerContext::ParallelUnpackerContext(
     const Logger &logger,
-    const FileSaver &file_saver,
+    const IFileSaver &file_saver,
     const fmt::Registry &registry,
     const bool enable_nested_decoding,
     const std::vector<std::string> &arguments,
