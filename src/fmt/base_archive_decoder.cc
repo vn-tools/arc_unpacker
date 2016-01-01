@@ -1,4 +1,6 @@
 #include "fmt/base_archive_decoder.h"
+#include <algorithm>
+#include <cmath>
 #include "algo/format.h"
 #include "err.h"
 #include "fmt/idecoder_visitor.h"
@@ -31,13 +33,17 @@ std::unique_ptr<ArchiveMeta> BaseArchiveDecoder::read_meta(
     if (prefix.empty())
         prefix = "unk";
 
+    const auto width = meta->entries.size() > 1
+        ? std::max<int>(1, 1 + std::log10(meta->entries.size()))
+        : 0;
+
     int number = 0;
     for (const auto &entry : meta->entries)
     {
         if (!entry->path.str().empty())
             continue;
         entry->path = meta->entries.size() > 1
-            ? algo::format("%s_%03d", prefix.c_str(), number++)
+            ? algo::format("%s_%0*d", prefix.c_str(), width, number++)
             : prefix;
     }
 

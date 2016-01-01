@@ -81,6 +81,73 @@ std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
+static std::unique_ptr<io::File> make_archive(
+    const io::path &archive_name,
+    const std::initializer_list<std::unique_ptr<io::File>> &files)
+{
+    auto output_file = std::make_unique<io::File>();
+    output_file->path = archive_name;
+    for (const auto &file : files)
+    {
+        output_file->stream.write(file->path.str());
+        output_file->stream.write_u8(0);
+        output_file->stream.write_u32_le(file->stream.size());
+        output_file->stream.write(file->stream.seek(0).read_to_eof());
+    }
+    return output_file;
+}
+
+template<NamingStrategy strategy>
+    static void test_naming_strategy(const std::string &prefix)
+{
+    const TestArchiveDecoder test_archive_decoder(strategy);
+
+    SECTION("Just one file")
+    {
+        auto dummy_file = make_archive(
+            "path/test.archive", {tests::stub_file("", ""_b)});
+
+        const auto saved_files
+            = tests::unpack(test_archive_decoder, *dummy_file);
+        REQUIRE((saved_files.size() == 1));
+        tests::compare_paths(saved_files[0]->path, prefix);
+    }
+
+    SECTION("Multiple files")
+    {
+        auto dummy_file = make_archive(
+            "path/test.archive",
+            {
+                tests::stub_file("", ""_b),
+                tests::stub_file("", ""_b),
+            });
+
+        const auto saved_files
+            = tests::unpack(test_archive_decoder, *dummy_file);
+        REQUIRE((saved_files.size() == 2));
+        tests::compare_paths(saved_files[0]->path, prefix + "_0");
+        tests::compare_paths(saved_files[1]->path, prefix + "_1");
+    }
+
+    SECTION("Mixed nameless and named files")
+    {
+        auto dummy_file = make_archive(
+            "path/test.archive",
+            {
+                tests::stub_file("", ""_b),
+                tests::stub_file("named", ""_b),
+                tests::stub_file("", ""_b),
+            });
+
+        const auto saved_files
+            = tests::unpack(test_archive_decoder, *dummy_file);
+        REQUIRE((saved_files.size() == 3));
+        tests::compare_paths(saved_files[0]->path, prefix + "_0");
+        tests::compare_paths(saved_files[1]->path, "named");
+        tests::compare_paths(saved_files[2]->path, prefix + "_1");
+    }
+}
+
 TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
 {
     const TestArchiveDecoder test_archive_decoder(NamingStrategy::Child);
@@ -103,163 +170,16 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
 {
     SECTION("Child naming strategy")
     {
-        const TestArchiveDecoder test_archive_decoder(NamingStrategy::Child);
-
-        SECTION("Just one file")
-        {
-            io::File dummy_file;
-            dummy_file.path = "path/test.archive";
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-
-            const auto saved_files
-                = tests::unpack(test_archive_decoder, dummy_file);
-            REQUIRE(saved_files.size() == 1);
-            REQUIRE(saved_files[0]->path.name() == "unk");
-        }
-
-        SECTION("Multiple files")
-        {
-            io::File dummy_file;
-            dummy_file.path = "path/test.archive";
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-
-            const auto saved_files
-                = tests::unpack(test_archive_decoder, dummy_file);
-            REQUIRE(saved_files.size() == 2);
-            REQUIRE(saved_files[0]->path.str() == "unk_000");
-            REQUIRE(saved_files[1]->path.str() == "unk_001");
-        }
-
-        SECTION("Mixed nameless and named files")
-        {
-            io::File dummy_file;
-            dummy_file.path = "path/test.archive";
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-            dummy_file.stream.write("named"_b);
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-
-            const auto saved_files
-                = tests::unpack(test_archive_decoder, dummy_file);
-            REQUIRE(saved_files.size() == 3);
-            REQUIRE(saved_files[0]->path.str() == "unk_000");
-            REQUIRE(saved_files[1]->path.str() == "named");
-            REQUIRE(saved_files[2]->path.str() == "unk_001");
-        }
+        test_naming_strategy<NamingStrategy::Child>("unk");
     }
 
     SECTION("Root naming strategy")
     {
-        const TestArchiveDecoder test_archive_decoder(NamingStrategy::Root);
-
-        SECTION("Just one file")
-        {
-            io::File dummy_file;
-            dummy_file.path = "path/test.archive";
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-
-            const auto saved_files
-                = tests::unpack(test_archive_decoder, dummy_file);
-            REQUIRE(saved_files.size() == 1);
-            REQUIRE(saved_files[0]->path.name() == "test.archive");
-        }
-
-        SECTION("Multiple files")
-        {
-            io::File dummy_file;
-            dummy_file.path = "path/test.archive";
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-
-            const auto saved_files
-                = tests::unpack(test_archive_decoder, dummy_file);
-            REQUIRE(saved_files.size() == 2);
-            tests::compare_paths(saved_files[0]->path, "path/test.archive_000");
-            tests::compare_paths(saved_files[1]->path, "path/test.archive_001");
-        }
-
-        SECTION("Mixed nameless and named files")
-        {
-            io::File dummy_file;
-            dummy_file.path = "path/test.archive";
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-            dummy_file.stream.write("named"_b);
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-
-            const auto saved_files
-                = tests::unpack(test_archive_decoder, dummy_file);
-            REQUIRE(saved_files.size() == 3);
-            tests::compare_paths(saved_files[0]->path, "path/test.archive_000");
-            tests::compare_paths(saved_files[1]->path, "named");
-            tests::compare_paths(saved_files[2]->path, "path/test.archive_001");
-        }
+        test_naming_strategy<NamingStrategy::Root>("path/test.archive");
     }
 
     SECTION("Sibling naming strategy")
     {
-        const TestArchiveDecoder test_archive_decoder(NamingStrategy::Sibling);
-
-        SECTION("Just one file")
-        {
-            io::File dummy_file;
-            dummy_file.path = "path/test.archive";
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-
-            const auto saved_files
-                = tests::unpack(test_archive_decoder, dummy_file);
-            REQUIRE(saved_files.size() == 1);
-            REQUIRE(saved_files[0]->path.name() == "test");
-        }
-
-        SECTION("Multiple files")
-        {
-            io::File dummy_file;
-            dummy_file.path = "path/test.archive";
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-
-            const auto saved_files
-                = tests::unpack(test_archive_decoder, dummy_file);
-            REQUIRE(saved_files.size() == 2);
-            tests::compare_paths(saved_files[0]->path, "test_000");
-            tests::compare_paths(saved_files[1]->path, "test_001");
-        }
-
-        SECTION("Mixed nameless and named files")
-        {
-            io::File dummy_file;
-            dummy_file.path = "path/test.archive";
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-            dummy_file.stream.write("named"_b);
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-            dummy_file.stream.write_u8(0);
-            dummy_file.stream.write_u32_le(0);
-
-            const auto saved_files
-                = tests::unpack(test_archive_decoder, dummy_file);
-            REQUIRE(saved_files.size() == 3);
-            tests::compare_paths(saved_files[0]->path, "test_000");
-            tests::compare_paths(saved_files[1]->path, "named");
-            tests::compare_paths(saved_files[2]->path, "test_001");
-        }
+        test_naming_strategy<NamingStrategy::Sibling>("test");
     }
 }
