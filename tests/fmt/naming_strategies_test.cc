@@ -1,5 +1,6 @@
 #include "fmt/naming_strategies.h"
 #include "test_support/catch.h"
+#include "test_support/file_support.h"
 
 using namespace au;
 using namespace au::fmt;
@@ -12,7 +13,7 @@ static void do_test(
 {
     const auto actual_path = fmt::decorate_path(
         strategy, parent_path, child_path);
-    REQUIRE(actual_path == expected_path);
+    tests::compare_paths(actual_path, expected_path);
 }
 
 TEST_CASE("File naming strategies", "[fmt_core]")
@@ -37,6 +38,17 @@ TEST_CASE("File naming strategies", "[fmt_core]")
         do_test(s, "test/nest",  "file", "test/file");
         do_test(s, "test/nest/", "file", "test/nest/file");
         do_test(s, "test/nest",  "a/b", "test/a/b");
+    }
+
+    SECTION("Flat sibling")
+    {
+        const auto s = NamingStrategy::FlatSibling;
+        do_test(s, "",           "file", "file");
+        do_test(s, "test",       "file", "file");
+        do_test(s, "test/",      "file", "test/file");
+        do_test(s, "test/nest",  "file", "test/file");
+        do_test(s, "test/nest/", "file", "test/nest/file");
+        do_test(s, "test/nest",  "a/b", "test/b");
     }
 
     SECTION("Child")
