@@ -1,9 +1,9 @@
 #include "dec/twilight_frontier/pak1_image_archive_decoder.h"
 #include "algo/format.h"
 #include "algo/range.h"
+#include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::twilight_frontier;
@@ -135,7 +135,8 @@ std::unique_ptr<io::File> Pak1ImageArchiveDecoder::read_file_impl(
     else
         throw err::UnsupportedBitDepthError(entry->depth);
 
-    return util::file_from_image(*image, entry->path);
+    const auto encoder = enc::png::PngImageEncoder();
+    return encoder.encode(logger, *image, entry->path);
 }
 
 static auto _ = dec::register_decoder<Pak1ImageArchiveDecoder>(

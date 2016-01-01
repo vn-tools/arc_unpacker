@@ -4,8 +4,8 @@
 #include "algo/str.h"
 #include "dec/fc01/common/custom_lzss.h"
 #include "dec/fc01/common/util.h"
+#include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::fc01;
@@ -127,7 +127,8 @@ std::unique_ptr<io::File> McaArchiveDecoder::read_file_impl(
 
     data = common::fix_stride(data, width, height, 24);
     res::Image image(width, height, data, res::PixelFormat::BGR888);
-    return util::file_from_image(image, entry->path);
+    const auto encoder = enc::png::PngImageEncoder();
+    return encoder.encode(logger, image, entry->path);
 }
 
 static auto _ = dec::register_decoder<McaArchiveDecoder>("fc01/mca");

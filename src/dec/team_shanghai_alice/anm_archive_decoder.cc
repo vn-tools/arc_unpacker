@@ -2,8 +2,8 @@
 #include <map>
 #include "algo/format.h"
 #include "algo/range.h"
+#include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec;
@@ -227,7 +227,8 @@ std::unique_ptr<io::File> AnmArchiveDecoder::read_file_impl(
     for (auto &texture_info : entry->texture_info_list)
         write_image(input_file.stream, texture_info, image, width);
 
-    return util::file_from_image(image, entry->path);
+    const auto encoder = enc::png::PngImageEncoder();
+    return encoder.encode(logger, image, entry->path);
 }
 
 static auto _ = dec::register_decoder<AnmArchiveDecoder>(

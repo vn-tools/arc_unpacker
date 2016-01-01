@@ -4,9 +4,9 @@
 #include "dec/team_shanghai_alice/pbg4_archive_decoder.h"
 #include "dec/team_shanghai_alice/pbgz_archive_decoder.h"
 #include "dec/team_shanghai_alice/tha1_archive_decoder.h"
+#include "enc/microsoft/wav_audio_encoder.h"
 #include "err.h"
 #include "io/file_system.h"
-#include "util/file_from_audio.h"
 
 using namespace au;
 using namespace au::dec::team_shanghai_alice;
@@ -119,7 +119,8 @@ std::unique_ptr<io::File> ThbgmAudioArchiveDecoder::read_file_impl(
     audio.samples = samples;
     audio.loops.push_back(res::AudioLoopInfo
         {entry->intro_size, entry->size - entry->intro_size, 0});
-    return util::file_from_audio(audio, entry->path);
+    const auto encoder = enc::microsoft::WavAudioEncoder();
+    return encoder.encode(logger, audio, entry->path);
 }
 
 static auto _ = dec::register_decoder<ThbgmAudioArchiveDecoder>(

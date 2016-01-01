@@ -3,11 +3,11 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "dec/jpeg/jpeg_image_decoder.h"
+#include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "io/lsb_bit_reader.h"
 #include "io/memory_stream.h"
 #include "ptr.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::cat_system;
@@ -217,7 +217,8 @@ std::unique_ptr<io::File> Hg3ImageArchiveDecoder::read_file_impl(
 
     res::Image actual_image(canvas_width, canvas_height);
     actual_image.paste(*image, x, y);
-    return util::file_from_image(actual_image, entry->path);
+    const auto encoder = enc::png::PngImageEncoder();
+    return encoder.encode(logger, actual_image, entry->path);
 }
 
 dec::NamingStrategy Hg3ImageArchiveDecoder::naming_strategy() const

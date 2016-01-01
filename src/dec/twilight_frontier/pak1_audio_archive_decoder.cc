@@ -1,7 +1,7 @@
 #include "dec/twilight_frontier/pak1_audio_archive_decoder.h"
 #include "algo/format.h"
 #include "algo/range.h"
-#include "util/file_from_audio.h"
+#include "enc/microsoft/wav_audio_encoder.h"
 
 using namespace au;
 using namespace au::dec::twilight_frontier;
@@ -77,7 +77,8 @@ std::unique_ptr<io::File> Pak1AudioArchiveDecoder::read_file_impl(
     audio.bits_per_sample = entry->bits_per_sample;
     audio.sample_rate = entry->sample_rate;
     audio.samples = input_file.stream.seek(entry->offset).read(entry->size);
-    return util::file_from_audio(audio, entry->path);
+    const auto encoder = enc::microsoft::WavAudioEncoder();
+    return encoder.encode(logger, audio, entry->path);
 }
 
 static auto _ = dec::register_decoder<Pak1AudioArchiveDecoder>(

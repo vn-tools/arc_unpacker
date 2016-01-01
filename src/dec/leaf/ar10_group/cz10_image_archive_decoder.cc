@@ -3,9 +3,9 @@
 #include "algo/format.h"
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
+#include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::leaf;
@@ -128,7 +128,8 @@ std::unique_ptr<io::File> Cz10ImageArchiveDecoder::read_file_impl(
     {
         image.at(x, y)[c] = *data_ptr++;
     }
-    return util::file_from_image(image, entry->path);
+    const auto encoder = enc::png::PngImageEncoder();
+    return encoder.encode(logger, image, entry->path);
 }
 
 dec::NamingStrategy Cz10ImageArchiveDecoder::naming_strategy() const

@@ -1,7 +1,7 @@
 #include "dec/playstation/gxt_image_archive_decoder.h"
 #include "algo/range.h"
+#include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::playstation;
@@ -103,7 +103,8 @@ std::unique_ptr<io::File> GxtImageArchiveDecoder::read_file_impl(
     const auto data = input_file.stream.seek(entry->offset).read(entry->size);
     res::Image image(
         entry->width, entry->height, data, res::PixelFormat::Gray8);
-    return util::file_from_image(image, entry->path);
+    const auto encoder = enc::png::PngImageEncoder();
+    return encoder.encode(logger, image, entry->path);
 }
 
 static auto _ = dec::register_decoder<GxtImageArchiveDecoder>(

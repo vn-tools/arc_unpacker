@@ -6,7 +6,6 @@
 #include "algo/str.h"
 #include "dec/leaf/pak1_group/grp_image_decoder.h"
 #include "err.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::leaf;

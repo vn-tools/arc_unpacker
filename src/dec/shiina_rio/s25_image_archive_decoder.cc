@@ -1,9 +1,9 @@
 #include "dec/shiina_rio/s25_image_archive_decoder.h"
 #include "algo/format.h"
 #include "algo/range.h"
+#include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::shiina_rio;
@@ -182,7 +182,8 @@ std::unique_ptr<io::File> S25ImageArchiveDecoder::read_file_impl(
     if (entry->flags & 0x80000000)
         throw err::NotSupportedError("Flagged S25 images are supported");
     const auto image = read_plain(input_file, *entry);
-    return util::file_from_image(image, entry->path);
+    const auto encoder = enc::png::PngImageEncoder();
+    return encoder.encode(logger, image, entry->path);
 }
 
 dec::NamingStrategy S25ImageArchiveDecoder::naming_strategy() const

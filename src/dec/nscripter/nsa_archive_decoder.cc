@@ -2,8 +2,8 @@
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
 #include "dec/nscripter/spb_image_decoder.h"
+#include "enc/png/png_image_encoder.h"
 #include "io/memory_stream.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::nscripter;
@@ -98,10 +98,12 @@ std::unique_ptr<io::File> NsaArchiveDecoder::read_file_impl(
 
         case COMPRESSStreamN_SPB:
         {
-            const auto spb_image_decoder = SpbImageDecoder();
+            const auto decoder = SpbImageDecoder();
+            const auto encoder = enc::png::PngImageEncoder();
             output_file->stream.write(data);
-            output_file = util::file_from_image(
-                spb_image_decoder.decode(logger, *output_file),
+            output_file = encoder.encode(
+                logger,
+                decoder.decode(logger, *output_file),
                 output_file->path);
             break;
         }

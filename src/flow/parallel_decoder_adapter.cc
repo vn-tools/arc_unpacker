@@ -1,8 +1,8 @@
 #include "flow/parallel_decoder_adapter.h"
 #include "dec/naming_strategies.h"
+#include "enc/microsoft/wav_audio_encoder.h"
+#include "enc/png/png_image_encoder.h"
 #include "flow/vfs_bridge.h"
-#include "util/file_from_audio.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::flow;
@@ -67,8 +67,9 @@ void ParallelDecoderAdapter::visit(const dec::BaseImageDecoder &decoder)
         [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
-            return util::file_from_image(
-                decoder.decode(logger, file_copy), input_file->path);
+            auto output_file = decoder.decode(logger, file_copy);
+            const auto encoder = enc::png::PngImageEncoder();
+            return encoder.encode(logger, output_file, input_file->path);
         },
         decoder,
         parent_task);
@@ -81,8 +82,9 @@ void ParallelDecoderAdapter::visit(const dec::BaseAudioDecoder &decoder)
         [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
-            return util::file_from_audio(
-                decoder.decode(logger, file_copy), input_file->path);
+            auto output_file = decoder.decode(logger, file_copy);
+            const auto encoder = enc::microsoft::WavAudioEncoder();
+            return encoder.encode(logger, output_file, input_file->path);
         },
         decoder,
         parent_task);

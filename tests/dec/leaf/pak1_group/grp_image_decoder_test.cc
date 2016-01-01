@@ -3,7 +3,6 @@
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
-#include "util/file_from_image.h"
 #include "util/virtual_file_system.h"
 
 using namespace au;

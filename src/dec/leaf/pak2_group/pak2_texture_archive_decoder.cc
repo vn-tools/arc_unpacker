@@ -1,8 +1,8 @@
 #include "dec/leaf/pak2_group/pak2_texture_archive_decoder.h"
 #include "algo/format.h"
 #include "algo/range.h"
+#include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::leaf;
@@ -114,7 +114,8 @@ std::unique_ptr<io::File> Pak2TextureArchiveDecoder::read_file_impl(
         chunk_image.flip_vertically();
         image.paste(chunk_image, chunk.x, chunk.y);
     }
-    return util::file_from_image(image, entry->path);
+    const auto encoder = enc::png::PngImageEncoder();
+    return encoder.encode(logger, image, entry->path);
 }
 
 dec::NamingStrategy Pak2TextureArchiveDecoder::naming_strategy() const

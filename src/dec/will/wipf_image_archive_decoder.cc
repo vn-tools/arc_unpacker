@@ -1,8 +1,8 @@
 #include "dec/will/wipf_image_archive_decoder.h"
 #include "algo/range.h"
+#include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/file_from_image.h"
 #include "util/virtual_file_system.h"
 
 using namespace au;
@@ -180,7 +180,8 @@ std::unique_ptr<io::File> WipfImageArchiveDecoder::read_file_impl(
     auto image = read_image(input_file, *entry);
     if (entry->mask)
         image->apply_mask(*entry->mask);
-    return util::file_from_image(*image, entry->path);
+    const auto encoder = enc::png::PngImageEncoder();
+    return encoder.encode(logger, *image, entry->path);
 }
 
 static auto _ = dec::register_decoder<WipfImageArchiveDecoder>("will/wipf");

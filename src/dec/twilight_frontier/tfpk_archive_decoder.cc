@@ -9,7 +9,6 @@
 #include "err.h"
 #include "io/file_system.h"
 #include "io/memory_stream.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::twilight_frontier;

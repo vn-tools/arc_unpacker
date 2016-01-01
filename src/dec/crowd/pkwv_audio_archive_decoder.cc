@@ -1,6 +1,6 @@
 #include "dec/crowd/pkwv_audio_archive_decoder.h"
 #include "algo/range.h"
-#include "util/file_from_audio.h"
+#include "enc/microsoft/wav_audio_encoder.h"
 
 using namespace au;
 using namespace au::dec::crowd;
@@ -82,7 +82,8 @@ std::unique_ptr<io::File> PkwvAudioArchiveDecoder::read_file_impl(
     audio.sample_rate = entry->fmt.sample_rate;
     audio.bits_per_sample = entry->fmt.bits_per_sample;
     audio.samples = input_file.stream.seek(entry->offset).read(entry->size);
-    return util::file_from_audio(audio, entry->path);
+    const auto encoder = enc::microsoft::WavAudioEncoder();
+    return encoder.encode(logger, audio, entry->path);
 }
 
 static auto _ = dec::register_decoder<PkwvAudioArchiveDecoder>("crowd/pkwv");

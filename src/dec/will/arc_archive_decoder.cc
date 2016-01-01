@@ -3,7 +3,6 @@
 #include "algo/range.h"
 #include "dec/will/wipf_image_archive_decoder.h"
 #include "err.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::will;

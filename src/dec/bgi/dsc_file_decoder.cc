@@ -1,10 +1,10 @@
 #include "dec/bgi/dsc_file_decoder.h"
 #include "algo/range.h"
 #include "dec/bgi/common.h"
+#include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
 #include "io/msb_bit_reader.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::bgi;
@@ -179,7 +179,8 @@ std::unique_ptr<io::File> DscFileDecoder::decode_impl(
                 throw err::UnsupportedBitDepthError(bpp);
         }
         res::Image image(width, height, data_stream.read_to_eof(), fmt);
-        return util::file_from_image(image, input_file.path);
+        const auto encoder = enc::png::PngImageEncoder();
+        return encoder.encode(logger, image, input_file.path);
     }
 
     auto output_file = std::make_unique<io::File>();

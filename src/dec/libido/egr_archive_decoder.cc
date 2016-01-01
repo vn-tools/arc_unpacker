@@ -1,8 +1,8 @@
 #include "dec/libido/egr_archive_decoder.h"
 #include "algo/format.h"
 #include "algo/range.h"
+#include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::libido;
@@ -66,7 +66,8 @@ std::unique_ptr<io::File> EgrArchiveDecoder::read_file_impl(
         input_file.stream.read(entry->width * entry->height),
         palette);
 
-    return util::file_from_image(image, entry->path);
+    const auto encoder = enc::png::PngImageEncoder();
+    return encoder.encode(logger, image, entry->path);
 }
 
 static auto _ = dec::register_decoder<EgrArchiveDecoder>("libido/egr");

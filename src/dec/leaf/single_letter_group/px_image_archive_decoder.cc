@@ -2,9 +2,9 @@
 #include <array>
 #include "algo/format.h"
 #include "algo/range.h"
+#include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "util/call_stack_keeper.h"
-#include "util/file_from_image.h"
 
 using namespace au;
 using namespace au::dec::leaf;
@@ -384,7 +384,8 @@ std::unique_ptr<io::File> PxImageArchiveDecoder::read_file_impl(
 
     res::Image image(
         entry->width, entry->height, data, res::PixelFormat::BGRA8888);
-    return util::file_from_image(image, entry->path);
+    const auto encoder = enc::png::PngImageEncoder();
+    return encoder.encode(logger, image, entry->path);
 }
 
 dec::NamingStrategy PxImageArchiveDecoder::naming_strategy() const
