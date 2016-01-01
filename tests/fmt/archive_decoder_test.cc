@@ -182,4 +182,9 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
     {
         test_naming_strategy<NamingStrategy::Sibling>("test");
     }
+
+    SECTION("Flat sibling naming strategy")
+    {
+        test_naming_strategy<NamingStrategy::Sibling>("test");
+    }
 }

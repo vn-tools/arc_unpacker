@@ -27,6 +27,8 @@ std::unique_ptr<ArchiveMeta> BaseArchiveDecoder::read_meta(
     std::string prefix;
     if (naming_strategy() == NamingStrategy::Sibling)
         prefix = input_file.path.stem();
+    else if (naming_strategy() == NamingStrategy::FlatSibling)
+        prefix = input_file.path.stem();
     else if (naming_strategy() == NamingStrategy::Root)
         prefix = (input_file.path.parent() / input_file.path.stem()).str();
 
