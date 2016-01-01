@@ -2,7 +2,7 @@
 #include "algo/range.h"
 #include "err.h"
 #include "fmt/fc01/common/custom_lzss.h"
-#include "io/bit_reader.h"
+#include "io/msb_bit_reader.h"
 
 using namespace au;
 using namespace au::fmt::fc01;

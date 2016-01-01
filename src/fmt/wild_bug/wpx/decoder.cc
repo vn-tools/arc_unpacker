@@ -4,6 +4,7 @@
 #include "err.h"
 #include "fmt/wild_bug/wpx/retrieval.h"
 #include "fmt/wild_bug/wpx/transcription.h"
+#include "io/msb_bit_reader.h"
 
 using namespace au;
 using namespace au::fmt::wild_bug::wpx;

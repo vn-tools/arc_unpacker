@@ -3,8 +3,8 @@
 #include "algo/range.h"
 #include "algo/str.h"
 #include "err.h"
-#include "io/bit_reader.h"
 #include "io/memory_stream.h"
+#include "io/msb_bit_reader.h"
 #include "util/any.h"
 
 using namespace au;

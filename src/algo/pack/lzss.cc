@@ -1,5 +1,6 @@
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
+#include "io/msb_bit_reader.h"
 #include "ptr.h"
 #include "util/cyclic_buffer.h"
 

@@ -1,8 +1,8 @@
 #include "fmt/liar_soft/cg_decompress.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/bit_reader.h"
 #include "io/memory_stream.h"
+#include "io/msb_bit_reader.h"
 
 using namespace au;
 using namespace au::fmt::liar_soft;

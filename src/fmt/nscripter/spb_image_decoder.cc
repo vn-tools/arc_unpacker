@@ -1,6 +1,6 @@
 #include "fmt/nscripter/spb_image_decoder.h"
 #include "algo/range.h"
-#include "io/bit_reader.h"
+#include "io/msb_bit_reader.h"
 
 using namespace au;
 using namespace au::fmt::nscripter;

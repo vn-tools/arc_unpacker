@@ -1,6 +1,6 @@
 #include "fmt/lilim/aos1_archive_decoder.h"
 #include "algo/range.h"
-#include "io/bit_reader.h"
+#include "io/msb_bit_reader.h"
 
 using namespace au;
 using namespace au::fmt::lilim;

@@ -1,10 +1,10 @@
-#include "io/bit_reader.h"
-#include <algorithm>
+#include "io/base_bit_reader.h"
 #include "err.h"
 #include "io/memory_stream.h"
 
 using namespace au;
 using namespace au::io;
+
 
 BaseBitReader::BaseBitReader(const bstr &input) :
     buffer(0),
@@ -67,52 +67,4 @@ u32 BaseBitReader::get_gamma(const bool stop_mark)
         value |= get(1); // one by one to enforce MSB order
     }
     return value;
-}
-
-LsbBitReader::LsbBitReader(const bstr &input) : BaseBitReader(input)
-{
-}
-
-LsbBitReader::LsbBitReader(io::Stream &input_stream)
-    : BaseBitReader(input_stream)
-{
-}
-
-u32 LsbBitReader::get(const size_t bits)
-{
-    while (bits_available < bits)
-    {
-        const auto tmp = input_stream->read_u8();
-        buffer |= tmp << bits_available;
-        bits_available += 8;
-    }
-    const auto mask = (1ull << bits) - 1;
-    const auto value = buffer & mask;
-    buffer >>= bits;
-    bits_available -= bits;
-    position += bits;
-    return value;
-}
-
-MsbBitReader::MsbBitReader(const bstr &input) : BaseBitReader(input)
-{
-}
-
-MsbBitReader::MsbBitReader(io::Stream &input_stream)
-    : BaseBitReader(input_stream)
-{
-}
-
-u32 MsbBitReader::get(const size_t bits)
-{
-    while (bits_available < bits)
-    {
-        const auto tmp = input_stream->read_u8();
-        buffer = (buffer << 8) | tmp;
-        bits_available += 8;
-    }
-    const auto mask = (1ull << bits) - 1;
-    bits_available -= bits;
-    position += bits;
-    return (buffer >> bits_available) & mask;
 }

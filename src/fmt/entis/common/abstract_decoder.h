@@ -1,6 +1,7 @@
 #pragma once
 
-#include "io/bit_reader.h"
+#include <memory>
+#include "io/ibit_reader.h"
 
 namespace au {
 namespace fmt {
@@ -17,7 +18,7 @@ namespace common {
         virtual void reset() = 0;
         virtual void decode(u8 *ouptut, size_t output_size) = 0;
 
-        std::unique_ptr<io::MsbBitReader> bit_reader;
+        std::unique_ptr<io::IBitReader> bit_reader;
     };
 
 } } } }

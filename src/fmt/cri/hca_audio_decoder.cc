@@ -6,7 +6,7 @@
 #include "fmt/cri/hca/channel_decoder.h"
 #include "fmt/cri/hca/meta.h"
 #include "fmt/cri/hca/permutator.h"
-#include "io/bit_reader.h"
+#include "io/msb_bit_reader.h"
 
 using namespace au;
 using namespace au::fmt::cri;

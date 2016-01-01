@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "io/bit_reader.h"
+#include "io/ibit_reader.h"
 #include "io/stream.h"
 #include "types.h"
 

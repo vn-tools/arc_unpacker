@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/bit_reader.h"
+#include "io/ibit_reader.h"
 
 namespace au {
 namespace algo {

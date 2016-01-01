@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/bit_reader.h"
+#include "io/base_bit_reader.h"
 
 namespace au {
 namespace fmt {

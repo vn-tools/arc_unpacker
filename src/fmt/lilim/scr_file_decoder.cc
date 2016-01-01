@@ -1,5 +1,5 @@
 #include "fmt/lilim/scr_file_decoder.h"
-#include "io/bit_reader.h"
+#include "io/msb_bit_reader.h"
 
 using namespace au;
 using namespace au::fmt::lilim;

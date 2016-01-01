@@ -4,8 +4,8 @@
 #include "algo/range.h"
 #include "err.h"
 #include "fmt/jpeg/jpeg_image_decoder.h"
-#include "io/bit_reader.h"
 #include "io/memory_stream.h"
+#include "io/lsb_bit_reader.h"
 #include "ptr.h"
 #include "util/file_from_image.h"
 

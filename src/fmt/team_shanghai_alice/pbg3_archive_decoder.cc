@@ -2,6 +2,7 @@
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
 #include "io/memory_stream.h"
+#include "io/msb_bit_reader.h"
 
 using namespace au;
 using namespace au::fmt::team_shanghai_alice;

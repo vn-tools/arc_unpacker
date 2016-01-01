@@ -1,7 +1,7 @@
 #include "fmt/real_live/nwa_audio_decoder.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/bit_reader.h"
+#include "io/lsb_bit_reader.h"
 #include "io/memory_stream.h"
 
 using namespace au;

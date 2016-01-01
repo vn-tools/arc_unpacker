@@ -4,6 +4,7 @@
 #include "err.h"
 #include "fmt/bgi/cbg/cbg_common.h"
 #include "io/memory_stream.h"
+#include "io/msb_bit_reader.h"
 
 using namespace au;
 using namespace au::fmt::bgi::cbg;

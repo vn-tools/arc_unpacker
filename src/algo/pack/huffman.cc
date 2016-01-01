@@ -1,4 +1,5 @@
 #include "algo/pack/huffman.h"
+#include "io/msb_bit_reader.h"
 
 using namespace au;
 using namespace au::algo::pack;
