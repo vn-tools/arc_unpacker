@@ -58,7 +58,7 @@ std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
         e.path, input_file.stream.seek(0).read_to_eof());
 }
 
-TEST_CASE("Infinite recognition loops don't cause stack overflow", "[dec]")
+TEST_CASE("Infinite recognition loops don't cause stack overflow", "[flow]")
 {
     auto registry = Registry::create_mock();
     registry->add_decoder(

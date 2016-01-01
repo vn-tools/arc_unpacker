@@ -130,7 +130,7 @@ std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
-TEST_CASE("Recursive unpacking with virtual file system lookups", "[dec]")
+TEST_CASE("Recursive unpacking with virtual file system lookups", "[flow]")
 {
     const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;

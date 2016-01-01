@@ -132,7 +132,7 @@ std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
-TEST_CASE("Recursive unpacking with nested files", "[dec]")
+TEST_CASE("Recursive unpacking with nested files", "[flow]")
 {
     const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;
@@ -150,7 +150,7 @@ TEST_CASE("Recursive unpacking with nested files", "[dec]")
     REQUIRE(saved_files[0]->stream.read_to_eof() == "decoded_image"_b);
 }
 
-TEST_CASE("Recursive unpacking with nested archives", "[dec]")
+TEST_CASE("Recursive unpacking with nested archives", "[flow]")
 {
     const auto registry = create_registry();
     TestArchiveDecoder archive_decoder;
@@ -179,7 +179,7 @@ TEST_CASE("Recursive unpacking with nested archives", "[dec]")
 }
 
 TEST_CASE(
-    "Non-recursive unpacking doesn't execute child decoders", "[dec]")
+    "Non-recursive unpacking doesn't execute child decoders", "[flow]")
 {
     const auto registry = create_registry();
 
@@ -204,7 +204,7 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Recursive unpacking passes correct paths to child decoders", "[dec]")
+    "Recursive unpacking passes correct paths to child decoders", "[flow]")
 {
     std::vector<io::path> paths_for_recognition, paths_for_conversion;
     auto registry = Registry::create_mock();
