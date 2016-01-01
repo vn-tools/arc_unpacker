@@ -41,17 +41,16 @@ namespace flow {
             ParallelUnpacker &unpacker,
             TaskScheduler &task_scheduler,
             const ParallelUnpackerContext &unpacker_context,
-            const size_t depth,
             const io::path &base_name,
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task);
 
         virtual ~BaseParallelUnpackingTask() {}
+        size_t get_depth() const;
 
         Logger logger;
         ParallelUnpacker &unpacker;
         TaskScheduler &task_scheduler;
         const ParallelUnpackerContext &unpacker_context;
-        const size_t depth;
         const io::path base_name;
         unsigned int task_id;
         const std::shared_ptr<const BaseParallelUnpackingTask> parent_task;

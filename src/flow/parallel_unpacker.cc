@@ -29,7 +29,6 @@ namespace
             ParallelUnpacker &unpacker,
             TaskScheduler &task_scheduler,
             const ParallelUnpackerContext &unpacker_context,
-            const size_t depth,
             const io::path &base_name,
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
             const SourceType source_type,
@@ -51,7 +50,6 @@ namespace
             ParallelUnpacker &unpacker,
             TaskScheduler &task_scheduler,
             const ParallelUnpackerContext &unpacker_context,
-            const size_t depth,
             const io::path &base_name,
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
             const FileFactoryWithLogger file_factory,
@@ -179,14 +177,12 @@ BaseParallelUnpackingTask::BaseParallelUnpackingTask(
     ParallelUnpacker &unpacker,
     TaskScheduler &task_scheduler,
     const ParallelUnpackerContext &unpacker_context,
-    const size_t depth,
     const io::path &base_name,
     const std::shared_ptr<const BaseParallelUnpackingTask> parent_task) :
         logger(unpacker_context.logger),
         unpacker(unpacker),
         task_scheduler(task_scheduler),
         unpacker_context(unpacker_context),
-        depth(depth),
         base_name(base_name),
         parent_task(parent_task)
 {
@@ -197,11 +193,22 @@ BaseParallelUnpackingTask::BaseParallelUnpackingTask(
         algo::format("[task %d] %s: ", task_id, base_name.c_str()));
 }
 
+size_t BaseParallelUnpackingTask::get_depth() const
+{
+    auto depth = 0;
+    auto task = parent_task;
+    while (task != nullptr)
+    {
+        ++depth;
+        task = task->parent_task;
+    }
+    return depth;
+}
+
 DecodeInputFileTask::DecodeInputFileTask(
     ParallelUnpacker &unpacker,
     TaskScheduler &task_scheduler,
     const ParallelUnpackerContext &unpacker_context,
-    const size_t depth,
     const io::path &base_name,
     const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
     const SourceType source_type,
@@ -211,7 +218,6 @@ DecodeInputFileTask::DecodeInputFileTask(
             unpacker,
             task_scheduler,
             unpacker_context,
-            depth,
             base_name,
             parent_task),
         source_type(source_type),
@@ -274,7 +280,6 @@ ProcessOutputFileTask::ProcessOutputFileTask(
     ParallelUnpacker &unpacker,
     TaskScheduler &task_scheduler,
     const ParallelUnpackerContext &unpacker_context,
-    const size_t depth,
     const io::path &base_name,
     const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
     const FileFactoryWithLogger file_factory,
@@ -283,7 +288,6 @@ ProcessOutputFileTask::ProcessOutputFileTask(
             unpacker,
             task_scheduler,
             unpacker_context,
-            depth,
             base_name,
             parent_task),
         file_factory(file_factory),
@@ -323,7 +327,7 @@ bool ProcessOutputFileTask::work() const
         if (linked_decoders.empty())
             return save(*this, output_file);
 
-        if (depth >= max_depth)
+        if (get_depth() >= max_depth)
         {
             logger.warn("cycle detected.\n");
             return save(*this, output_file);
@@ -334,7 +338,6 @@ bool ProcessOutputFileTask::work() const
                 unpacker,
                 task_scheduler,
                 unpacker_context,
-                depth + 1,
                 output_file->path,
                 shared_from_this(),
                 SourceType::NestedDecoding,
@@ -380,7 +383,6 @@ void ParallelUnpacker::add_input_file(
             *this,
             p->task_scheduler,
             p->context,
-            0,
             base_name,
             nullptr,
             SourceType::InitialUserInput,
@@ -398,7 +400,6 @@ void ParallelUnpacker::save_file(
             *this,
             p->task_scheduler,
             p->context,
-            parent_task->depth + 1,
             parent_task->base_name,
             parent_task,
             file_factory,
