@@ -4,7 +4,7 @@
 #include "dec/cronus/common.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "plugin_mgr.h"
+#include "plugin_manager.h"
 
 using namespace au;
 using namespace au::dec::cronus;
@@ -60,13 +60,13 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(
 
 struct PakArchiveDecoder::Priv final
 {
-    PluginManager<Plugin> plugin_mgr;
+    PluginManager<Plugin> plugin_manager;
 };
 
 PakArchiveDecoder::PakArchiveDecoder() : p(new Priv)
 {
-    p->plugin_mgr.add("default", "Unencrypted games", {0, 0});
-    p->plugin_mgr.add("sweet", "Sweet Pleasure", {0xBC138744, 0x64E0BA23});
+    p->plugin_manager.add("default", "Unencrypted games", {0, 0});
+    p->plugin_manager.add("sweet", "Sweet Pleasure", {0xBC138744, 0x64E0BA23});
 }
 
 PakArchiveDecoder::~PakArchiveDecoder()
@@ -88,7 +88,7 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
         input_file.stream.seek(magic3.size());
     bool encrypted = input_file.stream.read_u32_le() > 0;
     auto pos = input_file.stream.tell();
-    for (auto &plugin : p->plugin_mgr.get_all())
+    for (const auto &plugin : p->plugin_manager.get_all())
     {
         input_file.stream.seek(pos);
         try

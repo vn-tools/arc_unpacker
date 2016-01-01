@@ -3,7 +3,6 @@
 #include "algo/str.h"
 #include "dec/shiina_rio/warc/decompress.h"
 #include "dec/shiina_rio/warc/decrypt.h"
-#include "dec/shiina_rio/warc/plugin_registry.h"
 #include "err.h"
 #include "io/memory_stream.h"
 
@@ -38,27 +37,15 @@ ArchiveMetaImpl::ArchiveMetaImpl(
 {
 }
 
-struct WarcArchiveDecoder::Priv final
-{
-    warc::PluginRegistry plugin_registry;
-};
-
-WarcArchiveDecoder::WarcArchiveDecoder() : p(new Priv)
-{
-}
-
-WarcArchiveDecoder::~WarcArchiveDecoder()
-{
-}
-
 void WarcArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 {
-    p->plugin_registry.register_cli_options(arg_parser);
+    plugin_manager.register_cli_options(
+        arg_parser, "Selects WARC decryption routine.");
 }
 
 void WarcArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->plugin_registry.parse_cli_options(arg_parser);
+    plugin_manager.parse_cli_options(arg_parser);
 }
 
 bool WarcArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -69,10 +56,7 @@ bool WarcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> WarcArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto plugin = p->plugin_registry.get_plugin();
-    if (!plugin)
-        throw err::UsageError("Plugin not specified");
-
+    const auto plugin = plugin_manager.get()();
     input_file.stream.seek(magic.size());
     const int warc_version = 100
         * algo::from_string<float>(input_file.stream.read(3).str());

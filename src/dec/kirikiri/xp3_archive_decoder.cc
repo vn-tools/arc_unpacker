@@ -2,7 +2,6 @@
 #include "algo/locale.h"
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
-#include "dec/kirikiri/xp3_filter_registry.h"
 #include "err.h"
 #include "io/memory_stream.h"
 
@@ -39,7 +38,7 @@ namespace
 
     struct ArchiveMetaImpl final : dec::ArchiveMeta
     {
-        std::unique_ptr<Xp3Filter> filter;
+        Xp3DecryptFunc decrypt_func;
     };
 
     struct ArchiveEntryImpl final : dec::ArchiveEntry
@@ -176,27 +175,15 @@ static std::unique_ptr<ArchiveEntryImpl> read_entry(
     return entry;
 }
 
-struct Xp3ArchiveDecoder::Priv final
-{
-    Xp3FilterRegistry filter_registry;
-};
-
-Xp3ArchiveDecoder::Xp3ArchiveDecoder() : p(new Priv)
-{
-}
-
-Xp3ArchiveDecoder::~Xp3ArchiveDecoder()
-{
-}
-
 void Xp3ArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 {
-    p->filter_registry.register_cli_options(arg_parser);
+    plugin_manager.register_cli_options(
+        arg_parser, "Selects XP3 decryption routine.");
 }
 
 void Xp3ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->filter_registry.parse_cli_options(arg_parser);
+    plugin_manager.parse_cli_options(arg_parser);
 }
 
 bool Xp3ArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -223,8 +210,8 @@ std::unique_ptr<dec::ArchiveMeta> Xp3ArchiveDecoder::read_meta_impl(
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    meta->filter.reset(new Xp3Filter(input_file.path));
-    p->filter_registry.set_decoder(*meta->filter);
+    meta->decrypt_func = plugin_manager.get()
+        .create_decrypt_func(input_file.path);
 
     while (table_stream.tell() < table_stream.size())
         meta->entries.push_back(read_entry(logger, table_stream));
@@ -251,15 +238,10 @@ std::unique_ptr<io::File> Xp3ArchiveDecoder::read_file_impl(
             : input_file.stream.read(segm_chunk->size_orig);
     }
 
-    if (meta->filter && meta->filter->decoder)
-        meta->filter->decoder(data, entry->adlr_chunk->key);
+    if (meta->decrypt_func)
+        meta->decrypt_func(data, entry->adlr_chunk->key);
 
     return std::make_unique<io::File>(entry->path, data);
-}
-
-void Xp3ArchiveDecoder::set_plugin(const std::string &plugin_name)
-{
-    p->filter_registry.use_plugin(plugin_name);
 }
 
 std::vector<std::string> Xp3ArchiveDecoder::get_linked_formats() const

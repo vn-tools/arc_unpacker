@@ -1,6 +1,8 @@
 #pragma once
 
 #include "dec/base_archive_decoder.h"
+#include "dec/nitroplus/npa_plugin.h"
+#include "plugin_manager.h"
 
 namespace au {
 namespace dec {
@@ -10,7 +12,6 @@ namespace nitroplus {
     {
     public:
         NpaArchiveDecoder();
-        ~NpaArchiveDecoder();
         void register_cli_options(ArgParser &arg_parser) const override;
         void parse_cli_options(const ArgParser &arg_parser) override;
 
@@ -28,8 +29,7 @@ namespace nitroplus {
             const ArchiveEntry &e) const override;
 
     private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
+        PluginManager<std::shared_ptr<NpaPlugin>> plugin_manager;
     };
 
 } } }

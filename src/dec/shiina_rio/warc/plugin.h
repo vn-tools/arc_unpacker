@@ -1,6 +1,8 @@
 #pragma once
 
 #include <array>
+#include <functional>
+#include <memory>
 #include "res/image.h"
 
 namespace au {
@@ -25,5 +27,7 @@ namespace warc {
         FlagCryptFunc flag_pre_crypt;
         FlagCryptFunc flag_post_crypt;
     };
+
+    using PluginBuilder = std::function<std::shared_ptr<Plugin>()>;
 
 } } } }

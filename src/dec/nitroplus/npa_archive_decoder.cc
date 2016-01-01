@@ -2,7 +2,6 @@
 #include "algo/locale.h"
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
-#include "dec/nitroplus/npa_filter_registry.h"
 #include "err.h"
 
 using namespace au;
@@ -20,7 +19,7 @@ namespace
 
     struct ArchiveMetaImpl final : dec::ArchiveMeta
     {
-        std::shared_ptr<NpaFilter> filter;
+        std::shared_ptr<NpaPlugin> plugin;
         u32 key1, key2;
         bool files_are_encrypted;
         bool files_are_compressed;
@@ -43,7 +42,7 @@ namespace
 static void decrypt_file_name(
     const ArchiveMetaImpl &meta, bstr &name, size_t file_index)
 {
-    u32 tmp = meta.filter->file_name_key(meta.key1, meta.key2);
+    u32 tmp = meta.plugin->file_name_key(meta.key1, meta.key2);
     for (auto char_pos : algo::range(name.size()))
     {
         u32 key = 0xFC * char_pos;
@@ -62,7 +61,7 @@ static void decrypt_file_name(
 static void decrypt_file_data(
     const ArchiveMetaImpl &meta, const ArchiveEntryImpl &entry, bstr &data)
 {
-    u32 key = meta.filter->data_key;
+    u32 key = meta.plugin->data_key;
     for (auto i : algo::range(entry.path_orig.size()))
         key -= entry.path_orig[i];
     key *= entry.path_orig.size();
@@ -73,30 +72,18 @@ static void decrypt_file_data(
     u8 *data_ptr = data.get<u8>();
     size_t size = 0x1000 + entry.path_orig.size();
     for (auto i : algo::range(std::min(size, data.size())))
-        data_ptr[i] = meta.filter->permutation[data_ptr[i]] - key - i;
-}
-
-struct NpaArchiveDecoder::Priv final
-{
-    NpaFilterRegistry filter_registry;
-};
-
-NpaArchiveDecoder::NpaArchiveDecoder() : p(new Priv)
-{
-}
-
-NpaArchiveDecoder::~NpaArchiveDecoder()
-{
+        data_ptr[i] = meta.plugin->permutation[data_ptr[i]] - key - i;
 }
 
 void NpaArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 {
-    p->filter_registry.register_cli_options(arg_parser);
+    plugin_manager.register_cli_options(
+        arg_parser, "Selects NPA decryption routine.");
 }
 
 void NpaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->filter_registry.parse_cli_options(arg_parser);
+    plugin_manager.parse_cli_options(arg_parser);
 }
 
 bool NpaArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -108,9 +95,7 @@ std::unique_ptr<dec::ArchiveMeta> NpaArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    meta->filter = p->filter_registry.get_filter();
-    if (!meta->filter)
-        throw err::UsageError("Plugin not specified");
+    meta->plugin = plugin_manager.get();
 
     input_file.stream.seek(magic.size());
     meta->key1 = input_file.stream.read_u32_le();

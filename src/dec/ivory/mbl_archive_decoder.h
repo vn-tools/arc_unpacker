@@ -1,19 +1,20 @@
 #pragma once
 
 #include "dec/base_archive_decoder.h"
+#include "plugin_manager.h"
 
 namespace au {
 namespace dec {
 namespace ivory {
 
+    using MblDecryptFunc = std::function<void(bstr &)>;
+
     class MblArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         MblArchiveDecoder();
-        ~MblArchiveDecoder();
         void register_cli_options(ArgParser &arg_parser) const override;
         void parse_cli_options(const ArgParser &arg_parser) override;
-        void set_plugin(const std::string &name);
         std::vector<std::string> get_linked_formats() const override;
 
     protected:
@@ -29,9 +30,8 @@ namespace ivory {
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
 
-    private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
+    public:
+        PluginManager<MblDecryptFunc> plugin_manager;
     };
 
 } } }

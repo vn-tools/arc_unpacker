@@ -473,33 +473,38 @@ static bstr find_control_block(const io::path &path)
     throw err::FileNotFoundError("TPM file not found");
 }
 
-Xp3FilterFunc au::dec::kirikiri::create_cxdec_filter(
-    const io::path &arc_path,
-    u16 key1,
-    u16 key2,
+Xp3Plugin au::dec::kirikiri::create_cxdec_plugin(
+    const u16 key1,
+    const u16 key2,
     const std::array<size_t, 3> key_derivation_order1,
     const std::array<size_t, 8> key_derivation_order2,
     const std::array<size_t, 6> key_derivation_order3)
 {
-    CxdecSettings settings;
-    settings.control_block = find_control_block(arc_path);
-    settings.key1 = key1;
-    settings.key2 = key2;
-    settings.key_derivation_order1 = key_derivation_order1;
-    settings.key_derivation_order2 = key_derivation_order2;
-    settings.key_derivation_order3 = key_derivation_order3;
-
-    return [=](bstr &data, u32 adlr_key)
+    Xp3Plugin plugin;
+    plugin.create_decrypt_func = [=](const io::path &arc_path)
     {
-        KeyDeriver key_deriver(settings);
-        size_t size = std::min<size_t>(
-            data.size(), (adlr_key & settings.key1) + settings.key2);
+        CxdecSettings settings;
+        settings.control_block = find_control_block(arc_path);
+        settings.key1 = key1;
+        settings.key2 = key2;
+        settings.key_derivation_order1 = key_derivation_order1;
+        settings.key_derivation_order2 = key_derivation_order2;
+        settings.key_derivation_order3 = key_derivation_order3;
 
-        auto hash1 = adlr_key;
-        auto hash2 = (adlr_key >> 16) ^ adlr_key;
-        size_t offset1 = 0;
-        size_t offset2 = size;
-        decrypt_chunk(key_deriver, data, hash1, offset1, offset2);
-        decrypt_chunk(key_deriver, data, hash2, offset2, data.size() - offset2);
+        return [=](bstr &data, u32 adlr_key)
+        {
+            KeyDeriver key_deriver(settings);
+            size_t size = std::min<size_t>(
+                data.size(), (adlr_key & settings.key1) + settings.key2);
+
+            auto hash1 = adlr_key;
+            auto hash2 = (adlr_key >> 16) ^ adlr_key;
+            size_t offset1 = 0;
+            size_t offset2 = size;
+            decrypt_chunk(key_deriver, data, hash1, offset1, offset2);
+            decrypt_chunk(
+                key_deriver, data, hash2, offset2, data.size() - offset2);
+        };
     };
+    return plugin;
 }

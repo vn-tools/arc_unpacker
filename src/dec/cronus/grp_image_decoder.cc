@@ -3,14 +3,14 @@
 #include "algo/range.h"
 #include "dec/cronus/common.h"
 #include "err.h"
-#include "plugin_mgr.h"
+#include "plugin_manager.h"
 
 using namespace au;
 using namespace au::dec::cronus;
 
 namespace
 {
-    enum EncType
+    enum class EncryptionType : u8
     {
         Delta,
         SwapBytes,
@@ -26,10 +26,10 @@ namespace
         size_t output_size;
         bool flip;
         bool use_transparency;
-        EncType encryption_type;
+        EncryptionType encryption_type;
     };
 
-    using HeaderFunc = std::function<Header(io::IStream&)>;
+    using HeaderReader = std::function<std::unique_ptr<Header>(io::IStream&)>;
 }
 
 static void swap_decrypt(bstr &input, size_t encrypted_size)
@@ -46,8 +46,7 @@ static void swap_decrypt(bstr &input, size_t encrypted_size)
 
 struct GrpImageDecoder::Priv final
 {
-    PluginManager<HeaderFunc> plugin_mgr;
-    Header header;
+    PluginManager<HeaderReader> plugin_manager;
 };
 
 static bool validate_header(const Header &header)
@@ -64,126 +63,141 @@ static bool validate_header(const Header &header)
     return header.output_size == expected_output_size;
 }
 
-static HeaderFunc reader_v1(u32 key1, u32 key2, u32 key3, EncType enc_type)
+static HeaderReader get_v1_reader(
+    const u32 key1,
+    const u32 key2,
+    const u32 key3,
+    const EncryptionType enc_type)
 {
     return [=](io::IStream &input_stream)
     {
-        Header header;
-        header.width = input_stream.read_u32_le() ^ key1;
-        header.height = input_stream.read_u32_le() ^ key2;
-        header.bpp = input_stream.read_u32_le();
+        auto header = std::make_unique<Header>();
+        header->width = input_stream.read_u32_le() ^ key1;
+        header->height = input_stream.read_u32_le() ^ key2;
+        header->bpp = input_stream.read_u32_le();
         input_stream.skip(4);
-        header.output_size = input_stream.read_u32_le() ^ key3;
+        header->output_size = input_stream.read_u32_le() ^ key3;
         input_stream.skip(4);
-        header.use_transparency = false;
-        header.flip = true;
-        header.encryption_type = enc_type;
+        header->use_transparency = false;
+        header->flip = true;
+        header->encryption_type = enc_type;
         return header;
     };
 }
 
-static HeaderFunc reader_v2()
+static HeaderReader get_v2_reader()
 {
     return [](io::IStream &input_stream)
     {
-        Header header;
+        auto header = std::make_unique<Header>();
         input_stream.skip(4);
-        header.output_size = input_stream.read_u32_le();
+        header->output_size = input_stream.read_u32_le();
         input_stream.skip(8);
-        header.width = input_stream.read_u32_le();
-        header.height = input_stream.read_u32_le();
-        header.bpp = input_stream.read_u32_le();
+        header->width = input_stream.read_u32_le();
+        header->height = input_stream.read_u32_le();
+        header->bpp = input_stream.read_u32_le();
         input_stream.skip(8);
-        header.flip = false;
-        header.use_transparency = input_stream.read_u32_le() != 0;
-        header.encryption_type = EncType::None;
+        header->flip = false;
+        header->use_transparency = input_stream.read_u32_le() != 0;
+        header->encryption_type = EncryptionType::None;
         return header;
     };
 }
 
 GrpImageDecoder::GrpImageDecoder() : p(new Priv)
 {
-    p->plugin_mgr.add(
+    p->plugin_manager.add(
         "dokidoki", "Doki Doki Princess",
-        reader_v1(0xA53CC35A, 0x35421005, 0xCF42355D, EncType::SwapBytes));
+        get_v1_reader(
+            0xA53CC35A, 0x35421005, 0xCF42355D, EncryptionType::SwapBytes));
 
-    p->plugin_mgr.add(
+    p->plugin_manager.add(
         "sweet", "Sweet Pleasure",
-        reader_v1(0x2468FCDA, 0x4FC2CC4D, 0xCF42355D, EncType::Delta));
+        get_v1_reader(
+            0x2468FCDA, 0x4FC2CC4D, 0xCF42355D, EncryptionType::Delta));
 
-    p->plugin_mgr.add("nursery", "Nursery Song", reader_v2());
+    p->plugin_manager.add("nursery", "Nursery Song", get_v2_reader());
 }
 
 GrpImageDecoder::~GrpImageDecoder()
 {
 }
 
-bool GrpImageDecoder::is_recognized_impl(io::File &input_file) const
+static std::unique_ptr<Header> read_header(
+    const PluginManager<HeaderReader> &plugin_manager, io::File &input_file)
 {
-    for (auto header_func : p->plugin_mgr.get_all())
+    for (const auto header_func : plugin_manager.get_all())
     {
         input_file.stream.seek(0);
         try
         {
-            p->header = header_func(input_file.stream);
-            if (!validate_header(p->header))
+            auto header = header_func(input_file.stream);
+            if (!header)
                 continue;
-            p->header.input_offset = input_file.stream.tell();
-            return true;
+            if (!validate_header(*header))
+                continue;
+            header->input_offset = input_file.stream.tell();
+            return header;
         }
         catch (...)
         {
             continue;
         }
     }
-    return false;
+    return nullptr;
+}
+
+bool GrpImageDecoder::is_recognized_impl(io::File &input_file) const
+{
+    return read_header(p->plugin_manager, input_file) != nullptr;
 }
 
 res::Image GrpImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    input_file.stream.seek(p->header.input_offset);
+    const auto header = read_header(p->plugin_manager, input_file);
+    input_file.stream.seek(header->input_offset);
     auto data = input_file.stream.read_to_eof();
 
-    if (p->header.encryption_type == EncType::Delta)
+    if (header->encryption_type == EncryptionType::Delta)
         delta_decrypt(data, get_delta_key(input_file.path.name()));
-    else if (p->header.encryption_type == EncType::SwapBytes)
-        swap_decrypt(data, p->header.output_size);
-    data = algo::pack::lzss_decompress(data, p->header.output_size);
+    else if (header->encryption_type == EncryptionType::SwapBytes)
+        swap_decrypt(data, header->output_size);
+    data = algo::pack::lzss_decompress(data, header->output_size);
 
     std::unique_ptr<res::Image> image;
 
-    if (p->header.bpp == 8)
+    if (header->bpp == 8)
     {
         res::Palette palette(256, data, res::PixelFormat::BGRA8888);
         image = std::make_unique<res::Image>(
-            p->header.width, p->header.height, data.substr(1024), palette);
+            header->width, header->height, data.substr(1024), palette);
     }
-    else if (p->header.bpp == 24)
+    else if (header->bpp == 24)
     {
         image = std::make_unique<res::Image>(
-            p->header.width, p->header.height, data, res::PixelFormat::BGR888);
+            header->width, header->height, data, res::PixelFormat::BGR888);
     }
-    else if (p->header.bpp == 32)
+    else if (header->bpp == 32)
     {
         image = std::make_unique<res::Image>(
-            p->header.width,
-            p->header.height,
+            header->width,
+            header->height,
             data,
             res::PixelFormat::BGRA8888);
     }
     else
     {
-        throw err::UnsupportedBitDepthError(p->header.bpp);
+        throw err::UnsupportedBitDepthError(header->bpp);
     }
 
-    if (!p->header.use_transparency)
+    if (!header->use_transparency)
     {
-        for (auto x : algo::range(p->header.width))
-        for (auto y : algo::range(p->header.height))
+        for (auto x : algo::range(header->width))
+        for (auto y : algo::range(header->height))
             image->at(x, y).a = 0xFF;
     }
-    if (p->header.flip)
+    if (header->flip)
         image->flip_vertically();
 
     return *image;

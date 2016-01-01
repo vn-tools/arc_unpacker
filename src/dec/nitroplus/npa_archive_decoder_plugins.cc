@@ -1,14 +1,12 @@
-#include "dec/nitroplus/npa_filter_registry.h"
+#include "dec/nitroplus/npa_archive_decoder.h"
 #include "algo/range.h"
-#include "plugin_mgr.h"
 
 using namespace au;
 using namespace au::dec::nitroplus;
 
-static std::shared_ptr<NpaFilter> create_chaos_head_filter()
+static std::shared_ptr<NpaPlugin> create_chaos_head_filter()
 {
-    return std::shared_ptr<NpaFilter>(new NpaFilter
-    {
+    return std::make_shared<NpaPlugin>(
         "\xF1\x71\x80\x19\x17\x01\x74\x7D\x90\x47\xF9\x68\xDE\xB4\x24\x40"
         "\x73\x9E\x5B\x38\x4C\x3A\x2A\x0D\x2E\xB9\x5C\xE9\xCE\xE8\x3E\x39"
         "\xA2\xF8\xA8\x5E\x1D\x1B\xD3\x23\xCB\x9B\xB0\xD5\x59\xF0\x3B\x09"
@@ -26,14 +24,12 @@ static std::shared_ptr<NpaFilter> create_chaos_head_filter()
         "\xC8\xC3\x69\x7C\x31\x58\xE3\x75\xD8\xE1\xC0\x9F\x11\xB5\x93\x56"
         "\xF5\x1E\xB1\x1A\x70\x3D\xFB\x82\xDC\xDF\x7E\x07\x15\x49\xFC\xB8"_b,
         0x87654321,
-        [](u32 key1, u32 key2) { return key1 * key2; },
-    });
+        [](const u32 key1, const u32 key2) { return key1 * key2; });
 }
 
-static std::shared_ptr<NpaFilter> create_muramasa_filter()
+static std::shared_ptr<NpaPlugin> create_muramasa_filter()
 {
-    return std::shared_ptr<NpaFilter>(new NpaFilter
-    {
+    return std::make_shared<NpaPlugin>(
         "\x48\xE8\xD3\x11\x1D\x58\xEA\xE5\x23\xBD\x41\xC0\x86\x6A\x0A\xB3"
         "\xE9\x26\xAE\x90\xBF\x92\x02\x55\x06\x61\xAF\xF1\x76\xF0\x96\x91"
         "\x34\x40\x30\xA6\x15\x1E\x89\x09\x7E\x2E\x63\x8B\xA1\x43\x9E\x51"
@@ -51,40 +47,18 @@ static std::shared_ptr<NpaFilter> create_muramasa_filter()
         "\x70\x79\xC1\xEF\x98\xA0\xF9\xEB\x80\xF8\x73\x27\x18\x6B\x29\xAC"
         "\x4B\x16\x68\x12\xE3\x95\x4E\xD4\x8F\x87\xE6\x5D\x1B\xB1\x4F\x60"_b,
         0x87654321,
-        [](u32 key1, u32 key2) { return key1 * key2; },
-    });
+        [](const u32 key1, const u32 key2) { return key1 * key2; });
 }
 
-struct NpaFilterRegistry::Priv final
+NpaArchiveDecoder::NpaArchiveDecoder()
 {
-    using FilterBuilder = std::function<std::shared_ptr<NpaFilter>()>;
-    PluginManager<FilterBuilder> plugin_mgr;
-    std::shared_ptr<NpaFilter> filter;
-};
+    plugin_manager.add(
+        "chaos-head",
+        "ChaoS;HEAd",
+        create_chaos_head_filter());
 
-NpaFilterRegistry::NpaFilterRegistry() : p(new Priv)
-{
-    p->plugin_mgr.add("chaos-head", "ChaoS;HEAd", create_chaos_head_filter);
-    p->plugin_mgr.add(
-        "muramasa", "Full Metal Daemon Muramasa", create_muramasa_filter);
-}
-
-NpaFilterRegistry::~NpaFilterRegistry()
-{
-}
-
-void NpaFilterRegistry::register_cli_options(ArgParser &arg_parser) const
-{
-    p->plugin_mgr.register_cli_options(
-        arg_parser, "Selects NPA decryption routine.");
-}
-
-void NpaFilterRegistry::parse_cli_options(const ArgParser &arg_parser)
-{
-    p->plugin_mgr.parse_cli_options(arg_parser);
-}
-
-std::shared_ptr<NpaFilter> NpaFilterRegistry::get_filter() const
-{
-    return p->plugin_mgr.get()();
+    plugin_manager.add(
+        "muramasa",
+        "Full Metal Daemon Muramasa",
+        create_muramasa_filter());
 }

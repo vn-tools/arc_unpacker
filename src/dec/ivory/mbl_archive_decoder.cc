@@ -5,15 +5,12 @@
 #include "dec/ivory/prs_image_decoder.h"
 #include "dec/ivory/wady_audio_decoder.h"
 #include "err.h"
-#include "plugin_mgr.h"
 
 using namespace au;
 using namespace au::dec::ivory;
 
 namespace
 {
-    using PluginFunc = std::function<void(bstr &)>;
-
     struct ArchiveEntryImpl final : dec::ArchiveEntry
     {
         size_t offset;
@@ -23,7 +20,7 @@ namespace
     struct ArchiveMetaImpl final : dec::ArchiveMeta
     {
         bool encrypted;
-        PluginFunc decrypt;
+        MblDecryptFunc decrypt;
     };
 }
 
@@ -48,34 +45,24 @@ static bool verify_version(
 
 static int detect_version(io::IStream &input_stream)
 {
-    {
-        input_stream.seek(0);
-        const auto file_count = input_stream.read_u32_le();
-        if (verify_version(input_stream, file_count, 16))
-            return 1;
-    }
+    input_stream.seek(0);
+    const auto file_count = input_stream.read_u32_le();
+    if (verify_version(input_stream, file_count, 16))
+        return 1;
 
-    {
-        input_stream.seek(0);
-        const auto file_count = input_stream.read_u32_le();
-        const auto name_size = input_stream.read_u32_le();
-        if (verify_version(input_stream, file_count, name_size))
-            return 2;
-    }
+    input_stream.seek(4);
+    const auto name_size = input_stream.read_u32_le();
+    if (verify_version(input_stream, file_count, name_size))
+        return 2;
 
     throw err::RecognitionError();
 }
 
-struct MblArchiveDecoder::Priv final
+MblArchiveDecoder::MblArchiveDecoder()
 {
-    PluginManager<PluginFunc> plugin_mgr;
-};
+    plugin_manager.add("noop", "Unencrypted games", [](bstr &) { });
 
-MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)
-{
-    p->plugin_mgr.add("noop", "Unencrypted games", [](bstr &) { });
-
-    p->plugin_mgr.add(
+    plugin_manager.add(
         "candy",
         "Candy Toys",
         [](bstr &data)
@@ -84,7 +71,7 @@ MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)
                 data[i] = -data[i];
         });
 
-    p->plugin_mgr.add(
+    plugin_manager.add(
         "wanko",
         "Wanko to Kurasou",
         [](bstr &data)
@@ -96,24 +83,15 @@ MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)
         });
 }
 
-MblArchiveDecoder::~MblArchiveDecoder()
-{
-}
-
 void MblArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
 {
-    p->plugin_mgr.register_cli_options(
+    plugin_manager.register_cli_options(
         arg_parser, "Specifies plugin for decoding dialog files.");
 }
 
 void MblArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
 {
-    p->plugin_mgr.parse_cli_options(arg_parser);
-}
-
-void MblArchiveDecoder::set_plugin(const std::string &plugin_name)
-{
-    p->plugin_mgr.set(plugin_name);
+    plugin_manager.parse_cli_options(arg_parser);
 }
 
 bool MblArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -128,7 +106,7 @@ std::unique_ptr<dec::ArchiveMeta> MblArchiveDecoder::read_meta_impl(
     const auto version = detect_version(input_file.stream);
     meta->encrypted
         = input_file.path.name().find("mg_data") != std::string::npos;
-    meta->decrypt = p->plugin_mgr.is_set() ? p->plugin_mgr.get() : nullptr;
+    meta->decrypt = plugin_manager.is_set() ? plugin_manager.get() : nullptr;
     input_file.stream.seek(0);
 
     const auto file_count = input_file.stream.read_u32_le();
