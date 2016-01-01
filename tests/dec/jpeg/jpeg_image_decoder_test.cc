@@ -10,7 +10,7 @@ using namespace au::dec::jpeg;
 
 static const std::string dir = "tests/dec/jpeg/files/";
 
-TEST_CASE("JPEG 24-bit images", "[util]")
+TEST_CASE("JPEG 24-bit images", "[dec]")
 {
     const auto input_file = tests::file_from_path(dir + "reimu_opaque.jpg");
 
@@ -26,7 +26,7 @@ TEST_CASE("JPEG 24-bit images", "[util]")
     REQUIRE(static_cast<int>(color.a) == 0xFF);
 }
 
-TEST_CASE("JPEG 8-bit images", "[util]")
+TEST_CASE("JPEG 8-bit images", "[dec]")
 {
     const auto decoder = JpegImageDecoder();
     auto input_file = tests::file_from_path(dir + "NoName.jpeg");

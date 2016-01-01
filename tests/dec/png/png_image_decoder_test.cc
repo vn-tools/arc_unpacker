@@ -10,7 +10,7 @@ using namespace au::dec::png;
 
 static const std::string dir = "tests/dec/png/files/";
 
-TEST_CASE("PNG images", "[util]")
+TEST_CASE("PNG images", "[dec]")
 {
     Logger dummy_logger;
     dummy_logger.mute();
@@ -46,7 +46,7 @@ TEST_CASE("PNG images with transparency", "[dec]")
     REQUIRE(static_cast<int>(color.a) == 0xFF);
 }
 
-TEST_CASE("PNG images with extra chunks", "[util]")
+TEST_CASE("PNG images with extra chunks", "[dec]")
 {
     const auto decoder = PngImageDecoder();
     const auto input_file = tests::file_from_path(dir + "b09s_hs02l_.png");
