@@ -1,8 +1,8 @@
 #include "dec/leaf/leafpack_group/lfg_image_decoder.h"
+#include "algo/cyclic_buffer.h"
 #include "algo/range.h"
 #include "dec/leaf/common/custom_lzss.h"
 #include "err.h"
-#include "util/cyclic_buffer.h"
 
 using namespace au;
 using namespace au::dec::leaf;
@@ -92,7 +92,7 @@ res::Image LfgImageDecoder::decode_impl(
     size_t y = height;
 
     // heavily modified LZSS
-    util::CyclicBuffer<0x1000> dict(0xFEE);
+    algo::CyclicBuffer<0x1000> dict(0xFEE);
     u16 control = 0;
     while (output_ptr >= output_start
         && output_ptr < output_end

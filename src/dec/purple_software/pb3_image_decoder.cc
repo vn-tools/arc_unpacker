@@ -1,5 +1,6 @@
 #include "dec/purple_software/pb3_image_decoder.h"
 #include "algo/binary.h"
+#include "algo/cyclic_buffer.h"
 #include "algo/format.h"
 #include "algo/range.h"
 #include "algo/str.h"
@@ -8,7 +9,6 @@
 #include "err.h"
 #include "io/memory_stream.h"
 #include "ptr.h"
-#include "util/cyclic_buffer.h"
 #include "util/virtual_file_system.h"
 
 using namespace au;
@@ -35,7 +35,7 @@ static bstr custom_lzss_decompress(
 {
     bstr output(output_size);
     auto output_ptr = make_ptr(output);
-    util::CyclicBuffer<0x800> dict(0x7DE);
+    algo::CyclicBuffer<0x800> dict(0x7DE);
     io::MemoryStream control_block_stream(control_block);
     io::MemoryStream data_block_stream(data_block);
     int control = 0, bit_mask = 0;

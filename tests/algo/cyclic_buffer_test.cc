@@ -1,28 +1,28 @@
-#include "util/cyclic_buffer.h"
+#include "algo/cyclic_buffer.h"
 #include "algo/range.h"
 #include "test_support/catch.h"
 
 using namespace au;
 
-TEST_CASE("CyclicBuffer", "[util]")
+TEST_CASE("CyclicBuffer", "[algo]")
 {
     SECTION("Empty buffer content")
     {
-        const util::CyclicBuffer<5> buffer(1);
+        const algo::CyclicBuffer<5> buffer(1);
         for (auto i : algo::range(5))
             REQUIRE(!buffer[i]);
     }
 
     SECTION("Size")
     {
-        const util::CyclicBuffer<5> buffer(1);
+        const algo::CyclicBuffer<5> buffer(1);
         REQUIRE(buffer.size() == 5);
         REQUIRE(buffer.pos() == 1);
     }
 
     SECTION("Pushing single bytes")
     {
-        util::CyclicBuffer<5> buffer(1);
+        algo::CyclicBuffer<5> buffer(1);
         SECTION("Small strings")
         {
             buffer << '1';
@@ -70,7 +70,7 @@ TEST_CASE("CyclicBuffer", "[util]")
 
     SECTION("Pushing whole strings")
     {
-        util::CyclicBuffer<5> buffer(1);
+        algo::CyclicBuffer<5> buffer(1);
         SECTION("Small strings")
         {
             buffer << "123"_b;
@@ -105,7 +105,7 @@ TEST_CASE("CyclicBuffer", "[util]")
     {
         SECTION("Zero start position, strings")
         {
-            util::CyclicBuffer<5> buffer(0);
+            algo::CyclicBuffer<5> buffer(0);
             REQUIRE(buffer.start() == 0);
             buffer << "123"_b; REQUIRE(buffer.start() == 0);
             buffer << "45"_b; REQUIRE(buffer.start() == 0);
@@ -116,7 +116,7 @@ TEST_CASE("CyclicBuffer", "[util]")
         }
         SECTION("Custom start position, strings")
         {
-            util::CyclicBuffer<5> buffer(1);
+            algo::CyclicBuffer<5> buffer(1);
             REQUIRE(buffer.start() == 1);
             buffer << "123"_b; REQUIRE(buffer.start() == 1);
             buffer << "45"_b; REQUIRE(buffer.start() == 1);
@@ -127,7 +127,7 @@ TEST_CASE("CyclicBuffer", "[util]")
         }
         SECTION("Zero start position bytes")
         {
-            util::CyclicBuffer<5> buffer(0);
+            algo::CyclicBuffer<5> buffer(0);
             REQUIRE(buffer.start() == 0);
             buffer << '1'; REQUIRE(buffer.start() == 0);
             buffer << '2'; REQUIRE(buffer.start() == 0);
@@ -142,7 +142,7 @@ TEST_CASE("CyclicBuffer", "[util]")
         }
         SECTION("Custom start position bytes")
         {
-            util::CyclicBuffer<5> buffer(1);
+            algo::CyclicBuffer<5> buffer(1);
             REQUIRE(buffer.start() == 1);
             buffer << '1'; REQUIRE(buffer.start() == 1);
             buffer << '2'; REQUIRE(buffer.start() == 1);
@@ -159,7 +159,7 @@ TEST_CASE("CyclicBuffer", "[util]")
 
     SECTION("Manual overwriting")
     {
-        util::CyclicBuffer<2> buffer(0);
+        algo::CyclicBuffer<2> buffer(0);
         buffer << "1"_b;
         buffer[0] = '2';
         REQUIRE(buffer[0] == '2');
@@ -168,7 +168,7 @@ TEST_CASE("CyclicBuffer", "[util]")
 
     SECTION("Access out of bounds")
     {
-        util::CyclicBuffer<2> buffer(0);
+        algo::CyclicBuffer<2> buffer(0);
         buffer[0] = '0';
         buffer[1] = '1';
         REQUIRE(buffer[2] == '0');

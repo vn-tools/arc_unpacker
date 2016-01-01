@@ -4,7 +4,7 @@
 #include "types.h"
 
 namespace au {
-namespace util {
+namespace algo {
 
     template<const size_t n> class CyclicBuffer final
     {

@@ -1,8 +1,8 @@
 #include "dec/purple_software/ps2_file_decoder.h"
 #include "algo/binary.h"
+#include "algo/cyclic_buffer.h"
 #include "algo/range.h"
 #include "ptr.h"
-#include "util/cyclic_buffer.h"
 
 using namespace au;
 using namespace au::dec::purple_software;
@@ -17,7 +17,7 @@ static void decrypt(bstr &data, const u32 key, const size_t shift)
 
 static bstr custom_lzss_decompress(const bstr &input, const size_t size_orig)
 {
-    util::CyclicBuffer<0x800> dict(0x7DF);
+    algo::CyclicBuffer<0x800> dict(0x7DF);
     bstr output(size_orig);
     auto output_ptr = make_ptr(output);
     auto input_ptr = make_ptr(input);

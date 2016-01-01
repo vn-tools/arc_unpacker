@@ -1,8 +1,8 @@
 #include "dec/amuse_craft/pgd_c00_image_decoder.h"
+#include "algo/cyclic_buffer.h"
 #include "algo/range.h"
 #include "dec/truevision/tga_image_decoder.h"
 #include "io/memory_stream.h"
-#include "util/cyclic_buffer.h"
 
 using namespace au;
 using namespace au::dec::amuse_craft;
@@ -14,7 +14,7 @@ static bstr decompress(const bstr &input, const size_t size_orig)
     bstr output;
     output.reserve(size_orig);
     io::MemoryStream input_stream(input);
-    util::CyclicBuffer<0xBB8> dict(0);
+    algo::CyclicBuffer<0xBB8> dict(0);
     u16 control = 0;
     while (output.size() < size_orig)
     {

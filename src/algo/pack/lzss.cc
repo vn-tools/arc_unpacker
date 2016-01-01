@@ -1,8 +1,8 @@
 #include "algo/pack/lzss.h"
+#include "algo/cyclic_buffer.h"
 #include "algo/range.h"
 #include "io/msb_bit_reader.h"
 #include "ptr.h"
-#include "util/cyclic_buffer.h"
 
 using namespace au;
 
@@ -64,7 +64,7 @@ bstr algo::pack::lzss_decompress(
     const size_t output_size,
     const BytewiseLzssSettings &settings)
 {
-    util::CyclicBuffer<0x1000> dict(settings.initial_dictionary_pos);
+    algo::CyclicBuffer<0x1000> dict(settings.initial_dictionary_pos);
     bstr output(output_size);
     auto output_ptr = make_ptr(output);
     auto input_ptr = make_ptr(input);
