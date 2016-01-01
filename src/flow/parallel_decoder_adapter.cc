@@ -35,7 +35,7 @@ void ParallelDecoderAdapter::visit(const dec::BaseArchiveDecoder &decoder)
 
     for (const auto &entry : meta->entries)
     {
-        parent_task->unpacker.save_file(
+        parent_task->task_context.unpacker.save_file(
             [input_file, meta, &entry, &decoder, vfs_bridge]
             (const Logger &logger)
             {
@@ -50,7 +50,7 @@ void ParallelDecoderAdapter::visit(const dec::BaseArchiveDecoder &decoder)
 void ParallelDecoderAdapter::visit(const dec::BaseFileDecoder &decoder)
 {
     auto input_file = this->input_file;
-    parent_task->unpacker.save_file(
+    parent_task->task_context.unpacker.save_file(
         [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
@@ -63,7 +63,7 @@ void ParallelDecoderAdapter::visit(const dec::BaseFileDecoder &decoder)
 void ParallelDecoderAdapter::visit(const dec::BaseImageDecoder &decoder)
 {
     auto input_file = this->input_file;
-    parent_task->unpacker.save_file(
+    parent_task->task_context.unpacker.save_file(
         [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
@@ -78,7 +78,7 @@ void ParallelDecoderAdapter::visit(const dec::BaseImageDecoder &decoder)
 void ParallelDecoderAdapter::visit(const dec::BaseAudioDecoder &decoder)
 {
     auto input_file = this->input_file;
-    parent_task->unpacker.save_file(
+    parent_task->task_context.unpacker.save_file(
         [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);

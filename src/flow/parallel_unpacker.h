@@ -35,12 +35,22 @@ namespace flow {
         const std::vector<std::string> available_decoders;
     };
 
+    struct ParallelTaskContext final
+    {
+        ParallelTaskContext(
+            ParallelUnpacker &unpacker,
+            const ParallelUnpackerContext &unpacker_context,
+            TaskScheduler &task_scheduler);
+
+        ParallelUnpacker &unpacker;
+        const ParallelUnpackerContext &unpacker_context;
+        TaskScheduler &task_scheduler;
+    };
+
     struct BaseParallelUnpackingTask : public ITask
     {
         BaseParallelUnpackingTask(
-            ParallelUnpacker &unpacker,
-            TaskScheduler &task_scheduler,
-            const ParallelUnpackerContext &unpacker_context,
+            ParallelTaskContext &task_context,
             const io::path &base_name,
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task);
 
@@ -48,18 +58,15 @@ namespace flow {
         size_t get_depth() const;
 
         Logger logger;
-        ParallelUnpacker &unpacker;
-        TaskScheduler &task_scheduler;
-        const ParallelUnpackerContext &unpacker_context;
+        ParallelTaskContext &task_context;
         const io::path base_name;
-        unsigned int task_id;
         const std::shared_ptr<const BaseParallelUnpackingTask> parent_task;
     };
 
     class ParallelUnpacker final
     {
     public:
-        ParallelUnpacker(const ParallelUnpackerContext &context);
+        ParallelUnpacker(const ParallelUnpackerContext &unpacker_context);
         ~ParallelUnpacker();
 
         void add_input_file(const io::path &base_name, const FileFactory);
