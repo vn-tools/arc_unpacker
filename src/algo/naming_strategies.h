@@ -4,7 +4,7 @@
 #include "types.h"
 
 namespace au {
-namespace dec {
+namespace algo {
 
     enum class NamingStrategy : u8
     {
@@ -14,7 +14,7 @@ namespace dec {
         FlatSibling = 3,
     };
 
-    io::path decorate_path(
+    io::path apply_naming_strategy(
         const NamingStrategy strategy,
         const io::path &parent_name,
         const io::path &current_name);

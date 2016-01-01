@@ -11,7 +11,7 @@ namespace dec {
     public:
         virtual ~BaseAudioDecoder() {}
 
-        NamingStrategy naming_strategy() const override;
+        algo::NamingStrategy naming_strategy() const override;
 
         void accept(IDecoderVisitor &visitor) const override;
 

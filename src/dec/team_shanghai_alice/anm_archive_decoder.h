@@ -21,7 +21,7 @@ namespace team_shanghai_alice {
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
 
-        NamingStrategy naming_strategy() const override;
+        algo::NamingStrategy naming_strategy() const override;
     };
 
 } } }

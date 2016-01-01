@@ -22,7 +22,7 @@ namespace dec {
     public:
         virtual ~BaseArchiveDecoder() {}
 
-        virtual NamingStrategy naming_strategy() const override;
+        virtual algo::NamingStrategy naming_strategy() const override;
 
         void accept(IDecoderVisitor &visitor) const override;
 

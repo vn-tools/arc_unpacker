@@ -8,9 +8,9 @@
 using namespace au;
 using namespace au::dec;
 
-NamingStrategy BaseArchiveDecoder::naming_strategy() const
+algo::NamingStrategy BaseArchiveDecoder::naming_strategy() const
 {
-    return NamingStrategy::Child;
+    return algo::NamingStrategy::Child;
 }
 
 void BaseArchiveDecoder::accept(IDecoderVisitor &visitor) const
@@ -25,11 +25,11 @@ std::unique_ptr<ArchiveMeta> BaseArchiveDecoder::read_meta(
     auto meta = read_meta_impl(logger, input_file);
 
     std::string prefix;
-    if (naming_strategy() == NamingStrategy::Sibling)
+    if (naming_strategy() == algo::NamingStrategy::Sibling)
         prefix = input_file.path.stem();
-    else if (naming_strategy() == NamingStrategy::FlatSibling)
+    else if (naming_strategy() == algo::NamingStrategy::FlatSibling)
         prefix = input_file.path.stem();
-    else if (naming_strategy() == NamingStrategy::Root)
+    else if (naming_strategy() == algo::NamingStrategy::Root)
         prefix = (input_file.path.parent() / input_file.path.stem()).str();
 
     if (prefix.empty())

@@ -19,7 +19,7 @@ namespace
     class TestArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
-        TestArchiveDecoder(const NamingStrategy strategy);
+        TestArchiveDecoder(const algo::NamingStrategy strategy);
 
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
@@ -33,19 +33,19 @@ namespace
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
 
-        NamingStrategy naming_strategy() const override;
+        algo::NamingStrategy naming_strategy() const override;
 
     private:
-        NamingStrategy strategy;
+        algo::NamingStrategy strategy;
     };
 }
 
-TestArchiveDecoder::TestArchiveDecoder(const NamingStrategy strategy)
+TestArchiveDecoder::TestArchiveDecoder(const algo::NamingStrategy strategy)
     : strategy(strategy)
 {
 }
 
-NamingStrategy TestArchiveDecoder::naming_strategy() const
+algo::NamingStrategy TestArchiveDecoder::naming_strategy() const
 {
     return strategy;
 }
@@ -119,7 +119,7 @@ static void test_many_files(
     }
 }
 
-template<NamingStrategy strategy>
+template<algo::NamingStrategy strategy>
     static void test_naming_strategy(const std::string &prefix)
 {
     const TestArchiveDecoder decoder(strategy);
@@ -182,7 +182,7 @@ template<NamingStrategy strategy>
 
 TEST_CASE("Simple archive unpacks correctly", "[dec]")
 {
-    const TestArchiveDecoder decoder(NamingStrategy::Child);
+    const TestArchiveDecoder decoder(algo::NamingStrategy::Child);
     auto archive_file = make_archive(
         "test.archive",
         {
@@ -199,21 +199,21 @@ TEST_CASE("Archive files get proper fallback names", "[dec]")
 {
     SECTION("Child naming strategy")
     {
-        test_naming_strategy<NamingStrategy::Child>("unk");
+        test_naming_strategy<algo::NamingStrategy::Child>("unk");
     }
 
     SECTION("Root naming strategy")
     {
-        test_naming_strategy<NamingStrategy::Root>("path/test");
+        test_naming_strategy<algo::NamingStrategy::Root>("path/test");
     }
 
     SECTION("Sibling naming strategy")
     {
-        test_naming_strategy<NamingStrategy::Sibling>("test");
+        test_naming_strategy<algo::NamingStrategy::Sibling>("test");
     }
 
     SECTION("Flat sibling naming strategy")
     {
-        test_naming_strategy<NamingStrategy::Sibling>("test");
+        test_naming_strategy<algo::NamingStrategy::Sibling>("test");
     }
 }

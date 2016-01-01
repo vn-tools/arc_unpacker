@@ -313,7 +313,7 @@ bool ProcessOutputFileTask::work() const
     const auto naming_strategy = origin_decoder->naming_strategy();
     try
     {
-        output_file->path = decorate_path(
+        output_file->path = algo::apply_naming_strategy(
             naming_strategy, base_name, output_file->path);
 
         if (!task_context.unpacker_context.enable_nested_decoding)

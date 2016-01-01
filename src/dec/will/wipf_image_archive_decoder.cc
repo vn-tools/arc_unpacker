@@ -136,9 +136,9 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(io::File &input_file)
     return meta;
 }
 
-dec::NamingStrategy WipfImageArchiveDecoder::naming_strategy() const
+algo::NamingStrategy WipfImageArchiveDecoder::naming_strategy() const
 {
-    return NamingStrategy::Sibling;
+    return algo::NamingStrategy::Sibling;
 }
 
 bool WipfImageArchiveDecoder::is_recognized_impl(io::File &input_file) const

@@ -42,9 +42,9 @@ namespace
     };
 }
 
-dec::NamingStrategy GxtImageArchiveDecoder::naming_strategy() const
+algo::NamingStrategy GxtImageArchiveDecoder::naming_strategy() const
 {
-    return dec::NamingStrategy::Sibling;
+    return algo::NamingStrategy::Sibling;
 }
 
 bool GxtImageArchiveDecoder::is_recognized_impl(io::File &input_file) const

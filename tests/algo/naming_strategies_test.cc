@@ -1,9 +1,9 @@
-#include "dec/naming_strategies.h"
+#include "algo/naming_strategies.h"
 #include "test_support/catch.h"
 #include "test_support/file_support.h"
 
 using namespace au;
-using namespace au::dec;
+using namespace au::algo;
 
 static void do_test(
     const NamingStrategy strategy,
@@ -11,7 +11,7 @@ static void do_test(
     const io::path &child_path,
     const io::path &expected_path)
 {
-    const auto actual_path = dec::decorate_path(
+    const auto actual_path = algo::apply_naming_strategy(
         strategy, parent_path, child_path);
     tests::compare_paths(actual_path, expected_path);
 }

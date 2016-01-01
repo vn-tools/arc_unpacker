@@ -1,5 +1,5 @@
 #include "flow/parallel_decoder_adapter.h"
-#include "dec/naming_strategies.h"
+#include "algo/naming_strategies.h"
 #include "enc/microsoft/wav_audio_encoder.h"
 #include "enc/png/png_image_encoder.h"
 #include "flow/vfs_bridge.h"

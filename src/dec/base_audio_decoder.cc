@@ -5,9 +5,9 @@
 using namespace au;
 using namespace au::dec;
 
-NamingStrategy BaseAudioDecoder::naming_strategy() const
+algo::NamingStrategy BaseAudioDecoder::naming_strategy() const
 {
-    return NamingStrategy::FlatSibling;
+    return algo::NamingStrategy::FlatSibling;
 }
 
 void BaseAudioDecoder::accept(IDecoderVisitor &visitor) const

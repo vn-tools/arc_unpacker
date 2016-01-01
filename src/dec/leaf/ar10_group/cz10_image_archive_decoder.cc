@@ -132,9 +132,9 @@ std::unique_ptr<io::File> Cz10ImageArchiveDecoder::read_file_impl(
     return encoder.encode(logger, image, entry->path);
 }
 
-dec::NamingStrategy Cz10ImageArchiveDecoder::naming_strategy() const
+algo::NamingStrategy Cz10ImageArchiveDecoder::naming_strategy() const
 {
-    return NamingStrategy::Sibling;
+    return algo::NamingStrategy::Sibling;
 }
 
 static auto _ = dec::register_decoder<Cz10ImageArchiveDecoder>("leaf/cz10");

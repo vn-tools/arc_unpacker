@@ -2,9 +2,9 @@
 
 #include <memory>
 #include <vector>
+#include "algo/naming_strategies.h"
 #include "arg_parser.h"
 #include "io/file.h"
-#include "naming_strategies.h"
 
 namespace au {
 namespace dec {
@@ -26,7 +26,7 @@ namespace dec {
 
         virtual std::vector<std::string> get_linked_formats() const = 0;
 
-        virtual NamingStrategy naming_strategy() const = 0;
+        virtual algo::NamingStrategy naming_strategy() const = 0;
     };
 
 } }

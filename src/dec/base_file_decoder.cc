@@ -5,9 +5,9 @@
 using namespace au;
 using namespace au::dec;
 
-NamingStrategy BaseFileDecoder::naming_strategy() const
+algo::NamingStrategy BaseFileDecoder::naming_strategy() const
 {
-    return NamingStrategy::FlatSibling;
+    return algo::NamingStrategy::FlatSibling;
 }
 
 void BaseFileDecoder::accept(IDecoderVisitor &visitor) const

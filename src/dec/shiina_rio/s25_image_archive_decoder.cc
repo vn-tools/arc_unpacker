@@ -186,9 +186,9 @@ std::unique_ptr<io::File> S25ImageArchiveDecoder::read_file_impl(
     return encoder.encode(logger, image, entry->path);
 }
 
-dec::NamingStrategy S25ImageArchiveDecoder::naming_strategy() const
+algo::NamingStrategy S25ImageArchiveDecoder::naming_strategy() const
 {
-    return NamingStrategy::Sibling;
+    return algo::NamingStrategy::Sibling;
 }
 
 static auto _ = dec::register_decoder<S25ImageArchiveDecoder>("shiina-rio/s25");

@@ -1,10 +1,10 @@
-#include "dec/naming_strategies.h"
+#include "algo/naming_strategies.h"
 #include <stdexcept>
 
 using namespace au;
-using namespace au::dec;
+using namespace au::algo;
 
-io::path dec::decorate_path(
+io::path algo::apply_naming_strategy(
     const NamingStrategy strategy,
     const io::path &parent_path,
     const io::path &current_path)

@@ -388,9 +388,9 @@ std::unique_ptr<io::File> PxImageArchiveDecoder::read_file_impl(
     return encoder.encode(logger, image, entry->path);
 }
 
-dec::NamingStrategy PxImageArchiveDecoder::naming_strategy() const
+algo::NamingStrategy PxImageArchiveDecoder::naming_strategy() const
 {
-    return NamingStrategy::Sibling;
+    return algo::NamingStrategy::Sibling;
 }
 
 static auto _ = dec::register_decoder<PxImageArchiveDecoder>("leaf/px");

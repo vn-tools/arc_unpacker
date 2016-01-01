@@ -221,9 +221,9 @@ std::unique_ptr<io::File> Hg3ImageArchiveDecoder::read_file_impl(
     return encoder.encode(logger, actual_image, entry->path);
 }
 
-dec::NamingStrategy Hg3ImageArchiveDecoder::naming_strategy() const
+algo::NamingStrategy Hg3ImageArchiveDecoder::naming_strategy() const
 {
-    return NamingStrategy::Sibling;
+    return algo::NamingStrategy::Sibling;
 }
 
 static auto _ = dec::register_decoder<Hg3ImageArchiveDecoder>("cat-system/hg3");

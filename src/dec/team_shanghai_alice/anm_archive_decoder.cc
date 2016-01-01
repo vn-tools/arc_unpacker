@@ -170,9 +170,9 @@ static std::vector<TextureInfo> read_texture_info_list(
     return texture_info_list;
 }
 
-NamingStrategy AnmArchiveDecoder::naming_strategy() const
+algo::NamingStrategy AnmArchiveDecoder::naming_strategy() const
 {
-    return NamingStrategy::Root;
+    return algo::NamingStrategy::Root;
 }
 
 bool AnmArchiveDecoder::is_recognized_impl(io::File &input_file) const

@@ -40,7 +40,7 @@ struct VirtualFileSystemBridge::Priv final
 
     io::path get_target_name(const io::path &input_path) const
     {
-        return dec::decorate_path(
+        return algo::apply_naming_strategy(
             decoder.naming_strategy(), base_name, input_path);
     }
 
