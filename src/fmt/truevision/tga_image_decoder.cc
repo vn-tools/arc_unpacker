@@ -17,7 +17,8 @@ namespace
     };
 }
 
-static res::Palette read_palette(io::IStream &stream, size_t size, size_t depth)
+static res::Palette read_palette(
+    io::IStream &input_stream, const size_t size, const size_t depth)
 {
     res::PixelFormat format;
     if (depth == 32)
@@ -29,11 +30,11 @@ static res::Palette read_palette(io::IStream &stream, size_t size, size_t depth)
     else
         throw err::UnsupportedBitDepthError(depth);
 
-    return res::Palette(size, stream, format);
+    return res::Palette(size, input_stream, format);
 }
 
 static bstr read_compressed_data(
-    io::IStream &stream,
+    io::IStream &input_stream,
     const size_t width,
     const size_t height,
     const size_t channels)
@@ -43,31 +44,31 @@ static bstr read_compressed_data(
     output.reserve(size_orig);
     while (output.size() < size_orig)
     {
-        const auto control = stream.read_u8();
+        const auto control = input_stream.read_u8();
         const auto repetitions = (control & 0x7F) + 1;
         const bool use_rle = (control & 0x80) != 0;
         if (use_rle)
         {
-            const auto chunk = stream.read(channels);
+            const auto chunk = input_stream.read(channels);
             for (auto i : algo::range(repetitions))
                 output += chunk;
         }
         else
         {
             for (auto i : algo::range(repetitions))
-                output += stream.read(channels);
+                output += input_stream.read(channels);
         }
     }
     return output;
 }
 
 static bstr read_uncompressed_data(
-    io::IStream &stream,
+    io::IStream &input_stream,
     const size_t width,
     const size_t height,
     const size_t channels)
 {
-    return stream.read(width * height * channels);
+    return input_stream.read(width * height * channels);
 }
 
 static res::Image get_image_from_palette(

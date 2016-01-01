@@ -19,12 +19,12 @@ namespace
 }
 
 static std::unique_ptr<res::Palette> read_palette(
-    io::IStream &stream, const Chunk &chunk)
+    io::IStream &input_stream, const Chunk &chunk)
 {
-    stream.seek(chunk.offset + 0x14);
-    const auto format_id = stream.read_u16_le();
-    stream.skip(2);
-    const auto color_count = stream.read_u16_le();
+    input_stream.seek(chunk.offset + 0x14);
+    const auto format_id = input_stream.read_u16_le();
+    input_stream.skip(2);
+    const auto color_count = input_stream.read_u16_le();
 
     res::PixelFormat format;
     if      (format_id == 0) format = res::PixelFormat::RGB565;
@@ -33,12 +33,12 @@ static std::unique_ptr<res::Palette> read_palette(
     else if (format_id == 3) format = res::PixelFormat::RGBA8888;
     else throw err::NotSupportedError("Unknown palette format");
 
-    stream.seek(chunk.offset + 0x50);
-    return std::make_unique<res::Palette>(color_count, stream, format);
+    input_stream.seek(chunk.offset + 0x50);
+    return std::make_unique<res::Palette>(color_count, input_stream, format);
 }
 
 static bstr read_data(
-    io::IStream &stream,
+    io::IStream &input_stream,
     const size_t width,
     const size_t height,
     const size_t bpp,
@@ -46,7 +46,7 @@ static bstr read_data(
 {
     const auto stride = width * bpp / 8;
     const auto block_stride = stride / 16;
-    auto data = stream.read(height * stride);
+    auto data = input_stream.read(height * stride);
     if (swizzled)
     {
         const bstr source = data;
@@ -67,19 +67,19 @@ static bstr read_data(
 }
 
 static std::unique_ptr<res::Image> read_image(
-    io::IStream &stream,
+    io::IStream &input_stream,
     const Chunk &chunk,
     std::unique_ptr<res::Palette> palette)
 {
-    stream.seek(chunk.offset + 0x14);
-    const auto format_id = stream.read_u16_le();
-    const auto swizzled = stream.read_u16_le() == 0x01;
-    const auto width = (stream.read_u16_le() + 15) & ~15;
-    const auto height = (stream.read_u16_le() + 7) & ~7;
+    input_stream.seek(chunk.offset + 0x14);
+    const auto format_id = input_stream.read_u16_le();
+    const auto swizzled = input_stream.read_u16_le() == 0x01;
+    const auto width = (input_stream.read_u16_le() + 15) & ~15;
+    const auto height = (input_stream.read_u16_le() + 7) & ~7;
 
-    stream.seek(chunk.offset + 0x2C);
-    const auto data_offset = stream.read_u32_le();
-    stream.seek(chunk.offset + 0x10 + data_offset);
+    input_stream.seek(chunk.offset + 0x2C);
+    const auto data_offset = input_stream.read_u32_le();
+    input_stream.seek(chunk.offset + 0x10 + data_offset);
     std::unique_ptr<res::Image> image;
     if (format_id < 4)
     {
@@ -91,7 +91,7 @@ static std::unique_ptr<res::Image> read_image(
         else if (format_id == 3) format = res::PixelFormat::RGBA8888;
 
         const auto data = read_data(
-            stream,
+            input_stream,
             width,
             height,
             res::pixel_format_to_bpp(format) * 8,
@@ -108,7 +108,7 @@ static std::unique_ptr<res::Image> read_image(
         else throw err::NotSupportedError("Unknown pixel format");
 
         const auto data = read_data(
-            stream, width, height, palette_bits, swizzled);
+            input_stream, width, height, palette_bits, swizzled);
         if (palette_bits == 8)
             image = std::make_unique<res::Image>(width, height, data, *palette);
         else if (palette_bits == 4)

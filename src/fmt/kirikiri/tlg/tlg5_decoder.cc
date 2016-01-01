@@ -18,7 +18,7 @@ namespace
 
     struct BlockInfo final
     {
-        BlockInfo(io::IStream &stream);
+        BlockInfo(io::IStream &input_stream);
         void decompress(LzssDecompressor &decompressor, Header &header);
 
         bool mark;
@@ -27,10 +27,11 @@ namespace
     };
 }
 
-BlockInfo::BlockInfo(io::IStream &stream)
+BlockInfo::BlockInfo(io::IStream &input_stream)
 {
-    mark = stream.read_u8() > 0;
-    data = stream.read(stream.read_u32_le());
+    mark = input_stream.read_u8() > 0;
+    const auto block_size = input_stream.read_u32_le();
+    data = input_stream.read(block_size);
 }
 
 void BlockInfo::decompress(LzssDecompressor &decompressor, Header &header)
@@ -78,11 +79,12 @@ static void load_pixel_block_row(
     }
 }
 
-static void read_image(io::IStream &stream, res::Image &image, Header &header)
+static void read_image(
+    io::IStream &input_stream, res::Image &image, Header &header)
 {
     // ignore block sizes
     size_t block_count = (header.image_height - 1) / header.block_height + 1;
-    stream.skip(4 * block_count);
+    input_stream.skip(4 * block_count);
 
     LzssDecompressor decompressor;
 
@@ -92,7 +94,7 @@ static void read_image(io::IStream &stream, res::Image &image, Header &header)
 
         for (auto channel : algo::range(header.channel_count))
         {
-            auto block_info = std::make_unique<BlockInfo>(stream);
+            auto block_info = std::make_unique<BlockInfo>(input_stream);
             if (!block_info->mark)
                 block_info->decompress(decompressor, header);
             channel_data.push_back(std::move(block_info));

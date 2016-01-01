@@ -5,10 +5,10 @@ using namespace au;
 
 // This is to test whether ImageDecoder::decode, IDecoder::is_recognized etc.
 // take care of stream position themselves rather than relying on the callers.
-static void navigate_to_random_place(io::IStream &stream)
+static void navigate_to_random_place(io::IStream &input_stream)
 {
-    if (stream.size())
-        stream.seek(rand() % stream.size());
+    if (input_stream.size())
+        input_stream.seek(rand() % input_stream.size());
 }
 
 std::vector<std::shared_ptr<io::File>> tests::unpack(

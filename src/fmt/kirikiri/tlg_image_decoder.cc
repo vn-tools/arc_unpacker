@@ -11,7 +11,7 @@ static const bstr magic_tlg_0 = "TLG0.0\x00sds\x1A"_b;
 static const bstr magic_tlg_5 = "TLG5.0\x00raw\x1A"_b;
 static const bstr magic_tlg_6 = "TLG6.0\x00raw\x1A"_b;
 
-static int guess_version(io::IStream &stream);
+static int guess_version(io::IStream &input_stream);
 static res::Image decode_proxy(int version, io::File &input_file);
 
 static std::string extract_string(std::string &container)

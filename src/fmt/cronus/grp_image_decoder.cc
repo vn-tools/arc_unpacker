@@ -66,15 +66,15 @@ static bool validate_header(const Header &header)
 
 static HeaderFunc reader_v1(u32 key1, u32 key2, u32 key3, EncType enc_type)
 {
-    return [=](io::IStream &input)
+    return [=](io::IStream &input_stream)
     {
         Header header;
-        header.width = input.read_u32_le() ^ key1;
-        header.height = input.read_u32_le() ^ key2;
-        header.bpp = input.read_u32_le();
-        input.skip(4);
-        header.output_size = input.read_u32_le() ^ key3;
-        input.skip(4);
+        header.width = input_stream.read_u32_le() ^ key1;
+        header.height = input_stream.read_u32_le() ^ key2;
+        header.bpp = input_stream.read_u32_le();
+        input_stream.skip(4);
+        header.output_size = input_stream.read_u32_le() ^ key3;
+        input_stream.skip(4);
         header.use_transparency = false;
         header.flip = true;
         header.encryption_type = enc_type;
@@ -84,18 +84,18 @@ static HeaderFunc reader_v1(u32 key1, u32 key2, u32 key3, EncType enc_type)
 
 static HeaderFunc reader_v2()
 {
-    return [](io::IStream &input)
+    return [](io::IStream &input_stream)
     {
         Header header;
-        input.skip(4);
-        header.output_size = input.read_u32_le();
-        input.skip(8);
-        header.width = input.read_u32_le();
-        header.height = input.read_u32_le();
-        header.bpp = input.read_u32_le();
-        input.skip(8);
+        input_stream.skip(4);
+        header.output_size = input_stream.read_u32_le();
+        input_stream.skip(8);
+        header.width = input_stream.read_u32_le();
+        header.height = input_stream.read_u32_le();
+        header.bpp = input_stream.read_u32_le();
+        input_stream.skip(8);
         header.flip = false;
-        header.use_transparency = input.read_u32_le() != 0;
+        header.use_transparency = input_stream.read_u32_le() != 0;
         header.encryption_type = EncType::None;
         return header;
     };

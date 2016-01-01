@@ -191,24 +191,24 @@ static void unpickle(io::IStream &table_stream, UnpickleContext *context)
     }
 }
 
-static int guess_version(io::IStream &arc_stream)
+static int guess_version(io::IStream &input_stream)
 {
     static const bstr magic_3 = "RPA-3.0 "_b;
     static const bstr magic_2 = "RPA-2.0 "_b;
-    if (arc_stream.read(magic_3.size()) == magic_3)
+    if (input_stream.read(magic_3.size()) == magic_3)
         return 3;
-    arc_stream.seek(0);
-    if (arc_stream.read(magic_2.size()) == magic_2)
+    input_stream.seek(0);
+    if (input_stream.read(magic_2.size()) == magic_2)
         return 2;
     return -1;
 }
 
-static u32 read_hex_number(io::IStream &arc_stream, size_t size)
+static u32 read_hex_number(io::IStream &input_stream, size_t size)
 {
     u32 result = 0;
     for (auto i : algo::range(size))
     {
-        char c = arc_stream.read_u8();
+        char c = input_stream.read_u8();
         result *= 16;
         if (c >= 'A' && c <= 'F')
             result += c + 10 - 'A';
@@ -222,10 +222,10 @@ static u32 read_hex_number(io::IStream &arc_stream, size_t size)
     return result;
 }
 
-static bstr read_raw_table(io::IStream &arc_stream)
+static bstr read_raw_table(io::IStream &input_stream)
 {
-    size_t compressed_size = arc_stream.size() - arc_stream.tell();
-    return algo::pack::zlib_inflate(arc_stream.read(compressed_size));
+    size_t compressed_size = input_stream.size() - input_stream.tell();
+    return algo::pack::zlib_inflate(input_stream.read(compressed_size));
 }
 
 bool RpaArchiveDecoder::is_recognized_impl(io::File &input_file) const

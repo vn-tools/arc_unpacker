@@ -94,12 +94,12 @@ static bstr delta_transform(
 }
 
 static std::unique_ptr<res::Image> decode_img0000(
-    const bstr &input_data,
+    const bstr &input,
     const size_t width,
     const size_t height,
     const size_t depth)
 {
-    io::MemoryStream input_stream(input_data);
+    io::MemoryStream input_stream(input);
     input_stream.seek(8);
     const auto data_size_comp = input_stream.read_u32_le();
     const auto data_size_orig = input_stream.read_u32_le();
@@ -143,10 +143,10 @@ static std::unique_ptr<res::Image> decode_img0000(
 }
 
 static std::unique_ptr<res::Image> decode_jpeg(
-    const Logger &logger, const bstr &input_data)
+    const Logger &logger, const bstr &input)
 {
     // const auto jpeg_decoder = fmt::jpeg::JpegImageDecoder();
-    // auto pseudo_file = std::make_unique<io::File>("dummy.jpg", input_data);
+    // auto pseudo_file = std::make_unique<io::File>("dummy.jpg", input);
     // return std::make_unique<res::Image>(
     //     jpeg_decoder.decode(logger, *pseudo_file));
     throw err::NotSupportedError("Not implemented");

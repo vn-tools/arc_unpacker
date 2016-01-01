@@ -21,35 +21,36 @@ namespace
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta(
-    io::IStream &stream, const io::path root = "")
+    io::IStream &input_stream, const io::path root = "")
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
-    common::SectionReader section_reader(stream);
+    common::SectionReader section_reader(input_stream);
     for (auto &section : section_reader.get_sections("DirEntry"))
     {
-        stream.seek(section.offset);
-        auto entry_count = stream.read_u32_le();
+        input_stream.seek(section.offset);
+        auto entry_count = input_stream.read_u32_le();
         for (auto i : algo::range(entry_count))
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
-            entry->size = stream.read_u64_le();
-            auto flags = stream.read_u32_le();
-            entry->encrypted = stream.read_u32_le() > 0;
-            entry->offset = section.offset + stream.read_u64_le();
-            stream.skip(8);
+            entry->size = input_stream.read_u64_le();
+            auto flags = input_stream.read_u32_le();
+            entry->encrypted = input_stream.read_u32_le() > 0;
+            entry->offset = section.offset + input_stream.read_u64_le();
+            input_stream.skip(8);
 
-            auto extra_size = stream.read_u32_le();
+            auto extra_size = input_stream.read_u32_le();
             if (flags & 0x70)
-                entry->extra = stream.read(extra_size);
+                entry->extra = input_stream.read(extra_size);
 
-            entry->path = stream.read_to_zero(stream.read_u32_le()).str();
+            const auto file_name_size = input_stream.read_u32_le();
+            entry->path = input_stream.read_to_zero(file_name_size).str();
             if (!root.str().empty())
                 entry->path = root / entry->path;
 
             if (flags == 0x10)
             {
-                const auto sub_meta = read_meta(stream, entry->path);
-                stream.peek(entry->offset, [&]()
+                const auto sub_meta = read_meta(input_stream, entry->path);
+                input_stream.peek(entry->offset, [&]()
                 {
                     for (auto &sub_entry : sub_meta->entries)
                         meta->entries.push_back(std::move(sub_entry));

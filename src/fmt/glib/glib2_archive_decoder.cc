@@ -58,11 +58,11 @@ static bstr decode(const bstr &input, const glib2::Decoder &decoder)
     return output;
 }
 
-static Header read_header(io::IStream &arc_stream, glib2::IPlugin &plugin)
+static Header read_header(io::IStream &input_stream, glib2::IPlugin &plugin)
 {
-    arc_stream.seek(0);
+    input_stream.seek(0);
     auto decoder = plugin.create_header_decoder();
-    auto buffer = decode(arc_stream.read(header_size), *decoder);
+    auto buffer = decode(input_stream.read(header_size), *decoder);
     io::MemoryStream header_stream(buffer);
 
     Header header;
@@ -123,7 +123,7 @@ static std::unique_ptr<ArchiveEntryImpl> read_table_entry(
     return entry;
 }
 
-static std::shared_ptr<glib2::IPlugin> guess_plugin(io::IStream &arc_stream)
+static std::shared_ptr<glib2::IPlugin> guess_plugin(io::IStream &input_stream)
 {
     std::vector<std::shared_ptr<glib2::IPlugin>> plugins;
     plugins.push_back(std::make_shared<glib2::MeiPlugin>());
@@ -133,10 +133,10 @@ static std::shared_ptr<glib2::IPlugin> guess_plugin(io::IStream &arc_stream)
     {
         try
         {
-            auto header = read_header(arc_stream, *plugin);
+            auto header = read_header(input_stream, *plugin);
             if (header.magic == magic_21 || header.magic == magic_21)
             {
-                arc_stream.seek(0);
+                input_stream.seek(0);
                 return plugin;
             }
         }

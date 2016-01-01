@@ -84,45 +84,48 @@ static const bstr magic_dxt4 = "DXT4"_b;
 static const bstr magic_dxt5 = "DXT5"_b;
 static const bstr magic_dx10 = "DX10"_b;
 
-static void fill_pixel_format(io::IStream &stream, DdsPixelFormat &pixel_format)
+static void fill_pixel_format(
+    io::IStream &input_stream, DdsPixelFormat &pixel_format)
 {
-    pixel_format.size = stream.read_u32_le();
-    pixel_format.flags = static_cast<DdsPixelFormatFlags>(stream.read_u32_le());
-    pixel_format.four_cc = stream.read(4);
-    pixel_format.rgb_bit_count = stream.read_u32_le();
-    pixel_format.r_bit_mask = stream.read_u32_le();
-    pixel_format.g_bit_mask = stream.read_u32_le();
-    pixel_format.b_bit_mask = stream.read_u32_le();
-    pixel_format.a_bit_mask = stream.read_u32_le();
+    pixel_format.size = input_stream.read_u32_le();
+    pixel_format.flags
+        = static_cast<DdsPixelFormatFlags>(input_stream.read_u32_le());
+    pixel_format.four_cc = input_stream.read(4);
+    pixel_format.rgb_bit_count = input_stream.read_u32_le();
+    pixel_format.r_bit_mask = input_stream.read_u32_le();
+    pixel_format.g_bit_mask = input_stream.read_u32_le();
+    pixel_format.b_bit_mask = input_stream.read_u32_le();
+    pixel_format.a_bit_mask = input_stream.read_u32_le();
 }
 
-static std::unique_ptr<DdsHeader> read_header(io::IStream &stream)
+static std::unique_ptr<DdsHeader> read_header(io::IStream &input_stream)
 {
     auto header = std::make_unique<DdsHeader>();
-    header->size = stream.read_u32_le();
-    header->flags = static_cast<DdsHeaderFlags>(stream.read_u32_le());
-    header->height = stream.read_u32_le();
-    header->width = stream.read_u32_le();
-    header->pitch_or_linear_size = stream.read_u32_le();
-    header->depth = stream.read_u32_le();
-    header->mip_map_count = stream.read_u32_le();
-    stream.skip(4 * 11);
-    fill_pixel_format(stream, header->pixel_format);
+    header->size = input_stream.read_u32_le();
+    header->flags = static_cast<DdsHeaderFlags>(input_stream.read_u32_le());
+    header->height = input_stream.read_u32_le();
+    header->width = input_stream.read_u32_le();
+    header->pitch_or_linear_size = input_stream.read_u32_le();
+    header->depth = input_stream.read_u32_le();
+    header->mip_map_count = input_stream.read_u32_le();
+    input_stream.skip(4 * 11);
+    fill_pixel_format(input_stream, header->pixel_format);
     for (auto i : algo::range(4))
-        header->caps[i] = stream.read_u32_le();
-    stream.skip(4);
+        header->caps[i] = input_stream.read_u32_le();
+    input_stream.skip(4);
     return header;
 }
 
-static std::unique_ptr<DdsHeaderDx10> read_header_dx10(io::IStream &stream)
+static std::unique_ptr<DdsHeaderDx10> read_header_dx10(
+    io::IStream &input_stream)
 {
     auto header = std::make_unique<DdsHeaderDx10>();
-    header->dxgi_format = stream.read_u32_le();
-    header->resource_dimension = static_cast<D3d10ResourceDimension>(
-        stream.read_u32_le());
-    header->misc_flag = stream.read_u32_le();
-    header->array_size = stream.read_u32_le();
-    header->misc_flags2 = stream.read_u32_le();
+    header->dxgi_format = input_stream.read_u32_le();
+    header->resource_dimension
+        = static_cast<D3d10ResourceDimension>(input_stream.read_u32_le());
+    header->misc_flag = input_stream.read_u32_le();
+    header->array_size = input_stream.read_u32_le();
+    header->misc_flags2 = input_stream.read_u32_le();
     return header;
 }
 
@@ -134,10 +137,10 @@ static std::unique_ptr<res::Image> create_image(
 }
 
 static void decode_dxt1_block(
-    io::IStream &stream, res::Pixel output_colors[4][4])
+    io::IStream &input_stream, res::Pixel output_colors[4][4])
 {
     res::Pixel colors[4];
-    bstr tmp = stream.read(4);
+    bstr tmp = input_stream.read(4);
     const u8 *tmp_ptr = tmp.get<u8>();
     colors[0] = res::read_pixel<res::PixelFormat::BGR565>(tmp_ptr);
     colors[1] = res::read_pixel<res::PixelFormat::BGR565>(tmp_ptr);
@@ -161,7 +164,7 @@ static void decode_dxt1_block(
         }
     }
 
-    auto lookup = stream.read_u32_le();
+    auto lookup = input_stream.read_u32_le();
     for (auto y : algo::range(4))
     for (auto x : algo::range(4))
     {
@@ -171,11 +174,11 @@ static void decode_dxt1_block(
     }
 }
 
-static void decode_dxt5_block(io::IStream &stream, u8 output_alpha[4][4])
+static void decode_dxt5_block(io::IStream &input_stream, u8 output_alpha[4][4])
 {
     u8 alpha[8];
-    alpha[0] = stream.read_u8();
-    alpha[1] = stream.read_u8();
+    alpha[0] = input_stream.read_u8();
+    alpha[1] = input_stream.read_u8();
 
     if (alpha[0] > alpha[1])
     {
@@ -193,7 +196,7 @@ static void decode_dxt5_block(io::IStream &stream, u8 output_alpha[4][4])
     for (auto i : algo::range(2))
     {
         u32 lookup = algo::from_big_endian<u32>(
-            (stream.read_u16_be() << 16) | (stream.read_u8() << 8));
+            (input_stream.read_u16_be() << 16) | (input_stream.read_u8() << 8));
         for (auto j : algo::range(8))
         {
             u8 index = lookup & 7;
@@ -207,14 +210,14 @@ static void decode_dxt5_block(io::IStream &stream, u8 output_alpha[4][4])
 }
 
 static std::unique_ptr<res::Image> decode_dxt1(
-    io::IStream &stream, size_t width, size_t height)
+    io::IStream &input_stream, size_t width, size_t height)
 {
     auto image = create_image(width, height);
     for (auto block_y : algo::range(0, height, 4))
     for (auto block_x : algo::range(0, width, 4))
     {
         res::Pixel colors[4][4];
-        decode_dxt1_block(stream, colors);
+        decode_dxt1_block(input_stream, colors);
         for (auto y : algo::range(4))
         for (auto x : algo::range(4))
             image->at(block_x + x, block_y + y) = colors[y][x];
@@ -223,7 +226,7 @@ static std::unique_ptr<res::Image> decode_dxt1(
 }
 
 static std::unique_ptr<res::Image> decode_dxt3(
-    io::IStream &stream, size_t width, size_t height)
+    io::IStream &input_stream, size_t width, size_t height)
 {
     auto image = create_image(width, height);
     for (auto block_y : algo::range(0, height, 4))
@@ -234,14 +237,14 @@ static std::unique_ptr<res::Image> decode_dxt3(
         {
             for (auto x : algo::range(0, 4, 2))
             {
-                u8 b = stream.read_u8();
+                u8 b = input_stream.read_u8();
                 alpha[y][x + 0] = b & 0xF0;
                 alpha[y][x + 1] = (b & 0x0F) << 4;
             }
         }
 
         res::Pixel colors[4][4];
-        decode_dxt1_block(stream, colors);
+        decode_dxt1_block(input_stream, colors);
         for (auto y : algo::range(4))
         for (auto x : algo::range(4))
         {
@@ -253,17 +256,17 @@ static std::unique_ptr<res::Image> decode_dxt3(
 }
 
 static std::unique_ptr<res::Image> decode_dxt5(
-    io::IStream &stream, size_t width, size_t height)
+    io::IStream &input_stream, size_t width, size_t height)
 {
     auto image = create_image(width, height);
     for (auto block_y : algo::range(0, height, 4))
     for (auto block_x : algo::range(0, width, 4))
     {
         u8 alpha[4][4];
-        decode_dxt5_block(stream, alpha);
+        decode_dxt5_block(input_stream, alpha);
 
         res::Pixel colors[4][4];
-        decode_dxt1_block(stream, colors);
+        decode_dxt1_block(input_stream, colors);
         for (auto y : algo::range(4))
         for (auto x : algo::range(4))
         {

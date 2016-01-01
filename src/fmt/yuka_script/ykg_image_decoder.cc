@@ -28,40 +28,40 @@ namespace
 
 static const bstr magic = "YKG000"_b;
 
-static std::unique_ptr<Header> read_header(io::IStream &input)
+static std::unique_ptr<Header> read_header(io::IStream &input_stream)
 {
     auto header = std::make_unique<Header>();
-    header->encrypted = input.read_u16_le() > 0;
+    header->encrypted = input_stream.read_u16_le() > 0;
 
-    size_t header_size = input.read_u32_le();
+    size_t header_size = input_stream.read_u32_le();
     if (header_size != 64)
         throw err::NotSupportedError("Unexpected header size");
-    input.skip(28);
+    input_stream.skip(28);
 
-    header->data_offset = input.read_u32_le();
-    header->data_size = input.read_u32_le();
-    input.skip(8);
+    header->data_offset = input_stream.read_u32_le();
+    header->data_size = input_stream.read_u32_le();
+    input_stream.skip(8);
 
-    header->regions_offset = input.read_u32_le();
-    header->regions_size = input.read_u32_le();
+    header->regions_offset = input_stream.read_u32_le();
+    header->regions_size = input_stream.read_u32_le();
     return header;
 }
 
 static std::vector<std::unique_ptr<Region>> read_regions(
-    io::IStream &input, Header &header)
+    io::IStream &input_stream, Header &header)
 {
     std::vector<std::unique_ptr<Region>> regions;
 
-    input.seek(header.regions_offset);
+    input_stream.seek(header.regions_offset);
     size_t region_count = header.regions_size / 64;
     for (auto i : algo::range(region_count))
     {
         auto region = std::make_unique<Region>();
-        region->x = input.read_u32_le();
-        region->y = input.read_u32_le();
-        region->width = input.read_u32_le();
-        region->height = input.read_u32_le();
-        input.skip(48);
+        region->x = input_stream.read_u32_le();
+        region->y = input_stream.read_u32_le();
+        region->width = input_stream.read_u32_le();
+        region->height = input_stream.read_u32_le();
+        input_stream.skip(48);
         regions.push_back(std::move(region));
     }
     return regions;

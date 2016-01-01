@@ -32,16 +32,17 @@ namespace
 
     struct FilterTypes final
     {
-        FilterTypes(io::IStream &stream);
+        FilterTypes(io::IStream &input_stream);
         void decompress(Header &header);
 
         bstr data;
     };
 }
 
-FilterTypes::FilterTypes(io::IStream &stream)
+FilterTypes::FilterTypes(io::IStream &input_stream)
 {
-    data = stream.read(stream.read_u32_le());
+    const auto size = input_stream.read_u32_le();
+    data = input_stream.read(size);
 }
 
 void FilterTypes::decompress(Header &header)
@@ -452,9 +453,10 @@ static void decode_line(
     }
 }
 
-static void read_image(io::IStream &stream, res::Image &image, Header &header)
+static void read_image(
+    io::IStream &input_stream, res::Image &image, Header &header)
 {
-    FilterTypes filter_types(stream);
+    FilterTypes filter_types(input_stream);
     filter_types.decompress(header);
 
     bstr pixel_buf(4 * header.image_width * h_block_size);
@@ -471,13 +473,13 @@ static void read_image(io::IStream &stream, res::Image &image, Header &header)
         int pixel_count = (ylim - y) * header.image_width;
         for (auto c : algo::range(header.channel_count))
         {
-            u32 bit_size = stream.read_u32_le();
+            u32 bit_size = input_stream.read_u32_le();
 
             int method = (bit_size >> 30) & 3;
             bit_size &= 0x3FFFFFFF;
 
             int byte_size = (bit_size + 7) / 8;
-            bstr bit_pool = stream.read(byte_size);
+            bstr bit_pool = input_stream.read(byte_size);
 
             // Although decode_golomb_values accesses only valid bits, it uses
             // reinterpret_cast<u32*>() that might access bits out of bounds.

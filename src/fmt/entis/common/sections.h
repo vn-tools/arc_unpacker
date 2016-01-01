@@ -18,7 +18,7 @@ namespace common {
     class SectionReader final
     {
     public:
-        SectionReader(io::IStream &stream);
+        SectionReader(io::IStream &input_stream);
         ~SectionReader();
         Section get_section(const std::string &name) const;
         std::vector<Section> get_sections() const;

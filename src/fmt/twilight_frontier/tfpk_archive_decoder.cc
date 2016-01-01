@@ -49,7 +49,7 @@ namespace
     class RsaReader final
     {
     public:
-        RsaReader(io::IStream &stream);
+        RsaReader(io::IStream &input_stream);
         ~RsaReader();
         std::unique_ptr<io::MemoryStream> read_block();
         size_t tell() const;
@@ -57,7 +57,7 @@ namespace
     private:
         std::unique_ptr<io::MemoryStream> decrypt(std::basic_string<u8> input);
 
-        io::IStream &stream;
+        io::IStream &input_stream;
         std::unique_ptr<algo::crypt::Rsa> rsa;
     };
 }
@@ -109,11 +109,13 @@ static const std::vector<algo::crypt::RsaKey> rsa_keys({
     },
 });
 
-RsaReader::RsaReader(io::IStream &stream) : stream(stream)
+RsaReader::RsaReader(io::IStream &input_stream) : input_stream(input_stream)
 {
     // test chunk = one block with dir count
     bstr test_chunk;
-    stream.peek(stream.tell(), [&]() { test_chunk = stream.read(0x40); });
+    input_stream.peek(
+        input_stream.tell(),
+        [&]() { test_chunk = input_stream.read(0x40); });
 
     for (auto &rsa_key : rsa_keys)
     {
@@ -143,14 +145,14 @@ RsaReader::~RsaReader()
 
 size_t RsaReader::tell() const
 {
-    return stream.tell();
+    return input_stream.tell();
 }
 
 std::unique_ptr<io::MemoryStream> RsaReader::read_block()
 {
     bstr block = rsa
-        ? rsa->decrypt(stream.read(0x40)).substr(0, 0x20)
-        : stream.read(0x40).substr(0, 0x20);
+        ? rsa->decrypt(input_stream.read(0x40)).substr(0, 0x20)
+        : input_stream.read(0x40).substr(0, 0x20);
     return std::make_unique<io::MemoryStream>(block);
 }
 

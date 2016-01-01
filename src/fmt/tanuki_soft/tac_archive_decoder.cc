@@ -46,12 +46,12 @@ static bstr decrypt(const bstr &input, size_t size, const bstr &key)
     return bf.decrypt(input.substr(0, left)) + input.substr(left);
 }
 
-static Version read_version(io::IStream &stream)
+static Version read_version(io::IStream &input_stream)
 {
-    if (stream.read(magic_100.size()) == magic_100)
+    if (input_stream.seek(0).read(magic_100.size()) == magic_100)
         return Version::Version100;
-    stream.seek(0);
-    if (stream.read(magic_110.size()) == magic_110)
+    input_stream.seek(0);
+    if (input_stream.seek(0).read(magic_110.size()) == magic_110)
         return Version::Version110;
     return Version::Unknown;
 }
@@ -64,15 +64,15 @@ bool TacArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<fmt::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto version = read_version(input_file.stream);
+    const auto version = read_version(input_file.stream);
     input_file.stream.skip(8);
-    size_t entry_count = input_file.stream.read_u32_le();
-    size_t dir_count = input_file.stream.read_u32_le();
-    size_t table_size = input_file.stream.read_u32_le();
+    const auto entry_count = input_file.stream.read_u32_le();
+    const auto dir_count = input_file.stream.read_u32_le();
+    const auto table_size = input_file.stream.read_u32_le();
     input_file.stream.skip(4);
     if (version == Version::Version110)
         input_file.stream.skip(8);
-    size_t file_data_start = input_file.stream.tell() + table_size;
+    const auto file_data_start = input_file.stream.tell() + table_size;
 
     auto table_data = input_file.stream.read(table_size);
     table_data = decrypt(table_data, table_size, "TLibArchiveData"_b);
@@ -80,7 +80,7 @@ std::unique_ptr<fmt::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
     io::MemoryStream table_stream(table_data);
 
     std::vector<std::unique_ptr<Directory>> dirs;
-    for (auto i : algo::range(dir_count))
+    for (const auto i : algo::range(dir_count))
     {
         auto dir = std::make_unique<Directory>();
         dir->hash = table_stream.read_u16_le();
@@ -90,7 +90,7 @@ std::unique_ptr<fmt::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
     }
 
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(entry_count))
+    for (const auto i : algo::range(entry_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->hash = table_stream.read_u64_le();
@@ -104,7 +104,7 @@ std::unique_ptr<fmt::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
 
     for (auto &dir : dirs)
     {
-        for (auto i : algo::range(dir->entry_count))
+        for (const auto i : algo::range(dir->entry_count))
         {
             if (i + dir->start_index >= meta->entries.size())
                 throw err::CorruptDataError("Corrupt file table");
@@ -123,9 +123,10 @@ std::unique_ptr<io::File> TacArchiveDecoder::read_file_impl(
     const fmt::ArchiveMeta &m,
     const fmt::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size_compressed);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto data = input_file.stream
+        .seek(entry->offset)
+        .read(entry->size_compressed);
     if (entry->compressed)
         data = algo::pack::zlib_inflate(data);
 
@@ -137,7 +138,7 @@ std::unique_ptr<io::File> TacArchiveDecoder::read_file_impl(
             bytes_to_decrypt = data.size();
 
         {
-            auto header = decrypt(
+            const auto header = decrypt(
                 data.substr(0, algo::crypt::Blowfish::block_size()),
                 algo::crypt::Blowfish::block_size(),
                 key).substr(0, 4);

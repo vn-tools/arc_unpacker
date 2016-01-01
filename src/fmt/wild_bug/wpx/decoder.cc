@@ -25,42 +25,42 @@ namespace
 
 struct Decoder::Priv final
 {
-    Priv(io::IStream &stream);
+    Priv(io::IStream &input_stream);
 
-    io::IStream &stream;
+    io::IStream &input_stream;
     std::string tag;
     std::map<u8, Section> sections;
 };
 
-Decoder::Priv::Priv(io::IStream &stream) : stream(stream)
+Decoder::Priv::Priv(io::IStream &input_stream) : input_stream(input_stream)
 {
 }
 
-Decoder::Decoder(io::IStream &stream) : p(new Priv(stream))
+Decoder::Decoder(io::IStream &input_stream) : p(new Priv(input_stream))
 {
-    if (stream.read(magic.size()) != magic)
+    if (input_stream.read(magic.size()) != magic)
         throw err::RecognitionError();
 
-    stream.seek(0x04);
-    p->tag = stream.read_to_zero(4).str();
+    input_stream.seek(0x04);
+    p->tag = input_stream.read_to_zero(4).str();
 
-    stream.seek(0x0C);
-    if (stream.read_u8() != 1)
+    input_stream.seek(0x0C);
+    if (input_stream.read_u8() != 1)
         throw err::CorruptDataError("Corrupt WPX header");
 
-    stream.seek(0x0E);
-    auto section_count = stream.read_u8();
-    auto dir_size = stream.read_u8();
+    input_stream.seek(0x0E);
+    auto section_count = input_stream.read_u8();
+    auto dir_size = input_stream.read_u8();
 
     for (auto i : algo::range(section_count))
     {
-        auto id = stream.read_u8();
+        auto id = input_stream.read_u8();
         Section section;
-        section.data_format = stream.read_u8();
-        stream.skip(2);
-        section.offset = stream.read_u32_le();
-        section.size_orig = stream.read_u32_le();
-        section.size_comp = stream.read_u32_le();
+        section.data_format = input_stream.read_u8();
+        input_stream.skip(2);
+        section.offset = input_stream.read_u32_le();
+        section.size_orig = input_stream.read_u32_le();
+        section.size_comp = input_stream.read_u32_le();
         p->sections[id] = section;
     }
 }
@@ -92,8 +92,8 @@ bstr Decoder::read_plain_section(u8 section_id)
     auto section = p->sections.at(section_id);
     if ((section.data_format & 0x80) || !section.size_comp)
     {
-        p->stream.seek(section.offset);
-        return p->stream.read(section.size_orig);
+        p->input_stream.seek(section.offset);
+        return p->input_stream.read(section.size_orig);
     }
     throw err::CorruptDataError("Section is compressed");
 }
@@ -110,8 +110,8 @@ bstr Decoder::read_compressed_section(
     if ((section.data_format & 0x80) || !section.size_comp)
         return read_plain_section(section_id);
 
-    p->stream.seek(section.offset);
-    io::MemoryStream section_stream(p->stream);
+    p->input_stream.seek(section.offset);
+    io::MemoryStream section_stream(p->input_stream);
 
     bstr output(section.size_orig);
     auto output_start = output.get<u8>();

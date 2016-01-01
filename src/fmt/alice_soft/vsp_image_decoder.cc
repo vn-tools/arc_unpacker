@@ -10,7 +10,8 @@ bool VspImageDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.path.has_extension("vsp");
 }
 
-static bstr decompress_vsp(io::IStream &input, size_t width, size_t height)
+static bstr decompress_vsp(
+    io::IStream &input_stream, const size_t width, const size_t height)
 {
     if (width % 8 != 0)
         throw std::logic_error("Invalid width");
@@ -31,12 +32,12 @@ static bstr decompress_vsp(io::IStream &input, size_t width, size_t height)
             size_t y = 0;
             while (y < height)
             {
-                auto c = input.read_u8();
+                auto c = input_stream.read_u8();
                 switch (c)
                 {
                     case 0x00:
                     {
-                        auto n = input.read_u8() + 1;
+                        auto n = input_stream.read_u8() + 1;
                         while (n-- && y < height)
                         {
                             bc[y][plane] = bp[y][plane];
@@ -47,8 +48,8 @@ static bstr decompress_vsp(io::IStream &input, size_t width, size_t height)
 
                     case 0x01:
                     {
-                        auto n = input.read_u8() + 1;
-                        auto b0 = input.read_u8();
+                        auto n = input_stream.read_u8() + 1;
+                        auto b0 = input_stream.read_u8();
                         while (n-- && y < height)
                             bc[y++][plane] = b0;
                         break;
@@ -56,9 +57,9 @@ static bstr decompress_vsp(io::IStream &input, size_t width, size_t height)
 
                     case 0x02:
                     {
-                        auto n = input.read_u8() + 1;
-                        auto b0 = input.read_u8();
-                        auto b1 = input.read_u8();
+                        auto n = input_stream.read_u8() + 1;
+                        auto b0 = input_stream.read_u8();
+                        auto b1 = input_stream.read_u8();
                         while (n-- && y < height)
                         {
                             bc[y++][plane] = b0;
@@ -70,7 +71,7 @@ static bstr decompress_vsp(io::IStream &input, size_t width, size_t height)
 
                     case 0x03:
                     {
-                        auto n = input.read_u8() + 1;
+                        auto n = input_stream.read_u8() + 1;
                         while (n-- && y < height)
                         {
                             bc[y][plane] = bc[y][0] ^ mask;
@@ -82,7 +83,7 @@ static bstr decompress_vsp(io::IStream &input, size_t width, size_t height)
 
                     case 0x04:
                     {
-                        auto n = input.read_u8() + 1;
+                        auto n = input_stream.read_u8() + 1;
                         while (n-- && y < height)
                         {
                             bc[y][plane] = bc[y][1] ^ mask;
@@ -94,7 +95,7 @@ static bstr decompress_vsp(io::IStream &input, size_t width, size_t height)
 
                     case 0x05:
                     {
-                        auto n = input.read_u8() + 1;
+                        auto n = input_stream.read_u8() + 1;
                         while (n-- && y < height)
                         {
                             bc[y][plane] = bc[y][2] ^ mask;
@@ -109,7 +110,7 @@ static bstr decompress_vsp(io::IStream &input, size_t width, size_t height)
                         break;
 
                     case 0x07:
-                        bc[y++][plane] = input.read_u8();
+                        bc[y++][plane] = input_stream.read_u8();
                         break;
 
                     default:
