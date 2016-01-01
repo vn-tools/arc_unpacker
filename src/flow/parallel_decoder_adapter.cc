@@ -35,35 +35,33 @@ void ParallelDecoderAdapter::visit(const dec::BaseArchiveDecoder &decoder)
 
     for (const auto &entry : meta->entries)
     {
-        parent_task->task_context.unpacker.save_file(
+        parent_task->save_file(
             [input_file, meta, &entry, &decoder, vfs_bridge]
             (const Logger &logger)
             {
                 io::File file_copy(*input_file);
                 return decoder.read_file(logger, file_copy, *meta, *entry);
             },
-            decoder,
-            parent_task);
+            decoder);
     }
 }
 
 void ParallelDecoderAdapter::visit(const dec::BaseFileDecoder &decoder)
 {
     auto input_file = this->input_file;
-    parent_task->task_context.unpacker.save_file(
+    parent_task->save_file(
         [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
             return decoder.decode(logger, file_copy);
         },
-        decoder,
-        parent_task);
+        decoder);
 }
 
 void ParallelDecoderAdapter::visit(const dec::BaseImageDecoder &decoder)
 {
     auto input_file = this->input_file;
-    parent_task->task_context.unpacker.save_file(
+    parent_task->save_file(
         [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
@@ -71,14 +69,13 @@ void ParallelDecoderAdapter::visit(const dec::BaseImageDecoder &decoder)
             const auto encoder = enc::png::PngImageEncoder();
             return encoder.encode(logger, output_file, input_file->path);
         },
-        decoder,
-        parent_task);
+        decoder);
 }
 
 void ParallelDecoderAdapter::visit(const dec::BaseAudioDecoder &decoder)
 {
     auto input_file = this->input_file;
-    parent_task->task_context.unpacker.save_file(
+    parent_task->save_file(
         [input_file, &decoder](const Logger &logger)
         {
             io::File file_copy(*input_file);
@@ -86,6 +83,5 @@ void ParallelDecoderAdapter::visit(const dec::BaseAudioDecoder &decoder)
             const auto encoder = enc::microsoft::WavAudioEncoder();
             return encoder.encode(logger, output_file, input_file->path);
         },
-        decoder,
-        parent_task);
+        decoder);
 }

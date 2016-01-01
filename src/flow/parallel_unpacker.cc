@@ -21,9 +21,7 @@ namespace
         NestedDecoding,
     };
 
-    struct DecodeInputFileTask final :
-        public BaseParallelUnpackingTask,
-        public std::enable_shared_from_this<BaseParallelUnpackingTask>
+    struct DecodeInputFileTask final : public BaseParallelUnpackingTask
     {
         DecodeInputFileTask(
             ParallelTaskContext &task_context,
@@ -40,9 +38,7 @@ namespace
         const FileFactory file_factory;
     };
 
-    struct ProcessOutputFileTask final :
-        public BaseParallelUnpackingTask,
-        public std::enable_shared_from_this<BaseParallelUnpackingTask>
+    struct ProcessOutputFileTask final : public BaseParallelUnpackingTask
     {
         ProcessOutputFileTask(
             ParallelTaskContext &task_context,
@@ -206,6 +202,19 @@ size_t BaseParallelUnpackingTask::get_depth() const
         task = task->parent_task;
     }
     return depth;
+}
+
+void BaseParallelUnpackingTask::save_file(
+    const FileFactoryWithLogger file_factory,
+    const dec::BaseDecoder &origin_decoder) const
+{
+    task_context.task_scheduler.push_front(
+        std::make_shared<ProcessOutputFileTask>(
+            task_context,
+            base_name,
+            shared_from_this(),
+            file_factory,
+            origin_decoder.shared_from_this()));
 }
 
 DecodeInputFileTask::DecodeInputFileTask(
@@ -381,20 +390,6 @@ void ParallelUnpacker::add_input_file(
             SourceType::InitialUserInput,
             p->unpacker_context.available_decoders,
             file_factory));
-}
-
-void ParallelUnpacker::save_file(
-    const FileFactoryWithLogger file_factory,
-    const dec::BaseDecoder &origin_decoder,
-    const std::shared_ptr<const BaseParallelUnpackingTask> parent_task)
-{
-    p->task_scheduler.push_front(
-        std::make_shared<ProcessOutputFileTask>(
-            p->task_context,
-            parent_task->base_name,
-            parent_task,
-            file_factory,
-            origin_decoder.shared_from_this()));
 }
 
 bool ParallelUnpacker::run(const size_t thread_count)

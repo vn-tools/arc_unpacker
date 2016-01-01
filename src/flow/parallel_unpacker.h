@@ -47,7 +47,9 @@ namespace flow {
         TaskScheduler &task_scheduler;
     };
 
-    struct BaseParallelUnpackingTask : public ITask
+    struct BaseParallelUnpackingTask :
+        public ITask,
+        public std::enable_shared_from_this<BaseParallelUnpackingTask>
     {
         BaseParallelUnpackingTask(
             ParallelTaskContext &task_context,
@@ -55,7 +57,12 @@ namespace flow {
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task);
 
         virtual ~BaseParallelUnpackingTask() {}
+
         size_t get_depth() const;
+
+        void save_file(
+            const FileFactoryWithLogger,
+            const dec::BaseDecoder &origin_decoder) const;
 
         Logger logger;
         ParallelTaskContext &task_context;
@@ -70,12 +77,6 @@ namespace flow {
         ~ParallelUnpacker();
 
         void add_input_file(const io::path &base_name, const FileFactory);
-
-        void save_file(
-            const FileFactoryWithLogger,
-            const dec::BaseDecoder &origin_decoder,
-            const std::shared_ptr<const BaseParallelUnpackingTask> parent_task);
-
         bool run(const size_t thread_count = 0);
 
     private:
