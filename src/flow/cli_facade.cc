@@ -73,7 +73,7 @@ R"(  __ _ _   _
  / _` | |_| |  arc_unpacker v%s
  \__,_|\__,_|  Extracts images and sounds from various visual novels.
 
-Usage: arc_unpacker [options] [fmt_options] input_path [input_path...]
+Usage: arc_unpacker [options] [dec_options] input_path [input_path...]
 
 [options] can be:
 
@@ -86,14 +86,14 @@ Usage: arc_unpacker [options] [fmt_options] input_path [input_path...]
         auto decoder = registry.create_decoder(options.decoder);
         ArgParser decoder_arg_parser;
         decoder->register_cli_options(decoder_arg_parser);
-        logger.info("[fmt_options] specific to " + options.decoder + ":\n\n");
+        logger.info("[dec_options] specific to " + options.decoder + ":\n\n");
         decoder_arg_parser.print_help(logger);
     }
     else
     {
         logger.info(
-R"([fmt_options] depend on chosen format and are required at runtime.
-See --help --fmt=FORMAT to get detailed help for given decoder.
+R"([dec_options] depend on the chosen decoder and are required at runtime.
+See --help --dec=DECODER to get detailed help for given decoder.
 
 )");
     }
@@ -134,9 +134,9 @@ void CliFacade::Priv::register_cli_options()
             "By default, the files are placed in current working directory. "
             "(Archives always create an intermediate directory.)");
 
-    auto sw = arg_parser.register_switch({"-f", "--fmt"})
-        ->set_value_name("FORMAT")
-        ->set_description("Disables guessing and selects given format.")
+    auto sw = arg_parser.register_switch({"-d", "--dec"})
+        ->set_value_name("DECODER")
+        ->set_description("Disables guessing and selects given decoder.")
         ->hide_possible_values();
     for (auto &name : registry.get_decoder_names())
         sw->add_possible_value(name);
@@ -145,8 +145,8 @@ void CliFacade::Priv::register_cli_options()
         ->set_value_name("NUM")
         ->set_description("Sets worker thread count.");
 
-    arg_parser.register_flag({"-l", "--list-fmt"})
-        ->set_description("Lists available FORMAT values.");
+    arg_parser.register_flag({"-l", "--list-decoders"})
+        ->set_description("Lists available DECODER values.");
 
     arg_parser.register_flag({"-v", "--version"})
         ->set_description("Shows arc_unpacker version.");
@@ -161,7 +161,7 @@ void CliFacade::Priv::parse_cli_options()
         = arg_parser.has_flag("-v") || arg_parser.has_flag("--version");
 
     options.should_list_decoders
-        = arg_parser.has_flag("-l") || arg_parser.has_flag("--list-fmt");
+        = arg_parser.has_flag("-l") || arg_parser.has_flag("--list-decoders");
 
     options.overwrite
         = !arg_parser.has_flag("-r") && !arg_parser.has_flag("--rename");
@@ -196,10 +196,10 @@ void CliFacade::Priv::parse_cli_options()
     else
         options.output_dir = "./";
 
-    if (arg_parser.has_switch("-f"))
-        options.decoder = arg_parser.get_switch("-f");
-    if (arg_parser.has_switch("--fmt"))
-        options.decoder = arg_parser.get_switch("--fmt");
+    if (arg_parser.has_switch("-d"))
+        options.decoder = arg_parser.get_switch("-d");
+    if (arg_parser.has_switch("--dec"))
+        options.decoder = arg_parser.get_switch("--dec");
 
     for (const auto &stray : arg_parser.get_stray())
     {

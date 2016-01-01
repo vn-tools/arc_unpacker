@@ -26,14 +26,14 @@ and unpack it for you.
 Caveats:
 
 1. The file format might be detected by two or more decoders at once. In such
-   cases you need to tell the program which one to use by supplying `--fmt=...`
+   cases you need to tell the program which one to use by supplying `--dec=...`
    option.
 
 2. The file might need more parameters to be correctly unpacked (all of which
-   can be discovered with `--help --fmt=FORMAT` switch). In such cases you need
-   to supply them manually. For example, XP3 archives need `--plugin` that
+   can be discovered with `--help --dec=DECODER` switch). In such cases you
+   need to supply them manually. For example, XP3 archives need `--plugin` that
    tells what kind of decryption to use. To tell it to use Fate/Stay Night
-   decryption, supply `--fmt=krkr/xp3 --plugin=fsn`.
+   decryption, supply `--dec=krkr/xp3 --plugin=fsn`.
 
 ## Q&A
 

@@ -41,7 +41,7 @@ static std::string read_gamelist_file()
 
 TEST_CASE("Documentation", "[core]")
 {
-    SECTION("--fmt switches contain hyphens rather than underscores")
+    SECTION("--dec switches contain hyphens rather than underscores")
     {
         const auto &registry = dec::Registry::instance();
         for (const auto &name : registry.get_decoder_names())
@@ -51,13 +51,13 @@ TEST_CASE("Documentation", "[core]")
         }
     }
 
-    SECTION("GAMELIST refers to valid --fmt switches")
+    SECTION("GAMELIST refers to valid --dec switches")
     {
         const auto content = read_gamelist_file();
         const auto &registry = dec::Registry::instance();
 
         const std::regex decoder_name_regex(
-            "--fmt=([^< ]*)",
+            "--dec=([^< ]*)",
             std::regex_constants::ECMAScript | std::regex_constants::icase);
 
         for (const auto decoder_name
