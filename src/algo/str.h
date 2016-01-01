@@ -21,6 +21,11 @@ namespace algo {
 
     bstr trim_to_zero(const bstr &input);
 
+    std::vector<std::string> split(
+        const std::string &input,
+        const char separator,
+        const bool keep_separators);
+
     std::string replace_all(
         const std::string &input,
         const std::string &from,

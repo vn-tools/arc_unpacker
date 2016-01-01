@@ -86,6 +86,27 @@ bstr algo::unhex(const std::string &input)
     return output;
 }
 
+std::vector<std::string> algo::split(
+    const std::string &input,
+    const char separator,
+    const bool keep_separators)
+{
+    std::vector<std::string> tokens;
+    size_t start = 0, end = 0;
+    while ((end = input.find(separator, start)) != std::string::npos)
+    {
+        const auto temp = input.substr(
+            start, end + (keep_separators ? 1 : 0) - start);
+        if (!temp.empty())
+            tokens.push_back(temp);
+        start = end + 1;
+    }
+    const auto temp = input.substr(start);
+    if (!temp.empty())
+        tokens.push_back(temp);
+    return tokens;
+}
+
 std::string algo::replace_all(
     const std::string &input,
     const std::string &from,

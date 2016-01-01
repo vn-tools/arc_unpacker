@@ -3,6 +3,7 @@
 #include <iostream>
 #include <mutex>
 #include "algo/format.h"
+#include "algo/str.h"
 
 using namespace au;
 
@@ -39,12 +40,16 @@ void Logger::Priv::log(
     auto *out = &std::cout;
     if (type == MessageType::Warning || type == MessageType::Error)
         out = &std::cerr;
-    (*out) << prefix;
-    if (colors_enabled && colors[type] != Color::Original)
-        logger.set_color(colors[type]);
-    (*out) << algo::format(fmt, args);
-    if (colors_enabled && colors[type] != Color::Original)
-        logger.set_color(Color::Original);
+    const auto output = algo::format(fmt, args);
+    for (const auto line : algo::split(output, '\n', true))
+    {
+        (*out) << prefix;
+        if (colors_enabled && colors[type] != Color::Original)
+            logger.set_color(colors[type]);
+        (*out) << line;
+        if (colors_enabled && colors[type] != Color::Original)
+            logger.set_color(Color::Original);
+    }
 }
 
 Logger::Logger(const Logger &other_logger) : p(new Priv(*this))
