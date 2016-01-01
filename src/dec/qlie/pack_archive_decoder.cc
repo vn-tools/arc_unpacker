@@ -1,17 +1,18 @@
 #include "dec/qlie/pack_archive_decoder.h"
-#include <cstring>
 #include "algo/locale.h"
 #include "algo/range.h"
+#include "dec/borland/tpf0_decoder.h"
+#include "dec/microsoft/exe_archive_decoder.h"
 #include "dec/qlie/mt.h"
 #include "err.h"
 #include "io/memory_stream.h"
+#include "ptr.h"
 
 using namespace au;
 using namespace au::dec::qlie;
 
 static const bstr magic = "FilePackVer3.0\x00\x00"_b;
 static const bstr compression_magic = "1PC\xFF"_b;
-static const bstr exe_key_magic = "\x05TIcon\x00"_b;
 
 namespace
 {
@@ -24,7 +25,7 @@ namespace
 
     struct ArchiveMetaImpl final : dec::ArchiveMeta
     {
-        EncryptionType enc_type;
+        EncryptionType encryption_type;
         bstr key1;
         bstr key2;
     };
@@ -41,21 +42,21 @@ namespace
     };
 }
 
-static u64 padb(u64 a, u64 b)
+static u64 padb(const u64 a, const u64 b)
 {
     return ((a & 0x7F7F7F7F7F7F7F7F)
         + (b & 0x7F7F7F7F7F7F7F7F))
         ^ ((a ^ b) & 0x8080808080808080);
 }
 
-static u64 padw(u64 a, u64 b)
+static u64 padw(const u64 a, const u64 b)
 {
     return ((a & 0x7FFF7FFF7FFF7FFF)
         + (b & 0x7FFF7FFF7FFF7FFF))
         ^ ((a ^ b) & 0x8000800080008000);
 }
 
-static u64 padd(u64 a, u64 b)
+static u64 padd(const u64 a, const u64 b)
 {
     return ((a & 0x7FFFFFFF7FFFFFFF)
         + (b & 0x7FFFFFFF7FFFFFFF))
@@ -80,14 +81,14 @@ static u32 derive_seed(const bstr &input)
     return static_cast<u32>(result & 0xFFFFFFFF);
 }
 
-static void decrypt_file_name(bstr &file_name, u32 key)
+static void decrypt_file_name(bstr &file_name, const u32 key)
 {
-    u8 x = ((key ^ 0x3E) + file_name.size()) & 0xFF;
-    for (auto i : algo::range(1, file_name.size() + 1))
+    const u8 x = ((key ^ 0x3E) + file_name.size()) & 0xFF;
+    for (const auto i : algo::range(1, file_name.size() + 1))
         file_name.get<u8>()[i - 1] ^= ((i ^ x) & 0xFF) + i;
 }
 
-static void decrypt_file_data_basic(bstr &data, u32 seed)
+static void decrypt_file_data_basic(bstr &data, const u32 seed)
 {
     u64 *current = data.get<u64>();
     const u64 *end = current + data.size() / 8;
@@ -104,7 +105,10 @@ static void decrypt_file_data_basic(bstr &data, u32 seed)
 }
 
 static void decrypt_file_data_with_external_keys(
-    bstr &data, u32 seed, const bstr &file_name, const ArchiveMetaImpl &meta)
+    bstr &data,
+    const u32 seed,
+    const bstr &file_name,
+    const ArchiveMetaImpl &meta)
 {
     u32 mt_mutator = 0x85F532;
     u32 mt_seed = 0x33F641;
@@ -121,7 +125,7 @@ static void decrypt_file_data_with_external_keys(
         + (mt_mutator ^ data.size() ^ 0x8F32DC));
     mt_seed = 9 * (mt_seed & 0xFFFFFF);
 
-    if (meta.enc_type == EncryptionType::WithGameExe)
+    if (meta.encryption_type == EncryptionType::WithGameExe)
         mt_seed ^= 0x453A;
 
     CustomMersenneTwister mt(mt_seed);
@@ -135,7 +139,7 @@ static void decrypt_file_data_with_external_keys(
             = mt.get_next_integer()
             | (static_cast<u64>(mt.get_next_integer()) << 32);
     }
-    for (auto i : algo::range(9))
+    for (const auto i : algo::range(9))
          mt.get_next_integer();
 
     u64 mutator
@@ -143,9 +147,8 @@ static void decrypt_file_data_with_external_keys(
         | (static_cast<u64>(mt.get_next_integer()) << 32);
 
     auto table_index = mt.get_next_integer() % table.size();
-    auto data_ptr = data.get<u64>();
-    auto data_end = data.end<const u64>();
-    while (data_ptr < data_end)
+    auto data_ptr = make_ptr(data.get<u64>(), data.size() / 8);
+    while (data_ptr < data_ptr.end())
     {
         mutator ^= table[table_index];
         mutator = padd(mutator, table[table_index]);
@@ -166,11 +169,11 @@ static void decrypt_file_data_with_external_keys(
 
 static void decrypt_file_data(
     bstr &data,
-    u32 seed,
+    const u32 seed,
     const bstr &file_name,
     const ArchiveMetaImpl &meta)
 {
-    switch (meta.enc_type)
+    switch (meta.encryption_type)
     {
         case EncryptionType::Basic:
             decrypt_file_data_basic(data, seed);
@@ -184,11 +187,10 @@ static void decrypt_file_data(
     }
 }
 
-static bstr decompress(const bstr &input, size_t output_size)
+static bstr decompress(const bstr &input, const size_t output_size)
 {
     bstr output(output_size);
-    char *output_ptr = output.get<char>();
-    const char *output_end = output_ptr + output_size;
+    auto output_ptr = make_ptr(output);
 
     io::MemoryStream input_stream(input);
 
@@ -237,7 +239,7 @@ static bstr decompress(const bstr &input, size_t output_size)
             : input_stream.read_u32_le();
 
         u8 n = 0;
-        while (true)
+        while (output_ptr < output_ptr.end())
         {
             u8 d;
             if (n > 0)
@@ -255,8 +257,6 @@ static bstr decompress(const bstr &input, size_t output_size)
             if (dict1[d] == d)
             {
                 *output_ptr++ = d;
-                if (output_ptr >= output_end)
-                    return output;
             }
             else
             {
@@ -316,51 +316,59 @@ std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    meta->enc_type = EncryptionType::Basic;
+    meta->encryption_type = EncryptionType::Basic;
 
     if (!p->fkey_path.empty())
     {
-        meta->enc_type = EncryptionType::WithFKey;
+        meta->encryption_type = EncryptionType::WithFKey;
         io::File file(p->fkey_path, io::FileMode::Read);
         meta->key1 = file.stream.read_to_eof();
     }
 
     if (!p->game_exe_path.empty())
     {
-        static const int key2_size = 256;
+        io::File exe_file(p->game_exe_path, io::FileMode::Read);
+        const auto exe_decoder = dec::microsoft::ExeArchiveDecoder();
+        const auto tpf0_decoder = dec::borland::Tpf0Decoder();
+        const auto exe_meta = exe_decoder.read_meta(logger, exe_file);
 
-        io::File file(p->game_exe_path, io::FileMode::Read);
-        auto exe_data = file.stream.read_to_eof();
+        std::unique_ptr<ArchiveEntry> tform_entry;
+        for (auto &entry : exe_meta->entries)
+            if (entry->path.str().find("TFORM1") != std::string::npos)
+                tform_entry = std::move(entry);
+        if (!tform_entry)
+            throw err::RecognitionError("Cannot find the key - missing TForm");
 
-        bool found = false;
-        auto start = file.stream.size() - exe_key_magic.size() - key2_size;
-        for (auto i : algo::range(start, 0, -1))
-        {
-            if (!std::memcmp(&exe_data[i],
-                exe_key_magic.get<char>(),
-                exe_key_magic.size()))
-            {
-                found = true;
-                meta->enc_type = EncryptionType::WithGameExe;
-                meta->key2 = bstr(
-                    &exe_data[i + exe_key_magic.size() - 1], key2_size);
-            }
-        }
+        const auto tform_file = exe_decoder.read_file(
+            logger, exe_file, *meta, *tform_entry);
+        const auto tform_data = tform_file->stream.seek(0).read_to_eof();
+        const auto tform = tpf0_decoder.decode(tform_data);
 
-        if (!found)
-            throw err::RecognitionError("Cannot find the key in the .exe file");
+        std::unique_ptr<dec::borland::Tpf0Structure> ticon;
+        for (auto &child : tform->children)
+            if (child->name == "IconKeyImage")
+                ticon = std::move(child);
+        if (!ticon)
+            throw err::RecognitionError("Cannot find the key - missing TIcon");
+
+        const auto ticon_content = ticon->property<bstr>("Picture.Data");
+        if (ticon_content.substr(0, 6) != "\x05TIcon"_b)
+            throw err::RecognitionError("Malformed TIcon key");
+
+        meta->encryption_type = EncryptionType::WithGameExe;
+        meta->key2 = ticon_content.substr(6, 256);
     }
 
     input_file.stream.seek(get_magic_start(input_file.stream) + magic.size());
-    auto file_count = input_file.stream.read_u32_le();
-    auto table_offset = input_file.stream.read_u64_le();
-    auto table_size = get_magic_start(input_file.stream) - table_offset;
+    const auto file_count = input_file.stream.read_u32_le();
+    const auto table_offset = input_file.stream.read_u64_le();
+    const auto table_size = get_magic_start(input_file.stream) - table_offset;
     input_file.stream.seek(table_offset);
     io::MemoryStream table_stream(input_file.stream, table_size);
 
     u32 seed = 0;
     table_stream.seek(0);
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         size_t file_name_size = table_stream.read_u16_le();
         table_stream.skip(file_name_size + 28);
@@ -371,7 +379,7 @@ std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
     seed = derive_seed(table_stream.read(256)) & 0x0FFFFFFF;
 
     table_stream.seek(0);
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
@@ -392,7 +400,7 @@ std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
         meta->entries.push_back(std::move(entry));
     }
 
-    for (auto &entry : meta->entries)
+    for (const auto &entry : meta->entries)
     {
         if (entry->path.name().find("pack_keyfile") != std::string::npos)
         {
