@@ -5,7 +5,7 @@
 #include "dec/ivory/prs_image_decoder.h"
 #include "dec/ivory/wady_audio_decoder.h"
 #include "err.h"
-#include "util/plugin_mgr.h"
+#include "plugin_mgr.h"
 
 using namespace au;
 using namespace au::dec::ivory;
@@ -68,7 +68,7 @@ static int detect_version(io::IStream &input_stream)
 
 struct MblArchiveDecoder::Priv final
 {
-    util::PluginManager<PluginFunc> plugin_mgr;
+    PluginManager<PluginFunc> plugin_mgr;
 };
 
 MblArchiveDecoder::MblArchiveDecoder() : p(new Priv)

@@ -3,7 +3,7 @@
 #include "dec/shiina_rio/warc/decrypt.h"
 #include "io/file.h"
 #include "io/program_path.h"
-#include "util/plugin_mgr.h"
+#include "plugin_mgr.h"
 
 using namespace au;
 using namespace au::dec::shiina_rio::warc;
@@ -28,7 +28,7 @@ static std::shared_ptr<res::Image> read_image(const std::string &name)
 struct PluginRegistry::Priv final
 {
     using PluginBuilder = std::function<std::shared_ptr<Plugin>()>;
-    util::PluginManager<PluginBuilder> plugin_mgr;
+    PluginManager<PluginBuilder> plugin_mgr;
     std::shared_ptr<Plugin> plugin;
 };
 

@@ -1,7 +1,7 @@
 #include "dec/kirikiri/xp3_filter_registry.h"
 #include "algo/range.h"
 #include "dec/kirikiri/cxdec.h"
-#include "util/plugin_mgr.h"
+#include "plugin_mgr.h"
 
 using namespace au;
 using namespace au::dec::kirikiri;
@@ -22,7 +22,7 @@ static std::function<void(Xp3Filter&)> cxdec(
 
 struct Xp3FilterRegistry::Priv final
 {
-    util::PluginManager<std::function<void(Xp3Filter&)>> plugin_mgr;
+    PluginManager<std::function<void(Xp3Filter&)>> plugin_mgr;
     std::function<void(Xp3Filter&)> filter_decorator;
 };
 

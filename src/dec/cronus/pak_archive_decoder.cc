@@ -4,7 +4,7 @@
 #include "dec/cronus/common.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/plugin_mgr.h"
+#include "plugin_mgr.h"
 
 using namespace au;
 using namespace au::dec::cronus;
@@ -60,7 +60,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(
 
 struct PakArchiveDecoder::Priv final
 {
-    util::PluginManager<Plugin> plugin_mgr;
+    PluginManager<Plugin> plugin_mgr;
 };
 
 PakArchiveDecoder::PakArchiveDecoder() : p(new Priv)

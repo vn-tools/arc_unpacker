@@ -1,6 +1,6 @@
 #include "dec/nitroplus/npa_filter_registry.h"
 #include "algo/range.h"
-#include "util/plugin_mgr.h"
+#include "plugin_mgr.h"
 
 using namespace au;
 using namespace au::dec::nitroplus;
@@ -58,7 +58,7 @@ static std::shared_ptr<NpaFilter> create_muramasa_filter()
 struct NpaFilterRegistry::Priv final
 {
     using FilterBuilder = std::function<std::shared_ptr<NpaFilter>()>;
-    util::PluginManager<FilterBuilder> plugin_mgr;
+    PluginManager<FilterBuilder> plugin_mgr;
     std::shared_ptr<NpaFilter> filter;
 };
 

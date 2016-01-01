@@ -3,7 +3,7 @@
 #include "algo/pack/zlib.h"
 #include "algo/range.h"
 #include "dec/nitroplus/npa_filter_registry.h"
-#include "util/plugin_mgr.h"
+#include "err.h"
 
 using namespace au;
 using namespace au::dec::nitroplus;

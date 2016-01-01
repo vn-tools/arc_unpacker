@@ -5,8 +5,8 @@
 #include "arg_parser.h"
 #include "err.h"
 
+// TODO: either refactor this, or remove it altogether
 namespace au {
-namespace util {
 
     template<typename T> struct PluginDefinition final
     {
@@ -85,4 +85,4 @@ namespace util {
         std::string used_value_name;
     };
 
-} }
+}

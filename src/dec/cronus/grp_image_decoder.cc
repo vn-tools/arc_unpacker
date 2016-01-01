@@ -3,7 +3,7 @@
 #include "algo/range.h"
 #include "dec/cronus/common.h"
 #include "err.h"
-#include "util/plugin_mgr.h"
+#include "plugin_mgr.h"
 
 using namespace au;
 using namespace au::dec::cronus;
@@ -46,7 +46,7 @@ static void swap_decrypt(bstr &input, size_t encrypted_size)
 
 struct GrpImageDecoder::Priv final
 {
-    util::PluginManager<HeaderFunc> plugin_mgr;
+    PluginManager<HeaderFunc> plugin_mgr;
     Header header;
 };
 
