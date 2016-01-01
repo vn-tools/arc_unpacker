@@ -110,7 +110,7 @@ template<NamingStrategy strategy>
         const auto saved_files
             = tests::unpack(test_archive_decoder, *dummy_file);
         REQUIRE((saved_files.size() == 1));
-        tests::compare_paths(saved_files[0]->path, prefix);
+        tests::compare_paths(saved_files[0]->path, prefix + ".dat");
     }
 
     SECTION("Multiple files")
@@ -125,8 +125,8 @@ template<NamingStrategy strategy>
         const auto saved_files
             = tests::unpack(test_archive_decoder, *dummy_file);
         REQUIRE((saved_files.size() == 2));
-        tests::compare_paths(saved_files[0]->path, prefix + "_0");
-        tests::compare_paths(saved_files[1]->path, prefix + "_1");
+        tests::compare_paths(saved_files[0]->path, prefix + "_0.dat");
+        tests::compare_paths(saved_files[1]->path, prefix + "_1.dat");
     }
 
     SECTION("Mixed nameless and named files")
@@ -142,9 +142,9 @@ template<NamingStrategy strategy>
         const auto saved_files
             = tests::unpack(test_archive_decoder, *dummy_file);
         REQUIRE((saved_files.size() == 3));
-        tests::compare_paths(saved_files[0]->path, prefix + "_0");
+        tests::compare_paths(saved_files[0]->path, prefix + "_0.dat");
         tests::compare_paths(saved_files[1]->path, "named");
-        tests::compare_paths(saved_files[2]->path, prefix + "_1");
+        tests::compare_paths(saved_files[2]->path, prefix + "_1.dat");
     }
 }
 
@@ -175,7 +175,7 @@ TEST_CASE("Archive files get proper fallback names", "[fmt_core]")
 
     SECTION("Root naming strategy")
     {
-        test_naming_strategy<NamingStrategy::Root>("path/test.archive");
+        test_naming_strategy<NamingStrategy::Root>("path/test");
     }
 
     SECTION("Sibling naming strategy")

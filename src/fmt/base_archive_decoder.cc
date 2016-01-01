@@ -28,7 +28,7 @@ std::unique_ptr<ArchiveMeta> BaseArchiveDecoder::read_meta(
     if (naming_strategy() == NamingStrategy::Sibling)
         prefix = input_file.path.stem();
     else if (naming_strategy() == NamingStrategy::Root)
-        prefix = input_file.path.str();
+        prefix = (input_file.path.parent() / input_file.path.stem()).str();
 
     if (prefix.empty())
         prefix = "unk";
@@ -45,6 +45,7 @@ std::unique_ptr<ArchiveMeta> BaseArchiveDecoder::read_meta(
         entry->path = meta->entries.size() > 1
             ? algo::format("%s_%0*d", prefix.c_str(), width, number++)
             : prefix;
+        entry->path.change_extension("dat");
     }
 
     return meta;
