@@ -8,7 +8,7 @@ using namespace au;
 using namespace au::io;
 
 template<typename T, const algo::Endianness endianness> inline T
-    read_any_primitive(IStream &input_stream)
+    read_any_primitive(io::IStream &input_stream)
 {
     bstr tmp = input_stream.read(sizeof(T));
     if (endianness != algo::get_machine_endianness())
@@ -16,7 +16,7 @@ template<typename T, const algo::Endianness endianness> inline T
     return *reinterpret_cast<const T*>(tmp.get<const char>());
 }
 
-IStream &BaseStream::peek(const size_t offset, std::function<void()> func)
+io::IStream &BaseStream::peek(const size_t offset, std::function<void()> func)
 {
     size_t old_pos = tell();
     seek(offset);
@@ -158,7 +158,7 @@ f64 BaseStream::read_f64_be()
     return read_any_primitive<const f64, algo::Endianness::BigEndian>(*this);
 }
 
-IStream &BaseStream::write(const bstr &bytes)
+io::IStream &BaseStream::write(const bstr &bytes)
 {
     if (!bytes.size())
         return *this;
@@ -166,48 +166,48 @@ IStream &BaseStream::write(const bstr &bytes)
     return *this;
 }
 
-IStream &BaseStream::write_u8(u8 value)
+io::IStream &BaseStream::write_u8(u8 value)
 {
     write_impl(&value, 1);
     return *this;
 }
 
-IStream &BaseStream::write_u16_le(u16 value)
+io::IStream &BaseStream::write_u16_le(u16 value)
 {
     value = algo::to_little_endian<u16>(value);
     write_impl(&value, 2);
     return *this;
 }
 
-IStream &BaseStream::write_u32_le(u32 value)
+io::IStream &BaseStream::write_u32_le(u32 value)
 {
     value = algo::to_little_endian<u32>(value);
     write_impl(&value, 4);
     return *this;
 }
 
-IStream &BaseStream::write_u64_le(u64 value)
+io::IStream &BaseStream::write_u64_le(u64 value)
 {
     value = algo::to_little_endian<u64>(value);
     write_impl(&value, 8);
     return *this;
 }
 
-IStream &BaseStream::write_u16_be(u16 value)
+io::IStream &BaseStream::write_u16_be(u16 value)
 {
     value = algo::to_big_endian<u16>(value);
     write_impl(&value, 2);
     return *this;
 }
 
-IStream &BaseStream::write_u32_be(u32 value)
+io::IStream &BaseStream::write_u32_be(u32 value)
 {
     value = algo::to_big_endian<u32>(value);
     write_impl(&value, 4);
     return *this;
 }
 
-IStream &BaseStream::write_u64_be(u64 value)
+io::IStream &BaseStream::write_u64_be(u64 value)
 {
     value = algo::to_big_endian<u64>(value);
     write_impl(&value, 8);
