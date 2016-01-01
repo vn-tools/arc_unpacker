@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/stream.h"
+#include "io/istream.h"
 
 namespace au {
 namespace algo {
@@ -14,7 +14,7 @@ namespace pack {
     };
 
     bstr zlib_inflate(
-        io::Stream &io,
+        io::IStream &io,
         const ZlibKind kind = ZlibKind::PlainZlib);
 
     bstr zlib_inflate(

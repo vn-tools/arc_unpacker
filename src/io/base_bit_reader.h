@@ -2,7 +2,7 @@
 
 #include <memory>
 #include "io/ibit_reader.h"
-#include "io/stream.h"
+#include "io/istream.h"
 
 namespace au {
 namespace io {
@@ -11,7 +11,7 @@ namespace io {
     {
     public:
         BaseBitReader(const bstr &input);
-        BaseBitReader(io::Stream &input_stream);
+        BaseBitReader(io::IStream &input_stream);
         virtual ~BaseBitReader() {}
 
         void seek(const size_t pos) override;
@@ -25,8 +25,8 @@ namespace io {
         u64 buffer;
         size_t bits_available;
         size_t position;
-        std::unique_ptr<io::Stream> own_stream_holder;
-        io::Stream *input_stream;
+        std::unique_ptr<io::IStream> own_stream_holder;
+        io::IStream *input_stream;
     };
 
 } }

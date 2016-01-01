@@ -451,7 +451,7 @@ static bstr decode_blocks(
     return block_output;
 }
 
-static BasicInfo read_basic_info(io::Stream &input_stream)
+static BasicInfo read_basic_info(io::IStream &input_stream)
 {
     input_stream.seek(4);
 

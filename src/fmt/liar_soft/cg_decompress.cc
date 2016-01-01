@@ -11,7 +11,7 @@ void fmt::liar_soft::cg_decompress(
     bstr &output,
     const size_t output_offset,
     const size_t output_shift,
-    io::Stream &input_stream,
+    io::IStream &input_stream,
     const size_t input_shift)
 {
     auto output_ptr = output.get<u8>() + output_offset;

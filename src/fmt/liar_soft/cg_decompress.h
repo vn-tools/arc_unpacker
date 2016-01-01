@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/stream.h"
+#include "io/istream.h"
 
 namespace au {
 namespace fmt {
@@ -10,7 +10,7 @@ namespace liar_soft {
         bstr &output,
         const size_t output_offset,
         const size_t output_shift,
-        io::Stream &input_stream,
+        io::IStream &input_stream,
         const size_t input_shift);
 
 } } }

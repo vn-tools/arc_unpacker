@@ -14,7 +14,7 @@ namespace
     };
 }
 
-static u32 read_24_le(io::Stream &input_stream)
+static u32 read_24_le(io::IStream &input_stream)
 {
     return (input_stream.read_u8() << 8)
         | (input_stream.read_u8() << 16)

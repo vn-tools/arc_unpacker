@@ -9,7 +9,7 @@ namespace io {
     {
     public:
         LsbBitReader(const bstr &input);
-        LsbBitReader(io::Stream &input_stream);
+        LsbBitReader(io::IStream &input_stream);
         u32 get(const size_t n) override;
     };
 

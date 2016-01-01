@@ -18,7 +18,7 @@ namespace
 
     struct BlockInfo final
     {
-        BlockInfo(io::Stream &stream);
+        BlockInfo(io::IStream &stream);
         void decompress(LzssDecompressor &decompressor, Header &header);
 
         bool mark;
@@ -27,7 +27,7 @@ namespace
     };
 }
 
-BlockInfo::BlockInfo(io::Stream &stream)
+BlockInfo::BlockInfo(io::IStream &stream)
 {
     mark = stream.read_u8() > 0;
     data = stream.read(stream.read_u32_le());
@@ -78,7 +78,7 @@ static void load_pixel_block_row(
     }
 }
 
-static void read_image(io::Stream &stream, res::Image &image, Header &header)
+static void read_image(io::IStream &stream, res::Image &image, Header &header)
 {
     // ignore block sizes
     size_t block_count = (header.image_height - 1) / header.block_height + 1;

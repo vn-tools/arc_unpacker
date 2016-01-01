@@ -32,14 +32,14 @@ namespace
 
     struct FilterTypes final
     {
-        FilterTypes(io::Stream &stream);
+        FilterTypes(io::IStream &stream);
         void decompress(Header &header);
 
         bstr data;
     };
 }
 
-FilterTypes::FilterTypes(io::Stream &stream)
+FilterTypes::FilterTypes(io::IStream &stream)
 {
     data = stream.read(stream.read_u32_le());
 }
@@ -452,7 +452,7 @@ static void decode_line(
     }
 }
 
-static void read_image(io::Stream &stream, res::Image &image, Header &header)
+static void read_image(io::IStream &stream, res::Image &image, Header &header)
 {
     FilterTypes filter_types(stream);
     filter_types.decompress(header);

@@ -26,7 +26,7 @@ static void decrypt(bstr &buffer, u8 a, u8 b, u8 delta)
 }
 
 static std::unique_ptr<io::MemoryStream> read_raw_table(
-    io::Stream &arc_stream, size_t file_count)
+    io::IStream &arc_stream, size_t file_count)
 {
     size_t table_size = file_count * 0x6C;
     if (table_size > arc_stream.size() - arc_stream.tell())

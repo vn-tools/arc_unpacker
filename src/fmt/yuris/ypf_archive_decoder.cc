@@ -23,7 +23,7 @@ namespace
     };
 }
 
-static u8 get_name_size(io::Stream &input_stream, size_t initial_pos)
+static u8 get_name_size(io::IStream &input_stream, size_t initial_pos)
 {
     const auto byte = input_stream.read_u8() ^ 0xFF;
     static const std::vector<u8> table =
@@ -49,9 +49,7 @@ static bstr unxor(const bstr &input, const u8 key)
 }
 
 static size_t guess_name_crypt_pos(
-    io::Stream &table_stream,
-    const size_t version,
-    const size_t file_count)
+    io::IStream &table_stream, const size_t version, const size_t file_count)
 {
     for (const auto initial_pos : {4, 0, 10})
     {

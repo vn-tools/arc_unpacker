@@ -21,7 +21,7 @@ namespace
 }
 
 static std::unique_ptr<fmt::ArchiveMeta> read_meta(
-    io::Stream &stream, const io::path root = "")
+    io::IStream &stream, const io::path root = "")
 {
     auto meta = std::make_unique<fmt::ArchiveMeta>();
     common::SectionReader section_reader(stream);

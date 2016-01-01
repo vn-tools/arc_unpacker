@@ -77,7 +77,7 @@ static bstr decrypt_utf_packet(const bstr &input)
     return output;
 }
 
-static bstr read_utf_packet(io::Stream &input_stream)
+static bstr read_utf_packet(io::IStream &input_stream)
 {
     bool isUtfEncrypted = false;
     input_stream.skip(4);
@@ -238,7 +238,7 @@ static std::vector<Row> parse_utf_packet(const bstr &utf_packet)
 }
 
 static void read_toc(
-    io::Stream &input_stream,
+    io::IStream &input_stream,
     const size_t toc_offset,
     const size_t content_offset,
     Toc &toc)
@@ -268,7 +268,7 @@ static void read_toc(
 }
 
 static void read_etoc(
-    io::Stream &input_stream, const size_t etoc_offset, Toc &toc)
+    io::IStream &input_stream, const size_t etoc_offset, Toc &toc)
 {
     input_stream.seek(etoc_offset);
     if (input_stream.read(4) != "ETOC"_b)
@@ -286,7 +286,7 @@ static void read_etoc(
 }
 
 static void read_itoc(
-    io::Stream &input_stream,
+    io::IStream &input_stream,
     const size_t itoc_offset,
     const size_t content_offset,
     const size_t align,

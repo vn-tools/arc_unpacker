@@ -96,7 +96,7 @@ static void unpickle_handle_number(size_t number, UnpickleContext *context)
     context->numbers.push_back(number);
 }
 
-static void unpickle(io::Stream &table_stream, UnpickleContext *context)
+static void unpickle(io::IStream &table_stream, UnpickleContext *context)
 {
     // Stupid unpickle "implementation" ahead: instead of twiddling with stack,
     // arrays, dictionaries and all that jazz, just remember all pushed strings
@@ -191,7 +191,7 @@ static void unpickle(io::Stream &table_stream, UnpickleContext *context)
     }
 }
 
-static int guess_version(io::Stream &arc_stream)
+static int guess_version(io::IStream &arc_stream)
 {
     static const bstr magic_3 = "RPA-3.0 "_b;
     static const bstr magic_2 = "RPA-2.0 "_b;
@@ -203,7 +203,7 @@ static int guess_version(io::Stream &arc_stream)
     return -1;
 }
 
-static u32 read_hex_number(io::Stream &arc_stream, size_t size)
+static u32 read_hex_number(io::IStream &arc_stream, size_t size)
 {
     u32 result = 0;
     for (auto i : algo::range(size))
@@ -222,7 +222,7 @@ static u32 read_hex_number(io::Stream &arc_stream, size_t size)
     return result;
 }
 
-static bstr read_raw_table(io::Stream &arc_stream)
+static bstr read_raw_table(io::IStream &arc_stream)
 {
     size_t compressed_size = arc_stream.size() - arc_stream.tell();
     return algo::pack::zlib_inflate(arc_stream.read(compressed_size));

@@ -17,7 +17,7 @@ namespace
     };
 }
 
-static res::Palette read_palette(io::Stream &stream, size_t size, size_t depth)
+static res::Palette read_palette(io::IStream &stream, size_t size, size_t depth)
 {
     res::PixelFormat format;
     if (depth == 32)
@@ -33,7 +33,7 @@ static res::Palette read_palette(io::Stream &stream, size_t size, size_t depth)
 }
 
 static bstr read_compressed_data(
-    io::Stream &stream,
+    io::IStream &stream,
     const size_t width,
     const size_t height,
     const size_t channels)
@@ -62,7 +62,7 @@ static bstr read_compressed_data(
 }
 
 static bstr read_uncompressed_data(
-    io::Stream &stream,
+    io::IStream &stream,
     const size_t width,
     const size_t height,
     const size_t channels)

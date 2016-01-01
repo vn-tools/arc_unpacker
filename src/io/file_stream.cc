@@ -42,14 +42,14 @@ FileStream::~FileStream()
         fclose(p->file);
 }
 
-Stream &FileStream::seek(const size_t offset)
+IStream &FileStream::seek(const size_t offset)
 {
     if (offset > size() || fseek(p->file, offset, SEEK_SET) != 0)
         throw err::EofError();
     return *this;
 }
 
-Stream &FileStream::skip(const int offset)
+IStream &FileStream::skip(const int offset)
 {
     if (tell() + offset > size() || fseek(p->file, offset, SEEK_CUR) != 0)
         throw err::EofError();
@@ -84,14 +84,14 @@ size_t FileStream::size() const
     return size;
 }
 
-Stream &FileStream::truncate(const size_t new_size)
+IStream &FileStream::truncate(const size_t new_size)
 {
     if (new_size == size())
         return *this;
     throw err::NotSupportedError("Truncating real files is not implemented");
 }
 
-std::unique_ptr<Stream> FileStream::clone() const
+std::unique_ptr<IStream> FileStream::clone() const
 {
     auto ret = std::make_unique<FileStream>(p->path, p->mode);
     ret->seek(tell());

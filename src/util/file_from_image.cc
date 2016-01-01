@@ -10,8 +10,9 @@ using namespace au::util;
 static void write_handler(
     png_structp png_ptr, png_bytep input, png_size_t size)
 {
-    auto stream = reinterpret_cast<io::Stream*>(png_get_io_ptr(png_ptr));
-    stream->write(bstr(input, size));
+    auto output_stream
+        = reinterpret_cast<io::IStream*>(png_get_io_ptr(png_ptr));
+    output_stream->write(bstr(input, size));
 }
 
 static void flush_handler(png_structp)

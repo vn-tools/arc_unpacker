@@ -2,35 +2,35 @@
 
 #include <memory>
 #include "err.h"
-#include "io/stream.h"
+#include "io/base_stream.h"
 
 namespace au {
 namespace io {
 
-    class MemoryStream final : public Stream
+    class MemoryStream final : public BaseStream
     {
     public:
         MemoryStream();
         MemoryStream(const char *buffer, const size_t buffer_size);
         MemoryStream(const bstr &buffer);
-        MemoryStream(Stream &other_stream, const size_t size);
-        MemoryStream(Stream &other_stream);
+        MemoryStream(IStream &other_stream, const size_t size);
+        MemoryStream(IStream &other_stream);
         ~MemoryStream();
 
         size_t size() const override;
         size_t tell() const override;
-        Stream &seek(const size_t offset) override;
-        Stream &skip(const int offset) override;
-        Stream &truncate(const size_t new_size) override;
+        IStream &seek(const size_t offset) override;
+        IStream &skip(const int offset) override;
+        IStream &truncate(const size_t new_size) override;
 
         // specialize most commonly used functions
         u8 read_u8() override;
         u16 read_u16_le() override;
         u32 read_u32_le() override;
 
-        Stream &reserve(const size_t count);
+        IStream &reserve(const size_t count);
 
-        std::unique_ptr<Stream> clone() const override;
+        std::unique_ptr<IStream> clone() const override;
 
     protected:
         void read_impl(void *destination, const size_t size) override;

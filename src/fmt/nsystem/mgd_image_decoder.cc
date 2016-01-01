@@ -27,7 +27,7 @@ namespace
 
 static const bstr magic = "MGD "_b;
 
-static void decompress_sgd_alpha(const bstr &input, io::Stream &output_stream)
+static void decompress_sgd_alpha(const bstr &input, io::IStream &output_stream)
 {
     io::MemoryStream input_stream(input);
     while (!input_stream.eof())
@@ -57,7 +57,7 @@ static void decompress_sgd_alpha(const bstr &input, io::Stream &output_stream)
 }
 
 static void decompress_sgd_bgr_strategy_1(
-    io::Stream &input_stream, io::Stream &output_stream, u8 flag)
+    io::IStream &input_stream, io::IStream &output_stream, u8 flag)
 {
     auto size = flag & 0x3F;
     output_stream.skip(-4);
@@ -89,7 +89,7 @@ static void decompress_sgd_bgr_strategy_1(
 }
 
 static void decompress_sgd_bgr_strategy_2(
-    io::Stream &input_stream, io::Stream &output_stream, u8 flag)
+    io::IStream &input_stream, io::IStream &output_stream, u8 flag)
 {
     auto size = (flag & 0x3F) + 1;
     u8 b = input_stream.read_u8();
@@ -105,7 +105,7 @@ static void decompress_sgd_bgr_strategy_2(
 }
 
 static void decompress_sgd_bgr_strategy_3(
-    io::Stream &input_stream, io::Stream &output_stream, u8 flag)
+    io::IStream &input_stream, io::IStream &output_stream, u8 flag)
 {
     auto size = flag;
     for (auto i : algo::range(size))
@@ -115,13 +115,13 @@ static void decompress_sgd_bgr_strategy_3(
     }
 }
 
-static void decompress_sgd_bgr(const bstr &input, io::Stream &output_stream)
+static void decompress_sgd_bgr(const bstr &input, io::IStream &output_stream)
 {
     io::MemoryStream input_stream(input);
     while (!input_stream.eof())
     {
         u8 flag = input_stream.read_u8();
-        std::function<void(io::Stream &, io::Stream &, u8)> func;
+        std::function<void(io::IStream &, io::IStream &, u8)> func;
         switch (flag & 0xC0)
         {
             case 0x80: func = decompress_sgd_bgr_strategy_1; break;
@@ -152,16 +152,17 @@ static bstr decompress_sgd(const bstr &input, size_t output_size)
     return output_stream.read_to_eof();
 }
 
-static std::vector<std::unique_ptr<Region>> read_region_data(io::Stream &stream)
+static std::vector<std::unique_ptr<Region>> read_region_data(
+    io::IStream &input_stream)
 {
     std::vector<std::unique_ptr<Region>> regions;
-    while (stream.tell() < stream.size())
+    while (input_stream.tell() < input_stream.size())
     {
-        stream.skip(4);
-        size_t regions_size = stream.read_u32_le();
-        size_t region_count = stream.read_u16_le();
-        size_t meta_format = stream.read_u16_le();
-        size_t bytes_left = stream.size() - stream.tell();
+        input_stream.skip(4);
+        size_t regions_size = input_stream.read_u32_le();
+        size_t region_count = input_stream.read_u16_le();
+        size_t meta_format = input_stream.read_u16_le();
+        size_t bytes_left = input_stream.size() - input_stream.tell();
         if (meta_format != 4)
             throw err::NotSupportedError("Unexpected meta format");
         if (regions_size != bytes_left)
@@ -170,16 +171,16 @@ static std::vector<std::unique_ptr<Region>> read_region_data(io::Stream &stream)
         for (auto i : algo::range(region_count))
         {
             auto region = std::make_unique<Region>();
-            region->x = stream.read_u16_le();
-            region->y = stream.read_u16_le();
-            region->width = stream.read_u16_le();
-            region->height = stream.read_u16_le();
+            region->x = input_stream.read_u16_le();
+            region->y = input_stream.read_u16_le();
+            region->width = input_stream.read_u16_le();
+            region->height = input_stream.read_u16_le();
             regions.push_back(std::move(region));
         }
 
-        if (stream.tell() + 4 >= stream.size())
+        if (input_stream.tell() + 4 >= input_stream.size())
             break;
-        stream.skip(4);
+        input_stream.skip(4);
     }
     return regions;
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "io/stream.h"
+#include "io/istream.h"
 
 namespace au {
 namespace fmt {
@@ -18,7 +18,7 @@ namespace common {
     class SectionReader final
     {
     public:
-        SectionReader(io::Stream &stream);
+        SectionReader(io::IStream &stream);
         ~SectionReader();
         Section get_section(const std::string &name) const;
         std::vector<Section> get_sections() const;

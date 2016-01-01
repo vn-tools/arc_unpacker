@@ -316,7 +316,7 @@ static void process_8bit_block(
     }
 }
 
-static void process_alpha(bstr &output, io::Stream &input_stream, int width)
+static void process_alpha(bstr &output, io::IStream &input_stream, int width)
 {
     auto output_start = output.get<u8>();
     auto output_end = output_start + output.size();
@@ -364,7 +364,7 @@ static void process_alpha(bstr &output, io::Stream &input_stream, int width)
     }
 }
 
-std::unique_ptr<res::Image> Cbg2Decoder::decode(io::Stream &input_stream) const
+std::unique_ptr<res::Image> Cbg2Decoder::decode(io::IStream &input_stream) const
 {
     size_t width = input_stream.read_u16_le();
     size_t height = input_stream.read_u16_le();

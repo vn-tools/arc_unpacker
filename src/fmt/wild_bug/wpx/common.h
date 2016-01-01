@@ -1,7 +1,7 @@
 #pragma once
 
 #include "io/ibit_reader.h"
-#include "io/memory_stream.h"
+#include "io/istream.h"
 
 namespace au {
 namespace fmt {
@@ -10,7 +10,7 @@ namespace wpx {
 
     struct DecoderContext final
     {
-        io::Stream &stream;
+        io::IStream &input_stream;
         io::IBitReader &bit_reader;
     };
 

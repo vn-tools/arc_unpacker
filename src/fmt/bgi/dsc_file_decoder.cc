@@ -37,10 +37,10 @@ static int is_image(const bstr &input)
     return width && height && (bpp == 8 || bpp == 24 || bpp == 32);
 }
 
-static NodeList get_nodes(io::Stream &stream, u32 key)
+static NodeList get_nodes(io::IStream &input_stream, u32 key)
 {
     NodeList nodes;
-    for (auto i : algo::range(1024))
+    for (const auto i : algo::range(1024))
     {
         auto node_info = std::make_unique<NodeInfo>();
         node_info->has_children = false;
@@ -49,9 +49,9 @@ static NodeList get_nodes(io::Stream &stream, u32 key)
     }
 
     std::vector<u32> arr0;
-    for (auto n : algo::range(512))
+    for (const auto n : algo::range(512))
     {
-        u8 tmp = stream.read_u8() - get_and_update_key(key);
+        u8 tmp = input_stream.read_u8() - get_and_update_key(key);
         if (tmp)
             arr0.push_back((tmp << 16) + n);
     }
@@ -101,7 +101,7 @@ static NodeList get_nodes(io::Stream &stream, u32 key)
 }
 
 static bstr decompress(
-    io::Stream &stream,
+    io::IStream &input_stream,
     const NodeList &nodes,
     size_t output_size)
 {
@@ -109,7 +109,7 @@ static bstr decompress(
     u8 *output_ptr = output.get<u8>();
     const u8 *output_start = output_ptr;
     const u8 *output_end = output_ptr + output.size();
-    io::MsbBitReader bit_reader(stream.read_to_eof());
+    io::MsbBitReader bit_reader(input_stream.read_to_eof());
 
     u32 bits = 0, bit_count = 0;
     while (output_ptr < output_end)

@@ -174,8 +174,7 @@ class NonFinalObjectsCheck(Check):
             if (re.search('(class|struct) (General|Data|Io|NotSupported)Error', line)
             or re.search('(class|struct) FileSaver', line) and 'file_saver.h' in file.name
             or re.search('(class|struct) (Switch|Flag|Option)', line) and 'arg_parser.' in file.name
-            or re.search('(class|struct) Archive(Entry|Meta)', line) and 'archive_decoder.h' in file.name
-            or re.search('(class|struct) Stream', line) and 'stream.h' in file.name): continue
+            or re.search('(class|struct) Archive(Entry|Meta)', line) and 'archive_decoder.h' in file.name): continue
 
             yield Problem(file, 'Use "final" where possible', i, line)
 

@@ -28,7 +28,7 @@ namespace
 static bstr decode_block(
     const NwaHeader &header,
     size_t current_block,
-    io::Stream &input_stream,
+    io::IStream &input_stream,
     const std::vector<u32> &offsets)
 {
     const auto bytes_per_sample = header.bits_per_sample >> 3;
@@ -136,7 +136,7 @@ static bstr decode_block(
 }
 
 static bstr read_compressed_samples(
-    io::Stream &input_stream, const NwaHeader &header)
+    io::IStream &input_stream, const NwaHeader &header)
 {
     if (header.compression_level < 0 || header.compression_level > 5)
         throw err::NotSupportedError("Unsupported compression level");
@@ -177,7 +177,7 @@ static bstr read_compressed_samples(
 }
 
 static bstr read_uncompressed_samples(
-    io::Stream &input_stream, const NwaHeader &header)
+    io::IStream &input_stream, const NwaHeader &header)
 {
     return input_stream.read(header.uncompressed_size);
 }

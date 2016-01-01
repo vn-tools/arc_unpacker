@@ -48,7 +48,7 @@ Palette::Palette(const size_t colors, const bstr &input, const PixelFormat fmt)
 }
 
 Palette::Palette(
-    const size_t colors, io::Stream &input_stream, const PixelFormat fmt)
+    const size_t colors, io::IStream &input_stream, const PixelFormat fmt)
     : p(new Priv(
         colors,
         input_stream.read(pixel_format_to_bpp(fmt) * colors),

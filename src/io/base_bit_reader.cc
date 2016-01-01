@@ -15,7 +15,7 @@ BaseBitReader::BaseBitReader(const bstr &input) :
 {
 }
 
-BaseBitReader::BaseBitReader(Stream &input_stream) :
+BaseBitReader::BaseBitReader(IStream &input_stream) :
     buffer(0),
     bits_available(0),
     position(0),

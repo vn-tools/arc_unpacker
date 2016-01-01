@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/stream.h"
+#include "io/istream.h"
 #include "res/pixel.h"
 
 namespace au {
@@ -78,10 +78,11 @@ namespace res {
         std::vector<Pixel> &output,
         const PixelFormat fmt);
 
-    template<PixelFormat fmt> inline Pixel read_pixel(io::Stream &stream)
+    template<PixelFormat fmt> inline Pixel read_pixel(
+        io::IStream &input_stream)
     {
-        auto str = stream.read(pixel_format_to_bpp(fmt));
-        auto str_ptr = str.get<const u8>();
+        const auto str = input_stream.read(pixel_format_to_bpp(fmt));
+        const auto *str_ptr = str.get<const u8>();
         return read_pixel<fmt>(str_ptr);
     }
 

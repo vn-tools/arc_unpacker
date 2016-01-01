@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/stream.h"
+#include "types.h"
 
 namespace au {
 namespace fmt {

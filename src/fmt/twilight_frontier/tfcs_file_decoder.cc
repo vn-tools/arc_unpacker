@@ -11,7 +11,7 @@ using namespace au::fmt::twilight_frontier;
 
 static const bstr magic = "TFCS\x00"_b;
 
-static void write_cell(io::Stream &output_stream, std::string cell)
+static void write_cell(io::IStream &output_stream, std::string cell)
 {
     if (cell.find(",") != std::string::npos)
         cell = "\"" + algo::replace_all(cell, "\"", "\"\"") + "\"";

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "io/stream.h"
+#include "types.h"
 
 namespace au {
 namespace fmt {

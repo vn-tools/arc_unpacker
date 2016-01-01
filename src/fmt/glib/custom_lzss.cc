@@ -14,7 +14,7 @@ bstr glib::custom_lzss_decompress(const bstr &input, const size_t output_size)
 }
 
 bstr glib::custom_lzss_decompress(
-    io::Stream &input_stream, const size_t output_size)
+    io::IStream &input_stream, const size_t output_size)
 {
     const size_t dict_size = 0x1000;
     size_t dict_pos = 0xFEE;

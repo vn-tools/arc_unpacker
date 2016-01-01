@@ -7,7 +7,7 @@ MsbBitReader::MsbBitReader(const bstr &input) : BaseBitReader(input)
 {
 }
 
-MsbBitReader::MsbBitReader(io::Stream &input_stream)
+MsbBitReader::MsbBitReader(io::IStream &input_stream)
     : BaseBitReader(input_stream)
 {
 }

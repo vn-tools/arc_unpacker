@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "io/stream.h"
+#include "io/istream.h"
 #include "res/pixel.h"
 #include "res/pixel_format.h"
 
@@ -22,7 +22,7 @@ namespace res {
 
         Palette(
             const size_t color_count,
-            io::Stream &input_stream,
+            io::IStream &input_stream,
             const PixelFormat format);
 
         ~Palette();

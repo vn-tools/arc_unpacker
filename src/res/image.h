@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "io/stream.h"
+#include "io/istream.h"
 #include "res/palette.h"
 #include "res/pixel.h"
 #include "res/pixel_format.h"
@@ -25,7 +25,7 @@ namespace res {
         Image(
             const size_t width,
             const size_t height,
-            io::Stream &input_stream,
+            io::IStream &input_stream,
             const PixelFormat fmt);
 
         Image(
@@ -37,7 +37,7 @@ namespace res {
         Image(
             const size_t width,
             const size_t height,
-            io::Stream &input_stream,
+            io::IStream &input_stream,
             const Palette &palette);
 
         ~Image();

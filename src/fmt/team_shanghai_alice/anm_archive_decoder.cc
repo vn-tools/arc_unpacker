@@ -30,7 +30,7 @@ namespace
 
 static const bstr texture_magic = "THTX"_b;
 
-static std::string read_name(io::Stream &input, size_t offset)
+static std::string read_name(io::IStream &input, size_t offset)
 {
     std::string name;
     input.peek(offset, [&]() { name = input.read_to_zero().str(); });
@@ -38,7 +38,7 @@ static std::string read_name(io::Stream &input, size_t offset)
 }
 
 static size_t read_old_texture_info(
-    TextureInfo &texture_info, io::Stream &input, size_t base_offset)
+    TextureInfo &texture_info, io::IStream &input, size_t base_offset)
 {
     input.skip(4); // sprite count
     input.skip(4); // script count
@@ -65,7 +65,7 @@ static size_t read_old_texture_info(
 }
 
 static size_t read_new_texture_info(
-    TextureInfo &texture_info, io::Stream &input, size_t base_offset)
+    TextureInfo &texture_info, io::IStream &input, size_t base_offset)
 {
     texture_info.version = input.read_u32_le();
     input.skip(2); // sprite count
@@ -89,7 +89,7 @@ static size_t read_new_texture_info(
 }
 
 static void write_image(
-    io::Stream &input,
+    io::IStream &input,
     const TextureInfo &texture_info,
     res::Image &image,
     size_t stride)
@@ -139,7 +139,7 @@ static void write_image(
     }
 }
 
-static std::vector<TextureInfo> read_texture_info_list(io::Stream &input)
+static std::vector<TextureInfo> read_texture_info_list(io::IStream &input)
 {
     std::vector<TextureInfo> texture_info_list;
     u32 base_offset = 0;

@@ -17,35 +17,35 @@ namespace
     };
 }
 
-static Version detect_version(io::Stream &stream)
+static Version detect_version(io::IStream &input_stream)
 {
     auto version = Version::Version1;
-    stream.peek(stream.tell(), [&]()
+    input_stream.peek(input_stream.tell(), [&]()
     {
-        auto channels = stream.read_u16_le();
+        auto channels = input_stream.read_u16_le();
         try
         {
-            stream.seek(0x30);
+            input_stream.seek(0x30);
             if (channels == 2)
             {
                 for (auto i : algo::range(2))
                 {
-                    auto compressed_size = stream.read_u32_le();
-                    stream.skip(compressed_size);
+                    auto compressed_size = input_stream.read_u32_le();
+                    input_stream.skip(compressed_size);
                 }
             }
             else if (channels == 1)
             {
-                stream.skip(4);
-                auto left = stream.read_u32_le();
-                stream.skip(2);
+                input_stream.skip(4);
+                auto left = input_stream.read_u32_le();
+                input_stream.skip(2);
                 while (left--)
                 {
-                    if (!(stream.read_u8() & 1))
-                        stream.read_u8();
+                    if (!(input_stream.read_u8() & 1))
+                        input_stream.read_u8();
                 }
             }
-            if (stream.eof())
+            if (input_stream.eof())
                 version = Version::Version2;
         }
         catch (...)
@@ -56,7 +56,7 @@ static Version detect_version(io::Stream &stream)
 }
 
 static bstr decode_v1(
-    io::Stream &stream,
+    io::IStream &input_stream,
     const size_t sample_count,
     const size_t channels,
     const size_t block_align)
@@ -78,7 +78,7 @@ static bstr decode_v1(
     auto samples_end = samples.end<u16>();
 
     u16 prev_sample[2] = {0, 0};
-    io::MemoryStream tmp_stream(stream);
+    io::MemoryStream tmp_stream(input_stream);
     while (!tmp_stream.eof() && samples_ptr < samples_end)
     {
         for (auto i : algo::range(channels))
@@ -103,7 +103,7 @@ static bstr decode_v1(
 }
 
 static bstr decode_v2(
-    io::Stream &stream, const size_t sample_count, const size_t channels)
+    io::IStream &input_stream, const size_t sample_count, const size_t channels)
 {
     static const u16 table1[] =
     {
@@ -119,10 +119,10 @@ static bstr decode_v2(
     for (auto i : algo::range(channels))
     {
         auto compressed_size = channels == 1
-            ? stream.size() - stream.tell()
-            : stream.read_u32_le();
+            ? input_stream.size() - input_stream.tell()
+            : input_stream.read_u32_le();
 
-        io::MemoryStream tmp_stream(stream, compressed_size);
+        io::MemoryStream tmp_stream(input_stream, compressed_size);
         tmp_stream.skip(4);
         auto left = tmp_stream.read_u32_le();
         s16 prev_sample = tmp_stream.read_u16_le();

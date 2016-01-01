@@ -5,7 +5,7 @@ using namespace au;
 using namespace au::io;
 
 void tests::stream_test(
-    const std::function<std::unique_ptr<Stream>()> &factory,
+    const std::function<std::unique_ptr<IStream>()> &factory,
     const std::function<void()> &cleanup)
 {
     {

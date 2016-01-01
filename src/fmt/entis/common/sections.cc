@@ -6,15 +6,15 @@ using namespace au::fmt::entis::common;
 
 struct SectionReader::Priv final
 {
-    Priv(io::Stream &stream) : stream(stream)
+    Priv(io::IStream &stream) : stream(stream)
     {
     }
 
     std::vector<Section> sections;
-    io::Stream &stream;
+    io::IStream &stream;
 };
 
-SectionReader::SectionReader(io::Stream &stream) : p(new Priv(stream))
+SectionReader::SectionReader(io::IStream &stream) : p(new Priv(stream))
 {
     while (!stream.eof())
     {

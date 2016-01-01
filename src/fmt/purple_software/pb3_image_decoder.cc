@@ -67,7 +67,7 @@ static bstr custom_lzss_decompress(
     return output;
 }
 
-static res::Image unpack_v1(const Header &header, io::Stream &input_stream)
+static res::Image unpack_v1(const Header &header, io::IStream &input_stream)
 {
     const auto channel_count = header.depth >> 3;
     const auto stride = header.width * channel_count;
@@ -163,7 +163,7 @@ static res::Image unpack_v1(const Header &header, io::Stream &input_stream)
     return output_image;
 }
 
-static res::Image unpack_v2(const Header &header, io::Stream &input_stream)
+static res::Image unpack_v2(const Header &header, io::IStream &input_stream)
 {
     input_stream.seek(0x2C);
 
@@ -199,7 +199,7 @@ static res::Image unpack_v2(const Header &header, io::Stream &input_stream)
     return output_image;
 }
 
-static res::Image unpack_v3(const Header &header, io::Stream &input_stream)
+static res::Image unpack_v3(const Header &header, io::IStream &input_stream)
 {
     const auto jbp1_data = input_stream.seek(0x34).read_to_eof();
     return res::Image(
@@ -209,7 +209,7 @@ static res::Image unpack_v3(const Header &header, io::Stream &input_stream)
         res::PixelFormat::BGR888);
 }
 
-static res::Image unpack_v5(const Header &header, io::Stream &input_stream)
+static res::Image unpack_v5(const Header &header, io::IStream &input_stream)
 {
     const auto channel_count = header.depth >> 3;
     const auto stride = header.width * channel_count;
@@ -259,7 +259,7 @@ static res::Image unpack_v5(const Header &header, io::Stream &input_stream)
 }
 
 static res::Image unpack_v6(
-    const Logger &logger, const Header &header, io::Stream &input_stream)
+    const Logger &logger, const Header &header, io::IStream &input_stream)
 {
     static const auto name_key =
         "\xA6\x75\xF3\x9C\xC5\x69\x78\xA3"
@@ -350,7 +350,7 @@ static res::Image unpack_v6(
     return output_image;
 }
 
-static std::unique_ptr<io::Stream> decrypt(const bstr &input)
+static std::unique_ptr<io::IStream> decrypt(const bstr &input)
 {
     auto output_stream = std::make_unique<io::MemoryStream>(input);
     output_stream->seek(output_stream->size() - 0x2F);
@@ -370,7 +370,7 @@ static std::unique_ptr<io::Stream> decrypt(const bstr &input)
     return std::move(output_stream);
 }
 
-static Header read_header(io::Stream &input_stream)
+static Header read_header(io::IStream &input_stream)
 {
     input_stream.seek(0x18);
     Header header;

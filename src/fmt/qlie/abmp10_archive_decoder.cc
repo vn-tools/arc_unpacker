@@ -32,7 +32,7 @@ static const bstr magic_data13 = "abdata13\0\0\0\0\0\0\0\0"_b;
 static const bstr magic_image10 = "abimage10\0\0\0\0\0\0\0"_b;
 static const bstr magic_sound10 = "absound10\0\0\0\0\0\0\0"_b;
 
-static int guess_version(io::Stream &arc_stream)
+static int guess_version(io::IStream &arc_stream)
 {
     bstr magic = arc_stream.read(16);
     if (magic == magic10)

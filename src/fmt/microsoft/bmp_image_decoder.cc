@@ -42,7 +42,7 @@ static u64 rotr(u64 value, size_t value_size, size_t how_much)
     return rotl(value, value_size, value_size - how_much);
 }
 
-static Header read_header(io::Stream &input_stream)
+static Header read_header(io::IStream &input_stream)
 {
     Header h;
     h.data_offset = input_stream.read_u32_le();
@@ -147,7 +147,7 @@ static Header read_header(io::Stream &input_stream)
 }
 
 static res::Image get_image_from_palette(
-    io::Stream &input_stream,
+    io::IStream &input_stream,
     const Header &header,
     const res::Palette &palette)
 {
@@ -168,7 +168,7 @@ static res::Image get_image_from_palette(
 }
 
 static std::unique_ptr<res::Image> get_image_without_palette_fast24(
-    io::Stream &input_stream, const Header &header)
+    io::IStream &input_stream, const Header &header)
 {
     auto image = std::make_unique<res::Image>(header.width, header.height);
     for (const auto y : algo::range(header.height))
@@ -182,7 +182,7 @@ static std::unique_ptr<res::Image> get_image_without_palette_fast24(
 }
 
 static std::unique_ptr<res::Image> get_image_without_palette_fast32(
-    io::Stream &input_stream, const Header &header)
+    io::IStream &input_stream, const Header &header)
 {
     auto image = std::make_unique<res::Image>(header.width, header.height);
     for (const auto y : algo::range(header.height))
@@ -197,7 +197,7 @@ static std::unique_ptr<res::Image> get_image_without_palette_fast32(
 }
 
 static std::unique_ptr<res::Image> get_image_without_palette_generic(
-    io::Stream &input_stream, const Header &header)
+    io::IStream &input_stream, const Header &header)
 {
     auto image = std::make_unique<res::Image>(header.width, header.height);
     double multipliers[4];
@@ -227,7 +227,7 @@ static std::unique_ptr<res::Image> get_image_without_palette_generic(
 }
 
 static res::Image get_image_without_palette(
-    io::Stream &input_stream, const Header &header)
+    io::IStream &input_stream, const Header &header)
 {
     std::unique_ptr<res::Image> image;
 

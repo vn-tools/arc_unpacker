@@ -4,6 +4,7 @@
 #include "err.h"
 #include "fmt/wild_bug/wpx/retrieval.h"
 #include "fmt/wild_bug/wpx/transcription.h"
+#include "io/memory_stream.h"
 #include "io/msb_bit_reader.h"
 
 using namespace au;
@@ -24,18 +25,18 @@ namespace
 
 struct Decoder::Priv final
 {
-    Priv(io::Stream &stream);
+    Priv(io::IStream &stream);
 
-    io::Stream &stream;
+    io::IStream &stream;
     std::string tag;
     std::map<u8, Section> sections;
 };
 
-Decoder::Priv::Priv(io::Stream &stream) : stream(stream)
+Decoder::Priv::Priv(io::IStream &stream) : stream(stream)
 {
 }
 
-Decoder::Decoder(io::Stream &stream) : p(new Priv(stream))
+Decoder::Decoder(io::IStream &stream) : p(new Priv(stream))
 {
     if (stream.read(magic.size()) != magic)
         throw err::RecognitionError();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/stream.h"
+#include "io/istream.h"
 #include "types.h"
 
 namespace au {
@@ -11,6 +11,6 @@ namespace glib {
         const bstr &input, const size_t output_size);
 
     bstr custom_lzss_decompress(
-        io::Stream &input_stream, const size_t output_size);
+        io::IStream &input_stream, const size_t output_size);
 
 } } }

@@ -11,8 +11,8 @@ static const bstr magic = "\x89PNG"_b;
 
 static void read_handler(png_structp png_ptr, png_bytep output, png_size_t size)
 {
-    auto stream = reinterpret_cast<io::Stream*>(png_get_io_ptr(png_ptr));
-    const auto input = stream->read(size);
+    auto input_stream = reinterpret_cast<io::IStream*>(png_get_io_ptr(png_ptr));
+    const auto input = input_stream->read(size);
     std::memcpy(output, input.get<u8>(), size);
 }
 

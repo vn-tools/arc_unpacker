@@ -19,7 +19,7 @@ namespace
 }
 
 static std::unique_ptr<res::Palette> read_palette(
-    io::Stream &stream, const Chunk &chunk)
+    io::IStream &stream, const Chunk &chunk)
 {
     stream.seek(chunk.offset + 0x14);
     const auto format_id = stream.read_u16_le();
@@ -38,7 +38,7 @@ static std::unique_ptr<res::Palette> read_palette(
 }
 
 static bstr read_data(
-    io::Stream &stream,
+    io::IStream &stream,
     const size_t width,
     const size_t height,
     const size_t bpp,
@@ -67,7 +67,7 @@ static bstr read_data(
 }
 
 static std::unique_ptr<res::Image> read_image(
-    io::Stream &stream,
+    io::IStream &stream,
     const Chunk &chunk,
     std::unique_ptr<res::Palette> palette)
 {

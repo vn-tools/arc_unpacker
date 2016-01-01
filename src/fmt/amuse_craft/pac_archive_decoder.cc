@@ -16,35 +16,35 @@ namespace
     };
 }
 
-static int detect_version(io::Stream &stream)
+static int detect_version(io::IStream &input_stream)
 {
     try
     {
-        stream.seek(0);
-        const auto file_count = stream.read_u16_le();
-        stream.seek(0x3FE);
-        stream.skip((file_count - 1) * (16 + 8));
-        stream.skip(16);
-        const auto last_entry_offset = stream.read_u32_le();
-        const auto last_entry_size = stream.read_u32_le();
-        if (last_entry_offset + last_entry_size == stream.size())
+        input_stream.seek(0);
+        const auto file_count = input_stream.read_u16_le();
+        input_stream.seek(0x3FE);
+        input_stream.skip((file_count - 1) * (16 + 8));
+        input_stream.skip(16);
+        const auto last_entry_offset = input_stream.read_u32_le();
+        const auto last_entry_size = input_stream.read_u32_le();
+        if (last_entry_offset + last_entry_size == input_stream.size())
             return 1;
     }
-    catch (...) { }
+    catch (...) {}
 
     try
     {
-        stream.seek(magic.size() + 4);
-        const auto file_count = stream.read_u32_le();
-        stream.seek(0x804);
-        stream.skip((file_count - 1) * (32 + 8));
-        stream.skip(32);
-        const auto last_entry_offset = stream.read_u32_le();
-        const auto last_entry_size = stream.read_u32_le();
-        if (last_entry_offset + last_entry_size == stream.size())
+        input_stream.seek(magic.size() + 4);
+        const auto file_count = input_stream.read_u32_le();
+        input_stream.seek(0x804);
+        input_stream.skip((file_count - 1) * (32 + 8));
+        input_stream.skip(32);
+        const auto last_entry_offset = input_stream.read_u32_le();
+        const auto last_entry_size = input_stream.read_u32_le();
+        if (last_entry_offset + last_entry_size == input_stream.size())
             return 2;
     }
-    catch (...) { }
+    catch (...) {}
 
     throw err::RecognitionError();
 }

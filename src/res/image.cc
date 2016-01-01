@@ -33,7 +33,7 @@ Image::Image(
 Image::Image(
     const size_t width,
     const size_t height,
-    io::Stream &input_stream,
+    io::IStream &input_stream,
     const PixelFormat fmt) :
         Image(
             width,
@@ -56,7 +56,7 @@ Image::Image(
 Image::Image(
     const size_t width,
     const size_t height,
-    io::Stream &input_stream,
+    io::IStream &input_stream,
     const Palette &palette)
         : Image(width, height, input_stream, PixelFormat::Gray8)
 {

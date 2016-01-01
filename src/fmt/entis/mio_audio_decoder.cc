@@ -14,47 +14,47 @@ static const bstr magic2 = "\x00\x01\x00\x03\x00\x00\x00\x00"_b;
 static const bstr magic3 = "Music Interleaved and Orthogonal transformed"_b;
 
 static audio::MioHeader read_header(
-    io::Stream &stream, common::SectionReader &section_reader)
+    io::IStream &input_stream, common::SectionReader &section_reader)
 {
     auto header_section = section_reader.get_section("Header");
-    stream.seek(header_section.offset);
-    common::SectionReader header_section_reader(stream);
+    input_stream.seek(header_section.offset);
+    common::SectionReader header_section_reader(input_stream);
     header_section = header_section_reader.get_section("SoundInf");
-    stream.seek(header_section.offset);
+    input_stream.seek(header_section.offset);
 
     audio::MioHeader header;
-    header.version = stream.read_u32_le();
+    header.version = input_stream.read_u32_le();
     header.transformation
-        = static_cast<common::Transformation>(stream.read_u32_le());
+        = static_cast<common::Transformation>(input_stream.read_u32_le());
     header.architecture
-        = static_cast<common::Architecture>(stream.read_u32_le());
+        = static_cast<common::Architecture>(input_stream.read_u32_le());
 
-    header.channel_count   = stream.read_u32_le();
-    header.sample_rate     = stream.read_u32_le();
-    header.blockset_count  = stream.read_u32_le();
-    header.subband_degree  = stream.read_u32_le();
-    header.sample_count    = stream.read_u32_le();
-    header.lapped_degree   = stream.read_u32_le();
-    header.bits_per_sample = stream.read_u32_le();
+    header.channel_count   = input_stream.read_u32_le();
+    header.sample_rate     = input_stream.read_u32_le();
+    header.blockset_count  = input_stream.read_u32_le();
+    header.subband_degree  = input_stream.read_u32_le();
+    header.sample_count    = input_stream.read_u32_le();
+    header.lapped_degree   = input_stream.read_u32_le();
+    header.bits_per_sample = input_stream.read_u32_le();
     return header;
 }
 
 static std::vector<audio::MioChunk> read_chunks(
-    io::Stream &stream, common::SectionReader &section_reader)
+    io::IStream &input_stream, common::SectionReader &section_reader)
 {
     auto stream_section = section_reader.get_section("Stream");
-    stream.seek(stream_section.offset);
-    common::SectionReader chunk_section_reader(stream);
+    input_stream.seek(stream_section.offset);
+    common::SectionReader chunk_section_reader(input_stream);
     std::vector<audio::MioChunk> chunks;
     for (auto &chunk_section : chunk_section_reader.get_sections("SoundStm"))
     {
-        stream.seek(chunk_section.offset);
+        input_stream.seek(chunk_section.offset);
         audio::MioChunk chunk;
-        chunk.version = stream.read_u8();
-        chunk.initial = stream.read_u8() > 0;
-        stream.skip(2);
-        chunk.sample_count = stream.read_u32_le();
-        chunk.data = stream.read(chunk_section.size - 8);
+        chunk.version = input_stream.read_u8();
+        chunk.initial = input_stream.read_u8() > 0;
+        input_stream.skip(2);
+        chunk.sample_count = input_stream.read_u32_le();
+        chunk.data = input_stream.read(chunk_section.size - 8);
         chunks.push_back(chunk);
     }
     return chunks;

@@ -62,7 +62,7 @@ static u64 padd(u64 a, u64 b)
         ^ ((a ^ b) & 0x8000000080000000);
 }
 
-static size_t get_magic_start(const io::Stream &arc_stream)
+static size_t get_magic_start(const io::IStream &arc_stream)
 {
     return arc_stream.size() - magic.size() - 8 - 4;
 }

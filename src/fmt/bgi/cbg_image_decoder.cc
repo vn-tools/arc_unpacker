@@ -17,12 +17,12 @@ namespace
 
 static const bstr magic = "CompressedBG___\x00"_b;
 
-static Version get_version(io::Stream &stream)
+static Version get_version(io::IStream &input_stream)
 {
     Version ret;
-    stream.peek(46, [&]()
+    input_stream.peek(46, [&]()
     {
-        ret = stream.read_u16_le() == 2
+        ret = input_stream.read_u16_le() == 2
             ? Version::Version2
             : Version::Version1;
     });

@@ -2,8 +2,8 @@
 
 #include <memory>
 #include <string>
+#include "io/base_stream.h"
 #include "io/path.h"
-#include "io/stream.h"
 
 namespace au {
 namespace io {
@@ -14,7 +14,7 @@ namespace io {
         Write = 2,
     };
 
-    class FileStream final : public Stream
+    class FileStream final : public BaseStream
     {
     public:
         FileStream(const path &path, const FileMode mode);
@@ -22,11 +22,11 @@ namespace io {
 
         size_t size() const override;
         size_t tell() const override;
-        Stream &seek(const size_t offset) override;
-        Stream &skip(const int offset) override;
-        Stream &truncate(const size_t new_size) override;
+        IStream &seek(const size_t offset) override;
+        IStream &skip(const int offset) override;
+        IStream &truncate(const size_t new_size) override;
 
-        std::unique_ptr<Stream> clone() const override;
+        std::unique_ptr<IStream> clone() const override;
 
     protected:
         void read_impl(void *destination, const size_t size) override;

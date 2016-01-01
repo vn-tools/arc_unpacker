@@ -111,7 +111,7 @@ static res::PixelFormat bpp_to_pixel_format(int bpp)
     throw err::UnsupportedBitDepthError(bpp);
 }
 
-std::unique_ptr<res::Image> Cbg1Decoder::decode(io::Stream &input_stream) const
+std::unique_ptr<res::Image> Cbg1Decoder::decode(io::IStream &input_stream) const
 {
     auto width = input_stream.read_u16_le();
     auto height = input_stream.read_u16_le();

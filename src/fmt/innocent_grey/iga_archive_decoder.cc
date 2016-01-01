@@ -24,13 +24,13 @@ namespace
     };
 }
 
-static u32 read_integer(io::Stream &stream)
+static u32 read_integer(io::IStream &input_stream)
 {
     u32 ret = 0;
     while (!(ret & 1))
     {
         ret <<= 7;
-        ret |= stream.read_u8();
+        ret |= input_stream.read_u8();
     }
     return ret >> 1;
 }

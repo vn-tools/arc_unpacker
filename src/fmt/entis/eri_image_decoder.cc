@@ -17,36 +17,36 @@ static const bstr magic2 = "\x00\x01\x00\x03\x00\x00\x00\x00"_b;
 static const bstr magic3 = "Entis Rasterized Image"_b;
 
 static image::EriHeader read_header(
-    io::Stream &stream, common::SectionReader &section_reader)
+    io::IStream &input_stream, common::SectionReader &section_reader)
 {
     auto header_section = section_reader.get_section("Header");
-    stream.seek(header_section.offset);
-    common::SectionReader header_section_reader(stream);
+    input_stream.seek(header_section.offset);
+    common::SectionReader header_section_reader(input_stream);
     header_section = header_section_reader.get_section("ImageInf");
-    stream.seek(header_section.offset);
+    input_stream.seek(header_section.offset);
 
     image::EriHeader header;
-    header.version = stream.read_u32_le();
+    header.version = input_stream.read_u32_le();
     header.transformation
-        = static_cast<common::Transformation>(stream.read_u32_le());
+        = static_cast<common::Transformation>(input_stream.read_u32_le());
     header.architecture
-        = static_cast<common::Architecture>(stream.read_u32_le());
+        = static_cast<common::Architecture>(input_stream.read_u32_le());
 
-    header.format_type      = stream.read_u32_le();
-    s32 width               = stream.read_u32_le();
-    s32 height              = stream.read_u32_le();
+    header.format_type      = input_stream.read_u32_le();
+    s32 width               = input_stream.read_u32_le();
+    s32 height              = input_stream.read_u32_le();
     header.width            = std::abs(width);
     header.height           = std::abs(height);
     header.flip             = height > 0;
-    header.bit_depth        = stream.read_u32_le();
-    header.clipped_pixel    = stream.read_u32_le();
-    header.sampling_flags   = stream.read_u32_le();
-    header.quantumized_bits = stream.read_u64_le();
-    header.allotted_bits    = stream.read_u64_le();
-    header.blocking_degree  = stream.read_u32_le();
-    header.lapped_block     = stream.read_u32_le();
-    header.frame_transform  = stream.read_u32_le();
-    header.frame_degree     = stream.read_u32_le();
+    header.bit_depth        = input_stream.read_u32_le();
+    header.clipped_pixel    = input_stream.read_u32_le();
+    header.sampling_flags   = input_stream.read_u32_le();
+    header.quantumized_bits = input_stream.read_u64_le();
+    header.allotted_bits    = input_stream.read_u64_le();
+    header.blocking_degree  = input_stream.read_u32_le();
+    header.lapped_block     = input_stream.read_u32_le();
+    header.frame_transform  = input_stream.read_u32_le();
+    header.frame_degree     = input_stream.read_u32_le();
     return header;
 }
 

@@ -7,7 +7,7 @@ using namespace au;
 using namespace au::fmt::bgi;
 using namespace au::fmt::bgi::cbg;
 
-bstr cbg::read_decrypted_data(io::Stream &input_stream)
+bstr cbg::read_decrypted_data(io::IStream &input_stream)
 {
     u32 key = input_stream.read_u32_le();
     const u32 data_size = input_stream.read_u32_le();
@@ -34,7 +34,7 @@ bstr cbg::read_decrypted_data(io::Stream &input_stream)
     return data;
 }
 
-u32 cbg::read_variable_data(io::Stream &input_stream)
+u32 cbg::read_variable_data(io::IStream &input_stream)
 {
     u8 current;
     u32 result = 0;
@@ -48,7 +48,7 @@ u32 cbg::read_variable_data(io::Stream &input_stream)
     return result;
 }
 
-FreqTable cbg::read_freq_table(io::Stream &input_stream, size_t tree_size)
+FreqTable cbg::read_freq_table(io::IStream &input_stream, size_t tree_size)
 {
     FreqTable freq_table(tree_size);
     for (auto i : algo::range(tree_size))

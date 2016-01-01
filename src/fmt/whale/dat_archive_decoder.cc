@@ -144,7 +144,7 @@ static void transform_script_content(
         *buffer_ptr++ ^= xor_value;
 }
 
-static u32 read_file_count(io::Stream &arc_stream)
+static u32 read_file_count(io::IStream &arc_stream)
 {
     return arc_stream.read_u32_le() ^ file_count_hash;
 }

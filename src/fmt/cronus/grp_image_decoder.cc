@@ -29,7 +29,7 @@ namespace
         EncType encryption_type;
     };
 
-    using HeaderFunc = std::function<Header(io::Stream&)>;
+    using HeaderFunc = std::function<Header(io::IStream&)>;
 }
 
 static void swap_decrypt(bstr &input, size_t encrypted_size)
@@ -66,7 +66,7 @@ static bool validate_header(const Header &header)
 
 static HeaderFunc reader_v1(u32 key1, u32 key2, u32 key3, EncType enc_type)
 {
-    return [=](io::Stream &input)
+    return [=](io::IStream &input)
     {
         Header header;
         header.width = input.read_u32_le() ^ key1;
@@ -84,7 +84,7 @@ static HeaderFunc reader_v1(u32 key1, u32 key2, u32 key3, EncType enc_type)
 
 static HeaderFunc reader_v2()
 {
-    return [](io::Stream &input)
+    return [](io::IStream &input)
     {
         Header header;
         input.skip(4);
