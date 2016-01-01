@@ -5,7 +5,7 @@
 using namespace au;
 
 std::vector<std::shared_ptr<io::File>> tests::flow_unpack(
-    const fmt::Registry &registry,
+    const dec::Registry &registry,
     const bool enable_nested_decoding,
     io::File &input_file)
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fmt/base_archive_decoder.h"
+#include "dec/base_archive_decoder.h"
 #include "logger.h"
 #include "util/virtual_file_system.h"
 
@@ -14,8 +14,8 @@ namespace flow {
     public:
         VirtualFileSystemBridge(
             const Logger &logger,
-            const fmt::BaseArchiveDecoder &decoder,
-            const std::shared_ptr<fmt::ArchiveMeta> meta,
+            const dec::BaseArchiveDecoder &decoder,
+            const std::shared_ptr<dec::ArchiveMeta> meta,
             const std::shared_ptr<io::File> input_file,
             const io::path &base_name);
 

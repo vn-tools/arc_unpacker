@@ -1,7 +1,7 @@
 #include "test_support/audio_support.h"
 #include "algo/format.h"
 #include "algo/range.h"
-#include "fmt/microsoft/wav_audio_decoder.h"
+#include "dec/microsoft/wav_audio_decoder.h"
 #include "test_support/catch.h"
 #include "test_support/file_support.h"
 
@@ -11,7 +11,7 @@ static res::Audio audio_from_file(io::File &file)
 {
     Logger dummy_logger;
     dummy_logger.mute();
-    const auto wav_audio_decoder = fmt::microsoft::WavAudioDecoder();
+    const auto wav_audio_decoder = dec::microsoft::WavAudioDecoder();
     return wav_audio_decoder.decode(dummy_logger, file);
 }
 

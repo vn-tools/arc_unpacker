@@ -11,7 +11,7 @@ TEST_CASE("FileStream", "[io][stream]")
     {
         static const bstr png_magic = "\x89PNG"_b;
         io::FileStream stream(
-            "tests/fmt/png/files/reimu_transparent.png", io::FileMode::Read);
+            "tests/dec/png/files/reimu_transparent.png", io::FileMode::Read);
         REQUIRE(stream.read(png_magic.size()) == png_magic);
     }
 

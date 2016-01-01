@@ -2,9 +2,9 @@
 #include <set>
 #include <stack>
 #include "algo/format.h"
+#include "dec/idecoder.h"
 #include "err.h"
 #include "flow/parallel_decoder_adapter.h"
-#include "fmt/idecoder.h"
 
 using namespace au;
 using namespace au::flow;
@@ -55,12 +55,12 @@ namespace
             const io::path &base_name,
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
             const FileFactoryWithLogger file_factory,
-            const std::shared_ptr<const fmt::IDecoder> origin_decoder);
+            const std::shared_ptr<const dec::IDecoder> origin_decoder);
 
         bool work() const override;
 
         const FileFactoryWithLogger file_factory;
-        const std::shared_ptr<const fmt::IDecoder> origin_decoder;
+        const std::shared_ptr<const dec::IDecoder> origin_decoder;
     };
 }
 
@@ -84,11 +84,11 @@ static bool save(
 }
 
 static std::vector<std::string> collect_linked_decoders(
-    const fmt::IDecoder &base_decoder, const fmt::Registry &registry)
+    const dec::IDecoder &base_decoder, const dec::Registry &registry)
 {
     std::set<std::string> known_formats;
-    std::vector<std::shared_ptr<fmt::IDecoder>> linked_decoders;
-    std::stack<const fmt::IDecoder*> decoders_to_inspect;
+    std::vector<std::shared_ptr<dec::IDecoder>> linked_decoders;
+    std::stack<const dec::IDecoder*> decoders_to_inspect;
     decoders_to_inspect.push(&base_decoder);
     while (!decoders_to_inspect.empty())
     {
@@ -107,7 +107,7 @@ static std::vector<std::string> collect_linked_decoders(
     return std::vector<std::string>(known_formats.begin(), known_formats.end());
 }
 
-static std::shared_ptr<fmt::IDecoder> guess_decoder(
+static std::shared_ptr<dec::IDecoder> guess_decoder(
     const BaseParallelUnpackingTask &task,
     const std::vector<std::string> &available_decoders,
     io::File &file,
@@ -116,7 +116,7 @@ static std::shared_ptr<fmt::IDecoder> guess_decoder(
     task.logger.info(
         "guessing decoder among %d decoders...\n", available_decoders.size());
 
-    std::map<std::string, std::shared_ptr<fmt::IDecoder>> matching_decoders;
+    std::map<std::string, std::shared_ptr<dec::IDecoder>> matching_decoders;
     for (const auto &name : available_decoders)
     {
         const auto current_decoder
@@ -162,7 +162,7 @@ static std::shared_ptr<fmt::IDecoder> guess_decoder(
 ParallelUnpackerContext::ParallelUnpackerContext(
     const Logger &logger,
     const IFileSaver &file_saver,
-    const fmt::Registry &registry,
+    const dec::Registry &registry,
     const bool enable_nested_decoding,
     const std::vector<std::string> &arguments,
     const std::vector<std::string> &available_decoders) :
@@ -278,7 +278,7 @@ ProcessOutputFileTask::ProcessOutputFileTask(
     const io::path &base_name,
     const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
     const FileFactoryWithLogger file_factory,
-    const std::shared_ptr<const fmt::IDecoder> origin_decoder) :
+    const std::shared_ptr<const dec::IDecoder> origin_decoder) :
         BaseParallelUnpackingTask(
             unpacker,
             task_scheduler,
@@ -390,7 +390,7 @@ void ParallelUnpacker::add_input_file(
 
 void ParallelUnpacker::save_file(
     const FileFactoryWithLogger file_factory,
-    const fmt::BaseDecoder &origin_decoder,
+    const dec::BaseDecoder &origin_decoder,
     const std::shared_ptr<const BaseParallelUnpackingTask> parent_task)
 {
     p->task_scheduler.push_front(

@@ -1,6 +1,6 @@
 #include "flow/parallel_decoder_adapter.h"
+#include "dec/naming_strategies.h"
 #include "flow/vfs_bridge.h"
-#include "fmt/naming_strategies.h"
 #include "util/file_from_audio.h"
 #include "util/file_from_image.h"
 
@@ -18,10 +18,10 @@ ParallelDecoderAdapter::~ParallelDecoderAdapter()
 {
 }
 
-void ParallelDecoderAdapter::visit(const fmt::BaseArchiveDecoder &decoder)
+void ParallelDecoderAdapter::visit(const dec::BaseArchiveDecoder &decoder)
 {
     auto input_file = this->input_file;
-    auto meta = std::shared_ptr<fmt::ArchiveMeta>(
+    auto meta = std::shared_ptr<dec::ArchiveMeta>(
         decoder.read_meta(parent_task->logger, *input_file));
     parent_task->logger.info(
         "archive contains %d files.\n", meta->entries.size());
@@ -47,7 +47,7 @@ void ParallelDecoderAdapter::visit(const fmt::BaseArchiveDecoder &decoder)
     }
 }
 
-void ParallelDecoderAdapter::visit(const fmt::BaseFileDecoder &decoder)
+void ParallelDecoderAdapter::visit(const dec::BaseFileDecoder &decoder)
 {
     auto input_file = this->input_file;
     parent_task->unpacker.save_file(
@@ -60,7 +60,7 @@ void ParallelDecoderAdapter::visit(const fmt::BaseFileDecoder &decoder)
         parent_task);
 }
 
-void ParallelDecoderAdapter::visit(const fmt::BaseImageDecoder &decoder)
+void ParallelDecoderAdapter::visit(const dec::BaseImageDecoder &decoder)
 {
     auto input_file = this->input_file;
     parent_task->unpacker.save_file(
@@ -74,7 +74,7 @@ void ParallelDecoderAdapter::visit(const fmt::BaseImageDecoder &decoder)
         parent_task);
 }
 
-void ParallelDecoderAdapter::visit(const fmt::BaseAudioDecoder &decoder)
+void ParallelDecoderAdapter::visit(const dec::BaseAudioDecoder &decoder)
 {
     auto input_file = this->input_file;
     parent_task->unpacker.save_file(

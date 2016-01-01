@@ -12,7 +12,7 @@ static void navigate_to_random_place(io::IStream &input_stream)
 }
 
 std::vector<std::shared_ptr<io::File>> tests::unpack(
-    const fmt::BaseArchiveDecoder &decoder, io::File &input_file)
+    const dec::BaseArchiveDecoder &decoder, io::File &input_file)
 {
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));
@@ -30,7 +30,7 @@ std::vector<std::shared_ptr<io::File>> tests::unpack(
 }
 
 std::unique_ptr<io::File> tests::decode(
-    const fmt::BaseFileDecoder &decoder, io::File &input_file)
+    const dec::BaseFileDecoder &decoder, io::File &input_file)
 {
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));
@@ -41,7 +41,7 @@ std::unique_ptr<io::File> tests::decode(
 }
 
 res::Image tests::decode(
-    const fmt::BaseImageDecoder &decoder, io::File &input_file)
+    const dec::BaseImageDecoder &decoder, io::File &input_file)
 {
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));
@@ -52,7 +52,7 @@ res::Image tests::decode(
 }
 
 res::Audio tests::decode(
-    const fmt::BaseAudioDecoder &decoder, io::File &input_file)
+    const dec::BaseAudioDecoder &decoder, io::File &input_file)
 {
     navigate_to_random_place(input_file.stream);
     REQUIRE(decoder.is_recognized(input_file));

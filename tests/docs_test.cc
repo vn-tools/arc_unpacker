@@ -1,6 +1,6 @@
 #include <regex>
 #include "algo/str.h"
-#include "fmt/registry.h"
+#include "dec/registry.h"
 #include "io/file_stream.h"
 #include "test_support/catch.h"
 
@@ -43,10 +43,10 @@ TEST_CASE("Documentation", "[core]")
 {
     SECTION("--fmt switches contain hyphens rather than underscores")
     {
-        const auto &registry = fmt::Registry::instance();
+        const auto &registry = dec::Registry::instance();
         for (const auto &name : registry.get_decoder_names())
         {
-            INFO("Format contains underscore: " << name);
+            INFO("Decoder name contains underscore: " << name);
             REQUIRE(name.find_first_of("_") == name.npos);
         }
     }
@@ -54,16 +54,17 @@ TEST_CASE("Documentation", "[core]")
     SECTION("GAMELIST refers to valid --fmt switches")
     {
         const auto content = read_gamelist_file();
-        const auto &registry = fmt::Registry::instance();
+        const auto &registry = dec::Registry::instance();
 
-        const std::regex fmt_regex(
+        const std::regex decoder_name_regex(
             "--fmt=([^< ]*)",
             std::regex_constants::ECMAScript | std::regex_constants::icase);
 
-        for (const auto fmt : regex_range(fmt_regex, content, 1))
+        for (const auto decoder_name
+            : regex_range(decoder_name_regex, content, 1))
         {
-            INFO("Format not present in the registry: " << fmt);
-            REQUIRE(registry.has_decoder(fmt));
+            INFO("Decoder name not present in the registry: " << decoder_name);
+            REQUIRE(registry.has_decoder(decoder_name));
         }
     }
 

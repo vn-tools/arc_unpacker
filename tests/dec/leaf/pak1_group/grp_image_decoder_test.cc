@@ -1,0 +1,70 @@
+#include "dec/leaf/pak1_group/grp_image_decoder.h"
+#include "test_support/catch.h"
+#include "test_support/decoder_support.h"
+#include "test_support/file_support.h"
+#include "test_support/image_support.h"
+#include "util/file_from_image.h"
+#include "util/virtual_file_system.h"
+
+using namespace au;
+using namespace au::dec::leaf;
+
+static const std::string pak1_dir = "tests/dec/leaf/files/pak1/";
+static const std::string grp_dir = "tests/dec/leaf/files/grp/";
+
+static void do_test(
+    const std::string &input_path,
+    const std::string &palette_path,
+    const std::string &mask_path,
+    const std::string &expected_path)
+{
+    const auto decoder = GrpImageDecoder();
+    const auto input_file = tests::file_from_path(input_path);
+    if (!palette_path.empty())
+    {
+        util::VirtualFileSystem::register_file(palette_path, [&]()
+            {
+                return tests::file_from_path(palette_path);
+            });
+    }
+    if (!mask_path.empty())
+    {
+        util::VirtualFileSystem::register_file(mask_path, [&]()
+            {
+                return tests::file_from_path(mask_path);
+            });
+    }
+    const auto expected_file = tests::file_from_path(expected_path);
+    const auto actual_image = tests::decode(decoder, *input_file);
+    tests::compare_images(*expected_file, actual_image);
+}
+
+TEST_CASE("Leaf GRP images", "[dec]")
+{
+    SECTION("Palettes")
+    {
+        do_test(
+            pak1_dir + "leaflogo-out.grp",
+            pak1_dir + "leaflogo-out.c16",
+            "",
+            grp_dir + "leaflogo-out.png");
+}
+
+    SECTION("Palettes, variant with extra 0 bytes at beginning")
+    {
+        do_test(
+            pak1_dir + "leaf-out.grp",
+            pak1_dir + "leaf-out.c16",
+            "",
+            grp_dir + "leaf-out.png");
+    }
+
+    SECTION("Palettes and masks")
+    {
+        do_test(
+            grp_dir + "ase200.grp",
+            grp_dir + "ase200.c16",
+            grp_dir + "ase200.msk",
+            grp_dir + "ase200-out.png");
+    }
+}

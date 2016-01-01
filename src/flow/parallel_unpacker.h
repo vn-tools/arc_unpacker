@@ -2,10 +2,10 @@
 
 #include <map>
 #include <memory>
+#include "dec/base_decoder.h"
+#include "dec/registry.h"
 #include "flow/ifile_saver.h"
 #include "flow/task_scheduler.h"
-#include "fmt/base_decoder.h"
-#include "fmt/registry.h"
 #include "logger.h"
 
 namespace au {
@@ -22,14 +22,14 @@ namespace flow {
         ParallelUnpackerContext(
             const Logger &logger,
             const IFileSaver &file_saver,
-            const fmt::Registry &registry,
+            const dec::Registry &registry,
             const bool enable_nested_decoding,
             const std::vector<std::string> &arguments,
             const std::vector<std::string> &available_decoders);
 
         const Logger &logger;
         const IFileSaver &file_saver;
-        const fmt::Registry &registry;
+        const dec::Registry &registry;
         const bool enable_nested_decoding;
         const std::vector<std::string> arguments;
         const std::vector<std::string> available_decoders;
@@ -67,7 +67,7 @@ namespace flow {
 
         void save_file(
             const FileFactoryWithLogger,
-            const fmt::BaseDecoder &origin_decoder,
+            const dec::BaseDecoder &origin_decoder,
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task);
 
         bool run(const size_t thread_count = 0);

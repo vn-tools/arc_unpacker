@@ -1,9 +1,9 @@
 #include "test_support/image_support.h"
 #include "algo/format.h"
 #include "algo/range.h"
-#include "fmt/jpeg/jpeg_image_decoder.h"
-#include "fmt/microsoft/bmp_image_decoder.h"
-#include "fmt/png/png_image_decoder.h"
+#include "dec/jpeg/jpeg_image_decoder.h"
+#include "dec/microsoft/bmp_image_decoder.h"
+#include "dec/png/png_image_decoder.h"
 #include "test_support/catch.h"
 #include "test_support/file_support.h"
 
@@ -32,15 +32,15 @@ static res::Image image_from_file(io::File &file)
     Logger dummy_logger;
     dummy_logger.mute();
 
-    static const auto png_image_decoder = fmt::png::PngImageDecoder();
+    static const auto png_image_decoder = dec::png::PngImageDecoder();
     if (png_image_decoder.is_recognized(file))
         return png_image_decoder.decode(dummy_logger, file);
 
-    static const auto bmp_image_decoder = fmt::microsoft::BmpImageDecoder();
+    static const auto bmp_image_decoder = dec::microsoft::BmpImageDecoder();
     if (bmp_image_decoder.is_recognized(file))
         return bmp_image_decoder.decode(dummy_logger, file);
 
-    static const auto jpeg_image_decoder = fmt::jpeg::JpegImageDecoder();
+    static const auto jpeg_image_decoder = dec::jpeg::JpegImageDecoder();
     if (jpeg_image_decoder.is_recognized(file))
         return jpeg_image_decoder.decode(dummy_logger, file);
 

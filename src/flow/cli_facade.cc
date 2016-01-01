@@ -4,10 +4,10 @@
 #include <map>
 #include "algo/range.h"
 #include "arg_parser.h"
+#include "dec/idecoder.h"
+#include "dec/registry.h"
 #include "flow/file_saver_hdd.h"
 #include "flow/parallel_unpacker.h"
-#include "fmt/idecoder.h"
-#include "fmt/registry.h"
 #include "io/file_system.h"
 #include "util/virtual_file_system.h"
 #include "version.h"
@@ -19,7 +19,7 @@ namespace
 {
     struct Options final
     {
-        std::string format;
+        std::string decoder;
         io::path output_dir;
         std::vector<io::path> input_paths;
         bool overwrite;
@@ -27,7 +27,7 @@ namespace
         bool enable_virtual_file_system;
         bool should_show_help;
         bool should_show_version;
-        bool should_list_fmt;
+        bool should_list_decoders;
         unsigned int thread_count;
     };
 }
@@ -40,27 +40,27 @@ public:
 
 private:
     void register_cli_options();
-    void print_fmt_list() const;
+    void print_decoder_list() const;
     void print_cli_help() const;
     void parse_cli_options();
 
     Logger &logger;
     const std::vector<std::string> arguments;
-    const fmt::Registry &registry;
+    const dec::Registry &registry;
 
     ArgParser arg_parser;
     Options options;
 };
 
 CliFacade::Priv::Priv(Logger &logger, const std::vector<std::string> &arguments)
-    : logger(logger), arguments(arguments), registry(fmt::Registry::instance())
+    : logger(logger), arguments(arguments), registry(dec::Registry::instance())
 {
     register_cli_options();
     arg_parser.parse(arguments);
     parse_cli_options();
 }
 
-void CliFacade::Priv::print_fmt_list() const
+void CliFacade::Priv::print_decoder_list() const
 {
     for (auto &name : registry.get_decoder_names())
         logger.info("%s\n", name.c_str());
@@ -81,12 +81,12 @@ Usage: arc_unpacker [options] [fmt_options] input_path [input_path...]
 
     arg_parser.print_help(logger);
 
-    if (!options.format.empty())
+    if (!options.decoder.empty())
     {
-        auto decoder = registry.create_decoder(options.format);
+        auto decoder = registry.create_decoder(options.decoder);
         ArgParser decoder_arg_parser;
         decoder->register_cli_options(decoder_arg_parser);
-        logger.info("[fmt_options] specific to " + options.format + ":\n\n");
+        logger.info("[fmt_options] specific to " + options.decoder + ":\n\n");
         decoder_arg_parser.print_help(logger);
     }
     else
@@ -160,7 +160,7 @@ void CliFacade::Priv::parse_cli_options()
     options.should_show_version
         = arg_parser.has_flag("-v") || arg_parser.has_flag("--version");
 
-    options.should_list_fmt
+    options.should_list_decoders
         = arg_parser.has_flag("-l") || arg_parser.has_flag("--list-fmt");
 
     options.overwrite
@@ -197,9 +197,9 @@ void CliFacade::Priv::parse_cli_options()
         options.output_dir = "./";
 
     if (arg_parser.has_switch("-f"))
-        options.format = arg_parser.get_switch("-f");
+        options.decoder = arg_parser.get_switch("-f");
     if (arg_parser.has_switch("--fmt"))
-        options.format = arg_parser.get_switch("--fmt");
+        options.decoder = arg_parser.get_switch("--fmt");
 
     for (const auto &stray : arg_parser.get_stray())
     {
@@ -230,9 +230,9 @@ int CliFacade::Priv::run() const
         return 0;
     }
 
-    if (options.should_list_fmt)
+    if (options.should_list_decoders)
     {
-        print_fmt_list();
+        print_decoder_list();
         return 0;
     }
 
@@ -243,9 +243,9 @@ int CliFacade::Priv::run() const
         return 1;
     }
 
-    const auto available_decoders = options.format.empty()
+    const auto available_decoders = options.decoder.empty()
         ? registry.get_decoder_names()
-        : std::vector<std::string>{options.format};
+        : std::vector<std::string>{options.decoder};
 
     FileSaverHdd file_saver(options.output_dir, options.overwrite);
     ParallelUnpackerContext context(
