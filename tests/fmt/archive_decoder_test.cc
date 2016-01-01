@@ -1,4 +1,6 @@
 #include "fmt/base_archive_decoder.h"
+#include "algo/format.h"
+#include "algo/range.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
@@ -83,7 +85,7 @@ std::unique_ptr<io::File> TestArchiveDecoder::read_file_impl(
 
 static std::unique_ptr<io::File> make_archive(
     const io::path &archive_name,
-    const std::initializer_list<std::unique_ptr<io::File>> &files)
+    const std::vector<std::shared_ptr<io::File>> &files)
 {
     auto output_file = std::make_unique<io::File>();
     output_file->path = archive_name;
@@ -97,33 +99,56 @@ static std::unique_ptr<io::File> make_archive(
     return output_file;
 }
 
+static void test_many_files(
+    const TestArchiveDecoder &decoder,
+    const std::string &prefix,
+    const size_t file_count,
+    const size_t format_size)
+{
+    std::vector<std::shared_ptr<io::File>> input_files;
+    for (const auto i : algo::range(file_count))
+        input_files.push_back(tests::stub_file("", ""_b));
+    auto archive_file = make_archive("path/test.archive", input_files);
+    const auto saved_files = tests::unpack(decoder, *archive_file);
+    REQUIRE((saved_files.size() == file_count));
+    for (const auto i : algo::range(file_count))
+    {
+        tests::compare_paths(
+            saved_files[i]->path,
+            algo::format("%s_%0*d.dat", prefix.c_str(), format_size, i));
+    }
+}
+
 template<NamingStrategy strategy>
     static void test_naming_strategy(const std::string &prefix)
 {
-    const TestArchiveDecoder test_archive_decoder(strategy);
+    const TestArchiveDecoder decoder(strategy);
+
+    SECTION("No files")
+    {
+        auto archive_file = make_archive("path/test.archive", {});
+        const auto saved_files = tests::unpack(decoder, *archive_file);
+        REQUIRE((saved_files.size() == 0));
+    }
 
     SECTION("Just one file")
     {
-        auto dummy_file = make_archive(
+        auto archive_file = make_archive(
             "path/test.archive", {tests::stub_file("", ""_b)});
-
-        const auto saved_files
-            = tests::unpack(test_archive_decoder, *dummy_file);
+        const auto saved_files = tests::unpack(decoder, *archive_file);
         REQUIRE((saved_files.size() == 1));
         tests::compare_paths(saved_files[0]->path, prefix + ".dat");
     }
 
-    SECTION("Multiple files")
+    SECTION("Two files")
     {
-        auto dummy_file = make_archive(
+        auto archive_file = make_archive(
             "path/test.archive",
             {
                 tests::stub_file("", ""_b),
                 tests::stub_file("", ""_b),
             });
-
-        const auto saved_files
-            = tests::unpack(test_archive_decoder, *dummy_file);
+        const auto saved_files = tests::unpack(decoder, *archive_file);
         REQUIRE((saved_files.size() == 2));
         tests::compare_paths(saved_files[0]->path, prefix + "_0.dat");
         tests::compare_paths(saved_files[1]->path, prefix + "_1.dat");
@@ -131,35 +156,39 @@ template<NamingStrategy strategy>
 
     SECTION("Mixed nameless and named files")
     {
-        auto dummy_file = make_archive(
+        auto archive_file = make_archive(
             "path/test.archive",
             {
                 tests::stub_file("", ""_b),
                 tests::stub_file("named", ""_b),
                 tests::stub_file("", ""_b),
             });
-
-        const auto saved_files
-            = tests::unpack(test_archive_decoder, *dummy_file);
+        const auto saved_files = tests::unpack(decoder, *archive_file);
         REQUIRE((saved_files.size() == 3));
         tests::compare_paths(saved_files[0]->path, prefix + "_0.dat");
         tests::compare_paths(saved_files[1]->path, "named");
         tests::compare_paths(saved_files[2]->path, prefix + "_1.dat");
     }
+
+    SECTION("Many files")
+    {
+        test_many_files(decoder, prefix, 9, 1);
+        test_many_files(decoder, prefix, 10, 2);
+        test_many_files(decoder, prefix, 11, 2);
+        test_many_files(decoder, prefix, 99, 2);
+        test_many_files(decoder, prefix, 100, 3);
+    }
 }
 
 TEST_CASE("Simple archive unpacks correctly", "[fmt_core]")
 {
-    const TestArchiveDecoder test_archive_decoder(NamingStrategy::Child);
-    io::File dummy_file;
-    dummy_file.path = "test.archive";
-    dummy_file.stream.write("deeply/nested/file.txt"_b);
-    dummy_file.stream.write_u8(0);
-    dummy_file.stream.write_u32_le(3);
-    dummy_file.stream.write("abc"_b);
-
-    const auto saved_files
-        = tests::unpack(test_archive_decoder, dummy_file);
+    const TestArchiveDecoder decoder(NamingStrategy::Child);
+    auto archive_file = make_archive(
+        "test.archive",
+        {
+            tests::stub_file("deeply/nested/file.txt", "abc"_b)
+        });
+    const auto saved_files = tests::unpack(decoder, *archive_file);
 
     REQUIRE(saved_files.size() == 1);
     tests::compare_paths(saved_files[0]->path, "deeply/nested/file.txt");
