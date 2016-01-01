@@ -85,12 +85,12 @@ namespace algo {
             Holder(T &&value) : value(static_cast<T&&>(value)) {}
             Holder(const T &value) : value(value) {}
 
-            virtual std::unique_ptr<IPlaceholder> clone() const override
+            std::unique_ptr<IPlaceholder> clone() const override
             {
                 return std::make_unique<Holder<T>>(value);
             }
 
-            virtual const std::type_info &type() const override
+            const std::type_info &type() const override
             {
                 return typeid(T);
             }
