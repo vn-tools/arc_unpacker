@@ -19,7 +19,7 @@ struct VirtualFileSystemBridge::Priv final
     {
         for (const auto &entry : meta->entries)
         {
-            util::VirtualFileSystem::register_file(
+            VirtualFileSystem::register_file(
                 get_target_name(entry->path),
                 [&logger, input_file, meta, &entry, &decoder]()
                 {
@@ -33,7 +33,7 @@ struct VirtualFileSystemBridge::Priv final
     {
         for (const auto &entry : meta->entries)
         {
-            util::VirtualFileSystem::unregister_file(
+            VirtualFileSystem::unregister_file(
                 get_target_name(entry->path));
         }
     }

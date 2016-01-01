@@ -3,7 +3,7 @@
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/virtual_file_system.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec::will;
@@ -149,7 +149,7 @@ bool WipfImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> WipfImageArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto mask_file = util::VirtualFileSystem::get_by_name(
+    auto mask_file = VirtualFileSystem::get_by_name(
         io::path(input_file.path).change_extension("msk").name());
     std::unique_ptr<ArchiveMeta> mask_meta;
     if (mask_file && !input_file.path.has_extension("msk"))

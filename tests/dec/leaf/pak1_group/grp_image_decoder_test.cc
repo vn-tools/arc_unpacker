@@ -3,7 +3,7 @@
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
-#include "util/virtual_file_system.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec::leaf;
@@ -21,14 +21,14 @@ static void do_test(
     const auto input_file = tests::file_from_path(input_path);
     if (!palette_path.empty())
     {
-        util::VirtualFileSystem::register_file(palette_path, [&]()
+        VirtualFileSystem::register_file(palette_path, [&]()
             {
                 return tests::file_from_path(palette_path);
             });
     }
     if (!mask_path.empty())
     {
-        util::VirtualFileSystem::register_file(mask_path, [&]()
+        VirtualFileSystem::register_file(mask_path, [&]()
             {
                 return tests::file_from_path(mask_path);
             });

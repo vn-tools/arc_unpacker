@@ -6,7 +6,6 @@
 #include "io/path.h"
 
 namespace au {
-namespace util {
 
     class VirtualFileSystem final
     {
@@ -27,4 +26,4 @@ namespace util {
         static std::unique_ptr<io::File> get_by_path(const io::path &path);
     };
 
-} }
+}

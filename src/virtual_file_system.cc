@@ -1,4 +1,4 @@
-#include "util/virtual_file_system.h"
+#include "virtual_file_system.h"
 #include <map>
 #include <mutex>
 #include <set>
@@ -7,7 +7,6 @@
 #include "io/file_system.h"
 
 using namespace au;
-using namespace au::util;
 
 static std::mutex mutex;
 static std::map<io::path, std::function<std::unique_ptr<io::File>()>> factories;

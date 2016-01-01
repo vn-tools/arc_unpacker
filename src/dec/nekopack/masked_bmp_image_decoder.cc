@@ -1,7 +1,7 @@
 #include "dec/nekopack/masked_bmp_image_decoder.h"
 #include "dec/microsoft/bmp_image_decoder.h"
 #include "err.h"
-#include "util/virtual_file_system.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec::nekopack;
@@ -14,7 +14,7 @@ bool MaskedBmpImageDecoder::is_recognized_impl(io::File &input_file) const
 res::Image MaskedBmpImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto base_file = util::VirtualFileSystem::get_by_name(
+    auto base_file = VirtualFileSystem::get_by_name(
         io::path(input_file.path).change_extension("bmp").name());
     if (!base_file)
         throw err::CorruptDataError("Missing base file");

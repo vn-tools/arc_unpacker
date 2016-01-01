@@ -9,8 +9,8 @@
 #include "flow/file_saver_hdd.h"
 #include "flow/parallel_unpacker.h"
 #include "io/file_system.h"
-#include "util/virtual_file_system.h"
 #include "version.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::flow;
@@ -187,7 +187,7 @@ void CliFacade::Priv::parse_cli_options()
         options.thread_count = 0;
 
     if (arg_parser.has_flag("--no-vfs"))
-        util::VirtualFileSystem::disable();
+        VirtualFileSystem::disable();
 
     if (arg_parser.has_switch("-o"))
         options.output_dir = arg_parser.get_switch("-o");
@@ -263,7 +263,7 @@ int CliFacade::Priv::run() const
             io::path(input_path).change_stem(input_path.stem() + "~").name(),
             [&]()
             {
-                util::VirtualFileSystem::register_directory(
+                VirtualFileSystem::register_directory(
                     io::absolute(input_path).parent());
                 return std::make_shared<io::File>(
                     io::absolute(input_path), io::FileMode::Read);

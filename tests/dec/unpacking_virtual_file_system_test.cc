@@ -4,7 +4,7 @@
 #include "test_support/catch.h"
 #include "test_support/file_support.h"
 #include "test_support/flow_support.h"
-#include "util/virtual_file_system.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec;
@@ -86,7 +86,7 @@ std::unique_ptr<io::File> TestFileDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto output_file = std::make_unique<io::File>();
-    auto other_file = util::VirtualFileSystem::get_by_stem("aside");
+    auto other_file = VirtualFileSystem::get_by_stem("aside");
     if (other_file)
     {
         output_file->stream.write(other_file->stream.seek(0).read_to_eof());

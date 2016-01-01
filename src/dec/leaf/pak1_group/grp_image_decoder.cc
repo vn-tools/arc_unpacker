@@ -1,6 +1,6 @@
 #include "dec/leaf/pak1_group/grp_image_decoder.h"
 #include "algo/range.h"
-#include "util/virtual_file_system.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec::leaf;
@@ -57,9 +57,9 @@ res::Image GrpImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto image = decode_image(input_file);
-    const auto mask_file = util::VirtualFileSystem::get_by_name(
+    const auto mask_file = VirtualFileSystem::get_by_name(
         io::path(input_file.path).change_extension("msk").name());
-    const auto palette_file = util::VirtualFileSystem::get_by_name(
+    const auto palette_file = VirtualFileSystem::get_by_name(
         io::path(input_file.path).change_extension("c16").name());
 
     if (palette_file)

@@ -4,7 +4,7 @@
 #include "dec/majiro/rc8_image_decoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/virtual_file_system.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec::majiro;
@@ -161,7 +161,7 @@ res::Image RctImageDecoder::decode_impl(
         const auto base_name
             = algo::trim_to_zero(input_file.stream.read(name_size).str());
 
-        auto base_file = util::VirtualFileSystem::get_by_name(base_name);
+        auto base_file = VirtualFileSystem::get_by_name(base_name);
         if (base_file)
         {
             std::vector<std::shared_ptr<dec::BaseImageDecoder>> decoders;

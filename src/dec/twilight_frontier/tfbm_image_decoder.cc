@@ -4,7 +4,7 @@
 #include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "util/virtual_file_system.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec::twilight_frontier;
@@ -35,7 +35,7 @@ res::Image TfbmImageDecoder::decode_impl(
     {
         const auto palette_path = input_file.path.parent()
             / algo::format("palette%03d.bmp", palette_number);
-        auto palette_file = util::VirtualFileSystem::get_by_path(palette_path);
+        auto palette_file = VirtualFileSystem::get_by_path(palette_path);
         if (!palette_file)
         {
             logger.warn("Palette %s not found\n", palette_path.c_str());

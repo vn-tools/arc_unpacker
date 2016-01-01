@@ -2,7 +2,7 @@
 
 #include "dec/base_archive_decoder.h"
 #include "logger.h"
-#include "util/virtual_file_system.h"
+#include "virtual_file_system.h"
 
 namespace au {
 namespace flow {

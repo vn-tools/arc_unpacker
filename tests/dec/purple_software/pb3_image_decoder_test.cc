@@ -3,7 +3,7 @@
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
-#include "util/virtual_file_system.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec::purple_software;
@@ -49,7 +49,7 @@ TEST_CASE("Purple Software PB3 images", "[dec]")
 
     SECTION("Version 6 with base images")
     {
-        util::VirtualFileSystem::register_file("fk1-al_a101", []()
+        VirtualFileSystem::register_file("fk1-al_a101", []()
             {
                 return tests::file_from_path(dir + "fk1-al_a101.png");
             });

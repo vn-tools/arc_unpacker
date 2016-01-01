@@ -9,7 +9,7 @@
 #include "err.h"
 #include "io/memory_stream.h"
 #include "ptr.h"
-#include "util/virtual_file_system.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec::purple_software;
@@ -270,7 +270,7 @@ static res::Image unpack_v6(
 
     res::Image output_image(header.width, header.height);
 
-    const auto base_file = util::VirtualFileSystem::get_by_stem(base_stem);
+    const auto base_file = VirtualFileSystem::get_by_stem(base_stem);
     if (base_file)
     {
         const std::vector<std::shared_ptr<dec::BaseImageDecoder>> decoders

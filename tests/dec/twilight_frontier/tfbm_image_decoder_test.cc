@@ -4,7 +4,7 @@
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 #include "test_support/image_support.h"
-#include "util/virtual_file_system.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec::twilight_frontier;
@@ -42,7 +42,7 @@ TEST_CASE("Twilight Frontier TFBM images", "[dec]")
     SECTION("8-bit, external palette")
     {
         const auto palette_path = dir + "palette000.bmp";
-        util::VirtualFileSystem::register_file(
+        VirtualFileSystem::register_file(
             palette_path,
             [&]()
             {
