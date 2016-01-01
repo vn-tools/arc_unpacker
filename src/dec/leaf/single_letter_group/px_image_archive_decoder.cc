@@ -1,10 +1,10 @@
 #include "dec/leaf/single_letter_group/px_image_archive_decoder.h"
 #include <array>
+#include "algo/call_stack_keeper.h"
 #include "algo/format.h"
 #include "algo/range.h"
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "util/call_stack_keeper.h"
 
 using namespace au;
 using namespace au::dec::leaf;
@@ -298,7 +298,7 @@ static bstr read_blocks(
 }
 
 static void read_meta(
-    util::CallStackKeeper &keeper,
+    algo::CallStackKeeper &keeper,
     io::IStream &input_stream,
     dec::ArchiveMeta &meta)
 {
@@ -362,7 +362,7 @@ std::unique_ptr<dec::ArchiveMeta> PxImageArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
-    util::CallStackKeeper keeper;
+    algo::CallStackKeeper keeper;
     ::read_meta(keeper, input_file.stream, *meta);
     return std::move(meta);
 }

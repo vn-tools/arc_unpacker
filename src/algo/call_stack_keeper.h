@@ -4,7 +4,7 @@
 #include <memory>
 
 namespace au {
-namespace util {
+namespace algo {
 
     class CallStackKeeper final
     {

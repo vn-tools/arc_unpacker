@@ -1,7 +1,7 @@
-#include "util/call_stack_keeper.h"
+#include "algo/call_stack_keeper.h"
 #include "err.h"
 
-using namespace au::util;
+using namespace au::algo;
 
 struct CallStackKeeper::Priv final
 {

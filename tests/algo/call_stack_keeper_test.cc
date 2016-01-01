@@ -1,13 +1,13 @@
-#include "util/call_stack_keeper.h"
+#include "algo/call_stack_keeper.h"
 #include "test_support/catch.h"
 
 using namespace au;
 
-TEST_CASE("Call stack keeper", "[util]")
+TEST_CASE("Call stack keeper", "[algo]")
 {
     SECTION("The action is invoked at all")
     {
-        util::CallStackKeeper keeper(3);
+        algo::CallStackKeeper keeper(3);
         bool executed = false;
         keeper.recurse([&]() { executed = true; });
         REQUIRE(executed);
@@ -15,7 +15,7 @@ TEST_CASE("Call stack keeper", "[util]")
 
     SECTION("Breaking recursion limit throws an exception")
     {
-        util::CallStackKeeper keeper(3);
+        algo::CallStackKeeper keeper(3);
         keeper.recurse([&]()
             {
                 keeper.recurse([&]()
@@ -37,7 +37,7 @@ TEST_CASE("Call stack keeper", "[util]")
 
     SECTION("Checking for recursion limit")
     {
-        util::CallStackKeeper keeper(2);
+        algo::CallStackKeeper keeper(2);
         REQUIRE(!keeper.recursion_limit_reached());
 
         keeper.recurse([&]()
@@ -55,7 +55,7 @@ TEST_CASE("Call stack keeper", "[util]")
 
     SECTION("Handling exceptions")
     {
-        util::CallStackKeeper keeper(1);
+        algo::CallStackKeeper keeper(1);
         REQUIRE(!keeper.recursion_limit_reached());
         REQUIRE_THROWS(keeper.recurse([&]()
             {
