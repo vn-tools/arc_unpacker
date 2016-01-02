@@ -20,9 +20,9 @@ static bstr decode_chunk_pcm16(
     const MioChunk &chunk,
     common::AbstractDecoder &decoder)
 {
-    auto sample_count = chunk.sample_count;
-    auto channel_count = header.channel_count;
-    auto total_sample_count = sample_count * channel_count;
+    const auto sample_count = chunk.sample_count;
+    const auto channel_count = header.channel_count;
+    const auto total_sample_count = sample_count * channel_count;
 
     if (chunk.initial)
         decoder.reset();
@@ -32,13 +32,13 @@ static bstr decode_chunk_pcm16(
     decoder.decode(decoded.get<u8>(), decoded.size());
 
     bstr mixed(total_sample_count * sizeof(s16));
-    for (auto i : algo::range(channel_count))
+    for (const auto i : algo::range(channel_count))
     {
-        auto offset = i * sample_count * sizeof(s16);
+        const auto offset = i * sample_count * sizeof(s16);
         u8 *source1_ptr = decoded.get<u8>() + offset;
         u8 *source2_ptr = source1_ptr + sample_count;
         u8 *target_ptr = mixed.get<u8>() + offset;
-        for (auto j : algo::range(sample_count))
+        for (const auto j : algo::range(sample_count))
         {
             s8 bytLow = source2_ptr[j];
             s8 bytHigh = source1_ptr[j];
@@ -48,14 +48,14 @@ static bstr decode_chunk_pcm16(
     }
 
     bstr output(total_sample_count * sizeof(s16));
-    auto source_ptr = mixed.get<s16>();
-    auto step = channel_count;
-    for (auto i : algo::range(channel_count))
+    const auto *source_ptr = mixed.get<s16>();
+    const auto step = channel_count;
+    for (const auto i : algo::range(channel_count))
     {
         auto target_ptr = output.get<s16>() + i;
         s16 value = 0;
         s16 delta = 0;
-        for (auto j : algo::range(sample_count))
+        for (const auto j : algo::range(sample_count))
         {
             delta += *source_ptr++;
             value += delta;

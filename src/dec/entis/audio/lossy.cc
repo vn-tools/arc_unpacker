@@ -57,24 +57,24 @@ struct LossyAudioDecoder::Priv final
     Priv(const MioHeader &header);
     ~Priv();
 
-    void initialize_with_degree(size_t subband_degree);
+    void initialize_with_degree(const size_t subband_degree);
 
     bstr decode_dct(const MioChunk &chunk);
     bstr decode_dct_mss(const MioChunk &chunk);
 
     void decode_lead_block();
-    void decode_post_block(s16 *output_ptr, size_t samples);
-    void decode_impl_block(s16 *output_ptr, size_t samples);
+    void decode_internal_block(s16 *output_ptr, const size_t samples);
+    void decode_post_block(s16 *output_ptr, const size_t samples);
 
     void decode_lead_block_mss();
-    void decode_post_block_mss(s16 *output_ptr, size_t samples);
-    void decode_impl_block_mss(s16 *output_ptr, size_t samples);
+    void decode_internal_block_mss(s16 *output_ptr, const size_t samples);
+    void decode_post_block_mss(s16 *output_ptr, const size_t samples);
 
     void dequantumize(
         float *destination,
         const s32 *quantumized,
-        s32 weight_code,
-        int coefficient);
+        const s32 weight_code,
+        const int coefficient);
 
     const MioHeader &header;
     std::unique_ptr<common::AbstractDecoder> decoder;
@@ -108,14 +108,14 @@ struct LossyAudioDecoder::Priv final
 
 static void init_dct_of_k_matrix()
 {
-    for (auto i : algo::range(1, max_dct_degree))
+    for (const auto i : algo::range(1, max_dct_degree))
     {
         int n = 1 << i;
         float *dct_of_k = dct_of_k_matrix[i];
         double nr = pi / (4.0 * n);
         double dr = nr + nr;
         double ir = nr;
-        for (auto j : algo::range(n))
+        for (const auto j : algo::range(n))
         {
             dct_of_k[j] = cos(ir);
             ir += dr;
@@ -123,7 +123,7 @@ static void init_dct_of_k_matrix()
     }
 }
 
-static int round32(float r)
+static int round32(const float r)
 {
     if (r >= 0.0)
         return floor(r + 0.5);
@@ -131,9 +131,9 @@ static int round32(float r)
 }
 
 static void round32_array(
-    s16 *output, int step, const float *source, size_t size)
+    s16 *output, const int step, const float *source, const size_t size)
 {
-    while (size--)
+    for (const auto i : algo::range(size))
     {
         s16 value = round32(*source++);
         if (value <= -0x8000)
@@ -146,34 +146,37 @@ static void round32_array(
     }
 }
 
-static void iplot(float *input, size_t dct_degree)
+static void iplot(float *input, const size_t dct_degree)
 {
-    auto degree_num = 1 << dct_degree;
-    for (auto i : algo::range(0, degree_num, 2))
+    const auto degree_num = 1 << dct_degree;
+    for (const auto i : algo::range(0, degree_num, 2))
     {
-        auto r1 = input[i];
-        auto r2 = input[i + 1];
+        const auto r1 = input[i];
+        const auto r2 = input[i + 1];
         input[i + 0] = 0.5 * (r1 + r2);
         input[i + 1] = 0.5 * (r1 - r2);
     }
 }
 
 static void ilot(
-    float *output, const float *input1, const float *input2, size_t dct_degree)
+    float *output,
+    const float *input1,
+    const float *input2,
+    const size_t dct_degree)
 {
-    auto degree_num = 1 << dct_degree;
-    for (auto i : algo::range(0, degree_num, 2))
+    const auto degree_num = 1 << dct_degree;
+    for (const auto i : algo::range(0, degree_num, 2))
     {
-        auto r1 = input1[i + 0];
-        auto r2 = input2[i + 1];
+        const auto r1 = input1[i + 0];
+        const auto r2 = input2[i + 1];
         output[i + 0] = r1 + r2;
         output[i + 1] = r1 - r2;
     }
 }
 
-static std::vector<EriSinCos> create_revolve_param(size_t dct_degree)
+static std::vector<EriSinCos> create_revolve_param(const size_t dct_degree)
 {
-    auto degree_num = 1 << dct_degree;
+    const auto degree_num = 1 << dct_degree;
     signed int lc = 1, n = degree_num / 2;
     while (n >= 8)
     {
@@ -182,22 +185,22 @@ static std::vector<EriSinCos> create_revolve_param(size_t dct_degree)
     }
 
     std::vector<EriSinCos> revolve_param(lc * 8);
-    double k = pi / (degree_num * 2);
+    const double k = pi / (degree_num * 2);
     EriSinCos *revolve_param_ptr = &revolve_param[0];
     signed int step = 2;
     do
     {
-        for (auto i : algo::range(7))
+        for (const auto i : algo::range(7))
         {
             double ws = 1.0;
             double a = 0.0;
-            for (auto j : algo::range(i))
+            for (const auto j : algo::range(i))
             {
                 a += step;
                 ws = ws * revolve_param_ptr[j].rsin
                     + revolve_param_ptr[j].rcos * cos(a * k);
             }
-            double r = atan2(ws, cos((a + step) * k));
+            const double r = atan2(ws, cos((a + step) * k));
             revolve_param_ptr[i].rsin = sin(r);
             revolve_param_ptr[i].rcos = cos(r);
         }
@@ -209,12 +212,17 @@ static std::vector<EriSinCos> create_revolve_param(size_t dct_degree)
 }
 
 static void revolve_2x2(
-    float *buf1, float *buf2, float rsin, float rcos, size_t step, size_t size)
+    float *buf1,
+    float *buf2,
+    const float rsin,
+    const float rcos,
+    const size_t step,
+    const size_t size)
 {
-    for (auto i : algo::range(size))
+    for (const auto i : algo::range(size))
     {
-        float r1 = *buf1;
-        float r2 = *buf2;
+        const float r1 = *buf1;
+        const float r2 = *buf2;
         *buf1 = r1 * rcos - r2 * rsin;
         *buf2 = r1 * rsin + r2 * rcos;
         buf1 += step;
@@ -225,10 +233,10 @@ static void revolve_2x2(
 static void odd_givens_inverse_matrix(
     float *input,
     const std::vector<EriSinCos> &revolve_param,
-    size_t dct_degree)
+    const size_t dct_degree)
 {
-    auto degree_num = 1 << dct_degree;
-    auto revolve_ptr = &revolve_param[0];
+    const auto degree_num = 1 << dct_degree;
+    const auto *revolve_ptr = &revolve_param[0];
     auto index = 1;
     auto step = 2;
     auto lc = (degree_num / 2) / 8;
@@ -242,10 +250,10 @@ static void odd_givens_inverse_matrix(
         lc /= 8;
     }
     auto k = index + step * (lc - 2);
-    for (int j = lc - 2; j >= 0; j --)
+    for (int j = lc - 2; j >= 0; j--)
     {
-        auto r1 = input[k];
-        auto r2 = input[k + step];
+        const auto r1 = input[k];
+        const auto r2 = input[k + step];
         input[k] = r1 * revolve_ptr[j].rcos + r2 * revolve_ptr[j].rsin;
         input[k + step] = r2 * revolve_ptr[j].rcos - r1 * revolve_ptr[j].rsin;
         k -= step;
@@ -257,13 +265,13 @@ static void odd_givens_inverse_matrix(
         revolve_ptr -= 7;
         step /= 8;
         index -= step * 7;
-        for (auto i : algo::range(lc))
+        for (const auto i : algo::range(lc))
         {
-            auto k = i * (step * 8) + index + step * 6;
+            k = i * (step * 8) + index + step * 6;
             for (int j = 6; j >= 0; j--)
             {
-                auto r1 = input[k];
-                auto r2 = input[k + step];
+                const auto r1 = input[k];
+                const auto r2 = input[k + step];
                 input[k] = r1 * revolve_ptr[j].rcos + r2 * revolve_ptr[j].rsin;
                 input[k + step] =
                     r2 * revolve_ptr[j].rcos - r1 * revolve_ptr[j].rsin;
@@ -276,10 +284,10 @@ static void odd_givens_inverse_matrix(
 
 static void dct(
     float *output,
-    size_t output_interval,
+    const size_t output_interval,
     float *input,
     float *work_buf,
-    size_t dct_degree)
+    const size_t dct_degree)
 {
     if (dct_degree < min_dct_degree || dct_degree > max_dct_degree)
         throw std::logic_error("DCT degree out of bounds");
@@ -303,29 +311,29 @@ static void dct(
         return;
     }
 
-    auto degree_num = 1 << dct_degree;
-    auto half_degree = degree_num >> 1;
-    for (auto i : algo::range(half_degree))
+    const auto degree_num = 1 << dct_degree;
+    const auto half_degree = degree_num >> 1;
+    for (const auto i : algo::range(half_degree))
     {
         work_buf[i] = input[i] + input[degree_num - i - 1];
         work_buf[i + half_degree] = input[i] - input[degree_num - i - 1];
     }
-    auto output_step = output_interval << 1;
+    const auto output_step = output_interval << 1;
     dct(output, output_step, work_buf, input, dct_degree - 1);
-    auto dct_of_k = dct_of_k_matrix[dct_degree - 1];
+    const auto dct_of_k = dct_of_k_matrix[dct_degree - 1];
     input = work_buf + half_degree;
     output += output_interval;
-    for (auto i : algo::range(half_degree))
+    for (const auto i : algo::range(half_degree))
         input[i] *= dct_of_k[i];
     dct(output, output_step, input, work_buf, dct_degree - 1);
     float *output_ptr = output;
-    for (auto i : algo::range(half_degree))
+    for (const auto i : algo::range(half_degree))
     {
         *output_ptr += *output_ptr;
         output_ptr += output_step;
     }
     output_ptr = output;
-    for (auto i : algo::range(1, half_degree, 1))
+    for (const auto i : algo::range(1, half_degree, 1))
     {
         output_ptr[output_step] -= *output_ptr;
         output_ptr += output_step;
@@ -335,9 +343,9 @@ static void dct(
 static void idct(
     float *output,
     float *input,
-    size_t input_interval,
+    const size_t input_interval,
     float *work_buf,
-    size_t dct_degree)
+    const size_t dct_degree)
 {
     if (dct_degree < min_dct_degree || dct_degree > max_dct_degree)
         throw std::logic_error("DCT degree out of bounds");
@@ -362,26 +370,26 @@ static void idct(
         return;
     }
 
-    size_t degree_num = 1 << dct_degree;
-    size_t half_degree = degree_num >> 1;
-    size_t input_step = input_interval << 1;
+    const size_t degree_num = 1 << dct_degree;
+    const size_t half_degree = degree_num >> 1;
+    const size_t input_step = input_interval << 1;
     idct(output, input, input_step, work_buf, dct_degree - 1);
-    float *dct_of_k = dct_of_k_matrix[dct_degree - 1];
-    float *odd_input = input + input_interval;
+    const float *dct_of_k = dct_of_k_matrix[dct_degree - 1];
+    const float *odd_input = input + input_interval;
     float *odd_output = output + half_degree;
-    float *input_ptr = odd_input;
-    for (auto i : algo::range(half_degree))
+    const float *input_ptr = odd_input;
+    for (const auto i : algo::range(half_degree))
     {
         work_buf[i] = *input_ptr * dct_of_k[i];
         input_ptr += input_step;
     }
     dct(odd_output, 1, work_buf, (work_buf + half_degree), dct_degree - 1);
-    for (auto i : algo::range(half_degree))
+    for (const auto i : algo::range(half_degree))
         odd_output[i] += odd_output[i];
-    for (auto i : algo::range(1, half_degree, 1))
+    for (const auto i : algo::range(1, half_degree, 1))
         odd_output[i] -= odd_output[i - 1];
     float r32_buf[4];
-    for (auto i : algo::range(half_degree >> 1))
+    for (const auto i : algo::range(half_degree >> 1))
     {
         r32_buf[0] = output[i] + output[half_degree + i];
         r32_buf[3] = output[i] - output[half_degree + i];
@@ -409,20 +417,21 @@ LossyAudioDecoder::Priv::Priv(const MioHeader &header) : header(header)
 
     buf_size = 0;
 
-    auto subband_size = 1 << header.subband_degree;
-    buffer1.reset(new s32[header.channel_count * subband_size]);
-    matrix_buf.reset(new float[header.channel_count * subband_size]);
-    internal_buf.reset(new float[header.channel_count * subband_size]);
-    work_buf.reset(new float[subband_size]);
-    work_buf2.reset(new float[subband_size]);
-    weight_table.reset(new float[subband_size]);
+    const auto subband_size = 1 << header.subband_degree;
+    const auto subband_size_total = header.channel_count * subband_size;
+    buffer1 = std::make_unique<s32[]>(subband_size_total);
+    matrix_buf = std::make_unique<float[]>(subband_size_total);
+    internal_buf = std::make_unique<float[]>(subband_size_total);
+    work_buf = std::make_unique<float[]>(subband_size);
+    work_buf2 = std::make_unique<float[]>(subband_size);
+    weight_table = std::make_unique<float[]>(subband_size);
 
-    auto blockset_samples = header.channel_count << header.subband_degree;
-    auto lapped_samples = blockset_samples * header.lapped_degree;
+    const auto blockset_samples = header.channel_count << header.subband_degree;
+    const auto lapped_samples = blockset_samples * header.lapped_degree;
     if (lapped_samples > 0)
     {
-        last_dct.reset(new float[lapped_samples]);
-        for (auto i : algo::range(lapped_samples))
+        last_dct = std::make_unique<float[]>(lapped_samples);
+        for (const auto i : algo::range(lapped_samples))
             last_dct[i] = 0.0f;
     }
     initialize_with_degree(header.subband_degree);
@@ -432,14 +441,15 @@ LossyAudioDecoder::Priv::~Priv()
 {
 }
 
-void LossyAudioDecoder::Priv::initialize_with_degree(size_t subband_degree)
+void LossyAudioDecoder::Priv::initialize_with_degree(
+    const size_t subband_degree)
 {
     revolve_param = create_revolve_param(subband_degree);
     static const int freq_width[7] = {-6, -6, -5, -4, -3, -2, -1};
     auto j = 0;
-    for (auto i : algo::range(7))
+    for (const auto i : algo::range(7))
     {
-        int frequency_width = 1 << (subband_degree + freq_width[i]);
+        const int frequency_width = 1 << (subband_degree + freq_width[i]);
         frequency_point[i] = j + (frequency_width / 2);
         j += frequency_width;
     }
@@ -450,15 +460,15 @@ void LossyAudioDecoder::Priv::initialize_with_degree(size_t subband_degree)
 void LossyAudioDecoder::Priv::dequantumize(
     float *destination,
     const s32 *quantumized,
-    s32 weight_code,
-    int coefficient)
+    const s32 weight_code,
+    const int coefficient)
 {
-    double matrix_scale = sqrt(2.0 / degree_num);
-    double coefficient_ratio = matrix_scale * coefficient;
+    const double matrix_scale = sqrt(2.0 / degree_num);
+    const double coefficient_ratio = matrix_scale * coefficient;
     double avg_ratio[7];
-    for (auto i : algo::range(6))
+    for (const auto i : algo::range(6))
     {
-        auto power = (((weight_code >> (i * 5)) & 0x1F) - 15) * 0.5;
+        const auto power = (((weight_code >> (i * 5)) & 0x1F) - 15) * 0.5;
         avg_ratio[i] = 1.0 / pow(2.0, power);
     }
     avg_ratio[6] = 1.0;
@@ -466,60 +476,60 @@ void LossyAudioDecoder::Priv::dequantumize(
     size_t pos = 0;
     while (pos < frequency_point[0])
         weight_table[pos++] = avg_ratio[0];
-    for (auto j : algo::range(1, 7))
+    for (const auto j : algo::range(1, 7))
     {
-        auto diff = frequency_point[j] - frequency_point[j - 1];
-        double a = avg_ratio[j - 1];
-        double k = (avg_ratio[j] - a) / diff;
+        const auto diff = frequency_point[j] - frequency_point[j - 1];
+        const double a = avg_ratio[j - 1];
+        const double k = (avg_ratio[j] - a) / diff;
         while (pos < frequency_point[j])
         {
-            float tmp = k * (pos - frequency_point[j - 1]) + a;
+            const auto tmp = k * (pos - frequency_point[j - 1]) + a;
             weight_table[pos++] = tmp;
         }
     }
     while (pos < degree_num)
         weight_table[pos++] = avg_ratio[6];
 
-    float odd_weight_ratio = (((weight_code >> 30) & 0x03) + 0x02) / 2.0;
-    for (auto i : algo::range(15, degree_num, 16))
+    const float odd_weight_ratio = (((weight_code >> 30) & 0x03) + 0x02) / 2.0;
+    for (const auto i : algo::range(15, degree_num, 16))
         weight_table[i] *= odd_weight_ratio;
 
     weight_table[degree_num - 1] = coefficient;
 
-    for (auto i : algo::range(degree_num))
+    for (const auto i : algo::range(degree_num))
         weight_table[i] = 1.0 / weight_table[i];
-    for (auto i : algo::range(degree_num))
+    for (const auto i : algo::range(degree_num))
         destination[i] = coefficient_ratio * weight_table[i] * quantumized[i];
 }
 
 void LossyAudioDecoder::Priv::decode_lead_block()
 {
-    auto weight_code = *weight_ptr++;
-    auto coefficient = *coefficient_ptr++;
-    auto half_degree = degree_num / 2;
-    for (auto i : algo::range(half_degree))
+    const auto weight_code = *weight_ptr++;
+    const auto coefficient = *coefficient_ptr++;
+    const auto half_degree = degree_num / 2;
+    for (const auto i : algo::range(half_degree))
     {
         buffer1[i * 2] = 0;
         buffer1[i * 2 + 1] = *source_ptr++;
     }
     dequantumize(last_dct_buf, buffer1.get(), weight_code, coefficient);
     odd_givens_inverse_matrix(last_dct_buf, revolve_param, subband_degree);
-    for (auto i : algo::range(0, degree_num, 2))
+    for (const auto i : algo::range(0, degree_num, 2))
         last_dct_buf[i] = last_dct_buf[i + 1];
     iplot(last_dct_buf, subband_degree);
 }
 
-void LossyAudioDecoder::Priv::decode_impl_block(
-    s16 * output_ptr, size_t samples)
+void LossyAudioDecoder::Priv::decode_internal_block(
+    s16 *output_ptr, const size_t samples)
 {
-    auto weight_code = *weight_ptr++;
-    auto coefficient = *coefficient_ptr++;
+    const auto weight_code = *weight_ptr++;
+    const auto coefficient = *coefficient_ptr++;
     dequantumize(matrix_buf.get(), source_ptr, weight_code, coefficient);
     source_ptr += degree_num;
     odd_givens_inverse_matrix(matrix_buf.get(), revolve_param, subband_degree);
     iplot(matrix_buf.get(), subband_degree);
     ilot(work_buf.get(), last_dct_buf, matrix_buf.get(), subband_degree);
-    for (auto i : algo::range(degree_num))
+    for (const auto i : algo::range(degree_num))
     {
         last_dct_buf[i] = matrix_buf[i];
         matrix_buf[i] = work_buf[i];
@@ -535,23 +545,23 @@ void LossyAudioDecoder::Priv::decode_impl_block(
 }
 
 void LossyAudioDecoder::Priv::decode_post_block(
-    s16 * output_ptr, size_t samples)
+    s16 * output_ptr, const size_t samples)
 {
-    auto weight_code = *weight_ptr++;
-    auto coefficient = *coefficient_ptr++;
-    auto half_degree = degree_num / 2;
-    for (auto i : algo::range(half_degree))
+    const auto weight_code = *weight_ptr++;
+    const auto coefficient = *coefficient_ptr++;
+    const auto half_degree = degree_num / 2;
+    for (const auto i : algo::range(half_degree))
     {
         buffer1[i * 2] = 0;
         buffer1[i * 2 + 1] = *source_ptr++;
     }
     dequantumize(matrix_buf.get(), buffer1.get(), weight_code, coefficient);
     odd_givens_inverse_matrix(matrix_buf.get(), revolve_param, subband_degree);
-    for (auto i : algo::range(0, degree_num, 2))
+    for (const auto i : algo::range(0, degree_num, 2))
         matrix_buf[i] = -matrix_buf[i + 1];
     iplot(matrix_buf.get(), subband_degree);
     ilot(work_buf.get(), last_dct_buf, matrix_buf.get(), subband_degree);
-    for (auto i : algo::range(degree_num))
+    for (const auto i : algo::range(degree_num))
         matrix_buf[i] = work_buf[i];
     idct(
         internal_buf.get(),
@@ -565,41 +575,41 @@ void LossyAudioDecoder::Priv::decode_post_block(
 
 bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
 {
-    auto degree_width = 1 << header.subband_degree;
-    auto sample_count
+    const auto degree_width = 1 << header.subband_degree;
+    const auto sample_count
         = (chunk.sample_count + degree_width - 1) & ~(degree_width - 1);
-    auto subband_count = sample_count >> header.subband_degree;
-    auto channel_count = header.channel_count;
-    auto all_sample_count = sample_count * channel_count;
-    auto all_subband_count = subband_count;
+    const auto subband_count = sample_count >> header.subband_degree;
+    const auto channel_count = header.channel_count;
+    const auto all_sample_count = sample_count * channel_count;
+    const auto all_subband_count = subband_count;
 
     if (all_sample_count > buf_size)
     {
-        buffer2.reset(new s32[all_sample_count]);
-        buffer3.reset(new s8[all_sample_count * 2]);
-        division_table.reset(new u8[all_subband_count]);
-        revolve_code_table.reset(new u8[all_subband_count * 5]);
-        weight_code_table.reset(new s32[all_subband_count * 5]);
-        coefficient_table.reset(new u32[all_subband_count * 5]);
+        buffer2 = std::make_unique<s32[]>(all_sample_count);
+        buffer3 = std::make_unique<s8[]>(all_sample_count * 2);
+        division_table = std::make_unique<u8[]>(all_subband_count);
+        revolve_code_table = std::make_unique<u8[]>(all_subband_count * 5);
+        weight_code_table = std::make_unique<s32[]>(all_subband_count * 5);
+        coefficient_table = std::make_unique<u32[]>(all_subband_count * 5);
         buf_size = all_sample_count;
     }
 
     if (decoder->bit_reader->get(1))
         throw err::CorruptDataError("Expected 0 bit");
 
-    auto last_division = std::make_unique<int[]>(channel_count);
+    const auto last_division = std::make_unique<int[]>(channel_count);
     division_ptr = division_table.get();
     weight_ptr = weight_code_table.get();
     coefficient_ptr = coefficient_table.get();
 
-    for (auto i : algo::range(channel_count))
+    for (const auto i : algo::range(channel_count))
         last_division[i] = -1;
 
-    for (auto i : algo::range(subband_count))
+    for (const auto i : algo::range(subband_count))
     {
-        for (auto j : algo::range(channel_count))
+        for (const auto j : algo::range(channel_count))
         {
-            int division_code = decoder->bit_reader->get(2);
+            const int division_code = decoder->bit_reader->get(2);
             *division_ptr++ = division_code;
             if (division_code != last_division[j])
             {
@@ -610,8 +620,8 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
                 }
                 last_division[j] = division_code;
             }
-            auto division_count = 1 << division_code;
-            for (auto k : algo::range(division_count))
+            const auto division_count = 1 << division_code;
+            for (const auto k : algo::range(division_count))
             {
                 *weight_ptr++ = decoder->bit_reader->get(32);
                 *coefficient_ptr++ = decoder->bit_reader->get(16);
@@ -620,7 +630,7 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
     }
     if (subband_count)
     {
-        for (auto i : algo::range(channel_count))
+        for (const auto i : algo::range(channel_count))
         {
             *weight_ptr++ = decoder->bit_reader->get(32);
             *coefficient_ptr++ = decoder->bit_reader->get(16);
@@ -638,15 +648,15 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
         decoder->decode(
             reinterpret_cast<u8*>(buffer3.get()), all_sample_count * 2);
 
-        auto hi_buf = buffer3.get();
-        auto lo_buf = buffer3.get() + all_sample_count;
-        for (auto i : algo::range(degree_width))
+        const auto *hi_buf = buffer3.get();
+        const auto *lo_buf = buffer3.get() + all_sample_count;
+        for (const auto i : algo::range(degree_width))
         {
             auto quantumized_ptr = buffer2.get() + i;
-            for (auto j : algo::range(all_subband_count))
+            for (const auto j : algo::range(all_subband_count))
             {
-                s32 low = *lo_buf++;
-                s32 high = *hi_buf++ ^ (low >> 8);
+                const s32 low = *lo_buf++;
+                const s32 high = *hi_buf++ ^ (low >> 8);
                 *quantumized_ptr = (low & 0xFF) | (high << 8);
                 quantumized_ptr += degree_width;
             }
@@ -662,7 +672,7 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
     weight_ptr = weight_code_table.get();
     coefficient_ptr = coefficient_table.get();
     source_ptr = buffer2.get();
-    for (auto i : algo::range(channel_count))
+    for (const auto i : algo::range(channel_count))
     {
         last_division[i] = -1;
         samples_left[i] = chunk.sample_count;
@@ -670,11 +680,11 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
     }
 
     int current_division = -1;
-    for (auto i : algo::range(subband_count))
-    for (auto j : algo::range(channel_count))
+    for (const auto i : algo::range(subband_count))
+    for (const auto j : algo::range(channel_count))
     {
-        auto division_code = *division_ptr++;
-        auto division_count = 1 << division_code;
+        const auto division_code = *division_ptr++;
+        const auto division_count = 1 << division_code;
         int channel_step = degree_width * header.lapped_degree * j;
         last_dct_buf = last_dct.get() + channel_step;
         auto lead_block = false;
@@ -688,7 +698,8 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
                         (header.subband_degree - last_division[j]);
                     current_division = last_division[j];
                 }
-                auto samples_to_process = std::min(samples_left[j], degree_num);
+                const auto samples_to_process
+                    = std::min(samples_left[j], degree_num);
                 decode_post_block(output_ptrs[j], samples_to_process);
                 samples_left[j] -= samples_to_process;
                 output_ptrs[j] += samples_to_process * channel_count;
@@ -701,7 +712,7 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
             initialize_with_degree(header.subband_degree - division_code);
             current_division = division_code;
         }
-        for (auto k : algo::range(division_count))
+        for (const auto k : algo::range(division_count))
         {
             if (lead_block)
             {
@@ -710,8 +721,9 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
             }
             else
             {
-                auto samples_to_process = std::min(samples_left[j], degree_num);
-                decode_impl_block(output_ptrs[j], samples_to_process);
+                const auto samples_to_process
+                    = std::min(samples_left[j], degree_num);
+                decode_internal_block(output_ptrs[j], samples_to_process);
                 samples_left[j] -= samples_to_process;
                 output_ptrs[j] += samples_to_process * channel_count;
             }
@@ -720,9 +732,9 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
 
     if (subband_count)
     {
-        for (auto i : algo::range(channel_count))
+        for (const auto i : algo::range(channel_count))
         {
-            int channel_step = degree_width * header.lapped_degree * i;
+            const int channel_step = degree_width * header.lapped_degree * i;
             last_dct_buf = last_dct.get() + channel_step;
             if (current_division != last_division[i])
             {
@@ -730,7 +742,8 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
                     (header.subband_degree - last_division[i]);
                 current_division = last_division[i];
             }
-            auto samples_to_process = std::min(samples_left[i], degree_num);
+            const auto samples_to_process
+                = std::min(samples_left[i], degree_num);
             decode_post_block(output_ptrs[i], samples_to_process);
             samples_left[i] -= samples_to_process;
             output_ptrs[i] += samples_to_process * channel_count;
@@ -742,13 +755,13 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
 
 void LossyAudioDecoder::Priv::decode_lead_block_mss()
 {
-    auto half_degree = degree_num / 2;
-    auto weight_code = *weight_ptr++;
-    auto coefficient = *coefficient_ptr++;
+    const auto half_degree = degree_num / 2;
+    const auto weight_code = *weight_ptr++;
+    const auto coefficient = *coefficient_ptr++;
     auto lap_buf = last_dct.get();
-    for (auto i : algo::range(2))
+    for (const auto i : algo::range(2))
     {
-        for (auto j : algo::range(half_degree))
+        for (const auto j : algo::range(half_degree))
         {
             buffer1[j * 2] = 0;
             buffer1[j * 2 + 1] = *source_ptr++;
@@ -756,17 +769,17 @@ void LossyAudioDecoder::Priv::decode_lead_block_mss()
         dequantumize(lap_buf, buffer1.get(), weight_code, coefficient);
         lap_buf += degree_num;
     }
-    auto rev_code = *rev_code_ptr++;
+    const auto rev_code = *rev_code_ptr++;
     auto lap_buf1 = last_dct.get();
     auto lap_buf2 = last_dct.get() + degree_num;
-    auto rsin = sin(rev_code * pi / 8);
-    auto rcos = cos(rev_code * pi / 8);
+    const auto rsin = sin(rev_code * pi / 8);
+    const auto rcos = cos(rev_code * pi / 8);
     revolve_2x2(lap_buf1, lap_buf2, rsin, rcos, 1, degree_num);
     lap_buf = last_dct.get();
-    for (auto i : algo::range(2))
+    for (const auto i : algo::range(2))
     {
         odd_givens_inverse_matrix(lap_buf, revolve_param, subband_degree);
-        for (auto j : algo::range(0, degree_num, 2))
+        for (const auto j : algo::range(0, degree_num, 2))
             lap_buf[j] = lap_buf[j + 1];
         iplot(lap_buf, subband_degree);
         lap_buf += degree_num;
@@ -778,12 +791,12 @@ void LossyAudioDecoder::Priv::decode_post_block_mss(
 {
     auto matrix_ptr = matrix_buf.get();
     auto lap_buf = last_dct.get();
-    auto half_degree = degree_num / 2;
-    auto weight_code = *weight_ptr++;
-    auto coefficient = *coefficient_ptr++;
-    for (auto i : algo::range(2))
+    const auto half_degree = degree_num / 2;
+    const auto weight_code = *weight_ptr++;
+    const auto coefficient = *coefficient_ptr++;
+    for (const auto i : algo::range(2))
     {
-        for (auto j : algo::range(half_degree))
+        for (const auto j : algo::range(half_degree))
         {
             buffer1[j * 2] = 0;
             buffer1[j * 2 + 1] = *source_ptr++;
@@ -791,21 +804,21 @@ void LossyAudioDecoder::Priv::decode_post_block_mss(
         dequantumize(matrix_ptr, buffer1.get(), weight_code, coefficient);
         matrix_ptr += degree_num;
     }
-    auto rev_code = *rev_code_ptr++;
+    const auto rev_code = *rev_code_ptr++;
     auto matrix_ptr1 = matrix_buf.get();
     auto matrix_ptr2 = matrix_buf.get() + degree_num;
-    auto rsin = sin(rev_code * pi / 8);
-    auto rcos = cos(rev_code * pi / 8);
+    const auto rsin = sin(rev_code * pi / 8);
+    const auto rcos = cos(rev_code * pi / 8);
     revolve_2x2(matrix_ptr1, matrix_ptr2, rsin, rcos, 1, degree_num);
     matrix_ptr = matrix_buf.get();
-    for (auto i : algo::range(2))
+    for (const auto i : algo::range(2))
     {
         odd_givens_inverse_matrix(matrix_ptr, revolve_param, subband_degree);
-        for (auto j : algo::range(0, degree_num, 2))
+        for (const auto j : algo::range(0, degree_num, 2))
             matrix_ptr[j] = -matrix_ptr[j + 1];
         iplot(matrix_ptr, subband_degree);
         ilot(work_buf.get(), lap_buf, matrix_ptr, subband_degree);
-        for (auto j : algo::range(degree_num))
+        for (const auto j : algo::range(degree_num))
             matrix_ptr[j] = work_buf[j];
         idct(internal_buf.get(), matrix_ptr, 1, work_buf.get(), subband_degree);
         round32_array(output_ptr + i, 2, internal_buf.get(), samples);
@@ -814,23 +827,23 @@ void LossyAudioDecoder::Priv::decode_post_block_mss(
     }
 }
 
-void LossyAudioDecoder::Priv::decode_impl_block_mss(
+void LossyAudioDecoder::Priv::decode_internal_block_mss(
     s16 *output_ptr, size_t samples)
 {
     auto matrix_ptr = matrix_buf.get();
     auto lap_buf = last_dct.get();
-    auto weight_code = *weight_ptr++;
-    auto coefficient = *coefficient_ptr++;
-    for (auto i : algo::range(2))
+    const auto weight_code = *weight_ptr++;
+    const auto coefficient = *coefficient_ptr++;
+    for (const auto i : algo::range(2))
     {
         dequantumize(matrix_ptr, source_ptr, weight_code, coefficient);
         source_ptr += degree_num;
         matrix_ptr += degree_num;
     }
 
-    int rev_code = *rev_code_ptr++;
-    int rev_code1 = (rev_code >> 2) & 0x03;
-    int rev_code2 = rev_code & 0x03;
+    const int rev_code = *rev_code_ptr++;
+    const int rev_code1 = (rev_code >> 2) & 0x03;
+    const int rev_code2 = rev_code & 0x03;
 
     float rsin, rcos;
     float *matrix_ptr1 = matrix_buf.get();
@@ -843,12 +856,12 @@ void LossyAudioDecoder::Priv::decode_impl_block_mss(
     revolve_2x2(matrix_ptr1+1, matrix_ptr2+1, rsin, rcos, 2, degree_num / 2);
 
     matrix_ptr = matrix_buf.get();
-    for (auto i : algo::range(2))
+    for (const auto i : algo::range(2))
     {
         odd_givens_inverse_matrix(matrix_ptr, revolve_param, subband_degree);
         iplot(matrix_ptr, subband_degree);
         ilot(work_buf.get(), lap_buf, matrix_ptr, subband_degree);
-        for (auto j : algo::range(degree_num))
+        for (const auto j : algo::range(degree_num))
         {
             lap_buf[j] = matrix_ptr[j];
             matrix_ptr[j] = work_buf[j];
@@ -862,22 +875,22 @@ void LossyAudioDecoder::Priv::decode_impl_block_mss(
 
 bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
 {
-    auto degree_width = 1 << header.subband_degree;
-    auto sample_count
+    const auto degree_width = 1 << header.subband_degree;
+    const auto sample_count
         = (chunk.sample_count + degree_width - 1) & ~(degree_width - 1);
-    auto subband_count = sample_count >> header.subband_degree;
-    auto channel_count = header.channel_count;
-    auto all_sample_count = sample_count * channel_count;
-    auto all_subband_count = subband_count;
+    const auto subband_count = sample_count >> header.subband_degree;
+    const auto channel_count = header.channel_count;
+    const auto all_sample_count = sample_count * channel_count;
+    const auto all_subband_count = subband_count;
 
     if (all_sample_count > buf_size)
     {
-        buffer2.reset(new s32[all_sample_count]);
-        buffer3.reset(new s8[all_sample_count * 2]);
-        division_table.reset(new u8[all_subband_count]);
-        revolve_code_table.reset(new u8[all_subband_count * 10]);
-        weight_code_table.reset(new s32[all_subband_count * 10]);
-        coefficient_table.reset(new u32[all_subband_count * 10]);
+        buffer2 = std::make_unique<s32[]>(all_sample_count);
+        buffer3 = std::make_unique<s8[]>(all_sample_count * 2);
+        division_table = std::make_unique<u8[]>(all_subband_count);
+        revolve_code_table = std::make_unique<u8[]>(all_subband_count * 10);
+        weight_code_table = std::make_unique<s32[]>(all_subband_count * 10);
+        coefficient_table = std::make_unique<u32[]>(all_subband_count * 10);
         buf_size = all_sample_count;
     }
 
@@ -890,9 +903,9 @@ bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
     weight_ptr = weight_code_table.get();
     coefficient_ptr = coefficient_table.get();
 
-    for (auto i : algo::range(subband_count))
+    for (const auto i : algo::range(subband_count))
     {
-        int division_code = decoder->bit_reader->get(2);
+        const int division_code = decoder->bit_reader->get(2);
         *division_ptr++ = division_code;
 
         bool lead_block = false;
@@ -908,8 +921,8 @@ bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
             last_division_code = division_code;
         }
 
-        auto division_count = 1 << division_code;
-        for (auto k : algo::range(division_count))
+        const auto division_count = 1 << division_code;
+        for (const auto k : algo::range(division_count))
         {
             if (lead_block)
             {
@@ -942,15 +955,15 @@ bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
         decoder->decode(
             reinterpret_cast<u8*>(buffer3.get()), all_sample_count * 2);
 
-        auto hi_buf = buffer3.get();
-        auto lo_buf = buffer3.get() + all_sample_count;
-        for (auto i : algo::range(degree_width * 2))
+        const auto *hi_buf = buffer3.get();
+        const auto *lo_buf = buffer3.get() + all_sample_count;
+        for (const auto i : algo::range(degree_width * 2))
         {
             auto quantumized_ptr = buffer2.get() + i;
-            for (auto j : algo::range(all_subband_count))
+            for (const auto j : algo::range(all_subband_count))
             {
-                s32 low = *lo_buf++;
-                s32 high = *hi_buf++ ^ (low >> 8);
+                const s32 low = *lo_buf++;
+                const s32 high = *hi_buf++ ^ (low >> 8);
                 *quantumized_ptr = (low & 0xFF) | (high << 8);
                 quantumized_ptr += degree_width * 2;
             }
@@ -970,17 +983,18 @@ bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
     coefficient_ptr = coefficient_table.get();
     source_ptr = buffer2.get();
 
-    for (auto i : algo::range(subband_count))
+    for (const auto i : algo::range(subband_count))
     {
-        auto division_code = *division_ptr++;
-        auto division_count = 1 << division_code;
+        const auto division_code = *division_ptr++;
+        const auto division_count = 1 << division_code;
         bool lead_block = false;
 
         if (last_division_code != division_code)
         {
             if (i)
             {
-                auto samples_to_process = std::min(samples_left, degree_num);
+                const auto samples_to_process
+                    = std::min(samples_left, degree_num);
                 decode_post_block_mss(output_ptr, samples_to_process);
                 samples_left -= samples_to_process;
                 output_ptr += samples_to_process * channel_count;
@@ -990,7 +1004,7 @@ bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
             lead_block = true;
         }
 
-        for (auto k : algo::range(division_count))
+        for (const auto k : algo::range(division_count))
         {
             if (lead_block)
             {
@@ -999,8 +1013,9 @@ bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
             }
             else
             {
-                auto samples_to_process = std::min(samples_left, degree_num);
-                decode_impl_block_mss(output_ptr, samples_to_process);
+                const auto samples_to_process
+                    = std::min(samples_left, degree_num);
+                decode_internal_block_mss(output_ptr, samples_to_process);
                 samples_left -= samples_to_process;
                 output_ptr += samples_to_process * channel_count;
             }
@@ -1009,7 +1024,7 @@ bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
 
     if (subband_count)
     {
-        auto samples_to_process = std::min(samples_left, degree_num);
+        const auto samples_to_process = std::min(samples_left, degree_num);
         decode_post_block_mss(output_ptr, samples_to_process);
         samples_left -= samples_to_process;
         output_ptr += samples_to_process * channel_count;
@@ -1025,11 +1040,11 @@ LossyAudioDecoder::LossyAudioDecoder(const MioHeader &header)
     if (header.architecture == common::Architecture::RunLengthGamma)
     {
         // this is nonsense but hey, I just reimplement stuff
-        // p->decoder.reset(new common::GammaDecoder());
-        p->decoder.reset(new common::HuffmanDecoder());
+        // p->decoder = std::make_unique<common::GammaDecoder>();
+        p->decoder = std::make_unique<common::HuffmanDecoder>();
     }
     else if (header.architecture == common::Architecture::RunLengthHuffman)
-        p->decoder.reset(new common::HuffmanDecoder());
+        p->decoder = std::make_unique<common::HuffmanDecoder>();
     else
         throw err::NotSupportedError("Unsupported architecture");
 }

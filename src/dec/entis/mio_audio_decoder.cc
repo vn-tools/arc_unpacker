@@ -14,7 +14,7 @@ static const bstr magic2 = "\x00\x01\x00\x03\x00\x00\x00\x00"_b;
 static const bstr magic3 = "Music Interleaved and Orthogonal transformed"_b;
 
 static audio::MioHeader read_header(
-    io::IStream &input_stream, common::SectionReader &section_reader)
+    io::IStream &input_stream, const common::SectionReader &section_reader)
 {
     auto header_section = section_reader.get_section("Header");
     input_stream.seek(header_section.offset);
@@ -42,11 +42,12 @@ static audio::MioHeader read_header(
 static std::vector<audio::MioChunk> read_chunks(
     io::IStream &input_stream, common::SectionReader &section_reader)
 {
-    auto stream_section = section_reader.get_section("Stream");
+    const auto stream_section = section_reader.get_section("Stream");
     input_stream.seek(stream_section.offset);
     common::SectionReader chunk_section_reader(input_stream);
     std::vector<audio::MioChunk> chunks;
-    for (auto &chunk_section : chunk_section_reader.get_sections("SoundStm"))
+    for (const auto &chunk_section
+        : chunk_section_reader.get_sections("SoundStm"))
     {
         input_stream.seek(chunk_section.offset);
         audio::MioChunk chunk;
@@ -73,24 +74,25 @@ res::Audio MioAudioDecoder::decode_impl(
     input_file.stream.seek(0x40);
 
     common::SectionReader section_reader(input_file.stream);
-    auto header = read_header(input_file.stream, section_reader);
-    auto chunks = read_chunks(input_file.stream, section_reader);
+    const auto header = read_header(input_file.stream, section_reader);
+    const auto chunks = read_chunks(input_file.stream, section_reader);
 
     std::unique_ptr<audio::BaseAudioDecoder> impl;
     if (header.transformation == common::Transformation::Lossless)
-        impl.reset(new audio::LosslessAudioDecoder(header));
+        impl = std::make_unique<audio::LosslessAudioDecoder>(header);
     else if (header.transformation == common::Transformation::Lot)
-        impl.reset(new audio::LossyAudioDecoder(header));
+        impl = std::make_unique<audio::LossyAudioDecoder>(header);
     else if (header.transformation == common::Transformation::LotMss)
-        impl.reset(new audio::LossyAudioDecoder(header));
-    else
+        impl = std::make_unique<audio::LossyAudioDecoder>(header);
+
+    if (!impl)
     {
         throw err::NotSupportedError(algo::format(
             "Transformation type %d not supported", header.transformation));
     }
 
     bstr samples;
-    for (auto chunk : chunks)
+    for (const auto chunk : chunks)
         samples += impl->process_chunk(chunk);
 
     res::Audio audio;
