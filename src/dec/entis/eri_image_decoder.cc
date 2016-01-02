@@ -1,6 +1,9 @@
 #include "dec/entis/eri_image_decoder.h"
+#include <map>
 #include "algo/format.h"
+#include "algo/locale.h"
 #include "algo/range.h"
+#include "algo/str.h"
 #include "dec/entis/common/enums.h"
 #include "dec/entis/common/gamma_decoder.h"
 #include "dec/entis/common/huffman_decoder.h"
@@ -8,6 +11,7 @@
 #include "dec/entis/common/sections.h"
 #include "dec/entis/image/lossless.h"
 #include "err.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec::entis;
@@ -50,6 +54,19 @@ static image::EriHeader read_header(
     header.lapped_block     = input_stream.read_u32_le();
     header.frame_transform  = input_stream.read_u32_le();
     header.frame_degree     = input_stream.read_u32_le();
+
+    if (header_section_reader.has_section("descript"))
+    {
+        const auto description_section
+            = header_section_reader.get_section("descript");
+        const auto description = input_stream
+            .seek(description_section.offset)
+            .read(description_section.size);
+        header.description = description.substr(0, 2) == "\xFF\xFE"_b
+            ? algo::utf16_to_utf8(description.substr(2)).str()
+            : description.str();
+    }
+
     return header;
 }
 
@@ -107,8 +124,41 @@ res::Image EriImageDecoder::decode_impl(
     if (!pixel_data_sections.size())
         throw err::CorruptDataError("No pixel data found");
 
-    res::Image image(header.width, header.height * pixel_data_sections.size());
+    std::unique_ptr<res::Image> base_image;
+    if (!header.description.empty())
+    {
+        std::string base_name;
+        const auto lines = algo::split(
+            algo::replace_all(header.description, "\r", ""), '\n', false);
+        logger.info("Meta:\n");
+        for (const auto i : algo::range(lines.size()))
+            logger.info("[line %d] %s\n", i, lines[i].c_str());
+        try
+        {
+            std::map<std::string, std::string> meta;
+            for (const auto i : algo::range(0, lines.size(), 2))
+                meta[lines[i]] = lines[i + 1];
+            if (meta.find("#reference-file") != meta.end())
+                base_name = meta.at("#reference-file");
+        }
+        catch (const std::exception &e)
+        {
+            logger.warn("Error parsing metadata: %s", e.what());
+        }
+        if (!base_name.empty())
+        {
+            auto base_file = VirtualFileSystem::get_by_name(base_name);
+            if (base_file && is_recognized(*base_file))
+            {
+                Logger dummy_logger;
+                dummy_logger.mute();
+                base_image = std::make_unique<res::Image>(
+                    decode(dummy_logger, *base_file));
+            }
+        }
+    }
 
+    res::Image image(header.width, header.height * pixel_data_sections.size());
     for (const auto i : algo::range(pixel_data_sections.size()))
     {
         const auto &pixel_data_section = pixel_data_sections[i];
@@ -118,7 +168,6 @@ res::Image EriImageDecoder::decode_impl(
                 .seek(pixel_data_section.offset)
                 .read(pixel_data_section.size));
 
-        // sometimes mismatches the depth reported by header
         const auto actual_depth
             = pixel_data.size() * 8 / (header.width * header.height);
 
@@ -142,7 +191,11 @@ res::Image EriImageDecoder::decode_impl(
             res::Image::OverlayKind::OverwriteAll);
     }
 
-    return image;
+    if (!base_image)
+        return image;
+
+    base_image->overlay(image, res::Image::OverlayKind::AddSimple);
+    return *base_image;
 }
 
 static auto _ = dec::register_decoder<EriImageDecoder>("entis/eri");

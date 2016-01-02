@@ -41,6 +41,7 @@ namespace image {
         u32 lapped_block;
         u32 frame_transform;
         u32 frame_degree;
+        std::string description;
     };
 
 } } } }

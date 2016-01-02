@@ -45,10 +45,18 @@ std::vector<Section> SectionReader::get_sections() const
 std::vector<Section> SectionReader::get_sections(const std::string &name) const
 {
     std::vector<Section> sections;
-    for (auto &section : p->sections)
+    for (const auto &section : p->sections)
         if (section.name == name)
             sections.push_back(section);
     return sections;
+}
+
+bool SectionReader::has_section(const std::string &name) const
+{
+    for (const auto &section : p->sections)
+        if (section.name == name)
+            return true;
+    return false;
 }
 
 Section SectionReader::get_section(const std::string &name) const

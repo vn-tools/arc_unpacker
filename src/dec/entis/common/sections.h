@@ -21,6 +21,7 @@ namespace common {
         SectionReader(io::IStream &input_stream);
         ~SectionReader();
         Section get_section(const std::string &name) const;
+        bool has_section(const std::string &name) const;
         std::vector<Section> get_sections() const;
         std::vector<Section> get_sections(const std::string &name) const;
     private:
