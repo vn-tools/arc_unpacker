@@ -17,7 +17,6 @@ namespace
         size_t offset;
         size_t size;
         bool compressed;
-        bool already_unpacked;
     };
 }
 
@@ -140,7 +139,6 @@ std::unique_ptr<dec::ArchiveMeta> Pak1ArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->already_unpacked = false;
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(16)).str();
         entry->size = input_file.stream.read_u32_le();
@@ -165,9 +163,6 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
     }
 
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    if (entry->already_unpacked)
-        return nullptr;
-
     input_file.stream.seek(entry->offset);
     bstr data;
     if (entry->compressed)

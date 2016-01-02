@@ -68,8 +68,8 @@ static Header read_header(io::IStream &input_stream, glib2::IPlugin &plugin)
     Header header;
     header.magic = header_stream.read(magic_21.size());
     header_stream.skip(1);
-    for (auto i : algo::range(4))
-    for (auto j : algo::range(4))
+    for (const auto i : algo::range(4))
+    for (const auto j : algo::range(4))
         header.table_keys[3 - i][j] = header_stream.read_u32_le();
     header.table_offset = header_stream.read_u32_le();
     header.table_size = header_stream.read_u32_le();
@@ -104,8 +104,8 @@ static std::unique_ptr<ArchiveEntryImpl> read_table_entry(
                 table_stream.skip(4); // null
                 entry->size = table_stream.read_u32_le();
                 entry->offset = table_stream.read_u32_le();
-                for (auto i : algo::range(4))
-                for (auto j : algo::range(4))
+                for (const auto i : algo::range(4))
+                for (const auto j : algo::range(4))
                     entry->content_keys[i][j] = table_stream.read_u32_le();
             });
     }
@@ -129,7 +129,7 @@ static std::shared_ptr<glib2::IPlugin> guess_plugin(io::IStream &input_stream)
     plugins.push_back(std::make_shared<glib2::MeiPlugin>());
     plugins.push_back(std::make_shared<glib2::MusumePlugin>());
 
-    for (auto &plugin : plugins)
+    for (const auto &plugin : plugins)
     {
         try
         {
@@ -174,7 +174,7 @@ std::unique_ptr<dec::ArchiveMeta> Glib2ArchiveDecoder::read_meta_impl(
     size_t file_headers_size = table_stream.read_u32_le();
 
     std::vector<std::unique_ptr<ArchiveEntryImpl>> entries;
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
         entries.push_back(read_table_entry(
             table_stream, entries, file_names_start, file_headers_start));
 
@@ -202,7 +202,7 @@ std::unique_ptr<io::File> Glib2ArchiveDecoder::read_file_impl(
     const size_t chunk_size = 0x20000;
     size_t offset = 0;
     std::vector<std::unique_ptr<glib2::Decoder>> decoders(4);
-    for (auto i : algo::range(4))
+    for (const auto i : algo::range(4))
     {
         try
         {
@@ -213,14 +213,14 @@ std::unique_ptr<io::File> Glib2ArchiveDecoder::read_file_impl(
         }
         catch (const err::NotSupportedError &e)
         {
-            for (auto j : algo::range(i))
+            for (const auto j : algo::range(i))
                 decoders[i] = nullptr;
             logger.warn("%s\n", e.what());
         }
     }
 
     auto key_id = 0;
-    for (auto written : algo::range(0, entry->size, chunk_size))
+    for (const auto written : algo::range(0, entry->size, chunk_size))
     {
         auto current_chunk_size = std::min<size_t>(
             chunk_size, entry->size - written);

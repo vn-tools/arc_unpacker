@@ -13,7 +13,6 @@ namespace
     {
         size_t offset;
         size_t size;
-        bool already_unpacked;
     };
 
     struct Directory final
@@ -39,7 +38,6 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
             const auto name = input_file.stream.read_to_zero(name_size).str();
-            entry->already_unpacked = false;
             entry->path = name + "." + dir.extension;
             entry->size = input_file.stream.read_u32_le();
             entry->offset = input_file.stream.read_u32_le();
@@ -100,16 +98,12 @@ std::unique_ptr<io::File> ArcArchiveDecoder::read_file_impl(
     const dec::ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    if (entry->already_unpacked)
-        return nullptr;
-
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
     if (entry->path.has_extension("wsc") || entry->path.has_extension("scr"))
     {
         for (auto &c : data)
             c = (c >> 2) | (c << 6);
     }
-
     return std::make_unique<io::File>(entry->path, data);
 }
 

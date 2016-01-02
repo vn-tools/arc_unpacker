@@ -33,7 +33,6 @@ namespace
         size_t size;
         size_t offset;
         bstr key;
-        bool already_unpacked;
     };
 
     struct DirEntry final
@@ -115,7 +114,7 @@ RsaReader::RsaReader(io::IStream &input_stream) : input_stream(input_stream)
         input_stream.tell(),
         [&]() { test_chunk = input_stream.read(0x40); });
 
-    for (auto &rsa_key : rsa_keys)
+    for (const auto &rsa_key : rsa_keys)
     {
         algo::crypt::Rsa tester(rsa_key);
         try
@@ -165,7 +164,7 @@ static bstr read_file_content(
     size_t key_size = entry.key.size();
     if (meta.version == TfpkVersion::Th135)
     {
-        for (auto i : algo::range(data.size()))
+        for (const auto i : algo::range(data.size()))
             data[i] ^= entry.key[i % key_size];
     }
     else
@@ -173,9 +172,9 @@ static bstr read_file_content(
         auto *key = entry.key.get<const u8>();
         auto *buf = data.get<u8>();
         u8 aux[4];
-        for (auto i : algo::range(4))
+        for (const auto i : algo::range(4))
             aux[i] = key[i];
-        for (auto i : algo::range(data.size()))
+        for (const auto i : algo::range(data.size()))
         {
             u8 tmp = buf[i];
             buf[i] = tmp ^ key[i % key_size] ^ aux[i & 3];
@@ -194,7 +193,7 @@ static std::string lower_ascii_only(std::string name_utf8)
 {
     // while SJIS can use ASCII for encoding multibyte characters,
     // UTF-8 uses the codes 0..127 only for the ASCII characters.
-    for (auto i : algo::range(name_utf8.size()))
+    for (const auto i : algo::range(name_utf8.size()))
         if (name_utf8[i] >= 'A' && name_utf8[i] <= 'Z')
             name_utf8[i] += 'a' - 'A';
     return name_utf8;
@@ -218,7 +217,7 @@ static u32 get_file_name_hash(
     if (version == TfpkVersion::Th135)
     {
         u32 result = initial_hash;
-        for (auto i : algo::range(name_processed.size()))
+        for (const auto i : algo::range(name_processed.size()))
         {
             result *= 0x1000193;
             result ^= name_processed[i];
@@ -228,7 +227,7 @@ static u32 get_file_name_hash(
     else
     {
         u32 result = initial_hash;
-        for (auto i : algo::range(name_processed.size()))
+        for (const auto i : algo::range(name_processed.size()))
         {
             result ^= name_processed[i];
             result *= 0x1000193;
@@ -258,7 +257,7 @@ static std::vector<DirEntry> read_dir_entries(RsaReader &reader)
 {
     std::vector<DirEntry> dirs;
     auto dir_count = reader.read_block()->read_u32_le();
-    for (auto i : algo::range(dir_count))
+    for (const auto i : algo::range(dir_count))
     {
         auto tmp_stream = reader.read_block();
         DirEntry entry;
@@ -283,20 +282,20 @@ static HashLookupMap read_fn_map(
     size_t block_count = tmp_stream->read_u32_le();
 
     tmp_stream = std::make_unique<io::MemoryStream>();
-    for (auto i : algo::range(block_count))
+    for (const auto i : algo::range(block_count))
         tmp_stream->write(reader.read_block()->read_to_eof());
 
     tmp_stream->seek(0);
     tmp_stream = std::make_unique<io::MemoryStream>(
         algo::pack::zlib_inflate(tmp_stream->read(table_size_compressed)));
 
-    for (auto &dir_entry : dir_entries)
+    for (const auto &dir_entry : dir_entries)
     {
         auto dn = get_dir_name(dir_entry, user_fn_map);
         if (dn.size() > 0 && dn[dn.size() - 1] != '/')
             dn += "/";
 
-        for (auto j : algo::range(dir_entry.file_count))
+        for (const auto j : algo::range(dir_entry.file_count))
         {
             // TH145 English patch contains invalid directory names
             try
@@ -367,7 +366,7 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
         : TfpkVersion::Th145;
 
     HashLookupMap user_fn_map;
-    for (auto &fn : p->fn_set)
+    for (const auto &fn : p->fn_set)
         user_fn_map[get_file_name_hash(fn, meta->version)] = fn;
 
     RsaReader reader(input_file.stream);
@@ -378,14 +377,13 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
     if (dir_entries.size() > 0)
         fn_map = read_fn_map(reader, dir_entries, user_fn_map, meta->version);
 
-    for (auto &it : user_fn_map)
+    for (const auto &it : user_fn_map)
         fn_map[it.first] = it.second;
 
     size_t file_count = reader.read_block()->read_u32_le();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->already_unpacked = false;
         auto b1 = reader.read_block();
         auto b2 = reader.read_block();
         auto b3 = reader.read_block();
@@ -416,7 +414,7 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
 
             b3->seek(0);
             io::MemoryStream key_stream;
-            for (auto j : algo::range(4))
+            for (const auto j : algo::range(4))
                 key_stream.write_u32_le(neg32(b3->read_u32_le()));
 
             key_stream.seek(0);
@@ -438,11 +436,9 @@ std::unique_ptr<io::File> TfpkArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    if (entry->already_unpacked)
-        return nullptr;
-    auto data = read_file_content(input_file, *meta, *entry, entry->size);
+    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto data = read_file_content(input_file, *meta, *entry, entry->size);
     auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;

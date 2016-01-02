@@ -17,7 +17,6 @@ namespace
     {
         size_t offset;
         size_t size;
-        bool already_unpacked;
     };
 }
 
@@ -69,7 +68,6 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->already_unpacked = false;
         entry->offset = table_stream.read_u32_le();
         entry->size = table_stream.read_u32_le();
         const auto name_size = table_stream.read_u8();
@@ -88,8 +86,6 @@ std::unique_ptr<io::File> Pak2ArchiveDecoder::read_file_impl(
     const dec::ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    if (entry->already_unpacked)
-        return nullptr;
     const auto data = algo::unxor(
         input_file.stream.seek(entry->offset).read(entry->size),
         (entry->offset >> 1) | 0x23);

@@ -17,7 +17,6 @@ namespace
     {
         u32 offset;
         u32 size_comp;
-        bool already_unpacked;
     };
 }
 
@@ -30,16 +29,15 @@ std::unique_ptr<dec::ArchiveMeta> Nekopack4ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto table_size = input_file.stream.read_u32_le();
+    const auto table_size = input_file.stream.read_u32_le();
     auto meta = std::make_unique<ArchiveMeta>();
     while (true)
     {
-        auto name_size = input_file.stream.read_u32_le();
+        const auto name_size = input_file.stream.read_u32_le();
         if (!name_size)
             break;
 
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->already_unpacked = false;
         entry->path = input_file.stream.read_to_zero(name_size).str();
         u32 key = 0;
         for (const u8 &c : entry->path.str())
@@ -57,24 +55,22 @@ std::unique_ptr<io::File> Nekopack4ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    if (entry->already_unpacked)
-        return nullptr;
-
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size_comp - 4);
-    auto size_orig = input_file.stream.read_u32_le();
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    auto data = input_file.stream
+        .seek(entry->offset)
+        .read(entry->size_comp - 4);
+    const auto size_orig = input_file.stream.read_u32_le();
 
     u8 key = (entry->size_comp >> 3) + 0x22;
-    auto output_ptr = data.get<u8>();
-    auto output_end = data.end<const u8>();
-    while (output_ptr < output_end && key)
+    for (auto &c : data)
     {
-        *output_ptr++ ^= key;
+        c ^= key;
         key <<= 3;
+        if (!key)
+            break;
     }
-    data = algo::pack::zlib_inflate(data);
 
+    data = algo::pack::zlib_inflate(data);
     return std::make_unique<io::File>(entry->path, data);
 }
 
