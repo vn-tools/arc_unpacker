@@ -11,7 +11,7 @@ using namespace au::dec::entis;
 
 static const bstr magic1 = "Entis\x1A\x00\x00"_b;
 static const bstr magic2 = "\x00\x01\x00\x03\x00\x00\x00\x00"_b;
-static const bstr magic3 = "Music Interleaved and Orthogonal transformed"_b;
+static const bstr magic3 = "Music Interleaved and Orthogonal"_b;
 
 static audio::MioHeader read_header(
     io::IStream &input_stream, const common::SectionReader &section_reader)
