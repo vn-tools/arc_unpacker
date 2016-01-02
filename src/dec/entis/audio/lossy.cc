@@ -581,7 +581,7 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
     const auto subband_count = sample_count >> header.subband_degree;
     const auto channel_count = header.channel_count;
     const auto all_sample_count = sample_count * channel_count;
-    const auto all_subband_count = subband_count;
+    const auto all_subband_count = subband_count * channel_count;
 
     if (all_sample_count > buf_size)
     {
