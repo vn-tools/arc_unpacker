@@ -140,4 +140,9 @@ std::unique_ptr<io::File> Abmp10ArchiveDecoder::read_file_impl(
     return output_file;
 }
 
+std::vector<std::string> Abmp10ArchiveDecoder::get_linked_formats() const
+{
+    return {"qlie/abmp7", "qlie/abmp10", "qlie/dpng"};
+}
+
 static auto _ = dec::register_decoder<Abmp10ArchiveDecoder>("qlie/abmp10");
