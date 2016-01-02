@@ -27,14 +27,13 @@ res::Image TfbmImageDecoder::decode_impl(
     const auto stride = input_file.stream.read_u32_le();
     const auto pix_size = input_file.stream.read_u32_le();
     const auto pix_data = input_file.stream.read(pix_size);
-    const auto palette_number = 0;
     io::MemoryStream source_stream(algo::pack::zlib_inflate(pix_data));
 
     std::shared_ptr<res::Palette> palette;
     if (bit_depth == 8)
     {
         const auto palette_path = input_file.path.parent()
-            / algo::format("palette%03d.bmp", palette_number);
+            / algo::format("palette000.bmp");
         auto palette_file = VirtualFileSystem::get_by_path(palette_path);
         if (!palette_file)
         {
