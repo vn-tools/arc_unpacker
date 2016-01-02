@@ -78,6 +78,7 @@ namespace au {
             return end<const u8>();
         }
 
+        const char *c_str() const;
         std::string str(bool trim_to_zero = false) const;
 
         bstr operator +(const bstr &other) const;

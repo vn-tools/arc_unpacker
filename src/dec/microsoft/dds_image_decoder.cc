@@ -307,7 +307,7 @@ res::Image DdsImageDecoder::decode_impl(
         {
             throw err::NotSupportedError(algo::format(
                 "%s textures are not supported",
-                header->pixel_format.four_cc.get<char>()));
+                header->pixel_format.four_cc.c_str()));
         }
     }
     else if (header->pixel_format.flags & DDPF_RGB)

@@ -75,7 +75,7 @@ static void read_resource_entry(io::File &input_file, dec::ArchiveMeta &meta)
     else if (magic != magic_imgdat10 && magic != magic_snddat10)
     {
         throw err::NotSupportedError(algo::format(
-            "Unknown image magic: %s", magic.get<char>()));
+            "Unknown image magic: %s", magic.c_str()));
     }
 
     input_file.stream.skip(1);
@@ -120,7 +120,7 @@ std::unique_ptr<dec::ArchiveMeta> Abmp10ArchiveDecoder::read_meta_impl(
         else
         {
             throw err::NotSupportedError(algo::format(
-                "Unknown section: %s", magic.get<char>()));
+                "Unknown section: %s", magic.c_str()));
         }
     }
     return meta;

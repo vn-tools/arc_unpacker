@@ -25,11 +25,16 @@ bstr::bstr(const std::string &other) : v(other.begin(), other.end())
 {
 }
 
+const char *bstr::c_str() const
+{
+    return get<const char>();
+}
+
 std::string bstr::str(bool trim_to_zero) const
 {
     if (trim_to_zero)
-        return std::string(get<char>());
-    return std::string(get<char>(), size());
+        return std::string(c_str());
+    return std::string(c_str(), size());
 }
 
 bool bstr::empty() const

@@ -150,15 +150,14 @@ static std::unique_ptr<ArchiveEntryImpl> read_entry(
             entry->time_chunk = read_time_chunk(chunk_stream);
         else
         {
-            logger.warn("Unknown chunk '%s'", chunk_magic.get<char>());
+            logger.warn("Unknown chunk '%s'", chunk_magic.c_str());
             continue;
         }
 
         if (!chunk_stream.eof())
         {
             logger.warn(
-                "'%s' chunk contains data beyond EOF\n",
-                chunk_magic.get<char>());
+                "'%s' chunk contains data beyond EOF\n", chunk_magic.c_str());
         }
     }
     if (!entry_stream.eof())

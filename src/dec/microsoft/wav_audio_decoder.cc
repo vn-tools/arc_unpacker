@@ -45,7 +45,7 @@ res::Audio WavAudioDecoder::decode_impl(
         }
         else
         {
-            logger.warn("Unknown chunk: %s\n", chunk_name.get<const char>());
+            logger.warn("Unknown chunk: %s\n", chunk_name.c_str());
             input_file.stream.skip(chunk_size);
         }
     }
