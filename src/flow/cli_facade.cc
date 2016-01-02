@@ -1,8 +1,8 @@
 #include "flow/cli_facade.h"
 #include <algorithm>
-#include <boost/lexical_cast.hpp>
 #include <map>
 #include "algo/range.h"
+#include "algo/str.h"
 #include "arg_parser.h"
 #include "dec/idecoder.h"
 #include "dec/registry.h"
@@ -178,10 +178,10 @@ void CliFacade::Priv::parse_cli_options()
     options.enable_nested_decoding = !arg_parser.has_flag("--no-recurse");
 
     if (arg_parser.has_switch("-t"))
-        options.thread_count = boost::lexical_cast<unsigned int>(
+        options.thread_count = algo::from_string<int>(
             arg_parser.get_switch("-t"));
     else if (arg_parser.has_switch("--threads"))
-        options.thread_count = boost::lexical_cast<unsigned int>(
+        options.thread_count = algo::from_string<int>(
             arg_parser.get_switch("--threads"));
     else
         options.thread_count = 0;
