@@ -11,23 +11,23 @@ using namespace au::dec::entis::audio;
 static const int min_dct_degree = 2;
 static const int max_dct_degree = 12;
 
-static const double pi = 3.141592653589;
-static const float rcos_pi_4 = cos(pi / 4.0);
-static const float r2cos_pi_4 = 2 * rcos_pi_4;
+static const f64 pi = 3.141592653589;
+static const f32 rcos_pi_4 = static_cast<f32>(std::cos(pi / 4.0));
+static const f32 r2cos_pi_4 = 2.0f * rcos_pi_4;
 
-static float dct_of_k2[2];       // = cos((2*i+1) / 8)
-static float dct_of_k4[4];       // = cos((2*i+1) / 16)
-static float dct_of_k8[8];       // = cos((2*i+1) / 32)
-static float dct_of_k16[16];     // = cos((2*i+1) / 64)
-static float dct_of_k32[32];     // = cos((2*i+1) / 128)
-static float dct_of_k64[64];     // = cos((2*i+1) / 256)
-static float dct_of_k128[128];   // = cos((2*i+1) / 512)
-static float dct_of_k256[256];   // = cos((2*i+1) / 1024)
-static float dct_of_k512[512];   // = cos((2*i+1) / 2048)
-static float dct_of_k1024[1024]; // = cos((2*i+1) / 4096)
-static float dct_of_k2048[2048]; // = cos((2*i+1) / 8192)
+static f32 dct_of_k2[2];       // = std::cos((2*i+1) / 8)
+static f32 dct_of_k4[4];       // = std::cos((2*i+1) / 16)
+static f32 dct_of_k8[8];       // = std::cos((2*i+1) / 32)
+static f32 dct_of_k16[16];     // = std::cos((2*i+1) / 64)
+static f32 dct_of_k32[32];     // = std::cos((2*i+1) / 128)
+static f32 dct_of_k64[64];     // = std::cos((2*i+1) / 256)
+static f32 dct_of_k128[128];   // = std::cos((2*i+1) / 512)
+static f32 dct_of_k256[256];   // = std::cos((2*i+1) / 1024)
+static f32 dct_of_k512[512];   // = std::cos((2*i+1) / 2048)
+static f32 dct_of_k1024[1024]; // = std::cos((2*i+1) / 4096)
+static f32 dct_of_k2048[2048]; // = std::cos((2*i+1) / 8192)
 
-static float *dct_of_k_matrix[max_dct_degree] =
+static f32 *dct_of_k_matrix[max_dct_degree] =
 {
     nullptr,
     dct_of_k2,
@@ -47,8 +47,8 @@ namespace
 {
     struct EriSinCos final
     {
-        float rsin;
-        float rcos;
+        f32 rsin;
+        f32 rcos;
     };
 }
 
@@ -71,7 +71,7 @@ struct LossyAudioDecoder::Priv final
     void decode_post_block_mss(s16 *output_ptr, const size_t samples);
 
     void dequantumize(
-        float *destination,
+        f32 *destination,
         const s32 *quantumized,
         const s32 weight_code,
         const int coefficient);
@@ -87,19 +87,19 @@ struct LossyAudioDecoder::Priv final
     std::unique_ptr<u8[]> revolve_code_table;
     std::unique_ptr<s32[]> weight_code_table;
     std::unique_ptr<u32[]> coefficient_table;
-    std::unique_ptr<float[]> matrix_buf;
-    std::unique_ptr<float[]> internal_buf;
-    std::unique_ptr<float[]> work_buf;
-    std::unique_ptr<float[]> work_buf2;
-    std::unique_ptr<float[]> weight_table;
-    std::unique_ptr<float[]> last_dct;
+    std::unique_ptr<f32[]> matrix_buf;
+    std::unique_ptr<f32[]> internal_buf;
+    std::unique_ptr<f32[]> work_buf;
+    std::unique_ptr<f32[]> work_buf2;
+    std::unique_ptr<f32[]> weight_table;
+    std::unique_ptr<f32[]> last_dct;
 
     u8 *division_ptr;
     u8 *rev_code_ptr;
     s32 *weight_ptr;
     u32 *coefficient_ptr;
     s32 *source_ptr;
-    float *last_dct_buf;
+    f32 *last_dct_buf;
     size_t subband_degree;
     size_t degree_num;
     std::vector<EriSinCos> revolve_param;
@@ -111,27 +111,27 @@ static void init_dct_of_k_matrix()
     for (const auto i : algo::range(1, max_dct_degree))
     {
         int n = 1 << i;
-        float *dct_of_k = dct_of_k_matrix[i];
-        double nr = pi / (4.0 * n);
-        double dr = nr + nr;
-        double ir = nr;
+        f32 *dct_of_k = dct_of_k_matrix[i];
+        f64 nr = pi / (4.0 * n);
+        f64 dr = nr + nr;
+        f64 ir = nr;
         for (const auto j : algo::range(n))
         {
-            dct_of_k[j] = cos(ir);
+            dct_of_k[j] = static_cast<f32>(std::cos(ir));
             ir += dr;
         }
     }
 }
 
-static int round32(const float r)
+static int round32(const f32 r)
 {
-    if (r >= 0.0)
-        return floor(r + 0.5);
-    return ceil(r - 0.5);
+    return (r >= 0.0)
+        ? static_cast<int>(floor(r + 0.5))
+        : static_cast<int>(ceil(r - 0.5));
 }
 
 static void round32_array(
-    s16 *output, const int step, const float *source, const size_t size)
+    s16 *output, const int step, const f32 *source, const size_t size)
 {
     for (const auto i : algo::range(size))
     {
@@ -146,22 +146,22 @@ static void round32_array(
     }
 }
 
-static void iplot(float *input, const size_t dct_degree)
+static void iplot(f32 *input, const size_t dct_degree)
 {
     const auto degree_num = 1 << dct_degree;
     for (const auto i : algo::range(0, degree_num, 2))
     {
         const auto r1 = input[i];
         const auto r2 = input[i + 1];
-        input[i + 0] = 0.5 * (r1 + r2);
-        input[i + 1] = 0.5 * (r1 - r2);
+        input[i + 0] = 0.5f * (r1 + r2);
+        input[i + 1] = 0.5f * (r1 - r2);
     }
 }
 
 static void ilot(
-    float *output,
-    const float *input1,
-    const float *input2,
+    f32 *output,
+    const f32 *input1,
+    const f32 *input2,
     const size_t dct_degree)
 {
     const auto degree_num = 1 << dct_degree;
@@ -185,24 +185,24 @@ static std::vector<EriSinCos> create_revolve_param(const size_t dct_degree)
     }
 
     std::vector<EriSinCos> revolve_param(lc * 8);
-    const double k = pi / (degree_num * 2);
+    const f64 k = pi / (degree_num * 2);
     EriSinCos *revolve_param_ptr = &revolve_param[0];
     signed int step = 2;
     do
     {
         for (const auto i : algo::range(7))
         {
-            double ws = 1.0;
-            double a = 0.0;
+            f64 ws = 1.0;
+            f64 a = 0.0;
             for (const auto j : algo::range(i))
             {
                 a += step;
                 ws = ws * revolve_param_ptr[j].rsin
-                    + revolve_param_ptr[j].rcos * cos(a * k);
+                    + revolve_param_ptr[j].rcos * std::cos(a * k);
             }
-            const double r = atan2(ws, cos((a + step) * k));
-            revolve_param_ptr[i].rsin = sin(r);
-            revolve_param_ptr[i].rcos = cos(r);
+            const f64 r = atan2(ws, std::cos((a + step) * k));
+            revolve_param_ptr[i].rsin = static_cast<f32>(std::sin(r));
+            revolve_param_ptr[i].rcos = static_cast<f32>(std::cos(r));
         }
         revolve_param_ptr += 7;
         step *= 8;
@@ -212,17 +212,17 @@ static std::vector<EriSinCos> create_revolve_param(const size_t dct_degree)
 }
 
 static void revolve_2x2(
-    float *buf1,
-    float *buf2,
-    const float rsin,
-    const float rcos,
+    f32 *buf1,
+    f32 *buf2,
+    const f32 rsin,
+    const f32 rcos,
     const size_t step,
     const size_t size)
 {
     for (const auto i : algo::range(size))
     {
-        const float r1 = *buf1;
-        const float r2 = *buf2;
+        const f32 r1 = *buf1;
+        const f32 r2 = *buf2;
         *buf1 = r1 * rcos - r2 * rsin;
         *buf2 = r1 * rsin + r2 * rcos;
         buf1 += step;
@@ -231,7 +231,7 @@ static void revolve_2x2(
 }
 
 static void odd_givens_inverse_matrix(
-    float *input,
+    f32 *input,
     const std::vector<EriSinCos> &revolve_param,
     const size_t dct_degree)
 {
@@ -283,10 +283,10 @@ static void odd_givens_inverse_matrix(
 }
 
 static void dct(
-    float *output,
+    f32 *output,
     const size_t output_interval,
-    float *input,
-    float *work_buf,
+    f32 *input,
+    f32 *work_buf,
     const size_t dct_degree)
 {
     if (dct_degree < min_dct_degree || dct_degree > max_dct_degree)
@@ -294,12 +294,12 @@ static void dct(
 
     if (dct_degree == min_dct_degree)
     {
-        float r32_buf[4];
+        f32 r32_buf[4];
         r32_buf[0] = input[0] + input[3];
         r32_buf[2] = input[0] - input[3];
         r32_buf[1] = input[1] + input[2];
         r32_buf[3] = input[1] - input[2];
-        output[0] = 0.5 * (r32_buf[0] + r32_buf[1]);
+        output[0] = 0.5f * (r32_buf[0] + r32_buf[1]);
         output[output_interval * 2] = rcos_pi_4 * (r32_buf[0] - r32_buf[1]);
         r32_buf[2] = dct_of_k2[0] * r32_buf[2];
         r32_buf[3] = dct_of_k2[1] * r32_buf[3];
@@ -326,7 +326,7 @@ static void dct(
     for (const auto i : algo::range(half_degree))
         input[i] *= dct_of_k[i];
     dct(output, output_step, input, work_buf, dct_degree - 1);
-    float *output_ptr = output;
+    f32 *output_ptr = output;
     for (const auto i : algo::range(half_degree))
     {
         *output_ptr += *output_ptr;
@@ -341,10 +341,10 @@ static void dct(
 }
 
 static void idct(
-    float *output,
-    float *input,
+    f32 *output,
+    f32 *input,
     const size_t input_interval,
-    float *work_buf,
+    f32 *work_buf,
     const size_t dct_degree)
 {
     if (dct_degree < min_dct_degree || dct_degree > max_dct_degree)
@@ -352,8 +352,8 @@ static void idct(
 
     if (dct_degree == min_dct_degree)
     {
-        float r32_buf1[2];
-        float r32_buf2[4];
+        f32 r32_buf1[2];
+        f32 r32_buf2[4];
         r32_buf1[0] = input[0];
         r32_buf1[1] = rcos_pi_4 * input[input_interval * 2];
         r32_buf2[0] = r32_buf1[0] + r32_buf1[1];
@@ -374,10 +374,10 @@ static void idct(
     const size_t half_degree = degree_num >> 1;
     const size_t input_step = input_interval << 1;
     idct(output, input, input_step, work_buf, dct_degree - 1);
-    const float *dct_of_k = dct_of_k_matrix[dct_degree - 1];
-    const float *odd_input = input + input_interval;
-    float *odd_output = output + half_degree;
-    const float *input_ptr = odd_input;
+    const f32 *dct_of_k = dct_of_k_matrix[dct_degree - 1];
+    const f32 *odd_input = input + input_interval;
+    f32 *odd_output = output + half_degree;
+    const f32 *input_ptr = odd_input;
     for (const auto i : algo::range(half_degree))
     {
         work_buf[i] = *input_ptr * dct_of_k[i];
@@ -388,7 +388,7 @@ static void idct(
         odd_output[i] += odd_output[i];
     for (const auto i : algo::range(1, half_degree, 1))
         odd_output[i] -= odd_output[i - 1];
-    float r32_buf[4];
+    f32 r32_buf[4];
     for (const auto i : algo::range(half_degree >> 1))
     {
         r32_buf[0] = output[i] + output[half_degree + i];
@@ -420,17 +420,17 @@ LossyAudioDecoder::Priv::Priv(const MioHeader &header) : header(header)
     const auto subband_size = 1 << header.subband_degree;
     const auto subband_size_total = header.channel_count * subband_size;
     buffer1 = std::make_unique<s32[]>(subband_size_total);
-    matrix_buf = std::make_unique<float[]>(subband_size_total);
-    internal_buf = std::make_unique<float[]>(subband_size_total);
-    work_buf = std::make_unique<float[]>(subband_size);
-    work_buf2 = std::make_unique<float[]>(subband_size);
-    weight_table = std::make_unique<float[]>(subband_size);
+    matrix_buf = std::make_unique<f32[]>(subband_size_total);
+    internal_buf = std::make_unique<f32[]>(subband_size_total);
+    work_buf = std::make_unique<f32[]>(subband_size);
+    work_buf2 = std::make_unique<f32[]>(subband_size);
+    weight_table = std::make_unique<f32[]>(subband_size);
 
     const auto blockset_samples = header.channel_count << header.subband_degree;
     const auto lapped_samples = blockset_samples * header.lapped_degree;
     if (lapped_samples > 0)
     {
-        last_dct = std::make_unique<float[]>(lapped_samples);
+        last_dct = std::make_unique<f32[]>(lapped_samples);
         for (const auto i : algo::range(lapped_samples))
             last_dct[i] = 0.0f;
     }
@@ -458,14 +458,14 @@ void LossyAudioDecoder::Priv::initialize_with_degree(
 }
 
 void LossyAudioDecoder::Priv::dequantumize(
-    float *destination,
+    f32 *destination,
     const s32 *quantumized,
     const s32 weight_code,
     const int coefficient)
 {
-    const double matrix_scale = sqrt(2.0 / degree_num);
-    const double coefficient_ratio = matrix_scale * coefficient;
-    double avg_ratio[7];
+    const f64 matrix_scale = sqrt(2.0 / degree_num);
+    const f64 coefficient_ratio = matrix_scale * coefficient;
+    f64 avg_ratio[7];
     for (const auto i : algo::range(6))
     {
         const auto power = (((weight_code >> (i * 5)) & 0x1F) - 15) * 0.5;
@@ -475,31 +475,34 @@ void LossyAudioDecoder::Priv::dequantumize(
 
     size_t pos = 0;
     while (pos < frequency_point[0])
-        weight_table[pos++] = avg_ratio[0];
+        weight_table[pos++] = static_cast<f32>(avg_ratio[0]);
     for (const auto j : algo::range(1, 7))
     {
-        const auto diff = frequency_point[j] - frequency_point[j - 1];
-        const double a = avg_ratio[j - 1];
-        const double k = (avg_ratio[j] - a) / diff;
+        const f64 a = avg_ratio[j - 1];
+        const f64 k = (avg_ratio[j] - a)
+            / (frequency_point[j] - frequency_point[j - 1]);
         while (pos < frequency_point[j])
         {
             const auto tmp = k * (pos - frequency_point[j - 1]) + a;
-            weight_table[pos++] = tmp;
+            weight_table[pos++] = static_cast<f32>(tmp);
         }
     }
     while (pos < degree_num)
-        weight_table[pos++] = avg_ratio[6];
+        weight_table[pos++] = static_cast<f32>(avg_ratio[6]);
 
-    const float odd_weight_ratio = (((weight_code >> 30) & 0x03) + 0x02) / 2.0;
+    const f32 odd_weight_ratio = (((weight_code >> 30) & 3) + 2) / 2.0f;
     for (const auto i : algo::range(15, degree_num, 16))
         weight_table[i] *= odd_weight_ratio;
 
-    weight_table[degree_num - 1] = coefficient;
+    weight_table[degree_num - 1] = static_cast<f32>(coefficient);
 
     for (const auto i : algo::range(degree_num))
-        weight_table[i] = 1.0 / weight_table[i];
+        weight_table[i] = 1.0f / weight_table[i];
     for (const auto i : algo::range(degree_num))
-        destination[i] = coefficient_ratio * weight_table[i] * quantumized[i];
+    {
+        destination[i] = static_cast<f32>(
+            coefficient_ratio * weight_table[i] * quantumized[i]);
+    }
 }
 
 void LossyAudioDecoder::Priv::decode_lead_block()
@@ -772,8 +775,8 @@ void LossyAudioDecoder::Priv::decode_lead_block_mss()
     const auto rev_code = *rev_code_ptr++;
     auto lap_buf1 = last_dct.get();
     auto lap_buf2 = last_dct.get() + degree_num;
-    const auto rsin = sin(rev_code * pi / 8);
-    const auto rcos = cos(rev_code * pi / 8);
+    const auto rsin = static_cast<f32>(std::sin(rev_code * pi / 8));
+    const auto rcos = static_cast<f32>(std::cos(rev_code * pi / 8));
     revolve_2x2(lap_buf1, lap_buf2, rsin, rcos, 1, degree_num);
     lap_buf = last_dct.get();
     for (const auto i : algo::range(2))
@@ -807,8 +810,8 @@ void LossyAudioDecoder::Priv::decode_post_block_mss(
     const auto rev_code = *rev_code_ptr++;
     auto matrix_ptr1 = matrix_buf.get();
     auto matrix_ptr2 = matrix_buf.get() + degree_num;
-    const auto rsin = sin(rev_code * pi / 8);
-    const auto rcos = cos(rev_code * pi / 8);
+    const auto rsin = static_cast<f32>(std::sin(rev_code * pi / 8));
+    const auto rcos = static_cast<f32>(std::cos(rev_code * pi / 8));
     revolve_2x2(matrix_ptr1, matrix_ptr2, rsin, rcos, 1, degree_num);
     matrix_ptr = matrix_buf.get();
     for (const auto i : algo::range(2))
@@ -845,14 +848,14 @@ void LossyAudioDecoder::Priv::decode_internal_block_mss(
     const int rev_code1 = (rev_code >> 2) & 0x03;
     const int rev_code2 = rev_code & 0x03;
 
-    float rsin, rcos;
-    float *matrix_ptr1 = matrix_buf.get();
-    float *matrix_ptr2 = matrix_buf.get() + degree_num;
-    rsin = ::sin(rev_code1 * pi / 8);
-    rcos = ::cos(rev_code1 * pi / 8);
+    f32 rsin, rcos;
+    f32 *matrix_ptr1 = matrix_buf.get();
+    f32 *matrix_ptr2 = matrix_buf.get() + degree_num;
+    rsin = static_cast<f32>(std::sin(rev_code1 * pi / 8));
+    rcos = static_cast<f32>(std::cos(rev_code1 * pi / 8));
     revolve_2x2(matrix_ptr1, matrix_ptr2, rsin, rcos, 2, degree_num / 2);
-    rsin = ::sin(rev_code2 * pi / 8);
-    rcos = ::cos(rev_code2 * pi / 8);
+    rsin = static_cast<f32>(std::sin(rev_code2 * pi / 8));
+    rcos = static_cast<f32>(std::cos(rev_code2 * pi / 8));
     revolve_2x2(matrix_ptr1+1, matrix_ptr2+1, rsin, rcos, 2, degree_num / 2);
 
     matrix_ptr = matrix_buf.get();
