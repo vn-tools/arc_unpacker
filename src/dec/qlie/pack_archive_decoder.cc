@@ -1,4 +1,5 @@
 #include "dec/qlie/pack_archive_decoder.h"
+#include "algo/binary.h"
 #include "algo/locale.h"
 #include "algo/range.h"
 #include "dec/borland/tpf0_decoder.h"
@@ -42,27 +43,6 @@ namespace
     };
 }
 
-static u64 padb(const u64 a, const u64 b)
-{
-    return ((a & 0x7F7F7F7F7F7F7F7F)
-        + (b & 0x7F7F7F7F7F7F7F7F))
-        ^ ((a ^ b) & 0x8080808080808080);
-}
-
-static u64 padw(const u64 a, const u64 b)
-{
-    return ((a & 0x7FFF7FFF7FFF7FFF)
-        + (b & 0x7FFF7FFF7FFF7FFF))
-        ^ ((a ^ b) & 0x8000800080008000);
-}
-
-static u64 padd(const u64 a, const u64 b)
-{
-    return ((a & 0x7FFFFFFF7FFFFFFF)
-        + (b & 0x7FFFFFFF7FFFFFFF))
-        ^ ((a ^ b) & 0x8000000080000000);
-}
-
 static size_t get_magic_start(const io::IStream &input_stream)
 {
     return input_stream.size() - magic.size() - 8 - 4;
@@ -74,8 +54,8 @@ static u32 derive_seed(const bstr &input)
     u64 result = 0;
     for (auto i : algo::range(input.size() >> 3))
     {
-        key = padw(key, 0x0307030703070307);
-        result = padw(result, input.get<u64>()[i] ^ key);
+        key = algo::padw(key, 0x0307030703070307);
+        result = algo::padw(result, input.get<u64>()[i] ^ key);
     }
     result ^= (result >> 32);
     return static_cast<u32>(result & 0xFFFFFFFF);
@@ -98,7 +78,7 @@ static void decrypt_file_data_basic(bstr &data, const u32 seed)
 
     while (current < end)
     {
-        key = padd(key, 0xCE24F523CE24F523);
+        key = algo::padd(key, 0xCE24F523CE24F523);
         key ^= mutator;
         mutator = *current++ ^= key;
     }
@@ -151,15 +131,15 @@ static void decrypt_file_data_with_external_keys(
     while (data_ptr < data_ptr.end())
     {
         mutator ^= table[table_index];
-        mutator = padd(mutator, table[table_index]);
+        mutator = algo::padd(mutator, table[table_index]);
 
         *data_ptr ^= mutator;
 
-        mutator = padb(mutator, *data_ptr);
+        mutator = algo::padb(mutator, *data_ptr);
         mutator ^= *data_ptr;
         mutator <<= 1;
         mutator &= 0xFFFFFFFEFFFFFFFE;
-        mutator = padw(mutator, *data_ptr);
+        mutator = algo::padw(mutator, *data_ptr);
 
         table_index++;
         table_index %= table.size();
