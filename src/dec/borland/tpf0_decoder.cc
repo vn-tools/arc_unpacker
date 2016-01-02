@@ -9,23 +9,6 @@ using namespace au::dec::borland;
 
 static const auto magic = "TPF0"_b;
 
-namespace
-{
-    struct delphi_f80 final
-    {
-        u64 mantissa : 64;
-        u32 exponent : 15;
-        u8 sign : 1;
-    };
-
-    struct ieee754_f64 final
-    {
-        u64 mantissa : 52;
-        u32 exponent : 11;
-        u8 sign : 1;
-    };
-}
-
 static algo::any read_value(io::IStream &input_stream)
 {
     const auto type = input_stream.read_u8();
@@ -40,12 +23,19 @@ static algo::any read_value(io::IStream &input_stream)
 
     if (type == 5)
     {
-        const auto value_f80 = *input_stream.read(10).get<delphi_f80>();
-        ieee754_f64 value_f64;
-        value_f64.mantissa = value_f80.mantissa >> 12;
-        value_f64.exponent = value_f80.exponent >> 4;
-        value_f64.sign = value_f80.sign;
-        const auto alias = reinterpret_cast<const char*>(&value_f64);
+        const auto hi = input_stream.read_u64_le();
+        const auto lo = input_stream.read_u16_le();
+        const u64 f80_sign     = lo >> 15;  // 1
+        const u64 f80_exponent = lo & ~15;  // 15
+        const u64 f80_mantissa = hi;        // 64
+        const u64 f64_sign     = f80_sign;              // 1
+        const u64 f64_exponent = f80_exponent >> 4;     // 11
+        const u64 f64_mantissa = f80_mantissa >> 12;    // 52
+        const u64 packed_f64
+            = (f64_sign << 63)
+            | (f64_exponent << 52)
+            | (f64_mantissa << 0);
+        const auto alias = reinterpret_cast<const char*>(&packed_f64);
         return *reinterpret_cast<const f64*>(alias);
     }
 
