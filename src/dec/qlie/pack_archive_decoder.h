@@ -9,8 +9,6 @@ namespace qlie {
     class PackArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
-        PackArchiveDecoder();
-        ~PackArchiveDecoder();
         void register_cli_options(ArgParser &arg_parser) const override;
         void parse_cli_options(const ArgParser &arg_parser) override;
         std::vector<std::string> get_linked_formats() const override;
@@ -29,8 +27,8 @@ namespace qlie {
             const ArchiveEntry &e) const override;
 
     private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
+        std::string fkey_path;
+        std::string game_exe_path;
     };
 
 } } }
