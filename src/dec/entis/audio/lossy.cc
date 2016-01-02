@@ -135,7 +135,7 @@ static void round32_array(
 {
     for (const auto i : algo::range(size))
     {
-        s16 value = round32(*source++);
+        int value = round32(*source++);
         if (value <= -0x8000)
             *output = -0x8000;
         else if (value >= 0x7FFF)
