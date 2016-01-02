@@ -40,13 +40,15 @@ namespace
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
             const std::shared_ptr<io::File> input_file,
             const DecoderFileFactory file_factory,
-            const std::shared_ptr<const dec::IDecoder> origin_decoder);
+            const std::shared_ptr<const dec::IDecoder> origin_decoder,
+            const std::string &target_name);
 
         bool work() const override;
 
         const std::shared_ptr<io::File> input_file;
         const DecoderFileFactory file_factory;
         const std::shared_ptr<const dec::IDecoder> origin_decoder;
+        const std::string target_name;
     };
 }
 
@@ -205,7 +207,8 @@ size_t BaseParallelUnpackingTask::get_depth() const
 void BaseParallelUnpackingTask::save_file(
     const std::shared_ptr<io::File> input_file,
     const DecoderFileFactory file_factory,
-    const dec::BaseDecoder &origin_decoder) const
+    const dec::BaseDecoder &origin_decoder,
+    const std::string &target_name) const
 {
     task_context.task_scheduler.push_front(
         std::make_shared<ProcessOutputFileTask>(
@@ -215,7 +218,8 @@ void BaseParallelUnpackingTask::save_file(
             shared_from_this(),
             input_file,
             file_factory,
-            origin_decoder.shared_from_this()));
+            origin_decoder.shared_from_this(),
+            target_name));
 }
 
 DecodeInputFileTask::DecodeInputFileTask(
@@ -289,21 +293,27 @@ ProcessOutputFileTask::ProcessOutputFileTask(
     const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
     const std::shared_ptr<io::File> input_file,
     const DecoderFileFactory file_factory,
-    const std::shared_ptr<const dec::IDecoder> origin_decoder) :
+    const std::shared_ptr<const dec::IDecoder> origin_decoder,
+    const std::string &target_name) :
         BaseParallelUnpackingTask(
             task_context, source_type, base_name, parent_task),
         input_file(input_file),
         file_factory(file_factory),
-        origin_decoder(origin_decoder)
+        origin_decoder(origin_decoder),
+        target_name(target_name)
 {
 }
 
 bool ProcessOutputFileTask::work() const
 {
-    logger.info("decoding file...\n");
+    logger.info(
+        target_name.empty()
+            ? "decoding...\n"
+            : "decoding \"%s\"...\n",
+        target_name.c_str());
     if (!input_file)
     {
-        logger.err("error obtaining input file!!!\n");
+        logger.err("error obtaining input file!\n");
         return false;
     }
 
@@ -314,18 +324,35 @@ bool ProcessOutputFileTask::work() const
         output_file = file_factory(input_file_copy, logger);
         if (!output_file)
         {
-            logger.info("decoding ommitted.\n");
+            logger.info(
+                target_name.empty()
+                    ? "decoding of \"%s\" ommitted.\n"
+                    : "decoding ommitted.\n",
+                target_name.c_str());
             return false;
         }
     }
     catch (const std::exception &e)
     {
-        logger.err("error decoding (%s)\n", e.what());
+        if (target_name.empty())
+        {
+            logger.err("error decoding (%s)\n", e.what());
+        }
+        else
+        {
+            logger.err(
+                "error decoding \"%s\" (%s)\n", target_name.c_str(), e.what());
+        }
         return source_type == TaskSourceType::NestedDecoding
             ? save(*this, input_file)
             : false;
     }
-    logger.info("decoding finished.\n");
+
+    logger.info(
+        target_name.empty()
+            ? "decoding finished\n"
+            : "decoding of \"%s\" finished.\n",
+        target_name.c_str());
 
     const auto naming_strategy = origin_decoder->naming_strategy();
     try

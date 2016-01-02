@@ -70,7 +70,8 @@ namespace flow {
         void save_file(
             const std::shared_ptr<io::File> input_file,
             const DecoderFileFactory,
-            const dec::BaseDecoder &origin_decoder) const;
+            const dec::BaseDecoder &origin_decoder,
+            const std::string &custom_name = "") const;
 
         Logger logger;
         ParallelTaskContext &task_context;

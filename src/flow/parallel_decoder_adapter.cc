@@ -43,7 +43,8 @@ void ParallelDecoderAdapter::visit(const dec::BaseArchiveDecoder &decoder)
                 return decoder.read_file(
                     logger, input_file_copy, *meta, *entry);
             },
-            decoder);
+            decoder,
+            entry->path.str());
     }
 }
 

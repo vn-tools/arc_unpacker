@@ -110,7 +110,7 @@ class ClassInitializerListStyleCheck(Check):
     def scan(self, file):
         for i, line in enumerate(file.lines):
             match = self.regex.match(line)
-            if match is not None:
+            if match is not None and '?' not in file.lines[i - 1]:
                 yield Problem(
                     file,
                     'Put : in the previous line'.format(match.group()),
