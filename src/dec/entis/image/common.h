@@ -8,16 +8,18 @@ namespace dec {
 namespace entis {
 namespace image {
 
-    enum EriImage
+    enum EriFormatType
     {
-        Rgb         = 0x00000001,
-        Rgba        = 0x04000001,
-        Gray        = 0x00000002,
-        TypeMask    = 0x00FFFFFF,
-        WithPalette = 0x01000000,
-        UseClipping = 0x02000000,
-        WithAlpha   = 0x04000000,
-        SideBySide  = 0x10000000,
+        Colored = 0x00000001,
+        Gray    = 0x00000002,
+    };
+
+    enum EriFormatFlags
+    {
+        WithPalette = 0x01,
+        UseClipping = 0x02,
+        WithAlpha   = 0x04,
+        SideBySide  = 0x10,
     };
 
     struct EriHeader final
@@ -25,7 +27,8 @@ namespace image {
         u32 version;
         common::Transformation transformation;
         common::Architecture architecture;
-        u32 format_type;
+        EriFormatFlags format_flags;
+        EriFormatType format_type;
         u32 width;
         u32 height;
         bool flip;

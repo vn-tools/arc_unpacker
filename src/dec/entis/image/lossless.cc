@@ -39,24 +39,24 @@ static Permutation init_permutation(const DecodeContext &ctx)
     Permutation permutation(ctx.block_samples * 4);
 
     auto permutation_ptr = permutation.data();
-    for (auto c : algo::range(ctx.channel_count))
-    for (auto y : algo::range(ctx.block_size))
-    for (auto x : algo::range(ctx.block_size))
+    for (const auto c : algo::range(ctx.channel_count))
+    for (const auto y : algo::range(ctx.block_size))
+    for (const auto x : algo::range(ctx.block_size))
         *permutation_ptr++ = c * ctx.block_area + y * ctx.block_size + x;
 
-    for (auto c : algo::range(ctx.channel_count))
-    for (auto y : algo::range(ctx.block_size))
-    for (auto x : algo::range(ctx.block_size))
+    for (const auto c : algo::range(ctx.channel_count))
+    for (const auto y : algo::range(ctx.block_size))
+    for (const auto x : algo::range(ctx.block_size))
         *permutation_ptr++ = c * ctx.block_area + y + x * ctx.block_size;
 
-    for (auto y : algo::range(ctx.block_size))
-    for (auto x : algo::range(ctx.block_size))
-    for (auto c : algo::range(ctx.channel_count))
+    for (const auto y : algo::range(ctx.block_size))
+    for (const auto x : algo::range(ctx.block_size))
+    for (const auto c : algo::range(ctx.channel_count))
         *permutation_ptr++ = c * ctx.block_area + y * ctx.block_size + x;
 
-    for (auto y : algo::range(ctx.block_size))
-    for (auto x : algo::range(ctx.block_size))
-    for (auto c : algo::range(ctx.channel_count))
+    for (const auto y : algo::range(ctx.block_size))
+    for (const auto x : algo::range(ctx.block_size))
+    for (const auto c : algo::range(ctx.channel_count))
         *permutation_ptr++ = c * ctx.block_area + y + x * ctx.block_size;
 
     return permutation;
@@ -64,16 +64,16 @@ static Permutation init_permutation(const DecodeContext &ctx)
 
 static size_t get_channel_count(const EriHeader &header)
 {
-    switch (header.format_type & EriImage::TypeMask)
+    switch (header.format_type)
     {
-        case EriImage::Rgb:
+        case EriFormatType::Colored:
             if (header.bit_depth <= 8)
                 return 1;
-            if ((header.format_type & EriImage::WithAlpha))
+            if (header.format_flags & EriFormatFlags::WithAlpha)
                 return 4;
             return 3;
 
-        case EriImage::Gray:
+        case EriFormatType::Gray:
             return 1;
     }
     throw err::CorruptDataError("Unknown pixel format");
@@ -85,140 +85,85 @@ static void color_op_0000(u8 *decode_buf, const DecodeContext &context)
 
 static void color_op_0101(u8 *decode_buf, const DecodeContext &context)
 {
-    auto samples = context.block_area;
-    auto size = context.block_area;
-    auto i = 0;
-    while (size--)
-    {
-        auto base = decode_buf[i];
-        decode_buf[i++ + samples] += base;
-    }
+    for (const auto i : algo::range(context.block_area))
+        decode_buf[i + context.block_area] += decode_buf[i];
 }
 
 static void color_op_0110(u8 *decode_buf, const DecodeContext &context)
 {
-    auto samples = context.block_area * 2;
-    auto size = context.block_area;
-    auto i = 0;
-    while (size--)
-    {
-        auto base = decode_buf[i];
-        decode_buf[i++ + samples] += base;
-    }
+    for (const auto i : algo::range(context.block_area))
+        decode_buf[i + context.block_area * 2] += decode_buf[i];
 }
 
 static void color_op_0111(u8 *decode_buf, const DecodeContext &context)
 {
-    auto samples = context.block_area;
-    auto size = context.block_area;
-    auto i = 0;
-    while (size--)
+    for (const auto i : algo::range(context.block_area))
     {
-        auto base = decode_buf[i];
-        decode_buf[i + samples] += base;
-        decode_buf[i + samples * 2] += base;
-        i ++;
+        decode_buf[i + context.block_area] += decode_buf[i];
+        decode_buf[i + context.block_area * 2] += decode_buf[i];
     }
 }
 
 static void color_op_1001(u8 *decode_buf, const DecodeContext &context)
 {
-    auto samples = context.block_area;
-    auto size = context.block_area;
-    auto i = 0;
-    while (size--)
-    {
-        auto base = decode_buf[i + samples];
-        decode_buf[i++] += base;
-    }
+    for (const auto i : algo::range(context.block_area))
+        decode_buf[i] += decode_buf[i + context.block_area];
 }
 
 static void color_op_1010(u8 *decode_buf, const DecodeContext &context)
 {
-    auto samples = context.block_area;
-    auto size = context.block_area;
-    auto i = 0;
-    while (size--)
+    for (const auto i : algo::range(context.block_area))
     {
-        auto base = decode_buf[i + samples];
-        decode_buf[i++ + samples * 2] += base;
+        decode_buf[i + context.block_area * 2]
+            += decode_buf[i + context.block_area];
     }
 }
 
 static void color_op_1011(u8 *decode_buf, const DecodeContext &context)
 {
-    auto samples = context.block_area;
-    auto size = context.block_area;
-    auto i = 0;
-    while (size--)
+    for (const auto i : algo::range(context.block_area))
     {
-        auto base = decode_buf[i + samples];
-        decode_buf[i] += base;
-        decode_buf[i + samples * 2] += base;
-        i ++;
+        decode_buf[i] += decode_buf[i + context.block_area];
+        decode_buf[i + context.block_area * 2]
+            += decode_buf[i + context.block_area];
     }
 }
 
 static void color_op_1101(u8 *decode_buf, const DecodeContext &context)
 {
-    auto samples = context.block_area * 2;
-    auto size = context.block_area;
-    auto i = 0;
-    while (size--)
-    {
-        auto base = decode_buf[i + samples];
-        decode_buf[i++] += base;
-    }
+    for (const auto i : algo::range(context.block_area))
+        decode_buf[i] += decode_buf[i + context.block_area * 2];
 }
 
 static void color_op_1110(u8 *decode_buf, const DecodeContext &context)
 {
-    auto samples = context.block_area;
-    auto size = context.block_area;
-    auto i = 0;
-    while (size--)
+    for (const auto i : algo::range(context.block_area))
     {
-        auto base = decode_buf[i + samples * 2];
-        decode_buf[i++ + samples] += base;
+        decode_buf[i + context.block_area]
+            += decode_buf[i + context.block_area * 2];
     }
 }
 
 static void color_op_1111(u8 *decode_buf, const DecodeContext &context)
 {
-    auto samples = context.block_area;
-    auto size = context.block_area;
-    auto i = 0;
-    while (size--)
+    for (const auto i : algo::range(context.block_area))
     {
-        auto base = decode_buf[i + samples * 2];
-        decode_buf[i] += base;
-        decode_buf[i + samples] += base;
-        i ++;
+        decode_buf[i] += decode_buf[i + context.block_area * 2];
+        decode_buf[i + context.block_area]
+            += decode_buf[i + context.block_area * 2];
     }
 }
 
 static std::vector<ColorTransformer> color_ops
 {
-    color_op_0000,
-    color_op_0000,
-    color_op_0000,
-    color_op_0000,
-    color_op_0000,
-    color_op_0101,
-    color_op_0110,
-    color_op_0111,
-    color_op_0000,
-    color_op_1001,
-    color_op_1010,
-    color_op_1011,
-    color_op_0000,
-    color_op_1101,
-    color_op_1110,
-    color_op_1111,
+    color_op_0000, color_op_0000, color_op_0000, color_op_0000,
+    color_op_0000, color_op_0101, color_op_0110, color_op_0111,
+    color_op_0000, color_op_1001, color_op_1010, color_op_1011,
+    color_op_0000, color_op_1101, color_op_1110, color_op_1111,
 };
 
 static void transform(
-    u8 transformer_code,
+    const u8 transformer_code,
     const DecodeContext &ctx,
     const Permutation &permutation,
     const bstr &arrange_buf,
@@ -226,11 +171,11 @@ static void transform(
     u8 *prev_block_col,
     bstr &block_out)
 {
-    auto diff_mode   = (transformer_code & 0b11'00'0000) >> 6;
-    auto perm_offset = (transformer_code & 0b00'11'0000) >> 4;
-    auto color_op    = (transformer_code & 0b00'00'1111);
+    const auto diff_mode   = (transformer_code & 0b11'00'0000) >> 6;
+    const auto perm_offset = (transformer_code & 0b00'11'0000) >> 4;
+    const auto color_op    = (transformer_code & 0b00'00'1111);
 
-    for (auto i : algo::range(ctx.block_samples))
+    for (const auto i : algo::range(ctx.block_samples))
     {
         block_out[permutation[perm_offset * ctx.block_samples + i]]
             = arrange_buf[i];
@@ -240,14 +185,14 @@ static void transform(
 
     color_ops[color_op](block_out.get<u8>(), ctx);
 
-    if (diff_mode & 0x01)
+    if (diff_mode & 0b01)
     {
         auto block_out_ptr = block_out.get<u8>();
         auto next_block_col_ptr = prev_block_col;
-        for (auto i : algo::range(ctx.block_stride))
+        for (const auto i : algo::range(ctx.block_stride))
         {
             u8 last_value = *next_block_col_ptr;
-            for (auto j : algo::range(ctx.block_size))
+            for (const auto j : algo::range(ctx.block_size))
             {
                 last_value += *block_out_ptr;
                 *block_out_ptr++ = last_value;
@@ -259,38 +204,36 @@ static void transform(
     {
         auto block_out_ptr = block_out.get<u8>();
         auto next_block_col_ptr = prev_block_col;
-        for (auto i : algo::range(ctx.block_stride))
+        for (const auto i : algo::range(ctx.block_stride))
         {
             *next_block_col_ptr++ = block_out_ptr[ctx.block_size - 1];
             block_out_ptr += ctx.block_size;
         }
     }
 
+    auto prev_block_row_base = prev_block_row;
+    auto block_out_ptr = block_out.get<u8>();
+    for (const auto k : algo::range(ctx.channel_count))
     {
-        auto prev_block_row_base = prev_block_row;
-        auto block_out_ptr = block_out.get<u8>();
-        for (auto k : algo::range(ctx.channel_count))
+        const auto *prev_block_row_ptr = prev_block_row_base;
+        for (const auto i : algo::range(ctx.block_size))
         {
-            auto prev_block_row_ptr = prev_block_row_base;
-            for (auto i : algo::range(ctx.block_size))
-            {
-                auto ptrCurrentLine = block_out_ptr;
-                for (auto j : algo::range(ctx.block_size))
-                    *block_out_ptr++ += *prev_block_row_ptr++;
-                prev_block_row_ptr = ptrCurrentLine;
-            }
-            for (auto j : algo::range(ctx.block_size))
-                *prev_block_row_base++ = *prev_block_row_ptr++;
+            auto last_block_out_ptr = block_out_ptr;
+            for (const auto j : algo::range(ctx.block_size))
+                *block_out_ptr++ += *prev_block_row_ptr++;
+            prev_block_row_ptr = last_block_out_ptr;
         }
+        for (const auto j : algo::range(ctx.block_size))
+            *prev_block_row_base++ = *prev_block_row_ptr++;
     }
 }
 
 static u8 get_transformer_code(
     const EriHeader &header,
-    DecodeContext &ctx,
+    const DecodeContext &ctx,
     common::AbstractDecoder &decoder,
 
-    u8 *&transformer_codes_ptr,
+    const u8 *&transformer_codes_ptr,
     common::HuffmanTree &huffman_tree,
     common::ProbModel &prob_model)
 {
@@ -301,7 +244,7 @@ static u8 get_transformer_code(
         {
             decoder.reset();
         }
-        if (header.format_type == EriImage::Gray)
+        if (header.format_type == EriFormatType::Gray)
             return 0b11'00'0000;
         return 0b00'00'0000;
     }
@@ -320,7 +263,7 @@ static u8 get_transformer_code(
 
     if (header.architecture == common::Architecture::RunLengthGamma)
     {
-        auto transformer_code = 0b11'00'0000 | decoder.bit_reader->get(4);
+        const auto transformer_code = 0b11'00'0000 | decoder.bit_reader->get(4);
         decoder.reset();
         return transformer_code;
     }
@@ -337,7 +280,7 @@ static std::vector<u8> prefetch_transformer_codes(
     std::vector<u8> transformer_codes;
     if (!(ctx.encode_type & 0x01) || (ctx.channel_count < 3))
         return transformer_codes;
-    for (auto i : algo::range(ctx.width_blocks * ctx.height_blocks))
+    for (const auto i : algo::range(ctx.width_blocks * ctx.height_blocks))
     {
         u8 op_code;
         if (header.architecture == common::Architecture::RunLengthGamma)
@@ -349,7 +292,9 @@ static std::vector<u8> prefetch_transformer_codes(
             op_code = get_huffman_code(*decoder.bit_reader, huffman_tree);
         }
         else
+        {
             throw err::NotSupportedError("Architecture not supported");
+        }
         transformer_codes.push_back(op_code);
     }
     return transformer_codes;
@@ -388,13 +333,13 @@ static bstr crop(
     const EriHeader &header)
 {
     bstr output(header.width * header.height * ctx.channel_count);
-    for (auto y : algo::range(header.height))
+    for (const auto y : algo::range(header.height))
     {
-        auto output_ptr = output.get<u8>();
-        auto input_ptr = input.get<u8>();
+        auto *output_ptr = output.get<u8>();
+        const auto *input_ptr = input.get<u8>();
         output_ptr += y * header.width * ctx.channel_count;
         input_ptr += y * ctx.width_blocks * ctx.block_stride;
-        for (auto x : algo::range(header.width * ctx.channel_count))
+        for (const auto x : algo::range(header.width * ctx.channel_count))
             *output_ptr++ = *input_ptr++;
     }
     return output;
@@ -423,12 +368,9 @@ bstr image::decode_lossless_pixel_data(
     common::ProbModel prob_model; // for nemesis decoder
     common::HuffmanTree huffman_tree; // for huffman decoder
 
-    auto permutation = init_permutation(ctx);
-    auto transformer_codes = prefetch_transformer_codes(
-        ctx,
-        header,
-        decoder,
-        huffman_tree);
+    const auto permutation = init_permutation(ctx);
+    const auto transformer_codes = prefetch_transformer_codes(
+        ctx, header, decoder, huffman_tree);
 
     if (decoder.bit_reader->get(1))
         throw err::CorruptDataError("Expected 0 bit");
@@ -452,39 +394,37 @@ bstr image::decode_lossless_pixel_data(
     bstr prev_row(ctx.width_blocks * ctx.block_stride);
 
     auto transformer_codes_ptr = transformer_codes.data();
-    for (auto y : algo::range(ctx.height_blocks))
+    for (const auto y : algo::range(ctx.height_blocks))
+    for (const auto x : algo::range(ctx.width_blocks))
     {
-        for (auto x : algo::range(ctx.width_blocks))
+        const u8 transformer_code = get_transformer_code(
+            header,
+            ctx,
+            decoder,
+            transformer_codes_ptr,
+            huffman_tree,
+            prob_model);
+
+        decoder.decode(arrange_buf.get<u8>(), arrange_buf.size());
+
+        transform(
+            transformer_code,
+            ctx,
+            permutation,
+            arrange_buf,
+            prev_row.get<u8>() + x * ctx.block_stride,
+            prev_col.get<u8>() + y * ctx.block_stride,
+            block_out);
+
+        auto *block_out_ptr = block_out.get<u8>();
+        for (const auto c : algo::range(ctx.channel_count))
+        for (const auto yy : algo::range(ctx.block_size))
+        for (const auto xx : algo::range(ctx.block_size))
         {
-            u8 transformer_code = get_transformer_code(
-                header,
-                ctx,
-                decoder,
-                transformer_codes_ptr,
-                huffman_tree,
-                prob_model);
-
-            decoder.decode(arrange_buf.get<u8>(), arrange_buf.size());
-
-            transform(
-                transformer_code,
-                ctx,
-                permutation,
-                arrange_buf,
-                prev_row.get<u8>() + x * ctx.block_stride,
-                prev_col.get<u8>() + y * ctx.block_stride,
-                block_out);
-
-            auto *block_out_ptr = block_out.get<u8>();
-            for (auto c : algo::range(ctx.channel_count))
-            for (auto yy : algo::range(ctx.block_size))
-            for (auto xx : algo::range(ctx.block_size))
-            {
-                auto sum_y = y * ctx.block_size + yy;
-                auto sum_x = x * ctx.block_size + xx;
-                auto pos = sum_y * ctx.width_blocks * ctx.block_size + sum_x;
-                output[pos * ctx.channel_count + c] = *block_out_ptr++;
-            }
+            const auto sum_y = y * ctx.block_size + yy;
+            const auto sum_x = x * ctx.block_size + xx;
+            const auto pos = sum_y * ctx.width_blocks * ctx.block_size + sum_x;
+            output[pos * ctx.channel_count + c] = *block_out_ptr++;
         }
     }
 

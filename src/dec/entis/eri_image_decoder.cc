@@ -19,11 +19,11 @@ static const bstr magic3 = "Entis Rasterized Image"_b;
 static image::EriHeader read_header(
     io::IStream &input_stream, const common::SectionReader &section_reader)
 {
-    auto header_section = section_reader.get_section("Header");
+    const auto header_section = section_reader.get_section("Header");
     input_stream.seek(header_section.offset);
-    common::SectionReader header_section_reader(input_stream);
-    header_section = header_section_reader.get_section("ImageInf");
-    input_stream.seek(header_section.offset);
+    const common::SectionReader header_section_reader(input_stream);
+    const auto info_section = header_section_reader.get_section("ImageInf");
+    input_stream.seek(info_section.offset);
 
     image::EriHeader header;
     header.version = input_stream.read_u32_le();
@@ -32,9 +32,12 @@ static image::EriHeader read_header(
     header.architecture
         = static_cast<common::Architecture>(input_stream.read_u32_le());
 
-    header.format_type      = input_stream.read_u32_le();
-    s32 width               = input_stream.read_u32_le();
-    s32 height              = input_stream.read_u32_le();
+    const auto tmp = input_stream.read_u32_le();
+    header.format_type  = static_cast<image::EriFormatType>(tmp & 0xFFFFFF);
+    header.format_flags = static_cast<image::EriFormatFlags>(tmp >> 24);
+
+    const s32 width         = input_stream.read_u32_le();
+    const s32 height        = input_stream.read_u32_le();
     header.width            = std::abs(width);
     header.height           = std::abs(height);
     header.flip             = height > 0;
@@ -95,9 +98,9 @@ res::Image EriImageDecoder::decode_impl(
     if (header.version != 0x00020100 && header.version != 0x00020200)
         throw err::UnsupportedVersionError(header.version);
 
-    auto stream_section = section_reader.get_section("Stream");
+    const auto stream_section = section_reader.get_section("Stream");
     input_file.stream.seek(stream_section.offset);
-    common::SectionReader stream_section_reader(input_file.stream);
+    const common::SectionReader stream_section_reader(input_file.stream);
 
     const auto pixel_data_sections
         = stream_section_reader.get_sections("ImageFrm");
@@ -109,9 +112,11 @@ res::Image EriImageDecoder::decode_impl(
     for (const auto i : algo::range(pixel_data_sections.size()))
     {
         const auto &pixel_data_section = pixel_data_sections[i];
-        input_file.stream.seek(pixel_data_section.offset);
         const auto pixel_data = decode_pixel_data(
-            header, input_file.stream.read(pixel_data_section.size));
+            header,
+            input_file.stream
+                .seek(pixel_data_section.offset)
+                .read(pixel_data_section.size));
 
         // sometimes mismatches the depth reported by header
         const auto actual_depth
