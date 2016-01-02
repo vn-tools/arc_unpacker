@@ -11,11 +11,17 @@
 namespace au {
 namespace flow {
 
+    enum class TaskSourceType : u8
+    {
+        InitialUserInput,
+        NestedDecoding,
+    };
+
     class ParallelUnpacker;
 
-    using FileFactory = std::function<std::shared_ptr<io::File>()>;
-    using FileFactoryWithLogger
-        = std::function<std::shared_ptr<io::File>(const Logger &)>;
+    using InputFileFactory = std::function<std::shared_ptr<io::File>()>;
+    using DecoderFileFactory
+        = std::function<std::shared_ptr<io::File>(io::File &, const Logger &)>;
 
     struct ParallelUnpackerContext final
     {
@@ -53,6 +59,7 @@ namespace flow {
     {
         BaseParallelUnpackingTask(
             ParallelTaskContext &task_context,
+            const TaskSourceType source_type,
             const io::path &base_name,
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task);
 
@@ -61,11 +68,13 @@ namespace flow {
         size_t get_depth() const;
 
         void save_file(
-            const FileFactoryWithLogger,
+            const std::shared_ptr<io::File> input_file,
+            const DecoderFileFactory,
             const dec::BaseDecoder &origin_decoder) const;
 
         Logger logger;
         ParallelTaskContext &task_context;
+        const TaskSourceType source_type;
         const io::path base_name;
         const std::shared_ptr<const BaseParallelUnpackingTask> parent_task;
     };
@@ -76,7 +85,7 @@ namespace flow {
         ParallelUnpacker(const ParallelUnpackerContext &unpacker_context);
         ~ParallelUnpacker();
 
-        void add_input_file(const io::path &base_name, const FileFactory);
+        void add_input_file(const io::path &base_name, const InputFileFactory);
         bool run(const size_t thread_count = 0);
 
     private:

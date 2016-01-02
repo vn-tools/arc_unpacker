@@ -36,11 +36,12 @@ void ParallelDecoderAdapter::visit(const dec::BaseArchiveDecoder &decoder)
     for (const auto &entry : meta->entries)
     {
         parent_task->save_file(
-            [input_file, meta, &entry, &decoder, vfs_bridge]
-            (const Logger &logger)
+            input_file,
+            [meta, &entry, &decoder, vfs_bridge]
+            (io::File &input_file_copy, const Logger &logger)
             {
-                io::File file_copy(*input_file);
-                return decoder.read_file(logger, file_copy, *meta, *entry);
+                return decoder.read_file(
+                    logger, input_file_copy, *meta, *entry);
             },
             decoder);
     }
@@ -48,40 +49,37 @@ void ParallelDecoderAdapter::visit(const dec::BaseArchiveDecoder &decoder)
 
 void ParallelDecoderAdapter::visit(const dec::BaseFileDecoder &decoder)
 {
-    auto input_file = this->input_file;
     parent_task->save_file(
-        [input_file, &decoder](const Logger &logger)
+        input_file,
+        [&decoder](io::File &input_file_copy, const Logger &logger)
         {
-            io::File file_copy(*input_file);
-            return decoder.decode(logger, file_copy);
+            return decoder.decode(logger, input_file_copy);
         },
         decoder);
 }
 
 void ParallelDecoderAdapter::visit(const dec::BaseImageDecoder &decoder)
 {
-    auto input_file = this->input_file;
     parent_task->save_file(
-        [input_file, &decoder](const Logger &logger)
+        input_file,
+        [&decoder](io::File &input_file_copy, const Logger &logger)
         {
-            io::File file_copy(*input_file);
-            auto output_file = decoder.decode(logger, file_copy);
+            auto output_file = decoder.decode(logger, input_file_copy);
             const auto encoder = enc::png::PngImageEncoder();
-            return encoder.encode(logger, output_file, input_file->path);
+            return encoder.encode(logger, output_file, input_file_copy.path);
         },
         decoder);
 }
 
 void ParallelDecoderAdapter::visit(const dec::BaseAudioDecoder &decoder)
 {
-    auto input_file = this->input_file;
     parent_task->save_file(
-        [input_file, &decoder](const Logger &logger)
+        input_file,
+        [&decoder](io::File &input_file_copy, const Logger &logger)
         {
-            io::File file_copy(*input_file);
-            auto output_file = decoder.decode(logger, file_copy);
+            auto output_file = decoder.decode(logger, input_file_copy);
             const auto encoder = enc::microsoft::WavAudioEncoder();
-            return encoder.encode(logger, output_file, input_file->path);
+            return encoder.encode(logger, output_file, input_file_copy.path);
         },
         decoder);
 }

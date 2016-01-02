@@ -15,41 +15,37 @@ static std::mutex mutex;
 
 namespace
 {
-    enum class SourceType : u8
-    {
-        InitialUserInput,
-        NestedDecoding,
-    };
-
     struct DecodeInputFileTask final : public BaseParallelUnpackingTask
     {
         DecodeInputFileTask(
             ParallelTaskContext &task_context,
+            const TaskSourceType source_type,
             const io::path &base_name,
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
-            const SourceType source_type,
             const std::vector<std::string> &available_decoders,
-            const FileFactory file_factory);
+            const InputFileFactory file_factory);
 
         bool work() const override;
 
-        const SourceType source_type;
         const std::vector<std::string> available_decoders;
-        const FileFactory file_factory;
+        const InputFileFactory file_factory;
     };
 
     struct ProcessOutputFileTask final : public BaseParallelUnpackingTask
     {
         ProcessOutputFileTask(
             ParallelTaskContext &task_context,
+            const TaskSourceType source_type,
             const io::path &base_name,
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
-            const FileFactoryWithLogger file_factory,
+            const std::shared_ptr<io::File> input_file,
+            const DecoderFileFactory file_factory,
             const std::shared_ptr<const dec::IDecoder> origin_decoder);
 
         bool work() const override;
 
-        const FileFactoryWithLogger file_factory;
+        const std::shared_ptr<io::File> input_file;
+        const DecoderFileFactory file_factory;
         const std::shared_ptr<const dec::IDecoder> origin_decoder;
     };
 }
@@ -102,7 +98,7 @@ static std::shared_ptr<dec::IDecoder> guess_decoder(
     const BaseParallelUnpackingTask &task,
     const std::vector<std::string> &available_decoders,
     io::File &file,
-    const SourceType source_type)
+    const TaskSourceType source_type)
 {
     task.logger.info(
         "guessing decoder among %d decoders...\n", available_decoders.size());
@@ -125,7 +121,7 @@ static std::shared_ptr<dec::IDecoder> guess_decoder(
 
     if (matching_decoders.empty())
     {
-        if (source_type == SourceType::NestedDecoding)
+        if (source_type == TaskSourceType::NestedDecoding)
         {
             task.logger.info("not recognized by any decoder.\n");
         }
@@ -136,7 +132,7 @@ static std::shared_ptr<dec::IDecoder> guess_decoder(
         return nullptr;
     }
 
-    if (source_type == SourceType::NestedDecoding)
+    if (source_type == TaskSourceType::NestedDecoding)
     {
         task.logger.warn("file was recognized by multiple decoders.\n");
     }
@@ -178,10 +174,12 @@ ParallelTaskContext::ParallelTaskContext(
 
 BaseParallelUnpackingTask::BaseParallelUnpackingTask(
     ParallelTaskContext &task_context,
+    const TaskSourceType source_type,
     const io::path &base_name,
     const std::shared_ptr<const BaseParallelUnpackingTask> parent_task) :
         logger(task_context.unpacker_context.logger),
         task_context(task_context),
+        source_type(source_type),
         base_name(base_name),
         parent_task(parent_task)
 {
@@ -205,27 +203,30 @@ size_t BaseParallelUnpackingTask::get_depth() const
 }
 
 void BaseParallelUnpackingTask::save_file(
-    const FileFactoryWithLogger file_factory,
+    const std::shared_ptr<io::File> input_file,
+    const DecoderFileFactory file_factory,
     const dec::BaseDecoder &origin_decoder) const
 {
     task_context.task_scheduler.push_front(
         std::make_shared<ProcessOutputFileTask>(
             task_context,
+            source_type,
             base_name,
             shared_from_this(),
+            input_file,
             file_factory,
             origin_decoder.shared_from_this()));
 }
 
 DecodeInputFileTask::DecodeInputFileTask(
     ParallelTaskContext &task_context,
+    const TaskSourceType source_type,
     const io::path &base_name,
     const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
-    const SourceType source_type,
     const std::vector<std::string> &available_decoders,
-    const FileFactory file_factory) :
-        BaseParallelUnpackingTask(task_context, base_name, parent_task),
-        source_type(source_type),
+    const InputFileFactory file_factory) :
+        BaseParallelUnpackingTask(
+            task_context, source_type, base_name, parent_task),
         available_decoders(available_decoders),
         file_factory(file_factory)
 {
@@ -258,7 +259,7 @@ bool DecodeInputFileTask::work() const
 
         if (!decoder)
         {
-            return source_type == SourceType::NestedDecoding
+            return source_type == TaskSourceType::NestedDecoding
                 ? save(*this, input_file)
                 : false;
         }
@@ -275,7 +276,7 @@ bool DecodeInputFileTask::work() const
     catch (const std::exception &e)
     {
         logger.err("recognition finished with errors (%s)\n", e.what());
-        return source_type == SourceType::NestedDecoding
+        return source_type == TaskSourceType::NestedDecoding
             ? save(*this, input_file)
             : false;
     }
@@ -283,11 +284,15 @@ bool DecodeInputFileTask::work() const
 
 ProcessOutputFileTask::ProcessOutputFileTask(
     ParallelTaskContext &task_context,
+    const TaskSourceType source_type,
     const io::path &base_name,
     const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
-    const FileFactoryWithLogger file_factory,
+    const std::shared_ptr<io::File> input_file,
+    const DecoderFileFactory file_factory,
     const std::shared_ptr<const dec::IDecoder> origin_decoder) :
-        BaseParallelUnpackingTask(task_context, base_name, parent_task),
+        BaseParallelUnpackingTask(
+            task_context, source_type, base_name, parent_task),
+        input_file(input_file),
         file_factory(file_factory),
         origin_decoder(origin_decoder)
 {
@@ -296,17 +301,29 @@ ProcessOutputFileTask::ProcessOutputFileTask(
 bool ProcessOutputFileTask::work() const
 {
     logger.info("decoding file...\n");
+    if (!input_file)
+    {
+        logger.err("error obtaining input file!!!\n");
+        return false;
+    }
+
+    io::File input_file_copy(*input_file);
     std::shared_ptr<io::File> output_file;
     try
     {
-        output_file = file_factory(logger);
+        output_file = file_factory(input_file_copy, logger);
         if (!output_file)
+        {
+            logger.info("decoding ommitted.\n");
             return false;
+        }
     }
     catch (const std::exception &e)
     {
         logger.err("error decoding (%s)\n", e.what());
-        return false;
+        return source_type == TaskSourceType::NestedDecoding
+            ? save(*this, input_file)
+            : false;
     }
     logger.info("decoding finished.\n");
 
@@ -334,9 +351,9 @@ bool ProcessOutputFileTask::work() const
         task_context.task_scheduler.push_front(
             std::make_shared<DecodeInputFileTask>(
                 task_context,
+                TaskSourceType::NestedDecoding,
                 output_file->path,
                 shared_from_this(),
-                SourceType::NestedDecoding,
                 linked_decoders,
                 [=]() { return output_file; }));
 
@@ -380,14 +397,14 @@ ParallelUnpacker::~ParallelUnpacker()
 }
 
 void ParallelUnpacker::add_input_file(
-    const io::path &base_name, const FileFactory file_factory)
+    const io::path &base_name, const InputFileFactory file_factory)
 {
     p->task_scheduler.push_back(
         std::make_shared<DecodeInputFileTask>(
             p->task_context,
+            TaskSourceType::InitialUserInput,
             base_name,
             nullptr,
-            SourceType::InitialUserInput,
             p->unpacker_context.available_decoders,
             file_factory));
 }
