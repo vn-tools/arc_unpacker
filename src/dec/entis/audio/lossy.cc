@@ -176,13 +176,11 @@ static void ilot(
 
 static std::vector<EriSinCos> create_revolve_param(const size_t dct_degree)
 {
-    const auto degree_num = 1 << dct_degree;
-    signed int lc = 1, n = degree_num / 2;
-    while (n >= 8)
-    {
-        n /= 8;
+    const signed int degree_num = 1 << dct_degree;
+
+    int lc = 1;
+    for (int n = degree_num / 2; n >= 8; n /= 8)
         ++lc;
-    }
 
     std::vector<EriSinCos> revolve_param(lc * 8);
     const f64 k = pi / (degree_num * 2);
@@ -200,7 +198,7 @@ static std::vector<EriSinCos> create_revolve_param(const size_t dct_degree)
                 ws = ws * revolve_param_ptr[j].rsin
                     + revolve_param_ptr[j].rcos * std::cos(a * k);
             }
-            const f64 r = atan2(ws, std::cos((a + step) * k));
+            const f64 r = std::atan2(ws, std::cos((a + step) * k));
             revolve_param_ptr[i].rsin = static_cast<f32>(std::sin(r));
             revolve_param_ptr[i].rcos = static_cast<f32>(std::cos(r));
         }
@@ -299,14 +297,14 @@ static void dct(
         r32_buf[2] = input[0] - input[3];
         r32_buf[1] = input[1] + input[2];
         r32_buf[3] = input[1] - input[2];
-        output[0] = 0.5f * (r32_buf[0] + r32_buf[1]);
-        output[output_interval * 2] = rcos_pi_4 * (r32_buf[0] - r32_buf[1]);
+        output[output_interval * 0] = (r32_buf[0] + r32_buf[1]) * 0.5f;
+        output[output_interval * 2] = (r32_buf[0] - r32_buf[1]) *  rcos_pi_4;
         r32_buf[2] = dct_of_k2[0] * r32_buf[2];
         r32_buf[3] = dct_of_k2[1] * r32_buf[3];
-        r32_buf[0] = r32_buf[2] + r32_buf[3];
-        r32_buf[1] = r2cos_pi_4 * (r32_buf[2] - r32_buf[3]);
+        r32_buf[0] = (r32_buf[2] + r32_buf[3]);
+        r32_buf[1] = (r32_buf[2] - r32_buf[3]) * r2cos_pi_4;
         r32_buf[1] -= r32_buf[0];
-        output[output_interval] = r32_buf[0];
+        output[output_interval * 1] = r32_buf[0];
         output[output_interval * 3] = r32_buf[1];
         return;
     }
@@ -326,18 +324,10 @@ static void dct(
     for (const auto i : algo::range(half_degree))
         input[i] *= dct_of_k[i];
     dct(output, output_step, input, work_buf, dct_degree - 1);
-    f32 *output_ptr = output;
     for (const auto i : algo::range(half_degree))
-    {
-        *output_ptr += *output_ptr;
-        output_ptr += output_step;
-    }
-    output_ptr = output;
-    for (const auto i : algo::range(1, half_degree, 1))
-    {
-        output_ptr[output_step] -= *output_ptr;
-        output_ptr += output_step;
-    }
+        output[i * output_step] += output[i * output_step];
+    for (const auto i : algo::range(1, half_degree))
+        output[i * output_step] -= output[(i - 1) * output_step];
 }
 
 static void idct(
@@ -377,16 +367,12 @@ static void idct(
     const f32 *dct_of_k = dct_of_k_matrix[dct_degree - 1];
     const f32 *odd_input = input + input_interval;
     f32 *odd_output = output + half_degree;
-    const f32 *input_ptr = odd_input;
     for (const auto i : algo::range(half_degree))
-    {
-        work_buf[i] = *input_ptr * dct_of_k[i];
-        input_ptr += input_step;
-    }
-    dct(odd_output, 1, work_buf, (work_buf + half_degree), dct_degree - 1);
+        work_buf[i] = odd_input[i * input_step] * dct_of_k[i];
+    dct(odd_output, 1, work_buf, work_buf + half_degree, dct_degree - 1);
     for (const auto i : algo::range(half_degree))
         odd_output[i] += odd_output[i];
-    for (const auto i : algo::range(1, half_degree, 1))
+    for (const auto i : algo::range(1, half_degree))
         odd_output[i] -= odd_output[i - 1];
     f32 r32_buf[4];
     for (const auto i : algo::range(half_degree >> 1))
