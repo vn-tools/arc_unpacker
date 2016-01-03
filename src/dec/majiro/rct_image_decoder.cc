@@ -168,9 +168,14 @@ res::Image RctImageDecoder::decode_impl(
             decoders.push_back(std::make_shared<RctImageDecoder>());
             decoders.push_back(std::make_shared<Rc8ImageDecoder>());
             for (const auto &decoder : decoders)
+            {
                 if (decoder->is_recognized(*base_file))
-                    output_image.paste(
-                        decoder->decode(logger, *base_file), 0, 0);
+                {
+                    output_image.overlay(
+                        decoder->decode(logger, *base_file),
+                        res::Image::OverlayKind::OverwriteAll);
+                }
+            }
         }
     }
 
@@ -199,7 +204,8 @@ res::Image RctImageDecoder::decode_impl(
         }
     }
 
-    output_image.paste(overlay_image, 0, 0);
+    output_image.overlay(
+        overlay_image, res::Image::OverlayKind::OverwriteNonTransparent);
     return output_image;
 }
 

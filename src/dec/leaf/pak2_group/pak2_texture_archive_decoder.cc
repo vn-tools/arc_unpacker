@@ -112,7 +112,11 @@ std::unique_ptr<io::File> Pak2TextureArchiveDecoder::read_file_impl(
             input_file.stream.read(chunk.width * chunk.height * 2),
             res::PixelFormat::BGRnA5551);
         chunk_image.flip_vertically();
-        image.paste(chunk_image, chunk.x, chunk.y);
+        image.overlay(
+            chunk_image,
+            chunk.x,
+            chunk.y,
+            res::Image::OverlayKind::OverwriteAll);
     }
     const auto encoder = enc::png::PngImageEncoder();
     return encoder.encode(logger, image, entry->path);

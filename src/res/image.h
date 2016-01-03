@@ -12,6 +12,13 @@ namespace res {
     class Image final
     {
     public:
+        enum class OverlayKind : u8
+        {
+            OverwriteAll,
+            OverwriteNonTransparent,
+            AddSimple,
+        };
+
         Image(const Image &other);
 
         Image(const size_t width, const size_t height);
@@ -67,7 +74,14 @@ namespace res {
         void crop(const size_t width, const size_t height);
         void apply_mask(const Image &other);
         void apply_palette(const Palette &palette);
-        void paste(const Image &other, const int target_x, const int target_y);
+
+        void overlay(
+            const Image &other, const OverlayKind overlay_kind);
+        void overlay(
+            const Image &other,
+            const int target_x,
+            const int target_y,
+            const OverlayKind overlay_kind);
 
         Pixel *begin();
         Pixel *end();

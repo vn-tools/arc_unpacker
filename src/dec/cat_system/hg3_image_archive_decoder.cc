@@ -216,7 +216,7 @@ std::unique_ptr<io::File> Hg3ImageArchiveDecoder::read_file_impl(
         throw err::NotSupportedError("No image data found!\n");
 
     res::Image actual_image(canvas_width, canvas_height);
-    actual_image.paste(*image, x, y);
+    actual_image.overlay(*image, x, y, res::Image::OverlayKind::OverwriteAll);
     const auto encoder = enc::png::PngImageEncoder();
     return encoder.encode(logger, actual_image, entry->path);
 }

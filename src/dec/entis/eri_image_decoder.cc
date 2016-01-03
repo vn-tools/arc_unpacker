@@ -130,7 +130,11 @@ res::Image EriImageDecoder::decode_impl(
         res::Image subimage(header.width, header.height, pixel_data, fmt);
         if (header.flip)
             subimage.flip_vertically();
-        image.paste(subimage, 0, i * header.height);
+        image.overlay(
+            subimage,
+            0,
+            i * header.height,
+            res::Image::OverlayKind::OverwriteAll);
     }
 
     return image;

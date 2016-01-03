@@ -125,20 +125,56 @@ void Image::apply_palette(const Palette &palette)
     }
 }
 
-void Image::paste(const Image &other, const int target_x, const int target_y)
+void Image::overlay(
+    const Image &other,
+    const OverlayKind overlay_kind)
 {
-    const size_t x1 = std::max<size_t>(0, target_x);
-    const size_t x2 = std::min<size_t>(width(), target_x + other.width());
-    const size_t y1 = std::max<size_t>(0, target_y);
-    const size_t y2 = std::min<size_t>(height(), target_y + other.height());
-    const size_t source_x = std::max<size_t>(0, -target_x);
-    const size_t source_y = std::max<size_t>(0, -target_y);
-    for (const auto y : algo::range(y1, y2, 1))
-    for (const auto x : algo::range(x1, x2, 1))
+    overlay(other, 0, 0, overlay_kind);
+}
+
+void Image::overlay(
+    const Image &other,
+    const int target_x,
+    const int target_y,
+    const OverlayKind overlay_kind)
+{
+    const int x1 = std::max<int>(0, target_x);
+    const int x2 = std::min<int>(width(), target_x + other.width());
+    const int y1 = std::max<int>(0, target_y);
+    const int y2 = std::min<int>(height(), target_y + other.height());
+    const int source_x = std::max<int>(0, -target_x);
+    const int source_y = std::max<int>(0, -target_y);
+    if (overlay_kind == OverlayKind::OverwriteAll)
     {
-        const auto &target_pixel = other.at(source_x + x, source_y + y);
-        if (target_pixel.a)
-            at(x, y) = target_pixel;
+        for (const auto y : algo::range(y1, y2))
+        for (const auto x : algo::range(x1, x2))
+            at(x, y) = other.at(source_x + x, source_y + y);
+    }
+    else if (overlay_kind == OverlayKind::OverwriteNonTransparent)
+    {
+        for (const auto y : algo::range(y1, y2))
+        for (const auto x : algo::range(x1, x2))
+        {
+            const auto &source_pixel = other.at(source_x + x, source_y + y);
+            if (source_pixel.a)
+                at(x, y) = source_pixel;
+        }
+    }
+    else if (overlay_kind == OverlayKind::AddSimple)
+    {
+        for (const auto y : algo::range(y1, y2))
+        for (const auto x : algo::range(x1, x2))
+        {
+            auto &target_pixel = at(x, y);
+            const auto &source_pixel = other.at(source_x + x, source_y + y);
+            target_pixel.r += source_pixel.r;
+            target_pixel.g += source_pixel.g;
+            target_pixel.b += source_pixel.b;
+        }
+    }
+    else
+    {
+        throw std::logic_error("Unknown overlay kind");
     }
 }
 

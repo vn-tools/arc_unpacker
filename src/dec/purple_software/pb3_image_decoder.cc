@@ -283,7 +283,8 @@ static res::Image unpack_v6(
             if (decoder->is_recognized(*base_file))
             {
                 const auto base_image = decoder->decode(logger, *base_file);
-                output_image.paste(base_image, 0, 0);
+                output_image.overlay(
+                    base_image, res::Image::OverlayKind::OverwriteAll);
             }
         }
     }
