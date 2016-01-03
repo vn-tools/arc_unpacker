@@ -153,8 +153,8 @@ void Image::overlay(
     const int x2 = std::min<int>(width(), target_x + other.width());
     const int y1 = std::max<int>(0, target_y);
     const int y2 = std::min<int>(height(), target_y + other.height());
-    const int source_x = std::max<int>(0, -target_x);
-    const int source_y = std::max<int>(0, -target_y);
+    const int source_x = -target_x;
+    const int source_y = -target_y;
     if (overlay_kind == OverlayKind::OverwriteAll)
     {
         for (const auto y : algo::range(y1, y2))
