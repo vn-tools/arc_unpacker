@@ -34,14 +34,16 @@ void TaskScheduler::push_back(std::shared_ptr<ITask> task)
     p->tasks.push_back(task);
 }
 
-bool TaskScheduler::run(size_t number_of_threads)
+TaskSchedulerResult TaskScheduler::run(size_t number_of_threads)
 {
     if (!number_of_threads)
         number_of_threads = std::thread::hardware_concurrency();
     if (!number_of_threads)
         number_of_threads = 1;
 
-    bool success = true;
+    TaskSchedulerResult result;
+    result.success_count = 0;
+    result.error_count = 0;
     bool still_running = true;
 
     for (const auto i : algo::range(number_of_threads))
@@ -73,7 +75,8 @@ bool TaskScheduler::run(size_t number_of_threads)
 
                 {
                     std::unique_lock<std::mutex> lock(mutex);
-                    success &= local_success;
+                    result.success_count += local_success;
+                    result.error_count += !local_success;
                     still_running = !p->tasks.empty();
                 }
             }
@@ -83,5 +86,5 @@ bool TaskScheduler::run(size_t number_of_threads)
     for (auto &t : p->threads)
         t->join();
 
-    return success;
+    return result;
 }

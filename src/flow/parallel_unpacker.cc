@@ -251,7 +251,7 @@ bool DecodeInputFileTask::work() const
         input_file = file_factory();
         if (!input_file)
         {
-            logger.err("No input file(?)\n");
+            logger.err("no input file (?)\n");
             return false;
         }
     }
@@ -287,9 +287,9 @@ bool DecodeInputFileTask::work() const
     catch (const std::exception &e)
     {
         logger.err("recognition finished with errors (%s)\n", e.what());
-        return source_type == TaskSourceType::NestedDecoding
-            ? save(*this, input_file)
-            : false;
+        if (source_type == TaskSourceType::NestedDecoding)
+            save(*this, input_file);
+        return false;
     }
 }
 
@@ -355,9 +355,9 @@ bool ProcessOutputFileTask::work() const
             logger.err(
                 "error decoding \"%s\" (%s)\n", target_name.c_str(), e.what());
         }
-        return source_type == TaskSourceType::NestedDecoding
-            ? save(*this, input_file)
-            : false;
+        if (source_type == TaskSourceType::NestedDecoding)
+            save(*this, input_file);
+        return false;
     }
 
     logger.info(
@@ -367,45 +367,36 @@ bool ProcessOutputFileTask::work() const
         target_name.c_str());
 
     const auto naming_strategy = origin_decoder->naming_strategy();
-    try
+    output_file->path = algo::apply_naming_strategy(
+        naming_strategy, base_name, output_file->path);
+
+    if (!task_context.unpacker_context.enable_nested_decoding)
+        return save(*this, output_file);
+
+    auto linked_decoders = collect_linked_decoders(
+        *origin_decoder, task_context.unpacker_context.registry);
+    linked_decoders.insert(
+        decoders_to_check.begin(), decoders_to_check.end());
+
+    if (linked_decoders.empty())
+        return save(*this, output_file);
+
+    if (get_depth() >= max_depth)
     {
-        output_file->path = algo::apply_naming_strategy(
-            naming_strategy, base_name, output_file->path);
-
-        if (!task_context.unpacker_context.enable_nested_decoding)
-            return save(*this, output_file);
-
-        auto linked_decoders = collect_linked_decoders(
-            *origin_decoder, task_context.unpacker_context.registry);
-        linked_decoders.insert(
-            decoders_to_check.begin(), decoders_to_check.end());
-
-        if (linked_decoders.empty())
-            return save(*this, output_file);
-
-        if (get_depth() >= max_depth)
-        {
-            logger.warn("cycle detected.\n");
-            return save(*this, output_file);
-        }
-
-        task_context.task_scheduler.push_front(
-            std::make_shared<DecodeInputFileTask>(
-                task_context,
-                TaskSourceType::NestedDecoding,
-                output_file->path,
-                shared_from_this(),
-                linked_decoders,
-                [=]() { return output_file; }));
-
-        return true;
+        logger.warn("cycle detected.\n");
+        return save(*this, output_file);
     }
-    catch (const std::exception &e)
-    {
-        logger.err(
-            "error processing %s (%s)\n", output_file->path.c_str(), e.what());
-        return false;
-    }
+
+    task_context.task_scheduler.push_front(
+        std::make_shared<DecodeInputFileTask>(
+            task_context,
+            TaskSourceType::NestedDecoding,
+            output_file->path,
+            shared_from_this(),
+            linked_decoders,
+            [=]() { return output_file; }));
+
+    return true;
 }
 
 struct ParallelUnpacker::Priv final
@@ -452,5 +443,15 @@ void ParallelUnpacker::add_input_file(
 
 bool ParallelUnpacker::run(const size_t thread_count)
 {
-    return p->task_scheduler.run(thread_count);
+    // TODO: don't let the user mute this
+    const auto results = p->task_scheduler.run(thread_count);
+    const auto &logger = p->unpacker_context.logger;
+    logger.info(
+        "Executed %d tasks (", results.success_count + results.error_count);
+    if (results.error_count > 0)
+        logger.err("%d problems, ", results.error_count);
+    logger.info(
+        "%d saved files)\n",
+        p->unpacker_context.file_saver.get_saved_file_count());
+    return results.error_count == 0;
 }

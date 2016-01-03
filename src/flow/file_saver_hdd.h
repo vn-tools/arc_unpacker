@@ -13,6 +13,7 @@ namespace flow {
         ~FileSaverHdd();
 
         io::path save(std::shared_ptr<io::File> file) const override;
+        size_t get_saved_file_count() const override;
 
     private:
         struct Priv;

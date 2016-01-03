@@ -8,9 +8,11 @@ struct FileSaverCallback::Priv final
     Priv(FileSaveCallback callback);
 
     FileSaveCallback callback;
+    size_t saved_file_count;
 };
 
-FileSaverCallback::Priv::Priv(FileSaveCallback callback) : callback(callback)
+FileSaverCallback::Priv::Priv(FileSaveCallback callback)
+    : callback(callback), saved_file_count(0)
 {
 }
 
@@ -35,5 +37,11 @@ void FileSaverCallback::set_callback(FileSaveCallback callback)
 io::path FileSaverCallback::save(std::shared_ptr<io::File> file) const
 {
     p->callback(file);
+    ++p->saved_file_count;
     return file->path;
+}
+
+size_t FileSaverCallback::get_saved_file_count() const
+{
+    return p->saved_file_count;
 }

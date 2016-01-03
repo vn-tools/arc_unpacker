@@ -19,12 +19,13 @@ struct FileSaverHdd::Priv final
     io::path make_path_unique(const io::path &path);
 
     io::path output_dir;
-    std::set<io::path> paths;
     bool overwrite;
+    size_t saved_file_count;
+    std::set<io::path> paths;
 };
 
 FileSaverHdd::Priv::Priv(const io::path &output_dir, const bool overwrite)
-    : output_dir(output_dir), overwrite(overwrite)
+    : output_dir(output_dir), overwrite(overwrite), saved_file_count(0)
 {
 }
 
@@ -58,5 +59,11 @@ io::path FileSaverHdd::save(std::shared_ptr<io::File> file) const
     io::create_directories(full_path.parent());
     io::FileStream output_stream(full_path, io::FileMode::Write);
     output_stream.write(file->stream.seek(0).read_to_eof());
+    ++p->saved_file_count;
     return full_path;
+}
+
+size_t FileSaverHdd::get_saved_file_count() const
+{
+    return p->saved_file_count;
 }
