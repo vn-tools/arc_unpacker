@@ -236,7 +236,7 @@ TEST_CASE(
     io::File dummy_file("outer.arc", outer_arc_content);
 
     const auto saved_files = tests::flow_unpack(*registry, true, dummy_file);
-    REQUIRE(paths_for_recognition.size() == 4);
+    REQUIRE(paths_for_recognition.size() == 5);
     tests::compare_paths(paths_for_recognition[0], "outer.arc");
     tests::compare_paths(
         paths_for_recognition[1], "outer.arc/inner.arc");
@@ -244,6 +244,8 @@ TEST_CASE(
         paths_for_recognition[2], "outer.arc/inner.arc/nested/test.rgb");
     tests::compare_paths(
         paths_for_recognition[3], "outer.arc/inner.arc/nested/test.rgb");
+    tests::compare_paths(
+        paths_for_recognition[4], "outer.arc/inner.arc/nested/test.png");
     REQUIRE(paths_for_conversion.size() == 1);
     tests::compare_paths(
         paths_for_conversion[0], "outer.arc/inner.arc/nested/test.rgb");

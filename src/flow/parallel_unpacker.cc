@@ -22,12 +22,11 @@ namespace
             const TaskSourceType source_type,
             const io::path &base_name,
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
-            const std::vector<std::string> &available_decoders,
+            const std::set<std::string> &decoders_to_check,
             const InputFileFactory file_factory);
 
         bool work() const override;
 
-        const std::vector<std::string> available_decoders;
         const InputFileFactory file_factory;
     };
 
@@ -38,6 +37,7 @@ namespace
             const TaskSourceType source_type,
             const io::path &base_name,
             const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
+            const std::set<std::string> &decoders_to_check,
             const std::shared_ptr<io::File> input_file,
             const DecoderFileFactory file_factory,
             const std::shared_ptr<const dec::IDecoder> origin_decoder,
@@ -72,7 +72,7 @@ static bool save(
     }
 }
 
-static std::vector<std::string> collect_linked_decoders(
+static std::set<std::string> collect_linked_decoders(
     const dec::IDecoder &base_decoder, const dec::Registry &registry)
 {
     std::set<std::string> known_formats;
@@ -93,20 +93,20 @@ static std::vector<std::string> collect_linked_decoders(
             linked_decoders.push_back(std::move(linked_decoder));
         }
     }
-    return std::vector<std::string>(known_formats.begin(), known_formats.end());
+    return std::set<std::string>(known_formats.begin(), known_formats.end());
 }
 
 static std::shared_ptr<dec::IDecoder> guess_decoder(
     const BaseParallelUnpackingTask &task,
-    const std::vector<std::string> &available_decoders,
+    const std::set<std::string> &decoders_to_check,
     io::File &file,
     const TaskSourceType source_type)
 {
     task.logger.info(
-        "guessing decoder among %d decoders...\n", available_decoders.size());
+        "guessing decoder among %d decoders...\n", decoders_to_check.size());
 
     std::map<std::string, std::shared_ptr<dec::IDecoder>> matching_decoders;
-    for (const auto &name : available_decoders)
+    for (const auto &name : decoders_to_check)
     {
         const auto current_decoder
             = task.task_context.unpacker_context.registry.create_decoder(name);
@@ -154,13 +154,13 @@ ParallelUnpackerContext::ParallelUnpackerContext(
     const dec::Registry &registry,
     const bool enable_nested_decoding,
     const std::vector<std::string> &arguments,
-    const std::vector<std::string> &available_decoders) :
+    const std::set<std::string> &decoders_to_check) :
         logger(logger),
         file_saver(file_saver),
         registry(registry),
         enable_nested_decoding(enable_nested_decoding),
         arguments(arguments),
-        available_decoders(available_decoders)
+        decoders_to_check(decoders_to_check)
 {
 }
 
@@ -178,12 +178,14 @@ BaseParallelUnpackingTask::BaseParallelUnpackingTask(
     ParallelTaskContext &task_context,
     const TaskSourceType source_type,
     const io::path &base_name,
-    const std::shared_ptr<const BaseParallelUnpackingTask> parent_task) :
+    const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
+    const std::set<std::string> &decoders_to_check) :
         logger(task_context.unpacker_context.logger),
         task_context(task_context),
         source_type(source_type),
         base_name(base_name),
-        parent_task(parent_task)
+        parent_task(parent_task),
+        decoders_to_check(decoders_to_check)
 {
     mutex.lock();
     const auto task_id = task_count++;
@@ -216,6 +218,8 @@ void BaseParallelUnpackingTask::save_file(
             source_type,
             base_name,
             shared_from_this(),
+            source_type == TaskSourceType::InitialUserInput
+                ? std::set<std::string>() : decoders_to_check,
             input_file,
             file_factory,
             origin_decoder.shared_from_this(),
@@ -227,11 +231,14 @@ DecodeInputFileTask::DecodeInputFileTask(
     const TaskSourceType source_type,
     const io::path &base_name,
     const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
-    const std::vector<std::string> &available_decoders,
+    const std::set<std::string> &decoders_to_check,
     const InputFileFactory file_factory) :
         BaseParallelUnpackingTask(
-            task_context, source_type, base_name, parent_task),
-        available_decoders(available_decoders),
+            task_context,
+            source_type,
+            base_name,
+            parent_task,
+            decoders_to_check),
         file_factory(file_factory)
 {
 }
@@ -259,7 +266,7 @@ bool DecodeInputFileTask::work() const
         logger.info("initial recognition...\n");
 
         const auto decoder = guess_decoder(
-            *this, available_decoders, *input_file, source_type);
+            *this, decoders_to_check, *input_file, source_type);
 
         if (!decoder)
         {
@@ -291,12 +298,17 @@ ProcessOutputFileTask::ProcessOutputFileTask(
     const TaskSourceType source_type,
     const io::path &base_name,
     const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
+    const std::set<std::string> &decoders_to_check,
     const std::shared_ptr<io::File> input_file,
     const DecoderFileFactory file_factory,
     const std::shared_ptr<const dec::IDecoder> origin_decoder,
     const std::string &target_name) :
         BaseParallelUnpackingTask(
-            task_context, source_type, base_name, parent_task),
+            task_context,
+            source_type,
+            base_name,
+            parent_task,
+            decoders_to_check),
         input_file(input_file),
         file_factory(file_factory),
         origin_decoder(origin_decoder),
@@ -363,8 +375,10 @@ bool ProcessOutputFileTask::work() const
         if (!task_context.unpacker_context.enable_nested_decoding)
             return save(*this, output_file);
 
-        const auto linked_decoders = collect_linked_decoders(
+        auto linked_decoders = collect_linked_decoders(
             *origin_decoder, task_context.unpacker_context.registry);
+        linked_decoders.insert(
+            decoders_to_check.begin(), decoders_to_check.end());
 
         if (linked_decoders.empty())
             return save(*this, output_file);
@@ -432,7 +446,7 @@ void ParallelUnpacker::add_input_file(
             TaskSourceType::InitialUserInput,
             base_name,
             nullptr,
-            p->unpacker_context.available_decoders,
+            p->unpacker_context.decoders_to_check,
             file_factory));
 }
 

@@ -20,13 +20,14 @@ std::vector<std::shared_ptr<io::File>> tests::flow_unpack(
             saved_files.push_back(saved_file);
         });
 
+    const auto name_list = registry.get_decoder_names();
     flow::ParallelUnpackerContext context(
         dummy_logger,
         file_saver,
         registry,
         enable_nested_decoding,
         {},
-        registry.get_decoder_names());
+        std::set<std::string>(name_list.begin(), name_list.end()));
 
     flow::ParallelUnpacker unpacker(context);
     unpacker.add_input_file(

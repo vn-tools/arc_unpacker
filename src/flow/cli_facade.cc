@@ -243,9 +243,10 @@ int CliFacade::Priv::run() const
         return 1;
     }
 
+    const auto name_list = registry.get_decoder_names();
     const auto available_decoders = options.decoder.empty()
-        ? registry.get_decoder_names()
-        : std::vector<std::string>{options.decoder};
+        ? std::set<std::string>(name_list.begin(), name_list.end())
+        : std::set<std::string>{options.decoder};
 
     FileSaverHdd file_saver(options.output_dir, options.overwrite);
     ParallelUnpackerContext context(

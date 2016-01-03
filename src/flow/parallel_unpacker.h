@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include "dec/base_decoder.h"
 #include "dec/registry.h"
 #include "flow/ifile_saver.h"
@@ -31,14 +32,14 @@ namespace flow {
             const dec::Registry &registry,
             const bool enable_nested_decoding,
             const std::vector<std::string> &arguments,
-            const std::vector<std::string> &available_decoders);
+            const std::set<std::string> &decoders_to_check);
 
         const Logger &logger;
         const IFileSaver &file_saver;
         const dec::Registry &registry;
         const bool enable_nested_decoding;
         const std::vector<std::string> arguments;
-        const std::vector<std::string> available_decoders;
+        const std::set<std::string> decoders_to_check;
     };
 
     struct ParallelTaskContext final
@@ -61,7 +62,8 @@ namespace flow {
             ParallelTaskContext &task_context,
             const TaskSourceType source_type,
             const io::path &base_name,
-            const std::shared_ptr<const BaseParallelUnpackingTask> parent_task);
+            const std::shared_ptr<const BaseParallelUnpackingTask> parent_task,
+            const std::set<std::string> &decoders_to_check);
 
         virtual ~BaseParallelUnpackingTask() {}
 
@@ -78,6 +80,7 @@ namespace flow {
         const TaskSourceType source_type;
         const io::path base_name;
         const std::shared_ptr<const BaseParallelUnpackingTask> parent_task;
+        const std::set<std::string> decoders_to_check;
     };
 
     class ParallelUnpacker final
