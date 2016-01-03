@@ -48,15 +48,15 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
     auto output_end = output.end<const u8>();
 
     std::vector<int> shift_table;
-    for (auto i : algo::range(6))
+    for (const auto i : algo::range(6))
         shift_table.push_back((-1 - i) * 3);
-    for (auto i : algo::range(7))
+    for (const auto i : algo::range(7))
         shift_table.push_back((3 - i - width) * 3);
-    for (auto i : algo::range(7))
+    for (const auto i : algo::range(7))
         shift_table.push_back((3 - i - width * 2) * 3);
-    for (auto i : algo::range(7))
+    for (const auto i : algo::range(7))
         shift_table.push_back((3 - i - width * 3) * 3);
-    for (auto i : algo::range(5))
+    for (const auto i : algo::range(5))
         shift_table.push_back((2 - i - width * 4) * 3);
 
     if (output.size() < 3)
@@ -92,6 +92,20 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
     }
 
     return output;
+}
+
+static std::unique_ptr<res::Image> try_decode(
+    const Logger &logger, io::File &input_file)
+{
+    std::vector<std::shared_ptr<dec::BaseImageDecoder>> decoders;
+    decoders.push_back(std::make_shared<RctImageDecoder>());
+    decoders.push_back(std::make_shared<Rc8ImageDecoder>());
+
+    for (const auto &decoder : decoders)
+        if (decoder->is_recognized(input_file))
+            return std::make_unique<res::Image>(
+                decoder->decode(logger, input_file));
+    return nullptr;
 }
 
 struct RctImageDecoder::Priv final
@@ -136,7 +150,7 @@ res::Image RctImageDecoder::decode_impl(
     input_file.stream.skip(magic.size());
 
     bool encrypted;
-    auto tmp = input_file.stream.read_u8();
+    const auto tmp = input_file.stream.read_u8();
     if (tmp == 'S')
         encrypted = true;
     else if (tmp == 'C')
@@ -153,8 +167,8 @@ res::Image RctImageDecoder::decode_impl(
     const auto height = input_file.stream.read_u32_le();
     const auto data_size = input_file.stream.read_u32_le();
 
-    res::Image output_image(width, height);
-
+    std::unique_ptr<res::Image> base_image;
+    std::unique_ptr<res::Image> mask_image;
     if (version == 1)
     {
         const auto name_size = input_file.stream.read_u16_le();
@@ -163,20 +177,14 @@ res::Image RctImageDecoder::decode_impl(
 
         auto base_file = VirtualFileSystem::get_by_name(base_name);
         if (base_file)
-        {
-            std::vector<std::shared_ptr<dec::BaseImageDecoder>> decoders;
-            decoders.push_back(std::make_shared<RctImageDecoder>());
-            decoders.push_back(std::make_shared<Rc8ImageDecoder>());
-            for (const auto &decoder : decoders)
-            {
-                if (decoder->is_recognized(*base_file))
-                {
-                    output_image.overlay(
-                        decoder->decode(logger, *base_file),
-                        res::Image::OverlayKind::OverwriteAll);
-                }
-            }
-        }
+            base_image = try_decode(logger, *base_file);
+    }
+
+    {
+        auto mask_file = VirtualFileSystem::get_by_stem(
+            input_file.path.stem() + "_");
+        if (mask_file)
+            mask_image = try_decode(logger, *mask_file);
     }
 
     auto data = input_file.stream.read(data_size);
@@ -195,8 +203,8 @@ res::Image RctImageDecoder::decode_impl(
     res::Image overlay_image(width, height, data, res::PixelFormat::BGR888);
     if (version == 1)
     {
-        for (auto y : algo::range(height))
-        for (auto x : algo::range(width))
+        for (const auto y : algo::range(height))
+        for (const auto x : algo::range(width))
         {
             auto &p = overlay_image.at(x, y);
             if (p.r == 0xFF && p.g == 0 && p.g == 0)
@@ -204,8 +212,20 @@ res::Image RctImageDecoder::decode_impl(
         }
     }
 
+    res::Image output_image(width, height);
+    if (base_image)
+    {
+        output_image.overlay(
+            *base_image,
+            res::Image::OverlayKind::OverwriteNonTransparent);
+    }
     output_image.overlay(
         overlay_image, res::Image::OverlayKind::OverwriteNonTransparent);
+    if (mask_image)
+    {
+        mask_image->invert();
+        output_image.apply_mask(*mask_image);
+    }
     return output_image;
 }
 
