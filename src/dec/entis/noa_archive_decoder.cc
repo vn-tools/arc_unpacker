@@ -104,7 +104,7 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
 
 std::vector<std::string> NoaArchiveDecoder::get_linked_formats() const
 {
-    return {"entis/mio", "entis/eri"};
+    return {"entis/noa", "entis/mio", "entis/eri"};
 }
 
 static auto _ = dec::register_decoder<NoaArchiveDecoder>("entis/noa");
