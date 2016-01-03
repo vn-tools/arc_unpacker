@@ -69,6 +69,7 @@ namespace res {
             return pixels[x + y * _width];
         }
 
+        void invert();
         void flip_vertically();
         void flip_horizontally();
         void crop(const size_t width, const size_t height);
