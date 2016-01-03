@@ -4,7 +4,7 @@
 
 using namespace au;
 
-TEST_CASE("Pixel properties", "[core][types]")
+TEST_CASE("Pixel properties", "[res]")
 {
     REQUIRE(sizeof(res::Pixel) == 4);
     REQUIRE(std::is_pod<res::Pixel>::value);
