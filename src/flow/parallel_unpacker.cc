@@ -1,4 +1,5 @@
 #include "flow/parallel_unpacker.h"
+#include <chrono>
 #include <set>
 #include <stack>
 #include "algo/format.h"
@@ -443,11 +444,18 @@ void ParallelUnpacker::add_input_file(
 
 bool ParallelUnpacker::run(const size_t thread_count)
 {
-    // TODO: don't let the user mute this
+    const auto begin = std::chrono::steady_clock::now();
     const auto results = p->task_scheduler.run(thread_count);
+    const auto end = std::chrono::steady_clock::now();
+    const auto diff
+        = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+
+    // TODO: don't let the user mute this
     const auto &logger = p->unpacker_context.logger;
     logger.info(
-        "Executed %d tasks (", results.success_count + results.error_count);
+        "Executed %d tasks in %.02fs (",
+        results.success_count + results.error_count,
+        diff.count() / 1000.0);
     if (results.error_count > 0)
         logger.err("%d problems, ", results.error_count);
     logger.info(
