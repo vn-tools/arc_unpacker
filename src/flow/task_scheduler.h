@@ -13,7 +13,7 @@ namespace flow {
         virtual bool work() const = 0;
     };
 
-    struct TaskSchedulerResult
+    struct TaskSchedulerResult final
     {
         int success_count;
         int error_count;
