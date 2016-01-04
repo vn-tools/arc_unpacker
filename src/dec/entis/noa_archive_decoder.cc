@@ -1,6 +1,9 @@
 #include "dec/entis/noa_archive_decoder.h"
 #include "algo/range.h"
+#include "dec/entis/common/bshf_decoder.h"
 #include "dec/entis/common/sections.h"
+#include "err.h"
+#include "ptr.h"
 
 using namespace au;
 using namespace au::dec::entis;
@@ -11,34 +14,39 @@ static const bstr magic3 = "ERISA-Archive file"_b;
 
 namespace
 {
+    struct ArchiveMetaImpl final : dec::ArchiveMeta
+    {
+        std::string key;
+    };
+
     struct ArchiveEntryImpl final : dec::ArchiveEntry
     {
         size_t offset;
         size_t size;
-        bool encrypted;
+        u32 encryption;
         bstr extra;
     };
 }
 
-static std::unique_ptr<dec::ArchiveMeta> read_meta(
+static std::unique_ptr<ArchiveMetaImpl> read_meta(
     io::IStream &input_stream, const io::path root = "")
 {
-    auto meta = std::make_unique<dec::ArchiveMeta>();
+    auto meta = std::make_unique<ArchiveMetaImpl>();
     common::SectionReader section_reader(input_stream);
-    for (auto &section : section_reader.get_sections("DirEntry"))
+    for (const auto &section : section_reader.get_sections("DirEntry"))
     {
-        input_stream.seek(section.offset);
-        auto entry_count = input_stream.read_u32_le();
-        for (auto i : algo::range(entry_count))
+        input_stream.seek(section.data_offset);
+        const auto entry_count = input_stream.read_u32_le();
+        for (const auto i : algo::range(entry_count))
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
             entry->size = input_stream.read_u64_le();
-            auto flags = input_stream.read_u32_le();
-            entry->encrypted = input_stream.read_u32_le() > 0;
-            entry->offset = section.offset + input_stream.read_u64_le();
+            const auto flags = input_stream.read_u32_le();
+            entry->encryption = input_stream.read_u32_le();
+            entry->offset = section.base_offset + input_stream.read_u64_le();
             input_stream.skip(8);
 
-            auto extra_size = input_stream.read_u32_le();
+            const auto extra_size = input_stream.read_u32_le();
             if (flags & 0x70)
                 entry->extra = input_stream.read(extra_size);
 
@@ -75,11 +83,26 @@ bool NoaArchiveDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.read(magic3.size()) == magic3;
 }
 
+void NoaArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
+{
+    arg_parser.register_switch({"--noa-key"})
+        ->set_value_name("KEY")
+        ->set_description("Decryption key (same for all files)");
+}
+
+void NoaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
+{
+    if (arg_parser.has_switch("noa-key"))
+        key = arg_parser.get_switch("noa-key");
+}
+
 std::unique_ptr<dec::ArchiveMeta> NoaArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0x40);
-    return ::read_meta(input_file.stream);
+    auto meta = ::read_meta(input_file.stream);
+    meta->key = key;
+    return std::move(meta);
 }
 
 std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
@@ -88,16 +111,42 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    if (entry->encrypted)
-    {
-        logger.warn(
-            "%s is encrypted, but encrypted files are not supported\n",
-            entry->path.c_str());
-    }
+    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+
     input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size);
-    auto output_file = std::make_unique<io::File>(entry->path, data);
+
+    const auto entry_magic = input_file.stream.read(8);
+    if (entry_magic != "filedata"_b)
+        throw err::CorruptDataError("Expected 'filedata' magic.");
+
+    const auto total_size = input_file.stream.read_u64_le();
+    if (total_size < entry->size)
+        throw err::BadDataSizeError();
+
+    auto data = input_file.stream.read(total_size);
+
+    if (entry->encryption)
+    {
+        if (entry->encryption & 0x40000000)
+        {
+            common::BshfDecoder decoder(key);
+            decoder.set_input(data);
+            decoder.reset();
+            decoder.decode(data.get<u8>(), data.size() - 4);
+        }
+
+        if (entry->encryption & ~(0x80000001 | 0x40000000))
+        {
+            logger.warn(
+                "%s: unknown encryption scheme (%08x)\n",
+                entry->path.c_str(),
+                entry->encryption);
+        }
+    }
+
+    auto actual_data = data.substr(0, entry->size);
+    auto output_file = std::make_unique<io::File>(entry->path, actual_data);
     output_file->guess_extension();
     return output_file;
 }

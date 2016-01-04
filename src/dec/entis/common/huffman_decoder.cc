@@ -83,7 +83,7 @@ void HuffmanDecoder::reset()
     p->available_size = 0;
 }
 
-void HuffmanDecoder::decode(u8 *output, size_t output_size)
+void HuffmanDecoder::decode(u8 *output, const size_t output_size)
 {
     if (!bit_reader)
         throw std::logic_error("Trying to decode with unitialized input");

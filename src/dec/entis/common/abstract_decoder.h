@@ -16,7 +16,7 @@ namespace common {
 
         virtual void set_input(const bstr &data);
         virtual void reset() = 0;
-        virtual void decode(u8 *ouptut, size_t output_size) = 0;
+        virtual void decode(u8 *ouptut, const size_t output_size) = 0;
 
         std::unique_ptr<io::IBitReader> bit_reader;
     };

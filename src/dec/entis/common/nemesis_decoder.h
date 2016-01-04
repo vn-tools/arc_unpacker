@@ -15,7 +15,7 @@ namespace common {
         ~NemesisDecoder();
 
         void reset() override;
-        void decode(u8 *output, size_t output_size) override;
+        void decode(u8 *output, const size_t output_size) override;
 
         int decode_erisa_code(ProbModel &model);
         int decode_erisa_code_index(const ProbModel &model);

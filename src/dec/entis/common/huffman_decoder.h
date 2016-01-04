@@ -18,7 +18,7 @@ namespace common {
         ~HuffmanDecoder();
 
         void reset() override;
-        void decode(u8 *output, size_t output_size) override;
+        void decode(u8 *output, const size_t output_size) override;
 
     private:
         struct Priv;

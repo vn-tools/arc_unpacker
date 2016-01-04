@@ -24,10 +24,10 @@ static image::EriHeader read_header(
     io::IStream &input_stream, const common::SectionReader &section_reader)
 {
     const auto header_section = section_reader.get_section("Header");
-    input_stream.seek(header_section.offset);
+    input_stream.seek(header_section.data_offset);
     const common::SectionReader header_section_reader(input_stream);
     const auto info_section = header_section_reader.get_section("ImageInf");
-    input_stream.seek(info_section.offset);
+    input_stream.seek(info_section.data_offset);
 
     image::EriHeader header;
     header.version = input_stream.read_u32_le();
@@ -60,7 +60,7 @@ static image::EriHeader read_header(
         const auto description_section
             = header_section_reader.get_section("descript");
         const auto description = input_stream
-            .seek(description_section.offset)
+            .seek(description_section.data_offset)
             .read(description_section.size);
         header.description = description.substr(0, 2) == "\xFF\xFE"_b
             ? algo::utf16_to_utf8(description.substr(2)).str()
@@ -116,7 +116,7 @@ res::Image EriImageDecoder::decode_impl(
         throw err::UnsupportedVersionError(header.version);
 
     const auto stream_section = section_reader.get_section("Stream");
-    input_file.stream.seek(stream_section.offset);
+    input_file.stream.seek(stream_section.data_offset);
     const common::SectionReader stream_section_reader(input_file.stream);
 
     const auto pixel_data_sections
@@ -165,7 +165,7 @@ res::Image EriImageDecoder::decode_impl(
         const auto pixel_data = decode_pixel_data(
             header,
             input_file.stream
-                .seek(pixel_data_section.offset)
+                .seek(pixel_data_section.data_offset)
                 .read(pixel_data_section.size));
 
         const auto actual_depth

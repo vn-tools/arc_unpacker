@@ -12,7 +12,8 @@ namespace common {
     {
         std::string name;
         size_t size;
-        size_t offset;
+        size_t base_offset;
+        size_t data_offset;
     };
 
     class SectionReader final

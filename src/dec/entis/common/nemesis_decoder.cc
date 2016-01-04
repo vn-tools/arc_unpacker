@@ -36,7 +36,7 @@ void NemesisDecoder::reset()
     p->augend_register = 0xFFFF;
 }
 
-void NemesisDecoder::decode(u8 *output, size_t output_size)
+void NemesisDecoder::decode(u8 *output, const size_t output_size)
 {
     if (!bit_reader)
         throw std::logic_error("Trying to reset with unitialized input");

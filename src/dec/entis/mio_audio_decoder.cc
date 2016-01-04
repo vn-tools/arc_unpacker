@@ -17,10 +17,10 @@ static audio::MioHeader read_header(
     io::IStream &input_stream, const common::SectionReader &section_reader)
 {
     auto header_section = section_reader.get_section("Header");
-    input_stream.seek(header_section.offset);
+    input_stream.seek(header_section.data_offset);
     common::SectionReader header_section_reader(input_stream);
     header_section = header_section_reader.get_section("SoundInf");
-    input_stream.seek(header_section.offset);
+    input_stream.seek(header_section.data_offset);
 
     audio::MioHeader header;
     header.version = input_stream.read_u32_le();
@@ -43,13 +43,13 @@ static std::vector<audio::MioChunk> read_chunks(
     io::IStream &input_stream, common::SectionReader &section_reader)
 {
     const auto stream_section = section_reader.get_section("Stream");
-    input_stream.seek(stream_section.offset);
+    input_stream.seek(stream_section.data_offset);
     common::SectionReader chunk_section_reader(input_stream);
     std::vector<audio::MioChunk> chunks;
     for (const auto &chunk_section
         : chunk_section_reader.get_sections("SoundStm"))
     {
-        input_stream.seek(chunk_section.offset);
+        input_stream.seek(chunk_section.data_offset);
         audio::MioChunk chunk;
         chunk.version = input_stream.read_u8();
         chunk.initial = input_stream.read_u8() > 0;

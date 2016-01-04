@@ -10,6 +10,8 @@ namespace entis {
     {
     public:
         std::vector<std::string> get_linked_formats() const override;
+        void register_cli_options(ArgParser &arg_parser) const override;
+        void parse_cli_options(const ArgParser &arg_parser) override;
 
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
@@ -23,6 +25,9 @@ namespace entis {
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
+
+    public:
+        std::string key;
     };
 
 } } }
