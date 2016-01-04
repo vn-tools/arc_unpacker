@@ -452,14 +452,23 @@ bool ParallelUnpacker::run(const size_t thread_count)
 
     // TODO: don't let the user mute this
     const auto &logger = p->unpacker_context.logger;
+
     logger.info(
         "Executed %d tasks in %.02fs (",
         results.success_count + results.error_count,
         diff.count() / 1000.0);
+
     if (results.error_count > 0)
-        logger.err("%d problems, ", results.error_count);
+    {
+        logger.err("%d problem%s",
+            results.error_count,
+            results.error_count == 1 ? "" : "s");
+        logger.info(", ");
+    }
+
     logger.info(
         "%d saved files)\n",
         p->unpacker_context.file_saver.get_saved_file_count());
+
     return results.error_count == 0;
 }
