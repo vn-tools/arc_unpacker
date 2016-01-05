@@ -28,6 +28,7 @@ namespace
         bool should_show_help;
         bool should_show_version;
         bool should_list_decoders;
+        unsigned int verbosity = 3;
         unsigned int thread_count;
     };
 }
@@ -58,6 +59,20 @@ CliFacade::Priv::Priv(Logger &logger, const std::vector<std::string> &arguments)
     register_cli_options();
     arg_parser.parse(arguments);
     parse_cli_options();
+
+    if (options.verbosity == 0)
+    {
+        logger.mute();
+    }
+    else if (options.verbosity == 1)
+    {
+        logger.mute(Logger::MessageType::Success);
+        logger.mute(Logger::MessageType::Info);
+    }
+    else if (options.verbosity == 2)
+    {
+        logger.mute(Logger::MessageType::Info);
+    }
 }
 
 void CliFacade::Priv::print_decoder_list() const
@@ -116,8 +131,21 @@ void CliFacade::Priv::register_cli_options()
             "Renames output files to preserve existing files. "
             "By default, existing files are overwritten with output files.");
 
-    arg_parser.register_flag({"-q", "--quiet"})
-        ->set_description("Disables all console output.");
+    {
+        auto sw = arg_parser.register_switch({"-v", "--verbosity"})
+            ->set_description(
+                "Sets verbosity level (defaults to 3).\n"
+                "3: log all information\n"
+                "2: log summary, warnings, errors and successes\n"
+                "1: log summary, warnings and errors\n"
+                "0: log summary only")
+            ->set_value_name("NUM")
+            ->add_possible_value("0")
+            ->add_possible_value("1")
+            ->add_possible_value("2")
+            ->add_possible_value("3")
+            ->hide_possible_values();
+    }
 
     arg_parser.register_flag({"--no-color", "--no-colors"})
         ->set_description("Disables colors in console output.");
@@ -134,12 +162,14 @@ void CliFacade::Priv::register_cli_options()
             "By default, the files are placed in current working directory. "
             "(Archives always create an intermediate directory.)");
 
-    auto sw = arg_parser.register_switch({"-d", "--dec"})
-        ->set_value_name("DECODER")
-        ->set_description("Disables guessing and selects given decoder.")
-        ->hide_possible_values();
-    for (auto &name : registry.get_decoder_names())
-        sw->add_possible_value(name);
+    {
+        auto sw = arg_parser.register_switch({"-d", "--dec"})
+            ->set_value_name("DECODER")
+            ->set_description("Disables guessing and selects given decoder.")
+            ->hide_possible_values();
+        for (const auto &name : registry.get_decoder_names())
+            sw->add_possible_value(name);
+    }
 
     arg_parser.register_switch({"-t", "--threads"})
         ->set_value_name("NUM")
@@ -148,7 +178,7 @@ void CliFacade::Priv::register_cli_options()
     arg_parser.register_flag({"-l", "--list-decoders"})
         ->set_description("Lists available DECODER values.");
 
-    arg_parser.register_flag({"-v", "--version"})
+    arg_parser.register_flag({"--version"})
         ->set_description("Shows arc_unpacker version.");
 }
 
@@ -157,8 +187,7 @@ void CliFacade::Priv::parse_cli_options()
     options.should_show_help
         = arg_parser.has_flag("-h") || arg_parser.has_flag("--help");
 
-    options.should_show_version
-        = arg_parser.has_flag("-v") || arg_parser.has_flag("--version");
+    options.should_show_version = arg_parser.has_flag("--version");
 
     options.should_list_decoders
         = arg_parser.has_flag("-l") || arg_parser.has_flag("--list-decoders");
@@ -169,10 +198,12 @@ void CliFacade::Priv::parse_cli_options()
     if (arg_parser.has_flag("--no-color") || arg_parser.has_flag("--no-colors"))
         logger.disable_colors();
 
-    if (arg_parser.has_flag("-q") || arg_parser.has_flag("--quiet"))
+    if (arg_parser.has_switch("-v"))
+        options.verbosity = algo::from_string<int>(arg_parser.get_switch("-v"));
+    if (arg_parser.has_switch("--verbosity"))
     {
-        logger.mute();
-        logger.unmute(Logger::MessageType::Debug);
+        options.verbosity
+            = algo::from_string<int>(arg_parser.get_switch("--verbosity"));
     }
 
     options.enable_nested_decoding = !arg_parser.has_flag("--no-recurse");

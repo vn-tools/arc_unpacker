@@ -450,8 +450,8 @@ bool ParallelUnpacker::run(const size_t thread_count)
     const auto diff
         = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
 
-    // TODO: don't let the user mute this
-    const auto &logger = p->unpacker_context.logger;
+    Logger logger(p->unpacker_context.logger);
+    logger.unmute();
 
     logger.info(
         "Executed %d tasks in %.02fs (",
