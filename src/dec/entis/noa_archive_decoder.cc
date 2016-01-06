@@ -125,6 +125,7 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
     auto data = input_file.stream.read(total_size);
     if (entry->encryption)
     {
+        const auto expected_checksum = data.substr(-4);
         if (entry->encryption & 0x40000000)
         {
             common::BshfDecoder decoder(key);
@@ -149,6 +150,20 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
                 "%s: unknown encryption scheme (%08x)\n",
                 entry->path.c_str(),
                 entry->encryption);
+        }
+        else
+        {
+            std::array<u8, 4> checksum = {0, 0, 0, 0};
+            for (const auto i : algo::range(entry->size))
+                checksum[i % checksum.size()] ^= data[i];
+            for (const auto i : algo::range(4))
+            {
+                if (checksum[i] != expected_checksum[i])
+                {
+                    throw err::CorruptDataError(
+                        "Checksum mismatch - wrong key?");
+                }
+            }
         }
     }
 
