@@ -15,7 +15,7 @@ namespace io {
     void create_directories(const path &p);
     void remove(const path &p);
 
-    template<typename T> class AbstractDirectoryRange final
+    template<typename T> class BaseDirectoryRange final
     {
     public:
         struct Iterator final
@@ -44,7 +44,7 @@ namespace io {
             }
         };
 
-        inline AbstractDirectoryRange(const path &path) :
+        inline BaseDirectoryRange(const path &path) :
             path_copy(path),
             b(Iterator(T(path_copy.str()))),
             e(Iterator(T()))
@@ -66,10 +66,10 @@ namespace io {
         Iterator b, e;
     };
 
-    using DirectoryRange = AbstractDirectoryRange
+    using DirectoryRange = BaseDirectoryRange
         <boost::filesystem::directory_iterator>;
 
-    using RecursiveDirectoryRange = AbstractDirectoryRange
+    using RecursiveDirectoryRange = BaseDirectoryRange
         <boost::filesystem::recursive_directory_iterator>;
 
     inline DirectoryRange directory_range(const path &path)

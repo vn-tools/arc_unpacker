@@ -167,7 +167,7 @@ class NonFinalObjectsCheck(Check):
             or '_struct' in line # false positives I
             or 'pngstruct' in line # false positives II
             or 'enum class' in line # false positives III
-            or re.search('(class|struct) (Abstract|Base|I)[A-Z]', line)
+            or re.search('(class|struct) (Base|I)[A-Z]', line)
             or re.search('template<(class|struct)', line)): continue
 
             # exceptions for core classes
