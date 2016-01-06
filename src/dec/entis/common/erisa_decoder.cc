@@ -1,11 +1,11 @@
-#include "dec/entis/common/nemesis_decoder.h"
+#include "dec/entis/common/erisa_decoder.h"
 #include "algo/range.h"
 
 using namespace au;
 using namespace au::dec::entis;
 using namespace au::dec::entis::common;
 
-struct NemesisDecoder::Priv final
+struct ErisaDecoder::Priv final
 {
     u8 zero_flag;
     size_t available_size;
@@ -17,15 +17,15 @@ struct NemesisDecoder::Priv final
     std::vector<ProbModel> models;
 };
 
-NemesisDecoder::NemesisDecoder() : p(new Priv())
+ErisaDecoder::ErisaDecoder() : p(new Priv())
 {
 }
 
-NemesisDecoder::~NemesisDecoder()
+ErisaDecoder::~ErisaDecoder()
 {
 }
 
-void NemesisDecoder::reset()
+void ErisaDecoder::reset()
 {
     if (!bit_reader)
         throw std::logic_error("Trying to reset with unitialized input");
@@ -36,7 +36,7 @@ void NemesisDecoder::reset()
     p->augend_register = 0xFFFF;
 }
 
-void NemesisDecoder::decode(u8 *output, const size_t output_size)
+void ErisaDecoder::decode(u8 *output, const size_t output_size)
 {
     if (!bit_reader)
         throw std::logic_error("Trying to reset with unitialized input");
@@ -75,7 +75,7 @@ void NemesisDecoder::decode(u8 *output, const size_t output_size)
     p->last_model = current_model;
 }
 
-int NemesisDecoder::decode_erisa_code(ProbModel &model)
+int ErisaDecoder::decode_erisa_code(ProbModel &model)
 {
     int index = decode_erisa_code_index(model);
     int symbol = prob_escape_code;
@@ -87,7 +87,7 @@ int NemesisDecoder::decode_erisa_code(ProbModel &model)
     return symbol;
 }
 
-int NemesisDecoder::decode_erisa_code_index(const ProbModel &model)
+int ErisaDecoder::decode_erisa_code_index(const ProbModel &model)
 {
     if (!bit_reader)
         throw std::logic_error("Trying to reset with unitialized input");

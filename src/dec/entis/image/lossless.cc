@@ -1,9 +1,9 @@
 #include "dec/entis/image/lossless.h"
 #include <functional>
 #include "algo/range.h"
+#include "dec/entis/common/erisa_decoder.h"
 #include "dec/entis/common/gamma_decoder.h"
 #include "dec/entis/common/huffman_decoder.h"
-#include "dec/entis/common/nemesis_decoder.h"
 #include "err.h"
 
 using namespace au;
@@ -257,7 +257,7 @@ static u8 get_transformer_code(
 
     if (header.architecture == common::Architecture::Nemesis)
     {
-        return static_cast<common::NemesisDecoder&>(decoder)
+        return static_cast<common::ErisaDecoder&>(decoder)
             .decode_erisa_code(prob_model);
     }
 

@@ -8,11 +8,11 @@ namespace dec {
 namespace entis {
 namespace common {
 
-    class NemesisDecoder final : public BaseDecoder
+    class ErisaDecoder final : public BaseDecoder
     {
     public:
-        NemesisDecoder();
-        ~NemesisDecoder();
+        ErisaDecoder();
+        ~ErisaDecoder();
 
         void reset() override;
         void decode(u8 *output, const size_t output_size) override;

@@ -5,9 +5,9 @@
 #include "algo/range.h"
 #include "algo/str.h"
 #include "dec/entis/common/enums.h"
+#include "dec/entis/common/erisa_decoder.h"
 #include "dec/entis/common/gamma_decoder.h"
 #include "dec/entis/common/huffman_decoder.h"
-#include "dec/entis/common/nemesis_decoder.h"
 #include "dec/entis/common/sections.h"
 #include "dec/entis/image/lossless.h"
 #include "err.h"
@@ -87,7 +87,7 @@ static bstr decode_pixel_data(
     else if (header.architecture == common::Architecture::RunLengthHuffman)
         decoder = std::make_unique<common::HuffmanDecoder>();
     else if (header.architecture == common::Architecture::Nemesis)
-        decoder = std::make_unique<common::NemesisDecoder>();
+        decoder = std::make_unique<common::ErisaDecoder>();
 
     if (!decoder)
     {
