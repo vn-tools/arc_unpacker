@@ -62,7 +62,10 @@ CliFacade::Priv::Priv(Logger &logger, const std::vector<std::string> &arguments)
 
     if (options.verbosity == 0)
     {
-        logger.mute();
+        logger.mute(Logger::MessageType::Error);
+        logger.mute(Logger::MessageType::Warning);
+        logger.mute(Logger::MessageType::Success);
+        logger.mute(Logger::MessageType::Info);
     }
     else if (options.verbosity == 1)
     {

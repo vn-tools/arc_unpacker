@@ -451,22 +451,27 @@ bool ParallelUnpacker::run(const size_t thread_count)
         = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
 
     Logger logger(p->unpacker_context.logger);
-    logger.unmute();
 
-    logger.info(
+    logger.log(
+        Logger::MessageType::Summary,
         "Executed %d tasks in %.02fs (",
         results.success_count + results.error_count,
         diff.count() / 1000.0);
 
     if (results.error_count > 0)
     {
-        logger.err("%d problem%s",
+        logger.set_color(Logger::Color::Red);
+        logger.log(
+            Logger::MessageType::Summary,
+            "%d problem%s",
             results.error_count,
             results.error_count == 1 ? "" : "s");
-        logger.info(", ");
+        logger.set_color(Logger::Color::Original);
+        logger.log(Logger::MessageType::Summary, ", ");
     }
 
-    logger.info(
+    logger.log(
+        Logger::MessageType::Summary,
         "%d saved files)\n",
         p->unpacker_context.file_saver.get_saved_file_count());
 

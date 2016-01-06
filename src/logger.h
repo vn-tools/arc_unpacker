@@ -10,6 +10,7 @@ namespace au {
     public:
         enum MessageType
         {
+            Summary,
             Info,
             Success,
             Warning,
@@ -45,6 +46,7 @@ namespace au {
 
         void set_color(const Color c);
         void set_prefix(const std::string &prefix);
+        void log(const MessageType type, const std::string fmt, ...) const;
         void info(const std::string str, ...) const;
         void success(const std::string str, ...) const;
         void warn(const std::string str, ...) const;

@@ -16,7 +16,7 @@ struct Logger::Priv final
         const MessageType type, const std::string fmt, std::va_list args) const;
 
     Logger &logger;
-    Color colors[5];
+    Color colors[6];
     int muted = 0;
     bool colors_enabled = true;
     std::string prefix;
@@ -24,6 +24,7 @@ struct Logger::Priv final
 
 Logger::Priv::Priv(Logger &logger) : logger(logger)
 {
+    colors[MessageType::Summary] = Color::Original;
     colors[MessageType::Info] = Color::Original;
     colors[MessageType::Success] = Color::Lime;
     colors[MessageType::Warning] = Color::Yellow;
@@ -71,6 +72,15 @@ Logger::~Logger()
 void Logger::set_prefix(const std::string &prefix)
 {
     p->prefix = prefix;
+}
+
+void Logger::log(
+    const MessageType message_type, const std::string fmt, ...) const
+{
+    std::va_list args;
+    va_start(args, fmt);
+    p->log(message_type, fmt, args);
+    va_end(args);
 }
 
 void Logger::info(const std::string fmt, ...) const
