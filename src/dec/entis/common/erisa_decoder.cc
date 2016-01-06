@@ -10,8 +10,6 @@ struct ErisaDecoder::Priv final
     u8 zero_flag;
     size_t available_size;
 
-    u32 code_register;
-    u32 augend_register;
     ProbModel rle_model;
     ProbModel *last_model;
     std::vector<ProbModel> models;
@@ -32,8 +30,8 @@ void ErisaDecoder::reset()
     p->models.resize(0x100);
     p->last_model = &p->models[0];
     p->available_size = 0;
-    p->code_register = bit_reader->get(32);
-    p->augend_register = 0xFFFF;
+    code_register = bit_reader->get(32);
+    augend_register = 0xFFFF;
 }
 
 void ErisaDecoder::decode(u8 *output, const size_t output_size)
@@ -73,53 +71,4 @@ void ErisaDecoder::decode(u8 *output, const size_t output_size)
         current_model = &p->models[symbol & 0xFF];
     }
     p->last_model = current_model;
-}
-
-int ErisaDecoder::decode_erisa_code(ProbModel &model)
-{
-    int index = decode_erisa_code_index(model);
-    int symbol = prob_escape_code;
-    if (index >= 0)
-    {
-        symbol = model.sym_table[index].symbol;
-        model.increase_symbol(index);
-    }
-    return symbol;
-}
-
-int ErisaDecoder::decode_erisa_code_index(const ProbModel &model)
-{
-    if (!bit_reader)
-        throw std::logic_error("Trying to reset with unitialized input");
-
-    u32 acc = p->code_register * model.total_count / p->augend_register;
-    if (acc >= prob_total_limit)
-        return prob_escape_code;
-
-    size_t symbol_index = 0;
-    u16 fs = 0;
-    u16 occurences;
-    while (true)
-    {
-        occurences = model.sym_table[symbol_index].occurrences;
-        if (acc < occurences)
-            break;
-        acc -= occurences;
-        fs += occurences;
-        if (++symbol_index >= model.symbol_sorts)
-            return prob_escape_code;
-    }
-    p->code_register -= (p->augend_register * fs + model.total_count - 1)
-        / model.total_count;
-    p->augend_register = p->augend_register * occurences / model.total_count;
-
-    while (!(p->augend_register & 0x8000))
-    {
-        p->code_register <<= 1;
-        p->code_register |= bit_reader->get(1);
-        p->augend_register <<= 1;
-    }
-
-    p->code_register &= 0xFFFF;
-    return symbol_index;
 }
