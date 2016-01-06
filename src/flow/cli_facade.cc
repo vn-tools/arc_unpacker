@@ -28,7 +28,7 @@ namespace
         bool should_show_help;
         bool should_show_version;
         bool should_list_decoders;
-        unsigned int verbosity = 3;
+        int verbosity = 3;
         unsigned int thread_count;
     };
 }
@@ -60,6 +60,10 @@ CliFacade::Priv::Priv(Logger &logger, const std::vector<std::string> &arguments)
     arg_parser.parse(arguments);
     parse_cli_options();
 
+    if (options.verbosity == -1)
+    {
+        logger.mute(); // includes summary and debug messages
+    }
     if (options.verbosity == 0)
     {
         logger.mute(Logger::MessageType::Error);
@@ -143,6 +147,7 @@ void CliFacade::Priv::register_cli_options()
                 "1: log summary, warnings and errors\n"
                 "0: log summary only")
             ->set_value_name("NUM")
+            ->add_possible_value("-1")
             ->add_possible_value("0")
             ->add_possible_value("1")
             ->add_possible_value("2")
