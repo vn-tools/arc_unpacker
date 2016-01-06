@@ -150,7 +150,7 @@ static std::unique_ptr<ArchiveEntryImpl> read_entry(
             entry->time_chunk = read_time_chunk(chunk_stream);
         else
         {
-            logger.warn("Unknown chunk '%s'", chunk_magic.c_str());
+            logger.warn("Unknown chunk '%s'\n", chunk_magic.c_str());
             continue;
         }
 
