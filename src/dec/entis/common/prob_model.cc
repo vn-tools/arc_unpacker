@@ -6,27 +6,32 @@ using namespace au::dec::entis::common;
 
 ProbModel::ProbModel()
 {
-    total_count = prob_symbol_sorts;
-    symbol_sorts = prob_symbol_sorts;
-    for (auto i : algo::range(prob_symbol_sorts - 1))
+    total_count = sym_table.size();
+    symbol_sorts = sym_table.size();
+    for (const auto i : algo::range(sym_table.size() - 1))
     {
         sym_table[i].occurrences = 1;
         sym_table[i].symbol = i;
     }
-    sym_table[prob_symbol_sorts - 1].occurrences = 1;
-    sym_table[prob_symbol_sorts - 1].symbol = prob_escape_code;
+    sym_table[sym_table.size() - 1].occurrences = 1;
+    sym_table[sym_table.size() - 1].symbol = prob_escape_code;
+    for (const auto i : algo::range(sub_model.size()))
+    {
+        sub_model[i].occurrences = 0;
+        sub_model[i].symbol = -1;
+    }
 }
 
-void ProbModel::increase_symbol(int index)
+void ProbModel::increase_symbol(size_t index)
 {
-    ++sym_table[index].occurrences;
-    auto symbol_to_bump = sym_table[index];
+    sym_table[index].occurrences++;
+    const auto symbol_to_bump = sym_table[index];
     while (index > 0)
     {
         if (sym_table[index - 1].occurrences >= symbol_to_bump.occurrences)
             break;
         sym_table[index] = sym_table[index - 1];
-        --index;
+        index--;
     }
     sym_table[index] = symbol_to_bump;
     total_count++;
@@ -37,14 +42,24 @@ void ProbModel::increase_symbol(int index)
 void ProbModel::half_occurrence_count()
 {
     total_count = 0;
-    for (auto i : algo::range(symbol_sorts))
+    for (const auto i : algo::range(symbol_sorts))
     {
         sym_table[i].occurrences = (sym_table[i].occurrences + 1) >> 1;
         total_count += sym_table[i].occurrences;
     }
+    for (const auto i : algo::range(sub_model.size()))
+        sub_model[i].occurrences >>= 1;
 }
 
-s16 ProbModel::find_symbol(s16 symbol)
+void ProbModel::add_symbol(const s16 symbol)
+{
+    const auto index = symbol_sorts++;
+    sym_table[index].symbol = symbol;
+    sym_table[index].occurrences = 1;
+    total_count++;
+}
+
+s16 ProbModel::find_symbol(const s16 symbol) const
 {
     u32 sym = 0;
     while (sym_table[sym].symbol != symbol)

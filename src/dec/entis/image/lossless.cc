@@ -257,7 +257,7 @@ static u8 get_transformer_code(
 
     if (header.architecture == common::Architecture::Nemesis)
     {
-        return static_cast<common::ErisaDecoder&>(decoder)
+        return static_cast<common::BaseErisaDecoder&>(decoder)
             .decode_erisa_code(prob_model);
     }
 

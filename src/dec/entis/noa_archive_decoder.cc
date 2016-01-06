@@ -1,6 +1,7 @@
 #include "dec/entis/noa_archive_decoder.h"
 #include "algo/range.h"
 #include "dec/entis/common/bshf_decoder.h"
+#include "dec/entis/common/erisan_decoder.h"
 #include "dec/entis/common/sections.h"
 #include "err.h"
 #include "ptr.h"
@@ -121,11 +122,7 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
         throw err::CorruptDataError("Expected 'filedata' magic.");
 
     const auto total_size = input_file.stream.read_u64_le();
-    if (total_size < entry->size)
-        throw err::BadDataSizeError();
-
     auto data = input_file.stream.read(total_size);
-
     if (entry->encryption)
     {
         if (entry->encryption & 0x40000000)
@@ -133,10 +130,20 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
             common::BshfDecoder decoder(key);
             decoder.set_input(data);
             decoder.reset();
-            decoder.decode(data.get<u8>(), data.size() - 4);
+            decoder.decode(data.get<u8>(), entry->size);
         }
 
-        if (entry->encryption & ~(0x80000001 | 0x40000000))
+        if (entry->encryption & 0x80000010)
+        {
+            bstr output(entry->size);
+            common::ErisaNDecoder decoder;
+            decoder.set_input(data);
+            decoder.reset();
+            decoder.decode(output.get<u8>(), entry->size);
+            data = output;
+        }
+
+        if (entry->encryption & ~(0x80000010 | 0x40000000))
         {
             logger.warn(
                 "%s: unknown encryption scheme (%08x)\n",

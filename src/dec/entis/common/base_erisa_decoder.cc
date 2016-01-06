@@ -1,24 +1,26 @@
 #include "dec/entis/common/base_erisa_decoder.h"
+#include "err.h"
 
 using namespace au;
 using namespace au::dec::entis::common;
 
 int BaseErisaDecoder::decode_erisa_code(ProbModel &model)
 {
-    int index = decode_erisa_code_index(model);
-    int symbol = prob_escape_code;
-    if (index >= 0)
-    {
-        symbol = model.sym_table[index].symbol;
-        model.increase_symbol(index);
-    }
+    const auto index = decode_erisa_code_index(model);
+    if (index < 0)
+        return prob_escape_code;
+    const auto symbol = model.sym_table[index].symbol;
+    model.increase_symbol(index);
     return symbol;
 }
 
 int BaseErisaDecoder::decode_erisa_code_index(const ProbModel &model)
 {
     if (!bit_reader)
-        throw std::logic_error("Trying to reset with unitialized input");
+    {
+        throw std::logic_error(
+            "Trying to decode ERISA code index with unitialized input");
+    }
 
     u32 acc = code_register * model.total_count / augend_register;
     if (acc >= prob_total_limit)
@@ -40,6 +42,8 @@ int BaseErisaDecoder::decode_erisa_code_index(const ProbModel &model)
     code_register -= (augend_register * fs + model.total_count - 1)
         / model.total_count;
     augend_register = augend_register * occurences / model.total_count;
+    if (augend_register == 0)
+        throw err::CorruptDataError("Empty augend register");
 
     while (!(augend_register & 0x8000))
     {

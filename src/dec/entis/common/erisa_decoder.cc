@@ -9,7 +9,6 @@ struct ErisaDecoder::Priv final
 {
     u8 zero_flag;
     size_t available_size;
-
     ProbModel rle_model;
     ProbModel *last_model;
     std::vector<ProbModel> models;
@@ -27,11 +26,13 @@ void ErisaDecoder::reset()
 {
     if (!bit_reader)
         throw std::logic_error("Trying to reset with unitialized input");
+
+    code_register = bit_reader->get(32);
+    augend_register = 0xFFFF;
+
     p->models.resize(0x100);
     p->last_model = &p->models[0];
     p->available_size = 0;
-    code_register = bit_reader->get(32);
-    augend_register = 0xFFFF;
 }
 
 void ErisaDecoder::decode(u8 *output, const size_t output_size)
