@@ -143,7 +143,7 @@ res::Image EriImageDecoder::decode_impl(
         }
         catch (const std::exception &e)
         {
-            logger.warn("Error parsing metadata: %s", e.what());
+            logger.warn("Error parsing metadata: %s\n", e.what());
         }
         if (!base_name.empty())
         {
