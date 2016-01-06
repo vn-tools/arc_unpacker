@@ -231,7 +231,7 @@ static void transform(
 static u8 get_transformer_code(
     const EriHeader &header,
     const DecodeContext &ctx,
-    common::AbstractDecoder &decoder,
+    common::BaseDecoder &decoder,
 
     const u8 *&transformer_codes_ptr,
     common::HuffmanTree &huffman_tree,
@@ -274,7 +274,7 @@ static u8 get_transformer_code(
 static std::vector<u8> prefetch_transformer_codes(
     const DecodeContext &ctx,
     const EriHeader &header,
-    common::AbstractDecoder &decoder,
+    common::BaseDecoder &decoder,
     common::HuffmanTree &huffman_tree)
 {
     std::vector<u8> transformer_codes;
@@ -346,7 +346,7 @@ static bstr crop(
 }
 
 bstr image::decode_lossless_pixel_data(
-    const EriHeader &header, common::AbstractDecoder &decoder)
+    const EriHeader &header, common::BaseDecoder &decoder)
 {
     DecodeContext ctx;
     ctx.eri_version = decoder.bit_reader->get(8);

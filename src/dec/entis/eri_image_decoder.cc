@@ -80,7 +80,7 @@ bool EriImageDecoder::is_recognized_impl(io::File &input_file) const
 static bstr decode_pixel_data(
     const image::EriHeader &header, const bstr &encoded_pixel_data)
 {
-    std::unique_ptr<common::AbstractDecoder> decoder;
+    std::unique_ptr<common::BaseDecoder> decoder;
 
     if (header.architecture == common::Architecture::RunLengthGamma)
         decoder = std::make_unique<common::GammaDecoder>();

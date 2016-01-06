@@ -77,7 +77,7 @@ struct LossyAudioDecoder::Priv final
         const int coefficient);
 
     const MioHeader &header;
-    std::unique_ptr<common::AbstractDecoder> decoder;
+    std::unique_ptr<common::BaseDecoder> decoder;
 
     size_t buf_size;
     std::unique_ptr<s32[]> buffer1;

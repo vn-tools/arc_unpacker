@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dec/entis/common/abstract_decoder.h"
+#include "dec/entis/common/base_decoder.h"
 #include "types.h"
 
 namespace au {
@@ -8,7 +8,7 @@ namespace dec {
 namespace entis {
 namespace common {
 
-    class BshfDecoder final : public AbstractDecoder
+    class BshfDecoder final : public BaseDecoder
     {
     public:
         BshfDecoder(const bstr &key);

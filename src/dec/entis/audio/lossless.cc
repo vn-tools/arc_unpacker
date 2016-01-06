@@ -10,7 +10,7 @@ using namespace au::dec::entis::audio;
 static bstr decode_chunk_pcm8(
     const MioHeader &header,
     const MioChunk &chunk,
-    common::AbstractDecoder &decoder)
+    common::BaseDecoder &decoder)
 {
     throw err::NotSupportedError("PCM8 is not supported");
 }
@@ -18,7 +18,7 @@ static bstr decode_chunk_pcm8(
 static bstr decode_chunk_pcm16(
     const MioHeader &header,
     const MioChunk &chunk,
-    common::AbstractDecoder &decoder)
+    common::BaseDecoder &decoder)
 {
     const auto sample_count = chunk.sample_count;
     const auto channel_count = header.channel_count;

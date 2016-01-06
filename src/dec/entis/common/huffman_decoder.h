@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dec/entis/common/abstract_decoder.h"
+#include "dec/entis/common/base_decoder.h"
 #include "dec/entis/common/huffman_tree.h"
 
 namespace au {
@@ -11,7 +11,7 @@ namespace common {
     int get_huffman_code(io::IBitReader &bit_reader, HuffmanTree &tree);
     int get_huffman_size(io::IBitReader &bit_reader, HuffmanTree &tree);
 
-    class HuffmanDecoder final : public AbstractDecoder
+    class HuffmanDecoder final : public BaseDecoder
     {
     public:
         HuffmanDecoder();

@@ -8,11 +8,11 @@ namespace dec {
 namespace entis {
 namespace common {
 
-    class AbstractDecoder
+    class BaseDecoder
     {
     public:
-        AbstractDecoder() {}
-        virtual ~AbstractDecoder() {}
+        BaseDecoder() {}
+        virtual ~BaseDecoder() {}
 
         virtual void set_input(const bstr &data);
         virtual void reset() = 0;

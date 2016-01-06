@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dec/entis/common/abstract_decoder.h"
+#include "dec/entis/common/base_decoder.h"
 #include "dec/entis/common/prob_model.h"
 
 namespace au {
@@ -8,7 +8,7 @@ namespace dec {
 namespace entis {
 namespace common {
 
-    class NemesisDecoder final : public AbstractDecoder
+    class NemesisDecoder final : public BaseDecoder
     {
     public:
         NemesisDecoder();
