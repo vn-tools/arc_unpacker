@@ -128,7 +128,13 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
         const auto expected_checksum = data.substr(-4);
         if (entry->encryption & 0x40000000)
         {
-            common::BshfDecoder decoder(key);
+            if (meta->key.empty())
+            {
+                throw err::UsageError(
+                    "File is encrypted, but key not set. "
+                    "Please supply one with --noa-key switch.");
+            }
+            common::BshfDecoder decoder(meta->key);
             decoder.set_input(data);
             decoder.reset();
             decoder.decode(data.get<u8>(), entry->size);
