@@ -144,7 +144,7 @@ static std::shared_ptr<dec::IDecoder> guess_decoder(
         task.logger.warn("file was recognized by multiple decoders.\n");
         for (const auto &it : matching_decoders)
             task.logger.warn("- " + it.first + "\n");
-        task.logger.warn("Please provide --fmt and proceed manually.\n");
+        task.logger.warn("Please provide --dec and proceed manually.\n");
     }
     return nullptr;
 }
