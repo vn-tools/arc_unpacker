@@ -14,7 +14,7 @@ static bstr decompress(const bstr &input, const size_t size_orig)
     bstr output;
     output.reserve(size_orig);
     io::MemoryStream input_stream(input);
-    algo::CyclicBuffer<0xBB8> dict(0);
+    algo::CyclicBuffer<u8, 0xBB8> dict(0);
     u16 control = 0;
     while (output.size() < size_orig)
     {
@@ -38,7 +38,8 @@ static bstr decompress(const bstr &input, const size_t size_orig)
             const auto repetitions = input_stream.read_u8();
             const auto chunk = input_stream.read(repetitions);
             output += chunk;
-            dict << chunk;
+            for (const auto &c : chunk)
+                dict << c;
         }
     }
     return output;

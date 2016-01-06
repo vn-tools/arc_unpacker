@@ -92,7 +92,7 @@ res::Image LfgImageDecoder::decode_impl(
     size_t y = height;
 
     // heavily modified LZSS
-    algo::CyclicBuffer<0x1000> dict(0xFEE);
+    algo::CyclicBuffer<u8, 0x1000> dict(0xFEE);
     u16 control = 0;
     while (output_ptr >= output_start
         && output_ptr < output_end

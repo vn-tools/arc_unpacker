@@ -64,7 +64,7 @@ bstr algo::pack::lzss_decompress(
     const size_t output_size,
     const BytewiseLzssSettings &settings)
 {
-    algo::CyclicBuffer<0x1000> dict(settings.initial_dictionary_pos);
+    algo::CyclicBuffer<u8, 0x1000> dict(settings.initial_dictionary_pos);
     bstr output(output_size);
     auto output_ptr = make_ptr(output);
     auto input_ptr = make_ptr(input);

@@ -1,12 +1,12 @@
 #pragma once
 
+#include <array>
 #include <memory>
-#include "types.h"
 
 namespace au {
 namespace algo {
 
-    template<const size_t n> class CyclicBuffer final
+    template<typename T, const size_t n> class CyclicBuffer final
     {
     public:
         CyclicBuffer(const size_t start_pos = 0) :
@@ -32,31 +32,21 @@ namespace algo {
             return current_pos;
         }
 
-        inline void operator <<(const bstr &s)
-        {
-            for (const auto c : s)
-            {
-                a[current_pos++] = c;
-                current_pos %= n;
-            }
-            written += s.size();
-        }
-
-        inline void operator <<(const u8 c)
+        inline void operator <<(const T c)
         {
             a[current_pos++] = c;
             current_pos %= n;
             written++;
         }
 
-        inline u8 &operator [](const size_t i)
+        inline T &operator [](const size_t i)
         {
             if (i < n)
                 return a[i];
             return a[i % n];
         }
 
-        inline const u8 &operator [](const size_t i) const
+        inline const T &operator [](const size_t i) const
         {
             if (i < n)
                 return a[i];
@@ -67,7 +57,7 @@ namespace algo {
         size_t start_pos;
         size_t current_pos;
         int written;
-        u8 a[n];
+        std::array<T, n> a;
     };
 
 } }

@@ -11,7 +11,7 @@ using namespace au::dec::leaf;
 bstr common::custom_lzss_decompress(const bstr &input, const size_t output_size)
 {
     bstr output(output_size);
-    algo::CyclicBuffer<0x1000> dict(0xFEE);
+    algo::CyclicBuffer<u8, 0x1000> dict(0xFEE);
     u8 *output_ptr = output.get<u8>();
     const u8 *output_end = output.end<const u8>();
     const u8 *input_ptr = input.get<const u8>();

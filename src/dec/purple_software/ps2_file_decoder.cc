@@ -17,7 +17,7 @@ static void decrypt(bstr &data, const u32 key, const size_t shift)
 
 static bstr custom_lzss_decompress(const bstr &input, const size_t size_orig)
 {
-    algo::CyclicBuffer<0x800> dict(0x7DF);
+    algo::CyclicBuffer<u8, 0x800> dict(0x7DF);
     bstr output(size_orig);
     auto output_ptr = make_ptr(output);
     auto input_ptr = make_ptr(input);

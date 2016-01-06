@@ -35,7 +35,7 @@ static bstr custom_lzss_decompress(
 {
     bstr output(output_size);
     auto output_ptr = make_ptr(output);
-    algo::CyclicBuffer<0x800> dict(0x7DE);
+    algo::CyclicBuffer<u8, 0x800> dict(0x7DE);
     io::MemoryStream control_block_stream(control_block);
     io::MemoryStream data_block_stream(data_block);
     int control = 0, bit_mask = 0;
