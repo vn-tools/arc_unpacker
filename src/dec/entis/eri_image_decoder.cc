@@ -136,7 +136,7 @@ res::Image EriImageDecoder::decode_impl(
         try
         {
             std::map<std::string, std::string> meta;
-            for (const auto i : algo::range(0, lines.size(), 2))
+            for (const auto i : algo::range(0, lines.size() & ~1, 2))
                 meta[lines[i]] = lines[i + 1];
             if (meta.find("#reference-file") != meta.end())
                 base_name = meta.at("#reference-file");
