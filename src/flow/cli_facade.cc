@@ -138,6 +138,28 @@ void CliFacade::Priv::register_cli_options()
             "Renames output files to preserve existing files. "
             "By default, existing files are overwritten with output files.");
 
+    arg_parser.register_switch({"-o", "--out"})
+        ->set_value_name("DIR")
+        ->set_description("Specifies where to place the output files. "
+            "By default, the files are placed in current working directory. "
+            "(Archives always create an intermediate directory.)");
+
+    {
+        auto sw = arg_parser.register_switch({"-d", "--dec"})
+            ->set_value_name("DECODER")
+            ->set_description("Disables guessing and selects given decoder.")
+            ->hide_possible_values();
+        for (const auto &name : registry.get_decoder_names())
+            sw->add_possible_value(name);
+    }
+
+    arg_parser.register_flag({"-l", "--list-decoders"})
+        ->set_description("Lists available DECODER values.");
+
+    arg_parser.register_switch({"-t", "--threads"})
+        ->set_value_name("NUM")
+        ->set_description("Sets worker thread count.");
+
     {
         auto sw = arg_parser.register_switch({"-v", "--verbosity"})
             ->set_description(
@@ -163,28 +185,6 @@ void CliFacade::Priv::register_cli_options()
 
     arg_parser.register_flag({"--no-vfs"})
         ->set_description("Disables virtual file system lookups.");
-
-    arg_parser.register_switch({"-o", "--out"})
-        ->set_value_name("DIR")
-        ->set_description("Specifies where to place the output files. "
-            "By default, the files are placed in current working directory. "
-            "(Archives always create an intermediate directory.)");
-
-    {
-        auto sw = arg_parser.register_switch({"-d", "--dec"})
-            ->set_value_name("DECODER")
-            ->set_description("Disables guessing and selects given decoder.")
-            ->hide_possible_values();
-        for (const auto &name : registry.get_decoder_names())
-            sw->add_possible_value(name);
-    }
-
-    arg_parser.register_switch({"-t", "--threads"})
-        ->set_value_name("NUM")
-        ->set_description("Sets worker thread count.");
-
-    arg_parser.register_flag({"-l", "--list-decoders"})
-        ->set_description("Lists available DECODER values.");
 
     arg_parser.register_flag({"--version"})
         ->set_description("Shows arc_unpacker version.");
