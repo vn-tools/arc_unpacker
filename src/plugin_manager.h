@@ -107,14 +107,14 @@ namespace au {
         inline T get() const
         {
             const algo::any &ret = get_impl();
-            return ret.get<T>();
+            return ret.template get<T>();
         }
 
         inline std::vector<T> get_all() const
         {
             std::vector<T> ret;
             for (const auto &def : definitions)
-                ret.push_back(def->value.get<T>());
+                ret.push_back(def->value.template get<T>());
             return ret;
         }
     };
