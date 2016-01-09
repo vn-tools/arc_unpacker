@@ -110,7 +110,7 @@ static std::unique_ptr<res::Image> decode_img0000(
     const auto ctl = algo::pack::zlib_inflate(input_stream.read(ctl_size_comp));
 
     io::LsbBitReader ctl_bit_reader(ctl);
-    bool copy = ctl_bit_reader.get(1);
+    auto copy = ctl_bit_reader.get(1);
     const auto output_size = ctl_bit_reader.get_gamma(1);
 
     bstr output(output_size);
