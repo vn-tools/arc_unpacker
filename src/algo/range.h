@@ -12,42 +12,42 @@ namespace algo {
         {
             int i, stride;
 
-            constexpr Iterator(int i, int stride) : i(i), stride(stride)
+            Iterator(int i, int stride) : i(i), stride(stride)
             {
             }
 
-            constexpr Iterator(Iterator it, int stride) : i(*it), stride(stride)
+            Iterator(Iterator it, int stride) : i(*it), stride(stride)
             {
             }
 
-            constexpr int operator *() const
+            int operator *() const
             {
                 return i;
             }
 
-            inline Iterator operator ++()
+            Iterator operator ++()
             {
                 i += stride;
                 return *this;
             }
 
-            constexpr bool operator !=(Iterator other) const
+            bool operator !=(Iterator other) const
             {
                 return stride < 0 ? i > *other : i < *other;
             }
         };
 
-        constexpr Range(int b, int e, int stride = 1)
+        Range(int b, int e, int stride = 1)
             : stride(stride), b(b, stride), e(e, stride)
         {
         }
 
-        constexpr Iterator begin() const
+        Iterator begin() const
         {
             return b;
         }
 
-        constexpr Iterator end() const
+        Iterator end() const
         {
             return e;
         }
@@ -56,12 +56,12 @@ namespace algo {
         Iterator b, e;
     };
 
-    constexpr Range range(int b, int e, int stride=1)
+    inline Range range(int b, int e, int stride=1)
     {
         return Range(b, e, stride);
     }
 
-    constexpr Range range(int e)
+    inline Range range(int e)
     {
         return Range(0, e);
     }
