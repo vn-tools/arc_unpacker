@@ -230,9 +230,9 @@ class DebugLogCheck(Check):
         if 'benchmark' in file.name:
             return
         for i, line in enumerate(file.lines):
-            if 'Log.debug(' in line:
+            if '.debug(' in line:
                 yield Problem(
-                    file, 'Don\'t use Log.debug() in production code', i, line)
+                    file, 'Don\'t use Logger.debug() in production code', i, line)
 
 class CommentWhitespaceCheck(Check):
     def __init__(self):
