@@ -1,5 +1,6 @@
 #pragma once
 
+#include "err.h"
 #include "types.h"
 
 namespace au {
@@ -68,6 +69,29 @@ namespace au {
             return ret;
         }
 
+        void append_from(const bstr &source)
+        {
+            if (source.size() > left())
+                throw err::BadDataSizeError();
+            for (const auto &c : source)
+                *cur_ptr++ = c;
+        }
+
+        void append_from(const int relative_position, size_t count)
+        {
+            if (pos() + relative_position < 0)
+                throw err::BadDataOffsetError();
+            if (pos() + relative_position + count > size())
+                throw err::BadDataOffsetError();
+            if (count > left())
+                throw err::BadDataSizeError();
+            auto source_ptr = cur_ptr + relative_position;
+            while (count--)
+                *cur_ptr++ = *source_ptr++;
+        }
+
+        constexpr size_t pos() const { return cur_ptr - start_ptr; }
+        constexpr size_t left() const { return end_ptr - cur_ptr; }
         constexpr size_t size() const { return end_ptr - start_ptr; }
         constexpr void operator +=(const size_t n) const { cur_ptr += n; }
         constexpr void operator -=(const size_t n) const { cur_ptr -= n; }
