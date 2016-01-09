@@ -15,7 +15,7 @@ namespace common {
         ~ErisaNDecoder();
 
         void reset() override;
-        void decode(u8 *ouptut, size_t output_size) override;
+        void decode(u8 *ouptut, const size_t output_size) override;
 
     protected:
         struct Priv;
