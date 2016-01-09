@@ -108,10 +108,10 @@ static u64 CRC_TABLE[0x100] =
 static u64 crc64(const bstr &buffer)
 {
     u64 crc = 0xFFFFFFFFFFFFFFFF;
-    for (auto i : algo::range(buffer.size()))
+    for (const auto i : algo::range(buffer.size()))
     {
-        u8 c = static_cast<u8>(buffer[i]);
-        int tab_index = ((crc >> 56) ^ c) & 0xFF;
+        const auto c = static_cast<u8>(buffer[i]);
+        const auto tab_index = ((crc >> 56) ^ c) & 0xFF;
         crc = CRC_TABLE[tab_index] ^ ((crc << 8) & 0xFFFFFFFFFFFFFFFF);
     }
     return crc ^ 0xFFFFFFFFFFFFFFFF;
@@ -124,24 +124,21 @@ static void transform_regular_content(
         floor(buffer.size() / static_cast<float>(file_name.size())));
     u8 *buffer_ptr = buffer.get<u8>();
     u8 *buffer_end = buffer_ptr + buffer.size();
-    for (auto j : algo::range(file_name.size() - 1))
+    for (const auto j : algo::range(file_name.size() - 1))
+    for (const auto k : algo::range(block_size))
     {
-        for (auto k : algo::range(block_size))
-        {
-            if (buffer_ptr >= buffer_end)
-                return;
-            *buffer_ptr++ ^= file_name[j];
-        }
+        if (buffer_ptr >= buffer_end)
+            return;
+        *buffer_ptr++ ^= file_name[j];
     }
 }
 
 static void transform_script_content(
-    bstr &buffer, u64 hash, const bstr &game_title)
+    bstr &buffer, const u64 hash, const bstr &game_title)
 {
-    u32 xor_value = (hash ^ crc64(game_title)) & 0xFFFFFFFF;
-    u32 *buffer_ptr = buffer.get<u32>();
-    for (auto i : algo::range(buffer.size() / 4))
-        *buffer_ptr++ ^= xor_value;
+    const u32 xor_value = (hash ^ crc64(game_title)) & 0xFFFFFFFF;
+    for (const auto i : algo::range(buffer.size() / 4))
+        buffer.get<u32>()[i] ^= xor_value;
 }
 
 static u32 read_file_count(io::IStream &input_stream)
@@ -155,9 +152,9 @@ static void dump(const ArchiveMetaImpl &meta, const std::string &dump_path)
     // about the last archive
     static io::FileStream stream(dump_path, io::FileMode::Write);
 
-    for (auto &e : meta.entries)
+    for (const auto &e : meta.entries)
     {
-        auto entry = dynamic_cast<ArchiveEntryImpl*>(e.get());
+        const auto entry = static_cast<ArchiveEntryImpl*>(e.get());
         if (entry->valid)
             stream.write(entry->path.str() + "\n");
         else
@@ -216,7 +213,7 @@ void DatArchiveDecoder::set_game_title(const std::string &game_title)
 
 void DatArchiveDecoder::add_file_name(const std::string &file_name)
 {
-    auto file_name_sjis = algo::utf8_to_sjis(file_name);
+    const auto file_name_sjis = algo::utf8_to_sjis(file_name);
     p->file_names_map[crc64(file_name_sjis)] = file_name_sjis;
 }
 
@@ -224,7 +221,7 @@ bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("dat"))
         return false;
-    auto file_count = read_file_count(input_file.stream);
+    const auto file_count = read_file_count(input_file.stream);
     return file_count * (8 + 1 + 4 + 4 + 4) < input_file.stream.size();
 }
 
@@ -234,12 +231,12 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->game_title = p->game_title;
 
-    auto file_count = read_file_count(input_file.stream);
-    for (auto i : algo::range(file_count))
+    const auto file_count = read_file_count(input_file.stream);
+    for (const auto i : algo::range(file_count))
     {
-        auto hash64 = input_file.stream.read_u64_le();
-        auto hash32 = hash64 & 0xFFFFFFFF;
-        auto hash8 = hash64 & 0xFF;
+        const auto hash64 = input_file.stream.read_u64_le();
+        const auto hash32 = hash64 & 0xFFFFFFFF;
+        const auto hash8 = hash64 & 0xFF;
 
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->hash = hash64;
@@ -250,8 +247,8 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
         entry->size_comp = input_file.stream.read_u32_le() ^ hash32;
         entry->size_orig = input_file.stream.read_u32_le() ^ hash32;
 
-        auto name = p->file_names_map[entry->hash];
-        auto name_found = name.size();
+        const auto name = p->file_names_map[entry->hash];
+        const auto name_found = name.size();
 
         if (entry->type == TableEntryType::Compressed)
         {
@@ -291,8 +288,8 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    auto meta = static_cast<const ArchiveMetaImpl*>(&m);
-    auto entry = static_cast<const ArchiveEntryImpl*>(&e);
+    const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
+    const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     if (!entry->valid)
     {
         logger.err(
@@ -300,8 +297,7 @@ std::unique_ptr<io::File> DatArchiveDecoder::read_file_impl(
         return nullptr;
     }
 
-    input_file.stream.seek(entry->offset);
-    auto data = input_file.stream.read(entry->size_comp);
+    auto data = input_file.stream.seek(entry->offset).read(entry->size_comp);
 
     if (entry->type == TableEntryType::Compressed)
     {
