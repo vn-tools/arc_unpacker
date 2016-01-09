@@ -482,6 +482,7 @@ Xp3Plugin au::dec::kirikiri::create_cxdec_plugin(
 {
     Xp3Plugin plugin;
     plugin.create_decrypt_func = [=](const io::path &arc_path)
+        -> std::function<void(bstr &, u32)> // fixes crash in clang
     {
         CxdecSettings settings;
         settings.control_block = find_control_block(arc_path);
