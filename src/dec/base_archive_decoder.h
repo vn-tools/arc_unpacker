@@ -20,6 +20,8 @@ namespace dec {
     class BaseArchiveDecoder : public BaseDecoder
     {
     public:
+        BaseArchiveDecoder();
+
         virtual ~BaseArchiveDecoder() {}
 
         virtual algo::NamingStrategy naming_strategy() const override;
@@ -45,6 +47,9 @@ namespace dec {
             io::File &input_file,
             const ArchiveMeta &m,
             const ArchiveEntry &e) const = 0;
+
+    private:
+        bool numeric_file_names;
     };
 
 } }

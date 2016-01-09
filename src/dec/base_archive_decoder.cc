@@ -13,6 +13,25 @@ algo::NamingStrategy BaseArchiveDecoder::naming_strategy() const
     return algo::NamingStrategy::Child;
 }
 
+BaseArchiveDecoder::BaseArchiveDecoder() : numeric_file_names(false)
+{
+    add_arg_parser_decorator(
+        [](ArgParser &arg_parser)
+        {
+            arg_parser
+                .register_flag({"--numeric-file-names"})
+                ->set_description(
+                    "Replaces file names with extensionless sequential "
+                    "numbers. Useful for recovering archives with broken file "
+                    "names and for scripting.");
+        },
+        [&](const ArgParser &arg_parser)
+        {
+            if (arg_parser.has_flag("--numeric-file-names"))
+                numeric_file_names = true;
+        });
+}
+
 void BaseArchiveDecoder::accept(IDecoderVisitor &visitor) const
 {
     visitor.visit(*this);
@@ -24,30 +43,41 @@ std::unique_ptr<ArchiveMeta> BaseArchiveDecoder::read_meta(
     input_file.stream.seek(0);
     auto meta = read_meta_impl(logger, input_file);
 
-    std::string prefix;
-    if (naming_strategy() == algo::NamingStrategy::Sibling)
-        prefix = input_file.path.stem();
-    else if (naming_strategy() == algo::NamingStrategy::FlatSibling)
-        prefix = input_file.path.stem();
-    else if (naming_strategy() == algo::NamingStrategy::Root)
-        prefix = (input_file.path.parent() / input_file.path.stem()).str();
-
-    if (prefix.empty())
-        prefix = "unk";
-
     const auto width = meta->entries.size() > 1
         ? std::max<int>(1, 1 + std::log10(meta->entries.size()))
         : 0;
 
-    int number = 0;
-    for (const auto &entry : meta->entries)
+    if (numeric_file_names)
     {
-        if (!entry->path.str().empty())
-            continue;
-        entry->path = meta->entries.size() > 1
-            ? algo::format("%s_%0*d", prefix.c_str(), width, number++)
-            : prefix;
-        entry->path.change_extension("dat");
+        int number = 0;
+        for (const auto &entry : meta->entries)
+            entry->path = algo::format("%0*d", width, number++);
+    }
+    else
+    {
+        std::string prefix;
+        if (naming_strategy() == algo::NamingStrategy::Sibling)
+            prefix = input_file.path.stem();
+        else if (naming_strategy() == algo::NamingStrategy::FlatSibling)
+            prefix = input_file.path.stem();
+        else if (naming_strategy() == algo::NamingStrategy::Root)
+            prefix = (input_file.path.parent() / input_file.path.stem()).str();
+
+        if (prefix.empty())
+            prefix = "unk";
+
+        int number = 0;
+        for (const auto &entry : meta->entries)
+        {
+            if (!entry->path.str().empty())
+                continue;
+
+            entry->path = meta->entries.size() > 1
+                ? algo::format("%s_%0*d", prefix.c_str(), width, number++)
+                : prefix;
+
+            entry->path.change_extension("dat");
+        }
     }
 
     return meta;
