@@ -32,27 +32,27 @@ Meta dec::cri::hca::read_meta(const bstr &input)
         if (magic == "HCA\x00"_b)
         {
             out.hca = std::make_unique<HcaChunk>();
-            out.hca->version = stream.read_u16_be();
-            out.hca->data_offset = stream.read_u16_be();
+            out.hca->version = stream.read_be<u16>();
+            out.hca->data_offset = stream.read_be<u16>();
         }
 
         else if (magic == "fmt\x00"_b)
         {
             out.fmt = std::make_unique<FmtChunk>();
-            out.fmt->channel_count = stream.read_u8();
+            out.fmt->channel_count = stream.read<u8>();
             out.fmt->sample_rate
-                = (stream.read_u16_be() << 8) | stream.read_u8();
-            out.fmt->block_count = stream.read_u32_be();
+                = (stream.read_be<u16>() << 8) | stream.read<u8>();
+            out.fmt->block_count = stream.read_be<u32>();
             stream.skip(4);
         }
 
         else if (magic == "dec\x00"_b)
         {
             out.comp = std::make_unique<CompChunk>();
-            out.comp->block_size = stream.read_u16_be();
+            out.comp->block_size = stream.read_be<u16>();
             u8 unk[6];
             for (const auto i : algo::range(6))
-                unk[i] = stream.read_u8();
+                unk[i] = stream.read<u8>();
             out.comp->unk[0] = unk[0];
             out.comp->unk[1] = unk[1];
             out.comp->unk[2] = unk[4] >> 4;
@@ -66,38 +66,38 @@ Meta dec::cri::hca::read_meta(const bstr &input)
         else if (magic == "comp"_b)
         {
             out.comp = std::make_unique<CompChunk>();
-            out.comp->block_size = stream.read_u16_be();
+            out.comp->block_size = stream.read_be<u16>();
             for (const auto i : algo::range(8))
-                out.comp->unk[i] = stream.read_u8();
+                out.comp->unk[i] = stream.read<u8>();
             stream.skip(2);
         }
 
         else if (magic == "vbr\x00"_b)
         {
             out.vbr = std::make_unique<VbrChunk>();
-            out.vbr->unk[0] = stream.read_u16_be();
-            out.vbr->unk[1] = stream.read_u16_be();
+            out.vbr->unk[0] = stream.read_be<u16>();
+            out.vbr->unk[1] = stream.read_be<u16>();
         }
 
         else if (magic == "ath\x00"_b)
         {
             out.ath = std::make_unique<AthChunk>();
-            out.ath->type = stream.read_u16_le();
+            out.ath->type = stream.read_le<u16>();
         }
 
         else if (magic == "loop"_b)
         {
             out.loop = std::make_unique<LoopChunk>();
-            out.loop->start = stream.read_u32_be();
-            out.loop->end = stream.read_u32_be();
-            out.loop->repetitions = stream.read_u16_be();
+            out.loop->start = stream.read_be<u32>();
+            out.loop->end = stream.read_be<u32>();
+            out.loop->repetitions = stream.read_be<u16>();
             stream.skip(2);
         }
 
         else if (magic == "ciph"_b)
         {
             out.ciph = std::make_unique<CiphChunk>();
-            out.ciph->type = stream.read_u16_be();
+            out.ciph->type = stream.read_be<u16>();
         }
 
         else if (magic == "rva\x00"_b)
@@ -115,7 +115,7 @@ Meta dec::cri::hca::read_meta(const bstr &input)
         else if (magic == "comm"_b)
         {
             out.comm = std::make_unique<CommChunk>();
-            const auto tmp = stream.read_u32_be();
+            const auto tmp = stream.read_be<u32>();
             out.comm->text = stream.read(tmp);
         }
 

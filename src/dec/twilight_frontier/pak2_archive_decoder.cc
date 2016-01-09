@@ -51,11 +51,11 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
-    const auto file_count = input_file.stream.read_u16_le();
+    const auto file_count = input_file.stream.read_le<u16>();
     if (!file_count && input_file.stream.size() != 6)
         throw err::RecognitionError();
 
-    const auto table_size = input_file.stream.read_u32_le();
+    const auto table_size = input_file.stream.read_le<u32>();
     if (table_size > input_file.stream.size() - input_file.stream.tell())
         throw err::RecognitionError();
     if (table_size > file_count * (4 + 4 + 256 + 1))
@@ -68,9 +68,9 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->offset = table_stream.read_u32_le();
-        entry->size = table_stream.read_u32_le();
-        const auto name_size = table_stream.read_u8();
+        entry->offset = table_stream.read_le<u32>();
+        entry->size = table_stream.read_le<u32>();
+        const auto name_size = table_stream.read<u8>();
         entry->path = algo::sjis_to_utf8(table_stream.read(name_size)).str();
         if (entry->offset + entry->size > input_file.stream.size())
             throw err::BadDataOffsetError();

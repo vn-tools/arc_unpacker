@@ -31,12 +31,12 @@ TranscriptionSpec TranscriptionStrategy1::get_spec(DecoderContext &context)
     {
         if (context.bit_reader.get(1))
         {
-            spec.look_behind = context.input_stream.read_u8() + 1;
+            spec.look_behind = context.input_stream.read<u8>() + 1;
             spec.size = 2;
         }
         else
         {
-            spec.look_behind = context.input_stream.read_u16_le() + 1;
+            spec.look_behind = context.input_stream.read_le<u16>() + 1;
             spec.size = 3;
         }
     }
@@ -69,12 +69,12 @@ TranscriptionSpec TranscriptionStrategy3::get_spec(DecoderContext &context)
     TranscriptionSpec spec;
     if (context.bit_reader.get(1))
     {
-        spec.look_behind = context.input_stream.read_u8() + 1;
+        spec.look_behind = context.input_stream.read<u8>() + 1;
         spec.size = 2;
     }
     else
     {
-        spec.look_behind = context.input_stream.read_u16_le() + 1;
+        spec.look_behind = context.input_stream.read_le<u16>() + 1;
         spec.size = 3;
     }
     spec.size += read_count(context.bit_reader);

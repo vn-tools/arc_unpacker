@@ -18,12 +18,12 @@ res::Audio WwaAudioDecoder::decode_impl(
     wpx::Decoder decoder(input_file.stream);
     io::MemoryStream metadata_stream(decoder.read_plain_section(0x20));
 
-    const auto pcm_type = metadata_stream.read_u16_le();
-    const auto channel_count = metadata_stream.read_u16_le();
-    const auto sample_rate = metadata_stream.read_u32_le();
-    const auto byte_rate = metadata_stream.read_u32_le();
-    const auto block_align = metadata_stream.read_u16_le();
-    const auto bits_per_sample = metadata_stream.read_u16_le();
+    const auto pcm_type = metadata_stream.read_le<u16>();
+    const auto channel_count = metadata_stream.read_le<u16>();
+    const auto sample_rate = metadata_stream.read_le<u32>();
+    const auto byte_rate = metadata_stream.read_le<u32>();
+    const auto block_align = metadata_stream.read_le<u16>();
+    const auto bits_per_sample = metadata_stream.read_le<u16>();
 
     const auto samples = decoder.read_compressed_section(0x21);
 

@@ -39,10 +39,10 @@ std::unique_ptr<dec::ArchiveMeta> GxpArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(24);
-    const auto file_count = input_file.stream.read_u32_le();
-    const auto table_size = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
+    const auto table_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
-    const auto data_offset = input_file.stream.read_u64_le();
+    const auto data_offset = input_file.stream.read_le<u64>();
     io::MemoryStream table_stream(input_file.stream.read(table_size));
 
     auto meta = std::make_unique<dec::ArchiveMeta>();
@@ -50,17 +50,17 @@ std::unique_ptr<dec::ArchiveMeta> GxpArchiveDecoder::read_meta_impl(
     {
         auto entry_stream = std::make_unique<io::MemoryStream>(
             decrypt(table_stream.read(4)));
-        const auto entry_size = entry_stream->read_u32_le();
+        const auto entry_size = entry_stream->read_le<u32>();
         entry_stream = std::make_unique<io::MemoryStream>(
             decrypt(table_stream.skip(-4).read(entry_size)));
         entry_stream->skip(4);
 
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->size = entry_stream->read_u32_le();
+        entry->size = entry_stream->read_le<u32>();
         entry_stream->skip(4);
-        const auto name_size = entry_stream->read_u32_le();
+        const auto name_size = entry_stream->read_le<u32>();
         entry_stream->skip(8);
-        entry->offset = data_offset + entry_stream->read_u64_le();
+        entry->offset = data_offset + entry_stream->read_le<u64>();
         entry->path
             = algo::utf16_to_utf8(entry_stream->read(name_size * 2)).str();
         meta->entries.push_back(std::move(entry));

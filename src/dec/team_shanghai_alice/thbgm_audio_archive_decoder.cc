@@ -85,16 +85,16 @@ std::unique_ptr<dec::ArchiveMeta> ThbgmAudioArchiveDecoder::read_meta_impl(
         entry->path = definitions_file->stream.read_to_zero(16).str();
         if (entry->path.str().empty())
             break;
-        entry->offset = definitions_file->stream.read_u32_le();
+        entry->offset = definitions_file->stream.read_le<u32>();
         definitions_file->stream.skip(4);
-        entry->intro_size = definitions_file->stream.read_u32_le();
-        entry->size = definitions_file->stream.read_u32_le();
-        entry->format = definitions_file->stream.read_u16_le();
-        entry->channel_count = definitions_file->stream.read_u16_le();
-        entry->sample_rate = definitions_file->stream.read_u32_le();
-        entry->byte_rate = definitions_file->stream.read_u32_le();
-        entry->block_align = definitions_file->stream.read_u16_le();
-        entry->bits_per_sample = definitions_file->stream.read_u16_le();
+        entry->intro_size = definitions_file->stream.read_le<u32>();
+        entry->size = definitions_file->stream.read_le<u32>();
+        entry->format = definitions_file->stream.read_le<u16>();
+        entry->channel_count = definitions_file->stream.read_le<u16>();
+        entry->sample_rate = definitions_file->stream.read_le<u32>();
+        entry->byte_rate = definitions_file->stream.read_le<u32>();
+        entry->block_align = definitions_file->stream.read_le<u16>();
+        entry->bits_per_sample = definitions_file->stream.read_le<u16>();
         definitions_file->stream.skip(4);
         meta->entries.push_back(std::move(entry));
     }

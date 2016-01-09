@@ -28,13 +28,13 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0xA8);
-    auto file_count = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(12);
-    auto table_offset = input_file.stream.read_u32_le();
-    auto table_size_comp = input_file.stream.read_u32_le();
-    auto key = input_file.stream.read_u32_le();
-    auto table_size_orig = input_file.stream.read_u32_le();
-    auto data_offset = input_file.stream.read_u32_le();
+    auto table_offset = input_file.stream.read_le<u32>();
+    auto table_size_comp = input_file.stream.read_le<u32>();
+    auto key = input_file.stream.read_le<u32>();
+    auto table_size_orig = input_file.stream.read_le<u32>();
+    auto data_offset = input_file.stream.read_le<u32>();
 
     input_file.stream.seek(table_offset);
     auto table_data = input_file.stream.read(table_size_comp);
@@ -49,9 +49,9 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
         table_stream.seek(i * 0x18);
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::format("%05d.dat", i);
-        entry->offset = table_stream.read_u32_le() + data_offset;
-        entry->size_comp = table_stream.read_u32_le();
-        entry->size_orig = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>() + data_offset;
+        entry->size_comp = table_stream.read_le<u32>();
+        entry->size_orig = table_stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

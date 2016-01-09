@@ -19,7 +19,7 @@ std::unique_ptr<io::File> AffFileDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
-    const auto size = input_file.stream.read_u32_le();
+    const auto size = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
 
     auto data = input_file.stream.read_to_eof();

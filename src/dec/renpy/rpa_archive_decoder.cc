@@ -106,51 +106,51 @@ static void unpickle(io::IStream &table_stream, UnpickleContext *context)
     size_t table_size = table_stream.size();
     while (table_stream.tell() < table_size)
     {
-        PickleOpcode c = static_cast<PickleOpcode>(table_stream.read_u8());
+        PickleOpcode c = static_cast<PickleOpcode>(table_stream.read<u8>());
         switch (c)
         {
             case PickleOpcode::ShortBinString:
             {
-                char size = table_stream.read_u8();
+                char size = table_stream.read<u8>();
                 unpickle_handle_string(table_stream.read(size), context);
                 break;
             }
 
             case PickleOpcode::BinUnicode:
             {
-                u32 size = table_stream.read_u32_le();
+                u32 size = table_stream.read_le<u32>();
                 unpickle_handle_string(table_stream.read(size), context);
                 break;
             }
 
             case PickleOpcode::BinInt1:
             {
-                unpickle_handle_number(table_stream.read_u8(), context);
+                unpickle_handle_number(table_stream.read<u8>(), context);
                 break;
             }
 
             case PickleOpcode::BinInt2:
             {
-                unpickle_handle_number(table_stream.read_u16_le(), context);
+                unpickle_handle_number(table_stream.read_le<u16>(), context);
                 break;
             }
 
             case PickleOpcode::BinInt4:
             {
-                unpickle_handle_number(table_stream.read_u32_le(), context);
+                unpickle_handle_number(table_stream.read_le<u32>(), context);
                 break;
             }
 
             case PickleOpcode::Long1:
             {
-                size_t size = table_stream.read_u8();
+                size_t size = table_stream.read<u8>();
                 u32 number = 0;
                 size_t pos = table_stream.tell();
                 for (auto i : algo::range(size))
                 {
                     table_stream.seek(pos + size - 1 - i);
                     number *= 256;
-                    number += table_stream.read_u8();
+                    number += table_stream.read<u8>();
                 }
                 unpickle_handle_number(number, context);
                 table_stream.seek(pos + size);
@@ -208,7 +208,7 @@ static u32 read_hex_number(io::IStream &input_stream, size_t size)
     u32 result = 0;
     for (auto i : algo::range(size))
     {
-        char c = input_stream.read_u8();
+        char c = input_stream.read<u8>();
         result *= 16;
         if (c >= 'A' && c <= 'F')
             result += c + 10 - 'A';

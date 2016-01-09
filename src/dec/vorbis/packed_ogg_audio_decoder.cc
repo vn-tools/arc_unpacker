@@ -25,15 +25,15 @@ static const bstr ogg_magic = "OggS"_b;
 static OggPage read_ogg_page(io::IStream &input_stream)
 {
     OggPage page;
-    page.version = input_stream.read_u8();
-    page.header_type = input_stream.read_u8();
+    page.version = input_stream.read<u8>();
+    page.header_type = input_stream.read<u8>();
     page.granule_position = input_stream.read(8);
-    page.bitstream_serial_number = input_stream.read_u32_le();
-    page.page_sequence_number = input_stream.read_u32_le();
-    page.checksum = input_stream.read_u32_le();
-    std::vector<size_t> sizes(input_stream.read_u8());
+    page.bitstream_serial_number = input_stream.read_le<u32>();
+    page.page_sequence_number = input_stream.read_le<u32>();
+    page.checksum = input_stream.read_le<u32>();
+    std::vector<size_t> sizes(input_stream.read<u8>());
     for (auto &size : sizes)
-        size = input_stream.read_u8();
+        size = input_stream.read<u8>();
     for (auto &size : sizes)
         page.segments.push_back(input_stream.read(size));
     return page;
@@ -42,15 +42,15 @@ static OggPage read_ogg_page(io::IStream &input_stream)
 static void write_ogg_page(io::IStream &output_stream, const OggPage &page)
 {
     output_stream.write(ogg_magic);
-    output_stream.write_u8(page.version);
-    output_stream.write_u8(page.header_type);
+    output_stream.write<u8>(page.version);
+    output_stream.write<u8>(page.header_type);
     output_stream.write(page.granule_position);
-    output_stream.write_u32_le(page.bitstream_serial_number);
-    output_stream.write_u32_le(page.page_sequence_number);
-    output_stream.write_u32_le(page.checksum);
-    output_stream.write_u8(page.segments.size());
+    output_stream.write_le<u32>(page.bitstream_serial_number);
+    output_stream.write_le<u32>(page.page_sequence_number);
+    output_stream.write_le<u32>(page.checksum);
+    output_stream.write<u8>(page.segments.size());
     for (auto &page_segment : page.segments)
-        output_stream.write_u8(page_segment.size());
+        output_stream.write<u8>(page_segment.size());
     for (auto &page_segment : page.segments)
         output_stream.write(page_segment);
 }
@@ -60,7 +60,7 @@ bool PackedOggAudioDecoder::is_recognized_impl(io::File &input_file) const
     if (!input_file.path.has_extension("wav"))
         return false;
     input_file.stream.seek(16);
-    input_file.stream.skip(input_file.stream.read_u32_le());
+    input_file.stream.skip(input_file.stream.read_le<u32>());
     input_file.stream.skip(20);
     return input_file.stream.read(4) == ogg_magic;
 }
@@ -115,17 +115,17 @@ std::unique_ptr<io::File> PackedOggAudioDecoder::decode_impl(
     input_file.stream.skip(4); // file size w/o RIFF header, usually corrupted
     if (input_file.stream.read(8) != "WAVEfmt\x20"_b)
         throw err::CorruptDataError("Expected WAVE header");
-    input_file.stream.skip(input_file.stream.read_u32_le());
+    input_file.stream.skip(input_file.stream.read_le<u32>());
 
     if (input_file.stream.read(4) != "fact"_b)
         throw err::CorruptDataError("Expected fact chunk");
-    if (input_file.stream.read_u32_le() != 4)
+    if (input_file.stream.read_le<u32>() != 4)
         throw err::CorruptDataError("Corrupt fact chunk");
     input_file.stream.skip(4);
 
     if (input_file.stream.read(4) != "data"_b)
         throw err::CorruptDataError("Expected data chunk");
-    auto data_size = input_file.stream.read_u32_le();
+    auto data_size = input_file.stream.read_le<u32>();
     io::MemoryStream input(input_file.stream, data_size);
 
     auto output_file = std::make_unique<io::File>();

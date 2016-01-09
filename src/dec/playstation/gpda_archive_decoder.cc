@@ -20,31 +20,31 @@ bool GpdaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     return input_file.stream.read(magic.size()) == magic
-        && input_file.stream.read_u32_le() == input_file.stream.size();
+        && input_file.stream.read_le<u32>() == input_file.stream.size();
 }
 
 std::unique_ptr<dec::ArchiveMeta> GpdaArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(12);
-    const auto file_count = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
-        entry->offset = input_file.stream.read_u32_le();
-        if (input_file.stream.read_u32_le() != 0)
+        entry->offset = input_file.stream.read_le<u32>();
+        if (input_file.stream.read_le<u32>() != 0)
             throw err::CorruptDataError("Expected '0'");
-        entry->size = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_le<u32>();
 
-        const auto name_offset = input_file.stream.read_u32_le();
+        const auto name_offset = input_file.stream.read_le<u32>();
         if (!name_offset)
             entry->path = "";
         else
             input_file.stream.peek(name_offset, [&]()
                 {
-                    const auto name_size = input_file.stream.read_u32_le();
+                    const auto name_size = input_file.stream.read_le<u32>();
                     entry->path = input_file.stream.read(name_size).str();
                 });
 

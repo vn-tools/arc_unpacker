@@ -16,7 +16,7 @@ u32 CustomBitReader::get(const size_t bits)
         buffer >>= 1;
         if (!bits_available)
         {
-            buffer = input_stream->read_u8();
+            buffer = input_stream->read<u8>();
             bits_available = 8;
         }
         value <<= 1;

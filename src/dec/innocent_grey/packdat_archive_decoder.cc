@@ -27,17 +27,17 @@ std::unique_ptr<dec::ArchiveMeta> PackdatArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto file_count = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(32).str();
-        entry->offset = input_file.stream.read_u32_le();
-        entry->encrypted = (input_file.stream.read_u32_le() & 0x10000) != 0;
-        entry->size_orig = input_file.stream.read_u32_le();
-        entry->size_comp = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->encrypted = (input_file.stream.read_le<u32>() & 0x10000) != 0;
+        entry->size_orig = input_file.stream.read_le<u32>();
+        entry->size_comp = input_file.stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

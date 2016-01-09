@@ -42,22 +42,22 @@ static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
     {
         control >>= 1;
         if (!(control & 0x100))
-            control = input_stream.read_u8() | 0xFF00;
+            control = input_stream.read<u8>() | 0xFF00;
         if (control & 1)
         {
             if (input_stream.eof())
                 break;
-            auto byte = input_stream.read_u8();
+            auto byte = input_stream.read<u8>();
             dict[dict_pos++] = *output_ptr++ = byte;
             dict_pos %= dict_size;
             continue;
         }
         if (input_stream.eof())
             break;
-        u8 di = input_stream.read_u8();
+        u8 di = input_stream.read<u8>();
         if (input_stream.eof())
             break;
-        u8 tmp = input_stream.read_u8();
+        u8 tmp = input_stream.read<u8>();
         u32 look_behind_pos = (((di << 8) | tmp) >> 4);
         u16 repetitions = (tmp & 0xF) + 2;
         while (repetitions-- && output_ptr < output_end)
@@ -117,17 +117,17 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(io::File &input_file)
 {
     input_file.stream.seek(magic.size());
     auto meta = std::make_unique<dec::ArchiveMeta>();
-    const auto file_count = input_file.stream.read_u16_le();
-    const auto depth = input_file.stream.read_u16_le();
+    const auto file_count = input_file.stream.read_le<u16>();
+    const auto depth = input_file.stream.read_le<u16>();
     auto offset = input_file.stream.tell() + file_count * 24;
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->width = input_file.stream.read_u32_le();
-        entry->height = input_file.stream.read_u32_le();
+        entry->width = input_file.stream.read_le<u32>();
+        entry->height = input_file.stream.read_le<u32>();
         input_file.stream.skip(12);
         entry->offset = offset;
-        entry->size_comp = input_file.stream.read_u32_le();
+        entry->size_comp = input_file.stream.read_le<u32>();
         entry->size_orig = entry->width * entry->height * (depth >> 3);
         entry->depth = depth;
         offset += entry->size_comp + (entry->depth == 8 ? 256 * 4 : 0);

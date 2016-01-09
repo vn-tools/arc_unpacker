@@ -16,8 +16,8 @@ res::Audio DwvAudioDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 2);
-    const auto header_size = input_file.stream.read_u32_le();
-    const auto samples_size = input_file.stream.read_u32_le();
+    const auto header_size = input_file.stream.read_le<u32>();
+    const auto samples_size = input_file.stream.read_le<u32>();
     const auto header = input_file.stream.read(header_size);
     const auto samples = input_file.stream.read(samples_size);
 
@@ -25,15 +25,15 @@ res::Audio DwvAudioDecoder::decode_impl(
     audio.samples = samples;
 
     io::MemoryStream header_stream(header);
-    audio.codec = header_stream.read_u16_le();
-    audio.channel_count = header_stream.read_u16_le();
-    audio.sample_rate = header_stream.read_u32_le();
-    const auto byte_rate = header_stream.read_u32_le();
-    const auto block_align = header_stream.read_u16_le();
-    audio.bits_per_sample = header_stream.read_u16_le();
+    audio.codec = header_stream.read_le<u16>();
+    audio.channel_count = header_stream.read_le<u16>();
+    audio.sample_rate = header_stream.read_le<u32>();
+    const auto byte_rate = header_stream.read_le<u32>();
+    const auto block_align = header_stream.read_le<u16>();
+    audio.bits_per_sample = header_stream.read_le<u16>();
     if (header_stream.tell() < header_stream.size())
     {
-        const auto extra_data_size = header_stream.read_u16_le();
+        const auto extra_data_size = header_stream.read_le<u16>();
         audio.extra_codec_headers = header_stream.read(extra_data_size);
     }
 

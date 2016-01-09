@@ -94,18 +94,18 @@ res::Image McgImageDecoder::decode_impl(
         * algo::from_string<float>(input_file.stream.read(4).str()));
 
     input_file.stream.seek(16);
-    const auto header_size = input_file.stream.read_u32_le();
+    const auto header_size = input_file.stream.read_le<u32>();
     if (header_size != 64)
     {
         throw err::NotSupportedError(
             algo::format("Unknown header size: %d", header_size));
     }
-    const auto x = input_file.stream.read_u32_le();
-    const auto y = input_file.stream.read_u32_le();
-    const auto width = input_file.stream.read_u32_le();
-    const auto height = input_file.stream.read_u32_le();
-    const auto depth = input_file.stream.read_u32_le();
-    const auto size_orig = input_file.stream.read_u32_le();
+    const auto x = input_file.stream.read_le<u32>();
+    const auto y = input_file.stream.read_le<u32>();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
+    const auto depth = input_file.stream.read_le<u32>();
+    const auto size_orig = input_file.stream.read_le<u32>();
 
     if (!key)
         throw err::UsageError("MCG decryption key not set");

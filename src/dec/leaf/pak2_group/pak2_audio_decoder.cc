@@ -15,7 +15,7 @@ std::unique_ptr<io::File> Pak2AudioDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(12);
-    const auto size_comp = input_file.stream.read_u32_le();
+    const auto size_comp = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
     const auto data = input_file.stream.read(size_comp);
     if (!input_file.stream.eof())

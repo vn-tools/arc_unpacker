@@ -31,7 +31,7 @@ static std::string extract_string(std::string &container)
 
 static res::Image decode_tlg_0(io::File &input_file)
 {
-    size_t raw_data_size = input_file.stream.read_u32_le();
+    size_t raw_data_size = input_file.stream.read_le<u32>();
     size_t raw_data_offset = input_file.stream.tell();
 
     std::vector<std::pair<std::string, std::string>> tags;
@@ -40,7 +40,7 @@ static res::Image decode_tlg_0(io::File &input_file)
     while (input_file.stream.tell() < input_file.stream.size())
     {
         std::string chunk_name = input_file.stream.read(4).str();
-        size_t chunk_size = input_file.stream.read_u32_le();
+        size_t chunk_size = input_file.stream.read_le<u32>();
         std::string chunk_data = input_file.stream.read(chunk_size).str();
 
         if (chunk_name == "tags")

@@ -17,25 +17,25 @@ res::Image PrtImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    const auto version = input_file.stream.read_u16_le();
+    const auto version = input_file.stream.read_le<u16>();
 
     if (version != 0x66 && version != 0x65)
         throw err::UnsupportedVersionError(version);
 
-    const auto bit_depth = input_file.stream.read_u16_le();
-    const auto palette_offset = input_file.stream.read_u16_le();
-    const auto data_offset = input_file.stream.read_u16_le();
-    auto width = input_file.stream.read_u16_le();
-    auto height = input_file.stream.read_u16_le();
+    const auto bit_depth = input_file.stream.read_le<u16>();
+    const auto palette_offset = input_file.stream.read_le<u16>();
+    const auto data_offset = input_file.stream.read_le<u16>();
+    auto width = input_file.stream.read_le<u16>();
+    auto height = input_file.stream.read_le<u16>();
     bool has_alpha = false;
 
     if (version == 0x66)
     {
-        has_alpha = input_file.stream.read_u32_le() != 0;
-        const auto x = input_file.stream.read_u32_le();
-        const auto y = input_file.stream.read_u32_le();
-        const auto width2 = input_file.stream.read_u32_le();
-        const auto height2 = input_file.stream.read_u32_le();
+        has_alpha = input_file.stream.read_le<u32>() != 0;
+        const auto x = input_file.stream.read_le<u32>();
+        const auto y = input_file.stream.read_le<u32>();
+        const auto width2 = input_file.stream.read_le<u32>();
+        const auto height2 = input_file.stream.read_le<u32>();
         if (width2) width = width2;
         if (height2) height = height2;
     }

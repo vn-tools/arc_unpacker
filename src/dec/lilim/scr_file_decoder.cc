@@ -45,7 +45,7 @@ std::unique_ptr<io::File> ScrFileDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
-    const auto size_orig = input_file.stream.read_u32_le();
+    const auto size_orig = input_file.stream.read_le<u32>();
     auto data = input_file.stream.read_to_eof();
     data = decode_huffman(data, size_orig);
     auto output_file = std::make_unique<io::File>(input_file.path, data);

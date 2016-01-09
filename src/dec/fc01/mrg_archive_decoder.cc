@@ -50,12 +50,13 @@ std::unique_ptr<dec::ArchiveMeta> MrgArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
-    const auto table_size = input_file.stream.read_u32_le() - 12 - magic.size();
-    const auto file_count = input_file.stream.read_u32_le();
+    const auto data_offset = input_file.stream.read_le<u32>();
+    const auto table_size = data_offset - 12 - magic.size();
+    const auto file_count = input_file.stream.read_le<u32>();
 
     auto table_data = input_file.stream.read(table_size);
     auto key = guess_key(table_data, input_file.stream.size());
-    for (auto i : algo::range(table_data.size()))
+    for (const auto i : algo::range(table_data.size()))
     {
         table_data[i] = common::rol8(table_data[i], 1) ^ key;
         key += table_data.size() - i;
@@ -64,14 +65,14 @@ std::unique_ptr<dec::ArchiveMeta> MrgArchiveDecoder::read_meta_impl(
     io::MemoryStream table_stream(table_data);
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
-    for (auto i : algo::range(file_count))
+    for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream.read_to_zero(0x0E).str();
-        entry->size_orig = table_stream.read_u32_le();
-        entry->filter = table_stream.read_u8();
+        entry->size_orig = table_stream.read_le<u32>();
+        entry->filter = table_stream.read<u8>();
         table_stream.skip(9);
-        entry->offset = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>();
         if (last_entry)
             last_entry->size_comp = entry->offset - last_entry->offset;
         last_entry = entry.get();
@@ -81,7 +82,8 @@ std::unique_ptr<dec::ArchiveMeta> MrgArchiveDecoder::read_meta_impl(
     if (last_entry)
     {
         table_stream.skip(0x1C);
-        last_entry->size_comp = table_stream.read_u32_le() - last_entry->offset;
+        last_entry->size_comp
+            = table_stream.read_le<u32>() - last_entry->offset;
     }
 
     return meta;

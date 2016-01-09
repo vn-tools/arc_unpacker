@@ -29,8 +29,8 @@ namespace
 
 BlockInfo::BlockInfo(io::IStream &input_stream)
 {
-    mark = input_stream.read_u8() > 0;
-    const auto block_size = input_stream.read_u32_le();
+    mark = input_stream.read<u8>() > 0;
+    const auto block_size = input_stream.read_le<u32>();
     data = input_stream.read(block_size);
 }
 
@@ -107,10 +107,10 @@ static void read_image(
 res::Image Tlg5Decoder::decode(io::File &file)
 {
     Header header;
-    header.channel_count = file.stream.read_u8();
-    header.image_width = file.stream.read_u32_le();
-    header.image_height = file.stream.read_u32_le();
-    header.block_height = file.stream.read_u32_le();
+    header.channel_count = file.stream.read<u8>();
+    header.image_width = file.stream.read_le<u32>();
+    header.image_height = file.stream.read_le<u32>();
+    header.block_height = file.stream.read_le<u32>();
     if (header.channel_count != 3 && header.channel_count != 4)
         throw err::UnsupportedChannelCountError(header.channel_count);
 

@@ -14,8 +14,8 @@ res::Image SygImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0x10);
-    const auto width = input_file.stream.read_u32_le();
-    const auto height = input_file.stream.read_u32_le();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
     const auto data = input_file.stream.seek(0x20).read(width * height * 3);
     return res::Image(width, height, data, res::PixelFormat::BGR888);
 }

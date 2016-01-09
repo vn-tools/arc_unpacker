@@ -45,22 +45,22 @@ Decoder::Decoder(io::IStream &input_stream) : p(new Priv(input_stream))
     p->tag = input_stream.read_to_zero(4).str();
 
     input_stream.seek(0x0C);
-    if (input_stream.read_u8() != 1)
+    if (input_stream.read<u8>() != 1)
         throw err::CorruptDataError("Corrupt WPX header");
 
     input_stream.seek(0x0E);
-    auto section_count = input_stream.read_u8();
-    auto dir_size = input_stream.read_u8();
+    auto section_count = input_stream.read<u8>();
+    auto dir_size = input_stream.read<u8>();
 
     for (auto i : algo::range(section_count))
     {
-        auto id = input_stream.read_u8();
+        auto id = input_stream.read<u8>();
         Section section;
-        section.data_format = input_stream.read_u8();
+        section.data_format = input_stream.read<u8>();
         input_stream.skip(2);
-        section.offset = input_stream.read_u32_le();
-        section.size_orig = input_stream.read_u32_le();
-        section.size_comp = input_stream.read_u32_le();
+        section.offset = input_stream.read_le<u32>();
+        section.size_orig = input_stream.read_le<u32>();
+        section.size_comp = input_stream.read_le<u32>();
         p->sections[id] = section;
     }
 }
@@ -126,7 +126,7 @@ bstr Decoder::read_compressed_section(
     }
 
     for (auto i : algo::range(quant_size))
-        *output_ptr++ = section_stream.read_u8();
+        *output_ptr++ = section_stream.read<u8>();
     int remaining = section.size_orig - quant_size;
     section_stream.seek((-quant_size & 3) + quant_size);
     io::MsbBitReader bit_reader(section_stream);

@@ -28,17 +28,17 @@ namespace
 
 bool NsaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    size_t file_count = input_file.stream.read_u16_be();
-    size_t offset_to_files = input_file.stream.read_u32_be();
+    size_t file_count = input_file.stream.read_be<u16>();
+    size_t offset_to_files = input_file.stream.read_be<u32>();
     if (file_count == 0)
         return false;
     for (auto i : algo::range(file_count))
     {
         input_file.stream.read_to_zero();
-        input_file.stream.read_u8();
-        size_t offset = input_file.stream.read_u32_be();
-        size_t size_comp = input_file.stream.read_u32_be();
-        size_t size_orig = input_file.stream.read_u32_be();
+        input_file.stream.read<u8>();
+        size_t offset = input_file.stream.read_be<u32>();
+        size_t size_comp = input_file.stream.read_be<u32>();
+        size_t size_orig = input_file.stream.read_be<u32>();
         if (offset_to_files + offset + size_comp > input_file.stream.size())
             return false;
     }
@@ -49,17 +49,17 @@ std::unique_ptr<dec::ArchiveMeta> NsaArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
-    size_t file_count = input_file.stream.read_u16_be();
-    size_t offset_to_data = input_file.stream.read_u32_be();
+    size_t file_count = input_file.stream.read_be<u16>();
+    size_t offset_to_data = input_file.stream.read_be<u32>();
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero().str();
         entry->compression_type =
-            static_cast<CompressionType>(input_file.stream.read_u8());
-        entry->offset = input_file.stream.read_u32_be() + offset_to_data;
-        entry->size_comp = input_file.stream.read_u32_be();
-        entry->size_orig = input_file.stream.read_u32_be();
+            static_cast<CompressionType>(input_file.stream.read<u8>());
+        entry->offset = input_file.stream.read_be<u32>() + offset_to_data;
+        entry->size_comp = input_file.stream.read_be<u32>();
+        entry->size_orig = input_file.stream.read_be<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

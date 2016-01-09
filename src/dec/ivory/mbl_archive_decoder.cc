@@ -33,8 +33,8 @@ static bool verify_version(
     {
         input_stream.skip((file_count - 1) * (name_size + 8));
         input_stream.skip(name_size);
-        const auto last_file_offset = input_stream.read_u32_le();
-        const auto last_file_size = input_stream.read_u32_le();
+        const auto last_file_offset = input_stream.read_le<u32>();
+        const auto last_file_size = input_stream.read_le<u32>();
         return last_file_offset + last_file_size == input_stream.size();
     }
     catch (...)
@@ -46,12 +46,12 @@ static bool verify_version(
 static int detect_version(io::IStream &input_stream)
 {
     input_stream.seek(0);
-    const auto file_count = input_stream.read_u32_le();
+    const auto file_count = input_stream.read_le<u32>();
     if (verify_version(input_stream, file_count, 16))
         return 1;
 
     input_stream.seek(4);
-    const auto name_size = input_stream.read_u32_le();
+    const auto name_size = input_stream.read_le<u32>();
     if (verify_version(input_stream, file_count, name_size))
         return 2;
 
@@ -102,17 +102,17 @@ std::unique_ptr<dec::ArchiveMeta> MblArchiveDecoder::read_meta_impl(
     meta->decrypt = plugin_manager.is_set() ? plugin_manager.get() : nullptr;
     input_file.stream.seek(0);
 
-    const auto file_count = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
     const auto name_size = version == 2
-        ? input_file.stream.read_u32_le()
+        ? input_file.stream.read_le<u32>()
         : 16;
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(name_size)).str();
-        entry->offset = input_file.stream.read_u32_le();
-        entry->size = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->size = input_file.stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return std::move(meta);

@@ -255,13 +255,13 @@ static std::string get_dir_name(
 static std::vector<DirEntry> read_dir_entries(RsaReader &reader)
 {
     std::vector<DirEntry> dirs;
-    auto dir_count = reader.read_block()->read_u32_le();
+    auto dir_count = reader.read_block()->read_le<u32>();
     for (const auto i : algo::range(dir_count))
     {
         auto tmp_stream = reader.read_block();
         DirEntry entry;
-        entry.initial_hash = tmp_stream->read_u32_le();
-        entry.file_count = tmp_stream->read_u32_le();
+        entry.initial_hash = tmp_stream->read_le<u32>();
+        entry.file_count = tmp_stream->read_le<u32>();
         dirs.push_back(entry);
     }
     return dirs;
@@ -276,9 +276,9 @@ static HashLookupMap read_fn_map(
     HashLookupMap fn_map;
 
     auto tmp_stream = reader.read_block();
-    size_t table_size_compressed = tmp_stream->read_u32_le();
-    size_t table_size_original = tmp_stream->read_u32_le();
-    size_t block_count = tmp_stream->read_u32_le();
+    size_t table_size_compressed = tmp_stream->read_le<u32>();
+    size_t table_size_original = tmp_stream->read_le<u32>();
+    size_t block_count = tmp_stream->read_le<u32>();
 
     tmp_stream = std::make_unique<io::MemoryStream>();
     for (const auto i : algo::range(block_count))
@@ -341,7 +341,7 @@ bool TfpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.read(magic.size()) != magic)
         return false;
-    auto version = input_file.stream.read_u8();
+    auto version = input_file.stream.read<u8>();
     return version == 0 || version == 1;
 }
 
@@ -351,7 +351,7 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
     input_file.stream.seek(magic.size());
 
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    meta->version = input_file.stream.read_u8() == 0
+    meta->version = input_file.stream.read<u8>() == 0
         ? TfpkVersion::Th135
         : TfpkVersion::Th145;
 
@@ -370,7 +370,7 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
     for (const auto &it : user_fn_map)
         fn_map[it.first] = it.second;
 
-    size_t file_count = reader.read_block()->read_u32_le();
+    size_t file_count = reader.read_block()->read_le<u32>();
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
@@ -379,10 +379,10 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
         auto b3 = reader.read_block();
         if (meta->version == TfpkVersion::Th135)
         {
-            entry->size = b1->read_u32_le();
-            entry->offset = b1->read_u32_le();
+            entry->size = b1->read_le<u32>();
+            entry->offset = b1->read_le<u32>();
 
-            auto fn_hash = b2->read_u32_le();
+            auto fn_hash = b2->read_le<u32>();
             auto it = fn_map.find(fn_hash);
             entry->path = it == fn_map.end()
                 ? get_unknown_name(i, fn_hash)
@@ -392,11 +392,11 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
         }
         else
         {
-            entry->size   = b1->read_u32_le() ^ b3->read_u32_le();
-            entry->offset = b1->read_u32_le() ^ b3->read_u32_le();
+            entry->size   = b1->read_le<u32>() ^ b3->read_le<u32>();
+            entry->offset = b1->read_le<u32>() ^ b3->read_le<u32>();
 
-            u32 fn_hash = b2->read_u32_le() ^ b3->read_u32_le();
-            u32 unk = b2->read_u32_le() ^ b3->read_u32_le();
+            u32 fn_hash = b2->read_le<u32>() ^ b3->read_le<u32>();
+            u32 unk = b2->read_le<u32>() ^ b3->read_le<u32>();
             auto it = fn_map.find(fn_hash);
             entry->path = it == fn_map.end()
                 ? get_unknown_name(i + 1, fn_hash)
@@ -405,7 +405,7 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
             b3->seek(0);
             io::MemoryStream key_stream;
             for (const auto j : algo::range(4))
-                key_stream.write_u32_le(neg32(b3->read_u32_le()));
+                key_stream.write_le<u32>(neg32(b3->read_le<u32>()));
 
             key_stream.seek(0);
             entry->key = key_stream.read_to_eof();

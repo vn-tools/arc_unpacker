@@ -21,12 +21,12 @@ static int detect_version(io::IStream &input_stream)
     try
     {
         input_stream.seek(0);
-        const auto file_count = input_stream.read_u16_le();
+        const auto file_count = input_stream.read_le<u16>();
         input_stream.seek(0x3FE);
         input_stream.skip((file_count - 1) * (16 + 8));
         input_stream.skip(16);
-        const auto last_entry_offset = input_stream.read_u32_le();
-        const auto last_entry_size = input_stream.read_u32_le();
+        const auto last_entry_offset = input_stream.read_le<u32>();
+        const auto last_entry_size = input_stream.read_le<u32>();
         if (last_entry_offset + last_entry_size == input_stream.size())
             return 1;
     }
@@ -35,12 +35,12 @@ static int detect_version(io::IStream &input_stream)
     try
     {
         input_stream.seek(magic.size() + 4);
-        const auto file_count = input_stream.read_u32_le();
+        const auto file_count = input_stream.read_le<u32>();
         input_stream.seek(0x804);
         input_stream.skip((file_count - 1) * (32 + 8));
         input_stream.skip(32);
-        const auto last_entry_offset = input_stream.read_u32_le();
-        const auto last_entry_size = input_stream.read_u32_le();
+        const auto last_entry_offset = input_stream.read_le<u32>();
+        const auto last_entry_size = input_stream.read_le<u32>();
         if (last_entry_offset + last_entry_size == input_stream.size())
             return 2;
     }
@@ -59,8 +59,8 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(
         auto path = input_file.stream.read_to_zero(name_size).str();
         std::replace(path.begin(), path.end(), '_', '/');
         entry->path = path;
-        entry->size = input_file.stream.read_u32_le();
-        entry->offset = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_le<u32>();
+        entry->offset = input_file.stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -78,14 +78,14 @@ std::unique_ptr<dec::ArchiveMeta> PacArchiveDecoder::read_meta_impl(
     if (version == 1)
     {
         input_file.stream.seek(0);
-        const auto file_count = input_file.stream.read_u16_le();
+        const auto file_count = input_file.stream.read_le<u16>();
         input_file.stream.seek(0x3FE);
         return ::read_meta(input_file, file_count, 16);
     }
     else if (version == 2)
     {
         input_file.stream.seek(magic.size() + 4);
-        const auto file_count = input_file.stream.read_u32_le();
+        const auto file_count = input_file.stream.read_le<u32>();
         input_file.stream.seek(0x804);
         return ::read_meta(input_file, file_count, 32);
     }

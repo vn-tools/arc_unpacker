@@ -44,11 +44,11 @@ static bstr custom_lzss_decompress(
         if (!bit_mask)
         {
             bit_mask = 0x80;
-            control = control_block_stream.read_u8();
+            control = control_block_stream.read<u8>();
         }
         if (control & bit_mask)
         {
-            const auto tmp = data_block_stream.read_u16_le();
+            const auto tmp = data_block_stream.read_le<u16>();
             auto repetitions = (tmp & 0x1F) + 3;
             auto look_behind_pos = tmp >> 5;
             while (repetitions-- && output_ptr < output_ptr.end())
@@ -59,7 +59,7 @@ static bstr custom_lzss_decompress(
         }
         else
         {
-            *output_ptr++ = data_block_stream.read_u8();
+            *output_ptr++ = data_block_stream.read<u8>();
             dict << output_ptr[-1];
         }
         bit_mask >>= 1;
@@ -73,18 +73,18 @@ static res::Image unpack_v1(const Header &header, io::IStream &input_stream)
     const auto stride = header.width * channel_count;
     res::Image output_image(header.width, header.height);
 
-    const auto main_sizes_offset = input_stream.seek(0x2C).read_u32_le();
-    const auto data_sizes_offset = input_stream.seek(0x30).read_u32_le();
+    const auto main_sizes_offset = input_stream.seek(0x2C).read_le<u32>();
+    const auto data_sizes_offset = input_stream.seek(0x30).read_le<u32>();
 
     input_stream.seek(main_sizes_offset);
     std::vector<size_t> main_sizes;
     for (const auto channel : algo::range(channel_count))
-        main_sizes.push_back(input_stream.read_u32_le());
+        main_sizes.push_back(input_stream.read_le<u32>());
 
     input_stream.seek(data_sizes_offset);
     std::vector<size_t> data_sizes;
     for (const auto channel : algo::range(channel_count))
-        data_sizes.push_back(input_stream.read_u32_le());
+        data_sizes.push_back(input_stream.read_le<u32>());
 
     std::vector<size_t> main_offsets;
     std::vector<size_t> data_offsets;
@@ -99,9 +99,9 @@ static res::Image unpack_v1(const Header &header, io::IStream &input_stream)
     for (const auto channel : algo::range(channel_count))
     {
         input_stream.seek(main_offsets[channel]);
-        const auto control_block1_size = input_stream.read_u32_le();
-        const auto data_block1_size = input_stream.read_u32_le();
-        const auto size_orig = input_stream.read_u32_le();
+        const auto control_block1_size = input_stream.read_le<u32>();
+        const auto data_block1_size = input_stream.read_le<u32>();
+        const auto size_orig = input_stream.read_le<u32>();
 
         const auto control_block1 = input_stream.read(control_block1_size);
         const auto data_block1 = input_stream.read(data_block1_size);
@@ -137,12 +137,12 @@ static res::Image unpack_v1(const Header &header, io::IStream &input_stream)
 
             if (!bit_mask)
             {
-                control = control_block1_stream.read_u8();
+                control = control_block1_stream.read<u8>();
                 bit_mask = 0x80;
             }
             if (control & bit_mask)
             {
-                const auto b = data_block1_stream.read_u8();
+                const auto b = data_block1_stream.read<u8>();
                 for (const auto y : algo::range(block_y1, block_y2))
                 for (const auto x : algo::range(block_x1, block_x2))
                     output_image.at(x, y)[channel] = b;
@@ -151,7 +151,7 @@ static res::Image unpack_v1(const Header &header, io::IStream &input_stream)
             {
                 for (const auto y : algo::range(block_y1, block_y2))
                 for (const auto x : algo::range(block_x1, block_x2))
-                    output_image.at(x, y)[channel] = plane_stream.read_u8();
+                    output_image.at(x, y)[channel] = plane_stream.read<u8>();
             }
             bit_mask >>= 1;
         }
@@ -167,8 +167,8 @@ static res::Image unpack_v2(const Header &header, io::IStream &input_stream)
 {
     input_stream.seek(0x2C);
 
-    const auto mask_data_offset = input_stream.read_u32_le();
-    const auto mask_data_size = input_stream.read_u32_le();
+    const auto mask_data_offset = input_stream.read_le<u32>();
+    const auto mask_data_size = input_stream.read_le<u32>();
     const auto jbp1_data_size = mask_data_offset - input_stream.tell();
     const auto jbp1_data = input_stream.read(jbp1_data_size);
     const auto mask_data = input_stream
@@ -185,9 +185,9 @@ static res::Image unpack_v2(const Header &header, io::IStream &input_stream)
     io::MemoryStream mask_stream(mask_data);
     while (!mask_stream.eof())
     {
-        const auto control = mask_stream.read_u8();
+        const auto control = mask_stream.read<u8>();
         if (control == 0 || control == 0xFF)
-            final_mask_data += bstr(mask_stream.read_u8(), control);
+            final_mask_data += bstr(mask_stream.read<u8>(), control);
         else
             final_mask_data += control;
     }
@@ -220,8 +220,8 @@ static res::Image unpack_v5(const Header &header, io::IStream &input_stream)
     std::vector<size_t> data_offsets;
     for (const auto i : algo::range(channel_count))
     {
-        control_offsets.push_back(0x54 + input_stream.read_u32_le());
-        data_offsets.push_back(0x54 + input_stream.read_u32_le());
+        control_offsets.push_back(0x54 + input_stream.read_le<u32>());
+        data_offsets.push_back(0x54 + input_stream.read_le<u32>());
     }
 
     std::vector<size_t> control_sizes;
@@ -289,13 +289,13 @@ static res::Image unpack_v6(
         }
     }
 
-    const auto size_orig = input_stream.seek(0x18).read_u32_le();
+    const auto size_orig = input_stream.seek(0x18).read_le<u32>();
 
     const auto control_block_offset
-        = 0x20 + input_stream.seek(0x0C).read_u32_le();
+        = 0x20 + input_stream.seek(0x0C).read_le<u32>();
     const auto data_block_offset
-        = control_block_offset + input_stream.seek(0x2C).read_u32_le();
-    const auto data_block_size = input_stream.seek(0x30).read_u32_le();
+        = control_block_offset + input_stream.seek(0x2C).read_le<u32>();
+    const auto data_block_size = input_stream.seek(0x30).read_le<u32>();
     const auto control_block_size = data_block_offset - control_block_offset;
 
     const auto control_block1 = input_stream
@@ -310,8 +310,8 @@ static res::Image unpack_v6(
         control_block1, data_block1, size_orig);
 
     io::MemoryStream proxy_block_stream(proxy_block);
-    const auto control_block2_size = proxy_block_stream.read_u32_le();
-    const auto data_block2_size = proxy_block_stream.read_u32_le();
+    const auto control_block2_size = proxy_block_stream.read_le<u32>();
+    const auto data_block2_size = proxy_block_stream.read_le<u32>();
     const auto control_block2 = proxy_block_stream.read(control_block2_size);
     const auto data_block2 = proxy_block_stream.read(data_block2_size);
 
@@ -334,7 +334,7 @@ static res::Image unpack_v6(
         const size_t block_y2 = std::min(block_y1 + block_size, header.height);
         if (!bit_mask)
         {
-            control = control_block2_stream.read_u8();
+            control = control_block2_stream.read<u8>();
             bit_mask = 0x80;
         }
         if (!(control & bit_mask))
@@ -375,11 +375,11 @@ static Header read_header(io::IStream &input_stream)
 {
     input_stream.seek(0x18);
     Header header;
-    header.sub_type = input_stream.read_u32_le();
-    header.main_type = input_stream.read_u16_le();
-    header.width = input_stream.read_u16_le();
-    header.height = input_stream.read_u16_le();
-    header.depth = input_stream.read_u16_le();
+    header.sub_type = input_stream.read_le<u32>();
+    header.main_type = input_stream.read_le<u16>();
+    header.width = input_stream.read_le<u16>();
+    header.height = input_stream.read_le<u16>();
+    header.depth = input_stream.read_le<u16>();
     return header;
 }
 

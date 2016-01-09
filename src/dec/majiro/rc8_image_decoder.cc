@@ -28,17 +28,17 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
 
     if (output.size() < 1)
         return output;
-    *output_ptr++ = input_stream.read_u8();
+    *output_ptr++ = input_stream.read<u8>();
 
     while (output_ptr < output_end)
     {
-        auto flag = input_stream.read_u8();
+        auto flag = input_stream.read<u8>();
         if (flag & 0x80)
         {
             auto size = flag & 7;
             auto look_behind = (flag >> 3) & 0x0F;
             size = size == 7
-                ? input_stream.read_u16_le() + 0x0A
+                ? input_stream.read_le<u16>() + 0x0A
                 : size + 3;
             auto source_ptr = &output_ptr[shift_table[look_behind]];
             if (source_ptr < output_start || source_ptr + size >= output_end)
@@ -49,10 +49,10 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
         else
         {
             auto size = flag == 0x7F
-                ? input_stream.read_u16_le() + 0x80
+                ? input_stream.read_le<u16>() + 0x80
                 : flag + 1;
             while (size-- && output_ptr < output_end)
-                *output_ptr++ = input_stream.read_u8();
+                *output_ptr++ = input_stream.read<u8>();
         }
     }
 
@@ -69,7 +69,7 @@ res::Image Rc8ImageDecoder::decode_impl(
 {
     input_file.stream.skip(magic.size());
 
-    if (input_file.stream.read_u8() != '_')
+    if (input_file.stream.read<u8>() != '_')
         throw err::NotSupportedError("Unexpected encryption flag");
 
     const auto version = algo::from_string<int>(
@@ -77,8 +77,8 @@ res::Image Rc8ImageDecoder::decode_impl(
     if (version != 0)
         throw err::UnsupportedVersionError(version);
 
-    const auto width = input_file.stream.read_u32_le();
-    const auto height = input_file.stream.read_u32_le();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
 
     res::Palette palette(256, input_file.stream, res::PixelFormat::BGR888);

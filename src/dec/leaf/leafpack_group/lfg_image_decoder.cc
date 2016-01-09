@@ -68,17 +68,17 @@ res::Image LfgImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(32);
-    const auto x1 = input_file.stream.read_u16_le();
-    const auto y1 = input_file.stream.read_u16_le();
-    const auto x2 = input_file.stream.read_u16_le();
-    const auto y2 = input_file.stream.read_u16_le();
+    const auto x1 = input_file.stream.read_le<u16>();
+    const auto y1 = input_file.stream.read_le<u16>();
+    const auto x2 = input_file.stream.read_le<u16>();
+    const auto y2 = input_file.stream.read_le<u16>();
     const auto width = (x2 - x1 + 1) * 8;
     const auto height = y2 - y1 + 1;
 
-    const bool horizontal = input_file.stream.read_u8() > 0;
-    const auto base_color = input_file.stream.read_u8();
+    const bool horizontal = input_file.stream.read<u8>() > 0;
+    const auto base_color = input_file.stream.read<u8>();
     input_file.stream.skip(2);
-    const auto size_orig = input_file.stream.read_u32_le();
+    const auto size_orig = input_file.stream.read_le<u32>();
     const auto input = input_file.stream.read_to_eof();
 
     bstr data(size_orig * 2, base_color);
@@ -135,7 +135,7 @@ res::Image LfgImageDecoder::decode_impl(
     bstr palette_data;
     for (const auto i : algo::range(24))
     {
-        const auto tmp = input_file.stream.read_u8();
+        const auto tmp = input_file.stream.read<u8>();
         palette_data += static_cast<u8>(tmp & 0xF0);
         palette_data += static_cast<u8>(tmp << 4);
     }

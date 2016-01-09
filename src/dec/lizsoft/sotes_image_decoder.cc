@@ -7,27 +7,27 @@ using namespace au::dec::lizsoft;
 
 bool SotesImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    const auto a = input_file.stream.seek(0x438).read_u32_le();
-    const auto b = input_file.stream.seek(0x448).read_u32_le();
-    const auto c = input_file.stream.seek(0x450).read_u32_le();
+    const auto a = input_file.stream.seek(0x438).read_le<u32>();
+    const auto b = input_file.stream.seek(0x448).read_le<u32>();
+    const auto c = input_file.stream.seek(0x450).read_le<u32>();
     return a - b == 0x2711 && c - b <= 0x80;
 }
 
 res::Image SotesImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto base = input_file.stream.seek(0x448).read_u32_le();
+    const auto base = input_file.stream.seek(0x448).read_le<u32>();
     const auto pixel_data_offset
-        = 0x458 + input_file.stream.seek(0x450).read_u32_le() - base;
+        = 0x458 + input_file.stream.seek(0x450).read_le<u32>() - base;
 
-    const auto depth = input_file.stream.seek(0x430).read_u16_le() - base;
-    auto tmp1 = input_file.stream.seek(0x440).read_u32_le() - base;
+    const auto depth = input_file.stream.seek(0x430).read_le<u16>() - base;
+    auto tmp1 = input_file.stream.seek(0x440).read_le<u32>() - base;
     const auto width
-        = input_file.stream.seek(4 + 4 * tmp1).read_u32_le() - base;
+        = input_file.stream.seek(4 + 4 * tmp1).read_le<u32>() - base;
 
-    const auto tmp2 = input_file.stream.seek(0x18).read_u32_le() - base;
+    const auto tmp2 = input_file.stream.seek(0x18).read_le<u32>() - base;
     const auto height
-        = input_file.stream.seek(0x420 + 4 * tmp2).read_u32_le() - base;
+        = input_file.stream.seek(0x420 + 4 * tmp2).read_le<u32>() - base;
 
     res::Palette palette(
         256,

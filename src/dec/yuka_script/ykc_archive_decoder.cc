@@ -25,8 +25,8 @@ std::unique_ptr<dec::ArchiveMeta> YkcArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 10);
-    size_t table_offset = input_file.stream.read_u32_le();
-    size_t table_size = input_file.stream.read_u32_le();
+    size_t table_offset = input_file.stream.read_le<u32>();
+    size_t table_size = input_file.stream.read_le<u32>();
     size_t file_count = table_size / 20;
 
     auto meta = std::make_unique<ArchiveMeta>();
@@ -35,10 +35,10 @@ std::unique_ptr<dec::ArchiveMeta> YkcArchiveDecoder::read_meta_impl(
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
         input_file.stream.seek(table_offset + i * 20);
-        size_t name_origin = input_file.stream.read_u32_le();
-        size_t name_size = input_file.stream.read_u32_le();
-        entry->offset = input_file.stream.read_u32_le();
-        entry->size = input_file.stream.read_u32_le();
+        size_t name_origin = input_file.stream.read_le<u32>();
+        size_t name_size = input_file.stream.read_le<u32>();
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->size = input_file.stream.read_le<u32>();
         input_file.stream.skip(4);
 
         input_file.stream.seek(name_origin);

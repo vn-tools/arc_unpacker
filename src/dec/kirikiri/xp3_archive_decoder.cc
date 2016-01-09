@@ -59,7 +59,7 @@ static const bstr time_chunk_magic = "time"_b;
 
 static int detect_version(io::IStream &input_stream)
 {
-    if (input_stream.seek(19).read_u32_le() == 1)
+    if (input_stream.seek(19).read_le<u32>() == 1)
         return 2;
     return 1;
 }
@@ -68,27 +68,27 @@ static u64 get_table_offset(io::IStream &input_stream, int version)
 {
     input_stream.seek(xp3_magic.size());
     if (version == 1)
-        return input_stream.read_u64_le();
+        return input_stream.read_le<u64>();
 
-    u64 additional_header_offset = input_stream.read_u64_le();
-    u32 minor_version = input_stream.read_u32_le();
+    u64 additional_header_offset = input_stream.read_le<u64>();
+    u32 minor_version = input_stream.read_le<u32>();
     if (minor_version != 1)
         throw err::CorruptDataError("Unexpected XP3 version");
 
     input_stream.seek(additional_header_offset);
     input_stream.skip(1); // flags?
     input_stream.skip(8); // table size
-    return input_stream.read_u64_le();
+    return input_stream.read_le<u64>();
 }
 
 static std::unique_ptr<InfoChunk> read_info_chunk(io::IStream &chunk_stream)
 {
     auto info_chunk = std::make_unique<InfoChunk>();
-    info_chunk->flags = chunk_stream.read_u32_le();
-    info_chunk->file_size_orig = chunk_stream.read_u64_le();
-    info_chunk->file_size_comp = chunk_stream.read_u64_le();
+    info_chunk->flags = chunk_stream.read_le<u32>();
+    info_chunk->file_size_orig = chunk_stream.read_le<u64>();
+    info_chunk->file_size_comp = chunk_stream.read_le<u64>();
 
-    const auto file_name_size = chunk_stream.read_u16_le();
+    const auto file_name_size = chunk_stream.read_le<u16>();
     const auto name = chunk_stream.read(file_name_size * 2);
     info_chunk->name = algo::utf16_to_utf8(name).str();
     return info_chunk;
@@ -101,10 +101,10 @@ static std::vector<std::unique_ptr<SegmChunk>> read_segm_chunks(
     while (!chunk_stream.eof())
     {
         auto segm_chunk = std::make_unique<SegmChunk>();
-        segm_chunk->flags = chunk_stream.read_u32_le();
-        segm_chunk->offset = chunk_stream.read_u64_le();
-        segm_chunk->size_orig = chunk_stream.read_u64_le();
-        segm_chunk->size_comp = chunk_stream.read_u64_le();
+        segm_chunk->flags = chunk_stream.read_le<u32>();
+        segm_chunk->offset = chunk_stream.read_le<u64>();
+        segm_chunk->size_orig = chunk_stream.read_le<u64>();
+        segm_chunk->size_comp = chunk_stream.read_le<u64>();
         segm_chunks.push_back(std::move(segm_chunk));
     }
     return segm_chunks;
@@ -113,14 +113,14 @@ static std::vector<std::unique_ptr<SegmChunk>> read_segm_chunks(
 static std::unique_ptr<AdlrChunk> read_adlr_chunk(io::IStream &chunk_stream)
 {
     auto adlr_chunk = std::make_unique<AdlrChunk>();
-    adlr_chunk->key = chunk_stream.read_u32_le();
+    adlr_chunk->key = chunk_stream.read_le<u32>();
     return adlr_chunk;
 }
 
 static std::unique_ptr<TimeChunk> read_time_chunk(io::IStream &chunk_stream)
 {
     auto time_chunk = std::make_unique<TimeChunk>();
-    time_chunk->timestamp = chunk_stream.read_u64_le();
+    time_chunk->timestamp = chunk_stream.read_le<u64>();
     return time_chunk;
 }
 
@@ -130,14 +130,14 @@ static std::unique_ptr<ArchiveEntryImpl> read_entry(
     if (input_stream.read(file_entry_magic.size()) != file_entry_magic)
         throw err::CorruptDataError("Expected FILE entry");
 
-    const auto entry_size = input_stream.read_u64_le();
+    const auto entry_size = input_stream.read_le<u64>();
     io::MemoryStream entry_stream(input_stream.read(entry_size));
 
     auto entry = std::make_unique<ArchiveEntryImpl>();
     while (!entry_stream.eof())
     {
         const auto chunk_magic = entry_stream.read(4);
-        const auto chunk_size = entry_stream.read_u64_le();
+        const auto chunk_size = entry_stream.read_le<u64>();
         io::MemoryStream chunk_stream(entry_stream.read(chunk_size));
 
         if (chunk_magic == info_chunk_magic)
@@ -186,10 +186,10 @@ std::unique_ptr<dec::ArchiveMeta> Xp3ArchiveDecoder::read_meta_impl(
     const auto table_offset = get_table_offset(input_file.stream, version);
 
     input_file.stream.seek(table_offset);
-    const auto table_is_compressed = input_file.stream.read_u8() != 0;
-    const auto table_size_comp = input_file.stream.read_u64_le();
+    const auto table_is_compressed = input_file.stream.read<u8>() != 0;
+    const auto table_size_comp = input_file.stream.read_le<u64>();
     const auto table_size_orig = table_is_compressed
-        ? input_file.stream.read_u64_le()
+        ? input_file.stream.read_le<u64>()
         : table_size_comp;
 
     auto table_data = input_file.stream.read(table_size_comp);

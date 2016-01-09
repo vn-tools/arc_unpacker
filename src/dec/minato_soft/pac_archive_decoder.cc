@@ -69,9 +69,9 @@ std::unique_ptr<dec::ArchiveMeta> PacArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    size_t file_count = input_file.stream.read_u32_le();
+    size_t file_count = input_file.stream.read_le<u32>();
     input_file.stream.seek(input_file.stream.size() - 4);
-    size_t compressed_size = input_file.stream.read_u32_le();
+    size_t compressed_size = input_file.stream.read_le<u32>();
     size_t uncompressed_size = file_count * 76;
 
     input_file.stream.seek(input_file.stream.size() - 4 - compressed_size);
@@ -88,9 +88,9 @@ std::unique_ptr<dec::ArchiveMeta> PacArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::sjis_to_utf8(table_stream.read_to_zero(0x40)).str();
-        entry->offset = table_stream.read_u32_le();
-        entry->size_orig = table_stream.read_u32_le();
-        entry->size_comp = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>();
+        entry->size_orig = table_stream.read_le<u32>();
+        entry->size_comp = table_stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

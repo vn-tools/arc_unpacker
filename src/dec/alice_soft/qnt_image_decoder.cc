@@ -30,15 +30,15 @@ static void deinterleave(res::Image &image, const bstr &input)
         {
             for (x = 0; x < image.width() - 1; x += 2)
             {
-                image.at(x, y)[i] = input_stream.read_u8();
-                image.at(x, y + 1)[i] = input_stream.read_u8();
-                image.at(x + 1, y)[i] = input_stream.read_u8();
-                image.at(x + 1, y + 1)[i] = input_stream.read_u8();
+                image.at(x, y)[i] = input_stream.read<u8>();
+                image.at(x, y + 1)[i] = input_stream.read<u8>();
+                image.at(x + 1, y)[i] = input_stream.read<u8>();
+                image.at(x + 1, y + 1)[i] = input_stream.read<u8>();
             }
             if (x != image.width())
             {
-                image.at(x, y)[i] = input_stream.read_u8();
-                image.at(x, y + 1)[i] = input_stream.read_u8();
+                image.at(x, y)[i] = input_stream.read<u8>();
+                image.at(x, y + 1)[i] = input_stream.read<u8>();
                 input_stream.skip(2);
             }
         }
@@ -46,14 +46,14 @@ static void deinterleave(res::Image &image, const bstr &input)
         {
             for (x = 0; x < image.width() - 1; x += 2)
             {
-                image.at(x, y)[i] = input_stream.read_u8();
+                image.at(x, y)[i] = input_stream.read<u8>();
                 input_stream.skip(1);
-                image.at(x + 1, y)[i] = input_stream.read_u8();
+                image.at(x + 1, y)[i] = input_stream.read<u8>();
                 input_stream.skip(1);
             }
             if (x != image.width())
             {
-                image.at(x, y)[i] = input_stream.read_u8();
+                image.at(x, y)[i] = input_stream.read<u8>();
                 input_stream.skip(3);
             }
         }
@@ -92,20 +92,20 @@ static void apply_alpha(res::Image &image, const bstr &input)
 
     io::MemoryStream input_stream(input);
 
-    image.at(0, 0).a = input_stream.read_u8();
+    image.at(0, 0).a = input_stream.read<u8>();
     for (auto x : algo::range(1, image.width()))
-        image.at(x, 0).a = image.at(x - 1, 0).a - input_stream.read_u8();
+        image.at(x, 0).a = image.at(x - 1, 0).a - input_stream.read<u8>();
     if (image.width() & 1)
         input_stream.skip(1);
 
     for (auto y : algo::range(1, image.height()))
     {
-        image.at(0, y).a = image.at(0, y - 1).a - input_stream.read_u8();
+        image.at(0, y).a = image.at(0, y - 1).a - input_stream.read<u8>();
         for (auto x : algo::range(1, image.width()))
         {
             u8 ax = image.at(x - 1, y).a;
             u8 ay = image.at(x, y - 1).a;
-            image.at(x, y).a = (ax + ay) / 2 - input_stream.read_u8();
+            image.at(x, y).a = (ax + ay) / 2 - input_stream.read<u8>();
         }
         if (image.width() & 1)
             input_stream.skip(1);
@@ -121,18 +121,18 @@ res::Image QntImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    Version version = static_cast<Version>(input_file.stream.read_u32_le());
+    Version version = static_cast<Version>(input_file.stream.read_le<u32>());
 
     if (version != Version2)
         throw err::UnsupportedVersionError(version);
 
     input_file.stream.skip(4 * 3);
-    auto width = input_file.stream.read_u32_le();
-    auto height = input_file.stream.read_u32_le();
-    auto depth = input_file.stream.read_u32_le();
+    auto width = input_file.stream.read_le<u32>();
+    auto height = input_file.stream.read_le<u32>();
+    auto depth = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
-    auto pixel_size = input_file.stream.read_u32_le();
-    auto alpha_size = input_file.stream.read_u32_le();
+    auto pixel_size = input_file.stream.read_le<u32>();
+    auto alpha_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(24);
 
     bstr color_data = pixel_size

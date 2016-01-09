@@ -16,12 +16,12 @@ res::Image EpfImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto width = input_file.stream.read_u32_le();
-    const auto height = input_file.stream.read_u32_le();
-    if (input_file.stream.read_u32_le() != 1)
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
+    if (input_file.stream.read_le<u32>() != 1)
         throw err::CorruptDataError("Expected '1'");
-    const auto size_orig = input_file.stream.read_u32_le();
-    const auto size_comp = input_file.stream.read_u32_le();
+    const auto size_orig = input_file.stream.read_le<u32>();
+    const auto size_comp = input_file.stream.read_le<u32>();
     const auto data = algo::pack::lzss_decompress(
         input_file.stream.read(size_comp), size_orig);
     return res::Image(width, height, data, res::PixelFormat::BGRA8888);

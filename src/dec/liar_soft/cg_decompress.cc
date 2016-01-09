@@ -19,9 +19,9 @@ void dec::liar_soft::cg_decompress(
     if (output_shift < input_shift)
         throw std::logic_error("Invalid shift");
 
-    const auto size_orig = input_stream.read_u32_le();
-    const auto size_comp = input_stream.read_u32_le();
-    const auto table_size = input_stream.read_u16_le();
+    const auto size_orig = input_stream.read_le<u32>();
+    const auto size_comp = input_stream.read_le<u32>();
+    const auto table_size = input_stream.read_le<u16>();
     if (!table_size)
         throw err::CorruptDataError("No table entries found");
     if (size_orig != ((output.size() / output_shift) * input_shift))

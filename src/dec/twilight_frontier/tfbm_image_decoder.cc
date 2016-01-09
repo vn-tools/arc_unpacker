@@ -21,11 +21,11 @@ res::Image TfbmImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    const auto bit_depth = input_file.stream.read_u8();
-    const auto width = input_file.stream.read_u32_le();
-    const auto height = input_file.stream.read_u32_le();
-    const auto stride = input_file.stream.read_u32_le();
-    const auto pix_size = input_file.stream.read_u32_le();
+    const auto bit_depth = input_file.stream.read<u8>();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
+    const auto stride = input_file.stream.read_le<u32>();
+    const auto pix_size = input_file.stream.read_le<u32>();
     const auto pix_data = input_file.stream.read(pix_size);
     io::MemoryStream source_stream(algo::pack::zlib_inflate(pix_data));
 
@@ -45,7 +45,7 @@ res::Image TfbmImageDecoder::decode_impl(
             palette_file->stream.seek(0);
             if (palette_file->stream.read(pal_magic.size()) != pal_magic)
                 throw err::RecognitionError();
-            const auto pal_size = palette_file->stream.read_u32_le();
+            const auto pal_size = palette_file->stream.read_le<u32>();
             const auto pal_data = palette_file->stream.read(pal_size);
             palette = std::make_shared<res::Palette>(
                 256,
@@ -74,7 +74,7 @@ res::Image TfbmImageDecoder::decode_impl(
                 break;
 
             case 8:
-                pixel = (*palette)[source_stream.read_u8()];
+                pixel = (*palette)[source_stream.read<u8>()];
                 break;
 
             default:

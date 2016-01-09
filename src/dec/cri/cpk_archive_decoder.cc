@@ -81,7 +81,7 @@ static bstr read_utf_packet(io::IStream &input_stream)
 {
     bool isUtfEncrypted = false;
     input_stream.skip(4);
-    const auto utf_size = input_stream.read_u64_le();
+    const auto utf_size = input_stream.read_le<u64>();
     const auto utf_packet = input_stream.read(utf_size);
     return utf_packet.substr(0, 4) == "@UTF"_b
         ? utf_packet
@@ -92,8 +92,8 @@ static bstr decompress_layla(const bstr &input)
 {
     io::MemoryStream input_stream(input);
     input_stream.seek(layla_magic.size());
-    const auto size_orig = input_stream.read_u32_le();
-    const auto size_comp = input_stream.read_u32_le();
+    const auto size_orig = input_stream.read_le<u32>();
+    const auto size_comp = input_stream.read_le<u32>();
     const auto data_comp = algo::reverse(input_stream.read(size_comp));
     const auto prefix = input_stream.read_to_eof();
 
@@ -137,14 +137,14 @@ static std::vector<Row> parse_utf_packet(const bstr &utf_packet)
     io::MemoryStream utf_stream(utf_packet);
     if (utf_stream.read(4) != "@UTF"_b)
         throw err::CorruptDataError("Expected UTF packet");
-    const auto table_size = utf_stream.read_u32_be();
-    const auto rows_offset_base = utf_stream.read_u32_be() + 8;
-    const auto text_offset_base = utf_stream.read_u32_be() + 8;
-    const auto data_offset_base = utf_stream.read_u32_be() + 8;
-    const auto table_name_offset = utf_stream.read_u32_be();
-    const auto column_count = utf_stream.read_u16_be();
-    const auto row_size = utf_stream.read_u16_be();
-    const auto row_count = utf_stream.read_u32_be();
+    const auto table_size = utf_stream.read_be<u32>();
+    const auto rows_offset_base = utf_stream.read_be<u32>() + 8;
+    const auto text_offset_base = utf_stream.read_be<u32>() + 8;
+    const auto data_offset_base = utf_stream.read_be<u32>() + 8;
+    const auto table_name_offset = utf_stream.read_be<u32>();
+    const auto column_count = utf_stream.read_be<u16>();
+    const auto row_size = utf_stream.read_be<u16>();
+    const auto row_count = utf_stream.read_be<u32>();
 
     std::string table_name;
     utf_stream.peek(
@@ -154,11 +154,11 @@ static std::vector<Row> parse_utf_packet(const bstr &utf_packet)
     std::vector<Column> columns(column_count);
     for (auto &column : columns)
     {
-        column.flags = utf_stream.read_u8();
+        column.flags = utf_stream.read<u8>();
         if (column.flags == 0)
-            column.flags = utf_stream.read_u32_be();
+            column.flags = utf_stream.read_be<u32>();
 
-        const auto column_name_offset = utf_stream.read_u32_be();
+        const auto column_name_offset = utf_stream.read_be<u32>();
         utf_stream.peek(
             text_offset_base + column_name_offset,
             [&]() { column.name = utf_stream.read_to_zero().str(); });
@@ -186,31 +186,31 @@ static std::vector<Row> parse_utf_packet(const bstr &utf_packet)
             {
                 case type_u8a:
                 case type_u8b:
-                    cell = utf_stream.read_u8();
+                    cell = utf_stream.read<u8>();
                     break;
 
                 case type_u16a:
                 case type_u16b:
-                    cell = utf_stream.read_u16_be();
+                    cell = utf_stream.read_be<u16>();
                     break;
 
                 case type_u32a:
                 case type_u32b:
-                    cell = utf_stream.read_u32_be();
+                    cell = utf_stream.read_be<u32>();
                     break;
 
                 case type_u64a:
                 case type_u64b:
-                    cell = utf_stream.read_u64_be();
+                    cell = utf_stream.read_be<u64>();
                     break;
 
                 case type_f32:
-                    cell = utf_stream.read_f32_be();
+                    cell = utf_stream.read_be<f32>();
                     break;
 
                 case type_str:
                 {
-                    const auto value_offset = utf_stream.read_u32_be();
+                    const auto value_offset = utf_stream.read_be<u32>();
                     utf_stream.peek(
                         text_offset_base + value_offset,
                         [&]()
@@ -222,8 +222,8 @@ static std::vector<Row> parse_utf_packet(const bstr &utf_packet)
 
                 case type_data:
                 {
-                    const auto data_offset = utf_stream.read_u32_be();
-                    const auto data_size = utf_stream.read_u32_be();
+                    const auto data_offset = utf_stream.read_be<u32>();
+                    const auto data_size = utf_stream.read_be<u32>();
                     utf_stream.peek(
                         data_offset_base + data_offset,
                         [&]() { cell = utf_stream.read(data_size); });

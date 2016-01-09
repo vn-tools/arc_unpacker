@@ -14,14 +14,14 @@ res::Image BbmImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
-    const auto total_width = input_file.stream.read_u16_le();
-    const auto total_height = input_file.stream.read_u16_le();
+    const auto total_width = input_file.stream.read_le<u16>();
+    const auto total_height = input_file.stream.read_le<u16>();
 
-    const auto chunk_width = input_file.stream.read_u16_le();
-    const auto chunk_height = input_file.stream.read_u16_le();
-    const auto chunk_count_x = input_file.stream.read_u16_le();
-    const auto chunk_count_y = input_file.stream.read_u16_le();
-    const auto chunk_size = input_file.stream.read_u32_le();
+    const auto chunk_width = input_file.stream.read_le<u16>();
+    const auto chunk_height = input_file.stream.read_le<u16>();
+    const auto chunk_count_x = input_file.stream.read_le<u16>();
+    const auto chunk_count_y = input_file.stream.read_le<u16>();
+    const auto chunk_size = input_file.stream.read_le<u32>();
 
     res::Image image(total_width, total_height);
     for (auto chunk_y : algo::range(chunk_count_y))
@@ -29,7 +29,7 @@ res::Image BbmImageDecoder::decode_impl(
     {
         io::MemoryStream chunk_stream(input_file.stream.read(chunk_size));
         chunk_stream.skip(5);
-        auto color_num = chunk_stream.read_u16_le();
+        auto color_num = chunk_stream.read_le<u16>();
         chunk_stream.skip(11);
         const res::Palette palette(
             color_num, chunk_stream, res::PixelFormat::BGRA8888);

@@ -105,7 +105,7 @@ std::unique_ptr<dec::ArchiveMeta> LpkArchiveDecoder::read_meta_impl(
     meta->content_key = key1;
 
     input_file.stream.seek(magic.size());
-    const auto tmp = input_file.stream.read_u32_le() ^ key2;
+    const auto tmp = input_file.stream.read_le<u32>() ^ key2;
     meta->flags = static_cast<LpkFlags>(tmp >> 24);
     auto table_size = tmp & 0xFFFFFF;
     if (meta->flags & LpkFlags::AlignedOffset)
@@ -115,11 +115,11 @@ std::unique_ptr<dec::ArchiveMeta> LpkArchiveDecoder::read_meta_impl(
     decrypt_table(table_data, key2, meta->plugin.rotate_pattern);
 
     io::MemoryStream input_stream(table_data);
-    const auto file_count = input_stream.read_u32_le();
-    const auto prefix_size = input_stream.read_u8();
+    const auto file_count = input_stream.read_le<u32>();
+    const auto prefix_size = input_stream.read<u8>();
     meta->prefix = input_stream.read(prefix_size);
-    const auto offset_size = input_stream.read_u8() ? 4 : 2;
-    const auto letter_table_size = input_stream.read_u32_le();
+    const auto offset_size = input_stream.read<u8>() ? 4 : 2;
+    const auto letter_table_size = input_stream.read_le<u32>();
     const auto entries_offset = input_stream.tell() + letter_table_size;
     const auto entry_size = meta->flags & LpkFlags::IsCompressed ? 13 : 9;
 
@@ -144,13 +144,13 @@ std::unique_ptr<dec::ArchiveMeta> LpkArchiveDecoder::read_meta_impl(
         const auto traversal = stack.top();
         stack.pop();
         input_stream.seek(traversal.offset);
-        const auto entry_count = input_stream.read_u8();
+        const auto entry_count = input_stream.read<u8>();
         for (const auto i : algo::range(entry_count))
         {
-            const auto next_letter = input_stream.read_u8();
+            const auto next_letter = input_stream.read<u8>();
             const auto next_offset = offset_size == 4
-                ? input_stream.read_u32_le()
-                : input_stream.read_u16_le();
+                ? input_stream.read_le<u32>()
+                : input_stream.read_le<u16>();
             if (next_letter == 0)
             {
                 mini_entries.push_back({
@@ -170,14 +170,14 @@ std::unique_ptr<dec::ArchiveMeta> LpkArchiveDecoder::read_meta_impl(
     {
         input_stream.seek(mini_entry.offset);
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->flags = input_stream.read_u8();
+        entry->flags = input_stream.read<u8>();
         entry->path = mini_entry.name;
-        entry->offset = input_stream.read_u32_le();
+        entry->offset = input_stream.read_le<u32>();
         if (meta->flags & LpkFlags::AlignedOffset)
             entry->offset <<= 11;
-        entry->size_comp = input_stream.read_u32_le();
+        entry->size_comp = input_stream.read_le<u32>();
         entry->size_orig = meta->flags & LpkFlags::IsCompressed
-            ? input_stream.read_u32_le()
+            ? input_stream.read_le<u32>()
             : entry->size_comp;
         meta->entries.push_back(std::move(entry));
     }

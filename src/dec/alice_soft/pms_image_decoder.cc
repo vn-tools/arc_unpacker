@@ -17,13 +17,13 @@ bstr PmsImageDecoder::decompress_8bit(
 
     while (output_ptr < output_end)
     {
-        u8 c = input_stream.read_u8();
+        u8 c = input_stream.read<u8>();
 
         switch (c)
         {
             case 0xFF:
             {
-                auto n = input_stream.read_u8() + 3;
+                auto n = input_stream.read<u8>() + 3;
                 while (n-- && output_ptr < output_end)
                 {
                     *output_ptr = output_ptr[-width];
@@ -34,7 +34,7 @@ bstr PmsImageDecoder::decompress_8bit(
 
             case 0xFE:
             {
-                auto n = input_stream.read_u8() + 3;
+                auto n = input_stream.read<u8>() + 3;
                 while (n-- && output_ptr < output_end)
                 {
                     *output_ptr = output_ptr[-width * 2];
@@ -45,8 +45,8 @@ bstr PmsImageDecoder::decompress_8bit(
 
             case 0xFD:
             {
-                auto n = input_stream.read_u8() + 4;
-                auto color = input_stream.read_u8();
+                auto n = input_stream.read<u8>() + 4;
+                auto color = input_stream.read<u8>();
                 while (n-- && output_ptr < output_end)
                     *output_ptr++ = color;
                 break;
@@ -54,9 +54,9 @@ bstr PmsImageDecoder::decompress_8bit(
 
             case 0xFC:
             {
-                auto n = input_stream.read_u8() + 3;
-                auto color1 = input_stream.read_u8();
-                auto color2 = input_stream.read_u8();
+                auto n = input_stream.read<u8>() + 3;
+                auto color1 = input_stream.read<u8>();
+                auto color2 = input_stream.read<u8>();
                 while (n-- && output_ptr < output_end)
                 {
                     *output_ptr++ = color1;
@@ -66,7 +66,7 @@ bstr PmsImageDecoder::decompress_8bit(
             }
 
             case 0xF8:
-                *output_ptr++ = input_stream.read_u8();
+                *output_ptr++ = input_stream.read<u8>();
                 break;
 
             default:
@@ -86,13 +86,13 @@ bstr PmsImageDecoder::decompress_16bit(
 
     while (output_ptr < output_end)
     {
-        u8 c = input_stream.read_u8();
+        u8 c = input_stream.read<u8>();
 
         switch (c)
         {
             case 0xFF:
             {
-                auto n = input_stream.read_u8() + 2;
+                auto n = input_stream.read<u8>() + 2;
                 while (n-- && output_ptr < output_end)
                 {
                     *output_ptr = output_ptr[-width];
@@ -103,7 +103,7 @@ bstr PmsImageDecoder::decompress_16bit(
 
             case 0xFE:
             {
-                auto n = input_stream.read_u8() + 2;
+                auto n = input_stream.read<u8>() + 2;
                 while (n-- && output_ptr < output_end)
                 {
                     *output_ptr = output_ptr[-width * 2];
@@ -114,8 +114,8 @@ bstr PmsImageDecoder::decompress_16bit(
 
             case 0xFD:
             {
-                auto size = input_stream.read_u8() + 3;
-                auto color = input_stream.read_u16_le();
+                auto size = input_stream.read<u8>() + 3;
+                auto color = input_stream.read_le<u16>();
                 while (size-- && output_ptr < output_end)
                     *output_ptr++ = color;
                 break;
@@ -123,9 +123,9 @@ bstr PmsImageDecoder::decompress_16bit(
 
             case 0xFC:
             {
-                auto n = input_stream.read_u8() + 2;
-                auto color1 = input_stream.read_u16_le();
-                auto color2 = input_stream.read_u16_le();
+                auto n = input_stream.read<u8>() + 2;
+                auto color1 = input_stream.read_le<u16>();
+                auto color2 = input_stream.read_le<u16>();
                 while (n-- && output_ptr < output_end)
                 {
                     *output_ptr++ = color1;
@@ -146,15 +146,15 @@ bstr PmsImageDecoder::decompress_16bit(
 
             case 0xF9:
             {
-                auto n = input_stream.read_u8() + 1;
-                auto byte1 = input_stream.read_u8();
+                auto n = input_stream.read<u8>() + 1;
+                auto byte1 = input_stream.read<u8>();
                 auto half1
                     = ((byte1 & 0b11100000) << 8)
                     | ((byte1 & 0b00011000) << 6)
                     | ((byte1 & 0b00000111) << 2);
                 while (n-- && output_ptr < output_end)
                 {
-                    auto byte2 = input_stream.read_u8();
+                    auto byte2 = input_stream.read<u8>();
                     auto half2
                         = ((byte2 & 0b11000000) << 5)
                         | ((byte2 & 0b00111100) << 3)
@@ -165,11 +165,11 @@ bstr PmsImageDecoder::decompress_16bit(
             }
 
             case 0xF8:
-                *output_ptr++ = input_stream.read_u16_le();
+                *output_ptr++ = input_stream.read_le<u16>();
                 break;
 
             default:
-                *output_ptr++ = c | (input_stream.read_u8() << 8);
+                *output_ptr++ = c | (input_stream.read<u8>() << 8);
                 break;
         }
     }
@@ -189,14 +189,14 @@ res::Image PmsImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(2);
-    auto version = input_file.stream.read_u16_le();
+    auto version = input_file.stream.read_le<u16>();
     input_file.stream.skip(2);
-    auto depth = input_file.stream.read_u16_le();
+    auto depth = input_file.stream.read_le<u16>();
     input_file.stream.skip(4 * 4);
-    auto width = input_file.stream.read_u32_le();
-    auto height = input_file.stream.read_u32_le();
-    auto data_offset = input_file.stream.read_u32_le();
-    auto extra_data_offset = input_file.stream.read_u32_le();
+    auto width = input_file.stream.read_le<u32>();
+    auto height = input_file.stream.read_le<u32>();
+    auto data_offset = input_file.stream.read_le<u32>();
+    auto extra_data_offset = input_file.stream.read_le<u32>();
 
     std::unique_ptr<res::Image> image;
 

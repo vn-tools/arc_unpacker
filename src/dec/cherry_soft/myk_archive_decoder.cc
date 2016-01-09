@@ -24,8 +24,8 @@ std::unique_ptr<dec::ArchiveMeta> MykArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto file_count = input_file.stream.read_u16_le();
-    auto table_offset = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_le<u16>();
+    auto table_offset = input_file.stream.read_le<u32>();
     input_file.stream.seek(table_offset);
 
     auto meta = std::make_unique<ArchiveMeta>();
@@ -35,7 +35,7 @@ std::unique_ptr<dec::ArchiveMeta> MykArchiveDecoder::read_meta_impl(
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(12).str();
         entry->offset = current_offset;
-        entry->size = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_le<u32>();
         current_offset += entry->size;
         meta->entries.push_back(std::move(entry));
     }

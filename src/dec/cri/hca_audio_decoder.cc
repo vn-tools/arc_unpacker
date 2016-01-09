@@ -192,7 +192,7 @@ res::Audio HcaAudioDecoder::decode_impl(
     const u32 ciph_key2 = 0xCC554639;
 
     input_file.stream.seek(6);
-    static const u16 meta_size = input_file.stream.read_u16_be();
+    static const u16 meta_size = input_file.stream.read_be<u16>();
 
     input_file.stream.seek(0);
     auto meta = read_meta(input_file.stream.read(meta_size));

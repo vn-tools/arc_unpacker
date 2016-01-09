@@ -18,10 +18,10 @@ bool PckArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("pck"))
         return false;
-    const auto file_count = input_file.stream.seek(0).read_u32_le();
+    const auto file_count = input_file.stream.seek(0).read_le<u32>();
     input_file.stream.skip(file_count * 12 - 8);
-    const auto last_file_offset = input_file.stream.read_u32_le();
-    const auto last_file_size = input_file.stream.read_u32_le();
+    const auto last_file_offset = input_file.stream.read_le<u32>();
+    const auto last_file_size = input_file.stream.read_le<u32>();
     return last_file_offset + last_file_size == input_file.stream.size();
 }
 
@@ -29,14 +29,14 @@ std::unique_ptr<dec::ArchiveMeta> PckArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
-    const auto file_count = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         input_file.stream.skip(4);
-        entry->offset = input_file.stream.read_u32_le();
-        entry->size = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->size = input_file.stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     for (auto &entry : meta->entries)

@@ -78,10 +78,10 @@ static std::unique_ptr<ArchiveMetaImpl> read_meta(
     {
         auto dir = std::make_unique<DirectoryInfo>();
         const auto entry_offset = dir_table_stream.tell();
-        const auto entry_size = dir_table_stream.read_u32_le();
-        dir->file_count = dir_table_stream.read_u32_le();
-        dir->file_table_offset = dir_table_stream.read_u32_le();
-        dir->file_table_main_key = dir_table_stream.read_u32_le();
+        const auto entry_size = dir_table_stream.read_le<u32>();
+        dir->file_count = dir_table_stream.read_le<u32>();
+        dir->file_table_offset = dir_table_stream.read_le<u32>();
+        dir->file_table_main_key = dir_table_stream.read_le<u32>();
         dir->path = algo::sjis_to_utf8(dir_table_stream.read_to_zero()).str();
         if (prev_dir)
         {
@@ -121,11 +121,12 @@ static std::unique_ptr<ArchiveMetaImpl> read_meta(
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
             const auto entry_offset = file_table_stream.tell();
-            const auto entry_size = file_table_stream.read_u32_le();
-            entry->offset = file_table_stream.read_u64_le() + header.data_start;
-            entry->size = file_table_stream.read_u32_le();
+            const auto entry_size = file_table_stream.read_le<u32>();
+            const auto relative_offset = file_table_stream.read_le<u64>();
+            entry->offset = relative_offset + header.data_start;
+            entry->size = file_table_stream.read_le<u32>();
             file_table_stream.skip(4);
-            const auto tmp = file_table_stream.read_u32_le();
+            const auto tmp = file_table_stream.read_le<u32>();
             entry->key
                 = ((header.main_key ^ (dir->file_table_main_key + tmp))
                 + header.dir_count - 0x5C29E87B) ^ header.extra_key;
@@ -143,15 +144,15 @@ static std::unique_ptr<ArchiveMetaImpl> read_meta(
 static Header read_header_5(io::IStream &input_stream)
 {
     Header header;
-    header.dir_count = input_stream.read_u32_le() ^ 0xFE3A53D9;
-    header.dir_table_size = input_stream.read_u32_le() ^ 0x37F298E7;
-    header.file_table_size = input_stream.read_u32_le() ^ 0x7A6F3A2C;
+    header.dir_count = input_stream.read_le<u32>() ^ 0xFE3A53D9;
+    header.dir_table_size = input_stream.read_le<u32>() ^ 0x37F298E7;
+    header.file_table_size = input_stream.read_le<u32>() ^ 0x7A6F3A2C;
     input_stream.skip(16);
-    header.md5_dwords[0] = input_stream.read_u32_le() ^ 0x43DE7C19;
-    header.md5_dwords[1] = input_stream.read_u32_le() ^ 0xCC65F415;
-    header.md5_dwords[2] = input_stream.read_u32_le() ^ 0xD016A93C;
-    header.md5_dwords[3] = input_stream.read_u32_le() ^ 0x97A3BA9A;
-    header.main_key = input_stream.read_u32_le() ^ 0xAE7D39BF;
+    header.md5_dwords[0] = input_stream.read_le<u32>() ^ 0x43DE7C19;
+    header.md5_dwords[1] = input_stream.read_le<u32>() ^ 0xCC65F415;
+    header.md5_dwords[2] = input_stream.read_le<u32>() ^ 0xD016A93C;
+    header.md5_dwords[3] = input_stream.read_le<u32>() ^ 0x97A3BA9A;
+    header.main_key = input_stream.read_le<u32>() ^ 0xAE7D39BF;
     header.extra_key = 0;
     input_stream.skip(12);
     header.table_size = header.dir_table_size + header.file_table_size;
@@ -162,17 +163,17 @@ static Header read_header_5(io::IStream &input_stream)
 static Header read_header_6(io::IStream &input_stream)
 {
     Header header;
-    header.dir_count = input_stream.read_u32_le() ^ 0xFE3A53DA;
-    header.dir_table_size = input_stream.read_u32_le() ^ 0x37F298E8;
-    header.file_table_size = input_stream.read_u32_le() ^ 0x7A6F3A2D;
+    header.dir_count = input_stream.read_le<u32>() ^ 0xFE3A53DA;
+    header.dir_table_size = input_stream.read_le<u32>() ^ 0x37F298E8;
+    header.file_table_size = input_stream.read_le<u32>() ^ 0x7A6F3A2D;
     input_stream.skip(16);
-    header.md5_dwords[0] = input_stream.read_u32_le() ^ 0x43DE7C1A;
-    header.md5_dwords[1] = input_stream.read_u32_le() ^ 0xCC65F416;
-    header.md5_dwords[2] = input_stream.read_u32_le() ^ 0xD016A93D;
-    header.md5_dwords[3] = input_stream.read_u32_le() ^ 0x97A3BA9B;
-    header.main_key = input_stream.read_u32_le() ^ 0xAE7D39B7;
-    const auto tmp1 = input_stream.read_u32_le() ^ 0xFB73A956;
-    const auto tmp2 = input_stream.read_u32_le() ^ 0x37ACF832;
+    header.md5_dwords[0] = input_stream.read_le<u32>() ^ 0x43DE7C1A;
+    header.md5_dwords[1] = input_stream.read_le<u32>() ^ 0xCC65F416;
+    header.md5_dwords[2] = input_stream.read_le<u32>() ^ 0xD016A93D;
+    header.md5_dwords[3] = input_stream.read_le<u32>() ^ 0x97A3BA9B;
+    header.main_key = input_stream.read_le<u32>() ^ 0xAE7D39B7;
+    const auto tmp1 = input_stream.read_le<u32>() ^ 0xFB73A956;
+    const auto tmp2 = input_stream.read_le<u32>() ^ 0x37ACF832;
     header.extra_key = (algo::rotr(tmp2, 5) * 0x7DA8F173) + 0x13712765;
     input_stream.skip(4);
     header.table_size = header.dir_table_size + header.file_table_size;

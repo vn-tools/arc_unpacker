@@ -14,7 +14,7 @@ static bstr decompress(const bstr &src, const size_t size_orig)
     io::MemoryStream input_stream(src);
     while (output.size() < size_orig && !input_stream.eof())
     {
-        const auto control = input_stream.read_u8();
+        const auto control = input_stream.read<u8>();
         if (control >= 0x80)
         {
             if (control >= 0xA0)
@@ -23,7 +23,7 @@ static bstr decompress(const bstr &src, const size_t size_orig)
                 int base_value;
                 if (control == 0xFF)
                 {
-                    repeat = input_stream.read_u8() + 2;
+                    repeat = input_stream.read<u8>() + 2;
                     base_value = 0;
                 }
                 else if (control >= 0xE0)
@@ -34,7 +34,7 @@ static bstr decompress(const bstr &src, const size_t size_orig)
                 else
                 {
                     repeat = (control & 0x1F) + 2;
-                    base_value = input_stream.read_u8();
+                    base_value = input_stream.read<u8>();
                 }
                 output += bstr(repeat, base_value);
             }
@@ -47,7 +47,7 @@ static bstr decompress(const bstr &src, const size_t size_orig)
         else
         {
             const auto look_behind
-                = (input_stream.read_u8() + (control << 8)) % 0x400;
+                = (input_stream.read<u8>() + (control << 8)) % 0x400;
             const auto repeat = (control >> 2) + 2;
             for (const auto i : algo::range(repeat))
                 output += output[output.size() - look_behind];
@@ -64,7 +64,7 @@ bool Pak2CompressedFileDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<io::File> Pak2CompressedFileDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto size_orig = input_file.stream.seek(24).read_u32_le();
+    const auto size_orig = input_file.stream.seek(24).read_le<u32>();
     const auto data = input_file.stream.seek(36).read_to_eof();
     return std::make_unique<io::File>(
         input_file.path, decompress(data, size_orig));

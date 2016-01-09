@@ -29,18 +29,18 @@ bstr glib::custom_lzss_decompress(
     {
         control >>= 1;
         if (!(control & 0x100))
-            control = input_stream.read_u8() | 0xFF00;
+            control = input_stream.read<u8>() | 0xFF00;
 
         if (control & 1)
         {
-            auto byte = input_stream.read_u8();
+            auto byte = input_stream.read<u8>();
             dict[dict_pos++] = *output_ptr++ = byte;
             dict_pos %= dict_size;
             continue;
         }
 
-        u32 tmp1 = input_stream.read_u8();
-        u32 tmp2 = input_stream.read_u8();
+        u32 tmp1 = input_stream.read<u8>();
+        u32 tmp2 = input_stream.read<u8>();
 
         u32 look_behind_pos = (((tmp2 & 0xF0) << 4) | tmp1) % dict_size;
         u16 repetitions = (~tmp2 & 0xF) + 3;

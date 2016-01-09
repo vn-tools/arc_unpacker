@@ -76,10 +76,10 @@ res::Image WbmImageDecoder::decode_impl(
 
     io::MemoryStream metadata_stream(decoder.read_plain_section(0x10));
     metadata_stream.skip(4);
-    auto width = metadata_stream.read_u16_le();
-    auto height = metadata_stream.read_u16_le();
+    auto width = metadata_stream.read_le<u16>();
+    auto height = metadata_stream.read_le<u16>();
     metadata_stream.skip(4);
-    auto depth = metadata_stream.read_u8();
+    auto depth = metadata_stream.read<u8>();
 
     if (depth != 32 && depth != 24 && depth != 8)
         throw err::UnsupportedBitDepthError(depth);

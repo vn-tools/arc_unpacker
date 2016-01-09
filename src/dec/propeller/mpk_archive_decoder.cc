@@ -22,8 +22,8 @@ bool MpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> MpkArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto table_offset = input_file.stream.read_u32_le();
-    auto file_count = input_file.stream.read_u32_le();
+    auto table_offset = input_file.stream.read_le<u32>();
+    auto file_count = input_file.stream.read_le<u32>();
 
     input_file.stream.seek(table_offset);
     auto meta = std::make_unique<ArchiveMeta>();
@@ -43,8 +43,8 @@ std::unique_ptr<dec::ArchiveMeta> MpkArchiveDecoder::read_meta_impl(
             name = name.substr(1);
         entry->path = name;
 
-        entry->offset = input_file.stream.read_u32_le() ^ key32;
-        entry->size = input_file.stream.read_u32_le() ^ key32;
+        entry->offset = input_file.stream.read_le<u32>() ^ key32;
+        entry->size = input_file.stream.read_le<u32>() ^ key32;
 
         meta->entries.push_back(std::move(entry));
     }

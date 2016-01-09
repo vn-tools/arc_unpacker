@@ -26,14 +26,14 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0x30);
-    auto version = input_file.stream.read_u32_le();
+    auto version = input_file.stream.read_le<u32>();
     auto entry_size = (version >> 16) < 5 ? 0x48 : 0x68;
 
-    auto table_size_comp = input_file.stream.read_u32_le();
-    auto key = input_file.stream.read_u32_le();
-    auto file_count = input_file.stream.read_u32_le();
-    auto data_offset = input_file.stream.read_u32_le();
-    auto table_offset = input_file.stream.read_u32_le();
+    auto table_size_comp = input_file.stream.read_le<u32>();
+    auto key = input_file.stream.read_le<u32>();
+    auto file_count = input_file.stream.read_le<u32>();
+    auto data_offset = input_file.stream.read_le<u32>();
+    auto table_offset = input_file.stream.read_le<u32>();
 
     auto table_size_orig = file_count * entry_size;
 
@@ -50,8 +50,8 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
         auto entry = std::make_unique<ArchiveEntryImpl>();
         table_stream.seek(entry_size * i);
         entry->path = table_stream.read_to_zero(0x40).str();
-        entry->offset = table_stream.read_u32_le() + data_offset;
-        entry->size = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>() + data_offset;
+        entry->size = table_stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

@@ -23,7 +23,7 @@ std::unique_ptr<dec::ArchiveMeta> RgssadArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<rgs::ArchiveEntryImpl>();
 
-        size_t name_size = input_file.stream.read_u32_le() ^ key;
+        size_t name_size = input_file.stream.read_le<u32>() ^ key;
         key = rgs::advance_key(key);
         auto name = input_file.stream.read(name_size).str();
         for (auto i : algo::range(name_size))
@@ -33,7 +33,7 @@ std::unique_ptr<dec::ArchiveMeta> RgssadArchiveDecoder::read_meta_impl(
         }
         entry->path = name;
 
-        entry->size = input_file.stream.read_u32_le() ^ key;
+        entry->size = input_file.stream.read_le<u32>() ^ key;
         key = rgs::advance_key(key);
 
         entry->key = key;

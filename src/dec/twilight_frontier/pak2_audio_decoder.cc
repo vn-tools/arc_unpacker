@@ -11,14 +11,14 @@ bool Pak2AudioDecoder::is_recognized_impl(io::File &input_file) const
 res::Audio Pak2AudioDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto format = input_file.stream.read_u16_le();
-    const auto channel_count = input_file.stream.read_u16_le();
-    const auto sample_rate = input_file.stream.read_u32_le();
-    const auto byte_rate = input_file.stream.read_u32_le();
-    const auto block_align = input_file.stream.read_u16_le();
-    const auto bits_per_sample = input_file.stream.read_u16_le();
+    const auto format = input_file.stream.read_le<u16>();
+    const auto channel_count = input_file.stream.read_le<u16>();
+    const auto sample_rate = input_file.stream.read_le<u32>();
+    const auto byte_rate = input_file.stream.read_le<u32>();
+    const auto block_align = input_file.stream.read_le<u16>();
+    const auto bits_per_sample = input_file.stream.read_le<u16>();
     input_file.stream.skip(2);
-    const auto size = input_file.stream.read_u32_le();
+    const auto size = input_file.stream.read_le<u32>();
     const auto samples = input_file.stream.read(size);
 
     res::Audio audio;

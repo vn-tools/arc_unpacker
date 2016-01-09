@@ -15,22 +15,22 @@ static bstr decrypt(const bstr &input, size_t size_compressed, size_t offset)
 
     auto real_offset = offset - 16;
     input_stream.seek(real_offset);
-    u32 key = input_stream.read_u32_le() + offset + 0x3786425;
+    u32 key = input_stream.read_le<u32>() + offset + 0x3786425;
 
     input_stream.seek(0);
     while (!input_stream.eof())
     {
         bool use_key = input_stream.tell() != real_offset;
-        auto value = input_stream.read_u32_le();
+        auto value = input_stream.read_le<u32>();
         if (use_key)
         {
             value -= size_compressed;
             value -= key;
         }
-        output_stream.write_u32_le(value);
+        output_stream.write_le<u32>(value);
         key = key * 0x41C64E6D + 0x9B06;
     }
-    output_stream.write_u32_le(0);
+    output_stream.write_le<u32>(0);
 
     output_stream.seek(4);
     return output_stream.read_to_eof();
@@ -46,14 +46,14 @@ std::unique_ptr<io::File> CpsFileDecoder::decode_impl(
 {
     input_file.stream.skip(magic.size());
 
-    size_t size_compressed = input_file.stream.read_u32_le();
-    auto version = input_file.stream.read_u16_le();
-    auto compression_type = input_file.stream.read_u16_le();
-    size_t size_original = input_file.stream.read_u32_le();
+    size_t size_compressed = input_file.stream.read_le<u32>();
+    auto version = input_file.stream.read_le<u16>();
+    auto compression_type = input_file.stream.read_le<u16>();
+    size_t size_original = input_file.stream.read_le<u32>();
 
     auto data = input_file.stream.read(size_compressed - 16 - 4);
 
-    auto offset = input_file.stream.read_u32_le() - 0x7534682;
+    auto offset = input_file.stream.read_le<u32>() - 0x7534682;
     if (offset)
         data = decrypt(data, size_compressed, offset);
 

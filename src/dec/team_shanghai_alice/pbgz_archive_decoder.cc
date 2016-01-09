@@ -78,7 +78,7 @@ static std::unique_ptr<io::File> read_file(
 
     auto data = decrypt(
         uncompressed_stream.read_to_eof(),
-        decryptors[encryption_version][uncompressed_stream.read_u8()]);
+        decryptors[encryption_version][uncompressed_stream.read<u8>()]);
 
     return std::make_unique<io::File>(entry->path, data);
 }
@@ -113,9 +113,9 @@ std::unique_ptr<dec::ArchiveMeta> PbgzArchiveDecoder::read_meta_impl(
 
     io::MemoryStream header_stream(
         decrypt(input_file.stream.read(12), {0x1B, 0x37, 0x0C, 0x400}));
-    auto file_count = header_stream.read_u32_le() - 123456;
-    auto table_offset = header_stream.read_u32_le() - 345678;
-    auto table_size_orig = header_stream.read_u32_le() - 567891;
+    auto file_count = header_stream.read_le<u32>() - 123456;
+    auto table_offset = header_stream.read_le<u32>() - 345678;
+    auto table_size_orig = header_stream.read_le<u32>() - 567891;
 
     input_file.stream.seek(table_offset);
     io::MemoryStream table_stream(
@@ -129,8 +129,8 @@ std::unique_ptr<dec::ArchiveMeta> PbgzArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream.read_to_zero().str();
-        entry->offset = table_stream.read_u32_le();
-        entry->size_orig = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>();
+        entry->size_orig = table_stream.read_le<u32>();
         table_stream.skip(4);
         if (last_entry)
             last_entry->size_comp = entry->offset - last_entry->offset;

@@ -22,11 +22,11 @@ static bstr decompress(const bstr &input, const size_t size_orig)
     {
         control >>= 1;
         if (!(control & 0x100))
-            control = input_stream.read_u8() | 0xFF00;
+            control = input_stream.read<u8>() | 0xFF00;
 
         if (control & 1)
         {
-            u32 tmp = input_stream.read_u16_le();
+            u32 tmp = input_stream.read_le<u16>();
             size_t repetitions = 0;
             size_t look_behind = 0;
             if (tmp & 8)
@@ -36,7 +36,7 @@ static bstr decompress(const bstr &input, const size_t size_orig)
             }
             else
             {
-                tmp = (tmp << 8) | input_stream.read_u8();
+                tmp = (tmp << 8) | input_stream.read<u8>();
                 repetitions = ((((tmp & 0xFFC) >> 2) + 1) << 2) | (tmp & 3);
                 look_behind = tmp >> 12;
             }
@@ -49,7 +49,7 @@ static bstr decompress(const bstr &input, const size_t size_orig)
         }
         else
         {
-            size_t repetitions = input_stream.read_u8();
+            size_t repetitions = input_stream.read<u8>();
             const auto src = input_stream.read(repetitions);
             auto src_ptr = src.get<const u8>();
             while (output_ptr < output_end && repetitions--)
@@ -164,13 +164,13 @@ res::Image PgdGeImageDecoder::decode_impl(
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(8);
-    auto width = input_file.stream.read_u32_le();
-    auto height = input_file.stream.read_u32_le();
+    auto width = input_file.stream.read_le<u32>();
+    auto height = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
-    auto filter_type = input_file.stream.read_u16_le();
+    auto filter_type = input_file.stream.read_le<u16>();
     input_file.stream.skip(2);
-    auto size_orig = input_file.stream.read_u32_le();
-    auto size_comp = input_file.stream.read_u32_le();
+    auto size_orig = input_file.stream.read_le<u32>();
+    auto size_comp = input_file.stream.read_le<u32>();
     auto data = input_file.stream.read(size_comp);
     data = decompress(data, size_orig);
 
@@ -184,10 +184,10 @@ res::Image PgdGeImageDecoder::decode_impl(
     {
         io::MemoryStream filter_stream(data);
         filter_stream.skip(2);
-        const auto depth = filter_stream.read_u16_le();
+        const auto depth = filter_stream.read_le<u16>();
         const auto channels = depth >> 3;
-        const auto width2 = filter_stream.read_u16_le();
-        const auto height2 = filter_stream.read_u16_le();
+        const auto width2 = filter_stream.read_le<u16>();
+        const auto height2 = filter_stream.read_le<u16>();
         if (width2 != width || height2 != height)
             throw err::BadDataSizeError();
         const auto delta_spec = filter_stream.read(height);

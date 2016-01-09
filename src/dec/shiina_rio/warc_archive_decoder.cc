@@ -53,7 +53,7 @@ std::unique_ptr<dec::ArchiveMeta> WarcArchiveDecoder::read_meta_impl(
         throw err::UnsupportedVersionError(warc_version);
 
     input_file.stream.seek(8);
-    const auto table_offset = input_file.stream.read_u32_le() ^ 0xF182AD82;
+    const auto table_offset = input_file.stream.read_le<u32>() ^ 0xF182AD82;
     input_file.stream.seek(table_offset);
     auto table_data = input_file.stream.read_to_eof();
 
@@ -77,11 +77,11 @@ std::unique_ptr<dec::ArchiveMeta> WarcArchiveDecoder::read_meta_impl(
         entry->path = name;
         entry->suspicious |= known_names.find(entry->path) != known_names.end();
         known_names.insert(entry->path);
-        entry->offset = table_stream.read_u32_le();
-        entry->size_comp = table_stream.read_u32_le();
-        entry->size_orig = table_stream.read_u32_le();
-        entry->time = table_stream.read_u64_le();
-        entry->flags = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>();
+        entry->size_comp = table_stream.read_le<u32>();
+        entry->size_orig = table_stream.read_le<u32>();
+        entry->time = table_stream.read_le<u64>();
+        entry->flags = table_stream.read_le<u32>();
         if (!entry->path.str().empty())
             meta->entries.push_back(std::move(entry));
     }
@@ -99,7 +99,7 @@ std::unique_ptr<io::File> WarcArchiveDecoder::read_file_impl(
     input_file.stream.seek(entry->offset);
 
     const bstr head = input_file.stream.read(4);
-    const auto size_orig = input_file.stream.read_u32_le();
+    const auto size_orig = input_file.stream.read_le<u32>();
     const bool compress_crypt = head[3] > 0;
     const u32 tmp = *head.get<u32>() ^ 0x82AD82 ^ size_orig;
     bstr file_magic(3);

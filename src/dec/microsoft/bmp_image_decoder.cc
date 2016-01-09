@@ -45,22 +45,22 @@ static u64 rotr(u64 value, size_t value_size, size_t how_much)
 static Header read_header(io::IStream &input_stream)
 {
     Header h;
-    h.data_offset = input_stream.read_u32_le();
+    h.data_offset = input_stream.read_le<u32>();
 
-    auto header_size = input_stream.read_u32_le();
+    auto header_size = input_stream.read_le<u32>();
     io::MemoryStream header_stream(input_stream.read(header_size - 4));
 
-    h.width = header_stream.read_u32_le();
-    s32 height = header_stream.read_u32_le();
+    h.width = header_stream.read_le<u32>();
+    s32 height = header_stream.read_le<u32>();
     h.height = std::abs(height);
     h.flip = height > 0;
-    h.planes = header_stream.read_u16_le();
-    h.depth = header_stream.read_u16_le();
-    h.compression = header_stream.read_u32_le();
-    h.image_size = header_stream.read_u32_le();
+    h.planes = header_stream.read_le<u16>();
+    h.depth = header_stream.read_le<u16>();
+    h.compression = header_stream.read_le<u32>();
+    h.image_size = header_stream.read_le<u32>();
     header_stream.skip(8);
-    h.palette_size = header_stream.read_u32_le();
-    h.important_colors = header_stream.read_u32_le();
+    h.palette_size = header_stream.read_le<u32>();
+    h.important_colors = header_stream.read_le<u32>();
 
     if (h.depth <= 8 && !h.palette_size)
         h.palette_size = 256;
@@ -101,24 +101,24 @@ static Header read_header(io::IStream &input_stream)
         {
             if (header_size == 40)
             {
-                h.masks[2] = input_stream.read_u32_be();
-                h.masks[1] = input_stream.read_u32_be();
-                h.masks[0] = input_stream.read_u32_be();
+                h.masks[2] = input_stream.read_be<u32>();
+                h.masks[1] = input_stream.read_be<u32>();
+                h.masks[0] = input_stream.read_be<u32>();
                 h.masks[3] = 0;
             }
             else if (header_size == 52)
             {
-                h.masks[2] = header_stream.read_u32_be();
-                h.masks[1] = header_stream.read_u32_be();
-                h.masks[0] = header_stream.read_u32_be();
+                h.masks[2] = header_stream.read_be<u32>();
+                h.masks[1] = header_stream.read_be<u32>();
+                h.masks[0] = header_stream.read_be<u32>();
                 h.masks[3] = 0;
             }
             else if (header_size >= 56)
             {
-                h.masks[2] = header_stream.read_u32_be();
-                h.masks[1] = header_stream.read_u32_be();
-                h.masks[0] = header_stream.read_u32_be();
-                h.masks[3] = header_stream.read_u32_be();
+                h.masks[2] = header_stream.read_be<u32>();
+                h.masks[1] = header_stream.read_be<u32>();
+                h.masks[0] = header_stream.read_be<u32>();
+                h.masks[3] = header_stream.read_be<u32>();
             }
             else
             {
@@ -266,7 +266,7 @@ bool BmpImageDecoder::is_recognized_impl(io::File &input_file) const
     if (input_file.stream.read(magic.size()) != magic)
         return false;
     input_file.stream.skip(4); // file size, some encoders corrupt this value
-    return input_file.stream.read_u32_le() == 0; // but this should be reliable
+    return input_file.stream.read_le<u32>() == 0; // but this should be reliable
 }
 
 res::Image BmpImageDecoder::decode_impl(
@@ -277,9 +277,9 @@ res::Image BmpImageDecoder::decode_impl(
     res::Palette palette(header.palette_size);
     for (const auto i : algo::range(palette.size()))
     {
-        palette[i].b = input_file.stream.read_u8();
-        palette[i].g = input_file.stream.read_u8();
-        palette[i].r = input_file.stream.read_u8();
+        palette[i].b = input_file.stream.read<u8>();
+        palette[i].g = input_file.stream.read<u8>();
+        palette[i].r = input_file.stream.read<u8>();
         palette[i].a = 0xFF;
         input_file.stream.skip(1);
     }

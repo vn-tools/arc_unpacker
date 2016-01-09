@@ -33,13 +33,13 @@ std::unique_ptr<dec::ArchiveMeta> AfaArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic1.size() + 4 + magic2.size() + 4 * 2);
-    auto file_data_start = input_file.stream.read_u32_le();
+    auto file_data_start = input_file.stream.read_le<u32>();
     if (input_file.stream.read(magic3.size()) != magic3)
         throw err::CorruptDataError("Corrupt file table");
 
-    auto table_size_compressed = input_file.stream.read_u32_le();
-    auto table_size_original = input_file.stream.read_u32_le();
-    auto file_count = input_file.stream.read_u32_le();
+    auto table_size_compressed = input_file.stream.read_le<u32>();
+    auto table_size_original = input_file.stream.read_le<u32>();
+    auto file_count = input_file.stream.read_le<u32>();
 
     io::MemoryStream table_stream(
         algo::pack::zlib_inflate(
@@ -51,13 +51,13 @@ std::unique_ptr<dec::ArchiveMeta> AfaArchiveDecoder::read_meta_impl(
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
         table_stream.skip(4);
-        auto name_size = table_stream.read_u32_le();
+        auto name_size = table_stream.read_le<u32>();
         entry->path = algo::sjis_to_utf8(
             table_stream.read_to_zero(name_size)).str();
 
         table_stream.skip(4 * 3); // for some games, apparently this is 4 * 2
-        entry->offset = table_stream.read_u32_le() + file_data_start;
-        entry->size = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>() + file_data_start;
+        entry->size = table_stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

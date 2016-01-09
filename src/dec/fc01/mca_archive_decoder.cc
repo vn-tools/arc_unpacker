@@ -58,9 +58,9 @@ std::unique_ptr<dec::ArchiveMeta> McaArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(16);
-    auto header_size = input_file.stream.read_u32_le();
+    auto header_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(12);
-    auto file_count = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.seek(header_size);
 
     auto meta = std::make_unique<ArchiveMeta>();
@@ -68,7 +68,7 @@ std::unique_ptr<dec::ArchiveMeta> McaArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::format("%03d.png", i);
-        entry->offset = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -82,12 +82,12 @@ std::unique_ptr<io::File> McaArchiveDecoder::read_file_impl(
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
-    auto encryption_type = input_file.stream.read_u32_le();
+    auto encryption_type = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
-    auto width = input_file.stream.read_u32_le();
-    auto height = input_file.stream.read_u32_le();
-    auto size_comp = input_file.stream.read_u32_le();
-    auto size_orig = input_file.stream.read_u32_le();
+    auto width = input_file.stream.read_le<u32>();
+    auto height = input_file.stream.read_le<u32>();
+    auto size_comp = input_file.stream.read_le<u32>();
+    auto size_orig = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
 
     auto data = input_file.stream.read(size_comp);

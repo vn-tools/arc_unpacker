@@ -41,7 +41,7 @@ namespace
 
 FilterTypes::FilterTypes(io::IStream &input_stream)
 {
-    const auto size = input_stream.read_u32_le();
+    const auto size = input_stream.read_le<u32>();
     data = input_stream.read(size);
 }
 
@@ -473,7 +473,7 @@ static void read_image(
         int pixel_count = (ylim - y) * header.image_width;
         for (auto c : algo::range(header.channel_count))
         {
-            u32 bit_size = input_stream.read_u32_le();
+            u32 bit_size = input_stream.read_le<u32>();
 
             int method = (bit_size >> 30) & 3;
             bit_size &= 0x3FFFFFFF;
@@ -553,13 +553,13 @@ res::Image Tlg6Decoder::decode(io::File &file)
     init_table();
 
     Header header;
-    header.channel_count = file.stream.read_u8();
-    header.data_flags = file.stream.read_u8();
-    header.color_type = file.stream.read_u8();
-    header.external_golomb_table = file.stream.read_u8();
-    header.image_width = file.stream.read_u32_le();
-    header.image_height = file.stream.read_u32_le();
-    header.max_bit_size = file.stream.read_u32_le();
+    header.channel_count = file.stream.read<u8>();
+    header.data_flags = file.stream.read<u8>();
+    header.color_type = file.stream.read<u8>();
+    header.external_golomb_table = file.stream.read<u8>();
+    header.image_width = file.stream.read_le<u32>();
+    header.image_height = file.stream.read_le<u32>();
+    header.max_bit_size = file.stream.read_le<u32>();
 
     header.x_block_count = ((header.image_width - 1) / w_block_size) + 1;
     header.y_block_count = ((header.image_height - 1) / h_block_size) + 1;

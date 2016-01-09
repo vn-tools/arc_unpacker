@@ -16,14 +16,14 @@ res::Image GsImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    auto size_comp = input_file.stream.read_u32_le();
-    auto size_orig = input_file.stream.read_u32_le();
-    auto header_size = input_file.stream.read_u32_le();
+    auto size_comp = input_file.stream.read_le<u32>();
+    auto size_orig = input_file.stream.read_le<u32>();
+    auto header_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
-    auto width = input_file.stream.read_u32_le();
-    auto height = input_file.stream.read_u32_le();
-    auto depth = input_file.stream.read_u32_le();
-    bool use_transparency = input_file.stream.read_u32_le() > 0;
+    auto width = input_file.stream.read_le<u32>();
+    auto height = input_file.stream.read_le<u32>();
+    auto depth = input_file.stream.read_le<u32>();
+    bool use_transparency = input_file.stream.read_le<u32>() > 0;
 
     input_file.stream.seek(header_size);
     auto data = input_file.stream.read(size_comp);

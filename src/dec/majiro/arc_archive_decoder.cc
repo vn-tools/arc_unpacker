@@ -31,9 +31,9 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     input_file.stream.seek(magic.size());
     const auto version = algo::from_string<float>(
         input_file.stream.read_to_zero().str());
-    const auto file_count = input_file.stream.read_u32_le();
-    const auto names_offset = input_file.stream.read_u32_le();
-    const auto data_offset = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
+    const auto names_offset = input_file.stream.read_le<u32>();
+    const auto data_offset = input_file.stream.read_le<u32>();
 
     if (version != 2 && version != 3)
         throw err::UnsupportedVersionError(version);
@@ -43,10 +43,10 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->hash = version == 3
-            ? input_file.stream.read_u64_le()
-            : input_file.stream.read_u32_le();
-        entry->offset = input_file.stream.read_u32_le();
-        entry->size = input_file.stream.read_u32_le();
+            ? input_file.stream.read_le<u64>()
+            : input_file.stream.read_le<u32>();
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->size = input_file.stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
 

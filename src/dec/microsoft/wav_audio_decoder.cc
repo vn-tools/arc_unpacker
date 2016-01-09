@@ -20,20 +20,20 @@ res::Audio WavAudioDecoder::decode_impl(
     while (!input_file.stream.eof())
     {
         const auto chunk_name = input_file.stream.read(4);
-        const auto chunk_size = input_file.stream.read_u32_le();
+        const auto chunk_size = input_file.stream.read_le<u32>();
         const auto chunk_start = input_file.stream.tell();
         if (chunk_name == "fmt\x20"_b)
         {
-            audio.codec = input_file.stream.read_u16_le();
-            audio.channel_count = input_file.stream.read_u16_le();
-            audio.sample_rate = input_file.stream.read_u32_le();
-            const auto byte_rate = input_file.stream.read_u32_le();
-            const auto block_align = input_file.stream.read_u16_le();
-            audio.bits_per_sample = input_file.stream.read_u16_le();
+            audio.codec = input_file.stream.read_le<u16>();
+            audio.channel_count = input_file.stream.read_le<u16>();
+            audio.sample_rate = input_file.stream.read_le<u32>();
+            const auto byte_rate = input_file.stream.read_le<u32>();
+            const auto block_align = input_file.stream.read_le<u16>();
+            audio.bits_per_sample = input_file.stream.read_le<u16>();
             const auto chunk_pos = input_file.stream.tell() - chunk_start;
             if (chunk_pos < chunk_size)
             {
-                const auto extra_data_size = input_file.stream.read_u16_le();
+                const auto extra_data_size = input_file.stream.read_le<u16>();
                 audio.extra_codec_headers
                     = input_file.stream.read(extra_data_size);
             }

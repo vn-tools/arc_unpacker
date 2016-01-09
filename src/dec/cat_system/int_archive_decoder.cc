@@ -153,7 +153,7 @@ std::unique_ptr<dec::ArchiveMeta> IntArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto file_count = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
     const auto name_size = 64;
 
     const auto executable_paths = find_executables(input_file.path);
@@ -167,8 +167,8 @@ std::unique_ptr<dec::ArchiveMeta> IntArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(file_count))
     {
         const io::path entry_path = input_file.stream.read(name_size).str();
-        const auto entry_offset = input_file.stream.read_u32_le();
-        const auto entry_size = input_file.stream.read_u32_le();
+        const auto entry_offset = input_file.stream.read_le<u32>();
+        const auto entry_size = input_file.stream.read_le<u32>();
         if (entry_path.name() == "__key__.dat")
         {
             auto mt = algo::crypt::MersenneTwister::Classic(entry_size);
@@ -205,8 +205,8 @@ std::unique_ptr<dec::ArchiveMeta> IntArchiveDecoder::read_meta_impl(
         else
         {
             entry->path = name.str();
-            entry->offset = input_file.stream.read_u32_le();
-            entry->size = input_file.stream.read_u32_le();
+            entry->offset = input_file.stream.read_le<u32>();
+            entry->size = input_file.stream.read_le<u32>();
         }
 
         meta->entries.push_back(std::move(entry));

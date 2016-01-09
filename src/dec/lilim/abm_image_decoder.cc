@@ -15,24 +15,24 @@ static bstr decompress_opaque(const bstr &input, const size_t size_hint)
 
     while (!input_stream.eof())
     {
-        const auto control = input_stream.read_u8();
+        const auto control = input_stream.read<u8>();
 
         if (control == 0x00)
         {
-            auto repetitions = input_stream.read_u8();
+            auto repetitions = input_stream.read<u8>();
             while (repetitions--)
                 output += '\x00';
         }
 
         else if (control == 0xFF)
         {
-            auto repetitions = input_stream.read_u8();
+            auto repetitions = input_stream.read<u8>();
             while (repetitions--)
-                output += input_stream.read_u8();
+                output += input_stream.read<u8>();
         }
 
         else
-            output += input_stream.read_u8();
+            output += input_stream.read<u8>();
     }
 
     return output;
@@ -47,11 +47,11 @@ static bstr decompress_alpha(const bstr &input, const size_t size_hint)
     size_t current_channel = 0;
     while (!input_stream.eof())
     {
-        const auto control = input_stream.read_u8();
+        const auto control = input_stream.read<u8>();
 
         if (control == 0x00)
         {
-            auto repetitions = input_stream.read_u8();
+            auto repetitions = input_stream.read<u8>();
             while (repetitions--)
             {
                 output += '\x00';
@@ -66,10 +66,10 @@ static bstr decompress_alpha(const bstr &input, const size_t size_hint)
 
         else if (control == 0xFF)
         {
-            auto repetitions = input_stream.read_u8();
+            auto repetitions = input_stream.read<u8>();
             while (repetitions--)
             {
-                output += input_stream.read_u8();
+                output += input_stream.read<u8>();
                 current_channel++;
                 if (current_channel == 3)
                 {
@@ -81,7 +81,7 @@ static bstr decompress_alpha(const bstr &input, const size_t size_hint)
 
         else
         {
-            output += input_stream.read_u8();
+            output += input_stream.read<u8>();
             current_channel++;
             if (current_channel == 3)
             {
@@ -104,10 +104,10 @@ res::Image AbmImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(18);
-    const auto width = input_file.stream.read_u32_le();
-    const auto height = input_file.stream.read_u32_le();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
     input_file.stream.skip(2);
-    const s16 depth = input_file.stream.read_u16_le();
+    const s16 depth = input_file.stream.read_le<u16>();
 
     const auto size = width * height * 4;
     input_file.stream.seek(54);

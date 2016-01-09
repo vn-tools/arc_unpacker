@@ -26,14 +26,15 @@ bool WpnAudioDecoder::is_recognized_impl(io::File &input_file) const
 res::Audio WpnAudioDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto chunk_count = input_file.stream.seek(magic.size()).read_u32_le();
+    input_file.stream.seek(magic.size());
+    const auto chunk_count = input_file.stream.read_le<u32>();
     std::map<bstr, Chunk> chunks;
     for (const auto i : algo::range(chunk_count))
     {
         const auto chunk_name = input_file.stream.read(4);
         Chunk chunk;
-        chunk.offset = input_file.stream.read_u32_le();
-        chunk.size = input_file.stream.read_u32_le();
+        chunk.offset = input_file.stream.read_le<u32>();
+        chunk.size = input_file.stream.read_le<u32>();
         chunks[chunk_name] = chunk;
     }
 
@@ -41,15 +42,15 @@ res::Audio WpnAudioDecoder::decode_impl(
 
     const auto &fmt_chunk = chunks.at(fmt_magic);
     input_file.stream.seek(fmt_chunk.offset);
-    audio.codec = input_file.stream.read_u16_le();
-    audio.channel_count = input_file.stream.read_u16_le();
-    audio.sample_rate = input_file.stream.read_u32_le();
-    const auto byte_rate = input_file.stream.read_u32_le();
-    const auto block_align = input_file.stream.read_u16_le();
-    audio.bits_per_sample = input_file.stream.read_u16_le();
+    audio.codec = input_file.stream.read_le<u16>();
+    audio.channel_count = input_file.stream.read_le<u16>();
+    audio.sample_rate = input_file.stream.read_le<u32>();
+    const auto byte_rate = input_file.stream.read_le<u32>();
+    const auto block_align = input_file.stream.read_le<u16>();
+    audio.bits_per_sample = input_file.stream.read_le<u16>();
     if (input_file.stream.tell() - fmt_chunk.offset < fmt_chunk.size)
     {
-        const auto extra_data_size = input_file.stream.read_u16_le();
+        const auto extra_data_size = input_file.stream.read_le<u16>();
         audio.extra_codec_headers = input_file.stream.read(extra_data_size);
     }
 

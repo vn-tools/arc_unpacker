@@ -19,13 +19,13 @@ res::Audio WafAudioDecoder::decode_impl(
 
     res::Audio audio;
     audio.codec = 2;
-    audio.channel_count = input_file.stream.read_u16_le();
-    audio.sample_rate = input_file.stream.read_u32_le();
-    const auto byte_rate = input_file.stream.read_u32_le();
-    const auto block_align = input_file.stream.read_u16_le();
-    audio.bits_per_sample = input_file.stream.read_u16_le();
+    audio.channel_count = input_file.stream.read_le<u16>();
+    audio.sample_rate = input_file.stream.read_le<u32>();
+    const auto byte_rate = input_file.stream.read_le<u32>();
+    const auto block_align = input_file.stream.read_le<u16>();
+    audio.bits_per_sample = input_file.stream.read_le<u16>();
     audio.extra_codec_headers = input_file.stream.read(32);
-    const auto samples_size = input_file.stream.read_u32_le();
+    const auto samples_size = input_file.stream.read_le<u32>();
     audio.samples = input_file.stream.read(samples_size);
     return audio;
 }

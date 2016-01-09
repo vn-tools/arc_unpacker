@@ -78,8 +78,8 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::sjis_to_utf8(table_stream.read_to_zero()).str();
         table_stream.seek(0x114 * i + 0x108);
-        entry->offset = table_stream.read_u32_le() + meta->header_offset;
-        entry->size = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>() + meta->header_offset;
+        entry->size = table_stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return std::move(meta);

@@ -9,11 +9,11 @@ using namespace au::dec::bgi::cbg;
 
 bstr cbg::read_decrypted_data(io::IStream &input_stream)
 {
-    u32 key = input_stream.read_u32_le();
-    const u32 data_size = input_stream.read_u32_le();
+    u32 key = input_stream.read_le<u32>();
+    const u32 data_size = input_stream.read_le<u32>();
 
-    u8 expected_sum = input_stream.read_u8();
-    u8 expected_xor = input_stream.read_u8();
+    u8 expected_sum = input_stream.read<u8>();
+    u8 expected_xor = input_stream.read<u8>();
     input_stream.skip(2);
 
     auto data = input_stream.read(data_size);
@@ -41,7 +41,7 @@ u32 cbg::read_variable_data(io::IStream &input_stream)
     u32 shift = 0;
     do
     {
-        current = input_stream.read_u8();
+        current = input_stream.read<u8>();
         result |= (current & 0x7F) << shift;
         shift += 7;
     } while (current & 0x80);

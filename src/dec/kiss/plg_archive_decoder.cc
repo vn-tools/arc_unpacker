@@ -26,18 +26,18 @@ std::unique_ptr<dec::ArchiveMeta> PlgArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto file_count = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
     auto meta = std::make_unique<ArchiveMeta>();
     for (const size_t i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(0x20).str();
-        if (input_file.stream.read_u32_le() != i)
+        if (input_file.stream.read_le<u32>() != i)
             throw err::CorruptDataError("Unexpected entry index");
-        entry->size = input_file.stream.read_u32_le();
-        entry->offset = input_file.stream.read_u32_le();
-        if (input_file.stream.read_u32_le() != 0)
+        entry->size = input_file.stream.read_le<u32>();
+        entry->offset = input_file.stream.read_le<u32>();
+        if (input_file.stream.read_le<u32>() != 0)
             throw err::CorruptDataError("Expected '0'");
         meta->entries.push_back(std::move(entry));
     }

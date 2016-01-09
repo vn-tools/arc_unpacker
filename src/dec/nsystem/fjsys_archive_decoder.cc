@@ -24,19 +24,19 @@ std::unique_ptr<dec::ArchiveMeta> FjsysArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto header_size = input_file.stream.read_u32_le();
-    auto file_names_size = input_file.stream.read_u32_le();
+    auto header_size = input_file.stream.read_le<u32>();
+    auto file_names_size = input_file.stream.read_le<u32>();
     auto file_names_start = header_size - file_names_size;
-    auto file_count = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(64);
 
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        size_t file_name_offset = input_file.stream.read_u32_le();
-        entry->size = input_file.stream.read_u32_le();
-        entry->offset = input_file.stream.read_u64_le();
+        size_t file_name_offset = input_file.stream.read_le<u32>();
+        entry->size = input_file.stream.read_le<u32>();
+        entry->offset = input_file.stream.read_le<u64>();
         input_file.stream.peek(file_name_offset + file_names_start, [&]()
         {
             entry->path = input_file.stream.read_to_zero().str();

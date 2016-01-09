@@ -18,14 +18,14 @@ std::unique_ptr<io::File> DojFileDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic1.size());
-    const auto meta_size = input_file.stream.read_u16_le() * 6;
+    const auto meta_size = input_file.stream.read_le<u16>() * 6;
     input_file.stream.skip(meta_size);
     if (input_file.stream.read(magic2.size()) != magic2)
         throw err::CorruptDataError("Corrupt metadata");
 
     input_file.stream.skip(2);
-    const auto size_comp = input_file.stream.read_u32_le();
-    const auto size_orig = input_file.stream.read_u32_le();
+    const auto size_comp = input_file.stream.read_le<u32>();
+    const auto size_orig = input_file.stream.read_le<u32>();
     const auto data = sysd_decompress(input_file.stream.read(size_comp));
     if (data.size() != size_orig)
         throw err::BadDataSizeError();

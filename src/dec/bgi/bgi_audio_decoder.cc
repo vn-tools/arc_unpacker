@@ -15,9 +15,9 @@ std::unique_ptr<io::File> BgiAudioDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
-    const auto header_size = input_file.stream.read_u32_le();
+    const auto header_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(magic.size());
-    const auto input_file_size = input_file.stream.read_u32_le();
+    const auto input_file_size = input_file.stream.read_le<u32>();
     input_file.stream.seek(header_size);
     const auto data = input_file.stream.read(input_file_size);
 

@@ -47,9 +47,9 @@ static bstr decode_block(
     for (const auto i : algo::range(header.channel_count))
     {
         if (header.bits_per_sample == 8)
-            d[i] = input_stream.read_u8();
+            d[i] = input_stream.read<u8>();
         else
-            d[i] = input_stream.read_u16_le();
+            d[i] = input_stream.read_le<u16>();
     }
 
     const auto input = input_stream.read(
@@ -124,9 +124,9 @@ static bstr decode_block(
         }
 
         if (header.bits_per_sample == 8)
-            output_stream.write_u8(d[current_channel]);
+            output_stream.write<u8>(d[current_channel]);
         else
-            output_stream.write_u16_le(d[current_channel]);
+            output_stream.write_le<u16>(d[current_channel]);
 
         if (header.channel_count == 2)
             current_channel ^= 1;
@@ -168,7 +168,7 @@ static bstr read_compressed_samples(
     input_stream.skip(4);
     std::vector<u32> offsets;
     for (const auto i : algo::range(header.block_count))
-        offsets.push_back(input_stream.read_u32_le());
+        offsets.push_back(input_stream.read_le<u32>());
 
     bstr output;
     for (const auto i : algo::range(header.block_count))
@@ -194,17 +194,17 @@ res::Audio NwaAudioDecoder::decode_impl(
     io::MemoryStream input_stream(input_file.stream.seek(0).read_to_eof());
 
     NwaHeader header;
-    header.channel_count = input_stream.read_u16_le();
-    header.bits_per_sample = input_stream.read_u16_le();
-    header.sample_rate = input_stream.read_u32_le();
-    header.compression_level = static_cast<s32>(input_stream.read_u32_le());
-    header.use_run_length = input_stream.read_u32_le() != 0;
-    header.block_count = input_stream.read_u32_le();
-    header.uncompressed_size = input_stream.read_u32_le();
-    header.compressed_size = input_stream.read_u32_le();
-    header.sample_count = input_stream.read_u32_le();
-    header.block_size = input_stream.read_u32_le();
-    header.rest_size = input_stream.read_u32_le();
+    header.channel_count = input_stream.read_le<u16>();
+    header.bits_per_sample = input_stream.read_le<u16>();
+    header.sample_rate = input_stream.read_le<u32>();
+    header.compression_level = static_cast<s32>(input_stream.read_le<u32>());
+    header.use_run_length = input_stream.read_le<u32>() != 0;
+    header.block_count = input_stream.read_le<u32>();
+    header.uncompressed_size = input_stream.read_le<u32>();
+    header.compressed_size = input_stream.read_le<u32>();
+    header.sample_count = input_stream.read_le<u32>();
+    header.block_size = input_stream.read_le<u32>();
+    header.rest_size = input_stream.read_le<u32>();
 
     const auto samples = header.compression_level == -1
         ? read_uncompressed_samples(input_stream, header)

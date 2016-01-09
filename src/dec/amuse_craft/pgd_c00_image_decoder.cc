@@ -20,11 +20,11 @@ static bstr decompress(const bstr &input, const size_t size_orig)
     {
         control >>= 1;
         if (!(control & 0x100))
-            control = input_stream.read_u8() | 0xFF00;
+            control = input_stream.read<u8>() | 0xFF00;
         if (control & 1)
         {
-            const auto look_behind_pos = input_stream.read_u16_le();
-            const auto repetitions = input_stream.read_u8();
+            const auto look_behind_pos = input_stream.read_le<u16>();
+            const auto repetitions = input_stream.read<u8>();
             const auto dict_start = dict.start();
             for (const auto i : algo::range(repetitions))
             {
@@ -35,7 +35,7 @@ static bstr decompress(const bstr &input, const size_t size_orig)
         }
         else
         {
-            const auto repetitions = input_stream.read_u8();
+            const auto repetitions = input_stream.read<u8>();
             const auto chunk = input_stream.read(repetitions);
             output += chunk;
             for (const auto &c : chunk)
@@ -55,8 +55,8 @@ res::Image PgdC00ImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(24 + magic.size());
-    const auto size_orig = input_file.stream.read_u32_le();
-    const auto size_comp = input_file.stream.read_u32_le();
+    const auto size_orig = input_file.stream.read_le<u32>();
+    const auto size_comp = input_file.stream.read_le<u32>();
     auto data = input_file.stream.read(size_comp - 12);
     data = decompress(data, size_orig);
     io::File tmp_file("test.tga", data);

@@ -66,9 +66,9 @@ std::unique_ptr<dec::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
 {
     const auto version = read_version(input_file.stream);
     input_file.stream.skip(8);
-    const auto entry_count = input_file.stream.read_u32_le();
-    const auto dir_count = input_file.stream.read_u32_le();
-    const auto table_size = input_file.stream.read_u32_le();
+    const auto entry_count = input_file.stream.read_le<u32>();
+    const auto dir_count = input_file.stream.read_le<u32>();
+    const auto table_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
     if (version == Version::Version110)
         input_file.stream.skip(8);
@@ -83,9 +83,9 @@ std::unique_ptr<dec::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(dir_count))
     {
         auto dir = std::make_unique<Directory>();
-        dir->hash = table_stream.read_u16_le();
-        dir->entry_count = table_stream.read_u16_le();
-        dir->start_index = table_stream.read_u32_le();
+        dir->hash = table_stream.read_le<u16>();
+        dir->entry_count = table_stream.read_le<u16>();
+        dir->start_index = table_stream.read_le<u32>();
         dirs.push_back(std::move(dir));
     }
 
@@ -93,11 +93,11 @@ std::unique_ptr<dec::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
     for (const auto i : algo::range(entry_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->hash = table_stream.read_u64_le();
-        entry->compressed = table_stream.read_u32_le() != 0;
-        entry->size_original = table_stream.read_u32_le();
-        entry->offset = table_stream.read_u32_le() + file_data_start;
-        entry->size_compressed = table_stream.read_u32_le();
+        entry->hash = table_stream.read_le<u64>();
+        entry->compressed = table_stream.read_le<u32>() != 0;
+        entry->size_original = table_stream.read_le<u32>();
+        entry->offset = table_stream.read_le<u32>() + file_data_start;
+        entry->size_compressed = table_stream.read_le<u32>();
         entry->path = algo::format("%05d.dat", i);
         meta->entries.push_back(std::move(entry));
     }

@@ -24,15 +24,15 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto file_count = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_le<u32>();
     auto file_data_start = input_file.stream.tell() + file_count * 32;
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(16).str();
-        entry->offset = input_file.stream.read_u32_le() + file_data_start;
-        entry->size = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>() + file_data_start;
+        entry->size = input_file.stream.read_le<u32>();
         input_file.stream.skip(8);
         meta->entries.push_back(std::move(entry));
     }

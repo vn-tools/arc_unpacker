@@ -61,8 +61,8 @@ static bstr decompress(
 
 static res::Image decode_v0(io::File &input_file, size_t width, size_t height)
 {
-    const auto size_comp = input_file.stream.read_u32_le() - 8;
-    const auto size_orig = input_file.stream.read_u32_le();
+    const auto size_comp = input_file.stream.read_le<u32>() - 8;
+    const auto size_orig = input_file.stream.read_le<u32>();
     const auto data = decompress(
         input_file.stream.read(size_comp), size_orig, 3, 1);
     return res::Image(width, height, data, res::PixelFormat::BGR888);
@@ -70,11 +70,11 @@ static res::Image decode_v0(io::File &input_file, size_t width, size_t height)
 
 static res::Image decode_v1(io::File &input_file, size_t width, size_t height)
 {
-    const auto size_comp = input_file.stream.read_u32_le() - 8;
-    const auto size_orig = input_file.stream.read_u32_le();
+    const auto size_comp = input_file.stream.read_le<u32>() - 8;
+    const auto size_orig = input_file.stream.read_le<u32>();
     io::MemoryStream tmp_stream(
         decompress(input_file.stream.read(size_comp), size_orig, 1, 2));
-    const size_t colors = tmp_stream.read_u16_le();
+    const size_t colors = tmp_stream.read_le<u16>();
     const auto pal_data = tmp_stream.read(4 * colors);
     const auto pix_data = tmp_stream.read_to_eof();
     res::Palette palette(colors, pal_data, res::PixelFormat::BGRA8888);
@@ -84,32 +84,32 @@ static res::Image decode_v1(io::File &input_file, size_t width, size_t height)
 static res::Image decode_v2(io::File &input_file, size_t width, size_t height)
 {
     std::vector<std::unique_ptr<Region>> regions;
-    const auto region_count = input_file.stream.read_u32_le();
+    const auto region_count = input_file.stream.read_le<u32>();
     for (const auto i : algo::range(region_count))
     {
         auto region = std::make_unique<Region>();
-        region->x1 = input_file.stream.read_u32_le();
-        region->y1 = input_file.stream.read_u32_le();
-        region->x2 = input_file.stream.read_u32_le();
-        region->y2 = input_file.stream.read_u32_le();
-        region->ox = input_file.stream.read_u32_le();
-        region->oy = input_file.stream.read_u32_le();
+        region->x1 = input_file.stream.read_le<u32>();
+        region->y1 = input_file.stream.read_le<u32>();
+        region->x2 = input_file.stream.read_le<u32>();
+        region->y2 = input_file.stream.read_le<u32>();
+        region->ox = input_file.stream.read_le<u32>();
+        region->oy = input_file.stream.read_le<u32>();
         regions.push_back(std::move(region));
     }
 
-    const auto size_comp = input_file.stream.read_u32_le() - 8;
-    const auto size_orig = input_file.stream.read_u32_le();
+    const auto size_comp = input_file.stream.read_le<u32>() - 8;
+    const auto size_orig = input_file.stream.read_le<u32>();
 
     io::MemoryStream input(
         decompress(input_file.stream.read(size_comp), size_orig, 1, 2));
-    if (input.read_u32_le() != regions.size())
+    if (input.read_le<u32>() != regions.size())
         throw err::CorruptDataError("Region count mismatch");
 
     res::Image image(width, height);
     for (const auto &region : regions)
     {
-        region->block_offset = input.read_u32_le();
-        region->block_size = input.read_u32_le();
+        region->block_offset = input.read_le<u32>();
+        region->block_size = input.read_le<u32>();
     }
 
     for (const auto &region : regions)
@@ -118,19 +118,19 @@ static res::Image decode_v2(io::File &input_file, size_t width, size_t height)
             continue;
 
         input.seek(region->block_offset);
-        u16 block_type = input.read_u16_le();
-        u16 part_count = input.read_u16_le();
+        u16 block_type = input.read_le<u16>();
+        u16 part_count = input.read_le<u16>();
         if (block_type != 1)
             throw err::NotSupportedError("Unexpected block type");
 
         input.skip(0x70);
         for (const auto j : algo::range(part_count))
         {
-            u16 part_x = input.read_u16_le();
-            u16 part_y = input.read_u16_le();
+            u16 part_x = input.read_le<u16>();
+            u16 part_y = input.read_le<u16>();
             input.skip(2);
-            u16 part_width = input.read_u16_le();
-            u16 part_height = input.read_u16_le();
+            u16 part_width = input.read_le<u16>();
+            u16 part_height = input.read_le<u16>();
             input.skip(0x52);
 
             res::Image part(
@@ -165,9 +165,9 @@ bool G00ImageDecoder::is_recognized_impl(io::File &input_file) const
 res::Image G00ImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    u8 version = input_file.stream.read_u8();
-    u16 width = input_file.stream.read_u16_le();
-    u16 height = input_file.stream.read_u16_le();
+    u8 version = input_file.stream.read<u8>();
+    u16 width = input_file.stream.read_le<u16>();
+    u16 height = input_file.stream.read_le<u16>();
 
     switch (version)
     {

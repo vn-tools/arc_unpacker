@@ -211,84 +211,84 @@ static const std::string path_sep = u8"／";
 DosHeader::DosHeader(io::IStream &input_stream)
 {
     magic      = input_stream.read(2);
-    e_cblp     = input_stream.read_u16_le();
-    e_cp       = input_stream.read_u16_le();
-    e_crlc     = input_stream.read_u16_le();
-    e_cparhdr  = input_stream.read_u16_le();
-    e_minalloc = input_stream.read_u16_le();
-    e_maxalloc = input_stream.read_u16_le();
-    e_ss       = input_stream.read_u16_le();
-    e_sp       = input_stream.read_u16_le();
-    e_csum     = input_stream.read_u16_le();
-    e_ip       = input_stream.read_u16_le();
-    e_cs       = input_stream.read_u16_le();
-    e_lfarlc   = input_stream.read_u16_le();
-    e_ovno     = input_stream.read_u16_le();
+    e_cblp     = input_stream.read_le<u16>();
+    e_cp       = input_stream.read_le<u16>();
+    e_crlc     = input_stream.read_le<u16>();
+    e_cparhdr  = input_stream.read_le<u16>();
+    e_minalloc = input_stream.read_le<u16>();
+    e_maxalloc = input_stream.read_le<u16>();
+    e_ss       = input_stream.read_le<u16>();
+    e_sp       = input_stream.read_le<u16>();
+    e_csum     = input_stream.read_le<u16>();
+    e_ip       = input_stream.read_le<u16>();
+    e_cs       = input_stream.read_le<u16>();
+    e_lfarlc   = input_stream.read_le<u16>();
+    e_ovno     = input_stream.read_le<u16>();
     input_stream.skip(2 * 4);
-    e_oemid    = input_stream.read_u16_le();
-    e_oeminfo  = input_stream.read_u16_le();
+    e_oemid    = input_stream.read_le<u16>();
+    e_oeminfo  = input_stream.read_le<u16>();
     input_stream.skip(2 * 10);
-    e_lfanew   = input_stream.read_u32_le();
+    e_lfanew   = input_stream.read_le<u32>();
 }
 
 ImageOptionalHeader::ImageOptionalHeader(io::IStream &input_stream)
 {
-    magic                          = input_stream.read_u16_le();
-    major_linker_version           = input_stream.read_u8();
-    minor_linker_version           = input_stream.read_u8();
-    size_of_code                   = input_stream.read_u32_le();
-    size_of_initialized_data       = input_stream.read_u32_le();
-    size_of_uninitialized_data     = input_stream.read_u32_le();
-    address_of_entry_point         = input_stream.read_u32_le();
-    base_of_code                   = input_stream.read_u32_le();
-    base_of_data                   = input_stream.read_u32_le();
-    image_base                     = input_stream.read_u32_le();
-    section_alignment              = input_stream.read_u32_le();
-    file_alignment                 = input_stream.read_u32_le();
-    major_operating_system_version = input_stream.read_u16_le();
-    minor_operating_system_version = input_stream.read_u16_le();
-    major_image_version            = input_stream.read_u16_le();
-    minor_image_version            = input_stream.read_u16_le();
-    major_subsystem_version        = input_stream.read_u16_le();
-    minor_subsystem_version        = input_stream.read_u16_le();
-    win32_version_value            = input_stream.read_u32_le();
-    size_of_image                  = input_stream.read_u32_le();
-    size_of_headers                = input_stream.read_u32_le();
-    checksum                       = input_stream.read_u32_le();
-    subsystem                      = input_stream.read_u16_le();
-    dll_characteristics            = input_stream.read_u16_le();
+    magic                          = input_stream.read_le<u16>();
+    major_linker_version           = input_stream.read<u8>();
+    minor_linker_version           = input_stream.read<u8>();
+    size_of_code                   = input_stream.read_le<u32>();
+    size_of_initialized_data       = input_stream.read_le<u32>();
+    size_of_uninitialized_data     = input_stream.read_le<u32>();
+    address_of_entry_point         = input_stream.read_le<u32>();
+    base_of_code                   = input_stream.read_le<u32>();
+    base_of_data                   = input_stream.read_le<u32>();
+    image_base                     = input_stream.read_le<u32>();
+    section_alignment              = input_stream.read_le<u32>();
+    file_alignment                 = input_stream.read_le<u32>();
+    major_operating_system_version = input_stream.read_le<u16>();
+    minor_operating_system_version = input_stream.read_le<u16>();
+    major_image_version            = input_stream.read_le<u16>();
+    minor_image_version            = input_stream.read_le<u16>();
+    major_subsystem_version        = input_stream.read_le<u16>();
+    minor_subsystem_version        = input_stream.read_le<u16>();
+    win32_version_value            = input_stream.read_le<u32>();
+    size_of_image                  = input_stream.read_le<u32>();
+    size_of_headers                = input_stream.read_le<u32>();
+    checksum                       = input_stream.read_le<u32>();
+    subsystem                      = input_stream.read_le<u16>();
+    dll_characteristics            = input_stream.read_le<u16>();
     bool pe64 = magic == 0x20B;
     if (pe64)
     {
-        size_of_stack_reserve = input_stream.read_u64_le();
-        size_of_stack_commit  = input_stream.read_u64_le();
-        size_of_heap_reserve  = input_stream.read_u64_le();
-        size_of_heap_commit   = input_stream.read_u64_le();
+        size_of_stack_reserve = input_stream.read_le<u64>();
+        size_of_stack_commit  = input_stream.read_le<u64>();
+        size_of_heap_reserve  = input_stream.read_le<u64>();
+        size_of_heap_commit   = input_stream.read_le<u64>();
     }
     else
     {
-        size_of_stack_reserve = input_stream.read_u32_le();
-        size_of_stack_commit  = input_stream.read_u32_le();
-        size_of_heap_reserve  = input_stream.read_u32_le();
-        size_of_heap_commit   = input_stream.read_u32_le();
+        size_of_stack_reserve = input_stream.read_le<u32>();
+        size_of_stack_commit  = input_stream.read_le<u32>();
+        size_of_heap_reserve  = input_stream.read_le<u32>();
+        size_of_heap_commit   = input_stream.read_le<u32>();
     }
-    loader_flags = input_stream.read_u32_le();
-    number_of_rva_and_sizes = input_stream.read_u32_le();
+    loader_flags = input_stream.read_le<u32>();
+    number_of_rva_and_sizes = input_stream.read_le<u32>();
 }
 
 ImageFileHeader::ImageFileHeader(io::IStream &input_stream)
 {
-    machine = input_stream.read_u16_le();
-    number_of_sections = input_stream.read_u16_le();
-    timestamp = input_stream.read_u32_le();
-    pointer_to_symbol_table = input_stream.read_u32_le();
-    number_of_symbols = input_stream.read_u32_le();
-    size_of_optional_header = input_stream.read_u16_le();
-    characteristics = input_stream.read_u16_le();
+    machine = input_stream.read_le<u16>();
+    number_of_sections = input_stream.read_le<u16>();
+    timestamp = input_stream.read_le<u32>();
+    pointer_to_symbol_table = input_stream.read_le<u32>();
+    number_of_symbols = input_stream.read_le<u32>();
+    size_of_optional_header = input_stream.read_le<u16>();
+    characteristics = input_stream.read_le<u16>();
 }
 
 ImageNtHeader::ImageNtHeader(io::IStream &input_stream) :
-    signature(input_stream.read_u32_le()),
+    signature(input_stream.read_le<u32>()),
     file_header(input_stream),
     optional_header(input_stream)
 {
@@ -296,39 +296,39 @@ ImageNtHeader::ImageNtHeader(io::IStream &input_stream) :
 
 ImageDataDir::ImageDataDir(io::IStream &input_stream)
 {
-    virtual_address = input_stream.read_u32_le();
-    size = input_stream.read_u32_le();
+    virtual_address = input_stream.read_le<u32>();
+    size = input_stream.read_le<u32>();
 }
 
 ImageSectionHeader::ImageSectionHeader(io::IStream &input_stream)
 {
     name                    = input_stream.read(8).str();
-    virtual_size            = input_stream.read_u32_le();
-    virtual_address         = input_stream.read_u32_le();
-    size_of_raw_data        = input_stream.read_u32_le();
-    pointer_to_raw_data     = input_stream.read_u32_le();
-    pointer_to_relocations  = input_stream.read_u32_le();
-    pointer_to_line_numbers = input_stream.read_u32_le();
-    number_of_relocations   = input_stream.read_u16_le();
-    number_of_line_numbers  = input_stream.read_u16_le();
-    characteristics         = input_stream.read_u32_le();
+    virtual_size            = input_stream.read_le<u32>();
+    virtual_address         = input_stream.read_le<u32>();
+    size_of_raw_data        = input_stream.read_le<u32>();
+    pointer_to_raw_data     = input_stream.read_le<u32>();
+    pointer_to_relocations  = input_stream.read_le<u32>();
+    pointer_to_line_numbers = input_stream.read_le<u32>();
+    number_of_relocations   = input_stream.read_le<u16>();
+    number_of_line_numbers  = input_stream.read_le<u16>();
+    characteristics         = input_stream.read_le<u32>();
 }
 
 ImageResourceDir::ImageResourceDir(io::IStream &input_stream)
 {
-    characteristics         = input_stream.read_u32_le();
-    timestamp               = input_stream.read_u32_le();
-    major_version           = input_stream.read_u16_le();
-    minor_version           = input_stream.read_u16_le();
-    number_of_named_entries = input_stream.read_u16_le();
-    number_of_id_entries    = input_stream.read_u16_le();
+    characteristics         = input_stream.read_le<u32>();
+    timestamp               = input_stream.read_le<u32>();
+    major_version           = input_stream.read_le<u16>();
+    minor_version           = input_stream.read_le<u16>();
+    number_of_named_entries = input_stream.read_le<u16>();
+    number_of_id_entries    = input_stream.read_le<u16>();
 }
 
 ImageResourceDirEntry::ImageResourceDirEntry(io::IStream &input_stream)
 {
     // I am ugliness
-    name = input_stream.read_u32_le();
-    offset_to_data = input_stream.read_u32_le();
+    name = input_stream.read_le<u32>();
+    offset_to_data = input_stream.read_le<u32>();
     id = name;
     name_is_string = (name >> 31) > 0;
     name_offset = name & 0x7FFFFFFF;
@@ -338,9 +338,9 @@ ImageResourceDirEntry::ImageResourceDirEntry(io::IStream &input_stream)
 
 ImageResourceDataEntry::ImageResourceDataEntry(io::IStream &input_stream)
 {
-    offset_to_data = input_stream.read_u32_le();
-    size = input_stream.read_u32_le();
-    code_page = input_stream.read_u32_le();
+    offset_to_data = input_stream.read_le<u32>();
+    size = input_stream.read_le<u32>();
+    code_page = input_stream.read_le<u32>();
     input_stream.skip(4);
 }
 
@@ -465,7 +465,7 @@ std::string ResourceCrawler::read_entry_name(const ImageResourceDirEntry &entry)
     if (entry.name_is_string)
     {
         args.input_stream.seek(args.base_offset + entry.name_offset);
-        size_t max_size = args.input_stream.read_u16_le();
+        size_t max_size = args.input_stream.read_le<u16>();
         bstr name_utf16 = args.input_stream.read(max_size * 2);
         return algo::utf16_to_utf8(name_utf16).str();
     }

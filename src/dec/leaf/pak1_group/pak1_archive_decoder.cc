@@ -123,16 +123,16 @@ bool Pak1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> Pak1ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto file_count = input_file.stream.seek(0).read_u32_le();
+    const auto file_count = input_file.stream.seek(0).read_le<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(16)).str();
-        entry->size = input_file.stream.read_u32_le();
-        entry->compressed = input_file.stream.read_u32_le() > 0;
-        entry->offset = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_le<u32>();
+        entry->compressed = input_file.stream.read_le<u32>() > 0;
+        entry->offset = input_file.stream.read_le<u32>();
         if (entry->size)
             meta->entries.push_back(std::move(entry));
     }
@@ -156,8 +156,8 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
     bstr data;
     if (entry->compressed)
     {
-        const auto size_comp = input_file.stream.read_u32_le();
-        const auto size_orig = input_file.stream.read_u32_le();
+        const auto size_comp = input_file.stream.read_le<u32>();
+        const auto size_orig = input_file.stream.read_le<u32>();
         data = input_file.stream.read(size_comp - 8);
         data = custom_lzss_decompress(
             data, size_orig, version == 1 ? 0x1000 : 0x800);

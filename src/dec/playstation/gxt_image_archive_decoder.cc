@@ -56,31 +56,31 @@ std::unique_ptr<dec::ArchiveMeta> GxtImageArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto version = input_file.stream.read_u32_le();
+    const auto version = input_file.stream.read_le<u32>();
     if (version != 0x1000'0003)
         throw err::UnsupportedVersionError(version);
 
-    const auto texture_count = input_file.stream.read_u32_le();
-    const auto texture_data_offset = input_file.stream.read_u32_le();
-    const auto texture_data_size = input_file.stream.read_u32_le();
-    const auto texture_p4_count = input_file.stream.read_u32_le();
-    const auto texture_p8_count = input_file.stream.read_u32_le();
+    const auto texture_count = input_file.stream.read_le<u32>();
+    const auto texture_data_offset = input_file.stream.read_le<u32>();
+    const auto texture_data_size = input_file.stream.read_le<u32>();
+    const auto texture_p4_count = input_file.stream.read_le<u32>();
+    const auto texture_p8_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
 
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(texture_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->offset = input_file.stream.read_u32_le();
-        entry->size = input_file.stream.read_u32_le();
-        entry->palette_index = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->size = input_file.stream.read_le<u32>();
+        entry->palette_index = input_file.stream.read_le<u32>();
         input_file.stream.skip(4);
         entry->texture_type
-            = static_cast<TextureType>(input_file.stream.read_u32_le());
+            = static_cast<TextureType>(input_file.stream.read_le<u32>());
         entry->texture_base_format
-            = static_cast<TextureBaseFormat>(input_file.stream.read_u32_le());
-        entry->width = input_file.stream.read_u16_le();
-        entry->height = input_file.stream.read_u16_le();
+            = static_cast<TextureBaseFormat>(input_file.stream.read_le<u32>());
+        entry->width = input_file.stream.read_le<u16>();
+        entry->height = input_file.stream.read_le<u16>();
         input_file.stream.skip(4);
         meta->entries.push_back(std::move(entry));
     }

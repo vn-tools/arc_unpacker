@@ -39,8 +39,8 @@ static bstr decrypt_3(const bstr &input, const u8 key)
 
     io::MemoryStream input_stream(input);
     input_stream.seek(0);
-    const auto width = input_stream.read_u32_le();
-    const auto height = input_stream.read_u32_le();
+    const auto width = input_stream.read_le<u32>();
+    const auto height = input_stream.read_le<u32>();
     const auto size = width * height;
     if (32 + size * 4 > input_stream.size())
         return input;
@@ -73,16 +73,16 @@ std::unique_ptr<dec::ArchiveMeta> AArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto file_count = input_file.stream.read_u16_le();
+    const auto file_count = input_file.stream.read_le<u16>();
     const auto offset_to_data = input_file.stream.tell() + 32 * file_count;
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(23).str();
-        entry->flags = input_file.stream.read_u8();
-        entry->size = input_file.stream.read_u32_le();
-        entry->offset = input_file.stream.read_u32_le() + offset_to_data;
+        entry->flags = input_file.stream.read<u8>();
+        entry->size = input_file.stream.read_le<u32>();
+        entry->offset = input_file.stream.read_le<u32>() + offset_to_data;
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -100,7 +100,7 @@ std::unique_ptr<io::File> AArchiveDecoder::read_file_impl(
     bstr data;
     if (entry->flags)
     {
-        const auto size_orig = input_file.stream.read_u32_le();
+        const auto size_orig = input_file.stream.read_le<u32>();
         data = input_file.stream.read(entry->size-4);
         data = algo::pack::lzss_decompress(data, size_orig);
 

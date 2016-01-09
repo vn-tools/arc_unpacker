@@ -30,17 +30,17 @@ std::unique_ptr<dec::ArchiveMeta> Ar10ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto file_count = input_file.stream.read_u32_le();
-    const auto offset_to_data = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
+    const auto offset_to_data = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    meta->archive_key = input_file.stream.read_u8();
+    meta->archive_key = input_file.stream.read<u8>();
     ArchiveEntryImpl *last_entry = nullptr;
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero()).str();
-        entry->offset = input_file.stream.read_u32_le() + offset_to_data;
+        entry->offset = input_file.stream.read_le<u32>() + offset_to_data;
         if (last_entry)
             last_entry->size = entry->offset - last_entry->offset;
         last_entry = entry.get();
@@ -61,8 +61,8 @@ std::unique_ptr<io::File> Ar10ArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
 
     input_file.stream.seek(entry->offset);
-    const auto data_size = input_file.stream.read_u32_le();
-    const auto key_size = input_file.stream.read_u8() ^ meta->archive_key;
+    const auto data_size = input_file.stream.read_le<u32>();
+    const auto key_size = input_file.stream.read<u8>() ^ meta->archive_key;
     const auto key = input_file.stream.read(key_size);
     auto data = input_file.stream.read(data_size);
 

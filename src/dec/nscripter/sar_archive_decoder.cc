@@ -21,15 +21,15 @@ bool SarArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> SarArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    u16 file_count = input_file.stream.read_u16_be();
-    u32 offset_to_data = input_file.stream.read_u32_be();
+    u16 file_count = input_file.stream.read_be<u16>();
+    u32 offset_to_data = input_file.stream.read_be<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero().str();
-        entry->offset = input_file.stream.read_u32_be() + offset_to_data;
-        entry->size = input_file.stream.read_u32_be();
+        entry->offset = input_file.stream.read_be<u32>() + offset_to_data;
+        entry->size = input_file.stream.read_be<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

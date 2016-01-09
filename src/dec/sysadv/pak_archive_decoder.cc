@@ -25,17 +25,17 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto file_count = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        auto name = input_file.stream.read(input_file.stream.read_u8());
+        auto name = input_file.stream.read(input_file.stream.read<u8>());
         for (auto i : algo::range(name.size()))
             name[i] ^= 0xFF;
         entry->path = name.str();
-        entry->offset = input_file.stream.read_u32_le();
-        entry->size = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->size = input_file.stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

@@ -22,7 +22,7 @@ SectionReader::SectionReader(io::IStream &input_stream)
         Section section;
         section.base_offset = input_stream.tell();
         section.name = input_stream.read(8).str();
-        section.size = input_stream.read_u64_le();
+        section.size = input_stream.read_le<u64>();
         section.data_offset = input_stream.tell();
 
         const auto space_index = section.name.find_first_of('\x20');

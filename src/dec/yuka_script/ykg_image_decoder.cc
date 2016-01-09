@@ -31,19 +31,19 @@ static const bstr magic = "YKG000"_b;
 static std::unique_ptr<Header> read_header(io::IStream &input_stream)
 {
     auto header = std::make_unique<Header>();
-    header->encrypted = input_stream.read_u16_le() > 0;
+    header->encrypted = input_stream.read_le<u16>() > 0;
 
-    size_t header_size = input_stream.read_u32_le();
+    size_t header_size = input_stream.read_le<u32>();
     if (header_size != 64)
         throw err::NotSupportedError("Unexpected header size");
     input_stream.skip(28);
 
-    header->data_offset = input_stream.read_u32_le();
-    header->data_size = input_stream.read_u32_le();
+    header->data_offset = input_stream.read_le<u32>();
+    header->data_size = input_stream.read_le<u32>();
     input_stream.skip(8);
 
-    header->regions_offset = input_stream.read_u32_le();
-    header->regions_size = input_stream.read_u32_le();
+    header->regions_offset = input_stream.read_le<u32>();
+    header->regions_size = input_stream.read_le<u32>();
     return header;
 }
 
@@ -57,10 +57,10 @@ static std::vector<std::unique_ptr<Region>> read_regions(
     for (auto i : algo::range(region_count))
     {
         auto region = std::make_unique<Region>();
-        region->x = input_stream.read_u32_le();
-        region->y = input_stream.read_u32_le();
-        region->width = input_stream.read_u32_le();
-        region->height = input_stream.read_u32_le();
+        region->x = input_stream.read_le<u32>();
+        region->y = input_stream.read_le<u32>();
+        region->width = input_stream.read_le<u32>();
+        region->height = input_stream.read_le<u32>();
         input_stream.skip(48);
         regions.push_back(std::move(region));
     }

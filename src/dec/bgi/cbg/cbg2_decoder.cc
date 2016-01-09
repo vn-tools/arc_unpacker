@@ -59,7 +59,7 @@ static FloatTablePair read_ac_mul_pair(const bstr &input)
     io::MemoryStream input_stream(input);
     for (auto i : algo::range(ac_mul_pair.size()))
         for (auto j : algo::range(dc_table.size()))
-            ac_mul_pair[i][j] = input_stream.read_u8() * dc_table[j];
+            ac_mul_pair[i][j] = input_stream.read<u8>() * dc_table[j];
     return ac_mul_pair;
 }
 
@@ -329,13 +329,13 @@ static void process_alpha(bstr &output, io::IStream &input_stream, int width)
         if (!current_bit)
         {
             current_bit = 8;
-            mark = input_stream.read_u8();
+            mark = input_stream.read<u8>();
         }
 
         --current_bit;
         if (mark & (1 << (7 - current_bit)))
         {
-            int tmp = input_stream.read_u16_le();
+            int tmp = input_stream.read_le<u16>();
 
             int look_behind_pos = tmp & 0x3F;
             if (look_behind_pos > 0x1F)
@@ -358,7 +358,7 @@ static void process_alpha(bstr &output, io::IStream &input_stream, int width)
         }
         else
         {
-            *output_ptr = input_stream.read_u8();
+            *output_ptr = input_stream.read<u8>();
             output_ptr += 4;
         }
     }
@@ -366,9 +366,9 @@ static void process_alpha(bstr &output, io::IStream &input_stream, int width)
 
 std::unique_ptr<res::Image> Cbg2Decoder::decode(io::IStream &input_stream) const
 {
-    size_t width = input_stream.read_u16_le();
-    size_t height = input_stream.read_u16_le();
-    size_t depth = input_stream.read_u32_le();
+    size_t width = input_stream.read_le<u16>();
+    size_t height = input_stream.read_le<u16>();
+    size_t depth = input_stream.read_le<u32>();
     size_t channels = depth >> 3;
     input_stream.skip(12);
 
@@ -385,7 +385,7 @@ std::unique_ptr<res::Image> Cbg2Decoder::decode(io::IStream &input_stream) const
 
     auto block_offsets = std::make_unique<u32[]>(block_count + 1);
     for (auto i : algo::range(block_count + 1))
-        block_offsets[i] = raw_stream.read_u32_le();
+        block_offsets[i] = raw_stream.read_le<u32>();
 
     bstr bmp_data(pad_width * pad_height * 4);
     for (auto i : algo::range(bmp_data.size()))
@@ -430,7 +430,7 @@ std::unique_ptr<res::Image> Cbg2Decoder::decode(io::IStream &input_stream) const
     if (channels == 4)
     {
         raw_stream.seek(block_offsets[block_count]);
-        if (raw_stream.read_u32_le() == 1)
+        if (raw_stream.read_le<u32>() == 1)
             process_alpha(bmp_data, raw_stream, pad_width);
     }
 

@@ -31,8 +31,8 @@ std::unique_ptr<dec::ArchiveMeta> PArchiveDecoder::read_meta_impl(
 {
     static const u32 encryption_key = 0xE3DF59AC;
     input_file.stream.seek(0);
-    auto magic = input_file.stream.read_u32_le();
-    auto file_count = input_file.stream.read_u32_le() ^ encryption_key;
+    auto magic = input_file.stream.read_le<u32>();
+    auto file_count = input_file.stream.read_le<u32>() ^ encryption_key;
     if (magic != 0 && magic != 1)
         throw err::RecognitionError();
     auto meta = std::make_unique<ArchiveMeta>();
@@ -43,8 +43,8 @@ std::unique_ptr<dec::ArchiveMeta> PArchiveDecoder::read_meta_impl(
         for (auto j : algo::range(name.size()))
             name[j] ^= i * j * 3 + 0x3D;
         entry->path = name.substr(0, name.find('\0'));
-        entry->offset = input_file.stream.read_u32_le();
-        entry->size = input_file.stream.read_u32_le() ^ encryption_key;
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->size = input_file.stream.read_le<u32>() ^ encryption_key;
         meta->entries.push_back(std::move(entry));
     }
     return meta;

@@ -22,14 +22,14 @@ bool OvkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> OvkArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto file_count = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->size = input_file.stream.read_u32_le();
-        entry->offset = input_file.stream.read_u32_le();
-        const auto file_id = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_le<u32>();
+        entry->offset = input_file.stream.read_le<u32>();
+        const auto file_id = input_file.stream.read_le<u32>();
         entry->path = algo::format("sample%05d", file_id);
         input_file.stream.skip(4);
         meta->entries.push_back(std::move(entry));

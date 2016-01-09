@@ -23,7 +23,7 @@ res::Image Ex3ImageDecoder::decode_impl(
     bstr table1(256);
     bstr table2(256);
 
-    u8 b = input_file.stream.read_u8();
+    u8 b = input_file.stream.read<u8>();
     while (input_file.stream.tell() < input_file.stream.size())
     {
         for (auto j : algo::range(256))
@@ -43,17 +43,17 @@ res::Image Ex3ImageDecoder::decode_impl(
             {
                 if (offset >= 256)
                     throw err::BadDataOffsetError();
-                table1[offset] = input_file.stream.read_u8();
+                table1[offset] = input_file.stream.read<u8>();
                 if (offset != table1[offset])
-                    table2[offset] = input_file.stream.read_u8();
+                    table2[offset] = input_file.stream.read<u8>();
                 ++offset;
             }
             if (offset == 256)
                 break;
-            b = input_file.stream.read_u8();
+            b = input_file.stream.read<u8>();
         }
 
-        int left = input_file.stream.read_u16_be();
+        int left = input_file.stream.read_be<u16>();
         offset = 0;
         while (true)
         {
@@ -69,7 +69,7 @@ res::Image Ex3ImageDecoder::decode_impl(
                 if (!left)
                     break;
                 --left;
-                b = input_file.stream.read_u8();
+                b = input_file.stream.read<u8>();
             }
 
             if (b == table1[b])
@@ -85,7 +85,7 @@ res::Image Ex3ImageDecoder::decode_impl(
             }
         }
         if (input_file.stream.tell() < input_file.stream.size())
-            b = input_file.stream.read_u8();
+            b = input_file.stream.read<u8>();
     }
 
     io::File bmp_file(input_file.path, data);

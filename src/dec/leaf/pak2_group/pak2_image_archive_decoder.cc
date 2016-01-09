@@ -40,10 +40,10 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ImageArchiveDecoder::read_meta_impl(
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
             input_file.stream.skip(18);
-            entry->bpp = input_file.stream.read_u16_le();
+            entry->bpp = input_file.stream.read_le<u16>();
             input_file.stream.skip(8);
-            entry->width = input_file.stream.read_u16_le();
-            entry->height = input_file.stream.read_u16_le();
+            entry->width = input_file.stream.read_le<u16>();
+            entry->height = input_file.stream.read_le<u16>();
             entry->color_offset = input_file.stream.tell();
             entry->size = entry->width * entry->height * entry->bpp >> 3;
             input_file.stream.skip(entry->size);

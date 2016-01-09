@@ -25,12 +25,12 @@ bool Pak1AudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("dat"))
         return false;
-    size_t file_count = input_file.stream.read_u32_le();
+    size_t file_count = input_file.stream.read_le<u32>();
     for (auto i : algo::range(file_count))
     {
-        if (!input_file.stream.read_u8())
+        if (!input_file.stream.read<u8>())
             continue;
-        auto size = input_file.stream.read_u32_le();
+        auto size = input_file.stream.read_le<u32>();
         input_file.stream.skip(18);
         input_file.stream.skip(size);
     }
@@ -40,21 +40,21 @@ bool Pak1AudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> Pak1AudioArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto file_count = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        if (!input_file.stream.read_u8())
+        if (!input_file.stream.read<u8>())
             continue;
 
-        entry->size = input_file.stream.read_u32_le();
-        entry->format = input_file.stream.read_u16_le();
-        entry->channel_count = input_file.stream.read_u16_le();
-        entry->sample_rate = input_file.stream.read_u32_le();
-        entry->byte_rate = input_file.stream.read_u32_le();
-        entry->block_align = input_file.stream.read_u16_le();
-        entry->bits_per_sample = input_file.stream.read_u16_le();
+        entry->size = input_file.stream.read_le<u32>();
+        entry->format = input_file.stream.read_le<u16>();
+        entry->channel_count = input_file.stream.read_le<u16>();
+        entry->sample_rate = input_file.stream.read_le<u32>();
+        entry->byte_rate = input_file.stream.read_le<u32>();
+        entry->block_align = input_file.stream.read_le<u16>();
+        entry->bits_per_sample = input_file.stream.read_le<u16>();
         input_file.stream.skip(2);
 
         entry->offset = input_file.stream.tell();

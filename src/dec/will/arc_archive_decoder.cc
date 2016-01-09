@@ -39,8 +39,8 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(
             auto entry = std::make_unique<ArchiveEntryImpl>();
             const auto name = input_file.stream.read_to_zero(name_size).str();
             entry->path = name + "." + dir.extension;
-            entry->size = input_file.stream.read_u32_le();
-            entry->offset = input_file.stream.read_u32_le();
+            entry->size = input_file.stream.read_le<u32>();
+            entry->offset = input_file.stream.read_le<u32>();
 
             if (entry->path.str().empty())
                 throw err::CorruptDataError("Empty file name");
@@ -65,15 +65,15 @@ bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto dir_count = input_file.stream.read_u32_le();
+    const auto dir_count = input_file.stream.read_le<u32>();
     if (dir_count > 100)
         throw err::BadDataSizeError();
     std::vector<Directory> dirs(dir_count);
     for (const auto i : algo::range(dirs.size()))
     {
         dirs[i].extension = input_file.stream.read_to_zero(4).str();
-        dirs[i].file_count = input_file.stream.read_u32_le();
-        dirs[i].offset = input_file.stream.read_u32_le();
+        dirs[i].file_count = input_file.stream.read_le<u32>();
+        dirs[i].offset = input_file.stream.read_le<u32>();
     }
 
     for (const auto name_size : {9, 13})

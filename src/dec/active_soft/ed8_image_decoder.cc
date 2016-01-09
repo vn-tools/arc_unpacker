@@ -17,10 +17,10 @@ res::Image Ed8ImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
-    const auto width = input_file.stream.read_u16_le();
-    const auto height = input_file.stream.read_u16_le();
-    const auto palette_size = input_file.stream.read_u32_le();
-    const auto data_size = input_file.stream.read_u32_le();
+    const auto width = input_file.stream.read_le<u16>();
+    const auto height = input_file.stream.read_le<u16>();
+    const auto palette_size = input_file.stream.read_le<u32>();
+    const auto data_size = input_file.stream.read_le<u32>();
     const res::Palette palette(
         palette_size, input_file.stream, res::PixelFormat::BGR888);
 

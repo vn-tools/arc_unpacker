@@ -11,20 +11,20 @@ static const auto magic = "TPF0"_b;
 
 static algo::any read_value(io::IStream &input_stream)
 {
-    const auto type = input_stream.read_u8();
+    const auto type = input_stream.read<u8>();
     if (type == 0)
         throw err::CorruptDataError("Zero not supported in this context");
 
     if (type == 2)
-        return static_cast<int>(input_stream.read_u8());
+        return static_cast<int>(input_stream.read<u8>());
 
     if (type == 3)
-        return static_cast<int>(input_stream.read_u16_le());
+        return static_cast<int>(input_stream.read_le<u16>());
 
     if (type == 5)
     {
-        const auto hi = input_stream.read_u64_le();
-        const auto lo = input_stream.read_u16_le();
+        const auto hi = input_stream.read_le<u64>();
+        const auto lo = input_stream.read_le<u16>();
         const u64 f80_sign     = lo >> 15;  // 1
         const u64 f80_exponent = lo & ~15;  // 15
         const u64 f80_mantissa = hi;        // 64
@@ -40,7 +40,7 @@ static algo::any read_value(io::IStream &input_stream)
     }
 
     if (type == 6 || type == 7)
-        return input_stream.read(input_stream.read_u8()).str();
+        return input_stream.read(input_stream.read<u8>()).str();
 
     if (type == 8)
         return true;
@@ -49,14 +49,14 @@ static algo::any read_value(io::IStream &input_stream)
         return true;
 
     if (type == 10)
-        return input_stream.read(input_stream.read_u32_le());
+        return input_stream.read(input_stream.read_le<u32>());
 
     if (type == 11)
     {
         std::vector<std::string> ret;
         while (true)
         {
-            const auto size = input_stream.read_u8();
+            const auto size = input_stream.read<u8>();
             if (size == 0)
                 break;
             ret.push_back(input_stream.read(size).str());
@@ -66,7 +66,7 @@ static algo::any read_value(io::IStream &input_stream)
 
     if (type == 18)
     {
-        const auto size = input_stream.read_u32_le();
+        const auto size = input_stream.read_le<u32>();
         return algo::utf16_to_utf8(input_stream.read(size * 2)).str();
     }
 
@@ -76,15 +76,15 @@ static algo::any read_value(io::IStream &input_stream)
 
 static std::unique_ptr<Tpf0Structure> read_structure(io::IStream &input_stream)
 {
-    const auto type_size = input_stream.read_u8();
+    const auto type_size = input_stream.read<u8>();
     auto s = std::make_unique<Tpf0Structure>();
     if (type_size == 0)
         return nullptr;
     s->type = input_stream.read(type_size).str();
-    s->name = input_stream.read(input_stream.read_u8()).str();
+    s->name = input_stream.read(input_stream.read<u8>()).str();
     while (true)
     {
-        const auto key_size = input_stream.read_u8();
+        const auto key_size = input_stream.read<u8>();
         if (!key_size)
             break;
         const auto key = input_stream.read(key_size).str();

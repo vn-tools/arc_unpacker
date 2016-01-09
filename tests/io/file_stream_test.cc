@@ -21,12 +21,12 @@ TEST_CASE("FileStream", "[io][stream]")
 
         {
             io::FileStream stream("tests/trash.out", io::FileMode::Write);
-            REQUIRE_NOTHROW(stream.write_u32_le(1));
+            REQUIRE_NOTHROW(stream.write_le<u32>(1));
         }
 
         {
             io::FileStream stream("tests/trash.out", io::FileMode::Read);
-            REQUIRE(stream.read_u32_le() == 1);
+            REQUIRE(stream.read_le<u32>() == 1);
             REQUIRE(stream.size() == 4);
         }
 

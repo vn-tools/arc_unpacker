@@ -14,19 +14,19 @@ bool DbmImageDecoder::is_recognized_impl(io::File &input_file) const
     if (input_file.stream.read(magic.size()) != magic)
         return false;
     input_file.stream.skip(2);
-    return input_file.stream.read_u32_le() == input_file.stream.size();
+    return input_file.stream.read_le<u32>() == input_file.stream.size();
 }
 
 res::Image DbmImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 8);
-    const auto width = input_file.stream.read_u16_le();
-    const auto height = input_file.stream.read_u16_le();
-    const auto format = input_file.stream.read_u32_le();
-    if (input_file.stream.read_u16_le() != 1)
+    const auto width = input_file.stream.read_le<u16>();
+    const auto height = input_file.stream.read_le<u16>();
+    const auto format = input_file.stream.read_le<u32>();
+    if (input_file.stream.read_le<u16>() != 1)
         throw err::CorruptDataError("Expected '1'");
-    const auto size_comp = input_file.stream.read_u32_le();
+    const auto size_comp = input_file.stream.read_le<u32>();
     const auto data = sysd_decompress(input_file.stream.read(size_comp));
 
     if (format == 1 || format == 2 || format == 3)

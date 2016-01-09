@@ -36,7 +36,7 @@ static bstr decompress(
     io::MemoryStream input_stream(input);
     for (const auto y : algo::range(height))
     {
-        const auto control = input_stream.read_u8();
+        const auto control = input_stream.read<u8>();
         bstr line;
 
         if (control == 0)
@@ -45,13 +45,13 @@ static bstr decompress(
         }
         else if (control == 1)
         {
-            const auto chunk_size = input_stream.read_u16_be();
+            const auto chunk_size = input_stream.read_be<u16>();
             const auto chunk = input_stream.read(chunk_size);
             line = algo::pack::zlib_inflate(chunk);
         }
         else if (control == 2)
         {
-            const auto chunk_size = input_stream.read_u16_be();
+            const auto chunk_size = input_stream.read_be<u16>();
             const auto chunk = input_stream.read(chunk_size);
             line = algo::pack::zlib_inflate(chunk);
             for (const auto i : algo::range(1, stride))
@@ -59,7 +59,7 @@ static bstr decompress(
         }
         else if (control == 3)
         {
-            const auto chunk_size = input_stream.read_u16_be();
+            const auto chunk_size = input_stream.read_be<u16>();
             const auto chunk = input_stream.read(chunk_size);
             line = algo::pack::zlib_inflate(chunk);
             for (const auto i : algo::range(stride))
@@ -86,16 +86,16 @@ std::unique_ptr<dec::ArchiveMeta> Cz10ImageArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
 
     input_file.stream.seek(magic.size());
-    const auto image_count = input_file.stream.read_u32_le();
+    const auto image_count = input_file.stream.read_le<u32>();
     auto current_offset = input_file.stream.tell() + image_count * 16;
     for (const auto i : algo::range(image_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->width = input_file.stream.read_u16_le();
-        entry->height = input_file.stream.read_u16_le();
+        entry->width = input_file.stream.read_le<u16>();
+        entry->height = input_file.stream.read_le<u16>();
         input_file.stream.skip(4);
-        entry->size = input_file.stream.read_u32_le();
-        entry->channels = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_le<u32>();
+        entry->channels = input_file.stream.read_le<u32>();
         entry->offset = current_offset;
         current_offset += entry->size;
         meta->entries.push_back(std::move(entry));

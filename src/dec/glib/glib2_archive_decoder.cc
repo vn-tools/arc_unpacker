@@ -70,9 +70,9 @@ static Header read_header(io::IStream &input_stream, glib2::IPlugin &plugin)
     header_stream.skip(1);
     for (const auto i : algo::range(4))
     for (const auto j : algo::range(4))
-        header.table_keys[3 - i][j] = header_stream.read_u32_le();
-    header.table_offset = header_stream.read_u32_le();
-    header.table_size = header_stream.read_u32_le();
+        header.table_keys[3 - i][j] = header_stream.read_le<u32>();
+    header.table_offset = header_stream.read_le<u32>();
+    header.table_size = header_stream.read_le<u32>();
     return header;
 }
 
@@ -84,13 +84,13 @@ static std::unique_ptr<ArchiveEntryImpl> read_table_entry(
 {
     auto entry = std::make_unique<ArchiveEntryImpl>();
 
-    auto file_name_offset = table_stream.read_u32_le() + file_names_start;
+    auto file_name_offset = table_stream.read_le<u32>() + file_names_start;
     table_stream.skip(4);
-    s32 parent_dir = table_stream.read_u32_le();
-    u32 flags = table_stream.read_u32_le();
+    s32 parent_dir = table_stream.read_le<u32>();
+    u32 flags = table_stream.read_le<u32>();
     entry->is_file = flags == 0x100;
-    auto file_header_offset = table_stream.read_u32_le() + file_headers_start;
-    auto file_header_size = table_stream.read_u32_le();
+    auto file_header_offset = table_stream.read_le<u32>() + file_headers_start;
+    auto file_header_size = table_stream.read_le<u32>();
 
     if (entry->is_file)
     {
@@ -98,15 +98,15 @@ static std::unique_ptr<ArchiveEntryImpl> read_table_entry(
             file_header_offset,
             [&]()
             {
-                auto file_header_size2 = table_stream.read_u32_le();
+                auto file_header_size2 = table_stream.read_le<u32>();
                 if (file_header_size2 + 4 != file_header_size)
                     throw err::BadDataSizeError();
                 table_stream.skip(4); // null
-                entry->size = table_stream.read_u32_le();
-                entry->offset = table_stream.read_u32_le();
+                entry->size = table_stream.read_le<u32>();
+                entry->offset = table_stream.read_le<u32>();
                 for (const auto i : algo::range(4))
                 for (const auto j : algo::range(4))
-                    entry->content_keys[i][j] = table_stream.read_u32_le();
+                    entry->content_keys[i][j] = table_stream.read_le<u32>();
             });
     }
 
@@ -168,10 +168,10 @@ std::unique_ptr<dec::ArchiveMeta> Glib2ArchiveDecoder::read_meta_impl(
     if (table_stream.read(table_magic.size()) != table_magic)
         throw err::CorruptDataError("Corrupt table data");
 
-    size_t file_count = table_stream.read_u32_le();
+    size_t file_count = table_stream.read_le<u32>();
     size_t file_names_start = file_count * 0x18 + 0x10;
-    size_t file_headers_start = table_stream.read_u32_le() + 0x10;
-    size_t file_headers_size = table_stream.read_u32_le();
+    size_t file_headers_start = table_stream.read_le<u32>() + 0x10;
+    size_t file_headers_size = table_stream.read_le<u32>();
 
     std::vector<std::unique_ptr<ArchiveEntryImpl>> entries;
     for (const auto i : algo::range(file_count))

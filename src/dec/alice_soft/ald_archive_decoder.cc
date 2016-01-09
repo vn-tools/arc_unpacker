@@ -16,9 +16,9 @@ namespace
 
 static u32 read_24_le(io::IStream &input_stream)
 {
-    return (input_stream.read_u8() << 8)
-        | (input_stream.read_u8() << 16)
-        | (input_stream.read_u8() << 24);
+    return (input_stream.read<u8>() << 8)
+        | (input_stream.read<u8>() << 16)
+        | (input_stream.read<u8>() << 24);
 }
 
 bool AldArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -41,11 +41,11 @@ std::unique_ptr<dec::ArchiveMeta> AldArchiveDecoder::read_meta_impl(
         if (!offset)
             break;
         input_file.stream.seek(offset);
-        const auto header_size = input_file.stream.read_u32_le();
+        const auto header_size = input_file.stream.read_le<u32>();
         if (input_file.stream.tell() + header_size < input_file.stream.size())
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
-            entry->size = input_file.stream.read_u32_le();
+            entry->size = input_file.stream.read_le<u32>();
             input_file.stream.skip(8);
             const auto name = input_file.stream.read_to_zero(header_size - 16);
             entry->path = algo::sjis_to_utf8(name).str();

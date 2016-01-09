@@ -37,21 +37,21 @@ static std::unique_ptr<ArchiveMetaImpl> read_meta(
     for (const auto &section : section_reader.get_sections("DirEntry"))
     {
         input_stream.seek(section.data_offset);
-        const auto entry_count = input_stream.read_u32_le();
+        const auto entry_count = input_stream.read_le<u32>();
         for (const auto i : algo::range(entry_count))
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
-            entry->size = input_stream.read_u64_le();
-            const auto flags = input_stream.read_u32_le();
-            entry->encryption = input_stream.read_u32_le();
-            entry->offset = section.base_offset + input_stream.read_u64_le();
+            entry->size = input_stream.read_le<u64>();
+            const auto flags = input_stream.read_le<u32>();
+            entry->encryption = input_stream.read_le<u32>();
+            entry->offset = section.base_offset + input_stream.read_le<u64>();
             input_stream.skip(8);
 
-            const auto extra_size = input_stream.read_u32_le();
+            const auto extra_size = input_stream.read_le<u32>();
             if (flags & 0x70)
                 entry->extra = input_stream.read(extra_size);
 
-            const auto file_name_size = input_stream.read_u32_le();
+            const auto file_name_size = input_stream.read_le<u32>();
             entry->path = input_stream.read_to_zero(file_name_size).str();
             if (!root.str().empty())
                 entry->path = root / entry->path;
@@ -124,7 +124,7 @@ std::unique_ptr<io::File> NoaArchiveDecoder::read_file_impl(
     if (entry_magic != "filedata"_b)
         throw err::CorruptDataError("Expected 'filedata' magic.");
 
-    const auto total_size = input_file.stream.read_u64_le();
+    const auto total_size = input_file.stream.read_le<u64>();
     auto data = input_file.stream.read(total_size);
     if (entry->encryption)
     {

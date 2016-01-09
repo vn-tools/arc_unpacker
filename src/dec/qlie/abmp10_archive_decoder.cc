@@ -48,7 +48,7 @@ static void read_data_entry(io::File &input_file, dec::ArchiveMeta &meta)
 {
     auto entry = std::make_unique<ArchiveEntryImpl>();
     entry->path = "unknown.dat";
-    entry->size = input_file.stream.read_u32_le();
+    entry->size = input_file.stream.read_le<u32>();
     entry->offset = input_file.stream.tell();
     input_file.stream.skip(entry->size);
     meta.entries.push_back(std::move(entry));
@@ -59,7 +59,7 @@ static void read_resource_entry(io::File &input_file, dec::ArchiveMeta &meta)
     bstr magic = input_file.stream.read(16);
 
     auto entry = std::make_unique<ArchiveEntryImpl>();
-    auto name_size = input_file.stream.read_u16_le();
+    auto name_size = input_file.stream.read_le<u16>();
     entry->path = algo::sjis_to_utf8(input_file.stream.read(name_size)).str();
     if (entry->path.str().empty())
         entry->path = "unknown";
@@ -70,7 +70,7 @@ static void read_resource_entry(io::File &input_file, dec::ArchiveMeta &meta)
         || magic == magic_imgdat13
         || magic == magic_imgdat14)
     {
-        input_file.stream.skip(input_file.stream.read_u16_le());
+        input_file.stream.skip(input_file.stream.read_le<u16>());
     }
     else if (magic != magic_imgdat10 && magic != magic_snddat10)
     {
@@ -84,7 +84,7 @@ static void read_resource_entry(io::File &input_file, dec::ArchiveMeta &meta)
     if (magic == magic_imgdat13)
         input_file.stream.skip(12);
 
-    entry->size = input_file.stream.read_u32_le();
+    entry->size = input_file.stream.read_le<u32>();
     entry->offset = input_file.stream.tell();
     input_file.stream.skip(entry->size);
     if (entry->size)
@@ -113,7 +113,7 @@ std::unique_ptr<dec::ArchiveMeta> Abmp10ArchiveDecoder::read_meta_impl(
         }
         else if (magic == magic_image10 || magic == magic_sound10)
         {
-            size_t file_count = input_file.stream.read_u8();
+            size_t file_count = input_file.stream.read<u8>();
             for (auto i : algo::range(file_count))
                 read_resource_entry(input_file, *meta);
         }

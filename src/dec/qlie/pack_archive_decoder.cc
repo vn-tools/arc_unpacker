@@ -167,8 +167,8 @@ static bstr decompress(const bstr &input, const size_t output_size)
             "Try with --fkey or --gameexe?");
     }
 
-    bool use_short_size = input_stream.read_u32_le() > 0;
-    u32 file_size = input_stream.read_u32_le();
+    bool use_short_size = input_stream.read_le<u32>() > 0;
+    u32 file_size = input_stream.read_le<u32>();
     if (file_size != output_size)
         throw err::BadDataSizeError();
 
@@ -182,7 +182,7 @@ static bstr decompress(const bstr &input, const size_t output_size)
 
         for (size_t d = 0; d < 256; )
         {
-            u8 c = input_stream.read_u8();
+            u8 c = input_stream.read<u8>();
             if (c > 0x7F)
             {
                 d += c - 0x7F;
@@ -193,16 +193,16 @@ static bstr decompress(const bstr &input, const size_t output_size)
 
             for (const auto i : algo::range(c + 1))
             {
-                dict1[d] = input_stream.read_u8();
+                dict1[d] = input_stream.read<u8>();
                 if (dict1[d] != d)
-                    dict2[d] = input_stream.read_u8();
+                    dict2[d] = input_stream.read<u8>();
                 d++;
             }
         }
 
         int bytes_left = use_short_size
-            ? input_stream.read_u16_le()
-            : input_stream.read_u32_le();
+            ? input_stream.read_le<u16>()
+            : input_stream.read_le<u32>();
 
         u8 n = 0;
         while (output_ptr < output_ptr.end())
@@ -217,7 +217,7 @@ static bstr decompress(const bstr &input, const size_t output_size)
                 if (bytes_left == 0)
                     break;
                 bytes_left--;
-                d = input_stream.read_u8();
+                d = input_stream.read<u8>();
             }
 
             if (dict1[d] == d)
@@ -345,8 +345,8 @@ std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
         logger.info(".exe key not found\n");
 
     input_file.stream.seek(get_magic_start(input_file.stream) + magic.size());
-    const auto file_count = input_file.stream.read_u32_le();
-    const auto table_offset = input_file.stream.read_u64_le();
+    const auto file_count = input_file.stream.read_le<u32>();
+    const auto table_offset = input_file.stream.read_le<u64>();
     const auto table_size = get_magic_start(input_file.stream) - table_offset;
     input_file.stream.seek(table_offset);
     io::MemoryStream table_stream(input_file.stream, table_size);
@@ -355,11 +355,11 @@ std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
     table_stream.seek(0);
     for (const auto i : algo::range(file_count))
     {
-        size_t file_name_size = table_stream.read_u16_le();
+        size_t file_name_size = table_stream.read_le<u16>();
         table_stream.skip(file_name_size + 28);
     }
     table_stream.skip(28);
-    table_stream.skip(table_stream.read_u32_le());
+    table_stream.skip(table_stream.read_le<u32>());
     table_stream.skip(36);
     seed = derive_seed(table_stream.read(256)) & 0x0FFFFFFF;
 
@@ -368,16 +368,16 @@ std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
-        size_t name_size = table_stream.read_u16_le();
+        size_t name_size = table_stream.read_le<u16>();
         entry->path_orig = table_stream.read(name_size);
         decrypt_file_name(entry->path_orig, seed);
         entry->path = algo::sjis_to_utf8(entry->path_orig).str();
 
-        entry->offset = table_stream.read_u64_le();
-        entry->size_compressed = table_stream.read_u32_le();
-        entry->size_original = table_stream.read_u32_le();
-        entry->compressed = table_stream.read_u32_le() > 0;
-        entry->encrypted = table_stream.read_u32_le() > 0;
+        entry->offset = table_stream.read_le<u64>();
+        entry->size_compressed = table_stream.read_le<u32>();
+        entry->size_original = table_stream.read_le<u32>();
+        entry->compressed = table_stream.read_le<u32>() > 0;
+        entry->encrypted = table_stream.read_le<u32>() > 0;
 
         entry->seed = seed;
         table_stream.skip(4);

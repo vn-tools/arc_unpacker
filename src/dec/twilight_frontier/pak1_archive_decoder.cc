@@ -56,7 +56,7 @@ bool Pak1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> Pak1ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    u16 file_count = input_file.stream.read_u16_le();
+    u16 file_count = input_file.stream.read_le<u16>();
     if (file_count == 0 && input_file.stream.size() != 6)
         throw err::RecognitionError();
     auto table_stream = read_raw_table(input_file.stream, file_count);
@@ -65,8 +65,8 @@ std::unique_ptr<dec::ArchiveMeta> Pak1ArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream->read_to_zero(0x64).str();
-        entry->size = table_stream->read_u32_le();
-        entry->offset = table_stream->read_u32_le();
+        entry->size = table_stream->read_le<u32>();
+        entry->offset = table_stream->read_le<u32>();
         if (entry->offset + entry->size > input_file.stream.size())
             throw err::BadDataOffsetError();
         meta->entries.push_back(std::move(entry));

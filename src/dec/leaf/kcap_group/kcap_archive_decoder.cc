@@ -33,8 +33,8 @@ static size_t detect_version(io::File &input_file, const size_t file_count)
     {
         input_file.stream.skip((file_count - 1) * (24 + 8));
         input_file.stream.skip(24);
-        const auto last_entry_offset = input_file.stream.read_u32_le();
-        const auto last_entry_size = input_file.stream.read_u32_le();
+        const auto last_entry_offset = input_file.stream.read_le<u32>();
+        const auto last_entry_size = input_file.stream.read_le<u32>();
         if (last_entry_offset + last_entry_size == input_file.stream.size())
             version = 1;
     });
@@ -42,8 +42,8 @@ static size_t detect_version(io::File &input_file, const size_t file_count)
     {
         input_file.stream.skip((file_count - 1) * (4 + 24 + 8));
         input_file.stream.skip(4 + 24);
-        const auto last_entry_offset = input_file.stream.read_u32_le();
-        const auto last_entry_size = input_file.stream.read_u32_le();
+        const auto last_entry_offset = input_file.stream.read_le<u32>();
+        const auto last_entry_size = input_file.stream.read_le<u32>();
         if (last_entry_offset + last_entry_size == input_file.stream.size())
             version = 2;
     });
@@ -60,8 +60,8 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(
         entry->compressed = true;
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(24)).str();
-        entry->offset = input_file.stream.read_u32_le();
-        entry->size = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->size = input_file.stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -75,11 +75,11 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v2(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         const auto type = static_cast<EntryType>(
-            input_file.stream.read_u32_le());
+            input_file.stream.read_le<u32>());
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero(24)).str();
-        entry->offset = input_file.stream.read_u32_le();
-        entry->size = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->size = input_file.stream.read_le<u32>();
         if (type == EntryType::RegularFile)
             entry->compressed = false;
         else if (type == EntryType::CompressedFile)
@@ -104,7 +104,7 @@ std::unique_ptr<dec::ArchiveMeta> KcapArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto file_count = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
     const auto version = detect_version(input_file, file_count);
     if (version == 1)
         return read_meta_v1(input_file, file_count);
@@ -125,8 +125,8 @@ std::unique_ptr<io::File> KcapArchiveDecoder::read_file_impl(
     bstr data;
     if (entry->compressed)
     {
-        auto size_comp = input_file.stream.read_u32_le();
-        auto size_orig = input_file.stream.read_u32_le();
+        auto size_comp = input_file.stream.read_le<u32>();
+        auto size_orig = input_file.stream.read_le<u32>();
         data = input_file.stream.read(size_comp - 8);
         data = algo::pack::lzss_decompress(data, size_orig);
     }

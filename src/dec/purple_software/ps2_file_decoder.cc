@@ -57,20 +57,20 @@ bool Ps2FileDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.read(magic.size()) != magic)
         return false;
-    const auto size_comp = input_file.stream.seek(0x24).read_u32_le();
-    const auto size_orig = input_file.stream.seek(0x28).read_u32_le();
+    const auto size_comp = input_file.stream.seek(0x24).read_le<u32>();
+    const auto size_orig = input_file.stream.seek(0x28).read_le<u32>();
     return size_comp != size_orig;
 }
 
 std::unique_ptr<io::File> Ps2FileDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto tmp = input_file.stream.seek(12).read_u32_le();
+    const auto tmp = input_file.stream.seek(12).read_le<u32>();
     const auto key = (tmp >> 24) + (tmp >> 3);
     const auto shift = (tmp >> 20) % 5 + 1;
 
-    const auto size_comp = input_file.stream.seek(0x24).read_u32_le();
-    const auto size_orig = input_file.stream.seek(0x28).read_u32_le();
+    const auto size_comp = input_file.stream.seek(0x24).read_le<u32>();
+    const auto size_orig = input_file.stream.seek(0x28).read_le<u32>();
     auto data = input_file.stream.seek(0x30).read(size_comp);
     decrypt(data, key, shift);
 

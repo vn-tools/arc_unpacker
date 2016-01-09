@@ -20,7 +20,7 @@ std::unique_ptr<io::File> OgvAudioDecoder::decode_impl(
     input_file.stream.skip(4); // sort of file size
     if (input_file.stream.read(4) != "fmt\x20"_b)
         throw err::CorruptDataError("Expected fmt chunk");
-    input_file.stream.skip(input_file.stream.read_u32_le());
+    input_file.stream.skip(input_file.stream.read_le<u32>());
 
     if (input_file.stream.read(4) != "data"_b)
         throw err::CorruptDataError("Expected data chunk");

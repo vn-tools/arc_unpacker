@@ -18,7 +18,7 @@ res::Image ZbmImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(10);
-    const auto size_orig = input_file.stream.read_u32_le();
+    const auto size_orig = input_file.stream.read_le<u32>();
 
     algo::pack::BytewiseLzssSettings settings;
     settings.initial_dictionary_pos = 0xFF0;

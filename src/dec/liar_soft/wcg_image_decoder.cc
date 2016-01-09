@@ -15,7 +15,7 @@ bool WcgImageDecoder::is_recognized_impl(io::File &input_file) const
     if (input_file.stream.read(magic.size()) != magic)
         return false;
 
-    const int version = input_file.stream.read_u16_le();
+    const int version = input_file.stream.read_le<u16>();
     if (((version & 0xF) != 1) || ((version & 0x1C0) != 64))
         return false;
 
@@ -28,13 +28,13 @@ res::Image WcgImageDecoder::decode_impl(
     input_file.stream.seek(magic.size());
 
     input_file.stream.skip(2);
-    const auto depth = input_file.stream.read_u16_le();
+    const auto depth = input_file.stream.read_le<u16>();
     if (depth != 32)
         throw err::UnsupportedBitDepthError(depth);
     input_file.stream.skip(2);
 
-    const auto width = input_file.stream.read_u32_le();
-    const auto height = input_file.stream.read_u32_le();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
     const auto canvas_size = width * height;
 
     bstr output(canvas_size * 4);

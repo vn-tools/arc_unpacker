@@ -61,19 +61,19 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
 
     if (output.size() < 3)
         return output;
-    *output_ptr++ = input_stream.read_u8();
-    *output_ptr++ = input_stream.read_u8();
-    *output_ptr++ = input_stream.read_u8();
+    *output_ptr++ = input_stream.read<u8>();
+    *output_ptr++ = input_stream.read<u8>();
+    *output_ptr++ = input_stream.read<u8>();
 
     while (output_ptr < output_end)
     {
-        auto flag = input_stream.read_u8();
+        auto flag = input_stream.read<u8>();
         if (flag & 0x80)
         {
             auto size = flag & 3;
             auto look_behind = (flag >> 2) & 0x1F;
             size = size == 3
-                ? (input_stream.read_u16_le() + 4) * 3
+                ? (input_stream.read_le<u16>() + 4) * 3
                 : size * 3 + 3;
             auto source_ptr = &output_ptr[shift_table[look_behind]];
             if (source_ptr < output_start || source_ptr + size >= output_end)
@@ -84,10 +84,10 @@ static bstr uncompress(const bstr &input, size_t width, size_t height)
         else
         {
             auto size = flag == 0x7F
-                ? (input_stream.read_u16_le() + 0x80) * 3
+                ? (input_stream.read_le<u16>() + 0x80) * 3
                 : flag * 3 + 3;
             while (size-- && output_ptr < output_end)
-                *output_ptr++ = input_stream.read_u8();
+                *output_ptr++ = input_stream.read<u8>();
         }
     }
 
@@ -135,7 +135,7 @@ res::Image RctImageDecoder::decode_impl(
     input_file.stream.skip(magic.size());
 
     bool encrypted;
-    const auto tmp = input_file.stream.read_u8();
+    const auto tmp = input_file.stream.read<u8>();
     if (tmp == 'S')
         encrypted = true;
     else if (tmp == 'C')
@@ -148,15 +148,15 @@ res::Image RctImageDecoder::decode_impl(
     if (version < 0 || version > 1)
         throw err::UnsupportedVersionError(version);
 
-    const auto width = input_file.stream.read_u32_le();
-    const auto height = input_file.stream.read_u32_le();
-    const auto data_size = input_file.stream.read_u32_le();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
+    const auto data_size = input_file.stream.read_le<u32>();
 
     std::unique_ptr<res::Image> base_image;
     std::unique_ptr<res::Image> mask_image;
     if (version == 1)
     {
-        const auto name_size = input_file.stream.read_u16_le();
+        const auto name_size = input_file.stream.read_le<u16>();
         const auto base_name
             = algo::trim_to_zero(input_file.stream.read(name_size).str());
 

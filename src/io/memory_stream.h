@@ -23,11 +23,6 @@ namespace io {
         IStream &skip(const int offset) override;
         IStream &truncate(const size_t new_size) override;
 
-        // specialize most commonly used functions
-        u8 read_u8() override;
-        u16 read_u16_le() override;
-        u32 read_u32_le() override;
-
         IStream &reserve(const size_t count);
 
         std::unique_ptr<IStream> clone() const override;
@@ -38,16 +33,6 @@ namespace io {
 
     private:
         MemoryStream(const std::shared_ptr<bstr> buffer);
-
-        template<typename T> inline T read_primitive()
-        {
-            const auto size = sizeof(T);
-            if (buffer_pos + size > buffer->size())
-                throw err::EofError();
-            const auto ret = reinterpret_cast<const T&>((*buffer)[buffer_pos]);
-            buffer_pos += size;
-            return ret;
-        }
 
         std::shared_ptr<bstr> buffer;
         size_t buffer_pos;

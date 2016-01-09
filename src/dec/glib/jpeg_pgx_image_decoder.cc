@@ -18,28 +18,28 @@ static bstr extract_pgx_stream(const bstr &jpeg_data)
     io::MemoryStream jpeg_stream(jpeg_data);
     jpeg_stream.skip(2); // soi
     jpeg_stream.skip(2); // header chunk
-    jpeg_stream.skip(jpeg_stream.read_u16_be() - 2);
-    while (jpeg_stream.read_u16_be() == 0xFFE3)
-        output += jpeg_stream.read(jpeg_stream.read_u16_be() - 2);
+    jpeg_stream.skip(jpeg_stream.read_be<u16>() - 2);
+    while (jpeg_stream.read_be<u16>() == 0xFFE3)
+        output += jpeg_stream.read(jpeg_stream.read_be<u16>() - 2);
     return output;
 }
 
 bool JpegPgxImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    u16 marker = input_file.stream.read_u16_be();
+    u16 marker = input_file.stream.read_be<u16>();
     // soi
     if (marker != 0xFFD8)
         return false;
-    marker = input_file.stream.read_u16_be();
+    marker = input_file.stream.read_be<u16>();
     // header chunk
     if (marker != 0xFFE0)
         return false;
-    input_file.stream.skip(input_file.stream.read_u16_be() - 2);
+    input_file.stream.skip(input_file.stream.read_be<u16>() - 2);
     // PGX start
-    marker = input_file.stream.read_u16_be();
+    marker = input_file.stream.read_be<u16>();
     if (marker != 0xFFE3)
         return false;
-    if (input_file.stream.read_u16_be() < magic.size())
+    if (input_file.stream.read_be<u16>() < magic.size())
         return false;
     return input_file.stream.read(magic.size()) == magic;
 }
@@ -52,19 +52,19 @@ res::Image JpegPgxImageDecoder::decode_impl(
 
     pgx_stream.skip(magic.size());
     pgx_stream.skip(4);
-    const auto width = pgx_stream.read_u32_le();
-    const auto height = pgx_stream.read_u32_le();
-    const auto transparent = pgx_stream.read_u16_le() != 0;
+    const auto width = pgx_stream.read_le<u32>();
+    const auto height = pgx_stream.read_le<u32>();
+    const auto transparent = pgx_stream.read_le<u16>() != 0;
     pgx_stream.skip(2);
-    const auto source_size = pgx_stream.read_u32_le();
+    const auto source_size = pgx_stream.read_le<u32>();
     const auto target_size = width * height * 4;
     pgx_stream.skip(8);
 
     if (!transparent)
     {
         pgx_stream.skip(8);
-        const auto tmp1 = pgx_stream.read_u32_le();
-        const auto tmp2 = pgx_stream.read_u32_le();
+        const auto tmp1 = pgx_stream.read_le<u32>();
+        const auto tmp2 = pgx_stream.read_le<u32>();
         const auto extra_size = (tmp2 & 0x00FF00FF) | (tmp1 & 0xFF00FF00);
         // why?
         custom_lzss_decompress(pgx_stream, extra_size);

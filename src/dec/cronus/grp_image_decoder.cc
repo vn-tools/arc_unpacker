@@ -72,11 +72,11 @@ static HeaderReader get_v1_reader(
     return [=](io::IStream &input_stream)
     {
         auto header = std::make_unique<Header>();
-        header->width = input_stream.read_u32_le() ^ key1;
-        header->height = input_stream.read_u32_le() ^ key2;
-        header->bpp = input_stream.read_u32_le();
+        header->width = input_stream.read_le<u32>() ^ key1;
+        header->height = input_stream.read_le<u32>() ^ key2;
+        header->bpp = input_stream.read_le<u32>();
         input_stream.skip(4);
-        header->output_size = input_stream.read_u32_le() ^ key3;
+        header->output_size = input_stream.read_le<u32>() ^ key3;
         input_stream.skip(4);
         header->use_transparency = false;
         header->flip = true;
@@ -91,14 +91,14 @@ static HeaderReader get_v2_reader()
     {
         auto header = std::make_unique<Header>();
         input_stream.skip(4);
-        header->output_size = input_stream.read_u32_le();
+        header->output_size = input_stream.read_le<u32>();
         input_stream.skip(8);
-        header->width = input_stream.read_u32_le();
-        header->height = input_stream.read_u32_le();
-        header->bpp = input_stream.read_u32_le();
+        header->width = input_stream.read_le<u32>();
+        header->height = input_stream.read_le<u32>();
+        header->bpp = input_stream.read_le<u32>();
         input_stream.skip(8);
         header->flip = false;
-        header->use_transparency = input_stream.read_u32_le() != 0;
+        header->use_transparency = input_stream.read_le<u32>() != 0;
         header->encryption_type = EncryptionType::None;
         return header;
     };

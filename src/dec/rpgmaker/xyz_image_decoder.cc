@@ -18,8 +18,8 @@ res::Image XyzImageDecoder::decode_impl(
 {
     input_file.stream.skip(magic.size());
 
-    u16 width = input_file.stream.read_u16_le();
-    u16 height = input_file.stream.read_u16_le();
+    u16 width = input_file.stream.read_le<u16>();
+    u16 height = input_file.stream.read_le<u16>();
 
     bstr data = algo::pack::zlib_inflate(input_file.stream.read_to_eof());
 

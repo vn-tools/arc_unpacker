@@ -22,7 +22,7 @@ static Version get_version(io::IStream &input_stream)
     Version ret;
     input_stream.peek(46, [&]()
     {
-        ret = input_stream.read_u16_le() == 2
+        ret = input_stream.read_le<u16>() == 2
             ? Version::Version2
             : Version::Version1;
     });

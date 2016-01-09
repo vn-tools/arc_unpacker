@@ -18,20 +18,20 @@ res::Image DpngImageDecoder::decode_impl(
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(4);
-    const auto file_count = input_file.stream.read_u32_le();
-    const auto width = input_file.stream.read_u32_le();
-    const auto height = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
 
     const auto png_image_decoder = dec::png::PngImageDecoder();
 
     res::Image image(width, height);
     for (const auto i : algo::range(file_count))
     {
-        const auto subimage_x = input_file.stream.read_u32_le();
-        const auto subimage_y = input_file.stream.read_u32_le();
-        const auto subimage_width = input_file.stream.read_u32_le();
-        const auto subimage_height = input_file.stream.read_u32_le();
-        const auto subimage_data_size = input_file.stream.read_u32_le();
+        const auto subimage_x = input_file.stream.read_le<u32>();
+        const auto subimage_y = input_file.stream.read_le<u32>();
+        const auto subimage_width = input_file.stream.read_le<u32>();
+        const auto subimage_height = input_file.stream.read_le<u32>();
+        const auto subimage_data_size = input_file.stream.read_le<u32>();
         input_file.stream.skip(8);
 
         if (!subimage_data_size)

@@ -16,8 +16,8 @@ res::Image CmpImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    auto size_original = input_file.stream.read_u32_le();
-    auto size_compressed = input_file.stream.read_u32_le();
+    auto size_original = input_file.stream.read_le<u32>();
+    auto size_compressed = input_file.stream.read_le<u32>();
 
     auto data = input_file.stream.read(size_compressed);
     algo::pack::BitwiseLzssSettings settings;

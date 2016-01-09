@@ -56,7 +56,7 @@ std::unique_ptr<dec::ArchiveMeta> LeafpackArchiveDecoder::read_meta_impl(
     }
 
     input_file.stream.seek(magic.size());
-    const auto file_count = input_file.stream.read_u16_le();
+    const auto file_count = input_file.stream.read_le<u16>();
 
     const auto table_size = file_count * 24;
     input_file.stream.seek(input_file.stream.size() - table_size);
@@ -76,8 +76,8 @@ std::unique_ptr<dec::ArchiveMeta> LeafpackArchiveDecoder::read_meta_impl(
         if (name.size() > 3)
             name.insert(name.size() - 3, ".");
         entry->path = name;
-        entry->offset = table_stream.read_u32_le();
-        entry->size = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>();
+        entry->size = table_stream.read_le<u32>();
         table_stream.skip(4);
         meta->entries.push_back(std::move(entry));
     }

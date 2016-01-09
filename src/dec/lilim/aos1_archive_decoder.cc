@@ -18,7 +18,7 @@ bool Aos1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(0);
     return input_file.path.has_extension("aos")
-        && input_file.stream.read_u32_le() > 0;
+        && input_file.stream.read_le<u32>() > 0;
 }
 
 std::unique_ptr<dec::ArchiveMeta> Aos1ArchiveDecoder::read_meta_impl(
@@ -34,14 +34,14 @@ std::unique_ptr<dec::ArchiveMeta> Aos1ArchiveDecoder::read_meta_impl(
             break;
         if (name[0] == 0xFF)
         {
-            auto offset = input_file.stream.read_u32_le();
+            auto offset = input_file.stream.read_le<u32>();
             input_file.stream.skip(12);
             input_file.stream.skip(offset);
             continue;
         }
         entry->path = name.str();
-        entry->offset = input_file.stream.read_u32_le();
-        entry->size = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->size = input_file.stream.read_le<u32>();
         input_file.stream.skip(8);
         entry->offset += input_file.stream.tell();
         meta->entries.push_back(std::move(entry));

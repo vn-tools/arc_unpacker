@@ -29,9 +29,9 @@ std::unique_ptr<dec::ArchiveMeta> EgrArchiveDecoder::read_meta_impl(
     while (!input_file.stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->width = input_file.stream.read_u32_le();
-        entry->height = input_file.stream.read_u32_le();
-        if (input_file.stream.read_u32_le() != entry->width * entry->height)
+        entry->width = input_file.stream.read_le<u32>();
+        entry->height = input_file.stream.read_le<u32>();
+        if (input_file.stream.read_le<u32>() != entry->width * entry->height)
             throw err::BadDataSizeError();
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(0x574 + entry->width * entry->height);
@@ -54,9 +54,9 @@ std::unique_ptr<io::File> EgrArchiveDecoder::read_file_impl(
     {
         input_file.stream.skip(1);
         palette[i].a = 0xFF;
-        palette[i].b = input_file.stream.read_u8();
-        palette[i].r = input_file.stream.read_u8();
-        palette[i].g = input_file.stream.read_u8();
+        palette[i].b = input_file.stream.read<u8>();
+        palette[i].r = input_file.stream.read<u8>();
+        palette[i].g = input_file.stream.read<u8>();
     }
 
     input_file.stream.skip(0x174);

@@ -16,11 +16,11 @@ res::Image Lc3ImageDecoder::decode_impl(
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(4);
-    const auto width = input_file.stream.read_u16_le();
-    const auto height = input_file.stream.read_u16_le();
+    const auto width = input_file.stream.read_le<u16>();
+    const auto height = input_file.stream.read_le<u16>();
 
-    const auto alpha_pos = input_file.stream.read_u32_le();
-    const auto color_pos = input_file.stream.read_u32_le();
+    const auto alpha_pos = input_file.stream.read_le<u32>();
+    const auto color_pos = input_file.stream.read_le<u32>();
 
     input_file.stream.seek(color_pos);
     const auto color_data = common::custom_lzss_decompress(

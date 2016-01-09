@@ -27,7 +27,7 @@ std::unique_ptr<dec::ArchiveMeta> Afs2ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
-    const auto file_count = input_file.stream.read_u32_le() - 1;
+    const auto file_count = input_file.stream.read_le<u32>() - 1;
     input_file.stream.skip(4);
     input_file.stream.skip((file_count + 1) * 2);
     ArchiveEntryImpl *last_entry = nullptr;
@@ -36,7 +36,7 @@ std::unique_ptr<dec::ArchiveMeta> Afs2ArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::format("%d.dat", i);
-        entry->offset = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>();
         if (last_entry)
             last_entry->size = entry->offset - last_entry->offset;
         last_entry = entry.get();

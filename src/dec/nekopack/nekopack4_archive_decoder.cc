@@ -29,11 +29,11 @@ std::unique_ptr<dec::ArchiveMeta> Nekopack4ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto table_size = input_file.stream.read_u32_le();
+    const auto table_size = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
     while (true)
     {
-        const auto name_size = input_file.stream.read_u32_le();
+        const auto name_size = input_file.stream.read_le<u32>();
         if (!name_size)
             break;
 
@@ -42,8 +42,8 @@ std::unique_ptr<dec::ArchiveMeta> Nekopack4ArchiveDecoder::read_meta_impl(
         u32 key = 0;
         for (const u8 &c : entry->path.str())
             key += c;
-        entry->offset = input_file.stream.read_u32_le() ^ key;
-        entry->size_comp = input_file.stream.read_u32_le() ^ key;
+        entry->offset = input_file.stream.read_le<u32>() ^ key;
+        entry->size_comp = input_file.stream.read_le<u32>() ^ key;
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -59,7 +59,7 @@ std::unique_ptr<io::File> Nekopack4ArchiveDecoder::read_file_impl(
     auto data = input_file.stream
         .seek(entry->offset)
         .read(entry->size_comp - 4);
-    const auto size_orig = input_file.stream.read_u32_le();
+    const auto size_orig = input_file.stream.read_le<u32>();
 
     u8 key = (entry->size_comp >> 3) + 0x22;
     for (auto &c : data)

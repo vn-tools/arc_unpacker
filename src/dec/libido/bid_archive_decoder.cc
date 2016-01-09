@@ -15,10 +15,10 @@ namespace
 
 bool BidArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    auto data_start = input_file.stream.read_u32_le();
+    auto data_start = input_file.stream.read_le<u32>();
     input_file.stream.seek(data_start - 8);
-    auto last_file_offset = input_file.stream.read_u32_le() + data_start;
-    auto last_file_size = input_file.stream.read_u32_le();
+    auto last_file_offset = input_file.stream.read_le<u32>() + data_start;
+    auto last_file_size = input_file.stream.read_le<u32>();
     return last_file_offset + last_file_size == input_file.stream.size();
 }
 
@@ -26,14 +26,14 @@ std::unique_ptr<dec::ArchiveMeta> BidArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
-    u32 data_start = input_file.stream.read_u32_le();
+    u32 data_start = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
     while (input_file.stream.tell() < data_start)
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(16).str();
-        entry->offset = input_file.stream.read_u32_le() + data_start;
-        entry->size = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>() + data_start;
+        entry->size = input_file.stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

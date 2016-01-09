@@ -45,16 +45,16 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMetaImpl>();
 
     input_file.stream.seek(3);
-    meta->version = input_file.stream.read_u8() - '0';
+    meta->version = input_file.stream.read<u8>() - '0';
 
     ArchiveEntryImpl *last_entry = nullptr;
-    const auto file_count = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->offset = input_file.stream.read_u32_le();
-        entry->size_orig = input_file.stream.read_u32_le();
-        auto name = input_file.stream.read(input_file.stream.read_u8());
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->size_orig = input_file.stream.read_le<u32>();
+        auto name = input_file.stream.read(input_file.stream.read<u8>());
         if (meta->version == 2)
             xor_data(name);
         entry->path = algo::sjis_to_utf8(name).str();

@@ -44,7 +44,7 @@ static bstr read_compressed_data(
     output.reserve(size_orig);
     while (output.size() < size_orig)
     {
-        const auto control = input_stream.read_u8();
+        const auto control = input_stream.read<u8>();
         const auto repetitions = (control & 0x7F) + 1;
         const bool use_rle = (control & 0x80) != 0;
         if (use_rle)
@@ -119,19 +119,19 @@ res::Image TgaImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
-    const auto id_size = input_file.stream.read_u8();
-    const bool use_palette = input_file.stream.read_u8() == 1;
-    const auto data_type = input_file.stream.read_u8();
-    const auto palette_start = input_file.stream.read_u16_le();
-    const auto palette_size = input_file.stream.read_u16_le() - palette_start;
-    const auto palette_depth = input_file.stream.read_u8();
+    const auto id_size = input_file.stream.read<u8>();
+    const bool use_palette = input_file.stream.read<u8>() == 1;
+    const auto data_type = input_file.stream.read<u8>();
+    const auto palette_start = input_file.stream.read_le<u16>();
+    const auto palette_size = input_file.stream.read_le<u16>() - palette_start;
+    const auto palette_depth = input_file.stream.read<u8>();
     input_file.stream.skip(4); // x and y
-    const auto width = input_file.stream.read_u16_le();
-    const auto height = input_file.stream.read_u16_le();
-    auto depth = input_file.stream.read_u8();
+    const auto width = input_file.stream.read_le<u16>();
+    const auto height = input_file.stream.read_le<u16>();
+    auto depth = input_file.stream.read<u8>();
     if (!depth)
         depth = 32;
-    const auto flags = input_file.stream.read_u8();
+    const auto flags = input_file.stream.read<u8>();
 
     const auto channels = depth / 8;
     const auto flip_horizontally = (flags & Flags::RightToLeft) != 0;

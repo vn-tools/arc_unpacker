@@ -9,12 +9,12 @@ static int detect_version(io::File &input_file)
 {
     int version = 1;
     input_file.stream.seek(0);
-    size_t width = input_file.stream.read_u16_le();
-    size_t height = input_file.stream.read_u16_le();
+    size_t width = input_file.stream.read_le<u16>();
+    size_t height = input_file.stream.read_le<u16>();
     if (!width && !height)
     {
-        width = input_file.stream.read_u16_le();
-        height = input_file.stream.read_u16_le();
+        width = input_file.stream.read_le<u16>();
+        height = input_file.stream.read_le<u16>();
         version = 2;
     }
     if (width * height + version * 4 == input_file.stream.size())
@@ -26,8 +26,8 @@ static res::Image decode_image(io::File &input_file)
 {
     const auto version = detect_version(input_file);
     input_file.stream.seek(version == 1 ? 0 : 4);
-    const auto width = input_file.stream.read_u16_le();
-    const auto height = input_file.stream.read_u16_le();
+    const auto width = input_file.stream.read_le<u16>();
+    const auto height = input_file.stream.read_le<u16>();
     const auto data = input_file.stream.read(width * height);
     return res::Image(width, height, data, res::PixelFormat::Gray8);
 }
@@ -35,15 +35,15 @@ static res::Image decode_image(io::File &input_file)
 static res::Palette decode_palette(io::File &input_file)
 {
     input_file.stream.seek(0);
-    const auto count = input_file.stream.read_u16_le();
+    const auto count = input_file.stream.read_le<u16>();
     auto palette = res::Palette(256);
     for (auto i : algo::range(count))
     {
-        auto index = input_file.stream.read_u8();
+        auto index = input_file.stream.read<u8>();
         palette[index].a = 0xFF;
-        palette[index].b = input_file.stream.read_u8();
-        palette[index].g = input_file.stream.read_u8();
-        palette[index].r = input_file.stream.read_u8();
+        palette[index].b = input_file.stream.read<u8>();
+        palette[index].g = input_file.stream.read<u8>();
+        palette[index].r = input_file.stream.read<u8>();
     }
     return palette;
 }

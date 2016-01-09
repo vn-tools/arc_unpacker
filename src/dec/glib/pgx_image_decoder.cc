@@ -16,11 +16,11 @@ res::Image PgxImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size() + 4);
-    const auto width = input_file.stream.read_u32_le();
-    const auto height = input_file.stream.read_u32_le();
-    const auto transparent = input_file.stream.read_u16_le() != 0;
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
+    const auto transparent = input_file.stream.read_le<u16>() != 0;
     input_file.stream.skip(2);
-    const auto source_size = input_file.stream.read_u32_le();
+    const auto source_size = input_file.stream.read_le<u32>();
     const auto target_size = width * height * 4;
 
     input_file.stream.seek(input_file.stream.size() - source_size);

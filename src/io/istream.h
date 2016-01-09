@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <memory>
+#include "algo/endian.h"
 #include "types.h"
 
 namespace au {
@@ -21,33 +22,102 @@ namespace io {
             const size_t offset, const std::function<void()> func) = 0;
         virtual bool eof() const = 0;
 
-        virtual bstr read(const size_t bytes) = 0;
         virtual bstr read_to_zero() = 0;
         virtual bstr read_to_zero(const size_t bytes) = 0;
         virtual bstr read_to_eof() = 0;
         virtual bstr read_line() = 0;
-        virtual u8 read_u8() = 0;
-        virtual u16 read_u16_le() = 0;
-        virtual u16 read_u16_be() = 0;
-        virtual u32 read_u32_le() = 0;
-        virtual u32 read_u32_be() = 0;
-        virtual u64 read_u64_le() = 0;
-        virtual u64 read_u64_be() = 0;
-        virtual f32 read_f32_le() = 0;
-        virtual f32 read_f32_be() = 0;
-        virtual f64 read_f64_le() = 0;
-        virtual f64 read_f64_be() = 0;
 
-        virtual IStream &write(const bstr &bytes) = 0;
-        virtual IStream &write_u8(u8) = 0;
-        virtual IStream &write_u16_le(u16) = 0;
-        virtual IStream &write_u16_be(u16) = 0;
-        virtual IStream &write_u32_le(u32) = 0;
-        virtual IStream &write_u32_be(u32) = 0;
-        virtual IStream &write_u64_le(u64) = 0;
-        virtual IStream &write_u64_be(u64) = 0;
+        bstr read(const size_t bytes)
+        {
+            if (!bytes)
+                return ""_b;
+            bstr ret(bytes);
+            read_impl(&ret[0], bytes);
+            return ret;
+        }
+
+        template<typename T> T read()
+        {
+            static_assert(
+                sizeof(T) == 1,
+                "For multiple bytes, must specify endianness");
+            T x;
+            read_impl(&x, sizeof(x));
+            return x;
+        }
+
+        template<typename T> T read_le()
+        {
+            static_assert(
+                sizeof(T) > 1,
+                "Endianness does not make sense for single bytes");
+            T x;
+            read_impl(&x, sizeof(x));
+            return algo::from_little_endian(x);
+        }
+
+        template<typename T> T read_be()
+        {
+            static_assert(
+                sizeof(T) > 1,
+                "Endianness does not make sense for single bytes");
+            T x;
+            read_impl(&x, sizeof(x));
+            return algo::from_big_endian(x);
+        }
+
+        io::IStream &write(const bstr &bytes)
+        {
+            if (!bytes.size())
+                return *this;
+            write_impl(bytes.get<char>(), bytes.size());
+            return *this;
+        }
+
+        io::IStream &write(const std::string &bytes)
+        {
+            return write(bstr(bytes));
+        }
+
+        io::IStream &write(const char *bytes)
+        {
+            return write(bstr(bytes));
+        }
+
+        template<typename T> IStream &write(const T x)
+        {
+            static_assert(
+                sizeof(T) == 1,
+                "For multiple bytes, must specify endianness");
+            write_impl(&x, sizeof(T));
+            return *this;
+        }
+
+        template<typename T> IStream &write_le(const T x)
+        {
+            static_assert(
+                sizeof(T) > 1,
+                "Endianness does not make sense for single bytes");
+            const auto y = algo::to_little_endian(x);
+            write_impl(&y, sizeof(T));
+            return *this;
+        }
+
+        template<typename T> io::IStream & write_be(const T x)
+        {
+            static_assert(
+                sizeof(T) > 1,
+                "Endianness does not make sense for single bytes");
+            const auto y = algo::to_big_endian(x);
+            write_impl(&y, sizeof(T));
+            return *this;
+        }
 
         virtual std::unique_ptr<IStream> clone() const = 0;
+
+    protected:
+        virtual void read_impl(void *input, const size_t size) = 0;
+        virtual void write_impl(const void *str, const size_t size) = 0;
     };
 
 } }

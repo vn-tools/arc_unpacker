@@ -14,7 +14,7 @@ res::Image LfbImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
-    const auto size_orig = input_file.stream.read_u32_le();
+    const auto size_orig = input_file.stream.read_le<u32>();
     const auto data = common::custom_lzss_decompress(
         input_file.stream.read_to_eof(), size_orig);
     const auto pseudo_file = std::make_unique<io::File>(input_file.path, data);

@@ -17,16 +17,16 @@ bool Pak2ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("pak"))
         return false;
-    const auto file_count = input_file.stream.seek(0x1C).read_u16_le();
+    const auto file_count = input_file.stream.seek(0x1C).read_le<u16>();
     if (file_count < 2)
         return false;
-    const auto value1 = input_file.stream.seek(0x34).read_u32_le();
-    const auto value2 = input_file.stream.seek(0x3C).read_u32_le();
+    const auto value1 = input_file.stream.seek(0x34).read_le<u32>();
+    const auto value2 = input_file.stream.seek(0x3C).read_le<u32>();
     for (const auto i : algo::range(file_count))
     {
-        if (input_file.stream.seek(0x34 + i * 0x20).read_u32_le() != value1)
+        if (input_file.stream.seek(0x34 + i * 0x20).read_le<u32>() != value1)
             return false;
-        if (input_file.stream.seek(0x3C + i * 0x20).read_u32_le() != value2)
+        if (input_file.stream.seek(0x3C + i * 0x20).read_le<u32>() != value2)
             return false;
     }
     return true;
@@ -36,7 +36,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
-    const auto file_count = input_file.stream.seek(0x1C).read_u16_le();
+    const auto file_count = input_file.stream.seek(0x1C).read_le<u16>();
     const auto data_offset = 0x20 + 0x20 * file_count;
     input_file.stream.seek(0x20);
     for (const auto i : algo::range(file_count))
@@ -50,9 +50,9 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ArchiveDecoder::read_meta_impl(
         if (entry->path.str().empty())
             continue;
         input_file.stream.skip(2);
-        entry->offset = input_file.stream.read_u32_le() + data_offset;
+        entry->offset = input_file.stream.read_le<u32>() + data_offset;
         input_file.stream.skip(4);
-        entry->size = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_le<u32>();
         input_file.stream.skip(4);
         meta->entries.push_back(std::move(entry));
     }

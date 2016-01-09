@@ -29,14 +29,14 @@ std::unique_ptr<dec::ArchiveMeta> LnkArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(magic.size());
     auto meta = std::make_unique<ArchiveMeta>();
-    auto file_count = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
     auto file_data_start = input_file.stream.tell() + (file_count << 5);
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->offset = input_file.stream.read_u32_le() + file_data_start;
-        u32 tmp = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>() + file_data_start;
+        u32 tmp = input_file.stream.read_le<u32>();
         entry->compressed = tmp & 1;
         entry->size = tmp >> 1;
         entry->path = input_file.stream.read_to_zero(24).str();

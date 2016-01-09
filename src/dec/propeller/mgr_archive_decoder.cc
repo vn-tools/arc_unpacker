@@ -60,14 +60,14 @@ bool MgrArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> MgrArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto entry_count = input_file.stream.read_u16_le();
+    auto entry_count = input_file.stream.read_le<u16>();
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : algo::range(entry_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = entry_count == 1
             ? input_file.stream.tell()
-            : input_file.stream.read_u32_le();
+            : input_file.stream.read_le<u32>();
         entry->path = algo::format("%d.bmp", i);
         meta->entries.push_back(std::move(entry));
     }
@@ -82,8 +82,8 @@ std::unique_ptr<io::File> MgrArchiveDecoder::read_file_impl(
 {
     auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
-    size_t size_orig = input_file.stream.read_u32_le();
-    size_t size_comp = input_file.stream.read_u32_le();
+    size_t size_orig = input_file.stream.read_le<u32>();
+    size_t size_comp = input_file.stream.read_le<u32>();
 
     auto data = input_file.stream.read(size_comp);
     data = decompress(data, size_orig);

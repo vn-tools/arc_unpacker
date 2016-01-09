@@ -15,14 +15,14 @@ res::Image MncImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    auto offset_to_pixels = input_file.stream.read_u32_le();
-    auto header_size = input_file.stream.read_u32_le();
-    auto width = input_file.stream.read_u32_le();
-    auto height = input_file.stream.read_u32_le();
+    auto offset_to_pixels = input_file.stream.read_le<u32>();
+    auto header_size = input_file.stream.read_le<u32>();
+    auto width = input_file.stream.read_le<u32>();
+    auto height = input_file.stream.read_le<u32>();
     input_file.stream.skip(2);
-    auto bit_depth = input_file.stream.read_u16_le();
+    auto bit_depth = input_file.stream.read_le<u16>();
     input_file.stream.skip(4);
-    auto data_size = input_file.stream.read_u32_le();
+    auto data_size = input_file.stream.read_le<u32>();
     input_file.stream.seek(offset_to_pixels);
     auto data = input_file.stream.read(data_size);
 

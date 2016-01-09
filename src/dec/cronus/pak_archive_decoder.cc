@@ -30,8 +30,8 @@ namespace
 static std::unique_ptr<dec::ArchiveMeta> read_meta(
     io::File &input_file, const Plugin &plugin, bool encrypted)
 {
-    auto file_count = input_file.stream.read_u32_le() ^ plugin.key1;
-    auto file_data_start = input_file.stream.read_u32_le() ^ plugin.key2;
+    auto file_count = input_file.stream.read_le<u32>() ^ plugin.key1;
+    auto file_data_start = input_file.stream.read_le<u32>() ^ plugin.key2;
     if (file_data_start > input_file.stream.size())
         return nullptr;
 
@@ -51,8 +51,8 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream.read_to_zero(16).str();
-        entry->offset = table_stream.read_u32_le() + file_data_start;
-        entry->size = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>() + file_data_start;
+        entry->size = table_stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -86,7 +86,7 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
 {
     if (input_file.stream.read(magic2.size()) != magic2)
         input_file.stream.seek(magic3.size());
-    bool encrypted = input_file.stream.read_u32_le() > 0;
+    bool encrypted = input_file.stream.read_le<u32>() > 0;
     auto pos = input_file.stream.tell();
     for (const auto &plugin : p->plugin_manager.get_all())
     {

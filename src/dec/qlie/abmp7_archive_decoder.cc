@@ -24,13 +24,13 @@ std::unique_ptr<dec::ArchiveMeta> Abmp7ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(12);
-    input_file.stream.skip(input_file.stream.read_u32_le());
+    input_file.stream.skip(input_file.stream.read_le<u32>());
 
     auto meta = std::make_unique<ArchiveMeta>();
 
     auto first_entry = std::make_unique<ArchiveEntryImpl>();
     first_entry->path = "base.dat";
-    first_entry->size = input_file.stream.read_u32_le();
+    first_entry->size = input_file.stream.read_le<u32>();
     first_entry->offset = input_file.stream.tell();
     input_file.stream.skip(first_entry->size);
     meta->entries.push_back(std::move(first_entry));
@@ -38,13 +38,14 @@ std::unique_ptr<dec::ArchiveMeta> Abmp7ArchiveDecoder::read_meta_impl(
     while (!input_file.stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        auto encoded_name = input_file.stream.read(input_file.stream.read_u8());
+        const auto name_size = input_file.stream.read<u8>();
+        const auto encoded_name = input_file.stream.read(name_size);
         input_file.stream.skip(31 - encoded_name.size());
         entry->path = algo::sjis_to_utf8(encoded_name).str();
         if (entry->path.str().empty())
             entry->path = "unknown";
         entry->path.change_extension("dat");
-        entry->size = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_le<u32>();
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));

@@ -16,7 +16,7 @@ u32 LsbBitReader::get(const size_t bits)
 {
     while (bits_available < bits)
     {
-        const auto tmp = input_stream->read_u8();
+        const auto tmp = input_stream->read<u8>();
         buffer |= tmp << bits_available;
         bits_available += 8;
     }

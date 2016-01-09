@@ -261,7 +261,7 @@ template<class T> static void test_stream_interop()
             io::MemoryStream stream("\xFF\x01"_b);
             T reader(stream);
             REQUIRE((reader.get(8) == 0xFF));
-            REQUIRE((stream.read_u8() == 1));
+            REQUIRE((stream.read<u8>() == 1));
         }
 
         SECTION("Unaligned")
@@ -270,7 +270,7 @@ template<class T> static void test_stream_interop()
             T reader(stream);
             REQUIRE((reader.get(8) == 0xFF));
             REQUIRE((reader.get(1) == 0x01));
-            REQUIRE((stream.read_u8() == 2));
+            REQUIRE((stream.read<u8>() == 2));
         }
 
         SECTION("Interleaving")
@@ -279,9 +279,9 @@ template<class T> static void test_stream_interop()
             T reader(stream);
             REQUIRE((reader.get(8) == 0xFF));
             REQUIRE((reader.get(1) == 0x01));
-            REQUIRE((stream.read_u8() == 2));
+            REQUIRE((stream.read<u8>() == 2));
             REQUIRE((reader.get(7) == 0x40));
-            REQUIRE((stream.read_u8() == 1));
+            REQUIRE((stream.read<u8>() == 1));
             REQUIRE((reader.get(8) == 0xFF));
         }
 
@@ -291,10 +291,10 @@ template<class T> static void test_stream_interop()
             T reader(stream);
             REQUIRE((reader.get(8) == 0xFF));
             REQUIRE((reader.get(1) == 0x01));
-            REQUIRE((stream.read_u8() == 2));
+            REQUIRE((stream.read<u8>() == 2));
             reader.seek(stream.tell() << 3);
             REQUIRE((reader.get(8) == 1));
-            REQUIRE((stream.read_u8() == 0xFF));
+            REQUIRE((stream.read<u8>() == 0xFF));
         }
     }
 }

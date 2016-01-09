@@ -21,15 +21,15 @@ res::Image NvsgImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(hzc1_magic.size());
-    size_t uncompressed_size = input_file.stream.read_u32_le();
+    size_t uncompressed_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(4); // nvsg header size
     input_file.stream.skip(nvsg_magic.size());
     input_file.stream.skip(2);
-    size_t format = input_file.stream.read_u16_le();
-    size_t width = input_file.stream.read_u16_le();
-    size_t height = input_file.stream.read_u16_le();
+    size_t format = input_file.stream.read_le<u16>();
+    size_t width = input_file.stream.read_le<u16>();
+    size_t height = input_file.stream.read_le<u16>();
     input_file.stream.skip(8);
-    size_t image_count = input_file.stream.read_u32_le();
+    size_t image_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
 
     bstr data = algo::pack::zlib_inflate(input_file.stream.read_to_eof());

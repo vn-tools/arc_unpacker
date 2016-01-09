@@ -32,12 +32,12 @@ static bstr decompress_vsp(
             size_t y = 0;
             while (y < height)
             {
-                auto c = input_stream.read_u8();
+                auto c = input_stream.read<u8>();
                 switch (c)
                 {
                     case 0x00:
                     {
-                        auto n = input_stream.read_u8() + 1;
+                        auto n = input_stream.read<u8>() + 1;
                         while (n-- && y < height)
                         {
                             bc[y][plane] = bp[y][plane];
@@ -48,8 +48,8 @@ static bstr decompress_vsp(
 
                     case 0x01:
                     {
-                        auto n = input_stream.read_u8() + 1;
-                        auto b0 = input_stream.read_u8();
+                        auto n = input_stream.read<u8>() + 1;
+                        auto b0 = input_stream.read<u8>();
                         while (n-- && y < height)
                             bc[y++][plane] = b0;
                         break;
@@ -57,9 +57,9 @@ static bstr decompress_vsp(
 
                     case 0x02:
                     {
-                        auto n = input_stream.read_u8() + 1;
-                        auto b0 = input_stream.read_u8();
-                        auto b1 = input_stream.read_u8();
+                        auto n = input_stream.read<u8>() + 1;
+                        auto b0 = input_stream.read<u8>();
+                        auto b1 = input_stream.read<u8>();
                         while (n-- && y < height)
                         {
                             bc[y++][plane] = b0;
@@ -71,7 +71,7 @@ static bstr decompress_vsp(
 
                     case 0x03:
                     {
-                        auto n = input_stream.read_u8() + 1;
+                        auto n = input_stream.read<u8>() + 1;
                         while (n-- && y < height)
                         {
                             bc[y][plane] = bc[y][0] ^ mask;
@@ -83,7 +83,7 @@ static bstr decompress_vsp(
 
                     case 0x04:
                     {
-                        auto n = input_stream.read_u8() + 1;
+                        auto n = input_stream.read<u8>() + 1;
                         while (n-- && y < height)
                         {
                             bc[y][plane] = bc[y][1] ^ mask;
@@ -95,7 +95,7 @@ static bstr decompress_vsp(
 
                     case 0x05:
                     {
-                        auto n = input_stream.read_u8() + 1;
+                        auto n = input_stream.read<u8>() + 1;
                         while (n-- && y < height)
                         {
                             bc[y][plane] = bc[y][2] ^ mask;
@@ -110,7 +110,7 @@ static bstr decompress_vsp(
                         break;
 
                     case 0x07:
-                        bc[y++][plane] = input_stream.read_u8();
+                        bc[y++][plane] = input_stream.read<u8>();
                         break;
 
                     default:
@@ -146,11 +146,11 @@ static bstr decompress_vsp(
 res::Image VspImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    auto x = input_file.stream.read_u16_le();
-    auto y = input_file.stream.read_u16_le();
-    auto width = input_file.stream.read_u16_le() - x;
-    auto height = input_file.stream.read_u16_le() - y;
-    auto use_pms = input_file.stream.read_u8() > 0;
+    auto x = input_file.stream.read_le<u16>();
+    auto y = input_file.stream.read_le<u16>();
+    auto width = input_file.stream.read_le<u16>() - x;
+    auto height = input_file.stream.read_le<u16>() - y;
+    auto use_pms = input_file.stream.read<u8>() > 0;
 
     std::unique_ptr<res::Image> image;
 
@@ -174,9 +174,9 @@ res::Image VspImageDecoder::decode_impl(
         res::Palette palette(16);
         for (auto &c : palette)
         {
-            c.b = (input_file.stream.read_u8() & 0x0F) * 0x11;
-            c.r = (input_file.stream.read_u8() & 0x0F) * 0x11;
-            c.g = (input_file.stream.read_u8() & 0x0F) * 0x11;
+            c.b = (input_file.stream.read<u8>() & 0x0F) * 0x11;
+            c.r = (input_file.stream.read<u8>() & 0x0F) * 0x11;
+            c.g = (input_file.stream.read<u8>() & 0x0F) * 0x11;
         }
 
         input_file.stream.seek(0x3A);

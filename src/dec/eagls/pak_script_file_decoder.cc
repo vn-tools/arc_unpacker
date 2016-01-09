@@ -42,7 +42,7 @@ std::unique_ptr<io::File> PakScriptFileDecoder::decode_impl(
     const auto offset = 3600;
     input_file.stream.seek(offset);
     auto data = input_file.stream.read(input_file.stream.size() - offset - 1);
-    s8 seed = input_file.stream.read_u8();
+    s8 seed = input_file.stream.read<u8>();
     algo::crypt::Lcg lcg(algo::crypt::LcgKind::MicrosoftVisualC, seed);
     for (auto i : algo::range(0, data.size(), 2))
         data[i] ^= key[lcg.next() % key.size()];

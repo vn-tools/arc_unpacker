@@ -22,7 +22,7 @@ bool BinArchiveDecoder::is_recognized_impl(io::File &input_file) const
 std::unique_ptr<dec::ArchiveMeta> BinArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    size_t file_count = input_file.stream.read_u32_le();
+    size_t file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
 
     auto names_start = file_count * 12 + 8;
@@ -30,14 +30,14 @@ std::unique_ptr<dec::ArchiveMeta> BinArchiveDecoder::read_meta_impl(
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        auto name_offset = input_file.stream.read_u32_le();
+        auto name_offset = input_file.stream.read_le<u32>();
         input_file.stream.peek(names_start + name_offset, [&]()
         {
             entry->path = algo::sjis_to_utf8(
                 input_file.stream.read_to_zero()).str();
         });
-        entry->offset = input_file.stream.read_u32_le();
-        entry->size = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>();
+        entry->size = input_file.stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

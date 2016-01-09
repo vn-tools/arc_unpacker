@@ -35,14 +35,14 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     const auto arc_name = algo::lower(input_file.path.stem());
-    const auto header_size = (input_file.stream.read_u16_le() - 1) * 256;
+    const auto header_size = (input_file.stream.read_le<u16>() - 1) * 256;
     auto meta = std::make_unique<ArchiveMeta>();
 
     ArchiveEntryImpl *last_entry = nullptr;
     bool finished = false;
     for (auto i : algo::range((header_size / 2) - 1))
     {
-        size_t offset = input_file.stream.read_u16_le();
+        size_t offset = input_file.stream.read_le<u16>();
         if (offset == 0)
         {
             finished = true;

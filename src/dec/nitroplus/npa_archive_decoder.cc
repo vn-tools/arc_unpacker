@@ -11,10 +11,10 @@ static const bstr magic = "NPA\x01\x00\x00\x00"_b;
 
 namespace
 {
-    enum FileType
+    enum class EntryType : u8
     {
-        FILE_TYPE_DIRECTORY = 1,
-        FILE_TYPE_FILE = 2
+        Directory = 1,
+        File = 2
     };
 
     struct ArchiveMetaImpl final : dec::ArchiveMeta
@@ -87,36 +87,36 @@ std::unique_ptr<dec::ArchiveMeta> NpaArchiveDecoder::read_meta_impl(
     meta->plugin = plugin_manager.get();
 
     input_file.stream.seek(magic.size());
-    meta->key1 = input_file.stream.read_u32_le();
-    meta->key2 = input_file.stream.read_u32_le();
-    meta->files_are_compressed = input_file.stream.read_u8() > 0;
-    meta->files_are_encrypted = input_file.stream.read_u8() > 0;
-    const auto total_entry_count = input_file.stream.read_u32_le();
-    const auto folder_count = input_file.stream.read_u32_le();
-    const auto file_count = input_file.stream.read_u32_le();
+    meta->key1 = input_file.stream.read_le<u32>();
+    meta->key2 = input_file.stream.read_le<u32>();
+    meta->files_are_compressed = input_file.stream.read<u8>() > 0;
+    meta->files_are_encrypted = input_file.stream.read<u8>() > 0;
+    const auto total_entry_count = input_file.stream.read_le<u32>();
+    const auto folder_count = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
-    const auto table_size = input_file.stream.read_u32_le();
+    const auto table_size = input_file.stream.read_le<u32>();
     const auto data_offset = input_file.stream.tell() + table_size;
 
     for (const auto i : algo::range(total_entry_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
 
-        const auto name_size = input_file.stream.read_u32_le();
+        const auto name_size = input_file.stream.read_le<u32>();
         entry->path_orig = input_file.stream.read(name_size);
         decrypt_file_name(*meta, entry->path_orig, i);
         entry->path = algo::sjis_to_utf8(entry->path_orig).str();
 
-        FileType file_type = static_cast<FileType>(input_file.stream.read_u8());
+        const auto entry_type = input_file.stream.read<EntryType>();
         input_file.stream.skip(4);
 
-        entry->offset = input_file.stream.read_u32_le() + data_offset;
-        entry->size_comp = input_file.stream.read_u32_le();
-        entry->size_orig = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>() + data_offset;
+        entry->size_comp = input_file.stream.read_le<u32>();
+        entry->size_orig = input_file.stream.read_le<u32>();
 
-        if (file_type == FILE_TYPE_DIRECTORY)
+        if (entry_type == EntryType::Directory)
             continue;
-        if (file_type != FILE_TYPE_FILE)
+        if (entry_type != EntryType::File)
             throw err::NotSupportedError("Unknown file type");
         meta->entries.push_back(std::move(entry));
     }

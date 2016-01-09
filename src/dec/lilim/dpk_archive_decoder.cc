@@ -22,14 +22,14 @@ bool DpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
     if (input_file.stream.read(magic.size()) != magic)
         return false;
     input_file.stream.skip(2);
-    return input_file.stream.read_u32_le() == input_file.stream.size();
+    return input_file.stream.read_le<u32>() == input_file.stream.size();
 }
 
 std::unique_ptr<dec::ArchiveMeta> DpkArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto file_count = input_file.stream.read_u16_le();
+    const auto file_count = input_file.stream.read_le<u16>();
     input_file.stream.skip(4);
     auto meta = std::make_unique<ArchiveMeta>();
     size_t current_offset = magic.size() + 2 + 4 + file_count * 0x14;
@@ -37,7 +37,7 @@ std::unique_ptr<dec::ArchiveMeta> DpkArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(0x10).str();
-        entry->size = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_le<u32>();
         entry->offset = current_offset;
         current_offset += entry->size;
         meta->entries.push_back(std::move(entry));

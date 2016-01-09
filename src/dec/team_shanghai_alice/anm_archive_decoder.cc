@@ -46,48 +46,48 @@ static size_t read_old_texture_info(
     input_stream.skip(4); // script count
     input_stream.skip(4); // zero
 
-    texture_info.width = input_stream.read_u32_le();
-    texture_info.height = input_stream.read_u32_le();
-    texture_info.format = input_stream.read_u32_le();
-    texture_info.x = input_stream.read_u16_le();
-    texture_info.y = input_stream.read_u16_le();
+    texture_info.width = input_stream.read_le<u32>();
+    texture_info.height = input_stream.read_le<u32>();
+    texture_info.format = input_stream.read_le<u32>();
+    texture_info.x = input_stream.read_le<u16>();
+    texture_info.y = input_stream.read_le<u16>();
     // input_stream.skip(4);
 
-    size_t name_offset1 = base_offset + input_stream.read_u32_le();
+    size_t name_offset1 = base_offset + input_stream.read_le<u32>();
     input_stream.skip(4);
-    size_t name_offset2 = base_offset + input_stream.read_u32_le();
+    size_t name_offset2 = base_offset + input_stream.read_le<u32>();
     texture_info.name = read_name(input_stream, name_offset1);
 
-    texture_info.version = input_stream.read_u32_le();
+    texture_info.version = input_stream.read_le<u32>();
     input_stream.skip(4);
-    texture_info.texture_offset = base_offset + input_stream.read_u32_le();
-    texture_info.has_data = input_stream.read_u32_le() > 0;
+    texture_info.texture_offset = base_offset + input_stream.read_le<u32>();
+    texture_info.has_data = input_stream.read_le<u32>() > 0;
 
-    return base_offset + input_stream.read_u32_le();
+    return base_offset + input_stream.read_le<u32>();
 }
 
 static size_t read_new_texture_info(
     TextureInfo &texture_info, io::IStream &input_stream, size_t base_offset)
 {
-    texture_info.version = input_stream.read_u32_le();
+    texture_info.version = input_stream.read_le<u32>();
     input_stream.skip(2); // sprite count
     input_stream.skip(2); // script count
     input_stream.skip(2); // zero
 
-    texture_info.width = input_stream.read_u16_le();
-    texture_info.height = input_stream.read_u16_le();
-    texture_info.format = input_stream.read_u16_le();
-    size_t name_offset = base_offset + input_stream.read_u32_le();
+    texture_info.width = input_stream.read_le<u16>();
+    texture_info.height = input_stream.read_le<u16>();
+    texture_info.format = input_stream.read_le<u16>();
+    size_t name_offset = base_offset + input_stream.read_le<u32>();
     texture_info.name = read_name(input_stream, name_offset);
-    texture_info.x = input_stream.read_u16_le();
-    texture_info.y = input_stream.read_u16_le();
+    texture_info.x = input_stream.read_le<u16>();
+    texture_info.y = input_stream.read_le<u16>();
     input_stream.skip(4);
 
-    texture_info.texture_offset = base_offset + input_stream.read_u32_le();
-    texture_info.has_data = input_stream.read_u16_le() > 0;
+    texture_info.texture_offset = base_offset + input_stream.read_le<u32>();
+    texture_info.has_data = input_stream.read_le<u16>() > 0;
     input_stream.skip(2);
 
-    return base_offset + input_stream.read_u32_le();
+    return base_offset + input_stream.read_le<u32>();
 }
 
 static void write_image(
@@ -103,10 +103,10 @@ static void write_image(
     if (input_stream.read(texture_magic.size()) != texture_magic)
         throw err::CorruptDataError("Corrupt texture data");
     input_stream.skip(2);
-    auto format = input_stream.read_u16_le();
-    auto width = input_stream.read_u16_le();
-    auto height = input_stream.read_u16_le();
-    auto data_size = input_stream.read_u32_le();
+    auto format = input_stream.read_le<u16>();
+    auto width = input_stream.read_le<u16>();
+    auto height = input_stream.read_le<u16>();
+    auto data_size = input_stream.read_le<u32>();
     auto data = input_stream.read(data_size);
     auto data_ptr = data.get<const u8>();
 
@@ -152,7 +152,7 @@ static std::vector<TextureInfo> read_texture_info_list(
 
         input_stream.seek(base_offset);
         input_stream.skip(8);
-        bool use_old = input_stream.read_u32_le() == 0;
+        bool use_old = input_stream.read_le<u32>() == 0;
 
         input_stream.seek(base_offset);
         size_t next_offset = use_old
@@ -216,8 +216,8 @@ std::unique_ptr<io::File> AnmArchiveDecoder::read_file_impl(
             input_file.stream.skip(texture_magic.size());
             input_file.stream.skip(2);
             input_file.stream.skip(2);
-            size_t chunk_width = input_file.stream.read_u16_le();
-            size_t chunk_height = input_file.stream.read_u16_le();
+            size_t chunk_width = input_file.stream.read_le<u16>();
+            size_t chunk_height = input_file.stream.read_le<u16>();
             width = std::max(width, texture_info.x + chunk_width);
             height = std::max(height, texture_info.y + chunk_height);
         });

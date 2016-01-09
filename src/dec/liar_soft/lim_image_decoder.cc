@@ -13,7 +13,7 @@ bool LimImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (input_file.stream.read(magic.size()) != magic)
         return false;
-    if (!(input_file.stream.read_u16_le() & 0x10))
+    if (!(input_file.stream.read_le<u16>() & 0x10))
         return false;
     return true;
 }
@@ -22,14 +22,14 @@ res::Image LimImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto version = input_file.stream.read_u16_le();
-    const auto depth = input_file.stream.read_u16_le();
-    const auto bits_per_channel = input_file.stream.read_u16_le();
+    const auto version = input_file.stream.read_le<u16>();
+    const auto depth = input_file.stream.read_le<u16>();
+    const auto bits_per_channel = input_file.stream.read_le<u16>();
     if (bits_per_channel != 8)
         throw err::UnsupportedBitDepthError(bits_per_channel);
 
-    const auto width = input_file.stream.read_u32_le();
-    const auto height = input_file.stream.read_u32_le();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
     const auto canvas_size = width * height;
 
     if (!(version & 0xF))

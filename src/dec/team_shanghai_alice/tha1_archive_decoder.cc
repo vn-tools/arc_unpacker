@@ -125,9 +125,9 @@ std::unique_ptr<dec::ArchiveMeta> Tha1ArchiveDecoder::read_meta_impl(
     io::MemoryStream header_stream(header_data);
     if (header_stream.read(magic.size()) != magic)
         throw err::RecognitionError();
-    auto table_size_orig = header_stream.read_u32_le() - 123456789;
-    auto table_size_comp = header_stream.read_u32_le() - 987654321;
-    auto file_count = header_stream.read_u32_le() - 135792468;
+    auto table_size_orig = header_stream.read_le<u32>() - 123456789;
+    auto table_size_comp = header_stream.read_le<u32>() - 987654321;
+    auto file_count = header_stream.read_le<u32>() - 135792468;
     auto table_offset = input_file.stream.size() - table_size_comp;
 
     input_file.stream.seek(table_offset);
@@ -150,8 +150,8 @@ std::unique_ptr<dec::ArchiveMeta> Tha1ArchiveDecoder::read_meta_impl(
             entry->decryptor_id += c;
         entry->decryptor_id %= 8;
 
-        entry->offset = table_stream.read_u32_le();
-        entry->size_orig = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>();
+        entry->size_orig = table_stream.read_le<u32>();
         table_stream.skip(4);
         if (last_entry)
             last_entry->size_comp = entry->offset - last_entry->offset;

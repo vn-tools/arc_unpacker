@@ -28,13 +28,13 @@ bool Pak1ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("dat"))
         return false;
-    auto palette_count = input_file.stream.read_u8();
+    auto palette_count = input_file.stream.read<u8>();
     input_file.stream.skip(palette_count * 512);
     while (!input_file.stream.eof())
     {
         input_file.stream.skip(4 * 3);
         input_file.stream.skip(1);
-        input_file.stream.skip(input_file.stream.read_u32_le());
+        input_file.stream.skip(input_file.stream.read_le<u32>());
     }
     return input_file.stream.eof();
 }
@@ -43,7 +43,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak1ImageArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    auto palette_count = input_file.stream.read_u8();
+    auto palette_count = input_file.stream.read<u8>();
     for (auto i : algo::range(palette_count))
     {
         meta->palettes.push_back(res::Palette(
@@ -55,11 +55,11 @@ std::unique_ptr<dec::ArchiveMeta> Pak1ImageArchiveDecoder::read_meta_impl(
     while (input_file.stream.tell() < input_file.stream.size())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->width = input_file.stream.read_u32_le();
-        entry->height = input_file.stream.read_u32_le();
+        entry->width = input_file.stream.read_le<u32>();
+        entry->height = input_file.stream.read_le<u32>();
         input_file.stream.skip(4);
-        entry->depth = input_file.stream.read_u8();
-        entry->size = input_file.stream.read_u32_le();
+        entry->depth = input_file.stream.read<u8>();
+        entry->size = input_file.stream.read_le<u32>();
         entry->path = algo::format("%04d", i++);
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(entry->size);
@@ -97,11 +97,11 @@ std::unique_ptr<io::File> Pak1ImageArchiveDecoder::read_file_impl(
     {
         size_t repeat;
         if (entry->depth == 32 || entry->depth == 24)
-            repeat = input.read_u32_le();
+            repeat = input.read_le<u32>();
         else if (entry->depth == 16)
-            repeat = input.read_u16_le();
+            repeat = input.read_le<u16>();
         else if (entry->depth == 8)
-            repeat = input.read_u8();
+            repeat = input.read<u8>();
         else
             throw err::UnsupportedBitDepthError(entry->depth);
 

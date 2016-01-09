@@ -18,51 +18,51 @@ void WavAudioEncoder::encode_impl(
     output_file.stream.write("WAVE"_b);
 
     output_file.stream.write("fmt "_b);
-    output_file.stream.write_u32_le(
+    output_file.stream.write_le<u32>(
         18 + input_audio.extra_codec_headers.size());
-    output_file.stream.write_u16_le(input_audio.codec);
-    output_file.stream.write_u16_le(input_audio.channel_count);
-    output_file.stream.write_u32_le(input_audio.sample_rate);
-    output_file.stream.write_u32_le(byte_rate);
-    output_file.stream.write_u16_le(block_align);
-    output_file.stream.write_u16_le(input_audio.bits_per_sample);
-    output_file.stream.write_u16_le(input_audio.extra_codec_headers.size());
+    output_file.stream.write_le<u16>(input_audio.codec);
+    output_file.stream.write_le<u16>(input_audio.channel_count);
+    output_file.stream.write_le<u32>(input_audio.sample_rate);
+    output_file.stream.write_le<u32>(byte_rate);
+    output_file.stream.write_le<u16>(block_align);
+    output_file.stream.write_le<u16>(input_audio.bits_per_sample);
+    output_file.stream.write_le<u16>(input_audio.extra_codec_headers.size());
     output_file.stream.write(input_audio.extra_codec_headers);
 
     output_file.stream.write("data"_b);
-    output_file.stream.write_u32_le(input_audio.samples.size());
+    output_file.stream.write_le<u32>(input_audio.samples.size());
     output_file.stream.write(input_audio.samples);
 
     if (!input_audio.loops.empty())
     {
         const auto extra_data = ""_b;
         output_file.stream.write("smpl"_b);
-        output_file.stream.write_u32_le(36
+        output_file.stream.write_le<u32>(36
             + (24 * input_audio.loops.size()) + extra_data.size());
-        output_file.stream.write_u32_le(0); // manufacturer
-        output_file.stream.write_u32_le(0); // product
-        output_file.stream.write_u32_le(0); // sample period
-        output_file.stream.write_u32_le(0); // midi unity note
-        output_file.stream.write_u32_le(0); // midi pitch fraction
-        output_file.stream.write_u32_le(0); // smpte format
-        output_file.stream.write_u32_le(0); // smpte offset
-        output_file.stream.write_u32_le(input_audio.loops.size());
-        output_file.stream.write_u32_le(extra_data.size());
+        output_file.stream.write_le<u32>(0); // manufacturer
+        output_file.stream.write_le<u32>(0); // product
+        output_file.stream.write_le<u32>(0); // sample period
+        output_file.stream.write_le<u32>(0); // midi unity note
+        output_file.stream.write_le<u32>(0); // midi pitch fraction
+        output_file.stream.write_le<u32>(0); // smpte format
+        output_file.stream.write_le<u32>(0); // smpte offset
+        output_file.stream.write_le<u32>(input_audio.loops.size());
+        output_file.stream.write_le<u32>(extra_data.size());
         for (const auto i : algo::range(input_audio.loops.size()))
         {
             const auto loop = input_audio.loops[i];
-            output_file.stream.write_u32_le(i);
-            output_file.stream.write_u32_le(0); // type
-            output_file.stream.write_u32_le(loop.start);
-            output_file.stream.write_u32_le(loop.end);
-            output_file.stream.write_u32_le(0); // fraction
-            output_file.stream.write_u32_le(loop.play_count);
+            output_file.stream.write_le<u32>(i);
+            output_file.stream.write_le<u32>(0); // type
+            output_file.stream.write_le<u32>(loop.start);
+            output_file.stream.write_le<u32>(loop.end);
+            output_file.stream.write_le<u32>(0); // fraction
+            output_file.stream.write_le<u32>(loop.play_count);
         }
         output_file.stream.write(extra_data);
     }
 
     output_file.stream.seek(4);
-    output_file.stream.write_u32_le(output_file.stream.size() - 8);
+    output_file.stream.write_le<u32>(output_file.stream.size() - 8);
 
     if (!input_audio.loops.empty())
         output_file.path.change_extension("wavloop");

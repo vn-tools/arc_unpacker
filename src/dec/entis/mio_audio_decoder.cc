@@ -23,19 +23,19 @@ static audio::MioHeader read_header(
     input_stream.seek(header_section.data_offset);
 
     audio::MioHeader header;
-    header.version = input_stream.read_u32_le();
+    header.version = input_stream.read_le<u32>();
     header.transformation
-        = static_cast<common::Transformation>(input_stream.read_u32_le());
+        = static_cast<common::Transformation>(input_stream.read_le<u32>());
     header.architecture
-        = static_cast<common::Architecture>(input_stream.read_u32_le());
+        = static_cast<common::Architecture>(input_stream.read_le<u32>());
 
-    header.channel_count   = input_stream.read_u32_le();
-    header.sample_rate     = input_stream.read_u32_le();
-    header.blockset_count  = input_stream.read_u32_le();
-    header.subband_degree  = input_stream.read_u32_le();
-    header.sample_count    = input_stream.read_u32_le();
-    header.lapped_degree   = input_stream.read_u32_le();
-    header.bits_per_sample = input_stream.read_u32_le();
+    header.channel_count   = input_stream.read_le<u32>();
+    header.sample_rate     = input_stream.read_le<u32>();
+    header.blockset_count  = input_stream.read_le<u32>();
+    header.subband_degree  = input_stream.read_le<u32>();
+    header.sample_count    = input_stream.read_le<u32>();
+    header.lapped_degree   = input_stream.read_le<u32>();
+    header.bits_per_sample = input_stream.read_le<u32>();
     return header;
 }
 
@@ -51,10 +51,10 @@ static std::vector<audio::MioChunk> read_chunks(
     {
         input_stream.seek(chunk_section.data_offset);
         audio::MioChunk chunk;
-        chunk.version = input_stream.read_u8();
-        chunk.initial = input_stream.read_u8() > 0;
+        chunk.version = input_stream.read<u8>();
+        chunk.initial = input_stream.read<u8>() > 0;
         input_stream.skip(2);
-        chunk.sample_count = input_stream.read_u32_le();
+        chunk.sample_count = input_stream.read_le<u32>();
         chunk.data = input_stream.read(chunk_section.size - 8);
         chunks.push_back(chunk);
     }

@@ -30,30 +30,30 @@ static image::EriHeader read_header(
     input_stream.seek(info_section.data_offset);
 
     image::EriHeader header;
-    header.version = input_stream.read_u32_le();
+    header.version = input_stream.read_le<u32>();
     header.transformation
-        = static_cast<common::Transformation>(input_stream.read_u32_le());
+        = static_cast<common::Transformation>(input_stream.read_le<u32>());
     header.architecture
-        = static_cast<common::Architecture>(input_stream.read_u32_le());
+        = static_cast<common::Architecture>(input_stream.read_le<u32>());
 
-    const auto tmp = input_stream.read_u32_le();
+    const auto tmp = input_stream.read_le<u32>();
     header.format_type  = static_cast<image::EriFormatType>(tmp & 0xFFFFFF);
     header.format_flags = static_cast<image::EriFormatFlags>(tmp >> 24);
 
-    const s32 width         = input_stream.read_u32_le();
-    const s32 height        = input_stream.read_u32_le();
+    const s32 width         = input_stream.read_le<u32>();
+    const s32 height        = input_stream.read_le<u32>();
     header.width            = std::abs(width);
     header.height           = std::abs(height);
     header.flip             = height > 0;
-    header.bit_depth        = input_stream.read_u32_le();
-    header.clipped_pixel    = input_stream.read_u32_le();
-    header.sampling_flags   = input_stream.read_u32_le();
-    header.quantumized_bits = input_stream.read_u64_le();
-    header.allotted_bits    = input_stream.read_u64_le();
-    header.blocking_degree  = input_stream.read_u32_le();
-    header.lapped_block     = input_stream.read_u32_le();
-    header.frame_transform  = input_stream.read_u32_le();
-    header.frame_degree     = input_stream.read_u32_le();
+    header.bit_depth        = input_stream.read_le<u32>();
+    header.clipped_pixel    = input_stream.read_le<u32>();
+    header.sampling_flags   = input_stream.read_le<u32>();
+    header.quantumized_bits = input_stream.read_le<u64>();
+    header.allotted_bits    = input_stream.read_le<u64>();
+    header.blocking_degree  = input_stream.read_le<u32>();
+    header.lapped_block     = input_stream.read_le<u32>();
+    header.frame_transform  = input_stream.read_le<u32>();
+    header.frame_degree     = input_stream.read_le<u32>();
 
     if (header_section_reader.has_section("descript"))
     {

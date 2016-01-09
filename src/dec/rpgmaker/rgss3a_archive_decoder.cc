@@ -16,19 +16,19 @@ std::unique_ptr<dec::ArchiveMeta> Rgss3aArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    u32 key = input_file.stream.read_u32_le() * 9 + 3;
+    u32 key = input_file.stream.read_le<u32>() * 9 + 3;
     auto meta = std::make_unique<ArchiveMeta>();
     while (!input_file.stream.eof())
     {
         auto entry = std::make_unique<rgs::ArchiveEntryImpl>();
-        entry->offset = input_file.stream.read_u32_le() ^ key;
+        entry->offset = input_file.stream.read_le<u32>() ^ key;
         if (!entry->offset)
             break;
 
-        entry->size = input_file.stream.read_u32_le() ^ key;
-        entry->key = input_file.stream.read_u32_le() ^ key;
+        entry->size = input_file.stream.read_le<u32>() ^ key;
+        entry->key = input_file.stream.read_le<u32>() ^ key;
 
-        size_t name_size = input_file.stream.read_u32_le() ^ key;
+        size_t name_size = input_file.stream.read_le<u32>() ^ key;
         auto name = input_file.stream.read(name_size).str();
         for (auto i : algo::range(name_size))
             name[i] ^= key >> (i << 3);

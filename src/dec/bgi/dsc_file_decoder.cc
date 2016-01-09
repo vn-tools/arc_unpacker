@@ -27,9 +27,9 @@ static const bstr magic = "DSC FORMAT 1.00\x00"_b;
 static int is_image(const bstr &input)
 {
     io::MemoryStream input_stream(input);
-    auto width = input_stream.read_u16_le();
-    auto height = input_stream.read_u16_le();
-    auto bpp = input_stream.read_u8();
+    auto width = input_stream.read_le<u16>();
+    auto height = input_stream.read_le<u16>();
+    auto bpp = input_stream.read<u8>();
     auto zeros = input_stream.read(11);
     for (auto i : algo::range(zeros.size()))
         if (zeros[i])
@@ -51,7 +51,7 @@ static NodeList get_nodes(io::IStream &input_stream, u32 key)
     std::vector<u32> arr0;
     for (const auto n : algo::range(512))
     {
-        u8 tmp = input_stream.read_u8() - get_and_update_key(key);
+        u8 tmp = input_stream.read<u8>() - get_and_update_key(key);
         if (tmp)
             arr0.push_back((tmp << 16) + n);
     }
@@ -148,8 +148,8 @@ std::unique_ptr<io::File> DscFileDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    auto key = input_file.stream.read_u32_le();
-    auto output_size = input_file.stream.read_u32_le();
+    auto key = input_file.stream.read_le<u32>();
+    auto output_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
 
     auto nodes = get_nodes(input_file.stream, key);
@@ -158,9 +158,9 @@ std::unique_ptr<io::File> DscFileDecoder::decode_impl(
     if (is_image(data))
     {
         io::MemoryStream data_stream(data);
-        auto width = data_stream.read_u16_le();
-        auto height = data_stream.read_u16_le();
-        auto bpp = data_stream.read_u8();
+        auto width = data_stream.read_le<u16>();
+        auto height = data_stream.read_le<u16>();
+        auto bpp = data_stream.read<u8>();
         data_stream.skip(11);
 
         res::PixelFormat fmt;

@@ -24,7 +24,7 @@ std::unique_ptr<dec::ArchiveMeta> AdpackArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size() + 4);
-    const auto file_count = input_file.stream.read_u32_le() - 1;
+    const auto file_count = input_file.stream.read_le<u32>() - 1;
     input_file.stream.seek(0x10);
     ArchiveEntryImpl *last_entry = nullptr;
     auto meta = std::make_unique<ArchiveMeta>();
@@ -33,7 +33,7 @@ std::unique_ptr<dec::ArchiveMeta> AdpackArchiveDecoder::read_meta_impl(
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(0x18).str();
         input_file.stream.skip(4);
-        entry->offset = input_file.stream.read_u32_le();
+        entry->offset = input_file.stream.read_le<u32>();
         if (last_entry)
             last_entry->size = entry->offset - last_entry->offset;
         last_entry = entry.get();

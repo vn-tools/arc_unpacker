@@ -88,8 +88,8 @@ bool SpbImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("bmp"))
         return false;
-    const auto width = input_file.stream.read_u16_be();
-    const auto height = input_file.stream.read_u16_be();
+    const auto width = input_file.stream.read_be<u16>();
+    const auto height = input_file.stream.read_be<u16>();
     if (height == 0 || width == 0)
         return false;
     if (width > 5000 || height > 5000)
@@ -100,8 +100,8 @@ bool SpbImageDecoder::is_recognized_impl(io::File &input_file) const
 res::Image SpbImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto width = input_file.stream.read_u16_be();
-    const auto height = input_file.stream.read_u16_be();
+    const auto width = input_file.stream.read_be<u16>();
+    const auto height = input_file.stream.read_be<u16>();
     io::MsbBitReader bit_reader(input_file.stream.read_to_eof());
     return decode_image(width, height, bit_reader);
 }

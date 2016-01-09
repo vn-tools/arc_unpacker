@@ -28,27 +28,27 @@ bool NpaSgArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     if (!input_file.path.has_extension("npa"))
         return false;
-    size_t table_size = input_file.stream.read_u32_le();
+    size_t table_size = input_file.stream.read_le<u32>();
     return table_size < input_file.stream.size();
 }
 
 std::unique_ptr<dec::ArchiveMeta> NpaSgArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    size_t table_size = input_file.stream.read_u32_le();
+    size_t table_size = input_file.stream.read_le<u32>();
     auto table_data = input_file.stream.read(table_size);
     decrypt(table_data);
     io::MemoryStream table_stream(table_data);
 
     auto meta = std::make_unique<ArchiveMeta>();
-    size_t file_count = table_stream.read_u32_le();
+    size_t file_count = table_stream.read_le<u32>();
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        const auto name_size = table_stream.read_u32_le();
+        const auto name_size = table_stream.read_le<u32>();
         entry->path = algo::utf16_to_utf8(table_stream.read(name_size)).str();
-        entry->size = table_stream.read_u32_le();
-        entry->offset = table_stream.read_u32_le();
+        entry->size = table_stream.read_le<u32>();
+        entry->offset = table_stream.read_le<u32>();
         table_stream.skip(4);
         if (entry->offset + entry->size > input_file.stream.size())
             throw err::BadDataOffsetError();

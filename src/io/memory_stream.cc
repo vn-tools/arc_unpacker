@@ -61,21 +61,6 @@ IStream &MemoryStream::skip(const int offset)
     return *this;
 }
 
-u8 MemoryStream::read_u8()
-{
-    return read_primitive<u8>();
-}
-
-u16 MemoryStream::read_u16_le()
-{
-    return read_primitive<u16>();
-}
-
-u32 MemoryStream::read_u32_le()
-{
-    return read_primitive<u32>();
-}
-
 void MemoryStream::read_impl(void *destination, const size_t size)
 {
     // destination MUST exist and size MUST be at least 1

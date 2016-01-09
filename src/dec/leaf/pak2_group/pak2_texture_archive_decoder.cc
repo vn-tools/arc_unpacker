@@ -37,10 +37,10 @@ std::unique_ptr<dec::ArchiveMeta> Pak2TextureArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
 
     input_file.stream.seek(24);
-    const auto image_count = input_file.stream.read_u16_le();
-    const auto chunk_count = input_file.stream.read_u16_le();
+    const auto image_count = input_file.stream.read_le<u16>();
+    const auto chunk_count = input_file.stream.read_le<u16>();
     input_file.stream.skip(4);
-    auto last_chunk_offset = input_file.stream.read_u16_le();
+    auto last_chunk_offset = input_file.stream.read_le<u16>();
 
     const auto data_offset = input_file.stream.tell()
         + image_count * 2
@@ -50,7 +50,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak2TextureArchiveDecoder::read_meta_impl(
     std::vector<size_t> image_chunk_counts;
     for (const auto i : algo::range(image_count))
     {
-        const auto chunk_offset = input_file.stream.read_u16_le();
+        const auto chunk_offset = input_file.stream.read_le<u16>();
         image_chunk_counts.push_back(chunk_offset - last_chunk_offset);
         last_chunk_offset = chunk_offset;
     }
@@ -63,13 +63,13 @@ std::unique_ptr<dec::ArchiveMeta> Pak2TextureArchiveDecoder::read_meta_impl(
         {
             Chunk chunk;
             input_file.stream.skip(8);
-            chunk.x = static_cast<s16>(input_file.stream.read_u16_le());
-            chunk.y = static_cast<s16>(input_file.stream.read_u16_le());
+            chunk.x = static_cast<s16>(input_file.stream.read_le<u16>());
+            chunk.y = static_cast<s16>(input_file.stream.read_le<u16>());
             input_file.stream.skip(4);
-            chunk.width = input_file.stream.read_u16_le();
-            chunk.height = input_file.stream.read_u16_le();
+            chunk.width = input_file.stream.read_le<u16>();
+            chunk.height = input_file.stream.read_le<u16>();
             input_file.stream.skip(4);
-            chunk.offset = input_file.stream.read_u32_le() + data_offset;
+            chunk.offset = input_file.stream.read_le<u32>() + data_offset;
             input_file.stream.skip(8);
             entry->chunks.push_back(chunk);
         }

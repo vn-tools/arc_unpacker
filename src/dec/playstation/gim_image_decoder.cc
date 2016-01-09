@@ -22,9 +22,9 @@ static std::unique_ptr<res::Palette> read_palette(
     io::IStream &input_stream, const Chunk &chunk)
 {
     input_stream.seek(chunk.offset + 0x14);
-    const auto format_id = input_stream.read_u16_le();
+    const auto format_id = input_stream.read_le<u16>();
     input_stream.skip(2);
-    const auto color_count = input_stream.read_u16_le();
+    const auto color_count = input_stream.read_le<u16>();
 
     res::PixelFormat format;
     if      (format_id == 0) format = res::PixelFormat::RGB565;
@@ -72,13 +72,13 @@ static std::unique_ptr<res::Image> read_image(
     std::unique_ptr<res::Palette> palette)
 {
     input_stream.seek(chunk.offset + 0x14);
-    const auto format_id = input_stream.read_u16_le();
-    const auto swizzled = input_stream.read_u16_le() == 0x01;
-    const auto width = (input_stream.read_u16_le() + 15) & ~15;
-    const auto height = (input_stream.read_u16_le() + 7) & ~7;
+    const auto format_id = input_stream.read_le<u16>();
+    const auto swizzled = input_stream.read_le<u16>() == 0x01;
+    const auto width = (input_stream.read_le<u16>() + 15) & ~15;
+    const auto height = (input_stream.read_le<u16>() + 7) & ~7;
 
     input_stream.seek(chunk.offset + 0x2C);
-    const auto data_offset = input_stream.read_u32_le();
+    const auto data_offset = input_stream.read_le<u32>();
     input_stream.seek(chunk.offset + 0x10 + data_offset);
     std::unique_ptr<res::Image> image;
     if (format_id < 4)
@@ -120,7 +120,7 @@ static std::unique_ptr<res::Image> read_image(
                 for (const auto y : algo::range(height))
                 for (const auto x : algo::range(0, width, 2))
                 {
-                    const auto tmp = data_stream.read_u8();
+                    const auto tmp = data_stream.read<u8>();
                     image->at(x + 0, y) = palette->at(tmp & 0xF);
                     image->at(x + 1, y) = palette->at(tmp >> 4);
                 }
@@ -129,13 +129,13 @@ static std::unique_ptr<res::Image> read_image(
             {
                 for (const auto y : algo::range(height))
                 for (const auto x : algo::range(width))
-                    image->at(x, y) = palette->at(data_stream.read_u16_le());
+                    image->at(x, y) = palette->at(data_stream.read_le<u16>());
             }
             else if (palette_bits == 32)
             {
                 for (const auto y : algo::range(height))
                 for (const auto x : algo::range(width))
-                    image->at(x, y) = palette->at(data_stream.read_u32_le());
+                    image->at(x, y) = palette->at(data_stream.read_le<u32>());
             }
         }
     }
@@ -157,9 +157,9 @@ res::Image GimImageDecoder::decode_impl(
     {
         Chunk chunk;
         chunk.offset = input_file.stream.tell();
-        chunk.type = input_file.stream.read_u32_le();
-        chunk.size = input_file.stream.read_u32_le();
-        if (input_file.stream.read_u32_le() != chunk.size)
+        chunk.type = input_file.stream.read_le<u32>();
+        chunk.size = input_file.stream.read_le<u32>();
+        if (input_file.stream.read_le<u32>() != chunk.size)
             throw err::NotSupportedError("Data is most probably compressed");
         input_file.stream.seek(chunk.offset + chunk.size);
         chunks[chunk.type] = chunk;

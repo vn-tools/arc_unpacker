@@ -143,7 +143,7 @@ static void transform_script_content(
 
 static u32 read_file_count(io::IStream &input_stream)
 {
-    return input_stream.read_u32_le() ^ file_count_hash;
+    return input_stream.read_le<u32>() ^ file_count_hash;
 }
 
 static void dump(const ArchiveMetaImpl &meta, const std::string &dump_path)
@@ -223,18 +223,18 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     const auto file_count = read_file_count(input_file.stream);
     for (const auto i : algo::range(file_count))
     {
-        const auto hash64 = input_file.stream.read_u64_le();
+        const auto hash64 = input_file.stream.read_le<u64>();
         const auto hash32 = hash64 & 0xFFFFFFFF;
         const auto hash8 = hash64 & 0xFF;
 
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->hash = hash64;
         entry->type = static_cast<TableEntryType>(
-            input_file.stream.read_u8() ^ hash8);
+            input_file.stream.read<u8>() ^ hash8);
 
-        entry->offset    = input_file.stream.read_u32_le() ^ hash32;
-        entry->size_comp = input_file.stream.read_u32_le() ^ hash32;
-        entry->size_orig = input_file.stream.read_u32_le() ^ hash32;
+        entry->offset    = input_file.stream.read_le<u32>() ^ hash32;
+        entry->size_comp = input_file.stream.read_le<u32>() ^ hash32;
+        entry->size_orig = input_file.stream.read_le<u32>() ^ hash32;
 
         entry->valid = file_names_map.find(entry->hash) != file_names_map.end();
         const auto name = entry->valid

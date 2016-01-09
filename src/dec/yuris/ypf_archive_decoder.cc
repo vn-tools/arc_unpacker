@@ -25,7 +25,7 @@ namespace
 
 static u8 get_name_size(io::IStream &input_stream, size_t initial_pos)
 {
-    const auto byte = input_stream.read_u8() ^ 0xFF;
+    const auto byte = input_stream.read<u8>() ^ 0xFF;
     static const std::vector<u8> table =
         {
             0x03, 0x48, 0x06, 0x35, 0x0C, 0x10, 0x11, 0x19,
@@ -102,9 +102,9 @@ std::unique_ptr<dec::ArchiveMeta> YpfArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(4);
-    const auto version = input_file.stream.read_u32_le();
-    const auto file_count = input_file.stream.read_u32_le();
-    const auto table_size = input_file.stream.read_u32_le();
+    const auto version = input_file.stream.read_le<u32>();
+    const auto file_count = input_file.stream.read_le<u32>();
+    const auto table_size = input_file.stream.read_le<u32>();
 
     io::MemoryStream table_stream(
         input_file.stream.seek(0x20).read(table_size));
@@ -123,11 +123,11 @@ std::unique_ptr<dec::ArchiveMeta> YpfArchiveDecoder::read_meta_impl(
         names.push_back(name);
 
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->type = table_stream.read_u8();
-        entry->compressed = table_stream.read_u8() == 1;
-        entry->size_orig = table_stream.read_u32_le();
-        entry->size_comp = table_stream.read_u32_le();
-        entry->offset = table_stream.read_u32_le();
+        entry->type = table_stream.read<u8>();
+        entry->compressed = table_stream.read<u8>() == 1;
+        entry->size_orig = table_stream.read_le<u32>();
+        entry->size_comp = table_stream.read_le<u32>();
+        entry->offset = table_stream.read_le<u32>();
         table_stream.skip(version == 0xDE ? 12 : 4);
         meta->entries.push_back(std::move(entry));
     }

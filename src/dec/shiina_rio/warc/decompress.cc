@@ -29,13 +29,13 @@ void CustomBitReader::fetch()
 {
     if (input_stream->size() - input_stream->tell() >= 4)
     {
-        buffer = input_stream->read_u32_le();
+        buffer = input_stream->read_le<u32>();
         return;
     }
     while (!input_stream->eof())
     {
         buffer <<= 8;
-        buffer |= input_stream->read_u8();
+        buffer |= input_stream->read<u8>();
     }
 }
 

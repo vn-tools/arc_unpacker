@@ -40,7 +40,7 @@ static bstr decompress_rle(bstr &input, size_t output_size)
         else
         {
             for (auto i : algo::range(size))
-                *output_ptr++ = input_stream.read_u8();
+                *output_ptr++ = input_stream.read<u8>();
         }
         zero_flag = !zero_flag;
     }
@@ -113,12 +113,12 @@ static res::PixelFormat bpp_to_pixel_format(int bpp)
 
 std::unique_ptr<res::Image> Cbg1Decoder::decode(io::IStream &input_stream) const
 {
-    auto width = input_stream.read_u16_le();
-    auto height = input_stream.read_u16_le();
-    auto bpp = input_stream.read_u32_le();
+    auto width = input_stream.read_le<u16>();
+    auto height = input_stream.read_le<u16>();
+    auto bpp = input_stream.read_le<u32>();
     input_stream.skip(8);
 
-    auto huffman_size = input_stream.read_u32_le();
+    auto huffman_size = input_stream.read_le<u32>();
     io::MemoryStream decrypted_stream(read_decrypted_data(input_stream));
     auto raw_data = input_stream.read_to_eof();
 

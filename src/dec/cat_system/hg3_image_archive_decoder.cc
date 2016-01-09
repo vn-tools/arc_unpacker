@@ -101,10 +101,10 @@ static std::unique_ptr<res::Image> decode_img0000(
 {
     io::MemoryStream input_stream(input);
     input_stream.seek(8);
-    const auto data_size_comp = input_stream.read_u32_le();
-    const auto data_size_orig = input_stream.read_u32_le();
-    const auto ctl_size_comp = input_stream.read_u32_le();
-    const auto ctl_size_orig = input_stream.read_u32_le();
+    const auto data_size_comp = input_stream.read_le<u32>();
+    const auto data_size_orig = input_stream.read_le<u32>();
+    const auto ctl_size_comp = input_stream.read_le<u32>();
+    const auto ctl_size_orig = input_stream.read_le<u32>();
     const auto data = algo::pack::zlib_inflate(
         input_stream.read(data_size_comp));
     const auto ctl = algo::pack::zlib_inflate(input_stream.read(ctl_size_comp));
@@ -166,7 +166,7 @@ std::unique_ptr<dec::ArchiveMeta> Hg3ImageArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = input_file.stream.tell() + 8;
-        entry->size = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_le<u32>();
         input_file.stream.skip(4);
         if (!entry->size)
             entry->size = input_file.stream.size() - entry->offset;
@@ -193,19 +193,19 @@ std::unique_ptr<io::File> Hg3ImageArchiveDecoder::read_file_impl(
     {
         const auto chunk_name = data_stream.read(8);
         data_stream.skip(4);
-        const auto chunk_size = data_stream.read_u32_le();
+        const auto chunk_size = data_stream.read_le<u32>();
         const auto chunk_data = data_stream.read(chunk_size);
         chunks[chunk_name] = chunk_data;
     }
 
     io::MemoryStream header_stream(chunks.at("stdinfo\x00"_b));
-    const auto width = header_stream.read_u32_le();
-    const auto height = header_stream.read_u32_le();
-    const auto depth = header_stream.read_u32_le();
-    const auto x = header_stream.read_u32_le();
-    const auto y = header_stream.read_u32_le();
-    const auto canvas_width = header_stream.read_u32_le();
-    const auto canvas_height = header_stream.read_u32_le();
+    const auto width = header_stream.read_le<u32>();
+    const auto height = header_stream.read_le<u32>();
+    const auto depth = header_stream.read_le<u32>();
+    const auto x = header_stream.read_le<u32>();
+    const auto y = header_stream.read_le<u32>();
+    const auto canvas_width = header_stream.read_le<u32>();
+    const auto canvas_height = header_stream.read_le<u32>();
 
     std::unique_ptr<res::Image> image;
     if (chunks.find("img0000\x00"_b) != chunks.end())

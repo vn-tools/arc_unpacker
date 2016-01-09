@@ -33,9 +33,9 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto file_count = input_file.stream.read_u32_le();
-    auto table_size_orig = input_file.stream.read_u32_le();
-    auto table_size_comp = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_le<u32>();
+    auto table_size_orig = input_file.stream.read_le<u32>();
+    auto table_size_comp = input_file.stream.read_le<u32>();
     input_file.stream.skip(0x104);
 
     io::MemoryStream table_stream(
@@ -47,14 +47,14 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        size_t file_name_size = table_stream.read_u32_le();
+        size_t file_name_size = table_stream.read_le<u32>();
         entry->path = algo::sjis_to_utf8(
             table_stream.read(file_name_size)).str();
-        entry->offset = table_stream.read_u32_le() + file_data_offset;
-        entry->size_orig = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>() + file_data_offset;
+        entry->size_orig = table_stream.read_le<u32>();
         table_stream.skip(4);
-        entry->compressed = table_stream.read_u32_le() > 0;
-        entry->size_comp = table_stream.read_u32_le();
+        entry->compressed = table_stream.read_le<u32>() > 0;
+        entry->size_comp = table_stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

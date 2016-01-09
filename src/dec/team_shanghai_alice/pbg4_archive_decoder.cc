@@ -37,9 +37,9 @@ std::unique_ptr<dec::ArchiveMeta> Pbg4ArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto file_count = input_file.stream.read_u32_le();
-    auto table_offset = input_file.stream.read_u32_le();
-    auto table_size_orig = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_le<u32>();
+    auto table_offset = input_file.stream.read_le<u32>();
+    auto table_size_orig = input_file.stream.read_le<u32>();
 
     input_file.stream.seek(table_offset);
     auto table_data = input_file.stream.read_to_eof();
@@ -52,8 +52,8 @@ std::unique_ptr<dec::ArchiveMeta> Pbg4ArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = table_stream.read_to_zero().str();
-        entry->offset = table_stream.read_u32_le();
-        entry->size_orig = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>();
+        entry->size_orig = table_stream.read_le<u32>();
         table_stream.skip(4);
         if (last_entry)
             last_entry->size_comp = entry->offset - last_entry->offset;

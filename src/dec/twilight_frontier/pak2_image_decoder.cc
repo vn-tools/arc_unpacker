@@ -17,11 +17,11 @@ bool Pak2ImageDecoder::is_recognized_impl(io::File &input_file) const
 res::Image Pak2ImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto bit_depth = input_file.stream.read_u8();
-    const auto width = input_file.stream.read_u32_le();
-    const auto height = input_file.stream.read_u32_le();
-    const auto stride = input_file.stream.read_u32_le();
-    const auto palette_number = input_file.stream.read_u32_le();
+    const auto bit_depth = input_file.stream.read<u8>();
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
+    const auto stride = input_file.stream.read_le<u32>();
+    const auto palette_number = input_file.stream.read_le<u32>();
     io::MemoryStream source_stream(input_file.stream);
 
     std::shared_ptr<res::Palette> palette;
@@ -60,7 +60,7 @@ res::Image Pak2ImageDecoder::decode_impl(
                 break;
 
             case 8:
-                pixel = (*palette)[source_stream.read_u8()];
+                pixel = (*palette)[source_stream.read<u8>()];
                 break;
 
             default:

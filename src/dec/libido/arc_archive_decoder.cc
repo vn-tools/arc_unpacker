@@ -17,12 +17,12 @@ namespace
 
 bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    auto file_count = input_file.stream.read_u32_le();
+    auto file_count = input_file.stream.read_le<u32>();
     if (file_count)
     {
         input_file.stream.skip((file_count - 1) * 32 + 24);
-        const auto last_file_size_comp = input_file.stream.read_u32_le();
-        const auto last_file_offset = input_file.stream.read_u32_le();
+        const auto last_file_size_comp = input_file.stream.read_le<u32>();
+        const auto last_file_offset = input_file.stream.read_le<u32>();
         input_file.stream.seek(last_file_size_comp + last_file_offset);
     }
     else
@@ -34,7 +34,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMeta>();
-    u32 file_count = input_file.stream.read_u32_le();
+    u32 file_count = input_file.stream.read_le<u32>();
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
@@ -42,9 +42,9 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
         for (auto i : algo::range(tmp.size()))
             tmp[i] ^= tmp[tmp.size() - 1];
         entry->path = tmp.str(true);
-        entry->size_orig = input_file.stream.read_u32_le();
-        entry->size_comp = input_file.stream.read_u32_le();
-        entry->offset = input_file.stream.read_u32_le();
+        entry->size_orig = input_file.stream.read_le<u32>();
+        entry->size_comp = input_file.stream.read_le<u32>();
+        entry->offset = input_file.stream.read_le<u32>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

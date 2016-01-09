@@ -92,7 +92,7 @@ std::unique_ptr<io::File> LndFileDecoder::decode_impl(
 {
     input_file.stream.seek(magic.size());
     input_file.stream.skip(4);
-    auto size_orig = input_file.stream.read_u32_le();
+    auto size_orig = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
     auto data = input_file.stream.read_to_eof();
     data = decompress_raw_data(data, size_orig);

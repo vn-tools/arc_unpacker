@@ -33,7 +33,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(0);
-    const auto file_count = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
     ArchiveEntryImpl *last_entry = nullptr;
     for (const size_t i : algo::range(file_count))
@@ -41,8 +41,8 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read_to_zero()).str();
-        entry->offset = input_file.stream.read_u32_le();
-        if (input_file.stream.read_u32_le() != 0)
+        entry->offset = input_file.stream.read_le<u32>();
+        if (input_file.stream.read_le<u32>() != 0)
             throw err::CorruptDataError("Expected '0'");
         if (last_entry)
             last_entry->size = entry->offset - last_entry->offset;

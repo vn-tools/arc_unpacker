@@ -60,7 +60,7 @@ u32 CustomBitReader::get(const size_t bits)
     {
         if (!bits_available)
         {
-            buffer = input_stream->read_u8();
+            buffer = input_stream->read<u8>();
             bits_available = 8;
         }
         ret <<= 1;
@@ -456,15 +456,15 @@ static BasicInfo read_basic_info(io::IStream &input_stream)
     input_stream.seek(4);
 
     BasicInfo info;
-    info.data_offset = input_stream.read_u32_le();
-    info.flags = input_stream.read_u32_le();
+    info.data_offset = input_stream.read_le<u32>();
+    info.flags = input_stream.read_le<u32>();
     input_stream.skip(4);
-    info.width = input_stream.read_u16_le();
-    info.height = input_stream.read_u16_le();
-    info.depth = input_stream.read_u16_le();
+    info.width = input_stream.read_le<u16>();
+    info.height = input_stream.read_le<u16>();
+    info.depth = input_stream.read_le<u16>();
     input_stream.skip(6);
-    info.bit_pool_1_size = input_stream.read_u32_le();
-    info.bit_pool_2_size = input_stream.read_u32_le();
+    info.bit_pool_1_size = input_stream.read_le<u32>();
+    info.bit_pool_2_size = input_stream.read_le<u32>();
 
     const auto type = (info.flags >> 28) & 3;
     if (type == 0)
@@ -507,11 +507,11 @@ bstr dec::purple_software::jbp1_decompress(const bstr &input)
 
     std::array<u32, 0x80> freq_dc;
     for (const auto i : algo::range(16))
-        freq_dc[i] = input_stream.read_u32_le();
+        freq_dc[i] = input_stream.read_le<u32>();
 
     std::array<u32, 0x80> freq_ac;
     for (const auto i : algo::range(16))
-        freq_ac[i] = input_stream.read_u32_le();
+        freq_ac[i] = input_stream.read_le<u32>();
 
     bstr tree_input = input_stream.read(16);
     for (auto &c : tree_input)
@@ -522,10 +522,10 @@ bstr dec::purple_software::jbp1_decompress(const bstr &input)
     if (info.flags & 0x08000000)
     {
         for (const auto i : algo::range(64))
-            quant_y[i] = input_stream.read_u8();
+            quant_y[i] = input_stream.read<u8>();
 
         for (const auto i : algo::range(64))
-            quant_c[i] =  input_stream.read_u8();
+            quant_c[i] =  input_stream.read<u8>();
     }
 
     CustomBitReader bit_reader_1(input_stream.read(info.bit_pool_1_size));

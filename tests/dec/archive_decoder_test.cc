@@ -64,7 +64,7 @@ std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero().str();
-        entry->size = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_le<u32>();
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));
@@ -92,8 +92,8 @@ static std::unique_ptr<io::File> make_archive(
     for (const auto &file : files)
     {
         output_file->stream.write(file->path.str());
-        output_file->stream.write_u8(0);
-        output_file->stream.write_u32_le(file->stream.size());
+        output_file->stream.write<u8>(0);
+        output_file->stream.write_le<u32>(file->stream.size());
         output_file->stream.write(file->stream.seek(0).read_to_eof());
     }
     return output_file;

@@ -16,7 +16,7 @@ std::unique_ptr<io::File> EogAudioDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto file_size = input_file.stream.read_u32_le();
+    const auto file_size = input_file.stream.read_le<u32>();
     const auto ogg_data = input_file.stream.read_to_eof();
     auto output_file = std::make_unique<io::File>(input_file.path, ogg_data);
     output_file->path.change_extension("ogg");

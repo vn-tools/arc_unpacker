@@ -40,7 +40,7 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
         get_path_to_index(input_file.path), io::FileMode::Read);
 
     auto data = index_stream.read(index_stream.size() - 4);
-    auto seed = index_stream.read_u32_le();
+    auto seed = index_stream.read_le<u32>();
     algo::crypt::Lcg lcg(algo::crypt::LcgKind::MicrosoftVisualC, seed);
     for (auto i : algo::range(data.size()))
         data[i] ^= key[lcg.next() % key.size()];
@@ -54,8 +54,8 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
         entry->path = algo::sjis_to_utf8(data_stream.read_to_zero(20)).str();
         if (entry->path.str().empty())
             break;
-        entry->offset = data_stream.read_u32_le();
-        entry->size = data_stream.read_u32_le();
+        entry->offset = data_stream.read_le<u32>();
+        entry->size = data_stream.read_le<u32>();
         min_offset = std::min(min_offset, entry->offset);
         meta->entries.push_back(std::move(entry));
     }

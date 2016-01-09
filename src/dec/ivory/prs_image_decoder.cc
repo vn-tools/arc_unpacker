@@ -106,15 +106,15 @@ res::Image PrsImageDecoder::decode_impl(
 {
     input_file.stream.skip(magic.size());
 
-    bool using_differences = input_file.stream.read_u8() > 0;
-    auto version = input_file.stream.read_u8();
+    bool using_differences = input_file.stream.read<u8>() > 0;
+    auto version = input_file.stream.read<u8>();
     if (version != 3)
         throw err::UnsupportedVersionError(version);
 
-    u32 source_size = input_file.stream.read_u32_le();
+    u32 source_size = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
-    u16 width = input_file.stream.read_u16_le();
-    u16 height = input_file.stream.read_u16_le();
+    u16 width = input_file.stream.read_le<u16>();
+    u16 height = input_file.stream.read_le<u16>();
 
     auto target = input_file.stream.read(source_size);
     target = decode_pixels(target, width, height);

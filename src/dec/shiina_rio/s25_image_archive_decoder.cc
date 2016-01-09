@@ -34,14 +34,14 @@ static bstr decode_row(const bstr &input, const ArchiveEntryImpl &entry)
         if (input_stream.tell() & 1)
             input_stream.skip(1);
 
-        const u16 tmp = input_stream.read_u16_le();
+        const u16 tmp = input_stream.read_le<u16>();
 
         const size_t method = tmp >> 13;
         const size_t skip = (tmp >> 11) & 3;
         input_stream.skip(skip);
         size_t count = tmp & 0x7FF;
         if (!count)
-            count = input_stream.read_u32_le();
+            count = input_stream.read_le<u32>();
         if (count > left)
             count = left;
         left -= count;
@@ -117,12 +117,12 @@ static res::Image read_plain(
     input_file.stream.seek(entry.offset);
     std::vector<u32> row_offsets(entry.height);
     for (auto &offset : row_offsets)
-        offset = input_file.stream.read_u32_le();
+        offset = input_file.stream.read_le<u32>();
     for (const auto y : algo::range(entry.height))
     {
         const auto row_offset = row_offsets[y];
         input_file.stream.seek(row_offset);
-        auto row_size = input_file.stream.read_u16_le();
+        auto row_size = input_file.stream.read_le<u16>();
         if (row_offset & 1)
         {
             input_file.stream.skip(1);
@@ -146,11 +146,11 @@ std::unique_ptr<dec::ArchiveMeta> S25ImageArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    const auto file_count = input_file.stream.read_u32_le();
+    const auto file_count = input_file.stream.read_le<u32>();
     std::vector<size_t> offsets;
     for (const auto i : algo::range(file_count))
     {
-        const auto offset = input_file.stream.read_u32_le();
+        const auto offset = input_file.stream.read_le<u32>();
         if (offset)
             offsets.push_back(offset);
     }
@@ -160,10 +160,10 @@ std::unique_ptr<dec::ArchiveMeta> S25ImageArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         input_file.stream.seek(offset);
-        entry->width = input_file.stream.read_u32_le();
-        entry->height = input_file.stream.read_u32_le();
+        entry->width = input_file.stream.read_le<u32>();
+        entry->height = input_file.stream.read_le<u32>();
         input_file.stream.skip(8);
-        entry->flags = input_file.stream.read_u32_le();
+        entry->flags = input_file.stream.read_le<u32>();
         entry->offset = input_file.stream.tell();
         if (!entry->width || !entry->height)
             continue;

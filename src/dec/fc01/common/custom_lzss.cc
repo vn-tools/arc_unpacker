@@ -26,17 +26,17 @@ bstr common::custom_lzss_decompress(const bstr &input, size_t output_size)
     {
         control >>= 1;
         if (!(control & 0x100))
-            control = input_stream.read_u8() | 0xFF00;
+            control = input_stream.read<u8>() | 0xFF00;
 
         if (control & 1)
         {
-            const auto byte = input_stream.read_u8();
+            const auto byte = input_stream.read<u8>();
             dict[dict_pos++] = *output_ptr++ = byte;
             dict_pos %= dict_size;
             continue;
         }
 
-        const u16 tmp = input_stream.read_u16_le();
+        const u16 tmp = input_stream.read_le<u16>();
         u32 look_behind_pos = tmp % dict_size;
         u16 repetitions = (tmp >> 12) + 3;
         while (repetitions-- && output_ptr < output_end)

@@ -32,9 +32,9 @@ std::unique_ptr<dec::ArchiveMeta> GmlArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
-    auto file_data_start = input_file.stream.read_u32_le();
-    auto table_size_orig = input_file.stream.read_u32_le();
-    auto table_size_comp = input_file.stream.read_u32_le();
+    auto file_data_start = input_file.stream.read_le<u32>();
+    auto table_size_orig = input_file.stream.read_le<u32>();
+    auto table_size_comp = input_file.stream.read_le<u32>();
     auto table_data = input_file.stream.read(table_size_comp);
     for (auto i : algo::range(table_data.size()))
         table_data[i] ^= 0xFF;
@@ -44,13 +44,13 @@ std::unique_ptr<dec::ArchiveMeta> GmlArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMetaImpl>();
     meta->permutation = table_stream.read(0x100);
 
-    auto file_count = table_stream.read_u32_le();
+    auto file_count = table_stream.read_le<u32>();
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->path = table_stream.read(table_stream.read_u32_le()).str();
-        entry->offset = table_stream.read_u32_le() + file_data_start;
-        entry->size = table_stream.read_u32_le();
+        entry->path = table_stream.read(table_stream.read_le<u32>()).str();
+        entry->offset = table_stream.read_le<u32>() + file_data_start;
+        entry->size = table_stream.read_le<u32>();
         entry->prefix = table_stream.read(4);
         meta->entries.push_back(std::move(entry));
     }

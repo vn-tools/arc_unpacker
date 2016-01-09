@@ -23,9 +23,9 @@ namespace
 
 static std::unique_ptr<dec::ArchiveMeta> read_meta_v0(io::File &input_file)
 {
-    auto size_comp = input_file.stream.read_u32_le();
-    auto size_orig = input_file.stream.read_u32_le();
-    auto file_count = input_file.stream.read_u32_le();
+    auto size_comp = input_file.stream.read_le<u32>();
+    auto size_orig = input_file.stream.read_le<u32>();
+    auto file_count = input_file.stream.read_le<u32>();
     if (size_comp > 1024 * 1024 * 10)
         throw err::BadDataSizeError();
 
@@ -43,11 +43,11 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v0(io::File &input_file)
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->offset = table_stream.read_u32_le() + data_start;
-        entry->size_comp = table_stream.read_u32_le();
-        entry->size_orig = table_stream.read_u32_le();
+        entry->offset = table_stream.read_le<u32>() + data_start;
+        entry->size_comp = table_stream.read_le<u32>();
+        entry->size_orig = table_stream.read_le<u32>();
         entry->key = key;
-        auto name_size = table_stream.read_u32_le();
+        auto name_size = table_stream.read_le<u32>();
 
         table_stream.skip(8);
         entry->path = algo::sjis_to_utf8(table_stream.read(name_size)).str();
@@ -63,11 +63,11 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(io::File &input_file)
     while (!input_file.stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->size_comp = input_file.stream.read_u32_le();
+        entry->size_comp = input_file.stream.read_le<u32>();
         if (!entry->size_comp)
             break;
-        entry->size_orig = input_file.stream.read_u32_le();
-        auto name_size = input_file.stream.read_u32_le();
+        entry->size_orig = input_file.stream.read_le<u32>();
+        auto name_size = input_file.stream.read_le<u32>();
         input_file.stream.skip(8);
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read(name_size)).str();

@@ -28,7 +28,7 @@ std::array<u32, 4> cpz5::get_hash(
 {
     io::MemoryStream tmp_stream;
     for (const auto &dword : input_dwords)
-        tmp_stream.write_u32_le(dword);
+        tmp_stream.write_le<u32>(dword);
 
     const auto hash_bytes = algo::crypt::md5(
         tmp_stream.seek(0).read_to_eof(), plugin.hash_iv);
@@ -36,7 +36,7 @@ std::array<u32, 4> cpz5::get_hash(
     tmp_stream.seek(0).write(hash_bytes).seek(0);
     std::array<u32, 4> hash_dwords;
     for (const auto i : algo::range(4))
-        hash_dwords[i] = tmp_stream.read_u32_le();
+        hash_dwords[i] = tmp_stream.read_le<u32>();
 
     std::array<u32, 4> result;
     for (const auto i : algo::range(4))

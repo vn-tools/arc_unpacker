@@ -65,16 +65,16 @@ std::unique_ptr<dec::ArchiveMeta> GzipArchiveDecoder::read_meta_impl(
     {
         input_file.stream.skip(magic.size());
         const auto compression_method = static_cast<CompressionMethod>(
-            input_file.stream.read_u8());
-        const auto flags = input_file.stream.read_u8();
-        const auto mtime = input_file.stream.read_u32_le();
-        const auto extra_flags = input_file.stream.read_u8();
+            input_file.stream.read<u8>());
+        const auto flags = input_file.stream.read<u8>();
+        const auto mtime = input_file.stream.read_le<u32>();
+        const auto extra_flags = input_file.stream.read<u8>();
         const auto operation_system
-            = static_cast<OperatingSystem>(input_file.stream.read_u8());
+            = static_cast<OperatingSystem>(input_file.stream.read<u8>());
 
         if (flags & Flags::Extra)
         {
-            const auto extra_field_size = input_file.stream.read_u16_le();
+            const auto extra_field_size = input_file.stream.read_le<u16>();
             input_file.stream.skip(extra_field_size);
         }
 

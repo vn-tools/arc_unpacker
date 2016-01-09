@@ -64,8 +64,8 @@ static bstr make_archive(
     {
         const auto content = input_file->stream.seek(0).read_to_eof();
         tmp_stream.write(input_file->path.str());
-        tmp_stream.write_u8(0);
-        tmp_stream.write_u32_le(content.size());
+        tmp_stream.write<u8>(0);
+        tmp_stream.write_le<u32>(content.size());
         tmp_stream.write(content);
     }
     return tmp_stream.seek(0).read_to_eof();
@@ -101,7 +101,7 @@ std::unique_ptr<ArchiveMeta> TestArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero().str();
-        entry->size = input_file.stream.read_u32_le();
+        entry->size = input_file.stream.read_le<u32>();
         entry->offset = input_file.stream.tell();
         input_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));

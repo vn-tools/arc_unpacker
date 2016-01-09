@@ -26,12 +26,12 @@ res::Image AjpImageDecoder::decode_impl(
 {
     input_file.stream.skip(magic.size());
     input_file.stream.skip(4 * 2);
-    auto width = input_file.stream.read_u32_le();
-    auto height = input_file.stream.read_u32_le();
-    auto jpeg_offset = input_file.stream.read_u32_le();
-    auto jpeg_size = input_file.stream.read_u32_le();
-    auto mask_offset = input_file.stream.read_u32_le();
-    auto mask_size = input_file.stream.read_u32_le();
+    auto width = input_file.stream.read_le<u32>();
+    auto height = input_file.stream.read_le<u32>();
+    auto jpeg_offset = input_file.stream.read_le<u32>();
+    auto jpeg_size = input_file.stream.read_le<u32>();
+    auto mask_offset = input_file.stream.read_le<u32>();
+    auto mask_size = input_file.stream.read_le<u32>();
 
     input_file.stream.seek(jpeg_offset);
     auto jpeg_data = input_file.stream.read(jpeg_size);

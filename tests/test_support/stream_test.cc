@@ -21,25 +21,26 @@ void tests::stream_test(
         {
             stream->write("\x00\x00\x00\x01"_b).seek(0);
             REQUIRE(stream->size() == 4);
-            REQUIRE(stream->read_u32_le() == 0x01000000);
+            REQUIRE(stream->read_le<u32>() == 0x01000000);
             stream->seek(0);
             stream->write("\x00\x00\x00\x02"_b);
             stream->seek(0);
-            REQUIRE(stream->read_u32_le() == 0x02000000);
+            REQUIRE(stream->read_le<u32>() == 0x02000000);
         }
 
         SECTION("Reading integers")
         {
             stream->write("\x01\x00\x00\x00"_b).seek(0);
             stream->seek(0);
-            REQUIRE(stream->read_u32_le() == 1);
+            REQUIRE(stream->read_le<u32>() == 1);
             REQUIRE(stream->size() == 4);
         }
 
         SECTION("Writing integers")
         {
-            stream->write_u32_le(1).seek(0);
-            REQUIRE(stream->read_u32_le() == 1);
+            stream->write_le<u32>(1);
+            stream->seek(0);
+            REQUIRE(stream->read_le<u32>() == 1);
             REQUIRE(stream->size() == 4);
         }
 
@@ -51,7 +52,7 @@ void tests::stream_test(
             {
                 stream->skip(1);
                 REQUIRE(stream->tell() == 1);
-                REQUIRE(stream->read_u16_le() == 15);
+                REQUIRE(stream->read_le<u16>() == 15);
                 REQUIRE(stream->tell() == 3);
             }
 
@@ -59,7 +60,7 @@ void tests::stream_test(
             {
                 stream->read(2);
                 stream->skip(-1);
-                REQUIRE(stream->read_u16_le() == 15);
+                REQUIRE(stream->read_le<u16>() == 15);
                 REQUIRE(stream->tell() == 3);
             }
         }
@@ -90,9 +91,9 @@ void tests::stream_test(
             SECTION("Seeking affects what gets read")
             {
                 stream->seek(1);
-                REQUIRE(stream->read_u16_le() == 0);
+                REQUIRE(stream->read_le<u16>() == 0);
                 stream->seek(0);
-                REQUIRE(stream->read_u32_le() == 1);
+                REQUIRE(stream->read_le<u32>() == 1);
             }
 
             SECTION("Seeking affects telling position")
@@ -158,11 +159,11 @@ void tests::stream_test(
         SECTION("Reading integers with endianness conversions")
         {
             stream->write("\x12\x34\x56\x78"_b).seek(0);
-            REQUIRE(stream->read_u8() == 0x12); stream->skip(-1);
-            REQUIRE(stream->read_u16_le() == 0x3412); stream->skip(-2);
-            REQUIRE(stream->read_u16_be() == 0x1234); stream->skip(-2);
-            REQUIRE(stream->read_u32_le() == 0x78563412); stream->skip(-4);
-            REQUIRE(stream->read_u32_be() == 0x12345678); stream->skip(-4);
+            REQUIRE(stream->read<u8>() == 0x12); stream->skip(-1);
+            REQUIRE(stream->read_le<u16>() == 0x3412); stream->skip(-2);
+            REQUIRE(stream->read_be<u16>() == 0x1234); stream->skip(-2);
+            REQUIRE(stream->read_le<u32>() == 0x78563412); stream->skip(-4);
+            REQUIRE(stream->read_be<u32>() == 0x12345678); stream->skip(-4);
         }
     }
 
