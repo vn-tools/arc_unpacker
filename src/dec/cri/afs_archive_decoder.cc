@@ -56,4 +56,9 @@ std::unique_ptr<io::File> AfsArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, data);
 }
 
+std::vector<std::string> AfsArchiveDecoder::get_linked_formats() const
+{
+    return {"cri/afs"};
+}
+
 static auto _ = dec::register_decoder<AfsArchiveDecoder>("cri/afs");
