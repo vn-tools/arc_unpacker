@@ -18,7 +18,9 @@ namespace au {
     class BasePluginManager
     {
     public:
-        BasePluginManager() : option_name("plugin") {}
+        BasePluginManager() : BasePluginManager("plugin") {}
+        BasePluginManager(const std::string &option_name)
+            : option_name(option_name) {}
 
         virtual ~BasePluginManager() {}
 
