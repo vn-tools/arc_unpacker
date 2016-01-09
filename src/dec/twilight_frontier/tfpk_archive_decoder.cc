@@ -250,7 +250,7 @@ static std::string get_dir_name(
     auto it = user_fn_map.find(dir_entry.initial_hash);
     if (it != user_fn_map.end())
         return it->second;
-    return get_unknown_name(-1, dir_entry.initial_hash, "");
+    return get_unknown_name(0, dir_entry.initial_hash, "");
 }
 
 static std::vector<DirEntry> read_dir_entries(RsaReader &reader)
@@ -409,7 +409,7 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
             u32 unk = b2->read_u32_le() ^ b3->read_u32_le();
             auto it = fn_map.find(fn_hash);
             entry->path = it == fn_map.end()
-                ? get_unknown_name(i, fn_hash)
+                ? get_unknown_name(i + 1, fn_hash)
                 : it->second;
 
             b3->seek(0);
