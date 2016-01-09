@@ -214,4 +214,9 @@ std::unique_ptr<io::File> LpkArchiveDecoder::read_file_impl(
     return std::make_unique<io::File>(entry->path, meta->prefix + data);
 }
 
+std::vector<std::string> LpkArchiveDecoder::get_linked_formats() const
+{
+    return {"lucifen/elg"};
+}
+
 static auto _ = dec::register_decoder<LpkArchiveDecoder>("lucifen/lpk");
