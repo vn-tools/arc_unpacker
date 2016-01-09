@@ -1,5 +1,6 @@
 #pragma once
 
+#include <set>
 #include "dec/base_archive_decoder.h"
 
 namespace au {
@@ -10,9 +11,6 @@ namespace twilight_frontier {
     {
     public:
         TfpkArchiveDecoder();
-        ~TfpkArchiveDecoder();
-        void register_cli_options(ArgParser &arg_parser) const override;
-        void parse_cli_options(const ArgParser &arg_parser) override;
         std::vector<std::string> get_linked_formats() const override;
 
     protected:
@@ -29,8 +27,7 @@ namespace twilight_frontier {
             const ArchiveEntry &e) const override;
 
     private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
+        std::set<std::string> fn_set;
     };
 
 } } }

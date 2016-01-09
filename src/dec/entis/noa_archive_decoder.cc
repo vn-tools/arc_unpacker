@@ -84,17 +84,20 @@ bool NoaArchiveDecoder::is_recognized_impl(io::File &input_file) const
         && input_file.stream.read(magic3.size()) == magic3;
 }
 
-void NoaArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
+NoaArchiveDecoder::NoaArchiveDecoder()
 {
-    arg_parser.register_switch({"--noa-key"})
-        ->set_value_name("KEY")
-        ->set_description("Decryption key (same for all files)");
-}
-
-void NoaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    if (arg_parser.has_switch("noa-key"))
-        key = arg_parser.get_switch("noa-key");
+    add_arg_parser_decorator(
+        [](ArgParser &arg_parser)
+        {
+            arg_parser.register_switch({"--noa-key"})
+                ->set_value_name("KEY")
+                ->set_description("Decryption key (same for all files)");
+        },
+        [&](const ArgParser &arg_parser)
+        {
+            if (arg_parser.has_switch("noa-key"))
+                key = arg_parser.get_switch("noa-key");
+        });
 }
 
 std::unique_ptr<dec::ArchiveMeta> NoaArchiveDecoder::read_meta_impl(

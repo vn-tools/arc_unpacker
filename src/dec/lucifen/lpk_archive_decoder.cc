@@ -76,17 +76,6 @@ bool LpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
-void LpkArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    plugin_manager.register_cli_options(
-        arg_parser, "Selects LPK decryption routine.");
-}
-
-void LpkArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    plugin_manager.parse_cli_options(arg_parser);
-}
-
 std::unique_ptr<dec::ArchiveMeta> LpkArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {

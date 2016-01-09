@@ -10,10 +10,6 @@ namespace leaf {
     {
     public:
         LeafpackArchiveDecoder();
-        ~LeafpackArchiveDecoder();
-        void register_cli_options(ArgParser &arg_parser) const override;
-        void parse_cli_options(const ArgParser &arg_parser) override;
-        void set_key(const bstr &key);
         std::vector<std::string> get_linked_formats() const override;
 
     protected:
@@ -29,9 +25,8 @@ namespace leaf {
             const ArchiveMeta &m,
             const ArchiveEntry &e) const override;
 
-    private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
+    public:
+        bstr key;
     };
 
 } } }

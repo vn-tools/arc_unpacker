@@ -174,17 +174,6 @@ static std::unique_ptr<ArchiveEntryImpl> read_entry(
     return entry;
 }
 
-void Xp3ArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    plugin_manager.register_cli_options(
-        arg_parser, "Selects XP3 decryption routine.");
-}
-
-void Xp3ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    plugin_manager.parse_cli_options(arg_parser);
-}
-
 bool Xp3ArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(xp3_magic.size()) == xp3_magic;

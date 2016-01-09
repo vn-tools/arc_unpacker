@@ -81,17 +81,10 @@ MblArchiveDecoder::MblArchiveDecoder()
             for (auto i : algo::range(data.size()))
                 data[i] ^= key[i % key.size()];
         });
-}
 
-void MblArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    plugin_manager.register_cli_options(
-        arg_parser, "Specifies plugin for decoding dialog files.");
-}
-
-void MblArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    plugin_manager.parse_cli_options(arg_parser);
+    add_arg_parser_decorator(
+        plugin_manager.create_arg_parser_decorator(
+            "Specifies plugin for decoding dialog files."));
 }
 
 bool MblArchiveDecoder::is_recognized_impl(io::File &input_file) const

@@ -107,7 +107,8 @@ Usage: arc_unpacker [options] [dec_options] input_path [input_path...]
     {
         auto decoder = registry.create_decoder(options.decoder);
         ArgParser decoder_arg_parser;
-        decoder->register_cli_options(decoder_arg_parser);
+        for (const auto &decorator : decoder->get_arg_parser_decorators())
+            decorator.register_cli_options(decoder_arg_parser);
         logger.info("[dec_options] specific to " + options.decoder + ":\n\n");
         decoder_arg_parser.print_help(logger);
     }

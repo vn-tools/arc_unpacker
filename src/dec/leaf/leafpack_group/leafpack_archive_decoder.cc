@@ -24,17 +24,20 @@ static void decrypt(bstr &data, const bstr &key)
         data[i] -= key[i % key.size()];
 }
 
-struct LeafpackArchiveDecoder::Priv final
+LeafpackArchiveDecoder::LeafpackArchiveDecoder()
 {
-    bstr key;
-};
-
-LeafpackArchiveDecoder::LeafpackArchiveDecoder() : p(new Priv())
-{
-}
-
-LeafpackArchiveDecoder::~LeafpackArchiveDecoder()
-{
+    add_arg_parser_decorator(
+        [](ArgParser &arg_parser)
+        {
+            arg_parser.register_switch({"--leafpack-key"})
+                ->set_value_name("KEY")
+                ->set_description("Decryption key");
+        },
+        [&](const ArgParser &arg_parser)
+        {
+            if (arg_parser.has_switch("leafpack-key"))
+                key = algo::unhex(arg_parser.get_switch("leafpack-key"));
+        });
 }
 
 bool LeafpackArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -42,28 +45,10 @@ bool LeafpackArchiveDecoder::is_recognized_impl(io::File &input_file) const
     return input_file.stream.read(magic.size()) == magic;
 }
 
-void LeafpackArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    arg_parser.register_switch({"--leafpack-key"})
-        ->set_value_name("KEY")
-        ->set_description("Decryption key");
-}
-
-void LeafpackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    if (arg_parser.has_switch("leafpack-key"))
-        set_key(algo::unhex(arg_parser.get_switch("leafpack-key")));
-}
-
-void LeafpackArchiveDecoder::set_key(const bstr &key)
-{
-    p->key = key;
-}
-
 std::unique_ptr<dec::ArchiveMeta> LeafpackArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    if (p->key.empty())
+    if (key.empty())
     {
         throw err::UsageError(
             "File needs key to be unpacked. "
@@ -76,7 +61,7 @@ std::unique_ptr<dec::ArchiveMeta> LeafpackArchiveDecoder::read_meta_impl(
     const auto table_size = file_count * 24;
     input_file.stream.seek(input_file.stream.size() - table_size);
     auto table_data = input_file.stream.read(table_size);
-    decrypt(table_data, p->key);
+    decrypt(table_data, key);
 
     io::MemoryStream table_stream(table_data);
     auto meta = std::make_unique<ArchiveMeta>();
@@ -108,7 +93,7 @@ std::unique_ptr<io::File> LeafpackArchiveDecoder::read_file_impl(
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
     auto data = input_file.stream.read(entry->size);
-    decrypt(data, p->key);
+    decrypt(data, key);
     return std::make_unique<io::File>(entry->path, data);
 }
 

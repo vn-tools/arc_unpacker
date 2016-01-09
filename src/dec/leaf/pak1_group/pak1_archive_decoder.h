@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/optional.hpp>
 #include "dec/base_archive_decoder.h"
 
 namespace au {
@@ -10,11 +11,8 @@ namespace leaf {
     {
     public:
         Pak1ArchiveDecoder();
-        ~Pak1ArchiveDecoder();
-        void register_cli_options(ArgParser &arg_parser) const override;
-        void parse_cli_options(const ArgParser &arg_parser) override;
-        void set_version(const int version);
         std::vector<std::string> get_linked_formats() const override;
+        void set_version(const int version);
 
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
@@ -30,8 +28,7 @@ namespace leaf {
             const ArchiveEntry &e) const override;
 
     private:
-        struct Priv;
-        std::unique_ptr<Priv> p;
+        boost::optional<int> version;
     };
 
 } } }

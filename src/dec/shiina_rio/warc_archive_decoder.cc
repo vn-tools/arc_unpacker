@@ -37,17 +37,6 @@ ArchiveMetaImpl::ArchiveMetaImpl(
 {
 }
 
-void WarcArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    plugin_manager.register_cli_options(
-        arg_parser, "Selects WARC decryption routine.");
-}
-
-void WarcArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    plugin_manager.parse_cli_options(arg_parser);
-}
-
 bool WarcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;

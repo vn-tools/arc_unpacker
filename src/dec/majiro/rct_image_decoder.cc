@@ -108,35 +108,20 @@ static std::unique_ptr<res::Image> try_decode(
     return nullptr;
 }
 
-struct RctImageDecoder::Priv final
+RctImageDecoder::RctImageDecoder()
 {
-    bstr key;
-};
-
-RctImageDecoder::RctImageDecoder() : p(new Priv())
-{
-}
-
-RctImageDecoder::~RctImageDecoder()
-{
-}
-
-void RctImageDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    arg_parser.register_switch({"--rct-key"})
-        ->set_value_name("KEY")
-        ->set_description("Decryption key (same for all files)");
-}
-
-void RctImageDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    if (arg_parser.has_switch("rct-key"))
-        set_key(algo::unhex(arg_parser.get_switch("rct-key")));
-}
-
-void RctImageDecoder::set_key(const bstr &key)
-{
-    p->key = key;
+    add_arg_parser_decorator(
+        [](ArgParser &arg_parser)
+        {
+            arg_parser.register_switch({"--rct-key"})
+                ->set_value_name("KEY")
+                ->set_description("Decryption key (same for all files)");
+        },
+        [&](const ArgParser &arg_parser)
+        {
+            if (arg_parser.has_switch("rct-key"))
+                key = algo::unhex(arg_parser.get_switch("rct-key"));
+        });
 }
 
 bool RctImageDecoder::is_recognized_impl(io::File &input_file) const
@@ -190,13 +175,13 @@ res::Image RctImageDecoder::decode_impl(
     auto data = input_file.stream.read(data_size);
     if (encrypted)
     {
-        if (p->key.empty())
+        if (key.empty())
         {
             throw err::UsageError(
                 "File is encrypted, but key not set. "
                 "Please supply one with --rct-key switch.");
         }
-        data = decrypt(data, p->key);
+        data = decrypt(data, key);
     }
     data = uncompress(data, width, height);
 

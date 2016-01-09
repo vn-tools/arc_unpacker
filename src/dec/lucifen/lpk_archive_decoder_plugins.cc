@@ -23,4 +23,8 @@ LpkArchiveDecoder::LpkArchiveDecoder()
                 {"data",    {0x2D4DAAC8, 0xE15D75AE}},
             }
         });
+
+    add_arg_parser_decorator(
+        plugin_manager.create_arg_parser_decorator(
+            "Selects LPK decryption routine."));
 }

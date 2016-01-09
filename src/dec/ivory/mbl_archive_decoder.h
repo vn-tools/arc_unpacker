@@ -13,8 +13,6 @@ namespace ivory {
     {
     public:
         MblArchiveDecoder();
-        void register_cli_options(ArgParser &arg_parser) const override;
-        void parse_cli_options(const ArgParser &arg_parser) override;
         std::vector<std::string> get_linked_formats() const override;
 
     protected:

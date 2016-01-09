@@ -1,5 +1,4 @@
 #include "dec/leaf/pak1_group/pak1_archive_decoder.h"
-#include <boost/optional.hpp>
 #include <map>
 #include "algo/locale.h"
 #include "algo/range.h"
@@ -83,40 +82,30 @@ static bstr custom_lzss_decompress(
     return output;
 }
 
-struct Pak1ArchiveDecoder::Priv final
+Pak1ArchiveDecoder::Pak1ArchiveDecoder()
 {
-    boost::optional<int> version;
-};
-
-Pak1ArchiveDecoder::Pak1ArchiveDecoder() : p(new Priv())
-{
+    add_arg_parser_decorator(
+        [](ArgParser &arg_parser)
+        {
+            arg_parser.register_switch({"--pak-version"})
+                ->set_value_name("NUMBER")
+                ->set_description("File version (1 or 2)");
+        },
+        [&](const ArgParser &arg_parser)
+        {
+            if (arg_parser.has_switch("pak-version"))
+            {
+                set_version(algo::from_string<int>(
+                    arg_parser.get_switch("pak-version")));
+            }
+        });
 }
 
-Pak1ArchiveDecoder::~Pak1ArchiveDecoder()
+void Pak1ArchiveDecoder::set_version(const int v)
 {
-}
-
-void Pak1ArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    arg_parser.register_switch({"--pak-version"})
-        ->set_value_name("NUMBER")
-        ->set_description("File version (1 or 2)");
-}
-
-void Pak1ArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    if (arg_parser.has_switch("pak-version"))
-    {
-        set_version(algo::from_string<int>(
-            arg_parser.get_switch("pak-version")));
-    }
-}
-
-void Pak1ArchiveDecoder::set_version(const int version)
-{
-    if (version != 1 && version != 2)
+    if (v != 1 && v != 2)
         throw err::UsageError("PAK version can be either '1' or '2'");
-    p->version = version;
+    version = v;
 }
 
 bool Pak1ArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -156,7 +145,7 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
     const dec::ArchiveMeta &m,
     const dec::ArchiveEntry &e) const
 {
-    if (!p->version)
+    if (!version)
     {
         throw err::UsageError(
             "Please choose PAK version with --pak-version switch.");
@@ -171,7 +160,7 @@ std::unique_ptr<io::File> Pak1ArchiveDecoder::read_file_impl(
         const auto size_orig = input_file.stream.read_u32_le();
         data = input_file.stream.read(size_comp - 8);
         data = custom_lzss_decompress(
-            data, size_orig, p->version == 1 ? 0x1000 : 0x800);
+            data, size_orig, version == 1 ? 0x1000 : 0x800);
     }
     else
     {

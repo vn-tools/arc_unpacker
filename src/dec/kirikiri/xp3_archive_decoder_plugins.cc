@@ -66,4 +66,8 @@ Xp3ArchiveDecoder::Xp3ArchiveDecoder()
         "mahoyoru", "Mahou Tsukai no Yoru",
         create_cxdec_plugin(
             0x22A, 0x2A2, {1,0,2}, {7,6,5,1,0,3,4,2}, {3,2,1,4,5,0}));
+
+    add_arg_parser_decorator(
+        plugin_manager.create_arg_parser_decorator(
+            "Selects XP3 decryption routine."));
 }

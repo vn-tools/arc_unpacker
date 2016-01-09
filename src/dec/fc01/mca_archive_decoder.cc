@@ -32,37 +32,21 @@ static bstr decrypt(const bstr &input, size_t output_size, u8 initial_key)
     return output;
 }
 
-struct McaArchiveDecoder::Priv final
+McaArchiveDecoder::McaArchiveDecoder()
 {
-    u8 key;
-    bool key_set;
-};
-
-McaArchiveDecoder::McaArchiveDecoder() : p(new Priv())
-{
-}
-
-McaArchiveDecoder::~McaArchiveDecoder()
-{
-}
-
-void McaArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    arg_parser.register_switch({"--mca-key"})
-        ->set_value_name("KEY")
-        ->set_description("Decryption key (0..255, same for all files)");
-}
-
-void McaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    if (arg_parser.has_switch("mca-key"))
-        set_key(algo::from_string<int>(arg_parser.get_switch("mca-key")));
-}
-
-void McaArchiveDecoder::set_key(u8 key)
-{
-    p->key = key;
-    p->key_set = true;
+    add_arg_parser_decorator(
+        [](ArgParser &arg_parser)
+        {
+            arg_parser.register_switch({"--mca-key"})
+                ->set_value_name("KEY")
+                ->set_description(
+                    "Decryption key (0..255, same for all files)");
+        },
+        [&](const ArgParser &arg_parser)
+        {
+            if (arg_parser.has_switch("mca-key"))
+                key = algo::from_string<int>(arg_parser.get_switch("mca-key"));
+        });
 }
 
 bool McaArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -108,15 +92,15 @@ std::unique_ptr<io::File> McaArchiveDecoder::read_file_impl(
 
     auto data = input_file.stream.read(size_comp);
 
-    if (!p->key_set)
+    if (!key)
         throw err::UsageError("MCA decryption key not set");
     if (encryption_type == 0)
     {
-        data = decrypt(data, size_orig, p->key);
+        data = decrypt(data, size_orig, key.get());
     }
     else if (encryption_type == 1)
     {
-        data = decrypt(data, size_orig, p->key);
+        data = decrypt(data, size_orig, key.get());
         data = common::custom_lzss_decompress(data, size_orig);
     }
     else

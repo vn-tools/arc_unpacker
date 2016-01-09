@@ -1,6 +1,5 @@
 #include "dec/twilight_frontier/tfpk_archive_decoder.h"
 #include <map>
-#include <set>
 #include "algo/crypt/rsa.h"
 #include "algo/format.h"
 #include "algo/locale.h"
@@ -313,38 +312,29 @@ static HashLookupMap read_fn_map(
     return fn_map;
 }
 
-struct TfpkArchiveDecoder::Priv final
+TfpkArchiveDecoder::TfpkArchiveDecoder()
 {
-    std::set<std::string> fn_set;
-};
-
-void TfpkArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    arg_parser.register_switch({"--file-names"})
-        ->set_value_name("PATH")
-        ->set_description(
-            "Specifies path to file containing list of game's file names.\n"
-            "Used to get proper file names and to find palettes for sprites.");
-}
-
-void TfpkArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    auto path = arg_parser.get_switch("file-names");
-    if (path != "")
-    {
-        io::FileStream stream(path, io::FileMode::Read);
-        std::string line;
-        while ((line = stream.read_line().str()) != "")
-            p->fn_set.insert(line);
-    }
-}
-
-TfpkArchiveDecoder::TfpkArchiveDecoder() : p(new Priv)
-{
-}
-
-TfpkArchiveDecoder::~TfpkArchiveDecoder()
-{
+    add_arg_parser_decorator(
+        [](ArgParser &arg_parser)
+        {
+            arg_parser.register_switch({"--file-names"})
+                ->set_value_name("PATH")
+                ->set_description(
+                    "Specifies path to file containing list of game's file "
+                    "names. Used to get proper file names and to find palettes "
+                    "for sprites.");
+        },
+        [&](const ArgParser &arg_parser)
+        {
+            const auto path = arg_parser.get_switch("file-names");
+            if (path != "")
+            {
+                io::FileStream stream(path, io::FileMode::Read);
+                std::string line;
+                while ((line = stream.read_line().str()) != "")
+                    fn_set.insert(line);
+            }
+        });
 }
 
 bool TfpkArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -366,7 +356,7 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
         : TfpkVersion::Th145;
 
     HashLookupMap user_fn_map;
-    for (const auto &fn : p->fn_set)
+    for (const auto &fn : fn_set)
         user_fn_map[get_file_name_hash(fn, meta->version)] = fn;
 
     RsaReader reader(input_file.stream);

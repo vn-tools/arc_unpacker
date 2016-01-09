@@ -277,9 +277,12 @@ bool DecodeInputFileTask::work() const
         }
 
         ArgParser decoder_arg_parser;
-        decoder->register_cli_options(decoder_arg_parser);
+        const auto decorators = decoder->get_arg_parser_decorators();
+        for (const auto &decorator : decorators)
+            decorator.register_cli_options(decoder_arg_parser);
         decoder_arg_parser.parse(task_context.unpacker_context.arguments);
-        decoder->parse_cli_options(decoder_arg_parser);
+        for (const auto &decorator : decorators)
+            decorator.parse_cli_options(decoder_arg_parser);
 
         ParallelDecoderAdapter adapter(shared_from_this(), input_file);
         decoder->accept(adapter);

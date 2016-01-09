@@ -112,4 +112,8 @@ WarcArchiveDecoder::WarcArchiveDecoder()
             p->crc_crypt = warc::get_crc_crypt(read_etc_file("table4.bin"));
             return p;
         });
+
+    add_arg_parser_decorator(
+        plugin_manager.create_arg_parser_decorator(
+            "Selects WARC decryption routine."));
 }

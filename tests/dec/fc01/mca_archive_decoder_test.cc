@@ -15,7 +15,7 @@ static void do_test(
     const u8 key)
 {
     McaArchiveDecoder decoder;
-    decoder.set_key(key);
+    decoder.key = key;
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
     tests::compare_images(expected_files, actual_files, false);

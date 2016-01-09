@@ -162,59 +162,48 @@ static void dump(const ArchiveMetaImpl &meta, const std::string &dump_path)
     }
 }
 
-struct DatArchiveDecoder::Priv final
+DatArchiveDecoder::DatArchiveDecoder()
 {
-    bstr game_title;
-    std::map<u64, bstr> file_names_map;
-    std::string dump_path;
-};
+    add_arg_parser_decorator(
+        [](ArgParser &arg_parser)
+        {
+            arg_parser.register_switch({"--file-names"})
+                ->set_value_name("PATH")
+                ->set_description(
+                    "Specifies path to file containing list of game's file "
+                    "names");
 
-DatArchiveDecoder::DatArchiveDecoder() : p(new Priv)
-{
+            arg_parser.register_switch({"--dump"})
+                ->set_value_name("PATH")
+                ->set_description(
+                    "Rather than unpacking, create dump of the file names.\n"
+                    "This is useful when adding support for new games.");
+        },
+        [&](const ArgParser &arg_parser)
+        {
+            dump_path = arg_parser.get_switch("dump");
+
+            if (arg_parser.has_switch("file-names"))
+            {
+                io::FileStream stream(
+                    arg_parser.get_switch("file-names"), io::FileMode::Read);
+                set_game_title(stream.read_line().str());
+                bstr line;
+                while ((line = stream.read_line()) != ""_b)
+                    add_file_name(line.str());
+            }
+        });
 }
 
-DatArchiveDecoder::~DatArchiveDecoder()
+void DatArchiveDecoder::set_game_title(const std::string &new_game_title)
 {
-}
-
-void DatArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    arg_parser.register_switch({"--file-names"})
-        ->set_value_name("PATH")
-        ->set_description(
-            "Specifies path to file containing list of game's file names");
-
-    arg_parser.register_switch({"--dump"})
-        ->set_value_name("PATH")
-        ->set_description(
-            "Rather than unpacking, create dump of the file names.\n"
-            "This is useful when adding support for new games.");
-}
-
-void DatArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    p->dump_path = arg_parser.get_switch("dump");
-
-    if (arg_parser.has_switch("file-names"))
-    {
-        io::FileStream stream(
-            arg_parser.get_switch("file-names"), io::FileMode::Read);
-        set_game_title(stream.read_line().str());
-        bstr line;
-        while ((line = stream.read_line()) != ""_b)
-            add_file_name(line.str());
-    }
-}
-
-void DatArchiveDecoder::set_game_title(const std::string &game_title)
-{
-    p->game_title = algo::utf8_to_sjis(game_title);
+    game_title = algo::utf8_to_sjis(new_game_title);
 }
 
 void DatArchiveDecoder::add_file_name(const std::string &file_name)
 {
     const auto file_name_sjis = algo::utf8_to_sjis(file_name);
-    p->file_names_map[crc64(file_name_sjis)] = file_name_sjis;
+    file_names_map[crc64(file_name_sjis)] = file_name_sjis;
 }
 
 bool DatArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -229,7 +218,7 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
-    meta->game_title = p->game_title;
+    meta->game_title = game_title;
 
     const auto file_count = read_file_count(input_file.stream);
     for (const auto i : algo::range(file_count))
@@ -247,35 +236,32 @@ std::unique_ptr<dec::ArchiveMeta> DatArchiveDecoder::read_meta_impl(
         entry->size_comp = input_file.stream.read_u32_le() ^ hash32;
         entry->size_orig = input_file.stream.read_u32_le() ^ hash32;
 
-        const auto name = p->file_names_map[entry->hash];
-        const auto name_found = name.size();
+        entry->valid = file_names_map.find(entry->hash) != file_names_map.end();
+        const auto name = entry->valid
+            ? file_names_map.at(entry->hash)
+            : std::string("");
 
         if (entry->type == TableEntryType::Compressed)
         {
-            entry->path_orig = name_found ? name : algo::format("%04d.txt", i);
             entry->valid = true;
+            entry->path_orig
+                = name.empty() ? algo::format("%04d.txt", i) : name;
         }
-        else
+        else if (!name.empty())
         {
-            if (name_found)
-            {
-                entry->path_orig = name;
-                entry->offset ^= name[name.size() >> 1] & 0xFF;
-                entry->size_comp ^= name[name.size() >> 2] & 0xFF;
-                entry->size_orig ^= name[name.size() >> 3] & 0xFF;
-                entry->valid = true;
-            }
-            else
-                entry->valid = false;
+            entry->path_orig = name;
+            entry->offset ^= name[name.size() >> 1] & 0xFF;
+            entry->size_comp ^= name[name.size() >> 2] & 0xFF;
+            entry->size_orig ^= name[name.size() >> 3] & 0xFF;
         }
 
         entry->path = algo::sjis_to_utf8(entry->path_orig).str();
         meta->entries.push_back(std::move(entry));
     }
 
-    if (p->dump_path != "")
+    if (!dump_path.empty())
     {
-        dump(*meta, p->dump_path);
+        dump(*meta, dump_path);
         meta->entries.clear();
     }
 

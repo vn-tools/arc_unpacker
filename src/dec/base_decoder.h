@@ -13,13 +13,24 @@ namespace dec {
     public:
         virtual ~BaseDecoder() {}
 
-        virtual void register_cli_options(ArgParser &arg_parser) const override;
-        virtual void parse_cli_options(const ArgParser &arg_parser) override;
+        std::vector<ArgParserDecorator>
+            get_arg_parser_decorators() const override;
+
         virtual bool is_recognized(io::File &input_file) const override;
+
         virtual std::vector<std::string> get_linked_formats() const override;
 
     protected:
+        void add_arg_parser_decorator(const ArgParserDecorator &decorator);
+
+        void add_arg_parser_decorator(
+            const std::function<void(ArgParser &)> register_callback,
+            const std::function<void(const ArgParser &)> parse_callback);
+
         virtual bool is_recognized_impl(io::File &input_file) const = 0;
+
+    private:
+        std::vector<ArgParserDecorator> arg_parser_decorators;
     };
 
 } }

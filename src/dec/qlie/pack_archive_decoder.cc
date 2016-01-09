@@ -273,30 +273,33 @@ static bstr get_exe_key(const Logger &logger, const io::path &input_path)
     return ticon_content.substr(6, 256);
 }
 
+PackArchiveDecoder::PackArchiveDecoder()
+{
+    add_arg_parser_decorator(
+        [](ArgParser &arg_parser)
+        {
+            arg_parser.register_switch({"--fkey"})
+                ->set_value_name("PATH")
+                ->set_description("Selects path to fkey file");
+
+            arg_parser.register_switch({"--game-exe"})
+                ->set_value_name("PATH")
+                ->set_description("Selects path to game executable");
+        },
+        [&](const ArgParser &arg_parser)
+        {
+            if (arg_parser.has_switch("fkey"))
+                fkey_path = arg_parser.get_switch("fkey");
+
+            if (arg_parser.has_switch("game-exe"))
+                game_exe_path = arg_parser.get_switch("game-exe");
+        });
+}
+
 bool PackArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     input_file.stream.seek(get_magic_start(input_file.stream));
     return input_file.stream.read(magic.size()) == magic;
-}
-
-void PackArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    arg_parser.register_switch({"--fkey"})
-        ->set_value_name("PATH")
-        ->set_description("Selects path to fkey file");
-
-    arg_parser.register_switch({"--game-exe"})
-        ->set_value_name("PATH")
-        ->set_description("Selects path to game executable");
-}
-
-void PackArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    if (arg_parser.has_switch("fkey"))
-        fkey_path = arg_parser.get_switch("fkey");
-
-    if (arg_parser.has_switch("game-exe"))
-        game_exe_path = arg_parser.get_switch("game-exe");
 }
 
 std::unique_ptr<dec::ArchiveMeta> PackArchiveDecoder::read_meta_impl(

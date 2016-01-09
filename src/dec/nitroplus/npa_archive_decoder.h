@@ -12,8 +12,6 @@ namespace nitroplus {
     {
     public:
         NpaArchiveDecoder();
-        void register_cli_options(ArgParser &arg_parser) const override;
-        void parse_cli_options(const ArgParser &arg_parser) override;
 
     protected:
         bool is_recognized_impl(io::File &input_file) const override;

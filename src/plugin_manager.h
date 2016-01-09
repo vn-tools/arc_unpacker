@@ -24,20 +24,23 @@ namespace au {
 
         virtual ~BasePluginManager() {}
 
-        inline void register_cli_options(
-            ArgParser &parser, const std::string &description) const
+        inline ArgParserDecorator create_arg_parser_decorator(
+            const std::string &description)
         {
-            auto sw = parser.register_switch({option_name})
-                ->set_value_name("PLUGIN")
-                ->set_description(description);
-            for (const auto &def : definitions)
-                sw->add_possible_value(def->name, def->description);
-        }
-
-        inline void parse_cli_options(const ArgParser &parser)
-        {
-            if (parser.has_switch(option_name))
-                set(parser.get_switch(option_name));
+            return ArgParserDecorator(
+                [description, this](ArgParser &arg_parser)
+                {
+                    auto sw = arg_parser.register_switch({option_name})
+                        ->set_value_name("PLUGIN")
+                        ->set_description(description);
+                    for (const auto &def : definitions)
+                        sw->add_possible_value(def->name, def->description);
+                },
+                [this](const ArgParser &arg_parser)
+                {
+                    if (arg_parser.has_switch(option_name))
+                        set(arg_parser.get_switch(option_name));
+                });
         }
 
         inline bool is_set() const

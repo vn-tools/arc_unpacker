@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 #include "algo/naming_strategies.h"
-#include "arg_parser.h"
+#include "arg_parser_decorator.h"
 #include "io/file.h"
 
 namespace au {
@@ -18,9 +18,8 @@ namespace dec {
 
         virtual void accept(IDecoderVisitor &visitor) const = 0;
 
-        virtual void register_cli_options(ArgParser &arg_parser) const = 0;
-
-        virtual void parse_cli_options(const ArgParser &arg_parser) = 0;
+        virtual std::vector<ArgParserDecorator>
+            get_arg_parser_decorators() const = 0;
 
         virtual bool is_recognized(io::File &input_file) const = 0;
 

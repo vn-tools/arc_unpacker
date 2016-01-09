@@ -64,42 +64,26 @@ static bstr transform_v200(
     return output;
 }
 
-struct McgImageDecoder::Priv final
+McgImageDecoder::McgImageDecoder()
 {
-    u8 key;
-    bool key_set;
-};
-
-McgImageDecoder::McgImageDecoder() : p(new Priv())
-{
-}
-
-McgImageDecoder::~McgImageDecoder()
-{
-}
-
-void McgImageDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    arg_parser.register_switch({"--mcg-key"})
-        ->set_value_name("KEY")
-        ->set_description("Decryption key (0..255, same for all files)");
-}
-
-void McgImageDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    if (arg_parser.has_switch("mcg-key"))
-        set_key(algo::from_string<int>(arg_parser.get_switch("mcg-key")));
+    add_arg_parser_decorator(
+        [](ArgParser &arg_parser)
+        {
+            arg_parser.register_switch({"--mcg-key"})
+                ->set_value_name("KEY")
+                ->set_description(
+                    "Decryption key (0..255, same for all files)");
+        },
+        [&](const ArgParser &arg_parser)
+        {
+            if (arg_parser.has_switch("mcg-key"))
+                key = algo::from_string<int>(arg_parser.get_switch("mcg-key"));
+        });
 }
 
 bool McgImageDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
-}
-
-void McgImageDecoder::set_key(u8 key)
-{
-    p->key = key;
-    p->key_set = true;
 }
 
 res::Image McgImageDecoder::decode_impl(
@@ -123,19 +107,19 @@ res::Image McgImageDecoder::decode_impl(
     const auto depth = input_file.stream.read_u32_le();
     const auto size_orig = input_file.stream.read_u32_le();
 
-    if (!p->key_set)
+    if (!key)
         throw err::UsageError("MCG decryption key not set");
 
     input_file.stream.seek(header_size);
     bstr data = input_file.stream.read_to_eof();
     if (version == 101)
-        data = decrypt_v101(data, size_orig, p->key);
+        data = decrypt_v101(data, size_orig, key.get());
     else if (version == 200)
     {
         common::MrgDecryptor decryptor(data, width * height);
         bstr planes[3];
         for (const auto i : algo::range(3))
-            planes[i] = decryptor.decrypt_with_key(p->key);
+            planes[i] = decryptor.decrypt_with_key(key.get());
         data = transform_v200(planes, width, height);
     }
     else

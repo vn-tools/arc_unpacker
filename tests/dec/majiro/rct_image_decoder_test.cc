@@ -17,7 +17,7 @@ static void do_test(
 {
     RctImageDecoder decoder;
     if (!key.empty())
-        decoder.set_key(key);
+        decoder.key = key;
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);

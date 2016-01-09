@@ -61,4 +61,8 @@ NpaArchiveDecoder::NpaArchiveDecoder()
         "muramasa",
         "Full Metal Daemon Muramasa",
         create_muramasa_filter());
+
+    add_arg_parser_decorator(
+        plugin_manager.create_arg_parser_decorator(
+            "Selects NPA decryption routine."));
 }

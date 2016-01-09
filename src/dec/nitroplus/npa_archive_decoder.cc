@@ -75,17 +75,6 @@ static void decrypt_file_data(
         data_ptr[i] = meta.plugin->permutation[data_ptr[i]] - key - i;
 }
 
-void NpaArchiveDecoder::register_cli_options(ArgParser &arg_parser) const
-{
-    plugin_manager.register_cli_options(
-        arg_parser, "Selects NPA decryption routine.");
-}
-
-void NpaArchiveDecoder::parse_cli_options(const ArgParser &arg_parser)
-{
-    plugin_manager.parse_cli_options(arg_parser);
-}
-
 bool NpaArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.read(magic.size()) == magic;
