@@ -1,2793 +1,1992 @@
 <!DOCTYPE html>
-<!-- vim: set tw=200 sts=2 ts=2 sw=2 cc=200: -->
+<!-- vim: set sts=2 ts=2 sw=2 cc=200: -->
 <html>
 <head>
   <meta charset="utf-8"/>
   <title>arc_unpacker - supported game list</title>
   <style type="text/css">
-    body { font-size: 10.5pt; font-family: sans-serif; text-align: center; }
-    #main { margin: 0 auto; display: inline-block; text-align: left; }
+    body { font-size: 10.5pt; font-family: sans-serif; text-align: center; color: #333; }
+    #main { margin: 0 auto; display: inline-block; text-align: left; max-width: 60em; }
     h1 { font-size: 18pt; font-weight: normal; text-align: center; margin-bottom: 2em; }
-    table { border-spacing: 0; border-collapse: collapse; }
-    th, td { padding: 0.2em 0.5em; text-align: left; font-weight: normal; }
-    th:first-child { text-align: center; }
-    th { border: 1px solid #ccc; }
-    td { border: 1px solid #ddd; }
-    table.zebra thead tr { background: #eee; }
-    table.zebra tbody tr:nth-child(2n) { background: #f7f7f7; }
-    table.zebra tr:hover td { background: #def; }
     a { text-decoration: none; color: dodgerblue; }
-    i { width: 12px; height: 12px; vertical-align: middle; display: inline-block; border: 1px solid black; }
-    i.full { background: black; }
-    i.partial:after { display: block; content: ''; border: 6px solid; border-color: black transparent transparent black; }
-    i.none { position: relative; }
-    i.none:after, i.none:before { position: absolute; top: 5px; left: 0px; content: ''; display: block; width: 12px; height: 1px; background: black; }
-    i.none:after { transform: rotate(45deg); }
-    i.none:before { transform: rotate(-45deg); }
-    i.incorrect { border-style: dashed; border-color: #bdb; }
-    canvas { float: left; margin-right: 0.5em; }
-    #main-legend-hints { float: left; margin-bottom: 0.5em; }
-    #main-legend { float: left; }
-    #aux-legend { float: left; margin-left: 10em; }
+    p { margin: 0.5em 0; }
+    *:first-child { margin-top: 0; }
+    #game-list { list-style-type: none; margin: 1em 0; padding: 0; }
+    #game-list>li { padding: 0.8em; background: #f9f9f9; margin: 1em 0; }
+    #game-list>li:hover { background: #f0f0f0; }
+    .title-english { font-size: 120%; padding-bottom: 0.2em; }
+    .release { float: left; }
+    .misc-area { float: right; color: #888; }
+    .misc-area a, .misc-area span { margin-left: 3em; }
+    .details-area { padding: 0.5em; background: #fff; margin: 0.5em 0 0 0; }
     .clear { clear: both; }
-    section { margin-bottom: 0.5em; }
   </style>
 </head>
 <body>
 <div id="main">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
   <h1>
     <a href="https://github.com/vn-tools/arc_unpacker">
       <code>arc_unpacker</code>
     </a> - supported game list
   </h1>
 
+  <header>
+    <p>If a game isn't listed below and it works, please let me know so I can update the table. Contact information can be found in
+    <a href="https://github.com/vn-tools/arc_unpacker">README</a>.</p>
+  </header>
+
   <section>
-    <div id="main-legend">
-      <div>
-        <canvas id="main-legend-arrows"></canvas>
-        <table id="main-legend-hints">
-          <tr><td>Generic files</td></tr>
-          <tr><td>Graphic</td></tr>
-          <tr><td>Sound</td></tr>
-        </table>
-      </div>
-      <table id="main-legend-table">
-        <tr>
-        <td><i class="full"></i></td>
-        <td><i class="full"></i></td>
-        <td><i class="full"></i></td>
-        </tr>
-      </table>
-    </div>
-    <div id="aux-legend">
-      <table>
-        <tr><td><i class="full"></i></td><td>Fully supported</td></tr>
-        <tr><td><i class="partial"></i></td><td>Partially supported</td></tr>
-        <tr><td><i class="none"></i></td><td>Not supported</td></tr>
-        <tr><td><i class="incorrect"></i></td><td>Doesn't apply</td></tr>
-      </table>
-    </div>
-    <div class="clear"></div>
+    <ul id="game-list"></ul>
 
     <script>
-      var main_legend_table = document.getElementById('main-legend-table');
-      var main_legend_hints = document.getElementById('main-legend-hints');
-      var canvas = document.getElementById('main-legend-arrows');
-      canvas.width = main_legend_table.offsetWidth;
-      canvas.height = main_legend_hints.offsetHeight;
-      var ctx = canvas.getContext("2d");
-      ctx.lineWidth = .5;
-      function moveTo(x, y) {
-        ctx.moveTo(Math.floor(x) + 0.5, Math.floor(y) + 0.5);
-      }
-      function lineTo(x, y) {
-        ctx.lineTo(Math.floor(x) + 0.5, Math.floor(y) + 0.5);
-      }
-      ctx.beginPath();
-      moveTo(canvas.width / 6, canvas.height);
-      lineTo(canvas.width / 6, canvas.height / 6);
-      lineTo(canvas.width, canvas.height / 6);
-      ctx.stroke();
-      moveTo(canvas.width * 3 / 6, canvas.height);
-      lineTo(canvas.width * 3 / 6, canvas.height * 3 / 6);
-      lineTo(canvas.width, canvas.height * 3 / 6);
-      ctx.stroke();
-      moveTo(canvas.width * 5 / 6, canvas.height);
-      lineTo(canvas.width * 5 / 6, canvas.height * 5 / 6);
-      lineTo(canvas.width, canvas.height * 5 / 6);
-      ctx.stroke();
+      var games = [
+
+        { company: 'Microsoft',
+          title: '.EXE and .DLL resources',
+          details: {
+            support: {'file': 'full', 'gfx': 'doesn\'t apply', 'audio': 'doesn\'t apply'},
+            cli_invocation: ['--dec=microsoft/exe'] } },
+
+        { company: '07th Expansion & Alchemist',
+          date: '2007-08-17',
+          title: 'Umineko No Naku Koro Ni',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nscripter/nsa'] } },
+
+        { company: '07th Expansion',
+          date: '2002-08-10',
+          title: 'Higurashi No Naku Koro Ni',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=bgi/arc'] } },
+
+        { company: '3rd Eye',
+          date: '2015-07-24',
+          title: 'Sorcery Jokers',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=shiina-rio/warc --plugin=sorcery-jokers'] } },
+
+        { company: 'Akabei Soft2',
+          date: '2005-11-25',
+          title: 'Sharin no Kuni, Himawari no Shoujo',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Akabei Soft2',
+          date: '2008-05-29',
+          title: 'G-senjou no Maou',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Akatsuki Works',
+          date: '2009-10-22',
+          title: 'Comyu Kuroi Ryuu to Yasashii Oukoku',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=comyu'] } },
+
+        { company: 'Alice Soft',
+          date: '1995-12-01',
+          title: 'Rance 4.1 - Okusuri Koujou o Sukue!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'none'},
+            cli_invocation: ['--dec=alice-soft/dat'] } },
+
+        { company: 'Alice Soft',
+          date: '1995-12-01',
+          title: 'Rance 4.2 - Angelgumi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'none'},
+            cli_invocation: ['--dec=alice-soft/dat'] } },
+
+        { company: 'Alice Soft',
+          date: '1997-04-04',
+          title: 'Kichikuou Rance',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald'] } },
+
+        { company: 'Alice Soft',
+          date: '1997-04-04',
+          title: 'Rance 4 - Kyoudan no Isan',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald'] } },
+
+        { company: 'Alice Soft',
+          date: '1997-12-18',
+          title: 'Atlach-Nacha',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald'] } },
+
+        { company: 'Alice Soft',
+          date: '1997-12-18',
+          title: 'Dalk',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald'] } },
+
+        { company: 'Alice Soft',
+          date: '1997-12-18',
+          title: 'Dr. Stop!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald'] } },
+
+        { company: 'Alice Soft',
+          date: '1997-12-18',
+          title: 'Ningen Gari',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald'] } },
+
+        { company: 'Alice Soft',
+          date: '1997-12-18',
+          title: 'Rance 1 - Hikari o Motomete',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald'] } },
+
+        { company: 'Alice Soft',
+          date: '1997-12-18',
+          title: 'Rance 2 - Hangyaku no Shoujo-tachi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald'] } },
+
+        { company: 'Alice Soft',
+          date: '1997-12-18',
+          title: 'Rance 3 - Leazas Kanraku',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald'] } },
+
+        { company: 'Alice Soft',
+          date: '1997-12-18',
+          title: 'Toushin Toshi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald'] } },
+
+        { company: 'Alice Soft',
+          date: '1997-12-18',
+          title: 'Zero',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald'] } },
+
+        { company: 'Alice Soft',
+          date: '2001-11-30',
+          title: 'Daiakuji',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/afa', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2002-10-25',
+          title: 'Rance 5D',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald'] } },
+
+        { company: 'Alice Soft',
+          date: '2004-08-27',
+          title: 'Rance 6 - Zeth Houkai -',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2006-08-04',
+          title: 'Tsuma Shibori',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2006-12-15',
+          title: 'Sengoku Rance',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2009-12-18',
+          title: 'Alice 2010',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2009-12-18',
+          title: 'Choukou Sennin Haruka - Haruka VS Escalayer',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2009-12-18',
+          title: 'Choukou Sennin Haruka - Shippuu! Ninja Dai Sakusen',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2009-12-18',
+          title: 'Haru Urare - Kounai Akasen Kuiki',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2009-12-18',
+          title: 'Jinmu - Kamunagara',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2009-12-18',
+          title: 'Mamanyonyo',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2009-12-18',
+          title: 'Megane no Mei to Natsuyasumi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2009-12-18',
+          title: 'Rachel no Sakuragai',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2009-12-18',
+          title: 'Rance 2 - Hangyuaku no Shoujo-tachi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2009-12-18',
+          title: 'Sabaku no Nikka',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Alice Soft',
+          date: '2009-12-18',
+          title: 'Vanish! - Kono Te no Hira ni Oppai o',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=alice-soft/ald', '--dec=alice-soft/alk'] } },
+
+        { company: 'Ammolite',
+          date: '2015-04-24',
+          title: 'Sweet ☆ Switch ~Majiwaru Shisen de Torokeru Karada~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=xor'] } },
+
+        { company: 'Appetite',
+          date: '2011-12-22',
+          title: 'Mama no Okugai Shuuchi Lesson',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=xor'] } },
+
+        { company: 'Astronauts',
+          date: '2012-04-27',
+          title: 'Demonion ~Maou no Chika Yousai~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=avg/gxp'] } },
+
+        { company: 'Atelier Sakura',
+          date: '2015-09-25',
+          title: 'Shin Hoka no Otoko no Seieki de Harande mo Ii Desu ka...? 2 Zenshin Asedaku Uwaki Sex de Ninshinshita Wedding Planner no Konyakusha',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'none'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'atelier773',
+          date: '2010-06-21',
+          title: 'Cherry Tree High Comedy Club',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=rpgmaker/rgssad'] } },
+
+        { company: 'atelier773',
+          date: '2010-12-31',
+          title: 'Cherry Tree High I! My! Girls!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=rpgmaker/rgssad'] } },
+
+        { company: 'August',
+          date: '2013-01-25',
+          title: 'Daitoshokan no Hitsujikai',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=bgi/arc'] } },
+
+        { company: 'Bandai Namco Entertainment',
+          date: '2011-??-??',
+          title: 'Ore no imouto konna ni kawaii wake ga nai (PSP English patch v0.4.2)',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=playstation/gpda', '--dec=cri/afs2'] } },
+
+        { company: 'Black Lilith',
+          date: '2011-10-28',
+          title: 'Ore to Saeko-san to Netorare Mail',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Cattleya',
+          date: '2006-01-27',
+          title: 'Okami Misao',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yumemiru/dat'] } },
+
+        { company: 'Cattleya',
+          date: '2006-06-30',
+          title: 'Chijoku Sister',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yumemiru/dat'] } },
+
+        { company: 'Cattleya',
+          date: '2007-02-23',
+          title: 'Shin Onna Kyoushi Yuuwaku Shinro Shidoushitsu',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yumemiru/dat'] } },
+
+        { company: 'Cattleya',
+          date: '2008-04-25',
+          title: 'Tsuma no Haha Sayuri',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Cattleya',
+          date: '2009-06-26',
+          title: 'Bijukubo "Iyarashii Kaa-san de Gomenne..."',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Cattleya',
+          date: '2010-07-23',
+          title: 'Miboujin Sanae "Watashi ga Hajimete de Ii no......?"',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Cattleya',
+          date: '2011-08-26',
+          title: 'Onna Zakari wa Toshishita Konomi "Honki no Sex Oshiete A-ge-ru"',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Cattleya',
+          date: '2012-08-24',
+          title: 'Kyouiku Mama to Oba to Oba',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Cherry Soft',
+          date: '1999-07-23',
+          title: 'Heroine',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=cherry-soft/myk'] } },
+
+        { company: 'CLOCKUP',
+          date: '2010-06-25',
+          title: 'Eroge! ~H mo Game mo Kaihatsu Zanmai~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'CLOCKUP',
+          date: '2011-10-28',
+          title: 'Please Rape Me!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Cronus',
+          date: '2000-09-22',
+          title: 'Sweet Pleasure',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=cronus/pak'] } },
+
+        { company: 'Cronus',
+          date: '2001-10-19',
+          title: 'Dokidoki Princess',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=cronus/pak'] } },
+
+        { company: 'Cronus',
+          date: '2002-11-29',
+          title: 'Caliz',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=riddle-soft/pac'] } },
+
+        { company: 'Cronus',
+          date: '2003-04-25',
+          title: 'Kaikan Senshi Busty',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=riddle-soft/pac'] } },
+
+        { company: 'Cronus',
+          date: '2004-02-27',
+          title: 'Fruit Punch',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=riddle-soft/pac'] } },
+
+        { company: 'Cronus',
+          date: '2005-08-05',
+          title: 'Brightia Plus',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=riddle-soft/pac'] } },
+
+        { company: 'Cronus',
+          date: '2006-06-30',
+          title: 'Nursery Song',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=cronus/pak'] } },
+
+        { company: 'Cronus',
+          date: '2006-06-30',
+          title: 'Sweet Pleasure NS',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=riddle-soft/pac'] } },
+
+        { company: 'Crowd',
+          date: '1997-10-24',
+          title: 'X-Change',
+          details: {
+            support: {'file': 'doesn\'t apply', 'gfx': 'full', 'audio': 'doesn\'t apply'},
+            cli_invocation: ['--dec=crowd/zbm'] } },
+
+        { company: 'Crowd',
+          date: '1999-08-27',
+          title: 'X-Change 2',
+          details: {
+            support: {'file': 'doesn\'t apply', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=crowd/cwl', '--dec=crowd/pkwv'] } },
+
+        { company: 'Crowd',
+          date: '2004-06-25',
+          title: 'X-Change 3',
+          details: {
+            support: {'file': 'doesn\'t apply', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=crowd/cwl', '--dec=crowd/cwp', '--dec=crowd/eog', '--dec=crowd/pck'] } },
+
+        { company: 'Cuffs',
+          date: '2005-08-05',
+          title: 'Sakura Musubi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=entis/eri', '--dec=entis/mio', '--dec=entis/noa'] } },
+
+        { company: 'Empress',
+          date: '2015-05-12',
+          title: 'Starless Nymphomaniacs\' Paradise',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=majiro/arc'] } },
+
+        { company: 'Empress',
+          date: '2015-06-26',
+          title: 'Closed Game',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=majiro/arc'] } },
+
+        { company: 'Erectlip',
+          date: '2010-11-12',
+          title: 'Mahou Shoujo Iris',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=amuse-craft/pac'] } },
+
+        { company: 'Erectlip',
+          date: '2011-01-28',
+          title: 'Mahou Shoujo Ixia',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=amuse-craft/pac'] } },
+
+        { company: 'Erectlip',
+          date: '2011-02-25',
+          title: 'Kyonyuu Seido Kaichou Chijoku no Hakudaku Kuro Tights ~Konna Yatsu no Okazu ni Naru nante!~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=amuse-craft/pac'] } },
+
+        { company: 'Erectlip',
+          date: '2011-12-22',
+          title: 'Little†B☆☆☆h',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=amuse-craft/pac'] } },
+
+        { company: 'Erectlip',
+          date: '2015-08-28',
+          title: 'Sensei Ano ne... ~Netorare Shoujo to Houkago no Taiiku Souko~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=amuse-craft/pac'] } },
+
+        { company: 'Etude',
+          date: '2007-11-22',
+          title: 'Soshite Ashita no Sekai yori',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=qlie/pack'] } },
+
+        { company: 'Eufonie',
+          date: '2012-12-21',
+          title: 'Koiken Otome',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=qlie/pack'] } },
+
+        { company: 'F&C01',
+          date: '2002-08-30',
+          title: 'Mizukabe',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=fc01/mrg --mcg-key=209 --mca-key=209'] } },
+
+        { company: 'F&C01',
+          date: '2007-10-26',
+          title: 'Suigetsu',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=fc01/mrg --mcg-key=205 --mca-key=205'] } },
+
+        { company: 'F&C01',
+          date: '2011-04-28',
+          title: 'White Breath ~With Faint Hope~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=fc01/mrg --mcg-key=77 --mca-key=77'] } },
+
+        { company: 'Favorite',
+          date: '2011-07-29',
+          title: 'Irotoridori no Sekai',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=fvp/bin'] } },
+
+        { company: 'feng',
+          date: '2010-10-15',
+          title: 'Hoshizora e Kakaru Hashi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuka-script/ykc'] } },
+
+        { company: 'Four Leaf Studios',
+          date: '2012-01-04',
+          title: 'Katawa Shoujo',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=renpy/rpa'] } },
+
+        { company: 'Front Wing',
+          date: '2007-03-23',
+          title: 'Kimihagu',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=qlie/pack'] } },
+
+        { company: 'Front Wing',
+          date: '2013-05-24',
+          title: 'Grisaia no Kajitsu',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=cat-system/int'] } },
+
+        { company: 'Fuguriya',
+          date: '2006-09-29',
+          title: 'Sono Hanabira ni Kuchizuke o 1',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Fuguriya',
+          date: '2007-05-29',
+          title: 'Sono Hanabira ni Kuchizuke o 2 - Watashi no Ouji-sama',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Fuguriya',
+          date: '2007-07-14',
+          title: 'Sono Hanabira ni Kuchizuke o 3 - Anata to Koibito Tsunagi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Fuguriya',
+          date: '2008-06-06',
+          title: 'Sono Hanabira ni Kuchizuke o 4 - Itoshisa no Photograph',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Fuguriya',
+          date: '2008-07-25',
+          title: 'Sono Hanabira ni Kuchizuke o 5 - Anata o Suki na Shiawase',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Fuguriya',
+          date: '2008-12-05',
+          title: 'Sono Hanabira ni Kuchizuke o 6 - Kuchibiru to Kiss de Tsubuyaite',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Fuguriya',
+          date: '2009-12-11',
+          title: 'Sono Hanabira ni Kuchizuke o 7 - Amakute Hoshikute Torokeru Chuu',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Fuguriya',
+          date: '2010-02-12',
+          title: 'Sono Hanabira ni Kuchizuke o 8 - Tenshi no Hanabira Zome',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Fuguriya',
+          date: '2010-11-29',
+          title: 'Sono Hanabira ni Kuchizuke o 9 - Amakute Otona no Torokeru Chuu',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Fuguriya',
+          date: '2011-11-20',
+          title: 'Sono Hanabira ni Kuchizuke o 10 - Lily Platinum',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Fuguriya',
+          date: '2014-03-28',
+          title: 'Sono Hanabira ni Kuchizuke o 17 - Anata ni Chikau Ai',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Galette',
+          date: '2013-06-28',
+          title: 'Santaful Summer',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=entis/noa --noa-key=20130611VER1', '--dec=entis/noa --noa-key=20130611VER2'] } },
+
+        { company: 'Galette',
+          date: '2015-06-26',
+          title: 'Lollipop Factory',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=entis/noa --noa-key=HUYAF6a4ePCDA98aAYCDAF79aga5067', '--dec=entis/noa --noa-key=JKNA789A54daC975fCA067gCA6ggtuyf'] } },
+
+        { company: 'Hakudakukei',
+          date: '2011-07-29',
+          title: 'Jugyou de Ecchi? ~Hisshuu Kamoku wa Sai Kyo-iku! Sensei ya Doukyuusei to Aheahe Peropero Benkyou Chuu~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=majiro/arc --rct-key=82D682DA82A982E9'] } },
+
+        { company: 'Hamham Soft',
+          date: '2007-12-21',
+          title: 'Imouto ni! Sukumizu Kisetara Nugasanai!',
+          details: {
+            support: {'file': 'doesn\'t apply', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=real-live/g00', '--dec=real-live/nwa', '--dec=real-live/ovk'] } },
+
+        { company: 'Herencia',
+          date: '2015-07-03',
+          title: 'Kangoku Hime ~Little Joou-sama no M Otoko Pet Ka Choukyou~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Hot Pink',
+          date: '2015-09-18',
+          title: 'Gohoushi Nurse ~Mayonaka no Kyousei Call~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=shiina-rio/warc --plugin=gh-nurse'] } },
+
+        { company: 'Innocent Grey',
+          date: '2008-07-04',
+          title: 'Kara no Shoujo',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=innocent-grey/packdat'] } },
+
+        { company: 'Innocent Grey',
+          date: '2013-12-20',
+          title: 'Kara no Shoujo - The Second Episode',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=innocent-grey/iga'] } },
+
+        { company: 'Ivory',
+          date: '2003-06-06',
+          title: 'Candy Toys',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=ivory/mbl --plugin=candy'] } },
+
+        { company: 'Ivory',
+          date: '2006-04-14',
+          title: 'Wanko to Kurasou',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=ivory/mbl --plugin=wanko'] } },
+
+        { company: 'Key',
+          date: '2004-11-26',
+          title: 'Kanon',
+          details: {
+            support: {'file': 'doesn\'t apply', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=real-live/g00', '--dec=real-live/nwa'] } },
+
+        { company: 'Key',
+          date: '2007-09-28',
+          title: 'Little Busters',
+          details: {
+            support: {'file': 'doesn\'t apply', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=real-live/g00', '--dec=real-live/nwa', '--dec=real-live/ovk'] } },
+
+        { company: 'Key',
+          date: '2008-02-29',
+          title: 'Clannad',
+          details: {
+            support: {'file': 'doesn\'t apply', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=real-live/g00', '--dec=real-live/nwa', '--dec=real-live/ovk'] } },
+
+        { company: 'KID',
+          date: '2003-11-27',
+          title: 'Ever 17',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kid/lnk'] } },
+
+        { company: 'Kikiyama',
+          date: '2004-06-26',
+          title: 'Yume Nikki',
+          details: {
+            support: {'file': 'doesn\'t apply', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=rpgmaker/xyz'] } },
+
+        { company: 'Kiss',
+          date: '1999-01-21',
+          title: 'Custom Reido',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kiss/plg'] } },
+
+        { company: 'Kiss',
+          date: '1999-11-26',
+          title: 'Custom Reido +',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kiss/plg'] } },
+
+        { company: 'Kiss',
+          date: '2004-01-30',
+          title: 'Custom Reido 2',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kiss/arc'] } },
+
+        { company: 'Kiss',
+          date: '2006-03-24',
+          title: 'Custom Reido 3',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kiss/arc'] } },
+
+        { company: 'Kiss',
+          date: '2007-03-23',
+          title: 'Custom Reido F',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kiss/arc'] } },
+
+        { company: 'Kiss',
+          date: '2010-04-30',
+          title: 'Custom Reido 4',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=xor'] } },
+
+        { company: 'Kiss',
+          date: '2010-08-13',
+          title: 'Custom Reido 4+',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=xor'] } },
+
+        { company: 'Kiss',
+          date: '2010-11-26',
+          title: 'Custom Reido 4++',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=xor'] } },
+
+        { company: 'Kiss',
+          date: '2011-06-24',
+          title: 'Custom Reido V',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=xor'] } },
+
+        { company: 'Latte',
+          date: '2011-12-22',
+          title: 'Imouto Senbatsu☆Sousenkyo',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=tactics/arc'] } },
+
+        { company: 'Latte',
+          date: '2012-07-27',
+          title: 'Dainikai Imouto Senbatsu☆Sousenkyo ~366ninme no Imouto Icha Love Nijitsudan~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=tactics/arc'] } },
+
+        { company: 'Leaf',
+          date: '1996-06-26',
+          title: 'Shizuku',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/leafpack --leafpack-key=71486A559F1358F7D17C3E'] } },
+
+        { company: 'Leaf',
+          date: '1996-07-26',
+          title: 'Kizuato',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/leafpack --leafpack-key=71486A559F1358F7D17C3E'] } },
+
+        { company: 'Leaf',
+          date: '1996-11-22',
+          title: 'Saorin to Ishho!!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/pak1 --pak-version=1', '--dec=leaf/leafpack --leafpack-key=71486A559F1358F7D17C3E'] } },
+
+        { company: 'Leaf',
+          date: '1997-05-23',
+          title: 'To Heart',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/leafpack --leafpack-key=D1586A569A13A5F77C3E74'] } },
+
+        { company: 'Leaf',
+          date: '1997-11-28',
+          title: 'Hatsune No Naisho!!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/pak1 --pak-version=1', '--dec=leaf/leafpack --leafpack-key=5142FE772D65487E0A8AE5'] } },
+
+        { company: 'Leaf',
+          date: '1998-05-01',
+          title: 'White Album',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/pak1 --pak-version=2'] } },
+
+        { company: 'Leaf',
+          date: '1999-05-28',
+          title: 'Comic Party',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/pak1 --pak-version=2'] } },
+
+        { company: 'Leaf',
+          date: '2000-01-28',
+          title: 'Hatsune No Naisho!!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/pak1 --pak-version=1', '--dec=leaf/leafpack --leafpack-key=5142FE772D65487E0A8AE5'] } },
+
+        { company: 'Leaf',
+          date: '2000-01-28',
+          title: 'Inagawa de Ikou!!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/pak1 --pak-version=2', '--dec=leaf/leafpack --leafpack-key=13A5F77C3ED1586A569A74'] } },
+
+        { company: 'Leaf',
+          date: '2000-04-28',
+          title: 'Magical Antique',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/pak2'] } },
+
+        { company: 'Leaf',
+          date: '2001-02-09',
+          title: 'Tasogare',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/kcap'] } },
+
+        { company: 'Leaf',
+          date: '2002-07-26',
+          title: 'Kizuato',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/kcap'] } },
+
+        { company: 'Leaf',
+          date: '2003-02-28',
+          title: 'Routes',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/kcap'] } },
+
+        { company: 'Leaf',
+          date: '2003-06-19',
+          title: 'Comic Party',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'partial'},
+            cli_invocation: ['--dec=leaf/ar10'] } },
+
+        { company: 'Leaf',
+          date: '2003-06-19',
+          title: 'To Heart',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/leafpack --leafpack-key=D1586A569A13A5F77C3E74'] } },
+
+        { company: 'Leaf',
+          date: '2003-11-28',
+          title: 'Routes',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/kcap'] } },
+
+        { company: 'Leaf',
+          date: '2004-01-23',
+          title: 'Shizuku',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/kcap'] } },
+
+        { company: 'Leaf',
+          date: '2005-04-28',
+          title: 'Tears to Tiara',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=leaf/kcap', '--dec=leaf/lac'] } },
+
+        { company: 'Liar-soft',
+          date: '2002-02-08',
+          title: 'Kusarihime ~Euthanasia~',
+          details: {
+            support: {'file': 'doesn\'t apply', 'gfx': 'full', 'audio': 'none'},
+            cli_invocation: ['--dec=liar-soft/lim'] } },
+
+        { company: 'Liar-soft',
+          date: '2006-07-07',
+          title: 'Souten no Celenaria - What a Beautiful World',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=liar-soft/xfl'] } },
+
+        { company: 'Liar-soft',
+          date: '2007-09-14',
+          title: 'Kusarihime ~Euthanasia~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=liar-soft/xfl'] } },
+
+        { company: 'Liar-soft',
+          date: '2007-11-22',
+          title: 'Sekien no Inganock - What a Beautiful People',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=liar-soft/xfl'] } },
+
+        { company: 'Liar-soft',
+          date: '2008-11-21',
+          title: 'Shikkoku no Sharnoth - What a Beautiful Tomorrow',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=liar-soft/xfl'] } },
+
+        { company: 'Libido',
+          date: '1994-06-01',
+          title: 'Libido 7',
+          details: {
+            support: {'file': 'doesn\'t apply', 'gfx': 'partial - dimensions and color palette of character avatars and company\'s logo are hardcoded in the game\'s code', 'audio': 'none'},
+            cli_invocation: ['--dec=libido/egr'] } },
+
+        { company: 'Libido',
+          date: '1997-06-13',
+          title: 'Houkago Mania Club',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=libido/bid'] } },
+
+        { company: 'Libido',
+          date: '1998-09-11',
+          title: 'Fifteen ~School Girls Digital Tokuhon~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=libido/arc'] } },
+
+        { company: 'Libido',
+          date: '1999-04-23',
+          title: 'Girl Friends',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=libido/arc'] } },
+
+        { company: 'Libido',
+          date: '2000-09-29',
+          title: 'Cherry Boy, Innocent Girl',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=libido/arc'] } },
+
+        { company: 'LiLiM DARKNESS',
+          date: '2006-08-25',
+          title: 'Angels Blue',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=lilim/aos1'] } },
+
+        { company: 'LiLiM DARKNESS',
+          date: '2006-08-25',
+          title: 'Innocent Blue',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=lilim/aos1'] } },
+
+        { company: 'LiLiM DARKNESS',
+          date: '2006-08-25',
+          title: 'Triangle Blue',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=lilim/dpk'] } },
+
+        { company: 'LiLiM DARKNESS',
+          date: '2009-11-27',
+          title: 'Dark Blue',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=lilim/aos2'] } },
+
+        { company: 'LiLiM DARKNESS',
+          date: '2012-06-29',
+          title: 'Wedding Blue',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=lilim/aos2'] } },
+
+        { company: 'LiLiM DARKNESS',
+          date: '2013-10-25',
+          title: 'Hunting Blue',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=lilim/aos2'] } },
+
+        { company: 'LizSoft',
+          date: '2008-09-10',
+          title: 'Fortune Summoners: Secret Of The Elemental Stone',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=microsoft/exe', '--dec=lizsoft/sotes'] } },
+
+        { company: 'Lose',
+          date: '2012-04-27',
+          title: 'Monobeno',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Lump of Sugar',
+          date: '2007-01-26',
+          title: 'Itsuka, Todoku, Ano Sora ni.',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=bgi/arc'] } },
+
+        { company: 'Lump of Sugar',
+          date: '2013-05-31',
+          title: 'Magical Charming!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=bgi/arc'] } },
+
+        { company: 'Meteor',
+          date: '2006-11-17',
+          title: 'Chokotto Vampire!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=adv/dat'] } },
+
+        { company: 'Minato Carnival',
+          date: '2012-09-28',
+          title: 'Tsujidou-san no Jun\'ai Road',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=whale/dat --file-names=etc/tsujidou-junai.lst'] } },
+
+        { company: 'Minato Carnival',
+          date: '2013-08-30',
+          title: 'Tsujidou-san no Virgin Road',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=whale/dat --file-names=etc/tsujidou-virgin.lst'] } },
+
+        { company: 'Minato Soft',
+          date: '2009-10-30',
+          title: 'Maji de Watashi ni Koishinasai!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=minato-soft/pac'] } },
+
+        { company: 'Momoiro Gekijou',
+          date: '2011-11-18',
+          title: 'Shojo Mama',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=shiina-rio/warc --plugin=shojo-mama'] } },
+
+        { company: 'Nibarera',
+          date: '2012-08-18',
+          title: 'ElEMENTS',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=rpgmaker/rgss3a'] } },
+
+        { company: 'Nitroplus',
+          date: '2003-12-26',
+          title: 'Saya no Uta',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nitroplus/pak'] } },
+
+        { company: 'Nitroplus',
+          date: '2008-04-25',
+          title: 'Chaos;Head',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nitroplus/npa --plugin=chaos-head'] } },
+
+        { company: 'Nitroplus',
+          date: '2009-10-30',
+          title: 'Full Metal Daemon Muramasa',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nitroplus/npa --plugin=muramasa'] } },
+
+        { company: 'Nitroplus',
+          date: '2010-08-26',
+          title: 'Steins;Gate',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nitroplus/npa-sg'] } },
+
+        { company: 'Overdrive',
+          date: '2011-09-30',
+          title: 'Go! Go! Nippon! ~My First Trip to Japan~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=bgi/arc'] } },
+
+        { company: 'Palette',
+          date: '2006-02-24',
+          title: 'Moshimo Ashita ga Harenaraba',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=sysadv/pak'] } },
+
+        { company: 'Parasol',
+          date: '2012-05-25',
+          title: 'Koiimo SWEET☆DAYS',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Parasol',
+          date: '2013-05-31',
+          title: 'Yumekoi ~Yume Miru Mahou Shoujo to Koi no Jumon~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Parasol',
+          date: '2014-08-29',
+          title: 'Hare Nochi Kitto Nanohana Biyori',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Parfum Soft',
+          date: '2012-12-11',
+          title: 'Issho ni Chapuchapu Time! ~Ofuro de Ichaicha Seikatsu~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=ast/arc'] } },
+
+        { company: 'PeasSoft',
+          date: '2012-12-21',
+          title: 'Iinazuke wa Imouto-sama!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuka-script/ykc'] } },
+
+        { company: 'Pita Fetish',
+          date: '2011-04-28',
+          title: 'Gokkun! Onii-chan Milk ~Punipuni Oppai na Imouto to~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=mixed-xor'] } },
+
+        { company: 'Propeller',
+          date: '2007-03-30',
+          title: 'Tekoire Princess! ~Boku ga Mienai Kimi no Tame~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=shiina-rio/warc --plugin=237'] } },
+
+        { company: 'Propeller',
+          date: '2011-06-24',
+          title: 'Sukimazakura to Uso no Machi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=propeller/mpk'] } },
+
+        { company: 'Purple Software',
+          date: '2008-07-31',
+          title: 'Haruiro Ouse',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=purple-software/cpz5'] } },
+
+        { company: 'Purple Software',
+          date: '2013-02-28',
+          title: 'Hapymaher',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=purple-software/cpz5'] } },
+
+        { company: 'Purple Software',
+          date: '2015-04-24',
+          title: 'Chrono Clock',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=purple-software/cpz6'] } },
+
+        { company: 'Purple Software',
+          date: '2015-07-24',
+          title: 'Hapymaher - W Pack',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=purple-software/cpz5'] } },
+
+        { company: 'Purple Software',
+          date: '2015-07-24',
+          title: 'Hapymaher -Fragmentation Dream-',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=purple-software/cpz5'] } },
+
+        { company: 'Ricotta',
+          date: '2013-10-25',
+          title: 'Walkure Romanze More&More',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=qlie/pack'] } },
+
+        { company: 'Root',
+          date: '2010-07-23',
+          title: 'PARA-SOL',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=gs/pak', '--dec=gs/dat'] } },
+
+        { company: 'Rune & Cage',
+          date: '2004-02-27',
+          title: 'Watashi no Puni Puni',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=glib/gml'] } },
+
+        { company: 'Rune & Cage',
+          date: '2008-03-28',
+          title: 'Pure My Imouto Milk Purun',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=glib/glib2'] } },
+
+        { company: 'Rune',
+          date: '2007-12-14',
+          title: 'Musume Shimai',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=glib/glib2'] } },
+
+        { company: 'Sei Mikaeru Joshi Gakuen',
+          date: '2015-06-26',
+          title: 'Sono Hanabira ni Kuchizuke o 18 - Nyuu Jene!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Shangri-La',
+          date: '2008-03-27',
+          title: 'Akatsuki no Goei',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=majiro/arc --rct-key=82a882ca82ae82e8904882d782e98148'] } },
+
+        { company: 'Shangri-La',
+          date: '2008-12-25',
+          title: 'Akatsuki no Goei ~Principal-tachi no Kyuujitsu~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=majiro/arc --rct-key=82e082a491ab82aa906a82cc82e682a482be82e6'] } },
+
+        { company: 'Shangri-La',
+          date: '2008-12-25',
+          title: 'Akatsuki no Goei ~Tsumibukaki Shuumatsuron~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=majiro/arc --rct-key=97f682cd937995558ddb8356838a815b83598163816382b182f182c882f1'] } },
+
+        { company: 'silica-gel',
+          date: '2014-07-18',
+          title: 'Majime to Sasayakareru Ore wo Osananajimi no Risa ga Seiteki na Imi mo Komete Kanraku Shite Iku Hanashi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=shiina-rio/warc --plugin=majime1'] } },
+
+        { company: 'Soviet Games',
+          date: '2013-12-21',
+          title: 'Everlasting Summer',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=renpy/rpa'] } },
+
+        { company: 'Spiky Caterpillar',
+          date: '2012-06-02',
+          title: 'Long Live The Queen',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=renpy/rpa'] } },
+
+        { company: 'SQUEEZ',
+          date: '2005-09-22',
+          title: 'Honoo no Haramase Tenkousei',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=eagls/pak'] } },
+
+        { company: 'Studio Ring',
+          date: '2010-10-29',
+          title: 'Nanami to Konomi no Oshiete ABC',
+          details: {
+            support: {'file': 'doesn\'t apply', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=real-live/g00', '--dec=real-live/nwa', '--dec=real-live/ovk'] } },
+
+        { company: 'Studio Triumph',
+          date: '2012-01-27',
+          title: 'Netorare Nurse Jitsu Ane Erina Kankin Kairaku Jigoku Hen',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Syrup -Many Milk-',
+          date: '2014-01-31',
+          title: 'Machi Gurumi no Wana ~Hakudaku ni Mamireta Yuuri~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=entis/noa'] } },
+
+        { company: 'Syrup -Many Milk-',
+          date: '2014-01-31',
+          title: 'Nerawareta Megami Tenshi Angeltia ~Mamotta Ningentachi ni Uragirarete~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=entis/noa'] } },
+
+        { company: 'Tanuki Soft',
+          date: '2008-12-12',
+          title: 'Mei Shoujo',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=glib/glib2'] } },
+
+        { company: 'Tanuki Soft',
+          date: '2009-12-18',
+          title: 'Bishoujo',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=glib/glib2'] } },
+
+        { company: 'Tanuki Soft',
+          date: '2010-12-17',
+          title: 'Shoukoujo',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=tanuki/tac'] } },
+
+        { company: 'Tanuki Soft',
+          date: '2011-11-18',
+          title: 'Mebae',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=tanuki/tac'] } },
+
+        { company: 'Tanuki Soft',
+          date: '2012-12-21',
+          title: 'Tonari no Puu-san',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=tanuki/tac'] } },
+
+        { company: 'Tanuki Soft',
+          date: '2014-02-28',
+          title: 'Shoujo Kyouiku',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=tanuki/tac'] } },
+
+        { company: 'Tanuki Soft',
+          date: '2015-07-31',
+          title: 'Shoujo Ramune',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=tanuki/tac'] } },
+
+        { company: 'Tarte',
+          date: '2004-07-23',
+          title: 'Hinatabokko',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=active-soft/adpack'] } },
+
+        { company: 'Tasofro & Team Shanghai Alice',
+          date: '2004-12-30',
+          title: 'Touhou 07.5 - Immaterial and Missing Power',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=twilight-frontier/pak1'] } },
+
+        { company: 'Tasofro & Team Shanghai Alice',
+          date: '2008-05-25',
+          title: 'Touhou 10.5 - Scarlet Weather Rhapsody',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=twilight-frontier/pak2'] } },
+
+        { company: 'Tasofro & Team Shanghai Alice',
+          date: '2009-08-15',
+          title: 'Touhou 12.3 - Hisoutensoku',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=twilight-frontier/pak2'] } },
+
+        { company: 'Tasofro & Team Shanghai Alice',
+          date: '2013-05-26',
+          title: 'Touhou 13.5 - Hopeless Masquerade',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=twilight-frontier/tfpk --file-names=etc/th135-file-names.lst'] } },
+
+        { company: 'Tasofro & Team Shanghai Alice',
+          date: '2015-05-10',
+          title: 'Touhou 14.5 - Urban Legend in Limbo',
+          details: {
+            support: {'file': 'full', 'gfx': 'partial - a few directory names are still unknown. Directory names are required by sprites to use correct palette.', 'audio': 'full'},
+            cli_invocation: ['--dec=twilight-frontier/tfpk --file-names=etc/th145-file-names.lst'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2002-08-11',
+          title: 'Touhou 06 - The Embodiment of Scarlet Devil',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/pbg3'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2003-08-17',
+          title: 'Touhou 07 - Perfet Cherry Blossom',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/pbg4'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2004-08-15',
+          title: 'Touhou 08 - Imperishable Night',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/pbgz'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2005-08-14',
+          title: 'Touhou 09 - Phantasmagoria of Flower View',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/pbgz'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2005-12-30',
+          title: 'Touhou 09.5 - Shoot the Bullet',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/tha1'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2007-08-17',
+          title: 'Touhou 10 - Mountain of Faith',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/tha1'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2008-08-16',
+          title: 'Touhou 11 - Subterranean Animism',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/tha1'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2009-08-15',
+          title: 'Touhou 12 - Undefined Fantastic Object',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/tha1'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2010-03-14',
+          title: 'Touhou 12.5 - Double Spoiler',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/tha1'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2010-08-14',
+          title: 'Touhou 12.8 - Fairy Wars',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/tha1'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2011-08-13',
+          title: 'Touhou 13 - Ten Desires',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/tha1'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2013-08-12',
+          title: 'Touhou 14 - Double Dealing Character',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/tha1'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2014-05-11',
+          title: 'Touhou 14.3 - Impossible Spell Card',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/tha1'] } },
+
+        { company: 'Team Shanghai Alice',
+          date: '2015-08-14',
+          title: 'Touhou 15 - Legacy of Lunatic Kingdom (full & trial)',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=team-shanghai-alice/tha1'] } },
+
+        { company: 'Tryset',
+          date: '2011-10-28',
+          title: 'Shin Yarasete! Teacher',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Type-Moon & French Bread',
+          date: '2002-12-30',
+          title: 'Melty Blood',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=french-bread/p'] } },
+
+        { company: 'Type-Moon',
+          date: '2000-12-29',
+          title: 'Tsukihime',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nscripter/nsa', '--dec=nscripter/sar'] } },
+
+        { company: 'Type-Moon',
+          date: '2004-03-26',
+          title: 'Fate/Stay Night',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=fsn'] } },
+
+        { company: 'Type-Moon',
+          date: '2005-12-29',
+          title: 'Fate/Hollow Ataraxia',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=fha'] } },
+
+        { company: 'Type-Moon',
+          date: '2012-04-12',
+          title: 'Mahou Tsukai no Yoru',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=mahoyoru'] } },
+
+        { company: 'Unison Soft',
+          date: '2007-03-23',
+          title: 'Chu x Chu Idol (The idol is a vampire!?)',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=amuse-craft/pac'] } },
+
+        { company: 'Waffle',
+          date: '2011-10-28',
+          title: 'Tsugou no Yoi Sexfriend?',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nekopack/nekopack4'] } },
+
+        { company: 'Waffle',
+          date: '2014-04-11',
+          title: 'Gakuen de Jikan yo Tomare',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nekopack/nekopack4'] } },
+
+        { company: 'West Vision',
+          date: '2004-01-23',
+          title: 'OL Gari ~Nureta Office~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'partial'},
+            cli_invocation: ['--dec=west-vision/syg'] } },
+
+        { company: 'West Vision',
+          date: '2004-12-17',
+          title: 'Innyuu Kazoku ~Boku to Haha to Ane to Imouto to~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'West Vision',
+          date: '2005-08-26',
+          title: 'Kyonyuu Gokuraku Seminar',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=wild-bug/wbp'] } },
+
+        { company: 'West Vision',
+          date: '2007-01-19',
+          title: 'Nyuuki Taisai',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'West Vision',
+          date: '2008-01-25',
+          title: 'Futago Reijou',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Whirlpool',
+          date: '2006-09-29',
+          title: 'Ina☆Koi! ~Oinari-sama to Motemote no Tatari~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2007-05-25',
+          title: 'Ina☆Koi! Fandisc',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2007-11-30',
+          title: 'Magus Tale ~Sekaiju to Koisuru Mahoutsukai~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2008-06-13',
+          title: 'Magus Tale Infinity',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2008-12-28',
+          title: 'Meri☆Chri ~Juu Nen Buri no White Christmas~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2009-07-31',
+          title: '77 (Sevens) ~And, Two Stars Meet Again~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2010-04-30',
+          title: 'Neko☆Koi! ~Nekogami-sama to Nekomimi no Tatari~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2010-07-30',
+          title: 'Magus Tale Infinity',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2010-07-30',
+          title: 'Magus Tale ~Sekaiju to Koisuru Mahoutsukai~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2010-08-27',
+          title: 'Suzukaze no Melt -Where Wishes are Drawn to Each Other-',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2011-06-24',
+          title: 'Maikaze no Melt -Where Leads to Feeling Destination-',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2011-09-30',
+          title: 'Lunaris Filia ~Kiss to Keiyaku to Shinku no Hitomi~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2012-09-28',
+          title: 'Ryuuyoku no Melodia -Diva with the blessed dragonol-',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whirlpool',
+          date: '2012-12-21',
+          title: 'Justy×Nasty ~Maou Hajimemashita~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=yuris/ypf'] } },
+
+        { company: 'Whitesoft',
+          date: '2015-02-27',
+          title: 'Sakura Synchronicity',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=lucifen/lpk --plugin=sakura-sync'] } },
+
+        { company: 'Will',
+          date: '2007-02-23',
+          title: 'Tsuma Youji 1 ~Boku wa Hitozuma Kanrinin~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=will/arc'] } },
+
+        { company: 'Will',
+          date: '2008-05-23',
+          title: 'Tsuma Youji 2 ~Boku wa Hitozuma Tenjouin~',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=will/arc'] } },
+
+        { company: 'Yurin Yurin',
+          date: '2010-09-25',
+          title: 'Hanahira!',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Yurin Yurin',
+          date: '2012-11-15',
+          title: 'Sono Hanabira ni Kuchizuke o 11 - Michael no Otomoe-tachi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=nsystem/fjsys'] } },
+
+        { company: 'Yurin Yurin',
+          date: '2013-03-29',
+          title: 'Sono Hanabira ni Kuchizuke o 12 - Atelier no Koibito-tachi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Yurin Yurin',
+          date: '2013-05-31',
+          title: 'Sono Hanabira ni Kuchizuke o 13 - Tenshi no Akogare',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Yurin Yurin',
+          date: '2013-08-30',
+          title: 'Sono Hanabira ni Kuchizuke o 14 - Tenshi-tachi no Harukoi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Yurin Yurin',
+          date: '2013-12-20',
+          title: 'Sono Hanabira ni Kuchizuke o 15 - Shirayuki no Kishi',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+        { company: 'Yurin Yurin',
+          date: '2015-03-28',
+          title: 'Sono Hanabira ni Kuchizuke o 16 - Tenshi-tachi no Yakusoku',
+          details: {
+            support: {'file': 'full', 'gfx': 'full', 'audio': 'full'},
+            cli_invocation: ['--dec=kirikiri/xp3 --plugin=noop'] } },
+
+      ];
+
+      games = games.sort(function (a, b) {
+        return a['title'].localeCompare(b['title']);
+      });
+
+      var $ul = $('#game-list');
+      $.each(games, function(i, game) {
+        var complex = false;
+        $cliInvocationList = $('<ul/>');
+        $.each(
+          game['details']['cli_invocation'],
+          function(i, parameters) {
+            $cliInvocationList.append($('<li>').append($('<code>').text(parameters)));
+            if (parameters.indexOf(' ') !== -1) {
+              complex = true;
+            }
+          });
+
+        $supportList = $('<ul/>');
+        $.each(
+          game['details']['support'],
+          function(key, value) {
+            $supportList.append($('<li/>').text(key).append(': ').append(value));
+          });
+
+        var $detailsArea = $('<div class="details-area"/>').hide();
+        $detailsArea.append($('<p/>').text('Support:'));
+        $detailsArea.append($supportList);
+        $detailsArea.append($('<p/>').text('CLI invocation:'));
+        $detailsArea.append($cliInvocationList);
+
+        var $li = $('<li/>');
+
+        var $titleEnglish = $('<div class="title-english"/>');
+        $titleEnglish.text(game['title']);
+        $li.append($titleEnglish);
+
+        if (game.hasOwnProperty('company')) {
+          var $releaseInfo = $('<div class="release"/>');
+          $releaseInfo.text(game['company']);
+          if (game.hasOwnProperty('date')) {
+            $releaseInfo.append(' (' + game['date'] + ')');
+          }
+          $li.append($releaseInfo);
+        }
+
+        var $miscArea = $('<div class="misc-area"/>');
+
+        var $detailsLink = $('<a/>');
+        $detailsLink.attr('href', '#');
+        $detailsLink.text('Show details');
+        $detailsLink.click(function(e) {
+          e.preventDefault();
+          var visible = !$detailsArea.is(':visible');
+          $detailsLink.fadeOut(125, function() {
+            $detailsLink.text(visible
+              ? 'Hide details'
+              : 'Show details').fadeIn(125);
+          });
+          $detailsArea.slideToggle(250);
+        });
+        $miscArea.append($detailsLink);
+        if (complex) {
+          var $cliWarning = $('<span/>');
+          $cliWarning.text('Requires extra CLI switches');
+          $miscArea.prepend($cliWarning);
+        }
+
+        $li.append($miscArea);
+        $li.append($('<div class="clear"/>'));
+        $li.append($detailsArea);
+
+        $ul.append($li);
+      });
     </script>
   </section>
-
-  <section>
-    <table class="zebra">
-      <thead>
-        <tr>
-          <th colspan="3">Features</th>
-          <th>Company</th>
-          <th>Release date</th>
-          <th>Game</th>
-          <th>CLI invocation</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="incorrect"></i></td>
-          <td><i class="incorrect"></i></td>
-          <td>-</td>
-          <td>-</td>
-          <td>Generic <code>.exe</code> and <code>.dll</code> resources</td>
-          <td><code>--dec=microsoft/exe</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>07th Expansion &amp; Alchemist</td>
-          <td>2007-08-17</td>
-          <td>Umineko No Naku Koro Ni</td>
-          <td><code>--dec=nscripter/nsa</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>07th Expansion</td>
-          <td>2002-08-10</td>
-          <td>Higurashi No Naku Koro Ni</td>
-          <td><code>--dec=bgi/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>3rd Eye</td>
-          <td>2015-07-24</td>
-          <td>Sorcery Jokers</td>
-          <td><code>--dec=shiina-rio/warc --plugin=sorcery-jokers</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Akabei Soft2</td>
-          <td>2005-11-25</td>
-          <td>Sharin no Kuni, Himawari no Shoujo</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Akabei Soft2</td>
-          <td>2008-05-29</td>
-          <td>G-senjou no Maou</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Akatsuki Works</td>
-          <td>2009-10-22</td>
-          <td>Comyu Kuroi Ryuu to Yasashii Oukoku</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=comyu</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="none"></i></td>
-          <td>Alice Soft</td>
-          <td>1995-12-01</td>
-          <td>Rance 4.1 - Okusuri Koujou o Sukue!</td>
-          <td><code>--dec=alice-soft/dat</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="none"></i></td>
-          <td>Alice Soft</td>
-          <td>1995-12-01</td>
-          <td>Rance 4.2 - Angelgumi</td>
-          <td><code>--dec=alice-soft/dat</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>1997-04-04</td>
-          <td>Kichikuou Rance</td>
-          <td><code>--dec=alice-soft/ald</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>1997-04-04</td>
-          <td>Rance 4 - Kyoudan no Isan</td>
-          <td><code>--dec=alice-soft/ald</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>1997-12-18</td>
-          <td>Atlach-Nacha</td>
-          <td><code>--dec=alice-soft/ald</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>1997-12-18</td>
-          <td>Dalk</td>
-          <td><code>--dec=alice-soft/ald</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>1997-12-18</td>
-          <td>Dr. Stop!</td>
-          <td><code>--dec=alice-soft/ald</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>1997-12-18</td>
-          <td>Ningen Gari</td>
-          <td><code>--dec=alice-soft/ald</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>1997-12-18</td>
-          <td>Rance 1 - Hikari o Motomete</td>
-          <td><code>--dec=alice-soft/ald</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>1997-12-18</td>
-          <td>Rance 2 - Hangyaku no Shoujo-tachi</td>
-          <td><code>--dec=alice-soft/ald</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>1997-12-18</td>
-          <td>Rance 3 - Leazas Kanraku</td>
-          <td><code>--dec=alice-soft/ald</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>1997-12-18</td>
-          <td>Toushin Toshi</td>
-          <td><code>--dec=alice-soft/ald</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>1997-12-18</td>
-          <td>Zero</td>
-          <td><code>--dec=alice-soft/ald</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2001-11-30</td>
-          <td>Daiakuji</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/afa</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2002-10-25</td>
-          <td>Rance 5D</td>
-          <td><code>--dec=alice-soft/ald</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2004-08-27</td>
-          <td>Rance 6 - Zeth Houkai -</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2006-08-04</td>
-          <td>Tsuma Shibori</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2006-12-15</td>
-          <td>Sengoku Rance</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2009-12-18</td>
-          <td>Alice 2010</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2009-12-18</td>
-          <td>Choukou Sennin Haruka - Haruka VS Escalayer</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2009-12-18</td>
-          <td>Choukou Sennin Haruka - Shippuu! Ninja Dai Sakusen</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2009-12-18</td>
-          <td>Haru Urare - Kounai Akasen Kuiki</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2009-12-18</td>
-          <td>Jinmu - Kamunagara</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2009-12-18</td>
-          <td>Mamanyonyo</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2009-12-18</td>
-          <td>Megane no Mei to Natsuyasumi</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2009-12-18</td>
-          <td>Rachel no Sakuragai</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2009-12-18</td>
-          <td>Rance 2 - Hangyuaku no Shoujo-tachi</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2009-12-18</td>
-          <td>Sabaku no Nikka</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Alice Soft</td>
-          <td>2009-12-18</td>
-          <td>Vanish! - Kono Te no Hira ni Oppai o</td>
-          <td><code>--dec=alice-soft/ald</code>, <code>--dec=alice-soft/alk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Ammolite</td>
-          <td>2015-04-24</td>
-          <td>Sweet ☆ Switch ~Majiwaru Shisen de Torokeru Karada~</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=xor</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Appetite</td>
-          <td>2011-12-22</td>
-          <td>Mama no Okugai Shuuchi Lesson</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=xor</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Astronauts</td>
-          <td>120427</td>
-          <td>Demonion ~Maou no Chika Yousai~</td>
-          <td><code>--dec=avg/gxp</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="none"></i></td>
-          <td>Atelier Sakura</td>
-          <td>2015-09-25</td>
-          <td>Shin Hoka no Otoko no Seieki de Harande mo Ii Desu ka...? 2 Zenshin Asedaku Uwaki Sex de Ninshinshita Wedding Planner no Konyakusha</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>atelier773</td>
-          <td>2010-06-21</td>
-          <td>Cherry Tree High Comedy Club</td>
-          <td><code>--dec=rpgmaker/rgssad</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>atelier773</td>
-          <td>2010-12-31</td>
-          <td>Cherry Tree High I! My! Girls!</td>
-          <td><code>--dec=rpgmaker/rgssad</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>August</td>
-          <td>2013-01-25</td>
-          <td>Daitoshokan no Hitsujikai</td>
-          <td><code>--dec=bgi/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Bandai Namco Entertainment</td>
-          <td>2011-??-??</td>
-          <td>Ore no imouto konna ni kawaii wake ga nai (PSP English patch v0.4.2)</td>
-          <td><code>--dec=playstation/gpda</code>, <code>--dec=cri/afs2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Black Lilith</td>
-          <td>2011-10-28</td>
-          <td>Ore to Saeko-san to Netorare Mail</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cattleya</td>
-          <td>2006-01-27</td>
-          <td>Okami Misao</td>
-          <td><code>--dec=yumemiru/dat</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cattleya</td>
-          <td>2006-06-30</td>
-          <td>Chijoku Sister</td>
-          <td><code>--dec=yumemiru/dat</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cattleya</td>
-          <td>2007-02-23</td>
-          <td>Shin Onna Kyoushi Yuuwaku Shinro Shidoushitsu</td>
-          <td><code>--dec=yumemiru/dat</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cattleya</td>
-          <td>2008-04-25</td>
-          <td>Tsuma no Haha Sayuri</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cattleya</td>
-          <td>2009-06-26</td>
-          <td>Bijukubo "Iyarashii Kaa-san de Gomenne..."</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cattleya</td>
-          <td>2010-07-23</td>
-          <td>Miboujin Sanae "Watashi ga Hajimete de Ii no......?"</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cattleya</td>
-          <td>2011-08-26</td>
-          <td>Onna Zakari wa Toshishita Konomi "Honki no Sex Oshiete A-ge-ru"</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cattleya</td>
-          <td>2012-08-24</td>
-          <td>Kyouiku Mama to Oba to Oba</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cherry Soft</td>
-          <td>1999-07-23</td>
-          <td>Heroine</td>
-          <td><code>--dec=cherry-soft/myk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>CLOCKUP</td>
-          <td>2010-06-25</td>
-          <td>Eroge! ~H mo Game mo Kaihatsu Zanmai~</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>CLOCKUP</td>
-          <td>2011-10-28</td>
-          <td>Please Rape Me!</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cronus</td>
-          <td>2000-09-22</td>
-          <td>Sweet Pleasure</td>
-          <td><code>--dec=cronus/pak</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cronus</td>
-          <td>2001-10-19</td>
-          <td>Dokidoki Princess</td>
-          <td><code>--dec=cronus/pak</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cronus</td>
-          <td>2002-11-29</td>
-          <td>Caliz</td>
-          <td><code>--dec=riddle-soft/pac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cronus</td>
-          <td>2003-04-25</td>
-          <td>Kaikan Senshi Busty</td>
-          <td><code>--dec=riddle-soft/pac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cronus</td>
-          <td>2004-02-27</td>
-          <td>Fruit Punch</td>
-          <td><code>--dec=riddle-soft/pac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cronus</td>
-          <td>2005-08-05</td>
-          <td>Brightia Plus</td>
-          <td><code>--dec=riddle-soft/pac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cronus</td>
-          <td>2006-06-30</td>
-          <td>Nursery Song</td>
-          <td><code>--dec=cronus/pak</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cronus</td>
-          <td>2006-06-30</td>
-          <td>Sweet Pleasure NS</td>
-          <td><code>--dec=riddle-soft/pac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="incorrect"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="incorrect" title="aiff, supported by ffmpeg"></i></td>
-          <td>Crowd</td>
-          <td>1997-10-24</td>
-          <td>X-Change</td>
-          <td><code>--dec=crowd/zbm</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="incorrect"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Crowd</td>
-          <td>1999-08-27</td>
-          <td>X-Change 2</td>
-          <td><code>--dec=crowd/cwl</code>, <code>--dec=crowd/pkwv</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="incorrect"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Crowd</td>
-          <td>2004-06-25</td>
-          <td>X-Change 3</td>
-          <td><code>--dec=crowd/cwl</code>, <code>--dec=crowd/cwp</code>, <code>--dec=crowd/eog</code>, <code>--dec=crowd/pck</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Cuffs</td>
-          <td>2005-08-05</td>
-          <td>Sakura Musubi</td>
-          <td><code>--dec=entis/eri</code>, <code>--dec=entis/mio</code>, <code>--dec=entis/noa</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Empress</td>
-          <td>2015-05-12</td>
-          <td>Starless Nymphomaniacs' Paradise</td>
-          <td><code>--dec=majiro/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Empress</td>
-          <td>2015-06-26</td>
-          <td>Closed Game</td>
-          <td><code>--dec=majiro/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Erectlip</td>
-          <td>2010-11-12</td>
-          <td>Mahou Shoujo Iris</td>
-          <td><code>--dec=amuse-craft/pac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Erectlip</td>
-          <td>2011-01-28</td>
-          <td>Mahou Shoujo Ixia</td>
-          <td><code>--dec=amuse-craft/pac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Erectlip</td>
-          <td>2011-02-25</td>
-          <td>Kyonyuu Seido Kaichou Chijoku no Hakudaku Kuro Tights ~Konna Yatsu no Okazu ni Naru nante!~</td>
-          <td><code>--dec=amuse-craft/pac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Erectlip</td>
-          <td>2011-12-22</td>
-          <td>Little†B☆☆☆h</td>
-          <td><code>--dec=amuse-craft/pac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Erectlip</td>
-          <td>2015-08-28</td>
-          <td>Sensei Ano ne... ~Netorare Shoujo to Houkago no Taiiku Souko~</td>
-          <td><code>--dec=amuse-craft/pac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Etude</td>
-          <td>2007-11-22</td>
-          <td>Soshite Ashita no Sekai yori</td>
-          <td><code>--dec=qlie/pack</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Eufonie</td>
-          <td>2012-12-21</td>
-          <td>Koiken Otome</td>
-          <td><code>--dec=qlie/pack</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>F&amp;C01</td>
-          <td>2002-08-30</td>
-          <td>Mizukabe</td>
-          <td><code>--dec=fc01/mrg --mcg-key=209 --mca-key=209</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>F&amp;C01</td>
-          <td>2007-10-26</td>
-          <td>Suigetsu</td>
-          <td><code>--dec=fc01/mrg --mcg-key=205 --mca-key=205</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>F&amp;C01</td>
-          <td>2011-04-28</td>
-          <td>White Breath ~With Faint Hope~</td>
-          <td><code>--dec=fc01/mrg --mcg-key=77 --mca-key=77</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Favorite</td>
-          <td>2011-07-29</td>
-          <td>Irotoridori no Sekai</td>
-          <td><code>--dec=fvp/bin</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>feng</td>
-          <td>2010-10-15</td>
-          <td>Hoshizora e Kakaru Hashi</td>
-          <td><code>--dec=yuka-script/ykc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Four Leaf Studios</td>
-          <td>2012-01-04</td>
-          <td>Katawa Shoujo</td>
-          <td><code>--dec=renpy/rpa</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Front Wing</td>
-          <td>2007-03-23</td>
-          <td>Kimihagu</td>
-          <td><code>--dec=qlie/pack</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Front Wing</td>
-          <td>2013-05-24</td>
-          <td>Grisaia no Kajitsu</td>
-          <td><code>--dec=cat-system/int</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Fuguriya</td>
-          <td>2006-09-29</td>
-          <td>Sono Hanabira ni Kuchizuke o 1</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Fuguriya</td>
-          <td>2007-05-29</td>
-          <td>Sono Hanabira ni Kuchizuke o 2 - Watashi no Ouji-sama</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Fuguriya</td>
-          <td>2007-07-14</td>
-          <td>Sono Hanabira ni Kuchizuke o 3 - Anata to Koibito Tsunagi</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Fuguriya</td>
-          <td>2008-06-06</td>
-          <td>Sono Hanabira ni Kuchizuke o 4 - Itoshisa no Photograph</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Fuguriya</td>
-          <td>2008-07-25</td>
-          <td>Sono Hanabira ni Kuchizuke o 5 - Anata o Suki na Shiawase</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Fuguriya</td>
-          <td>2008-12-05</td>
-          <td>Sono Hanabira ni Kuchizuke o 6 - Kuchibiru to Kiss de Tsubuyaite</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Fuguriya</td>
-          <td>2009-12-11</td>
-          <td>Sono Hanabira ni Kuchizuke o 7 - Amakute Hoshikute Torokeru Chuu</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Fuguriya</td>
-          <td>2010-02-12</td>
-          <td>Sono Hanabira ni Kuchizuke o 8 - Tenshi no Hanabira Zome</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Fuguriya</td>
-          <td>2010-11-29</td>
-          <td>Sono Hanabira ni Kuchizuke o 9 - Amakute Otona no Torokeru Chuu</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Fuguriya</td>
-          <td>2011-11-20</td>
-          <td>Sono Hanabira ni Kuchizuke o 10 - Lily Platinum</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Fuguriya</td>
-          <td>2014-03-28</td>
-          <td>Sono Hanabira ni Kuchizuke o 17 - Anata ni Chikau Ai</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Galette</td>
-          <td>2013-06-28</td>
-          <td>Santaful Summer</td>
-          <td><code>--dec=entis/noa --noa-key=20130611VER1</code>, <code>--dec=entis/noa --noa-key=20130611VER2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Galette</td>
-          <td>2015-06-26</td>
-          <td>Lollipop Factory</td>
-          <td><code>--dec=entis/noa --noa-key=HUYAF6a4ePCDA98aAYCDAF79aga5067</code>, <code>--dec=entis/noa --noa-key=JKNA789A54daC975fCA067gCA6ggtuyf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Hakudakukei</td>
-          <td>2011-07-29</td>
-          <td>Jugyou de Ecchi? ~Hisshuu Kamoku wa Sai Kyo-iku! Sensei ya Doukyuusei to Aheahe Peropero Benkyou Chuu~</td>
-          <td><code>--dec=majiro/arc --rct-key=82D682DA82A982E9</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="incorrect"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Hamham Soft</td>
-          <td>2007-12-21</td>
-          <td>Imouto ni! Sukumizu Kisetara Nugasanai!</td>
-          <td><code>--dec=real-live/g00</code>, <code>--dec=real-live/nwa</code>, <code>--dec=real-live/ovk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Herencia</td>
-          <td>2015-07-03</td>
-          <td>Kangoku Hime ~Little Joou-sama no M Otoko Pet Ka Choukyou~</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Hot Pink</td>
-          <td>2015-09-18</td>
-          <td>Gohoushi Nurse ~Mayonaka no Kyousei Call~</td>
-          <td><code>--dec=shiina-rio/warc --plugin=gh-nurse</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Innocent Grey</td>
-          <td>2008-07-04</td>
-          <td>Kara no Shoujo</td>
-          <td><code>--dec=innocent-grey/packdat</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Innocent Grey</td>
-          <td>2013-12-20</td>
-          <td>Kara no Shoujo - The Second Episode</td>
-          <td><code>--dec=innocent-grey/iga</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Ivory</td>
-          <td>2003-06-06</td>
-          <td>Candy Toys</td>
-          <td><code>--dec=ivory/mbl --plugin=candy</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Ivory</td>
-          <td>2006-04-14</td>
-          <td>Wanko to Kurasou</td>
-          <td><code>--dec=ivory/mbl --plugin=wanko</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="incorrect"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Key</td>
-          <td>2004-11-26</td>
-          <td>Kanon</td>
-          <td><code>--dec=real-live/g00</code>, <code>--dec=real-live/nwa</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="incorrect"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Key</td>
-          <td>2007-09-28</td>
-          <td>Little Busters</td>
-          <td><code>--dec=real-live/g00</code>, <code>--dec=real-live/nwa</code>, <code>--dec=real-live/ovk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="incorrect"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Key</td>
-          <td>2008-02-29</td>
-          <td>Clannad</td>
-          <td><code>--dec=real-live/g00</code>, <code>--dec=real-live/nwa</code>, <code>--dec=real-live/ovk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>KID</td>
-          <td>2003-11-27</td>
-          <td>Ever 17</td>
-          <td><code>--dec=kid/lnk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="incorrect"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Kikiyama</td>
-          <td>2004-06-26</td>
-          <td>Yume Nikki</td>
-          <td><code>--dec=rpgmaker/xyz</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Kiss</td>
-          <td>1999-01-21</td>
-          <td>Custom Reido</td>
-          <td><code>--dec=kiss/plg</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Kiss</td>
-          <td>1999-11-26</td>
-          <td>Custom Reido +</td>
-          <td><code>--dec=kiss/plg</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Kiss</td>
-          <td>2004-01-30</td>
-          <td>Custom Reido 2</td>
-          <td><code>--dec=kiss/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Kiss</td>
-          <td>2006-03-24</td>
-          <td>Custom Reido 3</td>
-          <td><code>--dec=kiss/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Kiss</td>
-          <td>2007-03-23</td>
-          <td>Custom Reido F</td>
-          <td><code>--dec=kiss/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Kiss</td>
-          <td>2010-04-30</td>
-          <td>Custom Reido 4</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=xor</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Kiss</td>
-          <td>2010-08-13</td>
-          <td>Custom Reido 4+</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=xor</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Kiss</td>
-          <td>2010-11-26</td>
-          <td>Custom Reido 4++</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=xor</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Kiss</td>
-          <td>2011-06-24</td>
-          <td>Custom Reido V</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=xor</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Latte</td>
-          <td>2011-12-22</td>
-          <td>Imouto Senbatsu☆Sousenkyo</td>
-          <td><code>--dec=tactics/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Latte</td>
-          <td>2012-07-27</td>
-          <td>Dainikai Imouto Senbatsu☆Sousenkyo ~366ninme no Imouto Icha Love Nijitsudan~</td>
-          <td><code>--dec=tactics/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>1996-06-26</td>
-          <td>Shizuku</td>
-          <td><code>--dec=leaf/leafpack --leafpack-key=71486A559F1358F7D17C3E</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>1996-07-26</td>
-          <td>Kizuato</td>
-          <td><code>--dec=leaf/leafpack --leafpack-key=71486A559F1358F7D17C3E</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>1996-11-22</td>
-          <td>Saorin to Ishho!!</td>
-          <td><code>--dec=leaf/pak1 --pak-version=1</code>, <code>--dec=leaf/leafpack --leafpack-key=71486A559F1358F7D17C3E</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>1997-05-23</td>
-          <td>To Heart</td>
-          <td><code>--dec=leaf/leafpack --leafpack-key=D1586A569A13A5F77C3E74</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>1997-11-28</td>
-          <td>Hatsune No Naisho!!</td>
-          <td><code>--dec=leaf/pak1 --pak-version=1</code>, <code>--dec=leaf/leafpack --leafpack-key=5142FE772D65487E0A8AE5</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>1998-05-01</td>
-          <td>White Album</td>
-          <td><code>--dec=leaf/pak1 --pak-version=2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>1999-05-28</td>
-          <td>Comic Party</td>
-          <td><code>--dec=leaf/pak1 --pak-version=2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>2000-01-28</td>
-          <td>Hatsune No Naisho!!</td>
-          <td><code>--dec=leaf/pak1 --pak-version=1</code>, <code>--dec=leaf/leafpack --leafpack-key=5142FE772D65487E0A8AE5</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>2000-01-28</td>
-          <td>Inagawa de Ikou!!</td>
-          <td><code>--dec=leaf/pak1 --pak-version=2</code>, <code>--dec=leaf/leafpack --leafpack-key=13A5F77C3ED1586A569A74</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>2000-04-28</td>
-          <td>Magical Antique</td>
-          <td><code>--dec=leaf/pak2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>2001-02-09</td>
-          <td>Tasogare</td>
-          <td><code>--dec=leaf/kcap</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>2002-07-26</td>
-          <td>Kizuato</td>
-          <td><code>--dec=leaf/kcap</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>2003-02-28</td>
-          <td>Routes</td>
-          <td><code>--dec=leaf/kcap</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="partial" title="Voice fully supported, BGM not supported"></i></td>
-          <td>Leaf</td>
-          <td>2003-06-19</td>
-          <td>Comic Party</td>
-          <td><code>--dec=leaf/ar10</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>2003-06-19</td>
-          <td>To Heart</td>
-          <td><code>--dec=leaf/leafpack --leafpack-key=D1586A569A13A5F77C3E74</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>2003-11-28</td>
-          <td>Routes</td>
-          <td><code>--dec=leaf/kcap</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>2004-01-23</td>
-          <td>Shizuku</td>
-          <td><code>--dec=leaf/kcap</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Leaf</td>
-          <td>2005-04-28</td>
-          <td>Tears to Tiara</td>
-          <td><code>--dec=leaf/kcap</code>, <code>--dec=leaf/lac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="incorrect"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="none" title="Vorbis OGG wrapped with Microsoft WAV using unknown codec"></i></td>
-          <td>Liar-soft</td>
-          <td>2002-02-08</td>
-          <td>Kusarihime ~Euthanasia~</td>
-          <td><code>--dec=liar-soft/lim</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Liar-soft</td>
-          <td>2006-07-07</td>
-          <td>Souten no Celenaria - What a Beautiful World</td>
-          <td><code>--dec=liar-soft/xfl</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Liar-soft</td>
-          <td>2007-09-14</td>
-          <td>Kusarihime ~Euthanasia~</td>
-          <td><code>--dec=liar-soft/xfl</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Liar-soft</td>
-          <td>2007-11-22</td>
-          <td>Sekien no Inganock - What a Beautiful People</td>
-          <td><code>--dec=liar-soft/xfl</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Liar-soft</td>
-          <td>2008-11-21</td>
-          <td>Shikkoku no Sharnoth - What a Beautiful Tomorrow</td>
-          <td><code>--dec=liar-soft/xfl</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="incorrect"></i></td>
-          <td><i class="partial" title="Dimensions and color palette of character avatars and company's logo are hardcoded in the game's code"></i></td>
-          <td><i class="none"></i></td>
-          <td>Libido</td>
-          <td>1994-06-01</td>
-          <td>Libido 7</td>
-          <td><code>--dec=libido/egr</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Libido</td>
-          <td>1997-06-13</td>
-          <td>Houkago Mania Club</td>
-          <td><code>--dec=libido/bid</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Libido</td>
-          <td>1998-09-11</td>
-          <td>Fifteen ~School Girls Digital Tokuhon~</td>
-          <td><code>--dec=libido/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Libido</td>
-          <td>1999-04-23</td>
-          <td>Girl Friends</td>
-          <td><code>--dec=libido/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Libido</td>
-          <td>2000-09-29</td>
-          <td>Cherry Boy, Innocent Girl</td>
-          <td><code>--dec=libido/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>LiLiM DARKNESS</td>
-          <td>2006-08-25</td>
-          <td>Angels Blue</td>
-          <td><code>--dec=lilim/aos1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>LiLiM DARKNESS</td>
-          <td>2006-08-25</td>
-          <td>Innocent Blue</td>
-          <td><code>--dec=lilim/aos1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>LiLiM DARKNESS</td>
-          <td>2006-08-25</td>
-          <td>Triangle Blue</td>
-          <td><code>--dec=lilim/dpk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>LiLiM DARKNESS</td>
-          <td>2009-11-27</td>
-          <td>Dark Blue</td>
-          <td><code>--dec=lilim/aos2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>LiLiM DARKNESS</td>
-          <td>2012-06-29</td>
-          <td>Wedding Blue</td>
-          <td><code>--dec=lilim/aos2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>LiLiM DARKNESS</td>
-          <td>2013-10-25</td>
-          <td>Hunting Blue</td>
-          <td><code>--dec=lilim/aos2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>LizSoft</td>
-          <td>2008-09-10</td>
-          <td>Fortune Summoners: Secret Of The Elemental Stone</td>
-          <td><code>--dec=microsoft/exe</code>, <code>--dec=lizsoft/sotes</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Lose</td>
-          <td>2012-04-27</td>
-          <td>Monobeno</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Lump of Sugar</td>
-          <td>2007-01-26</td>
-          <td>Itsuka, Todoku, Ano Sora ni.</td>
-          <td><code>--dec=bgi/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Lump of Sugar</td>
-          <td>2013-05-31</td>
-          <td>Magical Charming!</td>
-          <td><code>--dec=bgi/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Meteor</td>
-          <td>2006-11-17</td>
-          <td>Chokotto Vampire!</td>
-          <td><code>--dec=adv/dat</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Minato Carnival</td>
-          <td>2012-09-28</td>
-          <td>Tsujidou-san no Jun'ai Road</td>
-          <td><code>--dec=whale/dat --file-names=etc/tsujidou-junai.lst</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Minato Carnival</td>
-          <td>2013-08-30</td>
-          <td>Tsujidou-san no Virgin Road</td>
-          <td><code>--dec=whale/dat --file-names=etc/tsujidou-virgin.lst</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Minato Soft</td>
-          <td>2009-10-30</td>
-          <td>Maji de Watashi ni Koishinasai!</td>
-          <td><code>--dec=minato-soft/pac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Momoiro Gekijou</td>
-          <td>2011-11-18</td>
-          <td>Shojo Mama</td>
-          <td><code>--dec=shiina-rio/warc --plugin=shojo-mama</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Nibarera</td>
-          <td>2012-08-18</td>
-          <td>ElEMENTS</td>
-          <td><code>--dec=rpgmaker/rgss3a</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Nitroplus</td>
-          <td>2003-12-26</td>
-          <td>Saya no Uta</td>
-          <td><code>--dec=nitroplus/pak</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Nitroplus</td>
-          <td>2008-04-25</td>
-          <td>Chaos;Head</td>
-          <td><code>--dec=nitroplus/npa --plugin=chaos-head</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Nitroplus</td>
-          <td>2009-10-30</td>
-          <td>Full Metal Daemon Muramasa</td>
-          <td><code>--dec=nitroplus/npa --plugin=muramasa</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Nitroplus</td>
-          <td>2010-08-26</td>
-          <td>Steins;Gate</td>
-          <td><code>--dec=nitroplus/npa-sg</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Overdrive</td>
-          <td>2011-09-30</td>
-          <td>Go! Go! Nippon! ~My First Trip to Japan~</td>
-          <td><code>--dec=bgi/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Palette</td>
-          <td>2006-02-24</td>
-          <td>Moshimo Ashita ga Harenaraba</td>
-          <td><code>--dec=sysadv/pak</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Parasol</td>
-          <td>2012-05-25</td>
-          <td>Koiimo SWEET&#x2606;DAYS</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Parasol</td>
-          <td>2013-05-31</td>
-          <td>Yumekoi ~Yume Miru Mahou Shoujo to Koi no Jumon~</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Parasol</td>
-          <td>2014-08-29</td>
-          <td>Hare Nochi Kitto Nanohana Biyori</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Parfum Soft</td>
-          <td>2012-12-11</td>
-          <td>Issho ni Chapuchapu Time! ~Ofuro de Ichaicha Seikatsu~</td>
-          <td><code>--dec=ast/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>PeasSoft</td>
-          <td>2012-12-21</td>
-          <td>Iinazuke wa Imouto-sama!</td>
-          <td><code>--dec=yuka-script/ykc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Pita Fetish</td>
-          <td>2011-04-28</td>
-          <td>Gokkun! Onii-chan Milk ~Punipuni Oppai na Imouto to~</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=mixed-xor</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Propeller</td>
-          <td>2007-03-30</td>
-          <td>Tekoire Princess! ~Boku ga Mienai Kimi no Tame~</td>
-          <td><code>--dec=shiina-rio/warc --plugin=237</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Propeller</td>
-          <td>2011-06-24</td>
-          <td>Sukimazakura to Uso no Machi</td>
-          <td><code>--dec=propeller/mpk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Purple Software</td>
-          <td>2008-07-31</td>
-          <td>Haruiro Ouse</td>
-          <td><code>--dec=purple-software/cpz5</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Purple Software</td>
-          <td>2013-02-28</td>
-          <td>Hapymaher</td>
-          <td><code>--dec=purple-software/cpz5</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Purple Software</td>
-          <td>2015-04-24</td>
-          <td>Chrono Clock</td>
-          <td><code>--dec=purple-software/cpz6</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Purple Software</td>
-          <td>2015-07-24</td>
-          <td>Hapymaher - W Pack</td>
-          <td><code>--dec=purple-software/cpz5</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Purple Software</td>
-          <td>2015-07-24</td>
-          <td>Hapymaher -Fragmentation Dream-</td>
-          <td><code>--dec=purple-software/cpz5</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Ricotta</td>
-          <td>2013-10-25</td>
-          <td>Walkure Romanze More&amp;More</td>
-          <td><code>--dec=qlie/pack</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Root</td>
-          <td>2010-07-23</td>
-          <td>PARA-SOL</td>
-          <td><code>--dec=gs/pak</code>, <code>--dec=gs/dat</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Rune &amp; Cage</td>
-          <td>2004-02-27</td>
-          <td>Watashi no Puni Puni</td>
-          <td><code>--dec=glib/gml</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Rune &amp; Cage</td>
-          <td>2008-03-28</td>
-          <td>Pure My Imouto Milk Purun</td>
-          <td><code>--dec=glib/glib2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Rune</td>
-          <td>2007-12-14</td>
-          <td>Musume Shimai</td>
-          <td><code>--dec=glib/glib2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Sei Mikaeru Joshi Gakuen</td>
-          <td>2015-06-26</td>
-          <td>Sono Hanabira ni Kuchizuke o 18 - Nyuu Jene!</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Shangri-La</td>
-          <td>2008-03-27</td>
-          <td>Akatsuki no Goei</td>
-          <td><code>--dec=majiro/arc --rct-key=82a882ca82ae82e8904882d782e98148</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Shangri-La</td>
-          <td>2008-12-25</td>
-          <td>Akatsuki no Goei ~Principal-tachi no Kyuujitsu~</td>
-          <td><code>--dec=majiro/arc --rct-key=82e082a491ab82aa906a82cc82e682a482be82e6</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Shangri-La</td>
-          <td>2008-12-25</td>
-          <td>Akatsuki no Goei ~Tsumibukaki Shuumatsuron~</td>
-          <td><code>--dec=majiro/arc --rct-key=97f682cd937995558ddb8356838a815b83598163816382b182f182c882f1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>silica-gel</td>
-          <td>2014-07-18</td>
-          <td>Majime to Sasayakareru Ore wo Osananajimi no Risa ga Seiteki na Imi mo Komete Kanraku Shite Iku Hanashi</td>
-          <td><code>--dec=shiina-rio/warc --plugin=majime1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Soviet Games</td>
-          <td>2013-12-21</td>
-          <td>Everlasting Summer</td>
-          <td><code>--dec=renpy/rpa</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Spiky Caterpillar</td>
-          <td>2012-06-02</td>
-          <td>Long Live The Queen</td>
-          <td><code>--dec=renpy/rpa</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>SQUEEZ</td>
-          <td>2005-09-22</td>
-          <td>Honoo no Haramase Tenkousei</td>
-          <td><code>--dec=eagls/pak</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="incorrect"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Studio Ring</td>
-          <td>2010-10-29</td>
-          <td>Nanami to Konomi no Oshiete ABC</td>
-          <td><code>--dec=real-live/g00</code>, <code>--dec=real-live/nwa</code>, <code>--dec=real-live/ovk</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Studio Triumph</td>
-          <td>2012-01-27</td>
-          <td>Netorare Nurse Jitsu Ane Erina Kankin Kairaku Jigoku Hen</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Syrup -Many Milk-</td>
-          <td>2014-01-31</td>
-          <td>Machi Gurumi no Wana ~Hakudaku ni Mamireta Yuuri~</td>
-          <td><code>--dec=entis/noa</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Syrup -Many Milk-</td>
-          <td>2014-01-31</td>
-          <td>Nerawareta Megami Tenshi Angeltia ~Mamotta Ningentachi ni Uragirarete~</td>
-          <td><code>--dec=entis/noa</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tanuki Soft</td>
-          <td>2008-12-12</td>
-          <td>Mei Shoujo</td>
-          <td><code>--dec=glib/glib2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tanuki Soft</td>
-          <td>2009-12-18</td>
-          <td>Bishoujo</td>
-          <td><code>--dec=glib/glib2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tanuki Soft</td>
-          <td>2010-12-17</td>
-          <td>Shoukoujo</td>
-          <td><code>--dec=tanuki/tac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tanuki Soft</td>
-          <td>2011-11-18</td>
-          <td>Mebae</td>
-          <td><code>--dec=tanuki/tac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tanuki Soft</td>
-          <td>2012-12-21</td>
-          <td>Tonari no Puu-san</td>
-          <td><code>--dec=tanuki/tac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tanuki Soft</td>
-          <td>2014-02-28</td>
-          <td>Shoujo Kyouiku</td>
-          <td><code>--dec=tanuki/tac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tanuki Soft</td>
-          <td>2015-07-31</td>
-          <td>Shoujo Ramune</td>
-          <td><code>--dec=tanuki/tac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tarte</td>
-          <td>2004-07-23</td>
-          <td>Hinatabokko</td>
-          <td><code>--dec=active-soft/adpack</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tasofro &amp; Team Shanghai Alice</td>
-          <td>2004-12-30</td>
-          <td>Touhou 07.5 - Immaterial and Missing Power</td>
-          <td><code>--dec=twilight-frontier/pak1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tasofro &amp; Team Shanghai Alice</td>
-          <td>2008-05-25</td>
-          <td>Touhou 10.5 - Scarlet Weather Rhapsody</td>
-          <td><code>--dec=twilight-frontier/pak2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tasofro &amp; Team Shanghai Alice</td>
-          <td>2009-08-15</td>
-          <td>Touhou 12.3 - Hisoutensoku</td>
-          <td><code>--dec=twilight-frontier/pak2</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tasofro &amp; Team Shanghai Alice</td>
-          <td>2013-05-26</td>
-          <td>Touhou 13.5 - Hopeless Masquerade</td>
-          <td><code>--dec=twilight-frontier/tfpk --file-names=etc/th135-file-names.lst</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="partial" title="A few directory names are still unknown. Directory names are required by sprites to use correct palette."></i></td>
-          <td><i class="full"></i></td>
-          <td>Tasofro &amp; Team Shanghai Alice</td>
-          <td>2015-05-10</td>
-          <td>Touhou 14.5 - Urban Legend in Limbo</td>
-          <td><code>--dec=twilight-frontier/tfpk --file-names=etc/th145-file-names.lst</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2002-08-11</td>
-          <td>Touhou 06 - The Embodiment of Scarlet Devil</td>
-          <td><code>--dec=team-shanghai-alice/pbg3</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2003-08-17</td>
-          <td>Touhou 07 - Perfet Cherry Blossom</td>
-          <td><code>--dec=team-shanghai-alice/pbg4</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2004-08-15</td>
-          <td>Touhou 08 - Imperishable Night</td>
-          <td><code>--dec=team-shanghai-alice/pbgz</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2005-08-14</td>
-          <td>Touhou 09 - Phantasmagoria of Flower View</td>
-          <td><code>--dec=team-shanghai-alice/pbgz</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2005-12-30</td>
-          <td>Touhou 09.5 - Shoot the Bullet</td>
-          <td><code>--dec=team-shanghai-alice/tha1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2007-08-17</td>
-          <td>Touhou 10 - Mountain of Faith</td>
-          <td><code>--dec=team-shanghai-alice/tha1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2008-08-16</td>
-          <td>Touhou 11 - Subterranean Animism</td>
-          <td><code>--dec=team-shanghai-alice/tha1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2009-08-15</td>
-          <td>Touhou 12 - Undefined Fantastic Object</td>
-          <td><code>--dec=team-shanghai-alice/tha1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2010-03-14</td>
-          <td>Touhou 12.5 - Double Spoiler</td>
-          <td><code>--dec=team-shanghai-alice/tha1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2010-08-14</td>
-          <td>Touhou 12.8 - Fairy Wars</td>
-          <td><code>--dec=team-shanghai-alice/tha1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2011-08-13</td>
-          <td>Touhou 13 - Ten Desires</td>
-          <td><code>--dec=team-shanghai-alice/tha1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2013-08-12</td>
-          <td>Touhou 14 - Double Dealing Character</td>
-          <td><code>--dec=team-shanghai-alice/tha1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2014-05-11</td>
-          <td>Touhou 14.3 - Impossible Spell Card</td>
-          <td><code>--dec=team-shanghai-alice/tha1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Team Shanghai Alice</td>
-          <td>2015-08-14</td>
-          <td>Touhou 15 - Legacy of Lunatic Kingdom (full &amp; trial)</td>
-          <td><code>--dec=team-shanghai-alice/tha1</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Tryset</td>
-          <td>2011-10-28</td>
-          <td>Shin Yarasete! Teacher</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Type-Moon &amp; French Bread</td>
-          <td>2002-12-30</td>
-          <td>Melty Blood</td>
-          <td><code>--dec=french-bread/p</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Type-Moon</td>
-          <td>2000-12-29</td>
-          <td>Tsukihime</td>
-          <td><code>--dec=nscripter/nsa</code>, <code>--dec=nscripter/sar</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Type-Moon</td>
-          <td>2004-03-26</td>
-          <td>Fate/Stay Night</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=fsn</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Type-Moon</td>
-          <td>2005-12-29</td>
-          <td>Fate/Hollow Ataraxia</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=fha</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Type-Moon</td>
-          <td>2012-04-12</td>
-          <td>Mahou Tsukai no Yoru</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=mahoyoru</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Unison Soft</td>
-          <td>2007-03-23</td>
-          <td>Chu x Chu Idol (The idol is a vampire!?)</td>
-          <td><code>--dec=amuse-craft/pac</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Waffle</td>
-          <td>2011-10-28</td>
-          <td>Tsugou no Yoi Sexfriend?</td>
-          <td><code>--dec=nekopack/nekopack4</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Waffle</td>
-          <td>2014-04-11</td>
-          <td>Gakuen de Jikan yo Tomare</td>
-          <td><code>--dec=nekopack/nekopack4</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="partial" title="BGM is encoded as CD audio"></i></td>
-          <td>West Vision</td>
-          <td>2004-01-23</td>
-          <td>OL Gari ~Nureta Office~</td>
-          <td><code>--dec=west-vision/syg</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>West Vision</td>
-          <td>2004-12-17</td>
-          <td>Innyuu Kazoku ~Boku to Haha to Ane to Imouto to~</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>West Vision</td>
-          <td>2005-08-26</td>
-          <td>Kyonyuu Gokuraku Seminar</td>
-          <td><code>--dec=wild-bug/wbp</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>West Vision</td>
-          <td>2007-01-19</td>
-          <td>Nyuuki Taisai</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>West Vision</td>
-          <td>2008-01-25</td>
-          <td>Futago Reijou</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2006-09-29</td>
-          <td>Ina☆Koi! ~Oinari-sama to Motemote no Tatari~</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2007-05-25</td>
-          <td>Ina☆Koi! Fandisc</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2007-11-30</td>
-          <td>Magus Tale ~Sekaiju to Koisuru Mahoutsukai~</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2008-06-13</td>
-          <td>Magus Tale Infinity</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2008-12-28</td>
-          <td>Meri☆Chri ~Juu Nen Buri no White Christmas~</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2009-07-31</td>
-          <td>77 (Sevens) ~And, Two Stars Meet Again~</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2010-04-30</td>
-          <td>Neko☆Koi! ~Nekogami-sama to Nekomimi no Tatari~</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2010-07-30</td>
-          <td>Magus Tale Infinity</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2010-07-30</td>
-          <td>Magus Tale ~Sekaiju to Koisuru Mahoutsukai~</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2010-08-27</td>
-          <td>Suzukaze no Melt -Where Wishes are Drawn to Each Other-</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2011-06-24</td>
-          <td>Maikaze no Melt -Where Leads to Feeling Destination-</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2011-09-30</td>
-          <td>Lunaris Filia ~Kiss to Keiyaku to Shinku no Hitomi~</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2012-09-28</td>
-          <td>Ryuuyoku no Melodia -Diva with the blessed dragonol-</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whirlpool</td>
-          <td>2012-12-21</td>
-          <td>Justy×Nasty ~Maou Hajimemashita~</td>
-          <td><code>--dec=yuris/ypf</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Whitesoft</td>
-          <td>2015-02-27</td>
-          <td>Sakura Synchronicity</td>
-          <td><code>--dec=lucifen/lpk --plugin=sakura-sync</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Will</td>
-          <td>2007-02-23</td>
-          <td>Tsuma Youji 1 ~Boku wa Hitozuma Kanrinin~</td>
-          <td><code>--dec=will/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Will</td>
-          <td>2008-05-23</td>
-          <td>Tsuma Youji 2 ~Boku wa Hitozuma Tenjouin~</td>
-          <td><code>--dec=will/arc</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Yurin Yurin</td>
-          <td>2010-09-25</td>
-          <td>Hanahira!</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Yurin Yurin</td>
-          <td>2012-11-15</td>
-          <td>Sono Hanabira ni Kuchizuke o 11 - Michael no Otomoe-tachi</td>
-          <td><code>--dec=nsystem/fjsys</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Yurin Yurin</td>
-          <td>2013-03-29</td>
-          <td>Sono Hanabira ni Kuchizuke o 12 - Atelier no Koibito-tachi</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Yurin Yurin</td>
-          <td>2013-05-31</td>
-          <td>Sono Hanabira ni Kuchizuke o 13 - Tenshi no Akogare</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Yurin Yurin</td>
-          <td>2013-08-30</td>
-          <td>Sono Hanabira ni Kuchizuke o 14 - Tenshi-tachi no Harukoi</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Yurin Yurin</td>
-          <td>2013-12-20</td>
-          <td>Sono Hanabira ni Kuchizuke o 15 - Shirayuki no Kishi</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-
-        <tr>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td><i class="full"></i></td>
-          <td>Yurin Yurin</td>
-          <td>2014-03-28</td>
-          <td>Sono Hanabira ni Kuchizuke o 16 - Tenshi-tachi no Yakusoku</td>
-          <td><code>--dec=kirikiri/xp3 --plugin=noop</code></td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <footer>
-    <p>If a game isn't listed above and it works, please let me know so I can update the table. Contact information can be found in
-    <a href="https://github.com/vn-tools/arc_unpacker">README</a>.</p>
-  </footer>
 </div>
 </body>
 </html>

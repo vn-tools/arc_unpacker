@@ -57,7 +57,7 @@ TEST_CASE("Documentation", "[core]")
         const auto &registry = dec::Registry::instance();
 
         const std::regex decoder_name_regex(
-            "--dec=([^< ]*)",
+            "--dec=([^' ]*)",
             std::regex_constants::ECMAScript | std::regex_constants::icase);
 
         for (const auto decoder_name
@@ -66,36 +66,5 @@ TEST_CASE("Documentation", "[core]")
             INFO("Decoder name not present in the registry: " << decoder_name);
             REQUIRE(registry.has_decoder(decoder_name));
         }
-    }
-
-    SECTION("GAMELIST is sorted alphabetically")
-    {
-        const auto content = read_gamelist_file();
-        const std::regex row_regex(
-            "<tr>(([\r\n]|.)*?)</tr>", std::regex_constants::ECMAScript);
-        const std::regex cell_regex(
-            "<td>(.*)</td>", std::regex_constants::ECMAScript);
-
-        size_t comparisons = 0;
-        std::string last_sort_key;
-        for (const auto row : regex_range(row_regex, content, 1))
-        {
-            std::vector<std::string> cells;
-            for (const auto cell : regex_range(cell_regex, row, 1))
-                cells.push_back(cell);
-            if (cells.size() != 7)
-                continue;
-            const auto company = cells[3];
-            const auto release_date = cells[4];
-            const auto game_title = cells[5];
-            const auto sort_key = algo::lower(
-                "[" + company + "][" + release_date + "]" + game_title);
-            REQUIRE(sort_key > last_sort_key);
-            last_sort_key = sort_key;
-            comparisons++;
-        }
-
-        // sanity check to see if regexes actually work and match stuff
-        REQUIRE(comparisons > 10);
     }
 }
