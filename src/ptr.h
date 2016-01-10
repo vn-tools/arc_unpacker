@@ -77,16 +77,26 @@ namespace au {
                 *cur_ptr++ = c;
         }
 
-        void append_from(const int relative_position, size_t count)
+        void append_from(ptr<const T> &input_ptr, size_t size)
+        {
+            if (size > input_ptr.left())
+                throw err::BadDataSizeError();
+            if (size > left())
+                throw err::BadDataSizeError();
+            while (size--)
+                *cur_ptr++ = *input_ptr++;
+        }
+
+        void append_from(const int relative_position, size_t size)
         {
             if (pos() + relative_position < 0)
                 throw err::BadDataOffsetError();
-            if (pos() + relative_position + count > size())
+            if (pos() + relative_position + size > this->size())
                 throw err::BadDataOffsetError();
-            if (count > left())
+            if (size > left())
                 throw err::BadDataSizeError();
             auto source_ptr = cur_ptr + relative_position;
-            while (count--)
+            while (size--)
                 *cur_ptr++ = *source_ptr++;
         }
 
@@ -144,7 +154,7 @@ namespace au {
         return ptr<u8>(data.get<u8>(), data.size());
     }
 
-    inline const ptr<const u8> make_ptr(const bstr &data)
+    inline ptr<const u8> make_ptr(const bstr &data)
     {
         return ptr<const u8>(data.get<const u8>(), data.size());
     }
