@@ -122,10 +122,12 @@ See --help --dec=DECODER to get detailed help for given decoder.
     }
 
     logger.info(
-R"(Useful places:
+R"(Contact:
+
 Source code   - https://github.com/vn-tools/arc_unpacker
 Bug reporting - https://github.com/vn-tools/arc_unpacker/issues
-Game requests - #arc_unpacker on Rizon
+Game requests - https://github.com/vn-tools/arc_unpacker/issues
+IRC channel   - #arc_unpacker on irc.rizon.net
 )");
 }
 
