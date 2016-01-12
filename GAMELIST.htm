@@ -2327,7 +2327,7 @@
       ];
 
       games = games.sort(function (a, b) {
-        return a.title.localeCompare(b.title);
+        return a.title.localeCompare(b.title, ['en', 'jp'], {numeric: true});
       });
 
       var $ul = $('#game-list');
