@@ -6,64 +6,62 @@
 namespace au {
 namespace algo {
 
-    template<typename T> class ptr final
+    template<typename T> class BasePtr final
     {
     public:
-        constexpr ptr(T *data, const size_t size) :
-            start_ptr(data),
-            cur_ptr(data),
-            end_ptr(data + size)
+        constexpr BasePtr(T *data, const size_t size) :
+            start_ptr(data), cur_ptr(data), end_ptr(data + size)
         {
         }
 
-        ptr &operator++()
+        BasePtr &operator++()
         {
             cur_ptr++;
             return *this;
         }
 
-        ptr &operator--()
+        BasePtr &operator--()
         {
             cur_ptr--;
             return *this;
         }
 
-        ptr operator++(int)
+        BasePtr operator++(int)
         {
             auto p = *this;
             operator++();
             return p;
         }
 
-        ptr operator--(int)
+        BasePtr operator--(int)
         {
             auto p = *this;
             operator--();
             return p;
         }
 
-        constexpr ptr<T> operator +(const int n) const
+        constexpr BasePtr<T> operator +(const int n) const
         {
-            ptr ret(start_ptr, size());
+            BasePtr ret(start_ptr, size());
             ret += pos();
             ret += n;
             return ret;
         }
 
-        constexpr ptr<T> operator -(const size_t n) const
+        constexpr BasePtr<T> operator -(const size_t n) const
         {
             return operator+(-n);
         }
 
-        ptr<T> operator +(const int n)
+        BasePtr<T> operator +(const int n)
         {
-            ptr ret(start_ptr, size());
+            BasePtr ret(start_ptr, size());
             ret += pos();
             ret += n;
             return ret;
         }
 
-        ptr<T> operator -(const size_t n)
+        BasePtr<T> operator -(const size_t n)
         {
             return operator+(-n);
         }
@@ -76,7 +74,7 @@ namespace algo {
                 *cur_ptr++ = c;
         }
 
-        void append_from(ptr<const T> &input_ptr, size_t size)
+        void append_from(BasePtr<const T> &input_ptr, size_t size)
         {
             if (size > input_ptr.left())
                 throw err::BadDataSizeError();
@@ -131,6 +129,10 @@ namespace algo {
         T *cur_ptr;
         T *end_ptr;
     };
+
+
+    template<typename T> using ptr = BasePtr<T>;
+
 
     template<typename T> inline ptr<T> make_ptr(T *data, const size_t size)
     {
