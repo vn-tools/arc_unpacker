@@ -64,7 +64,7 @@ static bstr read_rgb(
     while (true)
     {
         const auto flags = input_stream.read<u8>();
-        if (flags == 0xFF || output_ptr >= output_ptr.end())
+        if (flags == 0xFF || !output_ptr.left())
             break;
 
         const auto method = (flags >> 6) & 3;
@@ -182,7 +182,7 @@ static bstr read_mono(
     while (true)
     {
         const auto flags = input_stream.read<u8>();
-        if (flags == 0xFF || output_ptr >= output_ptr.end())
+        if (flags == 0xFF || !output_ptr.left())
             break;
 
         const auto method = (flags >> 6) & 3;

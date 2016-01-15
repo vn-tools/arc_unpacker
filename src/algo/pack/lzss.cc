@@ -31,7 +31,7 @@ bstr algo::pack::lzss_decompress(
     auto dict = std::make_unique<u8[]>(dict_size);
     auto output_ptr = algo::make_ptr(output);
     auto dict_ptr = dict.get();
-    while (output_ptr < output.end())
+    while (output_ptr.left())
     {
         if (bit_reader.get(1) > 0)
         {
@@ -45,7 +45,7 @@ bstr algo::pack::lzss_decompress(
             auto look_behind_pos = bit_reader.get(settings.position_bits);
             auto repetitions = bit_reader.get(settings.size_bits)
                 + settings.min_match_size;
-            while (repetitions-- && output_ptr < output.end())
+            while (repetitions-- && output_ptr.left())
             {
                 *output_ptr++ = dict_ptr[look_behind_pos];
                 look_behind_pos++;
@@ -69,28 +69,28 @@ bstr algo::pack::lzss_decompress(
     auto output_ptr = algo::make_ptr(output);
     auto input_ptr = algo::make_ptr(input);
     u16 control = 0;
-    while (output_ptr < output_ptr.end())
+    while (output_ptr.left())
     {
         control >>= 1;
         if (!(control & 0x100))
         {
-            if (input_ptr >= input_ptr.end()) break;
+            if (!input_ptr.left()) break;
             control = *input_ptr++ | 0xFF00;
         }
         if (control & 1)
         {
-            if (input_ptr >= input_ptr.end()) break;
+            if (!input_ptr.left()) break;
             *output_ptr++ = *input_ptr++;
             dict << output_ptr[-1];
         }
         else
         {
-            if (input_ptr + 2 > input_ptr.end()) break;
+            if (input_ptr.left() < 2) break;
             const auto lo = *input_ptr++;
             const auto hi = *input_ptr++;
             auto look_behind_pos = lo | ((hi & 0xF0) << 4);
             auto repetitions = (hi & 0xF) + 3;
-            while (repetitions-- && output_ptr < output_ptr.end())
+            while (repetitions-- && output_ptr.left())
             {
                 *output_ptr++ = dict[look_behind_pos++];
                 dict << output_ptr[-1];

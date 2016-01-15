@@ -122,7 +122,7 @@ static void decrypt_file_data_with_external_keys(
 
     auto table_index = mt.get_next_integer() % table.size();
     auto data_ptr = algo::make_ptr(data.get<u64>(), data.size() / 8);
-    while (data_ptr < data_ptr.end())
+    while (data_ptr.left())
     {
         mutator ^= table[table_index];
         mutator = algo::padd(mutator, table[table_index]);
@@ -205,7 +205,7 @@ static bstr decompress(const bstr &input, const size_t output_size)
             : input_stream.read_le<u32>();
 
         u8 n = 0;
-        while (output_ptr < output_ptr.end())
+        while (output_ptr.left())
         {
             u8 d;
             if (n > 0)

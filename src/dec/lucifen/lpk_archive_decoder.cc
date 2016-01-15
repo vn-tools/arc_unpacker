@@ -45,7 +45,7 @@ namespace
 static void decrypt_table(bstr &data, u32 key, u32 rotate_pattern)
 {
     auto data_ptr = algo::make_ptr(data.get<u32>(), data.size() / 4);
-    while (data_ptr < data_ptr.end())
+    while (data_ptr.left())
     {
         *data_ptr++ ^= key;
         rotate_pattern = algo::rotl<u32>(rotate_pattern, 4);
@@ -57,7 +57,7 @@ static void decrypt_content_1(bstr &data, u32 key, u32 rotate_pattern)
 {
     auto data_ptr = algo::make_ptr(
         data.get<u32>(), std::min<size_t>(0x100, data.size()) / 4);
-    while (data_ptr < data_ptr.end())
+    while (data_ptr.left())
     {
         *data_ptr++ ^= key;
         rotate_pattern = algo::rotr<u32>(rotate_pattern, 4);

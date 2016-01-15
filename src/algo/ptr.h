@@ -125,13 +125,6 @@ namespace algo {
         T *current() { return cur_ptr; }
         T *end() { return end_ptr; }
 
-        constexpr bool operator <(const T *p) const { return cur_ptr < p; }
-        constexpr bool operator <=(const T *p) const { return cur_ptr <= p; }
-        constexpr bool operator >(const T *p) const { return cur_ptr > p; }
-        constexpr bool operator >=(const T *p) const { return cur_ptr >= p; }
-        constexpr bool operator ==(const T *p) const { return cur_ptr == p; }
-        constexpr bool operator !=(const T *p) const { return cur_ptr != p; }
-
     private:
         T *start_ptr;
         T *cur_ptr;

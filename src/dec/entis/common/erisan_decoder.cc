@@ -91,7 +91,7 @@ void ErisaNDecoder::decode(u8 *output, const size_t output_size)
         return;
 
     auto output_ptr = algo::make_ptr(output, output_size);
-    while (output_ptr < output_ptr.end())
+    while (output_ptr.left())
     {
         if (p->nemesis_left > 0)
         {

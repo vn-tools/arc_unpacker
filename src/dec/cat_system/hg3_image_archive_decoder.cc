@@ -58,7 +58,7 @@ static bstr delta_transform(
 
     bstr output(input.size());
     auto output_ptr = algo::make_ptr(output);
-    while (output_ptr < output_ptr.end())
+    while (output_ptr.left())
     {
         u32 value
             = table[0][input[plane0++]]
@@ -116,17 +116,13 @@ static std::unique_ptr<res::Image> decode_img0000(
     bstr output(output_size);
     auto input_ptr = algo::make_ptr(data);
     auto output_ptr = algo::make_ptr(output);
-    while (output_ptr < output_ptr.end())
+    while (output_ptr.left())
     {
         auto size = ctl_bit_reader.get_gamma(1);
         if (copy)
         {
-            while (size--
-                && input_ptr < input_ptr.end()
-                && output_ptr < output_ptr.end())
-            {
+            while (size-- && input_ptr.left() && output_ptr.left())
                 *output_ptr++ = *input_ptr++;
-            }
         }
         else
         {

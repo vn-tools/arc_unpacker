@@ -39,7 +39,7 @@ static bstr custom_lzss_decompress(
     io::MemoryStream control_block_stream(control_block);
     io::MemoryStream data_block_stream(data_block);
     int control = 0, bit_mask = 0;
-    while (output_ptr < output_ptr.end())
+    while (output_ptr.left())
     {
         if (!bit_mask)
         {
@@ -51,7 +51,7 @@ static bstr custom_lzss_decompress(
             const auto tmp = data_block_stream.read_le<u16>();
             auto repetitions = (tmp & 0x1F) + 3;
             auto look_behind_pos = tmp >> 5;
-            while (repetitions-- && output_ptr < output_ptr.end())
+            while (repetitions-- && output_ptr.left())
             {
                 *output_ptr++ = dict[look_behind_pos++];
                 dict << output_ptr[-1];

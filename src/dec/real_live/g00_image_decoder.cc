@@ -29,7 +29,7 @@ static bstr decompress(
     auto input_ptr = algo::make_ptr(input);
 
     u16 control = 1;
-    while (output_ptr < output_ptr.end() && input_ptr < input_ptr.end())
+    while (output_ptr.left() && input_ptr.left())
     {
         control >>= 1;
         if (!(control & 0x100))

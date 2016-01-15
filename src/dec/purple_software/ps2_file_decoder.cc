@@ -22,27 +22,27 @@ static bstr custom_lzss_decompress(const bstr &input, const size_t size_orig)
     auto output_ptr = algo::make_ptr(output);
     auto input_ptr = algo::make_ptr(input);
     u16 control = 1;
-    while (output_ptr < output_ptr.end())
+    while (output_ptr.left())
     {
         if (control == 1)
         {
-            if (input_ptr >= input_ptr.end()) break;
+            if (!input_ptr.left()) break;
             control = *input_ptr++ | 0x100;
         }
         if (control & 1)
         {
-            if (input_ptr >= input_ptr.end()) break;
+            if (!input_ptr.left()) break;
             *output_ptr++ = *input_ptr++;
             dict << output_ptr[-1];
         }
         else
         {
-            if (input_ptr + 2 > input_ptr.end()) break;
+            if (input_ptr.left() < 2) break;
             const u8 lo = *input_ptr++;
             const u8 hi = *input_ptr++;
             auto look_behind_pos = lo | (hi & 0xE0) << 3;
             auto repetitions = (hi & 0x1F) + 2;
-            while (repetitions-- && output_ptr < output_ptr.end())
+            while (repetitions-- && output_ptr.left())
             {
                 *output_ptr++ = dict[look_behind_pos++];
                 dict << output_ptr[-1];
