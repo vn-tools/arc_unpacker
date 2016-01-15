@@ -16,58 +16,56 @@ namespace algo {
         {
         }
 
-        ptr &operator--()
-        {
-            cur_ptr--;
-            return *this;
-        }
-
         ptr &operator++()
         {
             cur_ptr++;
             return *this;
         }
 
-        ptr operator--(int)
+        ptr &operator--()
         {
-            auto p = *this;
             cur_ptr--;
-            return p;
+            return *this;
         }
 
         ptr operator++(int)
         {
             auto p = *this;
-            cur_ptr++;
+            operator++();
             return p;
         }
 
-        constexpr ptr<T> operator +(const size_t n) const
+        ptr operator--(int)
+        {
+            auto p = *this;
+            operator--();
+            return p;
+        }
+
+        constexpr ptr<T> operator +(const int n) const
         {
             ptr ret(start_ptr, size());
+            ret += pos();
             ret += n;
             return ret;
         }
 
         constexpr ptr<T> operator -(const size_t n) const
         {
-            ptr ret(start_ptr, size());
-            ret -= n;
-            return ret;
+            return operator+(-n);
         }
 
-        ptr<T> operator +(const size_t n)
+        ptr<T> operator +(const int n)
         {
             ptr ret(start_ptr, size());
+            ret += pos();
             ret += n;
             return ret;
         }
 
         ptr<T> operator -(const size_t n)
         {
-            ptr ret(start_ptr, size());
-            ret -= n;
-            return ret;
+            return operator+(-n);
         }
 
         void append_from(const bstr &source)
