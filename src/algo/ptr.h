@@ -40,6 +40,18 @@ namespace algo {
             return p;
         }
 
+        BasePtr &operator +=(const size_t n)
+        {
+            cur_ptr += n;
+            return *this;
+        }
+
+        BasePtr &operator -=(const size_t n)
+        {
+            cur_ptr -= n;
+            return *this;
+        }
+
         constexpr BasePtr<T> operator +(const int n) const
         {
             BasePtr ret(start_ptr, size());
@@ -100,8 +112,6 @@ namespace algo {
         constexpr size_t pos() const { return cur_ptr - start_ptr; }
         constexpr size_t left() const { return end_ptr - cur_ptr; }
         constexpr size_t size() const { return end_ptr - start_ptr; }
-        constexpr void operator +=(const size_t n) const { cur_ptr += n; }
-        constexpr void operator -=(const size_t n) const { cur_ptr -= n; }
 
         constexpr T &operator *() const { return *cur_ptr; }
         constexpr T &operator[](const size_t n) const { return cur_ptr[n]; }
@@ -109,8 +119,6 @@ namespace algo {
         constexpr T *current() const { return cur_ptr; }
         constexpr T *end() const { return end_ptr; }
 
-        void operator +=(const size_t n) { cur_ptr += n; }
-        void operator -=(const size_t n) { cur_ptr -= n; }
         T &operator *() { return *cur_ptr; }
         T &operator[](const size_t n) { return cur_ptr[n]; }
         T *start() { return start_ptr; }
