@@ -1,5 +1,6 @@
 #include "dec/amuse_craft/pgd_c00_image_decoder.h"
-#include "algo/cyclic_buffer.h"
+#include <array>
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "dec/truevision/tga_image_decoder.h"
 #include "io/memory_stream.h"
@@ -14,7 +15,9 @@ static bstr decompress(const bstr &input, const size_t size_orig)
     bstr output;
     output.reserve(size_orig);
     io::MemoryStream input_stream(input);
-    algo::CyclicBuffer<u8, 0xBB8> dict(0);
+    std::array<u8, 0xBB8> dict = {0};
+    auto dict_ptr = algo::make_cyclic_ptr(dict.data(), dict.size());
+    auto written = -static_cast<int>(dict.size());
     u16 control = 0;
     while (output.size() < size_orig)
     {
@@ -25,13 +28,17 @@ static bstr decompress(const bstr &input, const size_t size_orig)
         {
             const auto look_behind_pos = input_stream.read_le<u16>();
             const auto repetitions = input_stream.read<u8>();
-            const auto dict_start = dict.start();
+            auto source_ptr
+                = algo::make_cyclic_ptr(dict.data(), dict.size())
+                + (written < 0 ? 0 : dict_ptr.pos())
+                + look_behind_pos;
             for (const auto i : algo::range(repetitions))
             {
-                const u8 c = dict[dict_start + look_behind_pos + i];
+                const auto c = *source_ptr++;
                 output += c;
-                dict << c;
+                *dict_ptr++ = c;
             }
+            written += repetitions;
         }
         else
         {
@@ -39,7 +46,8 @@ static bstr decompress(const bstr &input, const size_t size_orig)
             const auto chunk = input_stream.read(repetitions);
             output += chunk;
             for (const auto &c : chunk)
-                dict << c;
+                *dict_ptr++ = c;
+            written += chunk.size();
         }
     }
     return output;

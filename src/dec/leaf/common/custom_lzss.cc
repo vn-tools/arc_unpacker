@@ -1,5 +1,6 @@
 #include "dec/leaf/common/custom_lzss.h"
-#include "algo/cyclic_buffer.h"
+#include <array>
+#include "algo/ptr.h"
 #include "algo/range.h"
 
 using namespace au;
@@ -10,31 +11,42 @@ using namespace au::dec::leaf;
 // - input is negated
 bstr common::custom_lzss_decompress(const bstr &input, const size_t output_size)
 {
+    std::array<u8, 0x1000> dict = {0};
+    auto dict_ptr = algo::make_cyclic_ptr(dict.data(), dict.size()) + 0xFEE;
     bstr output(output_size);
-    algo::CyclicBuffer<u8, 0x1000> dict(0xFEE);
-    u8 *output_ptr = output.get<u8>();
-    const u8 *output_end = output.end<const u8>();
-    const u8 *input_ptr = input.get<const u8>();
-    const u8 *input_end = input.end<const u8>();
+    auto output_ptr = algo::make_ptr(output);
+    auto input_ptr = algo::make_ptr(input);
     u16 control = 0;
-    while (output_ptr < output_end && input_ptr < input_end)
+    while (output_ptr.left() && input_ptr.left())
     {
         control <<= 1;
         if (!(control & 0x80))
             control = (~*input_ptr++ << 8) | 0xFF;
 
         if ((control >> 15) & 1)
-            dict << (*output_ptr++ = ~*input_ptr++);
+        {
+            if (!input_ptr.left()) break;
+            const auto b = ~*input_ptr++;
+            *output_ptr++ = b;
+            *dict_ptr++ = b;
+        }
         else
         {
-            if (input_ptr + 2 > input_end)
-                break;
-            const u16 tmp = ~reinterpret_cast<const u16&>(*input_ptr);
-            input_ptr += 2;
-            u16 look_behind_pos = tmp >> 4;
-            u16 repetitions = (tmp & 0xF) + 3;
-            while (repetitions-- && output_ptr < output_end)
-                dict << (*output_ptr++ = dict[look_behind_pos++]);
+            if (input_ptr.left() < 2) break;
+            const u8 lo = ~*input_ptr++;
+            const u8 hi = ~*input_ptr++;
+            const auto tmp = (hi << 8) | lo;
+            const auto look_behind_pos = tmp >> 4;
+            auto repetitions = (tmp & 0xF) + 3;
+            auto source_ptr
+                = algo::make_cyclic_ptr(dict.data(), dict.size())
+                + look_behind_pos;
+            while (repetitions-- && output_ptr.left())
+            {
+                const auto b = *source_ptr++;
+                *output_ptr++ = b;
+                *dict_ptr++ = b;
+            }
         }
     }
     return output;

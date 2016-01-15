@@ -1,6 +1,6 @@
 #include "dec/purple_software/ps2_file_decoder.h"
+#include <array>
 #include "algo/binary.h"
-#include "algo/cyclic_buffer.h"
 #include "algo/ptr.h"
 #include "algo/range.h"
 
@@ -17,7 +17,8 @@ static void decrypt(bstr &data, const u32 key, const size_t shift)
 
 static bstr custom_lzss_decompress(const bstr &input, const size_t size_orig)
 {
-    algo::CyclicBuffer<u8, 0x800> dict(0x7DF);
+    std::array<u8, 0x800> dict = {0};
+    auto dict_ptr = algo::make_cyclic_ptr(dict.data(), dict.size()) + 0x7DF;
     bstr output(size_orig);
     auto output_ptr = algo::make_ptr(output);
     auto input_ptr = algo::make_ptr(input);
@@ -32,20 +33,25 @@ static bstr custom_lzss_decompress(const bstr &input, const size_t size_orig)
         if (control & 1)
         {
             if (!input_ptr.left()) break;
-            *output_ptr++ = *input_ptr++;
-            dict << output_ptr[-1];
+            const auto b = *input_ptr++;
+            *output_ptr++ = b;
+            *dict_ptr++ = b;
         }
         else
         {
             if (input_ptr.left() < 2) break;
-            const u8 lo = *input_ptr++;
-            const u8 hi = *input_ptr++;
-            auto look_behind_pos = lo | (hi & 0xE0) << 3;
+            const auto lo = *input_ptr++;
+            const auto hi = *input_ptr++;
+            const auto look_behind_pos = lo | (hi & 0xE0) << 3;
             auto repetitions = (hi & 0x1F) + 2;
+            auto source_ptr
+                = algo::make_cyclic_ptr(dict.data(), dict.size())
+                + look_behind_pos;
             while (repetitions-- && output_ptr.left())
             {
-                *output_ptr++ = dict[look_behind_pos++];
-                dict << output_ptr[-1];
+                const auto b = *source_ptr++;
+                *output_ptr++ = b;
+                *dict_ptr++ = b;
             }
         }
         control >>= 1;

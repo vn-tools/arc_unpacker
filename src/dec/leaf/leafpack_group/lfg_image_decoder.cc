@@ -1,5 +1,6 @@
 #include "dec/leaf/leafpack_group/lfg_image_decoder.h"
-#include "algo/cyclic_buffer.h"
+#include <array>
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "dec/leaf/common/custom_lzss.h"
 #include "err.h"
@@ -92,7 +93,8 @@ res::Image LfgImageDecoder::decode_impl(
     size_t y = height;
 
     // heavily modified LZSS
-    algo::CyclicBuffer<u8, 0x1000> dict(0xFEE);
+    std::array<u8, 0x1000> dict = {0};
+    auto dict_ptr = algo::make_cyclic_ptr(dict.data(), dict.size()) + 0xFEE;
     u16 control = 0;
     while (output_ptr >= output_start
         && output_ptr < output_end
@@ -105,7 +107,7 @@ res::Image LfgImageDecoder::decode_impl(
         if ((control >> 15) & 1)
         {
             const auto tmp = lame_permutation[*input_ptr++];
-            dict << tmp;
+            *dict_ptr++ = tmp;
             output_ptr[0] = tmp >> 4;
             output_ptr[1] = tmp & 0xF;
             move_output_ptr(horizontal, width, height, output_ptr, x, y);
@@ -116,14 +118,17 @@ res::Image LfgImageDecoder::decode_impl(
                 break;
             const auto tmp = *reinterpret_cast<const u16*>(input_ptr);
             input_ptr += 2;
-            u16 look_behind_pos = tmp >> 4;
-            u16 repetitions = (tmp & 0xF) + 3;
+            const auto look_behind_pos = tmp >> 4;
+            auto repetitions = (tmp & 0xF) + 3;
+            auto source_ptr
+                = algo::make_cyclic_ptr(dict.data(), dict.size())
+                + look_behind_pos;
             while (repetitions--
                 && output_ptr >= output_start
                 && output_ptr < output_end)
             {
-                const auto tmp = dict[look_behind_pos++];
-                dict << tmp;
+                const auto tmp = *source_ptr++;
+                *dict_ptr++ = tmp;
                 output_ptr[0] = tmp >> 4;
                 output_ptr[1] = tmp & 0xF;
                 move_output_ptr(horizontal, width, height, output_ptr, x, y);

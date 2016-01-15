@@ -1,5 +1,5 @@
 #include "algo/pack/lzss.h"
-#include "algo/cyclic_buffer.h"
+#include <array>
 #include "algo/ptr.h"
 #include "algo/range.h"
 #include "io/msb_bit_reader.h"
@@ -25,34 +25,34 @@ bstr algo::pack::lzss_decompress(
     const size_t output_size,
     const BitwiseLzssSettings &settings)
 {
+    std::vector<u8> dict(1 << settings.position_bits, 0);
+    auto dict_ptr
+        = algo::make_cyclic_ptr(dict.data(), dict.size())
+        + settings.initial_dictionary_pos;
+
     bstr output(output_size);
-    const auto dict_size = 1 << settings.position_bits;
-    auto dict_pos = settings.initial_dictionary_pos;
-    auto dict = std::make_unique<u8[]>(dict_size);
     auto output_ptr = algo::make_ptr(output);
-    auto dict_ptr = dict.get();
     while (output_ptr.left())
     {
         if (bit_reader.get(1) > 0)
         {
-            *output_ptr++ = bit_reader.get(8);
-            dict_ptr[dict_pos] = output_ptr[-1];
-            dict_pos++;
-            dict_pos %= dict_size;
+            const auto b = bit_reader.get(8);
+            *output_ptr++ = b;
+            *dict_ptr++ = b;
         }
         else
         {
             auto look_behind_pos = bit_reader.get(settings.position_bits);
             auto repetitions = bit_reader.get(settings.size_bits)
                 + settings.min_match_size;
+            auto source_ptr
+                = algo::make_cyclic_ptr(dict.data(), dict.size())
+                + look_behind_pos;
             while (repetitions-- && output_ptr.left())
             {
-                *output_ptr++ = dict_ptr[look_behind_pos];
-                look_behind_pos++;
-                look_behind_pos %= dict_size;
-                dict_ptr[dict_pos] = output_ptr[-1];
-                dict_pos++;
-                dict_pos %= dict_size;
+                const auto b = *source_ptr++;
+                *output_ptr++ = b;
+                *dict_ptr++ = b;
             }
         }
     }
@@ -64,10 +64,15 @@ bstr algo::pack::lzss_decompress(
     const size_t output_size,
     const BytewiseLzssSettings &settings)
 {
-    algo::CyclicBuffer<u8, 0x1000> dict(settings.initial_dictionary_pos);
+    std::array<u8, 0x1000> dict = {0};
+    auto dict_ptr
+        = algo::make_cyclic_ptr(dict.data(), dict.size())
+        + settings.initial_dictionary_pos;
+
     bstr output(output_size);
     auto output_ptr = algo::make_ptr(output);
     auto input_ptr = algo::make_ptr(input);
+
     u16 control = 0;
     while (output_ptr.left())
     {
@@ -80,20 +85,25 @@ bstr algo::pack::lzss_decompress(
         if (control & 1)
         {
             if (!input_ptr.left()) break;
-            *output_ptr++ = *input_ptr++;
-            dict << output_ptr[-1];
+            const auto b = *input_ptr++;
+            *output_ptr++ = b;
+            *dict_ptr++ = b;
         }
         else
         {
             if (input_ptr.left() < 2) break;
             const auto lo = *input_ptr++;
             const auto hi = *input_ptr++;
-            auto look_behind_pos = lo | ((hi & 0xF0) << 4);
+            const auto look_behind_pos = lo | ((hi & 0xF0) << 4);
             auto repetitions = (hi & 0xF) + 3;
+            auto source_ptr
+                = algo::make_cyclic_ptr(dict.data(), dict.size())
+                + look_behind_pos;
             while (repetitions-- && output_ptr.left())
             {
-                *output_ptr++ = dict[look_behind_pos++];
-                dict << output_ptr[-1];
+                const auto b = *source_ptr++;
+                *output_ptr++ = b;
+                *dict_ptr++ = b;
             }
         }
     }

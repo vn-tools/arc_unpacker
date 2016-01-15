@@ -1,6 +1,6 @@
 #include "dec/purple_software/pb3_image_decoder.h"
+#include <array>
 #include "algo/binary.h"
-#include "algo/cyclic_buffer.h"
 #include "algo/format.h"
 #include "algo/ptr.h"
 #include "algo/range.h"
@@ -33,9 +33,10 @@ static bstr custom_lzss_decompress(
     const bstr &data_block,
     const size_t output_size)
 {
+    std::array<u8, 0x800> dict = {0};
+    auto dict_ptr = algo::make_cyclic_ptr(dict.data(), dict.size()) + 0x7DE;
     bstr output(output_size);
     auto output_ptr = algo::make_ptr(output);
-    algo::CyclicBuffer<u8, 0x800> dict(0x7DE);
     io::MemoryStream control_block_stream(control_block);
     io::MemoryStream data_block_stream(data_block);
     int control = 0, bit_mask = 0;
@@ -49,18 +50,23 @@ static bstr custom_lzss_decompress(
         if (control & bit_mask)
         {
             const auto tmp = data_block_stream.read_le<u16>();
+            const auto look_behind_pos = tmp >> 5;
             auto repetitions = (tmp & 0x1F) + 3;
-            auto look_behind_pos = tmp >> 5;
+            auto source_ptr
+                = algo::make_cyclic_ptr(dict.data(), dict.size())
+                + look_behind_pos;
             while (repetitions-- && output_ptr.left())
             {
-                *output_ptr++ = dict[look_behind_pos++];
-                dict << output_ptr[-1];
+                const auto b = *source_ptr++;
+                *output_ptr++ = b;
+                *dict_ptr++ = b;
             }
         }
         else
         {
-            *output_ptr++ = data_block_stream.read<u8>();
-            dict << output_ptr[-1];
+            const auto b = data_block_stream.read<u8>();;
+            *output_ptr++ = b;
+            *dict_ptr++ = b;
         }
         bit_mask >>= 1;
     }

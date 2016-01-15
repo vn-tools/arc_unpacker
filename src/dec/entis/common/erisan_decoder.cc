@@ -1,6 +1,5 @@
 #include "dec/entis/common/erisan_decoder.h"
 #include <array>
-#include "algo/cyclic_buffer.h"
 #include "algo/ptr.h"
 #include "algo/range.h"
 #include "err.h"
@@ -18,7 +17,40 @@ static const size_t nemesis_index_size = 0x100;
 
 namespace
 {
-    using PhraseLookup = algo::CyclicBuffer<size_t, nemesis_index_size>;
+    template<typename T, const size_t n> class CyclicBuffer final
+    {
+    public:
+        CyclicBuffer() : start_pos(0), current_pos(start_pos), a {0} {}
+        constexpr size_t size() const { return n; }
+        constexpr size_t pos() const { return current_pos; }
+
+        inline void operator <<(const T c)
+        {
+            a[current_pos++] = c;
+            current_pos %= n;
+        }
+
+        inline const T &operator [](const size_t i) const
+        {
+            if (i < n)
+                return a[i];
+            return a[i % n];
+        }
+
+        inline T &operator [](const size_t i)
+        {
+            if (i < n)
+                return a[i];
+            return a[i % n];
+        }
+
+    private:
+        size_t start_pos;
+        size_t current_pos;
+        std::array<T, n> a;
+    };
+
+    using PhraseLookup = CyclicBuffer<size_t, nemesis_index_size>;
 
     struct ProbBase final
     {
@@ -30,12 +62,12 @@ namespace
 
 struct ErisaNDecoder::Priv final
 {
-    algo::CyclicBuffer<u8, 4> last_symbol_buffer;
+    CyclicBuffer<u8, 4> last_symbol_buffer;
     ProbBase prob_erisa;
 
     int nemesis_left;
     int nemesis_next;
-    algo::CyclicBuffer<u8, nemesis_buf_size> nemesis_buffer;
+    CyclicBuffer<u8, nemesis_buf_size> nemesis_buffer;
     std::array<PhraseLookup, 0x100> nemesis_lookup;
     ProbModel phrase_len_prob;
     ProbModel phrase_index_prob;
@@ -59,9 +91,6 @@ void ErisaNDecoder::reset()
     code_register = bit_reader->get(32);
     augend_register = 0xFFFF;
 
-    for (auto &ppl : p->nemesis_lookup)
-        for (const auto i : algo::range(ppl.size()))
-            ppl << 0;
     p->nemesis_left = 0;
     p->eof = false;
     for (const auto i : algo::range(4))
