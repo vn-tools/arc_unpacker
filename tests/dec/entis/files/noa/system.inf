@@ -1,0 +1,794 @@
+<skin>
+	<resource>
+		<image id="ID_BTN_NULL" src="BTN_NULL.eri"/>
+		<image id="ID_FRM_0701" src="FRM_0701.eri"/>
+		<image id="ID_FRM_0702" src="FRM_0702.eri"/>
+		<image id="ID_FRM_0703" src="FRM_0703.eri"/>
+		<image id="ID_FRM_0704" src="FRM_0704.eri"/>
+		<image id="ID_FRM_0705" src="FRM_0705.eri"/>
+		<image id="ID_FRM_0706" src="FRM_0706.eri"/>
+		<image id="ID_FRM_0707" src="FRM_0707.eri"/>
+		<image id="ID_FRM_0708" src="FRM_0708.eri"/>
+		<image id="ID_FRM_0709" src="FRM_0709.eri"/>
+		<image id="ID_FRM_0710" src="FRM_0710.eri"/>
+		<image id="ID_FRM_0711" src="FRM_0711.eri"/>
+		<image id="ID_FRM_0712" src="FRM_0712.eri"/>
+		<image id="ID_FRM_0801" src="FRM_0801.eri"/>
+		<image id="ID_FRM_0802" src="FRM_0802.eri"/>
+		<image id="ID_FRM_0803" src="FRM_0803.eri"/>
+		<image id="ID_FRM_0804" src="FRM_0804.eri"/>
+		<image id="ID_FRM_0805" src="FRM_0805.eri"/>
+		<image id="ID_FRM_0806" src="FRM_0806.eri"/>
+		<image id="ID_FRM_0807" src="FRM_0807.eri"/>
+		<image id="ID_FRM_0808" src="FRM_0808.eri"/>
+		<image id="ID_FRM_0809" src="FRM_0809.eri"/>
+		<image id="ID_FRM_0810" src="FRM_0810.eri"/>
+		<image id="ID_FRM_0811" src="FRM_0811.eri"/>
+		<image id="ID_FRM_0812" src="FRM_0812.eri"/>
+		<image id="ID_FRM_0813" src="FRM_0813.eri"/>
+		<image id="ID_FRM_0814" src="FRM_0814.eri"/>
+		<image id="ID_FRM_0815" src="FRM_0815.eri"/>
+		<image id="ID_FRM_0816" src="FRM_0816.eri"/>
+		<image id="ID_FRM_0817" src="FRM_0817.eri"/>
+		<image id="ID_FRM_0818" src="FRM_0818.eri"/>
+		<image id="ID_FRM_0819" src="FRM_0819.eri"/>
+		<image id="ID_FRM_0820" src="FRM_0820.eri"/>
+		<image id="ID_FRM_0901" src="FRM_0901.eri"/>
+		<image id="ID_FRM_0902" src="FRM_0902.eri"/>
+		<image id="ID_FRM_0903" src="FRM_0903.eri"/>
+		<image id="ID_FRM_0904" src="FRM_0904.eri"/>
+		<image id="ID_FRM_0905" src="FRM_0905.eri"/>
+		<image id="ID_FRM_0906" src="FRM_0906.eri"/>
+		<image id="ID_FRM_0907" src="FRM_0907.eri"/>
+		<image id="ID_FRM_0908" src="FRM_0908.eri"/>
+		<image id="ID_FRM_0909" src="FRM_0909.eri"/>
+		<image id="ID_FRM_0910" src="FRM_0910.eri"/>
+		<image id="ID_FRM_0911" src="FRM_0911.eri"/>
+	</resource>
+	<declare_style>
+		<style id="ID_BTN_BGM01" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0802:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0802:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0802:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM02" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0803:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0803:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0803:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM03" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0804:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0804:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0804:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM04" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0805:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0805:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0805:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM05" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0806:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0806:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0806:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM06" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0807:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0807:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0807:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM07" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0808:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0808:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0808:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM08" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0809:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0809:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0809:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM09" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0810:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0810:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0810:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM10" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0811:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0811:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0811:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM11" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0812:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0812:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0812:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM12" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0813:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0813:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0813:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM13" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0814:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0814:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0814:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM14" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0815:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0815:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0815:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM15" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0816:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0816:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0816:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM16" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0817:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0817:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0817:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM17" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0818:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0818:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0818:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM18" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0819:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0819:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0819:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_BGM19" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0820:RECT(0,0,320,27)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0820:RECT(320,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_FRM_0820:RECT(640,0,320,27)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_DUMMY" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0707">
+				<arrange align="left" height="" indent="0" left="8" line_height="14" top="40" width=""/>
+				<font bold="false" face="‚l‚r ‚oƒSƒVƒbƒN" italic="false" size="14"/>
+				<text color="00000000H" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="4" y="4"/>
+			</normal>
+		</style>
+		<style id="ID_BTN_REC01" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0902:RECT(0,0,432,58)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<pushed image="ID_FRM_0902:RECT(864,0,432,58)">
+				<arrange align="left" height="" left="0" line_height="19" top="0" width=""/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+			</pushed>
+			<focus image="ID_FRM_0902:RECT(432,0,432,58)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<disabled image="ID_BTN_NULL">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_REC02" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0903:RECT(0,0,432,58)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0903:RECT(432,0,432,58)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<pushed image="ID_FRM_0903:RECT(864,0,432,58)">
+				<arrange align="left" height="" left="0" line_height="19" top="0" width=""/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+			</pushed>
+			<disabled image="ID_BTN_NULL">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_REC03" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0904:RECT(0,0,432,58)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0904:RECT(432,0,432,58)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<pushed image="ID_FRM_0904:RECT(864,0,432,58)">
+				<arrange align="left" height="" left="0" line_height="19" top="0" width=""/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+			</pushed>
+			<disabled image="ID_BTN_NULL">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_REC04" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0905:RECT(0,0,432,58)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0905:RECT(432,0,432,58)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<pushed image="ID_FRM_0905:RECT(864,0,432,58)">
+				<arrange align="left" height="" left="0" line_height="19" top="0" width=""/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+			</pushed>
+			<disabled image="ID_BTN_NULL">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_REC05" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0906:RECT(0,0,432,58)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0906:RECT(432,0,432,58)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<pushed image="ID_FRM_0906:RECT(864,0,432,58)">
+				<arrange align="left" height="" left="0" line_height="19" top="0" width=""/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+			</pushed>
+			<disabled image="ID_BTN_NULL">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_REC06" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0907:RECT(0,0,432,58)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0907:RECT(432,0,432,58)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<pushed image="ID_FRM_0907:RECT(864,0,432,58)">
+				<arrange align="left" height="" left="0" line_height="19" top="0" width=""/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+			</pushed>
+			<disabled image="ID_BTN_NULL">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_REC07" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0908:RECT(0,0,432,58)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0908:RECT(432,0,432,58)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<pushed image="ID_FRM_0908:RECT(864,0,432,58)">
+				<arrange align="left" height="" left="0" line_height="19" top="0" width=""/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+			</pushed>
+			<disabled image="ID_BTN_NULL">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_REC08" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0909:RECT(0,0,432,58)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0909:RECT(432,0,432,58)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<pushed image="ID_FRM_0909:RECT(864,0,432,58)">
+				<arrange align="left" height="" left="0" line_height="19" top="0" width=""/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+			</pushed>
+			<disabled image="ID_BTN_NULL">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_REC09" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0910:RECT(0,0,432,58)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0910:RECT(432,0,432,58)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<pushed image="ID_FRM_0910:RECT(864,0,432,58)">
+				<arrange align="left" height="" left="0" line_height="19" top="0" width=""/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+			</pushed>
+			<disabled image="ID_BTN_NULL">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_REC10" type="button">
+			<arrange type="button"/>
+			<normal image="ID_FRM_0911:RECT(0,0,432,58)">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<focus image="ID_FRM_0911:RECT(432,0,432,58)">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+			<pushed image="ID_FRM_0911:RECT(864,0,432,58)">
+				<arrange align="left" height="" left="0" line_height="19" top="0" width=""/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+			</pushed>
+			<disabled image="ID_BTN_NULL">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</disabled>
+		</style>
+		<style id="ID_BTN_TRANS" type="button">
+			<arrange type="button"/>
+			<normal image="ID_BTN_NULL">
+				<arrange align="left" height="" indent="0" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</normal>
+			<pushed image="ID_BTN_NULL">
+				<arrange align="left" height="" left="0" line_height="19" top="0" width=""/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+			</pushed>
+			<focus image="ID_BTN_NULL">
+				<arrange align="left" height="" left="" line_height="19" top="" width=""/>
+				<font bold="false" face="‚l‚r ƒSƒVƒbƒN" italic="false" size="19"/>
+				<text color="00FFFFFFH" transparency="0"/>
+				<shadow color="00C0C0C0H" transparency="64" x="1" y="1"/>
+			</focus>
+		</style>
+		<style id="ID_SCRL_CGMODE" type="scroll_bar">
+			<arrange bar_offset="0" type="vert"/>
+			<up_button style="ID_BTN_TRANS"/>
+			<down_button style="ID_BTN_TRANS"/>
+			<normal bar="ID_FRM_0702:RECT(0,0,16,16)" column="ID_FRM_0701"/>
+			<focus bar="ID_FRM_0702:RECT(16,0,16,16)" column="ID_FRM_0701"/>
+			<tracking bar="ID_FRM_0702:RECT(32,0,16,16)" column="ID_FRM_0701"/>
+			<disabled bar="ID_FRM_0702:RECT(0,0,16,16)" column="ID_FRM_0701"/>
+		</style>
+	</declare_style>
+	<page bg="" height="376" id="ID_PAGE_CGMODE_SLIDER" mask="" mask_threshold="" title="" width="16">
+		<scroll_bar id="ID_SCROLL" style="ID_SCRL_CGMODE" width="376" x="0" y="0"/>
+	</page>
+	<window bg="ID_FRM_0801" height="600" id="ID_PAGE_MUSICMODE" mask="" mask_threshold="" title="" width="800">
+		<button group="true" height="0" id="ID_BGM01" style="ID_BTN_BGM01" width="0" x="442" y="14"/>
+		<button group="true" height="0" id="ID_BGM02" style="ID_BTN_BGM02" width="0" x="442" y="44"/>
+		<button group="true" height="0" id="ID_BGM03" style="ID_BTN_BGM03" width="0" x="442" y="74"/>
+		<button group="true" height="0" id="ID_BGM04" style="ID_BTN_BGM04" width="0" x="442" y="104"/>
+		<button group="true" height="0" id="ID_BGM05" style="ID_BTN_BGM05" width="0" x="442" y="134"/>
+		<button group="true" height="0" id="ID_BGM06" style="ID_BTN_BGM06" width="0" x="442" y="164"/>
+		<button group="true" height="0" id="ID_BGM07" style="ID_BTN_BGM07" width="0" x="442" y="194"/>
+		<button group="true" height="0" id="ID_BGM08" style="ID_BTN_BGM08" width="0" x="442" y="224"/>
+		<button group="true" height="0" id="ID_BGM09" style="ID_BTN_BGM09" width="0" x="442" y="254"/>
+		<button group="true" height="0" id="ID_BGM10" style="ID_BTN_BGM10" width="0" x="442" y="284"/>
+		<button group="true" height="0" id="ID_BGM11" style="ID_BTN_BGM11" width="0" x="442" y="314"/>
+		<button group="true" height="0" id="ID_BGM12" style="ID_BTN_BGM12" width="0" x="442" y="344"/>
+		<button group="true" height="0" id="ID_BGM13" style="ID_BTN_BGM13" width="0" x="442" y="374"/>
+		<button group="true" height="0" id="ID_BGM14" style="ID_BTN_BGM14" width="0" x="442" y="404"/>
+		<button group="true" height="0" id="ID_BGM15" style="ID_BTN_BGM15" width="0" x="442" y="434"/>
+		<button group="true" height="0" id="ID_BGM16" style="ID_BTN_BGM16" width="0" x="442" y="464"/>
+		<button group="true" height="0" id="ID_BGM17" style="ID_BTN_BGM17" width="0" x="442" y="494"/>
+		<button group="true" height="0" id="ID_BGM18" style="ID_BTN_BGM18" width="0" x="442" y="524"/>
+		<button group="true" height="0" id="ID_BGM19" style="ID_BTN_BGM19" width="0" x="442" y="554"/>
+	</window>
+	<window bg="ID_FRM_0901" height="128" id="ID_PAGE_RECOLLECTMODE" mask="" mask_threshold="" title="" width="128">
+		<button group="true" height="0" id="ID_SAKURA01" style="ID_BTN_REC01" width="0" x="356" y="5"/>
+		<button group="true" height="0" id="ID_SAKURA02" style="ID_BTN_REC02" width="0" x="356" y="64"/>
+		<button group="true" height="0" id="ID_SAKURA03" style="ID_BTN_REC03" width="0" x="356" y="123"/>
+		<button group="true" height="0" id="ID_SAKURA04" style="ID_BTN_REC04" width="0" x="356" y="182"/>
+		<button group="true" height="0" id="ID_MOMIJI01" style="ID_BTN_REC05" width="0" x="356" y="241"/>
+		<button group="true" height="0" id="ID_MOMIJI02" style="ID_BTN_REC06" width="0" x="356" y="300"/>
+		<button group="true" height="0" id="ID_MOMIJI03" style="ID_BTN_REC07" width="0" x="356" y="359"/>
+		<button group="true" height="0" id="ID_MOMIJI04" style="ID_BTN_REC08" width="0" x="356" y="418"/>
+		<button group="true" height="0" id="ID_KAREN01" style="ID_BTN_REC09" width="0" x="356" y="477"/>
+		<button group="true" height="0" id="ID_KAREN02" style="ID_BTN_REC10" width="0" x="356" y="536"/>
+	</window>
+</skin>
