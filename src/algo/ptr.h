@@ -1,12 +1,13 @@
 #pragma once
 
+#include <limits>
 #include "err.h"
 #include "types.h"
 
 namespace au {
 namespace algo {
 
-    template<typename T> class BasePtr final
+    template<typename T, bool cyclic> class BasePtr
     {
     public:
         constexpr BasePtr(T *data, const size_t size) :
@@ -14,45 +15,54 @@ namespace algo {
         {
         }
 
-        BasePtr &operator++()
+        inline BasePtr &operator++()
         {
             cur_ptr++;
+            if (cyclic && cur_ptr == end_ptr)
+                cur_ptr = start_ptr;
             return *this;
         }
 
-        BasePtr &operator--()
+        inline BasePtr &operator--()
         {
-            cur_ptr--;
+            if (cyclic && cur_ptr == start_ptr)
+                cur_ptr = end_ptr - 1;
+            else
+                cur_ptr--;
             return *this;
         }
 
-        BasePtr operator++(int)
+        inline BasePtr operator++(int)
         {
             auto p = *this;
             operator++();
             return p;
         }
 
-        BasePtr operator--(int)
+        inline BasePtr operator--(int)
         {
             auto p = *this;
             operator--();
             return p;
         }
 
-        BasePtr &operator +=(const size_t n)
+        inline BasePtr &operator +=(const size_t n)
         {
             cur_ptr += n;
+            while (cyclic && cur_ptr >= end_ptr)
+                cur_ptr -= size();
             return *this;
         }
 
-        BasePtr &operator -=(const size_t n)
+        inline BasePtr &operator -=(const size_t n)
         {
             cur_ptr -= n;
+            while (cyclic && cur_ptr < start_ptr)
+                cur_ptr += size();
             return *this;
         }
 
-        constexpr BasePtr<T> operator +(const int n) const
+        constexpr BasePtr operator +(const int n) const
         {
             BasePtr ret(start_ptr, size());
             ret += pos();
@@ -60,12 +70,12 @@ namespace algo {
             return ret;
         }
 
-        constexpr BasePtr<T> operator -(const size_t n) const
+        constexpr BasePtr operator -(const size_t n) const
         {
             return operator+(-n);
         }
 
-        BasePtr<T> operator +(const int n)
+        inline BasePtr operator +(const int n)
         {
             BasePtr ret(start_ptr, size());
             ret += pos();
@@ -73,57 +83,120 @@ namespace algo {
             return ret;
         }
 
-        BasePtr<T> operator -(const size_t n)
+        inline BasePtr operator -(const size_t n)
         {
             return operator+(-n);
         }
 
         void append_from(const bstr &source)
         {
-            if (source.size() > left())
+            if (!cyclic && source.size() > left())
                 throw err::BadDataSizeError();
             for (const auto &c : source)
-                *cur_ptr++ = c;
+            {
+                *cur_ptr = c;
+                operator++();
+            }
         }
 
-        void append_from(BasePtr<const T> &input_ptr, size_t size)
+        void append_from(BasePtr<const T, false> &input_ptr, size_t n)
         {
-            if (size > input_ptr.left())
+            if (n > input_ptr.left())
                 throw err::BadDataSizeError();
-            if (size > left())
+            if (!cyclic && n > left())
                 throw err::BadDataSizeError();
-            while (size--)
-                *cur_ptr++ = *input_ptr++;
+            while (n--)
+            {
+                *cur_ptr = *input_ptr++;
+                operator++();
+            }
         }
 
-        void append_from(const int relative_position, size_t size)
+        void append_from(BasePtr<T, true> &input_ptr, size_t n)
         {
-            if (pos() + relative_position < 0)
-                throw err::BadDataOffsetError();
-            if (pos() + relative_position + size > this->size())
-                throw err::BadDataOffsetError();
-            if (size > left())
+            if (n > input_ptr.left())
                 throw err::BadDataSizeError();
-            auto source_ptr = cur_ptr + relative_position;
-            while (size--)
-                *cur_ptr++ = *source_ptr++;
+            if (!cyclic && n > left())
+                throw err::BadDataSizeError();
+            while (n--)
+            {
+                *cur_ptr = *input_ptr++;
+                operator++();
+            }
         }
 
-        constexpr size_t pos() const { return cur_ptr - start_ptr; }
-        constexpr size_t left() const { return end_ptr - cur_ptr; }
-        constexpr size_t size() const { return end_ptr - start_ptr; }
+        void append_from(int relative_position, size_t n)
+        {
+            if (cyclic)
+            {
+                while (pos() + relative_position < 0)
+                    relative_position += size();
+                while (pos() + relative_position >= size())
+                    relative_position -= size();
+            }
+            else
+            {
+                if (pos() + relative_position < 0)
+                    throw err::BadDataOffsetError();
+                if (pos() + relative_position + n > size())
+                    throw err::BadDataOffsetError();
+                if (n > left())
+                    throw err::BadDataSizeError();
+            }
+            BasePtr<T, cyclic> source_ptr(start_ptr, size());
+            source_ptr += pos() + relative_position;
+            while (n--)
+            {
+                *cur_ptr = *source_ptr++;
+                operator++();
+            }
+        }
 
-        constexpr T &operator *() const { return *cur_ptr; }
-        constexpr T &operator[](const size_t n) const { return cur_ptr[n]; }
-        constexpr T *start() const { return start_ptr; }
-        constexpr T *current() const { return cur_ptr; }
-        constexpr T *end() const { return end_ptr; }
+        constexpr size_t pos() const
+        {
+            return cur_ptr - start_ptr;
+        }
 
-        T &operator *() { return *cur_ptr; }
-        T &operator[](const size_t n) { return cur_ptr[n]; }
+        constexpr size_t left() const
+        {
+            if (cyclic)
+                return std::numeric_limits<size_t>::max();
+            return end_ptr - cur_ptr;
+        }
+
+        constexpr size_t size() const
+        {
+            return end_ptr - start_ptr;
+        }
+
+        T &operator *()
+        {
+            return *cur_ptr;
+        }
+
+        constexpr T &operator *() const
+        {
+            return *cur_ptr;
+        }
+
+        T &operator[](size_t n)
+        {
+            return start_ptr[(pos() + n) % size()];
+        }
+
+        constexpr T &operator[](size_t n) const
+        {
+            return start_ptr[(pos() + n) % size()];
+        }
+
         T *start() { return start_ptr; }
+        constexpr T *start() const { return start_ptr; }
+
         T *current() { return cur_ptr; }
+        constexpr T *current() const { return cur_ptr; }
+
         T *end() { return end_ptr; }
+        constexpr T *end() const { return end_ptr; }
 
     private:
         T *start_ptr;
@@ -131,8 +204,8 @@ namespace algo {
         T *end_ptr;
     };
 
-
-    template<typename T> using ptr = BasePtr<T>;
+    template<typename T> using ptr = BasePtr<T, false>;
+    template<typename T> using cyclic_ptr = BasePtr<T, true>;
 
 
     template<typename T> inline ptr<T> make_ptr(T *data, const size_t size)
@@ -159,6 +232,23 @@ namespace algo {
     inline ptr<const u8> make_ptr(const bstr &data)
     {
         return ptr<const u8>(data.get<const u8>(), data.size());
+    }
+
+
+    template<typename T> inline cyclic_ptr<T> make_cyclic_ptr(
+        T *data, const size_t size)
+    {
+        return cyclic_ptr<T>(data, size);
+    }
+
+    inline cyclic_ptr<u8> make_cyclic_ptr(bstr &data)
+    {
+        return cyclic_ptr<u8>(data.get<u8>(), data.size());
+    }
+
+    inline cyclic_ptr<const u8> make_cyclic_ptr(const bstr &data)
+    {
+        return cyclic_ptr<const u8>(data.get<const u8>(), data.size());
     }
 
 } }
