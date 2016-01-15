@@ -1,8 +1,8 @@
 #include "dec/purple_software/ps2_file_decoder.h"
 #include "algo/binary.h"
 #include "algo/cyclic_buffer.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
-#include "ptr.h"
 
 using namespace au;
 using namespace au::dec::purple_software;
@@ -19,8 +19,8 @@ static bstr custom_lzss_decompress(const bstr &input, const size_t size_orig)
 {
     algo::CyclicBuffer<u8, 0x800> dict(0x7DF);
     bstr output(size_orig);
-    auto output_ptr = make_ptr(output);
-    auto input_ptr = make_ptr(input);
+    auto output_ptr = algo::make_ptr(output);
+    auto input_ptr = algo::make_ptr(input);
     u16 control = 1;
     while (output_ptr < output_ptr.end())
     {

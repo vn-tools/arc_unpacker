@@ -1,13 +1,13 @@
 #include "dec/cat_system/hg3_image_archive_decoder.h"
 #include <map>
 #include "algo/pack/zlib.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "dec/jpeg/jpeg_image_decoder.h"
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "io/lsb_bit_reader.h"
 #include "io/memory_stream.h"
-#include "ptr.h"
 
 using namespace au;
 using namespace au::dec::cat_system;
@@ -57,7 +57,7 @@ static bstr delta_transform(
     auto plane3 = plane2 + plane_size;
 
     bstr output(input.size());
-    auto output_ptr = make_ptr(output);
+    auto output_ptr = algo::make_ptr(output);
     while (output_ptr < output_ptr.end())
     {
         u32 value
@@ -75,14 +75,14 @@ static bstr delta_transform(
     const auto channels = depth >> 3;
     const auto stride = width * channels;
 
-    output_ptr = make_ptr(output) + channels;
+    output_ptr = algo::make_ptr(output) + channels;
     for (const auto x : algo::range(stride - channels))
     {
         *output_ptr += output_ptr[-channels];
         output_ptr++;
     }
 
-    output_ptr = make_ptr(output) + stride;
+    output_ptr = algo::make_ptr(output) + stride;
     for (const auto y : algo::range(1, height))
     for (const auto x : algo::range(stride))
     {
@@ -114,8 +114,8 @@ static std::unique_ptr<res::Image> decode_img0000(
     const auto output_size = ctl_bit_reader.get_gamma(1);
 
     bstr output(output_size);
-    auto input_ptr = make_ptr(data);
-    auto output_ptr = make_ptr(output);
+    auto input_ptr = algo::make_ptr(data);
+    auto output_ptr = algo::make_ptr(output);
     while (output_ptr < output_ptr.end())
     {
         auto size = ctl_bit_reader.get_gamma(1);

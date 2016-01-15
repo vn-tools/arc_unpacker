@@ -1,8 +1,8 @@
 #include "algo/pack/lzss.h"
 #include "algo/cyclic_buffer.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "io/msb_bit_reader.h"
-#include "ptr.h"
 
 using namespace au;
 
@@ -29,7 +29,7 @@ bstr algo::pack::lzss_decompress(
     const auto dict_size = 1 << settings.position_bits;
     auto dict_pos = settings.initial_dictionary_pos;
     auto dict = std::make_unique<u8[]>(dict_size);
-    auto output_ptr = make_ptr(output);
+    auto output_ptr = algo::make_ptr(output);
     auto dict_ptr = dict.get();
     while (output_ptr < output.end())
     {
@@ -66,8 +66,8 @@ bstr algo::pack::lzss_decompress(
 {
     algo::CyclicBuffer<u8, 0x1000> dict(settings.initial_dictionary_pos);
     bstr output(output_size);
-    auto output_ptr = make_ptr(output);
-    auto input_ptr = make_ptr(input);
+    auto output_ptr = algo::make_ptr(output);
+    auto input_ptr = algo::make_ptr(input);
     u16 control = 0;
     while (output_ptr < output_ptr.end())
     {

@@ -1,7 +1,7 @@
 #include "dec/real_live/g00_image_decoder.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "io/memory_stream.h"
-#include "ptr.h"
 
 using namespace au;
 using namespace au::dec::real_live;
@@ -25,8 +25,8 @@ static bstr decompress(
 {
     bstr output(output_size);
 
-    auto output_ptr = make_ptr(output);
-    auto input_ptr = make_ptr(input);
+    auto output_ptr = algo::make_ptr(output);
+    auto input_ptr = algo::make_ptr(input);
 
     u16 control = 1;
     while (output_ptr < output_ptr.end() && input_ptr < input_ptr.end())

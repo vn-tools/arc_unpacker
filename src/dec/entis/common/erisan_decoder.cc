@@ -1,9 +1,9 @@
 #include "dec/entis/common/erisan_decoder.h"
 #include <array>
 #include "algo/cyclic_buffer.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "err.h"
-#include "ptr.h"
 
 using namespace au;
 using namespace au::dec::entis::common;
@@ -90,7 +90,7 @@ void ErisaNDecoder::decode(u8 *output, const size_t output_size)
     if (p->eof)
         return;
 
-    auto output_ptr = make_ptr(output, output_size);
+    auto output_ptr = algo::make_ptr(output, output_size);
     while (output_ptr < output_ptr.end())
     {
         if (p->nemesis_left > 0)

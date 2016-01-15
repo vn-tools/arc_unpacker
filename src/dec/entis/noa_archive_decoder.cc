@@ -4,7 +4,6 @@
 #include "dec/entis/common/erisan_decoder.h"
 #include "dec/entis/common/sections.h"
 #include "err.h"
-#include "ptr.h"
 
 using namespace au;
 using namespace au::dec::entis;

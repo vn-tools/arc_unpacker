@@ -50,7 +50,7 @@ std::array<u32, 4> cpz5::get_hash(
 }
 
 void cpz5::decrypt_1a(
-    ptr<u8> target, const Plugin &plugin, const u32 key)
+    algo::ptr<u8> target, const Plugin &plugin, const u32 key)
 {
     std::array<u32, 24> table;
     const auto limit = std::min(table.size(), plugin.secret.size() / 4);
@@ -85,7 +85,7 @@ void cpz5::decrypt_1a(
 }
 
 void cpz5::decrypt_1b(
-    ptr<u8> target, const u32 key, const std::array<u32, 4> &hash)
+    algo::ptr<u8> target, const u32 key, const std::array<u32, 4> &hash)
 {
     static const std::array<u32, 4> addends = {0x76A3BF29, 0, 0x10000000, 0};
     std::array<u32, 4> table;
@@ -114,7 +114,7 @@ void cpz5::decrypt_1b(
 }
 
 void cpz5::decrypt_1c(
-    ptr<u8> target,
+    algo::ptr<u8> target,
     const Plugin &plugin,
     const u32 key,
     const std::array<u32, 4> &hash)
@@ -145,7 +145,7 @@ void cpz5::decrypt_1c(
 }
 
 void cpz5::decrypt_2(
-    ptr<u8> target,
+    algo::ptr<u8> target,
     const Plugin &plugin,
     const u32 key,
     const u32 seed,
@@ -158,7 +158,7 @@ void cpz5::decrypt_2(
 }
 
 void cpz5::decrypt_3(
-    ptr<u8> target,
+    algo::ptr<u8> target,
     const Plugin &plugin,
     const u32 key,
     const u32 seed,

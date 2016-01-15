@@ -1,7 +1,7 @@
 #include "dec/lucifen/elg_image_decoder.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "err.h"
-#include "ptr.h"
 
 using namespace au;
 using namespace au::dec::lucifen;
@@ -59,7 +59,7 @@ static bstr read_rgb(
     const size_t width, const size_t height, io::IStream &input_stream)
 {
     bstr output(width * height * 3);
-    auto output_ptr = make_ptr(output);
+    auto output_ptr = algo::make_ptr(output);
 
     while (true)
     {
@@ -177,7 +177,7 @@ static bstr read_mono(
     const size_t width, const size_t height, io::IStream &input_stream)
 {
     bstr output(width * height);
-    auto output_ptr = make_ptr(output);
+    auto output_ptr = algo::make_ptr(output);
 
     while (true)
     {

@@ -4,6 +4,7 @@
 #include "types.h"
 
 namespace au {
+namespace algo {
 
     template<typename T> class ptr final
     {
@@ -159,4 +160,4 @@ namespace au {
         return ptr<const u8>(data.get<const u8>(), data.size());
     }
 
-}
+} }

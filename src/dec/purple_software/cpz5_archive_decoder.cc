@@ -2,11 +2,11 @@
 #include "algo/binary.h"
 #include "algo/format.h"
 #include "algo/locale.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "dec/purple_software/cpz5/crypt.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "ptr.h"
 
 using namespace au;
 using namespace au::dec::purple_software;
@@ -59,9 +59,10 @@ static std::unique_ptr<ArchiveMetaImpl> read_meta(
         throw err::BadDataSizeError();
     const auto hash = cpz5::get_hash(plugin, header.md5_dwords);
     bstr table_data_copy(table_data);
-    auto table_data_ptr = make_ptr(table_data_copy);
-    auto dir_table_ptr = make_ptr(&table_data_copy[0], header.dir_table_size);
-    auto file_table_ptr = make_ptr(
+    auto table_data_ptr = algo::make_ptr(table_data_copy);
+    auto dir_table_ptr = algo::make_ptr(
+        &table_data_copy[0], header.dir_table_size);
+    auto file_table_ptr = algo::make_ptr(
         &table_data_copy[header.dir_table_size], header.file_table_size);
 
     // whole index
@@ -106,7 +107,7 @@ static std::unique_ptr<ArchiveMetaImpl> read_meta(
 
     for (const auto &dir : dirs)
     {
-        auto dir_file_table_ptr = make_ptr(
+        auto dir_file_table_ptr = algo::make_ptr(
             file_table_ptr + dir->file_table_offset, dir->file_table_size);
 
         cpz5::decrypt_2(
@@ -260,7 +261,7 @@ std::unique_ptr<io::File> Cpz5ArchiveDecoder::read_file_impl(
     auto data = input_file.stream.seek(entry->offset).read(entry->size);
 
     cpz5::decrypt_3(
-        make_ptr(data),
+        algo::make_ptr(data),
         meta->plugin,
         meta->hash[3],
         meta->main_key,

@@ -1,8 +1,9 @@
-#include "ptr.h"
+#include "algo/ptr.h"
 #include "test_support/catch.h"
 #include "types.h"
 
 using namespace au;
+using namespace au::algo;
 
 TEST_CASE("ptr", "[core]")
 {

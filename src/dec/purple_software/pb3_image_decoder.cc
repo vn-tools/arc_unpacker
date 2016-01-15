@@ -2,13 +2,13 @@
 #include "algo/binary.h"
 #include "algo/cyclic_buffer.h"
 #include "algo/format.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "algo/str.h"
 #include "dec/png/png_image_decoder.h"
 #include "dec/purple_software/jbp1.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "ptr.h"
 #include "virtual_file_system.h"
 
 using namespace au;
@@ -34,7 +34,7 @@ static bstr custom_lzss_decompress(
     const size_t output_size)
 {
     bstr output(output_size);
-    auto output_ptr = make_ptr(output);
+    auto output_ptr = algo::make_ptr(output);
     algo::CyclicBuffer<u8, 0x800> dict(0x7DE);
     io::MemoryStream control_block_stream(control_block);
     io::MemoryStream data_block_stream(data_block);
@@ -245,7 +245,7 @@ static res::Image unpack_v5(const Header &header, io::IStream &input_stream)
 
         const auto plane = custom_lzss_decompress(
             control_block, data_block, header.width * header.height);
-        auto plane_ptr = make_ptr(plane);
+        auto plane_ptr = algo::make_ptr(plane);
 
         u8 acc = 0;
         for (const auto y : algo::range(header.height))

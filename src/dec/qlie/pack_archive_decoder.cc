@@ -1,6 +1,7 @@
 #include "dec/qlie/pack_archive_decoder.h"
 #include "algo/binary.h"
 #include "algo/locale.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "algo/str.h"
 #include "dec/borland/tpf0_decoder.h"
@@ -9,7 +10,6 @@
 #include "err.h"
 #include "io/file_system.h"
 #include "io/memory_stream.h"
-#include "ptr.h"
 
 using namespace au;
 using namespace au::dec::qlie;
@@ -121,7 +121,7 @@ static void decrypt_file_data_with_external_keys(
         | (static_cast<u64>(mt.get_next_integer()) << 32);
 
     auto table_index = mt.get_next_integer() % table.size();
-    auto data_ptr = make_ptr(data.get<u64>(), data.size() / 8);
+    auto data_ptr = algo::make_ptr(data.get<u64>(), data.size() / 8);
     while (data_ptr < data_ptr.end())
     {
         mutator ^= table[table_index];
@@ -156,7 +156,7 @@ static void decrypt_file_data(
 static bstr decompress(const bstr &input, const size_t output_size)
 {
     bstr output(output_size);
-    auto output_ptr = make_ptr(output);
+    auto output_ptr = algo::make_ptr(output);
 
     io::MemoryStream input_stream(input);
 

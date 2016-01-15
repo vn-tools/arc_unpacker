@@ -3,10 +3,10 @@
 #include "algo/binary.h"
 #include "algo/locale.h"
 #include "algo/pack/lzss.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "algo/str.h"
 #include "io/memory_stream.h"
-#include "ptr.h"
 #include "virtual_file_system.h"
 
 using namespace au;
@@ -44,7 +44,7 @@ namespace
 
 static void decrypt_table(bstr &data, u32 key, u32 rotate_pattern)
 {
-    auto data_ptr = make_ptr(data.get<u32>(), data.size() / 4);
+    auto data_ptr = algo::make_ptr(data.get<u32>(), data.size() / 4);
     while (data_ptr < data_ptr.end())
     {
         *data_ptr++ ^= key;
@@ -55,7 +55,7 @@ static void decrypt_table(bstr &data, u32 key, u32 rotate_pattern)
 
 static void decrypt_content_1(bstr &data, u32 key, u32 rotate_pattern)
 {
-    auto data_ptr = make_ptr(
+    auto data_ptr = algo::make_ptr(
         data.get<u32>(), std::min<size_t>(0x100, data.size()) / 4);
     while (data_ptr < data_ptr.end())
     {
