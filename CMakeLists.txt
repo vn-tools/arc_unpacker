@@ -58,6 +58,11 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
 endif()
 
+if(MSVC)
+    add_definitions(-DNOMINMAX)                 # disable retarded macros
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)  # _wfopen
+endif()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 endif()
