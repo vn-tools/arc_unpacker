@@ -43,6 +43,14 @@ Xp3ArchiveDecoder::Xp3ArchiveDecoder()
         }));
 
     plugin_manager.add(
+        "rebirth", "Re:birth colony ~Lost azurite~",
+        create_simple_plugin([](bstr &data, u32 key)
+        {
+            for (const auto i : algo::range(5, data.size()))
+                data[i] ^= (key >> 12);
+        }));
+
+    plugin_manager.add(
         "mixed-xor", "Gokkun! Onii-chan Milk ~Punipuni Oppai na Imouto to~",
         create_simple_plugin([](bstr &data, u32 key)
         {
