@@ -24,12 +24,12 @@ MemoryStream::MemoryStream(const char *buffer, const size_t buffer_size)
 {
 }
 
-MemoryStream::MemoryStream(IStream &other, const size_t size)
+MemoryStream::MemoryStream(io::IStream &other, const size_t size)
     : MemoryStream(std::make_shared<bstr>(other.read(size)))
 {
 }
 
-MemoryStream::MemoryStream(IStream &other)
+MemoryStream::MemoryStream(io::IStream &other)
     : MemoryStream(std::make_shared<bstr>(other.read_to_eof()))
 {
 }
@@ -38,14 +38,14 @@ MemoryStream::~MemoryStream()
 {
 }
 
-IStream &MemoryStream::reserve(const size_t size)
+io::IStream &MemoryStream::reserve(const size_t size)
 {
     if (buffer->size() < size)
         buffer->resize(size);
     return *this;
 }
 
-IStream &MemoryStream::seek(const size_t offset)
+io::IStream &MemoryStream::seek(const size_t offset)
 {
     if (offset > buffer->size())
         throw err::EofError();
@@ -53,7 +53,7 @@ IStream &MemoryStream::seek(const size_t offset)
     return *this;
 }
 
-IStream &MemoryStream::skip(const int offset)
+io::IStream &MemoryStream::skip(const int offset)
 {
     if (buffer_pos + offset > buffer->size())
         throw err::EofError();
@@ -92,7 +92,7 @@ size_t MemoryStream::size() const
     return buffer->size();
 }
 
-IStream &MemoryStream::truncate(const size_t new_size)
+io::IStream &MemoryStream::truncate(const size_t new_size)
 {
     buffer->resize(new_size);
     if (buffer_pos > new_size)
@@ -100,7 +100,7 @@ IStream &MemoryStream::truncate(const size_t new_size)
     return *this;
 }
 
-std::unique_ptr<IStream> MemoryStream::clone() const
+std::unique_ptr<io::IStream> MemoryStream::clone() const
 {
     auto ret = std::unique_ptr<MemoryStream>(new MemoryStream(buffer));
     ret->seek(tell());

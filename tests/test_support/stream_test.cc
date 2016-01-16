@@ -2,10 +2,9 @@
 #include "test_support/stream_test.h"
 
 using namespace au;
-using namespace au::io;
 
 void tests::stream_test(
-    const std::function<std::unique_ptr<IStream>()> &factory,
+    const std::function<std::unique_ptr<io::IStream>()> &factory,
     const std::function<void()> &cleanup)
 {
     {
