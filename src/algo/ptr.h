@@ -157,7 +157,7 @@ namespace algo {
             return cur_ptr - start_ptr;
         }
 
-        constexpr size_t left() const
+        inline size_t left() const
         {
             if (cyclic)
                 return std::numeric_limits<size_t>::max();
