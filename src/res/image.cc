@@ -67,7 +67,7 @@ Image::~Image()
 {
 }
 
-void Image::invert()
+Image &Image::invert()
 {
     for (const auto y : algo::range(_height))
     for (const auto x : algo::range(_width))
@@ -76,35 +76,38 @@ void Image::invert()
         at(x, y).g ^= 0xFF;
         at(x, y).b ^= 0xFF;
     }
+    return *this;
 }
 
-void Image::flip_vertically()
+Image &Image::flip_vertically()
 {
     for (const auto y : algo::range(_height >> 1))
     for (const auto x : algo::range(_width))
     {
-        auto t = at(x, _height - 1 - y);
+        const auto t = at(x, _height - 1 - y);
         at(x, _height - 1 - y) = at(x, y);
         at(x, y) = t;
     }
+    return *this;
 }
 
-void Image::flip_horizontally()
+Image &Image::flip_horizontally()
 {
     for (const auto y : algo::range(_height))
     for (const auto x : algo::range(_width >> 1))
     {
-        auto t = at(_width - 1 - x, y);
+        const auto t = at(_width - 1 - x, y);
         at(_width - 1 - x, y) = at(x, y);
         at(x, y) = t;
     }
+    return *this;
 }
 
-void Image::crop(const size_t new_width, const size_t new_height)
+Image &Image::crop(const size_t new_width, const size_t new_height)
 {
     std::vector<Pixel> old_pixels(pixels.begin(), pixels.end());
-    auto old_width = _width;
-    auto old_height = _height;
+    const auto old_width = _width;
+    const auto old_height = _height;
     _width = new_width;
     _height = new_height;
     pixels.resize(new_width * new_height);
@@ -113,20 +116,22 @@ void Image::crop(const size_t new_width, const size_t new_height)
     {
         pixels[y * new_width + x] = old_pixels[y * old_width + x];
     }
+    return *this;
 }
 
-void Image::apply_mask(const Image &other)
+Image &Image::apply_mask(const Image &other)
 {
     if (other.width() != _width || other.height() != _height)
         throw std::logic_error("Mask image size is different from image size");
     for (const auto y : algo::range(_height))
     for (const auto x : algo::range(_width))
         at(x, y).a = other.at(x, y).r;
+    return *this;
 }
 
-void Image::apply_palette(const Palette &palette)
+Image &Image::apply_palette(const Palette &palette)
 {
-    auto palette_size = palette.size();
+    const auto palette_size = palette.size();
     for (auto &c : pixels)
     {
         if (c.r < palette_size)
@@ -134,16 +139,17 @@ void Image::apply_palette(const Palette &palette)
         else
             c.a = 0x00;
     }
+    return *this;
 }
 
-void Image::overlay(
+Image &Image::overlay(
     const Image &other,
     const OverlayKind overlay_kind)
 {
-    overlay(other, 0, 0, overlay_kind);
+    return overlay(other, 0, 0, overlay_kind);
 }
 
-void Image::overlay(
+Image &Image::overlay(
     const Image &other,
     const int target_x,
     const int target_y,
@@ -187,6 +193,7 @@ void Image::overlay(
     {
         throw std::logic_error("Unknown overlay kind");
     }
+    return *this;
 }
 
 Pixel *Image::begin()

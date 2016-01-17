@@ -69,16 +69,16 @@ namespace res {
             return pixels[x + y * _width];
         }
 
-        void invert();
-        void flip_vertically();
-        void flip_horizontally();
-        void crop(const size_t width, const size_t height);
-        void apply_mask(const Image &other);
-        void apply_palette(const Palette &palette);
+        Image &invert();
+        Image &flip_vertically();
+        Image &flip_horizontally();
+        Image &crop(const size_t width, const size_t height);
+        Image &apply_mask(const Image &other);
+        Image &apply_palette(const Palette &palette);
 
-        void overlay(
+        Image &overlay(
             const Image &other, const OverlayKind overlay_kind);
-        void overlay(
+        Image &overlay(
             const Image &other,
             const int target_x,
             const int target_y,
