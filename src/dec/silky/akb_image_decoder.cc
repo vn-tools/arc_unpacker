@@ -29,7 +29,7 @@ res::Image AkbImageDecoder::decode_impl(
     const auto y1 = input_file.stream.read_le<s32>();
     const auto x2 = input_file.stream.read_le<s32>();
     const auto y2 = input_file.stream.read_le<s32>();
-    if (y2 <= y1 || x2 <= x1)
+    if (y2 < y1 || x2 < x1)
         throw err::BadDataSizeError();
 
     std::unique_ptr<res::Image> base_image;
