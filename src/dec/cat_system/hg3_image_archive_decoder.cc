@@ -185,7 +185,7 @@ std::unique_ptr<io::File> Hg3ImageArchiveDecoder::read_file_impl(
     io::MemoryStream data_stream(data);
 
     std::map<bstr, bstr> chunks;
-    while (!data_stream.eof())
+    while (data_stream.size() - data_stream.tell() > 8)
     {
         const auto chunk_name = data_stream.read(8);
         data_stream.skip(4);
