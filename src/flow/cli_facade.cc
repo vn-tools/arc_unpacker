@@ -93,7 +93,7 @@ void CliFacade::Priv::print_cli_help() const
     logger.info(
 R"(  __ _ _   _
  / _` | |_| |  arc_unpacker v%s
- \__,_|\__,_|  Extracts images and sounds from various visual novels.
+ \__,_|\__,_|  the visual novel extractor
 
 Usage: arc_unpacker [options] [dec_options] input_path [input_path...]
 
