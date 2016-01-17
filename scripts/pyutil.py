@@ -198,41 +198,163 @@ def lzss_compress_bitwise(input):
         return out_io.seek(0).read()
 
 def lzss_compress_bytewise(input):
-    WINDOW_BITS = 12
-    LENGTH_BITS  = 4
-    MIN_MATCH = 3
-    WINDOW_SIZE = (1 << WINDOW_BITS)
-    MAX_MATCH = MIN_MATCH + (1 << LENGTH_BITS) - 1
-    out = []
-    read_ptr = 0
-    while read_ptr < len(input):
-        flag_ptr = len(out)
-        flag, bit = 0, -1
-        out += [[]]
-        while bit < 7 and read_ptr < len(input):
-            bit += 1
-            window_ptr = max(0, read_ptr - WINDOW_SIZE)
-            best_match_len, best_match_ptr = 0, 0
-            window_str = input[window_ptr:read_ptr]
-            match = input[read_ptr:read_ptr + MIN_MATCH]
-            i = window_str.find(match)
-            while (i != -1
-            and best_match_len < MAX_MATCH
-            and len(match) > best_match_len):
-                best_match_len = len(match)
-                best_match_ptr = i
-                match = input[read_ptr : read_ptr + len(match) + 1]
-                i = window_str.find(match)
-            if best_match_len >= MIN_MATCH:
-                best_match_ptr += 0xFEE
-                best_match_ptr %= WINDOW_SIZE
-                out.append(best_match_ptr & 0xFF)
-                out.append((best_match_len - MIN_MATCH)
-                    | ((best_match_ptr & 0xF00) >> 4))
-                read_ptr += best_match_len
+    class Lzss(object):
+        def __init__(self):
+            window_bits = 12
+            length_bits  = 4
+            self.window_size = 1 << window_bits
+            self.min_match = 3
+            self.max_match = self.min_match + (1 << length_bits) - 1
+            self.nil = self.window_size
+
+            self.text_buf = bytearray(b'\x00' * (self.window_size + self.max_match - 1))
+            self.match_position = 0
+            self.match_length = 0
+            self.lson = [self.nil for i in range(self.window_size + 1)]
+            self.rson = [self.nil for i in range(self.window_size + 257)]
+            self.dad = [self.nil for i in range(self.window_size + 1)]
+
+        def insert_node(self, r):
+            cmp = 1
+            p = self.window_size + 1 + self.text_buf[r]
+            self.rson[r] = self.lson[r] = self.nil
+            self.match_length = 0
+            while True:
+                if cmp >= 0:
+                    if self.rson[p] != self.nil:
+                        p = self.rson[p]
+                    else:
+                        self.rson[p] = r
+                        self.dad[r] = p
+                        return
+                else:
+                    if self.lson[p] != self.nil:
+                        p = self.lson[p]
+                    else:
+                        self.lson[p] = r
+                        self.dad[r] = p
+                        return
+                i = 1
+                while i < self.max_match:
+                    cmp = self.text_buf[r + i] - self.text_buf[p + i]
+                    if cmp != 0:
+                        break
+                    i += 1
+                if i > self.match_length:
+                    self.match_position = p
+                    self.match_length = i
+                    if self.match_length >= self.max_match:
+                        break
+            self.dad[r] = self.dad[p]
+            self.lson[r] = self.lson[p]
+            self.rson[r] = self.rson[p]
+            self.dad[self.lson[p]] = r
+            self.dad[self.rson[p]] = r
+            if self.rson[self.dad[p]] == p:
+                self.rson[self.dad[p]] = r
             else:
-                flag |= 1 << bit
-                out += [input[read_ptr]]
-                read_ptr += 1
-        out[flag_ptr] = flag
-    return bytes(out)
+                self.lson[self.dad[p]] = r
+            self.dad[p] = self.nil
+
+        def delete_node(self, p):
+            if self.dad[p] == self.nil:
+                return
+            if self.rson[p] == self.nil:
+                q = self.lson[p]
+            elif self.lson[p] == self.nil:
+                q = self.rson[p]
+            else:
+                q = self.lson[p]
+                if self.rson[q] != self.nil:
+                    q = self.rson[q]
+                    while self.rson[q] != self.nil:
+                        q = self.rson[q]
+                    self.rson[self.dad[q]] = self.lson[q]
+                    self.dad[self.lson[q]] = self.dad[q]
+                    self.lson[q] = self.lson[p]
+                    self.dad[self.lson[p]] = q
+                self.rson[q] = self.rson[p]
+                self.dad[self.rson[p]] = q
+            self.dad[q] = self.dad[p]
+            if self.rson[self.dad[p]] == p:
+                self.rson[self.dad[p]] = q
+            else:
+                self.lson[self.dad[p]] = q
+            self.dad[p] = self.nil
+
+        def encode(self, input):
+            code_buf = bytearray(b'\x00' * 17)
+            code_buf[0] = 0
+            code_buf_ptr = mask = 1
+            s = 0
+            r = self.window_size - self.max_match
+
+            output = bytearray()
+            with io_ext(io.BytesIO(input)) as input_io:
+                for i in range(s, r):
+                    self.text_buf[i] = 0
+                length = 0
+                while length < self.max_match:
+                    if input_io.tell() == input_io.size():
+                        break
+                    self.text_buf[r + length] = input_io.read_u8()
+                    length += 1
+                if length == 0:
+                    return b''
+
+                for i in range(1, self.max_match + 1):
+                    self.insert_node(r - i)
+                self.insert_node(r)
+                while length > 0:
+                    if self.match_length > length:
+                        self.match_length = length
+                    if self.match_length < self.min_match:
+                        self.match_length = 1
+                        code_buf[0] |= mask
+                        code_buf[code_buf_ptr] = self.text_buf[r]
+                        code_buf_ptr += 1
+                    else:
+                        self.match_position = (self.match_position - 0) & 0xFFF
+                        code_buf[code_buf_ptr] = self.match_position & 0xFF
+                        code_buf_ptr += 1
+                        code_buf[code_buf_ptr] = (
+                            (((self.match_position & 0xF00) >> 4)
+                             | ((self.match_length - self.min_match) & 0xF)))
+                        code_buf_ptr += 1
+                    mask <<= 1
+                    mask &= 0xFF
+                    if mask == 0:
+                        for i in range(code_buf_ptr):
+                            output.append(code_buf[i])
+                        code_buf[0] = 0
+                        code_buf_ptr = mask = 1
+                    last_match_length = self.match_length
+                    i = 0
+                    while i < last_match_length:
+                        if input_io.tell() == input_io.size():
+                            break
+                        c = input_io.read_u8()
+                        self.delete_node(s)
+                        self.text_buf[s] = c
+                        if s < self.max_match - 1:
+                            self.text_buf[s + self.window_size] = c
+                        s = (s + 1) & (self.window_size - 1)
+                        r = (r + 1) & (self.window_size - 1)
+                        self.insert_node(r)
+                        i += 1
+
+                    while i < last_match_length:
+                        self.delete_node(s)
+                        s = (s + 1) & (self.window_size - 1)
+                        r = (r + 1) & (self.window_size - 1)
+                        length -= 1
+                        if length > 0:
+                            self.insert_node(r)
+                        i += 1
+
+                if code_buf_ptr > 1:
+                    for i in range(code_buf_ptr):
+                        output.append(code_buf[i])
+            return output
+
+    return bytes(Lzss().encode(input))
