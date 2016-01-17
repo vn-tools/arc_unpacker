@@ -2,21 +2,24 @@
 #include "algo/pack/lzss.h"
 #include "algo/range.h"
 #include "err.h"
+#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec::silky;
 
-static const bstr magic = "AKB\x20"_b;
+static const bstr magic1 = "AKB "_b;
+static const bstr magic2 = "AKB+"_b;
 
 bool AkbImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.stream.read(magic.size()) == magic;
+    return input_file.stream.seek(0).read(magic1.size()) == magic1
+        || input_file.stream.seek(0).read(magic2.size()) == magic2;
 }
 
 res::Image AkbImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    input_file.stream.seek(magic.size());
+    const auto plus = input_file.stream.seek(0).read(magic2.size()) == magic2;
     const auto width = input_file.stream.read_le<u16>();
     const auto height = input_file.stream.read_le<u16>();
     const auto channels = input_file.stream.read_be<u32>() & 0x40 ? 3 : 4;
@@ -28,6 +31,27 @@ res::Image AkbImageDecoder::decode_impl(
     const auto y2 = input_file.stream.read_le<s32>();
     if (y2 <= y1 || x2 <= x1)
         throw err::BadDataSizeError();
+
+    std::unique_ptr<res::Image> base_image;
+    if (plus)
+    {
+        const auto base_name = input_file.stream.read_to_zero(32).str();
+
+        auto base_file = VirtualFileSystem::get_by_stem(
+            io::path(base_name).stem());
+        if (base_file && is_recognized(*base_file))
+        {
+            base_image = std::make_unique<res::Image>(
+                decode(logger, *base_file));
+        }
+    }
+
+    if (!base_image)
+    {
+        base_image = std::make_unique<res::Image>(width, height);
+        for (auto &c : *base_image)
+            c = background;
+    }
 
     const auto canvas_width = x2 - x1;
     const auto canvas_height = y2 - y1;
@@ -59,11 +83,14 @@ res::Image AkbImageDecoder::decode_impl(
         : res::PixelFormat::BGR888;
     res::Image overlay(x2 - x1, y2 - y1, data, fmt);
 
-    auto image = res::Image(width, height);
-    for (auto &c : image)
-        c = background;
-    image.overlay(overlay, x1, y1, res::Image::OverlayKind::OverwriteAll);
-    return image;
+    if (plus)
+        for (auto &c : overlay)
+            if (c.r == 0 && c.g == 0xFF && c.b == 0)
+                c.a = 0;
+
+    base_image->overlay(
+        overlay, x1, y1, res::Image::OverlayKind::OverwriteNonTransparent);
+    return *base_image;
 }
 
 static auto _ = dec::register_decoder<AkbImageDecoder>("silky/akb");
