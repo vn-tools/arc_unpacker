@@ -70,3 +70,13 @@ bstr BaseStream::read_line()
     }
     return output;
 }
+
+IStream &BaseStream::write_zero_padded(
+    const bstr &bytes, const size_t target_size)
+{
+    if (bytes.size() > target_size)
+        return write(bytes.substr(0, target_size));
+    write(bytes);
+    write(bstr(target_size - bytes.size()));
+    return *this;
+}

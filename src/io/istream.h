@@ -84,6 +84,9 @@ namespace io {
             return write(bstr(bytes));
         }
 
+        virtual io::IStream &write_zero_padded(
+            const bstr &bytes, const size_t target_size) = 0;
+
         template<typename T> IStream &write(const T x)
         {
             static_assert(

@@ -18,6 +18,9 @@ namespace io {
         bstr read_to_zero(const size_t bytes) override;
         bstr read_to_eof() override;
         bstr read_line() override;
+
+        IStream &write_zero_padded(
+            const bstr &bytes, const size_t target_size) override;
     };
 
 } }
