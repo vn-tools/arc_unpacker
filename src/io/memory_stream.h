@@ -20,7 +20,6 @@ namespace io {
         size_t size() const override;
         size_t tell() const override;
         IStream &seek(const size_t offset) override;
-        IStream &skip(const int offset) override;
         IStream &truncate(const size_t new_size) override;
 
         IStream &reserve(const size_t count);

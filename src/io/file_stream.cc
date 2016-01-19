@@ -49,13 +49,6 @@ io::IStream &FileStream::seek(const size_t offset)
     return *this;
 }
 
-io::IStream &FileStream::skip(const int offset)
-{
-    if (tell() + offset > size() || fseek(p->file, offset, SEEK_CUR) != 0)
-        throw err::EofError();
-    return *this;
-}
-
 void FileStream::read_impl(void *destination, const size_t size)
 {
     // destination MUST exist and size MUST be at least 1

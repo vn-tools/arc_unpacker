@@ -3,9 +3,17 @@
 #include <memory>
 #include "algo/endian.h"
 #include "algo/range.h"
+#include "err.h"
 
 using namespace au;
 using namespace au::io;
+
+io::IStream &BaseStream::skip(const int offset)
+{
+    if (tell() + offset > size())
+        throw err::EofError();
+    return seek(tell() + offset);
+}
 
 io::IStream &BaseStream::peek(const size_t offset, std::function<void()> func)
 {

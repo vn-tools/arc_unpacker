@@ -53,14 +53,6 @@ io::IStream &MemoryStream::seek(const size_t offset)
     return *this;
 }
 
-io::IStream &MemoryStream::skip(const int offset)
-{
-    if (buffer_pos + offset > buffer->size())
-        throw err::EofError();
-    buffer_pos += offset;
-    return *this;
-}
-
 void MemoryStream::read_impl(void *destination, const size_t size)
 {
     // destination MUST exist and size MUST be at least 1

@@ -12,6 +12,7 @@ namespace io {
 
         IStream &peek(
             const size_t offset, const std::function<void()> func) override;
+        IStream &skip(const int offset) override;
         bool eof() const override;
 
         bstr read_to_zero() override;
