@@ -263,6 +263,7 @@ static res::Image get_image_without_palette(
 
 bool BmpImageDecoder::is_recognized_impl(io::File &input_file) const
 {
+    input_file.stream.seek(0);
     if (input_file.stream.read(magic.size()) != magic)
         return false;
     input_file.stream.skip(4); // file size, some encoders corrupt this value
