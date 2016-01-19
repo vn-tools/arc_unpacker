@@ -47,6 +47,12 @@ static res::Image image_from_file(io::File &file)
     throw std::logic_error("Only PNG, BMP and JPEG files are supported");
 }
 
+res::Image tests::get_opaque_test_image()
+{
+    const auto input_file = tests::file_from_path("tests/dec/homura.png");
+    return image_from_file(*input_file);
+}
+
 void tests::compare_images(
     const res::Image &expected_image, const res::Image &actual_image)
 {

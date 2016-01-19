@@ -7,6 +7,8 @@
 namespace au {
 namespace tests {
 
+    res::Image get_opaque_test_image();
+
     void compare_images(
         const res::Image &expected_image,
         const res::Image &actual_image);
