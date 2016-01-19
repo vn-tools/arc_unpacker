@@ -8,6 +8,11 @@
 using namespace au;
 using namespace au::io;
 
+size_t BaseStream::left() const
+{
+    return size() - tell();
+}
+
 io::IStream &BaseStream::skip(const int offset)
 {
     if (tell() + offset > size())

@@ -13,6 +13,7 @@ namespace io {
     public:
         virtual ~IStream() {}
 
+        virtual size_t left() const = 0;
         virtual size_t size() const = 0;
         virtual size_t tell() const = 0;
         virtual IStream &seek(const size_t offset) = 0;

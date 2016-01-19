@@ -10,6 +10,8 @@ namespace io {
     public:
         virtual ~BaseStream() {}
 
+        size_t left() const override;
+
         IStream &peek(
             const size_t offset, const std::function<void()> func) override;
         IStream &skip(const int offset) override;
