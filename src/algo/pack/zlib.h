@@ -14,11 +14,13 @@ namespace pack {
     };
 
     bstr zlib_inflate(
-        io::IStream &io,
-        const ZlibKind kind = ZlibKind::PlainZlib);
+        io::IStream &input_stream, const ZlibKind kind = ZlibKind::PlainZlib);
 
     bstr zlib_inflate(
-        const bstr &input,
-        const ZlibKind kind = ZlibKind::PlainZlib);
+        const bstr &input, const ZlibKind kind = ZlibKind::PlainZlib);
+
+    bstr zlib_deflate(
+        const bstr &input, const ZlibKind kind = ZlibKind::PlainZlib);
+
 
 } } }

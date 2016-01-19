@@ -5,26 +5,28 @@
 using namespace au;
 using namespace au::algo::pack;
 
-TEST_CASE("ZLIB unpacking", "[algo][pack]")
+TEST_CASE("ZLIB compression", "[algo][pack]")
 {
+    const bstr input =
+        "\x78\xDA\xCB\xC9\x4C\x4B\x55\xC8"
+        "\x2C\x56\x48\xCE\x4F\x49\xE5\x02"
+        "\x00\x20\xC1\x04\x62"_b;
+    const bstr output = "life is code\n"_b;
+
     SECTION("Inflating ZLIB from bstr")
     {
-        const bstr input =
-            "\x78\xDA\xCB\xC9\x4C\x4B\x55\xC8"
-            "\x2C\x56\x48\xCE\x4F\x49\xE5\x02"
-            "\x00\x20\xC1\x04\x62"_b;
-
-        REQUIRE(zlib_inflate(input) == "life is code\n"_b);
+        REQUIRE(zlib_inflate(input) == output);
     }
 
     SECTION("Inflating ZLIB from stream")
     {
-        io::MemoryStream stream(
-            "\x78\xDA\xCB\xC9\x4C\x4B\x55\xC8"
-            "\x2C\x56\x48\xCE\x4F\x49\xE5\x02"
-            "\x00\x20\xC1\x04\x62"_b);
+        io::MemoryStream input_stream(input);
+        REQUIRE(zlib_inflate(input_stream) == output);
+        REQUIRE(input_stream.eof());
+    }
 
-        REQUIRE(zlib_inflate(stream) == "life is code\n"_b);
-        REQUIRE(stream.eof());
+    SECTION("Deflating ZLIB from bstr")
+    {
+        REQUIRE(zlib_inflate(zlib_deflate(output)) == output);
     }
 }
