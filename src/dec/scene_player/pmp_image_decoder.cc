@@ -14,8 +14,10 @@ bool PmpImageDecoder::is_recognized_impl(io::File &input_file) const
 res::Image PmpImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto data = algo::pack::zlib_inflate(algo::unxor(
-            input_file.stream.seek(0).read_to_eof(), 0x21));
+    const auto data
+        = algo::pack::zlib_inflate(
+            algo::unxor(
+                input_file.stream.seek(0).read_to_eof(), 0x21));
     const auto pseudo_file = std::make_unique<io::File>("dummy.bmp", data);
     const auto bmp_decoder = dec::microsoft::BmpImageDecoder();
     return bmp_decoder.decode(logger, *pseudo_file);
