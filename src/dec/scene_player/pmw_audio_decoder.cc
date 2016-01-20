@@ -22,4 +22,4 @@ std::unique_ptr<io::File> PmwAudioDecoder::decode_impl(
     return output_file;
 }
 
-static auto _ = dec::register_decoder<PmwAudioDecoder>("scene-player/pwm");
+static auto _ = dec::register_decoder<PmwAudioDecoder>("scene-player/pmw");
