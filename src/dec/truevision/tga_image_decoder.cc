@@ -1,7 +1,7 @@
 #include "dec/truevision/tga_image_decoder.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::truevision;
@@ -18,7 +18,7 @@ namespace
 }
 
 static res::Palette read_palette(
-    io::IStream &input_stream, const size_t size, const size_t depth)
+    io::BaseByteStream &input_stream, const size_t size, const size_t depth)
 {
     res::PixelFormat format;
     if (depth == 32)
@@ -34,7 +34,7 @@ static res::Palette read_palette(
 }
 
 static bstr read_compressed_data(
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const size_t width,
     const size_t height,
     const size_t channels)
@@ -63,7 +63,7 @@ static bstr read_compressed_data(
 }
 
 static bstr read_uncompressed_data(
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const size_t width,
     const size_t height,
     const size_t channels)
@@ -78,11 +78,11 @@ static res::Image get_image_from_palette(
     const size_t depth,
     const res::Palette &palette)
 {
-    io::MsbBitReader bit_reader(input);
+    io::MsbBitStream bit_stream(input);
     res::Image output(width, height);
     for (auto y : algo::range(height))
     for (auto x : algo::range(width))
-        output.at(x, y) = palette[bit_reader.get(depth)];
+        output.at(x, y) = palette[bit_stream.read(depth)];
     return output;
 }
 

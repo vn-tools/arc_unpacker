@@ -1,12 +1,13 @@
-#include "io/base_bit_reader.h"
+#include "io/base_bit_stream.h"
 #include "err.h"
 #include "io/memory_stream.h"
 
 using namespace au;
 using namespace au::io;
 
+BaseBitStream::~BaseBitStream() {}
 
-BaseBitReader::BaseBitReader(const bstr &input) :
+BaseBitStream::BaseBitStream(const bstr &input) :
     buffer(0),
     bits_available(0),
     position(0),
@@ -15,7 +16,7 @@ BaseBitReader::BaseBitReader(const bstr &input) :
 {
 }
 
-BaseBitReader::BaseBitReader(io::IStream &input_stream) :
+BaseBitStream::BaseBitStream(io::BaseByteStream &input_stream) :
     buffer(0),
     bits_available(0),
     position(0),
@@ -23,7 +24,7 @@ BaseBitReader::BaseBitReader(io::IStream &input_stream) :
 {
 }
 
-void BaseBitReader::seek(const size_t new_pos)
+BaseStream &BaseBitStream::seek(const size_t new_pos)
 {
     if (new_pos > size())
         throw err::EofError();
@@ -31,40 +32,36 @@ void BaseBitReader::seek(const size_t new_pos)
     bits_available = 0;
     buffer = 0;
     input_stream->seek(position / 8);
-    get(new_pos % 32);
+    read(new_pos % 32);
+    return *this;
 }
 
-void BaseBitReader::skip(int offset)
+BaseStream &BaseBitStream::truncate(const size_t new_size)
 {
-    return seek(tell() + offset);
+    throw err::NotSupportedError("Not implemented");
 }
 
-size_t BaseBitReader::tell() const
+size_t BaseBitStream::tell() const
 {
     return position;
 }
 
-bool BaseBitReader::eof() const
-{
-    return position == size();
-}
-
-size_t BaseBitReader::size() const
+size_t BaseBitStream::size() const
 {
     return input_stream->size() * 8;
 }
 
 // Elias Gamma coding
-u32 BaseBitReader::get_gamma(const bool stop_mark)
+u32 BaseBitStream::read_gamma(const bool stop_mark)
 {
     size_t count = 0;
-    while (get(1) != stop_mark)
+    while (read(1) != stop_mark)
         ++count;
     u32 value = 1;
     while (count--)
     {
         value <<= 1;
-        value |= get(1); // one by one to enforce MSB order
+        value |= read(1); // one by one to enforce MSB order
     }
     return value;
 }

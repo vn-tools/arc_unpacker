@@ -16,7 +16,7 @@ namespace
     };
 }
 
-static int detect_version(io::IStream &input_stream)
+static int detect_version(io::BaseByteStream &input_stream)
 {
     try
     {

@@ -1,14 +1,14 @@
-#include "dec/active_soft/custom_bit_reader.h"
+#include "dec/active_soft/custom_bit_stream.h"
 #include "algo/range.h"
 
 using namespace au;
 using namespace au::dec::active_soft;
 
-CustomBitReader::CustomBitReader(const bstr &input) : io::BaseBitReader(input)
+CustomBitStream::CustomBitStream(const bstr &input) : io::BaseBitStream(input)
 {
 }
 
-u32 CustomBitReader::get(const size_t bits)
+u32 CustomBitStream::read(const size_t bits)
 {
     u32 value = 0;
     for (const auto i : algo::range(bits))

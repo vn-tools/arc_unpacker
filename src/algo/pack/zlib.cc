@@ -12,7 +12,7 @@ using namespace au::algo::pack;
 static const int buffer_size = 8192;
 
 static bstr process_stream(
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const ZlibKind kind,
     const std::function<int(z_stream &s, const int window_bits)> &init_func,
     const std::function<int(z_stream &s)> &process_func,
@@ -76,7 +76,8 @@ static bstr process_stream(
     return output;
 }
 
-bstr algo::pack::zlib_inflate(io::IStream &input_stream, const ZlibKind kind)
+bstr algo::pack::zlib_inflate(
+    io::BaseByteStream &input_stream, const ZlibKind kind)
 {
     return process_stream(
         input_stream,

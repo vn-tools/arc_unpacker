@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "io/ibit_reader.h"
+#include "io/base_bit_stream.h"
 
 namespace au {
 namespace dec {
@@ -18,7 +18,7 @@ namespace common {
         virtual void reset() = 0;
         virtual void decode(u8 *ouptut, const size_t output_size) = 0;
 
-        std::unique_ptr<io::IBitReader> bit_reader;
+        std::unique_ptr<io::BaseBitStream> bit_stream;
     };
 
 } } } }

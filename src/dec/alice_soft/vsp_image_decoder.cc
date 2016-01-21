@@ -11,7 +11,7 @@ bool VspImageDecoder::is_recognized_impl(io::File &input_file) const
 }
 
 static bstr decompress_vsp(
-    io::IStream &input_stream, const size_t width, const size_t height)
+    io::BaseByteStream &input_stream, const size_t width, const size_t height)
 {
     if (width % 8 != 0)
         throw std::logic_error("Invalid width");

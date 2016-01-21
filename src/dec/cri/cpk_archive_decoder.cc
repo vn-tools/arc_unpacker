@@ -5,7 +5,7 @@
 #include "algo/str.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::cri;
@@ -77,7 +77,7 @@ static bstr decrypt_utf_packet(const bstr &input)
     return output;
 }
 
-static bstr read_utf_packet(io::IStream &input_stream)
+static bstr read_utf_packet(io::BaseByteStream &input_stream)
 {
     bool isUtfEncrypted = false;
     input_stream.skip(4);
@@ -97,15 +97,15 @@ static bstr decompress_layla(const bstr &input)
     const auto data_comp = algo::reverse(input_stream.read(size_comp));
     const auto prefix = input_stream.read_to_eof();
 
-    io::MsbBitReader bit_reader(data_comp);
+    io::MsbBitStream bit_stream(data_comp);
     bstr output;
     output.reserve(size_orig);
     while (output.size() < size_orig)
     {
-        if (bit_reader.get(1))
+        if (bit_stream.read(1))
         {
             auto repetitions = 3;
-            auto look_behind = bit_reader.get(13) + 3;
+            auto look_behind = bit_stream.read(13) + 3;
 
             std::vector<size_t> sizes = {5, 3, 2};
             while (true)
@@ -116,7 +116,7 @@ static bstr decompress_layla(const bstr &input)
                     size = sizes.back();
                     sizes.pop_back();
                 }
-                const auto marker = bit_reader.get(size);
+                const auto marker = bit_stream.read(size);
                 repetitions += marker;
                 if (marker != (1u << size) - 1)
                     break;
@@ -126,7 +126,7 @@ static bstr decompress_layla(const bstr &input)
                 output += output.at(output.size() - look_behind);
         }
         else
-            output += static_cast<u8>(bit_reader.get(8));
+            output += static_cast<u8>(bit_stream.read(8));
     }
 
     return prefix + algo::reverse(output);
@@ -238,7 +238,7 @@ static std::vector<Row> parse_utf_packet(const bstr &utf_packet)
 }
 
 static void read_toc(
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const size_t toc_offset,
     const size_t content_offset,
     Toc &toc)
@@ -268,7 +268,7 @@ static void read_toc(
 }
 
 static void read_etoc(
-    io::IStream &input_stream, const size_t etoc_offset, Toc &toc)
+    io::BaseByteStream &input_stream, const size_t etoc_offset, Toc &toc)
 {
     input_stream.seek(etoc_offset);
     if (input_stream.read(4) != "ETOC"_b)
@@ -286,7 +286,7 @@ static void read_etoc(
 }
 
 static void read_itoc(
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const size_t itoc_offset,
     const size_t content_offset,
     const size_t align,

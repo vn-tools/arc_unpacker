@@ -1,6 +1,6 @@
 #include "dec/active_soft/ed8_image_decoder.h"
 #include "algo/range.h"
-#include "dec/active_soft/custom_bit_reader.h"
+#include "dec/active_soft/custom_bit_stream.h"
 #include "err.h"
 
 using namespace au;
@@ -41,31 +41,31 @@ res::Image Ed8ImageDecoder::decode_impl(
     const auto output_start = output.get<const u8>();
     const auto output_end = output.end<const u8>();
 
-    CustomBitReader bit_reader(input_file.stream.read(data_size));
+    CustomBitStream bit_stream(input_file.stream.read(data_size));
     while (output_ptr < output_end)
     {
-        *output_ptr++ = bit_reader.get(8);
+        *output_ptr++ = bit_stream.read(8);
         if (output_ptr >= output_end)
             break;
-        if (bit_reader.get(1))
+        if (bit_stream.read(1))
             continue;
         int last_idx = -1;
         while (output_ptr < output_end)
         {
             int idx = 0;
-            if (bit_reader.get(1))
+            if (bit_stream.read(1))
             {
-                if (bit_reader.get(1))
-                    idx = bit_reader.get(1) + 1;
-                idx = (idx << 1) + bit_reader.get(1) + 1;
+                if (bit_stream.read(1))
+                    idx = bit_stream.read(1) + 1;
+                idx = (idx << 1) + bit_stream.read(1) + 1;
             }
-            idx = (idx << 1) + bit_reader.get(1);
+            idx = (idx << 1) + bit_stream.read(1);
 
             if (idx == last_idx)
                 break;
             last_idx = idx;
 
-            int repetitions = bit_reader.get_gamma(0);
+            int repetitions = bit_stream.read_gamma(0);
             if (idx >= 2)
                 repetitions++;
 

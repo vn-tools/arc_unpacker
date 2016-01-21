@@ -28,7 +28,7 @@ namespace
 
 static const bstr magic = "YKG000"_b;
 
-static std::unique_ptr<Header> read_header(io::IStream &input_stream)
+static std::unique_ptr<Header> read_header(io::BaseByteStream &input_stream)
 {
     auto header = std::make_unique<Header>();
     header->encrypted = input_stream.read_le<u16>() > 0;
@@ -48,7 +48,7 @@ static std::unique_ptr<Header> read_header(io::IStream &input_stream)
 }
 
 static std::vector<std::unique_ptr<Region>> read_regions(
-    io::IStream &input_stream, Header &header)
+    io::BaseByteStream &input_stream, Header &header)
 {
     std::vector<std::unique_ptr<Region>> regions;
 

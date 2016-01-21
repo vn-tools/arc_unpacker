@@ -58,7 +58,7 @@ namespace
     };
 }
 
-static GtfHeader read_header(io::IStream &input_stream)
+static GtfHeader read_header(io::BaseByteStream &input_stream)
 {
     GtfHeader header;
     header.version = input_stream.read_be<u32>();
@@ -67,7 +67,7 @@ static GtfHeader read_header(io::IStream &input_stream)
     return header;
 }
 
-static GtfSpec read_spec(io::IStream &input_stream)
+static GtfSpec read_spec(io::BaseByteStream &input_stream)
 {
     GtfSpec spec;
     input_stream.skip(4);

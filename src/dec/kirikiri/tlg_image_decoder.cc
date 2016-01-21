@@ -11,7 +11,7 @@ static const bstr magic_tlg_0 = "TLG0.0\x00sds\x1A"_b;
 static const bstr magic_tlg_5 = "TLG5.0\x00raw\x1A"_b;
 static const bstr magic_tlg_6 = "TLG6.0\x00raw\x1A"_b;
 
-static int guess_version(io::IStream &input_stream);
+static int guess_version(io::BaseByteStream &input_stream);
 static res::Image decode_proxy(int version, io::File &input_file);
 
 static std::string extract_string(std::string &container)
@@ -73,7 +73,7 @@ static res::Image decode_tlg_6(io::File &input_file)
     return Tlg6Decoder().decode(input_file);
 }
 
-static int guess_version(io::IStream &input_stream)
+static int guess_version(io::BaseByteStream &input_stream)
 {
     size_t pos = input_stream.tell();
     if (input_stream.read(magic_tlg_0.size()) == magic_tlg_0)

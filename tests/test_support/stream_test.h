@@ -1,13 +1,13 @@
 #pragma once
 
 #include <memory>
-#include "io/istream.h"
+#include "io/base_byte_stream.h"
 
 namespace au {
 namespace tests {
 
     void stream_test(
-        const std::function<std::unique_ptr<io::IStream>()> &factory,
+        const std::function<std::unique_ptr<io::BaseByteStream>()> &factory,
         const std::function<void()> &cleanup);
 
 } }

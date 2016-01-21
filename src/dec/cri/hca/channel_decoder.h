@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dec/cri/hca/ath_table.h"
-#include "io/ibit_reader.h"
+#include "io/base_bit_stream.h"
 
 namespace au {
 namespace dec {
@@ -14,12 +14,12 @@ namespace hca {
         ChannelDecoder(const int type, const int idx, const int count);
 
         void decode1(
-            io::IBitReader &bit_reader,
+            io::BaseBitStream &bit_stream,
             const unsigned int a,
             const int b,
             const AthTable &ath_table);
 
-        void decode2(io::IBitReader &bit_reader);
+        void decode2(io::BaseBitStream &bit_stream);
 
         void decode3(
             const unsigned int a,

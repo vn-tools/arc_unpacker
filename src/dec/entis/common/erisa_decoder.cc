@@ -24,10 +24,10 @@ ErisaDecoder::~ErisaDecoder()
 
 void ErisaDecoder::reset()
 {
-    if (!bit_reader)
+    if (!bit_stream)
         throw std::logic_error("Trying to reset with unitialized input");
 
-    code_register = bit_reader->get(32);
+    code_register = bit_stream->read(32);
     augend_register = 0xFFFF;
 
     p->models.resize(0x100);
@@ -37,7 +37,7 @@ void ErisaDecoder::reset()
 
 void ErisaDecoder::decode(u8 *output, const size_t output_size)
 {
-    if (!bit_reader)
+    if (!bit_stream)
         throw std::logic_error("Trying to reset with unitialized input");
 
     auto output_ptr = output;

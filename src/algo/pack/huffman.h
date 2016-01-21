@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/ibit_reader.h"
+#include "io/base_bit_stream.h"
 
 namespace au {
 namespace algo {
@@ -9,7 +9,7 @@ namespace pack {
     struct HuffmanTree final
     {
         HuffmanTree(const bstr &data);
-        HuffmanTree(io::IBitReader &bit_reader);
+        HuffmanTree(io::BaseBitStream &input_stream);
 
         int size;
         u16 root;

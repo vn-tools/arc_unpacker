@@ -3,17 +3,17 @@
 #include "dec/bgi/cbg/cbg_common.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::bgi::cbg;
 
 static bstr decompress_huffman(
-    io::IBitReader &bit_reader, const Tree &tree, size_t output_size)
+    io::BaseBitStream &bit_stream, const Tree &tree, size_t output_size)
 {
     bstr output(output_size);
     for (auto i : algo::range(output.size()))
-        output[i] = tree.get_leaf(bit_reader);
+        output[i] = tree.get_leaf(bit_stream);
     return output;
 }
 
@@ -111,7 +111,8 @@ static res::PixelFormat bpp_to_pixel_format(int bpp)
     throw err::UnsupportedBitDepthError(bpp);
 }
 
-std::unique_ptr<res::Image> Cbg1Decoder::decode(io::IStream &input_stream) const
+std::unique_ptr<res::Image> Cbg1Decoder::decode(
+    io::BaseByteStream &input_stream) const
 {
     auto width = input_stream.read_le<u16>();
     auto height = input_stream.read_le<u16>();
@@ -125,8 +126,8 @@ std::unique_ptr<res::Image> Cbg1Decoder::decode(io::IStream &input_stream) const
     auto freq_table = read_freq_table(decrypted_stream, 256);
     auto tree = build_tree(freq_table, false);
 
-    io::MsbBitReader bit_reader(raw_data);
-    auto output = decompress_huffman(bit_reader, tree, huffman_size);
+    io::MsbBitStream bit_stream(raw_data);
+    auto output = decompress_huffman(bit_stream, tree, huffman_size);
     auto pixel_data = decompress_rle(output, width * height * (bpp >> 3));
     transform_colors(pixel_data, width, height, bpp);
 

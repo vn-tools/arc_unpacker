@@ -25,7 +25,7 @@ namespace
 }
 
 static bool verify_version(
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const size_t file_count,
     const size_t name_size)
 {
@@ -43,7 +43,7 @@ static bool verify_version(
     }
 }
 
-static int detect_version(io::IStream &input_stream)
+static int detect_version(io::BaseByteStream &input_stream)
 {
     input_stream.seek(0);
     const auto file_count = input_stream.read_le<u32>();

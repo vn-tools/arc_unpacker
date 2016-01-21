@@ -4,7 +4,7 @@
 using namespace au;
 
 void tests::stream_test(
-    const std::function<std::unique_ptr<io::IStream>()> &factory,
+    const std::function<std::unique_ptr<io::BaseByteStream>()> &factory,
     const std::function<void()> &cleanup)
 {
     {

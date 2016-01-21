@@ -141,7 +141,7 @@ static void transform_script_content(
         buffer.get<u32>()[i] ^= xor_value;
 }
 
-static u32 read_file_count(io::IStream &input_stream)
+static u32 read_file_count(io::BaseByteStream &input_stream)
 {
     return input_stream.read_le<u32>() ^ file_count_hash;
 }

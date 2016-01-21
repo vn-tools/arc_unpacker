@@ -2,7 +2,7 @@
 #include <array>
 #include "algo/ptr.h"
 #include "algo/range.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 
@@ -16,12 +16,12 @@ bstr algo::pack::lzss_decompress(
     const size_t output_size,
     const BitwiseLzssSettings &settings)
 {
-    io::MsbBitReader bit_reader(input);
-    return lzss_decompress(bit_reader, output_size, settings);
+    io::MsbBitStream bit_stream(input);
+    return lzss_decompress(bit_stream, output_size, settings);
 }
 
 bstr algo::pack::lzss_decompress(
-    io::IBitReader &bit_reader,
+    io::BaseBitStream &input_stream,
     const size_t output_size,
     const BitwiseLzssSettings &settings)
 {
@@ -34,16 +34,16 @@ bstr algo::pack::lzss_decompress(
     auto output_ptr = algo::make_ptr(output);
     while (output_ptr.left())
     {
-        if (bit_reader.get(1) > 0)
+        if (input_stream.read(1) > 0)
         {
-            const auto b = bit_reader.get(8);
+            const auto b = input_stream.read(8);
             *output_ptr++ = b;
             *dict_ptr++ = b;
         }
         else
         {
-            auto look_behind_pos = bit_reader.get(settings.position_bits);
-            auto repetitions = bit_reader.get(settings.size_bits)
+            auto look_behind_pos = input_stream.read(settings.position_bits);
+            auto repetitions = input_stream.read(settings.size_bits)
                 + settings.min_match_size;
             auto source_ptr
                 = algo::make_cyclic_ptr(dict.data(), dict.size())

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "io/istream.h"
+#include "io/base_byte_stream.h"
 
 namespace au {
 namespace dec {
@@ -11,7 +11,7 @@ namespace wpx {
     class Decoder final
     {
     public:
-        Decoder(io::IStream &input_stream);
+        Decoder(io::BaseByteStream &input_stream);
         ~Decoder();
 
         std::string get_tag() const;

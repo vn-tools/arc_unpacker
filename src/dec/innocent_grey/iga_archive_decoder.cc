@@ -24,7 +24,7 @@ namespace
     };
 }
 
-static u32 read_integer(io::IStream &input_stream)
+static u32 read_integer(io::BaseByteStream &input_stream)
 {
     u32 ret = 0;
     while (!(ret & 1))

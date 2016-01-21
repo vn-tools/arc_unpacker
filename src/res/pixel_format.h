@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/istream.h"
+#include "io/base_byte_stream.h"
 #include "res/pixel.h"
 
 namespace au {
@@ -79,7 +79,7 @@ namespace res {
         const PixelFormat fmt);
 
     template<PixelFormat fmt> inline Pixel read_pixel(
-        io::IStream &input_stream)
+        io::BaseByteStream &input_stream)
     {
         const auto str = input_stream.read(pixel_format_to_bpp(fmt));
         const auto *str_ptr = str.get<const u8>();

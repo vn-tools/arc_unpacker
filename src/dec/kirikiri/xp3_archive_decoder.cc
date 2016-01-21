@@ -57,14 +57,14 @@ static const bstr segm_chunk_magic = "segm"_b;
 static const bstr adlr_chunk_magic = "adlr"_b;
 static const bstr time_chunk_magic = "time"_b;
 
-static int detect_version(io::IStream &input_stream)
+static int detect_version(io::BaseByteStream &input_stream)
 {
     if (input_stream.seek(19).read_le<u32>() == 1)
         return 2;
     return 1;
 }
 
-static u64 get_table_offset(io::IStream &input_stream, int version)
+static u64 get_table_offset(io::BaseByteStream &input_stream, int version)
 {
     input_stream.seek(xp3_magic.size());
     if (version == 1)
@@ -81,7 +81,8 @@ static u64 get_table_offset(io::IStream &input_stream, int version)
     return input_stream.read_le<u64>();
 }
 
-static std::unique_ptr<InfoChunk> read_info_chunk(io::IStream &chunk_stream)
+static std::unique_ptr<InfoChunk> read_info_chunk(
+    io::BaseByteStream &chunk_stream)
 {
     auto info_chunk = std::make_unique<InfoChunk>();
     info_chunk->flags = chunk_stream.read_le<u32>();
@@ -95,7 +96,7 @@ static std::unique_ptr<InfoChunk> read_info_chunk(io::IStream &chunk_stream)
 }
 
 static std::vector<std::unique_ptr<SegmChunk>> read_segm_chunks(
-    io::IStream &chunk_stream)
+    io::BaseByteStream &chunk_stream)
 {
     std::vector<std::unique_ptr<SegmChunk>> segm_chunks;
     while (!chunk_stream.eof())
@@ -110,14 +111,16 @@ static std::vector<std::unique_ptr<SegmChunk>> read_segm_chunks(
     return segm_chunks;
 }
 
-static std::unique_ptr<AdlrChunk> read_adlr_chunk(io::IStream &chunk_stream)
+static std::unique_ptr<AdlrChunk> read_adlr_chunk(
+    io::BaseByteStream &chunk_stream)
 {
     auto adlr_chunk = std::make_unique<AdlrChunk>();
     adlr_chunk->key = chunk_stream.read_le<u32>();
     return adlr_chunk;
 }
 
-static std::unique_ptr<TimeChunk> read_time_chunk(io::IStream &chunk_stream)
+static std::unique_ptr<TimeChunk> read_time_chunk(
+    io::BaseByteStream &chunk_stream)
 {
     auto time_chunk = std::make_unique<TimeChunk>();
     time_chunk->timestamp = chunk_stream.read_le<u64>();
@@ -125,7 +128,7 @@ static std::unique_ptr<TimeChunk> read_time_chunk(io::IStream &chunk_stream)
 }
 
 static std::unique_ptr<ArchiveEntryImpl> read_entry(
-    const Logger &logger, io::IStream &input_stream)
+    const Logger &logger, io::BaseByteStream &input_stream)
 {
     if (input_stream.read(file_entry_magic.size()) != file_entry_magic)
         throw err::CorruptDataError("Expected FILE entry");

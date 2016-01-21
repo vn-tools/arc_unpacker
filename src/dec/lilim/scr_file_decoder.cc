@@ -1,20 +1,20 @@
 #include "dec/lilim/scr_file_decoder.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::lilim;
 
 static int init_huffman(
-    io::IBitReader &bit_reader, u16 nodes[2][512], int &size)
+    io::BaseBitStream &bit_stream, u16 nodes[2][512], int &size)
 {
-    if (!bit_reader.get(1))
-        return bit_reader.get(8);
+    if (!bit_stream.read(1))
+        return bit_stream.read(8);
     const auto pos = size;
     if (pos > 511)
         return -1;
     size++;
-    nodes[0][pos] = init_huffman(bit_reader, nodes, size);
-    nodes[1][pos] = init_huffman(bit_reader, nodes, size);
+    nodes[0][pos] = init_huffman(bit_stream, nodes, size);
+    nodes[1][pos] = init_huffman(bit_stream, nodes, size);
     return pos;
 }
 
@@ -22,15 +22,15 @@ static bstr decode_huffman(const bstr &input, const size_t target_size)
 {
     bstr output;
     output.reserve(input.size() * 2);
-    io::MsbBitReader bit_reader(input);
+    io::MsbBitStream bit_stream(input);
     u16 nodes[2][512];
     auto size = 256;
-    auto root = init_huffman(bit_reader, nodes, size);
-    while (output.size() < target_size && !bit_reader.eof())
+    auto root = init_huffman(bit_stream, nodes, size);
+    while (output.size() < target_size && !bit_stream.eof())
     {
         auto byte = root;
         while (byte >= 256 && byte <= 511)
-            byte = nodes[bit_reader.get(1)][byte];
+            byte = nodes[bit_stream.read(1)][byte];
         output += static_cast<const u8>(byte);
     }
     return output;

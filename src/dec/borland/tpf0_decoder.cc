@@ -9,7 +9,7 @@ using namespace au::dec::borland;
 
 static const auto magic = "TPF0"_b;
 
-static algo::any read_value(io::IStream &input_stream)
+static algo::any read_value(io::BaseByteStream &input_stream)
 {
     const auto type = input_stream.read<u8>();
     if (type == 0)
@@ -74,7 +74,8 @@ static algo::any read_value(io::IStream &input_stream)
         algo::format("Unknown value type: %d\n", type));
 }
 
-static std::unique_ptr<Tpf0Structure> read_structure(io::IStream &input_stream)
+static std::unique_ptr<Tpf0Structure> read_structure(
+    io::BaseByteStream &input_stream)
 {
     const auto type_size = input_stream.read<u8>();
     auto s = std::make_unique<Tpf0Structure>();

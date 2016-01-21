@@ -2,7 +2,7 @@
 #include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::liar_soft;
@@ -11,7 +11,7 @@ void dec::liar_soft::cg_decompress(
     bstr &output,
     const size_t output_offset,
     const size_t output_shift,
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const size_t input_shift)
 {
     auto output_ptr = output.get<u8>() + output_offset;
@@ -33,18 +33,18 @@ void dec::liar_soft::cg_decompress(
     const size_t unk1 = table_size < 0x1000 ? 6 : 0xE;
     const size_t unk2 = table_size < 0x1000 ? 3 : 4;
 
-    io::MsbBitReader bit_reader(input_stream.read(size_comp));
+    io::MsbBitStream bit_stream(input_stream.read(size_comp));
     while (output_ptr < output_end)
     {
         try
         {
             size_t sequence_size = 1;
-            size_t table_offset_size = bit_reader.get(unk2);
+            size_t table_offset_size = bit_stream.read(unk2);
 
             if (!table_offset_size)
             {
-                sequence_size = bit_reader.get(4) + 2;
-                table_offset_size = bit_reader.get(unk2);
+                sequence_size = bit_stream.read(4) + 2;
+                table_offset_size = bit_stream.read(unk2);
             }
             if (!table_offset_size)
                 throw err::BadDataSizeError();
@@ -52,18 +52,18 @@ void dec::liar_soft::cg_decompress(
             size_t table_offset = 0;
             if (table_offset_size == 1)
             {
-                table_offset = bit_reader.get(1);
+                table_offset = bit_stream.read(1);
             }
             else
             {
                 table_offset_size--;
                 if (table_offset_size >= unk1)
                 {
-                    while (!bit_reader.eof() && bit_reader.get(1))
+                    while (!bit_stream.eof() && bit_stream.read(1))
                         ++table_offset_size;
                 }
                 table_offset = 1 << table_offset_size;
-                table_offset |= bit_reader.get(table_offset_size);
+                table_offset |= bit_stream.read(table_offset_size);
             }
 
             if ((table_offset + 1) * input_shift > table.size())

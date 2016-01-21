@@ -59,7 +59,7 @@ static ProceedResult proceed_and_get_block_size(
 }
 
 static void decode_1_8(
-    DecoderContext &context, io::IStream &input_stream, bstr &output)
+    DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
     auto output_ptr = output.get<u32>();
     const auto output_end = output.end<const u32>();
@@ -74,7 +74,7 @@ static void decode_1_8(
 }
 
 static void decode_1_32(
-    DecoderContext &context, io::IStream &input_stream, bstr &output)
+    DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
     auto output_ptr = output.get<u32>();
     const auto output_end = output.end<const u32>();
@@ -97,7 +97,7 @@ static void decode_1_32(
 }
 
 static void decode_4_9(
-    DecoderContext &context, io::IStream &input_stream, bstr &output)
+    DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
     bool use_alpha = true;
     while (true)
@@ -132,7 +132,7 @@ static void decode_4_9(
 }
 
 static void decode_4_32(
-    DecoderContext &context, io::IStream &input_stream, bstr &output)
+    DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
     while (true)
     {
@@ -171,7 +171,7 @@ static void decode_4_32(
 }
 
 static void decode_4_48(
-    DecoderContext &context, io::IStream &input_stream, bstr &output)
+    DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
     while (true)
     {
@@ -212,7 +212,7 @@ static void decode_4_48(
 }
 
 static void decode_7(
-    DecoderContext &context, io::IStream &input_stream, bstr &output)
+    DecoderContext &context, io::BaseByteStream &input_stream, bstr &output)
 {
     auto output_ptr = output.get<u32>();
     const auto output_end = output.end<const u32>();
@@ -239,7 +239,7 @@ static void decode_7(
 
 static bstr read_blocks(
     DecoderContext &context,
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const std::vector<size_t> &block_offsets)
 {
     bstr data(context.image_width * context.image_height * 4);
@@ -264,7 +264,7 @@ static bstr read_blocks(
         }
         else
         {
-            std::function<void(DecoderContext &, io::IStream &, bstr &)>
+            std::function<void(DecoderContext &, io::BaseByteStream &, bstr &)>
                 decoder;
             if (block_type == 1)
             {
@@ -299,7 +299,7 @@ static bstr read_blocks(
 
 static void read_meta(
     algo::CallStackKeeper &keeper,
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     dec::ArchiveMeta &meta)
 {
     const auto base_offset = input_stream.tell();

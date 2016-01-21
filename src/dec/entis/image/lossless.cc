@@ -253,7 +253,7 @@ static u8 get_transformer_code(
         return *transformer_codes_ptr++;
 
     if (header.architecture == common::Architecture::RunLengthHuffman)
-        return get_huffman_code(*decoder.bit_reader, huffman_tree);
+        return get_huffman_code(*decoder.bit_stream, huffman_tree);
 
     if (header.architecture == common::Architecture::Nemesis)
     {
@@ -263,7 +263,8 @@ static u8 get_transformer_code(
 
     if (header.architecture == common::Architecture::RunLengthGamma)
     {
-        const auto transformer_code = 0b11'00'0000 | decoder.bit_reader->get(4);
+        const auto transformer_code
+            = 0b11'00'0000 | decoder.bit_stream->read(4);
         decoder.reset();
         return transformer_code;
     }
@@ -285,11 +286,11 @@ static std::vector<u8> prefetch_transformer_codes(
         u8 op_code;
         if (header.architecture == common::Architecture::RunLengthGamma)
         {
-            op_code = 0b11'00'0000 | decoder.bit_reader->get(4);
+            op_code = 0b11'00'0000 | decoder.bit_stream->read(4);
         }
         else if (header.architecture == common::Architecture::RunLengthHuffman)
         {
-            op_code = get_huffman_code(*decoder.bit_reader, huffman_tree);
+            op_code = get_huffman_code(*decoder.bit_stream, huffman_tree);
         }
         else
         {
@@ -349,10 +350,10 @@ bstr image::decode_lossless_pixel_data(
     const EriHeader &header, common::BaseDecoder &decoder)
 {
     DecodeContext ctx;
-    ctx.eri_version = decoder.bit_reader->get(8);
-    ctx.op_table = decoder.bit_reader->get(8);
-    ctx.encode_type = decoder.bit_reader->get(8);
-    ctx.bit_count = decoder.bit_reader->get(8);
+    ctx.eri_version = decoder.bit_stream->read(8);
+    ctx.op_table = decoder.bit_stream->read(8);
+    ctx.encode_type = decoder.bit_stream->read(8);
+    ctx.bit_count = decoder.bit_stream->read(8);
 
     ctx.channel_count = get_channel_count(header);
     ctx.block_size = (1 << header.blocking_degree);
@@ -372,7 +373,7 @@ bstr image::decode_lossless_pixel_data(
     const auto transformer_codes = prefetch_transformer_codes(
         ctx, header, decoder, huffman_tree);
 
-    if (decoder.bit_reader->get(1))
+    if (decoder.bit_stream->read(1))
         throw err::CorruptDataError("Expected 0 bit");
 
     if (header.architecture == common::Architecture::RunLengthGamma)

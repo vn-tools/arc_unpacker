@@ -85,10 +85,10 @@ ErisaNDecoder::~ErisaNDecoder()
 
 void ErisaNDecoder::reset()
 {
-    if (!bit_reader)
+    if (!bit_stream)
         throw std::logic_error("Trying to reset with unitialized input");
 
-    code_register = bit_reader->get(32);
+    code_register = bit_stream->read(32);
     augend_register = 0xFFFF;
 
     p->nemesis_left = 0;

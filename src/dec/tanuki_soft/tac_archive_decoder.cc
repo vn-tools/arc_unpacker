@@ -46,7 +46,7 @@ static bstr decrypt(const bstr &input, size_t size, const bstr &key)
     return bf.decrypt(input.substr(0, left)) + input.substr(left);
 }
 
-static Version read_version(io::IStream &input_stream)
+static Version read_version(io::BaseByteStream &input_stream)
 {
     if (input_stream.seek(0).read(magic_100.size()) == magic_100)
         return Version::Version100;

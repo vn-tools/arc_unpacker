@@ -142,7 +142,7 @@ static std::unique_ptr<ArchiveMetaImpl> read_meta(
     return meta;
 }
 
-static Header read_header_5(io::IStream &input_stream)
+static Header read_header_5(io::BaseByteStream &input_stream)
 {
     Header header;
     header.dir_count = input_stream.read_le<u32>() ^ 0xFE3A53D9;
@@ -161,7 +161,7 @@ static Header read_header_5(io::IStream &input_stream)
     return header;
 }
 
-static Header read_header_6(io::IStream &input_stream)
+static Header read_header_6(io::BaseByteStream &input_stream)
 {
     Header header;
     header.dir_count = input_stream.read_le<u32>() ^ 0xFE3A53DA;

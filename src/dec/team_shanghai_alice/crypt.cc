@@ -14,8 +14,8 @@ bool DecryptorContext::operator ==(const DecryptorContext &other) const
 }
 
 static void decrypt(
-    io::IStream &input_stream,
-    io::IStream &output_stream,
+    io::BaseByteStream &input_stream,
+    io::BaseByteStream &output_stream,
     const DecryptorContext &context)
 {
     int left = input_stream.size();

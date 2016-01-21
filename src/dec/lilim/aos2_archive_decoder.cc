@@ -1,6 +1,6 @@
 #include "dec/lilim/aos2_archive_decoder.h"
 #include "algo/range.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::lilim;

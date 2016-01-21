@@ -16,7 +16,7 @@ int BaseErisaDecoder::decode_erisa_code(ProbModel &model)
 
 int BaseErisaDecoder::decode_erisa_code_index(const ProbModel &model)
 {
-    if (!bit_reader)
+    if (!bit_stream)
     {
         throw std::logic_error(
             "Trying to decode ERISA code index with unitialized input");
@@ -48,7 +48,7 @@ int BaseErisaDecoder::decode_erisa_code_index(const ProbModel &model)
     while (!(augend_register & 0x8000))
     {
         code_register <<= 1;
-        code_register |= bit_reader->get(1);
+        code_register |= bit_stream->read(1);
         augend_register <<= 1;
     }
 

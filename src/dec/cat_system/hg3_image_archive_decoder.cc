@@ -6,7 +6,7 @@
 #include "dec/jpeg/jpeg_image_decoder.h"
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
-#include "io/lsb_bit_reader.h"
+#include "io/lsb_bit_stream.h"
 #include "io/memory_stream.h"
 
 using namespace au;
@@ -109,16 +109,16 @@ static std::unique_ptr<res::Image> decode_img0000(
         input_stream.read(data_size_comp));
     const auto ctl = algo::pack::zlib_inflate(input_stream.read(ctl_size_comp));
 
-    io::LsbBitReader ctl_bit_reader(ctl);
-    auto copy = ctl_bit_reader.get(1);
-    const auto output_size = ctl_bit_reader.get_gamma(1);
+    io::LsbBitStream ctl_bit_stream(ctl);
+    auto copy = ctl_bit_stream.read(1);
+    const auto output_size = ctl_bit_stream.read_gamma(1);
 
     bstr output(output_size);
     auto input_ptr = algo::make_ptr(data);
     auto output_ptr = algo::make_ptr(output);
     while (output_ptr.left())
     {
-        auto size = ctl_bit_reader.get_gamma(1);
+        auto size = ctl_bit_stream.read_gamma(1);
         if (copy)
         {
             while (size-- && input_ptr.left() && output_ptr.left())

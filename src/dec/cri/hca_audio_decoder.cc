@@ -6,7 +6,7 @@
 #include "dec/cri/hca/meta.h"
 #include "dec/cri/hca/permutator.h"
 #include "err.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::cri;
@@ -137,22 +137,22 @@ static void decode_block(
 
     // suspicion: I believe the last 2 bytes are used as a CRC16 manipulator
     // (so that the checksum computes to 0.)
-    io::MsbBitReader bit_reader(block_data.substr(0, block_data.size()));
+    io::MsbBitStream bit_stream(block_data.substr(0, block_data.size()));
 
-    int magic = bit_reader.get(16);
+    int magic = bit_stream.read(16);
     if (magic == 0xFFFF)
     {
-        int tmp = (bit_reader.get(9) << 8) - bit_reader.get(7);
+        int tmp = (bit_stream.read(9) << 8) - bit_stream.read(7);
         for (const auto i : algo::range(meta.fmt->channel_count))
         {
             channel_decoders[i]->decode1(
-                bit_reader, params[8], tmp, ath_table);
+                bit_stream, params[8], tmp, ath_table);
         }
 
         for (const auto i : algo::range(8))
         {
             for (const auto j : algo::range(meta.fmt->channel_count))
-                channel_decoders[j]->decode2(bit_reader);
+                channel_decoders[j]->decode2(bit_stream);
 
             for (const auto j : algo::range(meta.fmt->channel_count))
             {

@@ -1,12 +1,12 @@
 #include "dec/nscripter/spb_image_decoder.h"
 #include "algo/range.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::nscripter;
 
 static res::Image decode_image(
-    size_t width, size_t height, io::IBitReader &bit_reader)
+    size_t width, size_t height, io::BaseBitStream &bit_stream)
 {
     res::Image output(width, height);
     for (auto &c : output)
@@ -19,13 +19,13 @@ static res::Image decode_image(
         u8 *channel_ptr = channel_data.get<u8>();
         const u8 *channel_end = channel_ptr + channel_data.size();
 
-        u8 ch = bit_reader.get(8);
+        u8 ch = bit_stream.read(8);
         if (channel_ptr >= channel_end) break;
         *channel_ptr++ = ch;
 
         while (channel_ptr < channel_end)
         {
-            size_t t = bit_reader.get(3);
+            size_t t = bit_stream.read(3);
             if (t == 0)
             {
                 if (channel_ptr >= channel_end)
@@ -43,17 +43,17 @@ static res::Image decode_image(
                 continue;
             }
 
-            size_t mask = t == 7 ? bit_reader.get(1) + 1 : t + 2;
+            size_t mask = t == 7 ? bit_stream.read(1) + 1 : t + 2;
 
             for (auto i : algo::range(4))
             {
                 if (mask == 8)
                 {
-                    ch = bit_reader.get(8);
+                    ch = bit_stream.read(8);
                 }
                 else
                 {
-                    t = bit_reader.get(mask);
+                    t = bit_stream.read(mask);
                     if (t & 1)
                         ch += (t >> 1) + 1;
                     else
@@ -102,8 +102,8 @@ res::Image SpbImageDecoder::decode_impl(
 {
     const auto width = input_file.stream.read_be<u16>();
     const auto height = input_file.stream.read_be<u16>();
-    io::MsbBitReader bit_reader(input_file.stream.read_to_eof());
-    return decode_image(width, height, bit_reader);
+    io::MsbBitStream bit_stream(input_file.stream.read_to_eof());
+    return decode_image(width, height, bit_stream);
 }
 
 static auto _ = dec::register_decoder<SpbImageDecoder>("nscripter/spb");

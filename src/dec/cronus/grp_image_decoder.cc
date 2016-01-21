@@ -29,7 +29,8 @@ namespace
         EncryptionType encryption_type;
     };
 
-    using HeaderReader = std::function<std::unique_ptr<Header>(io::IStream&)>;
+    using HeaderReader = std::function<
+        std::unique_ptr<Header>(io::BaseByteStream&)>;
 }
 
 static void swap_decrypt(bstr &input, size_t encrypted_size)
@@ -69,7 +70,7 @@ static HeaderReader get_v1_reader(
     const u32 key3,
     const EncryptionType enc_type)
 {
-    return [=](io::IStream &input_stream)
+    return [=](io::BaseByteStream &input_stream)
     {
         auto header = std::make_unique<Header>();
         header->width = input_stream.read_le<u32>() ^ key1;
@@ -87,7 +88,7 @@ static HeaderReader get_v1_reader(
 
 static HeaderReader get_v2_reader()
 {
-    return [](io::IStream &input_stream)
+    return [](io::BaseByteStream &input_stream)
     {
         auto header = std::make_unique<Header>();
         input_stream.skip(4);

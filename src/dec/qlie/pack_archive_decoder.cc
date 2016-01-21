@@ -37,7 +37,7 @@ namespace
     };
 }
 
-static size_t get_magic_start(const io::IStream &input_stream)
+static size_t get_magic_start(const io::BaseByteStream &input_stream)
 {
     return input_stream.size() - magic.size() - 8 - 4;
 }

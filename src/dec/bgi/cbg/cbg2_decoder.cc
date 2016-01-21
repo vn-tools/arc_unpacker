@@ -4,7 +4,7 @@
 #include "dec/bgi/cbg/cbg_common.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::bgi::cbg;
@@ -205,15 +205,15 @@ static std::vector<u16> decompress_block(
     const Tree &tree2)
 {
     std::vector<u16> color_info(output_size, 0);
-    io::MsbBitReader bit_reader(input);
+    io::MsbBitStream bit_stream(input);
 
     int init_value = 0;
     for (auto i : algo::range(0, output_size, block_dim2))
     {
-        size_t size = tree1.get_leaf(bit_reader);
+        size_t size = tree1.get_leaf(bit_stream);
         if (size)
         {
-            int value = bit_reader.get(size);
+            int value = bit_stream.read(size);
             if (((1 << (size - 1)) & value) == 0)
                 value = (0xFFFFFFFF << size) | (value + 1);
             init_value += value;
@@ -222,14 +222,14 @@ static std::vector<u16> decompress_block(
     }
 
     // align to regular byte
-    bit_reader.get((8 - (bit_reader.tell() & 7)) & 7);
+    bit_stream.read((8 - (bit_stream.tell() & 7)) & 7);
 
     for (auto i : algo::range(0, output_size, block_dim2))
     {
         size_t index = 1;
         while (index < block_dim2)
         {
-            size_t size = tree2.get_leaf(bit_reader);
+            size_t size = tree2.get_leaf(bit_stream);
             if (!size)
                 break;
             if (size < 0xF)
@@ -244,7 +244,7 @@ static std::vector<u16> decompress_block(
                 size >>= 4;
                 if (size)
                 {
-                    int value = bit_reader.get(size);
+                    int value = bit_stream.read(size);
                     if (((1 << (size - 1)) & value) == 0 && size != 0)
                         value = (0xFFFFFFFF << size) | (value + 1);
                     color_info.at(i + jpeg_zigzag_order[index]) = value;
@@ -316,7 +316,8 @@ static void process_8bit_block(
     }
 }
 
-static void process_alpha(bstr &output, io::IStream &input_stream, int width)
+static void process_alpha(
+    bstr &output, io::BaseByteStream &input_stream, int width)
 {
     auto output_start = output.get<u8>();
     auto output_end = output_start + output.size();
@@ -364,7 +365,8 @@ static void process_alpha(bstr &output, io::IStream &input_stream, int width)
     }
 }
 
-std::unique_ptr<res::Image> Cbg2Decoder::decode(io::IStream &input_stream) const
+std::unique_ptr<res::Image> Cbg2Decoder::decode(
+    io::BaseByteStream &input_stream) const
 {
     size_t width = input_stream.read_le<u16>();
     size_t height = input_stream.read_le<u16>();

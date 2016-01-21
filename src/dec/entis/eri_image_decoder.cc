@@ -21,7 +21,8 @@ static const bstr magic2 = "\x00\x01\x00\x03\x00\x00\x00\x00"_b;
 static const bstr magic3 = "Entis Rasterized Image"_b;
 
 static image::EriHeader read_header(
-    io::IStream &input_stream, const common::SectionReader &section_reader)
+    io::BaseByteStream &input_stream,
+    const common::SectionReader &section_reader)
 {
     const auto header_section = section_reader.get_section("Header");
     input_stream.seek(header_section.data_offset);

@@ -87,7 +87,7 @@ static const bstr magic_dxt5 = "DXT5"_b;
 static const bstr magic_dx10 = "DX10"_b;
 
 static void fill_pixel_format(
-    io::IStream &input_stream, DdsPixelFormat &pixel_format)
+    io::BaseByteStream &input_stream, DdsPixelFormat &pixel_format)
 {
     pixel_format.size = input_stream.read_le<u32>();
     pixel_format.flags
@@ -100,7 +100,7 @@ static void fill_pixel_format(
     pixel_format.a_bit_mask = input_stream.read_le<u32>();
 }
 
-static std::unique_ptr<DdsHeader> read_header(io::IStream &input_stream)
+static std::unique_ptr<DdsHeader> read_header(io::BaseByteStream &input_stream)
 {
     auto header = std::make_unique<DdsHeader>();
     header->size = input_stream.read_le<u32>();
@@ -119,7 +119,7 @@ static std::unique_ptr<DdsHeader> read_header(io::IStream &input_stream)
 }
 
 static std::unique_ptr<DdsHeaderDx10> read_header_dx10(
-    io::IStream &input_stream)
+    io::BaseByteStream &input_stream)
 {
     auto header = std::make_unique<DdsHeaderDx10>();
     header->dxgi_format = input_stream.read_le<u32>();

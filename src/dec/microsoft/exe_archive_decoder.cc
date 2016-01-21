@@ -17,7 +17,7 @@ namespace
 
     struct DosHeader final
     {
-        DosHeader(io::IStream &input_stream);
+        DosHeader(io::BaseByteStream &input_stream);
 
         bstr magic;
         u16 e_cblp;
@@ -40,7 +40,7 @@ namespace
 
     struct ImageOptionalHeader final
     {
-        ImageOptionalHeader(io::IStream &input_stream);
+        ImageOptionalHeader(io::BaseByteStream &input_stream);
 
         u16 magic;
         u8 major_linker_version;
@@ -76,7 +76,7 @@ namespace
 
     struct ImageFileHeader final
     {
-        ImageFileHeader(io::IStream &input_stream);
+        ImageFileHeader(io::BaseByteStream &input_stream);
 
         u16 machine;
         u16 number_of_sections;
@@ -89,7 +89,7 @@ namespace
 
     struct ImageNtHeader final
     {
-        ImageNtHeader(io::IStream &input_stream);
+        ImageNtHeader(io::BaseByteStream &input_stream);
 
         u32 signature;
         ImageFileHeader file_header;
@@ -98,7 +98,7 @@ namespace
 
     struct ImageDataDir final
     {
-        ImageDataDir(io::IStream &input_stream);
+        ImageDataDir(io::BaseByteStream &input_stream);
 
         u32 virtual_address;
         u32 size;
@@ -106,7 +106,7 @@ namespace
 
     struct ImageSectionHeader final
     {
-        ImageSectionHeader(io::IStream &input_stream);
+        ImageSectionHeader(io::BaseByteStream &input_stream);
 
         std::string name;
         u32 virtual_size;
@@ -123,7 +123,7 @@ namespace
 
     struct ImageResourceDir final
     {
-        ImageResourceDir(io::IStream &input_stream);
+        ImageResourceDir(io::BaseByteStream &input_stream);
 
         u32 characteristics;
         u32 timestamp;
@@ -135,7 +135,7 @@ namespace
 
     struct ImageResourceDirEntry final
     {
-        ImageResourceDirEntry(io::IStream &input_stream);
+        ImageResourceDirEntry(io::BaseByteStream &input_stream);
 
         u32 offset_to_data;
         bool name_is_string;
@@ -147,7 +147,7 @@ namespace
 
     struct ImageResourceDataEntry final
     {
-        ImageResourceDataEntry(io::IStream &input_stream);
+        ImageResourceDataEntry(io::BaseByteStream &input_stream);
 
         u32 offset_to_data;
         u32 size;
@@ -180,13 +180,13 @@ namespace
             const Logger &logger,
             const RvaHelper &rva_helper,
             const size_t base_offset,
-            io::IStream &input_stream,
+            io::BaseByteStream &input_stream,
             dec::ArchiveMeta &meta);
 
         const Logger &logger;
         const RvaHelper &rva_helper;
         const size_t base_offset;
-        io::IStream &input_stream;
+        io::BaseByteStream &input_stream;
         dec::ArchiveMeta &meta;
     };
 
@@ -208,7 +208,7 @@ namespace
 // keep flat hierarchy for unpacked files
 static const std::string path_sep = u8"／";
 
-DosHeader::DosHeader(io::IStream &input_stream)
+DosHeader::DosHeader(io::BaseByteStream &input_stream)
 {
     magic      = input_stream.read(2);
     e_cblp     = input_stream.read_le<u16>();
@@ -231,7 +231,7 @@ DosHeader::DosHeader(io::IStream &input_stream)
     e_lfanew   = input_stream.read_le<u32>();
 }
 
-ImageOptionalHeader::ImageOptionalHeader(io::IStream &input_stream)
+ImageOptionalHeader::ImageOptionalHeader(io::BaseByteStream &input_stream)
 {
     magic                          = input_stream.read_le<u16>();
     major_linker_version           = input_stream.read<u8>();
@@ -276,7 +276,7 @@ ImageOptionalHeader::ImageOptionalHeader(io::IStream &input_stream)
     number_of_rva_and_sizes = input_stream.read_le<u32>();
 }
 
-ImageFileHeader::ImageFileHeader(io::IStream &input_stream)
+ImageFileHeader::ImageFileHeader(io::BaseByteStream &input_stream)
 {
     machine = input_stream.read_le<u16>();
     number_of_sections = input_stream.read_le<u16>();
@@ -287,20 +287,20 @@ ImageFileHeader::ImageFileHeader(io::IStream &input_stream)
     characteristics = input_stream.read_le<u16>();
 }
 
-ImageNtHeader::ImageNtHeader(io::IStream &input_stream) :
+ImageNtHeader::ImageNtHeader(io::BaseByteStream &input_stream) :
     signature(input_stream.read_le<u32>()),
     file_header(input_stream),
     optional_header(input_stream)
 {
 }
 
-ImageDataDir::ImageDataDir(io::IStream &input_stream)
+ImageDataDir::ImageDataDir(io::BaseByteStream &input_stream)
 {
     virtual_address = input_stream.read_le<u32>();
     size = input_stream.read_le<u32>();
 }
 
-ImageSectionHeader::ImageSectionHeader(io::IStream &input_stream)
+ImageSectionHeader::ImageSectionHeader(io::BaseByteStream &input_stream)
 {
     name                    = input_stream.read(8).str();
     virtual_size            = input_stream.read_le<u32>();
@@ -314,7 +314,7 @@ ImageSectionHeader::ImageSectionHeader(io::IStream &input_stream)
     characteristics         = input_stream.read_le<u32>();
 }
 
-ImageResourceDir::ImageResourceDir(io::IStream &input_stream)
+ImageResourceDir::ImageResourceDir(io::BaseByteStream &input_stream)
 {
     characteristics         = input_stream.read_le<u32>();
     timestamp               = input_stream.read_le<u32>();
@@ -324,7 +324,7 @@ ImageResourceDir::ImageResourceDir(io::IStream &input_stream)
     number_of_id_entries    = input_stream.read_le<u16>();
 }
 
-ImageResourceDirEntry::ImageResourceDirEntry(io::IStream &input_stream)
+ImageResourceDirEntry::ImageResourceDirEntry(io::BaseByteStream &input_stream)
 {
     // I am ugliness
     name = input_stream.read_le<u32>();
@@ -336,7 +336,7 @@ ImageResourceDirEntry::ImageResourceDirEntry(io::IStream &input_stream)
     offset_to_data &= 0x7FFFFFFF;
 }
 
-ImageResourceDataEntry::ImageResourceDataEntry(io::IStream &input_stream)
+ImageResourceDataEntry::ImageResourceDataEntry(io::BaseByteStream &input_stream)
 {
     offset_to_data = input_stream.read_le<u32>();
     size = input_stream.read_le<u32>();
@@ -394,7 +394,7 @@ ResourceCrawlerArgs::ResourceCrawlerArgs(
     const Logger &logger,
     const RvaHelper &helper,
     const size_t base_offset,
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     dec::ArchiveMeta &meta) :
         logger(logger),
         rva_helper(helper),

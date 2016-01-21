@@ -352,7 +352,7 @@ ChannelDecoder::ChannelDecoder(const int type, const int idx, const int count)
 }
 
 void ChannelDecoder::decode1(
-    io::IBitReader &bit_reader,
+    io::BaseBitStream &bit_stream,
     const unsigned int a,
     const int b,
     const AthTable &ath_table)
@@ -412,24 +412,24 @@ void ChannelDecoder::decode1(
     static const auto value_f32 = reinterpret_cast<const f32*>(value_u32);
     static const auto scale_f32 = reinterpret_cast<const f32*>(scale_u32);
 
-    int v = bit_reader.get(3);
+    int v = bit_stream.read(3);
     if (v >= 6)
     {
         for (const auto i : algo::range(count))
-            value[i] = bit_reader.get(6);
+            value[i] = bit_stream.read(6);
     }
     else if (v)
     {
-        int acc = bit_reader.get(6);
+        int acc = bit_stream.read(6);
         const u32 mask = (1ull << v) - 1;
         const u32 half_mask = mask >> 1;
         value[0] = acc;
         for (const auto i : algo::range(1, count))
         {
-            const u32 tmp = bit_reader.get(v);
+            const u32 tmp = bit_stream.read(v);
             acc = tmp != mask
                 ? acc + tmp - half_mask
-                : bit_reader.get(6);
+                : bit_stream.read(6);
             value[i] = acc;
         }
     }
@@ -441,19 +441,19 @@ void ChannelDecoder::decode1(
 
     if (type == 2)
     {
-        v = bit_reader.get(4);
-        bit_reader.skip(-4);
+        v = bit_stream.read(4);
+        bit_stream.skip(-4);
         value2[0] = v;
         if (v < 15)
         {
             for (const auto i : algo::range(8))
-                value2[i] = bit_reader.get(4);
+                value2[i] = bit_stream.read(4);
         }
     }
     else
     {
         for (const auto i : algo::range(a))
-            value3[i] = bit_reader.get(6);
+            value3[i] = bit_stream.read(6);
     }
 
     for (const auto i : algo::range(count))
@@ -477,7 +477,7 @@ void ChannelDecoder::decode1(
         base[i] = value_f32[value[i]] * scale_f32[scale[i]];
 }
 
-void ChannelDecoder::decode2(io::IBitReader &bit_reader)
+void ChannelDecoder::decode2(io::BaseBitStream &bit_stream)
 {
     static const char list1[] =
     {
@@ -512,19 +512,19 @@ void ChannelDecoder::decode2(io::IBitReader &bit_reader)
     {
         int s = scale[i];
         int bit_count = list1[s];
-        int v = bit_reader.get(bit_count);
+        int v = bit_stream.read(bit_count);
         f32 f;
         if (s < 8)
         {
             v += s << 4;
-            bit_reader.skip(list2[v] - bit_count);
+            bit_stream.skip(list2[v] - bit_count);
             f = list3[v];
         }
         else
         {
             v = (1 - ((v & 1) << 1)) * (v >> 1);
             if (!v)
-                bit_reader.skip(-1);
+                bit_stream.skip(-1);
             f = v;
         }
         block[i] = base[i] * f;

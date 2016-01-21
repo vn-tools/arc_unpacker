@@ -5,7 +5,7 @@
 #include "dec/wild_bug/wpx/transcription.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::wild_bug::wpx;
@@ -25,18 +25,19 @@ namespace
 
 struct Decoder::Priv final
 {
-    Priv(io::IStream &input_stream);
+    Priv(io::BaseByteStream &input_stream);
 
-    io::IStream &input_stream;
+    io::BaseByteStream &input_stream;
     std::string tag;
     std::map<u8, Section> sections;
 };
 
-Decoder::Priv::Priv(io::IStream &input_stream) : input_stream(input_stream)
+Decoder::Priv::Priv(io::BaseByteStream &input_stream)
+    : input_stream(input_stream)
 {
 }
 
-Decoder::Decoder(io::IStream &input_stream) : p(new Priv(input_stream))
+Decoder::Decoder(io::BaseByteStream &input_stream) : p(new Priv(input_stream))
 {
     if (input_stream.read(magic.size()) != magic)
         throw err::RecognitionError();
@@ -129,7 +130,7 @@ bstr Decoder::read_compressed_section(
         *output_ptr++ = section_stream.read<u8>();
     int remaining = section.size_orig - quant_size;
     section_stream.seek((-quant_size & 3) + quant_size);
-    io::MsbBitReader bit_reader(section_stream);
+    io::MsbBitStream bit_stream(section_stream);
 
     std::unique_ptr<ITranscriptionStrategy> transcriptor;
     if (use_plain_transcriptors)
@@ -155,16 +156,16 @@ bstr Decoder::read_compressed_section(
 
     std::unique_ptr<IRetrievalStrategy> retriever;
     if (section.data_format & 4)
-        retriever.reset(new RetrievalStrategy1(bit_reader, quant_size));
+        retriever.reset(new RetrievalStrategy1(bit_stream, quant_size));
     else if (section.data_format & 2)
-        retriever.reset(new RetrievalStrategy2(bit_reader));
+        retriever.reset(new RetrievalStrategy2(bit_stream));
     else
-        retriever.reset(new RetrievalStrategy3(bit_reader));
+        retriever.reset(new RetrievalStrategy3(bit_stream));
 
-    DecoderContext context {section_stream, bit_reader};
+    DecoderContext context {section_stream, bit_stream};
     while (output_ptr < output_end)
     {
-        if (context.bit_reader.get(1))
+        if (context.bit_stream.read(1))
         {
             *output_ptr = retriever->fetch_byte(context, output_ptr);
             output_ptr++;

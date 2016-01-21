@@ -1,7 +1,7 @@
 #include "dec/real_live/nwa_audio_decoder.h"
 #include "algo/range.h"
 #include "err.h"
-#include "io/lsb_bit_reader.h"
+#include "io/lsb_bit_stream.h"
 #include "io/memory_stream.h"
 
 using namespace au;
@@ -28,7 +28,7 @@ namespace
 static bstr decode_block(
     const NwaHeader &header,
     size_t current_block,
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const std::vector<u32> &offsets)
 {
     const auto bytes_per_sample = header.bits_per_sample >> 3;
@@ -54,7 +54,7 @@ static bstr decode_block(
 
     const auto input = input_stream.read(
         input_size - bytes_per_sample * header.channel_count);
-    io::LsbBitReader bit_reader(input);
+    io::LsbBitStream bit_stream(input);
 
     auto current_channel = 0;
     auto run_length = 0;
@@ -66,10 +66,10 @@ static bstr decode_block(
         }
         else
         {
-            int type = bit_reader.get(3);
+            int type = bit_stream.read(3);
             if (type == 7)
             {
-                if (bit_reader.get(1))
+                if (bit_stream.read(1))
                 {
                     d[current_channel] = 0;
                 }
@@ -83,7 +83,7 @@ static bstr decode_block(
                     }
                     const auto mask1 = (1 << (bits - 1));
                     const auto mask2 = (1 << (bits - 1)) - 1;
-                    const auto b = bit_reader.get(bits);
+                    const auto b = bit_stream.read(bits);
                     if (b & mask1)
                         d[current_channel] -= (b & mask2) << shift;
                     else
@@ -105,7 +105,7 @@ static bstr decode_block(
                 }
                 const auto mask1 = (1 << (bits - 1));
                 const auto mask2 = (1 << (bits - 1)) - 1;
-                const auto b = bit_reader.get(bits);
+                const auto b = bit_stream.read(bits);
                 if (b & mask1)
                     d[current_channel] -= (b & mask2) << shift;
                 else
@@ -113,12 +113,12 @@ static bstr decode_block(
             }
             else if (header.use_run_length)
             {
-                run_length = bit_reader.get(1);
+                run_length = bit_stream.read(1);
                 if (run_length == 1)
                 {
-                    run_length = bit_reader.get(2);
+                    run_length = bit_stream.read(2);
                     if (run_length == 3)
-                        run_length = bit_reader.get(8);
+                        run_length = bit_stream.read(8);
                 }
             }
         }
@@ -136,7 +136,7 @@ static bstr decode_block(
 }
 
 static bstr read_compressed_samples(
-    io::IStream &input_stream, const NwaHeader &header)
+    io::BaseByteStream &input_stream, const NwaHeader &header)
 {
     if (header.compression_level < 0 || header.compression_level > 5)
         throw err::NotSupportedError("Unsupported compression level");
@@ -177,7 +177,7 @@ static bstr read_compressed_samples(
 }
 
 static bstr read_uncompressed_samples(
-    io::IStream &input_stream, const NwaHeader &header)
+    io::BaseByteStream &input_stream, const NwaHeader &header)
 {
     return input_stream.read(header.uncompressed_size);
 }

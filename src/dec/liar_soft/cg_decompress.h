@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/istream.h"
+#include "io/base_byte_stream.h"
 
 namespace au {
 namespace dec {
@@ -10,7 +10,7 @@ namespace liar_soft {
         bstr &output,
         const size_t output_offset,
         const size_t output_shift,
-        io::IStream &input_stream,
+        io::BaseByteStream &input_stream,
         const size_t input_shift);
 
 } } }

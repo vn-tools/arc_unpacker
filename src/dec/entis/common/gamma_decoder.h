@@ -1,14 +1,14 @@
 #pragma once
 
 #include "dec/entis/common/base_decoder.h"
-#include "io/ibit_reader.h"
+#include "io/base_bit_stream.h"
 
 namespace au {
 namespace dec {
 namespace entis {
 namespace common {
 
-    int get_gamma_code(io::IBitReader &bit_reader);
+    int get_gamma_code(io::BaseBitStream &bit_stream);
 
     class GammaDecoder final : public BaseDecoder
     {

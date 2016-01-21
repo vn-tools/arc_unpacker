@@ -32,20 +32,20 @@ namespace
 
     struct FilterTypes final
     {
-        FilterTypes(io::IStream &input_stream);
-        void decompress(Header &header);
+        FilterTypes(io::BaseByteStream &input_stream);
+        void decompress(const Header &header);
 
         bstr data;
     };
 }
 
-FilterTypes::FilterTypes(io::IStream &input_stream)
+FilterTypes::FilterTypes(io::BaseByteStream &input_stream)
 {
     const auto size = input_stream.read_le<u32>();
     data = input_stream.read(size);
 }
 
-void FilterTypes::decompress(Header &header)
+void FilterTypes::decompress(const Header &header)
 {
     LzssDecompressor decompressor;
     u8 dictionary[4096];
@@ -379,7 +379,7 @@ static void decode_line(
     u32 *in,
     int odd_skip,
     int dir,
-    Header &header)
+    const Header &header)
 {
     res::Pixel left, top_left;
     int step;
@@ -454,7 +454,7 @@ static void decode_line(
 }
 
 static void read_image(
-    io::IStream &input_stream, res::Image &image, Header &header)
+    io::BaseByteStream &input_stream, res::Image &image, const Header &header)
 {
     FilterTypes filter_types(input_stream);
     filter_types.decompress(header);

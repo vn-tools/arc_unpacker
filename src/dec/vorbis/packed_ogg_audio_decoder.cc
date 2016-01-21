@@ -22,7 +22,7 @@ namespace
 
 static const bstr ogg_magic = "OggS"_b;
 
-static OggPage read_ogg_page(io::IStream &input_stream)
+static OggPage read_ogg_page(io::BaseByteStream &input_stream)
 {
     OggPage page;
     page.version = input_stream.read<u8>();
@@ -39,7 +39,8 @@ static OggPage read_ogg_page(io::IStream &input_stream)
     return page;
 }
 
-static void write_ogg_page(io::IStream &output_stream, const OggPage &page)
+static void write_ogg_page(
+    io::BaseByteStream &output_stream, const OggPage &page)
 {
     output_stream.write(ogg_magic);
     output_stream.write<u8>(page.version);
@@ -66,7 +67,9 @@ bool PackedOggAudioDecoder::is_recognized_impl(io::File &input_file) const
 }
 
 static void rewrite_ogg_stream(
-    const Logger &logger, io::IStream &input_stream, io::IStream &output_stream)
+    const Logger &logger,
+    io::BaseByteStream &input_stream,
+    io::BaseByteStream &output_stream)
 {
     // The OGG files used by LiarSoft may contain multiple streams, out of
     // which only the first one contains actual audio data.

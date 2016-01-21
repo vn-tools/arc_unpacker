@@ -2,7 +2,7 @@
 #include "algo/range.h"
 #include "dec/fc01/common/custom_lzss.h"
 #include "err.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::fc01;
@@ -11,24 +11,24 @@ static const bstr magic = "ACD 1.00"_b;
 
 static bstr do_decode(const bstr &input, size_t canvas_size)
 {
-    io::MsbBitReader bit_reader(input);
+    io::MsbBitStream bit_stream(input);
     bstr output(canvas_size);
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<const u8>();
     while (output_ptr < output_end)
     {
         s32 byte = 0;
-        if (bit_reader.get(1))
+        if (bit_stream.read(1))
         {
             byte--;
-            if (!bit_reader.get(1))
+            if (!bit_stream.read(1))
             {
                 byte += 3;
 
                 int bit = 0;
                 while (!bit)
                 {
-                    bit = bit_reader.get(1);
+                    bit = bit_stream.read(1);
                     byte = (byte << 1) | bit;
                     bit = (byte >> 8) & 1;
                     byte &= 0xFF;

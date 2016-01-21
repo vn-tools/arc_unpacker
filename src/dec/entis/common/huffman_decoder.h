@@ -8,8 +8,8 @@ namespace dec {
 namespace entis {
 namespace common {
 
-    int get_huffman_code(io::IBitReader &bit_reader, HuffmanTree &tree);
-    int get_huffman_size(io::IBitReader &bit_reader, HuffmanTree &tree);
+    int get_huffman_code(io::BaseBitStream &bit_stream, HuffmanTree &tree);
+    int get_huffman_size(io::BaseBitStream &bit_stream, HuffmanTree &tree);
 
     class HuffmanDecoder final : public BaseDecoder
     {

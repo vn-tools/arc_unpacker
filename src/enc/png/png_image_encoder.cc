@@ -11,7 +11,7 @@ static void write_handler(
     png_structp png_ptr, png_bytep input, png_size_t size)
 {
     auto output_stream
-        = reinterpret_cast<io::IStream*>(png_get_io_ptr(png_ptr));
+        = reinterpret_cast<io::BaseByteStream*>(png_get_io_ptr(png_ptr));
     output_stream->write(bstr(input, size));
 }
 

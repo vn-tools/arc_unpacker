@@ -10,7 +10,7 @@ static std::unique_ptr<res::Image> create_image(
 }
 
 static void decode_dxt1_block(
-    io::IStream &input_stream, res::Pixel output_colors[4][4])
+    io::BaseByteStream &input_stream, res::Pixel output_colors[4][4])
 {
     res::Pixel colors[4];
     const auto tmp = input_stream.read(4);
@@ -47,7 +47,8 @@ static void decode_dxt1_block(
     }
 }
 
-static void decode_dxt5_block(io::IStream &input_stream, u8 output_alpha[4][4])
+static void decode_dxt5_block(
+    io::BaseByteStream &input_stream, u8 output_alpha[4][4])
 {
     u8 alpha[8];
     alpha[0] = input_stream.read<u8>();
@@ -84,7 +85,7 @@ static void decode_dxt5_block(io::IStream &input_stream, u8 output_alpha[4][4])
 }
 
 std::unique_ptr<res::Image> dec::microsoft::dxt::decode_dxt1(
-    io::IStream &input_stream, size_t width, size_t height)
+    io::BaseByteStream &input_stream, size_t width, size_t height)
 {
     auto image = create_image(width, height);
     for (const auto block_y : algo::range(0, height, 4))
@@ -100,7 +101,7 @@ std::unique_ptr<res::Image> dec::microsoft::dxt::decode_dxt1(
 }
 
 std::unique_ptr<res::Image> dec::microsoft::dxt::decode_dxt3(
-    io::IStream &input_stream, size_t width, size_t height)
+    io::BaseByteStream &input_stream, size_t width, size_t height)
 {
     auto image = create_image(width, height);
     for (const auto block_y : algo::range(0, height, 4))
@@ -128,7 +129,7 @@ std::unique_ptr<res::Image> dec::microsoft::dxt::decode_dxt3(
 }
 
 std::unique_ptr<res::Image> dec::microsoft::dxt::decode_dxt5(
-    io::IStream &input_stream, size_t width, size_t height)
+    io::BaseByteStream &input_stream, size_t width, size_t height)
 {
     auto image = create_image(width, height);
     for (const auto block_y : algo::range(0, height, 4))

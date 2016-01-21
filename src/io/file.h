@@ -18,9 +18,9 @@ namespace io {
         void guess_extension();
 
     private:
-        std::unique_ptr<io::IStream> stream_holder;
+        std::unique_ptr<io::BaseByteStream> stream_holder;
     public:
-        io::IStream &stream;
+        io::BaseByteStream &stream;
         io::path path; // doesn't need to be physical path
 
     };

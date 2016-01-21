@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "io/ibit_reader.h"
+#include "io/base_bit_stream.h"
 
 namespace au {
 namespace algo {
@@ -28,7 +28,7 @@ namespace pack {
         const BitwiseLzssSettings &settings);
 
     bstr lzss_decompress(
-        io::IBitReader &bit_reader,
+        io::BaseBitStream &input_stream,
         const size_t output_size,
         const BitwiseLzssSettings &settings);
 

@@ -17,7 +17,7 @@ namespace
     };
 }
 
-static Version detect_version(io::IStream &input_stream)
+static Version detect_version(io::BaseByteStream &input_stream)
 {
     auto version = Version::Version1;
     input_stream.peek(input_stream.tell(), [&]()
@@ -56,7 +56,7 @@ static Version detect_version(io::IStream &input_stream)
 }
 
 static bstr decode_v1(
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const size_t sample_count,
     const size_t channels,
     const size_t block_align)
@@ -103,7 +103,9 @@ static bstr decode_v1(
 }
 
 static bstr decode_v2(
-    io::IStream &input_stream, const size_t sample_count, const size_t channels)
+    io::BaseByteStream &input_stream,
+    const size_t sample_count,
+    const size_t channels)
 {
     static const u16 table1[] =
     {

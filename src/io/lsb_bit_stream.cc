@@ -1,18 +1,18 @@
-#include "io/lsb_bit_reader.h"
+#include "io/lsb_bit_stream.h"
 
 using namespace au;
 using namespace au::io;
 
-LsbBitReader::LsbBitReader(const bstr &input) : BaseBitReader(input)
+LsbBitStream::LsbBitStream(const bstr &input) : BaseBitStream(input)
 {
 }
 
-LsbBitReader::LsbBitReader(io::IStream &input_stream)
-    : BaseBitReader(input_stream)
+LsbBitStream::LsbBitStream(io::BaseByteStream &input_stream)
+    : BaseBitStream(input_stream)
 {
 }
 
-u32 LsbBitReader::get(const size_t bits)
+u32 LsbBitStream::read(const size_t bits)
 {
     while (bits_available < bits)
     {

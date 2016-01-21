@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/istream.h"
+#include "io/base_byte_stream.h"
 #include "res/image.h"
 
 namespace au {
@@ -11,7 +11,8 @@ namespace cbg {
     class Cbg2Decoder final
     {
     public:
-        std::unique_ptr<res::Image> decode(io::IStream &input_stream) const;
+        std::unique_ptr<res::Image> decode(
+            io::BaseByteStream &input_stream) const;
     };
 
 } } } }

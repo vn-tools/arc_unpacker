@@ -3,7 +3,7 @@
 #include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::microsoft;
@@ -42,7 +42,7 @@ static u64 rotr(u64 value, size_t value_size, size_t how_much)
     return rotl(value, value_size, value_size - how_much);
 }
 
-static Header read_header(io::IStream &input_stream)
+static Header read_header(io::BaseByteStream &input_stream)
 {
     Header h;
     h.data_offset = input_stream.read_le<u32>();
@@ -147,19 +147,19 @@ static Header read_header(io::IStream &input_stream)
 }
 
 static res::Image get_image_from_palette(
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const Header &header,
     const res::Palette &palette)
 {
     res::Image image(header.width, header.height);
     for (const auto y : algo::range(header.height))
     {
-        io::MsbBitReader bit_reader(input_stream
+        io::MsbBitStream bit_stream(input_stream
             .seek(header.data_offset + header.stride * y)
             .read((header.width * header.depth + 7) / 8));
         for (const auto x : algo::range(header.width))
         {
-            auto c = bit_reader.get(header.depth);
+            auto c = bit_stream.read(header.depth);
             if (c < palette.size())
                 image.at(x, y) = palette[c];
         }
@@ -168,7 +168,7 @@ static res::Image get_image_from_palette(
 }
 
 static std::unique_ptr<res::Image> get_image_without_palette_fast24(
-    io::IStream &input_stream, const Header &header)
+    io::BaseByteStream &input_stream, const Header &header)
 {
     auto image = std::make_unique<res::Image>(header.width, header.height);
     for (const auto y : algo::range(header.height))
@@ -182,7 +182,7 @@ static std::unique_ptr<res::Image> get_image_without_palette_fast24(
 }
 
 static std::unique_ptr<res::Image> get_image_without_palette_fast32(
-    io::IStream &input_stream, const Header &header)
+    io::BaseByteStream &input_stream, const Header &header)
 {
     auto image = std::make_unique<res::Image>(header.width, header.height);
     for (const auto y : algo::range(header.height))
@@ -197,7 +197,7 @@ static std::unique_ptr<res::Image> get_image_without_palette_fast32(
 }
 
 static std::unique_ptr<res::Image> get_image_without_palette_generic(
-    io::IStream &input_stream, const Header &header)
+    io::BaseByteStream &input_stream, const Header &header)
 {
     auto image = std::make_unique<res::Image>(header.width, header.height);
     double multipliers[4];
@@ -206,12 +206,12 @@ static std::unique_ptr<res::Image> get_image_without_palette_generic(
 
     for (const auto y : algo::range(header.height))
     {
-        io::MsbBitReader bit_reader(input_stream
+        io::MsbBitStream bit_stream(input_stream
             .seek(header.data_offset + header.stride * y)
             .read((header.width * header.depth + 7) / 8));
         for (const auto x : algo::range(header.width))
         {
-            u64 c = bit_reader.get(header.depth);
+            u64 c = bit_stream.read(header.depth);
             if (header.rotation < 0)
                 c = rotl(c, header.depth, -header.rotation);
             else if (header.rotation > 0)
@@ -227,7 +227,7 @@ static std::unique_ptr<res::Image> get_image_without_palette_generic(
 }
 
 static res::Image get_image_without_palette(
-    io::IStream &input_stream, const Header &header)
+    io::BaseByteStream &input_stream, const Header &header)
 {
     std::unique_ptr<res::Image> image;
 

@@ -30,7 +30,7 @@ namespace
 
 static const bstr texture_magic = "THTX"_b;
 
-static std::string read_name(io::IStream &input_stream, size_t offset)
+static std::string read_name(io::BaseByteStream &input_stream, size_t offset)
 {
     std::string name;
     input_stream.peek(
@@ -40,7 +40,9 @@ static std::string read_name(io::IStream &input_stream, size_t offset)
 }
 
 static size_t read_old_texture_info(
-    TextureInfo &texture_info, io::IStream &input_stream, size_t base_offset)
+    TextureInfo &texture_info,
+    io::BaseByteStream &input_stream,
+    const size_t base_offset)
 {
     input_stream.skip(4); // sprite count
     input_stream.skip(4); // script count
@@ -53,9 +55,9 @@ static size_t read_old_texture_info(
     texture_info.y = input_stream.read_le<u16>();
     // input_stream.skip(4);
 
-    size_t name_offset1 = base_offset + input_stream.read_le<u32>();
+    const auto name_offset1 = base_offset + input_stream.read_le<u32>();
     input_stream.skip(4);
-    size_t name_offset2 = base_offset + input_stream.read_le<u32>();
+    const auto name_offset2 = base_offset + input_stream.read_le<u32>();
     texture_info.name = read_name(input_stream, name_offset1);
 
     texture_info.version = input_stream.read_le<u32>();
@@ -67,7 +69,9 @@ static size_t read_old_texture_info(
 }
 
 static size_t read_new_texture_info(
-    TextureInfo &texture_info, io::IStream &input_stream, size_t base_offset)
+    TextureInfo &texture_info,
+    io::BaseByteStream &input_stream,
+    const size_t base_offset)
 {
     texture_info.version = input_stream.read_le<u32>();
     input_stream.skip(2); // sprite count
@@ -77,7 +81,7 @@ static size_t read_new_texture_info(
     texture_info.width = input_stream.read_le<u16>();
     texture_info.height = input_stream.read_le<u16>();
     texture_info.format = input_stream.read_le<u16>();
-    size_t name_offset = base_offset + input_stream.read_le<u32>();
+    const auto name_offset = base_offset + input_stream.read_le<u32>();
     texture_info.name = read_name(input_stream, name_offset);
     texture_info.x = input_stream.read_le<u16>();
     texture_info.y = input_stream.read_le<u16>();
@@ -91,10 +95,10 @@ static size_t read_new_texture_info(
 }
 
 static void write_image(
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const TextureInfo &texture_info,
     res::Image &image,
-    size_t stride)
+    const size_t stride)
 {
     if (!texture_info.has_data)
         return;
@@ -142,7 +146,7 @@ static void write_image(
 }
 
 static std::vector<TextureInfo> read_texture_info_list(
-    io::IStream &input_stream)
+    io::BaseByteStream &input_stream)
 {
     std::vector<TextureInfo> texture_info_list;
     u32 base_offset = 0;
@@ -216,8 +220,8 @@ std::unique_ptr<io::File> AnmArchiveDecoder::read_file_impl(
             input_file.stream.skip(texture_magic.size());
             input_file.stream.skip(2);
             input_file.stream.skip(2);
-            size_t chunk_width = input_file.stream.read_le<u16>();
-            size_t chunk_height = input_file.stream.read_le<u16>();
+            const auto chunk_width = input_file.stream.read_le<u16>();
+            const auto chunk_height = input_file.stream.read_le<u16>();
             width = std::max(width, texture_info.x + chunk_width);
             height = std::max(height, texture_info.y + chunk_height);
         });

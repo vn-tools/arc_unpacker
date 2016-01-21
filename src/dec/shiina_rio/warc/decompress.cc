@@ -3,7 +3,7 @@
 #include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::shiina_rio;
@@ -11,21 +11,21 @@ using namespace au::dec::shiina_rio::warc;
 
 namespace
 {
-    class CustomBitReader final : public io::BaseBitReader
+    class CustomBitStream final : public io::BaseBitStream
     {
     public:
-        CustomBitReader(const bstr &input);
-        u32 get(const size_t bits) override;
+        CustomBitStream(const bstr &input);
+        u32 read(const size_t bits) override;
     private:
         void fetch();
     };
 }
 
-CustomBitReader::CustomBitReader(const bstr &input) : io::BaseBitReader(input)
+CustomBitStream::CustomBitStream(const bstr &input) : io::BaseBitStream(input)
 {
 }
 
-void CustomBitReader::fetch()
+void CustomBitStream::fetch()
 {
     if (input_stream->size() - input_stream->tell() >= 4)
     {
@@ -39,7 +39,7 @@ void CustomBitReader::fetch()
     }
 }
 
-u32 CustomBitReader::get(size_t requested_bits)
+u32 CustomBitStream::read(size_t requested_bits)
 {
     u32 value = 0;
     if (bits_available < requested_bits)
@@ -60,16 +60,16 @@ u32 CustomBitReader::get(size_t requested_bits)
 }
 
 static int init_huffman(
-    io::IBitReader &bit_reader, u16 nodes[2][512], int &size)
+    io::BaseBitStream &bit_stream, u16 nodes[2][512], int &size)
 {
-    if (!bit_reader.get(1))
-        return bit_reader.get(8);
+    if (!bit_stream.read(1))
+        return bit_stream.read(8);
     const auto pos = size;
     if (pos > 511)
         return -1;
     size++;
-    nodes[0][pos] = init_huffman(bit_reader, nodes, size);
-    nodes[1][pos] = init_huffman(bit_reader, nodes, size);
+    nodes[0][pos] = init_huffman(bit_stream, nodes, size);
+    nodes[1][pos] = init_huffman(bit_stream, nodes, size);
     return pos;
 }
 
@@ -78,15 +78,15 @@ static bstr decode_huffman(const bstr &input, const size_t size_orig)
     bstr output(size_orig);
     auto output_ptr = output.get<u8>();
     const auto output_end = output.end<const u8>();
-    CustomBitReader bit_reader(input);
+    CustomBitStream bit_stream(input);
     u16 nodes[2][512];
     auto size = 256;
-    auto root = init_huffman(bit_reader, nodes, size);
+    auto root = init_huffman(bit_stream, nodes, size);
     while (output_ptr < output_end)
     {
         auto byte = root;
         while (byte >= 256 && byte <= 511)
-            byte = nodes[bit_reader.get(1)][byte];
+            byte = nodes[bit_stream.read(1)][byte];
         *output_ptr++ = byte;
     }
     return output;

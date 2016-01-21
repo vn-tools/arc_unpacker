@@ -1,6 +1,6 @@
 #include "dec/active_soft/edt_image_decoder.h"
 #include "algo/range.h"
-#include "dec/active_soft/custom_bit_reader.h"
+#include "dec/active_soft/custom_bit_stream.h"
 #include "err.h"
 #include "io/memory_stream.h"
 
@@ -64,23 +64,23 @@ res::Image EdtImageDecoder::decode_impl(
     bstr output;
     output.reserve(target_size);
 
-    CustomBitReader bit_reader(input_file.stream.read(data_size));
+    CustomBitStream bit_stream(input_file.stream.read(data_size));
     io::MemoryStream raw_stream(input_file.stream.read(raw_size));
     output += raw_stream.read(channels);
     while (output.size() < target_size)
     {
-        if (!bit_reader.get(1))
+        if (!bit_stream.read(1))
         {
             output += raw_stream.read(channels);
             continue;
         }
 
-        if (bit_reader.get(1))
+        if (bit_stream.read(1))
         {
             auto look_behind = channels;
-            if (bit_reader.get(1))
+            if (bit_stream.read(1))
             {
-                const auto idx = bit_reader.get(2) << 3;
+                const auto idx = bit_stream.read(2) << 3;
                 look_behind = look_behind_table[(0x11'19'17'18 >> idx) & 0xFF];
             }
             if (look_behind > output.size())
@@ -88,18 +88,18 @@ res::Image EdtImageDecoder::decode_impl(
             for (const auto i : algo::range(channels))
             {
                 u8 b = clamp(output[output.size() - look_behind], 0x02, 0xFD);
-                if (bit_reader.get(1))
+                if (bit_stream.read(1))
                 {
-                    const int b2 = bit_reader.get(1) + 1;
-                    b += bit_reader.get(1) ? b2 : -b2;
+                    const int b2 = bit_stream.read(1) + 1;
+                    b += bit_stream.read(1) ? b2 : -b2;
                 }
                 output += static_cast<u8>(b);
             }
         }
         else
         {
-            const auto look_behind = look_behind_table[bit_reader.get(5)];
-            auto repetitions = bit_reader.get_gamma(0) * channels;
+            const auto look_behind = look_behind_table[bit_stream.read(5)];
+            auto repetitions = bit_stream.read_gamma(0) * channels;
             if (look_behind > output.size())
                 throw err::BadDataOffsetError();
             while (repetitions-- && output.size() < target_size)

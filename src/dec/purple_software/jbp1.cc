@@ -3,7 +3,7 @@
 #include "algo/range.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 
@@ -37,11 +37,11 @@ namespace
         size_t input_size;
     };
 
-    class CustomBitReader final : public io::BaseBitReader
+    class CustomBitStream final : public io::BaseBitStream
     {
     public:
-        CustomBitReader(const bstr &str);
-        u32 get(const size_t bits) override;
+        CustomBitStream(const bstr &str);
+        u32 read(const size_t bits) override;
     };
 }
 
@@ -49,11 +49,11 @@ Tree::Tree() : base(), neighbour(), other()
 {
 }
 
-CustomBitReader::CustomBitReader(const bstr &input) : io::BaseBitReader(input)
+CustomBitStream::CustomBitStream(const bstr &input) : io::BaseBitStream(input)
 {
 }
 
-u32 CustomBitReader::get(const size_t bits)
+u32 CustomBitStream::read(const size_t bits)
 {
     u32 ret = 0;
     for (const auto i : algo::range(bits))
@@ -132,11 +132,11 @@ static Tree make_tree(const bstr &input, std::array<u32, 0x80> &freq)
     return ret;
 }
 
-static int read_from_tree(const Tree &tree, io::IBitReader &bit_reader)
+static int read_from_tree(const Tree &tree, io::BaseBitStream &bit_stream)
 {
     size_t ret = tree.root;
     while (ret >= tree.input_size)
-        ret = tree.neighbour.at((bit_reader.get(1) << 9) + ret);
+        ret = tree.neighbour.at((bit_stream.read(1) << 9) + ret);
     return ret;
 }
 
@@ -338,8 +338,8 @@ static void ycc2rgb(u8 *dc, u8 *ac, short *iy, short *cbcr, const size_t stride)
 static bstr decode_blocks(
     const BasicInfo &info,
     const bstr &tree_input,
-    io::IBitReader &bit_reader_1,
-    io::IBitReader &bit_reader_2,
+    io::BaseBitStream &bit_stream_1,
+    io::BaseBitStream &bit_stream_2,
     std::array<u32, 0x80> &freq_dc,
     std::array<u32, 0x80> &freq_ac,
     const std::array<s16, 64> &quant_y,
@@ -352,8 +352,8 @@ static bstr decode_blocks(
 
     for (const auto i : algo::range(tmp.size()))
     {
-        const auto bit_count = read_from_tree(tree_dc, bit_reader_1);
-        u32 x = bit_reader_1.get(bit_count);
+        const auto bit_count = read_from_tree(tree_dc, bit_stream_1);
+        u32 x = bit_stream_1.read(bit_count);
         if (x < (1u << (bit_count - 1)))
             x = x - (1 << bit_count) + 1;
 
@@ -392,7 +392,7 @@ static bstr decode_blocks(
                 for (int i = 0; i < 63;)
                 {
                     const auto bit_count
-                        = read_from_tree(tree_ac, bit_reader_2);
+                        = read_from_tree(tree_ac, bit_stream_2);
 
                     if (bit_count == 15)
                         break;
@@ -400,13 +400,13 @@ static bstr decode_blocks(
                     if (!bit_count)
                     {
                         auto tree_input_pos = 0;
-                        while (bit_reader_2.get(1))
+                        while (bit_stream_2.read(1))
                             tree_input_pos++;
                         i += tree_input.at(tree_input_pos);
                     }
                     else
                     {
-                        u32 x = bit_reader_2.get(bit_count);
+                        u32 x = bit_stream_2.read(bit_count);
                         if (x < (1u << (bit_count - 1)))
                             x = x - (1 << bit_count) + 1;
                         dct_table[n][original_order[i]] = x;
@@ -451,7 +451,7 @@ static bstr decode_blocks(
     return block_output;
 }
 
-static BasicInfo read_basic_info(io::IStream &input_stream)
+static BasicInfo read_basic_info(io::BaseByteStream &input_stream)
 {
     input_stream.seek(4);
 
@@ -528,13 +528,13 @@ bstr dec::purple_software::jbp1_decompress(const bstr &input)
             quant_c[i] =  input_stream.read<u8>();
     }
 
-    CustomBitReader bit_reader_1(input_stream.read(info.bit_pool_1_size));
-    CustomBitReader bit_reader_2(input_stream.read(info.bit_pool_2_size));
+    CustomBitStream bit_stream_1(input_stream.read(info.bit_pool_1_size));
+    CustomBitStream bit_stream_2(input_stream.read(info.bit_pool_2_size));
     const auto block_output = decode_blocks(
         info,
         tree_input,
-        bit_reader_1,
-        bit_reader_2,
+        bit_stream_1,
+        bit_stream_2,
         freq_dc,
         freq_ac,
         quant_y,

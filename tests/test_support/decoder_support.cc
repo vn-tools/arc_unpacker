@@ -5,7 +5,7 @@ using namespace au;
 
 // This is to test whether ImageDecoder::decode, IDecoder::is_recognized etc.
 // take care of stream position themselves rather than relying on the callers.
-static void navigate_to_random_place(io::IStream &input_stream)
+static void navigate_to_random_place(io::BaseByteStream &input_stream)
 {
     if (input_stream.size())
         input_stream.seek(rand() % input_stream.size());

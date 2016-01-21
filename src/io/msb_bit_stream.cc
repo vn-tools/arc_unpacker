@@ -1,18 +1,18 @@
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::io;
 
-MsbBitReader::MsbBitReader(const bstr &input) : BaseBitReader(input)
+MsbBitStream::MsbBitStream(const bstr &input) : BaseBitStream(input)
 {
 }
 
-MsbBitReader::MsbBitReader(io::IStream &input_stream)
-    : BaseBitReader(input_stream)
+MsbBitStream::MsbBitStream(io::BaseByteStream &input_stream)
+    : BaseBitStream(input_stream)
 {
 }
 
-u32 MsbBitReader::get(const size_t bits)
+u32 MsbBitStream::read(const size_t bits)
 {
     while (bits_available < bits)
     {

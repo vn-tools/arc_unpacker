@@ -27,7 +27,8 @@ namespace
 
 static const bstr magic = "MGD "_b;
 
-static void decompress_sgd_alpha(const bstr &input, io::IStream &output_stream)
+static void decompress_sgd_alpha(
+    const bstr &input, io::BaseByteStream &output_stream)
 {
     io::MemoryStream input_stream(input);
     while (!input_stream.eof())
@@ -35,9 +36,8 @@ static void decompress_sgd_alpha(const bstr &input, io::IStream &output_stream)
         auto flag = input_stream.read_le<u16>();
         if (flag & 0x8000)
         {
-            size_t size = (flag & 0x7FFF) + 1;
-            u8 alpha = input_stream.read<u8>();
-            for (auto i : algo::range(size))
+            const u8 alpha = input_stream.read<u8>();
+            for (auto i : algo::range((flag & 0x7FFF) + 1))
             {
                 output_stream.skip(3);
                 output_stream.write<u8>(alpha ^ 0xFF);
@@ -57,17 +57,18 @@ static void decompress_sgd_alpha(const bstr &input, io::IStream &output_stream)
 }
 
 static void decompress_sgd_bgr_strategy_1(
-    io::IStream &input_stream, io::IStream &output_stream, u8 flag)
+    io::BaseByteStream &input_stream,
+    io::BaseByteStream &output_stream,
+    const u8 flag)
 {
-    auto size = flag & 0x3F;
     output_stream.skip(-4);
     u8 b = output_stream.read<u8>();
     u8 g = output_stream.read<u8>();
     u8 r = output_stream.read<u8>();
     output_stream.skip(1);
-    for (auto i : algo::range(size))
+    for (const auto i : algo::range(flag & 0x3F))
     {
-        u16 delta = input_stream.read_le<u16>();
+        const u16 delta = input_stream.read_le<u16>();
         if (delta & 0x8000)
         {
             b += delta & 0x1F;
@@ -89,13 +90,14 @@ static void decompress_sgd_bgr_strategy_1(
 }
 
 static void decompress_sgd_bgr_strategy_2(
-    io::IStream &input_stream, io::IStream &output_stream, u8 flag)
+    io::BaseByteStream &input_stream,
+    io::BaseByteStream &output_stream,
+    const u8 flag)
 {
-    auto size = (flag & 0x3F) + 1;
-    u8 b = input_stream.read<u8>();
-    u8 g = input_stream.read<u8>();
-    u8 r = input_stream.read<u8>();
-    for (auto i : algo::range(size))
+    const u8 b = input_stream.read<u8>();
+    const u8 g = input_stream.read<u8>();
+    const u8 r = input_stream.read<u8>();
+    for (const auto i : algo::range((flag & 0x3F) + 1))
     {
         output_stream.write<u8>(b);
         output_stream.write<u8>(g);
@@ -105,23 +107,25 @@ static void decompress_sgd_bgr_strategy_2(
 }
 
 static void decompress_sgd_bgr_strategy_3(
-    io::IStream &input_stream, io::IStream &output_stream, u8 flag)
+    io::BaseByteStream &input_stream,
+    io::BaseByteStream &output_stream,
+    const u8 flag)
 {
-    auto size = flag;
-    for (auto i : algo::range(size))
+    for (const auto i : algo::range(flag))
     {
         output_stream.write(input_stream.read(3));
         output_stream.skip(1);
     }
 }
 
-static void decompress_sgd_bgr(const bstr &input, io::IStream &output_stream)
+static void decompress_sgd_bgr(
+    const bstr &input, io::BaseByteStream &output_stream)
 {
+    std::function<void(io::BaseByteStream &, io::BaseByteStream &, u8)> func;
     io::MemoryStream input_stream(input);
     while (!input_stream.eof())
     {
         u8 flag = input_stream.read<u8>();
-        std::function<void(io::IStream &, io::IStream &, u8)> func;
         switch (flag & 0xC0)
         {
             case 0x80: func = decompress_sgd_bgr_strategy_1; break;
@@ -153,7 +157,7 @@ static bstr decompress_sgd(const bstr &input, size_t output_size)
 }
 
 static std::vector<std::unique_ptr<Region>> read_region_data(
-    io::IStream &input_stream)
+    io::BaseByteStream &input_stream)
 {
     std::vector<std::unique_ptr<Region>> regions;
     while (input_stream.tell() < input_stream.size())

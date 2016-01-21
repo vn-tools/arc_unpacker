@@ -4,7 +4,7 @@
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::dec::bgi;
@@ -37,7 +37,7 @@ static int is_image(const bstr &input)
     return width && height && (bpp == 8 || bpp == 24 || bpp == 32);
 }
 
-static NodeList get_nodes(io::IStream &input_stream, u32 key)
+static NodeList get_nodes(io::BaseByteStream &input_stream, u32 key)
 {
     NodeList nodes;
     for (const auto i : algo::range(1024))
@@ -101,7 +101,7 @@ static NodeList get_nodes(io::IStream &input_stream, u32 key)
 }
 
 static bstr decompress(
-    io::IStream &input_stream,
+    io::BaseByteStream &input_stream,
     const NodeList &nodes,
     size_t output_size)
 {
@@ -109,18 +109,18 @@ static bstr decompress(
     u8 *output_ptr = output.get<u8>();
     const u8 *output_start = output_ptr;
     const u8 *output_end = output_ptr + output.size();
-    io::MsbBitReader bit_reader(input_stream.read_to_eof());
+    io::MsbBitStream bit_stream(input_stream.read_to_eof());
 
     u32 bits = 0, bit_count = 0;
     while (output_ptr < output_end)
     {
         u32 node_index = 0;
         while (nodes[node_index]->has_children)
-            node_index = nodes[node_index]->children[bit_reader.get(1)];
+            node_index = nodes[node_index]->children[bit_stream.read(1)];
 
         if (nodes[node_index]->look_behind)
         {
-            auto offset = bit_reader.get(12);
+            auto offset = bit_stream.read(12);
             u32 repetitions = nodes[node_index]->value + 2;
             u8 *look_behind = output_ptr - offset - 2;
             if (look_behind < output_start)

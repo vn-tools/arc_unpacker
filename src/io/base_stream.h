@@ -1,29 +1,27 @@
 #pragma once
 
-#include "io/istream.h"
+#include <functional>
+#include <memory>
 
 namespace au {
 namespace io {
 
-    class BaseStream : public IStream
+    class BaseStream
     {
     public:
-        virtual ~BaseStream() {}
+        virtual ~BaseStream() = 0;
 
-        size_t left() const override;
+        bool eof() const;
+        size_t left() const;
+        virtual size_t size() const = 0;
+        virtual size_t tell() const = 0;
+        virtual BaseStream &seek(const size_t offset) = 0;
+        virtual BaseStream &truncate(const size_t new_size) = 0;
 
-        IStream &peek(
-            const size_t offset, const std::function<void()> func) override;
-        IStream &skip(const int offset) override;
-        bool eof() const override;
-
-        bstr read_to_zero() override;
-        bstr read_to_zero(const size_t bytes) override;
-        bstr read_to_eof() override;
-        bstr read_line() override;
-
-        IStream &write_zero_padded(
-            const bstr &bytes, const size_t target_size) override;
+        // virtual allows changing return type in method chaining
+        virtual BaseStream &skip(const int offset);
+        virtual BaseStream &peek(
+            const size_t offset, const std::function<void()> func);
     };
 
 } }

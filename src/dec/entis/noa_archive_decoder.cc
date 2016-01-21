@@ -29,7 +29,7 @@ namespace
 }
 
 static std::unique_ptr<ArchiveMetaImpl> read_meta(
-    io::IStream &input_stream, const io::path root = "")
+    io::BaseByteStream &input_stream, const io::path root = "")
 {
     auto meta = std::make_unique<ArchiveMetaImpl>();
     common::SectionReader section_reader(input_stream);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "io/istream.h"
+#include "io/base_byte_stream.h"
 
 namespace au {
 namespace dec {
@@ -19,7 +19,7 @@ namespace common {
     class SectionReader final
     {
     public:
-        SectionReader(io::IStream &input_stream);
+        SectionReader(io::BaseByteStream &input_stream);
         ~SectionReader();
         Section get_section(const std::string &name) const;
         bool has_section(const std::string &name) const;

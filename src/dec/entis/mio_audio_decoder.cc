@@ -14,7 +14,8 @@ static const bstr magic2 = "\x00\x01\x00\x03\x00\x00\x00\x00"_b;
 static const bstr magic3 = "Music Interleaved and Orthogonal"_b;
 
 static audio::MioHeader read_header(
-    io::IStream &input_stream, const common::SectionReader &section_reader)
+    io::BaseByteStream &input_stream,
+    const common::SectionReader &section_reader)
 {
     auto header_section = section_reader.get_section("Header");
     input_stream.seek(header_section.data_offset);
@@ -40,7 +41,7 @@ static audio::MioHeader read_header(
 }
 
 static std::vector<audio::MioChunk> read_chunks(
-    io::IStream &input_stream, common::SectionReader &section_reader)
+    io::BaseByteStream &input_stream, common::SectionReader &section_reader)
 {
     const auto stream_section = section_reader.get_section("Stream");
     input_stream.seek(stream_section.data_offset);

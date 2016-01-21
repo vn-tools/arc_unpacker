@@ -583,7 +583,7 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
         buf_size = all_sample_count;
     }
 
-    if (decoder->bit_reader->get(1))
+    if (decoder->bit_stream->read(1))
         throw err::CorruptDataError("Expected 0 bit");
 
     const auto last_division = std::make_unique<int[]>(channel_count);
@@ -598,22 +598,22 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
     {
         for (const auto j : algo::range(channel_count))
         {
-            const int division_code = decoder->bit_reader->get(2);
+            const int division_code = decoder->bit_stream->read(2);
             *division_ptr++ = division_code;
             if (division_code != last_division[j])
             {
                 if (i)
                 {
-                    *weight_ptr++ = decoder->bit_reader->get(32);
-                    *coefficient_ptr++ = decoder->bit_reader->get(16);
+                    *weight_ptr++ = decoder->bit_stream->read(32);
+                    *coefficient_ptr++ = decoder->bit_stream->read(16);
                 }
                 last_division[j] = division_code;
             }
             const auto division_count = 1 << division_code;
             for (const auto k : algo::range(division_count))
             {
-                *weight_ptr++ = decoder->bit_reader->get(32);
-                *coefficient_ptr++ = decoder->bit_reader->get(16);
+                *weight_ptr++ = decoder->bit_stream->read(32);
+                *coefficient_ptr++ = decoder->bit_stream->read(16);
             }
         }
     }
@@ -621,12 +621,12 @@ bstr LossyAudioDecoder::Priv::decode_dct(const MioChunk &chunk)
     {
         for (const auto i : algo::range(channel_count))
         {
-            *weight_ptr++ = decoder->bit_reader->get(32);
-            *coefficient_ptr++ = decoder->bit_reader->get(16);
+            *weight_ptr++ = decoder->bit_stream->read(32);
+            *coefficient_ptr++ = decoder->bit_stream->read(16);
         }
     }
 
-    if (decoder->bit_reader->get(1))
+    if (decoder->bit_stream->read(1))
         throw err::CorruptDataError("Expected 0 bit");
 
     if (chunk.initial || header.architecture == common::Architecture::Nemesis)
@@ -883,7 +883,7 @@ bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
         buf_size = all_sample_count;
     }
 
-    if (decoder->bit_reader->get(1))
+    if (decoder->bit_stream->read(1))
         throw err::CorruptDataError("Expected 0 bit");
 
     int last_division_code = -1;
@@ -894,7 +894,7 @@ bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
 
     for (const auto i : algo::range(subband_count))
     {
-        const int division_code = decoder->bit_reader->get(2);
+        const int division_code = decoder->bit_stream->read(2);
         *division_ptr++ = division_code;
 
         bool lead_block = false;
@@ -902,9 +902,9 @@ bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
         {
             if (i)
             {
-                *rev_code_ptr++ = decoder->bit_reader->get(2);
-                *weight_ptr++ = decoder->bit_reader->get(32);
-                *coefficient_ptr++ = decoder->bit_reader->get(16);
+                *rev_code_ptr++ = decoder->bit_stream->read(2);
+                *weight_ptr++ = decoder->bit_stream->read(32);
+                *coefficient_ptr++ = decoder->bit_stream->read(16);
             }
             lead_block = true;
             last_division_code = division_code;
@@ -915,25 +915,25 @@ bstr LossyAudioDecoder::Priv::decode_dct_mss(const MioChunk &chunk)
         {
             if (lead_block)
             {
-                *rev_code_ptr++ = decoder->bit_reader->get(2);
+                *rev_code_ptr++ = decoder->bit_stream->read(2);
                 lead_block = false;
             }
             else
             {
-                *rev_code_ptr++ = decoder->bit_reader->get(4);
+                *rev_code_ptr++ = decoder->bit_stream->read(4);
             }
-            *weight_ptr++ = decoder->bit_reader->get(32);
-            *coefficient_ptr++ = decoder->bit_reader->get(16);
+            *weight_ptr++ = decoder->bit_stream->read(32);
+            *coefficient_ptr++ = decoder->bit_stream->read(16);
         }
     }
     if (subband_count)
     {
-        *rev_code_ptr++ = decoder->bit_reader->get(2);
-        *weight_ptr++ = decoder->bit_reader->get(32);
-        *coefficient_ptr++ = decoder->bit_reader->get(16);
+        *rev_code_ptr++ = decoder->bit_stream->read(2);
+        *weight_ptr++ = decoder->bit_stream->read(32);
+        *coefficient_ptr++ = decoder->bit_stream->read(16);
     }
 
-    if (decoder->bit_reader->get(1))
+    if (decoder->bit_stream->read(1))
         throw err::CorruptDataError("Expected 0 bit");
 
     if (chunk.initial || header.architecture == common::Architecture::Nemesis)

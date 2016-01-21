@@ -3,30 +3,40 @@
 #include <functional>
 #include <memory>
 #include "algo/endian.h"
+#include "io/base_stream.h"
 #include "types.h"
 
 namespace au {
 namespace io {
 
-    class IStream
+    class BaseByteStream : public BaseStream
     {
     public:
-        virtual ~IStream() {}
+        virtual ~BaseByteStream() = 0;
 
-        virtual size_t left() const = 0;
-        virtual size_t size() const = 0;
-        virtual size_t tell() const = 0;
-        virtual IStream &seek(const size_t offset) = 0;
-        virtual IStream &skip(const int offset) = 0;
-        virtual IStream &truncate(const size_t new_size) = 0;
-        virtual IStream &peek(
-            const size_t offset, const std::function<void()> func) = 0;
-        virtual bool eof() const = 0;
+        // allow method chaining via BaseByteStream
+        BaseByteStream &skip(const int offset) override
+        {
+            BaseStream::skip(offset);
+            return *this;
+        }
 
-        virtual bstr read_to_zero() = 0;
-        virtual bstr read_to_zero(const size_t bytes) = 0;
-        virtual bstr read_to_eof() = 0;
-        virtual bstr read_line() = 0;
+        BaseByteStream &seek(const size_t offset) override
+        {
+            seek_impl(offset);
+            return *this;
+        }
+
+        BaseByteStream &truncate(const size_t new_size) override
+        {
+            truncate_impl(new_size);
+            return *this;
+        }
+
+        bstr read_to_zero();
+        bstr read_to_zero(const size_t bytes);
+        bstr read_to_eof();
+        bstr read_line();
 
         bstr read(const size_t bytes)
         {
@@ -67,7 +77,7 @@ namespace io {
             return algo::from_big_endian(x);
         }
 
-        io::IStream &write(const bstr &bytes)
+        io::BaseByteStream &write(const bstr &bytes)
         {
             if (!bytes.size())
                 return *this;
@@ -75,20 +85,20 @@ namespace io {
             return *this;
         }
 
-        io::IStream &write(const std::string &bytes)
+        io::BaseByteStream &write(const std::string &bytes)
         {
             return write(bstr(bytes));
         }
 
-        io::IStream &write(const char *bytes)
+        io::BaseByteStream &write(const char *bytes)
         {
             return write(bstr(bytes));
         }
 
-        virtual io::IStream &write_zero_padded(
-            const bstr &bytes, const size_t target_size) = 0;
+        io::BaseByteStream &write_zero_padded(
+            const bstr &bytes, const size_t target_size);
 
-        template<typename T> IStream &write(const T x)
+        template<typename T> BaseByteStream &write(const T x)
         {
             static_assert(
                 sizeof(T) == 1,
@@ -97,7 +107,7 @@ namespace io {
             return *this;
         }
 
-        template<typename T> IStream &write_le(const T x)
+        template<typename T> BaseByteStream &write_le(const T x)
         {
             static_assert(
                 sizeof(T) > 1,
@@ -107,7 +117,7 @@ namespace io {
             return *this;
         }
 
-        template<typename T> io::IStream & write_be(const T x)
+        template<typename T> BaseByteStream &write_be(const T x)
         {
             static_assert(
                 sizeof(T) > 1,
@@ -117,11 +127,13 @@ namespace io {
             return *this;
         }
 
-        virtual std::unique_ptr<IStream> clone() const = 0;
+        virtual std::unique_ptr<BaseByteStream> clone() const = 0;
 
     protected:
         virtual void read_impl(void *input, const size_t size) = 0;
         virtual void write_impl(const void *str, const size_t size) = 0;
+        virtual void seek_impl(const size_t offset) = 0;
+        virtual void truncate_impl(const size_t new_size) = 0;
     };
 
 } }

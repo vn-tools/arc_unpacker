@@ -7,7 +7,8 @@ using namespace au::dec::ism;
 
 static const bstr magic = "ISM IMAGEFILE\x00"_b;
 
-static void unpack_v10(io::IStream &input_stream, algo::ptr<u8> &output_ptr)
+static void unpack_v10(
+    io::BaseByteStream &input_stream, algo::ptr<u8> &output_ptr)
 {
     u16 control = 0;
     while (output_ptr.left())
@@ -30,7 +31,8 @@ static void unpack_v10(io::IStream &input_stream, algo::ptr<u8> &output_ptr)
     }
 }
 
-static void unpack_v21(io::IStream &input_stream, algo::ptr<u8> &output_ptr)
+static void unpack_v21(
+    io::BaseByteStream &input_stream, algo::ptr<u8> &output_ptr)
 {
     std::array<u8, 0x800> dict = {0};
     auto dict_ptr = algo::make_cyclic_ptr(dict.data(), dict.size()) + 0x7F7;

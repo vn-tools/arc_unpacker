@@ -1,7 +1,7 @@
 #pragma once
 
-#include "io/ibit_reader.h"
-#include "io/istream.h"
+#include "io/base_bit_stream.h"
+#include "io/base_byte_stream.h"
 
 namespace au {
 namespace dec {
@@ -10,8 +10,8 @@ namespace wpx {
 
     struct DecoderContext final
     {
-        io::IStream &input_stream;
-        io::IBitReader &bit_reader;
+        io::BaseByteStream &input_stream;
+        io::BaseBitStream &bit_stream;
     };
 
 } } } }

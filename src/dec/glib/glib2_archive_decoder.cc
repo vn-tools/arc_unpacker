@@ -58,7 +58,8 @@ static bstr decode(const bstr &input, const glib2::Decoder &decoder)
     return output;
 }
 
-static Header read_header(io::IStream &input_stream, glib2::IPlugin &plugin)
+static Header read_header(
+    io::BaseByteStream &input_stream, const glib2::IPlugin &plugin)
 {
     input_stream.seek(0);
     auto decoder = plugin.create_header_decoder();
@@ -77,7 +78,7 @@ static Header read_header(io::IStream &input_stream, glib2::IPlugin &plugin)
 }
 
 static std::unique_ptr<ArchiveEntryImpl> read_table_entry(
-    io::IStream &table_stream,
+    io::BaseByteStream &table_stream,
     const std::vector<std::unique_ptr<ArchiveEntryImpl>> &entries,
     size_t file_names_start,
     size_t file_headers_start)
@@ -123,7 +124,8 @@ static std::unique_ptr<ArchiveEntryImpl> read_table_entry(
     return entry;
 }
 
-static std::shared_ptr<glib2::IPlugin> guess_plugin(io::IStream &input_stream)
+static std::shared_ptr<glib2::IPlugin> guess_plugin(
+    io::BaseByteStream &input_stream)
 {
     std::vector<std::shared_ptr<glib2::IPlugin>> plugins;
     plugins.push_back(std::make_shared<glib2::MeiPlugin>());

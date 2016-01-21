@@ -1,34 +1,34 @@
 #include "algo/pack/huffman.h"
-#include "io/msb_bit_reader.h"
+#include "io/msb_bit_stream.h"
 
 using namespace au;
 using namespace au::algo::pack;
 
 static int init_huffman_impl(
-    io::IBitReader &bit_reader, u16 nodes[2][512], int &size)
+    io::BaseBitStream &input_stream, u16 nodes[2][512], int &size)
 {
-    if (!bit_reader.get(1))
-        return bit_reader.get(8);
+    if (!input_stream.read(1))
+        return input_stream.read(8);
     const auto pos = size;
     if (pos > 511)
         return -1;
     size++;
-    nodes[0][pos] = init_huffman_impl(bit_reader, nodes, size);
-    nodes[1][pos] = init_huffman_impl(bit_reader, nodes, size);
+    nodes[0][pos] = init_huffman_impl(input_stream, nodes, size);
+    nodes[1][pos] = init_huffman_impl(input_stream, nodes, size);
     return pos;
 }
 
-HuffmanTree::HuffmanTree(io::IBitReader &bit_reader)
+HuffmanTree::HuffmanTree(io::BaseBitStream &input_stream)
 {
     size = 256;
-    root = init_huffman_impl(bit_reader, nodes, size);
+    root = init_huffman_impl(input_stream, nodes, size);
 }
 
 HuffmanTree::HuffmanTree(const bstr &data)
 {
-    io::MsbBitReader bit_reader(data);
+    io::MsbBitStream input_stream(data);
     size = 256;
-    root = init_huffman_impl(bit_reader, nodes, size);
+    root = init_huffman_impl(input_stream, nodes, size);
 }
 
 bstr algo::pack::decode_huffman(
@@ -38,12 +38,12 @@ bstr algo::pack::decode_huffman(
 {
     bstr output;
     output.resize(target_size);
-    io::MsbBitReader bit_reader(input);
-    while (output.size() < target_size && !bit_reader.eof())
+    io::MsbBitStream input_stream(input);
+    while (output.size() < target_size && !input_stream.eof())
     {
         auto byte = huffman_tree.root;
         while (byte >= 256 && byte <= 511)
-            byte = huffman_tree.nodes[bit_reader.get(1)][byte];
+            byte = huffman_tree.nodes[input_stream.read(1)][byte];
         output += static_cast<const u8>(byte);
     }
     return output;

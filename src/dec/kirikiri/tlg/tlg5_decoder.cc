@@ -18,8 +18,8 @@ namespace
 
     struct BlockInfo final
     {
-        BlockInfo(io::IStream &input_stream);
-        void decompress(LzssDecompressor &decompressor, Header &header);
+        BlockInfo(io::BaseByteStream &input_stream);
+        void decompress(LzssDecompressor &decompressor, const Header &header);
 
         bool mark;
         size_t block_size;
@@ -27,14 +27,14 @@ namespace
     };
 }
 
-BlockInfo::BlockInfo(io::IStream &input_stream)
+BlockInfo::BlockInfo(io::BaseByteStream &input_stream)
 {
     mark = input_stream.read<u8>() > 0;
     const auto block_size = input_stream.read_le<u32>();
     data = input_stream.read(block_size);
 }
 
-void BlockInfo::decompress(LzssDecompressor &decompressor, Header &header)
+void BlockInfo::decompress(LzssDecompressor &decompressor, const Header &header)
 {
     size_t output_size = header.image_width * header.block_height;
     data = decompressor.decompress(data, output_size);
@@ -43,7 +43,7 @@ void BlockInfo::decompress(LzssDecompressor &decompressor, Header &header)
 static void load_pixel_block_row(
     res::Image &image,
     std::vector<std::unique_ptr<BlockInfo>> channel_data,
-    Header &header,
+    const Header &header,
     int block_y)
 {
     size_t max_y = std::min(block_y + header.block_height, header.image_height);
@@ -80,7 +80,7 @@ static void load_pixel_block_row(
 }
 
 static void read_image(
-    io::IStream &input_stream, res::Image &image, Header &header)
+    io::BaseByteStream &input_stream, res::Image &image, const Header &header)
 {
     // ignore block sizes
     size_t block_count = (header.image_height - 1) / header.block_height + 1;

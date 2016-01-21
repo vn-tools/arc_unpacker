@@ -9,7 +9,7 @@ static const bstr magic1 = "PM\x01\x00"_b;
 static const bstr magic2 = "PM\x02\x00"_b;
 
 bstr PmsImageDecoder::decompress_8bit(
-    io::IStream &input_stream, const size_t width, const size_t height)
+    io::BaseByteStream &input_stream, const size_t width, const size_t height)
 {
     bstr output(width * height);
     auto output_ptr = output.get<u8>();
@@ -78,7 +78,7 @@ bstr PmsImageDecoder::decompress_8bit(
 }
 
 bstr PmsImageDecoder::decompress_16bit(
-    io::IStream &input_stream, size_t width, size_t height)
+    io::BaseByteStream &input_stream, size_t width, size_t height)
 {
     bstr output(width * height * 2);
     auto output_ptr = output.get<u16>();

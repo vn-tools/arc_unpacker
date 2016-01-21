@@ -19,7 +19,7 @@ namespace
     };
 }
 
-static Header read_header(io::IStream &input_stream)
+static Header read_header(io::BaseByteStream &input_stream)
 {
     Header header;
 
@@ -56,7 +56,7 @@ static Header read_header(io::IStream &input_stream)
 }
 
 static bstr read_rgb(
-    const size_t width, const size_t height, io::IStream &input_stream)
+    const size_t width, const size_t height, io::BaseByteStream &input_stream)
 {
     bstr output(width * height * 3);
     auto output_ptr = algo::make_ptr(output);
@@ -174,7 +174,7 @@ static bstr read_rgb(
 }
 
 static bstr read_mono(
-    const size_t width, const size_t height, io::IStream &input_stream)
+    const size_t width, const size_t height, io::BaseByteStream &input_stream)
 {
     bstr output(width * height);
     auto output_ptr = algo::make_ptr(output);
