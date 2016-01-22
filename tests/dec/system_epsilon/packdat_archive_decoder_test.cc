@@ -48,7 +48,7 @@ static void do_test(
         input_file.stream.write(data);
     }
     const auto actual_files = tests::unpack(decoder, input_file);
-    tests::compare_files(expected_files, actual_files, true);
+    tests::compare_files(actual_files, expected_files, true);
 }
 
 TEST_CASE("SYSTEM-ε PACKDAT archives", "[dec]")

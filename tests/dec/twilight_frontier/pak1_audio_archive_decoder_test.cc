@@ -16,7 +16,7 @@ static void do_test(
     const auto decoder = Pak1AudioArchiveDecoder();
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
-    tests::compare_audio(expected_files, actual_files, true);
+    tests::compare_audio(actual_files, expected_files, true);
 }
 
 TEST_CASE("Twilight Frontier PAK1 audio", "[dec]")

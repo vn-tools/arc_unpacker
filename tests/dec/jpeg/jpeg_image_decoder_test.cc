@@ -32,5 +32,5 @@ TEST_CASE("JPEG 8-bit images", "[dec]")
     auto input_file = tests::file_from_path(dir + "NoName.jpeg");
     auto expected_file = tests::file_from_path(dir + "NoName-out.png");
     auto actual_image = tests::decode(decoder, *input_file);
-    tests::compare_images(*expected_file, actual_image);
+    tests::compare_images(actual_image, *expected_file);
 }

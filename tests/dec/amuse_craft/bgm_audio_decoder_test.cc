@@ -13,5 +13,5 @@ TEST_CASE("Amuse Craft BGM audio files", "[dec]")
     io::File input_file("TEST.OGG", "BGM\x20JUNKJUNKOggSwhatever"_b);
     const io::File expected_file("TEST.ogg", "OggSwhatever"_b);
     const auto actual_file = tests::decode(decoder, input_file);
-    tests::compare_files(expected_file, *actual_file, true);
+    tests::compare_files(*actual_file, expected_file, true);
 }

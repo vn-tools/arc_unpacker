@@ -16,7 +16,7 @@ static void do_test(
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_audio = tests::decode(decoder, *input_file);
-    tests::compare_audio(*expected_file, actual_audio);
+    tests::compare_audio(actual_audio, *expected_file);
 }
 
 TEST_CASE("Twilight Frontier TFWA audio", "[dec]")

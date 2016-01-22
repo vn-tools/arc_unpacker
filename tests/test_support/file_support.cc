@@ -44,8 +44,8 @@ void tests::compare_paths(
 }
 
 void tests::compare_files(
-    const std::vector<std::shared_ptr<io::File>> &expected_files,
     const std::vector<std::shared_ptr<io::File>> &actual_files,
+    const std::vector<std::shared_ptr<io::File>> &expected_files,
     const bool compare_file_paths)
 {
     REQUIRE(actual_files.size() == expected_files.size());
@@ -54,13 +54,13 @@ void tests::compare_files(
         const auto &expected_file = expected_files[i];
         const auto &actual_file = actual_files[i];
         INFO(algo::format("Files at index %d differ", i));
-        tests::compare_files(*expected_file, *actual_file, compare_file_paths);
+        tests::compare_files(*actual_file, *expected_file, compare_file_paths);
     }
 }
 
 void tests::compare_files(
-    const io::File &expected_file,
     const io::File &actual_file,
+    const io::File &expected_file,
     const bool compare_file_paths)
 {
     if (compare_file_paths)

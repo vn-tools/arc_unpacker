@@ -25,5 +25,5 @@ TEST_CASE("ScenePlayer PMW audio", "[dec]")
 
     const auto decoder = PmwAudioDecoder();
     const auto actual_file = tests::decode(decoder, input_file);
-    tests::compare_files(expected_file, *actual_file, true);
+    tests::compare_files(*actual_file, expected_file, true);
 }

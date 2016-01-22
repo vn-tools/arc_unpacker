@@ -16,7 +16,7 @@ static void do_test(
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_image = tests::decode(decoder, *input_file);
-    tests::compare_images(*expected_file, actual_image);
+    tests::compare_images(actual_image, *expected_file);
 }
 
 TEST_CASE("RealLive G00 images", "[dec]")

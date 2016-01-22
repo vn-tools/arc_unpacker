@@ -15,7 +15,7 @@ static void do_test(
     const Cpz5ArchiveDecoder decoder(5);
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
-    tests::compare_files(expected_files, actual_files, true);
+    tests::compare_files(actual_files, expected_files, true);
 }
 
 TEST_CASE("Purple Software CPZ5 archives", "[dec]")

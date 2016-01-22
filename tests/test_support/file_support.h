@@ -19,13 +19,13 @@ namespace tests {
         const io::path &actual_path, const io::path &expected_path);
 
     void compare_files(
-        const io::File &expected_file,
         const io::File &actual_file,
+        const io::File &expected_file,
         const bool compare_file_paths);
 
     void compare_files(
-        const std::vector<std::shared_ptr<io::File>> &expected_files,
         const std::vector<std::shared_ptr<io::File>> &actual_files,
+        const std::vector<std::shared_ptr<io::File>> &expected_files,
         const bool compare_file_paths);
 
 } }

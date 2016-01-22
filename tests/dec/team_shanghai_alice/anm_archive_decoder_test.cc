@@ -20,7 +20,7 @@ static void do_test(
     std::vector<std::shared_ptr<io::File>> expected_files;
     for (const auto &path : expected_paths)
         expected_files.push_back(tests::file_from_path(dir + path));
-    tests::compare_images(expected_files, actual_files, false);
+    tests::compare_images(actual_files, expected_files, false);
 }
 
 TEST_CASE("Team Shanghai Alice ANM sprite containers", "[dec]")

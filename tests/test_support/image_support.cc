@@ -10,8 +10,8 @@
 using namespace au;
 
 static inline void compare_pixels(
-    const res::Pixel expected,
     const res::Pixel actual,
+    const res::Pixel expected,
     const size_t x,
     const size_t y)
 {
@@ -22,8 +22,8 @@ static inline void compare_pixels(
         FAIL(algo::format(
             "Pixels differ at %d, %d: %02x%02x%02x%02x != %02x%02x%02x%02x",
             x, y,
-            expected.b, expected.g, expected.r, expected.a,
-            actual.b, actual.g, actual.r, actual.a));
+            actual.b, actual.g, actual.r, actual.a,
+            expected.b, expected.g, expected.r, expected.a));
     }
 }
 
@@ -54,7 +54,7 @@ res::Image tests::get_opaque_test_image()
 }
 
 void tests::compare_images(
-    const res::Image &expected_image, const res::Image &actual_image)
+    const res::Image &actual_image, const res::Image &expected_image)
 {
     REQUIRE(expected_image.width() == actual_image.width());
     REQUIRE(expected_image.height() == actual_image.height());
@@ -69,26 +69,26 @@ void tests::compare_images(
 }
 
 void tests::compare_images(
-    io::File &expected_file, const res::Image &actual_image)
+    const res::Image &actual_image, io::File &expected_file)
 {
-    tests::compare_images(image_from_file(expected_file), actual_image);
+    tests::compare_images(actual_image, image_from_file(expected_file));
 }
 
 void tests::compare_images(
-    io::File &expected_file,
     io::File &actual_file,
+    io::File &expected_file,
     const bool compare_file_paths)
 {
     auto expected_image = image_from_file(expected_file);
     auto actual_image = image_from_file(actual_file);
     if (compare_file_paths)
         tests::compare_paths(actual_file.path, expected_file.path);
-    tests::compare_images(expected_image, actual_image);
+    tests::compare_images(actual_image, expected_image);
 }
 
 void tests::compare_images(
-    const std::vector<std::shared_ptr<io::File>> &expected_images,
     const std::vector<std::shared_ptr<io::File>> &actual_images,
+    const std::vector<std::shared_ptr<io::File>> &expected_images,
     const bool compare_file_paths)
 {
     REQUIRE(expected_images.size() == actual_images.size());
@@ -96,6 +96,6 @@ void tests::compare_images(
     {
         INFO(algo::format("Images at index %d differ", i));
         tests::compare_images(
-            *expected_images[i], *actual_images[i], compare_file_paths);
+            *actual_images[i], *expected_images[i], compare_file_paths);
     }
 }

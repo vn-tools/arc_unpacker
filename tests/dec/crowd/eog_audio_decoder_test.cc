@@ -13,5 +13,5 @@ TEST_CASE("Crowd EOG audio files", "[dec]")
     io::File input_file("TEST.OGG", "CRM\x00\x0C\x00\x00\x00OggSwhatever"_b);
     const io::File expected_file("TEST.ogg", "OggSwhatever"_b);
     const auto actual_file = tests::decode(decoder, input_file);
-    tests::compare_files(expected_file, *actual_file, true);
+    tests::compare_files(*actual_file, expected_file, true);
 }

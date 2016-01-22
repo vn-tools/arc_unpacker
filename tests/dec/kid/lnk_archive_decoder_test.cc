@@ -18,7 +18,7 @@ static void do_test(
         ? tests::zlib_file_from_path(dir + input_path)
         : tests::file_from_path(dir + input_path);
     const auto actual_files = tests::unpack(decoder, *input_file);
-    tests::compare_files(expected_files, actual_files, true);
+    tests::compare_files(actual_files, expected_files, true);
 }
 
 TEST_CASE("Kid LNK archives", "[dec]")

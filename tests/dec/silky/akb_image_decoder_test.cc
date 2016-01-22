@@ -17,7 +17,7 @@ static void do_test(
 {
     const auto decoder = AkbImageDecoder();
     const auto actual_image = tests::decode(decoder, *input_file);
-    tests::compare_images(*expected_file, actual_image);
+    tests::compare_images(actual_image, *expected_file);
 }
 
 TEST_CASE("Silky AKB images", "[dec]")

@@ -28,5 +28,5 @@ TEST_CASE("ScenePlayer PMP images", "[dec]")
 
     const auto decoder = PmpImageDecoder();
     const auto actual_image = tests::decode(decoder, input_file);
-    tests::compare_images(input_image, actual_image);
+    tests::compare_images(actual_image, input_image);
 }

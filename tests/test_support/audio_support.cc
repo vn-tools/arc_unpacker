@@ -16,7 +16,7 @@ static res::Audio audio_from_file(io::File &file)
 }
 
 void tests::compare_audio(
-    const res::Audio &expected, const res::Audio &actual)
+    const res::Audio &actual, const res::Audio &expected)
 {
     REQUIRE(expected.codec == actual.codec);
     REQUIRE(expected.channel_count == actual.channel_count);
@@ -38,26 +38,26 @@ void tests::compare_audio(
 }
 
 void tests::compare_audio(
-    io::File &expected_file, const res::Audio &actual_audio)
+    const res::Audio &actual_audio, io::File &expected_file)
 {
-    tests::compare_audio(audio_from_file(expected_file), actual_audio);
+    tests::compare_audio(actual_audio, audio_from_file(expected_file));
 }
 
 void tests::compare_audio(
-    io::File &expected_file,
     io::File &actual_file,
+    io::File &expected_file,
     const bool compare_file_paths)
 {
     auto expected_audio = audio_from_file(expected_file);
     auto actual_audio = audio_from_file(actual_file);
     if (compare_file_paths)
         tests::compare_paths(actual_file.path, expected_file.path);
-    tests::compare_audio(expected_audio, actual_audio);
+    tests::compare_audio(actual_audio, expected_audio);
 }
 
 void tests::compare_audio(
-    const std::vector<std::shared_ptr<io::File>> &expected_files,
     const std::vector<std::shared_ptr<io::File>> &actual_files,
+    const std::vector<std::shared_ptr<io::File>> &expected_files,
     const bool compare_file_paths)
 {
     REQUIRE(expected_files.size() == actual_files.size());
@@ -65,6 +65,6 @@ void tests::compare_audio(
     {
         INFO(algo::format("Audio at index %d differs", i));
         tests::compare_audio(
-            *expected_files[i], *actual_files[i], compare_file_paths);
+            *actual_files[i], *expected_files[i], compare_file_paths);
     }
 }

@@ -16,7 +16,7 @@ static void do_test_image(
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
-    tests::compare_images(*expected_file, *actual_file, false);
+    tests::compare_images(*actual_file, *expected_file, false);
 }
 
 static void do_test_file(
@@ -26,7 +26,7 @@ static void do_test_file(
     const auto input_file = tests::file_from_path(dir + input_path);
     const auto expected_file = tests::file_from_path(dir + expected_path);
     const auto actual_file = tests::decode(decoder, *input_file);
-    tests::compare_files(*expected_file, *actual_file, false);
+    tests::compare_files(*actual_file, *expected_file, false);
 }
 
 TEST_CASE("BGI DSC files / images", "[dec]")

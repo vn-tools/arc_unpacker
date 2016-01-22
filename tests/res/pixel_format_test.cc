@@ -29,7 +29,7 @@ static void test_read(
     std::vector<res::Pixel> actual_pixels(1);
     res::read_pixels(input_string.get<u8>(), actual_pixels, fmt);
     const auto actual_pixel = actual_pixels[0];
-    compare_pixels(expected_pixel, actual_pixel);
+    compare_pixels(actual_pixel, expected_pixel);
 }
 
 TEST_CASE("PixelFormat", "[res]")

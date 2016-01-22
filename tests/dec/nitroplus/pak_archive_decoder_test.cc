@@ -18,7 +18,7 @@ static void do_test(const std::string &path)
     const auto decoder = PakArchiveDecoder();
     const auto input_file = tests::file_from_path(dir + path);
     const auto actual_files = tests::unpack(decoder, *input_file);
-    tests::compare_files(expected_files, actual_files, true);
+    tests::compare_files(actual_files, expected_files, true);
 }
 
 TEST_CASE("Nitroplus PAK archives", "[dec]")
