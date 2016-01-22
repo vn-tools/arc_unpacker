@@ -103,16 +103,25 @@ bstr algo::pack::zlib_inflate(const bstr &input, const ZlibKind kind)
     return ::zlib_inflate(input_stream, kind);
 }
 
-bstr algo::pack::zlib_deflate(const bstr &input, const ZlibKind kind)
+bstr algo::pack::zlib_deflate(
+    const bstr &input,
+    const ZlibKind kind,
+    const CompressionLevel compression_level)
 {
     io::MemoryStream input_stream(input);
     return process_stream(
         input_stream,
         kind,
-        [](z_stream &s, const int window_bits)
+        [compression_level](z_stream &s, const int window_bits)
         {
+            std::vector<int> levels = {9, 6, 1, 0};
             return deflateInit2(
-                &s, 9, Z_DEFLATED, window_bits, 9, Z_DEFAULT_STRATEGY);
+                &s,
+                levels.at(static_cast<int>(compression_level)),
+                Z_DEFLATED,
+                window_bits,
+                9,
+                Z_DEFAULT_STRATEGY);
         },
         [&input_stream](z_stream &s)
         {

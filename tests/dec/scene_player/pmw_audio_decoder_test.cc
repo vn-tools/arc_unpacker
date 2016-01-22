@@ -16,7 +16,12 @@ TEST_CASE("ScenePlayer PMW audio", "[dec]")
     io::File expected_file("test.wav", input_text);
     io::File input_file(
         "test.pmw",
-        algo::unxor(algo::pack::zlib_deflate(input_text), 0x21));
+        algo::unxor(
+            algo::pack::zlib_deflate(
+                input_text,
+                algo::pack::ZlibKind::PlainZlib,
+                algo::pack::CompressionLevel::Store),
+            0x21));
 
     const auto decoder = PmwAudioDecoder();
     const auto actual_file = tests::decode(decoder, input_file);

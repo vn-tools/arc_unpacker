@@ -1,5 +1,6 @@
 #pragma once
 
+#include "algo/pack/compression_level.h"
 #include "io/base_byte_stream.h"
 #include "types.h"
 
@@ -22,7 +23,9 @@ namespace pack {
         const bstr &input, const ZlibKind kind = ZlibKind::PlainZlib);
 
     bstr zlib_deflate(
-        const bstr &input, const ZlibKind kind = ZlibKind::PlainZlib);
+        const bstr &input,
+        const ZlibKind kind = ZlibKind::PlainZlib,
+        const CompressionLevel = CompressionLevel::Best);
 
 
 } } }

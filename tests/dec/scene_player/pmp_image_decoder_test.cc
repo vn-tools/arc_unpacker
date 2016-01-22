@@ -21,7 +21,10 @@ TEST_CASE("ScenePlayer PMP images", "[dec]")
         "test.pmp",
         algo::unxor(
             algo::pack::zlib_deflate(
-                bmp_file->stream.seek(0).read_to_eof()), 0x21));
+                bmp_file->stream.seek(0).read_to_eof(),
+                algo::pack::ZlibKind::PlainZlib,
+                algo::pack::CompressionLevel::Store),
+            0x21));
 
     const auto decoder = PmpImageDecoder();
     const auto actual_image = tests::decode(decoder, input_file);
