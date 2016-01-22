@@ -124,6 +124,73 @@ template<class T> static void test_reading_multiple_bytes(const TestType type)
     }
 }
 
+template<class T> static void test_writing(const TestType type)
+{
+    SECTION("Writing")
+    {
+        SECTION("Aligned")
+        {
+            io::MemoryStream output_stream;
+            {
+                T writer(output_stream);
+                writer.write(1, 0b1);
+                writer.write(7, 0b0111111);
+            }
+            const auto output = output_stream.seek(0).read_to_eof();
+            REQUIRE((output == "\xBF"_b));
+        }
+
+        SECTION("Unaligned")
+        {
+            io::MemoryStream output_stream;
+            {
+                T writer(output_stream);
+                writer.write(1, 0b1);
+                writer.write(10, 0b1011111101);
+            }
+            const auto output = output_stream.seek(0).read_to_eof();
+            REQUIRE((output == "\xDF\xA0"_b));
+        }
+
+        SECTION("Max value")
+        {
+            io::MemoryStream output_stream;
+            {
+                T writer(output_stream);
+                writer.write(32, 0xFFFFFFFF);
+            }
+            const auto output = output_stream.seek(0).read_to_eof();
+            REQUIRE((output == "\xFF\xFF\xFF\xFF"_b));
+        }
+
+        SECTION("Values exceeding masks")
+        {
+            io::MemoryStream output_stream;
+            {
+                T writer(output_stream);
+                writer.write(1, 8);
+                writer.write(1, 7);
+            }
+            const auto output = output_stream.seek(0).read_to_eof();
+            REQUIRE((output == "\x40"_b));
+        }
+
+        // SECTION("Interleaving")
+        // {
+        //     io::MemoryStream output_stream("\xFF\xFF"_b);
+        //     output_stream.seek(0);
+        //     {
+        //         T writer(output_stream);
+        //         writer.seek(3);
+        //         writer.write(8, 0);
+        //     }
+        //     const auto output = output_stream.seek(0).read_to_eof();
+        //     INFO(output.size());
+        //     REQUIRE((output == "\xE0\x1F"_b));
+        // }
+    }
+}
+
 template<class T> static void test_checking_for_eof()
 {
     SECTION("Checking for EOF")
@@ -369,4 +436,5 @@ TEST_CASE("MsbBitStream", "[io]")
     test_reading_single_bits<io::MsbBitStream>(TestType::Msb);
     test_reading_multiple_bits<io::MsbBitStream>(TestType::Msb);
     test_reading_multiple_bytes<io::MsbBitStream>(TestType::Msb);
+    test_writing<io::MsbBitStream>(TestType::Msb);
 }

@@ -19,8 +19,9 @@ namespace io {
         BaseStream &seek(const size_t offset) override;
         BaseStream &truncate(const size_t new_size) override;
 
-        virtual u32 read(const size_t n) = 0;
         u32 read_gamma(const bool stop_mark);
+        virtual u32 read(const size_t n) = 0;
+        virtual void write(const size_t bits, const u32 value);
 
     protected:
         u64 buffer;

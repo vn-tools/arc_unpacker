@@ -11,7 +11,11 @@ namespace io {
     public:
         MsbBitStream(const bstr &input);
         MsbBitStream(io::BaseByteStream &input_stream);
-        u32 read(const size_t n) override;
+        ~MsbBitStream();
+        u32 read(const size_t bits) override;
+        void write(const size_t bits, const u32 value) override;
+    private:
+        bool dirty;
     };
 
 } }
