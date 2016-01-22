@@ -2,9 +2,30 @@
 #include <array>
 #include "algo/ptr.h"
 #include "algo/range.h"
+#include "io/memory_stream.h"
 #include "io/msb_bit_stream.h"
 
 using namespace au;
+
+namespace
+{
+    struct LzssEncoderState final
+    {
+        LzssEncoderState(const size_t dict_size, const size_t max_match_size);
+
+        void insert_node(int r);
+        void delete_node(int p);
+
+        const size_t dict_size;
+        const size_t max_match_size;
+        const int empty;
+        std::vector<u8> text_buf;
+        std::vector<int> children[2], dad;
+
+        size_t match_position;
+        size_t match_size;
+    };
+}
 
 algo::pack::BytewiseLzssSettings::BytewiseLzssSettings()
     : initial_dictionary_pos(0xFEE)
@@ -34,7 +55,7 @@ bstr algo::pack::lzss_decompress(
     auto output_ptr = algo::make_ptr(output);
     while (output_ptr.left())
     {
-        if (input_stream.read(1) > 0)
+        if (input_stream.read(1))
         {
             const auto b = input_stream.read(8);
             *output_ptr++ = b;
@@ -108,4 +129,170 @@ bstr algo::pack::lzss_decompress(
         }
     }
     return output;
+}
+
+LzssEncoderState::LzssEncoderState(
+    const size_t dict_size, const size_t max_match_size) :
+        dict_size(dict_size),
+        max_match_size(max_match_size),
+        empty(dict_size),
+        text_buf(dict_size + max_match_size),
+        dad(dict_size + 1)
+{
+    children[0].resize(dict_size + 1);
+    children[1].resize(dict_size + 1 + 256);
+    for (auto &c : children[0]) c = empty;
+    for (auto &c : children[1]) c = empty;
+    for (auto &c : dad) c = empty;
+}
+
+void LzssEncoderState::insert_node(int r)
+{
+    int cmp = 1;
+    int p = dict_size + 1 + text_buf[r];
+    children[0][r] = children[1][r] = empty;
+    match_size = 0;
+    while (true)
+    {
+        const auto lr = cmp >= 0;
+        if (children[lr][p] == empty)
+        {
+            children[lr][p] = r;
+            dad[r] = p;
+            return;
+        }
+        p = children[lr][p];
+        size_t i = 0;
+        while (++i < max_match_size)
+            if ((cmp = text_buf[r + i] - text_buf[p + i]) != 0)
+                break;
+        if (i > match_size)
+        {
+            match_position = p;
+            if ((match_size = i) >= max_match_size)
+                break;
+        }
+    }
+    dad[r] = dad[p];
+    children[0][r] = children[0][p];
+    children[1][r] = children[1][p];
+    dad[children[0][p]] = r;
+    dad[children[1][p]] = r;
+    children[children[1][dad[p]] == p][dad[p]] = r;
+    dad[p] = empty;
+}
+
+void LzssEncoderState::delete_node(int p)
+{
+    if (dad[p] == empty)
+        return;
+
+    int  q;
+    if (children[1][p] == empty)
+        q = children[0][p];
+    else if (children[0][p] == empty)
+        q = children[1][p];
+    else
+    {
+        q = children[0][p];
+        if (children[1][q] != empty)
+        {
+            do
+                q = children[1][q];
+            while (children[1][q] != empty);
+
+            children[1][dad[q]] = children[0][q];
+            dad[children[0][q]] = dad[q];
+            children[0][q] = children[0][p];
+            dad[children[0][p]] = q;
+        }
+
+        children[1][q] = children[1][p];
+        dad[children[1][p]] = q;
+    }
+
+    dad[q] = dad[p];
+    children[children[1][dad[p]] == p][dad[p]] = q;
+    dad[p] = empty;
+}
+
+bstr algo::pack::lzss_compress(
+    const bstr &input, const algo::pack::BitwiseLzssSettings &settings)
+{
+    io::MemoryStream input_stream(input);
+    return lzss_compress(input_stream, settings);
+}
+
+bstr algo::pack::lzss_compress(
+    io::BaseByteStream &input_stream,
+    const algo::pack::BitwiseLzssSettings &settings)
+{
+    const auto dict_size = 1 << settings.position_bits;
+    const auto max_match_size
+        = settings.min_match_size + (1 << settings.size_bits) - 1;
+    LzssEncoderState state(dict_size, max_match_size);
+
+    size_t s = 0;
+    size_t r = dict_size - max_match_size;
+    for (const auto i : algo::range(s, r))
+        state.text_buf[i] = 0;
+
+    size_t len;
+    for (len = 0; len < max_match_size && input_stream.left(); len++)
+        state.text_buf[r + len] = input_stream.read<u8>();
+
+    for (const auto i : algo::range(1, max_match_size + 1))
+        state.insert_node(r - i);
+    state.insert_node(r);
+
+    io::MemoryStream output_stream;
+    {
+        io::MsbBitStream bit_stream(output_stream);
+        while (len > 0)
+        {
+            auto match_size = state.match_size;
+            auto match_position = state.match_position;
+            if (match_size > len)
+                match_size = len;
+            if (match_size < settings.min_match_size)
+            {
+                match_size = 1;
+                bit_stream.write(1, 1);
+                bit_stream.write(8, state.text_buf[r]);
+            }
+            else
+            {
+                match_position -= dict_size - max_match_size;
+                match_position += settings.initial_dictionary_pos;
+                match_position %= dict_size;
+                bit_stream.write(1, 0);
+                bit_stream.write(settings.position_bits, match_position);
+                bit_stream.write(
+                    settings.size_bits, match_size - settings.min_match_size);
+            }
+
+            auto last_match_size = match_size;
+            size_t i;
+            for (i = 0; i < last_match_size && input_stream.left(); i++)
+            {
+                const auto c = input_stream.read<u8>();
+                state.delete_node(s);
+                state.text_buf[s] = c;
+                if (s < max_match_size + 1)
+                    state.text_buf[s + dict_size] = c;
+                s = (s + 1) % dict_size;
+                r = (r + 1) % dict_size;
+                state.insert_node(r);
+            }
+            while (i++ < last_match_size)
+            {
+                state.delete_node(s);
+                s = (s + 1) % dict_size;
+                r = (r + 1) % dict_size;
+                if (--len)
+                    state.insert_node(r);
+            }
+        }
+    }
+    return output_stream.seek(0).read_to_eof();
 }

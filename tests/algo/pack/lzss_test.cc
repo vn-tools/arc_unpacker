@@ -93,3 +93,26 @@ TEST_CASE("LZSS unpacking", "[algo][pack]")
         test_bytes("\x07\x61\x61\x61\xEE\xF0\xEE\xF3\xEE\xF9\xEE\xFD'"_b, 40);
     }
 }
+
+TEST_CASE("LZSS packing", "[algo][pack]")
+{
+    SECTION("Bitwise")
+    {
+        const auto input =
+            "111111111"
+            "1 1 1 1 1 1 1 1"
+            "12 12 12 12 12 12 12 12 "
+            "123 123 123 123 123 123 123 123 "
+            "1234 1234 1234 1234 1234 1234 1234 1234 "
+            "12345 12345 12345 12345 12345 12345 12345 12345 "
+            "123456789123456789123456789123456789123456789"_b;
+
+        BitwiseLzssSettings settings;
+        settings.position_bits = 16;
+        settings.size_bits = 4;
+        settings.initial_dictionary_pos = 1;
+        settings.min_match_size = 3;
+        const auto x = lzss_compress(input, settings);
+        REQUIRE(lzss_decompress(x, input.size(), settings) == input);
+    }
+}

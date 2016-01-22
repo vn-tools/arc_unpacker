@@ -37,4 +37,11 @@ namespace pack {
         const size_t output_size,
         const BytewiseLzssSettings &settings = BytewiseLzssSettings());
 
+    bstr lzss_compress(
+        const bstr &input, const algo::pack::BitwiseLzssSettings &settings);
+
+    bstr lzss_compress(
+        io::BaseByteStream &input_stream,
+        const algo::pack::BitwiseLzssSettings &settings);
+
 } } }
