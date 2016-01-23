@@ -9,7 +9,7 @@
 
 using namespace au;
 
-static inline void compare_pixels(
+static inline bool compare_pixels(
     const res::Pixel actual,
     const res::Pixel expected,
     const size_t x,
@@ -18,13 +18,15 @@ static inline void compare_pixels(
     if (expected != actual)
     {
         if (expected.a == 0 && actual.a == 0)
-            return;
-        FAIL(algo::format(
+            return true;
+        WARN(algo::format(
             "Pixels differ at %d, %d: %02x%02x%02x%02x != %02x%02x%02x%02x",
             x, y,
             actual.b, actual.g, actual.r, actual.a,
             expected.b, expected.g, expected.r, expected.a));
+        return false;
     }
+    return true;
 }
 
 static res::Image image_from_file(io::File &file)
@@ -59,13 +61,15 @@ void tests::compare_images(
     REQUIRE(expected_image.width() == actual_image.width());
     REQUIRE(expected_image.height() == actual_image.height());
 
+    bool images_match = true;
     for (const auto y : algo::range(expected_image.height()))
     for (const auto x : algo::range(expected_image.width()))
     {
         const auto expected_pixel = expected_image.at(x, y);
         const auto actual_pixel = actual_image.at(x, y);
-        compare_pixels(expected_pixel, actual_pixel, x, y);
+        images_match &= compare_pixels(actual_pixel, expected_pixel, x, y);
     }
+    REQUIRE(images_match);
 }
 
 void tests::compare_images(
