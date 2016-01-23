@@ -130,10 +130,10 @@ static bstr compress_custom(const res::Image &input_image)
     return output_stream.seek(0).read_to_eof();
 }
 
-TEST_CASE("Complet's GD images", "[dec]")
+static void do_test(const bstr &magic, const size_t width, const size_t height)
 {
     const auto decoder = GdImageDecoder();
-    res::Image expected_image(800, 600);
+    res::Image expected_image(width, height);
     expected_image.overlay(
         tests::get_opaque_test_image(), res::Image::OverlayKind::OverwriteAll);
     for (auto &c : expected_image)
@@ -147,7 +147,7 @@ TEST_CASE("Complet's GD images", "[dec]")
     input_image.flip_vertically();
 
     io::File input_file;
-    input_file.stream.write("GD3?"_b);
+    input_file.stream.write(magic);
     for (const auto y : algo::range((input_image.height() - 1) / 10))
     for (const auto x : algo::range(input_image.width() / 10))
     {
@@ -202,5 +202,18 @@ TEST_CASE("Complet's GD images", "[dec]")
         input_file.stream.write(compress_custom(input_image));
         const auto actual_image = tests::decode(decoder, input_file);
         tests::compare_images(expected_image, actual_image);
+    }
+}
+
+TEST_CASE("Complet's GD images", "[dec]")
+{
+    SECTION("GD2")
+    {
+        do_test("GD2?"_b, 640, 480);
+    }
+
+    SECTION("GD3")
+    {
+        do_test("GD3?"_b, 800, 600);
     }
 }

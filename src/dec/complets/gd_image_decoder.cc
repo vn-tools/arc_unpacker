@@ -9,7 +9,8 @@
 using namespace au;
 using namespace au::dec::complets;
 
-static const bstr magic = "GD3"_b;
+static const bstr magic2 = "GD2"_b;
+static const bstr magic3 = "GD3"_b;
 
 namespace
 {
@@ -144,16 +145,18 @@ static bstr decompress_custom(
 
 bool GdImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.stream.read(magic.size()) == magic;
+    return input_file.stream.seek(0).read(magic2.size()) == magic2
+        || input_file.stream.seek(0).read(magic3.size()) == magic3;
 }
 
 res::Image GdImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
+    const auto version = input_file.stream.seek(2).read<u8>() - '0';
     const auto fmt = res::PixelFormat::BGR888;
     const auto channels = 3;
-    const auto width = 800;
-    const auto height = 600;
+    const auto width = version == 2 ? 640 : 800;
+    const auto height = version == 2 ? 480 : 600;
     const auto thumb_width = width / 10;
     const auto thumb_height = (height / 10) - 1;
     const auto compression_type = input_file.stream
