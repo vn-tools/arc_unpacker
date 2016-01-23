@@ -14,10 +14,6 @@ using namespace au::dec::cri::hca;
 
 static const bstr magic = "HCA\x00"_b;
 
-namespace
-{
-}
-
 static inline f32 clamp(const f32 input)
 {
     if (input > 1)
