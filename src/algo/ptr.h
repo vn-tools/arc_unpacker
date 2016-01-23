@@ -15,6 +15,16 @@ namespace algo {
         {
         }
 
+        inline T *operator->()
+        {
+            return cur_ptr;
+        }
+
+        inline const T *operator->() const
+        {
+            return cur_ptr;
+        }
+
         inline BasePtr &operator++()
         {
             cur_ptr++;
