@@ -349,7 +349,6 @@ static void read_meta(
         entry->block_offsets.push_back(base_offset);
         meta.entries.push_back(std::move(entry));
     }
-
 }
 
 bool PxImageArchiveDecoder::is_recognized_impl(io::File &input_file) const

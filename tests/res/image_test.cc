@@ -150,5 +150,4 @@ TEST_CASE("Image overlays", "[res]")
             REQUIRE(base.at(x, y).g == 0);
         }
     }
-
 }
