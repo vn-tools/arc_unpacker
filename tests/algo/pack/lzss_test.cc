@@ -115,4 +115,21 @@ TEST_CASE("LZSS packing", "[algo][pack]")
         const auto x = lzss_compress(input, settings);
         REQUIRE(lzss_decompress(x, input.size(), settings) == input);
     }
+
+    SECTION("Bytewise")
+    {
+        const auto input =
+            "111111111"
+            "1 1 1 1 1 1 1 1"
+            "12 12 12 12 12 12 12 12 "
+            "123 123 123 123 123 123 123 123 "
+            "1234 1234 1234 1234 1234 1234 1234 1234 "
+            "12345 12345 12345 12345 12345 12345 12345 12345 "
+            "123456789123456789123456789123456789123456789"_b;
+
+        BytewiseLzssSettings settings;
+        settings.initial_dictionary_pos = 1;
+        const auto x = lzss_compress(input, settings);
+        REQUIRE(lzss_decompress(x, input.size(), settings) == input);
+    }
 }

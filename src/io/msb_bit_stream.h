@@ -13,6 +13,7 @@ namespace io {
         MsbBitStream(io::BaseByteStream &input_stream);
         ~MsbBitStream();
         u32 read(const size_t bits) override;
+        void flush() override;
         void write(const size_t bits, const u32 value) override;
     private:
         bool dirty;

@@ -66,6 +66,10 @@ u32 BaseBitStream::read_gamma(const bool stop_mark)
     return value;
 }
 
+void BaseBitStream::flush()
+{
+}
+
 void BaseBitStream::write(const size_t bits, const u32 value)
 {
     throw err::NotSupportedError("Not implemented");

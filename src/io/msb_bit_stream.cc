@@ -15,8 +15,16 @@ MsbBitStream::MsbBitStream(io::BaseByteStream &input_stream)
 
 MsbBitStream::~MsbBitStream()
 {
+    flush();
+}
+
+void MsbBitStream::flush()
+{
     if (dirty)
-        input_stream->write<u8>(buffer << (8 - bits_available));
+    {
+        input_stream->write<u8>(buffer << (8 - bits_available)).skip(-1);
+        dirty = false;
+    }
 }
 
 u32 MsbBitStream::read(const size_t bits)

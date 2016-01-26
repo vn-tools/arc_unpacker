@@ -21,6 +21,7 @@ namespace io {
 
         u32 read_gamma(const bool stop_mark);
         virtual u32 read(const size_t n) = 0;
+        virtual void flush();
         virtual void write(const size_t bits, const u32 value);
 
     protected:
