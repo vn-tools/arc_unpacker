@@ -52,4 +52,9 @@ std::unique_ptr<io::File> Gpk2ArchiveDecoder::read_file_impl(
         input_file.stream.seek(entry->offset).read(entry->size));
 }
 
+std::vector<std::string> Gpk2ArchiveDecoder::get_linked_formats() const
+{
+    return {"gpk2/gfb"};
+}
+
 static auto _ = dec::register_decoder<Gpk2ArchiveDecoder>("gpk2/gpk2");
