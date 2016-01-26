@@ -4,6 +4,7 @@
 #include "dec/jpeg/jpeg_image_decoder.h"
 #include "dec/microsoft/bmp_image_decoder.h"
 #include "dec/png/png_image_decoder.h"
+#include "enc/png/png_image_encoder.h"
 #include "test_support/catch.h"
 #include "test_support/file_support.h"
 
@@ -102,4 +103,15 @@ void tests::compare_images(
         tests::compare_images(
             *actual_images[i], *expected_images[i], compare_file_paths);
     }
+}
+
+void tests::dump_image(const res::Image &input_image, const io::path &path)
+{
+    Logger dummy_logger;
+    dummy_logger.mute();
+
+    enc::png::PngImageEncoder encoder;
+    const auto output_file = encoder.encode(dummy_logger, input_image, path);
+    const auto data = output_file->stream.seek(0).read_to_eof();
+    io::File(path, io::FileMode::Write).stream.write(data);
 }

@@ -27,4 +27,6 @@ namespace tests {
         const std::vector<std::shared_ptr<io::File>> &expected_images,
         const bool compare_file_paths);
 
+    void dump_image(const res::Image &input_image, const io::path &path);
+
 } }
