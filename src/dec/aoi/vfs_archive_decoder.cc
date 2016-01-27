@@ -4,7 +4,8 @@
 using namespace au;
 using namespace au::dec::aoi;
 
-static const bstr magic = "VF\x00\x01"_b;
+static const bstr magic1 = "VF\x00\x01"_b;
+static const bstr magic2 = "VF\x01\x01"_b;
 
 namespace
 {
@@ -17,7 +18,8 @@ namespace
 
 bool VfsArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.stream.seek(0).read(magic.size()) == magic;
+    return input_file.stream.seek(0).read(magic1.size()) == magic1
+        || input_file.stream.seek(0).read(magic2.size()) == magic2;
 }
 
 std::unique_ptr<dec::ArchiveMeta> VfsArchiveDecoder::read_meta_impl(
