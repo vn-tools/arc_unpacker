@@ -56,7 +56,7 @@ std::unique_ptr<io::File> VfsArchiveDecoder::read_file_impl(
 
 std::vector<std::string> VfsArchiveDecoder::get_linked_formats() const
 {
-    return {"aoi/iph"};
+    return {"aoi/iph", "aoi/aog"};
 }
 
 static auto _ = dec::register_decoder<VfsArchiveDecoder>("aoi/vfs");
