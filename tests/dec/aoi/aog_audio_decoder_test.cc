@@ -8,11 +8,23 @@ using namespace au::dec::aoi;
 
 TEST_CASE("Aoi AOG audio files", "[dec]")
 {
-    const auto decoder = AogAudioDecoder();
-    io::File input_file(
-        "test.aog",
-        "AoiOgg\x00\x00JUNKJUNKJUNKJUNKJUNKJUNKJUNKJUNKJUNKOggSwhatever"_b);
-    const io::File expected_file("test.ogg", "OggSwhatever"_b);
-    const auto actual_file = tests::decode(decoder, input_file);
-    tests::compare_files(*actual_file, expected_file, true);
+    SECTION("With Aoi header")
+    {
+        const auto decoder = AogAudioDecoder();
+        io::File input_file(
+            "test.aog",
+            "AoiOgg\x00\x00JUNKJUNKJUNKJUNKJUNKJUNKJUNKJUNKJUNKOggSwhatever"_b);
+        const io::File expected_file("test.ogg", "OggSwhatever"_b);
+        const auto actual_file = tests::decode(decoder, input_file);
+        tests::compare_files(*actual_file, expected_file, true);
+    }
+
+    SECTION("Without Aoi header")
+    {
+        const auto decoder = AogAudioDecoder();
+        io::File input_file("test.aog", "OggSwhatever"_b);
+        const io::File expected_file("test.ogg", "OggSwhatever"_b);
+        const auto actual_file = tests::decode(decoder, input_file);
+        tests::compare_files(*actual_file, expected_file, true);
+    }
 }
