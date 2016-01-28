@@ -42,6 +42,15 @@ Caveats:
   chosen so that it stands out from normal `.wav`s and for compatibility with
   `foo_input_wave_loop`.
 
+- **I drag the game files onto `arc_unpacker` and it immediately closes.**  
+  Try running it from the command prompt to see the output and possible error
+  message. Usually this behavior is a sign that the game requires additional
+  switches which are described in the [game
+  list](https://rawgit.com/vn-tools/arc_unpacker/master/GAMELIST.htm). If you
+  are unfamiliar with the Windows command prompt, I recommend reading [this
+  little
+  guide](http://www.codejacked.com/a-beginners-guide-to-the-command-prompt/).
+
 - **What's the license?**  
   All the code is licensed under
   [`LICENSE.md`](https://github.com/vn-tools/arc_unpacker/blob/master/LICENSE.md)
