@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "dec/base_archive_decoder.h"
