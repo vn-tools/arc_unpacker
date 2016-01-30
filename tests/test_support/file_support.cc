@@ -78,3 +78,12 @@ void tests::compare_files(
         : "(too big to display)"));
     REQUIRE(expected_content == actual_content);
 }
+
+void tests::dump_file(io::File &input_file, const io::path &path)
+{
+    const auto old_pos = input_file.stream.tell();
+    input_file.stream.seek(0);
+    const auto data = input_file.stream.read_to_eof();
+    io::File(path, io::FileMode::Write).stream.write(data);
+    input_file.stream.seek(old_pos);
+}

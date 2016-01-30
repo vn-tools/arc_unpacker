@@ -28,4 +28,6 @@ namespace tests {
         const std::vector<std::shared_ptr<io::File>> &expected_files,
         const bool compare_file_paths);
 
+    void dump_file(io::File &input_file, const io::path &path);
+
 } }
