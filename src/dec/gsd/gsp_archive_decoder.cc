@@ -52,4 +52,9 @@ std::unique_ptr<io::File> GspArchiveDecoder::read_file_impl(
         input_file.stream.seek(entry->offset).read(entry->size));
 }
 
+std::vector<std::string> GspArchiveDecoder::get_linked_formats() const
+{
+    return {"gsd/bmz"};
+}
+
 static auto _ = dec::register_decoder<GspArchiveDecoder>("gsd/gsp");
