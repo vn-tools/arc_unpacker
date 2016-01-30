@@ -84,7 +84,7 @@ static Header read_header(io::BaseByteStream &input_stream)
                 h.masks[2] = 0x0000FF00;
                 h.masks[1] = 0x00FF0000;
                 h.masks[0] = 0xFF000000;
-                h.masks[3] = 0;
+                h.masks[3] = 0x000000FF;
             }
             else if (h.depth == 16)
             {
@@ -294,6 +294,17 @@ res::Image BmpImageDecoder::decode_impl(
     res::Image image = palette.size() > 0
         ? get_image_from_palette(input_file.stream, header, palette)
         : get_image_without_palette(input_file.stream, header);
+
+    if (header.depth == 32)
+    {
+        bool everything_transparent = true;
+        for (const auto &c : image)
+            if (c.a != 0)
+                everything_transparent = false;
+        if (everything_transparent)
+            for (auto &c : image)
+                c.a = 0xFF;
+    }
 
     if (header.flip)
         image.flip_vertically();
