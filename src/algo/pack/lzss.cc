@@ -258,7 +258,7 @@ LzssEncoderState::LzssEncoderState(
         dict_size(dict_size),
         max_match_size(max_match_size),
         empty(dict_size),
-        text_buf(dict_size + max_match_size),
+        text_buf(dict_size + max_match_size + 1),
         dad(dict_size + 1)
 {
     children[0].resize(dict_size + 1);
