@@ -56,6 +56,13 @@ res::Image tests::get_opaque_test_image()
     return image_from_file(*input_file);
 }
 
+res::Image tests::get_transparent_test_image()
+{
+    const auto input_file = tests::file_from_path(
+        "tests/dec/png/files/reimu_transparent.png");
+    return image_from_file(*input_file);
+}
+
 void tests::compare_images(
     const res::Image &actual_image, const res::Image &expected_image)
 {
