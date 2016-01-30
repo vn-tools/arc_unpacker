@@ -1,6 +1,5 @@
 #include "dec/gsd/gsp_archive_decoder.h"
 #include "algo/binary.h"
-#include "algo/ptr.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
