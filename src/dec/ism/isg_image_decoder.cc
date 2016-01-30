@@ -1,4 +1,5 @@
 #include "dec/ism/isg_image_decoder.h"
+#include <array>
 #include "algo/ptr.h"
 #include "err.h"
 
