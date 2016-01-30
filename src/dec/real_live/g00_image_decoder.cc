@@ -48,7 +48,7 @@ static bstr decompress(
 
             const auto look_behind = (tmp >> 4) * byte_count;
             const auto size = ((tmp & 0x0F) + size_delta) * byte_count;
-            output_ptr.append_from(-look_behind, size);
+            output_ptr.append_self(-look_behind, size);
         }
     }
     return output;

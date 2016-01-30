@@ -73,7 +73,9 @@ static bstr read_rgb(
             const size_t count = (flags & 0x20) != 0
                 ? (((flags & 0x1F) << 8) + input_stream.read<u8>() + 0x21)
                 : ((flags & 0x1F) + 1);
-            output_ptr.append_from(input_stream.read(count * 3));
+            const auto chunk = input_stream.read(count * 3);
+            auto chunk_ptr = algo::make_ptr(chunk);
+            output_ptr.append_from(chunk_ptr);
         }
 
         else if (method == 1)
@@ -81,9 +83,12 @@ static bstr read_rgb(
             const size_t count = (flags & 0x20) != 0
                 ? (((flags & 0x1F) << 8) + input_stream.read<u8>() + 0x22)
                 : ((flags & 0x1F) + 2);
-            const auto base = input_stream.read(3);
+            const auto chunk = input_stream.read(3);
             for (const auto i : algo::range(count))
-                output_ptr.append_from(base);
+            {
+                auto chunk_ptr = algo::make_ptr(chunk);
+                output_ptr.append_from(chunk_ptr);
+            }
         }
 
         else if (method == 2)
@@ -114,7 +119,7 @@ static bstr read_rgb(
                     : ((flags & 0x7) + 2);
                 count = 1;
             }
-            output_ptr.append_from(-pos * 3, count * 3);
+            output_ptr.append_self(-pos * 3, count * 3);
         }
 
         else
@@ -144,7 +149,7 @@ static bstr read_rgb(
                 {
                     const auto b = input_stream.read<u8>();
                     const auto pos = ((flags & 0x3) << 8) + b + 0x80A;
-                    output_ptr.append_from(-pos * 3, 3);
+                    output_ptr.append_self(-pos * 3, 3);
                     continue;
                 }
             }
@@ -166,7 +171,7 @@ static bstr read_rgb(
             }
 
             const auto pos = x - width * y;
-            output_ptr.append_from(pos * 3, 3);
+            output_ptr.append_self(pos * 3, 3);
         }
     }
 
@@ -191,7 +196,9 @@ static bstr read_mono(
             const size_t count = (flags & 0x20) != 0
                 ? (((flags & 0x1F) << 8) + input_stream.read<u8>() + 0x21)
                 : ((flags & 0x1F) + 1);
-            output_ptr.append_from(input_stream.read(count));
+            const auto chunk = input_stream.read(count);
+            auto chunk_ptr = algo::make_ptr(chunk);
+            output_ptr.append_from(chunk_ptr);
         }
 
         else if (method == 1)
@@ -199,9 +206,9 @@ static bstr read_mono(
             const size_t count = (flags & 0x20) != 0
                 ? (((flags & 0x1F) << 8) + input_stream.read<u8>() + 0x23)
                 : ((flags & 0x1F) + 3);
-            const auto base = input_stream.read(1);
+            const auto base = input_stream.read<u8>();
             for (const auto i : algo::range(count))
-                output_ptr.append_from(base);
+                output_ptr.append_basic(base);
         }
 
         else if (method == 2)
@@ -228,7 +235,7 @@ static bstr read_mono(
                 pos = ((flags & 0xF) << 8) + input_stream.read<u8>() + 3;
                 count = 4;
             }
-            output_ptr.append_from(-pos, count);
+            output_ptr.append_self(-pos, count);
         }
 
         else
@@ -244,7 +251,7 @@ static bstr read_mono(
                 pos = (flags & 0x1F) + 1;
                 count = 1;
             }
-            output_ptr.append_from(-pos, count);
+            output_ptr.append_self(-pos, count);
         }
     }
 

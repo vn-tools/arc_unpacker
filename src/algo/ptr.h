@@ -98,15 +98,20 @@ namespace algo {
             return operator+(-n);
         }
 
-        void append_from(const bstr &source)
+        void append_basic(const T &t, size_t n = 1)
         {
-            if (!cyclic && source.size() > left())
+            if (left() < n)
                 throw err::BadDataSizeError();
-            for (const auto &c : source)
+            while (n--)
             {
-                *cur_ptr = c;
+                *cur_ptr = t;
                 operator++();
             }
+        }
+
+        void append_from(BasePtr<const T, false> &input_ptr)
+        {
+            append_from(input_ptr, input_ptr.left());
         }
 
         void append_from(BasePtr<const T, false> &input_ptr, size_t n)
@@ -124,8 +129,6 @@ namespace algo {
 
         void append_from(BasePtr<T, true> &input_ptr, size_t n)
         {
-            if (n > input_ptr.left())
-                throw err::BadDataSizeError();
             if (!cyclic && n > left())
                 throw err::BadDataSizeError();
             while (n--)
@@ -135,7 +138,7 @@ namespace algo {
             }
         }
 
-        void append_from(int relative_position, size_t n)
+        void append_self(int relative_position, size_t n)
         {
             if (cyclic)
             {
