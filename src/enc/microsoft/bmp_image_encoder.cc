@@ -11,7 +11,7 @@ void BmpImageEncoder::encode_impl(
 {
     const auto width = input_image.width();
     const auto height = input_image.height();
-    const auto stride = ((width * 3) + 3) & ~3;
+    const auto stride = ((width * 4) + 3) & ~3;
 
     // BITMAPFILEHEADER
     output_file.stream.write("BM"_b);
@@ -25,7 +25,7 @@ void BmpImageEncoder::encode_impl(
     output_file.stream.write_le<u32>(width);    // biWidth
     output_file.stream.write_le<u32>(-height);  // biHeight
     output_file.stream.write_le<u16>(1);        // biPlanes
-    output_file.stream.write_le<u16>(24);       // biBitCount
+    output_file.stream.write_le<u16>(32);       // biBitCount
     output_file.stream.write_le<u32>(0);        // biCompression
     output_file.stream.write_le<u32>(0);        // biSizeImage
     output_file.stream.write_le<u32>(0);        // biXPelsPerMeter
@@ -41,8 +41,9 @@ void BmpImageEncoder::encode_impl(
             output_file.stream.write<u8>(c.b);
             output_file.stream.write<u8>(c.g);
             output_file.stream.write<u8>(c.r);
+            output_file.stream.write<u8>(c.a);
         }
-        output_file.stream.write(bstr(stride - 3 * width));
+        output_file.stream.write(bstr(stride - 4 * width));
     }
 
     output_file.path.change_extension("bmp");
