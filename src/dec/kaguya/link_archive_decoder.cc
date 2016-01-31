@@ -59,4 +59,9 @@ std::unique_ptr<io::File> LinkArchiveDecoder::read_file_impl(
     return output_file;
 }
 
+std::vector<std::string> LinkArchiveDecoder::get_linked_formats() const
+{
+    return {"kaguya/compressed-bmp"};
+}
+
 static auto _ = dec::register_decoder<LinkArchiveDecoder>("kaguya/link");
