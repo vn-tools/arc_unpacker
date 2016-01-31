@@ -26,19 +26,7 @@ namespace
         size_t match_size;
     };
 
-    class BaseLzssWriter
-    {
-    public:
-        virtual void write_literal(const u8 literal) = 0;
-        virtual void write_repetition(
-            const size_t position_bits,
-            const size_t position,
-            const size_t size_bits,
-            const size_t size) = 0;
-        virtual bstr retrieve() = 0;
-    };
-
-    class BitwiseLzssWriter final : public BaseLzssWriter
+    class BitwiseLzssWriter final : public algo::pack::BaseLzssWriter
     {
     public:
         BitwiseLzssWriter();
@@ -54,7 +42,7 @@ namespace
         io::MsbBitStream bit_stream;
     };
 
-    class BytewiseLzssWriter final : public BaseLzssWriter
+    class BytewiseLzssWriter final : public algo::pack::BaseLzssWriter
     {
     public:
         BytewiseLzssWriter();
@@ -338,14 +326,14 @@ void LzssEncoderState::delete_node(int p)
     dad[p] = empty;
 }
 
-template<typename ConcreteLzssWriter> static bstr base_lzss_compress(
+bstr algo::pack::lzss_compress(
     io::BaseByteStream &input_stream,
-    const algo::pack::BitwiseLzssSettings &settings)
+    const algo::pack::BitwiseLzssSettings &settings,
+    algo::pack::BaseLzssWriter &writer)
 {
     const auto dict_size = 1 << settings.position_bits;
     const auto max_match_size
         = settings.min_match_size + (1 << settings.size_bits) - 1;
-    ConcreteLzssWriter writer;
     LzssEncoderState state(dict_size, max_match_size);
 
     size_t s = 0;
@@ -413,21 +401,22 @@ bstr algo::pack::lzss_compress(
     const bstr &input, const algo::pack::BitwiseLzssSettings &settings)
 {
     io::MemoryStream input_stream(input);
-    return lzss_compress(input_stream, settings);
+    return algo::pack::lzss_compress(input_stream, settings);
 }
 
 bstr algo::pack::lzss_compress(
     io::BaseByteStream &input_stream,
     const algo::pack::BitwiseLzssSettings &settings)
 {
-    return base_lzss_compress<BitwiseLzssWriter>(input_stream, settings);
+    BitwiseLzssWriter writer;
+    return algo::pack::lzss_compress(input_stream, settings, writer);
 }
 
 bstr algo::pack::lzss_compress(
     const bstr &input, const algo::pack::BytewiseLzssSettings &settings)
 {
     io::MemoryStream input_stream(input);
-    return lzss_compress(input_stream, settings);
+    return algo::pack::lzss_compress(input_stream, settings);
 }
 
 bstr algo::pack::lzss_compress(
@@ -439,6 +428,6 @@ bstr algo::pack::lzss_compress(
     bitwise_settings.position_bits = 12;
     bitwise_settings.size_bits = 4;
     bitwise_settings.initial_dictionary_pos = settings.initial_dictionary_pos;
-    return base_lzss_compress<BytewiseLzssWriter>(
-        input_stream, bitwise_settings);
+    BytewiseLzssWriter writer;
+    return algo::pack::lzss_compress(input_stream, bitwise_settings, writer);
 }

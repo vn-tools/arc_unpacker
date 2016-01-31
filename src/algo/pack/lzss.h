@@ -22,6 +22,18 @@ namespace pack {
         size_t initial_dictionary_pos;
     };
 
+    class BaseLzssWriter
+    {
+    public:
+        virtual void write_literal(const u8 literal) = 0;
+        virtual void write_repetition(
+            const size_t position_bits,
+            const size_t position,
+            const size_t size_bits,
+            const size_t size) = 0;
+        virtual bstr retrieve() = 0;
+    };
+
     bstr lzss_decompress(
         const bstr &input,
         const size_t output_size,
@@ -52,5 +64,9 @@ namespace pack {
         io::BaseByteStream &input_stream,
         const BytewiseLzssSettings &settings);
 
+    bstr lzss_compress(
+        io::BaseByteStream &input_stream,
+        const algo::pack::BitwiseLzssSettings &settings,
+        BaseLzssWriter &writer);
 
 } } }
