@@ -1,4 +1,5 @@
 #include "dec/kaguya/compressed_bmp_image_decoder.h"
+#include <array>
 #include "algo/ptr.h"
 #include "dec/microsoft/bmp_image_decoder.h"
 
