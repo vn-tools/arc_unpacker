@@ -33,7 +33,10 @@ const char *bstr::c_str() const
 std::string bstr::str(bool trim_to_zero) const
 {
     if (trim_to_zero)
-        return std::string(c_str());
+    {
+        const auto pos = std::find(v.begin(), v.end(), '\0');
+        return std::string(c_str(), pos != v.end() ? pos - v.begin() : size());
+    }
     return std::string(c_str(), size());
 }
 

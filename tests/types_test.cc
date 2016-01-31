@@ -88,6 +88,9 @@ TEST_CASE("bstr", "[core][types]")
         const bstr y("test\x00\x01", 6);
         REQUIRE(y.str(true).size() == 4);
         REQUIRE(y.str(true) == std::string("test", 4));
+        const bstr z("unterminated", 12);
+        REQUIRE(z.str(true).size() == 12);
+        REQUIRE(z.str(true) == std::string("unterminated", 12));
     }
 
     SECTION("Searching for substrings")
