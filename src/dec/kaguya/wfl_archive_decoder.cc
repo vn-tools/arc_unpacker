@@ -73,7 +73,9 @@ std::unique_ptr<io::File> WflArchiveDecoder::read_file_impl(
     const auto data_orig = entry->type == 1
         ? decompress(data_comp, entry->size_orig)
         : data_comp;
-    return std::make_unique<io::File>(entry->path, data_orig);
+    auto output_file = std::make_unique<io::File>(entry->path, data_orig);
+    output_file->guess_extension();
+    return output_file;
 }
 
 std::vector<std::string> WflArchiveDecoder::get_linked_formats() const
