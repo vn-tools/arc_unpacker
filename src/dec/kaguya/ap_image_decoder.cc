@@ -7,7 +7,11 @@ static const bstr magic = "AP"_b;
 
 bool ApImageDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.stream.read(magic.size()) == magic;
+    if (input_file.stream.read(magic.size()) != magic)
+        return false;
+    const auto width = input_file.stream.read_le<u32>();
+    const auto height = input_file.stream.read_le<u32>();
+    return width * height * 4 + 2 + 4 + 4 + 2 == input_file.stream.size();
 }
 
 res::Image ApImageDecoder::decode_impl(
