@@ -78,7 +78,7 @@ std::unique_ptr<io::File> WflArchiveDecoder::read_file_impl(
 
 std::vector<std::string> WflArchiveDecoder::get_linked_formats() const
 {
-    return {"kaguya/ap"};
+    return {"kaguya/ap", "kaguya/ao"};
 }
 
 static auto _ = dec::register_decoder<WflArchiveDecoder>("kaguya/wfl");
