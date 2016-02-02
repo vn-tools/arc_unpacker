@@ -1,6 +1,8 @@
 arc\_unpacker - the visual novel extractor
 ==========================================
 
+ [![Build Status](https://travis-ci.org/vn-tools/arc_unpacker.svg?branch=master)](https://travis-ci.org/vn-tools/arc_unpacker)
+
 `arc_unpacker` is a command line tool for extracting images, sounds, music and
 miscellaneous resources from visual novels (and some other Japanese games).
 
