@@ -1,3 +1,6 @@
+branches:
+    only:
+        - master
 language: c++
 compiler: clang
 sudo: true
