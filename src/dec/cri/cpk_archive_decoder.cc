@@ -409,7 +409,7 @@ std::unique_ptr<io::File> CpkArchiveDecoder::read_file_impl(
 
 std::vector<std::string> CpkArchiveDecoder::get_linked_formats() const
 {
-    return {"cri/hca", "playstation/gxt"};
+    return {"cri/hca", "playstation/gxt", "playstation/gtf"};
 }
 
 static auto _ = dec::register_decoder<CpkArchiveDecoder>("cri/cpk");
