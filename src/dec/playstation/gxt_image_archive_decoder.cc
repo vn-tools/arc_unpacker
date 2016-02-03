@@ -75,10 +75,9 @@ std::unique_ptr<dec::ArchiveMeta> GxtImageArchiveDecoder::read_meta_impl(
         entry->size = input_file.stream.read_le<u32>();
         entry->palette_index = input_file.stream.read_le<u32>();
         input_file.stream.skip(4);
-        entry->texture_type
-            = static_cast<TextureType>(input_file.stream.read_le<u32>());
+        entry->texture_type = input_file.stream.read_le<TextureType>();
         entry->texture_base_format
-            = static_cast<TextureBaseFormat>(input_file.stream.read_le<u32>());
+            = input_file.stream.read_le<TextureBaseFormat>();
         entry->width = input_file.stream.read_le<u16>();
         entry->height = input_file.stream.read_le<u16>();
         input_file.stream.skip(4);

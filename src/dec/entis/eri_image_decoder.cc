@@ -32,10 +32,8 @@ static image::EriHeader read_header(
 
     image::EriHeader header;
     header.version = input_stream.read_le<u32>();
-    header.transformation
-        = static_cast<common::Transformation>(input_stream.read_le<u32>());
-    header.architecture
-        = static_cast<common::Architecture>(input_stream.read_le<u32>());
+    header.transformation = input_stream.read_le<common::Transformation>();
+    header.architecture = input_stream.read_le<common::Architecture>();
 
     const auto tmp = input_stream.read_le<u32>();
     header.format_type  = static_cast<image::EriFormatType>(tmp & 0xFFFFFF);

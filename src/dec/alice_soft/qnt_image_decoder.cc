@@ -11,7 +11,7 @@ static const bstr magic = "QNT\x00"_b;
 
 namespace
 {
-    enum Version
+    enum class Version : u32
     {
         Version0,
         Version1,
@@ -121,10 +121,10 @@ res::Image QntImageDecoder::decode_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.skip(magic.size());
-    Version version = static_cast<Version>(input_file.stream.read_le<u32>());
+    Version version = input_file.stream.read_le<Version>();
 
-    if (version != Version2)
-        throw err::UnsupportedVersionError(version);
+    if (version != Version::Version2)
+        throw err::UnsupportedVersionError(static_cast<int>(version));
 
     input_file.stream.skip(4 * 3);
     auto width = input_file.stream.read_le<u32>();

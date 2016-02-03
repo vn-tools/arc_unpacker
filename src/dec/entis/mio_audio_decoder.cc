@@ -25,10 +25,8 @@ static audio::MioHeader read_header(
 
     audio::MioHeader header;
     header.version = input_stream.read_le<u32>();
-    header.transformation
-        = static_cast<common::Transformation>(input_stream.read_le<u32>());
-    header.architecture
-        = static_cast<common::Architecture>(input_stream.read_le<u32>());
+    header.transformation = input_stream.read_le<common::Transformation>();
+    header.architecture = input_stream.read_le<common::Architecture>();
 
     header.channel_count   = input_stream.read_le<u32>();
     header.sample_rate     = input_stream.read_le<u32>();
