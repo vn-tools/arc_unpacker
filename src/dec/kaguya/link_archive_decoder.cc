@@ -17,7 +17,15 @@ namespace
 
 bool LinkArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.stream.seek(0).read(magic.size()) == magic;
+    if (input_file.stream.seek(0).read(magic.size()) != magic)
+        return false;
+    const auto file_count = input_file.stream.read_le<u32>();
+    const auto file_names_size = input_file.stream.read_le<u32>();
+    input_file.stream.skip(file_names_size);
+    input_file.stream.skip(8 * (file_count - 1));
+    const auto last_offset = input_file.stream.read_le<u32>();
+    const auto last_size = input_file.stream.read_le<u32>();
+    return last_offset + last_size == input_file.stream.size();
 }
 
 std::unique_ptr<dec::ArchiveMeta> LinkArchiveDecoder::read_meta_impl(
