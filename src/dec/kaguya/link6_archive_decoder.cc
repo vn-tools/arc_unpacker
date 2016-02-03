@@ -69,7 +69,7 @@ std::unique_ptr<io::File> Link6ArchiveDecoder::read_file_impl(
 
 std::vector<std::string> Link6ArchiveDecoder::get_linked_formats() const
 {
-    return {"kaguya/ap", "kaguya/ap0"};
+    return {"kaguya/ap", "kaguya/ap0", "kaguya/ap2"};
 }
 
 static auto _ = dec::register_decoder<Link6ArchiveDecoder>("kaguya/link6");
