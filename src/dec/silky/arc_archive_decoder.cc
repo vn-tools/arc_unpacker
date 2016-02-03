@@ -19,7 +19,16 @@ namespace
 
 bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.path.has_extension("arc");
+    if (!input_file.path.has_extension("arc"))
+        return false;
+    Logger dummy_logger;
+    dummy_logger.mute();
+    const auto meta = read_meta_impl(dummy_logger, input_file);
+    if (!meta->entries.size())
+        return false;
+    const auto &last_entry
+        = static_cast<const ArchiveEntryImpl&>(*meta->entries.back());
+    return last_entry.offset + last_entry.size_comp == input_file.stream.size();
 }
 
 std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
