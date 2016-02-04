@@ -61,6 +61,14 @@ Xp3ArchiveDecoder::Xp3ArchiveDecoder()
         }));
 
     plugin_manager.add(
+        "orcsoft", "Oku-sama wa Moto Yariman -Besluted-",
+        create_simple_plugin([](bstr &data, u32 key)
+        {
+            for (const auto i : algo::range(0, data.size()))
+                data[i] ^= (key + 1) ^ 0xFF;
+        }));
+
+    plugin_manager.add(
         "comyu", "Comyu - Kuroi Ryuu to Yasashii Oukoku",
         create_cxdec_plugin(
             0x1A3, 0x0B6, {0,1,2}, {0,7,5,6,3,1,4,2}, {4,3,2,1,5,0}));
