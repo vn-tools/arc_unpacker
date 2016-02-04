@@ -1,4 +1,5 @@
 #include "dec/kirikiri/xp3_archive_decoder.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "dec/kirikiri/cxdec.h"
 
@@ -66,6 +67,21 @@ Xp3ArchiveDecoder::Xp3ArchiveDecoder()
         {
             for (const auto i : algo::range(0, data.size()))
                 data[i] ^= (key + 1) ^ 0xFF;
+        }));
+
+    plugin_manager.add(
+        "dieselmine", "Tairyou Chuunyuu!",
+        create_simple_plugin([](bstr &data, u32 key)
+        {
+            auto data_ptr = algo::make_ptr(data);
+            while (data_ptr.left() && data_ptr.pos() < 0x7B)
+                *data_ptr++ ^= 21 * key;
+            while (data_ptr.left() && data_ptr.pos() < 0xF6)
+                *data_ptr++ -= 32 * key;
+            while (data_ptr.left() && data_ptr.pos() < 0x171)
+                *data_ptr++ ^= 43 * key;
+            while (data_ptr.left())
+                *data_ptr++ -= 54 * key;
         }));
 
     plugin_manager.add(
