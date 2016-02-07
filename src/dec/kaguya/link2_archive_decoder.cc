@@ -72,7 +72,7 @@ std::unique_ptr<io::File> Link2ArchiveDecoder::read_file_impl(
 
 std::vector<std::string> Link2ArchiveDecoder::get_linked_formats() const
 {
-    return {"kaguya/ap", "microsoft/bmp"};
+    return {"kaguya/ap", "kaguya/raw-mask", "microsoft/bmp"};
 }
 
 static auto _ = dec::register_decoder<Link2ArchiveDecoder>("kaguya/link2");
