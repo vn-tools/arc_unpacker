@@ -74,12 +74,12 @@ namespace au {
             definitions.push_back(std::move(def));
         }
 
-        inline algo::any &get_impl() const
+        inline algo::any &get_impl(const std::string &check) const
         {
             if (definitions.empty())
                 throw std::logic_error("No plugins were defined!");
             for (const auto &def : definitions)
-                if (def->name == used_value_name)
+                if (def->name == check)
                     return def->value;
             throw err::UsageError("No plugin was selected.");
         }
@@ -111,7 +111,13 @@ namespace au {
 
         inline T get() const
         {
-            const algo::any &ret = get_impl();
+            const algo::any &ret = get_impl(used_value_name);
+            return ret.template get<T>();
+        }
+
+        inline T get(const std::string &name) const
+        {
+            const algo::any &ret = get_impl(name);
             return ret.template get<T>();
         }
 
