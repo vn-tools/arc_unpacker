@@ -174,7 +174,7 @@ namespace algo {
         {
             if (cyclic)
                 return std::numeric_limits<size_t>::max();
-            return end_ptr - cur_ptr;
+            return std::max<int>(0, end_ptr - cur_ptr);
         }
 
         constexpr size_t size() const
