@@ -87,6 +87,12 @@ void tests::compare_images(
 }
 
 void tests::compare_images(
+    io::File &actual_file, const res::Image &expected_image)
+{
+    tests::compare_images(image_from_file(actual_file), expected_image);
+}
+
+void tests::compare_images(
     io::File &actual_file,
     io::File &expected_file,
     const bool compare_file_paths)
@@ -99,16 +105,28 @@ void tests::compare_images(
 }
 
 void tests::compare_images(
-    const std::vector<std::shared_ptr<io::File>> &actual_images,
-    const std::vector<std::shared_ptr<io::File>> &expected_images,
+    const std::vector<std::shared_ptr<io::File>> &actual_files,
+    const std::vector<std::shared_ptr<io::File>> &expected_files,
     const bool compare_file_paths)
 {
-    REQUIRE(expected_images.size() == actual_images.size());
-    for (const auto i : algo::range(expected_images.size()))
+    REQUIRE(expected_files.size() == actual_files.size());
+    for (const auto i : algo::range(expected_files.size()))
     {
         INFO(algo::format("Images at index %d differ", i));
         tests::compare_images(
-            *actual_images[i], *expected_images[i], compare_file_paths);
+            *actual_files[i], *expected_files[i], compare_file_paths);
+    }
+}
+
+void tests::compare_images(
+    const std::vector<std::shared_ptr<io::File>> &actual_files,
+    const std::vector<res::Image> &expected_images)
+{
+    REQUIRE(actual_files.size() == expected_images.size());
+    for (const auto i : algo::range(expected_images.size()))
+    {
+        INFO(algo::format("Images at index %d differ", i));
+        tests::compare_images(*actual_files[i], expected_images[i]);
     }
 }
 

@@ -20,13 +20,21 @@ namespace tests {
 
     void compare_images(
         io::File &actual_file,
+        const res::Image &expected_image);
+
+    void compare_images(
+        io::File &actual_file,
         io::File &expected_file,
         const bool compare_file_paths);
 
     void compare_images(
-        const std::vector<std::shared_ptr<io::File>> &actual_images,
-        const std::vector<std::shared_ptr<io::File>> &expected_images,
+        const std::vector<std::shared_ptr<io::File>> &actual_files,
+        const std::vector<std::shared_ptr<io::File>> &expected_files,
         const bool compare_file_paths);
+
+    void compare_images(
+        const std::vector<std::shared_ptr<io::File>> &actual_files,
+        const std::vector<res::Image> &expected_images);
 
     void dump_image(const res::Image &input_image, const io::path &path);
 
