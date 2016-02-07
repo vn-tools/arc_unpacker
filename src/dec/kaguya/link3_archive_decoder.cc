@@ -66,7 +66,14 @@ std::unique_ptr<io::File> Link3ArchiveDecoder::read_file_impl(
 
 std::vector<std::string> Link3ArchiveDecoder::get_linked_formats() const
 {
-    return {"kaguya/ap", "kaguya/ap2", "kaguya/bmr", "microsoft/bmp"};
+    return
+    {
+        "kaguya/ap",
+        "kaguya/ap2",
+        "kaguya/bmr",
+        "kaguya/anm",
+        "microsoft/bmp"
+    };
 }
 
 static auto _ = dec::register_decoder<Link3ArchiveDecoder>("kaguya/link3");
