@@ -1,6 +1,7 @@
 #include "dec/kaguya/lin2_archive_decoder.h"
 #include "algo/binary.h"
 #include "algo/range.h"
+#include "dec/kaguya/common/custom_lzss.h"
 
 using namespace au;
 using namespace au::dec::kaguya;
@@ -13,6 +14,7 @@ namespace
     {
         size_t offset;
         size_t size;
+        u16 type;
     };
 }
 
@@ -35,7 +37,7 @@ std::unique_ptr<dec::ArchiveMeta> Lin2ArchiveDecoder::read_meta_impl(
             = algo::unxor(input_file.stream.read(name_size), 0xFF).c_str();
         entry->offset = input_file.stream.read_le<u32>();
         entry->size = input_file.stream.read_le<u32>();
-        input_file.stream.skip(2);
+        entry->type = input_file.stream.read_le<u16>();
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -48,16 +50,29 @@ std::unique_ptr<io::File> Lin2ArchiveDecoder::read_file_impl(
     const dec::ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    auto output_file = std::make_unique<io::File>(
-        entry->path,
-        input_file.stream.seek(entry->offset).read(entry->size));
+    input_file.stream.seek(entry->offset);
+
+    bstr data;
+    if (entry->type == 1)
+    {
+        const auto size_orig = input_file.stream.read_le<u32>();
+        data = input_file.stream.read(entry->size - 4);
+        data = common::custom_lzss_decompress(data, size_orig);
+    }
+    else
+    {
+        data = input_file.stream.read(entry->size);
+    }
+
+    std::unique_ptr<io::File> output_file = std::make_unique<io::File>(
+        entry->path, data);
     output_file->guess_extension();
     return output_file;
 }
 
 std::vector<std::string> Lin2ArchiveDecoder::get_linked_formats() const
 {
-    return {"kaguya/compressed-bmp"};
+    return {"microsoft/bmp"};
 }
 
 static auto _ = dec::register_decoder<Lin2ArchiveDecoder>("kaguya/lin2");

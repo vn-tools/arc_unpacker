@@ -1,5 +1,6 @@
 #include "dec/kaguya/link_archive_decoder.h"
 #include "algo/range.h"
+#include "dec/kaguya/common/custom_lzss.h"
 
 using namespace au;
 using namespace au::dec::kaguya;
@@ -60,16 +61,29 @@ std::unique_ptr<io::File> LinkArchiveDecoder::read_file_impl(
     const dec::ArchiveEntry &e) const
 {
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    auto output_file = std::make_unique<io::File>(
-        entry->path,
-        input_file.stream.seek(entry->offset).read(entry->size));
+
+    bstr data;
+    if (entry->path.has_extension("cg_")
+        || entry->path.has_extension("bg_")
+        || entry->path.has_extension("sp_"))
+    {
+        const auto size_orig = input_file.stream.read_le<u32>();
+        data = input_file.stream.read(entry->size - 4);
+        data = common::custom_lzss_decompress(data, size_orig);
+    }
+    else
+    {
+        data = input_file.stream.read(entry->size);
+    }
+
+    auto output_file = std::make_unique<io::File>(entry->path, data);
     output_file->guess_extension();
     return output_file;
 }
 
 std::vector<std::string> LinkArchiveDecoder::get_linked_formats() const
 {
-    return {"kaguya/compressed-bmp"};
+    return {"microsoft/bmp"};
 }
 
 static auto _ = dec::register_decoder<LinkArchiveDecoder>("kaguya/link");

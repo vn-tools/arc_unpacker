@@ -1,12 +1,12 @@
-#include "dec/kaguya/compressed_bmp_image_decoder.h"
+#include "dec/kaguya/common/custom_lzss.h"
 #include <array>
 #include "algo/ptr.h"
-#include "dec/microsoft/bmp_image_decoder.h"
 
 using namespace au;
 using namespace au::dec::kaguya;
 
-static bstr custom_lzss_decompress(const bstr &input, const size_t size_orig)
+bstr common::custom_lzss_decompress(
+    const bstr &input, const size_t size_orig)
 {
     std::array<u8, 256> dict = {0};
     u8 aux_byte = 0;
@@ -55,22 +55,3 @@ static bstr custom_lzss_decompress(const bstr &input, const size_t size_orig)
     }
     return output;
 }
-
-bool CompressedBmpImageDecoder::is_recognized_impl(io::File &input_file) const
-{
-    return input_file.stream.seek(5).read(2) == "BM"_b;
-}
-
-res::Image CompressedBmpImageDecoder::decode_impl(
-    const Logger &logger, io::File &input_file) const
-{
-    input_file.stream.seek(0);
-    const auto size_orig = input_file.stream.read_le<u32>();
-    const auto data_comp = input_file.stream.read_to_eof();
-    const auto data_orig = custom_lzss_decompress(data_comp, size_orig);
-    const auto pseudo_file = std::make_unique<io::File>("dummy.bmp", data_orig);
-    return dec::microsoft::BmpImageDecoder().decode(logger, *pseudo_file);
-}
-
-static auto _
-    = dec::register_decoder<CompressedBmpImageDecoder>("kaguya/compressed-bmp");

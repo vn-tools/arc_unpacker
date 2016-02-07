@@ -1,11 +1,101 @@
 #include "dec/kaguya/lin2_archive_decoder.h"
 #include "algo/binary.h"
+#include "algo/pack/lzss.h"
+#include "io/memory_stream.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
 #include "test_support/file_support.h"
 
 using namespace au;
 using namespace au::dec::kaguya;
+
+namespace
+{
+    class CustomLzssWriter final : public algo::pack::BaseLzssWriter
+    {
+    public:
+        CustomLzssWriter(const size_t reserve_size);
+        void write_literal(const u8 literal) override;
+        void write_repetition(
+            const size_t position_bits,
+            const size_t position,
+            const size_t size_bits,
+            const size_t size) override;
+        bstr retrieve() override;
+
+    private:
+        size_t control_count, control_pos;
+        size_t repeat_count, repeat_pos;
+        bstr output;
+    };
+}
+
+CustomLzssWriter::CustomLzssWriter(const size_t reserve_size)
+    : control_count(0), repeat_count(0)
+{
+    output.reserve(reserve_size);
+}
+
+void CustomLzssWriter::write_literal(const u8 literal)
+{
+    if (control_count == 0)
+    {
+        output += "\x00"_b;
+        control_pos = output.size() - 1;
+        control_count = 8;
+    }
+    output[control_pos] <<= 1;
+    output[control_pos] |= 1;
+    control_count--;
+    output += literal;
+}
+
+void CustomLzssWriter::write_repetition(
+    const size_t position_bits,
+    const size_t position,
+    const size_t size_bits,
+    const size_t size)
+{
+    if (control_count == 0)
+    {
+        output += "\x00"_b;
+        control_pos = output.size() - 1;
+        control_count = 8;
+    }
+    output[control_pos] <<= 1;
+    control_count--;
+    output += static_cast<u8>(position);
+    if (repeat_count == 0)
+    {
+        output += "\x00"_b;
+        repeat_pos = output.size() - 1;
+        repeat_count = 8;
+    }
+    output[repeat_pos] >>= 4;
+    output[repeat_pos] |= size << 4;
+    repeat_count -= 4;
+}
+
+bstr CustomLzssWriter::retrieve()
+{
+    if (control_count)
+        output[control_pos] <<= control_count;
+    if (repeat_count)
+        output[repeat_pos] <<= repeat_count;
+    return output;
+}
+
+static bstr compress(const bstr &input)
+{
+    algo::pack::BitwiseLzssSettings settings;
+    settings.min_match_size = 2;
+    settings.position_bits = 8;
+    settings.size_bits = 4;
+    settings.initial_dictionary_pos = 0xEF;
+    CustomLzssWriter writer(input.size());
+    io::MemoryStream input_stream(input);
+    return algo::pack::lzss_compress(input_stream, settings, writer);
+}
 
 TEST_CASE("Atelier Kaguya LIN2 archives", "[dec]")
 {
@@ -21,25 +111,58 @@ TEST_CASE("Atelier Kaguya LIN2 archives", "[dec]")
         table_size += 2 + file->path.str().size() + 1 + 10;
     const auto data_offset = header_size + table_size;
 
-    io::File input_file;
-    input_file.stream.write("LIN2"_b);
-    input_file.stream.write_le<u32>(expected_files.size());
-    auto offset = data_offset;
-    for (const auto &file : expected_files)
+    SECTION("Uncompressed")
     {
-        input_file.stream.write_le<u16>(file->path.str().size() + 1);
-        input_file.stream.write(algo::unxor(file->path.str(), 0xFF));
-        input_file.stream.write<u8>(0xFF);
-        input_file.stream.write_le<u32>(offset);
-        input_file.stream.write_le<u32>(file->stream.size());
-        input_file.stream.write("??"_b);
-        offset += file->stream.size();
-    }
-    REQUIRE(input_file.stream.tell() == data_offset);
-    for (const auto &file : expected_files)
-        input_file.stream.write(file->stream.seek(0).read_to_eof());
+        io::File input_file;
+        input_file.stream.write("LIN2"_b);
+        input_file.stream.write_le<u32>(expected_files.size());
+        auto offset = data_offset;
+        for (const auto &file : expected_files)
+        {
+            input_file.stream.write_le<u16>(file->path.str().size() + 1);
+            input_file.stream.write(algo::unxor(file->path.str(), 0xFF));
+            input_file.stream.write<u8>(0xFF);
+            input_file.stream.write_le<u32>(offset);
+            input_file.stream.write_le<u32>(file->stream.size());
+            input_file.stream.write_le<u16>(0);
+            offset += file->stream.size();
+        }
+        REQUIRE(input_file.stream.tell() == data_offset);
+        for (const auto &file : expected_files)
+            input_file.stream.write(file->stream.seek(0).read_to_eof());
 
-    const auto decoder = Lin2ArchiveDecoder();
-    const auto actual_files = tests::unpack(decoder, input_file);
-    tests::compare_files(actual_files, expected_files, true);
+        const auto decoder = Lin2ArchiveDecoder();
+        const auto actual_files = tests::unpack(decoder, input_file);
+        tests::compare_files(actual_files, expected_files, true);
+    }
+
+    SECTION("Compressed")
+    {
+        io::File input_file;
+        input_file.stream.write("LIN2"_b);
+        input_file.stream.write_le<u32>(expected_files.size());
+        auto offset = data_offset;
+        for (const auto &file : expected_files)
+        {
+            const auto data = compress(file->stream.seek(0).read_to_eof());
+            input_file.stream.write_le<u16>(file->path.str().size() + 1);
+            input_file.stream.write(algo::unxor(file->path.str(), 0xFF));
+            input_file.stream.write<u8>(0xFF);
+            input_file.stream.write_le<u32>(offset);
+            input_file.stream.write_le<u32>(data.size() + 4);
+            input_file.stream.write_le<u16>(1);
+            offset += data.size() + 4;
+        }
+        REQUIRE(input_file.stream.tell() == data_offset);
+        for (const auto &file : expected_files)
+        {
+            const auto data = compress(file->stream.seek(0).read_to_eof());
+            input_file.stream.write_le<u32>(file->stream.size());
+            input_file.stream.write(data);
+        }
+
+        const auto decoder = Lin2ArchiveDecoder();
+        const auto actual_files = tests::unpack(decoder, input_file);
+        tests::compare_files(actual_files, expected_files, true);
+    }
 }
