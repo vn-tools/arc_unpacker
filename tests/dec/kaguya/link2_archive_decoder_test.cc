@@ -1,4 +1,4 @@
-#include "dec/kaguya/lin2_archive_decoder.h"
+#include "dec/kaguya/link2_archive_decoder.h"
 #include "algo/binary.h"
 #include "algo/pack/lzss.h"
 #include "io/memory_stream.h"
@@ -97,7 +97,7 @@ static bstr compress(const bstr &input)
     return algo::pack::lzss_compress(input_stream, settings, writer);
 }
 
-TEST_CASE("Atelier Kaguya LIN2 archives", "[dec]")
+TEST_CASE("Atelier Kaguya LINK2 archives", "[dec]")
 {
     const std::vector<std::shared_ptr<io::File>> &expected_files =
     {
@@ -131,7 +131,7 @@ TEST_CASE("Atelier Kaguya LIN2 archives", "[dec]")
         for (const auto &file : expected_files)
             input_file.stream.write(file->stream.seek(0).read_to_eof());
 
-        const auto decoder = Lin2ArchiveDecoder();
+        const auto decoder = Link2ArchiveDecoder();
         const auto actual_files = tests::unpack(decoder, input_file);
         tests::compare_files(actual_files, expected_files, true);
     }
@@ -161,7 +161,7 @@ TEST_CASE("Atelier Kaguya LIN2 archives", "[dec]")
             input_file.stream.write(data);
         }
 
-        const auto decoder = Lin2ArchiveDecoder();
+        const auto decoder = Link2ArchiveDecoder();
         const auto actual_files = tests::unpack(decoder, input_file);
         tests::compare_files(actual_files, expected_files, true);
     }

@@ -6,7 +6,7 @@ namespace au {
 namespace dec {
 namespace kaguya {
 
-    class Lin2ArchiveDecoder final : public BaseArchiveDecoder
+    class Link2ArchiveDecoder final : public BaseArchiveDecoder
     {
     public:
         std::vector<std::string> get_linked_formats() const override;
