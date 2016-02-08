@@ -69,6 +69,7 @@ std::vector<std::string> Link3ArchiveDecoder::get_linked_formats() const
     return
     {
         "kaguya/ap",
+        "kaguya/ap0",
         "kaguya/ap2",
         "kaguya/bmr",
         "kaguya/anm",
