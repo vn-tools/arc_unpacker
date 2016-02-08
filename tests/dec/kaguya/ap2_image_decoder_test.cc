@@ -18,7 +18,17 @@ TEST_CASE("Kaguya AP2 images", "[dec]")
     input_file.stream.write_le<u32>(0);
     input_file.stream.write_le<u32>(input_image.width());
     input_file.stream.write_le<u32>(input_image.height());
-    input_file.stream.write_le<u32>(24);
+
+    SECTION("Fake 24-bit")
+    {
+        input_file.stream.write_le<u32>(24);
+    }
+
+    SECTION("32-bit")
+    {
+        input_file.stream.write_le<u32>(32);
+    }
+
     for (const auto y : algo::range(input_image.height() - 1, -1, -1))
     for (const auto x : algo::range(input_image.width()))
     {

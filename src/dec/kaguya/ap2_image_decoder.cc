@@ -20,7 +20,7 @@ res::Image Ap2ImageDecoder::decode_impl(
     const auto width = input_file.stream.read_le<u32>();
     const auto height = input_file.stream.read_le<u32>();
     const auto depth = input_file.stream.read_le<u32>();
-    if (depth != 24)
+    if (depth != 24 && depth != 32)
         throw err::UnsupportedBitDepthError(depth);
     const auto data = input_file.stream.read_to_eof();
     return res::Image(width, height, data, res::PixelFormat::BGRA8888)
