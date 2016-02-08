@@ -23,13 +23,17 @@ namespace
     };
 }
 
-static bstr decrypt(
+static void decrypt(
     const LibPlugin &key,
     io::BaseByteStream &input_stream,
+    io::BaseByteStream &output_stream,
     const size_t size)
 {
     if (key.empty())
-        return input_stream.read(size);
+    {
+        output_stream.write(input_stream.read(size));
+        return;
+    }
 
     algo::crypt::Camellia camellia(key);
 
@@ -37,9 +41,9 @@ static bstr decrypt(
     const auto offset_start = input_stream.tell() & ~0xF;
     const auto aligned_size = (offset_pad + size + 0xF) & ~0xF;
     const auto block_count = (aligned_size + 0xF) / 0x10;
+    if (block_count == 0)
+        return;
 
-    io::MemoryStream output_stream;
-    output_stream.reserve(size);
     input_stream.seek(input_stream.tell() - offset_pad);
     for (const auto i : algo::range(block_count))
     {
@@ -53,8 +57,25 @@ static bstr decrypt(
             output_block);
         for (const auto j : algo::range(4))
             output_stream.write_be<u32>(output_block[j]);
+
+        if (i == 0)
+        {
+            const auto first_block = output_stream.seek(0).read_to_eof();
+            const auto block_part = first_block.substr(offset_pad);
+            output_stream.truncate(0);
+            output_stream.write(block_part);
+        }
     }
-    return output_stream.seek(offset_pad).read(size);
+}
+
+static bstr decrypt(
+    const LibPlugin &key,
+    io::BaseByteStream &input_stream,
+    const size_t size)
+{
+    io::MemoryStream output_stream;
+    decrypt(key, input_stream, output_stream, size);
+    return output_stream.seek(0).read(size);
 }
 
 bool LibuArchiveDecoder::is_recognized_impl(io::File &input_file) const
@@ -111,9 +132,9 @@ std::unique_ptr<io::File> LibuArchiveDecoder::read_file_impl(
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
     input_file.stream.seek(entry->offset);
-    return std::make_unique<io::File>(
-        entry->path,
-        decrypt(meta->plugin, input_file.stream, entry->size));
+    auto output_file = std::make_unique<io::File>(entry->path, ""_b);
+    decrypt(meta->plugin, input_file.stream, output_file->stream, entry->size);
+    return output_file;
 }
 
 std::vector<std::string> LibuArchiveDecoder::get_linked_formats() const
