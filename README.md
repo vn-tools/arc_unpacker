@@ -53,6 +53,17 @@ Caveats:
   little
   guide](http://www.codejacked.com/a-beginners-guide-to-the-command-prompt/).
 
+- **I get `std::bad_alloc`, what gives?**  
+  One option is that an archive contains a very large file, which causes
+  `arc_unpacker` to run out of RAM while it tries to decode that file. To
+  circumvent this (short of buying more memory), you can try running
+  `arc_unpacker` with `-t=1 --no-recurse` which should reduce its memory
+  footprint. Since there only were a few such archives spotted, no special
+  mechanism was developed to work around this issue, although this might change
+  in the future. Other options include corrupt game files or a specific kind of
+  bug in `arc_unpacker`'s decoders, but both are unlikely. If you are unable to
+  unpack the files, do not hesitate to report the issue to the issue tracker.
+
 - **What's the license?**  
   All the code is licensed under
   [`LICENSE.md`](https://github.com/vn-tools/arc_unpacker/blob/master/LICENSE.md)
