@@ -48,6 +48,26 @@ bstr BaseByteStream::read_line()
     return output;
 }
 
+BaseByteStream &BaseByteStream::write(io::BaseByteStream &other_stream)
+{
+    return write(other_stream, other_stream.left());
+}
+
+BaseByteStream &BaseByteStream::write(
+    io::BaseByteStream &other_stream, const size_t size)
+{
+    const auto buffer_size = 16 * 1024;
+    size_t left = size;
+    for (const auto i : algo::range(0, size, buffer_size))
+    {
+        const auto bytes_to_transcribe
+            = std::min<size_t>(buffer_size, left);
+        write(other_stream.read(bytes_to_transcribe));
+        left -= bytes_to_transcribe;
+    }
+    return *this;
+}
+
 BaseByteStream &BaseByteStream::write_zero_padded(
     const bstr &bytes, const size_t target_size)
 {

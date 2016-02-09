@@ -95,6 +95,11 @@ namespace io {
             return write(bstr(bytes));
         }
 
+        io::BaseByteStream &write(io::BaseByteStream &other_stream);
+
+        io::BaseByteStream &write(
+            io::BaseByteStream &other_stream, const size_t size);
+
         io::BaseByteStream &write_zero_padded(
             const bstr &bytes, const size_t target_size);
 
