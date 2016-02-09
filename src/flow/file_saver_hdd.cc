@@ -58,7 +58,8 @@ io::path FileSaverHdd::save(std::shared_ptr<io::File> file) const
     const auto full_path = p->make_path_unique(p->output_dir / file->path);
     io::create_directories(full_path.parent());
     io::FileStream output_stream(full_path, io::FileMode::Write);
-    output_stream.write(file->stream.seek(0).read_to_eof());
+    file->stream.seek(0);
+    output_stream.write(file->stream);
     ++p->saved_file_count;
     return full_path;
 }
