@@ -83,7 +83,7 @@ size_t MemoryStream::size() const
     return buffer->size();
 }
 
-void MemoryStream::truncate_impl(const size_t new_size)
+void MemoryStream::resize_impl(const size_t new_size)
 {
     buffer->resize(new_size);
     if (buffer_pos > new_size)

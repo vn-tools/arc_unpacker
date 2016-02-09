@@ -30,6 +30,6 @@ std::unique_ptr<io::File> rgs::read_file_impl(
         key = rgs::advance_key(key);
         output_file->stream.write_le<u32>(chunk);
     }
-    output_file->stream.truncate(entry.size);
+    output_file->stream.resize(entry.size);
     return output_file;
 }

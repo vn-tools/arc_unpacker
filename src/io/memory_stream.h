@@ -29,7 +29,7 @@ namespace io {
         void read_impl(void *destination, const size_t size) override;
         void write_impl(const void *source, const size_t size) override;
         void seek_impl(const size_t offset) override;
-        void truncate_impl(const size_t new_size) override;
+        void resize_impl(const size_t new_size) override;
 
     private:
         MemoryStream(const std::shared_ptr<bstr> buffer);

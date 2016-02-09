@@ -76,7 +76,7 @@ size_t FileStream::size() const
     return size;
 }
 
-void FileStream::truncate_impl(const size_t new_size)
+void FileStream::resize_impl(const size_t new_size)
 {
     if (new_size == size())
         return;

@@ -36,7 +36,7 @@ BaseStream &BaseBitStream::seek(const size_t new_pos)
     return *this;
 }
 
-BaseStream &BaseBitStream::truncate(const size_t new_size)
+BaseStream &BaseBitStream::resize(const size_t new_size)
 {
     throw err::NotSupportedError("Not implemented");
 }

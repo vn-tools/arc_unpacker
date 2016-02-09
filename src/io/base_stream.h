@@ -16,7 +16,7 @@ namespace io {
         virtual size_t size() const = 0;
         virtual size_t tell() const = 0;
         virtual BaseStream &seek(const size_t offset) = 0;
-        virtual BaseStream &truncate(const size_t new_size) = 0;
+        virtual BaseStream &resize(const size_t new_size) = 0;
 
         // virtual allows changing return type in method chaining
         virtual BaseStream &skip(const int offset);

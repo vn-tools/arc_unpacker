@@ -17,7 +17,7 @@ namespace io {
         size_t tell() const override;
         size_t size() const override;
         BaseStream &seek(const size_t offset) override;
-        BaseStream &truncate(const size_t new_size) override;
+        BaseStream &resize(const size_t new_size) override;
 
         u32 read_gamma(const bool stop_mark);
         virtual u32 read(const size_t n) = 0;

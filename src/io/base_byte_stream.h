@@ -27,9 +27,9 @@ namespace io {
             return *this;
         }
 
-        BaseByteStream &truncate(const size_t new_size) override
+        BaseByteStream &resize(const size_t new_size) override
         {
-            truncate_impl(new_size);
+            resize_impl(new_size);
             return *this;
         }
 
@@ -138,7 +138,7 @@ namespace io {
         virtual void read_impl(void *input, const size_t size) = 0;
         virtual void write_impl(const void *str, const size_t size) = 0;
         virtual void seek_impl(const size_t offset) = 0;
-        virtual void truncate_impl(const size_t new_size) = 0;
+        virtual void resize_impl(const size_t new_size) = 0;
     };
 
 } }
