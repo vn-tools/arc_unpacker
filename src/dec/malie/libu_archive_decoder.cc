@@ -31,7 +31,7 @@ static void decrypt(
 {
     if (key.empty())
     {
-        output_stream.write(input_stream.read(size));
+        output_stream.write(input_stream, size);
         return;
     }
 
