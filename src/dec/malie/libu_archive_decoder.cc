@@ -64,6 +64,7 @@ static void decrypt(
             const auto block_part = first_block.substr(offset_pad);
             output_stream.resize(0);
             output_stream.write(block_part);
+            output_stream.resize(size);
         }
     }
 }
