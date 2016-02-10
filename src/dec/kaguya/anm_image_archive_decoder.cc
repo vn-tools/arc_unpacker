@@ -3,7 +3,6 @@
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
 #include "io/memory_stream.h"
-#include "virtual_file_system.h"
 
 using namespace au;
 using namespace au::dec::kaguya;

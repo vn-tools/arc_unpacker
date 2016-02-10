@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dec/base_image_decoder.h"
+#include "types.h"
 
 namespace au {
 namespace dec {
