@@ -25,6 +25,12 @@ void VirtualFileSystem::enable()
     enabled = true;
 }
 
+void VirtualFileSystem::clear()
+{
+    directories.clear();
+    factories.clear();
+}
+
 void VirtualFileSystem::register_file(
     const io::path &path,
     const std::function<std::unique_ptr<io::File>()> factory)

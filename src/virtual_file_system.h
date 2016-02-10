@@ -13,6 +13,7 @@ namespace au {
         static void enable();
         static void disable();
 
+        static void clear();
         static void register_file(
             const io::path &path,
             const std::function<std::unique_ptr<io::File>()> factory);
