@@ -104,6 +104,7 @@ std::vector<std::string> Link4ArchiveDecoder::get_linked_formats() const
         "kaguya/ap",
         "kaguya/ap0",
         "kaguya/ap2",
+        "kaguya/ap3",
         "kaguya/anm",
         "kaguya/bmr",
         "microsoft/bmp"
