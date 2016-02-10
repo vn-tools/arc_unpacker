@@ -1,4 +1,5 @@
 ﻿#include "dec/kaguya/common/params_encryption.h"
+#include "algo/binary.h"
 #include "algo/locale.h"
 #include "algo/range.h"
 #include "err.h"
@@ -6,7 +7,7 @@
 using namespace au;
 using namespace au::dec::kaguya;
 
-bstr common::get_key_from_params_file(io::BaseByteStream &input_stream)
+common::Params common::parse_params_file(io::BaseByteStream &input_stream)
 {
     const auto scr_magic = input_stream.seek(0).read(15);
     if (scr_magic != "[SCR-PARAMS]v02"_b)
@@ -56,15 +57,68 @@ bstr common::get_key_from_params_file(io::BaseByteStream &input_stream)
     auto key_size = input_stream.read_le<u32>();
     if (game_title == "幼なじみと甘～くエッチに過ごす方法"_b)
         key_size = 240000;
-    return input_stream.read(key_size);
+
+    common::Params params;
+    params.game_title = game_title;
+    params.key = input_stream.read(key_size);
+    return params;
 }
 
-int common::get_encryption_offset(const bstr &data)
+static void decrypt(
+    io::BaseByteStream &input_stream,
+    const bstr &key,
+    const size_t pos,
+    const size_t size)
 {
-    if (data.substr(0, 2) == "BM"_b) return 54;
-    if (data.substr(0, 4) == "AP-0"_b) return 12;
-    if (data.substr(0, 4) == "AP-1"_b) return 12;
-    if (data.substr(0, 4) == "AP-2"_b) return 24;
-    if (data.substr(0, 4) == "AP-3"_b) return 24;
-    return -1;
+    const auto old_pos = input_stream.tell();
+    input_stream.seek(pos);
+    const auto data = algo::unxor(input_stream.read(size), key);
+    input_stream.seek(pos);
+    input_stream.write(data);
+    input_stream.seek(old_pos);
+}
+
+static void decrypt(
+    io::BaseByteStream &input_stream, const bstr &key, const size_t pos)
+{
+    decrypt(input_stream, key, pos, input_stream.size() - pos);
+}
+
+void common::decrypt(
+    io::BaseByteStream &input_stream, const common::Params &params)
+{
+    if (input_stream.seek(0).read(2) == "BM"_b)
+        ::decrypt(input_stream, params.key, 54);
+
+    if (input_stream.seek(0).read(4) == "AP-0"_b)
+        ::decrypt(input_stream, params.key, 12);
+
+    if (input_stream.seek(0).read(4) == "AP-1"_b)
+        ::decrypt(input_stream, params.key, 12);
+
+    if (input_stream.seek(0).read(4) == "AP-2"_b)
+        ::decrypt(input_stream, params.key, 24);
+
+    if (input_stream.seek(0).read(4) == "AP-3"_b)
+        ::decrypt(input_stream, params.key, 24);
+
+    if (input_stream.seek(0).read(4) == "AN00"_b)
+    {
+        if (params.game_title == "幼なじみと甘～くエッチに過ごす方法"_b)
+            return;
+
+        input_stream.seek(20);
+        const auto frame_count = input_stream.read_le<u16>();
+        input_stream.skip(2 + frame_count * 4);
+        const auto file_count = input_stream.read_le<u16>();
+        for (const auto i : algo::range(file_count))
+        {
+            input_stream.skip(8);
+            const auto width = input_stream.read_le<u32>();
+            const auto height = input_stream.read_le<u32>();
+            const auto size = 4 * width * height;
+            ::decrypt(input_stream, params.key, input_stream.tell(), size);
+            input_stream.skip(size);
+        }
+    }
 }

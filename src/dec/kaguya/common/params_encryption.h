@@ -7,8 +7,15 @@ namespace dec {
 namespace kaguya {
 namespace common {
 
-    bstr get_key_from_params_file(io::BaseByteStream &input_stream);
+    struct Params final
+    {
+        bstr game_title;
+        bstr key;
+    };
 
-    int get_encryption_offset(const bstr &data);
+    Params parse_params_file(io::BaseByteStream &input_stream);
+
+    void decrypt(
+        io::BaseByteStream &input_stream, const common::Params &params);
 
 } } } }

@@ -1,5 +1,4 @@
 #include "dec/kaguya/base_link_archive_decoder.h"
-#include "algo/binary.h"
 #include "algo/locale.h"
 #include "algo/range.h"
 #include "dec/kaguya/common/params_encryption.h"
@@ -13,7 +12,7 @@ namespace
 {
     struct ArchiveMetaImpl final : dec::ArchiveMeta
     {
-        bstr key;
+        common::Params params;
     };
 
     struct ArchiveEntryImpl final : dec::ArchiveEntry
@@ -33,7 +32,7 @@ std::unique_ptr<dec::ArchiveMeta> BaseLinkArchiveDecoder::read_meta_impl(
     {
         try
         {
-            meta->key = common::get_key_from_params_file(params_file->stream);
+            meta->params = common::parse_params_file(params_file->stream);
         }
         catch (const std::exception &e)
         {
@@ -104,17 +103,17 @@ std::unique_ptr<io::File> BaseLinkArchiveDecoder::read_file_impl(
 {
     const auto meta = static_cast<const ArchiveMetaImpl*>(&m);
     const auto entry = static_cast<const ArchiveEntryImpl*>(&e);
-    auto data = input_file.stream.seek(entry->offset).read(entry->size);
+    auto output_file = std::make_unique<io::File>(entry->path, ""_b);
+    output_file->stream.write(
+        input_file.stream.seek(entry->offset), entry->size);
+
     if (entry->encrypted)
     {
-        if (meta->key.empty())
-            throw err::CorruptDataError("Missing decryption key");
-        const auto offset = common::get_encryption_offset(data);
-        if (offset != -1)
-            for (const auto i : algo::range(offset, data.size()))
-                data[i] ^= meta->key[(i - offset) % meta->key.size()];
+        if (meta->params.key.empty())
+            throw err::CorruptDataError("Missing decryption params");
+        common::decrypt(output_file->stream, meta->params);
     }
-    return std::make_unique<io::File>(entry->path, data);
+    return output_file;
 }
 
 std::vector<std::string> BaseLinkArchiveDecoder::get_linked_formats() const

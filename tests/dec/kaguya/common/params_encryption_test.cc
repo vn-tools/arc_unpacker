@@ -11,18 +11,10 @@ static void write_string(io::BaseByteStream &stream, const bstr &str)
     stream.write(str);
 }
 
-TEST_CASE("Atelier Kaguya params decryption offsets", "[dec]")
-{
-    REQUIRE(get_encryption_offset("BM\x00\x00"_b) == 54);
-    REQUIRE(get_encryption_offset("AP-0"_b) == 12);
-    REQUIRE(get_encryption_offset("AP-1"_b) == 12);
-    REQUIRE(get_encryption_offset("AP-2"_b) == 24);
-    REQUIRE(get_encryption_offset("AP-3"_b) == 24);
-}
-
 TEST_CASE("Atelier Kaguya params decryption", "[dec]")
 {
     const auto key = "\x01\x02\x03"_b;
+    const auto game_title = "game title"_b;
     io::MemoryStream output_stream;
 
     // for unknown data, serialize nonempty junk to test skipping
@@ -32,8 +24,8 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
         output_stream.write("[SCR-PARAMS]v02"_b);
         output_stream.write_le<u32>('?');
         output_stream.write_le<u32>('?');
-        write_string(output_stream, "game title"_b);
         write_string(output_stream, "???"_b);
+        write_string(output_stream, game_title);
         write_string(output_stream, "producer"_b);
         write_string(output_stream, "copyright"_b);
         write_string(output_stream, "???"_b);
@@ -76,5 +68,7 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
         output_stream.write(key);
     }
 
-    REQUIRE(get_key_from_params_file(output_stream) == key);
+    const auto params = parse_params_file(output_stream);
+    REQUIRE(params.key == key);
+    REQUIRE(params.game_title == game_title);
 }
