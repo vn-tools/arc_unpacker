@@ -109,12 +109,10 @@ std::unique_ptr<io::File> BaseLinkArchiveDecoder::read_file_impl(
     {
         if (meta->key.empty())
             throw err::CorruptDataError("Missing decryption key");
-        if (meta->key.size() < 0x3A980)
-            throw err::CorruptDataError("Corrupt decryption key");
         const auto offset = common::get_encryption_offset(data);
         if (offset != -1)
             for (const auto i : algo::range(offset, data.size()))
-                data[i] ^= meta->key[(i - offset) % 0x3A980];
+                data[i] ^= meta->key[(i - offset) % meta->key.size()];
     }
     return std::make_unique<io::File>(entry->path, data);
 }

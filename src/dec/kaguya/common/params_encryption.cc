@@ -1,4 +1,4 @@
-#include "dec/kaguya/common/params_encryption.h"
+﻿#include "dec/kaguya/common/params_encryption.h"
 #include "algo/locale.h"
 #include "algo/range.h"
 #include "err.h"
@@ -14,9 +14,9 @@ bstr common::get_key_from_params_file(io::BaseByteStream &input_stream)
 
     input_stream.skip(8);
 
+    input_stream.skip(input_stream.read<u8>());
     const auto game_title
         = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
-    input_stream.skip(input_stream.read<u8>());
     const auto producer
         = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
     const auto copyright
@@ -53,7 +53,9 @@ bstr common::get_key_from_params_file(io::BaseByteStream &input_stream)
     for (const auto i : algo::range(unk4_count))
         input_stream.skip(input_stream.read<u8>());
 
-    const auto key_size = input_stream.read_le<u32>();
+    auto key_size = input_stream.read_le<u32>();
+    if (game_title == "幼なじみと甘～くエッチに過ごす方法"_b)
+        key_size = 240000;
     return input_stream.read(key_size);
 }
 
