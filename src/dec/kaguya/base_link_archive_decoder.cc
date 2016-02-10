@@ -92,7 +92,7 @@ std::unique_ptr<dec::ArchiveMeta> BaseLinkArchiveDecoder::read_meta_impl(
         input_file.stream.seek(entry_offset + entry_size);
     }
 
-    return meta;
+    return std::move(meta);
 }
 
 std::unique_ptr<io::File> BaseLinkArchiveDecoder::read_file_impl(
