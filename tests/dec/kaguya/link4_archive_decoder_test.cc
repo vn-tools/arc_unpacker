@@ -91,8 +91,8 @@ TEST_CASE("Atelier Kaguya LINK4 archives", "[dec]")
             data = data.substr(0, 12) + algo::unxor(data.substr(12), key);
             const auto name = algo::utf8_to_sjis(file->path.str());
             input_file.stream.write_le<u32>(data.size() + 16 + name.size());
-            input_file.stream.write<u8>(4);
-            input_file.stream.write("????????"_b);
+            input_file.stream.write_le<u16>(4);
+            input_file.stream.write("???????"_b);
             input_file.stream.write<u8>(name.size());
             input_file.stream.write("??"_b);
             input_file.stream.write(name);

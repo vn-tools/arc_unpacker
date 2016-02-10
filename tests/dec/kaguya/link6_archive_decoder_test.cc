@@ -27,13 +27,8 @@ TEST_CASE("Atelier Kaguya LINK6 archives", "[dec]")
         const auto data = file->stream.seek(0).read_to_eof();
         const auto name = algo::utf8_to_utf16(file->path.str());
         input_file.stream.write_le<u32>(data.size() + 15 + name.size());
-        input_file.stream.write("??"_b);
-        input_file.stream.write("??"_b);
-        input_file.stream.write<u8>('?');
-        input_file.stream.write<u8>('?');
-        input_file.stream.write<u8>('?');
-        input_file.stream.write<u8>('?');
-        input_file.stream.write<u8>('?');
+        input_file.stream.write_le<u16>(0);
+        input_file.stream.write("???????");
         input_file.stream.write_le<u16>(name.size());
         input_file.stream.write(name);
         input_file.stream.write(data);
