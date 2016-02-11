@@ -18,7 +18,7 @@ struct Listener final : Catch::TestEventListenerBase
 
 INTERNAL_CATCH_REGISTER_LISTENER(Listener)
 
-int main(int argc, char *const argv[])
+int main(int argc, char *argv[])
 {
     io::set_program_path_from_arg(argv[0]);
     init_fs_utf8();
