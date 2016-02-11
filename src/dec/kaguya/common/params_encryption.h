@@ -9,6 +9,7 @@ namespace common {
 
     struct Params final
     {
+        bool decrypt_anm;
         bstr game_title;
         bstr key;
     };

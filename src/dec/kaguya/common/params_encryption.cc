@@ -7,14 +7,9 @@
 using namespace au;
 using namespace au::dec::kaguya;
 
-common::Params common::parse_params_file(io::BaseByteStream &input_stream)
+static common::Params parse_params_file_v2(io::BaseByteStream &input_stream)
 {
-    const auto scr_magic = input_stream.seek(0).read(15);
-    if (scr_magic != "[SCR-PARAMS]v02"_b)
-        throw err::RecognitionError();
-
     input_stream.skip(8);
-
     input_stream.skip(input_stream.read<u8>());
     const auto game_title
         = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
@@ -24,7 +19,6 @@ common::Params common::parse_params_file(io::BaseByteStream &input_stream)
         = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
     input_stream.skip(input_stream.read<u8>());
     input_stream.skip(1);
-
     for (const auto i : algo::range(2))
         input_stream.skip(input_stream.read<u8>());
     for (const auto i : algo::range(input_stream.read<u8>()))
@@ -60,7 +54,8 @@ common::Params common::parse_params_file(io::BaseByteStream &input_stream)
     }
 
     else if (game_title == "新妻イカせてミルク！"_b
-        || game_title == "毎日がＭ！"_b)
+        || game_title == "毎日がＭ！"_b
+        || game_title == "ちゅぱしてあげる"_b)
     {
         for (const auto i : algo::range(input_stream.read<u8>()))
         {
@@ -95,9 +90,77 @@ common::Params common::parse_params_file(io::BaseByteStream &input_stream)
     }
 
     common::Params params;
+    params.decrypt_anm = game_title != "幼なじみと甘～くエッチに過ごす方法"_b;
     params.game_title = game_title;
     params.key = input_stream.read(key_size);
     return params;
+}
+
+static common::Params parse_params_file_v3(io::BaseByteStream &input_stream)
+{
+    input_stream.skip(10);
+    input_stream.skip(input_stream.read<u8>());
+    const auto game_title
+        = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
+    const auto producer
+        = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
+    const auto copyright
+        = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
+    input_stream.skip(1);
+    for (const auto i : algo::range(2))
+        input_stream.skip(input_stream.read<u8>());
+    for (const auto i : algo::range(input_stream.read<u8>()))
+    {
+        const auto arc_name = input_stream.read(input_stream.read<u8>());
+        const auto arc_type = input_stream.read(input_stream.read<u8>());
+    }
+    input_stream.skip(12);
+    input_stream.skip(1);
+
+    for (const auto i : algo::range(input_stream.read<u8>()))
+    {
+        input_stream.skip(1);
+        input_stream.skip(input_stream.read<u8>());
+        for (const auto j : algo::range(input_stream.read<u8>()))
+            input_stream.skip(input_stream.read<u8>());
+        for (const auto j : algo::range(input_stream.read<u8>()))
+            input_stream.skip(input_stream.read<u8>());
+    }
+
+    for (const auto i : algo::range(input_stream.read<u8>()))
+    {
+        input_stream.skip(input_stream.read<u8>());
+        input_stream.skip(input_stream.read<u8>());
+    }
+
+    for (const auto i : algo::range(input_stream.read<u8>()))
+    {
+        input_stream.skip(input_stream.read<u8>());
+        for (const auto j : algo::range(input_stream.read<u8>()))
+            input_stream.skip(input_stream.read<u8>());
+        for (const auto j : algo::range(input_stream.read<u8>()))
+            input_stream.skip(input_stream.read<u8>());
+    }
+
+    const auto key_size = input_stream.read_le<u32>();
+    common::Params params;
+    params.decrypt_anm = true;
+    params.game_title = game_title;
+    params.key = input_stream.read(key_size);
+    return params;
+}
+
+common::Params common::parse_params_file(io::BaseByteStream &input_stream)
+{
+    const auto scr_magic = input_stream.seek(0).read(15);
+
+    if (scr_magic == "[SCR-PARAMS]v02"_b)
+        return parse_params_file_v2(input_stream);
+
+    if (scr_magic == "[SCR-PARAMS]v03"_b)
+        return parse_params_file_v3(input_stream);
+
+    throw err::RecognitionError();
 }
 
 static void decrypt(
@@ -138,11 +201,8 @@ void common::decrypt(
     if (input_stream.seek(0).read(4) == "AP-3"_b)
         ::decrypt(input_stream, params.key, 24);
 
-    if (input_stream.seek(0).read(4) == "AN00"_b)
+    if (input_stream.seek(0).read(4) == "AN00"_b && params.decrypt_anm)
     {
-        if (params.game_title == "幼なじみと甘～くエッチに過ごす方法"_b)
-            return;
-
         input_stream.seek(20);
         const auto frame_count = input_stream.read_le<u16>();
         input_stream.skip(2 + frame_count * 4);
