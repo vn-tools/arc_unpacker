@@ -96,7 +96,8 @@ static common::Params parse_params_file_v2(io::BaseByteStream &input_stream)
     return params;
 }
 
-static common::Params parse_params_file_v3(io::BaseByteStream &input_stream)
+static common::Params parse_params_file_v3_or_4(
+    io::BaseByteStream &input_stream)
 {
     input_stream.skip(10);
     input_stream.skip(input_stream.read<u8>());
@@ -158,7 +159,10 @@ common::Params common::parse_params_file(io::BaseByteStream &input_stream)
         return parse_params_file_v2(input_stream);
 
     if (scr_magic == "[SCR-PARAMS]v03"_b)
-        return parse_params_file_v3(input_stream);
+        return parse_params_file_v3_or_4(input_stream);
+
+    if (scr_magic == "[SCR-PARAMS]v04"_b)
+        return parse_params_file_v3_or_4(input_stream);
 
     throw err::RecognitionError();
 }
