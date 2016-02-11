@@ -27,36 +27,71 @@ common::Params common::parse_params_file(io::BaseByteStream &input_stream)
 
     for (const auto i : algo::range(2))
         input_stream.skip(input_stream.read<u8>());
-    const auto arc_count = input_stream.read<u8>();
-    for (const auto i : algo::range(arc_count))
+    for (const auto i : algo::range(input_stream.read<u8>()))
     {
         const auto arc_name = input_stream.read(input_stream.read<u8>());
         const auto arc_type = input_stream.read(input_stream.read<u8>());
     }
     input_stream.skip(1);
 
-    const auto unk_count = input_stream.read<u8>();
-    for (const auto i : algo::range(unk_count))
+    size_t key_size;
+
+    if (game_title == "幼なじみと甘～くエッチに過ごす方法"_b
+        || game_title == "艶女医"_b)
     {
-        input_stream.skip(1);
-        input_stream.skip(input_stream.read<u8>());
-        const auto unk2_count = input_stream.read<u8>();
-        for (const auto j : algo::range(unk2_count))
+        for (const auto i : algo::range(input_stream.read<u8>()))
+        {
+            input_stream.skip(1);
             input_stream.skip(input_stream.read<u8>());
-        input_stream.skip(input_stream.read<u8>());
+            for (const auto j : algo::range(input_stream.read<u8>()))
+                input_stream.skip(input_stream.read<u8>());
+            input_stream.skip(input_stream.read<u8>());
+        }
+
+        for (const auto i : algo::range(input_stream.read<u8>()))
+            input_stream.skip(input_stream.read<u8>());
+
+        for (const auto i : algo::range(input_stream.read<u8>()))
+            input_stream.skip(input_stream.read<u8>());
+
+        key_size = input_stream.read_le<u32>();
+        if (game_title == "幼なじみと甘～くエッチに過ごす方法"_b)
+            key_size = 240000;
     }
 
-    const auto unk3_count = input_stream.read<u8>();
-    for (const auto i : algo::range(unk3_count))
-        input_stream.skip(input_stream.read<u8>());
+    else if (game_title == "新妻イカせてミルク！"_b)
+    {
+        for (const auto i : algo::range(input_stream.read<u8>()))
+        {
+            input_stream.skip(1);
+            input_stream.skip(input_stream.read<u8>());
+            for (const auto j : algo::range(input_stream.read<u8>()))
+                input_stream.skip(input_stream.read<u8>());
+            for (const auto j : algo::range(input_stream.read<u8>()))
+                input_stream.skip(input_stream.read<u8>());
+        }
 
-    const auto unk4_count = input_stream.read<u8>();
-    for (const auto i : algo::range(unk4_count))
-        input_stream.skip(input_stream.read<u8>());
+        for (const auto i : algo::range(input_stream.read<u8>()))
+        {
+            input_stream.skip(input_stream.read<u8>());
+            input_stream.skip(input_stream.read<u8>());
+        }
 
-    auto key_size = input_stream.read_le<u32>();
-    if (game_title == "幼なじみと甘～くエッチに過ごす方法"_b)
-        key_size = 240000;
+        for (const auto i : algo::range(input_stream.read<u8>()))
+        {
+            input_stream.skip(input_stream.read<u8>());
+            for (const auto j : algo::range(input_stream.read<u8>()))
+                input_stream.skip(input_stream.read<u8>());
+            for (const auto j : algo::range(input_stream.read<u8>()))
+                input_stream.skip(input_stream.read<u8>());
+        }
+
+        key_size = input_stream.read_le<u32>();
+    }
+    else
+    {
+        throw err::CorruptDataError("Unknown game: " + game_title.str());
+    }
 
     common::Params params;
     params.game_title = game_title;
