@@ -59,7 +59,8 @@ common::Params common::parse_params_file(io::BaseByteStream &input_stream)
             key_size = 240000;
     }
 
-    else if (game_title == "新妻イカせてミルク！"_b)
+    else if (game_title == "新妻イカせてミルク！"_b
+        || game_title == "毎日がＭ！"_b)
     {
         for (const auto i : algo::range(input_stream.read<u8>()))
         {
