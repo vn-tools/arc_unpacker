@@ -7,7 +7,8 @@
 using namespace au;
 using namespace au::dec::kaguya;
 
-static const bstr magic = "AN00"_b;
+static const bstr magic0 = "AN00"_b;
+static const bstr magic1 = "AN10"_b;
 
 namespace
 {
@@ -17,6 +18,7 @@ namespace
         size_t size;
         size_t width;
         size_t height;
+        size_t channels;
         std::unique_ptr<res::Image> mask;
     };
 }
@@ -28,13 +30,15 @@ algo::NamingStrategy AnmImageArchiveDecoder::naming_strategy() const
 
 bool AnmImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
-    return input_file.stream.read(magic.size()) == magic;
+    return input_file.stream.seek(0).read(magic0.size()) == magic0
+        || input_file.stream.seek(0).read(magic1.size()) == magic1;
 }
 
 std::unique_ptr<dec::ArchiveMeta> AnmImageArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    input_file.stream.seek(magic.size());
+    const auto version = input_file.stream.seek(2).read<u8>() - '0';
+    input_file.stream.seek(4);
     const auto x = input_file.stream.read_le<u32>();
     const auto y = input_file.stream.read_le<u32>();
     const auto width = input_file.stream.read_le<u32>();
@@ -50,8 +54,9 @@ std::unique_ptr<dec::ArchiveMeta> AnmImageArchiveDecoder::read_meta_impl(
         input_file.stream.skip(8);
         entry->width = input_file.stream.read_le<u32>();
         entry->height = input_file.stream.read_le<u32>();
+        entry->channels = version == 0 ? 4 : input_file.stream.read_le<u32>();
         entry->offset = input_file.stream.tell();
-        entry->size = 4 * entry->width * entry->height;
+        entry->size = entry->channels * entry->width * entry->height;
         input_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));
     }
@@ -69,7 +74,9 @@ std::unique_ptr<io::File> AnmImageArchiveDecoder::read_file_impl(
         entry->width,
         entry->height,
         input_file.stream.seek(entry->offset).read(entry->size),
-        res::PixelFormat::BGRA8888);
+        entry->channels == 3
+            ? res::PixelFormat::BGR888
+            : res::PixelFormat::BGRA8888);
     image.flip_vertically();
     return enc::png::PngImageEncoder().encode(logger, image, entry->path);
 }
