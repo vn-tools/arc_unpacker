@@ -126,6 +126,7 @@ std::vector<std::string> BaseLinkArchiveDecoder::get_linked_formats() const
         "kaguya/ap3",
         "kaguya/anm",
         "kaguya/bmr",
+        "kaguya/plt",
         "microsoft/bmp"
     };
 }
