@@ -10,6 +10,7 @@ namespace io {
     {
     public:
         File(File &other_file);
+        File(const io::path &path, std::unique_ptr<io::BaseByteStream> stream);
         File(const io::path &path, const io::FileMode mode);
         File(const io::path &path, const bstr &data);
         File();

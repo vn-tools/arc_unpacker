@@ -24,21 +24,24 @@ File::File(File &other_file) :
 {
 }
 
-File::File(const io::path &path, const io::FileMode mode) :
-    stream_holder(new io::FileStream(path, mode)),
+File::File(const io::path &path, std::unique_ptr<BaseByteStream> stream) :
+    stream_holder(std::move(stream)),
     stream(*stream_holder),
     path(path)
+{
+}
+
+File::File(const io::path &path, const FileMode mode) :
+    File(path, std::make_unique<FileStream>(path, mode))
 {
 }
 
 File::File(const io::path &path, const bstr &data) :
-    stream_holder(new io::MemoryStream(data)),
-    stream(*stream_holder),
-    path(path)
+    File(path, std::make_unique<MemoryStream>(data))
 {
 }
 
-File::File() : stream_holder(new io::MemoryStream()), stream(*stream_holder)
+File::File() : File("", std::make_unique<MemoryStream>())
 {
 }
 
