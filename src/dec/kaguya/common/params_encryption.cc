@@ -317,20 +317,50 @@ void common::decrypt(
         }
         input_stream.skip(2);
         const auto file_count = input_stream.read_le<u16>();
-        if (file_count)
+        if (!file_count)
+            return;
+        input_stream.skip(16);
+        for (const auto i : algo::range(file_count))
         {
-            input_stream.skip(16);
-            for (const auto i : algo::range(file_count))
-            {
-                input_stream.skip(8);
-                const auto width = input_stream.read_le<u32>();
-                const auto height = input_stream.read_le<u32>();
-                const auto channels = input_stream.read_le<u32>();
-                const auto size = channels * width * height;
-                ::decrypt(input_stream, params.key, input_stream.tell(), size);
-                input_stream.skip(size);
-            }
+            input_stream.skip(8);
+            const auto width = input_stream.read_le<u32>();
+            const auto height = input_stream.read_le<u32>();
+            const auto channels = input_stream.read_le<u32>();
+            const auto size = channels * width * height;
+            ::decrypt(input_stream, params.key, input_stream.tell(), size);
+            input_stream.skip(size);
         }
+    }
+
+    if (input_stream.seek(0).read(4) == "AN21"_b && params.decrypt_anm)
+    {
+        input_stream.seek(4);
+        const auto unk_count = input_stream.read_le<u16>();
+        input_stream.skip(2);
+        for (const auto i : algo::range(unk_count))
+        {
+            const auto control = input_stream.read<u8>();
+            if (control == 0) continue;
+            else if (control == 1) input_stream.skip(8);
+            else if (control == 2) input_stream.skip(4);
+            else if (control == 3) input_stream.skip(4);
+            else if (control == 4) input_stream.skip(4);
+            else if (control == 5) input_stream.skip(4);
+            else throw err::NotSupportedError("Unsupported control");
+        }
+        const auto unk2_count = input_stream.read_le<u16>();
+        input_stream.skip(unk2_count * 8);
+        input_stream.skip(7);
+        const auto file_count = input_stream.read_le<u16>();
+        if (!file_count)
+            return;
+        input_stream.skip(24);
+        const auto width = input_stream.read_le<u32>();
+        const auto height = input_stream.read_le<u32>();
+        const auto channels = input_stream.read_le<u32>();
+        const auto size = channels * width * height;
+        ::decrypt(input_stream, params.key, input_stream.tell(), size);
+        input_stream.skip(size);
     }
 
     if (input_stream.seek(0).read(4) == "PL00"_b)
