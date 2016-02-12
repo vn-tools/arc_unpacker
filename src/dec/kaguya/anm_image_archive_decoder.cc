@@ -9,6 +9,7 @@ using namespace au::dec::kaguya;
 
 static const bstr magic0 = "AN00"_b;
 static const bstr magic1 = "AN10"_b;
+static const bstr magic2 = "AN20"_b;
 
 namespace
 {
@@ -31,36 +32,86 @@ algo::NamingStrategy AnmImageArchiveDecoder::naming_strategy() const
 bool AnmImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.seek(0).read(magic0.size()) == magic0
-        || input_file.stream.seek(0).read(magic1.size()) == magic1;
+        || input_file.stream.seek(0).read(magic1.size()) == magic1
+        || input_file.stream.seek(0).read(magic2.size()) == magic2;
 }
 
 std::unique_ptr<dec::ArchiveMeta> AnmImageArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
-    const auto version = input_file.stream.seek(2).read<u8>() - '0';
-    input_file.stream.seek(4);
-    const auto x = input_file.stream.read_le<u32>();
-    const auto y = input_file.stream.read_le<u32>();
-    const auto width = input_file.stream.read_le<u32>();
-    const auto height = input_file.stream.read_le<u32>();
-    const auto frame_count = input_file.stream.read_le<u16>();
-    input_file.stream.skip(2);
-    input_file.stream.skip(frame_count * 4);
-    const auto file_count = input_file.stream.read_le<u16>();
-    auto meta = std::make_unique<dec::ArchiveMeta>();
-    for (const auto i : algo::range(file_count))
+    input_file.stream.seek(2);
+    const auto major_version = input_file.stream.read<u8>() - '0';
+    const auto minor_version = input_file.stream.read<u8>() - '0';
+
+    if (major_version == 0 || major_version == 1)
     {
-        auto entry = std::make_unique<ArchiveEntryImpl>();
-        input_file.stream.skip(8);
-        entry->width = input_file.stream.read_le<u32>();
-        entry->height = input_file.stream.read_le<u32>();
-        entry->channels = version == 0 ? 4 : input_file.stream.read_le<u32>();
-        entry->offset = input_file.stream.tell();
-        entry->size = entry->channels * entry->width * entry->height;
-        input_file.stream.skip(entry->size);
-        meta->entries.push_back(std::move(entry));
+        const auto x = input_file.stream.read_le<u32>();
+        const auto y = input_file.stream.read_le<u32>();
+        const auto width = input_file.stream.read_le<u32>();
+        const auto height = input_file.stream.read_le<u32>();
+        const auto frame_count = input_file.stream.read_le<u16>();
+        input_file.stream.skip(2);
+        input_file.stream.skip(frame_count * 4);
+        const auto file_count = input_file.stream.read_le<u16>();
+        auto meta = std::make_unique<dec::ArchiveMeta>();
+        for (const auto i : algo::range(file_count))
+        {
+            auto entry = std::make_unique<ArchiveEntryImpl>();
+            input_file.stream.skip(8);
+            entry->width = input_file.stream.read_le<u32>();
+            entry->height = input_file.stream.read_le<u32>();
+            entry->channels = major_version == 0
+                ? 4
+                : input_file.stream.read_le<u32>();
+            entry->offset = input_file.stream.tell();
+            entry->size = entry->channels * entry->width * entry->height;
+            input_file.stream.skip(entry->size);
+            meta->entries.push_back(std::move(entry));
+        }
+        return meta;
     }
-    return meta;
+
+    else if (major_version == 2)
+    {
+        const auto unk_count = input_file.stream.read_le<u16>();
+        input_file.stream.skip(2);
+        for (const auto i : algo::range(unk_count))
+        {
+            const auto control = input_file.stream.read<u8>();
+            if (control == 0) continue;
+            else if (control == 1) input_file.stream.skip(8);
+            else if (control == 2) input_file.stream.skip(4);
+            else if (control == 3) input_file.stream.skip(4);
+            else if (control == 4) input_file.stream.skip(4);
+            else if (control == 5) input_file.stream.skip(4);
+            else throw err::NotSupportedError("Unsupported control");
+        }
+
+        input_file.stream.skip(2);
+        auto meta = std::make_unique<dec::ArchiveMeta>();
+        const auto file_count = input_file.stream.read_le<u16>();
+        if (!file_count)
+            return meta;
+        const auto x = input_file.stream.read_le<u32>();
+        const auto y = input_file.stream.read_le<u32>();
+        const auto width = input_file.stream.read_le<u32>();
+        const auto height = input_file.stream.read_le<u32>();
+        for (const auto i : algo::range(file_count))
+        {
+            auto entry = std::make_unique<ArchiveEntryImpl>();
+            input_file.stream.skip(8);
+            entry->width = input_file.stream.read_le<u32>();
+            entry->height = input_file.stream.read_le<u32>();
+            entry->channels = input_file.stream.read_le<u32>();
+            entry->offset = input_file.stream.tell();
+            entry->size = entry->channels * entry->width * entry->height;
+            input_file.stream.skip(entry->size);
+            meta->entries.push_back(std::move(entry));
+        }
+        return meta;
+    }
+
+    throw err::UnsupportedVersionError(major_version);
 }
 
 std::unique_ptr<io::File> AnmImageArchiveDecoder::read_file_impl(
