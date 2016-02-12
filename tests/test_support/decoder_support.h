@@ -9,15 +9,15 @@ namespace au {
 namespace tests {
 
     std::vector<std::shared_ptr<io::File>> unpack(
-        const dec::BaseArchiveDecoder &decoder, io::File &input_file);
+        const au::dec::BaseArchiveDecoder &decoder, io::File &input_file);
 
     std::unique_ptr<io::File> decode(
-        const dec::BaseFileDecoder &decoder, io::File &input_file);
+        const au::dec::BaseFileDecoder &decoder, io::File &input_file);
 
     res::Image decode(
-        const dec::BaseImageDecoder &decoder, io::File &input_file);
+        const au::dec::BaseImageDecoder &decoder, io::File &input_file);
 
     res::Audio decode(
-        const dec::BaseAudioDecoder &decoder, io::File &input_file);
+        const au::dec::BaseAudioDecoder &decoder, io::File &input_file);
 
 } }

@@ -14,11 +14,9 @@ namespace
     struct ArchiveEntryImpl final : dec::ArchiveEntry
     {
         size_t offset;
-        size_t size;
-        size_t width;
-        size_t height;
+        size_t x, y;
+        size_t width, height;
         size_t channels;
-        std::unique_ptr<res::Image> mask;
     };
 }
 
@@ -37,21 +35,21 @@ std::unique_ptr<dec::ArchiveMeta> Pl00ImageArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(magic.size());
     const auto file_count = input_file.stream.read_le<u16>();
-    const auto x = input_file.stream.read_le<u32>();
-    const auto y = input_file.stream.read_le<u32>();
-    const auto width = input_file.stream.read_le<u32>();
-    const auto height = input_file.stream.read_le<u32>();
+    const auto base_x = input_file.stream.read_le<u32>();
+    const auto base_y = input_file.stream.read_le<u32>();
+    const auto base_width = input_file.stream.read_le<u32>();
+    const auto base_height = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<dec::ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        input_file.stream.skip(8);
+        entry->x = input_file.stream.read_le<u32>();
+        entry->y = input_file.stream.read_le<u32>();
         entry->width = input_file.stream.read_le<u32>();
         entry->height = input_file.stream.read_le<u32>();
         entry->channels = input_file.stream.read_le<u32>();
         entry->offset = input_file.stream.tell();
-        entry->size = entry->channels * entry->width * entry->height;
-        input_file.stream.skip(entry->size);
+        input_file.stream.skip(entry->channels * entry->width * entry->height);
         meta->entries.push_back(std::move(entry));
     }
     return meta;
@@ -74,7 +72,7 @@ std::unique_ptr<io::File> Pl00ImageArchiveDecoder::read_file_impl(
     res::Image image(
         entry->width,
         entry->height,
-        input_file.stream.seek(entry->offset).read(entry->size),
+        input_file.stream.seek(entry->offset),
         fmt);
     image.flip_vertically();
     return enc::png::PngImageEncoder().encode(logger, image, entry->path);

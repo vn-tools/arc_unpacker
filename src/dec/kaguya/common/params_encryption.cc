@@ -360,7 +360,6 @@ void common::decrypt(
         const auto channels = input_stream.read_le<u32>();
         const auto size = channels * width * height;
         ::decrypt(input_stream, params.key, input_stream.tell(), size);
-        input_stream.skip(size);
     }
 
     if (input_stream.seek(0).read(4) == "PL00"_b)
@@ -378,5 +377,18 @@ void common::decrypt(
             ::decrypt(input_stream, params.key, input_stream.tell(), size);
             input_stream.skip(size);
         }
+    }
+
+    if (input_stream.seek(0).read(4) == "PL10"_b)
+    {
+        input_stream.seek(4);
+        const auto file_count = input_stream.read_le<u16>();
+        input_stream.skip(16);
+        input_stream.skip(8);
+        const auto width = input_stream.read_le<u32>();
+        const auto height = input_stream.read_le<u32>();
+        const auto channels = input_stream.read_le<u32>();
+        const auto size = channels * width * height;
+        ::decrypt(input_stream, params.key, input_stream.tell(), size);
     }
 }

@@ -2,13 +2,12 @@
 #include "algo/range.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
-#include "test_support/file_support.h"
 #include "test_support/image_support.h"
 
 using namespace au;
 using namespace au::dec::kaguya;
 
-TEST_CASE("Atelier Kaguya AN20 archives", "[dec]")
+TEST_CASE("Atelier Kaguya AN20 image archives", "[dec]")
 {
     const std::vector<res::Image> expected_images =
     {

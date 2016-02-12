@@ -1,4 +1,4 @@
-﻿#include "dec/kaguya/an21_image_archive_decoder.h"
+﻿#include "dec/kaguya/pl10_image_archive_decoder.h"
 #include "algo/range.h"
 #include "dec/kaguya/common/rle_test.h"
 #include "io/memory_stream.h"
@@ -20,7 +20,7 @@ static void mutate_image(res::Image &image)
     }
 }
 
-TEST_CASE("Atelier Kaguya AN21 image archives", "[dec]")
+TEST_CASE("Atelier Kaguya PL10 image archives", "[dec]")
 {
     std::vector<res::Image> expected_images =
     {
@@ -32,34 +32,7 @@ TEST_CASE("Atelier Kaguya AN21 image archives", "[dec]")
     mutate_image(expected_images[2]);
 
     io::File input_file;
-
-    const std::vector<std::vector<u32>> unk = {
-        {0},
-        {1, '?', '?'},
-        {2, '?'},
-        {3, '?'},
-        {4, '?'},
-        {5, '?'},
-    };
-    input_file.stream.write("AN21"_b);
-    input_file.stream.write_le<u16>(unk.size());
-    input_file.stream.write_le<u16>('?');
-    for (const auto x : unk)
-    {
-        input_file.stream.write<u8>(x[0]);
-        for (const auto i : algo::range(1, x.size()))
-            input_file.stream.write_le<u32>(x[i]);
-    }
-
-    const std::vector<std::pair<u32, u32>> unk2 = {{1, 2}, {3, 4}};
-    input_file.stream.write_le<u16>(unk2.size());
-    for (const auto x : unk2)
-    {
-        input_file.stream.write_le<u32>(x.first);
-        input_file.stream.write_le<u32>(x.second);
-    }
-    input_file.stream.write("[PIC]10"_b);
-
+    input_file.stream.write("PL10"_b);
     input_file.stream.write_le<u16>(expected_images.size());
     input_file.stream.write_le<u32>(0);
     input_file.stream.write_le<u32>(0);
@@ -106,7 +79,7 @@ TEST_CASE("Atelier Kaguya AN21 image archives", "[dec]")
         last_data = data;
     }
 
-    const auto decoder = An21ImageArchiveDecoder();
+    const auto decoder = Pl10ImageArchiveDecoder();
     const auto actual_files = tests::unpack(decoder, input_file);
     tests::compare_images(actual_files, expected_images);
 }
