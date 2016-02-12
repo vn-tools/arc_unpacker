@@ -38,4 +38,12 @@ namespace tests {
 
     void dump_image(const res::Image &input_image, const io::path &path);
 
+    bool is_image_transparent(const res::Image &image);
+
+    void write_24_bit_image(
+        io::BaseByteStream &output_stream, const res::Image &image);
+
+    void write_32_bit_image(
+        io::BaseByteStream &output_stream, const res::Image &image);
+
 } }

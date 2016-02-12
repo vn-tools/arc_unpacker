@@ -140,3 +140,36 @@ void tests::dump_image(const res::Image &input_image, const io::path &path)
     const auto data = output_file->stream.seek(0).read_to_eof();
     io::File(path, io::FileMode::Write).stream.write(data);
 }
+
+bool tests::is_image_transparent(const res::Image &image)
+{
+    for (const auto &c : image)
+        if (c.a != 0xFF)
+            return true;
+    return false;
+}
+
+void tests::write_32_bit_image(
+    io::BaseByteStream &output_stream, const res::Image &image)
+{
+    for (const auto y : algo::range(image.height()))
+    for (const auto x : algo::range(image.width()))
+    {
+        output_stream.write<u8>(image.at(x, y).b);
+        output_stream.write<u8>(image.at(x, y).g);
+        output_stream.write<u8>(image.at(x, y).r);
+        output_stream.write<u8>(image.at(x, y).a);
+    }
+}
+
+void tests::write_24_bit_image(
+    io::BaseByteStream &output_stream, const res::Image &image)
+{
+    for (const auto y : algo::range(image.height()))
+    for (const auto x : algo::range(image.width()))
+    {
+        output_stream.write<u8>(image.at(x, y).b);
+        output_stream.write<u8>(image.at(x, y).g);
+        output_stream.write<u8>(image.at(x, y).r);
+    }
+}
