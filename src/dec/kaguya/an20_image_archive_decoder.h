@@ -7,7 +7,7 @@ namespace au {
 namespace dec {
 namespace kaguya {
 
-    class AnmImageArchiveDecoder final : public BaseArchiveDecoder
+    class An20ImageArchiveDecoder final : public BaseArchiveDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
