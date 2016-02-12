@@ -297,7 +297,7 @@ void LzssEncoderState::delete_node(int p)
     if (dad[p] == empty)
         return;
 
-    int  q;
+    int q;
     if (children[1][p] == empty)
         q = children[0][p];
     else if (children[0][p] == empty)

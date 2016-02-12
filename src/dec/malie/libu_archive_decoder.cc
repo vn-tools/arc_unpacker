@@ -95,7 +95,7 @@ void CamelliaStream::read_impl(void *destination, const size_t size)
     }
 
     const auto old_pos = parent_stream->tell();
-    const auto offset_pad  = parent_stream->tell() & 0xF;
+    const auto offset_pad = parent_stream->tell() & 0xF;
     const auto offset_start = parent_stream->tell() & ~0xF;
     const auto aligned_size = (offset_pad + size + 0xF) & ~0xF;
     const auto block_count = (aligned_size + 0xF) / 0x10;

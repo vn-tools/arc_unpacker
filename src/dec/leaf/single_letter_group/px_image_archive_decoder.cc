@@ -53,7 +53,7 @@ static ProceedResult proceed_and_get_block_size(
         throw err::BadDataSizeError();
     left -= result.block_size;
 
-    result.position = context.block_x + context.block_y *  context.image_width;
+    result.position = context.block_x + context.block_y * context.image_width;
     context.block_x += result.block_size;
     return result;
 }

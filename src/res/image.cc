@@ -15,7 +15,7 @@ Image::Image(const Image &other) : Image(other.width(), other.height())
 }
 
 Image::Image(const size_t width, const size_t height)
-    : pixels(width * height),  _width(width), _height(height)
+    : pixels(width * height), _width(width), _height(height)
 {
 }
 

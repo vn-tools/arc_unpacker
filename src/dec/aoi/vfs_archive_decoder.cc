@@ -54,7 +54,7 @@ std::unique_ptr<dec::ArchiveMeta> VfsArchiveDecoder::read_meta_impl(
     {
         const auto names_offset
             = input_file.stream.tell() + entry_size * file_count + 8;
-        for (const auto i  : algo::range(file_count))
+        for (const auto i : algo::range(file_count))
         {
             const auto entry_offset = input_file.stream.tell();
             auto entry = std::make_unique<ArchiveEntryImpl>();
