@@ -1,4 +1,4 @@
-﻿#include "dec/kaguya/plt_image_archive_decoder.h"
+﻿#include "dec/kaguya/pl00_image_archive_decoder.h"
 #include "algo/range.h"
 #include "test_support/catch.h"
 #include "test_support/decoder_support.h"
@@ -8,7 +8,7 @@
 using namespace au;
 using namespace au::dec::kaguya;
 
-TEST_CASE("Atelier Kaguya PLT image archives", "[dec]")
+TEST_CASE("Atelier Kaguya PL00 image archives", "[dec]")
 {
     const std::vector<res::Image> expected_images =
     {
@@ -58,7 +58,7 @@ TEST_CASE("Atelier Kaguya PLT image archives", "[dec]")
         }
     }
 
-    const auto decoder = PltImageArchiveDecoder();
+    const auto decoder = Pl00ImageArchiveDecoder();
     const auto actual_files = tests::unpack(decoder, input_file);
     tests::compare_images(actual_files, expected_images);
 }

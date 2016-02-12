@@ -1,4 +1,4 @@
-#include "dec/kaguya/plt_image_archive_decoder.h"
+#include "dec/kaguya/pl00_image_archive_decoder.h"
 #include "algo/range.h"
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
@@ -22,17 +22,17 @@ namespace
     };
 }
 
-algo::NamingStrategy PltImageArchiveDecoder::naming_strategy() const
+algo::NamingStrategy Pl00ImageArchiveDecoder::naming_strategy() const
 {
     return algo::NamingStrategy::Sibling;
 }
 
-bool PltImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
+bool Pl00ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
 {
     return input_file.stream.seek(0).read(magic.size()) == magic;
 }
 
-std::unique_ptr<dec::ArchiveMeta> PltImageArchiveDecoder::read_meta_impl(
+std::unique_ptr<dec::ArchiveMeta> Pl00ImageArchiveDecoder::read_meta_impl(
     const Logger &logger, io::File &input_file) const
 {
     input_file.stream.seek(magic.size());
@@ -57,7 +57,7 @@ std::unique_ptr<dec::ArchiveMeta> PltImageArchiveDecoder::read_meta_impl(
     return meta;
 }
 
-std::unique_ptr<io::File> PltImageArchiveDecoder::read_file_impl(
+std::unique_ptr<io::File> Pl00ImageArchiveDecoder::read_file_impl(
     const Logger &logger,
     io::File &input_file,
     const dec::ArchiveMeta &m,
@@ -80,4 +80,4 @@ std::unique_ptr<io::File> PltImageArchiveDecoder::read_file_impl(
     return enc::png::PngImageEncoder().encode(logger, image, entry->path);
 }
 
-static auto _ = dec::register_decoder<PltImageArchiveDecoder>("kaguya/plt");
+static auto _ = dec::register_decoder<Pl00ImageArchiveDecoder>("kaguya/pl00");

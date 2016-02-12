@@ -129,7 +129,7 @@ std::vector<std::string> BaseLinkArchiveDecoder::get_linked_formats() const
         "kaguya/an20",
         "kaguya/an21",
         "kaguya/bmr",
-        "kaguya/plt",
+        "kaguya/pl00",
         "microsoft/bmp"
     };
 }

@@ -7,7 +7,7 @@ namespace au {
 namespace dec {
 namespace kaguya {
 
-    class PltImageArchiveDecoder final : public BaseArchiveDecoder
+    class Pl00ImageArchiveDecoder final : public BaseArchiveDecoder
     {
     protected:
         bool is_recognized_impl(io::File &input_file) const override;
