@@ -24,7 +24,7 @@ res::Image Ex3ImageDecoder::decode_impl(
     bstr table2(256);
 
     u8 b = input_file.stream.read<u8>();
-    while (input_file.stream.tell() < input_file.stream.size())
+    while (input_file.stream.left())
     {
         for (auto j : algo::range(256))
             table1[j] = j;
@@ -84,7 +84,7 @@ res::Image Ex3ImageDecoder::decode_impl(
                 table0[offset++] = table1[b];
             }
         }
-        if (input_file.stream.tell() < input_file.stream.size())
+        if (input_file.stream.left())
             b = input_file.stream.read<u8>();
     }
 

@@ -96,7 +96,7 @@ std::unique_ptr<dec::ArchiveMeta> NpaArchiveDecoder::read_meta_impl(
     const auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
     const auto table_size = input_file.stream.read_le<u32>();
-    const auto data_offset = input_file.stream.tell() + table_size;
+    const auto data_offset = input_file.stream.pos() + table_size;
 
     for (const auto i : algo::range(total_entry_count))
     {

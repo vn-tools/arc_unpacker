@@ -72,7 +72,7 @@ std::unique_ptr<dec::ArchiveMeta> TacArchiveDecoder::read_meta_impl(
     input_file.stream.skip(4);
     if (version == Version::Version110)
         input_file.stream.skip(8);
-    const auto file_data_start = input_file.stream.tell() + table_size;
+    const auto file_data_start = input_file.stream.pos() + table_size;
 
     auto table_data = input_file.stream.read(table_size);
     table_data = decrypt(table_data, table_size, "TLibArchiveData"_b);

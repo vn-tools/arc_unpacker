@@ -14,7 +14,7 @@ namespace io {
         BaseBitStream(io::BaseByteStream &input_stream);
         virtual ~BaseBitStream() = 0;
 
-        size_t tell() const override;
+        size_t pos() const override;
         size_t size() const override;
         BaseStream &seek(const size_t offset) override;
         BaseStream &resize(const size_t new_size) override;

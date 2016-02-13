@@ -156,7 +156,7 @@ res::Image GimImageDecoder::decode_impl(
     while (!input_file.stream.eof())
     {
         Chunk chunk;
-        chunk.offset = input_file.stream.tell();
+        chunk.offset = input_file.stream.pos();
         chunk.type = input_file.stream.read_le<u32>();
         chunk.size = input_file.stream.read_le<u32>();
         if (input_file.stream.read_le<u32>() != chunk.size)

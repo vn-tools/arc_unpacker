@@ -42,7 +42,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak2TextureArchiveDecoder::read_meta_impl(
     input_file.stream.skip(4);
     auto last_chunk_offset = input_file.stream.read_le<u16>();
 
-    const auto data_offset = input_file.stream.tell()
+    const auto data_offset = input_file.stream.pos()
         + image_count * 2
         + chunk_count * 36
         + 36;

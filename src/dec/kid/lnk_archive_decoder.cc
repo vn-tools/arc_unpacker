@@ -31,7 +31,7 @@ std::unique_ptr<dec::ArchiveMeta> LnkArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     auto file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(8);
-    auto file_data_start = input_file.stream.tell() + (file_count << 5);
+    auto file_data_start = input_file.stream.pos() + (file_count << 5);
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();

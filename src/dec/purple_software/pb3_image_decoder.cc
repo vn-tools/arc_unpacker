@@ -113,7 +113,7 @@ static res::Image unpack_v1(
         const auto control_block1 = input_stream.read(control_block1_size);
         const auto data_block1 = input_stream.read(data_block1_size);
         const auto control_block2 = input_stream.read(
-            main_offsets[channel] + main_sizes[channel] - input_stream.tell());
+            main_offsets[channel] + main_sizes[channel] - input_stream.pos());
 
         const auto data_block2 = input_stream
             .seek(data_offsets[channel])
@@ -177,7 +177,7 @@ static res::Image unpack_v2(
 
     const auto mask_data_offset = input_stream.read_le<u32>();
     const auto mask_data_size = input_stream.read_le<u32>();
-    const auto jbp1_data_size = mask_data_offset - input_stream.tell();
+    const auto jbp1_data_size = mask_data_offset - input_stream.pos();
     const auto jbp1_data = input_stream.read(jbp1_data_size);
     const auto mask_data = input_stream
         .seek(mask_data_offset).read(mask_data_size);

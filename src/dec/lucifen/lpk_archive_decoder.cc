@@ -120,7 +120,7 @@ std::unique_ptr<dec::ArchiveMeta> LpkArchiveDecoder::read_meta_impl(
     meta->prefix = input_stream.read(prefix_size);
     const auto offset_size = input_stream.read<u8>() ? 4 : 2;
     const auto letter_table_size = input_stream.read_le<u32>();
-    const auto entries_offset = input_stream.tell() + letter_table_size;
+    const auto entries_offset = input_stream.pos() + letter_table_size;
     const auto entry_size = meta->flags & LpkFlags::IsCompressed ? 13 : 9;
 
     struct Traversal final
@@ -137,7 +137,7 @@ std::unique_ptr<dec::ArchiveMeta> LpkArchiveDecoder::read_meta_impl(
 
     std::vector<MiniEntry> mini_entries;
     std::stack<Traversal> stack;
-    stack.push({input_stream.tell(), ""});
+    stack.push({input_stream.pos(), ""});
 
     while (!stack.empty())
     {
@@ -160,7 +160,7 @@ std::unique_ptr<dec::ArchiveMeta> LpkArchiveDecoder::read_meta_impl(
             else
             {
                 stack.push({
-                    input_stream.tell() + next_offset,
+                    input_stream.pos() + next_offset,
                     traversal.current_name + std::string(1, next_letter)});
             }
         }

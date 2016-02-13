@@ -30,7 +30,7 @@ static void encrypt(
     io::BaseByteStream &output_stream)
 {
     algo::crypt::Camellia camellia(key);
-    const auto offset_start = output_stream.tell() & ~0xF;
+    const auto offset_start = output_stream.pos() & ~0xF;
     const auto aligned_size = (input.size() + 0xF) & ~0xF;
     const auto block_count = aligned_size / 0x10;
     io::MemoryStream input_stream;

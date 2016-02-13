@@ -41,7 +41,7 @@ BaseStream &BaseBitStream::resize(const size_t new_size)
     throw err::NotSupportedError("Not implemented");
 }
 
-size_t BaseBitStream::tell() const
+size_t BaseBitStream::pos() const
 {
     return position;
 }

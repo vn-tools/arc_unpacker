@@ -27,7 +27,7 @@ std::unique_ptr<dec::ArchiveMeta> XflArchiveDecoder::read_meta_impl(
     input_file.stream.seek(magic.size());
     auto table_size = input_file.stream.read_le<u32>();
     auto file_count = input_file.stream.read_le<u32>();
-    auto file_start = input_file.stream.tell() + table_size;
+    auto file_start = input_file.stream.pos() + table_size;
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : algo::range(file_count))
     {

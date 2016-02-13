@@ -62,7 +62,7 @@ void FileStream::write_impl(const void *source, const size_t size)
         throw err::IoError("Could not write full data");
 }
 
-size_t FileStream::tell() const
+size_t FileStream::pos() const
 {
     return ftell(p->file);
 }
@@ -86,6 +86,6 @@ void FileStream::resize_impl(const size_t new_size)
 std::unique_ptr<io::BaseByteStream> FileStream::clone() const
 {
     auto ret = std::make_unique<FileStream>(p->path, p->mode);
-    ret->seek(tell());
+    ret->seek(pos());
     return std::move(ret);
 }

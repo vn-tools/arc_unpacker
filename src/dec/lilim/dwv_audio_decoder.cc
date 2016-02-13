@@ -31,7 +31,7 @@ res::Audio DwvAudioDecoder::decode_impl(
     const auto byte_rate = header_stream.read_le<u32>();
     const auto block_align = header_stream.read_le<u16>();
     audio.bits_per_sample = header_stream.read_le<u16>();
-    if (header_stream.tell() < header_stream.size())
+    if (header_stream.left())
     {
         const auto extra_data_size = header_stream.read_le<u16>();
         audio.extra_codec_headers = header_stream.read(extra_data_size);

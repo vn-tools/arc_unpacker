@@ -38,7 +38,7 @@ std::unique_ptr<dec::ArchiveMeta> PkwvAudioArchiveDecoder::read_meta_impl(
     input_file.stream.seek(magic.size());
     const auto fmt_count = input_file.stream.read_le<u16>();
     const auto file_count = input_file.stream.read_le<u16>();
-    const auto data_offset = input_file.stream.tell()
+    const auto data_offset = input_file.stream.pos()
         + fmt_count * 20
         + file_count * 24;
 

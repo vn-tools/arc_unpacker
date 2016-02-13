@@ -232,7 +232,7 @@ static void decrypt(
     const size_t pos,
     const size_t size)
 {
-    const auto old_pos = input_stream.tell();
+    const auto old_pos = input_stream.pos();
     input_stream.seek(pos);
     const auto data = algo::unxor(input_stream.read(size), key);
     input_stream.seek(pos);
@@ -279,7 +279,7 @@ void common::decrypt(
             const auto width = input_stream.read_le<u32>();
             const auto height = input_stream.read_le<u32>();
             const auto size = 4 * width * height;
-            ::decrypt(input_stream, params.key, input_stream.tell(), size);
+            ::decrypt(input_stream, params.key, input_stream.pos(), size);
             input_stream.skip(size);
         }
     }
@@ -297,7 +297,7 @@ void common::decrypt(
             const auto height = input_stream.read_le<u32>();
             const auto channels = input_stream.read_le<u32>();
             const auto size = channels * width * height;
-            ::decrypt(input_stream, params.key, input_stream.tell(), size);
+            ::decrypt(input_stream, params.key, input_stream.pos(), size);
             input_stream.skip(size);
         }
     }
@@ -330,7 +330,7 @@ void common::decrypt(
             const auto height = input_stream.read_le<u32>();
             const auto channels = input_stream.read_le<u32>();
             const auto size = channels * width * height;
-            ::decrypt(input_stream, params.key, input_stream.tell(), size);
+            ::decrypt(input_stream, params.key, input_stream.pos(), size);
             input_stream.skip(size);
         }
     }
@@ -362,7 +362,7 @@ void common::decrypt(
         const auto height = input_stream.read_le<u32>();
         const auto channels = input_stream.read_le<u32>();
         const auto size = channels * width * height;
-        ::decrypt(input_stream, params.key, input_stream.tell(), size);
+        ::decrypt(input_stream, params.key, input_stream.pos(), size);
     }
 
     else if (input_stream.seek(0).read(4) == "PL00"_b)
@@ -377,7 +377,7 @@ void common::decrypt(
             const auto height = input_stream.read_le<u32>();
             const auto channels = input_stream.read_le<u32>();
             const auto size = channels * width * height;
-            ::decrypt(input_stream, params.key, input_stream.tell(), size);
+            ::decrypt(input_stream, params.key, input_stream.pos(), size);
             input_stream.skip(size);
         }
     }
@@ -392,6 +392,6 @@ void common::decrypt(
         const auto height = input_stream.read_le<u32>();
         const auto channels = input_stream.read_le<u32>();
         const auto size = channels * width * height;
-        ::decrypt(input_stream, params.key, input_stream.tell(), size);
+        ::decrypt(input_stream, params.key, input_stream.pos(), size);
     }
 }

@@ -51,7 +51,7 @@ File::~File()
 
 void File::guess_extension()
 {
-    const auto old_pos = stream.tell();
+    const auto old_pos = stream.pos();
     for (const auto &def : magic_definitions)
     {
         const auto magic = def.first;

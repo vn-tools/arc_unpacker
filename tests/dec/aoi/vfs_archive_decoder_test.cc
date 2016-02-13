@@ -26,7 +26,7 @@ TEST_CASE("Aoi VFS archives", "[dec]")
         input_file.stream.write_le<u32>(table_size);
         input_file.stream.write("JUNK"_b);
 
-        size_t offset = input_file.stream.tell() + table_size;
+        size_t offset = input_file.stream.pos() + table_size;
         for (const auto &file : expected_files)
         {
             input_file.stream.write_zero_padded(file->path.str(), 0x13);
@@ -53,7 +53,7 @@ TEST_CASE("Aoi VFS archives", "[dec]")
         input_file.stream.write_le<u32>(table_size);
         input_file.stream.write("JUNK"_b);
 
-        size_t offset = input_file.stream.tell() + table_size;
+        size_t offset = input_file.stream.pos() + table_size;
         for (const auto &file : expected_files)
         {
             input_file.stream.write_zero_padded(file->path.str(), 0x13);

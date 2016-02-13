@@ -21,7 +21,7 @@ res::Audio WavAudioDecoder::decode_impl(
     {
         const auto chunk_name = input_file.stream.read(4);
         const auto chunk_size = input_file.stream.read_le<u32>();
-        const auto chunk_start = input_file.stream.tell();
+        const auto chunk_start = input_file.stream.pos();
         if (chunk_name == "fmt\x20"_b)
         {
             audio.codec = input_file.stream.read_le<u16>();
@@ -30,7 +30,7 @@ res::Audio WavAudioDecoder::decode_impl(
             const auto byte_rate = input_file.stream.read_le<u32>();
             const auto block_align = input_file.stream.read_le<u16>();
             audio.bits_per_sample = input_file.stream.read_le<u16>();
-            const auto chunk_pos = input_file.stream.tell() - chunk_start;
+            const auto chunk_pos = input_file.stream.pos() - chunk_start;
             if (chunk_pos < chunk_size)
             {
                 const auto extra_data_size = input_file.stream.read_le<u16>();

@@ -33,7 +33,7 @@ std::unique_ptr<dec::ArchiveMeta> EgrArchiveDecoder::read_meta_impl(
         entry->height = input_file.stream.read_le<u32>();
         if (input_file.stream.read_le<u32>() != entry->width * entry->height)
             throw err::BadDataSizeError();
-        entry->offset = input_file.stream.tell();
+        entry->offset = input_file.stream.pos();
         input_file.stream.skip(0x574 + entry->width * entry->height);
         entry->path = algo::format("Image%03d.png", i++);
         meta->entries.push_back(std::move(entry));

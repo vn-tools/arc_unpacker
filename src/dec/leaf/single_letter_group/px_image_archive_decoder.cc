@@ -302,8 +302,8 @@ static void read_meta(
     io::BaseByteStream &input_stream,
     dec::ArchiveMeta &meta)
 {
-    const auto base_offset = input_stream.tell();
-    const auto table_offset = input_stream.tell() + 32;
+    const auto base_offset = input_stream.pos();
+    const auto table_offset = input_stream.pos() + 32;
     const auto control = input_stream.seek(base_offset + 16).read_le<u16>();
 
     if (control & 0x80)

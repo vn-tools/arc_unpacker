@@ -222,7 +222,7 @@ static std::vector<u16> decompress_block(
     }
 
     // align to regular byte
-    bit_stream.read((8 - (bit_stream.tell() & 7)) & 7);
+    bit_stream.read((8 - (bit_stream.pos() & 7)) & 7);
 
     for (auto i : algo::range(0, output_size, block_dim2))
     {
@@ -398,9 +398,9 @@ std::unique_ptr<res::Image> Cbg2Decoder::decode(
         raw_stream.seek(block_offsets[i]);
         raw_stream.skip((pad_width + block_dim2 - 1) / block_dim2);
         size_t block_size_original = read_variable_data(raw_stream);
-        int block_size_compressed = block_offsets[i + 1] - raw_stream.tell();
+        int block_size_compressed = block_offsets[i + 1] - raw_stream.pos();
         if (block_size_compressed < 0)
-            block_size_compressed = raw_stream.size() - raw_stream.tell();
+            block_size_compressed = raw_stream.size() - raw_stream.pos();
         auto expected_width = pad_width * block_dim * (depth == 8 ? 1 : 3);
         if (expected_width != block_size_original)
             throw err::BadDataSizeError();

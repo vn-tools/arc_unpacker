@@ -78,7 +78,7 @@ static std::unique_ptr<ArchiveMetaImpl> read_meta(
     for (const auto i : algo::range(header.dir_count))
     {
         auto dir = std::make_unique<DirectoryInfo>();
-        const auto entry_offset = dir_table_stream.tell();
+        const auto entry_offset = dir_table_stream.pos();
         const auto entry_size = dir_table_stream.read_le<u32>();
         dir->file_count = dir_table_stream.read_le<u32>();
         dir->file_table_offset = dir_table_stream.read_le<u32>();
@@ -121,7 +121,7 @@ static std::unique_ptr<ArchiveMetaImpl> read_meta(
         for (const auto i : algo::range(dir->file_count))
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
-            const auto entry_offset = file_table_stream.tell();
+            const auto entry_offset = file_table_stream.pos();
             const auto entry_size = file_table_stream.read_le<u32>();
             const auto relative_offset = file_table_stream.read_le<u64>();
             entry->offset = relative_offset + header.data_start;
@@ -157,7 +157,7 @@ static Header read_header_5(io::BaseByteStream &input_stream)
     header.extra_key = 0;
     input_stream.skip(12);
     header.table_size = header.dir_table_size + header.file_table_size;
-    header.data_start = input_stream.tell() + header.table_size;
+    header.data_start = input_stream.pos() + header.table_size;
     return header;
 }
 
@@ -178,7 +178,7 @@ static Header read_header_6(io::BaseByteStream &input_stream)
     header.extra_key = (algo::rotr(tmp2, 5) * 0x7DA8F173) + 0x13712765;
     input_stream.skip(4);
     header.table_size = header.dir_table_size + header.file_table_size;
-    header.data_start = input_stream.tell() + header.table_size;
+    header.data_start = input_stream.pos() + header.table_size;
     return header;
 }
 

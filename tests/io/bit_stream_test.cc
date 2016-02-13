@@ -286,7 +286,7 @@ template<class T> static void test_seeking()
             for (auto i : algo::range(32))
             {
                 reader.seek(i);
-                INFO("Position: " << reader.tell());
+                INFO("Position: " << reader.pos());
                 auto mask = (1ull << (32 - i)) - 1;
                 auto expected = 0b11001100101010101111000000110011ull & mask;
                 REQUIRE((reader.read(32 - i) == expected));
@@ -301,7 +301,7 @@ template<class T> static void test_seeking()
             {
                 reader.seek(31);
                 REQUIRE_THROWS(reader.skip(2 + i));
-                REQUIRE((reader.tell() == 31));
+                REQUIRE((reader.pos() == 31));
             }
             for (auto i : algo::range(32))
                 REQUIRE_THROWS(reader.seek(33 + i));
@@ -359,7 +359,7 @@ template<class T> static void test_stream_interop()
             REQUIRE((reader.read(8) == 0xFF));
             REQUIRE((reader.read(1) == 0x01));
             REQUIRE((stream.read<u8>() == 2));
-            reader.seek(stream.tell() << 3);
+            reader.seek(stream.pos() << 3);
             REQUIRE((reader.read(8) == 1));
             REQUIRE((stream.read<u8>() == 0xFF));
         }
@@ -378,7 +378,7 @@ template<class T> static void test_retracting()
             REQUIRE(reader.eof());
             REQUIRE_THROWS(reader.read(1));
             REQUIRE(reader.eof());
-            REQUIRE((reader.tell() == 8));
+            REQUIRE((reader.pos() == 8));
         }
 
         SECTION("Byte-aligned with byte retrieval")
@@ -388,7 +388,7 @@ template<class T> static void test_retracting()
             reader.read(1);
             REQUIRE_THROWS(reader.read(16));
             REQUIRE(!reader.eof());
-            REQUIRE((reader.tell() == 8));
+            REQUIRE((reader.pos() == 8));
             REQUIRE((reader.read(8) == 0xFF));
         }
 
@@ -398,7 +398,7 @@ template<class T> static void test_retracting()
             reader.read(7);
             REQUIRE_THROWS(reader.read(2));
             REQUIRE(!reader.eof());
-            REQUIRE((reader.tell() == 7));
+            REQUIRE((reader.pos() == 7));
             REQUIRE(reader.read(1));
         }
 
@@ -408,7 +408,7 @@ template<class T> static void test_retracting()
             reader.read(7);
             REQUIRE_THROWS(reader.read(10));
             REQUIRE(!reader.eof());
-            REQUIRE((reader.tell() == 7));
+            REQUIRE((reader.pos() == 7));
             REQUIRE(reader.read(1));
         }
     }

@@ -21,7 +21,7 @@ namespace io {
         ~FileStream();
 
         size_t size() const override;
-        size_t tell() const override;
+        size_t pos() const override;
 
         std::unique_ptr<BaseByteStream> clone() const override;
 

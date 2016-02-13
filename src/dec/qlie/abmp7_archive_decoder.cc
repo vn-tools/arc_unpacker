@@ -31,7 +31,7 @@ std::unique_ptr<dec::ArchiveMeta> Abmp7ArchiveDecoder::read_meta_impl(
     auto first_entry = std::make_unique<ArchiveEntryImpl>();
     first_entry->path = "base.dat";
     first_entry->size = input_file.stream.read_le<u32>();
-    first_entry->offset = input_file.stream.tell();
+    first_entry->offset = input_file.stream.pos();
     input_file.stream.skip(first_entry->size);
     meta->entries.push_back(std::move(first_entry));
 
@@ -46,7 +46,7 @@ std::unique_ptr<dec::ArchiveMeta> Abmp7ArchiveDecoder::read_meta_impl(
             entry->path = "unknown";
         entry->path.change_extension("dat");
         entry->size = input_file.stream.read_le<u32>();
-        entry->offset = input_file.stream.tell();
+        entry->offset = input_file.stream.pos();
         input_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));
     }

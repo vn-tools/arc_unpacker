@@ -33,7 +33,7 @@ static std::unique_ptr<ArchiveMetaImpl> prepare_meta(io::File &input_file)
     meta->arc_key = input_file.stream.read(8);
 
     input_file.stream.skip(20);
-    meta->header_offset = input_file.stream.tell();
+    meta->header_offset = input_file.stream.pos();
     bstr header_data = input_file.stream.read(0x24);
 
     // recover game key

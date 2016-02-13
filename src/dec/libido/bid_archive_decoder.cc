@@ -28,7 +28,7 @@ std::unique_ptr<dec::ArchiveMeta> BidArchiveDecoder::read_meta_impl(
     auto meta = std::make_unique<ArchiveMeta>();
     u32 data_start = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
-    while (input_file.stream.tell() < data_start)
+    while (input_file.stream.pos() < data_start)
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = input_file.stream.read_to_zero(16).str();

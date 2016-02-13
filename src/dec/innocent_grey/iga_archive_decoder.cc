@@ -47,11 +47,11 @@ std::unique_ptr<dec::ArchiveMeta> IgaArchiveDecoder::read_meta_impl(
     input_file.stream.skip(12);
 
     const auto table_size = read_integer(input_file.stream);
-    const auto table_start = input_file.stream.tell();
+    const auto table_start = input_file.stream.pos();
     const auto table_end = table_start + table_size;
     EntrySpec *last_entry_spec = nullptr;
     std::vector<std::unique_ptr<EntrySpec>> entry_specs;
-    while (input_file.stream.tell() < table_end)
+    while (input_file.stream.pos() < table_end)
     {
         auto spec = std::make_unique<EntrySpec>();
         spec->name_offset = read_integer(input_file.stream);
@@ -69,7 +69,7 @@ std::unique_ptr<dec::ArchiveMeta> IgaArchiveDecoder::read_meta_impl(
         return std::make_unique<ArchiveMeta>();
 
     const auto names_size = read_integer(input_file.stream);
-    const auto names_start = input_file.stream.tell();
+    const auto names_start = input_file.stream.pos();
     last_entry_spec->name_size = names_size - last_entry_spec->name_offset;
 
     const auto data_offset = input_file.stream.size()

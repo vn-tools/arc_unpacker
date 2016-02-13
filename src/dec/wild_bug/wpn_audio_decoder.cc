@@ -48,7 +48,7 @@ res::Audio WpnAudioDecoder::decode_impl(
     const auto byte_rate = input_file.stream.read_le<u32>();
     const auto block_align = input_file.stream.read_le<u16>();
     audio.bits_per_sample = input_file.stream.read_le<u16>();
-    if (input_file.stream.tell() - fmt_chunk.offset < fmt_chunk.size)
+    if (input_file.stream.pos() - fmt_chunk.offset < fmt_chunk.size)
     {
         const auto extra_data_size = input_file.stream.read_le<u16>();
         audio.extra_codec_headers = input_file.stream.read(extra_data_size);

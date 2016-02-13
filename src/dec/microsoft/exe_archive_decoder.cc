@@ -425,7 +425,7 @@ void ResourceCrawler::process_dir(const size_t offset, const std::string path)
 
         try
         {
-            args.input_stream.peek(args.input_stream.tell(), [&]()
+            args.input_stream.peek(args.input_stream.pos(), [&]()
             {
                 std::string entry_path = read_entry_name(entry);
                 if (path != "")

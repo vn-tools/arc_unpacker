@@ -27,7 +27,7 @@ CustomBitStream::CustomBitStream(const bstr &input) : io::BaseBitStream(input)
 
 void CustomBitStream::fetch()
 {
-    if (input_stream->size() - input_stream->tell() >= 4)
+    if (input_stream->left() >= 4)
     {
         buffer = input_stream->read_le<u32>();
         return;

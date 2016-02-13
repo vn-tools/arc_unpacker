@@ -13,7 +13,7 @@ void tests::stream_test(
         SECTION("Proper file position after initialization")
         {
             REQUIRE(stream->size() == 0);
-            REQUIRE(stream->tell() == 0);
+            REQUIRE(stream->pos() == 0);
         }
 
         SECTION("NULL bytes in binary data don't cause anomalies")
@@ -50,9 +50,9 @@ void tests::stream_test(
             SECTION("Positive offset")
             {
                 stream->skip(1);
-                REQUIRE(stream->tell() == 1);
+                REQUIRE(stream->pos() == 1);
                 REQUIRE(stream->read_le<u16>() == 15);
-                REQUIRE(stream->tell() == 3);
+                REQUIRE(stream->pos() == 3);
             }
 
             SECTION("Negative offset")
@@ -60,7 +60,7 @@ void tests::stream_test(
                 stream->read(2);
                 stream->skip(-1);
                 REQUIRE(stream->read_le<u16>() == 15);
-                REQUIRE(stream->tell() == 3);
+                REQUIRE(stream->pos() == 3);
             }
         }
 
@@ -70,13 +70,13 @@ void tests::stream_test(
 
             SECTION("Initial seeking")
             {
-                REQUIRE(stream->tell() == 0);
+                REQUIRE(stream->pos() == 0);
             }
 
             SECTION("Seeking to EOF")
             {
                 stream->seek(4);
-                REQUIRE(stream->tell() == 4);
+                REQUIRE(stream->pos() == 4);
             }
 
             SECTION("Seeking beyond EOF throws errors")
@@ -84,7 +84,7 @@ void tests::stream_test(
                 REQUIRE(stream->size() == 4);
                 stream->seek(3);
                 REQUIRE_THROWS(stream->seek(5));
-                REQUIRE(stream->tell() == 3);
+                REQUIRE(stream->pos() == 3);
             }
 
             SECTION("Seeking affects what gets read")
@@ -98,11 +98,11 @@ void tests::stream_test(
             SECTION("Seeking affects telling position")
             {
                 stream->seek(2);
-                REQUIRE(stream->tell() == 2);
+                REQUIRE(stream->pos() == 2);
                 stream->skip(1);
-                REQUIRE(stream->tell() == 3);
+                REQUIRE(stream->pos() == 3);
                 stream->skip(-1);
-                REQUIRE(stream->tell() == 2);
+                REQUIRE(stream->pos() == 2);
             }
         }
 

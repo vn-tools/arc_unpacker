@@ -31,7 +31,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v0(io::File &input_file)
 
     input_file.stream.skip(4);
     auto table_buf = input_file.stream.read(size_comp);
-    auto data_start = input_file.stream.tell();
+    auto data_start = input_file.stream.pos();
 
     for (auto &c : table_buf)
         c ^= 0xFF;
@@ -71,7 +71,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(io::File &input_file)
         input_file.stream.skip(8);
         entry->path = algo::sjis_to_utf8(
             input_file.stream.read(name_size)).str();
-        entry->offset = input_file.stream.tell();
+        entry->offset = input_file.stream.pos();
         entry->key = key;
         input_file.stream.skip(entry->size_comp);
         meta->entries.push_back(std::move(entry));

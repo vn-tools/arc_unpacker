@@ -38,7 +38,7 @@ namespace
         ~CamelliaStream();
 
         size_t size() const override;
-        size_t tell() const override;
+        size_t pos() const override;
         std::unique_ptr<BaseByteStream> clone() const override;
 
     protected:
@@ -94,16 +94,16 @@ void CamelliaStream::read_impl(void *destination, const size_t size)
         return;
     }
 
-    const auto old_pos = parent_stream->tell();
-    const auto offset_pad = parent_stream->tell() & 0xF;
-    const auto offset_start = parent_stream->tell() & ~0xF;
+    const auto old_pos = parent_stream->pos();
+    const auto offset_pad = parent_stream->pos() & 0xF;
+    const auto offset_start = parent_stream->pos() & ~0xF;
     const auto aligned_size = (offset_pad + size + 0xF) & ~0xF;
     const auto block_count = (aligned_size + 0xF) / 0x10;
     if (block_count == 0)
         return;
 
     parent_stream->seek(parent_stream_offset
-        + ((parent_stream->tell() - parent_stream_offset) - offset_pad));
+        + ((parent_stream->pos() - parent_stream_offset) - offset_pad));
 
     io::MemoryStream output_stream;
     output_stream.resize(block_count * 16);
@@ -129,9 +129,9 @@ void CamelliaStream::write_impl(const void *source, const size_t size)
     throw err::NotSupportedError("Not implemented");
 }
 
-size_t CamelliaStream::tell() const
+size_t CamelliaStream::pos() const
 {
-    return parent_stream->tell() - parent_stream_offset;
+    return parent_stream->pos() - parent_stream_offset;
 }
 
 size_t CamelliaStream::size() const
@@ -146,8 +146,10 @@ void CamelliaStream::resize_impl(const size_t new_size)
 
 std::unique_ptr<io::BaseByteStream> CamelliaStream::clone() const
 {
-    return std::make_unique<CamelliaStream>(
+    auto ret = std::make_unique<CamelliaStream>(
         *parent_stream, key, parent_stream_offset, parent_stream_size);
+    ret->seek(pos());
+    return std::move(ret);
 }
 
 bool LibuArchiveDecoder::is_recognized_impl(io::File &input_file) const

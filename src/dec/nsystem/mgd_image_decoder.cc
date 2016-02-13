@@ -160,13 +160,13 @@ static std::vector<std::unique_ptr<Region>> read_region_data(
     io::BaseByteStream &input_stream)
 {
     std::vector<std::unique_ptr<Region>> regions;
-    while (input_stream.tell() < input_stream.size())
+    while (input_stream.left())
     {
         input_stream.skip(4);
         size_t regions_size = input_stream.read_le<u32>();
         size_t region_count = input_stream.read_le<u16>();
         size_t meta_format = input_stream.read_le<u16>();
-        size_t bytes_left = input_stream.size() - input_stream.tell();
+        size_t bytes_left = input_stream.size() - input_stream.pos();
         if (meta_format != 4)
             throw err::NotSupportedError("Unexpected meta format");
         if (regions_size != bytes_left)
@@ -182,7 +182,7 @@ static std::vector<std::unique_ptr<Region>> read_region_data(
             regions.push_back(std::move(region));
         }
 
-        if (input_stream.tell() + 4 >= input_stream.size())
+        if (input_stream.left() < 4)
             break;
         input_stream.skip(4);
     }

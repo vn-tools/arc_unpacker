@@ -73,7 +73,7 @@ void MemoryStream::write_impl(const void *source, size_t size)
     std::memcpy(destination_ptr, source_ptr, size);
 }
 
-size_t MemoryStream::tell() const
+size_t MemoryStream::pos() const
 {
     return buffer_pos;
 }
@@ -93,6 +93,6 @@ void MemoryStream::resize_impl(const size_t new_size)
 std::unique_ptr<io::BaseByteStream> MemoryStream::clone() const
 {
     auto ret = std::unique_ptr<MemoryStream>(new MemoryStream(buffer));
-    ret->seek(tell());
+    ret->seek(pos());
     return std::move(ret);
 }

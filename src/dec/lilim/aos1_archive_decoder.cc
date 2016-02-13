@@ -43,7 +43,7 @@ std::unique_ptr<dec::ArchiveMeta> Aos1ArchiveDecoder::read_meta_impl(
         entry->offset = input_file.stream.read_le<u32>();
         entry->size = input_file.stream.read_le<u32>();
         input_file.stream.skip(8);
-        entry->offset += input_file.stream.tell();
+        entry->offset += input_file.stream.pos();
         meta->entries.push_back(std::move(entry));
     }
     return meta;

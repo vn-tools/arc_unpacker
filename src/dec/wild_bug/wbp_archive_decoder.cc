@@ -63,7 +63,7 @@ std::unique_ptr<dec::ArchiveMeta> WbpArchiveDecoder::read_meta_impl(
         input_file.stream.seek(file_offsets[i]);
         do
         {
-            auto old_pos = input_file.stream.tell();
+            auto old_pos = input_file.stream.pos();
 
             input_file.stream.skip(1);
             auto name_size = input_file.stream.read<u8>();
@@ -82,7 +82,7 @@ std::unique_ptr<dec::ArchiveMeta> WbpArchiveDecoder::read_meta_impl(
             input_file.stream.seek(old_pos + (name_size & 0xFC) + 0x18);
         }
         while (i + 1 < file_offsets.size()
-            && input_file.stream.tell() < file_offsets[i + 1]);
+            && input_file.stream.pos() < file_offsets[i + 1]);
     }
     return meta;
 }

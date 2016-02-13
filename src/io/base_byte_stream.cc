@@ -31,7 +31,7 @@ bstr BaseByteStream::read_to_zero(const size_t bytes)
 
 bstr BaseByteStream::read_to_eof()
 {
-    return read(size() - tell());
+    return read(size() - pos());
 }
 
 bstr BaseByteStream::read_line()

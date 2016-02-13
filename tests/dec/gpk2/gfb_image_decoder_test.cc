@@ -29,7 +29,7 @@ TEST_CASE("GPK2 GFB images", "[dec]")
         input_file.stream.write_le<u32>(input_image.height());
         input_file.stream.write("??"_b);
         input_file.stream.write_le<u16>(24);
-        while (input_file.stream.tell() < 0x40)
+        while (input_file.stream.pos() < 0x40)
             input_file.stream.write("?"_b);
 
         io::MemoryStream pixel_stream;
@@ -66,7 +66,7 @@ TEST_CASE("GPK2 GFB images", "[dec]")
         input_file.stream.write_le<u32>(input_image.height());
         input_file.stream.write("??"_b);
         input_file.stream.write_le<u16>(24);
-        while (input_file.stream.tell() < 0x40)
+        while (input_file.stream.pos() < 0x40)
             input_file.stream.write("?"_b);
 
         for (const auto y : algo::range(input_image.height() - 1, -1, -1))
@@ -97,7 +97,7 @@ TEST_CASE("GPK2 GFB images", "[dec]")
         input_file.stream.write_le<u32>(input_image.height());
         input_file.stream.write("??"_b);
         input_file.stream.write_le<u16>(32);
-        while (input_file.stream.tell() < 0x40)
+        while (input_file.stream.pos() < 0x40)
             input_file.stream.write("?"_b);
 
         for (const auto y : algo::range(input_image.height() - 1, -1, -1))
@@ -130,7 +130,7 @@ TEST_CASE("GPK2 GFB images", "[dec]")
         input_file.stream.write_le<u32>(input_image.height());
         input_file.stream.write("??"_b);
         input_file.stream.write_le<u16>(32);
-        while (input_file.stream.tell() < 0x40)
+        while (input_file.stream.pos() < 0x40)
             input_file.stream.write("?"_b);
 
         for (const auto y : algo::range(input_image.height() - 1, -1, -1))

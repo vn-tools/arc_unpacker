@@ -40,7 +40,7 @@ std::unique_ptr<dec::ArchiveMeta> VfsArchiveDecoder::read_meta_impl(
     {
         for (const auto i : algo::range(file_count))
         {
-            const auto entry_offset = input_file.stream.tell();
+            const auto entry_offset = input_file.stream.pos();
             auto entry = std::make_unique<ArchiveEntryImpl>();
             entry->path = input_file.stream.read_to_zero(0x13).str();
             entry->offset = input_file.stream.read_le<u32>();
@@ -53,10 +53,10 @@ std::unique_ptr<dec::ArchiveMeta> VfsArchiveDecoder::read_meta_impl(
     else if (version == 0x200)
     {
         const auto names_offset
-            = input_file.stream.tell() + entry_size * file_count + 8;
+            = input_file.stream.pos() + entry_size * file_count + 8;
         for (const auto i : algo::range(file_count))
         {
-            const auto entry_offset = input_file.stream.tell();
+            const auto entry_offset = input_file.stream.pos();
             auto entry = std::make_unique<ArchiveEntryImpl>();
 
             const auto name_offset

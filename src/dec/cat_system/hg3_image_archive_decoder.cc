@@ -161,7 +161,7 @@ std::unique_ptr<dec::ArchiveMeta> Hg3ImageArchiveDecoder::read_meta_impl(
     while (!input_file.stream.eof())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
-        entry->offset = input_file.stream.tell() + 8;
+        entry->offset = input_file.stream.pos() + 8;
         entry->size = input_file.stream.read_le<u32>();
         input_file.stream.skip(4);
         if (!entry->size)
@@ -185,7 +185,7 @@ std::unique_ptr<io::File> Hg3ImageArchiveDecoder::read_file_impl(
     io::MemoryStream data_stream(data);
 
     std::map<bstr, bstr> chunks;
-    while (data_stream.size() - data_stream.tell() > 8)
+    while (data_stream.left() > 8)
     {
         const auto chunk_name = data_stream.read(8);
         data_stream.skip(4);

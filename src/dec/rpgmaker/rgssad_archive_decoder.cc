@@ -37,7 +37,7 @@ std::unique_ptr<dec::ArchiveMeta> RgssadArchiveDecoder::read_meta_impl(
         key = rgs::advance_key(key);
 
         entry->key = key;
-        entry->offset = input_file.stream.tell();
+        entry->offset = input_file.stream.pos();
 
         input_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));

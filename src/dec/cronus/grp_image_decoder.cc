@@ -137,7 +137,7 @@ static std::unique_ptr<Header> read_header(
                 continue;
             if (!validate_header(*header))
                 continue;
-            header->input_offset = input_file.stream.tell();
+            header->input_offset = input_file.stream.pos();
             return header;
         }
         catch (...)

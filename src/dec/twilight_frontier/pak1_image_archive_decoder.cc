@@ -1,5 +1,6 @@
 #include "dec/twilight_frontier/pak1_image_archive_decoder.h"
 #include "algo/format.h"
+#include "algo/ptr.h"
 #include "algo/range.h"
 #include "enc/png/png_image_encoder.h"
 #include "err.h"
@@ -52,7 +53,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak1ImageArchiveDecoder::read_meta_impl(
     meta->palettes.push_back(res::Palette(256));
 
     size_t i = 0;
-    while (input_file.stream.tell() < input_file.stream.size())
+    while (input_file.stream.left())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->width = input_file.stream.read_le<u32>();
@@ -61,7 +62,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak1ImageArchiveDecoder::read_meta_impl(
         entry->depth = input_file.stream.read<u8>();
         entry->size = input_file.stream.read_le<u32>();
         entry->path = algo::format("%04d", i++);
-        entry->offset = input_file.stream.tell();
+        entry->offset = input_file.stream.pos();
         input_file.stream.skip(entry->size);
         meta->entries.push_back(std::move(entry));
     }
@@ -88,25 +89,24 @@ std::unique_ptr<io::File> Pak1ImageArchiveDecoder::read_file_impl(
         throw err::UnsupportedBitDepthError(entry->depth);
 
     bstr output(entry->width * entry->height * chunk_size);
-    auto output_ptr = output.get<u8>();
-    auto output_end = output.end<u8>();
+    auto output_ptr = algo::make_ptr(output);
     input_file.stream.seek(entry->offset);
-    io::MemoryStream input(input_file.stream, entry->size);
+    io::MemoryStream input_stream(input_file.stream, entry->size);
 
-    while (output_ptr < output_end && input.tell() < input.size())
+    while (output_ptr.left() && input_stream.left())
     {
         size_t repeat;
         if (entry->depth == 32 || entry->depth == 24)
-            repeat = input.read_le<u32>();
+            repeat = input_stream.read_le<u32>();
         else if (entry->depth == 16)
-            repeat = input.read_le<u16>();
+            repeat = input_stream.read_le<u16>();
         else if (entry->depth == 8)
-            repeat = input.read<u8>();
+            repeat = input_stream.read<u8>();
         else
             throw err::UnsupportedBitDepthError(entry->depth);
 
-        auto chunk = input.read(chunk_size);
-        while (repeat--)
+        auto chunk = input_stream.read(chunk_size);
+        while (repeat-- && output_ptr.left())
             for (auto &c : chunk)
                 *output_ptr++ = c;
     }

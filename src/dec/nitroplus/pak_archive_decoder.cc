@@ -43,7 +43,7 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
             input_file.stream.read(table_size_comp)));
 
     auto meta = std::make_unique<ArchiveMeta>();
-    auto file_data_offset = input_file.stream.tell();
+    auto file_data_offset = input_file.stream.pos();
     for (auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();

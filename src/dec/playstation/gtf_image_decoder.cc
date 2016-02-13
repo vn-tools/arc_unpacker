@@ -72,7 +72,7 @@ static GtfSpec read_spec(io::BaseByteStream &input_stream)
     GtfSpec spec;
     input_stream.skip(4);
     spec.header_size = input_stream.read_be<u32>();
-    spec.offset = input_stream.tell() + spec.header_size - 4;
+    spec.offset = input_stream.pos() + spec.header_size - 4;
     input_stream.skip(4);
     spec.flags = input_stream.read<u8>();
     spec.mipmap = input_stream.read<u8>();

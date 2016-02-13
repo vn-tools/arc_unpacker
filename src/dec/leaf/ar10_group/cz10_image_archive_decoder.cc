@@ -87,7 +87,7 @@ std::unique_ptr<dec::ArchiveMeta> Cz10ImageArchiveDecoder::read_meta_impl(
 
     input_file.stream.seek(magic.size());
     const auto image_count = input_file.stream.read_le<u32>();
-    auto current_offset = input_file.stream.tell() + image_count * 16;
+    auto current_offset = input_file.stream.pos() + image_count * 16;
     for (const auto i : algo::range(image_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();

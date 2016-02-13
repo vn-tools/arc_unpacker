@@ -119,7 +119,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(io::File &input_file)
     auto meta = std::make_unique<dec::ArchiveMeta>();
     const auto file_count = input_file.stream.read_le<u16>();
     const auto depth = input_file.stream.read_le<u16>();
-    auto offset = input_file.stream.tell() + file_count * 24;
+    auto offset = input_file.stream.pos() + file_count * 24;
     for (const auto i : algo::range(file_count))
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();

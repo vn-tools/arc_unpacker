@@ -29,7 +29,7 @@ namespace
 static size_t detect_version(io::File &input_file, const size_t file_count)
 {
     size_t version = 0;
-    input_file.stream.peek(input_file.stream.tell(), [&]()
+    input_file.stream.peek(input_file.stream.pos(), [&]()
     {
         input_file.stream.skip((file_count - 1) * (24 + 8));
         input_file.stream.skip(24);
@@ -38,7 +38,7 @@ static size_t detect_version(io::File &input_file, const size_t file_count)
         if (last_entry_offset + last_entry_size == input_file.stream.size())
             version = 1;
     });
-    input_file.stream.peek(input_file.stream.tell(), [&]()
+    input_file.stream.peek(input_file.stream.pos(), [&]()
     {
         input_file.stream.skip((file_count - 1) * (4 + 24 + 8));
         input_file.stream.skip(4 + 24);

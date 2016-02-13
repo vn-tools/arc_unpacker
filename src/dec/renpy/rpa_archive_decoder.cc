@@ -104,7 +104,7 @@ static void unpickle(io::BaseByteStream &table_stream, UnpickleContext *context)
     // using Pickle's HIGHEST_PROTOCOL, which means there's no need to parse
     // 90% of the opcodes (such as "S" with escape stuff).
     size_t table_size = table_stream.size();
-    while (table_stream.tell() < table_size)
+    while (table_stream.pos() < table_size)
     {
         PickleOpcode c = static_cast<PickleOpcode>(table_stream.read<u8>());
         switch (c)
@@ -145,7 +145,7 @@ static void unpickle(io::BaseByteStream &table_stream, UnpickleContext *context)
             {
                 size_t size = table_stream.read<u8>();
                 u32 number = 0;
-                size_t pos = table_stream.tell();
+                size_t pos = table_stream.pos();
                 for (auto i : algo::range(size))
                 {
                     table_stream.seek(pos + size - 1 - i);
@@ -224,7 +224,7 @@ static u32 read_hex_number(io::BaseByteStream &input_stream, size_t size)
 
 static bstr read_raw_table(io::BaseByteStream &input_stream)
 {
-    size_t compressed_size = input_stream.size() - input_stream.tell();
+    size_t compressed_size = input_stream.size() - input_stream.pos();
     return algo::pack::zlib_inflate(input_stream.read(compressed_size));
 }
 

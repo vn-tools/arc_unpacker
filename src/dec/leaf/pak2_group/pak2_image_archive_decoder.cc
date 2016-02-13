@@ -44,7 +44,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ImageArchiveDecoder::read_meta_impl(
             input_file.stream.skip(8);
             entry->width = input_file.stream.read_le<u16>();
             entry->height = input_file.stream.read_le<u16>();
-            entry->color_offset = input_file.stream.tell();
+            entry->color_offset = input_file.stream.pos();
             entry->size = entry->width * entry->height * entry->bpp >> 3;
             input_file.stream.skip(entry->size);
 
@@ -58,7 +58,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ImageArchiveDecoder::read_meta_impl(
             if (!last_entry)
                 throw err::CorruptDataError("Mask found, but no color data");
             input_file.stream.skip(28);
-            last_entry->mask_offset = input_file.stream.tell();
+            last_entry->mask_offset = input_file.stream.pos();
             input_file.stream.skip(last_entry->width * last_entry->height);
         }
         else if (entry_magic == end_magic)

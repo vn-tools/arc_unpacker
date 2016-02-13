@@ -127,7 +127,7 @@ TEST_CASE("Atelier Kaguya LINK2 archives", "[dec]")
             input_file.stream.write_le<u16>(0);
             offset += file->stream.size();
         }
-        REQUIRE(input_file.stream.tell() == data_offset);
+        REQUIRE(input_file.stream.pos() == data_offset);
         for (const auto &file : expected_files)
             input_file.stream.write(file->stream.seek(0).read_to_eof());
 
@@ -153,7 +153,7 @@ TEST_CASE("Atelier Kaguya LINK2 archives", "[dec]")
             input_file.stream.write_le<u16>(1);
             offset += data.size() + 4;
         }
-        REQUIRE(input_file.stream.tell() == data_offset);
+        REQUIRE(input_file.stream.pos() == data_offset);
         for (const auto &file : expected_files)
         {
             const auto data = compress(file->stream.seek(0).read_to_eof());

@@ -48,7 +48,7 @@ namespace
         RsaReader(io::BaseByteStream &input_stream);
         ~RsaReader();
         std::unique_ptr<io::MemoryStream> read_block();
-        size_t tell() const;
+        size_t pos() const;
 
     private:
         std::unique_ptr<io::MemoryStream> decrypt(std::basic_string<u8> input);
@@ -111,7 +111,7 @@ RsaReader::RsaReader(io::BaseByteStream &input_stream)
     // test chunk = one block with dir count
     bstr test_chunk;
     input_stream.peek(
-        input_stream.tell(),
+        input_stream.pos(),
         [&]() { test_chunk = input_stream.read(0x40); });
 
     for (const auto &rsa_key : rsa_keys)
@@ -140,9 +140,9 @@ RsaReader::~RsaReader()
 {
 }
 
-size_t RsaReader::tell() const
+size_t RsaReader::pos() const
 {
-    return input_stream.tell();
+    return input_stream.pos();
 }
 
 std::unique_ptr<io::MemoryStream> RsaReader::read_block()
@@ -414,7 +414,7 @@ std::unique_ptr<dec::ArchiveMeta> TfpkArchiveDecoder::read_meta_impl(
         meta->entries.push_back(std::move(entry));
     }
 
-    auto table_end = reader.tell();
+    auto table_end = reader.pos();
     for (auto &entry : meta->entries)
         static_cast<ArchiveEntryImpl*>(entry.get())->offset += table_end;
 

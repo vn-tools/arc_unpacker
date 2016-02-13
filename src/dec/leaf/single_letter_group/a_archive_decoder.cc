@@ -74,7 +74,7 @@ std::unique_ptr<dec::ArchiveMeta> AArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(magic.size());
     const auto file_count = input_file.stream.read_le<u16>();
-    const auto offset_to_data = input_file.stream.tell() + 32 * file_count;
+    const auto offset_to_data = input_file.stream.pos() + 32 * file_count;
     auto meta = std::make_unique<ArchiveMeta>();
     for (const auto i : algo::range(file_count))
     {

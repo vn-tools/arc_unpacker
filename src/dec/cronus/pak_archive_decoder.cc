@@ -36,7 +36,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta(
         return nullptr;
 
     auto table_size_orig = file_count * 24;
-    auto table_size_comp = file_data_start - input_file.stream.tell();
+    auto table_size_comp = file_data_start - input_file.stream.pos();
     auto table_data = input_file.stream.read(table_size_comp);
     if (encrypted)
     {
@@ -87,7 +87,7 @@ std::unique_ptr<dec::ArchiveMeta> PakArchiveDecoder::read_meta_impl(
     if (input_file.stream.read(magic2.size()) != magic2)
         input_file.stream.seek(magic3.size());
     bool encrypted = input_file.stream.read_le<u32>() > 0;
-    auto pos = input_file.stream.tell();
+    auto pos = input_file.stream.pos();
     for (const auto &plugin : p->plugin_manager.get_all())
     {
         input_file.stream.seek(pos);

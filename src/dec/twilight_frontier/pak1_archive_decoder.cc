@@ -29,7 +29,7 @@ static std::unique_ptr<io::MemoryStream> read_raw_table(
     io::BaseByteStream &input_stream, size_t file_count)
 {
     size_t table_size = file_count * 0x6C;
-    if (table_size > input_stream.size() - input_stream.tell())
+    if (table_size > input_stream.left())
         throw err::RecognitionError();
     if (table_size > file_count * (0x64 + 4 + 4))
         throw err::RecognitionError();

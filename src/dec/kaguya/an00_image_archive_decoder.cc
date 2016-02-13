@@ -47,7 +47,7 @@ std::unique_ptr<dec::ArchiveMeta> An00ImageArchiveDecoder::read_meta_impl(
         entry->y = input_file.stream.read_le<u32>();
         entry->width = input_file.stream.read_le<u32>();
         entry->height = input_file.stream.read_le<u32>();
-        entry->offset = input_file.stream.tell();
+        entry->offset = input_file.stream.pos();
         input_file.stream.skip(4 * entry->width * entry->height);
         meta->entries.push_back(std::move(entry));
     }

@@ -204,7 +204,7 @@ std::unique_ptr<dec::ArchiveMeta> Xp3ArchiveDecoder::read_meta_impl(
     meta->decrypt_func = plugin_manager.get()
         .create_decrypt_func(input_file.path);
 
-    while (table_stream.tell() < table_stream.size())
+    while (table_stream.left())
         meta->entries.push_back(read_entry(logger, table_stream));
     return std::move(meta);
 }

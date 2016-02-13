@@ -49,7 +49,7 @@ static void read_data_entry(io::File &input_file, dec::ArchiveMeta &meta)
     auto entry = std::make_unique<ArchiveEntryImpl>();
     entry->path = "unknown.dat";
     entry->size = input_file.stream.read_le<u32>();
-    entry->offset = input_file.stream.tell();
+    entry->offset = input_file.stream.pos();
     input_file.stream.skip(entry->size);
     meta.entries.push_back(std::move(entry));
 }
@@ -85,7 +85,7 @@ static void read_resource_entry(io::File &input_file, dec::ArchiveMeta &meta)
         input_file.stream.skip(12);
 
     entry->size = input_file.stream.read_le<u32>();
-    entry->offset = input_file.stream.tell();
+    entry->offset = input_file.stream.pos();
     input_file.stream.skip(entry->size);
     if (entry->size)
         meta.entries.push_back(std::move(entry));
@@ -101,7 +101,7 @@ std::unique_ptr<dec::ArchiveMeta> Abmp10ArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(16);
     auto meta = std::make_unique<ArchiveMeta>();
-    while (input_file.stream.tell() < input_file.stream.size())
+    while (input_file.stream.left())
     {
         auto magic = input_file.stream.read(16);
         if (magic == magic_data10

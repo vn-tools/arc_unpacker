@@ -35,7 +35,7 @@ std::unique_ptr<dec::ArchiveMeta> LinkArchiveDecoder::read_meta_impl(
     input_file.stream.seek(magic.size());
     const auto file_count = input_file.stream.read_le<u32>();
     const auto file_names_size = input_file.stream.read_le<u32>();
-    const auto file_names_start = input_file.stream.tell();
+    const auto file_names_start = input_file.stream.pos();
 
     std::vector<bstr> file_names;
     for (const auto i : algo::range(file_count))

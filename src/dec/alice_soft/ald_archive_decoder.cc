@@ -42,14 +42,14 @@ std::unique_ptr<dec::ArchiveMeta> AldArchiveDecoder::read_meta_impl(
             break;
         input_file.stream.seek(offset);
         const auto header_size = input_file.stream.read_le<u32>();
-        if (input_file.stream.tell() + header_size < input_file.stream.size())
+        if (input_file.stream.left() >= header_size)
         {
             auto entry = std::make_unique<ArchiveEntryImpl>();
             entry->size = input_file.stream.read_le<u32>();
             input_file.stream.skip(8);
             const auto name = input_file.stream.read_to_zero(header_size - 16);
             entry->path = algo::sjis_to_utf8(name).str();
-            entry->offset = input_file.stream.tell();
+            entry->offset = input_file.stream.pos();
             meta->entries.push_back(std::move(entry));
         }
     }

@@ -35,7 +35,7 @@ static bstr process_stream(
     bstr output, input_chunk, output_chunk(buffer_size);
     size_t written = 0;
     int ret;
-    const auto initial_pos = input_stream.tell();
+    const auto initial_pos = input_stream.pos();
     do
     {
         if (s.avail_in == 0)

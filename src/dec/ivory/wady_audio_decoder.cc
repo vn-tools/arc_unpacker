@@ -20,7 +20,7 @@ namespace
 static Version detect_version(io::BaseByteStream &input_stream)
 {
     auto version = Version::Version1;
-    input_stream.peek(input_stream.tell(), [&]()
+    input_stream.peek(input_stream.pos(), [&]()
     {
         auto channels = input_stream.read_le<u16>();
         try
@@ -121,7 +121,7 @@ static bstr decode_v2(
     for (auto i : algo::range(channels))
     {
         auto compressed_size = channels == 1
-            ? input_stream.size() - input_stream.tell()
+            ? input_stream.size() - input_stream.pos()
             : input_stream.read_le<u32>();
 
         io::MemoryStream tmp_stream(input_stream, compressed_size);

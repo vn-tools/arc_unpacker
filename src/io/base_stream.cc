@@ -9,20 +9,20 @@ BaseStream::~BaseStream() {}
 
 size_t BaseStream::left() const
 {
-    return size() - tell();
+    return size() - pos();
 }
 
 io::BaseStream &BaseStream::skip(const int offset)
 {
-    if (tell() + offset > size())
+    if (static_cast<int>(left()) < offset)
         throw err::EofError();
-    return seek(tell() + offset);
+    return seek(pos() + offset);
 }
 
 io::BaseStream &BaseStream::peek(
     const size_t offset, std::function<void()> func)
 {
-    size_t old_pos = tell();
+    size_t old_pos = pos();
     seek(offset);
     try
     {
@@ -39,5 +39,5 @@ io::BaseStream &BaseStream::peek(
 
 bool BaseStream::eof() const
 {
-    return tell() == size();
+    return pos() == size();
 }

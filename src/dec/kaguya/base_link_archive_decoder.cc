@@ -61,7 +61,7 @@ std::unique_ptr<dec::ArchiveMeta> BaseLinkArchiveDecoder::read_meta_impl(
 
     while (true)
     {
-        const auto entry_offset = input_file.stream.tell();
+        const auto entry_offset = input_file.stream.pos();
         const auto entry_size = input_file.stream.read_le<u32>();
         if (!entry_size)
             break;
@@ -85,7 +85,7 @@ std::unique_ptr<dec::ArchiveMeta> BaseLinkArchiveDecoder::read_meta_impl(
                 input_file.stream.read(name_size)).str();
         }
 
-        entry->offset = input_file.stream.tell();
+        entry->offset = input_file.stream.pos();
         entry->size = entry_size - (entry->offset - entry_offset);
         meta->entries.push_back(std::move(entry));
 

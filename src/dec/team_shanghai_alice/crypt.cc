@@ -28,7 +28,7 @@ static void decrypt(
     shift += (left & 1);
     left -= shift;
 
-    while (left > 0 && output_stream.tell() < context.limit)
+    while (left > 0 && output_stream.pos() < context.limit)
     {
         if (left < static_cast<int>(current_block_size))
             current_block_size = left;
@@ -52,7 +52,7 @@ static void decrypt(
 
     left += shift;
     left = std::min(left, static_cast<int>(
-        input_stream.size() - input_stream.tell()));
+        input_stream.size() - input_stream.pos()));
     if (left > 0)
         output_stream.write(input_stream.read(left));
     output_stream.seek(0);

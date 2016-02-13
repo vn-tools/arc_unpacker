@@ -20,7 +20,7 @@ res::Image CwpImageDecoder::decode_impl(
     const auto ihdr_crc = input_file.stream.read_be<u32>();
     const auto first_idat_size = input_file.stream.read_be<u32>();
     const auto rest = input_file.stream.read(
-        input_file.stream.size() - 1 - input_file.stream.tell());
+        input_file.stream.size() - 1 - input_file.stream.pos());
 
     io::File png_file("dummy.png", ""_b);
     png_file.stream.write("\x89""PNG"_b);

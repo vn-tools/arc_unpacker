@@ -32,12 +32,12 @@ static std::string extract_string(std::string &container)
 static res::Image decode_tlg_0(io::File &input_file)
 {
     size_t raw_data_size = input_file.stream.read_le<u32>();
-    size_t raw_data_offset = input_file.stream.tell();
+    size_t raw_data_offset = input_file.stream.pos();
 
     std::vector<std::pair<std::string, std::string>> tags;
 
     input_file.stream.skip(raw_data_size);
-    while (input_file.stream.tell() < input_file.stream.size())
+    while (input_file.stream.left())
     {
         std::string chunk_name = input_file.stream.read(4).str();
         size_t chunk_size = input_file.stream.read_le<u32>();
@@ -75,7 +75,7 @@ static res::Image decode_tlg_6(io::File &input_file)
 
 static int guess_version(io::BaseByteStream &input_stream)
 {
-    size_t pos = input_stream.tell();
+    size_t pos = input_stream.pos();
     if (input_stream.read(magic_tlg_0.size()) == magic_tlg_0)
         return 0;
 

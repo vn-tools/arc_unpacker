@@ -66,7 +66,7 @@ std::unique_ptr<dec::ArchiveMeta> MgrArchiveDecoder::read_meta_impl(
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = entry_count == 1
-            ? input_file.stream.tell()
+            ? input_file.stream.pos()
             : input_file.stream.read_le<u32>();
         entry->path = algo::format("%d.bmp", i);
         meta->entries.push_back(std::move(entry));

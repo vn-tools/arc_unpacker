@@ -18,10 +18,10 @@ SectionReader::SectionReader(io::BaseByteStream &input_stream)
     while (!input_stream.eof())
     {
         Section section;
-        section.base_offset = input_stream.tell();
+        section.base_offset = input_stream.pos();
         section.name = input_stream.read(8).str();
         section.size = input_stream.read_le<u64>();
-        section.data_offset = input_stream.tell();
+        section.data_offset = input_stream.pos();
 
         const auto space_index = section.name.find_first_of('\x20');
         if (space_index != section.name.npos)

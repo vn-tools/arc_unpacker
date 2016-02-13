@@ -54,7 +54,7 @@ std::unique_ptr<dec::ArchiveMeta> WflArchiveDecoder::read_meta_impl(
         entry->size_orig = entry->type == 1
             ? input_file.stream.read_le<u32>()
             : entry->size_comp;
-        entry->offset = input_file.stream.tell();
+        entry->offset = input_file.stream.pos();
         input_file.stream.skip(entry->size_comp);
         meta->entries.push_back(std::move(entry));
     }

@@ -27,7 +27,7 @@ std::unique_ptr<dec::ArchiveMeta> PacArchiveDecoder::read_meta_impl(
     input_file.stream.seek(magic.size());
     auto file_count = input_file.stream.read_le<u32>();
     auto meta = std::make_unique<ArchiveMeta>();
-    auto file_data_start = input_file.stream.tell() + file_count * 32;
+    auto file_data_start = input_file.stream.pos() + file_count * 32;
     auto current_file_offset = 0;
     for (auto i : algo::range(file_count))
     {

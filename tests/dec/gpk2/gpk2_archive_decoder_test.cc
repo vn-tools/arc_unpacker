@@ -17,12 +17,12 @@ static void do_test(
     table_stream.write_le<u32>(expected_files.size());
     for (const auto &file : expected_files)
     {
-        table_stream.write_le<u32>(input_file.stream.tell());
+        table_stream.write_le<u32>(input_file.stream.pos());
         table_stream.write_le<u32>(file->stream.size());
         table_stream.write_zero_padded(file->path.str(), 0x80);
         input_file.stream.write(file->stream.seek(0).read_to_eof());
     }
-    const auto offset_to_table = input_file.stream.tell();
+    const auto offset_to_table = input_file.stream.pos();
     input_file.stream.write(table_stream.seek(0).read_to_eof());
     input_file.stream.seek(4).write_le<u32>(offset_to_table);
 

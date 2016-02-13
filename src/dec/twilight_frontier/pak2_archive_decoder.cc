@@ -56,7 +56,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ArchiveDecoder::read_meta_impl(
         throw err::RecognitionError();
 
     const auto table_size = input_file.stream.read_le<u32>();
-    if (table_size > input_file.stream.size() - input_file.stream.tell())
+    if (table_size > input_file.stream.left())
         throw err::RecognitionError();
     if (table_size > file_count * (4 + 4 + 256 + 1))
         throw err::RecognitionError();

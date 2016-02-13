@@ -19,7 +19,7 @@ namespace io {
         ~MemoryStream();
 
         size_t size() const override;
-        size_t tell() const override;
+        size_t pos() const override;
 
         BaseByteStream &reserve(const size_t count);
 

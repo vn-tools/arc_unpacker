@@ -90,10 +90,10 @@ std::unique_ptr<dec::ArchiveMeta> GzipArchiveDecoder::read_meta_impl(
         if (flags & Flags::Crc)
             input_file.stream.skip(2);
 
-        entry->offset = input_file.stream.tell();
+        entry->offset = input_file.stream.pos();
         const auto data = algo::pack::zlib_inflate(
             input_file.stream, algo::pack::ZlibKind::RawDeflate);
-        entry->size = input_file.stream.tell() - entry->offset;
+        entry->size = input_file.stream.pos() - entry->offset;
         input_file.stream.skip(8);
 
         meta->entries.push_back(std::move(entry));

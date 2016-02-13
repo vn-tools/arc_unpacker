@@ -32,7 +32,7 @@ std::unique_ptr<dec::ArchiveMeta> LwgArchiveDecoder::read_meta_impl(
     size_t file_count = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
     size_t table_size = input_file.stream.read_le<u32>();
-    size_t file_data_start = input_file.stream.tell() + table_size + 4;
+    size_t file_data_start = input_file.stream.pos() + table_size + 4;
 
     auto meta = std::make_unique<ArchiveMeta>();
     for (auto i : algo::range(file_count))
