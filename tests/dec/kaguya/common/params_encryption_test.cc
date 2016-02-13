@@ -1,5 +1,7 @@
 ﻿#include "dec/kaguya/common/params_encryption.h"
+#include <stack>
 #include "algo/locale.h"
+#include "algo/range.h"
 #include "io/memory_stream.h"
 #include "test_support/catch.h"
 
@@ -223,6 +225,84 @@ static void write_body_v5(
     output_stream.write(key);
 }
 
+static void write_body_v5_2(
+    io::BaseByteStream &output_stream, const bstr &key, const bstr &game_title)
+{
+    output_stream.write_le<u16>('?');
+    output_stream.write_le<u32>('?');
+    output_stream.write_le<u32>('?');
+    write_raw(output_stream, "???"_b);
+    write_utf16(output_stream, game_title);
+    write_utf16(output_stream, "producer"_b);
+    write_utf16(output_stream, "copyright"_b);
+    output_stream.write<u8>('?');
+    write_utf16(output_stream, "???"_b);
+    write_utf16(output_stream, "???"_b);
+
+    const std::vector<std::pair<bstr, bstr>> arc_names
+        = {{"bla"_b, "bla"_b}, {"herp"_b, "derp"_b}};
+    output_stream.write<u8>(arc_names.size());
+    for (const auto &kv : arc_names)
+    {
+        write_utf16(output_stream, kv.first);
+        write_utf16(output_stream, kv.second);
+    }
+    output_stream.write_le<u32>(3);
+    output_stream.write_le<u32>(2);
+    output_stream.write_le<u32>(1);
+    output_stream.write_le<u32>('?');
+
+    struct Tree final
+    {
+        bstr name;
+        std::vector<std::pair<bstr, bstr>> values;
+        std::vector<Tree> children;
+    };
+
+    for (const auto i : algo::range(3))
+    {
+        Tree unk = {
+            "whatever"_b,
+            {{"1"_b, "2"_b}, {"3"_b, "4"_b}},
+            {
+                {
+                    "nested1"_b,
+                    {{"a"_b, "b"_b}, {"c"_b, "d"_b}, {"e"_b, "f"_b}},
+                    {}
+                },
+                {
+                    "nested2"_b,
+                    {{"a"_b, "b"_b}, {"c"_b, "d"_b}, {"e"_b, "f"_b}},
+                    {}
+                },
+            }
+        };
+
+        output_stream.write<u8>(1);
+
+        std::stack<Tree> stack;
+        stack.push(unk);
+        while (!stack.empty())
+        {
+            const auto tree = stack.top();
+            stack.pop();
+            write_utf16(output_stream, tree.name);
+            output_stream.write_le<u32>(tree.values.size());
+            for (const auto &value : tree.values)
+            {
+                write_utf16(output_stream, value.first);
+                write_utf16(output_stream, value.second);
+            }
+            output_stream.write_le<u32>(tree.children.size());
+            for (const auto child : tree.children)
+                stack.push(child);
+        }
+    }
+
+    output_stream.write_le<u32>(key.size());
+    output_stream.write(key);
+}
+
 TEST_CASE("Atelier Kaguya params decryption", "[dec]")
 {
     // for unknown data, serialize nonempty junk to test skipping
@@ -341,6 +421,18 @@ TEST_CASE("Atelier Kaguya params decryption", "[dec]")
         io::MemoryStream output_stream;
         output_stream.write("[SCR-PARAMS]v05.1"_b);
         write_body_v5(output_stream, key, game_title);
+        const auto params = parse_params_file(output_stream);
+        REQUIRE(params.key == key);
+        REQUIRE(params.game_title == game_title);
+    }
+
+    SECTION("Version 5.2")
+    {
+        const auto key = "abc"_b;
+        const auto game_title = "some generic title"_b;
+        io::MemoryStream output_stream;
+        output_stream.write("[SCR-PARAMS]v05.2"_b);
+        write_body_v5_2(output_stream, key, game_title);
         const auto params = parse_params_file(output_stream);
         REQUIRE(params.key == key);
         REQUIRE(params.game_title == game_title);
