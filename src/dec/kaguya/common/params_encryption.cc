@@ -249,6 +249,42 @@ static common::Params parse_params_file_v5_2(io::BaseByteStream &input_stream)
     return params;
 }
 
+static common::Params parse_params_file_v5_3(io::BaseByteStream &input_stream)
+{
+    input_stream.skip(10);
+    input_stream.skip(input_stream.read<u8>());
+    const auto game_title
+        = algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
+    const auto producer
+        = algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
+    const auto copyright
+        = algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
+    input_stream.skip(1);
+    for (const auto i : algo::range(2))
+        input_stream.skip(input_stream.read_le<u16>());
+    for (const auto i : algo::range(input_stream.read<u8>()))
+    {
+        const auto arc_name = algo::utf16_to_utf8(
+            input_stream.read(input_stream.read_le<u16>()));
+        const auto arc_type = algo::utf16_to_utf8(
+            input_stream.read(input_stream.read_le<u16>()));
+    }
+    input_stream.skip(16);
+
+    for (const auto i : algo::range(3))
+        if (input_stream.read<u8>())
+            skip_tree_v5_2(input_stream);
+
+    input_stream.skip(input_stream.read_le<u32>() * 12);
+
+    const auto key_size = input_stream.read_le<u32>();
+    common::Params params;
+    params.decrypt_anm = true;
+    params.game_title = game_title;
+    params.key = input_stream.read(key_size);
+    return params;
+}
+
 static bool verify_magic(io::BaseByteStream &input_stream, const bstr &magic)
 {
     return input_stream.seek(0).read(magic.size()) == magic;
@@ -264,6 +300,9 @@ common::Params common::parse_params_file(io::BaseByteStream &input_stream)
     {
         return parse_params_file_v3_or_4(input_stream);
     }
+
+    if (verify_magic(input_stream, "[SCR-PARAMS]v05.3"_b))
+        return parse_params_file_v5_3(input_stream);
 
     if (verify_magic(input_stream, "[SCR-PARAMS]v05.2"_b))
         return parse_params_file_v5_2(input_stream);
