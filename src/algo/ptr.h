@@ -56,20 +56,22 @@ namespace algo {
             return p;
         }
 
-        inline BasePtr &operator +=(const size_t n)
+        inline BasePtr &operator +=(const int n)
         {
             cur_ptr += n;
-            while (cyclic && cur_ptr >= end_ptr)
-                cur_ptr -= size();
+            if (cyclic)
+            {
+                while (cur_ptr < start_ptr)
+                    cur_ptr += size();
+                while (cur_ptr >= end_ptr)
+                    cur_ptr -= size();
+            }
             return *this;
         }
 
-        inline BasePtr &operator -=(const size_t n)
+        inline BasePtr &operator -=(const int n)
         {
-            cur_ptr -= n;
-            while (cyclic && cur_ptr < start_ptr)
-                cur_ptr += size();
-            return *this;
+            return operator+=(-n);
         }
 
         constexpr BasePtr operator +(const int n) const
@@ -80,7 +82,7 @@ namespace algo {
             return ret;
         }
 
-        constexpr BasePtr operator -(const size_t n) const
+        constexpr BasePtr operator -(const int n) const
         {
             return operator+(-n);
         }
@@ -93,7 +95,7 @@ namespace algo {
             return ret;
         }
 
-        inline BasePtr operator -(const size_t n)
+        inline BasePtr operator -(const int n)
         {
             return operator+(-n);
         }
