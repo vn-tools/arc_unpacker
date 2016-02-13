@@ -47,7 +47,8 @@ std::unique_ptr<dec::ArchiveMeta> An20ImageArchiveDecoder::read_meta_impl(
         else throw err::NotSupportedError("Unsupported control");
     }
 
-    input_file.stream.skip(2);
+    const auto unk2_count = input_file.stream.read_le<u16>();
+    input_file.stream.skip(unk2_count * 8);
     auto meta = std::make_unique<dec::ArchiveMeta>();
     const auto file_count = input_file.stream.read_le<u16>();
     if (!file_count)

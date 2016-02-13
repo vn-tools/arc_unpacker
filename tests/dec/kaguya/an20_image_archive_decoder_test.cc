@@ -32,7 +32,13 @@ TEST_CASE("Atelier Kaguya AN20 image archives", "[dec]")
         for (const auto i : algo::range(1, x.size()))
             input_file.stream.write_le<u32>(x[i]);
     }
-    input_file.stream.write_le<u16>('?');
+    const std::vector<std::pair<u32, u32>> unk2 = {{1, 2}, {3, 4}};
+    input_file.stream.write_le<u16>(unk2.size());
+    for (const auto x : unk2)
+    {
+        input_file.stream.write_le<u32>(x.first);
+        input_file.stream.write_le<u32>(x.second);
+    }
     input_file.stream.write_le<u16>(expected_images.size());
     input_file.stream.write_le<u32>(0);
     input_file.stream.write_le<u32>(0);
