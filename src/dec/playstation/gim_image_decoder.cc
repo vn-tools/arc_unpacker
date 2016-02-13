@@ -153,7 +153,7 @@ res::Image GimImageDecoder::decode_impl(
 {
     input_file.stream.seek(0x30);
     std::map<int, Chunk> chunks;
-    while (!input_file.stream.eof())
+    while (input_file.stream.left())
     {
         Chunk chunk;
         chunk.offset = input_file.stream.pos();

@@ -19,7 +19,7 @@ std::unique_ptr<dec::ArchiveMeta> RgssadArchiveDecoder::read_meta_impl(
     input_file.stream.seek(magic.size());
     auto key = initial_key;
     auto meta = std::make_unique<ArchiveMeta>();
-    while (!input_file.stream.eof())
+    while (input_file.stream.left())
     {
         auto entry = std::make_unique<rgs::ArchiveEntryImpl>();
 

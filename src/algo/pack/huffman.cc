@@ -39,7 +39,7 @@ bstr algo::pack::decode_huffman(
     bstr output;
     output.resize(target_size);
     io::MsbBitStream input_stream(input);
-    while (output.size() < target_size && !input_stream.eof())
+    while (output.size() < target_size && input_stream.left())
     {
         auto byte = huffman_tree.root;
         while (byte >= 256 && byte <= 511)

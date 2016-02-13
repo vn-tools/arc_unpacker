@@ -77,7 +77,7 @@ static void rewrite_ogg_stream(
     u32 initial_serial_number = 0;
     auto pages = 0;
     auto serial_number_known = false;
-    while (!input_stream.eof())
+    while (input_stream.left())
     {
         OggPage page;
         try

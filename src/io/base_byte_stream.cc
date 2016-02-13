@@ -10,7 +10,7 @@ BaseByteStream::~BaseByteStream() {}
 bstr BaseByteStream::read_to_zero()
 {
     bstr output;
-    while (!eof())
+    while (left())
     {
         const char c = read<u8>();
         if (c == '\0')
@@ -37,7 +37,7 @@ bstr BaseByteStream::read_to_eof()
 bstr BaseByteStream::read_line()
 {
     bstr output;
-    while (!eof())
+    while (left())
     {
         const auto c = read<u8>();
         if (c == '\0' || c == '\n')

@@ -32,7 +32,7 @@ void CustomBitStream::fetch()
         buffer = input_stream->read_le<u32>();
         return;
     }
-    while (!input_stream->eof())
+    while (input_stream->left())
     {
         buffer <<= 8;
         buffer |= input_stream->read<u8>();

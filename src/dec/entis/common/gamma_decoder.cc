@@ -9,7 +9,7 @@ using namespace au::dec::entis::common;
 
 int common::get_gamma_code(io::BaseBitStream &bit_stream)
 {
-    if (bit_stream.eof())
+    if (!bit_stream.left())
         return 0;
     if (!bit_stream.read(1))
         return 1;
@@ -17,10 +17,10 @@ int common::get_gamma_code(io::BaseBitStream &bit_stream)
     auto code = 0;
     while (true)
     {
-        if (bit_stream.eof())
+        if (!bit_stream.left())
             return 0;
         code = (code << 1) | bit_stream.read(1);
-        if (bit_stream.eof())
+        if (!bit_stream.left())
             return 0;
         if (!bit_stream.read(1))
             return code + base;

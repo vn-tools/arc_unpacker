@@ -22,7 +22,7 @@ bstr common::custom_lzss_decompress(const bstr &input, size_t output_size)
     auto output_end = output.end<const u8>();
 
     u16 control = 0;
-    while (output_ptr < output_end && !input_stream.eof())
+    while (output_ptr < output_end && input_stream.left())
     {
         control >>= 1;
         if (!(control & 0x100))

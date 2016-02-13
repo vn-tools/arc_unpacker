@@ -104,7 +104,7 @@ void BshfDecoder::decode(u8 *output, const size_t output_size)
         {
             for (const auto i : algo::range(32))
             {
-                if (bit_stream->eof())
+                if (!bit_stream->left())
                     return;
                 bshf_buffer->input[i] = bit_stream->read(8);
             }

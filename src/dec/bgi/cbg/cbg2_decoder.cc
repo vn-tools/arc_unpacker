@@ -325,7 +325,7 @@ static void process_alpha(
 
     u8 mark;
     u8 current_bit = 0;
-    while (!input_stream.eof())
+    while (input_stream.left())
     {
         if (!current_bit)
         {

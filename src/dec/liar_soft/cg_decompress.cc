@@ -59,7 +59,7 @@ void dec::liar_soft::cg_decompress(
                 table_offset_size--;
                 if (table_offset_size >= unk1)
                 {
-                    while (!bit_stream.eof() && bit_stream.read(1))
+                    while (bit_stream.left() && bit_stream.read(1))
                         ++table_offset_size;
                 }
                 table_offset = 1 << table_offset_size;

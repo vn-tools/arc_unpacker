@@ -15,7 +15,7 @@ struct SectionReader::Priv final
 SectionReader::SectionReader(io::BaseByteStream &input_stream)
     : p(new Priv(input_stream))
 {
-    while (!input_stream.eof())
+    while (input_stream.left())
     {
         Section section;
         section.base_offset = input_stream.pos();

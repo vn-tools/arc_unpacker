@@ -36,8 +36,3 @@ io::BaseStream &BaseStream::peek(
         throw;
     }
 }
-
-bool BaseStream::eof() const
-{
-    return pos() == size();
-}

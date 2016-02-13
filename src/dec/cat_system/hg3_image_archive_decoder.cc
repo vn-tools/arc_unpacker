@@ -158,7 +158,7 @@ std::unique_ptr<dec::ArchiveMeta> Hg3ImageArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(12);
     auto meta = std::make_unique<ArchiveMeta>();
-    while (!input_file.stream.eof())
+    while (input_file.stream.left())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->offset = input_file.stream.pos() + 8;

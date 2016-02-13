@@ -41,7 +41,7 @@ res::Image LimImageDecoder::decode_impl(
     cg_decompress(output, 0, 2, input_file.stream, 2);
     res::Image image(width, height, output, res::PixelFormat::BGR565);
 
-    if (!input_file.stream.eof())
+    if (input_file.stream.left())
     {
         output.resize(canvas_size);
         cg_decompress(output, 0, 1, input_file.stream, 1);

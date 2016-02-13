@@ -18,7 +18,7 @@ std::unique_ptr<io::File> Pak2AudioDecoder::decode_impl(
     const auto size_comp = input_file.stream.read_le<u32>();
     input_file.stream.skip(4);
     const auto data = input_file.stream.read(size_comp);
-    if (!input_file.stream.eof())
+    if (input_file.stream.left())
         logger.warn("Extra data after EOF.\n");
     auto output_file = std::make_unique<io::File>(input_file.path, data);
     output_file->guess_extension();

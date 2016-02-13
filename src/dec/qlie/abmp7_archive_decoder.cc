@@ -35,7 +35,7 @@ std::unique_ptr<dec::ArchiveMeta> Abmp7ArchiveDecoder::read_meta_impl(
     input_file.stream.skip(first_entry->size);
     meta->entries.push_back(std::move(first_entry));
 
-    while (!input_file.stream.eof())
+    while (input_file.stream.left())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         const auto name_size = input_file.stream.read<u8>();

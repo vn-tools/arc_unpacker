@@ -26,7 +26,7 @@ std::unique_ptr<dec::ArchiveMeta> Aos1ArchiveDecoder::read_meta_impl(
 {
     input_file.stream.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
-    while (!input_file.stream.eof())
+    while (input_file.stream.left())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         const auto name = input_file.stream.read_to_zero(0x10);

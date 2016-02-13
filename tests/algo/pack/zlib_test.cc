@@ -22,7 +22,7 @@ TEST_CASE("ZLIB compression", "[algo][pack]")
     {
         io::MemoryStream input_stream(input);
         REQUIRE(zlib_inflate(input_stream) == output);
-        REQUIRE(input_stream.eof());
+        REQUIRE(input_stream.left() == 0);
     }
 
     SECTION("Deflating ZLIB from bstr")

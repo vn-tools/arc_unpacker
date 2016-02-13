@@ -79,7 +79,7 @@ std::unique_ptr<dec::ArchiveMeta> ThbgmAudioArchiveDecoder::read_meta_impl(
         throw err::NotSupportedError("BGM definitions not found");
 
     auto meta = std::make_unique<ArchiveMeta>();
-    while (!definitions_file->stream.eof())
+    while (definitions_file->stream.left())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->path = definitions_file->stream.read_to_zero(16).str();

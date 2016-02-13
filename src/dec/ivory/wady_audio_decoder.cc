@@ -45,7 +45,7 @@ static Version detect_version(io::BaseByteStream &input_stream)
                         input_stream.read<u8>();
                 }
             }
-            if (input_stream.eof())
+            if (!input_stream.left())
                 version = Version::Version2;
         }
         catch (...)
@@ -79,7 +79,7 @@ static bstr decode_v1(
 
     u16 prev_sample[2] = {0, 0};
     io::MemoryStream tmp_stream(input_stream);
-    while (!tmp_stream.eof() && samples_ptr < samples_end)
+    while (tmp_stream.left() && samples_ptr < samples_end)
     {
         for (auto i : algo::range(channels))
         {

@@ -31,13 +31,13 @@ bool Pak1ImageArchiveDecoder::is_recognized_impl(io::File &input_file) const
         return false;
     auto palette_count = input_file.stream.read<u8>();
     input_file.stream.skip(palette_count * 512);
-    while (!input_file.stream.eof())
+    while (input_file.stream.left())
     {
         input_file.stream.skip(4 * 3);
         input_file.stream.skip(1);
         input_file.stream.skip(input_file.stream.read_le<u32>());
     }
-    return input_file.stream.eof();
+    return input_file.stream.left() == 0;
 }
 
 std::unique_ptr<dec::ArchiveMeta> Pak1ImageArchiveDecoder::read_meta_impl(

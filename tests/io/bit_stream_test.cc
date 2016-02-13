@@ -197,13 +197,13 @@ template<class T> static void test_checking_for_eof()
     {
         T reader("\x00\x00"_b);
         reader.read(7);
-        REQUIRE(!reader.eof());
+        REQUIRE((reader.left() == 9));
         reader.read(7);
-        REQUIRE(!reader.eof());
+        REQUIRE((reader.left() == 2));
         reader.read(1);
-        REQUIRE(!reader.eof());
+        REQUIRE((reader.left() == 1));
         reader.read(1);
-        REQUIRE(reader.eof());
+        REQUIRE((reader.left() == 0));
     }
 }
 
@@ -375,9 +375,9 @@ template<class T> static void test_retracting()
             T reader("\x00"_b);
             reader.read(7);
             reader.read(1);
-            REQUIRE(reader.eof());
+            REQUIRE((reader.left() == 0));
             REQUIRE_THROWS(reader.read(1));
-            REQUIRE(reader.eof());
+            REQUIRE((reader.left() == 0));
             REQUIRE((reader.pos() == 8));
         }
 
@@ -387,7 +387,6 @@ template<class T> static void test_retracting()
             reader.read(7);
             reader.read(1);
             REQUIRE_THROWS(reader.read(16));
-            REQUIRE(!reader.eof());
             REQUIRE((reader.pos() == 8));
             REQUIRE((reader.read(8) == 0xFF));
         }
@@ -397,7 +396,6 @@ template<class T> static void test_retracting()
             T reader("\x01"_b);
             reader.read(7);
             REQUIRE_THROWS(reader.read(2));
-            REQUIRE(!reader.eof());
             REQUIRE((reader.pos() == 7));
             REQUIRE(reader.read(1));
         }
@@ -407,7 +405,6 @@ template<class T> static void test_retracting()
             T reader("\x01\x00"_b);
             reader.read(7);
             REQUIRE_THROWS(reader.read(10));
-            REQUIRE(!reader.eof());
             REQUIRE((reader.pos() == 7));
             REQUIRE(reader.read(1));
         }

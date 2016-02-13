@@ -31,7 +31,7 @@ static void decompress_sgd_alpha(
     const bstr &input, io::BaseByteStream &output_stream)
 {
     io::MemoryStream input_stream(input);
-    while (!input_stream.eof())
+    while (input_stream.left())
     {
         auto flag = input_stream.read_le<u16>();
         if (flag & 0x8000)
@@ -45,7 +45,7 @@ static void decompress_sgd_alpha(
         }
         else
         {
-            while (flag-- && !input_stream.eof())
+            while (flag-- && input_stream.left())
             {
                 u8 alpha = input_stream.read<u8>();
                 output_stream.skip(3);
@@ -123,7 +123,7 @@ static void decompress_sgd_bgr(
 {
     std::function<void(io::BaseByteStream &, io::BaseByteStream &, u8)> func;
     io::MemoryStream input_stream(input);
-    while (!input_stream.eof())
+    while (input_stream.left())
     {
         u8 flag = input_stream.read<u8>();
         switch (flag & 0xC0)

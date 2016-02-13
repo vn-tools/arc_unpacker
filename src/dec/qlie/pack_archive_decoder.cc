@@ -175,7 +175,7 @@ static bstr decompress(const bstr &input, const size_t output_size)
     u8 dict1[256];
     u8 dict2[256];
     u8 dict3[256];
-    while (!input_stream.eof())
+    while (input_stream.left())
     {
         for (const auto i : algo::range(256))
             dict1[i] = i;

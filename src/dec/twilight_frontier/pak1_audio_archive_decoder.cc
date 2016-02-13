@@ -34,7 +34,7 @@ bool Pak1AudioArchiveDecoder::is_recognized_impl(io::File &input_file) const
         input_file.stream.skip(18);
         input_file.stream.skip(size);
     }
-    return input_file.stream.eof();
+    return input_file.stream.left() == 0;
 }
 
 std::unique_ptr<dec::ArchiveMeta> Pak1AudioArchiveDecoder::read_meta_impl(

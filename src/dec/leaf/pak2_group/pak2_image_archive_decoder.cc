@@ -32,7 +32,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ImageArchiveDecoder::read_meta_impl(
 
     input_file.stream.seek(0);
     ArchiveEntryImpl *last_entry = nullptr;
-    while (!input_file.stream.eof())
+    while (input_file.stream.left())
     {
         input_file.stream.skip(4);
         const auto entry_magic = input_file.stream.read(4);
@@ -64,7 +64,7 @@ std::unique_ptr<dec::ArchiveMeta> Pak2ImageArchiveDecoder::read_meta_impl(
         else if (entry_magic == end_magic)
         {
             input_file.stream.skip(12);
-            if (!input_file.stream.eof())
+            if (input_file.stream.left())
                 throw err::CorruptDataError("More data follow");
         }
         else

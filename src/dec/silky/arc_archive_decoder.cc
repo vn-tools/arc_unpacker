@@ -39,7 +39,7 @@ std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
     io::MemoryStream table_stream(input_file.stream.read(table_size));
 
     auto meta = std::make_unique<ArchiveMeta>();
-    while (!table_stream.eof())
+    while (table_stream.left())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         const auto name_size = table_stream.read<u8>();

@@ -12,7 +12,7 @@ static bstr decompress(const bstr &src, const size_t size_orig)
     bstr output;
     output.reserve(size_orig);
     io::MemoryStream input_stream(src);
-    while (output.size() < size_orig && !input_stream.eof())
+    while (output.size() < size_orig && input_stream.left())
     {
         const auto control = input_stream.read<u8>();
         if (control >= 0x80)

@@ -62,7 +62,7 @@ std::unique_ptr<dec::ArchiveMeta> WarcArchiveDecoder::read_meta_impl(
 
     std::set<io::path> known_names;
     auto meta = std::make_unique<ArchiveMetaImpl>(*plugin, warc_version);
-    while (!table_stream.eof())
+    while (table_stream.left())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         auto name = table_stream.read_to_zero(plugin->entry_name_size).str();

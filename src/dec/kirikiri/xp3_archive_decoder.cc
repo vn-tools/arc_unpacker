@@ -99,7 +99,7 @@ static std::vector<std::unique_ptr<SegmChunk>> read_segm_chunks(
     io::BaseByteStream &chunk_stream)
 {
     std::vector<std::unique_ptr<SegmChunk>> segm_chunks;
-    while (!chunk_stream.eof())
+    while (chunk_stream.left())
     {
         auto segm_chunk = std::make_unique<SegmChunk>();
         segm_chunk->flags = chunk_stream.read_le<u32>();
@@ -137,7 +137,7 @@ static std::unique_ptr<ArchiveEntryImpl> read_entry(
     io::MemoryStream entry_stream(input_stream.read(entry_size));
 
     auto entry = std::make_unique<ArchiveEntryImpl>();
-    while (!entry_stream.eof())
+    while (entry_stream.left())
     {
         const auto chunk_magic = entry_stream.read(4);
         const auto chunk_size = entry_stream.read_le<u64>();
@@ -157,13 +157,13 @@ static std::unique_ptr<ArchiveEntryImpl> read_entry(
             continue;
         }
 
-        if (!chunk_stream.eof())
+        if (chunk_stream.left())
         {
             logger.warn(
                 "'%s' chunk contains data beyond EOF\n", chunk_magic.c_str());
         }
     }
-    if (!entry_stream.eof())
+    if (entry_stream.left())
         throw err::CorruptDataError("FILE entry contains data beyond EOF");
 
     if (!entry->info_chunk)

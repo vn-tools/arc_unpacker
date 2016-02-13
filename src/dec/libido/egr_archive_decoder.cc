@@ -26,7 +26,7 @@ std::unique_ptr<dec::ArchiveMeta> EgrArchiveDecoder::read_meta_impl(
 {
     auto i = 0;
     auto meta = std::make_unique<ArchiveMeta>();
-    while (!input_file.stream.eof())
+    while (input_file.stream.left())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->width = input_file.stream.read_le<u32>();

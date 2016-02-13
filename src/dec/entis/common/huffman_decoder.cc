@@ -14,7 +14,7 @@ int common::get_huffman_code(io::BaseBitStream &bit_stream, HuffmanTree &tree)
         int child = tree.nodes[HuffmanNodes::Root].code;
         while (!(child & HuffmanFlags::Code))
         {
-            if (bit_stream.eof())
+            if (!bit_stream.left())
                 return HuffmanFlags::Escape;
             entry = child + bit_stream.read(1);
             child = tree.nodes[entry].code;
@@ -25,7 +25,7 @@ int common::get_huffman_code(io::BaseBitStream &bit_stream, HuffmanTree &tree)
         if (code != HuffmanFlags::Escape)
             return code;
     }
-    if (bit_stream.eof())
+    if (!bit_stream.left())
         return HuffmanFlags::Escape;
     int code = bit_stream.read(8);
     tree.add_new_entry(code);
@@ -40,7 +40,7 @@ int common::get_huffman_size(io::BaseBitStream &bit_stream, HuffmanTree &tree)
         int child = tree.nodes[HuffmanNodes::Root].code;
         do
         {
-            if (bit_stream.eof())
+            if (!bit_stream.left())
                 return HuffmanFlags::Escape;
             entry = child + bit_stream.read(1);
             child = tree.nodes[entry].code;

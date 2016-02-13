@@ -26,7 +26,7 @@ static bstr decompress_rle(bstr &input, size_t output_size)
     auto output_end = output.get<const u8>() + output.size();
 
     bool zero_flag = false;
-    while (!input_stream.eof())
+    while (input_stream.left())
     {
         u32 size = read_variable_data(input_stream);
         if (output_ptr + size >= output_end)

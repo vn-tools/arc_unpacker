@@ -191,7 +191,7 @@ static res::Image unpack_v2(
     bstr final_mask_data;
     final_mask_data.reserve(header.width * header.height);
     io::MemoryStream mask_stream(mask_data);
-    while (!mask_stream.eof())
+    while (mask_stream.left())
     {
         const auto control = mask_stream.read<u8>();
         if (control == 0 || control == 0xFF)

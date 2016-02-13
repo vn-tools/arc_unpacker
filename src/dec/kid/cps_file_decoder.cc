@@ -18,7 +18,7 @@ static bstr decrypt(const bstr &input, size_t size_compressed, size_t offset)
     u32 key = input_stream.read_le<u32>() + offset + 0x3786425;
 
     input_stream.seek(0);
-    while (!input_stream.eof())
+    while (input_stream.left())
     {
         bool use_key = input_stream.pos() != real_offset;
         auto value = input_stream.read_le<u32>();

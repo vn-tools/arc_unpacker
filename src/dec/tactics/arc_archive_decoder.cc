@@ -60,7 +60,7 @@ static std::unique_ptr<dec::ArchiveMeta> read_meta_v1(io::File &input_file)
 {
     static const bstr key = "mlnebzqm"_b; // found in .exe
     auto meta = std::make_unique<dec::ArchiveMeta>();
-    while (!input_file.stream.eof())
+    while (input_file.stream.left())
     {
         auto entry = std::make_unique<ArchiveEntryImpl>();
         entry->size_comp = input_file.stream.read_le<u32>();

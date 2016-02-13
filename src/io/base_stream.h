@@ -11,7 +11,6 @@ namespace io {
     public:
         virtual ~BaseStream() = 0;
 
-        bool eof() const;
         size_t left() const;
         virtual size_t size() const = 0;
         virtual size_t pos() const = 0;

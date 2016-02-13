@@ -61,7 +61,7 @@ std::unique_ptr<dec::ArchiveMeta> GzipArchiveDecoder::read_meta_impl(
     input_file.stream.seek(0);
     auto meta = std::make_unique<ArchiveMeta>();
 
-    while (!input_file.stream.eof())
+    while (input_file.stream.left())
     {
         input_file.stream.skip(magic.size());
         const auto compression_method = static_cast<CompressionMethod>(

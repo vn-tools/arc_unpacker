@@ -26,7 +26,7 @@ static bstr decode_huffman(const bstr &input, const size_t target_size)
     u16 nodes[2][512];
     auto size = 256;
     auto root = init_huffman(bit_stream, nodes, size);
-    while (output.size() < target_size && !bit_stream.eof())
+    while (output.size() < target_size && bit_stream.left())
     {
         auto byte = root;
         while (byte >= 256 && byte <= 511)

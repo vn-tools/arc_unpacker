@@ -38,24 +38,24 @@ static bstr custom_lzss_decompress(const bstr &input, size_t output_size)
     auto output_ptr = output.get<u8>();
     auto output_end = output.end<const u8>();
     u16 control = 0;
-    while (output_ptr < output_end && !input_stream.eof())
+    while (output_ptr < output_end && input_stream.left())
     {
         control >>= 1;
         if (!(control & 0x100))
             control = input_stream.read<u8>() | 0xFF00;
         if (control & 1)
         {
-            if (input_stream.eof())
+            if (!input_stream.left())
                 break;
             auto byte = input_stream.read<u8>();
             dict[dict_pos++] = *output_ptr++ = byte;
             dict_pos %= dict_size;
             continue;
         }
-        if (input_stream.eof())
+        if (!input_stream.left())
             break;
         u8 di = input_stream.read<u8>();
-        if (input_stream.eof())
+        if (!input_stream.left())
             break;
         u8 tmp = input_stream.read<u8>();
         u32 look_behind_pos = (((di << 8) | tmp) >> 4);

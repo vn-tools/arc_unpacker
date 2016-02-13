@@ -17,7 +17,7 @@ res::Audio WavAudioDecoder::decode_impl(
 {
     res::Audio audio;
     input_file.stream.seek(12);
-    while (!input_file.stream.eof())
+    while (input_file.stream.left())
     {
         const auto chunk_name = input_file.stream.read(4);
         const auto chunk_size = input_file.stream.read_le<u32>();

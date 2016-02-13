@@ -13,7 +13,7 @@ static bstr decompress_opaque(const bstr &input, const size_t size_hint)
     output.reserve(size_hint);
     io::MemoryStream input_stream(input);
 
-    while (!input_stream.eof())
+    while (input_stream.left())
     {
         const auto control = input_stream.read<u8>();
 
@@ -45,7 +45,7 @@ static bstr decompress_alpha(const bstr &input, const size_t size_hint)
     io::MemoryStream input_stream(input);
 
     size_t current_channel = 0;
-    while (!input_stream.eof())
+    while (input_stream.left())
     {
         const auto control = input_stream.read<u8>();
 

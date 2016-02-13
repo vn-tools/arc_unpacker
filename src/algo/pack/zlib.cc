@@ -125,7 +125,7 @@ bstr algo::pack::zlib_deflate(
         },
         [&input_stream](z_stream &s)
         {
-            return deflate(&s, input_stream.eof() ? Z_FINISH : Z_NO_FLUSH);
+            return deflate(&s, input_stream.left() ? Z_NO_FLUSH : Z_FINISH);
         },
         [](z_stream &s)
         {

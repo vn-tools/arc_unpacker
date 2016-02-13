@@ -27,7 +27,7 @@ bool ArcArchiveDecoder::is_recognized_impl(io::File &input_file) const
     }
     else
         input_file.stream.skip(1);
-    return input_file.stream.eof();
+    return input_file.stream.left() == 0;
 }
 
 std::unique_ptr<dec::ArchiveMeta> ArcArchiveDecoder::read_meta_impl(
