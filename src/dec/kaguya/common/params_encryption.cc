@@ -7,20 +7,73 @@
 using namespace au;
 using namespace au::dec::kaguya;
 
+static bstr read_binary_string(io::BaseByteStream &input_stream)
+{
+    return input_stream.read(input_stream.read<u8>());
+}
+
+static bstr read_sjis_string(io::BaseByteStream &input_stream)
+{
+    return algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
+}
+
+static bstr read_utf16_string(io::BaseByteStream &input_stream)
+{
+    return algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
+}
+
+static bool verify_magic(
+    io::BaseByteStream &input_stream,
+    const std::initializer_list<bstr> &magic_list)
+{
+    for (const auto &magic : magic_list)
+        if (input_stream.seek(0).read(magic.size()) == magic)
+            return true;
+    return false;
+}
+
+static bool verify_magic(io::BaseByteStream &input_stream, const bstr &magic)
+{
+    return verify_magic(input_stream, {magic});
+}
+
+static void decrypt(
+    io::BaseByteStream &input_stream, const bstr &key, const size_t size)
+{
+    const auto old_pos = input_stream.pos();
+    const auto data = algo::unxor(input_stream.read(size), key);
+    input_stream.seek(old_pos);
+    input_stream.write(data);
+}
+
+static void decrypt(io::BaseByteStream &input_stream, const bstr &key)
+{
+    decrypt(input_stream, key, input_stream.left());
+}
+
+static int get_scr_version(io::BaseByteStream &input_stream)
+{
+    if (verify_magic(input_stream, "[SCR-PARAMS]v05.3"_b)) return 53;
+    if (verify_magic(input_stream, "[SCR-PARAMS]v05.2"_b)) return 52;
+    if (verify_magic(input_stream, "[SCR-PARAMS]v05.1"_b)) return 51;
+    if (verify_magic(input_stream, "[SCR-PARAMS]v05"_b)) return 50;
+    if (verify_magic(input_stream, "[SCR-PARAMS]v04"_b)) return 40;
+    if (verify_magic(input_stream, "[SCR-PARAMS]v03"_b)) return 30;
+    if (verify_magic(input_stream, "[SCR-PARAMS]v02"_b)) return 20;
+    throw err::RecognitionError();
+}
+
 static common::Params parse_params_file_v2(io::BaseByteStream &input_stream)
 {
     input_stream.skip(8);
-    input_stream.skip(input_stream.read<u8>());
-    const auto game_title
-        = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
-    const auto producer
-        = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
-    const auto copyright
-        = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
-    input_stream.skip(input_stream.read<u8>());
+    read_binary_string(input_stream);
+    const auto game_title = read_sjis_string(input_stream);
+    const auto producer = read_sjis_string(input_stream);
+    const auto copyright = read_sjis_string(input_stream);
+    read_binary_string(input_stream);
     input_stream.skip(1);
     for (const auto i : algo::range(2))
-        input_stream.skip(input_stream.read<u8>());
+        read_binary_string(input_stream);
     for (const auto i : algo::range(input_stream.read<u8>()))
     {
         const auto arc_name = input_stream.read(input_stream.read<u8>());
@@ -36,17 +89,17 @@ static common::Params parse_params_file_v2(io::BaseByteStream &input_stream)
         for (const auto i : algo::range(input_stream.read<u8>()))
         {
             input_stream.skip(1);
-            input_stream.skip(input_stream.read<u8>());
+            read_binary_string(input_stream);
             for (const auto j : algo::range(input_stream.read<u8>()))
-                input_stream.skip(input_stream.read<u8>());
-            input_stream.skip(input_stream.read<u8>());
+                read_binary_string(input_stream);
+            read_binary_string(input_stream);
         }
 
         for (const auto i : algo::range(input_stream.read<u8>()))
-            input_stream.skip(input_stream.read<u8>());
+            read_binary_string(input_stream);
 
         for (const auto i : algo::range(input_stream.read<u8>()))
-            input_stream.skip(input_stream.read<u8>());
+            read_binary_string(input_stream);
 
         key_size = input_stream.read_le<u32>();
         if (game_title == "幼なじみと甘～くエッチに過ごす方法"_b)
@@ -60,26 +113,24 @@ static common::Params parse_params_file_v2(io::BaseByteStream &input_stream)
         for (const auto i : algo::range(input_stream.read<u8>()))
         {
             input_stream.skip(1);
-            input_stream.skip(input_stream.read<u8>());
-            for (const auto j : algo::range(input_stream.read<u8>()))
-                input_stream.skip(input_stream.read<u8>());
-            for (const auto j : algo::range(input_stream.read<u8>()))
-                input_stream.skip(input_stream.read<u8>());
+            read_binary_string(input_stream);
+            for (const auto j : algo::range(2))
+            for (const auto k : algo::range(input_stream.read<u8>()))
+                read_binary_string(input_stream);
         }
 
         for (const auto i : algo::range(input_stream.read<u8>()))
         {
-            input_stream.skip(input_stream.read<u8>());
-            input_stream.skip(input_stream.read<u8>());
+            read_binary_string(input_stream);
+            read_binary_string(input_stream);
         }
 
         for (const auto i : algo::range(input_stream.read<u8>()))
         {
-            input_stream.skip(input_stream.read<u8>());
-            for (const auto j : algo::range(input_stream.read<u8>()))
-                input_stream.skip(input_stream.read<u8>());
-            for (const auto j : algo::range(input_stream.read<u8>()))
-                input_stream.skip(input_stream.read<u8>());
+            read_binary_string(input_stream);
+            for (const auto j : algo::range(2))
+            for (const auto k : algo::range(input_stream.read<u8>()))
+                read_binary_string(input_stream);
         }
 
         key_size = input_stream.read_le<u32>();
@@ -96,150 +147,85 @@ static common::Params parse_params_file_v2(io::BaseByteStream &input_stream)
     return params;
 }
 
-static common::Params parse_params_file_v3_or_4(
-    io::BaseByteStream &input_stream)
+static void skip_tree(io::BaseByteStream &input_stream)
 {
-    input_stream.skip(10);
-    input_stream.skip(input_stream.read<u8>());
-    const auto game_title
-        = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
-    const auto producer
-        = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
-    const auto copyright
-        = algo::sjis_to_utf8(input_stream.read(input_stream.read<u8>()));
-    input_stream.skip(1);
-    for (const auto i : algo::range(2))
-        input_stream.skip(input_stream.read<u8>());
-    for (const auto i : algo::range(input_stream.read<u8>()))
-    {
-        const auto arc_name = input_stream.read(input_stream.read<u8>());
-        const auto arc_type = input_stream.read(input_stream.read<u8>());
-    }
-    input_stream.skip(12);
-    input_stream.skip(1);
-
-    for (const auto i : algo::range(input_stream.read<u8>()))
-    {
-        input_stream.skip(1);
-        input_stream.skip(input_stream.read<u8>());
-        for (const auto j : algo::range(input_stream.read<u8>()))
-            input_stream.skip(input_stream.read<u8>());
-        for (const auto j : algo::range(input_stream.read<u8>()))
-            input_stream.skip(input_stream.read<u8>());
-    }
-    for (const auto i : algo::range(input_stream.read<u8>()))
-    {
-        input_stream.skip(input_stream.read<u8>());
-        input_stream.skip(input_stream.read<u8>());
-    }
-    for (const auto i : algo::range(input_stream.read<u8>()))
-    {
-        input_stream.skip(input_stream.read<u8>());
-        for (const auto j : algo::range(input_stream.read<u8>()))
-            input_stream.skip(input_stream.read<u8>());
-        for (const auto j : algo::range(input_stream.read<u8>()))
-            input_stream.skip(input_stream.read<u8>());
-    }
-
-    const auto key_size = input_stream.read_le<u32>();
-    common::Params params;
-    params.decrypt_anm = true;
-    params.game_title = game_title;
-    params.key = input_stream.read(key_size);
-    return params;
-}
-
-static common::Params parse_params_file_v5_or_v5_1(
-    io::BaseByteStream &input_stream)
-{
-    input_stream.skip(10);
-    input_stream.skip(input_stream.read<u8>());
-    const auto game_title
-        = algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
-    const auto producer
-        = algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
-    const auto copyright
-        = algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
-    input_stream.skip(1);
-    for (const auto i : algo::range(2))
-        input_stream.skip(input_stream.read_le<u16>());
-    for (const auto i : algo::range(input_stream.read<u8>()))
-    {
-        const auto arc_name = algo::utf16_to_utf8(
-            input_stream.read(input_stream.read_le<u16>()));
-        const auto arc_type = algo::utf16_to_utf8(
-            input_stream.read(input_stream.read_le<u16>()));
-    }
-    input_stream.skip(12);
-
-    for (const auto i : algo::range(input_stream.read<u8>()))
-    {
-        input_stream.skip(1);
-        input_stream.skip(input_stream.read_le<u16>());
-        for (const auto j : algo::range(input_stream.read<u8>()))
-            input_stream.skip(input_stream.read_le<u16>());
-        for (const auto j : algo::range(input_stream.read<u8>()))
-            input_stream.skip(input_stream.read_le<u16>());
-    }
-    for (const auto i : algo::range(input_stream.read<u8>()))
-    {
-        input_stream.skip(input_stream.read_le<u16>());
-        input_stream.skip(input_stream.read_le<u16>());
-    }
-    for (const auto i : algo::range(input_stream.read<u8>()))
-    {
-        input_stream.skip(input_stream.read_le<u16>());
-        for (const auto j : algo::range(input_stream.read<u8>()))
-            input_stream.skip(input_stream.read_le<u16>());
-        for (const auto j : algo::range(input_stream.read<u8>()))
-            input_stream.skip(input_stream.read_le<u16>());
-    }
-
-    const auto key_size = input_stream.read_le<u32>();
-    common::Params params;
-    params.decrypt_anm = true;
-    params.game_title = game_title;
-    params.key = input_stream.read(key_size);
-    return params;
-}
-
-static void skip_tree_v5_2(io::BaseByteStream &input_stream)
-{
-    input_stream.skip(input_stream.read_le<u16>());
+    read_utf16_string(input_stream);
     for (const auto i : algo::range(input_stream.read_le<u32>()))
     {
-        input_stream.skip(input_stream.read_le<u16>());
-        input_stream.skip(input_stream.read_le<u16>());
+        read_utf16_string(input_stream);
+        read_utf16_string(input_stream);
     }
     for (const auto i : algo::range(input_stream.read_le<u32>()))
-        skip_tree_v5_2(input_stream);
+        skip_tree(input_stream);
 }
 
-static common::Params parse_params_file_v5_2(io::BaseByteStream &input_stream)
+static common::Params parse_params_file_v3_or_later(
+    io::BaseByteStream &input_stream, const size_t version)
 {
+    const auto read_string = version < 50
+        ? read_sjis_string
+        : read_utf16_string;
+    // v3 and v4 use some idiotic encoding which we're going to ignore
+    const auto read_string_safe = version < 50
+        ? read_binary_string
+        : read_utf16_string;
+
     input_stream.skip(10);
-    input_stream.skip(input_stream.read<u8>());
-    const auto game_title
-        = algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
-    const auto producer
-        = algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
-    const auto copyright
-        = algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
+    read_binary_string(input_stream);
+    const auto game_title = read_string(input_stream);
+    const auto producer = read_string(input_stream);
+    const auto copyright = read_string(input_stream);
+
     input_stream.skip(1);
-    for (const auto i : algo::range(2))
-        input_stream.skip(input_stream.read_le<u16>());
+    read_string_safe(input_stream);
+    read_string_safe(input_stream);
+
     for (const auto i : algo::range(input_stream.read<u8>()))
     {
-        const auto arc_name = algo::utf16_to_utf8(
-            input_stream.read(input_stream.read_le<u16>()));
-        const auto arc_type = algo::utf16_to_utf8(
-            input_stream.read(input_stream.read_le<u16>()));
+        read_string_safe(input_stream);
+        read_string_safe(input_stream);
     }
-    input_stream.skip(16);
 
-    for (const auto i : algo::range(3))
-        if (input_stream.read<u8>())
-            skip_tree_v5_2(input_stream);
+    input_stream.skip(12);
+
+    if (version < 52)
+    {
+        if (version < 50)
+            input_stream.skip(1);
+
+        for (const auto i : algo::range(input_stream.read<u8>()))
+        {
+            input_stream.skip(1);
+            read_string_safe(input_stream);
+            for (const auto j : algo::range(2))
+            for (const auto k : algo::range(input_stream.read<u8>()))
+                read_string_safe(input_stream);
+        }
+
+        for (const auto i : algo::range(input_stream.read<u8>()))
+        {
+            read_string_safe(input_stream);
+            read_string_safe(input_stream);
+        }
+
+        for (const auto i : algo::range(input_stream.read<u8>()))
+        {
+            read_string_safe(input_stream);
+            for (const auto j : algo::range(2))
+            for (const auto j : algo::range(input_stream.read<u8>()))
+                read_string_safe(input_stream);
+        }
+    }
+    else
+    {
+        input_stream.skip(4);
+        for (const auto i : algo::range(3))
+            if (input_stream.read<u8>())
+                skip_tree(input_stream);
+
+        if (version >= 53)
+            input_stream.skip(input_stream.read_le<u32>() * 12);
+    }
 
     const auto key_size = input_stream.read_le<u32>();
     common::Params params;
@@ -247,115 +233,27 @@ static common::Params parse_params_file_v5_2(io::BaseByteStream &input_stream)
     params.game_title = game_title;
     params.key = input_stream.read(key_size);
     return params;
-}
-
-static common::Params parse_params_file_v5_3(io::BaseByteStream &input_stream)
-{
-    input_stream.skip(10);
-    input_stream.skip(input_stream.read<u8>());
-    const auto game_title
-        = algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
-    const auto producer
-        = algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
-    const auto copyright
-        = algo::utf16_to_utf8(input_stream.read(input_stream.read_le<u16>()));
-    input_stream.skip(1);
-    for (const auto i : algo::range(2))
-        input_stream.skip(input_stream.read_le<u16>());
-    for (const auto i : algo::range(input_stream.read<u8>()))
-    {
-        const auto arc_name = algo::utf16_to_utf8(
-            input_stream.read(input_stream.read_le<u16>()));
-        const auto arc_type = algo::utf16_to_utf8(
-            input_stream.read(input_stream.read_le<u16>()));
-    }
-    input_stream.skip(16);
-
-    for (const auto i : algo::range(3))
-        if (input_stream.read<u8>())
-            skip_tree_v5_2(input_stream);
-
-    input_stream.skip(input_stream.read_le<u32>() * 12);
-
-    const auto key_size = input_stream.read_le<u32>();
-    common::Params params;
-    params.decrypt_anm = true;
-    params.game_title = game_title;
-    params.key = input_stream.read(key_size);
-    return params;
-}
-
-static bool verify_magic(io::BaseByteStream &input_stream, const bstr &magic)
-{
-    return input_stream.seek(0).read(magic.size()) == magic;
 }
 
 common::Params common::parse_params_file(io::BaseByteStream &input_stream)
 {
-    if (verify_magic(input_stream, "[SCR-PARAMS]v02"_b))
-        return parse_params_file_v2(input_stream);
-
-    if (verify_magic(input_stream, "[SCR-PARAMS]v03"_b)
-        || verify_magic(input_stream, "[SCR-PARAMS]v04"_b))
-    {
-        return parse_params_file_v3_or_4(input_stream);
-    }
-
-    if (verify_magic(input_stream, "[SCR-PARAMS]v05.3"_b))
-        return parse_params_file_v5_3(input_stream);
-
-    if (verify_magic(input_stream, "[SCR-PARAMS]v05.2"_b))
-        return parse_params_file_v5_2(input_stream);
-
-    if (verify_magic(input_stream, "[SCR-PARAMS]v05.1"_b)
-        || verify_magic(input_stream, "[SCR-PARAMS]v05"_b))
-    {
-        return parse_params_file_v5_or_v5_1(input_stream);
-    }
-
-    throw err::RecognitionError();
-}
-
-static void decrypt(
-    io::BaseByteStream &input_stream,
-    const bstr &key,
-    const size_t pos,
-    const size_t size)
-{
-    const auto old_pos = input_stream.pos();
-    input_stream.seek(pos);
-    const auto data = algo::unxor(input_stream.read(size), key);
-    input_stream.seek(pos);
-    input_stream.write(data);
-    input_stream.seek(old_pos);
-}
-
-static void decrypt(
-    io::BaseByteStream &input_stream, const bstr &key, const size_t pos)
-{
-    decrypt(input_stream, key, pos, input_stream.size() - pos);
+    const auto version = get_scr_version(input_stream);
+    return version == 20
+        ? parse_params_file_v2(input_stream)
+        : parse_params_file_v3_or_later(input_stream, version);
 }
 
 void common::decrypt(
     io::BaseByteStream &input_stream, const common::Params &params)
 {
     if (verify_magic(input_stream, "BM"_b))
-        ::decrypt(input_stream, params.key, 54);
+        ::decrypt(input_stream.seek(54), params.key);
 
-    else if (verify_magic(input_stream, "AP-0"_b))
-         ::decrypt(input_stream, params.key, 12);
+    else if (verify_magic(input_stream, {"AP-3"_b, "AP-2"_b}))
+         ::decrypt(input_stream.seek(24), params.key);
 
-    else if (verify_magic(input_stream, "AP-1"_b))
-         ::decrypt(input_stream, params.key, 12);
-
-    else if (verify_magic(input_stream, "AP-2"_b))
-         ::decrypt(input_stream, params.key, 24);
-
-    else if (verify_magic(input_stream, "AP-3"_b))
-         ::decrypt(input_stream, params.key, 24);
-
-    else if (verify_magic(input_stream, "AP"_b))
-        ::decrypt(input_stream, params.key, 12);
+    else if (verify_magic(input_stream, {"AP-1"_b, "AP-0"_b, "AP"_b}))
+         ::decrypt(input_stream.seek(12), params.key);
 
     else if (verify_magic(input_stream, "AN00"_b) && params.decrypt_anm)
     {
@@ -368,9 +266,7 @@ void common::decrypt(
             input_stream.skip(8);
             const auto width = input_stream.read_le<u32>();
             const auto height = input_stream.read_le<u32>();
-            const auto size = 4 * width * height;
-            ::decrypt(input_stream, params.key, input_stream.pos(), size);
-            input_stream.skip(size);
+            ::decrypt(input_stream, params.key, 4 * width * height);
         }
     }
 
@@ -386,9 +282,7 @@ void common::decrypt(
             const auto width = input_stream.read_le<u32>();
             const auto height = input_stream.read_le<u32>();
             const auto channels = input_stream.read_le<u32>();
-            const auto size = channels * width * height;
-            ::decrypt(input_stream, params.key, input_stream.pos(), size);
-            input_stream.skip(size);
+            ::decrypt(input_stream, params.key, channels * width * height);
         }
     }
 
@@ -420,9 +314,7 @@ void common::decrypt(
             const auto width = input_stream.read_le<u32>();
             const auto height = input_stream.read_le<u32>();
             const auto channels = input_stream.read_le<u32>();
-            const auto size = channels * width * height;
-            ::decrypt(input_stream, params.key, input_stream.pos(), size);
-            input_stream.skip(size);
+            ::decrypt(input_stream, params.key, channels * width * height);
         }
     }
 
@@ -452,8 +344,7 @@ void common::decrypt(
         const auto width = input_stream.read_le<u32>();
         const auto height = input_stream.read_le<u32>();
         const auto channels = input_stream.read_le<u32>();
-        const auto size = channels * width * height;
-        ::decrypt(input_stream, params.key, input_stream.pos(), size);
+        ::decrypt(input_stream, params.key, channels * width * height);
     }
 
     else if (verify_magic(input_stream, "PL00"_b))
@@ -467,9 +358,7 @@ void common::decrypt(
             const auto width = input_stream.read_le<u32>();
             const auto height = input_stream.read_le<u32>();
             const auto channels = input_stream.read_le<u32>();
-            const auto size = channels * width * height;
-            ::decrypt(input_stream, params.key, input_stream.pos(), size);
-            input_stream.skip(size);
+            ::decrypt(input_stream, params.key, channels * width * height);
         }
     }
 
@@ -482,7 +371,6 @@ void common::decrypt(
         const auto width = input_stream.read_le<u32>();
         const auto height = input_stream.read_le<u32>();
         const auto channels = input_stream.read_le<u32>();
-        const auto size = channels * width * height;
-        ::decrypt(input_stream, params.key, input_stream.pos(), size);
+        ::decrypt(input_stream, params.key, channels * width * height);
     }
 }
