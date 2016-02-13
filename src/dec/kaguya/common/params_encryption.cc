@@ -252,19 +252,22 @@ void common::decrypt(
     if (input_stream.seek(0).read(2) == "BM"_b)
         ::decrypt(input_stream, params.key, 54);
 
-    if (input_stream.seek(0).read(4) == "AP-0"_b)
+    else if (input_stream.seek(0).read(4) == "AP-0"_b)
+         ::decrypt(input_stream, params.key, 12);
+
+    else if (input_stream.seek(0).read(4) == "AP-1"_b)
+         ::decrypt(input_stream, params.key, 12);
+
+    else if (input_stream.seek(0).read(4) == "AP-2"_b)
+         ::decrypt(input_stream, params.key, 24);
+
+    else if (input_stream.seek(0).read(4) == "AP-3"_b)
+         ::decrypt(input_stream, params.key, 24);
+
+    else if (input_stream.seek(0).read(2) == "AP"_b)
         ::decrypt(input_stream, params.key, 12);
 
-    if (input_stream.seek(0).read(4) == "AP-1"_b)
-        ::decrypt(input_stream, params.key, 12);
-
-    if (input_stream.seek(0).read(4) == "AP-2"_b)
-        ::decrypt(input_stream, params.key, 24);
-
-    if (input_stream.seek(0).read(4) == "AP-3"_b)
-        ::decrypt(input_stream, params.key, 24);
-
-    if (input_stream.seek(0).read(4) == "AN00"_b && params.decrypt_anm)
+    else if (input_stream.seek(0).read(4) == "AN00"_b && params.decrypt_anm)
     {
         input_stream.seek(20);
         const auto frame_count = input_stream.read_le<u16>();
@@ -281,7 +284,7 @@ void common::decrypt(
         }
     }
 
-    if (input_stream.seek(0).read(4) == "AN10"_b && params.decrypt_anm)
+    else if (input_stream.seek(0).read(4) == "AN10"_b && params.decrypt_anm)
     {
         input_stream.seek(20);
         const auto frame_count = input_stream.read_le<u16>();
@@ -299,7 +302,7 @@ void common::decrypt(
         }
     }
 
-    if (input_stream.seek(0).read(4) == "AN20"_b && params.decrypt_anm)
+    else if (input_stream.seek(0).read(4) == "AN20"_b && params.decrypt_anm)
     {
         input_stream.seek(4);
         const auto unk_count = input_stream.read_le<u16>();
@@ -332,7 +335,7 @@ void common::decrypt(
         }
     }
 
-    if (input_stream.seek(0).read(4) == "AN21"_b && params.decrypt_anm)
+    else if (input_stream.seek(0).read(4) == "AN21"_b && params.decrypt_anm)
     {
         input_stream.seek(4);
         const auto unk_count = input_stream.read_le<u16>();
@@ -362,7 +365,7 @@ void common::decrypt(
         ::decrypt(input_stream, params.key, input_stream.tell(), size);
     }
 
-    if (input_stream.seek(0).read(4) == "PL00"_b)
+    else if (input_stream.seek(0).read(4) == "PL00"_b)
     {
         input_stream.seek(4);
         const auto file_count = input_stream.read_le<u16>();
@@ -379,7 +382,7 @@ void common::decrypt(
         }
     }
 
-    if (input_stream.seek(0).read(4) == "PL10"_b)
+    else if (input_stream.seek(0).read(4) == "PL10"_b)
     {
         input_stream.seek(4);
         const auto file_count = input_stream.read_le<u16>();
