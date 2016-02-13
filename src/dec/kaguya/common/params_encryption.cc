@@ -207,21 +207,27 @@ static common::Params parse_params_file_v5(
     return params;
 }
 
+static bool verify_magic(io::BaseByteStream &input_stream, const bstr &magic)
+{
+    return input_stream.seek(0).read(magic.size()) == magic;
+}
+
 common::Params common::parse_params_file(io::BaseByteStream &input_stream)
 {
-    const auto scr_magic = input_stream.seek(0).read(15);
-
-    if (scr_magic == "[SCR-PARAMS]v02"_b)
+    if (verify_magic(input_stream, "[SCR-PARAMS]v02"_b))
         return parse_params_file_v2(input_stream);
 
-    if (scr_magic == "[SCR-PARAMS]v03"_b)
+    if (verify_magic(input_stream, "[SCR-PARAMS]v03"_b)
+        || verify_magic(input_stream, "[SCR-PARAMS]v04"_b))
+    {
         return parse_params_file_v3_or_4(input_stream);
+    }
 
-    if (scr_magic == "[SCR-PARAMS]v04"_b)
-        return parse_params_file_v3_or_4(input_stream);
-
-    if (scr_magic == "[SCR-PARAMS]v05"_b)
+    if (verify_magic(input_stream, "[SCR-PARAMS]v05.1"_b)
+        || verify_magic(input_stream, "[SCR-PARAMS]v05"_b))
+    {
         return parse_params_file_v5(input_stream);
+    }
 
     throw err::RecognitionError();
 }
